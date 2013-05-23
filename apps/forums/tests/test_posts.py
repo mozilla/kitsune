@@ -14,8 +14,8 @@ from users.tests import user
 class PostTestCase(ForumTestCase):
 
     def test_new_post_updates_thread(self):
-        """Saving a new post in a thread should update the last_post key in
-        that thread to point to the new post."""
+        # Saving a new post in a thread should update the last_post
+        # key in that thread to point to the new post.
         t = thread(save=True)
         post(thread=t, save=True)
         p = t.new_post(author=t.creator, content='an update')
@@ -24,8 +24,8 @@ class PostTestCase(ForumTestCase):
         eq_(p.id, t.last_post_id)
 
     def test_new_post_updates_forum(self):
-        """Saving a new post should update the last_post key in the forum to
-        point to the new post."""
+        # Saving a new post should update the last_post key in the
+        # forum to point to the new post.
         t = thread(save=True)
         post(thread=t, save=True)
         p = t.new_post(author=t.creator, content='another update')
@@ -34,8 +34,8 @@ class PostTestCase(ForumTestCase):
         eq_(p.id, f.last_post_id)
 
     def test_update_post_does_not_update_thread(self):
-        """Updating/saving an old post in a thread should _not_ update the
-        last_post key in that thread."""
+        # Updating/saving an old post in a thread should _not_ update
+        # the last_post key in that thread.
         t = thread(save=True)
         old = post(thread=t, save=True)
         last = post(thread=t, save=True)
@@ -44,8 +44,8 @@ class PostTestCase(ForumTestCase):
         eq_(last.id, old.thread.last_post_id)
 
     def test_update_forum_does_not_update_thread(self):
-        """Updating/saving an old post in a forum should _not_ update the
-        last_post key in that forum."""
+        # Updating/saving an old post in a forum should _not_ update
+        # the last_post key in that forum.
         t = thread(save=True)
         old = post(thread=t, save=True)
         last = post(thread=t, save=True)
@@ -54,8 +54,8 @@ class PostTestCase(ForumTestCase):
         eq_(last.id, t.forum.last_post_id)
 
     def test_replies_count(self):
-        """The Thread.replies value should remain one less than the number of
-        posts in the thread."""
+        # The Thread.replies value should remain one less than the
+        # number of posts in the thread.
         t = thread(save=True)
         post(thread=t, save=True)
         post(thread=t, save=True)
@@ -66,7 +66,7 @@ class PostTestCase(ForumTestCase):
         eq_(old + 1, t.replies)
 
     def test_sticky_threads_first(self):
-        """Sticky threads should come before non-sticky threads."""
+        # Sticky threads should come before non-sticky threads.
         t = post(save=True).thread
         sticky = thread(forum=t.forum, is_sticky=True, save=True)
         yesterday = datetime.now() - timedelta(days=1)
@@ -76,8 +76,9 @@ class PostTestCase(ForumTestCase):
         eq_(sticky.id, Thread.objects.all()[0].id)
 
     def test_thread_sorting(self):
-        """After the sticky threads, threads should be sorted by the created
-        date of the last post."""
+        # After the sticky threads, threads should be sorted by the
+        # created date of the last post.
+
         # Make sure the datetimes are different.
         post(created=datetime.now() - timedelta(days=1), save=True)
         post(save=True)

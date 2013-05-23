@@ -101,10 +101,8 @@ class BelongsTestCase(ForumTestCase):
         eq_(404, r.status_code)
 
     def test_edit_post_belongs_to_thread_and_forum(self):
-        """
-        Edit post action - post belongs to thread and thread belongs to
-        forum.
-        """
+        # Edit post action - post belongs to thread and thread belongs
+        # to forum.
         f = forum(save=True)
         t = thread(forum=f, save=True)
         # Post belongs to a different forum and thread.
@@ -124,10 +122,8 @@ class BelongsTestCase(ForumTestCase):
         eq_(404, r.status_code)
 
     def test_delete_post_belongs_to_thread_and_forum(self):
-        """
-        Delete post action - post belongs to thread and thread belongs to
-        forum.
-        """
+        # Delete post action - post belongs to thread and thread
+        # belongs to forum.
         f = forum(save=True)
         t = thread(forum=f, save=True)
         # Post belongs to a different forum and thread.

@@ -220,8 +220,7 @@ class TopContributors(TestCase):
 
     @override_settings(CC_TOP_CONTRIB_SORT='1w')
     def test_week_range(self):
-        """
-        Test that data looks about right for the 'one week' date range.
+        """Data looks about right for the 'one week' date range.
 
         Test two date ranges to ensure that the code is paying attention to
         settings.py.

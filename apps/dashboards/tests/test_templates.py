@@ -16,9 +16,10 @@ from wiki.tests import revision, translated_revision
 class LocalizationDashTests(TestCase):
     """Tests for the Localization Dashboard.
 
-    The L10n Dash shares a lot of code with the Contributor Dash, so this also
-    covers much of the latter, such as the readout template, most of the view
-    mechanics, and the Unreviewed Changes readout itself.
+    The L10n Dash shares a lot of code with the Contributor Dash, so
+    this also covers much of the latter, such as the readout template,
+    most of the view mechanics, and the Unreviewed Changes readout
+    itself.
 
     """
 
@@ -30,7 +31,7 @@ class LocalizationDashTests(TestCase):
             "'" + contents + "' is not in the following: " + html
 
     def test_render(self):
-        """Assert the main dash and all the readouts render and don't crash."""
+        """Assert main dash and all the readouts render and don't crash."""
         # Put some stuff in the DB so at least one row renders for each
         # readout:
         untranslated = revision(is_approved=True,
@@ -74,11 +75,12 @@ class LocalizationDashTests(TestCase):
 
     def test_untranslated_detail(self):
         """Assert the whole-page Untranslated Articles view works."""
-        # We don't need to test every whole-page view: just one, to make sure
-        # the localization_detail template and the view work. All the readouts'
-        # querying and formatting methods, including the various template
-        # parameters for each individual readout, are exercised by rendering
-        # the main, multi-readout page.
+        # We don't need to test every whole-page view: just one, to
+        # make sure the localization_detail template and the view
+        # work. All the readouts' querying and formatting methods,
+        # including the various template parameters for each
+        # individual readout, are exercised by rendering the main,
+        # multi-readout page.
 
         # Put something in the DB so something shows up:
         untranslated = revision(is_approved=True,
@@ -116,7 +118,8 @@ class GroupLocaleDashTests(TestCase):
 
     @mock.patch.object(Site.objects, 'get_current')
     def test_for_user_active(self, get_current):
-        """Checks the locale dashboard loads for a user associated with it."""
+        """Checks the locale dashboard loads for a user associated with it.
+        """
         get_current.return_value.domain = 'testserver'
         # Create user/group and add user to group.
         u = user(username='test', save=True)

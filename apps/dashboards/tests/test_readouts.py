@@ -49,7 +49,7 @@ class OverviewTests(TestCase):
     """Tests for Overview readout"""
 
     def test_counting_unready_templates(self):
-        """Templates without a ready-for-l10n rev shouldn't count in total."""
+        """Templates without a ready-for-l10n rev don't count"""
         # Make a template with an approved but not-ready-for-l10n rev:
         r = revision(document=document(title='Template:smoo',
                                        is_localizable=True,
@@ -67,10 +67,7 @@ class OverviewTests(TestCase):
         eq_(1, overview_rows('de')['templates']['denominator'])
 
     def test_counting_unready_navigation(self):
-        """Navigation articles without ready-for-l10n rev shouldn't count in
-        total.
-
-        """
+        """Navigation articles without ready-for-l10n rev don't count"""
         # Make a navigation doc with an approved but not-ready-for-l10n rev:
         r = revision(document=document(title='smoo',
                                        category=50,
@@ -106,10 +103,10 @@ class OverviewTests(TestCase):
         eq_(1, overview_rows('de')['all']['denominator'])
 
     def test_counting_unready_parents(self):
-        """Translations whose parents have no ready-to-localize revisions
-        should not count in the numerator.
+        """Translations with no ready revs don't count in numerator
 
-        By dint of factoring, this also tests that templates whose parents....
+        By dint of factoring, this also tests that templates whose
+        parents....
 
         """
         parent_rev = revision(document=document(is_localizable=True,
@@ -206,7 +203,8 @@ class OverviewTests(TestCase):
         eq_(0, overview['most-visited']['numerator'])
 
     def test_not_counting_untranslated(self):
-        """Translations with no approved revisions shouldn't count as done."""
+        """Translations with no approved revisions shouldn't count as done.
+        """
         t = translated_revision(is_approved=False, save=True)
         overview = overview_rows('de')
         eq_(0, overview['most-visited']['numerator'])
@@ -254,8 +252,8 @@ class UnreviewedChangesTests(ReadoutTestCase):
     readout = UnreviewedReadout
 
     def test_unrevieweds_after_current(self):
-        """Show the unreviewed revisions with later creation dates than the
-        current"""
+        """Show unreviewed revisions with later creation dates than current
+        """
         current = translated_revision(is_approved=True, save=True,
                                       created=datetime(2000, 1, 1))
         unreviewed = revision(document=current.document, save=True,
@@ -268,8 +266,7 @@ class UnreviewedChangesTests(ReadoutTestCase):
         assert unreviewed.document.title in self.titles()
 
     def test_rejected_newer_than_current(self):
-        """If there are reviewed but unapproved (i.e. rejected) revisions newer
-        than the current_revision, don't show them."""
+        """Don't show reviewed but unapproved revs newer than current rev"""
         rejected = translated_revision(reviewed=datetime.now(), save=True)
         assert rejected.document.title not in self.titles()
 
@@ -433,8 +430,12 @@ class MostVisitedTranslationsTests(ReadoutTestCase):
         self.assertRaises(IndexError, self.row)
 
     def _test_significance(self, significance, status):
-        """Assert that a translation out of date due to a `significance`-level
-        update to the original article shows status `status`."""
+        """
+        Assert that a translation out of date due to a
+        `significance`-level update to the original article shows
+        status `status`.
+
+        """
         translation = translated_revision(is_approved=True, save=True)
         revision(document=translation.document.parent,
                  is_approved=True,
@@ -463,7 +464,8 @@ class MostVisitedTranslationsTests(ReadoutTestCase):
         eq_(unicode(row['status']), 'Translation Needed')
 
     def test_up_to_date(self):
-        """Show up-to-date translations have no status, just a happy class."""
+        """Show up-to-date translations have no status, just a happy class.
+        """
         translation = translated_revision(is_approved=True, save=True)
         row = self.row()
         eq_(row['title'], translation.document.title)
@@ -471,10 +473,7 @@ class MostVisitedTranslationsTests(ReadoutTestCase):
         eq_(row['status_class'], 'ok')
 
     def test_one_rejected_revision(self):
-        """A translation with only 1 revision, which is rejected, should show
-        as "Needs Translation".
-
-        """
+        """Translation with 1 rejected rev shows as Needs Translation"""
         translated_revision(is_approved=False,
                             reviewed=datetime.now(),
                             save=True)
@@ -488,9 +487,12 @@ class MostVisitedTranslationsTests(ReadoutTestCase):
         eq_([], MostVisitedTranslationsReadout(MockRequest()).rows())
 
     def test_consider_max_significance(self):
-        """When determining how significantly an article has changed since
-        translation, use the max significance of the approved revisions, not
-        just that of the latest ready-to-localize one."""
+        """Use max significance for determining change significance
+
+        When determining how significantly an article has changed
+        since translation, use the max significance of the approved
+        revisions, not just that of the latest ready-to-localize one.
+        """
         translation = translated_revision(is_approved=True, save=True)
         revision(document=translation.document.parent,
                  is_approved=True,
@@ -546,9 +548,12 @@ class OutOfDateTests(ReadoutTestCase):
     readout = OutOfDateReadout
 
     def test_consider_max_significance(self):
-        """When determining how significantly an article has changed since
-        translation, use the max significance of the approved revisions, not
-        just that of the latest ready-to-localize one."""
+        """Use max significance of approved revs for changed significance
+
+        When determining how significantly an article has changed
+        since translation, use the max significance of the approved
+        revisions, not just that of the latest ready-to-localize one.
+        """
         translation = translated_revision(is_approved=True, save=True)
         revision(document=translation.document.parent,
                  is_approved=True,
@@ -591,7 +596,8 @@ class TemplateTranslationsTests(ReadoutTestCase):
     readout = TemplateTranslationsReadout
 
     def test_not_template(self):
-        """Documents that are not templates shouldn't show up in the list."""
+        """Documents that are not templates shouldn't show up in the list.
+        """
         translated_revision(is_approved=False, save=True)
         self.assertRaises(IndexError, self.row)
 
@@ -694,8 +700,8 @@ class UnreadyTests(ReadoutTestCase):
         eq_([], self.titles())
 
     def test_unapproved_revs(self):
-        """Articles with only unreviewed or rejected revs after the latest
-        ready one should not appear."""
+        """Don't show articles with unreviewed or rejected revs after latest
+        """
         d = document(save=True)
         ready = revision(document=d,
                          is_approved=True,
@@ -728,8 +734,9 @@ class UnreadyTests(ReadoutTestCase):
         eq_([r.document.title], self.titles())
 
     def test_insignificant_revs(self):
-        """Articles with approved, unready, but insignificant revisions newer
-        than their latest ready-for-l10n ones should not appear."""
+        # Articles with approved, unready, but insignificant revisions
+        # newer than their latest ready-for-l10n ones should not
+        # appear.
         ready = revision(is_approved=True,
                          is_ready_for_localization=True,
                          save=True)
@@ -741,8 +748,8 @@ class UnreadyTests(ReadoutTestCase):
         eq_([], self.titles())
 
     def test_significant_revs(self):
-        """Articles with approved, significant, but unready revisions newer
-        than their latest ready-for-l10n ones should appear."""
+        # Articles with approved, significant, but unready revisions
+        # newer than their latest ready-for-l10n ones should appear.
         ready = revision(is_approved=True,
                          is_ready_for_localization=True,
                          save=True)
@@ -905,8 +912,6 @@ class CannedResponsesTests(ReadoutTestCase):
                  save=True)
 
         eq_('out-of-date', self.row()['status_class'])
-
-
 
     def test_by_product(self):
         """Test the product filtering of the readout."""

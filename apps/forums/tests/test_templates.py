@@ -209,7 +209,8 @@ class PostsTemplateTests(ForumTestCase):
 class ThreadsTemplateTests(ForumTestCase):
 
     def test_last_thread_post_link_has_post_id(self):
-        """Make sure the last post url links to the last post (#post-<id>)."""
+        """Make sure the last post url links to the last post (#post-<id>).
+        """
         t = forum_post(save=True).thread
         last = forum_post(thread=t, save=True)
 
@@ -310,7 +311,8 @@ class ThreadsTemplateTests(ForumTestCase):
         self.assertContains(response, 'Post a new thread')
 
     def test_restricted_hide_new_thread(self):
-        """'Post new thread' doesn't show if user has no permission to post."""
+        """'Post new thread' doesn't show if user has no permission to post.
+        """
         f = forum(save=True)
         ct = ContentType.objects.get_for_model(f)
         # If the forum has the permission and the user isn't assigned said
@@ -327,7 +329,8 @@ class ThreadsTemplateTests(ForumTestCase):
 class ForumsTemplateTests(ForumTestCase):
 
     def test_last_post_link_has_post_id(self):
-        """Make sure the last post url links to the last post (#post-<id>)."""
+        """Make sure the last post url links to the last post (#post-<id>).
+        """
         p = forum_post(save=True)
 
         response = get(self.client, 'forums.forums')
@@ -395,7 +398,6 @@ class ForumsTemplateTests(ForumTestCase):
 
 
 class NewThreadTemplateTests(ForumTestCase):
-
     def test_preview(self):
         """Preview the thread post."""
         f = forum(save=True)

@@ -76,9 +76,8 @@ class ForumModelTestCase(ForumTestCase):
         assert 'last=%s' % lp.id in url
 
     def test_last_post_updated(self):
-        """Adding/Deleting the last post in a thread and forum should
-        update the last_post field
-        """
+        # Adding/Deleting the last post in a thread and forum should
+        # update the last_post field
         orig_post = post(created=YESTERDAY, save=True)
         t = orig_post.thread
 
@@ -97,8 +96,9 @@ class ForumModelTestCase(ForumTestCase):
         eq_(t.last_post.id, orig_post.id)
 
     def test_public_access(self):
-        """Assert Forums think they're publicly viewable and postable at
-        appropriate times."""
+        # Assert Forums think they're publicly viewable and postable
+        # at appropriate times.
+
         # By default, users have access to forums that aren't restricted.
         u = user(save=True)
         f = forum(save=True)
@@ -122,9 +122,11 @@ class ForumModelTestCase(ForumTestCase):
         assert not f.allows_posting_by(unprivileged_user)
 
     def test_move_updates_last_posts(self):
-        """Moving the thread containing a forum's last post to a new forum
-        should update the last_post of both forums. Consequently, deleting
-        the last post shouldn't delete the old forum. [bug 588994]"""
+        # Moving the thread containing a forum's last post to a new
+        # forum should update the last_post of both
+        # forums. Consequently, deleting the last post shouldn't
+        # delete the old forum. [bug 588994]
+
         # Setup forum to move latest thread from.
         old_forum = forum(save=True)
         t1 = thread(forum=old_forum, save=True)
@@ -179,9 +181,8 @@ class ForumModelTestCase(ForumTestCase):
 
 class ThreadModelTestCase(ForumTestCase):
     def test_delete_thread_with_last_forum_post(self):
-        """Deleting the thread with a forum's last post should
-        update the last_post field on the forum
-        """
+        # Deleting the thread with a forum's last post should update
+        # the last_post field on the forum
         t = thread(save=True)
         post(thread=t, save=True)
         f = t.forum
@@ -232,8 +233,7 @@ class SaveDateTestCase(ForumTestCase):
         self.forum = self.thread.forum
 
     def assertDateTimeAlmostEqual(self, a, b, delta, msg=None):
-        """
-        Assert that two datetime objects are within `range` (a timedelta).
+        """Assert that two datetime objects are within `range` (a timedelta).
         """
         diff = abs(a - b)
         assert diff < abs(delta), msg or '%s ~= %s' % (a, b)
@@ -247,10 +247,8 @@ class SaveDateTestCase(ForumTestCase):
         self.assertDateTimeAlmostEqual(now, t.created, self.delta)
 
     def test_save_thread_created(self):
-        """
-        Saving a new thread that already has a created date should respect
-        that created date.
-        """
+        # Saving a new thread that already has a created date should
+        # respect that created date.
         created = datetime(1992, 1, 12, 9, 48, 23)
         t = thread(forum=self.forum, title='foo', creator=self.user,
                    created=created, save=True)
@@ -271,10 +269,8 @@ class SaveDateTestCase(ForumTestCase):
         eq_(created, t.created)
 
     def test_save_new_post_no_timestamps(self):
-        """
-        Saving a new post should behave as if auto_add_now was set on
-        created and auto_now set on updated.
-        """
+        # Saving a new post should behave as if auto_add_now was set on
+        # created and auto_now set on updated.
         p = post(thread=self.thread, content='bar', author=self.user,
                  save=True)
         now = datetime.now()
@@ -282,9 +278,7 @@ class SaveDateTestCase(ForumTestCase):
         self.assertDateTimeAlmostEqual(now, p.updated, self.delta)
 
     def test_save_old_post_no_timestamps(self):
-        """
-        Saving an existing post should update the updated date.
-        """
+        """Saving an existing post should update the updated date."""
         created = datetime(2010, 5, 4, 14, 4, 22)
         updated = datetime(2010, 5, 4, 14, 4, 31)
         p = post(thread=self.thread, created=created, updated=updated,
@@ -301,10 +295,8 @@ class SaveDateTestCase(ForumTestCase):
         eq_(created, p.created)
 
     def test_save_new_post_timestamps(self):
-        """
-        Saving a new post should allow you to override auto_add_now- and
-        auto_now-like functionality.
-        """
+        # Saving a new post should allow you to override auto_add_now-
+        # and auto_now-like functionality.
         created_ = datetime(1992, 1, 12, 10, 12, 32)
         p = Post(thread=self.thread, content='bar', author=self.user,
                  created=created_, updated=created_)

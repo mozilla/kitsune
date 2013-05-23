@@ -34,15 +34,13 @@ class TopUnhelpfulArticlesTests(TestCase):
         eq_(0, len(result))
 
     def test_no_current_articles(self):
-        """Make sure _get_current_articles() returns nothing with no votes."""
+        """Make sure _get_current_articles() returns nothing with no votes.
+        """
         result = _get_current_unhelpful({})
         eq_(0, len(result))
 
     def test_old_articles(self):
-        """
-        Make sure _get_old_unhelpful() returns an unhelpful (no > yes) with
-        votes within time range.
-        """
+        """Returns unhelpful votes within time range"""
         r = _make_backdated_revision(90)
 
         # Add 4 no votes 1.5 months ago
@@ -58,10 +56,7 @@ class TopUnhelpfulArticlesTests(TestCase):
         eq_(5, result[r.id]['total'])
 
     def test_old_articles_helpful(self):
-        """
-        Make sure _get_old_unhelpful() doesn't return a helpful (no < yes)
-        with votes within time range.
-        """
+        """Doesn't return helpful votes within range"""
         r = _make_backdated_revision(90)
 
         for x in range(0, 4):
@@ -73,10 +68,7 @@ class TopUnhelpfulArticlesTests(TestCase):
         eq_(0, len(result))
 
     def test_current_articles(self):
-        """
-        Make sure _get_current_unhelpful() returns an unhelpful (no > yes) with
-        votes within time range.
-        """
+        """Returns unhelpful votes within time range"""
         r = _make_backdated_revision(90)
 
         for x in range(0, 3):
@@ -95,10 +87,7 @@ class TopUnhelpfulArticlesTests(TestCase):
         eq_(5, result[r.id]['total'])
 
     def test_current_articles_helpful(self):
-        """
-        Make sure _get_current_unhelpful() doesn't return a helpful (no < yes)
-        with votes within time range.
-        """
+        """Doesn't return helpful votes within time range"""
         r = _make_backdated_revision(90)
 
         for x in range(0, 3):
@@ -113,9 +102,7 @@ class TopUnhelpfulArticlesTests(TestCase):
         eq_(0, len(result))
 
     def test_current_articles_not_in_old(self):
-        """
-        Unhelpful articles in current but not in old shouldn't break stuff.
-        """
+        """Unhelpful articles in current but not in old works"""
         r = _make_backdated_revision(90)
 
         for x in range(0, 3):

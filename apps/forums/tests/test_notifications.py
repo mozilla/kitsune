@@ -17,9 +17,10 @@ from users.models import Setting
 from users.tests import user
 
 
-# Some of these contain a locale prefix on included links, while others don't.
-# This depends on whether the tests use them inside or outside the scope of a
-# request. See the long explanation in questions.tests.test_notifications.
+# Some of these contain a locale prefix on included links, while
+# others don't.  This depends on whether the tests use them inside or
+# outside the scope of a request. See the long explanation in
+# questions.tests.test_notifications.
 REPLY_EMAIL = u"""Reply to thread: {thread}
 
 User {username} has replied to a thread you're watching. Here is their reply:
@@ -138,8 +139,8 @@ class NotificationsTests(ForumTestCase):
         starts_with(mail.outbox[0].body, body)
 
     def test_watch_other_thread_then_reply(self):
-        """Watching a different thread than the one we're replying to shouldn't
-        notify."""
+        # Watching a different thread than the one we're replying to
+        # shouldn't notify.
         t1 = thread(save=True)
         t2 = thread(save=True)
         poster = user(save=True)
@@ -178,8 +179,8 @@ class NotificationsTests(ForumTestCase):
 
     @mock.patch.object(Site.objects, 'get_current')
     def test_watch_forum_then_new_thread_as_self(self, get_current):
-        """Watching a forum and creating a new thread as myself should not
-        send email."""
+        # Watching a forum and creating a new thread as myself should
+        # not send email.
         get_current.return_value.domain = 'testserver'
 
         f = forum(save=True)

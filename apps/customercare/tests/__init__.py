@@ -13,9 +13,8 @@ tweet_created = datetime.now().strftime('%a, %d %b %Y %H:%M:%S')
 def tweet(**kwargs):
     """Return a Tweet with valid default values or the ones passed in.
 
-    Args:
-        save: whether to save the Tweet before returning it
-        text: the `text` attribute of the Tweet's raw_json
+    :arg save: whether to save the Tweet before returning it
+    :arg text: the `text` attribute of the Tweet's raw_json
     """
     global next_tweet_id
     # TODO: Escape quotes and such

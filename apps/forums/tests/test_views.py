@@ -96,7 +96,8 @@ class ThreadAuthorityPermissionsTests(ForumTestCase):
         eq_(405, response.status_code)
 
     def test_watch_forum_without_permission(self):
-        """Watching forums without the view_in_forum permission should 404."""
+        """Watching forums without the view_in_forum permission should 404.
+        """
         restricted_forum = _restricted_forum()
         u = user(save=True)
 
@@ -107,7 +108,8 @@ class ThreadAuthorityPermissionsTests(ForumTestCase):
         eq_(404, response.status_code)
 
     def test_watch_thread_without_permission(self):
-        """Watching threads without the view_in_forum permission should 404."""
+        """Watching threads without the view_in_forum permission should 404.
+        """
         restricted_forum = _restricted_forum()
         t = thread(forum=restricted_forum, save=True)
         u = user(save=True)
@@ -119,7 +121,8 @@ class ThreadAuthorityPermissionsTests(ForumTestCase):
         eq_(404, response.status_code)
 
     def test_read_without_permission(self):
-        """Listing threads without the view_in_forum permission should 404."""
+        """Listing threads without the view_in_forum permission should 404.
+        """
         restricted_forum = _restricted_forum()
 
         response = get(self.client, 'forums.threads',
@@ -223,7 +226,6 @@ class ThreadTests(ForumTestCase):
 
 
 class ThreadPermissionsTests(ForumTestCase):
-
     def test_edit_thread_403(self):
         """Editing a thread without permissions returns 403."""
         t = forum_post(save=True).thread
