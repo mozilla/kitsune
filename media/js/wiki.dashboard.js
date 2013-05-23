@@ -32,31 +32,8 @@ $(document).ready(function() {
   });
 });
 
-
-// TODO: The next two functions are copied from the kpi dasbhoard script
-// The only change is the width. We should roll this up into rickshaw_utils
-// maybe?
-
-// parseInt and _.map don't get along because parseInt takes a second arg.
-// This doesn't have that problem.
-function parseNum(n) {
-  return parseInt(n, 10);
-}
-
-function makeVoteGraph($container, descriptors, metadata) {
+function makeVoteGraph($container, descriptors) {
   $.getJSON($container.data('url'), function(data) {
-    var date, series, graph, split;
-
-    $.each(data.objects, function(d) {
-      date = this.date || this.created || this.start;
-      // Assume something like 2013-12-31
-      split = _.map(date.split('-'), parseNum);
-      // The Data constructor takes months as 0 through 11. Wtf.
-      this.date = +new Date(split[0], split[1] - 1, split[2]) / 1000;
-      this.start = undefined;
-      this.created = undefined;
-    });
-
     new k.Graph($container, {
       data: {
         datums: data.objects,
@@ -71,7 +48,6 @@ function makeVoteGraph($container, descriptors, metadata) {
         width: 600,
         height: 300
       },
-      metadata: metadata
     }).render();
   });
 }
