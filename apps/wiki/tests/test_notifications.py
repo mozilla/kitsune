@@ -4,9 +4,10 @@ from django.core import mail
 from nose.tools import eq_
 
 from sumo.tests import post
-from users.tests import user
-from wiki.events import ReadyRevisionEvent, ApproveRevisionInLocaleEvent
+from users.tests import add_permission, user
 from wiki.config import SIGNIFICANCES, MEDIUM_SIGNIFICANCE
+from wiki.events import ReadyRevisionEvent, ApproveRevisionInLocaleEvent
+from wiki.models import Revision
 from wiki.tests import revision, TestCaseBase
 
 
@@ -31,14 +32,16 @@ def _set_up_ready_watcher():
 
 class ReviewTests(TestCaseBase):
     """Tests for notifications sent during revision review"""
-    fixtures = ['users.json']
 
     def setUp(self):
         """Have a user watch for revision approval. Log in."""
         self.approved_watcher = user(email='approved@example.com', save=True)
         ApproveRevisionInLocaleEvent.notify(self.approved_watcher,
                                             locale='en-US')
-        self.client.login(username='admin', password='testpass')
+        approver = user(save=True)
+        add_permission(approver, Revision, 'review_revision')
+        add_permission(approver, Revision, 'mark_ready_for_l10n')
+        self.client.login(username=approver.username, password='testpass')
 
     def _review_revision(self, is_approved=True, is_ready=False, r=None):
         """Make a revision, and approve or reject it through the view."""
@@ -131,13 +134,15 @@ class ReviewTests(TestCaseBase):
 
 class ReadyForL10nTests(TestCaseBase):
     """Tests for notifications sent during ready for l10n"""
-    fixtures = ['users.json']
 
     def setUp(self):
         """Have a user watch for revision approval. Log in."""
         self.ready_watcher = user(email='approved@example.com', save=True)
         ReadyRevisionEvent.notify(self.ready_watcher)
-        self.client.login(username='admin', password='testpass')
+
+        readyer = user(save=True)
+        add_permission(readyer, Revision, 'mark_ready_for_l10n')
+        self.client.login(username=readyer.username, password='testpass')
 
     def _mark_as_ready_revision(self):
         """Make a revision, and approve or reject it through the view."""
