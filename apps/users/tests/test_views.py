@@ -1,7 +1,7 @@
 import os
 
 from django.conf import settings
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from django.contrib.sites.models import Site
 from django.core import mail
 from django.test.utils import override_settings
@@ -15,8 +15,8 @@ from questions.models import Question
 from sumo.tests import TestCase, LocalizingClient, send_mail_raise_smtp
 from sumo.urlresolvers import reverse
 from users import ERROR_SEND_EMAIL
-from users.models import (Profile, RegistrationProfile, EmailChange, Setting,
-                          email_utils)
+from users.models import (CONTRIBUTOR_GROUP, Profile, RegistrationProfile,
+                          EmailChange, Setting, email_utils)
 from users.tests import profile, user, group, add_permission
 
 
@@ -321,6 +321,24 @@ class ChangeEmailTestCase(TestCase):
             doc('article h1').text())
         u = User.objects.get(username=self.u.username)
         eq_(old_email, u.email)
+
+
+class MakeContributorTests(TestCase):
+    def setUp(self):
+        self.u = user(save=True)
+        self.client.login(username=self.u.username, password='testpass')
+        group(name=CONTRIBUTOR_GROUP, save=True)
+        super(MakeContributorTests, self).setUp()
+
+    def test_make_contributor(self):
+        """Test adding a user to the contributor group"""
+        eq_(0, self.u.groups.filter(name=CONTRIBUTOR_GROUP).count())
+
+        response = self.client.post(reverse('users.make_contributor',
+                                            force_locale=True))
+        eq_(302, response.status_code)
+
+        eq_(1, self.u.groups.filter(name=CONTRIBUTOR_GROUP).count())
 
 
 class AvatarTests(TestCase):

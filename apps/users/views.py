@@ -35,8 +35,8 @@ from users.forms import (ProfileForm, AvatarForm, EmailConfirmationForm,
                          PasswordChangeForm, SettingsForm, ForgotUsernameForm,
                          RegisterForm, PasswordResetForm)
 from users.helpers import profile_url
-from users.models import (Profile, RegistrationProfile,
-                          EmailChange)
+from users.models import (CONTRIBUTOR_GROUP, Group, Profile,
+                          RegistrationProfile, EmailChange)
 from users.utils import (handle_login, handle_register,
                          try_send_email_with_form)
 from wiki.models import user_num_documents, user_documents
@@ -381,6 +381,33 @@ def edit_profile(request, template):
 
     return render(request, template, {
         'form': form, 'profile': user_profile})
+
+
+@login_required
+@require_http_methods(['POST'])
+def make_contributor(request):
+    """Adds the logged in user to the contributor group"""
+    group = Group.objects.get(name=CONTRIBUTOR_GROUP)
+    request.user.groups.add(group)
+
+    @email_utils.safe_translation
+    def _make_mail(locale):
+        mail = email_utils.make_mail(
+            subject=_('Welcome to SUMO!'),
+            text_template='users/email/contributor.ltxt',
+            html_template='users/email/contributor.html',
+            context_vars={'username': request.user.username},
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to_email=request.user.email)
+
+        return mail
+
+    email_utils.send_messages([_make_mail(request.LANGUAGE_CODE)])
+
+    if 'return_to' in request.POST:
+        return HttpResponseRedirect(request.POST['return_to'])
+    else:
+        return HttpResponseRedirect(reverse('landings.get_involved'))
 
 
 @login_required

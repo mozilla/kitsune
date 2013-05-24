@@ -69,12 +69,22 @@
     </div>
   </div>
 
-  <div class="row cf">
-    <div class="grid_12">
-      <div class="content-box button-wrapper cf">
-        <a class="btn btn-submit" href="{{ url('users.auth_contributor') }}">{{ _('Sign me up') }} &raquo;</a>
-        <h3>{{ _('Sign up as a volunteer') }}</h3>
+  {% if not user.is_authenticated() or not user.groups.filter(name='Registered as contributor') %}
+    <div class="row cf">
+      <div class="grid_12">
+        <div class="content-box button-wrapper cf">
+          {% if user.is_authenticated() %}
+            <form method="post" action="{{ url('users.make_contributor') }}">
+              <input type="hidden" name="return_to" value="{{ url('landings.get_involved') }}">
+              {{ csrf() }}
+              <button class="btn btn-submit">{{ _('Sign me up') }} &raquo;</button>
+            </form>
+          {% else %}
+            <a class="btn btn-submit" href="{{ url('users.auth_contributor') }}">{{ _('Sign me up') }} &raquo;</a>
+          {% endif %}
+          <h3>{{ _('Sign up as a volunteer') }}</h3>
+        </div>
       </div>
     </div>
-  </div>
+  {% endif %}
 {% endblock %}
