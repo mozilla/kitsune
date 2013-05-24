@@ -1,20 +1,19 @@
+from datetime import datetime
+
 from django.core.files import File
 
 from gallery.models import Image, Video
-from users.tests import get_user
+from users.tests import user
 
 
 def image(file_and_save=True, **kwargs):
-    """Return a saved image.
-
-    Requires a users fixture if no creator is provided.
-
-    """
+    """Return a saved image."""
     u = None
     if 'creator' not in kwargs:
-        u = get_user()
+        u = user(save=True)
 
-    defaults = {'title': 'Some title', 'description': 'Some description',
+    defaults = {'title': 'Some title %s' % str(datetime.now()),
+                'description': 'Some description %s' % str(datetime.now()),
                 'creator': u}
     defaults.update(kwargs)
 
@@ -31,14 +30,10 @@ def image(file_and_save=True, **kwargs):
 
 
 def video(file_and_save=True, **kwargs):
-    """Return a saved video.
-
-    Requires a users fixture if no creator is provided.
-
-    """
+    """Return a saved video."""
     u = None
     if 'creator' not in kwargs:
-        u = get_user()
+        u = user(save=True)
 
     defaults = {'title': 'Some title', 'description': 'Some description',
                 'creator': u}

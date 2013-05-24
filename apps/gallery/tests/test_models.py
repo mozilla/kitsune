@@ -16,7 +16,7 @@ class ImageTestCase(TestCase):
 
     def test_new_image(self):
         """New Image is created and saved"""
-        img = image()
+        img = image(title='Some title')
         eq_('Some title', img.title)
         eq_(150, img.file.width)
         eq_(200, img.file.height)

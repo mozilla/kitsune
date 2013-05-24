@@ -13,6 +13,7 @@ from gallery.tests import image, video
 from gallery.views import _get_media_info
 from sumo.tests import post, LocalizingClient, TestCase
 from sumo.urlresolvers import reverse
+from users.tests import user, add_permission
 
 
 TEST_IMG = 'apps/upload/tests/media/test.jpg'
@@ -25,12 +26,10 @@ VIDEO_PATH = settings.MEDIA_URL + settings.GALLERY_VIDEO_PATH
 
 
 class DeleteEditImageTests(TestCase):
-    fixtures = ['users.json']
     client_class = LocalizingClient
 
     def setUp(self):
         super(DeleteEditImageTests, self).setUp()
-        self.client.login(username='jsocol', password='testpass')
 
     def tearDown(self):
         Image.objects.all().delete()
@@ -38,8 +37,10 @@ class DeleteEditImageTests(TestCase):
 
     def test_delete_image(self):
         """Deleting an uploaded image works."""
-        # Upload the image first
         im = image()
+        u = user(save=True)
+        add_permission(u, Image, 'delete_image')
+        self.client.login(username=u.username, password='testpass')
         r = post(self.client, 'gallery.delete_media', args=['image', im.id])
 
         eq_(200, r.status_code)
@@ -47,8 +48,9 @@ class DeleteEditImageTests(TestCase):
 
     def test_delete_image_without_permissions(self):
         """Can't delete an image I didn't create."""
-        self.client.login(username='tagger', password='testpass')
         img = image()
+        u = user(save=True)
+        self.client.login(username=u.username, password='testpass')
         r = post(self.client, 'gallery.delete_media', args=['image', img.id])
 
         eq_(403, r.status_code)
@@ -56,8 +58,8 @@ class DeleteEditImageTests(TestCase):
 
     def test_delete_own_image(self):
         """Can delete an image I created."""
-        self.client.login(username='tagger', password='testpass')
-        u = User.objects.get(username='tagger')
+        u = user(save=True)
+        self.client.login(username=u.username, password='testpass')
         img = image(creator=u)
         r = post(self.client, 'gallery.delete_media', args=['image', img.id])
 
@@ -68,6 +70,9 @@ class DeleteEditImageTests(TestCase):
     def test_schedule_rebuild_kb_on_delete(self, schedule_rebuild_kb):
         """KB rebuild scheduled on delete"""
         im = image()
+        u = user(save=True)
+        add_permission(u, Image, 'delete_image')
+        self.client.login(username=u.username, password='testpass')
         r = post(self.client, 'gallery.delete_media', args=['image', im.id])
 
         eq_(200, r.status_code)
@@ -76,8 +81,9 @@ class DeleteEditImageTests(TestCase):
 
     def test_edit_own_image(self):
         """Can edit an image I created."""
-        u = User.objects.get(username='jsocol')
+        u = user(save=True)
         img = image(creator=u)
+        self.client.login(username=u.username, password='testpass')
         r = post(self.client, 'gallery.edit_media', {'description': 'arrr'},
                  args=['image', img.id])
 
@@ -86,8 +92,9 @@ class DeleteEditImageTests(TestCase):
 
     def test_edit_image_without_permissions(self):
         """Can't edit an image I didn't create."""
-        u = User.objects.get(username='pcraciunoiu')
-        img = image(creator=u)
+        img = image()
+        u = user(save=True)
+        self.client.login(username=u.username, password='testpass')
         r = post(self.client, 'gallery.edit_media', {'description': 'arrr'},
                  args=['image', img.id])
 
@@ -95,22 +102,25 @@ class DeleteEditImageTests(TestCase):
 
     def test_edit_image_with_permissions(self):
         """Editing image sets the updated_by field."""
-        self.client.login(username='admin', password='testpass')
         img = image()
+        u = user(save=True)
+        add_permission(u, Image, 'change_image')
+        self.client.login(username=u.username, password='testpass')
         r = post(self.client, 'gallery.edit_media', {'description': 'arrr'},
                  args=['image', img.id])
 
         eq_(200, r.status_code)
-        eq_('admin', Image.objects.get().updated_by.username)
+        eq_(u.username, Image.objects.get().updated_by.username)
 
 
 class UploadImageTests(TestCase):
-    fixtures = ['users.json']
     client_class = LocalizingClient
 
     def setUp(self):
         super(UploadImageTests, self).setUp()
-        self.client.login(username='pcraciunoiu', password='testpass')
+
+        self.user = user(save=True)
+        self.client.login(username=self.user.username, password='testpass')
 
     def tearDown(self):
         Image.objects.all().delete()
@@ -144,10 +154,10 @@ class UploadImageTests(TestCase):
         eq_(90, file['width'])
         eq_(120, file['height'])
         assert file['url'].endswith(img.get_absolute_url())
-        eq_('pcraciunoiu', img.creator.username)
+        eq_(self.user.username, img.creator.username)
         eq_(150, img.file.width)
         eq_(200, img.file.height)
-        assert 'pcraciunoiu' in img.title
+        assert self.user.username in img.title
         eq_('Autosaved draft.', img.description)
         eq_('en-US', img.locale)
 
@@ -222,8 +232,7 @@ class UploadImageTests(TestCase):
 
     def test_upload_draft_image(self):
         """Uploading draft image works, sets locale too."""
-        u = User.objects.get(username='pcraciunoiu')
-        img = image(creator=u, is_draft=True)
+        img = image(creator=self.user, is_draft=True)
         # No thumbnail yet.
         eq_(None, img.thumbnail)
 
@@ -244,12 +253,11 @@ class UploadImageTests(TestCase):
     def test_image_title_locale_unique_validation(self):
         """Posting an existing locale/title combination shows a validation
         error."""
-        u = User.objects.get(username='pcraciunoiu')
-        image(creator=u, is_draft=True, title='Some title')
+        image(creator=self.user, is_draft=True, title='Some title')
         post(self.client, 'gallery.upload',
              {'locale': 'de', 'title': 'Hasta la vista',
               'description': 'Auf wiedersehen!'}, args=['image'])
-        image(creator=u, is_draft=True, title='Some title')
+        image(creator=self.user, is_draft=True, title='Some title')
         r = post(self.client, 'gallery.upload',
                  {'locale': 'de', 'title': 'Hasta la vista',
                   'description': 'Auf wiedersehen!'},
@@ -274,7 +282,6 @@ class UploadImageTests(TestCase):
 
 
 class ViewHelpersTests(TestCase):
-    fixtures = ['users.json']
 
     def tearDown(self):
         Image.objects.all().delete()
@@ -297,12 +304,13 @@ class ViewHelpersTests(TestCase):
 
 
 class UploadVideoTests(TestCase):
-    fixtures = ['users.json']
     client_class = LocalizingClient
 
     def setUp(self):
         super(UploadVideoTests, self).setUp()
-        self.client.login(username='pcraciunoiu', password='testpass')
+
+        self.user = user(save=True)
+        self.client.login(username=self.user.username, password='testpass')
 
     def tearDown(self):
         Video.objects.all().delete()
@@ -328,8 +336,8 @@ class UploadVideoTests(TestCase):
         eq_(32, file['width'])
         eq_(32, file['height'])
         assert file['url'].endswith(vid.get_absolute_url())
-        eq_('pcraciunoiu', vid.creator.username)
-        assert 'pcraciunoiu' in vid.title
+        eq_(self.user.username, vid.creator.username)
+        assert self.user.username in vid.title
         eq_('Autosaved draft.', vid.description)
         eq_('en-US', vid.locale)
         with open(TEST_VID['ogv']) as f:
@@ -452,32 +460,32 @@ class UploadVideoTests(TestCase):
 
 
 class SearchTests(TestCase):
-    fixtures = ['users.json', 'gallery/media.json']
     client_class = LocalizingClient
 
-    def test_search_results(self):
-        url = reverse('gallery.search', args=['image'])
-        response = self.client.get(url, {'q': 'quicktime'}, follow=True)
-        doc = pq(response.content)
-        eq_(1, len(doc('#media-list li')))
-
     def test_image_search(self):
+        image(title='fx2-quicktimeflash.png')
+        image(title='another-image.png')
         url = reverse('gallery.search', args=['image'])
         response = self.client.get(url, {'q': 'quicktime'}, follow=True)
         doc = pq(response.content)
         eq_(1, len(doc('#media-list li')))
 
     def test_video_search(self):
+        video(title='0a85171f1802a3b0d9f46ffb997ddc02-1251659983-259-2.mp4')
+        video(title='another-video.mp4')
         url = reverse('gallery.search', args=['video'])
         response = self.client.get(url, {'q': '1802'}, follow=True)
         doc = pq(response.content)
         eq_(1, len(doc('#media-list li')))
 
     def test_search_description(self):
+        image(description='This image was automatically migrated')
+        image(description='This image was automatically migrated')
+        image(description='This image was automatically')
         url = reverse('gallery.search', args=['image'])
         response = self.client.get(url, {'q': 'migrated'}, follow=True)
         doc = pq(response.content)
-        eq_(5, len(doc('#media-list li')))
+        eq_(2, len(doc('#media-list li')))
 
     def test_search_nonexistent(self):
         url = reverse('gallery.search', args=['foo'])
