@@ -26,10 +26,10 @@ sys.path[:0] = new_sys_path
 from django.core.management import execute_manager, setup_environ
 
 try:
-    import settings_local as settings
+    from kitsune import settings_local as settings
 except ImportError:
     try:
-        import settings  # Assumed to be in the same directory.
+        from kitsune import settings  # Assumed to be in the same directory.
     except ImportError:
         sys.stderr.write(
             "Error: Tried importing 'settings_local.py' and 'settings.py' "
@@ -42,7 +42,7 @@ except ImportError:
 setup_environ(settings)
 
 # Import for side-effect: configures our logging handlers.
-import log_settings
+from kitsune import log_settings
 
 
 if __name__ == "__main__":

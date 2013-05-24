@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
-import urls
-
 from nose.tools import eq_
 
+from kitsune import urls
 from sumo.tests import TestCase
 from wiki.admin import DocumentAdmin
 from wiki.models import Document
