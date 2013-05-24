@@ -74,7 +74,7 @@ k.Graph.prototype.init = function() {
 
 k.Graph.prototype.initData = function() {
   var i, d, date;
-  for (i = 0; i < this.data.datums.length) {
+  for (i = 0; i < this.data.datums.length; i++) {
     d = this.data.datums[i];
     d.date = k.Graph.toSeconds(d.date || d.created || d.start);
     d.created = undefined;
