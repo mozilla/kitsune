@@ -50,14 +50,6 @@ def user(**kwargs):
     return user
 
 
-def get_user(username='jsocol'):
-    """Return a saved Django user, creating one first if necessary."""
-    try:
-        return User.objects.get(username=username)
-    except User.DoesNotExist:
-        return user(username=username, save=True)
-
-
 @with_save
 def group(**kwargs):
     defaults = {}
