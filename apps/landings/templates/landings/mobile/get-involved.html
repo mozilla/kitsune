@@ -67,10 +67,20 @@
       </a>
     </li>
   </ul>
-  <div class="sign-up">
-    <h3>{{ _('Sign up as a volunteer') }}</h3>
-    <a class="btn btn-submit" href="{{ url('users.auth_contributor') }}">
-      {{ _('Sign me up') }}
-    </a>
-  </div>
+  {% if not user.is_authenticated() or not user.groups.filter(name='Registered as contributor') %}
+    <div class="sign-up">
+      <h3>{{ _('Sign up as a volunteer') }}</h3>
+      {% if user.is_authenticated() %}
+        <form method="post" action="{{ url('users.make_contributor') }}">
+          <input type="hidden" name="return_to" value="{{ url('landings.get_involved') }}">
+          {{ csrf() }}
+          <button class="btn btn-submit">{{ _('Sign me up') }}</button>
+        </form>
+      {% else %}
+        <a class="btn btn-submit" href="{{ url('users.auth_contributor') }}">
+          {{ _('Sign me up') }}
+        </a>
+      {% endif %}
+    </div>
+  {% endif %}
 {% endblock %}
