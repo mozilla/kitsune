@@ -1,10 +1,10 @@
 *.pyc
 *.pyo
-settings_local.py
+kitsune/settings_local.py
 pip-log.txt
 .coverage
 coverage.xml
-build.py
+kitsune/build.py
 **-all.css
 **-min.css
 **-all.js
@@ -14,7 +14,6 @@ node_modules
 tmp
 locale
 docs/_build
-highstock.src.js
 /static
 *.less.css
 .DS_Store

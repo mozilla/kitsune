@@ -124,9 +124,6 @@
 [submodule "vendor/src/django-eadred"]
 	path = vendor/src/django-eadred
 	url = git://github.com/willkg/django-eadred.git
-[submodule "media/js/libs/ace"]
-	path = media/js/libs/ace
-	url = git://github.com/ajaxorg/ace-builds.git
 [submodule "vendor/src/raven-python"]
 	path = vendor/src/raven-python
 	url = git://github.com/getsentry/raven-python.git
@@ -142,3 +139,6 @@
 [submodule "vendor/src/premailer"]
 	path = vendor/src/premailer
 	url = git://github.com/peterbe/premailer.git
+[submodule "media/js/libs/ace"]
+	path = media/js/libs/ace
+	url = git://github.com/ajaxorg/ace-builds.git
