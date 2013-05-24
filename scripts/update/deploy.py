@@ -15,7 +15,7 @@ from commander.deploy import task, hostgroups
 import commander_settings as settings
 
 
-os.environ['DJANGO_SETTINGS_MODULE'] = 'settings_local'
+os.environ['DJANGO_SETTINGS_MODULE'] = 'kitsune.settings_local'
 
 
 @task

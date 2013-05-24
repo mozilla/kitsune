@@ -37,7 +37,7 @@ git submodule update --init --recursive
 
 python manage.py update_product_details
 
-cat > settings_local.py <<SETTINGS
+cat > kitsune/settings_local.py <<SETTINGS
 from settings import *
 ROOT_URLCONF = '%s.urls' % ROOT_PACKAGE
 LOG_LEVEL = logging.ERROR
