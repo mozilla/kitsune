@@ -80,7 +80,7 @@
     {% if articles %}
       <ul class="articles select-one">
         {% if not all_articles %}
-          {% set articles = articles[:5] %}
+          {% set articles = articles[:4 if request.MOBILE else 5] %}
         {% endif %}
         {% for article in articles %}
           <li>
