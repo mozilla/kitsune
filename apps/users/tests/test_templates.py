@@ -343,7 +343,6 @@ class EditAvatarTests(TestCaseBase):
 
 
 class ViewProfileTests(TestCaseBase):
-    fixtures = ['users.json']
 
     def setUp(self):
         self.u = user(save=True)
