@@ -12,7 +12,6 @@ from users.tests import user
 
 class UsernamesTests(TestCase):
     """Test the usernames API method."""
-    fixtures = ['users.json']
     url = reverse('users.api.usernames', locale='en-US')
 
     def setUp(self):
