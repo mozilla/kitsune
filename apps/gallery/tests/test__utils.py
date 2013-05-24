@@ -9,14 +9,14 @@ from gallery.utils import create_image, create_video, check_media_permissions
 from sumo.tests import TestCase
 from sumo.urlresolvers import reverse
 from upload.tests import check_file_info
+from users.tests import user, add_permission
 
 
 class CheckPermissionsTestCase(TestCase):
-    fixtures = ['users.json']
 
     def setUp(self):
         super(CheckPermissionsTestCase, self).setUp()
-        self.user = User.objects.get(username='tagger')
+        self.user = user(save=True)
 
     def tearDown(self):
         Image.objects.all().delete()
@@ -35,18 +35,18 @@ class CheckPermissionsTestCase(TestCase):
         self.assertRaises(PermissionDenied, fn)
 
     def test_check_has_perm(self):
-        """Admin has perm to change video."""
-        u = User.objects.get(username='admin')
-        vid = video(creator=u)
+        """User with django permission has perm to change video."""
+        vid = video(creator=self.user)
+        u = user(save=True)
+        add_permission(u, Video, 'change_video')
         check_media_permissions(vid, u, 'change')
 
 
 class CreateImageTestCase(TestCase):
-    fixtures = ['users.json']
 
     def setUp(self):
         super(CreateImageTestCase, self).setUp()
-        self.user = User.objects.all()[0]
+        self.user = user(save=True)
 
     def tearDown(self):
         Image.objects.all().delete()
@@ -72,11 +72,10 @@ class CreateImageTestCase(TestCase):
 
 
 class CreateVideoTestCase(TestCase):
-    fixtures = ['users.json']
 
     def setUp(self):
         super(CreateVideoTestCase, self).setUp()
-        self.user = User.objects.all()[0]
+        self.user = user(save=True)
 
     def tearDown(self):
         Video.objects.all().delete()
