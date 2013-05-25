@@ -1,0 +1,28 @@
+{% extends 'email/base.html' %}
+
+{% block content %}
+  <p>{{ _('{sitename} Password Reset')|f(sitename=domain) }}</p>
+
+  <p>
+    {% trans sitename=site_name %}
+      A request was received to reset the password for this account on
+      {{ sitename }}. To change this password please click on the following
+      link, or paste it into your browser's location bar:
+    {% endtrans %}
+  </p>
+
+  <p><a href="{{ protocol }}://{{ domain }}/users/pwreset/{{ uid }}/{{ token }}">
+    {{ protocol }}://{{ domain }}/users/pwreset/{{ uid }}/{{ token }}
+  </a></p>
+
+  <p>
+    {{ _('If you did not request this email there is no need for further action.') }}
+  </p>
+
+  <p>
+    {{ _('Thanks,') }}
+    <br />{{ _('The {sitename} team')|f(sitename=site_name) }}
+  </p>
+{% endblock %}
+
+{% block footer %}{% endblock %}

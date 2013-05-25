@@ -207,16 +207,21 @@ def resend_confirmation(request, template):
                                     'login_url': reverse('users.login')}
 
                     subject = _('Account already activated')
-                    message = email_utils.render_email(
-                        'users/email/already_activated.ltxt', email_kwargs)
 
-                    # TODO: Send HTML email here.
-                    form = try_send_email_with_form(
-                        mail.send_mail,
-                        form, 'email',
-                        subject,
-                        message, settings.DEFAULT_FROM_EMAIL,
-                        [user.email])
+                    @email_utils.safe_translation
+                    def _make_mail(locale):
+                        mail = email_utils.make_mail(
+                            subject=subject,
+                            text_template='users/email/already_activated.ltxt',
+                            html_template='users/email/already_activated.html',
+                            context_vars=email_kwargs,
+                            from_email=settings.DEFAULT_FROM_EMAIL,
+                            to_email=user.email)
+
+                        return mail
+
+                    email_utils.send_messages(
+                        [_make_mail(request.LANGUAGE_CODE)])
                 except User.DoesNotExist:
                     # Don't leak existence of email addresses.
                     pass
@@ -496,7 +501,8 @@ def password_reset(request, template):
                 form.save, form, 'email',
                 use_https=request.is_secure(),
                 token_generator=default_token_generator,
-                email_template_name='users/email/pw_reset.ltxt',
+                text_template='users/email/pw_reset.ltxt',
+                html_template='users/email/pw_reset.html',
                 subject_template_name='users/email/pw_reset_subject.ltxt')
         # Form may now be invalid if email failed to send.
         # PasswordResetForm is invalid iff there is no user with the entered
