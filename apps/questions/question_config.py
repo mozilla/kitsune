@@ -124,6 +124,31 @@ products = SortedDict([
             }),
         ])
     }),
+    ('firefox-os', {
+        'name': _lazy(u'Firefox OS'),
+        'subtitle': '',
+        'extra_fields': [],
+        'tags': [],
+        'products': ['firefox-os'],
+        'categories': SortedDict([
+            # TODO: Just use the IA topics for this.
+            ('download-and-install', {
+                'name': _lazy(u'Download and install apps'),
+                'topic': 'download-and-install',
+                'tags': ['download-and-install'],
+            }),
+            ('customize', {
+                'name': _lazy(u'Customize controls, options and add-ons'),
+                'topic': 'customize',
+                'tags': ['customize'],
+            }),
+            ('fix-problems', {
+                'name': _lazy(u'Fix slowness, crashing, error messages and other problems'),
+                'topic': 'fix-problems',
+                'tags': ['fix-problems'],
+            }),
+        ])
+    }),
     ('other', {
         'name': _lazy(u'Thunderbird'),
         'subtitle':  _lazy(u'or other Mozilla products'),
