@@ -6,8 +6,9 @@ from django.contrib.auth import authenticate, forms as auth_forms
 from django.contrib.auth.forms import (PasswordResetForm as
                                        DjangoPasswordResetForm)
 from django.contrib.auth.models import User
+from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.models import get_current_site
-from django.core.mail import EmailMultiAlternatives
+from django.utils.http import int_to_base36
 
 from tower import ugettext as _, ugettext_lazy as _lazy
 
@@ -347,6 +348,57 @@ class PasswordResetForm(DjangoPasswordResetForm):
         if not len(self.users_cache):
             raise forms.ValidationError(self.error_messages['unknown'])
         return email
+
+    def save(self, domain_override=None,
+         subject_template_name='registration/password_reset_subject.txt',
+         text_template=None,
+         html_template=None,
+         use_https=False, token_generator=default_token_generator,
+         from_email=None, request=None):
+        """
+        Based off of django's but uses jingo and handles html and plain-text
+        emails
+        """
+        for user in self.users_cache:
+            if not domain_override:
+                current_site = get_current_site(request)
+                site_name = current_site.name
+                domain = current_site.domain
+            else:
+                site_name = domain = domain_override
+
+            c = {
+                'email': user.email,
+                'domain': domain,
+                'site_name': site_name,
+                'uid': int_to_base36(user.id),
+                'user': user,
+                'token': token_generator.make_token(user),
+                'protocol': use_https and 'https' or 'http',
+            }
+
+            subject = email_utils.render_email(subject_template_name, c)
+            # Email subject *must not* contain newlines
+            subject = ''.join(subject.splitlines())
+
+            @email_utils.safe_translation
+            def _make_mail(locale):
+                mail = email_utils.make_mail(
+                    subject=subject,
+                    text_template=text_template,
+                    html_template=html_template,
+                    context_vars=c,
+                    from_email=from_email,
+                    to_email=user.email)
+
+                return mail
+
+            if request:
+                locale = request.LANGUAGE_CODE
+            else:
+                locale = settings.WIKI_DEFAULT_LANGUAGE
+
+            email_utils.send_messages([_make_mail(locale)])
 
 
 def _check_password(password):
