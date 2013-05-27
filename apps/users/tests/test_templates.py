@@ -3,7 +3,6 @@ import os
 from smtplib import SMTPRecipientsRefused
 
 from django.conf import settings
-from django.contrib.auth.forms import PasswordResetForm
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.models import Site
@@ -20,6 +19,7 @@ from sumo.urlresolvers import reverse
 from sumo.helpers import urlparams
 from sumo.tests import post, get
 from users import ERROR_SEND_EMAIL
+from users.forms import PasswordResetForm
 from users.models import Profile, RegistrationProfile, RegistrationManager
 from users.tests import TestCaseBase, user, add_permission, profile, group
 from wiki.tests import revision
