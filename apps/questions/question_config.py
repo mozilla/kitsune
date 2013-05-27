@@ -124,12 +124,12 @@ products = SortedDict([
             }),
         ])
     }),
-    ('firefoxos', {
+    ('firefox-os', {
         'name': _lazy(u'Firefox OS'),
-        'subtitle': _lazy(u''),
-        'extra_fields': ['ff_version', 'os', 'plugins'],
-        'tags': ['firefoxos'],
-        'products': ['firefoxos'],
+        'subtitle': '',
+        'extra_fields': [],
+        'tags': [],
+        'products': ['firefox-os'],
         'categories': SortedDict([
             # TODO: Just use the IA topics for this.
             ('download-and-install', {
