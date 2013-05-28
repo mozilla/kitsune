@@ -69,9 +69,30 @@
 
     initReadyForL10n();
 
+    initArticleApproveModal();
+
     initRevisionList();
 
     $('img.lazy').lazyload();
+  }
+
+  function initArticleApproveModal() {
+    if ($('#approve-modal').length > 0) {
+      var onSignificanceClick = function(e) {
+        // Hiding if the significance is typo.
+        // .parent() is because #id_is_ready_for_localization is inside a
+        // <label>, as is the text
+        if (e.target.id === 'id_significance_0') {
+          $('#id_is_ready_for_localization').parent().hide();
+        } else {
+          $('#id_is_ready_for_localization').parent().show();
+        }
+      };
+
+      $('#id_significance_0').click(onSignificanceClick);
+      $('#id_significance_1').click(onSignificanceClick);
+      $('#id_significance_2').click(onSignificanceClick);
+    }
   }
 
   // Make <summary> and <details> tags work even if the browser doesn't support them.
