@@ -40,10 +40,10 @@ def user(**kwargs):
     defaults = {}
     if 'username' not in kwargs:
         defaults['username'] = ''.join(random.choice(letters)
-                                       for x in xrange(15))
+                                       for x in range(15))
     if 'email' not in kwargs:
         defaults['email'] = ''.join(
-            random.choice(letters) for x in xrange(10)) + '@example.com'
+            random.choice(letters) for x in range(10)) + '@example.com'
     defaults.update(kwargs)
     user = User(**defaults)
     user.set_password(kwargs.get('password', 'testpass'))
@@ -54,7 +54,7 @@ def user(**kwargs):
 def group(**kwargs):
     defaults = {}
     if 'name' not in kwargs:
-        defaults['name'] = ''.join(random.choice(letters) for x in xrange(15))
+        defaults['name'] = ''.join(random.choice(letters) for x in range(15))
     defaults.update(kwargs)
     return Group(**defaults)
 
