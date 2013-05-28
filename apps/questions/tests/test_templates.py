@@ -1,5 +1,7 @@
 import json
+import random
 from datetime import datetime, timedelta
+from string import letters
 
 from django.conf import settings
 from django.contrib.auth.models import User, Permission
@@ -1194,6 +1196,18 @@ class QuestionsTemplateTestCase(TestCaseBase):
         assert 'test question content lorem ipsum' in response.content
         doc = pq(response.content)
         eq_(0, len(doc('article.questions select')))
+
+    def test_truncated_text_is_stripped(self):
+        """Verify we strip html from truncated text."""
+        long_str = ''.join(random.choice(letters) for x in xrange(170))
+        question(
+            content='<p>%s</p>' % long_str,
+            save=True)
+        response = get(self.client, 'questions.questions')
+
+        # Verify that the <p> was stripped
+        assert '<p class="short-text"><p>' not in response.content
+        assert '<p class="short-text">%s' % long_str[:5] in response.content
 
 
 class QuestionsTemplateTestCaseNoFixtures(TestCase):
