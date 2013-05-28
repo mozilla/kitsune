@@ -688,7 +688,7 @@ def solve(request, question_id, answer_id):
             distinguishable_letters = \
                 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRTUVWXYZ'
             new_secret = ''.join(random.choice(distinguishable_letters)
-                             for x in xrange(10))
+                             for x in range(10))
             watch.update(secret=new_secret)
             request.user = question.creator
         except Watch.DoesNotExist:
