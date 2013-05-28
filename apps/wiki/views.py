@@ -499,7 +499,9 @@ def review_revision(request, document_slug, revision_id):
             # Send notifications of approvedness and readiness:
             if rev.is_ready_for_localization or rev.is_approved:
                 events = [ApproveRevisionInLocaleEvent(rev)]
-                if rev.is_ready_for_localization:
+                if (rev.is_ready_for_localization and
+                    rev.can_be_readied_for_localization()):
+
                     events.append(ReadyRevisionEvent(rev))
                 ApprovedOrReadyUnion(*events).fire(exclude=[rev.creator,
                                                             request.user])

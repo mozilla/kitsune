@@ -43,18 +43,20 @@ class ReviewTests(TestCaseBase):
         add_permission(approver, Revision, 'mark_ready_for_l10n')
         self.client.login(username=approver.username, password='testpass')
 
-    def _review_revision(self, is_approved=True, is_ready=False, r=None):
+    def _review_revision(self, is_approved=True, is_ready=False,
+                         significance=SIGNIFICANCES[0][0], r=None):
         """Make a revision, and approve or reject it through the view."""
         if not r:
             r = revision(is_approved=False,
                          is_ready_for_localization=False,
+                         significance=significance,
                          save=True)
 
         # Figure out POST data:
         data = {'comment': 'đSome comment'}
         if is_approved:
             data['approve'] = 'Approve Revision'
-            data['significance'] = SIGNIFICANCES[0][0]
+            data['significance'] = significance
             if is_ready:
                 data['is_ready_for_localization'] = 'on'
         else:
@@ -70,7 +72,7 @@ class ReviewTests(TestCaseBase):
         """Show that a ready(-and-approved) rev mails Ready watchers a Ready
         notification and Approved watchers an Approved one."""
         _set_up_ready_watcher()
-        self._review_revision(is_ready=True)
+        self._review_revision(is_ready=True, significance=MEDIUM_SIGNIFICANCE)
         # 1 mail to each watcher, 1 to the creator, and one to the reviewer
         eq_(4, len(mail.outbox))
         _assert_ready_mail(mail.outbox[0])
@@ -125,7 +127,7 @@ class ReviewTests(TestCaseBase):
         # Have the Approved watcher watch Ready as well:
         ReadyRevisionEvent.notify(self.approved_watcher)
 
-        self._review_revision(is_ready=True)
+        self._review_revision(is_ready=True, significance=MEDIUM_SIGNIFICANCE)
         # 1 mail to watcher, 1 to creator, 1 to reviewer
         eq_(3, len(mail.outbox))
         _assert_ready_mail(mail.outbox[0])
