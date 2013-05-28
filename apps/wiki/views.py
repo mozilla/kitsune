@@ -473,7 +473,7 @@ def review_revision(request, document_slug, revision_id):
             # If document is localizable and revision was approved and
             # user has permission, set the is_ready_for_localization value.
             if (doc.allows(request.user, 'mark_ready_for_l10n') and
-                rev.is_approved):
+                rev.is_approved and rev.can_be_readied_for_localization()):
                 rev.is_ready_for_localization = form.cleaned_data[
                     'is_ready_for_localization']
 

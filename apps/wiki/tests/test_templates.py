@@ -1328,7 +1328,7 @@ class ReviewRevisionTests(TestCaseBase):
         """Verify revision approval with ready for l10n."""
         add_permission(self.user, Revision, 'mark_ready_for_l10n')
         # Approve something:
-        significance = SIGNIFICANCES[0][0]
+        significance = SIGNIFICANCES[1][0]
         response = post(self.client, 'wiki.review_revision',
                         {'approve': 'Approve Revision',
                          'significance': significance,
