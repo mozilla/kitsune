@@ -1183,6 +1183,16 @@ class QuestionsTemplateTestCase(TestCaseBase):
         doc = pq(response.content)
         eq_(1, len(doc('meta[name=robots]')))
 
+    def test_select_in_question(self):
+        """Verify we properly escape <select/>."""
+        question(
+            title='test question <select></select>',
+            content='test question <select></select>',
+            save=True)
+        response = get(self.client, 'questions.questions')
+        doc = pq(response.content)
+        eq_(0, len(doc('article.questions select')))
+
 
 class QuestionsTemplateTestCaseNoFixtures(TestCase):
     client_class = LocalizingClient
