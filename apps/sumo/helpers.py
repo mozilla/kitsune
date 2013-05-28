@@ -113,12 +113,14 @@ def truncate_question(text, length, longtext=None):
     if len(text) > length:
         if longtext is None:
             longtext = text
+        stripped_text = bleach.clean(text, strip=True)
+
         f = ('<p class="short-text">%s&hellip; ' +
              '<span class="show-more-link">(' + _('read more') + ')</span>' +
              '</p><div class="long-text">%s</div>')
-        return f % (text[:length], longtext)
-    else:
-        return '<p>%s</p>' % text
+        return f % (stripped_text[:length], longtext)
+
+    return text
 
 
 class Paginator(object):
