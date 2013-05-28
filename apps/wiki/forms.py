@@ -272,11 +272,12 @@ class ReviewForm(forms.Form):
                                 error_messages={'max_length': COMMENT_LONG})
 
     _widget = forms.RadioSelect(renderer=RadioFieldRendererWithHelpText)
-    significance = forms.ChoiceField(
+    significance = forms.TypedChoiceField(
                     label=_lazy(u'Significance:'),
                     choices=SIGNIFICANCES,
                     initial=SIGNIFICANCES[1][0],
-                    required=False, widget=_widget)
+                    required=False, widget=_widget,
+                    coerce=int, empty_value=SIGNIFICANCES[1][0])
 
     is_ready_for_localization = forms.BooleanField(
         initial=False,
