@@ -31,7 +31,8 @@ function init() {
     },
     graph: {
       renderer: 'bar',
-      width: 690
+      width: 690,
+      unstack: false
     },
     options: {
       slider: false

@@ -9,7 +9,8 @@ function init() {
       slug: 'questions',
       func: k.Graph.identity('questions'),
       color: '#5d84b2',
-      axisGroup: 'questions'
+      axisGroup: 'questions',
+      area: true
     },
     {
       name: gettext('% Solved'),
