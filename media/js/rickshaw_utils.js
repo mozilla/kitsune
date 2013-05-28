@@ -36,8 +36,10 @@ k.Graph = function($elem, extra) {
     },
 
     graph: {
-      renderer: 'line',
-      interpolation: 'linear'
+      renderer: 'area',
+      interpolation: 'linear',
+      stroke: true,
+      unstack: true
     },
     hover: {},
     yAxis: {},
@@ -181,6 +183,8 @@ k.Graph.prototype.makeSeries = function(objects, descriptors) {
   var desc;
   var min, max, data;
   var windowMin, windowMax;
+  var stroke, fill;
+  var r, g, b;
 
   if (this.rickshaw.graph) {
     windowMin = this.rickshaw.graph.window.xMin || -Infinity;
@@ -214,10 +218,26 @@ k.Graph.prototype.makeSeries = function(objects, descriptors) {
       max = 1;
     }
 
+    if (this.graph.renderer === 'area') {
+      stroke = desc.color;
+      if (desc.area) {
+        r = parseInt(desc.color.slice(1,3), 16);
+        g = parseInt(desc.color.slice(3,5), 16);
+        b = parseInt(desc.color.slice(5,7), 16);
+        fill = interpolate('rgba(%s,%s,%s,0.5)', [r, g, b]);
+      } else {
+        fill = 'rgba(0, 0, 0, 0.0)';
+      }
+    } else {
+      stroke = undefined;
+      fill = desc.color;
+    }
+
     series[i] = {
       name: desc.name,
       slug: desc.slug,
-      color: desc.color,
+      stroke: stroke,
+      color: fill,
       disabled: desc.disabled || false,
       axisGroup: desc.axisGroup,
       min: min,
@@ -507,7 +527,7 @@ k.Graph.prototype.initLegend = function() {
       line = this.data.series[i];
       $li = $('<li>').appendTo($series);
       $('<span class="color-square">')
-        .css('background', line.color)
+        .css('background', line.stroke || line.color)
         .appendTo($li);
       $('<span>').text(line.name).appendTo($li);
     }
