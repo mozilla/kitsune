@@ -1186,10 +1186,12 @@ class QuestionsTemplateTestCase(TestCaseBase):
     def test_select_in_question(self):
         """Verify we properly escape <select/>."""
         question(
-            title='test question <select></select>',
-            content='test question <select></select>',
+            title='test question lorem ipsum <select></select>',
+            content='test question content lorem ipsum <select></select>',
             save=True)
         response = get(self.client, 'questions.questions')
+        assert 'test question lorem ipsum' in response.content
+        assert 'test question content lorem ipsum' in response.content
         doc = pq(response.content)
         eq_(0, len(doc('article.questions select')))
 
