@@ -119,8 +119,8 @@ def truncate_question(text, length, longtext=None):
              '<span class="show-more-link">(' + _('read more') + ')</span>' +
              '</p><div class="long-text">%s</div>')
         return f % (stripped_text[:length], longtext)
-    else:
-        return '%s' % text
+
+    return text
 
 
 class Paginator(object):
