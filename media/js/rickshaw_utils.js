@@ -185,6 +185,7 @@ k.Graph.prototype.makeSeries = function(objects, descriptors) {
   var windowMin, windowMax;
   var stroke, fill;
   var r, g, b;
+  var palette = new Rickshaw.Color.Palette();
 
   if (this.rickshaw.graph) {
     windowMin = this.rickshaw.graph.window.xMin || -Infinity;
@@ -219,7 +220,7 @@ k.Graph.prototype.makeSeries = function(objects, descriptors) {
     }
 
     if (this.graph.renderer === 'area') {
-      stroke = desc.color;
+      stroke = desc.color || palette.color(desc.name);
       if (desc.area) {
         r = parseInt(desc.color.slice(1,3), 16);
         g = parseInt(desc.color.slice(3,5), 16);
@@ -229,6 +230,7 @@ k.Graph.prototype.makeSeries = function(objects, descriptors) {
         fill = 'rgba(0, 0, 0, 0.0)';
       }
     } else {
+      // This is a bar graph. 'fill' is really color.
       stroke = undefined;
       fill = desc.color;
     }
