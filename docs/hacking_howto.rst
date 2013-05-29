@@ -60,7 +60,7 @@ These are required for the minimum installation:
 * git
 * Python 2.6 or 2.7
 * pip: `<http://www.pip-installer.org/en/latest/>`_
-* MySQL server and client headers
+* MariaDB 5.5 server and client headers
 * Memcached Server
 * libxml and headers
 * libxslt and headers
