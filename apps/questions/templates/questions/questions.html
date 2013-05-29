@@ -166,7 +166,7 @@
             <div class="question-meta {% if not question.num_answers %}urgent{% endif %}">
               <div class="have-problem-this-week">
                 <h4>{{ question.num_votes_past_week }}</h4>
-                {{ _('new this week') }}
+                {{ _('votes this week') }}
               </div>
               <div class="replies">
                 <h4>{{ question.num_answers }}</h4>
@@ -176,7 +176,12 @@
                   replies
                 {% endtrans %}
               </div>
-              {% include 'questions/includes/have_problem.html' %}
+              {% if question.num_visits %}
+                <div class="views">
+                  <h4>{{ question.num_visits }}</h4>
+                  {{ _('views') }}
+                </div>
+              {% endif %}
             </div>
 
             <div class="content ui-truncatable truncated">

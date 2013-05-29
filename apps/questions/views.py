@@ -26,8 +26,6 @@ import waffle
 from mobility.decorators import mobile_template
 from ratelimit.decorators import ratelimit
 from ratelimit.helpers import is_ratelimited
-from pyelasticsearch.exceptions import (
-    Timeout, ConnectionError, ElasticHttpError)
 from session_csrf import anonymous_csrf
 from statsd import statsd
 from taggit.models import Tag
@@ -106,10 +104,13 @@ def questions(request, template):
     question_qs = Question.objects.select_related(
         'creator', 'last_answer', 'last_answer__creator')
 
-    question_qs = question_qs.extra(
-        {'_num_votes': 'SELECT COUNT(*) FROM questions_questionvote WHERE '
-                       'questions_questionvote.question_id = '
-                       'questions_question.id'})
+    # We only need _num_votes included if we are sorting by requested.
+    # We don't display it on the page.
+    if sort_ == 'requested':
+        question_qs = question_qs.extra(
+            {'_num_votes': 'SELECT COUNT(*) FROM questions_questionvote '
+                           'WHERE questions_questionvote.question_id = '
+                           'questions_question.id'})
 
     question_qs = question_qs.filter(creator__is_active=1)
 
