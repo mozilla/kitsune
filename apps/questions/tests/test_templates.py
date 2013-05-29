@@ -1209,6 +1209,14 @@ class QuestionsTemplateTestCase(TestCaseBase):
         assert '<p class="short-text"><p>' not in response.content
         assert '<p class="short-text">%s' % long_str[:5] in response.content
 
+    def test_views(self):
+        """Verify the view count is displayed correctly."""
+        q = question(save=True)
+        q.questionvisits_set.create(visits=1007)
+        response = get(self.client, 'questions.questions')
+        doc = pq(response.content)
+        eq_('1007 views', doc('div.views').text())
+
 
 class QuestionsTemplateTestCaseNoFixtures(TestCase):
     client_class = LocalizingClient
