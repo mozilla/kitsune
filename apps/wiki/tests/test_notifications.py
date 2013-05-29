@@ -5,7 +5,7 @@ from nose.tools import eq_
 
 from sumo.tests import post
 from users.tests import add_permission, user
-from wiki.config import SIGNIFICANCES, MEDIUM_SIGNIFICANCE
+from wiki.config import SIGNIFICANCES, MEDIUM_SIGNIFICANCE, TYPO_SIGNIFICANCE
 from wiki.events import ReadyRevisionEvent, ApproveRevisionInLocaleEvent
 from wiki.models import Revision
 from wiki.tests import revision, TestCaseBase
@@ -78,6 +78,13 @@ class ReviewTests(TestCaseBase):
         _assert_ready_mail(mail.outbox[0])
         _assert_approved_mail(mail.outbox[1])
         _assert_creator_mail(mail.outbox[2])
+
+    def test_typo_significance_ignore(self):
+        _set_up_ready_watcher()
+        self._review_revision(is_ready=True, significance=TYPO_SIGNIFICANCE)
+        # This is the same as test_ready, except we miss 1 mail, that is the
+        # localization mail.
+        eq_(3, len(mail.outbox))
 
     def test_approved(self):
         """Show that an approved rev mails Ready watchers nothing and Approved
