@@ -710,7 +710,7 @@ k.Graph.toSeconds = function(obj) {
     return obj;
   }
   return undefined;
-}
+};
 
 /* Takes two or more arguments. The arguments are the keys that
  * represent an entire collection (all pieces in a pie). The first key
@@ -774,22 +774,30 @@ k.Graph.monkeyPatch = function(graph) {
 };
 
 
-Rickshaw.namespace('Rickshaw.Graph.ScaledHoverDetail');
-
 /* This is a mostly intact version of Rickshaw.Graph.HoverDetail that
- * is modified to work with scaled series.
+ * is modified to work with scaled series, and to work better with bar
+ * charts.
  *
  * The `render` method has changed to call a method to determine the
  * location of the tooltip, and to respect series scale (`series.scale`).
+ *
+ * The location of the tooltip is in the middle of the bar drawn by the
+ * bar renderer, and the selection is based on the visible rectangles.
  */
 
-Rickshaw.Graph.ScaledHoverDetail = Rickshaw.Class.create(Rickshaw.Graph.HoverDetail, {
+Rickshaw.namespace('Rickshaw.Graph.ScaledBarHoverDetail');
+Rickshaw.Graph.ScaledBarHoverDetail = Rickshaw.Class.create(Rickshaw.Graph.HoverDetail, {
 
   getHoverPoint: function(point) {
-    var barWidth = this.graph.renderer.barWidth + this.graph.renderer.gapSize;
+    var barWidth = this.graph.renderer.barWidth();
+    var x = this.graph.x(point.value.x);
+    if (this.graph.renderer.unstack) {
+      barWidth /= this.graph.series.active().length;
+      x += barWidth * (point.order - 1);
+    }
     return {
-      left: this.graph.x(point.value.x),
-      top: this.graph.y(point.value.y0 + point.value.y)
+      left: x + barWidth / 2,
+      top: this.graph.y(point.value.y0 + point.value.y / 2)
     };
   },
 
@@ -845,18 +853,7 @@ Rickshaw.Graph.ScaledHoverDetail = Rickshaw.Class.create(Rickshaw.Graph.HoverDet
     if (typeof this.onRender == 'function') {
       this.onRender(args);
     }
-  }
-});
-
-/* This is a mostly intact version of Rickshaw.Graph.ScaledHoverDetail that
- * is modified to work nicer with the Bar renderer. The data point
- * chosen is based on the rectangle rendered by the Bar renderer, and
- * the tool tip points to the center of that rectangle.
- *
- * The `update` method has changed to modify the hover behavior.
- */
-Rickshaw.namespace('Rickshaw.Graph.ScaledBarHoverDetail');
-Rickshaw.Graph.ScaledBarHoverDetail = Rickshaw.Class.create(Rickshaw.Graph.ScaledHoverDetail, {
+  },
 
   update: function(e) {
 
@@ -952,21 +949,7 @@ Rickshaw.Graph.ScaledBarHoverDetail = Rickshaw.Class.create(Rickshaw.Graph.Scale
     if (this.visible) {
       this.render(renderArgs);
     }
-  },
-
-  getHoverPoint: function(point) {
-    var barWidth = this.graph.renderer.barWidth();
-    var x = this.graph.x(point.value.x);
-    if (this.graph.renderer.unstack) {
-      barWidth /= this.graph.series.active().length;
-      x += barWidth * (point.order - 1);
-    }
-    return {
-      left: x + barWidth / 2,
-      top: this.graph.y(point.value.y0 + point.value.y / 2)
-    };
   }
-
 });
 
 
