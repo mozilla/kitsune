@@ -2,6 +2,8 @@ import logging
 from datetime import datetime
 from difflib import SequenceMatcher
 
+import requests
+
 from django.conf import settings
 from django.contrib import admin
 from django.core.exceptions import PermissionDenied
@@ -168,17 +170,27 @@ def search(request):
 
     stats = None
     write_stats = None
+    es_deets = None
     indexes = []
+    outstanding_chunks = None
+
+    try:
+        # TODO: SUMO has a single ES_URL and that's the ZLB and does
+        # the balancing. If that ever changes and we have multiple
+        # ES_URLs, then this should get fixed.
+        es_deets = requests.get(settings.ES_URLS[0]).json()
+    except requests.exceptions.RequestException:
+        pass
 
     try:
         stats = get_doctype_stats(es_utils.READ_INDEX)
     except ES_EXCEPTIONS:
-        stats = None
+        pass
 
     try:
         write_stats = get_doctype_stats(es_utils.WRITE_INDEX)
     except ES_EXCEPTIONS:
-        write_stats = None
+        pass
 
     try:
         indexes = get_indexes()
@@ -190,7 +202,7 @@ def search(request):
         client = redis_client('default')
         outstanding_chunks = int(client.get(OUTSTANDING_INDEX_CHUNKS))
     except (RedisError, TypeError):
-        outstanding_chunks = None
+        pass
 
     recent_records = Record.uncached.order_by('-starttime')[:20]
 
@@ -198,6 +210,7 @@ def search(request):
         request,
         'admin/search_maintenance.html',
         {'title': 'Search',
+         'es_deets': es_deets,
          'doctype_stats': stats,
          'doctype_write_stats': write_stats,
          'indexes': indexes,
