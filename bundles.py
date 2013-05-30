@@ -33,7 +33,7 @@ MINIFY_BUNDLES = {
         ),
         'rickshaw': (
             'css/jqueryui/jqueryui.css',
-            'css/rickshaw.min.css',
+            'css/rickshaw.css',
             'less/rickshaw.sumo.less',
         ),
         'search': (
