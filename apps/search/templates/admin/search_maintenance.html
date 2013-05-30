@@ -55,7 +55,7 @@
   {% endif %}
 
   <section>
-    <h1>Settings</h1>
+    <h1>Settings and Elasticsearch details</h1>
     <p>
       Settings at the time this page was loaded:
     </p>
@@ -64,6 +64,7 @@
       <tr><th>ES_INDEX_PREFIX</th><td>{{ settings.ES_INDEX_PREFIX }}</td></tr>
       <tr><th>ES_INDEXES</th><td>{{ settings.ES_INDEXES }}</td></tr>
       <tr><th>ES_WRITE_INDEXES</th><td>{{ settings.ES_WRITE_INDEXES }}</td></tr>
+      <tr><th>Elasticsearch version</th><td>{{ es_deets.version.number }}</td></tr>
     </table>
   </section>
 

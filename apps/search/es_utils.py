@@ -3,6 +3,8 @@ import logging
 import pprint
 import time
 
+import requests
+
 from django.conf import settings
 from django.db import reset_queries
 
@@ -376,6 +378,14 @@ def es_delete_cmd(index, noinput=False, log=log):
 def es_status_cmd(checkindex=False, log=log):
     """Shows elastic search index status"""
     try:
+        # TODO: SUMO has a single ES_URL and that's the ZLB and does
+        # the balancing. If that ever changes and we have multiple
+        # ES_URLs, then this should get fixed.
+        es_deets = requests.get(settings.ES_URLS[0]).json()
+    except requests.exceptions.RequestException:
+        pass
+
+    try:
         read_doctype_stats = get_doctype_stats(READ_INDEX)
     except ES_EXCEPTIONS:
         read_doctype_stats = None
@@ -394,6 +404,9 @@ def es_status_cmd(checkindex=False, log=log):
         log.error('Your elasticsearch process is not running or ES_URLS '
                   'is set wrong in your settings_local.py file.')
         return
+
+    log.info('Elasticsearch:')
+    log.info('  Version                 : %s', es_deets['version']['number'])
 
     log.info('Settings:')
     log.info('  ES_URLS                 : %s', settings.ES_URLS)
