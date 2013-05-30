@@ -1,4 +1,4 @@
-(function($) {
+(function() {
 
 // TODO: Figure out why this one causes strange errors.
 //"use strict";
@@ -350,7 +350,7 @@ k.Graph.prototype.initGraph = function() {
     if (this.graph.renderer === 'bar') {
       hoverClass = Rickshaw.Graph.ScaledBarHoverDetail;
     } else {
-      hoverClass = Rickshaw.Graph.ScaledHoverDetail;
+      hoverClass = Rickshaw.Graph.KHover;
     }
 
     this.rickshaw.hover = new hoverClass(hoverOpts);
@@ -1039,4 +1039,168 @@ Rickshaw.Graph.Axis.ScaledY.prototype.setScale = function(s) {
   this.render();
 };
 
-})(jQuery);
+
+/* Custom hover class for k.Graph.
+ *
+ * This will find all points in a vertical slice for the graph and show
+ * them in a single dialog.
+ */
+Rickshaw.namespace('Rickshaw.Graph.KHover');
+
+Rickshaw.Graph.KHover = Rickshaw.Class.create({
+
+  initialize: function(args) {
+
+    var graph = this.graph = args.graph;
+
+    this.xFormatter = args.xFormatter || function(x) {
+      return new Date( x * 1000 ).toUTCString();
+    };
+
+    this.yFormatter = args.yFormatter || function(y) {
+      return y === null ? y : y.toFixed(2);
+    };
+
+    var element = this.element = document.createElement('div');
+    element.className = 'khover';
+
+    this.visible = true;
+    graph.element.appendChild(element);
+
+    this.lastEvent = null;
+    this._addListeners();
+  },
+
+  /* Called when the mouse moves. Collects a set of points to draw, and
+   * then calls this.render if appropriate. */
+  update: function(e) {
+
+    e = e || this.lastEvent;
+    if (!e) return;
+    this.lastEvent = e;
+
+    if (!e.target.nodeName.match(/^(path|svg|rect)$/)) return;
+
+    var i;
+    var graph = this.graph;
+
+    var eventX = e.offsetX || e.layerX;
+    var eventY = e.offsetY || e.layerY;
+
+    var points = [];
+    var data = this.graph.stackedData[0];
+
+    // The x value in the units of the graph that corresponds to the pointer.
+    var domainX = graph.x.invert(eventX);
+    var xMin = graph.window.xMin || data[0].x;
+    var xMax = graph.window.xMax || data.slice(-1)[0].x;
+    var domainIndexScale = d3.scale.linear()
+      .domain([xMin, xMax])
+      .range([0, data.length - 1]);
+
+    var approximateIndex = Math.round(domainIndexScale(domainX));
+    var dataIndex = approximateIndex || 0;
+
+    // clamp dataIndex between 0 and length;
+    dataIndex = Math.max(0, Math.min(dataIndex, data.length - 1));
+
+    for (i = 0; i < graph.stackedData.length; i++) {
+      points.push({
+        x: graph.stackedData[i][dataIndex].x,
+        y: graph.stackedData[i][dataIndex].y,
+        series: graph.series[i]
+      });
+    }
+
+    if (this.visible) {
+      this.render({
+        eventX: eventX,
+        eventY: eventY,
+        x: points[0].x,
+        points: points
+      });
+    }
+  },
+
+  hide: function() {
+    this.visible = false;
+    this.element.classList.add('inactive');
+  },
+
+  show: function() {
+    this.visible = true;
+    this.element.classList.remove('inactive');
+  },
+
+  /* Create dom elements to render the element. Usually called after
+   * `this.update` noticed the mouse move. */
+  render: function(args) {
+    var i, val;
+    var formatter = this.xFormatter;
+    var point, series;
+    var dot, li, label = document.createElement('ul');
+    var transform;
+
+    this.element.innerHTML = '';
+
+    li = document.createElement('li');
+    li.className = 'date';
+    li.innerHTML = formatter(args.x);
+    label.appendChild(li);
+
+    for (i = 0; i < args.points.length; i++) {
+      point = args.points[i];
+      series = point.series;
+      formatter = series.yFormatter || this.yFormatter;
+      li = document.createElement('li');
+      val = point.y * series.scale;
+
+      li.innerHTML = interpolate('<span class="color" style="background-color: %s;"></span>%s: %s',
+                                 [series.stroke, series.name, formatter(val)]);
+      label.appendChild(li);
+
+      dot = document.createElement('div');
+      dot.className = 'dot';
+
+      transform = interpolate('translate(0, %spx)', [this.graph.y(point.y)]);
+      dot.style.transform = transform;
+      dot.style['-webkit-transform'] = transform;
+      dot.style.borderColor = series.stroke;
+      this.element.appendChild(dot);
+    }
+
+    this.element.appendChild(label);
+    transform = interpolate('translate(%spx, 0)', [this.graph.x(point.x)])
+    // Really, webkit? Really?
+    this.element.style.transform = transform;
+    this.element.style['-webkit-transform'] = transform;
+
+    this.show();
+  },
+
+  _addListeners: function() {
+
+    this.graph.element.addEventListener(
+      'mousemove',
+      function(e) {
+        this.visible = true;
+        this.update(e)
+      }.bind(this),
+      false
+    );
+
+    this.graph.onUpdate( function() { this.update() }.bind(this) );
+
+    this.graph.element.addEventListener(
+      'mouseout',
+      function(e) {
+        if (e.relatedTarget && !(e.relatedTarget.compareDocumentPosition(this.graph.element) & Node.DOCUMENT_POSITION_CONTAINS)) {
+          this.hide();
+        }
+       }.bind(this),
+      false
+    );
+  }
+});
+
+})();
