@@ -82,5 +82,4 @@
     }
 
     $('#show-graph').click(init);
-    $(init);
 }(jQuery));

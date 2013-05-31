@@ -17,6 +17,7 @@ k.Graph = function($elem, extra) {
       legend: true,
       sets: false,
       slider: true,
+      timeline: false,
       xAxis: true,
       yAxis: true
     },
@@ -72,6 +73,7 @@ k.Graph.prototype.init = function() {
   this.initDateRange();
   this.initLegend();
   this.initSets();
+  this.initTimeline();
 };
 
 k.Graph.prototype.initData = function() {
@@ -563,7 +565,8 @@ k.Graph.prototype.initTimeline = function() {
   var i, j;
 
   if (this.options.timeline) {
-    this.dom.timelines = $container.find('.timelines');
+    this.dom.timelines = this.dom.elem.find('.timelines');
+    $timelines = $(this.dom.timelines);
     this.rickshaw.timelines = [];
 
     for (i=0; i < this.data.annotations.length; i++) {
