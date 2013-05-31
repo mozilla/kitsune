@@ -1118,7 +1118,7 @@ Rickshaw.Graph.KHover = Rickshaw.Class.create({
   /* Create dom elements to render the element. Usually called after
    * `this.update` noticed the mouse move. */
   render: function(args) {
-    var i, val;
+    var i, val, x, labelBounds, graphBounds;
     var formatter = this.xFormatter;
     var point, series;
     var dot, li, label = document.createElement('ul');
@@ -1153,8 +1153,23 @@ Rickshaw.Graph.KHover = Rickshaw.Class.create({
     }
 
     this.element.appendChild(label);
-    transform = interpolate('translate(%spx, 0)', [this.graph.x(point.x)])
+
+    labelBounds = label.getBoundingClientRect();
+    graphBounds = this.graph.element.getBoundingClientRect();
+
+    // To be honest, I don't know why *2 and -20. But they work nicely
+    // across the graphs I tried.
+    rightMin = graphBounds.right - labelBounds.width * 2;
+    if (args.eventX > rightMin) {
+      x = this.graph.x(point.x) - labelBounds.width - 20;
+      this.element.className = 'khover right';
+    } else {
+      x = this.graph.x(point.x);
+      this.element.className = 'khover';
+    }
+
     // Really, webkit? Really?
+    transform = interpolate('translate(%spx, 0)', [x]);
     this.element.style.transform = transform;
     this.element.style['-webkit-transform'] = transform;
 
