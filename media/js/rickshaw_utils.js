@@ -1,4 +1,4 @@
-(function($) {
+(function() {
 
 // TODO: Figure out why this one causes strange errors.
 //"use strict";
@@ -350,7 +350,7 @@ k.Graph.prototype.initGraph = function() {
     if (this.graph.renderer === 'bar') {
       hoverClass = Rickshaw.Graph.ScaledBarHoverDetail;
     } else {
-      hoverClass = Rickshaw.Graph.ScaledHoverDetail;
+      hoverClass = Rickshaw.Graph.KHover;
     }
 
     this.rickshaw.hover = new hoverClass(hoverOpts);
@@ -710,7 +710,7 @@ k.Graph.toSeconds = function(obj) {
     return obj;
   }
   return undefined;
-}
+};
 
 /* Takes two or more arguments. The arguments are the keys that
  * represent an entire collection (all pieces in a pie). The first key
@@ -774,22 +774,30 @@ k.Graph.monkeyPatch = function(graph) {
 };
 
 
-Rickshaw.namespace('Rickshaw.Graph.ScaledHoverDetail');
-
 /* This is a mostly intact version of Rickshaw.Graph.HoverDetail that
- * is modified to work with scaled series.
+ * is modified to work with scaled series, and to work better with bar
+ * charts.
  *
  * The `render` method has changed to call a method to determine the
  * location of the tooltip, and to respect series scale (`series.scale`).
+ *
+ * The location of the tooltip is in the middle of the bar drawn by the
+ * bar renderer, and the selection is based on the visible rectangles.
  */
 
-Rickshaw.Graph.ScaledHoverDetail = Rickshaw.Class.create(Rickshaw.Graph.HoverDetail, {
+Rickshaw.namespace('Rickshaw.Graph.ScaledBarHoverDetail');
+Rickshaw.Graph.ScaledBarHoverDetail = Rickshaw.Class.create(Rickshaw.Graph.HoverDetail, {
 
   getHoverPoint: function(point) {
-    var barWidth = this.graph.renderer.barWidth + this.graph.renderer.gapSize;
+    var barWidth = this.graph.renderer.barWidth();
+    var x = this.graph.x(point.value.x);
+    if (this.graph.renderer.unstack) {
+      barWidth /= this.graph.series.active().length;
+      x += barWidth * (point.order - 1);
+    }
     return {
-      left: this.graph.x(point.value.x),
-      top: this.graph.y(point.value.y0 + point.value.y)
+      left: x + barWidth / 2,
+      top: this.graph.y(point.value.y0 + point.value.y / 2)
     };
   },
 
@@ -845,18 +853,7 @@ Rickshaw.Graph.ScaledHoverDetail = Rickshaw.Class.create(Rickshaw.Graph.HoverDet
     if (typeof this.onRender == 'function') {
       this.onRender(args);
     }
-  }
-});
-
-/* This is a mostly intact version of Rickshaw.Graph.ScaledHoverDetail that
- * is modified to work nicer with the Bar renderer. The data point
- * chosen is based on the rectangle rendered by the Bar renderer, and
- * the tool tip points to the center of that rectangle.
- *
- * The `update` method has changed to modify the hover behavior.
- */
-Rickshaw.namespace('Rickshaw.Graph.ScaledBarHoverDetail');
-Rickshaw.Graph.ScaledBarHoverDetail = Rickshaw.Class.create(Rickshaw.Graph.ScaledHoverDetail, {
+  },
 
   update: function(e) {
 
@@ -952,21 +949,7 @@ Rickshaw.Graph.ScaledBarHoverDetail = Rickshaw.Class.create(Rickshaw.Graph.Scale
     if (this.visible) {
       this.render(renderArgs);
     }
-  },
-
-  getHoverPoint: function(point) {
-    var barWidth = this.graph.renderer.barWidth();
-    var x = this.graph.x(point.value.x);
-    if (this.graph.renderer.unstack) {
-      barWidth /= this.graph.series.active().length;
-      x += barWidth * (point.order - 1);
-    }
-    return {
-      left: x + barWidth / 2,
-      top: this.graph.y(point.value.y0 + point.value.y / 2)
-    };
   }
-
 });
 
 
@@ -1039,4 +1022,183 @@ Rickshaw.Graph.Axis.ScaledY.prototype.setScale = function(s) {
   this.render();
 };
 
-})(jQuery);
+
+/* Custom hover class for k.Graph.
+ *
+ * This will find all points in a vertical slice for the graph and show
+ * them in a single dialog.
+ */
+Rickshaw.namespace('Rickshaw.Graph.KHover');
+
+Rickshaw.Graph.KHover = Rickshaw.Class.create({
+
+  initialize: function(args) {
+
+    var graph = this.graph = args.graph;
+
+    this.xFormatter = args.xFormatter || function(x) {
+      return new Date( x * 1000 ).toUTCString();
+    };
+
+    this.yFormatter = args.yFormatter || function(y) {
+      return y === null ? y : y.toFixed(2);
+    };
+
+    var element = this.element = document.createElement('div');
+    element.className = 'khover';
+
+    this.visible = true;
+    graph.element.appendChild(element);
+
+    this.lastEvent = null;
+    this._addListeners();
+  },
+
+  /* Called when the mouse moves. Collects a set of points to draw, and
+   * then calls this.render if appropriate. */
+  update: function(e) {
+
+    e = e || this.lastEvent;
+    if (!e) return;
+    this.lastEvent = e;
+
+    if (!e.target.nodeName.match(/^(path|svg|rect)$/)) return;
+
+    var i;
+    var graph = this.graph;
+
+    var eventX = e.offsetX || e.layerX;
+    var eventY = e.offsetY || e.layerY;
+
+    var points = [];
+    var data = this.graph.stackedData[0];
+
+    // The x value in the units of the graph that corresponds to the pointer.
+    var domainX = graph.x.invert(eventX);
+    var xMin = graph.window.xMin || data[0].x;
+    var xMax = graph.window.xMax || data.slice(-1)[0].x;
+    var domainIndexScale = d3.scale.linear()
+      .domain([xMin, xMax])
+      .range([0, data.length - 1]);
+
+    var approximateIndex = Math.round(domainIndexScale(domainX));
+    var dataIndex = approximateIndex || 0;
+
+    // clamp dataIndex between 0 and length;
+    dataIndex = Math.max(0, Math.min(dataIndex, data.length - 1));
+
+    for (i = 0; i < graph.stackedData.length; i++) {
+      points.push({
+        x: graph.stackedData[i][dataIndex].x,
+        y: graph.stackedData[i][dataIndex].y,
+        series: graph.series[i]
+      });
+    }
+
+    if (this.visible) {
+      this.render({
+        eventX: eventX,
+        eventY: eventY,
+        x: points[0].x,
+        points: points
+      });
+    }
+  },
+
+  hide: function() {
+    this.visible = false;
+    this.element.classList.add('inactive');
+  },
+
+  show: function() {
+    this.visible = true;
+    this.element.classList.remove('inactive');
+  },
+
+  /* Create dom elements to render the element. Usually called after
+   * `this.update` noticed the mouse move. */
+  render: function(args) {
+    var i, val, x, labelBounds, graphBounds;
+    var formatter = this.xFormatter;
+    var point, series;
+    var dot, li, label = document.createElement('ul');
+    var transform;
+
+    this.element.innerHTML = '';
+
+    li = document.createElement('li');
+    li.className = 'date';
+    li.innerHTML = formatter(args.x);
+    label.appendChild(li);
+
+    for (i = 0; i < args.points.length; i++) {
+      point = args.points[i];
+      series = point.series;
+      formatter = series.yFormatter || this.yFormatter;
+      li = document.createElement('li');
+      val = point.y * series.scale;
+
+      li.innerHTML = interpolate('<span class="color" style="background-color: %s;"></span>%s: %s',
+                                 [series.stroke, series.name, formatter(val)]);
+      label.appendChild(li);
+
+      dot = document.createElement('div');
+      dot.className = 'dot';
+
+      transform = interpolate('translate(0, %spx)', [this.graph.y(point.y)]);
+      dot.style.transform = transform;
+      dot.style['-webkit-transform'] = transform;
+      dot.style.borderColor = series.stroke;
+      this.element.appendChild(dot);
+    }
+
+    this.element.appendChild(label);
+
+    labelBounds = label.getBoundingClientRect();
+    graphBounds = this.graph.element.getBoundingClientRect();
+
+    // To be honest, I don't know why *2 and -20. But they work nicely
+    // across the graphs I tried.
+    rightMin = graphBounds.right - labelBounds.width * 2;
+    if (args.eventX > rightMin) {
+      x = this.graph.x(point.x) - labelBounds.width - 20;
+      this.element.className = 'khover right';
+    } else {
+      x = this.graph.x(point.x);
+      this.element.className = 'khover';
+    }
+
+    // Really, webkit? Really?
+    transform = interpolate('translate(%spx, 0)', [x]);
+    this.element.style.transform = transform;
+    this.element.style['-webkit-transform'] = transform;
+
+    this.show();
+  },
+
+  _addListeners: function() {
+
+    this.graph.element.addEventListener(
+      'mousemove',
+      function(e) {
+        this.visible = true;
+        this.update(e)
+      }.bind(this),
+      false
+    );
+
+    this.graph.onUpdate( function() { this.update() }.bind(this) );
+
+    this.graph.element.addEventListener(
+      'mouseout',
+      function(e) {
+        if (e.relatedTarget && !(e.relatedTarget.compareDocumentPosition(this.graph.element) & Node.DOCUMENT_POSITION_CONTAINS)) {
+          this.hide();
+        }
+       }.bind(this),
+      false
+    );
+  }
+});
+
+})();
