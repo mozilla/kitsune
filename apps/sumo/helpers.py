@@ -113,7 +113,7 @@ def truncate_question(text, length, longtext=None):
     if len(text) > length:
         if longtext is None:
             longtext = text
-        stripped_text = bleach.clean(text, strip=True)
+        stripped_text = bleach.clean(text, tags=[], strip=True)
 
         f = ('<p class="short-text">%s&hellip; ' +
              '<span class="show-more-link">(' + _('read more') + ')</span>' +
