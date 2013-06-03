@@ -105,6 +105,9 @@ urlpatterns = patterns('kitsune.wiki.views',
     url(r'^/json$', 'json_view', name='wiki.json'),
     url(r'^/revisions', 'recent_revisions', name='wiki.revisions'),
 
+    url(r'^/offline/get-bundles$', 'get_bundles', name='wiki.get_bundles'),
+    url(r'^/offline/get-languages$', 'get_languages', name='wiki.get_languages'),
+
     url(r'^/new$', 'new_document', name='wiki.new_document'),
     url(r'^/all$', 'list_documents', name='wiki.all_documents'),
     url(r'^/preview-wiki-content$', 'preview_revision', name='wiki.preview'),
