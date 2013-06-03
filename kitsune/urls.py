@@ -35,6 +35,7 @@ urlpatterns = patterns('',
     (r'^products', include('kitsune.products.urls')),
     (r'^announcements', include('kitsune.announcements.urls')),
     (r'^badges/', include('kitsune.kbadge.urls')),
+    (r'^offline', include('kitsune.offline.urls')),
 
     # Kitsune admin (not Django admin).
     (r'^admin/', include(admin.site.urls)),

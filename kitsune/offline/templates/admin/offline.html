@@ -1,0 +1,59 @@
+{% extends "kadmin/base.html" %}
+
+{% block content_title %}
+<h1>Offline SUMO Administration</h1>
+{% endblock %}
+
+{% block content %}
+<section>
+    <h2>Currently available bundles</h2>
+    {% if bundles %}
+    <table>
+        <thead>
+            <tr>
+                <th>Locale</th>
+                <th>Product</th>
+                <th>Bundle Hash</th>
+                <th>Last updated (server time)</th>
+                <th>Size</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for bundle in bundles %}
+            <tr>
+                <td>{{ bundle.locale }}</td>
+                <td>{{ bundle.product }}</td>
+                <td>{{ bundle.hash }}</td>
+                <td>{{ bundle.updated }}</td>
+                <td>{{ bundle.size }} KB</td>
+            </tr>
+            {% endfor %}
+            <tr>
+                <td><strong>All</strong></td>
+                <td><strong>All</strong></td>
+                <td> --- </td>
+                <td> --- </td>
+                <td><strong>{{ totalsize }} MB</strong></td>
+            </tr>
+        </tbody>
+    </table>
+    <p>Note sizes are raw sizes of the JSON. May not reflect the actual size in Redis or the ones downloaded due to compression.</p>
+    {% else %}
+    <p>No bundles are in Redis. Please generate them.</p>
+    {% endif %}
+</section>
+
+<section>
+    <h2>Database administrations</h2>
+    <form method="POST">
+          {% csrf_token %}
+        <input type="hidden" name="action" value="generate_all" />
+        <input type="submit" value="Regenerate all bundles (This may take a while)" />
+    </form>
+    <form method="POST">
+          {% csrf_token %}
+        <input type="hidden" name="action" value="delete_all" />
+        <input type="submit" value="Delete all bundles" />
+    </form>
+</section>
+{% endblock %}
