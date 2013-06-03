@@ -69,9 +69,10 @@
                 width: 600
             },
             options: {
+                bucket: true,
                 legend: false,
                 sets: true,
-                bucket: true
+                timeline: true
             },
             metadata: {
                 sets: sets
