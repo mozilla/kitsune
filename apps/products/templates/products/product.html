@@ -11,7 +11,7 @@
 {% block content %}
   <div class="grid_12">
     <h1 class="product-title cf">
-      <img src="{{ MEDIA_URL }}img/blank.png" alt="" class="logo-sprite"
+      <img src="{{ STATIC_URL }}img/blank.png" alt="" class="logo-sprite"
         style="background-image: url('{{ product.image_url }}');" />
       {{ _(product.title, 'DB: products.Product.title') }}
     </h1>

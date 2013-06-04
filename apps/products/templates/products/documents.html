@@ -13,7 +13,7 @@
   <div class="grid_12">
     <h1 class="product-title cf">
       {% set prod_url = url('products.product', slug=product.slug) %}
-      <img src="{{ MEDIA_URL }}img/blank.png" alt="" class="logo-sprite" style="background-image: url('{{ product.image_url }}');" />
+      <img src="{{ STATIC_URL }}img/blank.png" alt="" class="logo-sprite" style="background-image: url('{{ product.image_url }}');" />
       <a href="{{ prod_url }}">{{ _(product.title, 'DB: products.Product.title') }}</a>
     </h1>
   </div>
@@ -23,7 +23,7 @@
   </aside>
   <div class="grid_9">
     <article id="document-list">
-      {% if topic.image %}<img src="{{ MEDIA_URL }}img/blank.png" alt="" class="logo-sprite" style="background-image: url('{{ topic.image_url }}');" />{% endif %}
+      {% if topic.image %}<img src="{{ STATIC_URL }}img/blank.png" alt="" class="logo-sprite" style="background-image: url('{{ topic.image_url }}');" />{% endif %}
       <h1 class="topic-title cf">{{ _(topic.title, 'DB: topics.Topic.title') }}</h1>
 
       {% if subtopics or topic.parent %}

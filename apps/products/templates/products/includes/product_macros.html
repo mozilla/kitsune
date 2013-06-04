@@ -8,7 +8,7 @@
           {% set prod_url = url('products.product', slug=product.slug) %}
         {% endif %}
         <a class="cf" href="{{ prod_url }}">
-          <img src="{{ MEDIA_URL }}img/blank.png" class="logo-sprite" style="background-image: url('{{ product.image_url }}');" alt="" />
+          <img src="{{ STATIC_URL }}img/blank.png" class="logo-sprite" style="background-image: url('{{ product.image_url }}');" alt="" />
           <span class="title">{{ _(product.title, 'DB: products.Product.title') }}</span>
           <span class="description">{{ _(product.description, 'DB: products.Product.description') }}</span>
         </a>
@@ -17,7 +17,7 @@
     {% if show_thunderbird %}
       <li class="thunderbird">
         <a class="cf" href="https://support.mozillamessaging.com">
-          <img src="{{ MEDIA_URL }}img/blank.png" class="logo-sprite" alt="" />
+          <img src="{{ STATIC_URL }}img/blank.png" class="logo-sprite" alt="" />
           <span class="title">{{ 'Thunderbird' }}</span>
           <span class="description">{{ _('Email software for Windows, Mac and Linux') }}</span>
         </a>

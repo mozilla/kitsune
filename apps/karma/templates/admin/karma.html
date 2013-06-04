@@ -3,7 +3,7 @@
 
 {% block extrastyle %}
   {{ block.super }}
-  <link rel="stylesheet" media="screen,projection,tv" href="{{ MEDIA_URL }}css/users.autocomplete.css" />
+  <link rel="stylesheet" media="screen,projection,tv" href="{{ STATIC_URL }}css/users.autocomplete.css" />
 {% endblock %}
 
 {% block content %}
@@ -94,12 +94,12 @@
 
 {% block footer %}
   {{ block.super }}
-  <script type="text/javascript" src="{{ MEDIA_URL }}js/libs/jquery.min.js"></script>
+  <script type="text/javascript" src="{{ STATIC_URL }}js/libs/jquery.min.js"></script>
   <script type="text/javascript">
     // Not happy about this... but it works!
     $('body').data('usernames-api', '/en-US/users/api/usernames');
   </script>
-  <script type="text/javascript" src="{{ MEDIA_URL }}js/i18n.js"></script>
-  <script type="text/javascript" src="{{ MEDIA_URL }}js/libs/jquery.tokeninput.js"></script>
-  <script type="text/javascript" src="{{ MEDIA_URL }}js/users.autocomplete.js"></script>
+  <script type="text/javascript" src="{{ STATIC_URL }}js/i18n.js"></script>
+  <script type="text/javascript" src="{{ STATIC_URL }}js/libs/jquery.tokeninput.js"></script>
+  <script type="text/javascript" src="{{ STATIC_URL }}js/users.autocomplete.js"></script>
 {% endblock %}

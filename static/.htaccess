@@ -1,0 +1,29 @@
+# Neither Firefox nor Safari will draw these if they're text/xml
+AddType image/svg+xml .svg
+AddType application/octet-stream .exe
+
+AddCharset utf-8 .css .js
+
+# Set far-future Expires headers for static media
+ExpiresActive on
+
+ExpiresDefault "access plus 1 week"
+ExpiresByType text/css "access plus 1 year"
+ExpiresByType text/javascript "access plus 1 year"
+ExpiresByType image/png "access plus 1 month"
+ExpiresByType image/jpeg "access plus 1 month"
+ExpiresByType image/gif "access plus 1 month"
+ExpiresByType image/svg+xml "access plus 1 month"
+ExpiresByType image/vnd.microsoft.icon "access plus 1 month"
+ExpiresByType video/webm "access plus 1 week"
+ExpiresByType video/ogg "access plus 1 week"
+ExpiresByType video/x-flv "access plus 1 week"
+ExpiresByType application/x-shockwave-flash "access plus 1 week"
+ExpiresByType text/plain "access plus 0 seconds"
+ExpiresByType application/octet-stream "access plus 0 seconds"
+
+FileETag MTime
+
+<FilesMatch "\.txt$">
+    FileETag None
+</FilesMatch>

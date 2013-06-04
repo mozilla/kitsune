@@ -37,7 +37,7 @@
       {% if user_can_announce %}
         <div id="create-announcement">
           <button class="btn">
-            <img src="{{ MEDIA_URL }}img/blank.png" />
+            <img src="{{ STATIC_URL }}img/blank.png" />
             {{ _('Create announcement') }}
           </button>
           <span class="success">{{ _('Created successfully') }}</span>
@@ -50,7 +50,7 @@
                   <button type="submit" class="btn btn-submit" value="Submit">
                     {{ _('Create') }}
                   </button>
-                  <img src="{{ MEDIA_URL }}img/wait-trans.gif" class="spinner" />
+                  <img src="{{ STATIC_URL }}img/wait-trans.gif" class="spinner" />
                 </i>
               </ul>
             </form>

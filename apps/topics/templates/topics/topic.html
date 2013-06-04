@@ -9,7 +9,7 @@
 
 {% block content %}
   {% if products %}
-    {% if topic.image %}<img src="{{ MEDIA_URL }}img/blank.png" alt="" class="logo-sprite" style="background-image: url('{{ topic.image_url }}');" />{% endif %}
+    {% if topic.image %}<img src="{{ STATIC_URL }}img/blank.png" alt="" class="logo-sprite" style="background-image: url('{{ topic.image_url }}');" />{% endif %}
     <h1 class="topic-title cf">{{ title }}</h1>
     <h2>{{ _('Select a product') }}</h2>
     <section id="products-and-services">
@@ -24,7 +24,7 @@
     </aside>
     <div class="grid_9">
       <section id="document-list">
-        {% if topic.image %}<img src="{{ MEDIA_URL }}img/blank.png" alt="" class="logo-sprite" style="background-image: url('{{ topic.image_url }}');" />{% endif %}
+        {% if topic.image %}<img src="{{ STATIC_URL }}img/blank.png" alt="" class="logo-sprite" style="background-image: url('{{ topic.image_url }}');" />{% endif %}
         <h1 class="topic-title cf">{{ title }}</h1>
         {% for document in documents %}
           {% if loop.first %}<ul class="topic-list">{% endif %}

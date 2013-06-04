@@ -3,7 +3,7 @@ window.k = window.k || {};
 
 (function () {
     k.LAZY_DELAY = 500;  // delay to lazy loading scripts, in ms
-    k.MEDIA_URL = '/media/';
+    k.STATIC_URL = $('body').data('static-url');
     k.getQueryParamsAsDict = function (url) {
         // Parse the url's query parameters into a dict. Mostly stolen from:
         // http://stackoverflow.com/questions/901115/get-query-string-values-in-javascript/2880929#2880929

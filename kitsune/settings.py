@@ -289,6 +289,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.contrib.auth.context_processors.auth',
     'django.core.context_processors.debug',
     'django.core.context_processors.media',
+    'django.core.context_processors.static',
     'django.core.context_processors.request',
     'session_csrf.context_processor',
 
@@ -512,8 +513,6 @@ STANDALONE_DOMAINS = [
 # to True
 TOWER_ADD_HEADERS = True
 
-# Jingo-Minify should not use the STATIC_ROOT
-JINGO_MINIFY_USE_STATIC = False
 JAVA_BIN = '/usr/bin/java'
 
 LESS_BIN = 'lessc'
