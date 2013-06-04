@@ -33,6 +33,11 @@ def update_locales(ctx):
         ctx.local("svn up")
         ctx.local("./compile-mo.sh .")
 
+    # NOTE: Temporary hack to get locales working again.
+    with ctx.lcd(os.path.join(settings.SRC_DIR, 'kitsune')):
+        ctx.local("rm -f locale")
+        ctx.local("ln -s ../locale locale")
+
 
 @task
 def update_assets(ctx):
