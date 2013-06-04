@@ -30,14 +30,14 @@
     {% for topic in topics[:5] %}
       <li>
         <a href="{{ url('products.documents', product_slug=product.slug, topic_slug=topic.slug) }}" class="cf">
-          <img src="{{ MEDIA_URL }}img/blank.png" class="topic-sprite topic-{{ topic.slug }}" alt="">
+          <img src="{{ STATIC_URL }}img/blank.png" class="topic-sprite topic-{{ topic.slug }}" alt="">
           {{ _(topic.title, 'DB: topics.Topic.title') }}
         </a>
       </li>
       {% if loop.last %}
           <li>
             <a href="{{ url('wiki.document', 'get-community-support') }}" class="cf">
-              <img src="{{ MEDIA_URL }}img/blank.png" class="topic-sprite topic-get-community-support" alt="">
+              <img src="{{ STATIC_URL }}img/blank.png" class="topic-sprite topic-get-community-support" alt="">
               {{ _('Get community support') }}
             </a>
           </li>

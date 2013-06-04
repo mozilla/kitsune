@@ -59,7 +59,7 @@
             {% set watch = _('Watch this thread') %}
             <input type="hidden" name="watch" value="yes" />
           {% endif %}
-          <button type="submit" title="{{ watch }}" class="btn" id="watch-thread-toggle"><img src="{{ MEDIA_URL }}img/blank.png" alt="" /> {{ watch }}</button>
+          <button type="submit" title="{{ watch }}" class="btn" id="watch-thread-toggle"><img src="{{ STATIC_URL }}img/blank.png" alt="" /> {{ watch }}</button>
         </form>
       {% endif %}
 

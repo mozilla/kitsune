@@ -57,7 +57,7 @@
 
   <div class="grid_12 cf">
     <div id="tweet-tools">
-      <img id="refresh-busy" src="{{ MEDIA_URL }}img/customercare/spinner.gif"/>
+      <img id="refresh-busy" src="{{ STATIC_URL }}img/customercare/spinner.gif"/>
       <select id="show">
         {% for value, content in filters.iteritems() %}
           <option value="{{ value }}">{{ content }}</option>
@@ -95,7 +95,7 @@
     </div>
 
     <div id="infinite-scroll">
-      <img id="scroll-busy" src="{{ MEDIA_URL }}img/customercare/spinner.gif"/>
+      <img id="scroll-busy" src="{{ STATIC_URL }}img/customercare/spinner.gif"/>
     </div>
   </div>
 

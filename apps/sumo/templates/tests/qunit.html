@@ -3,7 +3,7 @@
 <head>
 	<title>QUnit Test Suite</title>
   <link rel="stylesheet" href="{{ url('qunit_css') }}?v={{ timestamp }}" type="text/css" media="screen">
-  <link rel="stylesheet" href="{{ MEDIA_URL }}css/kbox.css?v={{ timestamp }}" type="text/css" media="screen">
+  <link rel="stylesheet" href="{{ STATIC_URL }}css/kbox.css?v={{ timestamp }}" type="text/css" media="screen">
 </head>
 <body
   data-for-os="{&#34;maemo&#34;: 4, &#34;win&#34;: 1, &#34;mac&#34;: 2, &#34;android&#34;: 5, &#34;linux&#34;: 3}"
@@ -216,15 +216,15 @@
   <script src="{{ url('jsi18n') }}/build:{{ BUILD_ID_JS }}"></script>
   <script src="{{ url('wafflejs') }}?v={{ timestamp }}"></script>
   {% for jsfile in settings.MINIFY_BUNDLES['js']['common'] %}
-    <script src="{{ MEDIA_URL + jsfile }}?v={{ timestamp }}"></script>
+    <script src="{{ STATIC_URL + jsfile }}?v={{ timestamp }}"></script>
   {% endfor %}
   <script type="text/javascript" src="{{ url('qunit_js') }}?v={{ timestamp }}"></script>
-  <script type="text/javascript" src="{{ MEDIA_URL }}js/libs/jquery.mockjax.js?v={{ timestamp }}"></script>
+  <script type="text/javascript" src="{{ STATIC_URL }}js/libs/jquery.mockjax.js?v={{ timestamp }}"></script>
   {% for url in suite.extra_urls %}
     <script type="text/javascript" src="{{ url }}?v={{ timestamp }}"></script>
   {% endfor %}
   {% for url in suite.extra_media_urls %}
-    <script type="text/javascript" src="{{ MEDIA_URL }}{{ url }}?v={{ timestamp }}"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}{{ url }}?v={{ timestamp }}"></script>
   {% endfor %}
   {% for file in files %}
     <script type="text/javascript" src="{{ url('qunit_test', file) }}?v={{ timestamp }}"></script>

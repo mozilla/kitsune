@@ -258,6 +258,10 @@ MEDIA_URL = '/media/'
 
 STATIC_ROOT = path('static')
 STATIC_URL = '/static/'
+STATICFILES_FINDERS = (
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+    'sumo.static_finders.WTFinder')
 
 # Paths that don't require a locale prefix.
 SUPPORTED_NONLOCALES = ('media', 'admin', 'robots.txt', 'services', '1',
@@ -289,6 +293,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.contrib.auth.context_processors.auth',
     'django.core.context_processors.debug',
     'django.core.context_processors.media',
+    'django.core.context_processors.static',
     'django.core.context_processors.request',
     'session_csrf.context_processor',
 
@@ -512,8 +517,6 @@ STANDALONE_DOMAINS = [
 # to True
 TOWER_ADD_HEADERS = True
 
-# Jingo-Minify should not use the STATIC_ROOT
-JINGO_MINIFY_USE_STATIC = False
 JAVA_BIN = '/usr/bin/java'
 
 LESS_BIN = 'lessc'

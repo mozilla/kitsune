@@ -18,7 +18,7 @@
             {% set watch = _('Watch this locale') %}
             <input type="hidden" name="watch" value="yes">
           {% endif %}
-          <button type="submit" alt="{{ watch }}" title="{{ watch }}" class="btn" id="watch-forum-toggle"><img src="{{ MEDIA_URL }}img/blank.png" alt="" /> {{ watch }}</button>
+          <button type="submit" alt="{{ watch }}" title="{{ watch }}" class="btn" id="watch-forum-toggle"><img src="{{ STATIC_URL }}img/blank.png" alt="" /> {{ watch }}</button>
         </form>
       {% endif %}
       <ol class="threads-columns cf {% if not desc_toggle %}desc{% endif %}">

@@ -23,7 +23,7 @@
               {% set watch = _('Watch this forum') %}
               <input type="hidden" name="watch" value="yes" />
             {% endif %}
-            <button type="submit" alt="{{ watch }}" title="{{ watch }}" class="btn" id="watch-forum-toggle"><img src="{{ MEDIA_URL }}img/blank.png" alt="" /> {{ watch }}</button>
+            <button type="submit" alt="{{ watch }}" title="{{ watch }}" class="btn" id="watch-forum-toggle"><img src="{{ STATIC_URL }}img/blank.png" alt="" /> {{ watch }}</button>
           </form>
         {% endif %}
       </div>
@@ -40,10 +40,10 @@
           <li class="cf">
             <div class="type">
               {% if thread.is_locked %}
-                <img src="{{ MEDIA_URL }}img/blank.png" alt="{{ _('Locked', 'thread_type') }}" title="{{ _('Locked', 'thread_type') }}" class="icon-locked" />
+                <img src="{{ STATIC_URL }}img/blank.png" alt="{{ _('Locked', 'thread_type') }}" title="{{ _('Locked', 'thread_type') }}" class="icon-locked" />
               {% endif %}
               {% if thread.is_sticky %}
-                <img src="{{ MEDIA_URL }}img/blank.png" alt="{{ _('Sticky', 'thread_type') }}" title="{{ _('Sticky', 'thread_type') }}" class="icon-sticky" />
+                <img src="{{ STATIC_URL }}img/blank.png" alt="{{ _('Sticky', 'thread_type') }}" title="{{ _('Sticky', 'thread_type') }}" class="icon-sticky" />
               {% endif %}
             </div>
             <div class="title"><a href="{{ url('wiki.discuss.posts', document.slug, thread.id) }}">{{ thread.title }}</a></div>

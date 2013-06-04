@@ -24,7 +24,7 @@
     {% for key, product in products.iteritems() %}
       <li>
         <a class="cf" href="{{ url('questions.aaq_step2', product_key=key) }}">
-          <img src="{{ MEDIA_URL }}img/blank.png" alt="" class="logo-sprite logo-{{ key }}">
+          <img src="{{ STATIC_URL }}img/blank.png" alt="" class="logo-sprite logo-{{ key }}">
           <span class="title">{{ product.name }}</span>
           <span class="description">{{ product.subtitle }}</span>
         </a>
