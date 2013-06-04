@@ -33,10 +33,6 @@ def update_locales(ctx):
         ctx.local("svn up")
         ctx.local("./compile-mo.sh .")
 
-    # NOTE: Temporary hack to remove the sym link.
-    with ctx.lcd(os.path.join(settings.SRC_DIR, 'kitsune')):
-        ctx.local("rm -f locale")
-
 
 @task
 def update_assets(ctx):
