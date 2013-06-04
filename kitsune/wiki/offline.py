@@ -5,26 +5,96 @@ import time
 from django.conf import settings
 from django.http import HttpResponse, HttpResponseBadRequest
 
-from products.models import Product
-from wiki.models import Document
+from kitsune.products.models import Product
+from kitsune.sumo.parser import _get_wiki_link
+from kitsune.wiki.models import Document
+from kitsune.wiki.parser import WikiParser as WParser
 
+i = 0
+def wiki_to_html(wiki_markup, locale=settings.WIKI_DEFAULT_LANGUAGE, doc_id=None):
+    global i
+    i += 1
+    print i
+    parsed = WikiParser(doc_id=doc_id).parse(wiki_markup, show_toc=False, locale=locale)
+    return parsed
+
+class WikiParser(WParser):
+    def _hook_internal_link(self, parser, space, name):
+        # This deserves refactoring with apps.sumo.parser.WikiParser._hook_internal_link
+        # However, it is not yet the time to clean up everything.
+        text = False
+        title = name
+        if '|' in name:
+            title, text = title.split('|', 1)
+
+        hash = ''
+        if '#' in title:
+            title, hash = title.split('#', 1)
+
+        if hash != '':
+            hash = '#' + hash.replace(' ', '_')
+
+        if title == '' and hash != '':
+            if not text:
+                text = hash.replace('_', ' ')
+
+            # This is modified as we don't want angular to clickjack.
+            return u'<a href="{}" target="_self">{}</a>'.format(hash, text)
+
+        link = _get_wiki_link(title, self.locale)
+        extra_a_attr = ''
+        if not link['found']:
+            # This is modified too as when there is a not found link, we should
+            # just return the text for offline.
+            return text if text else link['text']
+
+        if not text:
+            text = link['text']
+
+        return u'<a href="{url}{hash}">{text}</a>'.format(url=link['url'], hash=hash, text=text)
+
+    def _hook_image_tag(self, parser, space, name):
+        # TODO: obviously this gotta work better.
+        params = {}
+        if not '|' in name:
+            title = name.strip()
+            params['alt'] = title
+        else:
+            first = True
+            for item in name.split('|'):
+                if first:
+                    title = item
+                    first = False
+                    continue
+                item = item.strip()
+                if '=' in item:
+                    param, value = item.split('=', 1)
+                    params[param] = value
+                else:
+                    params[item] = True
+            # Let's not care about captions for now.
+
+        if 'width' in params and 'height' in params:
+            return '<div class="img-placeholder">{} x {} img placeholder</div>'
+        else:
+            return '<div class="img-placeholder">img placeholder</div>'
+
+doc_key = lambda locale, doc_slug: locale + '~' + doc_slug
+topic_key = lambda product_slug, topic_slug: product_slug + '~' + topic_slug
 
 def serialize_document_for_offline(doc):
     """Grabs the document in a dictionary. This method returns a document that
     is ready to be inserted into the client-side database.
     """
     return {
-        'key': doc.id,
+        'key': doc_key(doc.locale, doc.slug),
         'title': doc.title,
         'summary': doc.current_revision.summary,
-        'slug': doc.slug,
         'html': doc.html,
+        #'html': wiki_to_html(doc.current_revision.content, locale=doc.locale, doc_id=doc.id),
         'updated': int(time.mktime(doc.current_revision.created.timetuple())),
+        'slug': doc.slug
     }
-
-
-def topics_key(locale, product, topic):
-    return '{}~{}~{}'.format(locale, product, topic)
 
 
 def bundle_for_product(product, locale):
@@ -56,16 +126,16 @@ def bundle_for_product(product, locale):
         docs_bundle[serialized_doc['key']] = serialized_doc
 
         for t in doc.get_topics():
-            key = topics_key(locale, product.slug, t.id)
-            topic = topics.setdefault(key, {})
+            topic = topics.setdefault(t.id, {})
             if not topic:
-                bundle['locales'][locale]['children'].add(key)
-                topic['key'] = key
+                bundle['locales'][locale]['children'].add(t.id)
+                topic['key'] = topic_key(product.slug, t.slug)
                 topic['name'] = t.title
-                topic['children'] = [topics_key(locale, product.slug, st.id) for st in t.subtopics.all()]
+                topic['children'] = [st.slug for st in t.subtopics.all()]
                 topic['docs'] = []
-                topic['product'] = product.slug
-            topic['docs'].append(doc.id)
+                topic['product'] = product.slug # seems redundant with key, eh?
+                topic['slug'] = t.slug
+            topic['docs'].append(doc.slug)
 
 
     bundle['locales'][locale]['children'] = list(bundle['locales'][locale]['children'])

@@ -1,8 +1,8 @@
 from nose.tools import eq_
 
-from sumo.tests import TestCase
+from kitsune.sumo.tests import TestCase
 
-from wiki.offline import (
+from kitsune.wiki.offline import (
     serialize_document_for_offline,
     bundle_for_product,
     merge_bundles
