@@ -18,10 +18,12 @@ test suite is::
 
     ./manage.py test
 
+
 However, that doesn't provide the most sensible defaults. Here is a good
 command to alias to something short::
 
     ./manage.py test -s --noinput --logging-clear-handlers
+
 
 The ``-s`` flag is important if you want to be able to drop into PDB from
 within tests.
@@ -134,8 +136,8 @@ You can run the tests a few different ways but during development you
 probably want to run them in a web browser by opening this page:
 http://127.0.0.1:8000/en-US/qunit/
 
-Before you can load that page, you'll need to adjust your settings_local.py
-file so it includes django-qunit::
+Before you can load that page, you'll need to adjust your
+``kitsune/settings_local.py`` file so it includes django-qunit::
 
     INSTALLED_APPS += (
         # ...

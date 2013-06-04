@@ -19,15 +19,15 @@ for the sections in ``REDIS_BACKEND``.
 There are two ways to set this up. First is to set it up using the
 configuration below and run three separate Redis servers. The second
 is to set it up differently, tweak the settings in
-``settings_local.py`` accordingly, and run Redis using just the test
-configuration.
+``kitsune/settings_local.py`` accordingly, and run Redis using just the
+test configuration.
 
 
 Configuration
 =============
 
 If you want to run three separate Redis servers, add this to
-``settings_local.py``::
+``kitsune/settings_local.py``::
 
     REDIS_BACKENDS = {
             'default': 'redis://localhost:6379?socket_timeout=0.5&db=0',

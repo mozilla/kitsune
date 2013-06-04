@@ -86,9 +86,11 @@ If you are running OSX and using homebrew, you can do something like::
 
     $ brew install memcached
 
+
 and launch it::
 
     $ memcached
+
 
 If you are running RedHat/CentOS/Fedora, once you have installed
 memcached you can start it and configure it to run on startup using::
@@ -97,12 +99,14 @@ memcached you can start it and configure it to run on startup using::
     $ /etc/init.d/memcached start
     $ service memcached start
 
+
 .. Note::
 
    This should probably be somewhere else, but the easy way to flush
    your cache is something like this::
 
        echo "flush_all" | nc localhost 11211
+
 
    Assuming you have memcache configured to listen to 11211.
 
@@ -125,6 +129,7 @@ Grab the source from Github using::
 
     $ git clone --recursive git://github.com/mozilla/kitsune.git
     $ cd kitsune
+
 
 .. Note::
 
@@ -150,6 +155,7 @@ To use pip, do this::
 
     $ sudo pip install -r requirements/compiled.txt
 
+
 If you want to use your system's package manager, you'll need to go
 through ``requirements/compiled.txt`` and install the dependencies by
 hand.
@@ -173,7 +179,7 @@ Configuration and Setup
 settings_local.py
 -----------------
 
-Create a file named ``settings_local.py`` in the ``kitsune`` directory.
+Create a file named ``settings_local.py`` in the ``kitsune/`` directory.
 Start with this::
 
     from settings import *
@@ -219,6 +225,7 @@ Start with this::
     LESS_PREPROCESS = True
     LESS_BIN = '/path/to/kitsune/node_modules/less/bin/lessc'
 
+
 Don't forget to change ``<YOUR_PASSWORD>`` and update ``LESS_BIN``
 based on your setup.
 
@@ -227,8 +234,8 @@ these, the test suite will use MySQL's (moronic) defaults when
 creating the test database (see below) and lots of tests will
 fail. Hundreds.
 
-Now you can copy and modify any settings from ``settings.py`` into
-``settings_local.py`` and the value will override the default.
+Now you can copy and modify any settings from ``kitsune/settings.py`` into
+``kitsune/settings_local.py`` and the value will override the default.
 
 
 Database
@@ -243,11 +250,13 @@ database settings. For example, using the settings above::
     mysql> CREATE DATABASE kitsune;
     mysql> GRANT ALL ON kitsune.* TO kitsune@localhost IDENTIFIED BY '<YOUR_PASSWORD>';
 
+
 To load the latest database schema, use ``scripts/schema.sql`` and
 ``schematic``::
 
     $ mysql -u kitsune -p kitsune < scripts/schema.sql
     $ ./vendor/src/schematic/schematic migrations/
+
 
 You'll now have an empty but up-to-date database!
 
@@ -255,6 +264,7 @@ Finally, you'll probably want to create a superuser. Just use Django's
 ``createsuperuser`` management command::
 
     $ ./manage.py createsuperuser
+
 
 and follow the prompts. After logging in, you can create a profile for
 the user by going to ``/users/edit`` in your browser.
@@ -303,6 +313,7 @@ the SUMO home page!
 
        $ rm **/*.less.css
 
+
   Verify the ``LESS_BIN`` setting in settings_local.py.
   Then *hard-refresh* your pages on the browser via *Ctrl + Shift + R*.
 
@@ -317,6 +328,7 @@ database user::
     $ mysql -u root -p
     mysql> GRANT ALL ON test_kitsune.* TO kitsune@localhost IDENTIFIED BY '<YOUR_PASSWORD>';
 
+
 The test suite will create and use this database, to keep any data in
 your development database safe from tests.
 
@@ -327,6 +339,7 @@ Running the tests
 Running the test suite is easy::
 
     $ ./manage.py test -s --noinput --logging-clear-handlers
+
 
 For more information, see the :ref:`test documentation
 <tests-chapter>`.

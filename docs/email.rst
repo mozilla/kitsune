@@ -28,6 +28,7 @@ mail backend.
 
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
+
 If you have ``sendmail`` installed and working, that should do it. However, you
 might get caught in spam filters. An easy workaround for spam filters or not
 having sendmail working is to send email via a Gmail account.
@@ -40,6 +41,7 @@ having sendmail working is to send email via a Gmail account.
     EMAIL_HOST_USER = '<your gmail address>@gmail.com'
     EMAIL_HOST_PASSWORD = '<your gmail password>'
 
+
 Yeah, you need to put your Gmail password in a plain text file on your
 computer. It's not for everyone. Be **very** careful copying and pasting
-settings from ``settings_local.py`` if you go this route.
+settings from ``kitsune/settings_local.py`` if you go this route.

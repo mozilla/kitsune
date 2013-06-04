@@ -35,8 +35,8 @@ to as ``ELASTICDIR``.
 You can configure Elastic Search with the configuration file at
 ``ELASTICDIR/config/elasticsearch.yml``.
 
-Elastic Search uses several settings in ``settings.py`` that you
-need to override in ``settings_local.py``. Here's an example::
+Elastic Search uses several settings in ``kitsune/settings.py`` that you
+need to override in ``kitsune/settings_local.py``. Here's an example::
 
     # Connection information for Elastic
     ES_URLS = ['http://127.0.0.1:9200']
@@ -106,9 +106,10 @@ These settings explained:
        settings in between.
 
 
-There are a few other settings you can set in your ``settings_local.py``
-file that override Elastic Utils defaults.  See `the Elastic Utils
-docs <http://elasticutils.readthedocs.org/en/latest/installation.html#configure>`_
+There are a few other settings you can set in your
+``kitsune/settings_local.py`` file that override Elastic Utils defaults.  See
+`the Elastic Utils docs
+<http://elasticutils.readthedocs.org/en/latest/installation.html#configure>`_
 for details.
 
 Other things you can change:
@@ -132,7 +133,7 @@ Other things you can change:
     Defaults to False.
 
     You can also set ``ES_LIVE_INDEXING`` in your
-    ``settings_local.py`` file. This affects whether Kitsune does
+    ``kitsune/settings_local.py`` file. This affects whether Kitsune does
     Elastic indexing when data changes in the ``post_save`` and
     ``pre_delete`` hooks.
 

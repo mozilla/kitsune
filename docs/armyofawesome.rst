@@ -24,7 +24,7 @@ settings_local.py below.
 Update settings_local.py
 ------------------------
 
-Set the following settings in settings_local.py::
+Set the following settings in ``kitsune/settings_local.py``::
 
     TWITTER_CONSUMER_KEY = <consumer key>
     TWITTER_CONSUMER_SECRET = <consumer secret>
@@ -60,6 +60,7 @@ content is::
     =Category 2=
     ==Reply 3==
     And another reply
+
 
 Note that replies can't be over 140 characters long, including the
 @username and #fxhelp hash tag. Therefore, each reply defined here
