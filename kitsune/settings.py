@@ -14,10 +14,16 @@ STAGE = False
 LOG_LEVEL = logging.INFO
 SYSLOG_TAG = 'http_sumo_app'
 
-ROOT = os.path.dirname(os.path.abspath(__file__))
-path = lambda *a: os.path.join(ROOT, *a)
+# Repository directory.
+ROOT = os.path.dirname(os.path.dirname(__file__))
 
-ROOT_PACKAGE = os.path.basename(ROOT)
+# Django project directory.
+PROJECT_ROOT = os.path.dirname(__file__)
+
+PROJECT_MODULE = 'kitsune'
+
+# path bases things off of ROOT
+path = lambda *a: os.path.abspath(os.path.join(ROOT, *a))
 
 ADMINS = (
     # ('Your Name', 'your_email@domain.com'),
@@ -232,6 +238,8 @@ DB_LOCALIZE = {
     },
 }
 
+# locale is in the kitsune git repo project directory, so that's
+# up one directory from the PROJECT_ROOT
 LOCALE_PATHS = (
     path('locale'),
 )
@@ -241,14 +249,14 @@ ENGAGE_ROBOTS = False
 
 # Absolute path to the directory that holds media.
 # Example: "/home/media/media.lawrence.com/"
-MEDIA_ROOT = path('../media')
+MEDIA_ROOT = path('media')
 
 # URL that handles the media served from MEDIA_ROOT. Make sure to use a
 # trailing slash if there is a path component (optional in other cases).
 # Examples: "http://media.lawrence.com", "http://example.com/media/"
 MEDIA_URL = '/media/'
 
-STATIC_ROOT = path('../static')
+STATIC_ROOT = path('static')
 STATIC_URL = '/static/'
 
 # Paths that don't require a locale prefix.
@@ -356,15 +364,15 @@ PASSWORD_HASHERS = (
     'users.hashers.SHA256PasswordHasher',
 )
 
-USERNAME_BLACKLIST = path('configs/username-blacklist.txt')
+USERNAME_BLACKLIST = path('kitsune', 'configs', 'username-blacklist.txt')
 
-ROOT_URLCONF = '%s.urls' % ROOT_PACKAGE
+ROOT_URLCONF = '%s.urls' % PROJECT_MODULE
 
 TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates"
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
-    path('templates'),
+    path('kitsune', 'templates'),
 )
 
 # TODO: Figure out why changing the order of apps (for example, moving
@@ -380,7 +388,6 @@ INSTALLED_APPS = (
     'users',
     'tower',
     'jingo_minify',
-    ROOT_PACKAGE,
     'authority',
     'timezones',
     'waffle',
