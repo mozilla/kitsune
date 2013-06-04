@@ -47,7 +47,7 @@ python manage.py update_product_details
 
 cat > kitsune/settings_local.py <<SETTINGS
 from settings import *
-ROOT_URLCONF = '%s.urls' % PACKAGE_MODULE
+ROOT_URLCONF = '%s.urls' % PROJECT_MODULE
 LOG_LEVEL = logging.ERROR
 DATABASES['default']['NAME'] = 'kitsune_$BUILD_NAME'
 DATABASES['default']['HOST'] = 'localhost'
