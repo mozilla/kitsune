@@ -14,8 +14,11 @@ STAGE = False
 LOG_LEVEL = logging.INFO
 SYSLOG_TAG = 'http_sumo_app'
 
+# ROOT is the Kitsune Django project directory
 ROOT = os.path.dirname(os.path.abspath(__file__))
-path = lambda *a: os.path.join(ROOT, *a)
+
+# path bases things off of ROOT
+path = lambda *a: os.path.abspath(os.path.join(ROOT, *a))
 
 ROOT_PACKAGE = os.path.basename(ROOT)
 
@@ -232,8 +235,10 @@ DB_LOCALIZE = {
     },
 }
 
+# locale is in the kitsune git repo project directory, so that's
+# up one directory from the ROOT
 LOCALE_PATHS = (
-    path('locale'),
+    path('..', 'locale'),
 )
 
 # Use the real robots.txt?
