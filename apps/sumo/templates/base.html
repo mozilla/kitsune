@@ -12,12 +12,13 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
   <title>{% block title %}{% if title %}{{ title }} | {% endif %}{{ _('Mozilla Support', 'site_title') }}{% endblock %}</title>
 
-  <link rel="icon" type="image/png" sizes="16x16" href="{{ STATIC_URL }}img/firefox-16.png"/>
-  <link rel="icon" type="image/png" sizes="32x32" href="{{ STATIC_URL }}img/firefox-32.png"/>
-  <link rel="icon" type="image/png" sizes="64x64" href="{{ STATIC_URL }}img/firefox-64.png"/>
-  <link rel="icon" type="image/png" sizes="128x128" href="{{ STATIC_URL }}img/firefox-128.png"/>
-  <link rel="icon" type="image/png" sizes="256x256" href="{{ STATIC_URL }}img/firefox-256.png"/>
-  <link rel="icon" type="image/png" sizes="512x512" href="{{ STATIC_URL }}img/firefox-512.png"/>
+  <link rel="icon" type="image/png" sizes="512x512" href="{{ STATIC_URL }}img/firefox-512.png">
+  <link rel="icon" type="image/png" sizes="256x256" href="{{ STATIC_URL }}img/firefox-256.png">
+  <link rel="icon" type="image/png" sizes="128x128" href="{{ STATIC_URL }}img/firefox-128.png">
+  <link rel="icon" type="image/png" sizes="64x64" href="{{ STATIC_URL }}img/firefox-64.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="{{ STATIC_URL }}img/firefox-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="{{ STATIC_URL }}img/firefox-16.png">
+
   <link rel="search" type="application/opensearchdescription+xml" title="{{ _('Firefox Help') }}" href="{{ url('search.plugin') }}"/>
   {% if feeds %}
     {% for feed in feeds %}
