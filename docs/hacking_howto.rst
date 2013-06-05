@@ -76,6 +76,7 @@ These are optional:
 Installation for these is very system dependent. Using a package
 manager, like yum, aptitude, or brew, is encouraged.
 
+.. _hacking-howto-memcached:
 
 memcached
 ---------
@@ -352,7 +353,7 @@ Error: A csrf_token was used in a template, but the context did not provide the 
 -------------------------------------------------------------------------------------
 
 If you see this, you likely have CACHES specifying to use memcached in your
-settings_local.py file, but you don't have memcached running.
+``kitsune/settings_local.py`` file, but you don't have memcached running.
 
 See :ref:`hacking-howto-memcached`.
 
