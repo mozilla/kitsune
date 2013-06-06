@@ -197,3 +197,32 @@ def pageviews_by_question(start_date, end_date):
             break
 
     return counts
+
+
+def search_ctr(start_date, end_date):
+    """Return search click through rate based on Goal 11 in google analytics.
+
+    Returns a dict with daily numbers:
+        {u'2012-01-22': 74.8,
+         u'2012-01-23': 73.6,
+         u'2012-01-24': 76.2,...}
+    """
+    ctr = {}
+    request = _build_request()
+    date = start_date
+    while date <= end_date:
+        date_str = str(date)
+
+        # This metric name for goals in Google Analytics is gross.
+        # Sorry about that. I don't see another way to it.
+        metric_name = 'ga:goal11ConversionRate'
+        ctr_str = request.get(
+            ids='ga:' + profile_id,
+            start_date=date_str,
+            end_date=date_str,
+            metrics=metric_name).execute()['rows'][0][0]
+        ctr[date_str] = float(ctr_str)
+
+        date += timedelta(days=1)
+
+    return ctr
