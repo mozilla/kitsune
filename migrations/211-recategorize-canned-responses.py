@@ -7,8 +7,8 @@ they are easy to find.
 from django.conf import settings
 from django.db.models import Q
 
-from wiki.models import Document
-from wiki.config import CANNED_RESPONSES_CATEGORY
+from kitsune.wiki.models import Document
+from kitsune.wiki.config import CANNED_RESPONSES_CATEGORY
 
 canned = Q(slug__startswith='forum-response-')
 canned |= Q(slug='common-forum-responses')
