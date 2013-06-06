@@ -1,6 +1,6 @@
-from gallery.models import Image, Video
-from users.models import Profile
-from wiki.models import Document, Locale
+from kitsune.gallery.models import Image, Video
+from kitsune.users.models import Profile
+from kitsune.wiki.models import Document, Locale
 
 
 def run():

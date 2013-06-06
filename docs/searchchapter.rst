@@ -251,7 +251,7 @@ Kitsune uses `elasticutils <https://github.com/mozilla/elasticutils>`_
 and `pyelasticsearch
 <http://pyelasticsearch.readthedocs.org/en/latest/>`_.
 
-Most of our code is in the ``search`` app in ``apps/search/``.
+Most of our code is in the ``search`` app in ``kitsune/search/``.
 
 Models in Kitsune that are indexable use ``SearchMixin`` defined in
 ``models.py``.
@@ -355,4 +355,4 @@ Link to the Elastic Search code
 
 Here's a link to the search view in the master branch:
 
-https://github.com/mozilla/kitsune/blob/master/apps/search/views.py
+https://github.com/mozilla/kitsune/blob/master/kitsune/search/views.py

@@ -1,8 +1,8 @@
 from django.utils.encoding import smart_str
 
-from taggit.models import Tag
-from topics.models import Topic
-from wiki.models import Document
+from kitsune.taggit.models import Tag
+from kitsune.topics.models import Topic
+from kitsune.wiki.models import Document
 
 tags_to_migrate = {
     # '<source tag>': '<destination tag>',

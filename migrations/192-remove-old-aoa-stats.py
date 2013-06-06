@@ -1,7 +1,7 @@
 from django.conf import settings
 
-from sumo.redis_utils import redis_client, RedisError
-from customercare.cron import get_customercare_stats
+from kitsune.customercare.cron import get_customercare_stats
+from kitsune.sumo.redis_utils import redis_client, RedisError
 
 try:
     print "Removing old data"

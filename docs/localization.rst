@@ -301,7 +301,7 @@ Then, all you need to do is run the ``extract_db`` management command::
 
 *Be sure to have a recent database from production when running the command.*
 
-By default, this will write all the strings to `apps/sumo/db_strings.py`
+By default, this will write all the strings to `kitsune/sumo/db_strings.py`
 and they will get picked up during the normal string extraction (see below).
 
 

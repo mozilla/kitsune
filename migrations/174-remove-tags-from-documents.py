@@ -2,7 +2,7 @@ from django.contrib.contenttypes.models import ContentType
 
 from taggit.models import TaggedItem
 
-from wiki.models import Document
+from kitsune.wiki.models import Document
 
 
 def run():

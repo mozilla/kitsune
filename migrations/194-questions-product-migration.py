@@ -1,8 +1,8 @@
 from django.utils.encoding import smart_str
 
-from products.models import Product
-from taggit.models import Tag
-from questions.models import Question
+from kitsune.products.models import Product
+from kitsune.taggit.models import Tag
+from kitsune.questions.models import Question
 
 tags_to_migrate = {
     # source tag -> product

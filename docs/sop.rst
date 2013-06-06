@@ -9,7 +9,7 @@ Occasionally, the localized strings cause the site to break.
 
 For example, this causes the site to break::
 
-    #: apps/questions/templates/questions/includes/answer.html:19
+    #: kitsune/questions/templates/questions/includes/answer.html:19
     msgid "{num} answers"
     msgstr "{0} antwoorden"
 

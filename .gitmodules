@@ -139,6 +139,6 @@
 [submodule "vendor/src/premailer"]
 	path = vendor/src/premailer
 	url = git://github.com/peterbe/premailer.git
-[submodule "apps/sumo/static/js/libs/ace"]
-	path = apps/sumo/static/js/libs/ace
+[submodule "kitsune/sumo/static/js/libs/ace"]
+	path = kitsune/sumo/static/js/libs/ace
 	url = git://github.com/ajaxorg/ace-builds.git

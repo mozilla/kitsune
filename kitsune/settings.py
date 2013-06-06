@@ -220,18 +220,18 @@ USE_I18N = True
 USE_L10N = True
 
 DB_LOCALIZE = {
-    'karma': {
+    'kitsune.karma': {
         'Title': {
             'attrs': ['name'],
             'comments': ['This is a karma title.'],
         }
     },
-    'products': {
+    'kitsune.products': {
         'Product': {
             'attrs': ['title', 'description'],
         }
     },
-    'topics': {
+    'kitsune.topics': {
         'Topic': {
             'attrs': ['title', 'description'],
         }
@@ -261,7 +261,7 @@ STATIC_URL = '/static/'
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-    'sumo.static_finders.WTFinder')
+    'kitsune.sumo.static_finders.WTFinder')
 
 # Paths that don't require a locale prefix.
 SUPPORTED_NONLOCALES = ('media', 'admin', 'robots.txt', 'services', '1',
@@ -285,7 +285,7 @@ JINGO_EXCLUDE_APPS = [
     'admin',
     'adminplus',
     'authority',
-    'kadmin',
+    'kitsune.kadmin',
     'waffle',
 ]
 
@@ -299,11 +299,11 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 
     'django.contrib.messages.context_processors.messages',
 
-    'sumo.context_processors.global_settings',
-    'sumo.context_processors.for_data',
-    'sumo.context_processors.i18n',
+    'kitsune.sumo.context_processors.global_settings',
+    'kitsune.sumo.context_processors.for_data',
+    'kitsune.sumo.context_processors.i18n',
     'jingo_minify.helpers.build_ids',
-    'messages.context_processors.unread_message_count',
+    'kitsune.messages.context_processors.unread_message_count',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -327,24 +327,24 @@ MIDDLEWARE_CLASSES = (
 
     # LocaleURLMiddleware must be before any middleware that uses
     # sumo.urlresolvers.reverse() to add locale prefixes to URLs:
-    'sumo.middleware.LocaleURLMiddleware',
+    'kitsune.sumo.middleware.LocaleURLMiddleware',
 
     # Mobile detection should happen in Zeus.
     'mobility.middleware.DetectMobileMiddleware',
     'mobility.middleware.XMobileMiddleware',
-    'sumo.middleware.MobileSwitchMiddleware',
+    'kitsune.sumo.middleware.MobileSwitchMiddleware',
 
-    'sumo.middleware.Forbidden403Middleware',
+    'kitsune.sumo.middleware.Forbidden403Middleware',
     'django.middleware.common.CommonMiddleware',
-    'sumo.middleware.RemoveSlashMiddleware',
-    'inproduct.middleware.EuBuildMiddleware',
-    'sumo.middleware.NoCacheHttpsMiddleware',
+    'kitsune.sumo.middleware.RemoveSlashMiddleware',
+    'kitsune.inproduct.middleware.EuBuildMiddleware',
+    'kitsune.sumo.middleware.NoCacheHttpsMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'sumo.anonymous.AnonymousIdentityMiddleware',
+    'kitsune.sumo.anonymous.AnonymousIdentityMiddleware',
     'session_csrf.CsrfMiddleware',
-    'twitter.middleware.SessionMiddleware',
-    'sumo.middleware.PlusToSpaceMiddleware',
+    'kitsune.twitter.middleware.SessionMiddleware',
+    'kitsune.sumo.middleware.PlusToSpaceMiddleware',
     'commonware.middleware.ScrubRequestOnException',
     'django_statsd.middleware.GraphiteRequestTimingMiddleware',
     'waffle.middleware.WaffleMiddleware',
@@ -366,7 +366,7 @@ GROUP_AVATAR_PATH = 'uploads/groupavatars/'
 ACCOUNT_ACTIVATION_DAYS = 30
 
 PASSWORD_HASHERS = (
-    'users.hashers.SHA256PasswordHasher',
+    'kitsune.users.hashers.SHA256PasswordHasher',
 )
 
 USERNAME_BLACKLIST = path('kitsune', 'configs', 'username-blacklist.txt')
@@ -377,7 +377,6 @@ TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates"
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
-    path('kitsune', 'templates'),
 )
 
 # TODO: Figure out why changing the order of apps (for example, moving
@@ -390,45 +389,45 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.admin',
-    'users',
+    'kitsune.users',
     'tower',
     'jingo_minify',
     'authority',
     'timezones',
     'waffle',
-    'access',
-    'sumo',
-    'search',
-    'forums',
+    'kitsune.access',
+    'kitsune.sumo',
+    'kitsune.search',
+    'kitsune.forums',
     'djcelery',
     'cronjobs',
     'tidings',
-    'activity',
-    'questions',
+    'kitsune.activity',
+    'kitsune.questions',
     'adminplus',
-    'kadmin',
+    'kitsune.kadmin',
     'taggit',
-    'flagit',
-    'upload',
+    'kitsune.flagit',
+    'kitsune.upload',
     'product_details',
-    'wiki',
-    'kbforums',
-    'dashboards',
-    'gallery',
-    'customercare',
-    'twitter',
-    'inproduct',
-    'postcrash',
-    'landings',
-    'announcements',
-    'messages',
+    'kitsune.wiki',
+    'kitsune.kbforums',
+    'kitsune.dashboards',
+    'kitsune.gallery',
+    'kitsune.customercare',
+    'kitsune.twitter',
+    'kitsune.inproduct',
+    'kitsune.postcrash',
+    'kitsune.landings',
+    'kitsune.announcements',
+    'kitsune.messages',
     'commonware.response.cookies',
-    'groups',
-    'karma',
-    'tags',
-    'kpi',
-    'products',
-    'topics',
+    'kitsune.groups',
+    'kitsune.karma',
+    'kitsune.tags',
+    'kitsune.kpi',
+    'kitsune.products',
+    'kitsune.topics',
 
     # App for Sentry:
     'raven.contrib.django',
@@ -478,18 +477,16 @@ tower_tmpl = 'tower.management.commands.extract.extract_tower_template'
 tower_python = 'tower.management.commands.extract.extract_tower_python'
 DOMAIN_METHODS = {
     'messages': [
-        ('apps/forums/**.py', 'ignore'),
-        ('apps/forums/**.html', 'ignore'),
-        ('apps/**/tests/**.py', 'ignore'),
-        ('apps/**/management/**.py', 'ignore'),
+        ('kitsune/forums/**.py', 'ignore'),
+        ('kitsune/forums/**.html', 'ignore'),
+        ('kitsune/**/tests/**.py', 'ignore'),
+        ('kitsune/**/management/**.py', 'ignore'),
 
-        ('apps/**.py', tower_python),
-        ('apps/**/templates/**.html', tower_tmpl),
-        ('templates/**.html', tower_tmpl),
+        ('kitsune/**.py', tower_python),
+        ('kitsune/**/templates/**.html', tower_tmpl),
     ],
     'lhtml': [
-        ('apps/forums/**.lhtml', 'ignore'),
-        ('apps/questions/**.lhtml', 'ignore'),
+        ('kitsune/forums/**.lhtml', 'ignore'),
 
         ('**/templates/**.lhtml', tower_tmpl)
     ],
@@ -498,9 +495,10 @@ DOMAIN_METHODS = {
     ],
     'javascript': [
         # We can't say **.js because that would dive into any libraries.
-        ('media/js/*-all.js', 'ignore'),
-        ('media/js/*-min.js', 'ignore'),
-        ('media/js/*.js', 'javascript'),
+        ('kitsune/**/static/js/*-all.js', 'ignore'),
+        ('kitsune/**/static/js/*-min.js', 'ignore'),
+
+        ('kitsune/**/static/js/*.js', 'javascript'),
     ],
 }
 
@@ -569,7 +567,7 @@ SEARCH_CACHE_PERIOD = 15
 MAX_FILENAME_LENGTH = 200
 MAX_FILEPATH_LENGTH = 250
 # Default storage engine - ours does not preserve filenames
-DEFAULT_FILE_STORAGE = 'upload.storage.RenameFileStorage'
+DEFAULT_FILE_STORAGE = 'kitsune.upload.storage.RenameFileStorage'
 
 # Auth and permissions related constants
 LOGIN_URL = '/users/login'
@@ -617,10 +615,10 @@ def read_only_mode(env):
     env['DATABASES']['default'] = env['DATABASES'][slave]
 
     # No sessions without the database, so disable auth.
-    env['AUTHENTICATION_BACKENDS'] = ('sumo.readonlyauth.ReadOnlyBackend',)
+    env['AUTHENTICATION_BACKENDS'] = ('kitsune.sumo.readonlyauth.ReadOnlyBackend',)
 
     # Add in the read-only middleware before csrf middleware.
-    extra = 'sumo.middleware.ReadOnlyMiddleware'
+    extra = 'kitsune.sumo.middleware.ReadOnlyMiddleware'
     before = 'session_csrf.CsrfMiddleware'
     m = list(env['MIDDLEWARE_CLASSES'])
     m.insert(m.index(before), extra)
@@ -696,8 +694,8 @@ TWITTER_ACCESS_TOKEN_SECRET = ''
 TIDINGS_FROM_ADDRESS = 'notifications@support.mozilla.org'
 # Anonymous watches must be confirmed.
 TIDINGS_CONFIRM_ANONYMOUS_WATCHES = True
-TIDINGS_MODEL_BASE = 'sumo.models.ModelBase'
-TIDINGS_REVERSE = 'sumo.urlresolvers.reverse'
+TIDINGS_MODEL_BASE = 'kitsune.sumo.models.ModelBase'
+TIDINGS_REVERSE = 'kitsune.sumo.urlresolvers.reverse'
 
 
 # Google Analytics settings.
