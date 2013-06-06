@@ -47,19 +47,15 @@ Running a Subset of Tests
 You can run part of the test suite by specifying the apps you want to run,
 like::
 
-    ./manage.py test wiki search kbforums
+    ./manage.py test kitsune/wiki kitsune/search kitsune/kbforums
 
 You can also specify modules::
 
-    ./manage.py test wiki.tests.test_views
+    ./manage.py test kitsune.wiki.tests.test_views
 
 You can specify specific tests::
 
-    ./manage.py test wiki.tests.test_views:VersionGroupTests.test_version_groups
-
-You can also exclude tests that match a regular expression with ``-e``::
-
-    ./manage.py test -e"search"
+    ./manage.py test kitsune.wiki.tests.test_views:VersionGroupTests.test_version_groups
 
 See the output of ``./manage.py test --help`` for more arguments.
 
