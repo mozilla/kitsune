@@ -46,7 +46,7 @@ class GroupHelperTests(TestCase):
         g.save()
         p = GroupProfile.objects.create(group=g, slug='foo')
         url = group_avatar(p)
-        eq_(settings.DEFAULT_AVATAR, url)
+        eq_(settings.STATIC_URL + settings.DEFAULT_AVATAR, url)
         p.avatar = Mock()
         p.avatar.url = '/foo/bar'
         url = group_avatar(p)

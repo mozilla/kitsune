@@ -21,10 +21,12 @@ class HelperTestCase(TestCase):
 
     def test_profile_avatar_default(self):
         profile(user=self.u)
-        eq_(settings.DEFAULT_AVATAR, profile_avatar(self.u))
+        eq_(settings.STATIC_URL + settings.DEFAULT_AVATAR,
+            profile_avatar(self.u))
 
     def test_profile_avatar_anonymous(self):
-        eq_(settings.DEFAULT_AVATAR, profile_avatar(AnonymousUser()))
+        eq_(settings.STATIC_URL + settings.DEFAULT_AVATAR,
+            profile_avatar(AnonymousUser()))
 
     def test_profile_avatar(self):
         profile(user=self.u, avatar='images/foo.png')

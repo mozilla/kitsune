@@ -13,7 +13,7 @@ def group_avatar(group_profile):
     if group_profile.avatar:
         return group_profile.avatar.url
     else:
-        return settings.DEFAULT_AVATAR
+        return settings.STATIC_URL + settings.DEFAULT_AVATAR
 
 
 @register.function

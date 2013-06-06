@@ -23,9 +23,9 @@ def profile_avatar(user):
     try:  # This is mostly for tests.
         profile = user.get_profile()
     except (Profile.DoesNotExist, AttributeError):
-        return settings.DEFAULT_AVATAR
+        return settings.STATIC_URL + settings.DEFAULT_AVATAR
     return (profile.avatar.url if profile and profile.avatar else
-            settings.DEFAULT_AVATAR)
+            settings.STATIC_URL + settings.DEFAULT_AVATAR)
 
 
 @register.function
