@@ -10,6 +10,8 @@ AOA_CONTRIBUTORS_METRIC_CODE = 'general aoa:contributors'
 SUPPORT_FORUM_CONTRIBUTORS_METRIC_CODE = 'general supportforum:contributors'
 KB_ENUS_CONTRIBUTORS_METRIC_CODE = 'general kb:en-US:contributors'
 KB_L10N_CONTRIBUTORS_METRIC_CODE = 'general kb:l10n:contributors'
+SEARCH_SEARCHES_METRIC_CODE = 'search clickthroughs:elastic:searches'
+SEARCH_CLICKS_METRIC_CODE = 'search clickthroughs:elastic:clicks'
 
 
 class MetricKind(ModelBase):

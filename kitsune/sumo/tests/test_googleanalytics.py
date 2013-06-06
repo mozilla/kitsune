@@ -74,6 +74,18 @@ class GoogleAnalyticsTests(TestCase):
         eq_(2, pageviews[2])
         eq_(11, pageviews[3])
 
+    @patch.object(googleanalytics, '_build_request')
+    def test_search_ctr(self, _build_request):
+        """Test googleanalytics.search_ctr()."""
+        execute = _build_request.return_value.get.return_value.execute
+        execute.return_value = SEARCH_CTR_RESPONSE
+
+        ctr = googleanalytics.search_ctr(
+            date(2013, 6, 6), date(2013, 6, 6))
+
+        eq_(1, len(ctr))
+        eq_(74.9, ctr['2013-06-06'])
+
 
 VISITORS_RESPONSE = {
     u'kind': u'analytics#gaData',
@@ -312,3 +324,33 @@ PAGEVIEWS_BY_QUESTION_RESPONSE = {
     u'selfLink': u'https://www.googleapis.com/analytics/v3/data/ga?ids=ga:65912487&dimensions=ga:pagePath&metrics=ga:pageviews&filters=ga:pagePathLevel2%3D%3D/questions/&start-date=2013-01-01&end-date=2013-01-02&start-index=1&max-results=10',
     u'totalResults': 10,
     u'totalsForAllResults': {u'ga:pageviews': u'242403'}}
+
+
+SEARCH_CTR_RESPONSE = {
+    u'kind': u'analytics#gaData',
+    u'rows': [[u'74.88925980111263']],  # <~ The number we are looking for.
+    u'containsSampledData': False,
+    u'profileInfo': {
+        u'webPropertyId': u'UA-36116321-2',
+        u'internalWebPropertyId': u'64136921',
+        u'tableId': u'ga:65912487',
+        u'profileId': u'65912487',
+        u'profileName': u'support.mozilla.org - Production Only',
+        u'accountId': u'36116321'},
+    u'itemsPerPage': 1000,
+    u'totalsForAllResults': {
+        u'ga:goal11ConversionRate': u'74.88925980111263'},
+    u'columnHeaders': [
+        {u'dataType': u'PERCENT',
+         u'columnType': u'METRIC',
+         u'name': u'ga:goal11ConversionRate'}],
+    u'query': {
+        u'max-results': 1000,
+        u'start-date': u'2013-06-06',
+        u'start-index': 1,
+        u'ids': u'ga:65912487',
+        u'metrics': [u'ga:goal11ConversionRate'],
+        u'end-date': u'2013-06-06'},
+    u'totalResults': 1,
+    u'id': u'https://www.googleapis.com/analytics/v3/data/ga?ids=ga:65912487&metrics=ga:goal11ConversionRate&start-date=2013-06-06&end-date=2013-06-06',
+    u'selfLink': u'https://www.googleapis.com/analytics/v3/data/ga?ids=ga:65912487&metrics=ga:goal11ConversionRate&start-date=2013-06-06&end-date=2013-06-06'}

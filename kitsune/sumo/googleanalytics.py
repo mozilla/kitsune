@@ -197,3 +197,30 @@ def pageviews_by_question(start_date, end_date):
             break
 
     return counts
+
+
+def search_ctr(start_date, end_date):
+    """Return search click through rate based on Goal 11 in google analytics.
+
+    Returns a dict with daily numbers:
+        {u'2012-01-22': 74.8,
+         u'2012-01-23': 73.6,
+         u'2012-01-24': 76.2,...}
+    """
+    ctr = {}
+    request = _build_request()
+    date = start_date
+    while date <= end_date:
+        date_str = str(date)
+        ctr_str = request.get(
+            ids='ga:' + profile_id,
+            start_date=date_str,
+            end_date=date_str,
+            metrics='ga:goal11ConversionRate').execute()['rows'][0][0]
+
+        # Round the number and convert to int
+        ctr[str(date)] = round(float(ctr_str), 1)
+
+        date += timedelta(days=1)
+
+    return ctr

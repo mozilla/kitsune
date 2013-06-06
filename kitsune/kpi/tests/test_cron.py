@@ -5,8 +5,11 @@ from nose.tools import eq_
 
 import kitsune.kpi.cron
 from kitsune.kpi.cron import (
-    update_visitors_metric, update_l10n_metric, googleanalytics)
-from kitsune.kpi.models import Metric, VISITORS_METRIC_CODE, L10N_METRIC_CODE
+    update_visitors_metric, update_l10n_metric, googleanalytics,
+    update_search_ctr_metric)
+from kitsune.kpi.models import (Metric, VISITORS_METRIC_CODE,
+                                L10N_METRIC_CODE, SEARCH_CLICKS_METRIC_CODE,
+                                SEARCH_SEARCHES_METRIC_CODE)
 from kitsune.kpi.tests import metric_kind
 from kitsune.sumo.tests import TestCase
 from kitsune.wiki.config import (
@@ -130,3 +133,20 @@ class CronJobTests(TestCase):
         metrics = Metric.objects.filter(kind=l10n_kind)
         eq_(1, len(metrics))
         eq_(50, metrics[0].value)
+
+    @patch.object(googleanalytics, 'search_ctr')
+    def test_update_search_ctr(self, search_ctr):
+        """Verify the cron job inserts the right rows."""
+        clicks_kind = metric_kind(code=SEARCH_CLICKS_METRIC_CODE, save=True)
+        metric_kind(code=SEARCH_SEARCHES_METRIC_CODE, save=True)
+        search_ctr.return_value = {'2013-06-06': 42.1,
+                                   '2013-06-07': 13.7,
+                                   '2013-06-08': 99.5}
+
+        update_search_ctr_metric()
+
+        metrics = Metric.objects.filter(kind=clicks_kind).order_by('start')
+        eq_(3, len(metrics))
+        eq_(421, metrics[0].value)
+        eq_(137, metrics[1].value)
+        eq_(date(2013, 6, 8), metrics[2].start)
