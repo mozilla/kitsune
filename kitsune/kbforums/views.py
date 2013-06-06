@@ -17,11 +17,11 @@ from kitsune.kbforums.feeds import ThreadsFeed, PostsFeed
 from kitsune.kbforums.forms import (ReplyForm, NewThreadForm,
                             EditThreadForm, EditPostForm)
 from kitsune.kbforums.models import Thread, Post
+from kitsune.lib.sumo_locales import LOCALES
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import paginate, get_next_url, user_or_ip
 from kitsune.users.models import Setting
 from kitsune.wiki.models import Document
-from sumo_locales import LOCALES
 
 
 log = logging.getLogger('k.kbforums')

@@ -8,11 +8,11 @@ from tower import ugettext_lazy as _lazy
 
 from kitsune import  search as constants
 from kitsune.forums.models import Forum as DiscussionForum
+from kitsune.lib.sumo_locales import LOCALES
 from kitsune.products.models import Product
 from kitsune.sumo.form_fields import TypedMultipleChoiceField
 from kitsune.topics.models import Topic
 from kitsune.wiki.config import CATEGORIES
-from sumo_locales import LOCALES
 
 
 SEARCH_LANGUAGES = [(k, LOCALES[k].native) for

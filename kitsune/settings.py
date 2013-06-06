@@ -5,7 +5,7 @@ import os
 import platform
 
 from bundles import MINIFY_BUNDLES
-from sumo_locales import LOCALES
+from kitsune.lib.sumo_locales import LOCALES
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG

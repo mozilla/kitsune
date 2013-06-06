@@ -6,12 +6,12 @@ from django.utils.datastructures import SortedDict
 from kitsune.announcements.models import Announcement
 from kitsune.announcements.forms import AnnouncementForm
 from kitsune.dashboards import ACTIONS_PER_PAGE
+from kitsune.lib.sumo_locales import LOCALES
 from kitsune.products.models import Product
 from kitsune.sumo.utils import paginate
 from kitsune.wiki.events import (
     ApproveRevisionInLocaleEvent, ReadyRevisionEvent,
     ReviewableRevisionInLocaleEvent)
-from sumo_locales import LOCALES
 
 
 def model_actions(model_class, request):

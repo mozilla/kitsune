@@ -5,9 +5,10 @@ from django.core.exceptions import ValidationError
 from tower import ugettext_lazy as _lazy, ugettext as _
 
 from kitsune.gallery.models import Image, Video
+from kitsune.lib.sumo_locales import LOCALES
 from kitsune.sumo.form_fields import StrippedCharField
 from kitsune.upload.forms import clean_image_extension
-from sumo_locales import LOCALES
+
 
 # Error messages
 MSG_TITLE_REQUIRED = _lazy(u'Please provide a title.')

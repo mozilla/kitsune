@@ -16,7 +16,7 @@ from timezones.fields import TimeZoneField
 from tower import ugettext as _
 from tower import ugettext_lazy as _lazy
 
-from countries import COUNTRIES
+from kitsune.lib.countries import COUNTRIES
 from kitsune.sumo import email_utils
 from kitsune.sumo.models import ModelBase, LocaleField
 from kitsune.sumo.urlresolvers import reverse

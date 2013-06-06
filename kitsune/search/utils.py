@@ -6,7 +6,7 @@ from django.conf import settings
 
 import bleach
 
-from sumo_locales import LOCALES
+from kitsune.lib.sumo_locales import LOCALES
 
 
 call = lambda x: subprocess.Popen(x, stdout=subprocess.PIPE).communicate()
