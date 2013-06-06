@@ -10,11 +10,11 @@ from django.db import connection, transaction
 import cronjobs
 
 from kitsune.questions.models import (
-    Question, QuestionVote, QuestionMappingType, QuestionVisits)
-from kitsune.questions.tasks import update_question_vote_chunk
+    Question, QuestionMappingType, QuestionVisits)
+from kitsune.questions.tasks import (
+    update_all_question_votes as update_question_votes_task)
 from kitsune.search.es_utils import ES_EXCEPTIONS, get_documents
 from kitsune.search.tasks import index_task
-from kitsune.sumo.utils import chunked
 
 
 log = logging.getLogger('k.cron')
@@ -24,24 +24,7 @@ log = logging.getLogger('k.cron')
 def update_weekly_votes():
     """Keep the num_votes_past_week value accurate."""
 
-    # Get all questions (id) with a vote in the last week.
-    recent = datetime.now() - timedelta(days=7)
-    q = QuestionVote.objects.filter(created__gte=recent)
-    q = q.values_list('question_id', flat=True).order_by('question')
-    q = q.distinct()
-    q_with_recent_votes = list(q)
-
-    # Get all questions with num_votes_past_week > 0
-    q = Question.objects.filter(num_votes_past_week__gt=0)
-    q = q.values_list('id', flat=True)
-    q_with_nonzero_votes = list(q)
-
-    # Union.
-    qs_to_update = list(set(q_with_recent_votes + q_with_nonzero_votes))
-
-    # Chunk them for tasks.
-    for chunk in chunked(qs_to_update, 50):
-        update_question_vote_chunk.apply_async(args=[chunk])
+    update_question_votes_task.delay()
 
 
 # TODO: remove this and use the karma top list.

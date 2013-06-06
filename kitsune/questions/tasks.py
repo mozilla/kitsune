@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime, timedelta
 
 from django.conf import settings
 from django.db import connection, transaction
@@ -38,30 +39,53 @@ def update_question_votes(question_id):
 
 
 @task(rate_limit='4/s')
-def update_question_vote_chunk(data):
-    """Update num_votes_past_week for a number of questions."""
+def update_all_question_votes():
+    """Update num_votes_past_week."""
 
-    # First we recalculate num_votes_past_week in the db.
-    log.info('Calculating past week votes for %s questions.' % len(data))
-
-    ids = ','.join(map(str, data))
+    # Query provided by :cyborgshadow. See
+    # https://bugzilla.mozilla.org/show_bug.cgi?id=880344
     sql = """
         UPDATE questions_question q
-        SET num_votes_past_week = (
-            SELECT COUNT(created)
-            FROM questions_questionvote qv
-            WHERE qv.question_id = q.id
-            AND qv.created >= DATE(SUBDATE(NOW(), 7))
-        )
-        WHERE q.id IN (%s);
-        """ % ids
+            LEFT JOIN (
+                SELECT q.id, COUNT(qv.created) votes
+                FROM questions_question q
+                INNER JOIN questions_questionvote qv
+                ON q.id = qv.question_id
+                AND qv.created >= CURDATE() - INTERVAL 7 day
+                GROUP  BY q.id) qv
+            ON q.id = qv.id
+        SET q.num_votes_past_week = IF(qv.votes > 0, qv.votes, 0);
+        """
     cursor = connection.cursor()
     cursor.execute(sql)
     transaction.commit_unless_managed()
 
     # Next we update our index with the changes we made directly in
     # the db.
-    if data and settings.ES_LIVE_INDEXING:
+    if settings.ES_LIVE_INDEXING:
+        # Figure out the questions that need to be reindexed...
+        from kitsune.questions.models import Question, QuestionVote
+
+        # Get all questions (id) with a vote in the last week.
+        recent = datetime.now() - timedelta(days=7)
+        q = QuestionVote.objects.filter(created__gte=recent)
+        q = q.values_list('question_id', flat=True).order_by('question')
+        q = q.distinct()
+        q_with_recent_votes = list(q)
+
+        # Get all questions with num_votes_past_week > 0
+        q = Question.objects.filter(num_votes_past_week__gt=0)
+        q = q.values_list('id', flat=True)
+        q_with_nonzero_votes = list(q)
+
+        # Union them!
+        qs_to_update = list(set(q_with_recent_votes + q_with_nonzero_votes))
+        ids = ','.join(map(str, qs_to_update))
+
+        # First we recalculate num_votes_past_week in the db.
+        log.info('Reindexing %s questions for vote counts.' %
+                 len(qs_to_update))
+
         # Get the data we just updated from the database.
         sql = """
             SELECT id, num_votes_past_week
@@ -79,7 +103,7 @@ def update_question_vote_chunk(data):
             # Fetch all the documents we need to update.
             from kitsune.questions.models import QuestionMappingType
             from kitsune.search import es_utils
-            es_docs = es_utils.get_documents(QuestionMappingType, data)
+            es_docs = es_utils.get_documents(QuestionMappingType, qs_to_update)
 
             # For each document, update the data and stick it back in the
             # index.
