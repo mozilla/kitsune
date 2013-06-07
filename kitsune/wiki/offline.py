@@ -7,6 +7,7 @@ from django.http import HttpResponse, HttpResponseBadRequest
 
 from kitsune.products.models import Product
 from kitsune.sumo.parser import _get_wiki_link
+from kitsune.wiki.config import CATEGORIES
 from kitsune.wiki.models import Document
 from kitsune.wiki.parser import WikiParser as WParser
 
@@ -115,7 +116,9 @@ def bundle_for_product(product, locale):
     bundle['docs'] = docs_bundle = {}
 
     docs = Document.objects.filter(products__id=product.id, locale=locale,
-                                   is_archived=False, is_template=False)
+                                   is_archived=False, is_template=False,
+                                   category__in=(CATEGORIES[0][0],
+                                                 CATEGORIES[1][0]))
 
     for doc in docs:
         if not doc.current_revision or not doc.html:
