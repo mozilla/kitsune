@@ -9,14 +9,15 @@
 
   <p>{{ _('{answerer} wrote:')|f(answerer=answerer) }}</p>
 
-  {{ answer_html }}
+  <div class="quote">{{ answer_html }}</div>
 
   <p><a href="https://{{ host }}{{ answer_url }}">{{ _('See the answer.') }}</a></p>
 
   <p>
     {% trans %}
       If this answer solves your problem, please
-      <a href="https://{{ host }}{{ solution_url }}">mark it as "solved"</a>.
+      <br/><br/>
+      <a class="button" style="width: 200px;" href="https://{{ host }}{{ solution_url }}">Mark it as solved</a>
     {% endtrans %}
   </p>
 
