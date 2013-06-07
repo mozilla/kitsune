@@ -142,3 +142,12 @@
 [submodule "kitsune/sumo/static/js/libs/ace"]
 	path = kitsune/sumo/static/js/libs/ace
 	url = git://github.com/ajaxorg/ace-builds.git
+[submodule "vendor/src/twython"]
+	path = vendor/src/twython
+	url = https://github.com/ryanmcgrath/twython.git
+[submodule "vendor/src/requests-oauthlib"]
+	path = vendor/src/requests-oauthlib
+	url = https://github.com/requests/requests-oauthlib.git
+[submodule "vendor/src/oauthlib"]
+	path = vendor/src/oauthlib
+	url = https://github.com/idan/oauthlib.git

@@ -86,3 +86,6 @@ src/django-statsd
 src/pyelasticsearch
 src/requests
 src/premailer
+src/oauthlib
+src/requests-oauthlib
+src/twython

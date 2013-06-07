@@ -25,14 +25,15 @@ class TwitterCronTestCase(TestCase):
             "http://a3.twimg.com/profile_images/688562959/"
             "jspeis_gmail.com_852af0c8__1__normal.jpg"),
         "created_at": "Mon, 25 Oct 2010 18:12:20 +0000",
-        "from_user": "jspeis",
+        "user": {
+            "screen_name": "jspeis",
+        },
         "metadata": {
             "result_type": "recent",
         },
         "to_user_id": None,
         "text": "giving the Firefox 4 beta a whirl",
         "id": 28713868836,
-        "from_user_id": 2385258,
         "geo": None,
         "iso_language_code": "en",
         "source": "&lt;a href=&quot;http://twitter.com/&quot;&gt;web&lt;/a&gt;"
@@ -93,11 +94,11 @@ class TwitterCronTestCase(TestCase):
 
     def test_fx4status(self):
         """Ensure fx4status tweets are filtered out."""
-        self.tweet['from_user'] = 'fx4status'
+        self.tweet['user']['screen_name'] = 'fx4status'
         assert _filter_tweet(self.tweet) is None
 
     def test_username_and_tweet_contain_firefox(self):
-        self.tweet['from_user'] = 'ilovefirefox4ever'
+        self.tweet['user']['screen_name'] = 'ilovefirefox4ever'
         self.tweet['text'] = 'My Firefox crashes :-( Any advice?'
         assert _filter_tweet(self.tweet) is not None
 
