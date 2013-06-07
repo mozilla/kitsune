@@ -93,7 +93,8 @@ def serialize_document_for_offline(doc):
         'html': doc.html,
         #'html': wiki_to_html(doc.current_revision.content, locale=doc.locale, doc_id=doc.id),
         'updated': int(time.mktime(doc.current_revision.created.timetuple())),
-        'slug': doc.slug
+        'slug': doc.slug,
+        'redirect': doc.redirect_url()
     }
 
 
@@ -220,3 +221,4 @@ def get_languages(request):
     data = json.dumps({'languages': settings.LANGUAGE_CHOICES})
 
     return HttpResponse(data, mimetype='application/json')
+
