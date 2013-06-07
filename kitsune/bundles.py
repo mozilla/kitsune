@@ -122,7 +122,8 @@ MINIFY_BUNDLES = {
         'common': (
             'js/i18n.js',
             'js/libs/underscore.js',
-            'js/libs/jquery-1.7.1.min.js',
+            'js/libs/jquery-1.10.1.min.js',
+            'js/libs/jquery-migrate.js',
             'js/libs/jquery.cookie.js',
             'js/libs/jquery.placeholder.js',
             'js/browserdetect.js',
@@ -137,7 +138,8 @@ MINIFY_BUNDLES = {
         'mobile/common': (
             'js/i18n.js',
             'js/libs/underscore.js',
-            'js/libs/jquery-1.8.2.min.js',
+            'js/libs/jquery-1.10.1.min.js',
+            'js/libs/jquery-migrate.js',
             'js/libs/modernizr-2.6.1.js',
             'js/browserdetect.js',
             'js/aaq.js',
