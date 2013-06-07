@@ -1,26 +1,19 @@
-import colorsys
-import json
 import logging
-import math
 
 from django.conf import settings
-from django.contrib.auth.models import Group
 from django.http import Http404, HttpResponseRedirect, HttpResponse
 from django.shortcuts import get_object_or_404, render
 from django.views.decorators.http import require_GET
 
 from tower import ugettext as _
 
-from kitsune.access.decorators import login_required
 from kitsune.announcements.views import user_can_announce
-from kitsune.dashboards.personal import GROUP_DASHBOARDS, personal_dashboards
 from kitsune.dashboards.readouts import (
     overview_rows, READOUTS, L10N_READOUTS, CONTRIBUTOR_READOUTS)
 from kitsune.dashboards.utils import render_readouts
 from kitsune.products.models import Product
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import smart_int
-from kitsune.users.helpers import profile_url
 from kitsune.wiki.models import Locale
 
 
@@ -87,8 +80,9 @@ def localization(request):
     product = _get_product(request)
 
     data = {
-      'overview_rows': overview_rows(request.LANGUAGE_CODE, product=product),
-      'user_can_announce': permission
+        'overview_rows': overview_rows(
+            request.LANGUAGE_CODE, product=product),
+        'user_can_announce': permission,
     }
     return render_readouts(request, L10N_READOUTS, 'localization.html',
                            extra_data=data, product=product)
@@ -118,30 +112,6 @@ def wiki_rows(request, readout_slug):
                           product=product)
     max_rows = smart_int(request.GET.get('max'), fallback=None)
     return HttpResponse(readout.render(max_rows=max_rows))
-
-
-@require_GET
-@login_required
-def group_dashboard(request, group_id):
-    try:
-        group = request.user.groups.get(pk=group_id)
-    except Group.DoesNotExist:
-        raise Http404
-
-    return GROUP_DASHBOARDS[group.dashboard.dashboard](
-        request, group.id, group.dashboard.parameters).render()
-
-
-@require_GET
-@login_required
-def default_dashboard(request):
-    dashboards = personal_dashboards(request)
-    if len(dashboards) > 0:
-      # Redirect to the first dashboard
-      return HttpResponseRedirect(dashboards[0].get_absolute_url())
-    else:
-      # Redirect to the profile page
-      return HttpResponseRedirect(profile_url(request.user))
 
 
 def _get_product(request):

@@ -1,24 +1,14 @@
 from django.conf import settings
-from django.contrib.contenttypes.models import ContentType
 from django.shortcuts import render
 from django.utils.datastructures import SortedDict
 
 from kitsune.announcements.models import Announcement
 from kitsune.announcements.forms import AnnouncementForm
-from kitsune.dashboards import ACTIONS_PER_PAGE
 from kitsune.lib.sumo_locales import LOCALES
 from kitsune.products.models import Product
-from kitsune.sumo.utils import paginate
 from kitsune.wiki.events import (
     ApproveRevisionInLocaleEvent, ReadyRevisionEvent,
     ReviewableRevisionInLocaleEvent)
-
-
-def model_actions(model_class, request):
-    """Returns paginated actions for the given model."""
-    ct = ContentType.objects.get_for_model(model_class)
-    actions = request.user.action_inbox.filter(content_type=ct)
-    return paginate(request, actions, per_page=ACTIONS_PER_PAGE)
 
 
 def render_readouts(request, readouts, template, locale=None, extra_data=None,

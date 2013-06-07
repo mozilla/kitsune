@@ -30,7 +30,6 @@
         <ul>
           <li><a href="{{ profile_url(user) }}">{{ _('View Profile') }}</a></li>
           <li><a href="{{ profile_url(user, edit=True) }}">{{ _('Edit Profile') }}</a></li>
-          <li><a href="{{ url('dashboards.default') }}">{{ _('Dashboard') }}</a></li>
           <li><a href="{{ url('users.edit_settings') }}">{{ _('Settings') }}</a></li>
           <li><a href="{{ url('users.logout') }}" class="sign-out">{{ _('Sign Out') }}</a></li>
         </ul>

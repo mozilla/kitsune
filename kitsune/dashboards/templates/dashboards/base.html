@@ -10,13 +10,12 @@
     <article id="{{ dashboard_id }}" class="dashboards">
       <h1>{{ title }}</h1>
       {% block dashboard_content %}
-
       {% endblock %}
     </article>
   </div>
 {% endblock %}
 
 {% block side_top %}
-  {{ personal_dashboard_tabs(active_tab) }}
+  {% include 'dashboards/includes/personal_tabs.html' %}
   {{ for_contributors_sidebar(user, settings.WIKI_DEFAULT_LANGUAGE) }}
 {% endblock %}

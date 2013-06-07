@@ -1,14 +1,8 @@
-import mock
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 
-from django.contrib.sites.models import Site
-
-from kitsune.announcements.tests import announcement
-from kitsune.dashboards.tests import group_dashboard
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.users.tests import user, group, profile
 from kitsune.wiki.config import MAJOR_SIGNIFICANCE, MEDIUM_SIGNIFICANCE
 from kitsune.wiki.tests import revision, translated_revision
 
@@ -91,56 +85,3 @@ class LocalizationDashTests(TestCase):
                                            args=['untranslated'],
                                            locale='de'))
         self.assertContains(response, untranslated.document.title)
-
-
-class GroupLocaleDashTests(TestCase):
-
-    def setUp(self):
-        super(GroupLocaleDashTests, self).setUp()
-        self.g = group(save=True, name='A group')
-        # defaults to a 'de' localization dashboard
-        group_dashboard(group=self.g, save=True)
-
-    def test_anonymous_user(self):
-        """Checks the locale dashboard doesn't load for an anonymous user."""
-        response = self.client.get(reverse('dashboards.group',
-                                           args=[self.g.pk], locale='en-US'))
-        eq_(302, response.status_code)
-        assert '/users/login' in response['location']
-
-    def test_for_user_not_in_group(self):
-        """Checks the locale dashboard doesn't load for user not in group."""
-        user(username='test', save=True)
-        self.client.login(username='test', password='testpass')
-        response = self.client.get(reverse('dashboards.group',
-                                           args=[self.g.pk], locale='en-US'))
-        eq_(404, response.status_code)
-
-    @mock.patch.object(Site.objects, 'get_current')
-    def test_for_user_active(self, get_current):
-        """Checks the locale dashboard loads for a user associated with it.
-        """
-        get_current.return_value.domain = 'testserver'
-        # Create user/group and add user to group.
-        u = user(username='test', save=True)
-        u.groups.add(self.g)
-        profile(user=u)
-        # Create site-wide and group announcements and dashboard.
-        announcement().save()
-        content = 'stardate 12341'
-        announcement(group=self.g, content=content).save()
-
-        # Log in and check response.
-        self.client.login(username='test', password='testpass')
-        response = self.client.get(reverse('dashboards.group',
-                                           args=[self.g.pk]), follow=True)
-        eq_(200, response.status_code)
-        doc = pq(response.content)
-        # The locale dash tab shows up.
-        eq_(4, len(doc('#user-nav li')))
-        # The locale dash tabs shows up and is active
-        eq_(u'A group', doc('#user-nav li.selected').text())
-        # The subtitle shows French.
-        eq_(u'Deutsch', doc('article h2.subtitle').text())
-        # The correct announcement shows up.
-        self.assertContains(response, content)

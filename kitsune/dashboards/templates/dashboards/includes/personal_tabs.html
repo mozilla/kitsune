@@ -10,9 +10,4 @@
       <a href="{{ url('users.edit_settings') }}">{{ _('Edit settings') }}</a>
     </li>
   {% endif %}
-  {% for dash in dashboards %}
-    <li{% if dash.group.id == active_tab %} class="selected"{% endif %}>
-      <a href="{{ dash.get_absolute_url() }}">{{ _(dash.group.name) }}</a>
-    </li>
-  {% endfor %}
 </ul>

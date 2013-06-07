@@ -81,7 +81,6 @@
         ({{ unread_message_count }})
       {% endif %}
     </a>
-    <a href="{{ url('dashboards.default') }}">{{ _('Dashboard') }}</a>
     <a href="{{ url('users.edit_settings') }}">{{ _('Settings') }}</a>
     <a href="{{ url('users.logout') }}" class="sign-out">{{ _('Sign Out') }}</a>
   {% else %}

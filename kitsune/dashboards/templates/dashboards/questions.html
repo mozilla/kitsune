@@ -1,9 +1,0 @@
-{% extends "dashboards/base.html" %}
-{% set title = _('Support Forum Dashboard') %}
-{% set dashboard_id = 'questions-dashboard' %}
-{% set crumbs = [(None, title)] %}
-
-{% block dashboard_content %}
-  {% include 'dashboards/includes/announcement_list.html' %}
-  {% include 'dashboards/includes/action_list.html' %}
-{% endblock %}

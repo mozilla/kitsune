@@ -1,7 +1,6 @@
 from tower import ugettext_lazy as _lazy
 
 
-ACTIONS_PER_PAGE = 20
 # Report time period enumerations:
 LAST_7_DAYS = 0
 ALL_TIME = 1
