@@ -82,7 +82,6 @@ def update_all_question_votes():
         qs_to_update = list(set(q_with_recent_votes + q_with_nonzero_votes))
         ids = ','.join(map(str, qs_to_update))
 
-        # First we recalculate num_votes_past_week in the db.
         log.info('Reindexing %s questions for vote counts.' %
                  len(qs_to_update))
 
