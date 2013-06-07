@@ -21,7 +21,6 @@ from statsd import statsd
 from taggit.models import Tag, TaggedItem
 
 from kitsune import questions as constants
-from kitsune.activity.models import ActionMixin
 from kitsune.flagit.models import FlaggedObject
 from kitsune.karma.manager import KarmaManager
 from kitsune.products.models import Product
@@ -573,7 +572,7 @@ class QuestionVisits(ModelBase):
                         ' so I kept what I had.')
 
 
-class Answer(ActionMixin, ModelBase):
+class Answer(ModelBase):
     """An answer to a support question."""
     question = models.ForeignKey('Question', related_name='answers')
     creator = models.ForeignKey(User, related_name='answers')

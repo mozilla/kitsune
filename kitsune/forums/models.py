@@ -8,7 +8,6 @@ from tidings.models import NotificationsMixin
 
 from kitsune import forums
 from kitsune.access import has_perm, perm_is_defined_on
-from kitsune.activity.models import ActionMixin
 from kitsune.sumo.helpers import urlparams, wiki_to_html
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.models import ModelBase
@@ -278,7 +277,7 @@ class ThreadMappingType(SearchMappingType):
 register_for_indexing('forums', Thread)
 
 
-class Post(ActionMixin, ModelBase):
+class Post(ModelBase):
     thread = models.ForeignKey('Thread')
     content = models.TextField()
     author = models.ForeignKey(User)

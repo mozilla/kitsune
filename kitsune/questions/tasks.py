@@ -7,7 +7,6 @@ from celery.task import task
 from multidb.pinning import pin_this_thread, unpin_this_thread
 from statsd import statsd
 
-from kitsune.activity.models import Action
 from kitsune.questions import ANSWERS_PER_PAGE
 from kitsune.questions.karma_actions import AnswerAction, FirstAnswerAction
 from kitsune.search.es_utils import ES_EXCEPTIONS
@@ -112,29 +111,6 @@ def update_answer_pages(question):
 @task
 def log_answer(answer):
     pin_this_thread()
-
-    creator = answer.creator
-    created = answer.created
-    question = answer.question
-    users = [
-        a.creator
-        for a in question.answers.select_related('creator').exclude(
-            creator=creator)
-        ]
-    if question.creator != creator:
-        users += [question.creator]
-    users = set(users)  # Remove duplicates.
-
-    if users:
-        action = Action.objects.create(
-            creator=creator,
-            created=created,
-            url=answer.get_absolute_url(),
-            content_object=answer,
-            formatter_cls='questions.formatters.AnswerFormatter')
-        action.users.add(*users)
-
-    transaction.commit_unless_managed()
 
     # Record karma actions
     AnswerAction(answer.creator, answer.created.date()).save()

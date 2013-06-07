@@ -3,7 +3,6 @@ from django.db.models.signals import post_save
 
 from nose.tools import eq_
 
-from kitsune.activity.models import Action
 from kitsune.questions.models import (
     Question, QuestionVote, send_vote_update_task, Answer)
 from kitsune.questions.tasks import update_question_vote_chunk
@@ -41,24 +40,3 @@ class QuestionVoteTestCase(TestCase):
         update_question_vote_chunk([q.pk for q in q1])
         q3 = Question.uncached.all().order_by('-num_votes_past_week')
         eq_(2, q3[0].pk)
-
-
-class AnswerLogTests(TestCase):
-    fixtures = ['users.json']
-
-    def setUp(self):
-        super(AnswerLogTests, self).setUp()
-        Action.objects.all().delete()
-
-    def test_answer_logged(self):
-        assert not Action.uncached.exists(), 'Actions start empty.'
-        orig, replier = User.objects.all()[0:2]
-        q = Question.objects.create(creator=orig, title='foo', content='bar')
-        assert not Action.uncached.exists(), 'No actions after question.'
-
-        Answer.objects.create(question=q, creator=replier, content='baz')
-        eq_(1, Action.uncached.count())
-
-        act = Action.uncached.all()[0]
-        assert orig in act.users.all()
-        assert not replier in act.users.all()

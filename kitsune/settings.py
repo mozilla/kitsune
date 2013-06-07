@@ -409,7 +409,6 @@ INSTALLED_APPS = (
     'djcelery',
     'cronjobs',
     'tidings',
-    'kitsune.activity',
     'kitsune.questions',
     'adminplus',
     'kitsune.kadmin',
