@@ -1,4 +1,5 @@
 @import '../variables.less';
+@import '../vendors.less';
 
 .topic-icon {
   background-position: 50% 50%;
@@ -36,26 +37,27 @@
     position: relative;
 
     > li {
-      &:after {
-        background: @iconsSprite -50px -514px no-repeat;
-        bottom: 8px;
-        content: '';
-        height: 16px;
-        position: absolute;
-        right: 8px;
-        width: 16px;
-      }
-
       > a,
       > a:visited {
         color: @textGrey;
         display: block;
+        position: relative;
 
         .title {
           display: block;
           font-family: @OpenSansLight;
           font-size: 16px;
           margin-left: 86px;
+
+          &:after {
+            background: @iconsSprite -50px -514px no-repeat;
+            bottom: 8px;
+            content: '';
+            height: 16px;
+            position: absolute;
+            right: 8px;
+            width: 16px;
+          }
         }
 
         .topic-icon {
