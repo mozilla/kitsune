@@ -40,7 +40,7 @@ def collect_tweets():
 
         search_options = {
             'q': 'firefox OR #fxinput OR @firefoxbrasil OR #firefoxos',
-            'rpp': settings.CC_TWEETS_PERPAGE,  # Items per page.
+            'count': settings.CC_TWEETS_PERPAGE,  # Items per page.
             'result_type': 'recent',  # Retrieve tweets by date.
         }
 

@@ -45,13 +45,20 @@ def _tweet_for_template(tweet, https=False):
     else:
         replies = None
 
-    if https:
-        img = bleach.clean(data['profile_image_url_https'])
+    if 'from_user' in data: #For tweets collected using v1 API
+        user_data = data
+        from_user = data['from_user']
     else:
-        img = bleach.clean(data['profile_image_url'])
+        user_data = data['user']
+        from_user = user_data['screen_name']
+
+    if https:
+        img = bleach.clean(user_data['profile_image_url_https'])
+    else:
+        img = bleach.clean(user_data['profile_image_url'])
 
     return {'profile_img': img,
-            'user': bleach.clean(data['from_user']),
+            'user': from_user,
             'text': bleach.clean(data['text']),
             'id': tweet.pk,
             'date': date,

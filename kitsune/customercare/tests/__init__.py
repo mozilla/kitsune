@@ -25,7 +25,7 @@ def tweet(**kwargs):
         '"http://a1.twimg.com/profile_images/1117809237/cool_cat_normal.jpg", '
         '"source": "&lt;a href=&quot;http://www.tweetdeck.com&quot; '
             'rel=&quot;nofollow&quot;&gt;TweetDeck&lt;/a&gt;", '
-            '"from_user": "__jimcasey__", "from_user_id": 142651388, '
+            '"user": {"screen_name": "__jimcasey__"}, '
             '"to_user_id": null, "geo": null, "id": 25309168521, '
             '"metadata": {"result_type": "recent"}}' %
             (kwargs.pop('text', 'Hey #Firefox'), tweet_created)}
@@ -59,8 +59,9 @@ def reply(**kwargs):
                 'http://si0.twimg.com/profile_images/1117809237/cool_cat_normal.jpg',
             'source': '&lt;a href=&quot;http://www.tweetdeck.com&quot; '
                 'rel=&quot;nofollow&quot;&gt;TweetDeck&lt;/a&gt;',
-            'from_user': '__jimcasey__',
-            'from_user_id': 142651388,
+            'user': {
+                'screen_name': '__jimcasey__',
+            },
             'to_user_id': None,
             'geo': None,
             'id': 25309168521,
