@@ -9,10 +9,9 @@ from django.conf import settings
 from django.db.utils import IntegrityError
 
 import cronjobs
-import tweepy
 from multidb.pinning import pin_this_thread
 from statsd import statsd
-from tweepy.parsers import RawParser
+from twython import Twython
 
 from kitsune.customercare.models import Tweet, Reply
 from kitsune.sumo.redis_utils import redis_client, RedisError
@@ -34,14 +33,10 @@ log = logging.getLogger('k.twitter')
 def collect_tweets():
     """Collect new tweets about Firefox."""
     with statsd.timer('customercare.tweets.time_elapsed'):
-        auth = tweepy.OAuthHandler(settings.TWITTER_CONSUMER_KEY,
-                                   settings.TWITTER_CONSUMER_SECRET,
-                                   secure=True)
-
-        auth.set_access_token(settings.TWITTER_ACCESS_TOKEN,
-                              settings.TWITTER_ACCESS_TOKEN_SECRET)
-
-        api = tweepy.API(auth, parser=RawParser())
+        t = Twython(settings.TWITTER_CONSUMER_KEY,
+                    settings.TWITTER_CONSUMER_SECRET,
+                    settings.TWITTER_ACCESS_TOKEN,
+                    settings.TWITTER_ACCESS_TOKEN_SECRET)
 
         search_options = {
             'q': 'firefox OR #fxinput OR @firefoxbrasil OR #firefoxos',
@@ -54,25 +49,21 @@ def collect_tweets():
         try:
             latest_tweet = Tweet.latest()
         except Tweet.DoesNotExist:
-            log.debug('No existing tweets. Retrieving %d tweets from search.' % (
-                settings.CC_TWEETS_PERPAGE))
+            log.debug('No existing tweets. Retrieving %d tweets from search.' %
+                      settings.CC_TWEETS_PERPAGE)
         else:
             search_options['since_id'] = latest_tweet.tweet_id
             log.info('Retrieving tweets with id >= %s' % latest_tweet.tweet_id)
 
         # Retrieve Tweets
-        try:
-            raw_data = json.loads(str(api.search(**search_options)))
-        except tweepy.TweepError, e:
-            log.warning('Twitter request failed: %s' % e)
-            return
+        results = t.search(**search_options)
 
-        if not ('results' in raw_data and raw_data['results']):
+        if len(results['statuses']) == 0:
             # Twitter returned 0 results.
             return
 
         # Drop tweets into DB
-        for item in raw_data['results']:
+        for item in results['statuses']:
             # Apply filters to tweet before saving
             # Allow links in #fxinput tweets
             statsd.incr('customercare.tweet.collected')
@@ -162,7 +153,7 @@ def _filter_tweet(item, allow_links=False):
         return None
 
     # Exclude filtered users
-    if item['from_user'] in settings.CC_IGNORE_USERS:
+    if item['user']['screen_name'] in settings.CC_IGNORE_USERS:
         statsd.incr('customercare.tweet.rejected.user')
         return None
 
