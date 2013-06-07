@@ -3,7 +3,7 @@ import json
 import time
 
 from django.conf import settings
-from django.http import HttpResponse, HttpResponseBadRequest
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseNotFound
 
 from kitsune.products.models import Product
 from kitsune.sumo.parser import _get_wiki_link
@@ -81,7 +81,7 @@ class WikiParser(WParser):
             return '<div class="img-placeholder">img placeholder</div>'
 
 doc_key = lambda locale, doc_slug: locale + '~' + doc_slug
-topic_key = lambda product_slug, topic_slug: product_slug + '~' + topic_slug
+topic_key = lambda locale, product_slug, topic_slug: locale + '~' + product_slug + '~' + topic_slug
 
 def serialize_document_for_offline(doc):
     """Grabs the document in a dictionary. This method returns a document that
@@ -132,8 +132,8 @@ def bundle_for_product(product, locale):
         for t in doc.get_topics():
             topic = topics.setdefault(t.id, {})
             if not topic:
-                bundle['locales'][locale]['children'].add(t.id)
-                topic['key'] = topic_key(product.slug, t.slug)
+                bundle['locales'][locale]['children'].add(t.slug)
+                topic['key'] = topic_key(locale, product.slug, t.slug)
                 topic['name'] = t.title
                 topic['children'] = [st.slug for st in t.subtopics.all()]
                 topic['docs'] = []
@@ -208,10 +208,16 @@ def get_bundles(request):
     locales = request.GET.getlist('locales', [])
     products = request.GET.getlist('products', [])
 
-    products = [Product.objects.get(slug=product) for product in products]
+    try:
+        products = [Product.objects.get(slug=product) for product in products]
+    except Product.DoesNotExist:
+        return HttpResponseNotFound('{"error": "not found", "reason": "invalid product"}', mimetype='application/json')
 
     bundles = []
     for locale in locales:
+        if locale.lower() not in settings.LANGUAGES:
+            return HttpResponseNotFound('{"error": "not found", "reason": "invalid locale"}', mimetype='application/json')
+
         for product in products:
             bundles.append(bundle_for_product(product, locale))
 
