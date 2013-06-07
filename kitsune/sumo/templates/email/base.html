@@ -176,6 +176,30 @@
       white-space: pre;
     }
 
+    .button {
+      background: #81bc2f; /* Old browsers */
+      background: -moz-linear-gradient(top,  #81bc2f 0%, #619827 100%); /* FF3.6+ */
+      background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#81bc2f), color-stop(100%,#619827)); /* Chrome,Safari4+ */
+      background: -webkit-linear-gradient(top,  #81bc2f 0%,#619827 100%); /* Chrome10+,Safari5.1+ */
+      background: -o-linear-gradient(top,  #81bc2f 0%,#619827 100%); /* Opera 11.10+ */
+      background: -ms-linear-gradient(top,  #81bc2f 0%,#619827 100%); /* IE10+ */
+      background: linear-gradient(to bottom,  #81bc2f 0%,#619827 100%); /* W3C */
+      filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#81bc2f', endColorstr='#619827',GradientType=0 ); /* IE6-9 */
+      border-radius: 6px;
+      -moz-border-radius: 6px;
+      -webkit-border-radius: 6px;
+      border-bottom: 2px solid #548323;
+      color: #fff;
+      display: block;
+      font-size: 17px;
+      font-weight: bold;
+      height: 42px;
+      line-height: 42px;
+      padding: 0 30px;
+      text-align: center;
+      text-shadow: 1px 1px 0 #426319;
+    }
+
     {% block styles %}{% endblock %}
   </style>
 </head>
