@@ -197,8 +197,8 @@ def get_customercare_stats():
         if user not in contributor_stats:
             contributor_stats[user] = {
                 'twitter_username': user,
-                'avatar': raw['profile_image_url'],
-                'avatar_https': raw['profile_image_url_https'],
+                'avatar': raw['user']['profile_image_url'],
+                'avatar_https': raw['user']['profile_image_url_https'],
                 'all': 0, '1m': 0, '1w': 0, '1d': 0,
             }
         contributor = contributor_stats[reply.twitter_username]
