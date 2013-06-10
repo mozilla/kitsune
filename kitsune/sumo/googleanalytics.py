@@ -212,14 +212,16 @@ def search_ctr(start_date, end_date):
     date = start_date
     while date <= end_date:
         date_str = str(date)
+
+        # This metric name for goals in Google Analytics is gross.
+        # Sorry about that. I don't see another way to it.
+        metric_name = 'ga:goal11ConversionRate'
         ctr_str = request.get(
             ids='ga:' + profile_id,
             start_date=date_str,
             end_date=date_str,
-            metrics='ga:goal11ConversionRate').execute()['rows'][0][0]
-
-        # Round the number and convert to int
-        ctr[str(date)] = round(float(ctr_str), 1)
+            metrics=metric_name).execute()['rows'][0][0]
+        ctr[date_str] = float(ctr_str)
 
         date += timedelta(days=1)
 

@@ -313,7 +313,7 @@ def update_search_ctr_metric():
             kind=clicks_kind,
             start=day,
             end=day + timedelta(days=1),
-            value=ctr * 10)
+            value=round(ctr, 1) * 10)
 
 
 def _get_latest_metric(metric_code):

@@ -84,7 +84,7 @@ class GoogleAnalyticsTests(TestCase):
             date(2013, 6, 6), date(2013, 6, 6))
 
         eq_(1, len(ctr))
-        eq_(74.9, ctr['2013-06-06'])
+        eq_(74.88925980111263, ctr['2013-06-06'])
 
 
 VISITORS_RESPONSE = {

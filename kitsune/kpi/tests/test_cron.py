@@ -139,14 +139,14 @@ class CronJobTests(TestCase):
         """Verify the cron job inserts the right rows."""
         clicks_kind = metric_kind(code=SEARCH_CLICKS_METRIC_CODE, save=True)
         metric_kind(code=SEARCH_SEARCHES_METRIC_CODE, save=True)
-        search_ctr.return_value = {'2013-06-06': 42.1,
-                                   '2013-06-07': 13.7,
-                                   '2013-06-08': 99.5}
+        search_ctr.return_value = {'2013-06-06': 42.123456789,
+                                   '2013-06-07': 13.7654321,
+                                   '2013-06-08': 99.55555}
 
         update_search_ctr_metric()
 
         metrics = Metric.objects.filter(kind=clicks_kind).order_by('start')
         eq_(3, len(metrics))
         eq_(421, metrics[0].value)
-        eq_(137, metrics[1].value)
+        eq_(138, metrics[1].value)
         eq_(date(2013, 6, 8), metrics[2].start)
