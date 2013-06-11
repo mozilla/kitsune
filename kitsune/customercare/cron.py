@@ -24,6 +24,7 @@ RT_REGEX = re.compile('^rt\W', re.IGNORECASE)
 ALLOWED_USERS = [
     {'id': 2142731, 'username': 'Firefox'},
     {'id': 150793437, 'username': 'FirefoxBrasil'},
+    {'id': 107272435, 'username': 'firefox_es'},
 ]
 
 log = logging.getLogger('k.twitter')
@@ -43,7 +44,8 @@ def collect_tweets():
                     settings.TWITTER_ACCESS_TOKEN_SECRET)
 
         search_options = {
-            'q': 'firefox OR #fxinput OR @firefoxbrasil OR #firefoxos',
+            'q': ('firefox OR #fxinput OR @firefoxbrasil OR #firefoxos'
+                  ' OR @firefox_es'),
             'count': settings.CC_TWEETS_PERPAGE,  # Items per page.
             'result_type': 'recent',  # Retrieve tweets by date.
         }
