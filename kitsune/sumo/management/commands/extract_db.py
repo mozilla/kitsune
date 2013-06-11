@@ -32,7 +32,7 @@ class Command(BaseCommand):
     help = ('Pulls strings from the database and writes them to python file.')
     option_list = BaseCommand.option_list + (
         make_option('--output-file', '-o',
-                    default=os.path.join(settings.ROOT, 'apps', 'sumo',
+                    default=os.path.join(settings.ROOT, 'kitsune', 'sumo',
                                          'db_strings.py'),
                     dest='outputfile',
                     help='The file where extracted strings are written to.'

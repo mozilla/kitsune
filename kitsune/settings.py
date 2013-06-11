@@ -220,18 +220,18 @@ USE_I18N = True
 USE_L10N = True
 
 DB_LOCALIZE = {
-    'kitsune.karma': {
+    'karma': {
         'Title': {
             'attrs': ['name'],
             'comments': ['This is a karma title.'],
         }
     },
-    'kitsune.products': {
+    'products': {
         'Product': {
             'attrs': ['title', 'description'],
         }
     },
-    'kitsune.topics': {
+    'topics': {
         'Topic': {
             'attrs': ['title', 'description'],
         }
