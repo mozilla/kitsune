@@ -74,7 +74,8 @@ def collect_tweets():
             created_date = datetime.utcfromtimestamp(calendar.timegm(
                 rfc822.parsedate(item['created_at'])))
 
-            item_lang = item.get('iso_language_code', 'en')
+            item_lang = item['metadata'].get('iso_language_code', 'en')
+
             tweet = Tweet(tweet_id=item['id'], raw_json=json.dumps(item),
                           locale=item_lang, created=created_date)
             try:
