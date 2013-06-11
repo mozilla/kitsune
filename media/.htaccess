@@ -27,3 +27,7 @@ FileETag MTime
 <FilesMatch "\.txt$">
     FileETag None
 </FilesMatch>
+
+<FileMatch ".(jpeg|png|jpg|gif)$">
+Header set Access-Control-Allow-Origin "*"
+</FileMatch>
