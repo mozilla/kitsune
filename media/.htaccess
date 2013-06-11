@@ -28,6 +28,6 @@ FileETag MTime
     FileETag None
 </FilesMatch>
 
-<FileMatch ".(jpeg|png|jpg|gif)$">
+<FilesMatch ".(jpeg|png|jpg|gif)$">
 Header set Access-Control-Allow-Origin "*"
-</FileMatch>
+</FilesMatch>
