@@ -1,5 +1,4 @@
-{# vim: set ts=2 et sts=2 sw=2: #}
-{% from 'includes/common_macros.html' import search_box, aux_nav with context %}
+{% from 'includes/common_macros.html' import announcement_bar, search_box, aux_nav with context %}
 {% if request.LANGUAGE_CODE == settings.WIKI_DEFAULT_LANGUAGE and waffle.flag('surveygizmo') %}
   {% set SURVEY_GIZMOS = (SURVEY_GIZMOS or []) + ['site_survey'] %}
 {% endif %}
@@ -104,6 +103,24 @@
     </a>
   </div>
 {% endif %}
+
+<div id="announcements">
+  {# This will get conditionally shown if it is needed. #}
+  {% call announcement_bar('outdated', 'error') %}
+    <span>
+      {{ _('Your Firefox is out of date and may contain a security risk!') }}
+    </span>
+    <a class="download-button" href="http://www.mozilla.org/firefox#desktop">
+      {{ _('Upgrade Firefox') }}
+    </a>
+  {% endcall %}
+
+  {% for announ in get_announcements() %}
+    {% call announcement_bar(announ.id, 'warn') %}
+      {{ announ.content }}
+    {% endcall %}
+  {% endfor %}
+</div>
 
 <header>
   <div class="container_12 cf">

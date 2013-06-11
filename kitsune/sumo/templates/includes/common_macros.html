@@ -130,3 +130,19 @@
   {% endif %}
   <li><a href="{{ url('kpi.dashboard') }}">{{ _('KPI Dashboard') }}</a></li>
 {%- endmacro %}
+
+{# This is designed to be used like this:
+  {% call announcement_bar('foo', 'info') %}
+    This is the contents of the bar.
+  {% endcall %}
+#}
+{% macro announcement_bar(id, level) -%}
+  <div class="announce-bar {{ level }}" id="announce-{{ id }}">
+    <div class="container_12">
+      <div class="grid_12">
+        <div class="close-button" data-close-id="announce-{{ id }}"></div>
+        {{ caller() }}
+      </div>
+    </div>
+  </div>
+{% endmacro %}
