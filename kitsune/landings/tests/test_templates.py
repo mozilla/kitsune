@@ -1,11 +1,8 @@
-import mock
-import waffle
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 
 from kitsune.products.tests import product
 from kitsune.search.tests.test_es import ElasticTestCase
-from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.topics.models import HOT_TOPIC_SLUG
 from kitsune.topics.tests import topic
@@ -27,29 +24,7 @@ class HomeTestCase(ElasticTestCase):
         r = self.client.get(reverse('home'), follow=True)
         eq_(200, r.status_code)
         doc = pq(r.content)
-        eq_(6, len(doc('#help-topics li')))
         eq_(5, len(doc('#products-and-services li')))
-
-    def test_hot_topics(self):
-        """Verifies the hot topics section."""
-        # Create the hot topics topic.
-        hot = topic(slug=HOT_TOPIC_SLUG, save=True)
-
-        # Create 3 hot documents.
-        for i in range(3):
-            doc = revision(is_approved=True, save=True).document
-            doc.topics.add(hot)
-
-        # Create a not hot document.
-        doc = revision(is_approved=True, save=True).document
-
-        self.refresh()
-
-        # GET the home page and verify the content
-        r = self.client.get(reverse('home'), follow=True)
-        eq_(200, r.status_code)
-        doc = pq(r.content)
-        eq_(3, len(doc('#hot-topics li')))
 
     def test_mozilla_news(self):
         """Verifies the Mozilla News section."""

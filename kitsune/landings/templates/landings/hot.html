@@ -1,0 +1,37 @@
+{# vim: set ts=2 et sts=2 sw=2: #}
+{% extends "base.html" %}
+{% from 'includes/common_macros.html' import for_contributors_sidebar %}
+{% set title = _(topic.title, 'DB: topics.Topic.title') %}
+{% set crumbs = [(None, title)] %}
+{% set styles = ('products',) %}
+
+{% block content %}
+  <div class="grid_12">
+    <section id="document-list">
+      {% if topic.image %}<img src="{{ STATIC_URL }}img/blank.png" alt="" class="logo-sprite" style="background-image: url('{{ topic.image_url }}');" />{% endif %}
+      <h1 class="topic-title cf">{{ title }}</h1>
+      {% for document in documents %}
+        {% if loop.first %}<ul class="topic-list">{% endif %}
+        <li>
+          <a href="{{ document['url'] }}">
+            {{ document['document_title'] }}
+          </a>
+        </li>
+        {% if loop.last %}</ul>{% endif %}
+      {% endfor %}
+
+      {% if fallback_documents %}
+        <h2>{{ _('In English') }}</h2>
+        {% for document in fallback_documents %}
+          {% if loop.first %}<ul class="topic-list">{% endif %}
+          <li>
+            <a href="{{ document['url']|replace('/'+ settings.WIKI_DEFAULT_LANGUAGE +'/', '/' + request.LANGUAGE_CODE + '/') }}">{{ document['document_title'] }}</a>
+          </li>
+          {% if loop.last %}</ul>{% endif %}
+        {% endfor %}
+      {% endif %}
+    </section>
+  </div>
+{% endblock %}
+
+{% block for_contributors %}{% endblock %}

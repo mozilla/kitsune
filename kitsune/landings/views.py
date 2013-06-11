@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 from django.views.decorators.cache import never_cache
 
 from mobility.decorators import mobile_template
@@ -6,7 +6,7 @@ from mobility.decorators import mobile_template
 from kitsune.products.models import Product
 from kitsune.sumo.parser import get_object_fallback
 from kitsune.sumo.views import redirect_to
-from kitsune.topics.models import Topic, HOT_TOPIC_SLUG
+from kitsune.topics.models import Topic
 from kitsune.wiki.facets import documents_for
 from kitsune.wiki.models import Document
 
@@ -29,23 +29,11 @@ def home(request):
         return redirect_to(request, 'products', permanent=False)
 
     products = Product.objects.filter(visible=True)
-    topics = Topic.objects.filter(visible=True)
     moz_news = get_object_fallback(
         Document, MOZILLA_NEWS_DOC, request.LANGUAGE_CODE)
 
-    try:
-        hot_docs, fallback_hot_docs = documents_for(
-            locale=request.LANGUAGE_CODE,
-            topics=[Topic.objects.get(slug=HOT_TOPIC_SLUG)])
-    except Topic.DoesNotExist:
-        # "hot" topic doesn't exist, move on.
-        hot_docs = fallback_hot_docs = None
-
     return render(request, 'landings/home.html', {
         'products': products,
-        'topics': topics,
-        'hot_docs': hot_docs,
-        'fallback_hot_docs': fallback_hot_docs,
         'moz_news': moz_news})
 
 
@@ -76,3 +64,15 @@ def get_involved_l10n(request, template):
 
 def integrity_check(request):
     return render(request, 'landings/integrity-check.html')
+
+
+def hot_topics(request):
+    """The hot topics landing page."""
+    topic = get_object_or_404(Topic, slug='hot')
+
+    data = dict(topic=topic)
+    docs, fallback = documents_for(
+        locale=request.LANGUAGE_CODE, topics=[topic])
+    data.update(documents=docs, fallback_documents=fallback)
+
+    return render(request, 'landings/hot.html', data)
