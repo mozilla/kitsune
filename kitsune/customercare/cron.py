@@ -195,10 +195,15 @@ def get_customercare_stats():
         raw = json.loads(reply.raw_json)
         user = reply.twitter_username
         if user not in contributor_stats:
+            if 'from_user' in raw: #For tweets collected using v1 API
+                user_data = raw
+            else:
+                user_data = raw['user']
+
             contributor_stats[user] = {
                 'twitter_username': user,
-                'avatar': raw['user']['profile_image_url'],
-                'avatar_https': raw['user']['profile_image_url_https'],
+                'avatar': user_data['profile_image_url'],
+                'avatar_https': user_data['profile_image_url_https'],
                 'all': 0, '1m': 0, '1w': 0, '1d': 0,
             }
         contributor = contributor_stats[reply.twitter_username]
