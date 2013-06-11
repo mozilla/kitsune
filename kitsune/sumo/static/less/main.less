@@ -1308,70 +1308,86 @@ input[type=button],
   }
 }
 
-#notify-outdated-bar {
-  background: url('../img/warning-stripes.png') top left repeat-x #ffe;
+.announce-bar {
+  background: url('../img/warning-stripes.png') top left repeat-x #eff;
+  display: none;
   font-size: 13px;
-  height: 30px;
+  margin-bottom: 1px;
+  min-height: 30px;
   line-height: 28px;
+  overflow: auto;
   position: relative;
 
+  // This is an overlay over the background to make it fade out.
   &:before {
-    background: #ffe;
+    background: #fff;
     bottom: 0;
     content: '';
     left: 0;
-    opacity: 0.65;
+    opacity: 0.5;
     position: absolute;
     right: 0;
     top: 0;
   }
 
-  .close-button {
-    background: @iconsSprite -50px -2022px no-repeat;
-    cursor: pointer;
-    float: right;
-    height: 15px;
-    margin-top: 7px;
-    width: 15px;
+  &.info {
+    background-color: #eff;
   }
 
-  .download-button,
-  .download-button:hover {
-    .gradient(#71a92a, #81bc2e, #639927);
-    border-bottom: 2px solid #548322;
-    .border-radius(2px);
-    .box-shadow(0 2px 0 rgba(0, 0, 0, 0.15));
-    color: #fff;
-    float: left;
-    font-size: 10px;
-    height: 18px;
-    line-height: 18px;
-    margin: 5px 0 0 8px;
-    padding: 0 5px;
-    text-decoration: none;
-    text-shadow: 1px 1px rgba(0, 0, 0, 0.35);
-    text-transform: uppercase;
+  &.warn {
+    background-color: #ffe;
+  }
 
-    &:before {
-      background: url('../img/ff-logo-16x16.png') 0 0 no-repeat;
-      content: '';
-      float: left;
-      height: 16px;
-      margin: 2px 2px 0 0;
-      width: 16px;
-    }
+  &.error {
+    background-color: #fef;
   }
 
   .grid_12 {
-    height: 30px;
-    position: relative;
     z-index: 1;
 
-    > span {
+    > * {
       float: left;
+    }
+
+    .close-button {
+      background: @iconsSprite -50px -2022px no-repeat;
+      cursor: pointer;
+      float: right;
+      height: 15px;
+      margin-top: 7px;
+      width: 15px;
+      z-index: 2;
+    }
+  }
+
+  &#announce-outdated {
+    .download-button,
+    .download-button:hover {
+      .gradient(#71a92a, #81bc2e, #639927);
+      border-bottom: 2px solid #548322;
+      .border-radius(2px);
+      .box-shadow(0 2px 0 rgba(0, 0, 0, 0.15));
+      color: #fff;
+      font-size: 10px;
+      height: 18px;
+      line-height: 18px;
+      margin: 5px 0 0 8px;
+      padding: 0 5px;
+      text-decoration: none;
+      text-shadow: 1px 1px rgba(0, 0, 0, 0.35);
+      text-transform: uppercase;
+
+      &:before {
+        background: url('../img/ff-logo-16x16.png') 0 0 no-repeat;
+        content: '';
+        height: 16px;
+        margin: 2px 2px 0 0;
+        width: 16px;
+      }
     }
   }
 }
+
 
 .warning-box {
   background: url('../img/warning-stripes.png') top left repeat-x #ffe;

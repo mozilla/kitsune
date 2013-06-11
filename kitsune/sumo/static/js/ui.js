@@ -5,6 +5,7 @@
 
   $(document).ready(function() {
     initFolding();
+    initAnnouncements();
 
     // Non supported Firefox version
     notifyOutdatedFirefox();
@@ -102,44 +103,48 @@
     }
   }
 
+  function initAnnouncements() {
+    var $announcements = $('#announcements');
+
+    $(document).on('click', '#tabzilla', function() {
+      $('body').prepend($announcements);
+    });
+
+    if (Modernizr.localstorage) {
+      // When an announcement is closed, remember it.
+      $announcements.on('click', '.close-button', function() {
+        var id = $(this).closest('.announce-bar').attr('id');
+        localStorage.setItem(id + '.closed', true);
+      });
+
+      // If an announcement has not been hidden before, show it.
+      $announcements.find('.announce-bar').each(function() {
+        var $this = $(this);
+        var id = $this.attr('id');
+        if (localStorage.getItem(id + '.closed') !== 'true') {
+          $this.show();
+        }
+      });
+    } else {
+      $announcements.find('.announce-bar').show();
+    }
+  }
+
   function notifyOutdatedFirefox() {
     var b = BrowserDetect.browser;
     var v = BrowserDetect.version;
+    var closed = false;
+    var show;
 
     if (Modernizr.localstorage) {
-      var closed = localStorage.getItem('notify-outdated.closed') === 'true';
+      closed = localStorage.getItem('announcement-outdated.closed') === 'true';
     }
 
-    if (b == 'fx' && (v <= 3.6 || (v >= 12 && v <= 16)) && !closed) {
-      // Ensure that the notify bar appears above tabzilla's panel
-      $(document).on('click', '#tabzilla', function() {
-        $('body').prepend($('#notify-outdated-bar'));
-      });
-
-      var $notifyBar = $('<div />').attr('id', 'notify-outdated-bar');
-
-      var $container = $('<div />').addClass('grid_12');
-      $notifyBar.append($container);
-      $container.wrap($('<div />').addClass('container_12'));
-
-      var $closeButton = $('<div />').addClass('close-button');
-      $closeButton.data('close-id', 'notify-outdated-bar');
-      $container.append($closeButton);
-
-      var $downloadButton = $('<a />').addClass('download-button');
-      $downloadButton.attr('href', 'http://www.mozilla.org/firefox#desktop');
-      $downloadButton.html(gettext('Upgrade Firefox'));
-      $container.prepend($downloadButton);
-
-      $container.prepend($('<span />').html(gettext('Your Firefox is out of date and may contain a security risk!')));
-
-      if (Modernizr.localstorage) {
-        $closeButton.on('click', function() {
-          localStorage.setItem('notify-outdated.closed', true);
-        });
-      }
-
-      $('body').prepend($notifyBar);
+    show = (b == 'fx') && (v <= 3.6 || (v >= 12 && v <= 16)) && (!closed);
+    if (show) {
+      $('#announce-outdated').show();
+    } else {
+      $('#announce-outdated').hide();
     }
   }
 
