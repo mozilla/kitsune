@@ -31,6 +31,10 @@ log = logging.getLogger('k.twitter')
 
 @cronjobs.register
 def collect_tweets():
+    # Don't (ab)use the twitter API from dev and stage.
+    if settings.STAGE:
+        return
+
     """Collect new tweets about Firefox."""
     with statsd.timer('customercare.tweets.time_elapsed'):
         t = Twython(settings.TWITTER_CONSUMER_KEY,
