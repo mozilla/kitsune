@@ -141,7 +141,6 @@
     }
 
     show = (b == 'fx') && (v <= 3.6 || (v >= 12 && v <= 16)) && (!closed);
-    console.log('show', show);
     if (show) {
       $('#announce-outdated').show();
     } else {
