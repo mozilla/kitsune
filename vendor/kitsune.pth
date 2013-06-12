@@ -89,3 +89,4 @@ src/premailer
 src/oauthlib
 src/requests-oauthlib
 src/twython
+packages/selenium/py
