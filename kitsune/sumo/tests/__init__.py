@@ -5,10 +5,13 @@ from os.path import join, dirname
 from smtplib import SMTPRecipientsRefused
 
 from django.conf import settings
+from django.test import LiveServerTestCase
 from django.test.client import Client
 from django.test.utils import override_settings
 
 from nose.tools import eq_
+from selenium import webdriver
+from selenium.common.exceptions import WebDriverException
 from test_utils import TestCase as OriginalTestCase
 
 from kitsune import sumo
@@ -120,6 +123,34 @@ class MobileTestCase(TestCase):
     def setUp(self):
         super(MobileTestCase, self).setUp()
         self.client.cookies[settings.MOBILE_COOKIE] = 'on'
+
+
+class SeleniumTestCase(LiveServerTestCase):
+
+    skipme = False
+
+    @classmethod
+    def setUpClass(cls):
+        try:
+            cls.webdriver = webdriver.Firefox()
+        except (RuntimeError, WebDriverException):
+            cls.skipme = True
+
+        super(SeleniumTestCase, cls).setUpClass()
+
+    @classmethod
+    def tearDownClass(cls):
+        if not cls.skipme:
+            cls.webdriver.quit()
+        super(SeleniumTestCase, cls).tearDownClass()
+
+    def setUp(self):
+        # Don't run if Selenium isn't available
+        if self.skipme:
+            raise SkipTest('Selenium unavailable.')
+
+        # Go to an empty page before every test
+        self.webdriver.get('')
 
 
 def with_save(func):
