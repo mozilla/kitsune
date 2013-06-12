@@ -8,7 +8,7 @@ from django.utils.encoding import smart_str
 
 from tower import ugettext_lazy as _lazy
 
-from kitsune.products.models import Product
+from kitsune.products.models import Product, Topic as NewTopic
 from kitsune.sumo.form_fields import MultiUsernameField, StrippedCharField
 from kitsune.topics.models import Topic
 from kitsune.wiki.config import (
@@ -17,7 +17,8 @@ from kitsune.wiki.config import (
 from kitsune.wiki.models import (
     Document, Revision, MAX_REVISION_COMMENT_LENGTH)
 from kitsune.wiki.widgets import (
-    RadioFieldRendererWithHelpText, TopicsAndSubtopicsWidget)
+    RadioFieldRendererWithHelpText, TopicsAndSubtopicsWidget,
+    ProductTopicsAndSubtopicsWidget)
 
 
 TITLE_REQUIRED = _lazy(u'Please provide a title.')
@@ -70,6 +71,9 @@ class DocumentForm(forms.ModelForm):
 
         topics_field = self.fields['topics']
         topics_field.choices = Topic.objects.values_list('id', 'title')
+
+        topics_field = self.fields['new_topics']
+        topics_field.choices = NewTopic.objects.values_list('id', 'title')
 
         products_field = self.fields['products']
         products_field.choices = Product.objects.values_list('id', 'title')
@@ -134,9 +138,15 @@ class DocumentForm(forms.ModelForm):
         help_text=_lazy(u'Type of article'))
 
     topics = forms.MultipleChoiceField(
-        label=_lazy(u'Topics:'),
+        label=u'Old Topics:',  # Don't bother localizing temp string.
         required=False,
         widget=TopicsAndSubtopicsWidget())
+
+    # TODO: remove topics above and replace with this.
+    new_topics = forms.MultipleChoiceField(
+        label=u'New Topics:',  # Don't bother localizing temp string.
+        required=False,
+        widget=ProductTopicsAndSubtopicsWidget())
 
     locale = forms.CharField(widget=forms.HiddenInput())
 
@@ -178,8 +188,8 @@ class DocumentForm(forms.ModelForm):
     class Meta:
         model = Document
         fields = ('title', 'slug', 'category', 'is_localizable', 'products',
-                  'topics', 'locale', 'is_archived', 'allow_discussion',
-                  'needs_change', 'needs_change_comment')
+                  'topics', 'new_topics', 'locale', 'is_archived',
+                  'allow_discussion', 'needs_change', 'needs_change_comment')
 
     def save(self, parent_doc, **kwargs):
         """Persist the Document form, and return the saved Document."""
