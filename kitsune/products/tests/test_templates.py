@@ -193,7 +193,7 @@ class ProductViewsNewTopicsTestCase(ElasticTestCase):
         new_topic(slug=HOT_TOPIC_SLUG, product=p, save=True)
         topics = []
         for i in range(11):
-            topics.append(new_topic(save=True))
+            topics.append(new_topic(product=p, save=True))
 
         # Create a document and assign the product and 10 topics.
         doc = revision(is_approved=True, save=True).document
