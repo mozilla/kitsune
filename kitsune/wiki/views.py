@@ -24,7 +24,7 @@ from tower import ugettext_lazy as _lazy
 from tower import ugettext as _
 
 from kitsune.access.decorators import login_required
-from kitsune.products.models import Product
+from kitsune.products.models import Product, Topic as NewTopic
 from kitsune.sumo.helpers import urlparams
 from kitsune.sumo.redis_utils import redis_client, RedisError
 from kitsune.sumo.urlresolvers import reverse
@@ -118,7 +118,10 @@ def document(request, document_slug, template=None):
     else:
         product = products[0]
 
-    topics = Topic.objects.filter(visible=True)
+    if waffle.flag_is_active(request, 'new-topics'):
+        topics = NewTopic.objects.filter(product=product, visible=True)
+    else:
+        topics = Topic.objects.filter(visible=True)
 
     ga_push = []
     if fallback_reason is not None:

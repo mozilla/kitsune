@@ -31,14 +31,14 @@ def topics_for(products, new_topics=False):
         docs = docs.filter(products=product)
 
     if new_topics:
-        model = NewTopic
+        for product in products:
+            qs = NewTopic.objects.filter(product=product)
     else:
-        model = Topic
+        qs = Topic.objects
 
-    return (model.objects
-                 .filter(visible=True, document__in=docs)
-                 .annotate(num_docs=Count('document'))
-                 .distinct())
+    return (qs.filter(visible=True, document__in=docs)
+               .annotate(num_docs=Count('document'))
+               .distinct())
 
 
 # TODO: Remove the new_topics argument when we remove old topics.
