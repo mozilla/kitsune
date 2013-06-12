@@ -8,35 +8,16 @@ from pyelasticsearch.exceptions import (
     Timeout, ConnectionError, ElasticHttpError)
 from statsd import statsd
 
-from kitsune.products.models import Product
+from kitsune.products.models import Topic as NewTopic
 from kitsune.topics.models import Topic
 from kitsune.wiki.models import Document, DocumentMappingType
 
 
-def products_for(topics):
-    """Returns a list of products that apply to passed in topics.
-
-    :arg topics: a list of Topic instances
-    """
-    statsd.incr('wiki.facets.products_for.db')
-
-    docs = Document.objects.filter(
-        locale=settings.WIKI_DEFAULT_LANGUAGE,
-        is_archived=False,
-        current_revision__isnull=False,
-        category__in=settings.IA_DEFAULT_CATEGORIES)
-
-    for topic in topics:
-        docs = docs.filter(topics=topic)
-
-    return Product.objects.filter(visible=True, document__in=docs).distinct()
-
-
-def topics_for(products, topics=None):
+# TODO: Remove the new_topics argument when we remove old topics.
+def topics_for(products, new_topics=False):
     """Returns a list of topics that apply to passed in products and topics.
 
     :arg products: a list of Product instances
-    :arg topics: an optional list of Topic instances
     """
     statsd.incr('wiki.facets.topics_for.db')
 
@@ -48,16 +29,20 @@ def topics_for(products, topics=None):
 
     for product in products:
         docs = docs.filter(products=product)
-    for topic in topics or []:
-        docs = docs.filter(topics=topic)
 
-    return (Topic.objects
+    if new_topics:
+        model = NewTopic
+    else:
+        model = Topic
+
+    return (model.objects
                  .filter(visible=True, document__in=docs)
                  .annotate(num_docs=Count('document'))
                  .distinct())
 
 
-def documents_for(locale, topics=None, products=None):
+# TODO: Remove the new_topics argument when we remove old topics.
+def documents_for(locale, topics=None, products=None, new_topics=False):
     """Returns a tuple of lists of articles that apply to topics and products.
 
     The first item in the tuple is the list of articles for the locale
@@ -85,7 +70,8 @@ def documents_for(locale, topics=None, products=None):
         en_documents = _documents_for(
             locale=settings.WIKI_DEFAULT_LANGUAGE,
             products=products,
-            topics=topics)
+            topics=topics,
+            new_topics=new_topics)
         fallback_documents = [d for d in en_documents if
                               d['id'] not in l10n_document_ids]
     else:
@@ -94,12 +80,14 @@ def documents_for(locale, topics=None, products=None):
     return documents, fallback_documents
 
 
-def _documents_for(locale, topics=None, products=None):
+# TODO: Remove the new_topics argument when we remove old topics.
+def _documents_for(locale, topics=None, products=None, new_topics=False):
     """Returns a list of articles that apply to passed in topics and products.
 
     """
     # First try to get the results from the cache
-    documents = cache.get(_documents_for_cache_key(locale, topics, products))
+    documents = cache.get(_documents_for_cache_key(
+        locale, topics, products, new_topics))
     if documents:
         statsd.incr('wiki.facets.documents_for.cache')
         return documents
@@ -108,7 +96,8 @@ def _documents_for(locale, topics=None, products=None):
         # Then try ES
         documents = _es_documents_for(locale, topics, products)
         cache.add(
-            _documents_for_cache_key(locale, topics, products), documents)
+            _documents_for_cache_key(locale, topics, products, new_topics),
+            documents)
         statsd.incr('wiki.facets.documents_for.es')
     except (Timeout, ConnectionError, ElasticHttpError):
         # Finally, hit the database (through cache machine)
@@ -116,7 +105,7 @@ def _documents_for(locale, topics=None, products=None):
         # but they won't be in the correct sort (by votes in the last
         # 30 days). It is better to return them in the wrong order
         # than not to return them at all.
-        documents = _db_documents_for(locale, topics, products)
+        documents = _db_documents_for(locale, topics, products, new_topics)
         statsd.incr('wiki.facets.documents_for.db')
 
     return documents
@@ -138,7 +127,8 @@ def _es_documents_for(locale, topics=None, products=None):
     return list(s.order_by('-document_recent_helpful_votes')[:100])
 
 
-def _db_documents_for(locale, topics=None, products=None):
+# TODO: Remove the new_topics argument when we remove old topics.
+def _db_documents_for(locale, topics=None, products=None, new_topics=False):
     """DB implementation of topics_for."""
     qs = Document.objects.filter(
         locale=locale,
@@ -146,7 +136,10 @@ def _db_documents_for(locale, topics=None, products=None):
         current_revision__isnull=False,
         category__in=settings.IA_DEFAULT_CATEGORIES)
     for topic in topics or []:
-        qs = qs.filter(topics=topic)
+        if new_topics:
+            qs = qs.filter(new_topics=topic)
+        else:
+            qs = qs.filter(topics=topic)
     for product in products or []:
         qs = qs.filter(products=product)
 
@@ -159,13 +152,20 @@ def _db_documents_for(locale, topics=None, products=None):
             url=d.get_absolute_url(),
             document_parent_id=d.parent_id,
             document_summary=d.current_revision.summary))
+
     return doc_dicts
 
 
-def _documents_for_cache_key(locale, topics, products):
+# TODO: Remove the new_topics argument when we remove old topics.
+def _documents_for_cache_key(locale, topics, products, new_topics):
     m = hashlib.md5()
-    m.update('{locale}:{topics}:{products}'.format(
+    key = '{locale}:{topics}:{products}'.format(
         locale=locale,
         topics=','.join(sorted([t.slug for t in topics or []])),
-        products=','.join(sorted([p.slug for p in products or []]))))
+        products=','.join(sorted([p.slug for p in products or []])))
+
+    if new_topics:
+        key += ':new'
+
+    m.update(key)
     return 'documents_for:%s' % m.hexdigest()

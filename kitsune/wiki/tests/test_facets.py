@@ -5,8 +5,7 @@ from kitsune.search.tests.test_es import ElasticTestCase
 from kitsune.sumo.tests import TestCase
 from kitsune.topics.tests import topic
 from kitsune.wiki.facets import (
-    products_for, topics_for, documents_for, _documents_for,
-    _db_documents_for)
+    topics_for, documents_for, _documents_for, _db_documents_for)
 from kitsune.wiki.tests import revision
 
 
@@ -65,27 +64,6 @@ class TestFacetHelpers(TestCase, TestFacetHelpersMixin):
         super(TestFacetHelpers, self).setUp()
         self.facets_setUp()
 
-    def test_products_for_topics(self):
-        """Verify products_for() returns products for passed topics."""
-        general_prods = products_for(topics=[self.general])
-        eq_(len(general_prods), 1)
-        eq_(general_prods[0].slug, self.desktop.slug)
-
-        bookmarks_prods = products_for(topics=[self.bookmarks])
-        eq_(len(bookmarks_prods), 2)
-
-        bookmarks_sync_prods = products_for(
-            topics=[self.bookmarks, self.sync])
-        eq_(len(bookmarks_sync_prods), 2)
-
-        bookmarks_general_prods = products_for(
-            topics=[self.bookmarks, self.general])
-        eq_(len(bookmarks_general_prods), 1)
-        eq_(self.desktop.slug, bookmarks_general_prods[0].slug)
-
-        sync_general_prods = products_for(topics=[self.sync, self.general])
-        eq_(len(sync_general_prods), 0)
-
     def test_topics_for_products(self):
         """Verify topics_for() returns topics for passed products."""
         desktop_topics = topics_for(products=[self.desktop])
@@ -97,20 +75,6 @@ class TestFacetHelpers(TestCase, TestFacetHelpersMixin):
         desktop_mobile_topics = topics_for(
             products=[self.desktop, self.mobile])
         eq_(len(desktop_mobile_topics), 2)
-
-    def test_topics_for_products_and_topics(self):
-        """Verify topics_for() returns topics for passed products."""
-        desktop_bookmarks_topics = topics_for(
-            products=[self.desktop], topics=[self.bookmarks])
-        eq_(len(desktop_bookmarks_topics), 3)
-
-        desktop_sync_topics = topics_for(
-            products=[self.desktop], topics=[self.sync])
-        eq_(len(desktop_sync_topics), 2)
-
-        desktop_sync_general_topics = topics_for(
-            products=[self.desktop], topics=[self.sync, self.general])
-        eq_(len(desktop_sync_general_topics), 0)
 
 
 class TestFacetHelpersES(ElasticTestCase, TestFacetHelpersMixin):

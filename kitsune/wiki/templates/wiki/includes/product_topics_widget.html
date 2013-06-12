@@ -1,0 +1,29 @@
+<ul class="products">
+  {% for group in topics|groupby('product') %}
+    <li class="cf">
+      <strong>{{ group.grouper }}</strong>
+      <ul class="topics">
+        {% for topic in group.list %}
+          <li>
+            <label>
+              <input type="checkbox" name="{{ name }}" value="{{ topic.id }}"{% if topic.checked %} checked{% endif %}/>
+              {{ topic.title }}
+            </label>
+            {% if topic.my_subtopics %}
+              <ul class="subtopics">
+                {% for subtopic in topic.my_subtopics %}
+                  <li>
+                    <label>
+                      <input type="checkbox" name="{{ name }}" value="{{ subtopic.id }}"{% if subtopic.checked %} checked{% endif %}/>
+                      {{ subtopic.title }}
+                    </label>
+                  </li>
+                {% endfor %}
+              </ul>
+            {% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    </li>
+  {% endfor %}
+</ul>

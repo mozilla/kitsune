@@ -1,7 +1,5 @@
 from django.core.cache import cache
 
-import mock
-import waffle
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 
@@ -14,11 +12,8 @@ from kitsune.wiki.tests import revision, helpful_vote
 
 
 class ProductViewsTestCase(ElasticTestCase):
-    @mock.patch.object(waffle, 'flag_is_active')
-    def test_products(self, flag_is_active):
+    def test_products(self):
         """Verify that /products page renders products."""
-        flag_is_active.return_value = True
-
         # Create some products.
         for i in range(3):
             product(save=True)
@@ -29,11 +24,8 @@ class ProductViewsTestCase(ElasticTestCase):
         doc = pq(r.content)
         eq_(4, len(doc('#products-and-services li')))
 
-    @mock.patch.object(waffle, 'flag_is_active')
-    def test_product_landing(self, flag_is_active):
+    def test_product_landing(self):
         """Verify that /products/<slug> page renders topics."""
-        flag_is_active.return_value = True
-
         # Create a product.
         p = product(save=True)
 
@@ -59,11 +51,8 @@ class ProductViewsTestCase(ElasticTestCase):
         eq_(11, len(doc('#help-topics li')))
         eq_(p.slug, doc('#support-search input[name=product]').attr['value'])
 
-    @mock.patch.object(waffle, 'flag_is_active')
-    def test_document_listing(self, flag_is_active):
+    def test_document_listing(self):
         """Verify /products/<product slug>/<topic slug> renders articles."""
-        flag_is_active.return_value = True
-
         # Create a topic and product.
         t1 = topic(save=True)
         p = product(save=True)
@@ -86,11 +75,8 @@ class ProductViewsTestCase(ElasticTestCase):
         eq_(3, len(doc('#document-list > ul > li')))
         eq_(p.slug, doc('#support-search input[name=product]').attr['value'])
 
-    @mock.patch.object(waffle, 'flag_is_active')
-    def test_document_listing_order(self, flag_is_active):
+    def test_document_listing_order(self):
         """Verify documents are listed in order of helpful votes."""
-        flag_is_active.return_value = True
-
         # Create topic, product and documents.
         t = topic(save=True)
         p = product(save=True)
@@ -124,11 +110,8 @@ class ProductViewsTestCase(ElasticTestCase):
         doc = pq(r.content)
         eq_(doc('#document-list > ul > li:first').text(), docs[2].title)
 
-    @mock.patch.object(waffle, 'flag_is_active')
-    def test_hot_topics(self, flag_is_active):
+    def test_hot_topics(self):
         """Verifies the hot topics section."""
-        flag_is_active.return_value = True
-
         # Create a product and the hot topics topic.
         p = product(save=True)
         hot = topic(slug=HOT_TOPIC_SLUG, save=True)
