@@ -9,6 +9,7 @@ from django.test import LiveServerTestCase
 from django.test.client import Client
 from django.test.utils import override_settings
 
+from nose import SkipTest
 from nose.tools import eq_
 from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
