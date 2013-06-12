@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from django.conf import settings
 
 from kitsune.products.models import Product, Topic
@@ -11,7 +12,6 @@ def run():
 
     # For each of the old topics...
     for old_topic in old_topics:
-        print old_topic.slug
         # Get the documents they apply to.
         docs = Document.objects.filter(
             locale=settings.WIKI_DEFAULT_LANGUAGE,
@@ -23,6 +23,9 @@ def run():
         # For each product, create the topic if it doesn't exist and assign it
         # to the documents.
         for product in products:
+            print '=========================================================='
+            print '[%s] %s' % (product, old_topic.title)
+            print '=========================================================='
             try:
                 topic = Topic.objects.get(
                     slug=old_topic.slug, product=product)
@@ -55,6 +58,7 @@ def run():
 
             # Add the new topic to the appropriate docs.
             for doc in docs.filter(products=product):
+                print doc.title.encode('utf8')
                 doc.new_topics.add(topic)
 
     # Make sure we have hot topics for all products.
