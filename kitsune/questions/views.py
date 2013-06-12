@@ -336,7 +336,13 @@ def aaq(request, product_key=None, category_key=None, showform=False,
     if product_key is None:
         product_key = request.GET.get('product')
         if request.MOBILE and product_key is None:
-            product_key = 'mobile'
+            # Firefox OS is weird. The best way we can detect it is to
+            # look for a mobile Firefox that is not Android.
+            ua = request.HTTP_USER_AGENT.lowercase()
+            if 'firefox' in ua and 'android' not in ua:
+                product_key = 'firefox-os'
+            else:
+                product_key = 'mobile'
     product = products.get(product_key)
     if product_key and not product:
         raise Http404
