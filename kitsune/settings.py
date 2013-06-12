@@ -229,7 +229,10 @@ DB_LOCALIZE = {
     'products': {
         'Product': {
             'attrs': ['title', 'description'],
-        }
+        },
+        'Topic':  {
+            'attrs': ['title', 'description'],
+        },
     },
     'topics': {
         'Topic': {
