@@ -61,7 +61,7 @@ class Topic(ModelBase):
     visible = models.BooleanField(default=False)
 
     class Meta(object):
-        ordering = ['display_order']
+        ordering = ['product', 'display_order']
         unique_together = ('slug', 'product')
 
     def __unicode__(self):
