@@ -1,4 +1,3 @@
-{# vim: set ts=2 et sts=2 sw=2: #}
 {% if user.is_authenticated() %}
   <form action="{{ url('wiki.discuss.watch_locale') }}" method="post">
     {{ csrf() }}

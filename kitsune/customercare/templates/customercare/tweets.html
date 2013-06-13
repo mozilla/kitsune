@@ -1,4 +1,3 @@
-{# vim: set ts=2 et sts=2 sw=2: #}
 {% for tweet in tweets -%}
   <div class="tweet{% if tweet.reply_to %} reply{% endif %}{% if tweet.hidden %} hidden-reply{% endif %} cf" data-tweet-id="{{ tweet.id }}" id="tweet-{{ tweet.id }}">
     <a href="https://twitter.com/{{ tweet.user }}" class="avatar" target="_blank">
