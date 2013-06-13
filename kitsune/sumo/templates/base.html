@@ -59,7 +59,7 @@
 <script src="{{ STATIC_URL }}js/libs/html5-shiv.js"></script>
 <![endif]-->
 </head>
-<body class="html-{{ DIR }} {{ classes }} {{ request.LANGUAGE_CODE }}"
+<body class="html-{{ DIR }} logged-{% if user.is_authenticated() %}in{% else %}out{% endif %} {{ classes }} {{ request.LANGUAGE_CODE }}"
       data-readonly="{{ settings.READ_ONLY|json }}"
       data-for-os="{{ for_os|json }}"
       data-for-version="{{ for_version|json }}"
