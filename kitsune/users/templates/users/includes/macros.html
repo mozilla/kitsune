@@ -1,4 +1,3 @@
-{# vim: set ts=2 et sts=2 sw=2: #}
 {% from "layout/errorlist.html" import errorlist %}
 {# csrf() is contextual, so we need to pass in its output #}
 {% macro login_form(form, csrf, next_url='', action=None, only_pwreset=False) -%}

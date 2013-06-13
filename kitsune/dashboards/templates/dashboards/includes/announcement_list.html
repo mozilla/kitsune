@@ -1,4 +1,3 @@
-{# vim: set ts=2 et sts=2 sw=2: #}
 {% if user.is_staff and user.has_perm('announcements.add_announcement') %}
   <a class="add" href="{{ url('admin:announcements_announcement_add') }}">{{ _('Add announcement') }}</a>
 {% endif %}
