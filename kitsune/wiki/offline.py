@@ -21,16 +21,23 @@ def serialize_document_for_offline(doc):
     """Grabs the document in a dictionary. This method returns a document that
     is ready to be inserted into the client-side database.
     """
-    return {
-        'key': doc_key(doc.locale, doc.slug),
-        'title': doc.title,
-        'summary': doc.current_revision.summary,
-        'html': doc.html,
-        #'html': wiki_to_html(doc.current_revision.content, locale=doc.locale, doc_id=doc.id),
-        'updated': int(time.mktime(doc.current_revision.created.timetuple())),
-        'slug': doc.slug,
-        'redirect': doc.redirect_url()
-    }
+    if doc.is_archived:
+        return {
+            'key': doc_key(doc.locale, doc.slug),
+            'title': doc.title,
+            'archived': True,
+        }
+    else:
+        return {
+            'key': doc_key(doc.locale, doc.slug),
+            'title': doc.title,
+            'summary': doc.current_revision.summary,
+            'html': doc.html,
+            #'html': wiki_to_html(doc.current_revision.content, locale=doc.locale, doc_id=doc.id),
+            'updated': int(time.mktime(doc.current_revision.created.timetuple())),
+            'slug': doc.slug,
+            'archived': False,
+        }
 
 
 def bundle_for_product(product, locale):
@@ -49,14 +56,21 @@ def bundle_for_product(product, locale):
     bundle['topics'] = topics = {}
     bundle['docs'] = docs_bundle = {}
 
-    docs = Document.objects.filter(products__id=product.id, locale=locale,
-                                   is_archived=False, is_template=False,
-                                   category__in=(CATEGORIES[0][0],
-                                                 CATEGORIES[1][0]))
+    if locale == settings.WIKI_DEFAULT_LANGUAGE:
+        docs = Document.objects.filter(products__id=product.id, locale=locale,
+                                       is_template=False,
+                                       category__in=(CATEGORIES[0][0],
+                                                     CATEGORIES[1][0]))
+    else:
+        docs = Document.objects.filter(parent__products__id=product.id,
+                                       locale=locale, is_template=False,
+                                       category__in=(CATEGORIES[0][0],
+                                                     CATEGORIES[1][0]))
 
     for doc in docs:
-        if not doc.current_revision or not doc.html:
+        if not doc.current_revision or not doc.html or doc.redirect_url():
             # These documents don't have approved revision. We just skip them.
+            # or if it is a redirect.. why even bother.
             continue
 
         serialized_doc = serialize_document_for_offline(doc)
