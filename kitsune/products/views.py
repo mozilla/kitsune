@@ -41,7 +41,10 @@ def product_landing(request, template, slug):
     return render(request, template, {
         'product': product,
         'products': Product.objects.filter(visible=True),
-        'topics': topics_for(products=[product], new_topics=new_topics),
+        'topics': topics_for(
+            products=[product],
+            new_topics=new_topics,
+            include_subtopics=False),
         'hot_docs': hot_docs,
         'fallback_hot_docs': fallback_hot_docs,
         'search_params': {'product': slug}})

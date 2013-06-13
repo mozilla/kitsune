@@ -14,7 +14,7 @@ from kitsune.wiki.models import Document, DocumentMappingType
 
 
 # TODO: Remove the new_topics argument when we remove old topics.
-def topics_for(products, new_topics=False):
+def topics_for(products, include_subtopics=True, new_topics=False):
     """Returns a list of topics that apply to passed in products and topics.
 
     :arg products: a list of Product instances
@@ -36,9 +36,14 @@ def topics_for(products, new_topics=False):
     else:
         qs = Topic.objects
 
-    return (qs.filter(visible=True, document__in=docs)
-               .annotate(num_docs=Count('document'))
-               .distinct())
+    qs = (qs.filter(visible=True, document__in=docs)
+            .annotate(num_docs=Count('document'))
+            .distinct())
+
+    if not include_subtopics:
+        qs = qs.filter(parent=None)
+
+    return qs
 
 
 # TODO: Remove the new_topics argument when we remove old topics.
