@@ -380,6 +380,10 @@ TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates"
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
+
+    # Check templates in the sumo apps first. There are overrides for the admin
+    # templates.
+    path('kitsune', 'sumo', 'templates'),
 )
 
 # TODO: Figure out why changing the order of apps (for example, moving
