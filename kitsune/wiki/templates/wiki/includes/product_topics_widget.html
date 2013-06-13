@@ -1,7 +1,7 @@
 <ul class="products">
-  {% for group in topics|groupby('product') %}
+  {% for group in topics|groupby('product_id') %}
     <li class="cf">
-      <strong>{{ group.grouper }}</strong>
+      <strong>{{ group.list[0].product }}</strong>
       <ul class="topics">
         {% for topic in group.list %}
           <li>
