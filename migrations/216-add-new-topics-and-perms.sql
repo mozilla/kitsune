@@ -23,7 +23,7 @@ CREATE INDEX `products_topic_63f17a16` ON `products_topic` (`parent_id`);
 
 -- Add the content type and permissions.
 INSERT INTO `django_content_type` (`name`, `app_label`, `model`) VALUES ('topic','products','topic');
-SELECT (@id:=`id`) FROM `django_content_type` WHERE `name` = 'topic' AND `app_label` = 'product';
+SELECT (@id:=`id`) FROM `django_content_type` WHERE `name` = 'topic' AND `app_label` = 'products';
 INSERT INTO `auth_permission` (`name`, `content_type_id`, `codename`) VALUES ('Can add topic',@id,'add_topic'),('Can change topic',@id,'change_topic'),('Can delete topic',@id,'delete_topic');
 
 
