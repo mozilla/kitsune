@@ -1,5 +1,4 @@
 import logging
-from contextlib import contextmanager
 from functools import wraps
 
 from django.conf import settings
@@ -8,8 +7,9 @@ from django.core import mail
 from django.core.mail import EmailMultiAlternatives
 from django.utils import translation
 
+from kitsune.sumo.utils import uselocale
+
 import jingo
-import tower
 from premailer import transform
 from test_utils import RequestFactory
 
@@ -24,33 +24,6 @@ def send_messages(messages):
 
     for msg in messages:
         conn.send_messages([msg])
-
-
-@contextmanager
-def uselocale(locale):
-    """Context manager for setting locale and returning
-    to previous locale.
-
-    This is useful for when doing translations for things run by
-    celery workers or out of the HTTP request handling path.
-
-    >>> with uselocale('xx'):
-    ...     subj = _('Subject of my email')
-    ...     msg = render_email(email_template, email_kwargs)
-    ...     mail.send_mail(subj, msg, ...)
-    ...
-
-    In Kitsune, you can get the right locale from Profile.locale and
-    also request.LANGUAGE_CODE.
-
-    If Kitsune is handling an HTTP request already, you don't have to
-    run uselocale---the locale will already be set correctly.
-
-    """
-    currlocale = translation.get_language()
-    tower.activate(locale)
-    yield
-    tower.activate(currlocale)
 
 
 def safe_translation(f):

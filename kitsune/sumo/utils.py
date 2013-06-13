@@ -1,8 +1,12 @@
+from contextlib import contextmanager
 import json
+
+import tower
 
 from django.contrib.sites.models import Site
 from django.db import models
 from django.db.models.signals import pre_delete
+from django.utils import translation
 from django.utils.http import urlencode, is_safe_url
 
 from kitsune.sumo import paginator
@@ -170,3 +174,30 @@ def user_or_ip(key_prefix):
         return 'uip:%s:%s' % (key_prefix, key)
 
     return _user_or_ip
+
+
+@contextmanager
+def uselocale(locale):
+    """Context manager for setting locale and returning
+    to previous locale.
+
+    This is useful for when doing translations for things run by
+    celery workers or out of the HTTP request handling path.
+
+    >>> with uselocale('xx'):
+    ...     subj = _('Subject of my email')
+    ...     msg = render_email(email_template, email_kwargs)
+    ...     mail.send_mail(subj, msg, ...)
+    ...
+
+    In Kitsune, you can get the right locale from Profile.locale and
+    also request.LANGUAGE_CODE.
+
+    If Kitsune is handling an HTTP request already, you don't have to
+    run uselocale---the locale will already be set correctly.
+
+    """
+    currlocale = translation.get_language()
+    tower.activate(locale)
+    yield
+    tower.activate(currlocale)
