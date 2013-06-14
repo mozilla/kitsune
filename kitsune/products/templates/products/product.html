@@ -17,7 +17,9 @@
 
     {% if product.slug == 'firefox' %}
       <div class="download-firefox">
-        <a href="http://www.mozilla.org/firefox#desktop" class="download-button">
+        <a href="http://www.mozilla.org/firefox#desktop" class="download-button"
+         data-ga-click="_trackEvent | Download Click | {{ product.slug }}">
+
           <span class="download-content">
             <span class="download-title">{{ _('Firefox') }}</span>
             {{ _('Free Download') }}
