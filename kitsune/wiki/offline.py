@@ -31,7 +31,6 @@ def serialize_document_for_offline(doc):
         return {
             'key': doc_key(doc.locale, doc.slug),
             'title': doc.title,
-            'summary': doc.current_revision.summary,
             'html': doc.html,
             #'html': wiki_to_html(doc.current_revision.content, locale=doc.locale, doc_id=doc.id),
             'updated': int(time.mktime(doc.current_revision.created.timetuple())),
