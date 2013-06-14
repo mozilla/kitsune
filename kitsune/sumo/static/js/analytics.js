@@ -32,21 +32,20 @@ if (alternateUrl) {
 })();
 
 
-// Additional tracking:
-$(document).ready(function() {
-  // Track clicks to the product download button:
-  $(document).on('click', 'a.download-button', function(ev) {
-    ev.preventDefault();
+$('body').on('click', 'a[data-ga-click]', function(ev) {
+  ev.preventDefault();
 
-    var pathParts = document.location.pathname.split('/');
-    var productSlug = pathParts[pathParts.length - 1];
+  var $this = $(this);
+  // Split by '|', and allow for white space on either side.
+  var gaData = $this.data('ga-click').split(/\s*\|\s*/);
+  var href = $this.attr('href');
 
-    _gaq.push(['_trackEvent', 'Download Click', productSlug]);
+  _gaq.push(gaData);
 
-    // Delay the outbound click by 100ms to ensure the event is tracked.
-    var href = $(this).attr('href');
-    setTimeout(function() {
-      document.location.href = href;
-    }, 100);
-  });
+  // Delay the click navigation by 100ms to ensure the event is tracked.
+  setTimeout(function() {
+    document.location.href = href;
+  }, 100);
+
+  return false;
 });
