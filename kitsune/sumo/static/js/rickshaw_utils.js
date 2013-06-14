@@ -240,16 +240,18 @@ k.Graph.prototype.makeSeries = function(objects, descriptors) {
     series[i] = {
       name: desc.name,
       slug: desc.slug,
+      disabled: desc.disabled || false,
+      type: desc.type || 'value',
+
       stroke: stroke,
       color: fill,
-      disabled: desc.disabled || false,
       axisGroup: desc.axisGroup,
       min: min,
       max: max,
       data: data
     };
 
-    if (0 <= min && min <= 1 && 0 <= max && max <= 1) {
+    if (series[i].type === 'percent') {
       series[i].yFormatter = function(value) {
         return Math.floor(value * 100) + '%';
       };

@@ -13,7 +13,8 @@ $(document).ready(function() {
       {
         'name': gettext('Article Votes: % Helpful'),
         'slug': 'wiki_percent',
-        'func': k.Graph.fraction('kb_helpful', 'kb_votes')
+        'func': k.Graph.fraction('kb_helpful', 'kb_votes'),
+        'percent': percent
       }
     ]);
   }
