@@ -7,11 +7,11 @@ from django.core import mail
 from django.core.mail import EmailMultiAlternatives
 from django.utils import translation
 
-from kitsune.sumo.utils import uselocale
-
 import jingo
 from premailer import transform
 from test_utils import RequestFactory
+
+from kitsune.sumo.utils import uselocale
 
 
 log = logging.getLogger('k.email')

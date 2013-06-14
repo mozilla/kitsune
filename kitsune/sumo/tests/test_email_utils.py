@@ -6,8 +6,8 @@ from django.contrib.sites.models import Site
 from django.utils.translation import get_language
 from django.utils.functional import lazy
 
-from kitsune.sumo.email_utils import (
-    safe_translation, emails_with_users_and_watches)
+from kitsune.sumo.email_utils import (safe_translation,
+                                      emails_with_users_and_watches)
 from kitsune.sumo.utils import uselocale
 from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import user
