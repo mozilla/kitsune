@@ -58,7 +58,8 @@
                 slug: 'percent',
                 func: k.Graph.percentage('yes', 'no'),
                 color: '#2b21de',
-                axisGroup: 'percent'
+                axisGroup: 'percent',
+                type: 'percent'
             }
         ];
 

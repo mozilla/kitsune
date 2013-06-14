@@ -17,21 +17,24 @@ function init() {
       slug: 'solved',
       func: k.Graph.fraction('solved', 'questions'),
       color: '#aa4643',
-      axisGroup: 'percent'
+      axisGroup: 'percent',
+      type: 'percent'
     },
     {
       name: gettext('% Responded in 24 hours'),
       slug: 'responded_24',
       func: k.Graph.fraction('responded_24', 'questions'),
       color: '#89a54e',
-      axisGroup: 'percent'
+      axisGroup: 'percent',
+      type: 'percent'
     },
     {
       name: gettext('% Responded in 72 hours'),
       slug: 'responded_72',
       func: k.Graph.fraction('responded_72', 'questions'),
       color: '#80699b',
-      axisGroup: 'percent'
+      axisGroup: 'percent',
+      type: 'percent'
     }
   ]);
 
@@ -39,12 +42,14 @@ function init() {
     {
       name: gettext('Article Votes: % Helpful'),
       slug: 'wiki_percent',
-      func: k.Graph.fraction('kb_helpful', 'kb_votes')
+      func: k.Graph.fraction('kb_helpful', 'kb_votes'),
+      type: 'percent'
     },
     {
       name: gettext('Answer Votes: % Helpful'),
       slug: 'ans_percent',
-      func: k.Graph.fraction('ans_helpful', 'ans_votes')
+      func: k.Graph.fraction('ans_helpful', 'ans_votes'),
+      type: 'percent'
     }
   ]);
 
@@ -75,7 +80,8 @@ function init() {
     {
       name: gettext('Click Through Rate %'),
       slug: 'ctr',
-      func: k.Graph.fraction('clicks', 'searches')
+      func: k.Graph.fraction('clicks', 'searches'),
+      type: 'percent'
     }
   ]);
 
@@ -92,7 +98,8 @@ function init() {
       name: gettext('L10n Coverage'),
       slug: 'l10n',
       // the api returns 0 to 100, we want 0.0 to 1.0.
-      func: function(d) { return d['coverage'] / 100; }
+      func: function(d) { return d['coverage'] / 100; },
+      type: 'percent'
     }
   ]);
 
