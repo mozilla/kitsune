@@ -13,7 +13,10 @@ from kitsune.sumo.parser import _get_wiki_link
 from kitsune.wiki.config import CATEGORIES
 from kitsune.wiki.models import Document
 from kitsune.wiki.parser import WikiParser as WParser
+from kitsune.wiki.tfidf import TFIDFAnalysis, find_word_locations_en_like
 
+
+bundle_key = lambda locale, product_slug: locale + '~' + product_slug
 doc_key = lambda locale, doc_slug: locale + '~' + doc_slug
 topic_key = lambda locale, product_slug, topic_slug: locale + '~' + product_slug + '~' + topic_slug
 
@@ -36,6 +39,7 @@ def serialize_document_for_offline(doc):
             'updated': int(time.mktime(doc.current_revision.created.timetuple())),
             'slug': doc.slug,
             'archived': False,
+            'id': doc.id
         }
 
 
@@ -54,6 +58,9 @@ def bundle_for_product(product, locale):
     # we need a dictionary as we need to merge everything together.
     bundle['topics'] = topics = {}
     bundle['docs'] = docs_bundle = {}
+    bundle['indexes'] = indexes = {}
+
+    index_builder = TFIDFAnalysis()
 
     if locale == settings.WIKI_DEFAULT_LANGUAGE:
         docs = Document.objects.filter(products__id=product.id, locale=locale,
@@ -74,6 +81,9 @@ def bundle_for_product(product, locale):
 
         serialized_doc = serialize_document_for_offline(doc)
 
+        if not doc.is_archived:
+            index_builder.feed(doc.id, [(doc.title, 1.2), (doc.current_revision.summary, 1)], find_word_locations_en_like)
+
         docs_bundle[serialized_doc['key']] = serialized_doc
 
         for t in doc.get_topics():
@@ -88,6 +98,12 @@ def bundle_for_product(product, locale):
                 topic['slug'] = t.slug
             topic['docs'].append(doc.slug)
 
+
+    index_builder.done = True
+    bundlekey = bundle_key(locale, product.slug)
+    bundle['indexes'][bundlekey] = {}
+    bundle['indexes'][bundlekey]['key'] = bundlekey
+    bundle['indexes'][bundlekey]['index'] = index_builder.offline_index()
 
     bundle['locales'][locale]['children'] = list(bundle['locales'][locale]['children'])
     return bundle
@@ -112,6 +128,9 @@ def merge_bundles(*bundles):
         if 'docs' in bundle:
             merged_bundle.setdefault('docs', {}).update(bundle['docs'])
 
+        if 'indexes' in bundle:
+            merged_bundle.setdefault('indexes', {}).update(bundle['indexes'])
+
     if 'locales' in merged_bundle:
         merged_bundle['locales'] = merged_bundle['locales'].values()
 
@@ -120,6 +139,9 @@ def merge_bundles(*bundles):
 
     if 'docs' in merged_bundle:
         merged_bundle['docs'] = merged_bundle['docs'].values()
+
+    if 'indexes' in merged_bundle:
+        merged_bundle['indexes'] = merged_bundle['indexes'].values()
 
     return merged_bundle
 
