@@ -44,7 +44,7 @@ def product_landing(request, template, slug):
         'topics': topics_for(
             products=[product],
             new_topics=new_topics,
-            include_subtopics=False),
+            parent=None),
         'hot_docs': hot_docs,
         'fallback_hot_docs': fallback_hot_docs,
         'search_params': {'product': slug}})
@@ -59,10 +59,8 @@ def document_listing(request, template, product_slug, topic_slug):
 
     if new_topics:
         topic = get_object_or_404(NewTopic, slug=topic_slug, product=product)
-        subtopics = NewTopic.objects.filter(parent=topic)
     else:
         topic = get_object_or_404(Topic, slug=topic_slug)
-        subtopics = Topic.objects.filter(parent=topic)
 
     documents, fallback_documents = documents_for(
         locale=request.LANGUAGE_CODE, products=[product], topics=[topic],
@@ -72,7 +70,8 @@ def document_listing(request, template, product_slug, topic_slug):
         'product': product,
         'topic': topic,
         'topics': topics_for(products=[product], new_topics=new_topics),
-        'subtopics': subtopics,
+        'subtopics': topics_for(
+            products=[product], parent=topic, new_topics=new_topics),
         'documents': documents,
         'fallback_documents': fallback_documents,
         'search_params': {'product': product_slug}})
