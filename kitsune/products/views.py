@@ -44,7 +44,7 @@ def product_landing(request, template, slug):
         'topics': topics_for(
             products=[product],
             new_topics=new_topics,
-            include_subtopics=False),
+            parent=None),
         'hot_docs': hot_docs,
         'fallback_hot_docs': fallback_hot_docs,
         'search_params': {'product': slug}})

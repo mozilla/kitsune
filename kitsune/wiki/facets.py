@@ -14,11 +14,11 @@ from kitsune.wiki.models import Document, DocumentMappingType
 
 
 # TODO: Remove the new_topics argument when we remove old topics.
-def topics_for(products, parent=None, include_subtopics=True,
-               new_topics=False):
+def topics_for(products, parent=False, new_topics=False):
     """Returns a list of topics that apply to passed in products and topics.
 
     :arg products: a list of Product instances
+    :arg parent: (optional) limit to topics with the given parent
     """
     statsd.incr('wiki.facets.topics_for.db')
 
@@ -41,7 +41,7 @@ def topics_for(products, parent=None, include_subtopics=True,
             .annotate(num_docs=Count('document'))
             .distinct())
 
-    if parent or not include_subtopics:
+    if parent or parent is None:
         qs = qs.filter(parent=parent)
 
     return qs
