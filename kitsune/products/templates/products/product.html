@@ -38,14 +38,7 @@
     {{ hot_topics(hot_docs, fallback_hot_docs) }}
     <section id="help-topics">
       <h1>{{ _('Help Topics') }}</h1>
-      {{ help_topics(topics[:5], show_community_support=True) }}
-      {% for topic in topics[5:10] %}
-        {% if loop.first %}<ul>{% endif %}
-        <li>
-          <a href="{{ url('products.documents', product_slug=product.slug, topic_slug=topic.slug) }}">{{ _(topic.title, 'DB: topics.Topic.title') }}</a>
-        </li>
-        {% if loop.last %}</ul>{% endif %}
-      {% endfor %}
+      {{ help_topics(topics, show_community_support=True) }}
     </section>
   </div>
 {% endblock %}
