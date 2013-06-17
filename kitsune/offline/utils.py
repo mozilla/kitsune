@@ -1,19 +1,14 @@
 from functools import wraps
-import json
 import time
 
 from tower import ugettext as _
 
 from django.conf import settings
-from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseNotFound
+from django.http import HttpResponse, HttpResponseBadRequest
 
-from kitsune.products.models import Product
-from kitsune.sumo.utils import uselocale
-from kitsune.sumo.parser import _get_wiki_link
+from kitsune.offline.index import TFIDFAnalysis, find_word_locations_en_like
 from kitsune.wiki.config import CATEGORIES
 from kitsune.wiki.models import Document
-from kitsune.wiki.parser import WikiParser as WParser
-from kitsune.wiki.tfidf import TFIDFAnalysis, find_word_locations_en_like
 
 
 bundle_key = lambda locale, product_slug: locale + '~' + product_slug
@@ -58,7 +53,7 @@ def bundle_for_product(product, locale):
     # we need a dictionary as we need to merge everything together.
     bundle['topics'] = topics = {}
     bundle['docs'] = docs_bundle = {}
-    bundle['indexes'] = indexes = {}
+    bundle['indexes'] = {}
 
     index_builder = TFIDFAnalysis()
 
@@ -168,36 +163,3 @@ def cors_enabled(origin, methods=['GET']):
             return response
         return decorated_func
     return decorator
-
-@cors_enabled('*')
-def get_bundles(request):
-    if 'locales' not in request.GET or 'products' not in request.GET:
-        return HttpResponseBadRequest()
-
-    locales = request.GET.getlist('locales', [])
-    products = request.GET.getlist('products', [])
-
-    try:
-        products = [Product.objects.get(slug=product) for product in products]
-    except Product.DoesNotExist:
-        return HttpResponseNotFound('{"error": "not found", "reason": "invalid product"}', mimetype='application/json')
-
-    bundles = []
-    for locale in locales:
-        if locale.lower() not in settings.LANGUAGES:
-            return HttpResponseNotFound('{"error": "not found", "reason": "invalid locale"}', mimetype='application/json')
-
-        for product in products:
-            with uselocale(locale):
-                bundles.append(bundle_for_product(product, locale))
-
-    data = json.dumps(merge_bundles(*bundles))
-
-    return HttpResponse(data, mimetype='application/json')
-
-@cors_enabled('*')
-def get_languages(request):
-    data = json.dumps({'languages': settings.LANGUAGE_CHOICES})
-
-    return HttpResponse(data, mimetype='application/json')
-
