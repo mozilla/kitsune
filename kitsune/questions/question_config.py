@@ -138,7 +138,7 @@ products = SortedDict([
                 'tags': ['download-and-install'],
             }),
             ('customize', {
-                'name': _lazy(u'Customize controls, options and add-ons'),
+                'name': _lazy(u'Customize controls, options, settings and preferences'),
                 'topic': 'customize',
                 'tags': ['customize'],
             }),
