@@ -154,16 +154,25 @@ class ProductViewsTestCase(ElasticTestCase):
         url = reverse('products.documents', args=[p.slug, t.slug])
         r = self.client.get(url, follow=True)
         eq_(200, r.status_code)
-        doc = pq(r.content)
-        eq_(0, len(doc('ul.subtopics')))
+        pqdoc = pq(r.content)
+        eq_(0, len(pqdoc('ul.subtopics')))
 
-        # Create a subtopic and verify it is listed
-        topic(parent=t, save=True)
-        url = reverse('products.documents', args=[p.slug, t.slug])
+        # Create a subtopic, it still shouldn't show up because no
+        # articles are assigned.
+        subtopic = topic(parent=t, save=True)
         r = self.client.get(url, follow=True)
         eq_(200, r.status_code)
-        doc = pq(r.content)
-        eq_(1, len(doc('ul.subtopics')))
+        pqdoc = pq(r.content)
+        eq_(0, len(pqdoc('ul.subtopics')))
+
+        # Add a document to the subtopic, now it should appear.
+        doc.topics.add(subtopic)
+        self.refresh()
+
+        r = self.client.get(url, follow=True)
+        eq_(200, r.status_code)
+        pqdoc = pq(r.content)
+        eq_(1, len(pqdoc('ul.subtopics')))
 
 
 class ProductViewsNewTopicsTestCase(ElasticTestCase):
@@ -312,13 +321,22 @@ class ProductViewsNewTopicsTestCase(ElasticTestCase):
         url = reverse('products.documents', args=[p.slug, t.slug])
         r = self.client.get(url, follow=True)
         eq_(200, r.status_code)
-        doc = pq(r.content)
-        eq_(0, len(doc('ul.subtopics')))
+        pqdoc = pq(r.content)
+        eq_(0, len(pqdoc('ul.subtopics')))
 
-        # Create a subtopic and verify it is listed
-        new_topic(parent=t, product=p, save=True)
-        url = reverse('products.documents', args=[p.slug, t.slug])
+        # Create a subtopic, it still shouldn't show up because no
+        # articles are assigned.
+        subtopic = new_topic(parent=t, product=p, save=True)
         r = self.client.get(url, follow=True)
         eq_(200, r.status_code)
-        doc = pq(r.content)
-        eq_(1, len(doc('ul.subtopics')))
+        pqdoc = pq(r.content)
+        eq_(0, len(pqdoc('ul.subtopics')))
+
+        # Add a document to the subtopic, now it should appear.
+        doc.new_topics.add(subtopic)
+        self.refresh()
+
+        r = self.client.get(url, follow=True)
+        eq_(200, r.status_code)
+        pqdoc = pq(r.content)
+        eq_(1, len(pqdoc('ul.subtopics')))

@@ -812,6 +812,10 @@ register_for_indexing(
     m2m=True)
 register_for_indexing(
     'wiki',
+    Document.new_topics.through,
+    m2m=True)
+register_for_indexing(
+    'wiki',
     Document.products.through,
     m2m=True)
 
