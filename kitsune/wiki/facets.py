@@ -134,7 +134,7 @@ def _es_documents_for(locale, topics=None, products=None):
 
 # TODO: Remove the new_topics argument when we remove old topics.
 def _db_documents_for(locale, topics=None, products=None, new_topics=False):
-    """DB implementation of topics_for."""
+    """DB implementation of documents_for."""
     qs = Document.objects.filter(
         locale=locale,
         is_archived=False,
