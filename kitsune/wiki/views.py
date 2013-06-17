@@ -1176,6 +1176,9 @@ def _document_form_initial(document):
             'is_archived': document.is_archived,
             'topics': Topic.uncached.filter(
                 document=document).values_list('id', flat=True),
+            # TODO: Remove topics above and replace with new_topics.
+            'new_topics': NewTopic.uncached.filter(
+                document=document).values_list('id', flat=True),
             'products': Product.uncached.filter(
                 document=document).values_list('id', flat=True),
             'allow_discussion': document.allow_discussion,
