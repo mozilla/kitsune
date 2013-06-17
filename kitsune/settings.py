@@ -440,6 +440,7 @@ INSTALLED_APPS = (
     'kitsune.kpi',
     'kitsune.products',
     'kitsune.topics',
+    'kitsune.offline',
 
     # App for Sentry:
     'raven.contrib.django',
