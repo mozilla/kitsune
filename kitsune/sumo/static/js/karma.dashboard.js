@@ -5,7 +5,7 @@
 function deslugify(slug){
     return _.map(slug.split('-'), function(w) {
         return w.charAt(0).toUpperCase() + w.slice(1)
-    }).join(' ')
+    }).join(' ');
 }
 
 
