@@ -12,7 +12,11 @@ class ProductAdmin(admin.ModelAdmin):
 
 
 class TopicAdmin(admin.ModelAdmin):
-    list_display = ('product', 'title', 'slug', 'display_order', 'visible')
+    def parent(obj):
+        return obj.parent
+    parent.short_description = 'Parent'
+
+    list_display = ('product', 'title', 'slug', parent, 'display_order', 'visible')
     list_display_links = ('title', 'slug')
     list_editable = ('display_order', 'visible')
     list_filter = ('product', 'parent', 'slug')
