@@ -45,7 +45,6 @@ from kitsune.wiki.showfor import showfor_data
 from kitsune.wiki.tasks import (
     send_reviewed_notification, schedule_rebuild_kb,
     send_contributor_notification)
-from kitsune.wiki.offline import get_bundles, get_languages
 
 
 log = logging.getLogger('k.wiki')

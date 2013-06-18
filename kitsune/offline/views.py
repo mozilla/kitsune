@@ -11,7 +11,11 @@ from kitsune.offline.utils import (cors_enabled,
 from kitsune.products.models import Product
 from kitsune.sumo.utils import uselocale
 
+INVALID_PRODUCT = '{"error": "not found", "reason": "invalid product"}'
+INVALID_LOCALE = '{"error": "not found", "reason": "invalid locale"}'
 
+
+# TODO: do not use cors for everywhere. Though we need a finalized URL.
 @cors_enabled('*')
 def get_bundles(request):
     if 'locales' not in request.GET or 'products' not in request.GET:
@@ -23,23 +27,29 @@ def get_bundles(request):
     try:
         products = [Product.objects.get(slug=product) for product in products]
     except Product.DoesNotExist:
-        return HttpResponseNotFound('{"error": "not found", "reason": "invalid product"}', mimetype='application/json')
+        return HttpResponseNotFound(INVALID_PRODUCT,
+                                    mimetype='application/json')
 
     bundles = []
     for locale in locales:
         if locale.lower() not in settings.LANGUAGES:
-            return HttpResponseNotFound('{"error": "not found", "reason": "invalid locale"}', mimetype='application/json')
+            return HttpResponseNotFound(INVALID_LOCALE,
+                                        mimetype='application/json')
 
         for product in products:
+            # We need to switch locale as topic names are translated via _
             with uselocale(locale):
                 bundles.append(bundle_for_product(product, locale))
 
+    # and yes, even if there is only one bundle we need to merge. The bundle
+    # from bundle_for_product is in a dictionary based format. We need it in a
+    # list based format.
     data = json.dumps(merge_bundles(*bundles))
 
     return HttpResponse(data, mimetype='application/json')
 
+
 @cors_enabled('*')
 def get_languages(request):
     data = json.dumps({'languages': settings.LANGUAGE_CHOICES})
-
     return HttpResponse(data, mimetype='application/json')

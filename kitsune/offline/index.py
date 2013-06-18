@@ -5,8 +5,11 @@ import math
 import string
 import re
 
+
 _whitespace_regex = re.compile(r'\s|-', flags=re.U)
 _alpha_regex = re.compile(r'\w', flags=re.U)
+
+
 def find_word_locations_western(s):
     """Builds an index in the format of {word: location}.
     This is a english like search. For Chinese-like
@@ -17,7 +20,7 @@ def find_word_locations_western(s):
     for c in s:
         if _whitespace_regex.match(c) or c in string.punctuation:
             words.append(u'')
-        elif c in '.!?': # We want to treat . as a big stop. Add two space.
+        elif c in '.!?':  # We want to treat . as a big stop. Add two space.
             words.append(u'')
             words.append(u'')
         elif c in '\'"[]1234567890/\\()_':
@@ -25,7 +28,7 @@ def find_word_locations_western(s):
         elif _alpha_regex.match(c) is not None:
             words[-1] += c
         else:
-            continue # something weird..
+            continue  # something weird.. just relax.. it's fine. we'll skip it
 
     locations = {}
     for i, w in enumerate(words):
@@ -36,6 +39,7 @@ def find_word_locations_western(s):
 
     return locations
 
+
 def find_word_locations_east_asian(s):
     """Builds an index of the format of {word: location}. This method is for
     languages like Chinese where there is no spaces to denote the beginning and
@@ -43,8 +47,10 @@ def find_word_locations_east_asian(s):
     """
     words = [u'']
     for c in s:
-        if _whitespace_regex.match(c) or c in u"；：，、" or c in string.punctuation: # still possible to have white space.
+        # Yes, east asian languages could still have white space.
+        if _whitespace_regex.match(c) or c in u"；：，、" + string.punctuation:
             words.append(u'')
+        # This is at least the punctuations in Chinese.
         elif c in u'。！？':
             words.append(u'')
             words.append(u'')
@@ -53,8 +59,7 @@ def find_word_locations_east_asian(s):
         elif _alpha_regex.match(c) is not None:
             words.append(c)
         else:
-            print "wut..", c
-            continue # Something weird
+            continue  # Something weird, but it is totally okay
 
     locations = {}
     for i, w in enumerate(words):
@@ -63,39 +68,36 @@ def find_word_locations_east_asian(s):
             l.append(i)
     return locations
 
-# Location based index is not enabled as it is not implemented on the client side.
+
+# Location based index is not enabled as it is not implemented on the client
+# side. It is also not proven that it will work effectively (although later on
+# we might need to implement this).
 # class LocationIndex(object):
 #     def __init__(self):
 #         self.index = {}
-#         self.done = False
 
 #     def feed(self, doc_id, texts, get_locations):
-#         if self.done:
-#             raise Exception
-
 #         for text, boost in texts:
 #             locations = get_locations(text)
 #             for w, l in locations.iteritems():
 #                 global_word_locations = self.index.setdefault(w, {})
-#                 local_word_locations = global_word_locations.setdefault(doc_id, [])
+#                 local_location = global_word_locations.setdefault(doc_id, [])
 #                 for location in l:
-#                     local_word_locations.append(location)
+#                     local_location.append(location)
 
 #     def offline_index(self):
 #         return self.index
 
+
+# Ahhh. The TFIDF index is awesome.
 class TFIDFIndex(object):
     def __init__(self):
         self.doc_count = 0
         self.global_word_freq = {}
         self.local_word_freq = {}
         self.docs_words_boosts = {}
-        self.done = False
 
     def feed(self, doc_id, texts, get_locations):
-        if self.done:
-            raise Exception
-
         self.doc_count += 1
         if doc_id in self.local_word_freq:
             return
@@ -116,7 +118,7 @@ class TFIDFIndex(object):
 
                 boost = max(self.docs_words_boosts[doc_id].get(w, 0), boost)
 
-                if boost != 1: # save some space..
+                if boost != 1:  # save some space..
                     self.docs_words_boosts[doc_id][w] = boost
 
     def f(self, term, doc_id):
@@ -124,23 +126,26 @@ class TFIDFIndex(object):
 
     # Awesome sauce
     # http://en.wikipedia.org/wiki/Tf%E2%80%93idf
+    # All of this is explained in the docs. So don't worry.
 
     # Algorithm adapted from wikipedia.
     # tf(t, d) = 0.5 + \frac{0.5 f(t, d)}{max(f(w, d), w \in d)}
     def tf(self, term, doc_id):
-        return 0.5 + (0.5 * self.f(term, doc_id)) / (max(self.local_word_freq[doc_id].values()))
+        o = self.f(term, doc_id) / max(self.local_word_freq[doc_id].values())
+        return 0.5 + (0.5 * o)
 
     # Wikipedia is amazing
     # idf(t, D) = \log \frac{|D|}{|{d \in D : t \in D}|}
     def idf(self, term):
-        appearance = 0 # Avoid division by 0 problem
+        appearance = 0  # Avoid division by 0 problem
         for doc_id, words in self.local_word_freq.iteritems():
             appearance += 1 if term in words else 0
         # Add a 1 so we are approximately the same.. not really
         return math.log(self.doc_count / appearance, 2)
 
     def tfidf(self, term, doc_id):
-        return self.tf(term, doc_id) * self.idf(term) * self.docs_words_boosts[doc_id].get(term, 1)
+        boost = self.docs_words_boosts[doc_id].get(term, 1)
+        return self.tf(term, doc_id) * self.idf(term) * boost
 
     def tfidf_doc(self, doc_id):
         doc = self.local_word_freq[doc_id]
