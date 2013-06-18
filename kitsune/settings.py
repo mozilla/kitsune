@@ -186,6 +186,16 @@ AAQ_LANGUAGES = (
     'xx',  # This is a test locale
 )
 
+WESTERN_LANGUAGES = (
+    'en-US',
+    'pt-BR',
+)
+
+EAST_ASIAN_LANGUAGES = (
+    'zh-CN',
+    'zh-TW'
+)
+
 # Languages that should show up in language switcher.
 LANGUAGE_CHOICES = tuple(
     [(lang, LOCALES[lang].native) for lang in SUMO_LANGUAGES

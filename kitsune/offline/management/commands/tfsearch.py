@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 
-from kitsune.offline.index import TFIDFAnalysis, find_word_locations_en_like
+from kitsune.offline.index import TFIDFIndex, find_word_locations_en_like
 from kitsune.wiki.models import Document
 from kitsune.wiki.config import CATEGORIES
 
@@ -10,7 +10,7 @@ class Command(BaseCommand):
                                        is_template=False,
                                        category__in=(CATEGORIES[0][0], CATEGORIES[1][0]))
 
-        analysis = TFIDFAnalysis()
+        analysis = TFIDFIndex()
 
         for doc in docs:
             if doc.redirect_url():

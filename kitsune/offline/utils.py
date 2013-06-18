@@ -1,4 +1,5 @@
 from functools import wraps
+import re
 import time
 
 from tower import ugettext as _
@@ -6,7 +7,7 @@ from tower import ugettext as _
 from django.conf import settings
 from django.http import HttpResponse, HttpResponseBadRequest
 
-from kitsune.offline.index import TFIDFAnalysis, find_word_locations_en_like
+from kitsune.offline.index import TFIDFIndex, find_word_locations_western
 from kitsune.wiki.config import CATEGORIES
 from kitsune.wiki.models import Document
 
@@ -14,6 +15,11 @@ from kitsune.wiki.models import Document
 bundle_key = lambda locale, product_slug: locale + '~' + product_slug
 doc_key = lambda locale, doc_slug: locale + '~' + doc_slug
 topic_key = lambda locale, product_slug, topic_slug: locale + '~' + product_slug + '~' + topic_slug
+
+_noscript_regex = re.compile(r'<noscript>.*</noscript>', flags=re.DOTALL)
+def transform_html(dochtml):
+    dochtml = _noscript_regex.sub('', dochtml)
+    return dochtml
 
 def serialize_document_for_offline(doc):
     """Grabs the document in a dictionary. This method returns a document that
@@ -29,8 +35,7 @@ def serialize_document_for_offline(doc):
         return {
             'key': doc_key(doc.locale, doc.slug),
             'title': doc.title,
-            'html': doc.html,
-            #'html': wiki_to_html(doc.current_revision.content, locale=doc.locale, doc_id=doc.id),
+            'html': transform_html(doc.html),
             'updated': int(time.mktime(doc.current_revision.created.timetuple())),
             'slug': doc.slug,
             'archived': False,
@@ -55,7 +60,7 @@ def bundle_for_product(product, locale):
     bundle['docs'] = docs_bundle = {}
     bundle['indexes'] = {}
 
-    index_builder = TFIDFAnalysis()
+    index_builder = TFIDFIndex()
 
     if locale == settings.WIKI_DEFAULT_LANGUAGE:
         docs = Document.objects.filter(products__id=product.id, locale=locale,
@@ -77,7 +82,7 @@ def bundle_for_product(product, locale):
         serialized_doc = serialize_document_for_offline(doc)
 
         if not doc.is_archived:
-            index_builder.feed(doc.id, [(doc.title, 1.2), (doc.current_revision.summary, 1)], find_word_locations_en_like)
+            index_builder.feed(doc.id, [(doc.title, 1.2), (doc.current_revision.summary, 1)], find_word_locations_western)
 
         docs_bundle[serialized_doc['key']] = serialized_doc
 

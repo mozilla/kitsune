@@ -1,25 +1,28 @@
+# -*- coding: utf-8 -*-
 from __future__ import division
 
 import math
+import string
+import re
 
-def find_word_locations_en_like(s):
-    """Builds an index in the format of {word: location}. This method also
-    strips out any stop words. This is a english like search. For Chinese-like
+_whitespace_regex = re.compile(r'\s|-', flags=re.U)
+_alpha_regex = re.compile(r'\w', flags=re.U)
+def find_word_locations_western(s):
+    """Builds an index in the format of {word: location}.
+    This is a english like search. For Chinese-like
     (no spaces and what not), use establish_word_locations_zh_like
     """
     s = s.lower()
-    words = ['']
+    words = [u'']
     for c in s:
-        if c in ' -':
-            words.append('')
-        elif c == '.': # We want to treat . as a big stop. Add two space.
-            words.append('')
-            words.append('')
-        elif c in ',;:': # We want to treat , as a single gap
-            words.append('')
-        elif c in '\'"[]1234567890/\\?!()\t_\n':
+        if _whitespace_regex.match(c) or c in string.punctuation:
+            words.append(u'')
+        elif c in '.!?': # We want to treat . as a big stop. Add two space.
+            words.append(u'')
+            words.append(u'')
+        elif c in '\'"[]1234567890/\\()_':
             continue
-        elif c in 'abcdefghijklmnopqrstuvwxyz':
+        elif _alpha_regex.match(c) is not None:
             words[-1] += c
         else:
             continue # something weird..
@@ -33,7 +36,55 @@ def find_word_locations_en_like(s):
 
     return locations
 
-class TFIDFAnalysis(object):
+def find_word_locations_east_asian(s):
+    """Builds an index of the format of {word: location}. This method is for
+    languages like Chinese where there is no spaces to denote the beginning and
+    end of a word.
+    """
+    words = [u'']
+    for c in s:
+        if _whitespace_regex.match(c) or c in u"；：，、" or c in string.punctuation: # still possible to have white space.
+            words.append(u'')
+        elif c in u'。！？':
+            words.append(u'')
+            words.append(u'')
+        elif c in u'\'"[]1234567890/\\()_（）【】『』、￥《》’‘”“':
+            continue
+        elif _alpha_regex.match(c) is not None:
+            words.append(c)
+        else:
+            print "wut..", c
+            continue # Something weird
+
+    locations = {}
+    for i, w in enumerate(words):
+        if w:
+            l = locations.setdefault(w, [])
+            l.append(i)
+    return locations
+
+# Location based index is not enabled as it is not implemented on the client side.
+# class LocationIndex(object):
+#     def __init__(self):
+#         self.index = {}
+#         self.done = False
+
+#     def feed(self, doc_id, texts, get_locations):
+#         if self.done:
+#             raise Exception
+
+#         for text, boost in texts:
+#             locations = get_locations(text)
+#             for w, l in locations.iteritems():
+#                 global_word_locations = self.index.setdefault(w, {})
+#                 local_word_locations = global_word_locations.setdefault(doc_id, [])
+#                 for location in l:
+#                     local_word_locations.append(location)
+
+#     def offline_index(self):
+#         return self.index
+
+class TFIDFIndex(object):
     def __init__(self):
         self.doc_count = 0
         self.global_word_freq = {}
