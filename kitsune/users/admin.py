@@ -41,7 +41,10 @@ class ProfileAdmin(admin.ModelAdmin):
         return False
 
     def full_user(self, obj):
-        return u'%s <%s>' % (obj.user.username, obj.user.email)
+        if obj.name:
+            return u'%s <%s>' % (obj.user.username, obj.name)
+        else:
+            return obj.user.username
     full_user.short_description = 'User'
 
     def save_model(self, request, obj, form, change):
