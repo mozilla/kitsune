@@ -1,6 +1,9 @@
 # Neither Firefox nor Safari will draw these if they're text/xml
 AddType image/svg+xml .svg
 AddType application/octet-stream .exe
+AddType application/font-woff .woff
+AddType application/vnd.ms-fontobject .eot
+AddType application/octet-stream .ttf
 
 AddCharset utf-8 .css .js
 
@@ -26,4 +29,10 @@ FileETag MTime
 
 <FilesMatch "\.txt$">
     FileETag None
+</FilesMatch>
+
+# fonts
+<FilesMatch "\.(eot|svg|ttf|woff)$">
+    Header set Access-Control-Allow-Origin "*"
+    ExpiresByType application/octet-stream "access plus 1 year"
 </FilesMatch>
