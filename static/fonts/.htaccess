@@ -9,5 +9,5 @@ RewriteRule \.(woff|eot|ttf)$ - [F,NC,L,E=!CORS]
 <FilesMatch "\.(ttf|woff|eot)$">
     Header append vary "Origin"
     ExpiresActive On
-    ExpiresDefault "access plus 2 weeks"
+    ExpiresDefault "access plus 1 year"
 </FilesMatch>

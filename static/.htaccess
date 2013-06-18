@@ -30,9 +30,3 @@ FileETag MTime
 <FilesMatch "\.txt$">
     FileETag None
 </FilesMatch>
-
-# fonts
-<FilesMatch "\.(eot|svg|ttf|woff)$">
-    Header set Access-Control-Allow-Origin "*"
-    ExpiresByType application/octet-stream "access plus 1 year"
-</FilesMatch>
