@@ -24,13 +24,12 @@ from tower import ugettext_lazy as _lazy
 from tower import ugettext as _
 
 from kitsune.access.decorators import login_required
-from kitsune.products.models import Product, Topic as NewTopic
+from kitsune.products.models import Product, Topic
 from kitsune.sumo.helpers import urlparams
 from kitsune.sumo.redis_utils import redis_client, RedisError
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import (paginate, smart_int, get_next_url, user_or_ip,
                         truncated_json_dumps)
-from kitsune.topics.models import Topic
 from kitsune.wiki import DOCUMENTS_PER_PAGE
 from kitsune.wiki.config import CATEGORIES, TEMPLATES_CATEGORY
 from kitsune.wiki.events import (
@@ -118,10 +117,7 @@ def document(request, document_slug, template=None):
     else:
         product = products[0]
 
-    if waffle.flag_is_active(request, 'new-topics'):
-        topics = NewTopic.objects.filter(product=product, visible=True)
-    else:
-        topics = Topic.objects.filter(visible=True)
+    topics = Topic.objects.filter(product=product, visible=True)
 
     ga_push = []
     if fallback_reason is not None:
@@ -159,7 +155,7 @@ def revision(request, document_slug, revision_id):
 
 
 @require_GET
-def list_documents(request, category=None, topic=None):
+def list_documents(request, category=None):
     """List wiki documents."""
     docs = Document.objects.filter(locale=request.LANGUAGE_CODE).order_by('title')
     if category:
@@ -173,21 +169,10 @@ def list_documents(request, category=None, topic=None):
         except KeyError:
             raise Http404
 
-    if topic:
-        topic = get_object_or_404(Topic, slug=topic)
-        default_lang = settings.WIKI_DEFAULT_LANGUAGE
-        if request.LANGUAGE_CODE == default_lang:
-            docs = docs.filter(topics=topic)
-        else:
-            parent_ids = Document.objects.filter(
-                locale=default_lang, topics=topic).values_list('id', flat=True)
-            docs = docs.filter(parent__in=parent_ids)
-
     docs = paginate(request, docs, per_page=DOCUMENTS_PER_PAGE)
     return render(request, 'wiki/list_documents.html', {
         'documents': docs,
-        'category': category,
-        'topic': topic.title if topic else None})
+        'category': category})
 
 
 @login_required
@@ -1175,9 +1160,6 @@ def _document_form_initial(document):
             'is_localizable': document.is_localizable,
             'is_archived': document.is_archived,
             'topics': Topic.uncached.filter(
-                document=document).values_list('id', flat=True),
-            # TODO: Remove topics above and replace with new_topics.
-            'new_topics': NewTopic.uncached.filter(
                 document=document).values_list('id', flat=True),
             'products': Product.uncached.filter(
                 document=document).values_list('id', flat=True),

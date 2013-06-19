@@ -3,9 +3,9 @@ from datetime import datetime
 
 from django.template.defaultfilters import slugify
 
-from kitsune.products.tests import product
+from kitsune.products.models import Product
+from kitsune.products.tests import product, topic
 from kitsune.sumo.tests import LocalizingClient, TestCase, with_save
-from kitsune.topics.tests import topic
 from kitsune.users.tests import user
 from kitsune.wiki.models import Document, Revision, HelpfulVote, Locale
 from kitsune.wiki.config import CATEGORIES, SIGNIFICANCES
@@ -95,12 +95,15 @@ def doc_rev(content=''):
 
 
 def new_document_data(topic_ids=None, product_ids=None):
+    product_ids = product_ids or [product(save=True).id]
+    p = Product.objects.get(id=product_ids[0])
+    topic_ids = topic_ids or [topic(product=p, save=True).id]
     return {
         'title': 'A Test Article',
         'slug': 'a-test-article',
         'locale': 'en-US',
-        'topics': topic_ids or [topic(save=True).id],
-        'products': product_ids or [product(save=True).id],
+        'topics': topic_ids,
+        'products': product_ids,
         'category': CATEGORIES[0][0],
         'keywords': 'key1, key2',
         'summary': 'lipsum',

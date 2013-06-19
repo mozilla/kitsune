@@ -15,13 +15,12 @@ from nose.tools import eq_
 from pyquery import PyQuery as pq
 from wikimarkup.parser import ALLOWED_TAGS, ALLOWED_ATTRIBUTES
 
-from kitsune.products.tests import product
+from kitsune.products.tests import product, topic
 from kitsune.questions.tests import question, answer, answervote
 from kitsune.search.tests.test_es import ElasticTestCase
 from kitsune.sumo.helpers import urlparams
 from kitsune.sumo.tests import post, get, attrs_eq, MobileTestCase
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.topics.tests import topic
 from kitsune.users.tests import user, add_permission
 from kitsune.wiki.events import (
     EditDocumentEvent, ReadyRevisionEvent, ReviewableRevisionInLocaleEvent,
@@ -1105,26 +1104,6 @@ class DocumentListTests(TestCaseBase):
         doc = pq(response.content)
         eq_(Document.objects.filter(locale=self.locale).count(),
             len(doc('#document-list ul.documents li')))
-
-    def test_topic_list(self):
-        """Verify the documents by topic list view."""
-        t = topic(save=True)
-        self.doc.topics.add(t)
-        response = self.client.get(
-            reverse('wiki.topic', args=[t.slug]))
-        eq_(200, response.status_code)
-        doc = pq(response.content)
-        eq_(1, len(doc('#document-list ul.documents li')))
-
-    def test_topic_list_l10n(self):
-        """Verify the documents by topic list view for a locale."""
-        t = topic(save=True)
-        self.doc.topics.add(t)
-        response = self.client.get(
-            reverse('wiki.topic', locale='es', args=[t.slug]))
-        eq_(200, response.status_code)
-        doc = pq(response.content)
-        eq_(1, len(doc('#document-list ul.documents li')))
 
 
 class DocumentRevisionsTests(TestCaseBase):

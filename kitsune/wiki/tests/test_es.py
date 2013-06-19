@@ -2,11 +2,10 @@ from datetime import datetime, timedelta
 
 from nose.tools import eq_
 
-from kitsune.products.tests import product
+from kitsune.products.tests import product, topic
 from kitsune.search.tests.test_es import ElasticTestCase
-from kitsune.topics.tests import topic
 from kitsune.wiki.tests import document, revision, helpful_vote
-from kitsune.wiki.models import Document, DocumentMappingType
+from kitsune.wiki.models import DocumentMappingType
 from kitsune.wiki.config import REDIRECT_CONTENT
 
 
@@ -114,14 +113,16 @@ class TestPostUpdate(ElasticTestCase):
         doc.save()
         revision(document=doc, is_approved=True, save=True)
         self.refresh()
-        eq_(DocumentMappingType.search().query(document_title__text='wool').count(), 1)
+        eq_(DocumentMappingType.search().query(
+            document_title__text='wool').count(), 1)
 
         # Now create a revision that is a redirect and make sure the
         # document is removed from the index.
         revision(document=doc, content=REDIRECT_CONTENT, is_approved=True,
                  save=True)
         self.refresh()
-        eq_(DocumentMappingType.search().query(document_title__text='wool').count(), 0)
+        eq_(DocumentMappingType.search().query(
+            document_title__text='wool').count(), 0)
 
     def test_wiki_keywords(self):
         """Make sure updating keywords updates the index."""
@@ -132,12 +133,14 @@ class TestPostUpdate(ElasticTestCase):
         doc.save()
         revision(document=doc, is_approved=True, save=True)
         self.refresh()
-        eq_(DocumentMappingType.search().query(document_keywords='wool').count(), 0)
+        eq_(DocumentMappingType.search().query(
+            document_keywords='wool').count(), 0)
 
         revision(document=doc, is_approved=True, keywords='wool', save=True)
         self.refresh()
 
-        eq_(DocumentMappingType.search().query(document_keywords='wool').count(), 1)
+        eq_(DocumentMappingType.search().query(
+            document_keywords='wool').count(), 1)
 
     def test_recent_helpful_votes(self):
         """Recent helpful votes are indexed properly."""

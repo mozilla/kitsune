@@ -9,9 +9,8 @@ from tower import ugettext_lazy as _lazy
 from kitsune import  search as constants
 from kitsune.forums.models import Forum as DiscussionForum
 from kitsune.lib.sumo_locales import LOCALES
-from kitsune.products.models import Product
+from kitsune.products.models import Product, Topic
 from kitsune.sumo.form_fields import TypedMultipleChoiceField
-from kitsune.topics.models import Topic
 from kitsune.wiki.config import CATEGORIES
 
 
@@ -29,7 +28,8 @@ class SearchForm(forms.Form):
         product_field.choices = Product.objects.values_list('slug', 'title')
 
         topics_field = self.fields['topics']
-        topics_field.choices = Topic.objects.values_list('slug', 'title')
+        topics_field.choices = Topic.objects.values_list(
+            'slug', 'title').distinct()
 
     def clean(self):
         """Clean up data and set defaults"""

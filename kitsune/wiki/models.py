@@ -17,7 +17,7 @@ from statsd import statsd
 from tidings.models import NotificationsMixin
 from tower import ugettext_lazy as _lazy, ugettext as _
 
-from kitsune.products.models import Product, Topic as NewTopic
+from kitsune.products.models import Product, Topic
 from kitsune.questions.models import Question
 from kitsune.search.es_utils import UnindexMeBro, ES_EXCEPTIONS
 from kitsune.search.models import (
@@ -27,7 +27,6 @@ from kitsune.sumo import ProgrammingError
 from kitsune.sumo.models import ModelBase, LocaleField
 from kitsune.sumo.urlresolvers import reverse, split_path
 from kitsune.tags.models import BigVocabTaggableMixin
-from kitsune.topics.models import Topic
 from kitsune.wiki import TEMPLATE_TITLE_PREFIX
 from kitsune.wiki.config import (
     CATEGORIES, SIGNIFICANCES, TYPO_SIGNIFICANCE, MEDIUM_SIGNIFICANCE,
@@ -111,13 +110,8 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
     # List of products this document applies to.
     products = models.ManyToManyField(Product)
 
-    # List of topics this document applies to.
-    topics = models.ManyToManyField(Topic)
-
     # List of product-specific topics this document applies to.
-    # TODO: Remove old topics above and rename this to topics.
-    # We'll have to pass a db_table param to specify the table name.
-    new_topics = models.ManyToManyField(NewTopic)
+    topics = models.ManyToManyField(Topic, db_table='wiki_document_new_topics')
 
     # Needs change fields.
     needs_change = models.BooleanField(default=False, help_text=_lazy(
@@ -501,7 +495,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         return EditDocumentEvent.is_notifying(user, self)
 
     def get_topics(self, uncached=False):
-        """Return the list of topics that apply to this document.
+        """Return the list of new topics that apply to this document.
 
         If the document has a parent, it inherits the parent's topics.
         """
@@ -511,20 +505,6 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
             q = Topic.uncached
         else:
             q = Topic.objects
-        return q.filter(document=self)
-
-    # Remove get_topics above and replace it with this one.
-    def get_new_topics(self, uncached=False):
-        """Return the list of new topics that apply to this document.
-
-        If the document has a parent, it inherits the parent's topics.
-        """
-        if self.parent:
-            return self.parent.get_new_topics()
-        if uncached:
-            q = NewTopic.uncached
-        else:
-            q = NewTopic.objects
         return q.filter(document=self)
 
     def get_products(self, uncached=False):
@@ -738,13 +718,8 @@ class DocumentMappingType(SearchMappingType):
         d['url'] = obj.get_absolute_url()
         d['indexed_on'] = int(time.time())
 
-        # For now, union the slugs of the old topics and new topics.
-        # .....What could go wrong?
-        # TODO: fix this when we remove old topics.
-        topics = list(set(
-            [t.slug for t in obj.get_topics(True)] +
-            [t.slug for t in obj.get_new_topics(True)]))
-        d['topic'] = topics
+
+        d['topic'] = [t.slug for t in obj.get_topics(True)]
         d['product'] = [p.slug for p in obj.get_products(True)]
 
         d['document_title'] = obj.title
@@ -809,10 +784,6 @@ register_for_indexing('wiki', Document)
 register_for_indexing(
     'wiki',
     Document.topics.through,
-    m2m=True)
-register_for_indexing(
-    'wiki',
-    Document.new_topics.through,
     m2m=True)
 register_for_indexing(
     'wiki',
