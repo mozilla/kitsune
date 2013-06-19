@@ -8,11 +8,10 @@ from taggit.models import TaggedItem
 
 from django.core.exceptions import ValidationError
 
-from kitsune.products.tests import product
+from kitsune.products.tests import product, topic
 from kitsune.sumo import ProgrammingError
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.topics.tests import topic
 from kitsune.wiki.config import (
     REDIRECT_SLUG, REDIRECT_TITLE, REDIRECT_HTML, MAJOR_SIGNIFICANCE,
     CATEGORIES, TYPO_SIGNIFICANCE, REDIRECT_CONTENT)
@@ -299,7 +298,7 @@ class DocumentTests(TestCase):
         eq_(2, len(en_us.get_topics()))
 
         # Localized document inherits parent's topics.
-        l10n = document(parent=en_us, save=True)
+        document(parent=en_us, save=True)
         eq_(2, len(en_us.get_topics()))
 
     def test_get_products(self):
@@ -311,7 +310,7 @@ class DocumentTests(TestCase):
         eq_(2, len(en_us.get_products()))
 
         # Localized document inherits parent's topics.
-        l10n = document(parent=en_us, save=True)
+        document(parent=en_us, save=True)
         eq_(2, len(en_us.get_products()))
 
 

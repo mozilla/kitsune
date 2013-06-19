@@ -9,7 +9,7 @@ class DocumentAdmin(admin.ModelAdmin):
                     'is_archived', 'allow_discussion')
     list_display_links = ('title',)
     list_filter = ('is_template', 'is_localizable', 'category', 'locale',
-                   'is_archived', 'allow_discussion', 'new_topics')
+                   'is_archived', 'allow_discussion', 'topics')
     raw_id_fields = ('parent', 'contributors')
     readonly_fields = ('id', 'current_revision', 'latest_localizable_revision')
     search_fields = ('title',)

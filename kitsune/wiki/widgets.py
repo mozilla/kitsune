@@ -7,57 +7,15 @@ from django.utils.safestring import mark_safe
 import jingo
 from test_utils import RequestFactory
 
-from kitsune.products.models import Topic as NewTopic
-from kitsune.topics.models import Topic
+from kitsune.products.models import Topic
 from kitsune.wiki.config import SIGNIFICANCES_HELP
-
-
-# TODO: Remove this when we remove old topics.
-class TopicsAndSubtopicsWidget(forms.widgets.SelectMultiple):
-    """A widget to render topics organized with subtopics."""
-
-    def render(self, name, value, attrs=None):
-        topics_and_subtopics = Topic.objects.all()
-        topics = [t for t in topics_and_subtopics if t.parent_id is None]
-
-        for topic in topics:
-            self.process_topic(value, topic)
-
-            topic.my_subtopics = [t for t in topics_and_subtopics
-                                  if t.parent_id == topic.id]
-
-            for subtopic in topic.my_subtopics:
-                self.process_topic(value, subtopic)
-
-        # Create a fake request to make jingo happy.
-        req = RequestFactory()
-        req.META = {}
-        req.locale = settings.WIKI_DEFAULT_LANGUAGE
-
-        return jingo.render_to_string(
-            req,
-            'wiki/includes/topics_widget.html',
-            {
-                'topics': topics,
-                'name': name,
-            })
-
-    def process_topic(self, value, topic):
-        if isinstance(value, (int, long)) and topic.id == value:
-            topic.checked = True
-        elif (not isinstance(value, basestring)
-              and isinstance(value, collections.Iterable)
-              and topic.id in value):
-            topic.checked = True
-        else:
-            topic.checked = False
 
 
 class ProductTopicsAndSubtopicsWidget(forms.widgets.SelectMultiple):
     """A widget to render topics organized by product and with subtopics."""
 
     def render(self, name, value, attrs=None):
-        topics_and_subtopics = NewTopic.objects.all()
+        topics_and_subtopics = Topic.objects.all()
         topics = [t for t in topics_and_subtopics if t.parent_id is None]
 
         for topic in topics:
