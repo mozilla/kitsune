@@ -58,8 +58,6 @@ class SessionMiddleware(object):
 
                     try:
                         tokens = t.get_authorized_tokens(verifier)
-                        print 't:'
-                        print tokens
                     except (TwythonError, TwythonAuthError):
                         log.warning('Twython Error with verifier token')
                         pass
@@ -91,8 +89,6 @@ class SessionMiddleware(object):
                 try:
                     auth_props = t.get_authentication_tokens(
                         callback_url=ssl_url)
-                    print 'ap: '
-                    print auth_props
                 except (TwythonError, TwythonAuthError):
                     log.warning('Twython error while getting authorization '
                                 'url')
