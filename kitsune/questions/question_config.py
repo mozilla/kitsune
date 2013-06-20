@@ -124,7 +124,7 @@ products = SortedDict([
             }),
         ])
     }),
-    ('firefox-os', {
+   """ ('firefox-os', {
         'name': _lazy(u'Firefox OS'),
         'subtitle': '',
         'extra_fields': [],
@@ -148,7 +148,7 @@ products = SortedDict([
                 'tags': ['fix-problems'],
             }),
         ])
-    }),
+    }), """
     ('other', {
         'name': _lazy(u'Thunderbird'),
         'subtitle':  _lazy(u'or other Mozilla products'),
