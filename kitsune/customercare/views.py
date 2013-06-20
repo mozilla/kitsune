@@ -204,7 +204,9 @@ def twitter_post(request):
         if username in settings.CC_BANNED_USERS:
             return render(request, 'customercare/tweets.html',
                           {'tweets': []})
-        result = request.twitter.api.update_status(content, reply_to_id)
+        result = request.twitter.api.update_status(
+            status=content,
+            in_reply_to_status_id=reply_to_id)
     except (TwythonError, TwythonAuthError), e:
         # L10n: {message} is an error coming from our twitter api library
         return HttpResponseBadRequest(
@@ -214,8 +216,10 @@ def twitter_post(request):
 
     # If tweepy's status models actually implemented a dictionary, it would
     # be too boring.
-    status = dict(result.__dict__)
-    author = dict(result.author.__dict__)
+    status = result
+    author = result['user']
+    created_at = datetime.strptime(status['created_at'],
+                                   '%a %b %d %H:%M:%S +0000 %Y')
 
     # Raw JSON blob data
     # Note: The JSON for the tweet posted is different than what we get from
@@ -223,8 +227,7 @@ def twitter_post(request):
     raw_tweet_data = {
         'id': status['id'],
         'text': status['text'],
-        'created_at': formatdate(calendar.timegm(
-            status['created_at'].timetuple())),
+        'created_at': status['created_at'],
         'iso_language_code': author['lang'],
         'from_user_id': author['id'],
         'from_user': author['screen_name'],
@@ -239,7 +242,7 @@ def twitter_post(request):
     tweet = Tweet.objects.create(pk=status['id'],
                          raw_json=json.dumps(raw_tweet_data),
                          locale=author['lang'],
-                         created=status['created_at'],
+                         created=created_at,
                          reply_to_id=reply_to_id)
 
     # Record in our Reply table.
@@ -249,7 +252,7 @@ def twitter_post(request):
         tweet_id=status['id'],
         raw_json=json.dumps(raw_tweet_data),
         locale=author['lang'],
-        created=status['created_at'],
+        created=created_at,
         reply_to_tweet_id=reply_to_id
     )
 
