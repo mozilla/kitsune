@@ -152,14 +152,12 @@ def landing(request):
     else:
         statsd.incr('customercare.stats.contributors.miss')
 
+    twitter_user = None
     if request.twitter.authed:
-        twitter_user = None
-
         try:
             credentials = request.twitter.api.verify_credentials()
         except (TwythonError, TwythonAuthError):
             # Bad oauth token. Create a new session so user re-auths.
-            twitter_user = None
             request.twitter = twitter.Session()
         else:
             twitter_user = credentials['screen_name']
