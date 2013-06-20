@@ -4,10 +4,9 @@ import re
 from django import http
 from django.conf import settings
 
-import tweepy
-
 from kitsune.twitter import (
     url, Session, REQUEST_KEY_NAME, REQUEST_SECRET_NAME)
+from twython import Twython, TwythonError, TwythonAuthError
 
 
 log = logging.getLogger('k')
@@ -29,19 +28,17 @@ class SessionMiddleware(object):
         is_secure = settings.TWITTER_COOKIE_SECURE
 
         ssl_url = url(request, {'scheme': 'https' if is_secure else 'http'})
-        auth = tweepy.OAuthHandler(settings.TWITTER_CONSUMER_KEY,
-                                   settings.TWITTER_CONSUMER_SECRET,
-                                   ssl_url,
-                                   secure=True)
 
         if request.REQUEST.get('twitter_delete_auth'):
             request.twitter = Session()
             return http.HttpResponseRedirect(url(request))
 
         elif request.twitter.authed:
-            auth.set_access_token(request.twitter.key, request.twitter.secret)
-            request.twitter.api = tweepy.API(auth)
-
+            request.twitter.api = Twython(settings.TWITTER_CONSUMER_KEY,
+                                          settings.TWITTER_CONSUMER_SECRET,
+                                          request.twitter.key,
+                                          request.twitter.secret,
+                                          ssl_verify=True)
         else:
             verifier = request.GET.get('oauth_verifier')
             if verifier:
@@ -51,13 +48,20 @@ class SessionMiddleware(object):
                 request_secret = request.COOKIES.get(REQUEST_SECRET_NAME)
 
                 if (validate_token(request_key) and
-                    validate_token(request_secret)):
-                    auth.set_request_token(request_key, request_secret)
+                        validate_token(request_secret)):
+
+                    t = Twython(settings.TWITTER_CONSUMER_KEY,
+                                settings.TWITTER_CONSUMER_SECRET,
+                                request_key,
+                                request_secret,
+                                ssl_verify=True)
 
                     try:
-                        auth.get_access_token(verifier)
-                    except tweepy.TweepError:
-                        log.warning('Tweepy Error with verifier token')
+                        tokens = t.get_authorized_tokens(verifier)
+                        print 't:'
+                        print tokens
+                    except (TwythonError, TwythonAuthError):
+                        log.warning('Twython Error with verifier token')
                         pass
                     else:
                         # Override path to drop query string.
@@ -67,9 +71,13 @@ class SessionMiddleware(object):
                              'path': request.path})
                         response = http.HttpResponseRedirect(ssl_url)
 
+                        request.twitter.screen_name = tokens['screen_name']
+
                         Session(
-                            auth.access_token.key,
-                            auth.access_token.secret).save(request, response)
+                            tokens['oauth_token'],
+                            tokens['oauth_token_secret']).save(request,
+                                                               response)
+
                         return response
                 else:
                     # request tokens didn't validate
@@ -77,20 +85,27 @@ class SessionMiddleware(object):
 
             elif request.REQUEST.get('twitter_auth_request'):
                 # We are requesting Twitter auth
-
+                t = Twython(settings.TWITTER_CONSUMER_KEY,
+                            settings.TWITTER_CONSUMER_SECRET,
+                            ssl_verify=True)
                 try:
-                    redirect_url = auth.get_authorization_url()
-                except tweepy.TweepError:
-                    log.warning('Tweepy error while getting authorization url')
+                    auth_props = t.get_authentication_tokens(
+                        callback_url=ssl_url)
+                    print 'ap: '
+                    print auth_props
+                except (TwythonError, TwythonAuthError):
+                    log.warning('Twython error while getting authorization '
+                                'url')
                 else:
-                    response = http.HttpResponseRedirect(redirect_url)
+                    response = http.HttpResponseRedirect(
+                        auth_props['auth_url'])
                     response.set_cookie(
                         REQUEST_KEY_NAME,
-                        auth.request_token.key,
+                        auth_props['oauth_token'],
                         secure=is_secure)
                     response.set_cookie(
                         REQUEST_SECRET_NAME,
-                        auth.request_token.secret,
+                        auth_props['oauth_token_secret'],
                         secure=is_secure)
                     return response
 

@@ -12,10 +12,10 @@ from django.utils.datastructures import SortedDict
 from django.views.decorators.http import require_POST, require_GET
 
 import bleach
-import tweepy
 from session_csrf import anonymous_csrf
 from statsd import statsd
 from tower import ugettext as _, ugettext_lazy as _lazy
+from twython import TwythonAuthError, TwythonError
 
 from kitsune import twitter
 from kitsune.customercare.models import Tweet, Reply
@@ -152,13 +152,17 @@ def landing(request):
     else:
         statsd.incr('customercare.stats.contributors.miss')
 
-    try:
-        twitter_user = (request.twitter.api.auth.get_username() if
-                        request.twitter.authed else None)
-    except tweepy.TweepError:
-        # Bad oauth token. Create a new session so user re-auths.
+    if request.twitter.authed:
         twitter_user = None
-        request.twitter = twitter.Session()
+
+        try:
+            credentials = request.twitter.api.verify_credentials()
+        except (TwythonError, TwythonAuthError):
+            # Bad oauth token. Create a new session so user re-auths.
+            twitter_user = None
+            request.twitter = twitter.Session()
+        else:
+            twitter_user = credentials['screen_name']
 
     yesterday = datetime.now() - timedelta(days=1)
 
@@ -202,7 +206,7 @@ def twitter_post(request):
             return render(request, 'customercare/tweets.html',
                           {'tweets': []})
         result = request.twitter.api.update_status(content, reply_to_id)
-    except tweepy.TweepError, e:
+    except TwythonError, e:
         # L10n: {message} is an error coming from our twitter api library
         return HttpResponseBadRequest(
             _('An error occured: {message}').format(message=e))
