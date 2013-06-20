@@ -239,6 +239,8 @@ class TweetReplyTests(TestCase):
             'screen_name': 'r1cky',
             'profile_image_url': 'http://example.com/profile.jpg',
             'profile_image_url_https': 'https://example.com/profile.jpg', }
+        credentials = {'screen_name': 'r1cky'}
+        request.twitter.api.verify_credentials.return_value = credentials
         request.twitter.api.update_status.return_value = return_value
         request.user = Mock()
         request.user.is_authenticated = lambda: False
