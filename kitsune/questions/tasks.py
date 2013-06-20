@@ -3,6 +3,8 @@ import logging
 from django.conf import settings
 from django.db import connection, transaction
 
+# NOTE: This import is just so _fire_task gets registered with celery.
+import tidings.events
 from celery.task import task
 from multidb.pinning import pin_this_thread, unpin_this_thread
 from statsd import statsd
