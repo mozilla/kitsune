@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 import json
+import time
 
 from django.conf import settings
 
@@ -227,19 +228,22 @@ class TweetReplyTests(TestCase):
         request.twitter = Mock()
         request.twitter.authed = True
         request.twitter.api = Mock()
-        return_value = Mock()
-        return_value.__dict__ = {
+        return_value = {
             'id': 123456790,
             'text': '@foobar try Aurora! #fxhelp',
-            'created_at': datetime.now(), }
-        return_value.author = Mock()
-        return_value.author.__dict__ = {
-            'lang': 'en',
-            'id': 42,
-            'screen_name': 'r1cky',
-            'profile_image_url': 'http://example.com/profile.jpg',
-            'profile_image_url_https': 'https://example.com/profile.jpg', }
+            'created_at': datetime.strftime(datetime.utcnow(),
+                                            '%a %b %d %H:%M:%S +0000 %Y'),
+            'user': {
+                'lang': 'en',
+                'id': 42,
+                'screen_name': 'r1cky',
+                'profile_image_url': 'http://example.com/profile.jpg',
+                'profile_image_url_https': 'https://example.com/profile.jpg',
+            }
+        }
         request.twitter.api.update_status.return_value = return_value
+        credentials = {'screen_name': 'r1cky'}
+        request.twitter.api.verify_credentials.return_value = credentials
         request.user = Mock()
         request.user.is_authenticated = lambda: False
 

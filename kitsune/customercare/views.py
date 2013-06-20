@@ -12,10 +12,10 @@ from django.utils.datastructures import SortedDict
 from django.views.decorators.http import require_POST, require_GET
 
 import bleach
-import tweepy
 from session_csrf import anonymous_csrf
 from statsd import statsd
 from tower import ugettext as _, ugettext_lazy as _lazy
+from twython import TwythonAuthError, TwythonError
 
 from kitsune import twitter
 from kitsune.customercare.models import Tweet, Reply
@@ -152,13 +152,15 @@ def landing(request):
     else:
         statsd.incr('customercare.stats.contributors.miss')
 
-    try:
-        twitter_user = (request.twitter.api.auth.get_username() if
-                        request.twitter.authed else None)
-    except tweepy.TweepError:
-        # Bad oauth token. Create a new session so user re-auths.
-        twitter_user = None
-        request.twitter = twitter.Session()
+    twitter_user = None
+    if request.twitter.authed:
+        try:
+            credentials = request.twitter.api.verify_credentials()
+        except (TwythonError, TwythonAuthError):
+            # Bad oauth token. Create a new session so user re-auths.
+            request.twitter = twitter.Session()
+        else:
+            twitter_user = credentials['screen_name']
 
     yesterday = datetime.now() - timedelta(days=1)
 
@@ -197,12 +199,15 @@ def twitter_post(request):
         return HttpResponseBadRequest(_('Message is too long'))
 
     try:
-        username = request.twitter.api.auth.get_username()
+        credentials = request.twitter.api.verify_credentials()
+        username = credentials['screen_name']
         if username in settings.CC_BANNED_USERS:
             return render(request, 'customercare/tweets.html',
                           {'tweets': []})
-        result = request.twitter.api.update_status(content, reply_to_id)
-    except tweepy.TweepError, e:
+        result = request.twitter.api.update_status(
+            status=content,
+            in_reply_to_status_id=reply_to_id)
+    except (TwythonError, TwythonAuthError), e:
         # L10n: {message} is an error coming from our twitter api library
         return HttpResponseBadRequest(
             _('An error occured: {message}').format(message=e))
@@ -211,8 +216,10 @@ def twitter_post(request):
 
     # If tweepy's status models actually implemented a dictionary, it would
     # be too boring.
-    status = dict(result.__dict__)
-    author = dict(result.author.__dict__)
+    status = result
+    author = result['user']
+    created_at = datetime.strptime(status['created_at'],
+                                   '%a %b %d %H:%M:%S +0000 %Y')
 
     # Raw JSON blob data
     # Note: The JSON for the tweet posted is different than what we get from
@@ -220,8 +227,7 @@ def twitter_post(request):
     raw_tweet_data = {
         'id': status['id'],
         'text': status['text'],
-        'created_at': formatdate(calendar.timegm(
-            status['created_at'].timetuple())),
+        'created_at': status['created_at'],
         'iso_language_code': author['lang'],
         'from_user_id': author['id'],
         'from_user': author['screen_name'],
@@ -236,7 +242,7 @@ def twitter_post(request):
     tweet = Tweet.objects.create(pk=status['id'],
                          raw_json=json.dumps(raw_tweet_data),
                          locale=author['lang'],
-                         created=status['created_at'],
+                         created=created_at,
                          reply_to_id=reply_to_id)
 
     # Record in our Reply table.
@@ -246,7 +252,7 @@ def twitter_post(request):
         tweet_id=status['id'],
         raw_json=json.dumps(raw_tweet_data),
         locale=author['lang'],
-        created=status['created_at'],
+        created=created_at,
         reply_to_tweet_id=reply_to_id
     )
 
