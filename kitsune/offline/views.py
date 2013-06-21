@@ -47,9 +47,3 @@ def get_bundles(request):
     data = json.dumps(merge_bundles(*bundles))
 
     return HttpResponse(data, mimetype='application/json')
-
-
-@cors_enabled('*')
-def get_languages(request):
-    data = json.dumps({'languages': settings.LANGUAGE_CHOICES})
-    return HttpResponse(data, mimetype='application/json')
