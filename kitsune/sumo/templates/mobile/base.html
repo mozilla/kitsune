@@ -132,13 +132,14 @@
     {% block footer %}{% endblock %}
   </footer>
 
-  {% if messages %}
-    <ul id="notifications">
-      {% for message in messages %}
-        <li>{{ message }}</li>
-      {% endfor %}
-    </ul>
-  {% endif %}
+  <ul id="notifications">
+    {% for message in messages %}
+      <li>{{ message }}</li>
+    {% endfor %}
+    {% for an in get_announcements() %}
+      <li class="announcement" id="announcement-{{ an.id }}">{{ an.content }}</li>
+    {% endfor %}
+  </ul>
 </div>
 
 {% block after_main %}{% endblock %}
