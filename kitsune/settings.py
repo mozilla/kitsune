@@ -186,12 +186,12 @@ AAQ_LANGUAGES = (
     'xx',  # This is a test locale
 )
 
-WESTERN_LANGUAGES = (
+LANGUAGES_WITH_SPACES = (
     'en-US',
     'pt-BR',
 )
 
-EAST_ASIAN_LANGUAGES = (
+LANGUAGES_WITHOUT_SPACES = (
     'zh-CN',
     'zh-TW'
 )

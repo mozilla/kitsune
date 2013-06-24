@@ -10,10 +10,11 @@ _whitespace_regex = re.compile(r'\s|-', flags=re.U)
 _alpha_regex = re.compile(r'\w', flags=re.U)
 
 
-def find_word_locations_western(s):
+def find_word_locations_with_spaces(s):
     """Builds an index in the format of {word: location}.
-    This is a english like search. For Chinese-like
-    (no spaces and what not), use establish_word_locations_zh_like
+
+    This is a english like search. For languages without spaces to
+    separate words, use find_word_locations_without_spaces.
     """
     s = s.lower()
     words = [u'']
@@ -28,22 +29,23 @@ def find_word_locations_western(s):
         elif _alpha_regex.match(c) is not None:
             words[-1] += c
         else:
-            continue  # something weird.. just relax.. it's fine. we'll skip it
+            # characters that we don't care about such as a control character.
+            # It's okay if we skip it.
+            continue
 
     locations = {}
     for i, w in enumerate(words):
         if w:
-            l = locations.setdefault(w, [])
-            l.append(i)
-            locations[w] = l
+            locations.setdefault(w, []).append(i)
 
     return locations
 
 
-def find_word_locations_east_asian(s):
-    """Builds an index of the format of {word: location}. This method is for
-    languages like Chinese where there is no spaces to denote the beginning and
-    end of a word.
+def find_word_locations_without_spaces(s):
+    """Builds an index of the format of {word: location}.
+
+    This method is for languages like Chinese where there is no spaces
+    to denote the beginning and end of a word.
     """
     words = [u'']
     for c in s:
@@ -64,8 +66,7 @@ def find_word_locations_east_asian(s):
     locations = {}
     for i, w in enumerate(words):
         if w:
-            l = locations.setdefault(w, [])
-            l.append(i)
+            locations.setdefault(w, []).append(i)
     return locations
 
 
@@ -89,8 +90,15 @@ def find_word_locations_east_asian(s):
 #         return self.index
 
 
-# Ahhh. The TFIDF index is awesome.
 class TFIDFIndex(object):
+    """This is an index for search and ranking based on TF-IDF.
+
+    TF-IDF (Term Frequency - Inverse Document Frequency) is a relatively
+    simple and intuitive NLP technique that scores words in a document
+    given a corpus based on how important this word is.
+
+    A full explanation of this is provided at <insert url when ready>.
+    """
     def __init__(self):
         self.doc_count = 0
         self.global_word_freq = {}
@@ -123,10 +131,6 @@ class TFIDFIndex(object):
 
     def f(self, term, doc_id):
         return self.local_word_freq[doc_id][term]
-
-    # Awesome sauce
-    # http://en.wikipedia.org/wiki/Tf%E2%80%93idf
-    # All of this is explained in the docs. So don't worry.
 
     # Algorithm adapted from wikipedia.
     # tf(t, d) = 0.5 + \frac{0.5 f(t, d)}{max(f(w, d), w \in d)}

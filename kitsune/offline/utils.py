@@ -7,7 +7,7 @@ from tower import ugettext as _
 from django.conf import settings
 from django.http import HttpResponse, HttpResponseBadRequest
 
-from kitsune.offline.index import TFIDFIndex, find_word_locations_western
+from kitsune.offline.index import TFIDFIndex, find_word_locations_with_spaces
 from kitsune.wiki.config import CATEGORIES
 from kitsune.wiki.models import Document
 
@@ -16,30 +16,36 @@ _noscript_regex = re.compile(r'<noscript>.*?</noscript>', flags=re.DOTALL)
 
 
 def bundle_key(locale, product_slug):
-    """The key for a bundle as stored in client-side's indexeddb. The
-    arguments to this function must be strings. This key is used for the index.
+    """The key for a bundle as stored in client-side's indexeddb.
+
+    The arguments to this function must be strings. This key is used
+    for the index.
     """
     return locale + '~' + product_slug
 
 
 def doc_key(locale, doc_slug):
-    """The key for a document as stored in client-side's indexeddb. The
-    arguments to this function must be strings.
+    """The key for a document as stored in client-side's indexeddb.
+
+    The arguments to this function must be strings.
     """
     return locale + '~' + doc_slug
 
 
 def topic_key(locale, product_slug, topic_slug):
-    """The key for a topic as stored in client-side's indexeddb. The
-    arguments to this function must be strings.
+    """The key for a topic as stored in client-side's indexeddb.
+
+    The arguments to this function must be strings.
     """
     return locale + '~' + product_slug + '~' + topic_slug
 
 
 def transform_html(dochtml):
-    """Do things to the document html such as stripping out things the offline
-    app do not need. We could also do this in WikiParser, but this is probably
-    easier for now.
+    """
+
+    Do things to the document html such as stripping out things the
+    offline app do not need. We could also do this in WikiParser,
+    but this is probably easier for now.
     """
     # Strip out all the <noscript> images
     dochtml = _noscript_regex.sub('', dochtml)
@@ -48,8 +54,10 @@ def transform_html(dochtml):
 
 
 def serialize_document_for_offline(doc):
-    """Grabs the document in a dictionary. This method returns a document that
-    is ready to be inserted into the client-side database.
+    """Grabs the document in a dictionary.
+
+    This method returns a document that is ready to be inserted into
+    the client-side database.
     """
     if doc.is_archived:
         return {
@@ -75,7 +83,6 @@ def serialize_document_for_offline(doc):
 def bundle_for_product(product, locale):
     """Gets an entire bundle for a product in a locale.
     """
-
     bundle = {}
 
     # put a new locale into the database.
@@ -94,18 +101,18 @@ def bundle_for_product(product, locale):
 
     index_builder = TFIDFIndex()
 
+    docs = Document.objects.filter(
+        locale=locale,
+        is_template=False,
+        category__in=(CATEGORIES[0][0], CATEGORIES[1][0])
+    )
+
     # Since the any languages that are derived from English will not have a
     # product, we must find its parent's product.
     if locale == settings.WIKI_DEFAULT_LANGUAGE:
-        docs = Document.objects.filter(products__id=product.id, locale=locale,
-                                       is_template=False,
-                                       category__in=(CATEGORIES[0][0],
-                                                     CATEGORIES[1][0]))
+        docs = docs.filter(products__id=product.id)
     else:
-        docs = Document.objects.filter(parent__products__id=product.id,
-                                       locale=locale, is_template=False,
-                                       category__in=(CATEGORIES[0][0],
-                                                     CATEGORIES[1][0]))
+        docs = docs.filter(parent__products__id=product.id)
 
     for doc in docs:
         if not doc.current_revision or not doc.html or doc.redirect_url():
@@ -120,16 +127,16 @@ def bundle_for_product(product, locale):
             # We only index the title and the summary as otherwise the corpus
             # is too big. We also boost the score of the title.
             texts = [(doc.title, 1.2), (doc.current_revision.summary, 1)]
-            # TODO: use find_word_locations_east_asian if it is an east asian
-            # language
-            find_word_locations = find_word_locations_western
+            # TODO: use find_word_locations_without_spaces if it is an east
+            # asian language
+            find_word_locations = find_word_locations_with_spaces
             index_builder.feed(doc.id, texts, find_word_locations)
 
         docs_bundle[serialized_doc['key']] = serialized_doc
 
         # Now we need to populate the topics for this locale.
         for t in doc.get_topics():
-            topic = topics.setdefault(t.id, {})
+            topic = topics.setdefault(t.slug, {})
             if not topic:  # this means that topics has not been set yet.
                 bundle['locales'][locale]['children'].add(t.slug)
                 topic['key'] = topic_key(locale, product.slug, t.slug)
@@ -152,7 +159,8 @@ def bundle_for_product(product, locale):
     # Note that we were using a set. Must convert it to a list for JSON to
     # understand.
     bundle['locales'][locale]['children'] = list(
-        bundle['locales'][locale]['children'])
+        bundle['locales'][locale]['children']
+    )
 
     return bundle
 

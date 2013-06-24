@@ -11,8 +11,7 @@ Overview
 Offline SUMO is an app developed for Firefox OS (and other platforms if so
 desired) that serves SUMO contents offline. This document is written for
 developers who wish to hack on the app. As of right now, the offline SUMO's
-code lives under https://github.com/shuhaowu/osumo. As the project matures,
-this will probably be moved under the umbrella of mozilla.
+code lives under https://github.com/mozilla/osumo.
 
 Offline SUMO is to be ran entirely offline. The primary target is a low powered
 device such as a Firefox OS phone. This requirement subject the app to some
@@ -26,7 +25,7 @@ constraints:
 
 The following choices are made to accomodate these constraints:
 
-- App is written as a single page application (SPA) with Angular.JS. Data is to
+- App is written as a single page application with Angular.JS. Data is to
   be downloaded from SUMO's offline API and stored into IndexedDB. This
   resolves most of the needs for a reasonably fast, offline only app. The
   caching of HTML, CSS, and JavaScript files are done via appcache.
@@ -45,8 +44,6 @@ The server also serves all the static files and builds the JavaScript and other
 files that needs to be generated.
 
 Most of the interesting code lives under static/js/develop/ and static/partials/.
-
-TODO: fill out more of how the app works here.
 
 Database Structure
 ==================
@@ -254,9 +251,10 @@ To address these issues, the following approach is taken:
   the article is about. A reverse hashtable is also easily serialized into JSON
   and stored into IndexedDB.
 
-We do not provide:
+We do not provide (yet!):
 
-- Stemming
+- Stemming: it is difficult to provide stemming to many languages uniformly.
+- Aliasing characters such as e to é: This may be added in soon.
 
 Index Structure
 ---------------
@@ -270,7 +268,7 @@ The score is computed based on an algorithm called
 `TF-IDF <http://en.wikipedia.org/wiki/Tf%E2%80%93idf>`_. TFIDF is an algorithm
 that scores the importance of each word in an article given a corpus of many
 articles. It effectively extracts the most important words in any article. For
-us, we multiple the scores for the terms of the title by 1.2, effectively
+us, we multiply the scores for the terms of the title by 1.2, effectively
 weighting it more than the summary.
 
 For each search term, we go through the index and finds the list of document
@@ -303,4 +301,8 @@ These documents will be displayed with that order.
 Component on Kitsune
 ====================
 
-TODO: fill this out
+The offline sumo app requires a component on Kitsune as we need to be able to
+get the data from the production wiki. Currently, one route is provided:
+/offline/get-bundles. This url will return a bundle that is to be directly
+stored into client sides' IndexedDB. The details of this structure is detailed
+in `Database Structure`_.
