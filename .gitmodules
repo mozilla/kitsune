@@ -58,9 +58,6 @@
 [submodule "vendor/src/django-csp"]
 	path = vendor/src/django-csp
 	url = https://github.com/mozilla/django-csp.git
-[submodule "vendor/src/tweepy"]
-	path = vendor/src/tweepy
-	url = https://github.com/tweepy/tweepy.git
 [submodule "vendor/src/django-timezones"]
 	path = vendor/src/django-timezones
 	url = https://github.com/brosner/django-timezones.git
