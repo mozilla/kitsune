@@ -54,24 +54,30 @@ def get_email_addresses(startdate, enddate, user, password):
             '&page={page}'
             '&user:pass={user}:{password}'.format(
                 survey=EMAIL_COLLECTION_SURVEY_ID, start=startdate,
-                end=enddate, page=page, user=user, password=password))
+                end=enddate, page=page, user=user, password=password),
+            timeout=300)
 
         results = json.loads(response.content)
         total_pages = results['total_pages']
         more_pages = page < total_pages
         emails = emails + [r['[question(13)]'] for r in results['data']]
+        page += 1
 
     return emails
 
 
 def add_email_to_campaign(email, user, password):
-    response = requests.put(
-        'https://restapi.surveygizmo.com/v2/survey/{survey}'
-        '/surveycampaign/{campaign}/contact?'
-        'semailaddress={email}'
-        '&user:pass={user}:{password}'.format(
-            survey=EXIT_SURVEY_ID, campaign=EXIT_SURVEY_CAMPAIGN_ID,
-            email=email, user=user, password=password))
+    try:
+        response = requests.put(
+            'https://restapi.surveygizmo.com/v2/survey/{survey}'
+            '/surveycampaign/{campaign}/contact?'
+            'semailaddress={email}'
+            '&user:pass={user}:{password}'.format(
+                survey=EXIT_SURVEY_ID, campaign=EXIT_SURVEY_CAMPAIGN_ID,
+                email=email, user=user, password=password),
+            timeout=30)
+    except requests.exceptions.Timeout:
+        print 'Timedout adding: %s' % email
 
     if response.status_code == 200:
         print 'Added: %s' % email
