@@ -2,32 +2,32 @@ window.k = window.k || {};
 
 (function($) {
     var UNSAFE_CHARS = {
-      '&': '&amp;',
-      '<': '&lt;',
-      '>': '&gt;',
-      "'": '&#39;',
-      '"': '&quot;'
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        "'": '&#39;',
+        '"': '&quot;'
     };
 
     k.safeString = function(str) {
-      if (str) {
-        return str.replace(new RegExp('[&<>\'"]', 'g'),
-            function(m) { return UNSAFE_CHARS[m]; });
-      }
-      return str;
+        if (str) {
+            return str.replace(new RegExp('[&<>\'"]', 'g'),
+                function(m) { return UNSAFE_CHARS[m]; });
+        }
+        return str;
     };
 
     k.safeInterpolate = function(fmt, obj, named) {
-      if (named) {
-        for (var j in obj) {
-          obj[j] = k.safeString(obj[j]);
+        if (named) {
+            for (var j in obj) {
+                obj[j] = k.safeString(obj[j]);
+            }
+        } else {
+            for (var i=0, l=obj.length; i<l; i++) {
+                obj[i] = k.safeString(obj[i]);
+            }
         }
-      } else {
-        for (var i=0, l=obj.length; i<l; i++) {
-          obj[i] = k.safeString(obj[i]);
-        }
-      }
-      return interpolate(fmt, obj, named);
+        return interpolate(fmt, obj, named);
     };
 
     $(function() {
@@ -49,13 +49,13 @@ window.k = window.k || {};
             });
         }
 
-        $('#cancel-button').on('click', function() {
-           if (!confirm(gettext('Are you sure you wish to cancel?'))) {
-               return false;
-           }
-        });
-
         showNotification($('#notifications > li').fadeOut(0));
+
+        $('#cancel-button').on('click', function() {
+            if (!confirm(gettext('Are you sure you wish to cancel?'))) {
+                return false;
+            }
+        });
 
         $(document).on('click', '.overlay > header', function() {
             $(this).closest('.overlay').hide();
@@ -90,7 +90,7 @@ window.k = window.k || {};
             var name = $this.data('name');
             if (name) {
                 if (!$form.has('input[name="' + name + '"]').length) {
-                  $form.append('<input name="' + name + '" value="1" type="hidden">');
+                    $form.append('<input name="' + name + '" value="1" type="hidden">');
                 }
             }
             $form.submit();
