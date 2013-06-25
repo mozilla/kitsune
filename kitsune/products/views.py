@@ -50,14 +50,17 @@ def document_listing(request, template, product_slug, topic_slug,
     topic = get_object_or_404(Topic, slug=topic_slug, product=product,
                               parent__isnull=True)
 
+    doc_kw = {'locale': request.LANGUAGE_CODE, 'products': [product]}
+
     if subtopic_slug is not None:
         subtopic = get_object_or_404(Topic, slug=subtopic_slug,
                                      product=product, parent=topic)
+        doc_kw['topics'] = [subtopic]
     else:
         subtopic = None
+        doc_kw['topics'] = [topic]
 
-    documents, fallback_documents = documents_for(
-        locale=request.LANGUAGE_CODE, products=[product], topics=[topic])
+    documents, fallback_documents = documents_for(**doc_kw)
 
     return render(request, template, {
         'product': product,

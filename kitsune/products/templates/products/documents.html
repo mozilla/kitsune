@@ -57,20 +57,21 @@
             <section class="cf">
               {% if subtopic %}
                 <p>
-                  <a href="{{ url('products.documents', product_slug=product.slug, topic_slug=topic.parent.slug) }}">
-                    {{ _('Go back to {topic}')|f(topic=_(topic.parent.title, 'DB: topics.Topic.title'))}}
+                  <a href="{{ url('products.documents', product_slug=product.slug, topic_slug=topic.slug) }}">
+                    {{ _('Go back to {topic}')|f(topic=_(topic.title, 'DB: topics.Topic.title'))}}
                   </a>
                 </p>
+              {% else %}
+                <ul class="subtopics cf">
+                  {% for subtopic in subtopics %}
+                    <li>
+                      <a href="{{ url('products.subtopics', product_slug=product.slug, topic_slug=topic.slug, subtopic_slug=subtopic.slug) }}">
+                        {{ _(subtopic.title, 'DB: topics.Topic.title') }}
+                      </a>
+                    </li>
+                  {% endfor %}
+                </ul>
               {% endif %}
-              <ul class="subtopics cf">
-                {% for subtopic in subtopics %}
-                  <li>
-                    <a href="{{ url('products.subtopics', product_slug=product.slug, topic_slug=topic.slug, subtopic_slug=subtopic.slug) }}">
-                      {{ _(subtopic.title, 'DB: topics.Topic.title') }}
-                    </a>
-                  </li>
-                {% endfor %}
-              </ul>
             </section>
           </div>
         {% endif %}
