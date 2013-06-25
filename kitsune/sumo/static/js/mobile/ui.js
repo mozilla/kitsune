@@ -39,13 +39,23 @@ window.k = window.k || {};
             setTimeout(function() { $nav.css('display', ''); }, 500);
         });
 
+        function nextNotification(current) {
+            var next = $(current).next();
+            $(current).remove();
+            showNotification(next);
+        }
+
         function showNotification(notification) {
             $(notification).first().fadeIn(600, function() {
-                $(this).delay(5000).fadeOut(600, function() {
-                    var next = $(this).next();
-                    $(this).remove();
-                    showNotification(next);
-                });
+                if ($(this).hasClass('announcement')) {
+                    $(this).on('click', function() {
+                        nextNotification(this);
+                    });
+                } else {
+                    $(this).delay(5000).fadeOut(600, function() {
+                        nextNotification(this);
+                    });
+                }
             });
         }
 

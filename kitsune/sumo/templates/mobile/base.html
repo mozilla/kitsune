@@ -137,7 +137,7 @@
       <li>{{ message }}</li>
     {% endfor %}
     {% for an in get_announcements() %}
-      <li id="announcement-{{ an.id }}">{{ an.content }}</li>
+      <li class="announcement" id="announcement-{{ an.id }}">{{ an.content }}</li>
     {% endfor %}
   </ul>
 </div>
