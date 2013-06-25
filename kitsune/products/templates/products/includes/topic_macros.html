@@ -1,0 +1,24 @@
+{% macro topic_sidebar(topics, subtopics, product, selected_topic=None, selected_subtopic=None) -%}
+  <ul class="sidebar-nav topics">
+    {% for topic in topics %}
+      {% set topic_url = url('products.documents', product_slug=product.slug, topic_slug=topic.slug) %}
+      <li {% if selected_topic == topic %}class="selected {% if selected_subtopic != None %}subtopic-selected{% endif %}"{% endif %}>
+        <a href="{{ topic_url }}">
+          {{ _(topic.title, 'DB: topics.Topic.title') }}
+        </a>
+        {% if selected_topic == topic %}
+          <ul class="subtopics">
+            {% for subtopic in subtopics %}
+              {% set subtopic_url = url('products.subtopics', product_slug=product.slug, topic_slug=topic.slug, subtopic_slug=subtopic.slug) %}
+              <li {% if selected_subtopic == subtopic %}class="selected"{% endif %}>
+                <a href="{{ subtopic_url }}">
+                {{ _(subtopic.title, 'DB: topics.Topic.title') }}
+                </a>
+              </li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+      </li>
+    {% endfor %}
+  </ul>
+{%- endmacro %}

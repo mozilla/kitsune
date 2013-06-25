@@ -1,6 +1,11 @@
 {% extends "base.html" %}
 {% from 'includes/common_macros.html' import for_contributors_sidebar %}
-{% from 'topics/includes/topic_macros.html' import hot_topics, topic_sidebar %}
+{% if waffle.flag('new-topics') %}
+  {% from 'products/includes/topic_macros.html' import topic_sidebar %}
+{% else %}
+  {% from 'topics/includes/topic_macros.html' import topic_sidebar %}
+{% endif %}
+{% from 'topics/includes/topic_macros.html' import hot_topics %}
 {% set crumbs = [(url('products'), _('Products')),
                  (url('products.product', slug=product.slug), _(product.title, 'DB: products.Product.title')),
                  (None, _(topic.title, 'DB: topics.Topic.title'))] %}
@@ -18,43 +23,64 @@
   </div>
   <aside class="grid_3">
     {{ for_contributors_sidebar(user, settings.WIKI_DEFAULT_LANGUAGE) }}
-    {{ topic_sidebar(topics[:10], product, topic) }}
+    {% if waffle.flag('new-topics') %}
+      {{ topic_sidebar(topics[:10], subtopics, product, topic, subtopic) }}
+    {% else %}
+      {{ topic_sidebar(topics[:10], product, topic) }}
+    {% endif %}
   </aside>
   <div class="grid_9">
     <article id="document-list">
       {% if topic.image %}<img src="{{ STATIC_URL }}img/blank.png" alt="" class="logo-sprite" style="background-image: url('{{ topic.image_url }}');" />{% endif %}
-      <h1 class="topic-title cf">{{ _(topic.title, 'DB: topics.Topic.title') }}</h1>
+      <h1 class="topic-title {% if topic.image %}has-image{% endif %} {% if not subtopic %}cf{% endif %}">
+        {% if subtopic %}
+          <a href="{{ url('products.documents', product_slug=product.slug, topic_slug=topic.slug) }}">
+        {% endif %}
+        {{ _(topic.title, 'DB: topics.Topic.title') }}
+        {% if subtopic %}
+          </a>
+        {% endif %}
+      </h1>
 
-      {% if subtopics or topic.parent %}
-        <div id="focus-and-refine" class="feature-box" data-ui-type="folding-section">
-          <header>
-            <h2 class="nomargin">{{ _('Related Topics') }}</h2>
-          </header>
-          <section class="cf">
-            {% if topic.parent %}
-              <p>
-                <a href="{{ url('products.documents', product_slug=product.slug, topic_slug=topic.parent.slug) }}">
-                  {{ _('Go back to {topic}')|f(topic=_(topic.parent.title, 'DB: topics.Topic.title'))}}
-                </a>
-              </p>
-            {% endif %}
-            <ul class="subtopics cf">
-              {% for topic_ in subtopics %}
-                <li>
-                  <a href="{{ url('products.documents', product_slug=product.slug, topic_slug=topic_.slug) }}">
-                    {{ _(topic_.title, 'DB: topics.Topic.title') }}
+      {% if subtopic %}
+        <h1 class="topic-title {% if topic.image %}has-image{% endif %} cf">
+          {{ _(subtopic.title, 'DB: topics.Topic.title') }}
+        </h1>
+      {% endif %}
+
+      {% if not waffle.flag('new-topics') %}
+        {% if subtopics or topic.parent %}
+          <div id="focus-and-refine" class="feature-box" data-ui-type="folding-section">
+            <header>
+              <h2 class="nomargin">{{ _('Related Topics') }}</h2>
+            </header>
+            <section class="cf">
+              {% if subtopic %}
+                <p>
+                  <a href="{{ url('products.documents', product_slug=product.slug, topic_slug=topic.parent.slug) }}">
+                    {{ _('Go back to {topic}')|f(topic=_(topic.parent.title, 'DB: topics.Topic.title'))}}
                   </a>
-                </li>
-              {% endfor %}
-            </ul>
-          </section>
-        </div>
+                </p>
+              {% endif %}
+              <ul class="subtopics cf">
+                {% for subtopic in subtopics %}
+                  <li>
+                    <a href="{{ url('products.subtopics', product_slug=product.slug, topic_slug=topic.slug, subtopic_slug=subtopic.slug) }}">
+                      {{ _(subtopic.title, 'DB: topics.Topic.title') }}
+                    </a>
+                  </li>
+                {% endfor %}
+              </ul>
+            </section>
+          </div>
+        {% endif %}
       {% endif %}
 
       {% for document in documents %}
         {% if loop.first %}<ul class="topic-list">{% endif %}
         <li>
           <a href="{{ document['url'] }}">{{ document['document_title'] }}</a>
+          {{ document['document_summary'] }}
         </li>
         {% if loop.last %}</ul>{% endif %}
       {% endfor %}
