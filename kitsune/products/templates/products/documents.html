@@ -8,10 +8,10 @@
 {% from 'topics/includes/topic_macros.html' import hot_topics %}
 {% set crumbs = [(url('products'), _('Products')),
                  (url('products.product', slug=product.slug), _(product.title, 'DB: products.Product.title')),
-                 (None, _(topic.title, 'DB: topics.Topic.title'))] %}
+                 (None, _(topic.title, 'DB: products.Topic.title'))] %}
 {% set styles = ('products',) %}
 
-{% block title %}{{ _(topic.title, 'DB: topics.Topic.title') }} | {{ _('{product} Help')|f(product=_(product.title, 'DB: products.Product.title')) }}{% endblock %}
+{% block title %}{{ _(topic.title, 'DB: products.Topic.title') }} | {{ _('{product} Help')|f(product=_(product.title, 'DB: products.Product.title')) }}{% endblock %}
 
 {% block content %}
   <div class="grid_12">
@@ -36,7 +36,7 @@
         {% if subtopic %}
           <a href="{{ url('products.documents', product_slug=product.slug, topic_slug=topic.slug) }}">
         {% endif %}
-        {{ _(topic.title, 'DB: topics.Topic.title') }}
+        {{ _(topic.title, 'DB: products.Topic.title') }}
         {% if subtopic %}
           </a>
         {% endif %}
@@ -44,7 +44,7 @@
 
       {% if subtopic %}
         <h1 class="topic-title {% if topic.image %}has-image{% endif %} cf">
-          {{ _(subtopic.title, 'DB: topics.Topic.title') }}
+          {{ _(subtopic.title, 'DB: products.Topic.title') }}
         </h1>
       {% endif %}
 
@@ -58,7 +58,7 @@
               {% if subtopic %}
                 <p>
                   <a href="{{ url('products.documents', product_slug=product.slug, topic_slug=topic.slug) }}">
-                    {{ _('Go back to {topic}')|f(topic=_(topic.title, 'DB: topics.Topic.title'))}}
+                    {{ _('Go back to {topic}')|f(topic=_(topic.title, 'DB: products.Topic.title'))}}
                   </a>
                 </p>
               {% else %}
@@ -66,7 +66,7 @@
                   {% for subtopic in subtopics %}
                     <li>
                       <a href="{{ url('products.subtopics', product_slug=product.slug, topic_slug=topic.slug, subtopic_slug=subtopic.slug) }}">
-                        {{ _(subtopic.title, 'DB: topics.Topic.title') }}
+                        {{ _(subtopic.title, 'DB: products.Topic.title') }}
                       </a>
                     </li>
                   {% endfor %}
@@ -81,7 +81,9 @@
         {% if loop.first %}<ul class="topic-list">{% endif %}
         <li>
           <a href="{{ document['url'] }}">{{ document['document_title'] }}</a>
-          {{ document['document_summary'] }}
+          {% if waffle.flag('new-topics') %}
+            {{ document['document_summary'] }}
+          {% endif %}
         </li>
         {% if loop.last %}</ul>{% endif %}
       {% endfor %}
