@@ -739,17 +739,21 @@ input[type=button],
         color: @textDarkGrey;
         font-family: @OpenSans;
         font-weight: bold;
+        position: relative;
       }
 
-      &:after {
-        background: url('../img/sidebar-arrow.gif') 0 3px no-repeat;
-        content: '';
-        height: 30px;
-        left: 0;
-        margin-top: -15px;
-        position: absolute;
-        top: 50%;
-        width: 15px;
+      > span,
+      > a {
+        &:after {
+          background: url('../img/sidebar-arrow.gif') 0 3px no-repeat;
+          content: '';
+          height: 30px;
+          left: 0;
+          margin-top: -15px;
+          position: absolute;
+          top: 50%;
+          width: 15px;
+        }
       }
     }
   }

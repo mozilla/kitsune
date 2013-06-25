@@ -43,18 +43,30 @@ def product_landing(request, template, slug):
 
 
 @mobile_template('products/{mobile/}documents.html')
-def document_listing(request, template, product_slug, topic_slug):
+def document_listing(request, template, product_slug, topic_slug,
+                     subtopic_slug=None):
     """The document listing page for a product + topic."""
     product = get_object_or_404(Product, slug=product_slug)
-    topic = get_object_or_404(Topic, slug=topic_slug, product=product)
+    topic = get_object_or_404(Topic, slug=topic_slug, product=product,
+                              parent__isnull=True)
 
-    documents, fallback_documents = documents_for(
-        locale=request.LANGUAGE_CODE, products=[product], topics=[topic])
+    doc_kw = {'locale': request.LANGUAGE_CODE, 'products': [product]}
+
+    if subtopic_slug is not None:
+        subtopic = get_object_or_404(Topic, slug=subtopic_slug,
+                                     product=product, parent=topic)
+        doc_kw['topics'] = [subtopic]
+    else:
+        subtopic = None
+        doc_kw['topics'] = [topic]
+
+    documents, fallback_documents = documents_for(**doc_kw)
 
     return render(request, template, {
         'product': product,
         'topic': topic,
-        'topics': topics_for(products=[product]),
+        'subtopic': subtopic,
+        'topics': topics_for(products=[product], parent=None),
         'subtopics': topics_for(products=[product], parent=topic),
         'documents': documents,
         'fallback_documents': fallback_documents,
