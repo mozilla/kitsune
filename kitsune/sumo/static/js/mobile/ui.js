@@ -50,11 +50,22 @@ window.k = window.k || {};
                 if ($(this).hasClass('announcement')) {
                     $(this).on('click', function() {
                         nextNotification(this);
+                        if (Modernizr.localstorage) {
+                            localStorage.setItem($(this).attr('id') + '.closed', true);
+                        }
                     });
                 } else {
                     $(this).delay(5000).fadeOut(600, function() {
                         nextNotification(this);
                     });
+                }
+            });
+        }
+
+        if (Modernizr.localstorage) {
+            $('#notifications > .announcement').each(function(){
+                if (localStorage.getItem($(this).attr('id') + '.closed') === 'true') {
+                    $(this).remove()
                 }
             });
         }
