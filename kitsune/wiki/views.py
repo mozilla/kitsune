@@ -117,7 +117,7 @@ def document(request, document_slug, template=None):
     else:
         product = products[0]
 
-    topics = Topic.objects.filter(product=product, visible=True)
+    topics = Topic.objects.filter(product=product, visible=True, parent=None)
 
     ga_push = []
     if fallback_reason is not None:
