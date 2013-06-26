@@ -7,8 +7,12 @@
 {% endif %}
 {% from 'topics/includes/topic_macros.html' import hot_topics %}
 {% set crumbs = [(url('products'), _('Products')),
-                 (url('products.product', slug=product.slug), _(product.title, 'DB: products.Product.title')),
-                 (None, _(topic.title, 'DB: products.Topic.title'))] %}
+                 (url('products.product', slug=product.slug), _(product.title, 'DB: products.Product.title'))] %}
+{% if subtopic %}
+  {% set crumbs = crumbs + [(url('products.documents', product_slug=product.slug, topic_slug=topic.slug), _(topic.title, 'DB: products.Topic.title')), (None, _(subtopic.title, 'DB: products.Topic.title'))] %}
+{% else %}
+  {% set crumbs = crumbs + [(None, _(topic.title, 'DB: products.Topic.title'))] %}
+{% endif %}
 {% set styles = ('products',) %}
 
 {% block title %}{{ _(topic.title, 'DB: products.Topic.title') }} | {{ _('{product} Help')|f(product=_(product.title, 'DB: products.Product.title')) }}{% endblock %}
