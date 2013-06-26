@@ -6,9 +6,12 @@
   {% from 'topics/includes/topic_macros.html' import topic_sidebar %}
 {% endif %}
 {% from 'topics/includes/topic_macros.html' import hot_topics %}
-{% set crumbs = [(url('products'), _('Products')),
-                 (url('products.product', slug=product.slug), _(product.title, 'DB: products.Product.title')),
-                 (None, _(topic.title, 'DB: products.Topic.title'))] %}
+{% set crumbs = [(url('products.product', slug=product.slug), _(product.title, 'DB: products.Product.title'))] %}
+{% if subtopic %}
+  {% set crumbs = crumbs + [(url('products.documents', product_slug=product.slug, topic_slug=topic.slug), _(topic.title, 'DB: products.Topic.title')), (None, _(subtopic.title, 'DB: products.Topic.title'))] %}
+{% else %}
+  {% set crumbs = crumbs + [(None, _(topic.title, 'DB: products.Topic.title'))] %}
+{% endif %}
 {% set styles = ('products',) %}
 
 {% block title %}{{ _(topic.title, 'DB: products.Topic.title') }} | {{ _('{product} Help')|f(product=_(product.title, 'DB: products.Product.title')) }}{% endblock %}
@@ -77,16 +80,26 @@
         {% endif %}
       {% endif %}
 
-      {% for document in documents %}
-        {% if loop.first %}<ul class="topic-list">{% endif %}
-        <li>
-          <a href="{{ document['url'] }}">{{ document['document_title'] }}</a>
-          {% if waffle.flag('new-topics') %}
-            {{ document['document_summary'] }}
-          {% endif %}
-        </li>
-        {% if loop.last %}</ul>{% endif %}
-      {% endfor %}
+      <ul class="topic-list">
+        {% if not subtopic and subtopics and waffle.flag('new-topics') %}
+          {# only show subtopics on the parent topic page #}
+          {% for subtopic in subtopics %}
+            <li>
+              <a href="{{ url('products.subtopics', product_slug=product.slug, topic_slug=topic.slug, subtopic_slug=subtopic.slug) }}">
+                {{ _(subtopic.title, 'DB: products.Topic.title') }}
+              </a>
+            </li>
+          {% endfor %}
+        {% endif %}
+        {% for document in documents %}
+          <li>
+            <a href="{{ document['url'] }}">{{ document['document_title'] }}</a>
+            {% if waffle.flag('new-topics') %}
+              {{ document['document_summary'] }}
+            {% endif %}
+          </li>
+        {% endfor %}
+      </ul>
 
       {% if fallback_documents %}
         <h2>{{ _('In English') }}</h2>

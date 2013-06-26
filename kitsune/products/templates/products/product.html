@@ -2,7 +2,7 @@
 {% from 'includes/common_macros.html' import for_contributors_sidebar %}
 {% from 'products/includes/product_macros.html' import product_sidebar %}
 {% from 'topics/includes/topic_macros.html' import hot_topics, help_topics with context %}
-{% set crumbs = [(url('products'), _('Products')), (None, _(product.title, 'DB: products.Product.title'))] %}
+{% set crumbs = [(None, _(product.title, 'DB: products.Product.title'))] %}
 {% set styles = ('products',) %}
 
 {% block title %}{{ _('{product} Help')|f(product=_(product.title, 'DB: products.Product.title')) }}{% endblock %}
