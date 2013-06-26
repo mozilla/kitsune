@@ -14,9 +14,9 @@ class AnnouncementForm(forms.Form):
     controllable locale or group, use the admin interface.
 
     """
-    content = forms.CharField(label=_lazy('Content'), max_length=10000,
+    content = forms.CharField(label=_lazy(u'Content'), max_length=10000,
                               widget=forms.Textarea)
-    show_after = forms.DateField(label=_lazy('Show after'), initial=date.today,
+    show_after = forms.DateField(label=_lazy(u'Show after'), initial=date.today,
                                  input_formats=['%Y-%m-%d'])
-    show_until = forms.DateField(label=_lazy('Show until'), required=False,
+    show_until = forms.DateField(label=_lazy(u'Show until'), required=False,
                                  input_formats=['%Y-%m-%d'])
