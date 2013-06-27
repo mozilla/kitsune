@@ -965,7 +965,8 @@ input[type=button],
       position: relative;
 
       &.dropdown {
-        > a:after {
+        > a:after,
+        > span:after {
           -moz-border-bottom-colors: none;
           -moz-border-image: none;
           -moz-border-left-colors: none;
@@ -987,7 +988,8 @@ input[type=button],
       }
 
       > a,
-      > a:visited {
+      > a:visited,
+      > span {
         color: @textDarkGrey;
         display: block;
         font-weight: normal;
@@ -1016,17 +1018,34 @@ input[type=button],
         left: 0;
         list-style: none;
         margin: 0;
-        padding: 0 12px;
+        padding: 0;
         position: absolute;
         top: 42px;
         width: 160px;
 
+        &.double {
+          width: 420px;
+
+          > li {
+            float: left;
+            width: 186px;
+
+            &:nth-child(odd) {
+              clear: left;
+            }
+          }
+        }
+
         > li {
           font-size: 12px;
+          padding: 0 12px;
+
+          &:hover {
+            background: #f0f0f0;
+          }
 
           > a,
           > a:visited {
-            border-bottom: 1px dotted #d6d6d6;
             color: @textGrey;
             display: block;
             padding: 10px 0;

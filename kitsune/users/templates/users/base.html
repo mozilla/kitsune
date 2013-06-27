@@ -1,5 +1,4 @@
 {% extends "base.html" %}
-{% from 'includes/common_macros.html' import for_contributors_sidebar %}
 {% from 'users/includes/macros.html' import personal_tabs %}
 {% set styles = ('users',) %}
 {% set scripts = ('users',) %}
@@ -14,7 +13,7 @@
     {% else %}
       {# If we are viewing another user's profile, don't show the personal tabs #}
       <ul class="sidebar-nav">
-        <li class="active">
+        <li class="selected">
           <a href="{{ profile_url(profile.user) }}">
             {{ display_name(profile.user) }}
           </a>
@@ -22,5 +21,4 @@
       </ul>
     {% endif %}
   {% endif %}
-  {{ for_contributors_sidebar(user, settings.WIKI_DEFAULT_LANGUAGE) }}
 {% endblock %}

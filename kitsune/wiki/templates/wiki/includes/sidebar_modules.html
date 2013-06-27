@@ -1,4 +1,3 @@
-{% from "includes/common_macros.html" import for_contributors_sidebar %}
 {% from "wiki/includes/document_macros.html" import document_watch with context %}
 
 {% macro document_tools(document, parent, user, active, settings) -%}
@@ -50,7 +49,6 @@
           {% endif %}
         </ul>
       </li>
-      {{ for_contributors_sidebar(user, settings.WIKI_DEFAULT_LANGUAGE, True) }}
     </ul>
     <div class="email">{{ document_watch(document, user) }}</div>
   </nav>

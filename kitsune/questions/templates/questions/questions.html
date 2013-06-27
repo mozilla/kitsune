@@ -1,5 +1,4 @@
 {% extends "questions/base.html" %}
-{% from "includes/common_macros.html" import for_contributors %}
 {% from "dashboards/includes/macros.html" import product_selector, topic_selector %}
 {% set title = _('Firefox Support Forum') %}
 {% set classes = 'questions' %}
@@ -58,9 +57,6 @@
         {%- endfor %}
         <a class="show-all" href="{{ questions_url(tagged=None) }}">{{ _('Show all questions') }}</a>
       </div>
-    {% endif %}
-    {% if user.is_authenticated() %}
-      {{ for_contributors(user, settings.WIKI_DEFAULT_LANGUAGE) }}
     {% endif %}
   </div>
   <div class="grid_7">
