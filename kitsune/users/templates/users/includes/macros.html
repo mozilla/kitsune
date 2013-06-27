@@ -62,3 +62,17 @@
     </div>
   </form>
 {%- endmacro %}
+
+{% macro personal_tabs(user, selected) -%}
+  <ul id="user-nav" class="sidebar-nav">
+    <li {{ selected|class_selected('my-profile') }}>
+      <a href="{{ profile_url(user) }}">{{ _('My profile') }}</a>
+    </li>
+    <li {{ selected|class_selected('edit-profile') }}>
+      <a href="{{ url('users.edit_profile') }}">{{ _('Edit my profile') }}</a>
+    </li>
+    <li {{ selected|class_selected('edit-settings') }}>
+      <a href="{{ url('users.edit_settings') }}">{{ _('Edit settings') }}</a>
+    </li>
+  </ul>
+{%- endmacro %}

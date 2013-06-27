@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% from 'includes/common_macros.html' import for_contributors_sidebar %}
+{% from 'users/includes/macros.html' import personal_tabs %}
 {% set styles = ('users',) %}
 {% set scripts = ('users',) %}
 
@@ -9,7 +10,7 @@
   {% endif %}
   {% if profile %}
     {% if request.user == profile.user %}
-      {% include 'dashboards/includes/personal_tabs.html' %}
+      {{ personal_tabs(request.user, active) }}
     {% else %}
       {# If we are viewing another user's profile, don't show the personal tabs #}
       <ul class="sidebar-nav">
