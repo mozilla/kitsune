@@ -2,7 +2,9 @@
 
 {% macro avatar_link(user=None) -%}
   {% if user %}
-    <a href="{{ profile_url(user) }}"><img src="{{ profile_avatar(user) }}" height="48" width="48" alt="{{ display_name(user) }}"></a>
+    <a href="{{ profile_url(user) }}">
+      <img src="{{ profile_avatar(user) }}" height="48" width="48" alt="{{ display_name(user) }}" />
+    </a>
   {% else %}
     <img src="{{ profile_avatar(user) }}" height="48" width="48" alt="{{ _('System') }}" />
   {% endif %}
@@ -18,32 +20,16 @@
 
 {% macro message_tabs(active_tab) -%}
   <ul id="pm-nav" class="sidebar-nav">
-    <li{% if active_tab == 'inbox' %} class="selected"{% endif %}>
+    <li {{ active_tab|class_selected('inbox') }}>
       <a href="{{ url('messages.inbox') }}">{{ _('Inbox') }}</a>
     </li>
-    <li{% if active_tab == 'outbox' %} class="selected"{% endif %}>
+    <li {{ active_tab|class_selected('outbox') }}>
       <a href="{{ url('messages.outbox') }}">{{ _('Sent Messages') }}</a>
     </li>
-    <li{% if active_tab == 'new' %} class="selected"{% endif %}>
+    <li {{ active_tab|class_selected('new') }}>
       <a href="{{ url('messages.new') }}">{{ _('New Message') }}</a>
     </li>
   </ul>
-{%- endmacro %}
-
-{% macro message_tabs_old(active_tab) -%}
-  <nav id="doc-tabs">
-    <ul>
-      <li{% if active_tab == 'inbox' %} class="active"{% endif %}>
-        <a href="{{ url('messages.inbox') }}">{{ _('Messages') }}</a>
-      </li>
-      <li{% if active_tab == 'outbox' %} class="active"{% endif %}>
-        <a href="{{ url('messages.outbox') }}">{{ _('Sent Messages') }}</a>
-      </li>
-      <li{% if active_tab == 'new' %} class="active"{% endif %}>
-        <a href="{{ url('messages.new') }}">{{ _('New Message') }}</a>
-      </li>
-    </ul>
-  </nav>
 {%- endmacro %}
 
 {% macro inbox_message(message) -%}

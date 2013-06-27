@@ -28,10 +28,26 @@
     {% else %}
       <h3>{{ _('Login Problems?') }}</h3>
       <ul>
-        <li><a href="{{ url('users.pw_reset') }}">{{ _("My password isn't working.") }}</a></li>
-        <li><a href="{{ url('users.forgot_username') }}">{{ _('I forgot my username.') }}</a></li>
-        <li><a href="{{ url('users.register') }}">{{ _("I don't have an account.") }} </a></li>
-        <li><a href="{{ url('users.resend_confirmation') }}">{{ _("I didn't get a confirmation email.") }}</a></li>
+        <li>
+          <a href="{{ url('users.pw_reset') }}">
+            {{ _("My password isn't working.") }}
+          </a>
+        </li>
+        <li>
+          <a href="{{ url('users.forgot_username') }}">
+            {{ _('I forgot my username.') }}
+          </a>
+        </li>
+        <li>
+          <a href="{{ url('users.register') }}">
+            {{ _("I don't have an account.") }}
+          </a>
+        </li>
+        <li>
+          <a href="{{ url('users.resend_confirmation') }}">
+            {{ _("I didn't get a confirmation email.") }}
+          </a>
+        </li>
       </ul>
     {% endif %}
   </div>
@@ -49,16 +65,22 @@
       {% for field in form if field.name != 'interested' %}
         <li class="cf">{{ field|label_with_help }} {{ field }}
           {% if field.name == "password"  %}
-            <p id="password-rules">{{ _("Password should be at least 8 characters long and contain at least 1 number.") }}</p>
+            <p id="password-rules">
+              {{ _("Password should be at least 8 characters long and contain at least 1 number.") }}
+            </p>
           {% elif field.name == "username" %}
-            <p id="username-rules">{{ _("Your username will be shown next to your question in our public support forums.") }}</p>
+            <p id="username-rules">
+              {{ _("Your username will be shown next to your question in our public support forums.") }}
+            </p>
           {% endif %}
         </li>
       {% endfor %}
     </ul>
     <div class="submit">
       <input type="hidden" name="register" value="1">
-      <button type="submit" data-type="submit" data-name="register" class="btn btn-submit">{{ _('Register') }}</button>
+      <button type="submit" data-type="submit" data-name="register" class="btn btn-submit">
+        {{ _('Register') }}
+      </button>
     </div>
   </form>
 {%- endmacro %}

@@ -93,10 +93,10 @@
     <header>{{ _('Sort by') }}</header>
     <div class="wrapper scrollable">
       <ul class="select-list">
-        <li{% if not sort %} class="selected"{% endif %}>
+        <li {{ sort|class_selected(None) }}>
           <a href="{{ url('questions.questions')|urlparams(filter=filter, tagged=tagged) }}">{{ _('Most Recent') }}</a>
         </li>
-        <li{% if sort == 'requested' %} class="selected"{% endif %}>
+        <li {{ sort|class_selected('requested') }}>
           <a href="{{ url('questions.questions')|urlparams(sort='requested', filter=filter, tagged=tagged) }}">{{ _('Most Requested') }}</a>
         </li>
       </ul>
@@ -107,20 +107,20 @@
     <header>{{ _('Show') }}</header>
     <div class="wrapper scrollable">
       <ul class="select-list">
-        <li{% if not filter %} class="selected"{% endif %}>
+        <li {{ filter|class_selected(None) }}>
           <a href="{{ url('questions.questions')|urlparams(sort=sort, tagged=tagged) }}">{{ _('All') }}</a>
         </li>
-        <li{% if filter == 'unsolved' %} class="selected"{% endif %}>
+        <li {{ filter|class_selected('unsolved') }}>
           <a href="{{ url('questions.questions')|urlparams(filter='unsolved', sort=sort, tagged=tagged) }}">{{ _('Unsolved') }}</a>
         </li>
-        <li{% if filter == 'solved' %} class="selected"{% endif %}>
+        <li {{ filter|class_selected('solved') }}>
           <a href="{{ url('questions.questions')|urlparams(filter='solved', sort=sort, tagged=tagged) }}">{{ _('Solved') }}</a>
         </li>
-        <li{% if filter == 'no-replies' %} class="selected"{% endif %}>
+        <li {{ filter|class_selected('no-replies') }}>
           <a href="{{ url('questions.questions')|urlparams(filter='no-replies', sort=sort, tagged=tagged) }}">{{ _('No Replies') }}</a>
         </li>
         {% if user.is_authenticated() %}
-          <li{% if filter == 'my-contributions' %} class="selected"{% endif %}>
+          <li {{ filter|class_selected('my-contributions') }}>
             <a href="{{ url('questions.questions')|urlparams(filter='my-contributions', sort=sort, tagged=tagged) }}">{{ _('My Contributions') }}</a>
           </li>
         {% endif %}
