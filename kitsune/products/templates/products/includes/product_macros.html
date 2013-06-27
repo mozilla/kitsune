@@ -25,18 +25,3 @@
     {% endif %}
   </ul>
 {%- endmacro %}
-
-{% macro product_sidebar(products, selected_product=None) -%}
-  <ul class="sidebar-nav products">
-    <li>
-      <a href="{{ url('products') }}">{{ _('Products') }}</a>
-      <ul class="sidebar-nav">
-        {% for product in products %}
-          <li{% if selected_product == product %} class="selected"{% endif %}>
-            <a href="{{ url('products.product', slug=product.slug) }}">{{ _(product.title, 'DB: products.Product.title') }}</a>
-          </li>
-        {% endfor %}
-      </ul>
-    </li>
-  </ul>
-{%- endmacro %}
