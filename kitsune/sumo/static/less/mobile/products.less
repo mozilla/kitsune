@@ -47,16 +47,23 @@
     line-height: 40px;
     padding: 10px 16px;
 
-    > span {
-      float: left;
-      width: 80px;
-    }
+    .return-link {
+      color: #fff;
+      display: block;
+      padding-left: 30px;
+      position: relative;
 
-    .select-box {
-      margin: 0 10px;
-      width: calc(~'100% - 130px');
-      width: -moz-calc(~'100% - 130px');
-      width: -webkit-calc(~'100% - 130px');
+      &:before {
+        background-position: -52px -1664px;
+        .icons-sprite();
+        content: '';
+        height: 20px;
+        left: 0;
+        margin-top: -10px;
+        position: absolute;
+        top: 50%;
+        width: 20px;
+      }
     }
   }
 }
@@ -156,6 +163,16 @@
     h2 {
       &:after {
         .icons-sprite-2x();
+      }
+    }
+  }
+
+  .documents {
+    .filter-bar {
+      .return-link {
+        &:after {
+          .icons-sprite-2x;
+        }
       }
     }
   }

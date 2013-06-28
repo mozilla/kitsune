@@ -2,21 +2,39 @@
 
 {% set styles = ('mobile/products',) %}
 {% set classes = 'documents' %}
-{% set headline = _(topic.title, 'DB: topics.Topic.title') %}
-{% set return_url = url('products.product', slug=product.slug) %}
+{% if subtopic %}
+  {% set headline = _(subtopic.title, 'DB: products.Topic.title') %}
+{% else %}
+  {% set headline = _(topic.title, 'DB: products.Topic.title') %}
+{% endif %}
+{% if subtopic %}
+  {% set return_url = url('products.documents', product_slug=product.slug, topic_slug=topic.slug) %}
+{% else %}
+  {% set return_url = url('products.product', slug=product.slug) %}
+{% endif %}
 
-{% block title %}{{ _(topic.title, 'DB: topics.Topic.title') }} | {{ _('{product} Help')|f(product=_(product.title, 'DB: products.Product.title')) }}{% endblock %}
+{% block title %}{{ headline }} | {{ _('{product} Help')|f(product=_(product.title, 'DB: products.Product.title')) }}{% endblock %}
 
 {% block content %}
-  {% if subtopics or topic.parent %}
+  {% if subtopic %}
     <div class="filter-bar">
-      <div class="select-box" data-overlay="filter-overlay">
-        {{ _('Related Topics') }}
-      </div>
+      <a class="return-link" href="{{ return_url }}">
+        {{ _('Back to:') }} {{ _(topic.title, 'DB: products.Topic.title') }}
+      </a>
     </div>
   {% endif %}
 
   <ul class="document-list">
+    {% if not subtopic and subtopics %}
+      {# only show subtopics on the parent topic page #}
+      {% for subtopic in subtopics %}
+        <li>
+          <a href="{{ url('products.subtopics', product_slug=product.slug, topic_slug=topic.slug, subtopic_slug=subtopic.slug) }}">
+            {{ _(subtopic.title, 'DB: products.Topic.title') }}
+          </a>
+        </li>
+      {% endfor %}
+    {% endif %}
     {% for document in documents %}
       <li>
         <a class="cf" href="{{ document['url'] }}">{{ document['document_title'] }}</a>
@@ -34,28 +52,4 @@
       {% if loop.last %}</ul>{% endif %}
     {% endfor %}
   {% endif %}
-{% endblock %}
-
-{% block after_main %}
-  <div id="filter-overlay" class="overlay" style="display: none;">
-    <header>{{ _('Related Topics') }}</header>
-    <div class="wrapper scrollable">
-      <ul class="select-list">
-        {% if topic.parent %}
-          <li>
-            <a href="{{ url('products.documents', product_slug=product.slug, topic_slug=topic.parent.slug) }}">
-              {{ _('Go back to {topic}')|f(topic=_(topic.parent.title, 'DB: topics.Topic.title'))}}
-            </a>
-          </li>
-        {% endif %}
-        {% for topic_ in subtopics %}
-          <li>
-            <a href="{{ url('products.documents', product_slug=product.slug, topic_slug=topic_.slug) }}">
-              {{ _(topic_.title, 'DB: topics.Topic.title') }}
-            </a>
-          </li>
-        {% endfor %}
-      </ul>
-    </div>
-  </div>
 {% endblock %}
