@@ -13,7 +13,7 @@
   {% set return_url = url('products.product', slug=product.slug) %}
 {% endif %}
 
-{% block title %}{{ _(topic.title, 'DB: products.Topic.title') }} | {{ _('{product} Help')|f(product=_(product.title, 'DB: products.Product.title')) }}{% endblock %}
+{% block title %}{{ headline }} | {{ _('{product} Help')|f(product=_(product.title, 'DB: products.Product.title')) }}{% endblock %}
 
 {% block content %}
   {% if subtopic %}
