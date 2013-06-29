@@ -295,7 +295,7 @@ class WikiParser(Parser):
 
         template = jingo.env.get_template(self.image_template)
         r_kwargs = {'image': image, 'params': params,
-                    'MEDIA_URL': settings.MEDIA_URL}
+                    'STATIC_URL': settings.STATIC_URL}
         return template.render(r_kwargs)
 
     # Videos are objects that can have one or more files attached to them
