@@ -1,5 +1,4 @@
 {% extends "base.html" %}
-{% from 'includes/common_macros.html' import for_contributors_sidebar %}
 {% if waffle.flag('new-topics') %}
   {% from 'products/includes/topic_macros.html' import topic_sidebar %}
 {% else %}
@@ -25,7 +24,6 @@
     </h1>
   </div>
   <aside class="grid_3">
-    {{ for_contributors_sidebar(user, settings.WIKI_DEFAULT_LANGUAGE) }}
     {% if waffle.flag('new-topics') %}
       {{ topic_sidebar(topics[:10], subtopics, product, topic, subtopic) }}
     {% else %}

@@ -10,7 +10,7 @@
           <ul class="subtopics">
             {% for subtopic in subtopics %}
               {% set subtopic_url = url('products.subtopics', product_slug=product.slug, topic_slug=topic.slug, subtopic_slug=subtopic.slug) %}
-              <li {% if selected_subtopic == subtopic %}class="selected"{% endif %}>
+              <li {{ selected_subtopic|class_selected(subtopic) }}>
                 <a href="{{ subtopic_url }}">
                 {{ _(subtopic.title, 'DB: topics.Topic.title') }}
                 </a>

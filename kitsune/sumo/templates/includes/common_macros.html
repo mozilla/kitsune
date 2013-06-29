@@ -26,6 +26,12 @@
     {% endif %}
     <li><a href="{{ ask_url }}" class="ask">{{ _('Ask a question') }}</a></li>
     {% if user.is_authenticated() %}
+      <li class="dropdown">
+        <span>{{ _('Contributor Tools') }}</span>
+        <ul class="double">
+          {{ _for_contributor_links(user, settings.WIKI_DEFAULT_LANGUAGE) }}
+        </ul>
+      </li>
       <li class="dropdown"><a href="{{ profile_url(user) }}" class="user">{{ user }}</a>
         <ul>
           <li><a href="{{ profile_url(user) }}">{{ _('View Profile') }}</a></li>

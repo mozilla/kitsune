@@ -1,13 +1,9 @@
 {% extends "base.html" %}
 {% from 'products/includes/product_macros.html' import product_cards with context %}
-{% from 'includes/common_macros.html' import for_contributors %}
 {% set styles = ('home',) %}
 
 {% block content %}
   <div class="grid_12">
-    {% if user.is_authenticated() %}
-      {{ for_contributors(user, settings.WIKI_DEFAULT_LANGUAGE) }}
-    {% endif %}
     <section id="products-and-services">
       {{ product_cards(products, show_thunderbird=True) }}
     </section>

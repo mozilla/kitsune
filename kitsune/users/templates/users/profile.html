@@ -15,16 +15,18 @@
       </div>
       {% if user.is_staff and user.has_perm('users.change_profile') %}
         <div id="admin-actions">
-          <a class="edit" href="{{ url('admin:users_profile_change', profile.user.id) }}">{{ _('Edit user profile') }}</a>
+          <a class="edit" href="{{ url('admin:users_profile_change', profile.user.id) }}">
+            {{ _('Edit user profile') }}
+          </a>
         </div>
       {% endif %}
       {% if request.user.is_authenticated and request.user != profile.user %}
         {{ flag_form(url('users.flag', object_id=profile.pk), False) }}
       {% endif %}
       <h1 class="user">{{ display_name(profile.user) }}
-          {% if profile.name %}
-            <span class="username">({{ profile.user.username }})</span>
-          {% endif %}
+        {% if profile.name %}
+          <span class="username">({{ profile.user.username }})</span>
+        {% endif %}
       </h1>
       <h2 class="location">
         {% if profile.city and profile.country %}

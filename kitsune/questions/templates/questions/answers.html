@@ -2,7 +2,6 @@
 {% from "layout/errorlist.html" import errorlist %}
 {% from "upload/attachments.html" import attachments_form %}
 {% from "includes/common_macros.html" import content_editor with context %}
-{% from "includes/common_macros.html" import for_contributors %}
 {% from "wiki/includes/flag_form.html" import flag_form with context %}
 {% from "questions/includes/questions.html" import troubleshooting_info %}
 
@@ -23,11 +22,6 @@
 {% endblock %}
 
 {% block content %}
-  <div class="grid_12">
-    {% if request.user.is_authenticated() %}
-      {{ for_contributors(user, settings.WIKI_DEFAULT_LANGUAGE) }}
-    {% endif %}
-  </div>
   <article>
     <div class="question grid_9">
       {% if question.is_locked %}

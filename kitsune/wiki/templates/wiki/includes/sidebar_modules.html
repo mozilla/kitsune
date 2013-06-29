@@ -1,68 +1,4 @@
-{% from "includes/common_macros.html" import for_contributors_sidebar %}
 {% from "wiki/includes/document_macros.html" import document_watch with context %}
-
-{% macro document_tabs(document, parent, user, active, settings) -%}
-  {% if not parent %}
-    {% set parent = document %}
-  {% endif %}
-  <nav id="doc-tabs">
-    <ul>
-      <li{% if active == 'article' %} class="active"{% endif %}>
-        {% if active == 'article' or not document %}
-          <span>{{ _('Article') }}</span>
-        {% else %}
-          <a href="{{ url('wiki.document', document.slug) }}">{{ _('Article') }}</a>
-        {% endif %}
-      </li>
-      {% if document and document.allow_discussion %}
-        <li{% if active == 'discussion' %} class="active"{% endif %}>
-          <a href="{{ url('wiki.discuss.threads', document.slug) }}">{{ _('Discussion') }}</a>
-        </li>
-      {% endif %}
-      {% if document and not document.is_archived and (document.allows(user, 'create_revision') or document.allows(user, 'edit')) %}
-        <li class="edit{% if active == 'edit' %} active{% endif %}">
-          {% if active == 'edit' %}
-            <span>{{ _('Edit Article') }}</span>
-          {% else %}
-            <a href="{{ url('wiki.edit_document', document.slug) }}">{{ _('Edit Article') }}</a>
-          {% endif %}
-        </li>
-      {% endif %}
-      {% if document and not document.is_archived and document.is_localizable %}
-        <li{% if active == 'localize' %} class="active"{% endif %}>
-          {% if active == 'localize' %}
-            <span>{{ _('Translate Article') }}</span>
-          {% else %}
-            <a href="{{ url('wiki.select_locale', document.slug) }}">{{ _('Translate Article') }}</a>
-          {% endif %}
-        </li>
-      {% endif %}
-      {% if not document and not document.is_archived and parent and parent.is_localizable %}
-        <li{% if active == 'localize' %} class="active"{% endif %}>
-          {% if active == 'localize' %}
-            <span>{{ _('Translate Article') }}</span>
-          {% else %}
-            <a href="{{ url('wiki.translate', parent.slug) }}">{{ _('Translate Article') }}</a>
-          {% endif %}
-        </li>
-        {% endif %}
-      {% if document and parent and parent.is_localizable %}
-        <li{% if active == 'show_translations' %} class="active"{% endif %}> 
-          {% if active == 'show_translations' %}
-            <span>{{ _('Show Translations') }}</span>
-          {% else %}
-            <a href="{{ url('wiki.show_translations', parent.slug) }}">{{ _('Show Translations') }}</a>
-          {% endif %}
-        </li>
-      {% endif %}
-      {% if document %}
-        <li{% if active == 'history' %} class="active"{% endif %}>
-          <a href="{% if document %}{{ url('wiki.document_revisions', document.slug) }}{% else %}{{ url('wiki.document_revisions', parent.slug, locale=settings.WIKI_DEFAULT_LANGUAGE) }}{% endif %}">{{ _('Show History') }}</a>
-        </li>
-      {% endif %}
-    </ul>
-  </nav>
-{%- endmacro %}
 
 {% macro document_tools(document, parent, user, active, settings) -%}
   {% if not parent %}
@@ -74,46 +10,45 @@
         <span>{{ _('Editing Tools') }}</span>
         <ul class="sidebar-nav">
           {% if document %}
-            <li{% if active == 'article' %} class="selected"{% endif %}>
+            <li {{ active|class_selected('article') }}>
               <a href="{{ url('wiki.document', document.slug) }}">{{ _('Article') }}</a>
             </li>
           {% endif %}
           {% if document and document.allow_discussion %}
-            <li{% if active == 'discussion' %} class="selected"{% endif %}>
+            <li {{ active|class_selected('discussion') }}>
               <a href="{{ url('wiki.discuss.threads', document.slug) }}">{{ _('Discussion') }}</a>
             </li>
           {% endif %}
           {% if document and not document.is_archived and (document.allows(user, 'create_revision') or document.allows(user, 'edit')) %}
-            <li{% if active == 'edit' %} class="selected"{% endif %}>
+            <li {{ active|class_selected('edit') }}>
               <a href="{{ url('wiki.edit_document', document.slug) }}">{{ _('Edit Article') }}</a>
             </li>
           {% endif %}
           {% if document and not document.is_archived and document.is_localizable %}
-            <li{% if active == 'localize' %} class="selected"{% endif %}>
+            <li {{ active|class_selected('localize') }}>
               <a href="{{ url('wiki.select_locale', document.slug) }}">{{ _('Translate Article') }}</a>
             </li>
           {% endif %}
           {% if not document and not document.is_archived and parent and parent.is_localizable %}
-            <li{% if active == 'localize' %} class="selected"{% endif %}>
+            <li {{ active|class_selected('localize') }}>
               <a href="{{ url('wiki.translate', parent.slug) }}">{{ _('Translate Article') }}</a>
             </li>
           {% endif %}
           {% if document and parent and parent.is_localizable %}
-            <li{% if active == 'show_translations' %} class="selected"{% endif %}> 
+            <li {{ active|class_selected('show_translations') }}>
               <a href="{{ url('wiki.show_translations', parent.slug) }}">{{ _('Show Translations') }}</a>
             </li>
           {% endif %}
           {% if document %}
-            <li{% if active == 'links_here' %} class="selected"{% endif %}>
+            <li {{ active|class_selected('links_here') }}>
               <a href="{{ url('wiki.what_links_here', document.slug) }}">{{ _('What Links Here') }}</a>
             </li>
-            <li{% if active == 'history' %} class="selected"{% endif %}>
+            <li {{ active|class_selected('history') }}>
               <a href="{{ url('wiki.document_revisions', document.slug) }}">{{ _('Show History') }}</a>
             </li>
           {% endif %}
         </ul>
       </li>
-      {{ for_contributors_sidebar(user, settings.WIKI_DEFAULT_LANGUAGE, True) }}
     </ul>
     <div class="email">{{ document_watch(document, user) }}</div>
   </nav>
