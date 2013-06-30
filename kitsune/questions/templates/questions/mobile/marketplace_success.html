@@ -1,12 +1,12 @@
 {% extends "mobile/base.html" %}
 {% from "layout/errorlist.html" import errorlist %}
-{% set title = _('Ask a Question about Marketplace') %}
+{% set title = _('Issue submitted successfully') %}
+{% set headline = title %}
 {% set classes = 'aaq' %}
 {% set hide_extra_content = True %}
 
 
 {% block content %}
-  <h1 class="title">{{ title }}</h1>
   <h2>
     {% trans %}
       Your issue has been submitted successfully. You should receive

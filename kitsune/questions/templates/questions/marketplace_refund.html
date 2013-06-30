@@ -1,0 +1,19 @@
+{% extends "questions/base.html" %}
+{% from "questions/includes/aaq_macros.html" import marketplace_category with context %}
+{% set title = _('Marketplace: Request a Refund') %}
+{% set classes = 'new-question marketplace' %}
+
+{% block content %}
+  <article class="main">
+    <div id="ask-question">
+      <h1>{{ title }}</h1>
+      <p>{{ _('The refund request must be made within 10 business days of purchase.') }}</p>
+      <div class="inner-wrap">
+        {{ marketplace_category('account', form, error_message) }}
+      </div>
+    </div>
+  </article>
+{% endblock %}
+
+{% block side %}
+{% endblock %}

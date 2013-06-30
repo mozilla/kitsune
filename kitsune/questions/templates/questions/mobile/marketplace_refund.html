@@ -1,0 +1,14 @@
+{% extends "mobile/base.html" %}
+{% from "questions/includes/aaq_macros.html" import marketplace_category with context %}
+{% from "layout/errorlist.html" import errorlist %}
+{% set title = _('Marketplace: Request a Refund') %}
+{% set headline = title %}
+{% set classes = 'aaq' %}
+{% set hide_extra_content = True %}
+{% set styles = ('mobile/aaq',) %}
+
+
+{% block content %}
+  <p>{{ _('The refund request must be made within 10 business days of purchase.') }}</p>
+  {{ marketplace_category('refund', form, error_message) }}
+{% endblock %}

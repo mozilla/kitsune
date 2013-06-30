@@ -43,7 +43,8 @@ from kitsune.questions.feeds import (
     QuestionsFeed, AnswersFeed, TaggedQuestionsFeed)
 from kitsune.questions.forms import (
     NewQuestionForm, EditQuestionForm, AnswerForm, WatchQuestionForm,
-    FREQUENCY_CHOICES, MarketplaceAaqForm, StatsForm)
+    FREQUENCY_CHOICES, MarketplaceAaqForm, MarketplaceRefundForm,
+    StatsForm)
 from kitsune.questions.karma_actions import (
     SolutionAction, AnswerMarkedHelpfulAction, AnswerMarkedNotHelpfulAction)
 from kitsune.questions.marketplace import (
@@ -784,7 +785,7 @@ def question_vote(request, question_id):
 
         if request.is_ajax():
             tmpl = 'questions/includes/question_vote_thanks.html'
-            form =  _init_watch_form(request)
+            form = _init_watch_form(request)
             html = jingo.render_to_string(request, tmpl, {'question': question,
                                                           'watch_form': form})
 
@@ -1187,6 +1188,47 @@ def marketplace_category(request, category_slug, template=None):
         'category': category_name,
         'category_slug': category_slug,
         'categories': MARKETPLACE_CATEGORIES,
+        'form': form,
+        'error_message': error_message})
+
+
+@anonymous_csrf
+@mobile_template('questions/{mobile/}marketplace_refund.html')
+def marketplace_refund(request, template):
+    """Form page that handles refund requests for Marketplace."""
+    error_message = None
+
+    if request.method == 'GET':
+        form = MarketplaceRefundForm(request.user)
+    else:
+        form = MarketplaceRefundForm(request.user, request.POST)
+        if form.is_valid():
+            transaction_id = form.cleaned_data['transaction_id']
+            category = form.cleaned_data['category']
+            subject = form.cleaned_data['subject']
+            body = 'Transaction ID: %s\nCategory: %s\n%s' % (
+                transaction_id,
+                category,
+                form.cleaned_data['body'])
+
+            if request.user.is_authenticated():
+                email = request.user.email
+            else:
+                email = form.cleaned_data['email']
+
+            # Submit ticket
+            try:
+                submit_ticket(email, category, subject, body)
+            except ZendeskError:
+                error_message = _('There was an error submitting the ticket, '
+                                  'please try again later.')
+
+            if not error_message:
+                return HttpResponseRedirect(
+                    reverse('questions.marketplace_aaq_success'))
+        print form.errors
+
+    return render(request, template, {
         'form': form,
         'error_message': error_message})
 
