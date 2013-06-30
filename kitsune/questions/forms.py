@@ -5,6 +5,7 @@ from django import forms
 
 from tower import ugettext_lazy as _lazy, ugettext as _
 
+from kitsune.questions.marketplace import submit_ticket
 from kitsune.questions.models import Answer
 from kitsune.sumo.form_fields import StrippedCharField
 
@@ -65,9 +66,10 @@ REPLY_PLACEHOLDER = _lazy(u'Enter your reply here.')
 EMAIL_PLACEHOLDER = _lazy(u'Enter your email address here.')
 SUBJECT_PLACEHOLDER = _lazy(u'Enter a subject here.')
 SUBJECT_CONTENT_REQUIRED = _lazy(u'Please provide a subject.')
-SUBJECT_CONTENT_SHORT = _lazy(u'The subject is too short (%(show_value)s '
-                              u'characters). It must be at least %(limit_value)s '
-                              u'characters.')
+SUBJECT_CONTENT_SHORT = _lazy(
+    u'The subject is too short (%(show_value)s '
+    u'characters). It must be at least %(limit_value)s '
+    u'characters.')
 SUBJECT_CONTENT_LONG = _lazy(u'Please keep the length of the subject to '
                              u'%(limit_value)s characters or less. It is '
                              u'currently %(show_value)s characters.')
@@ -83,6 +85,23 @@ CATEGORY_CHOICES = [(u'account', _lazy(u'Account Issues')),
                     (u'installation', _lazy(u'Installation Issues')),
                     (u'payment', _lazy(u'Payment Issues')),
                     (u'application', _lazy(u'Application Issues')), ]
+
+# Marketplace Request Refund form
+TRANSACTION_ID_PLACEHOLDER = _lazy(u'Enter the transaction ID here.')
+TRANSACTION_ID_REQUIRED = _lazy(u'Please provide the transaction ID.')
+REFUND_CATEGORY_CHOICES = [
+    (u'Defective', _lazy(u'Defective')),
+    (u'Malware', _lazy(u'Malware')),
+    (u'Did not work as expected', _lazy(u'Did not work as expected')),
+    (u'Seller will not provide support',
+     _lazy(u'Seller will not provide support')), ]
+
+
+# Marketplace Developer Request form
+DEVELOPER_REQUEST_CATEGORY_CHOICES = [
+    (u'Account Administration', _lazy(u'Account Administration')),
+    (u'Review Process', _lazy(u'Review Process')),
+    (u'Payments/Settlement', _lazy(u'Payments/Settlement')), ]
 
 
 class EditQuestionForm(forms.Form):
@@ -285,11 +304,13 @@ class WatchQuestionForm(forms.Form):
         return None
 
 
-class MarketplaceAaqForm(forms.Form):
-    """AAQ Form for Marketplace."""
+class BaseZendeskForm(forms.Form):
+    """Base Form class for all Zendesk forms."""
 
     def __init__(self, user, *args, **kwargs):
-        super(MarketplaceAaqForm, self).__init__(*args, **kwargs)
+        super(BaseZendeskForm, self).__init__(*args, **kwargs)
+
+        self.user = user
 
         # Add email field for users not logged in.
         if not user.is_authenticated():
@@ -317,9 +338,66 @@ class MarketplaceAaqForm(forms.Form):
                         'min_length': BODY_CONTENT_SHORT,
                         'max_length': BODY_CONTENT_LONG})
 
+    @property
+    def ticket_body(self):
+        """Body of the ticket to submit to zendesk."""
+        return self.cleaned_data['body']
+
+    def submit_ticket(self):
+        """Submit the ticket to Zendesk."""
+        if self.user.is_authenticated():
+            email = self.user.email
+        else:
+            email = self.cleaned_data['email']
+
+        submit_ticket(
+            email,
+            self.cleaned_data['category'],
+            self.cleaned_data['subject'],
+            self.ticket_body)
+
+
+class MarketplaceAaqForm(BaseZendeskForm):
+    """AAQ Form for Marketplace."""
+
     category = forms.ChoiceField(
         label=_lazy(u'Category:'),
         choices=CATEGORY_CHOICES)
+
+
+class MarketplaceRefundForm(BaseZendeskForm):
+    """Request Refund Form for Marketplace."""
+
+    transaction_id = StrippedCharField(
+        label=_lazy(u'Transaction ID:'),
+        widget=forms.TextInput(attrs={'placeholder': TRANSACTION_ID_PLACEHOLDER}),
+        error_messages={'required': TRANSACTION_ID_REQUIRED})
+
+    category = forms.ChoiceField(
+        label=_lazy(u'Category:'),
+        choices=REFUND_CATEGORY_CHOICES)
+
+    @property
+    def ticket_body(self):
+        """Body of the ticket to submit to zendesk."""
+        return 'Transaction ID: %s\nCategory: %s\n%s' % (
+            self.cleaned_data['transaction_id'],
+            self.cleaned_data['category'],
+            self.cleaned_data['body'])
+
+class MarketplaceDeveloperRequestForm(BaseZendeskForm):
+    """Marketplace Developer Request Form."""
+
+    category = forms.ChoiceField(
+        label=_lazy(u'Category:'),
+        choices=DEVELOPER_REQUEST_CATEGORY_CHOICES)
+
+    @property
+    def ticket_body(self):
+        """Body of the ticket to submit to zendesk."""
+        return 'Category: %s\n%s' % (
+            self.cleaned_data['category'],
+            self.cleaned_data['body'])
 
 
 bucket_choices = [(1, '1 day'), (7, '1 week'), (30, '1 month')]

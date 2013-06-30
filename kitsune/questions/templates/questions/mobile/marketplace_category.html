@@ -2,12 +2,13 @@
 {% from "questions/includes/aaq_macros.html" import marketplace_category with context %}
 {% from "layout/errorlist.html" import errorlist %}
 {% set title = _('Ask a Question about Marketplace') %}
+{% set headline = title %}
 {% set classes = 'aaq' %}
 {% set hide_extra_content = True %}
+{% set styles = ('mobile/aaq',) %}
 
 
 {% block content %}
-  <h1 class="title">{{ title }}</h1>
   {{ marketplace_category(category_slug, form, error_message) }}
   <div class="selections">
     <div class="selected">

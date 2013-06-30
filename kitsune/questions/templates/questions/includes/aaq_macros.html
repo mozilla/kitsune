@@ -170,18 +170,18 @@
         directly.
       {% endtrans %}
     </h2>
-  {% elif category_slug == 'account' %}
+  {% elif category_slug == 'account' or category_slug == 'refund' %}
     {% if error_message %}
       <ul class="errorlist">
         <li>{{ error_message }}</li>
       </ul>
     {% endif %}
-    <form id="question-form" action="" method="post">
+    <form id="question-form" class="marketplace" action="" method="post">
       {{ csrf() }}
       <ol>
         {{ form.as_ul() }}
         <li class="submit">
-          <input type="submit" class="btn btn-important" value="{{ _('Submit Issue') }}" />
+          <button type="submit" class="btn btn-submit big">{{ _('Submit Issue') }}</button>
         </li>
       </ol>
     </form>
