@@ -164,7 +164,7 @@
       <option value="">{{ _('All Topics') }}</option>
       {% for t in topics %}
         <option value="{{ t.slug }}" {% if current == t %}selected="selected"{% endif %}>
-          {{ _(t.title, 'DB: topics.Topic.title') }}
+          {{ _(t.title, 'DB: products.Topic.title') }}
         </option>
       {% endfor %}
     </select>

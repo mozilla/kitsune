@@ -4,7 +4,7 @@
       {% set topic_url = url('products.documents', product_slug=product.slug, topic_slug=topic.slug) %}
       <li {% if selected_topic == topic %}class="selected {% if selected_subtopic != None %}subtopic-selected{% endif %}"{% endif %}>
         <a href="{{ topic_url }}">
-          {{ _(topic.title, 'DB: topics.Topic.title') }}
+          {{ _(topic.title, 'DB: products.Topic.title') }}
         </a>
         {% if selected_topic == topic %}
           <ul class="subtopics">
@@ -12,7 +12,7 @@
               {% set subtopic_url = url('products.subtopics', product_slug=product.slug, topic_slug=topic.slug, subtopic_slug=subtopic.slug) %}
               <li {{ selected_subtopic|class_selected(subtopic) }}>
                 <a href="{{ subtopic_url }}">
-                {{ _(subtopic.title, 'DB: topics.Topic.title') }}
+                {{ _(subtopic.title, 'DB: products.Topic.title') }}
                 </a>
               </li>
             {% endfor %}
