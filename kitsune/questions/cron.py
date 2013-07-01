@@ -114,8 +114,7 @@ def auto_lock_old_questions():
                         doc[u'indexed_on'] = int(time.time())
                         documents.append(doc)
 
-                    QuestionMappingType.bulk_index(
-                        documents, id_field='document_id')
+                    QuestionMappingType.bulk_index(documents)
 
             except ES_EXCEPTIONS:
                 # Something happened with ES, so let's push index
