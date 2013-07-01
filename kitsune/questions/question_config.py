@@ -139,8 +139,8 @@ products = SortedDict([
            }),
            ('customize', {
                'name': _lazy(u'Customize controls, options, settings and preferences'),
-               'topic': 'customize',
-               'tags': ['customize'],
+               'topic': 'settings',
+               'tags': ['settings'],
            }),
            ('fix-problems', {
                'name': _lazy(u'Fix slowness, crashing, error messages and other problems'),
