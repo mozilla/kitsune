@@ -12,7 +12,7 @@ class TestLanguageSwitch(SeleniumTestCase):
         self.webdriver.get(url)
 
         picker = self.webdriver.find_element_by_css_selector('.locale-picker')
-        eq_(picker.text, 'ENGLISH')
+        eq_(picker.text.lower(), 'english')
         picker.click()
 
         self.webdriver.find_element_by_css_selector('a[lang="es"]').click()
@@ -21,4 +21,4 @@ class TestLanguageSwitch(SeleniumTestCase):
         eq_(self.webdriver.current_url, url)
 
         picker = self.webdriver.find_element_by_css_selector('.locale-picker')
-        eq_(picker.text, u'ESPAÑOL')
+        eq_(picker.text.lower(), u'español')
