@@ -17,6 +17,12 @@
       {{ csrf() }}
       {{ errorlist(form) }}
 
+      {% if request.limited %}
+        <div class="warning-box">
+          {{ _('You have exceeded the number of threads and replies that can be posted in a given amount of time. Please try again shortly.') }}
+        </div>
+      {% endif %}
+
       {% for field in form %}
         <div class="form-widget{% if field.errors %} invalid{% endif %}">
           {{ field.label_tag()|safe }}
