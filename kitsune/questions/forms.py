@@ -340,7 +340,7 @@ class BaseZendeskForm(forms.Form):
 
     @property
     def ticket_body(self):
-        """Body of the ticket to submit to zendesk."""
+        """Body of the ticket to submit to Zendesk."""
         return self.cleaned_data['body']
 
     def submit_ticket(self):
@@ -358,16 +358,12 @@ class BaseZendeskForm(forms.Form):
 
 
 class MarketplaceAaqForm(BaseZendeskForm):
-    """AAQ Form for Marketplace."""
-
     category = forms.ChoiceField(
         label=_lazy(u'Category:'),
         choices=CATEGORY_CHOICES)
 
 
 class MarketplaceRefundForm(BaseZendeskForm):
-    """Request Refund Form for Marketplace."""
-
     transaction_id = StrippedCharField(
         label=_lazy(u'Transaction ID:'),
         widget=forms.TextInput(attrs={'placeholder': TRANSACTION_ID_PLACEHOLDER}),
@@ -379,62 +375,24 @@ class MarketplaceRefundForm(BaseZendeskForm):
 
     @property
     def ticket_body(self):
-        """Body of the ticket to submit to zendesk."""
-        return 'Transaction ID: %s\nCategory: %s\n%s' % (
-            self.cleaned_data['transaction_id'],
-            self.cleaned_data['category'],
-            self.cleaned_data['body'])
+        """Body of the ticket to submit to Zendesk."""
+        return 'Transaction ID: {id}\nCategory: {category}\n{body}'.format(
+            id=self.cleaned_data['transaction_id'],
+            category=self.cleaned_data['category'],
+            body=self.cleaned_data['body'])
+
 
 class MarketplaceDeveloperRequestForm(BaseZendeskForm):
-    """Marketplace Developer Request Form."""
-
     category = forms.ChoiceField(
         label=_lazy(u'Category:'),
         choices=DEVELOPER_REQUEST_CATEGORY_CHOICES)
 
     @property
     def ticket_body(self):
-        """Body of the ticket to submit to zendesk."""
-        return 'Category: %s\n%s' % (
-            self.cleaned_data['category'],
-            self.cleaned_data['body'])
-
-
-class MarketplaceDeveloperRequestForm(forms.Form):
-    """Marketplace Developer Request Form."""
-
-    def __init__(self, user, *args, **kwargs):
-        super(MarketplaceDeveloperRequestForm, self).__init__(*args, **kwargs)
-
-        # Add email field for users not logged in.
-        if not user.is_authenticated():
-            email = forms.EmailField(
-                label=_lazy(u'Email:'),
-                widget=forms.TextInput(attrs={'placeholder': EMAIL_PLACEHOLDER})
-            )
-            self.fields['email'] = email
-
-    category = forms.ChoiceField(
-        label=_lazy(u'Category:'),
-        choices=DEVELOPER_REQUEST_CATEGORY_CHOICES)
-
-    subject = StrippedCharField(
-        label=_lazy(u'Subject:'),
-        min_length=4,
-        max_length=255,
-        widget=forms.TextInput(attrs={'placeholder': SUBJECT_PLACEHOLDER}),
-        error_messages={'required': SUBJECT_CONTENT_REQUIRED,
-                        'min_length': SUBJECT_CONTENT_SHORT,
-                        'max_length': SUBJECT_CONTENT_LONG})
-
-    body = StrippedCharField(
-        label=_lazy(u'Body:'),
-        min_length=5,
-        max_length=10000,
-        widget=forms.Textarea(attrs={'placeholder': BODY_PLACEHOLDER}),
-        error_messages={'required': BODY_CONTENT_REQUIRED,
-                        'min_length': BODY_CONTENT_SHORT,
-                        'max_length': BODY_CONTENT_LONG})
+        """Body of the ticket to submit to Zendesk."""
+        return 'Category: {category}\n{body}'.format(
+            category=self.cleaned_data['category'],
+            body=self.cleaned_data['body'])
 
 
 bucket_choices = [(1, '1 day'), (7, '1 week'), (30, '1 month')]

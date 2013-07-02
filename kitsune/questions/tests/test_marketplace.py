@@ -3,7 +3,7 @@ from nose.tools import eq_
 from pyquery import PyQuery as pq
 from zendesk import Zendesk
 
-import kitsune.questions.views
+import kitsune.questions.forms
 from kitsune import questions
 from kitsune.questions.marketplace import submit_ticket
 from kitsune.sumo.tests import TestCase, LocalizingClient, get, post
@@ -62,7 +62,7 @@ class MarketplaceAaqTests(TestCase):
         # One extra form field (email) in this case.
         eq_(5, len(doc('#question-form li')))
 
-    @mock.patch.object(kitsune.questions.views, 'submit_ticket')
+    @mock.patch.object(kitsune.questions.forms, 'submit_ticket')
     def test_submit_ticket(self, submit_ticket):
         """Verify form post."""
         subject = 'A new ticket'
@@ -76,7 +76,7 @@ class MarketplaceAaqTests(TestCase):
         eq_(200, response.status_code)
         submit_ticket.assert_called_with(self.user.email, cat, subject, body)
 
-    @mock.patch.object(kitsune.questions.views, 'submit_ticket')
+    @mock.patch.object(kitsune.questions.forms, 'submit_ticket')
     def test_submit_ticket_anon(self, submit_ticket):
         """Verify form post from unauth'd user."""
         email = 'foo@bar.com'
@@ -93,7 +93,7 @@ class MarketplaceAaqTests(TestCase):
         eq_(200, response.status_code)
         submit_ticket.assert_called_with(email, cat, subject, body)
 
-    @mock.patch.object(kitsune.questions.views, 'submit_ticket')
+    @mock.patch.object(kitsune.questions.forms, 'submit_ticket')
     def test_submit_refund_request(self, submit_ticket):
         """Verify refund requst form post."""
         subject = 'Please refund me!'
@@ -109,7 +109,7 @@ class MarketplaceAaqTests(TestCase):
         body = 'Transaction ID: qwerty12345\nCategory: Defective\nNOW!!'
         submit_ticket.assert_called_with(self.user.email, cat, subject, body)
 
-    @mock.patch.object(kitsune.questions.views, 'submit_ticket')
+    @mock.patch.object(kitsune.questions.forms, 'submit_ticket')
     def test_submit_developer_request(self, submit_ticket):
         """Verify refund requst form post."""
         subject = 'Please review my app!'
