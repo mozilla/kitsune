@@ -1149,8 +1149,8 @@ def marketplace(request, template=None):
 
 
 ZENDESK_ERROR_MESSAGE = _lazy(
-    'There was an error submitting the ticket. '
-    'Please try again later.')
+    u'There was an error submitting the ticket. '
+    u'Please try again later.')
 
 
 @anonymous_csrf
