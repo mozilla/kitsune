@@ -23,7 +23,6 @@ def patch_user_admin():
     """Prevent User objects from being deleted, even by superusers."""
     if not getattr(UserAdmin, '_monkeyed', False):
         UserAdmin._monkeyed = True
-        UserAdmin.has_delete_permission = lambda *a, **kw: False
         UserAdmin.actions = [_activate_users, _deactivate_users]
 
 
