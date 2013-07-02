@@ -7,19 +7,24 @@
 {% else %}
   {% set headline = _(topic.title, 'DB: products.Topic.title') %}
 {% endif %}
+{% set title = headline + ' | ' + _('{product} Help')|f(product=_(product.title, 'DB: products.Product.title')) %}
 {% if subtopic %}
   {% set return_url = url('products.documents', product_slug=product.slug, topic_slug=topic.slug) %}
 {% else %}
   {% set return_url = url('products.product', slug=product.slug) %}
 {% endif %}
 
-{% block title %}{{ headline }} | {{ _('{product} Help')|f(product=_(product.title, 'DB: products.Product.title')) }}{% endblock %}
-
 {% block content %}
   {% if subtopic %}
     <div class="filter-bar">
       <a class="return-link" href="{{ return_url }}">
         {{ _('Back to:') }} {{ _(topic.title, 'DB: products.Topic.title') }}
+      </a>
+    </div>
+  {% else %}
+    <div class="filter-bar">
+      <a class="return-link" href="{{ return_url }}">
+        {{ _('Back to:') }} {{ _(product.title, 'DB: products.Product.title') }}
       </a>
     </div>
   {% endif %}
