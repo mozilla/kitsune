@@ -140,6 +140,12 @@ def posts(request, forum_slug, thread_id, form=None, post_preview=None,
         'forums': Forum.objects.all()})
 
 
+
+def _skip_post_ratelimit(request):
+    """exclude users with the questions.bypass_ratelimit permission."""
+    return request.user.has_perm('questions.bypass_answer_ratelimit')
+
+
 @require_POST
 @login_required
 def reply(request, forum_slug, thread_id):
@@ -166,7 +172,8 @@ def reply(request, forum_slug, thread_id):
                 post_preview.author_post_count = \
                     reply_.author.post_set.count()
             elif not is_ratelimited(request, increment=True, rate='5/d',
-                                    ip=False, keys=user_or_ip('forum-post')):
+                                    ip=False, keys=user_or_ip('forum-post'),
+                                    skip_if=_skip_post_ratelimit):
                 reply_.save()
                 statsd.incr('forums.reply')
 
@@ -211,7 +218,8 @@ def new_thread(request, forum_slug):
             post_preview.author_post_count = \
                 post_preview.author.post_set.count()
         elif not is_ratelimited(request, increment=True, rate='5/d', ip=False,
-                                keys=user_or_ip('forum-post')):
+                                keys=user_or_ip('forum-post'),
+                                skip_if=_skip_post_ratelimit):
             thread = forum.thread_set.create(creator=request.user,
                                              title=form.cleaned_data['title'])
             thread.save()
