@@ -340,7 +340,7 @@ class BaseZendeskForm(forms.Form):
 
     @property
     def ticket_body(self):
-        """Body of the ticket to submit to zendesk."""
+        """Body of the ticket to submit to Zendesk."""
         return self.cleaned_data['body']
 
     def submit_ticket(self):
@@ -358,16 +358,12 @@ class BaseZendeskForm(forms.Form):
 
 
 class MarketplaceAaqForm(BaseZendeskForm):
-    """AAQ Form for Marketplace."""
-
     category = forms.ChoiceField(
         label=_lazy(u'Category:'),
         choices=CATEGORY_CHOICES)
 
 
 class MarketplaceRefundForm(BaseZendeskForm):
-    """Request Refund Form for Marketplace."""
-
     transaction_id = StrippedCharField(
         label=_lazy(u'Transaction ID:'),
         widget=forms.TextInput(attrs={'placeholder': TRANSACTION_ID_PLACEHOLDER}),
@@ -379,22 +375,21 @@ class MarketplaceRefundForm(BaseZendeskForm):
 
     @property
     def ticket_body(self):
-        """Body of the ticket to submit to zendesk."""
+        """Body of the ticket to submit to Zendesk."""
         return 'Transaction ID: {id}\nCategory: {category}\n{body}'.format(
             id=self.cleaned_data['transaction_id'],
             category=self.cleaned_data['category'],
             body=self.cleaned_data['body'])
 
-class MarketplaceDeveloperRequestForm(BaseZendeskForm):
-    """Marketplace Developer Request Form."""
 
+class MarketplaceDeveloperRequestForm(BaseZendeskForm):
     category = forms.ChoiceField(
         label=_lazy(u'Category:'),
         choices=DEVELOPER_REQUEST_CATEGORY_CHOICES)
 
     @property
     def ticket_body(self):
-        """Body of the ticket to submit to zendesk."""
+        """Body of the ticket to submit to Zendesk."""
         return 'Category: {category}\n{body}'.format(
             category=self.cleaned_data['category'],
             body=self.cleaned_data['body'])
