@@ -167,6 +167,98 @@ additional tips:
 
 .. _tests-chapter-qa-test-suite:
 
+In-Suite Selenium Tests
+=======================
+
+Front end testing that can't be done with QUnit can be done with
+Selenium_, a system for remote-controlling real browser windows and
+verifying behavior. Currently the tests are hard coded to use a local
+instance of Firefox.
+
+.. _Selenium: http://docs.seleniumhq.org/
+
+These tests are designed to be run locally on development laptops and
+locally on Jenkins. They are to provide some more security that we
+aren't breaking things when we write new code, and should run before
+commiting to master, just like any of our other in-suite tests. They are
+not intended to replace the QA test suites that run against dev, stage,
+and prod, and are not intended to beat on the site to find
+vulnerabilities
+
+You don't need a Selenium server to run these, and don't need to install
+anything more than a modern version of Firefox, and the dependencies in
+the vendor library.
+
+These tests use Django's `Live Server TestCase`_ class as a base, which
+causes Django to run a real http server for some of it's tests, instead
+of it's mocked http server that is used for most tests. This means it
+will allocate a port and try to render pages like a real server would.
+If static files are broken for you, these tests will likely fail as
+well.
+
+.. _`Live Server TestCase`: https://docs.djangoproject.com/en/1.4/topics/testing/#django.test.LiveServerTestCase
+
+Running Selenium Tests
+----------------------
+
+By default, the Selenium tests will run as a part of the normal test
+suite. When they run, a browser window will open and steal input for a
+moment. You don't need to interact with it, and if all goes well, it
+will close when the tests are complete. This cycle of open/test/close
+may happen more than once each time you run the tests, as each TestCase
+that uses Selenium will open it's own webdriver, which opens a browser
+window.
+
+
+Writing Selenium Tests
+----------------------
+
+To add a selenium test, subclass ``kitsune.sumo.tests.SeleniumTestCase``. To
+webdriver is available at ``self.webdriver``, and you can do things like
+``self.webdriver.get(url)`` and
+``self.webdriver.find_element_by_css_selector('div.baz')``. For more details
+about how to work with Selenium, you can check out Selenium HQ's guide_.
+
+.. _guide: http://docs.seleniumhq.org/docs/03_webdriver.jsp
+
+
+XVFB and Selenium
+-----------------
+
+Because Selenium opens real browser windows, it can be kind of annoying
+as windows open and steal focus and switch workspaces. Unfortunatly,
+Firefox doesn't have a headless mode of operation, so we can't simply
+turn off the UI. Luckily, there is a way to work around this fairly
+easily on Linux, and with some effort on OSX.
+
+Linux
+~~~~~
+Install XVFB_ and run the tests with it's xvfb-run binary. For example, if you
+run tests like
+
+    ./manage.py test -s --noinput --logging-clear-handlers
+
+You can switch to this to run with XVFB
+
+    xvfb-run ./manage.py test -s --noinput --logging-clear-handlers
+
+This creates a virtual X session for Firefox to run in, and sets up all the
+fiddly environment variables to get this working well. The tests will run as
+normal, and no windows will open, if all is working right.
+
+OSX ~~~ The same method can be used for OSX, but it requires some
+fiddliness. The default version of Firefox for OSX does not use X as
+it's graphic's backend, so by default XVFB can't help. You can however
+run an X11 enabled version of OSX and a OSX version of XVFB. You can
+find more details here_.
+
+.. _here: http://afitnerd.com/2011/09/06/headless-browser-testing-on-mac/
+
+NB: I don't use OSX, and that blog article is fairly out of date. If you
+find a way to get this working bettter or easier, or have better docs to
+share, please do!
+
+
 The QA test suite
 =================
 
