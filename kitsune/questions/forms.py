@@ -87,8 +87,8 @@ CATEGORY_CHOICES = [(u'account', _lazy(u'Account Issues')),
                     (u'application', _lazy(u'Application Issues')), ]
 
 # Marketplace Request Refund form
-TRANSACTION_ID_PLACEHOLDER = _lazy(u'Enter the transaction ID here.')
-TRANSACTION_ID_REQUIRED = _lazy(u'Please provide the transaction ID.')
+TRANSACTION_ID_PLACEHOLDER = _lazy(u'Enter the Transaction ID here.')
+TRANSACTION_ID_REQUIRED = _lazy(u'Please provide the Transaction ID.')
 REFUND_CATEGORY_CHOICES = [
     (u'Defective', _lazy(u'Defective')),
     (u'Malware', _lazy(u'Malware')),
