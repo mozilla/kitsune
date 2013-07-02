@@ -1148,7 +1148,7 @@ def marketplace(request, template=None):
         'categories': MARKETPLACE_CATEGORIES})
 
 
-ZENDESK_ERROR_MESSAGE = _(
+ZENDESK_ERROR_MESSAGE = _lazy(
     'There was an error submitting the ticket. '
     'Please try again later.')
 
