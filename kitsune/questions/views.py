@@ -1148,6 +1148,11 @@ def marketplace(request, template=None):
         'categories': MARKETPLACE_CATEGORIES})
 
 
+ZENDESK_ERROR_MESSAGE = _(
+    'There was an error submitting the ticket. '
+    'Please try again later.')
+
+
 @anonymous_csrf
 @mobile_template('questions/{mobile/}marketplace_category.html')
 def marketplace_category(request, category_slug, template=None):
@@ -1167,13 +1172,12 @@ def marketplace_category(request, category_slug, template=None):
             # Submit ticket
             try:
                 form.submit_ticket()
-            except ZendeskError:
-                error_message = _('There was an error submitting the ticket, '
-                                  'please try again later.')
 
-            if not error_message:
                 return HttpResponseRedirect(
                     reverse('questions.marketplace_aaq_success'))
+
+            except ZendeskError:
+                error_message = ZENDESK_ERROR_MESSAGE
 
     return render(request, template, {
         'category': category_name,
@@ -1197,13 +1201,12 @@ def marketplace_refund(request, template):
             # Submit ticket
             try:
                 form.submit_ticket()
-            except ZendeskError:
-                error_message = _('There was an error submitting the ticket, '
-                                  'please try again later.')
 
-            if not error_message:
                 return HttpResponseRedirect(
                     reverse('questions.marketplace_aaq_success'))
+
+            except ZendeskError:
+                error_message = ZENDESK_ERROR_MESSAGE
 
     return render(request, template, {
         'form': form,
@@ -1224,13 +1227,12 @@ def marketplace_developer_request(request, template):
             # Submit ticket
             try:
                 form.submit_ticket()
-            except ZendeskError:
-                error_message = _('There was an error submitting the ticket, '
-                                  'please try again later.')
 
-            if not error_message:
                 return HttpResponseRedirect(
                     reverse('questions.marketplace_aaq_success'))
+
+            except ZendeskError:
+                error_message = ZENDESK_ERROR_MESSAGE
 
     return render(request, template, {
         'form': form,

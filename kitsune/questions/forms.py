@@ -380,10 +380,10 @@ class MarketplaceRefundForm(BaseZendeskForm):
     @property
     def ticket_body(self):
         """Body of the ticket to submit to zendesk."""
-        return 'Transaction ID: %s\nCategory: %s\n%s' % (
-            self.cleaned_data['transaction_id'],
-            self.cleaned_data['category'],
-            self.cleaned_data['body'])
+        return 'Transaction ID: {id}\nCategory: {category}\n{body}'.format(
+            id=self.cleaned_data['transaction_id'],
+            category=self.cleaned_data['category'],
+            body=self.cleaned_data['body'])
 
 class MarketplaceDeveloperRequestForm(BaseZendeskForm):
     """Marketplace Developer Request Form."""
@@ -395,9 +395,9 @@ class MarketplaceDeveloperRequestForm(BaseZendeskForm):
     @property
     def ticket_body(self):
         """Body of the ticket to submit to zendesk."""
-        return 'Category: %s\n%s' % (
-            self.cleaned_data['category'],
-            self.cleaned_data['body'])
+        return 'Category: {category}\n{body}'.format(
+            category=self.cleaned_data['category'],
+            body=self.cleaned_data['body'])
 
 
 bucket_choices = [(1, '1 day'), (7, '1 week'), (30, '1 month')]
