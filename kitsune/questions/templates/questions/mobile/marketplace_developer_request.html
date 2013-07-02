@@ -1,0 +1,14 @@
+{% extends "mobile/base.html" %}
+{% from "questions/includes/aaq_macros.html" import marketplace_category with context %}
+{% from "layout/errorlist.html" import errorlist %}
+{% set title = _('Marketplace: Developer Support Request') %}
+{% set headline = title %}
+{% set classes = 'aaq' %}
+{% set hide_extra_content = True %}
+{% set styles = ('mobile/aaq',) %}
+
+
+{% block content %}
+  <p>{{ _('Please complete the form below to submit your question to our Marketplace Support group.') }}</p>
+  {{ marketplace_category('developer-request', form, error_message) }}
+{% endblock %}
