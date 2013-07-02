@@ -109,6 +109,20 @@ class MarketplaceAaqTests(TestCase):
         body = 'Transaction ID: qwerty12345\nCategory: Defective\nNOW!!'
         submit_ticket.assert_called_with(self.user.email, cat, subject, body)
 
+    @mock.patch.object(kitsune.questions.views, 'submit_ticket')
+    def test_submit_developer_request(self, submit_ticket):
+        """Verify refund requst form post."""
+        subject = 'Please review my app!'
+        body = 'PLEASE!!'
+        cat = 'Review Process'
+
+        response = post(self.client,
+                        'questions.marketplace_developer_request',
+                        {'subject': subject, 'body': body, 'category': cat})
+        eq_(200, response.status_code)
+        body = 'Category: Review Process\nPLEASE!!'
+        submit_ticket.assert_called_with(self.user.email, cat, subject, body)
+
 
 class FauxZendesk(Zendesk):
     def __init__(self, *args, **kwargs):

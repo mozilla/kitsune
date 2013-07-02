@@ -44,7 +44,7 @@ from kitsune.questions.feeds import (
 from kitsune.questions.forms import (
     NewQuestionForm, EditQuestionForm, AnswerForm, WatchQuestionForm,
     FREQUENCY_CHOICES, MarketplaceAaqForm, MarketplaceRefundForm,
-    StatsForm)
+    MarketplaceDeveloperRequestForm, StatsForm)
 from kitsune.questions.karma_actions import (
     SolutionAction, AnswerMarkedHelpfulAction, AnswerMarkedNotHelpfulAction)
 from kitsune.questions.marketplace import (
@@ -1226,7 +1226,44 @@ def marketplace_refund(request, template):
             if not error_message:
                 return HttpResponseRedirect(
                     reverse('questions.marketplace_aaq_success'))
-        print form.errors
+
+    return render(request, template, {
+        'form': form,
+        'error_message': error_message})
+
+
+@anonymous_csrf
+@mobile_template('questions/{mobile/}marketplace_developer_request.html')
+def marketplace_developer_request(request, template):
+    """Form page that handles developer requests for Marketplace."""
+    error_message = None
+
+    if request.method == 'GET':
+        form = MarketplaceDeveloperRequestForm(request.user)
+    else:
+        form = MarketplaceDeveloperRequestForm(request.user, request.POST)
+        if form.is_valid():
+            category = form.cleaned_data['category']
+            subject = form.cleaned_data['subject']
+            body = 'Category: %s\n%s' % (
+                category,
+                form.cleaned_data['body'])
+
+            if request.user.is_authenticated():
+                email = request.user.email
+            else:
+                email = form.cleaned_data['email']
+
+            # Submit ticket
+            try:
+                submit_ticket(email, category, subject, body)
+            except ZendeskError:
+                error_message = _('There was an error submitting the ticket, '
+                                  'please try again later.')
+
+            if not error_message:
+                return HttpResponseRedirect(
+                    reverse('questions.marketplace_aaq_success'))
 
     return render(request, template, {
         'form': form,

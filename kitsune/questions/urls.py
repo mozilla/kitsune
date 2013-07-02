@@ -31,6 +31,8 @@ urlpatterns = patterns('kitsune.questions.views',
         'marketplace_success', name='questions.marketplace_aaq_success'),
     url(r'^/marketplace/refund$', 'marketplace_refund',
         name='questions.marketplace_refund'),
+    url(r'^/marketplace/developer-request$', 'marketplace_developer_request',
+        name='questions.marketplace_developer_request'),
     url(r'^/marketplace/(?P<category_slug>[\w\-]+)$',
         'marketplace_category', name='questions.marketplace_aaq_category'),
 

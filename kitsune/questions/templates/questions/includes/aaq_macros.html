@@ -170,7 +170,7 @@
         directly.
       {% endtrans %}
     </h2>
-  {% elif category_slug == 'account' or category_slug == 'refund' %}
+  {% elif category_slug == 'account' or category_slug == 'refund' or category_slug == 'developer-request' %}
     {% if error_message %}
       <ul class="errorlist">
         <li>{{ error_message }}</li>

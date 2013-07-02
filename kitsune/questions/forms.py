@@ -400,6 +400,43 @@ class MarketplaceDeveloperRequestForm(BaseZendeskForm):
             self.cleaned_data['body'])
 
 
+class MarketplaceDeveloperRequestForm(forms.Form):
+    """Marketplace Developer Request Form."""
+
+    def __init__(self, user, *args, **kwargs):
+        super(MarketplaceDeveloperRequestForm, self).__init__(*args, **kwargs)
+
+        # Add email field for users not logged in.
+        if not user.is_authenticated():
+            email = forms.EmailField(
+                label=_lazy(u'Email:'),
+                widget=forms.TextInput(attrs={'placeholder': EMAIL_PLACEHOLDER})
+            )
+            self.fields['email'] = email
+
+    category = forms.ChoiceField(
+        label=_lazy(u'Category:'),
+        choices=DEVELOPER_REQUEST_CATEGORY_CHOICES)
+
+    subject = StrippedCharField(
+        label=_lazy(u'Subject:'),
+        min_length=4,
+        max_length=255,
+        widget=forms.TextInput(attrs={'placeholder': SUBJECT_PLACEHOLDER}),
+        error_messages={'required': SUBJECT_CONTENT_REQUIRED,
+                        'min_length': SUBJECT_CONTENT_SHORT,
+                        'max_length': SUBJECT_CONTENT_LONG})
+
+    body = StrippedCharField(
+        label=_lazy(u'Body:'),
+        min_length=5,
+        max_length=10000,
+        widget=forms.Textarea(attrs={'placeholder': BODY_PLACEHOLDER}),
+        error_messages={'required': BODY_CONTENT_REQUIRED,
+                        'min_length': BODY_CONTENT_SHORT,
+                        'max_length': BODY_CONTENT_LONG})
+
+
 bucket_choices = [(1, '1 day'), (7, '1 week'), (30, '1 month')]
 
 
