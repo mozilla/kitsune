@@ -1,6 +1,7 @@
 from contextlib import contextmanager
 import json
 
+from django.conf import settings
 from django.contrib.sites.models import Site
 from django.db import models
 from django.db.models.signals import pre_delete
@@ -8,6 +9,8 @@ from django.utils import translation
 from django.utils.http import urlencode, is_safe_url
 
 import tower
+
+from mozillapulse.publishers import SUMOPublisher
 
 from kitsune.sumo import paginator
 
@@ -201,3 +204,18 @@ def uselocale(locale):
     tower.activate(locale)
     yield
     tower.activate(currlocale)
+
+
+def publish_message(message):
+    publisher = SUMOPublisher(host=settings.RABBIT_HOST,
+                              port=settings.RABBIT_PORT,
+                              vhost=settings.RABBIT_VHOST,
+                              user=settings.RABBIT_USER,
+                              password=settings.RABBIT_PASSWORD)
+    try:
+        publisher.publish(message)
+    except Exception as e:
+        import sys
+        print >>sys.stderr, 'error: ' + str(e)
+        #XXX handle stuff
+        pass
