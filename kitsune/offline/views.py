@@ -45,5 +45,8 @@ def get_bundles(request):
     # from bundle_for_product is in a dictionary based format. We need it in a
     # list based format.
     data = json.dumps(merge_bundles(*bundles))
+    length = len(data)
 
-    return HttpResponse(data, mimetype='application/json')
+    response = HttpResponse(data, mimetype='application/json')
+    response['Content-Length'] = length
+    return response

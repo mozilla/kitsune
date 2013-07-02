@@ -59,7 +59,7 @@ Databases
 :Purpose:
     To store metadata, settings data, and locales
 :Stores:
-    meta, locales
+    meta
 :Notes:
     This database will always have a version of 1 for now. Changing this should
     be okay but let's try to avoid doing that.
@@ -97,30 +97,6 @@ Object Stores
         locale: the locale code that's the default display locale (str)
       }
 
-**Locales store under osumo-settings**
-
-:Name:
-    locales
-:Parent:
-    osumo-settings
-:Purpose:
-    To store translations for i18n.
-:Key path:
-    locale (str)
-:Schema:
-
-    ::
-
-      {
-        locale: locale code (str),
-        name: locale's display name (str),
-        data: {
-          english str: translated str (str)
-        }
-      }
-:Notes:
-    This might go away as the i18n component is still pretty unstable.
-
 ----------------------------
 
 **Locales store under osumo**
@@ -146,9 +122,6 @@ Object Stores
             name: product display name (str)
           }
         ],
-        children: [
-          topic slug (str)
-        ]
       }
 
 **Topics store under osumo**
@@ -171,6 +144,9 @@ Object Stores
         product: product slug (str),
         children: [
           subtopic slug (str)
+        ],
+        docs: [
+          doc slug (str)
         ],
         slug: topic slug
       }
@@ -197,7 +173,8 @@ Object Stores
         html: the html content (str),
         slug: document slug (str),
         title: document title (str),
-        updated: the last time the document has been updated as seconds since UNIX epoch (int)
+        updated: the last time the document has been updated as seconds since UNIX epoch (int),
+        archived: archived (boolean/undefined)
       }
 :Index:
     ``id`` is indexed by the field ``by_id``

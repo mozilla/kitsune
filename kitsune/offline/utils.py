@@ -90,7 +90,6 @@ def bundle_for_product(product, locale):
     bundle['locales'][locale] = {
         'key': locale,
         'name': settings.LANGUAGES[locale.lower()],
-        'children': set(),
         'products': [{'slug': product.slug, 'name': product.title}]
     }
 
@@ -136,18 +135,18 @@ def bundle_for_product(product, locale):
 
         # Now we need to populate the topics for this locale.
         for t in doc.get_topics():
-            topic = topics.setdefault(t.slug, {})
-            if not topic:  # this means that topics has not been set yet.
-                bundle['locales'][locale]['children'].add(t.slug)
-                topic['key'] = topic_key(locale, product.slug, t.slug)
-                # The title of the document is not translated so we must use
-                # gettext to get the translation for it.
-                topic['name'] = _(t.title)
-                topic['children'] = [st.slug for st in t.subtopics.all()]
-                topic['docs'] = []
-                topic['product'] = product.slug
-                topic['slug'] = t.slug
-            topic['docs'].append(doc.slug)
+            if t.product.id == product.id:
+                topic = topics.setdefault(t.slug, {})
+                if not topic:  # this means that topics has not been set yet.
+                    topic['key'] = topic_key(locale, product.slug, t.slug)
+                    # The title of the document is not translated so we must use
+                    # gettext to get the translation for it.
+                    topic['name'] = _(t.title)
+                    topic['children'] = [st.slug for st in t.subtopics.all()]
+                    topic['docs'] = []
+                    topic['product'] = product.slug
+                    topic['slug'] = t.slug
+                topic['docs'].append(doc.slug)
 
     # The bundle needs an index!
     bundlekey = bundle_key(locale, product.slug)
@@ -155,12 +154,6 @@ def bundle_for_product(product, locale):
     bundle['indexes'][bundlekey]['key'] = bundlekey
     # The client side will search through this index.
     bundle['indexes'][bundlekey]['index'] = index_builder.offline_index()
-
-    # Note that we were using a set. Must convert it to a list for JSON to
-    # understand.
-    bundle['locales'][locale]['children'] = list(
-        bundle['locales'][locale]['children']
-    )
 
     return bundle
 
@@ -175,7 +168,6 @@ def merge_bundles(*bundles):
             for k, locale in bundle['locales'].iteritems():
                 merged_locale = merged_locales.setdefault(k, {})
                 if merged_locale:
-                    merged_locale['children'].extend(locale['children'])
                     merged_locale['products'].extend(locale['products'])
                 else:
                     merged_locale.update(locale)
