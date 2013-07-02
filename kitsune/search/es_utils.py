@@ -122,7 +122,11 @@ def get_doctype_stats(index):
 
     from kitsune.search.models import get_mapping_types
     for cls in get_mapping_types():
-        stats[cls.get_mapping_type_name()] = cls.search().count()
+        # Note: Can't use cls.search() here since that returns a
+        # Sphilastic which is hard-coded to look only at the
+        # READ_INDEX.
+        s = S(cls).indexes(index)
+        stats[cls.get_mapping_type_name()] = s.count()
 
     return stats
 
