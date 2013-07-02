@@ -48,7 +48,7 @@ from kitsune.questions.forms import (
 from kitsune.questions.karma_actions import (
     SolutionAction, AnswerMarkedHelpfulAction, AnswerMarkedNotHelpfulAction)
 from kitsune.questions.marketplace import (
-    MARKETPLACE_CATEGORIES, submit_ticket, ZendeskError)
+    MARKETPLACE_CATEGORIES, ZendeskError)
 from kitsune.questions.models import (
     Question, Answer, QuestionVote, AnswerVote, QuestionMappingType)
 from kitsune.questions.question_config import products
@@ -1164,18 +1164,9 @@ def marketplace_category(request, category_slug, template=None):
     else:
         form = MarketplaceAaqForm(request.user, request.POST)
         if form.is_valid():
-            subject = form.cleaned_data['subject']
-            body = form.cleaned_data['body']
-            category = form.cleaned_data['category']
-
-            if request.user.is_authenticated():
-                email = request.user.email
-            else:
-                email = form.cleaned_data['email']
-
             # Submit ticket
             try:
-                submit_ticket(email, category, subject, body)
+                form.submit_ticket()
             except ZendeskError:
                 error_message = _('There was an error submitting the ticket, '
                                   'please try again later.')
@@ -1203,22 +1194,9 @@ def marketplace_refund(request, template):
     else:
         form = MarketplaceRefundForm(request.user, request.POST)
         if form.is_valid():
-            transaction_id = form.cleaned_data['transaction_id']
-            category = form.cleaned_data['category']
-            subject = form.cleaned_data['subject']
-            body = 'Transaction ID: %s\nCategory: %s\n%s' % (
-                transaction_id,
-                category,
-                form.cleaned_data['body'])
-
-            if request.user.is_authenticated():
-                email = request.user.email
-            else:
-                email = form.cleaned_data['email']
-
             # Submit ticket
             try:
-                submit_ticket(email, category, subject, body)
+                form.submit_ticket()
             except ZendeskError:
                 error_message = _('There was an error submitting the ticket, '
                                   'please try again later.')
@@ -1243,20 +1221,9 @@ def marketplace_developer_request(request, template):
     else:
         form = MarketplaceDeveloperRequestForm(request.user, request.POST)
         if form.is_valid():
-            category = form.cleaned_data['category']
-            subject = form.cleaned_data['subject']
-            body = 'Category: %s\n%s' % (
-                category,
-                form.cleaned_data['body'])
-
-            if request.user.is_authenticated():
-                email = request.user.email
-            else:
-                email = form.cleaned_data['email']
-
             # Submit ticket
             try:
-                submit_ticket(email, category, subject, body)
+                form.submit_ticket()
             except ZendeskError:
                 error_message = _('There was an error submitting the ticket, '
                                   'please try again later.')

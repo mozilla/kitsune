@@ -36,7 +36,6 @@ urlpatterns = patterns('kitsune.questions.views',
     url(r'^/marketplace/(?P<category_slug>[\w\-]+)$',
         'marketplace_category', name='questions.marketplace_aaq_category'),
 
-
     # TODO: Factor out `/(?P<question_id>\d+)` below
     url(r'^/(?P<question_id>\d+)$', 'answers', name='questions.answers'),
     url(r'^/(?P<question_id>\d+)/edit$',
