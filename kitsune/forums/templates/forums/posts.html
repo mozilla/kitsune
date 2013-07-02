@@ -106,6 +106,13 @@
         {{ csrf() }}
         <h3 id="thread-reply-title">{{ _('Post a reply') }}</h3>
         {{ errorlist(form) }}
+
+        {% if request.limited %}
+          <div class="warning-box">
+            {{ _('You have exceeded the number of threads and replies that can be posted in a given amount of time. Please try again shortly.') }}
+          </div>
+        {% endif %}
+
         <div id="thread-reply">
           {{ content_editor(form.content) }}
         </div>

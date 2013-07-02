@@ -7,6 +7,7 @@ from django.shortcuts import get_object_or_404, render
 from django.views.decorators.http import require_POST
 
 from authority.decorators import permission_required_or_403
+from ratelimit.helpers import is_ratelimited
 from statsd import statsd
 
 from kitsune import forums as constants
@@ -18,7 +19,7 @@ from kitsune.forums.forms import ReplyForm, NewThreadForm, EditThreadForm, EditP
 from kitsune.forums.models import Forum, Thread, Post
 from kitsune.sumo.helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.sumo.utils import paginate
+from kitsune.sumo.utils import paginate, user_or_ip
 from kitsune.users.models import Setting
 
 log = logging.getLogger('k.forums')
@@ -164,7 +165,8 @@ def reply(request, forum_slug, thread_id):
                 post_preview = reply_
                 post_preview.author_post_count = \
                     reply_.author.post_set.count()
-            else:
+            elif not is_ratelimited(request, increment=True, rate='5/d',
+                                    ip=False, keys=user_or_ip('forum-post')):
                 reply_.save()
                 statsd.incr('forums.reply')
 
@@ -208,7 +210,8 @@ def new_thread(request, forum_slug):
                                 content=form.cleaned_data['content'])
             post_preview.author_post_count = \
                 post_preview.author.post_set.count()
-        else:
+        elif not is_ratelimited(request, increment=True, rate='5/d', ip=False,
+                                keys=user_or_ip('forum-post')):
             thread = forum.thread_set.create(creator=request.user,
                                              title=form.cleaned_data['title'])
             thread.save()
