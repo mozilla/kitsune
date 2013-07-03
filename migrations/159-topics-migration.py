@@ -1,6 +1,6 @@
 from django.utils.encoding import smart_str
 
-from kitsune.taggit.models import Tag
+from taggit.models import Tag
 from kitsune.topics.models import Topic
 from kitsune.wiki.models import Document
 
