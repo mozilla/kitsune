@@ -140,13 +140,13 @@ class SimpleSyntaxTestCase(TestCase):
 
         # This used to truncate after the comment when rendered:
         eq_(p.parse('Start <!-- <foo --> End'),
-            '<p>Start <!-- <foo --> End\n</p>')
+            '<p>Start  End\n</p>')
 
         # Just make sure these don't go awry either:
         eq_(p.parse('Start <!-- <foo> --> End'),
-            '<p>Start <!-- <foo> --> End\n</p>')
+            '<p>Start  End\n</p>')
         eq_(p.parse('Start <!-- foo> --> End'),
-            '<p>Start <!-- foo> --> End\n</p>')
+            '<p>Start  End\n</p>')
 
     def test_internal_links(self):
         """Make sure internal links work correctly when not to redirected
