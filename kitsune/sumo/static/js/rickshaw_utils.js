@@ -1091,9 +1091,21 @@ Rickshaw.Graph.KHover = Rickshaw.Class.create({
     dataIndex = Math.max(0, Math.min(dataIndex, data.length - 1));
 
     // Sometimes the data has holes in it. In that case, the dataIndex
-    // will be wrong. Walk forward along the graph until we are at about
-    // the right point.
-    while (dataIndex < data.length && data[dataIndex].x < domainX) {
+    // will be wrong. Walk around the graph until we are at about the
+    // right point.
+    while (0 <= dataIndex && dataIndex < data.length - 1) {
+      if (data[dataIndex].x <= domainX && domainX <= data[dataIndex + 1].x) {
+        // the right one.
+        break;
+      }
+
+      // Move to the left or right, as appropratiate.
+      if (data[dataIndex].x > domainX) { dataIndex--; } else { dataIndex++; }
+    }
+
+    // Choose the closer of the two points.
+    if (data[dataIndex + 1] &&
+        data[dataIndex + 1].x - domainX < domainX - data[dataIndex].x) {
       dataIndex++;
     }
 
