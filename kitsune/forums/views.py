@@ -171,9 +171,10 @@ def reply(request, forum_slug, thread_id):
                 post_preview = reply_
                 post_preview.author_post_count = \
                     reply_.author.post_set.count()
-            elif not is_ratelimited(request, increment=True, rate='5/d',
-                                    ip=False, keys=user_or_ip('forum-post'),
-                                    skip_if=_skip_post_ratelimit):
+            elif (_skip_post_ratelimit(request) or
+                  not is_ratelimited(request, increment=True, rate='5/d',
+                                     ip=False,
+                                     keys=user_or_ip('forum-post'))):
                 reply_.save()
                 statsd.incr('forums.reply')
 
@@ -217,9 +218,9 @@ def new_thread(request, forum_slug):
                                 content=form.cleaned_data['content'])
             post_preview.author_post_count = \
                 post_preview.author.post_set.count()
-        elif not is_ratelimited(request, increment=True, rate='5/d', ip=False,
-                                keys=user_or_ip('forum-post'),
-                                skip_if=_skip_post_ratelimit):
+        elif (_skip_post_ratelimit(request) or
+              not is_ratelimited(request, increment=True, rate='5/d', ip=False,
+                                 keys=user_or_ip('forum-post'))):
             thread = forum.thread_set.create(creator=request.user,
                                              title=form.cleaned_data['title'])
             thread.save()
