@@ -3,6 +3,7 @@ import unittest
 from datetime import datetime, timedelta
 
 from django.conf import settings
+from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
 from django.http import QueryDict
 from django.utils.http import urlquote
@@ -12,7 +13,8 @@ from nose.tools import eq_
 from pyquery import PyQuery as pq
 
 from kitsune import search as constants
-from kitsune.forums.tests import forum, thread, post
+from kitsune.access.tests import permission
+from kitsune.forums.tests import forum, post, restricted_forum, thread
 from kitsune.products.tests import product, topic
 from kitsune.questions.models import QuestionMappingType
 from kitsune.questions.tests import question, answer, answervote, questionvote
@@ -22,7 +24,7 @@ from kitsune.search.tests import ElasticTestCase
 from kitsune.sumo.tests import LocalizingClient
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.topics.tests import topic as old_topic
-from kitsune.users.tests import user
+from kitsune.users.tests import group, user
 from kitsune.wiki.tests import document, revision, helpful_vote
 
 
@@ -322,6 +324,129 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
 
         content = json.loads(response.content)
         eq_(content['total'], 1)
+
+    def test_forums_search_authorized_forums(self):
+        """Only authorized people can search certain forums"""
+        # Create two threads: one in a restricted forum and one not.
+        forum1 = forum(name=u'ou812forum', save=True)
+        thread1 = thread(forum=forum1, save=True)
+        post(thread=thread1, content=u'audio', save=True)
+
+        forum2 = restricted_forum(name=u'restrictedkeepout', save=True)
+        thread2 = thread(forum=forum2, save=True)
+        post(thread=thread2, content=u'audio restricted', save=True)
+
+        self.refresh()
+
+        # Do a search as an anonymous user but don't specify the
+        # forums to filter on. Should only see one of the posts.
+        response = self.client.get(reverse('search'), {
+            'author': '',
+            'created': '0',
+            'created_date': '',
+            'updated': '0',
+            'updated_date': '',
+            'sortby': '0',
+            'a': '1',
+            'w': '4',
+            'q': 'audio',
+            'format': 'json'
+        })
+
+        eq_(200, response.status_code)
+        content = json.loads(response.content)
+        eq_(content['total'], 1)
+
+        # Do a search as an authorized user but don't specify the
+        # forums to filter on. Should see both posts.
+        u = user(save=True)
+        g = group(save=True)
+        g.user_set.add(u)
+        ct = ContentType.objects.get_for_model(forum2)
+        permission(codename='forums_forum.view_in_forum', content_type=ct,
+                   object_id=forum2.id, group=g, save=True)
+
+        self.client.login(username=u.username, password='testpass')
+        response = self.client.get(reverse('search'), {
+            'author': '',
+            'created': '0',
+            'created_date': '',
+            'updated': '0',
+            'updated_date': '',
+            'sortby': '0',
+            'a': '1',
+            'w': '4',
+            'q': 'audio',
+            'format': 'json'
+        })
+
+        # Sees both results
+        eq_(200, response.status_code)
+        content = json.loads(response.content)
+        eq_(content['total'], 2)
+
+    def test_forums_search_authorized_forums_specifying_forums(self):
+        """Only authorized people can search certain forums they specified"""
+        # Create two threads: one in a restricted forum and one not.
+        forum1 = forum(name=u'ou812forum', save=True)
+        thread1 = thread(forum=forum1, save=True)
+        post(thread=thread1, content=u'audio', save=True)
+
+        forum2 = restricted_forum(name=u'restrictedkeepout', save=True)
+        thread2 = thread(forum=forum2, save=True)
+        post(thread=thread2, content=u'audio restricted', save=True)
+
+        self.refresh()
+
+        # Do a search as an anonymous user and specify both
+        # forums. Should only see the post from the unrestricted
+        # forum.
+        response = self.client.get(reverse('search'), {
+            'author': '',
+            'created': '0',
+            'created_date': '',
+            'updated': '0',
+            'updated_date': '',
+            'sortby': '0',
+            'forum': [forum1.id, forum2.id],
+            'a': '1',
+            'w': '4',
+            'q': 'audio',
+            'format': 'json'
+        })
+
+        eq_(200, response.status_code)
+        content = json.loads(response.content)
+        eq_(content['total'], 1)
+
+        # Do a search as an authorized user and specify both
+        # forums. Should see both posts.
+        u = user(save=True)
+        g = group(save=True)
+        g.user_set.add(u)
+        ct = ContentType.objects.get_for_model(forum2)
+        permission(codename='forums_forum.view_in_forum', content_type=ct,
+                   object_id=forum2.id, group=g, save=True)
+
+        self.client.login(username=u.username, password='testpass')
+        response = self.client.get(reverse('search'), {
+            'author': '',
+            'created': '0',
+            'created_date': '',
+            'updated': '0',
+            'updated_date': '',
+            'sortby': '0',
+            'forum': [forum1.id, forum2.id],
+            'a': '1',
+            'w': '4',
+            'q': 'audio',
+            'format': 'json'
+        })
+
+        # Sees both results
+        eq_(200, response.status_code)
+        content = json.loads(response.content)
+        eq_(content['total'], 2)
 
     def test_forums_thread_created(self):
         """Tests created/created_date filtering for forums"""

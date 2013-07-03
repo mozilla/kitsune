@@ -14,7 +14,7 @@ class SearchViewTests(ElasticTestCase):
     client_class = LocalizingClient
 
     def test_discussion_forum_with_restricted_forums(self):
-        """Tests who can see restricted forums."""
+        """Tests who can see restricted forums in search form."""
         # This is a long test, but it saves us from doing the setup
         # twice.
         forum1 = forum(name=u'ou812forum', save=True)
