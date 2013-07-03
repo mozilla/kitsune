@@ -9,7 +9,7 @@
     {% for product in products %}
       <li>
         <a class="cf" href="{{ url('products.product', slug=product.slug) }}">
-          <img src="{{ STATIC_URL }}img/blank.png" class="logo-sprite" alt="">
+          <img src="{{ STATIC_URL }}img/blank.png" class="logo-sprite logo-{{ product.slug }}" alt="">
           <span class="title">{{ _(product.title, 'DB: products.Product.title') }}</span>
           {{ _(product.description, 'DB: products.Product.description') }}
         </a>
