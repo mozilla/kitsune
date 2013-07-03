@@ -57,12 +57,10 @@ class OfflineWikiDataGenerationTest(TestCase):
         eq_(1, len(bundle['locales']))
 
         locale_doc = bundle['locales'].values()[0]
-        locale_doc['children'].sort()
 
         expected_locale_doc = {
             'key': u'en-US',
             'name': u'English',
-            'children': [u'topic1', u'topic2'],
             'products': [{'slug': u'firefox', 'name': u'firefox'}]
         }
 
@@ -74,19 +72,19 @@ class OfflineWikiDataGenerationTest(TestCase):
         expected_topic1 = {
             'key': u'en-US~firefox~topic1',
             'name': u'topic1',
-            'children': [],
             'docs': [u'some-document'],
             'product': u'firefox',
-            'slug': u'topic1'
+            'slug': u'topic1',
+            'children': []
         }
 
         expected_topic2 = {
             'key': u'en-US~firefox~topic2',
             'name': u'topic2',
-            'children': [],
             'docs': [u'some-other-document'],
             'product': u'firefox',
-            'slug': u'topic2'
+            'slug': u'topic2',
+            'children': []
         }
 
         eq_(expected_topic1, topics[0])
@@ -155,7 +153,6 @@ class OfflineWikiDataGenerationTest(TestCase):
         expected_locale_doc = {
             'key': u'en-US',
             'name': u'English',
-            'children': [u'topic1', u'topic2'],
             'products': [
                 {'slug': u'firefox', 'name': u'firefox'},
                 {'slug': u'firefox-os', 'name': u'firefox os'}

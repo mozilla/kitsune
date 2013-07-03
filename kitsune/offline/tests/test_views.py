@@ -4,6 +4,7 @@ from nose.tools import eq_
 
 from django.conf import settings
 
+from kitsune.offline.cron import build_kb_bundles
 from kitsune.products.tests import product, topic
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
@@ -47,17 +48,19 @@ class OfflineViewTests(TestCase):
             d.parent = parent(i)
             d.save()
 
+        build_kb_bundles((prod, ))
+
+
     def test_get_single_bundle(self):
         self._create_bundle('firefox', 'en-US')
 
-        url = reverse('offline.get_bundles') + '?locales=en-US&products=firefox'
+        url = reverse('offline.get_bundle') + '?locale=en-US&product=firefox'
         resp = self.client.get(url, follow=True)
         data = json.loads(resp.content)
 
         assert 'locales' in data
         eq_(1, len(data['locales']))
         eq_([{u'slug': u'firefox', u'name': u'firefox'}], data['locales'][0]['products'])
-        eq_(['topic1'], data['locales'][0]['children'])
         eq_('en-US', data['locales'][0]['key'])
 
         assert 'topics' in data
@@ -70,25 +73,3 @@ class OfflineViewTests(TestCase):
 
         assert 'indexes' in data
 
-    def test_get_multiple_bundles(self):
-        self._create_bundle('firefox', 'en-US')
-        self._create_bundle('mobile', 'fr')
-
-        url = (reverse('offline.get_bundles') +
-               '?locales=en-US&products=firefox&locales=fr&products=mobile')
-        resp = self.client.get(url, follow=True)
-        data = json.loads(resp.content)
-
-        assert 'locales' in data
-        eq_(2, len(data['locales']))
-
-        assert 'topics' in data
-
-        assert 'docs' in data
-
-        # Note that _create_bundle with another language will create additional
-        # docs for en-US. So this means that en-US will have 10 articles while
-        # fr will have 5, making a total of 15.
-        eq_(15, len(data['docs']))
-
-        assert 'indexes' in data

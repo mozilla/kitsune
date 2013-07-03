@@ -40,6 +40,10 @@ def topic_key(locale, product_slug, topic_slug):
     return locale + '~' + product_slug + '~' + topic_slug
 
 
+def redis_bundle_name(locale, product_slug):
+    return 'osumo:' + bundle_key(locale, product_slug)
+
+
 def transform_html(dochtml):
     """
 

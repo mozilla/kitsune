@@ -34,6 +34,7 @@ HOME = /tmp
 0 5 * * * {{ cron }} reindex_kb
 0 6 * * * {{ cron }} process_exit_surveys
 0 1 * * * {{ cron }} update_l10n_coverage_metrics
+45 4 * * * {{ cron }} build_kb_bundles
 
 # Twice per week.
 #05 01 * * 1,4 {{ cron }} update_weekly_votes
