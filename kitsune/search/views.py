@@ -21,7 +21,7 @@ from statsd import statsd
 from tower import ugettext as _, ugettext_lazy as _lazy
 
 from kitsune import search as constants
-from kitsune.forums.models import ThreadMappingType
+from kitsune.forums.models import Forum, ThreadMappingType
 from kitsune.products.models import Product
 from kitsune.questions.models import Question, QuestionMappingType
 from kitsune.search.models import get_mapping_types
@@ -93,6 +93,7 @@ def search(request, template=None):
         r['include_archived'] = False
 
     search_form = SearchForm(r)
+    search_form.set_allowed_forums(request.user)
 
     if not search_form.is_valid() or a == '2':
         if is_json:
@@ -217,8 +218,20 @@ def search(request, template=None):
             if constants.DISCUSSION_LOCKED in cleaned['thread_type']:
                 discussion_f &= F(post_is_locked=1)
 
+        valid_forum_ids = [
+            f.id for f in Forum.authorized_forums_for_user(request.user)]
+
+        forum_ids = None
         if cleaned['forum']:
-            discussion_f &= F(post_forum_id__in=cleaned['forum'])
+            forum_ids = [f for f in cleaned['forum'] if f in valid_forum_ids]
+
+        # If we removed all the forums they wanted to look at or if
+        # they didn't specify, then we filter on the list of all
+        # forums they're authorized to look at.
+        if not forum_ids:
+            forum_ids = valid_forum_ids
+
+        discussion_f &= F(post_forum_id__in=forum_ids)
 
     # End - discussion forum filters
 

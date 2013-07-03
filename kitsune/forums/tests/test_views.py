@@ -7,7 +7,7 @@ from kitsune.access.tests import permission
 from kitsune.forums.events import NewThreadEvent, NewPostEvent
 from kitsune.forums.models import Forum, Thread
 from kitsune.forums.tests import (
-    ForumTestCase, forum, thread, post as forum_post)
+    ForumTestCase, forum, restricted_forum, thread, post as forum_post)
 from kitsune.sumo.tests import get, post
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import user, group
@@ -18,16 +18,16 @@ class PostPermissionsTests(ForumTestCase):
 
     def test_read_without_permission(self):
         """Listing posts without the view_in_forum permission should 404."""
-        restricted_forum = _restricted_forum()
-        t = thread(forum=restricted_forum, save=True)
+        rforum = restricted_forum()
+        t = thread(forum=rforum, save=True)
 
         response = get(self.client, 'forums.posts', args=[t.forum.slug, t.id])
         eq_(404, response.status_code)
 
     def test_reply_without_view_permission(self):
         """Posting without view_in_forum permission should 404."""
-        restricted_forum = _restricted_forum()
-        t = thread(forum=restricted_forum, save=True)
+        rforum = restricted_forum()
+        t = thread(forum=rforum, save=True)
         u = user(save=True)
 
         self.client.login(username=u.username, password='testpass')
@@ -37,9 +37,9 @@ class PostPermissionsTests(ForumTestCase):
 
     def test_reply_without_post_permission(self):
         """Posting without post_in_forum permission should 403."""
-        restricted_forum = _restricted_forum(
+        rforum = restricted_forum(
             permission_code='forums_forum.post_in_forum')
-        t = thread(forum=restricted_forum, save=True)
+        t = thread(forum=rforum, save=True)
         u = user(save=True)
 
         self.client.login(username=u.username, password='testpass')
@@ -64,19 +64,19 @@ class ThreadAuthorityPermissionsTests(ForumTestCase):
 
     def test_new_thread_without_view_permission(self):
         """Making a new thread without view permission should 404."""
-        restricted_forum = _restricted_forum()
-        thread(forum=restricted_forum, save=True)
+        rforum = restricted_forum()
+        thread(forum=rforum, save=True)
         u = user(save=True)
 
         self.client.login(username=u.username, password='testpass')
         response = post(self.client, 'forums.new_thread',
                         {'title': 'Blahs', 'content': 'Blahs'},
-                        args=[restricted_forum.slug])
+                        args=[rforum.slug])
         eq_(404, response.status_code)
 
     def test_new_thread_without_post_permission(self):
         """Making a new thread without post permission should 403."""
-        restricted_forum = _restricted_forum(
+        rforum = restricted_forum(
             permission_code='forums_forum.post_in_forum')
         u = user(save=True)
 
@@ -84,7 +84,7 @@ class ThreadAuthorityPermissionsTests(ForumTestCase):
         with patch.object(Forum, 'allows_viewing_by', Mock(return_value=True)):
             response = post(self.client, 'forums.new_thread',
                             {'title': 'Blahs', 'content': 'Blahs'},
-                            args=[restricted_forum.slug])
+                            args=[rforum.slug])
         eq_(403, response.status_code)
 
     def test_watch_GET_405(self):
@@ -99,20 +99,20 @@ class ThreadAuthorityPermissionsTests(ForumTestCase):
     def test_watch_forum_without_permission(self):
         """Watching forums without the view_in_forum permission should 404.
         """
-        restricted_forum = _restricted_forum()
+        rforum = restricted_forum()
         u = user(save=True)
 
         self.client.login(username=u.username, password='testpass')
         response = self.client.post(reverse('forums.watch_forum',
-                                            args=[restricted_forum.slug]),
+                                            args=[rforum.slug]),
                                     {'watch': 'yes'}, follow=False)
         eq_(404, response.status_code)
 
     def test_watch_thread_without_permission(self):
         """Watching threads without the view_in_forum permission should 404.
         """
-        restricted_forum = _restricted_forum()
-        t = thread(forum=restricted_forum, save=True)
+        rforum = restricted_forum()
+        t = thread(forum=rforum, save=True)
         u = user(save=True)
 
         self.client.login(username=u.username, password='testpass')
@@ -124,10 +124,10 @@ class ThreadAuthorityPermissionsTests(ForumTestCase):
     def test_read_without_permission(self):
         """Listing threads without the view_in_forum permission should 404.
         """
-        restricted_forum = _restricted_forum()
+        rforum = restricted_forum()
 
         response = get(self.client, 'forums.threads',
-                       args=[restricted_forum.slug])
+                       args=[rforum.slug])
         eq_(404, response.status_code)
 
 
@@ -363,15 +363,3 @@ class ThreadPermissionsTests(ForumTestCase):
         response = get(self.client, 'forums.delete_post',
                        args=[t.forum.slug, t.id, p.id])
         eq_(403, response.status_code)
-
-
-def _restricted_forum(permission_code='forums_forum.view_in_forum'):
-    """Return a forum with specified restriction."""
-    restricted_forum = forum(save=True)
-
-    # Make it restricted.
-    ct = ContentType.objects.get_for_model(restricted_forum)
-    permission(codename=permission_code, content_type=ct,
-               object_id=restricted_forum.id, save=True)
-
-    return restricted_forum

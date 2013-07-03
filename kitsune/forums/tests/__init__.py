@@ -1,8 +1,11 @@
 from datetime import datetime
 import uuid
 
+from django.contrib.contenttypes.models import ContentType
+
 from django.template.defaultfilters import slugify
 
+from kitsune.access.tests import permission
 from kitsune.forums.models import Forum, Thread, Post
 from kitsune.users.tests import user
 from kitsune.sumo.tests import LocalizingClient, TestCase, with_save
@@ -19,6 +22,36 @@ def forum(**kwargs):
     if 'slug' not in kwargs:
         kwargs['slug'] = slugify(kwargs['name'])
     return Forum(**kwargs)
+
+
+def restricted_forum(**kwargs):
+    """Creates a restricted forum.
+
+    :arg permission_code: Defaults to "forums_forum.view_in_forum"
+
+    Any additional arguments are passed to the created forum.
+
+    .. Note::
+
+       Always saves the forum it creates.
+
+    :returns: the created restricted forum
+
+    """
+    # Pop off the permission_code
+    permission_code = kwargs.pop(
+        'permission_code', 'forums_forum.view_in_forum')
+
+    # Remove save=True if it's there--we always save.
+    kwargs.pop('save', True)
+    new_forum = forum(save=True, **kwargs)
+
+    # Make it restricted.
+    ct = ContentType.objects.get_for_model(new_forum)
+    permission(codename=permission_code, content_type=ct,
+               object_id=new_forum.id, save=True)
+
+    return new_forum
 
 
 @with_save

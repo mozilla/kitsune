@@ -96,6 +96,11 @@ class Forum(NotificationsMixin, ModelBase):
             posts = posts.exclude(thread=exclude_thread)
         self.last_post = _last_post_from(posts, exclude_post=exclude_post)
 
+    @classmethod
+    def authorized_forums_for_user(cls, user):
+        """Returns the forums this user is authorized to view"""
+        return [f for f in Forum.objects.all() if f.allows_viewing_by(user)]
+
 
 class Thread(NotificationsMixin, ModelBase, SearchMixin):
     title = models.CharField(max_length=255)
