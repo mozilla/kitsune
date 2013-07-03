@@ -1109,11 +1109,13 @@ Rickshaw.Graph.KHover = Rickshaw.Class.create({
       dataIndex++;
     }
 
+    var activeSeries = graph.series.active();
+
     for (i = 0; i < graph.stackedData.length; i++) {
       points.push({
         x: graph.stackedData[i][dataIndex].x,
         y: graph.stackedData[i][dataIndex].y,
-        series: graph.series[i]
+        series: activeSeries[i]
       });
     }
 
