@@ -1,7 +1,7 @@
 from django.utils.encoding import smart_str
 
 from kitsune.products.models import Product
-from kitsune.taggit.models import Tag
+from taggit.models import Tag
 from kitsune.questions.models import Question
 
 tags_to_migrate = {
