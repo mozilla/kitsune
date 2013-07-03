@@ -419,24 +419,24 @@ h2 {
 }
 
 .logo-sprite {
-  background: url('../img/logos.large.sprite.png') -20px -20px no-repeat;
-  height: 110px;
-  width: 110px;
+  background: url('../img/logos.large.sprite.png?v=1') -100px -100px no-repeat;
+  height: 96px;
+  width: 96px;
+
+  &.logo-firefox {
+    background-position: -100px -100px;
+  }
+
+  &.logo-firefox-os {
+    background-position: -100px -988px;
+  }
 
   &.logo-mobile {
-    background-position: -20px -470px;
-  }
-
-  &.logo-home {
-    background-position: -20px -620px;
-  }
-
-  &.logo-sync {
-    background-position: -20px -320px;
+    background-position: -100px -692px;
   }
 
   &.logo-other {
-    background-position: -20px -170px;
+    background-position: -100px -396px;
   }
 }
 
