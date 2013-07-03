@@ -22,8 +22,7 @@
         width: 90px;
         z-index: 1;
 
-        &:before {
-          background: url('../../img/mobile/logos-sprite.png') -50px -50px no-repeat;
+        > span {
           content: '';
           height: 48px;
           left: 50%;
@@ -31,12 +30,6 @@
           position: absolute;
           top: 10px;
           width: 48px;
-        }
-
-        &.icon-other {
-          &:before {
-            background-position: -50px -198px;
-          }
         }
       }
 
