@@ -122,10 +122,12 @@ class SearchForm(forms.Form):
         label=_lazy('Thread type'), choices=constants.DISCUSSION_STATUS_LIST,
         coerce_only=True)
 
-    forums = [(f.id, f.name) for f in DiscussionForum.objects.all()]
     forum = TypedMultipleChoiceField(
-        required=False, coerce=int,
-        label=_lazy('Search in forum'), choices=forums, coerce_only=True)
+        required=False,
+        coerce=int,
+        label=_lazy('Search in forum'),
+        choices=[],  # Note: set choices with set_allowed_forums
+        coerce_only=True)
 
     # Support questions fields
     asked_by = forms.CharField(required=False, widget=user_widget)
@@ -160,3 +162,9 @@ class SearchForm(forms.Form):
                                         'class': 'auto-fill'})
     q_tags = forms.CharField(label=_lazy('Tags'), required=False,
                              widget=tag_widget)
+
+    def set_allowed_forums(self, user):
+        """Sets the 'forum' field choices to forums the user can see."""
+        forums = [(f.id, f.name)
+                  for f in DiscussionForum.authorized_forums_for_user(user)]
+        self.fields['forum'].choices = forums

@@ -828,21 +828,6 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
         thread2 = thread(forum=forum2, title=u'audio 2', save=True)
         post(thread=thread2, save=True)
 
-        import kitsune.search.forms
-        reload(kitsune.search.forms)
-        import kitsune.search.views
-        import kitsune.search.forms
-        kitsune.search.views.SearchForm = kitsune.search.forms.SearchForm
-
-        # Wait... reload? WTF is that about? What's going on here is
-        # that SearchForm pulls the list of forums from the db **at
-        # module load time**. Since we need it to include the two
-        # forums we just created, we need to reload the module and
-        # rebind it in kitsune.search.views. Otherwise when we go to get
-        # cleaned_data from it, it ditches the forum data we so
-        # lovingly put in our querystring and then our filters are
-        # wrong and then this test FAILS.
-
         self.refresh()
 
         qs = {'a': 1, 'w': 4, 'format': 'json'}
