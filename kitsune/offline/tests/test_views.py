@@ -8,6 +8,7 @@ from kitsune.offline.cron import build_kb_bundles
 from kitsune.products.tests import product, topic
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
+from kitsune.wiki.models import Document
 from kitsune.wiki.tests import document, revision
 
 
@@ -73,3 +74,23 @@ class OfflineViewTests(TestCase):
 
         assert 'indexes' in data
 
+    def test_get_bundle_version(self):
+        self._create_bundle('firefox', 'en-US')
+        url = (reverse('offline.bundle_version')
+                    + '?locale=en-US&product=firefox')
+        resp = self.client.get(url, follow=True)
+
+        hash1 = resp.content
+        assert resp['Content-Type'] == 'text/plain'
+        assert len(hash1) == 40  # sha1 hexdigest should be 40 char long.
+
+        doc = Document.objects.all()[0]  # getting one document should be okay.
+        doc.title = 'some differnet title!'
+        doc.save()
+
+        # rebuild bundle as the version is different now.
+        build_kb_bundles(('firefox', ))
+
+        # test to see if the hash has changed.
+        resp = self.client.get(url, follow=True)
+        assert hash1 != resp.content
