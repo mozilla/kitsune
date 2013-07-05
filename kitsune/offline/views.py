@@ -13,6 +13,7 @@ from kitsune.offline.utils import (
 from kitsune.products.models import Product
 from kitsune.sumo.redis_utils import redis_client, RedisError
 
+
 INVALID_PRODUCT = '{"error": "not found", "reason": "invalid product"}'
 INVALID_LOCALE = '{"error": "not found", "reason": "invalid locale"}'
 
@@ -58,6 +59,7 @@ def get_bundle(request):
     response['X-Content-Hash'] = bundle_hash
     return response
 
+
 @cors_enabled('*')
 def bundle_version(request):
     if 'locale' not in request.GET or 'product' not in request.GET:
@@ -67,8 +69,13 @@ def bundle_version(request):
     product = request.GET['product']
 
     name = redis_bundle_name(locale, product)
-    redis = redis_client('default')
+    try:
+        redis = redis_client('default')
+    except RedisError:
+        return HttpResponse('no builds', mimetype='text/plain', status=503)
+
     bundle_hash = redis.hget(name, 'hash')
+
     if bundle_hash:
         return HttpResponse(bundle_hash, mimetype='text/plain')
     else:

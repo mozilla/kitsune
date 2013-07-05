@@ -33,7 +33,10 @@ def build_kb_bundles(products=('firefox-os', 'firefox', 'mobile')):
                 with uselocale(locale):
                     bundle = merge_bundles(bundle_for_product(product, locale))
 
-                size += len(toss_bundle_into_redis(redis, product.slug, locale, bundle)[0])
+                size += len(toss_bundle_into_redis(redis,
+                                                   product.slug,
+                                                   locale,
+                                                   bundle)[0])
 
     time_taken = time.time() - start_time
     log.info('Generated all offline bundles. '

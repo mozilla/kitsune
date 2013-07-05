@@ -1,5 +1,6 @@
 import json
 
+from nose import SkipTest
 from nose.tools import eq_
 
 from django.conf import settings
@@ -8,6 +9,7 @@ from kitsune.offline.cron import build_kb_bundles
 from kitsune.products.tests import product, topic
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
+from kitsune.sumo.redis_utils import RedisError, redis_client
 from kitsune.wiki.models import Document
 from kitsune.wiki.tests import document, revision
 
@@ -49,7 +51,10 @@ class OfflineViewTests(TestCase):
             d.parent = parent(i)
             d.save()
 
-        build_kb_bundles((prod, ))
+        try:
+            build_kb_bundles((prod, ))
+        except RedisError:
+            pass  # do nothing as we should gracefully fallback.
 
 
     def test_get_single_bundle(self):
@@ -78,10 +83,17 @@ class OfflineViewTests(TestCase):
         self._create_bundle('firefox', 'en-US')
         url = (reverse('offline.bundle_version')
                     + '?locale=en-US&product=firefox')
+
+        try:
+            redis_client('default')
+        except RedisError:
+            raise SkipTest
+
         resp = self.client.get(url, follow=True)
 
         hash1 = resp.content
         assert resp['Content-Type'] == 'text/plain'
+
         assert len(hash1) == 40  # sha1 hexdigest should be 40 char long.
 
         doc = Document.objects.all()[0]  # getting one document should be okay.

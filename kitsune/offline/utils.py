@@ -87,8 +87,7 @@ def serialize_document_for_offline(doc):
 
 
 def bundle_for_product(product, locale):
-    """Gets an entire bundle for a product in a locale.
-    """
+    """Gets an entire bundle for a product in a locale."""
     bundle = {}
 
     # put a new locale into the database.
@@ -145,8 +144,8 @@ def bundle_for_product(product, locale):
                 topic = topics.setdefault(t.slug, {})
                 if not topic:  # this means that topics has not been set yet.
                     topic['key'] = topic_key(locale, product.slug, t.slug)
-                    # The title of the document is not translated so we must use
-                    # gettext to get the translation for it.
+                    # The title of the document is not translated so we must
+                    # use gettext to get the translation for it.
                     topic['name'] = _(t.title)
                     topic['children'] = [st.slug for st in t.subtopics.all()]
                     topic['docs'] = []
