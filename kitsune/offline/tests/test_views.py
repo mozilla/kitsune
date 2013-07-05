@@ -56,7 +56,6 @@ class OfflineViewTests(TestCase):
         except RedisError:
             pass  # do nothing as we should gracefully fallback.
 
-
     def test_get_single_bundle(self):
         self._create_bundle('firefox', 'en-US')
 
@@ -66,7 +65,8 @@ class OfflineViewTests(TestCase):
 
         assert 'locales' in data
         eq_(1, len(data['locales']))
-        eq_([{u'slug': u'firefox', u'name': u'firefox'}], data['locales'][0]['products'])
+        eq_([{u'slug': u'firefox', u'name': u'firefox'}],
+            data['locales'][0]['products'])
         eq_('en-US', data['locales'][0]['key'])
 
         assert 'topics' in data
@@ -79,10 +79,10 @@ class OfflineViewTests(TestCase):
 
         assert 'indexes' in data
 
-    def test_get_bundle_version(self):
+    def test_get_bundle_meta(self):
         self._create_bundle('firefox', 'en-US')
-        url = (reverse('offline.bundle_version')
-                    + '?locale=en-US&product=firefox')
+        url = (reverse('offline.bundle_meta') +
+               '?locale=en-US&product=firefox')
 
         try:
             redis_client('default')
@@ -91,9 +91,11 @@ class OfflineViewTests(TestCase):
 
         resp = self.client.get(url, follow=True)
 
-        hash1 = resp.content
-        assert resp['Content-Type'] == 'text/plain'
+        meta = json.loads(resp.content)
+        hash1 = meta['hash']
+        assert resp['Content-Type'] == 'application/json'
 
+        assert meta['length'] > 0
         assert len(hash1) == 40  # sha1 hexdigest should be 40 char long.
 
         doc = Document.objects.all()[0]  # getting one document should be okay.
