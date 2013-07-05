@@ -1,4 +1,6 @@
 from functools import wraps
+from hashlib import sha1
+import json
 import re
 import time
 
@@ -41,7 +43,7 @@ def topic_key(locale, product_slug, topic_slug):
 
 
 def redis_bundle_name(locale, product_slug):
-    return 'osumo:' + bundle_key(locale, product_slug)
+    return 'osumo:' + bundle_key(locale.lower(), product_slug.lower())
 
 
 def transform_html(dochtml):
@@ -200,6 +202,22 @@ def merge_bundles(*bundles):
         merged_bundle['indexes'] = merged_bundle['indexes'].values()
 
     return merged_bundle
+
+
+def toss_bundle_into_redis(redis, product, locale, bundle):
+    """Put a bundle into redis.
+
+    This is used in both the cron job and the view.
+    """
+    bundle = json.dumps(bundle)
+    bundle_hash = sha1(bundle).hexdigest()  # track version
+
+    if redis:
+        name = redis_bundle_name(locale.lower(), product.lower())
+        redis.hset(name, 'hash', bundle_hash)
+        redis.hset(name, 'bundle', bundle)
+
+    return bundle, bundle_hash
 
 
 def cors_enabled(origin, methods=['GET']):
