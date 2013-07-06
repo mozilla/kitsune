@@ -59,7 +59,9 @@ def get_bundle(request):
     response = HttpResponse(bundle, mimetype='application/json')
     response['Content-Length'] = len(bundle)
     response['X-Content-Hash'] = bundle_hash
-    response['Access-Control-Expose-Headers'] = 'Content-Length, X-Content-Hash'
+    response['Access-Control-Expose-Headers'] = \
+        'Content-Length, X-Content-Hash'
+
     return response
 
 
@@ -77,11 +79,10 @@ def bundle_meta(request):
     except RedisError:
         return HttpResponse('no builds', mimetype='text/plain', status=503)
 
-    bundle = redis.hget(name, 'bundle')
     bundle_hash = redis.hget(name, 'hash')
 
     if bundle_hash:
-        u = {'hash': bundle_hash, 'length': len(bundle)}
+        u = {'hash': bundle_hash}
         return HttpResponse(json.dumps(u), mimetype='application/json')
     else:
         return HttpResponseNotFound('not found?', mimetype='text/plain')

@@ -95,7 +95,6 @@ class OfflineViewTests(TestCase):
         hash1 = meta['hash']
         assert resp['Content-Type'] == 'application/json'
 
-        assert meta['length'] > 0
         assert len(hash1) == 40  # sha1 hexdigest should be 40 char long.
 
         doc = Document.objects.all()[0]  # getting one document should be okay.
@@ -107,4 +106,4 @@ class OfflineViewTests(TestCase):
 
         # test to see if the hash has changed.
         resp = self.client.get(url, follow=True)
-        assert hash1 != resp.content
+        assert hash1 != json.loads(resp.content)['hash']
