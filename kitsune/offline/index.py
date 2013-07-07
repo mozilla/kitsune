@@ -19,7 +19,8 @@ def find_word_locations_with_spaces(s):
     s = s.lower()
     words = [u'']
     for c in s:
-        if _whitespace_regex.match(c) or c in string.punctuation:
+        if (_whitespace_regex.match(c) or
+            c in string.punctuation and c not in '.!?'):
             words.append(u'')
         elif c in '.!?':  # We want to treat . as a big stop. Add two space.
             words.append(u'')
