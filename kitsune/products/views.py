@@ -1,10 +1,13 @@
+from django.conf import settings
 from django.shortcuts import get_object_or_404, render
 
 from mobility.decorators import mobile_template
+from taggit.models import Tag
 
 from kitsune.products.models import Product, Topic
 from kitsune.topics.models import HOT_TOPIC_SLUG
 from kitsune.wiki.facets import topics_for, documents_for
+from kitsune.questions.models import Question
 
 
 @mobile_template('products/{mobile/}products.html')
@@ -31,6 +34,18 @@ def product_landing(request, template, slug):
         # "hot" topic doesn't exist, move on.
         hot_docs = fallback_hot_docs = None
 
+    hot_questions = []
+    try:
+        hot_tag = Tag.objects.get(slug=HOT_TOPIC_SLUG)
+        if request.LANGUAGE_CODE in settings.AAQ_LANGUAGES:
+            hot_questions = Question.objects.filter(
+                locale=request.LANGUAGE_CODE,
+                products=product,
+                tags=hot_tag)
+            hot_questions = hot_questions.order_by('-created')[:3]
+    except Tag.DoesNotExist:
+        pass
+
     return render(request, template, {
         'product': product,
         'products': Product.objects.filter(visible=True),
@@ -38,6 +53,7 @@ def product_landing(request, template, slug):
             products=[product],
             parent=None),
         'hot_docs': hot_docs,
+        'hot_questions': hot_questions,
         'fallback_hot_docs': fallback_hot_docs,
         'search_params': {'product': slug}})
 

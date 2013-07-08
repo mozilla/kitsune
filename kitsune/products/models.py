@@ -38,6 +38,7 @@ class Product(ModelBase):
             settings.STATIC_URL, 'img', 'product_placeholder.png')
 
 
+# Note: This is the "new" Topic class
 class Topic(ModelBase):
     title = models.CharField(max_length=255, db_index=True)
     # We don't use a SlugField here because it isn't unique by itself.

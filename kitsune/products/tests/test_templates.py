@@ -1,13 +1,18 @@
+from datetime import datetime, timedelta
+
 from django.core.cache import cache
 
 from nose.tools import eq_
 from pyquery import PyQuery as pq
+from waffle.models import Flag
 
 from kitsune.products.tests import product, topic
 from kitsune.search.tests.test_es import ElasticTestCase
 from kitsune.sumo.urlresolvers import reverse
+from kitsune.tags.tests import tag
 from kitsune.topics.models import HOT_TOPIC_SLUG
 from kitsune.wiki.tests import revision, helpful_vote
+from kitsune.questions.tests import question
 
 
 class ProductViewsTestCase(ElasticTestCase):
@@ -134,6 +139,44 @@ class ProductViewsTestCase(ElasticTestCase):
         eq_(200, r.status_code)
         doc = pq(r.content)
         eq_(7, len(doc('#hot-topics li')))
+
+    def test_hot_questions(self):
+        """Verifies that hot questions show up in the hot topics section."""
+
+        # Create a product and the hot topics topic.
+        p = product(save=True)
+        hot_tag = tag(name='hot', slug=HOT_TOPIC_SLUG, save=True)
+        # Create a flag, since this code is flagged off by default.
+        Flag.objects.create(name='hot_questions', everyone=True)
+
+        # Create 4 hot questions.
+        titles = ['apple', 'banana', 'cherry', 'date']
+        timestamp = datetime.now() - timedelta(days=7)
+        for i in range(4):
+            q = question(title=titles[i], created=timestamp, save=True)
+            q.products.add(p)
+            q.tags.add(hot_tag)
+            timestamp += timedelta(days=1)
+
+        # Create a non-hot document.
+        q = question(title='elderberry', save=True)
+        q.products.add(p)
+
+        # GET the product landing page and verify the content.
+        url = reverse('products.product', args=[p.slug])
+        r = self.client.get(url, follow=True)
+        eq_(200, r.status_code)
+
+        doc = pq(r.content)
+        eq_(3, len(doc('#hot-topics li.question')))
+
+        # Only the 3 newest hot topics should show up.
+        assert 'apple' not in r.content
+        assert 'banana' in r.content
+        assert 'cherry' in r.content
+        assert 'date' in r.content
+        # Non-hot topics should not show up.
+        assert 'elderberry' not in r.content
 
     def test_subtopics(self):
         """Verifies subtopics appear on document listing page."""
