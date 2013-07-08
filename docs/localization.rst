@@ -364,11 +364,11 @@ When we add strings that need to be localized, it can take a couple of
 weeks for us to get translations of those localized strings. This
 makes it difficult to find localization issues.
 
-Enter poxx.
+Enter `dennis <https://github.com/willkg/dennis/>`_.
 
 Requirements:
 
-1. Install polib - ``pip install polib``
+1. Install dennis by doing ``pip install dennis``
 2. Get ``compile-mo.sh``. You can do this by getting the
    localizations. See :ref:`getting-localizations`.
 
@@ -397,6 +397,41 @@ Strings in the Pirate translation have the following properties:
 
    The xx locale is only available on your local machine. It is not
    available on -dev, -stage, or -prod.
+
+
+Linting localized strings
+=========================
+
+Whenever a translated string has a variable that's not in the original
+string, it's likely to throw an error when the string is
+interpolated. That's a problem.
+
+Enter `dennis <https://github.com/willkg/dennis/>`_.
+
+Requirements:
+
+1. Install dennis by doing ``pip install dennis``
+
+Now you can lint ``.po`` files and find all the problems by doing
+something like::
+
+    $ dennis-cmd lint locales/fr/LC_MESSAGES/messages.po
+
+
+It'll print out all the strings that have problems whether those
+problems are warning or errors.
+
+You can do this across all the locales like this::
+
+    $ dennis-cmd lint locales/
+
+
+but it generates a lot of output (as of this writing, there are a lot
+of problems), so it's probably better not to do that.
+
+See the other options::
+
+    $ dennis-cmd lint --help
 
 
 .. _getting-localizations:
