@@ -151,8 +151,8 @@ class DocumentForm(forms.ModelForm):
 
     def clean_slug(self):
         slug = self.cleaned_data['slug']
-        # Blacklist /, ? and +
-        if not re.compile(r'^[^/^\+^\?]+$').match(slug):
+        # Blacklist /, ?, % and +,
+        if not re.compile(r'^[^/^\+^\?%]+$').match(slug):
             raise forms.ValidationError(SLUG_INVALID)
         return slug
 
