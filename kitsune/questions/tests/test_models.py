@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime, timedelta
 
-from django.contrib.auth.models import User
 from django.db.models import Q
 
 import mock
@@ -13,6 +12,7 @@ from taggit.models import Tag
 import kitsune.sumo.models
 from kitsune.flagit.models import FlaggedObject
 from kitsune.karma.manager import KarmaManager
+from kitsune.search.tests.test_es import ElasticTestCase
 from kitsune.sumo.redis_utils import RedisError, redis_client
 from kitsune.questions.cron import auto_lock_old_questions
 from kitsune.questions.events import QuestionReplyEvent
@@ -22,11 +22,11 @@ from kitsune.questions.models import (
     _tenths_version, _has_beta, user_num_questions,
     user_num_answers, user_num_solutions)
 from kitsune.questions.tasks import update_answer_pages
-from kitsune.questions.tests import (
-    TestCaseBase, TaggingTestCaseBase, tags_eq, question, answer)
+from kitsune.questions.tests import TestCaseBase, tags_eq, question, answer
 from kitsune.questions.question_config import products
 from kitsune.sumo import googleanalytics
 from kitsune.sumo.tests import TestCase
+from kitsune.tags.tests import tag
 from kitsune.tags.utils import add_existing_tag
 from kitsune.users.tests import user
 from kitsune.wiki.tests import translated_revision
@@ -38,107 +38,96 @@ class TestAnswer(TestCaseBase):
     def test_new_answer_updates_question(self):
         """Test saving a new answer updates the corresponding question.
         Specifically, last_post and num_replies should update."""
-        question = Question(title='Test Question',
-                            content='Lorem Ipsum Dolor',
-                            creator_id=118533)
-        question.save()
+        q = question(title='Test Question', content='Lorem Ipsum Dolor',
+                     save=True)
+        updated = q.updated
 
-        updated = question.updated
+        eq_(0, q.num_answers)
+        eq_(None, q.last_answer)
 
-        eq_(0, question.num_answers)
-        eq_(None, question.last_answer)
+        a = answer(question=q, content='Test Answer', save=True)
+        a.save()
 
-        answer = Answer(question=question, creator_id=47963,
-                        content="Test Answer")
-        answer.save()
-
-        question = Question.objects.get(pk=question.id)
-        eq_(1, question.num_answers)
-        eq_(answer, question.last_answer)
-        self.assertNotEqual(updated, question.updated)
-
-        question.delete()
+        q = Question.objects.get(pk=q.id)
+        eq_(1, q.num_answers)
+        eq_(a, q.last_answer)
+        self.assertNotEqual(updated, q.updated)
 
     def test_delete_question_removes_flag(self):
         """Deleting a question also removes the flags on that question."""
-        question = Question(title='Test Question',
-                            content='Lorem Ipsum Dolor',
-                            creator_id=118533)
-        question.save()
+        q = question(title='Test Question', content='Lorem Ipsum Dolor',
+                     save=True)
+
+        u = user(save=True)
         FlaggedObject.objects.create(
-            status=0, content_object=question,
-            reason='language', creator_id=118533)
+            status=0, content_object=q, reason='language', creator_id=u.id)
         eq_(1, FlaggedObject.objects.count())
 
-        question.delete()
+        q.delete()
         eq_(0, FlaggedObject.objects.count())
 
     def test_delete_answer_removes_flag(self):
         """Deleting an answer also removes the flags on that answer."""
-        question = Question(title='Test Question',
-                            content='Lorem Ipsum Dolor',
-                            creator_id=118533)
-        question.save()
+        q = question(title='Test Question', content='Lorem Ipsum Dolor',
+                     save=True)
 
-        answer = Answer(question=question, creator_id=47963,
-                        content="Test Answer")
-        answer.save()
+        a = answer(question=q, content='Test Answer', save=True)
 
+        u = user(save=True)
         FlaggedObject.objects.create(
-            status=0, content_object=answer,
-            reason='language', creator_id=118533)
+            status=0, content_object=a, reason='language', creator_id=u.id)
         eq_(1, FlaggedObject.objects.count())
 
-        answer.delete()
+        a.delete()
         eq_(0, FlaggedObject.objects.count())
 
     def test_delete_last_answer_of_question(self):
         """Deleting the last_answer of a Question should update the question.
         """
-        question = Question.objects.get(pk=1)
-        last_answer = question.last_answer
+        yesterday = datetime.now() - timedelta(days=1)
+        q = answer(created=yesterday, save=True).question
+        last_answer = q.last_answer
 
         # add a new answer and verify last_answer updated
-        answer = Answer(question=question, creator_id=47963,
-                        content="Test Answer")
-        answer.save()
-        question = Question.objects.get(pk=question.id)
+        a = answer(question=q, content='Test Answer', save=True)
+        q = Question.objects.get(pk=q.id)
 
-        eq_(question.last_answer.id, answer.id)
+        eq_(q.last_answer.id, a.id)
 
         # delete the answer and last_answer should go back to previous value
-        answer.delete()
-        question = Question.objects.get(pk=question.id)
-        eq_(question.last_answer.id, last_answer.id)
-        eq_(Answer.objects.filter(pk=answer.id).count(), 0)
+        a.delete()
+        q = Question.objects.get(pk=q.id)
+        eq_(q.last_answer.id, last_answer.id)
+        eq_(Answer.objects.filter(pk=a.id).count(), 0)
 
     def test_delete_solution_of_question(self):
         """Deleting the solution of a Question should update the question.
         """
         # set a solution to the question
-        question = Question.objects.get(pk=1)
-        solution = question.last_answer
-        question.solution = solution
-        question.save()
+        q = answer(save=True).question
+        solution = q.last_answer
+        q.solution = solution
+        q.save()
 
         # delete the solution and question.solution should go back to None
         solution.delete()
-        question = Question.objects.get(pk=question.id)
-        eq_(question.solution, None)
+        q = Question.objects.get(pk=q.id)
+        eq_(q.solution, None)
 
     def test_update_page_task(self):
-        answer = Answer.objects.get(pk=1)
-        answer.page = 4
-        answer.save()
-        answer = Answer.objects.get(pk=1)
-        assert answer.page == 4
-        update_answer_pages(answer.question)
-        a = Answer.objects.get(pk=1)
+        a = answer(save=True)
+        a.page = 4
+        a.save()
+        a = Answer.objects.get(pk=a.id)
+        assert a.page == 4
+        update_answer_pages(a.question)
+        a = Answer.objects.get(pk=a.id)
         assert a.page == 1
 
     def test_delete_updates_pages(self):
-        a1 = Answer.objects.get(pk=2)
-        a2 = Answer.objects.get(pk=3)
+        a1 = answer(save=True)
+        a2 = answer(question=a1.question, save=True)
+        answer(question=a1.question, save=True)
         a1.page = 7
         a1.save()
         a2.delete()
@@ -146,23 +135,21 @@ class TestAnswer(TestCaseBase):
         assert a3.page == 1, "Page was %s" % a3.page
 
     def test_creator_num_answers(self):
-        question = Question.objects.all()[0]
-        answer = Answer(question=question, creator_id=47963,
-                        content="Test Answer")
-        answer.save()
+        a = answer(save=True)
 
-        eq_(answer.creator_num_answers, 2)
+        eq_(a.creator_num_answers, 1)
+
+        answer(creator=a.creator, save=True)
+        eq_(a.creator_num_answers, 2)
 
     def test_creator_num_solutions(self):
-        question = Question.objects.all()[0]
-        answer = Answer(question=question, creator_id=47963,
-                        content="Test Answer")
-        answer.save()
+        a = answer(save=True)
+        q = a.question
 
-        question.solution = answer
-        question.save()
+        q.solution = a
+        q.save()
 
-        eq_(answer.creator_num_solutions, 1)
+        eq_(a.creator_num_solutions, 1)
 
     @mock.patch.object(waffle, 'switch_is_active')
     def test_creator_nums_redis(self, switch_is_active):
@@ -174,14 +161,14 @@ class TestAnswer(TestCaseBase):
             raise SkipTest
 
         switch_is_active.return_value = True
-        answer = Answer.objects.all()[0]
+        a = answer(save=True)
 
-        AnswerAction(answer.creator).save()
-        AnswerAction(answer.creator).save()
-        SolutionAction(answer.creator).save()
+        AnswerAction(a.creator).save()
+        AnswerAction(a.creator).save()
+        SolutionAction(a.creator).save()
 
-        eq_(answer.creator_num_solutions, 1)
-        eq_(answer.creator_num_answers, 2)
+        eq_(a.creator_num_solutions, 1)
+        eq_(a.creator_num_answers, 3)
 
     def test_content_parsed_with_locale(self):
         """Make sure links to localized articles work."""
@@ -203,17 +190,8 @@ class TestQuestionMetadata(TestCaseBase):
         super(TestQuestionMetadata, self).setUp()
 
         # add a new Question to test with
-        question = Question(title='Test Question',
-                            content='Lorem Ipsum Dolor',
-                            creator_id=1)
-        question.save()
-        self.question = question
-
-    def tearDown(self):
-        super(TestQuestionMetadata, self).tearDown()
-
-        # remove the added Question
-        self.question.delete()
+        self.question = question(
+            title='Test Question', content='Lorem Ipsum Dolor', save=True)
 
     def test_add_metadata(self):
         """Test the saving of metadata."""
@@ -308,14 +286,14 @@ class QuestionTests(TestCaseBase):
 
     def test_save_updated(self):
         """Saving with the `update` option should update `updated`."""
-        q = Question.objects.all()[0]
+        q = question(save=True)
         updated = q.updated
         q.save(update=True)
         self.assertNotEqual(updated, q.updated)
 
     def test_save_no_update(self):
         """Saving without the `update` option shouldn't update `updated`."""
-        q = Question.objects.all()[0]
+        q = question(save=True)
         updated = q.updated
         q.save()
         eq_(updated, q.updated)
@@ -332,23 +310,23 @@ class QuestionTests(TestCaseBase):
     def test_notification_created(self):
         """Creating a new question auto-watches it for answers."""
 
-        u = User.objects.get(pk=118533)
-        q = Question(creator=u, title='foo', content='bar')
-        q.save()
+        u = user(save=True)
+        q = question(creator=u, title='foo', content='bar', save=True)
 
         assert QuestionReplyEvent.is_notifying(u, q)
 
     def test_no_notification_on_update(self):
         """Saving an existing question does not watch it."""
 
-        q = Question.objects.get(pk=1)
+        q = question(save=True)
+        QuestionReplyEvent.stop_notifying(q.creator, q)
         assert not QuestionReplyEvent.is_notifying(q.creator, q)
 
         q.save()
         assert not QuestionReplyEvent.is_notifying(q.creator, q)
 
     def test_is_solved_property(self):
-        a = Answer.objects.all()[0]
+        a = answer(save=True)
         q = a.question
         assert not q.is_solved
         q.solution = a
@@ -423,12 +401,12 @@ class QuestionTests(TestCaseBase):
         eq_(None, Question.from_url('/en-US/questions/stats'))
 
 
-class AddExistingTagTests(TaggingTestCaseBase):
+class AddExistingTagTests(TestCaseBase):
     """Tests for the add_existing_tag helper function."""
 
     def setUp(self):
         super(AddExistingTagTests, self).setUp()
-        self.untagged_question = Question.objects.get(pk=1)
+        self.untagged_question = question(save=True)
 
     def test_tags_manager(self):
         """Make sure the TaggableManager exists.
@@ -440,6 +418,7 @@ class AddExistingTagTests(TaggingTestCaseBase):
 
     def test_add_existing_case_insensitive(self):
         """Assert add_existing_tag works case-insensitively."""
+        tag(name='lemon', slug='lemon', save=True)
         add_existing_tag('LEMON', self.untagged_question.tags)
         tags_eq(self.untagged_question, [u'lemon'])
 
@@ -449,7 +428,7 @@ class AddExistingTagTests(TaggingTestCaseBase):
         add_existing_tag('nonexistent tag', self.untagged_question.tags)
 
 
-class OldQuestionsLockTest(TestCase):
+class OldQuestionsLockTest(ElasticTestCase):
     def test_lock_old_questions(self):
         last_updated = datetime.now() - timedelta(days=100)
 
@@ -466,6 +445,8 @@ class OldQuestionsLockTest(TestCase):
                       is_locked=True,
                       updated=last_updated,
                       save=True)
+
+        self.refresh()
 
         auto_lock_old_questions()
 

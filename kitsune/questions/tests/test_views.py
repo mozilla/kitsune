@@ -2,7 +2,6 @@ import json
 from datetime import datetime, timedelta
 
 from django.conf import settings
-from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from django.test.utils import override_settings
 
@@ -13,12 +12,12 @@ from pyquery import PyQuery as pq
 from kitsune.products.tests import product
 from kitsune.questions.models import (
     Question, QuestionVote, AnswerVote, Answer)
-from kitsune.questions.tests import answer, question
+from kitsune.questions.tests import answer, question, TestCaseBase
 from kitsune.questions.views import parse_troubleshooting
 from kitsune.search.tests.test_es import ElasticTestCase
 from kitsune.sumo.helpers import urlparams
 from kitsune.sumo.tests import (
-    get, MobileTestCase, LocalizingClient, TestCase, eq_msg)
+    get, MobileTestCase, LocalizingClient, eq_msg)
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.topics.tests import topic
 from kitsune.users.tests import user
@@ -59,7 +58,7 @@ class AAQTests(ElasticTestCase):
         d = document(title=u'CupcakesKB cupcakes', category=10, save=True)
         d.products.add(p)
 
-        rev = revision(document=d, is_approved=True, save=True)
+        revision(document=d, is_approved=True, save=True)
 
         self.refresh()
 
@@ -186,7 +185,6 @@ class AAQTests(ElasticTestCase):
 
 
 class MobileAAQTests(MobileTestCase):
-    fixtures = ['users.json', 'questions.json']
     client_class = LocalizingClient
     data = {'title': 'A test question',
             'content': 'I have this question that I hope...',
@@ -219,7 +217,10 @@ class MobileAAQTests(MobileTestCase):
     def test_logged_in_get(self, get_current):
         """New question is posted through mobile."""
         get_current.return_value.domain = 'testserver'
-        self.client.login(username='jsocol', password='testpass')
+
+        u = user(save=True)
+        self.client.login(username=u.username, password='testpass')
+
         response = self._new_question()
         eq_(200, response.status_code)
         self.assertTemplateUsed(response,
@@ -229,7 +230,10 @@ class MobileAAQTests(MobileTestCase):
     def test_logged_in_post(self, get_current):
         """New question is posted through mobile."""
         get_current.return_value.domain = 'testserver'
-        self.client.login(username='jsocol', password='testpass')
+
+        u = user(save=True)
+        self.client.login(username=u.username, password='testpass')
+
         response = self._new_question(post_it=True)
         eq_(200, response.status_code)
         assert Question.objects.filter(title='A test question')
@@ -238,10 +242,12 @@ class MobileAAQTests(MobileTestCase):
     def test_aaq_new_question_inactive(self, get_current):
         """New question is posted through mobile."""
         get_current.return_value.domain = 'testserver'
+
         # Log in first.
-        self.client.login(username='jsocol', password='testpass')
+        u = user(save=True)
+        self.client.login(username=u.username, password='testpass')
+
         # Then become inactive.
-        u = User.objects.get(username='jsocol')
         u.is_active = False
         u.save()
 
@@ -262,7 +268,7 @@ class MobileAAQTests(MobileTestCase):
         eq_(1, len(doc('#register-form input[name=register]')))
 
 
-class TestQuestionUpdates(TestCase):
+class TestQuestionUpdates(TestCaseBase):
     """Tests that questions are only updated in the right cases."""
     client_class = LocalizingClient
 
@@ -338,7 +344,7 @@ class TestQuestionUpdates(TestCase):
             })
 
 
-class TroubleshootingParsingTests(TestCase):
+class TroubleshootingParsingTests(TestCaseBase):
 
     def test_empty_troubleshooting_info(self):
         """Test a troubleshooting value that is valid JSON, but junk.
@@ -412,7 +418,7 @@ class TroubleshootingParsingTests(TestCase):
         assert parse_troubleshooting(troubleshooting) is not None
 
 
-class TestQuestionList(TestCase):
+class TestQuestionList(TestCaseBase):
 
     @override_settings(AAQ_LOCALES=['en-US', 'pt-BR'])
     def test_locale_filter(self):
@@ -448,7 +454,7 @@ class TestQuestionList(TestCase):
         sub_test('de', 'cupcakes?', 'donuts?', 'pastries?')
 
 
-class TestRateLimiting(TestCase):
+class TestRateLimiting(TestCaseBase):
     client_class = LocalizingClient
 
     def _check_question_vote(self, q, ignored):
@@ -572,7 +578,7 @@ class TestRateLimiting(TestCase):
         content = 'lorem ipsum dolor sit amet'
         url = reverse('questions.reply', args=[q.id])
         for i in range(7):
-            response = self.client.post(url, {'content': content})
+            self.client.post(url, {'content': content})
 
         eq_(4, Answer.uncached.count())
 

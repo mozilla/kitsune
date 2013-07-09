@@ -1,40 +1,43 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
-from django.contrib.auth.models import User
 from django.core.cache import cache
 
 from nose.tools import eq_
 from pyquery import PyQuery as pq
-from taggit.models import Tag
 
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.helpers import urlparams
 from kitsune.questions.feeds import QuestionsFeed, TaggedQuestionsFeed
 from kitsune.questions.models import Question
-from kitsune.questions.tests import TaggingTestCaseBase
+from kitsune.questions.tests import TestCaseBase, question
+from kitsune.tags.tests import tag
+from kitsune.users.tests import user
 
 
-class ForumTestFeedSorting(TaggingTestCaseBase):
+class ForumTestFeedSorting(TestCaseBase):
 
     def test_tagged_feed(self):
         """Test the tagged feed."""
-        tag = Tag.objects.get(slug='green')
-        items = TaggedQuestionsFeed().items(tag)
-        eq_(2, items[0].id)
+        t = tag(name='green', slug='green', save=True)
+        q = question(save=True)
+        q.tags.add('green')
+        items = TaggedQuestionsFeed().items(t)
         eq_(1, len(items))
+        eq_(q.id, items[0].id)
 
         cache.clear()
 
-        q = Question.objects.get(pk=1)
+        q = question(save=True)
         q.tags.add('green')
-        q.updated = datetime.now()
+        q.updated = datetime.now() + timedelta(days=1)
         q.save()
-        items = TaggedQuestionsFeed().items(tag)
-        eq_(1, items[0].id)
+        items = TaggedQuestionsFeed().items(t)
         eq_(2, len(items))
+        eq_(q.id, items[0].id)
 
     def test_tagged_feed_link(self):
         """Make sure the tagged feed is discoverable on the questions page."""
+        tag(name='green', slug='green', save=True)
         url = urlparams(reverse('questions.questions'), tagged='green')
         response = self.client.get(url)
         doc = pq(response.content)
@@ -49,10 +52,9 @@ class ForumTestFeedSorting(TaggingTestCaseBase):
 
     def test_no_inactive_users(self):
         """Ensure that inactive users' questions don't appear in the feed."""
-        u = User.objects.get(pk=118533)
-        u.is_active = False
-        u.save()
+        u = user(is_active=False, save=True)
+
         q = Question(title='Test Question', content='Lorem Ipsum Dolor',
-                     creator_id=118533)
+                     creator_id=u.id)
         q.save()
         assert q.id not in [x.id for x in QuestionsFeed().items()]
