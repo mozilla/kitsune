@@ -197,6 +197,7 @@ well.
 
 .. _`Live Server TestCase`: https://docs.djangoproject.com/en/1.4/topics/testing/#django.test.LiveServerTestCase
 
+
 Running Selenium Tests
 ----------------------
 
@@ -233,30 +234,36 @@ easily on Linux, and with some effort on OSX.
 
 Linux
 ~~~~~
+
 Install XVFB_ and run the tests with it's xvfb-run binary. For example, if you
-run tests like
+run tests like::
 
     ./manage.py test -s --noinput --logging-clear-handlers
 
-You can switch to this to run with XVFB
+
+You can switch to this to run with XVFB::
 
     xvfb-run ./manage.py test -s --noinput --logging-clear-handlers
+
 
 This creates a virtual X session for Firefox to run in, and sets up all the
 fiddly environment variables to get this working well. The tests will run as
 normal, and no windows will open, if all is working right.
 
-OSX ~~~ The same method can be used for OSX, but it requires some
-fiddliness. The default version of Firefox for OSX does not use X as
-it's graphic's backend, so by default XVFB can't help. You can however
-run an X11 enabled version of OSX and a OSX version of XVFB. You can
-find more details here_.
+OSX
+~~~
 
-.. _here: http://afitnerd.com/2011/09/06/headless-browser-testing-on-mac/
+The same method can be used for OSX, but it requires some fiddliness.
+The default version of Firefox for OSX does not use X as it's graphic's
+backend, so by default XVFB can't help. You can however run an X11 enabled
+version of OSX and a OSX version of XVFB. You can find more details
+`here <http://afitnerd.com/2011/09/06/headless-browser-testing-on-mac/>`_.
 
-NB: I don't use OSX, and that blog article is fairly out of date. If you
-find a way to get this working bettter or easier, or have better docs to
-share, please do!
+.. Note::
+
+   I don't use OSX, and that blog article is fairly out of date. If you
+   find a way to get this working bettter or easier, or have better docs to
+   share, please do!
 
 
 The QA test suite
