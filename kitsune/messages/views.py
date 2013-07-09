@@ -112,16 +112,21 @@ def new_message(request, template):
 @login_required
 def bulk_action(request, msgtype='inbox'):
     """Apply action to selected messages."""
-    if 'delete' in request.POST:
-        return delete(request, msgtype=msgtype)
-    elif 'mark_read' in request.POST and msgtype == 'inbox':
-        msgids = request.POST.getlist('id')
-        messages = InboxMessage.objects.filter(pk__in=msgids, to=request.user)
-        messages.update(read=True)
-    elif 'mark_unread' in request.POST and msgtype == 'inbox':
-        msgids = request.POST.getlist('id')
-        messages = InboxMessage.objects.filter(pk__in=msgids, to=request.user)
-        messages.update(read=False)
+    msgids = request.POST.getlist('id')
+
+    if len(msgids) == 0:
+        contrib_messages.add_message(request, contrib_messages.ERROR,
+                                     "No messages selected. Please try again.")
+    else:
+        if 'delete' in request.POST:
+            return delete(request, msgtype=msgtype)
+        elif 'mark_read' in request.POST and msgtype == 'inbox':
+            messages = InboxMessage.objects.filter(pk__in=msgids, to=request.user)
+            messages.update(read=True)
+        elif 'mark_unread' in request.POST and msgtype == 'inbox':
+            messages = InboxMessage.objects.filter(pk__in=msgids, to=request.user)
+            messages.update(read=False)
+
     return redirect('messages.%s' % msgtype)
 
 
@@ -141,6 +146,7 @@ def delete(request, template, msgid=None, msgtype='inbox'):
     else:
         messages = OutboxMessage.objects.filter(pk__in=msgids,
                                                 sender=request.user)
+
     if request.method == 'POST' and 'confirmed' in request.POST:
         if messages.count() != len(msgids):
             contrib_messages.add_message(request, contrib_messages.ERROR,

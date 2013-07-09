@@ -30,6 +30,14 @@ class ReadMessageTests(TestCase):
         assert InboxMessage.uncached.get(pk=i.pk).read
         assert InboxMessage.uncached.get(pk=j.pk).read
 
+    def test_mark_bulk_read_none(self):
+        url = reverse('messages.bulk_action', locale='en-US')
+        resp = self.client.post(url, {'id': [],
+                                      'mark_read': True},
+                                follow=True)
+
+        self.assertContains(resp, 'No messages selected')
+
     def test_mark_message_read(self):
         i = InboxMessage.objects.create(sender=self.user2, to=self.user1,
                                         message='foo')
@@ -101,6 +109,14 @@ class DeleteMessageTests(TestCase):
                                 {'confirmed': True}, follow=True)
         eq_(200, resp.status_code)
         eq_(0, OutboxMessage.uncached.count())
+
+    def test_bulk_delete_none(self):
+        url = reverse('messages.bulk_action', locale='en-US')
+        resp = self.client.post(url, {'id': [],
+                                      'delete': True},
+                                follow=True)
+
+        self.assertContains(resp, 'No messages selected')
 
 
 class OutboxTests(TestCase):
