@@ -165,8 +165,6 @@ additional tips:
 .. _`$.mockjax`: http://enterprisejquery.com/2010/07/mock-your-ajax-requests-with-mockjax-for-rapid-development/
 
 
-.. _tests-chapter-qa-test-suite:
-
 In-Suite Selenium Tests
 =======================
 
@@ -265,6 +263,8 @@ version of OSX and a OSX version of XVFB. You can find more details
    find a way to get this working bettter or easier, or have better docs to
    share, please do!
 
+
+.. _tests-chapter-qa-test-suite:
 
 The QA test suite
 =================
