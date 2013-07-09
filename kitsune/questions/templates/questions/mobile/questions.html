@@ -25,6 +25,18 @@
           </ol>
         </section>
       {% endif %}
+      <section id="product-switcher" class="swipeable">
+        <ul>
+          {% for p in product_list %}
+            <li class="{% if p == product %}selected{% endif %}">
+              <a href="?product={{ p.slug }}">
+                <span class="logo-sprite logo-{{ p.slug }}"></span>
+                {{ _(p.title, 'DB: products.Product.title') }}
+              </a>
+            </li>
+          {% endfor %}
+        </ul>
+      </section>
       <section id="question-stats">
         {% trans recent_unanswered_count,
           url=url('questions.questions')|urlparams(filter='recent-unanswered') %}
