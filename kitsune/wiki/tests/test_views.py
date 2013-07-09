@@ -285,8 +285,8 @@ class DocumentEditingTests(TestCase):
             sorted([prod.id for prod in [prod_desktop]]))
 
     @mock.patch.object(Site.objects, 'get_current')
-    def test_invalid_slugs(self, get_current):
-        """Slugs cannot contain /."""
+    def test_new_document_slugs(self, get_current):
+        """Slugs cannot contain /. but can be urlencoded"""
         get_current.return_value.domain = 'testserver'
         data = new_document_data()
         error = 'The slug provided is not valid.'
@@ -307,6 +307,13 @@ class DocumentEditingTests(TestCase):
         response = self.client.post(reverse('wiki.new_document'), data)
         self.assertRedirects(response, reverse('wiki.document_revisions',
                                                args=[data['slug']],
+                                               locale='en-US'))
+
+        data['title'] = 'Another title'
+        data['slug'] = '%2Atesttest'
+        response = self.client.post(reverse('wiki.new_document'), data)
+        self.assertRedirects(response, reverse('wiki.document_revisions',
+                                               args=['*testtest'],
                                                locale='en-US'))
 
     def test_localized_based_on(self):

@@ -1,5 +1,6 @@
 import json
 import re
+import urllib
 
 from django import forms
 from django.conf import settings
@@ -151,6 +152,8 @@ class DocumentForm(forms.ModelForm):
 
     def clean_slug(self):
         slug = self.cleaned_data['slug']
+        # Allow for characters that's encoded.
+        slug = urllib.unquote(slug).decode('utf-8')
         # Blacklist /, ? and +
         if not re.compile(r'^[^/^\+^\?]+$').match(slug):
             raise forms.ValidationError(SLUG_INVALID)
