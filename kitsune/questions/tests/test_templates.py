@@ -467,7 +467,7 @@ class AnswersTemplateTestCase(TestCaseBase):
                         args=[self.question.id])
         doc = pq(response.content)
         eq_(1, len(doc('li.edit')))
-        new_answer = self.question.answers.order_by('-created')[0]
+        new_answer = self.question.answers.order_by('-id')[0]
         eq_(1, len(doc('#answer-%s + div li.edit' % new_answer.id)))
 
         # Make sure it can be edited
