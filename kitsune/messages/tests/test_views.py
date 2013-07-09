@@ -32,9 +32,8 @@ class ReadMessageTests(TestCase):
 
     def test_mark_bulk_read_none(self):
         url = reverse('messages.bulk_action', locale='en-US')
-        resp = self.client.post(url, {'id': [],
-                                      'mark_read': True},
-                                follow=True)
+        resp = self.client.post(
+            url, {'id': [], 'mark_read': True}, follow=True)
 
         self.assertContains(resp, 'No messages selected')
 
@@ -112,9 +111,7 @@ class DeleteMessageTests(TestCase):
 
     def test_bulk_delete_none(self):
         url = reverse('messages.bulk_action', locale='en-US')
-        resp = self.client.post(url, {'id': [],
-                                      'delete': True},
-                                follow=True)
+        resp = self.client.post(url, {'id': [], 'delete': True}, follow=True)
 
         self.assertContains(resp, 'No messages selected')
 
