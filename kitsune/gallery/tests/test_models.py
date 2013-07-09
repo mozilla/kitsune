@@ -8,8 +8,6 @@ from kitsune.upload.tasks import generate_thumbnail
 
 
 class ImageTestCase(TestCase):
-    fixtures = ['users.json']
-
     def tearDown(self):
         Image.objects.all().delete()
         super(ImageTestCase, self).tearDown()
@@ -32,8 +30,6 @@ class ImageTestCase(TestCase):
 
 
 class VideoTestCase(TestCase):
-    fixtures = ['users.json']
-
     def tearDown(self):
         Video.objects.all().delete()
         super(VideoTestCase, self).tearDown()
