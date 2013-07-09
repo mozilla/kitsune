@@ -303,17 +303,18 @@ class DocumentEditingTests(TestCase):
         response = self.client.post(reverse('wiki.new_document'), data)
         self.assertContains(response, error)
 
+        data['slug'] = '%2Atesttest'
+        response = self.client.post(reverse('wiki.new_document'), data)
+        self.assertContains(response, error)
+
+        data['slug'] = '%20testtest'
+        response = self.client.post(reverse('wiki.new_document'), data)
+        self.assertContains(response, error)
+
         data['slug'] = 'valid'
         response = self.client.post(reverse('wiki.new_document'), data)
         self.assertRedirects(response, reverse('wiki.document_revisions',
                                                args=[data['slug']],
-                                               locale='en-US'))
-
-        data['title'] = 'Another title'
-        data['slug'] = '%2Atesttest'
-        response = self.client.post(reverse('wiki.new_document'), data)
-        self.assertRedirects(response, reverse('wiki.document_revisions',
-                                               args=['*testtest'],
                                                locale='en-US'))
 
     def test_localized_based_on(self):
