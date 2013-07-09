@@ -4,28 +4,28 @@ from datetime import datetime, timedelta
 from string import letters
 
 from django.conf import settings
-from django.contrib.auth.models import User, Permission
+from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from django.core import mail
 
 import mock
-from nose.plugins.skip import SkipTest
 from nose.tools import eq_
 from pyquery import PyQuery as pq
+from taggit.models import Tag
 from tidings.models import Watch
 
 from kitsune.products.tests import product
 from kitsune.questions.events import QuestionReplyEvent, QuestionSolvedEvent
 from kitsune.questions.models import Question, Answer, VoteMetadata
 from kitsune.questions.tests import (
-    TestCaseBase, TaggingTestCaseBase, tags_eq, question, answer,
-    questionvote)
+    TestCaseBase, tags_eq, question, answer, questionvote)
 from kitsune.questions.views import UNAPPROVED_TAG, NO_TAG
 from kitsune.questions.cron import cache_top_contributors
 from kitsune.sumo.helpers import urlparams
 from kitsune.sumo.tests import (
     get, post, attrs_eq, emailmessage_raise_smtp, TestCase, LocalizingClient)
 from kitsune.sumo.urlresolvers import reverse
+from kitsune.tags.tests import tag
 from kitsune.topics.tests import topic
 from kitsune.upload.models import ImageAttachment
 from kitsune.users.models import RegistrationProfile
@@ -37,14 +37,10 @@ class AnswersTemplateTestCase(TestCaseBase):
     def setUp(self):
         super(AnswersTemplateTestCase, self).setUp()
 
-        self.client.login(username='jsocol', password='testpass')
-        self.question = Question.objects.get(pk=1)
+        self.user = user(save=True)
+        self.client.login(username=self.user.username, password='testpass')
+        self.question = answer(save=True).question
         self.answer = self.question.answers.all()[0]
-
-    def tearDown(self):
-        super(AnswersTemplateTestCase, self).tearDown()
-
-        self.client.logout()
 
     def test_answer(self):
         """Posting a valid answer inserts it."""
@@ -57,15 +53,15 @@ class AnswersTemplateTestCase(TestCaseBase):
         eq_(1, len(response.redirect_chain))
         eq_(num_answers + 1, self.question.answers.count())
 
-        new_answer = self.question.answers.order_by('-created')[0]
+        new_answer = self.question.answers.order_by('-id')[0]
         eq_(content, new_answer.content)
         # Check canonical url
         doc = pq(response.content)
-        eq_('/questions/1', doc('link[rel="canonical"]')[0].attrib['href'])
+        eq_('/questions/%s' % self.question.id,
+            doc('link[rel="canonical"]')[0].attrib['href'])
 
     def test_answer_upload(self):
         """Posting answer attaches an existing uploaded image to the answer."""
-
         f = open('kitsune/upload/tests/media/test.jpg')
         post(self.client, 'upload.up_image_async', {'image': f},
              args=['questions.Question', self.question.id])
@@ -77,14 +73,14 @@ class AnswersTemplateTestCase(TestCaseBase):
                         args=[self.question.id])
         eq_(200, response.status_code)
 
-        new_answer = self.question.answers.order_by('-created')[0]
+        new_answer = self.question.answers.order_by('-id')[0]
         eq_(1, new_answer.images.count())
         image = new_answer.images.all()[0]
         name = '098f6b.png'
         message = 'File name "%s" does not contain "%s"' % (
             image.file.name, name)
         assert name in image.file.name, message
-        eq_('jsocol', image.creator.username)
+        eq_(self.user.username, image.creator.username)
 
         # Clean up
         ImageAttachment.objects.all().delete()
@@ -110,7 +106,6 @@ class AnswersTemplateTestCase(TestCaseBase):
 
     def test_long_answer(self):
         """Post a long answer shows error."""
-
         # Set up content length to 10,001 characters
         content = ''
         for i in range(1000):
@@ -134,7 +129,9 @@ class AnswersTemplateTestCase(TestCaseBase):
         eq_(0, len(doc('div.solution')))
 
         ans = self.question.answers.all()[0]
-        # Solve and verify
+        # Sign in as asker, solve and verify
+        self.client.login(
+            username=self.question.creator.username, password='testpass')
         response = post(self.client, 'questions.solve',
                         args=[self.question.id, ans.id])
         doc = pq(response.content)
@@ -151,13 +148,18 @@ class AnswersTemplateTestCase(TestCaseBase):
 
     def test_only_owner_or_admin_can_solve_unsolve(self):
         """Make sure non-owner/non-admin can't solve/unsolve."""
+        # Try as asker
+        self.client.login(
+            username=self.question.creator.username, password='testpass')
         response = get(self.client, 'questions.answers',
                        args=[self.question.id])
         doc = pq(response.content)
         eq_(1, len(doc('input[name="solution"]')))
-
         self.client.logout()
-        self.client.login(username='pcraciunoiu', password='testpass')
+
+        # Try as a nobody
+        u = user(save=True)
+        self.client.login(username=u.username, password='testpass')
         response = get(self.client, 'questions.answers',
                        args=[self.question.id])
         doc = pq(response.content)
@@ -260,7 +262,7 @@ class AnswersTemplateTestCase(TestCaseBase):
                        args=[self.question.id])
         doc = pq(response.content)
 
-        eq_(1, len(doc('#answer-1 h3.is-helpful')))
+        eq_(1, len(doc('#answer-%s h3.is-helpful' % self.answer.id)))
         eq_(0, len(doc('form.helpful input[name="helpful"]')))
         # Verify user agent
         vote_meta = VoteMetadata.objects.all()[0]
@@ -269,9 +271,10 @@ class AnswersTemplateTestCase(TestCaseBase):
 
     def test_answer_authenticated_vote(self):
         """Authenticated user answer vote."""
-        # log in as rrosario (didn't ask or answer question)
+        # log in as new user (didn't ask or answer question)
         self.client.logout()
-        self.client.login(username='rrosario', password='testpass')
+        u = user(save=True)
+        self.client.login(username=u.username, password='testpass')
 
         # Common vote test
         self.common_answer_vote()
@@ -313,7 +316,8 @@ class AnswersTemplateTestCase(TestCaseBase):
 
     def test_delete_question_without_permissions(self):
         """Deleting a question without permissions is a 403."""
-        self.client.login(username='tagger', password='testpass')
+        u = user(save=True)
+        self.client.login(username=u.username, password='testpass')
         response = get(self.client, 'questions.delete',
                        args=[self.question.id])
         eq_(403, response.status_code)
@@ -328,19 +332,23 @@ class AnswersTemplateTestCase(TestCaseBase):
                        args=[self.question.id])
         redirect = response.redirect_chain[0]
         eq_(302, redirect[1])
-        eq_('http://testserver/%s%s?next=/en-US/questions/1/delete' %
-            (settings.LANGUAGE_CODE, settings.LOGIN_URL), redirect[0])
+        eq_('http://testserver/%s%s?next=/en-US/questions/%s/delete' %
+            (settings.LANGUAGE_CODE, settings.LOGIN_URL, self.question.id),
+            redirect[0])
 
         response = post(self.client, 'questions.delete',
                         args=[self.question.id])
         redirect = response.redirect_chain[0]
         eq_(302, redirect[1])
-        eq_('http://testserver/%s%s?next=/en-US/questions/1/delete' %
-            (settings.LANGUAGE_CODE, settings.LOGIN_URL), redirect[0])
+        eq_('http://testserver/%s%s?next=/en-US/questions/%s/delete' %
+            (settings.LANGUAGE_CODE, settings.LOGIN_URL, self.question.id),
+            redirect[0])
 
     def test_delete_question_with_permissions(self):
         """Deleting a question with permissions."""
-        self.client.login(username='admin', password='testpass')
+        u = user(save=True)
+        add_permission(u, Question, 'delete_question')
+        self.client.login(username=u.username, password='testpass')
         response = get(self.client, 'questions.delete',
                        args=[self.question.id])
         eq_(200, response.status_code)
@@ -351,7 +359,8 @@ class AnswersTemplateTestCase(TestCaseBase):
 
     def test_delete_answer_without_permissions(self):
         """Deleting an answer without permissions sends 403."""
-        self.client.login(username='tagger', password='testpass')
+        u = user(save=True)
+        self.client.login(username=u.username, password='testpass')
         ans = self.question.last_answer
         response = get(self.client, 'questions.delete_answer',
                        args=[self.question.id, ans.id])
@@ -364,25 +373,30 @@ class AnswersTemplateTestCase(TestCaseBase):
     def test_delete_answer_logged_out(self):
         """Deleting an answer while logged out redirects to login."""
         self.client.logout()
-        ans = self.question.last_answer
+        q = self.question
+        ans = q.last_answer
         response = get(self.client, 'questions.delete_answer',
                        args=[self.question.id, ans.id])
         redirect = response.redirect_chain[0]
         eq_(302, redirect[1])
-        eq_('http://testserver/%s%s?next=/en-US/questions/1/delete/1' %
-            (settings.LANGUAGE_CODE, settings.LOGIN_URL), redirect[0])
+        eq_('http://testserver/%s%s?next=/en-US/questions/%s/delete/%s' %
+            (settings.LANGUAGE_CODE, settings.LOGIN_URL, q.id, ans.id),
+            redirect[0])
 
         response = post(self.client, 'questions.delete_answer',
                         args=[self.question.id, ans.id])
         redirect = response.redirect_chain[0]
         eq_(302, redirect[1])
-        eq_('http://testserver/%s%s?next=/en-US/questions/1/delete/1' %
-            (settings.LANGUAGE_CODE, settings.LOGIN_URL), redirect[0])
+        eq_('http://testserver/%s%s?next=/en-US/questions/%s/delete/%s' %
+            (settings.LANGUAGE_CODE, settings.LOGIN_URL, q.id, ans.id),
+            redirect[0])
 
     def test_delete_answer_with_permissions(self):
         """Deleting an answer with permissions."""
         ans = self.question.last_answer
-        self.client.login(username='admin', password='testpass')
+        u = user(save=True)
+        add_permission(u, Answer, 'delete_answer')
+        self.client.login(username=u.username, password='testpass')
         response = get(self.client, 'questions.delete_answer',
                        args=[self.question.id, ans.id])
         eq_(200, response.status_code)
@@ -415,12 +429,14 @@ class AnswersTemplateTestCase(TestCaseBase):
         """Editing an answer with permissions.
 
         The edit link should show up on the Answers page."""
-        self.client.login(username='admin', password='testpass')
+        u = user(save=True)
+        add_permission(u, Answer, 'change_answer')
+        self.client.login(username=u.username, password='testpass')
 
         response = get(self.client, 'questions.answers',
                        args=[self.question.id])
         doc = pq(response.content)
-        eq_(2, len(doc('li.edit')))
+        eq_(1, len(doc('li.edit')))
 
         answer = self.question.last_answer
         response = get(self.client, 'questions.edit_answer',
@@ -435,7 +451,8 @@ class AnswersTemplateTestCase(TestCaseBase):
 
     def test_answer_creator_can_edit(self):
         """The creator of an answer can edit his/her answer."""
-        self.client.login(username='rrosario', password='testpass')
+        u = user(save=True)
+        self.client.login(username=u.username, password='testpass')
 
         # Initially there should be no edit links
         response = get(self.client, 'questions.answers',
@@ -470,7 +487,8 @@ class AnswersTemplateTestCase(TestCaseBase):
 
     def test_lock_question_without_permissions(self):
         """Trying to lock a question without permission is a 403."""
-        self.client.login(username='tagger', password='testpass')
+        u = user(save=True)
+        self.client.login(username=u.username, password='testpass')
         q = self.question
         response = post(self.client, 'questions.lock', args=[q.id])
         eq_(403, response.status_code)
@@ -482,17 +500,22 @@ class AnswersTemplateTestCase(TestCaseBase):
         response = post(self.client, 'questions.lock', args=[q.id])
         redirect = response.redirect_chain[0]
         eq_(302, redirect[1])
-        eq_('http://testserver/%s%s?next=/en-US/questions/1/lock' %
-            (settings.LANGUAGE_CODE, settings.LOGIN_URL), redirect[0])
+        eq_('http://testserver/%s%s?next=/en-US/questions/%s/lock' %
+            (settings.LANGUAGE_CODE, settings.LOGIN_URL, q.id), redirect[0])
 
     def test_lock_question_with_permissions_GET(self):
         """Trying to lock a question via HTTP GET."""
+        u = user(save=True)
+        add_permission(u, Question, 'lock_question')
+        self.client.login(username=u.username, password='testpass')
         response = get(self.client, 'questions.lock', args=[self.question.id])
         eq_(405, response.status_code)
 
     def test_lock_question_with_permissions_POST(self):
         """Locking questions with permissions via HTTP POST."""
-        self.client.login(username='admin', password='testpass')
+        u = user(save=True)
+        add_permission(u, Question, 'lock_question')
+        self.client.login(username=u.username, password='testpass')
         q = self.question
         response = post(self.client, 'questions.lock', args=[q.id])
         eq_(200, response.status_code)
@@ -534,14 +557,16 @@ class AnswersTemplateTestCase(TestCaseBase):
 
     def test_watch_GET_405(self):
         """Watch replies with HTTP GET results in 405."""
-        self.client.login(username='rrosario', password='testpass')
+        u = user(save=True)
+        self.client.login(username=u.username, password='testpass')
         response = get(self.client, 'questions.watch',
                        args=[self.question.id])
         eq_(405, response.status_code)
 
     def test_unwatch_GET_405(self):
         """Unwatch replies with HTTP GET results in 405."""
-        self.client.login(username='rrosario', password='testpass')
+        u = user(save=True)
+        self.client.login(username=u.username, password='testpass')
         response = get(self.client, 'questions.unwatch',
                        args=[self.question.id])
         eq_(405, response.status_code)
@@ -552,21 +577,24 @@ class AnswersTemplateTestCase(TestCaseBase):
         get_current.return_value.domain = 'testserver'
         self.client.logout()
 
+        # Delete existing watches
+        Watch.objects.all().delete()
+
         post(self.client, 'questions.watch',
              {'email': 'some@bo.dy', 'event_type': 'reply'},
              args=[self.question.id])
         assert QuestionReplyEvent.is_notifying('some@bo.dy', self.question), (
                'Watch was not created')
 
-        attrs_eq(mail.outbox[0], to=['some@bo.dy'],
+        attrs_eq(mail.outbox[1], to=['some@bo.dy'],
                  subject='Please confirm your email address')
-        assert 'questions/confirm/' in mail.outbox[0].body
-        assert 'New answers' in mail.outbox[0].body
+        assert 'questions/confirm/' in mail.outbox[1].body
+        assert 'New answers' in mail.outbox[1].body
 
         # Now activate the watch.
         w = Watch.objects.get()
         get(self.client, 'questions.activate_watch', args=[w.id, w.secret])
-        assert Watch.objects.get().is_active
+        assert Watch.objects.get(id=w.id).is_active
 
     @mock.patch.object(mail.EmailMessage, 'send')
     def test_watch_replies_smtp_error(self, emailmessage_send):
@@ -588,6 +616,9 @@ class AnswersTemplateTestCase(TestCaseBase):
         get_current.return_value.domain = 'testserver'
         self.client.logout()
 
+        # Delete existing watches
+        Watch.objects.all().delete()
+
         post(self.client, 'questions.watch',
              {'email': 'some@bo.dy', 'event_type': 'reply'},
              args=[self.question.id])
@@ -596,17 +627,19 @@ class AnswersTemplateTestCase(TestCaseBase):
         w = Watch.objects.get()
         r = get(self.client, 'questions.activate_watch', args=[w.id, 'fail'])
         eq_(200, r.status_code)
-        assert not Watch.objects.get().is_active
+        assert not Watch.objects.get(id=w.id).is_active
 
     def test_watch_replies_logged_in(self):
         """Watch a question for replies (logged in)."""
-        self.client.login(username='rrosario', password='testpass')
-        user = User.objects.get(username='rrosario')
+        u = user(save=True)
+        self.client.login(username=u.username, password='testpass')
+        u = User.objects.get(username=u.username)
         post(self.client, 'questions.watch',
              {'event_type': 'reply'},
              args=[self.question.id])
-        assert QuestionReplyEvent.is_notifying(user, self.question), (
+        assert QuestionReplyEvent.is_notifying(u, self.question), (
                'Watch was not created')
+        return u
 
     @mock.patch.object(Site.objects, 'get_current')
     def test_watch_solution(self, get_current):
@@ -614,16 +647,19 @@ class AnswersTemplateTestCase(TestCaseBase):
         self.client.logout()
         get_current.return_value.domain = 'testserver'
 
+        # Delete existing watches
+        Watch.objects.all().delete()
+
         post(self.client, 'questions.watch',
              {'email': 'some@bo.dy', 'event_type': 'solution'},
              args=[self.question.id])
         assert QuestionSolvedEvent.is_notifying('some@bo.dy', self.question), (
                'Watch was not created')
 
-        attrs_eq(mail.outbox[0], to=['some@bo.dy'],
+        attrs_eq(mail.outbox[1], to=['some@bo.dy'],
                  subject='Please confirm your email address')
-        assert 'questions/confirm/' in mail.outbox[0].body
-        assert 'Solution found' in mail.outbox[0].body
+        assert 'questions/confirm/' in mail.outbox[1].body
+        assert 'Solution found' in mail.outbox[1].body
 
         # Now activate the watch.
         w = Watch.objects.get()
@@ -633,20 +669,19 @@ class AnswersTemplateTestCase(TestCaseBase):
     def test_unwatch(self):
         """Unwatch a question."""
         # First watch question.
-        self.test_watch_replies_logged_in()
+        u = self.test_watch_replies_logged_in()
         # Then unwatch it.
-        self.client.login(username='rrosario', password='testpass')
-        user = User.objects.get(username='rrosario')
+        self.client.login(username=u.username, password='testpass')
         post(self.client, 'questions.unwatch', args=[self.question.id])
-        assert not QuestionReplyEvent.is_notifying(user, self.question), (
+        assert not QuestionReplyEvent.is_notifying(u, self.question), (
                    'Watch was not destroyed')
 
     def test_watch_solution_and_replies(self):
         """User subscribes to solution and replies: page doesn't break"""
-        self.client.login(username='rrosario', password='testpass')
-        user = User.objects.get(username='rrosario')
-        QuestionReplyEvent.notify(user, self.question)
-        QuestionSolvedEvent.notify(user, self.question)
+        u = user(save=True)
+        self.client.login(username=u.username, password='testpass')
+        QuestionReplyEvent.notify(u, self.question)
+        QuestionSolvedEvent.notify(u, self.question)
         response = get(self.client, 'questions.answers',
                        args=[self.question.id])
         eq_(200, response.status_code)
@@ -665,7 +700,8 @@ class AnswersTemplateTestCase(TestCaseBase):
 
     def test_preview_answer_as_admin(self):
         """Preview an answer as admin and verify response is 200."""
-        self.client.login(username='admin', password='testpass')
+        u = user(is_staff=True, is_superuser=True, save=True)
+        self.client.login(username=u.username, password='testpass')
         content = 'Awesome answer.'
         response = post(self.client, 'questions.reply',
                         {'content': content, 'preview': 'any string'},
@@ -711,28 +747,8 @@ class AnswersTemplateTestCase(TestCaseBase):
         doc = pq(response.content)
         eq_(0, len(doc('meta[name=robots]')))
 
-class TaggedQuestionsTestCase(TaggingTestCaseBase):
-    """Questions/answers template tests that require tagged questions."""
 
-    def setUp(self):
-        super(TaggedQuestionsTestCase, self).setUp()
-
-        q = Question.objects.get(pk=1)
-        q.tags.add('green')
-
-    def test_related_list(self):
-        """Test that related Questions appear in the list."""
-
-        raise SkipTest
-
-        question = Question.objects.get(pk=1)
-        response = get(self.client, 'questions.answers',
-                       args=[question.id])
-        doc = pq(response.content)
-        eq_(1, len(doc('ul.related li')))
-
-
-class TaggingViewTestsAsTagger(TaggingTestCaseBase):
+class TaggingViewTestsAsTagger(TestCaseBase):
     """Tests for views that add and remove tags, logged in as someone who can
     add and remove but not create tags
 
@@ -742,47 +758,40 @@ class TaggingViewTestsAsTagger(TaggingTestCaseBase):
     def setUp(self):
         super(TaggingViewTestsAsTagger, self).setUp()
 
-        # Assign tag_question permission to the "tagger" user.
-        # Would be nice to have a natural key for doing this via a fixture.
-        self._can_tag = Permission.objects.get_by_natural_key('tag_question',
-                                                              'questions',
-                                                              'question')
-        self._user = User.objects.get(username='tagger')
-        self._user.user_permissions.add(self._can_tag)
+        u = user(save=True)
+        add_permission(u, Question, 'tag_question')
+        self.client.login(username=u.username, password='testpass')
 
-        self.client.login(username='tagger', password='testpass')
-
-    def tearDown(self):
-        self.client.logout()
-        self._user.user_permissions.remove(self._can_tag)
-        super(TaggingViewTestsAsTagger, self).tearDown()
+        self.question = question(save=True)
 
     # add_tag view:
 
     def test_add_tag_get_method(self):
         """Assert GETting the add_tag view redirects to the answers page."""
-        response = self.client.get(_add_tag_url())
-        url = 'http://testserver%s' % reverse('questions.answers',
-                                              kwargs={'question_id': 1},
-                                              force_locale=True)
+        response = self.client.get(_add_tag_url(self.question.id))
+        url = 'http://testserver%s' % reverse(
+            'questions.answers',
+            kwargs={'question_id': self.question.id},
+            force_locale=True)
         self.assertRedirects(response, url)
 
     def test_add_nonexistent_tag(self):
         """Assert adding a nonexistent tag sychronously shows an error."""
-        response = self.client.post(_add_tag_url(),
+        response = self.client.post(_add_tag_url(self.question.id),
                                     data={'tag-name': 'nonexistent tag'})
         self.assertContains(response, UNAPPROVED_TAG)
 
     def test_add_existent_tag(self):
         """Test adding a tag, case insensitivity, and space stripping."""
-        response = self.client.post(_add_tag_url(),
+        tag(name='PURplepurplepurple', slug='purplepurplepurple', save=True)
+        response = self.client.post(_add_tag_url(self.question.id),
                                     data={'tag-name': ' PURplepurplepurple '},
                                     follow=True)
         self.assertContains(response, 'purplepurplepurple')
 
     def test_add_no_tag(self):
         """Make sure adding a blank tag shows an error message."""
-        response = self.client.post(_add_tag_url(),
+        response = self.client.post(_add_tag_url(self.question.id),
                                     data={'tag-name': ''})
         self.assertContains(response, NO_TAG)
 
@@ -790,24 +799,26 @@ class TaggingViewTestsAsTagger(TaggingTestCaseBase):
 
     def test_add_async_nonexistent_tag(self):
         """Assert adding an nonexistent tag yields an AJAX error."""
-        response = self.client.post(_add_async_tag_url(),
+        response = self.client.post(_add_async_tag_url(self.question.id),
                                     data={'tag-name': 'nonexistent tag'},
                                     HTTP_X_REQUESTED_WITH='XMLHttpRequest')
         self.assertContains(response, UNAPPROVED_TAG, status_code=400)
 
     def test_add_async_existent_tag(self):
-        """Assert adding an unapplied tag yields an AJAX error."""
-        response = self.client.post(_add_async_tag_url(),
+        """Assert adding an unapplied tag."""
+        tag(name='purplepurplepurple', slug='purplepurplepurple', save=True)
+        response = self.client.post(_add_async_tag_url(self.question.id),
                                     data={'tag-name': ' PURplepurplepurple '},
                                     HTTP_X_REQUESTED_WITH='XMLHttpRequest')
         self.assertContains(response, 'canonicalName')
-        eq_([t.name for t in Question.objects.get(pk=1).tags.all()],
+        tags = Question.objects.get(id=self.question.id).tags.all()
+        eq_([t.name for t in tags],
             ['purplepurplepurple'])  # Test the backend since we don't have a
                                      # newly rendered page to rely on.
 
     def test_add_async_no_tag(self):
         """Assert adding an empty tag asynchronously yields an AJAX error."""
-        response = self.client.post(_add_async_tag_url(),
+        response = self.client.post(_add_async_tag_url(self.question.id),
                                     data={'tag-name': ''},
                                     HTTP_X_REQUESTED_WITH='XMLHttpRequest')
         self.assertContains(response, NO_TAG, status_code=400)
@@ -816,120 +827,137 @@ class TaggingViewTestsAsTagger(TaggingTestCaseBase):
 
     def test_remove_applied_tag(self):
         """Assert removing an applied tag succeeds."""
-        response = self.client.post(_remove_tag_url(),
+        self.question.tags.add('green')
+        self.question.tags.add('colorless')
+        response = self.client.post(_remove_tag_url(self.question.id),
                                     data={'remove-tag-colorless': 'dummy'})
-        self._assert_redirects_to_question_2(response)
-        eq_([t.name for t in Question.objects.get(pk=2).tags.all()], ['green'])
+        self._assert_redirects_to_question(response, self.question.id)
+        tags = Question.objects.get(pk=self.question.id).tags.all()
+        eq_([t.name for t in tags], ['green'])
 
     def test_remove_unapplied_tag(self):
         """Test removing an unapplied tag fails silently."""
-        response = self.client.post(_remove_tag_url(),
+        response = self.client.post(_remove_tag_url(self.question.id),
                                     data={'remove-tag-lemon': 'dummy'})
-        self._assert_redirects_to_question_2(response)
+        self._assert_redirects_to_question(response, self.question.id)
 
     def test_remove_no_tag(self):
         """Make sure removing with no params provided redirects harmlessly."""
-        response = self.client.post(_remove_tag_url(),
+        response = self.client.post(_remove_tag_url(self.question.id),
                                     data={})
-        self._assert_redirects_to_question_2(response)
+        self._assert_redirects_to_question(response, self.question.id)
 
-    def _assert_redirects_to_question_2(self, response):
-        url = 'http://testserver%s' % reverse('questions.answers',
-                                              kwargs={'question_id': 2},
-                                              force_locale=True)
+    def _assert_redirects_to_question(self, response, question_id):
+        url = 'http://testserver%s' % reverse(
+            'questions.answers', kwargs={'question_id': question_id},
+            force_locale=True)
         self.assertRedirects(response, url)
 
     # remove_tag_async view:
 
     def test_remove_async_applied_tag(self):
         """Assert taking a tag off a question works."""
-        response = self.client.post(_remove_async_tag_url(),
+        self.question.tags.add('green')
+        self.question.tags.add('colorless')
+        response = self.client.post(_remove_async_tag_url(self.question.id),
                                     data={'name': 'colorless'},
                                     HTTP_X_REQUESTED_WITH='XMLHttpRequest')
         eq_(response.status_code, 200)
-        eq_([t.name for t in Question.objects.get(pk=2).tags.all()], ['green'])
+        tags = Question.objects.get(pk=self.question.id).tags.all()
+        eq_([t.name for t in tags], ['green'])
 
     def test_remove_async_unapplied_tag(self):
         """Assert trying to remove a tag that isn't there succeeds."""
-        response = self.client.post(_remove_async_tag_url(),
+        response = self.client.post(_remove_async_tag_url(self.question.id),
                                     data={'name': 'lemon'},
                                     HTTP_X_REQUESTED_WITH='XMLHttpRequest')
         eq_(response.status_code, 200)
 
     def test_remove_async_no_tag(self):
         """Assert calling the remove handler with no param fails."""
-        response = self.client.post(_remove_async_tag_url(),
+        response = self.client.post(_remove_async_tag_url(self.question.id),
                                     data={},
                                     HTTP_X_REQUESTED_WITH='XMLHttpRequest')
         self.assertContains(response, NO_TAG, status_code=400)
 
 
-class TaggingViewTestsAsAdmin(TaggingTestCaseBase):
+class TaggingViewTestsAsAdmin(TestCaseBase):
     """Tests for views that create new tags, logged in as someone who can"""
 
     def setUp(self):
         super(TaggingViewTestsAsAdmin, self).setUp()
-        self.client.login(username='admin', password='testpass')
 
-    def tearDown(self):
-        self.client.logout()
-        super(TaggingViewTestsAsAdmin, self).tearDown()
+        u = user(save=True)
+        add_permission(u, Question, 'tag_question')
+        add_permission(u, Tag, 'add_tag')
+        self.client.login(username=u.username, password='testpass')
+
+        self.question = question(save=True)
+        tag(name='red', slug='red', save=True)
 
     def test_add_new_tag(self):
         """Assert adding a nonexistent tag sychronously creates & adds it."""
-        self.client.post(_add_tag_url(), data={'tag-name': 'nonexistent tag'})
-        tags_eq(Question.objects.get(pk=1), ['nonexistent tag'])
+        self.client.post(
+            _add_tag_url(self.question.id),
+                         data={'tag-name': 'nonexistent tag'})
+        tags_eq(Question.objects.get(id=self.question.id),
+                ['nonexistent tag'])
 
     def test_add_async_new_tag(self):
         """Assert adding an nonexistent tag creates & adds it."""
-        response = self.client.post(_add_async_tag_url(),
+        response = self.client.post(_add_async_tag_url(self.question.id),
                                     data={'tag-name': 'nonexistent tag'},
                                     HTTP_X_REQUESTED_WITH='XMLHttpRequest')
         eq_(response.status_code, 200)
-        tags_eq(Question.objects.get(pk=1), ['nonexistent tag'])
+        tags_eq(Question.objects.get(id=self.question.id), ['nonexistent tag'])
 
     def test_add_new_case_insensitive(self):
         """Adding a tag differing only in case from existing ones shouldn't
         create a new tag."""
-        self.client.post(_add_async_tag_url(), data={'tag-name': 'RED'},
+        self.client.post(_add_async_tag_url(self.question.id),
+                         data={'tag-name': 'RED'},
                          HTTP_X_REQUESTED_WITH='XMLHttpRequest')
-        tags_eq(Question.objects.get(pk=1), ['red'])
+        tags_eq(Question.objects.get(id=self.question.id), ['red'])
 
     def test_add_new_canonicalizes(self):
         """Adding a new tag as an admin should still canonicalize case."""
-        response = self.client.post(_add_async_tag_url(),
+        response = self.client.post(_add_async_tag_url(self.question.id),
                                     data={'tag-name': 'RED'},
                                     HTTP_X_REQUESTED_WITH='XMLHttpRequest')
         eq_(json.loads(response.content)['canonicalName'], 'red')
 
 
-def _add_tag_url():
+def _add_tag_url(question_id):
     """Return the URL to add_tag for question 1, an untagged question."""
-    return reverse('questions.add_tag', kwargs={'question_id': 1})
+    return reverse('questions.add_tag', kwargs={'question_id': question_id})
 
 
-def _add_async_tag_url():
+def _add_async_tag_url(question_id):
     """Return the URL to add_tag_async for question 1, an untagged question."""
-    return reverse('questions.add_tag_async', kwargs={'question_id': 1})
+    return reverse(
+        'questions.add_tag_async', kwargs={'question_id': question_id})
 
 
-def _remove_tag_url():
+def _remove_tag_url(question_id):
     """Return  URL to remove_tag for question 2, tagged {colorless, green}."""
-    return reverse('questions.remove_tag', kwargs={'question_id': 2})
+    return reverse(
+        'questions.remove_tag', kwargs={'question_id': question_id})
 
 
-def _remove_async_tag_url():
+def _remove_async_tag_url(question_id):
     """Return URL to remove_tag_async on q. 2, tagged {colorless, green}."""
-    return reverse('questions.remove_tag_async', kwargs={'question_id': 2})
+    return reverse(
+        'questions.remove_tag_async', kwargs={'question_id': question_id})
 
 
 class QuestionsTemplateTestCase(TestCaseBase):
 
     def test_all_filter_highlight(self):
+        q = question(save=True)
         response = get(self.client, 'questions.questions')
         doc = pq(response.content)
         eq_('active', doc('ul.show li')[0].attrib['class'])
-        eq_('question-1', doc('.questions > section')[0].attrib['id'])
+        eq_('question-%s' % q.id, doc('.questions > section')[0].attrib['id'])
 
     def test_no_reply_filter(self):
         url_ = urlparams(reverse('questions.questions'),
@@ -954,16 +982,18 @@ class QuestionsTemplateTestCase(TestCaseBase):
             doc('link[rel="canonical"]')[0].attrib['href'])
 
         # solve one question then verify that it shows up
-        answer = Answer.objects.all()[0]
-        answer.question.solution = answer
-        answer.question.save()
+        a = answer(save=True)
+        a.question.solution = a
+        a.question.save()
         response = self.client.get(url_)
         doc = pq(response.content)
         eq_(1, len(doc('.questions > section')))
-        eq_('question-%s' % answer.question.id,
+        eq_('question-%s' % a.question.id,
             doc('.questions > section')[0].attrib['id'])
 
     def test_unsolved_filter(self):
+        answer(save=True)
+        answer(save=True)
         # initially there should be 2 unsolved answers
         url_ = urlparams(reverse('questions.questions'),
                          filter='unsolved')
@@ -973,13 +1003,13 @@ class QuestionsTemplateTestCase(TestCaseBase):
         eq_(2, len(doc('.questions > section')))
 
         # solve one question then verify that it doesn't show up
-        answer = Answer.objects.all()[0]
-        answer.question.solution = answer
-        answer.question.save()
+        a = Answer.objects.all()[0]
+        a.question.solution = a
+        a.question.save()
         response = self.client.get(url_)
         doc = pq(response.content)
         eq_(1, len(doc('.questions > section')))
-        eq_(0, len(doc('.questions #question-%s' % answer.question.id)))
+        eq_(0, len(doc('.questions #question-%s' % a.question.id)))
         eq_('/questions?filter=unsolved',
             doc('link[rel="canonical"]')[0].attrib['href'])
 
@@ -995,48 +1025,27 @@ class QuestionsTemplateTestCase(TestCaseBase):
             doc('link[rel="canonical"]')[0].attrib['href'])
 
     def test_my_contributions_filter(self):
-        # jsocol should have 2 questions in his contributions
-        self._my_contributions_test_helper('jsocol', 2)
+        u = user(save=True)
+        answer(creator=u, save=True)
+        answer(creator=u, save=True)
+        answer(creator=u, save=True)
 
-        # pcraciunoiu should have 2 questions in his contributions'
-        self._my_contributions_test_helper('pcraciunoiu', 2)
-
-        # rrosario should have 0 questions in his contributions
-        self._my_contributions_test_helper('rrosario', 0)
+        # u should have 3 questions in their contributions
+        self._my_contributions_test_helper(u.username, 3)
 
     def test_contributed_badge(self):
-        # pcraciunoiu should have a contributor badge on question 1 but not 2
-        self.client.login(username='pcraciunoiu', password="testpass")
+        u = user(save=True)
+        q1 = answer(creator=u, save=True).question
+        q2 = answer(save=True).question
+
+        # u should have a contributor badge on q1 but not q2
+        self.client.login(username=u.username, password="testpass")
         response = get(self.client, 'questions.questions')
         doc = pq(response.content)
-        eq_(1, len(doc('#question-1 .thread-contributed.highlighted')))
-        eq_(0, len(doc('#question-2 .thread-contributed.highlighted')))
-
-    def test_sort(self):
-        # This test fails occasionally and needs to be rewritten. So for now
-        # we're skipping it!
-        raise SkipTest
-
-        # TODO: Rewrite this test because it's like the test that
-        # cried wolf and I ignore it.
-        default = reverse('questions.questions')
-        sorted = urlparams(default, sort='requested')
-
-        q = Question.objects.get(pk=2)
-        answer(question=q, save=True)
-
-        response = self.client.get(default)
-        doc = pq(response.content)
-        eq_('question-1', doc('ol.questions li')[0].attrib['id'])
-
-        q.num_votes_past_week = 7
-        q.save()
-
-        response = self.client.get(sorted)
-        doc = pq(response.content)
-        eq_('question-2', doc('ol.questions li')[0].attrib['id'])
-        eq_('/questions?sort=requested',
-            doc('link[rel="canonical"]')[0].attrib['href'])
+        eq_(1,
+            len(doc('#question-%s .thread-contributed.highlighted' % q1.id)))
+        eq_(0,
+            len(doc('#question-%s .thread-contributed.highlighted' % q2.id)))
 
     def test_top_contributors(self):
         # There should be no top contributors since there are no solutions.
@@ -1046,29 +1055,30 @@ class QuestionsTemplateTestCase(TestCaseBase):
         eq_(0, len(doc('#top-contributors ol li')))
 
         # Solve a question and verify we now have a top conributor.
-        answer = Answer.objects.all()[0]
-        answer.created = datetime.now()
-        answer.save()
-        answer.question.solution = answer
-        answer.question.save()
+        a = answer(save=True)
+        a.question.solution = a
+        a.question.save()
         cache_top_contributors()
         response = get(self.client, 'questions.questions')
         doc = pq(response.content)
         lis = doc('#top-contributors ol li')
         eq_(1, len(lis))
-        eq_('pcraciunoiu', lis[0].text)
+        eq_(a.creator.username, lis[0].text)
 
         # Make answer 8 days old. There should no be top contributors.
-        answer.created = datetime.now() - timedelta(days=8)
-        answer.save()
+        a.created = datetime.now() - timedelta(days=8)
+        a.save()
         cache_top_contributors()
         response = get(self.client, 'questions.questions')
         doc = pq(response.content)
         eq_(0, len(doc('#top-contributors ol li')))
 
     def test_tagged(self):
-        self.client.login(username='admin', password="testpass")
+        u = user(save=True)
+        add_permission(u, Question, 'tag_question')
         tagname = 'mobile'
+        tag(name=tagname, slug=tagname, save=True)
+        self.client.login(username=u.username, password="testpass")
         tagged = urlparams(reverse('questions.questions'), tagged=tagname)
 
         # First there should be no questions tagged 'mobile'
@@ -1077,14 +1087,14 @@ class QuestionsTemplateTestCase(TestCaseBase):
         eq_(0, len(doc('ol.questions > li')))
 
         # Tag a question 'mobile'
-        question = Question.objects.get(pk=2)
+        q = question(save=True)
         response = post(self.client, 'questions.add_tag',
                         {'tag-name': tagname},
-                        args=[question.id])
+                        args=[q.id])
         eq_(200, response.status_code)
 
         # Add an answer
-        answer(question=question, save=True)
+        answer(question=q, save=True)
 
         # Now there should be 1 question tagged 'mobile'
         response = self.client.get(tagged)
@@ -1172,8 +1182,10 @@ class QuestionsTemplateTestCase(TestCaseBase):
         url = urlparams(reverse('questions.questions'), product=p1.slug)
         resp = self.client.get(url)
         doc = pq(resp.content)
-        assert ('product=%s' % p1.slug) in doc('.sort-by >li > a')[0].attrib['href']
-        assert ('product=%s' % p1.slug) in doc('.sort-by >li > a')[1].attrib['href']
+        assert ('product=%s' % p1.slug in
+                doc('.sort-by >li > a')[0].attrib['href'])
+        assert ('product=%s' % p1.slug in
+                doc('.sort-by >li > a')[1].attrib['href'])
 
         product_input = doc('#tag-filter input[type=hidden][name=product]')
         eq_(1, len(product_input))
@@ -1271,15 +1283,14 @@ class QuestionEditingTests(TestCaseBase):
 
     def setUp(self):
         super(QuestionEditingTests, self).setUp()
-        self.client.login(username='admin', password='testpass')
 
-    def tearDown(self):
-        self.client.logout()
-        super(QuestionEditingTests, self).tearDown()
+        self.user = user(save=True)
+        add_permission(self.user, Question, 'change_question')
+        self.client.login(username=self.user.username, password='testpass')
 
     def test_extra_fields(self):
         """The edit-question form should show appropriate metadata fields."""
-        question_id = 1
+        question_id = question(save=True).id
         response = get(self.client, 'questions.edit_question',
                        kwargs={'question_id': question_id})
         eq_(response.status_code, 200)
@@ -1296,8 +1307,9 @@ class QuestionEditingTests(TestCaseBase):
 
     def test_no_extra_fields(self):
         """The edit-question form shouldn't show inappropriate metadata."""
+        question_id = question(save=True).id
         response = get(self.client, 'questions.edit_question',
-                       kwargs={'question_id': 2})
+                       kwargs={'question_id': question_id})
         eq_(response.status_code, 200)
 
         # Take the "os" field as representative. Make sure it doesn't show up:
@@ -1306,26 +1318,27 @@ class QuestionEditingTests(TestCaseBase):
 
     def test_post(self):
         """Posting a valid edit form should save the question."""
-        question_id = 1
+        p = product(slug='desktop', save=True)
+        q = question(save=True)
+        q.products.add(p)
         response = post(self.client, 'questions.edit_question',
                        {'title': 'New title',
                         'content': 'New content',
                         'ff_version': 'New version'},
-                       kwargs={'question_id': question_id})
+                       kwargs={'question_id': q.id})
 
         # Make sure the form redirects and thus appears to succeed:
         url = 'http://testserver%s' % reverse('questions.answers',
-                                           kwargs={'question_id': question_id},
+                                           kwargs={'question_id': q.id},
                                            force_locale=True)
         self.assertRedirects(response, url)
 
         # Make sure the static fields, the metadata, and the updated_by field
         # changed:
-        q = Question.objects.get(pk=question_id)
+        q = Question.objects.get(pk=q.id)
         eq_(q.title, 'New title')
         eq_(q.content, 'New content')
-        eq_(q.metadata['ff_version'], 'New version')
-        eq_(q.updated_by, User.objects.get(username='admin'))
+        eq_(q.updated_by, self.user)
 
 
 class AAQTemplateTestCase(TestCaseBase):
@@ -1362,11 +1375,9 @@ class AAQTemplateTestCase(TestCaseBase):
 
     def setUp(self):
         super(AAQTemplateTestCase, self).setUp()
-        self.client.login(username='jsocol', password='testpass')
 
-    def tearDown(self):
-        super(AAQTemplateTestCase, self).tearDown()
-        self.client.logout()
+        self.user = user(save=True)
+        self.client.login(username=self.user.username, password='testpass')
 
     def _post_new_question(self, locale=None):
         """Post a new question and return the response."""
@@ -1423,7 +1434,7 @@ class AAQTemplateTestCase(TestCaseBase):
         eq_(question.locale, 'de')
 
     def test_full_workflow_inactive(self):
-        u = User.objects.get(username='jsocol')
+        u = self.user
         u.is_active = False
         u.save()
         RegistrationProfile.objects.create_profile(u)
