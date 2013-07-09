@@ -4,16 +4,15 @@ from nose import SkipTest
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 
+from kitsune.gallery.models import Image, Video
+from kitsune.gallery.tests import image, video
 from kitsune.sumo.helpers import urlparams
 from kitsune.sumo.tests import TestCase, get, LocalizingClient, post
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.gallery.models import Image, Video
-from kitsune.gallery.tests import image, video
+from kitsune.users.tests import user
 
 
 class GalleryPageCase(TestCase):
-    fixtures = ['users.json']
-
     def tearDown(self):
         Image.objects.all().delete()
         super(GalleryPageCase, self).tearDown()
@@ -52,8 +51,6 @@ class GalleryPageCase(TestCase):
 
 
 class GalleryAsyncCase(TestCase):
-    fixtures = ['users.json']
-
     def tearDown(self):
         Image.objects.all().delete()
         super(GalleryAsyncCase, self).tearDown()
@@ -89,13 +86,13 @@ class GalleryAsyncCase(TestCase):
 
 
 class GalleryUploadTestCase(TestCase):
-    fixtures = ['users.json']
     client_class = LocalizingClient
 
     def setUp(self):
         super(GalleryUploadTestCase, self).setUp()
-        self.client.login(username='pcraciunoiu', password='testpass')
-        self.u = User.objects.get(username='pcraciunoiu')
+
+        self.u = user(save=True)
+        self.client.login(username=self.u.username, password='testpass')
 
     def tearDown(self):
         Image.objects.all().delete()
@@ -157,8 +154,6 @@ class GalleryUploadTestCase(TestCase):
 
 
 class MediaPageCase(TestCase):
-    fixtures = ['users.json']
-
     def tearDown(self):
         Image.objects.all().delete()
         super(MediaPageCase, self).tearDown()
