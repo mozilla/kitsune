@@ -31,7 +31,7 @@
         <ul>
           {% for p in product_list %}
             <li class="{% if p == product %}selected{% endif %}">
-              <a href="{% if p == product %}{{ questions_url(_product=None) }}{% else %}{{ questions_url(_product=p) }}{% endif %}">
+              <a href="{% if p == product %}{{ questions_url(_product=None) }}{% else %}{{ questions_url(_product=p.slug) }}{% endif %}">
                 <span class="logo-sprite logo-{{ p.slug }}"></span>
                 {{ _(p.title, 'DB: products.Product.title') }}
               </a>
