@@ -1,5 +1,7 @@
 {% extends 'mobile/base.html' %}
 
+{% from 'questions/mobile/includes/macros.html' import questions_url with context %}
+
 {% set styles = ('mobile/questions',) %}
 {% set classes = 'questions' %}
 {% set title = _('Support Forum') %}
@@ -29,7 +31,7 @@
         <ul>
           {% for p in product_list %}
             <li class="{% if p == product %}selected{% endif %}">
-              <a href="?product={{ p.slug }}">
+              <a href="{% if p == product %}{{ questions_url(_product=None) }}{% else %}{{ questions_url(_product=p) }}{% endif %}">
                 <span class="logo-sprite logo-{{ p.slug }}"></span>
                 {{ _(p.title, 'DB: products.Product.title') }}
               </a>
@@ -38,8 +40,7 @@
         </ul>
       </section>
       <section id="question-stats">
-        {% trans recent_unanswered_count,
-          url=url('questions.questions')|urlparams(filter='recent-unanswered') %}
+        {% trans recent_unanswered_count %}
           <strong>{{recent_unanswered_count}} question</strong> has no reply.
           {% pluralize recent_unanswered_count %}
           <strong>{{recent_unanswered_count}} questions</strong> have no reply.
@@ -106,10 +107,10 @@
     <div class="wrapper scrollable">
       <ul class="select-list">
         <li {{ sort|class_selected(None) }}>
-          <a href="{{ url('questions.questions')|urlparams(filter=filter, tagged=tagged) }}">{{ _('Most Recent') }}</a>
+          <a href="{{ questions_url(_sort=None) }}">{{ _('Most Recent') }}</a>
         </li>
         <li {{ sort|class_selected('requested') }}>
-          <a href="{{ url('questions.questions')|urlparams(sort='requested', filter=filter, tagged=tagged) }}">{{ _('Most Requested') }}</a>
+          <a href="{{ questions_url(_sort='requested') }}">{{ _('Most Requested') }}</a>
         </li>
       </ul>
     </div>
@@ -120,20 +121,20 @@
     <div class="wrapper scrollable">
       <ul class="select-list">
         <li {{ filter|class_selected(None) }}>
-          <a href="{{ url('questions.questions')|urlparams(sort=sort, tagged=tagged) }}">{{ _('All') }}</a>
+          <a href="{{ questions_url(_filter=None) }}">{{ _('All') }}</a>
         </li>
         <li {{ filter|class_selected('unsolved') }}>
-          <a href="{{ url('questions.questions')|urlparams(filter='unsolved', sort=sort, tagged=tagged) }}">{{ _('Unsolved') }}</a>
+          <a href="{{ questions_url(_filter='unsolved') }}">{{ _('Unsolved') }}</a>
         </li>
         <li {{ filter|class_selected('solved') }}>
-          <a href="{{ url('questions.questions')|urlparams(filter='solved', sort=sort, tagged=tagged) }}">{{ _('Solved') }}</a>
+          <a href="{{ questions_url(_filter='solved') }}">{{ _('Solved') }}</a>
         </li>
         <li {{ filter|class_selected('no-replies') }}>
-          <a href="{{ url('questions.questions')|urlparams(filter='no-replies', sort=sort, tagged=tagged) }}">{{ _('No Replies') }}</a>
+          <a href="{{ questions_url(_filter='no-replies') }}">{{ _('No Replies') }}</a>
         </li>
         {% if user.is_authenticated() %}
           <li {{ filter|class_selected('my-contributions') }}>
-            <a href="{{ url('questions.questions')|urlparams(filter='my-contributions', sort=sort, tagged=tagged) }}">{{ _('My Contributions') }}</a>
+            <a href="{{ questions_url(_filter='my-contributions') }}">{{ _('My Contributions') }}</a>
           </li>
         {% endif %}
       </ul>

@@ -1,0 +1,7 @@
+{% macro questions_url(_filter=False, _product=False, _sort=False, _tagged=False) %}
+  {% if _filter == False %}{% set _filter = filter %}{% endif %}
+  {% if _product == False %}{% set _product = product %}{% endif %}
+  {% if _sort == False %}{% set _sort = sort %}{% endif %}
+  {% if _tagged == False %}{% set _tagged = tagged %}{% endif %}
+  {{ url('questions.questions')|urlparams(filter=_filter, product=_product, sort=_sort, tagged=_tagged) }}
+{% endmacro %}
