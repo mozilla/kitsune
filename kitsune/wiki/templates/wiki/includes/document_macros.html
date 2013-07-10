@@ -1,16 +1,34 @@
 {% macro related(related_things, header, title_field) -%}
-    {% if related_things %}
-      <aside id="doc-related" class="folding-section">
-        <header>{{ header }}</header>
-        <section>
-          <ul>
-            {% for thing in related_things %}
-              <li><a href="{{ thing['url'] }}">{{ thing[title_field] }}</a></li>
-            {% endfor %}
-          </ul>
-        </section>
-      </aside>
-    {% endif %}
+
+  {% if title_field == 'document_title' %}
+    {% set ga_type = 'Related Article' %}
+    {% set ga_field = 'document_slug' %}
+  {% elif title_field == 'question_title' %}
+    {% set ga_type = 'Related Thread' %}
+    {% set ga_field = 'id' %}
+  {% else %}
+    {% set ga_type = None %}
+  {% endif %}
+
+  {% if related_things %}
+    <aside id="doc-related" class="folding-section">
+      <header>{{ header }}</header>
+      <section>
+        <ul>
+          {% for thing in related_things %}
+            <li>
+              <a href="{{ thing['url'] }}" 
+                {% if ga_type %}
+                  data-ga-click="_trackEvent | {{ ga_type }} | {{ document.slug }} | {{ thing[ga_field] }}"
+                {% endif %}>
+                {{ thing[title_field] }}
+              </a>
+            </li>
+          {% endfor %}
+        </ul>
+      </section>
+    </aside>
+  {% endif %}
 {%- endmacro %}
 
 {% macro contributor_list(contributors) -%}
