@@ -196,7 +196,7 @@ class ProductViewsTestCase(ElasticTestCase):
         r = self.client.get(url, follow=True)
         eq_(200, r.status_code)
         pqdoc = pq(r.content)
-        eq_(0, len(pqdoc('ul.subtopics')))
+        eq_(0, len(pqdoc('li.subtopic')))
 
         # Create a subtopic, it still shouldn't show up because no
         # articles are assigned.
@@ -204,7 +204,7 @@ class ProductViewsTestCase(ElasticTestCase):
         r = self.client.get(url, follow=True)
         eq_(200, r.status_code)
         pqdoc = pq(r.content)
-        eq_(0, len(pqdoc('ul.subtopics')))
+        eq_(0, len(pqdoc('li.subtopic')))
 
         # Add a document to the subtopic, now it should appear.
         doc.topics.add(subtopic)
@@ -213,4 +213,4 @@ class ProductViewsTestCase(ElasticTestCase):
         r = self.client.get(url, follow=True)
         eq_(200, r.status_code)
         pqdoc = pq(r.content)
-        eq_(1, len(pqdoc('ul.subtopics')))
+        eq_(1, len(pqdoc('li.subtopic')))
