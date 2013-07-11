@@ -5,6 +5,7 @@ from django.core.cache import cache
 import mock
 from nose.tools import eq_
 from pyquery import PyQuery as pq
+from waffle.models import Flag
 
 from kitsune.products.tests import product, topic
 from kitsune.search.tests.test_es import ElasticTestCase
@@ -141,15 +142,14 @@ class ProductViewsTestCase(ElasticTestCase):
         doc = pq(r.content)
         eq_(7, len(doc('#hot-topics li')))
 
-    @mock.patch.object(wiki_views.waffle, 'flag_is_active')
-    def test_hot_questions(self, flag_is_active):
+    def test_hot_questions(self):
         """Verifies that hot questions show up in the hot topics section."""
-
-        flag_is_active.return_value = True
 
         # Create a product and the hot topics topic.
         p = product(save=True)
         hot_tag = tag(name='hot', slug=HOT_TOPIC_SLUG, save=True)
+        # Create a flag, since this code is flagged off by default.
+        Flag.objects.create(name='hot_questions', everyone=True)
 
         # Create 4 hot questions.
         titles = ['apple', 'banana', 'cherry', 'date']
@@ -179,8 +179,6 @@ class ProductViewsTestCase(ElasticTestCase):
         assert 'date' in r.content
         # Non-hot topics should not show up.
         assert 'elderberry' not in r.content
-
-
 
     def test_subtopics(self):
         """Verifies subtopics appear on document listing page."""
