@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% from 'includes/common_macros.html' import for_contributors_sidebar %}
-{% from 'topics/includes/topic_macros.html' import hot_topics, help_topics with context %}
+{% from 'topics/includes/topic_macros.html' import hot_section, help_topics with context %}
 {% set crumbs = [(None, _(product.title, 'DB: products.Product.title'))] %}
 {% set styles = ('products',) %}
 
@@ -34,7 +34,7 @@
   </div>
 
   <div class="grid_12">
-    {{ hot_topics(hot_docs, fallback_hot_docs) }}
+    {{ hot_section(hot_docs, fallback_hot_docs, hot_questions) }}
     <section id="help-topics">
       <h1>{{ _('Help Topics') }}</h1>
       {{ help_topics(topics, show_community_support=True) }}

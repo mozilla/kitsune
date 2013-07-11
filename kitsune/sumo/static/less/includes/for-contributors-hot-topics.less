@@ -61,9 +61,35 @@
       border-bottom: 1px dotted @borderLightGrey;
       margin: 0;
       padding: 8px 0 8px 12px;
+      position: relative;
 
       &:last-of-type {
         border: 0;
+      }
+
+      &.question,
+      &.document {
+        list-style: none;
+
+        &:before {
+          background: url('../img/search-icons-sprite.png') 0 0 no-repeat;
+          content: '';
+          height: 18px;
+          width: 18px;
+          display: inline-block;
+          background-size: 45px;
+          position: relative;
+          top: 6px;
+          left: 2px
+        }
+      }
+
+      &.document:before {
+        background-position:-14px -15px;
+      }
+
+      &.question:before {
+        background-position:-14px -60px;
       }
     }
   }
