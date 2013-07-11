@@ -1,9 +1,5 @@
 {% extends "base.html" %}
-{% if waffle.flag('new-topics') %}
-  {% from 'products/includes/topic_macros.html' import topic_sidebar %}
-{% else %}
-  {% from 'topics/includes/topic_macros.html' import topic_sidebar %}
-{% endif %}
+{% from 'products/includes/topic_macros.html' import topic_sidebar %}
 {% from 'topics/includes/topic_macros.html' import hot_topics %}
 {% set crumbs = [(url('products.product', slug=product.slug), _(product.title, 'DB: products.Product.title'))] %}
 {% if subtopic %}
@@ -24,11 +20,7 @@
     </h1>
   </div>
   <aside class="grid_3">
-    {% if waffle.flag('new-topics') %}
-      {{ topic_sidebar(topics[:10], subtopics, product, topic, subtopic) }}
-    {% else %}
-      {{ topic_sidebar(topics[:10], product, topic) }}
-    {% endif %}
+    {{ topic_sidebar(topics[:10], subtopics, product, topic, subtopic) }}
   </aside>
   <div class="grid_9">
     <article id="document-list">
@@ -49,37 +41,8 @@
         </h1>
       {% endif %}
 
-      {% if not waffle.flag('new-topics') %}
-        {% if subtopics or topic.parent %}
-          <div id="focus-and-refine" class="feature-box" data-ui-type="folding-section">
-            <header>
-              <h2 class="nomargin">{{ _('Related Topics') }}</h2>
-            </header>
-            <section class="cf">
-              {% if subtopic %}
-                <p>
-                  <a href="{{ url('products.documents', product_slug=product.slug, topic_slug=topic.slug) }}">
-                    {{ _('Go back to {topic}')|f(topic=_(topic.title, 'DB: products.Topic.title'))}}
-                  </a>
-                </p>
-              {% else %}
-                <ul class="subtopics cf">
-                  {% for subtopic in subtopics %}
-                    <li>
-                      <a href="{{ url('products.subtopics', product_slug=product.slug, topic_slug=topic.slug, subtopic_slug=subtopic.slug) }}">
-                        {{ _(subtopic.title, 'DB: products.Topic.title') }}
-                      </a>
-                    </li>
-                  {% endfor %}
-                </ul>
-              {% endif %}
-            </section>
-          </div>
-        {% endif %}
-      {% endif %}
-
       <ul class="topic-list">
-        {% if not subtopic and subtopics and waffle.flag('new-topics') %}
+        {% if not subtopic and subtopics %}
           {# only show subtopics on the parent topic page #}
           {% for subtopic in subtopics %}
             <li>
@@ -92,9 +55,7 @@
         {% for document in documents %}
           <li>
             <a href="{{ document['url'] }}">{{ document['document_title'] }}</a>
-            {% if waffle.flag('new-topics') %}
-              {{ document['document_summary'] }}
-            {% endif %}
+            {{ document['document_summary'] }}
           </li>
         {% endfor %}
       </ul>
