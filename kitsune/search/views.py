@@ -299,10 +299,12 @@ def search(request, template=None):
         # Set up the highlights
         # First 500 characters of content in one big fragment
         searcher = searcher.highlight(
-            'question_content', 'discussion_content', 'document_summary',
+            'question_content',  # support forum
+            'discussion_content', 'document_summary',  # kb
+            'post_content',  # contributor forum
             pre_tags=['<b>'],
             post_tags=['</b>'],
-            number_of_fragments=0,
+            number_of_fragments=1,
             fragment_size=500)
 
         # Set up boosts
