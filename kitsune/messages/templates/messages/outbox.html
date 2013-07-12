@@ -14,7 +14,7 @@
           <input type="submit" name="delete" value="{{ _('Delete Selected') }}">
           <ol class="message-list">
             {% for message in msgs.object_list %}
-              <li>
+              <li class="cf">
                 <input type="checkbox" name="id" value="{{ message.id }}">
                 <span class="avatar">
                   {% if message.recipients > 1 -%}
