@@ -449,7 +449,7 @@ class TestWikiVideo(TestCase):
         # invalid html5 and the output I'm getting isn't really any
         # worse. Ergo, I have changed the test to accept either output
         # because I got stuff to do. Having said that, this is kind of
-        # ridiculous and should be fixed. See bug #829610.
+        # ridiculous and should be fixed. See bug #892610.
         assert doc('video').html() in [
             # This was the original expected test output.
             (u'<source src="{0}" '
