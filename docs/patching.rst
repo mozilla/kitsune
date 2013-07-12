@@ -16,7 +16,8 @@ fairly straight-forward workflow in git for submitting patches. This is
 outlined below.
 
 You should run the tests before submitting a pull request. You can find help
-for getting set up in the :ref:`installation docs <hacking-howto-chapter>`.
+for getting set up in the :ref:`installation docs <hacking-howto-chapter>` and
+help for running tests in the :ref:`testing docs <tests-chapter>`.
 
 If you ever find yourself stuck, come look for us in `#sumodev
 <ircs://irc.mozilla.org/sumodev>`_ on Mozilla's IRC network. We're happy to
@@ -260,9 +261,14 @@ have time.
     git checkout master
     git pull --rebase mozilla master
     git checkout my-feature-branch
-    git rebase -i master  # Update and squash.
-    python manage.py test  # Make sure tests still pass.
+
+    # Update and squash.
+    git rebase -i master
+
+    # Make sure tests pass.
+    python manage.py test
     git push -f origin my-feature-branch
+
 
 You're done! Congratulations, soon you'll have code running on one of the
 biggest sites in the world!
@@ -272,7 +278,11 @@ If you do have commit access, you should land your patch!
 Continuing from above::
 
     git checkout master
-    git merge my-feature-branch  # Should say something about "fast-forward".
+    git merge --ff-only my-feature-branch
+
+
+This requires that the merge be a fast-forward only. If it's not, then the merge
+will fail and you'll have to rebase.
 
 Before pushing to ``mozilla/master``, I like to verify that the merge went fine
 in the logs. For the vast majority of merges, *there should not be a merge
@@ -280,14 +290,16 @@ commit*.
 
 ::
 
-    git log -5  # Verify that the merge went OK.
-    git push mozilla master  # !!! Pushing code to the primary repo/branch!
+    git log -5                          # Verify that the merge went OK.
+    git push mozilla master             # !!! Pushing code to the primary repo/branch!
+
     # Optionally, you can keep your Github master in sync.
-    git push origin master  # Not strictly necessary but kinda nice.
+    git push origin master              # Not strictly necessary but kinda nice.
     git push origin :my-feature-branch  # Nice to clean up.
 
-Once the commit is on ``mozilla/master``, you should go to the main repo on
-Github and find and copy the URL of the commit. Then go to the bug in Bugzilla,
-paste the URL, and set the bug to ``RESOLVED FIXED``. This tells QA and others
-that the fix has landed on ``master`` and will be on the dev server soon! And
-close the pull request on Github.
+
+Once the commit is on ``mozilla/master``, copy the commit url to the bug
+in Bugzilla and close the pull request.
+
+Once the commit has been deployed to stage and prod, set the bug to
+``RESOLVED FIXED``. This tells everyone that the fix is in production.
