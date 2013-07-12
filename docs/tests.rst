@@ -4,23 +4,32 @@
 All about testing
 =================
 
-Kitsune has a fairly comprehensive Python test suite. Changes should not break
-tests---only change a test if there is a good reason to change the expected
-behavior---and new code should come with tests.
+Kitsune has a fairly comprehensive Python test suite. Changes should
+not break tests---only change a test if there is a good reason to
+change the expected behavior---and new code should come with tests.
 
 
 Running the Test Suite
 ======================
 
 If you followed the steps in :ref:`the installation docs
-<hacking-howto-chapter>`, then all you should need to do to run the
-test suite is::
+<hacking-howto-chapter>`, then you should be all set setup-wise.
+
+The tests run the server code with ``DEBUG=False``, so before running
+the tests, you need to collect the static files and compress the
+assets::
+
+    ./manage.py collectstatic
+    ./manage.py compress_assets
+
+
+After that, to run the tests, you need to do::
 
     ./manage.py test
 
 
-However, that doesn't provide the most sensible defaults. Here is a good
-command to alias to something short::
+That doesn't provide the most sensible defaults for running the
+tests. Here is a good command to alias to something short::
 
     ./manage.py test -s --noinput --logging-clear-handlers
 
@@ -63,15 +72,16 @@ See the output of ``./manage.py test --help`` for more arguments.
 The Test Database
 -----------------
 
-The test suite will create a new database named ``test_%s`` where ``%s`` is
-whatever value you have for ``settings.DATABASES['default']['NAME']``.
+The test suite will create a new database named ``test_%s`` where
+``%s`` is whatever value you have for
+``settings.DATABASES['default']['NAME']``.
 
 Make sure the user has ``ALL`` on the test database as well. This is
 covered in the installation chapter.
 
-When the schema changes, you may need to drop the test database. You can also
-run the test suite with ``FORCE_DB`` once to cause Django to drop and recreate
-it::
+When the schema changes, you may need to drop the test database. You
+can also run the test suite with ``FORCE_DB`` once to cause Django to
+drop and recreate it::
 
     FORCE_DB=1 ./manage.py test -s --noinput --logging-clear-handlers
 
@@ -79,13 +89,13 @@ it::
 Writing New Tests
 =================
 
-Code should be written so it can be tested, and then there should be tests for
-it.
+Code should be written so it can be tested, and then there should be
+tests for it.
 
-When adding code to an app, tests should be added in that app that cover the
-new functionality. All apps have a ``tests`` module where tests should go. They
-will be discovered automatically by the test runner as long as the look like a
-test.
+When adding code to an app, tests should be added in that app that
+cover the new functionality. All apps have a ``tests`` module where
+tests should go. They will be discovered automatically by the test
+runner as long as the look like a test.
 
 * Avoid naming test files ``test_utils.py``, since we use a library
   with the same name. Use ``test__utils.py`` instead.
@@ -94,28 +104,28 @@ test.
   ``LocalizingClient`` instead of the default client for the
   ``TestCase`` class.
 
-* Many models have "modelmakers" which are easier to work with for
-  some kinds of tests than fixtures. For example,
-  ``forums.tests.document`` is the model maker for
-  ``forums.models.Document``.
+* We use "modelmakers" instead of fixtures. Models should have
+  modelmakers defined in the tests module of the Django app. For
+  example, ``forums.tests.document`` is the modelmaker for
+  ``forums.Models.Document`` class.
 
 
 Changing Tests
 ==============
 
-Unless the current behavior, and thus the test that verifies that behavior is
-correct, is demonstrably wrong, don't change tests. Tests may be refactored as
-long as its clear that the result is the same.
+Unless the current behavior, and thus the test that verifies that
+behavior is correct, is demonstrably wrong, don't change tests. Tests
+may be refactored as long as its clear that the result is the same.
 
 
 Removing Tests
 ==============
 
-On those rare, wonderful occasions when we get to remove code, we should remove
-the tests for it, as well.
+On those rare, wonderful occasions when we get to remove code, we
+should remove the tests for it, as well.
 
-If we liberate some functionality into a new package, the tests for that
-functionality should move to that package, too.
+If we liberate some functionality into a new package, the tests for
+that functionality should move to that package, too.
 
 
 JavaScript Tests
@@ -206,6 +216,13 @@ will close when the tests are complete. This cycle of open/test/close
 may happen more than once each time you run the tests, as each TestCase
 that uses Selenium will open it's own webdriver, which opens a browser
 window.
+
+When the Selenium tests kick off, Django starts an instance of the
+server with ``DEBUG=False``. Because of this, you have to run these
+two commands before running the tests::
+
+    ./manage.py collectstatic
+    ./manage.py compress_assets
 
 
 Writing Selenium Tests
