@@ -45,7 +45,7 @@
         {% if not subtopic and subtopics %}
           {# only show subtopics on the parent topic page #}
           {% for subtopic in subtopics %}
-            <li>
+            <li class="subtopic">
               <a href="{{ url('products.subtopics', product_slug=product.slug, topic_slug=topic.slug, subtopic_slug=subtopic.slug) }}">
                 {{ _(subtopic.title, 'DB: products.Topic.title') }}
               </a>
