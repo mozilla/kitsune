@@ -18,7 +18,7 @@
           <ol class="message-list">
             {% for message in msgs.object_list %}
               <li class="{% if message.unread %}unread{% endif %}
-              {% if message.replied %}replied{% endif %} clearfix">
+              {% if message.replied %}replied{% endif %} cf">
                 <input type="checkbox" name="id" value="{{ message.id }}">
                 <span class="avatar">
                   {{ avatar_link(message.sender) }}
