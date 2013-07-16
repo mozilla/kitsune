@@ -13,6 +13,15 @@
 #
 # $ scripts/test_locales.sh
 
+if [[ -z `which dennis-cmd` ]]; then
+    echo "You must install dennis:"
+    echo ""
+    echo "   pip install dennis"
+    echo ""
+    echo "If you installed dennis already, then dennis-cmd isn't on your path."
+    exit 1
+fi
+
 echo "create required directories..."
 mkdir -p locale/templates/LC_MESSAGES
 
@@ -27,5 +36,5 @@ echo "copying messages.pot file...."
 cp locale/templates/LC_MESSAGES/messages.pot locale/xx/LC_MESSAGES/messages.po
 
 echo "poxx messages.po file...."
-scripts/poxx.py locale/xx/LC_MESSAGES/messages.po
+dennis-cmd translate --types="python" --pipeline="html,pirate" locale/xx/LC_MESSAGES/messages.po
 locale/compile-mo.sh locale/xx/
