@@ -15,7 +15,9 @@
       <h1>{{ readout.title }}</h1>
       <ul class="readout-modes" data-slug="{{ readout.slug }}">
         {% for key, name in readout.modes %}
-          <li class="mode{% if key == readout.default_mode %} active{% endif %}" data-url="{{ url('dashboards.wiki_rows', readout.slug)|urlparams(mode=key, locale=locale) }}">
+          <li class="mode{% if key == readout.default_mode %} active
+          {% endif %}" data-url="{{ url('dashboards.wiki_rows',
+                  readout.slug)|urlparams(mode=key, locale=locale, product=product.slug) }}">
             <a href="#">{{ name }}</a>
           </li>
         {% endfor %}
