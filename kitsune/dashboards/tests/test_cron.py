@@ -265,6 +265,11 @@ class L10nCoverageMetricsTests(TestCase):
         d = document(parent=r2.document, locale='de', save=True)
         revision(document=d, based_on=r2, is_approved=True, save=True)
 
+        # Translate all to ak.
+        for r in Revision.objects.filter(document__locale='en-US'):
+            d = document(parent=r.document, locale='ak', save=True)
+            revision(document=d, based_on=r, is_approved=True, save=True)
+
         # Call the cronjob
         update_l10n_coverage_metrics()
 
@@ -273,25 +278,36 @@ class L10nCoverageMetricsTests(TestCase):
 
         # Verify es metrics.
         eq_(4, WikiMetric.objects.filter(locale='es').count())
-        eq_(0.05, WikiMetric.objects.get(
+        eq_(5.0, WikiMetric.objects.get(
             locale='es', product=p, kind=top20_kind).value)
-        eq_(0.05, WikiMetric.objects.get(
+        eq_(5.0, WikiMetric.objects.get(
             locale='es', product=p, kind=all_kind).value)
-        eq_(0.05, WikiMetric.objects.get(
+        eq_(5.0, WikiMetric.objects.get(
             locale='es', product=None, kind=top20_kind).value)
-        eq_(0.05, WikiMetric.objects.get(
+        eq_(5.0, WikiMetric.objects.get(
             locale='es', product=None, kind=all_kind).value)
 
         # Verify de metrics.
         eq_(4, WikiMetric.objects.filter(locale='de').count())
-        eq_(0.1, WikiMetric.objects.get(
+        eq_(10.0, WikiMetric.objects.get(
             locale='de', product=p, kind=top20_kind).value)
-        eq_(0.1, WikiMetric.objects.get(
+        eq_(10.0, WikiMetric.objects.get(
             locale='de', product=p, kind=all_kind).value)
-        eq_(0.1, WikiMetric.objects.get(
+        eq_(10.0, WikiMetric.objects.get(
             locale='de', product=None, kind=top20_kind).value)
-        eq_(0.1, WikiMetric.objects.get(
+        eq_(10.0, WikiMetric.objects.get(
             locale='de', product=None, kind=all_kind).value)
+
+        # Verify ak metrics.
+        eq_(4, WikiMetric.objects.filter(locale='de').count())
+        eq_(100.0, WikiMetric.objects.get(
+            locale='ak', product=p, kind=top20_kind).value)
+        eq_(100.0, WikiMetric.objects.get(
+            locale='ak', product=p, kind=all_kind).value)
+        eq_(100.0, WikiMetric.objects.get(
+            locale='ak', product=None, kind=top20_kind).value)
+        eq_(100.0, WikiMetric.objects.get(
+            locale='ak', product=None, kind=all_kind).value)
 
         # Verify it metrics.
         eq_(4, WikiMetric.objects.filter(locale='it').count())
