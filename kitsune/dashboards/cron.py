@@ -1,9 +1,14 @@
+from datetime import date
+
 from django.conf import settings
-from django.db import transaction, connection
+from django.db import connection
 
 import cronjobs
 
-from kitsune.dashboards.models import PERIODS, WikiDocumentVisits
+from kitsune.dashboards.models import (
+    PERIODS, WikiDocumentVisits, WikiMetric, L10N_TOP20_CODE, L10N_ALL_CODE)
+from kitsune.dashboards.readouts import overview_rows
+from kitsune.products.models import Product
 from kitsune.sumo.redis_utils import redis_client
 from kitsune.wiki.models import Document
 
@@ -17,6 +22,50 @@ def reload_wiki_traffic_stats():
 
     for period, _ in PERIODS:
         WikiDocumentVisits.reload_period_from_analytics(period)
+
+
+@cronjobs.register
+def update_l10n_coverage_metrics():
+    """Calculate and store the l10n metrics for each locale/product.
+
+    The metrics are:
+    * Percent localized of top 20 articles
+    * Percent localized of all articles
+    """
+    today = date.today()
+
+    # Loop through all locales.
+    for locale in settings.SUMO_LANGUAGES:
+
+        # Skip en-US, it is always 100% localized.
+        if locale == settings.WIKI_DEFAULT_LANGUAGE:
+            continue
+
+        # Loop through all enabled products, including None (really All).
+        for product in [None] + list(Product.objects.filter(visible=True)):
+
+            # (Ab)use the overview_rows helper from the readouts.
+            rows = overview_rows(locale=locale, product=product)
+
+            # % of top 20 articles
+            top20 = rows['most-visited']
+            percent = 100.0 * float(top20['numerator']) / top20['denominator']
+            WikiMetric.objects.create(
+                code=L10N_TOP20_CODE,
+                locale=locale,
+                product=product,
+                date=today,
+                value=percent)
+
+            # % of all articles
+            all_ = rows['all']
+            percent = 100.0 * float(all_['numerator']) / all_['denominator']
+            WikiMetric.objects.create(
+                code=L10N_ALL_CODE,
+                locale=locale,
+                product=product,
+                date=today,
+                value=percent)
 
 
 def _get_old_unhelpful():

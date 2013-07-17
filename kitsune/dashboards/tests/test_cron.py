@@ -8,11 +8,14 @@ from nose.tools import eq_
 
 from kitsune.dashboards.cron import (
     cache_most_unhelpful_kb_articles, _get_old_unhelpful,
-    _get_current_unhelpful)
+    _get_current_unhelpful, update_l10n_coverage_metrics)
+from kitsune.dashboards.models import (
+    WikiMetric, L10N_TOP20_CODE, L10N_ALL_CODE)
+from kitsune.products.tests import product
 from kitsune.sumo.redis_utils import redis_client, RedisError
 from kitsune.sumo.tests import TestCase
-from kitsune.wiki.models import HelpfulVote
-from kitsune.wiki.tests import revision
+from kitsune.wiki.models import HelpfulVote, Revision
+from kitsune.wiki.tests import revision, document
 
 
 def _add_vote_in_past(rev, vote, days_back):
@@ -235,3 +238,81 @@ class TopUnhelpfulArticlesCronTests(TestCase):
         assert '%d::%.1f:' % (r2.id, 242.0) in result[0]
         assert '%d::%.1f:' % (r3.id, 122.0) in result[1]
         assert '%d::%.1f:' % (r.id, 102.0) in result[2]
+
+
+class L10nCoverageMetricsTests(TestCase):
+
+    def test_update_l10n_coverage_metrics(self):
+        """Test the cron job that updates l10n coverage metrics."""
+        p = product(save=True)
+
+        # Create en-US documents.
+        for i in range(20):
+            r = revision(
+                is_approved=True, is_ready_for_localization=True, save=True)
+            r.document.products.add(p)
+
+        r1 = Revision.objects.all()[0]
+        r2 = Revision.objects.all()[1]
+
+        # Translate one to es.
+        d = document(parent=r1.document, locale='es', save=True)
+        revision(document=d, based_on=r1, is_approved=True, save=True)
+
+        # Translate two to de.
+        d = document(parent=r1.document, locale='de', save=True)
+        revision(document=d, based_on=r1, is_approved=True, save=True)
+        d = document(parent=r2.document, locale='de', save=True)
+        revision(document=d, based_on=r2, is_approved=True, save=True)
+
+        # Translate all to ak.
+        for r in Revision.objects.filter(document__locale='en-US'):
+            d = document(parent=r.document, locale='ak', save=True)
+            revision(document=d, based_on=r, is_approved=True, save=True)
+
+        # Call the cronjob
+        update_l10n_coverage_metrics()
+
+        # Verify es metrics.
+        eq_(4, WikiMetric.objects.filter(locale='es').count())
+        eq_(5.0, WikiMetric.objects.get(
+            locale='es', product=p, code=L10N_TOP20_CODE).value)
+        eq_(5.0, WikiMetric.objects.get(
+            locale='es', product=p, code=L10N_ALL_CODE).value)
+        eq_(5.0, WikiMetric.objects.get(
+            locale='es', product=None, code=L10N_TOP20_CODE).value)
+        eq_(5.0, WikiMetric.objects.get(
+            locale='es', product=None, code=L10N_ALL_CODE).value)
+
+        # Verify de metrics.
+        eq_(4, WikiMetric.objects.filter(locale='de').count())
+        eq_(10.0, WikiMetric.objects.get(
+            locale='de', product=p, code=L10N_TOP20_CODE).value)
+        eq_(10.0, WikiMetric.objects.get(
+            locale='de', product=p, code=L10N_ALL_CODE).value)
+        eq_(10.0, WikiMetric.objects.get(
+            locale='de', product=None, code=L10N_TOP20_CODE).value)
+        eq_(10.0, WikiMetric.objects.get(
+            locale='de', product=None, code=L10N_ALL_CODE).value)
+
+        # Verify ak metrics.
+        eq_(4, WikiMetric.objects.filter(locale='de').count())
+        eq_(100.0, WikiMetric.objects.get(
+            locale='ak', product=p, code=L10N_TOP20_CODE).value)
+        eq_(100.0, WikiMetric.objects.get(
+            locale='ak', product=p, code=L10N_ALL_CODE).value)
+        eq_(100.0, WikiMetric.objects.get(
+            locale='ak', product=None, code=L10N_TOP20_CODE).value)
+        eq_(100.0, WikiMetric.objects.get(
+            locale='ak', product=None, code=L10N_ALL_CODE).value)
+
+        # Verify it metrics.
+        eq_(4, WikiMetric.objects.filter(locale='it').count())
+        eq_(0.0, WikiMetric.objects.get(
+            locale='it', product=p, code=L10N_TOP20_CODE).value)
+        eq_(0.0, WikiMetric.objects.get(
+            locale='it', product=p, code=L10N_ALL_CODE).value)
+        eq_(0.0, WikiMetric.objects.get(
+            locale='it', product=None, code=L10N_TOP20_CODE).value)
+        eq_(0.0, WikiMetric.objects.get(
+            locale='it', product=None, code=L10N_ALL_CODE).value)
