@@ -30,8 +30,8 @@ def update_l10n_coverage_metrics():
     """Calculate and store the l10n metrics for each locale/product.
 
     The metrics are:
-    * Percent of top 20 articles
-    * Percent of all articles
+    * Percent localized of top 20 articles
+    * Percent localized of all articles
     """
     today = date.today()
     top20_kind, _ = WikiMetricKind.objects.get_or_create(code=L10N_TOP20_CODE)
