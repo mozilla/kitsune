@@ -229,8 +229,8 @@
           </div>{# tab-wrapper #}
         </div>{# search-tabs #}
       {% else %}
-        {% import "search/basic-form.html" as basic with context %}
-        {{ basic.form(q=search_form.q.data) }}
+        {% from "search/includes/macros.html" import basic_search_form with context %}
+        {{ basic_search_form(True) }}
         <a href="{{ url('search')|urlparams(a=2, q=search_form.q.data) }}">{{ _('Use advanced search') }}</a>
       {% endif %}
     </div>
