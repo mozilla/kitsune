@@ -72,7 +72,7 @@ class WikiMetricKind(ModelBase):
 
 
 class WikiMetric(ModelBase):
-    """A single numeric locale and product based measurement for a date.
+    """A single numeric measurement for a locale, product and date.
 
     For example, the percentage of all FxOS articles localized to Spanish."""
     kind = models.ForeignKey(WikiMetricKind)
