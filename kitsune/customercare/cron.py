@@ -22,7 +22,7 @@ MENTION_REGEX = re.compile('(^|\W)@')
 RT_REGEX = re.compile('^rt\W', re.IGNORECASE)
 
 ALLOWED_USERS = [
-    # NIXING FOR NOWZ: {'id': 2142731, 'username': 'Firefox'},
+    {'id': 2142731, 'username': 'Firefox'},
     {'id': 150793437, 'username': 'FirefoxBrasil'},
     {'id': 107272435, 'username': 'firefox_es'},
 ]
