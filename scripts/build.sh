@@ -1,6 +1,8 @@
 #!/bin/bash
 # This script should run from inside Hudson
 
+exit 1
+
 cd $WORKSPACE
 VENV=$WORKSPACE/venv
 
