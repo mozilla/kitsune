@@ -6,7 +6,8 @@ from django.db import models
 
 from kitsune.dashboards import (LAST_7_DAYS, LAST_30_DAYS, LAST_90_DAYS,
                                 ALL_TIME, PERIODS)
-from kitsune.sumo.models import ModelBase
+from kitsune.products.models import Product
+from kitsune.sumo.models import ModelBase, LocaleField
 from kitsune.sumo import googleanalytics
 from kitsune.wiki.models import Document
 
@@ -56,3 +57,34 @@ class WikiDocumentVisits(ModelBase):
             # Don't erase interesting data if there's nothing to replace it:
             log.warning('Google Analytics returned no interesting data,'
                         ' so I kept what I had.')
+
+
+L10N_TOP20_CODE = 'Top 20: Percent Localized'
+L10N_ALL_CODE = 'All: Percent Localized'
+
+
+class WikiMetricKind(ModelBase):
+    """A kind of wiki metric, like 'Top 20: Percent Localized'"""
+    code = models.CharField(max_length=255, unique=True)
+
+    def __unicode__(self):
+        return self.code
+
+
+class WikiMetric(ModelBase):
+    """A single numeric locale and product based measurement for a date.
+
+    For example, the percentage of all FxOS articles localized to Spanish."""
+    kind = models.ForeignKey(WikiMetricKind)
+    locale = LocaleField(db_index=True, null=True, blank=True)
+    product = models.ForeignKey(Product, null=True, blank=True)
+    date = models.DateField()
+    value = models.FloatField()
+
+    class Meta(object):
+        unique_together = ('kind', 'product', 'locale', 'date')
+
+    def __unicode__(self):
+        return '[{date}][{locale}][{product}] {kind}: {value}'.format(
+            date=self.date, kind=self.kind, locale=self.locale,
+            value=self.value, product=self.product)
