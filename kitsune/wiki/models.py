@@ -31,7 +31,7 @@ from kitsune.wiki import TEMPLATE_TITLE_PREFIX
 from kitsune.wiki.config import (
     CATEGORIES, SIGNIFICANCES, TYPO_SIGNIFICANCE, MEDIUM_SIGNIFICANCE,
     MAJOR_SIGNIFICANCE, REDIRECT_HTML, REDIRECT_CONTENT, REDIRECT_TITLE,
-    REDIRECT_SLUG)
+    REDIRECT_SLUG, CANNED_RESPONSES_CATEGORY, ADMINISTRATION_CATEGORY)
 from kitsune.wiki.permissions import DocumentPermissionMixin
 
 
@@ -307,6 +307,12 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
     @property
     def language(self):
         return settings.LANGUAGES[self.locale.lower()]
+
+    @property
+    def is_hidden_from_search_engines(self):
+        return (self.is_template or self.is_archived or
+                self.category in (ADMINISTRATION_CATEGORY,
+                                  CANNED_RESPONSES_CATEGORY))
 
     def get_absolute_url(self):
         return reverse('wiki.document', locale=self.locale, args=[self.slug])
