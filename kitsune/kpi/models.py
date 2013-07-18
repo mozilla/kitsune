@@ -12,6 +12,9 @@ KB_ENUS_CONTRIBUTORS_METRIC_CODE = 'general kb:en-US:contributors'
 KB_L10N_CONTRIBUTORS_METRIC_CODE = 'general kb:l10n:contributors'
 SEARCH_SEARCHES_METRIC_CODE = 'search clickthroughs:elastic:searches'
 SEARCH_CLICKS_METRIC_CODE = 'search clickthroughs:elastic:clicks'
+EXIT_SURVEY_YES_CODE = 'exit-survey:yes'
+EXIT_SURVEY_NO_CODE = 'exit-survey:no'
+EXIT_SURVEY_DONT_KNOW_CODE = 'exit-survey:dont-know'
 
 
 class MetricKind(ModelBase):
