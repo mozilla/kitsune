@@ -171,7 +171,7 @@ def activate(request, template, activation_key, user_id=None):
         # Update created time to current time
         for q in my_questions:
             q.created = datetime.now()
-            q.save()
+            q.save(update=True)
 
     return render(request, template, {
         'account': account, 'questions': my_questions,
