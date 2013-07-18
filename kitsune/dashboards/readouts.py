@@ -24,7 +24,7 @@ from kitsune.wiki.config import (
     MEDIUM_SIGNIFICANCE, MAJOR_SIGNIFICANCE,
     TYPO_SIGNIFICANCE, REDIRECT_HTML,
     HOW_TO_CONTRIBUTE_CATEGORY, ADMINISTRATION_CATEGORY,
-    CANNED_RESPONSES_CATEGORY)
+    CANNED_RESPONSES_CATEGORY, NAVIGATION_CATEGORY)
 
 
 log = logging.getLogger('k.dashboards.readouts')
@@ -462,6 +462,8 @@ class MostVisitedDefaultLanguageReadout(Readout):
             'NOT engdoc.is_archived AND '
             'NOT engdoc.category IN ('
                 + str(ADMINISTRATION_CATEGORY) + ', '
+                + str(NAVIGATION_CATEGORY) + ', '
+                + str(CANNED_RESPONSES_CATEGORY) + ', '
                 + str(HOW_TO_CONTRIBUTE_CATEGORY) + ') AND '
             'NOT engdoc.is_template '
             'GROUP BY engdoc.id '
