@@ -465,7 +465,8 @@ class MostVisitedDefaultLanguageReadout(Readout):
                 + str(NAVIGATION_CATEGORY) + ', '
                 + str(CANNED_RESPONSES_CATEGORY) + ', '
                 + str(HOW_TO_CONTRIBUTE_CATEGORY) + ') AND '
-            'NOT engdoc.is_template '
+            'NOT engdoc.is_template AND '
+            'engdoc.html NOT LIKE "<p>REDIRECT <a%%" '
             'GROUP BY engdoc.id '
             'ORDER BY dashboards_wikidocumentvisits.visits DESC, '
                 'engdoc.title ASC' + self._limit_clause(max))
