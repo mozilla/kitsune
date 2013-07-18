@@ -22,7 +22,7 @@
 
 {% set meta = [] %}
 
-{% if noindex %}
+{% if document.is_hidden_from_search_engines %}
   {% set meta = meta + [('robots', 'noindex')] %}
 {% endif %}
 
