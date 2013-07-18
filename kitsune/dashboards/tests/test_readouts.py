@@ -304,7 +304,7 @@ class MostVisitedDefaultLanguageTests(ReadoutTestCase):
         eq_(self.row(locale=locale, product=p)['title'], d.title)
 
     def test_redirects_not_shown(self):
-        """Redirects shouldn't appear in Untranslated readout."""
+        """Redirects shouldn't appear in Most Visited readout."""
         revision(is_approved=True, is_ready_for_localization=True,
                  content='REDIRECT [[Foo Bar]]', save=True)
 
