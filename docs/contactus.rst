@@ -24,6 +24,9 @@ during the day in Eastern Time.
 If you ask something and all you get is silence, then it's probably
 the case that we're not around. Please try pinging us again.
 
+You can also use the `dev-sumo mailing list
+<http://www.mozilla.org/about/forums/#dev-sumo>`_.
+
 Current primary developers:
 
 .. This is a slight repeat from AUTHORS. We just need to point out
