@@ -1,4 +1,5 @@
 import os
+from datetime import datetime, timedelta
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -11,6 +12,7 @@ from nose.tools import eq_
 from pyquery import PyQuery as pq
 from tidings.tests import watch
 
+from kitsune.questions.tests import question
 from kitsune.questions.models import Question
 from kitsune.sumo.tests import (TestCase, LocalizingClient,
     send_mail_raise_smtp)
@@ -108,6 +110,24 @@ class RegisterTests(TestCase):
         eq_(200, response.status_code)
         user_ = User.objects.get(pk=user_.pk)
         assert user_.is_active
+
+    @mock.patch.object(Site.objects, 'get_current')
+    def test_question_created_time_on_user_activation(self, get_current):
+        get_current.return_value.domain = 'su.mo.com'
+        user_ = RegistrationProfile.objects.create_inactive_user(
+            'sumouser1234', 'testpass', 'sumouser@test.com')
+        assert not user_.is_active
+        then = datetime.now() - timedelta(days=1)
+        q = question(creator=user_, created=then, save=True)
+        assert q.created == then
+        key = RegistrationProfile.objects.all()[0].activation_key
+        url = reverse('users.activate', args=[user_.id, key])
+        response = self.client.get(url, follow=True)
+        eq_(200, response.status_code)
+        user_ = User.objects.get(pk=user_.pk)
+        assert user_.is_active
+        q = Question.objects.get(pk=q.pk)
+        assert q.created > then
 
     @mock.patch.object(Site.objects, 'get_current')
     def test_new_user_claim_watches(self, get_current):

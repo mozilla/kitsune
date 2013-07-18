@@ -1,12 +1,12 @@
 import os
 from ast import literal_eval
+from datetime import datetime
 
 from django.conf import settings
 from django.contrib import auth, messages
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.models import Site
-from django.core import mail
 from django.http import (HttpResponsePermanentRedirect, HttpResponseRedirect,
                          Http404)
 from django.views.decorators.http import (require_http_methods, require_GET,
@@ -167,6 +167,11 @@ def activate(request, template, activation_key, user_id=None):
         claim_watches.delay(account)
 
         my_questions = Question.uncached.filter(creator=account)
+
+        # Update created time to current time
+        for q in my_questions:
+            q.created = datetime.now()
+            q.save()
 
     return render(request, template, {
         'account': account, 'questions': my_questions,
