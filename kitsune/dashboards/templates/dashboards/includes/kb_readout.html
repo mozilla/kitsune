@@ -1,6 +1,6 @@
 {% for row in rows %}
   {% if loop.first %}
-    <tr>
+    <tr class="header-row">
       <th>{{ _('Article') }}</th>
       <th></th>
       <th>{{ column3_label }}</th>
@@ -8,7 +8,7 @@
     </tr>
   {% endif %}
   <tr>
-    <td>
+    <td class="doc-title">
       <a href="{{ row.url }}">{{ row.title }}</a>
       {% if row.users %}
         <div class="users">

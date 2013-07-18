@@ -291,6 +291,15 @@
   h1 {
     display: inline-block;
   }
+
+  tr.header-row {
+    counter-reset: doctitles;
+  }
+
+  td.doc-title:before{
+    counter-increment: doctitles;
+    content: counter(doctitles) ". ";
+  }
 }
 
 
