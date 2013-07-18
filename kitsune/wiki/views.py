@@ -31,7 +31,8 @@ from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import (paginate, smart_int, get_next_url, user_or_ip,
                         truncated_json_dumps)
 from kitsune.wiki import DOCUMENTS_PER_PAGE
-from kitsune.wiki.config import CATEGORIES, TEMPLATES_CATEGORY
+from kitsune.wiki.config import (CATEGORIES, ADMINISTRATION_CATEGORY,
+                                 CANNED_RESPONSES_CATEGORY, TEMPLATES_CATEGORY)
 from kitsune.wiki.events import (
     EditDocumentEvent, ReviewableRevisionInLocaleEvent,
     ApproveRevisionInLocaleEvent, ApprovedOrReadyUnion,
@@ -133,6 +134,12 @@ def document(request, document_slug, template=None):
     if (doc.category == TEMPLATES_CATEGORY or
         waffle.switch_is_active('hide-voting')):
         hide_voting = True
+
+    noindex = False
+    if (doc.category in (ADMINISTRATION_CATEGORY, CANNED_RESPONSES_CATEGORY,
+                         TEMPLATES_CATEGORY,)):
+        noindex = True
+
     data = {'document': doc, 'redirected_from': redirected_from,
             'related_documents': related_documents,
             'related_questions': related_questions,
@@ -140,7 +147,8 @@ def document(request, document_slug, template=None):
             'fallback_reason': fallback_reason,
             'is_aoa_referral': request.GET.get('ref') == 'aoa',
             'topics': topics, 'product': product, 'products': products,
-            'hide_voting': hide_voting, 'ga_push': ga_push}
+            'hide_voting': hide_voting, 'ga_push': ga_push,
+            'noindex': noindex}
     data.update(showfor_data(products))
     return render(request, template, data)
 
