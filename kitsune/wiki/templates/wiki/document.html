@@ -7,9 +7,6 @@
 {% set canonical_url = document.get_absolute_url() %}
 {% set scripts = ('wiki', 'readtracker') %}
 {% set extra_body_attrs = {'data-track-url': STATIC_URL + 'img/pixel.gif', 'data-document-id': document.id, 'data-default-slug': document.parent.slug if document.parent else document.slug} %}
-{% if noindex %}
-  {% set meta = (('robots', 'noindex'),) %}
-{% endif %}
 
 {% block title %}{{ document.title }} | {% if not products or products|count > 1 %}{{ _('Mozilla Support', 'site_title') }}{% else %}{{ _('{product} Help')|f(product=_(product.title, 'DB: products.Product.title')) }}{% endif %}{% endblock %}
 
@@ -25,7 +22,7 @@
 
 {% set meta = [] %}
 
-{% if document.is_template or document.is_archived %}
+{% if noindex %}
   {% set meta = meta + [('robots', 'noindex')] %}
 {% endif %}
 

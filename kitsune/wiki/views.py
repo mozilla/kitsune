@@ -136,8 +136,9 @@ def document(request, document_slug, template=None):
         hide_voting = True
 
     noindex = False
-    if (doc.category in (ADMINISTRATION_CATEGORY, CANNED_RESPONSES_CATEGORY,
-                         TEMPLATES_CATEGORY,)):
+    if (doc.is_template or doc.is_archived or
+            doc.category in (ADMINISTRATION_CATEGORY,
+                             CANNED_RESPONSES_CATEGORY)):
         noindex = True
 
     data = {'document': doc, 'redirected_from': redirected_from,

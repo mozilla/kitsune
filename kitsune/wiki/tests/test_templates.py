@@ -29,7 +29,8 @@ from kitsune.wiki.models import (
     Document, Revision, HelpfulVote, HelpfulVoteMetadata)
 from kitsune.wiki.config import (
     SIGNIFICANCES, MEDIUM_SIGNIFICANCE, ADMINISTRATION_CATEGORY,
-    TROUBLESHOOTING_CATEGORY, TEMPLATES_CATEGORY, CATEGORIES)
+    TROUBLESHOOTING_CATEGORY, TEMPLATES_CATEGORY, CATEGORIES,
+    CANNED_RESPONSES_CATEGORY)
 from kitsune.wiki.tasks import send_reviewed_notification
 from kitsune.wiki.tests import (
     TestCaseBase, document, revision, new_document_data, translated_revision,
@@ -317,6 +318,42 @@ class DocumentTests(TestCaseBase):
         # Archive the document and verify robots:noindex
         d = r.document
         d.is_archived = True
+        d.save()
+        response = self.client.get(r.document.get_absolute_url())
+        eq_(200, response.status_code)
+        doc = pq(response.content)
+        eq_('noindex', doc('meta[name=robots]')[0].attrib['content'])
+
+    def test_administration_noindex(self):
+        """Administration documents should have a noindex meta tag."""
+        # Create a document and verify there is no robots:noindex
+        r = revision(save=True, content='Some text.', is_approved=True)
+        response = self.client.get(r.document.get_absolute_url())
+        eq_(200, response.status_code)
+        doc = pq(response.content)
+        eq_(0, len(doc('meta[name=robots]')))
+
+        # Archive the document and verify robots:noindex
+        d = r.document
+        d.category = ADMINISTRATION_CATEGORY
+        d.save()
+        response = self.client.get(r.document.get_absolute_url())
+        eq_(200, response.status_code)
+        doc = pq(response.content)
+        eq_('noindex', doc('meta[name=robots]')[0].attrib['content'])
+
+    def test_canned_responses_noindex(self):
+        """Canned response documents should have a noindex meta tag."""
+        # Create a document and verify there is no robots:noindex
+        r = revision(save=True, content='Some text.', is_approved=True)
+        response = self.client.get(r.document.get_absolute_url())
+        eq_(200, response.status_code)
+        doc = pq(response.content)
+        eq_(0, len(doc('meta[name=robots]')))
+
+        # Archive the document and verify robots:noindex
+        d = r.document
+        d.category = CANNED_RESPONSES_CATEGORY
         d.save()
         response = self.client.get(r.document.get_absolute_url())
         eq_(200, response.status_code)
