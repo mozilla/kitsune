@@ -14,6 +14,8 @@ from kitsune.kpi.models import (
     L10N_METRIC_CODE, SUPPORT_FORUM_CONTRIBUTORS_METRIC_CODE,
     VISITORS_METRIC_CODE, SEARCH_SEARCHES_METRIC_CODE,
     SEARCH_CLICKS_METRIC_CODE)
+from kitsune.kpi.surveygizmo_utils import (
+    get_email_addresses, add_email_to_campaign)
 from kitsune.questions.models import Answer
 from kitsune.sumo import googleanalytics
 from kitsune.wiki.config import TYPO_SIGNIFICANCE, MEDIUM_SIGNIFICANCE
@@ -376,3 +378,29 @@ def _get_up_to_date_count(top_60_docs, locale):
                 up_to_date_docs += 0.5
 
     return up_to_date_docs, num_docs
+
+
+@cronjobs.register
+def process_exit_surveys():
+    """Exit survey handling.
+
+    * Add new emails collected to the exit survey.
+    """
+
+    # Get the email addresses from two days ago and add them to the survey
+    # campaign.
+    if settings.STAGE:
+        # Only run this on prod, it doesn't need to be running multiple times
+        # from different places.
+        print ('Skipped process_exit_surveys(). '
+               'Set settings.STAGE to False to run it for real.')
+        return
+
+    startdate = date.today() - timedelta(days=2)
+    enddate = date.today() - timedelta(days=1)
+
+    emails = get_email_addresses(startdate, enddate)
+    for email in emails:
+        add_email_to_campaign(email)
+
+    print '%s emails processed...' % len(emails)
