@@ -133,7 +133,6 @@ def document(request, document_slug, template=None):
     if (doc.category == TEMPLATES_CATEGORY or
         waffle.switch_is_active('hide-voting')):
         hide_voting = True
-
     data = {'document': doc, 'redirected_from': redirected_from,
             'related_documents': related_documents,
             'related_questions': related_questions,
@@ -141,8 +140,7 @@ def document(request, document_slug, template=None):
             'fallback_reason': fallback_reason,
             'is_aoa_referral': request.GET.get('ref') == 'aoa',
             'topics': topics, 'product': product, 'products': products,
-            'hide_voting': hide_voting, 'ga_push': ga_push,
-            'noindex': noindex}
+            'hide_voting': hide_voting, 'ga_push': ga_push}
     data.update(showfor_data(products))
     return render(request, template, data)
 
