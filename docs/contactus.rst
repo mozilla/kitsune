@@ -29,7 +29,6 @@ Current primary developers:
 .. This is a slight repeat from AUTHORS. We just need to point out
 .. people to contact if someone is having problems.
 
-* James Socol (jsocol)
 * Ricky Rosario (r1cky)
 * Will Kahn-Greene (willkg)
 * Rehan Dalal (rdalal)
