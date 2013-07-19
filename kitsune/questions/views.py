@@ -349,17 +349,16 @@ def aaq(request, product_key=None, category_key=None, showform=False,
                 product_key = 'firefox-os'
             else:
                 product_key = 'mobile'
+
     product = products.get(product_key)
     if product_key and not product:
         raise Http404
-
-    product_obj = Product.objects.filter(
-        slug__in=product.get('products'))
 
     if category_key is None:
         category_key = request.GET.get('category')
 
     if product and category_key:
+        product_obj = Product.objects.filter(slug__in=product.get('products'))
         category = product['categories'].get(category_key)
         if not category:
             # If we get an invalid category, redirect to previous step.

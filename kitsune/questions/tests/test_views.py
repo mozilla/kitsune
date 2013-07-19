@@ -184,6 +184,15 @@ class AAQTests(ElasticTestCase):
         response = self.client.post(url, data, follow=True)
         eq_(403, response.status_code)
 
+    def test_first_step(self):
+        """Make sure the first step doesn't blow up
+
+        Oddly, none of the other tests cover this simple case.
+        """
+        url = reverse('questions.aaq_step1')
+        res = self.client.get(url)
+        eq_(200, res.status_code)
+
 
 class MobileAAQTests(MobileTestCase):
     client_class = LocalizingClient
