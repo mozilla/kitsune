@@ -219,5 +219,19 @@
       </ul>
    </section>
 
+  <section id="exit-survey"
+     data-url="{{ url('api_dispatch_list', resource_name='kpi_exit_survey_results', api_name='v1') }}">
+
+      <h2>{{ _('Exit Survey Results') }}</h2>
+
+      <div class="rickshaw">
+        <div class="inline-controls"></div>
+        <div class="graph-container">
+          <div class="slider"></div>
+          <div class="graph"></div>
+        </div>
+      </div>
+    </section>
+
   </article>
 {% endblock %}

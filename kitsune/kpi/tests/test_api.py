@@ -11,7 +11,8 @@ from kitsune.kpi.cron import update_contributor_metrics
 from kitsune.kpi.models import (
     Metric, AOA_CONTRIBUTORS_METRIC_CODE, KB_ENUS_CONTRIBUTORS_METRIC_CODE,
     KB_L10N_CONTRIBUTORS_METRIC_CODE, L10N_METRIC_CODE,
-    SUPPORT_FORUM_CONTRIBUTORS_METRIC_CODE, VISITORS_METRIC_CODE)
+    SUPPORT_FORUM_CONTRIBUTORS_METRIC_CODE, VISITORS_METRIC_CODE,
+    EXIT_SURVEY_YES_CODE, EXIT_SURVEY_NO_CODE, EXIT_SURVEY_DONT_KNOW_CODE)
 from kitsune.kpi.tests import metric, metric_kind
 from kitsune.sumo.helpers import urlparams
 from kitsune.sumo.tests import TestCase, LocalizingClient
@@ -288,3 +289,22 @@ class KpiApiTests(TestCase):
         # The l10n coverage should be 56%.
         r = self._get_api_result('kpi_l10n_coverage')
         eq_(r['objects'][0]['coverage'], 56)
+
+    def test_exit_survey_results(self):
+        """Test the exist survey results API call."""
+        # Create the metrics
+        kind = metric_kind(code=EXIT_SURVEY_YES_CODE, save=True)
+        metric(kind=kind, start=date.today(), end=date.today(), value=1337,
+               save=True)
+        kind = metric_kind(code=EXIT_SURVEY_NO_CODE, save=True)
+        metric(kind=kind, start=date.today(), end=date.today(), value=42,
+               save=True)
+        kind = metric_kind(code=EXIT_SURVEY_DONT_KNOW_CODE, save=True)
+        metric(kind=kind, start=date.today(), end=date.today(), value=777,
+               save=True)
+
+        # Verify the results returned from the API
+        r = self._get_api_result('kpi_exit_survey_results')
+        eq_(r['objects'][0]['yes'], 1337)
+        eq_(r['objects'][0]['no'], 42)
+        eq_(r['objects'][0]['dont_know'], 777)
