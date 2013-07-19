@@ -23,7 +23,7 @@ from taggit.models import Tag, TaggedItem
 from kitsune import questions as constants
 from kitsune.flagit.models import FlaggedObject
 from kitsune.karma.manager import KarmaManager
-from kitsune.products.models import Product
+from kitsune.products.models import Product, Topic
 from kitsune.questions.karma_actions import (
     AnswerAction, FirstAnswerAction, SolutionAction)
 from kitsune.questions.question_config import products
@@ -39,7 +39,7 @@ from kitsune.sumo.redis_utils import RedisError
 from kitsune.sumo.urlresolvers import reverse, split_path
 from kitsune.tags.models import BigVocabTaggableMixin
 from kitsune.tags.utils import add_existing_tag
-from kitsune.topics.models import Topic
+from kitsune.topics.models import Topic as OldTopic
 from kitsune.upload.models import ImageAttachment
 
 
@@ -73,8 +73,10 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
     # List of products this question applies to.
     products = models.ManyToManyField(Product)
 
-    # List of topics this question applies to.
-    topics = models.ManyToManyField(Topic)
+    # List of product-specific topics this document applies to.
+    topics = models.ManyToManyField(Topic, db_table='questions_question_new_topics')
+    # TODO: remove this when removing old topics.
+    old_topics = models.ManyToManyField(OldTopic, db_table='questions_question_topics')
 
     locale = LocaleField(default=settings.WIKI_DEFAULT_LANGUAGE)
 

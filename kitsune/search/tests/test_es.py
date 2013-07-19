@@ -23,7 +23,6 @@ from kitsune.search.models import generate_tasks
 from kitsune.search.tests import ElasticTestCase
 from kitsune.sumo.tests import LocalizingClient
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.topics.tests import topic as old_topic
 from kitsune.users.tests import group, user
 from kitsune.wiki.tests import document, revision, helpful_vote
 
@@ -686,15 +685,10 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
 
     def test_question_topics(self):
         """Search questions for topics."""
-        t1 = old_topic(slug='doesnotexist', save=True)
-        t2 = old_topic(slug='cookies', save=True)
-        t3 = old_topic(slug='sync', save=True)
-
-        # TODO: This is a hack until we move questions to new topics.
-        # We need to create these for the search form validation.
-        topic(slug='doesnotexist', save=True)
-        topic(slug='cookies', save=True)
-        topic(slug='sync', save=True)
+        p = product(save=True)
+        t1 = topic(slug='doesnotexist', product=p,  save=True)
+        t2 = topic(slug='cookies', product=p, save=True)
+        t3 = topic(slug='sync', product=p, save=True)
 
         q = question(save=True)
         q.topics.add(t2)

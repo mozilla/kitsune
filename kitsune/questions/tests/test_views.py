@@ -19,7 +19,7 @@ from kitsune.sumo.helpers import urlparams
 from kitsune.sumo.tests import (
     get, MobileTestCase, LocalizingClient, eq_msg)
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.topics.tests import topic
+from kitsune.products.tests import topic
 from kitsune.users.tests import user
 from kitsune.wiki.tests import document, revision
 
@@ -50,8 +50,8 @@ class AAQTests(ElasticTestCase):
 
     def test_search_suggestions_questions(self):
         """Verifies the view doesn't kick up an HTTP 500"""
-        topic(title='Fix problems', slug='fix-problems', save=True)
         p = product(slug=u'firefox', save=True)
+        topic(title='Fix problems', slug='fix-problems', product=p, save=True)
         q = question(title=u'CupcakesQuestion cupcakes', save=True)
         q.products.add(p)
 
@@ -74,8 +74,8 @@ class AAQTests(ElasticTestCase):
 
     def test_search_suggestion_question_age(self):
         """Verifies the view doesn't return old questions."""
-        topic(title='Fix problems', slug='fix-problems', save=True)
         p = product(slug=u'firefox', save=True)
+        topic(title='Fix problems', slug='fix-problems', product=p, save=True)
 
         q1 = question(title='Fresh Cupcakes', save=True)
         q1.products.add(p)
@@ -100,8 +100,8 @@ class AAQTests(ElasticTestCase):
 
     def test_search_suggestion_questions_locale(self):
         """Verifies the right languages show up in search suggestions."""
-        topic(title='Fix problems', slug='fix-problems', save=True)
         p = product(slug=u'firefox', save=True)
+        topic(title='Fix problems', slug='fix-problems', product=p, save=True)
 
         q1 = question(title='question cupcakes?', save=True, locale='en-US')
         q1.products.add(p)
@@ -132,8 +132,8 @@ class AAQTests(ElasticTestCase):
 
     def test_search_suggestions_archived_articles(self):
         """Verifies that archived articles aren't shown."""
-        topic(title='Fix problems', slug='fix-problems', save=True)
         p = product(slug=u'firefox', save=True)
+        topic(title='Fix problems', slug='fix-problems', product=p, save=True)
 
         d1 = document(title=u'document donut', category=10, save=True)
         d1.products.add(p)
@@ -169,7 +169,8 @@ class AAQTests(ElasticTestCase):
                 'useragent': 'Mozilla/5.0 (Macintosh; U; Intel Mac OS X '
                              '10.6; en-US; rv:1.9.2.6) Gecko/20100625 '
                              'Firefox/3.6.6'}
-        topic(title='Fix problems', slug='fix-problems', save=True)
+        p = product(slug='firefox', save=True)
+        t = topic(slug='fix-problems', product=p, save=True)
         url = urlparams(
             reverse('questions.aaq_step5', args=['desktop', 'fix-problems']),
             search='A test question')
@@ -182,6 +183,15 @@ class AAQTests(ElasticTestCase):
 
         response = self.client.post(url, data, follow=True)
         eq_(403, response.status_code)
+
+    def test_first_step(self):
+        """Make sure the first step doesn't blow up
+
+        Oddly, none of the other tests cover this simple case.
+        """
+        url = reverse('questions.aaq_step1')
+        res = self.client.get(url)
+        eq_(200, res.status_code)
 
 
 class MobileAAQTests(MobileTestCase):
@@ -198,9 +208,10 @@ class MobileAAQTests(MobileTestCase):
 
     def _new_question(self, post_it=False):
         """Post a new question and return the response."""
-        topic(title='Fix problems', slug='fix-problems', save=True)
+        p = product(slug='mobile', save=True)
+        t = topic(slug='fix-problems', product=p, save=True)
         url = urlparams(
-            reverse('questions.aaq_step5', args=['desktop', 'fix-problems']),
+            reverse('questions.aaq_step5', args=[p.slug, t.slug]),
             search='A test question')
         if post_it:
             return self.client.post(url, self.data, follow=True)
@@ -426,8 +437,8 @@ class TestQuestionList(TestCaseBase):
         questions front page for AAQ locales."""
 
         eq_(Question.objects.count(), 0)
-        topic(title='Fix problems', slug='fix-problems', save=True)
         p = product(slug=u'firefox', save=True)
+        topic(title='Fix problems', slug='fix-problems', product=p, save=True)
 
         q1 = question(title='question cupcakes?', save=True, locale='en-US')
         q1.products.add(p)
@@ -588,7 +599,8 @@ class TestStats(ElasticTestCase):
 
     def test_stats(self):
         """Tests questions/stats view"""
-        t = topic(title='Websites', slug='websites', save=True)
+        p = product(save=True)
+        t = topic(title='Websites', slug='websites', product=p, save=True)
 
         q = question(
             title=u'cupcakes',
