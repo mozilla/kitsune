@@ -22,35 +22,7 @@ def run():
         # assign it to the documents.
         for product in products:
             print '%s / %s (%s questions)' % (product, old_topic.title, len(questions))
-            try:
-                topic = Topic.uncached.get(
-                    slug=old_topic.slug, product=product)
-            except Topic.DoesNotExist:
-                # Get the new parent if it should have one.
-                parent = None
-                if old_topic.parent:
-                    try:
-                        parent = Topic.uncached.get(
-                            slug=old_topic.parent.slug, product=product)
-                    except Topic.DoesNotExist:
-                        # Create the parent.
-                        parent = Topic.objects.create(
-                            title=old_topic.parent.title,
-                            slug=old_topic.parent.slug,
-                            description=old_topic.parent.description,
-                            product=product,
-                            display_order=old_topic.parent.display_order,
-                            visible=old_topic.parent.visible)
-
-                # Create the topic.
-                topic = Topic.objects.create(
-                    title=old_topic.title,
-                    slug=old_topic.slug,
-                    description=old_topic.description,
-                    product=product,
-                    parent=parent,
-                    display_order=old_topic.display_order,
-                    visible=old_topic.visible)
+            topic = Topic.uncached.get(slug=old_topic.slug, product=product)
 
             i = 0
             # Add the new topic to the appropriate docs.
