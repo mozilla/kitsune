@@ -26,7 +26,7 @@ from kitsune.sumo.tests import (
     get, post, attrs_eq, emailmessage_raise_smtp, TestCase, LocalizingClient)
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.tags.tests import tag
-from kitsune.topics.tests import topic
+from kitsune.products.tests import topic
 from kitsune.upload.models import ImageAttachment
 from kitsune.users.models import RegistrationProfile
 from kitsune.users.tests import user, add_permission
@@ -1140,9 +1140,10 @@ class QuestionsTemplateTestCase(TestCaseBase):
         check({'product': p3.slug}, [])
 
     def test_topic_filter(self):
-        t1 = topic(save=True)
-        t2 = topic(save=True)
-        t3 = topic(save=True)
+        p = product(save=True)
+        t1 = topic(product=p, save=True)
+        t2 = topic(product=p, save=True)
+        t3 = topic(product=p, save=True)
 
         q1 = question(save=True)
         q2 = question(save=True)
@@ -1381,8 +1382,8 @@ class AAQTemplateTestCase(TestCaseBase):
 
     def _post_new_question(self, locale=None):
         """Post a new question and return the response."""
-        topic(title='Fix problems', slug='fix-problems', save=True)
-        product(title='Firefox', slug='firefox', save=True)
+        p = product(title='Firefox', slug='firefox', save=True)
+        topic(slug='fix-problems', product=p, save=True)
         extra = {}
         if locale is not None:
             extra['locale'] = locale
@@ -1453,7 +1454,8 @@ class AAQTemplateTestCase(TestCaseBase):
 
     def test_invalid_type(self):
         """Providing an invalid type returns 400."""
-        topic(title='Fix problems', slug='fix-problems', save=True)
+        p = product(slug='firefox', save=True)
+        topic(slug='fix-problems', product=p, save=True)
         self.client.logout()
 
         url = urlparams(
@@ -1472,7 +1474,8 @@ class AAQTemplateTestCase(TestCaseBase):
     def test_register_through_aaq(self, get_current):
         """Registering through AAQ form sends confirmation email."""
         get_current.return_value.domain = 'testserver'
-        topic(title='Fix problems', slug='fix-problems', save=True)
+        p = product(slug='firefox', save=True)
+        topic(slug='fix-problems', product=p, save=True)
         self.client.logout()
         title = 'A test question'
         url = urlparams(

@@ -37,7 +37,7 @@ from kitsune import questions as constants
 from kitsune.access.decorators import (
     has_perm_or_owns_or_403, permission_required, login_required)
 from kitsune.karma.manager import KarmaManager
-from kitsune.products.models import Product
+from kitsune.products.models import Product, Topic
 from kitsune.questions.events import QuestionReplyEvent, QuestionSolvedEvent
 from kitsune.questions.feeds import (
     QuestionsFeed, AnswersFeed, TaggedQuestionsFeed)
@@ -52,14 +52,13 @@ from kitsune.questions.marketplace import (
 from kitsune.questions.models import (
     Question, Answer, QuestionVote, AnswerVote, QuestionMappingType)
 from kitsune.questions.question_config import products
-from kitsune.search.utils import locale_or_default, clean_excerpt
 from kitsune.search.es_utils import ES_EXCEPTIONS, Sphilastic, F
+from kitsune.search.utils import locale_or_default, clean_excerpt
 from kitsune.sumo.helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import (
     paginate, simple_paginate, build_paged_url, user_or_ip)
 from kitsune.tags.utils import add_existing_tag
-from kitsune.topics.models import Topic
 from kitsune.upload.models import ImageAttachment
 from kitsune.upload.views import upload_imageattachment
 from kitsune.users.forms import RegisterForm
@@ -99,8 +98,11 @@ def questions(request, template):
     else:
         product = None
 
-    if topic_slug:
-        topic = get_object_or_404(Topic, slug=topic_slug)
+    if topic_slug and product:
+        try:
+            topic = Topic.objects.get(slug=topic_slug, product=product)
+        except Topic.DoesNotExist:
+            topic = None
     else:
         topic = None
 
@@ -205,7 +207,10 @@ def questions(request, template):
     product_list = Product.objects.filter(visible=True)
 
     # List of topics to fill the selector.
-    topic_list = Topic.objects.filter(visible=True)[:10]
+    if product:
+        topic_list = Topic.objects.filter(visible=True, product=product)[:10]
+    else:
+        topic_list = []
 
     data = {'questions': questions_page,
             'feeds': feed_urls,
@@ -348,6 +353,9 @@ def aaq(request, product_key=None, category_key=None, showform=False,
     if product_key and not product:
         raise Http404
 
+    product_obj = Product.objects.filter(
+        slug__in=product.get('products'))
+
     if category_key is None:
         category_key = request.GET.get('category')
 
@@ -363,9 +371,8 @@ def aaq(request, product_key=None, category_key=None, showform=False,
             html = None
             articles, fallback = documents_for(
                 locale=request.LANGUAGE_CODE,
-                products=Product.objects.filter(
-                    slug__in=product.get('products')),
-                topics=[Topic.objects.get(slug=topic)])
+                products=product_obj,
+                topics=[Topic.objects.get(slug=topic, product=product_obj)])
         else:
             html = category.get('html')
             articles = category.get('articles')
@@ -509,7 +516,8 @@ def aaq(request, product_key=None, category_key=None, showform=False,
 
                 t = category.get('topic')
                 if t:
-                    question.topics.add(Topic.objects.get(slug=t))
+                    question.topics.add(Topic.objects.get(slug=t,
+                                                          product=product_obj))
 
         # The first time a question is saved, automatically apply some tags:
         question.auto_tag()

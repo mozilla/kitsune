@@ -4,7 +4,7 @@ from kitsune.products.tests import product
 from kitsune.questions.models import Question, QuestionMappingType
 from kitsune.questions.tests import question, answer, answervote, questionvote
 from kitsune.search.tests.test_es import ElasticTestCase
-from kitsune.topics.tests import topic
+from kitsune.products.tests import topic
 
 
 class QuestionUpdateTests(ElasticTestCase):
@@ -108,7 +108,8 @@ class QuestionUpdateTests(ElasticTestCase):
         refresh the index.
 
         """
-        t = topic(slug=u'hiphop', save=True)
+        p = product(save=True)
+        t = topic(slug=u'hiphop', product=p, save=True)
         eq_(QuestionMappingType.search().filter(topic=t.slug).count(), 0)
         q = question(save=True)
         self.refresh()
