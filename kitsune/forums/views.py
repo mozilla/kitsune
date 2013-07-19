@@ -172,7 +172,7 @@ def reply(request, forum_slug, thread_id):
                 post_preview.author_post_count = \
                     reply_.author.post_set.count()
             elif (_skip_post_ratelimit(request) or
-                  not is_ratelimited(request, increment=True, rate='5/d',
+                  not is_ratelimited(request, increment=True, rate='15/d',
                                      ip=False,
                                      keys=user_or_ip('forum-post'))):
                 reply_.save()
