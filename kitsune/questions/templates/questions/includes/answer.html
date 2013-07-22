@@ -35,11 +35,11 @@
   </div>
   <div class="main-content">
     {% if answer.id and question.solution == answer %}
-      <h3 class="is-solution">Chosen Solution</h3>
+      <h3 class="is-solution">{{_('Chosen Solution')}}</h3>
     {% elif answer.id and answer in question.helpful_replies %}
-      <h3 class="is-helpful">Helpful Reply</h3>
+      <h3 class="is-helpful">{{_('Helpful Reply')}}</h3>
     {% elif answer.id and answer.creator == question.creator %}
-      <h3 class="is-owner">Question owner</h3>
+      <h3 class="is-owner">{{_('Question owner')}}</h3>
     {% endif %}
     {% if is_preview %}
       {# Don't use cached content_parsed #}
