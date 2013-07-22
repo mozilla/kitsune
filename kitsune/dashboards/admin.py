@@ -1,16 +1,11 @@
 from django.contrib import admin
 
-from kitsune.dashboards.models import WikiMetric, WikiMetricKind
+from kitsune.dashboards.models import WikiMetric
 
 
 class WikiMetricAdmin(admin.ModelAdmin):
-    list_display = ['kind', 'date', 'locale', 'product', 'value']
-    list_filter = ['kind', 'product', 'locale']
-
-
-class WikiMetricKindAdmin(admin.ModelAdmin):
-    pass
+    list_display = ['code', 'date', 'locale', 'product', 'value']
+    list_filter = ['code', 'product', 'locale']
 
 
 admin.site.register(WikiMetric, WikiMetricAdmin)
-admin.site.register(WikiMetricKind, WikiMetricKindAdmin)

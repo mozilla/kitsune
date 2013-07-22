@@ -6,8 +6,7 @@ from django.db import connection
 import cronjobs
 
 from kitsune.dashboards.models import (
-    PERIODS, WikiDocumentVisits, WikiMetricKind, WikiMetric, L10N_TOP20_CODE,
-    L10N_ALL_CODE)
+    PERIODS, WikiDocumentVisits, WikiMetric, L10N_TOP20_CODE, L10N_ALL_CODE)
 from kitsune.dashboards.readouts import overview_rows
 from kitsune.products.models import Product
 from kitsune.sumo.redis_utils import redis_client
@@ -34,8 +33,6 @@ def update_l10n_coverage_metrics():
     * Percent localized of all articles
     """
     today = date.today()
-    top20_kind, _ = WikiMetricKind.objects.get_or_create(code=L10N_TOP20_CODE)
-    all_kind, _ = WikiMetricKind.objects.get_or_create(code=L10N_ALL_CODE)
 
     # Loop through all locales.
     for locale in settings.SUMO_LANGUAGES:
@@ -54,7 +51,7 @@ def update_l10n_coverage_metrics():
             top20 = rows['most-visited']
             percent = 100.0 * float(top20['numerator']) / top20['denominator']
             WikiMetric.objects.create(
-                kind=top20_kind,
+                code=L10N_TOP20_CODE,
                 locale=locale,
                 product=product,
                 date=today,
@@ -64,7 +61,7 @@ def update_l10n_coverage_metrics():
             all_ = rows['all']
             percent = 100.0 * float(all_['numerator']) / all_['denominator']
             WikiMetric.objects.create(
-                kind=all_kind,
+                code=L10N_ALL_CODE,
                 locale=locale,
                 product=product,
                 date=today,
