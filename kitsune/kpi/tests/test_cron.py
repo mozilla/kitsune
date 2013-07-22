@@ -1,16 +1,18 @@
-from datetime import date
+from datetime import date, timedelta
 
 from mock import patch
 from nose.tools import eq_
 
 import kitsune.kpi.cron
+from kitsune.kpi import surveygizmo_utils
 from kitsune.kpi.cron import (
     update_visitors_metric, update_l10n_metric, googleanalytics,
-    update_search_ctr_metric)
-from kitsune.kpi.models import (Metric, VISITORS_METRIC_CODE,
-                                L10N_METRIC_CODE, SEARCH_CLICKS_METRIC_CODE,
-                                SEARCH_SEARCHES_METRIC_CODE)
-from kitsune.kpi.tests import metric_kind
+    update_search_ctr_metric, _process_exit_survey_results)
+from kitsune.kpi.models import (
+    Metric, VISITORS_METRIC_CODE, L10N_METRIC_CODE, SEARCH_CLICKS_METRIC_CODE,
+    SEARCH_SEARCHES_METRIC_CODE, EXIT_SURVEY_YES_CODE, EXIT_SURVEY_NO_CODE,
+    EXIT_SURVEY_DONT_KNOW_CODE)
+from kitsune.kpi.tests import metric_kind, metric
 from kitsune.sumo.tests import TestCase
 from kitsune.wiki.config import (
     MAJOR_SIGNIFICANCE, MEDIUM_SIGNIFICANCE, TYPO_SIGNIFICANCE)
@@ -150,3 +152,196 @@ class CronJobTests(TestCase):
         eq_(421, metrics[0].value)
         eq_(138, metrics[1].value)
         eq_(date(2013, 6, 8), metrics[2].start)
+
+    @patch.object(surveygizmo_utils, 'requests')
+    def test_process_exit_surveys(self, requests):
+        """Verify the metrics inserted by process_exit_surveys cron job."""
+        requests.get.return_value.content = SURVEY_GIZMO_EXIT_SURVEY_RESPONSE
+
+        # Create the kinds.
+        yes_kind = metric_kind(code=EXIT_SURVEY_YES_CODE, save=True)
+        no_kind = metric_kind(code=EXIT_SURVEY_NO_CODE, save=True)
+        dunno_kind = metric_kind(code=EXIT_SURVEY_DONT_KNOW_CODE, save=True)
+        two_days_back = date.today() - timedelta(days=2)
+
+        # Add a metric for 2 days ago so only 1 new day is collected.
+        metric(kind=yes_kind, start=two_days_back, save=True)
+
+        # Collect and process.
+        _process_exit_survey_results()
+
+        # Verify.
+        eq_(4, Metric.objects.count())
+        eq_(2, Metric.objects.filter(kind=yes_kind)[1].value)
+        eq_(1, Metric.objects.get(kind=no_kind).value)
+        eq_(1, Metric.objects.get(kind=dunno_kind).value)
+
+
+SURVEY_GIZMO_EXIT_SURVEY_RESPONSE = """
+{
+    "total_count": "4",
+    "total_pages": 1,
+    "results_per_page": "500",
+    "result_ok": true,
+    "data": [
+        {
+            "[variable(\\"8-shown\\")]": "1",
+            "[variable(\\"1-shown\\")]": "1",
+            "[variable(\\"4-shown\\")]": "1",
+            "[variable(\\"2-shown\\")]": "1",
+            "[variable(\\"7-shown\\")]": "1",
+            "contact_id": "100019965",
+            "[variable(\\"STANDARD_USERAGENT\\")]": "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/28.0.1500.72 Safari/537.36",
+            "[question(6)]": "I most often use Chrome to browse because it has a native omni bar, but I really like what you guys are doing and am hoping that Firefox OS will be supported on my smartphone when it\'s released.",
+            "[question(4)]": " 9\\r",
+            "[variable(\\"STANDARD_GEOREGION\\")]": "00",
+            "id": "3970",
+            "[question(2)]": "Yes\\n",
+            "[variable(\\"PORTAL_RELATIONSHIP\\")]": "",
+            "[variable(\\"STANDARD_REFERER\\")]": "",
+            "[variable(\\"STANDARD_RESPONSETIME\\")]": "",
+            "sResponseComment": "",
+            "datesubmitted": "2013-07-16 00:31:26",
+            "[question(8)]": "Learn more about Firefox",
+            "[variable(\\"STANDARD_COMMENTS\\")]": "",
+            "[variable(\\"STANDARD_GEODMA\\")]": "0",
+            "status": "Complete",
+            "[variable(\\"6-shown\\")]": "1",
+            "[variable(\\"STANDARD_LAT\\")]": "1.2931",
+            "[variable(\\"STANDARD_GEOPOSTAL\\")]": "",
+            "[question(3), option(10004)]": "Help Articles\\n",
+            "[variable(\\"STANDARD_IP\\")]": "111.111.1.111, 111.111.11",
+            "[variable(4)]": "10007",
+            "is_test_data": "0",
+            "[url(\\"_\\")]": "",
+            "[variable(\\"STANDARD_GEOCITY\\")]": "Singapore",
+            "[url(\\"sguid\\")]": "",
+            "[variable(2)]": "10001",
+            "[variable(\\"STANDARD_GEOCOUNTRY\\")]": "Singapore",
+            "[variable(\\"3-shown\\")]": "1",
+            "[question(3), option(10006)]": "",
+            "[variable(\\"STANDARD_LONG\\")]": "103.855797",
+            "[variable(8)]": "10018",
+            "[question(3), option(10005)]": ""
+        }, {
+            "[variable(\\"8-shown\\")]": "1",
+            "[variable(\\"1-shown\\")]": "1",
+            "[variable(\\"4-shown\\")]": "1",
+            "[variable(\\"2-shown\\")]": "1",
+            "[variable(\\"7-shown\\")]": "1",
+            "contact_id": "100020010",
+            "[variable(\\"STANDARD_USERAGENT\\")]": "Mozilla/5.0 (Windows NT 5.1; rv:22.0) Gecko/20100101 Firefox/22.0",
+            "[question(6)]": "i know  mozilla firefox has  very experienced team what ever they are doing it is for the mankind and i can simply send best wishes\\r\\nthanks  that u give honour to ordinary people like me",
+            "[question(4)]": " 9\\r",
+            "[variable(\\"STANDARD_GEOREGION\\")]": "35",
+            "id": "3971",
+            "[question(2)]": "No\\n",
+            "[variable(\\"PORTAL_RELATIONSHIP\\")]": "",
+            "[variable(\\"STANDARD_REFERER\\")]": "http://in-mg61.mail.yahoo.com/neo/launch",
+            "[variable(\\"STANDARD_RESPONSETIME\\")]": "",
+            "sResponseComment": "",
+            "datesubmitted": "2013-07-16 01:18:05",
+            "[question(8)]": "Learn more about Firefox",
+            "[variable(\\"STANDARD_COMMENTS\\")]": "",
+            "[variable(\\"STANDARD_GEODMA\\")]": "0",
+            "status": "Complete",
+            "[variable(\\"6-shown\\")]": "1",
+            "[variable(\\"STANDARD_LAT\\")]": "23.266701",
+            "[variable(\\"STANDARD_GEOPOSTAL\\")]": "",
+            "[question(3), option(10004)]": "Help Articles\\n",
+            "[variable(\\"STANDARD_IP\\")]": "111.111.11.11",
+            "[variable(4)]": "10007",
+            "is_test_data": "0",
+            "[url(\\"_\\")]": "",
+            "[variable(\\"STANDARD_GEOCITY\\")]": "Bhopal",
+            "[url(\\"sguid\\")]": "",
+            "[variable(2)]": "10001",
+            "[variable(\\"STANDARD_GEOCOUNTRY\\")]": "India",
+            "[variable(\\"3-shown\\")]": "1",
+            "[question(3), option(10006)]": "",
+            "[variable(\\"STANDARD_LONG\\")]": "77.400002",
+            "[variable(8)]": "10018",
+            "[question(3), option(10005)]": "Support Forum\\n"
+        }, {
+            "[variable(\\"8-shown\\")]": "1",
+            "[variable(\\"1-shown\\")]": "1",
+            "[variable(\\"4-shown\\")]": "1",
+            "[variable(\\"2-shown\\")]": "1",
+            "[variable(\\"7-shown\\")]": "1",
+            "contact_id": "100020010",
+            "[variable(\\"STANDARD_USERAGENT\\")]": "Mozilla/5.0 (Windows NT 5.1; rv:22.0) Gecko/20100101 Firefox/22.0",
+            "[question(6)]": "i know  mozilla firefox has  very experienced team what ever they are doing it is for the mankind and i can simply send best wishes\\r\\nthanks  that u give honour to ordinary people like me",
+            "[question(4)]": " 9\\r",
+            "[variable(\\"STANDARD_GEOREGION\\")]": "35",
+            "id": "3971",
+            "[question(2)]": "I don't know\\n",
+            "[variable(\\"PORTAL_RELATIONSHIP\\")]": "",
+            "[variable(\\"STANDARD_REFERER\\")]": "http://in-mg61.mail.yahoo.com/neo/launch",
+            "[variable(\\"STANDARD_RESPONSETIME\\")]": "",
+            "sResponseComment": "",
+            "datesubmitted": "2013-07-16 01:18:05",
+            "[question(8)]": "Learn more about Firefox",
+            "[variable(\\"STANDARD_COMMENTS\\")]": "",
+            "[variable(\\"STANDARD_GEODMA\\")]": "0",
+            "status": "Complete",
+            "[variable(\\"6-shown\\")]": "1",
+            "[variable(\\"STANDARD_LAT\\")]": "23.266701",
+            "[variable(\\"STANDARD_GEOPOSTAL\\")]": "",
+            "[question(3), option(10004)]": "Help Articles\\n",
+            "[variable(\\"STANDARD_IP\\")]": "111.111.11.11",
+            "[variable(4)]": "10007",
+            "is_test_data": "0",
+            "[url(\\"_\\")]": "",
+            "[variable(\\"STANDARD_GEOCITY\\")]": "Bhopal",
+            "[url(\\"sguid\\")]": "",
+            "[variable(2)]": "10001",
+            "[variable(\\"STANDARD_GEOCOUNTRY\\")]": "India",
+            "[variable(\\"3-shown\\")]": "1",
+            "[question(3), option(10006)]": "",
+            "[variable(\\"STANDARD_LONG\\")]": "77.400002",
+            "[variable(8)]": "10018",
+            "[question(3), option(10005)]": "Support Forum\\n"
+        }, {
+            "[variable(\\"8-shown\\")]": "1",
+            "[variable(\\"1-shown\\")]": "1",
+            "[variable(\\"4-shown\\")]": "1",
+            "[variable(\\"2-shown\\")]": "1",
+            "[variable(\\"7-shown\\")]": "1",
+            "contact_id": "100020010",
+            "[variable(\\"STANDARD_USERAGENT\\")]": "Mozilla/5.0 (Windows NT 5.1; rv:22.0) Gecko/20100101 Firefox/22.0",
+            "[question(6)]": "i know  mozilla firefox has  very experienced team what ever they are doing it is for the mankind and i can simply send best wishes\\r\\nthanks  that u give honour to ordinary people like me",
+            "[question(4)]": " 9\\r",
+            "[variable(\\"STANDARD_GEOREGION\\")]": "35",
+            "id": "3971",
+            "[question(2)]": "Yes\\n",
+            "[variable(\\"PORTAL_RELATIONSHIP\\")]": "",
+            "[variable(\\"STANDARD_REFERER\\")]": "http://in-mg61.mail.yahoo.com/neo/launch",
+            "[variable(\\"STANDARD_RESPONSETIME\\")]": "",
+            "sResponseComment": "",
+            "datesubmitted": "2013-07-16 01:18:05",
+            "[question(8)]": "Learn more about Firefox",
+            "[variable(\\"STANDARD_COMMENTS\\")]": "",
+            "[variable(\\"STANDARD_GEODMA\\")]": "0",
+            "status": "Complete",
+            "[variable(\\"6-shown\\")]": "1",
+            "[variable(\\"STANDARD_LAT\\")]": "23.266701",
+            "[variable(\\"STANDARD_GEOPOSTAL\\")]": "",
+            "[question(3), option(10004)]": "Help Articles\\n",
+            "[variable(\\"STANDARD_IP\\")]": "111.111.11.11",
+            "[variable(4)]": "10007",
+            "is_test_data": "0",
+            "[url(\\"_\\")]": "",
+            "[variable(\\"STANDARD_GEOCITY\\")]": "Bhopal",
+            "[url(\\"sguid\\")]": "",
+            "[variable(2)]": "10001",
+            "[variable(\\"STANDARD_GEOCOUNTRY\\")]": "India",
+            "[variable(\\"3-shown\\")]": "1",
+            "[question(3), option(10006)]": "",
+            "[variable(\\"STANDARD_LONG\\")]": "77.400002",
+            "[variable(8)]": "10018",
+            "[question(3), option(10005)]": "Support Forum\\n"
+        }
+    ],
+    "page": "1"
+}
+"""

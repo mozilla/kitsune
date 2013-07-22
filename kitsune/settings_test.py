@@ -13,3 +13,6 @@ REDIS_BACKENDS = {
     'karma': 'redis://localhost:6383?socket_timeout=0.5&db=2',
     'helpfulvotes': 'redis://localhost:6383?socket_timeout=0.5&db=2',
 }
+
+# Some cron jobs are skipped on stage.
+STAGE = False

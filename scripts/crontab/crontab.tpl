@@ -32,6 +32,7 @@ HOME = /tmp
 0 2 * * * {{ cron }} update_search_ctr_metric
 0 4 * * * {{ cron }} auto_lock_old_questions
 0 5 * * * {{ cron }} reindex_kb
+0 6 * * * {{ cron }} process_exit_surveys
 
 # Twice per week.
 #05 01 * * 1,4 {{ cron }} update_weekly_votes

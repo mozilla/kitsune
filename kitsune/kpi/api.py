@@ -1,7 +1,6 @@
 from operator import itemgetter
 from datetime import date, timedelta
 
-from django.conf import settings
 from django.db import connections, router
 from django.db.models import Count, F
 
@@ -15,7 +14,8 @@ from kitsune.kpi.models import (
     Metric, MetricKind, AOA_CONTRIBUTORS_METRIC_CODE,
     KB_ENUS_CONTRIBUTORS_METRIC_CODE, KB_L10N_CONTRIBUTORS_METRIC_CODE,
     L10N_METRIC_CODE, SUPPORT_FORUM_CONTRIBUTORS_METRIC_CODE,
-    VISITORS_METRIC_CODE)
+    VISITORS_METRIC_CODE, EXIT_SURVEY_YES_CODE, EXIT_SURVEY_NO_CODE,
+    EXIT_SURVEY_DONT_KNOW_CODE)
 from kitsune.questions.models import Question, Answer, AnswerVote
 from kitsune.wiki.models import HelpfulVote
 
@@ -364,6 +364,52 @@ class L10nCoverageResource(CachedResource):
     class Meta(object):
         cache = SimpleCache()
         resource_name = 'kpi_l10n_coverage'
+        allowed_methods = ['get']
+
+
+class ExitSurveyResultsResource(CachedResource):
+    """Returns the results of the exit survey
+
+    * Number of "Yes" answers
+    * Number of "No" answers
+    * Number of "I don't know" answers
+    """
+    date = fields.DateField('date')
+    yes = fields.IntegerField('yes', default=0)
+    no = fields.IntegerField('no', default=0)
+    dont_know = fields.IntegerField('dont_know', default=0)
+
+    def get_object_list(self, request):
+        # Set up the queries for the data we need
+        kind = MetricKind.objects.get(code=EXIT_SURVEY_YES_CODE)
+        yes = Metric.objects.filter(kind=kind).order_by('-start')
+
+        kind = MetricKind.objects.get(code=EXIT_SURVEY_NO_CODE)
+        no = Metric.objects.filter(kind=kind).order_by('-start')
+
+        kind = MetricKind.objects.get(code=EXIT_SURVEY_DONT_KNOW_CODE)
+        dont_know = Metric.objects.filter(kind=kind).order_by('-start')
+
+        # Put all the results in a dict with the date as the key.
+        results_dict = {}
+
+        def merge_results(metrics_qs, label):
+            for metric in metrics_qs:
+                results_dict.setdefault(metric.end, {})[label] = metric.value
+
+        merge_results(yes, 'yes')
+        merge_results(no, 'no')
+        merge_results(dont_know, 'dont_know')
+
+        # Convert that to a list of dicts.
+        results_list = [dict(date=k, **v) for k, v in results_dict.items()]
+
+        return [Struct(**x) for x in sorted(
+            results_list, key=itemgetter('date'), reverse=True)]
+
+    class Meta:
+        cache = SimpleCache()
+        resource_name = 'kpi_exit_survey_results'
         allowed_methods = ['get']
 
 

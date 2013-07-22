@@ -5,7 +5,7 @@ from tastypie.api import Api
 from kitsune.kpi.api import (
     QuestionsResource, VoteResource, ActiveContributorsResource,
     ElasticClickthroughResource, VisitorsResource, L10nCoverageResource,
-    KBVoteResource)
+    KBVoteResource, ExitSurveyResultsResource)
 
 
 v1_api = Api(api_name='v1')
@@ -16,6 +16,7 @@ v1_api.register(ActiveContributorsResource())
 v1_api.register(ElasticClickthroughResource())
 v1_api.register(VisitorsResource())
 v1_api.register(L10nCoverageResource())
+v1_api.register(ExitSurveyResultsResource())
 
 
 urlpatterns = patterns('kitsune.kpi.views',

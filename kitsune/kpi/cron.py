@@ -13,7 +13,10 @@ from kitsune.kpi.models import (
     KB_ENUS_CONTRIBUTORS_METRIC_CODE, KB_L10N_CONTRIBUTORS_METRIC_CODE,
     L10N_METRIC_CODE, SUPPORT_FORUM_CONTRIBUTORS_METRIC_CODE,
     VISITORS_METRIC_CODE, SEARCH_SEARCHES_METRIC_CODE,
-    SEARCH_CLICKS_METRIC_CODE)
+    SEARCH_CLICKS_METRIC_CODE, EXIT_SURVEY_YES_CODE, EXIT_SURVEY_NO_CODE,
+    EXIT_SURVEY_DONT_KNOW_CODE)
+from kitsune.kpi.surveygizmo_utils import (
+    get_email_addresses, add_email_to_campaign, get_exit_survey_results)
 from kitsune.questions.models import Answer
 from kitsune.sumo import googleanalytics
 from kitsune.wiki.config import TYPO_SIGNIFICANCE, MEDIUM_SIGNIFICANCE
@@ -376,3 +379,75 @@ def _get_up_to_date_count(top_60_docs, locale):
                 up_to_date_docs += 0.5
 
     return up_to_date_docs, num_docs
+
+
+@cronjobs.register
+def process_exit_surveys():
+    """Exit survey handling.
+
+    * Collect new exit survey results.
+    * Save results to our metrics table.
+    * Add new emails collected to the exit survey.
+    """
+
+    _process_exit_survey_results()
+
+    # Get the email addresses from two days ago and add them to the survey
+    # campaign (skip this on stage).
+    if settings.STAGE:
+        # Only run this on prod, it doesn't need to be running multiple times
+        # from different places.
+        print ('Skipped email address processing in process_exit_surveys(). '
+               'Set settings.STAGE to False to run it for real.')
+        return
+
+    startdate = date.today() - timedelta(days=2)
+    enddate = date.today() - timedelta(days=1)
+
+    emails = get_email_addresses(startdate, enddate)
+    for email in emails:
+        add_email_to_campaign(email)
+
+    print '%s emails processed...' % len(emails)
+
+
+def _process_exit_survey_results():
+    """Collect and save new exit survey results."""
+    # Gather and process up until yesterday's exit survey results.
+    yes_kind, _ = MetricKind.objects.get_or_create(code=EXIT_SURVEY_YES_CODE)
+    no_kind, _ = MetricKind.objects.get_or_create(code=EXIT_SURVEY_NO_CODE)
+    dunno_kind, _ = MetricKind.objects.get_or_create(
+        code=EXIT_SURVEY_DONT_KNOW_CODE)
+
+    latest_metric = _get_latest_metric(EXIT_SURVEY_YES_CODE)
+    if latest_metric is not None:
+        latest_metric_date = latest_metric.start
+    else:
+        latest_metric_date = date(2013, 07, 01)
+
+    day = latest_metric_date + timedelta(days=1)
+    today = date.today()
+
+    while day < today:
+        # Get the aggregated results.
+        results = get_exit_survey_results(day)
+
+        # Store them.
+        Metric.objects.create(
+            kind=yes_kind,
+            start=day,
+            end=day + timedelta(days=1),
+            value=results['yes'])
+        Metric.objects.create(
+            kind=no_kind,
+            start=day,
+            end=day + timedelta(days=1),
+            value=results['no'])
+        Metric.objects.create(
+            kind=dunno_kind,
+            start=day,
+            end=day + timedelta(days=1),
+            value=results['dont-know'])
+
+        # Move on to next day.
+        day += timedelta(days=1)

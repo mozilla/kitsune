@@ -103,6 +103,34 @@ function init() {
     }
   ]);
 
+  makeKPIGraph($('#exit-survey'), [
+    {
+      name: gettext('Percent Yes'),
+      slug: 'percent_yes',
+      func: k.Graph.percentage('yes', 'no', 'dont_know'),
+      axisGroup: 'percent',
+      type: 'percent'
+    },
+    {
+      name: gettext('Yes'),
+      slug: 'yes',
+      func: k.Graph.identity('yes'),
+      axisGroup: 'response'
+    },
+    {
+      name: gettext('No'),
+      slug: 'no',
+      func: k.Graph.identity('no'),
+      axisGroup: 'response'
+    },
+    {
+      name: gettext("I don't know"),
+      slug: 'dont_know',
+      func: k.Graph.identity('dont_know'),
+      axisGroup: 'response'
+    }
+  ]);
+
 }
 
 function makeKPIGraph($container, descriptors) {
