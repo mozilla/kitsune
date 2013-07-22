@@ -41,8 +41,6 @@ def run():
         for product in products:
             print '%s / %s (%s questions)' % (product, old_topic.title, len(questions))
             try:
-                if random() > 0.90:
-                    raise Topic.DoesNotExist
                 topic = Topic.uncached.get(slug=old_topic.slug, product=product)
 
                 # Add the new topic to the appropriate docs.
