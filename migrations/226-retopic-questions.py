@@ -26,10 +26,11 @@ def run():
                            % (product_slug, topic_desc['topic']))
 
     # Assign all the right new topics to the right old topics.
-    for product in Product.objects.all().select_related('questions'):
+    for product in Product.objects.all():
         topics = Topic.objects.filter(product=product)
         for topic in topics:
-            questions = Question.objects.filter(old_topics__slug=topic.slug)
+            questions = Question.objects.filter(products=product,
+                                                old_topics__slug=topic.slug)
             print '%s / %s (%d questions)' % (product.title, topic.title, len(questions))
             for q in questions:
                 q.topics.add(topic)
