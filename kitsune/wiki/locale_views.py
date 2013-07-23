@@ -1,3 +1,5 @@
+from datetime import date, timedelta
+
 from django.contrib import messages
 from django.contrib.auth.models import User
 from django.core.exceptions import PermissionDenied
@@ -10,6 +12,7 @@ from tower import ugettext as _
 from kitsune.access.decorators import login_required
 from kitsune.groups.forms import AddUserForm
 from kitsune.wiki.models import Locale
+from kitsune.wiki.utils import active_contributors
 
 
 LEADER = 'leader'
@@ -36,6 +39,8 @@ def locale_details(request, locale_code, leader_form=None, reviewer_form=None,
     leaders = locale.leaders.all().select_related('profile')
     reviewers = locale.reviewers.all().select_related('profile')
     editors = locale.editors.all().select_related('profile')
+    active = active_contributors(
+        from_date=date.today() - timedelta(days=90), locale=locale_code)
     user_can_edit = _user_can_edit(request.user, locale)
     return render(
         request,
@@ -44,6 +49,7 @@ def locale_details(request, locale_code, leader_form=None, reviewer_form=None,
          'leaders': leaders,
          'reviewers': reviewers,
          'editors': editors,
+         'active': active,
          'user_can_edit': user_can_edit,
          'leader_form': leader_form or AddUserForm(),
          'reviewer_form': reviewer_form or AddUserForm(),

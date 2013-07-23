@@ -90,6 +90,17 @@
         </ul>
       </div>
 
+      <div id="active-contributors">
+        <h2>{{ _('{count} Active Contributors (last 90 days)')|f(count=active|count) }}</h2>
+        <ul class="users active">
+          {% for user in active %}
+            <li>
+              {{ user_row(user) }}
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+
     </article>
   </div>
 {% endblock %}

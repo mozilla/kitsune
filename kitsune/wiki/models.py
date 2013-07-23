@@ -724,7 +724,6 @@ class DocumentMappingType(SearchMappingType):
         d['url'] = obj.get_absolute_url()
         d['indexed_on'] = int(time.time())
 
-
         d['topic'] = [t.slug for t in obj.get_topics(True)]
         d['product'] = [p.slug for p in obj.get_products(True)]
 
@@ -1041,8 +1040,11 @@ class ImportantDate(ModelBase):
     date = models.DateField(db_index=True)
 
 
+# Note: This model should probably be called LocaleTeam.
+# It's a pain to change it now because of table names, FK column names,
+# the M2M tables, etc.
 class Locale(ModelBase):
-    """A locale supported in the KB."""
+    """A localization team."""
     locale = models.CharField(max_length=7, db_index=True)
     leaders = models.ManyToManyField(
         User, blank=True, related_name='locales_leader')
