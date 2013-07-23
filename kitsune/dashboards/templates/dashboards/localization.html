@@ -89,7 +89,7 @@
         {{ print_readout(readout, max_rows=20 if readout.slug == 'most-visited-translations' else 10, product=product) }}
       {% endfor %}
 
-      <section id="kpi-vote" data-url="{{ url('api_dispatch_list', resource_name='kpi_kb_vote', api_name='v1')|urlparams(locale=request.LANGUAGE_CODE) }}">
+      <section id="kpi-vote" data-url="{{ url('api_dispatch_list', resource_name='kpi_kb_vote', api_name='v1')|urlparams(locale=current_locale) }}">
         <h2>{{ _('Helpful Votes') }}</h2>
         <div class="rickshaw">
           <div class="inline-controls"></div>
@@ -104,5 +104,6 @@
 {% endblock %}
 
 {% block side_top %}
+  {{ url('wiki.locale_details', ) }}
   {{ for_contributors_sidebar(user, settings.WIKI_DEFAULT_LANGUAGE, active='kbdashboard') }}
 {% endblock %}
