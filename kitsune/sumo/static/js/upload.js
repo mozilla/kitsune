@@ -52,7 +52,7 @@ $(document).ready(function () {
                 }
 
                 $options.add.hide();
-                $options.adding.html(interpolate(gettext('Uploading "%s"...'),
+                $options.adding.text(interpolate(gettext('Uploading "%s"...'),
                                                 [$options.filename]))
                               .show();
                 $options.loading.removeClass('empty');
