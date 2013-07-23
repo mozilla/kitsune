@@ -1,13 +1,13 @@
 {% extends "wiki/base.html" %}
-{% from "includes/common_macros.html" import for_contributors_sidebar %}
 {% from "layout/errorlist.html" import errorlist %}
-{% set title = _('{locale} | Knowledge Base')|f(locale=locale.locale) %}
+{% from "dashboards/includes/macros.html" import localization_sidebar_nav %}
+{% set title = _('{locale} Localization Team | Knowledge Base')|f(locale=locale.locale) %}
 {% set crumbs = [(url('wiki.locales'), _('Locales')), (None, locale.locale)] %}
 
 {% block content %}
   <div class="grid_9">
     <article id="locale-listing">
-      <h1>[{{ locale.locale }}] {{ settings.LANGUAGES[locale.locale.lower()] }}</h1>
+      <h1>{{ _('[{locale}] Localization Team')|f(locale=locale.locale) }}</h1>
 
       <div id="locale-leaders" class="editable">
         {% if user_can_edit %}
@@ -106,11 +106,7 @@
 {% endblock %}
 
 {% block side_top %}
-  <nav id="doc-tools">
-    <ul class="sidebar-nav sidebar-folding">
-      {{ for_contributors_sidebar(user, settings.WIKI_DEFAULT_LANGUAGE, True) }}
-    </ul>
-  </nav>
+  {{ localization_sidebar_nav(locale.locale, 'team')}}
 {% endblock %}
 
 {% macro user_row(user) -%}
