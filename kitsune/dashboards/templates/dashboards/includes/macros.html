@@ -172,3 +172,14 @@
     </select>
   </div>
 {% endmacro %}
+
+{% macro sidebar_nav(locale, active) %}
+  <ul class="sidebar-nav">
+    <li {{ active|class_selected('dashboard') }}>
+      <a href="{{ url('dashboards.localization_with_locale', locale) }}">{{ _('Localization Dashboard') }}</a>
+    </li>
+    <li {{ active|class_selected('team') }}>
+      <a href="{{ url('wiki.locale_details', locale) }}">{{ _('Localization Team') }}</a>
+    </li>
+  </ul>
+{% endmacro %}

@@ -1,7 +1,7 @@
 {% extends "base.html" %}
-{% from "includes/common_macros.html" import for_contributors_sidebar %}
 {% from "dashboards/includes/macros.html" import print_readout, overview_section, product_selector, print_subscription_menu with context %}
-{% set title = _('Localization Dashboard') %}
+{% from "dashboards/includes/macros.html" import sidebar_nav %}
+{% set title = _('[{locale}] Localization Dashboard')|f(locale=current_locale) %}
 {% set scripts = ('wiki', 'rickshaw', 'wiki.dashboard') %}
 {% set styles = ('rickshaw', 'kbdashboards') %}
 {% set crumbs = [(None, title)] %}
@@ -104,6 +104,5 @@
 {% endblock %}
 
 {% block side_top %}
-  {{ url('wiki.locale_details', ) }}
-  {{ for_contributors_sidebar(user, settings.WIKI_DEFAULT_LANGUAGE, active='kbdashboard') }}
+  {{ sidebar_nav(current_locale, 'dashboard') }}
 {% endblock %}
