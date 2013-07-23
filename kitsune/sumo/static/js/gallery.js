@@ -277,7 +277,7 @@
             }
             $form.find('.upload-media.' + $input.attr('name')).hideFade();
             var message = interpolate(gettext('Uploading "%s"...'), [filename]);
-            $progress.filter('.row-right').find('span').html(message);
+            $progress.filter('.row-right').find('span').text(message);
             $progress.showFade();
             $form.find('.metadata').show();
             $('#gallery-upload-type').find('input[type="radio"]')
@@ -344,7 +344,7 @@
                     .wrap('<div class="preview-' + type + '"/>').parent();
             } else {
                 // Show file name for the video.
-                $content = $('<span class="text"/>').html(filename);
+                $content = $('<span class="text"/>').text(filename);
             }
             $preview_area = $('.preview.' + type, $form);
             $preview_area.filter('.row-right').html($content);
