@@ -1,14 +1,9 @@
 {% extends "gallery/media.html" %}
 {% from "layout/errorlist.html" import errorlist %}
-{% if media_type == 'image' %}
-  {% set edit_this = _('Edit image') %}
-  {% set save_this = _('Save image') %}
-  {% set title = _('Edit image | {t} | Media Gallery')|f(t=media.title) %}
-{% else %}
-  {% set edit_this = _('Edit video') %}
-  {% set save_this = _('Save video') %}
-  {% set title = _('Edit video | {t} | Media Gallery')|f(t=media.title) %}
-{% endif %}
+{% set edit_this = _('Edit image') %}
+{% set save_this = _('Save image') %}
+{% set title = _('Edit image | {t} | Media Gallery')|f(t=media.title) %}
+
 {% set crumbs = [(url('gallery.gallery', media_type), _('Media Gallery')),
                  (url('gallery.media', media_type, media.id), media.title),
                  (None, edit_this)] %}
