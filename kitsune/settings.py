@@ -288,6 +288,7 @@ JINGO_EXCLUDE_APPS = [
     'admin',
     'adminplus',
     'authority',
+    'browserid',
     'kadmin',
     'waffle',
 ]
@@ -307,6 +308,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'kitsune.sumo.context_processors.i18n',
     'jingo_minify.helpers.build_ids',
     'kitsune.messages.context_processors.unread_message_count',
+    'django_browserid.context_processors.browserid',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -358,7 +360,10 @@ MIDDLEWARE_CLASSES = (
 )
 
 # Auth
-AUTHENTICATION_BACKENDS = ('django.contrib.auth.backends.ModelBackend',)
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.ModelBackend',
+    'django_browserid.auth.BrowserIDBackend',
+)
 AUTH_PROFILE_MODULE = 'users.Profile'
 USER_AVATAR_PATH = 'uploads/avatars/'
 DEFAULT_AVATAR = 'img/avatar.png'
@@ -396,6 +401,7 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.admin',
+    'django_browserid',
     'kitsune.users',
     'tower',
     'jingo_minify',

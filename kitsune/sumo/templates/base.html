@@ -78,6 +78,12 @@
   {% for attr, val in extra_body_attrs.items() %}{{ attr }}="{{ val }}" {% endfor %}
 {%- endif %}>
 
+{% if waffle.flag('browserid') %}
+  <form id="browserid-form" action="{{ url('users.browserid_verify') }}" method="post">
+    {{ browserid_form }}
+  </form>
+{% endif %}
+
 {% if settings.STAGE %}
   <div id="stage-banner">
     <div class="close-button">X</div>
@@ -233,6 +239,12 @@
   <script type="text/javascript" language="javascript" src="//ethn.io/remotes/92398" async="true" charset="utf-8"> </script>
 {% endif %}
 {# End Ethnio #}
+
+{# Browser ID #}
+{% if waffle.flag('browserid') %}
+  <script src="https://login.persona.org/include.js" type="text/javascript"></script>
+{% endif %}
+{# End Browser ID #}
 
 {# Temporary Pontoon testing - bug 812176 #}
 {% if settings.STAGE %}

@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% set styles = ('users',) %}
+{% set classes = 'browserid-signup' %}
+
+{% block breadcrumbs %}
+{% endblock %}
+
+{% block content %}
+  <h1>{{ _("You're almost there!") }}</h1>
+  <p>
+    {% trans %}
+      Please select a username and click continue to proceed with sign up.
+    {% endtrans %}
+  </p>
+
+  <form method="post" action="{{ url('users.browserid_signup') }}">
+    <input type="hidden" name="next" value="{{ next }}">
+    {{ form }}
+    {{ csrf() }}
+    <p><button type="submit" class="btn btn-submit">{{ _('Continue') }}</button></p>
+  </form>
+{% endblock %}

@@ -148,3 +148,6 @@
 [submodule "vendor/src/oauthlib"]
 	path = vendor/src/oauthlib
 	url = https://github.com/idan/oauthlib.git
+[submodule "vendor/src/django-browserid"]
+	path = vendor/src/django-browserid
+	url = https://github.com/mozilla/django-browserid.git
