@@ -1,4 +1,4 @@
-<ul class="products">
+<ul class="products" id="accordion">
   {% for group in topics|groupby('product_id') %}
     <li class="cf">
       <strong>{{ group.list[0].product }}</strong>
