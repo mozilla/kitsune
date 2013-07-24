@@ -37,11 +37,7 @@
       {% for row, should_color in printed_rows %}
         <tr>
           <td>
-            {% if row.url %}
-              <a href="{{ row.url }}">{{ row.title }}</a>
-            {% else %}
               {{ row.title }}
-            {% endif %}
           </td>
           <td>
             {% trans numerator=number(row.numerator), denominator=number(row.denominator) %}
@@ -74,7 +70,7 @@
       </tr>
     </table>
     <div id="overview-options" class="choice-list">
-      <label>{{ _('More options:') }}</label>
+      <label>{{ _('Jump to:') }}</label>
       <ul>
         {% for slug, readout in readouts.iteritems() if readout.short_title %}
           <li><a href="#{{ slug }}">{{ readout.short_title }}</a></li>
