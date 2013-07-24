@@ -713,4 +713,3 @@ def browserid_signup(request):
                           {'email': email, 'next': next, 'form': form})
     else:
         return failure_resp
-
