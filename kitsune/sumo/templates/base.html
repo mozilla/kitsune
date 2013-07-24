@@ -78,6 +78,10 @@
   {% for attr, val in extra_body_attrs.items() %}{{ attr }}="{{ val }}" {% endfor %}
 {%- endif %}>
 
+<form id="browserid-form" action="{{ url('users.browserid_verify') }}" method="post">
+  {{ browserid_form }}
+</form>
+
 {% if settings.STAGE %}
   <div id="stage-banner">
     <div class="close-button">X</div>
@@ -233,6 +237,10 @@
   <script type="text/javascript" language="javascript" src="//ethn.io/remotes/92398" async="true" charset="utf-8"> </script>
 {% endif %}
 {# End Ethnio #}
+
+{# Browser ID #}
+  <script src="https://login.persona.org/include.js" type="text/javascript"></script>
+{# End Browser ID #}
 
 {# Temporary Pontoon testing - bug 812176 #}
 {% if settings.STAGE %}

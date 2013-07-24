@@ -74,6 +74,33 @@ class SettingsForm(forms.Form):
                 user.settings.create(name=field, value=value)
 
 
+class BrowserIDSignupForm(forms.ModelForm):
+    """A user registration form that requires a unique username"""
+    username = forms.RegexField(
+        label=_lazy(u'Username:'), max_length=30, min_length=4,
+        regex=r'^[\w.+-]+$',
+        help_text=_lazy(u'Required. 30 characters or fewer. Letters, digits '
+                        'and ./+/- only.'),
+        error_messages={'invalid': USERNAME_INVALID,
+                        'required': USERNAME_REQUIRED,
+                        'min_length': USERNAME_SHORT,
+                        'max_length': USERNAME_LONG})
+
+    class Meta(object):
+        model = User
+        fields = ('username',)
+
+    def clean(self):
+        super(BrowserIDSignupForm, self).clean()
+        username = self.cleaned_data.get('username')
+        _check_username(username)
+        return self.cleaned_data
+
+    def __init__(self,  request=None, *args, **kwargs):
+        super(BrowserIDSignupForm, self).__init__(request, auto_id='id_for_%s',
+                                                  *args, **kwargs)
+
+
 class RegisterForm(forms.ModelForm):
     """A user registration form that requires unique email addresses.
 
@@ -86,7 +113,7 @@ class RegisterForm(forms.ModelForm):
         label=_lazy(u'Username:'), max_length=30, min_length=4,
         regex=r'^[\w.+-]+$',
         help_text=_lazy(u'Required. 30 characters or fewer. Letters, digits '
-                         'and ./+/-/_ only.'),
+                         'and ./+/- only.'),
         error_messages={'invalid': USERNAME_INVALID,
                         'required': USERNAME_REQUIRED,
                         'min_length': USERNAME_SHORT,

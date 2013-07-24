@@ -1016,7 +1016,6 @@ input[type=button],
       > ul {
         background: #fff;
         .box-shadow(0 3px 3px rgba(0, 0, 0, 0.1));
-
         display: none;
         left: 0;
         list-style: none;
@@ -1068,10 +1067,28 @@ input[type=button],
         }
       }
 
+      > .doorhanger {
+        background: #fff;
+        border-top: 1px solid #eee;
+        .box-shadow(0 3px 3px rgba(0, 0, 0, 0.1));
+        display: none;
+        font-weight: normal;
+        left: 0;
+        padding: 0 12px;
+        position: absolute;
+        text-transform: none;
+        top: 42px;
+        width: 320px;
+      }
+
       &:hover {
         background: #fff;
 
         > ul {
+          display: block;
+        }
+
+        > .doorhanger {
           display: block;
         }
       }
@@ -1446,6 +1463,10 @@ input[type=button],
   display: inline-block;
   font-size: 12px;
   margin-top: 10px;
+}
+
+#browserid-form {
+  display: none;
 }
 
 @media only screen and (max-device-width: 800px) {

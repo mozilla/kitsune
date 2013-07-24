@@ -9,10 +9,14 @@ from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.models import Site
 from django.http import (HttpResponsePermanentRedirect, HttpResponseRedirect,
                          Http404)
+from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import (require_http_methods, require_GET,
                                           require_POST)
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, render, redirect
 from django.utils.http import base36_to_int
+
+from django_browserid import get_audience, verify
+from django_browserid.forms import BrowserIDForm
 
 from mobility.decorators import mobile_template
 from session_csrf import anonymous_csrf
@@ -33,7 +37,7 @@ from kitsune.upload.tasks import _create_image_thumbnail
 from kitsune.users.forms import (
     ProfileForm, AvatarForm, EmailConfirmationForm, AuthenticationForm,
     EmailChangeForm, SetPasswordForm, PasswordChangeForm, SettingsForm,
-    ForgotUsernameForm, RegisterForm, PasswordResetForm)
+    ForgotUsernameForm, RegisterForm, PasswordResetForm, BrowserIDSignupForm)
 from kitsune.users.helpers import profile_url
 from kitsune.users.models import (
     CONTRIBUTOR_GROUP, Group, Profile, RegistrationProfile, EmailChange)
@@ -632,3 +636,67 @@ def forgot_username(request, template):
         form = ForgotUsernameForm()
 
     return render(request, template, {'form': form})
+
+
+@csrf_exempt
+@require_POST
+@ssl_required
+def browserid_verify(request):
+    next = request.REQUEST.get('next')
+    redirect_to = next or getattr(settings, 'LOGIN_REDIRECT_URL', '/')
+    redirect_to_failure = getattr(settings, 'LOGIN_REDIRECT_URL_FAILURE', '/')
+
+    form = BrowserIDForm(data=request.POST)
+
+    if form.is_valid():
+        result = verify(form.cleaned_data['assertion'], get_audience(request))
+        if result:
+            # Verified so log in
+            email = result['email']
+            user = User.objects.filter(email=email)
+
+            if len(user) == 0:
+                form = BrowserIDSignupForm()
+                request.session['browserid-email'] = email
+                return render(request, 'users/browserid_signup.html',
+                              {'email': email, 'next': next, 'form': form})
+            else:
+                user = user[0]
+                user.backend = 'django_browserid.auth.BrowserIDBackend'
+                auth.login(request, user)
+                return redirect(redirect_to)
+
+    return redirect(redirect_to_failure)
+
+
+@anonymous_csrf
+@require_POST
+@ssl_required
+def browserid_signup(request):
+    next = request.REQUEST.get('next')
+    redirect_to = next or getattr(settings, 'LOGIN_REDIRECT_URL', '/')
+    redirect_to_failure = getattr(settings, 'LOGIN_REDIRECT_URL_FAILURE', '/')
+
+    email = request.session.get('browserid-email', None)
+
+    if email:
+        form = BrowserIDSignupForm(request.REQUEST)
+
+        if form.is_valid():
+            user = User.objects.create_user(form.cleaned_data['username'],
+                                            email)
+            user.save()
+
+            # Create a new profile for the user
+            Profile.objects.create(user=user, locale=request.LANGUAGE_CODE)
+
+            # Log the user in
+            user.backend = 'django_browserid.auth.BrowserIDBackend'
+            auth.login(request, user)
+
+            return redirect(redirect_to)
+        else:
+            return render(request, 'users/browserid_signup.html',
+                          {'email': email, 'next': next, 'form': form})
+
+    return redirect(redirect_to_failure)

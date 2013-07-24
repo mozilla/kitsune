@@ -134,6 +134,7 @@ MINIFY_BUNDLES = {
             'js/ui.js',
             'js/analytics.js',
             'js/surveygizmo.js',
+            'js/browserid.js',
         ),
         'mobile/common': (
             'js/i18n.js',

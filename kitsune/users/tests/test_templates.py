@@ -86,7 +86,7 @@ class LoginTests(TestCaseBase):
             urlparams(reverse('users.login'), next=next), follow=True)
         eq_(200, response.status_code)
         doc = pq(response.content)
-        eq_(next, doc('input[name="next"]')[0].attrib['value'])
+        eq_(next, doc('#login input[name="next"]')[0].attrib['value'])
 
         # Verify that it gets used on form POST.
         response = self.client.post(reverse('users.login'),
@@ -108,7 +108,7 @@ class LoginTests(TestCaseBase):
         response = self.client.get(url, follow=True)
         eq_(200, response.status_code)
         doc = pq(response.content)
-        eq_(valid_next, doc('input[name="next"]')[0].attrib['value'])
+        eq_(valid_next, doc('#login input[name="next"]')[0].attrib['value'])
 
         # Verify that it gets used on form POST.
         response = self.client.post(reverse('users.login'),
