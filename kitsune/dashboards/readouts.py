@@ -579,7 +579,7 @@ class MostVisitedTranslationsReadout(MostVisitedDefaultLanguageReadout):
     we should drop everything to translate.
 
     """
-    # No short_title; the link to this one is hard-coded in Overview readout
+    short_title = _lazy(u'Most Visited')
     slug = 'most-visited-translations'
     details_link_text = _lazy(u'All translations...')
 
@@ -622,6 +622,7 @@ class TemplateTranslationsReadout(Readout):
 
     """
     title = _lazy(u'Templates')
+    short_title = _lazy(u'Templates')
     slug = 'template-translations'
     details_link_text = _lazy(u'All templates...')
     column3_label = ''
@@ -685,6 +686,7 @@ class NavigationTranslationsReadout(Readout):
 
     """
     title = _lazy(u'Navigation Articles')
+    short_title = _lazy(u'Navigation Articles')
     slug = 'template-navigation'
     details_link_text = _lazy(u'All navigation articles...')
     column3_label = ''
