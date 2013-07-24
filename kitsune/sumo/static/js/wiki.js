@@ -65,7 +65,6 @@
                 collapsible: true,
                 heightStyle: "content",
                 active: false
-
             });
         });
     }
