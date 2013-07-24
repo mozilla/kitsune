@@ -60,13 +60,13 @@
     if ($body.is('.edit, .new')) {
       // collapse the topics listing per product and show only one topic list
       // at at a time
-        $(function () {
-            $("#accordion").accordion({
-                collapsible: true,
-                heightStyle: "content",
-                active: false
-            });
+      $(function () {
+        $("#accordion").accordion({
+          collapsible: true,
+          heightStyle: "content",
+          active: false
         });
+      });
     }
 
     if ($body.is('.translate')) {  // Translate page
