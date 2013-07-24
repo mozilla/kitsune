@@ -12,7 +12,7 @@ from django.http import (HttpResponsePermanentRedirect, HttpResponseRedirect,
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import (require_http_methods, require_GET,
                                           require_POST)
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, render, redirect
 from django.utils.http import base36_to_int
 
 from django_browserid import get_audience, verify
@@ -638,18 +638,13 @@ def forgot_username(request, template):
     return render(request, template, {'form': form})
 
 
-@require_POST
 @csrf_exempt
+@require_POST
 @ssl_required
 def browserid_verify(request):
     next = request.REQUEST.get('next')
-    redirect_to = next
-    if not redirect_to:
-        redirect_to = getattr(settings, 'LOGIN_REDIRECT_URL', '/')
+    redirect_to = next or getattr(settings, 'LOGIN_REDIRECT_URL', '/')
     redirect_to_failure = getattr(settings, 'LOGIN_REDIRECT_URL_FAILURE', '/')
-
-    success_resp = HttpResponseRedirect(redirect_to)
-    failure_resp = HttpResponseRedirect(redirect_to_failure)
 
     form = BrowserIDForm(data=request.POST)
 
@@ -660,7 +655,7 @@ def browserid_verify(request):
             email = result['email']
             user = User.objects.filter(email=email)
 
-            if len(user) is 0:
+            if len(user) == 0:
                 form = BrowserIDSignupForm()
                 request.session['browserid-email'] = email
                 return render(request, 'users/browserid_signup.html',
@@ -669,24 +664,18 @@ def browserid_verify(request):
                 user = user[0]
                 user.backend = 'django_browserid.auth.BrowserIDBackend'
                 auth.login(request, user)
-                return success_resp
-        else:
-            # Not verified so auth failure
-            return failure_resp
+                return redirect(redirect_to)
+
+    return redirect(redirect_to_failure)
 
 
+@anonymous_csrf
 @require_POST
 @ssl_required
-@anonymous_csrf
 def browserid_signup(request):
     next = request.REQUEST.get('next')
-    redirect_to = next
-    if not redirect_to:
-        redirect_to = getattr(settings, 'LOGIN_REDIRECT_URL', '/')
+    redirect_to = next or getattr(settings, 'LOGIN_REDIRECT_URL', '/')
     redirect_to_failure = getattr(settings, 'LOGIN_REDIRECT_URL_FAILURE', '/')
-
-    success_resp = HttpResponseRedirect(redirect_to)
-    failure_resp = HttpResponseRedirect(redirect_to_failure)
 
     email = request.session.get('browserid-email', None)
 
@@ -707,9 +696,9 @@ def browserid_signup(request):
             user.backend = 'django_browserid.auth.BrowserIDBackend'
             auth.login(request, user)
 
-            return success_resp
+            return redirect(redirect_to)
         else:
             return render(request, 'users/browserid_signup.html',
                           {'email': email, 'next': next, 'form': form})
-    else:
-        return failure_resp
+
+    return redirect(redirect_to_failure)

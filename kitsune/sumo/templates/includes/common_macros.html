@@ -54,12 +54,12 @@
           {{ browserid_login(text=_('Sign in with Persona')) }}
           <div class="doorhanger">
               <p><strong>{{ _("What's this") }}</strong></p>
-              {% trans %}
+              {% trans url="http://www.mozilla.org/persona/" %}
                 <p>
                   SUMO has switched to Persona, a safe and simple way to sign
                   in with just your e-mail address.
-                  <a href="http://www.mozilla.org/en-US/persona/">Learn more
-                  about why Mozilla is using Persona.</a>
+                  <a href="{{ url }}">Learn more about why Mozilla is using
+                  Persona.</a>
                 </p>
               {% endtrans %}
           </div>

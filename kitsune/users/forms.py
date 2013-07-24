@@ -80,7 +80,7 @@ class BrowserIDSignupForm(forms.ModelForm):
         label=_lazy(u'Username:'), max_length=30, min_length=4,
         regex=r'^[\w.+-]+$',
         help_text=_lazy(u'Required. 30 characters or fewer. Letters, digits '
-                        'and ./+/-/_ only.'),
+                        'and ./+/- only.'),
         error_messages={'invalid': USERNAME_INVALID,
                         'required': USERNAME_REQUIRED,
                         'min_length': USERNAME_SHORT,
@@ -113,7 +113,7 @@ class RegisterForm(forms.ModelForm):
         label=_lazy(u'Username:'), max_length=30, min_length=4,
         regex=r'^[\w.+-]+$',
         help_text=_lazy(u'Required. 30 characters or fewer. Letters, digits '
-                         'and ./+/-/_ only.'),
+                         'and ./+/- only.'),
         error_messages={'invalid': USERNAME_INVALID,
                         'required': USERNAME_REQUIRED,
                         'min_length': USERNAME_SHORT,
