@@ -33,7 +33,7 @@
 
 {% macro image_preview(form, type, name) %}
   {% set classes = 'preview ' + name %}
-  {% if form.instance.pk and (type == 'image' or form.instance.thumbnail) %}
+  {% if form.instance.pk and type == 'image' %}
     {% set html =
       '<div class="preview-{type} {name}">
         <img src="{thumbnail_url}">
@@ -60,28 +60,8 @@
     {{ image_preview(form, type, name) }}
 {% endmacro %}
 
-{% macro video_preview(file, name) %}
-  {% set classes = 'preview ' + name %}
-  {% if file %}
-    {% set html =
-      '{file_info}
-       <input type="submit" name="cancel" class="link-btn"
-              data-name="{name}"
-              data-action="{url}"
-              value="{value}">'|fe(
-        name=name, file_info=file.name.rsplit('/', 1)[-1],
-        url=url('gallery.cancel_draft', media_type='video')|urlparams(field=name),
-        value=_('Delete {format} file')|f(format=name)) %}
-    {% set classes = classes + ' on' %}
-  {% else %}
-    {% set classes = classes + ' off' %}
-  {% endif %}
-  {{ raw_row(html, classes, _('Preview ({format})')|f(format=name)) }}
-{% endmacro %}
 
 {% if image_form.instance.pk %}
-  {% set has_draft = True %}
-{% elif video_form.instance.pk %}
   {% set has_draft = True %}
 {% endif %}
 {#
@@ -95,12 +75,7 @@ TODO: better error messages ("invalid file" means too big, or extension, etc)
 
 #}
 <div id="gallery-upload-modal" title="{% if has_draft %}{{ _('Continue Uploading Media') }}{% else %}{{ _('Upload a New Media File') }}{% endif %}" data-modal="true" data-target="#btn-upload" data-id="upload-kbox" data-position="none"
-  data-max-image-size="{{ settings.IMAGE_MAX_FILESIZE }}"
-  data-max-video-size="{{ settings.VIDEO_MAX_FILESIZE }}">
-  <form id="gallery-upload-type" action="" method="post"
-        class="{{ 'draft' if has_draft else '' }}">
-    {{ form_row(upload_type_form, 'type') }}
-  </form>
+  data-max-image-size="{{ settings.IMAGE_MAX_FILESIZE }}">
   <form id="gallery-upload-image" class="upload-form{{ ' draft' if image_form.instance.pk else '' }}"
     data-post-url="{{ url('gallery.upload_async', media_type='image') }}"
     method="post" enctype="multipart/form-data"
@@ -114,39 +89,5 @@ TODO: better error messages ("invalid file" means too big, or extension, etc)
     {{ form_row(image_form, 'title', classes='metadata') }}
     {{ form_row(image_form, 'description', classes='metadata') }}
     {{ submit_row(image_form, 'image') }}
-  </form>
-  <form id="gallery-upload-video" class="upload-form{{ ' draft' if video_form.instance.pk else '' }}"
-    data-post-url="{{ url('gallery.upload_async', media_type='video') }}"
-    method="post" enctype="multipart/form-data"
-    action="{{ url('gallery.upload', media_type='video') }}"
-    data-flv="{{ 1 if video_form.instance.flv else 0 }}"
-    data-ogv="{{ 1 if video_form.instance.ogv else 0 }}"
-    data-webm="{{ 1 if video_form.instance.webm else 0 }}"
-    data-thumbnail="{{ 1 if video_form.instance.thumbnail else 0 }}">
-    {{ csrf() }}
-    {{ errorlist(video_form) }}
-    {{ form_row(video_form, 'flv', classes='upload-media') }}
-    {{ raw_row('<span></span><a class="flv" href="{url}">{label}</a>'|fe(
-                   url=url('gallery.gallery', media_type=media_type),
-                   label=_('Cancel')),
-               'progress flv', _('Progress (flv)')) }}
-    {{ video_preview(video_form.instance.flv, 'flv') }}
-    {{ form_row(video_form, 'ogv', classes='upload-media') }}
-    {{ raw_row('<span></span><a class="ogv" href="{url}">{label}</a>'|fe(
-                   url=url('gallery.gallery', media_type=media_type),
-                   label=_('Cancel')),
-               'progress ogv', _('Progress (ogv)')) }}
-    {{ video_preview(video_form.instance.ogv, 'ogv') }}
-    {{ form_row(video_form, 'webm', classes='upload-media') }}
-    {{ raw_row('<span></span><a class="webm" href="{url}">{label}</a>'|fe(
-                   url=url('gallery.gallery', media_type=media_type),
-                   label=_('Cancel')),
-               'progress webm', _('Progress (webm)')) }}
-    {{ video_preview(video_form.instance.webm, 'webm') }}
-    {{ image_fields(video_form, 'video', 'thumbnail') }}
-    {{ form_row(image_form, 'locale', classes='metadata') }}
-    {{ form_row(image_form, 'title', classes='metadata') }}
-    {{ form_row(image_form, 'description', classes='metadata') }}
-    {{ submit_row(video_form, 'video') }}
   </form>
 </div>

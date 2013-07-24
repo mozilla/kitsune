@@ -8,13 +8,8 @@
   {% set crumbs = [(url('gallery.gallery', media_type), _('Media Gallery')),
                    (None, media.title)] %}
 {% endif %}
-{% if media_type == 'image' %}
-  {% set delete_this = _('Delete this image') %}
-  {% set edit_this = _('Edit this image') %}
-{% else %}
-  {% set delete_this = _('Delete this video') %}
-  {% set edit_this = _('Edit this video') %}
-{% endif %}
+{% set delete_this = _('Delete this image') %}
+{% set edit_this = _('Edit this image') %}
 
 {% block above_main %}
   {% if user.is_authenticated() %}
@@ -78,9 +73,7 @@
           (media_type == 'video' and user.has_perm('gallery.delete_video')) %}
           <button type="submit" class="btn btn-submit big">{{ delete_this }}</button>
         {% endif %}
-        {% if user == media.creator or
-          (media_type == 'image' and user.has_perm('gallery.change_image')) or
-          (media_type == 'video' and user.has_perm('gallery.change_video')) %}
+        {% if media_type == 'image' and (user == media.creator or user.has_perm('gallery.change_image')) %}
           <a class="btn" href="{{ url('gallery.edit_media', media_type, media.id) }}">{{ edit_this }}</a>
         {% endif %}
       </form>

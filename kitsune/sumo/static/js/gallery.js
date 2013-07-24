@@ -12,19 +12,11 @@
             // the remainder are set by input name, not file type
             messages: {},
             extensions: {
-                file: ['jpg', 'jpeg', 'png', 'bmp', 'gif', 'tiff'],
-                flv: ['flv'],
-                ogv: ['ogv', 'ogg'],
-                webm: ['webm']},
+                file: ['jpg', 'jpeg', 'png', 'bmp', 'gif', 'tiff']},
             max_size: {
-                file: $('#gallery-upload-modal').data('max-image-size'),
-                flv: $('#gallery-upload-modal').data('max-video-size'),
+                file: $('#gallery-upload-modal').data('max-image-size')
             }
         };
-    CONSTANTS.extensions['thumbnail'] = CONSTANTS.extensions['file'];
-    CONSTANTS.max_size['thumbnail'] = CONSTANTS.max_size['file'];
-    CONSTANTS.max_size['ogv'] = CONSTANTS.max_size['flv'];
-    CONSTANTS.max_size['webm'] = CONSTANTS.max_size['flv'];
 
     CONSTANTS.messages['server'] = gettext('Could not upload file. Please try again later.');
     CONSTANTS.messages['file'] = {
@@ -33,26 +25,6 @@
         'cancelled': gettext('Upload cancelled. Please select an image file.'),
         'deleted': gettext('File deleted. Please select an image file.'),
         'del': gettext('Delete this image')};
-    CONSTANTS.messages['flv'] = {
-        'server': CONSTANTS.messages['server'],
-        'invalid': gettext('Invalid video. Please select a valid FLV video.'),
-        'cancelled': gettext('Upload cancelled. Please select an FLV video.'),
-        'deleted': gettext('File deleted. Please select an FLV video.'),
-        'del': gettext('Delete FLV video')};
-    CONSTANTS.messages['ogv'] = {
-        'server': CONSTANTS.messages['server'],
-        'invalid': gettext('Invalid video. Please select a valid OGV video.'),
-        'cancelled': gettext('Upload cancelled. Please select an OGV video.'),
-        'deleted': gettext('File deleted. Please select an OGV video.'),
-        'del': gettext('Delete OGV video')};
-    CONSTANTS.messages['webm'] = {
-        'server': CONSTANTS.messages['server'],
-        'invalid': gettext('Invalid video. Please select a valid WebM video.'),
-        'cancelled': gettext('Upload cancelled. Please select a WebM video.'),
-        'deleted': gettext('File deleted. Please select a WebM video.'),
-        'del': gettext('Delete WebM video')};
-    // necessary for video thumbnail
-    CONSTANTS.messages['thumbnail'] = CONSTANTS.messages['file'];
 
     // Save all initial values of input details:
     CONSTANTS.messages.initial = {};
@@ -102,9 +74,7 @@
      * modalReset: clean up the form in anticipation of a complete do-over
      */
     var GalleryUpload = {
-        forms: {$type: $('#gallery-upload-type'),
-                $image: $('#gallery-upload-image'),
-                $video: $('#gallery-upload-video')},
+        forms: {$image: $('#gallery-upload-image')},
         $modal: $('#gallery-upload-modal'),
         // some mapping here for what to show/hide and when
         /*
@@ -114,21 +84,7 @@
          */
         init: function() {
             var self = this;
-            self.$radios = $('input[type="radio"]', self.$modal);
-            /*
-             * Show/Hide media type form.
-             */
-            self.$radios.click(function changeMediaType() {
-                var current = self.$radios.index($(this));
-                if (0 === current) {
-                    self.forms.$video.hideFade();
-                    self.forms.$image.showFade();
-                } else {
-                    self.forms.$image.hideFade();
-                    self.forms.$video.showFade();
-                }
-            });
-            self.$radios.filter(':checked').click();
+            self.forms.$image.showFade();
 
             // Bind cancel upload event.
             $('.progress a', self.$modal).click(function cancelUpload(ev) {
@@ -206,10 +162,9 @@
                 }
             }
             self.forms.$image.find('input[name="upload"]').click(validateSubmit);
-            self.forms.$video.find('input[name="upload"]').click(validateSubmit);
 
 
-            if (self.forms.$type.hasClass('draft')) {
+            if (self.forms.$image.hasClass('draft')) {
                 // draft
                 self.draftSetup();
             } else {
@@ -226,12 +181,6 @@
             // An image must be uploaded
             if ($form[0] == self.forms.$image[0] &&
                 $form.find('.on input[type="file"]').length) {
-                return false;
-            }
-            // ... or a video must be uploaded
-            if ($form[0] == self.forms.$video[0] &&
-                $form.find('.on input[type="file"]')
-                      .not('[name="thumbnail"]').length == 3) {
                 return false;
             }
             // Metadata must be filled out
@@ -280,8 +229,6 @@
             $progress.filter('.row-right').find('span').text(message);
             $progress.showFade();
             $form.find('.metadata').show();
-            $('#gallery-upload-type').find('input[type="radio"]')
-                                     .attr('disabled', 'disabled');
             return {filename: filename};
         },
         /*
@@ -297,13 +244,6 @@
                 iframeJSON = $.parseJSON(iframeContent);
             } catch(err) {
                 self.uploadError($input, 'server');
-                if (err.substr(0, 12)  === 'Invalid JSON') {
-                    // This will help debug, if it's a lasting problem.
-                    if (undefined !== console) {
-                        console.log(err);
-                    }
-                    return false;
-                }
             }
 
             var upStatus = iframeJSON.status;
@@ -319,7 +259,7 @@
          * Fired after upload is complete, if isValidFile is true, and server
          * returned succes.
          * -- hide progress
-         * -- generate image/video preview
+         * -- generate image preview
          * -- create cancel button and bind its click event
          */
         uploadSuccess: function($input, iframeJSON, filename) {
@@ -335,16 +275,13 @@
             $form.find('.progress.' + type).hideFade();
 
             // generate preview
-            if (type === 'file' || type === 'thumbnail') {
+            if (type === 'file') {
                 // create thumbnail
                 $content = $('<img/>')
                     .attr({alt: upFile.name, title: upFile.name,
                            width: upFile.width, height: upFile.height,
                            src: upFile.thumbnail_url})
                     .wrap('<div class="preview-' + type + '"/>').parent();
-            } else {
-                // Show file name for the video.
-                $content = $('<span class="text"/>').text(filename);
             }
             $preview_area = $('.preview.' + type, $form);
             $preview_area.filter('.row-right').html($content);
@@ -385,8 +322,8 @@
             self.setInputError($input, reason);
         },
         /*
-         * Fired when deleting an uploaded image or video.
-         * -- hide preview of image or video
+         * Fired when deleting an uploaded image.
+         * -- hide preview of image
          * -- send off an ajax request to remove the uploaded file
          * -- show file input along with a message
          */
@@ -428,7 +365,7 @@
             self._reUpload($form, type);
         },
         /*
-         * Abstracts common code for re-uploading image/video
+         * Abstracts common code for re-uploading image
          * -- if no other uploads are in progress and none have completed,
          *    hide the metadata fields
          * -- show the file input
@@ -439,8 +376,6 @@
             if (!$form.find('.progress').hasClass('on') &&
                 !$form.find('.preview').hasClass('on')) {
                 $form.find('.metadata').hide();
-                $('#gallery-upload-type').find('input[type="radio"]')
-                                         .removeAttr('disabled');
                 $form.removeClass('draft');
             }
             // finally, show the input again
@@ -469,27 +404,20 @@
                 }
             });
             if (self.forms.$image.hasClass('draft')) {
-                self.$radios.first().click();
                 self.forms.$image.find('.upload-media').hideFade();
-            } else {
-                self.$radios.last().click();
             }
             self.$modal.find('input[name="cancel"]').not('.kbox-cancel')
                        .makeCancelUpload();
-            $('#gallery-upload-type').find('input[type="radio"]')
-                                     .attr('disabled', 'disabled');
         },
         /*
          * Fired when user closes modal.
-         * -- delete selected draft, image or video
+         * -- delete selected draft or image
          * -- call modalReset
          */
         modalClose: function() {
             var self = this,
-                checked_index = self.$radios.index(self.$radios.filter(':checked')),
                 csrf = $('input[name="csrfmiddlewaretoken"]').first().val(),
-                $input = $('.upload-action input[name="cancel"]', self.$modal)
-                            .eq(checked_index);
+                $input = $('.upload-action input[name="cancel"]', self.$modal);
             if (self.$modal.find('.draft').length) {
                 // If there's a draft to cancel.
                 $.ajax({
@@ -530,7 +458,6 @@
             });
             // Reset the forms.
             self.forms.$image[0].reset();
-            self.forms.$video[0].reset();
         }
     };
 
@@ -543,9 +470,4 @@
 
     var kbox = $('#gallery-upload-modal').kbox({preClose: preClose});
 
-    // Got draft? Show it.
-    if (document.location.hash === '#upload' ||
-        $('#gallery-upload-type').hasClass('draft')) {
-        $('#btn-upload').click();
-    }
 })(jQuery);

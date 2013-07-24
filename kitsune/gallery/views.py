@@ -10,22 +10,18 @@ from django.shortcuts import get_object_or_404, render
 from django.views.decorators.clickjacking import xframe_options_sameorigin
 from django.views.decorators.http import require_POST
 
-from tower import ugettext_lazy as _lazy
+from tower import ugettext as _
 
 from kitsune.access.decorators import login_required
 from kitsune.gallery import ITEMS_PER_PAGE
-from kitsune.gallery.forms import ImageForm, VideoForm, UploadTypeForm
+from kitsune.gallery.forms import ImageForm
 from kitsune.gallery.models import Image, Video
-from kitsune.gallery.utils import (
-    upload_image, upload_video, check_media_permissions)
+from kitsune.gallery.utils import upload_image, check_media_permissions
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import paginate
 from kitsune.upload.tasks import compress_image, generate_thumbnail
 from kitsune.upload.utils import FileTooLargeError
 from kitsune.wiki.tasks import schedule_rebuild_kb
-
-MSG_FAIL_UPLOAD = {'image': _lazy(u'Could not upload your image.'),
-                   'video': _lazy(u'Could not upload your video.')}
 
 
 log = logging.getLogger('k.gallery')
@@ -47,14 +43,15 @@ def gallery(request, media_type='image'):
     media = paginate(request, media_qs, per_page=ITEMS_PER_PAGE)
 
     drafts = _get_drafts(request.user)
-    image_form, video_form, upload_type_form = _init_forms(request, drafts)
+    image = drafts['image'][0] if drafts['image'] else None
+    image_form = _init_media_form(ImageForm, request, image)
+    if request.method == 'POST':
+        image_form.is_valid()
 
     return render(request, 'gallery/gallery.html', {
         'media': media,
         'media_type': media_type,
-        'upload_type_form': upload_type_form,
-        'image_form': image_form,
-        'video_form': video_form})
+        'image_form': image_form})
 
 
 @login_required
@@ -78,24 +75,6 @@ def upload(request, media_type='image'):
             return HttpResponseRedirect(img.get_absolute_url())
         else:
             return gallery(request, media_type='image')
-    elif media_type == 'video' and drafts['video']:
-        # We're publishing a video draft!
-        video_form = _init_media_form(VideoForm, request, drafts['video'][0])
-        if video_form.is_valid():
-            vid = video_form.save(is_draft=None)
-            if vid.thumbnail:
-                generate_thumbnail.delay(vid, 'poster', 'poster',
-                                         max_size=settings.WIKI_VIDEO_WIDTH)
-                generate_thumbnail.delay(vid, 'thumbnail', 'thumbnail')
-            # TODO: We can drop this when we start using Redis.
-            invalidate = Video.objects.exclude(pk=vid.pk)
-            if invalidate.exists():
-                Video.objects.invalidate(invalidate[0])
-            # Rebuild KB
-            schedule_rebuild_kb()
-            return HttpResponseRedirect(vid.get_absolute_url())
-        else:
-            return gallery(request, media_type='video')
 
     return HttpResponseBadRequest(u'Unrecognized POST request.')
 
@@ -108,20 +87,8 @@ def cancel_draft(request, media_type='image'):
     if media_type == 'image' and drafts['image']:
         drafts['image'].delete()
         drafts['image'] = None
-    elif media_type == 'video' and drafts['video']:
-        delete_file = request.GET.get('field')
-        if delete_file not in ('flv', 'ogv', 'webm', 'thumbnail'):
-            delete_file = None
-
-        if delete_file and getattr(drafts['video'][0], delete_file):
-            getattr(drafts['video'][0], delete_file).delete()
-            if delete_file == 'thumbnail' and drafts['video'][0].poster:
-                drafts['video'][0].poster.delete()
-        elif not delete_file:
-            drafts['video'].delete()
-            drafts['video'] = None
     else:
-        msg = u'Unrecognized request or nothing to cancel.'
+        msg = _(u'Unrecognized request or nothing to cancel.')
         mimetype = None
         if request.is_ajax():
             msg = json.dumps({'status': 'error', 'message': msg})
@@ -223,8 +190,7 @@ def edit_media(request, media_id, media_type='image'):
         media_form = _init_media_form(ImageForm, request, media,
                                       ('locale', 'title'))
     else:
-        media_form = _init_media_form(VideoForm, request, media,
-                                      ('locale', 'title'))
+        raise Http404
 
     if request.method == 'POST' and media_form.is_valid():
         media = media_form.save(update_user=request.user)
@@ -258,7 +224,9 @@ def upload_async(request, media_type='image'):
         if media_type == 'image':
             file_info = upload_image(request)
         else:
-            file_info = upload_video(request)
+            msg = _(u'Unrecognized media type.')
+            return HttpResponseBadRequest(
+                json.dumps({'status': 'error', 'message': msg}))
     except FileTooLargeError as e:
         return HttpResponseBadRequest(
             json.dumps({'status': 'error', 'message': e.args[0]}))
@@ -268,9 +236,10 @@ def upload_async(request, media_type='image'):
         return HttpResponse(
             json.dumps({'status': 'success', 'file': file_info}))
 
-    message = MSG_FAIL_UPLOAD[media_type]
+    message = _(u'Could not upload your image.')
     return HttpResponseBadRequest(
-        json.dumps({'status': 'error', 'message': unicode(message),
+        json.dumps({'status': 'error',
+                    'message': unicode(message),
                     'errors': file_info}))
 
 
@@ -323,17 +292,3 @@ def _init_media_form(form_cls, request=None, obj=None,
 
     return form_cls(post_data, file_data, instance=obj, initial=initial,
                     is_ajax=False)
-
-
-def _init_forms(request, drafts):
-    """Initialize video and image upload forms given the request and drafts."""
-    image = drafts['image'][0] if drafts['image'] else None
-    image_form = _init_media_form(ImageForm, request, image)
-    video = drafts['video'][0] if drafts['video'] else None
-    video_form = _init_media_form(VideoForm, request, video)
-    upload_type_form = UploadTypeForm()
-    if request.method == 'POST':
-        image_form.is_valid()
-        video_form.is_valid()
-
-    return (image_form, video_form, upload_type_form)

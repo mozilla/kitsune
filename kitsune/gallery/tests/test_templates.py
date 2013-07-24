@@ -1,5 +1,3 @@
-from django.contrib.auth.models import User
-
 from nose import SkipTest
 from nose.tools import eq_
 from pyquery import PyQuery as pq
@@ -108,15 +106,6 @@ class GalleryUploadTestCase(TestCase):
         assert doc('.file.preview img').attr('src').endswith('098f6b.jpg')
         eq_(1, doc('.file.preview img').length)
 
-    def test_video_draft_shows(self):
-        """The video draft is loaded for this user."""
-        video(is_draft=True, creator=self.u)
-        response = get(self.client, 'gallery.gallery', args=['image'])
-        eq_(200, response.status_code)
-        doc = pq(response.content)
-        # Preview for all 3 video formats: flv, ogv, webm
-        eq_(3, doc('#gallery-upload-video .preview input').length)
-
     def test_image_draft_post(self):
         """Posting to the page saves the field values for the image draft."""
         image(is_draft=True, creator=self.u)
@@ -145,8 +134,6 @@ class GalleryUploadTestCase(TestCase):
         doc = pq(response.content)
         eq_('fr',
             doc('#gallery-upload-image option[selected="selected"]').val())
-        eq_('fr',
-            doc('#gallery-upload-video option[selected="selected"]').val())
 
     def test_invalid_messages(self):
         # TODO(paul) POSTing invalid data shows error messages and pre-fills
