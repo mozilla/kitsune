@@ -57,27 +57,21 @@ def contributors_detail(request, readout_slug):
 
 
 @require_GET
-def localization_detail(request, readout_slug, locale_code=None):
+def localization_detail(request, readout_slug):
     """Show all the rows for the given localizer dashboard table."""
-    locale = locale_code or request.LANGUAGE_CODE
     product = _get_product(request)
 
     return _kb_detail(request, readout_slug, L10N_READOUTS,
                       'dashboards.localization', _('Localization Dashboard'),
-                      locale=locale, product=product)
+                      product=product)
 
 
 @require_GET
-def localization(request, locale_code=None):
+def localization(request):
     """Render aggregate data about articles in a non-default locale."""
-    locale = locale_code or request.LANGUAGE_CODE
-
-    # There is no localization dashboard for the default language. There
-    # is just the KB dashboard.
-    if locale == settings.WIKI_DEFAULT_LANGUAGE:
+    if request.LANGUAGE_CODE == settings.WIKI_DEFAULT_LANGUAGE:
         return HttpResponseRedirect(reverse('dashboards.contributors'))
-
-    locales = Locale.objects.filter(locale=locale)
+    locales = Locale.objects.filter(locale=request.LANGUAGE_CODE)
     if locales:
         permission = user_can_announce(request.user, locales[0])
     else:
@@ -86,12 +80,12 @@ def localization(request, locale_code=None):
     product = _get_product(request)
 
     data = {
-        'overview_rows': overview_rows(locale, product=product),
+        'overview_rows': overview_rows(
+            request.LANGUAGE_CODE, product=product),
         'user_can_announce': permission,
     }
-
     return render_readouts(request, L10N_READOUTS, 'localization.html',
-                           locale=locale, extra_data=data, product=product)
+                           extra_data=data, product=product)
 
 
 @require_GET
