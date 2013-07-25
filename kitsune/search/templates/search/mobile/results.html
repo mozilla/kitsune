@@ -29,7 +29,7 @@
         {% for p in products %}
           <li class="{% if p.slug == product[0] %}selected{% endif %}">
             <a href="{{ request.get_full_path()|urlparams(product=p.slug) }}">
-              <span class="logo-sprite logo-{{ key }}"></span>
+              <span class="logo-sprite logo-{{ p.slug }}"></span>
               {{ p.title }}
             </a>
           </li>
