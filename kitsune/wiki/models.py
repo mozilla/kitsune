@@ -566,8 +566,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
             cache.add(key, documents)
         except ES_EXCEPTIONS as exc:
             statsd.incr('wiki.related_documents.esexception')
-            log.error('ES MLT {err} related_documents for {doc}'.format(
-                    doc=repr(self), err=str(exc)))
+            log.error('ES MLT {err} related_documents'.format(err=str(exc)))
             documents = []
 
         return documents
@@ -612,8 +611,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
             cache.add(key, questions)
         except ES_EXCEPTIONS as exc:
             statsd.incr('wiki.related_questions.esexception')
-            log.error('ES MLT {err} related_questions for {doc}'.format(
-                    doc=repr(self), err=str(exc)))
+            log.error('ES MLT {err} related_questions'.format(err=str(exc)))
             questions = []
 
         return questions
