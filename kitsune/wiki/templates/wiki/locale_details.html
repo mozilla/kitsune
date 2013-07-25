@@ -1,6 +1,6 @@
 {% extends "wiki/base.html" %}
 {% from "layout/errorlist.html" import errorlist %}
-{% from "dashboards/includes/macros.html" import sidebar_nav %}
+{% from "dashboards/includes/macros.html" import localization_sidebar_nav %}
 {% set title = _('{locale} Localization Team | Knowledge Base')|f(locale=locale.locale) %}
 {% set crumbs = [(url('wiki.locales'), _('Locales')), (None, locale.locale)] %}
 
@@ -106,7 +106,7 @@
 {% endblock %}
 
 {% block side_top %}
-  {{ sidebar_nav(locale.locale, 'team')}}
+  {{ localization_sidebar_nav(locale.locale, 'team')}}
 {% endblock %}
 
 {% macro user_row(user) -%}

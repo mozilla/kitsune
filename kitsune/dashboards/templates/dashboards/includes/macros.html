@@ -173,7 +173,7 @@
   </div>
 {% endmacro %}
 
-{% macro sidebar_nav(locale, active) %}
+{% macro localization_sidebar_nav(locale, active) %}
   <ul class="sidebar-nav">
     <li {{ active|class_selected('dashboard') }}>
       <a href="{{ url('dashboards.localization', locale=locale) }}">{{ _('Localization Dashboard') }}</a>
