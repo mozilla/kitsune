@@ -1,5 +1,19 @@
 {% extends 'email/base.html' %}
 
+{% block styles %}
+  .answer {
+    border-bottom: 1px dotted #000;
+    border-top: 1px dotted #000;
+    padding: 16px;
+  }
+
+  .superheroes {
+    border-top: 1px dotted #000;
+    font-size: 13px;
+    padding-top: 16px;
+  }
+{% endblock %}
+
 {% block content %}
   <p>{{ _('Hi {username},')|f(username=username) }}</p>
 
@@ -9,21 +23,21 @@
 
   <p>{{ _('{answerer} wrote:')|f(answerer=answerer) }}</p>
 
-  <div class="quote">{{ answer_html }}</div>
+  <div class="answer">{{ answer_html }}</div>
 
   <p><a href="https://{{ host }}{{ answer_url }}">{{ _('See the answer.') }}</a></p>
 
   <p>
-    {% trans %}
+    {% trans url='http://' + host + solution_url %}
       If this answer solves your problem, please
       <br/><br/>
-      <a class="button" style="width: 200px;" href="https://{{ host }}{{ solution_url }}">Mark it as solved</a>
+      <a class="button" style="width: 200px;" href="{{ url }}">Mark it as solved</a>
     {% endtrans %}
   </p>
 
-  <p>{{ _('This will help other Firefox users find good answers to their questions!') }}</p>
-
-  <p><a href="https://{{ host }}/questions?filter=unsolved">{{ _('Help other Firefox users by browsing for unsolved questions on {host}.')|f(host=host) }}</a></p>
-
-  <p>{{ _("You might just make someone's day!") }}</p>
+  <p class="superheroes">
+    <strong>{{ _('Superhero wanted') }}</strong>
+    <br/><a href="https://{{ host }}/questions?filter=unsolved">{{ _('Help other Firefox users by browsing for unsolved questions on {host}.')|f(host=host) }}</a>
+    <br/>{{ _("You might just make someone's day!") }}
+  </p>
 {% endblock %}
