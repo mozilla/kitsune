@@ -10,9 +10,9 @@ urlpatterns = patterns('kitsune.dashboards.views',
         name='dashboards.wiki_rows'),
     url(r'^localization/readout/(?P<readout_slug>[^/]+)',
         'localization_detail', name='dashboards.localization_detail'),
-    url(r'^localization/(?P<locale_code>[^/]+)/readout/'
-         '(?P<readout_slug>[^/]+)', 'localization_detail',
-        name='dashboards.localization_detail_with_locale'),
     url(r'^contributors/readout/(?P<readout_slug>[^/]+)',
         'contributors_detail', name='dashboards.contributors_detail'),
+    url(r'^localization/readout/(?P<readout_slug>[^/]+)/'
+         '(?P<locale_code>[^/]+)', 'localization_detail',
+        name='dashboards.localization_detail_with_locale'),
 )
