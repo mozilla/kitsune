@@ -578,6 +578,12 @@
       window.highlighting.session = session;
       session.setMode("ace/mode/sumo");
       session.setUseWrapMode(true);
+      ace.config.loadModule('ace/ext/language_tools', function() {
+        ace_editor.setOptions({
+          enableBasicAutocompletion: true,
+          enableSnippets: true
+        });
+      });
 
       $("#id_content").bind("keyup", updateHighlightingEditor);
       updateHighlightingEditor();
