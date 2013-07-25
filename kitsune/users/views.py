@@ -683,16 +683,14 @@ def browserid_signup(request):
         form = BrowserIDSignupForm(request.REQUEST)
 
         if form.is_valid():
-            try_send_email_with_form(
-                RegistrationProfile.objects.create_inactive_user,
-                form, 'email',
-                form.cleaned_data['username'],
-                None,
-                email,
-                locale=request.LANGUAGE_CODE,
-                volunteer_interest=False)
+            user = User.objects.create_user(form.cleaned_data['username'],
+                                            email)
+            user.save()
 
-            user = User.objects.filter(email=email)
+            # Create a new profile for the user
+            Profile.objects.create(user=user, locale=request.LANGUAGE_CODE)
+
+            # Log the user in
             user.backend = 'django_browserid.auth.BrowserIDBackend'
             auth.login(request, user)
 
