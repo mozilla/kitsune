@@ -52,7 +52,8 @@ from kitsune.questions.marketplace import (
 from kitsune.questions.models import (
     Question, Answer, QuestionVote, AnswerVote, QuestionMappingType)
 from kitsune.questions.question_config import products
-from kitsune.search.es_utils import ES_EXCEPTIONS, Sphilastic, F
+from kitsune.search.es_utils import (ES_EXCEPTIONS, Sphilastic, F,
+                                     es_query_with_analyzer)
 from kitsune.search.utils import locale_or_default, clean_excerpt
 from kitsune.sumo.helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse
@@ -1406,6 +1407,7 @@ def _search_suggestions(request, text, locale, product_slugs):
                       for field in DocumentMappingType.get_query_fields())
         query.update(dict(('%s__text_phrase' % field, text)
                       for field in DocumentMappingType.get_query_fields()))
+        query = es_query_with_analyzer(query, locale)
         filter = F()
         filter |= F(document_locale=locale)
         filter |= F(document_locale=settings.WIKI_DEFAULT_LANGUAGE)

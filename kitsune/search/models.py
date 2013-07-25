@@ -106,6 +106,10 @@ class SearchMappingType(MappingType, Indexable):
         raise NotImplementedError
 
     @classmethod
+    def get_localized_fields(cls):
+        return []
+
+    @classmethod
     def get_indexable(cls):
         # Some models have a gazillion instances. So we want to go
         # through them one at a time in a way that doesn't pull all

@@ -675,6 +675,15 @@ class DocumentMappingType(SearchMappingType):
                 'document_keywords']
 
     @classmethod
+    def get_localized_fields(cls):
+        # This is the same list as `get_query_fields`, but it doesn't
+        # have to be, which is why it is typed twice.
+        return ['document_title',
+                'document_content',
+                'document_summary',
+                'document_keywords']
+
+    @classmethod
     def get_mapping(cls):
         return {
             'properties': {

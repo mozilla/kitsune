@@ -1149,6 +1149,24 @@ class TestAnalyzers(ElasticTestCase):
             locale = doc['locale']
             eq_(doc['_analyzer'], self.locale_data[locale]['analyzer'])
 
+    def test_query_analyzer_upgrader(self):
+        analyzer = 'snowball-english'
+        before = {
+            'document_title__text': 'foo',
+            'document_locale__text': 'bar',
+            'document_title__text_phrase': 'baz',
+            'document_locale__text_phrase': 'qux'
+        }
+        expected = {
+            'document_title__text_analyzer': ('foo', analyzer),
+            'document_locale__text': 'bar',
+            'document_title__text_phrase_analyzer': ('baz', analyzer),
+            'document_locale__text_phrase': 'qux',
+        }
+        actual = es_utils.es_query_with_analyzer(before, 'en-US')
+        eq_(actual, expected)
+
+
     def _check_locale_tokenization(self, locale, expected_tokens, p_tag=True):
         """
         Check that a given locale's document was tokenized correctly.
