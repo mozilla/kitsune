@@ -9,7 +9,12 @@
 
 {% block content %}
 <div class="grid_12 login-question-prompt">
-  <h1><a href="{{ url('questions.aaq_step1') }}">{{ _('Would you like to ask a question in the community support forum?') }}</a></h1>
+  {% if request.LANGUAGE_CODE in settings.AAQ_LANGUAGES %}
+    {% set ask_url = url('questions.aaq_step1') %}
+  {% else %}
+    {% set ask_url = url('wiki.document', 'get-community-support') %}
+  {% endif %}
+  <h1><a href="{{ ask_url }}">{{ _('Would you like to ask a question in the community support forum?') }}</a></h1>
 </div>
 <div class="grid_6">
   <article id="login" class="main">
