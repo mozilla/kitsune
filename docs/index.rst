@@ -48,6 +48,16 @@ Part 3: SUMO
    sop
    sla
 
+Part 4: Administration
+======================
+
+.. toctree::
+   :maxdepth: 2
+
+   products
+   groups
+   users
+   forums
 
 Indices and tables
 ==================
