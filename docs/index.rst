@@ -54,9 +54,10 @@ Part 4: Administration
 .. toctree::
    :maxdepth: 2
 
+   products
    groups
    users
-   forum
+   forums
 
 Indices and tables
 ==================
