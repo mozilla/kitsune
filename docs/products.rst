@@ -23,7 +23,3 @@ Visibility
 
 Display Order
 --------------
-
-
-Managing Permissions
-====================
