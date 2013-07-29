@@ -66,7 +66,7 @@ These are required for the minimum installation:
 * libxslt and headers
 * libjpeg and headers
 * zlib and headers
-* LESS
+* LESS 1.4.1
 
 These are optional:
 
@@ -120,7 +120,7 @@ To install LESS you will first need to `install Node.js and NPM
 
 Now install LESS using::
 
-    $ npm install -g less
+    $ npm install -g less@1.4.1
 
 
 Getting the Source
