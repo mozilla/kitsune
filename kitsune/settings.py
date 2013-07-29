@@ -756,3 +756,13 @@ TROUBLESHOOTER_ADDON_URL = 'https://addons.mozilla.org/firefox/downloads/latest/
 # SurveyGizmo API
 SURVEYGIZMO_USER = ''
 SURVEYGIZMO_PASSWORD = ''
+
+# Persona/Browser ID
+# Yo! We're adding this now because we're fast and furious. But this should
+# get moved to settings_local.py on the servers and your development
+# environment plus we should document what it should look like.
+SITE_URL = (
+    'https://support-dev.allizom.org',
+    'https://support.allizom.org',
+    'https://support.mozilla.org',
+)
