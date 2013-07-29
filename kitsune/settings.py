@@ -756,3 +756,9 @@ TROUBLESHOOTER_ADDON_URL = 'https://addons.mozilla.org/firefox/downloads/latest/
 # SurveyGizmo API
 SURVEYGIZMO_USER = ''
 SURVEYGIZMO_PASSWORD = ''
+
+SITE_URL = (
+    'https://support-dev.allizom.org',
+    'https://support.allizom.org',
+    'https://support.mozilla.org',
+)
