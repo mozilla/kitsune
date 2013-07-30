@@ -252,89 +252,89 @@ define('ace/snippets/sumo', ['require', 'exports', 'module' ], function(require,
 // The formatting of this needs to stay intact, or snippets won't work
 exports.snippetText = "# Basic formatting\n\
 snippet bold\n\
-	'''${1:text}'''\n\
+\t'''${1:text}'''\n\
 snippet italics\n\
-	''${1:text}''\n\
+\t''${1:text}''\n\
 snippet underline\n\
-	<u>${1:text}</u>\n\
+\t<u>${1:text}</u>\n\
 snippet superscript\n\
-	<sup>${1:text}</sup>\n\
+\t<sup>${1:text}</sup>\n\
 snippet subscript\n\
-	<sub>${1:text}</sub>\n\
+\t<sub>${1:text}</sub>\n\
 snippet strikethrough\n\
-	<del>${1:text}</del>\n\
+\t<del>${1:text}</del>\n\
 snippet code\n\
-	<code>${1:code}</code>\n\
+\t<code>${1:code}</code>\n\
 snippet horizontalRule\n\
-	----\n\
+\t----\n\
 snippet linkArticle\n\
-	[[${1:title}]]\n\
+\t[[${1:title}]]\n\
 snippet linkArticleCustomTitle\n\
-	[[${1:title}|${2:text}]]\n\
+\t[[${1:title}|${2:text}]]\n\
 snippet linkExternal\n\
-	[${1:url}]\n\
+\t[${1:url}]\n\
 snippet linkExternalCustomTitle\n\
-	[${1:url} ${2:text}]\n\
+\t[${1:url} ${2:text}]\n\
 snippet listNumbered\n\
-	# ${1:itemOne}\n\
-	# ${2:itemTwo}\n\
-	# ${3:itemThree}\n\
+\t# ${1:itemOne}\n\
+\t# ${2:itemTwo}\n\
+\t# ${3:itemThree}\n\
 snippet listUnordered\n\
-	* ${1:itemOne}\n\
-	* ${2:itemTwo}\n\
-	* ${3:itemThree}\n\
+\t* ${1:itemOne}\n\
+\t* ${2:itemTwo}\n\
+\t* ${3:itemThree}\n\
 snippet table\n\
-	{|\n\
-	|+ ${1:table caption}\n\
-	!${2:column_name}!!${3:column_name}\n\
-	|-\n\
-	|${4:row1col1}||${5:row1col2}\n\
-	|-\n\
-	|${6:row2col1}||${7:row2cols2}\n\
-	|}\n\
+\t{|\n\
+\t|+ ${1:table caption}\n\
+\t!${2:column_name}!!${3:column_name}\n\
+\t|-\n\
+\t|${4:row1col1}||${5:row1col2}\n\
+\t|-\n\
+\t|${6:row2col1}||${7:row2cols2}\n\
+\t|}\n\
 snippet toc\n\
-	__TOC__\n\
+\t__TOC__\n\
 snippet comment\n\
-	<!-- ${1:text} -->\n\
+\t<!-- ${1:text} -->\n\
 snippet heading6\n\
-	====== ${1:text} ======\n\
+\t====== ${1:text} ======\n\
 snippet heading5\n\
-	===== ${1:text} =====\n\
+\t===== ${1:text} =====\n\
 snippet heading4\n\
-	==== ${1:text} ====\n\
+\t==== ${1:text} ====\n\
 snippet heading3\n\
-	=== ${1:text} ===\n\
+\t=== ${1:text} ===\n\
 snippet heading2\n\
-	== ${1:text} ==\n\
+\t== ${1:text} ==\n\
 snippet heading1\n\
-	= ${1:text} =\n\
+\t= ${1:text} =\n\
 snippet for\n\
-	{for ${1:os_or_firefox_version}}${2:text}{/for}\n\
+\t{for ${1:os_or_firefox_version}}${2:text}{/for}\n\
 snippet note\n\
-	{note}${1:note text}{/note}\n\
+\t{note}${1:note text}{/note}\n\
 snippet warning\n\
-	{warning}${1:warning text}{/warning}\n\
+\t{warning}${1:warning text}{/warning}\n\
 snippet preference\n\
-	{pref ${1:pref value}}\n\
+\t{pref ${1:pref value}}\n\
 snippet filepath\n\
-	{filepath ${1:path}}\n\
+\t{filepath ${1:path}}\n\
 snippet key\n\
-	{key ${1:key or shortcut}}\n\
+\t{key ${1:key or shortcut}}\n\
 snippet menu\n\
-	{menu ${1:label}}\n\
+\t{menu ${1:label}}\n\
 snippet button\n\
-	{button ${1:label}}\n\
+\t{button ${1:label}}\n\
 snippet definitionlist\n\
-	; ${1:Term}\n\
-	: ${2:Definition}\n\
-	; ${3:Term}\n\
-	: ${4:Definition a}\n\
-	: ${5:Definition b}\n\
-	:: ${6:Reference}\n\
+\t; ${1:Term}\n\
+\t: ${2:Definition}\n\
+\t; ${3:Term}\n\
+\t: ${4:Definition a}\n\
+\t: ${5:Definition b}\n\
+\t:: ${6:Reference}\n\
 snippet image\n\
-	[[Image:${1:image title}]]\n\
+\t[[Image:${1:image title}]]\n\
 snippet video\n\
-	[[Video:${1:video title}]]\n\
+\t[[Video:${1:video title}]]\n\
 ";
 exports.scope = "sumo";
 
