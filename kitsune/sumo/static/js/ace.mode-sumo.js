@@ -1,3 +1,4 @@
+;
 define('ace/mode/sumo', function(require, exports, module) {
 
 var oop = require('ace/lib/oop');

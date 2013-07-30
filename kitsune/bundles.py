@@ -233,6 +233,7 @@ MINIFY_BUNDLES = {
         ),
         'wiki.editor': (
             'js/libs/ace/src-min/ace.js',
+            'js/libs/ace/src-min/ext-language_tools.js',
             'js/ace.mode-sumo.js',
         ),
         'wiki.dashboard': (
