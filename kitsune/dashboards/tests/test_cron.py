@@ -324,6 +324,7 @@ class L10nMetricsTests(TestCase):
 
     def test_update_active_contributor_metrics(self):
         """Test the cron job that updates active contributor metrics."""
+        yesterday = date.today() - timedelta(days=1)
         start_date = date.today() - timedelta(days=30)
         before_start = start_date - timedelta(days=1)
 
@@ -332,8 +333,9 @@ class L10nMetricsTests(TestCase):
         # 3 'en-US' contributors:
         d = document(locale='en-US', save=True)
         u = user(save=True)
-        revision(document=d, is_approved=True, reviewer=u, save=True)
-        revision(document=d, creator=u, save=True)
+        revision(document=d, created=yesterday, is_approved=True, reviewer=u,
+                 save=True)
+        revision(document=d, created=yesterday, creator=u, save=True)
 
         p = product(save=True)
         r = revision(created=start_date, save=True)
@@ -344,14 +346,16 @@ class L10nMetricsTests(TestCase):
 
         # 4 'es' contributors:
         d = document(locale='es', save=True)
-        revision(document=d, is_approved=True, reviewer=u, save=True)
-        revision(document=d, creator=u, reviewer=user(save=True), save=True)
+        revision(document=d, created=yesterday, is_approved=True, reviewer=u,
+                 save=True)
+        revision(document=d, created=yesterday, creator=u,
+                 reviewer=user(save=True), save=True)
         revision(document=d, created=start_date, save=True)
-        revision(document=d, save=True)
+        revision(document=d, created=yesterday, save=True)
         # Add one that shouldn't count:
         revision(document=d, created=before_start, save=True)
 
-        # Call the cron job.
+        # Call the cron job. Pass in tomorrow so today's contributions count.
         update_l10n_contributor_metrics()
 
         eq_(3.0, WikiMetric.objects.get(locale='en-US', product=None).value)
