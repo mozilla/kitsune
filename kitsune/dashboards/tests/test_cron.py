@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from datetime import timedelta
+from datetime import date, timedelta
 
 from django.conf import settings
 
@@ -8,12 +8,14 @@ from nose.tools import eq_
 
 from kitsune.dashboards.cron import (
     cache_most_unhelpful_kb_articles, _get_old_unhelpful,
-    _get_current_unhelpful, update_l10n_coverage_metrics)
+    _get_current_unhelpful, update_l10n_coverage_metrics,
+    update_l10n_contributor_metrics)
 from kitsune.dashboards.models import (
     WikiMetric, L10N_TOP20_CODE, L10N_ALL_CODE)
 from kitsune.products.tests import product
 from kitsune.sumo.redis_utils import redis_client, RedisError
 from kitsune.sumo.tests import TestCase
+from kitsune.users.tests import user
 from kitsune.wiki.models import HelpfulVote, Revision
 from kitsune.wiki.tests import revision, document
 
@@ -243,7 +245,7 @@ class TopUnhelpfulArticlesCronTests(TestCase):
         assert '%d::%.1f:' % (r.document.id, 102.0) in result[2]
 
 
-class L10nCoverageMetricsTests(TestCase):
+class L10nMetricsTests(TestCase):
 
     def test_update_l10n_coverage_metrics(self):
         """Test the cron job that updates l10n coverage metrics."""
@@ -319,3 +321,55 @@ class L10nCoverageMetricsTests(TestCase):
             locale='it', product=None, code=L10N_TOP20_CODE).value)
         eq_(0.0, WikiMetric.objects.get(
             locale='it', product=None, code=L10N_ALL_CODE).value)
+
+    def test_update_active_contributor_metrics(self):
+        """Test the cron job that updates active contributor metrics."""
+        day = date(2013, 07, 31)
+        last_month = date(2013, 06, 15)
+        start_date = date(2013, 06, 1)
+        before_start = date(2013, 05, 31)
+
+        # Create some revisions to test with:
+
+        # 3 'en-US' contributors:
+        d = document(locale='en-US', save=True)
+        u = user(save=True)
+        revision(document=d, creator=user(save=True), created=last_month,
+                 is_approved=True, reviewer=u, save=True)
+        revision(document=d, creator=u, created=last_month, save=True)
+
+        p = product(save=True)
+        r = revision(creator=user(save=True), created=start_date, save=True)
+        r.document.products.add(p)
+
+        # Add two that shouldn't count:
+        revision(document=d, creator=user(save=True), created=before_start,
+                 save=True)
+        revision(document=d, creator=user(save=True), created=day, save=True)
+
+        # 4 'es' contributors:
+        d = document(locale='es', save=True)
+        revision(document=d, creator=user(save=True), created=last_month,
+                 is_approved=True, reviewer=u, save=True)
+        revision(document=d, creator=u, created=last_month,
+                 reviewer=user(save=True), save=True)
+        revision(document=d, creator=user(save=True), created=start_date,
+                 save=True)
+        revision(document=d, creator=user(save=True), created=last_month,
+                 save=True)
+        # Add two that shouldn't count:
+        revision(document=d, creator=user(save=True), created=before_start,
+                 save=True)
+        revision(document=d, creator=user(save=True), created=day, save=True)
+
+        # Call the cron job.
+        update_l10n_contributor_metrics(day)
+
+        eq_(3.0, WikiMetric.objects.get(
+            locale='en-US', product=None, date=start_date).value)
+        eq_(1.0, WikiMetric.objects.get(
+            locale='en-US', product=p, date=start_date).value)
+        eq_(4.0, WikiMetric.objects.get(
+            locale='es', product=None, date=start_date).value)
+        eq_(0.0, WikiMetric.objects.get(
+            locale='es', product=p, date=start_date).value)
