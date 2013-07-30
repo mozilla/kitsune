@@ -470,4 +470,10 @@
 
     var kbox = $('#gallery-upload-modal').kbox({preClose: preClose});
 
+    // Open modal window from media page
+    if (document.location.hash === '#upload' ||
+        $('#gallery-upload-type').hasClass('draft')) {
+        $('#btn-upload').click();
+    }
+
 })(jQuery);
