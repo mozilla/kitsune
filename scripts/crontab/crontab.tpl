@@ -41,4 +41,7 @@ HOME = /tmp
 # Once per week.
 21 03 * * 3 {{ django }} purge_hashes
 
+# Once per month.
+0 0 1 * * {{ cron }} update_l10n_contributor_metrics
+
 MAILTO=root
