@@ -56,8 +56,8 @@ class TopUnhelpfulArticlesTests(TestCase):
 
         result = _get_old_unhelpful()
         eq_(1, len(result))
-        self.assertAlmostEqual(0.2, result[r.id]['percentage'])
-        eq_(5, result[r.id]['total'])
+        self.assertAlmostEqual(0.2, result[r.document.id]['percentage'])
+        eq_(5, result[r.document.id]['total'])
 
     def test_old_articles_helpful(self):
         """Doesn't return helpful votes within range"""
@@ -81,14 +81,14 @@ class TopUnhelpfulArticlesTests(TestCase):
         for x in range(0, 2):
             _add_vote_in_past(r, 1, 3)
 
-        old_data = {r.id: {'percentage': 0.2, 'total': 5.0}}
+        old_data = {r.document.id: {'percentage': 0.2, 'total': 5.0}}
 
         result = _get_current_unhelpful(old_data)
         eq_(1, len(result))
-        self.assertAlmostEqual(0.4, result[r.id]['currperc'])
-        self.assertAlmostEqual(0.4 - old_data[r.id]['percentage'],
-                               result[r.id]['diffperc'])
-        eq_(5, result[r.id]['total'])
+        self.assertAlmostEqual(0.4, result[r.document.id]['currperc'])
+        self.assertAlmostEqual(0.4 - old_data[r.document.id]['percentage'],
+                               result[r.document.id]['diffperc'])
+        eq_(5, result[r.document.id]['total'])
 
     def test_current_articles_helpful(self):
         """Doesn't return helpful votes within time range"""
@@ -100,7 +100,7 @@ class TopUnhelpfulArticlesTests(TestCase):
         for x in range(0, 2):
             _add_vote_in_past(r, 0, 3)
 
-        old_data = {r.id: {'percentage': 0.2, 'total': 5.0}}
+        old_data = {r.document.id: {'percentage': 0.2, 'total': 5.0}}
 
         result = _get_current_unhelpful(old_data)
         eq_(0, len(result))
@@ -118,10 +118,11 @@ class TopUnhelpfulArticlesTests(TestCase):
         old_data = {}
 
         result = _get_current_unhelpful(old_data)
+
         eq_(1, len(result))
-        self.assertAlmostEqual(0.4, result[r.id]['currperc'])
-        self.assertAlmostEqual(0, result[r.id]['diffperc'])
-        eq_(5, result[r.id]['total'])
+        self.assertAlmostEqual(0.4, result[r.document.id]['currperc'])
+        self.assertAlmostEqual(0, result[r.document.id]['diffperc'])
+        eq_(5, result[r.document.id]['total'])
 
 
 class TopUnhelpfulArticlesCronTests(TestCase):
@@ -161,7 +162,8 @@ class TopUnhelpfulArticlesCronTests(TestCase):
         eq_(1, self.redis.llen(self.REDIS_KEY))
         result = self.redis.lrange(self.REDIS_KEY, 0, 1)
         eq_(u'%d::%.1f::%.1f::%.1f::%.1f::%s::%s' %
-             (r.id, 5.0, 0.4, 0.0, 0.0, r.document.slug, r.document.title),
+             (r.document.id, 5.0, 0.4, 0.0, 0.0, r.document.slug,
+              r.document.title),
             result[0].decode('utf-8'))
 
     def test_caching_helpful(self):
@@ -199,7 +201,8 @@ class TopUnhelpfulArticlesCronTests(TestCase):
         eq_(1, self.redis.llen(self.REDIS_KEY))
         result = self.redis.lrange(self.REDIS_KEY, 0, 1)
         eq_(u'%d::%.1f::%.1f::%.1f::%.1f::%s::%s' %
-             (r.id, 5.0, 0.4, 0.2, 0.0, r.document.slug, r.document.title),
+             (r.document.id, 5.0, 0.4, 0.2, 0.0, r.document.slug,
+              r.document.title),
             result[0].decode('utf-8'))
 
     def test_caching_sorting(self):
@@ -235,9 +238,9 @@ class TopUnhelpfulArticlesCronTests(TestCase):
 
         eq_(3, self.redis.llen(self.REDIS_KEY))
         result = self.redis.lrange(self.REDIS_KEY, 0, 3)
-        assert '%d::%.1f:' % (r2.id, 242.0) in result[0]
-        assert '%d::%.1f:' % (r3.id, 122.0) in result[1]
-        assert '%d::%.1f:' % (r.id, 102.0) in result[2]
+        assert '%d::%.1f:' % (r2.document.id, 242.0) in result[0]
+        assert '%d::%.1f:' % (r3.document.id, 122.0) in result[1]
+        assert '%d::%.1f:' % (r.document.id, 102.0) in result[2]
 
 
 class L10nCoverageMetricsTests(TestCase):
