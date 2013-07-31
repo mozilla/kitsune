@@ -213,6 +213,18 @@ class WikiParser(Parser):
 
         Since py-wikimarkup's hooks don't offer custom paramters for
         callbacks, we're using self.locale to keep things simple.
+
+        :arg text: the text to parse
+        :arg show_toc: should we show a table of contents?
+        :arg tags: the allowed html tags
+        :arg attributes: the allowed html attributes
+        :arg styles: the allowed css styles
+        :arg locale: the locale to use
+        :arg nofollow: should links have nofollow set?
+        :arg youtube_embeds: should we replace the youtube placeholders
+            with the iframes? This is kind of a hack so that subclasses
+            can skip embedding here and do it on their own at the end
+            of parsing.
         """
         self.locale = locale
 
@@ -232,8 +244,6 @@ class WikiParser(Parser):
 
         html = _parse(locale)
 
-        # This is kind of a hack so that subclasses can skip embedding here
-        # and do it on their own at the end of parsing.
         if youtube_embeds:
             html = self.add_youtube_embeds(html)
 

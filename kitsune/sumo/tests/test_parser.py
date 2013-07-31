@@ -240,8 +240,11 @@ class TestWikiParser(TestCase):
 
 <svg/onload=alert(1)"""
 
-        doc = pq(self.p.parse(content))
-        eq_(0, len(doc('iframe')))
+        eq_('<p>&lt;iframe &lt;="" \\="" onload="prompt(1)" p="" '
+            'src=""&gt;</p><p>&lt;iframe onreadystatechange="'
+            'alert(/@blinkms/)" &lt;="" p=""&gt;</p><p>&lt;svg '
+            'onload="alert(1)" &lt;="" p=""&gt;&lt;/iframe&gt;</p>',
+            self.p.parse(content))
 
 
 class TestWikiInternalLinks(TestCase):
