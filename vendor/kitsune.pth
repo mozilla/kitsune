@@ -21,7 +21,6 @@ packages/importlib
 packages/python-memcached
 packages/selenium
 packages/mock
-packages/html5lib/src
 packages/logilab-common
 packages/billiard
 packages/pyparsing
@@ -91,3 +90,4 @@ src/requests-oauthlib
 src/twython
 packages/selenium/py
 src/django-browserid
+src/html5lib-python
