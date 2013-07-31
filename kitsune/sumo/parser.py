@@ -5,33 +5,13 @@ from django.conf import settings
 
 import jingo
 from tower import ugettext_lazy as _lazy, ugettext as _
-from wikimarkup.parser import Parser, ALLOWED_TAGS as ORIG_ALLOWED_TAGS
+from wikimarkup.parser import Parser, ALLOWED_TAGS
 
 from kitsune.gallery.models import Image, Video
 from kitsune.sumo import email_utils
 from kitsune.sumo.urlresolvers import reverse
 
 
-def _filter_iframe_attrs(name, value):
-    """Filter the attributes allowed on an iframe.
-
-    We only allow src from youtube.
-    """
-    if name in ('frameborder', 'allowfullscreen'):
-        return True
-    if name == 'src':
-        return _is_youtube_url(value)
-    return False
-
-
-def _is_youtube_url(url):
-    """Returns true if the URL is to youtube."""
-    parsed_url = urlparse(url)
-    netloc = parsed_url.netloc
-    return netloc in ['youtu.be', 'youtube.com', 'www.youtube.com']
-
-
-ALLOWED_TAGS = ORIG_ALLOWED_TAGS + ['iframe']
 ALLOWED_ATTRIBUTES = {
     'a': ['href', 'title', 'class', 'rel'],
     'div': ['id', 'class', 'style', 'data-for', 'title', 'data-target',
@@ -49,7 +29,6 @@ ALLOWED_ATTRIBUTES = {
     'video': ['height', 'width', 'controls', 'data-fallback', 'poster',
               'data-width', 'data-height'],
     'source': ['src', 'type'],
-    'iframe': _filter_iframe_attrs,
 }
 ALLOWED_STYLES = ['vertical-align']
 IMAGE_PARAMS = ['alt', 'align', 'caption', 'valign', 'frame', 'page', 'link',
@@ -60,6 +39,7 @@ IMAGE_PARAM_VALUES = {
                'bottom', 'text-bottom'),
 }
 VIDEO_PARAMS = ['height', 'width', 'modal', 'title', 'placeholder']
+YOUTUBE_PLACEHOLDER = 'YOUTUBE_EMBED_PLACEHOLDER_%s'
 
 
 def wiki_to_html(wiki_markup, locale=settings.WIKI_DEFAULT_LANGUAGE,
@@ -219,9 +199,11 @@ class WikiParser(Parser):
         self.registerInternalLinkHook('Video', self._hook_video)
         self.registerInternalLinkHook('V', self._hook_video)
 
+        self.youtube_videos = []
+
     def parse(self, text, show_toc=None, tags=None, attributes=None,
               styles=None, locale=settings.WIKI_DEFAULT_LANGUAGE,
-              nofollow=False):
+              nofollow=False, youtube_embeds=True):
         """Given wiki markup, return HTML.
 
         Pass a locale to get all the hooks to look up Documents or
@@ -231,6 +213,18 @@ class WikiParser(Parser):
 
         Since py-wikimarkup's hooks don't offer custom paramters for
         callbacks, we're using self.locale to keep things simple.
+
+        :arg text: the text to parse
+        :arg show_toc: should we show a table of contents?
+        :arg tags: the allowed html tags
+        :arg attributes: the allowed html attributes
+        :arg styles: the allowed css styles
+        :arg locale: the locale to use
+        :arg nofollow: should links have nofollow set?
+        :arg youtube_embeds: should we replace the youtube placeholders
+            with the iframes? This is kind of a hack so that subclasses
+            can skip embedding here and do it on their own at the end
+            of parsing.
         """
         self.locale = locale
 
@@ -248,7 +242,23 @@ class WikiParser(Parser):
                 strip_comments=True,
                 **parser_kwargs)
 
-        return _parse(locale)
+        html = _parse(locale)
+
+        if youtube_embeds:
+            html = self.add_youtube_embeds(html)
+
+        return html
+
+    def add_youtube_embeds(self, html):
+        """Insert youtube embeds.
+
+        We need to play this placeholder replacement game because we don't
+        allow iframes in the rendered content.
+        """
+        for video_id in self.youtube_videos:
+            html = html.replace(YOUTUBE_PLACEHOLDER % video_id,
+                                generate_youtube_embed(video_id))
+        return html
 
     def _hook_internal_link(self, parser, space, name):
         """Parses text and returns internal link."""
@@ -320,7 +330,9 @@ class WikiParser(Parser):
                 # The video id is in the v= query param
                 video_id = parse_qs(parsed_url.query)['v'][0]
 
-            return generate_youtube_embed(video_id)
+            self.youtube_videos.append(video_id)
+
+            return YOUTUBE_PLACEHOLDER % video_id
 
         v = get_object_fallback(Video, title, self.locale, message)
         if isinstance(v, basestring):
@@ -357,3 +369,10 @@ def _get_video_url(video_file):
     if settings.GALLERY_VIDEO_URL:
         return settings.GALLERY_VIDEO_URL + basename(video_file.name)
     return video_file.url
+
+
+def _is_youtube_url(url):
+    """Returns true if the URL is to youtube."""
+    parsed_url = urlparse(url)
+    netloc = parsed_url.netloc
+    return netloc in ['youtu.be', 'youtube.com', 'www.youtube.com']

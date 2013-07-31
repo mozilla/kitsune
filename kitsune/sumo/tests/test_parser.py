@@ -232,6 +232,20 @@ class TestWikiParser(TestCase):
         doc = pq(self.p.parse('<iframe src="http://example.com"></iframe>'))
         eq_(0, len(doc('iframe')))
 
+    def test_iframe_hell_bug_898769(self):
+        """Verify fix for bug 898769."""
+        content = """<iframe/src \/\/onload = prompt(1)
+
+<iframe/onreadystatechange=alert(/@blinkms/)
+
+<svg/onload=alert(1)"""
+
+        eq_('<p>&lt;iframe &lt;="" \\="" onload="prompt(1)" p="" '
+            'src=""&gt;</p><p>&lt;iframe onreadystatechange="'
+            'alert(/@blinkms/)" &lt;="" p=""&gt;</p><p>&lt;svg '
+            'onload="alert(1)" &lt;="" p=""&gt;&lt;/iframe&gt;</p>',
+            self.p.parse(content))
+
 
 class TestWikiInternalLinks(TestCase):
     def setUp(self):
