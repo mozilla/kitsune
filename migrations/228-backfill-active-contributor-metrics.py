@@ -11,7 +11,7 @@ def run():
     current_month = today.month
 
     year = current_year - 1
-    month = current_month - 1
+    month = current_month
 
     while year < current_year or month <= current_month:
         day = date(year, month, 1)
