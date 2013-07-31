@@ -1,4 +1,5 @@
 {% from 'includes/common_macros.html' import announcement_bar, search_box, aux_nav with context %}
+{% from 'includes/common_macros.html' import favicon %}
 {% if request.LANGUAGE_CODE == settings.WIKI_DEFAULT_LANGUAGE and waffle.flag('surveygizmo') %}
   {% set SURVEY_GIZMOS = (SURVEY_GIZMOS or []) + ['site_survey'] %}
 {% endif %}
@@ -11,12 +12,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
   <title>{% block title %}{% if title %}{{ title }} | {% endif %}{{ _('Mozilla Support', 'site_title') }}{% endblock %}</title>
 
-  <link rel="icon" type="image/png" sizes="512x512" href="{{ STATIC_URL }}img/firefox-512.png?v=1">
-  <link rel="icon" type="image/png" sizes="256x256" href="{{ STATIC_URL }}img/firefox-256.png?v=1">
-  <link rel="icon" type="image/png" sizes="128x128" href="{{ STATIC_URL }}img/firefox-128.png?v=1">
-  <link rel="icon" type="image/png" sizes="64x64" href="{{ STATIC_URL }}img/firefox-64.png?v=1">
-  <link rel="icon" type="image/png" sizes="32x32" href="{{ STATIC_URL }}img/firefox-32.png?v=1">
-  <link rel="icon" type="image/png" sizes="16x16" href="{{ STATIC_URL }}img/firefox-16.png?v=1">
+  {{ favicon() }}
 
   <link rel="search" type="application/opensearchdescription+xml" title="{{ _('Firefox Help') }}" href="{{ url('search.plugin') }}"/>
   {% if feeds %}

@@ -165,3 +165,10 @@
     </div>
   </div>
 {% endmacro %}
+
+{% macro favicon() %}
+  {% set sizes = (512, 256, 128, 64, 32, 16,) %}
+  {% for s in sizes %}
+    <link rel="icon" type="image/png" sizes="{{ s }}x{{ s }}" href="{{ STATIC_URL }}img/firefox-{{ s }}.png?v=1">
+  {% endfor %}
+{% endmacro %}

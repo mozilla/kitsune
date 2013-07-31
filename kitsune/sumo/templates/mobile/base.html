@@ -1,4 +1,4 @@
-{% from "includes/common_macros.html" import list_view_item %}
+{% from "includes/common_macros.html" import list_view_item, favicon %}
 {% from "wiki/includes/document_macros.html" import show_for with context %}
 {% from "search/basic-form.html" import mobile_nav_form with context %}
 <!DOCTYPE html>
@@ -15,12 +15,7 @@
 
   <title>{{ title }} | {{ _('Firefox Help', 'site_title') }}</title>
 
-  <link rel="icon" type="image/png" sizes="512x512" href="{{ STATIC_URL }}img/firefox-512.png">
-  <link rel="icon" type="image/png" sizes="256x256" href="{{ STATIC_URL }}img/firefox-256.png">
-  <link rel="icon" type="image/png" sizes="128x128" href="{{ STATIC_URL }}img/firefox-128.png">
-  <link rel="icon" type="image/png" sizes="64x64" href="{{ STATIC_URL }}img/firefox-64.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="{{ STATIC_URL }}img/firefox-32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="{{ STATIC_URL }}img/firefox-16.png">
+  {{ favicon() }}
 
   <link rel="search" type="application/opensearchdescription+xml" title="{{ _('Firefox Help') }}" href="{{ url('search.plugin') }}"/>
 
