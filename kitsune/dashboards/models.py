@@ -68,7 +68,7 @@ METRIC_CODE_CHOICES = (
     (L10N_TOP20_CODE, _lazy(u'Percent Localized: Top 20')),
     (L10N_ALL_CODE, _lazy(u'Percent Localized: All')),
     (L10N_ACTIVE_CONTRIBUTORS_CODE,
-     _lazy(u'Active Contributors (past 30 days)')),
+     _lazy(u'Monthly Active Contributors')),
 )
 
 

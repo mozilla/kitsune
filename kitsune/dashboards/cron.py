@@ -1,4 +1,4 @@
-from datetime import date, timedelta
+from datetime import date
 
 from django.conf import settings
 from django.db import connection
@@ -75,11 +75,15 @@ def update_l10n_contributor_metrics(day=None):
     """Update the number of active contributors for each locale/product.
 
     An active contributor is defined as a user that created or reviewed a
-    revision in the last 30 days.
+    revision in the previous calendar month.
     """
     if day is None:
         day = date.today()
-    thirty_days_back = day - timedelta(days=30)
+    first_of_month = date(day.year, day.month, 1)
+    if day.month == 1:
+        previous_first_of_month = date(day.year - 1, 12, 1)
+    else:
+        previous_first_of_month = date(day.year, day.month - 1, 1)
 
     # Loop through all locales.
     for locale in settings.SUMO_LANGUAGES:
@@ -88,8 +92,8 @@ def update_l10n_contributor_metrics(day=None):
         for product in [None] + list(Product.objects.filter(visible=True)):
 
             num = num_active_contributors(
-                from_date=thirty_days_back,
-                to_date=day,
+                from_date=previous_first_of_month,
+                to_date=first_of_month,
                 locale=locale,
                 product=product)
 
@@ -97,7 +101,7 @@ def update_l10n_contributor_metrics(day=None):
                 code=L10N_ACTIVE_CONTRIBUTORS_CODE,
                 locale=locale,
                 product=product,
-                date=day,
+                date=previous_first_of_month,
                 value=num)
 
 
