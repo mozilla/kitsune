@@ -153,4 +153,4 @@
 	url = https://github.com/mozilla/django-browserid.git
 [submodule "vendor/src/html5lib-python"]
 	path = vendor/src/html5lib-python
-	url = git@github.com:html5lib/html5lib-python.git
+	url = https://github.com/html5lib/html5lib-python.git
