@@ -91,3 +91,4 @@ src/twython
 packages/selenium/py
 src/django-browserid
 src/html5lib-python
+src/django-rest-framework

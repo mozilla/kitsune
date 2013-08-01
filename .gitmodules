@@ -154,3 +154,6 @@
 [submodule "vendor/src/html5lib-python"]
 	path = vendor/src/html5lib-python
 	url = https://github.com/html5lib/html5lib-python.git
+[submodule "vendor/src/django-rest-framework"]
+	path = vendor/src/django-rest-framework
+	url = https://github.com/tomchristie/django-rest-framework.git
