@@ -157,3 +157,6 @@
 [submodule "vendor/src/django-rest-framework"]
 	path = vendor/src/django-rest-framework
 	url = https://github.com/tomchristie/django-rest-framework.git
+[submodule "vendor/src/django-filter"]
+	path = vendor/src/django-filter
+	url = https://github.com/alex/django-filter.git
