@@ -1,5 +1,7 @@
 from django.conf.urls import patterns, url
 
+from kitsune.dashboards import api
+
 
 urlpatterns = patterns('kitsune.dashboards.views',
     url(r'^localization$', 'localization', name='dashboards.localization'),
@@ -10,4 +12,8 @@ urlpatterns = patterns('kitsune.dashboards.views',
         name='dashboards.localization_detail'),
     url(r'^contributors/(?P<readout_slug>[^/]+)', 'contributors_detail',
         name='dashboards.contributors_detail'),
+
+    # API for pull wiki metrics data.
+    url(r'^api/v1/wikimetrics/?$', api.WikiMetricList.as_view(),
+        name='api.wikimetrics-list'),
 )

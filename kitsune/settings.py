@@ -309,8 +309,17 @@ STATICFILES_FINDERS = (
     'kitsune.sumo.static_finders.WTFinder')
 
 # Paths that don't require a locale prefix.
-SUPPORTED_NONLOCALES = ('media', 'admin', 'robots.txt', 'services', '1',
-                        'postcrash', 'wafflejs', 'favicon.ico')
+SUPPORTED_NONLOCALES = (
+    '1',
+    'admin',
+    'api',
+    'favicon.ico',
+    'media',
+    'postcrash',
+    'robots.txt',
+    'services',
+    'wafflejs',
+)
 
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = '#%tc(zja8j01!r#h_y)=hy!^k)9az74k+-ib&ij&+**s3-e^_z'
@@ -332,6 +341,7 @@ JINGO_EXCLUDE_APPS = [
     'authority',
     'browserid',
     'kadmin',
+    'rest_framework',
     'waffle',
 ]
 
@@ -482,6 +492,7 @@ INSTALLED_APPS = (
     'kitsune.kpi',
     'kitsune.products',
     'kitsune.topics',
+    'rest_framework',
 
     # App for Sentry:
     'raven.contrib.django',
@@ -809,3 +820,8 @@ SITE_URL = (
     'https://support.allizom.org',
     'https://support.mozilla.org',
 )
+
+# Django Rest Framework
+REST_FRAMEWORK = {
+    'DEFAULT_FILTER_BACKENDS': ('rest_framework.filters.DjangoFilterBackend',)
+}
