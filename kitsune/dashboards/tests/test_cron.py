@@ -334,34 +334,42 @@ class L10nMetricsTests(TestCase):
         # 3 'en-US' contributors:
         d = document(locale='en-US', save=True)
         u = user(save=True)
-        revision(document=d, created=last_month, is_approved=True, reviewer=u,
-                 save=True)
-        revision(document=d, created=last_month, creator=u, save=True)
+        revision(document=d, creator=user(save=True), created=last_month,
+                 is_approved=True, reviewer=u, save=True)
+        revision(document=d, creator=u, created=last_month, save=True)
 
         p = product(save=True)
-        r = revision(created=start_date, save=True)
+        r = revision(creator=user(save=True), created=start_date, save=True)
         r.document.products.add(p)
 
         # Add two that shouldn't count:
-        revision(document=d, created=before_start, save=True)
-        revision(document=d, created=day, save=True)
+        revision(document=d, creator=user(save=True), created=before_start,
+                 save=True)
+        revision(document=d, creator=user(save=True), created=day, save=True)
 
         # 4 'es' contributors:
         d = document(locale='es', save=True)
-        revision(document=d, created=last_month, is_approved=True, reviewer=u,
-                 save=True)
-        revision(document=d, created=last_month, creator=u,
+        revision(document=d, creator=user(save=True), created=last_month,
+                 is_approved=True, reviewer=u, save=True)
+        revision(document=d, creator=u, created=last_month,
                  reviewer=user(save=True), save=True)
-        revision(document=d, created=start_date, save=True)
-        revision(document=d, created=last_month, save=True)
+        revision(document=d, creator=user(save=True), created=start_date,
+                 save=True)
+        revision(document=d, creator=user(save=True), created=last_month,
+                 save=True)
         # Add two that shouldn't count:
-        revision(document=d, created=before_start, save=True)
-        revision(document=d, created=day, save=True)
+        revision(document=d, creator=user(save=True), created=before_start,
+                 save=True)
+        revision(document=d, creator=user(save=True), created=day, save=True)
 
         # Call the cron job.
         update_l10n_contributor_metrics(day)
 
-        eq_(3.0, WikiMetric.objects.get(locale='en-US', product=None).value)
-        eq_(1.0, WikiMetric.objects.get(locale='en-US', product=p).value)
-        eq_(4.0, WikiMetric.objects.get(locale='es', product=None).value)
-        eq_(0.0, WikiMetric.objects.get(locale='es', product=p).value)
+        eq_(3.0, WikiMetric.objects.get(
+            locale='en-US', product=None, date=start_date).value)
+        eq_(1.0, WikiMetric.objects.get(
+            locale='en-US', product=p, date=start_date).value)
+        eq_(4.0, WikiMetric.objects.get(
+            locale='es', product=None, date=start_date).value)
+        eq_(0.0, WikiMetric.objects.get(
+            locale='es', product=p, date=start_date).value)
