@@ -186,6 +186,16 @@ AAQ_LANGUAGES = (
     'xx',  # This is a test locale
 )
 
+LANGUAGES_WITH_SPACES = (
+    'en-US',
+    'pt-BR',
+)
+
+LANGUAGES_WITHOUT_SPACES = (
+    'zh-CN',
+    'zh-TW'
+)
+
 # Languages that should show up in language switcher.
 LANGUAGE_CHOICES = tuple(
     [(lang, LOCALES[lang].native) for lang in SUMO_LANGUAGES
@@ -268,7 +278,7 @@ STATICFILES_FINDERS = (
 
 # Paths that don't require a locale prefix.
 SUPPORTED_NONLOCALES = ('media', 'admin', 'robots.txt', 'services', '1',
-                        'postcrash', 'wafflejs', 'favicon.ico')
+                        'postcrash', 'wafflejs', 'favicon.ico', 'offline')
 
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = '#%tc(zja8j01!r#h_y)=hy!^k)9az74k+-ib&ij&+**s3-e^_z'
@@ -440,6 +450,7 @@ INSTALLED_APPS = (
     'kitsune.kpi',
     'kitsune.products',
     'kitsune.topics',
+    'kitsune.offline',
 
     # App for Sentry:
     'raven.contrib.django',
