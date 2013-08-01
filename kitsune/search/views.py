@@ -14,7 +14,6 @@ from django.views.decorators.cache import cache_page
 
 import bleach
 import jinja2
-from elasticutils import S as UntypedS
 from elasticutils.utils import format_explanation
 from mobility.decorators import mobile_template
 from statsd import statsd
@@ -28,7 +27,7 @@ from kitsune.search.models import get_mapping_types
 from kitsune.search.utils import locale_or_default, clean_excerpt, ComposedList
 from kitsune.search import es_utils
 from kitsune.search.forms import SearchForm
-from kitsune.search.es_utils import ES_EXCEPTIONS, Sphilastic, F
+from kitsune.search.es_utils import ES_EXCEPTIONS, F, AnalyzerS
 from kitsune.sumo.utils import paginate, smart_int
 from kitsune.wiki.facets import documents_for
 from kitsune.wiki.models import Document, DocumentMappingType
@@ -130,8 +129,8 @@ def search(request, template=None):
 
     # We use a regular S here because we want to search across
     # multiple doctypes.
-    searcher = (UntypedS().es(urls=settings.ES_URLS)
-                          .indexes(es_utils.READ_INDEX))
+    searcher = (AnalyzerS().es(urls=settings.ES_URLS)
+                           .indexes(es_utils.READ_INDEX))
 
     wiki_f = F(model='wiki_document')
     question_f = F(model='questions_question')
@@ -350,13 +349,15 @@ def search(request, template=None):
         if cleaned_q:
             query_fields = chain(*[cls.get_query_fields()
                                    for cls in get_mapping_types()])
-
             query = {}
             # Create text and text_phrase queries for every field
             # we want to search.
             for field in query_fields:
                 for query_type in ['text', 'text_phrase']:
                     query['%s__%s' % (field, query_type)] = cleaned_q
+
+            # Transform the query to use locale aware analyzers.
+            query = es_utils.es_query_with_analyzer(query, language)
 
             searcher = searcher.query(should=True, **query)
 
@@ -525,6 +526,9 @@ def suggestions(request):
     try:
         query = dict(('%s__text' % field, term)
                      for field in DocumentMappingType.get_query_fields())
+        # Upgrade the query to an analyzer-aware one.
+        query = es_utils.es_query_with_analyzer(query, locale)
+
         wiki_s = (DocumentMappingType.search()
                   .filter(document_is_archived=False)
                   .filter(document_locale=locale)

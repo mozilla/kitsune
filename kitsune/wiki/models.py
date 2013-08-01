@@ -19,7 +19,8 @@ from tower import ugettext_lazy as _lazy, ugettext as _
 
 from kitsune.products.models import Product, Topic
 from kitsune.questions.models import Question
-from kitsune.search.es_utils import UnindexMeBro, ES_EXCEPTIONS
+from kitsune.search.es_utils import (UnindexMeBro, ES_EXCEPTIONS,
+                                     es_analyzer_for_locale)
 from kitsune.search.models import (
     SearchMappingType, SearchMixin, register_for_indexing,
     register_mapping_type)
@@ -674,6 +675,15 @@ class DocumentMappingType(SearchMappingType):
                 'document_keywords']
 
     @classmethod
+    def get_localized_fields(cls):
+        # This is the same list as `get_query_fields`, but it doesn't
+        # have to be, which is why it is typed twice.
+        return ['document_title',
+                'document_content',
+                'document_summary',
+                'document_keywords']
+
+    @classmethod
     def get_mapping(cls):
         return {
             'properties': {
@@ -686,18 +696,17 @@ class DocumentMappingType(SearchMappingType):
                 'product': {'type': 'string', 'index': 'not_analyzed'},
                 'topic': {'type': 'string', 'index': 'not_analyzed'},
 
-                'document_title': {'type': 'string', 'analyzer': 'snowball'},
+                'document_title': {'type': 'string'},
                 'document_locale': {'type': 'string', 'index': 'not_analyzed'},
                 'document_current_id': {'type': 'integer'},
                 'document_parent_id': {'type': 'integer'},
-                'document_content': {'type': 'string', 'analyzer': 'snowball',
-                                     'store': 'yes',
+                'document_content': {'type': 'string', 'store': 'yes',
                                      'term_vector': 'with_positions_offsets'},
                 'document_category': {'type': 'integer'},
                 'document_slug': {'type': 'string', 'index': 'not_analyzed'},
                 'document_is_archived': {'type': 'boolean'},
-                'document_summary': {'type': 'string', 'analyzer': 'snowball'},
-                'document_keywords': {'type': 'string', 'analyzer': 'snowball'},
+                'document_summary': {'type': 'string'},
+                'document_keywords': {'type': 'string'},
                 'document_recent_helpful_votes': {'type': 'integer'}
             }
         }
@@ -757,6 +766,9 @@ class DocumentMappingType(SearchMappingType):
             d['document_recent_helpful_votes'] = obj.recent_helpful_votes
         else:
             d['document_recent_helpful_votes'] = 0
+
+        # Select a locale-appropriate default analyzer for all strings.
+        d['_analyzer'] = es_analyzer_for_locale(obj.locale)
 
         return d
 

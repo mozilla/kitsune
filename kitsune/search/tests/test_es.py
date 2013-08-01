@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import json
 import unittest
 from datetime import datetime, timedelta
@@ -24,6 +25,7 @@ from kitsune.search.tests import ElasticTestCase
 from kitsune.sumo.tests import LocalizingClient
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import group, user
+from kitsune.wiki.models import DocumentMappingType
 from kitsune.wiki.tests import document, revision, helpful_vote
 
 
@@ -1100,3 +1102,150 @@ class TestMappings(unittest.TestCase):
                 merged_mapping[key][1].append(cls_name)
 
         # If we get here, then we're fine.
+
+
+class TestAnalyzers(ElasticTestCase):
+
+    def setUp(self):
+        super(TestAnalyzers, self).setUp()
+
+        self.locale_data = {
+            'en-US': {
+                'analyzer': 'snowball-english',
+                'content': 'I have a cat.',
+            },
+            'es': {
+                'analyzer': 'snowball-spanish',
+                'content': 'Tieno un gato.',
+            },
+            'ar': {
+                'analyzer': 'arabic',
+                'content': u'لدي اثنين من القطط',
+            },
+            'my': {
+                'analyzer': 'custom-burmese',
+                'content': u'အနုပညာ',
+            },
+            'he': {
+                'analyzer': 'standard',
+                'content': u'גאולוגיה היא אחד',
+            }
+        }
+
+        self.docs = {}
+        for locale, data in self.locale_data.items():
+            d = document(locale=locale, save=True)
+            revision(document=d, content=data['content'], is_approved=True, save=True)
+            self.locale_data[locale]['doc'] = d
+
+        self.refresh()
+
+    def test_analyzer_choices(self):
+        """Check that the indexer picked the right analyzer."""
+
+        ids = [d.id for d in self.docs.values()]
+        docs = es_utils.get_documents(DocumentMappingType, ids)
+        for doc in docs:
+            locale = doc['locale']
+            eq_(doc['_analyzer'], self.locale_data[locale]['analyzer'])
+
+    def test_query_analyzer_upgrader(self):
+        analyzer = 'snowball-english'
+        before = {
+            'document_title__text': 'foo',
+            'document_locale__text': 'bar',
+            'document_title__text_phrase': 'baz',
+            'document_locale__text_phrase': 'qux'
+        }
+        expected = {
+            'document_title__text_analyzer': ('foo', analyzer),
+            'document_locale__text': 'bar',
+            'document_title__text_phrase_analyzer': ('baz', analyzer),
+            'document_locale__text_phrase': 'qux',
+        }
+        actual = es_utils.es_query_with_analyzer(before, 'en-US')
+        eq_(actual, expected)
+
+
+    def _check_locale_tokenization(self, locale, expected_tokens, p_tag=True):
+        """
+        Check that a given locale's document was tokenized correctly.
+
+        * `locale` - The locale to check.
+        * `expected_tokens` - An iterable of the tokens that should be
+            found. If any tokens from this list are missing, or if any
+            tokens not in this list are found, the check will fail.
+        * `p_tag` - Default True. If True, an extra token will be added
+            to `expected_tokens`: "p".
+
+            This is because our wiki parser wraps it's content in <p>
+            tags and many analyzers will tokenize a string like
+            '<p>Foo</p>' as ['p', 'foo'] (the HTML tag is included in
+            the tokenization). So this will show up in the tokenization
+            during this test. Not all the analyzers do this, which is
+            why it can be turned off.
+
+        Why can't we fix the analyzers to strip out that HTML, and not
+        generate spurious tokens? That could probably be done, but it
+        probably isn't worth while because:
+
+        * ES will weight common words lower, thanks to it's TF-IDF
+          algorithms, which judges words based on how often they
+          appear in the entire corpus and in the document, so the p
+          tokens will be largely ignored.
+        * The pre-l10n search code did it this way, so it doesn't
+          break search.
+        * When implementing l10n search, I wanted to minimize the
+          number of changes needed, and this seemed like an unneeded
+          change.
+        """
+
+        search = es_utils.Sphilastic(DocumentMappingType)
+        search = search.filter(document_locale=locale)
+        facet_filter = search._process_filters([('document_locale', locale)])
+        search = search.facet_raw(tokens={
+                'terms': {'field': 'document_content'},
+                'facet_filter': facet_filter,
+                })
+        facets = search.facet_counts()
+
+        expected = set(expected_tokens)
+        if p_tag:
+            # Since `expected` is a set, there is no problem adding this
+            # twice, since duplicates will be ignored.
+            expected.add(u'p')
+        actual = set(t['term'] for t in facets['tokens'])
+        eq_(actual, expected)
+
+    # These 5 languages were chosen for tokenization testing because
+    # they represent the 5 kinds of languages we have: English, Snowball
+    # supported languages, ES supported languages, Languages with custom
+    # analyzers, and languages with no analyzer, which use the standard
+    # analyzer.
+
+    def test_english_tokenization(self):
+        """Test that English stemming and stop words work."""
+        self._check_locale_tokenization('en-US', ['i', 'have', 'cat'])
+
+    def test_spanish_tokenization(self):
+        """Test that Spanish stemming and stop words work."""
+        self._check_locale_tokenization('es', ['tien', 'un', 'gat'])
+
+    def test_arabic_tokenization(self):
+        """Test that Arabic stemming works.
+
+        I don't read Arabic, this is just what ES gave me when I asked
+        it to analyze an Arabic text as Arabic. If someone who reads
+        Arabic can improve this test, go for it!
+        """
+        self._check_locale_tokenization('ar', [u'لد', u'اثن', u'قطط'])
+
+    def test_burmese_tokenization(self):
+        """Test that the shingle analyzer is active for Burmese."""
+        tokens = [u'အန', u'နု', u'ုပ', u'ပည', u'ညာ']
+        self._check_locale_tokenization('my', tokens, False)
+
+    def test_herbrew_tokenization(self):
+        """Test that Hebrew uses the standard analyzer."""
+        tokens = [u'גאולוגיה', u'היא', u'אחד']
+        self._check_locale_tokenization('he', tokens)

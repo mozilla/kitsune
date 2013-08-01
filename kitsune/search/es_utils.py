@@ -7,6 +7,7 @@ from django.conf import settings
 from django.db import reset_queries
 
 import requests
+from elasticutils import S as UntypedS
 from elasticutils.contrib.django import S, F, get_es, ES_EXCEPTIONS  # noqa
 from pyelasticsearch.exceptions import ElasticHttpNotFoundError
 
@@ -45,7 +46,37 @@ class UnindexMeBro(Exception):
     pass
 
 
-class Sphilastic(S):
+class AnalyzerMixin(object):
+
+    def _with_analyzer(self, key, val, action):
+        """Do a normal kind of query, with a analyzer added.
+
+        :arg key: is the field being searched
+        :arg val: Is a two-tupe of the text to query for and the name of
+            the analyzer to use.
+        :arg action: is the type of query being performed, like text or
+            text_phrase
+        """
+        query, analyzer = val
+        return {
+            action: {
+                key: {
+                    'query': query,
+                    'analyzer': analyzer,
+                }
+            }
+        }
+
+    def process_query_text_phrase_analyzer(self, key, val, action):
+        """A text phrase query that includes an analyzer."""
+        return self._with_analyzer(key, val, 'text_phrase')
+
+    def process_query_text_analyzer(self, key, val, action):
+        """A text query that includes an analyzer."""
+        return self._with_analyzer(key, val, 'text')
+
+
+class Sphilastic(S, AnalyzerMixin):
     """Shim around elasticutils.contrib.django.S.
 
     Implements some Kitsune-specific behavior to make our lives
@@ -77,6 +108,15 @@ class Sphilastic(S):
         return {
             'more_like_this': val,
         }
+
+
+class AnalyzerS(UntypedS, AnalyzerMixin):
+    """This is to give the search view support for setting the analyzer.
+
+    This differs from Sphilastic in that this is a plain ES S object,
+    not based on Django.
+    """
+    pass
 
 
 def get_mappings():
@@ -157,6 +197,60 @@ def get_documents(cls, ids):
     return list(ret)
 
 
+def get_analysis():
+    """Generate all our custom analyzers, tokenizers, and filters
+
+    This is mostly variants of the Snowball analyzer for various
+    languages, and a custom analyzer for Burmese (my).
+    """
+    analyzers = {}
+    tokenizers = {}
+
+    snowball_langs = [
+        'Armenian', 'Basque', 'Catalan', 'Danish', 'Dutch', 'English',
+        'Finnish', 'French', 'German', 'Hungarian', 'Italian', 'Norwegian',
+        'Portuguese', 'Romanian', 'Russian', 'Spanish', 'Swedish', 'Turkish',
+    ]
+
+    for lang in snowball_langs:
+        key = 'snowball-' + lang.lower()
+        analyzers[key] = {
+            'type': 'snowball',
+            'language': lang,
+        }
+
+    # Burmese (my) specific custom analyzer.
+    #
+    # Burmese is a language that uses spaces to divide phrases, instead
+    # of words. Because of that, it isn't really possible to split out
+    # words like in other languages. This uses a similar approach to the
+    # built in CJK analyzer (which doesn't work reliably here), which is
+    # shingling, or overlapping substrings.
+    #
+    # Given the string 'abc def', this will result in these tokens being
+    # generated: ['ab', 'bc', 'c ', ' d', 'de', 'ef']. ES understands
+    # this kind of overlapping token, and hopefully this will result in
+    # an ok search experience.
+
+    analyzers['custom-burmese'] = {
+        'type': 'custom',
+        'tokenizer': 'custom-burmese',
+        'char_filter': ['html_strip'],
+    }
+
+    tokenizers['custom-burmese'] = {
+        'type': 'nGram',
+        'min_gram': 2,
+        'max_gram': 2,
+    }
+
+    # Done!
+    return {
+        'analyzer': analyzers,
+        'tokenizer': tokenizers,
+    }
+
+
 def recreate_index(es=None):
     """Deletes WRITE_INDEX if it's there and creates a new one"""
     if es is None:
@@ -165,16 +259,19 @@ def recreate_index(es=None):
     index = WRITE_INDEX
     delete_index(index)
 
-    mappings = get_mappings()
-
     # There should be no mapping-conflict race here since the index doesn't
     # exist. Live indexing should just fail.
 
-    # Simultaneously create the index and the mappings, so live
-    # indexing doesn't get a chance to index anything between the two
-    # and infer a bogus mapping (which ES then freaks out over when we
-    # try to lay in an incompatible explicit mapping).
-    es.create_index(index, settings={'mappings': mappings})
+    # Simultaneously create the index, the mappings, the analyzers, and
+    # the tokenizers, so live indexing doesn't get a chance to index
+    # anything between and infer a bogus mapping (which ES then freaks
+    # out over when we try to lay in an incompatible explicit mapping).
+    es.create_index(index, settings={
+            'mappings': get_mappings(),
+            'settings': {
+                'analysis': get_analysis(),
+            }
+        })
 
     # Wait until the index is there.
     es.health(wait_for_status='yellow')
@@ -619,3 +716,39 @@ def es_verify_cmd(log=log):
                 format_time((time.time() - cls_time) * 1000 / count)))
 
     log.info('Done! {0}'.format(format_time(time.time() - start_time)))
+
+
+def es_analyzer_for_locale(locale, fallback="standard"):
+    """Pick an appropriate analyzer for a given locale.
+
+    If no analyzer is defined for `locale`, return fallback instead,
+    which defaults to ES analyzer named "standard".
+    """
+    analyzer = settings.ES_LOCALE_ANALYZERS.get(locale, fallback)
+
+    if (not settings.ES_USE_PLUGINS and
+            analyzer in settings.ES_PLUGIN_ANALYZERS):
+        analyzer = fallback
+
+    return analyzer
+
+
+def es_query_with_analyzer(query, locale):
+    """Transform a query dict to use _analyzer actions for the right fields."""
+    analyzer = es_analyzer_for_locale(locale)
+    new_query = {}
+
+    # Import locally to avoid circular import
+    from kitsune.search.models import get_mapping_types
+    localized_fields = []
+    for mt in get_mapping_types():
+        localized_fields.extend(mt.get_localized_fields())
+
+    for k, v in query.items():
+        field, action = k.split('__')
+        if field in localized_fields:
+            new_query[k + '_analyzer'] = (v, analyzer)
+        else:
+            new_query[k] = v
+
+    return new_query

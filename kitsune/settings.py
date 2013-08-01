@@ -209,10 +209,51 @@ NON_SUPPORTED_LOCALES = {
     'sv-SE': 'sv',
 }
 
+ES_LOCALE_ANALYZERS = {
+    'ar': 'arabic',
+    'bg': 'bulgarian',
+    'ca': 'snowball-catalan',
+    'cs': 'czech',
+    'da': 'snowball-danish',
+    'de': 'snowball-german',
+    'en-US': 'snowball-english',
+    'es': 'snowball-spanish',
+    'eu': 'snowball-basque',
+    'fa': 'persian',
+    'fi': 'snowball-finnish',
+    'fr': 'snowball-french',
+    'gl': 'galician',
+    'hi-IN': 'hindi',
+    'hu': 'snowball-hungarian',
+    'hy-AM': 'snowball-armenian',
+    'id': 'indonesian',
+    'it': 'snowball-italian',
+    'ja': 'cjk',
+    'my': 'custom-burmese',
+    'nb-NO': 'snowball-norwegian',
+    'nl': 'snowball-dutch',
+    'no': 'snowball-norwegian',
+    'pl': 'polish',
+    'pt-BR': 'snowball-portuguese',
+    'pt-PT': 'snowball-portuguese',
+    'ro': 'snowball-romanian',
+    'ru': 'snowball-russian',
+    'sv': 'snowball-swedish',
+    'th': 'thai',
+    'tr': 'snowball-turkish',
+    'zh-CN': 'chinese',
+    'zh-TW': 'chinese',
+}
+
+ES_PLUGIN_ANALYZERS = [
+    'polish'
+]
+
+ES_USE_PLUGINS = False
+
 TEXT_DOMAIN = 'messages'
 
 SITE_ID = 1
-
 
 # If you set this to False, Django will make some optimizations so as
 # not to load the internationalization machinery.
@@ -544,7 +585,7 @@ SESSION_EXISTS_COOKIE = 'sumo_session'
 # Connection information for Elastic
 ES_URLS = ['http://127.0.0.1:9200']
 # Indexes for reading
-ES_INDEXES = {'default': 'sumo-20130701'}
+ES_INDEXES = {'default': 'sumo-20130723'}
 # Indexes for indexing--set this to ES_INDEXES if you want to read to
 # and write to the same index.
 ES_WRITE_INDEXES = ES_INDEXES
