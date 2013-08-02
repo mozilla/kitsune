@@ -1,8 +1,9 @@
-# Django settings for kitsune project.
-from datetime import date
+"""Django settings for kitsune project."""
+
 import logging
 import os
 import platform
+from datetime import date
 
 from bundles import MINIFY_BUNDLES
 from kitsune.lib.sumo_locales import LOCALES
@@ -537,6 +538,7 @@ DOMAIN_METHODS = {
 
         ('kitsune/**.py', tower_python),
         ('kitsune/**/templates/**.html', tower_tmpl),
+        ('vendor/src/django-tidings/**/templates/**.html', tower_tmpl),
     ],
     'lhtml': [
         ('kitsune/forums/**.lhtml', 'ignore'),
