@@ -1,4 +1,7 @@
+import json
+
 from django.conf import settings
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render
 
 from mobility.decorators import mobile_template
@@ -22,6 +25,14 @@ def product_list(request, template):
 def product_landing(request, template, slug):
     """The product landing page."""
     product = get_object_or_404(Product, slug=slug)
+
+    if request.is_ajax():
+        # Return a list of topics/subtopics for the product
+        topic_list = list()
+        for t in Topic.objects.filter(product=product, visible=True):
+            topic_list.append({'id': t.id, 'title': t.title})
+        return HttpResponse(json.dumps({'topics': topic_list}),
+                            mimetype='application/json')
 
     try:
         topic = Topic.objects.get(product=product, slug=HOT_TOPIC_SLUG)
@@ -49,9 +60,7 @@ def product_landing(request, template, slug):
     return render(request, template, {
         'product': product,
         'products': Product.objects.filter(visible=True),
-        'topics': topics_for(
-            products=[product],
-            parent=None),
+        'topics': topics_for(products=[product], parent=None),
         'hot_docs': hot_docs,
         'hot_questions': hot_questions,
         'fallback_hot_docs': fallback_hot_docs,

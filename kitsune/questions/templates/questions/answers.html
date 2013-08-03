@@ -180,51 +180,72 @@
         </li>
       </ul>
 
-      <ul class="sidebar-nav sidebar-folding tight">
-        <li id="question-details">
-          <span>{{ _('Question details') }}</span>
-          <div class="folder">
-            {% set products = question.products.all() %}
-            {% if products %}
-              <div class="sidebox tight condensed">
-                <span class="title">{{ _('Product') }}</span>
-                {% for p in products %}
-                  {{ p.title }}
-                {% endfor %}
-                </span>
-              </div>
-            {% endif %}
-
-            {% set topics = question.topics.all() %}
-            {% if topics %}
-              <div class="sidebox tight condensed">
-                <span class="title">{{ _('Topic') }}</span>
-                {% for t in topics %}
-                  {{ t.title }}
-                {% endfor %}
-              </div>
-            {% endif %}
-
-
-            <div class="sidebox tight" id="system-details">
-              <span class="title">{{ _('System Details') }}</span>
-              {% block system_info %}
-                <ul class="system">
-                  {% if question.metadata.os %}
-                    {% set os = question.metadata.os %}
-                    {% set os_lower = os.lower() %}
-                    <li class="{% if os_lower.find('mac') >= 0 %}mac{% elif os_lower.find('linux') >= 0 %}linux{% elif os_lower.find('win') >= 0 %}windows{% endif %}">{{ os }}</li>
+      <form method="post" action="{{ url('questions.edit_details', question.id) }}">
+        <ul class="sidebar-nav sidebar-folding tight">
+          <li id="question-details">
+            <span>{{ _('Question details') }}</span>
+            <div class="folder">
+              {% if product %}
+                {% set product = product[0] %}
+                <div class="sidebox tight condensed">
+                  <span class="title">{{ _('Product') }}</span>
+                  {% if user and user.has_perm('questions.change_question') %}
+                    <select id="details-product" name="product">
+                      {% for p in all_products %}
+                        <option {% if p.id == product.id %}selected="selected"{% endif %} value="{{ p.id }}" data-url="{{ url('products.product', p.slug) }}">{{ p.title }}</option>
+                      {% endfor %}
+                    </select>
+                  {% else %}
+                    {{ product.title }}
                   {% endif %}
-                  {% if question.metadata.ff_version %}
-                    <li class="ff">Firefox {{ question.metadata.ff_version }}</li>
+                  </span>
+                </div>
+              {% endif %}
+
+              {% if topic %}
+                {% set topic = topic[0] %}
+                <div class="sidebox tight condensed">
+                  <span class="title">{{ _('Topic') }}</span>
+                  {% if user and user.has_perm('questions.change_question') %}
+                    <select id="details-topic" name="topic">
+                      {% for t in all_topics %}
+                        <option {% if t.id == topic.id %}selected="selected"{% endif %} value="{{ t.id }}">{{ t.title }}</option>
+                      {% endfor %}
+                    </select>
+                  {% else %}
+                    {{ topic.title }}
                   {% endif %}
-                </ul>
-              {% endblock %}
-              <div><a id="show-more-details" href="#more-system-details">{{ _('More system details') }}</a></div>
+                </div>
+              {% endif %}
+
+
+              <div class="sidebox tight {% if user and user.has_perm('questions.change_question') %}condensed{% endif %}" id="system-details">
+                <span class="title">{{ _('System Details') }}</span>
+                {% block system_info %}
+                  <ul class="system">
+                    {% if question.metadata.os %}
+                      {% set os = question.metadata.os %}
+                      {% set os_lower = os.lower() %}
+                      <li class="{% if os_lower.find('mac') >= 0 %}mac{% elif os_lower.find('linux') >= 0 %}linux{% elif os_lower.find('win') >= 0 %}windows{% endif %}">{{ os }}</li>
+                    {% endif %}
+                    {% if question.metadata.ff_version %}
+                      <li class="ff">Firefox {{ question.metadata.ff_version }}</li>
+                    {% endif %}
+                  </ul>
+                {% endblock %}
+                <div><a id="show-more-details" href="#more-system-details">{{ _('More system details') }}</a></div>
+              </div>
+
+              {% if user and user.has_perm('questions.change_question') %}
+                <div class="sidebox tight">
+                  <button id="details-submit" type="submit" class="btn btn-submit">{{ _('Save changes') }}</button>
+                </div>
+              {% endif %}
             </div>
-          </div>
-        </li>
-      </ul>
+          </li>
+        </ul>
+        {{ csrf() }}
+      </form>
 
       <section id="more-system-details" class="kbox" title="{{ _('Additional System Details') }}" data-target="#show-more-details" data-modal="true" data-id="more-system-details-kbox" data-close-on-out-click="true">
         <h1>{{ _('Additional System Details') }}</h1>

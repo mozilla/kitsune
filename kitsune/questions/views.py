@@ -16,7 +16,7 @@ from django.core.paginator import EmptyPage, PageNotAnInteger
 from django.db.models import Q
 from django.http import (HttpResponseRedirect, HttpResponse, Http404,
                          HttpResponseBadRequest, HttpResponseForbidden)
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, render, redirect
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import (require_POST, require_GET,
                                           require_http_methods)
@@ -65,7 +65,7 @@ from kitsune.upload.views import upload_imageattachment
 from kitsune.users.forms import RegisterForm
 from kitsune.users.models import Setting
 from kitsune.users.utils import handle_login, handle_register
-from kitsune.wiki.facets import documents_for
+from kitsune.wiki.facets import documents_for, topics_for
 from kitsune.wiki.models import Document, DocumentMappingType
 
 
@@ -324,6 +324,15 @@ def answers(request, template, question_id, form=None, watch_form=None,
 
     extra_kwargs.update(ans_)
 
+    product = Product.uncached.filter(question=question)
+    topic = Topic.uncached.filter(question=question)
+
+    products = Product.objects.filter(visible=True)
+    topics = topics_for(products=[question.products.all()])
+
+    extra_kwargs.update({'all_products': products, 'all_topics': topics,
+                         'product': product, 'topic': topic})
+
     # Add noindex to questions without answers that are > 30 days old.
     if not request.MOBILE:
         no_answers = ans_['answers'].paginator.count == 0
@@ -332,6 +341,25 @@ def answers(request, template, question_id, form=None, watch_form=None,
             extra_kwargs.update(robots_noindex=True)
 
     return render(request, template, extra_kwargs)
+
+
+@require_POST
+@permission_required('questions.change_question')
+def edit_details(request, question_id):
+    try:
+        product = Product.objects.get(id=request.POST.get('product'))
+        topic = Topic.objects.get(id=request.POST.get('topic'),
+                                  product=product)
+    except (Product.DoesNotExist, Topic.DoesNotExist):
+        return HttpResponseBadRequest()
+
+    question = get_object_or_404(Question, pk=question_id)
+    question.products = [product]
+    question.topics = [topic]
+    question.save()
+
+    return redirect(reverse('questions.answers',
+                            kwargs={'question_id': question_id}))
 
 
 @mobile_template('questions/{mobile/}new_question.html')
