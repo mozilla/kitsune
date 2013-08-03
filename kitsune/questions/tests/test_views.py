@@ -20,7 +20,7 @@ from kitsune.sumo.tests import (
     get, MobileTestCase, LocalizingClient, eq_msg)
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.products.tests import topic
-from kitsune.users.tests import user
+from kitsune.users.tests import user, add_permission
 from kitsune.wiki.tests import document, revision
 
 
@@ -618,3 +618,109 @@ class TestStats(ElasticTestCase):
         # If there's histogram data, this is probably good enough to
         # denote its existence.
         assert ' data-graph="[' in response.content
+
+
+class TestEditDetails(TestCaseBase):
+    def setUp(self):
+        u = user(save=True)
+        add_permission(u, Question, 'edit_details')
+        self.user = u
+
+        p = product(save=True)
+        t = topic(product=p, save=True)
+
+        q = question(save=True)
+        q.products.add(p)
+        q.topics.add(t)
+        q.save()
+
+        self.question = q
+
+    def _request(self, user=None, data=None):
+        """Make a request to edit details"""
+        if user is None:
+            user = self.user
+        self.client.login(username=user.username, password='testpass')
+        url = reverse('questions.edit_details',
+                      kwargs={'question_id': self.question.id})
+        return self.client.post(url, data=data)
+
+    def test_permissions(self):
+        """Test that the new permission works"""
+        data = {
+            'product': self.question.products.all()[0].id,
+            'topic': self.question.topics.all()[0].id
+        }
+
+        u = user(save=True)
+        response = self._request(u, data=data)
+        eq_(403, response.status_code)
+
+        response = self._request(data=data)
+        eq_(302, response.status_code)
+
+    def test_missing_data(self):
+        """Test for missing data"""
+        data = {
+            'product': self.question.products.all()[0].id
+        }
+        response = self._request(data=data)
+        eq_(500, response.status_code)
+
+        data = {
+            'topic': self.question.topics.all()[0].id
+        }
+        response = self._request(data=data)
+        eq_(500, response.status_code)
+
+    def test_bad_data(self):
+        """Test for bad data"""
+        data = {
+            'product': product(save=True).id,
+            'topic': topic(save=True).id
+        }
+        response = self._request(data=data)
+        eq_(500, response.status_code)
+
+    def test_change_topic(self):
+        """Test changing the topic"""
+        t_old = self.question.topics.all()[0]
+        t_new = topic(product=t_old.product, save=True)
+
+        data = {
+            'product': t_old.product.id,
+            'topic': t_new.id
+        }
+
+        assert t_new.id != t_old.id
+
+        response = self._request(data=data)
+        eq_(302, response.status_code)
+
+        q = Question.objects.get(id=self.question.id)
+
+        eq_(1, len(q.topics.all()))
+        eq_(t_new.id, q.topics.all()[0].id)
+
+    def test_change_product(self):
+        """Test changing the product"""
+        t_old = self.question.topics.all()[0]
+        t_new = topic(save=True)
+
+        p_old = t_old.product
+        p_new = t_new.product
+
+        assert p_old.id != p_new.id
+
+        data = {
+            'product': p_new.id,
+            'topic': t_new.id
+        }
+
+        response = self._request(data=data)
+        eq_(302, response.status_code)
+
+        q = Question.objects.get(id=self.question.id)
+
+        eq_(1, len(q.products.all()))
+        eq_(p_new.id, q.products.all()[0].id)

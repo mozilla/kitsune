@@ -91,6 +91,8 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
                  'Can add tags to and remove tags from questions'),
                 ('change_solution',
                  'Can change/remove the solution to a question'),
+                ('edit_details',
+                 'Can edit the product and topic of a question'),
             )
 
     def __unicode__(self):

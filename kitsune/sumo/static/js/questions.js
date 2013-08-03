@@ -27,6 +27,7 @@
             initHaveThisProblemTooAjax();
             initHelpfulVote();
             initCrashIdLinking();
+            initEditDetails();
             addReferrerAndQueryToVoteForm();
             new k.AjaxPreview($('#preview'));
         }
@@ -88,6 +89,38 @@
                 $this.unbind('click').replaceWith($textbox);
                 $textbox.focus();
             }
+        });
+    }
+
+    // Handle changes to the details for a question
+    function initEditDetails() {
+        $('#details-product').on('change', function() {
+            var $selected;
+
+            $(this).children().each(function() {
+                if (this.selected) {
+                    $selected = $(this);
+                }
+            });
+
+            $('#details-topic').children().remove();
+            $('#details-submit').prop('disabled', true);
+
+            $.ajax($selected.data('url'), {
+                'dataType': 'json',
+                'success': function(data) {
+                    for (var i=0; i < data.topics.length; i++) {
+                        var topic = data.topics[i];
+                        var $opt = $('<option />');
+
+                        $opt.attr('value', topic.id);
+                        $opt.text(topic.title);
+
+                        $('#details-topic').append($opt);
+                    }
+                    $('#details-submit').prop('disabled', false);
+                }
+            });
         });
     }
 
