@@ -1,6 +1,5 @@
 """Django settings for kitsune project."""
 
-import imp
 import logging
 import os
 import platform
@@ -539,6 +538,7 @@ DOMAIN_METHODS = {
 
         ('kitsune/**.py', tower_python),
         ('kitsune/**/templates/**.html', tower_tmpl),
+        ('vendor/src/django-tidings/**/templates/**.html', tower_tmpl),
     ],
     'lhtml': [
         ('kitsune/forums/**.lhtml', 'ignore'),
@@ -556,20 +556,6 @@ DOMAIN_METHODS = {
         ('kitsune/**/static/js/*.js', 'javascript'),
     ],
 }
-
-# Tidings is a dependency, so it's location is unpredictable, but we
-# still need to extract some strings from it. This will look up the path
-# of wherever Tidings is, and add it to the list of files to extract
-# strings from. This will raise an import error if tidings is not
-# available, but so will many other parts of the code.
-_, tidings_path, _ = imp.find_module('tidings')
-tidings_html_path = os.path.relpath(os.path.join(
-    tidings_path, 'templates', 'tidings', '*.html'))
-tidings_ltxt_path = os.path.relpath(os.path.join(
-    tidings_path, 'templates', 'tidings', 'email', '*.ltxt'))
-DOMAIN_METHODS['messages'].append((tidings_html_path, tower_tmpl))
-DOMAIN_METHODS['ltxt'].append((tidings_ltxt_path, tower_tmpl))
-
 
 # These domains will not be merged into messages.pot and will use
 # separate PO files. See the following URL for an example of how to
