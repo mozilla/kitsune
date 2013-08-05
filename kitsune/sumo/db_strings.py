@@ -238,7 +238,7 @@ _("""Web browser for Windows, Mac and Linux""", "DB: products.Product.descriptio
 _("""Firefox for Android""", "DB: products.Product.title")
 _("""Web browser for Android smartphones and tablets""", "DB: products.Product.description")
 _("""Firefox OS""", "DB: products.Product.title")
-_("""Mobile OS for smartphones """, "DB: products.Product.description")
+_("""Mobile OS for smartphones""", "DB: products.Product.description")
 _("""Firefox Marketplace""", "DB: products.Product.title")
 _("""Firefox Marketplace""", "DB: products.Product.description")
 _("""Mozilla Persona""", "DB: products.Product.title")
