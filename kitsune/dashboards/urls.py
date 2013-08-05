@@ -15,5 +15,5 @@ urlpatterns = patterns('kitsune.dashboards.views',
 
     # API for pull wiki metrics data.
     url(r'^api/v1/wikimetrics/?$', api.WikiMetricList.as_view(),
-        name='api.wikimetrics-list'),
+        name='api.wikimetric_list'),
 )
