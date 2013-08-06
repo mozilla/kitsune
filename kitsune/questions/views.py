@@ -15,8 +15,7 @@ from django.core.exceptions import PermissionDenied
 from django.core.paginator import EmptyPage, PageNotAnInteger
 from django.db.models import Q
 from django.http import (HttpResponseRedirect, HttpResponse, Http404,
-                         HttpResponseBadRequest, HttpResponseForbidden,
-                         HttpResponseServerError)
+                         HttpResponseBadRequest, HttpResponseForbidden)
 from django.shortcuts import get_object_or_404, render, redirect
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import (require_POST, require_GET,
@@ -348,7 +347,7 @@ def edit_details(request, question_id):
         topic = Topic.objects.get(id=request.POST.get('topic'),
                                   product=product)
     except (Product.DoesNotExist, Topic.DoesNotExist):
-        return HttpResponseServerError()
+        return HttpResponseBadRequest()
 
     question = get_object_or_404(Question, pk=question_id)
     question.products = [product]

@@ -665,13 +665,13 @@ class TestEditDetails(TestCaseBase):
             'product': self.question.products.all()[0].id
         }
         response = self._request(data=data)
-        eq_(500, response.status_code)
+        eq_(400, response.status_code)
 
         data = {
             'topic': self.question.topics.all()[0].id
         }
         response = self._request(data=data)
-        eq_(500, response.status_code)
+        eq_(400, response.status_code)
 
     def test_bad_data(self):
         """Test for bad data"""
@@ -680,7 +680,7 @@ class TestEditDetails(TestCaseBase):
             'topic': topic(save=True).id
         }
         response = self._request(data=data)
-        eq_(500, response.status_code)
+        eq_(400, response.status_code)
 
     def test_change_topic(self):
         """Test changing the topic"""
