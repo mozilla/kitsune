@@ -177,5 +177,8 @@
     <li {{ active|class_selected('team') }}>
       <a href="{{ url('wiki.locale_details', locale) }}">{{ _('Localization Team') }}</a>
     </li>
+    <li {{ active|class_selected('revisions') }}>
+      <a href="{{ url('wiki.revisions')|urlparams(locale=locale) }}">{{ _('Recent Revisions') }}</a>
+    </li>
   </ul>
 {% endmacro %}
