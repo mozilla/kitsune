@@ -1,7 +1,6 @@
 import json
 from datetime import date, timedelta
 
-from nose import SkipTest
 from nose.tools import eq_
 
 from kitsune.dashboards.tests import wikimetric
@@ -113,36 +112,31 @@ class WikiMetricAPITests(TestCase):
 
     def test_code_filter(self):
         """Test filtering results by code."""
-        # TODO: Figure out why this test doesn't work. Filtering by code
-        # works fine when doing manual testing. I can't figure out why
-        # this isn't working here. HALP?
-        raise SkipTest
-
         today = date.today()
 
-        # Create 3 wikimetrics for code_a:
+        # Create 3 wikimetrics for active_contributors:
         for i in range(3):
             wikimetric(
-                code='code_a',
+                code='active_contributors',
                 date=today - timedelta(days=i),
                 save=True)
 
-        # Create 1 for code_b:
-        wikimetric(code='code_b', save=True)
+        # Create 1 for percent_localized_all:
+        wikimetric(code='percent_localized_all', save=True)
 
-        # Call and verify the API for code=code_a.
+        # Call and verify the API for code=active_contributors.
         response = self.client.get(
             urlparams(reverse('api.wikimetric_list'), format='json',
-                      code='code_a'))
+                      code='active_contributors'))
         eq_(200, response.status_code)
 
         results = json.loads(response.content)['results']
         eq_(3, len(results))
 
-        # Call and verify the API for code=code_b.
+        # Call and verify the API for code=percent_localized_all.
         response = self.client.get(
             urlparams(reverse('api.wikimetric_list'), format='json',
-                      code='code_b'))
+                      code='percent_localized_all'))
         eq_(200, response.status_code)
 
         results = json.loads(response.content)['results']
