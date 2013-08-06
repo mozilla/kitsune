@@ -341,7 +341,7 @@ def answers(request, template, question_id, form=None, watch_form=None,
 
 
 @require_POST
-@permission_required('questions.edit_details')
+@permission_required('questions.change_question')
 def edit_details(request, question_id):
     try:
         product = Product.objects.get(id=request.POST.get('product'))

@@ -623,7 +623,7 @@ class TestStats(ElasticTestCase):
 class TestEditDetails(TestCaseBase):
     def setUp(self):
         u = user(save=True)
-        add_permission(u, Question, 'edit_details')
+        add_permission(u, Question, 'change_question')
         self.user = u
 
         p = product(save=True)

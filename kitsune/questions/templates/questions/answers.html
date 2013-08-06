@@ -190,7 +190,7 @@
                 {% set product = products[0] %}
                 <div class="sidebox tight condensed">
                   <span class="title">{{ _('Product') }}</span>
-                  {% if user and user.has_perm('questions.edit_details') %}
+                  {% if user and user.has_perm('questions.change_question') %}
                     <select id="details-product" name="product">
                       {% for p in all_products %}
                         <option {% if p.id == product.id %}selected="selected"{% endif %} value="{{ p.id }}" data-url="{{ url('products.product', p.slug) }}">{{ p.title }}</option>
@@ -208,7 +208,7 @@
                 {% set topic = topics[0] %}
                 <div class="sidebox tight condensed">
                   <span class="title">{{ _('Topic') }}</span>
-                  {% if user and user.has_perm('questions.edit_details') %}
+                  {% if user and user.has_perm('questions.change_question') %}
                     <select id="details-topic" name="topic">
                       {% for t in all_topics %}
                         <option {% if t.id == topic.id %}selected="selected"{% endif %} value="{{ t.id }}">{{ t.title }}</option>
@@ -221,7 +221,7 @@
               {% endif %}
 
 
-              <div class="sidebox tight {% if user and user.has_perm('questions.edit_details') %}condensed{% endif %}" id="system-details">
+              <div class="sidebox tight {% if user and user.has_perm('questions.change_question') %}condensed{% endif %}" id="system-details">
                 <span class="title">{{ _('System Details') }}</span>
                 {% block system_info %}
                   <ul class="system">
@@ -238,7 +238,7 @@
                 <div><a id="show-more-details" href="#more-system-details">{{ _('More system details') }}</a></div>
               </div>
 
-              {% if user and user.has_perm('questions.edit_details') %}
+              {% if user and user.has_perm('questions.change_question') %}
                 <div class="sidebox tight">
                   <button id="details-submit" type="submit" class="btn btn-submit">{{ _('Save changes') }}</button>
                 </div>
