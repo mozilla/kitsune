@@ -32,7 +32,7 @@ class GoogleAnalyticsTests(TestCase):
         visits = googleanalytics.visitors_by_locale(
             date(2013, 01, 16), date(2013, 01, 16))
 
-        eq_(81, len(visits))
+        eq_(80, len(visits))
         eq_(221447, visits['en-US'])
         eq_(24432, visits['es'])
 
