@@ -1,6 +1,6 @@
-(function($) {
+(function($){
     $(function() {
-        $(document).on('click', '.browserid-login', function(e) {
+        $(document).on('click', '#change-email', function(e) {
             e.preventDefault();
             navigator.id.get(function(assertion) {
                 if (assertion) {

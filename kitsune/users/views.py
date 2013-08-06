@@ -651,20 +651,26 @@ def browserid_verify(request):
     if form.is_valid():
         result = verify(form.cleaned_data['assertion'], get_audience(request))
         if result:
-            # Verified so log in
-            email = result['email']
-            user = User.objects.filter(email=email)
-
-            if len(user) == 0:
-                form = BrowserIDSignupForm()
-                request.session['browserid-email'] = email
-                return render(request, 'users/browserid_signup.html',
-                              {'email': email, 'next': next, 'form': form})
+            if request.user.is_authenticated():
+                # User is already signed in so they must want an email change
+                request.user.email = result['email']
+                request.user.save()
+                return redirect(reverse('users.edit_profile'))
             else:
-                user = user[0]
-                user.backend = 'django_browserid.auth.BrowserIDBackend'
-                auth.login(request, user)
-                return redirect(redirect_to)
+                # Verified so log in
+                email = result['email']
+                user = User.objects.filter(email=email)
+
+                if len(user) == 0:
+                    form = BrowserIDSignupForm()
+                    request.session['browserid-email'] = email
+                    return render(request, 'users/browserid_signup.html',
+                                  {'email': email, 'next': next, 'form': form})
+                else:
+                    user = user[0]
+                    user.backend = 'django_browserid.auth.BrowserIDBackend'
+                    auth.login(request, user)
+                    return redirect(redirect_to)
 
     return redirect(redirect_to_failure)
 

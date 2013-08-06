@@ -51,7 +51,7 @@
     {% else %}
       {% if waffle.flag('browserid') %}
         <li>
-          {{ browserid_login(text=_('Sign in with Persona')) }}
+          {{ browserid_login(text=_('Sign in with email')) }}
           <div class="doorhanger">
             <p><strong>{{ _("What's this") }}</strong></p>
             <p>
