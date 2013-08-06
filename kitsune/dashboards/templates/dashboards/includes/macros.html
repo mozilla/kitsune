@@ -190,5 +190,8 @@
         {% endif %}
       </a>
     </li>
+    <li {{ active|class_selected('revisions') }}>
+      <a href="{{ url('wiki.revisions')|urlparams(locale=locale) }}">{{ _('Recent Revisions') }}</a>
+    </li>
   </ul>
 {% endmacro %}
