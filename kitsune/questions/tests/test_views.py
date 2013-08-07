@@ -9,6 +9,7 @@ import mock
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 
+from kitsune.products.models import Product, Topic
 from kitsune.products.tests import product
 from kitsune.questions.models import (
     Question, QuestionVote, AnswerVote, Answer)
@@ -710,6 +711,7 @@ class TestEditDetails(TestCaseBase):
         p_old = t_old.product
         p_new = t_new.product
 
+        assert t_old.id != t_new.id
         assert p_old.id != p_new.id
 
         data = {
@@ -720,7 +722,8 @@ class TestEditDetails(TestCaseBase):
         response = self._request(data=data)
         eq_(302, response.status_code)
 
-        q = Question.objects.get(id=self.question.id)
+        p = Product.uncached.get(question=self.question)
+        t = Topic.uncached.get(question=self.question)
 
-        eq_(1, len(q.products.all()))
-        eq_(p_new.id, q.products.all()[0].id)
+        eq_(p_new.id, p.id)
+        eq_(t_new.id, t.id)

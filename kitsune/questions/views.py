@@ -324,10 +324,14 @@ def answers(request, template, question_id, form=None, watch_form=None,
 
     extra_kwargs.update(ans_)
 
+    product = Product.uncached.filter(question=question)
+    topic = Topic.uncached.filter(question=question)
+
     products = Product.objects.filter(visible=True)
     topics = topics_for(products=[question.products.all()])
 
-    extra_kwargs.update({'all_products': products, 'all_topics': topics})
+    extra_kwargs.update({'all_products': products, 'all_topics': topics,
+                         'product': product, 'topic': topic})
 
     # Add noindex to questions without answers that are > 30 days old.
     if not request.MOBILE:

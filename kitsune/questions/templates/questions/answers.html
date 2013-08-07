@@ -185,9 +185,8 @@
           <li id="question-details">
             <span>{{ _('Question details') }}</span>
             <div class="folder">
-              {% set products = question.products.all() %}
-              {% if products %}
-                {% set product = products[0] %}
+              {% if product %}
+                {% set product = product[0] %}
                 <div class="sidebox tight condensed">
                   <span class="title">{{ _('Product') }}</span>
                   {% if user and user.has_perm('questions.change_question') %}
@@ -203,9 +202,8 @@
                 </div>
               {% endif %}
 
-              {% set topics = question.topics.all() %}
-              {% if topics %}
-                {% set topic = topics[0] %}
+              {% if topic %}
+                {% set topic = topic[0] %}
                 <div class="sidebox tight condensed">
                   <span class="title">{{ _('Topic') }}</span>
                   {% if user and user.has_perm('questions.change_question') %}
