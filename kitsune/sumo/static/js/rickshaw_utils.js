@@ -129,6 +129,16 @@ k.Graph.prototype.rebucket = function() {
     bucketed = this.data.datums.slice();
   }
 
+
+  /* Data points that are too near the present represent a UX problem.
+   * The data in them is not representative of a full time period, so
+   * they appear to be downward trending. `chopLimit` represents the
+   * boundary of what is considered to be "too new".  Bug #876912. */
+  var chopLimit = +new Date() / 1000 - (this.data.bucketSize || (24 * 60 * 60));
+  bucketed = _.filter(bucketed, function(d) {
+    return d.date < chopLimit;
+  });
+
   this.data.series = this.makeSeries(bucketed, this.data.seriesSpec);
 
   // Scale data based on axis groups
