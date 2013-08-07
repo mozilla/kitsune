@@ -183,7 +183,7 @@ settings_local.py
 Create a file named ``settings_local.py`` in the ``kitsune/`` directory.
 Start with this::
 
-    from settings import *
+    from kitsune.settings import *
 
     DEBUG = True
     TEMPLATE_DEBUG = DEBUG
