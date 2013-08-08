@@ -110,6 +110,7 @@ function makeWikiMetricGraphs() {
         }
       ],
       'mini',
+      true,
       _.values(l10nByDate)
     );
 
@@ -124,6 +125,7 @@ function makeWikiMetricGraphs() {
         }
       ],
       false,
+      false,
       _.values(contributorsByDate)
     );
 
@@ -132,7 +134,7 @@ function makeWikiMetricGraphs() {
 }
 
 
-function makeWikiMetricGraph($container, descriptors, legend, results) {
+function makeWikiMetricGraph($container, descriptors, legend, bucket, results) {
   new k.Graph($container, {
     data: {
       datums: results,
@@ -141,7 +143,7 @@ function makeWikiMetricGraph($container, descriptors, legend, results) {
     options: {
       legend: legend,
       slider: true,
-      bucket: false
+      bucket: bucket
     },
     graph: {
       width: 600,
