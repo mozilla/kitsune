@@ -61,7 +61,7 @@ function makeWikiMetricGraphs() {
   var $l10n = $('#localization-metrics');
   var $contributors = $('#active-contributors');
 
-  $.getJSON($l10n.data('url'), function(data) {
+  $.getJSON($contributors.data('url'), function(data) {
     var results = data.results;
     var resultsByDate;
     var contributorsByDate = {};
@@ -85,24 +85,27 @@ function makeWikiMetricGraphs() {
     }
 
     // Create the graphs.
-    makeWikiMetricGraph(
-      $l10n,
-      [
-        {
-          name: gettext('All Articles: % Localized'),
-          slug: 'percent_localized_all',
-          func: k.Graph.identity('percent_localized_all')
-        },
-        {
-          name: gettext('Top 20 Articles: % Localized'),
-          slug: 'percent_localized_top20',
-          func: k.Graph.identity('percent_localized_top20')
-        }
-      ],
-      'mini',
-      true,
-      _.values(l10nByDate)
-    );
+
+    if ($l10n.length) {
+      makeWikiMetricGraph(
+        $l10n,
+        [
+          {
+            name: gettext('All Articles: % Localized'),
+            slug: 'percent_localized_all',
+            func: k.Graph.identity('percent_localized_all')
+          },
+          {
+            name: gettext('Top 20 Articles: % Localized'),
+            slug: 'percent_localized_top20',
+            func: k.Graph.identity('percent_localized_top20')
+          }
+        ],
+        'mini',
+        true,
+        _.values(l10nByDate)
+      );
+    }
 
     makeWikiMetricGraph(
       $contributors,
