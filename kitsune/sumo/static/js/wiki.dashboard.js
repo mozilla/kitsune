@@ -98,12 +98,12 @@ function makeWikiMetricGraphs() {
       [
         {
           name: gettext('All Articles: % Localized'),
-          slug: 'active_contributors',
+          slug: 'percent_localized_all',
           func: k.Graph.identity('percent_localized_all')
         },
         {
           name: gettext('Top 20 Articles: % Localized'),
-          slug: 'active_contributors',
+          slug: 'percent_localized_top20',
           func: k.Graph.identity('percent_localized_top20')
         }
       ],
