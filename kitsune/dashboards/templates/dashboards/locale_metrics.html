@@ -11,6 +11,28 @@
     <article id="localize" class="dashboards">
       <h1>{{ title }}</h1>
 
+      <section id="localization-metrics" data-url="{{ url('api.wikimetric_list')|urlparams(locale=current_locale, page_size=10000, product='null') }}">
+        <h2>{{ _('Localization Percentage') }}</h2>
+        <div class="rickshaw">
+          <div class="inline-controls"></div>
+          <div class="graph-container">
+            <div class="slider"></div>
+            <div class="graph"></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="active-contributors" data-url="{{ url('api.wikimetric_list')|urlparams(locale=current_locale, page_size=10000, product='null') }}">
+        <h2>{{ _('Active Contributors') }}</h2>
+        <div class="rickshaw">
+          <div class="inline-controls"></div>
+          <div class="graph-container">
+            <div class="slider"></div>
+            <div class="graph"></div>
+          </div>
+        </div>
+      </section>
+
       <section id="kpi-vote" data-url="{{ url('api_dispatch_list', resource_name='kpi_kb_vote', api_name='v1')|urlparams(locale=current_locale) }}">
         <h2>{{ _('Helpful Votes') }}</h2>
         <div class="rickshaw">
