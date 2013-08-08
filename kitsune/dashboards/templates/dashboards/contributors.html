@@ -1,9 +1,9 @@
 {% extends "base.html" %}
-{% from "includes/common_macros.html" import for_contributors_sidebar %}
 {% from "dashboards/includes/macros.html" import print_readout, product_selector, print_subscription_menu with context %}
+{% from "dashboards/includes/macros.html" import localization_sidebar_nav %}
 {% set title = _('Knowledge Base Dashboard') %}
-{% set scripts = ('wiki', 'rickshaw', 'wiki.dashboard') %}
-{% set styles = ('rickshaw', 'kbdashboards') %}
+{% set scripts = ('wiki', 'wiki.dashboard') %}
+{% set styles = ('kbdashboards', ) %}
 {% set crumbs = [(None, title)] %}
 {% set classes = 'contributor-dashboard' %}
 {# TODO: Move required dashboard scripts out of wiki.js into their own #}
@@ -43,21 +43,10 @@
       {% for readout in readouts.itervalues() %}
         {{ print_readout(readout, locale=default_locale, product=product) }}
       {% endfor %}
-
-      <section id="kpi-vote" data-url="{{ url('api_dispatch_list', resource_name='kpi_kb_vote', api_name='v1')|urlparams(locale=settings.WIKI_DEFAULT_LANGUAGE) }}">
-        <h2>{{ _('Helpful Votes') }}</h2>
-        <div class="rickshaw">
-          <div class="inline-controls"></div>
-          <div class="graph-container">
-            <div class="slider"></div>
-            <div class="graph"></div>
-          </div>
-        </div>
-      </section>
     </article>
   </div>
 {% endblock %}
 
 {% block side_top %}
-  {{ for_contributors_sidebar(user, settings.WIKI_DEFAULT_LANGUAGE, active='kbdashboard') }}
+  {{ localization_sidebar_nav(settings.WIKI_DEFAULT_LANGUAGE, 'dashboard', True) }}
 {% endblock %}

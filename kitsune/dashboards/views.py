@@ -114,6 +114,19 @@ def wiki_rows(request, readout_slug):
     return HttpResponse(readout.render(max_rows=max_rows))
 
 
+@require_GET
+def locale_metrics(request, locale_code):
+    """The kb metrics dashboard for a specific locale."""
+
+    if locale_code not in settings.SUMO_LANGUAGES:
+        raise Http404
+
+    return render(
+        request,
+        'dashboards/locale_metrics.html',
+        {'current_locale': locale_code})
+
+
 def _get_product(request):
     product_slug = request.GET.get('product')
     if product_slug:

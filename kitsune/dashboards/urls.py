@@ -13,7 +13,11 @@ urlpatterns = patterns('kitsune.dashboards.views',
     url(r'^contributors/(?P<readout_slug>[^/]+)', 'contributors_detail',
         name='dashboards.contributors_detail'),
 
-    # API for pull wiki metrics data.
+    # The per-locale kb metrics dashboard.
+    url(r'^kb/dashboard/metrics/(?P<locale_code>[^/]+)$', 'locale_metrics',
+        name='dashboards.locale_metrics'),
+
+    # API to pull wiki metrics data.
     url(r'^api/v1/wikimetrics/?$', api.WikiMetricList.as_view(),
         name='api.wikimetric_list'),
 )

@@ -7,8 +7,11 @@
 "use strict";
 
 $(document).ready(function() {
-  if ($('body').is('.contributor-dashboard, .localization-dashboard')) {
-    // Create the dashboard chart.
+  if ($('body').is('.locale-metrics')) {
+    // Create the dashboard charts.
+
+    makeWikiMetricGraphs();
+
     makeVoteGraph($('#kpi-vote'), [
       {
         name: gettext('Article Votes: % Helpful'),
@@ -51,6 +54,94 @@ function makeVoteGraph($container, descriptors) {
       },
     }).render();
   });
+}
+
+function makeWikiMetricGraphs() {
+  // Get the data we need, process it and create the graphs.
+  var $l10n = $('#localization-metrics');
+  var $contributors = $('#active-contributors');
+
+  $.getJSON($contributors.data('url'), function(data) {
+    var results = data.results;
+    var resultsByDate;
+    var contributorsByDate = {};
+    var l10nByDate = {};
+    var i, l, result;
+
+    for (i = 0, l = results.length; i < l; i++) {
+      // Split out the results into two groups for two separate graphs:
+      // * active_contributors
+      // * percent_localized_all, percent_localized_top20
+      if (results[i].code === 'active_contributors') {
+        resultsByDate = contributorsByDate;
+      } else {
+        resultsByDate = l10nByDate;
+      }
+
+      // If we don't have an entry for that date, create it.
+      result = resultsByDate[results[i].date] || {date: results[i].date};
+      result[results[i].code] = results[i].value;
+      resultsByDate[results[i].date] = result;
+    }
+
+    // Create the graphs.
+
+    if ($l10n.length) {
+      makeWikiMetricGraph(
+        $l10n,
+        [
+          {
+            name: gettext('All Articles: % Localized'),
+            slug: 'percent_localized_all',
+            func: k.Graph.identity('percent_localized_all')
+          },
+          {
+            name: gettext('Top 20 Articles: % Localized'),
+            slug: 'percent_localized_top20',
+            func: k.Graph.identity('percent_localized_top20')
+          }
+        ],
+        'mini',
+        true,
+        _.values(l10nByDate)
+      );
+    }
+
+    makeWikiMetricGraph(
+      $contributors,
+      [
+        {
+          name: gettext('Active Contributors'),
+          slug: 'active_contributors',
+          func: k.Graph.identity('active_contributors')
+        }
+      ],
+      false,
+      false,
+      _.values(contributorsByDate)
+    );
+
+  });
+
+}
+
+
+function makeWikiMetricGraph($container, descriptors, legend, bucket, results) {
+  new k.Graph($container, {
+    data: {
+      datums: results,
+      seriesSpec: descriptors
+    },
+    options: {
+      legend: legend,
+      slider: true,
+      bucket: bucket
+    },
+    graph: {
+      width: 600,
+      height: 300
+    },
+  }).render();
 }
 
 }(jQuery));

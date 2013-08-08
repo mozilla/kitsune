@@ -1,13 +1,17 @@
 {% extends "wiki/base.html" %}
 {% from "layout/errorlist.html" import errorlist %}
 {% from "dashboards/includes/macros.html" import localization_sidebar_nav %}
-{% set title = _('{locale} Localization Team | Knowledge Base')|f(locale=locale.locale) %}
+{% if locale.locale==settings.WIKI_DEFAULT_LANGUAGE %}
+  {% set title = _('[{locale}] KB Team')|f(locale=locale.locale) %}
+{% else %}
+  {% set title = _('[{locale}] Localization Team')|f(locale=locale.locale) %}
+{% endif %}
 {% set crumbs = [(url('wiki.locales'), _('Locales')), (None, locale.locale)] %}
 
 {% block content %}
   <div class="grid_9">
     <article id="locale-listing">
-      <h1>{{ _('[{locale}] Localization Team')|f(locale=locale.locale) }}</h1>
+      <h1>{{ title }}</h1>
 
       <div id="locale-leaders" class="editable">
         {% if user_can_edit %}
@@ -106,7 +110,7 @@
 {% endblock %}
 
 {% block side_top %}
-  {{ localization_sidebar_nav(locale.locale, 'team')}}
+  {{ localization_sidebar_nav(locale.locale, 'team', locale.locale==settings.WIKI_DEFAULT_LANGUAGE)}}
 {% endblock %}
 
 {% macro user_row(user) -%}
