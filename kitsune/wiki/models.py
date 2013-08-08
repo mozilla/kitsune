@@ -687,6 +687,7 @@ class DocumentMappingType(SearchMappingType):
     def get_mapping(cls):
         return {
             'properties': {
+                # General fields
                 'id': {'type': 'long'},
                 'model': {'type': 'string', 'index': 'not_analyzed'},
                 'url': {'type': 'string', 'index': 'not_analyzed'},
@@ -696,17 +697,21 @@ class DocumentMappingType(SearchMappingType):
                 'product': {'type': 'string', 'index': 'not_analyzed'},
                 'topic': {'type': 'string', 'index': 'not_analyzed'},
 
+                # Document specific fields (locale aware)
                 'document_title': {'type': 'string'},
+                'document_keywords': {'type': 'string'},
+                'document_content': {'type': 'string', 'store': 'yes',
+                                     'term_vector': 'with_positions_offsets'},
+                'document_summary': {'type': 'string', 'store': 'yes',
+                                     'term_vector': 'with_positions_offsets'},
+
+                # Document specific fields (locale naive)
                 'document_locale': {'type': 'string', 'index': 'not_analyzed'},
                 'document_current_id': {'type': 'integer'},
                 'document_parent_id': {'type': 'integer'},
-                'document_content': {'type': 'string', 'store': 'yes',
-                                     'term_vector': 'with_positions_offsets'},
                 'document_category': {'type': 'integer'},
                 'document_slug': {'type': 'string', 'index': 'not_analyzed'},
                 'document_is_archived': {'type': 'boolean'},
-                'document_summary': {'type': 'string'},
-                'document_keywords': {'type': 'string'},
                 'document_recent_helpful_votes': {'type': 'integer'}
             }
         }
