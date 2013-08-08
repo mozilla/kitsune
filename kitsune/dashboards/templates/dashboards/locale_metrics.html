@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% from "dashboards/includes/macros.html" import localization_sidebar_nav %}
+{% set title = _('[{locale}] Locale Metrics')|f(locale=current_locale) %}
+{% set scripts = ('wiki', 'rickshaw', 'wiki.dashboard') %}
+{% set styles = ('rickshaw', 'kbdashboards') %}
+{% set crumbs = [(None, title)] %}
+{% set classes = 'locale-metrics' %}
+
+{% block content %}
+  <div class="grid_9">
+    <article id="localize" class="dashboards">
+      <h1>{{ title }}</h1>
+
+      <section id="kpi-vote" data-url="{{ url('api_dispatch_list', resource_name='kpi_kb_vote', api_name='v1')|urlparams(locale=current_locale) }}">
+        <h2>{{ _('Helpful Votes') }}</h2>
+        <div class="rickshaw">
+          <div class="inline-controls"></div>
+          <div class="graph-container">
+            <div class="slider"></div>
+            <div class="graph"></div>
+          </div>
+        </div>
+      </section>
+    </article>
+  </div>
+{% endblock %}
+
+{% block side_top %}
+  {{ localization_sidebar_nav(current_locale, 'metrics', current_locale==settings.WIKI_DEFAULT_LANGUAGE) }}
+{% endblock %}

@@ -7,7 +7,7 @@
 "use strict";
 
 $(document).ready(function() {
-  if ($('body').is('.contributor-dashboard, .localization-dashboard')) {
+  if ($('body').is('.locale-metrics')) {
     // Create the dashboard chart.
     makeVoteGraph($('#kpi-vote'), [
       {

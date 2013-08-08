@@ -169,13 +169,26 @@
   </div>
 {% endmacro %}
 
-{% macro localization_sidebar_nav(locale, active) %}
+{% macro localization_sidebar_nav(locale, active, is_default_locale=False) %}
   <ul class="sidebar-nav">
     <li {{ active|class_selected('dashboard') }}>
-      <a href="{{ url('dashboards.localization', locale=locale) }}">{{ _('Localization Dashboard') }}</a>
+      {% if is_default_locale %}
+        <a href="{{ url('dashboards.contributors') }}">{{ _('KB Dashboard') }}</a>
+      {% else %}
+        <a href="{{ url('dashboards.localization', locale=locale) }}">{{ _('Localization Dashboard') }}</a>
+      {% endif %}
+    </li>
+    <li {{ active|class_selected('metrics') }}>
+      <a href="{{ url('dashboards.locale_metrics', locale) }}">{{ _('Locale Metrics') }}</a>
     </li>
     <li {{ active|class_selected('team') }}>
-      <a href="{{ url('wiki.locale_details', locale) }}">{{ _('Localization Team') }}</a>
+      <a href="{{ url('wiki.locale_details', locale) }}">
+        {% if is_default_locale %}
+          {{ _('KB Team') }}
+        {% else %}
+          {{ _('Localization Team') }}
+        {% endif %}
+      </a>
     </li>
   </ul>
 {% endmacro %}
