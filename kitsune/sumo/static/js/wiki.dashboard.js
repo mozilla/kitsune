@@ -17,8 +17,7 @@ $(document).ready(function() {
         name: gettext('Article Votes: % Helpful'),
         slug: 'wiki_percent',
         func: k.Graph.fraction('kb_helpful', 'kb_votes'),
-        type: 'percent',
-        axisGroup: 'percent'
+        type: 'percent'
       }
     ]);
   }
