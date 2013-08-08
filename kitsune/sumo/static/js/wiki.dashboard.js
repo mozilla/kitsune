@@ -79,16 +79,9 @@ function makeWikiMetricGraphs() {
       }
 
       // If we don't have an entry for that date, create it.
-      result = resultsByDate[results[i].date];
-      if (!result) {
-        result = {
-          date: results[i].date
-        };
-        resultsByDate[results[i].date] = result;
-      }
-
-      // Add the new value.
+      result = resultsByDate[results[i].date] || {date: results[i].date};
       result[results[i].code] = results[i].value;
+      resultsByDate[results[i].date] = result;
     }
 
     // Create the graphs.
