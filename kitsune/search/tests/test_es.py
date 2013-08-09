@@ -958,34 +958,6 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
             response = self.client.get(reverse('search'), qs)
             eq_(json.loads(response.content)['total'], 1)
 
-    def test_product_facets(self):
-        """Verify the facet counts on the results page."""
-        # Create products, questions and documents.
-        p1 = product(title='Firefox', slug='firefox', save=True)
-        p2 = product(title='Firefox for mobile', slug='mobile', save=True)
-
-        ques = question(title=u'audio', save=True)
-        ques.products.add(p1)
-        ans = answer(question=ques, content=u'volume', save=True)
-        answervote(answer=ans, helpful=True, save=True)
-
-        doc = document(title=u'audio', locale=u'en-US', category=10, save=True)
-        doc.products.add(p1)
-        doc.products.add(p2)
-        revision(document=doc, is_approved=True, save=True)
-
-        self.refresh()
-
-        # There should be 2 total results, 2 "firefox" results and
-        # 1 "mobile" result.
-        response = self.client.get(reverse('search'), {'q': 'audio'})
-        eq_(200, response.status_code)
-        doc = pq(response.content)
-        eq_('Found 2 results for audio for All Products', doc('h2').text())
-        facet_text = doc('#product-filter').text()
-        assert 'Firefox (2)' in facet_text
-        assert 'Firefox for mobile (1)' in facet_text
-
 
 class ElasticSearchSuggestionsTests(ElasticTestCase):
     @mock.patch.object(Site.objects, 'get_current')
@@ -1135,7 +1107,8 @@ class TestAnalyzers(ElasticTestCase):
         self.docs = {}
         for locale, data in self.locale_data.items():
             d = document(locale=locale, save=True)
-            revision(document=d, content=data['content'], is_approved=True, save=True)
+            revision(document=d, content=data['content'], is_approved=True,
+                     save=True)
             self.locale_data[locale]['doc'] = d
 
         self.refresh()
@@ -1165,7 +1138,6 @@ class TestAnalyzers(ElasticTestCase):
         }
         actual = es_utils.es_query_with_analyzer(before, 'en-US')
         eq_(actual, expected)
-
 
     def _check_locale_tokenization(self, locale, expected_tokens, p_tag=True):
         """
