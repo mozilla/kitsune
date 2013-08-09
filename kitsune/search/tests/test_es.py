@@ -982,9 +982,6 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
         eq_(200, response.status_code)
         doc = pq(response.content)
         eq_('Found 2 results for audio in English', doc('h2').text())
-        facet_text = doc('#product-filter').text()
-        assert 'Firefox (2)' in facet_text
-        assert 'Firefox for mobile (1)' in facet_text
 
 
 class ElasticSearchSuggestionsTests(ElasticTestCase):
@@ -1135,7 +1132,8 @@ class TestAnalyzers(ElasticTestCase):
         self.docs = {}
         for locale, data in self.locale_data.items():
             d = document(locale=locale, save=True)
-            revision(document=d, content=data['content'], is_approved=True, save=True)
+            revision(document=d, content=data['content'], is_approved=True,
+                     save=True)
             self.locale_data[locale]['doc'] = d
 
         self.refresh()
@@ -1165,7 +1163,6 @@ class TestAnalyzers(ElasticTestCase):
         }
         actual = es_utils.es_query_with_analyzer(before, 'en-US')
         eq_(actual, expected)
-
 
     def _check_locale_tokenization(self, locale, expected_tokens, p_tag=True):
         """

@@ -22,7 +22,7 @@ from tower import ugettext as _, ugettext_lazy as _lazy
 from kitsune import search as constants
 from kitsune.forums.models import Forum, ThreadMappingType
 from kitsune.products.models import Product
-from kitsune.questions.models import Question, QuestionMappingType
+from kitsune.questions.models import QuestionMappingType
 from kitsune.search.models import get_mapping_types
 from kitsune.search.utils import locale_or_default, clean_excerpt, ComposedList
 from kitsune.search import es_utils
@@ -30,7 +30,7 @@ from kitsune.search.forms import SearchForm
 from kitsune.search.es_utils import ES_EXCEPTIONS, F, AnalyzerS
 from kitsune.sumo.utils import paginate, smart_int
 from kitsune.wiki.facets import documents_for
-from kitsune.wiki.models import Document, DocumentMappingType
+from kitsune.wiki.models import DocumentMappingType
 
 
 EXCERPT_JOINER = _lazy(u'...', 'between search excerpts')
@@ -371,9 +371,6 @@ def search(request, template=None):
         results_per_page = settings.SEARCH_RESULTS_PER_PAGE
         pages = paginate(request, documents, results_per_page)
 
-        # Facets
-        product_facets = {}
-
         # If we know there aren't any results, let's cheat and in
         # doing that, not hit ES again.
         if num_results == 0:
@@ -391,13 +388,6 @@ def search(request, template=None):
             else:
                 bounds = documents[0][1]
                 searcher = searcher.values_dict()[bounds[0]:bounds[1]]
-
-                # If we are doing basic search, we show product facets.
-                if a == '0':
-                    pfc = searcher.facet(
-                        'product', filtered=True).facet_counts()
-                    product_facets = dict(
-                        [(p['term'], p['count']) for p in pfc['product']])
 
         results = []
         for i, doc in enumerate(searcher):
@@ -497,7 +487,6 @@ def search(request, template=None):
         'w': cleaned['w'],
         'product': cleaned['product'],
         'products': Product.objects.filter(visible=True),
-        'product_facets': product_facets,
         'pages': pages,
         'search_form': search_form,
         'lang_name': lang_name, })
