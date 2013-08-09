@@ -27,11 +27,13 @@
         {% if product %}
           {# In basic search, you can only filter one product at a time. #}
           {% set product = product[0] %}
+        {% else %}
+          {% set product = None %}
         {% endif %}
 
         {% set base_doctype_url = base_url %}
         {% if product %}
-          {% set base_doctype_url = base_doctype_url|urlparams(product=product) %}
+          {% set base_doctype_url = base_doctype_url|urlparams(product=product.slug) %}
         {% endif %}
         <ul id="doctype-filter" class="search-filter sidebar-nav">
           <li {{ w|class_selected(3) }}>
@@ -56,13 +58,13 @@
           {% set base_product_url = base_product_url|urlparams(w=w) %}
         {% endif %}
         <ul id="product-filter" class="search-filter sidebar-nav">
-          <li {{ product|class_selected([]) }}>
+          <li {{ product|class_selected(None) }}>
             <a href="{{ base_product_url }}">
               {{ _('All Products') }}
             </a>
           </li>
           {% for p in products %}
-            <li {{ product|class_selected(p.slug) }}>
+            <li {{ product|class_selected(p) }}>
               <a href="{{ base_product_url|urlparams(product=p.slug) }}">
                 {{ _(p.title, 'DB: products.Product.title') }} ({{ product_facets.get(p.slug, 0) }})
               </a>
@@ -77,10 +79,15 @@
     <div class="grid_9">
       {% if num_results > 0 %}
         <h2>
-          {# L10n: {n} is the number of search results, {q} is the search query, {l} is the language searched. #}
-          {{ ngettext('Found <strong>{n}</strong> result for <strong>{q}</strong> in <strong>{l}</strong>',
-                  'Found <strong>{n}</strong> results for <strong>{q}</strong> in <strong>{l}</strong>',
-                  num_results)|fe(n=num_results, q=q, l=lang_name) }}
+          {% if product %}
+            {% set product_title = _(product.title, 'DB: products.Product.title') %}
+          {% else %}
+            {% set product_title = _('All Products') %}
+          {% endif %}
+          {# L10n: {n} is the number of search results, {q} is the search query, {product} is the product. #}
+          {{ ngettext('Found <strong>{n}</strong> result for <strong>{q}</strong> for <strong>{product}</strong>',
+                      'Found <strong>{n}</strong> results for <strong>{q}</strong> for <strong>{product}</strong>',
+                      num_results)|fe(n=num_results, q=q, product=product_title) }}
         </h2>
 
         <div class="content-box">

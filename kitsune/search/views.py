@@ -493,7 +493,7 @@ def search(request, template=None):
         'fallback_results': fallback_results,
         'q': cleaned['q'],
         'w': cleaned['w'],
-        'product': cleaned['product'],
+        'product': Product.objects.filter(slug__in=cleaned['product']),
         'products': Product.objects.filter(visible=True),
         'product_facets': product_facets,
         'pages': pages,

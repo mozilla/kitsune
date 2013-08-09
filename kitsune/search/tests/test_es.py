@@ -981,7 +981,7 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
         response = self.client.get(reverse('search'), {'q': 'audio'})
         eq_(200, response.status_code)
         doc = pq(response.content)
-        eq_('Found 2 results for audio in English', doc('h2').text())
+        eq_('Found 2 results for audio for All Products', doc('h2').text())
         facet_text = doc('#product-filter').text()
         assert 'Firefox (2)' in facet_text
         assert 'Firefox for mobile (1)' in facet_text
