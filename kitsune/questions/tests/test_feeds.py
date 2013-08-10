@@ -7,6 +7,7 @@ from pyquery import PyQuery as pq
 
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.helpers import urlparams
+from kitsune.products.tests import product, topic
 from kitsune.questions.feeds import QuestionsFeed, TaggedQuestionsFeed
 from kitsune.questions.models import Question
 from kitsune.questions.tests import TestCaseBase, question
@@ -14,7 +15,7 @@ from kitsune.tags.tests import tag
 from kitsune.users.tests import user
 
 
-class ForumTestFeedSorting(TestCaseBase):
+class ForumTestFeeds(TestCaseBase):
 
     def test_tagged_feed(self):
         """Test the tagged feed."""
@@ -57,4 +58,33 @@ class ForumTestFeedSorting(TestCaseBase):
         q = Question(title='Test Question', content='Lorem Ipsum Dolor',
                      creator_id=u.id)
         q.save()
-        assert q.id not in [x.id for x in QuestionsFeed().items()]
+        assert q.id not in [x.id for x in QuestionsFeed().items({})]
+
+    def test_question_feed_with_product(self):
+        """Test that questions feeds with products work."""
+        p = product(save=True)
+        url = urlparams(reverse('questions.questions'), product=p.slug)
+        res = self.client.get(url)
+        doc = pq(res.content)
+
+        feed_links = doc('link[type="application/atom+xml"]')
+        feed = feed_links[0]
+        eq_(1, len(feed_links))
+        eq_('Recently updated questions', feed.attrib['title'])
+        eq_('/en-US/questions/feed?product=' + p.slug, feed.attrib['href'])
+
+    def test_question_feed_with_product_and_topic(self):
+        """Test that questions feeds with products and topics work."""
+        p = product(save=True)
+        t = topic(product=p, save=True)
+        url = urlparams(reverse('questions.questions'),
+                        product=p.slug, topic=t.slug)
+        res = self.client.get(url)
+        doc = pq(res.content)
+
+        feed_links = doc('link[type="application/atom+xml"]')
+        feed = feed_links[0]
+        eq_(1, len(feed_links))
+        eq_('Recently updated questions', feed.attrib['title'])
+        eq_(urlparams('/en-US/questions/feed', product=p.slug, topic=t.slug),
+            feed.attrib['href'])
