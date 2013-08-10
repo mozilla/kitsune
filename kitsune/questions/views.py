@@ -139,7 +139,8 @@ def questions(request, template):
     else:
         filter_ = None
 
-    feed_urls = ((reverse('questions.feed'),
+    feed_urls = ((urlparams(reverse('questions.feed'),
+                            product=product_slug, topic=topic_slug),
                   QuestionsFeed().title()),)
 
     if tagged:

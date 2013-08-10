@@ -8,6 +8,7 @@ from tower import ugettext as _
 from taggit.models import Tag
 
 from kitsune import questions as constants
+from kitsune.products.models import Product, Topic
 from kitsune.questions.models import Question
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.helpers import urlparams
@@ -16,14 +17,44 @@ from kitsune.sumo.helpers import urlparams
 class QuestionsFeed(Feed):
     feed_type = Atom1Feed
 
+    def get_object(self, request):
+        query = {}
+
+        product_slug = request.GET.get('product')
+        topic_slug = request.GET.get('topic')
+
+        if product_slug:
+            query['product'] = get_object_or_404(Product, slug=product_slug)
+
+            if topic_slug:
+                query['topic'] = get_object_or_404(Topic, slug=topic_slug,
+                                                   product__slug=product_slug)
+
+        return query
+
     def title(self):
         return _('Recently updated questions')
 
-    def link(self):
-        return reverse('questions.questions')
+    def link(self, query):
+        slugs = {}
 
-    def items(self):
+        if 'product' in query:
+            slugs['product'] = query['product'].slug
+
+            if 'topic' in query:
+                slugs['topic'] = query['topic'].slug
+
+        return urlparams(reverse('questions.questions'), **slugs)
+
+    def items(self, query):
         qs = Question.objects.filter(creator__is_active=True)
+
+        if 'product' in query:
+            qs = qs.filter(products=query['product'])
+
+            if 'topic' in query:
+                qs = qs.filter(topics=query['topic'])
+
         return qs.order_by('-updated')[:constants.QUESTIONS_PER_PAGE]
 
     def item_title(self, item):
