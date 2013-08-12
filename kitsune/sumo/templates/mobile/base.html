@@ -119,7 +119,10 @@
     {% block content %}{% endblock %}
 
     {% if include_showfor %}
-      {{ show_for() }}
+      <article>
+        <header>Get support for another platform:</header>
+        {{ show_for('') }}
+      </article>
     {% endif %}
   </section>
 
