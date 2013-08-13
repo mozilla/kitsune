@@ -17,3 +17,4 @@ docs/_build
 /static
 *.less.css
 .DS_Store
+james.ini
