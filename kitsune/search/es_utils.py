@@ -58,7 +58,7 @@ class AnalyzerMixin(object):
             text_phrase
         """
         query, analyzer = val
-        return {
+        clause = {
             action: {
                 key: {
                     'query': query,
@@ -66,6 +66,12 @@ class AnalyzerMixin(object):
                 }
             }
         }
+
+        boost = self.field_boosts.get(key)
+        if boost is not None:
+            clause[action][key]['boost'] = boost
+
+        return clause
 
     def process_query_text_phrase_analyzer(self, key, val, action):
         """A text phrase query that includes an analyzer."""
