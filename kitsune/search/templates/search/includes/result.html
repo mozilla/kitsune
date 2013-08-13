@@ -6,7 +6,7 @@
       {% set esab = 'b' %}
     {% endif %}
     {% set url =  result.url|urlparams(s=s, as=as, r=r, esab=esab) %}
-    <h3><a class="title" href="{{ url }}" target="_blank">{{ result.title }}</a></h3>
+    <h3><a class="title" href="{{ url }}" {% if as == 'aaq' %}target="_blank"{% endif %}>{{ result.title }}</a></h3>
     <a tabindex="-1" href="{{ url }}" {% if as == 'aaq' %}target="_blank"{% endif %}>{{ result.search_summary }}</a>
     {% if result.type == 'question' %}
       <ul class="thread-meta cf">
