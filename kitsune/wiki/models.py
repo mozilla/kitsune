@@ -551,6 +551,8 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
                 .format(doc=repr(self)))
             return documents
 
+        products = [p.slug for p in self.products.all()]
+
         try:
             statsd.incr('wiki.related_documents.cache.miss')
             mt = self.get_mapping_type()
@@ -559,7 +561,8 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
                 s=mt.search().filter(
                     document_locale=self.locale,
                     document_is_archived=False,
-                    document_category__in=settings.IA_DEFAULT_CATEGORIES),
+                    document_category__in=settings.IA_DEFAULT_CATEGORIES,
+                    product__in=products),
                 fields=[
                     'document_title',
                     'document_summary',

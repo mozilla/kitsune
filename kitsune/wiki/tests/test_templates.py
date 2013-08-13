@@ -2293,7 +2293,9 @@ class RelatedThingsTestCase(ElasticTestCase):
     def test_related_documents(self):
         """Verify Related Documents are rendered as expected."""
         # The document
+        p = product(save=True)
         d1 = document(title='lorem ipsum', save=True)
+        d1.products.add(p)
         r1 = revision(document=d1, summary='lorem',
                       content='lorem ipsum dolor',
                       is_approved=True, save=True)
@@ -2302,6 +2304,7 @@ class RelatedThingsTestCase(ElasticTestCase):
 
         # A document that is similar.
         d2 = document(title='lorem ipsum sit', save=True)
+        d2.products.add(p)
         r2 = revision(document=d2, summary='lorem',
                       content='lorem ipsum dolor sit amet',
                       is_approved=True, save=True)
@@ -2310,6 +2313,7 @@ class RelatedThingsTestCase(ElasticTestCase):
 
         # A document that is similar but a different locale.
         d3 = document(title='lorem ipsum sit', locale='es', save=True)
+        d3.products.add(p)
         r3 = revision(document=d3, summary='lorem',
                       content='lorem ipsum dolor sit amet',
                       is_approved=True, save=True)
@@ -2318,6 +2322,7 @@ class RelatedThingsTestCase(ElasticTestCase):
 
         # A document that is similar but archived.
         d4 = document(title='lorem ipsum sit amet', save=True)
+        d4.products.add(p)
         r4 = revision(document=d4, summary='lorem',
                       content='lorem ipsum dolor sit amet',
                       is_approved=True, save=True)
@@ -2328,6 +2333,7 @@ class RelatedThingsTestCase(ElasticTestCase):
         # A document that is similar but a template.
         d5 = document(title='Template:lorem ipsum sit amet',
                       category=TEMPLATES_CATEGORY, save=True)
+        d5.products.add(p)
         r5 = revision(document=d5, summary='lorem',
                       content='lorem ipsum dolor sit amet',
                       is_approved=True, save=True)
@@ -2337,6 +2343,7 @@ class RelatedThingsTestCase(ElasticTestCase):
         # An administration document that is similar.
         d6 = document(title='admin lorem ipsum sit amet',
                       category=ADMINISTRATION_CATEGORY, save=True)
+        d6.products.add(p)
         r6 = revision(document=d6, summary='lorem',
                       content='lorem ipsum dolor sit amet',
                       is_approved=True, save=True)
@@ -2345,9 +2352,20 @@ class RelatedThingsTestCase(ElasticTestCase):
 
         # A document without an approved current_revision
         d7 = document(title='lorem ipsum ohai', save=True)
+        d7.products.add(p)
+        d7.save()
         r7 = revision(document=d1, summary='lorem',
                       content='lorem ipsum dolor',
                       save=True)
+
+        # A document with a different product
+        d8 = document(title='lorem ipsum dolor sit amet', save=True)
+        d8.products.add(product(save=True))
+        r8 = revision(document=d8, summary='lorem',
+                      content='lorem ipsum dolor',
+                      is_approved=True, save=True)
+        d8.current_revision = r8
+        d8.save()
 
         self.refresh()
 
