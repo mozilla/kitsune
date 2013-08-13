@@ -577,7 +577,8 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         """Return questions that are 'morelikethis' document."""
         # Only documents in default IA categories have related.
         if (self.redirect_url() or not self.current_revision or
-            self.category not in settings.IA_DEFAULT_CATEGORIES):
+                self.category not in settings.IA_DEFAULT_CATEGORIES or
+                self.locale not in settings.AAQ_LANGUAGES):
             return []
 
         # First try to get the results from the cache
