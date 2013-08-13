@@ -52,7 +52,7 @@
         {% set button_text = _('None of these solve my problem') %}
         <div class="search-results">
           {% for result in results %}
-            {{ search_result(result, as='aaq') }}
+            {{ search_result(result, as='aaq', open_in_new_tab=True) }}
           {% endfor %}
         </div>{# .search-results #}
       </div>
