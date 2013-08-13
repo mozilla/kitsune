@@ -295,16 +295,14 @@ def search(request, template=None):
     try:
         cleaned_q = cleaned['q']
 
-        # Set up the highlights
-        # First 500 characters of content in one big fragment
+        # Set up the highlights. Show the entire field highlighted.
         searcher = searcher.highlight(
             'question_content',  # support forum
-            'discussion_content', 'document_summary',  # kb
+            'document_summary',  # kb
             'post_content',  # contributor forum
             pre_tags=['<b>'],
             post_tags=['</b>'],
-            number_of_fragments=1,
-            fragment_size=500)
+            number_of_fragments=0)
 
         # Set up boosts
         searcher = searcher.boost(
