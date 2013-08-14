@@ -52,8 +52,8 @@ class ESCommandTests(ElasticTestCase):
 
     @mock.patch.object(FakeLogger, '_out')
     def test_delete(self, _out):
-        # Note: READ_INDEX == WRITE_INDEX in the tests, so we only
+        # Note: read_index() == write_index() in the tests, so we only
         # have to do one.
-        for index in [es_utils.READ_INDEX,
+        for index in [es_utils.read_index(),
                       'cupcakerainbow_index']:
             call_command('esdelete', index, noinput=True)

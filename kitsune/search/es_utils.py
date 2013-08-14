@@ -14,16 +14,21 @@ from pyelasticsearch.exceptions import ElasticHttpNotFoundError
 from kitsune.search.utils import chunked
 
 
-# Calculate index names.
-#
-# Note: This means that you need to restart kitsune to pick up new
-# index names. If that turns out to be lame, then we should switch
-# these to be functions.
-READ_INDEX = (u'%s_%s' % (settings.ES_INDEX_PREFIX,
-                          settings.ES_INDEXES['default']))
+# These used to be constants, but that was problematic. Things like
+# tests want to be able to dynamically change settings at run time,
+# which isn't possible if these are constants.
 
-WRITE_INDEX = (u'%s_%s' % (settings.ES_INDEX_PREFIX,
-                           settings.ES_WRITE_INDEXES['default']))
+def read_index():
+    """Calculate the read index name."""
+    return (u'%s_%s' % (settings.ES_INDEX_PREFIX,
+                        settings.ES_INDEXES['default']))
+
+
+def write_index():
+    """Calculate the write index name."""
+    return (u'%s_%s' % (settings.ES_INDEX_PREFIX,
+                        settings.ES_WRITE_INDEXES['default']))
+
 
 # This is the unified elastic search doctype.
 SUMO_DOCTYPE = u'sumodoc'
@@ -90,7 +95,7 @@ class Sphilastic(S, AnalyzerMixin):
 
     .. Note::
 
-       This looks at the READ_INDEX. If you need to look at something
+       This looks at the read index. If you need to look at something
        different, build your own S.
 
     """
@@ -99,8 +104,8 @@ class Sphilastic(S, AnalyzerMixin):
 
     def get_indexes(self):
         # SphilasticUnified is a searcher and so it's _always_ used in
-        # a read context. Therefore, we always return the READ_INDEX.
-        return [READ_INDEX]
+        # a read context. Therefore, we always return the read index.
+        return [read_index()]
 
     def process_query_mlt(self, key, val, action):
         """Add support for a more like this query to our S.
@@ -170,7 +175,7 @@ def get_doctype_stats(index):
     for cls in get_mapping_types():
         # Note: Can't use cls.search() here since that returns a
         # Sphilastic which is hard-coded to look only at the
-        # READ_INDEX.
+        # read index..
         s = S(cls).indexes(index)
         stats[cls.get_mapping_type_name()] = s.count()
 
@@ -258,11 +263,11 @@ def get_analysis():
 
 
 def recreate_index(es=None):
-    """Deletes WRITE_INDEX if it's there and creates a new one"""
+    """Deletes write index if it's there and creates a new one"""
     if es is None:
         es = get_es()
 
-    index = WRITE_INDEX
+    index = write_index()
     delete_index(index)
 
     # There should be no mapping-conflict race here since the index doesn't
@@ -371,14 +376,14 @@ def es_reindex_cmd(percent=100, delete=False, mapping_types=None,
     es = get_es()
 
     try:
-        get_doctype_stats(WRITE_INDEX)
+        get_doctype_stats(write_index())
     except ES_EXCEPTIONS:
         if not delete:
             log.error('The index does not exist. You must specify --delete.')
             return
 
     if delete:
-        log.info('wiping and recreating %s....', WRITE_INDEX)
+        log.info('wiping and recreating %s....', write_index())
         recreate_index(es=es)
 
     if criticalmass:
@@ -407,14 +412,13 @@ def es_reindex_cmd(percent=100, delete=False, mapping_types=None,
     # We're doing a lot of indexing, so we get the refresh_interval
     # currently in the index, then nix refreshing. Later we'll restore
     # it.
-    old_refresh = get_index_settings(WRITE_INDEX).get(
+    old_refresh = get_index_settings(write_index()).get(
         'index.refresh_interval', '1s')
 
     # Disable automatic refreshing
-    es.update_settings(
-        WRITE_INDEX, {'index': {'refresh_interval': '-1'}})
+    es.update_settings(write_index(), {'index': {'refresh_interval': '-1'}})
 
-    log.info('using index: %s', WRITE_INDEX)
+    log.info('using index: %s', write_index())
 
     start_time = time.time()
     for cls, indexable in all_indexable:
@@ -452,7 +456,7 @@ def es_reindex_cmd(percent=100, delete=False, mapping_types=None,
 
     # Re-enable automatic refreshing
     es.update_settings(
-        WRITE_INDEX, {'index': {'refresh_interval': old_refresh}})
+        write_index(), {'index': {'refresh_interval': old_refresh}})
     delta_time = time.time() - start_time
     log.info('done! (%s total)', format_time(delta_time))
 
@@ -470,7 +474,7 @@ def es_delete_cmd(index, noinput=False, log=log):
         log.error('Index "%s" is not a valid index.', index)
         return
 
-    if index == READ_INDEX and not noinput:
+    if index == read_index() and not noinput:
         ret = raw_input('"%s" is a read index. Are you sure you want '
                         'to delete it? (yes/no) ' % index)
         if ret != 'yes':
@@ -493,15 +497,15 @@ def es_status_cmd(checkindex=False, log=log):
         pass
 
     try:
-        read_doctype_stats = get_doctype_stats(READ_INDEX)
+        read_doctype_stats = get_doctype_stats(read_index())
     except ES_EXCEPTIONS:
         read_doctype_stats = None
 
-    if READ_INDEX == WRITE_INDEX:
+    if read_index() == write_index():
         write_doctype_stats = read_doctype_stats
     else:
         try:
-            write_doctype_stats = get_doctype_stats(WRITE_INDEX)
+            write_doctype_stats = get_doctype_stats(write_index())
         except ES_EXCEPTIONS:
             write_doctype_stats = None
 
@@ -528,9 +532,9 @@ def es_status_cmd(checkindex=False, log=log):
         log.info('  List of indexes:')
         for name, count in sorted(indexes):
             read_write = []
-            if name == READ_INDEX:
+            if name == read_index():
                 read_write.append('READ')
-            if name == WRITE_INDEX:
+            if name == write_index():
                 read_write.append('WRITE')
             log.info('    %-22s: %s %s', name, count,
                      '/'.join(read_write))
@@ -538,17 +542,17 @@ def es_status_cmd(checkindex=False, log=log):
         log.info('  There are no %s indexes.', settings.ES_INDEX_PREFIX)
 
     if read_doctype_stats is None:
-        log.info('  Read index does not exist. (%s)', READ_INDEX)
+        log.info('  Read index does not exist. (%s)', read_index())
     else:
-        log.info('  Read index (%s):', READ_INDEX)
+        log.info('  Read index (%s):', read_index())
         for name, count in sorted(read_doctype_stats.items()):
             log.info('    %-22s: %d', name, count)
 
-    if READ_INDEX != WRITE_INDEX:
+    if read_index() != write_index():
         if write_doctype_stats is None:
-            log.info('  Write index does not exist. (%s)', WRITE_INDEX)
+            log.info('  Write index does not exist. (%s)', write_index())
         else:
-            log.info('  Write index (%s):', WRITE_INDEX)
+            log.info('  Write index (%s):', write_index())
             for name, count in sorted(write_doctype_stats.items()):
                 log.info('    %-22s: %d', name, count)
     else:
