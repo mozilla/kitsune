@@ -10,10 +10,9 @@ from django.core.exceptions import PermissionDenied
 from django.http import HttpResponseRedirect, Http404
 from django.shortcuts import render
 
-from kitsune.search import es_utils
 from kitsune.search.es_utils import (
     get_doctype_stats, get_indexes, delete_index, ES_EXCEPTIONS,
-    get_indexable, CHUNK_SIZE, recreate_index)
+    get_indexable, CHUNK_SIZE, recreate_index, write_index, read_index)
 from kitsune.search.models import Record, get_mapping_types
 from kitsune.search.tasks import OUTSTANDING_INDEX_CHUNKS, index_chunk_task
 from kitsune.search.utils import chunked, create_batch_id
@@ -58,8 +57,8 @@ def handle_delete(request):
     if index_to_delete not in indexes:
         raise DeleteError('"%s" does not exist.' % index_to_delete)
 
-    # Rule 3: Don't delete the READ index.
-    if index_to_delete == es_utils.READ_INDEX:
+    # Rule 3: Don't delete the read index.
+    if index_to_delete == read_index():
         raise DeleteError('"%s" is the read index.' % index_to_delete)
 
     delete_index(index_to_delete)
@@ -73,8 +72,6 @@ class ReindexError(Exception):
 
 def handle_reindex(request):
     """Caculates and kicks off indexing tasks"""
-    write_index = es_utils.WRITE_INDEX
-
     # This is truthy if the user wants us to delete and recreate
     # the index first.
     delete_index_first = bool(request.POST.get('delete_index'))
@@ -132,7 +129,7 @@ def handle_reindex(request):
         log.warning('Redis not running. Can\'t denote outstanding tasks.')
 
     for chunk in chunks:
-        index_chunk_task.delay(write_index, batch_id, chunk)
+        index_chunk_task.delay(write_index(), batch_id, chunk)
 
     return HttpResponseRedirect(request.path)
 
@@ -183,12 +180,12 @@ def search(request):
         pass
 
     try:
-        stats = get_doctype_stats(es_utils.READ_INDEX)
+        stats = get_doctype_stats(read_index())
     except ES_EXCEPTIONS:
         pass
 
     try:
-        write_stats = get_doctype_stats(es_utils.WRITE_INDEX)
+        write_stats = get_doctype_stats(write_index())
     except ES_EXCEPTIONS:
         pass
 
@@ -214,8 +211,8 @@ def search(request):
          'doctype_stats': stats,
          'doctype_write_stats': write_stats,
          'indexes': indexes,
-         'read_index': es_utils.READ_INDEX,
-         'write_index': es_utils.WRITE_INDEX,
+         'read_index': read_index(),
+         'write_index': write_index(),
          'error_messages': error_messages,
          'recent_records': recent_records,
          'outstanding_chunks': outstanding_chunks,

@@ -35,20 +35,6 @@ class ElasticTestCase(TestCase):
             cls.skipme = True
             return
 
-        # Swap out for better versions that use ES_INDEX_PREFIX.
-        cls._old_read_index = es_utils.READ_INDEX
-        cls._old_write_index = es_utils.WRITE_INDEX
-        es_utils.READ_INDEX = settings.ES_INDEX_PREFIX + u'sumo_testindex'
-        es_utils.WRITE_INDEX = settings.ES_INDEX_PREFIX + u'sumo_testindex'
-
-    @classmethod
-    def tearDownClass(cls):
-        super(ElasticTestCase, cls).tearDownClass()
-        if not cls.skipme:
-            # Restore old settings.
-            es_utils.READ_INDEX = cls._old_read_index
-            es_utils.WRITE_INDEX = cls._old_write_index
-
     def setUp(self):
         if self.skipme:
             raise SkipTest
@@ -61,7 +47,7 @@ class ElasticTestCase(TestCase):
         self.teardown_indexes()
 
     def refresh(self, run_tasks=True):
-        index = es_utils.WRITE_INDEX
+        index = es_utils.write_index()
 
         if run_tasks:
             # Any time we're doing a refresh, we're making sure that
@@ -80,11 +66,11 @@ class ElasticTestCase(TestCase):
         self.refresh(run_tasks=False)
 
     def setup_indexes(self, empty=False, wait=True):
-        """(Re-)create WRITE_INDEX"""
+        """(Re-)create write index"""
         from kitsune.search.es_utils import recreate_index
         recreate_index()
         get_es().health(wait_for_status='yellow')
 
     def teardown_indexes(self):
-        """Tear down WRITE_INDEX"""
-        es_utils.delete_index(es_utils.WRITE_INDEX)
+        """Tear down write index"""
+        es_utils.delete_index(es_utils.write_index())

@@ -98,7 +98,7 @@ class SearchMappingType(MappingType, Indexable):
 
     @classmethod
     def get_index(cls):
-        return es_utils.WRITE_INDEX
+        return es_utils.write_index()
 
     @classmethod
     def get_query_fields(cls):
