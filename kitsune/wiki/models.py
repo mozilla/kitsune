@@ -559,7 +559,8 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
                 s=mt.search().filter(
                     document_locale=self.locale,
                     document_is_archived=False,
-                    document_category__in=settings.IA_DEFAULT_CATEGORIES),
+                    document_category__in=settings.IA_DEFAULT_CATEGORIES,
+                    product__in=[p.slug for p in self.get_products()]),
                 fields=[
                     'document_title',
                     'document_summary',
@@ -567,7 +568,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
             cache.add(key, documents)
         except ES_EXCEPTIONS as exc:
             statsd.incr('wiki.related_documents.esexception')
-            log.error('ES MLT {err} related_documents'.format(err=str(exc)))
+            log.exception('ES MLT related_documents')
             documents = []
 
         return documents
@@ -613,7 +614,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
             cache.add(key, questions)
         except ES_EXCEPTIONS as exc:
             statsd.incr('wiki.related_questions.esexception')
-            log.error('ES MLT {err} related_questions'.format(err=str(exc)))
+            log.exception('ES MLT related_questions')
             questions = []
 
         return questions
