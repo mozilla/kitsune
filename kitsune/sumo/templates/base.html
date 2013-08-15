@@ -213,6 +213,13 @@
 
 <script src="{{ url('jsi18n') }}build:{{ BUILD_ID_JS }}"></script>
 <script src="{{ url('wafflejs') }}"></script>
+
+{# Optimizely script for A/B testing - Bug 850816 #}
+{% if waffle.flag('optimizely') %}
+  <script src="//cdn.optimizely.com/js/245885873.js"></script>
+{% endif %}
+{# End Optimizely #}
+
 {{ js('common') }}
 <!--[if (gte IE 6)&(lte IE 8)]>
   {{ js('ie6-8') }}
@@ -220,12 +227,6 @@
 {% for script in scripts %}
   {{ js(script) }}
 {% endfor %}
-
-{# Optimizely script for A/B testing - Bug 850816 #}
-{% if waffle.flag('optimizely') %}
-  <script src="//cdn.optimizely.com/js/245885873.js"></script>
-{% endif %}
-{# End Optimizely #}
 
 {# Ethnio tracking - see bugs 683643 and 673544 #}
 {% if request.LANGUAGE_CODE == 'en-US' and waffle.flag('ethnio-all') %}
