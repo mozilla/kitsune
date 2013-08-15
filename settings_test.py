@@ -2,6 +2,9 @@
 # settings_local.py with settings appropriate for testing.
 
 ES_LIVE_INDEXING = False
+ES_INDEX_PREFIX = 'sumotest'
+ES_INDEXES = {'default': 'test'}
+ES_WRITE_INDEXES = ES_INDEXES
 
 # Make sure Celery is EAGER.
 CELERY_ALWAYS_EAGER = True
