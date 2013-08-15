@@ -420,7 +420,7 @@ def search(request, template=None):
                     'num_votes_past_week': doc['question_num_votes_past_week']}
 
             else:
-                summary = _build_es_excerpt(doc)
+                summary = _build_es_excerpt(doc, first_only=True)
                 result = {
                     'title': doc['post_title'],
                     'type': 'thread'}
@@ -563,15 +563,23 @@ def _ternary_filter(ternary_value):
     return ternary_value == constants.TERNARY_YES
 
 
-def _build_es_excerpt(result):
+def _build_es_excerpt(result, first_only=False):
     """Return concatenated search excerpts.
 
     :arg result: The result object from the queryset results
+    :arg first_only: True if we should show only the first bit, False
+        if we should show all bits
 
     """
-    excerpt = EXCERPT_JOINER.join(
-        [m.strip() for m in
-         chain(*result._highlight.values()) if m])
+    bits = [m.strip() for m in
+            chain(*result._highlight.values()) if m]
+
+    if first_only and bits:
+        excerpt = bits[0]
+    else:
+        excerpt = EXCERPT_JOINER.join(
+            [m.strip() for m in
+             chain(*result._highlight.values()) if m])
 
     return jinja2.Markup(clean_excerpt(excerpt))
 
