@@ -11,6 +11,8 @@ def run():
     # Make sure all topics listed in kitsune.questions.question_config exist.
     for prod_desc in question_config.products.values():
         for product_slug in prod_desc.get('products', []):
+            # Note: If this fails, add the missing product to
+            # migration 156.
             product = Product.objects.get(slug=product_slug)
             for topic_desc in prod_desc['categories'].values():
                 _, created = Topic.objects.get_or_create(
