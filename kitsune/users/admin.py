@@ -14,6 +14,7 @@ class ProfileAdminForm(forms.ModelForm):
 
 
 class ProfileAdmin(admin.ModelAdmin):
+    actions = None
     fieldsets = (
         (None, {
             'fields': ['user', 'name', 'public_email',
