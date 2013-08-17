@@ -57,16 +57,10 @@ rm /kitsune/build -rf
 
 # setup mysql
 
-# work around bug 899271
-mv /kitsune/migrations/226-retopic-questions.py /tmp/226-retopic-questions.py
-
 mysqladmin -u root password helloworld
 echo "CREATE DATABASE kitsune; GRANT ALL ON kitsune.* TO kitsune@localhost IDENTIFIED BY 'kitsune'" | mysql -u root --password=helloworld
 mysql -u kitsune --password=kitsune kitsune < /kitsune/scripts/schema.sql
 /kitsune/vendor/src/schematic/schematic /kitsune/migrations/
-
-# workaround
-mv /tmp/226-retopic-questions.py /kitsune/migrations/226-retopic-questions.py
 
 # install less
 npm install -g less
