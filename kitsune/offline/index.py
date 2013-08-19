@@ -77,7 +77,8 @@ class TFIDFIndex(object):
     simple and intuitive NLP technique that scores words in a document
     given a corpus based on how important this word is.
 
-    A full explanation of this is provided at <insert url when ready>.
+    A full explanation of this is provided at
+    http://osumo.readthedocs.org/en/latest/offlinesearch.html#index-structure.
     """
     def __init__(self):
         self.doc_count = 0
