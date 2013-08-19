@@ -66,3 +66,33 @@ def json_view(f):
             })
             return http.HttpResponseServerError(blob, content_type=JSON)
     return _wrapped
+
+
+def cors_enabled(origin, methods=['GET']):
+    """A simple decorator to enable CORS."""
+    def decorator(f):
+        @wraps(f)
+        def decorated_func(request, *args, **kwargs):
+            if request.method == 'OPTIONS':
+                # preflight
+                if ('HTTP_ACCESS_CONTROL_REQUEST_METHOD' in request.META and
+                    'HTTP_ACCESS_CONTROL_REQUEST_HEADERS' in request.META):
+
+                    response = http.HttpResponse()
+                    response['Access-Control-Allow-Methods'] = ", ".join(
+                        methods)
+
+                    # TODO: We might need to change this
+                    response['Access-Control-Allow-Headers'] = \
+                        request.META['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']
+                else:
+                    return http.HttpResponseBadRequest()
+            elif request.method in methods:
+                response = f(request, *args, **kwargs)
+            else:
+                return http.HttpResponseBadRequest()
+
+            response['Access-Control-Allow-Origin'] = origin
+            return response
+        return decorated_func
+    return decorator

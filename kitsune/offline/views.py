@@ -7,12 +7,12 @@ from django.http import (HttpResponse,
 
 from kitsune.offline.utils import (
     bundle_for_product,
-    cors_enabled,
     merge_bundles,
     redis_bundle_name,
-    toss_bundle_into_redis
+    insert_bundle_into_redis
 )
 from kitsune.products.models import Product
+from kitsune.sumo.decorators import cors_enabled
 from kitsune.sumo.redis_utils import redis_client, RedisError
 
 
@@ -42,7 +42,7 @@ def get_bundle(request):
         bundle_hash = redis.hget(name, 'hash')
 
     # redis.hget could return none if it does not exist.
-    # if redis is not available, toss_bundle won't actually toss it.
+    # if redis is not available, insert_bundle won't actually insert it.
     if bundle is None:
         try:
             product = Product.objects.get(slug=product)
@@ -51,10 +51,10 @@ def get_bundle(request):
                                         mimetype='application/json')
         else:
             bundle = merge_bundles(bundle_for_product(product, locale))
-            bundle, bundle_hash = toss_bundle_into_redis(redis,
-                                                         product.slug,
-                                                         locale,
-                                                         bundle)
+            bundle, bundle_hash = insert_bundle_into_redis(redis,
+                                                           product.slug,
+                                                           locale,
+                                                           bundle)
 
     response = HttpResponse(bundle, mimetype='application/json')
     response['Content-Length'] = len(bundle)

@@ -9,7 +9,7 @@ from statsd import statsd
 from kitsune.offline.utils import (
     bundle_for_product,
     merge_bundles,
-    toss_bundle_into_redis
+    insert_bundle_into_redis
 )
 from kitsune.products.models import Product
 from kitsune.sumo.utils import uselocale
@@ -33,10 +33,10 @@ def build_kb_bundles(products=('firefox-os', 'firefox', 'mobile')):
                 with uselocale(locale):
                     bundle = merge_bundles(bundle_for_product(product, locale))
 
-                size += len(toss_bundle_into_redis(redis,
-                                                   product.slug,
-                                                   locale,
-                                                   bundle)[0])
+                size += len(insert_bundle_into_redis(redis,
+                                                     product.slug,
+                                                     locale,
+                                                     bundle)[0])
 
     time_taken = time.time() - start_time
     log.info('Generated all offline bundles. '

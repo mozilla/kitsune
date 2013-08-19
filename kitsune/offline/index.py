@@ -13,20 +13,19 @@ _alpha_regex = re.compile(r'\w', flags=re.U)
 def find_word_locations_with_spaces(s):
     """Builds an index in the format of {word: location}.
 
-    This is a english like search. For languages without spaces to
+    This is an English like search. For languages without spaces to
     separate words, use find_word_locations_without_spaces.
     """
     s = s.lower()
     words = [u'']
     for c in s:
-        if (_whitespace_regex.match(c) or
-            c in string.punctuation and c not in '.!?'):
-            words.append(u'')
+        if c in '\'"[]1234567890/\\()_':
+            continue
         elif c in '.!?':  # We want to treat . as a big stop. Add two space.
             words.append(u'')
             words.append(u'')
-        elif c in '\'"[]1234567890/\\()_':
-            continue
+        elif _whitespace_regex.match(c) or c in string.punctuation:
+            words.append(u'')
         elif _alpha_regex.match(c) is not None:
             words[-1] += c
         else:
@@ -50,15 +49,15 @@ def find_word_locations_without_spaces(s):
     """
     words = [u'']
     for c in s:
-        # Yes, east asian languages could still have white space.
-        if _whitespace_regex.match(c) or c in u"；：，、" + string.punctuation:
-            words.append(u'')
+        if c in u'\'"[]1234567890/\\()_（）【】『』、￥《》’‘”“':
+            continue
         # This is at least the punctuations in Chinese.
         elif c in u'。！？':
             words.append(u'')
             words.append(u'')
-        elif c in u'\'"[]1234567890/\\()_（）【】『』、￥《》’‘”“':
-            continue
+        # Yes, east asian languages could still have white space.
+        elif _whitespace_regex.match(c) or c in u"；：，、" + string.punctuation:
+            words.append(u'')
         elif _alpha_regex.match(c) is not None:
             words.append(c)
         else:
@@ -111,17 +110,24 @@ class TFIDFIndex(object):
                     self.docs_words_boosts[doc_id][w] = boost
 
     def _f(self, term, doc_id):
+        """The frequency of a certain term in a certain document."""
         return self.local_word_freq[doc_id][term]
 
-    # Algorithm adapted from wikipedia.
-    # tf(t, d) = 0.5 + \frac{0.5 f(t, d)}{max(f(w, d), w \in d)}
     def _tf(self, term, doc_id):
+        """The term frequency term of the TF-IDF formula.
+
+        Adapted from Wikipedia:
+        tf(t, d) = 0.5 + \\frac{0.5 f(t, d)}{max(f(w, d), w \in d)}
+        """
         o = self._f(term, doc_id) / max(self.local_word_freq[doc_id].values())
         return 0.5 + (0.5 * o)
 
-    # Wikipedia is amazing
-    # idf(t, D) = \log \frac{|D|}{|{d \in D : t \in D}|}
     def _idf(self, term):
+        """The inverse document frequency term from the TF-IDF formula.
+
+        Adapted from Wikipedia.
+        idf(t, D) = \log \\frac{|D|}{|{d \in D : t \in D}|}
+        """
         appearance = 0  # Avoid division by 0 problem
         for doc_id, words in self.local_word_freq.iteritems():
             appearance += 1 if term in words else 0
@@ -129,10 +135,15 @@ class TFIDFIndex(object):
         return math.log(self.doc_count / appearance, 2)
 
     def tfidf(self, term, doc_id):
+        """The whole formula together for TF-IDF.
+
+        Adapted from Wikipedia.
+        """
         boost = self.docs_words_boosts[doc_id].get(term, 1)
         return self._tf(term, doc_id) * self._idf(term) * boost
 
     def tfidf_doc(self, doc_id):
+        """Computes the TF-IDF score for each term in a document."""
         doc = self.local_word_freq[doc_id]
         scores = []
         for word in doc:
@@ -141,6 +152,7 @@ class TFIDFIndex(object):
         return scores
 
     def offline_index(self):
+        """Builds the offline index."""
         index = {}
         for doc_id in self.local_word_freq:
             scores = self.tfidf_doc(doc_id)

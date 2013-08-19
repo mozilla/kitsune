@@ -1,4 +1,3 @@
-from functools import wraps
 from hashlib import sha1
 import json
 import re
@@ -7,7 +6,6 @@ import time
 from tower import ugettext as _
 
 from django.conf import settings
-from django.http import HttpResponse, HttpResponseBadRequest
 
 from kitsune.offline.index import (
     TFIDFIndex,
@@ -51,7 +49,7 @@ def redis_bundle_name(locale, product_slug):
 
 
 def transform_html(dochtml):
-    """
+    """Transforms the html to something we want to serve in the app.
 
     Do things to the document html such as stripping out things the
     offline app do not need. We could also do this in WikiParser,
@@ -182,33 +180,20 @@ def merge_bundles(*bundles):
                 else:
                     merged_locale.update(locale)
 
-        if 'topics' in bundle:
-            merged_bundle.setdefault('topics', {}).update(bundle['topics'])
-
-        if 'docs' in bundle:
-            merged_bundle.setdefault('docs', {}).update(bundle['docs'])
-
-        if 'indexes' in bundle:
-            merged_bundle.setdefault('indexes', {}).update(bundle['indexes'])
+        for key in ('topics', 'docs', 'indexes'):
+            if key in bundle:
+                merged_bundle.setdefault(key, {}).update(bundle[key])
 
     # This is because the database format is actually meant to have all of this
     # in a list format
-    if 'locales' in merged_bundle:
-        merged_bundle['locales'] = merged_bundle['locales'].values()
-
-    if 'topics' in merged_bundle:
-        merged_bundle['topics'] = merged_bundle['topics'].values()
-
-    if 'docs' in merged_bundle:
-        merged_bundle['docs'] = merged_bundle['docs'].values()
-
-    if 'indexes' in merged_bundle:
-        merged_bundle['indexes'] = merged_bundle['indexes'].values()
+    for key in ('locales', 'topics', 'docs', 'indexes'):
+        if key in merged_bundle:
+            merged_bundle[key] = merged_bundle[key].values()
 
     return merged_bundle
 
 
-def toss_bundle_into_redis(redis, product, locale, bundle):
+def insert_bundle_into_redis(redis, product, locale, bundle):
     """Put a bundle into redis.
 
     This is used in both the cron job and the view.
@@ -222,34 +207,3 @@ def toss_bundle_into_redis(redis, product, locale, bundle):
         redis.hset(name, 'bundle', bundle)
 
     return bundle, bundle_hash
-
-
-def cors_enabled(origin, methods=['GET']):
-    """A simple decorator to enable CORS.
-    """
-    def decorator(f):
-        @wraps(f)
-        def decorated_func(request, *args, **kwargs):
-            if request.method == 'OPTIONS':
-                # preflight
-                if ('HTTP_ACCESS_CONTROL_REQUEST_METHOD' in request.META and
-                    'HTTP_ACCESS_CONTROL_REQUEST_HEADERS' in request.META):
-
-                    response = HttpResponse()
-                    response['Access-Control-Allow-Methods'] = ", ".join(
-                        methods)
-
-                    # TODO: We might need to change this
-                    response['Access-Control-Allow-Headers'] = \
-                        request.META['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']
-                else:
-                    return HttpResponseBadRequest()
-            elif request.method in methods:
-                response = f(request, *args, **kwargs)
-            else:
-                return HttpResponseBadRequest()
-
-            response['Access-Control-Allow-Origin'] = origin
-            return response
-        return decorated_func
-    return decorator
