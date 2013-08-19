@@ -1,4 +1,6 @@
+import json
 import logging
+from datetime import date, timedelta
 
 from django.conf import settings
 from django.http import Http404, HttpResponseRedirect, HttpResponse
@@ -10,7 +12,7 @@ from tower import ugettext as _
 from kitsune.announcements.views import user_can_announce
 from kitsune.dashboards.readouts import (
     overview_rows, READOUTS, L10N_READOUTS, CONTRIBUTOR_READOUTS)
-from kitsune.dashboards.utils import render_readouts
+from kitsune.dashboards.utils import render_readouts, get_locales_by_visit
 from kitsune.products.models import Product
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import smart_int
@@ -125,6 +127,19 @@ def locale_metrics(request, locale_code):
         request,
         'dashboards/locale_metrics.html',
         {'current_locale': locale_code})
+
+
+@require_GET
+def aggregated_metrics(request):
+    """The aggregated (all locales) kb metrics dashboard."""
+    today = date.today()
+    locales = get_locales_by_visit(today - timedelta(days=30), today)
+
+    return render(
+        request,
+        'dashboards/aggregated_metrics.html',
+        {'locales_json': json.dumps(settings.SUMO_LANGUAGES),
+         'locales': locales})
 
 
 def _get_product(request):

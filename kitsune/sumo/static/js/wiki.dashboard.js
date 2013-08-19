@@ -22,6 +22,11 @@ $(document).ready(function() {
     ]);
   }
 
+  if ($('body').is('.aggregated-metrics')) {
+    // Create the dashboard charts.
+    makeAggregatedWikiMetricGraphs();
+  }
+
   // product selector page reloading
   $('#product-selector select').change(function() {
     var val = $(this).val();
@@ -127,7 +132,7 @@ function makeWikiMetricGraphs() {
 
 
 function makeWikiMetricGraph($container, descriptors, legend, bucket, results) {
-  new k.Graph($container, {
+  var graph = new k.Graph($container, {
     data: {
       datums: results,
       seriesSpec: descriptors
@@ -141,7 +146,105 @@ function makeWikiMetricGraph($container, descriptors, legend, bucket, results) {
       width: 600,
       height: 300
     },
-  }).render();
+  });
+
+  graph.render();
+
+  return graph;
+}
+
+function makeAggregatedWikiMetricGraphs() {
+  // Get the data we need, process it and create the graphs.
+  var locales = $('#locale-picker').data('locales');
+  var $contributors = $('#active-contributors');
+  var graphConfigs = [
+    {
+      selector: '#percent-localized-top20',
+      code: 'percent_localized_top20'
+    },
+    {
+      selector: '#percent-localized-all',
+      code: 'percent_localized_all'
+    },
+    {
+      selector: '#active-contributors',
+      code: 'active_contributors'
+    }
+  ];
+  var graphs = [];
+
+  $.getJSON($contributors.data('url'), function(data) {
+    var results = data.results;
+    var resultsByCode = {};
+    var resultsByDate;
+    var i, l, result, code, locale, date;
+
+    for (i = 0, l = results.length; i < l; i++) {
+      // Split out the results by code:
+      code = results[i].code;
+      locale = results[i].locale;
+      date = results[i].date;
+
+      // If we don't have an entry for the code, create it.
+      resultsByDate = resultsByCode[code] || {};
+
+      // If we don't have an entry for that date, create it.
+      result = resultsByDate[date] || {date: date};
+      result[locale] = results[i].value;
+      resultsByDate[date] = result;
+      resultsByCode[code] = resultsByDate;
+    }
+
+    // Create the graphs.
+    _.each(graphConfigs, function(config) {
+      graphs.push(makeWikiMetricGraph(
+        $(config.selector),
+        _.map(locales, function(locale) {
+            return {
+              name: locale,
+              slug: locale,
+              func: k.Graph.identity(locale)
+            }
+          }
+        ),
+        false,
+        false,
+        _.values(resultsByCode[config.code])
+      ));
+    });
+
+    function updateGraphLocales() {
+      // Update the locale series based on the selected locales.
+      var selectedLocales = _.map($('#locale-picker :checked'), function(el) {
+        return $(el).val();
+      });
+
+      // Loop through all the graphs...
+      _.each(graphs, function(graph) {
+        // And all the series (locales) in each graph...
+        _.each(graph.data.series, function(series, index) {
+          if (selectedLocales.indexOf(locales[index]) >= 0) {
+            // The locale is selected, show it.
+            series.disabled = false;
+            graph.data.seriesSpec[index].disabled = false;
+          } else {
+            // The locale isn't selected, don't show it.
+            series.disabled = true;
+            graph.data.seriesSpec[index].disabled = true;
+          }
+        });
+        graph.update();
+      });
+    }
+
+    // Select the top 10 (exclude #1 which is en-US) locales
+    $('#locale-picker :checkbox').slice(1,11).attr('checked', 'checked');
+
+    // Update the locale series when the selections change.
+    $('#locale-picker :checkbox').on('change', updateGraphLocales);
+
+    updateGraphLocales();
+  });
 }
 
 }(jQuery));

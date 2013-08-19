@@ -194,4 +194,9 @@
       <a href="{{ url('wiki.revisions')|urlparams(locale=locale) }}">{{ _('Recent Revisions') }}</a>
     </li>
   </ul>
+  <ul class="sidebar-nav">
+    <li {{ active|class_selected('aggregated') }}>
+      <a href="{{ url('dashboards.aggregated_metrics') }}">{{ _('Aggregated Metrics') }}</a>
+    </li>
+  </ul>
 {% endmacro %}
