@@ -13,6 +13,10 @@ urlpatterns = patterns('kitsune.dashboards.views',
     url(r'^contributors/(?P<readout_slug>[^/]+)', 'contributors_detail',
         name='dashboards.contributors_detail'),
 
+    # The aggregated kb metrics dashboard.
+    url(r'^kb/dashboard/metrics/aggregated$', 'aggregated_metrics',
+        name='dashboards.aggregated_metrics'),
+
     # The per-locale kb metrics dashboard.
     url(r'^kb/dashboard/metrics/(?P<locale_code>[^/]+)$', 'locale_metrics',
         name='dashboards.locale_metrics'),

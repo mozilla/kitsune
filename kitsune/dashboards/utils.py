@@ -1,14 +1,25 @@
+import logging
+
 from django.conf import settings
+from django.core.cache import cache
 from django.shortcuts import render
 from django.utils.datastructures import SortedDict
+
+from apiclient.errors import Error as GoogleAPIError
+from oauth2client.client import Error as Oauth2Error
+from OpenSSL.crypto import Error as OpenSSLError
 
 from kitsune.announcements.models import Announcement
 from kitsune.announcements.forms import AnnouncementForm
 from kitsune.lib.sumo_locales import LOCALES
 from kitsune.products.models import Product
+from kitsune.sumo.googleanalytics import visitors_by_locale
 from kitsune.wiki.events import (
     ApproveRevisionInLocaleEvent, ReadyRevisionEvent,
     ReviewableRevisionInLocaleEvent)
+
+
+log = logging.getLogger('k.dashboards')
 
 
 def render_readouts(request, readouts, template, locale=None, extra_data=None,
@@ -57,3 +68,30 @@ def render_readouts(request, readouts, template, locale=None, extra_data=None,
     if extra_data:
         data.update(extra_data)
     return render(request, 'dashboards/' + template, data)
+
+
+# Cache it all day to avoid calling Google Analytics over and over.
+CACHE_TIMEOUT = 24 * 60 * 60  # 24 hours
+
+
+def get_locales_by_visit(start_date, end_date):
+    """Get a list of (locale, visits) tuples sorted descending by visits."""
+
+    cache_key = 'locales_sorted_by_visits:{start}:{end}'.format(
+        start=start_date, end=end_date)
+
+    sorted_locales = cache.get(cache_key)
+    if sorted_locales is None:
+        try:
+            results = visitors_by_locale(start_date, end_date)
+            locales_and_visits = results.items()
+            sorted_locales = list(reversed(sorted(
+                locales_and_visits, key=lambda x: x[1])))
+            cache.add(cache_key, sorted_locales, CACHE_TIMEOUT)
+        except (GoogleAPIError, Oauth2Error, OpenSSLError):
+            # Just return all locales with 0s for visits.
+            log.exception('Something went wrong getting visitors by locale '
+                          'from Google Analytics. Nobody got a 500 though.')
+            sorted_locales = [(l, 0) for l in settings.SUMO_LANGUAGES]
+
+    return sorted_locales
