@@ -20,6 +20,7 @@ export DEBIAN_FRONTEND=noninteractive
 apt-get install -y python2.6 python2.6-dev mysql-client-5.5 mysql-server-5.5 memcached libmysqlclient-dev curl openjdk-7-jre-headless build-essential
 apt-get install -y libxml2 libxml2-dev libxslt1.1 libxslt1-dev libjpeg8-dev zlib1g zlib1g-dev
 apt-get install -y nodejs tmux redis-server pv vim
+apt-get dist-upgrade -y
 
 # fix problems so PIL can compile
 ln -s /usr/lib/x86_64-linux-gnu/libjpeg.so /usr/lib
@@ -34,6 +35,8 @@ update-alternatives --install /usr/bin/python python /usr/bin/python2.6 1000
 update-alternatives --set python /usr/bin/python2.6
 
 python --version
+
+sudo update-locale LANG=en_US.UTF-8 LC_ALL=en-US.UTF-8
 
 # setup node
 ln -sf /usr/bin/nodejs /usr/bin/node
