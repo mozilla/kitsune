@@ -1,6 +1,6 @@
 {% extends "wiki/base.html" %}
 {% from "wiki/includes/sidebar_modules.html" import document_tools, document_notifications with context %}
-{% from 'topics/includes/topic_macros.html' import topic_sidebar %}
+{% from 'products/includes/topic_macros.html' import topic_sidebar %}
 {% from "wiki/includes/document_macros.html" import contributor_list, document_title, document_messages, document_content, topic_list %}
 {% from "wiki/includes/document_macros.html" import related, show_for, vote_form with context %}
 {% set classes = 'document' %}
@@ -70,7 +70,7 @@
   {{ document_tools(doc, parent, user, 'article', settings) }}
   {{ related(related_documents, _('Related Articles'), 'document_title') }}
   {{ related(related_questions,  _('Related Questions'), 'question_title') }}
-  {{ topic_sidebar(topics[:10], product) }}
+  {{ topic_sidebar(topics[:10], [], product) }}
   {% if not hide_voting %}
     {{ vote_form(document, 'sidebar') }}
   {% endif %}

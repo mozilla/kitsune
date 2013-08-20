@@ -1,22 +1,18 @@
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 
-from kitsune.products.tests import product
+from kitsune.products.models import HOT_TOPIC_SLUG
+from kitsune.products.tests import product, topic
 from kitsune.search.tests.test_es import ElasticTestCase
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.topics.models import HOT_TOPIC_SLUG
-from kitsune.topics.tests import topic
 from kitsune.wiki.tests import document, revision
 
 
 class HomeTestCase(ElasticTestCase):
     def test_home(self):
-        """Verify that home page renders topics and products."""
+        """Verify that home page renders products."""
 
         # Create some topics and products
-        topic(slug=HOT_TOPIC_SLUG, save=True)
-        for i in range(6):
-            topic(save=True)
         for i in range(4):
             product(save=True)
 

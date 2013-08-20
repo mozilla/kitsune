@@ -5,10 +5,6 @@ from django.db import models
 
 from kitsune.sumo.models import ModelBase
 
-
-HOT_TOPIC_SLUG = 'hot'
-
-
 # Note: This is the "old" Topic class
 class Topic(ModelBase):
     title = models.CharField(max_length=255, db_index=True)

@@ -276,11 +276,6 @@ DB_LOCALIZE = {
             'attrs': ['title', 'description'],
         },
     },
-    'topics': {
-        'Topic': {
-            'attrs': ['title', 'description'],
-        }
-    },
 }
 
 # locale is in the kitsune git repo project directory, so that's
@@ -491,7 +486,6 @@ INSTALLED_APPS = (
     'kitsune.tags',
     'kitsune.kpi',
     'kitsune.products',
-    'kitsune.topics',
     'rest_framework',
 
     # App for Sentry:

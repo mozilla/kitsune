@@ -1,6 +1,5 @@
 {% extends "base.html" %}
 {% from 'products/includes/topic_macros.html' import topic_sidebar %}
-{% from 'topics/includes/topic_macros.html' import hot_topics %}
 {% set crumbs = [(url('products.product', slug=product.slug), _(product.title, 'DB: products.Product.title'))] %}
 {% if subtopic %}
   {% set crumbs = crumbs + [(url('products.documents', product_slug=product.slug, topic_slug=topic.slug), _(topic.title, 'DB: products.Topic.title')), (None, _(subtopic.title, 'DB: products.Topic.title'))] %}
