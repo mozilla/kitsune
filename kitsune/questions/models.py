@@ -39,7 +39,6 @@ from kitsune.sumo.redis_utils import RedisError
 from kitsune.sumo.urlresolvers import reverse, split_path
 from kitsune.tags.models import BigVocabTaggableMixin
 from kitsune.tags.utils import add_existing_tag
-from kitsune.topics.models import Topic as OldTopic
 from kitsune.upload.models import ImageAttachment
 
 
@@ -74,9 +73,8 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
     products = models.ManyToManyField(Product)
 
     # List of product-specific topics this document applies to.
-    topics = models.ManyToManyField(Topic, db_table='questions_question_new_topics')
-    # TODO: remove this when removing old topics.
-    old_topics = models.ManyToManyField(OldTopic, db_table='questions_question_topics')
+    topics = models.ManyToManyField(Topic,
+                                    db_table='questions_question_new_topics')
 
     locale = LocaleField(default=settings.WIKI_DEFAULT_LANGUAGE)
 

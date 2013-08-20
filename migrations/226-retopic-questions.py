@@ -1,8 +1,4 @@
-# -*- coding: utf-8 -*-
-from django.conf import settings
-
 from kitsune.products.models import Product, Topic
-from kitsune.topics.models import Topic as OldTopic
 from kitsune.questions import question_config
 from kitsune.questions.models import Question
 

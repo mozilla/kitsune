@@ -1,3 +1,89 @@
+{% macro hot_section(docs, fallback_docs, questions) -%}
+  {% if docs or fallback_docs or questions %}
+    <section id="hot-topics" class="feature-box">
+      <h1>{{ _('Hot Topics') }}</h1>
+      <ul class="cf">
+
+        {# The flag controls two things: Showing questions alongside
+           documents, and giving icons to documents. When questions
+           aren't there, no icon is needed. #}
+
+        {% if waffle.flag('hot_questions') %}
+          {% if docs %}
+            {% for doc in docs %}
+              <li class="document">
+                <a href="{{ doc['url'] }}">{{ doc['document_title'] }}</a>
+              </li>
+            {% endfor %}
+          {% endif %}
+
+          {% for q in questions %}
+            <li class="question">
+              <a href="{{ q.get_absolute_url() }}">{{ q.title }}</a>
+            </li>
+          {% endfor %}
+
+          {% if fallback_docs %}
+            <li class="fallback">{{ _('In English') }}</li>
+            {% for doc in fallback_docs %}
+              <li class="document">
+                <a href="{{ doc['url']|replace('/'+ settings.WIKI_DEFAULT_LANGUAGE +'/', '/' + request.LANGUAGE_CODE + '/') }}">
+                  {{ doc['document_title'] }}
+                </a>
+              </li>
+            {% endfor %}
+          {% endif %}
+
+        {% else %}
+
+          {% if docs %}
+            {% for doc in docs %}
+              <li>
+                <a href="{{ doc['url'] }}">{{ doc['document_title'] }}</a>
+              </li>
+            {% endfor %}
+          {% endif %}
+
+          {% if fallback_docs %}
+            <li class="fallback">{{ _('In English') }}</li>
+            {% for doc in fallback_docs %}
+              <li>
+                <a href="{{ doc['url']|replace('/'+ settings.WIKI_DEFAULT_LANGUAGE +'/', '/' + request.LANGUAGE_CODE + '/') }}">
+                  {{ doc['document_title'] }}
+                </a>
+              </li>
+            {% endfor %}
+          {% endif %}
+        {% endif %}
+      </ul>
+    </section>
+  {% endif %}
+{%- endmacro %}
+
+{% macro help_topics(topics, show_community_support=False) -%}
+  {% for topic in topics %}
+    {% if loop.first %}<ul class="card-grid cf">{% endif %}
+    <li>
+      {% set topic_url = url('products.documents', product_slug=product.slug, topic_slug=topic.slug) %}
+      <a href="{{ topic_url }}" class="cf">
+        <img src="{{ STATIC_URL }}img/blank.png" class="topic-icon" style="background-image: url('{{ topic.image_url }}')" alt="" />
+        <span class="title">{{ _(topic.title, 'DB: products.Topic.title') }}</span>
+      </a>
+    </li>
+    {% if loop.last %}
+      {% if show_community_support %}
+        <li class="community-support">
+          <a href="{{ url('wiki.document', 'get-community-support') }}" class="cf">
+            <img src="{{ STATIC_URL }}img/blank.png" class="topic-icon" alt="" />
+            <span class="title">{{ _('Get community support') }}</span>
+          </a>
+        </li>
+      {% endif %}
+      </ul>
+    {% endif %}
+  {% endfor %}
+{%- endmacro %}
+
 {% macro topic_sidebar(topics, subtopics, product, selected_topic=None, selected_subtopic=None) -%}
   <ul class="sidebar-nav topics">
     {% for topic in topics %}

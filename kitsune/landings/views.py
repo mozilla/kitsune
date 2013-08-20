@@ -1,12 +1,11 @@
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_list_or_404, render
 from django.views.decorators.cache import never_cache
 
 from mobility.decorators import mobile_template
 
-from kitsune.products.models import Product
+from kitsune.products.models import Product, Topic, HOT_TOPIC_SLUG
 from kitsune.sumo.parser import get_object_fallback
 from kitsune.sumo.views import redirect_to
-from kitsune.topics.models import Topic
 from kitsune.wiki.facets import documents_for
 from kitsune.wiki.models import Document
 
@@ -68,11 +67,11 @@ def integrity_check(request):
 
 def hot_topics(request):
     """The hot topics landing page."""
-    topic = get_object_or_404(Topic, slug='hot')
+    topics = get_list_or_404(Topic, slug=HOT_TOPIC_SLUG)
 
-    data = dict(topic=topic)
+    data = dict(topic=topics[0])
     docs, fallback = documents_for(
-        locale=request.LANGUAGE_CODE, topics=[topic])
+        locale=request.LANGUAGE_CODE, topics=[topics[0]])
     data.update(documents=docs, fallback_documents=fallback)
 
     return render(request, 'landings/hot.html', data)

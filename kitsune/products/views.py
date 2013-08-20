@@ -7,8 +7,7 @@ from django.shortcuts import get_object_or_404, render
 from mobility.decorators import mobile_template
 from taggit.models import Tag
 
-from kitsune.products.models import Product, Topic
-from kitsune.topics.models import HOT_TOPIC_SLUG
+from kitsune.products.models import Product, Topic, HOT_TOPIC_SLUG
 from kitsune.wiki.facets import topics_for, documents_for
 from kitsune.questions.models import Question
 

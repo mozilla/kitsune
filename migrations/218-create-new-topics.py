@@ -2,8 +2,8 @@
 from django.conf import settings
 
 from kitsune.products.models import Product, Topic
-from kitsune.topics.models import Topic as OldTopic
 from kitsune.wiki.models import Document
+from migrations.models import Topic as OldTopic
 
 
 def run():

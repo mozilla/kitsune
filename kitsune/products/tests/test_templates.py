@@ -6,11 +6,11 @@ from nose.tools import eq_
 from pyquery import PyQuery as pq
 from waffle.models import Flag
 
+from kitsune.products.models import HOT_TOPIC_SLUG
 from kitsune.products.tests import product, topic
 from kitsune.search.tests.test_es import ElasticTestCase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.tags.tests import tag
-from kitsune.topics.models import HOT_TOPIC_SLUG
 from kitsune.wiki.tests import revision, helpful_vote
 from kitsune.questions.tests import question
 

@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% from 'includes/common_macros.html' import for_contributors_sidebar %}
-{% from 'topics/includes/topic_macros.html' import hot_section, help_topics with context %}
+{% from 'products/includes/topic_macros.html' import hot_section, help_topics with context %}
 {% set crumbs = [(None, _(product.title, 'DB: products.Product.title'))] %}
 {% set styles = ('products',) %}
 {% set classes = 'product-landing' %}
