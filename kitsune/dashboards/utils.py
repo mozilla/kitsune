@@ -70,13 +70,13 @@ def render_readouts(request, readouts, template, locale=None, extra_data=None,
     return render(request, 'dashboards/' + template, data)
 
 
+# Cache it all day to avoid calling Google Analytics over and over.
 CACHE_TIMEOUT = 24 * 60 * 60  # 24 hours
 
 
 def get_locales_by_visit(start_date, end_date):
     """Get a list of (locale, visits) tuples sorted descending by visits."""
 
-    # Cache it all day to avoid calling Google Analytics over and over.
     cache_key = 'locales_sorted_by_visits:{start}:{end}'.format(
         start=start_date, end=end_date)
 
