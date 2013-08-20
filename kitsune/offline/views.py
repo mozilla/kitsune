@@ -69,6 +69,7 @@ def get_bundle(request):
 
 @cors_enabled('*')
 def bundle_meta(request):
+    """This view is responsible for update checking."""
     if 'locale' not in request.GET or 'product' not in request.GET:
         return HttpResponseBadRequest(BAD_REQUEST, mimetype='application/json')
 
