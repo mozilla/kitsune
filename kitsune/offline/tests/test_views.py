@@ -79,6 +79,20 @@ class OfflineViewTests(TestCase):
 
         assert 'indexes' in data
 
+    def test_get_bundle_bad_request(self):
+        url = reverse('offline.get_bundle')
+        resp = self.client.get(url, follow=True)
+        eq_(400, resp.status_code)
+        data = json.loads(resp.content)
+        eq_('bad request', data['error'])
+
+    def test_get_bundle_not_found(self):
+        url = reverse('offline.get_bundle') + '?locale=fr&product=redpanda'
+        resp = self.client.get(url, follow=True)
+        eq_(404, resp.status_code)
+        data = json.loads(resp.content)
+        eq_('bad request', data['error'])
+
     def test_get_bundle_meta(self):
         self._create_bundle('firefox', 'en-US')
         url = (reverse('offline.bundle_meta') +

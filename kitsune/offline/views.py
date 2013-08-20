@@ -18,12 +18,14 @@ from kitsune.sumo.redis_utils import redis_client, RedisError
 
 INVALID_PRODUCT = '{"error": "not found", "reason": "invalid product"}'
 INVALID_LOCALE = '{"error": "not found", "reason": "invalid locale"}'
+NOT_FOUND = '{"error": "not found", reason: "unknown"}'
+BAD_REQUEST = '{"error": "bad request", "reason": "incomplete request"}'
 
 
 @cors_enabled('*')
 def get_bundle(request):
     if 'locale' not in request.GET or 'product' not in request.GET:
-        return HttpResponseBadRequest()
+        return HttpResponseBadRequest(BAD_REQUEST, mimetype='application/json')
 
     locale = request.GET['locale']
     product = request.GET['product']
@@ -68,7 +70,7 @@ def get_bundle(request):
 @cors_enabled('*')
 def bundle_meta(request):
     if 'locale' not in request.GET or 'product' not in request.GET:
-        return HttpResponseBadRequest()
+        return HttpResponseBadRequest(BAD_REQUEST, mimetype='application/json')
 
     locale = request.GET['locale']
     product = request.GET['product']
@@ -85,7 +87,7 @@ def bundle_meta(request):
         u = {'hash': bundle_hash}
         return HttpResponse(json.dumps(u), mimetype='application/json')
     else:
-        return HttpResponseNotFound('not found?', mimetype='text/plain')
+        return HttpResponseNotFound(NOT_FOUND, mimetype='application/json')
 
 
 @cors_enabled('*')
