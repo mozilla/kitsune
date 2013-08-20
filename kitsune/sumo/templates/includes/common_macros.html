@@ -27,7 +27,7 @@
     <li><a href="{{ ask_url }}" class="ask">{{ _('Ask a question') }}</a></li>
     {% if user.is_authenticated() %}
       <li class="dropdown">
-        <span>{{ _('Contributor Tools') }}</span>
+        <a href="#">{{ _('Contributor Tools') }}</a>
         <ul class="double">
           {{ _for_contributor_links(user, settings.WIKI_DEFAULT_LANGUAGE) }}
         </ul>
