@@ -137,7 +137,7 @@ class GalleryUploadTestCase(TestCase):
 
     def test_invalid_messages(self):
         # TODO(paul) POSTing invalid data shows error messages and pre-fills
-        raise SkipTest
+        raise SkipTest('Not implemented')
 
 
 class MediaPageCase(TestCase):

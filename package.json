@@ -1,0 +1,11 @@
+{
+    "name": "Kitsune",
+    "description": "Platform for Firefox Help",
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/mozilla/kitsune.git"
+    },
+    "dependencies": {
+        "less": "1.4.1"
+    }
+}

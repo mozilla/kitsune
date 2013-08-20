@@ -588,7 +588,7 @@ class NewDocumentTests(TestCaseBase):
         # You shouldn't be able to make a new doc in a non-default locale
         # without marking it as non-localizable. Unskip this when the non-
         # localizable bool is implemented.
-        raise SkipTest
+        raise SkipTest('Not implemented')
 
         get_current.return_value.domain = 'testserver'
 
