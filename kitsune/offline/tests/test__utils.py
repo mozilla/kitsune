@@ -9,98 +9,98 @@ from kitsune.sumo.tests import TestCase
 from kitsune.wiki.tests import document, revision
 
 
+def _create_doc(title='', product=None, topic=None, is_archived=False):
+    title = 'test ' + title if title else 'test'
+    doc = document(title=title, save=True, is_archived=is_archived)
+    revision(summary='summary', is_approved=True, document=doc, save=True)
+
+    if is_archived:
+        expected = {
+            'key': 'en-US~' + doc.slug,
+            'title': doc.title,
+            'archived': True,
+            'slug': doc.slug
+        }
+    else:
+        updated = time.mktime(doc.current_revision.created.timetuple())
+        expected = {
+            'key': 'en-US~' + doc.slug,
+            'title': title,
+            'html': doc.html,
+            'updated': updated,
+            'slug': doc.slug,
+            'id': doc.id,
+            'archived': False
+        }
+
+    if product:
+        doc.products.add(product)
+
+    if topic:
+        doc.topics.add(topic)
+
+    return doc, expected
+
+
+def _create_product_bundle(prefix='moo'):
+    p = product(title=prefix + 'firefox', save=True)
+    t1 = topic(title=prefix + 'topic1', product=p, save=True)
+    t2 = topic(title=prefix + 'topic2', product=p, save=True)
+
+    doc1, expected_doc1 = _create_doc(title=prefix + 'doc1',
+                                      product=p, topic=t1)
+    doc2, expected_doc2 = _create_doc(title=prefix + 'doc2',
+                                      product=p, topic=t2)
+
+    expected_locale_doc = {
+        'key': u'en-US',
+        'name': u'English',
+        'products': [{
+            'slug': p.slug,
+            'name': p.title
+        }]
+    }
+
+    expected_topic1 = {
+        'key': 'en-US~' + p.slug + '~' + t1.slug,
+        'name': t1.title,
+        'docs': [doc1.slug],
+        'product': p.slug,
+        'slug': t1.slug,
+        'children': []
+    }
+
+    expected_topic2 = {
+        'key': 'en-US~' + p.slug + '~' + t2.slug,
+        'name': t2.title,
+        'docs': [doc2.slug],
+        'product': p.slug,
+        'slug': t2.slug,
+        'children': []
+    }
+
+    return p, {
+        'doc1': expected_doc1,
+        'doc2': expected_doc2,
+        'locale': expected_locale_doc,
+        'topic1': expected_topic1,
+        'topic2': expected_topic2
+    }
+
+
 class OfflineWikiDataGenerationTest(TestCase):
-    def _create_doc(self, title='', product=None, topic=None,
-                    is_archived=False):
-
-        title = 'test ' + title if title else 'test'
-        doc = document(title=title, save=True, is_archived=is_archived)
-        revision(summary='summary', is_approved=True, document=doc, save=True)
-
-        if is_archived:
-            expected = {
-                'key': 'en-US~' + doc.slug,
-                'title': doc.title,
-                'archived': True,
-                'slug': doc.slug
-            }
-        else:
-            updated = time.mktime(doc.current_revision.created.timetuple())
-            expected = {
-                'key': 'en-US~' + doc.slug,
-                'title': title,
-                'html': doc.html,
-                'updated': updated,
-                'slug': doc.slug,
-                'id': doc.id,
-                'archived': False
-            }
-
-        if product:
-            doc.products.add(product)
-
-        if topic:
-            doc.topics.add(topic)
-
-        return doc, expected
-
-    def _create_product_bundle(self, prefix='moo'):
-        p = product(title=prefix + 'firefox', save=True)
-        t1 = topic(title=prefix + 'topic1', product=p, save=True)
-        t2 = topic(title=prefix + 'topic2', product=p, save=True)
-
-        doc1, expected_doc1 = self._create_doc(title=prefix + 'doc1',
-                                               product=p, topic=t1)
-        doc2, expected_doc2 = self._create_doc(title=prefix + 'doc2',
-                                               product=p, topic=t2)
-
-        expected_locale_doc = {
-            'key': u'en-US',
-            'name': u'English',
-            'products': [{
-                'slug': p.slug,
-                'name': p.title
-            }]
-        }
-
-        expected_topic1 = {
-            'key': 'en-US~' + p.slug + '~' + t1.slug,
-            'name': t1.title,
-            'docs': [doc1.slug],
-            'product': p.slug,
-            'slug': t1.slug,
-            'children': []
-        }
-
-        expected_topic2 = {
-            'key': 'en-US~' + p.slug + '~' + t2.slug,
-            'name': t2.title,
-            'docs': [doc2.slug],
-            'product': p.slug,
-            'slug': t2.slug,
-            'children': []
-        }
-
-        return p, {
-            'doc1': expected_doc1,
-            'doc2': expected_doc2,
-            'locale': expected_locale_doc,
-            'topic1': expected_topic1,
-            'topic2': expected_topic2
-        }
-
     def test_serialize_document(self):
-        doc, expected = self._create_doc()
+        doc, expected = _create_doc()
         serialized = utils.serialize_document_for_offline(doc)
         eq_(expected, serialized)
 
     def test_serialized_archived_document(self):
-        doc, expected = self._create_doc(is_archived=True)
+        doc, expected = _create_doc(is_archived=True)
         serialized = utils.serialize_document_for_offline(doc)
         eq_(expected, serialized)
 
     def test_bundle_for_product(self):
-        p, expected_bundle = self._create_product_bundle()
+        p, expected_bundle = _create_product_bundle()
 
         bundle = utils.bundle_for_product(p, 'en-US')
 
@@ -126,8 +126,8 @@ class OfflineWikiDataGenerationTest(TestCase):
         eq_(u'en-US~moofirefox', bundle['indexes']['en-US~moofirefox']['key'])
 
     def test_merge_bundles(self):
-        p1, expected_bundle1 = self._create_product_bundle()
-        p2, expected_bundle2 = self._create_product_bundle('yay')
+        p1, expected_bundle1 = _create_product_bundle()
+        p2, expected_bundle2 = _create_product_bundle('yay')
 
         bundle1 = utils.bundle_for_product(p1, 'en-US')
         bundle2 = utils.bundle_for_product(p2, 'en-US')

@@ -67,6 +67,9 @@ def serialize_document_for_offline(doc):
     This method returns a document that is ready to be inserted into
     the client-side database.
     """
+
+    # in order to save some space, the doc htmls and summaries are not returned
+    # as archived articles are already out of date.
     if doc.is_archived:
         return {
             'key': doc_key(doc.locale, doc.slug),

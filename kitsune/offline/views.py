@@ -79,7 +79,9 @@ def bundle_meta(request):
     try:
         redis = redis_client('default')
     except RedisError:
-        return HttpResponse('no builds', mimetype='text/plain', status=503)
+        return HttpResponse('{"error": "no bundles available"}',
+                            mimetype='application/json',
+                            status=503)
 
     bundle_hash = redis.hget(name, 'hash')
 

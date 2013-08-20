@@ -97,9 +97,9 @@ class TFIDFIndex(object):
         for text, boost in texts:
 
             locations = get_locations(text)
-            for w, l in locations.iteritems():
+            for w, loc in locations.iteritems():
                 global_freq = self.global_word_freq.setdefault(w, 0)
-                local_freq = len(l)
+                local_freq = len(loc)
                 self.global_word_freq[w] = global_freq + local_freq
 
                 old_local_freq = self.local_word_freq[doc_id].setdefault(w, 0)
@@ -129,10 +129,10 @@ class TFIDFIndex(object):
         Adapted from Wikipedia.
         idf(t, D) = \log \\frac{|D|}{|{d \in D : t \in D}|}
         """
-        appearance = 0  # Avoid division by 0 problem
+        appearance = 0
         for doc_id, words in self.local_word_freq.iteritems():
             appearance += 1 if term in words else 0
-        # Add a 1 so we are approximately the same.. not really
+
         return math.log(self.doc_count / appearance, 2)
 
     def tfidf(self, term, doc_id):
