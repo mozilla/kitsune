@@ -91,7 +91,7 @@ class OfflineViewTests(TestCase):
         resp = self.client.get(url, follow=True)
         eq_(404, resp.status_code)
         data = json.loads(resp.content)
-        eq_('bad request', data['error'])
+        eq_('not found', data['error'])
 
     def test_get_bundle_meta(self):
         self._create_bundle('firefox', 'en-US')

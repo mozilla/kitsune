@@ -12,7 +12,7 @@ from kitsune.offline.index import (
     find_word_locations_with_spaces,
     find_word_locations_without_spaces
 )
-from kitsune.wiki.config import CATEGORIES
+from kitsune.wiki.config import TROUBLESHOOTING_CATEGORY, HOW_TO_CATEGORY
 from kitsune.wiki.models import Document
 
 
@@ -109,7 +109,7 @@ def bundle_for_product(product, locale):
     docs = Document.objects.filter(
         locale=locale,
         is_template=False,
-        category__in=(CATEGORIES[0][0], CATEGORIES[1][0])
+        category__in=(TROUBLESHOOTING_CATEGORY, HOW_TO_CATEGORY)
     )
 
     # Since the any languages that are derived from English will not have a
