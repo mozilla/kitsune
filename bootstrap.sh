@@ -62,6 +62,12 @@ echo "CREATE DATABASE kitsune; GRANT ALL ON kitsune.* TO kitsune@localhost IDENT
 mysql -u kitsune --password=kitsune kitsune < /kitsune/scripts/schema.sql
 /kitsune/vendor/src/schematic/schematic /kitsune/migrations/
 
+# redis stuff
+mkdir -p /home/vagrant/kitsune-redis/sumo
+mkdir -p /home/vagrant/kitsune-redis/sumo-test
+mkdir -p /home/vagrant/kitsune-redis/sumo-persistent
+chown -R vagrant:vagrant /home/vagrant/kitsune-redis
+
 # install less
 npm install -g less
 
