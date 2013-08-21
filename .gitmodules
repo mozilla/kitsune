@@ -160,3 +160,6 @@
 [submodule "vendor/src/django-filter"]
 	path = vendor/src/django-filter
 	url = https://github.com/alex/django-filter.git
+[submodule "vendor/src/django-badger"]
+	path = vendor/src/django-badger
+	url = https://github.com/mozilla/django-badger
