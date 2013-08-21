@@ -3,6 +3,8 @@
 {% from 'topics/includes/topic_macros.html' import hot_section, help_topics with context %}
 {% set crumbs = [(None, _(product.title, 'DB: products.Product.title'))] %}
 {% set styles = ('products',) %}
+{% set classes = 'product-landing' %}
+{% set extra_body_attrs = {'data-product-slug': product.slug} %}
 
 {% block title %}{{ _('{product} Help')|f(product=_(product.title, 'DB: products.Product.title')) }}{% endblock %}
 
