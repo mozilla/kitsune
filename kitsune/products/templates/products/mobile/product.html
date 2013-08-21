@@ -4,8 +4,6 @@
 {% set headline = title %}
 {% set styles = ('mobile/products',) %}
 {% set return_url = url('products') %}
-{% set classes = 'product-landing' %}
-{% set extra_body_attrs = {'data-product-slug': product.slug} %}
 
 {% block title %}{{ _('{product} Help')|f(product=_(product.title, 'DB: products.Product.title')) }}{% endblock %}
 
