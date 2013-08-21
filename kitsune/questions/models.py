@@ -73,8 +73,7 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
     products = models.ManyToManyField(Product)
 
     # List of product-specific topics this document applies to.
-    topics = models.ManyToManyField(Topic,
-                                    db_table='questions_question_new_topics')
+    topics = models.ManyToManyField(Topic)
 
     locale = LocaleField(default=settings.WIKI_DEFAULT_LANGUAGE)
 
