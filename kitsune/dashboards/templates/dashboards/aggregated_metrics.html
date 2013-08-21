@@ -53,9 +53,9 @@
     <ul>
       {% for locale in locales %}
         <li>
-          <label>
+          <label title="{{ _('{count} visitors in the past 30 days')|f(count=locale[1]) }}">
             <input type="checkbox" name="locale" value="{{ locale[0] }}" />
-            {{ locale[0] }} ({{ locale[1] }})
+            {{ locale[0] }}
           </label>
         </li>
       {% endfor %}
