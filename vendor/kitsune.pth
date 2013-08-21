@@ -93,3 +93,4 @@ src/django-browserid
 src/html5lib-python
 src/django-rest-framework
 src/django-filter
+src/django-badger

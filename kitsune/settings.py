@@ -459,6 +459,7 @@ INSTALLED_APPS = (
     'kitsune.search',
     'kitsune.forums',
     'djcelery',
+    'badger',
     'cronjobs',
     'tidings',
     'kitsune.questions',
@@ -543,6 +544,8 @@ DOMAIN_METHODS = {
         ('kitsune/**.py', tower_python),
         ('kitsune/**/templates/**.html', tower_tmpl),
         ('vendor/src/django-tidings/**/templates/**.html', tower_tmpl),
+        ('vendor/src/django-badger/badger/*.py', tower_python),
+        ('vendor/src/django-badger/badger/templatetags/*.py', tower_python),
     ],
     'lhtml': [
         ('kitsune/forums/**.lhtml', 'ignore'),
