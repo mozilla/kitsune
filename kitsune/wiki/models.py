@@ -112,7 +112,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
     products = models.ManyToManyField(Product)
 
     # List of product-specific topics this document applies to.
-    topics = models.ManyToManyField(Topic, db_table='wiki_document_new_topics')
+    topics = models.ManyToManyField(Topic)
 
     # Needs change fields.
     needs_change = models.BooleanField(default=False, help_text=_lazy(
