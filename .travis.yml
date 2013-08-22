@@ -8,6 +8,10 @@ script: scripts/travis/test.sh
 env:
   - ES_VERSION=0.20.5 REDIS_VERSION=2.4.11
 
-branches:
-  only:
-    - travis-904123
+notifications:
+    email: false
+    irc:
+        channels:
+            - "irc.mozilla.org#sumo-dev"
+        on_success: always
+        on_failure: always
