@@ -398,7 +398,7 @@ class QuestionTests(TestCaseBase):
         eq_(None, Question.from_url('/en-US/questions/%s/edit' % q.id))
         eq_(None, Question.from_url('/en-US/kb/%s' % q.id))
         eq_(None, Question.from_url('/random/url'))
-        eq_(None, Question.from_url('/en-US/questions/stats'))
+        eq_(None, Question.from_url('/en-US/questions/dashboard/metrics'))
 
 
 class AddExistingTagTests(TestCaseBase):

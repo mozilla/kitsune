@@ -1373,8 +1373,8 @@ def stats_topic_data(bucket_days, start, end):
     return interim_data.values()
 
 
-def stats(request):
-    template = 'questions/stats.html'
+def metrics(request):
+    template = 'questions/metrics.html'
 
     form = StatsForm(request.GET)
     if form.is_valid():

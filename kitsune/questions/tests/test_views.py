@@ -599,7 +599,7 @@ class TestStats(ElasticTestCase):
     client_class = LocalizingClient
 
     def test_stats(self):
-        """Tests questions/stats view"""
+        """Tests questions/dashboard/metrics view"""
         p = product(save=True)
         t = topic(title='Websites', slug='websites', product=p, save=True)
 
@@ -613,7 +613,7 @@ class TestStats(ElasticTestCase):
 
         self.refresh()
 
-        response = self.client.get(reverse('questions.stats'))
+        response = self.client.get(reverse('questions.metrics'))
         eq_(200, response.status_code)
 
         # If there's histogram data, this is probably good enough to
