@@ -4,6 +4,7 @@
 
 ul.users {
     list-style: none;
+    padding: 0;
 }
 
 ul.users li {
@@ -32,7 +33,6 @@ ul.users div.info {
     min-height: 45px;
     padding: 3px 0 0;
     vertical-align: top;
-    min-width: 220px;
 }
 
 ul.users p.pm {

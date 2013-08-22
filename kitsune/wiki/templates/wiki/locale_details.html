@@ -26,9 +26,9 @@
             <input type="submit" value="{{ _('Add Leader') }}" />
           </form>
         {% endif %}
-        <ul class="users leaders">
+        <ul class="users leaders cf">
           {% for user in leaders %}
-            <li>
+            <li class="grid_4">
               {{ user_row(user) }}
               {% if user_can_edit %}
                 <div class="remove edit-mode">
@@ -53,9 +53,9 @@
             <input type="submit" value="{{ _('Add Reviewer') }}" />
           </form>
         {% endif %}
-        <ul class="users reviewers">
+        <ul class="users reviewers cf">
           {% for user in reviewers %}
-            <li>
+            <li class="grid_4">
               {{ user_row(user) }}
               {% if user_can_edit %}
                 <div class="remove edit-mode">
@@ -80,9 +80,9 @@
             <input type="submit" value="{{ _('Add Editor') }}" />
           </form>
         {% endif %}
-        <ul class="users editors">
+        <ul class="users editors cf">
           {% for user in editors %}
-            <li>
+            <li class="grid_4">
               {{ user_row(user) }}
               {% if user_can_edit %}
                 <div class="remove edit-mode">
@@ -96,9 +96,9 @@
 
       <div id="active-contributors">
         <h2>{{ _('{count} Active Contributors (last 90 days)')|f(count=active|count) }}</h2>
-        <ul class="users active">
+        <ul class="users active cf">
           {% for user in active %}
-            <li>
+            <li class="grid_4">
               {{ user_row(user) }}
             </li>
           {% endfor %}

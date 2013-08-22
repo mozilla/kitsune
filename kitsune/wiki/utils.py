@@ -15,8 +15,9 @@ def active_contributors(from_date, to_date=None, locale=None, product=None):
     :arg locale: (optional) locale to filter on
     :arg product: (optional) only count documents for a product
     """
-    return User.objects.filter(
+    return (User.objects.filter(
         id__in=_active_contributors_id(from_date, to_date, locale, product))
+        .order_by('username'))
 
 
 def num_active_contributors(from_date, to_date=None, locale=None,
