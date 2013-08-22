@@ -2,11 +2,11 @@
 {% set title = _('Question Metrics') %}
 {% set crumbs = [(url('questions.questions'), _('Support Forum')),
                  (None, _('Metrics'))] %}
-{% set scripts = ('rickshaw', 'questions.stats') %}
+{% set scripts = ('rickshaw', 'questions.metrics') %}
 {% set styles = ('rickshaw', ) %}
 
 {% block content %}
-  <h1>{{ _('Question Statistics') }}</h1>
+  <h1>{{ _('Support Forum Metrics') }}</h1>
 
   {% if graph %}
     <div id="topic-stats" data-graph="{{ graph|json }}">

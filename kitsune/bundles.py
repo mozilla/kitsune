@@ -168,8 +168,8 @@ MINIFY_BUNDLES = {
             'js/libs/jquery.ajaxupload.js',
             'js/upload.js',
         ),
-        'questions.stats': (
-            'js/questions.stats.js',
+        'questions.metrics': (
+            'js/questions.metrics-dashboard.js',
         ),
         'mobile/questions': (
             'js/mobile/questions.js',
