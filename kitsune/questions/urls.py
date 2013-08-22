@@ -12,6 +12,8 @@ urlpatterns = patterns('kitsune.questions.views',
     url(r'^/answer-preview-async$', 'answer_preview_async',
         name='questions.answer_preview_async'),
     url(r'^/dashboard/metrics$', 'metrics', name='questions.metrics'),
+    url(r'^/dashboard/metrics/(?P<locale_code>[^/]+)$', 'metrics',
+        name='questions.locale_metrics'),
 
     # AAQ
     url(r'^/new$', 'aaq', name='questions.aaq_step1'),

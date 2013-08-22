@@ -180,8 +180,14 @@ class QuestionsResource(CachedResource):
     solved = fields.IntegerField('solved', default=0)
 
     def get_object_list(self, request):
+
+        locale = request.GET.get('locale')
+
         # Set up the query for the data we need.
         qs = _daily_qs_for(Question)
+
+        if locale:
+            qs = qs.filter(locale=locale)
 
         # All answers that were created within 3 days of the question.
         aq_72 = Answer.objects.filter(

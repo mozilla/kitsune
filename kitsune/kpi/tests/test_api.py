@@ -65,6 +65,43 @@ class KpiApiTests(TestCase):
         eq_(r['objects'][0]['responded_72'], 2)
         eq_(r['objects'][0]['questions'], 3)
 
+    def test_questions_by_locale(self):
+        """Test locale filtering of questions API call."""
+        # An en-US question with a solution:
+        q = question(locale='en-US', save=True)
+        a = answer(question=q, save=True)
+        q.solution = a
+        q.save()
+        # An en-US question with an answer:
+        q = question(locale='en-US', save=True)
+        answer(question=q, save=True)
+        # An en-US question without answers:
+        question(locale='en-US', save=True)
+
+        # A pt-BR question without answers:
+        question(locale='pt-BR', save=True)
+
+        # Verify no locale filtering:
+        r = self._get_api_result('kpi_questions')
+        eq_(r['objects'][0]['solved'], 1)
+        eq_(r['objects'][0]['responded_24'], 2)
+        eq_(r['objects'][0]['responded_72'], 2)
+        eq_(r['objects'][0]['questions'], 4)
+
+        # Verify locale=en-US
+        r = self._get_api_result('kpi_questions', locale='en-US')
+        eq_(r['objects'][0]['solved'], 1)
+        eq_(r['objects'][0]['responded_24'], 2)
+        eq_(r['objects'][0]['responded_72'], 2)
+        eq_(r['objects'][0]['questions'], 3)
+
+        # Verify locale=pt-BR
+        r = self._get_api_result('kpi_questions', locale='pt-BR')
+        eq_(r['objects'][0]['solved'], 0)
+        eq_(r['objects'][0]['responded_24'], 0)
+        eq_(r['objects'][0]['responded_72'], 0)
+        eq_(r['objects'][0]['questions'], 1)
+
     def test_questions_inactive_user(self):
         """Verify questions from inactive users aren't counted."""
         # Two questions for an inactive user.

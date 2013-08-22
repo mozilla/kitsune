@@ -25,6 +25,9 @@ MINIFY_BUNDLES = {
             'css/cannedresponses.css',
             'less/reportabuse.less',
         ),
+        'questions.metrics': (
+            'less/questions.metrics.less',
+        ),
         'mobile/questions': (
             'less/mobile/questions.less',
         ),
