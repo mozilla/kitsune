@@ -43,7 +43,7 @@ from kitsune.users.models import (
     CONTRIBUTOR_GROUP, Group, Profile, RegistrationProfile, EmailChange)
 from kitsune.users.utils import (
     handle_login, handle_register, try_send_email_with_form)
-from kitsune.wiki.models import user_num_documents, user_documents
+from kitsune.wiki.models import user_num_documents, user_documents, user_redirects
 
 
 @ssl_required
@@ -331,8 +331,8 @@ def documents_contributed(request, user_id):
 
     return render(request, 'users/documents_contributed.html', {
         'profile': user_profile,
-        'documents': user_documents(user_profile.user)})
-
+        'documents': user_documents(user_profile.user),
+        'redirects': user_redirects(user_profile.user)})
 
 @login_required
 @require_http_methods(['GET', 'POST'])
