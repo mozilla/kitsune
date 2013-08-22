@@ -46,7 +46,8 @@ class ReviewTests(TestCaseBase):
         self.client.login(username=approver.username, password='testpass')
 
     def _review_revision(self, is_approved=True, is_ready=False,
-                         significance=SIGNIFICANCES[0][0], r=None):
+                         significance=SIGNIFICANCES[0][0], r=None,
+                         comment=None):
         """Make a revision, and approve or reject it through the view."""
         if not r:
             r = revision(is_approved=False,
@@ -61,6 +62,8 @@ class ReviewTests(TestCaseBase):
             data['significance'] = significance
             if is_ready:
                 data['is_ready_for_localization'] = 'on'
+            if comment:
+                data['comment'] = comment
         else:
             data['reject'] = 'Reject Revision'
 
@@ -102,15 +105,15 @@ class ReviewTests(TestCaseBase):
         u1 = user()
         u1.save()
         r1 = revision(is_approved=False,
-                     creator=u1,
-                     is_ready_for_localization=False,
-                     save=True)
+                      creator=u1,
+                      is_ready_for_localization=False,
+                      save=True)
         u2 = user()
         u2.save()
         r2 = revision(document=r1.document, based_on=r1, is_approved=False,
-                     creator=u2,
-                     is_ready_for_localization=False,
-                     save=True)
+                      creator=u2,
+                      is_ready_for_localization=False,
+                      save=True)
         eq_(0, len(mail.outbox))
         self._review_revision(r=r2)
         # 1 mail for each watcher, 1 for creator, and one for reviewer.
@@ -141,6 +144,12 @@ class ReviewTests(TestCaseBase):
         eq_(3, len(mail.outbox))
         _assert_ready_mail(mail.outbox[0])
         _assert_creator_mail(mail.outbox[1])
+
+    def test_new_lines_in_review_message(self):
+        """Test that newlines in a review message are properly displayed."""
+        _set_up_ready_watcher()
+        self._review_revision(comment='foo\n\nbar\nbaz')
+        assert 'foo<br><br>bar<br>baz' in mail.outbox[1].alternatives[0][0]
 
 
 class ReadyForL10nTests(TestCaseBase):
