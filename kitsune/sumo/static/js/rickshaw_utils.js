@@ -100,7 +100,30 @@ k.Graph.prototype.rebucket = function() {
     for (i = 0; i < this.data.datums.length; i++) {
       // make a copy.
       d = $.extend({}, this.data.datums[i]);
-      d.date = Math.floor(d.date / this.data.bucketSize) * this.data.bucketSize;
+      var date = new Date(d.date * 1000);
+
+      // NB: These are resilient to borders in months and years because
+      // JS's Date has the neat property that
+      //   new Date(2013, 4, -1) === new Date(2013, 3, 29)
+      //   new Date(2013, 0, -60) === new Date(2012, 10, 1)
+      // This might be the only nice thing about JS's Date.
+      switch (this.data.bucketSize) {
+        case 'day':
+          // Get midnight of today (ie, the boundary between today and yesterday)
+          d.date = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+          break;
+        case 'week':
+          // Get the most recent Sunday.
+          d.date = new Date(date.getFullYear(), date.getMonth(), date.getDate() - date.getDay());
+          break;
+        case 'month':
+          // Get the first of this month.
+          d.date = new Date(date.getFullYear(), date.getMonth(), 1);
+          break;
+        default:
+          throw 'Unknown bucket size ' + this.data.bucketSize;
+      }
+      d.date = d.date / 1000;
 
       if (buckets[d.date] === undefined) {
         buckets[d.date] = [d];
@@ -129,14 +152,24 @@ k.Graph.prototype.rebucket = function() {
     bucketed = this.data.datums.slice();
   }
 
-
   /* Data points that are too near the present represent a UX problem.
    * The data in them is not representative of a full time period, so
    * they appear to be downward trending. `chopLimit` represents the
    * boundary of what is considered to be "too new".  Bug #876912. */
-  var chopLimit = +new Date() / 1000 - (this.data.bucketSize || (24 * 60 * 60));
+  var chopLimit;
+  var now = new Date();
+  if (this.data.bucketSize === 'week') {
+    // Get most recent Sunday.
+    chopLimit = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay());
+  } else if (this.data.bucketSize === 'month') {
+    // Get the first of the current month.
+    chopLimit = new Date(now.getFullYear(), now.getMonth(), 1);
+  } else {
+    // Get midnight of today (ie, the boundary between today and yesterday)
+    chopLimit = new Date(now.getFullYear(), now.getMonth(), now.getDay());
+  }
   bucketed = _.filter(bucketed, function(d) {
-    return d.date < chopLimit;
+    return d.date < chopLimit / 1000;
   });
 
   this.data.series = this.makeSeries(bucketed, this.data.seriesSpec);
@@ -296,11 +329,10 @@ k.Graph.prototype.initBucketUI = function() {
   if (!this.options.bucket) return;
 
   var i;
-  var DAY_S = 24 * 60 * 60;
   var bucketSizes = [
-    {value: 1 * DAY_S, text: gettext('Daily')},
-    {value: 7 * DAY_S, text: gettext('Weekly')},
-    {value: 30 * DAY_S, text: gettext('Monthly')}
+    {value: 'day', text: gettext('Daily')},
+    {value: 'week', text: gettext('Weekly')},
+    {value: 'month', text: gettext('Monthly')}
   ];
 
   var $bucket = $('<div class="bucket"></div>')
@@ -317,7 +349,7 @@ k.Graph.prototype.initBucketUI = function() {
 
   var self = this;
   $select.on('change', function() {
-    self.data.bucketSize = parseInt($(this).val(), 10);
+    self.data.bucketSize = $(this).val();
     self.rebucket();
     self.update();
   });
@@ -327,8 +359,8 @@ k.Graph.prototype._xFormatter = function(seconds) {
   var DAY_S = 24 * 60 * 60;
 
   var sizes = {};
-  sizes[7 * DAY_S] = gettext('Week beginning %(year)s-%(month)s-%(date)s');
-  sizes[30 * DAY_S] = gettext('Month beginning %(year)s-%(month)s-%(date)s');
+  sizes['week'] = gettext('Week beginning %(year)s-%(month)s-%(date)s');
+  sizes['month'] = gettext('Month beginning %(year)s-%(month)s-%(date)s');
 
   var key = this.data.bucketSize;
   var format = sizes[key];
