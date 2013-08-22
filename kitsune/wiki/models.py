@@ -1143,10 +1143,18 @@ def points_to_document_view(url, required_locale=None):
 def user_num_documents(user):
     """Count the number of documents a user has contributed to. """
     return Document.objects.filter(
-        revisions__creator=user).distinct().count()
+        revisions__creator=user).exclude(
+                html__startswith='<p>REDIRECT <a').distinct().count()
 
 
 def user_documents(user):
     """Return the documents a user has contributed to."""
     return Document.objects.filter(
-        revisions__creator=user).distinct()
+            revisions__creator=user).exclude(
+                html__startswith='<p>REDIRECT <a').distinct()
+
+def user_redirects(user):
+    """Return the redirects a user has contributed to."""
+    return Document.objects.filter(
+            revisions__creator=user).filter(
+                html__startswith='<p>REDIRECT <a').distinct()
