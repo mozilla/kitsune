@@ -270,9 +270,6 @@ MINIFY_BUNDLES = {
             'js/groups.js',
             'js/editable.js',
         ),
-        'readtracker': (
-            'js/readtracker.js',
-        ),
         'karma.dashboard': (
             'js/libs/backbone.js',
             'js/karma.dashboard.js',

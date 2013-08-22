@@ -5,7 +5,7 @@
 {% from "wiki/includes/document_macros.html" import related, show_for, vote_form with context %}
 {% set classes = 'document' %}
 {% set canonical_url = document.get_absolute_url() %}
-{% set scripts = ('wiki', 'readtracker') %}
+{% set scripts = ('wiki', ) %}
 {% set extra_body_attrs = {'data-track-url': STATIC_URL + 'img/pixel.gif', 'data-document-id': document.id, 'data-default-slug': document.parent.slug if document.parent else document.slug} %}
 
 {% block title %}{{ document.title }} | {% if not products or products|count > 1 %}{{ _('Mozilla Support', 'site_title') }}{% else %}{{ _('{product} Help')|f(product=_(product.title, 'DB: products.Product.title')) }}{% endif %}{% endblock %}
