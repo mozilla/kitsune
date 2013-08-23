@@ -1,4 +1,5 @@
 import re
+import sys
 
 from django import http
 from django.conf import settings as django_settings
@@ -22,7 +23,8 @@ def settings(request):
                        key in sorted(settings.keys())]
 
     return render_to_response('kadmin/settings.html',
-                              {'settings': sorted_settings,
+                              {'pythonpath': sys.path,
+                               'settings': sorted_settings,
                                'title': 'Settings'},
                               RequestContext(request, {}))
 
