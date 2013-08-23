@@ -8,6 +8,7 @@ from django.conf import settings
 from django.contrib import auth
 from django.contrib import messages
 from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
 from django.core.cache import cache
@@ -23,6 +24,8 @@ from django.views.decorators.http import (require_POST, require_GET,
 
 import jingo
 import waffle
+from django_browserid import get_audience, verify
+from django_browserid.forms import BrowserIDForm
 from mobility.decorators import mobile_template
 from ratelimit.decorators import ratelimit
 from ratelimit.helpers import is_ratelimited
@@ -62,8 +65,8 @@ from kitsune.sumo.utils import (
 from kitsune.tags.utils import add_existing_tag
 from kitsune.upload.models import ImageAttachment
 from kitsune.upload.views import upload_imageattachment
-from kitsune.users.forms import RegisterForm
-from kitsune.users.models import Setting
+from kitsune.users.forms import RegisterForm, BrowserIDSignupForm
+from kitsune.users.models import Setting, Profile
 from kitsune.users.utils import handle_login, handle_register
 from kitsune.wiki.facets import documents_for, topics_for
 from kitsune.wiki.models import Document, DocumentMappingType
@@ -473,47 +476,97 @@ def aaq(request, product_key=None, category_key=None, showform=False,
 
     # Handle the form post.
     if not request.user.is_authenticated():
-        if request.POST.get('login'):
-            login_form = handle_login(request, only_active=False)
-            statsd.incr('questions.user.login')
-            register_form = RegisterForm()
+        if waffle.flag_is_active(request, 'browserid'):
+            register_form = BrowserIDSignupForm()
+            next_url = urlparams(request.get_full_path(), step='aaq-question')
 
-            if login_form.is_valid():
-                statsd.incr('questions.user.login.success')
+            if request.POST.get('assertion'):
+                # Attempted login
+                login_form = BrowserIDForm(data=request.POST)
+
+                if login_form.is_valid():
+                    result = verify(login_form.cleaned_data['assertion'],
+                                    get_audience(request))
+                    if result:
+                        # Verified so log in
+                        email = result['email']
+                        user = User.objects.filter(email=email)
+
+                        if len(user) == 0:
+                            request.session['browserid-email'] = email
+                        else:
+                            user = user[0]
+                            user.backend = ('django_browserid.auth'
+                                            '.BrowserIDBackend')
+                            auth.login(request, user)
+                            return redirect(next_url)
             else:
-                statsd.incr('questions.user.login.fail')
+                # Attempted registration
+                email = request.session.get('browserid-email', None)
 
-        elif request.POST.get('register'):
-            login_form = AuthenticationForm()
-            register_form = handle_register(
-                request=request,
-                text_template='questions/email/confirm_question.ltxt',
-                html_template='questions/email/confirm_question.html',
-                subject=_('Please confirm your Firefox Help question'),
-                email_data=request.GET.get('search'))
+                if email:
+                    register_form = BrowserIDSignupForm(request.REQUEST)
 
-            if register_form.is_valid():  # Now try to log in.
-                user = auth.authenticate(username=request.POST.get('username'),
-                                         password=request.POST.get('password'))
-                auth.login(request, user)
-                statsd.incr('questions.user.register')
-        else:
-            # L10n: This shouldn't happen unless people tamper with POST data.
-            message = _lazy('Request type not recognized.')
-            return render(request, 'handlers/400.html', {
-                'message': message}, status=400)
-        if request.user.is_authenticated():
-            # Redirect to GET the current URL replacing the step parameter.
-            # This is also required for the csrf middleware to set the auth'd
-            # tokens appropriately.
-            url = urlparams(request.get_full_path(), step='aaq-question')
-            return HttpResponseRedirect(url)
-        else:
+                    if register_form.is_valid():
+                        user = User.objects.create_user(
+                            register_form.cleaned_data['username'], email)
+                        user.save()
+
+                        # Create a new profile for the user
+                        Profile.objects.create(user=user,
+                                               locale=request.LANGUAGE_CODE)
+
+                        # Log the user in
+                        user.backend = 'django_browserid.auth.BrowserIDBackend'
+                        auth.login(request, user)
+                        return redirect(next_url)
+
             return render(request, login_t, {
                 'product': product, 'category': category,
                 'title': request.POST.get('title'),
-                'register_form': register_form,
-                'login_form': login_form})
+                'register_form': register_form})
+        else:
+            if request.POST.get('login'):
+                login_form = handle_login(request, only_active=False)
+                statsd.incr('questions.user.login')
+                register_form = RegisterForm()
+
+                if login_form.is_valid():
+                    statsd.incr('questions.user.login.success')
+                else:
+                    statsd.incr('questions.user.login.fail')
+
+            elif request.POST.get('register'):
+                login_form = AuthenticationForm()
+                register_form = handle_register(
+                    request=request,
+                    text_template='questions/email/confirm_question.ltxt',
+                    html_template='questions/email/confirm_question.html',
+                    subject=_('Please confirm your Firefox Help question'),
+                    email_data=request.GET.get('search'))
+
+                if register_form.is_valid():  # Now try to log in.
+                    user = auth.authenticate(username=request.POST.get('username'),
+                                             password=request.POST.get('password'))
+                    auth.login(request, user)
+                    statsd.incr('questions.user.register')
+            else:
+                # L10n: This shouldn't happen unless people tamper with POST data.
+                message = _lazy('Request type not recognized.')
+                return render(request, 'handlers/400.html', {
+                    'message': message}, status=400)
+            if request.user.is_authenticated():
+                # Redirect to GET the current URL replacing the step parameter.
+                # This is also required for the csrf middleware to set the auth'd
+                # tokens appropriately.
+                url = urlparams(request.get_full_path(), step='aaq-question')
+                return HttpResponseRedirect(url)
+            else:
+                return render(request, login_t, {
+                    'product': product, 'category': category,
+                    'title': request.POST.get('title'),
+                    'register_form': register_form,
+                    'login_form': login_form})
 
     form = NewQuestionForm(product=product, category=category,
                            data=request.POST)
