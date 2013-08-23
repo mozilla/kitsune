@@ -73,7 +73,7 @@
   {% for attr, val in extra_body_attrs.items() %}{{ attr }}="{{ val }}" {% endfor %}
 {%- endif %}>
 
-{% if user.is_authenticated() %}
+{% if not user.is_authenticated() %}
   <form id="browserid-form" action="{{ url('users.browserid_verify') }}" method="post">
     {{ browserid_form }}
   </form>

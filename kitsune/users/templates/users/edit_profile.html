@@ -41,7 +41,7 @@
             <label>{{ _('Email:') }}</label>
             {{ user.email }}
             {% if waffle.flag('browserid') %}
-              <a href="#" id="change-email">{{ _('Change with Persona') }}</a>
+              <a href="#" id="change-email" class="browserid-login" data-next="{{ request.get_full_path() }}">{{ _('Change with Persona') }}</a>
             {% else %}
               <a href="{{ url('users.change_email') }}">{{ _('Change') }}</a>
             {% endif %}
