@@ -252,7 +252,6 @@ MINIFY_BUNDLES = {
         'users': (
             'js/users.js',
             'js/reportabuse.js',
-            'js/edit-profile.js',
         ),
         'messages': (
             'js/markup.js',
