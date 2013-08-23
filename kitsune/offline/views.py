@@ -5,20 +5,13 @@ from django.http import (HttpResponse,
                          HttpResponseBadRequest,
                          HttpResponseNotFound)
 
-from kitsune.offline.utils import (
-    bundle_for_product,
-    merge_bundles,
-    redis_bundle_name,
-    insert_bundle_into_redis
-)
-from kitsune.products.models import Product
+from kitsune.offline.utils import redis_bundle_name
 from kitsune.sumo.decorators import cors_enabled
 from kitsune.sumo.redis_utils import redis_client, RedisError
 
 
-INVALID_PRODUCT = '{"error": "not found", "reason": "invalid product"}'
 INVALID_LOCALE = '{"error": "not found", "reason": "invalid locale"}'
-NOT_FOUND = '{"error": "not found", reason: "unknown"}'
+NOT_FOUND = '{"error": "not found", "reason": "unknown"}'
 BAD_REQUEST = '{"error": "bad request", "reason": "incomplete request"}'
 
 
@@ -37,26 +30,13 @@ def get_bundle(request):
     try:
         redis = redis_client('default')
     except RedisError:
-        bundle = None
-        redis = None
+        return HttpResponse('not available yet', status=503)
     else:
         bundle = redis.hget(name, 'bundle')
         bundle_hash = redis.hget(name, 'hash')
 
-    # redis.hget could return none if it does not exist.
-    # if redis is not available, insert_bundle won't actually insert it.
     if bundle is None:
-        try:
-            product = Product.objects.get(slug=product)
-        except Product.DoesNotExist:
-            return HttpResponseNotFound(INVALID_PRODUCT,
-                                        mimetype='application/json')
-        else:
-            bundle = merge_bundles(bundle_for_product(product, locale))
-            bundle, bundle_hash = insert_bundle_into_redis(redis,
-                                                           product.slug,
-                                                           locale,
-                                                           bundle)
+        return HttpResponseNotFound(NOT_FOUND, mimetype='application/json')
 
     response = HttpResponse(bundle, mimetype='application/json')
     response['Content-Length'] = len(bundle)

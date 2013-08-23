@@ -87,6 +87,7 @@ class OfflineViewTests(TestCase):
         eq_('bad request', data['error'])
 
     def test_get_bundle_not_found(self):
+        self._create_bundle('firefox', 'en-US')
         url = reverse('offline.get_bundle') + '?locale=fr&product=redpanda'
         resp = self.client.get(url, follow=True)
         eq_(404, resp.status_code)

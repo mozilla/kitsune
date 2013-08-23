@@ -204,9 +204,9 @@ def insert_bundle_into_redis(redis, product, locale, bundle):
     bundle = json.dumps(bundle)
     bundle_hash = sha1(bundle).hexdigest()  # track version
 
-    if redis:
-        name = redis_bundle_name(locale.lower(), product.lower())
-        redis.hset(name, 'hash', bundle_hash)
-        redis.hset(name, 'bundle', bundle)
+    name = redis_bundle_name(locale.lower(), product.lower())
+    redis.hset(name, 'hash', bundle_hash)
+    redis.hset(name, 'bundle', bundle)
+    redis.hset(name, 'updated', time.time())
 
     return bundle, bundle_hash

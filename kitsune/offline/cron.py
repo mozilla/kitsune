@@ -23,6 +23,9 @@ log = logging.getLogger('k.offline')
 def build_kb_bundles(products=('firefox-os', 'firefox', 'mobile')):
     redis = redis_client('default')
 
+    if not redis:
+        raise IOError('Redis not available. Cannot generate offline bundles.')
+
     start_time = time.time()
     size = 0
 
