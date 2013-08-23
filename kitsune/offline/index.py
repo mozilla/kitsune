@@ -88,9 +88,6 @@ class TFIDFIndex(object):
 
     def feed(self, doc_id, texts, get_locations):
         self.doc_count += 1
-        if doc_id in self.local_word_freq:
-            return
-
         self.local_word_freq.setdefault(doc_id, {})
         self.docs_words_boosts.setdefault(doc_id, {})
 
