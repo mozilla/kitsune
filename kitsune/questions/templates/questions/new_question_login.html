@@ -1,6 +1,6 @@
 {% extends "questions/includes/question_editing_frame.html" %}
 {% from "layout/errorlist.html" import errorlist %}
-{% from "questions/includes/aaq_macros.html" import register_login_forms %}
+{% from "questions/includes/aaq_macros.html" import register_login_forms, aaq_progress %}
 {% set title = _('Ask a Question') %}
 {% set no_headline = True %}
 {% set classes = 'new-question' %}
@@ -8,7 +8,31 @@
 {% block breadcrumbs %}{% endblock %}
 
 {% block articles_and_search_results %}
-  {{ register_login_forms(register_form, login_form, csrf()) }}
+  {% if waffle.flag('browserid') %}
+    {{ aaq_progress(step=2) }}
+    {% if not request.session['browserid-email'] %}
+      <form id="aaq-browserid-form" action="{{ request.get_full_path() }}" method="post">
+        {{ csrf() }}
+        {{ browserid_form }}
+      </form>
+      <div class="highlight-box">
+        <h2>{{ _('Before you continue, you must sign in') }}</h2>
+        <p><a href="#" id="aaq-browserid-login" class="btn btn-submit">{{ _('Sign in with email') }}</a></p>
+      </div>
+    {% else %}
+      <div class="highlight-box">
+        <h2>{{ _('It appears you do not have an existing account') }}</h2>
+        <p>{{ _('Please select a username for your new account.') }}</p>
+        <form action="{{ request.get_full_path() }}" method="post">
+          {{ csrf() }}
+          {{ register_form }}
+          <p><button type="submit" class="btn btn-submit">{{ _('Register and continue') }}</button></p>
+        </form>
+      </div>
+    {% endif %}
+  {% else %}
+    {{ register_login_forms(register_form, login_form, csrf()) }}
+  {% endif %}
 {% endblock %}
 
 {% block submit_button_value %}{{ _('Post Question') }}{% endblock %}

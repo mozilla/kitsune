@@ -73,9 +73,11 @@
   {% for attr, val in extra_body_attrs.items() %}{{ attr }}="{{ val }}" {% endfor %}
 {%- endif %}>
 
-<form id="browserid-form" action="{{ url('users.browserid_verify') }}" method="post">
-  {{ browserid_form }}
-</form>
+{% if user.is_authenticated() %}
+  <form id="browserid-form" action="{{ url('users.browserid_verify') }}" method="post">
+    {{ browserid_form }}
+  </form>
+{% endif %}
 
 {% if settings.STAGE %}
   <div id="stage-banner">
