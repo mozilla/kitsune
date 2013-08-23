@@ -166,7 +166,7 @@ k.Graph.prototype.rebucket = function() {
     chopLimit = new Date(now.getFullYear(), now.getMonth(), 1);
   } else {
     // Get midnight of today (ie, the boundary between today and yesterday)
-    chopLimit = new Date(now.getFullYear(), now.getMonth(), now.getDay());
+    chopLimit = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   }
   bucketed = _.filter(bucketed, function(d) {
     return d.date < chopLimit / 1000;
