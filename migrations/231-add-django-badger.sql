@@ -1,4 +1,3 @@
-BEGIN;
 CREATE TABLE `badger_badge_prerequisites` (
     `id` integer AUTO_INCREMENT NOT NULL PRIMARY KEY,
     `from_badge_id` integer NOT NULL,
@@ -106,4 +105,57 @@ CREATE INDEX `badger_nomination_f97a5119` ON `badger_nomination` (`creator_id`);
 CREATE INDEX `badger_nomination_ca2b68c3` ON `badger_nomination` (`approver_id`);
 CREATE INDEX `badger_nomination_f77393ed` ON `badger_nomination` (`rejected_by_id`);
 CREATE INDEX `badger_nomination_f98cd8fe` ON `badger_nomination` (`award_id`);
-COMMIT;
+
+INSERT INTO django_content_type (name, app_label, model) VALUES
+    ('badge_prerequisites', 'badger', 'badge_prerequisites');
+SET @ct = (SELECT id from django_content_type WHERE app_label='badger'
+    and model='badge_prerequisites');
+INSERT INTO auth_permission (name, content_type_id, codename) VALUES
+    ('Can add badge prerequisites', @ct, 'add_badge_prerequisites'),
+    ('Can change badge prerequisites', @ct, 'change_badge_prerequisites'),
+    ('Can delete badge prerequisites', @ct, 'delete_badge_prerequisites');
+
+INSERT INTO django_content_type (name, app_label, model) VALUES
+    ('badge', 'badger', 'badge');
+SET @ct = (SELECT id from django_content_type WHERE app_label='badger'
+    and model='badge');
+INSERT INTO auth_permission (name, content_type_id, codename) VALUES
+    ('Can add badge', @ct, 'add_badge'),
+    ('Can change badge', @ct, 'change_badge'),
+    ('Can delete badge', @ct, 'delete_badge');
+
+INSERT INTO django_content_type (name, app_label, model) VALUES
+    ('award', 'badger', 'award');
+SET @ct = (SELECT id from django_content_type WHERE app_label='badger'
+    and model='award');
+INSERT INTO auth_permission (name, content_type_id, codename) VALUES
+    ('Can add award', @ct, 'add_award'),
+    ('Can change award', @ct, 'change_award'),
+    ('Can delete award', @ct, 'delete_award');
+
+INSERT INTO django_content_type (name, app_label, model) VALUES
+    ('progress', 'badger', 'progress');
+SET @ct = (SELECT id from django_content_type WHERE app_label='badger'
+    and model='progress');
+INSERT INTO auth_permission (name, content_type_id, codename) VALUES
+    ('Can add badge award progress', @ct, 'add_progress'),
+    ('Can change badge award progress', @ct, 'change_progress'),
+    ('Can delete badge award progress', @ct, 'delete_progress');
+
+INSERT INTO django_content_type (name, app_label, model) VALUES
+    ('deferredaward', 'badger', 'deferredaward');
+SET @ct = (SELECT id from django_content_type WHERE app_label='badger'
+    and model='deferredaward');
+INSERT INTO auth_permission (name, content_type_id, codename) VALUES
+    ('Can add deferred award', @ct, 'add_deferredaward'),
+    ('Can change deferred award', @ct, 'change_deferredaward'),
+    ('Can delete deferred award', @ct, 'delete_deferredaward');
+
+INSERT INTO django_content_type (name, app_label, model) VALUES
+    ('nomination', 'badger', 'nomination');
+SET @ct = (SELECT id from django_content_type WHERE app_label='badger'
+    and model='nomination');
+INSERT INTO auth_permission (name, content_type_id, codename) VALUES
+    ('Can add badge award nomination', @ct, 'add_nomination'),
+    ('Can change badge award nomination', @ct, 'change_nomination'),
+    ('Can delete badge award nomination', @ct, 'delete_nomination');

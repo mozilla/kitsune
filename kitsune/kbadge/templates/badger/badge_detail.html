@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section>
+  <h2>Badge detail</h2>
+
+  <dl class="badge" data-slug="{{ badge.slug }}">
+    <dt>Title:</dt>
+    <dd class="title">{{ badge.title }}</dd>
+
+    {% if badge.image %}
+      <dt>Image:</dt>
+      <dd class="image"><a href="{{ badge.get_absolute_url() }}" class="image"><img src="{{ badge.image.url }}" width="256" height="256" /></a></dd>
+    {% endif %}
+
+    {% if badge.description %}
+      <dt>Description:</dt>
+      <dd class="description">{{ badge.description }}</dd>
+    {% endif %}
+
+    <dt>Creator:</dt>
+    <dd><a href="{{ badge.creator.get_absolute_url() }}">{{ badge.creator }}</a></dd>
+
+    <dt>Created:</dt>
+    <dd>{{ badge.created }}</dd>
+
+    <dt>Modified:</dt>
+    <dd>{{ badge.modified }}</dd>
+  </dl>
+</section>
+
+{% if award_list %}
+  <section>
+    <h2>Recent awards</h2>
+    <ul>
+      {% for award in award_list %}
+        <li>
+          <a href="{{ award.get_absolute_url() }}">{{ award.user }}</a>
+        </li>
+      {% endfor %}
+    </ul>
+  </section>
+{% endif %}
+
+{% endblock %}

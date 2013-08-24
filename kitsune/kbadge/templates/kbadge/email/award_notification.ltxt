@@ -1,0 +1,15 @@
+{% if award_awarder %}
+{% trans username=award_awarder.displayname %}
+{{ username }} has awarded you a badge!
+{% endtrans %}
+{% else %}
+{{ _('You have been awarded a badge!') }}
+{% endif %}
+
+{{ badge_title }}
+
+{{ badge_description }}
+
+{{ award_description }}
+
+{{ award_url }}
