@@ -149,6 +149,7 @@ MINIFY_BUNDLES = {
             'js/aaq.js',
             'js/mobile/ui.js',
             'js/analytics.js',
+            'js/browserid.js',
         ),
         'ie6-8': (
             'js/libs/nwmatcher-1.2.5.js',
