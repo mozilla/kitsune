@@ -79,8 +79,12 @@
     <a href="{{ url('users.edit_settings') }}">{{ _('Settings') }}</a>
     <a href="{{ url('users.logout') }}" class="sign-out">{{ _('Sign Out') }}</a>
   {% else %}
-    <a href="{{ url('users.login') }}">{{ _('Sign in') }}</a>
-    <a href="{{ url('users.register') }}">{{ _('Register') }}</a>
+    {% if waffle.flag('browserid') %}
+      <a href="#" class="browserid-login">{{ _('Sign in with email') }}</a>
+    {% else %}
+      <a href="{{ url('users.login') }}">{{ _('Sign in') }}</a>
+      <a href="{{ url('users.register') }}">{{ _('Register') }}</a>
+    {% endif %}
   {% endif %}
 
   <header>{{ _('Languages') }}</header>
@@ -140,6 +144,12 @@
   </ul>
 </div>
 
+{% if not user.is_authenticated() %}
+  <form id="browserid-form" action="{{ url('users.browserid_verify') }}" method="post">
+    {{ browserid_form }}
+  </form>
+{% endif %}
+
 {% block after_main %}{% endblock %}
 
 <script src="{{ url('jsi18n') }}/build:{{ BUILD_ID_JS }}"></script>
@@ -147,6 +157,10 @@
 {% for script in scripts %}
   {{ js(script) }}
 {% endfor %}
+
+{# Browser ID #}
+<script src="https://login.persona.org/include.js" type="text/javascript"></script>
+{# End Browser ID #}
 
 </body>
 </html>

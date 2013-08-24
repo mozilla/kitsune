@@ -443,13 +443,19 @@ def aaq(request, product_key=None, category_key=None, showform=False,
             if not request.user.is_authenticated():
                 # User is on the login or register Step
                 statsd.incr('questions.aaq.login-or-register')
-                login_form = AuthenticationForm()
-                register_form = RegisterForm()
-                return render(request, login_t, {
-                    'product': product, 'category': category,
-                    'title': search,
-                    'register_form': register_form,
-                    'login_form': login_form})
+                if waffle.flag_is_active(request, 'browserid'):
+                    register_form = BrowserIDSignupForm()
+                    return render(request, login_t, {
+                        'product': product, 'category': category,
+                        'title': search, 'register_form': register_form})
+                else:
+                    login_form = AuthenticationForm()
+                    register_form = RegisterForm()
+                    return render(request, login_t, {
+                        'product': product, 'category': category,
+                        'title': search,
+                        'register_form': register_form,
+                        'login_form': login_form})
             form = NewQuestionForm(product=product,
                                    category=category,
                                    initial={'title': search})

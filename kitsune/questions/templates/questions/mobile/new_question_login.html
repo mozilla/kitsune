@@ -10,14 +10,38 @@
 {% from "users/includes/macros.html" import login_form %}
 
 {% block content %}
-  {{ mobile_register_forms(register_form, csrf()) }}
+  {% if waffle.flag('browserid') %}
+    <h2>{{ _('To post your question, please create a support account') }}</h2>
+    <p>
+      {{ _('A support account lets us alert you when people respond to your question.') }}
+    </p>
+    {% if not request.session['browserid-email'] %}
+      <p><span class="btn btn-login browserid-login" data-form="aaq-browserid-form">{{ _('Sign in with email') }}</span></p>
+      <form id="aaq-browserid-form" action="{{ request.get_full_path() }}" method="post">
+        {{ csrf() }}
+        {{ browserid_form }}
+      </form>
+    {% else %}
+      <div id="register-form">
+        <form action="{{ request.get_full_path() }}" method="post">
+          {{ csrf() }}
+          {{ register_form }}
+          <p><button type="submit" class="btn btn-submit">{{ _('Register and continue') }}</button></p>
+        </form>
+      </div>
+    {% endif %}
+  {% else %}
+    {{ mobile_register_forms(register_form, csrf()) }}
+  {% endif %}
 {% endblock %}
 
 {% block after_main %}
-  <div class="overlay" id="login-overlay" style="display: none;">
-    <header>{{ _('Sign in') }}</header>
-    <div id="login-form" class="wrapper scrollable">
-      {{ login_form(loginform, csrf=csrf(), action='', only_pwreset=True) }}
+  {% if not waffle.flag('browserid') %}
+    <div class="overlay" id="login-overlay" style="display: none;">
+      <header>{{ _('Sign in') }}</header>
+      <div id="login-form" class="wrapper scrollable">
+        {{ login_form(loginform, csrf=csrf(), action='', only_pwreset=True) }}
+      </div>
     </div>
-  </div>
+  {% endif %}
 {% endblock %}
