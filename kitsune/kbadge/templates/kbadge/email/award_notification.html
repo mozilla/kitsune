@@ -1,0 +1,32 @@
+{% extends 'email/base.html' %}
+
+{% block content %}
+<p>
+  {% if award_awarder %}
+    {% trans username=award_awarder.displayname %}
+      {{ username }} has awarded you a badge!
+    {% endtrans %}
+  {% else %}
+    {{ _('You have been awarded a badge!') }}
+  {% endif %}
+</p>
+
+<p><strong>{{ _('Badge title:') }}</strong></p>
+<div class="quote">
+  {{ badge_title }}
+</div>
+
+<p><strong>{{ _('Badge description:') }}</strong></p>
+<div class="quote">
+  {{ badge_description }}
+</div>
+
+{% if award_description %}
+  <p><strong>{{ _('Award reason:') }}</strong></p>
+  <div class="quote">
+    {{ award_description }}
+  </div>
+{% endif %}
+
+<p><a href="{{ award_url }}">See your badge!</a></p>
+{% endblock %}

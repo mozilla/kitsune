@@ -465,6 +465,7 @@ INSTALLED_APPS = (
     'kitsune.questions',
     'adminplus',
     'kitsune.kadmin',
+    'kitsune.kbadge',
     'taggit',
     'kitsune.flagit',
     'kitsune.upload',

@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Award detail</h1>
+
+<section class="award">
+  <dl class="award">
+    <dt>Awarded to:</dt>
+    <dd class="awarded_to"><a href="{{ award.user.get_absolute_url() }}"
+        class="username">{{ award.user }}</a></dd>
+
+    {% if award.description %}
+      <dt>Explanation:</dt>
+      <dd class="description">{{ award.description }}</dd>
+    {% endif %}
+
+    {% if award.creator %}
+      <dt>Awarded by:</dt>
+      <dd><a href="{{ award.creator.get_absolute_url() }}"
+             class="username">{{ award.creator }}</a></dd>
+    {% endif %}
+
+    <dt>Issued on:</dt>
+    <dd>{{ award.created }}</dd>
+  </dl>
+</section>
+
+<section class="badge">
+  <h2>Badge</h2>
+
+  <dl class="badge" data-slug="{{ badge.slug }}">
+    <dt>Title:</dt>
+    <dd class="title">{{ badge.title }}</dd>
+
+    {% if award and award.image %}
+      <dt>Image:</dt>
+      <dd class="image"><a href="{{ badge.get_absolute_url() }}" class="image"><img src="{{ award.image.url }}" width="256" height="256" /></a></dd>
+    {% elif badge.image %}
+      <dt>Image:</dt>
+      <dd class="image"><a href="{{ badge.get_absolute_url() }}" class="image"><img src="{{ badge.image.url }}" width="256" height="256" /></a></dd>
+    {% endif %}
+
+    {% if badge.description %}
+      <dt>Description:</dt>
+      <dd class="description">{{ badge.description }}</dd>
+    {% endif %}
+
+    <dt>Created:</dt>
+    <dd>{{ badge.created }}</dd>
+
+    <dt>Modified:</dt>
+    <dd>{{ badge.modified }}</dd>
+  </dl>
+</section>
+{% endblock %}
