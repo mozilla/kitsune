@@ -24,7 +24,7 @@
     <div id="email-field">
       <label>{{ _('Email') }}</label>
       <div class="value">{{ profile.user.email }}</div>
-      <a class="field-button" href="{{ url('users.change_email') }}">{{ _('Change Email') }}</a>
+      <a class="field-button {% if waffle.flag('browserid') %}browserid-login{% endif %}" href="{{ url('users.change_email') }}" data-next="{{ request.get_full_path() }}">{{ _('Change Email') }}</a>
     </div>
 
     <label>{{ _('Password') }}</label>
@@ -59,4 +59,10 @@
     <label>{{ _('Email in') }}</label>
     {{ form['locale'] }}
   </form>
+
+  {% if waffle.flag('browserid') %}
+    <form id="browserid-form" action="{{ url('users.browserid_verify') }}" method="post">
+      {{ browserid_form }}
+    </form>
+  {% endif %}
 {% endblock %}
