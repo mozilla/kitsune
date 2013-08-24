@@ -189,14 +189,13 @@
                 {% set product = product[0] %}
                 <div class="sidebox tight condensed">
                   <span class="title">{{ _('Product') }}</span>
+                  <span class="detail">{{ _(product.title, 'DB: products.Product.title') }}</span>
                   {% if user and user.has_perm('questions.change_question') %}
                     <select id="details-product" name="product">
                       {% for p in all_products %}
                         <option {% if p.id == product.id %}selected="selected"{% endif %} value="{{ p.id }}" data-url="{{ url('products.product', p.slug) }}">{{ p.title }}</option>
                       {% endfor %}
                     </select>
-                  {% else %}
-                    {{ product.title }}
                   {% endif %}
                   </span>
                 </div>
@@ -206,14 +205,13 @@
                 {% set topic = topic[0] %}
                 <div class="sidebox tight condensed">
                   <span class="title">{{ _('Topic') }}</span>
+                  <span class="detail">{{ _(topic.title, 'DB: products.Topic.title') }}</span>
                   {% if user and user.has_perm('questions.change_question') %}
                     <select id="details-topic" name="topic">
                       {% for t in all_topics %}
                         <option {% if t.id == topic.id %}selected="selected"{% endif %} value="{{ t.id }}">{{ t.title }}</option>
                       {% endfor %}
                     </select>
-                  {% else %}
-                    {{ topic.title }}
                   {% endif %}
                 </div>
               {% endif %}
@@ -238,6 +236,7 @@
 
               {% if user and user.has_perm('questions.change_question') %}
                 <div class="sidebox tight">
+                  <a href="#" id="details-edit">{{ _('Edit details') }}</a>
                   <button id="details-submit" type="submit" class="btn btn-submit">{{ _('Save changes') }}</button>
                 </div>
               {% endif %}
