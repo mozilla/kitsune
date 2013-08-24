@@ -7,7 +7,7 @@
 
             var $form;
             if ($this.data('form')) {
-                $form = $($this.data('form'));
+                $form = $('#' + $this.data('form'));
             } else {
                 $form = $('#browserid-form');
             }
