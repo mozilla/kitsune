@@ -15,6 +15,15 @@ def find_word_locations_with_spaces(s):
 
     This is an English like search. For languages without spaces to
     separate words, use find_word_locations_without_spaces.
+
+    This is a futureproof function. If we need to add location based indexing
+    for better searches with multiple search terms (especially for languages
+    like Chinese, Japanese, and Korean), we need to find each words index.
+
+    In this routine, we separate words at end of sentences by 2 as a gap and by
+    1 if words are separated by a comma (or alike).
+
+    Right now, the routine is only used to get the words count in TFIDFIndex.
     """
     s = s.lower()
     words = [u'']
@@ -61,7 +70,9 @@ def find_word_locations_without_spaces(s):
         elif _alpha_regex.match(c) is not None:
             words.append(c)
         else:
-            continue  # Something weird, but it is totally okay
+            # Something weird, but it is totally okay.
+            # this character is probably not significant (maybe invisble)
+            continue
 
     locations = {}
     for i, w in enumerate(words):

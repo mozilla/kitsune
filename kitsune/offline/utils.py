@@ -202,7 +202,9 @@ def insert_bundle_into_redis(redis, product, locale, bundle):
     This is used in both the cron job and the view.
     """
     bundle = json.dumps(bundle)
-    bundle_hash = sha1(bundle).hexdigest()  # track version
+    # track version. Used instead of a timestamp as there may be instances when
+    # nothing is updated between last generation and now.
+    bundle_hash = sha1(bundle).hexdigest()
 
     name = redis_bundle_name(locale.lower(), product.lower())
     redis.hset(name, 'hash', bundle_hash)

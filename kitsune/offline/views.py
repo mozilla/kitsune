@@ -75,6 +75,7 @@ def bundle_meta(request):
 
 @cors_enabled('*')
 def get_languages(request):
+    """Responsible for telling what the support languages are"""
     languages = []
     for code, name in settings.LANGUAGE_CHOICES:
         languages.append({'id': code, 'name': name})
