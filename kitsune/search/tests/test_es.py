@@ -1056,7 +1056,7 @@ class TestMappings(unittest.TestCase):
 
         merged_mapping = {}
 
-        for cls_name, mapping in es_utils.get_mappings().items():
+        for cls_name, mapping in es_utils.get_all_mappings().items():
             mapping = mapping['properties']
 
             for key, val in mapping.items():

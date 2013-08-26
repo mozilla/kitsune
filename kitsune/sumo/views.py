@@ -222,7 +222,7 @@ def monitor(request):
     # Check ES.
     es_results = []
     try:
-        es_utils.get_doctype_stats(es_utils.read_index())
+        es_utils.get_doctype_stats(es_utils.all_read_indexes()[0])
         es_results.append(
             (INFO, ('Successfully connected to ElasticSearch and index '
                     'exists.')))
