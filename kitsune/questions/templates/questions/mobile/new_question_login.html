@@ -11,10 +11,7 @@
 
 {% block content %}
   {% if waffle.flag('browserid') %}
-    <h2>{{ _('To post your question, please create a support account') }}</h2>
-    <p>
-      {{ _('A support account lets us alert you when people respond to your question.') }}
-    </p>
+    <h2>{{ _('Before you continue, you must sign in') }}</h2>
     {% if not request.session['browserid-email'] %}
       <p><span class="btn btn-login browserid-login" data-form="aaq-browserid-form">{{ _('Sign in with email') }}</span></p>
       <form id="aaq-browserid-form" action="{{ request.get_full_path() }}" method="post">
