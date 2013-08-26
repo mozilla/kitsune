@@ -1,0 +1,73 @@
+{% extends "questions/base.html" %}
+{% set title = _('Support Forum Metrics') %}
+{% set crumbs = [(url('questions.questions'), _('Support Forum')),
+                 (None, _('Metrics'))] %}
+{% set scripts = ('rickshaw', 'questions.metrics') %}
+{% set styles = ('rickshaw', 'questions.metrics') %}
+
+{% block content %}
+  <h1>{{ _('Support Forum Metrics') }}</h1>
+
+  <section id="locale-picker">
+    <span>{{ _('Locale:') }}</span>
+    {% if not current_locale %}
+      <strong>{{ _('All') }}</strong>
+    {% else %}
+      <a href="{{ url('questions.metrics') }}">{{ _('All') }}</a>
+    {% endif %}
+    {% for locale in settings.AAQ_LANGUAGES %}
+      {% if current_locale == locale %}
+         <strong>{{ locale }}</strong>
+      {% else %}
+        <a href="{{ url('questions.locale_metrics', locale) }}">{{ locale }}</a>
+      {% endif %}
+    {% endfor %}
+  </section>
+
+  {% set api_url = url('api_dispatch_list', resource_name='kpi_questions', api_name='v1') %}
+  {% if current_locale %}
+    {% set api_url = api_url|urlparams(locale=current_locale) %}
+  {% endif %}
+  <section id="questions-metrics"
+     data-url="{{ api_url }}">
+
+    <div class="rickshaw">
+      <div class="inline-controls"></div>
+      <div class="graph-container">
+        <div class="slider"></div>
+        <div class="graph"></div>
+      </div>
+    </div>
+  </section>
+
+  {% if graph %}
+    <div id="topic-stats" data-graph="{{ graph|json }}">
+      <h2 class="grid_12">{{ _('Topics') }}</h2>
+
+      <div class="grid_9 alpha">
+        <div class="graph-container">
+          <div class="graph"></div>
+        </div>
+      </div>
+
+      <div class="controls grid_3 omega">
+        <div class="legend"></div>
+        <div class="search">
+          <form>
+            <ul>
+              {{ form.as_ul() }}
+              <li><input type="submit" /></li>
+            </ul>
+          </form>
+        </div>
+      </div>
+    </div>
+  {% else %}
+    <p>
+      {{ _('Data is temporarily unavailable, please try again in a few minutes.') }}
+    </p>
+  {% endif %}
+{% endblock %}
+
+{% block side %}
+{% endblock %}

@@ -139,7 +139,7 @@
   <li><a href="{{ url('wiki.revisions') }}">{{ _('Recent Revisions') }}</a></li>
   <li><a href="{{ url('customercare.landing') }}">{{ _('Help on Twitter') }}</a></li>
   <li><a href="{{ url('questions.questions') }}">{{ _('Support Forum Home') }}</a></li>
-  <li><a href="{{ url('questions.stats') }}">{{ _('Support Forum Metrics') }}</a></li>
+  <li><a href="{{ url('questions.metrics') }}">{{ _('Support Forum Metrics') }}</a></li>
   {% if user.has_perm('flagit.can_moderate') %}
     <li><a href="{{ url('flagit.queue') }}">{{ _('Moderate Forum Content') }}</a></li>
   {% endif %}

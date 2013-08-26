@@ -181,7 +181,6 @@ SUMO_LANGUAGES = (
 AAQ_LANGUAGES = (
     'en-US',
     'pt-BR',
-    'xx',  # This is a test locale
 )
 
 # Languages that should show up in language switcher.
