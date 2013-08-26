@@ -227,10 +227,33 @@ h2 {
     }
   }
 
+  #details-submit {
+    display: none;
+  }
+
   #question-details {
     select {
       .box-sizing(border-box);
+      display: none;
       width: 100%;
+    }
+
+    &.editing {
+      select {
+        display: block;
+      }
+
+      .detail {
+        display: none;
+      }
+
+      #details-submit {
+        display: block;
+      }
+
+      #details-edit {
+        display: none;
+      }
     }
   }
 

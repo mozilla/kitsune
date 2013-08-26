@@ -24,6 +24,11 @@
             $('#support-search input[name=q]')
                 .val(k.unquote($.cookie('last_search')));
 
+            $(document).on('click', '#details-edit', function(ev) {
+                ev.preventDefault();
+                $('#question-details').addClass('editing');
+            });
+
             initHaveThisProblemTooAjax();
             initHelpfulVote();
             initCrashIdLinking();
