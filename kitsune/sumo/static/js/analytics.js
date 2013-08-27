@@ -51,13 +51,21 @@ $('body').on('click', 'a[data-ga-click]', function(ev) {
 });
 
 
-// Track reads (10secs on page) of product landing pages.
+// Track reads (5secs and 10secs on page) of product landing pages.
 if ($('body').is('.product-landing')) {
   setTimeout(function() {
     if (_gaq) {
       _gaq.push(['_trackEvent',
-                 'Landing Page Read',
+                 'Landing Page Read - 10 seconds',
                  $('body').data('product-slug')]);
     }
   }, 10000);
+
+  setTimeout(function() {
+    if (_gaq) {
+      _gaq.push(['_trackEvent',
+                 'Landing Page Read - 5 seconds',
+                 $('body').data('product-slug')]);
+    }
+  }, 5000);
 }
