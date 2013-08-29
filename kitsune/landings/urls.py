@@ -7,7 +7,7 @@ urlpatterns = patterns('kitsune.landings.views',
     url(r'^$', 'desktop_or_mobile', name='home.default'),
     url(r'^home$', 'home', name='home'),
 
-    url(r'^topics/hot$', 'hot_topics', name='hot_topics'),
+    url(r'^topics/hot$', redirect_to, {'url': 'products'}, name='hot_topics'),
 
     # Redirect from old mobile URL to new one.
     url(r'^mobile$', redirect_to,
