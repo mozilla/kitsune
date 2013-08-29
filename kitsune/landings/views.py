@@ -63,15 +63,3 @@ def get_involved_l10n(request, template):
 
 def integrity_check(request):
     return render(request, 'landings/integrity-check.html')
-
-
-def hot_topics(request):
-    """The hot topics landing page."""
-    topics = get_list_or_404(Topic, slug=HOT_TOPIC_SLUG)
-
-    data = dict(topic=topics[0])
-    docs, fallback = documents_for(
-        locale=request.LANGUAGE_CODE, topics=[topics[0]])
-    data.update(documents=docs, fallback_documents=fallback)
-
-    return render(request, 'landings/hot.html', data)
