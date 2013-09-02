@@ -57,6 +57,7 @@ Part 4: Administration
    products
    groups
    users
+   questions
    forums
 
 Indices and tables
