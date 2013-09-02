@@ -1,0 +1,26 @@
+{% if not user.is_authenticated() or not user.groups.filter(name='Registered as contributor') %}
+  <div class="row cf">
+    <div class="grid_12">
+      <div class="content-box button-wrapper cf">
+        {% if user.is_authenticated() %}
+          <form method="post" action="{{ url('users.make_contributor') }}">
+            <input type="hidden" name="return_to" value="{{ request.get_full_path() }}">
+            {{ csrf() }}
+            <button class="btn btn-submit">{{ _('Sign me up') }} &raquo;</button>
+          </form>
+        {% else %}
+          {% if waffle.flag('browserid') %}
+            <form id="gi-browserid-form" action="{{ url('users.browserid_verify') }}" method="post">
+              <input type="hidden" name="contributor" value="1">
+              {{ browserid_form }}
+            </form>
+            <a class="btn btn-submit browserid-login" data-form="gi-browserid-form" data-next="{{ request.get_full_path() }}" href="#">{{ _('Sign me up') }} &raquo;</a>
+          {% else %}
+            <a class="btn btn-submit" href="{{ url('users.auth_contributor') }}">{{ _('Sign me up') }} &raquo;</a>
+          {% endif %}
+        {% endif %}
+        <h3>{{ _('Sign up as a volunteer') }}</h3>
+      </div>
+    </div>
+  </div>
+{% endif %}

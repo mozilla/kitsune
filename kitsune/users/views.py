@@ -42,8 +42,10 @@ from kitsune.users.helpers import profile_url
 from kitsune.users.models import (
     CONTRIBUTOR_GROUP, Group, Profile, RegistrationProfile, EmailChange)
 from kitsune.users.utils import (
-    handle_login, handle_register, try_send_email_with_form)
-from kitsune.wiki.models import user_num_documents, user_documents, user_redirects
+    handle_login, handle_register, try_send_email_with_form,
+    add_to_contributors)
+from kitsune.wiki.models import (
+    user_num_documents, user_documents, user_redirects)
 
 
 @ssl_required
@@ -660,15 +662,21 @@ def browserid_verify(request):
                 # Verified so log in
                 email = result['email']
                 user = User.objects.filter(email=email)
+                contributor = 'contributor' in request.POST
 
                 if len(user) == 0:
                     form = BrowserIDSignupForm()
                     request.session['browserid-email'] = email
                     return render(request, 'users/browserid_signup.html',
-                                  {'email': email, 'next': next, 'form': form})
+                                  {'email': email, 'next': next, 'form': form,
+                                   'contributor': contributor})
                 else:
                     user = user[0]
                     user.backend = 'django_browserid.auth.BrowserIDBackend'
+
+                    if contributor:
+                        add_to_contributors(request, user)
+
                     auth.login(request, user)
                     return redirect(redirect_to)
 
@@ -684,6 +692,7 @@ def browserid_signup(request):
     redirect_to_failure = getattr(settings, 'LOGIN_REDIRECT_URL_FAILURE', '/')
 
     email = request.session.get('browserid-email', None)
+    contributor = 'contributor' in request.POST
 
     if email:
         form = BrowserIDSignupForm(request.REQUEST)
@@ -696,6 +705,10 @@ def browserid_signup(request):
             # Create a new profile for the user
             Profile.objects.create(user=user, locale=request.LANGUAGE_CODE)
 
+            # Check if the user should be added to the contributor group
+            if contributor:
+                add_to_contributors(request, user)
+
             # Log the user in
             user.backend = 'django_browserid.auth.BrowserIDBackend'
             auth.login(request, user)
@@ -703,6 +716,7 @@ def browserid_signup(request):
             return redirect(redirect_to)
         else:
             return render(request, 'users/browserid_signup.html',
-                          {'email': email, 'next': next, 'form': form})
+                          {'email': email, 'next': next, 'form': form,
+                           'contributor': contributor})
 
     return redirect(redirect_to_failure)
