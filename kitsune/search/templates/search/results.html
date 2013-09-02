@@ -79,15 +79,10 @@
     <div class="grid_9">
       {% if num_results > 0 %}
         <h2>
-          {% if product %}
-            {% set product_title = _(product.title, 'DB: products.Product.title') %}
-          {% else %}
-            {% set product_title = _('All Products') %}
-          {% endif %}
           {# L10n: {n} is the number of search results, {q} is the search query, {product} is the product. #}
           {{ ngettext('Found <strong>{n}</strong> result for <strong>{q}</strong> for <strong>{product}</strong>',
                       'Found <strong>{n}</strong> results for <strong>{q}</strong> for <strong>{product}</strong>',
-                      num_results)|fe(n=num_results, q=q, product=product_title) }}
+                      num_results)|fe(n=num_results, q=q, product=product_titles) }}
         </h2>
 
         <div class="content-box">

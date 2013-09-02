@@ -128,3 +128,44 @@ class SearchTest(ElasticTestCase):
         assert "We couldn't find any results for" in response.content
         doc = pq(response.content)
         eq_(2, len(doc('#search-results .result')))
+
+    def test_search_products(self):
+        p = product(title=u'Product One', slug='product', save=True)
+        doc1 = document(title=u'cookies', locale='en-US', category=10,
+                        save=True)
+        revision(document=doc1, is_approved=True, save=True)
+        doc1.products.add(p)
+        doc1.save()
+
+        self.refresh()
+
+        response = self.client.get(reverse('search'), {'a': '1',
+                                                       'product': 'product',
+                                                       'q': 'cookies',
+                                                       'w': '1'})
+
+        assert "We couldn't find any results for" not in response.content
+        eq_(200, response.status_code)
+        assert 'Product One' in response.content
+
+    def test_search_multiple_products(self):
+        p = product(title=u'Product One', slug='product-one', save=True)
+        p2 = product(title=u'Product Two', slug='product-two', save=True)
+        doc1 = document(title=u'cookies', locale='en-US', category=10,
+                        save=True)
+        revision(document=doc1, is_approved=True, save=True)
+        doc1.products.add(p)
+        doc1.products.add(p2)
+        doc1.save()
+
+        self.refresh()
+
+        response = self.client.get(reverse('search'), {
+                                    'a': '1',
+                                    'product': ['product-one', 'product-two'],
+                                    'q': 'cookies',
+                                    'w': '1'})
+
+        assert "We couldn't find any results for" not in response.content
+        eq_(200, response.status_code)
+        assert 'Product One, Product Two' in response.content

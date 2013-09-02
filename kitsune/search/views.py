@@ -477,14 +477,24 @@ def search(request, template=None):
     if num_results == 0:
         fallback_results = _fallback_results(language, cleaned['product'])
 
+    product = Product.objects.filter(slug__in=cleaned['product'])
+    if product:
+        product_titles = [_(p.title, 'DB: products.Product.title')
+                          for p in product]
+    else:
+        product_titles = [_('All Products')]
+
+    product_titles = ', '.join(product_titles)
+
     results_ = render(request, template, {
         'num_results': num_results,
         'results': results,
         'fallback_results': fallback_results,
         'q': cleaned['q'],
         'w': cleaned['w'],
-        'product': Product.objects.filter(slug__in=cleaned['product']),
+        'product': product,
         'products': Product.objects.filter(visible=True),
+        'product_titles': product_titles,
         'pages': pages,
         'search_form': search_form,
         'lang_name': lang_name, })
