@@ -58,6 +58,7 @@ Part 4: Administration
    products
    groups
    users
+   questions
    forums
    badges
 
