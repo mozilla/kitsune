@@ -20,14 +20,7 @@
     </div>
   </div>
 
-  <div class="row cf">
-    <div class="grid_12">
-      <div class="content-box button-wrapper cf">
-        <a class="btn btn-submit" href="{{ url('users.auth_contributor') }}">{{ _('Sign me up') }} &raquo;</a>
-        <h3>{{ _('Sign up as a volunteer') }}</h3>
-      </div>
-    </div>
-  </div>
+  {% include 'landings/includes/register_contributor.html' %}
 
   <div class="row cf pick-a-way">
     <div class="grid_12">

@@ -696,6 +696,25 @@ def browserid_signup(request):
             # Create a new profile for the user
             Profile.objects.create(user=user, locale=request.LANGUAGE_CODE)
 
+            # Check if the user should be added to the contributor group
+            if 'contributor' in request.POST:
+                group = Group.objects.get(name=CONTRIBUTOR_GROUP)
+                request.user.groups.add(group)
+
+                @email_utils.safe_translation
+                def _make_mail(locale):
+                    mail = email_utils.make_mail(
+                        subject=_('Welcome to SUMO!'),
+                        text_template='users/email/contributor.ltxt',
+                        html_template='users/email/contributor.html',
+                        context_vars={'username': user.username},
+                        from_email=settings.DEFAULT_FROM_EMAIL,
+                        to_email=user.email)
+
+                    return mail
+
+                email_utils.send_messages([_make_mail(request.LANGUAGE_CODE)])
+
             # Log the user in
             user.backend = 'django_browserid.auth.BrowserIDBackend'
             auth.login(request, user)
