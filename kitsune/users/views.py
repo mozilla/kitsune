@@ -42,7 +42,8 @@ from kitsune.users.helpers import profile_url
 from kitsune.users.models import (
     CONTRIBUTOR_GROUP, Group, Profile, RegistrationProfile, EmailChange)
 from kitsune.users.utils import (
-    handle_login, handle_register, try_send_email_with_form, make_contributor)
+    handle_login, handle_register, try_send_email_with_form,
+    add_to_contributors)
 from kitsune.wiki.models import (
     user_num_documents, user_documents, user_redirects)
 
@@ -674,7 +675,7 @@ def browserid_verify(request):
                     user.backend = 'django_browserid.auth.BrowserIDBackend'
 
                     if contributor:
-                        make_contributor(request, user)
+                        add_to_contributors(request, user)
 
                     auth.login(request, user)
                     return redirect(redirect_to)
@@ -706,7 +707,7 @@ def browserid_signup(request):
 
             # Check if the user should be added to the contributor group
             if contributor:
-                make_contributor(request, user)
+                add_to_contributors(request, user)
 
             # Log the user in
             user.backend = 'django_browserid.auth.BrowserIDBackend'

@@ -76,7 +76,7 @@ def try_send_email_with_form(func, form, field_name, *args, **kwargs):
         form.errors[field_name].append(unicode(ERROR_SEND_EMAIL))
     return form
 
-def make_contributor(request, user):
+def add_to_contributors(request, user):
     group = Group.objects.get(name=CONTRIBUTOR_GROUP)
     user.groups.add(group)
     user.save()
