@@ -42,8 +42,9 @@ from kitsune.users.helpers import profile_url
 from kitsune.users.models import (
     CONTRIBUTOR_GROUP, Group, Profile, RegistrationProfile, EmailChange)
 from kitsune.users.utils import (
-    handle_login, handle_register, try_send_email_with_form)
-from kitsune.wiki.models import user_num_documents, user_documents, user_redirects
+    handle_login, handle_register, try_send_email_with_form, make_contributor)
+from kitsune.wiki.models import (
+    user_num_documents, user_documents, user_redirects)
 
 
 @ssl_required
@@ -660,9 +661,9 @@ def browserid_verify(request):
                 # Verified so log in
                 email = result['email']
                 user = User.objects.filter(email=email)
+                contributor = 'contributor' in request.POST
 
                 if len(user) == 0:
-                    contributor = 'contributor' in request.POST
                     form = BrowserIDSignupForm()
                     request.session['browserid-email'] = email
                     return render(request, 'users/browserid_signup.html',
@@ -671,6 +672,10 @@ def browserid_verify(request):
                 else:
                     user = user[0]
                     user.backend = 'django_browserid.auth.BrowserIDBackend'
+
+                    if contributor:
+                        make_contributor(request, user)
+                    
                     auth.login(request, user)
                     return redirect(redirect_to)
 
@@ -701,24 +706,7 @@ def browserid_signup(request):
 
             # Check if the user should be added to the contributor group
             if contributor:
-                group = Group.objects.get(name=CONTRIBUTOR_GROUP)
-                user.groups.add(group)
-
-                user.save()
-
-                @email_utils.safe_translation
-                def _make_mail(locale):
-                    mail = email_utils.make_mail(
-                        subject=_('Welcome to SUMO!'),
-                        text_template='users/email/contributor.ltxt',
-                        html_template='users/email/contributor.html',
-                        context_vars={'username': user.username},
-                        from_email=settings.DEFAULT_FROM_EMAIL,
-                        to_email=user.email)
-
-                    return mail
-
-                email_utils.send_messages([_make_mail(request.LANGUAGE_CODE)])
+                make_contributor(request, user)
 
             # Log the user in
             user.backend = 'django_browserid.auth.BrowserIDBackend'

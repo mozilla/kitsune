@@ -1,14 +1,16 @@
 import logging
 from smtplib import SMTPException
 
+from django.conf import settings
 from django.contrib import auth
 from django.contrib.auth.models import User
 
 from statsd import statsd
 
+from kitsune.sumo import email_utils
 from kitsune.users import ERROR_SEND_EMAIL
 from kitsune.users.forms import RegisterForm, AuthenticationForm
-from kitsune.users.models import RegistrationProfile
+from kitsune.users.models import RegistrationProfile, Group, CONTRIBUTOR_GROUP
 
 
 log = logging.getLogger('k.users')
@@ -73,3 +75,23 @@ def try_send_email_with_form(func, form, field_name, *args, **kwargs):
             form.errors[field_name] = []
         form.errors[field_name].append(unicode(ERROR_SEND_EMAIL))
     return form
+
+def make_contributor(request, user):
+    group = Group.objects.get(name=CONTRIBUTOR_GROUP)
+    user.groups.add(group)
+
+    user.save()
+
+    @email_utils.safe_translation
+    def _make_mail(locale):
+        mail = email_utils.make_mail(
+            subject=_('Welcome to SUMO!'),
+            text_template='users/email/contributor.ltxt',
+            html_template='users/email/contributor.html',
+            context_vars={'username': user.username},
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to_email=user.email)
+
+        return mail
+
+    email_utils.send_messages([_make_mail(request.LANGUAGE_CODE)])
