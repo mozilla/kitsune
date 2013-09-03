@@ -79,7 +79,6 @@ def try_send_email_with_form(func, form, field_name, *args, **kwargs):
 def make_contributor(request, user):
     group = Group.objects.get(name=CONTRIBUTOR_GROUP)
     user.groups.add(group)
-
     user.save()
 
     @email_utils.safe_translation

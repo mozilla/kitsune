@@ -675,7 +675,7 @@ def browserid_verify(request):
 
                     if contributor:
                         make_contributor(request, user)
-                    
+
                     auth.login(request, user)
                     return redirect(redirect_to)
 
