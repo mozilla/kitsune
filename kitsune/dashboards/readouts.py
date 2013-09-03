@@ -24,7 +24,8 @@ from kitsune.wiki.config import (
     MEDIUM_SIGNIFICANCE, MAJOR_SIGNIFICANCE,
     TYPO_SIGNIFICANCE, REDIRECT_HTML,
     HOW_TO_CONTRIBUTE_CATEGORY, ADMINISTRATION_CATEGORY,
-    CANNED_RESPONSES_CATEGORY, NAVIGATION_CATEGORY)
+    CANNED_RESPONSES_CATEGORY, NAVIGATION_CATEGORY, TROUBLESHOOTING_CATEGORY,
+    HOW_TO_CATEGORY, TEMPLATES_CATEGORY)
 
 
 log = logging.getLogger('k.dashboards.readouts')
@@ -59,6 +60,7 @@ most_visited_translation_from = (
         'AND engdoc.is_localizable '
         'AND NOT engdoc.is_archived '
         'AND engdoc.latest_localizable_revision_id IS NOT NULL '
+    '{extra_where} '
     'ORDER BY dashboards_wikidocumentvisits.visits DESC, '
              'COALESCE(transdoc.title, engdoc.title) ASC ').format
 
@@ -263,11 +265,15 @@ def overview_rows(locale, product=None):
                 'AND NOT EXISTS ' +
                 ANY_SIGNIFICANT_UPDATES +
                 'AS istranslated ' +
-             most_visited_translation_from(extra_joins=
-                'LEFT JOIN wiki_revision curtransrev '
-                    'ON transdoc.current_revision_id=curtransrev.id '
-                + extra_joins) +
-             'LIMIT %s) t1 ',
+            most_visited_translation_from(
+                extra_joins='LEFT JOIN wiki_revision curtransrev '
+                            'ON transdoc.current_revision_id=curtransrev.id ' +
+                            extra_joins,
+                extra_where='AND engdoc.category IN (' +
+                            str(TROUBLESHOOTING_CATEGORY) + ',' +
+                            str(HOW_TO_CATEGORY) + ',' +
+                            str(TEMPLATES_CATEGORY) + ')') +
+            'LIMIT %s) t1 ',
         (MEDIUM_SIGNIFICANCE, locale, LAST_30_DAYS) + prod_param +
         (settings.WIKI_DEFAULT_LANGUAGE, TOP_N)) or 0)  # SUM can return NULL.
 
@@ -606,7 +612,8 @@ class MostVisitedTranslationsReadout(MostVisitedDefaultLanguageReadout):
             'transdoc.title, dashboards_wikidocumentvisits.visits, ' +
             MOST_SIGNIFICANT_CHANGE_READY_TO_TRANSLATE + ', ' +
             NEEDS_REVIEW +
-            most_visited_translation_from(extra_joins=extra_joins) +
+            most_visited_translation_from(extra_joins=extra_joins,
+                                          extra_where='') +
             self._limit_clause(max), params)
 
     def _format_row(self, columns):
