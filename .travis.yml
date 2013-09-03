@@ -12,6 +12,6 @@ notifications:
     email: false
     irc:
         channels:
-            - "irc.mozilla.org#sumo-dev"
+            - "irc.mozilla.org#sumodev"
         on_success: always
         on_failure: always
