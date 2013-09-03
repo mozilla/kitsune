@@ -1,9 +1,9 @@
 <div class="author" xmlns="http://www.w3.org/1999/html"
      xmlns="http://www.w3.org/1999/html" xmlns="http://www.w3.org/1999/html">
-  <a class="avatar" href="{{ profile_url(post.author, request.user == post.author) }}">
+  <a class="avatar" href="{{ profile_url(post.author) }}">
     <img src="{{ profile_avatar(post.author) }}" height="45" width="45" alt="{{ post.author }}"/>
   </a>
-  <a class="author-name" href="{{ profile_url(post.author, request.user == post.author) }}">{{ post.author }}</a>
+  <a class="author-name" href="{{ profile_url(post.author) }}">{{ post.author }}</a>
 
   <ul>
     <li>{{ private_message(post.author) }}</li>
