@@ -24,7 +24,8 @@ from kitsune.wiki.config import (
     MEDIUM_SIGNIFICANCE, MAJOR_SIGNIFICANCE,
     TYPO_SIGNIFICANCE, REDIRECT_HTML,
     HOW_TO_CONTRIBUTE_CATEGORY, ADMINISTRATION_CATEGORY,
-    CANNED_RESPONSES_CATEGORY, NAVIGATION_CATEGORY)
+    CANNED_RESPONSES_CATEGORY, NAVIGATION_CATEGORY, TROUBLESHOOTING_CATEGORY,
+    HOW_TO_CATEGORY, TEMPLATES_CATEGORY)
 
 
 log = logging.getLogger('k.dashboards.readouts')
@@ -268,8 +269,10 @@ def overview_rows(locale, product=None):
                 extra_joins='LEFT JOIN wiki_revision curtransrev '
                             'ON transdoc.current_revision_id=curtransrev.id ' +
                             extra_joins,
-                extra_where='AND NOT engdoc.category IN (' +
-                            str(HOW_TO_CONTRIBUTE_CATEGORY) + ')') +
+                extra_where='AND engdoc.category IN (' +
+                            str(TROUBLESHOOTING_CATEGORY) + ',' +
+                            str(HOW_TO_CATEGORY) + ',' +
+                            str(TEMPLATES_CATEGORY) + ')') +
             'LIMIT %s) t1 ',
         (MEDIUM_SIGNIFICANCE, locale, LAST_30_DAYS) + prod_param +
         (settings.WIKI_DEFAULT_LANGUAGE, TOP_N)) or 0)  # SUM can return NULL.
