@@ -704,6 +704,8 @@ def browserid_signup(request):
                 group = Group.objects.get(name=CONTRIBUTOR_GROUP)
                 user.groups.add(group)
 
+                user.save()
+
                 @email_utils.safe_translation
                 def _make_mail(locale):
                     mail = email_utils.make_mail(
