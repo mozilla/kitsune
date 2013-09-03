@@ -204,6 +204,21 @@ class OverviewTests(TestCase):
         eq_(0, overview['all']['numerator'])
         eq_(0, overview['most-visited']['numerator'])
 
+    def test_not_counting_how_to_contribute(self):
+        """Articles with the How to contribute category should not be counted.
+        """
+        t = translated_revision(is_approved=True, save=True)
+        overview = overview_rows('de')
+        eq_(1, overview['most-visited']['numerator'])
+
+        # Update the parent with the How To Contribute category
+        d = t.document.parent
+        d.category = HOW_TO_CONTRIBUTE_CATEGORY
+        d.save()
+
+        overview = overview_rows('de')
+        eq_(0, overview['most-visited']['numerator'])
+
     def test_not_counting_untranslated(self):
         """Translations with no approved revisions shouldn't count as done.
         """
