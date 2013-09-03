@@ -662,10 +662,12 @@ def browserid_verify(request):
                 user = User.objects.filter(email=email)
 
                 if len(user) == 0:
+                    contributor = 'contributor' in request.POST
                     form = BrowserIDSignupForm()
                     request.session['browserid-email'] = email
                     return render(request, 'users/browserid_signup.html',
-                                  {'email': email, 'next': next, 'form': form})
+                                  {'email': email, 'next': next, 'form': form,
+                                   'contributor': contributor})
                 else:
                     user = user[0]
                     user.backend = 'django_browserid.auth.BrowserIDBackend'
@@ -684,6 +686,7 @@ def browserid_signup(request):
     redirect_to_failure = getattr(settings, 'LOGIN_REDIRECT_URL_FAILURE', '/')
 
     email = request.session.get('browserid-email', None)
+    contributor = 'contributor' in request.POST
 
     if email:
         form = BrowserIDSignupForm(request.REQUEST)
@@ -697,7 +700,7 @@ def browserid_signup(request):
             Profile.objects.create(user=user, locale=request.LANGUAGE_CODE)
 
             # Check if the user should be added to the contributor group
-            if 'contributor' in request.POST:
+            if contributor:
                 group = Group.objects.get(name=CONTRIBUTOR_GROUP)
                 request.user.groups.add(group)
 
@@ -722,6 +725,7 @@ def browserid_signup(request):
             return redirect(redirect_to)
         else:
             return render(request, 'users/browserid_signup.html',
-                          {'email': email, 'next': next, 'form': form})
+                          {'email': email, 'next': next, 'form': form,
+                           'contributor': contributor})
 
     return redirect(redirect_to_failure)

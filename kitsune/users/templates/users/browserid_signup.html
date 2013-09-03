@@ -16,6 +16,9 @@
 
   <form method="post" action="{{ url('users.browserid_signup') }}">
     <input type="hidden" name="next" value="{{ next }}">
+    {% if contributor %}
+      <input type="hidden" name="contributor" value="1">
+    {% endif %}
     {{ form }}
     {{ csrf() }}
     <p><button type="submit" class="btn btn-submit">{{ _('Continue') }}</button></p>
