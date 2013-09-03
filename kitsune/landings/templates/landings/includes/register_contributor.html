@@ -10,7 +10,7 @@
           </form>
         {% else %}
           {% if waffle.flag('browserid') %}
-            <form id="gi-browserid-form" action="{{ request.get_full_path() }}" method="post">
+            <form id="gi-browserid-form" action="{{ url('users.browserid_verify') }}" method="post">
               <input type="hidden" name="contributor" value="1">
               {{ browserid_form }}
             </form>
