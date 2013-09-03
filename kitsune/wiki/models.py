@@ -1095,8 +1095,8 @@ class DocumentLink(ModelBase):
     class Meta:
         unique_together = ('linked_from', 'linked_to')
 
-    def __repr__(self):
-        return ('<DocumentLink: %s from %r to %r>' %
+    def __unicode__(self):
+        return (u'<DocumentLink: %s from %r to %r>' %
                 (self.kind, self.linked_from, self.linked_to))
 
 
