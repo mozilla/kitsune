@@ -702,7 +702,7 @@ def browserid_signup(request):
             # Check if the user should be added to the contributor group
             if contributor:
                 group = Group.objects.get(name=CONTRIBUTOR_GROUP)
-                request.user.groups.add(group)
+                user.groups.add(group)
 
                 @email_utils.safe_translation
                 def _make_mail(locale):
