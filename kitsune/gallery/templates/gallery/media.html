@@ -52,7 +52,11 @@
           {% endif %}
         </ul>
         <ul id="media-meta" class="cf">
-          <li class="creator">{{ _('by {user}')|f(user=media.creator) }}</li>
+          <li class="creator">
+              {{ _('by <a href="{profile_url}">{user}</a>')|fe
+                      (profile_url=profile_url(media.creator),
+                      user=media.creator) }}
+          </li>
           <li class="created">{{ _('Uploaded {date}')|fe(date=datetimeformat(media.created, format='datetime')) }}</li>
           <li class="locale">{{ settings.LANGUAGES[media.locale.lower()] }}</li>
         </ul>
