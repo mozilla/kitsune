@@ -29,7 +29,8 @@
     {% if answer.id %}
       <div class="asked-on">
         {{ _('Posted') }}<br>
-        {{ datetimeformat(answer.created) }}
+        <a href="{{answer.get_absolute_url()}}"> {{ datetimeformat(answer
+                .created) }} </a>
       </div>
     {% endif %}
   </div>
