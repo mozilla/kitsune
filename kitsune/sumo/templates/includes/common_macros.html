@@ -51,7 +51,7 @@
     {% else %}
       {% if waffle.flag('browserid') %}
         <li>
-          {{ browserid_login(text=_('Sign in with email'), next=request.get_full_path()) }}
+          {{ browserid_login(text=_('Sign in with email'), next=(request.get_full_path() if not next_url else next_url)) }}
           <div class="doorhanger">
             <p><strong>{{ _("What's this") }}</strong></p>
             <p>
