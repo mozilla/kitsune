@@ -49,9 +49,9 @@ the output of::
 for the app that you made changes to, then editing that down to the
 bits needed.
 
-.. Note::
+1. Remove the ``BEGIN`` and ``COMMIT`` lines.
 
-   If you have CREATE TABLE statements, make sure they end with setting
+2. If you have CREATE TABLE statements, make sure they end with setting
    the engine to InnoDB. For example::
 
        CREATE TABLE `topics_topic` (
@@ -65,21 +65,17 @@ bits needed.
            `visible` bool NOT NULL
        ) ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_general_ci;
 
+3. If you created new models, make sure to insert the content type and
+   default permissions. For example, something like this::
 
-.. Note::
-
-   If you created new models, make sure to insert the content type and
-   default permissions. e.g. Something like this::
-
-      INSERT INTO django_content_type (name, app_label, model) VALUES
-          ('record', 'search', 'record');
-      SET @ct = (SELECT id from django_content_type WHERE app_label='search'
-          and model='record');
-      INSERT INTO auth_permission (name, content_type_id, codename) VALUES
-          ('Can add record', @ct, 'add_record'),
-          ('Can change record', @ct, 'change_record'),
-          ('Can delete record', @ct, 'delete_record'),
-          ('Can run a full reindexing', @ct, 'reindex');
+       INSERT INTO django_content_type (name, app_label, model) VALUES
+           ('record', 'search', 'record');
+       SET @ct = (SELECT id from django_content_type WHERE app_label='search'
+           and model='record');
+       INSERT INTO auth_permission (name, content_type_id, codename) VALUES
+           ('Can add record', @ct, 'add_record'),
+           ('Can change record', @ct, 'change_record'),
+           ('Can delete record', @ct, 'delete_record');
 
 
 Testing a migration
