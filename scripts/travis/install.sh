@@ -16,7 +16,7 @@ echo "Installing Node.js dependencies"
 npm install
 
 echo "Extracting ElasticSearch"
-tar xzvf elasticsearch-0.20.5.tar.gz
+tar xzvf vendor/tarballs/elasticsearch-0.20.5.tar.gz
 
 echo "Building Redis"
 tar xzvf vendor/tarballs/redis-2.4.11.tar.gz
