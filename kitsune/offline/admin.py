@@ -45,9 +45,13 @@ def offline_admin(request):
 
         bundle['hash'] = redis.hget(key, 'hash')
 
-        updated = float(redis.hget(key, 'updated'))
-        updated = datetime.datetime.fromtimestamp(updated)
-        bundle['updated'] = updated.strftime('%Y-%m-%d %H:%M:%S')
+        updated = redis.hget(key, 'updated')
+        if updated is not None:
+            updated = float(redis.hget(key, 'updated'))
+            updated = datetime.datetime.fromtimestamp(updated)
+            bundle['updated'] = updated.strftime('%Y-%m-%d %H:%M:%S')
+        else:
+            bundle['updated'] = 'N/A'
 
         bundle['size'] = round(len(redis.hget(key, 'bundle')) / 1024.0, 2)
         totalsize += bundle['size']
