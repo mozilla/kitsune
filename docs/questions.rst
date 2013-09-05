@@ -1,6 +1,6 @@
-======
+=========
 Questions
-======
+=========
 
 This document explains what kinds of question states exist in Kitsune,
 how they are set and their implications.
@@ -12,6 +12,8 @@ Not yet posted
 --------------
 Questions are created within the `Ask a question` workflow,
 but they are not shown in question listings until the user is confirmed.
+With Persona for authentication this status is impossible,
+since email addresses are confirmed right away.
 
 
 Default
@@ -34,7 +36,7 @@ This is the locked state of a thread. A thread can be locked in two ways:
 
 Implications:
 1. Users can't reply
-2. Moderators can reply
+2. Moderators can unlock to reply
 3. If there is an answer, the locked thread is still shown by search
 engines and our internal search.
 4. If there is no answer, the locked thread will not be shown by search
