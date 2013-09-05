@@ -16,6 +16,13 @@ from kitsune.wiki.tests import document, revision
 
 class OfflineViewTests(TestCase):
 
+    def setUp(self):
+        super(OfflineViewTests, self).setUp()
+        try:
+            redis_client('default').flushdb()
+        except RedisError:
+            raise SkipTest
+
     def _create_bundle(self, prod, locale=settings.WIKI_DEFAULT_LANGUAGE):
         p = product(title=prod, save=True)
         t = topic(title='topic1', product=p, save=True)
@@ -51,10 +58,7 @@ class OfflineViewTests(TestCase):
             d.parent = parent(i)
             d.save()
 
-        try:
-            build_kb_bundles((prod, ))
-        except RedisError:
-            pass  # do nothing as we should gracefully fallback.
+        build_kb_bundles((prod, ))
 
     def test_get_single_bundle(self):
         self._create_bundle('firefox', 'en-US')
@@ -98,11 +102,6 @@ class OfflineViewTests(TestCase):
         self._create_bundle('firefox', 'en-US')
         url = (reverse('offline.bundle_meta') +
                '?locale=en-US&product=firefox')
-
-        try:
-            redis_client('default')
-        except RedisError:
-            raise SkipTest
 
         resp = self.client.get(url, follow=True)
 
