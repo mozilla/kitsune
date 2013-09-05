@@ -11,9 +11,6 @@ after_success: scripts/travis/success.sh
 after_failure: scripts/travis/failure.sh
 after: scripts/travis/after.sh
 
-env:
-  - ES_VERSION=0.20.5 REDIS_VERSION=2.4.11
-
 notifications:
     email: false
     irc:

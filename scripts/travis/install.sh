@@ -15,13 +15,11 @@ pip install -r requirements/compiled.txt
 echo "Installing Node.js dependencies"
 npm install
 
-echo "Getting ElasticSearch"
-wget "https://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-${ES_VERSION}.tar.gz"
-tar xzvf elasticsearch-${ES_VERSION}.tar.gz
+echo "Extracting ElasticSearch"
+tar xzvf vendor/tarballs/elasticsearch-0.20.5.tar.gz
 
-echo "Getting Redis"
-wget "http://redis.googlecode.com/files/redis-${REDIS_VERSION}.tar.gz"
-tar xzvf redis-${REDIS_VERSION}.tar.gz
-pushd redis-${REDIS_VERSION}
+echo "Building Redis"
+tar xzvf vendor/tarballs/redis-2.4.11.tar.gz
+pushd redis-2.4.11
   make
 popd

@@ -1,0 +1,5 @@
+These files are for times when we need to automaticall set up a new
+environment, and don't want to spend the time to download packages, or
+want to be nice to the servers.
+
+Currently this is limited to automated testing via TravisCI.
