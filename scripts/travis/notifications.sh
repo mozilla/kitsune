@@ -6,6 +6,12 @@ date
 
 # This is ... lets not talk about how silly this is.
 # IRC Notifications are started first, so that the notifications come promptly.
+#
+# This uses ii, a odd irc client that maps channels and servers to the
+# filesystem. See http://tools.suckless.org/ii/ for more details.
+#
+# This uses a bunch of Travis environment variables, which are documented at
+# http://about.travis-ci.org/docs/user/ci-environment/
 
 # In case this script bails early, define a no-op irc script.
 echo "#!/bin/bash" > ./irc
@@ -21,9 +27,8 @@ if [ $TRAVIS_REPO_SLUG != "mozilla/kitsune" ]; then
   _die "Wrong repo."
 fi
 
-echo "Getting ii"
-wget "http://dl.suckless.org/tools/ii-1.7.tar.gz"
-tar xzvf ii-1.7.tar.gz
+echo "Installing ii"
+tar xzvf scripts/travis/ii-1.7.tar.gz
 pushd ii-1.7
   make
 popd
