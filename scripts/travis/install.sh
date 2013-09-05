@@ -16,10 +16,10 @@ echo "Installing Node.js dependencies"
 npm install
 
 echo "Extracting ElasticSearch"
-tar xzvf elasticsearch-*.tar.gz
+tar xzvf elasticsearch-0.20.5.tar.gz
 
 echo "Building Redis"
-tar xzvf vendor/tarballs/redis-*.tar.gz
-pushd redis-${REDIS_VERSION}
+tar xzvf vendor/tarballs/redis-2.4.11.tar.gz
+pushd redis-2.4.11
   make
 popd
