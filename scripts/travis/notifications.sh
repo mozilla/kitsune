@@ -28,7 +28,7 @@ if [ $TRAVIS_REPO_SLUG != "mozilla/kitsune" ]; then
 fi
 
 echo "Installing ii"
-tar xzvf scripts/travis/ii-1.7.tar.gz
+tar xzvf vendor/tarballs/ii-1.7.tar.gz
 pushd ii-1.7
   make
 popd
