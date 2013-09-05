@@ -4,4 +4,4 @@ set -e
 
 echo "Failure!"
 
-./irc "Travis build #${TRAVIS_BUILD_NUMBER} FAILED."
+./irc "Travis FAILURE for build ${TRAVIS_REPO_SLUG}/${TRAVIS_BRANCH} #${TRAVIS_BUILD_NUMBER}."

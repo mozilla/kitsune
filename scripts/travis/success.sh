@@ -4,4 +4,4 @@ set -e
 
 echo "Success!"
 
-./irc "Travis build #${TRAVIS_BUILD_NUMBER} SUCCESS."
+./irc "Travis SUCCESS for build ${TRAVIS_REPO_SLUG}/${TRAVIS_BRANCH} #${TRAVIS_BUILD_NUMBER}."
