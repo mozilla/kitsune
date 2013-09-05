@@ -6,14 +6,13 @@ from kitsune.users.tests import profile
 
 @with_save
 def award(**kwargs):
-    # TODO: factory for award
     defaults = {
         'description': u'An award!',
     }
     defaults.update(kwargs)
 
     if 'badge' not in defaults:
-        defaults['badge'] = badge(with_save=True)
+        defaults['badge'] = badge(save=True)
 
     if 'user' not in defaults:
         defaults['user'] = profile().user
