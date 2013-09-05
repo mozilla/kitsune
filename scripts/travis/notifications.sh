@@ -69,7 +69,7 @@ echo 'echo "$@" | tee irc.mozilla.org/#sumodev/in' >> ./irc
 if [ $TRAVIS_PULL_REQUEST == 'false' ]; then
   ./irc "Travis #${TRAVIS_BUILD_NUMBER} starting for ${TRAVIS_REPO_SLUG} branch ${TRAVIS_BRANCH} (${TRAVIS_COMMIT:0:8})"
 else
-  ./irc "Travis #${TRAVIS_BUILD_NUMBER} starting for ${TRAVIS_REPO_SLUG} pull request #${TRAVIS_PULL_REQUEST}"
+  ./irc "Travis #${TRAVIS_BUILD_NUMBER} starting for ${TRAVIS_REPO_SLUG} pull #${TRAVIS_PULL_REQUEST}"
 fi
 ./irc "https://travis-ci.org/mozilla/kitsune/builds/${TRAVIS_BUILD_ID}"
 
