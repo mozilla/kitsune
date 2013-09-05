@@ -18,3 +18,4 @@ docs/_build
 *.less.css
 .DS_Store
 james.ini
+.vagrant
