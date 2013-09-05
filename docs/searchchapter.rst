@@ -338,7 +338,7 @@ It scores as specified above.
 
 
 Ask A Question search
-----------
+---------------------
 
 An `Ask a question` or `AAQ` search is any search that is performed within
 the AAQ workflow. The only difference to `regular` search is that `AAQ`
