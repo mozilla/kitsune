@@ -12,6 +12,7 @@ echo "#!/bin/bash" > ./irc
 chmod +x ./irc
 function _die() {
   echo "No irc notifications" $@
+  [ -f irc.mozilla.org/out ] && cat irc.mozilla.org/out
   exit 0
 }
 
@@ -32,6 +33,7 @@ irc_nick="sumo_travis$(date +%N | cut -c1-3)"
 ii-1.7/ii -s irc.mozilla.org -i . -n $irc_nick &
 
 for i in $(seq 0 30); do
+  echo -n "$i "
   if [ $i -ge 30 ]; then
     _die "Timeout."
   fi
