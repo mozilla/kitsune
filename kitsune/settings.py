@@ -450,6 +450,8 @@ TEMPLATE_DIRS = (
 # TODO: Figure out why changing the order of apps (for example, moving
 # taggit higher in the list) breaks tests.
 INSTALLED_APPS = (
+    # south needs to come early so tests don't fail
+    'south',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
