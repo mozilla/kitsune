@@ -47,6 +47,12 @@ class ModelBase(caching.base.CachingMixin, models.Model):
                                           created=False)
 
 
+# This adds rules that South needs for introspection so it can do
+# migrations correctly.
+from south.modelsinspector import add_introspection_rules
+add_introspection_rules([], ["^kitsune\.sumo\.models\.LocaleField"])
+
+
 class LocaleField(models.CharField):
     """CharField with locale settings specific to SUMO defaults."""
     def __init__(self, max_length=7, default=settings.LANGUAGE_CODE,
