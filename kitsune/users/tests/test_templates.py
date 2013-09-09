@@ -15,6 +15,7 @@ from nose.tools import eq_
 from pyquery import PyQuery as pq
 
 from kitsune.flagit.models import FlaggedObject
+from kitsune.kbadge.tests import award, badge
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.helpers import urlparams
 from kitsune.sumo.tests import post, get
@@ -407,6 +408,15 @@ class ViewProfileTests(TestCaseBase):
 
         r = self.client.get(reverse('users.profile', args=[self.u.id]))
         assert 'Deactivate this user' not in r.content
+
+    def test_badges_listed(self):
+        """Verify that awarded badges appear on the profile page."""
+        badge_title = 'awesomesauce badge'
+        b = badge(title=badge_title, save=True)
+        u = profile().user
+        award(user=u, badge=b, save=True)
+        r = self.client.get(reverse('users.profile', args=[u.id]))
+        assert badge_title in r.content
 
 
 class PasswordChangeTests(TestCaseBase):

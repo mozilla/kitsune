@@ -1,0 +1,18 @@
+{% macro awards_list(awards) -%}
+  <ul>
+    {% for award in awards %}
+      {% if award.image %}
+        {% set award_image = award.image.url %}
+      {% elif award.badge.image %}
+        {% set award_image = award.badge.image.url %}
+      {% else %}
+        {% set award_image = STATIC_URL + 'kbadge/img/default-badge.png' %}
+      {% endif %}
+      <li>
+        <a href="{{ award.get_absolute_url() }}" title="{{ award.badge.title }}">
+          <img src="{{ award_image }}" alt="{{ award.badge.title }}" />
+        </a>
+      </li>
+    {% endfor %}
+  </ul>
+{%- endmacro %}

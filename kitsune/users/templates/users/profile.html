@@ -1,5 +1,6 @@
 {% extends "users/base.html" %}
 {% from "wiki/includes/flag_form.html" import flag_form with context %}
+{% from "kbadge/includes/macros.html" import awards_list with context %}
 
 {% set title = _('{user} | Profile')|f(user=profile.user.username) %}
 {% set classes = 'profile' %}
@@ -140,6 +141,13 @@
               <li>{{ group_link(g) }}</li>
             {% endfor %}
           </ul>
+        </section>
+      {% endif %}
+      {% set awards = user_awards(profile.user) %}
+      {% if awards %}
+        <section class="badges cf">
+          <h2>{{ _('Badges') }}</h2>
+          {{ awards_list(awards) }}
         </section>
       {% endif %}
     </article>
