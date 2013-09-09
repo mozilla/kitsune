@@ -1,4 +1,5 @@
 {% extends 'mobile/base.html' %}
+{% from "kbadge/includes/macros.html" import awards_list with context %}
 
 {% set headline = profile.user.username %}
 {% set title = headline %}
@@ -91,6 +92,16 @@
         {% for g in groups %}
           <div class="detail">{{ group_link(g) }}</div>
         {% endfor %}
+      </section>
+    {% endif %}
+
+    {% set awards = user_awards(profile.user) %}
+    {% if awards %}
+      <section class="badges cf">
+        <header>{{ _('Badges') }}</header>
+        <div class="detail">
+          {{ awards_list(awards) }}
+        </div>
       </section>
     {% endif %}
   </div>
