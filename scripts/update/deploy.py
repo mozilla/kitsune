@@ -42,9 +42,15 @@ def update_assets(ctx):
 
 
 @task
-def schematic(ctx):
+def db_migrations(ctx):
     with ctx.lcd(settings.SRC_DIR):
+        # This is a no-op after the final 232 migration. We should
+        # remove this at some point once we think all environments and
+        # contributors have updated.
         ctx.local("python2.6 ./vendor/src/schematic/schematic migrations")
+
+        # This performs South migrations.
+        ctx.local("python2.6 manage.py migrate")
 
 
 @task
@@ -86,7 +92,9 @@ def update_info(ctx):
         ctx.local("git log -3")
         ctx.local("git status")
         ctx.local("git submodule status")
+        # TODO: Nix this when we nix schematic.
         ctx.local("python2.6 ./vendor/src/schematic/schematic -v migrations/")
+        ctx.local("python2.6 manage.py migrate --list")
         with ctx.lcd("locale"):
             ctx.local("svn info")
             ctx.local("svn status")
@@ -104,7 +112,7 @@ def pre_update(ctx, ref=settings.UPDATE_REF):
 def update(ctx):
     update_assets()
     update_locales()
-    schematic()
+    db_migrations()
 
 
 @task
