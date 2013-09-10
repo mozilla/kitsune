@@ -50,7 +50,7 @@ def db_migrations(ctx):
         ctx.local("python2.6 ./vendor/src/schematic/schematic migrations")
 
         # This performs South migrations.
-        ctx.local("python2.6 mange.py migrate")
+        ctx.local("python2.6 manage.py migrate")
 
 
 @task
