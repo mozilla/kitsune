@@ -9,10 +9,10 @@ Changes that involve database migrations
 ========================================
 
 Any changes to the database (model fields, model field data, adding
-permissions, ...) need a migration.
+permissions, ...) require a migration.
 
-We use `schematic <https://github.com/jbalogh/schematic>`_ for
-migrations.
+We use `South <http://south.readthedocs.org/en/latest/index.html>`_
+for migrations.
 
 
 Running migrations
@@ -20,70 +20,63 @@ Running migrations
 
 To run migrations, you do::
 
-    ./vendor/src/schematic/schematic migrations/
+    $ ./manage.py migrate
 
-It'll perform any migrations that haven't been performed, yet.
+It'll perform any migrations that haven't been performed for all apps.
+
+
+Setting up an app for migrations
+--------------------------------
+
+New apps need to have the migration structure initialized. To do that,
+do::
+
+    $ ./manage.py schemamigration <appname> --initial
 
 
 Creating a new migration
 ------------------------
 
-Each migration increases the schema version number by 1. You can
-figure out which schema your database is running by doing::
+There are two kinds of migrations: schema migrations and data
+migrations.
 
-    ./vendor/src/schematic/schematic -v migrations
+To create a new schema migration, do::
 
-Migrations are stored in files in ``migrations/``.
-
-To create a new migration, you'll create a new file in the
-``migrations/`` directory. The first part of the filename is the
-schema version number. Then a dash. Then some name that indicates what
-the migration is for. See the directory for examples.
-
-There are a bunch of ways to create the substance of the file. It
-depends on what it is you're trying to do. One way is to base it on
-the output of::
-
-    ./manage.py sqlall <appname>
-
-for the app that you made changes to, then editing that down to the
-bits needed.
-
-1. Remove the ``BEGIN`` and ``COMMIT`` lines.
-
-2. If you have CREATE TABLE statements, make sure they end with setting
-   the engine to InnoDB. For example::
-
-       CREATE TABLE `topics_topic` (
-           `id` integer AUTO_INCREMENT NOT NULL PRIMARY KEY,
-           `title` varchar(255) NOT NULL,
-           `slug` varchar(50) NOT NULL,
-           `description` longtext NOT NULL,
-           `image` varchar(250),
-           `parent_id` integer,
-           `display_order` integer NOT NULL,
-           `visible` bool NOT NULL
-       ) ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_general_ci;
-
-3. If you created new models, make sure to insert the content type and
-   default permissions. For example, something like this::
-
-       INSERT INTO django_content_type (name, app_label, model) VALUES
-           ('record', 'search', 'record');
-       SET @ct = (SELECT id from django_content_type WHERE app_label='search'
-           and model='record');
-       INSERT INTO auth_permission (name, content_type_id, codename) VALUES
-           ('Can add record', @ct, 'add_record'),
-           ('Can change record', @ct, 'change_record'),
-           ('Can delete record', @ct, 'delete_record');
+    $ ./manage.py schemamigration <appname> --auto
 
 
-Testing a migration
--------------------
+South can figure out a lot of it for you. You can see the list of
+things it'll probably get right `in the South autodetector docs
+<http://south.readthedocs.org/en/latest/autodetector.html#autodetector-supported-actions>`_.
 
-You can dump your db to a file to save its state, then run the
-migrations. That way if the migration has bugs, you can restore your
-database.
+For everything else, you can run the auto and then tweak the migration.
+
+To create a new data migration, do::
+
+    $ ./manage.py datamigration <appname>
+
+
+For obvious reasons, there is no "auto" mode for data migrations.
+
+
+More about migrations
+---------------------
+
+Definitely read the chapter of the South tutorial on `teams and
+workflow
+<http://south.readthedocs.org/en/latest/tutorial/part5.html>`_.
+That'll answer a lot of questions about how to write and test
+migrations.
+
+For many of your questions, `the South tutorial
+<http://south.readthedocs.org/en/latest/tutorial/index.html>`_
+contains the answers.
+
+For other questions, definitely check out the `South documentation
+<http://south.readthedocs.org/en/latest/index.html>`_.
+
+For questions that aren't answered there, ask someone and/or try
+Googling the answer.
 
 
 Changes that involve reindexing
