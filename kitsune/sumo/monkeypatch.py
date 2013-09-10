@@ -82,3 +82,8 @@ jingo.monkey.patch()
 # Monkey patch django's csrf
 import session_csrf
 session_csrf.monkeypatch()
+
+
+# Load jingo helpers
+from jingo import load_helpers
+load_helpers()
