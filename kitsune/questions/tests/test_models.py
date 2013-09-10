@@ -532,10 +532,10 @@ class QuestionVisitsTests(TestCase):
         }
 
         QuestionVisits.reload_from_analytics()
-        eq_(3, QuestionVisits.objects.count())
-        eq_(42, QuestionVisits.objects.get(question_id=q1.id).visits)
-        eq_(27, QuestionVisits.objects.get(question_id=q2.id).visits)
-        eq_(1337, QuestionVisits.objects.get(question_id=q3.id).visits)
+        eq_(3, QuestionVisits.uncached.count())
+        eq_(42, QuestionVisits.uncached.get(question_id=q1.id).visits)
+        eq_(27, QuestionVisits.uncached.get(question_id=q2.id).visits)
+        eq_(1337, QuestionVisits.uncached.get(question_id=q3.id).visits)
 
         # Change the data and run again to cover the update case.
         pageviews_by_question.return_value = {
