@@ -552,18 +552,26 @@ class QuestionVisits(ModelBase):
             for question_id, visits in counts.iteritems():
                 # We are trying to minimize db calls here. Let's try to update
                 # first, that will be the common case.
-                num = cls.objects.filter(
+                num = cls.uncached.filter(
                     question_id=question_id).update(visits=visits)
 
                 # If we were able to update, we are done.
                 if num > 0:
                     continue
-
                 # If it doesn't exist yet, create it.
                 try:
-                    cls.objects.create(
+                    # For some reason unbeknowest to me,
+                    # IntegrityError doesn't get kicked up in the
+                    # QuestionVisits tests when running the tests with
+                    # a clean db. So to deal with that, we explicitly
+                    # check the db to see if the question exists.
+                    # This happens with Django 1.4.6 and South
+                    # 0.8.2. If we update either, we might want to see
+                    # if this is still a problem.
+                    Question.uncached.get(pk=question_id)
+                    cls.uncached.create(
                         question_id=question_id, visits=visits)
-                except IntegrityError:
+                except (Question.DoesNotExist, IntegrityError):
                     # The question doesn't exist anymore, move on.
                     continue
         else:
