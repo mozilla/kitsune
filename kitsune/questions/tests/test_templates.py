@@ -198,14 +198,14 @@ class AnswersTemplateTestCase(TestCaseBase):
                        args=[self.question.id])
         eq_(405, response.status_code)
 
-    def common_vote(self):
+    def common_vote(self, me_too_count=1):
         """Helper method for question vote tests."""
         # Check that there are no votes and vote form renders
         response = get(self.client, 'questions.answers',
                        args=[self.question.id])
         doc = pq(response.content)
         assert '0\n' in doc('.have-problem')[0].text
-        eq_(1, len(doc('div.me-too form')))
+        eq_(me_too_count, len(doc('div.me-too form')))
 
         # Vote
         ua = 'Mozilla/5.0 (DjangoTestClient)'
@@ -241,7 +241,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         self.client.logout()
 
         # Common vote test
-        self.common_vote()
+        self.common_vote(2)
 
     def common_answer_vote(self):
         """Helper method for answer vote tests."""

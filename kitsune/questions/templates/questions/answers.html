@@ -349,19 +349,11 @@
       </div>
     {% endif %}
     {% if not question.is_locked %}
-      <div class="answer-tools nopadding">
-        <h3>{{ _('Post a Reply') }}</h3>
-        {% if not user.is_authenticated() %}
-          <p>
-            {{ _('You must <a href="{url}">log in to your account</a> to reply to posts.')|fe(url=url('users.login')) }}
-          </p>
-          <p>
-            {{ _("Don't have an account? You can <a href='{url}'>create a free account</a> now.")|fe(url=url('users.register')) }}
-          </p>
-        {% endif %}
-      </div>
 
       {% if user.is_authenticated() %}
+        <div class="answer-tools nopadding">
+          <h3>{{ _('Post a Reply') }}</h3>
+        </div>
         <form action="{{ url('questions.reply', question_id=question.id) }}#question-reply" method="post" enctype="multipart/form-data">
           {{ csrf() }}
           {{ errorlist(form) }}
@@ -380,6 +372,29 @@
               data-preview-content-id="id_content" />
           </div>
         </form>
+      {% else %}
+        <div class="question-tools nopadding">
+          {% if request.LANGUAGE_CODE in settings.AAQ_LANGUAGES %}
+            {% set ask_url = url('questions.aaq_step1') %}
+          {% else %}
+            {% set ask_url = url('wiki.document', 'get-community-support') %}
+          {% endif %}
+
+          <div class="cf">
+            {% if not question.has_voted(request) %}
+              <div class="me-too">
+                <form action="{{ url('questions.vote', question_id=question.id) }}" method="post">
+                  <button class="btn big" type="submit">{{ _('I have this problem, too') }}</button>
+                </form>
+              </div>
+            {% endif %}
+            <a class="btn" href="{{ ask_url }}">{{ _('Ask a question') }}</a>
+          </div>
+
+          <p>
+            {{ _("If you want to join us in helping users, <a href='{url}'>sign up as a contributor</a>.")|fe(url=url('landings.get_involved_questions')) }}
+          </p>
+        </div>
       {% endif %}
     {% endif %}
 
