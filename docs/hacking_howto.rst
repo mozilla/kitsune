@@ -252,26 +252,29 @@ database settings. For example, using the settings above::
     mysql> GRANT ALL ON kitsune.* TO kitsune@localhost IDENTIFIED BY '<YOUR_PASSWORD>';
 
 
-To load the latest database schema, use ``scripts/schema.sql`` and
-``schematic``::
+To initialize the database, do::
 
-    $ mysql -u kitsune -p kitsune < scripts/schema.sql
-    $ ./vendor/src/schematic/schematic migrations/
+    $ ./manage.py syncdb --migrate
 
+
+This will ask you to create a superuser account. Just follow the prompts.
 
 You'll now have an empty but up-to-date database!
 
-Finally, you'll probably want to create a superuser. Just use Django's
-``createsuperuser`` management command::
-
-    $ ./manage.py createsuperuser
-
-
-and follow the prompts. After logging in, you can create a profile for
-the user by going to ``/users/edit`` in your browser.
+After logging in, you can create a profile for the user by going to
+``/users/edit`` in your browser.
 
 See also the :ref:`important wiki documents <wiki-chapter>`
 documentation.
+
+
+Install Sample Data
+-------------------
+
+We include some sample data to get you started. You can install it by
+running this command::
+
+    $ ./manage.py generatedata
 
 
 Product Details Initialization
@@ -283,15 +286,6 @@ within its package directory. To set this up, run this command to do
 the initial fetch::
 
     $ ./manage.py update_product_details
-
-
-Install Sample Data
--------------------
-
-We include some sample data to get you started. You can install it by
-running this command::
-
-    $ ./manage.py generatedata
 
 
 Testing it out
