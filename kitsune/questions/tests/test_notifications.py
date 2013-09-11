@@ -55,12 +55,12 @@ ANSWER_EMAIL_TO_ASKER = """Hi {asker},
 
 {replier} has posted an answer to your question on testserver:
 {title}
-https://testserver/en-US/questions/{question_id}#answer-{answer_id}
 
 {replier} wrote:
 "{content}"
 
-See the answer on the website, and let us know if it didn't solve your problem:
+If this doesn't solve your problem, let {replier} know by replying on the
+website:
 https://testserver/en-US/questions/{question_id}#answer-{answer_id}
 
 If this answer solves your problem, please mark it as "solved":"""
