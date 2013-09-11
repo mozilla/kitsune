@@ -19,3 +19,8 @@ REDIS_BACKENDS = {
 
 # Some cron jobs are skipped on stage.
 STAGE = False
+
+# This quells south's crazy debug logging
+import logging
+import south.logger
+logging.getLogger('south').setLevel(logging.INFO)
