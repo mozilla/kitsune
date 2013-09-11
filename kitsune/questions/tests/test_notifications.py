@@ -59,8 +59,7 @@ ANSWER_EMAIL_TO_ASKER = """Hi {asker},
 {replier} wrote:
 "{content}"
 
-If this doesn't solve your problem, let {replier} know by replying on the
-website:
+If this doesn't solve your problem, let {replier} know by replying on the website:
 https://testserver/en-US/questions/{question_id}#answer-{answer_id}
 
 If this answer solves your problem, please mark it as "solved":"""
