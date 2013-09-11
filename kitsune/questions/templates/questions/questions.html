@@ -54,9 +54,12 @@
     {% if tags %}
       <div id="tagged">
         {{ _('Showing questions tagged:') }}
+          <ul>
         {% for tag in tags -%}
-        <a class="tag" href="{{ questions_url(tagged=tags_to_text(tags|remove(tag))) }}">{{ tag.name }}</a>
+        <li><a class="tag" href="{{ questions_url(tagged=tags_to_text
+                (tags|remove(tag))) }}">{{ tag.name }}</a></li>
         {%- endfor %}
+          </ul>
         <a class="show-all" href="{{ questions_url(tagged=None) }}">{{ _('Show all questions') }}</a>
       </div>
     {% endif %}
