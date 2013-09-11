@@ -19,13 +19,14 @@
 
   <p>{{ _('{answerer} has posted an answer to your question on {host}:')|f(answerer=answerer, host=host) }}</p>
 
-  <p><a href="https://{{ host }}{{ answer_url }}">{{ question_title }}</a></p>
+  <p>{{ question_title }}</p>
 
   <p>{{ _('{answerer} wrote:')|f(answerer=answerer) }}</p>
 
   <div class="answer">{{ answer_html }}</div>
 
-  <p><a href="https://{{ host }}{{ answer_url }}">{{ _('See the answer.') }}</a></p>
+  <p><a href="https://{{ host }}{{ answer_url }}">
+      {{ _("If this doesn't solve your problem, let {answerer} know by replying on the website.")|f(answerer=answerer) }}</a></p>
 
   <p>
     {% trans url='http://' + host + solution_url %}

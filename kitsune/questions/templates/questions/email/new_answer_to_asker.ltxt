@@ -5,12 +5,12 @@
 
 {{ _('{answerer} has posted an answer to your question on {host}:')|f(answerer=answerer, host=host) }}
 {{ question_title }}
-https://{{ host }}{{ answer_url }}
 
 {{ _('{answerer} wrote:')|f(answerer=answerer) }}
 "{{ answer }}"
 
-{{ _('See the answer:') }}
+{{ _('If this doesn\'t solve your problem, let {answerer} know by replying
+on the website:')|f(answerer=answerer) }}
 https://{{ host }}{{ answer_url }}
 
 {{ _('If this answer solves your problem, please mark it as "solved":') }}
