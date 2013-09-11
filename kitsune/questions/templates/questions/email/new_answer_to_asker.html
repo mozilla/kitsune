@@ -25,7 +25,8 @@
 
   <div class="answer">{{ answer_html }}</div>
 
-  <p><a href="https://{{ host }}{{ answer_url }}">{{ _('See the answer.') }}</a></p>
+  <p><a href="https://{{ host }}{{ answer_url }}">
+      {{ _("See the answer on the website, and let us know if it didn't solve your problem") }}</a></p>
 
   <p>
     {% trans url='http://' + host + solution_url %}

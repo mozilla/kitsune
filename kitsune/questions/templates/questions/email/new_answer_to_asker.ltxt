@@ -10,7 +10,8 @@ https://{{ host }}{{ answer_url }}
 {{ _('{answerer} wrote:')|f(answerer=answerer) }}
 "{{ answer }}"
 
-{{ _('See the answer:') }}
+{{ _('See the answer on the website, and let us know if it didn\'t solve
+your problem:') }}
 https://{{ host }}{{ answer_url }}
 
 {{ _('If this answer solves your problem, please mark it as "solved":') }}

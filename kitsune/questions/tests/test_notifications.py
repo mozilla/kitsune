@@ -60,7 +60,7 @@ https://testserver/en-US/questions/{question_id}#answer-{answer_id}
 {replier} wrote:
 "{content}"
 
-See the answer:
+See the answer on the website, and let us know if it didn't solve your problem:
 https://testserver/en-US/questions/{question_id}#answer-{answer_id}
 
 If this answer solves your problem, please mark it as "solved":"""
