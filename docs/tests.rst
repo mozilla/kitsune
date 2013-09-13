@@ -265,6 +265,8 @@ This creates a virtual X session for Firefox to run in, and sets up all the
 fiddly environment variables to get this working well. The tests will run as
 normal, and no windows will open, if all is working right.
 
+.. _XVFB: http://www.x.org/archive/current/doc/man/man1/Xvfb.1.xhtml
+
 OSX
 ~~~
 
