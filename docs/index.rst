@@ -59,6 +59,7 @@ Part 4: Administration
    groups
    users
    forums
+   badges
 
 Indices and tables
 ==================
