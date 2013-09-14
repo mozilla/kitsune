@@ -7,7 +7,8 @@ from pyquery import PyQuery as pq
 
 from kitsune.sumo.tests import TestCase
 from kitsune.users.helpers import (
-    profile_url, profile_avatar, public_email, display_name, user_list)
+    profile_url, profile_avatar, public_email, display_name, user_list,
+    suggest_username)
 from kitsune.users.tests import profile, user
 
 
@@ -56,3 +57,21 @@ class HelperTestCase(TestCase):
         a = fragment('a')[1]
         assert a.attrib['href'].endswith('400000')
         eq_('testuser3', a.text)
+
+    def test_suggest_username(self):
+        eq_('someuser', suggest_username('someuser@test.com'))
+
+        User.objects.create(username='someuser')
+        suggested = suggest_username('someuser@test.com')
+
+        eq_('someuser1', suggested)
+
+        User.objects.create(username='someuser4')
+        suggested = suggest_username('someuser@test.com')
+        eq_('someuser1', suggested)
+
+        User.objects.create(username='ricky')
+        User.objects.create(username='Ricky1')
+        User.objects.create(username='ricky33')
+        suggested = suggest_username('rIcky@test.com')
+        eq_('rIcky2', suggested)

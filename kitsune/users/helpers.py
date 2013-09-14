@@ -1,4 +1,7 @@
+import bisect
+
 from django.conf import settings
+from django.contrib.auth.models import User
 
 from jinja2 import escape, Markup
 from jingo import register
@@ -65,3 +68,32 @@ def private_message(user):
     msg = _('Private message')
     return Markup(u'<p class="pm"><a href="{url}">{msg}</a></p>'.format(
         url=url, msg=msg))
+
+
+def suggest_username(email):
+    username = email.split('@', 1)[0]
+
+    username_regex = r'^{0}[0-9]*$'.format(username)
+    users = User.objects.filter(username__iregex=username_regex)
+
+    if users.count() > 0:
+        ids = []
+        for u in users:
+            # get the number at the end
+            i = u.username[len(username):]
+
+            # incase there's no number in the case where just the base is taken
+            if i:
+                i = int(i)
+                bisect.insort(ids, i)
+            else:
+                ids.insert(0, 0)
+
+        for index, i in enumerate(ids):
+            if index + 1 < len(ids):
+                if i + 1 != ids[index + 1]:
+                    break
+
+        username = '{0}{1}'.format(username, i + 1)
+
+    return username
