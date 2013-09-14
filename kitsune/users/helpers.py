@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.contrib.auth.models import User
 
 from jinja2 import escape, Markup
 from jingo import register
@@ -65,3 +66,27 @@ def private_message(user):
     msg = _('Private message')
     return Markup(u'<p class="pm"><a href="{url}">{msg}</a></p>'.format(
         url=url, msg=msg))
+
+
+def suggest_username(email):
+    username = email.split('@', 1)[0]
+
+    username_regex = r'^{0}[0-9]*$'.format(username)
+    users = User.objects.filter(username__regex=username_regex)
+
+    if users.count() > 0:
+        max_id = 0
+        for u in users:
+            # get the number at the end
+            i = u.username[len(username):]
+
+            # incase there's no number in the case where just the base is taken
+            if i:
+                i = int(i)
+                if i > max_id:
+                    max_id = i
+
+        max_id += 1
+        username = '{0}{1}'.format(username, max_id)
+
+    return username

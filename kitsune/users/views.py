@@ -38,7 +38,7 @@ from kitsune.users.forms import (
     ProfileForm, AvatarForm, EmailConfirmationForm, AuthenticationForm,
     EmailChangeForm, SetPasswordForm, PasswordChangeForm, SettingsForm,
     ForgotUsernameForm, RegisterForm, PasswordResetForm, BrowserIDSignupForm)
-from kitsune.users.helpers import profile_url
+from kitsune.users.helpers import profile_url, suggest_username
 from kitsune.users.models import (
     CONTRIBUTOR_GROUP, Group, Profile, RegistrationProfile, EmailChange)
 from kitsune.users.utils import (
@@ -667,6 +667,7 @@ def browserid_verify(request):
                 if len(user) == 0:
                     form = BrowserIDSignupForm()
                     request.session['browserid-email'] = email
+                    form.fields['username'].initial = suggest_username(email)
                     return render(request, 'users/browserid_signup.html',
                                   {'email': email, 'next': next, 'form': form,
                                    'contributor': contributor})
@@ -715,6 +716,7 @@ def browserid_signup(request):
 
             return redirect(redirect_to)
         else:
+            form.fields['username'].initial = suggest_username(email)
             return render(request, 'users/browserid_signup.html',
                           {'email': email, 'next': next, 'form': form,
                            'contributor': contributor})
