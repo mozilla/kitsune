@@ -385,6 +385,11 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
     def editable(self):
         return not self.is_locked and not self.is_archived
 
+    @property
+    def age(self):
+        """The age of the question, in seconds."""
+        delta = datetime.now() - self.created
+        return delta.seconds + delta.days * 24 * 60 * 60
 
 
 @register_mapping_type

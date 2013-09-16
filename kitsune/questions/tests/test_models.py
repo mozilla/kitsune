@@ -400,6 +400,33 @@ class QuestionTests(TestCaseBase):
         eq_(None, Question.from_url('/random/url'))
         eq_(None, Question.from_url('/en-US/questions/dashboard/metrics'))
 
+    def test_editable(self):
+        q = question(save=True)
+        assert q.editable  # unlocked/unarchived
+        q.is_archived = True
+        assert not q.editable  # unlocked/archived
+        q.is_locked = True
+        assert not q.editable  # locked/archived
+        q.is_archived = False
+        assert not q.editable  # locked/unarchived
+        q.is_locked = False
+        assert q.editable  # unlocked/unarchived
+
+    def test_age(self):
+        now = datetime.now()
+        ten_days_ago = now - timedelta(days=10)
+        thirty_seconds_ago = now - timedelta(seconds=30)
+
+        q1 = question(created=ten_days_ago, save=True)
+        q2 = question(created=thirty_seconds_ago, save=True)
+
+        # This test relies on datetime.now() being called in the age
+        # property, so this delta check makes it less likely to fail
+        # randomly.
+        assert abs(q1.age - 10 * 24 * 60 * 60) < 2, ('q1.age (%s) != 10 days'
+                                                     % q1.age)
+        assert abs(q2.age - 30) < 2, 'q2.age (%s) != 30 seconds' % q2.age
+
 
 class AddExistingTagTests(TestCaseBase):
     """Tests for the add_existing_tag helper function."""

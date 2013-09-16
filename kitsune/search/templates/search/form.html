@@ -89,6 +89,13 @@
               </div>
 
               <div class="container cf">
+                {{ search_form.is_archived.label_tag() }}
+                <div class="is_archived radios">
+                  {{ search_form.is_archived }}
+                </div>
+              </div>
+
+              <div class="container cf">
                 {{ search_form.is_solved.label_tag() }}
                 <div class="is_solved radios">
                   {{ search_form.is_solved }}

@@ -173,16 +173,18 @@
             {% endif %}
             {% if user.has_perm('questions.archive_question') %}
               <li class="archive">
-                <a data-form="archive-form" data-type="submit">
-                  {% if question.is_archived %}
-                    {{ _('Unarchive this post') }}
-                  {% else %}
-                    {{ _('Archive this post') }}
-                  {% endif %}
-                </a>
-                <form id="archive-form" class="archive" action="{{ url('questions.archive', question.id) }}" method="post">
-                  {{ csrf() }}
-                </form>
+                {% if question.age < 180 * 24 * 60 * 60 %}
+                  <a data-form="archive-form" data-type="submit">
+                    {% if question.is_archived %}
+                      {{ _('Unarchive this post') }}
+                    {% else %}
+                      {{ _('Archive this post') }}
+                    {% endif %}
+                  </a>
+                  <form id="archive-form" class="archive" action="{{ url('questions.archive', question.id) }}" method="post">
+                    {{ csrf() }}
+                  </form>
+                {% endif %}
               </li>
             {% endif %}
             <li class="email">

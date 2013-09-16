@@ -1231,6 +1231,13 @@ class QuestionsTemplateTestCase(TestCaseBase):
         doc = pq(response.content)
         eq_('1007 views', doc('div.views').text())
 
+    def test_no_unarchive_on_old_questions(self):
+        ques = question(save=True,
+                        created=(datetime.now() - timedelta(days=200)),
+                        is_archived=True)
+        response = get(self.client, 'questions.answers', args=[ques.id])
+        assert 'Archive this post' not in response.content
+
 
 class QuestionsTemplateTestCaseNoFixtures(TestCase):
     client_class = LocalizingClient
