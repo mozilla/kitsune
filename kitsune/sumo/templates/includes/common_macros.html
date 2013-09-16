@@ -52,16 +52,6 @@
       {% if waffle.flag('browserid') %}
         <li>
           {{ browserid_login(text=_('Sign in with email'), next=(request.get_full_path() if not next_url else next_url)) }}
-          <div class="doorhanger">
-            <p><strong>{{ _("What's this") }}</strong></p>
-            <p>
-              {% trans url="http://www.mozilla.org/persona/" %}
-                SUMO has switched to Persona, a safe and simple way to sign
-                in with just your e-mail address. <a href="{{ url }}">Learn
-                more about why Mozilla is using Persona.</a>
-              {% endtrans %}
-            </p>
-          </div>
         </li>
       {% else %}
         <li><a href="{{ url('users.auth') }}" class="sign-in register">
