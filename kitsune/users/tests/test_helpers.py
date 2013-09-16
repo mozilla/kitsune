@@ -68,4 +68,4 @@ class HelperTestCase(TestCase):
 
         User.objects.create(username='someuser4')
         suggested = suggest_username('someuser@test.com')
-        eq_('someuser5', suggested)
+        eq_('someuser1', suggested)

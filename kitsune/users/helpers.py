@@ -1,3 +1,5 @@
+import bisect
+
 from django.conf import settings
 from django.contrib.auth.models import User
 
@@ -75,7 +77,7 @@ def suggest_username(email):
     users = User.objects.filter(username__regex=username_regex)
 
     if users.count() > 0:
-        max_id = 0
+        ids = []
         for u in users:
             # get the number at the end
             i = u.username[len(username):]
@@ -83,10 +85,15 @@ def suggest_username(email):
             # incase there's no number in the case where just the base is taken
             if i:
                 i = int(i)
-                if i > max_id:
-                    max_id = i
+                bisect.insort(ids, i)
+            else:
+                ids.insert(0, 0)
 
-        max_id += 1
-        username = '{0}{1}'.format(username, max_id)
+        for index, i in enumerate(ids):
+            if index + 1 < len(ids):
+                if i + 1 != ids[index + 1]:
+                    break
+
+        username = '{0}{1}'.format(username, i + 1)
 
     return username
