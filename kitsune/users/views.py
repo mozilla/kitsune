@@ -38,12 +38,12 @@ from kitsune.users.forms import (
     ProfileForm, AvatarForm, EmailConfirmationForm, AuthenticationForm,
     EmailChangeForm, SetPasswordForm, PasswordChangeForm, SettingsForm,
     ForgotUsernameForm, RegisterForm, PasswordResetForm, BrowserIDSignupForm)
-from kitsune.users.helpers import profile_url, suggest_username
+from kitsune.users.helpers import profile_url
 from kitsune.users.models import (
     CONTRIBUTOR_GROUP, Group, Profile, RegistrationProfile, EmailChange)
 from kitsune.users.utils import (
     handle_login, handle_register, try_send_email_with_form,
-    add_to_contributors)
+    add_to_contributors, suggest_username)
 from kitsune.wiki.models import (
     user_num_documents, user_documents, user_redirects)
 
