@@ -1,6 +1,35 @@
 @import 'variables.less';
 @import 'vendors.less';
 
+.awardees {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+
+  > li {
+    border: 3px solid #fff;
+    .box-shadow(0 0 3px rgba(0, 0, 0, 0.25));
+    float: left;
+    margin: 0 10px 10px 0;
+  }
+}
+
+.badge-details {
+  > dd,
+  > dt {
+    float: left;
+    margin-bottom: 4px;
+    padding: 6px 10px;
+  }
+
+  > dt {
+    background: rgba(0, 0, 0, 0.1);
+    .border-radius(5px);
+    clear: left;
+    width: 100px;
+  }
+}
+
 #awards-list {
   list-style: none;
   margin: 0;
