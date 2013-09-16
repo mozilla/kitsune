@@ -120,6 +120,9 @@ MINIFY_BUNDLES = {
         'mobile/landings/get-involved': (
             'less/mobile/landings/get-involved.less',
         ),
+        'badges': (
+            'less/badges.less',
+        ),
     },
     'js': {
         'common': (

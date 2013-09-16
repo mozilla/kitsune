@@ -1,37 +1,43 @@
 {% extends "base.html" %}
+
+{% set styles=('badges',) %}
+
 {% block content %}
-  <section class="awards_list">
+  <div class="grid_12">
     {% if badge %}
-      <h2>Awards for {{ badge }}</h2>
+      {% trans badge_name=_(badge.title, 'DB: badger.Badge.title') %}
+        <h2>Recently awarded &quot;{{ badge_name }}&quot; badges</h2>
+      {% endtrans %}
     {% else %}
-      <h2>Recent Awards</h2>
+      <h2>{{ _('Recently awarded badges') }}</h2>
     {% endif %}
+  </div>
 
-    <ul>
-      {% for award in award_list %}
-        {% if award.image %}
-          {% set award_image = award.image.url %}
-        {% elif award.badge.image %}
-          {% set award_image = award.badge.image.url %}
-        {% else %}
-          {% set award_image = STATIC_URL + 'kbadge/img/default-badge.png' %}
-        {% endif %}
-        <li>
-          <a href="{{ award.get_absolute_url() }}"><img src="{{ award_image }}"
-             alt="{{ award.badge.title }}" width="128" height="128" /></a>
-
-          <a href="{{ award.get_absolute_url() }}">
-            {# TODO: This is bad l10n, but it's a mockup. #}
-            <span class="badge_title">{{ award.badge.title }}</span>
-            <span class="relation">awarded to</span>
-            <span class="user">{{ award.user }}</span>
-            {% if award.description %}
-              <span class="award_description">{{ award.description }}</span>
-            {% endif %}
-          </a>
-        </li>
-      {% endfor %}
-    </ul>
-    {# TODO: pagination here #}
-  </section>
+  <ul class="cf" id="awards-list">
+    {% for award in award_list %}
+      {% if award.image %}
+        {% set award_image = award.image.url %}
+      {% elif award.badge.image %}
+        {% set award_image = award.badge.image.url %}
+      {% else %}
+        {% set award_image = STATIC_URL + 'kbadge/img/default-badge.png' %}
+      {% endif %}
+      <li class="grid_4">
+        <a class="cf" href="{{ award.get_absolute_url() }}">
+          <div class="badge">
+            <img src="{{ award_image }}" alt="" title="{{ _(award.badge.title, 'DB: badger.Badge.title') }}">
+            <span>{{ _(award.badge.title, 'DB: badger.Badge.title') }}</span>
+          </div>
+          <div class="award">
+            {{ _('awarded to') }}
+            <br><img src="{{ profile_avatar(award.user) }}" alt="" title="{{ award.user }}">
+            <br>{{ award.user }}
+          </div>
+          <div class="meta">
+            {{ datetimeformat(award.created) }}
+          </div>
+        </a>
+      </li>
+    {% endfor %}
+  </ul>
 {% endblock %}
