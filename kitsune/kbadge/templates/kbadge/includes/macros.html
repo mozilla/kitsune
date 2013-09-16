@@ -9,8 +9,8 @@
         {% set award_image = STATIC_URL + 'kbadge/img/default-badge.png' %}
       {% endif %}
       <li>
-        <a href="{{ award.get_absolute_url() }}" title="{{ award.badge.title }}">
-          <img src="{{ award_image }}" alt="{{ award.badge.title }}" />
+        <a href="{{ award.get_absolute_url() }}" title="{{ _(award.badge.title, 'DB: badger.Badge.title') }}">
+          <img src="{{ award_image }}" alt="{{ _(award.badge.title, 'DB: badger.Badge.title') }}" />
         </a>
       </li>
     {% endfor %}
