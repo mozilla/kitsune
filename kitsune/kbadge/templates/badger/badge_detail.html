@@ -1,45 +1,50 @@
 {% extends "base.html" %}
 
+{% set styles=('badges',) %}
+
 {% block content %}
-<section>
-  <h2>Badge detail</h2>
+<div class="grid_6">
+  <h2>
+    {% trans badge_name=_(badge.title, 'DB: badger.Badge.title') %}
+      Badge: {{ badge_name }}
+    {% endtrans %}
+  </h2>
 
-  <dl class="badge" data-slug="{{ badge.slug }}">
-    <dt>Title:</dt>
-    <dd class="title">{{ badge.title }}</dd>
-
+  <dl class="badge-details" data-slug="{{ badge.slug }}">
     {% if badge.image %}
-      <dt>Image:</dt>
+      <dt>{{ _('Image:') }}</dt>
       <dd class="image"><a href="{{ badge.get_absolute_url() }}" class="image"><img src="{{ badge.image.url }}" width="256" height="256" /></a></dd>
     {% endif %}
 
     {% if badge.description %}
-      <dt>Description:</dt>
-      <dd class="description">{{ badge.description }}</dd>
+      <dt>{{ _('Description:') }}</dt>
+      <dd class="description">{{ _(badge.description, 'DB: badger.Badge.description') }}</dd>
     {% endif %}
 
-    <dt>Creator:</dt>
-    <dd><a href="{{ badge.creator.get_absolute_url() }}">{{ badge.creator }}</a></dd>
+    {% if badge.creator %}
+      <dt>{{ _('Creator:') }}</dt>
+      <dd><a href="{{ profile_url(badge.creator) }}">{{ badge.creator }}</a></dd>
+    {% endif %}
 
-    <dt>Created:</dt>
-    <dd>{{ badge.created }}</dd>
+    <dt>{{ _('Created:') }}</dt>
+    <dd>{{ datetimeformat(badge.created) }}</dd>
 
-    <dt>Modified:</dt>
-    <dd>{{ badge.modified }}</dd>
+    <dt>{{ _('Modified:') }}</dt>
+    <dd>{{ datetimeformat(badge.modified) }}</dd>
   </dl>
-</section>
+</div>
 
 {% if award_list %}
-  <section>
-    <h2>Recent awards</h2>
-    <ul>
+  <div class="grid_6">
+    <h2>{{ _('Recent awardees') }}</h2>
+    <ul class="awardees">
       {% for award in award_list %}
         <li>
-          <a href="{{ award.get_absolute_url() }}">{{ award.user }}</a>
+          <a href="{{ award.get_absolute_url() }}"><img src="{{ profile_avatar(award.user) }}" alt="" title="{{ award.user }}"></a>
         </li>
       {% endfor %}
     </ul>
-  </section>
+  </div>
 {% endif %}
 
 {% endblock %}
