@@ -181,3 +181,5 @@ _("""Moderator""", "DB: karma.Title.name")
 _("""Top 10 Contributor""", "DB: karma.Title.name")
 # This is a karma title.
 _("""Top 25 Contributor""", "DB: karma.Title.name")
+_("""Kitsune Contributor""", "DB: badger.Badge.title")
+_("""Badge awarded to those who have contributed to the Kitsune code base.""", "DB: badger.Badge.description")

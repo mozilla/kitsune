@@ -284,6 +284,11 @@ DB_LOCALIZE = {
             'attrs': ['title', 'description'],
         },
     },
+    'badger': {
+        'Badge': {
+            'attrs': ['title', 'description'],
+        },
+    },
 }
 
 # locale is in the kitsune git repo project directory, so that's
