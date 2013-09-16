@@ -124,7 +124,8 @@ def questions(request, template):
     question_qs = question_qs.filter(creator__is_active=1)
 
     if filter_ == 'no-replies':
-        question_qs = question_qs.filter(num_answers=0, is_locked=False)
+        question_qs = question_qs.filter(num_answers=0, is_locked=False,
+                                         is_archived=False)
     elif filter_ == 'replies':
         question_qs = question_qs.filter(num_answers__gt=0)
     elif filter_ == 'solved':
@@ -138,7 +139,8 @@ def questions(request, template):
         # Only unanswered questions from the last 24 hours.
         start = datetime.now() - timedelta(hours=24)
         question_qs = question_qs.filter(
-            num_answers=0, created__gt=start, is_locked=False)
+            num_answers=0, created__gt=start, is_locked=False,
+            is_archived=False)
     else:
         filter_ = None
 
@@ -683,7 +685,8 @@ def edit_question(request, question_id):
 
     # Locked questions can't be edited unless the user has the permission to.
     # (Question creators can't edit locked questions.)
-    if not user.has_perm('questions.change_question') and question.is_locked:
+    if (not user.has_perm('questions.change_question') and
+            not question.editable):
         raise PermissionDenied
 
     if request.method == 'GET':
@@ -737,7 +740,7 @@ def reply(request, question_id):
     """Post a new answer to a question."""
     question = get_object_or_404(Question, pk=question_id)
     answer_preview = None
-    if question.is_locked:
+    if not question.editable:
         raise PermissionDenied
 
     form = AnswerForm(request.POST)
@@ -802,7 +805,7 @@ def solve(request, question_id, answer_id):
             return HttpResponseForbidden()
 
     answer = get_object_or_404(Answer, pk=answer_id)
-    if question.is_locked:
+    if not question.editable:
         raise PermissionDenied
 
     if (question.creator != request.user and
@@ -828,7 +831,7 @@ def unsolve(request, question_id, answer_id):
     """Accept an answer as the solution to the question."""
     question = get_object_or_404(Question, pk=question_id)
     answer = get_object_or_404(Answer, pk=answer_id)
-    if question.is_locked:
+    if not question.editable:
         raise PermissionDenied
 
     if (question.creator != request.user and
@@ -853,7 +856,7 @@ def unsolve(request, question_id, answer_id):
 def question_vote(request, question_id):
     """I have this problem too."""
     question = get_object_or_404(Question, pk=question_id)
-    if question.is_locked:
+    if not question.editable:
         raise PermissionDenied
 
     if not question.has_voted(request):
@@ -1089,11 +1092,25 @@ def delete_answer(request, question_id, answer_id):
 @login_required
 @permission_required('questions.lock_question')
 def lock_question(request, question_id):
-    """Lock a question"""
+    """Lock or unlock a question"""
     question = get_object_or_404(Question, pk=question_id)
     question.is_locked = not question.is_locked
     log.info("User %s set is_locked=%s on question with id=%s " %
              (request.user, question.is_locked, question.id))
+    question.save()
+
+    return HttpResponseRedirect(question.get_absolute_url())
+
+
+@require_POST
+@login_required
+@permission_required('questions.archive_question')
+def archive_question(request, question_id):
+    """Archive or unarchive a question"""
+    question = get_object_or_404(Question, pk=question_id)
+    question.is_archived = not question.is_archived
+    log.info("User %s set is_archived=%s on question with id=%s " %
+             (request.user, question.is_archived, question.id))
     question.save()
 
     return HttpResponseRedirect(question.get_absolute_url())
@@ -1107,7 +1124,7 @@ def edit_answer(request, question_id, answer_id):
     """Edit an answer."""
     answer = get_object_or_404(Answer, pk=answer_id, question=question_id)
     answer_preview = None
-    if answer.question.is_locked:
+    if not answer.question.editable:
         raise PermissionDenied
 
     # NOJS: upload images, if any

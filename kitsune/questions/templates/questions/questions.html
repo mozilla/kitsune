@@ -199,6 +199,9 @@
               {% if question.is_locked %}
                 <div class="thread-locked highlighted">{{ _('Locked') }}</div>
               {% endif %}
+              {% if question.is_archived %}
+                <div class="thread-archived highlighted">{{ _('Archived') }}</div>
+              {% endif %}
             </div>
           </section>
           <aside>

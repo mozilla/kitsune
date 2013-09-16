@@ -30,7 +30,7 @@ HOME = /tmp
 0 10 * * * {{ cron }} update_l10n_metric
 0 3 * * * {{ cron }} update_contributor_metrics
 0 2 * * * {{ cron }} update_search_ctr_metric
-0 4 * * * {{ cron }} auto_lock_old_questions
+0 4 * * * {{ cron }} auto_archive_old_questions
 0 5 * * * {{ cron }} reindex_kb
 0 6 * * * {{ cron }} process_exit_surveys
 0 1 * * * {{ cron }} update_l10n_coverage_metrics

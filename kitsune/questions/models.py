@@ -64,6 +64,7 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
     solution = models.ForeignKey('Answer', related_name='solution_for',
                                  null=True)
     is_locked = models.BooleanField(default=False)
+    is_archived = models.NullBooleanField(default=False, null=True)
     num_votes_past_week = models.PositiveIntegerField(default=0, db_index=True)
 
     images = generic.GenericRelation(ImageAttachment)
@@ -327,7 +328,7 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         start = datetime.now() - timedelta(hours=24)
         qs = cls.objects.filter(
             num_answers=0, created__gt=start, is_locked=False,
-            creator__is_active=1)
+            is_archived=False, creator__is_active=1)
         if extra_filter:
             qs = qs.filter(extra_filter)
         return qs.count()
@@ -380,6 +381,11 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
 
         return self._num_visits
 
+    @property
+    def editable(self):
+        return not self.is_locked and not self.is_archived
+
+
 
 @register_mapping_type
 class QuestionMappingType(SearchMappingType):
@@ -419,6 +425,7 @@ class QuestionMappingType(SearchMappingType):
                 'question_num_answers': {'type': 'integer'},
                 'question_is_solved': {'type': 'boolean'},
                 'question_is_locked': {'type': 'boolean'},
+                'question_is_archived': {'type': 'boolean'},
                 'question_has_answers': {'type': 'boolean'},
                 'question_has_helpful': {'type': 'boolean'},
                 'question_creator': {'type': 'string', 'index': 'not_analyzed'},
@@ -435,8 +442,8 @@ class QuestionMappingType(SearchMappingType):
     def extract_document(cls, obj_id, obj=None):
         """Extracts indexable attributes from a Question and its answers."""
         fields = ['id', 'title', 'content', 'num_answers', 'solution_id',
-                  'is_locked', 'created', 'updated', 'num_votes_past_week',
-                  'locale']
+                  'is_locked', 'is_archived', 'created', 'updated',
+                  'num_votes_past_week', 'locale']
         composed_fields = ['creator__username']
         all_fields = fields + composed_fields
 
@@ -477,6 +484,7 @@ class QuestionMappingType(SearchMappingType):
         d['question_num_answers'] = obj['num_answers']
         d['question_is_solved'] = bool(obj['solution_id'])
         d['question_is_locked'] = obj['is_locked']
+        d['question_is_archived'] = obj['is_archived']
         d['question_has_answers'] = bool(obj['num_answers'])
 
         d['question_creator'] = obj['creator__username']

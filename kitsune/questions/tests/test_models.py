@@ -14,7 +14,7 @@ from kitsune.flagit.models import FlaggedObject
 from kitsune.karma.manager import KarmaManager
 from kitsune.search.tests.test_es import ElasticTestCase
 from kitsune.sumo.redis_utils import RedisError, redis_client
-from kitsune.questions.cron import auto_lock_old_questions
+from kitsune.questions.cron import auto_archive_old_questions
 from kitsune.questions.events import QuestionReplyEvent
 from kitsune.questions.karma_actions import SolutionAction, AnswerAction
 from kitsune.questions.models import (
@@ -428,8 +428,8 @@ class AddExistingTagTests(TestCaseBase):
         add_existing_tag('nonexistent tag', self.untagged_question.tags)
 
 
-class OldQuestionsLockTest(ElasticTestCase):
-    def test_lock_old_questions(self):
+class OldQuestionsArchiveTest(ElasticTestCase):
+    def test_archive_old_questions(self):
         last_updated = datetime.now() - timedelta(days=100)
 
         # created just now
@@ -440,27 +440,27 @@ class OldQuestionsLockTest(ElasticTestCase):
                       updated=last_updated,
                       save=True)
 
-        # created 200 days ago, already locked
+        # created 200 days ago, already archived
         q3 = question(created=(datetime.now() - timedelta(days=200)),
-                      is_locked=True,
+                      is_archived=True,
                       updated=last_updated,
                       save=True)
 
         self.refresh()
 
-        auto_lock_old_questions()
+        auto_archive_old_questions()
 
         # There are three questions.
         eq_(len(list(Question.objects.all())), 3)
 
-        # q2 and q3 are now locked and updated times are the same
-        locked_questions = list(Question.uncached.filter(is_locked=True))
-        eq_(sorted([(q.id, q.updated.date()) for q in locked_questions]),
+        # q2 and q3 are now archived and updated times are the same
+        archived_questions = list(Question.uncached.filter(is_archived=True))
+        eq_(sorted([(q.id, q.updated.date()) for q in archived_questions]),
             [(q.id, q.updated.date()) for q in [q2, q3]])
 
-        # q1 is still unlocked.
-        locked_questions = list(Question.uncached.filter(is_locked=False))
-        eq_(sorted([q.id for q in locked_questions]),
+        # q1 is still unarchived.
+        archived_questions = list(Question.uncached.filter(is_archived=False))
+        eq_(sorted([q.id for q in archived_questions]),
             [q1.id])
 
 

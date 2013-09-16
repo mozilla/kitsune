@@ -60,7 +60,7 @@
       </p>
     {% endif %}
   </div>
-  {% if answer.id and not question.is_locked %}
+  {% if answer.id and question.editable %}
     <div class="answer-tools cf">
       {% if user != answer.creator and not answer.has_voted(request) %}
         <form class="helpful" action="{{ url('questions.answer_vote', question_id=question.id, answer_id=answer.id) }}" method="post">
@@ -80,7 +80,7 @@
 </div>
 <div class="grid_3">
   {% if answer.id %}{# answer.id is None when previewing #}
-    {% if not question.is_locked %}
+    {% if question.editable %}
       {% if not question.solution and (user == question.creator or user.has_perm('questions.change_solution')) %}
         <div class="sidebox tight">
           <form class="solution" action="{{ url('questions.solve', question_id=question.id, answer_id=answer.id) }}" method="post">
@@ -110,7 +110,7 @@
     {% endif %}
 
     <ul class="sidebar-nav tight">
-      {% if answer.id and not question.is_locked and has_perm_or_owns('questions.change_answer', answer, answer) %}
+      {% if answer.id and question.editable and has_perm_or_owns('questions.change_answer', answer, answer) %}
         <li class="edit">
           <a href="{{ url('questions.edit_answer', question.id, answer.id) }}">{{ _('Edit this post') }}</a>
         </li>
