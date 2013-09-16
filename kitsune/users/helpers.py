@@ -74,7 +74,7 @@ def suggest_username(email):
     username = email.split('@', 1)[0]
 
     username_regex = r'^{0}[0-9]*$'.format(username)
-    users = User.objects.filter(username__regex=username_regex)
+    users = User.objects.filter(username__iregex=username_regex)
 
     if users.count() > 0:
         ids = []
