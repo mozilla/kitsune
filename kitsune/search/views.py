@@ -174,7 +174,7 @@ def search(request, template=None):
 
         # These filters are ternary, they can be either YES, NO, or OFF
         ternary_filters = ('is_locked', 'is_solved', 'has_answers',
-                           'has_helpful')
+                           'has_helpful', 'is_archived')
         d = dict(('question_%s' % filter_name,
                   _ternary_filter(cleaned[filter_name]))
                  for filter_name in ternary_filters if cleaned[filter_name])

@@ -141,6 +141,10 @@ class SearchForm(forms.Form):
         required=False, coerce=int, empty_value=0, widget=forms.RadioSelect,
         label=_lazy('Locked'), choices=constants.TERNARY_LIST)
 
+    is_archived = forms.TypedChoiceField(
+        required=False, coerce=int, empty_value=0, widget=forms.RadioSelect,
+        label=_lazy('Archived'), choices=constants.TERNARY_LIST)
+
     is_solved = forms.TypedChoiceField(
         required=False, coerce=int, empty_value=0, widget=forms.RadioSelect,
         label=_lazy('Solved'), choices=constants.TERNARY_LIST)

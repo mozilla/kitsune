@@ -62,8 +62,8 @@ def cache_top_contributors():
 
 
 @cronjobs.register
-def auto_lock_old_questions():
-    """Locks all questions that were created over 180 days ago"""
+def auto_archive_old_questions():
+    """Archive all questions that were created over 180 days ago"""
     # Set up logging so it doesn't send Ricky email.
     logging.basicConfig(level=logging.ERROR)
 
@@ -71,7 +71,7 @@ def auto_lock_old_questions():
     # a list of ids so that we can feed it to the update, but then
     # also know what we need to update in the index.
     days_180 = datetime.now() - timedelta(days=180)
-    q_ids = list(Question.objects.filter(is_locked=False)
+    q_ids = list(Question.objects.filter(is_archived=False)
                                  .filter(created__lte=days_180)
                                  .values_list('id', flat=True))
 
@@ -80,7 +80,7 @@ def auto_lock_old_questions():
 
         sql = """
             UPDATE questions_question
-            SET is_locked = 1
+            SET is_archived = 1
             WHERE id IN (%s)
             """ % ','.join(map(str, q_ids))
 
@@ -110,7 +110,7 @@ def auto_lock_old_questions():
                     # For each document, update the data and stick it
                     # back in the index.
                     for doc in es_docs:
-                        doc[u'question_is_locked'] = True
+                        doc[u'question_is_archived'] = True
                         doc[u'indexed_on'] = int(time.time())
                         documents.append(doc)
 
