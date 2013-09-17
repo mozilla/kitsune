@@ -336,6 +336,7 @@ def documents_contributed(request, user_id):
         'documents': user_documents(user_profile.user),
         'redirects': user_redirects(user_profile.user)})
 
+
 @login_required
 @require_http_methods(['GET', 'POST'])
 def edit_settings(request):
