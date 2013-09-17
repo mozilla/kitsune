@@ -16,11 +16,11 @@
           {{ form.password|safe }}
         </li>
       </ul>
+      <div class="submit">
+        <input type="hidden" name="login" value="1">
+        <button type="submit" data-type="submit" data-name="login" class="btn btn-submit" data-progress="{{ _('Logging in...') }}" data-done="{{ _('Logged in!') }}" data-reset="{{ _('Log in') }}">{{ _('Log in') }}</button>
+      </div>
     </fieldset>
-    <div class="submit">
-      <input type="hidden" name="login" value="1">
-      <button type="submit" data-type="submit" data-name="login" class="btn btn-submit" data-progress="{{ _('Logging in...') }}" data-done="{{ _('Logged in!') }}" data-reset="{{ _('Log in') }}">{{ _('Log in') }}</button>
-    </div>
   </form>
   <div id="login-help">
     {% if only_pwreset %}
