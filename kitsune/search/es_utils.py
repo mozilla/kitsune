@@ -762,3 +762,31 @@ def es_query_with_analyzer(query, locale):
             new_query[k] = v
 
     return new_query
+
+
+def es_mappings_are_correct(index=None):
+    # TODO: This is simple when there is only one kind of index. When we
+    # have multiple indexes, this probably needs to get smarter.
+    es = get_es()
+    expected = get_mappings()
+    try:
+        actual = es.get_mapping(index)
+    except ES_EXCEPTIONS:
+        # This can happen when the index doesn't exist or ES isn't
+        # available. Eitherway, consider that a failure.
+        return [(index, False)]
+    unimportant_keys = ['index_options', 'omit_norms', '_analyzer']
+
+    def strip_keys(d):
+        new_dict = {}
+        for k, v in d.items():
+            if k in unimportant_keys:
+                continue
+            if isinstance(v, dict):
+                new_dict[k] = strip_keys(v)
+            else:
+                new_dict[k] = v
+        return new_dict
+
+    actual = strip_keys(actual)
+    return [(name, mapping == expected) for name, mapping in actual.items()]

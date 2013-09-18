@@ -12,7 +12,8 @@ from django.shortcuts import render
 
 from kitsune.search.es_utils import (
     get_doctype_stats, get_indexes, delete_index, ES_EXCEPTIONS,
-    get_indexable, CHUNK_SIZE, recreate_index, write_index, read_index)
+    get_indexable, CHUNK_SIZE, recreate_index, write_index, read_index,
+    es_mappings_are_correct)
 from kitsune.search.models import Record, get_mapping_types
 from kitsune.search.tasks import OUTSTANDING_INDEX_CHUNKS, index_chunk_task
 from kitsune.search.utils import chunked, create_batch_id
@@ -217,6 +218,7 @@ def search(request):
          'recent_records': recent_records,
          'outstanding_chunks': outstanding_chunks,
          'now': datetime.now(),
+         'mappings_correct': es_mappings_are_correct(write_index())[0][1],
          })
 
 
