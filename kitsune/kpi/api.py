@@ -186,6 +186,9 @@ class QuestionsResource(CachedResource):
         # Set up the query for the data we need.
         qs = _daily_qs_for(Question)
 
+        # Don't count locked questions
+        qs = qs.exclude(is_locked=True)
+
         if locale:
             qs = qs.filter(locale=locale)
 
