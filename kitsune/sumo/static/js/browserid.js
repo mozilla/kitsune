@@ -20,10 +20,8 @@
 
             e.preventDefault();
 
-            next = $this.data('next');
-            if (next) {
-                $form.find('input[name="next"]').val(next);
-            }
+            next = $this.data('next') || document.location.pathname;
+            $form.find('input[name="next"]').val(next);
 
             navigator.id.request({
                 returnTo: next,
