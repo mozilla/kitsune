@@ -20,7 +20,7 @@
 
             e.preventDefault();
 
-            next = $this.data('next') || document.location.pathname;
+            next = $this.data('next') || document.location.pathname + document.location.search;
             $form.find('input[name="next"]').val(next);
 
             navigator.id.request({
