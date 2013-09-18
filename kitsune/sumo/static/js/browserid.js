@@ -1,28 +1,49 @@
 (function($) {
     $(function() {
+        var $form = $('#browserid-form');
+        var email = $form.data('email');
+        if (email === '') {
+            email = null;
+        }
+
+        function submitAssertion(assertion) {
+            if (assertion) {
+                var $e = $form.find('input[name="assertion"]');
+                $e.val(assertion.toString());
+                $form.submit();
+            }
+        }
+
         $(document).on('click', '.browserid-login', function(e) {
+            var $this = $(this);
+            var next;
+
             e.preventDefault();
 
-            var $this = $(this);
-
-            var $form;
-            if ($this.data('form')) {
-                $form = $('#' + $this.data('form'));
-            } else {
-                $form = $('#browserid-form');
+            next = $this.data('next');
+            if (next) {
+                $form.find('input[name="next"]').val(next);
             }
 
-            if ($this.data('next')) {
-                $form.find('input[name="next"]').val($this.data('next'));
-            }
-
-            navigator.id.get(function(assertion) {
-                if (assertion) {
-                    var $e = $form.find('input[name="assertion"]');
-                    $e.val(assertion.toString());
-                    $form.submit();
-                }
+            navigator.id.request({
+                returnTo: next,
+                siteName: gettext('Mozilla Support')/*,
+                TODO: siteLogo: */
             });
         });
+
+        $('a.sign-out').on('click', function(e) {
+            e.preventDefault();
+            navigator.id.logout();
+        });
+
+        navigator.id.watch({
+            loggedInUser: email,
+            onlogin: submitAssertion,
+            onlogout: function() {
+                window.location = $form.data('logout-url');
+            }
+        });
+
     });
 })(jQuery);
