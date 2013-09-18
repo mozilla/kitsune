@@ -51,7 +51,7 @@
             navigator.id.request({
                 returnTo: next,
                 siteName: gettext('Mozilla Support'),
-                onCancel: function() {
+                oncancel: function() {
                     $this.text(originalText);
                 }/*,
                 TODO: siteLogo: */
