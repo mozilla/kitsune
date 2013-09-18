@@ -202,6 +202,12 @@
         made mapping changes since this does not recreate the index with
         the new mappings.
       </p>
+      {% if not mappings_correct %}
+        <p class="errornote">
+          WARNING! The write index probably doesn't have a correct
+          mapping. You probabaly don't want to use this indexing button.
+        </p>
+      {% endif %}
       <form method="POST">
         {% csrf_token %}
         {% for stats_name, stats_count in doctype_write_stats.items %}
