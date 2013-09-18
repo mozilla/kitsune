@@ -40,9 +40,15 @@
             next = $this.data('next') || document.location.pathname + document.location.search;
             $form.find('input[name="next"]').val(next);
 
+            var originalText = $this.text();
+            $this.text(gettext('Signing you in...'));
+
             navigator.id.request({
                 returnTo: next,
-                siteName: gettext('Mozilla Support')/*,
+                siteName: gettext('Mozilla Support'),
+                onCancel: function() {
+                    $this.text(originalText);
+                }/*,
                 TODO: siteLogo: */
             });
         });
