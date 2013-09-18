@@ -58,6 +58,8 @@ class KpiApiTests(TestCase):
         answer(save=True)
         # A question without answers:
         question(save=True)
+        # A locked question that shouldn't be counted for anything
+        question(is_locked=True, save=True)
 
         r = self._get_api_result('kpi_questions')
         eq_(r['objects'][0]['solved'], 1)
