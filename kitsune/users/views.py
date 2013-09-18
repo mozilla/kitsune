@@ -670,8 +670,8 @@ def browserid_verify(request):
                     request.session['browserid-email'] = email
                     form.fields['username'].initial = suggest_username(email)
                     return render(request, 'users/browserid_signup.html',
-                                  {'email': email, 'next': next, 'form': form,
-                                   'contributor': contributor})
+                                  {'persona_email': email, 'next': next,
+                                   'form': form, 'contributor': contributor})
                 else:
                     user = user[0]
                     user.backend = 'django_browserid.auth.BrowserIDBackend'
@@ -719,7 +719,7 @@ def browserid_signup(request):
         else:
             form.fields['username'].initial = suggest_username(email)
             return render(request, 'users/browserid_signup.html',
-                          {'email': email, 'next': next, 'form': form,
+                          {'persona_email': email, 'next': next, 'form': form,
                            'contributor': contributor})
 
     return redirect(redirect_to_failure)

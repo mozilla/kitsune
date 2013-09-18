@@ -1,28 +1,55 @@
 (function($) {
     $(function() {
+        var $globalForm = $('#browserid-form');
+        var $form = $globalForm;
+        var email = $globalForm.data('email');
+        if (email === '') {
+            email = null;
+        }
+
+        function submitAssertion(assertion) {
+            if (assertion) {
+                var $e = $form.find('input[name="assertion"]');
+                $e.val(assertion.toString());
+                $form.submit();
+            }
+        }
+
         $(document).on('click', '.browserid-login', function(e) {
+            var $this = $(this);
+            var formId = $this.data('form');
+            var next;
+
             e.preventDefault();
 
-            var $this = $(this);
-
-            var $form;
-            if ($this.data('form')) {
-                $form = $('#' + $this.data('form'));
+            if (formId) {
+                $form = $('#' + formId);
             } else {
-                $form = $('#browserid-form');
+                $form = $globalForm;
             }
 
-            if ($this.data('next')) {
-                $form.find('input[name="next"]').val($this.data('next'));
-            }
+            next = $this.data('next') || document.location.pathname + document.location.search;
+            $form.find('input[name="next"]').val(next);
 
-            navigator.id.get(function(assertion) {
-                if (assertion) {
-                    var $e = $form.find('input[name="assertion"]');
-                    $e.val(assertion.toString());
-                    $form.submit();
-                }
+            navigator.id.request({
+                returnTo: next,
+                siteName: gettext('Mozilla Support')/*,
+                TODO: siteLogo: */
             });
         });
+
+        $('a.sign-out').on('click', function(e) {
+            e.preventDefault();
+            navigator.id.logout();
+        });
+
+        navigator.id.watch({
+            loggedInUser: email,
+            onlogin: submitAssertion,
+            onlogout: function() {
+                window.location = $form.data('logout-url');
+            }
+        });
+
     });
 })(jQuery);
