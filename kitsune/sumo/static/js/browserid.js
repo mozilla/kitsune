@@ -1,7 +1,8 @@
 (function($) {
     $(function() {
-        var $form = $('#browserid-form');
-        var email = $form.data('email');
+        var $globalForm = $('#browserid-form');
+        var $form = $globalForm;
+        var email = $globalForm.data('email');
         if (email === '') {
             email = null;
         }
@@ -16,9 +17,16 @@
 
         $(document).on('click', '.browserid-login', function(e) {
             var $this = $(this);
+            var formId = $this.data('form');
             var next;
 
             e.preventDefault();
+
+            if (formId) {
+                $form = $('#' + formId);
+            } else {
+                $form = $globalForm;
+            }
 
             next = $this.data('next') || document.location.pathname + document.location.search;
             $form.find('input[name="next"]').val(next);
