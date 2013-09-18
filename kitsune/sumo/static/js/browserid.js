@@ -9,8 +9,17 @@
 
         function submitAssertion(assertion) {
             if (assertion) {
-                var $e = $form.find('input[name="assertion"]');
-                $e.val(assertion.toString());
+                var $next = $form.find('input[name="next"]');
+                var next = $next.val();
+                var $assertion = $form.find('input[name="assertion"]');
+
+                // If there is no next set yet, make it the current URL.
+                if (!next) {
+                    $next.val(document.location.pathname + document.location.search);
+                }
+
+                $assertion.val(assertion.toString());
+
                 $form.submit();
             }
         }
