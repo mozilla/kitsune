@@ -1,4 +1,9 @@
 (function($) {
+    // Only run this code if browserid is enabled.
+    if (!waffle.flag_is_active('browserid')) {
+        return;
+    }
+
     $(function() {
         var $globalForm = $('#browserid-form');
         var $form = $globalForm;
