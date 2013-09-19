@@ -40,19 +40,10 @@ test('dont_link_invalid_crash_id', function() {
     equals(numIds, 0);
 });
 
-test('dont_link_crash_id_in_brackets', function() {
-    var $sandbox = this.sandbox;
-    var numIds = 0;
-    var content = $sandbox.find('.content_4');
-    k.linkCrashIds(content);
-    numIds = content.find('.crash-report').length;
-    equals(numIds, 0);
-});
-
 test('dont_link_crash_id_without_bp', function() {
     var $sandbox = this.sandbox;
     var numIds = 0;
-    var content = $sandbox.find('.content_5');
+    var content = $sandbox.find('.content_4');
     k.linkCrashIds(content);
     numIds = content.find('.crash-report').length;
     equals(numIds, 0);
