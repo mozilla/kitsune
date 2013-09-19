@@ -40,4 +40,19 @@
       </li>
     {% endfor %}
   </ul>
+
+  {% if is_paginated %}
+    <ol class="pagination cf">
+      {% if page_obj.has_previous %}
+        <li class="prev">
+          <a href="{{ pagination_base_url }}?page={{ page_obj.previous_page_number }}&sort={{current_sort}}" class="btn-page btn-page-prev">{{_('Previous')}}</a>
+        </li>
+      {% endif %}
+      {% if page_obj.has_next %}
+        <li class="next">
+          <a href="{{ pagination_base_url }}?page={{ page_obj.next_page_number }}&sort={{current_sort}}" class="btn-page btn-page-next">{{_('Next')}}</a>
+        </li>
+      {% endif %}
+    </ol>
+  {% endif %}
 {% endblock %}
