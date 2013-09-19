@@ -840,3 +840,6 @@ SITE_URL = (
 REST_FRAMEWORK = {
     'DEFAULT_FILTER_BACKENDS': ('rest_framework.filters.DjangoFilterBackend',)
 }
+
+# Django Badger
+BADGER_BADGE_PAGE_SIZE = 12
