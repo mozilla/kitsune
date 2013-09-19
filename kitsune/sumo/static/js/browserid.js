@@ -53,8 +53,8 @@
                 siteName: gettext('Mozilla Support'),
                 oncancel: function() {
                     $this.text(originalText);
-                }/*,
-                TODO: siteLogo: */
+                },
+                siteLogo: 'https://support.cdn.mozilla.net/static/img/firefox-256.png'
             });
         });
 
