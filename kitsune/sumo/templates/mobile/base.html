@@ -144,15 +144,22 @@
   </ul>
 </div>
 
-{% if not user.is_authenticated() %}
-  <form id="browserid-form" action="{{ url('users.browserid_verify') }}" method="post">
-    {{ browserid_form }}
-  </form>
+{% if not persona_email %}
+  {% if user.is_authenticated() %}
+    {% set persona_email = user.email %}
+  {% else %}
+    {% set persona_email = '' %}
+  {% endif %}
 {% endif %}
+<form id="browserid-form" action="{{ url('users.browserid_verify') }}" method="post" data-email="{{ persona_email }}" data-logout-url="{{ url('users.logout') }}">
+  {{ browserid_form }}
+</form>
 
 {% block after_main %}{% endblock %}
 
 <script src="{{ url('jsi18n') }}/build:{{ BUILD_ID_JS }}"></script>
+<script src="{{ url('wafflejs') }}"></script>
+
 {{ js('mobile/common') }}
 {% for script in scripts %}
   {{ js(script) }}
