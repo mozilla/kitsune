@@ -4,6 +4,7 @@ from django.views.decorators.cache import never_cache
 from mobility.decorators import mobile_template
 
 from kitsune.products.models import Product, Topic, HOT_TOPIC_SLUG
+from kitsune.sumo.decorators import ssl_required
 from kitsune.sumo.parser import get_object_fallback
 from kitsune.sumo.views import redirect_to
 from kitsune.wiki.facets import documents_for
@@ -36,26 +37,31 @@ def home(request):
         'moz_news': moz_news})
 
 
+@ssl_required
 @mobile_template('landings/{mobile/}get-involved.html')
 def get_involved(request, template):
     return render(request, template)
 
 
+@ssl_required
 @mobile_template('landings/{mobile/}get-involved-aoa.html')
 def get_involved_aoa(request, template):
     return render(request, template)
 
 
+@ssl_required
 @mobile_template('landings/{mobile/}get-involved-questions.html')
 def get_involved_questions(request, template):
     return render(request, template)
 
 
+@ssl_required
 @mobile_template('landings/{mobile/}get-involved-kb.html')
 def get_involved_kb(request, template):
     return render(request, template)
 
 
+@ssl_required
 @mobile_template('landings/{mobile/}get-involved-l10n.html')
 def get_involved_l10n(request, template):
     return render(request, template)
