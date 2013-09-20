@@ -99,7 +99,8 @@ def login(request, template):
 
     if request.MOBILE:
         return render(request, template, {
-            'form': form})
+            'form': form,
+            'next_url': next_url})
 
     return user_auth(request, login_form=form)
 

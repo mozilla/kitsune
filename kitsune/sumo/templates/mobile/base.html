@@ -80,7 +80,11 @@
     <a href="{{ url('users.logout') }}" class="sign-out">{{ _('Sign Out') }}</a>
   {% else %}
     {% if waffle.flag('browserid') %}
-      <a href="#" class="browserid-login" data-next="{% if next_url %}{{ next_url }}{% else %}{{ request.get_full_path() }}{% endif %}">{{ _('Sign in with email') }}</a>
+      {% if settings.SESSION_COOKIE_SECURE and not request.is_secure() %}
+        <a href="{{ url('users.login')|urlparams(next=(request.get_full_path() if not next_url else next_url)) }}">{{ _('Sign in with email') }}</a>
+      {% else %}
+        {{ browserid_login(text=_('Sign in with email'), next=(request.get_full_path() if not next_url else next_url)) }}
+      {% endif %}
     {% else %}
       <a href="{{ url('users.login') }}">{{ _('Sign in') }}</a>
       <a href="{{ url('users.register') }}">{{ _('Register') }}</a>

@@ -51,7 +51,11 @@
     {% else %}
       {% if waffle.flag('browserid') %}
         <li>
-          {{ browserid_login(text=_('Sign in with email'), next=(request.get_full_path() if not next_url else next_url)) }}
+          {% if settings.SESSION_COOKIE_SECURE and not request.is_secure() %}
+            <a href="{{ url('users.login')|urlparams(next=(request.get_full_path() if not next_url else next_url)) }}">{{ _('Sign in with email') }}</a>
+          {% else %}
+            {{ browserid_login(text=_('Sign in with email'), next=(request.get_full_path() if not next_url else next_url)) }}
+          {% endif %}
         </li>
       {% else %}
         <li><a href="{{ url('users.auth') }}" class="sign-in register">
