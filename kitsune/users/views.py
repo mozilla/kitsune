@@ -8,7 +8,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.models import Site
 from django.http import (HttpResponsePermanentRedirect, HttpResponseRedirect,
-                         Http404)
+                         Http404, urlencode)
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import (require_http_methods, require_GET,
                                           require_POST)
@@ -666,12 +666,11 @@ def browserid_verify(request):
                 contributor = 'contributor' in request.POST
 
                 if len(user) == 0:
-                    form = BrowserIDSignupForm()
+                    # Add the email to the session and redirect to signup
                     request.session['browserid-email'] = email
-                    form.fields['username'].initial = suggest_username(email)
-                    return render(request, 'users/browserid_signup.html',
-                                  {'persona_email': email, 'next': next,
-                                   'form': form, 'contributor': contributor})
+                    signup_url = reverse('users.browserid_signup')
+                    return redirect('%s?%s' % (signup_url,
+                                               urlencode({'next': next})))
                 else:
                     user = user[0]
                     user.backend = 'django_browserid.auth.BrowserIDBackend'
@@ -685,10 +684,10 @@ def browserid_verify(request):
     return redirect(redirect_to_failure)
 
 
-@anonymous_csrf
-@require_POST
 @ssl_required
-def browserid_signup(request):
+@anonymous_csrf
+@mobile_template('users/{mobile/}browserid_signup.html')
+def browserid_signup(request, template):
     next = request.REQUEST.get('next')
     redirect_to = next or getattr(settings, 'LOGIN_REDIRECT_URL', '/')
     redirect_to_failure = getattr(settings, 'LOGIN_REDIRECT_URL_FAILURE', '/')
@@ -697,7 +696,8 @@ def browserid_signup(request):
     contributor = 'contributor' in request.POST
 
     if email:
-        form = BrowserIDSignupForm(request.REQUEST)
+        data = request.POST if request.method == 'POST' else None
+        form = BrowserIDSignupForm(data)
 
         if form.is_valid():
             user = User.objects.create_user(form.cleaned_data['username'],
@@ -718,8 +718,8 @@ def browserid_signup(request):
             return redirect(redirect_to)
         else:
             form.fields['username'].initial = suggest_username(email)
-            return render(request, 'users/browserid_signup.html',
-                          {'persona_email': email, 'next': next, 'form': form,
-                           'contributor': contributor})
+            return render(request, template, {'persona_email': email,
+                                              'next': next, 'form': form,
+                                              'contributor': contributor})
 
     return redirect(redirect_to_failure)

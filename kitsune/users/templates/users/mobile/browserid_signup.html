@@ -1,0 +1,28 @@
+{% extends 'mobile/base.html' %}
+
+{% set styles = ('mobile/users',) %}
+{% set classes = 'register' %}
+{% set headline = _("You're almost there!") %}
+{% set title = headline %}
+
+{% block content %}
+  <div class="top-section">
+    <h2>{{ _('Create a support account.') }}</h2>
+    <p>
+      {% trans %}
+        Please select a username and click continue to proceed with sign up.
+      {% endtrans %}
+    </p>
+  </div>
+
+
+  <form method="post" action="{{ url('users.browserid_signup') }}">
+    <input type="hidden" name="next" value="{{ next }}">
+    {% if contributor %}
+      <input type="hidden" name="contributor" value="1">
+    {% endif %}
+    {{ form }}
+    {{ csrf() }}
+    <p><button type="submit" class="btn btn-submit">{{ _('Continue') }}</button></p>
+  </form>
+{% endblock %}
