@@ -49,7 +49,7 @@
             $this.text(gettext('Signing you in...'));
 
             navigator.id.request({
-                returnTo: next,
+                returnTo: decodeURI(next),  // WTF? This is a workaround for https://github.com/mozilla/browserid/issues/3903
                 siteName: gettext('Mozilla Support'),
                 oncancel: function() {
                     $this.text(originalText);
