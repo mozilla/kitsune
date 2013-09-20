@@ -20,11 +20,11 @@ class AwardsListTests(TestCase):
 
         resp = self.client.get(reverse('badger.awards_list'), follow=True)
         eq_(200, resp.status_code)
-        self.assertContains(resp, a1.description)
+        self.assertContains(resp, a1.user.username)
         self.assertContains(resp, a1.get_absolute_url())
-        self.assertContains(resp, a2.description)
+        self.assertContains(resp, a2.user.username)
         self.assertContains(resp, a2.get_absolute_url())
-        self.assertContains(resp, a3.description)
+        self.assertContains(resp, a3.user.username)
         self.assertContains(resp, a3.get_absolute_url())
 
 
