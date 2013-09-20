@@ -654,8 +654,8 @@ def browserid_verify(request):
     if form.is_valid():
         result = verify(form.cleaned_data['assertion'], get_audience(request))
         if result:
-            if request.user.is_authenticated():
-                # User is already signed in so they must want an email change
+            if request.user.is_authenticated() and request.user.email != result['email']:
+                # User is already signed and wants to change their email.
                 request.user.email = result['email']
                 request.user.save()
                 return redirect(reverse('users.edit_profile'))
