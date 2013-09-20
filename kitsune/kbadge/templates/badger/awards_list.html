@@ -6,28 +6,35 @@
   <div class="grid_12">
     {% if badge %}
       {% trans badge_name=badge %}
-        <h2>Your recently awarded &quot;{{ badge_name }}&quot; badges</h2>
+        <h2>Recently awarded &quot;{{ badge_name }}&quot; badges</h2>
       {% endtrans %}
     {% else %}
-      <h2>{{ _('Your recently awarded badges') }}</h2>
+      <h2>{{ _('Recently awarded badges') }}</h2>
     {% endif %}
-    <ul class="card-grid" id="awards-list">
-      {% for award in award_list %}
-        {% if award.image %}
-          {% set award_image = award.image.url %}
-        {% elif award.badge.image %}
-          {% set award_image = award.badge.image.url %}
-        {% else %}
-          {% set award_image = STATIC_URL + 'kbadge/img/default-badge.png' %}
-        {% endif %}
-        <li class="grid_4">
-          <a href="{{ award.get_absolute_url() }}">
-            <img src="{{ award_image }}" alt="{{ award.badge.title }}" width="128" height="128" />
-          </a>
-          <a href="{{ award.get_absolute_url() }}">{{ award.badge.title }}</a>
-        </li>
-      {% endfor %}
-    </ul>
   </div>
-  {# TODO: pagination here #}
+
+  <ul class="cf" id="awards-list">
+    {% for award in award_list %}
+      {% if award.image %}
+        {% set award_image = award.image.url %}
+      {% elif award.badge.image %}
+        {% set award_image = award.badge.image.url %}
+      {% else %}
+        {% set award_image = STATIC_URL + 'kbadge/img/default-badge.png' %}
+      {% endif %}
+      <li class="grid_4">
+        <a class="cf" href="{{ award.get_absolute_url() }}">
+          <div class="badge">
+            <img src="{{ award_image }}" alt="" title="{{ award.badge.title }}">
+            <span>{{ award.badge.title }}</span>
+          </div>
+          <div class="award">
+            {{ _('awarded to') }}
+            <br><img src="{{ profile_avatar(award.user) }}" alt="" title="{{ award.user }}">
+            <br>{{ award.user }}
+          </div>
+        </a>
+      </li>
+    {% endfor %}
+  </ul>
 {% endblock %}
