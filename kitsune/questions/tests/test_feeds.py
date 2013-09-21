@@ -88,3 +88,16 @@ class ForumTestFeeds(TestCaseBase):
         eq_('Recently updated questions', feed.attrib['title'])
         eq_(urlparams('/en-US/questions/feed', product=p.slug, topic=t.slug),
             feed.attrib['href'])
+
+    def test_question_feed_with_locale(self):
+        """Test that questions feeds with products and topics work."""
+        url = urlparams(reverse('questions.questions', locale='pt-BR'))
+        res = self.client.get(url)
+        doc = pq(res.content)
+
+        feed_links = doc('link[type="application/atom+xml"]')
+        feed = feed_links[0]
+        eq_(1, len(feed_links))
+        eq_('Recently updated questions', feed.attrib['title'])
+        eq_(urlparams('/pt-BR/questions/feed'),
+            feed.attrib['href'])
