@@ -22,6 +22,7 @@ class QuestionsFeed(Feed):
 
         product_slug = request.GET.get('product')
         topic_slug = request.GET.get('topic')
+        locale = request.LANGUAGE_CODE
 
         if product_slug:
             query['product'] = get_object_or_404(Product, slug=product_slug)
@@ -29,6 +30,8 @@ class QuestionsFeed(Feed):
             if topic_slug:
                 query['topic'] = get_object_or_404(Topic, slug=topic_slug,
                                                    product__slug=product_slug)
+        if locale:
+            query['locale'] = locale
 
         return query
 
@@ -44,7 +47,8 @@ class QuestionsFeed(Feed):
             if 'topic' in query:
                 slugs['topic'] = query['topic'].slug
 
-        return urlparams(reverse('questions.questions'), **slugs)
+        url = reverse('questions.questions', locale=query.get('locale'))
+        return urlparams(url, **slugs)
 
     def items(self, query):
         qs = Question.objects.filter(creator__is_active=True)
@@ -54,6 +58,9 @@ class QuestionsFeed(Feed):
 
             if 'topic' in query:
                 qs = qs.filter(topics=query['topic'])
+
+        if 'locale' in query:
+            qs = qs.filter(locale=query['locale'])
 
         return qs.order_by('-updated')[:constants.QUESTIONS_PER_PAGE]
 
