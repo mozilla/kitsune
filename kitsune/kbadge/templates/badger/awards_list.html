@@ -33,6 +33,9 @@
             <br><img src="{{ profile_avatar(award.user) }}" alt="" title="{{ award.user }}">
             <br>{{ award.user }}
           </div>
+          <div class="meta">
+            {{ datetimeformat(award.created) }}
+          </div>
         </a>
       </li>
     {% endfor %}
