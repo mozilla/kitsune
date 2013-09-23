@@ -5,7 +5,7 @@
 {% block content %}
   <div class="grid_12">
     {% if badge %}
-      {% trans badge_name=badge %}
+      {% trans badge_name=_(badge.title, 'DB: badger.Badge.title') %}
         <h2>Recently awarded &quot;{{ badge_name }}&quot; badges</h2>
       {% endtrans %}
     {% else %}
@@ -25,8 +25,8 @@
       <li class="grid_4">
         <a class="cf" href="{{ award.get_absolute_url() }}">
           <div class="badge">
-            <img src="{{ award_image }}" alt="" title="{{ award.badge.title }}">
-            <span>{{ award.badge.title }}</span>
+            <img src="{{ award_image }}" alt="" title="{{ _(award.badge.title, 'DB: badger.Badge.title') }}">
+            <span>{{ _(award.badge.title, 'DB: badger.Badge.title') }}</span>
           </div>
           <div class="award">
             {{ _('awarded to') }}
