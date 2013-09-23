@@ -18,19 +18,27 @@
         If you’re registered with Mozilla Support, we will keep you logged into
         Twitter, so you can use Army of Awesome instantly.{% endtrans %}
       </p>
-      <p>{% trans %}
-        Are you registered with Mozilla Support?{% endtrans %}
-      </p>
-      <div>
-        <a href="{{ url('users.login') }}" class="btn btn-submit btn-modal signin-sumo">
-          <span class="highlight">{{ _('Yes, I am.') }}</span>
-          {{ _('Click to sign in.') }}
-        </a>
-        <a href="{{ url('users.register') }}" class="btn btn-submit btn-modal register">
-          <span class="highlight">{{ _("No, I'm not.") }}</span>
-          {{ _('Click to register.') }}
-        </a>
-      </div>
+      {% if waffle.flag('browserid') %}
+        <div>
+          <a class="browserid-login btn btn-submit btn-modal" href="#" data-next="{{ url('customercare.landing') }}">
+            {{ _('Sign in with email') }}
+          </a>
+        </div>
+      {% else %}
+        <p>{% trans %}
+          Are you registered with Mozilla Support?{% endtrans %}
+        </p>
+        <div>
+          <a href="{{ url('users.login') }}" class="btn btn-submit btn-modal signin-sumo">
+            <span class="highlight">{{ _('Yes, I am.') }}</span>
+            {{ _('Click to sign in.') }}
+          </a>
+          <a href="{{ url('users.register') }}" class="btn btn-submit btn-modal register">
+            <span class="highlight">{{ _("No, I'm not.") }}</span>
+            {{ _('Click to register.') }}
+          </a>
+        </div>
+      {% endif %}
     {% endif %}
   </div>
 </div>
