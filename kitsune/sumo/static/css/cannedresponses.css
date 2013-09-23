@@ -19,11 +19,9 @@
     height: 88%;
     overflow-y: auto;
 }
-.response-list {
-    margin: 0;
-}
+.response-list,
 .response-list .sidebar-nav {
-    margin-bottom: 0;
+    margin: 0;
 }
 
 #responses-area {
