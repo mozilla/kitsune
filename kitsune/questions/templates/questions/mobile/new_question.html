@@ -1,6 +1,6 @@
 {% extends "mobile/base.html" %}
 {% from "layout/errorlist.html" import errorlist %}
-{% from "questions/includes/aaq_macros.html" import select_product, selected_product, select_category, selected_category, show_results %}
+{% from "questions/includes/aaq_macros.html" import select_product, selected_product, select_category, selected_category %}
 {% from "questions/includes/aaq_macros.html" import current_articles_and_message, aaq_search_form with context %}
 {% set title = _('Ask A Question') %}
 {% set headline = title %}
@@ -47,12 +47,16 @@
       <a class="btn" href="{{ url('questions.aaq_step2', product_key=current_product.key) }}">{{ _('Try another topic') }}</a>
 
       {% if not deadend %}
-        {% set form_url = url('questions.aaq_step5', product_key=current_product.key, category_key=current_category.key) %}
-        <form action="{% if settings.SESSION_COOKIE_SECURE %}https://{{ host }}{% endif %}{{ form_url }}" method="get">
-          <input type="hidden" name="search" value="" />
-          <input type="hidden" name="step" value="{% if user.is_authenticated() %}aaq-question{% else %}aaq-register{% endif %}" />
-          <button type="submit" class="btn">{{ _('Post a question') }}</button>
-        </form>
+        {% set next_step_url = url('questions.aaq_step5', product_key=current_product.key, category_key=current_category.key) %}
+        {% if waffle.flag('browserid') %}
+          <a href="#" class="btn browserid-login" data-next="{{ next_step_url|urlparams(search=request.GET.search, step='aaq-question') }}">{{ _('Post a question') }}</a>
+        {% else %}
+          <form action="{% if settings.SESSION_COOKIE_SECURE %}https://{{ host }}{% endif %}{{ next_step_url }}" method="get">
+            <input type="hidden" name="search" value="{{ request.GET.search }}" />
+            <input type="hidden" name="step" value="{% if user.is_authenticated() %}aaq-question{% else %}aaq-register{% endif %}" />
+            <button type="submit" class="btn">{{ _('Post a question') }}</button>
+          </form>
+        {% endif %}
       {% endif %}
     </div>
   {% endif %}
