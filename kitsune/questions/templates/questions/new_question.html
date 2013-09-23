@@ -60,11 +60,16 @@
       <h2 class="no-results">{{ _('This question has not been asked before.') }}</h2>
       {% set button_text = _('Provide more details') %}
     {% endif %}
-    <form action="{{ url('questions.aaq_step5', product_key=current_product.key, category_key=current_category.key) }}" method="get">
-      <input type="hidden" name="search" value="{{ request.GET.search }}" />
-      <input type="hidden" name="step" value="{% if user.is_authenticated() %}aaq-question{% else %}aaq-register{% endif %}" />
-      <button type="submit" data-type="submit" class="btn btn-submit big">{{ button_text }}</button>
-    </form>
+
+    {% if waffle.flag('browserid') %}
+      <a href="#" class="btn btn-submit big browserid-login" data-next="{{ url('questions.aaq_step5', product_key=current_product.key, category_key=current_category.key)|urlparams(search=request.GET.search, step='aaq-question') }}">{{ button_text }}</a>
+    {% else %}
+      <form action="{{ url('questions.aaq_step5', product_key=current_product.key, category_key=current_category.key) }}" method="get">
+        <input type="hidden" name="search" value="{{ request.GET.search }}" />
+        <input type="hidden" name="step" value="{% if user.is_authenticated() %}aaq-question{% else %}aaq-register{% endif %}" />
+        <button type="submit" data-type="submit" class="btn btn-submit big">{{ button_text }}</button>
+      </form>
+    {% endif %}
   {% endif %}
 
 {% endblock %}
