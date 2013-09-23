@@ -5,7 +5,7 @@
 {% block content %}
 <div class="grid_6">
   <h2>
-    {% trans badge_name=badge.title %}
+    {% trans badge_name=_(badge.title, 'DB: badger.Badge.title') %}
       Badge: {{ badge_name }}
     {% endtrans %}
   </h2>
@@ -18,19 +18,19 @@
 
     {% if badge.description %}
       <dt>{{ _('Description:') }}</dt>
-      <dd class="description">{{ badge.description }}</dd>
+      <dd class="description">{{ _(badge.description, 'DB: badger.Badge.description') }}</dd>
     {% endif %}
 
     {% if badge.creator %}
       <dt>{{ _('Creator:') }}</dt>
-      <dd><a href="{{ badge.creator.get_absolute_url() }}">{{ badge.creator }}</a></dd>
+      <dd><a href="{{ profile_url(badge.creator) }}">{{ badge.creator }}</a></dd>
     {% endif %}
 
     <dt>{{ _('Created:') }}</dt>
-    <dd>{{ badge.created }}</dd>
+    <dd>{{ datetimeformat(badge.created) }}</dd>
 
     <dt>{{ _('Modified:') }}</dt>
-    <dd>{{ badge.modified }}</dd>
+    <dd>{{ datetimeformat(badge.modified) }}</dd>
   </dl>
 </div>
 
