@@ -20,6 +20,7 @@ from twython import TwythonAuthError, TwythonError
 from kitsune import twitter
 from kitsune.customercare.models import Tweet, Reply
 from kitsune.customercare.replies import get_common_replies
+from kitsune.sumo.decorators import ssl_required
 from kitsune.sumo.redis_utils import redis_client, RedisError
 
 
@@ -131,6 +132,7 @@ def more_tweets(request):
             https=request.is_secure())})
 
 
+@ssl_required
 @require_GET
 @anonymous_csrf  # Need this so the anon csrf gets set for forms rendered.
 @twitter.auth_wanted
