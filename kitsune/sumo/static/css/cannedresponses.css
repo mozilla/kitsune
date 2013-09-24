@@ -1,5 +1,7 @@
-.markup-toolbar-button.btn-cannedresponses {
+.markup-toolbar-link.btn-cannedresponses {
     background-image: url(../img/icon.magic-hat.png);
+    background-repeat: no-repeat;
+    padding: 6px 40px 6px !important;
 }
 
 #responses-area,
