@@ -56,7 +56,7 @@ from kitsune.search.es_utils import (ES_EXCEPTIONS, Sphilastic, F,
                                      es_query_with_analyzer)
 from kitsune.search.utils import locale_or_default, clean_excerpt
 from kitsune.sumo.helpers import urlparams
-from kitsune.sumo.urlresolvers import reverse
+from kitsune.sumo.urlresolvers import reverse, split_path
 from kitsune.sumo.utils import (
     paginate, simple_paginate, build_paged_url, user_or_ip)
 from kitsune.tags.utils import add_existing_tag
@@ -370,6 +370,19 @@ def edit_details(request, question_id):
 def aaq(request, product_key=None, category_key=None, showform=False,
         template=None, step=0):
     """Ask a new question."""
+
+    if request.LANGUAGE_CODE not in settings.AAQ_LANGUAGES:
+        locale, path = split_path(request.path)
+        path = '/' + settings.WIKI_DEFAULT_LANGUAGE + '/' + path
+
+        old_lang = settings.LANGUAGES[request.LANGUAGE_CODE.lower()]
+        new_lang = settings.LANGUAGES[settings.WIKI_DEFAULT_LANGUAGE.lower()]
+        msg = (_(u"The questions forum isn't available in {old_lang}, we "
+                 u"have redirected you to the {new_lang} questions forum.")
+               .format(old_lang=old_lang, new_lang=new_lang))
+        messages.add_message(request, messages.WARNING, msg)
+
+        return HttpResponseRedirect(path)
 
     if product_key is None:
         product_key = request.GET.get('product')

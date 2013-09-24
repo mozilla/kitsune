@@ -66,6 +66,7 @@
   <a href="{{ url('wiki.document', 'mozilla-news') }}">{{ _('Mozilla news') }}</a>
   <a href="{{ url('landings.get_involved') }}">{{ _('Help other users') }}</a>
   <a href="{{ url('wiki.document', 'suggestion-box') }}">{{ _('Suggestion box') }}</a>
+  <a href="?{{ request.QUERY_STRING}}&amp;mobile=0">{{ _('Switch to desktop site') }}</a>
 
   <header>{{ _('Profile') }}</header>
   {% if user.is_authenticated() %}
@@ -91,13 +92,14 @@
     {% endif %}
   {% endif %}
 
-  <header>{{ _('Languages') }}</header>
-  {% set locale_url = url('sumo.locales') %}
-  {% if localizable_url %}
-    {% set locale_url = locale_url|urlparams(next=localizable_url) %}
+  {% if not hide_locale_switcher %}
+    <header>{{ _('Languages') }}</header>
+    {% set locale_url = url('sumo.locales') %}
+    {% if localizable_url %}
+      {% set locale_url = locale_url|urlparams(next=localizable_url) %}
+    {% endif %}
+    <a href="{{ locale_url }}" class="locale-picker">{{ _('Switch language') }}</a>
   {% endif %}
-  <a href="{{ locale_url }}" class="locale-picker">{{ _('Switch language') }}</a>
-  <a href="?{{ request.QUERY_STRING}}&amp;mobile=0">{{ _('Switch to desktop site') }}</a>
 </nav>
 
 <header class="slide-on-exposed">

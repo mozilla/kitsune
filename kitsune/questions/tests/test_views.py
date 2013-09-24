@@ -99,6 +99,7 @@ class AAQTests(ElasticTestCase):
         self.assertContains(response, q1.title)
         self.assertNotContains(response, q2.title)
 
+    @override_settings(AAQ_LANGUAGES=['en-US', 'pt-BR', 'de'])
     def test_search_suggestion_questions_locale(self):
         """Verifies the right languages show up in search suggestions."""
         p = product(slug=u'firefox', save=True)
@@ -193,6 +194,15 @@ class AAQTests(ElasticTestCase):
         url = reverse('questions.aaq_step1')
         res = self.client.get(url)
         eq_(200, res.status_code)
+
+    def test_redirect_bad_locales(self):
+        """Non-AAQ locales should redirect."""
+        url_fr = reverse('questions.aaq_step1', locale='fr')
+        url_en = reverse('questions.aaq_step1', locale='en-US')
+        res = self.client.get(url_fr)
+        eq_(302, res.status_code)
+        # This has some http://... stuff at the beginning. Ignore that.
+        assert res['location'].endswith(url_en)
 
 
 class MobileAAQTests(MobileTestCase):
@@ -432,7 +442,7 @@ class TroubleshootingParsingTests(TestCaseBase):
 
 class TestQuestionList(TestCaseBase):
 
-    @override_settings(AAQ_LOCALES=['en-US', 'pt-BR'])
+    @override_settings(AAQ_LANGUAGES=['en-US', 'pt-BR'])
     def test_locale_filter(self):
         """Only questions for the current locale should be shown on the
         questions front page for AAQ locales."""
@@ -459,10 +469,10 @@ class TestQuestionList(TestCaseBase):
             for substr in titles:
                 assert substr in doc('.questions section .content h2 a').text()
 
-        # en-US and pt-BR are both in AAQ_LOCALES, so should be filtered.
+        # en-US and pt-BR are both in AAQ_LANGUAGES, so should be filtered.
         sub_test('en-US', 'cupcakes?', 'donuts?')
         sub_test('pt-BR', 'pies?')
-        # de is not in AAQ_LOCALES, so should show en-US, but not pt-BR
+        # de is not in AAQ_LANGUAGES, so should show en-US, but not pt-BR
         sub_test('de', 'cupcakes?', 'donuts?', 'pastries?')
 
 
