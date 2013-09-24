@@ -1433,13 +1433,13 @@ class AAQTemplateTestCase(TestCaseBase):
         eq_('18.0.2', version)
 
     def test_localized_creation(self):
-        response = self._post_new_question(locale='de')
+        response = self._post_new_question(locale='pt-BR')
         eq_(200, response.status_code)
         assert 'Done!' in pq(response.content)('ul.user-messages li').text()
 
         # Verify question is in db now
         question = Question.objects.filter(title='A test question')[0]
-        eq_(question.locale, 'de')
+        eq_(question.locale, 'pt-BR')
 
     def test_full_workflow_inactive(self):
         u = self.user
