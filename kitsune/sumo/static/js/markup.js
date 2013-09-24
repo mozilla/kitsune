@@ -788,14 +788,14 @@ Marky.MediaButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
  * The canned responses helper
  */
 Marky.CannedResponsesButton = function() {
-    this.name = gettext('Insert a canned response...');
+    this.name = gettext('Common responses');
     this.classes = 'btn-cannedresponses';
     this.openTag = '';
     this.closeTag = '';
     this.defaultText = gettext('cannedresponses');
     this.everyline = false;
 
-    this.html = '<button class="markup-toolbar-button" />';
+    this.html = '<a class="markup-toolbar-link" href="#"/>';
 };
 
 Marky.CannedResponsesButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
