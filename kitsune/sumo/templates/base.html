@@ -132,7 +132,9 @@
             {% if localizable_url %}
               {% set locale_url = locale_url|urlparams(next=localizable_url) %}
             {% endif %}
-            <li><a href="{{ locale_url }}" class="locale-picker">{{ settings.LANGUAGES[request.LANGUAGE_CODE.lower()] }}</a></li>
+            {% if not hide_locale_switcher %}
+              <li><a href="{{ locale_url }}" class="locale-picker">{{ settings.LANGUAGES[request.LANGUAGE_CODE.lower()] }}</a></li>
+            {% endif %}
           </ul>
         </nav>
       </div>
