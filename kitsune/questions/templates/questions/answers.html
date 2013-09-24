@@ -406,7 +406,8 @@
           {% endif %}
 
           <div class="cf">
-            {% if not question.has_voted(request) %}
+            {% if answers.object_list and not question.has_voted(request) %}
+              {# Only show the button again if there are answers in between #}
               <div class="me-too">
                 <form action="{{ url('questions.vote', question_id=question.id) }}" method="post">
                   <button class="btn big" type="submit">{{ _('I have this problem, too') }}</button>
@@ -417,7 +418,7 @@
           </div>
 
           <p>
-            {{ _("If you want to join us in helping users, <a href='{url}'>sign up as a contributor</a>.")|fe(url=url('landings.get_involved_questions')) }}
+            {{ _('You must <a href="{login_url}">log in to your account</a> to reply to posts. Please <a href="{ask_url}">start a new question</a>, if you do not have an account yet.')|fe(login_url=url('users.login'), ask_url=ask_url) }}
           </p>
         </div>
       {% endif %}
