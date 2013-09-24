@@ -61,7 +61,7 @@
       {% set button_text = _('Provide more details') %}
     {% endif %}
 
-    {% if waffle.flag('browserid') %}
+    {% if waffle.flag('browserid') and not user.is_authenticated() %}
       <a href="#" class="btn btn-submit big browserid-login" data-next="{{ url('questions.aaq_step5', product_key=current_product.key, category_key=current_category.key)|urlparams(search=request.GET.search, step='aaq-question') }}">{{ button_text }}</a>
     {% else %}
       <form action="{{ url('questions.aaq_step5', product_key=current_product.key, category_key=current_category.key) }}" method="get">
