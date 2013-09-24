@@ -7,6 +7,7 @@ from django.views.decorators.cache import cache_page
 from django.views.generic.base import RedirectView
 
 import authority
+import badger
 from adminplus import AdminSitePlus
 from waffle.views import wafflejs
 
@@ -15,6 +16,8 @@ admin.site = AdminSitePlus()
 admin.autodiscover()
 admin.site.login = login_required(admin.site.login)
 authority.autodiscover()
+badger.autodiscover()
+
 
 urlpatterns = patterns('',
     (r'^search', include('kitsune.search.urls')),
