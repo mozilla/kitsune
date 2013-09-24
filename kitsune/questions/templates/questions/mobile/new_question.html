@@ -13,6 +13,8 @@
   {% set return_url = url('questions.aaq_step2', product_key=current_product.key) %}
 {% endif %}
 {% set styles = ('mobile/aaq',) %}
+{% set hide_locale_switcher = True %}
+{% set meta = [('robots', 'noindex')] %}
 
 {% block content %}
   {% if not current_category %}
