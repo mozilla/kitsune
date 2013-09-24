@@ -48,7 +48,7 @@
 
       {% if not deadend %}
         {% set next_step_url = url('questions.aaq_step5', product_key=current_product.key, category_key=current_category.key) %}
-        {% if waffle.flag('browserid') %}
+        {% if waffle.flag('browserid') and not user.is_authenticated() %}
           <a href="#" class="btn browserid-login" data-next="{{ next_step_url|urlparams(search=request.GET.search, step='aaq-question') }}">{{ _('Post a question') }}</a>
         {% else %}
           <form action="{% if settings.SESSION_COOKIE_SECURE %}https://{{ host }}{% endif %}{{ next_step_url }}" method="get">
