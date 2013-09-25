@@ -29,7 +29,6 @@ class RegisterTests(TestCase):
         self.client.logout()
         super(RegisterTests, self).setUp()
 
-    @override_settings(DEBUG=True)
     @mock.patch.object(Site.objects, 'get_current')
     def test_new_user(self, get_current):
         get_current.return_value.domain = 'su.mo.com'
@@ -60,7 +59,6 @@ class RegisterTests(TestCase):
         eq_('http://testserver/en-US/home?fpa=1',
             response.redirect_chain[0][0])
 
-    @override_settings(DEBUG=True)
     @mock.patch.object(email_utils, 'send_messages')
     @mock.patch.object(Site.objects, 'get_current')
     def test_new_user_smtp_error(self, get_current, send_messages):
@@ -75,7 +73,6 @@ class RegisterTests(TestCase):
         self.assertContains(response, unicode(ERROR_SEND_EMAIL))
         assert not User.objects.filter(username='newbie').exists()
 
-    @override_settings(DEBUG=True)
     @mock.patch.object(Site.objects, 'get_current')
     def test_unicode_password(self, get_current):
         u_str = u'a1\xe5\xe5\xee\xe9\xf8\xe7\u6709\u52b9'
@@ -167,7 +164,6 @@ class RegisterTests(TestCase):
         assert 'test_question' in response.content
         assert q.get_absolute_url() in response.content
 
-    @override_settings(DEBUG=True)
     def test_duplicate_username(self):
         u = user(save=True)
         response = self.client.post(reverse('users.register', locale='en-US'),
@@ -177,7 +173,6 @@ class RegisterTests(TestCase):
                                      'password2': 'foo'}, follow=True)
         self.assertContains(response, 'already exists')
 
-    @override_settings(DEBUG=True)
     def test_duplicate_email(self):
         u = user(email='noob@example.com', save=True)
         User.objects.create(username='noob', email='noob@example.com').save()
@@ -188,7 +183,6 @@ class RegisterTests(TestCase):
                                      'password2': 'foo'}, follow=True)
         self.assertContains(response, 'already exists')
 
-    @override_settings(DEBUG=True)
     def test_no_match_passwords(self):
         u = user(save=True)
         response = self.client.post(reverse('users.register', locale='en-US'),
@@ -228,7 +222,6 @@ class RegisterTests(TestCase):
         user = User.objects.get(pk=user.pk)
         assert user.is_active
 
-    @override_settings(DEBUG=True)
     @mock.patch.object(Site.objects, 'get_current')
     def test_new_contributor(self, get_current):
         """Verify that interested contributors are added to group."""
@@ -412,8 +405,6 @@ class SessionTests(TestCase):
         self.client.logout()
         super(SessionTests, self).setUp()
 
-    # Need to set DEBUG = True for @ssl_required to not freak out.
-    @override_settings(DEBUG=True)
     def test_login_sets_extra_cookie(self):
         """On login, set the SESSION_EXISTS_COOKIE."""
         url = reverse('users.login')
@@ -423,7 +414,6 @@ class SessionTests(TestCase):
         c = res.cookies[settings.SESSION_EXISTS_COOKIE]
         assert 'secure' not in c.output().lower()
 
-    @override_settings(DEBUG=True)
     def test_logout_deletes_cookie(self):
         """On logout, delete the SESSION_EXISTS_COOKIE."""
         url = reverse('users.logout')
@@ -432,8 +422,7 @@ class SessionTests(TestCase):
         c = res.cookies[settings.SESSION_EXISTS_COOKIE]
         assert '1970' in c['expires']
 
-    @override_settings(DEBUG=True,
-                       SESSION_EXPIRE_AT_BROWSER_CLOSE=True)
+    @override_settings(SESSION_EXPIRE_AT_BROWSER_CLOSE=True)
     def test_expire_at_browser_close(self):
         """If SESSION_EXPIRE_AT_BROWSER_CLOSE, do expire then."""
         url = reverse('users.login')
@@ -442,8 +431,7 @@ class SessionTests(TestCase):
         c = res.cookies[settings.SESSION_EXISTS_COOKIE]
         eq_('', c['max-age'])
 
-    @override_settings(DEBUG=True,
-                       SESSION_EXPIRE_AT_BROWSER_CLOSE=False,
+    @override_settings(SESSION_EXPIRE_AT_BROWSER_CLOSE=False,
                        SESSION_COOKIE_AGE=123)
     def test_expire_in_a_long_time(self):
         """If not SESSION_EXPIRE_AT_BROWSER_CLOSE, set an expiry date."""
