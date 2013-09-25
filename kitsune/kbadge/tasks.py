@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.contrib.sites.models import Site
 
 from celery.task import task
 from tower import ugettext as _
