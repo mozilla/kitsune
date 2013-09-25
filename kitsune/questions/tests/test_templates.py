@@ -7,6 +7,7 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from django.core import mail
+from django.test.utils import override_settings
 
 import mock
 from nose.tools import eq_
@@ -1400,6 +1401,7 @@ class AAQTemplateTestCase(TestCaseBase):
             search='A test question')
         return self.client.post(url, self.data, follow=True)
 
+    @override_settings(DEBUG=True)
     def test_full_workflow(self):
         response = self._post_new_question()
         eq_(200, response.status_code)
@@ -1432,6 +1434,7 @@ class AAQTemplateTestCase(TestCaseBase):
         version = question.metadata['ff_version']
         eq_('18.0.2', version)
 
+    @override_settings(DEBUG=True)
     def test_localized_creation(self):
         response = self._post_new_question(locale='pt-BR')
         eq_(200, response.status_code)
@@ -1441,6 +1444,7 @@ class AAQTemplateTestCase(TestCaseBase):
         question = Question.objects.filter(title='A test question')[0]
         eq_(question.locale, 'pt-BR')
 
+    @override_settings(DEBUG=True)
     def test_full_workflow_inactive(self):
         u = self.user
         u.is_active = False
@@ -1459,6 +1463,7 @@ class AAQTemplateTestCase(TestCaseBase):
         # And no confirmation email was sent (already sent on registration)
         eq_(0, len(mail.outbox))
 
+    @override_settings(DEBUG=True)
     def test_invalid_type(self):
         """Providing an invalid type returns 400."""
         p = product(slug='firefox', save=True)
@@ -1477,6 +1482,7 @@ class AAQTemplateTestCase(TestCaseBase):
         eq_(400, response.status_code)
         assert 'Request type not recognized' in response.content
 
+    @override_settings(DEBUG=True)
     @mock.patch.object(Site.objects, 'get_current')
     def test_register_through_aaq(self, get_current):
         """Registering through AAQ form sends confirmation email."""
@@ -1513,11 +1519,13 @@ class AAQTemplateTestCase(TestCaseBase):
         # Note: there was already an email sent above
         eq_(1, len(mail.outbox))
 
+    @override_settings(DEBUG=True)
     def test_invalid_product_404(self):
         url = reverse('questions.aaq_step2', args=['lipsum'])
         response = self.client.get(url)
         eq_(404, response.status_code)
 
+    @override_settings(DEBUG=True)
     def test_invalid_category_302(self):
         url = reverse('questions.aaq_step3', args=['desktop', 'lipsum'])
         response = self.client.get(url)

@@ -160,6 +160,7 @@ class AAQTests(ElasticTestCase):
         assert 'donut' in doc('.result.document h3 a').text()
         assert 'cupcake' not in doc('.result.document h3 a').text()
 
+    @override_settings(DEBUG=True)
     def test_ratelimit(self):
         """Make sure posting new questions is ratelimited"""
         data = {'title': 'A test question',
@@ -186,6 +187,7 @@ class AAQTests(ElasticTestCase):
         response = self.client.post(url, data, follow=True)
         eq_(403, response.status_code)
 
+    @override_settings(DEBUG=True)
     def test_first_step(self):
         """Make sure the first step doesn't blow up
 
@@ -195,6 +197,7 @@ class AAQTests(ElasticTestCase):
         res = self.client.get(url)
         eq_(200, res.status_code)
 
+    @override_settings(DEBUG=True)
     def test_redirect_bad_locales(self):
         """Non-AAQ locales should redirect."""
         url_fr = reverse('questions.aaq_step1', locale='fr')
@@ -248,6 +251,7 @@ class MobileAAQTests(MobileTestCase):
         self.assertTemplateUsed(response,
                                 'questions/mobile/new_question.html')
 
+    @override_settings(DEBUG=True)
     @mock.patch.object(Site.objects, 'get_current')
     def test_logged_in_post(self, get_current):
         """New question is posted through mobile."""
@@ -260,6 +264,7 @@ class MobileAAQTests(MobileTestCase):
         eq_(200, response.status_code)
         assert Question.objects.filter(title='A test question')
 
+    @override_settings(DEBUG=True)
     @mock.patch.object(Site.objects, 'get_current')
     def test_aaq_new_question_inactive(self, get_current):
         """New question is posted through mobile."""
