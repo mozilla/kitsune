@@ -15,8 +15,11 @@ def send_award_notification(award):
     """
     @email_utils.safe_translation
     def _make_mail(locale, context, email):
+        subject = _("You were awarded the '{title}' badge!".format(
+            title=_(award.badge.title, 'DB: badger.Badge.title')))
+
         mail = email_utils.make_mail(
-            subject=_("You were awarded the '%s' badge!" % award.badge.title),
+            subject=subject,
             text_template='kbadge/email/award_notification.ltxt',
             html_template='kbadge/email/award_notification.html',
             context_vars=context,

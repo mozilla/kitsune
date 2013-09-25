@@ -23,13 +23,13 @@
 
   <p>
     {% if award.creator %}
-      {% trans awarder=award.creator, badge_title=_(badge.title, 'DB: badger.Badge.title') %}
+      {% trans awarder=award.creator, title=_(badge.title, 'DB: badger.Badge.title') %}
         <strong>{{ awarder }}</strong> has awarded you the
-        <strong>{{ badge_title }}</strong> badge!
+        <strong>{{ title }}</strong> badge!
       {% endtrans %}
     {% else %}
-      {% trans badge_title=_(badge.title, 'DB: badger.Badge.title') %}
-        You have been awarded the <strong>{{ badge_title }}</strong> badge!
+      {% trans title=_(badge.title, 'DB: badger.Badge.title') %}
+        You have been awarded the <strong>{{ title }}</strong> badge!
       {% endtrans %}
     {% endif %}
   </p>

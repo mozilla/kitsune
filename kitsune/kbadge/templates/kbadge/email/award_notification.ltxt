@@ -1,12 +1,12 @@
 {{ _('Congratulations!') }}
 
 {% if award.creator %}
-{% trans awarder=award.creator, badge_title=_(badge.title, 'DB: badger.Badge.title') %}
-{{ awarder }} has awarded you the {{ badge_title }} badge!
+{% trans awarder=award.creator, title=_(badge.title, 'DB: badger.Badge.title') %}
+{{ awarder }} has awarded you the {{ title }} badge!
 {% endtrans %}
 {% else %}
-{% trans badge_title=_(badge.title, 'DB: badger.Badge.title') %}
-You have been awarded the {{ badge_title }} badge!
+{% trans title=_(badge.title, 'DB: badger.Badge.title') %}
+You have been awarded the {{ title }} badge!
 {% endtrans %}
 {% endif %}
 
