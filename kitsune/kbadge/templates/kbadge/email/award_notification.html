@@ -17,7 +17,7 @@
 
   {% if badge.image %}
     <p class="badge">
-      <img src="{{ badge.image.url }}" alt="" title="" />
+      <img src="https://{{ host }}{{ badge.image.url }}" alt="" title="" />
     </p>
   {% endif %}
 
@@ -39,7 +39,7 @@
   {% endif %}
 
   <p>
-    <a class="button" href="{{ award.get_absolute_url() }}">{{ _('See all the details...') }}</a>
+    <a class="button" href="https://{{ host }}{{ award.get_absolute_url() }}">{{ _('See all the details...') }}</a>
   </p>
 </div>
 {% endblock %}

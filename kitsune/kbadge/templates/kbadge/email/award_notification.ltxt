@@ -15,4 +15,4 @@ You have been awarded the {{ title }} badge!
 {% endif %}
 
 {{ _('See all the details:') }}
-{{ award.get_absolute_url() }}
+https://{{ host }}{{ award.get_absolute_url() }}
