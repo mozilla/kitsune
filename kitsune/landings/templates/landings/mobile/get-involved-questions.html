@@ -70,10 +70,7 @@
       </a>
     </li>
   </ul>
-  <div class="sign-up">
-    <h3>{{ _('Sign up as a volunteer') }}</h3>
-    <a class="btn btn-submit" href="{{ url('users.auth_contributor') }}">
-      {{ _('Sign me up') }}
-    </a>
-  </div>
+
+  {% include 'landings/mobile/includes/register_contributor.html' %}
+
 {% endblock %}
