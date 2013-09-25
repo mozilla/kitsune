@@ -55,6 +55,7 @@ from kitsune.questions.question_config import products
 from kitsune.search.es_utils import (ES_EXCEPTIONS, Sphilastic, F,
                                      es_query_with_analyzer)
 from kitsune.search.utils import locale_or_default, clean_excerpt
+from kitsune.sumo.decorators import ssl_required
 from kitsune.sumo.helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse, split_path
 from kitsune.sumo.utils import (
@@ -365,6 +366,7 @@ def edit_details(request, question_id):
                             kwargs={'question_id': question_id}))
 
 
+@ssl_required
 @mobile_template('questions/{mobile/}new_question.html')
 @anonymous_csrf  # This view renders a login form
 def aaq(request, product_key=None, category_key=None, showform=False,
@@ -590,23 +592,27 @@ def aaq(request, product_key=None, category_key=None, showform=False,
         'current_articles': articles})
 
 
+@ssl_required
 def aaq_step2(request, product_key):
     """Step 2: The product is selected."""
     return aaq(request, product_key=product_key, step=1)
 
 
+@ssl_required
 def aaq_step3(request, product_key, category_key):
     """Step 3: The product and category is selected."""
     return aaq(request, product_key=product_key, category_key=category_key,
                step=1)
 
 
+@ssl_required
 def aaq_step4(request, product_key, category_key):
     """Step 4: Search query entered."""
     return aaq(request, product_key=product_key, category_key=category_key,
                step=1)
 
 
+@ssl_required
 def aaq_step5(request, product_key, category_key):
     """Step 5: Show full question form."""
     return aaq(request, product_key=product_key, category_key=category_key,
