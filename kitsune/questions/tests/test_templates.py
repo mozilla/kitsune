@@ -1524,6 +1524,7 @@ class AAQTemplateTestCase(TestCaseBase):
         url = reverse('questions.aaq_step2', args=['lipsum'])
         response = self.client.get(url)
         eq_(404, response.status_code)
+
     @override_settings(DEBUG=True)
     def test_invalid_category_302(self):
         url = reverse('questions.aaq_step3', args=['desktop', 'lipsum'])
