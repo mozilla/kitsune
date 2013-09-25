@@ -200,22 +200,23 @@
           </p>
           <p>
             {% trans %}Edit levels are taken into account as follows:{% endtrans %}
-            <ul>
-              <li>{% trans %}A level 2 review change drops the localization to 50% of the article{% endtrans %}</li>
-              <li>{% trans %}A level 3 review change drops the localization to 0% of the article{% endtrans %}</li>
-              <li>{% trans %}More than one level 2 review change drops the localization to 0%{% endtrans %}</li>
-            </ul>
           </p>
+          <ul>
+            <li>{% trans %}A level 2 review change drops the localization to 50% of the article{% endtrans %}</li>
+            <li>{% trans %}A level 3 review change drops the localization to 0% of the article{% endtrans %}</li>
+            <li>{% trans %}More than one level 2 review change drops the localization to 0%{% endtrans %}</li>
+          </ul>
+          
           <p>
             {% trans %}Example:{% endtrans %}
-            <ul>
-              <li>{% trans %}German makes up 10% of our visitor base{% endtrans %}</li>
-              <li>{% trans %}The 'how to set your home page' article makes up 2% of our top 50 visits{% endtrans %}</li>
-              <li>{% trans %}When the Home page article is the only localized article and it's up to date in German, then our overall coverage is 2% of 10%=0.2% overall (+ the English coverage){% endtrans %}</li>
-              <li>{% trans %}When German misses a level 2 change, the coverage drops to 50%, so 1% of 10%= 0.1% overall{% endtrans %}</li>
-              <li>{% trans %}<b>Important:</b> Currently we are using a simplified model, where each article accounts for 1/50=2% of visits per language {% endtrans %}</li>
-            </ul>
           </p>
+          <ul>
+            <li>{% trans %}German makes up 10% of our visitor base{% endtrans %}</li>
+            <li>{% trans %}The 'how to set your home page' article makes up 2% of our top 50 visits{% endtrans %}</li>
+            <li>{% trans %}When the Home page article is the only localized article and it's up to date in German, then our overall coverage is 2% of 10%=0.2% overall (+ the English coverage){% endtrans %}</li>
+            <li>{% trans %}When German misses a level 2 change, the coverage drops to 50%, so 1% of 10%= 0.1% overall{% endtrans %}</li>
+            <li>{% trans %}<b>Important:</b> Currently we are using a simplified model, where each article accounts for 1/50=2% of visits per language {% endtrans %}</li>
+          </ul>
         </li>
       </ul>
    </section>
