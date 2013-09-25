@@ -16,7 +16,7 @@ def send_award_notification(award):
     @email_utils.safe_translation
     def _make_mail(locale, context, email):
         mail = email_utils.make_mail(
-            subject=_('You have been awarded a badge!'),  # TODO: make this suck less
+            subject=_("You were awarded the '%s' badge!" % award.badge.title),
             text_template='kbadge/email/award_notification.ltxt',
             html_template='kbadge/email/award_notification.html',
             context_vars=context,
@@ -28,13 +28,8 @@ def send_award_notification(award):
     msg = _make_mail(
         locale=award.user.profile.locale,
         context={
-            'badge_title': award.badge.title,  # TODO: l10nize this!
-            'badge_description': award.badge.description,  # TODO: l10nize this!
-            'badge_image': award.badge.image,  # TODO: this is an unbaked image!
-            'award_description': award.description,
-            'award_awardee': award.user,
-            'award_awarder': award.creator,
-            'award_url': award.get_absolute_url(),
+            'award': award,
+            'badge': award.badge,
         },
         email=award.user.email
     )
