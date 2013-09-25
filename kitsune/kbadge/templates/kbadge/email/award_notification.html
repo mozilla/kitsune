@@ -1,30 +1,45 @@
 {% extends 'email/base.html' %}
 
+{% block styles %}
+  .centered {
+    text-align: center;
+  }
+
+  .badge > img {
+    height: 256px;
+    width: 256px;
+  }
+{% endblock %}
+
 {% block content %}
-<p>
-  {% if award_awarder %}
-    {{ award_awarder.displayname }} has awarded you a badge!
-  {% else %}
-    You have been awarded a badge!
+<div class="centered">
+  <h1>{{ _('Congratulations!') }}</h1>
+
+  {% if badge.image %}
+    <p class="badge">
+      <img src="https://{{ host }}{{ badge.image.url }}" alt="" title="" />
+    </p>
   {% endif %}
-</p>
 
-<p><strong>Badge title:</strong></p>
-<div class="quote">
-  {{ badge_title }}
+  <p>
+    {% if award.creator %}
+      {% trans awarder=award.creator, title=_(badge.title, 'DB: badger.Badge.title') %}
+        <strong>{{ awarder }}</strong> has awarded you the
+        <strong>{{ title }}</strong> badge!
+      {% endtrans %}
+    {% else %}
+      {% trans title=_(badge.title, 'DB: badger.Badge.title') %}
+        You have been awarded the <strong>{{ title }}</strong> badge!
+      {% endtrans %}
+    {% endif %}
+  </p>
+
+  {% if award.description %}
+    <p>{{ award.description }}</p>
+  {% endif %}
+
+  <p>
+    <a class="button" href="https://{{ host }}{{ award.get_absolute_url() }}">{{ _('See all the details...') }}</a>
+  </p>
 </div>
-
-<p><strong>Badge description:</strong></p>
-<div class="quote">
-  {{ badge_description }}
-</div>
-
-{% if award_description %}
-  <p><strong>Award reason:</strong></p>
-  <div class="quote">
-    {{ award_description }}
-  </div>
-{% endif %}
-
-<p><a href="{{ award_url }}">See your badge!</a></p>
 {% endblock %}

@@ -1,15 +1,18 @@
-{% if award_awarder %}
-{% trans username=award_awarder.displayname %}
-{{ username }} has awarded you a badge!
+{{ _('Congratulations!') }}
+
+{% if award.creator %}
+{% trans awarder=award.creator, title=_(badge.title, 'DB: badger.Badge.title') %}
+{{ awarder }} has awarded you the {{ title }} badge!
 {% endtrans %}
 {% else %}
-{{ _('You have been awarded a badge!') }}
+{% trans title=_(badge.title, 'DB: badger.Badge.title') %}
+You have been awarded the {{ title }} badge!
+{% endtrans %}
 {% endif %}
 
-{{ badge_title }}
+{% if award.description %}
+{{ award.description }}
+{% endif %}
 
-{{ badge_description }}
-
-{{ award_description }}
-
-{{ award_url }}
+{{ _('See all the details:') }}
+https://{{ host }}{{ award.get_absolute_url() }}
