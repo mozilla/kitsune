@@ -20,6 +20,8 @@ REDIS_BACKENDS = {
 # Some cron jobs are skipped on stage.
 STAGE = False
 
+SESSION_COOKIE_SECURE = False
+
 # This quells south's crazy debug logging
 import logging
 import south.logger

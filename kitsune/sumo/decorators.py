@@ -9,9 +9,9 @@ from django.core.exceptions import PermissionDenied
 def ssl_required(view_func):
     """A view decorator that enforces HTTPS.
 
-    If settings.DEBUG is True, it doesn't enforce anything."""
+    If settings.SESSION_COOKIE_SECURE is False, it won't enforce anything."""
     def _checkssl(request, *args, **kwargs):
-        if not settings.DEBUG and not request.is_secure():
+        if settings.SESSION_COOKIE_SECURE and not request.is_secure():
             url_str = request.build_absolute_uri()
             url_str = url_str.replace('http://', 'https://')
             return http.HttpResponseRedirect(url_str)
