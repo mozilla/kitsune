@@ -13,6 +13,7 @@ from nose import SkipTest
 from nose.tools import eq_
 from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
+from selenium.webdriver.firefox import firefox_binary
 from test_utils import TestCase as OriginalTestCase
 
 from kitsune import sumo
@@ -133,7 +134,14 @@ class SeleniumTestCase(LiveServerTestCase):
     @classmethod
     def setUpClass(cls):
         try:
-            cls.webdriver = webdriver.Firefox()
+            firefox_path = getattr(settings, 'SELENIUM_FIREFOX_PATH', None)
+            if firefox_path:
+                firefox_bin = firefox_binary.FirefoxBinary(
+                    firefox_path=firefox_path)
+                kwargs = {'firefox_binary': firefox_bin}
+            else:
+                kwargs = {}
+            cls.webdriver = webdriver.Firefox(**kwargs)
         except (RuntimeError, WebDriverException):
             cls.skipme = True
 
