@@ -37,13 +37,9 @@ def on_reply_save(sender, instance, **kwargs):
 
 
 @task
-def maybe_award_badge(badge_info, year, user):
+def maybe_award_badge(badge_template, year, user):
     """Award the specific badge to the user if they've earned it."""
-    badge_slug = badge_info['slug'].format(year=year)
-    badge = get_or_create_badge(
-        slug=badge_slug,
-        title=badge_info['title'].format(year=year),
-        description=badge_info['description'].format(year=year))
+    badge = get_or_create_badge(badge_template, year)
 
     # If the user already has the badge, there is nothing else to do.
     if badge.is_awarded_to(user):
