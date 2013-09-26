@@ -332,6 +332,7 @@ Regular search does the following:
 5. (filter) support forum posts tagged with the product
    (e.g. "desktop")
 6. (filter) support forum posts must have an answer marked as helpful
+7. (filter) support forum posts must be from the past 180 days
 
 It scores as specified above.
 
