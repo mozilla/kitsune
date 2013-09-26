@@ -283,6 +283,26 @@ version of OSX and a OSX version of XVFB. You can find more details
    share, please do!
 
 
+Troubleshooting
+---------------
+
+**It says "Selenium unavailable."**
+
+    This could mean that Selenium couldn't launch Firefox or can
+    launch it, but can't connect to it.
+
+    Selenium by default looks for Firefox in "the usual places".
+    You can explicitly tell it which Firefox binary to use with
+    the ``SELENIUM_FIREFOX_PATH`` setting.
+
+    For example, in your ``settings_local.py`` file::
+
+        SELENIUM_FIREFOX_PATH = '/usr/bin/firefox'
+
+    I do this to make sure I'm using Firefox stable for tests
+    rather than Firefox nightly.
+
+
 .. _tests-chapter-qa-test-suite:
 
 The QA test suite
