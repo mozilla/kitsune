@@ -39,13 +39,9 @@ def on_reply_save(sender, instance, created, **kwargs):
 
 
 @task
-def maybe_award_badge(badge_info, year, user):
+def maybe_award_badge(badge_template, year, user):
     """Award the specific badge to the user if they've earned it."""
-    badge_slug = badge_info['slug'].format(year=year)
-    badge = get_or_create_badge(
-        slug=badge_slug,
-        title=badge_info['title'].format(year=year),
-        description=badge_info['description'].format(year=year))
+    badge = get_or_create_badge(badge_template, year)
 
     # If the user already has the badge, there is nothing else to do.
     if badge.is_awarded_to(user):
@@ -60,6 +56,7 @@ def maybe_award_badge(badge_info, year, user):
     # If the count is 20 or higher, award the badge.
     if qs.count() >= 20:
         badge.award_to(user)
+        return True
 
 
 def register_signals():

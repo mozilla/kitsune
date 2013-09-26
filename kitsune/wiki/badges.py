@@ -45,21 +45,17 @@ def on_revision_save(sender, instance, **kwargs):
 
     # The badge to be awarded depends on the locale.
     if rev.document.locale == settings.WIKI_DEFAULT_LANGUAGE:
-        badge_info = WIKI_BADGES['kb-badge']
+        badge_template = WIKI_BADGES['kb-badge']
     else:
-        badge_info = WIKI_BADGES['l10n-badge']
+        badge_template = WIKI_BADGES['l10n-badge']
 
-    maybe_award_badge.delay(badge_info, year, creator)
+    maybe_award_badge.delay(badge_template, year, creator)
 
 
 @task
-def maybe_award_badge(badge_info, year, user):
+def maybe_award_badge(badge_template, year, user):
     """Award the specific badge to the user if they've earned it."""
-    badge_slug = badge_info['slug'].format(year=year)
-    badge = get_or_create_badge(
-        slug=badge_slug,
-        title=badge_info['title'].format(year=year),
-        description=badge_info['description'].format(year=year))
+    badge = get_or_create_badge(badge_template, year)
 
     # If the user already has the badge, there is nothing else to do.
     if badge.is_awarded_to(user):
@@ -72,7 +68,7 @@ def maybe_award_badge(badge_info, year, user):
         is_approved=True,
         created__gte=date(year, 1, 1),
         created__lt=date(year + 1, 1, 1))
-    if badge_info['slug'] == WIKI_BADGES['kb-badge']['slug']:
+    if badge_template['slug'] == WIKI_BADGES['kb-badge']['slug']:
         # kb-badge
         qs = qs.filter(document__locale=settings.WIKI_DEFAULT_LANGUAGE)
     else:
@@ -82,6 +78,7 @@ def maybe_award_badge(badge_info, year, user):
     # If the count is 10 or higher, award the badge.
     if qs.count() >= 10:
         badge.award_to(user)
+        return True
 
 
 def register_signals():
