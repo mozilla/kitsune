@@ -6,7 +6,6 @@ from django.core.management.base import BaseCommand
 
 from kitsune.customercare import badges as aoa_badges
 from kitsune.customercare.models import Reply
-from kitsune.kbadge.utils import get_or_create_badge
 from kitsune.questions import badges as questions_badges
 from kitsune.questions.models import Answer
 from kitsune.wiki import badges as wiki_badges
@@ -32,8 +31,10 @@ class Command(BaseCommand):
                 .distinct())
 
             for user in User.objects.filter(id__in=user_ids):
-                wiki_badges.maybe_award_badge(
-                    wiki_badges.WIKI_BADGES['kb-badge'], year, user)
+                if wiki_badges.maybe_award_badge(
+                        wiki_badges.WIKI_BADGES['kb-badge'], year, user):
+                    print '{year} KB Badge awarded to {user}'.format(
+                        year=year, user=user.username)
 
             # L10n Badge
             # Figure out who the L10n contributors are for the year and
@@ -47,8 +48,10 @@ class Command(BaseCommand):
                 .distinct())
 
             for user in User.objects.filter(id__in=user_ids):
-                wiki_badges.maybe_award_badge(
-                    wiki_badges.WIKI_BADGES['l10n-badge'], year, user)
+                if wiki_badges.maybe_award_badge(
+                        wiki_badges.WIKI_BADGES['l10n-badge'], year, user):
+                    print '{year} L10n Badge awarded to {user}'.format(
+                        year=year, user=user.username)
 
             # Support Forum Badge
             # Figure out who the Support Forum contributors are for the year
@@ -61,10 +64,12 @@ class Command(BaseCommand):
                 .distinct())
 
             for user in User.objects.filter(id__in=user_ids):
-                questions_badges.maybe_award_badge(
-                    questions_badges.QUESTIONS_BADGES['answer-badge'],
-                    year,
-                    user)
+                if questions_badges.maybe_award_badge(
+                        questions_badges.QUESTIONS_BADGES['answer-badge'],
+                        year,
+                        user):
+                    print '{year} Support Forum Badge awarded to {user}'.format(
+                        year=year, user=user.username)
 
             # Army of Awesome Badge
             # Figure out who the Army of Awesome contributors are for the year
@@ -77,4 +82,7 @@ class Command(BaseCommand):
                 .distinct())
 
             for user in User.objects.filter(id__in=user_ids):
-                aoa_badges.maybe_award_badge(aoa_badges.AOA_BADGE, year, user)
+                if aoa_badges.maybe_award_badge(
+                        aoa_badges.AOA_BADGE, year, user):
+                     print '{year} AoA Badge awarded to {user}'.format(
+                        year=year, user=user.username)

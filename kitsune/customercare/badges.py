@@ -54,6 +54,7 @@ def maybe_award_badge(badge_template, year, user):
     # If the count is 50 or higher, award the badge.
     if qs.count() >= 50:
         badge.award_to(user)
+        return True
 
 
 def register_signals():
