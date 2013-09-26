@@ -1,6 +1,6 @@
-Metadata-Version: 1.0
+Metadata-Version: 1.1
 Name: selenium
-Version: 2.33.0
+Version: 2.35.0
 Summary: Python bindings for Selenium
 Home-page: http://code.google.com/p/selenium/
 Author: UNKNOWN
@@ -35,10 +35,10 @@ Description: ============
         Java Server
         -----------
         
-        Download the server from http://selenium.googlecode.com/files/selenium-server-standalone-2.33.0.jar
+        Download the server from http://selenium.googlecode.com/files/selenium-server-standalone-2.35.0.jar
         ::
         
-            java -jar selenium-server-standalone-2.33.0.jar
+            java -jar selenium-server-standalone-2.35.0.jar
         
         Example
         =======
