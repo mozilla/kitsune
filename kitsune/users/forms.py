@@ -237,7 +237,7 @@ class AvatarForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(AvatarForm, self).__init__(*args, **kwargs)
         self.fields['avatar'].help_text = (
-            u'Your avatar will be resized to {size}x{size}'.format(
+            _('Your avatar will be resized to {size}x{size}').format(
                 size=settings.AVATAR_SIZE))
 
     class Meta(object):
