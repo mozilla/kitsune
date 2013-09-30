@@ -6,10 +6,13 @@ from django.core.management.base import BaseCommand
 
 from kitsune.customercare import badges as aoa_badges
 from kitsune.customercare.models import Reply
+from kitsune.customercare.tasks import maybe_award_badge as maybe_award_aoa_badge
 from kitsune.questions import badges as questions_badges
 from kitsune.questions.models import Answer
+from kitsune.questions.tasks import maybe_award_badge as maybe_award_questions_badge
 from kitsune.wiki import badges as wiki_badges
 from kitsune.wiki.models import Revision
+from kitsune.wiki.tasks import maybe_award_badge as maybe_award_wiki_badge
 
 
 class Command(BaseCommand):
@@ -31,7 +34,7 @@ class Command(BaseCommand):
                 .distinct())
 
             for user in User.objects.filter(id__in=user_ids):
-                if wiki_badges.maybe_award_badge(
+                if maybe_award_wiki_badge(
                         wiki_badges.WIKI_BADGES['kb-badge'], year, user):
                     print '{year} KB Badge awarded to {user}'.format(
                         year=year, user=user.username)
@@ -48,7 +51,7 @@ class Command(BaseCommand):
                 .distinct())
 
             for user in User.objects.filter(id__in=user_ids):
-                if wiki_badges.maybe_award_badge(
+                if maybe_award_wiki_badge(
                         wiki_badges.WIKI_BADGES['l10n-badge'], year, user):
                     print '{year} L10n Badge awarded to {user}'.format(
                         year=year, user=user.username)
@@ -64,7 +67,7 @@ class Command(BaseCommand):
                 .distinct())
 
             for user in User.objects.filter(id__in=user_ids):
-                if questions_badges.maybe_award_badge(
+                if maybe_award_questions_badge(
                         questions_badges.QUESTIONS_BADGES['answer-badge'],
                         year,
                         user):
@@ -82,7 +85,7 @@ class Command(BaseCommand):
                 .distinct())
 
             for user in User.objects.filter(id__in=user_ids):
-                if aoa_badges.maybe_award_badge(
+                if maybe_award_aoa_badge(
                         aoa_badges.AOA_BADGE, year, user):
                      print '{year} AoA Badge awarded to {user}'.format(
                         year=year, user=user.username)
