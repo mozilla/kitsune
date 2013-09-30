@@ -37,7 +37,7 @@ HOME = /tmp
 45 4 * * * {{ cron }} build_kb_bundles
 
 # Temporary
-7 30 * * * {{ django }} award_badges
+7 15 * * * {{ django }} award_badges
 
 # Twice per week.
 #05 01 * * 1,4 {{ cron }} update_weekly_votes
