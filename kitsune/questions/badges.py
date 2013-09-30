@@ -1,10 +1,5 @@
-from datetime import date
-
 from django.db.models.signals import post_save
 
-from celery.task import task
-
-from kitsune.kbadge.utils import get_or_create_badge
 from kitsune.questions.models import Answer
 
 
@@ -34,29 +29,9 @@ def on_reply_save(sender, instance, created, **kwargs):
     # If this is a new answer (not an edit), then the creator
     # might qualify for the answers badge.
     if created:
+        from kitsune.questions.tasks import maybe_award_badge
         maybe_award_badge.delay(
             QUESTIONS_BADGES['answer-badge'], year, creator)
-
-
-@task
-def maybe_award_badge(badge_template, year, user):
-    """Award the specific badge to the user if they've earned it."""
-    badge = get_or_create_badge(badge_template, year)
-
-    # If the user already has the badge, there is nothing else to do.
-    if badge.is_awarded_to(user):
-        return
-
-    # Count the number of replies tweeted in the current year.
-    qs = Answer.objects.filter(
-        creator=user,
-        created__gte=date(year, 1, 1),
-        created__lt=date(year + 1, 1, 1))
-
-    # If the count is 30 or higher, award the badge.
-    if qs.count() >= 30:
-        badge.award_to(user)
-        return True
 
 
 def register_signals():

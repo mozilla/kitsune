@@ -1,11 +1,12 @@
 import logging
 import time
+from datetime import date
 
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
-from django.core.mail import EmailMessage, mail_admins
+from django.core.mail import mail_admins
 from django.db import transaction
 
 import celery.conf
@@ -15,9 +16,11 @@ from statsd import statsd
 from tower import ugettext as _
 import waffle
 
+from kitsune.kbadge.utils import get_or_create_badge
 from kitsune.sumo import email_utils
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import chunked
+from kitsune.wiki.badges import WIKI_BADGES
 from kitsune.wiki.models import (
     Document, points_to_document_view, SlugCollision, TitleCollision, Revision)
 
@@ -215,3 +218,32 @@ def _rebuild_kb_chunk(data):
     transaction.commit_unless_managed()
 
     unpin_this_thread()  # Not all tasks need to do use the master.
+
+
+@task
+def maybe_award_badge(badge_template, year, user):
+    """Award the specific badge to the user if they've earned it."""
+    badge = get_or_create_badge(badge_template, year)
+
+    # If the user already has the badge, there is nothing else to do.
+    if badge.is_awarded_to(user):
+        return
+
+    # Count the number of approved revisions in the appropriate locales
+    # for the current year.
+    qs = Revision.objects.filter(
+        creator=user,
+        is_approved=True,
+        created__gte=date(year, 1, 1),
+        created__lt=date(year + 1, 1, 1))
+    if badge_template['slug'] == WIKI_BADGES['kb-badge']['slug']:
+        # kb-badge
+        qs = qs.filter(document__locale=settings.WIKI_DEFAULT_LANGUAGE)
+    else:
+        # l10n-badge
+        qs = qs.exclude(document__locale=settings.WIKI_DEFAULT_LANGUAGE)
+
+    # If the count is 10 or higher, award the badge.
+    if qs.count() >= 10:
+        badge.award_to(user)
+        return True

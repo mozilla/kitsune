@@ -1,4 +1,5 @@
 import logging
+from datetime import date
 
 from django.conf import settings
 from django.db import connection, transaction
@@ -9,6 +10,7 @@ from celery.task import task
 from multidb.pinning import pin_this_thread, unpin_this_thread
 from statsd import statsd
 
+from kitsune.kbadge.utils import get_or_create_badge
 from kitsune.questions import ANSWERS_PER_PAGE
 from kitsune.questions.karma_actions import AnswerAction, FirstAnswerAction
 from kitsune.search.es_utils import ES_EXCEPTIONS
@@ -126,3 +128,25 @@ def log_answer(answer):
         FirstAnswerAction(answer.creator, answer.created.date()).save()
 
     unpin_this_thread()
+
+
+@task
+def maybe_award_badge(badge_template, year, user):
+    """Award the specific badge to the user if they've earned it."""
+    badge = get_or_create_badge(badge_template, year)
+
+    # If the user already has the badge, there is nothing else to do.
+    if badge.is_awarded_to(user):
+        return
+
+    # Count the number of replies tweeted in the current year.
+    from kitsune.questions.models import Answer
+    qs = Answer.objects.filter(
+        creator=user,
+        created__gte=date(year, 1, 1),
+        created__lt=date(year + 1, 1, 1))
+
+    # If the count is 30 or higher, award the badge.
+    if qs.count() >= 30:
+        badge.award_to(user)
+        return True

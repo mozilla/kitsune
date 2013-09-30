@@ -1,11 +1,6 @@
-from datetime import date
-
 from django.conf import settings
 from django.db.models.signals import post_save
 
-from celery.task import task
-
-from kitsune.kbadge.utils import get_or_create_badge
 from kitsune.wiki.models import Revision
 
 
@@ -49,36 +44,8 @@ def on_revision_save(sender, instance, **kwargs):
     else:
         badge_template = WIKI_BADGES['l10n-badge']
 
+    from kitsune.wiki.tasks import maybe_award_badge
     maybe_award_badge.delay(badge_template, year, creator)
-
-
-@task
-def maybe_award_badge(badge_template, year, user):
-    """Award the specific badge to the user if they've earned it."""
-    badge = get_or_create_badge(badge_template, year)
-
-    # If the user already has the badge, there is nothing else to do.
-    if badge.is_awarded_to(user):
-        return
-
-    # Count the number of approved revisions in the appropriate locales
-    # for the current year.
-    qs = Revision.objects.filter(
-        creator=user,
-        is_approved=True,
-        created__gte=date(year, 1, 1),
-        created__lt=date(year + 1, 1, 1))
-    if badge_template['slug'] == WIKI_BADGES['kb-badge']['slug']:
-        # kb-badge
-        qs = qs.filter(document__locale=settings.WIKI_DEFAULT_LANGUAGE)
-    else:
-        # l10n-badge
-        qs = qs.exclude(document__locale=settings.WIKI_DEFAULT_LANGUAGE)
-
-    # If the count is 10 or higher, award the badge.
-    if qs.count() >= 10:
-        badge.award_to(user)
-        return True
 
 
 def register_signals():
