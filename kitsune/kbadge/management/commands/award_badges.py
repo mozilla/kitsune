@@ -7,6 +7,7 @@ from django.core.management.base import BaseCommand
 from kitsune.customercare import badges as aoa_badges
 from kitsune.customercare.models import Reply
 from kitsune.customercare.tasks import maybe_award_badge as maybe_award_aoa_badge
+from kitsune.kbadge import badges  # This import hooks up email notifications
 from kitsune.questions import badges as questions_badges
 from kitsune.questions.models import Answer
 from kitsune.questions.tasks import maybe_award_badge as maybe_award_questions_badge
