@@ -61,7 +61,11 @@ def update_l10n_coverage_metrics():
 
             # % of all articles
             all_ = rows['all']
-            percent = 100.0 * float(all_['numerator']) / all_['denominator']
+            try:
+                percent = 100.0 * float(all_['numerator']) / all_['denominator']
+            except ZeroDivisionError:
+                percent = 0.0
+
             WikiMetric.objects.create(
                 code=L10N_ALL_CODE,
                 locale=locale,
