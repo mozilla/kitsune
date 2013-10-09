@@ -14,6 +14,7 @@ CELERY_ALWAYS_EAGER = True
 CACHE_BACKEND = 'caching.backends.locmem://'
 ES_INDEX_PREFIX = 'sumo'
 ES_URLS = ['http://localhost:9200']
+INSTALLED_APPS += ('django_qunit',)
 SETTINGS
 
 echo "Creating test database"
@@ -36,3 +37,7 @@ sudo chown `whoami` -R /var/redis/
 
 echo "Starting XVFB for Selenium tests."
 /usr/bin/Xvfb :99 -ac -screen 0 1280x1024x16 >/dev/null 2>/dev/null &
+
+echo "Doing static dance."
+./manage.py collectstatic --noinput > /dev/null
+./manage.py compress_assets > /dev/null

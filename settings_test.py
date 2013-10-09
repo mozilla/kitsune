@@ -1,5 +1,6 @@
 # The test system uses this to override settings in settings.py and
 # settings_local.py with settings appropriate for testing.
+import os
 
 ES_LIVE_INDEXING = False
 ES_INDEX_PREFIX = 'sumotest'
@@ -21,6 +22,11 @@ REDIS_BACKENDS = {
 STAGE = False
 
 SESSION_COOKIE_SECURE = False
+
+# The way we do live server test cases is greedy with ports. This gives
+# it more ports, but won't clobber settings from the environment.
+if 'DJANGO_LIVE_TEST_SERVER_ADDRESS' not in os.environ:
+    os.environ['DJANGO_LIVE_TEST_SERVER_ADDRESS'] = 'localhost:8081-8090'
 
 # This quells south's crazy debug logging
 import logging
