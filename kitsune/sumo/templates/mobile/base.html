@@ -163,7 +163,9 @@
 {% endfor %}
 
 {# Browser ID #}
-<script src="https://login.persona.org/include.js" type="text/javascript"></script>
+{% if waffle.flag('browserid') %}
+  <script src="https://login.persona.org/include.js" type="text/javascript"></script>
+{% endif %}
 {# End Browser ID #}
 
 </body>
