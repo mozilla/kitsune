@@ -141,7 +141,6 @@ SUMO_LANGUAGES = (
     'mr',
     'ms',
     'my',
-    'nb-NO',
     'ne-NP',
     'nl',
     'no',
