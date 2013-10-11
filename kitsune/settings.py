@@ -182,6 +182,7 @@ AAQ_LANGUAGES = (
     'en-US',
     'hu',
     'pt-BR',
+    'sr-Cyrl',
 )
 
 # Languages that should show up in language switcher.
