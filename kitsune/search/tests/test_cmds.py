@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.core.management import call_command
 
 import mock
@@ -52,8 +53,9 @@ class ESCommandTests(ElasticTestCase):
 
     @mock.patch.object(FakeLogger, '_out')
     def test_delete(self, _out):
-        # Note: read_index() == write_index() in the tests, so we only
-        # have to do one.
-        for index in [es_utils.read_index(),
-                      'cupcakerainbow_index']:
+        # Note: The read indexes and the write indexes are the same in
+        # the tests, so we only have to do this once.
+        indexes = es_utils.all_read_indexes()
+        indexes.append('cupcakerainbow_index')
+        for index in indexes:
             call_command('esdelete', index, noinput=True)

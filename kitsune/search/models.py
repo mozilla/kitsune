@@ -66,13 +66,13 @@ class SearchMixin(object):
 
     def index_later(self):
         """Register myself to be indexed at the end of the request."""
-        _local_tasks().add((index_task.delay, (
-                    self.get_mapping_type(), (self.id,))))
+        _local_tasks().add((index_task.delay,
+                           (self.get_mapping_type(), (self.id,))))
 
     def unindex_later(self):
         """Register myself to be unindexed at the end of the request."""
-        _local_tasks().add((unindex_task.delay, (
-                    self.get_mapping_type(), (self.id,))))
+        _local_tasks().add((unindex_task.delay,
+                           (self.get_mapping_type(), (self.id,))))
 
 
 class SearchMappingType(MappingType, Indexable):
@@ -98,7 +98,11 @@ class SearchMappingType(MappingType, Indexable):
 
     @classmethod
     def get_index(cls):
-        return es_utils.write_index()
+        return es_utils.write_index(cls.get_index_group())
+
+    @classmethod
+    def get_index_group(cls):
+        return 'default'
 
     @classmethod
     def get_query_fields(cls):

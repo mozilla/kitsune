@@ -22,6 +22,14 @@
       border: 3px red solid;
       font: bold 12px/14px serif;
     }
+    .errorspan {
+      background: #ffc;
+      border: 1px solid red;
+      padding: 1.5px;
+    }
+    .errorspan img {
+      transform: translate(0,-1px);
+    }
   </style>
 {% endblock %}
 
@@ -71,33 +79,35 @@
   <section>
     <h1>Index Status</h1>
     <p>
-      All indexes available:
+      All available indexes:
     </p>
     <table>
       <thead>
-        <th>index name</th>
-        <th>total documents in index</th>
-        <th></th>
-        <th></th>
+        <th>Index Name</th>
+        <th>Documents</th>
+        <th>Type</th>
+        <th>Delete</th>
       </thead>
+
       <tbody>
         {% for index_name, index_count in indexes %}
           <tr>
-            <td>{{ index_name }}</td><td>{{ index_count }}</td>
+            <td>{{ index_name }}</td>
+            <td>{{ index_count }}</td>
             <td>
-              {% if index_name == read_index and index_name == write_index %}
+              {% if index_name in read_indexes and index_name in write_indexes %}
                 READ/WRITE
               {% else %}
-                {% if index_name == read_index %}
+                {% if index_name in read_indexes %}
                   READ
                 {% else %}
-                  {% if index_name == write_index %}
+                  {% if index_name in write_indexes %}
                     WRITE
                   {% endif %}
                 {% endif %}
               {% endif %}
             </td>
-            {% if index_name != read_index %}
+            {% if index_name not in read_indexes %}
               <td>
                 <form method="POST">
                   {% csrf_token %}
@@ -106,53 +116,55 @@
                 </form>
               </td>
             {% else %}
-              <td></td>
+              <td>Disabled</td>
             {% endif %}
           </tr>
         {% endfor %}
       </tbody>
     </table>
-    <h2>Read index ({{ read_index }})</h2>
-    {% if doctype_stats == None %}
-      <p>
-        Read index does not exist.
-      </p>
-    {% else %}
-      <table>
-        <thead>
-          <th>doctype</th>
-          <th>count</th>
-        </thead>
-        <tbody>
-          {% for stats_name, stats_count in doctype_stats.items %}
-            <tr><td>{{ stats_name }}</td><td>{{ stats_count }}</td></tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    {% endif %}
-    <h2>Write index ({{ write_index }})</h2>
-    {% if read_index == write_index %}
-      <p>
-        Write index is the same as the read index.
-      </p>
-    {% else %}
-      {% if doctype_write_stats == None %}
-      <p>
-        Write index does not exist.
-      </p>
+
+    <h2>Read indexes</h2>
+    {% for index, stats in doctype_stats.items %}
+      <h3>{{ index }}</h3>
+      {% if stats == None %}
+        <p>Index does not exist.</p>
       {% else %}
         <table>
           <thead>
-            <th>doctype</th>
-            <th>count</th>
+            <tr><th>doctype</th><th>count</th></tr>
           </thead>
           <tbody>
-            {% for stats_name, stats_count in doctype_write_stats.items %}
-              <tr><td>{{ stats_name }}</td><td>{{ stats_count }}</td></tr>
+            {% for doctype, count in stats.items %}
+              <tr><td>{{ doctype }}</td><td>{{ count }}</td></tr>
             {% endfor %}
           </tbody>
         </table>
       {% endif %}
+    {% endfor %}
+
+    <h2>Write indexes</h2>
+    {% if read_indexes == write_indexes %}
+      <p>
+        Write indexes are the same as the read indexes.
+      </p>
+    {% else %}
+      {% for index, stats in doctype_stats.items %}
+        <h3>{{ index }}</h3>
+        {% if stats == None %}
+          <p>Index does not exist.</p>
+        {% else %}
+          <table>
+            <thead>
+              <tr><th>doctype</th><th>count</th></tr>
+            </thead>
+            <tbody>
+              {% for doctype, count in stats.items %}
+                <tr><td>{{ doctype }}</td><td>{{ count }}</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        {% endif %}
+      {% endfor %}
     {% endif %}
   </section>
 
@@ -204,33 +216,66 @@
       </p>
       <form method="POST">
         {% csrf_token %}
-        {% for stats_name, stats_count in doctype_write_stats.items %}
-          <input id="check_{{ stats_name }}" type="checkbox" name="check_{{ stats_name }}" value="yes" checked>
-          <label for="check_{{ stats_name }}">{{ stats_name }}</label><br>
+        {% for index, stats in doctype_write_stats.items %}
+          <h3>{{ index }}</h3>
+          {% for doctype, count in stats.items %}
+            <input id="check_{{ doctype }}" type="checkbox" name="check_{{ doctype }}" value="yes" checked>
+            <label for="check_{{ doctype }}">{{ doctype }}</label><br>
+          {% endfor %}
         {% endfor %}
         <input type="submit" name="reindex"
-               value="Reindex into {{ write_index }}"
+               value="Reindex into write indexes"
                {% if not settings.ES_LIVE_INDEXING or outstanding_chunks %}disabled{% endif %}>
       </form>
     {% endif %}
-    <h2>DELETE existing index, recreate it and reindex</h2>
+
+    <h2>DELETE existing index group's write index, recreate it and reindex</h2>
     <p>
-      This <strong>DELETES</strong> the existing WRITE index,
-      recreates it with the mappings, and indexes into the new index.
-      You should have to do this only when the search mapping changes
-      or when setting up the site for the first time.
+      This <strong>DELETES</strong> the existing WRITE index for a
+      group, recreates it with the mappings, and indexes into the new
+      index. You should have to do this only when the search mapping
+      changes or when setting up the site for the first time.
     </p>
-    {% if read_index == write_index %}
+
+    {% if read_indexes == write_indexes %}
       <p class="errornote">
-        WARNING! Read and write indexes are the same! Deleting and
+        WARNING! All read and write indexes are the same! Deleting and
         rebuilding the index would be really bad!
       </p>
     {% endif %}
+
     <form method="POST">
+      <table>
+        <tr>
+          <th></th>
+          <th>Group</th>
+          <th>Read Index</th>
+          <th>Write Index</th>
+        </tr>
+        {% for group, group_read_index, group_write_index in index_group_data %}
+          <tr>
+            <td>
+              <input id="check_{{ group }}" type="checkbox" name="check_{{ group }}" value="yes"
+                     {% if group_read_index != group_write_index %}checked{% endif %}>
+            </td>
+            <td><label for="check_{{ group }}">{{ group }}</label></td>
+            <td>{{ group_read_index }}</td>
+            <td>{{ group_write_index }}</td>
+            <td>
+              {% if group_read_index == group_write_index %}
+                <span class="errorspan">
+                  <img src="/static/admin/img/icon_error.gif" />
+                  This group's write index is a read index!
+                </span>
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </table>
+
       {% csrf_token %}
-      <input type="hidden" name="delete_index" value="1">
-      <input class="DANGER" type="submit" name="reindex"
-             value="DELETE index and index into {{ write_index }}"
+      <input class="DANGER" type="submit" name="recreate_index"
+             value="DELETE selected indexes and reindex"
              {% if not settings.ES_LIVE_INDEXING or outstanding_chunks %}disabled{% endif %}>
     </form>
 

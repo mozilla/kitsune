@@ -47,7 +47,7 @@ class ElasticTestCase(TestCase):
         self.teardown_indexes()
 
     def refresh(self, run_tasks=True):
-        index = es_utils.write_index()
+        es = get_es()
 
         if run_tasks:
             # Any time we're doing a refresh, we're making sure that
@@ -56,8 +56,10 @@ class ElasticTestCase(TestCase):
             # generated tasks, then refresh.
             generate_tasks()
 
-        get_es().refresh(index)
-        get_es().health(wait_for_status='yellow')
+        for index in es_utils.all_write_indexes():
+            es.refresh(index)
+
+        es.health(wait_for_status='yellow')
 
     def reindex_and_refresh(self):
         """Reindexes anything in the db"""
@@ -67,10 +69,11 @@ class ElasticTestCase(TestCase):
 
     def setup_indexes(self, empty=False, wait=True):
         """(Re-)create write index"""
-        from kitsune.search.es_utils import recreate_index
-        recreate_index()
+        from kitsune.search.es_utils import recreate_indexes
+        recreate_indexes()
         get_es().health(wait_for_status='yellow')
 
     def teardown_indexes(self):
         """Tear down write index"""
-        es_utils.delete_index(es_utils.write_index())
+        for index in es_utils.all_write_indexes():
+            es_utils.delete_index(index)

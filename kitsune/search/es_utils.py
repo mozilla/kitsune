@@ -18,20 +18,25 @@ from kitsune.search.utils import chunked
 # tests want to be able to dynamically change settings at run time,
 # which isn't possible if these are constants.
 
-def read_index():
-    """Calculate the read index name."""
+def read_index(group):
+    """Gets the name of the read index for a group."""
     return (u'%s_%s' % (settings.ES_INDEX_PREFIX,
-                        settings.ES_INDEXES['default']))
+                        settings.ES_INDEXES[group]))
 
 
-def write_index():
-    """Calculate the write index name."""
+def write_index(group):
+    """Gets the name of the write index for a group."""
     return (u'%s_%s' % (settings.ES_INDEX_PREFIX,
-                        settings.ES_WRITE_INDEXES['default']))
+                        settings.ES_WRITE_INDEXES[group]))
 
 
-# This is the unified elastic search doctype.
-SUMO_DOCTYPE = u'sumodoc'
+def all_read_indexes():
+    return [read_index(group) for group in settings.ES_INDEXES.keys()]
+
+
+def all_write_indexes():
+    return [write_index(group) for group in settings.ES_WRITE_INDEXES.keys()]
+
 
 # The number of things in a chunk. This is for parallel indexing via
 # the admin.
@@ -105,7 +110,7 @@ class Sphilastic(S, AnalyzerMixin):
     def get_indexes(self):
         # SphilasticUnified is a searcher and so it's _always_ used in
         # a read context. Therefore, we always return the read index.
-        return [read_index()]
+        return [read_index(self.type.get_index_group())]
 
     def process_query_mlt(self, key, val, action):
         """Add support for a more like this query to our S.
@@ -126,11 +131,25 @@ class AnalyzerS(UntypedS, AnalyzerMixin):
 
     This differs from Sphilastic in that this is a plain ES S object,
     not based on Django.
+
+    This just exists as a way to mix together UntypedS and AnalyzerMixin.
     """
     pass
 
 
-def get_mappings():
+def get_mappings(index):
+    mappings = {}
+
+    from kitsune.search.models import get_mapping_types
+    for cls in get_mapping_types():
+        group = cls.get_index_group()
+        if index == write_index(group) or index == read_index(group):
+            mappings[cls.get_mapping_type_name()] = cls.get_mapping()
+
+    return mappings
+
+
+def get_all_mappings():
     mappings = {}
 
     from kitsune.search.models import get_mapping_types
@@ -141,6 +160,10 @@ def get_mappings():
 
 
 def get_indexes(all_indexes=False):
+    """Query ES to get a list of indexes that actually exist.
+
+    :returns: A dict like {index_name: document_count}.
+    """
     es = get_es()
     status = es.status()
     indexes = status['indices']
@@ -173,11 +196,12 @@ def get_doctype_stats(index):
 
     from kitsune.search.models import get_mapping_types
     for cls in get_mapping_types():
-        # Note: Can't use cls.search() here since that returns a
-        # Sphilastic which is hard-coded to look only at the
-        # read index..
-        s = S(cls).indexes(index)
-        stats[cls.get_mapping_type_name()] = s.count()
+        if cls.get_index() == index:
+            # Note: Can't use cls.search() here since that returns a
+            # Sphilastic which is hard-coded to look only at the
+            # read index..
+            s = S(cls).indexes(index)
+            stats[cls.get_mapping_type_name()] = s.count()
 
     return stats
 
@@ -262,23 +286,30 @@ def get_analysis():
     }
 
 
-def recreate_index(es=None):
-    """Deletes write index if it's there and creates a new one"""
+def recreate_indexes(es=None, indexes=None):
+    """Deletes indexes and recreates them.
+
+    :arg es: An ES object to use. Defaults to calling `get_es()`.
+    :arg indexes: A list of indexes to recreate. Defaults to all write
+        indexes.
+    """
     if es is None:
         es = get_es()
+    if indexes is None:
+        indexes = all_write_indexes()
 
-    index = write_index()
-    delete_index(index)
+    for index in indexes:
+        delete_index(index)
 
-    # There should be no mapping-conflict race here since the index doesn't
-    # exist. Live indexing should just fail.
+        # There should be no mapping-conflict race here since the index doesn't
+        # exist. Live indexing should just fail.
 
-    # Simultaneously create the index, the mappings, the analyzers, and
-    # the tokenizers, so live indexing doesn't get a chance to index
-    # anything between and infer a bogus mapping (which ES then freaks
-    # out over when we try to lay in an incompatible explicit mapping).
-    es.create_index(index, settings={
-            'mappings': get_mappings(),
+        # Simultaneously create the index, the mappings, the analyzers, and
+        # the tokenizers, so live indexing doesn't get a chance to index
+        # anything between and infer a bogus mapping (which ES then freaks
+        # out over when we try to lay in an incompatible explicit mapping).
+        es.create_index(index, settings={
+            'mappings': get_mappings(index),
             'settings': {
                 'analysis': get_analysis(),
             }
@@ -375,16 +406,27 @@ def es_reindex_cmd(percent=100, delete=False, mapping_types=None,
     """
     es = get_es()
 
-    try:
-        get_doctype_stats(write_index())
-    except ES_EXCEPTIONS:
-        if not delete:
-            log.error('The index does not exist. You must specify --delete.')
-            return
+    if mapping_types is None:
+        indexes = all_write_indexes()
+    else:
+        indexes = indexes_for_doctypes(mapping_types)
+
+    need_delete = False
+    for index in indexes:
+        try:
+            # This is used to see if the index exists.
+            get_doctype_stats(index)
+        except ES_EXCEPTIONS:
+            if not delete:
+                log.error('The index "%s" does not exist. '
+                          'You must specify --delete.' % index)
+                need_delete = True
+    if need_delete:
+        return
 
     if delete:
-        log.info('wiping and recreating %s....', write_index())
-        recreate_index(es=es)
+        log.info('wiping and recreating %s...', ', '.join(indexes))
+        recreate_indexes(es, indexes)
 
     if criticalmass:
         # The critical mass is defined as the entire KB plus the most
@@ -409,16 +451,14 @@ def es_reindex_cmd(percent=100, delete=False, mapping_types=None,
     else:
         all_indexable = get_indexable(percent)
 
-    # We're doing a lot of indexing, so we get the refresh_interval
-    # currently in the index, then nix refreshing. Later we'll restore
-    # it.
-    old_refresh = get_index_settings(write_index()).get(
-        'index.refresh_interval', '1s')
-
-    # Disable automatic refreshing
-    es.update_settings(write_index(), {'index': {'refresh_interval': '-1'}})
-
-    log.info('using index: %s', write_index())
+    old_refreshes = {}
+    # We're doing a lot of indexing, so we get the refresh_interval of
+    # the index currently, then nix refreshing. Later we'll restore it.
+    for index in indexes:
+        old_refreshes[index] = (get_index_settings(index)
+                                .get('index.refresh_interval', '1s'))
+        # Disable automatic refreshing
+        es.update_settings(index, {'index': {'refresh_interval': '-1'}})
 
     start_time = time.time()
     for cls, indexable in all_indexable:
@@ -446,8 +486,7 @@ def es_reindex_cmd(percent=100, delete=False, mapping_types=None,
                      total,
                      format_time(this_1000),
                      format_time(per_1000),
-                     format_time(time_to_go)
-            )
+                     format_time(time_to_go))
 
         delta_time = time.time() - cls_start_time
         log.info('   done! (%s total, %s/1000 avg)',
@@ -455,8 +494,8 @@ def es_reindex_cmd(percent=100, delete=False, mapping_types=None,
                  format_time(delta_time / (total / 1000.0)))
 
     # Re-enable automatic refreshing
-    es.update_settings(
-        write_index(), {'index': {'refresh_interval': old_refresh}})
+    for index, old_refresh in old_refreshes.items():
+        es.update_settings(index, {'index': {'refresh_interval': old_refresh}})
     delta_time = time.time() - start_time
     log.info('done! (%s total)', format_time(delta_time))
 
@@ -474,7 +513,7 @@ def es_delete_cmd(index, noinput=False, log=log):
         log.error('Index "%s" is not a valid index.', index)
         return
 
-    if index == read_index() and not noinput:
+    if index in all_read_indexes() and not noinput:
         ret = raw_input('"%s" is a read index. Are you sure you want '
                         'to delete it? (yes/no) ' % index)
         if ret != 'yes':
@@ -496,18 +535,22 @@ def es_status_cmd(checkindex=False, log=log):
     except requests.exceptions.RequestException:
         pass
 
-    try:
-        read_doctype_stats = get_doctype_stats(read_index())
-    except ES_EXCEPTIONS:
-        read_doctype_stats = None
+    read_doctype_stats = {}
+    for index in all_read_indexes():
+        try:
+            read_doctype_stats[index] = get_doctype_stats(index)
+        except ES_EXCEPTIONS:
+            read_doctype_stats[index] = None
 
-    if read_index() == write_index():
+    if set(all_read_indexes()) == set(all_write_indexes()):
         write_doctype_stats = read_doctype_stats
     else:
-        try:
-            write_doctype_stats = get_doctype_stats(write_index())
-        except ES_EXCEPTIONS:
-            write_doctype_stats = None
+        write_doctype_stats = {}
+        for index in all_write_indexes():
+            try:
+                write_doctype_stats[index] = get_doctype_stats(index)
+            except ES_EXCEPTIONS:
+                write_doctype_stats[index] = None
 
     try:
         indexes = get_indexes(all_indexes=True)
@@ -532,31 +575,43 @@ def es_status_cmd(checkindex=False, log=log):
         log.info('  List of indexes:')
         for name, count in sorted(indexes):
             read_write = []
-            if name == read_index():
+            if name in all_read_indexes():
                 read_write.append('READ')
-            if name == write_index():
+            if name in all_write_indexes():
                 read_write.append('WRITE')
             log.info('    %-22s: %s %s', name, count,
                      '/'.join(read_write))
     else:
         log.info('  There are no %s indexes.', settings.ES_INDEX_PREFIX)
 
-    if read_doctype_stats is None:
-        log.info('  Read index does not exist. (%s)', read_index())
+    if not read_doctype_stats:
+        read_index_names = ', '.join(all_read_indexes())
+        log.info('  No read indexes exist. (%s)', read_index_names)
     else:
-        log.info('  Read index (%s):', read_index())
-        for name, count in sorted(read_doctype_stats.items()):
-            log.info('    %-22s: %d', name, count)
+        log.info('  Read indexes:')
+        for index, stats in read_doctype_stats.items():
+            if stats is None:
+                log.info('    %s does not exist', index)
+            else:
+                log.info('    %s:', index)
+                for name, count in sorted(stats.items()):
+                    log.info('      %-22s: %d', name, count)
 
-    if read_index() != write_index():
-        if write_doctype_stats is None:
-            log.info('  Write index does not exist. (%s)', write_index())
-        else:
-            log.info('  Write index (%s):', write_index())
-            for name, count in sorted(write_doctype_stats.items()):
-                log.info('    %-22s: %d', name, count)
+    if set(all_read_indexes()) == set(all_write_indexes()):
+        log.info('  Write indexes are the same as the read indexes.')
     else:
-        log.info('  Write index is same as read index.')
+        if not write_doctype_stats:
+            write_index_names = ', '.join(all_write_indexes())
+            log.info('  No write indexes exist. (%s)', write_index_names)
+        else:
+            log.info('  Write indexes:')
+            for index, stats in write_doctype_stats.items():
+                if stats is None:
+                    log.info('    %s does not exist', index)
+                else:
+                    log.info('    %s:', index)
+                    for name, count in sorted(stats.items()):
+                        log.info('      %-22s: %d', name, count)
 
     if checkindex:
         # Go through the index and verify everything
@@ -633,7 +688,7 @@ def es_verify_cmd(log=log):
     log.info('misfortune.')
     log.info('')
 
-    mappings = get_mappings()
+    mappings = get_all_mappings()
 
     log.info('Verifying mappings do not conflict.')
 
@@ -762,3 +817,9 @@ def es_query_with_analyzer(query, locale):
             new_query[k] = v
 
     return new_query
+
+
+def indexes_for_doctypes(doctype):
+    # Import locally to avoid circular import.
+    from kitsune.search.models import get_mapping_types
+    return set(d.get_index() for d in get_mapping_types(doctype))
