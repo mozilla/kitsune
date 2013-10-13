@@ -242,7 +242,7 @@
   {% endif %}
 {%- endmacro %}
 
-{% macro show_for(header=None) -%}
+{% macro show_for(header=None, close_button=False) -%}
   {# This macro needs to be imported with context to access oses, oses_json,
      browsers, browsers_json and version_group_json variables. #}
   {% if header == None %}
@@ -250,7 +250,12 @@
   {% endif %}
   <section id="support-for">
     {% if header %}
-      <h1>{{ header }} <div id="support-for-exit">x</div></h1>
+      <h1>
+        {{ header }}
+        {% if close_button %}
+          <div id="support-for-exit">x</div>
+        {% endif %}
+      </h1>
     {% endif %}
     <div>
       <select id="os" data-oses="{{ oses_json }}" class="enable-if-js" disabled="disabled">
