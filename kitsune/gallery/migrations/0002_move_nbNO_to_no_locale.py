@@ -8,10 +8,10 @@ class Migration(DataMigration):
 
     def forwards(self, orm):
         """"Removes 'no' instances and moves 'nb-NO' instances to 'no'."""
-        orm.Image.objects.filter(locale='no').delete(locale='no')
+        orm.Image.objects.filter(locale='no').delete()
         orm.Image.objects.filter(locale='nb-NO').update(locale='no')
 
-        orm.Video.objects.filter(locale='no').delete(locale='no')
+        orm.Video.objects.filter(locale='no').delete()
         orm.Video.objects.filter(locale='nb-NO').update(locale='no')
 
     def backwards(self, orm):
