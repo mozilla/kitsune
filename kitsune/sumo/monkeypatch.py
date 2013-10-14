@@ -13,6 +13,7 @@ def required_field_attrs(self, widget):
     attrs = field_widget_attrs(self, widget)
     # required="required" isn't supported for groups of checkboxes.
     if (self.required and (not 'required' in attrs) and
+        not widget.is_hidden and
         not isinstance(widget, widgets.CheckboxSelectMultiple)):
         attrs['required'] = 'required'
     return attrs

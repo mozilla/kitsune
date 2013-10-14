@@ -25,10 +25,10 @@
     <h1>{{ _('Support Forum') }}</h1>
 
     <div id="recent-stats" class="cf">
-      <span class="total">
+      <div class="total">
         <h3>{{ _('Total questions: <strong>{num}</strong>')|fe(num=recent_asked_count) }}</h3>
-      </span>
-      <span class="no-reply">
+      </div>
+      <div class="no-reply">
         <h3>
           {% if recent_unanswered_count > 0 %}
             {% trans recent_unanswered_count, url=questions_url(filter='recent-unanswered') %}
@@ -44,7 +44,7 @@
             {% endtrans %}
           {% endif %}
         </h3>
-      </span>
+      </div>
       <div class="progress-bar {% if recent_answered_percent == 100 %} complete{% endif %}">
         <div style="width: {{ recent_answered_percent }}%;">
           <span>{{ recent_answered_percent }}%</span>
@@ -105,7 +105,7 @@
           <section id="tag-filter">
             <h3>{{ _('Filter') }}</h3>
             <p>{{ _('Enter a tag. For example: "Firefox 14.0", "Windows 7", "crash"') }}</p>
-            <form action="" method="get">
+            <form action="#" method="get">
               <input type="hidden" class="current-tagged" value="{{ tagged }}"/>
               {% for key, value in request.GET.items() %}
                 <input type="hidden" name="{{ key }}" value="{{ value }}"/>
