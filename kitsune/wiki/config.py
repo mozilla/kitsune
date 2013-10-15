@@ -26,6 +26,8 @@ VersionMetadata = namedtuple('VersionMetadata',
                              'id, name, long, slug, max_version, show_in_ui, '
                              'is_default')
 DESKTOP_FIREFOX_VERSIONS = (
+    VersionMetadata(47, _lazy(u'Firefox 26'),
+                    _lazy(u'Firefox 26'), 'fx26', 26.9999, True, False),
     VersionMetadata(45, _lazy(u'Firefox 25'),
                     _lazy(u'Firefox 25'), 'fx25', 25.9999, True, False),
     VersionMetadata(43, _lazy(u'Firefox 24'),
@@ -33,7 +35,7 @@ DESKTOP_FIREFOX_VERSIONS = (
     VersionMetadata(41, _lazy(u'Firefox 23'),
                     _lazy(u'Firefox 23'), 'fx23', 23.9999, True, True),
     VersionMetadata(39, _lazy(u'Firefox 22'),
-                    _lazy(u'Firefox 22'), 'fx22', 22.9999, True, False),
+                    _lazy(u'Firefox 22'), 'fx22', 22.9999, False, False),
     VersionMetadata(37, _lazy(u'Firefox 21'),
                     _lazy(u'Firefox 21'), 'fx21', 21.9999, False, False),
     VersionMetadata(35, _lazy(u'Firefox 20'),
@@ -76,6 +78,8 @@ DESKTOP_FIREFOX_VERSIONS = (
     VersionMetadata(3, _lazy(u'Firefox 3.0'),
                     _lazy(u'Firefox 3.0'), 'fx3', 3.4999, False, False))
 MOBILE_FIREFOX_VERSIONS = (
+    VersionMetadata(46, _lazy(u'Firefox 26'), _lazy(u'Firefox 26 for Mobile'),
+                    'm26', 26.9999, True, False),
     VersionMetadata(44, _lazy(u'Firefox 25'), _lazy(u'Firefox 25 for Mobile'),
                     'm25', 25.9999, True, False),
     VersionMetadata(42, _lazy(u'Firefox 24'), _lazy(u'Firefox 24 for Mobile'),
@@ -83,7 +87,7 @@ MOBILE_FIREFOX_VERSIONS = (
     VersionMetadata(40, _lazy(u'Firefox 23'), _lazy(u'Firefox 23 for Mobile'),
                     'm23', 23.9999, True, True),
     VersionMetadata(38, _lazy(u'Firefox 22'), _lazy(u'Firefox 22 for Mobile'),
-                    'm22', 22.9999, True, False),
+                    'm22', 22.9999, False, False),
     VersionMetadata(36, _lazy(u'Firefox 21'), _lazy(u'Firefox 21 for Mobile'),
                     'm21', 21.9999, False, False),
     VersionMetadata(34, _lazy(u'Firefox 20'), _lazy(u'Firefox 20 for Mobile'),
