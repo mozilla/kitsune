@@ -364,15 +364,9 @@ When we add strings that need to be localized, it can take a couple of
 weeks for us to get translations of those localized strings. This
 makes it difficult to find localization issues.
 
-Enter poxx.
+Enter `dennis <https://github.com/willkg/dennis/>`_.
 
-Requirements:
-
-1. Install polib - ``pip install polib``
-2. Get ``compile-mo.sh``. You can do this by getting the
-   localizations. See :ref:`getting-localizations`.
-
-After getting requirements::
+Run::
 
     $ ./scripts/test_locales.sh
 
@@ -397,6 +391,18 @@ Strings in the Pirate translation have the following properties:
 
    The xx locale is only available on your local machine. It is not
    available on -dev, -stage, or -prod.
+
+
+Linting localized strings
+=========================
+
+You can lint localized strings for warnings and errors::
+
+    $ ./manage.py lint locales/
+
+You can see help text::
+
+    $ ./manage.py lint
 
 
 .. _getting-localizations:

@@ -26,6 +26,6 @@ mkdir -p locale/xx/LC_MESSAGES
 echo "copying messages.pot file...."
 cp locale/templates/LC_MESSAGES/messages.pot locale/xx/LC_MESSAGES/messages.po
 
-echo "poxx messages.po file...."
-scripts/poxx.py locale/xx/LC_MESSAGES/messages.po
+echo "translate messages.po file...."
+./manage.py translate --pipeline=html,pirate locale/xx/LC_MESSAGES/messages.po
 locale/compile-mo.sh locale/xx/

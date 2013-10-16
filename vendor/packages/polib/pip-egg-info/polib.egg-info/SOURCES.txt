@@ -1,0 +1,5 @@
+polib.py
+pip-egg-info/polib.egg-info/PKG-INFO
+pip-egg-info/polib.egg-info/SOURCES.txt
+pip-egg-info/polib.egg-info/dependency_links.txt
+pip-egg-info/polib.egg-info/top_level.txt

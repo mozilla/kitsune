@@ -1,0 +1,217 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: eToys\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2008-06-20 00:53-0000\n"
+"PO-Revision-Date: 2008-03-22 23:45-0400\n"
+"Last-Translator: Paulo Drummond <ptdrumm@terra.com.br>\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Pootle 1.1.0rc2\n"
+"X-Launchpad-Export-Date: 2007-12-03 23:40+0000\n"
+"X-Etoys-Domain: etoys\n"
+"X-Etoys-SystemVersion: etoys3.0 of 24 February 2008 update 2029\n"
+
+#. Test for empty comment lines
+#. 
+#,
+#: main.c:117
+msgid "Override the default prgname"
+msgstr "Override the default prgname"
+
+#: Balloon-Fills,BitmapFillStyle>>addFillStyleMenuItems:hand:from:
+msgid "choose new graphic"
+msgstr "escolher novo gráfico"
+
+#: Balloon-Fills,BitmapFillStyle>>addFillStyleMenuItems:hand:from:
+msgid "grab new graphic"
+msgstr "agarrar novo gráfico"
+
+#: Balloon-Fills,GradientFillStyle>>addFillStyleMenuItems:hand:from:
+msgid "change first color"
+msgstr "alterar a primeira cor"
+
+#: Balloon-Fills,GradientFillStyle>>addFillStyleMenuItems:hand:from:
+msgid "change second color"
+msgstr "alterar a segunda cor"
+
+#: Balloon-Fills,GradientFillStyle>>addFillStyleMenuItems:hand:from:
+msgid "linear gradient"
+msgstr "gradiente linear"
+
+#: Balloon-Fills,GradientFillStyle>>addFillStyleMenuItems:hand:from:
+msgid "radial gradient"
+msgstr "gradiente radial"
+
+#: Balloon-Fills,OrientedFillStyle>>addFillStyleMenuItems:hand:from:
+msgid "change orientation"
+msgstr "alterar orientação"
+
+#: Balloon-Fills,OrientedFillStyle>>addFillStyleMenuItems:hand:from:
+msgid "change origin"
+msgstr "mudar a origem"
+
+#: Balloon-MMFlash_Import,FlashFileReader>>processHeader
+msgid ""
+"This file's version ({1}) is higher than \n"
+"the currently supported version ({2}). \n"
+"It may contain features that are not supported \n"
+"and it may not display correctly.\n"
+"Do you want to continue?"
+msgstr ""
+"A versão ({1}) deste arquivo é mais recente \n"
+"que a atualmente suportada ({2}). \n"
+"Ela pode conter características que não são suportadas \n"
+"e pode não ser mostrada corretamente.\n"
+"Você quer continuar?"
+
+#: Balloon-MMFlash_Import,FlashMorphReader_class>>serviceOpenAsFlash
+msgid "open as Flash"
+msgstr ""
+
+#: Balloon-MMFlash_Import,FlashMorphReader_class>>serviceOpenAsFlash
+msgid "open file as flash"
+msgstr ""
+
+#: Balloon-MMFlash_Morphs,FlashButtonMorph>>addCustomAction
+msgid "Enter the Smalltalk code to execute:"
+msgstr ""
+
+#: Balloon-MMFlash_Morphs,FlashButtonMorph>>addCustomMenuItems:hand:
+msgid "remove all actions"
+msgstr "remover todas as ações"
+
+#: Balloon-MMFlash_Morphs,FlashButtonMorph>>addCustomMenuItems:hand:
+msgid "set custom action"
+msgstr "estabelecer ação específica"
+
+#: Balloon-MMFlash_Morphs,FlashCharacterMorph>>addCustomMenuItems:hand:
+msgid "add project target"
+msgstr "acrescentar meta de projeto"
+
+#: Balloon-MMFlash_Morphs,FlashCharacterMorph>>addCustomMenuItems:hand:
+msgid "remove project target"
+msgstr "remover alvo do projeto"
+
+#: Balloon-MMFlash_Morphs,FlashMorph>>addCustomMenuItems:hand:
+msgid "show compressed size"
+msgstr "mostrar tamanho comprimido"
+
+#: Balloon-MMFlash_Morphs,FlashMorph>>getSmoothingLevel,TTSampleFontMorph>>getSmoothingLevel
+msgid "more smoothing"
+msgstr "mais suavizamento"
+
+#: Balloon-MMFlash_Morphs,FlashMorph>>getSmoothingLevel,NCScrolledCompositeStateMorph>>addCustomMenuItems:hand:,TransformMorph>>addCustomMenuItems:hand:,TTSampleFontMorph>>getSmoothingLevel
+msgid "turn off smoothing"
+msgstr "desativar suavizamento"
+
+#: Balloon-MMFlash_Morphs,FlashMorph>>getSmoothingLevel,NCScrolledCompositeStateMorph>>addCustomMenuItems:hand:,TransformMorph>>addCustomMenuItems:hand:,TTSampleFontMorph>>getSmoothingLevel
+msgid "turn on smoothing"
+msgstr "ativar suavizamento"
+
+#: Balloon-MMFlash_Morphs,FlashPlayerMorph>>addCustomMenuItems:hand:
+msgid "make controls"
+msgstr "criar controles"
+
+#: Balloon-MMFlash_Morphs,FlashPlayerMorph>>addCustomMenuItems:hand:
+msgid "open sorter"
+msgstr "abrir ordenador"
+
+#: Balloon-MMFlash_Morphs,FlashPlayerMorph>>additionsToViewerCategories,PasteUpMorph>>additionsToViewerCategories
+msgid "collections"
+msgstr "coleções"
+
+#: Balloon-MMFlash_Morphs,FlashPlayerMorph>>additionsToViewerCategories,GraphMorph>>additionsToViewerCategories,GraphMorph>>additionsToViewerCategories,NCLabelMorph>>additionsToViewerCategories,PasteUpMorph>>additionsToViewerCategories,TextMorph>>additionsToViewerCategories
+msgid "cursor"
+msgstr "cursor"
+
+#: Balloon-MMFlash_Morphs,FlashPlayerMorph>>additionsToViewerCategories,PasteUpMorph>>additionsToViewerCategories
+msgid "first element"
+msgstr "primeiro elemento"
+
+#: Balloon-MMFlash_Morphs,FlashPlayerMorph>>additionsToViewerCategories,PasteUpMorph>>additionsToViewerCategories
+msgid "graphic at cursor"
+msgstr "gráfico no cursor"
+
+#: Balloon-MMFlash_Morphs,FlashPlayerMorph>>additionsToViewerCategories,PasteUpMorph>>additionsToViewerCategories
+msgid "player at cursor"
+msgstr "reprodutor no cursor"
+
+#: Balloon-MMFlash_Morphs,FlashPlayerMorph>>additionsToViewerCategories,PasteUpMorph>>additionsToViewerCategories
+msgid "The first object in my contents"
+msgstr "O primeiro objeto no meu conteúdo"
+
+#: Balloon-MMFlash_Morphs,FlashPlayerMorph>>additionsToViewerCategories,PasteUpMorph>>additionsToViewerCategories
+msgid "The index of the chosen element"
+msgstr "O índice do elemento escolhido"
+
+#: Balloon-MMFlash_Morphs,FlashPlayerMorph>>additionsToViewerCategories,PasteUpMorph>>additionsToViewerCategories
+msgid "the graphic worn by the object at the cursor"
+msgstr "o gráfico exibido pelo objeto na posição do cursor"
+
+#: Balloon-MMFlash_Morphs,FlashPlayerMorph>>additionsToViewerCategories,PasteUpMorph>>additionsToViewerCategories
+msgid "the object currently at the cursor"
+msgstr "o objeto atualmente na posição do cursor"
+
+#: Balloon-MMFlash_Morphs,FlashPlayerMorph>>openInMVC,FlashPlayerMorph>>openInWorld
+msgid "Flash Player"
+msgstr "Flash Player"
+
+#: Balloon-MMFlash_Morphs,FlashPlayerWindow>>initialize
+msgid "continue playing"
+msgstr "continuar reproduzindo"
+
+#: Balloon-MMFlash_Morphs,FlashPlayerWindow>>initialize,MovieMorph>>addCustomMenuItems:hand:
+msgid "stop playing"
+msgstr "parar de reproduzir"
+
+#: Balloon-TrueType_Support,TTFontReader_class>>serviceOpenTrueTypeFont,TTFontReader_class>>serviceOpenTrueTypeFont
+msgid "open true type font"
+msgstr ""
+
+#: Balloon-TrueType_Support,TTSampleStringMorph_class>>descriptionForPartsBin
+msgid "A short text in a beautiful font.  Use the resize handle to change size."
+msgstr ""
+"Um texto curto em uma fonte bonita. Use o manipulador de redimensionamento "
+"para alterar seu tamanho."
+
+#: Balloon-TrueType_Support,TTSampleStringMorph_class>>descriptionForPartsBin
+msgid "TrueType banner"
+msgstr "Banner em TrueType"
+
+#: Balloon-TrueType_Support,TTSampleStringMorph>>addCustomMenuItems:hand:
+msgid "edit contents..."
+msgstr "editar conteúdo..."
+
+#: Balloon-TrueType_Support,TTSampleStringMorph>>addCustomMenuItems:hand:
+msgid "how to find more fonts..."
+msgstr "como encontrar mais fontes..."
+
+#: Balloon-TrueType_Support,TTSampleStringMorph>>addCustomMenuItems:hand:
+msgid "load font from web..."
+msgstr "carregar fonte a partir da web..."
+
+#: BroomMorphs-Base,BroomMorph_class>>descriptionForPartsBin
+msgid "A broom to align Morphs with"
+msgstr "Uma vassoura para servir de base de alinhamento para Morphs"
+
+#: BroomMorphs-Base,BroomMorph_class>>descriptionForPartsBin
+msgid "Broom"
+msgstr "Vassoura"
+
+#: BroomMorphs-Base,BroomMorph_class>>descriptionForPartsBin,CircleMorph_class>>supplementaryPartsDescriptions,CurveMorph_class>>formerDescriptionForPartsBin,CurveMorph_class>>supplementaryPartsDescriptions,EllipseMorph_class>>descriptionForPartsBin,GrabPatchMorph_class>>descriptionForPartsBin,LassoPatchMorph_class>>descriptionForPartsBin,LineMorph_class>>descriptionForPartsBin,PolygonMorph_class>>descriptionForPartsBin,PolygonMorph_class>>supplementaryPartsDescriptions,PolygonMorph_class>>supplementaryPartsDescriptions,PolygonMorph_class>>supplementaryPartsDescriptions,RectangleMorph_class>>descriptionForPartsBin,RectangleMorph_class>>supplementaryPartsDescriptions,StarMorph_class>>descriptionForPartsBin
+msgid "Graphics"
+msgstr "Gráficos"
+
+#: BroomMorphs-Base,BroomMorph>>initialize
+msgid "Drag me to align other Morphs. Drag with the Shift key to move me without affecting other Morphs. Drag me with the second mouse button to align centers."
+msgstr ""
+"Arraste-me para alinhar com outros Morfs. Arraste com a tecla Shift premida "
+"para me mover sem afetar outros Morfs. Arraste-me com o outro botão do mouse "
+"para centralizar."
+
+#: BroomMorphs-Connectors,NCBroomMorph_class>>descriptionForPartsBin
+msgid "A broom to align shapes with"
+msgstr "Uma vassoura para alinhar formas"

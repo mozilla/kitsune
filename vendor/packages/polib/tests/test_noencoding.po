@@ -1,0 +1,55 @@
+# translation of django.po to Castellano
+# This file is distributed under the same license as the PACKAGE package.
+# Copyright (C) 2007 THE PACKAGE'S COPYRIGHT HOLDER.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: django\n"
+
+#: db/models/manipulators.py:309
+#, python-format
+msgid "%(object)s with this %(type)s already exists for the given %(field)s."
+msgstr "%(object)s de este %(type)s ya existen en este %(field)s."
+
+#: db/models/manipulators.py:310 contrib/admin/views/main.py:342
+#: contrib/admin/views/main.py:344 contrib/admin/views/main.py:346
+#: core/validators.py:275
+msgid "and"
+msgstr "y"
+
+#: db/models/fields/__init__.py:49
+#, python-format
+msgid "%(optname)s with this %(fieldname)s already exists."
+msgstr "Ya existe %(optname)s con este %(fieldname)s."
+
+#: db/models/fields/__init__.py:156 db/models/fields/__init__.py:313
+#: db/models/fields/__init__.py:721 db/models/fields/__init__.py:732
+#: newforms/fields.py:92 newforms/fields.py:490 newforms/fields.py:566
+#: newforms/fields.py:577 newforms/models.py:193 oldforms/__init__.py:373
+msgid "This field is required."
+msgstr "Este campo es obligatorio."
+
+#: db/models/fields/__init__.py:411
+msgid "This value must be an integer."
+msgstr "Este valor debe ser un entero."
+
+#: db/models/fields/__init__.py:446
+msgid "This value must be either True or False."
+msgstr "Este valor debe ser Verdadero o Falso."
+
+#: db/models/fields/__init__.py:467
+msgid "This field cannot be null."
+msgstr "Este campo no puede estar vacío."
+
+#: db/models/fields/__init__.py:501 core/validators.py:155
+msgid "Enter a valid date in YYYY-MM-DD format."
+msgstr "Introduzca una fecha válida en formato AAAA-MM-DD."
+
+#: db/models/fields/__init__.py:570 core/validators.py:164
+msgid "Enter a valid date/time in YYYY-MM-DD HH:MM format."
+msgstr "Introduzca una fecha/hora válida en formato AAAA-MM-DD HH:MM."
+
+#: db/models/fields/__init__.py:631
+msgid "This value must be a decimal number."
+msgstr "Este valor debe ser un entero."
+

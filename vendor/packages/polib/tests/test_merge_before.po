@@ -1,0 +1,36 @@
+# translation of django.po to Castellano
+# This file is distributed under the same license as the PACKAGE package.
+# Copyright (C) 2007 THE PACKAGE'S COPYRIGHT HOLDER.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: django\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2007-12-13 10:00+0100\n"
+"PO-Revision-Date: 2007-07-14 13:00-0500\n"
+"Last-Translator: Mario Gonzalez <gonzalemario @t gmail.com>\n"
+"Language-Team: Castellano <Django-I18N@googlegroups.com>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms:  nplurals=2; plural=(n != 1);\n"
+
+#: some/file.py:50
+msgid "This entry is already present in pofile, but with different occurrences"
+msgstr "Some translation ..."
+
+#: some/file.py:3 some/file2.py:4
+msgid "This entry is not present in potfile and will be obsoleted"
+msgstr "Some translation"
+
+#: utils/timesince.py:12
+#, fuzzy
+msgid "year"
+msgid_plural "years"
+msgstr[0] "année"
+msgstr[1] "années"
+
+#~ msgid ""
+#~ "This entry should be removed after the merge and added again as non "
+#~ "obsolete entry"
+#~ msgstr "Some translation"

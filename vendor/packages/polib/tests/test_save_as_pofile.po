@@ -1,0 +1,2495 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: django\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2007-08-17 15:35-0400\n"
+"PO-Revision-Date: 2007-07-14 13:00-0500\n"
+"Last-Translator: Mario Gonzalez <gonzalemario @t gmail.com>\n"
+"Language-Team: Castellano <Django-I18N@googlegroups.com>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid ""
+"\n"
+"<p class=\"help\">To install bookmarklets, drag the link to your bookmarks\n"
+"toolbar, or right-click the link and add it to your bookmarks. Now you can\n"
+"select the bookmarklet from any page in the site.  Note that some of these\n"
+"bookmarklets require you to be viewing the site from a computer designated\n"
+"as \"internal\" (talk to your system administrator if you aren't sure if\n"
+"your computer is \"internal\").</p>\n"
+msgstr ""
+"\n"
+"<p class=\"help\">Para instalar bookmarklets, arrastre el enlace a su barra\n"
+"de favoritos, o pulse con el botón derecho el enlace y añádalo a sus favoritos.\n"
+"Ahora puede escoger el bookmarklet desde cualquier página en el sitio.\n"
+"Observer que algunos de estos bookmarklets precisan que esté viendo\n"
+"el sitio desde un computador señalado como \"interno\" (hable\n"
+"con su administrador de sistemas si no está seguro de si el suyo lo es).</p>\n"
+
+msgid " By %(filter_title)s "
+msgstr " Por %(filter_title)s "
+
+msgid ""
+"\"%(attr)s\" on line %(line)s is an invalid attribute. (Line starts with "
+"\"%(start)s\".)"
+msgstr ""
+"El \"%(attr)s\" de la línea %(line)s no es un atributo válido. (La línea "
+"empieza por \"%(start)s\".)"
+
+msgid ""
+"\"<%(tag)s>\" on line %(line)s is an invalid tag. (Line starts with "
+"\"%(start)s\".)"
+msgstr ""
+"La \"<%(tag)s>\" de la línea %(line)s no es una etiqueta válida. (La línea "
+"empieza por \"%(start)s\".)"
+
+msgid "%(full_result_count)s total"
+msgstr "%(full_result_count)s total"
+
+msgid "%(name)s"
+msgstr "%(name)s"
+
+msgid "%(number)d %(type)s"
+msgstr "%(number)d %(type)s"
+
+msgid "%(object)s with this %(type)s already exists for the given %(field)s."
+msgstr "%(object)s de este %(type)s ya existen en este %(field)s."
+
+msgid "%(optname)s with this %(fieldname)s already exists."
+msgstr "Ya existe %(optname)s con este %(fieldname)s."
+
+msgid "%(score)d rating by %(user)s"
+msgstr "puntuado %(score)d por %(user)s"
+
+msgid "%(size)d byte"
+msgid_plural "%(size)d bytes"
+msgstr[0] "%(size)d byte"
+msgstr[1] "%(size)d bytes"
+
+msgid "%(value).1f billion"
+msgid_plural "%(value).1f billion"
+msgstr[0] "%(value).1f billión"
+msgstr[1] "%(value).1f billión"
+
+msgid "%(value).1f million"
+msgid_plural "%(value).1f million"
+msgstr[0] "%(value).1f millón"
+msgstr[1] "%(value).1f millión"
+
+msgid "%(value).1f trillion"
+msgid_plural "%(value).1f trillion"
+msgstr[0] "%(value).1f trillión"
+msgstr[1] "%(value).1f trillión"
+
+msgid "%.1f GB"
+msgstr "%.1f GB"
+
+msgid "%.1f KB"
+msgstr "%.1f KB"
+
+msgid "%.1f MB"
+msgstr "%.1f MB"
+
+msgid "%s does not appear to be a urlpattern object"
+msgstr "%s no parece ser un objeto urlpattern"
+
+msgid ", %(number)d %(type)s"
+msgstr ", %(number)d %(type)s"
+
+msgid "1 result"
+msgid_plural "%(counter)s results"
+msgstr[0] "1 resultado"
+msgstr[1] "%(counter)s resultados"
+
+msgid ""
+"<h3>By %s:</h3>\n"
+"<ul>\n"
+msgstr ""
+"<h3>Por %s:</h3>\n"
+"<ul>\n"
+
+msgid ""
+"A tag on line %(line)s is missing one or more required attributes. (Line "
+"starts with \"%(start)s\".)"
+msgstr ""
+"A una etiqueta de la línea %(line)s le faltan uno o más atributos "
+"requeridos. (La línea empieza por \"%(start)s\".)"
+
+msgid "A user with that username already exists."
+msgstr "Ya existe  un usuario con este nombre."
+
+msgid "A valid URL is required."
+msgstr "Se precisa una URL válida."
+
+msgid "AM"
+msgstr "AM"
+
+msgid "Aargau"
+msgstr "Aargau"
+
+msgid "Action"
+msgstr "Acción"
+
+msgid "Add"
+msgstr "Agregar"
+
+msgid "Add %(name)s"
+msgstr "Agregar %(name)s"
+
+msgid "Add %s"
+msgstr "Agregar %s"
+
+msgid "Add user"
+msgstr "Añadir usuario"
+
+msgid "Added %s."
+msgstr "Agregado %s."
+
+msgid "Aichi"
+msgstr "Aichi"
+
+msgid "Akita"
+msgstr "Akita"
+
+msgid "All"
+msgstr "Todo"
+
+msgid "All dates"
+msgstr "Todas las fechas"
+
+msgid "Anonymous users cannot vote"
+msgstr "Los usuarios anónimos no pueden votar"
+
+msgid "Any date"
+msgstr "Cualquier fecha"
+
+msgid "Aomori"
+msgstr "Aomori"
+
+msgid "App %r not found"
+msgstr "Aplicación %r no encontrada"
+
+msgid "Appenzell Ausserrhoden"
+msgstr "Appenzell Ausserrhoden"
+
+msgid "Appenzell Innerrhoden"
+msgstr "Appenzell Innerrhoden"
+
+msgid "April"
+msgstr "Abril"
+
+msgid "Arabic"
+msgstr "Árabe"
+
+msgid ""
+"Are you sure you want to delete the %(object_name)s \"%(escaped_object)s\"? "
+"All of the following related items will be deleted:"
+msgstr ""
+"¿Está seguro de que quiere borrar los %(object_name)s "
+"\"%(escaped_object)s\"? Se borrarán los siguientes objetos relacionados:"
+
+msgid "Are you sure?"
+msgstr "¿Está seguro?"
+
+msgid "Argentinean Spanish"
+msgstr "Español Argentino"
+
+msgid "As above, but opens the admin page in a new window."
+msgstr ""
+"Como antes, pero abre la página de administración en una nueva ventana."
+
+msgid "Aug."
+msgstr "Ago."
+
+msgid "August"
+msgstr "Agosto"
+
+msgid "Baden-Wuerttemberg"
+msgstr "Baden-Wuerttemberg"
+
+msgid "Badly formed XML: %s"
+msgstr "XML mal formado: %s"
+
+msgid "Banovce nad Bebravou"
+msgstr "Región de Banovce nad Bebravou"
+
+msgid "Banska Bystrica"
+msgstr "Región de Bystrica"
+
+msgid "Banska Bystrica region"
+msgstr "Región de Banska Bystrica"
+
+msgid "Banska Stiavnica"
+msgstr "Región de Banska Stiavnica"
+
+msgid "Bardejov"
+msgstr "Región de Bardejov"
+
+msgid "Basel-Land"
+msgstr "Basel-Land"
+
+msgid "Basel-Stadt"
+msgstr "Basel-Stadt"
+
+msgid "Bavaria"
+msgstr "Bavaria"
+
+msgid "Bengali"
+msgstr "Bengalí"
+
+msgid "Berlin"
+msgstr "Berlín"
+
+msgid "Berne"
+msgstr "Berne"
+
+msgid "Bookmarklets"
+msgstr "Bookmarklets"
+
+msgid "Boolean (Either True or False)"
+msgstr "Booleano (Verdadero o Falso)"
+
+msgid "Boolean (Either True, False or None)"
+msgstr "Booleano (Verdadero, Falso o Nulo)"
+
+msgid "Brandenburg"
+msgstr "Brandenburg"
+
+msgid "Bratislava I"
+msgstr "Región de Bratislava I"
+
+msgid "Bratislava II"
+msgstr "Región de Bratislava II"
+
+msgid "Bratislava III"
+msgstr "Región de Bratislava III"
+
+msgid "Bratislava IV"
+msgstr "Región de Bratislava IV"
+
+msgid "Bratislava V"
+msgstr "Región de Bratislava V"
+
+msgid "Bratislava region"
+msgstr "Región de Bratislava"
+
+msgid "Brazilian"
+msgstr "Brasileño"
+
+msgid "Bremen"
+msgstr "Bremen"
+
+msgid "Brezno"
+msgstr "Región de Brezno"
+
+msgid "Bulgarian"
+msgstr "Búlgaro"
+
+msgid "Bytca"
+msgstr "Región de Bytca"
+
+msgid "Cadca"
+msgstr "Región de Cadca"
+
+msgid "Catalan"
+msgstr "Catalán"
+
+msgid "Change"
+msgstr "Modificar"
+
+msgid "Change %s"
+msgstr "Modificar %s"
+
+msgid "Change history: %s"
+msgstr "Modificar histórico: %s"
+
+msgid "Change my password"
+msgstr "Cambiar mi clave"
+
+msgid "Change password"
+msgstr "Cambiar clave"
+
+msgid "Change password: %s"
+msgstr "Cambiar clave: %s"
+
+msgid "Change:"
+msgstr "Modificar:"
+
+msgid "Changed %s."
+msgstr "Modificado %s."
+
+msgid ""
+"Check this box if the comment is inappropriate. A \"This comment has been "
+"removed\" message will be displayed instead."
+msgstr ""
+"Marque esta caja si el comentario es inapropiado. En su lugar se mostrará "
+"\"Este comentario ha sido eliminado\"."
+
+msgid "Chiba"
+msgstr "Chiba"
+
+msgid "Comma-separated integers"
+msgstr "Enteros separados por comas"
+
+msgid "Comment:"
+msgstr "Comentario:"
+
+msgid "Confirm password:"
+msgstr "Confirme clave:"
+
+msgid "Content object"
+msgstr "Objeto contenido"
+
+msgid "Could not retrieve anything from %s."
+msgstr "No pude obtener nada de %s."
+
+msgid "Croatian"
+msgstr "Croata"
+
+msgid "Currently:"
+msgstr "Actualmente:"
+
+msgid "Czech"
+msgstr "Checo"
+
+msgid "DATETIME_FORMAT"
+msgstr "j N Y P"
+
+msgid "DATE_FORMAT"
+msgstr "j N Y"
+
+msgid "DATE_WITH_TIME_FULL"
+msgstr "j M Y P"
+
+msgid "Danish"
+msgstr "Danés"
+
+msgid "Database error"
+msgstr "Erorr en la base de datos"
+
+msgid "Date (with time)"
+msgstr "Fecha (con hora)"
+
+msgid "Date (without time)"
+msgstr "Fecha (sin hora)"
+
+msgid "Date/time"
+msgstr "Fecha/hora"
+
+msgid "Date:"
+msgstr "Fecha:"
+
+msgid "Dec."
+msgstr "Dic."
+
+msgid "December"
+msgstr "Diciembre"
+
+msgid "Decimal number"
+msgstr "Número decimal"
+
+msgid "Delete"
+msgstr "Eliminar"
+
+msgid "Deleted %s."
+msgstr "Borrado %s."
+
+msgid ""
+"Deleting the %(object_name)s '%(escaped_object)s' would result in deleting "
+"related objects, but your account doesn't have permission to delete the "
+"following types of objects:"
+msgstr ""
+"Eliminar el %(object_name)s '%(escaped_object)s' provocaría la eliminación "
+"de objetos relacionados, pero su cuenta no tiene permiso para borrar los "
+"siguientes tipos de objetos:"
+
+msgid ""
+"Designates that this user has all permissions without explicitly assigning "
+"them."
+msgstr ""
+"Indica que este usuario tiene todos los permisos sin asignárselos "
+"explícitamente."
+
+msgid "Designates whether the user can log into this admin site."
+msgstr "Indica si el usuario puede entrar en este sitio de administración."
+
+msgid ""
+"Designates whether this user can log into the Django admin. Unselect this "
+"instead of deleting accounts."
+msgstr ""
+"Indica si el usuario puede entrar en este sitio de administración. Desmarque"
+" esto en lugar de borrar la cuenta."
+
+msgid "Detva"
+msgstr "Región de Detva"
+
+msgid "Django administration"
+msgstr "Administración de Django"
+
+msgid "Django site admin"
+msgstr "Sitio de administración de Django"
+
+msgid "Documentation"
+msgstr "Documentación"
+
+msgid "Documentation bookmarklets"
+msgstr "Bookmarklets de documentación"
+
+msgid "Documentation for this page"
+msgstr "Documentación de esta página"
+
+msgid "Dolny Kubin"
+msgstr "Región de Dolny Kubin"
+
+msgid "Dunajska Streda"
+msgstr "Región de Dunajska Streda"
+
+msgid "Duplicate values are not allowed."
+msgstr "No se admiten valores duplicados."
+
+msgid "Dutch"
+msgstr "Alemán"
+
+msgid "E-mail address"
+msgstr "Dirección de correo electrónico"
+
+msgid "E-mail address:"
+msgstr "Dirección de correo electrónico:"
+
+msgid "Edit this object (current window)"
+msgstr "Editar este objeto (ventana actual)"
+
+msgid "Edit this object (new window)"
+msgstr "Editar este objeto (nueva ventana)"
+
+msgid "Ehime"
+msgstr "Ehime"
+
+msgid "Empty values are not allowed here."
+msgstr "No se admiten valores vacíos."
+
+msgid "English"
+msgstr "Inglés"
+
+msgid "Ensure that there are no more than %s decimal places."
+msgstr "Asegúrese de que no hay más de %s decimales."
+
+msgid "Ensure that there are no more than %s digits before the decimal point."
+msgstr "Asegúrese de que no hay más de %s dígitos antes del punto decimal."
+
+msgid "Ensure that there are no more than %s digits in total."
+msgstr "Asegúrese de que no hay más de %s dígitos en total."
+
+msgid "Ensure this value has at least %(min)d characters (it has %(length)d)."
+msgstr ""
+"Asegúrese de que su texto tiene al menos %(min)d caracteres (actualmente "
+"tiene %(length)d)."
+
+msgid "Ensure this value has at most %(max)d characters (it has %(length)d)."
+msgstr ""
+"Asegúrese de que su texto tiene a lo más %(max)d caracteres (actualmente "
+"tiene %(length)d)."
+
+msgid "Ensure this value is greater than or equal to %s."
+msgstr "Asegúrese de que este valor es mayor o igual a %s."
+
+msgid "Ensure this value is less than or equal to %s."
+msgstr "Asegúrese de que este valor es menor o igual a %s."
+
+msgid "Ensure your text is less than %s character."
+msgid_plural "Ensure your text is less than %s characters."
+msgstr[0] "Asegúrese de que su texto tiene menos de %s carácter."
+msgstr[1] "Asegúrese de que su texto tiene menos de %s caracteres."
+
+msgid "Enter a 4 digit post code."
+msgstr "Introduzca un código postal de 4 dígitos."
+
+msgid "Enter a list of values."
+msgstr "Introduzca una lista de valores."
+
+msgid "Enter a new password for the user <strong>%(username)s</strong>."
+msgstr ""
+"Introduzca una nueva contraseña para el usuario "
+"<strong>%(username)s</strong>."
+
+msgid "Enter a number."
+msgstr "Introduzca un número."
+
+msgid "Enter a positive number."
+msgstr "Introduzca un número positivo."
+
+msgid "Enter a postal code in the format XXXXX or XXX XX."
+msgstr "Introduzca un código postal en el formato XXXXX o XXX XX."
+
+msgid "Enter a postal code in the format XXXXXXX or XXX-XXXX."
+msgstr "Introduzca un código postal en el formato XXXXX o XXXX-XXXX."
+
+msgid "Enter a postcode. A space is required between the two postcode parts."
+msgstr ""
+"Introduzca un código postal. Se necesita un espacio entre las dos partes del"
+" código."
+
+msgid "Enter a valid Finnish social security number."
+msgstr "Introduzca un número de seguro social finlandés válido."
+
+msgid ""
+"Enter a valid German identity card number in XXXXXXXXXXX-XXXXXXX-XXXXXXX-X "
+"format."
+msgstr ""
+"Introduzca un número de tarjeta de identidad de Alemania válida en el "
+"formato XXXXXXXXXXX-XXXXXXX-XXXXXXX-X."
+
+msgid ""
+"Enter a valid Icelandic identification number. The format is XXXXXX-XXXX."
+msgstr ""
+"Introduzca un número de identificación de Islandia válido. El formato es "
+"XXXXXX-XXXX."
+
+msgid "Enter a valid Norwegian social security number."
+msgstr "Introduzca un número de seguro social de Noruega válido."
+
+msgid "Enter a valid Social Security number."
+msgstr "Introduzca un número de Seguro Social válido."
+
+msgid ""
+"Enter a valid Swiss identity or passport card number in X1234567<0 or "
+"1234567890 format."
+msgstr ""
+"Introduzca una identificación suiza válida o un número de pasaporte en el "
+"formato X1234567<0 or 1234567890."
+
+msgid "Enter a valid U.S. Social Security number in XXX-XX-XXXX format."
+msgstr ""
+"Introduzca un Número Seguro Social de EEUU válido en el formato XXX-XX-XXXX"
+
+msgid "Enter a valid U.S. state abbreviation."
+msgstr "Introduzca una abreviatura válida de estado de los EEUU."
+
+msgid "Enter a valid URL."
+msgstr "Introduzca una URL válida."
+
+msgid "Enter a valid VAT number."
+msgstr "Introduzca un número VAT válido."
+
+msgid "Enter a valid date in YYYY-MM-DD format."
+msgstr "Introduzca una fecha válida en formato AAAA-MM-DD."
+
+msgid "Enter a valid date."
+msgstr "Introduzca una fecha válida."
+
+msgid "Enter a valid date/time in YYYY-MM-DD HH:MM format."
+msgstr "Introduzca una fecha/hora válida en formato AAAA-MM-DD HH:MM."
+
+msgid "Enter a valid date/time."
+msgstr "Introduzca una fecha/hora válida."
+
+msgid "Enter a valid e-mail address."
+msgstr "Introduzca una dirección de correo electrónico válida"
+
+msgid "Enter a valid filename."
+msgstr "Introduzca un nombre de fichero válido"
+
+msgid "Enter a valid time in HH:MM format."
+msgstr "Introduzca una hora válida en formato HH:MM."
+
+msgid "Enter a valid time."
+msgstr "Introduzca una hora válida."
+
+msgid "Enter a valid value."
+msgstr "Introduzca un valor correcto."
+
+msgid "Enter a valid zip code."
+msgstr "Introduzca un código postal válido."
+
+msgid "Enter a whole number between -32,768 and 32,767."
+msgstr "Introduzca un número entero entre -32,768 y 32,767."
+
+msgid "Enter a whole number between 0 and 32,767."
+msgstr "Introduzca un número entero entre 0 y 32,767."
+
+msgid "Enter a whole number."
+msgstr "Introduzca un número entero."
+
+msgid "Enter a zip code in the format XXXX."
+msgstr "Introduzca un código postal en el formato XXXX."
+
+msgid "Enter a zip code in the format XXXXX or XXXXX-XXXX."
+msgstr "Introduzca un código postal en el formato XXXXX o XXXX-XXXX."
+
+msgid "Enter a zip code in the format XXXXX-XXX."
+msgstr "Introduzca un código postal en el formato XXXX-XXXX."
+
+msgid "Enter a zip code in the format XXXXX."
+msgstr "Introduzca un código postal en el formato XXXXX."
+
+msgid "Enter a zip code in the format XXXXXXX."
+msgstr "Introduzca un código postal en el formato XXXXXXX."
+
+msgid "Enter only digits separated by commas."
+msgstr "Introduzca sólo dígitos separados por comas."
+
+msgid "Enter the same password as above, for verification."
+msgstr "Introduzca la misma contraseña que arriba, para verificación"
+
+msgid "Enter valid a Chilean RUT"
+msgstr "Introduzca un RUT chileno válido"
+
+msgid "Enter valid a Chilean RUT. The format is XX.XXX.XXX-X."
+msgstr "Introduzca un RUT chileno válido. El formato es XX.XXX.XXX-X."
+
+msgid "Enter valid e-mail addresses separated by commas."
+msgstr "Introduzca direcciones de correo válidas separadas por comas."
+
+msgid ""
+"Example: '/about/contact/'. Make sure to have leading and trailing slashes."
+msgstr ""
+"Ejemplo: '/about/contact/'. Asegúrese de que pone barras al principio y al "
+"final."
+
+msgid ""
+"Example: 'flatpages/contact_page.html'. If this isn't provided, the system "
+"will use 'flatpages/default.html'."
+msgstr ""
+"Ejemplo: 'flatpages/contact_page.html'. Si no es proporcionado, el sistema "
+"usará 'flatpages/default.html'."
+
+msgid "Feb."
+msgstr "Feb."
+
+msgid "February"
+msgstr "Febrero"
+
+msgid "Feel free to change this password by going to this page:"
+msgstr "Puede cambiarla accediendo a esta página:"
+
+msgid "Fields on %s objects"
+msgstr "Campos en %s objetos"
+
+msgid "File path"
+msgstr "Ruta de fichero"
+
+msgid "Filter"
+msgstr "Filtro"
+
+msgid "Finnish"
+msgstr "Finés"
+
+msgid ""
+"First, enter a username and password. Then, you'll be able to edit more user"
+" options."
+msgstr ""
+"Primero introduzca un nombre de usuario y una contraseña. Luego podrá editar"
+" el resto de opciones del usuario."
+
+msgid "Flag by %r"
+msgstr "Marca de %r"
+
+msgid "Floating point number"
+msgstr "Número decimal"
+
+msgid "Forgotten your password?"
+msgstr "¿Has olvidado tu contraseña?"
+
+msgid ""
+"Forgotten your password? Enter your e-mail address below, and we'll reset "
+"your password and e-mail the new one to you."
+msgstr ""
+"¿Ha olvidado su clave? Introduzca su dirección de correo electrónico, y "
+"crearemos una nueva que le enviaremos por correo."
+
+msgid "French"
+msgstr "Francés"
+
+msgid "Fri"
+msgstr "Vie"
+
+msgid "Fribourg"
+msgstr "Fribourg"
+
+msgid "Friday"
+msgstr "Viernes"
+
+msgid "Fukui"
+msgstr "Fukui"
+
+msgid "Fukuoka"
+msgstr "Fukuoka"
+
+msgid "Fukushima"
+msgstr "Fukushima"
+
+msgid "Galanta"
+msgstr "Galanta"
+
+msgid "Galician"
+msgstr "Gallego"
+
+msgid "Gelnica"
+msgstr "Gelnica"
+
+msgid "Geneva"
+msgstr "Geneva"
+
+msgid "German"
+msgstr "Alemán"
+
+msgid "Gifu"
+msgstr "Gifu"
+
+msgid "Glarus"
+msgstr "Glarus"
+
+msgid "Go"
+msgstr "Buscar"
+
+msgid "Graubuenden"
+msgstr "Graubuenden"
+
+msgid "Greek"
+msgstr "Griego"
+
+msgid "Groups"
+msgstr "Grupos"
+
+msgid "Gunma"
+msgstr "Gunma"
+
+msgid "Hamburg"
+msgstr "Hamburg"
+
+msgid "Hebrew"
+msgstr "Hebreo"
+
+msgid "Hessen"
+msgstr "Hessen"
+
+msgid "Hiroshima"
+msgstr "Hiroshima"
+
+msgid "History"
+msgstr "Histórico"
+
+msgid "Hlohovec"
+msgstr "Hlohovec"
+
+msgid "Hokkaido"
+msgstr "Hokkaido"
+
+msgid "Hold down \"Control\", or \"Command\" on a Mac, to select more than one."
+msgstr ""
+"Mantenga presionado \"Control\", o \"Command\" en un Mac, para seleccionar "
+"más de uno."
+
+msgid "Home"
+msgstr "Inicio"
+
+msgid "Humenne"
+msgstr "Humenne"
+
+msgid "Hungarian"
+msgstr "Húngaro"
+
+msgid "Hyogo"
+msgstr "Hyogo"
+
+msgid "IP address"
+msgstr "Dirección IP"
+
+msgid "Ibaraki"
+msgstr "Ibaraki"
+
+msgid "Icelandic"
+msgstr "Islandés"
+
+msgid ""
+"If this is checked, only logged-in users will be able to view the page."
+msgstr "Si está marcado, sólo los usuarios registrados podrán ver la página."
+
+msgid "Ilava"
+msgstr "Ilava"
+
+msgid "Important dates"
+msgstr "Fechas importantes"
+
+msgid ""
+"In addition to the permissions manually assigned, this user will also get "
+"all permissions granted to each group he/she is in."
+msgstr ""
+"Además de los permisos asignados manualmente, este usuario también tendrá "
+"todos los permisos de los grupos en los que esté."
+
+msgid "Integer"
+msgstr "Entero"
+
+msgid "Invalid CNPJ number."
+msgstr "Número CNPJ inválido"
+
+msgid "Invalid CPF number."
+msgstr "Número CPF inválido."
+
+msgid "Invalid URL: %s"
+msgstr "URL no válida: %s"
+
+msgid "Invalid comment ID"
+msgstr "ID de comentario no válido"
+
+msgid "Invalid date: %s"
+msgstr "Fecha no válida: %s"
+
+msgid "Ishikawa"
+msgstr "Ishikawa"
+
+msgid "Italian"
+msgstr "Italiano"
+
+msgid "Iwate"
+msgstr "Iwate"
+
+msgid "Jan."
+msgstr "Ene."
+
+msgid "January"
+msgstr "Enero"
+
+msgid "Japanese"
+msgstr "Japonés"
+
+msgid "July"
+msgstr "Julio"
+
+msgid "Jumps to the admin page for pages that represent a single object."
+msgstr ""
+"Le lleva a la página de administración de páginas que representan un único "
+"objeto."
+
+msgid ""
+"Jumps you from any page to the documentation for the view that generates "
+"that page."
+msgstr ""
+"Le lleva desde cualquier página a la documentación de la vista que la "
+"genera."
+
+msgid "June"
+msgstr "Junio"
+
+msgid "Jura"
+msgstr "Jura"
+
+msgid "Kagawa"
+msgstr "Kagawa"
+
+msgid "Kagoshima"
+msgstr "Kagoshima"
+
+msgid "Kanagawa"
+msgstr "Kanagawa"
+
+msgid "Kannada"
+msgstr "Kannada"
+
+msgid "Kezmarok"
+msgstr "Kezmarok"
+
+msgid "Kochi"
+msgstr "Kochi"
+
+msgid "Komarno"
+msgstr "Komarno"
+
+msgid "Korean"
+msgstr "Koreano"
+
+msgid "Kosice - okolie"
+msgstr "Kosice - okolie"
+
+msgid "Kosice I"
+msgstr "Kosice I"
+
+msgid "Kosice II"
+msgstr "Kosice II"
+
+msgid "Kosice III"
+msgstr "Kosice III"
+
+msgid "Kosice IV"
+msgstr "Kosice IV"
+
+msgid "Kosice region"
+msgstr "Región de Kosice"
+
+msgid "Krupina"
+msgstr "Krupina"
+
+msgid "Kumamoto"
+msgstr "Kumamoto"
+
+msgid "Kyoto"
+msgstr "Kyoto"
+
+msgid "Kysucke Nove Mesto"
+msgstr "Kysucke Nove Mesto"
+
+msgid "Latvian"
+msgstr "Latvio"
+
+msgid "Levice"
+msgstr "Levice"
+
+msgid "Levoca"
+msgstr "Levoca"
+
+msgid "Line breaks are not allowed here."
+msgstr "No se permiten saltos de línea."
+
+msgid "Liptovsky Mikulas"
+msgstr "Liptovsky Mikulas"
+
+msgid "Log in"
+msgstr "Identificarse"
+
+msgid "Log in again"
+msgstr "Identificarse de nuevo"
+
+msgid "Log out"
+msgstr "Terminar sesión"
+
+msgid "Logged out"
+msgstr "Sesión terminada"
+
+msgid ""
+"Looks like your browser isn't configured to accept cookies. Please enable "
+"cookies, reload this page, and try again."
+msgstr ""
+"Parece que su navegador no está configurado para aceptar cookies. Actívelas "
+"por favor, recargue esta página, e inténtelo de nuevo."
+
+msgid "Lower Saxony"
+msgstr "Lower Saxony"
+
+msgid "Lowercase letters are not allowed here."
+msgstr "No se admiten letras minúsculas."
+
+msgid "Lucenec"
+msgstr "Lucenec"
+
+msgid "Lucerne"
+msgstr "Lucerne"
+
+msgid "MONTH_DAY_FORMAT"
+msgstr "j \\de F"
+
+msgid "Macedonian"
+msgstr "Macedonio"
+
+msgid "Make sure your uploaded file is at least %s bytes big."
+msgstr "Asegúrese de que el fichero que envía tiene al menos %s bytes."
+
+msgid "Make sure your uploaded file is at most %s bytes big."
+msgstr "Asegúrese de que el fichero que envía tiene como máximo %s bytes."
+
+msgid "Malacky"
+msgstr "Malacky"
+
+msgid "March"
+msgstr "Marzo"
+
+msgid "Martin"
+msgstr "Martin"
+
+msgid "May"
+msgstr "Mayo"
+
+msgid "Mecklenburg-Western Pomerania"
+msgstr "Mecklenburg-Western Pomerania"
+
+msgid "Medzilaborce"
+msgstr "Medzilaborce"
+
+msgid "Michalovce"
+msgstr "Michalovce"
+
+msgid "Mie"
+msgstr "Mie"
+
+msgid "Miyagi"
+msgstr "Miyagi"
+
+msgid "Miyazaki"
+msgstr "Miyazaki"
+
+msgid "Model %(name)r not found in app %(label)r"
+msgstr "El modelo %(name)s no se ha encontrado en la aplicación %(label)r"
+
+msgid "Models available in the %(name)s application."
+msgstr "Modelos disponibles en la aplicación %(name)s."
+
+msgid "Moderator deletion by %r"
+msgstr "Eliminación del moderador %r"
+
+msgid "Mon"
+msgstr "Lun"
+
+msgid "Monday"
+msgstr "Lunes"
+
+msgid "My Actions"
+msgstr "Mis acciones"
+
+msgid "Myjava"
+msgstr "Myjava"
+
+msgid "Nagano"
+msgstr "Nagano"
+
+msgid "Nagasaki"
+msgstr "Nagasaki"
+
+msgid "Namestovo"
+msgstr "Namestovo"
+
+msgid "Nara"
+msgstr "Nara"
+
+msgid "Neuchatel"
+msgstr "Neuchatel"
+
+msgid "New password:"
+msgstr "Clave nueva:"
+
+msgid "Nidwalden"
+msgstr "Nidwalden"
+
+msgid "Niigata"
+msgstr "Niigata"
+
+msgid "Nitra"
+msgstr "Nitra"
+
+msgid "Nitra region"
+msgstr "Región de Nitra"
+
+msgid "No"
+msgstr "No"
+
+msgid "No fields changed."
+msgstr "No ha cambiado ningún campo."
+
+msgid "No file was submitted."
+msgstr "No se ha enviado ningún fichero"
+
+msgid "No file was submitted. Check the encoding type on the form."
+msgstr ""
+"No se ha enviado ningún fichero. Compruebe el tipo de codificación en el "
+"formulario."
+
+msgid "No voting for yourself"
+msgstr "No puedes votarte tú mismo"
+
+msgid "Non-numeric characters aren't allowed here."
+msgstr "No se admiten caracteres no numéricos."
+
+msgid "None available"
+msgstr "Ninguno disponible"
+
+msgid "North Rhine-Westphalia"
+msgstr "North Rhine-Westphalia"
+
+msgid "Norwegian"
+msgstr "Noruego"
+
+msgid "Nov."
+msgstr "Nov."
+
+msgid "Nove Mesto nad Vahom"
+msgstr "Nove Mesto nad Vahom"
+
+msgid "Nove Zamky"
+msgstr "Nove Zamky"
+
+msgid "November"
+msgstr "Noviembre"
+
+msgid "Obwalden"
+msgstr "Obwalden"
+
+msgid "Oct."
+msgstr "Oct."
+
+msgid "October"
+msgstr "Octubre"
+
+msgid "Oita"
+msgstr "Oita"
+
+msgid "Okayama"
+msgstr "Okayama"
+
+msgid "Okinawa"
+msgstr "Okinawa"
+
+msgid "Old password:"
+msgstr "Clave antigua:"
+
+msgid "One or more %(fieldname)s in %(name)s:"
+msgstr "Uno o más %(fieldname)s en %(name)s:"
+
+msgid "One or more %(fieldname)s in %(name)s: %(obj)s"
+msgstr "Uno o más %(fieldname)s en %(name)s: %(obj)s"
+
+msgid "One or more of the required fields wasn't submitted"
+msgstr "No se proporcionó uno o más de los siguientes campos requeridos"
+
+msgid "Only POSTs are allowed"
+msgstr "Sólo se admite POST"
+
+msgid "Only alphabetical characters are allowed here."
+msgstr "Sólo se admiten caracteres alfabéticos."
+
+msgid "Optional"
+msgstr "Opcional"
+
+msgid "Order:"
+msgstr "Orden:"
+
+msgid "Ordering"
+msgstr "Ordenación"
+
+msgid "Osaka"
+msgstr "Osaka"
+
+msgid "PM"
+msgstr "PM"
+
+msgid "Page not found"
+msgstr "Página no encontrada"
+
+msgid "Partizanske"
+msgstr "Partizanske"
+
+msgid "Password"
+msgstr "Contraseña"
+
+msgid "Password (again)"
+msgstr "Contraseña (de nuevo)"
+
+msgid "Password change"
+msgstr "Cambio de clave"
+
+msgid "Password change successful"
+msgstr "Cambio de clave exitoso"
+
+msgid "Password changed successfully."
+msgstr "La clave se ha cambiado exitosamente."
+
+msgid "Password reset"
+msgstr "Recuperar clave"
+
+msgid "Password reset successful"
+msgstr "Recuperación de clave exitosa"
+
+msgid "Password:"
+msgstr "Clave:"
+
+msgid "Past 7 days"
+msgstr "Últimos 7 días"
+
+msgid "Permissions"
+msgstr "Permisos"
+
+msgid "Persian"
+msgstr "Persa"
+
+msgid "Personal info"
+msgstr "Información personal"
+
+msgid "Pezinok"
+msgstr "Pezinok"
+
+msgid "Phone number"
+msgstr "Número de teléfono"
+
+msgid "Phone numbers must be in XX-XXXX-XXXX format."
+msgstr "Los números de teléfono deben tener el formato XXX-XXX-XXXX."
+
+msgid "Phone numbers must be in XXX-XXX-XXXX format. \"%s\" is invalid."
+msgstr ""
+"Los números de teléfono deben guardar el formato XXX-XXX-XXXX. \"%s\" no es "
+"válido."
+
+msgid "Piestany"
+msgstr "Piestany"
+
+msgid ""
+"Please close the unclosed %(tag)s tag from line %(line)s. (Line starts with "
+"\"%(start)s\".)"
+msgstr ""
+"Por favor, cierre la etiqueta %(tag)s de la línea %(line)s. (La línea "
+"empieza por \"%(start)s\".)"
+
+msgid "Please correct the error below."
+msgid_plural "Please correct the errors below."
+msgstr[0] "Por favor, corrija el siguiente error."
+msgstr[1] "Por favor, corrija los siguientes errores."
+
+msgid ""
+"Please enter a correct username and password. Note that both fields are "
+"case-sensitive."
+msgstr ""
+"Por favor, introduzca un correcto nombre de usuario y contraseña. Note que "
+"ambos campos son sensibles a mayúsculas/minúsculas."
+
+msgid "Please enter a valid %s."
+msgstr "Por favor, introduzca un %s válido."
+
+msgid "Please enter a valid IP address."
+msgstr "Por favor introduzca una dirección IP válida."
+
+msgid ""
+"Please enter a valid decimal number with a whole part of at most %s digit."
+msgid_plural ""
+"Please enter a valid decimal number with a whole part of at most %s digits."
+msgstr[0] ""
+"Por favor, introduzca un número decimal válido con a lo más %s dígito en su "
+"parte entera."
+msgstr[1] ""
+"Por favor, introduzca un número decimal válido con a lo más %s dígitos en su"
+" parte entera."
+
+msgid "Please enter a valid decimal number with at most %s decimal place."
+msgid_plural ""
+"Please enter a valid decimal number with at most %s decimal places."
+msgstr[0] ""
+"Por favor, introduzca un número decimal válido con a lo más %s dígito "
+"decimal."
+msgstr[1] ""
+"Por favor, introduzca un número decimal válido con a lo más %s dígitos "
+"decimales."
+
+msgid "Please enter a valid decimal number with at most %s total digit."
+msgid_plural ""
+"Please enter a valid decimal number with at most %s total digits."
+msgstr[0] ""
+"Por favor, introduzca un número decimal válido con a lo más %s dígito en "
+"total."
+msgstr[1] ""
+"Por favor, introduzca un número decimal válido con a lo más %s dígitos en "
+"total."
+
+msgid "Please enter a valid decimal number."
+msgstr "Por favor, introduzca un número decimal válido."
+
+msgid "Please enter a valid floating point number."
+msgstr "Por favor, introduzca un número decimal válido."
+
+msgid "Please enter both fields or leave them both empty."
+msgstr "Por favor, rellene ambos campos o deje ambos vacíos."
+
+msgid "Please enter something for at least one field."
+msgstr "Por favor, introduzca algo en al menos un campo."
+
+msgid "Please enter valid %(self)s IDs. The value %(value)r is invalid."
+msgid_plural ""
+"Please enter valid %(self)s IDs. The values %(value)r are invalid."
+msgstr[0] ""
+"Por favor, introduzca IDs de %(self)s válidos. El valor %(value)r no es "
+"válido."
+msgstr[1] ""
+"Por favor, introduzca IDs de %(self)s válidos. Los valores %(value)r no son "
+"válidos."
+
+msgid ""
+"Please enter your old password, for security's sake, and then enter your new"
+" password twice so we can verify you typed it in correctly."
+msgstr ""
+"Por favor, introduzca su clave antigua, por seguridad, y después introduzca "
+"la nueva clave dos veces para verificar que la ha escrito correctamente."
+
+msgid ""
+"Please log in again, because your session has expired. Don't worry: Your "
+"submission has been saved."
+msgstr ""
+"Por favor, identifíquese de nuevo, porque su sesión ha caducado. No se "
+"preocupe: se ha guardado su envío."
+
+msgid "Polish"
+msgstr "Polaco"
+
+msgid "Poltar"
+msgstr "Poltar"
+
+msgid "Poprad"
+msgstr "Poprad"
+
+msgid "Portugese"
+msgstr "Portugés"
+
+msgid "Post a photo"
+msgstr "Postea una fotografía"
+
+msgid ""
+"Posted by %(user)s at %(date)s\n"
+"\n"
+"%(comment)s\n"
+"\n"
+"http://%(domain)s%(url)s"
+msgstr ""
+"Enviado por %(user)s en %(date)s\n"
+"\n"
+"%(comment)s\n"
+"\n"
+"http://%(domain)s%(url)s"
+
+msgid "Povazska Bystrica"
+msgstr "Povazska Bystrica"
+
+msgid "Presov"
+msgstr "Presov"
+
+msgid "Presov region"
+msgstr "Región de Presov"
+
+msgid "Preview comment"
+msgstr "Previsualizar comentario"
+
+msgid "Prievidza"
+msgstr "Prievidza"
+
+msgid "Puchov"
+msgstr "Puchov"
+
+msgid "Ratings"
+msgstr "Calificaciones"
+
+msgid "Recent Actions"
+msgstr "Acciones recientes"
+
+msgid "Relation to parent model"
+msgstr "Relación con el modelo padre"
+
+msgid "Required"
+msgstr "Requerido"
+
+msgid ""
+"Required. 30 characters or fewer. Alphanumeric characters only (letters, "
+"digits and underscores)."
+msgstr ""
+"Requerido. 30 caracteres o menos. Sólo caracteres alfanuméricos (letras, "
+"dígitos y guiones bajos)."
+
+msgid "Reset my password"
+msgstr "Recuperar mi clave"
+
+msgid "Revuca"
+msgstr "Revuca"
+
+msgid "Rhineland-Palatinate"
+msgstr "Rhineland-Palatinate"
+
+msgid "Rimavska Sobota"
+msgstr "Rimavska Sobota"
+
+msgid "Romanian"
+msgstr "Rumano"
+
+msgid "Roznava"
+msgstr "Roznava"
+
+msgid "Russian"
+msgstr "Ruso"
+
+msgid "Ruzomberok"
+msgstr "Ruzomberok"
+
+msgid "Saarland"
+msgstr "Saarland"
+
+msgid "Sabinov"
+msgstr "Sabinov"
+
+msgid "Saga"
+msgstr "Saga"
+
+msgid "Saitama"
+msgstr "Saitama"
+
+msgid "Sala"
+msgstr "Sala"
+
+msgid "Sat"
+msgstr "Sab"
+
+msgid "Saturday"
+msgstr "Sábado"
+
+msgid "Save"
+msgstr "Grabar"
+
+msgid "Save and add another"
+msgstr "Grabar y añadir otro"
+
+msgid "Save and continue editing"
+msgstr "Grabar y continuar editando"
+
+msgid "Save as new"
+msgstr "Grabar como nuevo"
+
+msgid "Saxony"
+msgstr "Saxony"
+
+msgid "Saxony-Anhalt"
+msgstr "Saxony-Anhalt"
+
+msgid "Schaffhausen"
+msgstr "Schaffhausen"
+
+msgid "Schleswig-Holstein"
+msgstr "Schleswig-Holstein"
+
+msgid "Schwyz"
+msgstr "Schwyz"
+
+msgid "Select %s"
+msgstr "Escoja %s"
+
+msgid "Select %s to change"
+msgstr "Escoja %s para modificar"
+
+msgid "Select a valid choice. %s is not one of the available choices."
+msgstr "Escoja una opción válida; '%s' no es una de las opciones disponibles."
+
+msgid ""
+"Select a valid choice. That choice is not one of the available choices."
+msgstr "Escoja una opción válida. Esa opción no está entre las aceptadas."
+
+msgid "Select a valid choice; '%(data)s' is not in %(choices)s."
+msgstr "Escoja una opción válida; '%(data)s' no está en %(choices)s."
+
+msgid "Senec"
+msgstr "Senec"
+
+msgid "Senica"
+msgstr "Senica"
+
+msgid "Separate multiple IDs with commas."
+msgstr "Separe múltiples IDs con comas."
+
+msgid "Sept."
+msgstr "Sept."
+
+msgid "September"
+msgstr "Septiembre"
+
+msgid "Serbian"
+msgstr "Serbio"
+
+msgid "Server Error <em>(500)</em>"
+msgstr "Error de servidor <em>(500)</em>"
+
+msgid "Server error"
+msgstr "Error del servidor"
+
+msgid "Server error (500)"
+msgstr "Error del servidor (500)"
+
+msgid "Shiga"
+msgstr "Shiga"
+
+msgid "Shimane"
+msgstr "Shimane"
+
+msgid "Shizuoka"
+msgstr "Shizuoka"
+
+msgid "Show all"
+msgstr "Mostrarlo todo"
+
+msgid "Show object ID"
+msgstr "Mostrar ID de objeto"
+
+msgid ""
+"Shows the content-type and unique ID for pages that represent a single "
+"object."
+msgstr ""
+"Muestra el tipo de contenido e ID unívoco de las páginas que representan un "
+"único objeto."
+
+msgid "Simplified Chinese"
+msgstr "Chino simplificado"
+
+msgid "Site administration"
+msgstr "Sitio administrativo"
+
+msgid "Skalica"
+msgstr "Skalica"
+
+msgid "Slovak"
+msgstr "Eslovaco"
+
+msgid "Slovenian"
+msgstr "Esloveno"
+
+msgid "Snina"
+msgstr "Snina"
+
+msgid "Sobrance"
+msgstr "Sobrance"
+
+msgid "Solothurn"
+msgstr "Solothurn"
+
+msgid ""
+"Some text starting on line %(line)s is not allowed in that context. (Line "
+"starts with \"%(start)s\".)"
+msgstr ""
+"Parte del texto que comienza en la línea %(line)s no está permitido en ese "
+"contexto. (La línea empieza por \"%(start)s\".)"
+
+msgid "Somebody tampered with the comment form (security violation)"
+msgstr ""
+"Alguien está jugando con el formulario de comentarios (violación de "
+"seguridad)"
+
+msgid ""
+"Something's wrong with your database installation. Make sure the appropriate"
+" database tables have been created, and make sure the database is readable "
+"by the appropriate user."
+msgstr ""
+"Algo va mal con la instalación de la base de datos. Asegúrate que las tablas"
+" necesarias han sido creadas, y que la base de datos puede ser leída por el "
+"usuario apropiado."
+
+msgid "Spanish"
+msgstr "Español"
+
+msgid "Spisska Nova Ves"
+msgstr "Spisska Nova Ves"
+
+msgid "St. Gallen"
+msgstr "St. Gallen"
+
+msgid "Stara Lubovna"
+msgstr "Stara Lubovna"
+
+msgid "String (up to %(max_length)s)"
+msgstr "Cadena (máximo %(max_length)s)"
+
+msgid "Stropkov"
+msgstr "Stropkov"
+
+msgid "Sun"
+msgstr "Dom"
+
+msgid "Sunday"
+msgstr "Domingo"
+
+msgid "Svidnik"
+msgstr "Svidnik"
+
+msgid "Swedish"
+msgstr "Sueco"
+
+msgid "TIME_FORMAT"
+msgstr "P"
+
+msgid "Tamil"
+msgstr "Tamil"
+
+msgid "Telugu"
+msgstr "Telugu"
+
+msgid "Text"
+msgstr "Texto"
+
+msgid "Thanks for spending some quality time with the Web site today."
+msgstr "Gracias por el tiempo que ha dedicado al sitio web hoy."
+
+msgid "Thanks for using our site!"
+msgstr "¡Gracias por usar nuestro sitio!"
+
+msgid ""
+"That e-mail address doesn't have an associated user account. Are you sure "
+"you've registered?"
+msgstr ""
+"Esta dirección de correo electrónico no tiene una cuenta de usuario "
+"asociada. ¿Está seguro de que se ha registrado?"
+
+msgid ""
+"The \"%(attr)s\" attribute on line %(line)s has an invalid value. (Line "
+"starts with \"%(start)s\".)"
+msgstr ""
+"El atributo \"%(attr)s\" de la línea %(line)s tiene un valor que no es "
+"válido. (La línea empieza por \"%(start)s\".)"
+
+msgid "The %(name)s \"%(obj)s\" was added successfully."
+msgstr "Se añadió con éxito el %(name)s \"%(obj)s\"."
+
+msgid ""
+"The %(name)s \"%(obj)s\" was added successfully. You may edit it again "
+"below."
+msgstr ""
+"Se agregó con éxito el %(name)s \"%(obj)s. Puede editarlo de nuevo abajo."
+
+msgid "The %(name)s \"%(obj)s\" was changed successfully."
+msgstr "Se modificó con éxito el %(name)s \"%(obj)s."
+
+msgid "The %(name)s \"%(obj)s\" was deleted successfully."
+msgstr "Se eliminó con éxito el %(name)s \"%(obj)s\"."
+
+msgid "The %(site_name)s team"
+msgstr "El equipo de %(site_name)s"
+
+msgid "The %(verbose_name)s was created successfully."
+msgstr "El %(verbose_name)s se ha creado correctamente."
+
+msgid "The %(verbose_name)s was deleted."
+msgstr "El %(verbose_name)s ha sido eliminado."
+
+msgid "The %(verbose_name)s was updated successfully."
+msgstr "Se actualizó con éxito el %(verbose_name)s."
+
+msgid "The Icelandic identification number is not valid."
+msgstr "El número de identificación de Islandia no es válido."
+
+msgid ""
+"The URL %(url)s returned the invalid Content-Type header '%(contenttype)s'."
+msgstr ""
+"La URL %(url)s devolvió la cabecera Content-Type '%(contenttype)s', que no "
+"es válida."
+
+msgid "The URL %s does not point to a valid QuickTime video."
+msgstr "La URL %s no apunta a un vídeo QuickTime válido."
+
+msgid "The URL %s does not point to a valid image."
+msgstr "La URL %s no apunta a una imagen válida."
+
+msgid "The URL %s is a broken link."
+msgstr "La URL %s es un enlace roto."
+
+msgid "The comment form didn't provide either 'preview' or 'post'"
+msgstr ""
+"El formulario de comentario no proporcionó 'previsualizar' ni 'enviar'"
+
+msgid ""
+"The comment form had an invalid 'target' parameter -- the object ID was "
+"invalid"
+msgstr ""
+"El formulario de comentarios tiene un parámetro 'target' no válido (el ID de"
+" objeto era inválido)"
+
+msgid "The format for this field is wrong."
+msgstr "El formato de este campo es incorrecto."
+
+msgid "The submitted file is empty."
+msgstr "El fichero enviado está vacío."
+
+msgid "The two 'new password' fields didn't match."
+msgstr ""
+"Las contraseñas introducidas en los campos 'nueva contraseña' no coinciden."
+
+msgid "The two password fields didn't match."
+msgstr "Las dos contraseñas no coinciden."
+
+msgid ""
+"There's been an error. It's been reported to the site administrators via "
+"e-mail and should be fixed shortly. Thanks for your patience."
+msgstr ""
+"Ha ocurrido un error. Se ha informado a los administradores del sitio "
+"mediante correo electrónico y debería arreglarse en breve. Gracias por su "
+"paciencia."
+
+msgid "This URL appears to be a broken link."
+msgstr "La URL parece ser un enlace roto."
+
+msgid "This account is inactive."
+msgstr "Esta cuenta está inactiva."
+
+msgid ""
+"This can be either an absolute path (as above) or a full URL starting with "
+"'http://'."
+msgstr ""
+"Esto puede ser bien una ruta absoluta (como antes) o una URL completa que "
+"empiece con 'http://'."
+
+msgid ""
+"This comment was flagged by %(user)s:\n"
+"\n"
+"%(text)s"
+msgstr ""
+"Este comentario fue marcado por %(user)s:\n"
+"\n"
+"%(text)s"
+
+msgid ""
+"This comment was posted by a sketchy user:\n"
+"\n"
+"%(text)s"
+msgstr ""
+"Este comentario ha sido colocado por un usuario poco preciso: \n"
+"\n"
+"%(text)s"
+
+msgid ""
+"This comment was posted by a user who has posted fewer than %(count)s comment:\n"
+"\n"
+"%(text)s"
+msgid_plural ""
+"This comment was posted by a user who has posted fewer than %(count)s comments:\n"
+"\n"
+"%(text)s"
+msgstr[0] ""
+"Este comentario lo envió un usuario que ha enviado menos de %(count)s comentario:\n"
+"\n"
+"%(text)s"
+msgstr[1] ""
+"Este comentario lo envió un usuario que ha enviado menos de %(count)s comentarios:\n"
+"\n"
+"%(text)s"
+
+msgid "This field cannot be null."
+msgstr "Este campo no puede estar vacío."
+
+msgid "This field is invalid."
+msgstr "Este campo no es válido."
+
+msgid "This field is required."
+msgstr "Este campo es obligatorio."
+
+msgid "This field must be given if %(field)s is %(value)s"
+msgstr "Se debe proporcionar este campo si %(field)s es %(value)s"
+
+msgid "This field must be given if %(field)s is not %(value)s"
+msgstr "Se debe proporcionar este campo si %(field)s no es %(value)s"
+
+msgid "This field must match the '%s' field."
+msgstr "Este campo debe concordar con el campo '%s'."
+
+msgid "This field requires at least 14 digits"
+msgstr "Este campo necesita 14 dígitos como máximo"
+
+msgid "This field requires at most 11 digits or 14 characters."
+msgstr "Este campo necesita al menos 11 o 14 caracteres"
+
+msgid "This field requires only numbers."
+msgstr "Este campo sólo acepta números."
+
+msgid "This month"
+msgstr "Este mes"
+
+msgid ""
+"This object doesn't have a change history. It probably wasn't added via this"
+" admin site."
+msgstr ""
+"Este objeto no tiene histórico de cambios. Probablemente no fue añadido "
+"usando este sitio de administración."
+
+msgid ""
+"This rating is required because you've entered at least one other rating."
+msgstr "Se precisa esta puntuación porque ha introducido al menos otra más."
+
+msgid ""
+"This should be an absolute path, excluding the domain name. Example: "
+"'/events/search/'."
+msgstr ""
+"Esta ruta debería ser absoluta, excluyendo el nombre de dominio. Ejeplo: "
+"'/events/search/'."
+
+msgid "This value can't be comprised solely of digits."
+msgstr "Este valor no puede comprender sólo dígitos."
+
+msgid "This value must be a decimal number."
+msgstr "Este valor debe ser un entero."
+
+msgid "This value must be a power of %s."
+msgstr "Este valor debe ser una potencia de %s."
+
+msgid "This value must be an integer."
+msgstr "Este valor debe ser un entero."
+
+msgid "This value must be at least %s."
+msgstr "Este valor debe ser como mínimo %s."
+
+msgid "This value must be between %(lower)s and %(upper)s."
+msgstr "Este valor debe estar entre %(lower)s y %(upper)s."
+
+msgid "This value must be either None, True or False."
+msgstr "Este valor debe ser Verdadero o Falso."
+
+msgid "This value must be either True or False."
+msgstr "Este valor debe ser Verdadero o Falso."
+
+msgid "This value must be no more than %s."
+msgstr "Este valor no debe ser mayor que %s."
+
+msgid "This value must contain only letters, numbers and underscores."
+msgstr "Este valor debe contener sólo letras, números y guiones bajos."
+
+msgid "This value must contain only letters, numbers, underscores or hyphens."
+msgstr ""
+"Este valor debe contener sólo letras, números, guiones bajos o medios."
+
+msgid ""
+"This value must contain only letters, numbers, underscores, dashes or "
+"slashes."
+msgstr ""
+"Este valor debe contener letras, números, guiones bajos o barras solamente."
+
+msgid "This year"
+msgstr "Este año"
+
+msgid "Thu"
+msgstr "Jue"
+
+msgid "Thurgau"
+msgstr "Thurgau"
+
+msgid "Thuringia"
+msgstr "Thuringia"
+
+msgid "Thursday"
+msgstr "Jueves"
+
+msgid "Ticino"
+msgstr "Ticino"
+
+msgid "Time"
+msgstr "Hora"
+
+msgid "Time:"
+msgstr "Hora:"
+
+msgid "Tochigi"
+msgstr "Tochigi"
+
+msgid "Today"
+msgstr "Hoy"
+
+msgid "Tokushima"
+msgstr "Tokushima"
+
+msgid "Tokyo"
+msgstr "Tokyo"
+
+msgid "Topolcany"
+msgstr "Topolcany"
+
+msgid "Tottori"
+msgstr "Tottori"
+
+msgid "Toyama"
+msgstr "Toyama"
+
+msgid "Traditional Chinese"
+msgstr "Chino tradicional"
+
+msgid "Trebisov"
+msgstr "Trebisov"
+
+msgid "Trencin"
+msgstr "Trencin"
+
+msgid "Trencin region"
+msgstr "Región de Trencin"
+
+msgid "Trnava"
+msgstr "Trnava"
+
+msgid "Trnava region"
+msgstr "Región de Trnava"
+
+msgid "Tue"
+msgstr "Mar"
+
+msgid "Tuesday"
+msgstr "Martes"
+
+msgid "Turcianske Teplice"
+msgstr "Turcianske Teplice"
+
+msgid "Turkish"
+msgstr "Turco"
+
+msgid "Tvrdosin"
+msgstr "Tvrdosin"
+
+msgid "U.S. state (two uppercase letters)"
+msgstr "Estado de los EEUU (dos letras mayúsculas)"
+
+msgid "URL"
+msgstr "URL"
+
+msgid "Ukrainian"
+msgstr "Ucraniano"
+
+msgid "Unknown"
+msgstr "Desconocido"
+
+msgid ""
+"Upload a valid image. The file you uploaded was either not an image or a "
+"corrupted image."
+msgstr ""
+"Envíe una imagen válida. El fichero que ha enviado no era una imagen o se "
+"trataba de una imagen corrupta."
+
+msgid "Uppercase letters are not allowed here."
+msgstr "No se admiten letras mayúsculas."
+
+msgid "Uri"
+msgstr "Uri"
+
+msgid ""
+"Use '[algo]$[salt]$[hexdigest]' or use the <a href=\"password/\">change "
+"password form</a>."
+msgstr ""
+"Use'[algo]$[sal]$[hash hexadecimal]' o use <a href=\"password/\">el "
+"formulario para cambiar la contraseña</a>."
+
+msgid "User"
+msgstr "Usuario"
+
+msgid "Username"
+msgstr "Nombre de usuario"
+
+msgid "Username:"
+msgstr "Usuario:"
+
+msgid "Usernames cannot contain the '@' character."
+msgstr "Los nombres de usuario no pueden contener el carácter '@'."
+
+msgid "Valais"
+msgstr "Valais"
+
+msgid ""
+"Valid HTML is required. Specific errors are:\n"
+"%s"
+msgstr ""
+"Se precisa HTML válido. Los errores específicos son:\n"
+"%s"
+
+msgid "Vaud"
+msgstr "Vaud"
+
+msgid "Velky Krtis"
+msgstr "Velky Krtis"
+
+msgid "View on site"
+msgstr "Ver en el sitio"
+
+msgid "Vranov nad Toplou"
+msgstr "Vranov nad Toplou"
+
+msgid "Wakayama"
+msgstr "Wakayama"
+
+msgid "Watch your mouth! The word %s is not allowed here."
+msgid_plural "Watch your mouth! The words %s are not allowed here."
+msgstr[0] "¡Cuida tu vocabulario! Aquí no admitimos la palabra %s."
+msgstr[1] "¡Cuida tu vocabulario! Aquí no admitimos las palabras %s."
+
+msgid "We're sorry, but the requested page could not be found."
+msgstr "Lo sentimos, pero no se encuentra la página solicitada."
+
+msgid ""
+"We've e-mailed a new password to the e-mail address you submitted. You "
+"should be receiving it shortly."
+msgstr ""
+"Le hemos enviado una clave nueva a la dirección que ha suministrado. Debería"
+" recibirla en breve."
+
+msgid "Wed"
+msgstr "Mie"
+
+msgid "Wednesday"
+msgstr "Miércoles"
+
+msgid "Welcome,"
+msgstr "Bienvenido,"
+
+msgid "Welsh"
+msgstr "Galés"
+
+msgid "XML text"
+msgstr "Texto XML"
+
+msgid "YEAR_MONTH_FORMAT"
+msgstr "F Y"
+
+msgid "Yamagata"
+msgstr "Yamagata"
+
+msgid "Yamaguchi"
+msgstr "Yamaguchi"
+
+msgid "Yamanashi"
+msgstr "Yamanashi"
+
+msgid "Year must be 1900 or later."
+msgstr "El año debe ser 1900 o posterior."
+
+msgid "Yes"
+msgstr "Sí"
+
+msgid "Yes, I'm sure"
+msgstr "Sí, estoy seguro"
+
+msgid "You don't have permission to edit anything."
+msgstr "No tiene permiso para editar nada."
+
+msgid "You may add another %s below."
+msgstr "Puede agregar otro %s abajo."
+
+msgid "You may edit it again below."
+msgstr "Puede editarlo de nuevo abajo."
+
+msgid "You're receiving this e-mail because you requested a password reset"
+msgstr "Está recibiendo este mensaje debido a que solicitó recuperar la clave"
+
+msgid ""
+"Your Web browser doesn't appear to have cookies enabled. Cookies are "
+"required for logging in."
+msgstr ""
+"Tu navegador de internet parece no tener las cookies habilitadas. Las "
+"cookies se necesitan para poder ingresar."
+
+msgid "Your e-mail address is not your username. Try '%s' instead."
+msgstr ""
+"Su dirección de correo no es su nombre de usuario. Pruebe con '%s' en su "
+"lugar."
+
+msgid "Your name:"
+msgstr "Tu nombre:"
+
+msgid "Your new password is: %(new_password)s"
+msgstr "Su nueva clave es: %(new_password)s"
+
+msgid "Your old password was entered incorrectly. Please enter it again."
+msgstr ""
+"Tu contraseña antigua es incorrecta. Por favor, vuelve a introducirla "
+"correctamente."
+
+msgid "Your password was changed."
+msgstr "Su clave ha sido cambiada."
+
+msgid "Your username, in case you've forgotten:"
+msgstr "Su nombre de usuario, en caso de haberlo olvidado:"
+
+msgid "Zarnovica"
+msgstr "Zarnovica"
+
+msgid "Ziar nad Hronom"
+msgstr "Ziar nad Hronom"
+
+msgid "Zilina"
+msgstr "Zilina"
+
+msgid "Zilina region"
+msgstr "Región de Zilina"
+
+msgid "Zlate Moravce"
+msgstr "Zlate Moravce"
+
+msgid "Zug"
+msgstr "Zug"
+
+msgid "Zurich"
+msgstr "Zurich"
+
+msgid "Zvolen"
+msgstr "Zvolen"
+
+msgid "a.m."
+msgstr "a.m"
+
+msgid "action flag"
+msgstr "marca de acción"
+
+msgid "action time"
+msgstr "hora de acción"
+
+msgid "active"
+msgstr "activo"
+
+msgid "all %s"
+msgstr "todo %s"
+
+msgid "and"
+msgstr "y"
+
+msgid "approved by staff"
+msgstr "aprobado por el staff"
+
+msgid "apr"
+msgstr "abr"
+
+msgid "aug"
+msgstr "ago"
+
+msgid "change message"
+msgstr "mensaje de cambio"
+
+msgid "codename"
+msgstr "nombre en código"
+
+msgid "comment"
+msgstr "comentario"
+
+msgid "comments"
+msgstr "comentarios"
+
+msgid "content"
+msgstr "contenido"
+
+msgid "content type"
+msgstr "tipo de contenido"
+
+msgid "content types"
+msgstr "tipos de contenido"
+
+msgid "date joined"
+msgstr "fecha de creación"
+
+msgid "date/time submitted"
+msgstr "fecha/hora de envío"
+
+msgid "day"
+msgid_plural "days"
+msgstr[0] "día"
+msgstr[1] "días"
+
+msgid "dec"
+msgstr "dic"
+
+msgid "deletion date"
+msgstr "fecha de eliminación"
+
+msgid "display name"
+msgstr "nombre para mostrar"
+
+msgid "domain name"
+msgstr "nombre de dominio"
+
+msgid "e-mail address"
+msgstr "dirección de correo"
+
+msgid "eight"
+msgstr "ocho"
+
+msgid "enable comments"
+msgstr "admitir comentarios"
+
+msgid "expire date"
+msgstr "fecha de caducidad"
+
+msgid "feb"
+msgstr "feb"
+
+msgid "filter:"
+msgstr "filtro:"
+
+msgid "first name"
+msgstr "nombre"
+
+msgid "five"
+msgstr "cinco"
+
+msgid "flag date"
+msgstr "fecha de la marca"
+
+msgid "flat page"
+msgstr "página estática"
+
+msgid "flat pages"
+msgstr "páginas estáticas"
+
+msgid "for your user account at %(site_name)s"
+msgstr "de su cuenta de usuario en %(site_name)s."
+
+msgid "four"
+msgstr "cuatro"
+
+msgid "free comment"
+msgstr "comentario libre"
+
+msgid "free comments"
+msgstr "comentarios libres"
+
+msgid "group"
+msgstr "grupo"
+
+msgid "groups"
+msgstr "grupos"
+
+msgid "headline"
+msgstr "encabezado"
+
+msgid "hour"
+msgid_plural "hours"
+msgstr[0] "hora"
+msgstr[1] "horas"
+
+msgid "ip address"
+msgstr "dirección ip"
+
+msgid "is public"
+msgstr "es público"
+
+msgid "is removed"
+msgstr "está eliminado"
+
+msgid "is valid rating"
+msgstr "es calificación válida"
+
+msgid "jan"
+msgstr "ene"
+
+msgid "jul"
+msgstr "jul"
+
+msgid "jun"
+msgstr "jun"
+
+msgid "karma score"
+msgstr "punto karma"
+
+msgid "karma scores"
+msgstr "puntos karma"
+
+msgid "last login"
+msgstr "Último registro"
+
+msgid "last name"
+msgstr "apellidos"
+
+msgid "log entries"
+msgstr "entradas de registro"
+
+msgid "log entry"
+msgstr "entrada de registro"
+
+msgid "mar"
+msgstr "mar"
+
+msgid "may"
+msgstr "may"
+
+msgid "message"
+msgstr "mensaje"
+
+msgid "midnight"
+msgstr "media noche"
+
+msgid "minute"
+msgid_plural "minutes"
+msgstr[0] "minuto"
+msgstr[1] "minutos"
+
+msgid "model:"
+msgstr "modelo:"
+
+msgid "moderator deletion"
+msgstr "eliminación de moderador"
+
+msgid "moderator deletions"
+msgstr "eliminaciones de moderador"
+
+msgid "month"
+msgid_plural "months"
+msgstr[0] "mes"
+msgstr[1] "meses"
+
+msgid "name"
+msgstr "nombre"
+
+msgid "nd"
+msgstr "nd"
+
+msgid "nine"
+msgstr "nueve"
+
+msgid "noon"
+msgstr "medio día"
+
+msgid "nov"
+msgstr "nov"
+
+msgid "number of %s"
+msgstr "número de %s"
+
+msgid "object ID"
+msgstr "ID de objeto"
+
+msgid "object id"
+msgstr "id de objeto"
+
+msgid "object repr"
+msgstr "repr de objeto"
+
+msgid "oct"
+msgstr "oct"
+
+msgid "one"
+msgstr "uno"
+
+msgid "or"
+msgstr "o"
+
+msgid "p.m."
+msgstr "p.m"
+
+msgid "password"
+msgstr "clave"
+
+msgid "permission"
+msgstr "permiso"
+
+msgid "permissions"
+msgstr "permisos"
+
+msgid "person's name"
+msgstr "nombre de la persona"
+
+msgid "python model class name"
+msgstr "nombre de módulo python"
+
+msgid "rating #1"
+msgstr "calificación 1"
+
+msgid "rating #2"
+msgstr "calificación 2"
+
+msgid "rating #3"
+msgstr "calificación 3"
+
+msgid "rating #4"
+msgstr "calificación 4"
+
+msgid "rating #5"
+msgstr "calificación 5"
+
+msgid "rating #6"
+msgstr "calificación 6"
+
+msgid "rating #7"
+msgstr "calificación 7"
+
+msgid "rating #8"
+msgstr "calificación 8"
+
+msgid "rd"
+msgstr "rd"
+
+msgid "redirect"
+msgstr "redirección"
+
+msgid "redirect from"
+msgstr "redirigir desde"
+
+msgid "redirect to"
+msgstr "redirigir a"
+
+msgid "redirects"
+msgstr "redirecciones"
+
+msgid "registration required"
+msgstr "debe estar registrado"
+
+msgid "related `%(label)s.%(name)s` objects"
+msgstr "los objetos relacionados `%(label)s.%(name)s`"
+
+msgid "score"
+msgstr "puntuación"
+
+msgid "score date"
+msgstr "fecha de la puntuación"
+
+msgid "sep"
+msgstr "sep"
+
+msgid "session"
+msgstr "sesión"
+
+msgid "session data"
+msgstr "datos de sesión"
+
+msgid "session key"
+msgstr "clave de sesión"
+
+msgid "sessions"
+msgstr "sesiones"
+
+msgid "seven"
+msgstr "siete"
+
+msgid "site"
+msgstr "sitio"
+
+msgid "sites"
+msgstr "sitios"
+
+msgid "six"
+msgstr "seis"
+
+msgid "st"
+msgstr "st"
+
+msgid "staff status"
+msgstr "es staff"
+
+msgid "superuser status"
+msgstr "es superusuario"
+
+msgid "tag:"
+msgstr "etiqueta:"
+
+msgid "template name"
+msgstr "nombre de plantilla"
+
+msgid "th"
+msgstr "th"
+
+msgid "the related `%(label)s.%(type)s` object"
+msgstr "el objeto relacionado`%(label)s.%(type)s` "
+
+msgid "three"
+msgstr "tres"
+
+msgid "title"
+msgstr "título"
+
+msgid "two"
+msgstr "dos"
+
+msgid "user"
+msgstr "usuario"
+
+msgid "user flag"
+msgstr "marca de usuario"
+
+msgid "user flags"
+msgstr "marcas de usuario"
+
+msgid "user permissions"
+msgstr "permisos"
+
+msgid "username"
+msgstr "nombre de usuario"
+
+msgid "users"
+msgstr "usuarios"
+
+msgid "view:"
+msgstr "vista:"
+
+msgid "week"
+msgid_plural "weeks"
+msgstr[0] "semana"
+msgstr[1] "semanas"
+
+msgid "year"
+msgid_plural "years"
+msgstr[0] "año"
+msgstr[1] "años"
+
+msgid "yes,no,maybe"
+msgstr "sí,no,tal vez"

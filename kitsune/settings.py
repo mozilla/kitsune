@@ -466,6 +466,7 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     'django_browserid',
     'kitsune.users',
+    'dennis.django_dennis',
     'tower',
     'jingo_minify',
     'authority',
