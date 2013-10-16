@@ -1,7 +1,6 @@
 #!/bin/bash
 # pwd is the git repo.
 set -e
-date
 
 echo "Making settings_local.py"
 cat > kitsune/settings_local.py <<SETTINGS
@@ -36,4 +35,4 @@ sudo chown `whoami` -R /var/redis/
 ./redis-2.4.11/src/redis-server configs/redis/redis-test.conf
 
 echo "Starting XVFB for Selenium tests."
-/usr/bin/Xvfb :99 -ac -screen 0 1280x1024x16 >/dev/null &
+/usr/bin/Xvfb :99 -ac -screen 0 1280x1024x16 >/dev/null 2>/dev/null &
