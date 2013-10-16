@@ -28,12 +28,14 @@ packages/sqlalchemy
 packages/translate-toolkit
 packages/nose
 packages/httplib2/python2
+packages/polib
 packages/pyes
 packages/mimeparse
 packages/simplejson
 packages/six
 packages/South
 src
+src/dennis
 src/django-cronjobs
 src/django-cache-machine
 src/django-nose

@@ -1,0 +1,44 @@
+# Evolution translation to Catalan.
+# Copyright © 2000, 2004, 2005, 2006 Free Software Foundation, Inc.
+# Softcatalà <info@softcatala.org>, 2000, 2004-2006
+#
+# Víctor Nieto <vnie2025@alu-etsetb.upc.es>
+# Aleix Badia i Bosch <abadia@ica.es>, 2004
+# Xavier Conde Rueda <xavi.conde@gmail.com>, 2004-2007
+# Francesc Dorca <f.dorca@filnet.es>, 2004
+# Jordi Mas <jmas@softcatala.org>, 2004-2007
+# Enric Balletbò i Serra <eballetbo@km103.com>, 2004
+# Gil Forcada <gilforcada@guifi.net>, 2006, 2011.
+# David Planella Molas <david.planella@gmail.com>, 2007, 2008, 2009, 2010, 2011, 2012.
+# Jordi Serratosa <jordis@softcatala.cat>, 2012.
+#
+#: ../shell/main.c:573
+msgid ""
+msgstr ""
+"Project-Id-Version: evolution\n"
+"Report-Msgid-Bugs-To: http://bugzilla.gnome.org/enter_bug.cgi?"
+"product=evolution&keywords=I18N+L10N&component=Miscellaneous\n"
+"POT-Creation-Date: 2012-06-04 00:00+0000\n"
+"PO-Revision-Date: 2012-03-18 13:14+0100\n"
+"Last-Translator: David Planella <david.planella@gmail.com>\n"
+"Language-Team: Catalan <tradgnome@softcatala.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bits\n"
+"Language: ca\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+
+#: ../addressbook/addressbook.error.xml.h:1
+msgid "This address book could not be opened."
+msgstr "No s'ha pogut obrir aquesta llibreta d'adreces."
+
+#, fuzzy
+#~| msgid ""
+#~| "Error on %s\n"
+#~| "%s"
+#~ msgid ""
+#~ "Error on %s: %s\n"
+#~ "%s"
+#~ msgstr ""
+#~ "S'ha produït un error en %s:\n"
+#~ "%s"

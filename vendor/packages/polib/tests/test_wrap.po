@@ -1,0 +1,12 @@
+# test wrapping
+msgid ""
+msgstr ""
+
+msgid "This line will not be wrapped"
+msgstr ""
+
+msgid "Some line that contain special characters \" and that \t is very, very, very long...: %s \n"
+msgstr ""
+
+msgid "Some line that contain special characters \"foobar\" and that contains whitespace at the end          "
+msgstr ""
