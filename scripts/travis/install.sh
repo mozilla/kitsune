@@ -11,6 +11,7 @@ sudo ln -s /usr/lib/`uname -i`-linux-gnu/libz.so ~/virtualenv/python2.6/lib/
 
 echo "Install Python dependencies"
 pip install -r requirements/compiled.txt
+pip install nosenicedots
 
 echo "Installing Node.js dependencies"
 npm install
