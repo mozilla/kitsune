@@ -31,14 +31,15 @@ def update_code(ctx, tag):
 def update_locales(ctx):
     with ctx.lcd(os.path.join(settings.SRC_DIR, 'locale')):
         ctx.local("svn up")
+        ctx.local("./compile-mo.sh .")
 
     # Run the script that lints the .po files and compiles to .mo the
     # the ones that don't have egregious errors in them. This prints
     # stdout to the deploy log and also to media/postatus.txt so
     # others can see what happened.
-    with ctx.lcd(settings.SRC_DIR):
-        ctx.local('date > media/postatus.txt')
-        ctx.local('./scripts/compile-linted-mo.sh | /usr/bin/tee -a media/postatus.txt')
+    # with ctx.lcd(settings.SRC_DIR):
+    #     ctx.local('date > media/postatus.txt')
+    #     ctx.local('./scripts/compile-linted-mo.sh | /usr/bin/tee -a media/postatus.txt')
 
 
 @task
