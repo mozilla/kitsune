@@ -830,11 +830,11 @@ SURVEYGIZMO_PASSWORD = ''
 # Yo! We're adding this now because we're fast and furious. But this should
 # get moved to settings_local.py on the servers and your development
 # environment plus we should document what it should look like.
-SITE_URL = (
+BROWSERID_AUDIENCES = [
     'https://support-dev.allizom.org',
     'https://support.allizom.org',
     'https://support.mozilla.org',
-)
+]
 
 # Django Rest Framework
 REST_FRAMEWORK = {

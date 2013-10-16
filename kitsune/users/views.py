@@ -15,7 +15,8 @@ from django.views.decorators.http import (require_http_methods, require_GET,
 from django.shortcuts import get_object_or_404, render, redirect
 from django.utils.http import base36_to_int
 
-from django_browserid import get_audience, verify
+from django_browserid.auth import BrowserIDBackend
+from django_browserid.base import get_audience
 from django_browserid.forms import BrowserIDForm
 
 from mobility.decorators import mobile_template
@@ -653,16 +654,17 @@ def browserid_verify(request):
     form = BrowserIDForm(data=request.POST)
 
     if form.is_valid():
-        result = verify(form.cleaned_data['assertion'], get_audience(request))
+        verifier = BrowserIDBackend().get_verifier()
+        result = verifier.verify(form.cleaned_data['assertion'], get_audience(request))
         if result:
-            if request.user.is_authenticated() and request.user.email != result['email']:
+            if request.user.is_authenticated() and request.user.email != result.email:
                 # User is already signed and wants to change their email.
-                request.user.email = result['email']
+                request.user.email = result.email
                 request.user.save()
                 return redirect(reverse('users.edit_profile'))
             else:
                 # Verified so log in
-                email = result['email']
+                email = result.email
                 user = User.objects.filter(email=email)
                 contributor = 'contributor' in request.POST
 
