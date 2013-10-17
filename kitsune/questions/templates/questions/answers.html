@@ -154,17 +154,21 @@
           <ul class="sidebar-nav tight">
             {% if user.has_perm('questions.change_question') or (question.editable and question.creator == user) %}
               <li class="edit">
-                <a href="{{ url('questions.edit_question', question.id) }}">{{ _('Edit this post') }}</a>
+                <a href="{{ url('questions.edit_question',
+                        question.id) }}">{{ _('Edit this question') }}</a>
               </li>
             {% endif %}
             {% if user.has_perm('questions.delete_question') %}
               <li class="delete">
-                <a class="delete" href="{{ url('questions.delete', question.id) }}">{{ _('Delete this post') }}</a>
+                <a class="delete" href="{{ url('questions.delete',
+                        question.id) }}">{{ _('Delete this question') }}</a>
               </li>
             {% endif %}
             {% if user.has_perm('questions.lock_question') %}
               <li class="lock">
-                <a data-form="lock-form" data-type="submit">{% if question.is_locked %}{{ _('Unlock this post') }}{% else %}{{ _('Lock this post') }}{% endif %}</a>
+                <a data-form="lock-form" data-type="submit">
+                    {% if question.is_locked %}{{ _('Unlock this post') }}
+                    {% else %}{{ _('Lock this question') }}{% endif %}</a>
                 <form id="lock-form" class="lock" action="{{ url('questions.lock', question.id) }}" method="post">
                   {{ csrf() }}
                 </form>
@@ -175,9 +179,9 @@
                 {% if question.age < 180 * 24 * 60 * 60 %}
                   <a data-form="archive-form" data-type="submit">
                     {% if question.is_archived %}
-                      {{ _('Unarchive this post') }}
+                      {{ _('Unarchive this question') }}
                     {% else %}
-                      {{ _('Archive this post') }}
+                      {{ _('Archive this question') }}
                     {% endif %}
                   </a>
                   <form id="archive-form" class="archive" action="{{ url('questions.archive', question.id) }}" method="post">
