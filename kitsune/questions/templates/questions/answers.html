@@ -167,7 +167,7 @@
             {% if user.has_perm('questions.lock_question') %}
               <li class="lock">
                 <a data-form="lock-form" data-type="submit">
-                    {% if question.is_locked %}{{ _('Unlock this post') }}
+                    {% if question.is_locked %}{{ _('Unlock this question') }}
                     {% else %}{{ _('Lock this question') }}{% endif %}</a>
                 <form id="lock-form" class="lock" action="{{ url('questions.lock', question.id) }}" method="post">
                   {{ csrf() }}
