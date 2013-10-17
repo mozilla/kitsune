@@ -233,6 +233,7 @@ function makeAggregatedWikiMetricGraphs() {
             graph.data.seriesSpec[index].disabled = true;
           }
         });
+        graph.rebucket();
         graph.update();
       });
     }
