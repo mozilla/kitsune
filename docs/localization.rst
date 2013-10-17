@@ -484,3 +484,35 @@ There is a shell script to compile the MO files for you::
     $ ./locale/compile-mo.sh locale
 
 Done!
+
+
+Reporting errors in .po files
+==============================
+
+We use `Dennis <https://github.com/willkg/dennis>`_ to lint .po files
+for errors that cause HTTP 500 errors in production. Things like
+malformed variables, variables in the translated string that aren't in
+the original and that sort of thing.
+
+When we do a deployment to production, we dump all the Dennis output into:
+
+https://support.mozilla.org/media/postatus.txt
+
+We need to check that periodically and report the errors.
+
+If there are errors in those files, we need to open up a bug in
+**Mozilla Localizations** -> *locale code* with the specifics.
+
+Bug description template::
+
+    We found errors in the translated strings for Mozilla Support
+    <https://support.mozilla.org/>. The errors are as follows:
+
+
+    <paste errors here>
+
+
+    Until these errors are fixed, we can't deploy updates to the
+    strings for this locale.
+
+    If you have any questions, let me know.
