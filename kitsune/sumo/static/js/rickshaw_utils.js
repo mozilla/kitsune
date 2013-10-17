@@ -184,7 +184,11 @@ k.Graph.prototype.rebucket = function() {
         max: -Infinity
       };
     }
-    this.axisGroups[name].max = Math.max(this.axisGroups[name].max, series.max);
+
+    // Only adjust the axis max if the series is enabled.
+    if (!series.disabled) {
+      this.axisGroups[name].max = Math.max(this.axisGroups[name].max, series.max);
+    }
   }
 
   for (i = 0; i < this.data.series.length; i++) {
