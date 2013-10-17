@@ -149,6 +149,41 @@ products = SortedDict([
            }),
        ])
     }),
+    ('webmaker', {
+       'name': _lazy(u'Webmaker'),
+       'subtitle': _lazy('Tools for creating and teaching the web'),
+       'extra_fields': [],
+       'tags': [],
+       'products': ['webmaker'],
+       'categories': SortedDict([
+           # TODO: Just use the IA topics for this.
+           ('popcorn-maker', {
+               'name': _lazy(u'Using Popcorn Maker'),
+               'topic': 'popcorn-maker',
+               'tags': ['popcorn-maker'],
+           }),
+           ('thimble', {
+               'name': _lazy(u'Using Thimble'),
+               'topic': 'thimble',
+               'tags': ['thimble'],
+           }),
+           ('x-ray-goggles', {
+               'name': _lazy(u'Using X-Ray Goggles'),
+               'topic': 'x-ray-goggles',
+               'tags': ['x-ray-goggles'],
+           }),
+           ('get-the-most-from-webmaker', {
+               'name': _lazy(u'Using a feature on webmaker.org'),
+               'topic': 'get-the-most-from-webmaker',
+               'tags': ['get-the-most-from-webmaker'],
+           }),
+           ('webmaker-contribution', {
+               'name': _lazy(u'Contributing to Webmaker'),
+               'topic': 'webmaker-contribution',
+               'tags': ['webmaker-contribution'],
+           }),
+       ])
+    }),
     ('other', {
         'name': _lazy(u'Thunderbird'),
         'subtitle':  _lazy(u'or other Mozilla products'),
