@@ -306,7 +306,7 @@ the SUMO home page!
    To do this, run the following command on the top directory
    of your Kitsune clone::
 
-       $ rm **/*.less.css
+       $ find . -name "*.less.css" -delete
 
 
   Verify the ``LESS_BIN`` setting in settings_local.py.
