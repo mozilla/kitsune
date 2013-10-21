@@ -179,7 +179,10 @@ SUMO_LANGUAGES = (
 # A list of locales for which AAQ is available.
 AAQ_LANGUAGES = (
     'en-US',
+    'hu',
     'pt-BR',
+    'sr-Cyrl',
+    'sr-Latn',
 )
 
 # Languages that should show up in language switcher.
