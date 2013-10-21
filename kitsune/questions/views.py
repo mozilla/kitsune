@@ -34,8 +34,7 @@ from tidings.models import Watch
 from tower import ugettext as _, ugettext_lazy as _lazy
 
 from kitsune import questions as constants
-from kitsune.access.decorators import (
-    has_perm_or_owns_or_403, permission_required, login_required)
+from kitsune.access.decorators import permission_required, login_required
 from kitsune.karma.manager import KarmaManager
 from kitsune.products.models import Product, Topic
 from kitsune.questions.events import QuestionReplyEvent, QuestionSolvedEvent
@@ -635,18 +634,12 @@ def aaq_confirm(request):
 
 @require_http_methods(['GET', 'POST'])
 @login_required
-@has_perm_or_owns_or_403('questions.change_question', 'creator',
-                         (Question, 'id__exact', 'question_id'),
-                         (Question, 'id__exact', 'question_id'))
 def edit_question(request, question_id):
     """Edit a question."""
     question = get_object_or_404(Question, pk=question_id)
     user = request.user
 
-    # Locked questions can't be edited unless the user has the permission to.
-    # (Question creators can't edit locked questions.)
-    if (not user.has_perm('questions.change_question') and
-            not question.editable):
+    if not question.allows_edit(user):
         raise PermissionDenied
 
     if request.method == 'GET':
@@ -700,7 +693,8 @@ def reply(request, question_id):
     """Post a new answer to a question."""
     question = get_object_or_404(Question, pk=question_id)
     answer_preview = None
-    if not question.editable:
+
+    if not question.allows_new_answer(request.user):
         raise PermissionDenied
 
     form = AnswerForm(request.POST)
@@ -765,7 +759,8 @@ def solve(request, question_id, answer_id):
             return HttpResponseForbidden()
 
     answer = get_object_or_404(Answer, pk=answer_id)
-    if not question.editable:
+
+    if not question.allows_solve(request.user):
         raise PermissionDenied
 
     if (question.creator != request.user and
@@ -791,7 +786,8 @@ def unsolve(request, question_id, answer_id):
     """Accept an answer as the solution to the question."""
     question = get_object_or_404(Question, pk=question_id)
     answer = get_object_or_404(Answer, pk=answer_id)
-    if not question.editable:
+
+    if not question.allows_unsolve(request.user):
         raise PermissionDenied
 
     if (question.creator != request.user and
@@ -816,6 +812,7 @@ def unsolve(request, question_id, answer_id):
 def question_vote(request, question_id):
     """I have this problem too."""
     question = get_object_or_404(Question, pk=question_id)
+
     if not question.editable:
         raise PermissionDenied
 
@@ -861,7 +858,8 @@ def question_vote(request, question_id):
 def answer_vote(request, question_id, answer_id):
     """Vote for Helpful/Not Helpful answers"""
     answer = get_object_or_404(Answer, pk=answer_id, question=question_id)
-    if answer.question.is_locked:
+
+    if not answer.question.editable:
         raise PermissionDenied
 
     if request.limited:
@@ -1010,10 +1008,12 @@ def remove_tag_async(request, question_id):
 
 
 @login_required
-@permission_required('questions.delete_question')
 def delete_question(request, question_id):
     """Delete a question"""
     question = get_object_or_404(Question, pk=question_id)
+
+    if not question.allows_delete(request.user):
+        raise PermissionDenied
 
     if request.method == 'GET':
         # Render the confirmation page
@@ -1029,10 +1029,12 @@ def delete_question(request, question_id):
 
 
 @login_required
-@permission_required('questions.delete_answer')
 def delete_answer(request, question_id, answer_id):
     """Delete an answer"""
     answer = get_object_or_404(Answer, pk=answer_id, question=question_id)
+
+    if not answer.allows_delete(request.user):
+        raise PermissionDenied
 
     if request.method == 'GET':
         # Render the confirmation page
@@ -1050,10 +1052,13 @@ def delete_answer(request, question_id, answer_id):
 
 @require_POST
 @login_required
-@permission_required('questions.lock_question')
 def lock_question(request, question_id):
     """Lock or unlock a question"""
     question = get_object_or_404(Question, pk=question_id)
+
+    if not question.allows_lock(request.user):
+        raise PermissionDenied
+
     question.is_locked = not question.is_locked
     log.info("User %s set is_locked=%s on question with id=%s " %
              (request.user, question.is_locked, question.id))
@@ -1064,10 +1069,13 @@ def lock_question(request, question_id):
 
 @require_POST
 @login_required
-@permission_required('questions.archive_question')
 def archive_question(request, question_id):
     """Archive or unarchive a question"""
     question = get_object_or_404(Question, pk=question_id)
+
+    if not question.allows_archive(request.user):
+        raise PermissionDenied
+
     question.is_archived = not question.is_archived
     log.info("User %s set is_archived=%s on question with id=%s " %
              (request.user, question.is_archived, question.id))
@@ -1077,14 +1085,12 @@ def archive_question(request, question_id):
 
 
 @login_required
-@has_perm_or_owns_or_403('questions.change_answer', 'creator',
-                         (Answer, 'id__iexact', 'answer_id'),
-                         (Answer, 'id__iexact', 'answer_id'))
 def edit_answer(request, question_id, answer_id):
     """Edit an answer."""
     answer = get_object_or_404(Answer, pk=answer_id, question=question_id)
     answer_preview = None
-    if not answer.question.editable:
+
+    if not answer.allows_edit(request.user):
         raise PermissionDenied
 
     # NOJS: upload images, if any
