@@ -391,6 +391,43 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         delta = datetime.now() - self.created
         return delta.seconds + delta.days * 24 * 60 * 60
 
+    def allows_edit(self, user):
+        """Return whether `user` can edit this question."""
+        return (user.has_perm('questions.change_question') or
+                (self.editable and self.creator == user))
+
+    def allows_delete(self, user):
+        """Return whether `user` can delete this question."""
+        return user.has_perm('questions.delete_question')
+
+    def allows_lock(self, user):
+        """Return whether `user` can lock this question."""
+        return user.has_perm('questions.lock_question')
+
+    def allows_archive(self, user):
+        """Return whether `user` can archive this question."""
+        return user.has_perm('questions.archive_question')
+
+    def allows_new_answer(self, user):
+        """Return whether `user` can answer (reply to) this question."""
+        return self.editable and user.is_authenticated()
+
+    def allows_solve(self, user):
+        """Return whether `user` can select the solution to this question."""
+        return (user == self.creator or
+                user.has_perm('questions.change_solution'))
+
+    def allows_unsolve(self, user):
+        """Return whether `user` can unsolve this question."""
+        return (user == self.creator or
+                user.has_perm('questions.change_solution'))
+
+    def allows_flag(self, user):
+        """Return whether `user` can flag this question."""
+        return (user.is_authenticated() and
+                user != self.creator and
+                self.editable)
+
 
 @register_mapping_type
 class QuestionMappingType(SearchMappingType):
@@ -783,6 +820,26 @@ class Answer(ModelBase):
                                   .values_list('created', flat=True)[0])
         except IndexError:
             return None
+
+    def allows_edit(self, user, question=None):
+        """Return whether `user` can edit this answer."""
+        if question is None:
+            question = self.question
+
+        return (question.editable and
+                (user.has_perm('questions.change_answer') or self.creator == user))
+
+    def allows_delete(self, user):
+        """Return whether `user` can delete this answer."""
+        return user.has_perm('questions.delete_answer')
+
+    def allows_flag(self, user, question=None):
+        """Return whether `user` can flag this answer."""
+        if question is None:
+            question = self.question
+
+        return (user.is_authenticated() and
+                user != self.creator and question.editable)
 
 
 def answer_connector(sender, instance, created, **kw):

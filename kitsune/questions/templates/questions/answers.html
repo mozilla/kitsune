@@ -152,19 +152,19 @@
         <li id="question-tools">
           <span>{{ _('Question tools') }}</span>
           <ul class="sidebar-nav tight">
-            {% if user.has_perm('questions.change_question') or (question.editable and question.creator == user) %}
+            {% if question.allows_edit(user) %}
               <li class="edit">
                 <a href="{{ url('questions.edit_question',
                         question.id) }}">{{ _('Edit this question') }}</a>
               </li>
             {% endif %}
-            {% if user.has_perm('questions.delete_question') %}
+            {% if question.allows_delete(user) %}
               <li class="delete">
                 <a class="delete" href="{{ url('questions.delete',
                         question.id) }}">{{ _('Delete this question') }}</a>
               </li>
             {% endif %}
-            {% if user.has_perm('questions.lock_question') %}
+            {% if question.allows_lock(user) %}
               <li class="lock">
                 <a data-form="lock-form" data-type="submit">
                     {% if question.is_locked %}{{ _('Unlock this question') }}
@@ -174,7 +174,7 @@
                 </form>
               </li>
             {% endif %}
-            {% if user.has_perm('questions.archive_question') %}
+            {% if question.allows_archive(user) %}
               <li class="archive">
                 {% if question.age < 180 * 24 * 60 * 60 %}
                   <a data-form="archive-form" data-type="submit">
@@ -356,7 +356,7 @@
         </li>
       </ul>
 
-      {% if user.is_authenticated() and user != question.creator and question.editable %}
+      {% if question.allows_flag(user) %}
         {{ flag_form(url('questions.flag', question.id)) }}
       {% endif %}
     </div>
@@ -376,55 +376,53 @@
         {{ _('You have exceeded the number of answers that can be posted in a given amount of time. Please try again shortly.') }}
       </div>
     {% endif %}
-    {% if question.editable %}
 
-      {% if user.is_authenticated() %}
+    {% if question.allows_new_answer(user) %}
+      <div class="answer-tools nopadding">
+        <h3>{{ _('Post a Reply') }}</h3>
+      </div>
+      <form action="{{ url('questions.reply', question_id=question.id) }}#question-reply" method="post" enctype="multipart/form-data">
+        {{ csrf() }}
+        {{ errorlist(form) }}
+
+        <div class="main-content">
+          {{ content_editor(form.content) }}
+        </div>
+
+        {{ attachments_form('questions.Question', question.pk, images, settings, user) }}
+
         <div class="answer-tools nopadding">
-          <h3>{{ _('Post a Reply') }}</h3>
+          <button type="submit" class="btn btn-submit big">{{ _('Post Reply') }}</button>
+          <input type="submit" id="preview" name="preview" value="{{ _('Preview Reply') }}"
+            data-preview-url="{{ url('questions.answer_preview_async') }}"
+            data-preview-container-id="answer-preview"
+            data-preview-content-id="id_content" />
         </div>
-        <form action="{{ url('questions.reply', question_id=question.id) }}#question-reply" method="post" enctype="multipart/form-data">
-          {{ csrf() }}
-          {{ errorlist(form) }}
+      </form>
+    {% elif question.editable and not user.is_authenticated() %}
+      <div class="question-tools nopadding">
+        {% if request.LANGUAGE_CODE in settings.AAQ_LANGUAGES %}
+          {% set ask_url = url('questions.aaq_step1') %}
+        {% else %}
+          {% set ask_url = url('wiki.document', 'get-community-support') %}
+        {% endif %}
 
-          <div class="main-content">
-            {{ content_editor(form.content) }}
-          </div>
-
-          {{ attachments_form('questions.Question', question.pk, images, settings, user) }}
-
-          <div class="answer-tools nopadding">
-            <button type="submit" class="btn btn-submit big">{{ _('Post Reply') }}</button>
-            <input type="submit" id="preview" name="preview" value="{{ _('Preview Reply') }}"
-              data-preview-url="{{ url('questions.answer_preview_async') }}"
-              data-preview-container-id="answer-preview"
-              data-preview-content-id="id_content" />
-          </div>
-        </form>
-      {% else %}
-        <div class="question-tools nopadding">
-          {% if request.LANGUAGE_CODE in settings.AAQ_LANGUAGES %}
-            {% set ask_url = url('questions.aaq_step1') %}
-          {% else %}
-            {% set ask_url = url('wiki.document', 'get-community-support') %}
+        <div class="cf">
+          {% if answers.object_list and not question.has_voted(request) %}
+            {# Only show the button again if there are answers in between #}
+            <div class="me-too">
+              <form action="{{ url('questions.vote', question_id=question.id) }}" method="post">
+                <button class="btn big" type="submit">{{ _('I have this problem, too') }}</button>
+              </form>
+            </div>
           {% endif %}
-
-          <div class="cf">
-            {% if answers.object_list and not question.has_voted(request) %}
-              {# Only show the button again if there are answers in between #}
-              <div class="me-too">
-                <form action="{{ url('questions.vote', question_id=question.id) }}" method="post">
-                  <button class="btn big" type="submit">{{ _('I have this problem, too') }}</button>
-                </form>
-              </div>
-            {% endif %}
-            <a class="btn" href="{{ ask_url }}">{{ _('Ask a question') }}</a>
-          </div>
-
-          <p>
-            {{ _('You must <a href="{login_url}">log in to your account</a> to reply to posts. Please <a href="{ask_url}">start a new question</a>, if you do not have an account yet.')|fe(login_url=url('users.login'), ask_url=ask_url) }}
-          </p>
+          <a class="btn" href="{{ ask_url }}">{{ _('Ask a question') }}</a>
         </div>
-      {% endif %}
+
+        <p>
+          {{ _('You must <a href="{login_url}">log in to your account</a> to reply to posts. Please <a href="{ask_url}">start a new question</a>, if you do not have an account yet.')|fe(login_url=url('users.login'), ask_url=ask_url) }}
+        </p>
+      </div>
     {% endif %}
 
     <section id="answer-preview">

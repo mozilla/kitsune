@@ -81,7 +81,7 @@
 <div class="grid_3">
   {% if answer.id %}{# answer.id is None when previewing #}
     {% if question.editable %}
-      {% if not question.solution and (user == question.creator or user.has_perm('questions.change_solution')) %}
+      {% if not question.solution and question.allows_solve(user) %}
         <div class="sidebox tight">
           <form class="solution" action="{{ url('questions.solve', question_id=question.id, answer_id=answer.id) }}" method="post">
             {{ csrf() }}
@@ -99,7 +99,7 @@
       {% if answer.id and question.solution == answer %}
         <div class="sidebox tight">
           <span class="title">{{ _('Solution chosen') }}</span>
-          {% if user == question.creator or user.has_perm('questions.change_solution') %}
+          {% if question.allows_unsolve(user) %}
             <form class="unsolve" action="{{ url('questions.unsolve', question_id=question.id, answer_id=answer.id) }}" method="post">
               {{ csrf() }}
               <input type="submit" name="unsolve" value="{{ _('Undo') }}" />
@@ -110,19 +110,19 @@
     {% endif %}
 
     <ul class="sidebar-nav tight">
-      {% if answer.id and question.editable and has_perm_or_owns('questions.change_answer', answer, answer) %}
+      {% if answer.id and answer.allows_edit(user, question) %}
         <li class="edit">
           <a href="{{ url('questions.edit_answer', question.id, answer.id) }}">{{ _('Edit this post') }}</a>
         </li>
       {% endif %}
-      {% if answer.id and user.has_perm('questions.delete_answer') %}
+      {% if answer.id and answer.allows_delete(user) %}
         <li class="delete">
           <a href="{{ url('questions.delete_answer', question.id, answer.id) }}">{{ _('Delete this post') }}</a>
         </li>
       {% endif %}
     </ul>
 
-    {% if user.is_authenticated() and user != answer.creator and not question.is_locked  %}
+    {% if answer.allows_flag(user, question)  %}
       {{ flag_form(url('questions.answer_flag', question.id, answer.id)) }}
     {% endif %}
   {% endif %}
