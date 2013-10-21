@@ -140,7 +140,7 @@
       closed = localStorage.getItem('announcement-outdated.closed') === 'true';
     }
 
-    show = (b == 'fx') && (v <= 3.6 || (v >= 12 && v <= 16)) && (!closed);
+    show = (b == 'fx') && (v <= 16 || (v >= 18 && v <= 23)) && (!closed);
     if (show) {
       $('#announce-outdated').show();
     } else {
