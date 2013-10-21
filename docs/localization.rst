@@ -364,7 +364,7 @@ When we add strings that need to be localized, it can take a couple of
 weeks for us to get translations of those localized strings. This
 makes it difficult to find localization issues.
 
-Enter `dennis <https://github.com/willkg/dennis/>`_.
+Enter `Dennis <https://github.com/willkg/dennis/>`_.
 
 Run::
 
@@ -503,16 +503,33 @@ We need to check that periodically and report the errors.
 If there are errors in those files, we need to open up a bug in
 **Mozilla Localizations** -> *locale code* with the specifics.
 
-Bug description template::
+Product:
 
-    We found errors in the translated strings for Mozilla Support
-    <https://support.mozilla.org/>. The errors are as follows:
+    Mozilla Localizations
+
+Component:
+
+    The locale code for the language in question
+
+Bug summary:
+
+    Use the error line
+
+Bug description template:
+
+    ::
+
+        We found errors in the translated strings for Mozilla Support
+        <https://support.mozilla.org/>. The errors are as follows:
 
 
-    <paste errors here>
+        <paste errors here>
 
 
-    Until these errors are fixed, we can't deploy updates to the
-    strings for this locale.
+        Until these errors are fixed, we can't deploy updates to the
+        strings for this locale to production.
 
-    If you have any questions, let me know.
+        Mozilla Support strings can be fixed in the Support Mozilla project
+        in Verbatim <https://localize.mozilla.org/projects/sumo/>.
+
+        If you have any questions, let us know.
