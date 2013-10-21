@@ -1,6 +1,4 @@
-$(document).ready(function(){
-
-"use strict";
+'use strict';
 
 var ajaxVoteFixture = {
     setup: function() {
@@ -12,7 +10,7 @@ var ajaxVoteFixture = {
             responseTime: 0,
             response: function(settings) {
                 // set the response message to the key/values POSTed
-                var message = ''
+                var message = '';
                 $.each(settings.data, function(key, val) {
                     message += key + ':' + val + ';';
                 });
@@ -66,6 +64,4 @@ asyncTest('not helpful vote', function() {
         $messageBox.remove();
         start();
     });
-});
-
 });

@@ -231,5 +231,15 @@
     <script type="text/javascript" src="{{ url('qunit_test', file) }}?v={{ timestamp }}"></script>
   {% endfor %}
 
+  <hr>
+
+  <ul>
+    <li>{{ settings.MINIFY_BUNDLES['js']['common'] }}</li>
+    <li>{{ url('qunit_js') }}</li>
+    <li>{{ suite.extra_urls }}</li>
+    <li>{{ suite.extra_media_urls }}</li>
+    <li>{{ files }}</li>
+  </ul>
+
 </body>
 </html>

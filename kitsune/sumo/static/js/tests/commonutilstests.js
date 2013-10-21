@@ -2,20 +2,18 @@
  * Tests for common utility functions (k.*).
  */
 
-$(document).ready(function(){
-
-"use strict";
+'use strict';
 
 // Object.keys() shim
 if (!Object.keys) {
     Object.keys = function keys(object) {
-        var keys = [];
+        var ks = [];
         for (var name in object) {
             if (object.hasOwnProperty(name)) {
-                keys.push(name);
+                ks.push(name);
             }
         }
-        return keys;
+        return ks;
     };
 }
 
@@ -31,22 +29,22 @@ test('one param', function() {
     var url = 'http://example.com/?test=woot',
         params = k.getQueryParamsAsDict(url);
     equals(Object.keys(params).length, 1);
-    equals('woot', params['test']);
+    equals('woot', params.test);
 });
 
 test('two params', function() {
     var url = 'http://example.com/?x=foo&y=bar',
         params = k.getQueryParamsAsDict(url);
     equals(Object.keys(params).length, 2);
-    equals('foo', params['x']);
-    equals('bar', params['y']);
+    equals('foo', params.x);
+    equals('bar', params.y);
 });
 
 test('google url', function() {
     var url = 'http://www.google.com/url?sa=t&source=web&cd=1&sqi=2&ved=0CDEQFjAA&url=http%3A%2F%2Fsupport.mozilla.com%2F&rct=j&q=firefox%20help&ei=OsBSTpbZBIGtgQfgzv3yBg&usg=AFQjCNFIV7wgd9Pnr0m3Ofc7r1zVTNK8dw',
         params = k.getQueryParamsAsDict(url);
     equals(Object.keys(params).length, 10);
-    equals('firefox help', params['q']);
+    equals('firefox help', params.q);
 });
 
 
@@ -134,18 +132,16 @@ test('escape html', function() {
 module('k.safeInterpolate');
 
 test('interpolate positional user input', function() {
-    var html = "<div>%s</div> %s",
-        unsafe = ["<a>", "<script>"],
-        safe = "<div>&lt;a&gt;</div> &lt;script&gt;";
+    var html = '<div>%s</div> %s',
+        unsafe = ['<a>', '<script>'],
+        safe = '<div>&lt;a&gt;</div> &lt;script&gt;';
     equals(k.safeInterpolate(html, unsafe, false), safe);
 });
 
 test('interpolate named user input', function() {
-    var html = "<div>%(display)s <span>(%(name)s)</span></div>",
-        unsafe = {"display": "<script>alert('xss');</script>",
-                  "name": "Jo&mdash;hn"},
-        safe = "<div>&lt;script&gt;alert(&#39;xss&#39;);&lt;/script&gt; <span>(Jo&amp;mdash;hn)</span></div>";
+    var html = '<div>%(display)s <span>(%(name)s)</span></div>',
+        unsafe = {'display': "<script>alert('xss');</script>",
+                  'name': 'Jo&mdash;hn'},
+        safe = '<div>&lt;script&gt;alert(&#39;xss&#39;);&lt;/script&gt; <span>(Jo&amp;mdash;hn)</span></div>';
     equals(k.safeInterpolate(html, unsafe, true), safe);
-});
-
 });

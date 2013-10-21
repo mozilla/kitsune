@@ -1,6 +1,4 @@
-$(document).ready(function(){
-
-"use strict";
+'use strict';
 
 var tagsFilterFixture = {
     setup: function() {
@@ -45,5 +43,3 @@ function checkResult($sandbox, input, expected) {
     $form.submit();
     equals($form.find('input[name="tagged"]').val(), expected);
 }
-
-});

@@ -1,6 +1,4 @@
-$(document).ready(function(){
-
-"use strict";
+'use strict';
 
 var kboxFixture = {
     setup: function() {
@@ -39,8 +37,6 @@ test('declarative', function() {
         kbox.destroy();
         equals(0, $sandbox.find('.kbox-container').length,
                'destroy cleans up kbox properly');
-        ok($('#kbox-overlay').length === 0, 'overlay cleaned up')
+        ok($('#kbox-overlay').length === 0, 'overlay cleaned up');
     });
-});
-
 });

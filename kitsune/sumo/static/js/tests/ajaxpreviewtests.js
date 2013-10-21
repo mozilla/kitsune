@@ -1,6 +1,4 @@
-$(document).ready(function(){
-
-"use strict";
+'use strict';
 
 var ajaxPreviewFixture = {
     setup: function() {
@@ -12,7 +10,7 @@ var ajaxPreviewFixture = {
             responseTime: 0,
             response: function(settings) {
                 equals('tokenvalue', settings.data.csrfmiddlewaretoken);
-                equals('The content to preview.', settings.data.content)
+                equals('The content to preview.', settings.data.content);
                 this.responseText = '<p>The content to preview.</p>';
             }
         });
@@ -64,7 +62,4 @@ asyncTest('integrated (with DOM events) ajax preview', function() {
                'Correct preview displayed.');
         start();
     });
-});
-
-
 });
