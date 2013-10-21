@@ -1,6 +1,4 @@
-$(document).ready(function(){
-
-"use strict";
+'use strict';
 
 var crashidLinking = {
     setup: function() {
@@ -49,4 +47,3 @@ test('dont_link_crash_id_without_bp', function() {
     equals(numIds, 0);
 });
 
-});

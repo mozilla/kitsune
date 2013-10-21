@@ -1,8 +1,4 @@
-/*jshint*/
-/*globals tests:true, ShowFor:true, module:true, equals:true, test:true, $:true */
-$(document).ready(function(){
-
-"use strict";
+'use strict';
 
 var showforFixture = {
     setup: function() {
@@ -238,6 +234,4 @@ test('linux fx17', function() {
     equals(this.$b.val(), 'fx17', 'Firefox 17 is now selected');
     assertNotHidden(this.$sandbox, ['linux', 'fx17', 'fx16', 'fx15']);
     assertNotVisible(this.$sandbox, ['win', 'mac']);
-});
-
 });

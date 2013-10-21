@@ -1,9 +1,4 @@
-/*jshint*/
-/*globals tests:true, ShowFor:true, module:true, equals:true, test:true, $:true,
-          BrowserDetect:true */
-$(document).ready(function(){
-
-"use strict";
+'use strict';
 
 module('BrowserDetect');
 
