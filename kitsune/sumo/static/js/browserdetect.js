@@ -17,6 +17,23 @@ var BrowserDetect = {
                        this.searchVersion(navigator.appVersion);
         this.OS = this.searchString(this.dataOS);
     },
+
+    detect: function(inputString) {
+        var browser = this.searchString(this.dataBrowser, inputString);
+        var version;
+        if (inputString) {
+            version = this.searchVersion(inputString);
+        } else {
+            version = this.searchVersion(navigator.userAgent, inputString) ||
+                           this.searchVersion(navigator.appVersion, inputString);
+        }
+        var os = this.searchString(this.dataOS, inputString);
+
+        var res = this.fxosSpecialCase(inputString, browser, version, os);
+
+        return res;
+    },
+
     searchString: function (data, inputString) {
         for (var i = 0, l = data.length; i < l; i++) {
             // If an inputString is specified (for testing), use that.
@@ -39,34 +56,46 @@ var BrowserDetect = {
             }
         }
     },
+
     searchVersion: function (dataString) {
         var index = dataString.indexOf(this.versionSearchString);
         if (index === -1) {
             return;
         }
-        return parseFloat(dataString.substring(index+this.versionSearchString.length+1));  // Turns "1.1.1" into 1.1 rather than 1.11. :-(
+        return parseFloat(dataString.substring(index+this.versionSearchString.length+1));  // Turns '1.1.1' into 1.1 rather than 1.11. :-(
     },
+
+    fxosSpecialCase: function(ua, browser, version, os) {
+        var match = /Gecko\/([\d.]+)/.exec(ua);
+        if (os === 'fxos' && !!match) {
+            var geckoVersion = parseFloat(match[1]);
+            version = this.dataGeckoToFxOS[geckoVersion];
+            browser = 'fxos';
+        }
+        return [browser, version, os];
+    },
+
     dataBrowser: [
         {
             string: navigator.userAgent,
-            subStrings: ["Fennec"],
-            versionSearch: "Fennec",
-            identity: "m"
+            subStrings: ['Fennec'],
+            versionSearch: 'Fennec',
+            identity: 'm'
         },
         { // Fennec's UA changed in v14 to:
           // Mozilla/5.0 (Android; Mobile; rv:14.0) Gecko/14.0 Firefox/14.0
-          // Now we need to look for the presence of both "Mobile"
-          // and "Firefox".
+          // Now we need to look for the presence of both 'Mobile'
+          // and 'Firefox'.
             string: navigator.userAgent,
-            subStrings: ["Mobile", "Firefox"],
-            versionSearch: "Firefox",
-            identity: "m"
+            subStrings: ['Mobile', 'Firefox'],
+            versionSearch: 'Firefox',
+            identity: 'm'
         },
         {
             string: navigator.userAgent,
-            subStrings: ["Firefox"],
-            versionSearch: "Firefox",
-            identity: "fx"
+            subStrings: ['Firefox'],
+            versionSearch: 'Firefox',
+            identity: 'fx'
         }
     ],
     dataOS : [
@@ -78,39 +107,50 @@ var BrowserDetect = {
         {   // 6.0 is Vista, 6.1 is Windows 7. We lump them together here.
             string: navigator.userAgent,
             subStrings: [/Windows NT 6\.[01]/],
-            identity: "win7"
+            identity: 'win7'
         },
         {   // This lumps together Windows 2000 and Windows XP
             string: navigator.userAgent,
             subStrings: [/Windows NT 5\./],
-            identity: "winxp"
+            identity: 'winxp'
         },
         {   // If we can't figure out what version, fallback.
             // This probably means they are running something like Windows ME.
             string: navigator.platform,
-            subStrings: ["Win"],
-            identity: "win"
+            subStrings: ['Win'],
+            identity: 'win'
         },
         {
             string: navigator.platform,
-            subStrings: ["Mac"],
-            identity: "mac"
+            subStrings: ['Mac'],
+            identity: 'mac'
         },
         {
             string: navigator.userAgent,
-            subStrings: ["Android"],
-            identity: "android"
+            subStrings: ['Android'],
+            identity: 'android'
         },
         {
             string: navigator.userAgent,
-            subStrings: ["Maemo"],
-            identity: "maemo"
+            subStrings: ['Maemo'],
+            identity: 'maemo'
         },
         {
             string: navigator.platform,
-            subStrings: ["Linux"],
-            identity: "linux"
+            subStrings: ['Linux'],
+            identity: 'linux'
+        },
+        {
+            string: navigator.userAgent,
+            subStrings: ['Firefox'],
+            identity: 'fxos'
         }
-    ]
+    ],
+    dataGeckoToFxOS: {
+        18.0: 1.0,
+        18.1: 1.1,
+        26.0: 1.2,
+        28.0: 1.3
+    }
 };
 BrowserDetect.init();  // TODO: Do this lazily.
