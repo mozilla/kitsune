@@ -177,10 +177,10 @@ products = SortedDict([
                'topic': 'get-the-most-from-webmaker',
                'tags': ['get-the-most-from-webmaker'],
            }),
-           ('webmaker-contribution', {
+           ('events-and-help-for-mentors', {
                'name': _lazy(u'Contributing to Webmaker'),
-               'topic': 'webmaker-contribution',
-               'tags': ['webmaker-contribution'],
+               'topic': 'events-and-help-for-mentors',
+               'tags': ['events-and-help-for-mentors'],
            }),
        ])
     }),
