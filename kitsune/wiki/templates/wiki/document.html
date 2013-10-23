@@ -2,7 +2,7 @@
 {% from "wiki/includes/sidebar_modules.html" import document_tools, document_notifications with context %}
 {% from 'products/includes/topic_macros.html' import topic_sidebar %}
 {% from "wiki/includes/document_macros.html" import contributor_list, document_title, document_messages, document_content, topic_list %}
-{% from "wiki/includes/document_macros.html" import related, show_for, vote_form with context %}
+{% from "wiki/includes/document_macros.html" import related, vote_form with context %}
 {% set classes = 'document' %}
 {% set canonical_url = document.get_absolute_url() %}
 {% set scripts = ('wiki', ) %}
@@ -35,7 +35,6 @@
     {% set prod_url = url('products.product', slug=product.slug) %}
     <img src="{{ STATIC_URL }}img/blank.png" alt="" class="logo-sprite" style="background-image: url('{{ product.image_url }}');" />
     <a href="{{ prod_url }}">{{ _(product.title, 'DB: products.Product.title') }}</a>
-    {{ show_for(header=False) }}
   </h1>
 {% endblock %}
 
@@ -67,7 +66,7 @@
     {% set doc = document %}
     {% set parent = doc.parent %}
   {% endif %}
-  {{ document_tools(doc, parent, user, 'article', settings) }}
+  {{ document_tools(doc, parent, user, 'article', settings, include_showfor=True) }}
   {{ related(related_documents, _('Related Articles'), 'document_title') }}
   {{ related(related_questions,  _('Related Questions'), 'question_title') }}
   {{ topic_sidebar(topics[:10], [], product) }}

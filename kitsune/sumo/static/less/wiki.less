@@ -24,21 +24,27 @@ article {
   }
 }
 
-.product-title {
+#editing-tools-sidebar {
   #support-for {
-    display: inline;
+    background: @sidebarBackground url('../img/grain.png');
     font-size: 14px;
     line-height: 14px;
+    padding: 10px 0 10px 40px;
 
     > div {
-      display: inline;
+      margin: 0 0 5px;
       position: relative;
       z-index: 5;
+
+      + div {
+        z-index: 4;
+      }
 
       .selectbox-wrapper {
         background: #fff;
         .box-shadow(0 0 8px 0 rgba(0, 0, 0, 0.1));
         left: 0;
+        min-width: 140px;
         position: absolute;
         top: 20px;
 
@@ -57,12 +63,6 @@ article {
           }
         }
       }
-    }
-  }
-
-  .logged-out & {
-    #support-for {
-      display: none;
     }
   }
 }
