@@ -410,17 +410,20 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
 
     def allows_new_answer(self, user):
         """Return whether `user` can answer (reply to) this question."""
-        return self.editable and user.is_authenticated()
+        return (user.has_perm('questions.add_answer') or
+                (self.editable and user.is_authenticated()))
 
     def allows_solve(self, user):
         """Return whether `user` can select the solution to this question."""
-        return (user == self.creator or
-                user.has_perm('questions.change_solution'))
+        return (self.editable and
+                (user == self.creator or
+                 user.has_perm('questions.change_solution')))
 
     def allows_unsolve(self, user):
         """Return whether `user` can unsolve this question."""
-        return (user == self.creator or
-                user.has_perm('questions.change_solution'))
+        return (self.editable and
+                (user == self.creator or
+                 user.has_perm('questions.change_solution')))
 
     def allows_flag(self, user):
         """Return whether `user` can flag this question."""
@@ -826,8 +829,8 @@ class Answer(ModelBase):
         if question is None:
             question = self.question
 
-        return (question.editable and
-                (user.has_perm('questions.change_answer') or self.creator == user))
+        return (user.has_perm('questions.change_answer') or
+                (question.editable and self.creator == user))
 
     def allows_delete(self, user):
         """Return whether `user` can delete this answer."""
@@ -839,7 +842,8 @@ class Answer(ModelBase):
             question = self.question
 
         return (user.is_authenticated() and
-                user != self.creator and question.editable)
+                user != self.creator and
+                question.editable)
 
 
 def answer_connector(sender, instance, created, **kw):
