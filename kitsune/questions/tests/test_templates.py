@@ -585,7 +585,6 @@ class AnswersTemplateTestCase(TestCaseBase):
                         {'content': content},
                         args=[self.question.id, answer.id])
         eq_(content, Answer.objects.get(pk=answer.id).content)
-    test_edit_answer_locked_question.xx = 1
 
     def test_vote_locked_question_403(self):
         """Locked questions can't be voted on."""
