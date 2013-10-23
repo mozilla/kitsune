@@ -527,8 +527,12 @@ class AnswersTemplateTestCase(TestCaseBase):
         eq_(200, response.status_code)
         eq_(False, Question.objects.get(pk=q.pk).is_locked)
 
-    def test_reply_to_locked_question_403(self):
+    def test_reply_to_locked_question(self):
         """Locked questions can't be answered."""
+        u = user(save=True)
+        self.client.login(username=u.username, password='testpass')
+
+        # Without add_answer permission, we should 403.
         q = self.question
         q.is_locked = True
         q.save()
@@ -536,21 +540,71 @@ class AnswersTemplateTestCase(TestCaseBase):
                         {'content': 'just testing'}, args=[q.id])
         eq_(403, response.status_code)
 
+        # With add_answer permission, it should work.
+        add_permission(u, Answer, 'add_answer')
+        response = post(self.client, 'questions.reply',
+                        {'content': 'just testing'}, args=[q.id])
+        eq_(200, response.status_code)
+
+    def test_edit_answer_locked_question(self):
+        """Verify edit answer of a locked question only with permissions."""
+        self.question.is_locked = True
+        self.question.save()
+
+        # The answer creator can't edit if question is locked
+        u = self.question.last_answer.creator
+        self.client.login(username=u.username, password='testpass')
+
+        response = get(self.client, 'questions.answers',
+                       args=[self.question.id])
+        doc = pq(response.content)
+        eq_(0, len(doc('li.edit')))
+
+        answer = self.question.last_answer
+        response = get(self.client, 'questions.edit_answer',
+                       args=[self.question.id, answer.id])
+        eq_(403, response.status_code)
+
+        # A user with edit_answer permission can edit.
+        u = user(save=True)
+        self.client.login(username=u.username, password='testpass')
+        add_permission(u, Answer, 'change_answer')
+
+        response = get(self.client, 'questions.answers',
+                       args=[self.question.id])
+        doc = pq(response.content)
+        eq_(1, len(doc('li.edit')))
+
+        answer = self.question.last_answer
+        response = get(self.client, 'questions.edit_answer',
+                       args=[self.question.id, answer.id])
+        eq_(200, response.status_code)
+
+        content = 'New content for answer'
+        response = post(self.client, 'questions.edit_answer',
+                        {'content': content},
+                        args=[self.question.id, answer.id])
+        eq_(content, Answer.objects.get(pk=answer.id).content)
+
     def test_vote_locked_question_403(self):
         """Locked questions can't be voted on."""
+        u = user(save=True)
+        self.client.login(username=u.username, password='testpass')
+
         q = self.question
         q.is_locked = True
         q.save()
-        self.client.login(username='rrosario', password='testpass')
         response = post(self.client, 'questions.vote', args=[q.id])
         eq_(403, response.status_code)
 
     def test_vote_answer_to_locked_question_403(self):
         """Answers to locked questions can't be voted on."""
+        u = user(save=True)
+        self.client.login(username=u.username, password='testpass')
+
         q = self.question
         q.is_locked = True
         q.save()
-        self.client.login(username='rrosario', password='testpass')
         response = post(self.client, 'questions.answer_vote',
                         {'helpful': 'y'}, args=[q.id, self.answer.id])
         eq_(403, response.status_code)
