@@ -1,6 +1,6 @@
-{% from "wiki/includes/document_macros.html" import document_watch with context %}
+{% from "wiki/includes/document_macros.html" import show_for, document_watch with context %}
 
-{% macro document_tools(document, parent, user, active, settings) -%}
+{% macro document_tools(document, parent, user, active, settings, include_showfor=False) -%}
   {% if not parent %}
     {% set parent = document %}
   {% endif %}
@@ -45,6 +45,11 @@
             </li>
             <li {{ active|class_selected('history') }}>
               <a href="{{ url('wiki.document_revisions', document.slug) }}">{{ _('Show History') }}</a>
+            </li>
+          {% endif %}
+          {% if include_showfor %}
+            <li>
+              {{ show_for(header=False) }}
             </li>
           {% endif %}
         </ul>
