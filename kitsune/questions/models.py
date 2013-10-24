@@ -647,6 +647,7 @@ class Answer(ModelBase):
     flags = generic.GenericRelation(FlaggedObject)
 
     html_cache_key = u'answer:html:%s'
+    images_cache_key = u'answer:images:%s'
 
     class Meta:
         ordering = ['created']
@@ -844,6 +845,18 @@ class Answer(ModelBase):
         return (user.is_authenticated() and
                 user != self.creator and
                 question.editable)
+
+    def get_images(self):
+        """A cached version of self.images.all().
+
+        Because django-cache-machine doesn't cache empty lists.
+        """
+        cache_key = self.images_cache_key % self.id
+        images = cache.get(cache_key)
+        if images is None:
+            images = list(self.images.all())
+            cache.add(cache_key, images, CACHE_TIMEOUT)
+        return images
 
 
 def answer_connector(sender, instance, created, **kw):
