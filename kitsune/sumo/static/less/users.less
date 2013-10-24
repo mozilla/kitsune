@@ -20,6 +20,26 @@ article {
   margin-bottom: 20px;
 }
 
+.change-avatar {
+  position: relative;
+
+  > .tip {
+    background: rgba(0, 0, 0, 0.8);
+    color:  #fff;
+    display: none;
+    margin-top: 5px;
+    padding: 10px;
+    position: absolute;
+    width: 300px;
+  }
+
+  &:hover {
+    > .tip {
+      display: block;
+    }
+  }
+}
+
 #profile {
   .avatar {
     float: left;
