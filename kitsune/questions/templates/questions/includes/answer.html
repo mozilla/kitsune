@@ -50,7 +50,7 @@
     {% endif %}
 
     <div class="ans-attachments attachments-list">
-      {% for image in answer.images.all() %}
+      {% for image in answer.get_images() %}
         {{ attachment(image, user, False) }}
       {% endfor %}
     </div>
