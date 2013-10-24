@@ -22,13 +22,16 @@
             <img src="{{ profile_avatar(profile.user) }}">
             <ul>
               <li>
-                <a href="{{ url('users.edit_avatar') }}">{{ _('Change', 'avatar') }}</a>
+                <a class="change-avatar" href="https://gravatar.com/emails" target="_blank">
+                  {{ _('Change', 'avatar') }}
+                  <span class="tip">
+                    {% trans %}
+                      SUMO is now using Gravatars as avatars. You must change
+                      your Gravatar on gravatar.com.
+                    {% endtrans %}
+                  </span>
+                </a>
               </li>
-              {% if profile.avatar %}
-                <li>
-                  <a href="{{ url('users.delete_avatar') }}">{{ _('Delete', 'avatar') }}</a>
-                </li>
-              {% endif %}
             </ul>
           </li>
           {% if not waffle.flag('browserid') %}

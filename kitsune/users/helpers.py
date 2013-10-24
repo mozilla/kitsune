@@ -1,3 +1,6 @@
+import hashlib
+import urllib
+
 from django.conf import settings
 
 from jinja2 import escape, Markup
@@ -18,14 +21,23 @@ def profile_url(user, edit=False):
 
 
 @register.function
-def profile_avatar(user):
+def profile_avatar(user, size=48):
     """Return a URL to the user's avatar."""
     try:  # This is mostly for tests.
         profile = user.get_profile()
     except (Profile.DoesNotExist, AttributeError):
-        return settings.STATIC_URL + settings.DEFAULT_AVATAR
-    return (profile.avatar.url if profile and profile.avatar else
-            settings.STATIC_URL + settings.DEFAULT_AVATAR)
+        avatar = settings.STATIC_URL + settings.DEFAULT_AVATAR
+    else:
+        avatar = (profile.avatar.url if profile and profile.avatar else
+                  settings.STATIC_URL + settings.DEFAULT_AVATAR)
+
+    if user and hasattr(user, 'email'):
+        email_hash = hashlib.md5(user.email.lower()).hexdigest()
+    else:
+        email_hash = '00000000000000000000000000000000'
+
+    return '//www.gravatar.com/avatar/%s?s=%s&d=%s' % (
+        email_hash, size, urllib.quote(avatar))
 
 
 @register.function
