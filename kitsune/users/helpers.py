@@ -31,7 +31,10 @@ def profile_avatar(user, size=48):
         avatar = (profile.avatar.url if profile and profile.avatar else
                   settings.STATIC_URL + settings.DEFAULT_AVATAR)
 
-    email_hash = hashlib.md5(user.email.lower()).hexdigest()
+    if user and hasattr(user, 'email'):
+        email_hash = hashlib.md5(user.email.lower()).hexdigest()
+    else:
+        email_hash = '00000000000000000000000000000000'
 
     return '//www.gravatar.com/avatar/%s?s=%s&d=%s' % (
         email_hash, size, urllib.quote(avatar))

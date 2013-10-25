@@ -1,3 +1,5 @@
+import hashlib
+
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser, User
 
@@ -21,16 +23,23 @@ class HelperTestCase(TestCase):
 
     def test_profile_avatar_default(self):
         profile(user=self.u)
-        eq_(settings.STATIC_URL + settings.DEFAULT_AVATAR,
-            profile_avatar(self.u))
+        email_hash = hashlib.md5(self.u.email.lower()).hexdigest()
+        gravatar_url = '//www.gravatar.com/avatar/%s?s=48&d=%s' % (
+            email_hash, settings.STATIC_URL + settings.DEFAULT_AVATAR)
+        eq_(gravatar_url, profile_avatar(self.u))
 
     def test_profile_avatar_anonymous(self):
-        eq_(settings.STATIC_URL + settings.DEFAULT_AVATAR,
-            profile_avatar(AnonymousUser()))
+        email_hash = '00000000000000000000000000000000'
+        gravatar_url = '//www.gravatar.com/avatar/%s?s=48&d=%s' % (
+            email_hash, settings.STATIC_URL + settings.DEFAULT_AVATAR)
+        eq_(gravatar_url, profile_avatar(AnonymousUser()))
 
     def test_profile_avatar(self):
         profile(user=self.u, avatar='images/foo.png')
-        eq_('%simages/foo.png' % settings.MEDIA_URL, profile_avatar(self.u))
+        email_hash = hashlib.md5(self.u.email.lower()).hexdigest()
+        gravatar_url = '//www.gravatar.com/avatar/%s?s=48&d=%s' % (
+            email_hash, settings.MEDIA_URL + 'images/foo.png')
+        eq_(gravatar_url, profile_avatar(self.u))
 
     def test_public_email(self):
         eq_(u'<span class="email">'
