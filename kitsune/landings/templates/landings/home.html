@@ -9,34 +9,16 @@
     </section>
   </div>
   {% if moz_news %}
-    <section id="mozilla-news" class="grid_8">
+    <section id="mozilla-news" class="grid_12">
       <h1>{{ _('Mozilla News') }}</h1>
       {{ moz_news.html|safe }}
     </section>
   {% endif %}
-  <aside class="grid_4">
-    <div class="feature-box">
-      <h1>{{ _('Help Other Users') }}</h1>
-      <p>
-        {% trans url=url('landings.get_involved') %}
-          Participate and help other users – 
-          <a href="{{url}}">
-            get started
-          </a>
-        {% endtrans %}
-      </p>
-      <h1>{{ _('Suggestion Box') }}</h1>
-      <p>
-        {# TODO: Fill in the url #}
-        {% trans url=url('wiki.document', 'suggestion-box') %}
-          Your input helps make Mozilla better.
-          <a href="{{url}}">
-            Give us your feedback
-          </a>
-        {% endtrans %}
-      </p>
-    </div>
-  </aside>
+  <div id="get-involved-button" class="grid_12">
+    <a class="btn btn-submit" href="{{ url('landings.get_involved') }}">
+      {{ _('Get involved - Help other users') }}
+    </a>
+  </div>
 {% endblock %}
 
 {% block outer_side %}
