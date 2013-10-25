@@ -170,7 +170,7 @@ _("""Mobile OS for smartphones""", "DB: products.Product.description")
 _("""Firefox Marketplace""", "DB: products.Product.title")
 _("""Firefox Marketplace""", "DB: products.Product.description")
 _("""Webmaker""", "DB: products.Product.title")
-_("""Tools for creating and remixing the web""", "DB: products.Product.description")
+_("""Tools for creating and teaching the web""", "DB: products.Product.description")
 _("""Mozilla Persona""", "DB: products.Product.title")
 _("""Mozilla Persona""", "DB: products.Product.description")
 # This is a karma title.
