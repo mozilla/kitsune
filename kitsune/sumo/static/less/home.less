@@ -4,6 +4,15 @@
 @import 'includes/for-contributors-hot-topics.less';
 @import 'includes/help-topics.less';
 
+#get-involved-button {
+  text-align: center;
+
+  > .btn {
+    font-size: 16px;
+    padding: 8px 40px;
+  }
+}
+
 #mozilla-news {
   > ul {
     font-family: @OpenSansLight;
@@ -19,20 +28,14 @@
       margin: 0 0 20px 0;
       padding: 0 0 20px 0;
       position: relative;
-      width: 300px;
-
-      &:nth-of-type(n+4) {
-        margin-left: 320px;
-      }
-
-      &:nth-of-type(-n+3) {
-        clear: left;
-        float: left;
-      }
 
       &:after {
         content: '\00BB';
         margin: 0 0 0 10px;
+      }
+
+      &:last-of-type {
+        border-bottom: none;
       }
     }
   }
