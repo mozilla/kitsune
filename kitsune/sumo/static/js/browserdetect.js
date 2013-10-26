@@ -70,9 +70,9 @@ var BrowserDetect = {
         }
     ],
     dataOS : [
-        {
+        {   // 6.2 is Windows 8 and 6.3 is Windows 8.1.
             string: navigator.userAgent,
-            subStrings: ["Windows NT 6.2"],
+            subStrings: [/Windows NT 6\.[23]/],
             identity: "win8"
         },
         {   // 6.0 is Vista, 6.1 is Windows 7. We lump them together here.
