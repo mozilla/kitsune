@@ -38,6 +38,13 @@ function init($container) {
         }
     });
 
+    // Autocomplete
+    $tags.autocomplete({
+        source: _.keys(vocab),
+        delay: 0,
+        minLength: 1
+    });
+
     // When form is submitted, get the slugs to send over in request.
     $form.submit(function() {
         var tagNames = $tags.val(),
