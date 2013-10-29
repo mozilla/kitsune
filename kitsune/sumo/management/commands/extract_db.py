@@ -5,6 +5,8 @@ from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.db.models.loading import get_model
 
+from tower import strip_whitespace
+
 
 class Command(BaseCommand):
     """
@@ -54,7 +56,7 @@ class Command(BaseCommand):
                 for item in qs:
                     for i in range(len(attrs)):
                         msg = {
-                            'id': item[i],
+                            'id': strip_whitespace(item[i]),
                             'context': 'DB: %s.%s.%s' % (app, model, attrs[i]),
                             'comments': params.get('comments')}
                         strings.append(msg)

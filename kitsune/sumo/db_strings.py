@@ -181,70 +181,37 @@ _("""Moderator""", "DB: karma.Title.name")
 _("""Top 10 Contributor""", "DB: karma.Title.name")
 # This is a karma title.
 _("""Top 25 Contributor""", "DB: karma.Title.name")
-_("""2012 Army of Awesome Badge""", "DB: badger.Badge.title")
-_("""The SUMO Army of Awesome 2012 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2012; in this case: 50 Army of Awesome tweets.
-
-Congrats to all SUMO Army of Awesome 2012 badge earners for advancing the Mozilla Mission!""", "DB: badger.Badge.description")
-_("""2013 Army of Awesome Badge""", "DB: badger.Badge.title")
-_("""The SUMO Army of Awesome 2013 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2013; in this case: 50 Army of Awesome tweets.
-
-Congrats to all SUMO Army of Awesome 2013 badge earners for advancing the Mozilla Mission!""", "DB: badger.Badge.description")
-_("""2010 Army of Awesome Badge""", "DB: badger.Badge.title")
-_("""The SUMO Army of Awesome 2010 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2010; in this case: 50 Army of Awesome tweets.
-
-Congrats to all SUMO Army of Awesome 2010 badge earners for advancing the Mozilla Mission!""", "DB: badger.Badge.description")
-_("""2011 Army of Awesome Badge""", "DB: badger.Badge.title")
-_("""The SUMO Army of Awesome 2011 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2011; in this case: 50 Army of Awesome tweets.
-
-Congrats to all SUMO Army of Awesome 2011 badge earners for advancing the Mozilla Mission!""", "DB: badger.Badge.description")
-_("""2012 Support Forum Badge""", "DB: badger.Badge.title")
-_("""The SUMO Forum 2012 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2012 in this case: 30 replies in the English SUMO Forum.
-
-Congrats to all SUMO Forum 2012 badge earners for advancing the Mozilla Mission!""", "DB: badger.Badge.description")
-_("""2010 KB Badge""", "DB: badger.Badge.title")
-_("""The SUMO KB 2010 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2010; in this case: 10 approved edits of the English SUMO Knowledge Base.
-
-Congrats to all SUMO KB 2010 badge earners for advancing the Mozilla Mission""", "DB: badger.Badge.description")
 _("""2010 L10n Badge""", "DB: badger.Badge.title")
-_("""The SUMO L10n 2010 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2010; in this case: 10 approved translation edits of the SUMO Knowledge Base.
-
-Congrats to all SUMO L10n 2010 badge earners for advancing the Mozilla Mission!""", "DB: badger.Badge.description")
-_("""2010 Support Forum Badge""", "DB: badger.Badge.title")
-_("""The SUMO Forum 2010 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2010 in this case: 30 replies in the English SUMO Forum.
-
-Congrats to all SUMO Forum 2010 badge earners for advancing the Mozilla Mission!""", "DB: badger.Badge.description")
-_("""2011 KB Badge""", "DB: badger.Badge.title")
-_("""The SUMO KB 2011 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2011; in this case: 10 approved edits of the English SUMO Knowledge Base.
-
-Congrats to all SUMO KB 2011 badge earners for advancing the Mozilla Mission!""", "DB: badger.Badge.description")
-_("""2011 L10n Badge""", "DB: badger.Badge.title")
-_("""The SUMO L10n 2011 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2011; in this case: 10 approved translation edits of the SUMO Knowledge Base.
-
-Congrats to all SUMO L10n 2011 badge earners for advancing the Mozilla Mission!""", "DB: badger.Badge.description")
-_("""2011 Support Forum Badge""", "DB: badger.Badge.title")
-_("""The SUMO Forum 2011 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2011 in this case: 30 replies in the English SUMO Forum.
-
-Congrats to all SUMO Forum 2011 badge earners for advancing the Mozilla Mission!
-""", "DB: badger.Badge.description")
-_("""2012 KB Badge""", "DB: badger.Badge.title")
-_("""The SUMO KB 2012 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2012; in this case: 10 approved edits of the English SUMO Knowledge Base.
-
-Congrats to all SUMO KB 2012 badge earners for advancing the Mozilla Mission!""", "DB: badger.Badge.description")
-_("""2013 KB Badge""", "DB: badger.Badge.title")
-_("""The SUMO KB 2013 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2013 in this case: 10 approved edits of the English SUMO Knowledge Base.
-
-Congrats to all SUMO KB 2013 badge earners for advancing the Mozilla Mission!""", "DB: badger.Badge.description")
+_("""The SUMO L10n 2010 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2010; in this case: 10 approved translation edits of the SUMO Knowledge Base. Congrats to all SUMO L10n 2010 badge earners for advancing the Mozilla Mission!""", "DB: badger.Badge.description")
 _("""2013 L10n Badge""", "DB: badger.Badge.title")
-_("""The SUMO L10n 2013 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2013 in this case: 10 approved translation edits of the SUMO Knowledge Base.
-
-Congrats to all SUMO L10n 2013 badge earners for advancing the Mozilla Mission!""", "DB: badger.Badge.description")
+_("""The SUMO L10n 2013 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2013 in this case: 10 approved translation edits of the SUMO Knowledge Base. Congrats to all SUMO L10n 2013 badge earners for advancing the Mozilla Mission!""", "DB: badger.Badge.description")
+_("""2012 Army of Awesome Badge""", "DB: badger.Badge.title")
+_("""The SUMO Army of Awesome 2012 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2012; in this case: 50 Army of Awesome tweets. Congrats to all SUMO Army of Awesome 2012 badge earners for advancing the Mozilla Mission!""", "DB: badger.Badge.description")
+_("""2013 Army of Awesome Badge""", "DB: badger.Badge.title")
+_("""The SUMO Army of Awesome 2013 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2013; in this case: 50 Army of Awesome tweets. Congrats to all SUMO Army of Awesome 2013 badge earners for advancing the Mozilla Mission!""", "DB: badger.Badge.description")
+_("""2010 Army of Awesome Badge""", "DB: badger.Badge.title")
+_("""The SUMO Army of Awesome 2010 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2010; in this case: 50 Army of Awesome tweets. Congrats to all SUMO Army of Awesome 2010 badge earners for advancing the Mozilla Mission!""", "DB: badger.Badge.description")
+_("""2011 Army of Awesome Badge""", "DB: badger.Badge.title")
+_("""The SUMO Army of Awesome 2011 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2011; in this case: 50 Army of Awesome tweets. Congrats to all SUMO Army of Awesome 2011 badge earners for advancing the Mozilla Mission!""", "DB: badger.Badge.description")
+_("""2012 Support Forum Badge""", "DB: badger.Badge.title")
+_("""The SUMO Forum 2012 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2012 in this case: 30 replies in the English SUMO Forum. Congrats to all SUMO Forum 2012 badge earners for advancing the Mozilla Mission!""", "DB: badger.Badge.description")
+_("""2010 KB Badge""", "DB: badger.Badge.title")
+_("""The SUMO KB 2010 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2010; in this case: 10 approved edits of the English SUMO Knowledge Base. Congrats to all SUMO KB 2010 badge earners for advancing the Mozilla Mission""", "DB: badger.Badge.description")
+_("""2010 Support Forum Badge""", "DB: badger.Badge.title")
+_("""The SUMO Forum 2010 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2010 in this case: 30 replies in the English SUMO Forum. Congrats to all SUMO Forum 2010 badge earners for advancing the Mozilla Mission!""", "DB: badger.Badge.description")
+_("""2011 KB Badge""", "DB: badger.Badge.title")
+_("""The SUMO KB 2011 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2011; in this case: 10 approved edits of the English SUMO Knowledge Base. Congrats to all SUMO KB 2011 badge earners for advancing the Mozilla Mission!""", "DB: badger.Badge.description")
+_("""2011 L10n Badge""", "DB: badger.Badge.title")
+_("""The SUMO L10n 2011 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2011; in this case: 10 approved translation edits of the SUMO Knowledge Base. Congrats to all SUMO L10n 2011 badge earners for advancing the Mozilla Mission!""", "DB: badger.Badge.description")
+_("""2011 Support Forum Badge""", "DB: badger.Badge.title")
+_("""The SUMO Forum 2011 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2011 in this case: 30 replies in the English SUMO Forum. Congrats to all SUMO Forum 2011 badge earners for advancing the Mozilla Mission!""", "DB: badger.Badge.description")
+_("""2012 KB Badge""", "DB: badger.Badge.title")
+_("""The SUMO KB 2012 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2012; in this case: 10 approved edits of the English SUMO Knowledge Base. Congrats to all SUMO KB 2012 badge earners for advancing the Mozilla Mission!""", "DB: badger.Badge.description")
+_("""2013 KB Badge""", "DB: badger.Badge.title")
+_("""The SUMO KB 2013 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2013 in this case: 10 approved edits of the English SUMO Knowledge Base. Congrats to all SUMO KB 2013 badge earners for advancing the Mozilla Mission!""", "DB: badger.Badge.description")
 _("""2013 Support Forum Badge""", "DB: badger.Badge.title")
-_("""The SUMO Forum 2013 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2013 in this case: 30 replies in the English SUMO Forum.
-
-Congrats to all SUMO Forum 2013 badge earners for advancing the Mozilla Mission""", "DB: badger.Badge.description")
+_("""The SUMO Forum 2013 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2013 in this case: 30 replies in the English SUMO Forum. Congrats to all SUMO Forum 2013 badge earners for advancing the Mozilla Mission""", "DB: badger.Badge.description")
 _("""2012 L10n Badge""", "DB: badger.Badge.title")
-_("""The SUMO L10n 2012 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2012; in this case: 10 approved translation edits of the SUMO Knowledge Base.
-
-Congrats to all SUMO L10n 2012 badge earners for advancing the Mozilla Mission!""", "DB: badger.Badge.description")
+_("""The SUMO L10n 2012 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2012; in this case: 10 approved translation edits of the SUMO Knowledge Base. Congrats to all SUMO L10n 2012 badge earners for advancing the Mozilla Mission!""", "DB: badger.Badge.description")
 _("""Kitsune Contributor""", "DB: badger.Badge.title")
 _("""Badge awarded to those who have contributed to the Kitsune code base.""", "DB: badger.Badge.description")
