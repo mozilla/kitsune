@@ -24,20 +24,20 @@ class HelperTestCase(TestCase):
     def test_profile_avatar_default(self):
         profile(user=self.u)
         email_hash = hashlib.md5(self.u.email.lower()).hexdigest()
-        gravatar_url = '//www.gravatar.com/avatar/%s?s=48&d=%s' % (
+        gravatar_url = 'https://secure.gravatar.com/avatar/%s?s=48&d=%s' % (
             email_hash, settings.STATIC_URL + settings.DEFAULT_AVATAR)
         eq_(gravatar_url, profile_avatar(self.u))
 
     def test_profile_avatar_anonymous(self):
         email_hash = '00000000000000000000000000000000'
-        gravatar_url = '//www.gravatar.com/avatar/%s?s=48&d=%s' % (
+        gravatar_url = 'https://secure.gravatar.com/avatar/%s?s=48&d=%s' % (
             email_hash, settings.STATIC_URL + settings.DEFAULT_AVATAR)
         eq_(gravatar_url, profile_avatar(AnonymousUser()))
 
     def test_profile_avatar(self):
         profile(user=self.u, avatar='images/foo.png')
         email_hash = hashlib.md5(self.u.email.lower()).hexdigest()
-        gravatar_url = '//www.gravatar.com/avatar/%s?s=48&d=%s' % (
+        gravatar_url = 'https://secure.gravatar.com/avatar/%s?s=48&d=%s' % (
             email_hash, settings.MEDIA_URL + 'images/foo.png')
         eq_(gravatar_url, profile_avatar(self.u))
 
