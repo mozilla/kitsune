@@ -8,17 +8,22 @@
       {{ product_cards(products, show_thunderbird=True) }}
     </section>
   </div>
+  <section id="get-involved-box" class="grid_12">
+    <div class="highlight-box">
+      <h2>{{ _('Save the world') }}</h2>
+      <h3>{{ _('from the comfort of your couch') }}</h3>
+      <a class="btn btn-submit" href="{{ url('landings.get_involved') }}">
+        {{ _('Get involved - Help other users') }}
+      </a>
+      <img class="hero-butler" src="{{ STATIC_URL }}img/gi-hero-butler.png" alt="">
+    </div>
+  </section>
   {% if moz_news %}
     <section id="mozilla-news" class="grid_12">
       <h1>{{ _('Mozilla News') }}</h1>
       {{ moz_news.html|safe }}
     </section>
   {% endif %}
-  <div id="get-involved-button" class="grid_12">
-    <a class="btn btn-submit" href="{{ url('landings.get_involved') }}">
-      {{ _('Get involved - Help other users') }}
-    </a>
-  </div>
 {% endblock %}
 
 {% block outer_side %}
