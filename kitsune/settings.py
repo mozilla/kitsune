@@ -91,6 +91,7 @@ LANGUAGE_CODE = 'en-US'
 # review with changes with one locale per line.
 SUMO_LANGUAGES = (
     'ach',
+    'af',
     'ak',
     'ar',
     'as',
