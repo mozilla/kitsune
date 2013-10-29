@@ -116,21 +116,6 @@
             </div>
           </div>
         {% endif %}
-
-        {% for answer in question.helpful_replies[0:2] %}
-          {% if loop.first %}
-            <div class="other-helpful">
-              <h3>{{ _('Helpful replies') }}</h3>
-          {% endif %}
-          <div class="mini-reply">
-            {{ answer.content_parsed|safe }}
-            <a class="read-more" href="{{ answer.get_absolute_url() }}">{{ _('Go to answer') }}</a>
-            <span class="helpful-count">{{ answer.num_helpful_votes }}</span>
-          </div>
-          {% if loop.last %}
-            </div>
-          {% endif %}
-        {% endfor %}
       </div>
 
       {% if question.editable %}
@@ -362,6 +347,7 @@
     </div>
 
     {% if answers.object_list %}
+      {% set helpful_replies = question.helpful_replies %}
       {% for answer in answers.object_list %}
         {% include "questions/includes/answer.html" %}
       {% endfor %}

@@ -57,10 +57,11 @@
       </ul>
       <div class="answer-nav">
         <ul>
+          {% set helpful_replies = question.helpful_replies %}
           {% for answer in answers %}
             {% if answer.id and question.solution == answer %}
               {% set class = 'solution is-helpful' %}
-            {% elif answer.id and answer in question.helpful_replies %}
+            {% elif answer.id and answer in helpful_replies %}
               {% set class = 'helpful is-helpful' %}
             {% elif answer.id and answer.creator == question.creator %}
               {% set class = 'creator' %}
@@ -70,7 +71,7 @@
             <li data-id="{{ answer.id }}" class="{{ class }} {% if loop.first %}selected{% endif %}">
               {% if answer.id and question.solution == answer %}
                 {{ _('solution') }}
-              {% elif answer.id and answer in question.helpful_replies %}
+              {% elif answer.id and answer in helpful_replies %}
                 {{ _('helpful') }}
               {% elif answer.id and answer.creator == question.creator %}
                 {{ _('owner') }}
