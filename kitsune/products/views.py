@@ -1,15 +1,12 @@
 import json
 
-from django.conf import settings
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render
 
 from mobility.decorators import mobile_template
-from taggit.models import Tag
 
-from kitsune.products.models import Product, Topic, HOT_TOPIC_SLUG
+from kitsune.products.models import Product, Topic
 from kitsune.wiki.facets import topics_for, documents_for
-from kitsune.questions.models import Question
 
 
 @mobile_template('products/{mobile/}products.html')
@@ -33,36 +30,10 @@ def product_landing(request, template, slug):
         return HttpResponse(json.dumps({'topics': topic_list}),
                             mimetype='application/json')
 
-    try:
-        topic = Topic.objects.get(product=product, slug=HOT_TOPIC_SLUG)
-
-        hot_docs, fallback_hot_docs = documents_for(
-            locale=request.LANGUAGE_CODE,
-            topics=[topic],
-            products=[product])
-    except Topic.DoesNotExist:
-        # "hot" topic doesn't exist, move on.
-        hot_docs = fallback_hot_docs = None
-
-    hot_questions = []
-    try:
-        hot_tag = Tag.objects.get(slug=HOT_TOPIC_SLUG)
-        if request.LANGUAGE_CODE in settings.AAQ_LANGUAGES:
-            hot_questions = Question.objects.filter(
-                locale=request.LANGUAGE_CODE,
-                products=product,
-                tags=hot_tag)
-            hot_questions = hot_questions.order_by('-created')[:3]
-    except Tag.DoesNotExist:
-        pass
-
     return render(request, template, {
         'product': product,
         'products': Product.objects.filter(visible=True),
         'topics': topics_for(products=[product], parent=None),
-        'hot_docs': hot_docs,
-        'hot_questions': hot_questions,
-        'fallback_hot_docs': fallback_hot_docs,
         'search_params': {'product': slug}})
 
 
