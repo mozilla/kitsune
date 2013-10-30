@@ -3,7 +3,6 @@ import logging
 
 from django.conf import settings
 from django.contrib.sites.models import Site
-from django.core.mail import EmailMultiAlternatives
 from django.core.urlresolvers import reverse as django_reverse
 
 from bleach import clean
@@ -108,6 +107,7 @@ class EditDocumentEvent(InstanceEvent):
         context['locale'] = document.locale
         context['title'] = document.title
         context['creator'] = revision.creator
+        context['comment'] = revision.comment
 
         return email_utils.emails_with_users_and_watches(
             subject=subject,
@@ -162,6 +162,7 @@ class ReviewableRevisionInLocaleEvent(_RevisionConstructor,
         context['locale'] = document.locale
         context['title'] = document.title
         context['creator'] = revision.creator
+        context['comment'] = revision.comment
 
         return email_utils.emails_with_users_and_watches(
             subject=subject,

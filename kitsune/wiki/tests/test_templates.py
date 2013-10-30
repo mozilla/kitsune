@@ -40,6 +40,8 @@ from kitsune.wiki.tests import (
 READY_FOR_REVIEW_EMAIL_CONTENT = (
 """%(user)s submitted a new revision to the document %(title)s.
 
+Fixing all the typos!!!!!11!!!one!!!!
+
 To review this revision, click the following link, or paste it into your browser's location bar:
 
 https://testserver/en-US/kb/%(slug)s/review/%(new_id)s
@@ -60,6 +62,8 @@ https://testserver/en-US/unsubscribe/%(watcher)s?s=%(secret)s
 
 DOCUMENT_EDITED_EMAIL_CONTENT = (
 """%(user)s created a new revision to the document %(title)s.
+
+Fixing all the typos!!!!!11!!!one!!!!
 
 To view this document's history, click the following link, or paste it into your browser's location bar:
 
@@ -805,6 +809,7 @@ class NewRevisionTests(TestCaseBase):
             reverse('wiki.edit_document', args=[self.d.slug]),
             {'summary': 'A brief summary', 'content': 'The article content',
              'keywords': 'keyword1 keyword2',
+             'comment': 'Fixing all the typos!!!!!11!!!one!!!!',
              'based_on': self.d.current_revision.id, 'form': 'rev'})
         eq_(302, response.status_code)
         eq_(2, self.d.revisions.count())

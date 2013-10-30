@@ -6,6 +6,8 @@
 {% endtrans %}
 
 
+{{ comment }}
+
 {% trans %}
 To view this document's history, click the following link, or paste it
 into your browser's location bar:
