@@ -7,6 +7,8 @@
 {% endtrans %}
 
 
+{{ comment }}
+
 {% trans %}
 To review this revision, click the following link, or paste it into
 your browser's location bar:
