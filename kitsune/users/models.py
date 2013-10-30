@@ -7,7 +7,6 @@ from datetime import datetime, timedelta
 from django.conf import settings
 from django.contrib.auth.models import User, Group
 from django.contrib.sites.models import Site
-from django.core.mail import EmailMultiAlternatives
 from django.db import models
 
 from celery.task import task
@@ -227,6 +226,9 @@ class RegistrationManager(ConfirmationManager):
                     user = profile.user
                     user.is_active = True
                     user.save()
+
+                    # We don't need the RegistrationProfile anymore, delete it.
+                    profile.delete()
 
                     # If user registered as contributor, send them the
                     # welcome email.

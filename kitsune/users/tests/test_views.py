@@ -108,6 +108,9 @@ class RegisterTests(TestCase):
         user_ = User.objects.get(pk=user_.pk)
         assert user_.is_active
 
+        # Verify that the RegistrationProfile was nuked.
+        eq_(0, RegistrationProfile.objects.filter(activation_key=key).count())
+
     @mock.patch.object(Site.objects, 'get_current')
     def test_question_created_time_on_user_activation(self, get_current):
         get_current.return_value.domain = 'su.mo.com'
