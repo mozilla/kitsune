@@ -1,7 +1,0 @@
-=We want your feedback!=
-We collect your ratings, read your comments and present them to the Mozilla engineering and products teams every week. Use this link to send us your valuable feedback:
-:{button [http://input.mozilla.org/feedback/ Submit Your Feedback]}
-
-==You can also help us make Firefox better by sending us performance data==
-*[[Send performance data to Mozilla to help improve Firefox|Send Firefox data]]
-*[[How can I help by submitting mobile performance data?|Send Firefox for Android data]]

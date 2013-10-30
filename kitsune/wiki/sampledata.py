@@ -13,9 +13,6 @@ def read_file(filename):
 
 
 MOZILLA_NEWS_CONTENT = read_file('MozillaNews.wiki')
-SUGGESTION_BOX_CONTENT = read_file('SuggestionBox.wiki')
-SUPERHEROES_CONTENT = read_file('SuperheroesWanted.wiki')
-COMMUNITY_CONTENT = read_file('GetCommunitySupport.wiki')
 FLASH_CONTENT = read_file('FlashCrashes.wiki')
 
 
@@ -88,14 +85,6 @@ def generate_sampledata(options):
     moznews = document(title='Mozilla News', slug='mozilla-news', save=True)
     revision(content=MOZILLA_NEWS_CONTENT, document=moznews, is_approved=True,
              reviewed=datetime.now(), save=True)
-    suggestion = document(title='Suggestion Box', slug='suggestion-box',
-                          save=True)
-    revision(content=SUGGESTION_BOX_CONTENT, document=suggestion,
-             is_approved=True, reviewed=datetime.now(), save=True)
-    community = document(title='Get community support',
-                         slug='get-community-support', save=True)
-    revision(content=COMMUNITY_CONTENT, document=community,
-             is_approved=True, reviewed=datetime.now(), save=True)
 
     # Create a hot article
     flash = document(title='Flash 11.3 crashes', slug='flash-113-crashes',
