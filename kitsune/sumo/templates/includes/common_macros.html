@@ -91,21 +91,6 @@
 </li>
 {% endmacro %}
 
-{% macro for_contributors(user, default_language) -%}
-  {% if user.is_authenticated() %}
-    <section id="for-contributors" class="feature-box collapsed" data-ui-type="folding-section">
-      <header>
-        <h1 class="nomargin">{{ _('For Contributors') }}</h1>
-      </header>
-      <section>
-        <ul class="cf">
-          {{ _for_contributor_links(user, default_language) }}
-        </ul>
-      </section>
-    </section>
-  {% endif %}
-{%- endmacro %}
-
 {% macro for_contributors_sidebar(user, default_language, li_only=False, active=None) -%}
   {% if user.is_authenticated() %}
     {% if not li_only %}

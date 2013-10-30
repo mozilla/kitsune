@@ -8,55 +8,6 @@
 {% block title %}{{ _('{product} Help')|f(product=_(product.title, 'DB: products.Product.title')) }}{% endblock %}
 
 {% block content %}
-  {% if hot_docs or fallback_hot_docs %}
-    <div id="hot-topics" class="collapsable expanded">
-      <h2 class="toggle">{{ _('Hot Topics') }}</h2>
-      <article>
-
-        <ul>
-          {# The flag controls two things: Showing questions alongside
-             documents, and giving icons to documents. When questions
-             aren't there, no icon is needed. #}
-
-          {% if waffle.flag('hot_questions') %}
-
-            {% for doc in hot_docs %}
-              <li class="document">
-                <a href="{{ doc['url'] }}">{{ doc['document_title'] }}</a>
-              </li>
-            {% endfor %}
-
-            {% for q in hot_questions %}
-              <li class="question">
-                <a href="{{ q.get_absolute_url() }}">{{ q.title }}</a>
-              </li>
-            {% endfor %}
-
-            {% if fallback_hot_docs %}
-              <li class="fallback">{{ _('In English') }}</li>
-              {% for doc in fallback_hot_docs %}
-                <li><a href="{{ doc['url']|replace('/'+ settings.WIKI_DEFAULT_LANGUAGE +'/', '/' + request.LANGUAGE_CODE + '/') }}">{{ doc['document_title'] }}</a></li>
-              {% endfor %}
-            {% endif %}
-
-          {% else %}
-
-            {% for doc in hot_docs %}
-              <li><a href="{{ doc['url'] }}">{{ doc['document_title'] }}</a></li>
-            {% endfor %}
-            {% if fallback_hot_docs %}
-              <li class="fallback">{{ _('In English') }}</li>
-              {% for doc in fallback_hot_docs %}
-                <li><a href="{{ doc['url']|replace('/'+ settings.WIKI_DEFAULT_LANGUAGE +'/', '/' + request.LANGUAGE_CODE + '/') }}">{{ doc['document_title'] }}</a></li>
-              {% endfor %}
-            {% endif %}
-
-          {% endif %}
-        </ul>
-
-      </article>
-    </div>
-  {% endif %}
   <ul id="topics">
     {% for topic in topics %}
       <li>
