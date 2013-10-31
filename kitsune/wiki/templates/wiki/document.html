@@ -30,6 +30,11 @@
   {% set meta = meta + [('description', document.current_revision.summary)] %}
 {% endif %}
 
+{% if document.slug == 'update-firefox-latest-version' %}
+  {# Don't show the Firefox outdated warning on the "Update firefox" article. #}
+  {% set suppress_outdated_warning = True %}
+{% endif %}
+
 {% block above_main %}
   <h1 class="product-title cf">
     {% set prod_url = url('products.product', slug=product.slug) %}
