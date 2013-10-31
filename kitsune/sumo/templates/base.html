@@ -102,16 +102,18 @@
 {% endif %}
 
 <div id="announcements">
-  {# This will get conditionally shown if it is needed. #}
-  {% call announcement_bar('outdated', 'error') %}
-    <span>
-      {{ _('Your Firefox is out of date and may contain a security risk!') }}
-    </span>
-    <a class="download-button" href="http://www.mozilla.org/firefox/new/#download-fx"
-     data-ga-click="_trackEvent | External Links | Top Banner - Firefox Upgrades">
-      {{ _('Upgrade Firefox') }}
-    </a>
-  {% endcall %}
+  {% if not suppress_outdated_warning %}
+    {# This will get conditionally shown (by js) if it is needed. #}
+    {% call announcement_bar('outdated', 'error') %}
+      <span>
+        {{ _('Your Firefox is out of date and may contain a security risk!') }}
+      </span>
+      <a class="download-button" href="http://www.mozilla.org/firefox/new/#download-fx"
+       data-ga-click="_trackEvent | External Links | Top Banner - Firefox Upgrades">
+        {{ _('Upgrade Firefox') }}
+      </a>
+    {% endcall %}
+  {% endif %}
 
   {% for announ in get_announcements() %}
     {% call announcement_bar(announ.id, 'warn') %}

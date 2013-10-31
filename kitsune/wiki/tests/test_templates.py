@@ -369,6 +369,25 @@ class DocumentTests(TestCaseBase):
         doc = pq(response.content)
         assert 'rel' not in doc('#doc-content a')[0].attrib
 
+    def test_no_outdated_on_update_firefox_article(self):
+        """Verify the Update Firefox article doesn't show outdated warning."""
+        # Create a document and verify the warning is on the page.
+        r = revision(save=True, content='Some text.', is_approved=True)
+        response = self.client.get(r.document.get_absolute_url())
+        eq_(200, response.status_code)
+        doc = pq(response.content)
+        eq_(1, len(doc('#announce-outdated')))
+
+        # Change the slug to match the Update Firefox article.
+        # Verify that the outdated warning isn't on the page anymore.
+        d = r.document
+        d.slug = 'update-firefox-latest-version'
+        d.save()
+        response = self.client.get(r.document.get_absolute_url())
+        eq_(200, response.status_code)
+        doc = pq(response.content)
+        eq_(0, len(doc('#announce-outdated')))
+
 
 class MobileArticleTemplate(MobileTestCase):
     def setUp(self):
