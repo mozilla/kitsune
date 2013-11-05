@@ -69,5 +69,6 @@
     </div>
   </div>
 
+  {% set user_is_contributor = user.is_authenticated() and user.groups.filter(name='Registered as contributor').count() > 0 %}
   {% include 'landings/includes/register_contributor.html' %}
 {% endblock %}
