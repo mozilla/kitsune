@@ -6,7 +6,7 @@
           <form method="post" action="{{ url('users.make_contributor') }}">
             <input type="hidden" name="return_to" value="{{ request.get_full_path() }}">
             {{ csrf() }}
-            <button class="btn btn-submit">{{ _('Sign me up') }} &raquo;</button>
+            <button id="sign-up-contributor" class="btn btn-submit">{{ _('Sign me up') }} &raquo;</button>
           </form>
         {% else %}
           {% if waffle.flag('browserid') %}

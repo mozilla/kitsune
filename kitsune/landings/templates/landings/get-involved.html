@@ -2,7 +2,6 @@
 
 {% set crumbs = [(None, _('Help Other Users'))] %}
 {% set styles = ('landings/get-involved',) %}
-{% set user_is_contributor = user.is_authenticated() and user.groups.filter(name='Registered as contributor') %}
 
 {% block content %}
   <div class="grid_12">
@@ -70,5 +69,6 @@
     </div>
   </div>
 
+  {% set user_is_contributor = user.is_authenticated() and user.groups.filter(name='Registered as contributor').count() > 0 %}
   {% include 'landings/includes/register_contributor.html' %}
 {% endblock %}

@@ -28,6 +28,7 @@
       var $this = $(this);
       var $form = $this.closest('form');
       var type = $this.attr('data-type');
+      var trigger = $this.attr('data-trigger');
 
       if (type === 'submit') {
         // Clicking the element will submit a form.
@@ -58,12 +59,12 @@
             $form.trigger('submit');
           }
         });
-      } else if (type === 'click') {
-        // Clicking the element will click somewhere else.
+      } else if (trigger) {
+        // Trigger an event on another element.
 
         $this.on('click', function(ev) {
           ev.preventDefault();
-          $($this.attr('data-click-selector')).click();
+          $($this.attr('data-trigger-target')).trigger(trigger);
           return false;
         });
       }
