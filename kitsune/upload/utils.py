@@ -5,6 +5,7 @@ from django.conf import settings
 from django.core.files import File
 from django.core.files.uploadedfile import InMemoryUploadedFile
 
+import bleach
 from PIL import Image
 from tower import ugettext_lazy as _lazy
 
@@ -46,7 +47,11 @@ def create_imageattachment(files, user, obj):
         compress_image.delay(image, 'file')
 
     (width, height) = _scale_dimensions(image.file.width, image.file.height)
-    return {'name': up_file.name, 'url': image.file.url,
+
+    # The filename may contain html in it. Escape it.
+    name = bleach.clean(up_file.name)
+
+    return {'name': name, 'url': image.file.url,
             'thumbnail_url': image.thumbnail_if_set().url,
             'width': width, 'height': height,
             'delete_url': image.get_delete_url()}
