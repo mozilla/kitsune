@@ -60,11 +60,16 @@ $(document).ready(function () {
                 return $options;
             },
             onComplete: function($input, iframeContent, $options) {
+                var iframeJSON;
+                var upFile;
+                var $thumbnail;
+                var upStatus;
+
                 $input.closest('form')[0].reset();
                 if (!iframeContent) {
                     return;
                 }
-                var iframeJSON;
+
                 try {
                     iframeJSON = $.parseJSON(iframeContent);
                 } catch(err) {
@@ -72,11 +77,14 @@ $(document).ready(function () {
                         dialogSet(UPLOAD.error_login, UPLOAD.error_title_up);
                     }
                 }
-                var upStatus = iframeJSON.status, upFile, $thumbnail;
+
+                upStatus = iframeJSON.status;
 
                 $options.progress.removeClass('show');
                 if (upStatus == 'success') {
                     upFile = iframeJSON.file;
+                    // HTML decode the name.
+                    upFile.name = $('<div/>').html(upFile.name).text();
                     $thumbnail = $('<img/>')
                         .attr({alt: upFile.name, title: upFile.name,
                                width: upFile.width, height: upFile.height,
