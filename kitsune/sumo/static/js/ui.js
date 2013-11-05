@@ -27,8 +27,12 @@
     $('.btn, a').each(function() {
       var $this = $(this);
       var $form = $this.closest('form');
+      var type = $this.attr('data-type');
+      var trigger = $this.attr('data-trigger');
 
-      if ($this.attr('data-type') === 'submit') {
+      if (type === 'submit') {
+        // Clicking the element will submit a form.
+
         if ($this.attr('data-form')) {
           $form = $('#' + $this.attr('data-form'));
         }
@@ -54,6 +58,14 @@
           if ($this.attr('data-nosubmit') !== '1') {
             $form.trigger('submit');
           }
+        });
+      } else if (trigger) {
+        // Trigger an event on another element.
+
+        $this.on('click', function(ev) {
+          ev.preventDefault();
+          $($this.attr('data-trigger-target')).trigger(trigger);
+          return false;
         });
       }
     });

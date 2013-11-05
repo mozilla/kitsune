@@ -80,3 +80,10 @@ def private_message(user):
     msg = _('Private message')
     return Markup(u'<p class="pm"><a href="{url}">{msg}</a></p>'.format(
         url=url, msg=msg))
+
+
+@register.function
+def is_contributor(user):
+    """Return whether the user is in the 'Registered as contributor' group."""
+    return (user.is_authenticated() and
+            user.groups.filter(name='Registered as contributor').count() > 0)

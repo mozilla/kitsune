@@ -21,6 +21,7 @@
     </div>
   </div>
 
+  {% set user_is_contributor = is_contributor(user) %}
   {% include 'landings/includes/register_contributor.html' %}
 
   <div class="row cf pick-a-way">
@@ -29,7 +30,14 @@
     </div>
     <div class="grid_6">
       <span class="bullet">1</span>
-      <div><a href="{{ url('users.auth_contributor') }}">{{ _('Sign up as a volunteer') }}</a></div>
+      <div>
+        {% set message =  _('Sign up as a volunteer') %}
+        {% if not user_is_contributor %}
+          <a href="#" data-trigger="click" data-trigger-target="#sign-up-contributor">{{ message }}</a>
+        {% else %}
+          {{ message }}
+        {% endif %}
+      </div>
 
       <span class="bullet">2</span>
       <div>

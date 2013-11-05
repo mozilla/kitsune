@@ -65,6 +65,7 @@
     </li>
   </ul>
 
+  {% set user_is_contributor = is_contributor(user) %}
   {% include 'landings/mobile/includes/register_contributor.html' %}
 
 {% endblock %}

@@ -69,5 +69,6 @@
     </div>
   </div>
 
+  {% set user_is_contributor = is_contributor(user) %}
   {% include 'landings/includes/register_contributor.html' %}
 {% endblock %}

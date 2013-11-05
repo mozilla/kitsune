@@ -1,11 +1,11 @@
-{% if not user.is_authenticated() or not user.groups.filter(name='Registered as contributor') %}
+{% if not user_is_contributor %}
   <div class="sign-up">
     <h3>{{ _('Sign up as a volunteer') }}</h3>
     {% if user.is_authenticated() %}
       <form method="post" action="{{ url('users.make_contributor') }}">
         <input type="hidden" name="return_to" value="{{ url('landings.get_involved') }}">
         {{ csrf() }}
-        <button class="btn btn-submit">{{ _('Sign me up') }}</button>
+        <button id="sign-up-contributor" class="btn btn-submit">{{ _('Sign me up') }}</button>
       </form>
     {% else %}
       {% if waffle.flag('browserid') %}
@@ -13,9 +13,9 @@
           <input type="hidden" name="contributor" value="1">
           {{ browserid_form }}
         </form>
-        <a class="btn btn-submit browserid-login" data-form="gi-browserid-form" data-next="{{ request.get_full_path() }}" href="#">{{ _('Sign me up') }}</a>
+        <a id="sign-up-contributor" class="btn btn-submit browserid-login" data-form="gi-browserid-form" data-next="{{ request.get_full_path() }}" href="#">{{ _('Sign me up') }}</a>
       {% else %}
-        <a class="btn btn-submit" href="{{ url('users.auth_contributor') }}">
+        <a id="sign-up-contributor" class="btn btn-submit" href="{{ url('users.auth_contributor') }}">
           {{ _('Sign me up') }}
         </a>
       {% endif %}

@@ -28,9 +28,13 @@
     <h4>{{ _('How it works') }}</h4>
     <ol>
       <li>
-        <a href="{{ url('users.auth_contributor') }}">
-          {{ _('Sign up as a volunteer') }}
-        </a>
+        {% set user_is_contributor = is_contributor(user) %}
+        {% set message =  _('Sign up as a volunteer') %}
+        {% if not user_is_contributor and request.LANGUAGE_CODE in settings.AAQ_LANGUAGES %}
+          <a href="#" data-trigger="click" data-trigger-target="#sign-up-contributor">{{ message }}</a>
+        {% else %}
+          {{ message }}
+        {% endif %}
       </li>
       <li>
         <a href="{{ url('forums.posts', 'contributors', 708942) }}">

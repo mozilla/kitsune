@@ -27,9 +27,13 @@
     <h4>{{ _('How it works') }}</h4>
     <ol>
       <li>
-        <a href="{{ url('customercare.landing') }}">
-          {{ _('Go to Army of Awesome') }}
-        </a>
+        {% set user_is_contributor = is_contributor(user) %}
+        {% set message =  _('Sign up as a volunteer') %}
+        {% if not user_is_contributor %}
+          <a href="#" data-trigger="click" data-trigger-target="#sign-up-contributor">{{ message }}</a>
+        {% else %}
+          {{ message }}
+        {% endif %}
       </li>
       <li>
         <a href="{{ url('wiki.document', 'localize-firefox-help') }}">

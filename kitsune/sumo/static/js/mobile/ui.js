@@ -141,6 +141,21 @@ window.k = window.k || {};
             $(this).children('ul').css('width', width + 'px');
         });
 
+        // Click target proxying.
+        $('.btn, a').each(function() {
+            var $this = $(this);
+            var trigger = $this.attr('data-trigger');
+
+            if (trigger) {
+                // Trigger an event on another element.
+                $this.on('click', function(ev) {
+                    ev.preventDefault();
+                    $($this.attr('data-trigger-target')).trigger(trigger);
+                    return false;
+                });
+            }
+        });
+
         // iOS Standalone Web App Fix
         if (("standalone" in window.navigator) && window.navigator.standalone) {
             $(document).on('click', 'a', function(event) {

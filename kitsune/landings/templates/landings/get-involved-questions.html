@@ -21,6 +21,7 @@
     </div>
   </div>
 
+  {% set user_is_contributor = is_contributor(user) %}
   {% include 'landings/includes/register_contributor.html' %}
 
   <div class="row cf pick-a-way">
@@ -31,8 +32,8 @@
       <span class="bullet">1</span>
       <div>
         {% set message =  _('Sign up as a volunteer') %}
-        {% if request.LANGUAGE_CODE in settings.AAQ_LANGUAGES %}
-          <a href="{{ url('users.auth_contributor') }}">{{ message }}</a>
+        {% if not user_is_contributor and request.LANGUAGE_CODE in settings.AAQ_LANGUAGES %}
+          <a href="#" data-trigger="click" data-trigger-target="#sign-up-contributor">{{ message }}</a>
         {% else %}
           {{ message }}
         {% endif %}
