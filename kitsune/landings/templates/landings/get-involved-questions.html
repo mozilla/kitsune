@@ -2,6 +2,7 @@
 
 {% set crumbs = [(url('landings.get_involved'), _('Help Other Users')), (none, _('Answer questions in the forum'))] %}
 {% set styles = ('landings/get-involved',) %}
+{% set user_is_contributor = user.is_authenticated() and user.groups.filter(name='Registered as contributor') %}
 
 {% block content %}
   <div class="grid_12">
@@ -31,8 +32,8 @@
       <span class="bullet">1</span>
       <div>
         {% set message =  _('Sign up as a volunteer') %}
-        {% if request.LANGUAGE_CODE in settings.AAQ_LANGUAGES %}
-          <a href="{{ url('users.auth_contributor') }}">{{ message }}</a>
+        {% if not user_is_contribuor and request.LANGUAGE_CODE in settings.AAQ_LANGUAGES %}
+          <a href="#" data-type="click" data-click-selector="#sign-up-contributor">{{ message }}</a>
         {% else %}
           {{ message }}
         {% endif %}

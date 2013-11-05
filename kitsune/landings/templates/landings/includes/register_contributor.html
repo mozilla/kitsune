@@ -1,4 +1,4 @@
-{% if not user.is_authenticated() or not user.groups.filter(name='Registered as contributor') %}
+{% if not user_is_contributor %}
   <div class="row cf">
     <div class="grid_12">
       <div class="content-box button-wrapper cf">
@@ -14,9 +14,9 @@
               <input type="hidden" name="contributor" value="1">
               {{ browserid_form }}
             </form>
-            <a class="btn btn-submit browserid-login" data-form="gi-browserid-form" data-next="{{ request.get_full_path() }}" href="#">{{ _('Sign me up') }} &raquo;</a>
+            <a id="sign-up-contributor" class="btn btn-submit browserid-login" data-form="gi-browserid-form" data-next="{{ request.get_full_path() }}" href="#">{{ _('Sign me up') }} &raquo;</a>
           {% else %}
-            <a class="btn btn-submit" href="{{ url('users.auth_contributor') }}">{{ _('Sign me up') }} &raquo;</a>
+            <a id="sign-up-contributor" class="btn btn-submit" href="{{ url('users.auth_contributor') }}">{{ _('Sign me up') }} &raquo;</a>
           {% endif %}
         {% endif %}
         <h3>{{ _('Sign up as a volunteer') }}</h3>

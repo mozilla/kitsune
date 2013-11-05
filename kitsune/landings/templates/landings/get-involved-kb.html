@@ -2,6 +2,7 @@
 
 {% set crumbs = [(url('landings.get_involved'), _('Help Other Users')), (none, _('Help Us Write Help Articles'))] %}
 {% set styles = ('landings/get-involved',) %}
+{% set user_is_contributor = user.is_authenticated() and user.groups.filter(name='Registered as contributor') %}
 
 {% block content %}
   <div class="grid_12">
@@ -29,7 +30,14 @@
     </div>
     <div class="grid_6">
       <span class="bullet">1</span>
-      <div><a href="{{ url('users.auth_contributor') }}">{{ _('Sign up as a volunteer') }}</a></div>
+      <div>
+        {% set message =  _('Sign up as a volunteer') %}
+        {% if not user_is_contribuor %}
+          <a href="#" data-type="click" data-click-selector="#sign-up-contributor">{{ message }}</a>
+        {% else %}
+          {{ message }}
+        {% endif %}
+      </div>
 
       <span class="bullet">2</span>
       <div>
