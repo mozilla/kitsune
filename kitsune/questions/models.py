@@ -27,8 +27,9 @@ from kitsune.products.models import Product, Topic
 from kitsune.questions.karma_actions import (
     AnswerAction, FirstAnswerAction, SolutionAction)
 from kitsune.questions.question_config import products
+from kitsune.questions.signals import tag_added
 from kitsune.questions.tasks import (
-    update_question_votes, update_answer_pages, log_answer)
+    update_question_votes, update_answer_pages, log_answer, escalate_question)
 from kitsune.search.models import (
     SearchMappingType, SearchMixin, register_for_indexing,
     register_mapping_type)
@@ -46,6 +47,7 @@ log = logging.getLogger('k.questions')
 
 
 CACHE_TIMEOUT = 10800  # 3 hours
+ESCALATE_TAG_NAME = 'escalate'
 
 
 class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
@@ -575,6 +577,13 @@ register_for_indexing(
     'questions',
     Question.products.through,
     m2m=True)
+
+
+def _tag_added(sender, question_id, tag_name, **kwargs):
+    """Signal handler for new tag on question."""
+    if tag_name == ESCALATE_TAG_NAME:
+        escalate_question.delay(question_id)
+tag_added.connect(_tag_added, sender=Question, dispatch_uid='tagged_1337')
 
 
 class QuestionMetaData(ModelBase):
