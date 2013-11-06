@@ -51,6 +51,7 @@ from kitsune.questions.marketplace import (
 from kitsune.questions.models import (
     Question, Answer, QuestionVote, AnswerVote, QuestionMappingType)
 from kitsune.questions.question_config import products
+from kitsune.questions.signals import tag_added
 from kitsune.search.es_utils import (ES_EXCEPTIONS, Sphilastic, F,
                                      es_query_with_analyzer)
 from kitsune.search.utils import locale_or_default, clean_excerpt
@@ -1602,8 +1603,14 @@ def _add_tag(request, question_id):
         except Tag.DoesNotExist:
             if request.user.has_perm('taggit.add_tag'):
                 question.tags.add(tag_name)  # implicitly creates if needed
-                return question, tag_name
-            raise
+                canonical_name = tag_name
+            else:
+                raise
+
+        # Fire off the tag_added signal.
+        tag_added.send(sender=Question, question_id=question.id,
+                       tag_name=canonical_name)
+
         return question, canonical_name
 
     return None, None

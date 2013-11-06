@@ -2,6 +2,7 @@ import logging
 from datetime import date
 
 from django.conf import settings
+from django.contrib.sites.models import Site
 from django.db import connection, transaction
 
 # NOTE: This import is just so _fire_task gets registered with celery.
@@ -13,6 +14,7 @@ from statsd import statsd
 from kitsune.kbadge.utils import get_or_create_badge
 from kitsune.questions import ANSWERS_PER_PAGE
 from kitsune.questions.karma_actions import AnswerAction, FirstAnswerAction
+from kitsune.questions.marketplace import submit_ticket
 from kitsune.search.es_utils import ES_EXCEPTIONS
 from kitsune.search.tasks import index_task
 
@@ -150,3 +152,20 @@ def maybe_award_badge(badge_template, year, user):
     if qs.count() >= 30:
         badge.award_to(user)
         return True
+
+
+@task
+def escalate_question(question_id):
+    """Escalate a question to zendesk by submitting a ticket."""
+    from kitsune.questions.models import Question
+    question = Question.objects.get(id=question_id)
+
+    url = 'https://{domain}{url}'.format(
+        domain=Site.objects.get_current().domain,
+        url=question.get_absolute_url())
+
+    submit_ticket(
+        email='support@mozilla.com',
+        category='Escalated',
+        subject='[Escalated] {title}'.format(title=question.title),
+        body='{url}\n\n{content}'.format(url=url, content=question.content))
