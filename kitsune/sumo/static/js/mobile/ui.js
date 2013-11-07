@@ -146,11 +146,11 @@ window.k = window.k || {};
             var $this = $(this);
             var trigger = $this.attr('data-trigger');
 
-            if (trigger) {
-                // Trigger an event on another element.
+            if (trigger === 'click') {
+                // Trigger a click on another element.
                 $this.on('click', function(ev) {
                     ev.preventDefault();
-                    $($this.attr('data-trigger-target')).trigger(trigger);
+                    $($this.attr('data-trigger-target'))[0].click();
                     return false;
                 });
             }
