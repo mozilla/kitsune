@@ -5,36 +5,39 @@ body {
     margin: 0;
     padding: 0;
 }
-
-div#header,
-div#footer-contents,
-div#toc,
+a.permalink,
+aside,
+button,
+div.announcements,
 div.document-vote,
+div.mobile-banner,
+div.post-actions,
+div.thread-actions,
+div#filter,
+div#header,
 div#more-help,
 div#side,
 div#thread-reply,
-div#filter,
-section#question-reply,
-div.thread-actions,
-div.post-actions,
-ol.breadcrumbs,
-span.post-action,
-a.permalink,
-ol.pagination,
-ul.tag-list,
-li.answer div.side-section,
-button,
+div#toc,
+footer,
 input,
+li.answer div.side-section,
+nav#aux-nav,
+ol.breadcrumbs,
+ol.pagination,
+section#question-reply,
+span.post-action,
+ul.tag-list,
 video {
     display: none;
 }
 
 div.warning, div.warning-box {
-    color: #FF6600;
     border-color: #E0E0E0;
     border-radius: 3px;
     border-style: solid;
     border-width: 1px 1px 1px 1em;
+    color: #FF6600;
     font-weight: bold;
     padding: 0.5em 1em 0.5em 2em;
 }
@@ -77,4 +80,9 @@ h1 {
 
 h2 {
     font-size: 1.25em;
+}
+
+section#doc-contributors {
+    border-top: 1px solid #555555;
+    padding-top: 6px;
 }
