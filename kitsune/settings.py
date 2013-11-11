@@ -398,7 +398,7 @@ MIDDLEWARE_CLASSES = (
     'kitsune.sumo.middleware.LocaleURLMiddleware',
 
     # Mobile detection should happen in Zeus.
-    'mobility.middleware.DetectMobileMiddleware',
+    'kitsune.sumo.middleware.DetectMobileMiddleware',
     'mobility.middleware.XMobileMiddleware',
     'kitsune.sumo.middleware.MobileSwitchMiddleware',
 
@@ -789,7 +789,6 @@ GA_PROFILE_ID = '12345678'  # Google Analytics profile id for SUMO prod
 GA_START_DATE = date(2012, 11, 10)
 
 MOBILE_COOKIE = 'msumo'
-MOBILE_USER_AGENTS = 'android|fennec|mobile|iphone|opera (?:mini|mobi)'
 
 # Directory of JavaScript test files for django_qunit to run
 QUNIT_TEST_DIRECTORY = os.path.join('kitsune', 'sumo', 'static', 'js', 'tests')
