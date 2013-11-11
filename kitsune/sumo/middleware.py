@@ -8,6 +8,7 @@ from django.db.utils import DatabaseError
 from django.http import HttpResponseRedirect, HttpResponsePermanentRedirect
 from django.http import HttpResponseForbidden
 from django.shortcuts import render
+from django.utils.cache import patch_vary_headers
 from django.utils.encoding import iri_to_uri, smart_str, smart_unicode
 
 import mobility
@@ -171,10 +172,34 @@ def safe_query_string(request):
         request.META['QUERY_STRING'] = qs
 
 
+# Mobile user agents.
+MOBILE_UAS = re.compile('android|fennec|mobile|iphone|opera (?:mini|mobi)')
+
+# Tablet user agents. User agents matching tablets will not be considered
+# to be mobile (for tablets, request.MOBILE = False).
+TABLET_UAS = re.compile('tablet|ipad')
+
+
+# This is a modified version of 'mobility.middleware.DetectMobileMiddleware'.
+# We want to exclude tablets from being detected as MOBILE and there is
+# no way to do that by just overriding the detection regex.
+class DetectMobileMiddleware(object):
+    """Looks at user agent and decides whether the device is mobile."""
+    def process_request(self, request):
+        ua = request.META.get('HTTP_USER_AGENT', '').lower()
+        mc = request.COOKIES.get(settings.MOBILE_COOKIE)
+        is_tablet = TABLET_UAS.search(ua)
+        is_mobile = not is_tablet and MOBILE_UAS.search(ua)
+        if (is_mobile and mc != 'off') or mc == 'on':
+            request.META['HTTP_X_MOBILE'] = '1'
+
+    def process_response(self, request, response):
+        patch_vary_headers(response, ['User-Agent'])
+        return response
+
+
 class MobileSwitchMiddleware(object):
-    """
-    Looks for query string parameters to switch to the mobile site.
-    """
+    """Looks for query string parameters to switch to the mobile site."""
     def process_request(self, request):
         mobile = request.GET.get('mobile')
 
