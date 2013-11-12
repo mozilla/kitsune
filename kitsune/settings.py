@@ -180,6 +180,7 @@ SUMO_LANGUAGES = (
 # A list of locales for which AAQ is available.
 AAQ_LANGUAGES = (
     'en-US',
+    'fi',
     'hu',
     'pt-BR',
     'sl',
