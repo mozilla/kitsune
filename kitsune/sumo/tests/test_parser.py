@@ -246,6 +246,40 @@ class TestWikiParser(TestCase):
             'onload="alert(1)" &lt;="" p=""&gt;&lt;/iframe&gt;</p>',
             self.p.parse(content))
 
+    def test_injections(self):
+        testdata = (
+            # Normal image urls
+            ('<img src="https://example.com/nursekitty.jpg">',
+             '<p><img src="https://example.com/nursekitty.jpg">\n</p>'),
+
+            ('<img src=https://example.com/nursekitty.jpg />',
+             '<p><img src="https://example.com/nursekitty.jpg">\n</p>'),
+
+            ('<img src="https://example.com/nursekitty.jpg" />',
+             '<p><img src="https://example.com/nursekitty.jpg">\n</p>'),
+
+            ('<img src=https://example.com/nursekitty.jpg </img>',
+             '<p><img src="https://example.com/nursekitty.jpg"></p>'),
+
+            # Script insertions from OWASP site
+            ('<IMG SRC=`javascript:alert("\'XSS\'")`>',
+             '<p><img>\n</p>'),
+
+            ('<IMG SRC=javascript:alert("XSS")>',
+             '<p><img>\n</p>'),
+
+            ('<IMG SRC=JaVaScRiPt:alert(\'XSS\')>',
+             '<p><img>\n</p>'),
+
+            ('<IMG SRC=javascript:alert(\'XSS\')>',
+             '<p><img>\n</p>'),
+
+            ('<IMG SRC="javascript:alert(\'XSS\');">',
+             '<p><img>\n</p>'),
+        )
+        for content, expected in testdata:
+            eq_(expected, self.p.parse(content))
+
 
 class TestWikiInternalLinks(TestCase):
     def setUp(self):
