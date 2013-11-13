@@ -1,18 +1,11 @@
-from django.shortcuts import get_list_or_404, render
+from django.shortcuts import render
 from django.views.decorators.cache import never_cache
 
 from mobility.decorators import mobile_template
 
-from kitsune.products.models import Product, Topic, HOT_TOPIC_SLUG
+from kitsune.products.models import Product
 from kitsune.sumo.decorators import ssl_required
-from kitsune.sumo.parser import get_object_fallback
 from kitsune.sumo.views import redirect_to
-from kitsune.wiki.facets import documents_for
-from kitsune.wiki.models import Document
-
-
-# Docs for the new IA:
-MOZILLA_NEWS_DOC = 'Mozilla News'
 
 
 @never_cache
@@ -28,13 +21,9 @@ def home(request):
     if request.MOBILE:
         return redirect_to(request, 'products', permanent=False)
 
-    products = Product.objects.filter(visible=True)
-    moz_news = get_object_fallback(
-        Document, MOZILLA_NEWS_DOC, request.LANGUAGE_CODE)
-
     return render(request, 'landings/home.html', {
-        'products': products,
-        'moz_news': moz_news})
+        'products': Product.objects.filter(visible=True)
+    })
 
 
 @ssl_required

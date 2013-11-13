@@ -51,12 +51,6 @@ $('body').on('click', 'a[data-ga-click]', function(ev) {
 });
 
 
-// Add data-ga-click attribute to Mozilla News links
-$('#mozilla-news a').each(function() {
-  $(this).attr('data-ga-click', '_trackEvent | External Links | Mozilla News');
-});
-
-
 // Track reads (5secs and 10secs on page) of product landing pages.
 if ($('body').is('.product-landing')) {
   setTimeout(function() {
