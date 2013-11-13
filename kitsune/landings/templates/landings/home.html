@@ -13,12 +13,6 @@
       {{ _('Get involved - Help other users') }}
     </a>
   </section>
-  {% if moz_news %}
-    <section id="mozilla-news" class="grid_12">
-      <h1>{{ _('Mozilla News') }}</h1>
-      {{ moz_news.html|safe }}
-    </section>
-  {% endif %}
 {% endblock %}
 
 {% block outer_side %}

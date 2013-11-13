@@ -12,7 +12,6 @@ def read_file(filename):
     return open(os.path.join(data_dir, filename), 'r').read()
 
 
-MOZILLA_NEWS_CONTENT = read_file('MozillaNews.wiki')
 FLASH_CONTENT = read_file('FlashCrashes.wiki')
 
 
@@ -80,11 +79,6 @@ def generate_sampledata(options):
         # before creating a new one.
         if not Topic.objects.filter(product=p, slug='hot').exists():
             topic(product=p, title='Hot topics', slug='hot', save=True)
-
-    # Create the special documents that are linked to from the home page
-    moznews = document(title='Mozilla News', slug='mozilla-news', save=True)
-    revision(content=MOZILLA_NEWS_CONTENT, document=moznews, is_approved=True,
-             reviewed=datetime.now(), save=True)
 
     # Create a hot article
     flash = document(title='Flash 11.3 crashes', slug='flash-113-crashes',
