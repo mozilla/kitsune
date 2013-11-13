@@ -12,10 +12,10 @@
 // * Deleted the browsers we don't care about.
 var BrowserDetect = {
     init: function () {
-        this.browser = this.searchString(this.dataBrowser);
-        this.version = this.searchVersion(navigator.userAgent) ||
-                       this.searchVersion(navigator.appVersion);
-        this.OS = this.searchString(this.dataOS);
+        var detected = this.detect();
+        this.browser = detected[0];
+        this.version = detected[1];
+        this.OS = detected[2];
     },
 
     detect: function(inputString) {
@@ -66,6 +66,7 @@ var BrowserDetect = {
     },
 
     fxosSpecialCase: function(ua, browser, version, os) {
+        ua = ua || navigator.userAgent;
         var match = /Gecko\/([\d.]+)/.exec(ua);
         if (os === 'fxos' && !!match) {
             var geckoVersion = parseFloat(match[1]);
@@ -87,7 +88,7 @@ var BrowserDetect = {
           // Now we need to look for the presence of both 'Mobile'
           // and 'Firefox'.
             string: navigator.userAgent,
-            subStrings: ['Mobile', 'Firefox'],
+            subStrings: ['Android', 'Firefox'],
             versionSearch: 'Firefox',
             identity: 'm'
         },
@@ -99,10 +100,11 @@ var BrowserDetect = {
         }
     ],
     dataOS : [
-        {   // 6.2 is Windows 8 and 6.3 is Windows 8.1.
+        {
+            // 6.2 is Windows 8. 6.3 is Windows 8.1.
             string: navigator.userAgent,
-            subStrings: [/Windows NT 6\.[23]/],
-            identity: "win8"
+            subStrings: [/Windows NT 6.[23]/],
+            identity: 'win8'
         },
         {   // 6.0 is Vista, 6.1 is Windows 7. We lump them together here.
             string: navigator.userAgent,

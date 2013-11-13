@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+.in,
+.out,
+.controls {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  position: absolute;
+  top: 0;
+  height: 100vh;
+  overflow-y: scroll;
+}
+
+.in {
+  height: 98vh;
+  margin: 1vmin 1vmin;
+  width: 39vw;
+  left: 0;
+}
+
+.out {
+  width: 40vw;
+  padding: 2vmax;
+  left: 40vw;
+}
+
+.controls {
+  padding: 1vh 1vw;
+  width: 20vw;
+  left: 80vw;
+  border-left: 1px solid black;
+}
+
+.for {
+  display: inline-block;
+  padding: 3px;
+}
+
+</style>
+
+<textarea class="in"></textarea>
+
+<div class="showfor-container">
+  <div class="out"></div>
+    <div class="controls">
+
+      <div class="product" data-product="firefox">
+        <h2>
+          <input type="checkbox" checked value="product:firefox">
+          Firefox
+        </h2>
+        <div class="selectbox-wrapper">
+          <select class="version">
+            <option value="version:fx26" data-min="26.0" data-max="27.0">Version 26</option>
+            <option value="version:fx25" data-min="25.0" data-max="26.0">Version 25</option>
+            <option value="version:fx24" data-min="24.0" data-max="25.0" selected>Version 24</option>
+            <option value="version:fx23" data-min="23.0" data-max="24.0">Version 23</option>
+            <option value="version:fx17" data-min="17.0" data-max="18.0">Version 17 (ESR)</option>
+          </select>
+        </div>
+        <div class="selectbox-wrapper">
+          <select class="platform">
+            <option value="platform:win8">Windows 8</option>
+            <option value="platform:win7">Windows 7/Vista</option>
+            <option value="platform:winxp">Windows XP</option>
+            <option value="platform:mac">Mac</option>
+            <option value="platform:linux">Linux</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="product" data-product="mobile">
+        <h2>
+          <input type="checkbox" checked value="product:mobile">
+          Firefox for Android
+        </h2>
+        <div class="selectbox-wrapper">
+          <select class="version">
+            <option value="version:m26" data-min="26.0" data-max="27.0">Version 26</option>
+            <option value="version:m25" data-min="25.0" data-max="26.0">Version 25</option>
+            <option value="version:m24" data-min="24.0" data-max="25.0" selected>Version 24</option>
+            <option value="version:m23" data-min="23.0" data-max="24.0">Version 23</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="product" data-product="firefox-os">
+        <h2>
+          <input type="checkbox" checked value="product:firefox-os">
+          Firefox OS
+        </h2>
+        <div class="selectbox-wrapper">
+          <select class="version">
+            <option value="version:fxos1.3" data-min="1.3" data-max="1.4">Version 1.3</option>
+            <option value="version:fxos1.2" data-min="1.2" data-max="1.3">Version 1.2</option>
+            <option value="version:fxos1.1" data-min="1.1" data-max="1.2" selected>Version 1.1</option>
+            <option value="version:fxos1.0" data-min="1.0" data-max="1.1">Version 1.0</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="product" data-product="marketplace">
+        <h2>
+          <input type="checkbox" checked value="product:marketplace">
+          Firefox Marketplace
+        </h2>
+      </div>
+
+      <div class="product" data-product="webmaker">
+        <h2>
+          <input type="checkbox" checked value="product:webmaker">
+          Webmaker
+        </h2>
+      </div>
+      <div class="product" data-product="persona">
+        <h2>
+          <input type="checkbox" checked value="product:persona">
+          Mozilla Persona
+        </h2>
+      </div>
+    </div>
+  </div>
+
+  <script type="application/json" class="showfor-data">
+    {
+      "platforms": [
+        {"name": "Web", "slug": "web"},
+        {"name": "Android", "slug": "android"},
+        {"name": "Linux", "slug": "linux"},
+        {"name": "Mac", "slug": "mac"},
+        {"name": "Windows XP", "slug": "winxp"},
+        {"name": "Windows 7/Vista", "slug": "win7"},
+        {"name": "Windows 8", "slug": "win8"}
+      ],
+      "products": [
+        {"platforms": ["linux", "mac", "winxp", "win7", "win8"], "slug": "firefox", "title": "Firefox"},
+        {"platforms": ["android"], "slug": "mobile", "title": "Firefox for Android"},
+        {"platforms": ["web"], "slug": "firefox-os", "title": "Firefox OS"}
+      ],
+      "versions": {
+        "marketplace": [{"product": "marketplace", "name": "Marketplace", "default": true, "min_version": 0.0, "max_version": 0.0, "slug": "marketplace"}],
+        "persona": [{"product": "persona", "name": "Persona", "default": true, "min_version": 0.0, "max_version": 0.0, "slug": "persona"}],
+        "firefox": [{"product": "firefox", "name": "Version 26", "default": false, "min_version": 26.0, "max_version": 27.0, "slug": "fx26"}, {"product": "firefox", "name": "Version 25", "default": false, "min_version": 25.0, "max_version": 26.0, "slug": "fx25"}, {"product": "firefox", "name": "Version 24", "default": true, "min_version": 24.0, "max_version": 25.0, "slug": "fx24"}, {"product": "firefox", "name": "Version 23", "default": false, "min_version": 23.0, "max_version": 24.0, "slug": "fx23"}, {"product": "firefox", "name": "Version 17 (ESR)", "default": false, "min_version": 17.0, "max_version": 18.0, "slug": "fx17"}],
+        "mobile": [{"product": "mobile", "name": "Version 26", "default": false, "min_version": 26.0, "max_version": 27.0, "slug": "m26"}, {"product": "mobile", "name": "Version 25", "default": false, "min_version": 25.0, "max_version": 26.0, "slug": "m25"}, {"product": "mobile", "name": "Version 24", "default": true, "min_version": 24.0, "max_version": 25.0, "slug": "m24"}, {"product": "mobile", "name": "Version 23", "default": false, "min_version": 23.0, "max_version": 24.0, "slug": "m23"}],
+        "firefox-os": [{"product": "firefox-os", "name": "Version 1.3", "default": false, "min_version": 1.3, "max_version": 1.4, "slug": "fxos1.3"}, {"product": "firefox-os", "name": "Version 1.2", "default": false, "min_version": 1.2, "max_version": 1.3, "slug": "fxos1.2"}, {"product": "firefox-os", "name": "Version 1.1", "default": true, "min_version": 1.1, "max_version": 1.2, "slug": "fxos1.1"}, {"product": "firefox-os", "name": "Version 1.0", "default": false, "min_version": 1.0, "max_version": 1.1, "slug": "fxos1.0"}],
+        "webmaker": [{"product": "webmaker", "name": "Webmaker", "default": true, "min_version": 0.0, "max_version": 0.0, "slug": "webmaker"}]
+      }
+    }
+  </script>
+
+</div>
+
+
+<script src="js/libs/jquery-1.10.1.min.js"></script>
+<script src="js/libs/underscore.js"></script>
+<script src="js/browserdetect.js"></script>
+<script src="js/showfor.js"></script>
+<script>
+
+var DELAY = 300;
+
+var $in = $('.in');
+var $out = $('.out');
+var timeout;
+
+function update() {
+  var src = $in.val();
+
+  src = src.replace(/\{for ([^\}]+)\}/g, '<span class="for" data-for="$1">');
+  src = src.replace(/\{\/for\}/g, '</span>');
+  src = src.replace(/\n\n/g, '<br>');
+
+  $out.html(src);
+
+  sf.initShowFuncs()
+  sf.showAndHide();
+}
+
+var sf = new ShowFor();
+update();
+
+$in.on('change keydown', function(e) {
+  clearTimeout(timeout);
+  setTimeout(update.bind(null, e), DELAY);
+});
+
+</script>

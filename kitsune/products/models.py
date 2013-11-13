@@ -1,6 +1,7 @@
 import os
 
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db import models
 
 from kitsune.sumo.models import ModelBase
@@ -23,6 +24,9 @@ class Product(ModelBase):
 
     # Whether or not this product is visible in the ui to users.
     visible = models.BooleanField(default=False)
+
+    # Platforms this Product runs on.
+    platforms = models.ManyToManyField('Platform')
 
     class Meta(object):
         ordering = ['display_order']
@@ -74,3 +78,39 @@ class Topic(ModelBase):
             return self.image.url
         return os.path.join(
             settings.STATIC_URL, 'img', 'topic_placeholder.png')
+
+
+class Version(ModelBase):
+    name = models.CharField(max_length=255)
+    slug = models.SlugField()
+    min_version = models.FloatField()
+    max_version = models.FloatField()
+    product = models.ForeignKey('Product', related_name='versions')
+    visible = models.BooleanField()
+    default = models.BooleanField()
+
+    class Meta(object):
+        ordering = ['-max_version']
+    
+    def save(self):
+        if self.default:
+            others = (Version.objects
+                      .filter(default=True, product=self.product)
+                      .exclude(pk=self.pk))
+
+            if others.count() > 0:
+                raise ValidationError('Only one version can be default for '
+                                      'each product.')
+
+        super(Version, self).save()
+
+
+class Platform(ModelBase):
+    name = models.CharField(max_length=255)
+    slug = models.SlugField()
+    visible = models.BooleanField()
+    # Dictates the order in which products are displayed in product
+    # lists.
+    display_order = models.IntegerField()
+
+

@@ -1,3 +1,5 @@
+(function() {
+
 'use strict';
 
 module('lazyload');
@@ -10,3 +12,5 @@ test('load original image', function() {
     equals($(img).attr('src'), 'http://example.com/test.jpg', 'src attribute set correctly');
     equals($(img).data('original-src'), undefined, 'original-src data attribute cleared correctly');
 });
+
+})();

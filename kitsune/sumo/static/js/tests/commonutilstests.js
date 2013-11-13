@@ -1,3 +1,5 @@
+(function() {
+
 /*
  * Tests for common utility functions (k.*).
  */
@@ -145,3 +147,5 @@ test('interpolate named user input', function() {
         safe = '<div>&lt;script&gt;alert(&#39;xss&#39;);&lt;/script&gt; <span>(Jo&amp;mdash;hn)</span></div>';
     equals(k.safeInterpolate(html, unsafe, true), safe);
 });
+
+})();

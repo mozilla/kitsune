@@ -1,3 +1,5 @@
+(function() {
+
 'use strict';
 
 var kboxFixture = {
@@ -40,3 +42,5 @@ test('declarative', function() {
         ok($('#kbox-overlay').length === 0, 'overlay cleaned up');
     });
 });
+
+})();

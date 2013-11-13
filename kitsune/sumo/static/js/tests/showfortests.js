@@ -1,237 +1,261 @@
+(function() {
+
+/* Tests for showfor */
 'use strict';
 
-var showforFixture = {
-    setup: function() {
-        var $sandbox = tests.createSandbox('#showfor'),
-            options = {
-                osSelector: 'select.os',
-                browserSelector: 'select.browser'
-            },
-            $b = $sandbox.find(options.browserSelector),
-            $o = $sandbox.find(options.osSelector);
-        ShowFor.initForTags(options, $sandbox);
-        this.$sandbox = $sandbox;
-        this.$b = $b;
-        this.$o = $o;
-    },
-    teardown: function() {
-        this.$sandbox.remove();
-    }
-};
-
-module('showfor', showforFixture);
-
-function assertNotVisible($sandbox, forVals) {
-    for (var i=0,l=forVals.length; i<l; i++) {
-        equals($sandbox.find('[data-for="' + forVals[i] + '"]:visible').length, 0,
-               '[data-for=' + forVals[i] + '] is not visible');
-    }
-}
-function assertNotHidden($sandbox, forVals) {
-    for (var i=0,l=forVals.length; i<l; i++) {
-        equals($sandbox.find('[data-for="' + forVals[i] + '"]:hidden').length, 0,
-               '[data-for=' + forVals[i] + '] is not hidden');
-    }
+/*
+ * Returns an object with the same prototype and properties as a ShowFor
+ * object, but for which the ShowFor constructor is not called. It will
+ * be bound to the passed $sandbox.
+*/
+function showForNoInit($sandbox) {
+  var sf = Object.create(ShowFor.prototype);
+  sf.$container = $sandbox;
+  sf.state = {};
+  return sf;
 }
 
-test('default', function() {
-    // Make sure initial setup is good (for example, on mac: data-for="mac"
-    // shows and data-for="not mac" doesn't show)
-    assertNotHidden(this.$sandbox, [this.$b.val(), this.$o.val()]);
-    assertNotVisible(this.$sandbox, ['not ' + this.$b.val(), 'not ' + this.$o.val()]);
+
+module('ShowFor', {
+  setup: function() {
+    this.$sandbox = tests.createSandbox('#showfor');
+    this.showFor = showForNoInit(this.$sandbox);
+  },
+  teardown: function() {
+    this.$sandbox.remove();
+  },
 });
 
-test('windows fx4', function() {
-    $('#_input_win').click();
-    $('#_input_fx4').click();
-    equals(this.$o.val(), 'win', 'Windows is now selected');
-    equals(this.$b.val(), 'fx4', 'Firefox 4 is now selected');
-    assertNotHidden(this.$sandbox, ['win', 'not mac', 'android', 'fx35,fx4', 'fx4', 'm4', 'm5', 'win,fx4']);
-    assertNotVisible(this.$sandbox, ['mac,linux', 'maemo', 'fx3', 'fx5', 'fx6', 'win,fx35']);
+test('loadData', function() {
+  this.showFor.loadData();
+
+  // Assert that data was loaded
+  equals(typeof this.showFor.data, 'object');
+  equals(this.showFor.data.platforms.length, 7);
+  equals(this.showFor.data.products.length, 3);
+  equals(this.showFor.data.versions.firefox.length, 5);
+
+  // Assert that the denormalized forms were pulled out
+  deepEqual(this.showFor.productSlugs, ['firefox', 'mobile', 'firefox-os']);
+  deepEqual(this.showFor.platformSlugs, ['web', 'android', 'linux', 'mac', 'winxp', 'win7', 'win8']);
+  equals(this.showFor.versionSlugs['fx24'], 'firefox');
+  equals(this.showFor.versionSlugs['fxos1.2'], 'firefox-os');
+  equals(this.showFor.versionSlugs['m24'], 'mobile');
 });
 
-test('windows versions', function() {
-    $('#_input_winxp').click();
-    equals(this.$o.val(), 'winxp', 'Windows XP is now selected');
-    assertNotHidden(this.$sandbox, ['win', 'winxp']);
-    assertNotVisible(this.$sandbox, ['win8', 'win7', 'mac', 'linux']);
+test('updateUI', function() {
+  var _orig = {
+    browser: BrowserDetect.browser,
+    version: BrowserDetect.version,
+    OS: BrowserDetect.OS,
+  };
 
-    $('#_input_win7').click();
-    equals(this.$o.val(), 'win7', 'Windows 7/Vista is now selected');
-    assertNotHidden(this.$sandbox, ['win', 'win7']);
-    assertNotVisible(this.$sandbox, ['win8', 'winxp', 'mac', 'linux']);
+  this.showFor.loadData();
 
-    $('#_input_win8').click();
-    equals(this.$o.val(), 'win8', 'Windows 8 is now selected');
-    assertNotHidden(this.$sandbox, ['win', 'win8']);
-    assertNotVisible(this.$sandbox, ['winxp', 'win7', 'mac', 'linux']);
+  var $versionFx = this.$sandbox.find('.product[data-product=firefox] select.version');
+  var $platformFx = this.$sandbox.find('.product[data-product=firefox] select.platform');
+  var $versionM = this.$sandbox.find('.product[data-product=mobile] select.version');
+
+  BrowserDetect.browser = 'fx';
+  BrowserDetect.version = 26.0;
+  BrowserDetect.OS = 'winxp';
+  sessionStorage.removeItem('showfor::persist');
+  this.showFor.updateUI();
+  equals($versionFx.val(), 'version:fx26');
+  equals($platformFx.val(), 'platform:winxp');
+
+  console.log($platformFx);
+
+  BrowserDetect.browser = 'm';
+  BrowserDetect.version = 23.0;
+  BrowserDetect.OS = 'android';
+  sessionStorage.removeItem('showfor::persist');
+  this.showFor.updateUI();
+  equals($versionM.val(), 'version:m23');
+
+  // cleanup
+  BrowserDetect.browser = _orig.browser;
+  BrowserDetect.version = _orig.version;
+  BrowserDetect.OS = _orig.OS;
 });
 
-test('linux fx35', function() {
-    $('#_input_linux').click();
-    $('#_input_fx35').click();
-    equals(this.$o.val(), 'linux', 'Linux is now selected');
-    equals(this.$b.val(), 'fx35', 'Firefox 3.5/6 is now selected');
-    assertNotHidden(this.$sandbox, ['not mac', 'mac,linux', 'android', 'fx35,fx4', 'm4', 'm5']);
-    assertNotVisible(this.$sandbox, ['win', 'maemo', 'fx3', 'fx4', 'fx5', 'fx6', 'win,fx4', 'win,fx35']);
+test('updateState', function() {
+  this.showFor.updateState();
+
+  equals(this.showFor.state.firefox.enabled, true);
+  equals(this.showFor.state.firefox.platform, 'win8');
+  equals(this.showFor.state.firefox.version.min, 24);
+  equals(this.showFor.state.firefox.version.max, 25);
+  equals(this.showFor.state.firefox.version.slug, 'fx24');
+
+  equals(this.showFor.state.mobile.enabled, true);
+  equals(this.showFor.state.mobile.version.min, 24);
+  equals(this.showFor.state.mobile.version.max, 25);
+  equals(this.showFor.state.mobile.version.slug, 'm24');
+
+  equals(this.showFor.state.persona.enabled, true);
+
+  // now change some things
+  this.$sandbox.find('[value="product:persona"]').prop('checked', false);
+  this.$sandbox.find('[data-product="mobile"] select.version').val('version:m26');
+  this.$sandbox.find('[data-product="firefox"] select.platform').val('platform:linux');
+
+  // and check again
+  this.showFor.updateState();
+
+  equals(this.showFor.state.firefox.enabled, true);
+  equals(this.showFor.state.firefox.platform, 'linux');
+  equals(this.showFor.state.firefox.version.min, 24);
+  equals(this.showFor.state.firefox.version.max, 25);
+  equals(this.showFor.state.firefox.version.slug, 'fx24');
+
+  equals(this.showFor.state.mobile.enabled, true);
+  equals(this.showFor.state.mobile.version.min, 26);
+  equals(this.showFor.state.mobile.version.max, 27);
+  equals(this.showFor.state.mobile.version.slug, 'm26');
+
+  equals(this.showFor.state.persona.enabled, false);
+
 });
 
-test('mac fx5', function() {
-    $('#_input_mac').click();
-    $('#_input_fx5').click();
-    equals(this.$o.val(), 'mac', 'Mac is now selected');
-    equals(this.$b.val(), 'fx5', 'Firefox 5 is now selected');
-    assertNotHidden(this.$sandbox, ['mac,linux', 'android', 'm4', 'fx35,fx4', 'fx4', 'fx5', 'm5']);
-    assertNotVisible(this.$sandbox, ['not mac', 'win', 'maemo', 'fx3', 'fx6', 'win,fx4', 'win,fx35']);
+test('initShowFuncs', function() {
+  // Replace the matchesCriteria function with a spy of sorts.
+  this.showFor.matchesCriteria = function(criteria) {
+    return criteria;
+  };
+
+  this.showFor.initShowFuncs();
+
+  // Now each showfor element should have a function stored in
+  // .data('show-func')that returns the criteria that was calcuated by
+  // initShowFuncs.
+  var $elems = this.$sandbox.find('.for');
+  deepEqual($elems.eq(0).data('show-func')(), ['fx24']);
+  deepEqual($elems.eq(1).data('show-func')(), ['fx24', 'win']);
+  deepEqual($elems.eq(2).data('show-func')(), ['=fxos1.1']);
+  deepEqual($elems.eq(3).data('show-func')(), ['not m25']);
 });
 
-test('windows fx6', function() {
-    $('#_input_win').click();
-    $('#_input_fx6').click();
-    equals(this.$o.val(), 'win', 'Windows is now selected');
-    equals(this.$b.val(), 'fx6', 'Firefox 6 is now selected');
-    assertNotHidden(this.$sandbox, ['win', 'not mac', 'android', 'fx35,fx4', 'fx4', 'fx5', 'fx6', 'm4', 'm5', 'win,fx4']);
-    assertNotVisible(this.$sandbox, ['mac,linux', 'maemo', 'fx3', 'win,fx35']);
+test('showAndHide', function() {
+  var $elems = this.$sandbox.find('.for');
+
+  var yes = function() { return true; };
+  var no = function() { return false; };
+
+  $elems.eq(0).data('show-func', yes);
+  $elems.eq(1).data('show-func', no);
+  $elems.eq(2).data('show-func', no);
+  // The last element (#3) doesn't have a show func.
+
+  this.showFor.showAndHide();
+  
+  // 0's show-func returns true. it should be visible
+  ok($elems.eq(0).is(':visible'));
+  // 1 and 2's show-funcs returns false. they should be hidden.
+  ok(!$elems.eq(1).is(':visible'));
+  ok(!$elems.eq(2).is(':visible'));
+  // 3 doesn't have a show func. It should be visible.
+  ok($elems.eq(3).is(':visible'));
 });
 
-test('android m4', function() {
-    $('#_input_android').click();
-    $('#_input_m4').click();
-    equals(this.$o.val(), 'android', 'Android is now selected');
-    equals(this.$b.val(), 'm4', 'Firefox 4 is now selected');
-    assertNotHidden(this.$sandbox, ['win', 'win7', 'not mac', 'android', 'm4', 'fx35,fx4', 'fx4', 'fx5', 'win,fx4']);
-    assertNotVisible(this.$sandbox, ['mac,linux', 'maemo', 'fx3', 'm5', 'fx6', 'winxp', 'win8', 'win,fx35']);
-});
+test('matchesCriteria', function() {
+  this.showFor.loadData();
 
-test('maemo m5', function() {
-    $('#_input_maemo').click();
-    $('#_input_m5').click();
-    equals(this.$o.val(), 'maemo', 'Maemo is now selected');
-    equals(this.$b.val(), 'm5', 'Firefox 5 is now selected');
-    assertNotHidden(this.$sandbox, ['win', 'not mac', 'maemo', 'm4', 'm5', 'fx35,fx4', 'fx4', 'fx5', 'win,fx4']);
-    assertNotVisible(this.$sandbox, ['mac,linux', 'android', 'fx3', 'fx6', 'win,fx35']);
-});
+  var check = function(criteria, expected) {
+    var msg = 'Expected ' + JSON.stringify(criteria) + ' to return ' + expected;
+    equals(this.showFor.matchesCriteria(criteria), expected, msg);
+  }.bind(this);
 
-module('ShowFor.addBrowserToSelect', showforFixture);
-// Test that browser versions get inserted in the right spot.
-
-test('fx9', function() {
-    var $select = this.$sandbox.find('select.browser-insert-test'),
-        length = $select.find('option').length;
-    ShowFor.addBrowserToSelect($select, 'fx9');
-    equals($select.find('option').length, length + 1);
-    equals($select.find('option')[0].value, 'fx9');
-});
-
-test('fx5', function() {
-    var $select = this.$sandbox.find('select.browser-insert-test'),
-        length = $select.find('option').length;
-    ShowFor.addBrowserToSelect($select, 'fx5');
-    equals($select.find('option').length, length + 1);
-    equals($select.find('option')[length - 1].value, 'fx5');
-});
-
-test('fx4', function() {
-    var $select = this.$sandbox.find('select.browser-insert-test'),
-        length = $select.find('option').length;
-    ShowFor.addBrowserToSelect($select, 'fx4');
-    equals($select.find('option').length, length + 1);
-    equals($select.find('option')[length - 1].value, 'fx4');
-});
-
-test('fx3', function() {
-    var $select = this.$sandbox.find('select.browser-insert-test'),
-        length = $select.find('option').length;
-    ShowFor.addBrowserToSelect($select, 'fx3');
-    equals($select.find('option').length, length + 1);
-    equals($select.find('option')[length].value, 'fx3');
-});
-
-
-var showforMobileOnlyFixture = {
-    setup: function() {
-        var $sandbox = tests.createSandbox('#showfor-mobile-only'),
-            options = {
-                osSelector: 'select.os',
-                browserSelector: 'select.browser'
-            },
-            $b = $sandbox.find(options.browserSelector),
-            $o = $sandbox.find(options.osSelector);
-        ShowFor.initForTags(options, $sandbox);
-        this.$sandbox = $sandbox;
-        this.$b = $b;
-        this.$o = $o;
-    },
-    teardown: function() {
-        this.$sandbox.remove();
+  this.showFor.state = {
+    firefox: {
+      enabled: true,
+      platform: 'win8',
+      version: {min: 24, max: 25, slug: 'fx24'}
     }
-};
+  };
 
-module('showforMobileOnly', showforMobileOnlyFixture);
+  // One selector criteria
+  check(['fx23'], true);
+  check(['fx24'], true);
+  check(['fx25'], false);
+  check(['=fx23'], false);
+  check(['=fx24'], true);
+  check(['=fx25'], false);
+  // Version and platform
+  check(['fx23', 'win8'], true);
+  check(['fx24', 'win8'], true);
+  check(['fx24', 'win'], true);
+  check(['fx24', 'linux'], false);
+  check(['fx25', 'win8'], false);
+  check(['fx25', 'win'], false);
+  check(['fx25', 'linux'], false);
+  // not tests single
+  check(['not fx23'], false);
+  check(['not fx24'], false);
+  check(['not fx25'], true);
+  check(['not =fx23'], true);
+  check(['not =fx24'], false);
+  check(['not =fx25'], true);
+  // not test multiple
+  check(['not fx23', 'win'], false);
+  check(['not fx24', 'win'], false);
+  check(['not fx25', 'win'], true);
 
-test('android m15', function() {
-    $('#_input_android').click();
-    $('#_input_m15').click();
-    equals(this.$o.val(), 'android', 'Android is now selected');
-    equals(this.$b.val(), 'm15', 'Firefox 15 is now selected');
-    assertNotHidden(this.$sandbox, ['android', 'm15']);
-    assertNotVisible(this.$sandbox, ['m16', 'maemo']);
-});
+  check(['not fx23', 'linux'], false);
+  check(['not fx24', 'linux'], false);
+  check(['not fx25', 'linux'], false);
 
-test('android m16', function() {
-    $('#_input_android').click();
-    $('#_input_m16').click();
-    equals(this.$o.val(), 'android', 'Android is now selected');
-    equals(this.$b.val(), 'm16', 'Firefox 16 is now selected');
-    assertNotHidden(this.$sandbox, ['android', 'm15', 'm16']);
-    assertNotVisible(this.$sandbox, ['maemo']);
-});
+  check(['not fx23', 'not win'], false);
+  check(['not fx24', 'not win'], false);
+  check(['not fx25', 'not win'], false);
 
+  check(['not fx23', 'not linux'], false);
+  check(['not fx24', 'not linux'], false);
+  check(['not fx25', 'not linux'], true);
 
-var showforDesktopOnlyFixture = {
-    setup: function() {
-        var $sandbox = tests.createSandbox('#showfor-desktop-only'),
-            options = {
-                osSelector: 'select.os',
-                browserSelector: 'select.browser'
-            },
-            $b = $sandbox.find(options.browserSelector),
-            $o = $sandbox.find(options.osSelector);
-        ShowFor.initForTags(options, $sandbox);
-        this.$sandbox = $sandbox;
-        this.$b = $b;
-        this.$o = $o;
+  // What about mixed products?
+  this.showFor.state = {
+    firefox: {
+      enabled: true,
+      platform: 'win8',
+      version: {min: 24, max: 25, slug: 'fx24'}
     },
-    teardown: function() {
-        this.$sandbox.remove();
-    }
-};
+    mobile: {
+      enabled: true,
+      version: {min: 24, max: 25, slug: 'm24'}
+    },
+  };
 
-module('showforDesktopOnly', showforDesktopOnlyFixture);
+  // This is basically an OR.
+  check(['fx23', 'm23'], true);
+  check(['fx23', 'm24'], true);
+  check(['fx23', 'm25'], true);
+  check(['fx24', 'm23'], true);
+  check(['fx24', 'm24'], true);
+  check(['fx24', 'm25'], true);
+  check(['fx25', 'm23'], true);
+  check(['fx25', 'm24'], true);
+  check(['fx25', 'm25'], false);
 
-test('win fx15', function() {
-    $('#_input_win').click();
-    $('#_input_fx15').click();
-    equals(this.$o.val(), 'win', 'Windows is now selected');
-    equals(this.$b.val(), 'fx15', 'Firefox 15 is now selected');
-    assertNotHidden(this.$sandbox, ['win', 'fx15']);
-    assertNotVisible(this.$sandbox, ['fx16', 'fx17', 'mac', 'linux']);
+  // What about disabled stuff?
+  this.showFor.state = {
+    firefox: {
+      enabled: true,
+    },
+    mobile: {
+      enabled: false,
+    },
+  };
+
+  check(['fx'], true);
+  check(['m'], false);
+  check(['fx', 'm'], true);
+
+  check(['not fx'], false);
+  check(['not m'], true);
+  check(['not fx', 'm'], false);
+  check(['fx', 'not m'], true);
+  check(['not fx', 'not m'], true);
 });
 
-test('mac fx16', function() {
-    $('#_input_mac').click();
-    $('#_input_fx16').click();
-    equals(this.$o.val(), 'mac', 'Mac is now selected');
-    equals(this.$b.val(), 'fx16', 'Firefox 16 is now selected');
-    assertNotHidden(this.$sandbox, ['mac', 'fx15', 'fx16']);
-    assertNotVisible(this.$sandbox, ['fx17', 'win', 'linux']);
-});
-
-test('linux fx17', function() {
-    $('#_input_linux').click();
-    $('#_input_fx17').click();
-    equals(this.$o.val(), 'linux', 'Linux is now selected');
-    equals(this.$b.val(), 'fx17', 'Firefox 17 is now selected');
-    assertNotHidden(this.$sandbox, ['linux', 'fx17', 'fx16', 'fx15']);
-    assertNotVisible(this.$sandbox, ['win', 'mac']);
-});
+})();

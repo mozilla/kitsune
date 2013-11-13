@@ -16,12 +16,14 @@ from babel import localedata
 from babel.dates import format_date, format_time, format_datetime
 from babel.numbers import format_decimal
 from jingo import register, env
+from jinja2.utils import Markup
 from pytz import timezone
 from tower import ugettext_lazy as _lazy, ugettext as _, ungettext
 
 from kitsune.sumo import parser
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.models import Profile
+from kitsune.wiki.showfor import showfor_data as _showfor_data
 
 
 class DateTimeFormatError(Exception):
@@ -431,3 +433,9 @@ def is_secure(context):
 @register.filter
 def linkify(text):
     return bleach.linkify(text)
+
+
+@register.function
+def showfor_data(products):
+    # Markup() marks this data as safe.
+    return Markup(jsonlib.dumps(_showfor_data(products)))

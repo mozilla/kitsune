@@ -134,15 +134,20 @@ def document(request, document_slug, template=None):
     if (doc.category == TEMPLATES_CATEGORY or
         waffle.switch_is_active('hide-voting')):
         hide_voting = True
-    data = {'document': doc, 'redirected_from': redirected_from,
-            'related_documents': related_documents,
-            'related_questions': related_questions,
-            'contributors': contributors,
-            'fallback_reason': fallback_reason,
-            'is_aoa_referral': request.GET.get('ref') == 'aoa',
-            'topics': topics, 'product': product, 'products': products,
-            'hide_voting': hide_voting, 'ga_push': ga_push}
-    data.update(showfor_data(products))
+    data = {
+        'document': doc,
+        'redirected_from': redirected_from,
+        'related_documents': related_documents,
+        'related_questions': related_questions,
+        'contributors': contributors,
+        'fallback_reason': fallback_reason,
+        'is_aoa_referral': request.GET.get('ref') == 'aoa',
+        'topics': topics,
+        'product': product,
+        'products': products,
+        'hide_voting': hide_voting,
+        'ga_push': ga_push,
+    }
     return render(request, template, data)
 
 
@@ -151,7 +156,6 @@ def revision(request, document_slug, revision_id):
     rev = get_object_or_404(Revision, pk=revision_id,
                             document__slug=document_slug)
     data = {'document': rev.document, 'revision': rev}
-    data.update(showfor_data())
     return render(request, 'wiki/revision.html', data)
 
 
@@ -397,10 +401,23 @@ def edit_document(request, document_slug, revision_id=None):
 def preview_revision(request):
     """Create an HTML fragment preview of the posted wiki syntax."""
     wiki_content = request.POST.get('content', '')
+    slug = request.POST.get('slug')
+    locale = request.POST.get('locale')
     statsd.incr('wiki.preview')
-    # TODO: Get doc ID from JSON.
-    data = {'content': wiki_to_html(wiki_content, request.LANGUAGE_CODE)}
-    data.update(showfor_data())
+
+    if slug and locale:
+        doc = get_object_or_404(Document, slug=slug, locale=locale)
+        if doc.parent:
+            products = doc.parent.products.all()
+        else:
+            products = doc.products.all()
+    else:
+        products = Product.objects.all()
+
+    data = {
+        'content': wiki_to_html(wiki_content, request.LANGUAGE_CODE),
+        'products': products
+    }
     return render(request, 'wiki/preview.html', data)
 
 
@@ -528,7 +545,6 @@ def review_revision(request, document_slug, revision_id):
             'parent_revision': parent_revision,
             'revision_contributors': list(revision_contributors),
             'should_ask_significance': should_ask_significance}
-    data.update(showfor_data())
     return render(request, template, data)
 
 

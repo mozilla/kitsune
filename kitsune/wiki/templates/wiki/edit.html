@@ -75,6 +75,8 @@
               </ul>
               {{ revision_form.hidden_fields()|join|safe }}
               <input type="hidden" name="form" value="rev" />
+              <input type="hidden" name="slug" value="{{ document.slug }}" />
+              <input type="hidden" name="locale" value="{{ document.locale }}" />
               {{ submit_revision(revision_form, include_diff=True) }}
               <div id="preview"></div>
               <div id="preview-diff">

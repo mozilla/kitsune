@@ -1,10 +1,7 @@
 (function($) {
     var $body = $('body');
 
-    if ($('#support-for').length > 0) {
-        // Set up showfor
-        ShowFor.initForTags();
-    }
+    new ShowFor();
 
     if ($body.is('.document')) {
         var focusOn = window.location.hash;

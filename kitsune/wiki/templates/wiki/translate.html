@@ -36,6 +36,8 @@
         <form action="" method="post" data-json-url="{{ url('wiki.json') }}">
           {{ csrf() }}
           <input type="hidden" name="form" value="both" />
+          <input type="hidden" name="slug" value="{{ parent.slug }}" />
+          <input type="hidden" name="locale" value="{{ parent.locale }}">
       {% endif %}
       {% if document_form %}
         <details class="h2"{% if disclose_description %} open="open"{% endif %}>
@@ -46,6 +48,8 @@
             <form action="" method="post" data-json-url="{{ url('wiki.json') }}" data-document-id="{{ document.id }}">
               {{ csrf() }}
               <input type="hidden" name="form" value="doc" />
+              <input type="hidden" name="slug" value="{{ document.slug }}" />
+              <input type="hidden" name="locale" value="{{ document.locale }}">
           {% endif %}
           <ul class="description">
             <li>
@@ -90,6 +94,8 @@
             <form action="" method="post">
               {{ csrf() }}
               <input type="hidden" name="form" value="rev" />
+              <input type="hidden" name="slug" value="{{ document.slug }}" />
+              <input type="hidden" name="locale" value="{{ document.locale }}" />
           {% endif %}
           {% if recent_approved_revs %}
             <h3>{{ _('Recently approved updates') }}:</h3>

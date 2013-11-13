@@ -35,8 +35,6 @@
 </head>
 <body class="{{ classes }}"
       data-readonly="{{ settings.READ_ONLY|json }}"
-      data-for-os="{{ for_os|json }}"
-      data-for-version="{{ for_version|json }}"
       data-static-url="{{ STATIC_URL }}"
       data-orientation="{% if page_align %}{{ page_align }}{% else %}right{% endif %}"
       data-ga-push="{{ ga_push_attribute() }}"
@@ -132,7 +130,7 @@
     {% if include_showfor %}
       <article>
         <header>{{ _('Get support for another platform:') }}</header>
-        {{ show_for('') }}
+        {{ show_for(products, '') }}
       </article>
     {% endif %}
   </section>

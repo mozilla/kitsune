@@ -1,3 +1,5 @@
+(function() {
+
 'use strict';
 
 module('BrowserDetect');
@@ -85,3 +87,5 @@ test('Firefox OS', function() {
     ua = 'Mozilla/5.0 (Mobile; nnnn; rv:28.0) Gecko/28.0 Firefox/28.0';
     deepEqual(BrowserDetect.detect(ua), ['fxos', 1.3, 'fxos']);
 });
+
+})();

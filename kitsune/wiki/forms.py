@@ -10,9 +10,7 @@ from tower import ugettext_lazy as _lazy
 
 from kitsune.products.models import Product, Topic
 from kitsune.sumo.form_fields import MultiUsernameField, StrippedCharField
-from kitsune.wiki.config import (
-    GROUPED_FIREFOX_VERSIONS, GROUPED_OPERATING_SYSTEMS, SIGNIFICANCES,
-    CATEGORIES)
+from kitsune.wiki.config import SIGNIFICANCES, CATEGORIES
 from kitsune.wiki.models import (
     Document, Revision, MAX_REVISION_COMMENT_LENGTH)
 from kitsune.wiki.widgets import (
@@ -213,18 +211,10 @@ class RevisionForm(forms.ModelForm):
                                 'min_length': SUMMARY_SHORT,
                                 'max_length': SUMMARY_LONG})
 
-    showfor_data = {
-        'oses': [(smart_str(c[0][0]), [(o.slug, smart_str(o.name)) for
-                                    o in c[1]]) for
-                 c in GROUPED_OPERATING_SYSTEMS],
-        'versions': [(smart_str(c[0][0]), [(v.slug, smart_str(v.name)) for
-                                        v in c[1] if v.show_in_ui]) for
-                     c in GROUPED_FIREFOX_VERSIONS]}
     content = StrippedCharField(
                 min_length=5, max_length=100000,
                 label=_lazy(u'Content:'),
-                widget=forms.Textarea(attrs={'data-showfor':
-                                             json.dumps(showfor_data)}),
+                widget=forms.Textarea(),
                 error_messages={'required': CONTENT_REQUIRED,
                                 'min_length': CONTENT_SHORT,
                                 'max_length': CONTENT_LONG})

@@ -6,7 +6,6 @@ from django.shortcuts import get_object_or_404, render
 from mobility.decorators import mobile_template
 
 from kitsune.products.models import Product, Topic
-from kitsune.wiki.config import DESKTOP_FIREFOX_VERSIONS
 from kitsune.wiki.facets import topics_for, documents_for
 
 
@@ -31,17 +30,19 @@ def product_landing(request, template, slug):
         return HttpResponse(json.dumps({'topics': topic_list}),
                             mimetype='application/json')
 
-    for version in DESKTOP_FIREFOX_VERSIONS:
-        if version.is_default:
-            latest_version = int(version.max_version)
-            break;
+    versions = product.versions.filter(default=True)
+    if versions:
+        latest_version = versions[0].max_version
+    else:
+        latest_version = 0
 
     return render(request, template, {
         'product': product,
         'products': Product.objects.filter(visible=True),
         'topics': topics_for(products=[product], parent=None),
         'search_params': {'product': slug},
-        'latest_version': latest_version})
+        'latest_version': latest_version
+    })
 
 
 @mobile_template('products/{mobile/}documents.html')

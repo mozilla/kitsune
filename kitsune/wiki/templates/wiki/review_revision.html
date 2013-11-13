@@ -33,7 +33,7 @@
           <div id="doc-content">
             {{ revision.content_parsed|safe }}
           </div>
-          {{ show_for(header=_('Article is for:')) }}
+          {{ show_for(products, document.products.all(), _('Article is for:')) }}
         </details>
       {% else %}
         <p>{{ _('This document does not have a current revision.') }}</p>
@@ -68,7 +68,7 @@
 
 {% block side_bottom %}
   {% if not revision.reviewed and not document.current_revision %}
-    {{ show_for(header=_('Article is for:')) }}
+    {{ show_for(products, document.products.all(), _('Article is for:')) }}
   {% endif %}
 {% endblock %}
 
