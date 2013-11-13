@@ -161,7 +161,6 @@ SUMO_LANGUAGES = (
     'son',
     'sq',
     'sr-Cyrl',
-    'sr-Latn',
     'sv',
     'sw',
     'ta-LK',
@@ -208,7 +207,6 @@ NON_SUPPORTED_LOCALES = {
     'nb-NO': 'no',
     'nn-NO': 'no',
     'oc': 'fr',
-    'sr': 'sr-CYRL',  # Override the tendency to go sr->sr-LATN.
     'sv-SE': 'sv',
 }
 
