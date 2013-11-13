@@ -31,7 +31,8 @@ from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import (paginate, smart_int, get_next_url, user_or_ip,
                         truncated_json_dumps)
 from kitsune.wiki import DOCUMENTS_PER_PAGE
-from kitsune.wiki.config import CATEGORIES, TEMPLATES_CATEGORY
+from kitsune.wiki.config import (
+    CATEGORIES, MAJOR_SIGNIFICANCE, TEMPLATES_CATEGORY)
 from kitsune.wiki.events import (
     EditDocumentEvent, ReviewableRevisionInLocaleEvent,
     ApproveRevisionInLocaleEvent, ApprovedOrReadyUnion,
@@ -458,8 +459,13 @@ def review_revision(request, document_slug, revision_id):
             rev.is_approved = 'approve' in request.POST
             rev.reviewer = request.user
             rev.reviewed = datetime.now()
+
             if should_ask_significance and form.cleaned_data['significance']:
                 rev.significance = form.cleaned_data['significance']
+            elif not should_ask_significance and not doc.parent:
+                # This is a new document without approved revisions.
+                # Significance is MAJOR.
+                rev.significance = MAJOR_SIGNIFICANCE
 
             # If document is localizable and revision was approved and
             # user has permission, set the is_ready_for_localization value.

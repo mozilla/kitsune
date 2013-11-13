@@ -6,7 +6,7 @@ from nose.tools import eq_
 from kitsune.sumo.tests import post
 from kitsune.users.tests import add_permission, user
 from kitsune.wiki.config import (
-    SIGNIFICANCES, MEDIUM_SIGNIFICANCE, TYPO_SIGNIFICANCE)
+    SIGNIFICANCES, MAJOR_SIGNIFICANCE, MEDIUM_SIGNIFICANCE, TYPO_SIGNIFICANCE)
 from kitsune.wiki.events import (
     ReadyRevisionEvent, ApproveRevisionInLocaleEvent)
 from kitsune.wiki.models import Revision
@@ -47,12 +47,13 @@ class ReviewTests(TestCaseBase):
 
     def _review_revision(self, is_approved=True, is_ready=False,
                          significance=SIGNIFICANCES[0][0], r=None,
-                         comment=None):
+                         comment=None, document=None):
         """Make a revision, and approve or reject it through the view."""
         if not r:
             r = revision(is_approved=False,
                          is_ready_for_localization=False,
                          significance=significance,
+                         document=document,
                          save=True)
 
         # Figure out POST data:
@@ -85,8 +86,14 @@ class ReviewTests(TestCaseBase):
         _assert_creator_mail(mail.outbox[2])
 
     def test_typo_significance_ignore(self):
+        # Create the first approved revision for the document. This one will
+        # always have MAJOR_SIGNIFICANCE.
+        r = revision(is_approved=True, save=True)
+
+        # Then, set up a watcher and create a TYPO_SIGNIFICANCE revision.
         _set_up_ready_watcher()
-        self._review_revision(is_ready=True, significance=TYPO_SIGNIFICANCE)
+        self._review_revision(is_ready=True, document=r.document,
+                              significance=TYPO_SIGNIFICANCE)
         # This is the same as test_ready, except we miss 1 mail, that is the
         # localization mail.
         eq_(3, len(mail.outbox))
@@ -150,6 +157,15 @@ class ReviewTests(TestCaseBase):
         _set_up_ready_watcher()
         self._review_revision(comment='foo\n\nbar\nbaz')
         assert 'foo<br><br>bar<br>baz' in mail.outbox[1].alternatives[0][0]
+
+    def test_first_approved_revision_has_major_significance(self):
+        """The 1st approved revision of a document has MAJOR_SIGNIFICANCE."""
+        self._review_revision(significance=MEDIUM_SIGNIFICANCE)
+        r = Revision.objects.get()
+
+        # Even though MEDIUM_SIGNIFICANCE was POSTed, the revision will be set
+        # to MAJOR_SIGNIFICANCE.
+        eq_(MAJOR_SIGNIFICANCE, r.significance)
 
 
 class ReadyForL10nTests(TestCaseBase):
