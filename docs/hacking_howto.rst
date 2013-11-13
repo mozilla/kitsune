@@ -248,7 +248,7 @@ Now create the database and grant permissions to the user, based on your
 database settings. For example, using the settings above::
 
     $ mysql -u root -p
-    mysql> CREATE DATABASE kitsune;
+    mysql> CREATE DATABASE kitsune CHARACTER SET utf8 COLLATE utf8_unicode_ci;
     mysql> GRANT ALL ON kitsune.* TO kitsune@localhost IDENTIFIED BY '<YOUR_PASSWORD>';
 
 
