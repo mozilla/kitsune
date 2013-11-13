@@ -243,12 +243,16 @@
 {%- endmacro %}
 
 {% macro show_for(header=None, close_button=False) -%}
-  {# This macro needs to be imported with context to access oses, oses_json,
-     browsers, browsers_json and version_group_json variables. #}
   {% if header == None %}
     {% set header = _('Help with:') %}
   {% endif %}
-  <section id="support-for">
+
+  <section class="showfor">
+    <script type="application/json" class="showfor-data">
+      {{ showfor_data(products) }}
+    </script>
+
+    Customize this article
     {% if header %}
       <h1>
         {{ header }}
@@ -257,35 +261,51 @@
         {% endif %}
       </h1>
     {% endif %}
-    <div>
-      <select id="os" data-oses="{{ oses_json }}" class="enable-if-js" disabled="disabled">
-        {% for label, options in oses %}
-          {% for _, name, slug, show, default in options if show %}
-            <option value="{{ slug }}" data-dependency="{{ label[1] }}"{% if default %}{% if label[1] == 'desktop' %} selected="selected"{% endif %} data-default="true"{% endif %}>{{ name }}</option>
-          {% endfor %}
-        {% endfor %}
-      </select>
-    </div>
-    <div>
-      <select id="browser" data-browsers="{{ browsers_json }}" data-version-groups="{{ version_group_json }}" class="enable-if-js" disabled="disabled">
-        {% set selected_added = False %}
-        {% for label, options in browsers %}
-          <optgroup label="{{ label[0] }}">
-            {% for option in options if option.show_in_ui %}
-              <option value="{{ option.slug }}" data-dependency="{{ label[1] }}"
-                {% if option.is_default %}
-                  data-default="true"
-                  {% if not selected_added %}
-                    {% set selected_added = True %}
-                    selected="selected"
-                  {% endif %}
-                {% endif %}>{{ option.name }}</option>
-            {% endfor %}
-          </optgroup>
-        {% endfor %}
-      </select>
-    </div>
+
+    {% for prod in products %}
+      {% set has_versions = prod.versions.count() > 1 %}
+      {% set has_platforms = prod.platforms.count() > 1 %}
+
+      <div class="product" data-product="{{ prod.slug }}">
+        <h2>
+          <input type="checkbox" checked value="product:{{ prod.slug }}">
+          {{ prod.title }}
+        </h2>
+
+        {% if has_versions %}
+          <div class="selectbox-wrapper">
+            <select class="version">
+              {% for version in prod.versions.all() %}
+                {% if version.visible %}
+                  <option value="version:{{ version.slug }}"
+                          data-min="{{ version.min_version }}"
+                          data-max="{{ version.max_version }}"
+                          {% if version.default %}selected{% endif %}>
+                    {{ version.name }}
+                  </option>
+                {% endif %}
+              {% endfor %}
+            </select>
+          </div>
+        {% endif %}
+
+        {% if has_platforms %}
+          <div class="selectbox-wrapper">
+            <select class="platform">
+              {% for platform in prod.platforms.all() %}
+                <option value="platform:{{ platform.slug }}" {% if platform.default %}selected{% endif %}>
+                  {{ platform.name }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+        {% endif %}
+
+      </div>
+    {% endfor %}
+
   </section>
+
 {%- endmacro %}
 
 {% macro vote_form(document, source=None) -%}

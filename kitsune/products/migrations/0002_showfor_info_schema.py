@@ -40,7 +40,6 @@ class Migration(SchemaMigration):
         ))
         db.create_unique(m2m_table_name, ['product_id', 'platform_id'])
 
-
     def backwards(self, orm):
         # Deleting model 'Platform'
         db.delete_table('products_platform')
@@ -50,7 +49,6 @@ class Migration(SchemaMigration):
 
         # Removing M2M table for field platforms on 'Product'
         db.delete_table(db.shorten_name('products_product_platforms'))
-
 
     models = {
         'products.platform': {

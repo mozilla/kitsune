@@ -56,8 +56,6 @@
 </head>
 <body class="html-{{ DIR }} logged-{% if user.is_authenticated() %}in{% else %}out{% endif %} {{ classes }} {{ request.LANGUAGE_CODE }}"
       data-readonly="{{ settings.READ_ONLY|json }}"
-      data-for-os="{{ for_os|json }}"
-      data-for-version="{{ for_version|json }}"
       data-usernames-api="{{ url('users.api.usernames') }}"
       data-static-url="{{ STATIC_URL }}"
       {% if SURVEY_GIZMOS %}

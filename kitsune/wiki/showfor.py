@@ -1,13 +1,9 @@
-import json
+from itertools import chain
 from string import ascii_letters
 
 from tower import ugettext_lazy as _lazy
 
-from kitsune.wiki.config import (
-    OPERATING_SYSTEMS, GROUPED_OPERATING_SYSTEMS, FIREFOX_VERSIONS,
-    GROUPED_FIREFOX_VERSIONS, MOBILE_OPERATING_SYSTEMS,
-    DESKTOP_OPERATING_SYSTEMS, MOBILE_FIREFOX_VERSIONS,
-    DESKTOP_FIREFOX_VERSIONS)
+from kitsune.products.models import Product, Version, Platform
 
 
 def _split_browser_slug(slug):
@@ -18,85 +14,49 @@ def _split_browser_slug(slug):
     return slug[:left_len], slug[left_len:]
 
 
-# TODO: This is a mess but should be taken care of in bug 768244.
-ALL_OS_JSON = json.dumps(
-    dict((o.slug, True) for o in OPERATING_SYSTEMS))
-ALL_BROWSER_JSON = json.dumps(
-    dict((v.slug, {'product': _split_browser_slug(v.slug)[0],
-                   'maxFloatVersion': v.max_version})
-         for v in FIREFOX_VERSIONS))
-MOBILE_OS_JSON = json.dumps(
-    dict((o.slug, True) for o in MOBILE_OPERATING_SYSTEMS))
-MOBILE_BROWSER_JSON = json.dumps(
-    dict((v.slug, {'product': _split_browser_slug(v.slug)[0],
-                   'maxFloatVersion': v.max_version})
-         for v in MOBILE_FIREFOX_VERSIONS))
-DESKTOP_OS_JSON = json.dumps(
-    dict((o.slug, True) for o in DESKTOP_OPERATING_SYSTEMS))
-DESKTOP_BROWSER_JSON = json.dumps(
-    dict((v.slug, {'product': _split_browser_slug(v.slug)[0],
-                   'maxFloatVersion': v.max_version})
-         for v in DESKTOP_FIREFOX_VERSIONS))
+def showfor_data(products):
+    def order(obj):
+        return obj.display_order
 
-def _version_groups(versions):
-    """Group versions so browser+version pairs can be mapped to {for} slugs.
+    # This is all a little gross, but it is 90% smaller than just
+    # dumping the models to json.
 
-    See test_version_groups for an example.
+    data = {
+        'products': [],
+        'versions': {},
+        'platforms': [],
+    }
 
-    """
-    slug_groups = {}
-    for v in versions:
-        left, right = _split_browser_slug(v.slug)
-        slug_groups.setdefault(left, []).append((v.max_version, right))
-    for g in slug_groups.itervalues():
-        g.sort()
-    return slug_groups
+    for prod in sorted(products, key=order):
+        if prod.visible:
+            data['products'].append({
+                'title': prod.title,
+                'slug': prod.slug,
+                'platforms': [plat.slug for plat in
+                              prod.platforms.filter(visible=True)],
+            })
 
+    all_versions = dict((p.slug, p.versions.filter(visible=True))
+                        for p in products)
+    # data['versions'] = dict((p.slug, p.versions.all()) for p in products)
+    for slug, versions in all_versions.items():
+        data['versions'][slug] = []
+        for version in versions:
+            data['versions'][slug].append({
+                'name': version.name,
+                'slug': version.slug,
+                'product': version.product.slug,
+                'default': version.default,
+                'min_version': version.min_version,
+                'max_version': version.max_version,
+            })
 
-ALL_VERSION_GROUP_JSON = json.dumps(
-    _version_groups(FIREFOX_VERSIONS))
-MOBILE_VERSION_GROUP_JSON = json.dumps(
-    _version_groups(MOBILE_FIREFOX_VERSIONS))
-DESKTOP_VERSION_GROUP_JSON = json.dumps(
-    _version_groups(DESKTOP_FIREFOX_VERSIONS))
+    # Get every platform, for every product. The result will have no
+    # duplicates, and will be dicts like {'name': ..., 'slug': ...}
+    platforms = set()
+    for prod in products:
+        platforms.update(prod.platforms.filter(visible=True))
+    data['platforms'] = [{'name': plat.name, 'slug': plat.slug}
+                         for plat in sorted(platforms, key=order)]
 
-
-def showfor_data(products=None):
-    """Return the showfor data required for the passed in products.
-
-    If no products are passed, we will return the showfor data for all
-    (mobile + desktop).
-    """
-    if products is None:
-        slugs = ['firefox', 'mobile']
-    else:
-        slugs = [p.slug for p in products]
-
-    if 'mobile' in slugs and 'firefox' in slugs:
-        # Use ALL_*
-        return {
-            'oses': GROUPED_OPERATING_SYSTEMS,
-            'oses_json': ALL_OS_JSON,
-            'browsers': GROUPED_FIREFOX_VERSIONS,
-            'browsers_json': ALL_BROWSER_JSON,
-            'version_group_json': ALL_VERSION_GROUP_JSON}
-    elif 'mobile' in slugs:
-        # Use MOBILE_*
-        return {
-            'oses': (((_lazy(u'Mobile:'), 'mobile'),
-                     MOBILE_OPERATING_SYSTEMS),),
-            'oses_json': MOBILE_OS_JSON,
-            'browsers': (((_lazy(u'Mobile:'), 'mobile'),
-                         MOBILE_FIREFOX_VERSIONS),),
-            'browsers_json': MOBILE_BROWSER_JSON,
-            'version_group_json': MOBILE_VERSION_GROUP_JSON}
-    else:
-        # Use DESKTOP_*
-        return {
-            'oses': (((_lazy(u'Desktop:'), 'desktop'),
-                     DESKTOP_OPERATING_SYSTEMS),),
-            'oses_json': DESKTOP_OS_JSON,
-            'browsers': (((_lazy(u'Desktop:'), 'desktop'),
-                         DESKTOP_FIREFOX_VERSIONS),),
-            'browsers_json': DESKTOP_BROWSER_JSON,
-            'version_group_json': DESKTOP_VERSION_GROUP_JSON}
+    return data

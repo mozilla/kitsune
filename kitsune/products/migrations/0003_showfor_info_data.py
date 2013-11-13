@@ -4,8 +4,6 @@ from south.db import db
 from south.v2 import DataMigration
 from django.db import models
 
-from kitsune.products.tests import platform
-
 
 class Migration(DataMigration):
 
@@ -56,7 +54,11 @@ class Migration(DataMigration):
                 pass
 
 
-        for i in range(4, 28):
+        # Go all the way to version 35 as a workaround for deprecating
+        # {for fx35} support. This will make the old tags hidden for a
+        # while, until Firefox 35 comes out. We should have the articles
+        # fixed by then.
+        for i in range(4, 35):
             name = 'Version %d' % i
             if i in [10, 17]:
                 name = 'Version %d (ESR)' % i
@@ -66,11 +68,11 @@ class Migration(DataMigration):
                 'slug': 'fx%d' % i,
                 'min_version': i,
                 'max_version': i + 1,
-                'default': i == 24,
+                'default': i == 25,
                 'visible': i in range(23, 27) or i == 17,
             })
 
-        for i in range(4, 28):
+        for i in range(4, 35):
             # No Firefox 13 for Android.
             if i == 13:
                 continue
@@ -109,15 +111,10 @@ class Migration(DataMigration):
                 'visible': True,
             })
 
-
     def backwards(self, orm):
         "Write your backwards methods here."
         orm.Platform.objects.all().delete()
         orm.Version.objects.all().delete()
-
-
-
-
 
     models = {
         'products.platform': {

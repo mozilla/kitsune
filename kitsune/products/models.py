@@ -113,3 +113,4 @@ class Platform(ModelBase):
     # lists.
     display_order = models.IntegerField()
 
+

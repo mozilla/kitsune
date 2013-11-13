@@ -16,14 +16,14 @@
       // Put last search query into search box
       $('#support-search input[name=q]')
           .val(k.unquote($.cookie('last_search')));
-      ShowFor.initForTags();
+      new ShowFor();
       addReferrerAndQueryToVoteForm();
       new k.AjaxVote('.document-vote form', {
         positionMessage: true
       });
       initAOABanner();
     } else if ($body.is('.review')) { // Review pages
-      ShowFor.initForTags();
+      new ShowFor();
       initNeedsChange();
 
       $('img.lazy').loadnow();
@@ -254,7 +254,7 @@
     $(preview).bind('done', function(e, success){
       if (success) {
         $previewBottom.show();
-        ShowFor.initForTags();
+        new ShowFor();
         $preview.find('select.enable-if-js').removeAttr('disabled');
         $preview.find('.kbox').kbox();
         k.initVideo();

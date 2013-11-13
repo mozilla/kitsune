@@ -1,3 +1,5 @@
+(function() {
+
 'use strict';
 
 var crashidLinking = {
@@ -47,3 +49,4 @@ test('dont_link_crash_id_without_bp', function() {
     equals(numIds, 0);
 });
 
+})();

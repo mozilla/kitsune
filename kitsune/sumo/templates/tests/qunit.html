@@ -45,110 +45,86 @@
     </div>
 
     <div id="showfor">
-      <div class="help-with-selects">
-        <select class="os" data-oses="{&#34;maemo&#34;: true, &#34;win&#34;: true, &#34;winxp&#34;: true, &#34;win7&#34;: true, &#34;win8&#34;: true, &#34;mac&#34;: true, &#34;android&#34;: true, &#34;linux&#34;: true}">
-          <option value="win" data-dependency="desktop">Windows</option>
-          <option value="winxp" data-dependency="desktop">Windows XP</option>
-          <option value="win7" data-dependency="desktop" data-default="true">Windows 7/Vista</option>
-          <option value="win8" data-dependency="desktop">Windows 8</option>
-          <option value="mac" data-dependency="desktop">Mac OS X</option>
-          <option value="linux" data-dependency="desktop">Linux</option>
-          <option value="android" data-dependency="mobile" data-default="true">Android</option>
-          <option value="maemo" data-dependency="mobile">Maemo</option>
-        </select>
-        <select class="browser" data-browsers="{&#34;fx5&#34;: {&#34;product&#34;: &#34;fx&#34;, &#34;maxFloatVersion&#34;: 5.9999000000000002}, &#34;fx4&#34;: {&#34;product&#34;: &#34;fx&#34;, &#34;maxFloatVersion&#34;: 4.9999000000000002}, &#34;fx6&#34;: {&#34;product&#34;: &#34;fx&#34;, &#34;maxFloatVersion&#34;: 6.9999000000000002}, &#34;fx3&#34;: {&#34;product&#34;: &#34;fx&#34;, &#34;maxFloatVersion&#34;: 3.4998999999999998}, &#34;m5&#34;: {&#34;product&#34;: &#34;m&#34;, &#34;maxFloatVersion&#34;: 5.9999000000000002}, &#34;m4&#34;: {&#34;product&#34;: &#34;m&#34;, &#34;maxFloatVersion&#34;: 4.9999000000000002}, &#34;m6&#34;: {&#34;product&#34;: &#34;m&#34;, &#34;maxFloatVersion&#34;: 6.9999000000000002}, &#34;fx35&#34;: {&#34;product&#34;: &#34;fx&#34;, &#34;maxFloatVersion&#34;: 3.9998999999999998}}" data-version-groups="{&#34;fx&#34;: [[3.4998999999999998, &#34;3&#34;], [3.9998999999999998, &#34;35&#34;], [4.9999000000000002, &#34;4&#34;], [5.9999000000000002, &#34;5&#34;], [6.9999000000000002, &#34;6&#34;]], &#34;m&#34;: [[4.9999000000000002, &#34;4&#34;], [5.9999000000000002, &#34;5&#34;], [6.9999000000000002, &#34;6&#34;]]}">
-          <optgroup label="Desktop:">
-            <option value="fx6" data-dependency="desktop">Firefox 6</option>
-            <option value="fx5" data-dependency="desktop" selected="selected" data-default="true">Firefox 5</option>
-            <option value="fx4" data-dependency="desktop">Firefox 4</option>
-            <option value="fx35" data-dependency="desktop">Firefox 3.5-3.6</option>
-          </optgroup>
-          <optgroup label="Mobile:">
-            <option value="m5" data-dependency="mobile" data-default="true">Firefox 5</option>
-            <option value="m4" data-dependency="mobile">Firefox 4</option>
-          </optgroup>
-        </select>
-      </div>
-      <div class="content">
-        <span class="for" data-for="win">win</span>
-        <span class="for" data-for="winxp">winxp</span>
-        <span class="for" data-for="win7">win7/vista</span>
-        <span class="for" data-for="win8">win8</span>
-        <span class="for" data-for="mac,linux">mac, linux</span>
-        <span class="for" data-for="not mac">not mac</span>
-        <div class="for" data-for="android">android</div>
-        <div class="for" data-for="maemo">maemo</div>
-        <span class="for" data-for="fx35,fx4">fx35,fx4</span>
-        <span class="for" data-for="fx4">fx4</span>
-        <span class="for" data-for="fx3">fx3</span>
-        <span class="for" data-for="fx5">fx5</span>
-        <span class="for" data-for="m4">m4</span>
-        <span class="for" data-for="m5">m5</span>
-        <span class="for" data-for="win,fx4">win,fx4</span>
-        <span class="for" data-for="win,fx35">win,fx35</span>
-      </div>
-      <!-- Another browser select to test the inserting new versions. -->
-      <select class="browser-insert-test">
-        <option value="fx8" data-dependency="desktop">Firefox 8</option>
-        <option value="fx7" data-dependency="desktop" selected="selected" data-default="true">Firefox 7</option>
-        <option value="fx6" data-dependency="desktop">Firefox 6</option>
-        <option value="fx35" data-dependency="desktop">Firefox 3.5-3.6</option>
-      </select>
-    </div>
 
-    <div id="showfor-mobile-only">
-      <div class="help-with-selects">
-        <select class="os" data-oses="{&#34;android&#34;: true, &#34;maemo&#34;: true}">
-          <option value="android" data-dependency="mobile" data-default="true">Android</option>
-        </select>
-        <select class="browser" data-browsers="{&#34;m5&#34;: {&#34;product&#34;: &#34;m&#34;, &#34;maxFloatVersion&#34;: 5.9999}, &#34;m4&#34;: {&#34;product&#34;: &#34;m&#34;, &#34;maxFloatVersion&#34;: 4.9999}, &#34;m6&#34;: {&#34;product&#34;: &#34;m&#34;, &#34;maxFloatVersion&#34;: 6.9999}, &#34;m11&#34;: {&#34;product&#34;: &#34;m&#34;, &#34;maxFloatVersion&#34;: 11.9999}, &#34;m10&#34;: {&#34;product&#34;: &#34;m&#34;, &#34;maxFloatVersion&#34;: 10.9999}, &#34;m7&#34;: {&#34;product&#34;: &#34;m&#34;, &#34;maxFloatVersion&#34;: 7.9999}, &#34;m12&#34;: {&#34;product&#34;: &#34;m&#34;, &#34;maxFloatVersion&#34;: 12.9999}, &#34;m15&#34;: {&#34;product&#34;: &#34;m&#34;, &#34;maxFloatVersion&#34;: 15.9999}, &#34;m14&#34;: {&#34;product&#34;: &#34;m&#34;, &#34;maxFloatVersion&#34;: 14.9999}, &#34;m17&#34;: {&#34;product&#34;: &#34;m&#34;, &#34;maxFloatVersion&#34;: 17.9999}, &#34;m16&#34;: {&#34;product&#34;: &#34;m&#34;, &#34;maxFloatVersion&#34;: 16.9999}, &#34;m9&#34;: {&#34;product&#34;: &#34;m&#34;, &#34;maxFloatVersion&#34;: 9.9999}, &#34;m8&#34;: {&#34;product&#34;: &#34;m&#34;, &#34;maxFloatVersion&#34;: 8.9999}}" data-version-groups="{&#34;m&#34;: [[4.9999, &#34;4&#34;], [5.9999, &#34;5&#34;], [6.9999, &#34;6&#34;], [7.9999, &#34;7&#34;], [8.9999, &#34;8&#34;], [9.9999, &#34;9&#34;], [10.9999, &#34;10&#34;], [11.9999, &#34;11&#34;], [12.9999, &#34;12&#34;], [14.9999, &#34;14&#34;], [15.9999, &#34;15&#34;], [16.9999, &#34;16&#34;], [17.9999, &#34;17&#34;]]}" class="enable-if-js" disabled="disabled">
-          <optgroup label="Mobile:">
-            <option value="m17" data-dependency="mobile">Firefox 17</option>
-            <option value="m16" data-dependency="mobile">Firefox 16</option>
-            <option value="m15" data-dependency="mobile" data-default="true" selected="selected">Firefox 15</option>
-            <option value="m14" data-dependency="mobile">Firefox 14</option>
-          </optgroup>
-        </select>
-      </div>
-      <div class="content">
-        <div class="for" data-for="android">android</div>
-        <div class="for" data-for="maemo">maemo</div>
-        <span class="for" data-for="m15">m15</span>
-        <span class="for" data-for="m16">m16</span>
-      </div>
-    </div>
+      <span class="for" data-for="fx24"></span>
+      <span class="for" data-for="fx24,win"></span>
+      <span class="for" data-for="=fxos1.1"></span>
+      <span class="for" data-for="not m25"></span>
 
-    <div id="showfor-desktop-only">
-      <div class="help-with-selects">
-        <select class="os" data-oses="{&#34;winxp&#34;: true, &#34;win7&#34;: true, &#34;win8&#34;: true, &#34;win&#34;: true, &#34;mac&#34;: true, &#34;linux&#34;: true}" class="enable-if-js" disabled="disabled">
-          <option value="win" data-dependency="desktop" selected="selected" data-default="true">Windows</option>
-          <option value="winxp" data-dependency="desktop">Windows XP</option>
-          <option value="win7" data-dependency="desktop">Windows 7/Vista</option>
-          <option value="win8" data-dependency="desktop">Windows 8</option>
-          <option value="mac" data-dependency="desktop">Mac OS X</option>
-          <option value="linux" data-dependency="desktop">Linux</option>
-        </select>
-        <select class="browser" data-browsers="{&#34;fx9&#34;: {&#34;product&#34;: &#34;fx&#34;, &#34;maxFloatVersion&#34;: 9.9999}, &#34;fx8&#34;: {&#34;product&#34;: &#34;fx&#34;, &#34;maxFloatVersion&#34;: 8.9999}, &#34;fx5&#34;: {&#34;product&#34;: &#34;fx&#34;, &#34;maxFloatVersion&#34;: 5.9999}, &#34;fx4&#34;: {&#34;product&#34;: &#34;fx&#34;, &#34;maxFloatVersion&#34;: 4.9999}, &#34;fx7&#34;: {&#34;product&#34;: &#34;fx&#34;, &#34;maxFloatVersion&#34;: 7.9999}, &#34;fx6&#34;: {&#34;product&#34;: &#34;fx&#34;, &#34;maxFloatVersion&#34;: 6.9999}, &#34;fx3&#34;: {&#34;product&#34;: &#34;fx&#34;, &#34;maxFloatVersion&#34;: 3.4999}, &#34;fx35&#34;: {&#34;product&#34;: &#34;fx&#34;, &#34;maxFloatVersion&#34;: 3.9999}, &#34;fx11&#34;: {&#34;product&#34;: &#34;fx&#34;, &#34;maxFloatVersion&#34;: 11.9999}, &#34;fx10&#34;: {&#34;product&#34;: &#34;fx&#34;, &#34;maxFloatVersion&#34;: 10.9999}, &#34;fx13&#34;: {&#34;product&#34;: &#34;fx&#34;, &#34;maxFloatVersion&#34;: 13.9999}, &#34;fx12&#34;: {&#34;product&#34;: &#34;fx&#34;, &#34;maxFloatVersion&#34;: 12.9999}, &#34;fx15&#34;: {&#34;product&#34;: &#34;fx&#34;, &#34;maxFloatVersion&#34;: 15.9999}, &#34;fx14&#34;: {&#34;product&#34;: &#34;fx&#34;, &#34;maxFloatVersion&#34;: 14.9999}, &#34;fx17&#34;: {&#34;product&#34;: &#34;fx&#34;, &#34;maxFloatVersion&#34;: 17.9999}, &#34;fx16&#34;: {&#34;product&#34;: &#34;fx&#34;, &#34;maxFloatVersion&#34;: 16.9999}}" data-version-groups="{&#34;fx&#34;: [[3.4999, &#34;3&#34;], [3.9999, &#34;35&#34;], [4.9999, &#34;4&#34;], [5.9999, &#34;5&#34;], [6.9999, &#34;6&#34;], [7.9999, &#34;7&#34;], [8.9999, &#34;8&#34;], [9.9999, &#34;9&#34;], [10.9999, &#34;10&#34;], [11.9999, &#34;11&#34;], [12.9999, &#34;12&#34;], [13.9999, &#34;13&#34;], [14.9999, &#34;14&#34;], [15.9999, &#34;15&#34;], [16.9999, &#34;16&#34;], [17.9999, &#34;17&#34;]]}" class="enable-if-js" disabled="disabled">
-          <optgroup label="Desktop:">
-            <option value="fx17" data-dependency="desktop">Firefox 17</option>
-            <option value="fx16" data-dependency="desktop">Firefox 16</option>
-            <option value="fx15" data-dependency="desktop" data-default="true" selected="selected">Firefox 15</option>
-            <option value="fx14" data-dependency="desktop">Firefox 14</option>
-            <option value="fx10" data-dependency="desktop">Firefox ESR</option>
-          </optgroup>
-        </select>
+      <div class="product" data-product="firefox">
+        <h2>
+          <input type="checkbox" checked value="product:firefox">
+          Firefox
+        </h2>
+        <div class="selectbox-wrapper">
+          <select class="version">
+            <option value="version:fx26" data-min="26.0" data-max="27.0">Version 26</option>
+            <option value="version:fx25" data-min="25.0" data-max="26.0">Version 25</option>
+            <option value="version:fx24" data-min="24.0" data-max="25.0" selected>Version 24</option>
+            <option value="version:fx23" data-min="23.0" data-max="24.0">Version 23</option>
+            <option value="version:fx17" data-min="17.0" data-max="18.0">Version 17 (ESR)</option>
+          </select>
+        </div>
+        <div class="selectbox-wrapper">
+          <select class="platform">
+            <option value="platform:win8">Windows 8</option>
+            <option value="platform:win7">Windows 7/Vista</option>
+            <option value="platform:winxp">Windows XP</option>
+            <option value="platform:mac">Mac</option>
+            <option value="platform:linux">Linux</option>
+          </select>
+        </div>
       </div>
-      <div class="content">
-        <div class="for" data-for="win">win</div>
-        <div class="for" data-for="winxp">winxp</div>
-        <div class="for" data-for="win7">win7</div>
-        <div class="for" data-for="win8">win8</div>
-        <div class="for" data-for="mac">mac</div>
-        <div class="for" data-for="linux">linux</div>
-        <span class="for" data-for="fx15">m15</span>
-        <span class="for" data-for="fx16">m16</span>
-        <span class="for" data-for="fx17">m17</span>
+
+      <div class="product" data-product="mobile">
+        <h2>
+          <input type="checkbox" checked value="product:mobile">
+          Firefox for Android
+        </h2>
+        <div class="selectbox-wrapper">
+          <select class="version">
+            <option value="version:m26" data-min="26.0" data-max="27.0">Version 26</option>
+            <option value="version:m25" data-min="25.0" data-max="26.0">Version 25</option>
+            <option value="version:m24" data-min="24.0" data-max="25.0" selected>Version 24</option>
+            <option value="version:m23" data-min="23.0" data-max="24.0">Version 23</option>
+          </select>
+        </div>
       </div>
+
+      <div class="product" data-product="persona">
+        <h2>
+          <input type="checkbox" checked value="product:persona">
+          Mozilla Persona
+        </h2>
+      </div>
+
+
+      <script type="application/json" class="showfor-data">
+        {
+          "platforms": [
+            {"name": "Web", "slug": "web"},
+            {"name": "Android", "slug": "android"},
+            {"name": "Linux", "slug": "linux"},
+            {"name": "Mac", "slug": "mac"},
+            {"name": "Windows XP", "slug": "winxp"},
+            {"name": "Windows 7/Vista", "slug": "win7"},
+            {"name": "Windows 8", "slug": "win8"}
+          ],
+          "products": [
+            {"platforms": ["linux", "mac", "winxp", "win7", "win8"], "slug": "firefox", "title": "Firefox"},
+            {"platforms": ["android"], "slug": "mobile", "title": "Firefox for Android"},
+            {"platforms": ["web"], "slug": "firefox-os", "title": "Firefox OS"}
+          ],
+          "versions": {
+            "marketplace": [{"product": "marketplace", "name": "Marketplace", "default": true, "min_version": 0.0, "max_version": 0.0, "slug": "marketplace"}],
+            "persona": [{"product": "persona", "name": "Persona", "default": true, "min_version": 0.0, "max_version": 0.0, "slug": "persona"}],
+            "firefox": [{"product": "firefox", "name": "Version 26", "default": false, "min_version": 26.0, "max_version": 27.0, "slug": "fx26"}, {"product": "firefox", "name": "Version 25", "default": false, "min_version": 25.0, "max_version": 26.0, "slug": "fx25"}, {"product": "firefox", "name": "Version 24", "default": true, "min_version": 24.0, "max_version": 25.0, "slug": "fx24"}, {"product": "firefox", "name": "Version 23", "default": false, "min_version": 23.0, "max_version": 24.0, "slug": "fx23"}, {"product": "firefox", "name": "Version 17 (ESR)", "default": false, "min_version": 17.0, "max_version": 18.0, "slug": "fx17"}],
+            "mobile": [{"product": "mobile", "name": "Version 26", "default": false, "min_version": 26.0, "max_version": 27.0, "slug": "m26"}, {"product": "mobile", "name": "Version 25", "default": false, "min_version": 25.0, "max_version": 26.0, "slug": "m25"}, {"product": "mobile", "name": "Version 24", "default": true, "min_version": 24.0, "max_version": 25.0, "slug": "m24"}, {"product": "mobile", "name": "Version 23", "default": false, "min_version": 23.0, "max_version": 24.0, "slug": "m23"}],
+            "firefox-os": [{"product": "firefox-os", "name": "Version 1.3", "default": false, "min_version": 1.3, "max_version": 1.4, "slug": "fxos1.3"}, {"product": "firefox-os", "name": "Version 1.2", "default": false, "min_version": 1.2, "max_version": 1.3, "slug": "fxos1.2"}, {"product": "firefox-os", "name": "Version 1.1", "default": true, "min_version": 1.1, "max_version": 1.2, "slug": "fxos1.1"}, {"product": "firefox-os", "name": "Version 1.0", "default": false, "min_version": 1.0, "max_version": 1.1, "slug": "fxos1.0"}],
+            "webmaker": [{"product": "webmaker", "name": "Webmaker", "default": true, "min_version": 0.0, "max_version": 0.0, "slug": "webmaker"}]
+          }
+        }
+      </script>
     </div>
 
     <div id="ajaxvote">

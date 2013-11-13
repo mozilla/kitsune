@@ -1,572 +1,436 @@
-/*jshint*/
-/*global BrowserDetect:false, gettext:false */
+/*global BrowserDetect:false, jQuery:false */
 /*
- * Scripts for the showfor browser/os detection.
+ * ShowFor is a system to customize an article for an individual. It
+ * will show or hide parts of an article based on spans with the class
+ * "for" and a data attribute "data-for" which contains the show/hide
+ * criteria.
  *
  * Depends on: browserdetect.js
- * Optional for dhtml selects: jquery.selectbox-1.2.js
  */
 
 (function($) {
 
-"use strict";
+'use strict';
 
+function ShowFor($container) {
+    this.$container = $container || $('body');
+    this.state = {};
 
-var OSES, BROWSERS, VERSIONS, MISSING_MSG;
-var ShowFor = {
-    // Return the browser and version that appears to be running. Possible
-    // values resemble {fx4, fx35, m1, m11}. Return undefined if the currently
-    // running browser can't be identified.
-    detectBrowser: function() {
-        function getVersionGroup(browser, version) {
-            if ((browser === undefined) || (version === undefined) || !VERSIONS[browser]) {
-                return;
-            }
+    this.loadData();
+    this.initEvents();
+    this.updateUI();
+    this.updateState();
+    this.wrapTOCs();
+    this.initShowFuncs();
+    this.showAndHide();
+}
 
-            for (var i = 0; i < VERSIONS[browser].length; i++) {
-                if (version < VERSIONS[browser][i][0]) {
-                    return browser + VERSIONS[browser][i][1];
-                }
-            }
-        }
-        return getVersionGroup(BrowserDetect.browser, BrowserDetect.version);
-    },
+ShowFor.prototype.productShortMap = {
+    'fx': 'firefox',
+    'm': 'mobile',
+    'fxos': 'firefox-os'
+};
 
-    // Treat the hash fragment of the URL as a querystring (e.g.
-    // #os=this&browser=that), and return an object with a property for each
-    // param. May not handle URL escaping yet.
-    hashFragment: function() {
-        var o = {},
-            args = document.location.hash.substr(1).split('&'),
-            chunks;
-        for (var i = 0; i < args.length; i++) {
-            chunks = args[i].split('=');
-            o[chunks[0]] = chunks[1];
-        }
-        return o;
-    },
-
-    // Hide/show the proper page sections that are marked with {for} tags as
-    // applying to only certain browsers or OSes. Update the table of contents
-    // to reflect what was hidden/shown.
-    initForTags: function(options, $container) {
-        if (!$container) {
-            $container = $('body');
-        }
-        options = $.extend({
-            osSelector: '#os',
-            browserSelector: '#browser'
-        }, options);
-        var self = this,
-            $osMenu = $container.find(options.osSelector),
-            $browserMenu = $container.find(options.browserSelector),
-            $origBrowserOptions = $browserMenu.find('option').clone(),
-            defaults = {
-                mobile: {
-                    browser: $origBrowserOptions.filter('[data-dependency="mobile"][data-default]').val(),
-                    os: $osMenu.find('[data-dependency="mobile"][data-default]').val()
-                },
-                desktop: {
-                    browser: $origBrowserOptions.filter('[data-dependency="desktop"][data-default]').val(),
-                    os: $osMenu.find('[data-dependency="desktop"][data-default]').val()
-                }
-            },
-            $body = $('body'),
-            hash = self.hashFragment(),
-            isSetManually,
-            browserUsed,
-            osUsed = BrowserDetect.OS;
-
-        OSES = $osMenu.data('oses');  // {'mac': true, 'win': true, ...}
-        BROWSERS = $browserMenu.data('browsers');  // {'fx4': {product: 'fx', maxFloatVersion: 4.9999}, ...}
-        VERSIONS = $browserMenu.data('version-groups');  // {'fx': [[3.4999, '3'], [3.9999, '35']], 'm': [[1.0999, '1'], [1.9999, '11']]}
-        MISSING_MSG = gettext('[missing header]');
-
-        browserUsed = ShowFor.detectBrowser();
-
-        function notListed(optionValue, $select) {
-            // Return true if the $select doesn't have optionValue.
-            return optionValue &&
-                $select.find('option[value=' + optionValue + ']').length === 0;
-        }
-
-        if (BROWSERS[browserUsed] && notListed(browserUsed, $browserMenu)) {
-            // If the browser used is not "officially" supported (shown in UI
-            // by default) and is a browser we support in our backend, then
-            // add it to the browser selections.
-            ShowFor.addBrowserToSelect($browserMenu, browserUsed);
-            $origBrowserOptions = $browserMenu.find('option').clone();
-        }
-
-        if (BROWSERS[hash.browser] && notListed(hash.browser, $browserMenu)) {
-            // A browser can be forced to show up by using the hash params.
-            ShowFor.addBrowserToSelect($browserMenu, hash.browser);
-            $origBrowserOptions = $browserMenu.find('option').clone();
-        }
-
-        if (OSES[osUsed] && notListed(osUsed, $osMenu)) {
-            // If the OS used is not "officially" supported (shown in UI
-            // by default) and is an OS we support in our backend, then
-            // add it to the OS selections.
-            ShowFor.addOsToSelect($osMenu, osUsed);
-        }
-
-        if (OSES[hash.os] && notListed(hash.os, $osMenu)) {
-            // An OS can be forced to show up by using the hash params.
-            ShowFor.addOsToSelect($osMenu, hash.os);
-        }
-
-
-        // Make the 'Table of Contents' header localizable.
-        $('#toc > h2').text(gettext('Table of Contents'));
-
-        // Given a symbol like 'm4' or '=fx4', return something like
-        // {comparator: '>', product: 'm', version: 4.9999}. Even if there's no
-        // explicit comparator in the symbol, the comparator that's assumed
-        // will be made explicit in the returned object. If it's not a known
-        // product/version combo, return undefined.
-        function conditionFromSymbol(symbol) {
-            var slug, browser, comparator;
-
-            // Figure out comparator:
-            if (symbol.substring(0, 1) == '=') {
-                comparator = '=';
-                slug = symbol.substring(1);
-            } else {  // If no leading =, assume >=.
-                comparator = '>=';
-                slug = symbol;
-            }
-
-            // Special case: fx3 and fx35 act like =fx3 and =fx35.
-            if (slug == 'fx3' || slug == 'fx35') {
-                comparator = '=';
-            }
-
-            browser = BROWSERS[slug];
-            return {comparator: comparator,
-                    product: browser.product,
-                    version: browser.maxFloatVersion};
-        }
-
-        function updateForsAndToc(calledOnLoad) {
-            // Hide and show document sections accordingly:
-            showAndHideFors($osMenu.val(), $browserMenu.val());
-
-            // Update the table of contents in case headers were hidden or shown:
-            $('#toc > :not(h2)').remove(); // __TOC__ generates <ul/>'s.
-            $('#toc').append(self.filteredToc($('#doc-content'), '#toc h2'));
-
-            if (true === calledOnLoad) {
-                // Called on document load. Scroll to hash if there is one.
-                var hash = document.location.hash.substring(1),
-                    element;
-                if (hash) {
-                    element = document.getElementById(hash);
-                    if (element) {
-                        element.scrollIntoView();
-                    }
-                }
-            }
-            return false;
-        }
-
-        // Set the {for} nodes to the proper visibility for the given OS and
-        // browser combination.
-        //
-        // Hidden are {for}s that {list at least one OS but not the passed-in
-        // one} or that {list at least one browser expression but none matching
-        // the passed-in one}. Also, the entire condition can be inverted by
-        // prefixing it with "not ", as in {for not mac,linux}.
-        //
-        // Takes a browser slug like "fx4" rather than a browser code and a
-        // raw floating-point version because it has to be able to take both
-        // detected browsers and slugs chosen explicitly from the <select>.
-        function showAndHideFors(os, browser) {
-            $container.find('.for').each(function(index) {
-                var platform = $osMenu.find('option:selected').data('dependency'),
-                    osAttrs = {},
-                    foundAnyOses = false, foundAnyBrowsers = false,
-                    forData,
-                    isInverted,
-                    shouldHide,
-                    browserConditions = [];
-
-                // Return whether the given browser slug matches any of the
-                // given conditions. Passing a falsey slug results in false.
-                // Passing an unknown slug results in undefined behavior.
-                // TODO: Implement with a generic any() instead--maybe underscore's.
-                function meetsAnyOfConditions(slug, conditions) {
-                    // Return whether a slug (like 'fx4' or 'fx35') meets a condition like
-                    // {comparator: '>' product: 'm', version: 4.9999}.
-                    function meets(slug, condition) {
-                        var browser = BROWSERS[slug];
-                        if (!slug || browser.product != condition.product) {
-                            return false;
-                        }
-                        switch (condition.comparator) {
-                            case '=':
-                                // =fx35 --> {comparator: '=' browser: 'fx', version: 3.9999}
-                                return browser.maxFloatVersion == condition.version;
-                            case '>=':
-                                // fx4 --> {comparator: '>=' browser: 'fx', version: 4.9999}
-                                return browser.maxFloatVersion >= condition.version;
-                            // Insert '<' here someday.
-                        }
-                        return false;
-                    }
-
-                    for (var i = 0; i < conditions.length; i++) {
-                        if (meets(slug, conditions[i])) {
-                            return true;
-                        }
-                    }
-                }
-
-                function slugWithoutComparators(slug) {
-                    return (slug.substring(0, 1) == '=') ? slug.substring(1) : slug;
-                }
-
-                // If the data-for attribute is missing, return.
-                forData = $(this).data('for');
-                if (!forData) {
-                    return;
-                }
-
-                // Catch the "not" operator if it's there:
-                isInverted = forData.substring(0, 4) == 'not ';
-                if (isInverted) {
-                    forData = forData.substring(4);  // strip off "not "
-                }
-
-                // Divide {for} attrs into OSes and browsers:
-                $(forData.split(',')).each(function(index) {
-                    if (OSES[this] !== undefined) {
-                        osAttrs[this] = true;
-                        foundAnyOses = true;
-                    } else if (BROWSERS[slugWithoutComparators(this)] !== undefined) {
-                        browserConditions.push(conditionFromSymbol(this));
-                        foundAnyBrowsers = true;
-                    }
-                });
-
-                // If the showfor data for this element is any sort of windows, also show it when os=win.
-                if (os === 'win') {
-                    for (var key in osAttrs) {
-                        if (key.substring(0, 3) === 'win') {
-                            osAttrs['win'] = true;
-                            break;
-                        }
-                    }
-                }
-
-                shouldHide = ((foundAnyOses && (osAttrs[os] === undefined &&
-                              // If any windows version is selected, also show {for win} items.
-                              (osAttrs['win'] === undefined || os.substring(0, 3) !== 'win'))) ||
-                              (foundAnyBrowsers && !meetsAnyOfConditions(browser, browserConditions))) &&
-                             // Special cases:
-                             // If the current selection is desktop:
-                             // * Show the default mobile OS if no browser was specified or
-                             //   the default mobile browser was also specified.
-                             !(osAttrs[defaults.mobile.os] && platform === 'desktop' &&
-                                (meetsAnyOfConditions(defaults.mobile.browser, browserConditions) || !foundAnyBrowsers)) &&
-                             // * Show the default mobile browser if no OS was specified or
-                             //   the default mobile OS was also specified.
-                             !(meetsAnyOfConditions(defaults.mobile.browser, browserConditions) && platform === 'desktop' &&
-                                (osAttrs[defaults.mobile.os] || !foundAnyOses)) &&
-                             // If the current selection is mobile:
-                             // * Show the default desktop OS if no browser was specified or
-                             //   the default desktop browser was also specified.
-                             !(osAttrs[defaults.desktop.os] && platform === 'mobile' &&
-                                (meetsAnyOfConditions(defaults.desktop.browser, browserConditions) || !foundAnyBrowsers)) &&
-                             !(osAttrs['win'] && platform === 'mobile' &&
-                                (meetsAnyOfConditions(defaults.desktop.browser, browserConditions) || !foundAnyBrowsers)) &&
-                             // * Show the default desktop browser if no OS was specified or
-                             //   the default desktop OS was also specified.
-                             !(meetsAnyOfConditions(defaults.desktop.browser, browserConditions) && platform === 'mobile' &&
-                                (osAttrs[defaults.desktop.os] || !foundAnyOses));
-
-                if (shouldHide != isInverted) {
-                    $(this).hide();  // saves original visibility, which is nice but not necessary
-                } else {
-                    $(this).show();  // restores original visibility
-                }
-            });
-        }
-
-        function updateShowforSelectors() {
-            if ($.fn.selectbox) {
-                $browserMenu.siblings('input.selectbox, div.selectbox-wrapper').remove();
-                $osMenu.siblings('input.selectbox, div.selectbox-wrapper').remove();
-                $browserMenu.selectbox();
-                $osMenu.selectbox();
-            } else {
-                $browserMenu.removeAttr('disabled');
-                $osMenu.removeAttr('disabled');
-            }
-        }
-
-        // If there isn't already a hash for purposes of actual navigation,
-        // stick our {for} settings in there.
-        function updateHashFragment() {
-            var hash = self.hashFragment();
-
-            // Kind of a shortcut. What we really want to know is "Is there anything in the hash fragment that isn't a {for} selector?"
-            if (!document.location.hash || hash.hasOwnProperty("os") || hash.hasOwnProperty("browser")) {
-                var newHash = "os=" + $osMenu.val() + "&browser=" + $browserMenu.val();
-                document.location.replace(document.location.href.split('#')[0] + '#' + newHash);
-            }
-        }
-
-        // Persist the menu selection in a cookie and hash fragment.
-        function persistSelection() {
-            var options = {
-                path: '/',
-                expires: new Date()
-            };
-            // 12 hour expiration
-            options.expires.setHours(options.expires.getHours() + 12);
-            $.cookie("for_os", $osMenu.val(), options);
-            $.cookie("for_browser", $browserMenu.val(), options);
-            updateHashFragment();
-        }
-
-        // Clear the menu selection cookies.
-        function clearSelectionCookies() {
-            $.cookie("for_os", null, {path: '/'});
-            $.cookie("for_browser", null, {path: '/'});
-        }
-
-        // Get the dependency based on the currently selected OS
-        function getCurrentDependency() {
-            return $osMenu.find('[value="' + $osMenu.val() + '"]')
-                          .data('dependency');
-        }
-
-        //Handle OS->Browser dependencies
-        function handleDependencies(evt) {
-            var currentDependency = getCurrentDependency(),
-                currentBrowser, newBrowser, availableBrowsers;
-
-            currentBrowser = $browserMenu.val();
-            availableBrowsers = $origBrowserOptions.filter(
-                '[data-dependency="' + currentDependency + '"]');
-            $browserMenu.empty().append(availableBrowsers);
-
-            // Set the browser to the default version
-            $browserMenu.val($browserMenu.find('option[data-default]').val());
-
-            // Set browser to same version (frex, m4->fx4), if possible.
-            var version = currentBrowser.replace(/^\D+/,'');
-            $browserMenu.find('option').each(function() {
-                var $this = $(this);
-                if ($this.val().replace(/^\D+/,'') === version) {
-                    $browserMenu.val($this.val());
-                }
-            });
-            updateShowforSelectors();
-        }
-
-        // Select the right item from the browser or OS menu, taking cues from
-        // the following places, in order: the URL hash fragment, the cookie,
-        // and client detection. Return whether the item appears to have
-        // selected manually: that is, via a cookie or a hash fragment.
-        function setSelectorValue(cookieName, hashName, hash, detector, $menu) {
-            var initial = hash[hashName],
-                isManual = true,
-                before;
-            if (!initial) {
-                initial = $.cookie(cookieName);
-                if (!initial) {
-                    initial = detector();
-                    isManual = false;
-                }
-            }
-            if (initial) {
-                before = $menu.val();
-                $menu.val(initial);  // does not fire change event
-
-                // If setting to the initial failed, set it back to the previous
-                // value. Otherwise, IE leaves the value as undefined.
-                if ($menu.val() != initial) {
-                    $menu.val(before);
-                }
-                updateShowforSelectors();
-            }
-            return isManual;
-        }
-
-        // Set the selector value to the first option that doesn't
-        // have the passed in dependency.
-        function setSelectorDefault($select, dependency) {
-            $select.val(
-                $select.find('option:not([data-dependency="' + dependency +
-                             '"])[data-default]').attr('value'));
-        }
-
-        // If we are on mobile or desktop home page, make sure
-        // appropriate OS is selected
-        function checkSelectorValues() {
-            var currentDependency,
-                isManual = false;
-
-            if ($body.is('.desktop, .mobile')) {
-                currentDependency = getCurrentDependency();
-                // currentDependency will be 'desktop' or 'mobile'
-                // Make sure we are on the corresponding home page. Otherwise,
-                // change the selection appropriately.
-                if (!$body.is('.' + currentDependency)) {
-                    var $detectedOS = $osMenu.find('[value=' + BrowserDetect.OS + ']');
-                    if (BrowserDetect.OS && $detectedOS.length &&
-                        $detectedOS.data('dependency') != currentDependency) {
-                        // The detected OS is valid. Make it the new selection.
-                        $osMenu.val($detectedOS.attr('value'));
-                        $browserMenu.val(ShowFor.detectBrowser());
-                        clearSelectionCookies();
-                    } else {
-                        // Force a new selection.
-                        setSelectorDefault($osMenu, currentDependency);
-                        setSelectorDefault($browserMenu, currentDependency);
-
-                        // Set the cookie so that the selection sticks when
-                        // browsing to articles.
-                        persistSelection();
-                        isManual = true;
-                    }
-                }
-            }
-            return isManual;
-        }
-
-        // Select the sniffed, cookied, or hashed browser or OS if there is one:
-        isSetManually = setSelectorValue("for_os", "os", hash, function() { return BrowserDetect.OS; }, $osMenu);
-        isSetManually |= setSelectorValue("for_browser", "browser", hash, ShowFor.detectBrowser, $browserMenu);
-        isSetManually |= checkSelectorValues();
-
-        // Possibly change the settings based on dependency rules:
-        handleDependencies(null);
-
-        if (isSetManually) {
-            updateHashFragment();
-        }
-
-        $osMenu.change(handleDependencies);
-        $osMenu.change(persistSelection);
-        $osMenu.change(updateForsAndToc);
-        $browserMenu.change(persistSelection);
-        $browserMenu.change(updateForsAndToc);
-
-        // Fire off the change handler for the first time:
-        updateForsAndToc(true);
-
-        updateShowforSelectors();
-    },
-
-    // Return a table of contents (an <ul>) listing the visible headers within
-    // elements in the $pageBody set.
-    //
-    // The highest header level found within $pageBody is considered to be the
-    // top of the TOC: if $pageBody has h2s but no h1s, h2s will be used as the
-    // first level of the TOC. Missing headers (such as if you follow an h2
-    // directly with an h4) are noted prominently so you can fix them.
-    //
-    // excludesSelector is an optional jQuery selector for excluding certain
-    // headings from the table of contents.
-    filteredToc: function($pageBody, excludesSelector) {
-        function headerLevel(index, hTag) {
-            return parseInt(hTag.tagName.charAt(1), 10);
-        }
-
-        var $headers = $pageBody.find(':header:not(:hidden)'),  // :hidden is a little overkill, but it's short.
-            $root = $('<ul />'),
-            $cur_ul = $root,
-            ul_level = Math.min.apply(Math, $headers.map(headerLevel).get());
-
-        // For each header in the document, look upward until you hit something that's hidden. If nothing is found, add the header to the TOC.
-        $headers.each(function addIfShown(index) {
-            var h_level = headerLevel(0, this),
-                $h = $(this);
-
-            if (excludesSelector && $h.is(excludesSelector)) {
-                // Skip excluded headers.
-                return;
-            }
-
-            // If we're too far down the tree, walk up it.
-            for (; ul_level > h_level; ul_level--) {
-                $cur_ul = $cur_ul.parent().closest('ul');
-            }
-
-            // If we're too far up the tree, walk down it, create <ul>s until we aren't:
-            for (; ul_level < h_level; ul_level++) {
-                var $last_li = $cur_ul.children().last();
-                if ($last_li.length === 0) {
-                    $last_li = $('<li />').append($('<em />')
-                                                  .text(MISSING_MSG))
-                                          .appendTo($cur_ul);
-                }
-                // Now the current <ul> ends in an <li>, one way or another.
-                $cur_ul = $('<ul />').appendTo($last_li);
-            }
-
-            // Now $cur_ul is at exactly the right level to add a header by appending an <li>.
-            // Clone the header, remove any hidden elements and get the text,
-            // and replace back with the clone.
-            var $tmpClone = $h.clone(),
-                text = $h.find(':hidden').remove().end().text();
-            $h.replaceWith($tmpClone);
-            $cur_ul.append($('<li />').text(text).wrapInner($('<a>').attr('href', '#' + $h.attr('id'))));
-        });
-        return $root;
-    },
-    addBrowserToSelect: function($select, browser) {
-        // Adds the given browser to the passed <select/>.
-        var $option = $('<option/>'),
-            version,
-            platform,
-            highestVersion,
-            lowestVersion,
-            selector,
-            sliceIndex;
-        $option.attr('value', browser);
-        if (browser.indexOf('fx') === 0) {
-            platform = 'desktop';
-            sliceIndex = 2;
-        } else {
-            platform = 'mobile';
-            sliceIndex = 1;
-        }
-        version = parseInt(browser.slice(sliceIndex), 10);
-        $option.attr('data-dependency', platform);
-        $option.text('Firefox ' + version);
-
-        // Insert the option into the right spot to keep versions in order.
-        // A little hacky, given fx35 is Firefox 3.5/3.6 and not Firefox 35.
-        selector = 'option[data-dependency="' + platform + '"]';
-        highestVersion = $select.find(selector + ':first').val();
-        highestVersion = parseInt(highestVersion.slice(sliceIndex), 10);
-        lowestVersion = $select.find(selector + ':last').val();
-        lowestVersion = parseInt(lowestVersion.slice(sliceIndex), 10);
-        if (lowestVersion === 35) {
-            lowestVersion = 3.5;
-        }
-        if (version > highestVersion) {
-            $select.prepend($option);
-        } else if (version < lowestVersion) {
-            $select.append($option);
-        } else {
-            // This will only be hit while we still officially support 3.6
-            $option.insertBefore($select.find(selector + ':last'));
-        }
-
-        return $select;
-    },
-    addOsToSelect: function($select, os) {
-        var $option = $('<option/>');
-        $option.attr('value', os)
-               .attr('text', os)
-               .attr('data-dependency', 'mobile'); // This is only for Maemo at this point.
-        $select.append($option);
+/* Get the product/platform data from the DOM, and munge it into the
+ * desired format. */
+ShowFor.prototype.loadData = function() {
+    this.data = JSON.parse(this.$container.find('.showfor-data').html());
+    this.productSlugs = this.data.products.map(function(prod) {
+        return prod.slug;
+    });
+    this.platformSlugs = this.data.platforms.map(function(platform) {
+        return platform.slug;
+    });
+    this.versionSlugs = {};
+    for (var prod in this.data.versions) {
+        this.data.versions[prod].forEach(function(version) {
+            this.versionSlugs[version.slug] = prod;
+        }.bind(this));
     }
+};
+
+// Bind events for ShowFor.
+ShowFor.prototype.initEvents = function() {
+    window.onpopstate = this.updateUI.bind(this);
+    this.$container.on('change keydown', 'input, select', this.onUIChange.bind(this));
+};
+
+/* Set up the UI. This consists of two parts:
+ *   1. Pick initial values for the form elements. This is based on the first of
+ *      the following criteria that matches:
+ *      * url hash
+ *      * sessionStore
+ *      * browser detection via useragent sniffing.
+ */
+ShowFor.prototype.updateUI = function() {
+    var persisted = null;
+    var hash = document.location.hash;
+
+    if (hash.indexOf(':') >= 0) {
+        persisted = hash.slice(1);
+    }
+
+    if (persisted === null && window.sessionStorage) {
+        // If the key doesn't exist, getItem will return null.
+        persisted = sessionStorage.getItem('showfor::persist');
+    }
+
+    // Well, we got something. Lets try to parse it.
+    if (persisted !== null) {
+        var itWorked = false;
+        persisted.split('&').forEach(function(prodInfo) {
+            var data = prodInfo.split(':');
+            var product = data[0] || null;
+            var platform = data[1] || null;
+            var version = data[2] || null;
+
+            var $product = this.$container.find('.product[data-product="' + product + '"]');
+            if ($product.length === 0) {
+                return;
+            }
+            itWorked = true;
+            $product.find('input[type=checkbox][value="product:' + product + '"]')
+                    .prop('checked', true);
+            if (platform) {
+                var $platform = $product.find('select.platform');
+                platform = 'platform:' + platform;
+                if ($platform.find('option[value="' + platform + '"]').length) {
+                    $platform.val(platform);
+                }
+            }
+            if (version) {
+                var $version = $product.find('select.version');
+                version = 'version:' + version;
+                if ($version.find('option[value="' + version + '"]').length) {
+                    $version.val(version);
+                }
+            }
+        }.bind(this));
+
+        if (itWorked) {
+            return;
+        }
+    }
+
+    // This will only run if sessionstorage and url hash detection both failed.
+    var browser = this.productShortMap[BrowserDetect.browser] || BrowserDetect.browser;
+    var platform = this.productShortMap[BrowserDetect.OS] || BrowserDetect.OS;
+    var version = BrowserDetect.version;
+
+    var $products = this.$container.find('.product');
+    var productElems = {};
+    $products.each(function(i, elem) {
+        var $elem = $(elem);
+        productElems[$elem.data('product')] = $elem;
+    });
+
+    // start off by checking all the boxes.
+    $products.find('input[type=checkbox]').prop('checked', true);
+
+    // There can only be one mobile product selected.
+    var hasMobile = productElems.mobile && productElems.mobile.length > 0;
+    var hasFxos = productElems['firefox-os'] && productElems['firefox-os'].length > 0;
+    if (hasMobile && hasFxos) {
+        if (browser === 'firefox-os') {
+            productElems.mobile.find('input[type=checkbox]').prop('checked', false);
+        } else {
+            productElems['firefox-os'].find('input[type=checkbox]').prop('checked', false);
+        }
+    }
+
+    var verSlug, $version;
+
+    if (browser === 'firefox') {
+        verSlug = 'version:fx' + version;
+        $version = productElems.firefox.find('select.version');
+        if ($version.find('option[value="' + verSlug + '"]').length) {
+            $version.val(verSlug);
+        }
+
+    } else if (browser === 'mobile') {
+        verSlug = 'version:m' + version;
+        $version = productElems.mobile.find('select.version');
+        if ($version.find('option[value="' + verSlug + '"]').length) {
+            $version.val(verSlug);
+        }
+
+    } else if (browser === 'firefox-os') {
+        verSlug = 'version:fxos' + version.toFixed(1);
+        $version = productElems['firefox-os'].find('select.version');
+        if ($version.find('option[value="' + verSlug + '"]').length) {
+            $version.val(verSlug);
+        }
+    }
+
+    var platSlug = 'platform:' + platform;
+    $products.find('select.platform').each(function(i, elem) {
+        if ($(elem).find('option[value="' + platSlug + '"]').length) {
+            $(elem).val(platSlug);
+        }
+    });
+};
+
+// Called when the user touches something.
+ShowFor.prototype.onUIChange = function() {
+    this.updateState();
+    this.showAndHide();
+    this.persist();
+};
+
+// Stores the current object state in the url hash and/or sessionStorage.
+ShowFor.prototype.persist = function() {
+    var key, val, i;
+
+    var persisted = '';
+    for (key in this.state) {
+        val = this.state[key];
+        if (val.enabled) {
+            if (i > 0) {
+                persisted += '&';
+            }
+            var plat = val.platform || '';
+            var ver = val.version ? (val.version.slug || '') : '';
+            persisted += key + ':' + plat + ':' + ver;
+            i++;
+        }
+    }
+
+    // to avoid jumping to the top if all products are disabled.
+    if (persisted === '') {
+        return;
+    }
+
+    // If this is a navigation hash instead of a showfor hash, there
+    // (probably) won't be any colons in it, so don't touch it.
+    if (document.location.hash === '' || document.location.hash.indexOf(':') >= 0) {
+        // Using document.location to change this triggers a popstate,
+        // which we listen to. replaceState doesn't trigger a popstate.
+        history.replaceState(this.state, persisted, '#' + persisted);
+        // document.location.hash = persisted;
+    }
+
+    if (window.sessionStorage) {
+        window.sessionStorage.setItem('showfor::persist', persisted);
+    }
+};
+
+/* Parse the state of the form elements and store it.
+ * 
+ * This gets stored in this object's internal state, in the url via a
+ * has, and into sessionstorage (if available) */
+ShowFor.prototype.updateState = function() {
+    this.state = {};
+
+    this.$container.find('.product').each(function(i, elem) {
+        var $elem = $(elem);
+        var slug = $elem.data('product');
+        this.state[slug] = {
+            enabled: $elem.find('input[type=checkbox]').prop('checked')
+        };
+
+        $elem.find('select').each(function(i, elem) {
+            var $elem = $(elem);
+            var combined = $elem.val();
+            var parts = combined.split(':');
+            var type = parts[0];
+            var data = parts[1];
+
+            if (type === 'version') {
+                var $option = $elem.find('option:selected');
+                data = {
+                    slug: data,
+                    min: parseFloat($option.data('min')),
+                    max: parseFloat($option.data('max'))
+                };
+            }
+
+            this.state[slug][type] = data;
+        }.bind(this));
+    }.bind(this));
+};
+
+/* Table of Contents entries need to be shown shown and hidden too.
+ * For any TOC entry that corresponds to a header that might be hidden,
+ * wrap it in a span to mimic showfor elements. */
+ShowFor.prototype.wrapTOCs = function() {
+    /* This works by going through the TOC that already exists, and for
+     * every element, checking if the corresponding heading in the
+     * article is contained in a showfor. If it is, this wraps the TOC
+     * element in <span>s that mimic showfor. */
+
+     this.$container.find('#toc a').each(function(i, elem) {
+        var $elem = $(elem);
+        var idSelector = $elem.attr('href');
+        if (idSelector[0] !== '#') {
+            // No idea what to do here. Yell and then give up on this item.
+            console.log('Warning: bad TOC link ' + idSelector + ' on ' + $elem.text());
+            return;
+        }
+
+        var $docSearcher = $(idSelector);
+        var $wrappee = $elem.parent();
+
+        while ($docSearcher.length) {
+            if ($docSearcher.hasClass('for')) {
+                var $wrapper = $('<span/>', {
+                    'class': 'for',
+                    'data-for': $docSearcher.data('for')
+                });
+                $wrappee = $wrappee.wrap($wrapper);
+            }
+            $docSearcher = $docSearcher.parent();
+        }
+     });
+};
+
+/* Attach functions to each DOM element that determine whether it should
+/* be shown or hidden. */
+ShowFor.prototype.initShowFuncs = function() {
+    this.$container.find('.for').each(function(i, elem) {
+        var $elem = $(elem);
+        var showFor = $elem.data('for');
+        var criteria = showFor.split(/\s*,\s*/);
+        var showFunc = this.matchesCriteria.bind(this, criteria);
+        $elem.data('show-func', showFunc);
+    }.bind(this));
+};
+
+/* Apply all the attached showfor functions for each DOM element.
+ *
+ * If no deciding function is attached, the element will be shown as a fallback.
+ */
+ShowFor.prototype.showAndHide = function() {
+    this.$container.find('.for').each(function(i, elem) {
+        var $elem = $(elem);
+        var showFunc = $elem.data('show-func');
+        if (showFunc) {
+            $elem.toggle(showFunc());
+        } else {
+            $elem.show();
+        }
+    }.bind(this));
+};
+
+/* Checks if the current state of this object matches criteria.
+ *
+ * criteria is an array of strings like "fx24" or "not m", which
+ * generally come from splitting the for selectors on commas.
+ */
+ShowFor.prototype.matchesCriteria = function(criteria) {
+    /* The basic logic for showfor is that there are two kinds of
+     * things: platforms and products. If one or more platforms are
+     * in the criteria, at least one has to match. If one or more
+     * products are in the criteria, at least one has to match.
+     *
+     * To be succinct, this has to be true for a set of criteria to match:
+     *
+     *    (any(browsers) or browsers.length == 0) and
+     *    (any(platforms) or platforms.length == 0)
+     *
+     * Versions are seen as more specific products. Platforms don't
+     * have versions.
+     */
+    var hasProduct = false;
+    var matchProduct = false;
+    var hasPlatform = false;
+    var matchPlatform = false;
+
+    /* This cheats a bit. Platforms are presented as being tied to a
+     * platform, but we ignore that. Just assume that all selected
+     * platforms apply to all products. */
+    var enabledPlatforms = [];
+    for (var slug in this.state) {
+        var prod = this.state[slug];
+        if (prod.enabled && prod.platform) {
+            enabledPlatforms.push(prod.platform);
+        }
+    }
+
+    /* This will loop through every item in criteria. It will set the
+     * has/matches variables above to true if at least one
+     * product/platform is found, and at least one of those matches
+     * respectively. */
+    criteria.forEach(function(name) {
+        var productSlug, elemVersion;
+
+        // Does this start with "not" ? Set a flag.
+        var not = (name.indexOf('not') === 0);
+        if (not) {
+            name = name.replace(/^not ?/, '');
+        }
+
+        // "fx" -> "firefox", etc.
+        name = this.productShortMap[name] || name;
+
+        // Check for exact-equals. Maybe this will get smarter later.
+        var oper = '>=';
+        if (name[0] === '=') {
+            name = name.slice(1);
+            oper = '=';
+        }
+
+        /* Not that the below things never set anything false, only to
+         * true. This way they work like a big OR. */
+
+        // Is this a product? (without a version) {for fx}
+        if (this.productSlugs.indexOf(name) >= 0) {
+            hasProduct = true;
+            if (this.state[name].enabled !== not) {
+                matchProduct = true;
+            }
+
+        // Is this a product+version?  {for fx27}
+        } else if (this.versionSlugs[name] !== undefined) {
+
+            /* elemVersion is the version indicated in the element being
+             * shown/hidden. stateMin and stateMax are the min and max
+             * versions from this.state, which reflects the UI. */
+            productSlug = this.versionSlugs[name];
+            hasProduct = true;
+            elemVersion = parseFloat(/^[a-z]+([\d\.]+)$/.exec(name)[1]);
+
+            // name = 'fx27' -> productSlug = 'fx', elemVersion = 27
+
+            var stateMin = this.state[productSlug].version.min;
+            var stateMax = this.state[productSlug].version.max;
+
+            var enabled = this.state[productSlug].enabled;
+            var rightVersion = ((oper === '>=' && elemVersion < stateMax) ||
+                                (oper === '=' && elemVersion >= stateMin && elemVersion < stateMax));
+
+            if ((enabled && rightVersion) !== not) {
+                matchProduct = true;
+            }
+
+        // Is it a platform?
+        } else if (this.platformSlugs.indexOf(name) >= 0) {
+            hasPlatform = true;
+
+            if ((enabledPlatforms.indexOf(name) >= 0) !== not) {
+                matchPlatform = true;
+            }
+
+        // Special case for windows.
+        } else if (name === 'win') {
+            /* Loop through each of the possible slugs for windows. If
+             * any of them match, then this name matches. */
+            var windowsTypes = ['winxp', 'win7', 'win8'];
+            hasPlatform = true;
+            var anyWin = false;
+            windowsTypes.forEach(function(fakeName) {
+                if ((enabledPlatforms.indexOf(fakeName) >= 0) !== not) {
+                    anyWin = true;
+                }
+            });
+            if ((anyWin && !not) || (!anyWin && not)) {
+                matchPlatform = true;
+            }
+        }
+    }.bind(this));
+
+    // If a platform matches, or no platform matchers exist AND
+    // if a product matches, or no product matchers exist.
+    return (!hasProduct || matchProduct) && (!hasPlatform || matchPlatform);
 };
 
 window.ShowFor = ShowFor;

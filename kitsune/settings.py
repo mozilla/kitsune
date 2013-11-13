@@ -366,7 +366,6 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.contrib.messages.context_processors.messages',
 
     'kitsune.sumo.context_processors.global_settings',
-    'kitsune.sumo.context_processors.for_data',
     'kitsune.sumo.context_processors.i18n',
     'jingo_minify.helpers.build_ids',
     'kitsune.messages.context_processors.unread_message_count',
