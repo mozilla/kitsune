@@ -68,7 +68,7 @@
     <h1 class="nomargin">{{ thread.title }}</h1>
     <ul class="cf" id="thread-meta">
       {% if count %}<li>{{ ngettext('{0} Reply', '{0} Replies', (count - 1))|f(count - 1) }}</li>{% endif %}
-      {% if last_post %}<li>{{ _('Last reply by') }} {{ last_post.author }}</li>{% endif %}
+      {% if last_post %}<li>{{ _('Last reply by') }} {{ display_name(last_post.author) }}</li>{% endif %}
       {% if thread.is_sticky %}<li>{{ _('Sticky') }}</li>{% endif %}
       {% if thread.is_locked %}<li>{{ _('Locked') }}</li>{% endif %}
     </ul>

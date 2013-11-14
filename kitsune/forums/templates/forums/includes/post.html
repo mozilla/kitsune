@@ -1,9 +1,9 @@
 <div class="author" xmlns="http://www.w3.org/1999/html"
      xmlns="http://www.w3.org/1999/html" xmlns="http://www.w3.org/1999/html">
   <a class="avatar" href="{{ profile_url(post.author) }}">
-    <img src="{{ profile_avatar(post.author) }}" height="45" width="45" alt="{{ post.author }}"/>
+    <img src="{{ profile_avatar(post.author) }}" height="45" width="45" alt="{{ display_name(post.author) }}"/>
   </a>
-  <a class="author-name" href="{{ profile_url(post.author) }}">{{ post.author }}</a>
+  <a class="author-name" href="{{ profile_url(post.author) }}">{{ display_name(post.author) }}</a>
 
   <ul>
     <li>{{ private_message(post.author) }}</li>
@@ -37,6 +37,6 @@
     <a href="#post-{{ post.id }}" class="permalink" title="{{ _('Link to this post.') }}">#</a>
   </div>
   {% if post.id and post.created != post.updated %}
-    {{ _('Modified by {name} on {datetime}')|fe(name=post.updated_by.username, datetime=datetimeformat(post.updated, format='longdatetime')) }}
+    {{ _('Modified by {name} on {datetime}')|fe(name=display_name(post.updated_by), datetime=datetimeformat(post.updated, format='longdatetime')) }}
   {% endif %}
 </div>
