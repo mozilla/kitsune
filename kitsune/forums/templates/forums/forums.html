@@ -35,7 +35,7 @@
                   <a href="{{ forum.last_post.get_absolute_url() }}">
                     {{ datetimeformat(forum.last_post.created) }}
                   </a><br/>
-                  {{ _('by <a class="username" href="{profile_url}">{username}</a>')|fe(profile_url=profile_url(forum.last_post.author), username=forum.last_post.author.username) }}
+                  {{ _('by <a class="username" href="{profile_url}">{username}</a>')|fe(profile_url=profile_url(forum.last_post.author), username=display_name(forum.last_post.author)) }}
                 {% else %}
                   {# Not localized because it's not worth localizers time. #}
                   No posts.

@@ -16,13 +16,13 @@
         {% endif %}
       </div>
       <div class="title"><a href="{{ url('forums.posts', forum_slug=_forum.slug, thread_id=thread.id)|urlparams(last=thread.last_post.id) }}">{{ thread.title }}</a></div>
-      <div class="author"><a class="username" href="{{ profile_url(thread.creator) }}">{{ thread.creator.username }}</a></div>
+      <div class="author"><a class="username" href="{{ profile_url(thread.creator) }}">{{ display_name(thread.creator) }}</a></div>
       <div class="replies">{{ thread.replies }}</div>
       <div class="last-post">
         <a href="{{ thread.get_last_post_url() }}">
           {{ datetimeformat(thread.last_post.created) }}
         </a><br/>
-        {{ _('by <a class="username" href="{profile_url}">{username}</a>')|fe(profile_url=profile_url(thread.last_post.author), username=thread.last_post.author.username) }}
+        {{ _('by <a class="username" href="{profile_url}">{username}</a>')|fe(profile_url=profile_url(thread.last_post.author), username=display_name(thread.last_post.author)) }}
       </div>
     </li>
   {% endfor %}
