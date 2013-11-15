@@ -86,9 +86,6 @@ class BestLanguageTests(TestCase):
         best = get_best_language('en-gb, es;q=0.2')
         eq_('en-US', best)
 
-    def test_serbian(self):
-        """sr -> sr-CYRL, not sr-LATN."""
-        eq_('sr-CYRL', get_best_language('sr'))
 
 class PreferredLanguageTests(TestCase):
     def test_anonymous_change_language(self):
