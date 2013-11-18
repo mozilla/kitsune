@@ -37,9 +37,11 @@
           $form = $('#' + $this.attr('data-form'));
         }
 
-        $this.on('click', function() {
+        $this.on('click', function(ev) {
           var name = $this.attr('data-name');
           var value = $this.attr('data-value');
+
+          ev.preventDefault();
 
           if (name) {
             var $input = $('<input type="hidden">');

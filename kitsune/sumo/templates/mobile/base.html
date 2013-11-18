@@ -76,7 +76,13 @@
       {% endif %}
     </a>
     <a href="{{ url('users.edit_settings') }}">{{ _('Settings') }}</a>
-    <a href="{{ url('users.logout') }}" class="sign-out">{{ _('Sign Out') }}</a>
+    <form id="sign-out" action="{{ url('users.logout') }}" method="post">
+      {{ csrf() }}
+      <noscript>
+        <input type="submit" value="{{ _('Sign Out') }}" />
+      </noscript>
+    </form>
+    <a class="sign-out" data-submit="sign-out" href="#sign-out">{{ _('Sign Out') }}</a>
   {% else %}
     {% if waffle.flag('browserid') %}
       {% if settings.SESSION_COOKIE_SECURE and not request.is_secure() %}
