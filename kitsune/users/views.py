@@ -107,6 +107,7 @@ def login(request, template):
 
 
 @ssl_required
+@require_POST
 def logout(request):
     """Log the user out."""
     auth.logout(request)

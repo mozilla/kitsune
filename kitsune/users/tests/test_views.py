@@ -420,7 +420,7 @@ class SessionTests(TestCase):
     def test_logout_deletes_cookie(self):
         """On logout, delete the SESSION_EXISTS_COOKIE."""
         url = reverse('users.logout')
-        res = self.client.get(url)
+        res = self.client.post(url)
         assert settings.SESSION_EXISTS_COOKIE in res.cookies
         c = res.cookies[settings.SESSION_EXISTS_COOKIE]
         assert '1970' in c['expires']

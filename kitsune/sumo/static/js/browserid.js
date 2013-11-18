@@ -67,7 +67,7 @@
             loggedInUser: email,
             onlogin: submitAssertion,
             onlogout: function() {
-                window.location = $form.data('logout-url');
+                $('#sign-out').submit();
             }
         });
 
