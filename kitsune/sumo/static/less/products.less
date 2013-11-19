@@ -64,6 +64,45 @@
     }
   }
 
+  .help-bubble {
+    background: #fff;
+    .border-radius(10px);
+    .box-shadow(0 0 10px rgba(0, 0, 0, 0.2));
+    display: none;
+    font-size: 13px;
+    padding: 25px;
+    position: absolute;
+    top: 50px;
+    z-index: 10;
+
+    &:before {
+      border-color: transparent transparent #fff transparent;
+      border-style: solid;
+      border-width: 0 16px 16px 16px;
+      content: '';
+      margin-left: -16px;
+      left: 50%;
+      position: absolute;
+      top: -16px;
+    }
+
+    ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+
+      > li {
+        border-bottom: 1px dotted #ccc;
+        padding: 12px 0;
+
+        &:last-of-type {
+          border-bottom: 0;
+          padding-bottom: 0;
+        }
+      }
+    }
+  }
+
   ul.info {
     font-size: 0.7em;
     margin: 4px 0 0 0;
