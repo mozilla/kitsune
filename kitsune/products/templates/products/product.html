@@ -3,6 +3,7 @@
 {% from 'products/includes/topic_macros.html' import help_topics with context %}
 {% set crumbs = [(None, _(product.title, 'DB: products.Product.title'))] %}
 {% set styles = ('products',) %}
+{% set scripts = ('products',) %}
 {% set classes = 'product-landing' %}
 {% set extra_body_attrs = {'data-product-slug': product.slug} %}
 
@@ -19,13 +20,27 @@
     {% if product.slug == 'firefox' %}
       <div class="download-firefox">
         <a href="http://www.mozilla.org/firefox/new/#download-fx" class="download-button"
-         data-ga-click="_trackEvent | Download Click | {{ product.slug }}">
-
+         data-ga-click="_trackEvent | Download Click | {{ product.slug }}"
+         data-latest-version="{{ latest_version }}">
           <span class="download-content">
             <span class="download-title">{{ _('Firefox') }}</span>
             {{ _('Free Download') }}
           </span>
         </a>
+        <div class="help-bubble">
+          <strong>{{ _('You are already using the latest version of Firefox.') }}</strong>
+          <ul>
+            <li>
+              <a href="{{ url('wiki.document', 'reset-firefox-easily-fix-most-problems') }}">{{ _('Reset your browser for a fresh start') }}</a>
+            </li>
+            <li>
+              <a href="http://www.mozilla.org/firefox/new/#download-fx"
+                 data-ga-click="_trackEvent | Download Click | {{ product.slug }}">
+                {{ _('Continue with download') }}
+              </a>
+            </li>
+          </ul>
+        </div>
         <ul class="info">
           <li><a href="http://www.mozilla.org/firefox/all/">{{ _('Systems and Languages') }}</a></li>
           <li><a href="http://www.mozilla.org/en-US/firefox/notes">{{ _("What's New") }}</a></li>
