@@ -1,3 +1,4 @@
+/* globals Rickshaw:false */
 (function() {
 
 // TODO: Figure out why this one causes strange errors.
@@ -577,12 +578,35 @@ k.Graph.prototype.initLegend = function() {
 
     for (i=0; i < this.data.series.length; i++) {
       line = this.data.series[i];
-      $li = $('<li>').appendTo($series);
-      $('<span class="color-square">')
-        .css('background', line.stroke || line.color)
+      $li = $('<li>')
+        .toggleClass('disabled', line.disabled)
+        .data('line', line)
+        .data('line-index', i)
+        .appendTo($series);
+      $('<span/>')
+        .addClass('color-square')
+        .css('border-color', line.stroke || line.color)
         .appendTo($li);
       $('<span>').text(line.name).appendTo($li);
     }
+
+    $legend.on('click', 'li', function(ev) {
+      var $elem = $(ev.currentTarget);
+
+      if ($elem.siblings(':not(.disabled)').length === 0) {
+        return;
+      }
+
+      var line = $elem.data('line');
+      var index = $elem.data('line-index')
+
+      line.disabled = !line.disabled;
+      $elem.toggleClass('disabled', line.disabled);
+      this.data.seriesSpec[index].disabled = line.disabled;
+
+      this.rebucket();
+      this.update();
+    }.bind(this));
 
     $legend.append($series);
 
