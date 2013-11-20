@@ -127,6 +127,7 @@
       list-style: none;
       margin: 0;
       padding: 0;
+      transition: 0.5s linear all;
 
       li {
         display: inline-block;
@@ -135,11 +136,24 @@
           margin-right: 10px;
         }
 
+        &.disabled {
+          color: #999;
+
+          .color-square {
+            border-width: 2px;
+          }
+        }
+
         .color-square {
+          -moz-box-sizing: border-box;
+               box-sizing: border-box;
+          border-style: solid;
+          border-width: 8px;
           display: inline-block;
           height: 16px;
           margin-right: 4px;
           transform: translate(0, 3px);
+          transition: 0.2s linear all;
           width: 16px;
         }
       }
