@@ -40,9 +40,6 @@
           <li>
             <form id="sign-out" action="{{ url('users.logout') }}" method="post">
               {{ csrf() }}
-              <noscript>
-                <input type="submit" value="{{ _('Sign Out') }}" />
-              </noscript>
             </form>
             <a class="sign-out" data-type="submit" data-form="sign-out" href="#sign-out">{{ _('Sign Out') }}</a>
           </li>

@@ -78,9 +78,6 @@
     <a href="{{ url('users.edit_settings') }}">{{ _('Settings') }}</a>
     <form id="sign-out" action="{{ url('users.logout') }}" method="post">
       {{ csrf() }}
-      <noscript>
-        <input type="submit" value="{{ _('Sign Out') }}" />
-      </noscript>
     </form>
     <a class="sign-out" data-submit="sign-out" href="#sign-out">{{ _('Sign Out') }}</a>
   {% else %}
