@@ -305,7 +305,7 @@ class QuestionTests(TestCaseBase):
 
         """
         eq_(Question._default_manager.__class__,
-            kitsune.sumo.models.ManagerBase)
+            kitsune.questions.managers.QuestionManager)
 
     def test_notification_created(self):
         """Creating a new question auto-watches it for answers."""

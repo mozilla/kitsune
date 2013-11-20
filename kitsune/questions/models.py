@@ -83,6 +83,8 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
     tags_cache_key = u'question:tags:%s'
     contributors_cache_key = u'question:contributors:%s'
 
+    objects = QuestionManager()
+
     class Meta:
         ordering = ['-updated']
         permissions = (
@@ -94,6 +96,14 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
 
     def __unicode__(self):
         return self.title
+
+    def set_needs_info(self):
+        """Mark question as NEEDS_INFO."""
+        self.tags.add(config.NEEDS_INFO_TAG_NAME)
+
+    def unset_needs_info(self):
+        """Remove NEEDS_INFO."""
+        self.tags.remove(config.NEEDS_INFO_TAG_NAME)
 
     @property
     def content_parsed(self):
