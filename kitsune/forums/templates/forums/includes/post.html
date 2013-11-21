@@ -36,7 +36,7 @@
     {{ datetimeformat(post.created, format='longdatetime') }}
     <a href="#post-{{ post.id }}" class="permalink" title="{{ _('Link to this post.') }}">#</a>
   </div>
-  {% if post.id and post.created != post.updated %}
+  {% if post.id and post.updated_by and post.created != post.updated %}
     {{ _('Modified by {name} on {datetime}')|fe(name=display_name(post.updated_by), datetime=datetimeformat(post.updated, format='longdatetime')) }}
   {% endif %}
 </div>
