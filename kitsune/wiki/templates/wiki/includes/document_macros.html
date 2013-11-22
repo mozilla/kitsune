@@ -263,45 +263,49 @@
     {% endif %}
 
     {% for prod in products %}
-      {% set has_versions = prod.versions.count() > 1 %}
-      {% set has_platforms = prod.platforms.count() > 1 %}
+      {% if prod.visible %}
+        {% set has_versions = prod.versions.count() > 1 %}
+        {% set has_platforms = prod.platforms.count() > 1 %}
 
-      <div class="product" data-product="{{ prod.slug }}">
-        <h2>
-          <input type="checkbox" checked value="product:{{ prod.slug }}">
-          {{ prod.title }}
-        </h2>
+        <div class="product" data-product="{{ prod.slug }}">
+          <h2>
+            <input type="checkbox" checked value="product:{{ prod.slug }}">
+            {{ prod.title }}
+          </h2>
 
-        {% if has_versions %}
-          <div class="selectbox-wrapper">
-            <select class="version">
-              {% for version in prod.versions.all() %}
-                {% if version.visible %}
-                  <option value="version:{{ version.slug }}"
-                          data-min="{{ version.min_version }}"
-                          data-max="{{ version.max_version }}"
-                          {% if version.default %}selected{% endif %}>
-                    {{ version.name }}
-                  </option>
-                {% endif %}
-              {% endfor %}
-            </select>
-          </div>
-        {% endif %}
+          {% if has_versions %}
+            <div class="selectbox-wrapper">
+              <select class="version">
+                {% for version in prod.versions.all() %}
+                  {% if version.visible %}
+                    <option value="version:{{ version.slug }}"
+                            data-min="{{ version.min_version }}"
+                            data-max="{{ version.max_version }}"
+                            {% if version.default %}selected{% endif %}>
+                      {{ version.name }}
+                    </option>
+                  {% endif %}
+                {% endfor %}
+              </select>
+            </div>
+          {% endif %}
 
-        {% if has_platforms %}
-          <div class="selectbox-wrapper">
-            <select class="platform">
-              {% for platform in prod.platforms.all() %}
-                <option value="platform:{{ platform.slug }}" {% if platform.default %}selected{% endif %}>
-                  {{ platform.name }}
-                </option>
-              {% endfor %}
-            </select>
-          </div>
-        {% endif %}
+          {% if has_platforms %}
+            <div class="selectbox-wrapper">
+              <select class="platform">
+                {% for platform in prod.platforms.all() %}
+                  {% if platform.visible %}
+                    <option value="platform:{{ platform.slug }}" {% if platform.default %}selected{% endif %}>
+                      {{ platform.name }}
+                    </option>
+                  {% endif %}
+                {% endfor %}
+              </select>
+            </div>
+          {% endif %}
 
-      </div>
+        </div>
+      {% endif %}
     {% endfor %}
 
   </section>

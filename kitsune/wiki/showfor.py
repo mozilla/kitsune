@@ -6,14 +6,6 @@ from tower import ugettext_lazy as _lazy
 from kitsune.products.models import Product, Version, Platform
 
 
-def _split_browser_slug(slug):
-    """Given something like fx35, split it into an alphabetic prefix and a
-    suffix, returning a 2-tuple like ('fx', '35')."""
-    right = slug.lstrip(ascii_letters)
-    left_len = len(slug) - len(right)
-    return slug[:left_len], slug[left_len:]
-
-
 def showfor_data(products):
     def order(obj):
         return obj.display_order
@@ -28,15 +20,14 @@ def showfor_data(products):
     }
 
     for prod in sorted(products, key=order):
-        if prod.visible:
-            data['products'].append({
-                'title': prod.title,
-                'slug': prod.slug,
-                'platforms': [plat.slug for plat in
-                              prod.platforms.filter(visible=True)],
-            })
+        data['products'].append({
+            'title': prod.title,
+            'slug': prod.slug,
+            'platforms': [plat.slug for plat in prod.platforms.all()],
+            'visible': prod.visible,
+        })
 
-    all_versions = dict((p.slug, p.versions.filter(visible=True))
+    all_versions = dict((p.slug, p.versions.all())
                         for p in products)
     # data['versions'] = dict((p.slug, p.versions.all()) for p in products)
     for slug, versions in all_versions.items():
@@ -49,14 +40,20 @@ def showfor_data(products):
                 'default': version.default,
                 'min_version': version.min_version,
                 'max_version': version.max_version,
+                'visible': version.visible,
             })
 
     # Get every platform, for every product. The result will have no
     # duplicates, and will be dicts like {'name': ..., 'slug': ...}
     platforms = set()
     for prod in products:
-        platforms.update(prod.platforms.filter(visible=True))
-    data['platforms'] = [{'name': plat.name, 'slug': plat.slug}
-                         for plat in sorted(platforms, key=order)]
+        platforms.update(prod.platforms.all())
+    data['platforms'] = []
+    for plat in sorted(platforms, key=order):
+        data['platforms'].append({
+            'name': plat.name,
+            'slug': plat.slug,
+            'visible': plat.visible,
+        })
 
     return data
