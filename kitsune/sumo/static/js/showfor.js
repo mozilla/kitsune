@@ -52,7 +52,7 @@ ShowFor.prototype.loadData = function() {
 // Bind events for ShowFor.
 ShowFor.prototype.initEvents = function() {
     window.onpopstate = this.updateUI.bind(this);
-    this.$container.on('change keydown', 'input, select', this.onUIChange.bind(this));
+    this.$container.on('change keyup', 'input, select', this.onUIChange.bind(this));
 };
 
 /* Set up the UI. This consists of two parts:
