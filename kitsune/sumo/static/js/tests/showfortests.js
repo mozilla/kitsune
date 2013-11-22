@@ -50,6 +50,8 @@ test('updateUI', function() {
     OS: BrowserDetect.OS,
   };
 
+  this.showFor.loadData();
+
   var $versionFx = this.$sandbox.find('.product[data-product=firefox] select.version');
   var $platformFx = this.$sandbox.find('.product[data-product=firefox] select.platform');
   var $versionM = this.$sandbox.find('.product[data-product=mobile] select.version');
@@ -57,6 +59,7 @@ test('updateUI', function() {
   BrowserDetect.browser = 'fx';
   BrowserDetect.version = 26.0;
   BrowserDetect.OS = 'winxp';
+  sessionStorage.removeItem('showfor::persist');
   this.showFor.updateUI();
   equals($versionFx.val(), 'version:fx26');
   equals($platformFx.val(), 'platform:winxp');
@@ -66,6 +69,7 @@ test('updateUI', function() {
   BrowserDetect.browser = 'm';
   BrowserDetect.version = 23.0;
   BrowserDetect.OS = 'android';
+  sessionStorage.removeItem('showfor::persist');
   this.showFor.updateUI();
   equals($versionM.val(), 'version:m23');
 

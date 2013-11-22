@@ -55,6 +55,59 @@ ShowFor.prototype.initEvents = function() {
     this.$container.on('change keyup', 'input, select', this.onUIChange.bind(this));
 };
 
+
+ShowFor.prototype.ensureSelect = function($select, type, val) {
+    var $opt;
+    var key;
+    var extra = {};
+    var target;
+
+    function select(array, slug) {
+        for (var i = 0; i < array.length; i++) {
+            if (array[i].slug === slug) {
+                return array[i];
+            }
+        }
+        return null;
+    }
+
+    if (type === 'version') {
+        var product = this.versionSlugs[val];
+        target = select(this.data.versions[product], val);
+        if (target !== null) {
+            extra['data-min-version'] = target.min_version;
+            extra['data-max-version'] = target.max_version;
+        }
+
+    } else if (type === 'platform') {
+        target = select(this.data.platforms, val);
+
+    } else if (type === 'product') {
+        target = select(this.data.products, val);
+
+    } else {
+        throw new Error('Unknown showfor select type ' + type);
+    }
+
+    if (target === null) {
+        return;
+    }
+
+    val = type + ':' + val;
+
+    if ($select.find('option[value="' + val + '"]').length === 0) {
+        $opt = $('<option>')
+            .attr('value', val)
+            .text(target.name);
+        for (key in extra) {
+            $opt.attr(key, extra[key]);
+        }
+        $select.append($opt);
+    }
+
+    $select.val(val);
+};
+
 /* Set up the UI. This consists of two parts:
  *   1. Pick initial values for the form elements. This is based on the first of
  *      the following criteria that matches:
@@ -68,16 +121,21 @@ ShowFor.prototype.updateUI = function() {
 
     if (hash.indexOf(':') >= 0) {
         persisted = hash.slice(1);
+        console.log('hash', persisted);
     }
 
     if (persisted === null && window.sessionStorage) {
         // If the key doesn't exist, getItem will return null.
         persisted = sessionStorage.getItem('showfor::persist');
+        console.log('ss', persisted);
     }
 
+    console.log(persisted);
+
     // Well, we got something. Lets try to parse it.
-    if (persisted !== null) {
+    if (persisted) {
         var itWorked = false;
+        this.$container.find('.product input[type=checkbox]').prop('checked', false);
         persisted.split('&').forEach(function(prodInfo) {
             var data = prodInfo.split(':');
             var product = data[0] || null;
@@ -93,17 +151,11 @@ ShowFor.prototype.updateUI = function() {
                     .prop('checked', true);
             if (platform) {
                 var $platform = $product.find('select.platform');
-                platform = 'platform:' + platform;
-                if ($platform.find('option[value="' + platform + '"]').length) {
-                    $platform.val(platform);
-                }
+                this.ensureSelect($platform, 'platform', platform);
             }
             if (version) {
                 var $version = $product.find('select.version');
-                version = 'version:' + version;
-                if ($version.find('option[value="' + version + '"]').length) {
-                    $version.val(version);
-                }
+                this.ensureSelect($version, 'version', version);
             }
         }.bind(this));
 
@@ -117,6 +169,8 @@ ShowFor.prototype.updateUI = function() {
     var platform = this.productShortMap[BrowserDetect.OS] || BrowserDetect.OS;
     var version = BrowserDetect.version;
 
+    console.log('lets try browsers:', browser, platform, version);
+
     var $products = this.$container.find('.product');
     var productElems = {};
     $products.each(function(i, elem) {
@@ -124,50 +178,27 @@ ShowFor.prototype.updateUI = function() {
         productElems[$elem.data('product')] = $elem;
     });
 
-    // start off by checking all the boxes.
-    $products.find('input[type=checkbox]').prop('checked', true);
-
-    // There can only be one mobile product selected.
-    var hasMobile = productElems.mobile && productElems.mobile.length > 0;
-    var hasFxos = productElems['firefox-os'] && productElems['firefox-os'].length > 0;
-    if (hasMobile && hasFxos) {
-        if (browser === 'firefox-os') {
-            productElems.mobile.find('input[type=checkbox]').prop('checked', false);
-        } else {
-            productElems['firefox-os'].find('input[type=checkbox]').prop('checked', false);
-        }
-    }
-
     var verSlug, $version;
 
     if (browser === 'firefox') {
-        verSlug = 'version:fx' + version;
+        verSlug = 'fx' + version;
         $version = productElems.firefox.find('select.version');
-        if ($version.find('option[value="' + verSlug + '"]').length) {
-            $version.val(verSlug);
-        }
+        this.ensureSelect($version, 'version', verSlug);
 
     } else if (browser === 'mobile') {
-        verSlug = 'version:m' + version;
+        verSlug = 'm' + version;
         $version = productElems.mobile.find('select.version');
-        if ($version.find('option[value="' + verSlug + '"]').length) {
-            $version.val(verSlug);
-        }
+        this.ensureSelect($version, 'version', verSlug);
 
     } else if (browser === 'firefox-os') {
-        verSlug = 'version:fxos' + version.toFixed(1);
+        verSlug = 'fxos' + version.toFixed(1);
         $version = productElems['firefox-os'].find('select.version');
-        if ($version.find('option[value="' + verSlug + '"]').length) {
-            $version.val(verSlug);
-        }
+        this.ensureSelect($version, 'version', verSlug);
     }
 
-    var platSlug = 'platform:' + platform;
     $products.find('select.platform').each(function(i, elem) {
-        if ($(elem).find('option[value="' + platSlug + '"]').length) {
-            $(elem).val(platSlug);
-        }
-    });
+        this.ensureSelect($(elem), 'platform', platform);
+    }.bind(this));
 };
 
 // Called when the user touches something.
@@ -179,7 +210,7 @@ ShowFor.prototype.onUIChange = function() {
 
 // Stores the current object state in the url hash and/or sessionStorage.
 ShowFor.prototype.persist = function() {
-    var key, val, i;
+    var key, val, i = 0;
 
     var persisted = '';
     for (key in this.state) {
