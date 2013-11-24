@@ -12,7 +12,8 @@ from tower import ugettext as _
 from kitsune.sumo import email_utils
 from kitsune.users import ERROR_SEND_EMAIL
 from kitsune.users.forms import RegisterForm, AuthenticationForm
-from kitsune.users.models import RegistrationProfile, Group, CONTRIBUTOR_GROUP
+from kitsune.users.models import (RegistrationProfile, Group,
+                                  CONTRIBUTOR_GROUP, Deactivation)
 
 
 log = logging.getLogger('k.users')
@@ -125,3 +126,10 @@ def suggest_username(email):
         username = '{0}{1}'.format(username, i + 1)
 
     return username
+
+
+def deactivate_user(user, moderator):
+    user.is_active = False
+    user.save()
+    deactivation = Deactivation(user=user, moderator=moderator)
+    deactivation.save()

@@ -415,8 +415,3 @@ class Deactivation(models.Model):
     def __unicode__(self):
         return u'%s was deactivated by %s on %s' % (self.user, self.moderator,
                                                     self.date)
-
-    def save(self, force_insert=False, force_update=False, using=None):
-        super(Deactivation, self).save(force_insert, force_update, using)
-        self.user.is_active = False
-        self.user.save()

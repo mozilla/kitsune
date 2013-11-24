@@ -46,7 +46,7 @@ from kitsune.users.models import (
     Deactivation)
 from kitsune.users.utils import (
     handle_login, handle_register, try_send_email_with_form,
-    add_to_contributors, suggest_username)
+    add_to_contributors, suggest_username, deactivate_user)
 from kitsune.wiki.models import (
     user_num_documents, user_documents, user_redirects)
 
@@ -326,8 +326,7 @@ def profile(request, template, user_id):
 @permission_required('users.deactivate_users')
 def deactivate(request):
     user = get_object_or_404(User, id=request.POST['user_id'], is_active=True)
-    deactivation = Deactivation(user=user, moderator=request.user)
-    deactivation.save()
+    deactivate_user(user, request.user)
     return HttpResponseRedirect(profile_url(user))
 
 

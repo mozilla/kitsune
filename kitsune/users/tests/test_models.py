@@ -84,15 +84,3 @@ class UserSettingsTests(TestCase):
         for setting in keys:
             field = SettingsForm.base_fields[setting]
             eq_(field.initial, Setting.get_for_user(self.u, setting))
-
-class DeactivationsTests(TestCase):
-
-    def setUp(self):
-        self.user = user(save=True)
-        self.moderator = user(save=True)
-
-    def test_deactivate_user(self):
-        assert self.user.is_active
-        d = Deactivation(user=self.user, moderator=self.moderator)
-        d.save()
-        assert not self.user.is_active
