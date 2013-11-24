@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 
+{% set crumbs = [(url('badger.badges_list'), _('Badges')), (url('badger.awards_list'), _('Recently Awarded')), (None, _(badge.title, 'DB: badger.Badge.title'))] %}
 {% set styles=('badges',) %}
 
 {% block content %}

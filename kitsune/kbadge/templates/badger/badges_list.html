@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% set crumbs = [(None, _('Badges'))] %}
+{% set styles=('badges',) %}
+
+{% block content %}
+  <div class="grid_12">
+    <h2>{{ _('All available SUMO badges') }}</h2>
+  </div>
+
+  <ul class="cf" id="badges-list">
+    {% for badge in badge_list %}
+      {% if badge.image %}
+        {% set badge_image = badge.image.url %}
+      {% else %}
+        {% set badge_image = STATIC_URL + 'kbadge/img/default-badge.png' %}
+      {% endif %}
+      <li class="grid_4">
+        <a class="cf" href="{{ badge.get_absolute_url() }}">
+          <span class="badge">
+            <img src="{{ badge_image }}" alt="" title="{{ _(badge.title, 'DB: badger.Badge.title') }}">
+          </span>
+          <h3>{{ _(badge.title, 'DB: badger.Badge.title') }}</h3>
+        </a>
+      </li>
+    {% endfor %}
+  </ul>
+
+  {% if is_paginated %}
+    <ol class="pagination cf">
+      {% if page_obj.has_previous %}
+        <li class="prev">
+          <a href="{{ pagination_base_url }}?page={{ page_obj.previous_page_number }}&sort={{current_sort}}" class="btn-page btn-page-prev">{{_('Previous')}}</a>
+        </li>
+      {% endif %}
+      {% if page_obj.has_next %}
+        <li class="next">
+          <a href="{{ pagination_base_url }}?page={{ page_obj.next_page_number }}&sort={{current_sort}}" class="btn-page btn-page-next">{{_('Next')}}</a>
+        </li>
+      {% endif %}
+    </ol>
+  {% endif %}
+{% endblock %}
