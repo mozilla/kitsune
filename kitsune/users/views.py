@@ -25,6 +25,7 @@ from statsd import statsd
 from tidings.tasks import claim_watches
 from tower import ugettext as _
 
+from kitsune import users as constants
 from kitsune.access.decorators import (
     logout_required, login_required, permission_required)
 from kitsune.questions.models import (
@@ -33,7 +34,7 @@ from kitsune.sumo import email_utils
 from kitsune.sumo.decorators import ssl_required
 from kitsune.sumo.helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.sumo.utils import get_next_url
+from kitsune.sumo.utils import get_next_url, simple_paginate
 from kitsune.upload.tasks import _create_image_thumbnail
 from kitsune.users.forms import (
     ProfileForm, AvatarForm, EmailConfirmationForm, AuthenticationForm,
@@ -41,7 +42,8 @@ from kitsune.users.forms import (
     ForgotUsernameForm, RegisterForm, PasswordResetForm, BrowserIDSignupForm)
 from kitsune.users.helpers import profile_url
 from kitsune.users.models import (
-    CONTRIBUTOR_GROUP, Group, Profile, RegistrationProfile, EmailChange)
+    CONTRIBUTOR_GROUP, Group, Profile, RegistrationProfile, EmailChange,
+    Deactivation)
 from kitsune.users.utils import (
     handle_login, handle_register, try_send_email_with_form,
     add_to_contributors, suggest_username)
@@ -324,9 +326,19 @@ def profile(request, template, user_id):
 @permission_required('users.deactivate_users')
 def deactivate(request):
     user = get_object_or_404(User, id=request.POST['user_id'], is_active=True)
-    user.is_active = False
-    user.save()
+    deactivation = Deactivation(user=user, moderator=request.user)
+    deactivation.save()
     return HttpResponseRedirect(profile_url(user))
+
+
+@require_GET
+@permission_required('users.deactivate_users')
+def deactivation_log(request):
+    deactivations_qs = Deactivation.objects.order_by('-date')
+    deactivations = simple_paginate(request, deactivations_qs,
+                                    per_page=constants.DEACTIVATIONS_PER_PAGE)
+    return render(request, 'users/deactivation_log.html', {
+        'deactivations': deactivations})
 
 
 @require_GET
