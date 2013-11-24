@@ -4,8 +4,7 @@ import badger
 badger.autodiscover()
 
 
-urlpatterns = patterns(
-    'badger.views',
+urlpatterns = patterns('badger.views',
     url(r'^$', 'badges_list', name='badger.badges_list'),
     url(r'^awards/?$', 'awards_list', name='badger.awards_list'),
     url(r'^badge/(?P<slug>[^/]+)/awards/(?P<id>\d+)/?$', 'award_detail',
