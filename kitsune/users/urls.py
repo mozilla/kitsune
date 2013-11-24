@@ -41,6 +41,8 @@ users_patterns = patterns('',
     url(r'^/avatar$', views.edit_avatar, name='users.edit_avatar'),
     url(r'^/avatar/delete$', views.delete_avatar, name='users.delete_avatar'),
     url(r'^/deactivate$', views.deactivate, name='users.deactivate'),
+    url(r'^/deactivation_log$', views.deactivation_log,
+        name='users.deactivation_log'),
     url(r'^/make_contributor$', views.make_contributor,
         name='users.make_contributor'),
 

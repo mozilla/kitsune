@@ -20,7 +20,7 @@ from kitsune.sumo.urlresolvers import reverse
 from kitsune.users import ERROR_SEND_EMAIL
 from kitsune.users.models import (
     CONTRIBUTOR_GROUP, Profile, RegistrationProfile, EmailChange, Setting,
-    email_utils)
+    email_utils, Deactivation)
 from kitsune.users.tests import profile, user, group, add_permission
 
 
@@ -501,6 +501,9 @@ class UserProfileTests(TestCase):
                                {'user_id': p.user.id})
 
         eq_(302, res.status_code)
+
+        log = Deactivation.objects.get(user_id=p.user_id)
+        eq_(log.moderator_id, self.u.id)
 
         p = Profile.objects.get(user_id=p.user_id)
         assert not p.user.is_active

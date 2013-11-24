@@ -36,6 +36,7 @@
     {% else %}
      <p>{{ _('There is no flagged content pending moderation.') }}</p>
     {% endfor %}
+    <p><a href="{{ url('users.deactivation_log') }}">{{ _('View all deactivated users') }}</a></p>
   </div>
 {% endblock %}
 

@@ -439,3 +439,30 @@ article {
     padding: 0;
   }
 }
+
+#deactivations-log {
+  margin-bottom: 24px;
+  width: 100%;
+
+  tbody {
+    tr {
+      &:nth-of-type(2n) {
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      &:nth-of-type(2n-1) {
+        background: rgba(255, 255, 255, 0.2);
+      }
+    }
+  }
+
+  th {
+    background: rgba(0, 0, 0, 0.05);
+    color: #000;
+  }
+
+  td,
+  th {
+    padding: 10px;
+  }
+}
