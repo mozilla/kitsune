@@ -148,6 +148,17 @@ class QuestionUpdateTests(ElasticTestCase):
 
         eq_(QuestionMappingType.search().filter(product=p.slug).count(), 0)
 
+    def test_question_is_unindexed_on_creator_delete(self):
+        search = QuestionMappingType.search()
+
+        q = question(title=u'Does this work?', save=True)
+        self.refresh()
+        eq_(search.query(question_title__text='work').count(), 1)
+
+        q.creator.delete()
+        self.refresh()
+        eq_(search.query(question_title__text='work').count(), 0)
+
 
 class QuestionSearchTests(ElasticTestCase):
     """Tests about searching for questions"""
