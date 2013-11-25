@@ -23,7 +23,7 @@ from kitsune.questions.models import (
     user_num_answers, user_num_solutions)
 from kitsune.questions.tasks import update_answer_pages
 from kitsune.questions.tests import TestCaseBase, tags_eq, question, answer
-from kitsune.questions.question_config import products
+from kitsune.questions.config import products
 from kitsune.sumo import googleanalytics
 from kitsune.sumo.tests import TestCase
 from kitsune.tags.tests import tag

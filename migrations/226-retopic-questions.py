@@ -1,11 +1,11 @@
 from kitsune.products.models import Product, Topic
-from kitsune.questions import question_config
+from kitsune.questions import config
 from kitsune.questions.models import Question
 
 
 def run():
-    # Make sure all topics listed in kitsune.questions.question_config exist.
-    for prod_desc in question_config.products.values():
+    # Make sure all topics listed in kitsune.questions.config exist.
+    for prod_desc in config.products.values():
         for product_slug in prod_desc.get('products', []):
             # Note: If this fails, add the missing product to
             # migration 156.

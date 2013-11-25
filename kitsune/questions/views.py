@@ -33,10 +33,10 @@ from tidings.events import ActivationRequestFailed
 from tidings.models import Watch
 from tower import ugettext as _, ugettext_lazy as _lazy
 
-from kitsune import questions as constants
 from kitsune.access.decorators import permission_required, login_required
 from kitsune.karma.manager import KarmaManager
 from kitsune.products.models import Product, Topic
+from kitsune.questions import config
 from kitsune.questions.events import QuestionReplyEvent, QuestionSolvedEvent
 from kitsune.questions.feeds import (
     QuestionsFeed, AnswersFeed, TaggedQuestionsFeed)
@@ -50,7 +50,6 @@ from kitsune.questions.marketplace import (
     MARKETPLACE_CATEGORIES, ZendeskError)
 from kitsune.questions.models import (
     Question, Answer, QuestionVote, AnswerVote, QuestionMappingType)
-from kitsune.questions.question_config import products
 from kitsune.questions.signals import tag_added
 from kitsune.search.es_utils import (ES_EXCEPTIONS, Sphilastic, F,
                                      es_query_with_analyzer)
@@ -190,7 +189,7 @@ def questions(request, template):
     try:
         with statsd.timer('questions.view.paginate.%s' % filter_):
             questions_page = simple_paginate(
-                request, question_qs, per_page=constants.QUESTIONS_PER_PAGE)
+                request, question_qs, per_page=config.QUESTIONS_PER_PAGE)
     except (PageNotAnInteger, EmptyPage):
         # If we aren't on page 1, redirect there.
         # TODO: Is 404 more appropriate?
@@ -237,7 +236,7 @@ def questions(request, template):
         data.update(karma_top=kmgr.top_users('3m', count=20))
         if request.user.is_authenticated():
             ranking = kmgr.ranking('3m', request.user)
-            if ranking <= constants.HIGHEST_RANKING:
+            if ranking <= config.HIGHEST_RANKING:
                 data.update(karma_ranking=ranking)
     else:
         data.update(top_contributors=_get_top_contributors())
@@ -397,7 +396,7 @@ def aaq(request, product_key=None, category_key=None, showform=False,
             else:
                 product_key = 'mobile'
 
-    product = products.get(product_key)
+    product = config.products.get(product_key)
     if product_key and not product:
         raise Http404
 
@@ -479,7 +478,7 @@ def aaq(request, product_key=None, category_key=None, showform=False,
             'form': form,
             'results': results,
             'tried_search': tried_search,
-            'products': products,
+            'products': config.products,
             'current_product': product,
             'current_category': category,
             'current_html': html,
@@ -586,7 +585,8 @@ def aaq(request, product_key=None, category_key=None, showform=False,
 
     statsd.incr('questions.aaq.details-form-error')
     return render(request, template, {
-        'form': form, 'products': products,
+        'form': form,
+        'products': config.products,
         'current_product': product,
         'current_category': category,
         'current_articles': articles})
@@ -1563,7 +1563,7 @@ def _answers_data(request, question_id, form=None, watch_form=None,
     answers_ = question.answers.all()
     if not request.MOBILE:
         answers_ = paginate(request, answers_,
-                            per_page=constants.ANSWERS_PER_PAGE)
+                            per_page=config.ANSWERS_PER_PAGE)
     feed_urls = ((reverse('questions.answers.feed',
                           kwargs={'question_id': question_id}),
                   AnswersFeed().title(question)),)

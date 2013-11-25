@@ -12,7 +12,7 @@ from multidb.pinning import pin_this_thread, unpin_this_thread
 from statsd import statsd
 
 from kitsune.kbadge.utils import get_or_create_badge
-from kitsune.questions import ANSWERS_PER_PAGE
+from kitsune.questions.config import ANSWERS_PER_PAGE
 from kitsune.questions.karma_actions import AnswerAction, FirstAnswerAction
 from kitsune.questions.marketplace import submit_ticket
 from kitsune.search.es_utils import ES_EXCEPTIONS

@@ -20,13 +20,13 @@ from product_details import product_details
 from statsd import statsd
 from taggit.models import Tag, TaggedItem
 
-from kitsune import questions as constants
 from kitsune.flagit.models import FlaggedObject
 from kitsune.karma.manager import KarmaManager
 from kitsune.products.models import Product, Topic
+from kitsune.questions import config
 from kitsune.questions.karma_actions import (
     AnswerAction, FirstAnswerAction, SolutionAction)
-from kitsune.questions.question_config import products
+from kitsune.questions.managers import QuestionManager
 from kitsune.questions.signals import tag_added
 from kitsune.questions.tasks import (
     update_question_votes, update_answer_pages, log_answer, escalate_question)
@@ -47,7 +47,6 @@ log = logging.getLogger('k.questions')
 
 
 CACHE_TIMEOUT = 10800  # 3 hours
-ESCALATE_TAG_NAME = 'escalate'
 
 
 class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
@@ -167,7 +166,7 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         unknown."""
         md = self.metadata
         if 'product' in md:
-            return products.get(md['product'], {})
+            return config.products.get(md['product'], {})
         return {}
 
     @property
@@ -581,7 +580,7 @@ register_for_indexing(
 
 def _tag_added(sender, question_id, tag_name, **kwargs):
     """Signal handler for new tag on question."""
-    if tag_name == ESCALATE_TAG_NAME:
+    if tag_name == config.ESCALATE_TAG_NAME:
         escalate_question.delay(question_id)
 tag_added.connect(_tag_added, sender=Question, dispatch_uid='tagged_1337')
 
@@ -684,7 +683,7 @@ class Answer(ModelBase):
         new = self.id is None
 
         if new:
-            page = self.question.num_answers / constants.ANSWERS_PER_PAGE + 1
+            page = self.question.num_answers / config.ANSWERS_PER_PAGE + 1
             self.page = page
         else:
             self.updated = datetime.now()
