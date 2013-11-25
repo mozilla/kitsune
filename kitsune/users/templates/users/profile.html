@@ -148,6 +148,7 @@
         <section class="badges cf">
           <h2>{{ _('Badges') }}</h2>
           {{ awards_list(awards) }}
+          <p><a href="{{ url('badger.badges_list') }}">{{ _('See all available SUMO badges') }}</a></p>
         </section>
       {% endif %}
     </article>
