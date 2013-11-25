@@ -113,7 +113,7 @@
 
 {% block side_bottom %}
   {% if not revision.reviewed and not document.current_revision %}
-    {{ show_for(header=_('Article is for:')) }}
+    {{ show_for(products, header=_('Article is for:')) }}
   {% endif %}
 {% endblock %}
 

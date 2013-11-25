@@ -1,9 +1,7 @@
 (function($) {
     var $body = $('body');
 
-    if ($('#support-for').length > 0) {
-        new ShowFor();
-    }
+    new ShowFor();
 
     if ($body.is('.document')) {
         var focusOn = window.location.hash;

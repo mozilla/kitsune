@@ -242,7 +242,7 @@
   {% endif %}
 {%- endmacro %}
 
-{% macro show_for(header=None, close_button=False) -%}
+{% macro show_for(products, header=None, close_button=False) -%}
   {% if header == None %}
     {% set header = _('Help with:') %}
   {% endif %}
