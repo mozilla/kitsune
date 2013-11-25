@@ -7,8 +7,8 @@ from tower import ugettext as _
 
 from taggit.models import Tag
 
-from kitsune import questions as constants
 from kitsune.products.models import Product, Topic
+from kitsune.questions import config
 from kitsune.questions.models import Question
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.helpers import urlparams
@@ -62,7 +62,7 @@ class QuestionsFeed(Feed):
         if 'locale' in query:
             qs = qs.filter(locale=query['locale'])
 
-        return qs.order_by('-updated')[:constants.QUESTIONS_PER_PAGE]
+        return qs.order_by('-updated')[:config.QUESTIONS_PER_PAGE]
 
     def item_title(self, item):
         return item.title
@@ -91,7 +91,7 @@ class TaggedQuestionsFeed(QuestionsFeed):
     def items(self, tag):
         qs = Question.objects.filter(creator__is_active=True,
                                      tags__name__in=[tag.name]).distinct()
-        return qs.order_by('-updated')[:constants.QUESTIONS_PER_PAGE]
+        return qs.order_by('-updated')[:config.QUESTIONS_PER_PAGE]
 
 
 class AnswersFeed(Feed):
