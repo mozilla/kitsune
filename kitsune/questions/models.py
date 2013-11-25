@@ -11,7 +11,7 @@ from django.core.cache import cache
 from django.core.urlresolvers import resolve
 from django.conf import settings
 from django.db import models, connection
-from django.db.models.signals import post_save, pre_delete
+from django.db.models.signals import post_save
 from django.db.utils import IntegrityError
 from django.http import Http404
 
