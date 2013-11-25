@@ -8,7 +8,7 @@ import mock
 from nose.tools import eq_
 
 from kitsune.sumo.tests import TestCase
-from kitsune.users.models import RegistrationProfile, Setting, Deactivation
+from kitsune.users.models import RegistrationProfile, Setting
 from kitsune.users.forms import SettingsForm
 from kitsune.users.tests import user, profile
 
