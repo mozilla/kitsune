@@ -151,7 +151,7 @@ def pageviews_by_document(start_date, end_date):
     return counts
 
 
-def pageviews_by_question(start_date, end_date):
+def pageviews_by_question(start_date, end_date, verbose=False):
     """Return the number of pageviews by question in a given date range.
 
     Returns a dict with pageviews for each document:
@@ -172,6 +172,10 @@ def pageviews_by_question(start_date, end_date):
         if start_date_step < start_date:
             start_date_step = start_date
 
+        if verbose:
+            print 'Fetching data for %s to %s:' % (start_date_step,
+                                                   end_date_step)
+
         while True:  # To deal with pagination
 
             @retry_503
@@ -187,6 +191,13 @@ def pageviews_by_question(start_date, end_date):
                     start_index=start_index).execute()
 
             results = _make_request()
+
+            if verbose:
+                d = (max_results - 1
+                     if start_index + max_results - 1 < results['totalResults']
+                     else results['totalResults'] - start_index)
+                print '- Got %s of %s results.' % (start_index + d,
+                                                   results['totalResults'])
 
             for result in results['rows']:
                 path = result[0]
@@ -207,7 +218,7 @@ def pageviews_by_question(start_date, end_date):
         if start_date_step == start_date:
             break
 
-        end_date_step = end_date_step - timedelta(91)
+        end_date_step = start_date_step - timedelta(1)
 
     return counts
 

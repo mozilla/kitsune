@@ -605,11 +605,11 @@ class QuestionVisits(ModelBase):
     visits = models.IntegerField(db_index=True)
 
     @classmethod
-    def reload_from_analytics(cls):
+    def reload_from_analytics(cls, verbose=False):
         """Update the stats from Google Analytics."""
         from kitsune.sumo import googleanalytics
         counts = googleanalytics.pageviews_by_question(
-            settings.GA_START_DATE, date.today())
+            settings.GA_START_DATE, date.today(), verbose=verbose)
         if counts:
             for question_id, visits in counts.iteritems():
                 # We are trying to minimize db calls here. Let's try to update

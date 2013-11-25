@@ -131,4 +131,4 @@ def reload_question_traffic_stats():
                'Set settings.STAGE to False to run it for real.')
         return
 
-    QuestionVisits.reload_from_analytics()
+    QuestionVisits.reload_from_analytics(verbose=settings.DEBUG)
