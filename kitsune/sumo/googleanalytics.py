@@ -151,7 +151,7 @@ def pageviews_by_document(start_date, end_date):
     return counts
 
 
-def pageviews_by_question(start_date, end_date):
+def pageviews_by_question(start_date, end_date, verbose=False):
     """Return the number of pageviews by question in a given date range.
 
     Returns a dict with pageviews for each document:
@@ -161,39 +161,64 @@ def pageviews_by_question(start_date, end_date):
     """
     counts = {}
     request = _build_request()
-    start_index = 1
     max_results = 10000
 
-    while True:  # To deal with pagination
+    end_date_step = end_date
 
-        @retry_503
-        def _make_request():
-            return request.get(
-                ids='ga:' + profile_id,
-                start_date=str(start_date),
-                end_date=str(end_date),
-                metrics='ga:pageviews',
-                dimensions='ga:pagePath',
-                filters='ga:pagePathLevel2==/questions/',
-                max_results=max_results,
-                start_index=start_index).execute()
+    while True: # To reduce the size of result set request 3 months at a time
+        start_date_step = end_date_step - timedelta(90)
 
-        results = _make_request()
+        if start_date_step < start_date:
+            start_date_step = start_date
 
-        for result in results['rows']:
-            path = result[0]
-            pageviews = int(result[1])
-            question_id = Question.from_url(path, id_only=True)
-            if not question_id:
-                continue
+        if verbose:
+            print 'Fetching data for %s to %s:' % (start_date_step,
+                                                   end_date_step)
 
-            # The same question can appear multiple times due to url params
-            # and locale.
-            counts[question_id] = counts.get(question_id, 0) + pageviews
+        start_index = 1
 
-        # Move to next page of results.
-        start_index += max_results
-        if start_index > results['totalResults']:
+        while True:  # To deal with pagination
+
+            @retry_503
+            def _make_request():
+                return request.get(
+                    ids='ga:' + profile_id,
+                    start_date=str(start_date_step),
+                    end_date=str(end_date_step),
+                    metrics='ga:pageviews',
+                    dimensions='ga:pagePath',
+                    filters='ga:pagePathLevel2==/questions/',
+                    max_results=max_results,
+                    start_index=start_index).execute()
+
+            results = _make_request()
+
+            if verbose:
+                d = (max_results - 1
+                     if start_index + max_results - 1 < results['totalResults']
+                     else results['totalResults'] - start_index)
+                print '- Got %s of %s results.' % (start_index + d,
+                                                   results['totalResults'])
+
+            for result in results['rows']:
+                path = result[0]
+                pageviews = int(result[1])
+                question_id = Question.from_url(path, id_only=True)
+                if not question_id:
+                    continue
+
+                # The same question can appear multiple times due to url params
+                # and locale.
+                counts[question_id] = counts.get(question_id, 0) + pageviews
+
+            # Move to next page of results.
+            start_index += max_results
+            if start_index > results['totalResults']:
+                break
+
+        end_date_step = start_date_step - timedelta(1)
+
+        if start_date_step == start_date or end_date_step < start_date:
             break
 
     return counts
