@@ -216,6 +216,7 @@ def pageviews_by_question(start_date, end_date, verbose=False):
                 break
 
         if start_date_step == start_date:
+            start_index = 0
             break
 
         end_date_step = start_date_step - timedelta(1)
