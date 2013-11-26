@@ -161,7 +161,6 @@ def pageviews_by_question(start_date, end_date, verbose=False):
     """
     counts = {}
     request = _build_request()
-    start_index = 1
     max_results = 10000
 
     end_date_step = end_date
@@ -175,6 +174,8 @@ def pageviews_by_question(start_date, end_date, verbose=False):
         if verbose:
             print 'Fetching data for %s to %s:' % (start_date_step,
                                                    end_date_step)
+
+        start_index = 1
 
         while True:  # To deal with pagination
 
@@ -215,11 +216,10 @@ def pageviews_by_question(start_date, end_date, verbose=False):
             if start_index > results['totalResults']:
                 break
 
-        if start_date_step == start_date:
-            start_index = 1
-            break
-
         end_date_step = start_date_step - timedelta(1)
+
+        if start_date_step == start_date or end_date_step < start_date:
+            break
 
     return counts
 
