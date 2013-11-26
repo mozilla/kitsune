@@ -55,7 +55,17 @@ ShowFor.prototype.initEvents = function() {
     this.$container.on('change keyup', 'input, select', this.onUIChange.bind(this));
 };
 
-
+/* Selects an option from a showfor selectbox, adding it if appropriate.
+ *
+ * If the desired value does not exist in the selectbox, this will consult the
+ * possible versions (even those not shown to the user) to see if the option is
+ * valid. If it is, it will be added, and then selected
+ *
+ * This is useful because if the user comes to the site using something no
+ * longer supported (Firefox 18 for example), then the UI will change to
+ * include Firefox 18. Users that aren't running Firefox 18 won't see it as an
+ * option though
+ */
 ShowFor.prototype.ensureSelect = function($select, type, val) {
     var $opt;
     var key;
@@ -78,17 +88,16 @@ ShowFor.prototype.ensureSelect = function($select, type, val) {
             extra['data-min-version'] = target.min_version;
             extra['data-max-version'] = target.max_version;
         }
-
     } else if (type === 'platform') {
         target = select(this.data.platforms, val);
-
     } else if (type === 'product') {
         target = select(this.data.products, val);
-
     } else {
         throw new Error('Unknown showfor select type ' + type);
     }
 
+    // This will fail if there is no version/product/platform that
+    // matches the desired val.
     if (target === null) {
         return;
     }
@@ -121,16 +130,12 @@ ShowFor.prototype.updateUI = function() {
 
     if (hash.indexOf(':') >= 0) {
         persisted = hash.slice(1);
-        console.log('hash', persisted);
     }
 
     if (persisted === null && window.sessionStorage) {
         // If the key doesn't exist, getItem will return null.
         persisted = sessionStorage.getItem('showfor::persist');
-        console.log('ss', persisted);
     }
-
-    console.log(persisted);
 
     // Well, we got something. Lets try to parse it.
     if (persisted) {
@@ -169,8 +174,6 @@ ShowFor.prototype.updateUI = function() {
     var platform = this.productShortMap[BrowserDetect.OS] || BrowserDetect.OS;
     var version = BrowserDetect.version;
 
-    console.log('lets try browsers:', browser, platform, version);
-
     var $products = this.$container.find('.product');
     var productElems = {};
     $products.each(function(i, elem) {
@@ -180,17 +183,17 @@ ShowFor.prototype.updateUI = function() {
 
     var verSlug, $version;
 
-    if (browser === 'firefox') {
+    if (browser === 'firefox' && this.productSlugs['firefox']) {
         verSlug = 'fx' + version;
         $version = productElems.firefox.find('select.version');
         this.ensureSelect($version, 'version', verSlug);
 
-    } else if (browser === 'mobile') {
+    } else if (browser === 'mobile' && this.productSlugs['mobile']) {
         verSlug = 'm' + version;
         $version = productElems.mobile.find('select.version');
         this.ensureSelect($version, 'version', verSlug);
 
-    } else if (browser === 'firefox-os') {
+    } else if (browser === 'firefox-os' && this.productSlugs['firefox-os']) {
         verSlug = 'fxos' + version.toFixed(1);
         $version = productElems['firefox-os'].find('select.version');
         this.ensureSelect($version, 'version', verSlug);
@@ -293,8 +296,7 @@ ShowFor.prototype.wrapTOCs = function() {
         var $elem = $(elem);
         var idSelector = $elem.attr('href');
         if (idSelector[0] !== '#') {
-            // No idea what to do here. Yell and then give up on this item.
-            console.log('Warning: bad TOC link ' + idSelector + ' on ' + $elem.text());
+            // No idea what to do here. Give up on this item.
             return;
         }
 
