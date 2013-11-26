@@ -365,11 +365,11 @@ def reconcile_chunk(cls, db_id_list, reraise=False):
     # Convert to a set which has constant type member test.
     db_id_list = set(db_id_list)
 
-    # Get a list of all the ids in the index.
-    index_id_list = [item[0] for item in cls.search().values_list('id').all()]
+    # Create a set of ids in the index
+    index_id_list = set(item[0] for item in cls.search().values_list('id').all())
 
     # Get the list of ids in the index that aren't in the db.
-    index_id_list = [id_ for id_ in index_id_list if id_ not in db_id_list]
+    index_id_list -= db_id_list
 
     total_reconciled = 0
 
