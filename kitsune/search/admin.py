@@ -15,7 +15,8 @@ from kitsune.search.es_utils import (
     get_indexable, CHUNK_SIZE, recreate_indexes, write_index, read_index,
     all_read_indexes, all_write_indexes, indexes_for_doctypes)
 from kitsune.search.models import Record, get_mapping_types
-from kitsune.search.tasks import OUTSTANDING_INDEX_CHUNKS, index_chunk_task
+from kitsune.search.tasks import (
+    OUTSTANDING_INDEX_CHUNKS, index_chunk_task, reconcile_task)
 from kitsune.search.utils import chunked, create_batch_id
 from kitsune.sumo.redis_utils import redis_client, RedisError
 from kitsune.wiki.models import Document, DocumentMappingType
@@ -100,6 +101,10 @@ def reindex_with_scoreboard(mapping_type_names):
                     'outstanding tasks.')
 
     batch_id = create_batch_id()
+
+    # Generate reconcile tasks
+    for name in mapping_type_names:
+        reconcile_task.delay(name)
 
     # Break up all the things we want to index into chunks. This
     # chunkifies by class then by chunk size.
