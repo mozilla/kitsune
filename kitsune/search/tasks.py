@@ -7,7 +7,8 @@ from celery.task import task
 from multidb.pinning import pin_this_thread, unpin_this_thread
 from statsd import statsd
 
-from kitsune.search.es_utils import index_chunk, UnindexMeBro
+from kitsune.search.es_utils import (
+    get_indexable, index_chunk, reconcile_chunk, UnindexMeBro)
 from kitsune.sumo.redis_utils import redis_client, RedisError
 
 
@@ -47,6 +48,44 @@ class IndexingTaskError(Exception):
 
 
 @task
+def reconcile_task(write_index, batch_id, mapping_type_name):
+    """Reconciles the data in the index with what's in the db
+
+    This pulls the list of ids from the db and the list of ids from
+    the index. Then it unindexes everything that shouldn't be in the
+    index.
+
+    :arg mapping_type_name: name of mapping type to reconcile
+
+    """
+    # Need to import Record here to prevent circular import
+    from kitsune.search.models import Record
+
+    rec = Record.objects.create(
+        starttime=datetime.datetime.now(),
+        text=(u'Batch: {0} Task: {1}: Reconciling {2}'.format(
+            batch_id, mapping_type_name, write_index)))
+
+    # get_indexable returns a list of tuples, but since we're only
+    # passing one mapping type name, we only get one result back.
+    cls, db_id_list = get_indexable(mapping_types=[mapping_type_name])[0]
+
+    try:
+        total = reconcile_chunk(cls, db_id_list, reraise=True)
+        rec.text = u'{0}: Total reconciled: {1}'.format(
+            rec.text, total)
+
+    except Exception:
+        rec.text = u'{0}: Errored out {1} {2}'.format(
+            rec.text, sys.exc_type, sys.exc_value)
+        raise IndexingTaskError()
+
+    finally:
+        rec.endtime = datetime.datetime.now()
+        rec.save()
+
+
+@task
 def index_chunk_task(write_index, batch_id, chunk):
     """Index a chunk of things.
 
@@ -62,11 +101,10 @@ def index_chunk_task(write_index, batch_id, chunk):
     task_name = '{0} {1} -> {2}'.format(
         cls.get_mapping_type_name(), id_list[0], id_list[-1])
 
-    rec = Record(
+    rec = Record.objects.create(
         starttime=datetime.datetime.now(),
-        text=(u'Batch: %s Task: %s: Reindexing into %s' % (
-                batch_id, task_name, write_index)))
-    rec.save()
+        text=u'Batch: {0} Task: {1}: Reindexing into {2}'.format(
+            batch_id, task_name, write_index))
 
     try:
         # Pin to master db to avoid replication lag issues and stale
@@ -76,8 +114,8 @@ def index_chunk_task(write_index, batch_id, chunk):
         index_chunk(cls, id_list, reraise=True)
 
     except Exception:
-        rec.text = (u'%s: Errored out %s %s' % (
-                rec.text, sys.exc_type, sys.exc_value))
+        rec.text = u'{0}: Errored out {1} {2}'.format(
+            rec.text, sys.exc_type, sys.exc_value)
         # Some exceptions aren't pickleable and we need this to throw
         # things that are pickleable.
         raise IndexingTaskError()

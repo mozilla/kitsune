@@ -10,6 +10,7 @@ import requests
 from elasticutils import S as UntypedS
 from elasticutils.contrib.django import S, F, get_es, ES_EXCEPTIONS  # noqa
 from pyelasticsearch.exceptions import ElasticHttpNotFoundError
+from statsd import statsd
 
 from kitsune.search.utils import chunked
 
@@ -350,6 +351,45 @@ def get_indexable(percent=100, mapping_types=None):
     return to_index
 
 
+def reconcile_chunk(cls, db_id_list, reraise=False):
+    """Reconcile a chunk of documents.
+
+    :arg cls: The MappingType class.
+    :arg db_id_list: Iterable of ids of that MappingType from the db.
+    :arg reraise: False if you want errors to be swallowed and True
+        if you want errors to be thrown.
+
+    :returns: The total number of reconciled items
+
+    """
+    # Convert to a set which has constant type member test.
+    db_id_list = set(db_id_list)
+
+    # Create a set of ids in the index
+    index_id_list = set(item[0] for item in cls.search().values_list('id').all())
+
+    # Get the list of ids in the index that aren't in the db.
+    index_id_list -= db_id_list
+
+    total_reconciled = 0
+
+    for id_ in index_id_list:
+        try:
+            # Ping statsd every time we unindex something from
+            # reconciling because it's curious.
+            statsd.incr('search.tasks.reconcile.delete.{0}'.format(
+                cls.get_mapping_type_name()))
+            cls.unindex(id_)
+            total_reconciled += 1
+        except Exception:
+            log.exception('Unable to unindex document (id: {0})'.format(
+                id_))
+            if reraise:
+                raise
+
+    return total_reconciled
+
+
 def index_chunk(cls, id_list, reraise=False):
     """Index a chunk of documents.
 
@@ -467,6 +507,13 @@ def es_reindex_cmd(percent=100, delete=False, mapping_types=None,
 
         if total == 0:
             continue
+
+        chunk_start_time = time.time()
+        log.info('reconciling %s: %s in db....',
+                 cls.get_mapping_type_name(), total)
+        ret = reconcile_chunk(cls, cls.get_indexable())
+        log.info('   done! reconciled %s index documents (%s total)',
+                 ret, format_time(time.time() - chunk_start_time))
 
         log.info('reindexing %s. %s to index....',
                  cls.get_mapping_type_name(), total)
