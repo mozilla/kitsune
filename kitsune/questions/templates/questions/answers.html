@@ -198,15 +198,17 @@
           <li id="question-details">
             <span>{{ _('Question details') }}</span>
             <div class="folder">
-              {% if product %}
-                {% set product = product[0] %}
+              {% if product or (user and user.has_perm('questions.change_question')) %}
                 <div class="sidebox tight condensed">
                   <span class="title">{{ _('Product') }}</span>
-                  <span class="detail">{{ _(product.title, 'DB: products.Product.title') }}</span>
+                  {% if product %}
+                    {% set product = product[0] %}
+                    <span class="detail">{{ _(product.title, 'DB: products.Product.title') }}</span>
+                  {% endif %}
                   {% if user and user.has_perm('questions.change_question') %}
                     <select id="details-product" name="product">
                       {% for p in all_products %}
-                        <option {% if p.id == product.id %}selected="selected"{% endif %} value="{{ p.id }}" data-url="{{ url('products.product', p.slug) }}">{{ p.title }}</option>
+                        <option {% if product and p.id == product.id %}selected="selected"{% endif %} value="{{ p.id }}" data-url="{{ url('products.product', p.slug) }}">{{ p.title }}</option>
                       {% endfor %}
                     </select>
                   {% endif %}
@@ -214,15 +216,17 @@
                 </div>
               {% endif %}
 
-              {% if topic %}
-                {% set topic = topic[0] %}
+              {% if topic or (user and user.has_perm('questions.change_question')) %}
                 <div class="sidebox tight condensed">
                   <span class="title">{{ _('Topic') }}</span>
-                  <span class="detail">{{ _(topic.title, 'DB: products.Topic.title') }}</span>
+                  {% if topic %}
+                    {% set topic = topic[0] %}
+                    <span class="detail">{{ _(topic.title, 'DB: products.Topic.title') }}</span>
+                  {% endif %}
                   {% if user and user.has_perm('questions.change_question') %}
                     <select id="details-topic" name="topic">
                       {% for t in all_topics %}
-                        <option {% if t.id == topic.id %}selected="selected"{% endif %} value="{{ t.id }}">{{ t.title }}</option>
+                        <option {% if topic and t.id == topic.id %}selected="selected"{% endif %} value="{{ t.id }}">{{ t.title }}</option>
                       {% endfor %}
                     </select>
                   {% endif %}
