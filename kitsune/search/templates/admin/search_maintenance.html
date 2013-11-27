@@ -55,9 +55,30 @@
 
   {% if outstanding_chunks %}
     <section>
-      <h1>{{ outstanding_chunks }} Outstanding indexing tasks</h1>
+      <h1>Indexing in progress! Outstanding tasks: {{ outstanding_chunks }}</h1>
       <p>
         <a href="{{ request.path }}">Refresh page</a>
+      </p>
+      <table>
+        <thead>
+          <tr>
+            <th>message</th>
+            <th>start time</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for record in outstanding_records %}
+            <tr>
+              <td>{{ record.text }}</td>
+              <td>{{ record.starttime }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <p>
+        Note: The number of records may not line up with the number of
+        outstanding indexing tasks because records are created when
+        the task starts.
       </p>
     </section>
   {% endif %}
@@ -169,30 +190,6 @@
   </section>
 
   <section>
-    <h1>Reindexing history</h1>
-    <table>
-      <thead>
-        <tr>
-          <th>message</th>
-          <th>start time</th>
-          <th>end time</th>
-          <th>delta</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for record in recent_records %}
-          <tr>
-            <td>{{ record.text }}</td>
-            <td>{{ record.starttime }}</td>
-            <td>{{ record.endtime }}</td>
-            <td>{{ record.delta }}</td>
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </section>
-
-  <section>
     <h1>Reindex</h1>
     {% if outstanding_chunks %}
       <p class="errornote">
@@ -295,5 +292,29 @@
       <input type="submit" name="reset"
              value="Reset scoreboard">
     </form>
+  </section>
+
+  <section>
+    <h1>Reindexing history</h1>
+    <table>
+      <thead>
+        <tr>
+          <th>message</th>
+          <th>start time</th>
+          <th>end time</th>
+          <th>delta</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for record in recent_records %}
+          <tr>
+            <td>{{ record.text }}</td>
+            <td>{{ record.starttime }}</td>
+            <td>{{ record.endtime }}</td>
+            <td>{{ record.delta }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
   </section>
 {% endblock %}

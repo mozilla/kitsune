@@ -102,16 +102,15 @@ def reindex_with_scoreboard(mapping_type_names):
 
     batch_id = create_batch_id()
 
-    # Generate reconcile tasks
-    for name in mapping_type_names:
-        reconcile_task.delay(name)
-
     # Break up all the things we want to index into chunks. This
-    # chunkifies by class then by chunk size.
+    # chunkifies by class then by chunk size. Also generate
+    # reconcile_tasks.
     chunks = []
     for cls, indexable in get_indexable(mapping_types=mapping_type_names):
         chunks.extend(
             (cls, chunk) for chunk in chunked(indexable, CHUNK_SIZE))
+
+        reconcile_task.delay(cls.get_index(), batch_id, cls.get_mapping_type_name())
 
     chunks_count = len(chunks)
 
@@ -228,7 +227,10 @@ def search(request):
     except (RedisError, TypeError):
         pass
 
-    recent_records = Record.uncached.order_by('-starttime')[:20]
+    recent_records = Record.uncached.order_by('-starttime')[:100]
+
+    outstanding_records = (Record.uncached.filter(endtime__isnull=True)
+                                          .order_by('-starttime'))
 
     index_groups = set(settings.ES_INDEXES.keys())
     index_groups |= set(settings.ES_WRITE_INDEXES.keys())
@@ -250,6 +252,7 @@ def search(request):
          'write_indexes': all_write_indexes,
          'error_messages': error_messages,
          'recent_records': recent_records,
+         'outstanding_records': outstanding_records,
          'outstanding_chunks': outstanding_chunks,
          'now': datetime.now(),
          'read_index': read_index,
