@@ -1,8 +1,10 @@
 {% extends 'base.html' %}
+{% set title = _('Activity Log') %}
 
 {% set styles = ('users',) %}
 
 {% block content %}
+  <h1>{{ _('Activity Log') }}</h1>
   <table id="deactivations-log">
     <thead>
       <tr>
@@ -15,8 +17,10 @@
       {% for deactivation in deactivations %}
         <tr>
           <td>{{ deactivation.date }}</td>
-          <td>{{ deactivation.user }}</td>
-          <td>{{ deactivation.moderator }}</td>
+          <td><a href="{{ profile_url(deactivation.user) }}">
+              {{ deactivation.user }}</a></td>
+          <td><a href="{{ profile_url(deactivation.moderator) }}">
+              {{ deactivation.moderator }}</a></td>
         </tr>
       {% endfor %}
     </tbody>
