@@ -183,17 +183,17 @@ ShowFor.prototype.updateUI = function() {
 
     var verSlug, $version;
 
-    if (browser === 'firefox' && this.productSlugs['firefox']) {
+    if (browser === 'firefox' && this.productSlugs.indexOf('firefox') !== -1) {
         verSlug = 'fx' + version;
         $version = productElems.firefox.find('select.version');
         this.ensureSelect($version, 'version', verSlug);
 
-    } else if (browser === 'mobile' && this.productSlugs['mobile']) {
+    } else if (browser === 'mobile' && this.productSlugs.indexOf('mobile') !== -1) {
         verSlug = 'm' + version;
         $version = productElems.mobile.find('select.version');
         this.ensureSelect($version, 'version', verSlug);
 
-    } else if (browser === 'firefox-os' && this.productSlugs['firefox-os']) {
+    } else if (browser === 'firefox-os' && this.productSlugs.indexOf('firefox-os') !== -1) {
         verSlug = 'fxos' + version.toFixed(1);
         $version = productElems['firefox-os'].find('select.version');
         this.ensureSelect($version, 'version', verSlug);
