@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import json
 import random
 from datetime import datetime, timedelta
@@ -817,7 +818,7 @@ class TaggingViewTestsAsTagger(TestCaseBase):
         add_permission(u, Question, 'tag_question')
         self.client.login(username=u.username, password='testpass')
 
-        self.question = question(save=True)
+        self.question = question(content=u'lorém ipsuñ', save=True)
 
     # add_tag view:
 
@@ -947,13 +948,13 @@ class TaggingViewTestsAsTagger(TestCaseBase):
             data={'tag-name': 'escalate'},
             follow=True)
 
-        question_url = 'https://testserver/en-US{url}'.format(
+        question_url = u'https://testserver/en-US{url}'.format(
             url=self.question.get_absolute_url())
         submit_ticket.assert_called_with(
             email='support@mozilla.com',
             category='Escalated',
-            subject='[Escalated] {title}'.format(title=self.question.title),
-            body='{url}\n\n{content}'.format(
+            subject=u'[Escalated] {title}'.format(title=self.question.title),
+            body=u'{url}\n\n{content}'.format(
                 url=question_url, content=self.question.content))
 
 

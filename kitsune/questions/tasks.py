@@ -167,5 +167,5 @@ def escalate_question(question_id):
     submit_ticket(
         email='support@mozilla.com',
         category='Escalated',
-        subject='[Escalated] {title}'.format(title=question.title),
-        body='{url}\n\n{content}'.format(url=url, content=question.content))
+        subject=u'[Escalated] {title}'.format(title=question.title),
+        body=u'{url}\n\n{content}'.format(url=url, content=question.content))
