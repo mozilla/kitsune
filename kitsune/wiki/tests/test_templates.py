@@ -2138,8 +2138,11 @@ class ArticlePreviewTests(TestCaseBase):
 
     def test_preview(self):
         """Preview the wiki syntax content."""
-        response = post(self.client, 'wiki.preview',
-                        {'content': '=Test Content='})
+        d = _create_document()
+        response = post(self.client, 'wiki.preview', {
+            'content': '=Test Content=', 
+            'slug': d.slug,
+        })
         eq_(200, response.status_code)
         doc = pq(response.content)
         eq_('Test Content', doc('#doc-content h1').text())
@@ -2151,7 +2154,10 @@ class ArticlePreviewTests(TestCaseBase):
         _create_document(title='Prueba', parent=d, locale='es')
         # Preview content that links to it and verify link is in locale.
         url = reverse('wiki.preview', locale='es')
-        response = self.client.post(url, {'content': '[[Test Document]]'})
+        response = self.client.post(url, {
+            'content': '[[Test Document]]',
+            'slug': d.slug,
+        })
         eq_(200, response.status_code)
         doc = pq(response.content)
         link = doc('#doc-content a')
