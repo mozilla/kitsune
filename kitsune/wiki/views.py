@@ -382,7 +382,6 @@ def edit_document(request, document_slug, revision_id=None):
                 raise PermissionDenied
 
     show_revision_warning = _show_revision_warning(doc, rev)
-
     locked, locked_by = _document_lock(doc.id, user.username)
 
     return render(request, 'wiki/edit.html', {
@@ -727,15 +726,23 @@ def translate(request, document_slug, revision_id=None):
     else:
         locked, locked_by = False, None
 
+    product_slugs = [p.slug for p in (doc or parent_doc).products.all()]
+    fxos_l10n_warning = ('firefox-os' in product_slugs and
+                         request.LANGUAGE_CODE not in settings.FXOS_LANGUAGES)
+
     return render(request, 'wiki/translate.html', {
-        'parent': parent_doc, 'document': doc,
-        'document_form': doc_form, 'revision_form': rev_form,
-        'locale': request.LANGUAGE_CODE, 'based_on': based_on_rev,
+        'parent': parent_doc,
+        'document': doc,
+        'document_form': doc_form,
+        'revision_form': rev_form,
+        'locale': request.LANGUAGE_CODE,
+        'based_on': based_on_rev,
         'disclose_description': disclose_description,
         'show_revision_warning': show_revision_warning,
         'recent_approved_revs': recent_approved_revs,
         'locked': locked,
-        'locked_by': locked_by})
+        'locked_by': locked_by,
+        'fxos_l10n_warning': fxos_l10n_warning})
 
 
 @require_POST

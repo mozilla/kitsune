@@ -1506,9 +1506,10 @@ input[type=button],
   margin: 0 0 20px 0;
   padding: 0;
 
-  li {
+  > li {
     .box-shadow(0 0 2px 0 rgba(0, 0, 0, 0.2));
     padding: 15px 20px;
+    position: relative;
 
     &.info {
       background: #dde2ff;
@@ -1524,6 +1525,20 @@ input[type=button],
 
     &.error {
       background: url('../img/warning-stripes.png') top left repeat-x #fee;
+    }
+
+    &.dismissible {
+      display: none;
+    }
+
+    .close-button {
+      background: @iconsSprite -50px -2022px no-repeat;
+      cursor: pointer;
+      height: 15px;
+      position: absolute;
+      right: 8px;
+      top: 8px;
+      width: 15px;
     }
   }
 }

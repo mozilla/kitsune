@@ -123,6 +123,7 @@ window.k = window.k || {};
 
         initAutoSubmitSelects();
         disableFormsOnSubmit();
+        userMessageUI();
     });
 
     /*
@@ -182,23 +183,30 @@ window.k = window.k || {};
         }
     }
 
-    /**
-     * Remove messages 20 seconds after mousemove.
-     */
-    function removeMessagesList() {
-        var $msgs = $('ul.user-messages');
-        if ($msgs.length) {
-            function moveListener () {
-                setTimeout(function() {
-                    $msgs.slideUp('fast', function() {
-                        $msgs.remove();
-                    });
-                }, 20000);
-            }
-            $(document).one('mousemove', moveListener);
+    function userMessageUI() {
+        // Add a close button to all messages.
+        $('.user-messages > li').each(function() {
+            var $msg = $(this);
+            $('<div>', {'class': 'close-button'}).appendTo($msg);
+        });
+
+        function key($msg) {
+            return 'user-message::dismissed::' + $msg.attr('id');
         }
+
+        // Some messages can be dismissed permanently.
+        $('.user-messages .dismissible').each(function() {
+            var $msg = $(this);
+            if (!localStorage.getItem(key($msg))) {
+                $msg.show();
+            }
+        });
+        $('.user-messages').on('click', '.dismissible .btn.dismiss', function(e) {
+            var $msg = $(this).parent();
+            localStorage.setItem(key($msg), true);
+            $msg.hide();
+        });
     }
-    $(document).ready(removeMessagesList);
 
     function layoutTweaks() {
         // Adjust the height of cards to be consistent within a group.

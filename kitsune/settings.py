@@ -163,8 +163,8 @@ SUMO_LANGUAGES = (
     'sr-Cyrl',
     'sv',
     'sw',
-    'ta-LK',
     'ta',
+    'ta-LK',
     'te',
     'th',
     'tr',
@@ -185,6 +185,25 @@ AAQ_LANGUAGES = (
     'sl',
     'sr-Cyrl',
 )
+
+# These languages won't show a warning about FxOS when contributors try
+# to add content.
+FXOS_LANGUAGES = [
+    'cs',
+    'el',
+    'en-US',
+    'es',
+    'hr',
+    'hu',
+    'nl',
+    'pl',
+    'pt-BR',
+    'pt-PT',
+    'ro',
+    'ru',
+    'sr-Cyrl',
+    'tr',
+]
 
 # Languages that should show up in language switcher.
 LANGUAGE_CHOICES = tuple(

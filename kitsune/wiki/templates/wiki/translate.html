@@ -16,20 +16,55 @@
   <div>
     {{ document_tools(document, parent, user, 'edit', settings) }}
 
-    {{ edit_messages(document, show_revision_warning) }}
-    {{ document_lock_warning() }}
-
     <article id="localize-document" class="main form-page{% if locked %} locked{% endif %}" data-slug="{{ parent.slug }}">
+
+      <ul class="user-messages">
+        {% if fxos_l10n_warning %}
+          <li class="info dismissible" id="fxos-l10n-warning">
+            <p>
+              {% trans %}
+                Thank you very much for helping us translate Firefox OS
+                support articles. Currently Firefox OS is only available or
+                expected to be available in the following locales:
+              {% endtrans %}
+            </p>
+
+            <ul>
+              {% for locale in settings.FXOS_LANGUAGES %}
+                <li>
+                  {{ _('{lang} ({lang_code})')|fe(lang=settings.LANGUAGES[locale.lower()], lang_code=locale) }}
+                </li>
+              {% endfor %}
+            </ul>
+
+            <p>
+              {% trans email_link='<a href="mailto:rosana@mozilla.com">rosana@mozilla.com</a>'|safe %}
+                If your locale is not listed here it could be possible that
+                the content changes before Firefox OS is launched in your
+                locale. If you need any guidance understanding the priority
+                for the translations please contact {{ email_link }}.
+              {% endtrans %}
+            </p>
+
+            <button class="btn dismiss">{{ _("I understand, don't show this again.") }}</button>
+          </li>
+        {% endif %}
+
+        {% if not based_on.is_ready_for_localization %}
+          <li class="warning">
+            {{ _('You are translating an English document which is not yet ready for localization.') }}
+          </li>
+        {% endif %}
+
+        {{ edit_messages(document, show_revision_warning) }}
+        {{ document_lock_warning() }}
+      </ul>
+
       <h1>{{ _('Translating {title}')|f(title=parent.title) }}</h1>
       <div class="change-locale">
         <p>
           {{ _('Translating article to {locale}' )|f(locale=language) }}.
         </p>
-        {% if not based_on.is_ready_for_localization %}
-          <div class="warning-box">
-            {{ _('You are translating an English document which is not yet ready for localization.') }}
-          </div>
-        {% endif %}
       </div>
       {% if not document %}
         {# If this is the first translation to this locale, we use 1 big form. #}
