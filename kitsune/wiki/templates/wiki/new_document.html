@@ -40,6 +40,7 @@
             {% endfor %}
           </ul>
           {{ revision_form.hidden_fields()|join|safe }}
+          <input type="hidden" name="slug" value="" />
           {{ submit_revision(revision_form) }}
         </form>
       </div>

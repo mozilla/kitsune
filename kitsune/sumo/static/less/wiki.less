@@ -769,7 +769,7 @@ textarea[name="content"] {
   margin: 20px 0 0;
   position: relative;
 
-  #support-for {
+  .showfor {
     background: #fff;
     .border-radius(10px);
     .box-shadow(0 4px 10px #999);
@@ -784,18 +784,18 @@ textarea[name="content"] {
     h1 {
       font-size: 20px;
     }
-  }
 
-  #support-for-exit {
-    font-size: 12px;
-    font-weight: bold;
-    position: absolute;
-    right: 10px;
-    top: 10px;
-    z-index: 6;
-    &:hover {
-      color: #999;
-      cursor: pointer;
+    .exit {
+      font-size: 12px;
+      font-weight: bold;
+      position: absolute;
+      right: 10px;
+      top: 10px;
+      z-index: 6;
+      &:hover {
+        color: #999;
+        cursor: pointer;
+      }
     }
   }
 }
@@ -805,7 +805,7 @@ textarea[name="content"] {
 }
 
 #review-revision {
-  #support-for {
+  .showfor {
     background: #fff;
     .border-radius(10px);
     .box-shadow(0 4px 10px #999);
@@ -820,7 +820,7 @@ textarea[name="content"] {
   }
 
   .open {
-    #support-for {
+    .showfor {
       display: block;
 
       h1 {
@@ -837,7 +837,7 @@ textarea[name="content"] {
 .html-rtl {
   #preview,
   #review-revision {
-    #support-for {
+    .showfor {
       left: 100px;
       right: auto;
     }

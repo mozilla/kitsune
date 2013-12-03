@@ -401,9 +401,17 @@ def edit_document(request, document_slug, revision_id=None):
 def preview_revision(request):
     """Create an HTML fragment preview of the posted wiki syntax."""
     wiki_content = request.POST.get('content', '')
+    slug = request.POST.get('slug')
     statsd.incr('wiki.preview')
-    # TODO: Get doc ID from JSON.
-    data = {'content': wiki_to_html(wiki_content, request.LANGUAGE_CODE)}
+    doc = get_object_or_404(Document, slug=slug)
+    if doc.parent:
+        products = doc.parent.products.all()
+    else:
+        products = doc.products.all()
+    data = {
+        'content': wiki_to_html(wiki_content, request.LANGUAGE_CODE),
+        'products': products
+    }
     return render(request, 'wiki/preview.html', data)
 
 

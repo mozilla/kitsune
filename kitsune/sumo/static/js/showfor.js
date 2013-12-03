@@ -85,8 +85,8 @@ ShowFor.prototype.ensureSelect = function($select, type, val) {
         var product = this.versionSlugs[val];
         target = select(this.data.versions[product], val);
         if (target !== null) {
-            extra['data-min-version'] = target.min_version;
-            extra['data-max-version'] = target.max_version;
+            extra['data-min'] = target.min_version;
+            extra['data-max'] = target.max_version;
         }
     } else if (type === 'platform') {
         target = select(this.data.platforms, val);
