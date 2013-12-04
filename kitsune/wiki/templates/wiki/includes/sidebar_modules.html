@@ -49,7 +49,7 @@
           {% endif %}
           {% if include_showfor %}
             <li>
-              {{ show_for(products, header=False) }}
+              {{ show_for(document.products.all(), header=False) }}
             </li>
           {% endif %}
         </ul>
