@@ -41,6 +41,7 @@
           </ul>
           {{ revision_form.hidden_fields()|join|safe }}
           <input type="hidden" name="slug" value="" />
+          <input type="hidden" name="locale" value="" />
           {{ submit_revision(revision_form) }}
         </form>
       </div>

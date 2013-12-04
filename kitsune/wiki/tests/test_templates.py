@@ -2140,8 +2140,9 @@ class ArticlePreviewTests(TestCaseBase):
         """Preview the wiki syntax content."""
         d = _create_document()
         response = post(self.client, 'wiki.preview', {
-            'content': '=Test Content=', 
+            'content': '=Test Content=',
             'slug': d.slug,
+            'locale': d.locale,
         })
         eq_(200, response.status_code)
         doc = pq(response.content)
@@ -2157,6 +2158,7 @@ class ArticlePreviewTests(TestCaseBase):
         response = self.client.post(url, {
             'content': '[[Test Document]]',
             'slug': d.slug,
+            'locale': d.locale,
         })
         eq_(200, response.status_code)
         doc = pq(response.content)

@@ -32,6 +32,7 @@ AjaxPreview.prototype = {
             csrftoken = $btn.closest('form')
                             .find('input[name=csrfmiddlewaretoken]').val(),
             slug = $btn.closest('form').find('input[name=slug]').val(),
+            locale = $btn.closest('form').find('input[name=locale]').val(),
             changeHash = o.changeHash === undefined ? true : o.changeHash;
 
         $btn.click(function(e) {
@@ -48,6 +49,7 @@ AjaxPreview.prototype = {
                 data: {
                     content: $content.val(),
                     slug: slug,
+                    locale: locale,
                     csrfmiddlewaretoken: csrftoken
                 },
                 dataType: 'html',

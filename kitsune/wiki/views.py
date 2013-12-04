@@ -402,12 +402,18 @@ def preview_revision(request):
     """Create an HTML fragment preview of the posted wiki syntax."""
     wiki_content = request.POST.get('content', '')
     slug = request.POST.get('slug')
+    locale = request.POST.get('locale')
     statsd.incr('wiki.preview')
-    doc = get_object_or_404(Document, slug=slug)
-    if doc.parent:
-        products = doc.parent.products.all()
+
+    if slug and locale:
+        doc = get_object_or_404(Document, slug=slug, locale=locale)
+        if doc.parent:
+            products = doc.parent.products.all()
+        else:
+            products = doc.products.all()
     else:
-        products = doc.products.all()
+        products = []
+
     data = {
         'content': wiki_to_html(wiki_content, request.LANGUAGE_CODE),
         'products': products
