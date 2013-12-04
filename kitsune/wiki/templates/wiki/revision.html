@@ -98,6 +98,6 @@
 
 {% block side_bottom %}
   <div>
-    {{ show_for(products, header=_('Article is for:')) }}
+    {{ show_for(document.products.all(), header=_('Article is for:')) }}
   </div>
 {% endblock %}
