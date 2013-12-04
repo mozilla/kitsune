@@ -412,7 +412,7 @@ def preview_revision(request):
         else:
             products = doc.products.all()
     else:
-        products = []
+        products = Product.objects.all()
 
     data = {
         'content': wiki_to_html(wiki_content, request.LANGUAGE_CODE),
