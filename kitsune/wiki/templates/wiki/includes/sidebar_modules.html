@@ -49,8 +49,7 @@
           {% endif %}
           {% if include_showfor %}
             <li>
-              {# The parent has precedence because products are inherited. #}
-              {{ show_for((parent or document).products.all(), header=False) }}
+              {{ show_for((document or parent).get_products(), header=False) }}
             </li>
           {% endif %}
         </ul>
