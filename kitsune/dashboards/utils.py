@@ -33,6 +33,20 @@ def render_readouts(request, readouts, template, locale=None, extra_data=None,
     """
     current_locale = locale or request.LANGUAGE_CODE
     on_default_locale = request.LANGUAGE_CODE == settings.WIKI_DEFAULT_LANGUAGE
+
+    default_kwargs = {
+        'locale': settings.WIKI_DEFAULT_LANGUAGE,
+    }
+    locale_kwargs = {
+        'locale': request.LANGUAGE_CODE,
+    }
+    ready_kwargs = {}
+
+    if product is not None:
+        default_kwargs['product'] = product.slug
+        locale_kwargs['product'] = product.slug
+        ready_kwargs['product'] = product.slug
+
     data = {'readouts': SortedDict((slug, class_(request, locale=locale,
                                                  product=product))
                                    for slug, class_ in readouts.iteritems()
@@ -45,20 +59,20 @@ def render_readouts(request, readouts, template, locale=None, extra_data=None,
             'request_locale_name': LOCALES[request.LANGUAGE_CODE].native,
             'is_watching_default_approved':
                 ApproveRevisionInLocaleEvent.is_notifying(
-                    request.user, locale=settings.WIKI_DEFAULT_LANGUAGE),
+                    request.user, **default_kwargs),
             'is_watching_other_approved':
                 None if on_default_locale
                 else ApproveRevisionInLocaleEvent.is_notifying(
-                    request.user, locale=request.LANGUAGE_CODE),
+                    request.user, **locale_kwargs),
             'is_watching_default_locale':
                 ReviewableRevisionInLocaleEvent.is_notifying(
-                    request.user, locale=settings.WIKI_DEFAULT_LANGUAGE),
+                    request.user, **default_kwargs),
             'is_watching_other_locale':
                 None if on_default_locale
                 else ReviewableRevisionInLocaleEvent.is_notifying(
-                    request.user, locale=request.LANGUAGE_CODE),
+                    request.user, **locale_kwargs),
             'is_watching_default_ready':
-                ReadyRevisionEvent.is_notifying(request.user),
+                ReadyRevisionEvent.is_notifying(request.user, **ready_kwargs),
             'on_default_locale': on_default_locale,
             'announce_form': AnnouncementForm(),
             'announcements': Announcement.get_for_locale_name(current_locale),

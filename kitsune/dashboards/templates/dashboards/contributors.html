@@ -1,7 +1,7 @@
 {% extends "base.html" %}
-{% from "dashboards/includes/macros.html" import print_readout, product_selector, print_subscription_menu with context %}
+{% from "dashboards/includes/macros.html" import print_readout, product_choice_list, print_subscription_menu with context %}
 {% from "dashboards/includes/macros.html" import localization_sidebar_nav %}
-{% set title = _('Knowledge Base Dashboard') %}
+{% set title = _('[{product}] Knowledge Base Dashboard')|f(product=_(product.title, 'DB: products.Product.title') if product else _('All Products')) %}
 {% set scripts = ('wiki', 'wiki.dashboard') %}
 {% set styles = ('kbdashboards', ) %}
 {% set crumbs = [(None, title)] %}
@@ -11,9 +11,9 @@
 {% block content %}
   <div class="grid_9">
     <article id="localize" class="dashboards">
-      {{ product_selector(products, product) }}
-
       <h1>{{ title }}</h1>
+
+      {{ product_choice_list(products, product, 'dashboards.contributors') }}
 
       {% if default_locale_name != request_locale_name %}
         <div class="choice-list">
@@ -37,7 +37,8 @@
                                    is_watching_other_locale,
                                    is_watching_default_approved,
                                    is_watching_other_approved,
-                                   settings.WIKI_DEFAULT_LANGUAGE) }}
+                                   settings.WIKI_DEFAULT_LANGUAGE,
+                                   product=product) }}
       {% endif %}
 
       {% for readout in readouts.itervalues() %}

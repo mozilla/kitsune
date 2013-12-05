@@ -761,63 +761,89 @@ def unwatch_document(request, document_slug):
 
 @require_POST
 @login_required
-def watch_locale(request):
+def watch_locale(request, product=None):
     """Start watching a locale for revisions ready for review."""
-    ReviewableRevisionInLocaleEvent.notify(request.user, locale=request.LANGUAGE_CODE)
+    kwargs = {'locale': request.LANGUAGE_CODE}
+    if product is not None:
+        kwargs['product'] = product
+    ReviewableRevisionInLocaleEvent.notify(request.user, **kwargs)
     statsd.incr('wiki.watches.locale')
+
     # A 200 so jQuery interprets it as success
     return HttpResponse()
 
 
 @require_POST
 @login_required
-def unwatch_locale(request):
+def unwatch_locale(request, product=None):
     """Stop watching a locale for revisions ready for review."""
-    ReviewableRevisionInLocaleEvent.stop_notifying(request.user,
-                                                   locale=request.LANGUAGE_CODE)
+    kwargs = {'locale': request.LANGUAGE_CODE}
+    if product is not None:
+        kwargs['product'] = product
+    ReviewableRevisionInLocaleEvent.stop_notifying(request.user, **kwargs)
+
     return HttpResponse()
 
 
 @require_POST
 @login_required
-def watch_approved(request):
-    """Start watching approved revisions in a locale."""
+def watch_approved(request, product=None):
+    """Start watching approved revisions in a locale for a given product."""
     if request.LANGUAGE_CODE not in settings.SUMO_LANGUAGES:
         raise Http404
-    ApproveRevisionInLocaleEvent.notify(request.user, locale=request.LANGUAGE_CODE)
+
+    kwargs = {'locale': request.LANGUAGE_CODE}
+    if product is not None:
+        kwargs['product'] = product
+    ApproveRevisionInLocaleEvent.notify(request.user, **kwargs)
     statsd.incr('wiki.watches.approved')
+
     return HttpResponse()
 
 
 @require_POST
 @login_required
-def unwatch_approved(request):
-    """Stop watching approved revisions."""
+def unwatch_approved(request, product=None):
+    """Stop watching approved revisions for a given product."""
     if request.LANGUAGE_CODE not in settings.SUMO_LANGUAGES:
         raise Http404
-    ApproveRevisionInLocaleEvent.stop_notifying(request.user,
-                                                locale=request.LANGUAGE_CODE)
+
+    kwargs = {'locale': request.LANGUAGE_CODE}
+    if product is not None:
+        kwargs['product'] = product
+    ApproveRevisionInLocaleEvent.stop_notifying(request.user, **kwargs)
+
     return HttpResponse()
 
 
 @require_POST
 @login_required
-def watch_ready(request):
-    """Start watching ready-for-l10n revisions."""
+def watch_ready(request, product=None):
+    """Start watching ready-for-l10n revisions for given product."""
     if request.LANGUAGE_CODE != settings.WIKI_DEFAULT_LANGUAGE:
         raise Http404
-    ReadyRevisionEvent.notify(request.user)
+
+    kwargs = {}
+    if product is not None:
+        kwargs['product'] = product
+    ReadyRevisionEvent.notify(request.user, **kwargs)
     statsd.incr('wiki.watches.ready')
+
     return HttpResponse()
 
 
 @require_POST
 @login_required
-def unwatch_ready(request):
-    """Stop watching ready-for-l10n revisions."""
+def unwatch_ready(request, product=None):
+    """Stop watching ready-for-l10n revisions for a given product."""
     if request.LANGUAGE_CODE != settings.WIKI_DEFAULT_LANGUAGE:
         raise Http404
-    ReadyRevisionEvent.stop_notifying(request.user)
+
+    kwargs = {}
+    if product is not None:
+        kwargs['product'] = product
+    ReadyRevisionEvent.stop_notifying(request.user, **kwargs)
+
     return HttpResponse()
 
 

@@ -88,21 +88,36 @@
                             unwatch_view,
                             default_locale,
                             show_default=True,
-                            show_other=True) %}
+                            show_other=True,
+                            product=None) %}
   <tr>
     <th class="state">{{ label }}</th>
     <td>
       {% if show_default %}
-        <input data-action-watch="{{ url(watch_view, locale=default_locale) }}"
-               data-action-unwatch="{{ url(unwatch_view, locale=default_locale) }}"
+        {% if product %}
+          {% set watch_url = url(watch_view, locale=default_locale, product=product.slug) %}
+          {% set unwatch_url = url(unwatch_view, locale=default_locale, product=product.slug) %}
+        {% else %}
+          {% set watch_url = url(watch_view, locale=default_locale) %}
+          {% set unwatch_url = url(unwatch_view, locale=default_locale) %}
+        {% endif %}
+        <input data-action-watch="{{ watch_url }}"
+               data-action-unwatch="{{ unwatch_url }}"
                type="checkbox"
                {% if is_watching_default %}checked="checked"{% endif %} />
       {% endif %}
     </td>
     {% if not on_default_locale and show_other %}
+      {% if product %}
+        {% set watch_url = url(watch_view, product=product.slug) %}
+        {% set unwatch_url = url(unwatch_view, product=product.slug) %}
+      {% else %}
+        {% set watch_url = url(watch_view) %}
+        {% set unwatch_url = url(unwatch_view) %}
+      {% endif %}
       <td>
-        <input data-action-watch="{{ url(watch_view) }}"
-               data-action-unwatch="{{ url(unwatch_view) }}"
+        <input data-action-watch="{{ watch_url }}"
+               data-action-unwatch="{{ unwatch_url }}"
                type="checkbox"
                {% if is_watching_other %}checked="checked"{% endif %} />
       </td>
@@ -119,7 +134,8 @@
                                  is_watching_other_approved,
                                  default_locale,
                                  show_default_waiting=True,
-                                 show_default_approved=True) %}
+                                 show_default_approved=True,
+                                 product=None) %}
   <div id="doc-watch">
     <button class="btn btn-submit popup-trigger" type="submit">
       <img src="{{ STATIC_URL }}img/blank.png" alt="" />
@@ -135,9 +151,20 @@
             <th>{{ current_locale_name }}</th>
           {% endif %}
         </tr>
-        {{ print_checkbox_row(_('Waiting for review'), on_default_locale, is_watching_default_locale, is_watching_other_locale, 'wiki.locale_watch', 'wiki.locale_unwatch', default_locale, show_default=show_default_waiting) }}
-        {{ print_checkbox_row(_('Approved'), on_default_locale, is_watching_default_approved, is_watching_other_approved, 'wiki.approved_watch', 'wiki.approved_unwatch', default_locale, show_default=show_default_approved) }}
-        {{ print_checkbox_row(_('Ready for localization'), on_default_locale, is_watching_default_ready, False, 'wiki.ready_watch', 'wiki.ready_unwatch', default_locale, show_other=False) }}
+        {{ print_checkbox_row(_('Waiting for review'), on_default_locale, is_watching_default_locale, is_watching_other_locale, 'wiki.locale_watch', 'wiki.locale_unwatch', default_locale, show_default=show_default_waiting, product=product) }}
+        {{ print_checkbox_row(_('Approved'), on_default_locale, is_watching_default_approved, is_watching_other_approved, 'wiki.approved_watch', 'wiki.approved_unwatch', default_locale, show_default=show_default_approved, product=product) }}
+        {{ print_checkbox_row(_('Ready for localization'), on_default_locale, is_watching_default_ready, False, 'wiki.ready_watch', 'wiki.ready_unwatch', default_locale, show_other=False, product=product) }}
+        <tr>
+          <td colspan="3">
+            <p class="note warning-box">
+              {% if product %}
+                {{ _('Please note that these selections are specific to the current product selected.') }}
+              {% else %}
+                {{ _('Please note that you will be subscribed to these notifications for all products. If you are only interested in specific products, please go to the dashboard for that product.') }}
+              {% endif %}
+            </p>
+          </td>
+        </tr>
       </table>
     </form>
   </div>
@@ -153,6 +180,33 @@
         </option>
       {% endfor %}
     </select>
+  </div>
+{% endmacro %}
+
+{% macro product_choice_list(products, current, url_name) %}
+  <div class="choice-list">
+    <label>{{ _('Product:') }}</label>
+    <ul>
+      <li>
+        {% if current %}
+          <a href="{{ url(url_name) }}">
+            {{ _('All Products') }}
+          </a>
+        {% else %}
+          {{ _('All Products') }}
+        {% endif %}
+      {% for p in products %}
+        <li>
+          {% if current == p %}
+            {{ _(p.title, 'DB: products.Product.title') }}
+          {% else %}
+            <a href="{{ url(url_name)|urlparams(product=p.slug) }}">
+              {{ _(p.title, 'DB: products.Product.title') }}
+            </a>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
   </div>
 {% endmacro %}
 

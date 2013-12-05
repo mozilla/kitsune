@@ -81,21 +81,21 @@ urlpatterns = patterns('kitsune.wiki.views',
     url(r'^/locales/(?P<locale_code>[^/]+)', include(locale_patterns)),
 
     # (Un)subscribe to locale 'ready for review' notifications.
-    url(r'^/watch-ready-for-review$', 'watch_locale',
-        name='wiki.locale_watch'),
-    url(r'^/unwatch-ready-for-review$', 'unwatch_locale',
-        name='wiki.locale_unwatch'),
+    url(r'^/watch-ready-for-review(?:/(?P<product>[^\/]+))?$',
+        'watch_locale', name='wiki.locale_watch'),
+    url(r'^/unwatch-ready-for-review(?:/(?P<product>[^\/]+))?$',
+        'unwatch_locale', name='wiki.locale_unwatch'),
 
     # (Un)subscribe to 'approved' notifications.
-    url(r'^/watch-approved$', 'watch_approved',
+    url(r'^/watch-approved(?:/(?P<product>[^\/]+))?$', 'watch_approved',
         name='wiki.approved_watch'),
-    url(r'^/unwatch-approved$', 'unwatch_approved',
+    url(r'^/unwatch-approved(?:/(?P<product>[^\/]+))?$', 'unwatch_approved',
         name='wiki.approved_unwatch'),
 
     # (Un)subscribe to 'ready-for-l10n' notifications.
-    url(r'^/watch-ready$', 'watch_ready',
+    url(r'^/watch-ready(?:/(?P<product>[^\/]+))?$', 'watch_ready',
         name='wiki.ready_watch'),
-    url(r'^/unwatch-ready$', 'unwatch_ready',
+    url(r'^/unwatch-ready(?:/(?P<product>[^\/]+))?$', 'unwatch_ready',
         name='wiki.ready_unwatch'),
 
     # Unhelfpul vote survey
