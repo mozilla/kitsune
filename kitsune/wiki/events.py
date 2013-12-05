@@ -7,6 +7,7 @@ from django.core.urlresolvers import reverse as django_reverse
 
 from bleach import clean
 from tidings.events import InstanceEvent, Event, EventUnion
+from tidings.utils import hash_to_unsigned
 from tower import ugettext as _
 from tower import ugettext_lazy as _lazy
 from wikimarkup.parser import ALLOWED_TAGS, ALLOWED_ATTRIBUTES
@@ -125,21 +126,80 @@ class _RevisionConstructor(object):
         self.revision = revision
 
 
-class _LocaleFilter(object):
+class _BaseProductFilter(object):
+    """A base class for product filters.
+
+    It adds a _filter_by_product method that filters down a list of
+    (user, watches) to only the users watching the products for the
+    revision.
+    """
+    def _filter_by_product(self, all_watchers):
+        products = self.revision.document.get_products(uncached=True)
+        product_hashes = [hash_to_unsigned(s.slug) for s in products]
+
+        watchers_and_watches = []
+
+        # Weed out the users that have a product filter that isn't one of the
+        # document's products.
+        for user, watches in all_watchers:
+            for watch in watches:
+                # Get the product filters for the watch, if any.
+                prods = watch.filters.filter(
+                    name='product').values_list('value', flat=True)
+
+                # If there are no product filters, they are watching them all.
+                if len(prods) == 0:
+                    watchers_and_watches.append((user, watches))
+                    break
+
+                # Otherwise, check if they are watching any of the document's
+                # products.
+                for prod in prods:
+                    if prod in product_hashes:
+                        watchers_and_watches.append((user, watches))
+                        break
+
+        return watchers_and_watches
+
+
+class _ProductFilter(_BaseProductFilter):
     """An event that receives a revision when constructed and filters according
-    to that revision's document's locale"""
-    filters = set(['locale'])
+    to that revision's document's products"""
+    filters = set(['product'])
 
     # notify(), stop_notifying(), and is_notifying() take...
-    # (user_or_email, locale=some_locale)
+    # (user_or_email, product=optional_product)
 
     def _users_watching(self, **kwargs):
-        return self._users_watching_by_filter(
-            locale=self.revision.document.locale, **kwargs)
+        # Get the users watching any or all products.
+        users = list(self._users_watching_by_filter(**kwargs))
+
+        # Weed out the users that have a product filter that isn't one of the
+        # document's products.
+        return self._filter_by_product(users)
+
+
+class _LocaleAndProductFilter(_BaseProductFilter):
+    """An event that receives a revision when constructed and filters according
+    to that revision's document's locale and products."""
+    filters = set(['locale', 'product'])
+
+    # notify(), stop_notifying(), and is_notifying() take...
+    # (user_or_email, locale=some_locale, product=optional_product)
+
+    def _users_watching(self, **kwargs):
+        locale = self.revision.document.locale
+
+        # Get the users just subscribed to the locale (any and all products).
+        users = list(self._users_watching_by_filter(locale=locale, **kwargs))
+
+        # Weed out the users that have a product filter that isn't one of the
+        # document's products.
+        return self._filter_by_product(users)
 
 
 class ReviewableRevisionInLocaleEvent(_RevisionConstructor,
-                                      _LocaleFilter,
+                                      _LocaleAndProductFilter,
                                       Event):
     """Event fired when any revision in a certain locale is ready for review"""
     # Our event_type suffices to limit our scope, so we don't bother
@@ -173,15 +233,12 @@ class ReviewableRevisionInLocaleEvent(_RevisionConstructor,
             default_locale=document.locale)
 
 
-class ReadyRevisionEvent(_RevisionConstructor, Event):
-    """Event fed to a union when a (en-US) revision becomes ready for l10n
-    """
+class ReadyRevisionEvent(_RevisionConstructor, _ProductFilter, Event):
+    """Event fired when a revision becomes ready for l10n."""
     event_type = 'ready wiki'
 
     def _mails(self, users_and_watches):
-        """Send readiness mails.
-
-        """
+        """Send readiness mails."""
         revision = self.revision
         document = revision.document
         log.debug('Sending ready notifications for revision (id=%s)' %
@@ -203,7 +260,8 @@ class ReadyRevisionEvent(_RevisionConstructor, Event):
             default_locale=document.locale)
 
 
-class ApproveRevisionInLocaleEvent(_RevisionConstructor, _LocaleFilter, Event):
+class ApproveRevisionInLocaleEvent(_RevisionConstructor,
+                                   _LocaleAndProductFilter, Event):
     """Event fed to a union when any revision in a certain locale is approved
 
     Not intended to be fired individually
