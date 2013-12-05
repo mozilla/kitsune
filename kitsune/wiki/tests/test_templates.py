@@ -2107,8 +2107,8 @@ class LocaleWatchTests(TestCaseBase):
         response = get(self.client, 'wiki.locale_unwatch')
         eq_(405, response.status_code)
 
-    def test_watch_unwatch(self):
-        """Watch and unwatch a document."""
+    def test_watch_and_unwatch_by_locale(self):
+        """Watch and unwatch a locale."""
         # Subscribe
         response = post(self.client, 'wiki.locale_watch')
         eq_(200, response.status_code)
@@ -2120,6 +2120,19 @@ class LocaleWatchTests(TestCaseBase):
         eq_(200, response.status_code)
         assert not ReviewableRevisionInLocaleEvent.is_notifying(self.user,
                                                                 locale='en-US')
+
+    def test_watch_and_unwatch_by_locale_and_product(self):
+        # Subscribe
+        response = post(self.client, 'wiki.locale_watch', args=['firefox-os'])
+        eq_(200, response.status_code)
+        assert ReviewableRevisionInLocaleEvent.is_notifying(
+            self.user, locale='en-US', product='firefox-os')
+
+        # Unsubscribe
+        response = post(self.client, 'wiki.locale_unwatch', args=['firefox-os'])
+        eq_(200, response.status_code)
+        assert not ReviewableRevisionInLocaleEvent.is_notifying(
+            self.user, locale='en-US', product='firefox-os')
 
 
 class ArticlePreviewTests(TestCaseBase):

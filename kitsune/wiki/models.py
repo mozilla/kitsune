@@ -520,7 +520,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         If the document has a parent, it inherits the parent's products.
         """
         if self.parent:
-            return self.parent.get_products()
+            return self.parent.get_products(uncached)
         if uncached:
             q = Product.uncached
         else:

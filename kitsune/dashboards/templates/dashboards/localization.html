@@ -1,7 +1,7 @@
 {% extends "base.html" %}
-{% from "dashboards/includes/macros.html" import print_readout, overview_section, product_selector, print_subscription_menu with context %}
+{% from "dashboards/includes/macros.html" import print_readout, overview_section, product_choice_list, print_subscription_menu with context %}
 {% from "dashboards/includes/macros.html" import localization_sidebar_nav %}
-{% set title = _('[{locale}] Localization Dashboard')|f(locale=current_locale) %}
+{% set title = _('[{locale}][{product}] Localization Dashboard')|f(locale=current_locale, product=_(product.title, 'DB: products.Product.title') if product else _('All Products')) %}
 {% set scripts = ('wiki', 'wiki.dashboard') %}
 {% set styles = ('kbdashboards', ) %}
 {% set crumbs = [(None, title)] %}
@@ -11,8 +11,6 @@
 {% block content %}
   <div class="grid_9">
     <article id="localize" class="dashboards">
-      {{ product_selector(products, product) }}
-
       <h1>{{ title }}</h1>
 
       {% if announcements %}
@@ -57,8 +55,10 @@
         </div>
       {% endif %}
 
+      {{ product_choice_list(products, product, 'dashboards.localization') }}
+
       <div class="choice-list">
-        <label>{{ _('Show information for:') }}</label>
+        <label>{{ _('Locale:') }}</label>
         <ul>
           <li>
             <a href="{{ url('dashboards.contributors') }}">{{ default_locale_name }}</a>
@@ -77,7 +77,8 @@
                                    is_watching_other_locale,
                                    is_watching_default_approved,
                                    is_watching_other_approved,
-                                   settings.WIKI_DEFAULT_LANGUAGE) }}
+                                   settings.WIKI_DEFAULT_LANGUAGE,
+                                   product=product) }}
       {% endif %}
 
       {{ overview_section(readouts, ((overview_rows['most-visited'], True),
