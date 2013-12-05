@@ -100,3 +100,6 @@ class Platform(ModelBase):
     # Dictates the order in which products are displayed in product
     # lists.
     display_order = models.IntegerField()
+
+    def __unicode__(self):
+        return u'%s' % self.name

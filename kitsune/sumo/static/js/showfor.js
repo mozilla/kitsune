@@ -28,7 +28,8 @@ function ShowFor($container) {
 ShowFor.prototype.productShortMap = {
     'fx': 'firefox',
     'm': 'mobile',
-    'fxos': 'firefox-os'
+    'fxos': 'firefox-os',
+    'tb': 'thunderbird'
 };
 
 /* Get the product/platform data from the DOM, and munge it into the
