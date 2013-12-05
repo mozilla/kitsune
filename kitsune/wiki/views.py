@@ -42,7 +42,6 @@ from kitsune.wiki.forms import (
     ReviewForm)
 from kitsune.wiki.models import Document, Revision, HelpfulVote, ImportantDate
 from kitsune.wiki.parser import wiki_to_html
-from kitsune.wiki.showfor import showfor_data
 from kitsune.wiki.tasks import (
     send_reviewed_notification, schedule_rebuild_kb,
     send_contributor_notification)
@@ -407,10 +406,7 @@ def preview_revision(request):
 
     if slug and locale:
         doc = get_object_or_404(Document, slug=slug, locale=locale)
-        if doc.parent:
-            products = doc.parent.products.all()
-        else:
-            products = doc.products.all()
+        products = doc.get_products()
     else:
         products = Product.objects.all()
 
