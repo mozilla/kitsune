@@ -30,18 +30,11 @@ def product_landing(request, template, slug):
         return HttpResponse(json.dumps({'topics': topic_list}),
                             mimetype='application/json')
 
-    versions = product.versions.filter(default=True)
-    if versions:
-        latest_version = versions[0].max_version
-    else:
-        latest_version = 0
-
     return render(request, template, {
         'product': product,
         'products': Product.objects.filter(visible=True),
         'topics': topics_for(products=[product], parent=None),
         'search_params': {'product': slug},
-        'latest_version': latest_version
     })
 
 

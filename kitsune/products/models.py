@@ -1,7 +1,6 @@
 import os
 
 from django.conf import settings
-from django.core.exceptions import ValidationError
 from django.db import models
 
 from kitsune.sumo.models import ModelBase
@@ -82,7 +81,8 @@ class Topic(ModelBase):
 
 class Version(ModelBase):
     name = models.CharField(max_length=255)
-    slug = models.SlugField()
+    # We don't use a SlugField here because we want to allow dots.
+    slug = models.CharField(max_length=255, db_index=True)
     min_version = models.FloatField()
     max_version = models.FloatField()
     product = models.ForeignKey('Product', related_name='versions')
@@ -91,18 +91,6 @@ class Version(ModelBase):
 
     class Meta(object):
         ordering = ['-max_version']
-    
-    def save(self):
-        if self.default:
-            others = (Version.objects
-                      .filter(default=True, product=self.product)
-                      .exclude(pk=self.pk))
-
-            if others.count() > 0:
-                raise ValidationError('Only one version can be default for '
-                                      'each product.')
-
-        super(Version, self).save()
 
 
 class Platform(ModelBase):
@@ -112,5 +100,3 @@ class Platform(ModelBase):
     # Dictates the order in which products are displayed in product
     # lists.
     display_order = models.IntegerField()
-
-
