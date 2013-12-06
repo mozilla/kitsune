@@ -12,6 +12,7 @@ HOME = /tmp
 # Every hour.
 42 * * * * {{ django }} cleanup
 30 * * * * {{ cron }} get_customercare_stats
+59 * * * * {{ cron }} escalate_questions
 
 # Every 6 hours.
 0 */6 * * * {{ django }} update_product_details -q > /dev/null

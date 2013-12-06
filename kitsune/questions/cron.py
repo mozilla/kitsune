@@ -9,9 +9,11 @@ from django.db import connection, transaction
 
 import cronjobs
 
+from kitsune.questions import config
 from kitsune.questions.models import (
     Question, QuestionVote, QuestionMappingType, QuestionVisits)
-from kitsune.questions.tasks import update_question_vote_chunk
+from kitsune.questions.tasks import (
+    escalate_question, update_question_vote_chunk)
 from kitsune.search.es_utils import ES_EXCEPTIONS, get_documents
 from kitsune.search.tasks import index_task
 from kitsune.sumo.utils import chunked
@@ -132,3 +134,31 @@ def reload_question_traffic_stats():
         return
 
     QuestionVisits.reload_from_analytics(verbose=settings.DEBUG)
+
+
+@cronjobs.register
+def escalate_questions():
+    """Escalate questions needing attention.
+
+    Escalate questions where the status is "needs attention" and the
+    last post was made more than 12 hours ago.
+    """
+    # Get all the questions that need attention and haven't been escalated.
+    qs = Question.objects.needs_attention().exclude(
+        tags__slug__in=[config.ESCALATE_TAG_NAME])
+
+    # From those, get the ones where the last post was over 12 hours ago.
+    qs_last_post_old = qs.filter(
+        last_answer__created__lt=datetime.now() - timedelta(hours=12))
+
+    # And the ones that haven't been replied to and are over 12 hours old.
+    qs_no_replies_yet = qs.filter(
+        last_answer__isnull=True,
+        created__lt=datetime.now() - timedelta(hours=12))
+    questions_to_escalate = list(qs_last_post_old) + list(qs_no_replies_yet)
+
+    for question in questions_to_escalate:
+        question.tags.add(config.ESCALATE_TAG_NAME)
+        escalate_question.delay(question.id)
+
+    return len(questions_to_escalate)
