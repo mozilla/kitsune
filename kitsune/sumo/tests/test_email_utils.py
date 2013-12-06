@@ -113,7 +113,7 @@ class SafeTranslationTests(TestCase):
         eq_(len(mocked_log.method_calls), 1)
 
         method_name, method_args, method_kwargs = mocked_log.method_calls[0]
-        eq_(method_name, 'error')
+        eq_(method_name, 'exception')
         assert 'Bad translation' in method_args[0]
         eq_(method_args[1], 'fr')
 
