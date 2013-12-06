@@ -38,7 +38,7 @@ def safe_translation(f):
         try:
             with uselocale(locale):
                 return f(locale, *args, **kwargs)
-        except (TypeError, KeyError, ValueError, IndexError) as e:
+        except (TypeError, KeyError, ValueError, IndexError):
             # Types of errors, and examples.
             #
             # TypeError: Not enough arguments for string
@@ -49,7 +49,7 @@ def safe_translation(f):
             #    '%(foo)a' or '%(foo)' or '{foo'
             # IndexError: Not enough arguments for .format() style string.
             #    '{0} {1}'.format(42)
-            log.error('Bad translation in locale "%s": %s', locale, e)
+            log.exception('Bad translation in locale "%s"', locale)
 
             with uselocale(settings.WIKI_DEFAULT_LANGUAGE):
                 return f(settings.WIKI_DEFAULT_LANGUAGE, *args, **kwargs)
