@@ -1,5 +1,5 @@
 {% macro awards_list(awards) -%}
-  <ul>
+  <ul class="cf">
     {% for award in awards %}
       {% if award.image %}
         {% set award_image = award.image.url %}
