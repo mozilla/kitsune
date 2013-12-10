@@ -142,7 +142,7 @@ def escalate_questions():
 
     Escalate questions where the status is "needs attention" and the
     last post was made more than 12 hours ago, but not that are older
-    than 2 days (to avoid the backfill from hell).
+    than 7 days. (to avoid the backfill from hell).
     """
     if settings.STAGE:
         return
@@ -151,15 +151,17 @@ def escalate_questions():
         tags__slug__in=[config.ESCALATE_TAG_NAME])
 
     # From those, get the ones where the last post was over 12 hours ago.
+    twelve_hours = datetime.now() - timedelta(hours=12)
+    one_week = datetime.now() - timedelta(days=7)
     qs_last_post_old = qs.filter(
-        last_answer__created__lt=datetime.now() - timedelta(hours=12),
-        last_answer__created__gt=datetime.now() - timedelta(hours=48))
+        last_answer__created__lt=twelve_hours,
+        last_answer__created__gt=one_week)
 
     # And the ones that haven't been replied to and are over 12 hours old.
     qs_no_replies_yet = qs.filter(
         last_answer__isnull=True,
-        created__lt=datetime.now() - timedelta(hours=12),
-        created__gt=datetime.now() - timedelta(hours=48))
+        created__lt=twelve_hours,
+        created__gt=one_week)
     questions_to_escalate = list(qs_last_post_old) + list(qs_no_replies_yet)
 
     for question in questions_to_escalate:
