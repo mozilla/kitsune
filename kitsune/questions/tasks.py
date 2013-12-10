@@ -1,4 +1,5 @@
 import logging
+import traceback
 from datetime import date
 
 from django.conf import settings
@@ -10,6 +11,7 @@ import tidings.events
 from celery.task import task
 from multidb.pinning import pin_this_thread, unpin_this_thread
 from statsd import statsd
+from zendesk import ZendeskError
 
 from kitsune.kbadge.utils import get_or_create_badge
 from kitsune.questions.config import ANSWERS_PER_PAGE
@@ -154,6 +156,17 @@ def maybe_award_badge(badge_template, year, user):
         return True
 
 
+class PickleableZendeskError(Exception):
+    """Zendesk error that captures information and can be pickled
+
+    This is like kitsune/search/tasks.py:IndexingTaskError and is
+    totally goofy.
+
+    """
+    def __init__(self):
+        super(PickleableZendeskError, self).__init__(traceback.format_exc())
+
+
 @task
 def escalate_question(question_id):
     """Escalate a question to zendesk by submitting a ticket."""
@@ -164,8 +177,12 @@ def escalate_question(question_id):
         domain=Site.objects.get_current().domain,
         url=question.get_absolute_url())
 
-    submit_ticket(
-        email='support@mozilla.com',
-        category='Escalated',
-        subject=u'[Escalated] {title}'.format(title=question.title),
-        body=u'{url}\n\n{content}'.format(url=url, content=question.content))
+    try:
+        submit_ticket(
+            email='support@mozilla.com',
+            category='Escalated',
+            subject=u'[Escalated] {title}'.format(title=question.title),
+            body=u'{url}\n\n{content}'.format(url=url, content=question.content))
+    except ZendeskError:
+        # This is unpickleable, so we need to unwrap it a bit
+        raise PickleableZendeskError()
