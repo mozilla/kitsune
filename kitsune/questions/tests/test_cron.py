@@ -20,7 +20,7 @@ class TestEscalateCron(TestCase):
         questions_to_escalate = [
             # Questions over 12 hours old without an answer.
             question(created=datetime.now() - timedelta(hours=13), save=True),
-            question(created=datetime.now() - timedelta(hours=100), save=True),
+            question(created=datetime.now() - timedelta(hours=36), save=True),
         ]
 
         # A question where the last answer is the asker and that answer is
@@ -54,7 +54,7 @@ class TestEscalateCron(TestCase):
         questions_not_to_escalate.append(q)
 
         # Question older than 12 hours without an answer already escalated.
-        q = question(created=datetime.now() - timedelta(hours=100), save=True)
+        q = question(created=datetime.now() - timedelta(hours=36), save=True)
         q.tags.add(config.ESCALATE_TAG_NAME)
         questions_not_to_escalate.append(q)
 
