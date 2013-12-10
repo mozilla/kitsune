@@ -141,7 +141,8 @@ def escalate_questions():
     """Escalate questions needing attention.
 
     Escalate questions where the status is "needs attention" and the
-    last post was made more than 12 hours ago.
+    last post was made more than 12 hours ago, but not that are older
+    than 2 days (to avoid the backfill from hell).
     """
     # Get all the questions that need attention and haven't been escalated.
     qs = Question.objects.needs_attention().exclude(
@@ -149,12 +150,14 @@ def escalate_questions():
 
     # From those, get the ones where the last post was over 12 hours ago.
     qs_last_post_old = qs.filter(
-        last_answer__created__lt=datetime.now() - timedelta(hours=12))
+        last_answer__created__lt=datetime.now() - timedelta(hours=12),
+        last_answer__created__gt=datetime.now() - timedelta(hours=48))
 
     # And the ones that haven't been replied to and are over 12 hours old.
     qs_no_replies_yet = qs.filter(
         last_answer__isnull=True,
-        created__lt=datetime.now() - timedelta(hours=12))
+        created__lt=datetime.now() - timedelta(hours=12),
+        created__gt=datetime.now() - timedelta(hours=48))
     questions_to_escalate = list(qs_last_post_old) + list(qs_no_replies_yet)
 
     for question in questions_to_escalate:
