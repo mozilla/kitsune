@@ -144,6 +144,8 @@ def escalate_questions():
     last post was made more than 12 hours ago, but not that are older
     than 2 days (to avoid the backfill from hell).
     """
+    if settings.STAGE:
+        return
     # Get all the questions that need attention and haven't been escalated.
     qs = Question.objects.needs_attention().exclude(
         tags__slug__in=[config.ESCALATE_TAG_NAME])
