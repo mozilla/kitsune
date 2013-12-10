@@ -769,7 +769,6 @@ def watch_locale(request, product=None):
     ReviewableRevisionInLocaleEvent.notify(request.user, **kwargs)
     statsd.incr('wiki.watches.locale')
 
-    # A 200 so jQuery interprets it as success
     return HttpResponse()
 
 
