@@ -2,7 +2,6 @@ import json
 import logging
 import random
 import time
-from collections import OrderedDict
 from datetime import date, datetime, timedelta
 
 from django.conf import settings
@@ -24,6 +23,7 @@ from django.views.decorators.http import (require_POST, require_GET,
 
 import jingo
 import waffle
+from ordereddict import OrderedDict
 from mobility.decorators import mobile_template
 from ratelimit.decorators import ratelimit
 from ratelimit.helpers import is_ratelimited
