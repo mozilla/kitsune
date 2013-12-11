@@ -14,6 +14,7 @@ HIGHEST_RANKING = 100
 # Special tag names:
 ESCALATE_TAG_NAME = 'escalate'
 NEEDS_INFO_TAG_NAME = 'needsinfo'
+OFFTOPIC_TAG_NAME = 'offtopic'
 
 
 products = SortedDict([

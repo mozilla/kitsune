@@ -606,51 +606,96 @@ h2 {
   }
 
   #filters {
-    h3 {
-      margin: 5px 0;
-    }
+    background: #fff;
+    margin-bottom: 20px;
+    padding: 20px 34px;
 
-    > section {
-      border-top: 1px dotted @borderLightGrey;
-      margin: 10px 0;
-      padding: 10px 0;
-    }
+    #more-filters {
+      border-right: 1px dotted @borderLightGrey;
+      float: left;
+      width: 78.5%;
 
-    p {
-      font-size: 12px;
-      margin-top: 0;
-    }
+      .cf {
+        margin-bottom: 10px;
 
-    .grid_2 {
-      margin-left: 0;
-    }
-
-    ul {
-      list-style: none;
-      margin: 0;
-      padding: 0;
-
-      li {
-        a {
-          color: @textLightGrey;
+        &:last-of-type {
+          margin-bottom: 0;
         }
 
-        &.active {
-          a {
-            color: @textGrey;
-            font-weight: bold;
+        > span {
+          float: left;
+          font-weight: bold;
+        }
+
+        > ul {
+          float: left;
+          list-style: none;
+          margin: 0;
+          padding: 0;
+
+          > li {
+            border-left: 1px solid @textGrey;
+            float: left;
+            margin-right: 10px;
+            padding-left: 10px;
+
+            &:first-of-type {
+              border: none;
+            }
+
+            a,
+            a:hover {
+              color: @textGrey;
+
+              &.selected {
+                color: #000;
+                font-weight: bold;
+                text-decoration: none;
+              }
+            }
+
+            label {
+              cursor: pointer;
+            }
           }
         }
       }
     }
 
-    input[type=text] {
-      margin: 0 0 10px;
-      width: 130px;
+    #flag-filter {
+      .box-sizing(border-box);
+      float: right;
+      padding-left: 25px;
+      width: 21%;
+    }
+  }
+
+  #owner-tabs {
+    padding: 0 8px;
+
+    a,
+    a:hover {
+      background: url("../img/grain.png") #E0E5E8;
+      color: @textGrey;
+      float: left;
+      height: 64px;
+      line-height: 64px;
+      margin-left: 6px;
+      padding: 0 20px;
+      text-decoration: none;
+
+      &.selected {
+        background: #fff;
+        color: #000;
+        font-weight: bold;
+      }
     }
   }
 
   #top-contributors {
+    position: relative;
+    text-align: center;
+
     ol {
       display: inline-block;
       width: 35%;
@@ -661,20 +706,23 @@ h2 {
     }
 
     .inner-wrap {
+      border: 1px solid #eee;
       display: none;
+      text-align: left;
     }
 
     &:hover {
-      position: relative;
-
       .inner-wrap {
+        background: #fff;
         display:block;
+        position: absolute;
+        right: -1px;
+        top: 100%;
+        width: 360px;
       }
 
       .feature-box {
         background: #fff;
-        position: absolute;
-        width: 318px;
       }
     }
   }
@@ -1180,6 +1228,7 @@ div.ans-attachments {
 }
 
 .feature-box {
+  margin: 0;
   padding: 13px 30px 15px;
 
   h2 {

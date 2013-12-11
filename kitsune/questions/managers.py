@@ -26,8 +26,27 @@ class QuestionManager(ManagerBase):
         return self.filter(solution__isnull=True, is_locked=False).filter(
             Q(last_answer__creator=F('creator')) | Q(last_answer__isnull=True))
 
+    def new(self):
+        return self.filter(last_answer__isnull=True, is_locked=False)
+
+    def unhelpful_answers(self):
+        return self.filter(solution__isnull=True, is_locked=False,
+                           last_answer__creator=F('creator'))
+
     def needs_info(self):
-        return self.filter(tags__slug__in=[config.NEEDS_INFO_TAG_NAME])
+        qs = self.filter(solution__isnull=True, is_locked=False,
+                         tags__slug__in=[config.NEEDS_INFO_TAG_NAME])
+        return qs.exclude(last_answer__creator=F('creator'))
+
+    def solution_provided(self):
+        qs = self.filter(solution__isnull=True, is_locked=False)
+        return qs.exclude(last_answer__creator=F('creator'))
+
+    def locked(self):
+        return self.filter(is_locked=True)
+
+    def solved(self):
+        return self.filter(solution__isnull=False)
 
     def escalated(self):
         return self.filter(tags__slug__in=[config.ESCALATE_TAG_NAME])

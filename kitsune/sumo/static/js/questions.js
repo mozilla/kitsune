@@ -17,6 +17,10 @@
 
         if($body.is('.questions')) {
             initTagFilterToggle();
+
+            $('#flag-filter input[type="checkbox"]').on('click', function() {
+                window.location = $(this).data('url');
+            });
         }
 
         if($body.is('.answers')) {

@@ -64,64 +64,19 @@
       </div>
     {% endif %}
   </div>
-  <div class="grid_7">
-    <div class="feature-box{% if not filter and not sort %} collapsed{% endif %}" data-ui-type="folding-section" id="filters">
-      <header><h2 class="nomargin">{{ _('Sort and Filter') }}</h2></header>
-      <section class="cf">
-        <div class="grid_2">
-          <h3>{{ _('Sort by') }}</h3>
-          <ul class="sort-by">
-            <li{% if not sort %} class="active"{% endif %}>
-              <a href="{{ questions_url(sort=None) }}">{{ _('Most Recent') }}</a>
-            </li>
-            <li{% if sort == 'requested' %} class="active"{% endif %}>
-              <a href="{{ questions_url(sort='requested') }}">{{ _('Most Requested') }}</a>
-            </li>
-          </ul>
-        </div>
-        <div class="grid_2">
-          <h3>{{ _('Show') }}</h3>
-          <ul class="show">
-            <li{% if not filter %} class="active"{% endif %}>
-              <a href="{{ questions_url(filter=None) }}">{{ _('All') }}</a>
-            </li>
-            <li{% if filter == 'unsolved' %} class="active"{% endif %}>
-              <a href="{{ questions_url(filter='unsolved') }}">{{ _('Unsolved') }}</a>
-            </li>
-            <li{% if filter == 'solved' %} class="active"{% endif %}>
-              <a href="{{ questions_url(filter='solved') }}">{{ _('Solved') }}</a>
-            </li>
-            <li{% if filter == 'no-replies' %} class="active"{% endif %}>
-              <a href="{{ questions_url(filter='no-replies') }}">{{ _('No Replies') }}</a>
-            </li>
-            {% if user.is_authenticated() %}
-              <li{% if filter == 'my-contributions' %} class="active"{% endif %}>
-                <a href="{{ questions_url(filter='my-contributions') }}">{{ _('My Contributions') }}</a>
-              </li>
-            {% endif %}
-          </ul>
-        </div>
-        <div class="grid_2">
-          <section id="tag-filter">
-            <h3>{{ _('Filter') }}</h3>
-            <p>{{ _('Enter a tag. For example: "Firefox 14.0", "Windows 7", "crash"') }}</p>
-            <form method="get">
-              <input type="hidden" class="current-tagged" value="{{ tagged }}"/>
-              {% for key, value in request.GET.items() %}
-                <input type="hidden" name="{{ key }}" value="{{ value }}"/>
-              {% endfor %}
-              <input class="searchbox" type="text" name="tagged" value="" data-vocabulary="{{ tag_vocab() }}" required="required"/>
-              <button type="submit" class="btn">{{ _('Filter Tag') }}</button>
-            </form>
-          </section>
-        </div>
-      </section>
+
+  <div class="grid_9">
+    <div id="owner-tabs" class="cf">
+      <a href="{{ questions_url(show='all', filter=None) }}" class="{% if show == 'all' %}selected{% endif %}">{{ _('All questions') }}</a>
+      <a href="{{ questions_url(show='needs-attention', filter=None) }}" class="{% if show == 'needs-attention' %}selected{% endif %}">{{ _('Attention needed') }}</a>
+      <a href="{{ questions_url(show='responded', filter=None) }}" class="{% if show == 'responded' %}selected{% endif %}">{{ _("Responded") }}</a>
+      <a href="{{ questions_url(show='done', filter=None) }}" class="{% if show == 'done' %}selected{% endif %}">{{ _('Done') }}</a>
     </div>
   </div>
-  <div class="grid_5">
+  <div class="grid_3">
     <section id="top-contributors">
       <div class="feature-box">
-        <h2 class="nomargin">{{ _('Top Contributors') }}</h2>
+        {{ _('Top Contributors') }}
         <div class="inner-wrap">
           {% if karma_top %}
             <ol>
@@ -158,6 +113,41 @@
       </div>
     </section>
   </div>
+  <div class="grid_12">
+    <div id="filters" class="cf">
+      <div id="flag-filter">
+        <div>
+          <label><input data-url="{{ questions_url(escalated=0 if escalated else 1) }}" type="checkbox" {% if escalated %}checked="checked"{% endif %}> {{ _('Escalated') }}</label>
+        </div>
+        <div>
+          <label><input data-url="{{ questions_url(offtopic=0 if offtopic else 1) }}" type="checkbox" {% if offtopic %}checked="checked"{% endif %}> {{ _('Off-topic') }}</label>
+        </div>
+      </div>
+
+      <div id="more-filters">
+        <div class="cf">
+          <span>{{ _('Filter:') }}</span>
+          <ul>
+            <li><a href="{{ questions_url(filter=None) }}" class="{% if not filter %}selected{% endif %}">{{ _('All') }}</a></li>
+            {% for f, desc in filters.iteritems() %}
+              <li><a href="{{ questions_url(filter=f) }}" class="{% if filter == f %}selected{% endif %}">{{ desc }}</a></li>
+            {% endfor %}
+          </ul>
+        </div>
+
+        <div class="cf">
+          <span>{{ _('Show me:') }}</span>
+          <ul>
+            <li><a href="{{ questions_url(owner=None) }}" class="{% if not owner or not request.user.is_authenticated() %}selected{% endif %}">{{ _('Posts from everyone') }}</a></li>
+            {% if request.user.is_authenticated() %}
+              <li><a href="{{ questions_url(owner='mine') }}" class="{% if owner == 'mine' %}selected{% endif %}">{{ _('My contributions') }}</a></li>
+            {% endif %}
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="grid_12">
     {% if questions.object_list %}
       <article class="questions">
