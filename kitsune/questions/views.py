@@ -23,6 +23,7 @@ from django.views.decorators.http import (require_POST, require_GET,
 
 import jingo
 import waffle
+from ordereddict import OrderedDict
 from mobility.decorators import mobile_template
 from ratelimit.decorators import ratelimit
 from ratelimit.helpers import is_ratelimited
@@ -75,24 +76,41 @@ log = logging.getLogger('k.questions')
 UNAPPROVED_TAG = _lazy(u'That tag does not exist.')
 NO_TAG = _lazy(u'Please provide a tag.')
 
+FILTER_GROUPS = {
+    'all': OrderedDict([
+        ('recently-unanswered', _('Recently unanswered')),
+    ]),
+    'needs-attention': OrderedDict([
+        ('new', _('New')),
+        ('unhelpful-answers', _("Answers didn't help")),
+    ]),
+    'responded': OrderedDict([
+        ('needsinfo', _('Needs info')),
+        ('solution-provided', _('Solution provided')),
+    ]),
+    'done': OrderedDict([
+        ('solved', _('Solved')),
+        ('locked', _('Locked')),
+    ]),
+}
+
 
 @mobile_template('questions/{mobile/}questions.html')
 def questions(request, template):
     """View the questions."""
 
     filter_ = request.GET.get('filter')
+    owner = request.GET.get(
+        'owner', request.session.get('questions_owner', 'all'))
+    show = request.GET.get('show', 'needs-attention')
+    escalated = int(request.GET.get(
+        'escalated', request.session.get('questions_escalated', False)))
+    offtopic = int(request.GET.get(
+        'offtopic', request.session.get('questions_offtopic', False)))
     tagged = request.GET.get('tagged')
     tags = None
-    sort_ = request.GET.get('sort', None)
     product_slug = request.GET.get('product')
     topic_slug = request.GET.get('topic')
-
-    if sort_ == 'requested':
-        order = ['-num_votes_past_week', '-_num_votes']
-    elif sort_ == 'created':
-        order = ['-created']
-    else:
-        order = ['-updated']
 
     if product_slug:
         product = get_object_or_404(Product, slug=product_slug)
@@ -107,39 +125,54 @@ def questions(request, template):
     else:
         topic = None
 
-    question_qs = Question.objects.select_related(
-        'creator', 'last_answer', 'last_answer__creator')
+    question_qs = Question.objects
 
-    # We only need _num_votes included if we are sorting by requested.
-    # We don't display it on the page.
-    if sort_ == 'requested':
-        question_qs = question_qs.extra(
-            {'_num_votes': 'SELECT COUNT(*) FROM questions_questionvote '
-                           'WHERE questions_questionvote.question_id = '
-                           'questions_question.id'})
+    if show not in FILTER_GROUPS:
+        show = None
+    else:
+        if filter_ not in FILTER_GROUPS[show]:
+            filter_ = None
+
+        if filter_ == 'new':
+            question_qs = question_qs.new()
+        elif filter_ == 'unhelpful-answers':
+            question_qs = question_qs.unhelpful_answers()
+        elif filter_ == 'needsinfo':
+            question_qs = question_qs.needs_info()
+        elif filter_ == 'solution-provided':
+            question_qs = question_qs.solution_provided()
+        elif filter_ == 'solved':
+            question_qs = question_qs.solved()
+        elif filter_ == 'locked':
+            question_qs = question_qs.locked()
+        elif filter_ == 'recently-unanswered':
+            question_qs = question_qs.recently_unanswered()
+        else:
+            if show == 'needs-attention':
+                question_qs = question_qs.needs_attention()
+            if show == 'responded':
+                question_qs = question_qs.responded()
+            if show == 'done':
+                question_qs = question_qs.done()
+
+    question_qs = question_qs.select_related(
+        'creator', 'last_answer', 'last_answer__creator')
 
     question_qs = question_qs.filter(creator__is_active=1)
 
-    if filter_ == 'no-replies':
-        question_qs = question_qs.filter(num_answers=0, is_locked=False,
-                                         is_archived=False)
-    elif filter_ == 'replies':
-        question_qs = question_qs.filter(num_answers__gt=0)
-    elif filter_ == 'solved':
-        question_qs = question_qs.exclude(solution=None)
-    elif filter_ == 'unsolved':
-        question_qs = question_qs.filter(solution=None)
-    elif filter_ == 'my-contributions' and request.user.is_authenticated():
+    if owner == 'mine' and request.user.is_authenticated():
         criteria = Q(answers__creator=request.user) | Q(creator=request.user)
         question_qs = question_qs.filter(criteria).distinct()
-    elif filter_ == 'recent-unanswered':
-        # Only unanswered questions from the last 24 hours.
-        start = datetime.now() - timedelta(hours=24)
-        question_qs = question_qs.filter(
-            num_answers=0, created__gt=start, is_locked=False,
-            is_archived=False)
     else:
-        filter_ = None
+        owner = None
+
+    if escalated:
+        question_qs = question_qs.filter(
+            tags__slug__in=[config.ESCALATE_TAG_NAME])
+
+    if offtopic:
+        question_qs = question_qs.filter(
+            tags__slug__in=[config.OFFTOPIC_TAG_NAME])
 
     feed_urls = ((urlparams(reverse('questions.feed'),
                             product=product_slug, topic=topic_slug),
@@ -184,7 +217,7 @@ def questions(request, template):
     question_qs = question_qs.filter(locale_query)
 
     # Set the order.
-    question_qs = question_qs.order_by(*order)
+    question_qs = question_qs.order_by('-updated')
 
     try:
         with statsd.timer('questions.view.paginate.%s' % filter_):
@@ -216,10 +249,20 @@ def questions(request, template):
     else:
         topic_list = []
 
+    # Store current filters in the session
+    if request.user.is_authenticated():
+        request.session['questions_owner'] = owner
+        request.session['questions_escalated'] = escalated
+        request.session['questions_offtopic'] = offtopic
+
     data = {'questions': questions_page,
             'feeds': feed_urls,
             'filter': filter_,
-            'sort': sort_,
+            'owner': owner,
+            'show': show,
+            'filters': FILTER_GROUPS[show],
+            'escalated': escalated,
+            'offtopic': offtopic,
             'tags': tags,
             'tagged': tagged,
             'recent_asked_count': recent_asked_count,

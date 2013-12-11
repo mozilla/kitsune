@@ -1028,88 +1028,6 @@ def _remove_async_tag_url(question_id):
 
 
 class QuestionsTemplateTestCase(TestCaseBase):
-
-    def test_all_filter_highlight(self):
-        q = question(save=True)
-        response = get(self.client, 'questions.questions')
-        doc = pq(response.content)
-        eq_('active', doc('ul.show li')[0].attrib['class'])
-        eq_('question-%s' % q.id, doc('.questions > section')[0].attrib['id'])
-
-    def test_no_reply_filter(self):
-        url_ = urlparams(reverse('questions.questions'),
-                         filter='no-replies')
-        q = question(save=True)
-        response = self.client.get(url_)
-        doc = pq(response.content)
-        eq_('active', doc('ul.show li')[-1].attrib['class'])
-        eq_('question-%s' % q.id, doc('.questions > section')[0].attrib['id'])
-        eq_('/questions?filter=no-replies',
-            doc('link[rel="canonical"]')[0].attrib['href'])
-
-    def test_solved_filter(self):
-        # initially there should be no solved answers
-        url_ = urlparams(reverse('questions.questions'),
-                         filter='solved')
-        response = self.client.get(url_)
-        doc = pq(response.content)
-        eq_('active', doc('ul.show li')[2].attrib['class'])
-        eq_(0, len(doc('ol.questions li')))
-        eq_('/questions?filter=solved',
-            doc('link[rel="canonical"]')[0].attrib['href'])
-
-        # solve one question then verify that it shows up
-        a = answer(save=True)
-        a.question.solution = a
-        a.question.save()
-        response = self.client.get(url_)
-        doc = pq(response.content)
-        eq_(1, len(doc('.questions > section')))
-        eq_('question-%s' % a.question.id,
-            doc('.questions > section')[0].attrib['id'])
-
-    def test_unsolved_filter(self):
-        answer(save=True)
-        answer(save=True)
-        # initially there should be 2 unsolved answers
-        url_ = urlparams(reverse('questions.questions'),
-                         filter='unsolved')
-        response = self.client.get(url_)
-        doc = pq(response.content)
-        eq_('active', doc('ul.show li')[1].attrib['class'])
-        eq_(2, len(doc('.questions > section')))
-
-        # solve one question then verify that it doesn't show up
-        a = Answer.objects.all()[0]
-        a.question.solution = a
-        a.question.save()
-        response = self.client.get(url_)
-        doc = pq(response.content)
-        eq_(1, len(doc('.questions > section')))
-        eq_(0, len(doc('.questions #question-%s' % a.question.id)))
-        eq_('/questions?filter=unsolved',
-            doc('link[rel="canonical"]')[0].attrib['href'])
-
-    def _my_contributions_test_helper(self, username, expected_qty):
-        url_ = urlparams(reverse('questions.questions'),
-                         filter='my-contributions')
-        self.client.login(username=username, password="testpass")
-        response = self.client.get(url_)
-        doc = pq(response.content)
-        eq_('active', doc('ul.show li')[-1].attrib['class'])
-        eq_(expected_qty, len(doc('.questions > section')))
-        eq_('/questions?filter=my-contributions',
-            doc('link[rel="canonical"]')[0].attrib['href'])
-
-    def test_my_contributions_filter(self):
-        u = user(save=True)
-        answer(creator=u, save=True)
-        answer(creator=u, save=True)
-        answer(creator=u, save=True)
-
-        # u should have 3 questions in their contributions
-        self._my_contributions_test_helper(u.username, 3)
-
     def test_contributed_badge(self):
         u = user(save=True)
         q1 = answer(creator=u, save=True).question
@@ -1117,7 +1035,8 @@ class QuestionsTemplateTestCase(TestCaseBase):
 
         # u should have a contributor badge on q1 but not q2
         self.client.login(username=u.username, password="testpass")
-        response = get(self.client, 'questions.questions')
+        response = self.client.get(urlparams(reverse('questions.questions'),
+                                             show='all'))
         doc = pq(response.content)
         eq_(1,
             len(doc('#question-%s .thread-contributed.highlighted' % q1.id)))
@@ -1156,12 +1075,13 @@ class QuestionsTemplateTestCase(TestCaseBase):
         tagname = 'mobile'
         tag(name=tagname, slug=tagname, save=True)
         self.client.login(username=u.username, password="testpass")
-        tagged = urlparams(reverse('questions.questions'), tagged=tagname)
+        tagged = urlparams(reverse('questions.questions'), tagged=tagname,
+                           show='all')
 
         # First there should be no questions tagged 'mobile'
         response = self.client.get(tagged)
         doc = pq(response.content)
-        eq_(0, len(doc('ol.questions > li')))
+        eq_(0, len(doc('article.questions > section')))
 
         # Tag a question 'mobile'
         q = question(save=True)
@@ -1176,8 +1096,8 @@ class QuestionsTemplateTestCase(TestCaseBase):
         # Now there should be 1 question tagged 'mobile'
         response = self.client.get(tagged)
         doc = pq(response.content)
-        eq_(1, len(doc('.questions > section')))
-        eq_('/questions?tagged=mobile',
+        eq_(1, len(doc('article.questions > section')))
+        eq_('/questions?tagged=mobile&show=all',
             doc('link[rel="canonical"]')[0].attrib['href'])
 
     def test_product_filter(self):
@@ -1253,22 +1173,6 @@ class QuestionsTemplateTestCase(TestCaseBase):
         # Filter on p3 -> No results
         check({'topic': t3.slug}, [])
 
-    def test_product_query_params(self):
-        """Test that the urls generated include the right query parameters."""
-
-        p1 = product(save=True)
-        url = urlparams(reverse('questions.questions'), product=p1.slug)
-        resp = self.client.get(url)
-        doc = pq(resp.content)
-        assert ('product=%s' % p1.slug in
-                doc('.sort-by >li > a')[0].attrib['href'])
-        assert ('product=%s' % p1.slug in
-                doc('.sort-by >li > a')[1].attrib['href'])
-
-        product_input = doc('#tag-filter input[type=hidden][name=product]')
-        eq_(1, len(product_input))
-        eq_(p1.slug, product_input[0].attrib['value'])
-
     def test_robots_noindex(self):
         """Verify the page is set for noindex by robots."""
         response = get(self.client, 'questions.questions')
@@ -1330,37 +1234,6 @@ class QuestionsTemplateTestCaseNoFixtures(TestCase):
         response = self.client.get(url)
         doc = pq(response.content)
         eq_(2, len(doc('article.questions > section')))
-
-    def test_order_by_votes(self):
-        #set up 3 questions with same number of votes in last week
-        #but different # of total votes
-        q1 = question(title="QUEST_A", num_votes_past_week=1, save=True)
-        q2 = question(title="QUEST_B", num_votes_past_week=1, save=True)
-        q3 = question(title="QUEST_C", num_votes_past_week=1, save=True)
-
-        questionvote(question=q1, save=True)
-
-        questionvote(question=q2, save=True)
-        questionvote(question=q2,
-                created=datetime(2012, 7, 9, 9, 0, 0),
-                save=True)
-        questionvote(question=q2,
-                created=datetime(2012, 7, 9, 9, 0, 0),
-                save=True)
-
-        questionvote(question=q3, save=True)
-        questionvote(question=q3,
-                created=datetime(2012, 7, 9, 9, 0, 0),
-                save=True)
-
-        url = urlparams(
-            reverse('questions.questions'),
-            sort='requested')
-
-        response = self.client.get(url, follow=True)
-        eq_(True, response.content.find("QUEST_B") <
-                response.content.find("QUEST_C") <
-                response.content.find("QUEST_A"))
 
 
 class QuestionEditingTests(TestCaseBase):
