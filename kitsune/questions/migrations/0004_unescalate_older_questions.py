@@ -9,7 +9,6 @@ class Migration(DataMigration):
     def forwards(self, orm):
         """Unescalate questions over a week old."""
         # Get the escalate tag.
-        ESCALATE_TAG_NAME = 'escalate'
         tag = orm['taggit.Tag'].objects.get(name='escalate')
 
         # Get all the items tagged escalate.
