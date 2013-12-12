@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 from django.db.models import Q, F
 
 from kitsune.questions import config
@@ -25,6 +27,10 @@ class QuestionManager(ManagerBase):
     def needs_attention(self):
         return self.filter(solution__isnull=True, is_locked=False).filter(
             Q(last_answer__creator=F('creator')) | Q(last_answer__isnull=True))
+
+    def recently_unanswered(self):
+        return self.filter(last_answer__isnull=True, is_locked=False,
+                           created__gte=datetime.now() - timedelta(hours=24))
 
     def new(self):
         return self.filter(last_answer__isnull=True, is_locked=False)

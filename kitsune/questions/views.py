@@ -77,7 +77,9 @@ UNAPPROVED_TAG = _lazy(u'That tag does not exist.')
 NO_TAG = _lazy(u'Please provide a tag.')
 
 FILTER_GROUPS = {
-    'all': OrderedDict(),
+    'all': OrderedDict([
+        ('recently-unanswered', _('Recently unanswered')),
+    ]),
     'needs-attention': OrderedDict([
         ('new', _('New')),
         ('unhelpful-answers', _("Answers didn't help")),
@@ -98,9 +100,9 @@ def questions(request, template):
     """View the questions."""
 
     filter_ = request.GET.get(
-        'filter', request.session.get('questions_filter', None))
+        'filter', request.session.get('questions_filter', 'none'))
     owner = request.GET.get(
-        'owner', request.session.get('questions_owner', None))
+        'owner', request.session.get('questions_owner', 'all'))
     show = request.GET.get(
         'show', request.session.get('questions_show', 'needs-attention'))
     escalated = int(request.GET.get(
@@ -145,6 +147,8 @@ def questions(request, template):
             question_qs = question_qs.solved()
         elif filter_ == 'locked':
             question_qs = question_qs.locked()
+        elif filter_ == 'recently-unanswered':
+            question_qs = question_qs.recently_unanswered()
         else:
             if show == 'needs-attention':
                 question_qs = question_qs.needs_attention()
@@ -161,6 +165,8 @@ def questions(request, template):
     if owner == 'mine' and request.user.is_authenticated():
         criteria = Q(answers__creator=request.user) | Q(creator=request.user)
         question_qs = question_qs.filter(criteria).distinct()
+    else:
+        owner = None
 
     if escalated:
         question_qs = question_qs.filter(
