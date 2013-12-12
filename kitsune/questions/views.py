@@ -163,6 +163,8 @@ def questions(request, template):
     if owner == 'mine' and request.user.is_authenticated():
         criteria = Q(answers__creator=request.user) | Q(creator=request.user)
         question_qs = question_qs.filter(criteria).distinct()
+    else:
+        owner = None
 
     if escalated:
         question_qs = question_qs.filter(

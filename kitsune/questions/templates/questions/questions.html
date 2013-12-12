@@ -67,10 +67,10 @@
 
   <div class="grid_9">
     <div id="owner-tabs" class="cf">
-      <a href="{{ questions_url(show='needs-attention', filter=None) }}" class="{% if show == 'needs-attention' %}selected{% endif %}">{{ _('Attention needed') }}</a>
-      <a href="{{ questions_url(show='responded', filter=None) }}" class="{% if show == 'responded' %}selected{% endif %}">{{ _("Responded") }}</a>
-      <a href="{{ questions_url(show='done', filter=None) }}" class="{% if show == 'done' %}selected{% endif %}">{{ _('Done') }}</a>
-      <a href="{{ questions_url(show='all', filter=None) }}" class="{% if show == 'all' %}selected{% endif %}">{{ _('All questions') }}</a>
+      <a href="{{ questions_url(show='needs-attention', filter=None) }}" {{ show|class_selected('needs-attention') }}>{{ _('Attention needed') }}</a>
+      <a href="{{ questions_url(show='responded', filter=None) }}" {{ show|class_selected('responded') }}>{{ _("Responded") }}</a>
+      <a href="{{ questions_url(show='done', filter=None) }}" {{ show|class_selected('done') }}>{{ _('Done') }}</a>
+      <a href="{{ questions_url(show='all', filter=None) }}" {{ show|class_selected('all') }}>{{ _('All questions') }}</a>
     </div>
   </div>
   <div class="grid_3">
@@ -128,9 +128,9 @@
         <div class="cf">
           <span>{{ _('Filter:') }}</span>
           <ul>
-            <li><a href="{{ questions_url(filter=None) }}" class="{% if not filter %}selected{% endif %}">{{ _('All') }}</a></li>
+            <li><a href="{{ questions_url(filter=None) }}" {{ filter|class_selected(None) }}>{{ _('All') }}</a></li>
             {% for f, desc in filters.iteritems() %}
-              <li><a href="{{ questions_url(filter=f) }}" class="{% if filter == f %}selected{% endif %}">{{ desc }}</a></li>
+              <li><a href="{{ questions_url(filter=f) }}" {{ filter|class_selected(f) }}>{{ desc }}</a></li>
             {% endfor %}
           </ul>
         </div>
@@ -138,9 +138,9 @@
         <div class="cf">
           <span>{{ _('Show me:') }}</span>
           <ul>
-            <li><a href="{{ questions_url(owner='all') }}" class="{% if not owner or not request.user.is_authenticated() %}selected{% endif %}">{{ _('Posts from everyone') }}</a></li>
+            <li><a href="{{ questions_url(owner='all') }}" {{ owner|class_selected(None) }}>{{ _('Posts from everyone') }}</a></li>
             {% if request.user.is_authenticated() %}
-              <li><a href="{{ questions_url(owner='mine') }}" class="{% if owner == 'mine' %}selected{% endif %}">{{ _('My contributions') }}</a></li>
+              <li><a href="{{ questions_url(owner='mine') }}" {{ owner|class_selected('mine') }}>{{ _('My contributions') }}</a></li>
             {% endif %}
           </ul>
         </div>
