@@ -25,8 +25,10 @@ class QuestionManager(ManagerBase):
     # else if OP is last to post
     #      the status is "Needs Attention"
     def needs_attention(self):
-        return self.filter(solution__isnull=True, is_locked=False).filter(
-            Q(last_answer__creator=F('creator')) | Q(last_answer__isnull=True))
+        qs = self.filter(solution__isnull=True, is_locked=False,
+                         created__gte=datetime.now() - timedelta(days=7))
+        return qs.filter(Q(last_answer__creator=F('creator')) |
+                         Q(last_answer__isnull=True))
 
     def recently_unanswered(self):
         return self.filter(last_answer__isnull=True, is_locked=False,

@@ -99,12 +99,10 @@ FILTER_GROUPS = {
 def questions(request, template):
     """View the questions."""
 
-    filter_ = request.GET.get(
-        'filter', request.session.get('questions_filter', 'none'))
+    filter_ = request.GET.get('filter')
     owner = request.GET.get(
         'owner', request.session.get('questions_owner', 'all'))
-    show = request.GET.get(
-        'show', request.session.get('questions_show', 'needs-attention'))
+    show = request.GET.get('show', 'needs-attention')
     escalated = int(request.GET.get(
         'escalated', request.session.get('questions_escalated', False)))
     offtopic = int(request.GET.get(
@@ -165,8 +163,6 @@ def questions(request, template):
     if owner == 'mine' and request.user.is_authenticated():
         criteria = Q(answers__creator=request.user) | Q(creator=request.user)
         question_qs = question_qs.filter(criteria).distinct()
-    else:
-        owner = None
 
     if escalated:
         question_qs = question_qs.filter(
@@ -253,9 +249,7 @@ def questions(request, template):
 
     # Store current filters in the session
     if request.user.is_authenticated():
-        request.session['questions_filter'] = filter_
         request.session['questions_owner'] = owner
-        request.session['questions_show'] = show
         request.session['questions_escalated'] = escalated
         request.session['questions_offtopic'] = offtopic
 
