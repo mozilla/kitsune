@@ -68,25 +68,6 @@ class OverviewTests(TestCase):
         r.save()
         eq_(1, overview_rows('de')['templates']['denominator'])
 
-    def test_counting_unready_navigation(self):
-        """Navigation articles without ready-for-l10n rev don't count"""
-        # Make a navigation doc with an approved but not-ready-for-l10n rev:
-        r = revision(document=document(title='smoo',
-                                       category=50,
-                                       is_localizable=True,
-                                       is_template=False,
-                                       save=True),
-                     is_ready_for_localization=False,
-                     is_approved=True,
-                     save=True)
-
-        # It shouldn't show up in the total:
-        eq_(0, overview_rows('de')['navigation']['denominator'])
-
-        r.is_ready_for_localization = True
-        r.save()
-        eq_(1, overview_rows('de')['navigation']['denominator'])
-
     def test_counting_unready_docs(self):
         """Docs without a ready-for-l10n rev shouldn't count in total."""
         # Make a doc with an approved but not-ready-for-l10n rev:
@@ -138,35 +119,6 @@ class OverviewTests(TestCase):
         t.document.parent.save()
         t.document.save()
         # ...but not when it's a template:
-        eq_(0, overview_rows('de')['all']['numerator'])
-        eq_(0, overview_rows('de')['all']['denominator'])
-
-    def test_all_articles_doesnt_have_30_40_50(self):
-        """Make sure All Articles doesn't have 30, 40, and 50 articles"""
-        t = translated_revision(is_approved=True, save=True)
-        # It shows up in All when it's a normal doc:
-        eq_(1, overview_rows('de')['all']['numerator'])
-        eq_(1, overview_rows('de')['all']['denominator'])
-
-        # ...but not when it's a navigation article:
-        t.document.parent.title = t.document.title = 'thing'
-        t.document.parent.category = t.document.category = 50
-        t.document.parent.save()
-        t.document.save()
-        eq_(0, overview_rows('de')['all']['numerator'])
-        eq_(0, overview_rows('de')['all']['denominator'])
-
-        # ...or administration:
-        t.document.parent.category = t.document.category = 40
-        t.document.parent.save()
-        t.document.save()
-        eq_(0, overview_rows('de')['all']['numerator'])
-        eq_(0, overview_rows('de')['all']['denominator'])
-
-        # ...or how to contribute:
-        t.document.parent.category = t.document.category = 30
-        t.document.parent.save()
-        t.document.save()
         eq_(0, overview_rows('de')['all']['numerator'])
         eq_(0, overview_rows('de')['all']['denominator'])
 

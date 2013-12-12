@@ -205,12 +205,7 @@ def overview_rows(locale, product=None):
     if product:
         total = total.filter(products=product)
 
-    total_docs = (total.filter(is_template=False)
-                  .filter(category__in=(10, 20, 60))
-                  .count())
-    total_navigation = (total.filter(is_template=False)
-                        .filter(category=50)
-                        .count())
+    total_docs = total.filter(is_template=False).count()
     total_templates = total.filter(is_template=True).count()
 
     if product:
@@ -238,12 +233,7 @@ def overview_rows(locale, product=None):
             'AND NOT EXISTS ' +
                 ANY_SIGNIFICANT_UPDATES)
     translated_docs = single_result(
-        up_to_date_translation_count +
-        'AND transdoc.category in (10, 20, 60)',
-        prod_param + (locale, False, MEDIUM_SIGNIFICANCE))
-    translated_navigation = single_result(
-        up_to_date_translation_count +
-        'AND transdoc.category = 50',
+        up_to_date_translation_count,
         prod_param + (locale, False, MEDIUM_SIGNIFICANCE))
     translated_templates = single_result(
         up_to_date_translation_count,
@@ -294,14 +284,6 @@ def overview_rows(locale, product=None):
                                'content across KB articles. You can create and '
                                'update a set of instructions in one place, and '
                                'then refer to it in other pages.')),
-            'navigation': dict(
-                 title=_('Navigation Articles'),
-                 url='#' + NavigationTranslationsReadout.slug,
-                 numerator=translated_navigation, denominator=total_navigation,
-                 percent=percent_or_100(translated_navigation, total_navigation),
-                 description=_('How many of the approved navigation articles '
-                               'which allow translations have an approved '
-                               'translation into this language')),
             'all': dict(
                  title=_('All Knowledge Base Articles'),
                  numerator=translated_docs, denominator=total_docs,

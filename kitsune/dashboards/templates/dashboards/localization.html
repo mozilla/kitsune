@@ -82,9 +82,8 @@
       {% endif %}
 
       {{ overview_section(readouts, ((overview_rows['most-visited'], True),
-                                     (overview_rows['templates'], True),
-                                     (overview_rows['navigation'], True),
-                                     (overview_rows['all'], False))) }}
+                                     (overview_rows['all'], False),
+                                     (overview_rows['templates'], True))) }}
 
       {% for readout in readouts.itervalues() %}
         {{ print_readout(readout, max_rows=20 if readout.slug == 'most-visited-translations' else 10, product=product) }}
