@@ -267,7 +267,6 @@ window.k = window.k || {};
 
         if (authFound) {
             qs = '?' + query.map(function(pair) { return pair.join('='); }).join('&');
-            console.log(qs);
             history.replaceState(this.state, {}, qs);
         }
     }
