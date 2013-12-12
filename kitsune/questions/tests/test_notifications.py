@@ -1,3 +1,5 @@
+import re
+
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.core import mail
@@ -31,16 +33,16 @@ ANSWER_EMAIL_TO_ANONYMOUS = """{replier} commented on a Firefox question on test
 
 {title}
 
-https://testserver/en-US/questions/{question_id}#answer-{answer_id}
+https://testserver/en-US/questions/{question_id}?auth=AUTH#answer-{answer_id}
 
 {replier} wrote:
 "{content}"
 
 See the comment:
-https://testserver/en-US/questions/{question_id}#answer-{answer_id}
+https://testserver/en-US/questions/{question_id}?auth=AUTH#answer-{answer_id}
 
 If this comment is helpful, vote on it:
-https://testserver/en-US/questions/{question_id}/vote/{answer_id}?helpful
+https://testserver/en-US/questions/{question_id}/vote/{answer_id}?helpful=&auth=AUTH
 
 Help other Firefox users by browsing for unsolved questions on testserver:
 https://testserver/questions?filter=unsolved
@@ -60,7 +62,7 @@ ANSWER_EMAIL_TO_ASKER = """Hi {asker},
 "{content}"
 
 If this doesn't solve your problem, let {replier} know by replying on the website:
-https://testserver/en-US/questions/{question_id}#answer-{answer_id}
+https://testserver/en-US/questions/{question_id}?auth=AUTH#answer-{answer_id}
 
 If this answer solves your problem, please mark it as "solved":"""
 SOLUTION_EMAIL_TO_ANONYMOUS = \
@@ -220,7 +222,9 @@ class NotificationsTests(TestCaseBase):
         attrs_eq(mail.outbox[i], to=[watcher.email],
                  subject='%s commented on a Firefox question '
                          "you're watching" % a.creator.username)
-        starts_with(mail.outbox[i].body, ANSWER_EMAIL.format(
+        body = mail.outbox[i].body
+        body = re.sub(r'auth=[a-zA-Z0-9%_-]+', r'auth=AUTH', body)
+        starts_with(body, ANSWER_EMAIL.format(
             to_user=watcher.username,
             title=q.title,
             content=a.content,
@@ -232,7 +236,9 @@ class NotificationsTests(TestCaseBase):
         attrs_eq(mail.outbox[i], to=[q.creator.email],
                  subject='%s posted an answer to your question "%s"' %
                          (a.creator.username, q.title))
-        starts_with(mail.outbox[i].body, ANSWER_EMAIL_TO_ASKER.format(
+        body = mail.outbox[i].body
+        body = re.sub(r'auth=[a-zA-Z0-9%_-]+', r'auth=AUTH', body)
+        starts_with(body, ANSWER_EMAIL_TO_ASKER.format(
             asker=q.creator.username,
             title=q.title,
             content=a.content,
@@ -244,7 +250,9 @@ class NotificationsTests(TestCaseBase):
         attrs_eq(mail.outbox[i], to=['anon@ymous.com'],
                  subject="%s commented on a Firefox question you're watching" %
                          a.creator.username)
-        starts_with(mail.outbox[i].body, ANSWER_EMAIL_TO_ANONYMOUS.format(
+        body = mail.outbox[i].body
+        body = re.sub(r'auth=[a-zA-Z0-9%_-]+', r'auth=AUTH', body)
+        starts_with(body, ANSWER_EMAIL_TO_ANONYMOUS.format(
             title=q.title,
             content=a.content,
             replier=replier.username,

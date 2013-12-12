@@ -392,6 +392,15 @@ MIDDLEWARE_CLASSES = (
     'commonware.middleware.NoVarySessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
 
+    # This should come before TokenLoginMiddleware, because
+    # TokenLoginMiddleware uses this to tell users they have been
+    # automatically logged. It also has to come after
+    # NoVarySessionMiddleware.
+    'django.contrib.messages.middleware.MessageMiddleware',
+
+    # This middleware should come after AuthenticationMiddleware.
+    'kitsune.users.middleware.TokenLoginMiddleware',
+
     # LocaleURLMiddleware must be before any middleware that uses
     # sumo.urlresolvers.reverse() to add locale prefixes to URLs:
     'kitsune.sumo.middleware.LocaleURLMiddleware',
@@ -407,7 +416,6 @@ MIDDLEWARE_CLASSES = (
     'kitsune.inproduct.middleware.EuBuildMiddleware',
     'kitsune.sumo.middleware.NoCacheHttpsMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
     'kitsune.sumo.anonymous.AnonymousIdentityMiddleware',
     'session_csrf.CsrfMiddleware',
     'kitsune.twitter.middleware.SessionMiddleware',
@@ -425,6 +433,7 @@ MIDDLEWARE_CLASSES = (
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
     'django_browserid.auth.BrowserIDBackend',
+    'kitsune.users.auth.TokenLoginBackend',
 )
 AUTH_PROFILE_MODULE = 'users.Profile'
 USER_AVATAR_PATH = 'uploads/avatars/'

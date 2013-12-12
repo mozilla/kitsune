@@ -1,12 +1,13 @@
 from django.conf import settings
 from django.contrib.sites.models import Site
-from django.core.mail import EmailMessage
 
 from tidings.events import InstanceEvent
 from tower import ugettext as _
 
+from kitsune import users
 from kitsune.questions.models import Question
 from kitsune.sumo import email_utils
+from kitsune.sumo.helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse
 
 
@@ -72,15 +73,15 @@ class QuestionReplyEvent(QuestionEvent):
              'answer_html': self.answer.content_parsed,
              'answerer': self.answer.creator.username,
              'question_title': self.instance.title,
-             'host': Site.objects.get_current().domain,
-             'answer_url': self.answer.get_absolute_url()}
+             'host': Site.objects.get_current().domain}
 
         @email_utils.safe_translation
         def _make_mail(locale, user, context):
             is_asker = asker_id == user.id
             if is_asker:
                 subject = _(u'%s posted an answer to your question "%s"' %
-                            (self.answer.creator.username, self.instance.title))
+                            (self.answer.creator.username,
+                             self.instance.title))
                 text_template = 'questions/email/new_answer_to_asker.ltxt'
                 html_template = 'questions/email/new_answer_to_asker.html'
             else:
@@ -100,8 +101,14 @@ class QuestionReplyEvent(QuestionEvent):
             return mail
 
         for u, w in users_and_watches:
-            c['helpful_url'] = self.answer.get_helpful_answer_url()
-            c['solution_url'] = self.answer.get_solution_url(watch=w[0])
+            auth_str = users.auth.get_auth_str(self.answer.question.creator)
+            answer_url = self.answer.get_absolute_url()
+            helpful_url = self.answer.get_helpful_answer_url()
+            solution_url = self.answer.get_solution_url(watch=w[0])
+
+            c['answer_url'] = urlparams(answer_url, auth=auth_str)
+            c['helpful_url'] = urlparams(helpful_url, auth=auth_str)
+            c['solution_url'] = urlparams(solution_url, auth=auth_str)
             c['username'] = u.username
             c['watch'] = w[0]  # TODO: Expose all watches.
 

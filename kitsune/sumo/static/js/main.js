@@ -123,6 +123,7 @@ window.k = window.k || {};
 
         initAutoSubmitSelects();
         disableFormsOnSubmit();
+        removeAuthToken();
     });
 
     /*
@@ -243,4 +244,31 @@ window.k = window.k || {};
             'seconds': seconds
         }, true);
     };
+
+    /* If an auth token is found in the url, remove it. It makes our
+     * urls look ugly.
+     */
+    function removeAuthToken() {
+        var qs = window.location.search.slice(1);
+        var query = qs.split('&').map(function(pair) {
+            return [
+                pair.split('=')[0],
+                pair.split('=').slice(1).join('=')
+            ];
+        });
+        var authFound = false;
+        query = query.filter(function(pair) {
+            if (pair[0] === 'auth') {
+                authFound = true;
+                return false;
+            }
+            return true;
+        });
+
+        if (authFound) {
+            qs = '?' + query.map(function(pair) { return pair.join('='); }).join('&');
+            console.log(qs);
+            history.replaceState(this.state, {}, qs);
+        }
+    }
 })();
