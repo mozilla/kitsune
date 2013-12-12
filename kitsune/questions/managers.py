@@ -35,11 +35,13 @@ class QuestionManager(ManagerBase):
                            created__gte=datetime.now() - timedelta(hours=24))
 
     def new(self):
-        return self.filter(last_answer__isnull=True, is_locked=False)
+        return self.filter(last_answer__isnull=True, is_locked=False,
+                           created__gte=datetime.now() - timedelta(days=7))
 
     def unhelpful_answers(self):
         return self.filter(solution__isnull=True, is_locked=False,
-                           last_answer__creator=F('creator'))
+                           last_answer__creator=F('creator'),
+                           created__gte=datetime.now() - timedelta(days=7))
 
     def needs_info(self):
         qs = self.filter(solution__isnull=True, is_locked=False,

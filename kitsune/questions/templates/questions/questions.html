@@ -67,10 +67,10 @@
 
   <div class="grid_9">
     <div id="owner-tabs" class="cf">
-      <a href="{{ questions_url(show='needs-attention', filter=None) }}" {{ show|class_selected('needs-attention') }}>{{ _('Attention needed') }}</a>
-      <a href="{{ questions_url(show='responded', filter=None) }}" {{ show|class_selected('responded') }}>{{ _("Responded") }}</a>
-      <a href="{{ questions_url(show='done', filter=None) }}" {{ show|class_selected('done') }}>{{ _('Done') }}</a>
-      <a href="{{ questions_url(show='all', filter=None) }}" {{ show|class_selected('all') }}>{{ _('All questions') }}</a>
+      <a href="{{ questions_url(show='needs-attention', filter=None, page=None) }}" {{ show|class_selected('needs-attention') }}>{{ _('Attention needed') }}</a>
+      <a href="{{ questions_url(show='responded', filter=None, page=None) }}" {{ show|class_selected('responded') }}>{{ _("Responded") }}</a>
+      <a href="{{ questions_url(show='done', filter=None, page=None) }}" {{ show|class_selected('done') }}>{{ _('Done') }}</a>
+      <a href="{{ questions_url(show='all', filter=None, page=None) }}" {{ show|class_selected('all') }}>{{ _('All questions') }}</a>
     </div>
   </div>
   <div class="grid_3">
@@ -117,10 +117,10 @@
     <div id="filters" class="cf">
       <div id="flag-filter">
         <div>
-          <label><input data-url="{{ questions_url(escalated=0 if escalated else 1) }}" type="checkbox" {% if escalated %}checked="checked"{% endif %}> {{ _('Escalated') }}</label>
+          <label><input data-url="{{ questions_url(escalated=0 if escalated else 1, page=None) }}" type="checkbox" {% if escalated %}checked="checked"{% endif %}> {{ _('Escalated') }}</label>
         </div>
         <div>
-          <label><input data-url="{{ questions_url(offtopic=0 if offtopic else 1) }}" type="checkbox" {% if offtopic %}checked="checked"{% endif %}> {{ _('Off-topic') }}</label>
+          <label><input data-url="{{ questions_url(offtopic=0 if offtopic else 1, page=None) }}" type="checkbox" {% if offtopic %}checked="checked"{% endif %}> {{ _('Off-topic') }}</label>
         </div>
       </div>
 
@@ -128,9 +128,9 @@
         <div class="cf">
           <span>{{ _('Filter:') }}</span>
           <ul>
-            <li><a href="{{ questions_url(filter=None) }}" {{ filter|class_selected(None) }}>{{ _('All') }}</a></li>
+            <li><a href="{{ questions_url(filter=None, page=None) }}" {{ filter|class_selected(None) }}>{{ _('All') }}</a></li>
             {% for f, desc in filters.iteritems() %}
-              <li><a href="{{ questions_url(filter=f) }}" {{ filter|class_selected(f) }}>{{ desc }}</a></li>
+              <li><a href="{{ questions_url(filter=f, page=None) }}" {{ filter|class_selected(f) }}>{{ desc }}</a></li>
             {% endfor %}
           </ul>
         </div>
@@ -138,9 +138,9 @@
         <div class="cf">
           <span>{{ _('Show me:') }}</span>
           <ul>
-            <li><a href="{{ questions_url(owner='all') }}" {{ owner|class_selected(None) }}>{{ _('Posts from everyone') }}</a></li>
+            <li><a href="{{ questions_url(owner='all', page=None) }}" {{ owner|class_selected(None) }}>{{ _('Posts from everyone') }}</a></li>
             {% if request.user.is_authenticated() %}
-              <li><a href="{{ questions_url(owner='mine') }}" {{ owner|class_selected('mine') }}>{{ _('My contributions') }}</a></li>
+              <li><a href="{{ questions_url(owner='mine', page=None) }}" {{ owner|class_selected('mine') }}>{{ _('My contributions') }}</a></li>
             {% endif %}
           </ul>
         </div>
