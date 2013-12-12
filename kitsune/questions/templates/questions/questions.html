@@ -138,7 +138,7 @@
         <div class="cf">
           <span>{{ _('Show me:') }}</span>
           <ul>
-            <li><a href="{{ questions_url(owner=None) }}" class="{% if not owner or not request.user.is_authenticated() %}selected{% endif %}">{{ _('Posts from everyone') }}</a></li>
+            <li><a href="{{ questions_url(owner='all') }}" class="{% if not owner or not request.user.is_authenticated() %}selected{% endif %}">{{ _('Posts from everyone') }}</a></li>
             {% if request.user.is_authenticated() %}
               <li><a href="{{ questions_url(owner='mine') }}" class="{% if owner == 'mine' %}selected{% endif %}">{{ _('My contributions') }}</a></li>
             {% endif %}
