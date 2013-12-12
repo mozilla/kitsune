@@ -151,17 +151,17 @@ def escalate_questions():
         tags__slug__in=[config.ESCALATE_TAG_NAME])
 
     # From those, get the ones where the last post was over 12 hours ago.
-    twelve_hours = datetime.now() - timedelta(hours=12)
-    one_week = datetime.now() - timedelta(days=7)
+    start = datetime.now() - timedelta(hours=24)
+    end = datetime.now() - timedelta(days=7)
     qs_last_post_old = qs.filter(
-        last_answer__created__lt=twelve_hours,
-        last_answer__created__gt=one_week)
+        last_answer__created__lt=start,
+        last_answer__created__gt=end)
 
     # And the ones that haven't been replied to and are over 12 hours old.
     qs_no_replies_yet = qs.filter(
         last_answer__isnull=True,
-        created__lt=twelve_hours,
-        created__gt=one_week)
+        created__lt=start,
+        created__gt=end)
     questions_to_escalate = list(qs_last_post_old) + list(qs_no_replies_yet)
 
     for question in questions_to_escalate:
