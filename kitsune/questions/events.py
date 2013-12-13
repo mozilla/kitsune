@@ -4,7 +4,7 @@ from django.contrib.sites.models import Site
 from tidings.events import InstanceEvent
 from tower import ugettext as _
 
-from kitsune import users
+from kitsune.users.auth import get_auth_str
 from kitsune.questions.models import Question
 from kitsune.sumo import email_utils
 from kitsune.sumo.helpers import urlparams
@@ -101,7 +101,7 @@ class QuestionReplyEvent(QuestionEvent):
             return mail
 
         for u, w in users_and_watches:
-            auth_str = users.auth.get_auth_str(self.answer.question.creator)
+            auth_str = get_auth_str(self.answer.question.creator)
             answer_url = self.answer.get_absolute_url()
             helpful_url = self.answer.get_helpful_answer_url()
             solution_url = self.answer.get_solution_url(watch=w[0])
