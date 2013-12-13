@@ -78,19 +78,19 @@ NO_TAG = _lazy(u'Please provide a tag.')
 
 FILTER_GROUPS = {
     'all': OrderedDict([
-        ('recently-unanswered', _('Recently unanswered')),
+        ('recently-unanswered', _lazy('Recently unanswered')),
     ]),
     'needs-attention': OrderedDict([
-        ('new', _('New')),
-        ('unhelpful-answers', _("Answers didn't help")),
+        ('new', _lazy('New')),
+        ('unhelpful-answers', _lazy('Answers didn\'t help')),
     ]),
     'responded': OrderedDict([
-        ('needsinfo', _('Needs info')),
-        ('solution-provided', _('Solution provided')),
+        ('needsinfo', _lazy('Needs info')),
+        ('solution-provided', _lazy('Solution provided')),
     ]),
     'done': OrderedDict([
-        ('solved', _('Solved')),
-        ('locked', _('Locked')),
+        ('solved', _lazy('Solved')),
+        ('locked', _lazy('Locked')),
     ]),
 }
 
