@@ -18,42 +18,42 @@ class TestEscalateCron(TestCase):
         """Verify the escalate cronjob escalates the right questions."""
 
         questions_to_escalate = [
-            # Questions over 12 hours old without an answer.
-            question(created=datetime.now() - timedelta(hours=13), save=True),
+            # Questions over 24 hours old without an answer.
+            question(created=datetime.now() - timedelta(hours=25), save=True),
             question(created=datetime.now() - timedelta(hours=36), save=True),
         ]
 
         # A question where the last answer is the asker and that answer is
-        # over 12 hours old.
-        q = question(created=datetime.now() - timedelta(hours=15), save=True)
-        answer(created=datetime.now() - timedelta(hours=14), question=q,
+        # over 24 hours old.
+        q = question(created=datetime.now() - timedelta(hours=26), save=True)
+        answer(created=datetime.now() - timedelta(hours=25), question=q,
                save=True)
-        answer(created=datetime.now() - timedelta(hours=13), creator=q.creator,
+        answer(created=datetime.now() - timedelta(hours=25), creator=q.creator,
                question=q, save=True)
         questions_to_escalate.append(q)
 
         questions_not_to_escalate = [
-            # Questions newer than 12 hours without an answer.
+            # Questions newer than 24 hours without an answer.
             question(save=True),
-            question(created=datetime.now() - timedelta(hours=1), save=True),
             question(created=datetime.now() - timedelta(hours=11), save=True),
+            question(created=datetime.now() - timedelta(hours=21), save=True),
         ]
 
-        # Question older than 12 hours with a recent answer.
-        q = question(created=datetime.now() - timedelta(hours=15), save=True)
+        # Question older than 24 hours with a recent answer.
+        q = question(created=datetime.now() - timedelta(hours=25), save=True)
         answer(created=datetime.now() - timedelta(hours=10), question=q,
                save=True)
         answer(created=datetime.now() - timedelta(hours=1), creator=q.creator,
                question=q, save=True)
         questions_not_to_escalate.append(q)
 
-        # Question older than 12 hours with a recent answer by the asker.
-        q = question(created=datetime.now() - timedelta(hours=15), save=True)
-        answer(created=datetime.now() - timedelta(hours=4), creator=q.creator,
+        # Question older than 24 hours with a recent answer by the asker.
+        q = question(created=datetime.now() - timedelta(hours=25), save=True)
+        answer(created=datetime.now() - timedelta(hours=15), creator=q.creator,
                question=q, save=True)
         questions_not_to_escalate.append(q)
 
-        # Question older than 12 hours without an answer already escalated.
+        # Question older than 24 hours without an answer already escalated.
         q = question(created=datetime.now() - timedelta(hours=36), save=True)
         q.tags.add(config.ESCALATE_TAG_NAME)
         questions_not_to_escalate.append(q)
