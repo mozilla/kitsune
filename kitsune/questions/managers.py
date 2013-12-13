@@ -26,7 +26,7 @@ class QuestionManager(ManagerBase):
     #      the status is "Needs Attention"
     def needs_attention(self):
         qs = self.filter(solution__isnull=True, is_locked=False,
-                         created__gte=datetime.now() - timedelta(days=7))
+                         updated__gte=datetime.now() - timedelta(days=7))
         return qs.filter(Q(last_answer__creator=F('creator')) |
                          Q(last_answer__isnull=True))
 
