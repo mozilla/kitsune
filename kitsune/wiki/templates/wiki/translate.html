@@ -23,26 +23,16 @@
           <li class="info dismissible" id="fxos-l10n-warning">
             <p>
               {% trans %}
-                Thank you very much for helping us translate Firefox OS
-                support articles. Currently Firefox OS is only available or
-                expected to be available in the following locales:
+                Thanks for your help! Just so you know, Firefox OS is
+                not available in your locale yet, and it's possible this
+                article will change before it is.
               {% endtrans %}
             </p>
 
-            <ul>
-              {% for locale in settings.FXOS_LANGUAGES %}
-                <li>
-                  {{ _('{lang} ({lang_code})')|fe(lang=settings.LANGUAGES[locale.lower()], lang_code=locale) }}
-                </li>
-              {% endfor %}
-            </ul>
-
             <p>
               {% trans email_link='<a href="mailto:rosana@mozilla.com">rosana@mozilla.com</a>'|safe %}
-                If your locale is not listed here it could be possible that
-                the content changes before Firefox OS is launched in your
-                locale. If you need any guidance understanding the priority
-                for the translations please contact {{ email_link }}.
+                If you have any questions about localization priorities,
+                please contact {{ email_link }}.
               {% endtrans %}
             </p>
 
