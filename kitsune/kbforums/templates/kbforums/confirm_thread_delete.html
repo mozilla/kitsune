@@ -16,7 +16,7 @@
     <label>{{ _('Title') }}</label>
     <div class="content">{{ thread.title }}</div>
     <label>{{ _('Creator') }}</label>
-    <div>{{ thread.creator }}</div>
+    <div>{{ display_name(thread.creator) }}</div>
     <label>{{ _('Date') }}</label>
     <div>{{ datetimeformat(thread.created, format='longdatetime') }}</div>
     <label>{{ _('Number of Replies') }}</label>

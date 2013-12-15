@@ -14,7 +14,7 @@
   <h1>{{ _('Are you sure you want to delete this post?') }}</h1>
   <div class="post-to-delete">
     <label>{{ _('Author') }}</label>
-    <div>{{ post.creator }}</div>
+    <div>{{ display_name(post.creator) }}</div>
     <label>{{ _('Date') }}</label>
     <div>{{ datetimeformat(post.created, format='longdatetime') }}</div>
     <label>{{ _('Content') }}</label>

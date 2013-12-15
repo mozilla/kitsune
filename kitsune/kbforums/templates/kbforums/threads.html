@@ -46,13 +46,13 @@
               {% endif %}
             </div>
             <div class="title"><a href="{{ url('wiki.discuss.posts', document.slug, thread.id) }}">{{ thread.title }}</a></div>
-            <div class="author"><a class="username" href="{{ profile_url(thread.creator) }}">{{ thread.creator.username }}</a></div>
+            <div class="author"><a class="username" href="{{ profile_url(thread.creator) }}">{{ display_name(thread.creator) }}</a></div>
             <div class="replies">{{ thread.replies }}</div>
             <div class="last-post">
               <a href="{{ thread.last_post.get_absolute_url() }}">
                 {{ datetimeformat(thread.last_post.created) }}
               </a><br/>
-              {{ _('by <a class="username" href="{profile_url}">{username}</a>')|fe(profile_url=profile_url(thread.last_post.creator), username=thread.last_post.creator.username) }}
+              {{ _('by <a class="username" href="{profile_url}">{username}</a>')|fe(profile_url=profile_url(thread.last_post.creator), username=display_name(thread.last_post.creator)) }}
             </div>
           </li>
         {% endfor %}
