@@ -4,7 +4,7 @@
   <a class="avatar" href="{{ profile_url(post.creator, request.user == post.creator) }}">
     <img src="{{ profile_avatar(post.creator) }}" height="45" width="45" alt=""/>
   </a>
-  <a class="author-name" href="{{ profile_url(post.creator, request.user == post.creator) }}">{{ post.creator }}</a>
+  <a class="author-name" href="{{ profile_url(post.creator, request.user == post.creator) }}">{{ display_name(post.creator) }}</a>
 
   <ul>
     <li>{{ private_message(post.creator) }}</li>
