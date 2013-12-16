@@ -52,7 +52,7 @@ we can compute the edit-title URL.
 
           {% if form %}
             <div class="highlight-box">
-              <form id="question-form" action="" method="post">
+              <form id="question-form" action="{{ url('questions.aaq_step5', product_key=current_product.key, category_key=current_category.key) }}" method="post">
                 {{ csrf() }}
                 {% block major_detail_instructions %}
                   <h2>Do some stuff.</h2>
@@ -78,9 +78,8 @@ we can compute the edit-title URL.
                     {% endif %}
 
                     <li class="{{ li_class }} {% if field.errors %}invalid{% endif %} cf">
-                      {{ field.label_tag()|safe }}
-
                       {% if field.name == 'title' and not request.GET.edit_title %}
+                        <label>{{ field.label|safe }}</label>
                         <div id="title-val">
                           <span title="{{ _('Click to change your question') }}">
                             {% if form.initial %}{{ form.initial.title }}{% else %}{{ form.title.data }}{% endif %}
@@ -88,12 +87,15 @@ we can compute the edit-title URL.
                           <a href="{{ ''|urlparams(search=request.GET.search, edit_title=1) }}#question-form">edit</a>
                           {{ field.as_hidden()|safe }}
                         </div>
-                      {% elif field.name == 'content' %}
-                        {{ content_editor(field) }}
-                      {% elif field.name == 'troubleshooting' %}
-                        {{ troubleshooting_instructions(field) }}
                       {% else %}
-                        {{ field|safe }}
+                        {{ field.label_tag()|safe }}
+                        {% if field.name == 'content' %}
+                          {{ content_editor(field) }}
+                        {% elif field.name == 'troubleshooting' %}
+                          {{ troubleshooting_instructions(field) }}
+                        {% else %}
+                          {{ field|safe }}
+                        {% endif %}
                       {% endif %}
 
                       {% if field.help_text %}
