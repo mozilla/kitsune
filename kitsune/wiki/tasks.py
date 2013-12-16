@@ -194,6 +194,9 @@ def _rebuild_kb_chunk(data):
                 # signal handlers like the one that triggers reindexing.
                 # See bug 797038 and bug 797352.
                 Document.objects.filter(pk=pk).update(html=html)
+                statsd.incr('wiki.rebuild_chunk.change')
+            else:
+                statsd.incr('wiki.rebuild_chunk.nochange')
         except Document.DoesNotExist:
             message = 'Missing document: %d' % pk
         except Revision.DoesNotExist:
@@ -247,3 +250,29 @@ def maybe_award_badge(badge_template, year, user):
     if qs.count() >= 10:
         badge.award_to(user)
         return True
+
+
+@task
+def render_document_cascade(base):
+    """Given a document, render it and all documents that may be affected."""
+
+    # This walks along the graph of links between documents. If there is
+    # a document A that includes another document B as a template, then
+    # there is an edge from A to B in this graph. The goal here is to
+    # process every node exactly once. This is robust to cycles and
+    # diamonds in the graph, since it keeps track of what nodes have
+    # been visited already.
+
+    todo = set([base])
+    done = set()
+
+    while todo:
+        d = todo.pop()
+        if d in done:
+            # Don't process a node twice.
+            continue
+        d.html = d.parse_and_calculate_links()
+        d.save()
+        done.add(d)
+        todo.update(l.linked_from for l in d.links_to()
+                    .filter(kind__in=['template', 'include']))

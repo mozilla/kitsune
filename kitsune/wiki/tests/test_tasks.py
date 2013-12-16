@@ -1,3 +1,4 @@
+import re
 from copy import copy
 from datetime import datetime
 
@@ -6,6 +7,7 @@ from django.contrib.sites.models import Site
 from django.core import mail
 from django.core.cache import cache
 
+import bleach
 import celery.conf
 import mock
 import waffle
@@ -14,11 +16,12 @@ from test_utils import RequestFactory
 
 from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import add_permission, user
-from kitsune.wiki.models import Revision
+from kitsune.wiki.models import Revision, Document
 from kitsune.wiki.tasks import (
     send_reviewed_notification, rebuild_kb, schedule_rebuild_kb,
-    _rebuild_kb_chunk)
+    _rebuild_kb_chunk, render_document_cascade)
 from kitsune.wiki.tests import TestCaseBase, revision
+from kitsune.wiki.tests.test_parser import doc_rev_parser
 
 
 REVIEWED_EMAIL_CONTENT = """Your revision has been reviewed.
@@ -176,3 +179,30 @@ class ReviewMailTestCase(TestCaseBase):
         assert '&quot;' not in mail.outbox[0].body
         assert '"All about quotes"' in mail.outbox[0].body
         assert 'foo & "bar"' in mail.outbox[0].body
+
+
+class TestDocumentRenderCascades(TestCaseBase):
+
+    def _clean(self, d):
+        """
+        Get a clean and normalized version of a documents html.
+
+        This grabs uncached copies from the DB, because the in memory
+        objects used in the test don't get updated during the cascade.
+        """
+        html = Document.uncached.get(slug=d.slug).html
+        return re.sub(r'\s+', ' ', bleach.clean(html, strip=True)).strip()
+
+    def test_cascade(self):
+        d1, _, _ = doc_rev_parser('one ', title='Template:D1')
+        d2, _, _ = doc_rev_parser('[[T:D1]] two', title='Template:D2')
+        d3, _, _ = doc_rev_parser('[[T:D1]] [[T:D2]] three', title='D3')
+
+        eq_(self._clean(d3), u'one one two three')
+
+        revision(document=d1, content='ONE', is_approved=True, save=True)
+        render_document_cascade(d1)
+
+        eq_(self._clean(d1), u'ONE')
+        eq_(self._clean(d2), u'ONE two')
+        eq_(self._clean(d3), u'ONE ONE two three')
