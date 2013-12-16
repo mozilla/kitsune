@@ -209,8 +209,6 @@
   </div>
 </footer>{# /#footer #}
 
-<script src="//mozorg.cdn.mozilla.net/{{ request.LANGUAGE_CODE }}/tabzilla/tabzilla.js"></script>
-
 <script src="{{ url('jsi18n') }}build:{{ BUILD_ID_JS }}"></script>
 <script src="{{ url('wafflejs') }}"></script>
 
@@ -227,6 +225,8 @@
 {% for script in scripts %}
   {{ js(script) }}
 {% endfor %}
+
+<script src="//mozorg.cdn.mozilla.net/{{ request.LANGUAGE_CODE }}/tabzilla/tabzilla.js" async="true"></script>
 
 {# Ethnio tracking - see bugs 683643 and 673544 #}
 {% if request.LANGUAGE_CODE == 'en-US' and waffle.flag('ethnio-all') %}
