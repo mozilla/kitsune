@@ -1093,7 +1093,7 @@ class DocumentLink(ModelBase):
     kind = models.CharField(max_length=16)
 
     class Meta:
-        unique_together = ('linked_from', 'linked_to')
+        unique_together = ('linked_from', 'linked_to', 'kind')
 
     def __unicode__(self):
         return (u'<DocumentLink: %s from %r to %r>' %

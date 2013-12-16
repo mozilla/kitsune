@@ -44,7 +44,7 @@ from kitsune.wiki.models import Document, Revision, HelpfulVote, ImportantDate
 from kitsune.wiki.parser import wiki_to_html
 from kitsune.wiki.tasks import (
     send_reviewed_notification, schedule_rebuild_kb,
-    send_contributor_notification)
+    send_contributor_notification, render_document_cascade)
 
 
 log = logging.getLogger('k.wiki')
@@ -519,9 +519,8 @@ def review_revision(request, document_slug, revision_id):
             send_reviewed_notification.delay(rev, doc, msg)
             send_contributor_notification(based_on_revs, rev, doc, msg)
 
-            # Schedule KB rebuild?
             statsd.incr('wiki.review')
-            schedule_rebuild_kb()
+            render_document_cascade.delay(doc)
 
             return HttpResponseRedirect(reverse('wiki.document_revisions',
                                                 args=[document_slug]))
