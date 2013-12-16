@@ -23,15 +23,6 @@ class TestEscalateCron(TestCase):
             question(created=datetime.now() - timedelta(hours=36), save=True),
         ]
 
-        # A question where the last answer is the asker and that answer is
-        # over 24 hours old.
-        q = question(created=datetime.now() - timedelta(hours=26), save=True)
-        answer(created=datetime.now() - timedelta(hours=25), question=q,
-               save=True)
-        answer(created=datetime.now() - timedelta(hours=25), creator=q.creator,
-               question=q, save=True)
-        questions_to_escalate.append(q)
-
         questions_not_to_escalate = [
             # Questions newer than 24 hours without an answer.
             question(save=True),
@@ -64,7 +55,7 @@ class TestEscalateCron(TestCase):
         # Get all escalated questions, there should be 4 now
         # (one was already tagged before the cron ran).
         escalated = Question.objects.escalated()
-        eq_(4, len(escalated))
+        eq_(3, len(escalated))
 
         # Verify that all the questions to escalated are listed.
         for q in questions_to_escalate:
