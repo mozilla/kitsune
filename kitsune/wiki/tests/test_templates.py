@@ -928,7 +928,7 @@ class NewRevisionTests(TestCaseBase):
         # Verify there is a warning box
         response = self.client.get(
             reverse('wiki.edit_document', locale=doc.locale, args=[doc.slug]))
-        assert len(pq(response.content)('div.warning-box'))
+        assert len(pq(response.content)('.user-messages .warning'))
 
         # Verify there is no warning box if editing the latest unreviewed
         response = self.client.get(
@@ -942,7 +942,7 @@ class NewRevisionTests(TestCaseBase):
         response = self.client.get(
             reverse('wiki.new_revision_based_on', locale=doc.locale,
                     args=[doc.slug, r.id]))
-        assert len(pq(response.content)('div.warning-box'))
+        assert len(pq(response.content)('.user-messages .warning'))
 
     def test_new_revision_warning(self,):
         """When editing based on current revision, we should show a warning if
@@ -1908,7 +1908,7 @@ class TranslateTests(TestCaseBase):
                       args=[en_revision.document.slug])
         response = self.client.get(url)
         doc = pq(response.content)
-        assert doc('.warning-box').text()
+        assert doc('.user-messages .warning').text()
 
     def test_skip_unready_when_first_translation(self):
         """Never offer an unready-for-localization revision as initial
