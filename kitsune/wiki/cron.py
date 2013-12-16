@@ -1,18 +1,9 @@
-import logging
-import os
-import urllib2
-
-from django.conf import settings
-
 import cronjobs
 import waffle
 
 from kitsune.search.tasks import index_task
 from kitsune.wiki import tasks
 from kitsune.wiki.models import DocumentMappingType
-
-
-log = logging.getLogger('k.migratehelpful')
 
 
 @cronjobs.register
