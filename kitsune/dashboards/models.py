@@ -44,9 +44,10 @@ class WikiDocumentVisits(ModelBase):
         unique_together = ('period', 'document')
 
     @classmethod
-    def reload_period_from_analytics(cls, period):
+    def reload_period_from_analytics(cls, period, verbose=False):
         """Replace the stats for the given period from Google Analytics."""
-        counts = googleanalytics.pageviews_by_document(*period_dates(period))
+        counts = googleanalytics.pageviews_by_document(
+            *period_dates(period), verbose=verbose)
         if counts:
             # Delete and remake the rows:
             # Horribly inefficient until
