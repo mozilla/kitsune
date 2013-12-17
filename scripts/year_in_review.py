@@ -17,10 +17,21 @@ log = logging.getLogger(__name__)
 BZ_URL = 'http://bugzilla.mozilla.org/xmlrpc.cgi'
 SESSION_COOKIES_CACHE_KEY = 'bugzilla-session-cookies'
 
-PRODUCTS = ['support.mozilla.org']
-BZ_RESOLUTIONS = ['', 'FIXED', 'INVALID', 'WONTFIX', 'DUPLICATE',
-                  'WORKSFORME', 'INCOMPLETE', 'SUPPORT', 'EXPIRED',
-                  'MOVED']
+PRODUCTS = [
+    'support.mozilla.org'
+]
+BZ_RESOLUTIONS = [
+    '',
+    'FIXED',
+    'INVALID',
+    'WONTFIX',
+    'DUPLICATE',
+    'WORKSFORME',
+    'INCOMPLETE',
+    'SUPPORT',
+    'EXPIRED',
+    'MOVED'
+]
 BZ_FIELDS = [
     'id',
     'status',
@@ -189,7 +200,9 @@ def print_bugzilla_stats(year):
         transport=SessionTransport(use_datetime=True),
         allow_none=True)
 
-    # created in year
+    # -------------------------------------------
+    # Bugs created this year
+    # -------------------------------------------
     bugs = bugzilla.get_bugs(
         product=PRODUCTS,
         creation_time='%s-01-01' % year,
@@ -214,11 +227,20 @@ def print_bugzilla_stats(year):
     creators.reverse()
     stats['created_by'] = creators[:10]
 
-    # resolved in year
+    print ''
+    print 'Bugs created:', stats['created']
+    print ''
+    for mem in stats['created_by']:
+        person = mem[0].split('@')[0]
+        print '  %20s : %s' % (person, mem[1])
+
+    # -------------------------------------------
+    # Bugs resolved this year
+    # -------------------------------------------
     bugs = bugzilla.get_bugs(
         product=PRODUCTS,
         last_change_time='%s-01-01' % year,
-        include_fields=['id', 'assigned_to', 'last_change_time', 'resolution'],
+        include_fields=['id', 'summary', 'assigned_to', 'last_change_time', 'resolution'],
         status=['RESOLVED', 'VERIFIED', 'CLOSED'],
         history=True,
         comments=False)
@@ -228,11 +250,22 @@ def print_bugzilla_stats(year):
     peeps = {}
     resolutions = {}
 
+    traceback_bugs = []
+    research_bugs = []
+    tracker_bugs = []
+
     for bug in bugs:
         # We can only get last_change_time >= somedate, so we need to
         # nix the bugs that are after the year we're looking for.
         if bug['last_change_time'].year != int(year):
             continue
+
+        if bug['summary'].lower().startswith('[traceback]'):
+            traceback_bugs.append(bug)
+        if bug['summary'].lower().startswith('[research]'):
+            research_bugs.append(bug)
+        if bug['summary'].lower().startswith('[tracker]'):
+            tracker_bugs.append(bug)
 
         for hist in bug['history']:
             for change in hist['changes']:
@@ -274,12 +307,6 @@ def print_bugzilla_stats(year):
     resolutions.sort(key=lambda item: item[1])
     stats['resolved_resolutions'] = resolutions
 
-    print 'Bugs created:', stats['created']
-    print ''
-    for mem in stats['created_by']:
-        person = mem[0].split('@')[0]
-        print '  %20s : %s' % (person, mem[1])
-
     print ''
     print 'Bugs resolved:', stats['resolved']
     print ''
@@ -289,34 +316,106 @@ def print_bugzilla_stats(year):
         for res, count in mem[1].items():
             print '  %20s : %10s %d' % ('', res, count)
 
+    # -------------------------------------------
+    # Resolution stats
+    # -------------------------------------------
+
     print ''
     for mem in stats['resolved_resolutions']:
         print '  %20s : %s' % (mem[0], mem[1])
 
+    # -------------------------------------------
+    # Research bugs
+    # -------------------------------------------
+
+    print ''
+    print 'Research bugs:', len(research_bugs)
+    print ''
+    for bug in research_bugs:
+        print '{0}: {1}'.format(bug['id'], bug['summary'])
+
+    # -------------------------------------------
+    # Trackers
+    # -------------------------------------------
+
+    print ''
+    print 'Tracker bugs:', len(tracker_bugs)
+    print ''
+    for bug in tracker_bugs:
+        print '{0}: {1}'.format(bug['id'], bug['summary'])
+
+
+def git(*args):
+    return subprocess.check_output(args)
+
 
 def print_git_stats(year):
-    stats = {}
-    commits = subprocess.check_output(
-        ['git', 'log',
-         '--after=%s-01-01' % year,
-         '--before=%s-01-01' % (int(year) + 1),
-         '--format=%an'])
-    commits = commits.splitlines()
+    # Get the shas for all the commits we're going to look at.
+    all_commits = subprocess.check_output([
+        'git', 'log',
+        '--after=%s-01-01' % year,
+        '--before=%s-01-01' % (int(year) + 1),
+        '--format=%H'
+    ])
 
-    stats['commits'] = len(commits)
+    all_commits = all_commits.splitlines()
+
+    # Person -> # commits
     committers = {}
-    for mem in commits:
-        committers[mem] = committers.get(mem, 0) + 1
 
-    committers = committers.items()
-    committers.sort(key=lambda item: item[1])
-    committers.reverse()
-    stats['committers'] = committers
+    # Person -> (# files changed, # inserted, # deleted)
+    changes = {}
 
-    print 'Total commits:', stats['commits']
+    for commit in all_commits:
+        author = git('git', 'log', '--format=%an',
+                     '{0}~..{1}'.format(commit, commit))
+
+        author = author.strip()
+        # FIXME - this is lame. what's going on is that there are
+        # merge commits which have multiple authors, so we just grab
+        # the second one.
+        if '\n' in author:
+            author = author.splitlines()[1]
+
+        committers[author] = committers.get(author, 0) + 1
+
+        diff_data = git('git', 'diff', '--numstat', '--find-copies-harder',
+                        '{0}~..{1}'.format(commit, commit))
+        total_added = 0
+        total_deleted = 0
+        total_files = 0
+
+        for line in diff_data.splitlines():
+            added, deleted, fn = line.split('\t')
+            if fn.startswith('vendor/'):
+                continue
+            if added != '-':
+                total_added += int(added)
+            if deleted != '-':
+                total_deleted += int(deleted)
+            total_files += 1
+
+        old_changes = changes.get(author, (0, 0, 0))
+        changes[author] = (
+            old_changes[0] + total_added,
+            old_changes[1] + total_deleted,
+            old_changes[2] + total_files
+        )
+
+    print 'Total commits:', len(all_commits)
     print ''
-    for mem in stats['committers']:
-        print '  %20s : %s' % (mem[0], mem[1])
+
+    committers = sorted(
+        committers.items(), key=lambda item: item[1], reverse=True)
+    for person, count in committers:
+        print '  %20s : %s  (+%s, -%s, files %s)' % (
+            person, count, changes[person][0], changes[person][1], changes[person][2])
+
+    # This is goofy summing, but whatevs.
+    print ''
+    print 'Total lines added:', sum([item[0] for item in changes.values()])
+    print 'Total lines deleted:', sum([item[1] for item in changes.values()])
+    print 'Total files changed:', sum([item[2] for item in changes.values()])
 
 
 def print_header(text):
