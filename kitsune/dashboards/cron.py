@@ -23,7 +23,8 @@ def reload_wiki_traffic_stats():
         return
 
     for period, _ in PERIODS:
-        WikiDocumentVisits.reload_period_from_analytics(period)
+        WikiDocumentVisits.reload_period_from_analytics(
+            period, verbose=settings.DEBUG)
 
 
 @cronjobs.register
