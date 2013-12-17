@@ -81,17 +81,17 @@
           {% if karma_top %}
             <ol>
               {% for u in karma_top[:5] %}
-                <li{% if u == user %} class="me"{% endif %}>{{ u.username }}</li>
+                <li{% if u == user %} class="me"{% endif %}>{{ display_name(u.username) }}</li>
               {% endfor %}
             </ol>
             <ol start="6">
               {% for u in karma_top[5:10] %}
-                <li{% if u == user %} class="me"{% endif %}>{{ u.username }}</li>
+                <li{% if u == user %} class="me"{% endif %}>{{ display_name(u.username) }}</li>
               {% endfor %}
             </ol>
             {% if karma_ranking and karma_ranking > 10 %}
               <ol start="{{ karma_ranking }}">
-                <li class="me">{{ user.username }}</li>
+                <li class="me">{{ display_name(user.username) }}</li>
               </ol>
             {% endif %}
           {% else %}
@@ -202,7 +202,7 @@
             {% if question.num_answers > 0 and question.last_answer %}
               <div>
                 <a href="{{ question.last_answer.get_absolute_url() }}">
-                  {{ _('Last reply by {user}')|f(user=question.last_answer.creator.username) }}
+                  {{ _('Last reply by {user}')|f(user=display_name(question.last_answer.creator.username)) }}
                 </a> {{ _('on') }} {{ datetimeformat(question.last_answer.created, format='datetime') }}
               </div>
             {% endif %}
