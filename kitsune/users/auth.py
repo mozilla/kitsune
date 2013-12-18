@@ -22,7 +22,11 @@ class TokenLoginBackend(object):
     """
 
     def authenticate(self, auth):
-        decoded = base64.b64decode(auth)
+        try:
+            decoded = base64.b64decode(auth)
+        except (TypeError, UnicodeDecodeError):
+            return None
+
         if ':' not in decoded:
             return None
         username, token = decoded.split(':')
@@ -47,6 +51,7 @@ class TokenLoginBackend(object):
 
 
 def get_auth_str(user):
+    """Creates an auth string based on {username}:{token}"""
     token = default_token_generator.make_token(user)
     auth = '{0}:{1}'.format(user.username, token)
     return base64.b64encode(auth)
