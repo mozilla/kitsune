@@ -396,12 +396,17 @@ def edit_details(request, question_id):
         product = Product.objects.get(id=request.POST.get('product'))
         topic = Topic.objects.get(id=request.POST.get('topic'),
                                   product=product)
-    except (Product.DoesNotExist, Topic.DoesNotExist):
+        locale = request.POST.get('locale')
+
+        # If locale is not in AAQ_LANGUAGES throws a ValueError
+        settings.AAQ_LANGUAGES.index(locale)
+    except (Product.DoesNotExist, Topic.DoesNotExist, ValueError):
         return HttpResponseBadRequest()
 
     question = get_object_or_404(Question, pk=question_id)
     question.products = [product]
     question.topics = [topic]
+    question.locale = locale
     question.save()
 
     return redirect(reverse('questions.answers',

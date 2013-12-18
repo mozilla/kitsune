@@ -645,6 +645,8 @@ class TestEditDetails(TestCaseBase):
         q.topics.add(t)
         q.save()
 
+        self.product = p
+        self.topic = t
         self.question = q
 
     def _request(self, user=None, data=None):
@@ -659,8 +661,9 @@ class TestEditDetails(TestCaseBase):
     def test_permissions(self):
         """Test that the new permission works"""
         data = {
-            'product': self.question.products.all()[0].id,
-            'topic': self.question.topics.all()[0].id
+            'product': self.p.id,
+            'topic': self.t.id,
+            'locale': self.question.locale
         }
 
         u = user(save=True)
@@ -673,13 +676,22 @@ class TestEditDetails(TestCaseBase):
     def test_missing_data(self):
         """Test for missing data"""
         data = {
-            'product': self.question.products.all()[0].id
+            'product': self.p.id,
+            'locale': self.question.locale
         }
         response = self._request(data=data)
         eq_(400, response.status_code)
 
         data = {
-            'topic': self.question.topics.all()[0].id
+            'topic': self.t.id,
+            'locale': self.question.locale
+        }
+        response = self._request(data=data)
+        eq_(400, response.status_code)
+
+        data = {
+            'product': self.p.id,
+            'topic': self.t.id
         }
         response = self._request(data=data)
         eq_(400, response.status_code)
@@ -688,22 +700,31 @@ class TestEditDetails(TestCaseBase):
         """Test for bad data"""
         data = {
             'product': product(save=True).id,
-            'topic': topic(save=True).id
+            'topic': topic(save=True).id,
+            'locale': self.question.locale
+        }
+        response = self._request(data=data)
+        eq_(400, response.status_code)
+
+        data = {
+            'product': self.p.id,
+            'topic': self.t.id,
+            'locale': 'zu'
         }
         response = self._request(data=data)
         eq_(400, response.status_code)
 
     def test_change_topic(self):
         """Test changing the topic"""
-        t_old = self.question.topics.all()[0]
-        t_new = topic(product=t_old.product, save=True)
+        t_new = topic(product=self.p, save=True)
 
         data = {
-            'product': t_old.product.id,
-            'topic': t_new.id
+            'product': self.p.id,
+            'topic': t_new.id,
+            'locale': self.question.locale
         }
 
-        assert t_new.id != t_old.id
+        assert t_new.id != self.t.id
 
         response = self._request(data=data)
         eq_(302, response.status_code)
@@ -715,18 +736,16 @@ class TestEditDetails(TestCaseBase):
 
     def test_change_product(self):
         """Test changing the product"""
-        t_old = self.question.topics.all()[0]
         t_new = topic(save=True)
-
-        p_old = t_old.product
         p_new = t_new.product
 
-        assert t_old.id != t_new.id
-        assert p_old.id != p_new.id
+        assert self.t.id != t_new.id
+        assert self.p.id != p_new.id
 
         data = {
             'product': p_new.id,
-            'topic': t_new.id
+            'topic': t_new.id,
+            'locale': self.question.locale
         }
 
         response = self._request(data=data)
@@ -737,3 +756,21 @@ class TestEditDetails(TestCaseBase):
 
         eq_(p_new.id, p.id)
         eq_(t_new.id, t.id)
+
+    def test_change_locale(self):
+        locale = 'hu'
+
+        assert locale in settings.AAQ_LANGUAGES
+        assert locale != self.question.locale
+
+        data = {
+            'product': self.p.id,
+            'topic': self.t.id,
+            'locale': locale
+        }
+
+        response = self._request(data=data)
+        eq_(302, response.status_code)
+
+        q = Question.objects.get(id=self.question.id)
+        eq_(q.locale, locale)
