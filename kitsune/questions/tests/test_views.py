@@ -660,7 +660,8 @@ class TestEditDetails(TestCaseBase):
         """Test that the new permission works"""
         data = {
             'product': self.question.products.all()[0].id,
-            'topic': self.question.topics.all()[0].id
+            'topic': self.question.topics.all()[0].id,
+            'locale': self.question.locale
         }
 
         u = user(save=True)
@@ -673,12 +674,21 @@ class TestEditDetails(TestCaseBase):
     def test_missing_data(self):
         """Test for missing data"""
         data = {
-            'product': self.question.products.all()[0].id
+            'product': self.question.products.all()[0].id,
+            'locale': self.question.locale
         }
         response = self._request(data=data)
         eq_(400, response.status_code)
 
         data = {
+            'topic': self.question.topics.all()[0].id,
+            'locale': self.question.locale
+        }
+        response = self._request(data=data)
+        eq_(400, response.status_code)
+
+        data = {
+            'product': self.question.products.all()[0].id,
             'topic': self.question.topics.all()[0].id
         }
         response = self._request(data=data)
@@ -688,7 +698,16 @@ class TestEditDetails(TestCaseBase):
         """Test for bad data"""
         data = {
             'product': product(save=True).id,
-            'topic': topic(save=True).id
+            'topic': topic(save=True),
+            'locale': self.question.locale
+        }
+        response = self._request(data=data)
+        eq_(400, response.status_code)
+
+        data = {
+            'product': self.question.products.all()[0].id,
+            'topic': self.question.topics.all()[0].id,
+            'locale': 'zu'
         }
         response = self._request(data=data)
         eq_(400, response.status_code)
@@ -700,7 +719,8 @@ class TestEditDetails(TestCaseBase):
 
         data = {
             'product': t_old.product.id,
-            'topic': t_new.id
+            'topic': t_new.id,
+            'locale': self.question.locale
         }
 
         assert t_new.id != t_old.id
@@ -726,7 +746,8 @@ class TestEditDetails(TestCaseBase):
 
         data = {
             'product': p_new.id,
-            'topic': t_new.id
+            'topic': t_new.id,
+            'locale': self.question.locale
         }
 
         response = self._request(data=data)
@@ -737,3 +758,21 @@ class TestEditDetails(TestCaseBase):
 
         eq_(p_new.id, p.id)
         eq_(t_new.id, t.id)
+
+    def test_change_locale(self):
+        locale = 'hu'
+
+        assert locale in settings.AAQ_LANGUAGES
+        assert locale != self.question.locale
+
+        data = {
+            'product': self.question.products.all()[0].id,
+            'topic': self.question.topics.all()[0].id,
+            'locale': locale
+        }
+
+        response = self._request(data=data)
+        eq_(302, response.status_code)
+
+        q = Question.objects.get(id=self.question.id)
+        eq_(q.locale, locale)

@@ -397,8 +397,8 @@ def edit_details(request, question_id):
         topic = Topic.objects.get(id=request.POST.get('topic'),
                                   product=product)
         locale = request.POST.get('locale')
-        assert locale in settings.AAQ_LANGUAGES
-    except (Product.DoesNotExist, Topic.DoesNotExist, AssertionError):
+        settings.AAQ_LANGUAGES.index(locale)
+    except (Product.DoesNotExist, Topic.DoesNotExist, ValueError):
         return HttpResponseBadRequest()
 
     question = get_object_or_404(Question, pk=question_id)
