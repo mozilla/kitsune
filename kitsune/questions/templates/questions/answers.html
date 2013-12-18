@@ -233,6 +233,17 @@
                 </div>
               {% endif %}
 
+              {% if user and user.has_perm('questions.change_question') %}
+                <div class="sidebox tight condensed" id="question-locale">
+                  <span class="title">{{ _('Locale') }}</span>
+                  <span class="detail">{{ settings.LANGUAGES[question.locale.lower()] }}</span>
+                  <select name="locale">
+                    {% for l in settings.AAQ_LANGUAGES %}
+                      <option {% if question.locale == l %}selected="selected"{% endif %} value="{{ l }}">{{ settings.LANGUAGES[l.lower()] }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+              {% endif %}
 
               <div class="sidebox tight {% if user and user.has_perm('questions.change_question') %}condensed{% endif %}" id="system-details">
                 <span class="title">{{ _('System Details') }}</span>
