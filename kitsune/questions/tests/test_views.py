@@ -661,8 +661,8 @@ class TestEditDetails(TestCaseBase):
     def test_permissions(self):
         """Test that the new permission works"""
         data = {
-            'product': self.p.id,
-            'topic': self.t.id,
+            'product': self.product.id,
+            'topic': self.topic.id,
             'locale': self.question.locale
         }
 
@@ -676,22 +676,22 @@ class TestEditDetails(TestCaseBase):
     def test_missing_data(self):
         """Test for missing data"""
         data = {
-            'product': self.p.id,
+            'product': self.product.id,
             'locale': self.question.locale
         }
         response = self._request(data=data)
         eq_(400, response.status_code)
 
         data = {
-            'topic': self.t.id,
+            'topic': self.topic.id,
             'locale': self.question.locale
         }
         response = self._request(data=data)
         eq_(400, response.status_code)
 
         data = {
-            'product': self.p.id,
-            'topic': self.t.id
+            'product': self.product.id,
+            'topic': self.topic.id
         }
         response = self._request(data=data)
         eq_(400, response.status_code)
@@ -707,8 +707,8 @@ class TestEditDetails(TestCaseBase):
         eq_(400, response.status_code)
 
         data = {
-            'product': self.p.id,
-            'topic': self.t.id,
+            'product': self.product.id,
+            'topic': self.topic.id,
             'locale': 'zu'
         }
         response = self._request(data=data)
@@ -716,15 +716,15 @@ class TestEditDetails(TestCaseBase):
 
     def test_change_topic(self):
         """Test changing the topic"""
-        t_new = topic(product=self.p, save=True)
+        t_new = topic(product=self.product, save=True)
 
         data = {
-            'product': self.p.id,
+            'product': self.product.id,
             'topic': t_new.id,
             'locale': self.question.locale
         }
 
-        assert t_new.id != self.t.id
+        assert t_new.id != self.topic.id
 
         response = self._request(data=data)
         eq_(302, response.status_code)
@@ -739,8 +739,8 @@ class TestEditDetails(TestCaseBase):
         t_new = topic(save=True)
         p_new = t_new.product
 
-        assert self.t.id != t_new.id
-        assert self.p.id != p_new.id
+        assert self.topic.id != t_new.id
+        assert self.product.id != p_new.id
 
         data = {
             'product': p_new.id,
@@ -764,8 +764,8 @@ class TestEditDetails(TestCaseBase):
         assert locale != self.question.locale
 
         data = {
-            'product': self.p.id,
-            'topic': self.t.id,
+            'product': self.product.id,
+            'topic': self.topic.id,
             'locale': locale
         }
 
