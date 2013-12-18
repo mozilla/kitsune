@@ -238,8 +238,8 @@
                   <span class="title">{{ _('Locale') }}</span>
                   <span class="detail">{{ settings.LANGUAGES[question.locale.lower()] }}</span>
                   <select name="locale">
-                    {% for l in settings.AAQ_LANGUAGES %}
-                      <option {% if question.locale == l %}selected="selected"{% endif %} value="{{ l }}">{{ settings.LANGUAGES[l.lower()] }}</option>
+                    {% for lang in settings.AAQ_LANGUAGES %}
+                      <option {% if question.locale == lang %}selected="selected"{% endif %} value="{{ lang }}">{{ settings.LANGUAGES[lang.lower()] }}</option>
                     {% endfor %}
                   </select>
                 </div>
