@@ -250,9 +250,9 @@ MINIFY_BUNDLES = {
             'js/wiki.dashboard.js',
         ),
         'customercare': (
-            'js/libs/jquery.NobleCount.js',
             'js/libs/jquery.cookie.js',
             'js/libs/jquery.bullseye-1.0.min.js',
+            'js/libs/twitter-text.js',
             'js/customercare.js',
             'js/users.js',
         ),

@@ -210,7 +210,9 @@
             this._tweet = new Tweet(this.$tweet_el);
 
             this.$textarea = this.$el.find("#reply-message");
-            this.$textarea.NobleCount('.character-counter');
+            this.$textarea.on('keydown', function() {
+                $('.character-counter').html(twttr.txt.getTweetLength($(this).val()));
+            });
 
             this.action = this.$el.find("form").attr('action');
             this.$success_msg = this.$el.find("#submit-message");
