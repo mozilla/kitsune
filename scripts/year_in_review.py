@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import json
 import logging
 import subprocess
 import sys
@@ -192,8 +193,8 @@ def parse_whiteboard(whiteboard):
     return bits
 
 
-def print_bugzilla_stats(year):
-    stats = {}
+def bugzilla_stats(year):
+    stats = []
 
     bugzilla = BugzillaAPI(
         BZ_URL,
@@ -221,18 +222,14 @@ def print_bugzilla_stats(year):
         total += 1
         creators[bug['creator']] = creators.get(bug['creator'], 0) + 1
 
-    stats['created'] = total
-    creators = creators.items()
-    creators.sort(key=lambda item: item[1])
-    creators.reverse()
-    stats['created_by'] = creators[:10]
+    creators = sorted(creators.items(), key=lambda item: item[1], reverse=True)
 
-    print ''
-    print 'Bugs created:', stats['created']
-    print ''
-    for mem in stats['created_by']:
-        person = mem[0].split('@')[0]
-        print '  %20s : %s' % (person, mem[1])
+    stats.append(('Bugs created', {
+        'total': total,
+        'breakdown': [
+            {'name': mem[0].split('@')[0], 'count': mem[1]}
+            for mem in creators[:10]]
+    }))
 
     # -------------------------------------------
     # Bugs resolved this year
@@ -296,60 +293,53 @@ def print_bugzilla_stats(year):
                 resolutions[change['added']] = resolutions.get(
                     change['added'], 0) + 1
 
-    peeps = peeps.items()
-    peeps.sort(key=lambda item: sum(item[1].values()))
-    peeps.reverse()
-
-    stats['resolved'] = total
-    stats['resolved_people'] = peeps[:10]
-
-    resolutions = resolutions.items()
-    resolutions.sort(key=lambda item: item[1])
-    stats['resolved_resolutions'] = resolutions
-
-    print ''
-    print 'Bugs resolved:', stats['resolved']
-    print ''
-    for mem in stats['resolved_people']:
-        person = mem[0].split('@')[0]
-        print '  %20s : %d' % (person, sum(mem[1].values()))
-        for res, count in mem[1].items():
-            print '  %20s : %10s %d' % ('', res, count)
+    peeps = sorted(peeps.items(), key=lambda item: sum(item[1].values()), reverse=True)
+    stats.append(('Bugs resolved', {
+        'total': total,
+        'breakdown': [
+            {'name': mem[0].split('@')[0],
+             'total': sum(mem[1].values()),
+             'breakdown': mem[1].items()}
+            for mem in peeps[:10]
+        ]
+    }))
 
     # -------------------------------------------
     # Resolution stats
     # -------------------------------------------
 
-    print ''
-    for mem in stats['resolved_resolutions']:
-        print '  %20s : %s' % (mem[0], mem[1])
+    resolutions = sorted(resolutions.items(), key=lambda item: item[1])
+    stats.append(('Bugs resolved breakdown', resolutions))
 
     # -------------------------------------------
     # Research bugs
     # -------------------------------------------
 
-    print ''
-    print 'Research bugs:', len(research_bugs)
-    print ''
-    for bug in research_bugs:
-        print '{0}: {1}'.format(bug['id'], bug['summary'])
+    stats.append(('Research bugs', [
+        {'id': bug['id'], 'summary': bug['summary']}
+        for bug in research_bugs
+    ]))
+
 
     # -------------------------------------------
     # Trackers
     # -------------------------------------------
 
-    print ''
-    print 'Tracker bugs:', len(tracker_bugs)
-    print ''
-    for bug in tracker_bugs:
-        print '{0}: {1}'.format(bug['id'], bug['summary'])
+    stats.append(('Tracker bugs', [
+        {'id': bug['id'], 'summary': bug['summary']}
+        for bug in tracker_bugs
+    ]))
+
+    return stats
 
 
 def git(*args):
     return subprocess.check_output(args)
 
 
-def print_git_stats(year):
+def git_stats(year):
+    stats = []
+
     # Get the shas for all the commits we're going to look at.
     all_commits = subprocess.check_output([
         'git', 'log',
@@ -407,44 +397,70 @@ def print_git_stats(year):
 
     committers = sorted(
         committers.items(), key=lambda item: item[1], reverse=True)
+
+    committers_data = []
     for person, count in committers:
-        print '  %20s : %s  (+%s, -%s, files %s)' % (
-            person, count, changes[person][0], changes[person][1], changes[person][2])
+        committers_data.append({
+            'name': person,
+            'data': {
+                'commits': count,
+                'added': changes[person][0],
+                'deleted': changes[person][1],
+                'files': changes[person][2]
+            }
+        })
 
-    # This is goofy summing, but whatevs.
-    print ''
-    print 'Total lines added:', sum([item[0] for item in changes.values()])
-    print 'Total lines deleted:', sum([item[1] for item in changes.values()])
-    print 'Total files changed:', sum([item[2] for item in changes.values()])
 
+    stats.append(('Git commit data', {
+            'total commits': len(all_commits),
+            'total lines added': sum([item[0] for item in changes.values()]),
+            'total lines deleted': sum([item[1] for item in changes.values()]),
+            'total files changed': sum([item[2] for item in changes.values()])
+    }))
 
-def print_header(text):
-    print ''
-    print text
-    print '=' * len(text)
-    print ''
+    stats.append(('Git committer data', committers_data))
+
+    return stats
 
 
 def main(argv):
     # XXX: This helps debug bugzilla xmlrpc bits.
     # logging.basicConfig(level=logging.DEBUG)
 
+    do_json = False
+
     if not argv:
         print USAGE
         print 'Error: Must specify the year. e.g. 2012'
         return 1
 
+    if '--json' in argv:
+        print 'OMGWTFBBQ! You want it in JSON!'
+        do_json = True
+        argv.remove('--json')
+
     year = argv[0]
 
-    print HEADER
+    output = []
+    output.append(('Year', year))
 
-    print_header('Twas the year: %s' % year)
+    print 'Generating bugzilla stats....'
+    output.extend(bugzilla_stats(year))
 
-    print_header('Bugzilla')
-    print_bugzilla_stats(year)
+    print 'Generating git stats....'
+    output.extend(git_stats(year))
 
-    print_header('git')
-    print_git_stats(year)
+    if do_json:
+        print json.dumps(output, indent=2)
+
+    else:
+        for mem in output:
+            print ''
+            print mem[0]
+            print '=' * len(mem[0])
+            print ''
+            # FIXME - this is gross
+            print json.dumps(mem[1], indent=2)
 
 
 if __name__ == '__main__':
