@@ -263,16 +263,24 @@ def render_document_cascade(base):
     # diamonds in the graph, since it keeps track of what nodes have
     # been visited already.
 
-    todo = set([base])
-    done = set()
+    # In case any thing goes wrong, this guarantees we unpin the DB
+    try:
+        # Sends all writes to the master DB. Slaves are readonly.
+        pin_this_thread()
 
-    while todo:
-        d = todo.pop()
-        if d in done:
-            # Don't process a node twice.
-            continue
-        d.html = d.parse_and_calculate_links()
-        d.save()
-        done.add(d)
-        todo.update(l.linked_from for l in d.links_to()
-                    .filter(kind__in=['template', 'include']))
+        todo = set([base])
+        done = set()
+
+        while todo:
+            d = todo.pop()
+            if d in done:
+                # Don't process a node twice.
+                continue
+            d.html = d.parse_and_calculate_links()
+            d.save()
+            done.add(d)
+            todo.update(l.linked_from for l in d.links_to()
+                        .filter(kind__in=['template', 'include']))
+
+    finally:
+        unpin_this_thread()
