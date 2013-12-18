@@ -247,7 +247,7 @@
     {% set header = _('Help with:') %}
   {% endif %}
 
-  <section class="showfor">
+  <section class="showfor" id="showfor-panel">
     <script type="application/json" class="showfor-data">
       {{ showfor_data(products) }}
     </script>
@@ -257,7 +257,7 @@
       <h1>
         {{ header }}
         {% if close_button %}
-          <div class="exit">x</div>
+          <div class="exit close-button" data-close-id="showfor-panel">x</div>
         {% endif %}
       </h1>
     {% endif %}
