@@ -211,7 +211,14 @@
 
             this.$textarea = this.$el.find("#reply-message");
             this.$textarea.on('keydown', function() {
-                $('.character-counter').html(twttr.txt.getTweetLength($(this).val()));
+                var delta = 140 - twttr.txt.getTweetLength($(this).val());
+                var $counter = $('.character-counter').text(delta);
+
+                if (delta < 0) {
+                    $counter.addClass('too-many');
+                } else {
+                    $counter.removeClass('too-many');
+                }
             });
 
             this.action = this.$el.find("form").attr('action');
