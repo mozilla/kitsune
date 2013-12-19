@@ -3,7 +3,7 @@
 {% block content %}
   <p><strong>{{ _('Please confirm your Firefox Help question') }}</strong></p>
 
-  <p>{{ _('Hi {username},')|f(username=display_name(username)) }}</p>
+  <p>{{ _('Hi {username},')|f(username=username) }}</p>
   <p>
     {% trans %}
       Before your Firefox Help question ({{ email_data }})

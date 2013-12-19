@@ -2,7 +2,7 @@
 
 {% block content %}
   {% if username %}
-    <p>{{ _('Hi {username},')|f(username=display_name(username)) }}</p>
+    <p>{{ _('Hi {username},')|f(username=username) }}</p>
   {% endif %}
 
   <p>

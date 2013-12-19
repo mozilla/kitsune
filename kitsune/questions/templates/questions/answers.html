@@ -72,7 +72,7 @@
           {% if question.last_answer %}
             <li>
               <a href="{{ question.last_answer.get_absolute_url() }}">
-                {{ _('Last reply by {user}')|f(user=display_name(question.last_answer.creator.username)) }}
+                {{ _('Last reply by {user}')|f(user=display_name(question.last_answer.creator)) }}
               </a>
               <span class="last-answer-date">
                 {{ question.last_answer.created|timesince }}
@@ -102,7 +102,7 @@
 
         {% if question.updated_by %}
           <p class="edited">
-            {{ _('Modified {datetime} by {name}')|fe(name=display_name(question.updated_by.username), datetime=datetimeformat(question.updated, format='longdatetime')) }}
+            {{ _('Modified {datetime} by {name}')|fe(name=display_name(question.updated_by), datetime=datetimeformat(question.updated, format='longdatetime')) }}
           </p>
         {% endif %}
 

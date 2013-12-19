@@ -56,7 +56,7 @@
     </div>
     {% if answer.updated_by %}
       <p class="edited">
-        {{ _('Modified {datetime} by {name}')|fe(name=display_name(answer.updated_by.username), datetime=datetimeformat(answer.updated, format='longdatetime')) }}
+        {{ _('Modified {datetime} by {name}')|fe(name=display_name(answer.updated_by), datetime=datetimeformat(answer.updated, format='longdatetime')) }}
       </p>
     {% endif %}
   </div>

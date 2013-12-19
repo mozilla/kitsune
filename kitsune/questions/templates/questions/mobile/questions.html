@@ -17,7 +17,7 @@
           <ol>
             {% if karma_top %}
               {% for user in karma_top[:10] %}
-                <li>{{ display_name(user.username) }}</li>
+                <li>{{ display_name(user) }}</li>
               {% endfor %}
             {% elif top_contributors %}
               {% for user in top_contributors[:10] %}

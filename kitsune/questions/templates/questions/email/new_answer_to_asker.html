@@ -15,7 +15,7 @@
 {% endblock %}
 
 {% block content %}
-  <p>{{ _('Hi {username},')|f(username=display_name(username)) }}</p>
+  <p>{{ _('Hi {username},')|f(username=username) }}</p>
 
   <p>{{ _('{answerer} has posted an answer to your question on {host}:')|f(answerer=answerer, host=host) }}</p>
 
