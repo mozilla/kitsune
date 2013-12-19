@@ -349,10 +349,13 @@ class Readout(object):
         return self.sort_and_truncate(
             [self._format_row(r) for r in cursor.fetchall()], max)
 
-    def render(self, max_rows=None):
+    def render(self, max_rows=None, rows=None):
         """Return HTML table rows, optionally limiting to a number of rows."""
+        # Fetch the rows if they aren't passed.
+        if not rows:
+            rows = self.rows(max_rows)
+
         # Compute percents for bar widths:
-        rows = self.rows(max_rows)
         max_visits = max(r['visits'] for r in rows) if rows else 0
         for r in rows:
             visits = r['visits']
@@ -600,6 +603,24 @@ class MostVisitedTranslationsReadout(MostVisitedDefaultLanguageReadout):
 
     def _format_row(self, columns):
         return _format_row_with_out_of_dateness(self.locale, *columns)
+
+    def render(self, max_rows=None, rows=None):
+        """Override parent render to add some filtering."""
+        # Compute percents for bar widths:
+        rows = self.rows()
+
+        if max_rows is not None:
+            # If we specify max_rows, we are on the l10n dashboard
+            # overview page and want to filter out all up to date docs.
+            # NOTE: This is a HACK! But I would rather filter here
+            # than figure out the SQL to do this. And I don't know
+            # any other way to filter in one view and not the other.
+            # BTW, OK means the translation is up to date. Those are
+            # the ones we are skipping.
+            rows = filter(lambda x: x['status_class'] != 'ok', rows)
+            rows = rows[:max_rows]
+
+        return super(MostVisitedTranslationsReadout, self).render(rows=rows)
 
 
 class TemplateTranslationsReadout(Readout):
