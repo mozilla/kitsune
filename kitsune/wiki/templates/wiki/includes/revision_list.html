@@ -41,7 +41,7 @@
             {% if not loop.last %}<input type="radio" name="to" value="{{ rev.id }}" {% if loop.first %}checked="checked"{% endif %} />{% endif %}
           </div>
           <div class="date">
-            <a href="{{ rev.get_absolute_url() }}" rel="nofollow, noindex">
+            <a href="{{ rev.get_absolute_url() }}" rel="nofollow">
               {{ datetimeformat(rev.created, format='datetime') }}
             </a>
           </div>
