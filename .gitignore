@@ -18,6 +18,3 @@ docs/_build
 *.less.css
 .DS_Store
 james.ini
-venv/
-.idea/
-build.*
