@@ -52,7 +52,7 @@ we can compute the edit-title URL.
 
           {% if form %}
             <div class="highlight-box">
-              <form id="question-form" action="{{ url('questions.aaq_step5', product_key=current_product.key, category_key=current_category.key) }}" method="post">
+              <form id="question-form" method="post">
                 {{ csrf() }}
                 {% block major_detail_instructions %}
                   <h2>Do some stuff.</h2>
