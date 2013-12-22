@@ -119,7 +119,7 @@
               <div class="container cf showhide-input">
                 {{ search_form.num_voted.label_tag() }}
                 {{ search_form.num_voted }}
-                <input name="num_votes" type="number" pattern="\d*"
+                <input name="num_votes" type="text" pattern="\d*"
                        value="{{ search_form.num_votes.data or '' }}"
                        title="{{ _('Number of votes. Must be an integer.') }}" />
               </div>
