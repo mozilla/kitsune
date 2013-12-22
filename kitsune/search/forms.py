@@ -24,11 +24,18 @@ class SearchForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super(SearchForm, self).__init__(*args, **kwargs)
 
-        product_field = self.fields['product']
-        product_field.choices = Product.objects.values_list('slug', 'title')
+        support_product_field = self.fields['support_product']
+        support_product_field.choices = Product.objects.values_list('slug', 'title')
 
-        topics_field = self.fields['topics']
-        topics_field.choices = Topic.objects.values_list(
+        kb_product_field = self.fields['kb_product']
+        kb_product_field.choices = Product.objects.values_list('slug', 'title')
+
+        support_topics_field = self.fields['support_topics']
+        support_topics_field.choices = Topic.objects.values_list(
+            'slug', 'title').distinct()
+
+        kb_topics_field = self.fields['kb_topics']
+        kb_topics_field.choices = Topic.objects.values_list(
             'slug', 'title').distinct()
 
     def clean(self):
@@ -70,7 +77,12 @@ class SearchForm(forms.Form):
     a = forms.IntegerField(required=False, widget=forms.HiddenInput)
 
     # KB fields
-    topics = forms.MultipleChoiceField(
+    kb_topics = forms.MultipleChoiceField(
+        required=False,
+        widget=forms.CheckboxSelectMultiple(),
+        label=_lazy('Topics'))
+
+    support_topics = forms.MultipleChoiceField(
         required=False,
         widget=forms.CheckboxSelectMultiple(),
         label=_lazy('Topics'))
@@ -82,7 +94,12 @@ class SearchForm(forms.Form):
         required=False, coerce=int, widget=forms.CheckboxSelectMultiple,
         label=_lazy('Category'), choices=CATEGORIES, coerce_only=True)
 
-    product = forms.MultipleChoiceField(
+    support_product = forms.MultipleChoiceField(
+        required=False,
+        label=_lazy('Relevant to'),
+        widget=forms.CheckboxSelectMultiple())
+
+    kb_product = forms.MultipleChoiceField(
         required=False,
         label=_lazy('Relevant to'),
         widget=forms.CheckboxSelectMultiple())
@@ -97,13 +114,21 @@ class SearchForm(forms.Form):
         choices=constants.SORTBY_DOCUMENTS_CHOICES)
 
     # Support questions and discussion forums fields
-    created = forms.TypedChoiceField(
+    support_created = forms.TypedChoiceField(
+        required=False, coerce=int, empty_value=0,
+        label=_lazy('Created'), choices=constants.DATE_LIST)
+
+    discussion_created = forms.TypedChoiceField(
         required=False, coerce=int, empty_value=0,
         label=_lazy('Created'), choices=constants.DATE_LIST)
 
     created_date = forms.CharField(required=False)
 
-    updated = forms.TypedChoiceField(
+    support_updated = forms.TypedChoiceField(
+        required=False, coerce=int, empty_value=0,
+        label=_lazy('Last updated'), choices=constants.DATE_LIST)
+
+    discussion_updated = forms.TypedChoiceField(
         required=False, coerce=int, empty_value=0,
         label=_lazy('Last updated'), choices=constants.DATE_LIST)
     updated_date = forms.CharField(required=False)
@@ -113,7 +138,11 @@ class SearchForm(forms.Form):
     # Discussion forums fields
     author = forms.CharField(required=False, widget=user_widget)
 
-    sortby = forms.TypedChoiceField(
+    support_sortby = forms.TypedChoiceField(
+        required=False, coerce=int, empty_value=0,
+        label=_lazy('Sort results by'), choices=constants.SORTBY_FORUMS)
+
+    discussion_sortby = forms.TypedChoiceField(
         required=False, coerce=int, empty_value=0,
         label=_lazy('Sort results by'), choices=constants.SORTBY_FORUMS)
 
