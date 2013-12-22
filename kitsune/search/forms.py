@@ -101,13 +101,11 @@ class SearchForm(forms.Form):
         choices=constants.SORTBY_DOCUMENTS_CHOICES)
 
     # Support questions and discussion forums fields
-    support_created = forms.TypedChoiceField(
+    created = forms.TypedChoiceField(
         required=False, coerce=int, empty_value=0,
         label=_lazy('Created'), choices=constants.DATE_LIST)
-
-    discussion_created = forms.TypedChoiceField(
-        required=False, coerce=int, empty_value=0,
-        label=_lazy('Created'), choices=constants.DATE_LIST)
+    support_created = created
+    discussion_created = created
 
     created_date = forms.CharField(required=False)
 
