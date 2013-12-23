@@ -10,7 +10,7 @@
       </a>
     </div>
     <div class="asked-by">
-      <a href="{{ profile_url(answer.creator) }}">{{ answer.creator }}</a>
+      <a href="{{ profile_url(answer.creator) }}">{{ display_name(answer.creator) }}</a>
       {% if waffle.switch('karma') and waffle.flag('karma') %}
         {{ titles(answer.creator) }}
       {% endif %}

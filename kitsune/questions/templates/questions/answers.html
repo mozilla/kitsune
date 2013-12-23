@@ -85,11 +85,11 @@
       <div class="user-meta">
         <div class="avatar">
           <a href="{{ profile_url(question.creator, request.user == question.creator) }}">
-            <img src="{{ profile_avatar(question.creator) }}" height="48" width="48" alt="{{ question.creator }}"/>
+            <img src="{{ profile_avatar(question.creator) }}" height="48" width="48" alt="{{ display_name(question.creator) }}"/>
           </a>
         </div>
         <div class="asked-by">
-          <a href="{{ profile_url(question.creator, request.user == question.creator) }}">{{ question.creator }}</a>
+          <a href="{{ profile_url(question.creator, request.user == question.creator) }}">{{ display_name(question.creator) }}</a>
         </div>
         <div class="asked-on">
           {{ _('Posted') }}<br>

@@ -196,7 +196,7 @@
           </section>
           <aside>
             <div class="user-meta">
-              {{ _('Posted by {user}')|f(user=question.creator) }}
+              {{ _('Posted by {user}')|f(user=display_name(question.creator)) }}
               {{ _('on') }} {{ datetimeformat(question.created, format='datetime') }}
             </div>
             {% if question.num_answers > 0 and question.last_answer %}
