@@ -127,8 +127,8 @@ def search(request, template=None):
     offset = (page - 1) * settings.SEARCH_RESULTS_PER_PAGE
 
     lang = language.lower()
-    if settings.LANGUAGES.get(lang):
-        lang_name = settings.LANGUAGES[lang]
+    if settings.LANGUAGES_DICT.get(lang):
+        lang_name = settings.LANGUAGES_DICT[lang]
     else:
         lang_name = ''
 

@@ -22,7 +22,7 @@ def get_bundle(request):
 
     locale = request.GET['locale']
     product = request.GET['product']
-    if locale.lower() not in settings.LANGUAGES:
+    if locale.lower() not in settings.LANGUAGES_DICT:
         return HttpResponseNotFound(INVALID_LOCALE,
                                     mimetype='application/json')
 

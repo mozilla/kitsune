@@ -51,7 +51,7 @@
         <ul id="media-meta" class="cf">
           <li class="creator">{{ _('by {user}')|f(user=media.creator) }}</li>
           <li class="created">{{ _('Uploaded {date}')|fe(date=datetimeformat(media.created, format='datetime')) }}</li>
-          <li class="locale">{{ settings.LANGUAGES[media.locale.lower()] }}</li>
+          <li class="locale">{{ settings.LANGUAGES_DICT[media.locale.lower()] }}</li>
         </ul>
         {% if media_type == 'video' %}
           <ul class="cf">

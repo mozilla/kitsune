@@ -98,7 +98,7 @@ def bundle_for_product(product, locale):
     bundle['locales'] = {}
     bundle['locales'][locale] = {
         'key': locale,
-        'name': settings.LANGUAGES[locale.lower()],
+        'name': settings.LANGUAGES_DICT[locale.lower()],
         'products': [{'slug': product.slug, 'name': product.title}]
     }
 
