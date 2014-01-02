@@ -97,3 +97,4 @@ src/django-filter
 src/django-badger
 src/billiard
 src/django-statici18n/src
+src/django-appconf
