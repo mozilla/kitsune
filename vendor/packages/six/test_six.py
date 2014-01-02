@@ -90,6 +90,9 @@ def test_move_items(item_name):
     """Ensure that everything loads correctly."""
     try:
         getattr(six.moves, item_name)
+    except AttributeError:
+        if item_name == "zip_longest" and sys.version_info < (2, 6):
+            py.test.skip("zip_longest only available on 2.6+")
     except ImportError:
         if item_name == "winreg" and not sys.platform.startswith("win"):
             py.test.skip("Windows only module")
@@ -98,11 +101,57 @@ def test_move_items(item_name):
         raise
 
 
+@py.test.mark.parametrize("item_name",
+                          [item.name for item in six._urllib_parse_moved_attributes])
+def test_move_items_urllib_parse(item_name):
+    """Ensure that everything loads correctly."""
+    if item_name == "ParseResult" and sys.version_info < (2, 5):
+        py.test.skip("ParseResult is only found on 2.5+")
+    if item_name in ("parse_qs", "parse_qsl") and sys.version_info < (2, 6):
+        py.test.skip("parse_qs[l] is new in 2.6")
+    getattr(six.moves.urllib.parse, item_name)
+
+
+@py.test.mark.parametrize("item_name",
+                          [item.name for item in six._urllib_error_moved_attributes])
+def test_move_items_urllib_error(item_name):
+    """Ensure that everything loads correctly."""
+    getattr(six.moves.urllib.error, item_name)
+
+
+@py.test.mark.parametrize("item_name",
+                          [item.name for item in six._urllib_request_moved_attributes])
+def test_move_items_urllib_request(item_name):
+    """Ensure that everything loads correctly."""
+    getattr(six.moves.urllib.request, item_name)
+
+
+@py.test.mark.parametrize("item_name",
+                          [item.name for item in six._urllib_response_moved_attributes])
+def test_move_items_urllib_response(item_name):
+    """Ensure that everything loads correctly."""
+    getattr(six.moves.urllib.response, item_name)
+
+
+@py.test.mark.parametrize("item_name",
+                          [item.name for item in six._urllib_robotparser_moved_attributes])
+def test_move_items_urllib_robotparser(item_name):
+    """Ensure that everything loads correctly."""
+    getattr(six.moves.urllib.robotparser, item_name)
+
+
 def test_filter():
     from six.moves import filter
     f = filter(lambda x: x % 2, range(10))
     assert six.advance_iterator(f) == 1
 
+
+def test_filter_false():
+    from six.moves import filterfalse
+    f = filterfalse(lambda x: x % 3, range(10))
+    assert six.advance_iterator(f) == 0
+    assert six.advance_iterator(f) == 3
+    assert six.advance_iterator(f) == 6
 
 def test_map():
     from six.moves import map
@@ -112,6 +161,15 @@ def test_map():
 def test_zip():
     from six.moves import zip
     assert six.advance_iterator(zip(range(2), range(2))) == (0, 0)
+
+
+@py.test.mark.skipif("sys.version_info < (2, 6)")
+def test_zip_longest():
+    from six.moves import zip_longest
+    it = zip_longest(range(2), range(1))
+
+    assert six.advance_iterator(it) == (0, 0)
+    assert six.advance_iterator(it) == (1, None)
 
 
 class TestCustomizedMoves:
@@ -306,6 +364,17 @@ def test_callable():
     assert not six.callable("string")
 
 
+def test_create_bound_method():
+    class X(object):
+        pass
+    def f(self):
+        return self
+    x = X()
+    b = six.create_bound_method(f, x)
+    assert isinstance(b, types.MethodType)
+    assert b() is x
+
+
 if six.PY3:
 
     def test_b():
@@ -340,9 +409,31 @@ def test_u_escapes():
     assert len(s) == 1
 
 
+def test_unichr():
+    assert six.u("\u1234") == six.unichr(0x1234)
+    assert type(six.u("\u1234")) is type(six.unichr(0x1234))
+
+
 def test_int2byte():
     assert six.int2byte(3) == six.b("\x03")
     py.test.raises((OverflowError, ValueError), six.int2byte, 256)
+
+
+def test_byte2int():
+    assert six.byte2int(six.b("\x03")) == 3
+    assert six.byte2int(six.b("\x03\x04")) == 3
+    py.test.raises(IndexError, six.byte2int, six.b(""))
+
+
+def test_bytesindex():
+    assert six.indexbytes(six.b("hello"), 3) == ord("l")
+
+
+def test_bytesiter():
+    it = six.iterbytes(six.b("hi"))
+    assert six.next(it) == ord("h")
+    assert six.next(it) == ord("i")
+    py.test.raises(StopIteration, six.next, it)
 
 
 def test_StringIO():
@@ -456,3 +547,68 @@ def test_with_metaclass():
         pass
     assert type(X) is Meta
     assert issubclass(X, Base)
+    class Base2(object):
+        pass
+    class X(six.with_metaclass(Meta, Base, Base2)):
+        pass
+    assert type(X) is Meta
+    assert issubclass(X, Base)
+    assert issubclass(X, Base2)
+
+
+def test_add_metaclass():
+    class Meta(type):
+        pass
+    class X:
+        "success"
+    X = six.add_metaclass(Meta)(X)
+    assert type(X) is Meta
+    assert issubclass(X, object)
+    assert X.__module__ == __name__
+    assert X.__doc__ == "success"
+    class Base(object):
+        pass
+    class X(Base):
+        pass
+    X = six.add_metaclass(Meta)(X)
+    assert type(X) is Meta
+    assert issubclass(X, Base)
+    class Base2(object):
+        pass
+    class X(Base, Base2):
+        pass
+    X = six.add_metaclass(Meta)(X)
+    assert type(X) is Meta
+    assert issubclass(X, Base)
+    assert issubclass(X, Base2)
+
+    # Test a second-generation subclass of a type.
+    class Meta1(type):
+        m1 = "m1"
+    class Meta2(Meta1):
+        m2 = "m2"
+    class Base:
+        b = "b"
+    Base = six.add_metaclass(Meta1)(Base)
+    class X(Base):
+        x = "x"
+    X = six.add_metaclass(Meta2)(X)
+    assert type(X) is Meta2
+    assert issubclass(X, Base)
+    assert type(Base) is Meta1
+    assert "__dict__" not in vars(X)
+    instance = X()
+    instance.attr = "test"
+    assert vars(instance) == {"attr": "test"}
+    assert instance.b == Base.b
+    assert instance.x == X.x
+
+    # test a class with slots
+    class MySlots(object):
+        __slots__ = ["a", "b"]
+    MySlots = six.add_metaclass(Meta1)(MySlots)
+
+    assert MySlots.__slots__ == ["a", "b"]
+    instance = MySlots()
+    instance.a = "foo"
+    py.test.raises(AttributeError, setattr, instance, "c", "baz")
