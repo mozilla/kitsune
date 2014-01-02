@@ -3,6 +3,43 @@ Changelog for Six
 
 This file lists the changes in each six version.
 
+1.4.1
+-----
+
+- Issue #32: urllib module wrappings don't work when six is not a toplevel file.
+
+1.4.0
+-----
+
+- Issue #31: Add six.moves mapping for UserString.
+
+- Pull request #12: Add six.add_metaclass, a decorator for adding a metaclass to
+  a class.
+
+- Add six.moves.zip_longest and six.moves.filterfalse, which correspond
+  respectively to itertools.izip_longest and itertools.ifilterfalse on Python 2
+  and itertools.zip_longest and itertools.filterfalse on Python 3.
+
+- Issue #25: Add the unichr function, which returns a string for a Unicode
+  codepoint.
+
+- Issue #26: Add byte2int function, which complements int2byte.
+
+- Add a PY2 constant with obvious semantics.
+
+- Add helpers for indexing and iterating over bytes: iterbytes and indexbytes.
+
+- Add create_bound_method() wrapper.
+
+- Issue #23: Allow multiple base classes to be passed to with_metaclass.
+
+- Issue #24: Add six.moves.range alias. This exactly the same as the current
+  xrange alias.
+
+- Pull request #5: Create six.moves.urllib, which contains abstractions for a
+  bunch of things which are in urllib in Python 3 and spread out across urllib,
+  urllib2, and urlparse in Python 2.
+
 1.3.0
 -----
 
@@ -56,14 +93,12 @@ This file lists the changes in each six version.
 
 - Issue #3: Add six.moves mappings for filter, map, and zip.
 
-
 1.0.0
 -----
 
 - Issue #2: u() on Python 2.x now resolves unicode escapes.
 
 - Expose an API for adding mappings to six.moves.
-
 
 1.0 beta 1
 ----------
