@@ -209,7 +209,8 @@ FXOS_LANGUAGES = [
 LANGUAGE_CHOICES = tuple(
     [(lang, LOCALES[lang].native) for lang in SUMO_LANGUAGES
      if lang != 'xx'])
-LANGUAGES = dict([(i.lower(), LOCALES[i].native) for i in SUMO_LANGUAGES])
+LANGUAGES_DICT = dict([(i.lower(), LOCALES[i].native) for i in SUMO_LANGUAGES])
+LANGUAGES = LANGUAGES_DICT.items()
 
 LANGUAGE_URL_MAP = dict([(i.lower(), i) for i in SUMO_LANGUAGES])
 
@@ -538,6 +539,7 @@ INSTALLED_APPS = (
     'kitsune.offline',
     'kitsune.products',
     'rest_framework',
+    'statici18n',
 
     # App for Sentry:
     'raven.contrib.django',
@@ -623,6 +625,9 @@ STANDALONE_DOMAINS = [
     TEXT_DOMAIN,
     'javascript',
 ]
+
+STATICI18N_DOMAIN = 'javascript'
+STATICI18N_PACKAGES = ['kitsune.sumo']
 
 # If you have trouble extracting strings with Tower, try setting this
 # to True

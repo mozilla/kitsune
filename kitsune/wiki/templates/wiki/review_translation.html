@@ -10,7 +10,7 @@
   <div class="grid_9">
     <article id="review-revision">
       <h1>{{ _('Review Translation of {title}')|f(title=document.parent.title) }}</h1>
-      <p>{{ _('Reviewing Translation {id} in {language} by {user}')|f(id=revision.id, user=revision.creator, language=settings.LANGUAGES[document.locale.lower()]) }}.
+      <p>{{ _('Reviewing Translation {id} in {language} by {user}')|f(id=revision.id, user=revision.creator, language=settings.LANGUAGES_DICT[document.locale.lower()]) }}.
       <a href="{{ url('wiki.document_revisions', document.slug) }}">{{ _('Back to History') }}</a></p>
 
       {% if revision.reviewed %}
@@ -36,17 +36,17 @@
           <summary>{{ _('Full Article Sources') }}</summary>
           {% if not parent_revision %}
             <div class="warning-box">
-              {{ _('The {default_locale} version has no approved content to show.')|f(default_locale=settings.LANGUAGES[settings.WIKI_DEFAULT_LANGUAGE.lower()]) }}
+              {{ _('The {default_locale} version has no approved content to show.')|f(default_locale=settings.LANGUAGES_DICT[settings.WIKI_DEFAULT_LANGUAGE.lower()]) }}
             </div>
           {% else %}
             {# Default vs. current locale #}
             <div id="content-fields" class="revision-diff">
               <div class="approved">
-                <h3>{{ _('Approved {default_locale} version:')|f(default_locale=settings.LANGUAGES[settings.WIKI_DEFAULT_LANGUAGE.lower()]) }}</h3>
+                <h3>{{ _('Approved {default_locale} version:')|f(default_locale=settings.LANGUAGES_DICT[settings.WIKI_DEFAULT_LANGUAGE.lower()]) }}</h3>
                 <p>{{ _('Revision {id} by {user} on {date}')|fe(id=parent_revision.id, user=parent_revision.creator, date=datetimeformat(parent_revision.created, format='longdatetime')) }}</p>
               </div>
               <div class="localized">
-                <h3>{{ _('Submitted {locale} translation:')|f(locale=settings.LANGUAGES[document.locale.lower()]) }}</h3>
+                <h3>{{ _('Submitted {locale} translation:')|f(locale=settings.LANGUAGES_DICT[document.locale.lower()]) }}</h3>
                 <p>{{ _('Revision {id} by {user} on {date}')|fe(id=revision.id, user=revision.creator, date=datetimeformat(revision.created, format='longdatetime')) }}</p>
               </div>
               <h4>{{ _('Keywords:') }}</h4>
