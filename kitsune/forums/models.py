@@ -11,9 +11,12 @@ from kitsune.access import has_perm, perm_is_defined_on
 from kitsune.sumo.helpers import urlparams, wiki_to_html
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.models import ModelBase
+from kitsune.sumo.utils import publish_message
 from kitsune.search.models import (
     SearchMappingType, SearchMixin, register_for_indexing,
     register_mapping_type)
+
+from mozillapulse.messages.sumo import SUMOForumPostMessage
 
 
 def _last_post_from(posts, exclude_post=None):
@@ -319,6 +322,17 @@ class Post(ModelBase):
 
             self.thread.forum.last_post = self
             self.thread.forum.save()
+
+        nowtuple = (self.created if new else self.updated).timetuple()
+        nowtimestamp = time.mktime(nowtuple)
+        pulsemsg = SUMOForumPostMessage(locale='en-US',
+                                        who=(self.creator if new else self.updated_by).email,
+                                        when=nowtimestamp,
+                                        slug=self.thread.forum.slug,
+                                        thread=self.thread.id,
+                                        id=self.id,
+                                        is_new=new)
+        publish_message(pulsemsg)
 
     def delete(self, *args, **kwargs):
         """Override delete method to update parent thread info."""

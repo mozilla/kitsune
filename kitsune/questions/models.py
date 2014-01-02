@@ -38,9 +38,12 @@ from kitsune.sumo.models import ModelBase, LocaleField
 from kitsune.sumo.helpers import wiki_to_html
 from kitsune.sumo.redis_utils import RedisError
 from kitsune.sumo.urlresolvers import reverse, split_path
+from kitsune.sumo.utils import publish_message
 from kitsune.tags.models import BigVocabTaggableMixin
 from kitsune.tags.utils import add_existing_tag
 from kitsune.upload.models import ImageAttachment
+
+from mozillapulse.messages.sumo import SUMOAnswerMessage, SUMOQuestionMessage
 
 
 log = logging.getLogger('k.questions')
@@ -134,6 +137,16 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
             from kitsune.questions.events import QuestionReplyEvent
             # Authors should automatically watch their own questions.
             QuestionReplyEvent.notify(self.creator, self)
+
+            nowtuple = self.created.timetuple()
+            nowtimestamp = time.mktime(nowtuple)
+            pulsemsg = SUMOQuestionMessage(locale=str(self.locale),
+                                           who=self.creator.email,
+                                           when=nowtimestamp,
+                                           id=self.id,
+                                           product=unicode(self.product['name']),
+                                           category=self.category['topic'])
+            publish_message(pulsemsg)
 
     def add_metadata(self, **kwargs):
         """Add (save to db) the passed in metadata.
@@ -716,6 +729,18 @@ class Answer(ModelBase):
                 # Avoid circular import: events.py imports Question.
                 from kitsune.questions.events import QuestionReplyEvent
                 QuestionReplyEvent(self).fire(exclude=self.creator)
+
+        nowtuple = (self.created if new else self.updated).timetuple()
+        nowtimestamp = time.mktime(nowtuple)
+        pulsemsg = SUMOAnswerMessage(locale=self.question.locale,
+                                     who=(self.creator if new else self.updated_by).email,
+                                     when=nowtimestamp,
+                                     question=self.question.id,
+                                     id=self.id,
+                                     is_new=new,
+                                     product=unicode(self.question.product['name']),
+                                     category=self.question.category['topic'])
+        publish_message(pulsemsg)
 
     def delete(self, *args, **kwargs):
         """Override delete method to update parent question info."""

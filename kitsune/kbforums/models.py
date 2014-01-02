@@ -9,7 +9,10 @@ from kitsune import kbforums
 from kitsune.sumo.helpers import urlparams, wiki_to_html
 from kitsune.sumo.models import ModelBase
 from kitsune.sumo.urlresolvers import reverse
+from kitsune.sumo.utils import publish_message
 from kitsune.wiki.models import Document
+
+from mozillapulse.messages.sumo import SUMOArticleDiscussionMessage
 
 
 def _last_post_from(posts, exclude_post=None):
@@ -115,6 +118,18 @@ class Post(ModelBase):
             self.thread.replies = self.thread.post_set.count() - 1
             self.thread.last_post = self
             self.thread.save()
+
+        nowtuple = (self.created if new else self.updated).timetuple()
+        nowtimestamp = time.mktime(nowtuple)
+        pulsemsg = SUMOArticleDiscussionMessage(locale=str(self.document.locale),
+                                                who=(self.creator if new else self.updated_by).email,
+                                                when=nowtimestamp,
+                                                article_id=self.document.id,
+                                                slug=self.document.slug,
+                                                thread=self.thread.id,
+                                                id=self.id,
+                                                is_new=new)
+        publish_message(pulsemsg)
 
     def delete(self, *args, **kwargs):
         """Override delete method to update parent thread info."""

@@ -27,6 +27,7 @@ from kitsune.search.models import (
 from kitsune.sumo import ProgrammingError
 from kitsune.sumo.models import ModelBase, LocaleField
 from kitsune.sumo.urlresolvers import reverse, split_path
+from kitsune.sumo.utils import publish_message
 from kitsune.tags.models import BigVocabTaggableMixin
 from kitsune.wiki import TEMPLATE_TITLE_PREFIX
 from kitsune.wiki.config import (
@@ -34,6 +35,8 @@ from kitsune.wiki.config import (
     MAJOR_SIGNIFICANCE, REDIRECT_HTML, REDIRECT_CONTENT, REDIRECT_TITLE,
     REDIRECT_SLUG, CANNED_RESPONSES_CATEGORY, ADMINISTRATION_CATEGORY)
 from kitsune.wiki.permissions import DocumentPermissionMixin
+
+from mozillapulse.messages.sumo import SUMOArticleRevisionMessage
 
 
 log = logging.getLogger('k.wiki')
@@ -945,6 +948,16 @@ class Revision(ModelBase):
             # Update the denormalized field on the document.
             self.document.latest_localizable_revision = self
             self.document.save()
+
+        pulsemsg = SUMOArticleRevisionMessage(str(self.document.locale))
+        nowtuple = self.created.timetuple()
+        nowtimestamp = time.mktime(nowtuple)
+        pulsemsg.set_data('when', nowtimestamp)
+        pulsemsg.set_data('who', self.creator.email)
+        pulsemsg.set_data('article', self.document.id)
+        pulsemsg.set_data('revision', self.id)
+        publish_message(pulsemsg)
+
 
     def delete(self, *args, **kwargs):
         """Dodge cascading delete of documents and other revisions."""
