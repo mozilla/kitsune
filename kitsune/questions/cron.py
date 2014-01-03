@@ -150,6 +150,9 @@ def escalate_questions():
     qs = Question.objects.needs_attention().exclude(
         tags__slug__in=[config.ESCALATE_TAG_NAME])
 
+    # Exclude those by inactive users.
+    qs = qs.exclude(creator__is_active=False)
+
     # Filter them down to those that haven't been replied to and are over
     # 24 hours old.
     start = datetime.now() - timedelta(hours=24)
