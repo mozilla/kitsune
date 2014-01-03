@@ -49,6 +49,12 @@ class TestEscalateCron(TestCase):
         q.tags.add(config.ESCALATE_TAG_NAME)
         questions_not_to_escalate.append(q)
 
+        # Question with an inactive user.
+        q = question(created=datetime.now() - timedelta(hours=36), save=True)
+        q.creator.is_active = False
+        q.creator.save()
+        questions_not_to_escalate.append(q)
+
         # Run the cron job and verify only 3 questions were escalated.
         eq_(len(questions_to_escalate), escalate_questions())
 
