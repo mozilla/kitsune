@@ -229,7 +229,7 @@ class EditQuestionForm(forms.Form):
             if parsed:
                 # Clean out unwanted garbage preferences.
                 if ('modifiedPreferences' in parsed and
-                    isinstance(parsed['modifiedPreferences'], dict)):
+                        isinstance(parsed['modifiedPreferences'], dict)):
                     for pref in parsed['modifiedPreferences'].keys():
                         if pref.startswith('print.macosx.pagesetup'):
                             del parsed['modifiedPreferences'][pref]
@@ -263,14 +263,13 @@ class NewQuestionForm(EditQuestionForm):
 class AnswerForm(forms.Form):
     """Form for replying to a question."""
     content = StrippedCharField(
-                label=_lazy('Content:'),
-                min_length=5,
-                max_length=10000,
-                widget=forms.Textarea(attrs={'placeholder':
-                                             REPLY_PLACEHOLDER}),
-                error_messages={'required': MSG_CONTENT_REQUIRED,
-                                'min_length': MSG_CONTENT_SHORT,
-                                'max_length': MSG_CONTENT_LONG})
+        label=_lazy('Content:'),
+        min_length=5,
+        max_length=10000,
+        widget=forms.Textarea(attrs={'placeholder': REPLY_PLACEHOLDER}),
+        error_messages={'required': MSG_CONTENT_REQUIRED,
+                        'min_length': MSG_CONTENT_SHORT,
+                        'max_length': MSG_CONTENT_LONG})
 
     class Meta:
         model = Answer
@@ -285,8 +284,8 @@ class WatchQuestionForm(forms.Form):
     )
 
     email = forms.EmailField(
-      required=False,
-      widget=forms.TextInput(attrs={'placeholder': EMAIL_PLACEHOLDER}))
+        required=False,
+        widget=forms.TextInput(attrs={'placeholder': EMAIL_PLACEHOLDER}))
     event_type = forms.ChoiceField(choices=EVENT_TYPE_CHOICES,
                                    widget=forms.RadioSelect)
 
@@ -316,8 +315,9 @@ class BaseZendeskForm(forms.Form):
         if not user.is_authenticated():
             email = forms.EmailField(
                 label=_lazy(u'Email:'),
-                widget=forms.TextInput(attrs={'placeholder': EMAIL_PLACEHOLDER})
-            )
+                widget=forms.TextInput(attrs={
+                    'placeholder': EMAIL_PLACEHOLDER
+                }))
             self.fields['email'] = email
 
     subject = StrippedCharField(
@@ -366,7 +366,9 @@ class MarketplaceAaqForm(BaseZendeskForm):
 class MarketplaceRefundForm(BaseZendeskForm):
     transaction_id = StrippedCharField(
         label=_lazy(u'Transaction ID:'),
-        widget=forms.TextInput(attrs={'placeholder': TRANSACTION_ID_PLACEHOLDER}),
+        widget=forms.TextInput(attrs={
+            'placeholder': TRANSACTION_ID_PLACEHOLDER
+        }),
         error_messages={'required': TRANSACTION_ID_REQUIRED})
 
     category = forms.ChoiceField(

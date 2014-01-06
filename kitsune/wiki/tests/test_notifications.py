@@ -126,7 +126,6 @@ class ReviewTests(TestCaseBase):
             doc=doc, is_ready=True, significance=MEDIUM_SIGNIFICANCE)
         eq_(12, len(mail.outbox))
 
-
     def test_typo_significance_ignore(self):
         # Create the first approved revision for the document. This one will
         # always have MAJOR_SIGNIFICANCE.

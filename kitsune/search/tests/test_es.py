@@ -688,7 +688,7 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
     def test_question_topics(self):
         """Search questions for topics."""
         p = product(save=True)
-        t1 = topic(slug='doesnotexist', product=p,  save=True)
+        t1 = topic(slug='doesnotexist', product=p, save=True)
         t2 = topic(slug='cookies', product=p, save=True)
         t3 = topic(slug='sync', product=p, save=True)
 
@@ -1176,9 +1176,8 @@ class TestAnalyzers(ElasticTestCase):
         search = search.filter(document_locale=locale)
         facet_filter = search._process_filters([('document_locale', locale)])
         search = search.facet_raw(tokens={
-                'terms': {'field': 'document_content'},
-                'facet_filter': facet_filter,
-                })
+            'terms': {'field': 'document_content'},
+            'facet_filter': facet_filter})
         facets = search.facet_counts()
 
         expected = set(expected_tokens)

@@ -5,14 +5,16 @@ from django.views.generic.base import RedirectView
 from kitsune.sumo import views
 
 
-services_patterns = patterns('',
+services_patterns = patterns(
+    '',
     url('^/monitor$', views.monitor, name='sumo.monitor'),
     url('^/version$', views.version_check, name='sumo.version'),
     url('^/error$', views.error, name='sumo.error'),
 )
 
 
-urlpatterns = patterns('',
+urlpatterns = patterns(
+    '',
     url(r'^robots.txt$', views.robots, name='robots.txt'),
     ('^services', include(services_patterns)),
 
@@ -27,7 +29,8 @@ urlpatterns = patterns('',
 
 
 if 'django_qunit' in settings.INSTALLED_APPS:
-    urlpatterns += patterns('',
+    urlpatterns += patterns(
+        '',
         url(r'^qunit/(?P<path>.*)', views.kitsune_qunit),
         url(r'^_qunit/', include('django_qunit.urls')),
     )

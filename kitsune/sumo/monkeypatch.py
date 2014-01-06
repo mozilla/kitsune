@@ -1,7 +1,6 @@
 from django.forms import fields
 from django.forms import widgets
 
-
 _has_been_patched = False
 
 
@@ -38,16 +37,18 @@ def patch():
         attrs = field_widget_attrs(self, widget)
         # required="required" isn't supported for groups of checkboxes.
         if (self.required and (not 'required' in attrs) and
-            not widget.is_hidden and
-            not isinstance(widget, widgets.CheckboxSelectMultiple)):
+                not widget.is_hidden and
+                not isinstance(widget, widgets.CheckboxSelectMultiple)):
             attrs['required'] = 'required'
         return attrs
 
     def required_char_field_attrs(self, widget, *args, **kwargs):
         """This function is for use on the CharField class."""
         # We need to call super() here, since Django's CharField.widget_attrs
-        # doesn't call its super and thus won't use the required_field_attrs above.
-        attrs = super(fields.CharField, self).widget_attrs(widget, *args, **kwargs)
+        # doesn't call its super and thus won't use the required_field_attrs
+        # above.
+        attrs = super(fields.CharField, self).widget_attrs(widget, *args,
+                                                           **kwargs)
         original_attrs = charfield_widget_attrs(self, widget) or {}
         attrs.update(original_attrs)
         return attrs

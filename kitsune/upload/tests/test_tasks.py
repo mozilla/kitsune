@@ -188,7 +188,7 @@ class CompressImageTestCase(TestCase):
 
     @mock.patch.object(settings._wrapped, 'OPTIPNG_PATH', '')
     @mock.patch.object(kitsune.upload.tasks.subprocess, 'call')
-    def test_compressed_image_default(self, call):
+    def test_compressed_image_animated(self, call):
         """uploaded animated gif image is not compressed."""
         image = self._uploaded_image(testfile="animated.gif")
         compress_image(image, 'file')

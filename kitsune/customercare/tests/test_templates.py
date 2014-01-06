@@ -125,7 +125,7 @@ class TweetListTestCase(TestCase):
         eq_(200, r.status_code)
         doc = pq(r.content)
         assert doc('#tweets-wrap .warning-box'), (
-               'Fallback message is not showing up.')
+            'Fallback message is not showing up.')
 
 
 class StatsTests(TestCase):

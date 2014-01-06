@@ -1,5 +1,3 @@
-import os
-
 from django.conf import settings
 from django.core.exceptions import PermissionDenied
 from django.core.files import File

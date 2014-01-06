@@ -54,8 +54,7 @@ from kitsune.wiki.models import (
 @ssl_required
 @anonymous_csrf
 @require_http_methods(['GET', 'POST'])
-def user_auth(request, contributor=False, register_form=None,
-        login_form=None):
+def user_auth(request, contributor=False, register_form=None, login_form=None):
     """Try to log the user in, or register a user.
 
     POSTs from these forms do not come back to this view, but instead go to the
@@ -93,7 +92,7 @@ def login(request, template):
         next_url = urlparams(next_url, fpa=1)
         res = HttpResponseRedirect(next_url)
         max_age = (None if settings.SESSION_EXPIRE_AT_BROWSER_CLOSE
-                        else settings.SESSION_COOKIE_AGE)
+                   else settings.SESSION_COOKIE_AGE)
         res.set_cookie(settings.SESSION_EXISTS_COOKIE,
                        '1',
                        secure=False,
@@ -408,7 +407,7 @@ def edit_profile(request, template):
         form = ProfileForm(instance=user_profile)
 
     # TODO: detect timezone automatically from client side, see
-    # http://rocketscience.itteco.org/2010/03/13/automatic-users-timezone-determination-with-javascript-and-django-timezones/
+    # http://rocketscience.itteco.org/2010/03/13/automatic-users-timezone-determination-with-javascript-and-django-timezones/  # noqa
 
     return render(request, template, {
         'form': form, 'profile': user_profile})
@@ -646,7 +645,7 @@ def forgot_username(request, template):
             messages.add_message(
                 request, messages.INFO,
                 _(u"We've sent an email with the username to any account"
-                   " using {email}.").format(email=form.data['email']))
+                  u" using {email}.").format(email=form.data['email']))
 
             return HttpResponseRedirect(reverse('users.login'))
     else:
@@ -667,9 +666,11 @@ def browserid_verify(request):
 
     if form.is_valid():
         verifier = BrowserIDBackend().get_verifier()
-        result = verifier.verify(form.cleaned_data['assertion'], get_audience(request))
+        result = verifier.verify(form.cleaned_data['assertion'],
+                                 get_audience(request))
         if result:
-            if request.user.is_authenticated() and request.user.email != result.email:
+            if (request.user.is_authenticated()
+                    and request.user.email != result.email):
                 # User is already signed and wants to change their email.
                 request.user.email = result.email
                 request.user.save()

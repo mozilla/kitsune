@@ -36,9 +36,9 @@ def LocalizationDashAnnouncementsTests(TestCase):
         self.locale1.leaders.add(self.u2)
         self.locale1.save()
 
-        self.announcement = announcement(save=True, creator=self.u2,
-            locale=self.locale1, content="Look at me!",
-            show_after=datetime(2012, 01, 01, 0, 0, 0))
+        self.announcement = announcement(
+            save=True, creator=self.u2, locale=self.locale1,
+            content="Look at me!", show_after=datetime(2012, 01, 01, 0, 0, 0))
 
     def test_show_create(self):
         self.client.login(username=self.u1.username, password='testpass')
@@ -70,9 +70,11 @@ class ContributorDashTests(TestCase):
     def test_detail_view(self):
         """Assert the detail page of the contributor dash resolves, renders.
         """
-        response = self.client.get(reverse('dashboards.contributors_detail',
-            args=[CONTRIBUTOR_READOUTS[CONTRIBUTOR_READOUTS.keys()[0]].slug],
-            locale='en-US'))
+        readoutKey = CONTRIBUTOR_READOUTS.keys()[0]
+        response = self.client.get(
+            reverse('dashboards.contributors_detail',
+                    args=[CONTRIBUTOR_READOUTS[readoutKey].slug],
+                    locale='en-US'))
         eq_(200, response.status_code)
 
 

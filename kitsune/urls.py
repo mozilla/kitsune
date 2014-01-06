@@ -19,7 +19,8 @@ authority.autodiscover()
 badger.autodiscover()
 
 
-urlpatterns = patterns('',
+urlpatterns = patterns(
+    '',
     (r'^search', include('kitsune.search.urls')),
     (r'^forums', include('kitsune.forums.urls')),
     (r'^questions', include('kitsune.questions.urls')),
@@ -66,7 +67,8 @@ handler500 = 'kitsune.sumo.views.handle500'
 
 if settings.DEBUG:
     media_url = settings.MEDIA_URL.lstrip('/').rstrip('/')
-    urlpatterns += patterns('',
+    urlpatterns += patterns(
+        '',
         (r'^%s/(?P<path>.*)$' % media_url, 'django.views.static.serve',
-          {'document_root': settings.MEDIA_ROOT}),
+         {'document_root': settings.MEDIA_ROOT}),
     )

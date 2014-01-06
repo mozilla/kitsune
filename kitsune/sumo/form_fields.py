@@ -127,12 +127,12 @@ class BaseValidator(validators.BaseValidator):
 
 class MinLengthValidator(validators.MinLengthValidator, BaseValidator):
     message = _lazy(u'Ensure this value has at least %(limit_value)s '
-                     'characters (it has %(show_value)s).')
+                    u'characters (it has %(show_value)s).')
 
 
 class MaxLengthValidator(validators.MaxLengthValidator, BaseValidator):
     message = _lazy(u'Ensure this value has at most %(limit_value)s '
-                     'characters (it has %(show_value)s).')
+                    u'characters (it has %(show_value)s).')
 
 
 def _format_decimal(num, format=None):

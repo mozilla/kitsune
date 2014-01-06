@@ -18,7 +18,7 @@ class JsonViewTests(TestCase):
         data = {
             'foo': 'bar',
             'baz': 'qux',
-            'quz': [{'foo': 'bar'},],
+            'quz': [{'foo': 'bar'}],
         }
         expect = json.dumps(data)
 
@@ -59,7 +59,7 @@ class JsonViewTests(TestCase):
     def test_permission(self):
         @json_view
         def temp(req):
-            raise PermissionDenied, 'bar'
+            raise PermissionDenied('bar')
 
         res = temp(rf.get('/'))
         eq_(403, res.status_code)
@@ -71,7 +71,7 @@ class JsonViewTests(TestCase):
     def test_server_error(self):
         @json_view
         def temp(req):
-            raise TypeError, 'fail'
+            raise TypeError('fail')
 
         res = temp(rf.get('/'))
         eq_(500, res.status_code)

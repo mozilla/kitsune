@@ -7,7 +7,8 @@ from kitsune.flagit import views as flagit_views
 
 
 # These patterns inherit from /document/discuss
-urlpatterns = patterns('kitsune.kbforums.views',
+urlpatterns = patterns(
+    'kitsune.kbforums.views',
     url(r'^$', 'threads', name='wiki.discuss.threads'),
     url(r'^/feed', ThreadsFeed(), name='wiki.discuss.threads.feed'),
     url(r'^/new', 'new_thread', name='wiki.discuss.new_thread'),

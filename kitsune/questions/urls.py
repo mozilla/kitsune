@@ -7,7 +7,8 @@ from kitsune.questions.models import Question, Answer
 from kitsune.flagit import views as flagit_views
 
 
-urlpatterns = patterns('kitsune.questions.views',
+urlpatterns = patterns(
+    'kitsune.questions.views',
     url(r'^$', 'questions', name='questions.questions'),
     url(r'^/answer-preview-async$', 'answer_preview_async',
         name='questions.answer_preview_async'),

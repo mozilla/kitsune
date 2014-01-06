@@ -275,7 +275,7 @@ def error(request):
     if not getattr(settings, 'STAGE', False):
         raise Http404
     # Do something stupid.
-    fu
+    fu  # noqa
 
 
 @require_GET
@@ -284,7 +284,7 @@ def version_check(request):
     mime = 'application/x-json'
     token = settings.VERSION_CHECK_TOKEN
     if (token is None or not 'token' in request.GET or
-        token != request.GET['token']):
+            token != request.GET['token']):
         return HttpResponse(status=403, mimetype=mime)
 
     versions = {

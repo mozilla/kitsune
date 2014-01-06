@@ -26,10 +26,10 @@ def create_for_locale(request):
         a = Announcement(creator=user, locale=locale, **form.cleaned_data)
         a.save()
         return HttpResponse(json.dumps({'id': a.id}),
-            content_type="application/json")
+                            content_type="application/json")
     else:
         return HttpResponse(json.dumps(form.errors), status=400,
-            content_type="application/json")
+                            content_type="application/json")
 
 
 @require_POST

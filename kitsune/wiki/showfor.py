@@ -1,11 +1,3 @@
-from itertools import chain
-from string import ascii_letters
-
-from tower import ugettext_lazy as _lazy
-
-from kitsune.products.models import Product, Version, Platform
-
-
 def showfor_data(products):
     def order(obj):
         return obj.display_order

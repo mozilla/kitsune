@@ -68,7 +68,7 @@ def reply(**kwargs):
             'text': kwargs.pop('text', 'Hey #Firefox'),
             'created_at': 'Thu, 23 Sep 2010 13:58:06 +0000',
             'source': '&lt;a href=&quot;http://www.tweetdeck.com&quot; '
-                'rel=&quot;nofollow&quot;&gt;TweetDeck&lt;/a&gt;',
+                      'rel=&quot;nofollow&quot;&gt;TweetDeck&lt;/a&gt;',
             'user': {
                 'screen_name': '__jimcasey__',
                 'profile_image_url': 'http://a1.twimg.com/profile_images/'

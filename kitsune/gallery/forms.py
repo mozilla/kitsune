@@ -1,6 +1,5 @@
 from django import forms
 from django.conf import settings
-from django.core.exceptions import ValidationError
 
 from tower import ugettext_lazy as _lazy, ugettext as _
 
@@ -14,18 +13,18 @@ from kitsune.upload.forms import clean_image_extension
 MSG_TITLE_REQUIRED = _lazy(u'Please provide a title.')
 MSG_TITLE_SHORT = _lazy(
     u'The title is too short (%(show_value)s characters). It must be at '
-     'least %(limit_value)s characters.')
+    'least %(limit_value)s characters.')
 MSG_TITLE_LONG = _lazy(
     u'Please keep the length of your title to %(limit_value)s characters '
-     'or less. It is currently %(show_value)s characters.')
+    'or less. It is currently %(show_value)s characters.')
 MSG_DESCRIPTION_REQUIRED = _lazy(u'Please provide a description.')
 MSG_DESCRIPTION_LONG = _lazy(
     u'Please keep the length of your description to %(limit_value)s '
-     'characters or less. It is currently %(show_value)s characters.')
+    'characters or less. It is currently %(show_value)s characters.')
 MSG_IMAGE_REQUIRED = _lazy(u'You have not selected an image to upload.')
 MSG_IMAGE_LONG = _lazy(
     u'Please keep the length of your image filename to %(max)s '
-     'characters or less. It is currently %(length)s characters.')
+    'characters or less. It is currently %(length)s characters.')
 MSG_TITLE_DRAFT = _lazy(u'Please select a different title.')
 
 TITLE_HELP_TEXT = _lazy(u'Include this in wiki syntax with [[%(type)s:title]]')
@@ -35,11 +34,11 @@ DESCRIPTION_HELP_TEXT = _lazy(u'Provide a brief description of this media.')
 class MediaForm(forms.ModelForm):
     """Common abstractions for Image form."""
     locale = forms.ChoiceField(
-                    required=False,
-                    label=_lazy(u'Locale'),
-                    choices=[(k, LOCALES[k].native) for
-                             k in settings.SUMO_LANGUAGES],
-                    initial=settings.WIKI_DEFAULT_LANGUAGE)
+        required=False,
+        label=_lazy(u'Locale'),
+        choices=[(k, LOCALES[k].native) for
+                 k in settings.SUMO_LANGUAGES],
+        initial=settings.WIKI_DEFAULT_LANGUAGE)
     title = StrippedCharField(
         required=False,
         label=_lazy(u'Title'),
@@ -77,11 +76,10 @@ class ImageForm(MediaForm):
 
     def __init__(self, *args, **kwargs):
         super(ImageForm, self).__init__(*args, **kwargs)
-        self.fields['file'].help_text = _(
-            u'Accepted formats include: PNG, JPEG, GIF. <a target="_blank" '
-            'href="{learn_more}">Learn more...</a>').format(
-                learn_more='http://infohost.nmt.edu/tcc/help/pubs/pil/'
-                           'formats.html')
+        msg = _(u'Accepted formats include: PNG, JPEG, GIF. '
+                '<a target="_blank" href="{learn_more}">Learn more...</a>')
+        url = 'http://infohost.nmt.edu/tcc/help/pubs/pil/formats.html'
+        self.fields['file'].help_text = msg.format(learn_more=url)
 
     def clean(self):
         c = super(ImageForm, self).clean()

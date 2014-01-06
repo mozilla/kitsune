@@ -112,10 +112,10 @@ def _documents_for(locale, topics=None, products=None):
 def _es_documents_for(locale, topics=None, products=None):
     """ES implementation of documents_for."""
     s = (DocumentMappingType.search()
-        .values_dict('id', 'document_title', 'url', 'document_parent_id',
-                     'document_summary')
-        .filter(document_locale=locale, document_is_archived=False,
-                document_category__in=settings.IA_DEFAULT_CATEGORIES))
+         .values_dict('id', 'document_title', 'url', 'document_parent_id',
+                      'document_summary')
+         .filter(document_locale=locale, document_is_archived=False,
+                 document_category__in=settings.IA_DEFAULT_CATEGORIES))
 
     for topic in topics or []:
         s = s.filter(topic=topic.slug)

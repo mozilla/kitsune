@@ -118,7 +118,7 @@ def pageviews_by_document(start_date, end_date, verbose=False):
 
     end_date_step = end_date
 
-    while True: # To reduce the size of result set request 3 months at a time
+    while True:  # To reduce the size of result set request 3 months at a time
         start_date_step = end_date_step - timedelta(90)
 
         if start_date_step < start_date:
@@ -140,7 +140,8 @@ def pageviews_by_document(start_date, end_date, verbose=False):
                     end_date=str(end_date_step),
                     metrics='ga:pageviews',
                     dimensions='ga:pagePath',
-                    filters='ga:pagePathLevel2==/kb/;ga:pagePathLevel1==/en-US/',
+                    filters=('ga:pagePathLevel2==/kb/;'
+                             'ga:pagePathLevel1==/en-US/'),
                     max_results=max_results,
                     start_index=start_index).execute()
 
@@ -160,7 +161,7 @@ def pageviews_by_document(start_date, end_date, verbose=False):
                 if not doc:
                     continue
 
-                # The same document can appear multiple times due to url params.
+                # The same document can appear multiple times due to url params
                 counts[doc.pk] = counts.get(doc.pk, 0) + pageviews
 
             # Move to next page of results.
@@ -190,7 +191,7 @@ def pageviews_by_question(start_date, end_date, verbose=False):
 
     end_date_step = end_date
 
-    while True: # To reduce the size of result set request 3 months at a time
+    while True:  # To reduce the size of result set request 3 months at a time
         start_date_step = end_date_step - timedelta(90)
 
         if start_date_step < start_date:

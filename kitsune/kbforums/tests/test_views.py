@@ -4,7 +4,6 @@ from kitsune.kbforums.models import Thread
 from kitsune.kbforums.tests import KBForumTestCase, thread
 from kitsune.kbforums.events import NewThreadEvent, NewPostEvent
 from kitsune.sumo.tests import get, post
-from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import user, add_permission
 from kitsune.wiki.tests import document
 

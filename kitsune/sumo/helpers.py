@@ -107,7 +107,7 @@ def wiki_to_html(wiki_markup, locale=settings.WIKI_DEFAULT_LANGUAGE,
                  nofollow=True):
     """Wiki Markup -> HTML jinja2.Markup object"""
     return jinja2.Markup(parser.wiki_to_html(wiki_markup, locale=locale,
-                                                  nofollow=nofollow))
+                                             nofollow=nofollow))
 
 
 @register.filter
@@ -226,8 +226,8 @@ def datetimeformat(context, value, format='shortdatetime'):
     if 'timezone' not in request.session:
         if request.user.is_authenticated():
             try:
-                convert_tzinfo = request.user.get_profile().timezone or \
-                                 default_tzinfo
+                convert_tzinfo = (request.user.get_profile().timezone or
+                                  default_tzinfo)
             except (Profile.DoesNotExist, AttributeError):
                 pass
         request.session['timezone'] = convert_tzinfo
@@ -246,24 +246,26 @@ def datetimeformat(context, value, format='shortdatetime'):
                 convert_value, format='short', tzinfo=convert_tzinfo,
                 locale=locale)
         else:
-            formatted = format_datetime(convert_value, format='short',
-                tzinfo=convert_tzinfo, locale=locale)
+            formatted = format_datetime(convert_value,
+                                        format='short',
+                                        tzinfo=convert_tzinfo,
+                                        locale=locale)
     elif format == 'longdatetime':
         formatted = format_datetime(convert_value, format='long',
-            tzinfo=convert_tzinfo, locale=locale)
+                                    tzinfo=convert_tzinfo, locale=locale)
     elif format == 'date':
         formatted = format_date(convert_value, locale=locale)
     elif format == 'time':
         formatted = format_time(convert_value, tzinfo=convert_tzinfo,
-            locale=locale)
+                                locale=locale)
     elif format == 'datetime':
         formatted = format_datetime(convert_value, tzinfo=convert_tzinfo,
-            locale=locale)
+                                    locale=locale)
     else:
         # Unknown format
         raise DateTimeFormatError
 
-    return jinja2.Markup('<time datetime="%s">%s</time>' % \
+    return jinja2.Markup('<time datetime="%s">%s</time>' %
                          (convert_value.isoformat(), formatted))
 
 
@@ -338,7 +340,7 @@ def timesince(d, now=None):
         (60, lambda n: ungettext('%(number)d minute ago',
                                  '%(number)d minutes ago', n)),
         (1, lambda n: ungettext('%(number)d second ago',
-                                 '%(number)d seconds ago', n))]
+                                '%(number)d seconds ago', n))]
     if not now:
         if d.tzinfo:
             now = datetime.datetime.now(LocalTimezone(d))

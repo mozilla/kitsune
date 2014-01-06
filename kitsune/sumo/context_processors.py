@@ -8,6 +8,6 @@ def global_settings(request):
 
 
 def i18n(request):
-    return {'LANG': settings.LANGUAGE_URL_MAP.get(translation.get_language())
-                    or translation.get_language(),
+    return {'LANG': (settings.LANGUAGE_URL_MAP.get(translation.get_language())
+                     or translation.get_language()),
             'DIR': 'rtl' if translation.get_language_bidi() else 'ltr'}

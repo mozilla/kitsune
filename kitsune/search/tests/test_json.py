@@ -2,7 +2,7 @@ from nose.tools import eq_
 
 from kitsune.search.tests.test_es import ElasticTestCase
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.sumo.tests import TestCase, LocalizingClient
+from kitsune.sumo.tests import LocalizingClient
 
 
 class JSONTest(ElasticTestCase):
@@ -48,7 +48,9 @@ class JSONTest(ElasticTestCase):
                 'callback': callback,
             })
             eq_(response['Content-Type'], 'application/x-javascript')
-            eq_(response.status_code, status)
+            eq_(response.status_code, status,
+                'callback "{0}": expected {1} got {2}'
+                .format(callback, status, response.status_code))
 
     def test_json_empty_query(self):
         """Empty query returns JSON format"""

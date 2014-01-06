@@ -34,7 +34,7 @@ def auth_wanted(view_func):
     def wrapper(request, *args, **kwargs):
         is_secure = settings.TWITTER_COOKIE_SECURE
         if (request.COOKIES.get(REDIRECT_NAME) and
-            (is_secure and not request.is_secure())):
+                (is_secure and not request.is_secure())):
             ssl_url = url(
                 request,
                 {'scheme': 'https' if is_secure else 'http'})

@@ -1,7 +1,8 @@
 from django.conf.urls import patterns, url, include
 
 
-group_patterns = patterns('kitsune.groups.views',
+group_patterns = patterns(
+    'kitsune.groups.views',
     url(r'^$', 'profile', name='groups.profile'),
     url(r'^/edit$', 'edit', name='groups.edit'),
     url(r'^/avatar$', 'edit_avatar', name='groups.edit_avatar'),
@@ -15,7 +16,8 @@ group_patterns = patterns('kitsune.groups.views',
         name='groups.remove_leader'),
 )
 
-urlpatterns = patterns('kitsune.groups.views',
+urlpatterns = patterns(
+    'kitsune.groups.views',
     url(r'^$', 'list', name='groups.list'),
     url(r'^join-contributors$', 'join_contributors',
         name='groups.join_contributors'),

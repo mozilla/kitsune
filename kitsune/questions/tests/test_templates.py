@@ -19,8 +19,7 @@ import kitsune.questions.tasks
 from kitsune.products.tests import product
 from kitsune.questions.events import QuestionReplyEvent, QuestionSolvedEvent
 from kitsune.questions.models import Question, Answer, VoteMetadata
-from kitsune.questions.tests import (
-    TestCaseBase, tags_eq, question, answer, questionvote)
+from kitsune.questions.tests import TestCaseBase, tags_eq, question, answer
 from kitsune.questions.views import UNAPPROVED_TAG, NO_TAG
 from kitsune.questions.cron import cache_top_contributors
 from kitsune.sumo.helpers import urlparams
@@ -654,7 +653,7 @@ class AnswersTemplateTestCase(TestCaseBase):
              {'email': 'some@bo.dy', 'event_type': 'reply'},
              args=[self.question.id])
         assert QuestionReplyEvent.is_notifying('some@bo.dy', self.question), (
-               'Watch was not created')
+            'Watch was not created')
 
         attrs_eq(mail.outbox[1], to=['some@bo.dy'],
                  subject='Please confirm your email address')
@@ -708,7 +707,7 @@ class AnswersTemplateTestCase(TestCaseBase):
              {'event_type': 'reply'},
              args=[self.question.id])
         assert QuestionReplyEvent.is_notifying(u, self.question), (
-               'Watch was not created')
+            'Watch was not created')
         return u
 
     @mock.patch.object(Site.objects, 'get_current')
@@ -724,7 +723,7 @@ class AnswersTemplateTestCase(TestCaseBase):
              {'email': 'some@bo.dy', 'event_type': 'solution'},
              args=[self.question.id])
         assert QuestionSolvedEvent.is_notifying('some@bo.dy', self.question), (
-               'Watch was not created')
+            'Watch was not created')
 
         attrs_eq(mail.outbox[1], to=['some@bo.dy'],
                  subject='Please confirm your email address')
@@ -744,7 +743,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         self.client.login(username=u.username, password='testpass')
         post(self.client, 'questions.unwatch', args=[self.question.id])
         assert not QuestionReplyEvent.is_notifying(u, self.question), (
-                   'Watch was not destroyed')
+            'Watch was not destroyed')
 
     def test_watch_solution_and_replies(self):
         """User subscribes to solution and replies: page doesn't break"""
@@ -990,7 +989,7 @@ class TaggingViewTestsAsAdmin(TestCaseBase):
         """Assert adding a nonexistent tag sychronously creates & adds it."""
         self.client.post(
             _add_tag_url(self.question.id),
-                         data={'tag-name': 'nonexistent tag'})
+            data={'tag-name': 'nonexistent tag'})
         tags_eq(Question.objects.get(id=self.question.id),
                 ['nonexistent tag'])
 
@@ -1270,12 +1269,12 @@ class QuestionEditingTests(TestCaseBase):
         # Make sure each extra metadata field is in the form:
         doc = pq(response.content)
         q = Question.objects.get(pk=question_id)
-        extra_fields = q.product.get('extra_fields', []) + \
-                       q.category.get('extra_fields', [])
+        extra_fields = (q.product.get('extra_fields', []) +
+                        q.category.get('extra_fields', []))
         for field in extra_fields:
-            assert doc('input[name=%s]' % field) or \
-                   doc('textarea[name=%s]' % field), \
-                   "The %s field is missing from the edit page.""" % field
+            assert (doc('input[name=%s]' % field) or
+                    doc('textarea[name=%s]' % field)), (
+                "The %s field is missing from the edit page." % field)
 
     def test_no_extra_fields(self):
         """The edit-question form shouldn't show inappropriate metadata."""
@@ -1294,15 +1293,15 @@ class QuestionEditingTests(TestCaseBase):
         q = question(save=True)
         q.products.add(p)
         response = post(self.client, 'questions.edit_question',
-                       {'title': 'New title',
-                        'content': 'New content',
-                        'ff_version': 'New version'},
-                       kwargs={'question_id': q.id})
+                        {'title': 'New title',
+                         'content': 'New content',
+                         'ff_version': 'New version'},
+                        kwargs={'question_id': q.id})
 
         # Make sure the form redirects and thus appears to succeed:
         url = 'http://testserver%s' % reverse('questions.answers',
-                                           kwargs={'question_id': q.id},
-                                           force_locale=True)
+                                              kwargs={'question_id': q.id},
+                                              force_locale=True)
         self.assertRedirects(response, url)
 
         # Make sure the static fields, the metadata, and the updated_by field

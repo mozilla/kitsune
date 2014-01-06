@@ -15,7 +15,7 @@ from kitsune.sumo.redis_utils import redis_client, RedisError
 from kitsune.users.tests import user, add_permission
 from kitsune.wiki.config import (
     TEMPLATES_CATEGORY, TYPO_SIGNIFICANCE,
-    MEDIUM_SIGNIFICANCE,  MAJOR_SIGNIFICANCE)
+    MEDIUM_SIGNIFICANCE, MAJOR_SIGNIFICANCE)
 from kitsune.wiki.models import Document, HelpfulVoteMetadata, HelpfulVote
 from kitsune.wiki.tests import (
     doc_rev, document, helpful_vote, new_document_data, revision,
@@ -35,8 +35,8 @@ class RedirectTests(TestCase):
         """The document view shouldn't redirect when passed redirect=no."""
         redirect, _ = doc_rev('REDIRECT [[http://smoo/]]')
         response = self.client.get(
-                       redirect.get_absolute_url() + '?redirect=no',
-                       follow=True)
+            redirect.get_absolute_url() + '?redirect=no',
+            follow=True)
         self.assertContains(response, 'REDIRECT ')
 
 
@@ -256,16 +256,16 @@ class DocumentEditingTests(TestCase):
                      'form': 'doc'})
         self.client.post(reverse('wiki.edit_document', args=[d.slug]), data)
 
-        eq_(sorted(Document.uncached.get(slug=d.slug).products.values_list(
-                    'id', flat=True)),
+        eq_(sorted(Document.uncached.get(slug=d.slug).products
+                   .values_list('id', flat=True)),
             sorted([prod.id for prod in [prod_desktop, prod_mobile]]))
 
         data.update({'products': [prod_desktop.id],
                      'form': 'doc'})
         self.client.post(reverse('wiki.edit_document', args=[data['slug']]),
                          data)
-        eq_(sorted(Document.uncached.get(slug=d.slug).products.values_list(
-                    'id', flat=True)),
+        eq_(sorted(Document.uncached.get(slug=d.slug).products
+                   .values_list('id', flat=True)),
             sorted([prod.id for prod in [prod_desktop]]))
 
     @mock.patch.object(Site.objects, 'get_current')
@@ -397,7 +397,9 @@ class VoteTests(TestCase):
         eq_(400, response.status_code)
 
     def test_vote_on_template(self):
-        """Throw helpful_vote a document that is a template and see if it 400s."""
+        """
+        Throw helpful_vote a document that is a template and see if it 400s.
+        """
         d = document(save=True, slug="somedoc", category=TEMPLATES_CATEGORY)
         r = revision(save=True, document=d)
         response = self.client.post(reverse('wiki.document_vote', args=['hi']),
@@ -466,12 +468,12 @@ class VoteTests(TestCase):
         rev = revision(save=True)
         url = reverse('wiki.document_vote', kwargs={
             'document_slug': rev.document.slug
-            })
+        })
         self.client.post(url, {
-                'revision_id': rev.id,
-                'helpful': True,
-                'source': 'test',
-            })
+            'revision_id': rev.id,
+            'helpful': True,
+            'source': 'test',
+        })
 
         eq_(HelpfulVoteMetadata.objects.filter(key='source').count(), 1)
 
@@ -480,7 +482,7 @@ class VoteTests(TestCase):
         for i in range(13):
             rev = revision(save=True)
             url = reverse('wiki.document_vote', kwargs={
-            'document_slug': rev.document.slug})
+                'document_slug': rev.document.slug})
             self.client.post(url, {
                 'revision_id': rev.id,
                 'helpful': True})
@@ -534,9 +536,12 @@ class TestDocumentLocking(TestCase):
         users can steal locks, and that when a user submits the edit page, the
         lock is cleared.
         """
-        _login = lambda u: self.client.login(username=u.username, password='testpass')
-        assert_is_locked = lambda r: self.assertContains(r, 'id="unlock-button"')
-        assert_not_locked = lambda r: self.assertNotContains(r, 'id="unlock-button"')
+        _login = lambda u: self.client.login(username=u.username,
+                                             password='testpass')
+        assert_is_locked = lambda r: self.assertContains(
+            r, 'id="unlock-button"')
+        assert_not_locked = lambda r: self.assertNotContains(
+            r, 'id="unlock-button"')
 
         u1 = user(save=True, password='testpass')
         u2 = user(save=True, password='testpass')
@@ -544,7 +549,8 @@ class TestDocumentLocking(TestCase):
         # With u1, edit the document. No lock should be found.
         _login(u1)
         r = self.client.get(edit_url)
-        # Now load it again, the page should not show as being locked (since u1 has the lock)
+        # Now load it again, the page should not show as being locked
+        # (since u1 has the lock)
         r = self.client.get(edit_url)
         assert_not_locked(r)
 
@@ -599,7 +605,8 @@ class TestDocumentLocking(TestCase):
         eq_(r.status_code, 302)
 
         # Now run the test.
-        edit_url = reverse('wiki.edit_document', locale='es', args=[data['slug']])
+        edit_url = reverse('wiki.edit_document', locale='es',
+                           args=[data['slug']])
         es_doc = Document.objects.get(slug=data['slug'])
         eq_(es_doc.locale, 'es')
         self._lock_workflow(es_doc, edit_url)

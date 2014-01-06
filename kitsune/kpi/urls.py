@@ -19,7 +19,8 @@ v1_api.register(L10nCoverageResource())
 v1_api.register(ExitSurveyResultsResource())
 
 
-urlpatterns = patterns('kitsune.kpi.views',
+urlpatterns = patterns(
+    'kitsune.kpi.views',
     url(r'^dashboard$', 'dashboard',
         name='kpi.dashboard'),
     (r'^api/', include(v1_api.urls)),

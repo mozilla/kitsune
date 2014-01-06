@@ -9,19 +9,22 @@ from kitsune.users.models import Profile
 
 
 # API patterns. All start with /users/api.
-api_patterns = patterns('',
+api_patterns = patterns(
+    '',
     url(r'^usernames', api.usernames, name='users.api.usernames'),
 )
 
 # These will all start with /user/<user_id>/
-detail_patterns = patterns('',
+detail_patterns = patterns(
+    '',
     url(r'^$', views.profile, name='users.profile'),
     url(r'^/documents$', views.documents_contributed, name='users.documents'),
-# TODO:
-#    url('^abuse', views.report_abuse, name='users.abuse'),
+    # TODO:
+    # url('^abuse', views.report_abuse, name='users.abuse'),
 )
 
-users_patterns = patterns('',
+users_patterns = patterns(
+    '',
     url(r'^/auth$', views.user_auth, name='users.auth'),
     url(r'^/authcontributor$', views.user_auth, {'contributor': True},
         name='users.auth_contributor'),
@@ -85,7 +88,8 @@ users_patterns = patterns('',
     (r'^/api/', include(api_patterns)),
 )
 
-urlpatterns = patterns('',
+urlpatterns = patterns(
+    '',
     # URLs for a single user.
     (r'^user/(?P<user_id>\d+)', include(detail_patterns)),
     url(r'^user/(?P<object_id>\d+)/flag$', kitsune.flagit.views.flag,

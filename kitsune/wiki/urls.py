@@ -6,7 +6,8 @@ from kitsune.wiki.locale_views import LEADER, REVIEWER, EDITOR
 
 
 # These patterns inherit (?P<document_slug>[^\/]).
-document_patterns = patterns('kitsune.wiki.views',
+document_patterns = patterns(
+    'kitsune.wiki.views',
     url(r'^$', 'document', name='wiki.document'),
     url(r'^/revision/(?P<revision_id>\d+)$', 'revision',
         name='wiki.revision'),
@@ -57,7 +58,8 @@ document_patterns = patterns('kitsune.wiki.views',
     url(r'^/steal_lock$', 'steal_lock', name='wiki.steal_lock'),
 )
 
-locale_patterns = patterns('kitsune.wiki.locale_views',
+locale_patterns = patterns(
+    'kitsune.wiki.locale_views',
     url(r'^$', 'locale_details', name='wiki.locale_details'),
     url(r'/add-leader$', 'add_to_locale',
         {'role': LEADER}, name='wiki.add_locale_leader'),
@@ -73,7 +75,8 @@ locale_patterns = patterns('kitsune.wiki.locale_views',
         {'role': EDITOR}, name='wiki.remove_locale_editor'),
 )
 
-urlpatterns = patterns('kitsune.wiki.views',
+urlpatterns = patterns(
+    'kitsune.wiki.views',
     url(r'^$', redirect_to,
         {'url': 'products.product', 'slug': 'firefox'}, name='wiki.landing'),
 
@@ -113,7 +116,8 @@ urlpatterns = patterns('kitsune.wiki.views',
     (r'^/(?P<document_slug>[^/]+)', include(document_patterns)),
 )
 
-urlpatterns += patterns('kitsune.kbforums.views',
+urlpatterns += patterns(
+    'kitsune.kbforums.views',
     # All kb discussions by locale.
     url(r'^/all/discussions$', 'locale_discussions',
         name='wiki.locale_discussions'),

@@ -27,7 +27,7 @@ class ThreadsFeed(Feed):
 
     def items(self, document):
         return document.thread_set.order_by(
-                '-last_post__created')[:constants.THREADS_PER_PAGE]
+            '-last_post__created')[:constants.THREADS_PER_PAGE]
 
     def item_title(self, item):
         return item.title

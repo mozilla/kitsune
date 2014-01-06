@@ -366,7 +366,8 @@ def reconcile_chunk(cls, db_id_list, reraise=False):
     db_id_list = set(db_id_list)
 
     # Create a set of ids in the index
-    index_id_list = set(item[0] for item in cls.search().values_list('id').all())
+    index_id_list = set(item[0] for item in
+                        cls.search().values_list('id').all())
 
     # Get the list of ids in the index that aren't in the db.
     index_id_list -= db_id_list
@@ -699,9 +700,7 @@ def es_search_cmd(query, pages=1, log=log):
     output.append('Search for: %s' % query)
     output.append('')
 
-    data = {
-        'q': query, 'format': 'json'
-        }
+    data = {'q': query, 'format': 'json'}
     url = reverse('search')
 
     # The search view shows 10 results at a time. So we hit it few
@@ -720,7 +719,8 @@ def es_search_cmd(query, pages=1, log=log):
 
             for mem in results:
                 output.append(u'%4d  %5.2f  %-10s  %-20s' % (
-                        mem['rank'], mem['score'], mem['type'], mem['title']))
+                              mem['rank'], mem['score'], mem['type'],
+                              mem['title']))
 
             output.append('')
 
@@ -789,12 +789,12 @@ def es_verify_cmd(log=log):
             if isinstance(item, (tuple, list)):
                 for mem in item:
                     if not isinstance(mem, python_type):
-                        log.error('   bad type: {0} {1} {2} {3}'.format(
-                                mt_name, field, type_['type'], item))
+                        log.error('   bad type: {0} {1} {2} {3}'
+                                  .format(mt_name, field, type_['type'], item))
                 continue
 
-            log.error('   bad type: {0} {1} {2} {3}'.format(
-                    mt_name, field, type_['type'], item))
+            log.error('   bad type: {0} {1} {2} {3}'
+                      .format(mt_name, field, type_['type'], item))
 
     start_time = time.time()
 
@@ -815,8 +815,8 @@ def es_verify_cmd(log=log):
             count += 1
             if count % 1000 == 0:
                 log.info('      {0} ({1}/1000 avg)'.format(
-                        count,
-                        format_time((time.time() - cls_time) * 1000 / count)))
+                         count,
+                         format_time((time.time() - cls_time) * 1000 / count)))
 
                 if settings.DEBUG:
                     # Nix queries so that this doesn't become a complete
@@ -824,8 +824,8 @@ def es_verify_cmd(log=log):
                     reset_queries()
 
         log.info('      Done! {0} ({1}/1000 avg)'.format(
-                format_time(time.time() - cls_time),
-                format_time((time.time() - cls_time) * 1000 / count)))
+            format_time(time.time() - cls_time),
+            format_time((time.time() - cls_time) * 1000 / count)))
 
     log.info('Done! {0}'.format(format_time(time.time() - start_time)))
 

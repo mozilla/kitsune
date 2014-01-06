@@ -263,19 +263,18 @@ class KpiApiTests(TestCase):
                       kwargs={'resource_name': 'elastic-clickthrough-rate',
                               'api_name': 'v1'})
         response = self.client.get(url + '?format=json')
-        self.assertContains(  # Beware of dict order changes someday.
-            response,
-            '"objects": [{"clicks": 2, "resource_uri": "", "searches": 20, '
-                         '"start": "2000-01-09"}, '
-                        '{"clicks": 1, "resource_uri": "", "searches": 10, '
-                         '"start": "2000-01-01"}]')
+        data = json.loads(response.content)
+        eq_(data['objects'], [
+            {'clicks': 2, 'resource_uri': u'', 'searches': 20,
+             'start': u'2000-01-09'},
+            {'clicks': 1, 'resource_uri': u'', 'searches': 10,
+             'start': u'2000-01-01'}])
 
         # Test filtering by start date:
         response = self.client.get(url + '?format=json&min_start=2000-01-09')
-        self.assertContains(  # Beware of dict order changes someday.
-            response,
-            '"objects": [{"clicks": 2, "resource_uri": "", "searches": 20, '
-                         '"start": "2000-01-09"}]')
+        data = json.loads(response.content)
+        eq_(data['objects'], [{u'searches': 20, u'start': u'2000-01-09',
+                               u'clicks': 2, u'resource_uri': u''}])
 
     def test_elastic_clickthrough_post(self):
         """Test elastic clickthrough write API."""
@@ -299,10 +298,10 @@ class KpiApiTests(TestCase):
 
         # Do a GET, and see if the round trip worked:
         response = self.client.get(url + '?format=json')
-        self.assertContains(  # Beware of dict order changes someday.
-            response,
-            '"objects": [{"clicks": 50000000, "resource_uri": "", '
-                         '"searches": 100000000, "start": "2000-01-02"}]')
+        data = json.loads(response.content)
+        eq_(data['objects'], [
+            {'clicks': 50000000, 'resource_uri': u'', 'searches': 100000000,
+             'start': '2000-01-02'}])
 
         # Correspnding ElasticSearch APIs are likely correct by dint
         # of factoring.

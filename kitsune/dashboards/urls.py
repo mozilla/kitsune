@@ -3,7 +3,8 @@ from django.conf.urls import patterns, url
 from kitsune.dashboards import api
 
 
-urlpatterns = patterns('kitsune.dashboards.views',
+urlpatterns = patterns(
+    'kitsune.dashboards.views',
     url(r'^localization$', 'localization', name='dashboards.localization'),
     url(r'^contributors$', 'contributors', name='dashboards.contributors'),
     url(r'^wiki-rows/(?P<readout_slug>[^/]+)', 'wiki_rows',

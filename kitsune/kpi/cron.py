@@ -67,7 +67,7 @@ def update_l10n_metric():
 
     For each locale {
         Total up to date = Total up to date +
-            ((Number of up to date articles from the en-US top 50 visited)/50 ) *
+            ((Number of up to date articles in the en-US top 50 visited)/50 ) *
              (Visitors for that locale / SUMO visits));
     }
 
@@ -146,11 +146,10 @@ def update_support_forum_contributors_metric(day=None):
     while day <= end:
         # Figure out the number of contributors from the last 30 days.
         thirty_days_back = day - timedelta(days=30)
-        contributors = (Answer.objects
-            .exclude(creator=F('question__creator'))
-            .filter(
-                created__gte=thirty_days_back,
-                created__lt=day)
+        contributors = (
+            Answer.objects.exclude(creator=F('question__creator'))
+            .filter(created__gte=thirty_days_back,
+                    created__lt=day)
             .values('creator')
             .annotate(count=Count('creator'))
             .filter(count__gte=10))
@@ -192,13 +191,13 @@ def update_kb_contributors_metric(day=None):
     while day <= end:
         # Figure out the number of contributors from the last 30 days.
         thirty_days_back = day - timedelta(days=30)
-        editors = (Revision.objects
-            .filter(
+        editors = (
+            Revision.objects.filter(
                 created__gte=thirty_days_back,
                 created__lt=day)
             .values_list('creator', flat=True).distinct())
-        reviewers = (Revision.objects
-            .filter(
+        reviewers = (
+            Revision.objects.filter(
                 reviewed__gte=thirty_days_back,
                 reviewed__lt=day)
             .values_list('reviewer', flat=True).distinct())
@@ -261,8 +260,8 @@ def update_aoa_contributors_metric(day=None):
     while day <= end:
         # Figure out the number of contributors from the last 30 days.
         thirty_days_back = day - timedelta(days=30)
-        contributors = (Reply.objects
-            .filter(
+        contributors = (
+            Reply.objects.filter(
                 created__gte=thirty_days_back,
                 created__lt=day)
             .values_list('twitter_username').distinct())

@@ -92,7 +92,7 @@ class KarmaManager(object):
                 key, '{t}:all'.format(t=action.action_type), count_incr)
             # Increment action daily count
             self.redis.hincrby(key, '{t}:{d}'.format(
-                 t=action.action_type, d=action.date), count_incr)
+                t=action.action_type, d=action.date), count_incr)
             # Increment action monthly count
             self.redis.hincrby(key, '{t}:{y}-{m:02d}'.format(
                 t=action.action_type, y=action.date.year,
@@ -197,7 +197,7 @@ class KarmaManager(object):
         if self.count(user=user, daterange=daterange, type=type):
             rank = self.redis.zrevrank('{p}:{t}:{r}'.format(
                 p=KEY_PREFIX, t=type, r=daterange), userid(user))
-            if rank != None:
+            if rank is not None:
                 return rank + 1
         return None
 
@@ -292,7 +292,7 @@ class KarmaManager(object):
     def _count(self, daterange, user, type='points'):
         """Calculates a user's count for range and type from daily counts."""
         daily_counts, days = self.daily_counts(user=user, daterange=daterange,
-                                         type=type)
+                                               type=type)
         return sum(daily_counts)
 
 

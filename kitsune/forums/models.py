@@ -51,10 +51,8 @@ class Forum(NotificationsMixin, ModelBase):
     class Meta(object):
         ordering = ['display_order', 'id']
         permissions = (
-                ('view_in_forum',
-                 'Can view restricted forums'),
-                ('post_in_forum',
-                 'Can post in restricted forums'))
+            ('view_in_forum', 'Can view restricted forums'),
+            ('post_in_forum', 'Can post in restricted forums'))
 
     def __unicode__(self):
         return self.name

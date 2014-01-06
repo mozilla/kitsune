@@ -178,17 +178,16 @@ def user_or_ip(key_prefix):
 
 @contextmanager
 def uselocale(locale):
-    """Context manager for setting locale and returning
-    to previous locale.
+    """
+    Context manager for setting locale and returning to previous locale.
 
     This is useful for when doing translations for things run by
-    celery workers or out of the HTTP request handling path.
+    celery workers or out of the HTTP request handling path. Example:
 
-    >>> with uselocale('xx'):
-    ...     subj = _('Subject of my email')
-    ...     msg = render_email(email_template, email_kwargs)
-    ...     mail.send_mail(subj, msg, ...)
-    ...
+        with uselocale('xx'):
+            subj = _('Subject of my email')
+            msg = render_email(email_template, email_kwargs)
+            mail.send_mail(subj, msg, ...)
 
     In Kitsune, you can get the right locale from Profile.locale and
     also request.LANGUAGE_CODE.

@@ -144,9 +144,9 @@ class RemoveSlashMiddleware(object):
 
     def process_response(self, request, response):
         if (response.status_code == 404
-            and request.path_info.endswith('/')
-            and not is_valid_path(request.path_info)
-            and is_valid_path(request.path_info[:-1])):
+                and request.path_info.endswith('/')
+                and not is_valid_path(request.path_info)
+                and is_valid_path(request.path_info[:-1])):
             # Use request.path because we munged app/locale in path_info.
             newurl = request.path[:-1]
             if request.GET:

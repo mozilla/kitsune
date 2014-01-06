@@ -29,7 +29,7 @@ from kitsune.sumo.helpers import urlparams
 from kitsune.sumo.redis_utils import redis_client, RedisError
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import (paginate, smart_int, get_next_url, user_or_ip,
-                        truncated_json_dumps)
+                                truncated_json_dumps)
 from kitsune.wiki import DOCUMENTS_PER_PAGE
 from kitsune.wiki.config import (
     CATEGORIES, MAJOR_SIGNIFICANCE, TEMPLATES_CATEGORY)
@@ -60,7 +60,7 @@ def document(request, document_slug, template=None):
         doc = Document.objects.get(locale=request.LANGUAGE_CODE,
                                    slug=document_slug)
         if (not doc.current_revision and doc.parent and
-            doc.parent.current_revision):
+                doc.parent.current_revision):
             # This is a translation but its current_revision is None
             # and OK to fall back to parent (parent is approved).
             fallback_reason = 'translation_not_approved'
@@ -121,17 +121,15 @@ def document(request, document_slug, template=None):
 
     ga_push = []
     if fallback_reason is not None:
-        ga_push.append(
-            ['_trackEvent', 'Incomplete L10n', 'Not Localized',
-            '%s/%s' % (doc.slug, request.LANGUAGE_CODE)])
+        ga_push.append(['_trackEvent', 'Incomplete L10n', 'Not Localized',
+                        '%s/%s' % (doc.slug, request.LANGUAGE_CODE)])
     elif doc.is_outdated():
-        ga_push.append(
-            ['_trackEvent', 'Incomplete L10n', 'Not Updated',
-            '%s/%s' % (doc.parent.slug, request.LANGUAGE_CODE)])
+        ga_push.append(['_trackEvent', 'Incomplete L10n', 'Not Updated',
+                        '%s/%s' % (doc.parent.slug, request.LANGUAGE_CODE)])
 
     hide_voting = False
     if (doc.category == TEMPLATES_CATEGORY or
-        waffle.switch_is_active('hide-voting')):
+            waffle.switch_is_active('hide-voting')):
         hide_voting = True
     data = {
         'document': doc,
@@ -161,7 +159,8 @@ def revision(request, document_slug, revision_id):
 @require_GET
 def list_documents(request, category=None):
     """List wiki documents."""
-    docs = Document.objects.filter(locale=request.LANGUAGE_CODE).order_by('title')
+    docs = (Document.objects.filter(locale=request.LANGUAGE_CODE)
+            .order_by('title'))
     if category:
         docs = docs.filter(category=category)
         try:
@@ -277,7 +276,7 @@ def _document_lock(doc_id, username):
             locked = not (locked_by == username)
             locked_by = User.objects.get(username=locked_by)
         except User.DoesNotExist:
-            # If the user doesn't exist, they shouldn't be able to enforce a lock.
+            # If the user doesn't exist, they can't take a lock.
             locked = False
             locked_by = None
     else:
@@ -455,7 +454,7 @@ def review_revision(request, document_slug, revision_id):
 
     based_on_revs = doc.revisions.all()
     last_approved_date = getattr(doc.current_revision, 'created',
-                                   datetime.fromordinal(1))
+                                 datetime.fromordinal(1))
     based_on_revs = based_on_revs.filter(created__gt=last_approved_date)
     revision_contributors = list(set(
         based_on_revs.values_list('creator__username', flat=True)))
@@ -482,7 +481,7 @@ def review_revision(request, document_slug, revision_id):
             # If document is localizable and revision was approved and
             # user has permission, set the is_ready_for_localization value.
             if (doc.allows(request.user, 'mark_ready_for_l10n') and
-                rev.is_approved and rev.can_be_readied_for_localization()):
+                    rev.is_approved and rev.can_be_readied_for_localization()):
                 rev.is_ready_for_localization = form.cleaned_data[
                     'is_ready_for_localization']
 
@@ -497,9 +496,8 @@ def review_revision(request, document_slug, revision_id):
             # Update the needs change bit (if approved, default language and
             # user has permission).
             if (doc.locale == settings.WIKI_DEFAULT_LANGUAGE and
-                doc.allows(request.user, 'edit_needs_change') and
-                rev.is_approved):
-
+                    doc.allows(request.user, 'edit_needs_change') and
+                    rev.is_approved):
                 doc.needs_change = form.cleaned_data['needs_change']
                 doc.needs_change_comment = \
                     form.cleaned_data['needs_change_comment']
@@ -699,8 +697,8 @@ def translate(request, document_slug, revision_id=None):
                     # Keep what was in the form.
                     based_on_id = None
 
-                _save_rev_and_notify(
-                    rev_form, request.user, doc, based_on_id, base_rev=base_rev)
+                _save_rev_and_notify(rev_form, request.user, doc, based_on_id,
+                                     base_rev=base_rev)
 
                 if 'notify-future-changes' in request.POST:
                     EditDocumentEvent.notify(request.user, doc)
@@ -855,7 +853,10 @@ def unwatch_ready(request, product=None):
 @require_GET
 def json_view(request):
     """Return some basic document info in a JSON blob."""
-    kwargs = {'locale': request.LANGUAGE_CODE, 'current_revision__isnull': False}
+    kwargs = {
+        'locale': request.LANGUAGE_CODE,
+        'current_revision__isnull': False
+    }
     if 'title' in request.GET:
         kwargs['title'] = request.GET['title']
     elif 'slug' in request.GET:
@@ -1171,8 +1172,8 @@ def remove_contributor(request, document_slug, user_id):
 
     if request.method == 'POST':
         document.contributors.remove(user)
-        msg = _('{user} removed from the contributors successfully!').format(
-                user=user.username)
+        msg = (_('{user} removed from the contributors successfully!')
+               .format(user=user.username))
         messages.add_message(request, messages.SUCCESS, msg)
         return HttpResponseRedirect(reverse('wiki.document_revisions',
                                             args=[document_slug]))

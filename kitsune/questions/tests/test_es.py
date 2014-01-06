@@ -1,7 +1,7 @@
 from nose.tools import eq_
 
 from kitsune.products.tests import product
-from kitsune.questions.models import Question, QuestionMappingType
+from kitsune.questions.models import QuestionMappingType
 from kitsune.questions.tests import question, answer, answervote, questionvote
 from kitsune.search.tests.test_es import ElasticTestCase
 from kitsune.products.tests import topic

@@ -33,19 +33,19 @@ def usernames(request):
     if not request.user.is_authenticated():
         return []
     with statsd.timer('users.api.usernames.search'):
-        profiles = Profile.objects.filter(
-            Q(name__istartswith=pre)
-            ).values_list('user_id', flat=True)
-        users = User.objects.filter(
-            Q(username__istartswith=pre) | Q(id__in=profiles),
-            ).extra(select={'length':'Length(username)'}
-            ).order_by('length'
-            ).select_related('profile')
+        profiles = (
+            Profile.objects.filter(Q(name__istartswith=pre))
+            .values_list('user_id', flat=True))
+        users = (
+            User.objects.filter(
+                Q(username__istartswith=pre) | Q(id__in=profiles))
+            .extra(select={'length': 'Length(username)'})
+            .order_by('length').select_related('profile'))
 
         if not waffle.switch_is_active('users-dont-limit-by-login'):
             last_login = datetime.now() - timedelta(weeks=12)
             users = users.filter(last_login__gte=last_login)
 
-        return [{'username':u.username,
-                'display_name':display_name_or_none(u)}
+        return [{'username': u.username,
+                 'display_name': display_name_or_none(u)}
                 for u in users[:10]]

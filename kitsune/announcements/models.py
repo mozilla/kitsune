@@ -17,16 +17,16 @@ class Announcement(ModelBase):
         default=datetime.now, db_index=True,
         verbose_name='Start displaying',
         help_text=('When this announcement will start appearing. '
-                    '(US/Pacific)'))
+                   '(US/Pacific)'))
     show_until = models.DateTimeField(
         db_index=True, null=True, blank=True,
         verbose_name='Stop displaying',
         help_text=('When this announcement will stop appearing. '
-                    'Leave blank for indefinite. (US/Pacific)'))
+                   'Leave blank for indefinite. (US/Pacific)'))
     content = models.TextField(
         max_length=10000,
         help_text=("Use wiki syntax or HTML. It will display similar to a "
-                    "document's content."))
+                   "document's content."))
     group = models.ForeignKey(Group, null=True, blank=True)
     locale = models.ForeignKey(Locale, null=True, blank=True)
 
@@ -34,7 +34,7 @@ class Announcement(ModelBase):
         excerpt = self.content[:50]
         if self.group:
             return u'[{group}] {excerpt}'.format(group=self.group,
-                                                excerpt=excerpt)
+                                                 excerpt=excerpt)
         return u'{excerpt}'.format(excerpt=excerpt)
 
     def is_visible(self):

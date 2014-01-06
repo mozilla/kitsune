@@ -99,12 +99,12 @@ class MobileDetectTestCase(TestCase):
 
     def test_ipad_isnt_mobile(self):
         self.check(
-            'Mozilla/5.0 (iPad; CPU OS 6_0 like Mac OS X) AppleWebKit/536.26'
-            ' (KHTML, like Gecko) Version/6.0 Mobile/10A5355d Safari/8536.25',
+            'Mozilla/5.0 (iPad; CPU OS 6_0 like Mac OS X) AppleWebKit/536.26 '
+            '(KHTML, like Gecko) Version/6.0 Mobile/10A5355d Safari/8536.25',
             False)
 
     def test_android_tablet_isnt_mobile(self):
-         self.check(
+        self.check(
             'Mozilla/5.0 (Android; Tablet; rv:13.0) Gecko/13.0 Firefox/13.0',
             False)
 
@@ -115,12 +115,12 @@ class MobileDetectTestCase(TestCase):
             False)
 
     def test_firefoxos_is_mobile(self):
-         self.check(
+        self.check(
             'Mozilla/5.0 (Mobile; rv:18.0) Gecko/18.0 Firefox/18.0',
             True)
 
     def test_android_firefox_is_mobile(self):
-         self.check(
+        self.check(
             'Mozilla/5.0 (Android; Mobile; rv:13.0) Gecko/13.0 Firefox/13.0',
             True)
 
@@ -131,8 +131,8 @@ class MobileDetectTestCase(TestCase):
             True)
 
     def test_iphone_safari_is_mobile(self):
-         self.check(
-            'Mozilla/5.0 (iPhone; U; CPU iPhone OS 3_0 like Mac OS X; en-us)'
-            ' AppleWebKit/528.18 (KHTML, like Gecko) Version/4.0 Mobile/7A341'
-            ' Safari/528.16',
+        self.check(
+            'Mozilla/5.0 (iPhone; U; CPU iPhone OS 3_0 like Mac OS X; en-us) '
+            'AppleWebKit/528.18 (KHTML, like Gecko) Version/4.0 Mobile/7A341 '
+            'Safari/528.16',
             True)

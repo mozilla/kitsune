@@ -1,5 +1,3 @@
-import waffle
-
 from kitsune import messages
 
 

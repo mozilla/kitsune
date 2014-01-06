@@ -5,6 +5,7 @@ from nose.tools import eq_
 from kitsune.sumo.tests import TestCase
 from kitsune.users.utils import suggest_username
 
+
 class UtilsTestCase(TestCase):
     def test_suggest_username(self):
         eq_('someuser', suggest_username('someuser@test.com'))

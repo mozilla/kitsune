@@ -3,9 +3,7 @@ from datetime import datetime
 from django.conf import settings
 from django.template.defaultfilters import slugify
 
-from kitsune.questions.tests import question
 from kitsune.sumo.tests import LocalizingClient, TestCase
-from kitsune.users.tests import user
 
 
 class TestCaseBase(TestCase):
@@ -17,8 +15,8 @@ class TestCaseBase(TestCase):
         """Setup"""
         # Change the CACHE_PREFIX to avoid conflicts
         self.orig_cache_prefix = getattr(settings, 'CACHE_PREFIX', None)
-        settings.CACHE_PREFIX = self.orig_cache_prefix or '' + 'test' + \
-                                slugify(datetime.now())
+        settings.CACHE_PREFIX = (self.orig_cache_prefix or '' + 'test' +
+                                 slugify(datetime.now()))
 
     def tearDown(self):
         settings.CACHE_PREFIX = self.orig_cache_prefix
