@@ -37,8 +37,14 @@ EXCERPT_JOINER = _lazy(u'...', 'between search excerpts')
 
 
 def jsonp_is_valid(func):
-    func_regex = re.compile(r'^[a-zA-Z_\$][a-zA-Z0-9_\$]*'
-        + r'(\[[a-zA-Z0-9_\$]*\])*(\.[a-zA-Z0-9_\$]+(\[[a-zA-Z0-9_\$]*\])*)*$')
+    func_regex = re.compile(r"""
+        ^[a-zA-Z_\$]
+        [a-zA-Z0-9_\$]*
+        (\[[a-zA-Z0-9_\$]*\])*
+        (\.[a-zA-Z0-9_\$]+
+            (\[[a-zA-Z0-9_\$]*\])*
+        )*$
+    """, re.VERBOSE)
     return func_regex.match(func)
 
 
@@ -105,12 +111,11 @@ def search(request, template=None):
         search_ = render(request, t, {
             'advanced': a, 'request': request,
             'search_form': search_form})
-        search_['Cache-Control'] = 'max-age=%s' % \
-                                   (settings.SEARCH_CACHE_PERIOD * 60)
-        search_['Expires'] = (datetime.utcnow() +
-                              timedelta(
-                                minutes=settings.SEARCH_CACHE_PERIOD)) \
-                              .strftime(expires_fmt)
+        cache_period = settings.SEARCH_CACHE_PERIOD
+        search_['Cache-Control'] = 'max-age=%s' % (cache_period * 60)
+        search_['Expires'] = (
+            (datetime.utcnow() + timedelta(minutes=cache_period))
+            .strftime(expires_fmt))
         return search_
 
     cleaned = search_form.cleaned_data
@@ -431,15 +436,14 @@ def search(request, template=None):
             result['rank'] = rank
             result['score'] = doc._score
             result['explanation'] = escape(format_explanation(
-                    doc._explanation))
+                doc._explanation))
             results.append(result)
 
     except ES_EXCEPTIONS as exc:
         # Handle timeout and all those other transient errors with a
         # "Search Unavailable" rather than a Django error page.
         if is_json:
-            return HttpResponse(json.dumps({'error':
-                                             _('Search Unavailable')}),
+            return HttpResponse(json.dumps({'error': _('Search Unavailable')}),
                                 mimetype=mimetype, status=503)
 
         # Cheating here: Convert from 'Timeout()' to 'timeout' so
@@ -498,11 +502,11 @@ def search(request, template=None):
         'pages': pages,
         'search_form': search_form,
         'lang_name': lang_name, })
-    results_['Cache-Control'] = 'max-age=%s' % \
-                                (settings.SEARCH_CACHE_PERIOD * 60)
-    results_['Expires'] = (datetime.utcnow() +
-                           timedelta(minutes=settings.SEARCH_CACHE_PERIOD)) \
-                           .strftime(expires_fmt)
+    cache_period = settings.SEARCH_CACHE_PERIOD
+    results_['Cache-Control'] = 'max-age=%s' % (cache_period * 60)
+    results_['Expires'] = (
+        (datetime.utcnow() + timedelta(minutes=cache_period))
+        .strftime(expires_fmt))
     results_.set_cookie(settings.LAST_SEARCH_COOKIE, urlquote(cleaned['q']),
                         max_age=3600, secure=False, httponly=False)
 

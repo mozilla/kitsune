@@ -69,8 +69,10 @@ class SearchTest(ElasticTestCase):
         self.refresh()
 
         response = self.client.get(reverse('search'), {
-                'a': 1, 'format': 'json', 'page': 'invalid'
-                })
+            'a': 1,
+            'format': 'json',
+            'page': 'invalid'
+        })
         eq_(200, response.status_code)
         eq_(1, json.loads(response.content)['total'])
 
@@ -112,10 +114,12 @@ class SearchTest(ElasticTestCase):
     def test_fallback_for_zero_results(self):
         """If there are no results, fallback to a list of top articles."""
         firefox = product(title=u'firefox', slug=u'desktop', save=True)
-        doc = document(title=u'audio1', locale=u'en-US', category=10, save=True)
+        doc = document(title=u'audio1', locale=u'en-US', category=10,
+                       save=True)
         doc.products.add(firefox)
         revision(document=doc, is_approved=True, save=True)
-        doc = document(title=u'audio2', locale=u'en-US', category=10, save=True)
+        doc = document(title=u'audio2', locale=u'en-US', category=10,
+                       save=True)
         doc.products.add(firefox)
         revision(document=doc, is_approved=True, save=True)
 
@@ -161,10 +165,11 @@ class SearchTest(ElasticTestCase):
         self.refresh()
 
         response = self.client.get(reverse('search'), {
-                                    'a': '1',
-                                    'product': ['product-one', 'product-two'],
-                                    'q': 'cookies',
-                                    'w': '1'})
+            'a': '1',
+            'product': ['product-one', 'product-two'],
+            'q': 'cookies',
+            'w': '1',
+        })
 
         assert "We couldn't find any results for" not in response.content
         eq_(200, response.status_code)

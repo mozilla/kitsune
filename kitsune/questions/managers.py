@@ -16,11 +16,9 @@ class QuestionManager(ManagerBase):
     # else if contributor is last to post
     #     the status is "Responded"
     def responded(self):
-        return self.filter(
-            solution__isnull=True,
-            is_locked=False,
-            last_answer__isnull=False).exclude(
-                last_answer__creator=F('creator'))
+        return (self.filter(solution__isnull=True, is_locked=False,
+                            last_answer__isnull=False)
+                .exclude(last_answer__creator=F('creator')))
 
     # else if OP is last to post
     #      the status is "Needs Attention"

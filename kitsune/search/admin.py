@@ -13,7 +13,7 @@ from django.shortcuts import render
 from kitsune.search.es_utils import (
     get_doctype_stats, get_indexes, delete_index, ES_EXCEPTIONS,
     get_indexable, CHUNK_SIZE, recreate_indexes, write_index, read_index,
-    all_read_indexes, all_write_indexes, indexes_for_doctypes)
+    all_read_indexes, all_write_indexes)
 from kitsune.search.models import Record, get_mapping_types
 from kitsune.search.tasks import (
     OUTSTANDING_INDEX_CHUNKS, index_chunk_task, reconcile_task)
@@ -110,7 +110,8 @@ def reindex_with_scoreboard(mapping_type_names):
         chunks.extend(
             (cls, chunk) for chunk in chunked(indexable, CHUNK_SIZE))
 
-        reconcile_task.delay(cls.get_index(), batch_id, cls.get_mapping_type_name())
+        reconcile_task.delay(cls.get_index(), batch_id,
+                             cls.get_mapping_type_name())
 
     chunks_count = len(chunks)
 

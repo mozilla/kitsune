@@ -47,7 +47,8 @@ products = SortedDict([
                 'tags': ['customize'],
             }),
             ('fix-problems', {
-                'name': _lazy(u'Fix slowness, crashing, error messages and other problems'),
+                'name': _lazy(u'Fix slowness, crashing, error messages and '
+                              u'other problems'),
                 'topic': 'fix-problems',
                 'tags': ['fix-problems'],
             }),
@@ -107,7 +108,8 @@ products = SortedDict([
                 'tags': ['customize'],
             }),
             ('fix-problems', {
-                'name': _lazy(u'Fix slowness, crashing, error messages and other problems'),
+                'name': _lazy(u'Fix slowness, crashing, error messages and '
+                              u'other problems'),
                 'topic': 'fix-problems',
                 'tags': ['fix-problems'],
             }),
@@ -139,68 +141,70 @@ products = SortedDict([
         ])
     }),
     ('firefox-os', {
-       'name': _lazy(u'Firefox OS'),
-       'subtitle': '',
-       'extra_fields': [],
-       'tags': [],
-       'products': ['firefox-os'],
-       'categories': SortedDict([
-           # TODO: Just use the IA topics for this.
-           ('download-and-install', {
-               'name': _lazy(u'Download and install apps'),
-               'topic': 'marketplace',
-               'tags': ['marketplace'],
-           }),
-           ('customize', {
-               'name': _lazy(u'Customize controls, options, settings and preferences'),
-               'topic': 'settings',
-               'tags': ['settings'],
-           }),
-           ('fix-problems', {
-               'name': _lazy(u'Fix slowness, crashing, error messages and other problems'),
-               'topic': 'fix-problems',
-               'tags': ['fix-problems'],
-           }),
-       ])
+        'name': _lazy(u'Firefox OS'),
+        'subtitle': '',
+        'extra_fields': [],
+        'tags': [],
+        'products': ['firefox-os'],
+        'categories': SortedDict([
+            # TODO: Just use the IA topics for this.
+            ('download-and-install', {
+                'name': _lazy(u'Download and install apps'),
+                'topic': 'marketplace',
+                'tags': ['marketplace'],
+            }),
+            ('customize', {
+                'name': _lazy(u'Customize controls, options, settings and '
+                              u'preferences'),
+                'topic': 'settings',
+                'tags': ['settings'],
+            }),
+            ('fix-problems', {
+                'name': _lazy(u'Fix slowness, crashing, error messages and '
+                              u'other problems'),
+                'topic': 'fix-problems',
+                'tags': ['fix-problems'],
+            }),
+        ])
     }),
     ('webmaker', {
-       'name': _lazy(u'Webmaker'),
-       'subtitle': _lazy('Tools for creating and teaching the web'),
-       'extra_fields': [],
-       'tags': [],
-       'products': ['webmaker'],
-       'categories': SortedDict([
-           # TODO: Just use the IA topics for this.
-           ('popcorn-maker', {
-               'name': _lazy(u'Using Popcorn Maker'),
-               'topic': 'popcorn-maker',
-               'tags': ['popcorn-maker'],
-           }),
-           ('thimble', {
-               'name': _lazy(u'Using Thimble'),
-               'topic': 'thimble',
-               'tags': ['thimble'],
-           }),
-           ('x-ray-goggles', {
-               'name': _lazy(u'Using X-Ray Goggles'),
-               'topic': 'x-ray-goggles',
-               'tags': ['x-ray-goggles'],
-           }),
-           ('get-the-most-from-webmaker', {
-               'name': _lazy(u'Using a feature on webmaker.org'),
-               'topic': 'get-the-most-from-webmaker',
-               'tags': ['get-the-most-from-webmaker'],
-           }),
-           ('events-and-help-for-mentors', {
-               'name': _lazy(u'Contributing to Webmaker'),
-               'topic': 'events-and-help-for-mentors',
-               'tags': ['events-and-help-for-mentors'],
-           }),
-       ])
+        'name': _lazy(u'Webmaker'),
+        'subtitle': _lazy('Tools for creating and teaching the web'),
+        'extra_fields': [],
+        'tags': [],
+        'products': ['webmaker'],
+        'categories': SortedDict([
+            # TODO: Just use the IA topics for this.
+            ('popcorn-maker', {
+                'name': _lazy(u'Using Popcorn Maker'),
+                'topic': 'popcorn-maker',
+                'tags': ['popcorn-maker'],
+            }),
+            ('thimble', {
+                'name': _lazy(u'Using Thimble'),
+                'topic': 'thimble',
+                'tags': ['thimble'],
+            }),
+            ('x-ray-goggles', {
+                'name': _lazy(u'Using X-Ray Goggles'),
+                'topic': 'x-ray-goggles',
+                'tags': ['x-ray-goggles'],
+            }),
+            ('get-the-most-from-webmaker', {
+                'name': _lazy(u'Using a feature on webmaker.org'),
+                'topic': 'get-the-most-from-webmaker',
+                'tags': ['get-the-most-from-webmaker'],
+            }),
+            ('events-and-help-for-mentors', {
+                'name': _lazy(u'Contributing to Webmaker'),
+                'topic': 'events-and-help-for-mentors',
+                'tags': ['events-and-help-for-mentors'],
+            }),
+        ])
     }),
     ('other', {
         'name': _lazy(u'Thunderbird'),
-        'subtitle':  _lazy(u'or other Mozilla products'),
+        'subtitle': _lazy(u'or other Mozilla products'),
         'html': 'This site is only for Firefox support. Please find your '
                 'product below.'
                 '<ul class="product-support">'

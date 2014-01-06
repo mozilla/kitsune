@@ -49,10 +49,10 @@ class TagWidget(Widget):
 
             # Hidden input for form state:
             if not self.async_urls:
-                output += u'<input%s />' % flatatt(dict(value=force_unicode(
-                                                              tag.name),
-                                                        type='hidden',
-                                                        name=control_name))
+                output += u'<input%s />' % flatatt({
+                    'value': force_unicode(tag.name),
+                    'type': 'hidden',
+                    'name': control_name})
 
                 # Linkless tag name:
                 output += (u'<span class="tag-name">%s</span>' %
@@ -79,9 +79,8 @@ class TagWidget(Widget):
 
     def render(self, name, value, attrs=None):
         """Render a hidden input for each choice plus a blank text input."""
-        output = u'<div class="tag-adder tags%s"' % ('' if self.read_only or
-                                                 self.async_urls
-                                              else ' deferred')
+        output = u'<div class="tag-adder tags%s"' % (
+            '' if self.read_only or self.async_urls else ' deferred')
         if not self.read_only:
             vocab = [t.name for t in Tag.objects.only('name').all()]
             output += u' data-tag-vocab-json="%s"' % escape(json.dumps(vocab))

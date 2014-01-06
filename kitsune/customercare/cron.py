@@ -202,7 +202,7 @@ def get_customercare_stats():
         raw = json.loads(reply.raw_json)
         user = reply.twitter_username
         if user not in contributor_stats:
-            if 'from_user' in raw: #For tweets collected using v1 API
+            if 'from_user' in raw:  # For tweets collected using v1 API
                 user_data = raw
             else:
                 user_data = raw['user']
@@ -227,7 +227,8 @@ def get_customercare_stats():
     limit = settings.CC_TOP_CONTRIB_LIMIT
     # Sort by whatever is in settings, break ties with 'all'
     contributor_stats = sorted(contributor_stats.values(),
-        key=lambda c: (c[sort_key], c['all']), reverse=True)[:limit]
+                               key=lambda c: (c[sort_key], c['all']),
+                               reverse=True)[:limit]
 
     try:
         redis = redis_client(name='default')

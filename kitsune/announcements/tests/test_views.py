@@ -62,9 +62,9 @@ class TestDeleteAnnouncement(TestCase):
         self.locale.leaders.add(self.u)
         self.locale.save()
 
-        self.announcement = announcement(save=True, creator=self.u,
-            locale=self.locale, content="Look at me!",
-            show_after=datetime(2012, 01, 01, 0, 0, 0))
+        self.announcement = announcement(
+            creator=self.u, locale=self.locale, content="Look at me!",
+            show_after=datetime(2012, 01, 01, 0, 0, 0), save=True)
 
     def _delete_test(self, id, status, count):
         """Login, or other setup, then call this."""

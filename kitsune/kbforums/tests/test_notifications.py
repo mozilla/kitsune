@@ -27,7 +27,8 @@ a post
 
 ========
 
-To view this post on the site, click the following link, or paste it into your browser's location bar:
+To view this post on the site, click the following link, or paste it into \
+your browser's location bar:
 
 https://testserver/en-US/kb/%s/discuss/%s#post-%s
 
@@ -36,7 +37,8 @@ Unsubscribe from these emails:
 https://testserver/en-US/unsubscribe/"""
 NEW_THREAD_EMAIL = u"""New thread: a title
 
-User jsocol has posted a new thread in a forum you're watching. Here is the thread:
+User jsocol has posted a new thread in a forum you're watching. Here is the \
+thread:
 
 ========
 
@@ -44,7 +46,8 @@ a post
 
 ========
 
-To view this post on the site, click the following link, or paste it into your browser's location bar:
+To view this post on the site, click the following link, or paste it into \
+your browser's location bar:
 
 https://testserver/en-US/kb/%s/discuss/%s
 

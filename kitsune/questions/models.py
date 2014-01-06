@@ -88,11 +88,11 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
     class Meta:
         ordering = ['-updated']
         permissions = (
-                ('tag_question',
-                 'Can add tags to and remove tags from questions'),
-                ('change_solution',
-                 'Can change/remove the solution to a question'),
-            )
+            ('tag_question',
+             'Can add tags to and remove tags from questions'),
+            ('change_solution',
+             'Can change/remove the solution to a question'),
+        )
 
     def __unicode__(self):
         return self.title
@@ -365,7 +365,8 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         except Http404:
             return None
 
-        import kitsune.questions.views  # Views import models; models import views.
+        # Avoid circular import. kitsune.question.views import this.
+        import kitsune.questions.views
         if view != kitsune.questions.views.answers:
             return None
 
@@ -386,7 +387,8 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         """Get the number of visits for this question."""
         if not hasattr(self, '_num_visits'):
             try:
-                self._num_visits = QuestionVisits.objects.get(question=self).visits
+                self._num_visits = (QuestionVisits.objects.get(question=self)
+                                    .visits)
             except QuestionVisits.DoesNotExist:
                 self._num_visits = None
 
@@ -470,23 +472,26 @@ class QuestionMappingType(SearchMappingType):
                 'topic': {'type': 'string', 'index': 'not_analyzed'},
 
                 'question_title': {'type': 'string', 'analyzer': 'snowball'},
-                'question_content':
-                    {'type': 'string', 'analyzer': 'snowball',
-                     # TODO: Stored because originally, this is the
-                     # only field we were excerpting on. Standardize
-                     # one way or the other.
-                     'store': 'yes', 'term_vector': 'with_positions_offsets'},
-                'question_answer_content':
-                    {'type': 'string', 'analyzer': 'snowball'},
+                'question_content': {
+                    'type': 'string', 'analyzer': 'snowball',
+                    # TODO: Stored because originally, this is the
+                    # only field we were excerpting on. Standardize
+                    # one way or the other.
+                    'store': 'yes', 'term_vector': 'with_positions_offsets'},
+                'question_answer_content': {
+                    'type': 'string', 'analyzer': 'snowball'},
                 'question_num_answers': {'type': 'integer'},
                 'question_is_solved': {'type': 'boolean'},
                 'question_is_locked': {'type': 'boolean'},
                 'question_is_archived': {'type': 'boolean'},
                 'question_has_answers': {'type': 'boolean'},
                 'question_has_helpful': {'type': 'boolean'},
-                'question_creator': {'type': 'string', 'index': 'not_analyzed'},
-                'question_answer_creator':
-                    {'type': 'string', 'index': 'not_analyzed'},
+                'question_creator': {
+                    'type': 'string',
+                    'index': 'not_analyzed'
+                },
+                'question_answer_creator': {
+                    'type': 'string', 'index': 'not_analyzed'},
                 'question_num_votes': {'type': 'integer'},
                 'question_num_votes_past_week': {'type': 'integer'},
                 'question_tag': {'type': 'string', 'index': 'not_analyzed'},
@@ -576,8 +581,8 @@ register_for_indexing(
     'questions',
     TaggedItem,
     instance_to_indexee=(
-        lambda i: i.content_object if isinstance(i.content_object, Question)
-                  else None))
+        lambda i: (i.content_object if isinstance(i.content_object, Question)
+                   else None)))
 register_for_indexing(
     'questions',
     Question.topics.through,
@@ -780,7 +785,7 @@ class Answer(ModelBase):
             try:
                 count = KarmaManager().count(
                     'all', user=self.creator, type=AnswerAction.action_type)
-                if count != None:
+                if count is not None:
                     return count
             except RedisError as e:
                 statsd.incr('redis.errror')
@@ -796,7 +801,7 @@ class Answer(ModelBase):
             try:
                 count = KarmaManager().count(
                     'all', user=self.creator, type=SolutionAction.action_type)
-                if count != None:
+                if count is not None:
                     return count
             except RedisError as e:
                 statsd.incr('redis.errror')
@@ -1031,5 +1036,5 @@ def user_num_solutions(user):
             statsd.incr('redis.errror')
             log.error('Redis connection error: %s' % e)
 
-    return Question.objects.filter(solution__in=Answer.objects
-            .filter(creator=user)).count()
+    return Question.objects.filter(
+        solution__in=Answer.objects.filter(creator=user)).count()

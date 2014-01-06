@@ -96,7 +96,8 @@ class ProductViewsTestCase(ElasticTestCase):
         r = self.client.get(url, follow=True)
         eq_(200, r.status_code)
         doc = pq(r.content)
-        eq_(doc('#document-list > ul > li:first-child > a').text(), docs[1].title)
+        eq_(doc('#document-list > ul > li:first-child > a').text(),
+            docs[1].title)
 
         # Add 2 helpful votes the third document. It should be first now.
         rev = docs[2].current_revision
@@ -108,7 +109,8 @@ class ProductViewsTestCase(ElasticTestCase):
         r = self.client.get(url, follow=True)
         eq_(200, r.status_code)
         doc = pq(r.content)
-        eq_(doc('#document-list > ul > li:first-child > a').text(), docs[2].title)
+        eq_(doc('#document-list > ul > li:first-child > a').text(),
+            docs[2].title)
 
     def test_subtopics(self):
         """Verifies subtopics appear on document listing page."""

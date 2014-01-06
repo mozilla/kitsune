@@ -236,7 +236,7 @@ def questions(request, template):
     if recent_asked_count:
         recent_answered_percent = int(
             (float(recent_asked_count - recent_unanswered_count) /
-            recent_asked_count) * 100)
+             recent_asked_count) * 100)
     else:
         recent_answered_percent = 0
 
@@ -274,7 +274,7 @@ def questions(request, template):
             'topic': topic}
 
     if (waffle.flag_is_active(request, 'karma') and
-        waffle.switch_is_active('karma')):
+            waffle.switch_is_active('karma')):
         kmgr = KarmaManager()
         data.update(karma_top=kmgr.top_users('3m', count=20))
         if request.user.is_authenticated():
@@ -363,7 +363,7 @@ def answers(request, template, question_id, form=None, watch_form=None,
     # Try to parse troubleshooting data as JSON.
     troubleshooting_json = question.metadata.get('troubleshooting')
     question.metadata['troubleshooting_parsed'] = (
-                        parse_troubleshooting(troubleshooting_json))
+        parse_troubleshooting(troubleshooting_json))
 
     if request.user.is_authenticated():
         ans_['images'] = question.images.filter(creator=request.user)
@@ -383,7 +383,7 @@ def answers(request, template, question_id, form=None, watch_form=None,
     if not request.MOBILE:
         no_answers = ans_['answers'].paginator.count == 0
         if (no_answers and
-            question.created < datetime.now() - timedelta(days=30)):
+                question.created < datetime.now() - timedelta(days=30)):
             extra_kwargs.update(robots_noindex=True)
 
     return render(request, template, extra_kwargs)
@@ -620,8 +620,8 @@ def aaq(request, product_key=None, category_key=None, showform=False,
 
         if request.user.is_active:
             messages.add_message(request, messages.SUCCESS,
-                _('Done! Your question is now posted on the Mozilla community '
-                  'support forum.'))
+                                 _('Done! Your question is now posted on the '
+                                   'Mozilla community support forum.'))
             url = reverse('questions.answers',
                           kwargs={'question_id': question.id})
             return HttpResponseRedirect(url)
@@ -677,7 +677,7 @@ def aaq_confirm(request):
         email = None
 
     confirm_t = ('questions/mobile/confirm_email.html' if request.MOBILE
-                     else 'questions/confirm_email.html')
+                 else 'questions/confirm_email.html')
     return render(request, confirm_t, {'email': email})
 
 
@@ -800,7 +800,7 @@ def solve(request, question_id, answer_id):
             distinguishable_letters = \
                 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRTUVWXYZ'
             new_secret = ''.join(random.choice(distinguishable_letters)
-                             for x in xrange(10))
+                                 for x in xrange(10))
             watch.update(secret=new_secret)
             request.user = question.creator
         except Watch.DoesNotExist:
@@ -813,7 +813,7 @@ def solve(request, question_id, answer_id):
         raise PermissionDenied
 
     if (question.creator != request.user and
-        not request.user.has_perm('questions.change_solution')):
+            not request.user.has_perm('questions.change_solution')):
         return HttpResponseForbidden()
 
     question.solution = answer
@@ -840,7 +840,7 @@ def unsolve(request, question_id, answer_id):
         raise PermissionDenied
 
     if (question.creator != request.user and
-        not request.user.has_perm('questions.change_solution')):
+            not request.user.has_perm('questions.change_solution')):
         return HttpResponseForbidden()
 
     question.solution = None
@@ -1181,7 +1181,7 @@ def watch_question(request, question_id):
     msg = None
     if form.is_valid():
         user_or_email = (request.user if request.user.is_authenticated()
-                                      else form.cleaned_data['email'])
+                         else form.cleaned_data['email'])
         try:
             if form.cleaned_data['event_type'] == 'reply':
                 QuestionReplyEvent.notify(user_or_email, question)
@@ -1195,7 +1195,7 @@ def watch_question(request, question_id):
     if request.is_ajax():
         if form.is_valid():
             msg = msg or (_('You will be notified of updates by email.') if
-                              request.user.is_authenticated() else
+                          request.user.is_authenticated() else
                           _('You should receive an email shortly '
                             'to confirm your subscription.'))
             return HttpResponse(json.dumps({'message': msg}))
@@ -1253,7 +1253,7 @@ def activate_watch(request, watch_id, secret):
     return render(request, 'questions/activate_watch.html', {
         'question': question,
         'unsubscribe_url': reverse('questions.unsubscribe',
-                                args=[watch_id, secret]),
+                                   args=[watch_id, secret]),
         'is_active': watch.is_active})
 
 
@@ -1529,9 +1529,9 @@ def _search_suggestions(request, text, locale, product_slugs):
     try:
         # Search for relevant KB documents.
         query = dict(('%s__text' % field, text)
-                      for field in DocumentMappingType.get_query_fields())
+                     for field in DocumentMappingType.get_query_fields())
         query.update(dict(('%s__text_phrase' % field, text)
-                      for field in DocumentMappingType.get_query_fields()))
+                     for field in DocumentMappingType.get_query_fields()))
         query = es_query_with_analyzer(query, locale)
         filter = F()
         filter |= F(document_locale=locale)
@@ -1549,7 +1549,7 @@ def _search_suggestions(request, text, locale, product_slugs):
                                        .get(pk=r['id']))
                 results.append({
                     'search_summary': clean_excerpt(
-                            doc.current_revision.summary),
+                        doc.current_revision.summary),
                     'url': doc.get_absolute_url(),
                     'title': doc.title,
                     'type': 'document',
@@ -1560,9 +1560,9 @@ def _search_suggestions(request, text, locale, product_slugs):
 
         # Search for relevant questions.
         query = dict(('%s__text' % field, text)
-                      for field in QuestionMappingType.get_query_fields())
+                     for field in QuestionMappingType.get_query_fields())
         query.update(dict(('%s__text_phrase' % field, text)
-                      for field in QuestionMappingType.get_query_fields()))
+                     for field in QuestionMappingType.get_query_fields()))
 
         max_age = int(time.time()) - settings.SEARCH_DEFAULT_MAX_QUESTION_AGE
         # Filter questions by language. Questions should be either in English
@@ -1575,10 +1575,9 @@ def _search_suggestions(request, text, locale, product_slugs):
         question_filter |= F(question_locale=settings.WIKI_DEFAULT_LANGUAGE)
         question_filter &= F(updated__gte=max_age)
 
-        raw_results = (question_s
-            .query(or_=query)
-            .filter(question_filter)
-            .values_dict('id')[:QUESTIONS_RESULTS])
+        raw_results = (question_s.query(or_=query)
+                       .filter(question_filter)
+                       .values_dict('id')[:QUESTIONS_RESULTS])
 
         for r in raw_results:
             try:
@@ -1619,8 +1618,8 @@ def _answers_data(request, question_id, form=None, watch_form=None,
 
     is_watching_question = (
         request.user.is_authenticated() and (
-        QuestionReplyEvent.is_notifying(request.user, question) or
-        QuestionSolvedEvent.is_notifying(request.user, question)))
+            QuestionReplyEvent.is_notifying(request.user, question) or
+            QuestionSolvedEvent.is_notifying(request.user, question)))
     return {'question': question,
             'answers': answers_,
             'form': form or AnswerForm(),

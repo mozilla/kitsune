@@ -3,7 +3,8 @@ from django.conf.urls import patterns, url
 from kitsune.sumo.views import redirect_to
 
 
-urlpatterns = patterns('kitsune.gallery.views',
+urlpatterns = patterns(
+    'kitsune.gallery.views',
     url(r'^/$', redirect_to,
         {'url': 'gallery.gallery', 'media_type': 'image'},
         name='gallery.home'),

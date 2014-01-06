@@ -1,8 +1,7 @@
-import calendar
 import json
 import logging
 from datetime import datetime, timedelta
-from email.utils import parsedate, formatdate
+from email.utils import parsedate
 
 from django.conf import settings
 from django.http import (HttpResponse, HttpResponseBadRequest,
@@ -46,7 +45,7 @@ def _tweet_for_template(tweet, https=False):
     else:
         replies = None
 
-    if 'from_user' in data: #For tweets collected using v1 API
+    if 'from_user' in data:  # For tweets collected using v1 API
         user_data = data
         from_user = data['from_user']
     else:
@@ -242,10 +241,10 @@ def twitter_post(request):
     # replying to a deleted tweet. TODO: Catch integrity error and log or
     # something.
     tweet = Tweet.objects.create(pk=status['id'],
-                         raw_json=json.dumps(raw_tweet_data),
-                         locale=author['lang'],
-                         created=created_at,
-                         reply_to_id=reply_to_id)
+                                 raw_json=json.dumps(raw_tweet_data),
+                                 locale=author['lang'],
+                                 created=created_at,
+                                 reply_to_id=reply_to_id)
 
     # Record in our Reply table.
     Reply.objects.create(
@@ -287,9 +286,9 @@ def hide_tweet(request):
         return HttpResponseNotFound(_('Invalid ID.'))
 
     if (tweet.reply_to is not None or
-        Tweet.objects.filter(reply_to=tweet).exists()):
-        return HttpResponseBadRequest(_('Tweets that are replies or have '
-                                        'replies must not be hidden.'))
+            Tweet.objects.filter(reply_to=tweet).exists()):
+            return HttpResponseBadRequest(_('Tweets that are replies or have '
+                                            'replies must not be hidden.'))
 
     try:
         tweet.hidden = True

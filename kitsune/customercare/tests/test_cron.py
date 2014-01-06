@@ -18,7 +18,6 @@ from kitsune.sumo.redis_utils import redis_client, RedisError
 from kitsune.sumo.tests import TestCase
 
 
-
 class TwitterCronTestCase(TestCase):
     tweet_template = {
         "profile_image_url": (

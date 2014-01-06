@@ -97,7 +97,7 @@ def remove_from_locale(request, locale_code, user_id, role):
         return HttpResponseRedirect(locale.get_absolute_url())
 
     return render(request, 'wiki/confirm_remove_from_locale.html',
-                        {'locale': locale, 'leader': user, 'role': role})
+                  {'locale': locale, 'leader': user, 'role': role})
 
 
 def _user_can_edit(user, locale):

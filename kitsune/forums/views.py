@@ -15,7 +15,8 @@ from kitsune.access.decorators import has_perm_or_owns_or_403, login_required
 from kitsune.access import has_perm
 from kitsune.forums.events import NewPostEvent, NewThreadEvent
 from kitsune.forums.feeds import ThreadsFeed, PostsFeed
-from kitsune.forums.forms import ReplyForm, NewThreadForm, EditThreadForm, EditPostForm
+from kitsune.forums.forms import (ReplyForm, NewThreadForm, EditThreadForm,
+                                  EditPostForm)
 from kitsune.forums.models import Forum, Thread, Post
 from kitsune.sumo.helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse
@@ -138,7 +139,6 @@ def posts(request, forum_slug, thread_id, form=None, post_preview=None,
         'is_watching_thread': is_watching_thread,
         'feeds': feed_urls,
         'forums': Forum.objects.all()})
-
 
 
 def _skip_post_ratelimit(request):

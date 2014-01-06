@@ -17,8 +17,8 @@ class TestTagsToText(TestCase):
         eq_('tag1,tag2', tags_to_text([_tag('tag1'), _tag('tag2')]))
 
     def test_three_tags(self):
-        eq_('tag1,tag2,tag3', tags_to_text([_tag('tag1'), _tag('tag2'),
-                                             _tag('tag3')]))
+        eq_('tag1,tag2,tag3', tags_to_text(
+            [_tag('tag1'), _tag('tag2'), _tag('tag3')]))
 
 
 def _tag(slug):

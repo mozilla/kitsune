@@ -91,7 +91,7 @@ class AAQTests(ElasticTestCase):
 
         url = urlparams(
             reverse('questions.aaq_step4', args=['desktop', 'fix-problems']),
-                    search='cupcakes')
+            search='cupcakes')
 
         response = self.client.get(url, follow=True)
         eq_(200, response.status_code)
@@ -172,7 +172,7 @@ class AAQTests(ElasticTestCase):
                              '10.6; en-US; rv:1.9.2.6) Gecko/20100625 '
                              'Firefox/3.6.6'}
         p = product(slug='firefox', save=True)
-        t = topic(slug='fix-problems', product=p, save=True)
+        topic(slug='fix-problems', product=p, save=True)
         url = urlparams(
             reverse('questions.aaq_step5', args=['desktop', 'fix-problems']),
             search='A test question')
@@ -330,18 +330,18 @@ class TestQuestionUpdates(TestCaseBase):
     def test_no_update_edit(self):
         url = urlparams(reverse('questions.edit_question', args=[self.q.id]))
         self._request_and_no_update(url, req_type='POST', data={
-                'title': 'A new title.',
-                'content': 'Some new content.'
-            })
+            'title': 'A new title.',
+            'content': 'Some new content.'
+        })
 
     def test_no_update_solve(self):
         url = urlparams(reverse('questions.solve',
-            args=[self.q.id, self.a.id]))
+                        args=[self.q.id, self.a.id]))
         self._request_and_no_update(url)
 
     def test_no_update_unsolve(self):
         url = urlparams(reverse('questions.unsolve',
-            args=[self.q.id, self.a.id]))
+                                args=[self.q.id, self.a.id]))
         self._request_and_no_update(url)
 
     def test_no_update_vote(self):
@@ -357,13 +357,13 @@ class TestQuestionUpdates(TestCaseBase):
     def test_no_update_tagging(self):
         url = urlparams(reverse('questions.add_tag', args=[self.q.id]))
         self._request_and_no_update(url, req_type='POST', data={
-                'tag-name': 'foo'
-            })
+            'tag-name': 'foo'
+        })
 
         url = urlparams(reverse('questions.remove_tag', args=[self.q.id]))
         self._request_and_no_update(url, req_type='POST', data={
-                'remove-tag-foo': 1
-            })
+            'remove-tag-foo': 1
+        })
 
 
 class TroubleshootingParsingTests(TestCaseBase):

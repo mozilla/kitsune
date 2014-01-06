@@ -45,7 +45,7 @@ def profile(request, group_slug, member_form=None, leader_form=None):
         'profile': prof, 'leaders': leaders,
         'members': members, 'user_can_edit': user_can_edit,
         'user_can_manage_leaders': user_can_manage_leaders,
-        'is_paginated' : is_paginated,
+        'is_paginated': is_paginated,
         'member_form': member_form or AddUserForm(),
         'leader_form': leader_form or AddUserForm()})
 
@@ -162,8 +162,8 @@ def remove_member(request, group_slug, user_id):
             # If user is a leader, remove from leaders
             prof.leaders.remove(user)
         user.groups.remove(prof.group)
-        msg = _('{user} removed from the group successfully!').format(
-                user=user.username)
+        msg = (_('{user} removed from the group successfully!')
+               .format(user=user.username))
         messages.add_message(request, messages.SUCCESS, msg)
         return HttpResponseRedirect(prof.get_absolute_url())
 
@@ -209,8 +209,8 @@ def remove_leader(request, group_slug, user_id):
 
     if request.method == 'POST':
         prof.leaders.remove(user)
-        msg = _('{user} removed from the group leaders successfully!').format(
-                user=user.username)
+        msg = (_('{user} removed from the group leaders successfully!')
+               .format(user=user.username))
         messages.add_message(request, messages.SUCCESS, msg)
         return HttpResponseRedirect(prof.get_absolute_url())
 

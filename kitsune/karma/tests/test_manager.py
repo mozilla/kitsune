@@ -68,8 +68,10 @@ class KarmaManagerTests(TestCase):
         self.mgr.update_top()
         u1, u2, u3 = self.user1, self.user2, self.user3
         eq_([u3, u1, u2], self.mgr.top_users('3m'))
-        eq_([u3, u1, u2], self.mgr.top_users('all', type=TestAction1.action_type))
-        eq_([u3, u1, u2], self.mgr.top_users('all', type=TestAction1.action_type))
+        eq_([u3, u1, u2], self.mgr.top_users('all',
+                                             type=TestAction1.action_type))
+        eq_([u3, u1, u2], self.mgr.top_users('all',
+                                             type=TestAction1.action_type))
         eq_([u1], self.mgr.top_users('1w', type=TestAction1.action_type))
         eq_([u1, u3], self.mgr.top_users(daterange='1w'))
 
@@ -81,7 +83,8 @@ class KarmaManagerTests(TestCase):
         eq_(1, self.mgr.ranking('all', self.user2))
         eq_(3, self.mgr.ranking('all', self.user1))
         eq_(1, self.mgr.ranking('1w', self.user1))
-        eq_(1, self.mgr.ranking('all', self.user3, type=TestAction1.action_type))
+        eq_(1, self.mgr.ranking('all', self.user3,
+                                type=TestAction1.action_type))
 
     @mock.patch.object(waffle, 'switch_is_active')
     def test_recalculate_points(self, switch_is_active):

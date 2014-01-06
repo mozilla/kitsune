@@ -104,7 +104,7 @@ class ForceErrorTests(TestCase):
     def test_error(self):
         """On STAGE servers, be able to force an error."""
         try:
-            res = self.client.get(self.url)
+            self.client.get(self.url)
             self.fail()
         except NameError:
             pass

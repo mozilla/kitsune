@@ -7,7 +7,7 @@ from django.contrib.sites.models import Site
 from django.db import connection, transaction
 
 # NOTE: This import is just so _fire_task gets registered with celery.
-import tidings.events
+import tidings.events  # noqa
 from celery.task import task
 from multidb.pinning import pin_this_thread, unpin_this_thread
 from statsd import statsd
@@ -182,7 +182,8 @@ def escalate_question(question_id):
             email='support@mozilla.com',
             category='Escalated',
             subject=u'[Escalated] {title}'.format(title=question.title),
-            body=u'{url}\n\n{content}'.format(url=url, content=question.content))
+            body=u'{url}\n\n{content}'.format(url=url,
+                                              content=question.content))
     except ZendeskError:
         # This is unpickleable, so we need to unwrap it a bit
         raise PickleableZendeskError()

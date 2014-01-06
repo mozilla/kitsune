@@ -41,8 +41,8 @@ class WriteOnlyBasicAuthentication(BasicAuthentication):
     def is_authenticated(self, request, **kwargs):
         if request.method == 'GET':
             return True
-        return super(WriteOnlyBasicAuthentication, self).is_authenticated(
-                request, **kwargs)
+        return (super(WriteOnlyBasicAuthentication, self)
+                .is_authenticated(request, **kwargs))
 
 
 class PermissionAuthorization(Authorization):
@@ -126,15 +126,18 @@ class SearchClickthroughResource(CachedResource):
 
         # I'm not sure you can join a table to itself with the ORM.
         cursor = _cursor()
-        cursor.execute(  # n for numerator, d for denominator
-            'SELECT n.start, n.value, d.value '
-            'FROM kpi_metric n '
-            'INNER JOIN kpi_metric d ON n.start=d.start '
-            'WHERE n.kind_id=(SELECT id FROM kpi_metrickind WHERE code=%s) '
-            'AND d.kind_id=(SELECT id FROM kpi_metrickind WHERE code=%s) ' +
-            ('AND n.start>=%s' if min_start else ''),
-            (self.clicks_kind, self.searches_kind) +
-                ((min_start,) if min_start else ()))
+        # n for numerator, d for denominator
+        query = """
+            SELECT n.start, n.value, d.value
+            FROM kpi_metric n
+            INNER JOIN kpi_metric d ON n.start=d.start
+            WHERE n.kind_id=(SELECT id FROM kpi_metrickind WHERE code=%s)
+            AND d.kind_id=(SELECT id FROM kpi_metrickind WHERE code=%s)
+            """ + ('AND n.start>=%s' if min_start else '')
+        args = [self.clicks_kind, self.searches_kind]
+        if min_start:
+            args.append(min_start)
+        cursor.execute(query, args)
         return [Struct(start=s, clicks=n, searches=d) for
                 s, n, d in reversed(cursor.fetchall())]
 
@@ -194,13 +197,13 @@ class QuestionsResource(CachedResource):
 
         # All answers that were created within 3 days of the question.
         aq_72 = Answer.objects.filter(
-                created__lt=F('question__created') + timedelta(days=3))
+            created__lt=F('question__created') + timedelta(days=3))
         # Questions of said answers.
         rs_72 = qs.filter(id__in=aq_72.values_list('question'))
 
         # All answers that were created within 24 hours of the question.
         aq_24 = Answer.objects.filter(
-                created__lt=F('question__created') + timedelta(hours=24))
+            created__lt=F('question__created') + timedelta(hours=24))
         # Questions of said answers.
         rs_24 = qs.filter(id__in=aq_24.values_list('question'))
 
@@ -237,10 +240,10 @@ class VoteResource(CachedResource):
         qs_ans_helpful_votes = qs_ans_votes.filter(helpful=True)
 
         return merge_results(
-                    kb_votes=qs_kb_votes,
-                    kb_helpful=qs_kb_helpful_votes,
-                    ans_votes=qs_ans_votes,
-                    ans_helpful=qs_ans_helpful_votes)
+            kb_votes=qs_kb_votes,
+            kb_helpful=qs_kb_helpful_votes,
+            ans_votes=qs_ans_votes,
+            ans_helpful=qs_ans_helpful_votes)
 
     class Meta(object):
         cache = SimpleCache()
@@ -266,12 +269,13 @@ class KBVoteResource(CachedResource):
             qs_kb_votes = qs_kb_votes.filter(
                 revision__document__locale=locale)
 
-        qs_kb_votes = (qs_kb_votes
-            .extra(
+        qs_kb_votes = (
+            qs_kb_votes.extra(
                 select={
                     'day': 'extract( day from wiki_helpfulvote.created )',
                     'month': 'extract( month from wiki_helpfulvote.created )',
-                    'year': 'extract( year from wiki_helpfulvote.created )',})
+                    'year': 'extract( year from wiki_helpfulvote.created )',
+                })
             .values('year', 'month', 'day')
             .annotate(count=Count('created')))
 
@@ -425,14 +429,15 @@ class ExitSurveyResultsResource(CachedResource):
 def _daily_qs_for(model_cls):
     """Return the daily grouped queryset we need for model_cls."""
     # Limit to newer than 2011/1/1 and active creators.
-    return model_cls.objects.filter(
-        created__gte=date(2011, 1, 1), creator__is_active=1).extra(
-            select={
+    return (model_cls.objects
+            .filter(created__gte=date(2011, 1, 1), creator__is_active=1)
+            .extra(select={
                 'day': 'extract( day from created )',
                 'month': 'extract( month from created )',
                 'year': 'extract( year from created )',
-            }).values('year', 'month', 'day').annotate(
-                count=Count('created'))
+            })
+            .values('year', 'month', 'day')
+            .annotate(count=Count('created')))
 
 
 def _qs_for(model_cls):
@@ -491,7 +496,7 @@ def _merge_results(x, y):
         [{"date": "2011-10-01", "votes": 3, "helpful": 7},...]
     """
     return dict((s, dict(x.get(s, {}).items() + y.get(s, {}).items()))
-                    for s in set(x.keys() + y.keys()))
+                for s in set(x.keys() + y.keys()))
 
 
 def _cursor():

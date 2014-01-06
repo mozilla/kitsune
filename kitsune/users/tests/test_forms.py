@@ -1,6 +1,5 @@
 import re
 
-from django.contrib.auth.models import User
 from django.forms import ValidationError
 
 from nose.tools import eq_
@@ -33,8 +32,8 @@ class AuthenticationFormTests(TestCaseBase):
 
         # Verify with inactive user
         form = AuthenticationForm(data={
-                'username': self.inactive_user.username,
-                'password': 'testpass'})
+            'username': self.inactive_user.username,
+            'password': 'testpass'})
         assert not form.is_valid()
 
     def test_allow_inactive(self):
@@ -45,9 +44,9 @@ class AuthenticationFormTests(TestCaseBase):
         assert form.is_valid()
 
         # Verify with inactive user
-        form = AuthenticationForm(only_active=False,
-                                  data={'username': self.inactive_user.username,
-                                        'password': 'testpass'})
+        form = AuthenticationForm(only_active=False, data={
+            'username': self.inactive_user.username,
+            'password': 'testpass'})
         assert form.is_valid()
 
 

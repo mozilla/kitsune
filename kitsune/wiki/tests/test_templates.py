@@ -37,12 +37,13 @@ from kitsune.wiki.tests import (
     locale)
 
 
-READY_FOR_REVIEW_EMAIL_CONTENT = (
-"""%(user)s submitted a new revision to the document %(title)s.
+READY_FOR_REVIEW_EMAIL_CONTENT = """\
+%(user)s submitted a new revision to the document %(title)s.
 
 Fixing all the typos!!!!!11!!!one!!!!
 
-To review this revision, click the following link, or paste it into your browser's location bar:
+To review this revision, click the following link, or paste it into your \
+browser's location bar:
 
 https://testserver/en-US/kb/%(slug)s/review/%(new_id)s
 
@@ -57,15 +58,16 @@ Changes:
 --
 Unsubscribe from these emails:
 https://testserver/en-US/unsubscribe/%(watcher)s?s=%(secret)s
-""")
+"""
 
 
-DOCUMENT_EDITED_EMAIL_CONTENT = (
-"""%(user)s created a new revision to the document %(title)s.
+DOCUMENT_EDITED_EMAIL_CONTENT = """\
+%(user)s created a new revision to the document %(title)s.
 
 Fixing all the typos!!!!!11!!!one!!!!
 
-To view this document's history, click the following link, or paste it into your browser's location bar:
+To view this document's history, click the following link, or paste it \
+into your browser's location bar:
 
 https://testserver/en-US/kb/%(slug)s/history
 
@@ -80,13 +82,14 @@ Changes:
 --
 Unsubscribe from these emails:
 https://testserver/en-US/unsubscribe/%(watcher)s?s=%(secret)s
-""")
+"""
 
 
-APPROVED_EMAIL_CONTENT = (
-"""%(reviewer)s has approved the revision to the document %(document_title)s.
+APPROVED_EMAIL_CONTENT = """\
+%(reviewer)s has approved the revision to the document %(document_title)s.
 
-To view the updated document, click the following link, or paste it into your browser's location bar:
+To view the updated document, click the following link, or paste it into \
+your browser's location bar:
 
 https://testserver/en-US/kb/%(document_slug)s
 
@@ -101,7 +104,7 @@ Changes:
 --
 Unsubscribe from these emails:
 https://testserver/en-US/unsubscribe/%(watcher)s?s=%(secret)s
-""")
+"""
 
 
 class DocumentTests(TestCaseBase):
@@ -216,13 +219,14 @@ class DocumentTests(TestCaseBase):
         # Ordinarily, a document with no approved revisions cannot have HTML,
         # but we shove it in manually here as a shortcut:
         redirect = document(
-                    html='<p>REDIRECT <a href="%s">Boo</a></p>' % target_url)
+            html='<p>REDIRECT <a href="%s">Boo</a></p>' % target_url)
         redirect.save()
         redirect_url = redirect.get_absolute_url()
         response = self.client.get(redirect_url, follow=True)
-        self.assertRedirects(response, urlparams(target_url,
-                                                redirectlocale=redirect.locale,
-                                                redirectslug=redirect.slug))
+        self.assertRedirects(response,
+                             urlparams(target_url,
+                                       redirectlocale=redirect.locale,
+                                       redirectslug=redirect.slug))
         self.assertContains(response, redirect_url + '?redirect=no')
         # There's a canonical URL in the <head>.
         doc = pq(response.content)
@@ -234,13 +238,12 @@ class DocumentTests(TestCaseBase):
         target = document(save=True)
         target_url = target.get_absolute_url()
         redirect = document(
-                    html='<p>REDIRECT <a href="%s">Boo</a></p>' % target_url)
+            html='<p>REDIRECT <a href="%s">Boo</a></p>' % target_url)
         redirect.save()
         redirect_url = redirect.get_absolute_url()
         response = self.client.get(redirect_url + '?redirect=no')
         doc = pq(response.content)
         assert not doc('.document-vote')
-
 
     def test_redirect_from_nonexistent(self):
         """The template shouldn't crash or print a backlink if the "from" page
@@ -454,7 +457,7 @@ class RevisionTests(TestCaseBase):
         url = reverse('wiki.mark_ready_for_l10n_revision',
                       args=[r.document.slug, r.id])
         response = self.client.post(url, data={},
-                      HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+                                    HTTP_X_REQUESTED_WITH='XMLHttpRequest')
 
         eq_(200, response.status_code)
 
@@ -479,7 +482,7 @@ class RevisionTests(TestCaseBase):
         url = reverse('wiki.mark_ready_for_l10n_revision',
                       args=[r.document.slug, r.id])
         response = self.client.get(url, data={},
-                      HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+                                   HTTP_X_REQUESTED_WITH='XMLHttpRequest')
 
         eq_(405, response.status_code)
 
@@ -501,7 +504,7 @@ class RevisionTests(TestCaseBase):
         url = reverse('wiki.mark_ready_for_l10n_revision',
                       args=[r.document.slug, r.id])
         response = self.client.post(url, data={},
-                      HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+                                    HTTP_X_REQUESTED_WITH='XMLHttpRequest')
 
         eq_(403, response.status_code)
 
@@ -520,7 +523,7 @@ class RevisionTests(TestCaseBase):
         url = reverse('wiki.mark_ready_for_l10n_revision',
                       args=[r.document.slug, r.id])
         response = self.client.post(url, data={},
-                      HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+                                    HTTP_X_REQUESTED_WITH='XMLHttpRequest')
 
         eq_(403, response.status_code)
 
@@ -543,7 +546,7 @@ class RevisionTests(TestCaseBase):
         url = reverse('wiki.mark_ready_for_l10n_revision',
                       args=[r.document.slug, r.id])
         response = self.client.post(url, data={},
-                      HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+                                    HTTP_X_REQUESTED_WITH='XMLHttpRequest')
 
         eq_(400, response.status_code)
 
@@ -617,11 +620,11 @@ class NewDocumentTests(TestCaseBase):
 
         self.client.login(username='admin', password='testpass')
         data = new_document_data()
-        locale = 'es'
-        self.client.post(reverse('wiki.new_document', locale=locale),
+        doc_locale = 'es'
+        self.client.post(reverse('wiki.new_document', locale=doc_locale),
                          data, follow=True)
         d = Document.objects.get(title=data['title'])
-        eq_(locale, d.locale)
+        eq_(doc_locale, d.locale)
         assert ready_fire.called
 
     def test_new_document_POST_empty_title(self):
@@ -824,10 +827,10 @@ class NewRevisionTests(TestCaseBase):
                                        new_rev.document.title,
                                        new_rev.id)
             diff = clean(''.join(difflib.unified_diff(
-                            smart_str(new_rev.based_on.content).splitlines(1),
-                            smart_str(new_rev.content).splitlines(1),
-                            fromfile=fromfile,
-                            tofile=tofile)), ALLOWED_TAGS, ALLOWED_ATTRIBUTES)
+                smart_str(new_rev.based_on.content).splitlines(1),
+                smart_str(new_rev.content).splitlines(1),
+                fromfile=fromfile,
+                tofile=tofile)), ALLOWED_TAGS, ALLOWED_ATTRIBUTES)
         else:
             diff = ''  # No based_on, so diff wouldn't make sense.
 
@@ -837,28 +840,28 @@ class NewRevisionTests(TestCaseBase):
                  subject=u'%s is ready for review (%s)' % (self.d.title,
                                                            new_rev.creator),
                  body=READY_FOR_REVIEW_EMAIL_CONTENT % {
-                        'user': self.user.username,
-                        'title': self.d.title,
-                        'slug': self.d.slug,
-                        'new_id': new_rev.id,
-                        'summary': new_rev.summary,
-                        'diff': diff,
-                        'watcher': reviewable_watch.pk,
-                        'secret': reviewable_watch.secret
-                    },
+                     'user': self.user.username,
+                     'title': self.d.title,
+                     'slug': self.d.slug,
+                     'new_id': new_rev.id,
+                     'summary': new_rev.summary,
+                     'diff': diff,
+                     'watcher': reviewable_watch.pk,
+                     'secret': reviewable_watch.secret
+                 },
                  to=['joe@example.com'])
         attrs_eq(mail.outbox[1],
                  subject=u'%s was edited by %s' % (self.d.title,
                                                    new_rev.creator),
                  body=DOCUMENT_EDITED_EMAIL_CONTENT % {
-                        'user': self.user.username,
-                        'title': self.d.title,
-                        'slug': self.d.slug,
-                        'watcher': edit_watch.pk,
-                        'secret': edit_watch.secret,
-                        'summary': new_rev.summary,
-                        'diff': diff,
-                    },
+                     'user': self.user.username,
+                     'title': self.d.title,
+                     'slug': self.d.slug,
+                     'watcher': edit_watch.pk,
+                     'secret': edit_watch.secret,
+                     'summary': new_rev.summary,
+                     'diff': diff,
+                 },
                  to=['sam@example.com'])
 
     @mock.patch.object(ReviewableRevisionInLocaleEvent, 'fire')
@@ -1043,7 +1046,7 @@ class DocumentEditTests(TestCaseBase):
         """Make sure we can save a document with translations."""
         # Create a translation
         _create_document(title='Document Prueba', parent=self.d,
-                             locale='es')
+                         locale='es')
         # Make sure is_localizable hidden field is rendered
         response = get(self.client, 'wiki.edit_document', args=[self.d.slug])
         eq_(200, response.status_code)
@@ -1187,7 +1190,8 @@ class DocumentRevisionsTests(TestCaseBase):
         eq_(4, len(doc('#revision-list li')))
         # Verify there is no Review link
         eq_(0, len(doc('#revision-list div.status a')))
-        eq_('Unreviewed', doc('#revision-list li:not(.header) div.status:first').text())
+        eq_('Unreviewed',
+            doc('#revision-list li:not(.header) div.status:first').text())
 
         # Log in as user with permission to review
         u = user(save=True)
@@ -1199,7 +1203,8 @@ class DocumentRevisionsTests(TestCaseBase):
         doc = pq(response.content)
         # Verify there are Review links now
         eq_(2, len(doc('#revision-list div.status a')))
-        eq_('Review', doc('#revision-list li:not(.header) div.status:first').text())
+        eq_('Review',
+            doc('#revision-list li:not(.header) div.status:first').text())
         # Verify edit revision link
         eq_('/en-US/kb/test-document/edit/{r}'.format(r=r2.id),
             doc('#revision-list div.edit a')[0].attrib['href'])
@@ -1322,10 +1327,10 @@ class ReviewRevisionTests(TestCaseBase):
                                        r.document.title,
                                        r.id)
             diff = clean(''.join(difflib.unified_diff(
-                            r.document.current_revision.content.splitlines(1),
-                            r.content.splitlines(1),
-                            fromfile=fromfile,
-                            tofile=tofile)), ALLOWED_TAGS, ALLOWED_ATTRIBUTES)
+                r.document.current_revision.content.splitlines(1),
+                r.content.splitlines(1),
+                fromfile=fromfile,
+                tofile=tofile)), ALLOWED_TAGS, ALLOWED_ATTRIBUTES)
 
         else:
             approved = r.document.revisions.filter(is_approved=True)
@@ -1343,26 +1348,24 @@ class ReviewRevisionTests(TestCaseBase):
                     difflib.unified_diff(
                         approved_rev.content.splitlines(1),
                         r.content.splitlines(1),
-                        fromfile=fromfile, tofile=tofile)
-                    ),
+                        fromfile=fromfile, tofile=tofile)),
                 ALLOWED_TAGS, ALLOWED_ATTRIBUTES)
 
         expected_body = (APPROVED_EMAIL_CONTENT % {
-                'reviewer': r.reviewer.username,
-                'document_title': self.document.title,
-                'document_slug': self.document.slug,
-                'watcher': watch.pk,
-                'secret': watch.secret,
-                'summary': approved_rev.summary,
-                'diff': diff,
-                'content': r.content,
-            })
+            'reviewer': r.reviewer.username,
+            'document_title': self.document.title,
+            'document_slug': self.document.slug,
+            'watcher': watch.pk,
+            'secret': watch.secret,
+            'summary': approved_rev.summary,
+            'diff': diff,
+            'content': r.content})
 
         eq_(1, len(mail.outbox))
         attrs_eq(mail.outbox[0],
-                 subject='%s (%s) has a new approved revision (%s)' %
-                     (self.document.title, self.document.locale,
-                      self.user.username),
+                 subject=('{0} ({1}) has a new approved revision ({2})'
+                          .format(self.document.title, self.document.locale,
+                                  self.user.username)),
                  body=expected_body,
                  to=['joe@example.com'])
 
@@ -1469,9 +1472,9 @@ class ReviewRevisionTests(TestCaseBase):
                         args=[self.document.slug, self.revision.id])
         redirect = response.redirect_chain[0]
         eq_(302, redirect[1])
-        eq_('http://testserver/%s%s?next=/en-US/kb/test-document/review/%s' %
-            (settings.LANGUAGE_CODE, settings.LOGIN_URL,
-                 str(self.revision.id)),
+        eq_('http://testserver/{0}{1}?next=/en-US/kb/test-document/review/{2}'
+            .format(settings.LANGUAGE_CODE, settings.LOGIN_URL,
+                    str(self.revision.id)),
             redirect[0])
 
     @mock.patch.object(Site.objects, 'get_current')
@@ -1496,10 +1499,10 @@ class ReviewRevisionTests(TestCaseBase):
 
         # Create a new translation based on the new current revision
         rev_es2 = Revision(summary="lipsum",
-                          content='<div>Lorem {for mac}Ipsum{/for} '
-                                  'Dolor</div>',
-                          keywords='kw1 kw2', document=doc_es,
-                          creator=user_, based_on=doc.current_revision)
+                           content='<div>Lorem {for mac}Ipsum{/for} '
+                                   'Dolor</div>',
+                           keywords='kw1 kw2', document=doc_es,
+                           creator=user_, based_on=doc.current_revision)
         rev_es2.save()
 
         # Whew, now render the review page
@@ -1645,9 +1648,9 @@ class CompareRevisionTests(TestCaseBase):
         self.revision1 = self.document.current_revision
         u = user(save=True)
         self.revision2 = Revision(summary="lipsum",
-                                 content='<div>Lorem Ipsum Dolor</div>',
-                                 keywords='kw1 kw2',
-                                 document=self.document, creator=u)
+                                  content='<div>Lorem Ipsum Dolor</div>',
+                                  keywords='kw1 kw2',
+                                  document=self.document, creator=u)
         self.revision2.save()
 
         u = user(save=True)
@@ -1790,10 +1793,13 @@ class TranslateTests(TestCaseBase):
 
         # Create and approve a new en-US revision
         rev_enUS = Revision(summary="lipsum",
-                       content='lorem ipsum dolor sit amet new',
-                       significance=SIGNIFICANCES[0][0], keywords='kw1 kw2',
-                       document=self.d, creator_id=user(save=True).id,
-                       is_ready_for_localization=True, is_approved=True)
+                            content='lorem ipsum dolor sit amet new',
+                            significance=SIGNIFICANCES[0][0],
+                            keywords='kw1 kw2',
+                            document=self.d,
+                            creator_id=user(save=True).id,
+                            is_ready_for_localization=True,
+                            is_approved=True)
         rev_enUS.save()
 
         # Verify the form renders with correct content
@@ -1990,9 +1996,10 @@ class TranslateTests(TestCaseBase):
     def test_show_translations_page(self):
         en = settings.WIKI_DEFAULT_LANGUAGE
         en_doc = document(save=True, locale=en, slug='english-slug')
-        de_doc = document(save=True, locale='de', parent=en_doc)
+        document(save=True, locale='de', parent=en_doc)
 
-        url = reverse('wiki.show_translations', locale=settings.WIKI_DEFAULT_LANGUAGE,
+        url = reverse('wiki.show_translations',
+                      locale=settings.WIKI_DEFAULT_LANGUAGE,
                       args=[en_doc.slug])
         r = self.client.get(url)
         doc = pq(r.content)
@@ -2076,16 +2083,16 @@ class DocumentWatchTests(TestCaseBase):
         """Watch and unwatch a document."""
         # Subscribe
         response = post(self.client, 'wiki.document_watch',
-                       args=[self.document.slug])
+                        args=[self.document.slug])
         eq_(200, response.status_code)
-        assert EditDocumentEvent.is_notifying(self.user, self.document), \
-               'Watch was not created'
+        assert EditDocumentEvent.is_notifying(self.user, self.document), (
+            'Watch was not created')
         # Unsubscribe
         response = post(self.client, 'wiki.document_unwatch',
-                       args=[self.document.slug])
+                        args=[self.document.slug])
         eq_(200, response.status_code)
-        assert not EditDocumentEvent.is_notifying(self.user, self.document), \
-               'Watch was not destroyed'
+        assert not EditDocumentEvent.is_notifying(self.user, self.document), (
+            'Watch was not destroyed')
 
 
 class LocaleWatchTests(TestCaseBase):
@@ -2129,7 +2136,8 @@ class LocaleWatchTests(TestCaseBase):
             self.user, locale='en-US', product='firefox-os')
 
         # Unsubscribe
-        response = post(self.client, 'wiki.locale_unwatch', args=['firefox-os'])
+        response = post(self.client, 'wiki.locale_unwatch',
+                        args=['firefox-os'])
         eq_(200, response.status_code)
         assert not ReviewableRevisionInLocaleEvent.is_notifying(
             self.user, locale='en-US', product='firefox-os')
@@ -2389,9 +2397,9 @@ class RelatedThingsTestCase(ElasticTestCase):
         d6 = document(title='admin lorem ipsum sit amet',
                       category=ADMINISTRATION_CATEGORY, save=True)
         d6.products.add(p)
-        r6 = revision(document=d6, summary='lorem',
-                      content='lorem ipsum dolor sit amet',
-                      is_approved=True, save=True)
+        revision(document=d6, summary='lorem',
+                 content='lorem ipsum dolor sit amet',
+                 is_approved=True, save=True)
         d6.current_revision = r5
         d6.save()
 
@@ -2399,9 +2407,9 @@ class RelatedThingsTestCase(ElasticTestCase):
         d7 = document(title='lorem ipsum ohai', save=True)
         d7.products.add(p)
         d7.save()
-        r7 = revision(document=d1, summary='lorem',
-                      content='lorem ipsum dolor',
-                      save=True)
+        revision(document=d1, summary='lorem',
+                 content='lorem ipsum dolor',
+                 save=True)
 
         # A document with a different product
         d8 = document(title='lorem ipsum dolor sit amet', save=True)
@@ -2706,9 +2714,9 @@ class RecentRevisionsTest(TestCaseBase):
 
         _create_document(title='1', rev_kwargs={'creator': self.u1})
         _create_document(title='2', rev_kwargs={
-                            'creator': self.u1,
-                            'created': datetime(2013, 3, 1, 0, 0, 0, 0),
-                        })
+            'creator': self.u1,
+            'created': datetime(2013, 3, 1, 0, 0, 0, 0),
+        })
         _create_document(
             title='3', locale='de', rev_kwargs={'creator': self.u2})
         _create_document(

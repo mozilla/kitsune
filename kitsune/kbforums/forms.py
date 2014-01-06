@@ -25,13 +25,13 @@ MSG_CONTENT_LONG = _lazy(u'Please keep the length of your message to '
 class ReplyForm(forms.ModelForm):
     """Reply form for forum threads."""
     content = StrippedCharField(
-                label=_lazy('Content:'),
-                min_length=5,
-                max_length=10000,
-                widget=forms.Textarea(attrs={'rows': 10, 'cols': 80}),
-                error_messages={'required': MSG_CONTENT_REQUIRED,
-                                'min_length': MSG_CONTENT_SHORT,
-                                'max_length': MSG_CONTENT_LONG})
+        label=_lazy('Content:'),
+        min_length=5,
+        max_length=10000,
+        widget=forms.Textarea(attrs={'rows': 10, 'cols': 80}),
+        error_messages={'required': MSG_CONTENT_REQUIRED,
+                        'min_length': MSG_CONTENT_SHORT,
+                        'max_length': MSG_CONTENT_LONG})
 
     class Meta:
         model = Post
@@ -47,13 +47,13 @@ class NewThreadForm(forms.Form):
                                               'min_length': MSG_TITLE_SHORT,
                                               'max_length': MSG_TITLE_LONG})
     content = StrippedCharField(
-                label=_lazy('Content:'),
-                min_length=5,
-                max_length=10000,
-                widget=forms.Textarea(attrs={'rows': 30, 'cols': 76}),
-                error_messages={'required': MSG_CONTENT_REQUIRED,
-                                'min_length': MSG_CONTENT_SHORT,
-                                'max_length': MSG_CONTENT_LONG})
+        label=_lazy('Content:'),
+        min_length=5,
+        max_length=10000,
+        widget=forms.Textarea(attrs={'rows': 30, 'cols': 76}),
+        error_messages={'required': MSG_CONTENT_REQUIRED,
+                        'min_length': MSG_CONTENT_SHORT,
+                        'max_length': MSG_CONTENT_LONG})
 
 
 class EditThreadForm(forms.ModelForm):
@@ -73,13 +73,13 @@ class EditThreadForm(forms.ModelForm):
 class EditPostForm(forms.Form):
     """Form to edit an existing post."""
     content = StrippedCharField(
-            label=_lazy('Content:'),
-            min_length=5,
-            max_length=10000,
-            widget=forms.Textarea(attrs={'rows': 30, 'cols': 76}),
-            error_messages={'required': MSG_CONTENT_REQUIRED,
-                            'min_length': MSG_CONTENT_SHORT,
-                            'max_length': MSG_CONTENT_LONG})
+        label=_lazy('Content:'),
+        min_length=5,
+        max_length=10000,
+        widget=forms.Textarea(attrs={'rows': 30, 'cols': 76}),
+        error_messages={'required': MSG_CONTENT_REQUIRED,
+                        'min_length': MSG_CONTENT_SHORT,
+                        'max_length': MSG_CONTENT_LONG})
 
     class Meta:
         model = Post

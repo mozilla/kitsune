@@ -109,7 +109,8 @@ def _user_karma_week(user, kmgr):
         'first_answers': kmgr.count(
             daterange='1w', user=user, type=FirstAnswerAction.action_type),
         'helpful_votes': kmgr.count(
-            daterange='1w', user=user, type=AnswerMarkedHelpfulAction.action_type),
+            daterange='1w', user=user,
+            type=AnswerMarkedHelpfulAction.action_type),
         'nothelpful_votes': kmgr.count(
             daterange='1w', user=user,
             type=AnswerMarkedNotHelpfulAction.action_type),

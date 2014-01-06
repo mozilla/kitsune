@@ -12,8 +12,8 @@ class ShowforDataTests(TestCase):
     def test_all_versions(self):
         """Test that products with visible=False are in the showfor data."""
         prod = product(save=True)
-        v1 = version(visible=True, product=prod, save=True)
-        v2 = version(visible=False, product=prod, save=True)
+        version(visible=True, product=prod, save=True)
+        version(visible=False, product=prod, save=True)
 
         data = showfor_data([prod])
 

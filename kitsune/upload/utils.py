@@ -12,7 +12,7 @@ from tower import ugettext_lazy as _lazy
 from kitsune.upload.forms import ImageAttachmentUploadForm
 from kitsune.upload.models import ImageAttachment
 from kitsune.upload.tasks import (compress_image, generate_thumbnail,
-    _scale_dimensions)
+                                  _scale_dimensions)
 
 
 def check_file_size(f, max_allowed_size):
@@ -82,9 +82,9 @@ def _image_to_png(up_file):
             options['transparency'] = pil_image.info['transparency']
         pil_image.save(converted_image, format='PNG', **options)
 
-        up_file = InMemoryUploadedFile(converted_image, None,
-                                    os.path.splitext(up_file.name)[0] + '.png',
-                                    'image/png', converted_image.len, None)
+        up_file = InMemoryUploadedFile(
+            converted_image, None, os.path.splitext(up_file.name)[0] + '.png',
+            'image/png', converted_image.len, None)
 
     return (up_file, is_animated)
 

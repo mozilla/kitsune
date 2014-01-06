@@ -1,6 +1,5 @@
 import json
 
-from nose import SkipTest
 from nose.tools import eq_
 
 from kitsune.sumo.helpers import urlparams

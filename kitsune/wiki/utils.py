@@ -47,12 +47,12 @@ def _active_contributors_id(from_date, to_date, locale, product):
     :arg product: (optional) only count documents for a product
     """
     editors = (Revision.objects
-        .filter(created__gte=from_date)
-        .values_list('creator', flat=True).distinct())
+               .filter(created__gte=from_date)
+               .values_list('creator', flat=True).distinct())
 
     reviewers = (Revision.objects
-        .filter(reviewed__gte=from_date)
-        .values_list('reviewer', flat=True).distinct())
+                 .filter(reviewed__gte=from_date)
+                 .values_list('reviewer', flat=True).distinct())
 
     if to_date:
         editors = editors.filter(created__lt=to_date)

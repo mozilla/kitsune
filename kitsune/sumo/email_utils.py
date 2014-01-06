@@ -102,14 +102,15 @@ def make_mail(subject,
     return mail
 
 
-def emails_with_users_and_watches(subject,
-                                  text_template,
-                                  html_template,
-                                  context_vars,
-                                  users_and_watches,
-                                  from_email=settings.TIDINGS_FROM_ADDRESS,
-                                  default_locale=settings.WIKI_DEFAULT_LANGUAGE,
-                                  **extra_kwargs):
+def emails_with_users_and_watches(
+        subject,
+        text_template,
+        html_template,
+        context_vars,
+        users_and_watches,
+        from_email=settings.TIDINGS_FROM_ADDRESS,
+        default_locale=settings.WIKI_DEFAULT_LANGUAGE,
+        **extra_kwargs):
     """Return iterable of EmailMessages with user and watch values substituted.
 
     A convenience function for generating emails by repeatedly

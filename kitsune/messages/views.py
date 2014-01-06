@@ -92,7 +92,7 @@ def new_message(request, template):
 
     if (request.method == 'POST' and form.is_valid() and
             not is_ratelimited(request, increment=True, rate='50/d', ip=False,
-                           keys=user_or_ip('private-message-day'))):
+                               keys=user_or_ip('private-message-day'))):
         send_message(form.cleaned_data['to'], form.cleaned_data['message'],
                      request.user)
         if form.cleaned_data['in_reply_to']:
@@ -121,10 +121,12 @@ def bulk_action(request, msgtype='inbox'):
         if 'delete' in request.POST:
             return delete(request, msgtype=msgtype)
         elif 'mark_read' in request.POST and msgtype == 'inbox':
-            messages = InboxMessage.objects.filter(pk__in=msgids, to=request.user)
+            messages = InboxMessage.objects.filter(pk__in=msgids,
+                                                   to=request.user)
             messages.update(read=True)
         elif 'mark_unread' in request.POST and msgtype == 'inbox':
-            messages = InboxMessage.objects.filter(pk__in=msgids, to=request.user)
+            messages = InboxMessage.objects.filter(pk__in=msgids,
+                                                   to=request.user)
             messages.update(read=False)
 
     return redirect('messages.%s' % msgtype)

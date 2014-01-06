@@ -3,7 +3,8 @@ from django.conf.urls import patterns, url
 from kitsune.messages import views
 
 
-urlpatterns = patterns('',
+urlpatterns = patterns(
+    '',
     url(r'^$', views.inbox, name='messages.inbox'),
     url(r'^/bulk_action$', views.bulk_action, name='messages.bulk_action'),
     url(r'^/read/(?P<msgid>\d+)$', views.read, name='messages.read'),

@@ -112,10 +112,16 @@ VISITORS_RESPONSE = {
         u'start-index': 1,
         u'ids': u'ga:1234567890',
         u'metrics': [u'ga:visitors'],
-        u'end-date': u'2013-01-16'},
-        u'totalResults': 1,
-        u'id': u'https://www.googleapis.com/analytics/v3/data/ga?ids=ga:1234567890&metrics=ga:visitors&start-date=2013-01-16&end-date=2013-01-16',
-        u'selfLink': u'https://www.googleapis.com/analytics/v3/data/ga?ids=ga:1234567890&metrics=ga:visitors&start-date=2013-01-16&end-date=2013-01-16'}
+        u'end-date': u'2013-01-16'
+    },
+    u'totalResults': 1,
+    u'id': ('https://www.googleapis.com/analytics/v3/data/ga'
+            '?ids=ga:1234567890&metrics=ga:visitors&start-date=2013-01-16'
+            '&end-date=2013-01-16'),
+    u'selfLink': ('https://www.googleapis.com/analytics/v3/data/ga'
+                  '?ids=ga:1234567890&metrics=ga:visitors'
+                  '&start-date=2013-01-16&end-date=2013-01-16')
+}
 
 
 VISITORS_BY_LOCALE_RESPONSE = {
@@ -202,7 +208,8 @@ VISITORS_BY_LOCALE_RESPONSE = {
         [u'/uk/', u'434'],
         [u'/vi/', u'4880'],
         [u'/zh-CN/', u'5640'],
-        [u'/zh-TW/', u'3508']],
+        [u'/zh-TW/', u'3508']
+    ],
     u'containsSampledData': False,
     u'profileInfo': {
         u'webPropertyId': u'UA-1234567890',
@@ -210,7 +217,8 @@ VISITORS_BY_LOCALE_RESPONSE = {
         u'tableId': u'ga:1234567890',
         u'profileId': u'1234567890',
         u'profileName': u'support.mozilla.org - Production Only',
-        u'accountId': u'1234567890'},
+        u'accountId': u'1234567890'
+    },
     u'itemsPerPage': 1000,
     u'totalsForAllResults': {
         u'ga:visitors': u'437598'},
@@ -220,7 +228,8 @@ VISITORS_BY_LOCALE_RESPONSE = {
          u'name': u'ga:pagePathLevel1'},
         {u'dataType': u'INTEGER',
          u'columnType': u'METRIC',
-         u'name': u'ga:visitors'}],
+         u'name': u'ga:visitors'}
+    ],
     u'query': {
         u'max-results': 1000,
         u'dimensions': u'ga:pagePathLevel1',
@@ -228,23 +237,30 @@ VISITORS_BY_LOCALE_RESPONSE = {
         u'start-index': 1,
         u'ids': u'ga:1234567890',
         u'metrics': [u'ga:visitors'],
-        u'end-date': u'2013-01-16'},
+        u'end-date': u'2013-01-16'
+    },
     u'totalResults': 83,
-    u'id': u'https://www.googleapis.com/analytics/v3/data/ga?ids=ga:1234567890&dimensions=ga:pagePathLevel1&metrics=ga:visitors&start-date=2013-01-16&end-date=2013-01-16',
-    u'selfLink': u'https://www.googleapis.com/analytics/v3/data/ga?ids=ga:1234567890&dimensions=ga:pagePathLevel1&metrics=ga:visitors&start-date=2013-01-16&end-date=2013-01-16'}
+    u'id': ('https://www.googleapis.com/analytics/v3/data/ga'
+            '?ids=ga:1234567890&dimensions=ga:pagePathLevel1'
+            '&metrics=ga:visitors&start-date=2013-01-16&end-date=2013-01-16'),
+    u'selfLink': ('https://www.googleapis.com/analytics/v3/data/ga'
+                  '?ids=ga:1234567890&dimensions=ga:pagePathLevel1'
+                  '&metrics=ga:visitors&start-date=2013-01-16'
+                  '&end-date=2013-01-16'),
+}
 
 
 PAGEVIEWS_BY_DOCUMENT_RESPONSE = {
     u'kind': u'analytics#gaData',
     u'rows': [
         [u'/en-US/kb/doc-1', u'1'],  # Counts as a pageview.
-        [u'/en-US/kb/doc-1/edit', u'2'],  # Doesn't count as a pageview (different view)
-        [u'/en-US/kb/doc-1/history', u'1'],  # Doesn't count as a pageview (different view)
+        [u'/en-US/kb/doc-1/edit', u'2'],  # Doesn't count as a pageview
+        [u'/en-US/kb/doc-1/history', u'1'],  # Doesn't count as a pageview
         [u'/en-US/kb/doc-2', u'2'],  # Counts as a pageview.
         [u'/en-US/kb/doc-3', u'10'],  # Counts as a pageview.
         [u'/en-US/kb/doc-4', u'39'],  # Counts as a pageview.
         [u'/en-US/kb/doc-5', u'40'],  # Counts as a pageview.
-        [u'/en-US/kb/doc-5/discuss', u'1'],  # Doesn't count as a pageview (different view)
+        [u'/en-US/kb/doc-5/discuss', u'1'],  # Doesn't count as a pageview
         [u'/en-US/kb/doc-5?param=ab', u'2'],  # Counts as a pageview.
         [u'/en-US/kb/doc-5?param=cd', u'4']],  # Counts as a pageview.
     u'containsSampledData': False,
@@ -254,30 +270,44 @@ PAGEVIEWS_BY_DOCUMENT_RESPONSE = {
          u'name': u'ga:pagePath'},
         {u'dataType': u'INTEGER',
          u'columnType': u'METRIC',
-         u'name': u'ga:pageviews'}],
-        u'profileInfo': {
-            u'webPropertyId': u'UA-1234567890',
-            u'internalWebPropertyId': u'1234567890',
-            u'tableId': u'ga:1234567890',
-            u'profileId': u'1234567890',
-            u'profileName': u'support.mozilla.org - Production Only',
-            u'accountId': u'1234567890'},
-        u'itemsPerPage': 10,
-        u'totalsForAllResults': {
-            u'ga:pageviews': u'164293'},
-        u'nextLink': u'https://www.googleapis.com/analytics/v3/data/ga?ids=ga:1234567890&dimensions=ga:pagePath&metrics=ga:pageviews&filters=ga:pagePathLevel2%3D%3D/kb/;ga:pagePathLevel1%3D%3D/en-US/&start-date=2013-01-17&end-date=2013-01-17&start-index=11&max-results=10',
-        u'query': {
-            u'max-results': 10,
-            u'dimensions': u'ga:pagePath',
-            u'start-date': u'2013-01-17',
-            u'start-index': 1,
-            u'ids': u'ga:1234567890',
-            u'metrics': [u'ga:pageviews'],
-            u'filters': u'ga:pagePathLevel2==/kb/;ga:pagePathLevel1==/en-US/',
-            u'end-date': u'2013-01-17'},
-        u'totalResults': 10,
-        u'id': u'https://www.googleapis.com/analytics/v3/data/ga?ids=ga:1234567890&dimensions=ga:pagePath&metrics=ga:pageviews&filters=ga:pagePathLevel2%3D%3D/kb/;ga:pagePathLevel1%3D%3D/en-US/&start-date=2013-01-17&end-date=2013-01-17&start-index=1&max-results=10',
-        u'selfLink': u'https://www.googleapis.com/analytics/v3/data/ga?ids=ga:1234567890&dimensions=ga:pagePath&metrics=ga:pageviews&filters=ga:pagePathLevel2%3D%3D/kb/;ga:pagePathLevel1%3D%3D/en-US/&start-date=2013-01-17&end-date=2013-01-17&start-index=1&max-results=10'}
+         u'name': u'ga:pageviews'}
+    ],
+    u'profileInfo': {
+        u'webPropertyId': u'UA-1234567890',
+        u'internalWebPropertyId': u'1234567890',
+        u'tableId': u'ga:1234567890',
+        u'profileId': u'1234567890',
+        u'profileName': u'support.mozilla.org - Production Only',
+        u'accountId': u'1234567890'},
+    u'itemsPerPage': 10,
+    u'totalsForAllResults': {
+        u'ga:pageviews': u'164293'},
+    u'nextLink': ('https://www.googleapis.com/analytics/v3/data/ga'
+                  '?ids=ga:1234567890&dimensions=ga:pagePath'
+                  '&metrics=ga:pageviews&filters=ga:pagePathLevel2%3D%3D/kb/'
+                  ';ga:pagePathLevel1%3D%3D/en-US/&start-date=2013-01-17'
+                  '&end-date=2013-01-17&start-index=11&max-results=10'),
+    u'query': {
+        u'max-results': 10,
+        u'dimensions': u'ga:pagePath',
+        u'start-date': u'2013-01-17',
+        u'start-index': 1,
+        u'ids': u'ga:1234567890',
+        u'metrics': [u'ga:pageviews'],
+        u'filters': u'ga:pagePathLevel2==/kb/;ga:pagePathLevel1==/en-US/',
+        u'end-date': u'2013-01-17'},
+    u'totalResults': 10,
+    u'id': ('https://www.googleapis.com/analytics/v3/data/ga?ids=ga:1234567890'
+            '&dimensions=ga:pagePath&metrics=ga:pageviews'
+            '&filters=ga:pagePathLevel2%3D%3D/kb/;'
+            'ga:pagePathLevel1%3D%3D/en-US/&start-date=2013-01-17'
+            '&end-date=2013-01-17&start-index=1&max-results=10'),
+    u'selfLink': ('https://www.googleapis.com/analytics/v3/data/ga'
+                  '?ids=ga:1234567890&dimensions=ga:pagePath&'
+                  'metrics=ga:pageviews&filters=ga:pagePathLevel2%3D%3D/kb/;'
+                  'ga:pagePathLevel1%3D%3D/en-US/&start-date=2013-01-17'
+                  '&end-date=2013-01-17&start-index=1&max-results=10')
+}
 
 
 PAGEVIEWS_BY_QUESTION_RESPONSE = {
@@ -289,10 +319,18 @@ PAGEVIEWS_BY_QUESTION_RESPONSE = {
          u'dataType': u'INTEGER',
          u'name': u'ga:pageviews'}],
     u'containsSampledData': False,
-    u'id': u'https://www.googleapis.com/analytics/v3/data/ga?ids=ga:65912487&dimensions=ga:pagePath&metrics=ga:pageviews&filters=ga:pagePathLevel2%3D%3D/questions/&start-date=2013-01-01&end-date=2013-01-02&start-index=1&max-results=10',
+    u'id': ('https://www.googleapis.com/analytics/v3/data/ga?ids=ga:65912487'
+            '&dimensions=ga:pagePath&metrics=ga:pageviews'
+            '&filters=ga:pagePathLevel2%3D%3D/questions/&start-date=2013-01-01'
+            '&end-date=2013-01-02&start-index=1&max-results=10'),
     u'itemsPerPage': 10,
     u'kind': u'analytics#gaData',
-    u'nextLink': u'https://www.googleapis.com/analytics/v3/data/ga?ids=ga:65912487&dimensions=ga:pagePath&metrics=ga:pageviews&filters=ga:pagePathLevel2%3D%3D/questions/&start-date=2013-01-01&end-date=2013-01-02&start-index=11&max-results=10',
+    u'nextLink': ('https://www.googleapis.com/analytics/v3/data/ga'
+                  '?ids=ga:65912487&dimensions=ga:pagePath'
+                  '&metrics=ga:pageviews'
+                  '&filters=ga:pagePathLevel2%3D%3D/questions/'
+                  '&start-date=2013-01-01&end-date=2013-01-02'
+                  '&start-index=11&max-results=10'),
     u'profileInfo': {
         u'accountId': u'36116321',
         u'internalWebPropertyId': u'64136921',
@@ -312,15 +350,20 @@ PAGEVIEWS_BY_QUESTION_RESPONSE = {
     u'rows': [
         [u'/en-US/questions/1', u'2'],  # Counts as a pageview.
         [u'/es/questions/1', u'1'],  # Counts as a pageview.
-        [u'/en-US/questions/1/edit', u'3'],  # Doesn't count as a pageview (different view)
-        [u'/en-US/questions/stats', u'1'],  # Doesn't count as a pageview (different view)
+        [u'/en-US/questions/1/edit', u'3'],  # Doesn't count as a pageview
+        [u'/en-US/questions/stats', u'1'],  # Doesn't count as a pageview
         [u'/en-US/questions/2', u'1'],  # Counts as a pageview.
         [u'/en-US/questions/2?mobile=1', u'1'],  # Counts as a pageview.
-        [u'/en-US/questions/2/foo', u'2'],  # Doesn't count as a pageview (different view)
-        [u'/en-US/questions/bar', u'1'],  # Doesn't count as a pageview (different view)
+        [u'/en-US/questions/2/foo', u'2'],  # Doesn't count as a pageview
+        [u'/en-US/questions/bar', u'1'],  # Doesn't count as a pageview
         [u'/es/questions/3?mobile=0', u'10'],  # Counts as a pageview.
         [u'/es/questions/3?lang=en-US', u'1']],  # Counts as a pageview.
-    u'selfLink': u'https://www.googleapis.com/analytics/v3/data/ga?ids=ga:65912487&dimensions=ga:pagePath&metrics=ga:pageviews&filters=ga:pagePathLevel2%3D%3D/questions/&start-date=2013-01-01&end-date=2013-01-02&start-index=1&max-results=10',
+    u'selfLink': ('https://www.googleapis.com/analytics/v3/data/ga'
+                  '?ids=ga:65912487&dimensions=ga:pagePath'
+                  '&metrics=ga:pageviews'
+                  '&filters=ga:pagePathLevel2%3D%3D/questions/'
+                  '&start-date=2013-01-01&end-date=2013-01-02'
+                  '&start-index=1&max-results=10'),
     u'totalResults': 10,
     u'totalsForAllResults': {u'ga:pageviews': u'242403'}}
 
@@ -351,5 +394,10 @@ SEARCH_CTR_RESPONSE = {
         u'metrics': [u'ga:goal11ConversionRate'],
         u'end-date': u'2013-06-06'},
     u'totalResults': 1,
-    u'id': u'https://www.googleapis.com/analytics/v3/data/ga?ids=ga:65912487&metrics=ga:goal11ConversionRate&start-date=2013-06-06&end-date=2013-06-06',
-    u'selfLink': u'https://www.googleapis.com/analytics/v3/data/ga?ids=ga:65912487&metrics=ga:goal11ConversionRate&start-date=2013-06-06&end-date=2013-06-06'}
+    u'id': ('https://www.googleapis.com/analytics/v3/data/ga?ids=ga:65912487'
+            '&metrics=ga:goal11ConversionRate&start-date=2013-06-06'
+            '&end-date=2013-06-06'),
+    u'selfLink': ('https://www.googleapis.com/analytics/v3/data/ga'
+                  '?ids=ga:65912487&metrics=ga:goal11ConversionRate&'
+                  'start-date=2013-06-06&end-date=2013-06-06'),
+}

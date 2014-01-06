@@ -137,7 +137,7 @@ def send_contributor_notification(based_on, revision, document, message):
 def schedule_rebuild_kb():
     """Try to schedule a KB rebuild, if we're allowed to."""
     if (not waffle.switch_is_active('wiki-rebuild-on-demand') or
-        celery.conf.ALWAYS_EAGER):
+            celery.conf.ALWAYS_EAGER):
         return
 
     if cache.get(settings.WIKI_REBUILD_TOKEN):
@@ -184,7 +184,7 @@ def _rebuild_kb_chunk(data):
             # link to a document but the document isn't there), log an error:
             url = document.redirect_url()
             if (url and points_to_document_view(url) and
-                not document.redirect_document()):
+                    not document.redirect_document()):
                 log.warn('Invalid redirect document: %d' % pk)
 
             html = document.parse_and_calculate_links()

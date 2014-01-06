@@ -47,38 +47,39 @@ def render_readouts(request, readouts, template, locale=None, extra_data=None,
         locale_kwargs['product'] = product.slug
         ready_kwargs['product'] = product.slug
 
-    data = {'readouts': SortedDict((slug, class_(request, locale=locale,
-                                                 product=product))
-                                   for slug, class_ in readouts.iteritems()
-                                   if class_.should_show_to(request)),
-            'default_locale': settings.WIKI_DEFAULT_LANGUAGE,
-            'default_locale_name':
-                LOCALES[settings.WIKI_DEFAULT_LANGUAGE].native,
-            'current_locale': current_locale,
-            'current_locale_name': LOCALES[current_locale].native,
-            'request_locale_name': LOCALES[request.LANGUAGE_CODE].native,
-            'is_watching_default_approved':
-                ApproveRevisionInLocaleEvent.is_notifying(
-                    request.user, **default_kwargs),
-            'is_watching_other_approved':
-                None if on_default_locale
-                else ApproveRevisionInLocaleEvent.is_notifying(
-                    request.user, **locale_kwargs),
-            'is_watching_default_locale':
-                ReviewableRevisionInLocaleEvent.is_notifying(
-                    request.user, **default_kwargs),
-            'is_watching_other_locale':
-                None if on_default_locale
-                else ReviewableRevisionInLocaleEvent.is_notifying(
-                    request.user, **locale_kwargs),
-            'is_watching_default_ready':
-                ReadyRevisionEvent.is_notifying(request.user, **ready_kwargs),
-            'on_default_locale': on_default_locale,
-            'announce_form': AnnouncementForm(),
-            'announcements': Announcement.get_for_locale_name(current_locale),
-            'product': product,
-            'products': Product.objects.filter(visible=True),
-        }
+    data = {
+        'readouts': SortedDict((slug, class_(request, locale=locale,
+                                             product=product))
+                               for slug, class_ in readouts.iteritems()
+                               if class_.should_show_to(request)),
+        'default_locale': settings.WIKI_DEFAULT_LANGUAGE,
+        'default_locale_name': (
+            LOCALES[settings.WIKI_DEFAULT_LANGUAGE].native),
+        'current_locale': current_locale,
+        'current_locale_name': LOCALES[current_locale].native,
+        'request_locale_name': LOCALES[request.LANGUAGE_CODE].native,
+        'is_watching_default_approved': (
+            ApproveRevisionInLocaleEvent.is_notifying(
+                request.user, **default_kwargs)),
+        'is_watching_other_approved': (
+            None if on_default_locale
+            else ApproveRevisionInLocaleEvent.is_notifying(
+                request.user, **locale_kwargs)),
+        'is_watching_default_locale': (
+            ReviewableRevisionInLocaleEvent.is_notifying(
+                request.user, **default_kwargs)),
+        'is_watching_other_locale': (
+            None if on_default_locale
+            else ReviewableRevisionInLocaleEvent.is_notifying(
+                request.user, **locale_kwargs)),
+        'is_watching_default_ready': (
+            ReadyRevisionEvent.is_notifying(request.user, **ready_kwargs)),
+        'on_default_locale': on_default_locale,
+        'announce_form': AnnouncementForm(),
+        'announcements': Announcement.get_for_locale_name(current_locale),
+        'product': product,
+        'products': Product.objects.filter(visible=True),
+    }
     if extra_data:
         data.update(extra_data)
     return render(request, 'dashboards/' + template, data)

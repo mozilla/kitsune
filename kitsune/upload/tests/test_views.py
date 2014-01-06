@@ -167,19 +167,15 @@ class UploadImageTestCase(TestCase):
 
     def test_upload_long_filename(self):
         """Uploading an image with a filename that's too long fails."""
-        with open('kitsune/upload/tests/media/a_really_long_filename_worth_'
-                  'more_than_250_characters__a_really_long_filename_worth_'
-                  'more_than_250_characters__a_really_long_filename_worth_'
-                  'more_than_250_characters__a_really_long_filename_worth_'
-                  'more_than_250_characters__a_really_long_filename_yes_.jpg') \
-            as f:
+        path = 'kitsune/upload/tests/media/' + 'long_file_name' * 17 + '.jpg'
+        with open(path) as f:
             r = self._make_post_request(image=f)
 
         eq_(400, r.status_code)
         json_r = json.loads(r.content)
         eq_('error', json_r['status'])
         eq_('Invalid or no image received.', json_r['message'])
-        eq_(MSG_IMAGE_LONG % {'length': 251,
+        eq_(MSG_IMAGE_LONG % {'length': 242,
                               'max': settings.MAX_FILENAME_LENGTH},
             json_r['errors']['image'][0])
 

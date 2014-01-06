@@ -1,3 +1,5 @@
+import re
+
 from django.conf import settings
 
 from nose.tools import eq_
@@ -424,8 +426,7 @@ class TestWikiInclude(TestCase):
         # boo.content_parsed is something like <p>Paper </p><p>Wooden
         # [Recursive inclusion of "Boo"] Bats\n</p> Cups\n<p></p>.
         eq_('Paper Wooden %s Bats Cups' % recursion_message,
-            boo.content_parsed.replace('</p>', '').replace('<p>',
-            '').replace('\n', ''))
+            re.sub(r'</?p>|\n', '', boo.content_parsed))
 
 
 class TestWikiVideo(TestCase):
@@ -459,8 +460,7 @@ class TestWikiVideo(TestCase):
             # This is the version that Mike and I get.
             (u'\n          <source src="{0}" type="video/webm">'
              u'\n          <source src="{1}" type="video/ogg">'
-             u'\n      </source></source>'.format(v.webm.url, v.ogv.url))
-            ]
+             u'\n      </source></source>'.format(v.webm.url, v.ogv.url))]
 
         eq_(1, len(doc('video')))
         eq_(2, len(doc('source')))
@@ -566,10 +566,12 @@ class ForWikiTests(TestCase):
 
     def test_nested(self):
         """{for} tags should be nestable."""
-        parsed_eq('<div class="for" data-for="mac"><p>Joe</p>'
+        parsed_eq('<div class="for" data-for="mac">'
+                  '<p>Joe</p>'
                   '<p>Red <span class="for"><span class="for">riding'
-                      '</span> hood</span></p>'
-                  '<p>Blow</p></div>',
+                  '</span> hood</span></p>'
+                  '<p>Blow</p>'
+                  '</div>',
 
                   '{for mac}\n'
                   'Joe\n'
@@ -618,10 +620,10 @@ class ForWikiTests(TestCase):
     def test_boolean_attr(self):
         """Make sure empty attributes don't raise exceptions."""
         parsed_eq('<p><video controls height="120">'
-                    '<source src="/some/path/file.ogv" type="video/ogv">'
+                  '  <source src="/some/path/file.ogv" type="video/ogv">'
                   '</video></p>',
                   '<p><video controls="" height="120">'
-                    '<source src="/some/path/file.ogv" type="video/ogv">'
+                  '  <source src="/some/path/file.ogv" type="video/ogv">'
                   '</video></p>')
 
     def test_adjacent_blocks(self):
@@ -939,8 +941,7 @@ class WhatLinksHereTests(TestCase):
         d3 = document(title='D3', save=True)
         r3_old = revision(document=d3, content='[[D1]]', is_approved=True,
                           save=True)
-        r3_new = revision(document=d3, content='[[D2]]', is_approved=True,
-                          save=True)
+        revision(document=d3, content='[[D2]]', is_approved=True, save=True)
 
         # This could cause stale data
         r3_old.content_parsed

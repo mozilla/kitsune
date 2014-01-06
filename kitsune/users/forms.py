@@ -96,7 +96,7 @@ class BrowserIDSignupForm(forms.ModelForm):
         _check_username(username)
         return self.cleaned_data
 
-    def __init__(self,  request=None, *args, **kwargs):
+    def __init__(self, request=None, *args, **kwargs):
         super(BrowserIDSignupForm, self).__init__(request, auto_id='id_for_%s',
                                                   *args, **kwargs)
 
@@ -113,7 +113,7 @@ class RegisterForm(forms.ModelForm):
         label=_lazy(u'Username:'), max_length=30, min_length=4,
         regex=r'^[\w.+-]+$',
         help_text=_lazy(u'Required. 30 characters or fewer. Letters, digits '
-                         'and ./+/- only.'),
+                        u'and ./+/- only.'),
         error_messages={'invalid': USERNAME_INVALID,
                         'required': USERNAME_REQUIRED,
                         'min_length': USERNAME_SHORT,
@@ -134,7 +134,7 @@ class RegisterForm(forms.ModelForm):
         widget=forms.PasswordInput(render_value=False),
         error_messages={'required': PASSWD2_REQUIRED},
         help_text=_lazy(u'Enter the same password as '
-                         'above, for verification.'))
+                        u'above, for verification.'))
 
     interested = forms.BooleanField(required=False)
 
@@ -163,7 +163,7 @@ class RegisterForm(forms.ModelForm):
                                           'already exists.'))
         return email
 
-    def __init__(self,  request=None, *args, **kwargs):
+    def __init__(self, request=None, *args, **kwargs):
         super(RegisterForm, self).__init__(request, auto_id='id_for_%s',
                                            *args, **kwargs)
 
@@ -377,11 +377,11 @@ class PasswordResetForm(DjangoPasswordResetForm):
         return email
 
     def save(self, domain_override=None,
-         subject_template_name='registration/password_reset_subject.txt',
-         text_template=None,
-         html_template=None,
-         use_https=False, token_generator=default_token_generator,
-         from_email=None, request=None):
+             subject_template_name='registration/password_reset_subject.txt',
+             text_template=None,
+             html_template=None,
+             use_https=False, token_generator=default_token_generator,
+             from_email=None, request=None):
         """
         Based off of django's but uses jingo and handles html and plain-text
         emails

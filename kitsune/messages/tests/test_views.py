@@ -118,12 +118,12 @@ class DeleteMessageTests(TestCase):
 
 class OutboxTests(TestCase):
     client_class = LocalizingClient
+
     def setUp(self):
         super(OutboxTests, self).setUp()
         self.user1 = user(save=True)
         self.user2 = user(save=True)
         self.client.login(username=self.user1.username, password='testpass')
-
 
     def test_message_without_recipients(self):
         OutboxMessage.objects.create(sender=self.user1, message='foo')

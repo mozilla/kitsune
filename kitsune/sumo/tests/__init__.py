@@ -113,12 +113,12 @@ class MigrationTests(TestCase):
             engines = contents.count('ENGINE=InnoDB')
             encodings = (contents.count('CHARSET=utf8') +
                          contents.count('CHARACTER SET utf8'))
-            assert engines >= creates, ("There weren't as many "
-                'occurrences of "ENGINE=InnoDB" as of "CREATE TABLE" in '
-                'migration %s.' % filename)
-            assert encodings >= creates, ("There weren't as many "
-                'UTF-8 declarations as "CREATE TABLE" occurrences in '
-                'migration %s.' % filename)
+            assert engines >= creates, (
+                "There weren't as many occurrences of 'ENGINE=InnoDB' as "
+                "of 'CREATE TABLE' in migration %s." % filename)
+            assert encodings >= creates, (
+                "There weren't as many UTF-8 declarations as"
+                "'CREATE TABLE' occurrences in migration %s." % filename)
 
 
 class MobileTestCase(TestCase):

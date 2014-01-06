@@ -1,6 +1,3 @@
-from collections import namedtuple
-from itertools import chain
-
 from tower import ugettext_lazy as _lazy
 
 # Wiki configuration.
@@ -25,20 +22,20 @@ SIGNIFICANCES = [
 ]
 
 SIGNIFICANCES_HELP = {
-    TYPO_SIGNIFICANCE:
-        _lazy(u'These minor changes are not important for localizers and '
-               'they will not be notified.'),
-    MEDIUM_SIGNIFICANCE:
-        _lazy(u'This will notify localizers and translations will be marked '
-              'as "needing updates" on dashboards. Most '
-              'changes&mdash;updating an image, fixing {for} markup, adding '
-              'or removing non-critical sections&mdash;should use this.'),
-    MAJOR_SIGNIFICANCE:
-        _lazy(u'This will notify localizers and translations will be marked '
-              '"out of date" on dashboards. Translations will show a warning '
-              'to users that they are out of date and that the English '
-              'version is the most accurate. Use this when the old '
-              'instructions are completely unusable.'),
+    TYPO_SIGNIFICANCE: _lazy(
+        u'These minor changes are not important for localizers and '
+        u'they will not be notified.'),
+    MEDIUM_SIGNIFICANCE: _lazy(
+        u'This will notify localizers and translations will be marked as '
+        u'"needing updates" on dashboards. Most changes&mdash;updating an '
+        u'image, fixing {for} markup, adding or removing non-critical '
+        u'sections&mdash;should use this.'),
+    MAJOR_SIGNIFICANCE: _lazy(
+        u'This will notify localizers and translations will be marked '
+        u'"out of date" on dashboards. Translations will show a warning '
+        u'to users that they are out of date and that the English '
+        u'version is the most accurate. Use this when the old '
+        u'instructions are completely unusable.'),
 }
 
 TROUBLESHOOTING_CATEGORY = 10

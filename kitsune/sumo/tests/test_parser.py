@@ -129,8 +129,7 @@ class GetObjectFallbackTests(TestCase):
 
         """
         revision(document=document(title='target', save=True),
-                              content='O hai.',
-                              is_approved=True).save()
+                 content='O hai.', is_approved=True, save=True)
         redirect_rev = revision(document=document(title='redirect', save=True),
                                 content='REDIRECT [[target]]',
                                 is_approved=True,
@@ -208,7 +207,7 @@ class TestWikiParser(TestCase):
         eq_({'found': True, 'url': '/en-US/kb/installing-firefox',
              'text': 'Installing Firefox'},
             _get_wiki_link('Installing Firefox',
-                         locale=settings.WIKI_DEFAULT_LANGUAGE))
+                           locale=settings.WIKI_DEFAULT_LANGUAGE))
 
     def test_showfor(self):
         """<showfor> tags should be escaped, not obeyed."""

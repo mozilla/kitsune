@@ -47,7 +47,6 @@ class SessionMiddleware(object):
                                           ssl_verify=True)
             return
 
-
         verifier = request.GET.get('oauth_verifier')
         if verifier:
             # We are completing an OAuth login

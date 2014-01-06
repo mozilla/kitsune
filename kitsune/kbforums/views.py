@@ -11,11 +11,11 @@ from statsd import statsd
 
 from kitsune import kbforums
 from kitsune.access.decorators import permission_required, login_required
-from kitsune.kbforums.events import (NewPostEvent, NewThreadEvent,
-                             NewPostInLocaleEvent, NewThreadInLocaleEvent)
+from kitsune.kbforums.events import (
+    NewPostEvent, NewThreadEvent, NewPostInLocaleEvent, NewThreadInLocaleEvent)
 from kitsune.kbforums.feeds import ThreadsFeed, PostsFeed
-from kitsune.kbforums.forms import (ReplyForm, NewThreadForm,
-                            EditThreadForm, EditPostForm)
+from kitsune.kbforums.forms import (
+    ReplyForm, NewThreadForm, EditThreadForm, EditPostForm)
 from kitsune.kbforums.models import Thread, Post
 from kitsune.lib.sumo_locales import LOCALES
 from kitsune.sumo.urlresolvers import reverse
@@ -182,7 +182,7 @@ def new_thread(request, document_slug):
                                 content=form.cleaned_data['content'])
         elif not _is_ratelimited(request):
             thread = doc.thread_set.create(creator=request.user,
-                                             title=form.cleaned_data['title'])
+                                           title=form.cleaned_data['title'])
             thread.save()
             statsd.incr('kbforums.thread')
             post = thread.new_post(creator=request.user,
@@ -431,7 +431,7 @@ def locale_discussions(request):
                         per_page=kbforums.THREADS_PER_PAGE)
     is_watching_locale = (request.user.is_authenticated() and
                           NewThreadInLocaleEvent.is_notifying(
-                            request.user, locale=request.LANGUAGE_CODE))
+                              request.user, locale=request.LANGUAGE_CODE))
     return render(request, 'kbforums/discussions.html', {
         'locale_name': locale_name, 'threads': threads_,
         'desc_toggle': desc_toggle,

@@ -10,7 +10,7 @@ from pyquery import PyQuery as pq
 from kitsune.sumo.tests import TestCase
 from kitsune.users.helpers import (
     profile_url, profile_avatar, public_email, display_name, user_list)
-from kitsune.users.tests import profile, user
+from kitsune.users.tests import profile
 
 
 class HelperTestCase(TestCase):
@@ -43,15 +43,15 @@ class HelperTestCase(TestCase):
 
     def test_public_email(self):
         eq_(u'<span class="email">'
-             '&#109;&#101;&#64;&#100;&#111;&#109;&#97;&#105;&#110;&#46;&#99;'
-             '&#111;&#109;</span>', public_email('me@domain.com'))
+            u'&#109;&#101;&#64;&#100;&#111;&#109;&#97;&#105;&#110;&#46;&#99;'
+            u'&#111;&#109;</span>', public_email('me@domain.com'))
         eq_(u'<span class="email">'
-             '&#110;&#111;&#116;&#46;&#97;&#110;&#46;&#101;&#109;&#97;&#105;'
-             '&#108;</span>', public_email('not.an.email'))
+            u'&#110;&#111;&#116;&#46;&#97;&#110;&#46;&#101;&#109;&#97;&#105;'
+            u'&#108;</span>', public_email('not.an.email'))
 
     def test_display_name(self):
         eq_(u'testuser', display_name(self.u))
-        p = profile(user=self.u, name=u'Test User')
+        profile(user=self.u, name=u'Test User')
         eq_(u'Test User', display_name(self.u))
 
     def test_user_list(self):

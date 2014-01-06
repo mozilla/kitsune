@@ -32,7 +32,8 @@ a post
 
 ========
 
-To view this post on the site, click the following link, or paste it into your browser's location bar:
+To view this post on the site, click the following link, or paste it into \
+your browser's location bar:
 
 https://testserver/en-US/forums/{forum_slug}/{thread_id}#post-{post_id}
 
@@ -42,7 +43,8 @@ https://testserver/en-US/unsubscribe/"""
 
 NEW_THREAD_EMAIL = u"""New thread: {thread}
 
-User {username} has posted a new thread in a forum you're watching. Here is the thread:
+User {username} has posted a new thread in a forum you're watching. Here is \
+the thread:
 
 ========
 
@@ -50,7 +52,8 @@ a post
 
 ========
 
-To view this post on the site, click the following link, or paste it into your browser's location bar:
+To view this post on the site, click the following link, or paste it into \
+your browser's location bar:
 
 https://testserver/en-US/forums/{forum_slug}/{thread_id}
 
@@ -94,10 +97,10 @@ class NotificationsTests(ForumTestCase):
         # Watch exists or not, depending on watch.
         if turn_on:
             assert NewPostEvent.is_notifying(user, thread), (
-                   'NewPostEvent should be notifying.')
+                'NewPostEvent should be notifying.')
         else:
             assert not NewPostEvent.is_notifying(user, thread), (
-                   'NewPostEvent should not be notifying.')
+                'NewPostEvent should not be notifying.')
 
     def _toggle_watch_forum_as(self, forum, user, turn_on=True):
         """Watch a forum and return it."""
@@ -108,10 +111,10 @@ class NotificationsTests(ForumTestCase):
         # Watch exists or not, depending on watch.
         if turn_on:
             assert NewThreadEvent.is_notifying(user, forum), (
-                   'NewThreadEvent should be notifying.')
+                'NewThreadEvent should be notifying.')
         else:
             assert not NewPostEvent.is_notifying(user, forum), (
-                   'NewThreadEvent should not be notifying.')
+                'NewThreadEvent should not be notifying.')
 
     @mock.patch.object(Site.objects, 'get_current')
     def test_watch_thread_then_reply(self, get_current):

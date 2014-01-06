@@ -276,15 +276,15 @@ class DocumentTests(TestCase):
         title2 = 'title2'
 
         redirect_to = revision(
-                    document=document(title=title1, locale='es', save=True),
-                    is_approved=True,
-                    save=True)
+            document=document(title=title1, locale='es', save=True),
+            is_approved=True,
+            save=True)
 
         redirector = revision(
-                    document=document(title=title2, locale='es', save=True),
-                    content=u'REDIRECT [[%s]]' % redirect_to.document.title,
-                    is_approved=True,
-                    save=True)
+            document=document(title=title2, locale='es', save=True),
+            content=u'REDIRECT [[%s]]' % redirect_to.document.title,
+            is_approved=True,
+            save=True)
 
         eq_(redirect_to.document.get_absolute_url(),
             redirector.document.redirect_url())
@@ -427,7 +427,7 @@ class LocalizableOrLatestRevisionTests(TestCase):
                             reviewed=datetime.now(),
                             save=True)
         eq_(rejected, rejected.document.localizable_or_latest_revision(
-                          include_rejected=True))
+            include_rejected=True))
 
     def test_non_localizable(self):
         """When document isn't localizable, ignore is_ready_for_l10n."""
@@ -491,9 +491,13 @@ class RedirectCreationTests(TestCase):
     def _test_collision_avoidance(self, attr, other_attr, template):
         """When creating redirects, dodge existing docs' titles and slugs."""
         # Create a doc called something like Whatever Redirect 1:
-        document(locale=self.d.locale,
-                **{other_attr: template % dict(old=getattr(self.d, other_attr),
-                                               number=1)}).save()
+        kwargs = {
+            other_attr: template % {
+                'old': getattr(self.d, other_attr),
+                'number': 1
+            }
+        }
+        document(locale=self.d.locale, **kwargs).save()
 
         # Trigger creation of a redirect of a new title or slug:
         setattr(self.d, attr, 'new')

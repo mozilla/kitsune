@@ -3,7 +3,8 @@ from django.conf.urls import patterns, url
 from kitsune.sumo.views import redirect_to
 
 
-urlpatterns = patterns('kitsune.landings.views',
+urlpatterns = patterns(
+    'kitsune.landings.views',
     url(r'^$', 'desktop_or_mobile', name='home.default'),
     url(r'^home$', 'home', name='home'),
 

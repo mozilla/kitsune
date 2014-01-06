@@ -1,10 +1,8 @@
-import json
 import re
 
 from django import forms
 from django.conf import settings
 from django.template.defaultfilters import slugify
-from django.utils.encoding import smart_str
 
 from tower import ugettext_lazy as _lazy
 
@@ -161,13 +159,13 @@ class DocumentForm(forms.ModelForm):
         # Products are required for en-US
         products = c.get('products')
         if (locale == settings.WIKI_DEFAULT_LANGUAGE and
-            (not products or len(products) < 1)):
+                (not products or len(products) < 1)):
             raise forms.ValidationError(PRODUCT_REQUIRED)
 
         # Topics are required for en-US
         topics = c.get('topics')
         if (locale == settings.WIKI_DEFAULT_LANGUAGE and
-            (not topics or len(topics) < 1)):
+                (not topics or len(topics) < 1)):
             raise forms.ValidationError(TOPIC_REQUIRED)
 
         return c
@@ -204,20 +202,20 @@ class RevisionForm(forms.ModelForm):
                                  help_text=_lazy(u'Affects search results'))
 
     summary = StrippedCharField(
-                min_length=5, max_length=1000, widget=forms.Textarea(),
-                label=_lazy(u'Search result summary:'),
-                help_text=_lazy(u'Only displayed on search results page'),
-                error_messages={'required': SUMMARY_REQUIRED,
-                                'min_length': SUMMARY_SHORT,
-                                'max_length': SUMMARY_LONG})
+        min_length=5, max_length=1000, widget=forms.Textarea(),
+        label=_lazy(u'Search result summary:'),
+        help_text=_lazy(u'Only displayed on search results page'),
+        error_messages={'required': SUMMARY_REQUIRED,
+                        'min_length': SUMMARY_SHORT,
+                        'max_length': SUMMARY_LONG})
 
     content = StrippedCharField(
-                min_length=5, max_length=100000,
-                label=_lazy(u'Content:'),
-                widget=forms.Textarea(),
-                error_messages={'required': CONTENT_REQUIRED,
-                                'min_length': CONTENT_SHORT,
-                                'max_length': CONTENT_LONG})
+        min_length=5, max_length=100000,
+        label=_lazy(u'Content:'),
+        widget=forms.Textarea(),
+        error_messages={'required': CONTENT_REQUIRED,
+                        'min_length': CONTENT_SHORT,
+                        'max_length': CONTENT_LONG})
 
     comment = StrippedCharField(required=False, label=_lazy(u'Comment:'))
 
@@ -264,11 +262,11 @@ class ReviewForm(forms.Form):
 
     _widget = forms.RadioSelect(renderer=RadioFieldRendererWithHelpText)
     significance = forms.TypedChoiceField(
-                    label=_lazy(u'Significance:'),
-                    choices=SIGNIFICANCES,
-                    initial=SIGNIFICANCES[1][0],
-                    required=False, widget=_widget,
-                    coerce=int, empty_value=SIGNIFICANCES[1][0])
+        label=_lazy(u'Significance:'),
+        choices=SIGNIFICANCES,
+        initial=SIGNIFICANCES[1][0],
+        required=False, widget=_widget,
+        coerce=int, empty_value=SIGNIFICANCES[1][0])
 
     is_ready_for_localization = forms.BooleanField(
         initial=False,

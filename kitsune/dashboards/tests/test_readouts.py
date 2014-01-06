@@ -172,7 +172,7 @@ class OverviewTests(TestCase):
     def test_not_counting_untranslated(self):
         """Translations with no approved revisions shouldn't count as done.
         """
-        t = translated_revision(is_approved=False, save=True)
+        translated_revision(is_approved=False, save=True)
         overview = overview_rows('de')
         eq_(0, overview['most-visited']['numerator'])
         eq_(0, overview['all']['numerator'])
@@ -192,7 +192,7 @@ class OverviewTests(TestCase):
 
     def test_redirects_are_ignored(self):
         """Verify that redirects aren't counted in the overview."""
-        t = translated_revision(is_approved=True, save=True)
+        translated_revision(is_approved=True, save=True)
 
         eq_(1, overview_rows('de')['all']['numerator'])
 
@@ -259,7 +259,7 @@ class MostVisitedDefaultLanguageTests(ReadoutTestCase):
         locale = settings.WIKI_DEFAULT_LANGUAGE
         p = product(title='Firefox', slug='firefox', save=True)
         d = document(save=True)
-        r = revision(document=d, is_approved=True, save=True)
+        revision(document=d, is_approved=True, save=True)
 
         # There shouldn't be any rows yet.
         eq_(0, len(self.rows(locale=locale, product=p)))
@@ -457,7 +457,7 @@ class MostVisitedTranslationsTests(ReadoutTestCase):
 
     def test_spam(self):
         """Don't offer unapproved (often spam) articles for translation."""
-        r = revision(is_approved=False, save=True)
+        revision(is_approved=False, save=True)
         eq_([], MostVisitedTranslationsReadout(MockRequest()).rows())
 
     def test_consider_max_significance(self):
@@ -541,10 +541,10 @@ class TemplateTranslationsTests(ReadoutTestCase):
         """Test the product filtering of the readout."""
         p = product(title='Firefox', slug='firefox', save=True)
         d = document(title='Template:test', save=True)
-        untranslated = revision(is_approved=True,
-                                is_ready_for_localization=True,
-                                document=d,
-                                save=True)
+        revision(is_approved=True,
+                 is_ready_for_localization=True,
+                 document=d,
+                 save=True)
 
         # There shouldn't be any rows yet.
         eq_(0, len(self.rows(product=p)))
@@ -571,20 +571,20 @@ class UnreadyTests(ReadoutTestCase):
         """Don't show articles with unreviewed or rejected revs after latest
         """
         d = document(save=True)
-        ready = revision(document=d,
-                         is_approved=True,
-                         is_ready_for_localization=True,
-                         save=True)
-        unreviewed = revision(document=d,
-                              is_approved=False,
-                              reviewed=None,
-                              is_ready_for_localization=False,
-                              save=True)
-        rejected = revision(document=d,
-                            is_approved=False,
-                            reviewed=datetime.now(),
-                            is_ready_for_localization=False,
-                            save=True)
+        revision(document=d,
+                 is_approved=True,
+                 is_ready_for_localization=True,
+                 save=True)
+        revision(document=d,
+                 is_approved=False,
+                 reviewed=None,
+                 is_ready_for_localization=False,
+                 save=True)
+        revision(document=d,
+                 is_approved=False,
+                 reviewed=datetime.now(),
+                 is_ready_for_localization=False,
+                 save=True)
         eq_([], self.titles())
 
     def test_first_rev(self):
@@ -608,11 +608,11 @@ class UnreadyTests(ReadoutTestCase):
         ready = revision(is_approved=True,
                          is_ready_for_localization=True,
                          save=True)
-        insignificant = revision(document=ready.document,
-                                 is_approved=True,
-                                 is_ready_for_localization=False,
-                                 significance=TYPO_SIGNIFICANCE,
-                                 save=True)
+        revision(document=ready.document,
+                 is_approved=True,
+                 is_ready_for_localization=False,
+                 significance=TYPO_SIGNIFICANCE,
+                 save=True)
         eq_([], self.titles())
 
     def test_significant_revs(self):
@@ -621,11 +621,11 @@ class UnreadyTests(ReadoutTestCase):
         ready = revision(is_approved=True,
                          is_ready_for_localization=True,
                          save=True)
-        significant = revision(document=ready.document,
-                               is_approved=True,
-                               is_ready_for_localization=False,
-                               significance=MEDIUM_SIGNIFICANCE,
-                               save=True)
+        revision(document=ready.document,
+                 is_approved=True,
+                 is_ready_for_localization=False,
+                 significance=MEDIUM_SIGNIFICANCE,
+                 save=True)
         eq_([ready.document.title], self.titles())
 
     def test_by_product(self):
@@ -634,11 +634,11 @@ class UnreadyTests(ReadoutTestCase):
         ready = revision(is_approved=True,
                          is_ready_for_localization=True,
                          save=True)
-        significant = revision(document=ready.document,
-                               is_approved=True,
-                               is_ready_for_localization=False,
-                               significance=MEDIUM_SIGNIFICANCE,
-                               save=True)
+        revision(document=ready.document,
+                 is_approved=True,
+                 is_ready_for_localization=False,
+                 significance=MEDIUM_SIGNIFICANCE,
+                 save=True)
 
         # There shouldn't be any rows yet.
         eq_(0, len(self.rows(product=p)))
@@ -695,7 +695,7 @@ class CannedResponsesTests(ReadoutTestCase):
     def test_translation_state(self):
         eng_doc = document(category=CANNED_RESPONSES_CATEGORY, save=True)
         eng_rev = revision(is_approved=True, is_ready_for_localization=True,
-                 document=eng_doc, save=True)
+                           document=eng_doc, save=True)
 
         eq_('untranslated', self.row()['status_class'])
 

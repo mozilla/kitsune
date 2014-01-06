@@ -172,7 +172,7 @@ class Prefixer(object):
 
         first_part = path.partition('/')[0]
         if (first_part not in settings.SUPPORTED_NONLOCALES and
-            first_part not in settings.LANGUAGE_URL_MAP):
+                first_part not in settings.LANGUAGE_URL_MAP):
             locale = self.locale if self.locale else self.get_language()
             url_parts.append(locale)
 

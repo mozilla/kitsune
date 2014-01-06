@@ -63,7 +63,7 @@ def update_l10n_coverage_metrics():
             # % of all articles
             all_ = rows['all']
             try:
-                percent = 100.0 * float(all_['numerator']) / all_['denominator']
+                percent = 100 * float(all_['numerator']) / all_['denominator']
             except ZeroDivisionError:
                 percent = 0.0
 
@@ -253,10 +253,10 @@ def cache_most_unhelpful_kb_articles():
     for entry in sorted_final:
         doc = Document.objects.get(pk=entry[0])
         redis.rpush(REDIS_KEY, (u'%s::%s::%s::%s::%s::%s::%s' %
-                                  (entry[0],  # Document ID
-                                   entry[1],  # Total Votes
-                                   entry[2],  # Current Percentage
-                                   entry[3],  # Difference in Percentage
-                                   1 - (entry[1] / max_total),  # Graph Color
-                                   doc.slug,  # Document slug
-                                   doc.title)))  # Document title
+                                (entry[0],  # Document ID
+                                 entry[1],  # Total Votes
+                                 entry[2],  # Current Percentage
+                                 entry[3],  # Difference in Percentage
+                                 1 - (entry[1] / max_total),  # Graph Color
+                                 doc.slug,  # Document slug
+                                 doc.title)))  # Document title

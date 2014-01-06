@@ -6,7 +6,7 @@ from kitsune.flagit.tests import TestCaseBase
 from kitsune.questions.models import Answer
 from kitsune.questions.tests import question, answer
 from kitsune.sumo.tests import post, get
-from kitsune.users.tests import user,add_permission
+from kitsune.users.tests import user, add_permission
 
 
 class FlaggedQueueTestCase(TestCaseBase):

@@ -39,8 +39,7 @@ def context_dict(revision, ready_for_l10n=False, revision_approved=False):
                 difflib.unified_diff(
                     l10n.order_by('-created')[1].content.splitlines(1),
                     revision.content.splitlines(1),
-                    fromfile=fromfile, tofile=tofile)
-                ),
+                    fromfile=fromfile, tofile=tofile)),
             ALLOWED_TAGS, ALLOWED_ATTRIBUTES)
     elif revision_approved and approved.count() > 1:
         doc = revision.document
@@ -54,8 +53,7 @@ def context_dict(revision, ready_for_l10n=False, revision_approved=False):
                 difflib.unified_diff(
                     approved_rev.content.splitlines(1),
                     revision.content.splitlines(1),
-                    fromfile=fromfile, tofile=tofile)
-                ),
+                    fromfile=fromfile, tofile=tofile)),
             ALLOWED_TAGS, ALLOWED_ATTRIBUTES)
     elif revision.document.current_revision is not None:
         fromfile = u'[%s] %s #%s' % (revision.document.locale,
@@ -70,8 +68,7 @@ def context_dict(revision, ready_for_l10n=False, revision_approved=False):
                 difflib.unified_diff(
                     revision.document.current_revision.content.splitlines(1),
                     revision.content.splitlines(1),
-                    fromfile=fromfile, tofile=tofile)
-                ),
+                    fromfile=fromfile, tofile=tofile)),
             ALLOWED_TAGS, ALLOWED_ATTRIBUTES)
 
     return {
@@ -214,8 +211,7 @@ class ReviewableRevisionInLocaleEvent(_RevisionConstructor,
         subject = _lazy(u'{title} is ready for review ({creator})')
         url = reverse('wiki.review_revision',
                       locale=document.locale,
-                      args=[document.slug,
-                      revision.id])
+                      args=[document.slug, revision.id])
 
         context = context_dict(revision)
         context['revision_url'] = url
@@ -248,7 +244,7 @@ class ReadyRevisionEvent(_RevisionConstructor, _ProductFilter, Event):
 
         context = context_dict(revision, ready_for_l10n=True)
         context['l10n_url'] = django_reverse('wiki.select_locale',
-                                        args=[document.slug])
+                                             args=[document.slug])
         context['title'] = document.title
 
         return email_utils.emails_with_users_and_watches(
@@ -307,7 +303,7 @@ class ApprovedOrReadyUnion(EventUnion):
                 # TODO: Expose all watches
                 c['watch'] = watches[0]
                 c['l10n_url'] = django_reverse('wiki.select_locale',
-                                          args=[document.slug])
+                                               args=[document.slug])
 
                 subject = _(u'{title} has a revision ready for '
                             'localization')

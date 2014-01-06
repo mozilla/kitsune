@@ -109,11 +109,12 @@ def details(request):
     if daterange == '1w':
         count_func = mgr.daily_counts
     for t in KarmaManager.action_types.keys():
-        counts[t], time_units = count_func(daterange, type=t, **form.cleaned_data)
+        counts[t], time_units = count_func(daterange, type=t,
+                                           **form.cleaned_data)
 
     return {
         'success': True,
         'time_units': time_units,
         'counts': counts,
         'userid': userid
-        }
+    }

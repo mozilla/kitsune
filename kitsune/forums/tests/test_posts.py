@@ -137,8 +137,7 @@ class PostTestCase(ForumTestCase):
         test_data = ((t.replies, 1),  # Test default
                      (50, 3),  # Test a large number
                      (19, 1),  # Test off-by-one error, low
-                     (20, 2),  # Test off-by-one error, high
-                    )
+                     (20, 2))  # Test off-by-one error, high
         for replies, pages in test_data:
             t.replies = replies
             eq_(t.last_page, pages)

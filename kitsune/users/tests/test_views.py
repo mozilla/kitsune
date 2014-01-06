@@ -15,7 +15,7 @@ from tidings.tests import watch
 from kitsune.questions.tests import question
 from kitsune.questions.models import Question
 from kitsune.sumo.tests import (TestCase, LocalizingClient,
-    send_mail_raise_smtp)
+                                send_mail_raise_smtp)
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users import ERROR_SEND_EMAIL
 from kitsune.users.models import (

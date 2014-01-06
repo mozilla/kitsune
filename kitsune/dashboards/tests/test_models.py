@@ -66,7 +66,12 @@ PAGEVIEWS_BY_DOCUMENT_RESPONSE = {
     u'itemsPerPage': 10,
     u'totalsForAllResults': {
         u'ga:pageviews': u'164293'},
-    u'nextLink': u'https://www.googleapis.com/analytics/v3/data/ga?ids=ga:1234567890&dimensions=ga:pagePath&metrics=ga:pageviews&filters=ga:pagePathLevel2%3D%3D/kb/;ga:pagePathLevel1%3D%3D/en-US/&start-date=2013-01-17&end-date=2013-01-17&start-index=11&max-results=10',
+    u'nextLink': (
+        u'https://www.googleapis.com/analytics/v3/data/ga'
+        u'?ids=ga:1234567890&dimensions=ga:pagePath&metrics=ga:pageviews'
+        u'&filters=ga:pagePathLevel2%3D%3D/kb/;ga:pagePathLevel1%3D%3D/en-US/'
+        u'&start-date=2013-01-17&end-date=2013-01-17&start-index=11'
+        u'&max-results=10'),
     u'query': {
         u'max-results': 10,
         u'dimensions': u'ga:pagePath',
@@ -77,5 +82,15 @@ PAGEVIEWS_BY_DOCUMENT_RESPONSE = {
         u'filters': u'ga:pagePathLevel2==/kb/;ga:pagePathLevel1==/en-US/',
         u'end-date': u'2013-01-17'},
     u'totalResults': 10,
-    u'id': u'https://www.googleapis.com/analytics/v3/data/ga?ids=ga:1234567890&dimensions=ga:pagePath&metrics=ga:pageviews&filters=ga:pagePathLevel2%3D%3D/kb/;ga:pagePathLevel1%3D%3D/en-US/&start-date=2013-01-17&end-date=2013-01-17&start-index=1&max-results=10',
-    u'selfLink': u'https://www.googleapis.com/analytics/v3/data/ga?ids=ga:1234567890&dimensions=ga:pagePath&metrics=ga:pageviews&filters=ga:pagePathLevel2%3D%3D/kb/;ga:pagePathLevel1%3D%3D/en-US/&start-date=2013-01-17&end-date=2013-01-17&start-index=1&max-results=10'}
+    u'id': (
+        u'https://www.googleapis.com/analytics/v3/data/ga'
+        u'?ids=ga:1234567890&dimensions=ga:pagePath&metrics=ga:pageviews'
+        u'&filters=ga:pagePathLevel2%3D%3D/kb/;ga:pagePathLevel1%3D%3D/en-US/'
+        u'&start-date=2013-01-17&end-date=2013-01-17&start-index=1'
+        u'&max-results=10'),
+    u'selfLink': (
+        u'https://www.googleapis.com/analytics/v3/data/ga'
+        u'?ids=ga:1234567890&dimensions=ga:pagePath&metrics=ga:pageviews'
+        u'&filters=ga:pagePathLevel2%3D%3D/kb/;ga:pagePathLevel1%3D%3D/en-US/'
+        u'&start-date=2013-01-17&end-date=2013-01-17&start-index=1'
+        u'&max-results=10')}

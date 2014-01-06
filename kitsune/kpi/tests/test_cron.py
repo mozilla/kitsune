@@ -25,8 +25,8 @@ class CronJobTests(TestCase):
         """Verify the cron job inserts the right rows."""
         visitor_kind = metric_kind(code=VISITORS_METRIC_CODE, save=True)
         visitors.return_value = {'2012-01-13': 42,
-                               '2012-01-14': 193,
-                               '2012-01-15': 33}
+                                 '2012-01-14': 193,
+                                 '2012-01-15': 33}
 
         update_visitors_metric()
 
@@ -191,8 +191,12 @@ SURVEY_GIZMO_EXIT_SURVEY_RESPONSE = """
             "[variable(\\"2-shown\\")]": "1",
             "[variable(\\"7-shown\\")]": "1",
             "contact_id": "100019965",
-            "[variable(\\"STANDARD_USERAGENT\\")]": "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/28.0.1500.72 Safari/537.36",
-            "[question(6)]": "I most often use Chrome to browse because it has a native omni bar, but I really like what you guys are doing and am hoping that Firefox OS will be supported on my smartphone when it\'s released.",
+            "[variable(\\"STANDARD_USERAGENT\\")]": "Mozilla/5.0 (Windows NT 6\
+.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/28.0.1500.72 Safari/5\
+37.36",
+            "[question(6)]": "I most often use Chrome to browse because it has\
+ a native omni bar, but I really like what you guys are doing and am hoping th\
+at Firefox OS will be supported on my smartphone when it\'s released.",
             "[question(4)]": " 9\\r",
             "[variable(\\"STANDARD_GEOREGION\\")]": "00",
             "id": "3970",
@@ -230,14 +234,18 @@ SURVEY_GIZMO_EXIT_SURVEY_RESPONSE = """
             "[variable(\\"2-shown\\")]": "1",
             "[variable(\\"7-shown\\")]": "1",
             "contact_id": "100020010",
-            "[variable(\\"STANDARD_USERAGENT\\")]": "Mozilla/5.0 (Windows NT 5.1; rv:22.0) Gecko/20100101 Firefox/22.0",
-            "[question(6)]": "i know  mozilla firefox has  very experienced team what ever they are doing it is for the mankind and i can simply send best wishes\\r\\nthanks  that u give honour to ordinary people like me",
+            "[variable(\\"STANDARD_USERAGENT\\")]": "Mozilla/5.0 (Windows NT 5\
+.1; rv:22.0) Gecko/20100101 Firefox/22.0",
+            "[question(6)]": "i know  mozilla firefox has  very experienced te\
+am what ever they are doing it is for the mankind and i can simply send best w\
+ishes\\r\\nthanks  that u give honour to ordinary people like me",
             "[question(4)]": " 9\\r",
             "[variable(\\"STANDARD_GEOREGION\\")]": "35",
             "id": "3971",
             "[question(2)]": "No\\n",
             "[variable(\\"PORTAL_RELATIONSHIP\\")]": "",
-            "[variable(\\"STANDARD_REFERER\\")]": "http://in-mg61.mail.yahoo.com/neo/launch",
+            "[variable(\\"STANDARD_REFERER\\")]": "http://in-mg61.mail.yahoo.c\
+om/neo/launch",
             "[variable(\\"STANDARD_RESPONSETIME\\")]": "",
             "sResponseComment": "",
             "datesubmitted": "2013-07-16 01:18:05",
@@ -269,14 +277,18 @@ SURVEY_GIZMO_EXIT_SURVEY_RESPONSE = """
             "[variable(\\"2-shown\\")]": "1",
             "[variable(\\"7-shown\\")]": "1",
             "contact_id": "100020010",
-            "[variable(\\"STANDARD_USERAGENT\\")]": "Mozilla/5.0 (Windows NT 5.1; rv:22.0) Gecko/20100101 Firefox/22.0",
-            "[question(6)]": "i know  mozilla firefox has  very experienced team what ever they are doing it is for the mankind and i can simply send best wishes\\r\\nthanks  that u give honour to ordinary people like me",
+            "[variable(\\"STANDARD_USERAGENT\\")]": "Mozilla/5.0 (Windows NT 5\
+.1; rv:22.0) Gecko/20100101 Firefox/22.0",
+            "[question(6)]": "i know  mozilla firefox has  very experienced te\
+am what ever they are doing it is for the mankind and i can simply send best w\
+ishes\\r\\nthanks  that u give honour to ordinary people like me",
             "[question(4)]": " 9\\r",
             "[variable(\\"STANDARD_GEOREGION\\")]": "35",
             "id": "3971",
             "[question(2)]": "I don't know\\n",
             "[variable(\\"PORTAL_RELATIONSHIP\\")]": "",
-            "[variable(\\"STANDARD_REFERER\\")]": "http://in-mg61.mail.yahoo.com/neo/launch",
+            "[variable(\\"STANDARD_REFERER\\")]": "http://in-mg61.mail.yahoo.c\
+om/neo/launch",
             "[variable(\\"STANDARD_RESPONSETIME\\")]": "",
             "sResponseComment": "",
             "datesubmitted": "2013-07-16 01:18:05",
@@ -308,14 +320,18 @@ SURVEY_GIZMO_EXIT_SURVEY_RESPONSE = """
             "[variable(\\"2-shown\\")]": "1",
             "[variable(\\"7-shown\\")]": "1",
             "contact_id": "100020010",
-            "[variable(\\"STANDARD_USERAGENT\\")]": "Mozilla/5.0 (Windows NT 5.1; rv:22.0) Gecko/20100101 Firefox/22.0",
-            "[question(6)]": "i know  mozilla firefox has  very experienced team what ever they are doing it is for the mankind and i can simply send best wishes\\r\\nthanks  that u give honour to ordinary people like me",
+            "[variable(\\"STANDARD_USERAGENT\\")]": "Mozilla/5.0 (Windows NT 5\
+.1; rv:22.0) Gecko/20100101 Firefox/22.0",
+            "[question(6)]": "i know  mozilla firefox has  very experienced te\
+am what ever they are doing it is for the mankind and i can simply send best w\
+ishes\\r\\nthanks  that u give honour to ordinary people like me",
             "[question(4)]": " 9\\r",
             "[variable(\\"STANDARD_GEOREGION\\")]": "35",
             "id": "3971",
             "[question(2)]": "Yes\\n",
             "[variable(\\"PORTAL_RELATIONSHIP\\")]": "",
-            "[variable(\\"STANDARD_REFERER\\")]": "http://in-mg61.mail.yahoo.com/neo/launch",
+            "[variable(\\"STANDARD_REFERER\\")]": "http://in-mg61.mail.yahoo.c\
+om/neo/launch",
             "[variable(\\"STANDARD_RESPONSETIME\\")]": "",
             "sResponseComment": "",
             "datesubmitted": "2013-07-16 01:18:05",

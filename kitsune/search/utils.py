@@ -30,7 +30,7 @@ class FakeLogger(object):
     def _out(self, level, msg, *args):
         msg = msg % args
         self.stdout.write('%s %-8s: %s\n' % (
-                time.strftime('%H:%M:%S'), level, msg))
+                          time.strftime('%H:%M:%S'), level, msg))
 
     def info(self, msg, *args):
         self._out('INFO', msg, *args)

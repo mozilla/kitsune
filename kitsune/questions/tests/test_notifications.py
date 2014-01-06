@@ -29,7 +29,8 @@ from kitsune.users.tests import user
 # never prepend a locale code unless passed force_locale=True. Thus, these
 # test-emails with locale prefixes are not identical to the ones sent in
 # production.
-ANSWER_EMAIL_TO_ANONYMOUS = """{replier} commented on a Firefox question on testserver:
+ANSWER_EMAIL_TO_ANONYMOUS = """{replier} commented on a Firefox question on \
+testserver:
 
 {title}
 
@@ -42,7 +43,8 @@ See the comment:
 https://testserver/en-US/questions/{question_id}?auth=AUTH#answer-{answer_id}
 
 If this comment is helpful, vote on it:
-https://testserver/en-US/questions/{question_id}/vote/{answer_id}?helpful=&auth=AUTH
+https://testserver/en-US/questions/{question_id}/vote/{answer_id}?helpful=&\
+auth=AUTH
 
 Help other Firefox users by browsing for unsolved questions on testserver:
 https://testserver/questions?filter=unsolved
@@ -61,12 +63,13 @@ ANSWER_EMAIL_TO_ASKER = """Hi {asker},
 {replier} wrote:
 "{content}"
 
-If this doesn't solve your problem, let {replier} know by replying on the website:
+If this doesn't solve your problem, let {replier} know by replying on the \
+website:
 https://testserver/en-US/questions/{question_id}?auth=AUTH#answer-{answer_id}
 
 If this answer solves your problem, please mark it as "solved":"""
-SOLUTION_EMAIL_TO_ANONYMOUS = \
-"""We just wanted to let you know that {replier} has found a solution to a Firefox question that you're following.
+SOLUTION_EMAIL_TO_ANONYMOUS = """We just wanted to let you know that \
+{replier} has found a solution to a Firefox question that you're following.
 
 The question:
 {title}
@@ -75,11 +78,15 @@ was marked as solved by its asker, {asker}.
 
 You can view the solution using the link below.
 
-Did this answer also help you? Did you find another post more helpful? Let other Firefox users know by voting next to the answer.
+Did this answer also help you? Did you find another post more helpful? Let \
+other Firefox users know by voting next to the answer.
 
 https://testserver/en-US/questions/{question_id}#answer-{answer_id}
 
-Did you know that {replier} is a Firefox user just like you? Get started helping other Firefox users by browsing questions at https://testserver/questions?filter=unsolved -- you might just make someone's day!
+Did you know that {replier} is a Firefox user just like you? Get started \
+helping other Firefox users by browsing questions at \
+https://testserver/questions?filter=unsolved -- you might just make someone's \
+day!
 
 --
 Unsubscribe from these emails:
@@ -120,7 +127,7 @@ class NotificationsTests(TestCaseBase):
         self.client.login(username=user.username, password='testpass')
 
         event_cls = (QuestionReplyEvent if event_type == 'reply'
-                                        else QuestionSolvedEvent)
+                     else QuestionSolvedEvent)
         # Make sure 'before' values are the reverse.
         if turn_on:
             assert not event_cls.is_notifying(user, q), (

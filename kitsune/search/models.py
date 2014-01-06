@@ -145,7 +145,7 @@ class SearchMappingType(MappingType, Indexable):
     def morelikethis(cls, id_, s, fields):
         """MoreLikeThis API"""
         return list(MLT(
-                id_, s=s, mlt_fields=fields, min_term_freq=1, min_doc_freq=1))
+            id_, s=s, mlt_fields=fields, min_term_freq=1, min_doc_freq=1))
 
 
 _identity = lambda s: s
@@ -222,11 +222,11 @@ def register_for_indexing(app,
 
         """
         return receiver(
-                signal,
-                sender=sender_class,
-                dispatch_uid='%s.%s.elastic.%s' %
-                             (app, sender_class.__name__, signal_name),
-                weak=False)
+            signal,
+            sender=sender_class,
+            dispatch_uid='%s.%s.elastic.%s' %
+                         (app, sender_class.__name__, signal_name),
+            weak=False)
 
     if m2m:
         # This is an m2m model, so we regstier m2m_chaned and it
@@ -277,7 +277,7 @@ class Record(ModelBase):
     class Meta:
         permissions = (
             ('reindex', 'Can run a full reindexing'),
-            )
+        )
 
     def delta(self):
         """Returns the timedelta"""

@@ -76,7 +76,7 @@ def cors_enabled(origin, methods=['GET']):
             if request.method == 'OPTIONS':
                 # preflight
                 if ('HTTP_ACCESS_CONTROL_REQUEST_METHOD' in request.META and
-                    'HTTP_ACCESS_CONTROL_REQUEST_HEADERS' in request.META):
+                        'HTTP_ACCESS_CONTROL_REQUEST_HEADERS' in request.META):
 
                     response = http.HttpResponse()
                     response['Access-Control-Allow-Methods'] = ", ".join(

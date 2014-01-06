@@ -49,7 +49,7 @@ class PostsTemplateTests(ForumTestCase):
 
         self.client.login(username=u.username, password='testpass')
         res = get(self.client, 'forums.edit_post',
-                 args=[p.thread.forum.slug, p.thread.id, p.id])
+                  args=[p.thread.forum.slug, p.thread.id, p.id])
 
         doc = pq(res.content)
         eq_(len(doc('form.edit-post')), 1)

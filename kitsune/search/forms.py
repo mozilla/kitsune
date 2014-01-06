@@ -6,7 +6,7 @@ from django.forms.util import ValidationError
 
 from tower import ugettext_lazy as _lazy
 
-from kitsune import  search as constants
+from kitsune import search as constants
 from kitsune.forums.models import Forum as DiscussionForum
 from kitsune.lib.sumo_locales import LOCALES
 from kitsune.products.models import Product, Topic

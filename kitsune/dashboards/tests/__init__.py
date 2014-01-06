@@ -1,7 +1,6 @@
 from datetime import date
 
 from kitsune.dashboards.models import WikiMetric, METRIC_CODE_CHOICES
-from kitsune.products.tests import product
 from kitsune.sumo.tests import with_save
 
 

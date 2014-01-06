@@ -18,8 +18,7 @@ from kitsune.sumo.helpers import (
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
 
-from kitsune.users.models import RegistrationProfile, Setting
-from kitsune.users.tests import user, profile
+from kitsune.users.tests import profile
 
 
 def render(s, context={}):
@@ -60,7 +59,7 @@ class TestHelpers(TestCase):
         eq_(collapse_linebreaks('Application Basics\n      \n\n      \n      '
                                 '\n\n\n        \n          \n            \n   '
                                 '           Name'),
-                                'Application Basics\r\n              Name')
+            'Application Basics\r\n              Name')
 
     def test_label_with_help(self):
         field = CharField(label='Foo', help_text='Foo bar')
@@ -108,7 +107,8 @@ class TestDateTimeFormat(TestCase):
         self.context['request'].user.is_authenticated = Mock(return_value=True)
         self.context['request'].session = {'timezone': self.timezone}
 
-    def _get_datetime_result(self, locale, timezone, format='short', return_format='shortdatetime'):
+    def _get_datetime_result(self, locale, timezone, format='short',
+                             return_format='shortdatetime'):
         value = datetime.fromordinal(733900)
         value = self.timezone.localize(value)
         value_test = value.astimezone(self.timezone)
@@ -180,7 +180,7 @@ class TestDateTimeFormat(TestCase):
         self.context['request'].LANGUAGE_CODE = 'fr'
         self.context['request'].session = {'timezone': fr_timezone}
         self._get_datetime_result('fr', fr_timezone,
-                                          'medium', 'datetime')
+                                  'medium', 'datetime')
 
     def test_timezone_different_locale(self):
         """Expects Europe/Paris timezone with different locale."""
@@ -188,7 +188,7 @@ class TestDateTimeFormat(TestCase):
         self.context['request'].LANGUAGE_CODE = 'tr'
         self.context['request'].session = {'timezone': fr_timezone}
         self._get_datetime_result('tr', fr_timezone,
-                                          'medium', 'datetime')
+                                  'medium', 'datetime')
 
     def test_invalid_value(self):
         """Passing invalid value raises ValueError."""

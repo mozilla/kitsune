@@ -43,7 +43,8 @@ class Reply(ModelBase):
     The Tweet table gets truncated regularly so we can't use it for metrics.
     This model is to keep track of contributor counts and such.
     """
-    user = models.ForeignKey(User, null=True, blank=True, related_name='tweet_replies')
+    user = models.ForeignKey(User, null=True, blank=True,
+                             related_name='tweet_replies')
     twitter_username = models.CharField(max_length=20)
     tweet_id = models.BigIntegerField()
     raw_json = models.TextField()

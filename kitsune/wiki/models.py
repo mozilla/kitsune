@@ -96,14 +96,14 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         default=False, db_index=True, verbose_name='is obsolete',
         help_text=_lazy(
             u'If checked, this wiki page will be hidden from basic searches '
-             'and dashboards. When viewed, the page will warn that it is no '
-             'longer maintained.'))
+            u'and dashboards. When viewed, the page will warn that it is no '
+            u'longer maintained.'))
 
     # Enable discussion (kbforum) on this document.
     allow_discussion = models.BooleanField(
         default=True, help_text=_lazy(
             u'If checked, this document allows discussion in an associated '
-             'forum. Uncheck to hide/disable the forum.'))
+            u'forum. Uncheck to hide/disable the forum.'))
 
     # List of users that have contributed to this document.
     contributors = models.ManyToManyField(User)
@@ -176,9 +176,9 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         # This only applies to documents that already exist, hence self.pk
         # TODO: Use uncached manager here, if we notice problems
         if self.pk and not self.is_localizable and self.translations.exists():
-            raise ValidationError('"%s": document has %s translations but is '
-                                  'not localizable.' % (
-                                  unicode(self), self.translations.count()))
+            raise ValidationError(
+                u'"{0}": document has {1} translations but is not localizable.'
+                .format(unicode(self), self.translations.count()))
 
     def _ensure_inherited_attr(self, attr):
         """Make sure my `attr` attr is the same as my parent's if I have one.
@@ -200,7 +200,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
     def _clean_category(self):
         """Make sure a doc's category is the same as its parent's."""
         if (not self.parent and
-            self.category not in (id for id, name in CATEGORIES)):
+                self.category not in (id for id, name in CATEGORIES)):
             # All we really need to do here is make sure category != '' (which
             # is what it is when it's missing from the DocumentForm). The extra
             # validation is just a nicety.
@@ -388,7 +388,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
                 full_url = anchors[0].get('href')
                 (dest_locale, url) = split_path(full_url)
                 if (source_locale != dest_locale
-                    and dest_locale == settings.LANGUAGE_CODE):
+                        and dest_locale == settings.LANGUAGE_CODE):
                     return '/' + source_locale + '/' + url
                 return full_url
 
@@ -539,7 +539,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         """Return documents that are 'morelikethis' one."""
         # Only documents in default IA categories have related.
         if (self.redirect_url() or not self.current_revision or
-            self.category not in settings.IA_DEFAULT_CATEGORIES):
+                self.category not in settings.IA_DEFAULT_CATEGORIES):
             return []
 
         # First try to get the results from the cache
@@ -548,7 +548,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         if documents is not None:
             statsd.incr('wiki.related_documents.cache.hit')
             log.debug('Getting MLT for {doc} from cache.'
-                .format(doc=repr(self)))
+                      .format(doc=repr(self)))
             return documents
 
         try:
@@ -566,7 +566,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
                     'document_summary',
                     'document_content'])[:3]
             cache.add(key, documents)
-        except ES_EXCEPTIONS as exc:
+        except ES_EXCEPTIONS:
             statsd.incr('wiki.related_documents.esexception')
             log.exception('ES MLT related_documents')
             documents = []
@@ -588,7 +588,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         if questions is not None:
             statsd.incr('wiki.related_questions.cache.hit')
             log.debug('Getting MLT questions for {doc} from cache.'
-                .format(doc=repr(self)))
+                      .format(doc=repr(self)))
             return questions
 
         try:
@@ -597,22 +597,21 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
             start_date = int(time.time()) - max_age
 
             s = Question.get_mapping_type().search()
-            questions = s.values_dict('id', 'question_title', 'url').filter(
-                    question_locale=self.locale,
-                    product__in=[p.slug for p in self.get_products()],
-                    question_has_helpful=True,
-                    created__gte=start_date
-                ).query(
-                    __mlt={
-                        'fields': ['question_title', 'question_content'],
-                        'like_text': self.title,
-                        'min_term_freq': 1,
-                        'min_doc_freq': 1,
-                    }
-                )[:3]
+            questions = (
+                s.values_dict('id', 'question_title', 'url')
+                .filter(question_locale=self.locale,
+                        product__in=[p.slug for p in self.get_products()],
+                        question_has_helpful=True,
+                        created__gte=start_date)
+                .query(__mlt={
+                    'fields': ['question_title', 'question_content'],
+                    'like_text': self.title,
+                    'min_term_freq': 1,
+                    'min_doc_freq': 1})
+                [:3])
             questions = list(questions)
             cache.add(key, questions)
-        except ES_EXCEPTIONS as exc:
+        except ES_EXCEPTIONS:
             statsd.incr('wiki.related_questions.esexception')
             log.exception('ES MLT related_questions')
             questions = []
@@ -753,7 +752,7 @@ class DocumentMappingType(SearchMappingType):
             d['document_summary'] = obj.current_revision.summary
             d['document_keywords'] = obj.current_revision.keywords
             d['updated'] = int(time.mktime(
-                    obj.current_revision.created.timetuple()))
+                obj.current_revision.created.timetuple()))
             d['document_current_id'] = obj.current_revision.id
             d['document_recent_helpful_votes'] = obj.recent_helpful_votes
         else:
@@ -767,9 +766,9 @@ class DocumentMappingType(SearchMappingType):
         # revision, or is a template, or is a redirect, or is in Navigation
         # category (50).
         if (obj.current_revision and
-            not obj.is_template and
-            not obj.html.startswith(REDIRECT_HTML) and
-            not obj.category == 50):
+                not obj.is_template and
+                not obj.html.startswith(REDIRECT_HTML) and
+                not obj.category == 50):
             d['document_recent_helpful_votes'] = obj.recent_helpful_votes
         else:
             d['document_recent_helpful_votes'] = 0
@@ -794,7 +793,7 @@ class DocumentMappingType(SearchMappingType):
         # If there are no revisions or the current revision is a
         # redirect, we want to remove it from the index.
         if (document['document_current_id'] is None or
-            document['document_content'].startswith(REDIRECT_HTML)):
+                document['document_content'].startswith(REDIRECT_HTML)):
 
             cls.unindex(document['id'], es=kwargs.get('es', None))
             return
@@ -895,9 +894,9 @@ class Revision(ModelBase):
                 old = self.based_on
                 self.based_on = based_on  # Be nice and guess a correct value.
                 # TODO(erik): This error message ignores non-translations.
-                raise ValidationError(_('A revision must be based on the '
-                    'English article. Revision ID %(id)s does not fit this'
-                    ' criterion.') %
+                raise ValidationError(
+                    _('A revision must be based on the English article. '
+                      'Revision ID %(id)s does not fit this criterion.') %
                     dict(id=old.id))
 
         if not self.can_be_readied_for_localization():
@@ -926,8 +925,8 @@ class Revision(ModelBase):
             if self.document.current_revision:
                 new_revs = new_revs.filter(
                     id__gt=self.document.current_revision.id)
-            new_contributors = set([r.creator
-                for r in new_revs.select_related('creator')])
+            new_contributors = set(
+                [r.creator for r in new_revs.select_related('creator')])
             for user in new_contributors:
                 if user not in contributors:
                     self.document.contributors.add(user)
@@ -1142,19 +1141,20 @@ def points_to_document_view(url, required_locale=None):
 
 def user_num_documents(user):
     """Count the number of documents a user has contributed to. """
-    return Document.objects.filter(
-        revisions__creator=user).exclude(
-                html__startswith='<p>REDIRECT <a').distinct().count()
+    return (Document.objects
+            .filter(revisions__creator=user)
+            .exclude(html__startswith='<p>REDIRECT <a').distinct().count())
 
 
 def user_documents(user):
     """Return the documents a user has contributed to."""
-    return Document.objects.filter(
-            revisions__creator=user).exclude(
-                html__startswith='<p>REDIRECT <a').distinct()
+    return (Document.objects
+            .filter(revisions__creator=user)
+            .exclude(html__startswith='<p>REDIRECT <a').distinct())
+
 
 def user_redirects(user):
     """Return the redirects a user has contributed to."""
-    return Document.objects.filter(
-            revisions__creator=user).filter(
-                html__startswith='<p>REDIRECT <a').distinct()
+    return (Document.objects
+            .filter(revisions__creator=user)
+            .filter(html__startswith='<p>REDIRECT <a').distinct())
