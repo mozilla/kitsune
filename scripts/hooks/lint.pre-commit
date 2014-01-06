@@ -1,0 +1,47 @@
+#!/bin/bash
+#
+# Run the Kitsune linters.
+#
+# If this file is not in the `.git/hooks` directory, executing it will
+# prompt to install it.
+
+DIR=$(dirname $0)
+
+function lint() {
+    echo 'Linting...'
+    FILES_TO_LINT=$(git diff-index --no-commit-id --name-only -r HEAD | sort | uniq)
+    ./scripts/lint.sh $FILES_TO_LINT
+    LINT_STATUS=$?
+    if [[ $LINT_STATUS -ne 0 ]]; then
+        echo
+        echo "Lint errors found. Please fix the above and retry."
+        echo "Alternatively, run 'git commit --no-verify' to ignore lint errors."
+        exit 1
+    fi
+}
+
+function install() {
+    echo -ne "Would you like to install the linter as a pre-commit hook? "
+    while true; do
+        read yn
+        case $yn in
+            [Yy]* ) break;;
+            [Nn]* ) exit 1;;
+            * ) echo "Please enter 'y' or 'n'."
+        esac
+    done
+
+    GITDIR=$(git rev-parse --git-dir)
+    if [[ -e $GITDIR/hooks/pre-commit ]]; then
+        echo "You already have a git pre-commit hook. Bailing."
+        exit 1
+    fi
+
+    ln -s ../../scripts/hooks/lint.pre-commit $GITDIR/hooks/pre-commit
+}
+
+if echo $DIR | grep -E ".git/hooks$" > /dev/null; then
+    lint
+else
+    install
+fi
