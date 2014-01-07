@@ -391,7 +391,7 @@
 
           {% if question.needs_info %}
             <label>
-              <input type="checkbox" name="clear_needsinfo">
+              <input type="checkbox" name="clear_needsinfo" {% if user == question.creator %}checked="checked"{% endif %}>
               {{ _('I am providing the requested information') }}
             </label>
           {% else %}
