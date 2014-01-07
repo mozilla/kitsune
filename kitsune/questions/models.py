@@ -106,6 +106,10 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         self.tags.remove(config.NEEDS_INFO_TAG_NAME)
 
     @property
+    def needs_info(self):
+        return self.tags.filter(slug=config.NEEDS_INFO_TAG_NAME).count() > 0
+
+    @property
     def content_parsed(self):
         return _content_parsed(self, self.locale)
 
