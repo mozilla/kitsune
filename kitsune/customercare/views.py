@@ -287,8 +287,8 @@ def hide_tweet(request):
 
     if (tweet.reply_to is not None or
             Tweet.objects.filter(reply_to=tweet).exists()):
-            return HttpResponseBadRequest(_('Tweets that are replies or have '
-                                            'replies must not be hidden.'))
+        return HttpResponseBadRequest(_('Tweets that are replies or have '
+                                        'replies must not be hidden.'))
 
     try:
         tweet.hidden = True
