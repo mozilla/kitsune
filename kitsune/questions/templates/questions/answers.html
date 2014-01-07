@@ -388,6 +388,18 @@
 
         <div class="main-content">
           {{ content_editor(form.content) }}
+
+          {% if question.needs_info %}
+            <label>
+              <input type="checkbox" name="clear_needsinfo" {% if user == question.creator %}checked="checked"{% endif %}>
+              {{ _('I am providing the requested information') }}
+            </label>
+          {% else %}
+            <label>
+              <input type="checkbox" name="needsinfo">
+              {{ _('Needs more information') }}
+            </label>
+          {% endif %}
         </div>
 
         {{ attachments_form('questions.Question', question.pk, images, settings, user) }}

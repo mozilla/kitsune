@@ -774,6 +774,12 @@ def reply(request, question_id):
             up_images.update(content_type=ct, object_id=answer.id)
             statsd.incr('questions.answer')
 
+            # Handle needsinfo tag
+            if 'needsinfo' in request.POST:
+                question.set_needs_info()
+            elif 'clear_needsinfo' in request.POST:
+                question.unset_needs_info()
+
             if Setting.get_for_user(request.user,
                                     'questions_watch_after_reply'):
                 QuestionReplyEvent.notify(request.user, question)

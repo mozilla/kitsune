@@ -476,6 +476,36 @@ class TestQuestionList(TestCaseBase):
         sub_test('de', 'cupcakes?', 'donuts?', 'pastries?')
 
 
+class TestQuestionReply(TestCaseBase):
+    def setUp(self):
+        u = user(save=True)
+        self.client.login(username=u.username, password='testpass')
+        self.question = question(save=True)
+
+    def test_needs_info(self):
+        eq_(self.question.needs_info, False)
+
+        res = self.client.post(
+            reverse('questions.reply', args=[self.question.id]),
+            {'content': 'More info please', 'needsinfo': ''})
+        eq_(res.status_code, 302)
+
+        q = Question.objects.get(id=self.question.id)
+        eq_(q.needs_info, True)
+
+    def test_clear_needs_info(self):
+        self.question.set_needs_info()
+        eq_(self.question.needs_info, True)
+
+        res = self.client.post(
+            reverse('questions.reply', args=[self.question.id]),
+            {'content': 'More info please', 'clear_needsinfo': ''})
+        eq_(res.status_code, 302)
+
+        q = Question.objects.get(id=self.question.id)
+        eq_(q.needs_info, False)
+
+
 class TestRateLimiting(TestCaseBase):
     client_class = LocalizingClient
 

@@ -194,6 +194,20 @@ class AnswersTemplateTestCase(TestCaseBase):
         q = Question.uncached.get(pk=self.question.id)
         eq_(q.solution, None)
 
+    def test_needs_info_checkbox(self):
+        """Test that needs info checkbox is correctly shown"""
+        response = get(self.client, 'questions.answers',
+                       args=[self.question.id])
+        doc = pq(response.content)
+        eq_(1, len(doc('input[name="needsinfo"]')))
+
+        self.question.set_needs_info()
+
+        response = get(self.client, 'questions.answers',
+                       args=[self.question.id])
+        doc = pq(response.content)
+        eq_(1, len(doc('input[name="clear_needsinfo"]')))
+
     def test_question_vote_GET(self):
         """Attempting to vote with HTTP GET returns a 405."""
         response = get(self.client, 'questions.vote',
