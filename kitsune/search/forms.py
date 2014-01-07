@@ -6,7 +6,7 @@ from django.forms.util import ValidationError
 
 from tower import ugettext_lazy as _lazy
 
-from kitsune import  search as constants
+from kitsune import search as constants
 from kitsune.forums.models import Forum as DiscussionForum
 from kitsune.lib.sumo_locales import LOCALES
 from kitsune.products.models import Product, Topic
@@ -74,8 +74,6 @@ class SearchForm(forms.Form):
         required=False,
         widget=forms.CheckboxSelectMultiple(),
         label=_lazy('Topics'))
-    kb_topics = topics
-    support_topics = topics
 
     language = forms.ChoiceField(required=False, label=_lazy('Language'),
                                  choices=SEARCH_LANGUAGES)
@@ -88,8 +86,6 @@ class SearchForm(forms.Form):
         required=False,
         label=_lazy('Relevant to'),
         widget=forms.CheckboxSelectMultiple())
-    kb_product = product
-    support_product = product
 
     include_archived = forms.BooleanField(
         required=False, label=_lazy('Include obsolete articles?'))
@@ -104,17 +100,12 @@ class SearchForm(forms.Form):
     created = forms.TypedChoiceField(
         required=False, coerce=int, empty_value=0,
         label=_lazy('Created'), choices=constants.DATE_LIST)
-    support_created = created
-    discussion_created = created
 
     created_date = forms.CharField(required=False)
 
     updated = forms.TypedChoiceField(
         required=False, coerce=int, empty_value=0,
         label=_lazy('Last updated'), choices=constants.DATE_LIST)
-    support_updated = updated
-    discussion_updated = updated
-
     updated_date = forms.CharField(required=False)
 
     user_widget = forms.TextInput(attrs={'placeholder': _lazy('username'),
@@ -125,8 +116,6 @@ class SearchForm(forms.Form):
     sortby = forms.TypedChoiceField(
         required=False, coerce=int, empty_value=0,
         label=_lazy('Sort results by'), choices=constants.SORTBY_FORUMS)
-    support_sortby = sortby
-    discussion_sortby = sortby
 
     thread_type = TypedMultipleChoiceField(
         required=False, coerce=int, widget=forms.CheckboxSelectMultiple,

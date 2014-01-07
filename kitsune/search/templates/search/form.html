@@ -40,16 +40,16 @@
               </div>
 
               <div class="container cf">
-                {{ search_form.kb_product.label_tag() }}
+                {{ search_form.product.label_tag() }}
                 <div class="product checkboxes">
-                    {{ search_form.kb_product }}
+                  {{ search_form.product }}
                 </div>
               </div>
 
               <div class="container cf">
-                {{ search_form.kb_topics.label_tag() }}
+                {{ search_form.topics.label_tag() }}
                 <div class="topics checkboxes">
-                  {{ search_form.kb_topics }}
+                  {{ search_form.topics }}
                 </div>
               </div>
 
@@ -66,7 +66,7 @@
               </div>
 
               {% for hidden in search_form.hidden_fields() if not hidden.name == 'w' %}
-                <input id="kb_{{ hidden.auto_id }}" type="hidden" value="{{ hidden.value() }}" name="{{ hidden.name }}">
+                {{ hidden }}
               {% endfor %}
               <input type="hidden" value="1" name="w" />
 
@@ -143,38 +143,38 @@
               </div>
 
               <div class="container cf">
-                {{ search_form.support_product.label_tag() }}
+                {{ search_form.product.label_tag() }}
                 <div class="product checkboxes">
-                  {{ search_form.support_product }}
+                  {{ search_form.product }}
                 </div>
               </div>
 
               <div class="container cf">
-                {{ search_form.support_topics.label_tag() }}
+                {{ search_form.topics.label_tag() }}
                 <div class="topics checkboxes">
-                  {{ search_form.support_topics }}
+                  {{ search_form.topics }}
                 </div>
               </div>
 
               <div class="container cf showhide-input">
-                {{ search_form.support_created.label_tag() }}
-                {{ search_form.support_created }}
+                {{ search_form.created.label_tag() }}
+                {{ search_form.created }}
                 <input name="created_date" type="text" value="{{ search_form.created_date.data or '' }}" class="datepicker" title="{{ _('Created date. Format: mm/dd/yy') }}" />
               </div>
 
               <div class="container cf showhide-input">
-                {{ search_form.support_updated.label_tag() }}
-                {{ search_form.support_updated }}
+                {{ search_form.updated.label_tag() }}
+                {{ search_form.updated }}
                 <input name="updated_date" type="text" value="{{ search_form.updated_date.data or '' }}" class="datepicker" title="{{ _('Updated date. Format: mm/dd/yy') }}" />
               </div>
 
               <div class="container cf">
-                {{ search_form.support_sortby.label_tag() }}
-                {{ search_form.support_sortby }}
+                {{ search_form.sortby.label_tag() }}
+                {{ search_form.sortby }}
               </div>
 
               {% for hidden in search_form.hidden_fields() if not hidden.name == 'w' %}
-                <input id="support_{{ hidden.auto_id }}" type="hidden" value="{{ hidden.value() }}" name="{{ hidden.name }}">
+                {{ hidden }}
               {% endfor %}
               <input type="hidden" value="2" name="w" />
 
@@ -202,20 +202,20 @@
               </div>
 
               <div class="container cf showhide-input">
-                {{ search_form.discussion_created.label_tag() }}
-                {{ search_form.discussion_created }}
+                {{ search_form.created.label_tag() }}
+                {{ search_form.created }}
                 <input name="created_date" type="text" value="{{ search_form.created_date.data or '' }}" class="datepicker" title="{{ _('Created date. Format: mm/dd/yy') }}" />
               </div>
 
               <div class="container cf showhide-input">
-                {{ search_form.discussion_updated.label_tag() }}
-                {{ search_form.discussion_updated }}
+                {{ search_form.updated.label_tag() }}
+                {{ search_form.updated }}
                 <input name="updated_date" type="text" value="{{ search_form.updated_date.data or '' }}" class="datepicker" title="{{ _('Updated date. Format: mm/dd/yy') }}" />
               </div>
 
               <div class="container cf">
-                {{ search_form.discussion_sortby.label_tag() }}
-                {{ search_form.discussion_sortby }}
+                {{ search_form.sortby.label_tag() }}
+                {{ search_form.sortby }}
               </div>
 
               <div class="container cf">
@@ -224,7 +224,7 @@
               </div>
 
               {% for hidden in search_form.hidden_fields() if not hidden.name == 'w' %}
-                <input id="discussion{{ hidden.auto_id }}" type="hidden" value="{{ hidden.value() }}" name="{{ hidden.name }}">
+                {{ hidden }}
               {% endfor %}
               <input type="hidden" value="4" name="w" />
 

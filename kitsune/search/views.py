@@ -91,7 +91,7 @@ def search(request, template=None):
     if 'include_archived' not in r:
         r['include_archived'] = False
 
-    search_form = SearchForm(r)
+    search_form = SearchForm(r, auto_id=False)
     search_form.set_allowed_forums(request.user)
 
     if not search_form.is_valid() or a == '2':
