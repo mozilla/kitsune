@@ -6,13 +6,17 @@ function init() {
 }
 
 function makeTopicsGraph() {
-  var $topic, datums, seriesSpec, key;
+  var $topics, datums, seriesSpec, key;
 
   $('input[type=date]').datepicker({
     dateFormat: 'yy-mm-dd'
   });
 
   $topics = $('#topic-stats');
+  if ($topics.length === 0) {
+    return;
+  }
+
   datums = $topics.data('graph');
   seriesSpec = [];
   window.datums = datums;

@@ -1,4 +1,3 @@
-from base64 import b64encode
 from datetime import date, datetime, timedelta
 import json
 
@@ -15,16 +14,14 @@ from kitsune.kpi.models import (
     EXIT_SURVEY_YES_CODE, EXIT_SURVEY_NO_CODE, EXIT_SURVEY_DONT_KNOW_CODE)
 from kitsune.kpi.tests import metric, metric_kind
 from kitsune.sumo.helpers import urlparams
-from kitsune.sumo.tests import TestCase, LocalizingClient
+from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.questions.tests import answer, answervote, question
-from kitsune.users.tests import user, add_permission
+from kitsune.users.tests import user
 from kitsune.wiki.tests import document, revision, helpful_vote
 
 
 class KpiApiTests(TestCase):
-    client_class = LocalizingClient
-
     def _make_elastic_metric_kinds(self):
         click_kind = metric_kind(code='search clickthroughs:elastic:clicks',
                                  save=True)
@@ -38,11 +35,9 @@ class KpiApiTests(TestCase):
         metric_kind(code=KB_L10N_CONTRIBUTORS_METRIC_CODE, save=True)
         metric_kind(code=SUPPORT_FORUM_CONTRIBUTORS_METRIC_CODE, save=True)
 
-    def _get_api_result(self, resource_name, **kwargs):
+    def _get_api_result(self, name, **kwargs):
         """Helper to make API calls, parse the json and return the result."""
-        url = reverse('api_dispatch_list',
-                      kwargs={'resource_name': resource_name,
-                              'api_name': 'v1'})
+        url = reverse(name)
         url = urlparams(url, format='json', **kwargs)
         response = self.client.get(url)
         eq_(200, response.status_code)
@@ -61,7 +56,7 @@ class KpiApiTests(TestCase):
         # A locked question that shouldn't be counted for anything
         question(is_locked=True, save=True)
 
-        r = self._get_api_result('kpi_questions')
+        r = self._get_api_result('api.kpi.questions')
         eq_(r['objects'][0]['solved'], 1)
         eq_(r['objects'][0]['responded_24'], 2)
         eq_(r['objects'][0]['responded_72'], 2)
@@ -84,25 +79,25 @@ class KpiApiTests(TestCase):
         question(locale='pt-BR', save=True)
 
         # Verify no locale filtering:
-        r = self._get_api_result('kpi_questions')
+        r = self._get_api_result('api.kpi.questions')
         eq_(r['objects'][0]['solved'], 1)
         eq_(r['objects'][0]['responded_24'], 2)
         eq_(r['objects'][0]['responded_72'], 2)
         eq_(r['objects'][0]['questions'], 4)
 
         # Verify locale=en-US
-        r = self._get_api_result('kpi_questions', locale='en-US')
+        r = self._get_api_result('api.kpi.questions', locale='en-US')
         eq_(r['objects'][0]['solved'], 1)
         eq_(r['objects'][0]['responded_24'], 2)
         eq_(r['objects'][0]['responded_72'], 2)
         eq_(r['objects'][0]['questions'], 3)
 
         # Verify locale=pt-BR
-        r = self._get_api_result('kpi_questions', locale='pt-BR')
-        eq_(r['objects'][0]['solved'], 0)
-        eq_(r['objects'][0]['responded_24'], 0)
-        eq_(r['objects'][0]['responded_72'], 0)
+        r = self._get_api_result('api.kpi.questions', locale='pt-BR')
         eq_(r['objects'][0]['questions'], 1)
+        assert 'solved' not in r['objects'][0]
+        assert 'responded_24' not in r['objects'][0]
+        assert 'responded_72' not in r['objects'][0]
 
     def test_questions_inactive_user(self):
         """Verify questions from inactive users aren't counted."""
@@ -112,7 +107,7 @@ class KpiApiTests(TestCase):
         question(creator=u, save=True)
         question(creator=u, save=True)
 
-        r = self._get_api_result('kpi_questions')
+        r = self._get_api_result('api.kpi.questions')
         eq_(len(r['objects']), 0)
 
         # Activate the user, now the questions should count.
@@ -120,9 +115,7 @@ class KpiApiTests(TestCase):
         u.save()
         cache.clear()  # We need to clear the cache for new results.
 
-        url = reverse('api_dispatch_list',
-                      kwargs={'resource_name': 'kpi_questions',
-                              'api_name': 'v1'})
+        url = reverse('api.kpi.questions')
         response = self.client.get(url + '?format=json')
         eq_(200, response.status_code)
         r = json.loads(response.content)
@@ -140,7 +133,7 @@ class KpiApiTests(TestCase):
         answervote(answer=a, helpful=True, save=True)
         answervote(answer=a, helpful=True, save=True)
 
-        r = self._get_api_result('kpi_vote')
+        r = self._get_api_result('api.kpi.votes')
         eq_(r['objects'][0]['kb_helpful'], 1)
         eq_(r['objects'][0]['kb_votes'], 3)
         eq_(r['objects'][0]['ans_helpful'], 2)
@@ -157,17 +150,17 @@ class KpiApiTests(TestCase):
             helpful_vote(revision=r, helpful=True, save=True)
 
         # All votes should be counted if we don't specify a locale
-        r = self._get_api_result('kpi_kb_vote')
+        r = self._get_api_result('api.kpi.kb-votes')
         eq_(r['objects'][0]['kb_helpful'], 3)
         eq_(r['objects'][0]['kb_votes'], 9)
 
         # Only en-US votes:
-        r = self._get_api_result('kpi_kb_vote', locale='en-US')
+        r = self._get_api_result('api.kpi.kb-votes', locale='en-US')
         eq_(r['objects'][0]['kb_helpful'], 1)
         eq_(r['objects'][0]['kb_votes'], 3)
 
         # Only es votes:
-        r = self._get_api_result('kpi_kb_vote', locale='es')
+        r = self._get_api_result('api.kpi.kb-votes', locale='es')
         eq_(r['objects'][0]['kb_helpful'], 2)
         eq_(r['objects'][0]['kb_votes'], 6)
 
@@ -201,7 +194,7 @@ class KpiApiTests(TestCase):
         self._make_contributor_metric_kinds()
         update_contributor_metrics(day=date.today() + timedelta(days=1))
 
-        r = self._get_api_result('kpi_active_contributors')
+        r = self._get_api_result('api.kpi.contributors')
 
         eq_(r['objects'][0]['en_us'], 2)
         eq_(r['objects'][0]['non_en_us'], 2)
@@ -225,7 +218,7 @@ class KpiApiTests(TestCase):
         self._make_contributor_metric_kinds()
         update_contributor_metrics(day=date.today() + timedelta(days=1))
 
-        r = self._get_api_result('kpi_active_contributors')
+        r = self._get_api_result('api.kpi.contributors')
         eq_(r['objects'][0]['support_forum'], 0)
 
         # Change the question creator, now we should have 1 contributor.
@@ -236,7 +229,7 @@ class KpiApiTests(TestCase):
         Metric.objects.all().delete()
         update_contributor_metrics(day=date.today() + timedelta(days=1))
 
-        r = self._get_api_result('kpi_active_contributors')
+        r = self._get_api_result('api.kpi.contributors')
         eq_(r['objects'][0]['support_forum'], 1)
 
     def test_elastic_clickthrough_get(self):
@@ -259,52 +252,20 @@ class KpiApiTests(TestCase):
                value=20,
                save=True)
 
-        url = reverse('api_dispatch_list',
-                      kwargs={'resource_name': 'elastic-clickthrough-rate',
-                              'api_name': 'v1'})
+        url = reverse('api.kpi.search-ctr')
         response = self.client.get(url + '?format=json')
         data = json.loads(response.content)
         eq_(data['objects'], [
-            {'clicks': 2, 'resource_uri': u'', 'searches': 20,
+            {'clicks': 2, 'searches': 20,
              'start': u'2000-01-09'},
-            {'clicks': 1, 'resource_uri': u'', 'searches': 10,
+            {'clicks': 1, 'searches': 10,
              'start': u'2000-01-01'}])
 
         # Test filtering by start date:
         response = self.client.get(url + '?format=json&min_start=2000-01-09')
         data = json.loads(response.content)
         eq_(data['objects'], [{u'searches': 20, u'start': u'2000-01-09',
-                               u'clicks': 2, u'resource_uri': u''}])
-
-    def test_elastic_clickthrough_post(self):
-        """Test elastic clickthrough write API."""
-        u = user(save=True)
-        add_permission(u, Metric, 'add_metric')
-
-        click_kind, search_kind = self._make_elastic_metric_kinds()
-
-        # POST the new object:
-        url = reverse('api_dispatch_list',
-                      kwargs={'resource_name': 'elastic-clickthrough-rate',
-                              'api_name': 'v1'})
-        auth = 'Basic ' + b64encode('%s:%s' % (u.username, 'testpass'))
-        response = self.client.post(url,
-                                    json.dumps({'start': '2000-01-02',
-                                                'searches': 1e8,
-                                                'clicks': 5e7}),
-                                    content_type='application/json',
-                                    HTTP_AUTHORIZATION=auth)
-        eq_(response.status_code, 201)
-
-        # Do a GET, and see if the round trip worked:
-        response = self.client.get(url + '?format=json')
-        data = json.loads(response.content)
-        eq_(data['objects'], [
-            {'clicks': 50000000, 'resource_uri': u'', 'searches': 100000000,
-             'start': '2000-01-02'}])
-
-        # Correspnding ElasticSearch APIs are likely correct by dint
-        # of factoring.
+                               u'clicks': 2}])
 
     def test_visitors(self):
         """Test unique visitors API call."""
@@ -314,7 +275,7 @@ class KpiApiTests(TestCase):
                save=True)
 
         # There should be 42 visitors.
-        r = self._get_api_result('kpi_visitors')
+        r = self._get_api_result('api.kpi.visitors')
         eq_(r['objects'][0]['visitors'], 42)
 
     def test_l10n_coverage(self):
@@ -325,7 +286,7 @@ class KpiApiTests(TestCase):
                save=True)
 
         # The l10n coverage should be 56%.
-        r = self._get_api_result('kpi_l10n_coverage')
+        r = self._get_api_result('api.kpi.l10n-coverage')
         eq_(r['objects'][0]['coverage'], 56)
 
     def test_exit_survey_results(self):
@@ -342,7 +303,7 @@ class KpiApiTests(TestCase):
                save=True)
 
         # Verify the results returned from the API
-        r = self._get_api_result('kpi_exit_survey_results')
+        r = self._get_api_result('api.kpi.exit-survey')
         eq_(r['objects'][0]['yes'], 1337)
         eq_(r['objects'][0]['no'], 42)
         eq_(r['objects'][0]['dont_know'], 777)

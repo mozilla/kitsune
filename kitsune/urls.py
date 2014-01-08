@@ -53,6 +53,7 @@ urlpatterns = patterns(
     (r'^', include('kitsune.dashboards.urls')),
     (r'^', include('kitsune.landings.urls')),
     (r'^', include('tidings.urls')),  # Keep short for email wrapping.
+    (r'^', include('kitsune.kpi.urls_api')),
 
     # Users
     ('', include('kitsune.users.urls')),
