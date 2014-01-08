@@ -19,8 +19,20 @@ FLAKE8_IGNORE=(
     'kitsune/sumo/static/js/libs/ace/kitchen-sink/docs/python.py'
 )
 
+# Files to lint is either the list of arguments to this script, or the
+# kitsune directory.
+FILES="$@"
+FLAKE8_FILES=()
+
+for f in $FILES; do
+    # If it is a directory, or if it is a python file, lint it with flake8.
+    if [[ -d $f ]] || echo $f | grep -E '.py$' > /dev/null; then
+        FLAKE8_FILES+=($f)
+    fi
+done
+
 FLAKE8_IGNORE=$(IFS=,; echo "${FLAKE8_IGNORE[*]}")
-flake8 --exclude=$FLAKE8_IGNORE kitsune
+flake8 --exclude=$FLAKE8_IGNORE ${FLAKE8_FILES[*]}
 FLAKE_RETURN=$?
 
 exit $FLAKE_RETURN
