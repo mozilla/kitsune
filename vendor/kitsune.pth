@@ -77,7 +77,6 @@ src/django-recaptcha
 src/python-recaptcha
 src/oedipus
 src/elasticutils
-src/django-tastypie
 src/zendesk
 packages/ordereddict
 src/django-eadred
