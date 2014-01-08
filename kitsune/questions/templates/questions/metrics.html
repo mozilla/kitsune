@@ -24,7 +24,7 @@
     {% endfor %}
   </section>
 
-  {% set api_url = url('api_dispatch_list', resource_name='kpi_questions', api_name='v1') %}
+  {% set api_url = url('api.kpi.questions') %}
   {% if current_locale %}
     {% set api_url = api_url|urlparams(locale=current_locale) %}
   {% endif %}

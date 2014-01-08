@@ -10,7 +10,7 @@
   <article id="kpi-dash-rickshaw">
 
     <section id="kpi-questions"
-     data-url="{{ url('api_dispatch_list', resource_name='kpi_questions', api_name='v1') }}">
+     data-url="{{ url('api.kpi.questions') }}">
 
      <h2>{{ _('Questions') }}</h2>
 
@@ -43,7 +43,7 @@
     </section>
 
     <section id="kpi-vote"
-     data-url="{{ url('api_dispatch_list', resource_name='kpi_vote', api_name='v1') }}">
+     data-url="{{ url('api.kpi.votes') }}">
 
       <h2>{{ _('Helpful Votes') }}</h2>
 
@@ -69,7 +69,7 @@
     </section>
 
     <section id="kpi-active-contributors"
-     data-url="{{ url('api_dispatch_list', resource_name='kpi_active_contributors', api_name='v1') }}">
+     data-url="{{ url('api.kpi.contributors') }}">
 
       <h2>{{ _('Active Contributors') }}</h2>
 
@@ -136,7 +136,7 @@
     </section>
 
     <section id="kpi-ctr"
-     data-url="{{ url('api_dispatch_list', resource_name='elastic-clickthrough-rate', api_name='v1') }}">
+     data-url="{{ url('api.kpi.search-ctr') }}">
 
       <h2>{{ _('Search Clickthrough Rate') }}</h2>
 
@@ -162,7 +162,7 @@
     </section>
 
     <section id="kpi-visitors"
-     data-url="{{ url('api_dispatch_list', resource_name='kpi_visitors', api_name='v1') }}">
+     data-url="{{ url('api.kpi.visitors') }}">
 
       <h2>{{ _('Daily Unique Visitors') }}</h2>
 
@@ -176,7 +176,7 @@
     </section>
 
     <section id="kpi-l10n"
-     data-url="{{ url('api_dispatch_list', resource_name='kpi_l10n_coverage', api_name='v1') }}">
+     data-url="{{ url('api.kpi.l10n-coverage') }}">
 
       <h2>{{ _('L10n Coverage') }}</h2>
 
@@ -206,7 +206,7 @@
             <li>{% trans %}A level 3 review change drops the localization to 0% of the article{% endtrans %}</li>
             <li>{% trans %}More than one level 2 review change drops the localization to 0%{% endtrans %}</li>
           </ul>
-          
+
           <p>
             {% trans %}Example:{% endtrans %}
           </p>
@@ -222,7 +222,7 @@
    </section>
 
   <section id="exit-survey"
-     data-url="{{ url('api_dispatch_list', resource_name='kpi_exit_survey_results', api_name='v1') }}">
+     data-url="{{ url('api.kpi.exit-survey') }}">
 
       <h2>{{ _('Exit Survey Results') }}</h2>
 

@@ -35,7 +35,7 @@
         </div>
       </section>
 
-      <section id="kpi-vote" data-url="{{ url('api_dispatch_list', resource_name='kpi_kb_vote', api_name='v1')|urlparams(locale=current_locale) }}">
+      <section id="kpi-vote" data-url="{{ url('api.kpi.kb-votes')|urlparams(locale=current_locale) }}">
         <h2>{{ _('Helpful Votes') }}</h2>
         <div class="rickshaw">
           <div class="inline-controls"></div>
