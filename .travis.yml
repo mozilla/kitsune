@@ -5,7 +5,9 @@ env: DJANGO_LIVE_TEST_SERVER_ADDRESS="localhost:9900-9999"
 
 install: scripts/travis/install.sh
 before_script: scripts/travis/setup.sh
-script: scripts/travis/test.sh
+script:
+  - scripts/lint.sh
+  - scripts/travis/test.sh
 
 notifications:
     email: false
