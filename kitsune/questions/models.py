@@ -100,10 +100,12 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
     def set_needs_info(self):
         """Mark question as NEEDS_INFO."""
         self.tags.add(config.NEEDS_INFO_TAG_NAME)
+        self.clear_cached_tags()
 
     def unset_needs_info(self):
         """Remove NEEDS_INFO."""
         self.tags.remove(config.NEEDS_INFO_TAG_NAME)
+        self.clear_cached_tags()
 
     @property
     def needs_info(self):
