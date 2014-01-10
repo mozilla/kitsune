@@ -19,8 +19,6 @@ HOME = /tmp
 40 */6 * * * {{ cron }} purge_tweets
 50 */6 * * * {{ cron }} cache_top_contributors
 
-# Every 12 hours.
-0 0,12 * * * {{ cron }} rebuild_kb
 
 # Once per day.
 0 16 * * * {{ cron }} reload_wiki_traffic_stats
@@ -38,6 +36,7 @@ HOME = /tmp
 0 6 * * * {{ cron }} process_exit_surveys
 0 1 * * * {{ cron }} update_l10n_coverage_metrics
 45 4 * * * {{ cron }} build_kb_bundles
+0 0 * * * {{ cron }} rebuild_kb
 
 # Twice per week.
 #05 01 * * 1,4 {{ cron }} update_weekly_votes
