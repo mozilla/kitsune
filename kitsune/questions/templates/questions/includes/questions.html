@@ -17,11 +17,11 @@
       <ul>
         {% for ext in parsed.extensions %}
           {# title is to provide a hover tip. #}
-          <li title="{{ ext.id }}" {% if not ext.isActive %}class="inactive"{% endif %}>
+          <li {% if not ext.isActive %}class="inactive"{% endif %}>
             {% if ext.isActive %}
-              {{ _('{name} {version}')|fe(name=ext.name, version=ext.version) }}
+              {{ _('{name} {version} ({id})')|fe(name=ext.name, version=ext.version, id=ext.id) }}
             {% else %}
-              {{ _('{name} {version} (Inactive)')|fe(name=ext.name, version=ext.version) }}
+              {{ _('{name} {version} ({id}) (Inactive)')|fe(name=ext.name, version=ext.version, id=ext.id) }}
             {% endif %}
           </li>
         {% endfor %}
