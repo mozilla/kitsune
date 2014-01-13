@@ -315,12 +315,20 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         return not not self.solution_id
 
     @property
+    def is_escalated(self):
+        return config.ESCALATE_TAG_NAME in [t.name for t in self.my_tags]
+
+    @property
+    def is_offtopic(self):
+        return config.OFFTOPIC_TAG_NAME in [t.name for t in self.my_tags]
+
+    @property
     def my_tags(self):
         """A caching wrapper around self.tags.all()."""
         cache_key = self.tags_cache_key % self.id
         tags = cache.get(cache_key)
         if tags is None:
-            tags = self.tags.all().order_by('name')
+            tags = list(self.tags.all().order_by('name'))
             cache.add(cache_key, tags, CACHE_TIMEOUT)
         return tags
 

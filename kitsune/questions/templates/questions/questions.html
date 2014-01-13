@@ -2,6 +2,12 @@
 {% from "dashboards/includes/macros.html" import product_selector, topic_selector %}
 {% set title = _('Firefox Support Forum') %}
 {% set classes = 'questions' %}
+{% if offtopic %}
+  {% set classes = classes + ' show-offtopic' %}
+{% endif %}
+{% if escalated %}
+  {% set classes = classes + ' show-escalated' %}
+{% endif %}
 {% set crumbs = [(None, _('Support Forum'))] %}
 {% set canonical_url = unlocalized_url('questions.questions')|urlparams(None, request.GET) %}
 {% if questions.number > 1 %}
@@ -152,7 +158,7 @@
     {% if questions.object_list %}
       <article class="questions">
         {% for question in questions.object_list %}
-          <section id="question-{{ question.id }}" class="cf">
+          <section id="question-{{ question.id }}" class="cf{% if question.is_escalated %} escalated{% endif %}{% if question.is_offtopic %} offtopic{% endif %}">
             <div class="question-meta {% if not question.num_answers %}urgent{% endif %}">
               <div class="have-problem-this-week">
                 <h4>{{ question.num_votes_past_week }}</h4>
@@ -194,7 +200,7 @@
               {% endif %}
             </div>
           </section>
-          <aside>
+          <aside class="{% if question.is_escalated %} escalated{% endif %}{% if question.is_offtopic %} offtopic{% endif %}">
             <div class="user-meta">
               {{ _('Posted by {user}')|f(user=display_name(question.creator)) }}
               {{ _('on') }} {{ datetimeformat(question.created, format='datetime') }}
