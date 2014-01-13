@@ -166,14 +166,6 @@ def questions(request, template):
     else:
         owner = None
 
-    if escalated:
-        question_qs = question_qs.filter(
-            tags__slug__in=[config.ESCALATE_TAG_NAME])
-
-    if offtopic:
-        question_qs = question_qs.filter(
-            tags__slug__in=[config.OFFTOPIC_TAG_NAME])
-
     feed_urls = ((urlparams(reverse('questions.feed'),
                             product=product_slug, topic=topic_slug),
                   QuestionsFeed().title()),)
