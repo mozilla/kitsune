@@ -151,4 +151,4 @@ class SubmitTicketTests(TestCase):
                  '"subject": "[TEST] subject"}}',
             headers={
                 'Content-Type': 'application/json',
-                'User-agent': 'Zendesk Python Library v1.1.0'})
+                'User-agent': 'Zendesk Python Library v1.1.1'})

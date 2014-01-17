@@ -34,7 +34,8 @@ def get_zendesk():
         statsd.incr('questions.zendesk.settingserror')
         raise ZendeskSettingsError('Missing Zendesk settings.')
 
-    return Zendesk(zendesk_url, zendesk_email, zendesk_password)
+    return Zendesk(
+        zendesk_url, zendesk_email, zendesk_password, api_version=2)
 
 
 def submit_ticket(email, category, subject, body):
