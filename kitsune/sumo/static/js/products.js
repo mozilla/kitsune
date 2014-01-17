@@ -3,7 +3,7 @@
 
     $(function() {
         var locale = $('body').attr('lang');
-        var gaBubbleOpen = ['_trackPageview', interpolate('/{0}/products/firefox/up-to-date-download', locale)];
+        var gaBubbleOpen = ['_trackPageview', interpolate('/%s/products/firefox/up-to-date-download', [locale])];
 
         $('.download-firefox .download-button').on('click', function(ev) {
             var $this = $(this);
