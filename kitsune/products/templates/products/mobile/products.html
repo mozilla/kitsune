@@ -9,11 +9,30 @@
     {% for product in products %}
       <li>
         <a class="cf" href="{{ url('products.product', slug=product.slug) }}">
-          <img src="{{ STATIC_URL }}img/blank.png" class="logo-sprite logo-{{ product.slug }}" alt="">
+          <img src="{{ STATIC_URL }}img/blank.png" class="logo-sprite" {% if product.image %}style="background-position: -50px -{{ 50 + (product.image_offset * 148) }}px;"{% endif %} alt="">
           <span class="title">{{ _(product.title, 'DB: products.Product.title') }}</span>
           {{ _(product.description, 'DB: products.Product.description') }}
         </a>
       </li>
     {% endfor %}
   </ul>
+{% endblock %}
+
+{% block head %}
+  {% if products %}
+    <style>
+      #products > li > a > .logo-sprite {
+        background-image: url({{ products[0].sprite_url(retina=False) }});
+      }
+
+      @media only screen and (-webkit-min-device-pixel-ratio: 2), only screen and (min-device-pixel-ratio: 2) {
+        #products > li > a > .logo-sprite {
+          background-image: url({{ products[0].sprite_url() }});
+          -webkit-background-size: 148px {{ products[0].sprite_height }}px;
+          -moz-background-size: 148px {{ products[0].sprite_height }}px;
+          background-size: 148px {{ products[0].sprite_height }}px;
+        }
+      }
+    </style>
+  {% endif %}
 {% endblock %}

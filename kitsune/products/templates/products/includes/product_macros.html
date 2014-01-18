@@ -8,7 +8,7 @@
           {% set prod_url = url('products.product', slug=product.slug) %}
         {% endif %}
         <a class="cf" href="{{ prod_url }}">
-          <img src="{{ STATIC_URL }}img/blank.png" class="logo-sprite" style="background-image: url('{{ product.image_url }}');" alt="" />
+          <img src="{{ STATIC_URL }}img/blank.png" class="logo-sprite" style="{% if product.image %}background-image: url({{ product.sprite_url() }}); background-position: -100px -{{ 100 + (product.image_offset * 296) }}px;{% else %}background-image: url({{ product.image_url }}){% endif %}" alt="" />
           <span class="title">{{ _(product.title, 'DB: products.Product.title') }}</span>
           <span class="description">{{ _(product.description, 'DB: products.Product.description') }}</span>
         </a>
