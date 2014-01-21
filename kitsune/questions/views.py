@@ -412,6 +412,10 @@ def aaq(request, product_key=None, category_key=None, showform=False,
         template=None, step=0):
     """Ask a new question."""
 
+    # This tells our LogoutDeactivatedUsersMiddleware not to
+    # boot this user.
+    request.session['in-aaq'] = True
+
     if request.LANGUAGE_CODE not in settings.AAQ_LANGUAGES:
         locale, path = split_path(request.path)
         path = '/' + settings.WIKI_DEFAULT_LANGUAGE + '/' + path
@@ -614,6 +618,10 @@ def aaq(request, product_key=None, category_key=None, showform=False,
             messages.add_message(request, messages.SUCCESS,
                                  _('Done! Your question is now posted on the '
                                    'Mozilla community support forum.'))
+
+            # Done with AAQ.
+            request.session['in-aaq'] = False
+
             url = reverse('questions.answers',
                           kwargs={'question_id': question.id})
             return HttpResponseRedirect(url)
@@ -667,6 +675,9 @@ def aaq_confirm(request):
         statsd.incr('questions.user.logout')
     else:
         email = None
+
+    # Done with AAQ.
+    request.session['in-aaq'] = False
 
     confirm_t = ('questions/mobile/confirm_email.html' if request.MOBILE
                  else 'questions/confirm_email.html')
