@@ -1361,6 +1361,13 @@ class AAQTemplateTestCase(TestCaseBase):
             reverse('questions.aaq_step5', args=['desktop', 'fix-problems'],
                     **extra),
             search='A test question')
+
+        # Set 'in-aaq' for the session. It isn't already set because this
+        # test doesn't do a GET of the form first.
+        s = self.client.session
+        s['in-aaq'] = True
+        s.save()
+
         return self.client.post(url, self.data, follow=True)
 
     def test_full_workflow(self):
