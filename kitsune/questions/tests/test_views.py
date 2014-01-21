@@ -273,6 +273,12 @@ class MobileAAQTests(MobileTestCase):
         u.is_active = False
         u.save()
 
+        # Set 'in-aaq' for the session. It isn't already set because this
+        # test doesn't do a GET of the form first.
+        s = self.client.session
+        s['in-aaq'] = True
+        s.save()
+
         response = self._new_question(post_it=True)
         eq_(200, response.status_code)
         self.assertTemplateUsed(response,
