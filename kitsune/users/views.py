@@ -8,7 +8,8 @@ from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.models import Site
 from django.http import (HttpResponsePermanentRedirect, HttpResponseRedirect,
-                         Http404, urlencode)
+                         Http404)
+from django.utils.http import urlencode
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import (require_http_methods, require_GET,
                                           require_POST)
