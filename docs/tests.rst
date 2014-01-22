@@ -318,7 +318,7 @@ they run:
     name          description
     ============  ===========================================================
     sumo.fft      runs on -dev
-    sumo.release  runs on -stage
+    sumo.stage    runs on -stage
     sumo.prod     runs on -prod and is read-only (it doesn't change any data)
     ============  ===========================================================
 
