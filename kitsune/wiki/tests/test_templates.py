@@ -783,8 +783,8 @@ class NewRevisionTests(TestCaseBase):
         eq_(200, response.status_code)
         doc = pq(response.content)
         eq_(doc('#id_keywords')[0].value, r.keywords)
-        eq_(doc('#id_summary')[0].value, r.summary)
-        eq_(doc('#id_content')[0].value, r.content)
+        eq_(doc('#id_summary')[0].value.strip(), r.summary)
+        eq_(doc('#id_content')[0].value.strip(), r.content)
 
     @mock.patch.object(Site.objects, 'get_current')
     @mock.patch.object(settings._wrapped, 'TIDINGS_CONFIRM_ANONYMOUS_WATCHES',
@@ -1902,7 +1902,7 @@ class TranslateTests(TestCaseBase):
         response = self.client.get(url)
         eq_(200, response.status_code)
         doc = pq(response.content)
-        eq_(doc('#id_content')[0].value, base_rev.content)
+        eq_(doc('#id_content')[0].value.strip(), base_rev.content)
 
     def test_translate_rejected_parent(self):
         """Translate view of rejected English document shows warning."""

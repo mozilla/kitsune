@@ -114,7 +114,7 @@ class GalleryUploadTestCase(TestCase):
         eq_(200, response.status_code)
         doc = pq(response.content)
         # Preview for all 3 video formats: flv, ogv, webm
-        eq_('??', doc('#gallery-upload-modal textarea').html())
+        eq_('??', doc('#gallery-upload-modal textarea').html().strip())
         eq_('test', doc('#gallery-upload-modal input[name="title"]').val())
 
     def test_video_draft_post(self):
