@@ -59,7 +59,7 @@ SLAVE_DATABASES = []
 # Cache Settings
 # CACHES = {
 #     'default': {
-#         'BACKEND': 'caching.backends.memcached.CacheClass',
+#         'BACKEND': 'caching.backends.memcached.MemcachedCache',
 #         'LOCATION': ['localhost:11211'],
 #         'PREFIX': 'sumo:',
 #     },
