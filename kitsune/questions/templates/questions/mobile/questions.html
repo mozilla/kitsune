@@ -54,10 +54,21 @@
           </div>
         </div>
       </section>
-      <section class="cf">
-        <div class="select-box" data-overlay="sort-overlay">{{ _('Sort by') }}</div>
-        <div class="select-box" data-overlay="show-overlay">{{ _('Show') }}</div>
-        <div class="select-box" data-overlay="filter-overlay">{{ _('Filter') }}</div>
+      <section id="question-filters" class="cf">
+        Filter questions
+        <div class="cf">
+          {% macro filter_button(title, slug) %}
+            <a class="btn{% if show == slug %} selected{% endif %}"
+               href="{{ request.path|urlparams(show=slug) }}">
+              {{ title }}
+            </a>
+          {% endmacro %}
+
+          {{ filter_button(_('Attention Needed'), 'needs-attention') }}
+          {{ filter_button(_('Responded'), 'responded') }}
+          {{ filter_button(_('Done'), 'done') }}
+          {{ filter_button(_('Show All'), 'all') }}
+        </div>
       </section>
     </div>
   </div>
