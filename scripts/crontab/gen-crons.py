@@ -26,7 +26,7 @@ def main():
     # To pick up the right PyOpenSSL:
     python_path = 'PYTHONPATH=/usr/local/lib64/python2.6/site-packages'
 
-    ctx = {'django': 'cd %s; %s %s manage.py' % (
+    ctx = {'django': 'cd %s; %s %s -W ignore::DeprecationWarning manage.py' % (
         opts.kitsune, python_path, opts.python),}
     ctx['cron'] = '%s cron' % ctx['django']
 
