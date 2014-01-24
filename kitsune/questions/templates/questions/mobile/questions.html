@@ -55,7 +55,7 @@
         </div>
       </section>
       <section id="question-filters" class="cf">
-        Filter questions
+        {{ _('Filter questions') }}
         <div class="cf">
           {% macro filter_button(title, slug) %}
             <a class="btn{% if show == slug %} selected{% endif %}"
@@ -110,57 +110,4 @@
     {% endif %}
   </ul>
   {{ questions|quick_paginator }}
-{% endblock %}
-
-{% block after_main %}
-  <div id="sort-overlay" class="overlay" style="display: none;">
-    <header>{{ _('Sort by') }}</header>
-    <div class="wrapper scrollable">
-      <ul class="select-list">
-        <li {{ sort|class_selected(None) }}>
-          <a href="{{ questions_url(_sort=None) }}">{{ _('Most Recent') }}</a>
-        </li>
-        <li {{ sort|class_selected('requested') }}>
-          <a href="{{ questions_url(_sort='requested') }}">{{ _('Most Requested') }}</a>
-        </li>
-      </ul>
-    </div>
-  </div>
-
-  <div id="show-overlay" class="overlay" style="display: none;">
-    <header>{{ _('Show') }}</header>
-    <div class="wrapper scrollable">
-      <ul class="select-list">
-        <li {{ filter|class_selected(None) }}>
-          <a href="{{ questions_url(_filter=None) }}">{{ _('All') }}</a>
-        </li>
-        <li {{ filter|class_selected('unsolved') }}>
-          <a href="{{ questions_url(_filter='unsolved') }}">{{ _('Unsolved') }}</a>
-        </li>
-        <li {{ filter|class_selected('solved') }}>
-          <a href="{{ questions_url(_filter='solved') }}">{{ _('Solved') }}</a>
-        </li>
-        <li {{ filter|class_selected('no-replies') }}>
-          <a href="{{ questions_url(_filter='no-replies') }}">{{ _('No Replies') }}</a>
-        </li>
-        {% if user.is_authenticated() %}
-          <li {{ filter|class_selected('my-contributions') }}>
-            <a href="{{ questions_url(_filter='my-contributions') }}">{{ _('My Contributions') }}</a>
-          </li>
-        {% endif %}
-      </ul>
-    </div>
-  </div>
-
-  <div id="filter-overlay" class="overlay" style="display: none;">
-    <header>{{ _('Filter') }}</header>
-    <div class="wrapper scrollable padded">
-      <p>{{ _('Enter a tag. For example: "Firefox 14.0", "Windows 7", "crash"') }}</p>
-      <form action="" method="get">
-        <input type="hidden" class="current-tagged" value="{{ tagged }}"/>
-        <input class="searchbox" type="text" name="tagged" value="" data-vocabulary="{{ tag_vocab() }}" required="required"/>
-        <button type="submit" class="btn">{{ _('Filter Tag') }}</button>
-      </form>
-    </div>
-  </div>
 {% endblock %}
