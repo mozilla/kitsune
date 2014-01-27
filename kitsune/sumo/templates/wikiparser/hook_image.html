@@ -43,18 +43,6 @@
   </a>
 {% endif %}
 
-{% if lazy_enabled %}
-  <noscript>
-    {% if params['link'] %}
-      <a href="{{ params['link'] }}"{% if params['page'] and not params['found'] %} class="new"{% endif %}>
-    {% endif %}
-    {{ render_image() }}
-    {% if params['link'] %}
-      </a>
-    {% endif %}
-  </noscript>
-{% endif %}
-
 {% if has_frame %}
   {% if params['caption'] %}
     <div class="caption"
