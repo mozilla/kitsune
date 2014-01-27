@@ -13,7 +13,7 @@
     <article id="localize" class="dashboards">
       <h1>{{ title }}</h1>
 
-      {{ product_choice_list(products, product, 'dashboards.contributors') }}
+      {{ product_choice_list(products, product, url('dashboards.contributors')) }}
 
       {% if default_locale_name != request_locale_name %}
         <div class="choice-list">

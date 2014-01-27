@@ -1,18 +1,23 @@
 {% extends "base.html" %}
-{% from "dashboards/includes/macros.html" import localization_sidebar_nav %}
+{% from "dashboards/includes/macros.html" import localization_sidebar_nav, product_choice_list %}
 {% set title = _('[{locale}] Locale Metrics')|f(locale=current_locale) %}
 {% set scripts = ('wiki', 'rickshaw', 'wiki.dashboard') %}
 {% set styles = ('rickshaw', 'kbdashboards') %}
 {% set crumbs = [(None, title)] %}
 {% set classes = 'locale-metrics' %}
 
+{% set product_slug = product.slug if product else 'null' %}
+
+
 {% block content %}
   <div class="grid_9">
     <article id="localize" class="dashboards">
       <h1>{{ title }}</h1>
 
+      {{ product_choice_list(products, product, url('dashboards.locale_metrics', locale_code=current_locale)) }}
+
       {% if current_locale != settings.WIKI_DEFAULT_LANGUAGE %}
-        <section id="localization-metrics" data-url="{{ url('api.wikimetric_list')|urlparams(locale=current_locale, page_size=10000, product='null') }}">
+        <section id="localization-metrics" data-url="{{ url('api.wikimetric_list')|urlparams(locale=current_locale, page_size=10000, product=product_slug) }}">
           <h2>{{ _('Localization Percentage') }}</h2>
           <div class="rickshaw">
             <div class="inline-controls"></div>
@@ -24,7 +29,7 @@
         </section>
       {% endif %}
 
-      <section id="active-contributors" data-url="{{ url('api.wikimetric_list')|urlparams(locale=current_locale, page_size=10000, product='null') }}">
+      <section id="active-contributors" data-url="{{ url('api.wikimetric_list')|urlparams(locale=current_locale, page_size=10000, product=product_slug) }}">
         <h2>{{ _('Active Contributors') }}</h2>
         <div class="rickshaw">
           <div class="inline-controls"></div>
@@ -35,7 +40,7 @@
         </div>
       </section>
 
-      <section id="kpi-vote" data-url="{{ url('api.kpi.kb-votes')|urlparams(locale=current_locale) }}">
+      <section id="kpi-vote" data-url="{{ url('api.kpi.kb-votes')|urlparams(locale=current_locale, product=product_slug) }}">
         <h2>{{ _('Helpful Votes') }}</h2>
         <div class="rickshaw">
           <div class="inline-controls"></div>

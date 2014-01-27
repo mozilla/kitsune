@@ -183,13 +183,13 @@
   </div>
 {% endmacro %}
 
-{% macro product_choice_list(products, current, url_name) %}
+{% macro product_choice_list(products, current, url_) %}
   <div class="choice-list">
     <label>{{ _('Product:') }}</label>
     <ul>
       <li>
         {% if current %}
-          <a href="{{ url(url_name) }}">
+          <a href="{{ url_ }}">
             {{ _('All Products') }}
           </a>
         {% else %}
@@ -200,7 +200,7 @@
           {% if current == p %}
             {{ _(p.title, 'DB: products.Product.title') }}
           {% else %}
-            <a href="{{ url(url_name)|urlparams(product=p.slug) }}">
+            <a href="{{ url_|urlparams(product=p.slug) }}">
               {{ _(p.title, 'DB: products.Product.title') }}
             </a>
           {% endif %}
