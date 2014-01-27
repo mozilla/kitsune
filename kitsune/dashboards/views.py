@@ -123,10 +123,16 @@ def locale_metrics(request, locale_code):
     if locale_code not in settings.SUMO_LANGUAGES:
         raise Http404
 
+    product = _get_product(request)
+
     return render(
         request,
         'dashboards/locale_metrics.html',
-        {'current_locale': locale_code})
+        {
+            'current_locale': locale_code,
+            'product': product,
+            'products': Product.objects.filter(visible=True),
+        })
 
 
 @require_GET

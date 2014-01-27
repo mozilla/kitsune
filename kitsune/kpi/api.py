@@ -167,6 +167,7 @@ class KBVoteMetricList(CachedAPIView):
     def get_objects(self, request):
         # Set up the queries for the data we need
         locale = request.GET.get('locale')
+        product = request.GET.get('product')
 
         qs_kb_votes = HelpfulVote.objects.filter(
             created__gte=date(2011, 1, 1))
@@ -174,6 +175,10 @@ class KBVoteMetricList(CachedAPIView):
         if locale:
             qs_kb_votes = qs_kb_votes.filter(
                 revision__document__locale=locale)
+
+        if product and product != 'null':
+            qs_kb_votes = qs_kb_votes.filter(
+                revision__document__products__slug=product)  # WHOA
 
         qs_kb_votes = (
             qs_kb_votes.extra(
