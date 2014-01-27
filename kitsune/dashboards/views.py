@@ -140,12 +140,17 @@ def aggregated_metrics(request):
     """The aggregated (all locales) kb metrics dashboard."""
     today = date.today()
     locales = get_locales_by_visit(today - timedelta(days=30), today)
+    product = _get_product(request)
 
     return render(
         request,
         'dashboards/aggregated_metrics.html',
-        {'locales_json': json.dumps(settings.SUMO_LANGUAGES),
-         'locales': locales})
+        {
+            'locales_json': json.dumps(settings.SUMO_LANGUAGES),
+            'locales': locales,
+            'product': product,
+            'products': Product.objects.filter(visible=True),
+        })
 
 
 def _get_product(request):

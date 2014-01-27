@@ -1,17 +1,22 @@
 {% extends "base.html" %}
-{% from "dashboards/includes/macros.html" import localization_sidebar_nav %}
+{% from "dashboards/includes/macros.html" import localization_sidebar_nav, product_choice_list %}
 {% set title = _('Aggregated Localization Metrics') %}
 {% set scripts = ('wiki', 'rickshaw', 'wiki.dashboard') %}
 {% set styles = ('rickshaw', 'kbdashboards') %}
 {% set crumbs = [(None, title)] %}
 {% set classes = 'aggregated-metrics' %}
 
+{% set product_slug = product.slug if product else 'null' %}
+
+
 {% block content %}
   <div class="grid_9">
     <article class="dashboards">
       <h1>{{ title }}</h1>
 
-      <section id="percent-localized-top20" data-url="{{ url('api.wikimetric_list')|urlparams(product='null', page_size=10000,) }}">
+      {{ product_choice_list(products, product, url('dashboards.aggregated_metrics')) }}
+
+      <section id="percent-localized-top20" data-url="{{ url('api.wikimetric_list')|urlparams(product=product_slug, page_size=10000,) }}">
         <h2>{{ _('Top 20 Articles: % Localized') }}</h2>
         <div class="rickshaw">
           <div class="inline-controls"></div>
@@ -22,7 +27,7 @@
         </div>
       </section>
 
-      <section id="percent-localized-all" data-url="{{ url('api.wikimetric_list')|urlparams(product='null', page_size=10000,) }}">
+      <section id="percent-localized-all" data-url="{{ url('api.wikimetric_list')|urlparams(product=product_slug, page_size=10000,) }}">
         <h2>{{ _('All Articles: % Localized') }}</h2>
         <div class="rickshaw">
           <div class="inline-controls"></div>
@@ -33,7 +38,7 @@
         </div>
       </section>
 
-      <section id="active-contributors" data-url="{{ url('api.wikimetric_list')|urlparams(product='null', page_size=10000,) }}">
+      <section id="active-contributors" data-url="{{ url('api.wikimetric_list')|urlparams(product=product_slug, page_size=10000,) }}">
         <h2>{{ _('Active Contributors') }}</h2>
         <div class="rickshaw">
           <div class="inline-controls"></div>
