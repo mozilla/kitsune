@@ -31,11 +31,11 @@
         {% if row.status %}
           <a href="{{ row.status_url }}">
             {{ row.status }}
-            {% if row.status_class %}<span class="{{ row.status_class }}" />{% endif %}
+            {% if row.status_class %}<span class="{{ row.status_class }}"></span>{% endif %}
           </a>
         {% else %}
           {# For having a bullet char without a link #}
-          <span class="{{ row.status_class }}" />
+          <span class="{{ row.status_class }}"></span>
         {% endif %}
       {% endif %}
     </td>
