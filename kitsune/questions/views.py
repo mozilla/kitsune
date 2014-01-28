@@ -1382,7 +1382,7 @@ def marketplace_success(request, template=None):
     return render(request, template)
 
 
-def stats_topic_data(bucket_days, start, end, locale=None):
+def stats_topic_data(bucket_days, start, end, locale=None, product=None):
     """Gets a zero filled histogram for each question topic.
 
     Uses elastic search.
@@ -1403,6 +1403,9 @@ def stats_topic_data(bucket_days, start, end, locale=None):
 
     if locale:
         f &= F(question_locale=locale)
+
+    if product:
+        f &= F(product=product.slug)
 
     topics = Topic.objects.values('slug', 'title')
     facets = {}
@@ -1480,6 +1483,10 @@ def metrics(request, locale_code=None):
     """The Support Forum metrics dashboard."""
     template = 'questions/metrics.html'
 
+    product = request.GET.get('product')
+    if product:
+        product = get_object_or_404(Product, slug=product)
+
     form = StatsForm(request.GET)
     if form.is_valid():
         bucket_days = form.cleaned_data['bucket']
@@ -1491,9 +1498,12 @@ def metrics(request, locale_code=None):
         end = date.today()
 
     data = {
-        'graph': stats_topic_data(bucket_days, start, end, locale_code),
+        'graph': stats_topic_data(
+            bucket_days, start, end, locale_code, product),
         'form': form,
         'current_locale': locale_code,
+        'product': product,
+        'products': Product.objects.filter(visible=True),
     }
 
     return render(request, template, data)

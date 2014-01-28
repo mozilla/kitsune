@@ -1,4 +1,5 @@
 {% extends "questions/base.html" %}
+{% from "dashboards/includes/macros.html" import product_choice_list %}
 {% set title = _('Support Forum Metrics') %}
 {% set crumbs = [(url('questions.questions'), _('Support Forum')),
                  (None, _('Metrics'))] %}
@@ -8,25 +9,41 @@
 {% block content %}
   <h1>{{ _('Support Forum Metrics') }}</h1>
 
-  <section id="locale-picker">
-    <span>{{ _('Locale:') }}</span>
-    {% if not current_locale %}
-      <strong>{{ _('All') }}</strong>
-    {% else %}
-      <a href="{{ url('questions.metrics') }}">{{ _('All') }}</a>
-    {% endif %}
-    {% for locale in settings.AAQ_LANGUAGES %}
-      {% if current_locale == locale %}
-         <strong>{{ locale }}</strong>
-      {% else %}
-        <a href="{{ url('questions.locale_metrics', locale) }}">{{ locale }}</a>
-      {% endif %}
-    {% endfor %}
-  </section>
+  {% if not current_locale %}
+    {% set base_url = url('questions.metrics')|urlparams(None, request.GET)|urlparams(product=None) %}
+  {% else %}
+    {% set base_url = url('questions.locale_metrics', current_locale)|urlparams(None, request.GET)|urlparams(product=None) %}
+  {% endif %}
+  {{ product_choice_list(products, product, base_url) }}
+
+  <div class="choice-list">
+    <label>{{ _('Locale:') }}</label>
+    <ul>
+      <li>
+        {% if not current_locale %}
+          {{ _('All') }}
+        {% else %}
+          <a href="{{ url('questions.metrics') }}">{{ _('All') }}</a>
+        {% endif %}
+      </li>
+      {% for locale in settings.AAQ_LANGUAGES %}
+        <li>
+          {% if current_locale == locale %}
+            {{ locale }}
+          {% else %}
+            <a href="{{ url('questions.locale_metrics', locale)|urlparams(None, request.GET) }}">{{ locale }}</a>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
 
   {% set api_url = url('api.kpi.questions') %}
   {% if current_locale %}
     {% set api_url = api_url|urlparams(locale=current_locale) %}
+  {% endif %}
+  {% if product %}
+    {% set api_url = api_url|urlparams(product=product.slug) %}
   {% endif %}
   <section id="questions-metrics" data-url="{{ api_url }}">
     <div class="rickshaw">
@@ -56,13 +73,16 @@
               {{ form.as_ul() }}
               <li><input type="submit" /></li>
             </ul>
+            {% if product %}
+              <input type="hidden" name="product" value="{{ product.slug }}" />
+            {% endif %}
           </form>
         </div>
       </div>
     </div>
   {% else %}
     <p>
-      {{ _('Data is temporarily unavailable, please try again in a few minutes.') }}
+      {{ _('There is no topic data available for the current selections.') }}
     </p>
   {% endif %}
 {% endblock %}
