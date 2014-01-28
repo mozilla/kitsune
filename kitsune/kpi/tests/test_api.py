@@ -13,6 +13,7 @@ from kitsune.kpi.models import (
     SUPPORT_FORUM_CONTRIBUTORS_METRIC_CODE, VISITORS_METRIC_CODE,
     EXIT_SURVEY_YES_CODE, EXIT_SURVEY_NO_CODE, EXIT_SURVEY_DONT_KNOW_CODE)
 from kitsune.kpi.tests import metric, metric_kind
+from kitsune.products.tests import product
 from kitsune.sumo.helpers import urlparams
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
@@ -99,6 +100,52 @@ class KpiApiTests(TestCase):
         assert 'responded_24' not in r['objects'][0]
         assert 'responded_72' not in r['objects'][0]
 
+    def test_questions_by_product(self):
+        """Test product filtering of questions API call."""
+        firefox_os = product(slug='firefox-os', save=True)
+        firefox = product(slug='firefox', save=True)
+
+        # A Firefox OS question with a solution:
+        q = question(save=True)
+        q.products.add(firefox_os)
+        a = answer(question=q, save=True)
+        q.solution = a
+        q.save()
+
+        # A Firefox OS question with an answer:
+        q = question(save=True)
+        q.products.add(firefox_os)
+        answer(question=q, save=True)
+
+        # A Firefox OS question without answers:
+        q = question(save=True)
+        q.products.add(firefox_os)
+
+        # A Firefox question without answers:
+        q = question(locale='pt-BR', save=True)
+        q.products.add(firefox)
+
+        # Verify no product filtering:
+        r = self._get_api_result('api.kpi.questions')
+        eq_(r['objects'][0]['solved'], 1)
+        eq_(r['objects'][0]['responded_24'], 2)
+        eq_(r['objects'][0]['responded_72'], 2)
+        eq_(r['objects'][0]['questions'], 4)
+
+        # Verify product=firefox-os
+        r = self._get_api_result('api.kpi.questions', product='firefox-os')
+        eq_(r['objects'][0]['solved'], 1)
+        eq_(r['objects'][0]['responded_24'], 2)
+        eq_(r['objects'][0]['responded_72'], 2)
+        eq_(r['objects'][0]['questions'], 3)
+
+        # Verify product=firefox
+        r = self._get_api_result('api.kpi.questions', product='firefox')
+        eq_(r['objects'][0]['questions'], 1)
+        assert 'solved' not in r['objects'][0]
+        assert 'responded_24' not in r['objects'][0]
+        assert 'responded_72' not in r['objects'][0]
+
     def test_questions_inactive_user(self):
         """Verify questions from inactive users aren't counted."""
         # Two questions for an inactive user.
@@ -149,6 +196,13 @@ class KpiApiTests(TestCase):
             helpful_vote(revision=r, save=True)
             helpful_vote(revision=r, helpful=True, save=True)
 
+        # Assign 2 documents to Firefox OS and 1 to Firefox
+        firefox_os = product(slug='firefox-os', save=True)
+        firefox = product(slug='firefox', save=True)
+        r1.document.products.add(firefox_os)
+        r2.document.products.add(firefox_os)
+        r3.document.products.add(firefox)
+
         # All votes should be counted if we don't specify a locale
         r = self._get_api_result('api.kpi.kb-votes')
         eq_(r['objects'][0]['kb_helpful'], 3)
@@ -163,6 +217,22 @@ class KpiApiTests(TestCase):
         r = self._get_api_result('api.kpi.kb-votes', locale='es')
         eq_(r['objects'][0]['kb_helpful'], 2)
         eq_(r['objects'][0]['kb_votes'], 6)
+
+        # Only Firefox OS votes:
+        r = self._get_api_result('api.kpi.kb-votes', product='firefox-os')
+        eq_(r['objects'][0]['kb_helpful'], 2)
+        eq_(r['objects'][0]['kb_votes'], 6)
+
+        # Only Firefox votes:
+        r = self._get_api_result('api.kpi.kb-votes', product='firefox')
+        eq_(r['objects'][0]['kb_helpful'], 1)
+        eq_(r['objects'][0]['kb_votes'], 3)
+
+        # Only Firefox OS + es votes:
+        r = self._get_api_result(
+            'api.kpi.kb-votes', product='firefox-os', locale='es')
+        eq_(r['objects'][0]['kb_helpful'], 1)
+        eq_(r['objects'][0]['kb_votes'], 3)
 
     def test_active_contributors(self):
         """Test active contributors API call."""

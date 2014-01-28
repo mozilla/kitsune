@@ -110,6 +110,7 @@ class QuestionsMetricList(CachedAPIView):
     def get_objects(self, request):
         # Set up the queries for the data we need
         locale = request.GET.get('locale')
+        product = request.GET.get('product')
 
         # Set up the query for the data we need.
         qs = _daily_qs_for(Question)
@@ -119,6 +120,9 @@ class QuestionsMetricList(CachedAPIView):
 
         if locale:
             qs = qs.filter(locale=locale)
+
+        if product:
+            qs = qs.filter(products__slug=product)
 
         # All answers that were created within 3 days of the question.
         aq_72 = Answer.objects.filter(
