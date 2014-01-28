@@ -7,9 +7,12 @@
 
   <article id="revision-list">
     <form class="filter" action="{{ url('wiki.revisions') }}">
-      {{ form }}
+      {% for field in form %}
+        {{ field.label }}
+        {{ field }}
+      {% endfor %}
       <button class="btn btn-submit">{{ _('Submit') }}</button>
-      <img src="/media/img/wait-trans.gif" class="loading" />
+      <img src="/media/img/wait-trans.gif" class="loading" alt="" />
     </form>
 
     <div id="revisions-fragment">

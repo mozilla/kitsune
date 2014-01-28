@@ -3,7 +3,7 @@
   <li>
     <div class="date">
       {{ rev.Revision }}
-      <a href="{{ rev.get_absolute_url() }}" rel="nofollow, noindex">
+      <a href="{{ rev.get_absolute_url() }}" rel="nofollow">
         {{ datetimeformat(rev.created, format='datetime') }}
       </a>
     </div>
@@ -15,7 +15,7 @@
         <a class="show-diff" href="{{ diff_url }}">
           <img class="icon-search" src="{{ STATIC_URL }}img/blank.png" alt="{{ _('View Diff') }}" />
         </a>
-        <img class="loading" src="/media/img/wait-trans.gif">
+        <img class="loading" src="/media/img/wait-trans.gif" alt="" />
         <a class="close-diff" href="">
           <img class="icon-back" src="{{ STATIC_URL }}img/blank.png" alt="{{ _('Close Diff') }}" />
         </a>
