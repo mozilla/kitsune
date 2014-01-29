@@ -962,7 +962,6 @@ class WhatLinksHereTests(TestCase):
         eq_(d1.images[0], img)
         eq_(len(img.documents), 1)
         eq_(img.documents[0], d1)
-    test_images.xx = 1
 
 
 class TestLazyWikiImageTags(TestCase):
