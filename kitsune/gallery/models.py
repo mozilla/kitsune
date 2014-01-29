@@ -45,6 +45,12 @@ class Image(Media):
         """Returns self.thumbnail, if set, else self.file"""
         return self.thumbnail.url if self.thumbnail else self.file.url
 
+    @property
+    def documents(self):
+        """Get the documents that include this image."""
+        from kitsune.wiki.models import Document
+        return Document.objects.filter(documentimage__image=self)
+
 
 @auto_delete_files
 class Video(Media):
