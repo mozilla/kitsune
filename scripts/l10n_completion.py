@@ -1,19 +1,21 @@
 #!/usr/bin/env python
 
 """
-Goes through locale files and gives a breakdown of percentage translated
-by app for each locale.
+
+Goes through locale files and gives a breakdown of percentage
+translated by app for each locale.
 
 Requires:
 
 * polib
 
-Usage::
+For usage help, type::
 
-   $ python l10n_completion.py <locales-dir> <output-file>
+   $ python l10n_completion.py --help
 
 """
 
+from optparse import OptionParser
 import json
 import os
 import site
@@ -29,15 +31,17 @@ import time
 import polib
 
 
-USAGE = 'usage: l10n_completion.py <locales-dir> <output-file>'
+USAGE = 'usage: %prog [OPTIONS] OUTPUT-FILE LOCALES-DIR'
 
 
 def get_language(fn):
+    """Given a filename, returns the locale it applies to"""
     # FIXME - this expects the fn to be '.../XX/LC_MESSAGES/messages.po'
     return fn.split(os.sep)[-3]
 
 
 def get_locale_files(localedir):
+    """Given a locale dir, returns a list of all .po files in that tree"""
     po_files = []
     for root, dirs, files in os.walk(localedir):
         po_files.extend(
@@ -48,6 +52,11 @@ def get_locale_files(localedir):
 
 
 def get_completion_data_for_file(fn):
+    """Parses .po file and returns completion data for that .po file
+
+    :returns: dict with keys total, translated and percent
+
+    """
     app_to_translations = {}
 
     lang = get_language(fn)
@@ -85,6 +94,11 @@ def get_completion_data_for_file(fn):
 
 
 def get_completion_data(locale_files):
+    """Given a list of .po files, returns a dict of all completion data
+
+    :returns: dict: locale -> completion data
+
+    """
     data = {}
 
     for fn in locale_files:
@@ -94,23 +108,30 @@ def get_completion_data(locale_files):
 
 
 def main(argv):
-    if len(argv) < 2:
-        print USAGE
+    parser = OptionParser(usage=USAGE)
+    parser.add_option(
+        '--truncate',
+        action='store', type='int', dest='truncate', default=0)
+
+    (options, args) = parser.parse_args(argv)
+
+    if len(args) != 2:
+        parser.error('Incorrect number of args.')
         return 1
 
+    output_file = args[0]
+    locales_dir = args[1]
+
     # Get list of locales dirs
-    locale_files = get_locale_files(argv[0])
+    locale_files = get_locale_files(locales_dir)
 
-    data = get_completion_data(locale_files)
-
+    # Generate completion data
     data = [
         {
             'created': time.time(),
-            'locales': data
+            'locales': get_completion_data(locale_files)
         }
     ]
-
-    output_file = argv[1]
 
     if os.path.exists(output_file):
         with open(output_file, 'rb') as fp:
@@ -118,6 +139,10 @@ def main(argv):
 
         old_data.append(data[0])
         data = old_data
+
+    if options.truncate and len(data) > options.truncate:
+        print 'Truncating ...'
+        data = data[len(data) - options.truncate:]
 
     with open(output_file, 'wb') as fp:
         json.dump(data, fp)
