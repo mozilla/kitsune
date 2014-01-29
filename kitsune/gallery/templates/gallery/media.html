@@ -68,7 +68,26 @@
           {{ generate_video(media) }}
         {% endif %}
       </div>
+
+      <h2> {{ _('Description') }}</h2>
       <div class="description">{{ media.description|wiki_to_html }}</div>
+
+      {% if media_type == 'image' %}
+        <h2> {{ _('Articles') }}</h2>
+        {% set documents = media.documents %}
+        <div class="documents">
+          {% if documents %}
+            <p>{{ _('The following articles include this image:') }}</p>
+            <ul>
+              {% for doc in documents %}
+                <li><a href="{{ doc.get_absolute_url() }}">{{ doc.title }}</a></li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p>{{ _('This image is not included in any articles.') }}</p>
+          {% endif %}
+        </div>
+      {% endif %}
     </div>
     <div class="submit">
       <form id="media-actions" action="{{ url('gallery.delete_media', media_type, media.pk) }}" method="GET">

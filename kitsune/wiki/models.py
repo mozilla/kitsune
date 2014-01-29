@@ -17,6 +17,7 @@ from statsd import statsd
 from tidings.models import NotificationsMixin
 from tower import ugettext_lazy as _lazy, ugettext as _
 
+from kitsune.gallery.models import Image
 from kitsune.products.models import Product, Topic
 from kitsune.questions.models import Question
 from kitsune.search.es_utils import (UnindexMeBro, ES_EXCEPTIONS,
@@ -637,6 +638,9 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         # often called multiple times per document.
         self.links_from().delete()
 
+        # Also delete the DocumentImage instances for this document.
+        DocumentImage.objects.filter(document=self).delete()
+
         from kitsune.wiki.parser import wiki_to_html, WhatLinksHereParser
         return wiki_to_html(self.current_revision.content,
                             locale=self.locale,
@@ -654,11 +658,23 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
     def add_link_to(self, linked_to, kind):
         """Create a DocumentLink to another Document."""
         try:
-            DocumentLink(linked_from=self,
-                         linked_to=linked_to,
-                         kind=kind).save()
+            DocumentLink(
+                linked_from=self, linked_to=linked_to, kind=kind).save()
         except IntegrityError:
             # This link already exists, ok.
+            pass
+
+    @property
+    def images(self):
+        return Image.objects.filter(documentimage__document=self)
+
+
+    def add_image(self, image):
+        """Create a DocumentImage to connect self to an Image instance."""
+        try:
+            DocumentImage(document=self, image=image).save()
+        except IntegrityError:
+            # This DocumentImage already exists, ok.
             pass
 
 
@@ -1097,6 +1113,19 @@ class DocumentLink(ModelBase):
     def __unicode__(self):
         return (u'<DocumentLink: %s from %r to %r>' %
                 (self.kind, self.linked_from, self.linked_to))
+
+
+class DocumentImage(ModelBase):
+    """Model to keep track of what documents include what images."""
+    document = models.ForeignKey(Document)
+    image = models.ForeignKey(Image)
+
+    class Meta:
+        unique_together = ('document', 'image')
+
+    def __unicode__(self):
+        return u'<DocumentImage: {doc} includes {img}>'.format(
+            doc=document, img=image)
 
 
 def _doc_components_from_url(url, required_locale=None, check_host=True):

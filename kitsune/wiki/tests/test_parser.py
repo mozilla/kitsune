@@ -954,6 +954,16 @@ class WhatLinksHereTests(TestCase):
         eq_(len(d3.links_to()), 0)
         eq_(len(d3.links_from()), 1)
 
+    def test_images(self):
+        img = image(title='image-file.png')
+        d1, _, _ = doc_rev_parser('[[Image:image-file.png]]', title='D1')
+
+        eq_(len(d1.images), 1)
+        eq_(d1.images[0], img)
+        eq_(len(img.documents), 1)
+        eq_(img.documents[0], d1)
+    test_images.xx = 1
+
 
 class TestLazyWikiImageTags(TestCase):
     def setUp(self):
