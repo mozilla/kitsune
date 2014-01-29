@@ -12,6 +12,7 @@ from lxml.etree import Element
 from statsd import statsd
 from tower import ugettext as _, ugettext_lazy as _lazy
 
+from kitsune.gallery.models import Image
 from kitsune.sumo import parser as sumo_parser
 from kitsune.sumo.parser import ALLOWED_ATTRIBUTES, get_object_fallback
 from kitsune.wiki.models import Document
@@ -479,3 +480,15 @@ class WhatLinksHereParser(WikiParser):
 
         return (super(WhatLinksHereParser, self)
                 ._hook_include(parser, space, name))
+
+    def _hook_image_tag(self, parser, space, name):
+        """Record an image is included in a document, then call super()."""
+        title = name.split('|')[0]
+        image = get_object_fallback(Image, title, self.locale)
+
+        if image:
+            self.current_doc.add_image(image)
+
+        return (super(WhatLinksHereParser, self)
+                ._hook_image_tag(parser, space, name))
+
