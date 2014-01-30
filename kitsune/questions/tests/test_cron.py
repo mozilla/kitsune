@@ -6,7 +6,6 @@ from nose.tools import eq_
 import kitsune.questions.tasks
 from kitsune.questions import config
 from kitsune.questions.cron import escalate_questions
-from kitsune.questions.models import Question
 from kitsune.questions.tests import answer, question
 from kitsune.sumo.tests import TestCase
 
@@ -19,8 +18,12 @@ class TestEscalateCron(TestCase):
 
         questions_to_escalate = [
             # Questions over 24 hours old without an answer.
-            question(created=datetime.now() - timedelta(hours=25), save=True),
-            question(created=datetime.now() - timedelta(hours=36), save=True),
+            question(
+                created=datetime.now() - timedelta(hours=24, minutes=10),
+                save=True),
+            question(
+                created=datetime.now() - timedelta(hours=24, minutes=50),
+                save=True),
         ]
 
         questions_not_to_escalate = [
@@ -31,7 +34,9 @@ class TestEscalateCron(TestCase):
         ]
 
         # Question older than 24 hours with a recent answer.
-        q = question(created=datetime.now() - timedelta(hours=25), save=True)
+        q = question(
+            created=datetime.now() - timedelta(hours=24, minutes=10),
+            save=True)
         answer(created=datetime.now() - timedelta(hours=10), question=q,
                save=True)
         answer(created=datetime.now() - timedelta(hours=1), creator=q.creator,
@@ -39,30 +44,28 @@ class TestEscalateCron(TestCase):
         questions_not_to_escalate.append(q)
 
         # Question older than 24 hours with a recent answer by the asker.
-        q = question(created=datetime.now() - timedelta(hours=25), save=True)
-        answer(created=datetime.now() - timedelta(hours=15), creator=q.creator,
-               question=q, save=True)
+        q = question(
+            created=datetime.now() - timedelta(hours=24, minutes=10),
+            save=True)
+        answer(
+            created=datetime.now() - timedelta(hours=15), creator=q.creator,
+            question=q, save=True)
         questions_not_to_escalate.append(q)
 
         # Question older than 24 hours without an answer already escalated.
-        q = question(created=datetime.now() - timedelta(hours=36), save=True)
+        q = question(
+            created=datetime.now() - timedelta(hours=24, minutes=10),
+            save=True)
         q.tags.add(config.ESCALATE_TAG_NAME)
         questions_not_to_escalate.append(q)
 
         # Question with an inactive user.
-        q = question(created=datetime.now() - timedelta(hours=36), save=True)
+        q = question(
+            created=datetime.now() - timedelta(hours=24, minutes=10),
+            save=True)
         q.creator.is_active = False
         q.creator.save()
         questions_not_to_escalate.append(q)
 
         # Run the cron job and verify only 3 questions were escalated.
         eq_(len(questions_to_escalate), escalate_questions())
-
-        # Get all escalated questions, there should be 4 now
-        # (one was already tagged before the cron ran).
-        escalated = Question.objects.escalated()
-        eq_(3, len(escalated))
-
-        # Verify that all the questions to escalated are listed.
-        for q in questions_to_escalate:
-            assert q in escalated

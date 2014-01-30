@@ -142,7 +142,7 @@ def escalate_questions():
 
     Escalate questions where the status is "needs attention" and
     still have no replies after 24 hours, but not that are older
-    than 7 days. (to avoid the backfill from hell).
+    than 25 hours (this runs every hour).
     """
     if settings.STAGE:
         return
@@ -154,16 +154,15 @@ def escalate_questions():
     qs = qs.exclude(creator__is_active=False)
 
     # Filter them down to those that haven't been replied to and are over
-    # 24 hours old.
+    # 24 hours old but less than 25 hours old. We run this once an hour.
     start = datetime.now() - timedelta(hours=24)
-    end = datetime.now() - timedelta(days=7)
+    end = datetime.now() - timedelta(hours=25)
     qs_no_replies_yet = qs.filter(
         last_answer__isnull=True,
         created__lt=start,
         created__gt=end)
 
     for question in qs_no_replies_yet:
-        question.tags.add(config.ESCALATE_TAG_NAME)
         escalate_question.delay(question.id)
 
     return len(qs_no_replies_yet)
