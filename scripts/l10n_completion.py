@@ -80,6 +80,9 @@ def get_completion_data_for_file(fn):
                 path = 'vendor/' + path[2]
             app_to_translations.setdefault(path, []).append(poentry.translated())
 
+    all_total = 0
+    all_translated = 0
+
     data = {}
     for app, tr_list in app_to_translations.items():
         total = len(tr_list)
@@ -88,9 +91,52 @@ def get_completion_data_for_file(fn):
         data[app] = {
             'total': total,
             'translated': translated,
-            'percent': int((100.00 / float(total)) * float(translated))
         }
-    return {lang: data}
+
+        all_total += total
+        all_translated += translated
+
+    return {
+        lang: {
+            'total': all_total,
+            'translated': all_translated,
+            'apps': data
+        }
+    }
+
+
+def merge_trees(data, new_data):
+    """Merges values from second tree into the first
+
+    This takes care to add values of the same key where appropriate.
+
+    """
+    for key, val in new_data.items():
+        if isinstance(val, dict):
+            if key not in data:
+                data[key] = new_data[key]
+            else:
+                merge_trees(data[key], new_data[key])
+
+        else:
+            if key not in data:
+                data[key] = val
+            else:
+                data[key] = data[key] + val
+
+
+def calculate_percents(data):
+    """Traverses a tree and calculates percents at appropriate levels"""
+    # calculate the percent for this node if appropriate
+    if 'translated' in data and 'total' in data:
+        total = float(data['total'])
+        translated = float(data['translated'])
+        data['percent'] = int((100.00 / total) * translated)
+
+    # traverse the tree to calculate additional percents
+    for key, val in data.items():
+        if isinstance(val, dict):
+            calculate_percents(val)
 
 
 def get_completion_data(locale_files):
@@ -102,7 +148,10 @@ def get_completion_data(locale_files):
     data = {}
 
     for fn in locale_files:
-        data.update(get_completion_data_for_file(fn))
+        new_data = get_completion_data_for_file(fn)
+        merge_trees(data, new_data)
+
+    calculate_percents(data)
 
     return data
 
