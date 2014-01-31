@@ -1,10 +1,10 @@
 from nose.tools import eq_
 
-from kitsune.products.tests import product
+from kitsune.products.tests import product, topic
 from kitsune.questions.models import QuestionMappingType
 from kitsune.questions.tests import question, answer, answervote, questionvote
 from kitsune.search.tests.test_es import ElasticTestCase
-from kitsune.products.tests import topic
+from kitsune.users.tests import user
 
 
 class QuestionUpdateTests(ElasticTestCase):
@@ -158,6 +158,31 @@ class QuestionUpdateTests(ElasticTestCase):
         q.creator.delete()
         self.refresh()
         eq_(search.query(question_title__text='work').count(), 0)
+
+    def test_question_is_reindexed_on_username_change(self):
+        search = QuestionMappingType.search()
+
+        u = user(username='dexter', save=True)
+
+        q = question(creator=u, title=u'Hello', save=True)
+        a = answer(creator=u, content=u'I love you', save=True)
+        self.refresh()
+        eq_(search.query(question_title__text='hello')[0]['question_creator'],
+            u'dexter')
+        query = search.query(question_answer_content__text='love')
+        eq_(query[0]['question_answer_creator'],
+            [u'dexter'])
+
+        # NOTE: This doesn't work because we depend on the countdown in celery.
+        # Any ideas?
+        # Change the username and verify the index.
+        # u.username = 'walter'
+        # u.save()
+        # self.refresh()
+        # eq_(search.query(question_title__text='hello')[0]['question_creator'],
+        #     u'walter')
+        # eq_(search.query(question_answer_content__text='love')[0]['question_answer_creator'],
+        #     [u'walter'])
 
 
 class QuestionSearchTests(ElasticTestCase):

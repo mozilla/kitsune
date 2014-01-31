@@ -2,6 +2,8 @@ import datetime
 import time
 
 from django.db import models
+from django.db.models import Q
+from django.db.models.signals import pre_save
 from django.contrib.auth.models import User
 
 from tidings.models import NotificationsMixin
@@ -14,6 +16,7 @@ from kitsune.sumo.models import ModelBase
 from kitsune.search.models import (
     SearchMappingType, SearchMixin, register_for_indexing,
     register_mapping_type)
+from kitsune.search.tasks import index_task
 
 
 def _last_post_from(posts, exclude_post=None):
@@ -359,3 +362,26 @@ class Post(ModelBase):
 
 
 register_for_indexing('forums', Post, instance_to_indexee=lambda p: p.thread)
+
+
+def user_pre_save(sender, instance, **kw):
+    """When a user's username is changed, we must reindex the threads
+    they participated in.
+    """
+    if instance.id:
+        user = User.objects.get(id=instance.id)
+        if user.username != instance.username:
+            thread_ids = (Thread.objects
+                .filter(
+                    Q(creator=instance) |
+                    Q(post__author=instance))
+                .values_list('id', flat=True)
+                .distinct())
+
+            # Note: the countdown is to give time for the transaction to
+            # be committed.
+            index_task.apply_async(
+                args=[ThreadMappingType, thread_ids], countdown=10)
+
+pre_save.connect(
+    user_pre_save, sender=User, dispatch_uid='forums_user_pre_save')
