@@ -11,7 +11,8 @@ from django.core.cache import cache
 from django.core.urlresolvers import resolve
 from django.conf import settings
 from django.db import models, connection
-from django.db.models.signals import post_save
+from django.db.models import Q
+from django.db.models.signals import post_save, pre_save
 from django.db.utils import IntegrityError
 from django.http import Http404
 
@@ -573,7 +574,7 @@ class QuestionMappingType(SearchMappingType):
 
         d['question_locale'] = obj['locale']
 
-        answer_values = list(Answer.objects
+        answer_values = list(Answer.uncached
                                    .filter(question=obj_id)
                                    .values_list('content',
                                                 'creator__username'))
@@ -912,6 +913,27 @@ post_save.connect(answer_connector, sender=Answer,
 
 register_for_indexing(
     'questions', Answer, instance_to_indexee=lambda a: a.question)
+
+
+def user_pre_save(sender, instance, **kw):
+    """When a user's username is changed, we must reindex the questions
+    they participated in.
+    """
+    if instance.id:
+        user = User.objects.get(id=instance.id)
+        if user.username != instance.username:
+            questions = (Question.objects
+                .filter(
+                    Q(creator=instance) |
+                    Q(answers__creator=instance))
+                .only('id')
+                .distinct())
+
+            for q in questions:
+                q.index_later()
+
+pre_save.connect(
+    user_pre_save, sender=User, dispatch_uid='questions_user_pre_save')
 
 
 class QuestionVote(ModelBase):

@@ -2,6 +2,8 @@ import datetime
 import time
 
 from django.db import models
+from django.db.models import Q
+from django.db.models.signals import pre_save
 from django.contrib.auth.models import User
 
 from tidings.models import NotificationsMixin
@@ -265,7 +267,9 @@ class ThreadMappingType(SearchMappingType):
         author_ords = set()
         content = []
 
-        for post in obj.post_set.select_related('author').all():
+        posts = Post.uncached.filter(
+            thread_id=obj.id).select_related('author')
+        for post in posts:
             author_ids.add(post.author.id)
             author_ords.add(post.author.username)
             content.append(post.content)
@@ -359,3 +363,24 @@ class Post(ModelBase):
 
 
 register_for_indexing('forums', Post, instance_to_indexee=lambda p: p.thread)
+
+
+def user_pre_save(sender, instance, **kw):
+    """When a user's username is changed, we must reindex the threads
+    they participated in.
+    """
+    if instance.id:
+        user = User.objects.get(id=instance.id)
+        if user.username != instance.username:
+            threads = (Thread.objects
+                .filter(
+                    Q(creator=instance) |
+                    Q(post__author=instance))
+                .only('id')
+                .distinct())
+
+            for t in threads:
+                t.index_later()
+
+pre_save.connect(
+    user_pre_save, sender=User, dispatch_uid='forums_user_pre_save')
