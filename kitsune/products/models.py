@@ -23,6 +23,8 @@ class Product(ModelBase):
     image_offset = models.IntegerField(default=None, null=True, editable=False)
     image_cachebuster = models.CharField(max_length=32, default=None,
                                          null=True, editable=False)
+    sprite_height = models.IntegerField(default=None, null=True,
+                                        editable=False)
 
     # Dictates the order in which products are displayed in product
     # lists.
@@ -62,7 +64,9 @@ class Product(ModelBase):
             cachebust = uuid4().hex
             logos = []
             offset = 0;
-            for product in Product.objects.order_by('id').all():
+            products = Product.objects.order_by('id').all()
+
+            for product in products:
                 if product.image:
                     product.image_offset = offset
                     offset += 1
@@ -74,6 +78,9 @@ class Product(ModelBase):
                     product.image_offset = None
 
                 product.image_cachebuster = cachebust
+
+            for product in products:
+                product.sprite_height = 148 * len(logos)
                 product.save(regenerate_sprite=False)
 
             if len(logos):
