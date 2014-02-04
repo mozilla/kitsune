@@ -33,40 +33,62 @@
   ((row1, True/False), (row2, True/False), ... etc) #}
   <details class="h2" open="open">
     <summary>{{ _('Overview') }}</summary>
-    <table class="overview">
+    <table class="overview l10n-overview">
       {% for row, should_color in printed_rows %}
-        <tr>
-          <td>
+        {% if row.title == 'Most-Visited Articles' %}
+          <tr class="most-visited-row">
+            <td class="row-title">
               {{ row.title }}
-          </td>
-          <td>
-            {% trans numerator=number(row.numerator), denominator=number(row.denominator) %}
-              {{ numerator }}
-              <small>of {{ denominator }}</small>
-            {% endtrans %}
-          </td>
-          <td>
-            {{ row.percent }}%
-            <div class="percent-graph">
-              <div style="width: {{ row.percent }}%"{% if should_color %} class="{{ 'best' if row.percent == 100 else ('better' if row.percent >= 20 else 'bad') }}"{% endif %}></div>
-            </div>
-          </td>
-          <td>
-            {{ row.description }}
-          </td>
-        </tr>
+              <div>{{ row.description }}</div>
+            </td>
+            <td colspan="2">
+              {% trans numerator=number(row.numerator), denominator=number(row.denominator) %}
+                {{ numerator }} of {{ denominator }}
+              {% endtrans %}
+            </td>
+          </tr>
+          <tr>
+            <td colspan="3">
+              <div class="percent-graph">
+                <span>{{ row.percent }}%</span>
+                <div style="width: {{ row.percent }}%"{% if should_color %} class="{{ 'best' if row.percent == 100 else ('better' if row.percent >= 20 else 'bad') }}"{% endif %}></div>
+              </div>
+            </td>
+          </tr>
+        {% else %}
+          <tr>
+            <td class="row-title">
+              {{ row.title }}
+              <div>{{ row.description }}</div>
+            </td>
+            <td>
+              {% trans numerator=number(row.numerator), denominator=number(row.denominator) %}
+                {{ numerator }}
+                <small>of {{ denominator }}</small>
+              {% endtrans %}
+            </td>
+            <td>
+              {{ row.percent }}%
+              <div class="percent-graph">
+                <div style="width: {{ row.percent }}%"{% if should_color %} class="{{ 'best' if row.percent == 100 else ('better' if row.percent >= 20 else 'bad') }}"{% endif %}></div>
+              </div>
+            </td>
+          </tr>
+        {% endif %}
       {% endfor %}
       <tr>
-        <td>{{ _('User Interface') }}</td>
-        <td></td>
-        <td></td>
-        <td>
-          {% trans url='https://localize.mozilla.org/' %}
-            A fully translated user interface improves the experience for
-            site visitors in your language. Help
-            <a href="{{ url }}">translate the interface</a>.
-          {% endtrans %}
+        <td class="row-title">
+          {{ _('User Interface') }}
+          <div>
+            {% trans url='https://localize.mozilla.org/' %}
+              A fully translated user interface improves the experience for
+              site visitors in your language. Help
+              <a href="{{ url }}">translate the interface</a>.
+            {% endtrans %}
+          </div>
         </td>
+        <td></td>
+        <td></td>
       </tr>
     </table>
     <div id="overview-options" class="choice-list">

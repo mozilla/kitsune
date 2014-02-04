@@ -29,6 +29,71 @@
       }
     }
 
+    &.l10n-overview {
+      tr {
+        &.most-visited-row {
+          border-bottom: none;
+          font-size: 130%;
+
+          + tr {
+            .percent-graph {
+              height: 30px;
+              position: relative;
+
+              > span {
+                font-weight: bold;
+                left: 50%;
+                margin-left: -50px;
+                position: absolute;
+                text-align: center;
+                top: 5px;
+                width: 100px;
+              }
+            }
+          }
+        }
+      }
+
+      td {
+        &:nth-child(1) {
+          width: 30%;
+        }
+
+        &:nth-child(2) {
+          width: 20%;
+        }
+
+        &:nth-child(3) {
+          width: 50%;
+        }
+
+        &.row-title {
+          position: relative;
+
+          > div {
+            background: #fff;
+            border: 1px solid #ccc;
+            display: none;
+            font-size: 14px;
+            padding: 10px;
+            position: absolute;
+            width: 300px;
+            z-index: 10;
+          }
+
+          &:hover {
+            > div {
+              display: block;
+            }
+          }
+        }
+      }
+
+      .percent-graph {
+        width: 100%;
+      }
+    }
+
     &.documents {
       .users {
         font-size: 90%;
@@ -144,7 +209,7 @@
 
     div {
       background: #dfdfdf;
-      height: 10px;
+      height: 100%;
 
       &.bad {
         background: #ff6b6b;
