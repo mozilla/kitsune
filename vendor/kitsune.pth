@@ -22,7 +22,6 @@ packages/python-memcached
 packages/selenium
 packages/mock
 packages/logilab-common
-packages/billiard
 packages/pyparsing
 packages/sqlalchemy
 packages/translate-toolkit
@@ -96,3 +95,4 @@ src/html5lib-python
 src/django-rest-framework
 src/django-filter
 src/django-badger
+src/billiard
