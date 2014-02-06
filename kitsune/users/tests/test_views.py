@@ -65,11 +65,12 @@ class RegisterTests(TestCase):
         get_current.return_value.domain = 'su.mo.com'
 
         send_messages.side_effect = send_mail_raise_smtp
-        response = self.client.post(reverse('users.register', locale='en-US'),
-                                    {'username': 'newbie',
-                                     'email': 'newbie@example.com',
-                                     'password': 'foobar22',
-                                     'password2': 'foobar22'}, follow=True)
+        response = self.client.post(
+            reverse('users.registercontributor', locale='en-US'),
+            {'username': 'newbie',
+             'email': 'newbie@example.com',
+             'password': 'foobar22',
+             'password2': 'foobar22'}, follow=True)
         self.assertContains(response, unicode(ERROR_SEND_EMAIL))
         assert not User.objects.filter(username='newbie').exists()
 
@@ -169,30 +170,33 @@ class RegisterTests(TestCase):
 
     def test_duplicate_username(self):
         u = user(save=True)
-        response = self.client.post(reverse('users.register', locale='en-US'),
-                                    {'username': u.username,
-                                     'email': 'newbie@example.com',
-                                     'password': 'foo',
-                                     'password2': 'foo'}, follow=True)
+        response = self.client.post(
+            reverse('users.registercontributor', locale='en-US'),
+            {'username': u.username,
+             'email': 'newbie@example.com',
+             'password': 'foo',
+             'password2': 'foo'}, follow=True)
         self.assertContains(response, 'already exists')
 
     def test_duplicate_email(self):
         u = user(email='noob@example.com', save=True)
         User.objects.create(username='noob', email='noob@example.com').save()
-        response = self.client.post(reverse('users.register', locale='en-US'),
-                                    {'username': 'newbie',
-                                     'email': u.email,
-                                     'password': 'foo',
-                                     'password2': 'foo'}, follow=True)
+        response = self.client.post(
+            reverse('users.registercontributor', locale='en-US'),
+            {'username': 'newbie',
+             'email': u.email,
+             'password': 'foo',
+             'password2': 'foo'}, follow=True)
         self.assertContains(response, 'already exists')
 
     def test_no_match_passwords(self):
         u = user(save=True)
-        response = self.client.post(reverse('users.register', locale='en-US'),
-                                    {'username': u.username,
-                                     'email': u.email,
-                                     'password': 'testpass',
-                                     'password2': 'testbus'}, follow=True)
+        response = self.client.post(
+            reverse('users.registercontributor', locale='en-US'),
+            {'username': u.username,
+             'email': u.email,
+             'password': 'testpass',
+             'password2': 'testbus'}, follow=True)
         self.assertContains(response, 'must match')
 
     @mock.patch.object(Site.objects, 'get_current')

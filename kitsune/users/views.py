@@ -143,7 +143,7 @@ def register(request, template, contributor=False):
         return render(request, template + 'register.html', {
             'form': form})
 
-    return user_auth(request, register_form=form)
+    return user_auth(request, register_form=form, contributor=contributor)
 
 
 def register_contributor(request):
