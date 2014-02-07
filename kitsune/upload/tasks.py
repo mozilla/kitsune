@@ -6,7 +6,7 @@ import subprocess
 from django.conf import settings
 from django.core.files.base import ContentFile
 
-from celery.task import task
+from celery import task
 from PIL import Image
 
 log = logging.getLogger('k.task')

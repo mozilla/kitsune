@@ -8,7 +8,6 @@ from django.core import mail
 from django.core.cache import cache
 
 import bleach
-import celery.conf
 import mock
 import waffle
 from nose.tools import eq_
@@ -41,7 +40,7 @@ https://testserver/en-US/kb/%s/history
 
 class RebuildTestCase(TestCase):
     rf = RequestFactory()
-    ALWAYS_EAGER = celery.conf.ALWAYS_EAGER
+    ALWAYS_EAGER = settings.CELERY_ALWAYS_EAGER
 
     def setUp(self):
         # create some random revisions.
@@ -54,12 +53,12 @@ class RebuildTestCase(TestCase):
 
         # TODO: fix this crap
         self.old_settings = copy(settings._wrapped.__dict__)
-        celery.conf.ALWAYS_EAGER = True
+        settings.CELERY_ALWAYS_EAGER = True
 
     def tearDown(self):
         cache.delete(settings.WIKI_REBUILD_TOKEN)
         settings._wrapped.__dict__ = self.old_settings
-        celery.conf.ALWAYS_EAGER = self.ALWAYS_EAGER
+        settings.CELERY_ALWAYS_EAGER = self.ALWAYS_EAGER
 
     @mock.patch.object(rebuild_kb, 'delay')
     @mock.patch.object(waffle, 'switch_is_active')
@@ -73,7 +72,7 @@ class RebuildTestCase(TestCase):
     @mock.patch.object(waffle, 'switch_is_active')
     def test_task_queue(self, switch_is_active, delay):
         switch_is_active.return_value = True
-        celery.conf.ALWAYS_EAGER = False
+        settings.CELERY_ALWAYS_EAGER = False
         schedule_rebuild_kb()
         assert cache.get(settings.WIKI_REBUILD_TOKEN)
         assert delay.called
