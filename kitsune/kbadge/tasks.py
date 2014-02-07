@@ -1,13 +1,13 @@
 from django.conf import settings
 from django.contrib.sites.models import Site
 
-from celery.task import task
+from celery import task
 from tower import ugettext as _
 
 from kitsune.sumo import email_utils
 
 
-@task
+@task()
 def send_award_notification(award):
     """Sends the award notification email
 

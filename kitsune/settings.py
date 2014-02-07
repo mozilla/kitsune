@@ -754,6 +754,7 @@ CELERY_SEND_TASK_ERROR_EMAILS = True
 CELERYD_LOG_LEVEL = logging.INFO
 CELERYD_CONCURRENCY = 4
 CELERY_EAGER_PROPAGATES_EXCEPTIONS = True  # Explode loudly during tests.
+CELERYD_HIJACK_ROOT_LOGGER = False
 
 # Wiki rebuild settings
 WIKI_REBUILD_TOKEN = 'sumo:wiki:full-rebuild'

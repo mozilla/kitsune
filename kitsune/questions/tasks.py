@@ -8,7 +8,7 @@ from django.db import connection, transaction
 
 # NOTE: This import is just so _fire_task gets registered with celery.
 import tidings.events  # noqa
-from celery.task import task
+from celery import task
 from multidb.pinning import pin_this_thread, unpin_this_thread
 from statsd import statsd
 from zendesk import ZendeskError
@@ -116,7 +116,7 @@ def update_answer_pages(question):
         i += 1
 
 
-@task
+@task()
 def log_answer(answer):
     pin_this_thread()
 
@@ -134,7 +134,7 @@ def log_answer(answer):
     unpin_this_thread()
 
 
-@task
+@task()
 def maybe_award_badge(badge_template, year, user):
     """Award the specific badge to the user if they've earned it."""
     badge = get_or_create_badge(badge_template, year)
@@ -167,7 +167,7 @@ class PickleableZendeskError(Exception):
         super(PickleableZendeskError, self).__init__(traceback.format_exc())
 
 
-@task
+@task()
 def escalate_question(question_id):
     """Escalate a question to zendesk by submitting a ticket."""
     from kitsune.questions.models import Question

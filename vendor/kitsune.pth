@@ -9,7 +9,7 @@ packages/python-dateutil
 packages/pylint
 packages/ipython
 packages/pyflakes
-packages/amqplib
+packages/amqp
 packages/django-taggit
 packages/anyjson
 packages/carrot
