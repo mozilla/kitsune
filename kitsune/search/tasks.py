@@ -3,7 +3,7 @@ import logging
 import sys
 import traceback
 
-from celery.task import task
+from celery import task
 from multidb.pinning import pin_this_thread, unpin_this_thread
 from statsd import statsd
 
@@ -47,7 +47,7 @@ class IndexingTaskError(Exception):
         super(IndexingTaskError, self).__init__(traceback.format_exc())
 
 
-@task
+@task()
 def reconcile_task(write_index, batch_id, mapping_type_name):
     """Reconciles the data in the index with what's in the db
 
@@ -85,7 +85,7 @@ def reconcile_task(write_index, batch_id, mapping_type_name):
         rec.save()
 
 
-@task
+@task()
 def index_chunk_task(write_index, batch_id, chunk):
     """Index a chunk of things.
 
@@ -146,7 +146,7 @@ RETRY_TIMES = (
 MAX_RETRIES = len(RETRY_TIMES)
 
 
-@task
+@task()
 def index_task(cls, id_list, **kw):
     """Index documents specified by cls and ids"""
     statsd.incr('search.tasks.index_task.%s' % cls.get_mapping_type_name())
@@ -182,7 +182,7 @@ def index_task(cls, id_list, **kw):
         unpin_this_thread()
 
 
-@task
+@task()
 def unindex_task(cls, id_list, **kw):
     """Unindex documents specified by cls and ids"""
     statsd.incr('search.tasks.unindex_task.%s' % cls.get_mapping_type_name())

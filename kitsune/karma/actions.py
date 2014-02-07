@@ -2,7 +2,7 @@ from datetime import date, datetime
 
 from django.contrib.auth.models import User
 
-from celery.task import task
+from celery import task
 from statsd import statsd
 import waffle
 
@@ -67,12 +67,12 @@ class KarmaAction(object):
                 # Passing self below is required because the method is a @task
                 self._delete(self)
 
-    @task
+    @task()
     def _save(self, redis=None):
         statsd.incr('karma.{t}'.format(t=self.action_type))
         KarmaManager(redis).save_action(self)
 
-    @task
+    @task()
     def _delete(self):
         statsd.incr('karma.delete.{t}'.format(t=self.action_type))
         KarmaManager().delete_action(self)

@@ -1,4 +1,4 @@
-from celery.task import task
+from celery import task
 import waffle
 
 from kitsune.karma.cron import (
@@ -12,7 +12,7 @@ from kitsune.sumo.redis_utils import redis_client
 from kitsune.sumo.utils import chunked
 
 
-@task
+@task()
 def init_karma():
     """Flushes the karma redis backend and populates with fresh data.
 
@@ -32,13 +32,13 @@ def init_karma():
         _process_answer_vote_chunk.apply_async(args=[chunk])
 
 
-@task
+@task()
 def update_top_contributors():
     """Updates the top contributor sorted sets."""
     _update_top_contributors()
 
 
-@task
+@task()
 def recalculate_karma_points():
     """Go through all karma action data and recalculate points."""
     if not waffle.switch_is_active('karma'):
@@ -48,7 +48,7 @@ def recalculate_karma_points():
         _process_recalculate_chunk.apply_async(args=[chunk])
 
 
-@task
+@task()
 def _process_question_chunk(data):
     """Save karma data for a chunk of questions."""
     redis = redis_client(name='karma')
@@ -68,7 +68,7 @@ def _process_question_chunk(data):
                                                             redis=redis)
 
 
-@task
+@task()
 def _process_answer_vote_chunk(data):
     """Save karma data for a chunk of answer votes."""
     redis = redis_client(name='karma')
@@ -82,7 +82,7 @@ def _process_answer_vote_chunk(data):
                                                                 redis=redis)
 
 
-@task
+@task()
 def _process_recalculate_chunk(data):
     """Recalculate karma points for a chunk of user ids."""
     mgr = KarmaManager()

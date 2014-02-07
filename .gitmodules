@@ -163,3 +163,6 @@
 [submodule "vendor/src/dennis"]
 	path = vendor/src/dennis
 	url = https://github.com/willkg/dennis.git
+[submodule "vendor/src/billiard"]
+	path = vendor/src/billiard
+	url = git://github.com/celery/billiard.git

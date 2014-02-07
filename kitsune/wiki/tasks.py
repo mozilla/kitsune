@@ -9,8 +9,7 @@ from django.core.exceptions import ValidationError
 from django.core.mail import mail_admins
 from django.db import transaction
 
-import celery.conf
-from celery.task import task
+from celery import task
 from multidb.pinning import pin_this_thread, unpin_this_thread
 from statsd import statsd
 from tower import ugettext as _
@@ -28,7 +27,7 @@ from kitsune.wiki.models import (
 log = logging.getLogger('k.task')
 
 
-@task
+@task()
 def send_reviewed_notification(revision, document, message):
     """Send notification of review to the revision creator."""
     if revision.reviewer == revision.creator:
@@ -79,7 +78,7 @@ def send_reviewed_notification(revision, document, message):
     email_utils.send_messages(msgs)
 
 
-@task
+@task()
 def send_contributor_notification(based_on, revision, document, message):
     """Send notification of review to the contributors of revisions."""
 
@@ -137,7 +136,7 @@ def send_contributor_notification(based_on, revision, document, message):
 def schedule_rebuild_kb():
     """Try to schedule a KB rebuild, if we're allowed to."""
     if (not waffle.switch_is_active('wiki-rebuild-on-demand') or
-            celery.conf.ALWAYS_EAGER):
+            settings.CELERY_ALWAYS_EAGER):
         return
 
     if cache.get(settings.WIKI_REBUILD_TOKEN):
@@ -223,7 +222,7 @@ def _rebuild_kb_chunk(data):
     unpin_this_thread()  # Not all tasks need to do use the master.
 
 
-@task
+@task()
 def maybe_award_badge(badge_template, year, user):
     """Award the specific badge to the user if they've earned it."""
     badge = get_or_create_badge(badge_template, year)
@@ -252,7 +251,7 @@ def maybe_award_badge(badge_template, year, user):
         return True
 
 
-@task
+@task()
 def render_document_cascade(base):
     """Given a document, render it and all documents that may be affected."""
 

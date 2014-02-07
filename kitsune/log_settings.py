@@ -3,8 +3,6 @@ import logging
 from django.conf import settings
 from django.utils.log import dictConfig
 
-import celery.conf
-import celery.log
 
 config = {
     'version': 1,
@@ -72,9 +70,14 @@ if settings.DEBUG:
     config['loggers']['django.request']['handlers'] = ['console']
     config['root']['handlers'] = ['console']
 else:
+    from celery import current_app
+    from celery.utils.log import LoggingProxy
+
     task_log = logging.getLogger('k.celery')
-    task_proxy = celery.log.LoggingProxy(task_log)
-    celery.conf.CELERYD_LOG_FILE = task_proxy
-    celery.conf.CELERYD_LOG_COLOR = False
+    task_proxy = LoggingProxy(task_log)
+    current_app.conf.update(
+        CELERYD_LOG_FILE = task_proxy,
+        CELERYD_LOG_COLOR = False
+    )
 
 dictConfig(config)
