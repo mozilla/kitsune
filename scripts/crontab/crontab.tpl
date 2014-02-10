@@ -10,8 +10,6 @@ HOME = /tmp
 * * * * * {{ cron }} collect_tweets
 
 # Every hour.
-42 * * * * {{ django }} cleanup
-30 * * * * {{ cron }} get_customercare_stats
 59 * * * * {{ cron }} escalate_questions
 
 # Every 6 hours.
@@ -37,9 +35,8 @@ HOME = /tmp
 0 1 * * * {{ cron }} update_l10n_coverage_metrics
 45 4 * * * {{ cron }} build_kb_bundles
 0 0 * * * {{ cron }} rebuild_kb
-
-# Twice per week.
-#05 01 * * 1,4 {{ cron }} update_weekly_votes
+0 22 * * * {{ cron }} get_customercare_stats
+42 22 * * * {{ django }} cleanup
 
 # Once per week.
 21 03 * * 3 {{ django }} purge_hashes
