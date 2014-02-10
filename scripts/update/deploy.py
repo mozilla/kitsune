@@ -25,6 +25,7 @@ def update_code(ctx, tag):
         ctx.local("git checkout -f %s" % tag)
         ctx.local("git submodule sync")
         ctx.local("git submodule update --init --recursive")
+        ctx.local('find vendor/ -type f -name "*.pyc" | xargs rm')
 
 
 @task
