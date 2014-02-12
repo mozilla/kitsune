@@ -95,7 +95,7 @@ class UploadImageTestCase(TestCase):
         self.client.logout()
         r = self._make_post_request(args=[im.id])
         eq_(403, r.status_code)
-        assert ImageAttachment.uncached.exists()
+        assert ImageAttachment.objects.exists()
 
     def test_delete_image_no_permission(self):
         """Can't delete an image without permission."""
@@ -106,7 +106,7 @@ class UploadImageTestCase(TestCase):
         self.client.login(username='tagger', password='testpass')
         r = self._make_post_request(args=[im.id])
         eq_(403, r.status_code)
-        assert ImageAttachment.uncached.exists()
+        assert ImageAttachment.objects.exists()
 
     def test_delete_image_owner(self):
         """Users can delete their own images."""
@@ -116,7 +116,7 @@ class UploadImageTestCase(TestCase):
         eq_(200, r.status_code)
         json_r = json.loads(r.content)
         eq_('success', json_r['status'])
-        assert not ImageAttachment.uncached.exists()
+        assert not ImageAttachment.objects.exists()
 
     def test_delete_image_with_permission(self):
         """Users with permission can delete images."""
@@ -133,7 +133,7 @@ class UploadImageTestCase(TestCase):
         eq_(200, r.status_code)
         json_r = json.loads(r.content)
         eq_('success', json_r['status'])
-        assert not ImageAttachment.uncached.exists()
+        assert not ImageAttachment.objects.exists()
 
     def test_delete_no_image(self):
         """Trying to delete a non-existent image 404s."""
