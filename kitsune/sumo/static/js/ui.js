@@ -79,6 +79,52 @@
     });
   });
 
+  $(window).load(function() {
+    $('[data-ui-type="carousel"]').each(function() {
+      var $this = $(this);
+      var $container = $(this).children().first()
+
+      var width = 0;
+      var height = 0;
+
+      $container.children().each(function() {
+        if (height < $(this).outerHeight()) {
+          height = $(this).outerHeight();
+        }
+        width += $(this).outerWidth() + parseInt($(this).css('marginRight')) + parseInt($(this).css('marginLeft'));
+      });
+
+      $this.css('height', height + 'px');
+      $container.css({'width': width + 'px', 'height': height + 'px'});
+      $container.children().css('height', height + 'px');
+
+      var $left = $('#' + $this.data('left'));
+      var $right = $('#' + $this.data('right'));
+
+      var scrollInterval;
+
+      $left.on('mouseover', function() {
+        scrollInterval = setInterval(function() {
+          $this.scrollLeft($this.scrollLeft() - 1);
+        }, 1);
+      });
+
+      $left.on('mouseout', function() {
+        clearInterval(scrollInterval);
+      });
+
+      $right.on('mouseover', function() {
+        scrollInterval = setInterval(function() {
+          $this.scrollLeft($this.scrollLeft() + 1);
+        }, 1);
+      });
+
+      $right.on('mouseout', function() {
+        clearInterval(scrollInterval);
+      });
+    });
+  });
+
   function initFolding() {
     var $folders = $('.sidebar-folding > li');
     // When a header is clicked, expand/contract the menu items.

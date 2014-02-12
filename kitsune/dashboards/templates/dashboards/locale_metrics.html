@@ -1,5 +1,6 @@
 {% extends "base.html" %}
-{% from "dashboards/includes/macros.html" import localization_sidebar_nav, product_choice_list %}
+{% from "dashboards/includes/macros.html" import localization_sidebar_nav %}
+{% from "dashboards/includes/macros.html" import product_choice_list with context %}
 {% set title = _('[{locale}] Locale Metrics')|f(locale=current_locale) %}
 {% set scripts = ('wiki', 'rickshaw', 'wiki.dashboard') %}
 {% set styles = ('rickshaw', 'kbdashboards') %}

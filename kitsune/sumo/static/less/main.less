@@ -1571,3 +1571,97 @@ input[type=button],
     }
   }
 }
+
+.product-picker {
+  position: relative;
+
+  > div {
+    margin: 20px 50px 0;
+    overflow: hidden;
+
+    > ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+
+      > li {
+        display: block;
+        float: left;
+        margin-right: 20px;
+        opacity: 0.6;
+        .transition(opacity 0.4s);
+        width: 135px;
+
+        &:hover {
+          opacity: 0.8;
+        }
+
+        &:last-of-type {
+          margin-right: 0;
+        }
+
+        &.selected {
+          font-weight: bold;
+          opacity: 1;
+
+          > a,
+          > a:visited {
+            color: #000
+          }
+        }
+
+        > a,
+        > a:visited {
+          background: #fff;
+          border: 1px solid @borderLightGrey;
+          .border-radius(6px);
+          .box-sizing(border-box);
+          color: @textDarkGrey;
+          display: block;
+          height: 100%;
+          padding: 10px;
+          text-align: center;
+
+          > span {
+            display: block;
+          }
+
+          > .logo-sprite {
+            margin: 0 10px;
+          }
+        }
+
+        > a:hover {
+          text-decoration: none;
+        }
+      }
+    }
+  }
+
+  > .left,
+  > .right {
+    background-image: url('../img/carousel-arrow-sprite.png');
+    background-repeat: no-repeat;
+    bottom: 0;
+    cursor: pointer;
+    position: absolute;
+    top: 0;
+    width: 50px;
+  }
+
+  > .left {
+    background-position: -50px center;
+    left: 0;
+  }
+
+  > .right {
+    background-position: -200px center;
+    right: 0;
+  }
+
+  .logo-sprite {
+    &.sumo {
+      background-image: url('../img/sumo-icon.png');
+    }
+  }
+}
