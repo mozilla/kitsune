@@ -33,7 +33,7 @@ echo "Starting Redis Servers"
 # This will daemonize
 sudo mkdir -p /var/redis/sumo-test/
 sudo chown `whoami` -R /var/redis/
-./redis-2.4.11/src/redis-server configs/redis/redis-test.conf
+./redis-2.6.9/src/redis-server configs/redis/redis-test.conf
 
 echo "Starting XVFB for Selenium tests."
 /usr/bin/Xvfb :99 -ac -screen 0 1280x1024x16 >/dev/null 2>/dev/null &
