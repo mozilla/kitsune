@@ -22,7 +22,7 @@ echo "Installing ElasticSearch"
 tar xzvf vendor/tarballs/elasticsearch-0.20.5.tar.gz > /dev/null
 
 echo "Installing Redis"
-tar xzvf vendor/tarballs/redis-2.4.11.tar.gz > /dev/null
-pushd redis-2.4.11
+tar xzvf vendor/tarballs/redis-2.6.9.tar.gz > /dev/null
+pushd redis-2.6.9
   make > /dev/null 2> /dev/null
 popd
