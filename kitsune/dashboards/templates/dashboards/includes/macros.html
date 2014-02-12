@@ -206,29 +206,27 @@
 {% endmacro %}
 
 {% macro product_choice_list(products, current, url_) %}
-  <div class="choice-list">
-    <label>{{ _('Product:') }}</label>
-    <ul>
-      <li>
-        {% if current %}
+  <div class="product-picker">
+    <div class="cf" data-ui-type="carousel" data-left="pp-left" data-right="pp-right">
+      <ul>
+        <li {{ current|class_selected(None) }}>
           <a href="{{ url_ }}">
-            {{ _('All Products') }}
+            <img src="{{ STATIC_URL }}img/blank.png" class="logo-sprite sumo">
+            <span>{{ _('All Products') }}</span>
           </a>
-        {% else %}
-          {{ _('All Products') }}
-        {% endif %}
-      {% for p in products %}
-        <li>
-          {% if current == p %}
-            {{ _(p.title, 'DB: products.Product.title') }}
-          {% else %}
-            <a href="{{ url_|urlparams(product=p.slug) }}">
-              {{ _(p.title, 'DB: products.Product.title') }}
-            </a>
-          {% endif %}
         </li>
-      {% endfor %}
-    </ul>
+        {% for p in products %}
+          <li {{ current|class_selected(p) }}>
+            <a href="{{ url_|urlparams(product=p.slug) }}">
+              <img src="{{ STATIC_URL }}img/blank.png" class="logo-sprite" style="{% if p.image %}background-image: url({{ p.sprite_url() }}); background-position: -100px -{{ 100 + (p.image_offset * 296) }}px;{% else %}background-image: url({{ p.image_url }}){% endif %}" alt="" />
+              <span>{{ _(p.title, 'DB: products.Product.title') }}</span>
+            </a>
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+    <span class="left" id="pp-left"></span>
+    <span class="right" id="pp-right"></span>
   </div>
 {% endmacro %}
 
