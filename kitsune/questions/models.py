@@ -703,6 +703,9 @@ class Answer(ModelBase):
     def clear_cached_html(self):
         cache.delete(self.html_cache_key % self.id)
 
+    def clear_cached_images(self):
+        cache.delete(self.images_cache_key % self.id)
+
     def save(self, update=True, no_notify=False, *args, **kwargs):
         """
         Override save method to update question info and take care of
@@ -735,6 +738,9 @@ class Answer(ModelBase):
                 # Avoid circular import: events.py imports Question.
                 from kitsune.questions.events import QuestionReplyEvent
                 QuestionReplyEvent(self).fire(exclude=self.creator)
+        else:
+            # Clear the attached images cache.
+            self.clear_cached_images()
 
     def delete(self, *args, **kwargs):
         """Override delete method to update parent question info."""
