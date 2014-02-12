@@ -9,19 +9,16 @@ import caching.base
 ManagerBase = caching.base.CachingManager
 
 
-class ModelBase(caching.base.CachingMixin, models.Model):
-    """
-    Base class for SUMO models to abstract some common features.
+class NoCacheModelBase(models.Model):
+    """Base class for SUMO models that don't want automatic caching.
 
-    * Caching.
+    * Adds update method.
     """
-
-    objects = ManagerBase()
-    uncached = models.Manager()
 
     class Meta:
         abstract = True
 
+    # TODO: Remove this in django 1.6, which comes with a smarter save().
     def update(self, **kw):
         """
         Shortcut for doing an UPDATE on this object.
@@ -45,6 +42,21 @@ class ModelBase(caching.base.CachingMixin, models.Model):
         if signal:
             models.signals.post_save.send(sender=cls, instance=self,
                                           created=False)
+
+
+class ModelBase(caching.base.CachingMixin, NoCacheModelBase):
+    """
+    Base class for SUMO models to abstract some common features.
+
+    * Caching.
+    * Adds update method.
+    """
+
+    objects = ManagerBase()
+    uncached = models.Manager()
+
+    class Meta:
+        abstract = True
 
 
 # This adds rules that South needs for introspection so it can do
