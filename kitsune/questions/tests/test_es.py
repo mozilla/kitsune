@@ -181,7 +181,6 @@ class QuestionUpdateTests(ElasticTestCase):
             u'walter')
         eq_(search.query(question_answer_content__text='love')[0]['question_answer_creator'],
             [u'walter'])
-    test_question_is_reindexed_on_username_change.xx = 1
 
 
 class QuestionSearchTests(ElasticTestCase):

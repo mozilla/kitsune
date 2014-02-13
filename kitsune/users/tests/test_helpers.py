@@ -10,13 +10,13 @@ from pyquery import PyQuery as pq
 from kitsune.sumo.tests import TestCase
 from kitsune.users.helpers import (
     profile_url, profile_avatar, public_email, display_name, user_list)
-from kitsune.users.tests import profile
+from kitsune.users.tests import profile, user
 
 
 class HelperTestCase(TestCase):
     def setUp(self):
         super(HelperTestCase, self).setUp()
-        self.u = User.objects.create(pk=500000, username=u'testuser')
+        self.u = user(username=u'testuser', save=True)
 
     def test_profile_url(self):
         eq_(u'/user/%d' % self.u.id, profile_url(self.u))
@@ -55,13 +55,13 @@ class HelperTestCase(TestCase):
         eq_(u'Test User', display_name(self.u))
 
     def test_user_list(self):
-        User.objects.create(pk=300000, username='testuser2')
-        User.objects.create(pk=400000, username='testuser3')
+        u = user(username='testuser2', save=True)
+        user(username='testuser3', save=True)
         users = User.objects.all()
         list = user_list(users)
         assert isinstance(list, Markup)
         fragment = pq(list)
         eq_(3, len(fragment('a')))
         a = fragment('a')[1]
-        assert a.attrib['href'].endswith('400000')
-        eq_('testuser3', a.text)
+        assert a.attrib['href'].endswith(str(u.id))
+        eq_(u.username, a.text)
