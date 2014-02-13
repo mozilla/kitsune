@@ -267,7 +267,8 @@ class ThreadMappingType(SearchMappingType):
         author_ords = set()
         content = []
 
-        posts = Post.uncached.filter(thread_id=obj.id).select_related('author')
+        posts = Post.uncached.filter(
+            thread_id=obj.id).select_related('author')
         for post in posts:
             author_ids.add(post.author.id)
             author_ords.add(post.author.username)
