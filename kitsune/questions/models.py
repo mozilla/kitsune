@@ -34,7 +34,6 @@ from kitsune.questions.tasks import (
 from kitsune.search.models import (
     SearchMappingType, SearchMixin, register_for_indexing,
     register_mapping_type)
-from kitsune.search.tasks import index_task
 from kitsune.sumo.helpers import urlparams
 from kitsune.sumo.models import ModelBase, LocaleField
 from kitsune.sumo.helpers import wiki_to_html
@@ -923,17 +922,15 @@ def user_pre_save(sender, instance, **kw):
     if instance.id:
         user = User.objects.get(id=instance.id)
         if user.username != instance.username:
-            question_ids = (Question.objects
+            questions = (Question.objects
                 .filter(
                     Q(creator=instance) |
                     Q(answers__creator=instance))
-                .values_list('id', flat=True)
+                .only('id')
                 .distinct())
 
-            # Note: the countdown is to give time for the transaction to
-            # be committed.
-            index_task.apply_async(
-                args=[QuestionMappingType, list(question_ids)], countdown=10)
+            for q in questions:
+                q.index_later()
 
 pre_save.connect(
     user_pre_save, sender=User, dispatch_uid='questions_user_pre_save')

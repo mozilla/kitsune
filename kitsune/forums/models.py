@@ -16,7 +16,6 @@ from kitsune.sumo.models import ModelBase
 from kitsune.search.models import (
     SearchMappingType, SearchMixin, register_for_indexing,
     register_mapping_type)
-from kitsune.search.tasks import index_task
 
 
 def _last_post_from(posts, exclude_post=None):
@@ -371,17 +370,15 @@ def user_pre_save(sender, instance, **kw):
     if instance.id:
         user = User.objects.get(id=instance.id)
         if user.username != instance.username:
-            thread_ids = (Thread.objects
+            threads = (Thread.objects
                 .filter(
                     Q(creator=instance) |
                     Q(post__author=instance))
-                .values_list('id', flat=True)
+                .only('id')
                 .distinct())
 
-            # Note: the countdown is to give time for the transaction to
-            # be committed.
-            index_task.apply_async(
-                args=[ThreadMappingType, list(thread_ids)], countdown=10)
+            for t in threads:
+                t.index_later()
 
 pre_save.connect(
     user_pre_save, sender=User, dispatch_uid='forums_user_pre_save')

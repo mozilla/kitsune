@@ -173,16 +173,15 @@ class QuestionUpdateTests(ElasticTestCase):
         eq_(query[0]['question_answer_creator'],
             [u'dexter'])
 
-        # NOTE: This doesn't work because we depend on the countdown in celery.
-        # Any ideas?
         # Change the username and verify the index.
-        # u.username = 'walter'
-        # u.save()
-        # self.refresh()
-        # eq_(search.query(question_title__text='hello')[0]['question_creator'],
-        #     u'walter')
-        # eq_(search.query(question_answer_content__text='love')[0]['question_answer_creator'],
-        #     [u'walter'])
+        u.username = 'walter'
+        u.save()
+        self.refresh()
+        eq_(search.query(question_title__text='hello')[0]['question_creator'],
+            u'walter')
+        eq_(search.query(question_answer_content__text='love')[0]['question_answer_creator'],
+            [u'walter'])
+    test_question_is_reindexed_on_username_change.xx = 1
 
 
 class QuestionSearchTests(ElasticTestCase):
