@@ -11,7 +11,7 @@
         {% for locale in locales %}
           <li>
             <a href="{{ url('wiki.locale_details', locale.locale) }}">
-              [{{ locale.locale }}] {{ settings.LANGUAGES[locale.locale.lower()] }}
+              [{{ locale.locale }}] {{ settings.LANGUAGES_DICT[locale.locale.lower()] }}
             </a>
           </li>
         {% endfor %}

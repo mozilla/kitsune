@@ -40,6 +40,7 @@ def update_locales(ctx):
     with ctx.lcd(settings.SRC_DIR):
         ctx.local('date > media/postatus.txt')
         ctx.local('./scripts/compile-linted-mo.sh | /usr/bin/tee -a media/postatus.txt')
+        ctx.local('python2.6 manage.py compilejsi18n')
 
 
 @task

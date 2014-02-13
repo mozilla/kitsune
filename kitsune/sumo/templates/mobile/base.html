@@ -152,7 +152,11 @@
 
 {% block after_main %}{% endblock %}
 
-<script src="{{ url('jsi18n') }}/build:{{ BUILD_ID_JS }}"></script>
+{# TODO: The BUILD_ID_JS changes whenever our js code changes.
+   But this should get cached busted whenever a locale is updated.
+   It's complicatred to fix. But for now it isn't more broken than
+   before. #}
+<script src="{{ STATIC_URL }}jsi18n/{{ request.LANGUAGE_CODE }}/javascript.js?{{ BUILD_ID_JS }}"></script>
 <script src="{{ url('wafflejs') }}"></script>
 
 {{ js('mobile/common') }}

@@ -166,3 +166,9 @@
 [submodule "vendor/src/billiard"]
 	path = vendor/src/billiard
 	url = https://github.com/celery/billiard.git
+[submodule "vendor/src/django-statici18n"]
+	path = vendor/src/django-statici18n
+	url = https://github.com/zyegfryed/django-statici18n.git
+[submodule "vendor/src/django-appconf"]
+	path = vendor/src/django-appconf
+	url = https://github.com/jezdez/django-appconf.git

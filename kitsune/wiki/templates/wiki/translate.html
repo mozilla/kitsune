@@ -12,7 +12,7 @@
 {% set scripts = ('wiki', 'wiki.diff', 'wiki.editor', 'libs/jqueryui') %}
 
 {% block content %}
-  {% set language = settings.LANGUAGES[locale.lower()] %}
+  {% set language = settings.LANGUAGES_DICT[locale.lower()] %}
   <div>
     {{ document_tools(document, parent, user, 'edit', settings) }}
 
@@ -169,7 +169,7 @@
           </ul>
           <div id="content-fields">
             <div class="approved">
-              <h3>{{ _('Approved {default_locale} version:')|f(default_locale=settings.LANGUAGES[settings.WIKI_DEFAULT_LANGUAGE.lower()]) }}</h3>
+              <h3>{{ _('Approved {default_locale} version:')|f(default_locale=settings.LANGUAGES_DICT[settings.WIKI_DEFAULT_LANGUAGE.lower()]) }}</h3>
               <div id="content-or-diff" class="content">
                 <textarea readonly="readonly">{{ based_on.content }}</textarea>
               </div>

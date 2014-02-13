@@ -308,7 +308,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
 
     @property
     def language(self):
-        return settings.LANGUAGES[self.locale.lower()]
+        return settings.LANGUAGES_DICT[self.locale.lower()]
 
     @property
     def is_hidden_from_search_engines(self):

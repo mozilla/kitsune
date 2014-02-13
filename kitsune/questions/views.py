@@ -420,8 +420,8 @@ def aaq(request, product_key=None, category_key=None, showform=False,
         locale, path = split_path(request.path)
         path = '/' + settings.WIKI_DEFAULT_LANGUAGE + '/' + path
 
-        old_lang = settings.LANGUAGES[request.LANGUAGE_CODE.lower()]
-        new_lang = settings.LANGUAGES[settings.WIKI_DEFAULT_LANGUAGE.lower()]
+        old_lang = settings.LANGUAGES_DICT[request.LANGUAGE_CODE.lower()]
+        new_lang = settings.LANGUAGES_DICT[settings.WIKI_DEFAULT_LANGUAGE.lower()]
         msg = (_(u"The questions forum isn't available in {old_lang}, we "
                  u"have redirected you to the {new_lang} questions forum.")
                .format(old_lang=old_lang, new_lang=new_lang))
