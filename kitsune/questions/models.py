@@ -933,7 +933,7 @@ def user_pre_save(sender, instance, **kw):
             # Note: the countdown is to give time for the transaction to
             # be committed.
             index_task.apply_async(
-                args=[QuestionMappingType, question_ids], countdown=10)
+                args=[QuestionMappingType, list(question_ids)], countdown=10)
 
 pre_save.connect(
     user_pre_save, sender=User, dispatch_uid='questions_user_pre_save')
