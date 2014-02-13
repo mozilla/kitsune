@@ -3,6 +3,7 @@ from nose.tools import eq_
 from kitsune.forums.models import ThreadMappingType
 from kitsune.forums.tests import thread, post
 from kitsune.search.tests.test_es import ElasticTestCase
+from kitsune.users.tests import user
 
 
 class TestPostUpdate(ElasticTestCase):
@@ -50,3 +51,21 @@ class TestPostUpdate(ElasticTestCase):
         new_thread.delete()
         self.refresh()
         eq_(ThreadMappingType.search().count(), 0)
+
+    def test_thread_is_reindexed_on_username_change(self):
+        search = ThreadMappingType.search()
+
+        u = user(username='dexter', save=True)
+
+        t = thread(creator=u, title=u'Hello', save=True)
+        post(author=u, thread=t, save=True)
+        self.refresh()
+        eq_(search.query(post_title='hello')[0]['post_author_ord'],
+            [u'dexter'])
+
+        # Change the username and verify the index.
+        u.username = 'walter'
+        u.save()
+        self.refresh()
+        eq_(search.query(post_title='hello')[0]['post_author_ord'],
+            [u'walter'])

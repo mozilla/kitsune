@@ -180,8 +180,7 @@ class QuestionUpdateTests(ElasticTestCase):
         eq_(search.query(question_title__text='hello')[0]['question_creator'],
             u'walter')
         query = search.query(question_answer_content__text='love')
-        eq_(query[0]['question_answer_creator'],
-            [u'walter'])
+        eq_(query[0]['question_answer_creator'], [u'walter'])
 
 
 class QuestionSearchTests(ElasticTestCase):

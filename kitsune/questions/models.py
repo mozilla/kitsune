@@ -574,7 +574,7 @@ class QuestionMappingType(SearchMappingType):
 
         d['question_locale'] = obj['locale']
 
-        answer_values = list(Answer.objects
+        answer_values = list(Answer.uncached
                                    .filter(question=obj_id)
                                    .values_list('content',
                                                 'creator__username'))
