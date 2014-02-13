@@ -79,7 +79,7 @@
 
       {% if document.allows(user, 'delete') %}
         <div id="delete-doc">
-          <a href="{{ url('wiki.document_delete', document.slug) }}">Delete this document</a>
+          <a href="{{ url('wiki.document_delete', document.slug) }}">{{ _('Delete this document') }}</a>
         </div>
       {% endif %}
     </article>
