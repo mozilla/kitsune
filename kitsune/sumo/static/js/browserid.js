@@ -1,6 +1,6 @@
 (function($) {
     // Only run this code if browserid is enabled.
-    if (!waffle.flag_is_active('browserid')) {
+    if ($('#browserid-form').length === 0) {
         return;
     }
 
