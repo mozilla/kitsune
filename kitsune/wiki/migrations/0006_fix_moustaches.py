@@ -4,6 +4,7 @@ from south.db import db
 from south.v2 import DataMigration
 from django.db import models
 
+
 class Migration(DataMigration):
 
     def forwards(self, orm):
@@ -15,6 +16,8 @@ class Migration(DataMigration):
         tb_documents = orm.Document.objects.filter(products__slug='thunderbird')
 
         for doc in tb_documents:
+            if doc.current_revision is None:
+                continue
             if doc.current_revision.content.startswith('REDIRECT [['):
                 # This is a redirect.
                 doc.is_ready_for_localization = False
@@ -26,8 +29,6 @@ class Migration(DataMigration):
                 content = content.replace('}}', '}')
                 doc.current_revision.content = content
                 doc.current_revision.save()
-                doc.html = doc.parse_and_calculate_links()
-                doc.save()
 
 
     def backwards(self, orm):
