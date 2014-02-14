@@ -71,7 +71,9 @@
   {% for attr, val in extra_body_attrs.items() %}{{ attr }}="{{ val }}" {% endfor %}
 {%- endif %}>
 
-{{ render_browserid_form() }}
+{% if waffle.flag('browserid') %}
+ {{ render_browserid_form() }}
+{% endif %}
 
 {% if settings.STAGE %}
   <div id="stage-banner">
@@ -210,7 +212,6 @@
 </footer>{# /#footer #}
 
 <script src="{{ url('jsi18n') }}build:{{ BUILD_ID_JS }}"></script>
-<script src="{{ url('wafflejs') }}"></script>
 
 {# Optimizely script for A/B testing - Bug 850816 #}
 {% if waffle.flag('optimizely') %}

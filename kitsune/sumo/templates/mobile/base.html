@@ -148,12 +148,13 @@
   </ul>
 </div>
 
-{{ render_browserid_form() }}
+{% if waffle.flag('browserid') %}
+ {{ render_browserid_form() }}
+{% endif %}
 
 {% block after_main %}{% endblock %}
 
 <script src="{{ url('jsi18n') }}/build:{{ BUILD_ID_JS }}"></script>
-<script src="{{ url('wafflejs') }}"></script>
 
 {{ js('mobile/common') }}
 {% for script in scripts %}
