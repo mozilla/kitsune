@@ -4,7 +4,6 @@ from south.db import db
 from south.v2 import DataMigration
 from django.db import models
 
-
 class Migration(DataMigration):
 
     def forwards(self, orm):
@@ -114,6 +113,17 @@ class Migration(DataMigration):
             'product': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'topics'", 'to': u"orm['products.Product']"}),
             'slug': ('django.db.models.fields.CharField', [], {'max_length': '255', 'db_index': 'True'}),
             'title': ('django.db.models.fields.CharField', [], {'max_length': '255', 'db_index': 'True'}),
+            'visible': ('django.db.models.fields.BooleanField', [], {'default': 'False'})
+        },
+        u'products.version': {
+            'Meta': {'ordering': "['-max_version']", 'object_name': 'Version'},
+            'default': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'max_version': ('django.db.models.fields.FloatField', [], {}),
+            'min_version': ('django.db.models.fields.FloatField', [], {}),
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
+            'product': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'versions'", 'to': u"orm['products.Product']"}),
+            'slug': ('django.db.models.fields.CharField', [], {'max_length': '255', 'db_index': 'True'}),
             'visible': ('django.db.models.fields.BooleanField', [], {'default': 'False'})
         },
         u'taggit.tag': {
@@ -226,5 +236,5 @@ class Migration(DataMigration):
         }
     }
 
-    complete_apps = ['wiki']
+    complete_apps = ['products', 'wiki']
     symmetrical = True
