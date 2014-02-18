@@ -202,14 +202,52 @@ products = SortedDict([
             }),
         ])
     }),
-    ('other', {
+    ('thunderbird', {
         'name': _lazy(u'Thunderbird'),
-        'subtitle': _lazy(u'or other Mozilla products'),
-        'html': 'This site is only for Firefox support. Please find your '
-                'product below.'
+        'subtitle': '',
+        'extra_fields': [],
+        'tags': [],
+        'products': ['thunderbird'],
+        'categories': SortedDict([
+            ('get-started', {
+                'name': _lazy(u'Learn the Basics: get started'),
+                'topic': 'get-started',
+                'tags': ['get-started'],
+            }),
+            ('download-and-install', {
+                'name': _lazy(u'Download, install and migration'),
+                'topic': 'download-and-install',
+                'tags': ['download-and-install'],
+            }),
+            ('privacy-and-security', {
+                'name': _lazy(u'Privacy and security settings'),
+                'topic': 'privacy-and-security',
+                'tags': ['privacy-and-security'],
+            }),
+            ('customize', {
+                'name': _lazy(u'Customize controls, options and add-ons'),
+                'topic': 'customize',
+                'tags': ['customize'],
+            }),
+            ('fix-problems', {
+                'name': _lazy(u'Fix slowness, crashing, error messages and '
+                              u'other problems'),
+                'topic': 'fix-problems',
+                'tags': ['fix-problems'],
+            }),
+            ('calendar', {
+                'name': _lazy(u'Calendar'),
+                'topic': 'calendar',
+                'tags': ['calendar'],
+            }),
+        ])
+    }),
+    ('other', {
+        'name': _lazy(u'Other Mozilla products'),
+        'subtitle': '',
+        'html': 'This site is only provides support for some of our products. '
+                'For other support, please find your product below.'
                 '<ul class="product-support">'
-                '<li><a href="http://support.mozillamessaging.com/">'
-                'Thunderbird support</a></li>'
                 '<li><a href="http://www.seamonkey-project.org/doc/">'
                 'SeaMonkey support</a></li>'
                 '<li><a href="http://caminobrowser.org/help/">'
