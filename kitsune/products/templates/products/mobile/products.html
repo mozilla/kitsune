@@ -19,18 +19,20 @@
 {% endblock %}
 
 {% block head %}
-  <style>
-    #products > li > a > .logo-sprite {
-      background-image: url({{ products[0].sprite_url(retina=False) }});
-    }
-
-    @media only screen and (-webkit-min-device-pixel-ratio: 2), only screen and (min-device-pixel-ratio: 2) {
+  {% if products %}
+    <style>
       #products > li > a > .logo-sprite {
-        background-image: url({{ products[0].sprite_url() }});
-        -webkit-background-size: 148px {{ products[0].sprite_height }}px;
-        -moz-background-size: 148px {{ products[0].sprite_height }}px;
-        background-size: 148px {{ products[0].sprite_height }}px;
+        background-image: url({{ products[0].sprite_url(retina=False) }});
       }
-    }
-  </style>
+
+      @media only screen and (-webkit-min-device-pixel-ratio: 2), only screen and (min-device-pixel-ratio: 2) {
+        #products > li > a > .logo-sprite {
+          background-image: url({{ products[0].sprite_url() }});
+          -webkit-background-size: 148px {{ products[0].sprite_height }}px;
+          -moz-background-size: 148px {{ products[0].sprite_height }}px;
+          background-size: 148px {{ products[0].sprite_height }}px;
+        }
+      }
+    </style>
+  {% endif %}
 {% endblock %}
