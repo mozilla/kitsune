@@ -70,10 +70,7 @@ class Product(ModelBase):
                 if product.image:
                     product.image_offset = offset
                     offset += 1
-
-                    fd = urllib.urlopen(settings.SITE_URL + self.image.url)
-                    logo_file = io.BytesIO(fd.read())
-                    logos.append(Image.open(logo_file))
+                    logos.append(product.image.open())
                 else:
                     product.image_offset = None
 
