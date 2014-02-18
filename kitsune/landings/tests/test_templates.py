@@ -18,4 +18,4 @@ class HomeTestCase(ElasticTestCase):
         r = self.client.get(reverse('home'), follow=True)
         eq_(200, r.status_code)
         doc = pq(r.content)
-        eq_(5, len(doc('#products-and-services li')))
+        eq_(4, len(doc('#products-and-services li')))

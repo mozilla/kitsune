@@ -22,7 +22,7 @@ class ProductViewsTestCase(ElasticTestCase):
         r = self.client.get(reverse('products'), follow=True)
         eq_(200, r.status_code)
         doc = pq(r.content)
-        eq_(4, len(doc('#products-and-services li')))
+        eq_(3, len(doc('#products-and-services li')))
 
     def test_product_landing(self):
         """Verify that /products/<slug> page renders topics."""

@@ -1,4 +1,4 @@
-{% macro product_cards(products, topic=None, show_thunderbird=False) -%}
+{% macro product_cards(products, topic=None) -%}
   <ul id="product-cards" class="card-grid cf">
     {% for product in products %}
       <li>
@@ -14,14 +14,5 @@
         </a>
       </li>
     {% endfor %}
-    {% if show_thunderbird %}
-      <li class="thunderbird">
-        <a class="cf" href="https://support.mozillamessaging.com">
-          <img src="{{ STATIC_URL }}img/blank.png" class="logo-sprite" alt="" />
-          <span class="title">{{ 'Thunderbird' }}</span>
-          <span class="description">{{ _('Email software for Windows, Mac and Linux') }}</span>
-        </a>
-      </li>
-    {% endif %}
   </ul>
 {%- endmacro %}
