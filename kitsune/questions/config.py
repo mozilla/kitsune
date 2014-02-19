@@ -211,34 +211,30 @@ products = SortedDict([
         'categories': SortedDict([
             ('get-started', {
                 'name': _lazy(u'Learn the Basics: get started'),
-                'topic': 'get-started',
+                'topic': 'learn-basics-get-started',
                 'tags': ['get-started'],
             }),
             ('download-and-install', {
                 'name': _lazy(u'Download, install and migration'),
-                'topic': 'download-and-install',
+                'topic': 'download-and-install-and-migration',
                 'tags': ['download-and-install'],
             }),
             ('privacy-and-security', {
                 'name': _lazy(u'Privacy and security settings'),
-                'topic': 'privacy-and-security',
+                'topic': 'privacy-and-security-settings',
                 'tags': ['privacy-and-security'],
             }),
             ('customize', {
                 'name': _lazy(u'Customize controls, options and add-ons'),
-                'topic': 'customize',
+                'topic': 'customize-controls-options-and-add-ons',
                 'tags': ['customize'],
             }),
             ('fix-problems', {
                 'name': _lazy(u'Fix slowness, crashing, error messages and '
                               u'other problems'),
-                'topic': 'fix-problems',
+                'topic': 'fix-slowness-crashing-error-messages-and-other-'
+                         'problems',
                 'tags': ['fix-problems'],
-            }),
-            ('calendar', {
-                'name': _lazy(u'Calendar'),
-                'topic': 'calendar',
-                'tags': ['calendar'],
             }),
         ])
     }),
