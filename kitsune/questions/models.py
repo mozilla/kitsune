@@ -165,6 +165,11 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
                                             'category']).delete()
         self._metadata = None
 
+    def remove_metadata(self, name):
+        """Delete the specified metadata."""
+        self.metadata_set.filter(name=name).delete()
+        self._metadata = None
+
     @property
     def metadata(self):
         """Dictionary access to metadata
@@ -176,6 +181,13 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
             self._metadata = dict((m.name, m.value) for
                                   m in self.metadata_set.all())
         return self._metadata
+
+    @property
+    def solver(self):
+        """Get the user that solved the question."""
+        solver_id = self.metadata.get('solver_id')
+        if solver_id:
+            return User.objects.get(id=solver_id)
 
     @property
     def product(self):

@@ -107,7 +107,8 @@
         {% endif %}
 
         {% if question.solution %}
-          <div class="solution">
+          {% set solver = question.solver %}
+          <div class="solution"{% if solver %} title="{{ _('Chosen as the solution by {user}')|f(user=solver.username) }}"{% endif %}>
             <h3>{{ _('Chosen solution') }}</h3>
             <div class="reply">
               {{ question.solution.content_parsed|safe }}

@@ -141,11 +141,13 @@ class AnswersTemplateTestCase(TestCaseBase):
         eq_('answer-%s' % ans.id, div.attrib['id'])
         q = Question.uncached.get(pk=self.question.id)
         eq_(q.solution, ans)
+        eq_(q.solver, self.question.creator)
         # Unsolve and verify
         response = post(self.client, 'questions.unsolve',
                         args=[self.question.id, ans.id])
         q = Question.uncached.get(pk=self.question.id)
         eq_(q.solution, None)
+        eq_(q.solver, None)
 
     def test_only_owner_or_admin_can_solve_unsolve(self):
         """Make sure non-owner/non-admin can't solve/unsolve."""
@@ -187,11 +189,13 @@ class AnswersTemplateTestCase(TestCaseBase):
              args=[self.question.id, ans.id])
         q = Question.uncached.get(pk=self.question.id)
         eq_(q.solution, ans)
+        eq_(q.solver, u)
         # Unsolve and verify
         post(self.client, 'questions.unsolve',
              args=[self.question.id, ans.id])
         q = Question.uncached.get(pk=self.question.id)
         eq_(q.solution, None)
+        eq_(q.solver, None)
 
     def test_needs_info_checkbox(self):
         """Test that needs info checkbox is correctly shown"""

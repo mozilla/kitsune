@@ -827,6 +827,7 @@ def solve(request, question_id, answer_id):
 
     question.solution = answer
     question.save()
+    question.add_metadata(solver_id=request.user.id)
 
     statsd.incr('questions.solution')
     QuestionSolvedEvent(answer).fire(exclude=question.creator)
@@ -854,6 +855,7 @@ def unsolve(request, question_id, answer_id):
 
     question.solution = None
     question.save()
+    question.remove_metadata('solver_id')
 
     statsd.incr('questions.unsolve')
     SolutionAction(user=answer.creator, day=answer.created).delete()
