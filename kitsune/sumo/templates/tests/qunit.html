@@ -101,15 +101,17 @@
 
       <script type="application/json" class="showfor-data">
         {
-          "platforms": [
-            {"name": "Web", "slug": "web"},
-            {"name": "Android", "slug": "android"},
-            {"name": "Linux", "slug": "linux"},
-            {"name": "Mac", "slug": "mac"},
-            {"name": "Windows XP", "slug": "winxp"},
-            {"name": "Windows 7/Vista", "slug": "win7"},
-            {"name": "Windows 8", "slug": "win8"}
-          ],
+          "platforms": {
+            "firefox": [
+              {"title": "Linux", "slug": "linux", "visible": true},
+              {"title": "Mac", "slug": "mac", "visible": true},
+              {"title": "Windows XP", "slug": "winxp", "visible": true},
+              {"title": "Windows 7", "slug": "win7", "visible": true},
+              {"title": "Windows 8", "slug": "win8", "visible": true}
+            ],
+            "mobile": [{"slug": "android"}],
+            "firefox-os": [{"slug": "web"}]
+          },
           "products": [
             {"platforms": ["linux", "mac", "winxp", "win7", "win8"], "slug": "firefox", "title": "Firefox"},
             {"platforms": ["android"], "slug": "mobile", "title": "Firefox for Android"},
