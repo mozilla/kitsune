@@ -9,7 +9,6 @@ from html5lib.serializer.htmlserializer import HTMLSerializer
 from html5lib.treebuilders import getTreeBuilder
 from html5lib.treewalkers import getTreeWalker
 from lxml.etree import Element
-from pyquery import PyQuery as pq
 from statsd import statsd
 from tower import ugettext as _, ugettext_lazy as _lazy
 
@@ -34,9 +33,10 @@ def wiki_to_html(wiki_markup, locale=settings.WIKI_DEFAULT_LANGUAGE,
     if parser_cls is None:
         parser_cls = WikiParser
 
-    with statsd.timer('wiki.render'):
-        content = parser_cls(doc_id=doc_id).parse(wiki_markup, show_toc=False,
-                                                  locale=locale)
+    with statsd.timer('wiki.render'), uselocale(locale):
+        content = parser_cls(doc_id=doc_id).parse(
+            wiki_markup, show_toc=False, locale=locale,
+            toc_string=_('Table of Contents'))
     return content
 
 
@@ -377,7 +377,7 @@ class WikiParser(sumo_parser.WikiParser):
         for_parser.expand_fors()
 
         html = for_parser.to_unicode()
-        html = self.localize_toc(html)
+
         html = self.add_youtube_embeds(html)
 
         return html
@@ -437,13 +437,6 @@ class WikiParser(sumo_parser.WikiParser):
             parsed = parsed.replace('</p>', '')
         # Do some string formatting to replace parameters
         return _format_template_content(parsed, _build_template_params(params))
-
-    def localize_toc(self, html):
-        doc = pq(html)
-        toc_title = doc.find('#toc h2:first-child')
-        with uselocale(self.locale):
-            toc_title.html(_('Table of Contents'))
-        return str(doc)
 
 
 class WhatLinksHereParser(WikiParser):
