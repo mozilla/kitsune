@@ -9,12 +9,14 @@ from html5lib.serializer.htmlserializer import HTMLSerializer
 from html5lib.treebuilders import getTreeBuilder
 from html5lib.treewalkers import getTreeWalker
 from lxml.etree import Element
+from pyquery import PyQuery as pq
 from statsd import statsd
 from tower import ugettext as _, ugettext_lazy as _lazy
 
 from kitsune.gallery.models import Image
 from kitsune.sumo import parser as sumo_parser
 from kitsune.sumo.parser import ALLOWED_ATTRIBUTES, get_object_fallback
+from kitsune.sumo.utils import uselocale
 from kitsune.wiki.models import Document
 
 
@@ -375,7 +377,7 @@ class WikiParser(sumo_parser.WikiParser):
         for_parser.expand_fors()
 
         html = for_parser.to_unicode()
-
+        html = self.localize_toc(html)
         html = self.add_youtube_embeds(html)
 
         return html
@@ -436,6 +438,13 @@ class WikiParser(sumo_parser.WikiParser):
         # Do some string formatting to replace parameters
         return _format_template_content(parsed, _build_template_params(params))
 
+    def localize_toc(self, html):
+        doc = pq(html)
+        toc_title = doc.find('#toc h2:first-child')
+        with uselocale(self.locale):
+            toc_title.html(_('Table of Contents'))
+        return str(doc)
+
 
 class WhatLinksHereParser(WikiParser):
     """An extension of the wiki that deals with what links here data."""
@@ -491,4 +500,3 @@ class WhatLinksHereParser(WikiParser):
 
         return (super(WhatLinksHereParser, self)
                 ._hook_image_tag(parser, space, name))
-
