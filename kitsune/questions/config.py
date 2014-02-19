@@ -216,7 +216,7 @@ products = SortedDict([
             }),
             ('download-and-install', {
                 'name': _lazy(u'Download, install and migration'),
-                'topic': 'download-and-install-and-migration',
+                'topic': 'download-install-and-migration',
                 'tags': ['download-and-install'],
             }),
             ('privacy-and-security', {
@@ -236,6 +236,11 @@ products = SortedDict([
                          'problems',
                 'tags': ['fix-problems'],
             }),
+            ('calendar', {
+                'name': _lazy('Calendar'),
+                'topic': 'calendar',
+                'tags': ['calendar'],
+            })
         ])
     }),
     ('other', {
