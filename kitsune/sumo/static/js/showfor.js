@@ -60,14 +60,14 @@ ShowFor.prototype.initEvents = function() {
  *
  * If the desired value does not exist in the selectbox, this will consult the
  * possible versions (even those not shown to the user) to see if the option is
- * valid. If it is, it will be added, and then selected
+ * valid. If it is, it will be added, and then selected.
  *
  * This is useful because if the user comes to the site using something no
  * longer supported (Firefox 18 for example), then the UI will change to
  * include Firefox 18. Users that aren't running Firefox 18 won't see it as an
  * option though
  */
-ShowFor.prototype.ensureSelect = function($select, type, val) {
+ShowFor.prototype.ensureSelect = function($select, type, product, val) {
     var $opt;
     var key;
     var extra = {};
@@ -83,14 +83,13 @@ ShowFor.prototype.ensureSelect = function($select, type, val) {
     }
 
     if (type === 'version') {
-        var product = this.versionSlugs[val];
         target = select(this.data.versions[product], val);
         if (target !== null) {
             extra['data-min'] = target.min_version;
             extra['data-max'] = target.max_version;
         }
     } else if (type === 'platform') {
-        target = select(this.data.platforms, val);
+        target = select(this.data.platforms[product], val);
     } else if (type === 'product') {
         target = select(this.data.products, val);
     } else {
@@ -157,11 +156,11 @@ ShowFor.prototype.updateUI = function() {
                     .prop('checked', true);
             if (platform) {
                 var $platform = $product.find('select.platform');
-                this.ensureSelect($platform, 'platform', platform);
+                this.ensureSelect($platform, 'platform', product, platform);
             }
             if (version) {
                 var $version = $product.find('select.version');
-                this.ensureSelect($version, 'version', version);
+                this.ensureSelect($version, 'version', product, version);
             }
         }.bind(this));
 
