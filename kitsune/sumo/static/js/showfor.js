@@ -39,9 +39,12 @@ ShowFor.prototype.loadData = function() {
     this.productSlugs = this.data.products.map(function(prod) {
         return prod.slug;
     });
-    this.platformSlugs = this.data.platforms.map(function(platform) {
-        return platform.slug;
-    });
+    this.platformSlugs = [];
+    for (var product in this.data.platforms) {
+        this.data.platforms[product].forEach(function(platform) {
+            this.platformSlugs.push(platform.slug);
+        }.bind(this));
+    }
     this.versionSlugs = {};
     for (var prod in this.data.versions) {
         this.data.versions[prod].forEach(function(version) {
@@ -60,37 +63,36 @@ ShowFor.prototype.initEvents = function() {
  *
  * If the desired value does not exist in the selectbox, this will consult the
  * possible versions (even those not shown to the user) to see if the option is
- * valid. If it is, it will be added, and then selected
+ * valid. If it is, it will be added, and then selected.
  *
  * This is useful because if the user comes to the site using something no
  * longer supported (Firefox 18 for example), then the UI will change to
  * include Firefox 18. Users that aren't running Firefox 18 won't see it as an
  * option though
  */
-ShowFor.prototype.ensureSelect = function($select, type, val) {
+ShowFor.prototype.ensureSelect = function($select, type, product, val) {
     var $opt;
     var key;
     var extra = {};
     var target;
 
-    function select(array, slug) {
-        for (var i = 0; i < array.length; i++) {
-            if (array[i].slug === slug) {
-                return array[i];
+    function select(searchArray, slug) {
+        for (var i = 0; i < searchArray.length; i++) {
+            if (searchArray[i].slug === slug) {
+                return searchArray[i];
             }
         }
         return null;
     }
 
     if (type === 'version') {
-        var product = this.versionSlugs[val];
         target = select(this.data.versions[product], val);
         if (target !== null) {
             extra['data-min'] = target.min_version;
             extra['data-max'] = target.max_version;
         }
     } else if (type === 'platform') {
-        target = select(this.data.platforms, val);
+        target = select(this.data.platforms[product], val);
     } else if (type === 'product') {
         target = select(this.data.products, val);
     } else {
@@ -157,11 +159,11 @@ ShowFor.prototype.updateUI = function() {
                     .prop('checked', true);
             if (platform) {
                 var $platform = $product.find('select.platform');
-                this.ensureSelect($platform, 'platform', platform);
+                this.ensureSelect($platform, 'platform', product, platform);
             }
             if (version) {
                 var $version = $product.find('select.version');
-                this.ensureSelect($version, 'version', version);
+                this.ensureSelect($version, 'version', product, version);
             }
         }.bind(this));
 
@@ -187,21 +189,23 @@ ShowFor.prototype.updateUI = function() {
     if (browser === 'firefox' && this.productSlugs.indexOf('firefox') !== -1) {
         verSlug = 'fx' + version;
         $version = productElems.firefox.find('select.version');
-        this.ensureSelect($version, 'version', verSlug);
+        this.ensureSelect($version, 'version', 'firefox', verSlug);
 
     } else if (browser === 'mobile' && this.productSlugs.indexOf('mobile') !== -1) {
         verSlug = 'm' + version;
         $version = productElems.mobile.find('select.version');
-        this.ensureSelect($version, 'version', verSlug);
+        this.ensureSelect($version, 'version', 'mobile', verSlug);
 
     } else if (browser === 'firefox-os' && this.productSlugs.indexOf('firefox-os') !== -1) {
         verSlug = 'fxos' + version.toFixed(1);
         $version = productElems['firefox-os'].find('select.version');
-        this.ensureSelect($version, 'version', verSlug);
+        this.ensureSelect($version, 'version', 'firefox-os', verSlug);
     }
 
     $products.find('select.platform').each(function(i, elem) {
-        this.ensureSelect($(elem), 'platform', platform);
+        var $elem = $(elem);
+        var product = $elem.parents('.product').data('product');
+        this.ensureSelect($elem, 'platform', product, platform);
     }.bind(this));
 };
 

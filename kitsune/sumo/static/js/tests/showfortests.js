@@ -1,3 +1,5 @@
+/* globals ShowFor:false, module:false, tests:false, test:false, equals:false,
+   deepEqual:false, assert:false, console:false, ok:false */
 (function() {
 
 /* Tests for showfor */
@@ -31,16 +33,23 @@ test('loadData', function() {
 
   // Assert that data was loaded
   equals(typeof this.showFor.data, 'object');
-  equals(this.showFor.data.platforms.length, 7);
   equals(this.showFor.data.products.length, 3);
   equals(this.showFor.data.versions.firefox.length, 5);
 
+  function unorderedEquals(arr1, arr2) {
+    console.log('unorderedEquals', arr1, arr2);
+    equals(arr1.length, arr2.length);
+    arr1.forEach(function(o) {
+      ok(arr2.indexOf(o) > -1);
+    });
+  }
+
   // Assert that the denormalized forms were pulled out
-  deepEqual(this.showFor.productSlugs, ['firefox', 'mobile', 'firefox-os']);
-  deepEqual(this.showFor.platformSlugs, ['web', 'android', 'linux', 'mac', 'winxp', 'win7', 'win8']);
-  equals(this.showFor.versionSlugs['fx24'], 'firefox');
+  unorderedEquals(this.showFor.productSlugs, ['firefox', 'mobile', 'firefox-os']);
+  unorderedEquals(this.showFor.platformSlugs, ['web', 'android', 'linux', 'mac', 'winxp', 'win7', 'win8']);
+  equals(this.showFor.versionSlugs.fx24, 'firefox');
   equals(this.showFor.versionSlugs['fxos1.2'], 'firefox-os');
-  equals(this.showFor.versionSlugs['m24'], 'mobile');
+  equals(this.showFor.versionSlugs.m24, 'mobile');
 });
 
 test('updateUI', function() {
@@ -63,8 +72,6 @@ test('updateUI', function() {
   this.showFor.updateUI();
   equals($versionFx.val(), 'version:fx26');
   equals($platformFx.val(), 'platform:winxp');
-
-  console.log($platformFx);
 
   BrowserDetect.browser = 'm';
   BrowserDetect.version = 23.0;

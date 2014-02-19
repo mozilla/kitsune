@@ -37,15 +37,16 @@ def showfor_data(products):
 
     # Get every platform, for every product. The result will have no
     # duplicates, and will be dicts like {'name': ..., 'slug': ...}
-    platforms = set()
+    platforms = {}
     for prod in products:
-        platforms.update(prod.platforms.all())
-    data['platforms'] = []
-    for plat in sorted(platforms, key=order):
-        data['platforms'].append({
-            'name': plat.name,
-            'slug': plat.slug,
-            'visible': plat.visible,
-        })
+        platforms[prod.slug] = prod.platforms.all()
+    data['platforms'] = {}
+    for prod_slug, plats in platforms.items():
+        for plat in sorted(plats, key=order):
+            data['platforms'].setdefault(prod_slug, []).append({
+                'name': plat.name,
+                'slug': plat.slug,
+                'visible': plat.visible,
+            })
 
     return data
