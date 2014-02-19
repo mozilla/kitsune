@@ -203,7 +203,7 @@ class WikiParser(Parser):
 
     def parse(self, text, show_toc=None, tags=None, attributes=None,
               styles=None, locale=settings.WIKI_DEFAULT_LANGUAGE,
-              nofollow=False, youtube_embeds=True):
+              nofollow=False, youtube_embeds=True, **kwargs):
         """Given wiki markup, return HTML.
 
         Pass a locale to get all the hooks to look up Documents or
@@ -228,7 +228,8 @@ class WikiParser(Parser):
         """
         self.locale = locale
 
-        parser_kwargs = {'tags': tags} if tags else {}
+        if tags:
+            kwargs['tags'] = tags
 
         @email_utils.safe_translation
         def _parse(locale):
@@ -240,7 +241,7 @@ class WikiParser(Parser):
                 styles=styles or ALLOWED_STYLES,
                 nofollow=nofollow,
                 strip_comments=True,
-                **parser_kwargs)
+                **kwargs)
 
         html = _parse(locale)
 

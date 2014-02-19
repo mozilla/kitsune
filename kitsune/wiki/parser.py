@@ -15,6 +15,7 @@ from tower import ugettext as _, ugettext_lazy as _lazy
 from kitsune.gallery.models import Image
 from kitsune.sumo import parser as sumo_parser
 from kitsune.sumo.parser import ALLOWED_ATTRIBUTES, get_object_fallback
+from kitsune.sumo.utils import uselocale
 from kitsune.wiki.models import Document
 
 
@@ -33,8 +34,10 @@ def wiki_to_html(wiki_markup, locale=settings.WIKI_DEFAULT_LANGUAGE,
         parser_cls = WikiParser
 
     with statsd.timer('wiki.render'):
-        content = parser_cls(doc_id=doc_id).parse(wiki_markup, show_toc=False,
-                                                  locale=locale)
+        with uselocale(locale):
+            content = parser_cls(doc_id=doc_id).parse(
+                wiki_markup, show_toc=False, locale=locale,
+                toc_string=_('Table of Contents'))
     return content
 
 
@@ -491,4 +494,3 @@ class WhatLinksHereParser(WikiParser):
 
         return (super(WhatLinksHereParser, self)
                 ._hook_image_tag(parser, space, name))
-
