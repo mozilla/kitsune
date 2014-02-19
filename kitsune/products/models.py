@@ -70,7 +70,8 @@ class Product(ModelBase):
                 if product.image:
                     product.image_offset = offset
                     offset += 1
-                    logos.append(product.image.open())
+                    logo_file = io.BytesIO(product.image.file.read())
+                    logos.append(Image.open(logo_file))
                 else:
                     product.image_offset = None
 
