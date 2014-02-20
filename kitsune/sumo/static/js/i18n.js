@@ -7,7 +7,7 @@
  *
  * Include this __after__ the Django script.
  */
-if (typeof(catalog) === 'undefined' && typof(django) === 'undefined' && typeof(django.catalog) === 'undefined') {
+if (typeof(catalog) === 'undefined' && typeof(django) === 'undefined' && typeof(django.catalog) === 'undefined') {
     gettext = function (msgid) {
         return msgid;
     };
