@@ -190,6 +190,10 @@ def get_customercare_stats():
         { ... },
     ]
     """
+    if settings.STAGE:
+        print ('Skipped get_customercare_stats(). '
+               'Set settings.STAGE to False to run it for real.')
+        return
 
     contributor_stats = {}
 
