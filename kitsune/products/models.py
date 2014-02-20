@@ -18,7 +18,9 @@ class Product(ModelBase):
     description = models.TextField()
     image = models.ImageField(upload_to=settings.PRODUCT_IMAGE_PATH, null=True,
                               blank=True,
-                              max_length=settings.MAX_FILEPATH_LENGTH)
+                              max_length=settings.MAX_FILEPATH_LENGTH,
+                              # no l10n in admin
+                              help_text=u'The image must be 96x96.')
     image_offset = models.IntegerField(default=None, null=True, editable=False)
     image_cachebuster = models.CharField(max_length=32, default=None,
                                          null=True, editable=False)
