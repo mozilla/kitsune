@@ -4,7 +4,7 @@
 {% set title = _('What Links Here | {document}')|fe(document=document.title) %}
 {% set crumbs = [(document.get_absolute_url(), document.title),
                  (None, _('What Links Here'))] %}
-
+{% set meta = [('robots', 'noindex, nofollow')] %}
 
 {% macro relations_list(name, title) %}
   {% if relations[name] %}
