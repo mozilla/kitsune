@@ -13,7 +13,7 @@
   <div class="grid_12">
     <h1 class="product-title cf">
       <img src="{{ STATIC_URL }}img/blank.png" alt="" class="logo-sprite"
-        style="{% if product.image %}background-image: url({{ product.sprite_url() }}); background-position: -100px -{{ 100 + (product.image_offset * 296) }}px;{% else %}background-image: url({{ product.image_url }}){% endif %}" />
+        style="{% if product.image and product.image_offset %}background-image: url({{ product.sprite_url() }}); background-position: -100px -{{ 100 + (product.image_offset * 296) }}px;{% else %}background-image: url({{ product.image_url }}){% endif %}" />
       {{ _(product.title, 'DB: products.Product.title') }}
     </h1>
 
