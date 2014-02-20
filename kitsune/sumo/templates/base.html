@@ -215,7 +215,7 @@
    But this should get cached busted whenever a locale is updated.
    It's complicatred to fix. But for now it isn't more broken than
    before. #}
-<script src="{{ STATIC_URL }}jsi18n/{{ request.LANGUAGE_CODE }}/javascript.js?{{ BUILD_ID_JS }}"></script>
+<script src="{{ STATIC_URL }}jsi18n/{{ request.LANGUAGE_CODE|lower }}/javascript.js?{{ BUILD_ID_JS }}"></script>
 
 {# Optimizely script for A/B testing - Bug 850816 #}
 {% if waffle.flag('optimizely') %}
