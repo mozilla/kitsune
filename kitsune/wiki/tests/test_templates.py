@@ -1018,7 +1018,7 @@ class HistoryTests(TestCaseBase):
                        args=[r.document.slug])
         eq_(200, response.status_code)
         doc = pq(response.content)
-        eq_('noindex', doc('meta[name=robots]')[0].attrib['content'])
+        eq_('noindex, nofollow', doc('meta[name=robots]')[0].attrib['content'])
 
     def test_history_category_appears(self):
         """Document history should have a category on page"""

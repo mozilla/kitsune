@@ -3,6 +3,7 @@
 {% set title = _('Show translations | {document}')|f(document=document.title) %}
 {% set crumbs = [(document.get_absolute_url(), document.title),
                  (None, _('Show translations'))] %}
+{% set meta = [('robots', 'noindex, nofollow')] %}
 
 {% block content %}
   <div class="grid_9">

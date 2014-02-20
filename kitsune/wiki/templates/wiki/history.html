@@ -7,6 +7,7 @@
 {% set title = _('Revision History | {document}')|fe(document=document.title) %}
 {% set crumbs = [(document.get_absolute_url(), document.title),
                  (None, _('History'))] %}
+{% set meta = [('robots', 'noindex, nofollow')] %}
 
 {% block content %}
   <div class="grid_9">
