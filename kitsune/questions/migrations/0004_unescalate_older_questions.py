@@ -6,6 +6,10 @@ from django.db import models
 
 class Migration(DataMigration):
 
+    depends_on = (
+        ('taggit', "0001_initial"),
+    )
+
     def forwards(self, orm):
         """Unescalate questions over a week old."""
         # Get the escalate tag.
