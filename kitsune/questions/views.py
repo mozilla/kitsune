@@ -827,7 +827,7 @@ def solve(request, question_id, answer_id):
 
     question.solution = answer
     question.save()
-    question.add_metadata(solver_id=request.user.id)
+    question.add_metadata(solver_id=str(request.user.id))
 
     statsd.incr('questions.solution')
     QuestionSolvedEvent(answer).fire(exclude=question.creator)
