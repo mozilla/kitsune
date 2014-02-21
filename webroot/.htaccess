@@ -1,4 +1,0 @@
-RewriteEngine On
-
-# Everything goes to Kitsune.
-RewriteRule ^(.*) /k/$1 [QSA]
