@@ -67,7 +67,6 @@ src/celery
 src/kombu
 src/django-celery
 src/django-tidings
-src/jstestnetlib
 src/pystatsd
 src/django-session-csrf
 src/redis-py
