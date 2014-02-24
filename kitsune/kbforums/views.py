@@ -281,6 +281,8 @@ def delete_thread(request, document_slug, thread_id):
                 (request.user, thread.id))
     thread.delete()
 
+    statsd.incr('kbforums.delete_thread')
+
     return HttpResponseRedirect(reverse('wiki.discuss.threads',
                                         args=[document_slug]))
 
@@ -338,6 +340,10 @@ def delete_post(request, document_slug, thread_id, post_id):
     log.warning("User %s is deleting KB post with id=%s" %
                 (request.user, post.id))
     post.delete()
+
+    statsd.incr('kbforums.delete_post')
+
+
     try:
         Thread.objects.get(pk=thread_id)
         goto = reverse('wiki.discuss.posts',

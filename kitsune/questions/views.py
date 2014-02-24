@@ -1085,6 +1085,8 @@ def delete_question(request, question_id):
                 (request.user, question.id))
     question.delete()
 
+    statsd.incr('questions.delete')
+
     return HttpResponseRedirect(reverse('questions.questions'))
 
 
@@ -1106,6 +1108,8 @@ def delete_answer(request, question_id, answer_id):
                 (request.user, answer.id))
     answer.delete()
 
+    statsd.incr('questions.delete_answer')
+
     return HttpResponseRedirect(reverse('questions.answers',
                                 args=[question_id]))
 
@@ -1123,6 +1127,11 @@ def lock_question(request, question_id):
     log.info("User %s set is_locked=%s on question with id=%s " %
              (request.user, question.is_locked, question.id))
     question.save()
+
+    if question.is_locked:
+        statsd.incr('questions.lock')
+    else:
+        statsd.incr('questions.unlock')
 
     return HttpResponseRedirect(question.get_absolute_url())
 
