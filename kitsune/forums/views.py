@@ -334,6 +334,8 @@ def delete_thread(request, forum_slug, thread_id):
                 (request.user, thread.id))
     thread.delete()
 
+    statsd.incr('forums.delete_thread')
+
     return HttpResponseRedirect(reverse('forums.threads', args=[forum_slug]))
 
 
@@ -428,6 +430,9 @@ def delete_post(request, forum_slug, thread_id, post_id):
     log.warning("User %s is deleting post with id=%s" %
                 (request.user, post.id))
     post.delete()
+
+    statsd.incr('forums.delete_post')
+
     try:
         Thread.objects.get(pk=thread_id)
         goto = reverse('forums.posts', args=[forum_slug, thread_id])
