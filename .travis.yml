@@ -4,6 +4,8 @@ node: "0.10"
 env: DJANGO_LIVE_TEST_SERVER_ADDRESS="localhost:9900-9999"
 
 before_install:
+  - rm -rf vendor/src/jstestnetlib
+  - git submodule deinit vendor/src/jstestnetlib
   - git submodule update --init --recursive
 
 git:
