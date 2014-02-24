@@ -3,14 +3,6 @@ python: "2.6"
 node: "0.10"
 env: DJANGO_LIVE_TEST_SERVER_ADDRESS="localhost:9900-9999"
 
-before_install:
-  - rm -rf vendor/src/jstestnetlib
-  - git submodule update --init --recursive
-
-git:
-    submodules: false
-
-
 install: scripts/travis/install.sh
 before_script: scripts/travis/setup.sh
 script:
