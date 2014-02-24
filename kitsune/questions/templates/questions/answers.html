@@ -108,8 +108,8 @@
 
         {% if question.solution %}
           {% set solver = question.solver %}
-          <div class="solution"{% if solver %} title="{{ _('Chosen as the solution by {user}')|f(user=solver.username) }}"{% endif %}>
-            <h3>{{ _('Chosen solution') }}</h3>
+          <div class="solution">
+            <h3{% if solver %} title="{{ _('Solution chosen by {user}')|f(user=solver.username) }}"{% endif %}>{{ _('Chosen solution') }}</h3>
             <div class="reply">
               {{ question.solution.content_parsed|safe }}
               <a class="read-more" href="{{ question.solution.get_absolute_url() }}">{{ _('Read this answer in context') }}</a>
