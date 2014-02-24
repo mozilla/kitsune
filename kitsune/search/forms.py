@@ -73,59 +73,59 @@ class SearchForm(forms.Form):
     topics = forms.MultipleChoiceField(
         required=False,
         widget=forms.CheckboxSelectMultiple(),
-        label=_lazy('Topics'))
+        label=_lazy(u'Topics'))
 
-    language = forms.ChoiceField(required=False, label=_lazy('Language'),
+    language = forms.ChoiceField(required=False, label=_lazy(u'Language'),
                                  choices=SEARCH_LANGUAGES)
 
     category = TypedMultipleChoiceField(
         required=False, coerce=int, widget=forms.CheckboxSelectMultiple,
-        label=_lazy('Category'), choices=CATEGORIES, coerce_only=True)
+        label=_lazy(u'Category'), choices=CATEGORIES, coerce_only=True)
 
     product = forms.MultipleChoiceField(
         required=False,
-        label=_lazy('Relevant to'),
+        label=_lazy(u'Relevant to'),
         widget=forms.CheckboxSelectMultiple())
 
     include_archived = forms.BooleanField(
-        required=False, label=_lazy('Include obsolete articles?'))
+        required=False, label=_lazy(u'Include obsolete articles?'))
 
     sortby_documents = forms.TypedChoiceField(
         required=False,
         empty_value=constants.SORTBY_DOCUMENTS_CHOICES[0][0],
-        label=_lazy('Sort results by'),
+        label=_lazy(u'Sort results by'),
         choices=constants.SORTBY_DOCUMENTS_CHOICES)
 
     # Support questions and discussion forums fields
     created = forms.TypedChoiceField(
         required=False, coerce=int, empty_value=0,
-        label=_lazy('Created'), choices=constants.DATE_LIST)
+        label=_lazy(u'Created'), choices=constants.DATE_LIST)
 
     created_date = forms.CharField(required=False)
 
     updated = forms.TypedChoiceField(
         required=False, coerce=int, empty_value=0,
-        label=_lazy('Last updated'), choices=constants.DATE_LIST)
+        label=_lazy(u'Last updated'), choices=constants.DATE_LIST)
     updated_date = forms.CharField(required=False)
 
-    user_widget = forms.TextInput(attrs={'placeholder': _lazy('username'),
+    user_widget = forms.TextInput(attrs={'placeholder': _lazy(u'username'),
                                          'class': 'auto-fill'})
     # Discussion forums fields
     author = forms.CharField(required=False, widget=user_widget)
 
     sortby = forms.TypedChoiceField(
         required=False, coerce=int, empty_value=0,
-        label=_lazy('Sort results by'), choices=constants.SORTBY_FORUMS)
+        label=_lazy(u'Sort results by'), choices=constants.SORTBY_FORUMS)
 
     thread_type = TypedMultipleChoiceField(
         required=False, coerce=int, widget=forms.CheckboxSelectMultiple,
-        label=_lazy('Thread type'), choices=constants.DISCUSSION_STATUS_LIST,
+        label=_lazy(u'Thread type'), choices=constants.DISCUSSION_STATUS_LIST,
         coerce_only=True)
 
     forum = TypedMultipleChoiceField(
         required=False,
         coerce=int,
-        label=_lazy('Search in forum'),
+        label=_lazy(u'Search in forum'),
         choices=[],  # Note: set choices with set_allowed_forums
         coerce_only=True)
 
@@ -135,36 +135,36 @@ class SearchForm(forms.Form):
 
     sortby_questions = forms.TypedChoiceField(
         required=False, coerce=int, empty_value=0,
-        label=_lazy('Sort results by'), choices=constants.SORTBY_QUESTIONS)
+        label=_lazy(u'Sort results by'), choices=constants.SORTBY_QUESTIONS)
 
     is_locked = forms.TypedChoiceField(
         required=False, coerce=int, empty_value=0, widget=forms.RadioSelect,
-        label=_lazy('Locked'), choices=constants.TERNARY_LIST)
+        label=_lazy(u'Locked'), choices=constants.TERNARY_LIST)
 
     is_archived = forms.TypedChoiceField(
         required=False, coerce=int, empty_value=0, widget=forms.RadioSelect,
-        label=_lazy('Archived'), choices=constants.TERNARY_LIST)
+        label=_lazy(u'Archived'), choices=constants.TERNARY_LIST)
 
     is_solved = forms.TypedChoiceField(
         required=False, coerce=int, empty_value=0, widget=forms.RadioSelect,
-        label=_lazy('Solved'), choices=constants.TERNARY_LIST)
+        label=_lazy(u'Solved'), choices=constants.TERNARY_LIST)
 
     has_answers = forms.TypedChoiceField(
         required=False, coerce=int, empty_value=0, widget=forms.RadioSelect,
-        label=_lazy('Has answers'), choices=constants.TERNARY_LIST)
+        label=_lazy(u'Has answers'), choices=constants.TERNARY_LIST)
 
     has_helpful = forms.TypedChoiceField(
         required=False, coerce=int, empty_value=0, widget=forms.RadioSelect,
-        label=_lazy('Has helpful answers'), choices=constants.TERNARY_LIST)
+        label=_lazy(u'Has helpful answers'), choices=constants.TERNARY_LIST)
 
     num_voted = forms.TypedChoiceField(
         required=False, coerce=int, empty_value=0,
-        label=_lazy('Votes'), choices=constants.NUMBER_LIST)
+        label=_lazy(u'Votes'), choices=constants.NUMBER_LIST)
     num_votes = forms.IntegerField(required=False)
 
-    tag_widget = forms.TextInput(attrs={'placeholder': _lazy('tag1, tag2'),
+    tag_widget = forms.TextInput(attrs={'placeholder': _lazy(u'tag1, tag2'),
                                         'class': 'auto-fill'})
-    q_tags = forms.CharField(label=_lazy('Tags'), required=False,
+    q_tags = forms.CharField(label=_lazy(u'Tags'), required=False,
                              widget=tag_widget)
 
     def set_allowed_forums(self, user):

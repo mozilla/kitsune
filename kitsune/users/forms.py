@@ -367,15 +367,6 @@ class ForgotUsernameForm(forms.Form):
 
 
 class PasswordResetForm(DjangoPasswordResetForm):
-    def clean_email(self):
-        """Same as django's but doesn't invalidate unusable passwords."""
-        email = self.cleaned_data["email"]
-        self.users_cache = User.objects.filter(
-            email__iexact=email, is_active=True)
-        if not len(self.users_cache):
-            raise forms.ValidationError(self.error_messages['unknown'])
-        return email
-
     def save(self, domain_override=None,
              subject_template_name='registration/password_reset_subject.txt',
              text_template=None,
@@ -386,7 +377,9 @@ class PasswordResetForm(DjangoPasswordResetForm):
         Based off of django's but uses jingo and handles html and plain-text
         emails
         """
-        for user in self.users_cache:
+        users = User.objects.filter(
+            email__iexact=self.cleaned_data["email"], is_active=True)
+        for user in users:
             if not domain_override:
                 current_site = get_current_site(request)
                 site_name = current_site.name

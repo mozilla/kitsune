@@ -400,15 +400,6 @@ MIDDLEWARE_CLASSES = (
     'django_statsd.middleware.GraphiteMiddleware',
     'commonware.request.middleware.SetRemoteAddrFromForwardedFor',
 
-    # This gives us atomic success or failure on multi-row writes. It
-    # does not give us a consistent per-transaction snapshot for
-    # reads; that would need the serializable isolation level (which
-    # InnoDB does support) and code to retry transactions that roll
-    # back due to serialization failures. It's a possibility for the
-    # future. Keep in mind that memcache defeats snapshotted reads
-    # where we don't explicitly use the "uncached" manager.
-    'django.middleware.transaction.TransactionMiddleware',
-
     # LocaleURLMiddleware requires access to request.user. These two must be
     # loaded before the LocaleURLMiddleware
     'commonware.middleware.NoVarySessionMiddleware',
@@ -649,6 +640,7 @@ SESSION_COOKIE_HTTPONLY = True
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 SESSION_ENGINE = 'django.contrib.sessions.backends.cached_db'
 SESSION_EXISTS_COOKIE = 'sumo_session'
+SESSION_SERIALIZER = 'django.contrib.sessions.serializers.PickleSerializer'
 
 #
 # Connection information for Elastic
@@ -889,3 +881,6 @@ AXES_USE_USER_AGENT = False
 AXES_COOLOFF_TIME = 1  # hour
 AXES_BEHIND_REVERSE_PROXY = True
 AXES_REVERSE_PROXY_HEADER = 'HTTP_X_CLUSTER_CLIENT_IP'
+
+# Set this to True to wrap each HTTP request in a transaction on this database.
+ATOMIC_REQUESTS = True
