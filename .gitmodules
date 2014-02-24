@@ -85,9 +85,6 @@
 [submodule "vendor/src/django-tidings"]
 	path = vendor/src/django-tidings
 	url = https://github.com/erikrose/django-tidings.git
-[submodule "vendor/src/jstestnetlib"]
-	path = vendor/src/jstestnetlib
-	url = https://github.com/kumar303/jstestnetlib.git
 [submodule "vendor/src/pystatsd"]
 	path = vendor/src/pystatsd
 	url = https://github.com/jsocol/pystatsd

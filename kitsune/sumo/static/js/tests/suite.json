@@ -7,7 +7,6 @@
         "js/markup.js",
         "js/questions.js",
         "js/showfor.js",
-        "js/libs/jstestnet.js",
         "js/testutils.js",
         "js/ajaxvote.js",
         "js/ajaxpreview.js",
