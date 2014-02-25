@@ -71,7 +71,8 @@ class QuestionReplyEvent(QuestionEvent):
 
         c = {'answer': self.answer.content,
              'answer_html': self.answer.content_parsed,
-             'answerer': self.answer.creator.username,
+             'answerer': self.answer.creator,
+             'created': self.answer.created,
              'question_title': self.instance.title,
              'host': Site.objects.get_current().domain}
 

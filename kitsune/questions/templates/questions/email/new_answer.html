@@ -1,23 +1,27 @@
 {% extends 'email/base.html' %}
 
+{% block styles %}
+  {% include 'questions/includes/reply_email_styles.css' %}
+{% endblock %}
+
+{% block header %}
+  <h1>{{ question_title }}</h1>
+  <img class="avatar" src="{{ profile_avatar(answerer) }}">
+  <div class="user-meta">
+    <strong>{{ answerer.username }}</strong>
+    <span>{{ created }}</span>
+  </div>
+  <div class="arrow"></div>
+{% endblock %}
+
 {% block content %}
-  {% if username %}
-    <p>{{ _('Hi {username},')|f(username=username) }}</p>
-  {% endif %}
-
-  <p>{{ _('{answerer} commented on a Firefox question on {host}:')|f(answerer=answerer, host=host) }}</p>
-
-  <p><a href="https://{{ host }}{{ answer_url }}">{{ question_title }}</a></p>
-
-  <p>{{ _('{answerer} wrote:')|f(answerer=answerer) }}</p>
-
   {{ answer_html }}
+{% endblock %}
 
-  <p><a href="https://{{ host }}{{ answer_url }}">{{ _('See the comment.') }}</a></p>
-
-  <p><a href="https://{{ host }}{{ helpful_url }}">{{ _('If this comment is helpful, vote on it.') }}</a></p>
-
-  <p><a href="https://{{ host }}/questions?filter=unsolved">{{ _('Help other Firefox users by browsing for unsolved questions on {host}.')|f(host=host) }}</a></p>
-
-  <p>{{ _("You might just make someone's day!") }}</p>
+{% block prefooter %}
+  <p><a class="button blue" href="https://{{ host }}{{ answer_url }}">{{ _('Post a Reply') }}</a></p>
+  <div class="gi-box">
+    <a href="https://{{ host }}/questions?filter=unsolved">{{ _('Browse for unsolved questions and help a Firefox user') }}</a>
+    <br/>{{ _("Solving 1 issue helps up to 1,000 users a day!") }}
+  </div>
 {% endblock %}
