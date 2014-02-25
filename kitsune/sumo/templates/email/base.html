@@ -204,6 +204,20 @@
       text-shadow: 1px 1px 0 #164e7f;
     }
 
+    .email-prefs {
+      float: left;
+    }
+
+    .watch-link {
+      float: right;
+    }
+
+    .email-prefs,
+    .watch-link a {
+      color: #999;
+      font-size: 12px;
+    }
+
     {% block styles %}{% endblock %}
   </style>
 </head>
@@ -230,9 +244,9 @@
             <td>
               {% block prefooter %}{% endblock %}
               {% block footer %}
-                <a href="{{ url('users.edit_settings') }}">{{ _('Change your email preferences') }}</a>
+                <a class="email-prefs" href="{{ url('users.edit_settings') }}">{{ _('Change your email preferences') }}</a>
                 {% if watch %}
-                  <br /><a href="{{ watch.unsubscribe_url() }}">{{ _('Unsubscribe from these emails') }}</a>
+                  <div class="watch-link"><a href="{{ watch.unsubscribe_url() }}">{{ _('Unsubscribe from these emails') }}</a></div>
                 {% endif %}
               {% endblock %}
             </td>

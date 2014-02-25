@@ -1,64 +1,12 @@
 {% extends 'email/base.html' %}
 
 {% block styles %}
-  h1 {
-    color: #525252;
-    font-size: 24px;
-    font-weight: normal;
-    margin: 50px 0 30px 0;
-  }
+  {% include 'questions/includes/reply_email_styles.css' %}
 
-  .user-meta {
-    color: #525252;
-    float: left;
-    font-weight: normal;
-    margin: 12px 0 30px 15px;
-  }
-
-  .user-meta > strong {
+  .button + a {
     display: block;
-    margin-bottom: 6px;
-  }
-
-  .arrow {
-    border-color: transparent transparent #fff transparent;
-    border-style: solid;
-    border-width: 0 16px 16px 16px;
-    clear: both;
-    display: block;
-    height: 0;
-    margin-left: 14px;
-    overflow: hidden;
-    width: 0;
-  }
-
-  .avatar {
-    border: 6px solid #fff;
     float: left;
-  }
-
-  .gi-box {
-    border-bottom: 1px dashed #bbb;
-    border-top: 1px dashed #bbb;
-    clear: both;
-    margin-bottom: 30px;
-    padding: 24px 10px;
-  }
-
-  .button {
-    float: left;
-    margin-bottom: 30px;
-  }
-
-  #main thead th {
-    padding-bottom: 0;
-    padding-left: 0;
-    padding-right: 0;
-  }
-
-  #main tfoot td {
-    padding-left: 0;
-    padding-right: 0;
+    margin: 16px 0 0 16px;
   }
 {% endblock %}
 
@@ -77,7 +25,10 @@
 {% endblock %}
 
 {% block prefooter %}
-  <p><a class="button" href="https://{{ host }}{{ answer_url }}">Mark it as solved</a></p>
+  <p>
+    <a class="button" href="https://{{ host }}{{ solution_url }}">{{ _('Mark it as solved') }}</a>
+    <a href="https://{{ host }}{{ answer_url }}">{{ _('This doesn\'t solve my problem') }}</a>
+  </p>
   <div class="gi-box">
     <a href="https://{{ host }}/questions?filter=unsolved">{{ _('Browse for unsolved questions and help a Firefox user') }}</a>
     <br/>{{ _("Solving 1 issue helps up to 1,000 users a day!") }}
