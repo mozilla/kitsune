@@ -172,6 +172,3 @@
 [submodule "vendor/src/django-axes"]
 	path = vendor/src/django-axes
 	url = https://github.com/django-security/django-axes.git
-[submodule "vendor/src/django-taggit"]
-	path = vendor/src/django-taggit
-	url = https://github.com/alex/django-taggit.git
