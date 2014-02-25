@@ -16,20 +16,51 @@
       </article>
     </div>
   {% else %}
-    <div class="{% if contributor %}grid_6{% else %}grid_12{% endif %}">
+    <div class="grid_6">
       <article id="login" class="main">
         <h1>{{ _('Sign In') }}</h1>
         {{ render_login(login_form, csrf=csrf(), next_url=next_url) }}
       </article>
     </div>
     {% if contributor %}
-    {# Only show registration form to users coming from the Get Involved pages. #}
+      {# Only show registration form to users coming from the Get Involved pages. #}
       <div class="grid_6">
         <article id="register" class="main">
           <h1>{{ _('Register to be a Contributor') }}</h1>
           <span>{{ _('You don\'t need to register to <a href="{url}">ask a question</a>.')|fe(url=url('questions.aaq_step1')) }}</span>
           {% set action = url('users.registercontributor') if contributor else url('users.register') %}
           {{ render_register(register_form, csrf=csrf(), action=action, contributor=contributor) }}
+        </article>
+      </div>
+    {% else %}
+      <div class="grid_6">
+        <article class="main">
+          <p>
+            <div class="get-involved-icon questions"></div>
+            {% trans %}
+              Having trouble with Firefox and want some help? Our support forums
+              are a great place to ask a question.
+            {% endtrans %}
+          </p>
+          <p>
+            <a href="{{ url('questions.aaq_step1') }}" class="btn">
+              {{ _('Ask a question') }}
+            </a>
+          </p>
+        </article>
+        <article class="main">
+          <p>
+            <div class="get-involved-icon localize"></div>
+            {% trans %}
+              Mozilla Support is a community of enthusiastic volunteers
+              and employees trying to support our users around the globe.
+            {% endtrans %}
+          </p>
+          <p>
+            <a href="{{ url('landings.get_involved') }}" class="btn">
+              {{ _('See what you can do to help') }}
+            </a>
+          </p>
         </article>
       </div>
     {% endif %}

@@ -5,6 +5,10 @@ article {
   background: #fff;
   padding: 30px;
 
+  &:not(:first-child) {
+    margin-top: 20px;
+  }
+
   h1 {
     margin-top: 0;
     padding-top: 0;
@@ -457,5 +461,21 @@ article {
   td,
   th {
     padding: 10px;
+  }
+}
+
+.get-involved-icon {
+  background: url('../img/get-involved-icons.png') no-repeat scroll -15px 0px transparent ;
+  background-size: 109px 436px;
+  float: right;
+  height: 59px;
+  width: 79px;
+
+  &.questions {
+    background-position: -15px -134px;
+  }
+
+  &.localize {
+    background-position: -15px -352px;
   }
 }
