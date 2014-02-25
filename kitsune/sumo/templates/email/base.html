@@ -181,14 +181,7 @@
     }
 
     .button {
-      background: #81bc2f; /* Old browsers */
-      background: -moz-linear-gradient(top,  #81bc2f 0%, #619827 100%); /* FF3.6+ */
-      background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#81bc2f), color-stop(100%,#619827)); /* Chrome,Safari4+ */
-      background: -webkit-linear-gradient(top,  #81bc2f 0%,#619827 100%); /* Chrome10+,Safari5.1+ */
-      background: -o-linear-gradient(top,  #81bc2f 0%,#619827 100%); /* Opera 11.10+ */
-      background: -ms-linear-gradient(top,  #81bc2f 0%,#619827 100%); /* IE10+ */
-      background: linear-gradient(to bottom,  #81bc2f 0%,#619827 100%); /* W3C */
-      filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#81bc2f', endColorstr='#619827',GradientType=0 ); /* IE6-9 */
+      background: #81bc2f;
       border-radius: 6px;
       -moz-border-radius: 6px;
       -webkit-border-radius: 6px;
@@ -204,6 +197,12 @@
       text-decoration: none;
       text-shadow: 1px 1px 0 #426319;
     }
+    
+    .button.blue {
+      background: #3C88CC;
+      border-bottom: 2px solid #164e7f;
+      text-shadow: 1px 1px 0 #164e7f;
+    }
 
     {% block styles %}{% endblock %}
   </style>
@@ -215,7 +214,10 @@
       <table cellpadding="0" cellspacing="0" border="0" align="center" id="main">
         <thead>
           <tr>
-            <th><img src="{{ STATIC_URL }}email/img/mozilla-support.png" alt="{{ _('Mozilla Support') }}"></th>
+            <th>
+              <img src="{{ STATIC_URL }}email/img/mozilla-support.png" alt="{{ _('Mozilla Support') }}">
+              {% block header %}{% endblock %}
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -226,6 +228,7 @@
         <tfoot>
           <tr>
             <td>
+              {% block prefooter %}{% endblock %}
               {% block footer %}
                 <a href="{{ url('users.edit_settings') }}">{{ _('Change your email preferences') }}</a>
                 {% if watch %}

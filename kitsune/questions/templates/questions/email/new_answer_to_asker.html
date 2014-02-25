@@ -1,44 +1,86 @@
 {% extends 'email/base.html' %}
 
 {% block styles %}
-  .answer {
-    border-bottom: 1px dotted #000;
-    border-top: 1px dotted #000;
-    padding: 16px;
+  h1 {
+    color: #525252;
+    font-size: 24px;
+    font-weight: normal;
+    margin: 50px 0 30px 0;
   }
 
-  .superheroes {
-    border-top: 1px dotted #000;
-    font-size: 13px;
-    padding-top: 16px;
+  .user-meta {
+    color: #525252;
+    float: left;
+    font-weight: normal;
+    margin: 12px 0 30px 15px;
   }
+
+  .user-meta > strong {
+    display: block;
+    margin-bottom: 6px;
+  }
+
+  .arrow {
+    border-color: transparent transparent #fff transparent;
+    border-style: solid;
+    border-width: 0 16px 16px 16px;
+    clear: both;
+    display: block;
+    height: 0;
+    margin-left: 14px;
+    overflow: hidden;
+    width: 0;
+  }
+
+  .avatar {
+    border: 6px solid #fff;
+    float: left;
+  }
+
+  .gi-box {
+    border-bottom: 1px dashed #bbb;
+    border-top: 1px dashed #bbb;
+    clear: both;
+    margin-bottom: 30px;
+    padding: 24px 10px;
+  }
+
+  .button {
+    float: left;
+    margin-bottom: 30px;
+  }
+
+  #main thead th {
+    padding-bottom: 0;
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  #main tfoot td {
+    padding-left: 0;
+    padding-right: 0;
+  }
+{% endblock %}
+
+{% block header %}
+  <h1>{{ question_title }}</h1>
+  <img class="avatar" src="{{ profile_avatar(answerer) }}">
+  <div class="user-meta">
+    <strong>{{ answerer.username }}</strong>
+    <span>{{ created }}</span>
+  </div>
+  <div class="arrow"></div>
 {% endblock %}
 
 {% block content %}
-  <p>{{ _('Hi {username},')|f(username=username) }}</p>
-
-  <p>{{ _('{answerer} has posted an answer to your question on {host}:')|f(answerer=answerer, host=host) }}</p>
-
-  <p>{{ question_title }}</p>
-
-  <p>{{ _('{answerer} wrote:')|f(answerer=answerer) }}</p>
-
   <div class="answer">{{ answer_html }}</div>
-
-  <p><a href="https://{{ host }}{{ answer_url }}">
-      {{ _("If this doesn't solve your problem, let {answerer} know by replying on the website.")|f(answerer=answerer) }}</a></p>
-
-  <p>
-    {% trans url='http://' + host + solution_url %}
-      If this answer solves your problem, please
-      <br/><br/>
-      <a class="button" style="width: 200px;" href="{{ url }}">Mark it as solved</a>
-    {% endtrans %}
-  </p>
-
-  <p class="superheroes">
-    <strong>{{ _('Superhero wanted') }}</strong>
-    <br/><a href="https://{{ host }}/questions?filter=unsolved">{{ _('Help other Firefox users by browsing for unsolved questions on {host}.')|f(host=host) }}</a>
-    <br/>{{ _("You might just make someone's day!") }}
-  </p>
 {% endblock %}
+
+{% block prefooter %}
+  <p><<a class="button" href="{{ url }}">Mark it as solved</a></p>
+  <div class="gi-box">
+    <a href="https://{{ host }}/questions?filter=unsolved">{{ _('Browse for unsolved questions and help a Firefox user') }}</a>
+    <br/>{{ _("Solving 1 issue helps up to 1,000 users a day!") }}
+  </div>
+{% endblock %}
+
