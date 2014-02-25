@@ -35,3 +35,5 @@ if 'DJANGO_LIVE_TEST_SERVER_ADDRESS' not in os.environ:
 import logging
 import south.logger
 logging.getLogger('south').setLevel(logging.INFO)
+
+AXES_BEHIND_REVERSE_PROXY = False
