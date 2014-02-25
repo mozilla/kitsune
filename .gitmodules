@@ -169,3 +169,6 @@
 [submodule "vendor/src/django-appconf"]
 	path = vendor/src/django-appconf
 	url = https://github.com/jezdez/django-appconf.git
+[submodule "vendor/src/django-taggit"]
+	path = vendor/src/django-taggit
+	url = https://github.com/alex/django-taggit.git

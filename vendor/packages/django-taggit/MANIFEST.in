@@ -1,2 +1,0 @@
-recursive-include docs *.txt
-recursive-include taggit/locale *

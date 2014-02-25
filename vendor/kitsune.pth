@@ -10,7 +10,6 @@ packages/pylint
 packages/ipython
 packages/pyflakes
 packages/amqp
-packages/django-taggit
 packages/anyjson
 packages/carrot
 packages/pyquery
@@ -97,3 +96,4 @@ src/django-badger
 src/billiard
 src/django-statici18n/src
 src/django-appconf
+src/django-taggit
