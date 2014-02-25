@@ -449,6 +449,7 @@ MIDDLEWARE_CLASSES = (
     'commonware.middleware.StrictTransportMiddleware',
     'commonware.middleware.XSSProtectionHeader',
     'commonware.middleware.RobotsTagHeader',
+    'axes.middleware.FailedLoginMiddleware'
 )
 
 # Auth
@@ -540,6 +541,7 @@ INSTALLED_APPS = (
     'kitsune.products',
     'rest_framework',
     'statici18n',
+    'axes',
 
     # App for Sentry:
     'raven.contrib.django',
@@ -877,3 +879,9 @@ BROWSERID_AUDIENCES = [
 REST_FRAMEWORK = {
     'DEFAULT_FILTER_BACKENDS': ('rest_framework.filters.DjangoFilterBackend',)
 }
+
+# Django-axes settings.
+AXES_LOGIN_FAILURE_LIMIT = 5
+AXES_LOCK_OUT_AT_FAILURE = True
+AXES_USE_USER_AGENT = False
+AXES_COOLOFF_TIME = 1  # hour
