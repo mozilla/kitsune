@@ -122,6 +122,7 @@
   <div class="grid_12">
     <div id="filters" class="cf">
       <div id="flag-filter">
+      <p>Include:</p>
         <div>
           <label><input data-url="{{ questions_url(escalated=0 if escalated else 1, page=None) }}" type="checkbox" {% if escalated %}checked="checked"{% endif %}> {{ _('Escalated') }}</label>
         </div>
