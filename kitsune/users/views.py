@@ -20,6 +20,7 @@ from django_browserid.auth import BrowserIDBackend
 from django_browserid.base import get_audience
 from django_browserid.forms import BrowserIDForm
 
+from axes.decorators import watch_login
 from mobility.decorators import mobile_template
 from session_csrf import anonymous_csrf
 from statsd import statsd
@@ -77,6 +78,7 @@ def user_auth(request, contributor=False, register_form=None, login_form=None):
 
 @ssl_required
 @anonymous_csrf
+@watch_login
 @mobile_template('users/{mobile/}login.html')
 def login(request, template):
     """Try to log the user in."""
