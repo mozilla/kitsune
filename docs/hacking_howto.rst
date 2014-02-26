@@ -226,6 +226,9 @@ Start with this::
     LESS_PREPROCESS = True
     LESS_BIN = '/path/to/kitsune/node_modules/less/bin/lessc'
 
+    # Tells django-axes we aren't behind a reverse proxy.
+    AXES_BEHIND_REVERSE_PROXY = False
+
 
 Don't forget to change ``<YOUR_PASSWORD>`` and update ``LESS_BIN``
 based on your setup.

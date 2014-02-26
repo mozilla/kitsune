@@ -36,4 +36,5 @@ import logging
 import south.logger
 logging.getLogger('south').setLevel(logging.INFO)
 
+# Tells django-axes we aren't behind a reverse proxy.
 AXES_BEHIND_REVERSE_PROXY = False
