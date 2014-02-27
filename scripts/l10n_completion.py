@@ -31,7 +31,7 @@ import time
 import polib
 
 
-USAGE = 'usage: %prog [OPTIONS] OUTPUT-FILE LOCALES-DIR'
+USAGE = 'usage: %prog [OPTIONS] LOCALES-DIR VERBOSE-OUTPUT-FILE SUMMARY-OUTPUT-FILE'
 
 
 def get_language(fn):
@@ -78,7 +78,8 @@ def get_completion_data_for_file(fn):
                 path = path[1]
             else:
                 path = 'vendor/' + path[2]
-            app_to_translations.setdefault(path, []).append(poentry.translated())
+            app_to_translations.setdefault(
+                path, []).append(poentry.translated())
 
     all_total = 0
     all_translated = 0
@@ -164,37 +165,47 @@ def main(argv):
 
     (options, args) = parser.parse_args(argv)
 
-    if len(args) != 2:
+    if len(args) != 3:
         parser.error('Incorrect number of args.')
         return 1
 
-    output_file = args[0]
-    locales_dir = args[1]
+    locales_dir = args[0]
+    verbose_file = args[1]
+    summary_file = args[2]
 
     # Get list of locales dirs
     locale_files = get_locale_files(locales_dir)
 
     # Generate completion data
-    data = [
+    new_data = [
         {
             'created': time.time(),
             'locales': get_completion_data(locale_files)
         }
     ]
+    data = new_data
 
-    if os.path.exists(output_file):
-        with open(output_file, 'rb') as fp:
+    if os.path.exists(verbose_file):
+        with open(verbose_file, 'rb') as fp:
             old_data = json.load(fp)
 
-        old_data.append(data[0])
+        old_data.append(new_data[0])
         data = old_data
 
     if options.truncate and len(data) > options.truncate:
         print 'Truncating ...'
         data = data[len(data) - options.truncate:]
 
-    with open(output_file, 'wb') as fp:
+    with open(verbose_file, 'wb') as fp:
         json.dump(data, fp)
+
+    # Remove all the apps data for the summary file.
+    for locale in new_data[0]['locales'].values():
+        locale.pop('apps', None)
+
+    # The summary file gets no historic data. Sorry.
+    with open(summary_file, 'wb') as fp:
+        json.dump(new_data[0], fp)
 
 
 if __name__ == '__main__':
