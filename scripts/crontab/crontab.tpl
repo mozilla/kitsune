@@ -37,7 +37,7 @@ HOME = /tmp
 0 0 * * * {{ cron }} rebuild_kb
 0 22 * * * {{ cron }} get_customercare_stats
 42 22 * * * {{ django }} cleanup
-30 3 * * * root {{ scripts }} scripts/l10n_completion.py --truncate 30 locale media/l10n_history.json media/l10n_summary.json
+30 3 * * * root {{ rscripts }} scripts/l10n_completion.py --truncate 30 locale media/l10n_history.json media/l10n_summary.json
 
 # Once per week.
 21 03 * * 3 {{ django }} purge_hashes
