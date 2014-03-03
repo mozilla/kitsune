@@ -33,9 +33,13 @@ def main():
             opts.kitsune, python_path, opts.python),
     }
     ctx['cron'] = '%s cron' % ctx['django']
+    ctx['rscripts'] = ctx['scripts']
 
     if opts.user:
         for k, v in ctx.iteritems():
+            if k == 'rscripts':
+                # rscripts get to run as whatever user is specified in crontab.tpl
+                continue
             ctx[k] = '%s %s' % (opts.user, v)
 
     # Needs to stay below the opts.user injection.
