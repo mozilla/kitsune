@@ -24,6 +24,23 @@
       }
     });
 
+    $('[data-ui-type="tabbed-view"]').each(function() {
+      var $tv = $(this);
+      var $tabs = $tv.children('[data-tab-role="tabs"]').children();
+      var $panels = $tv.children('[data-tab-role="panels"]').children();
+
+      $tabs.each(function(i) {
+        $(this).on('click', function() {
+          $panels.hide();
+          $panels.eq(i).show();
+          $tabs.removeClass('selected');
+          $tabs.eq(i).addClass('selected');
+        })
+      });
+
+      $tabs.first().trigger('click');
+    });
+
     $('.btn, a').each(function() {
       var $this = $(this);
       var $form = $this.closest('form');

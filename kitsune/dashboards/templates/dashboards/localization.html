@@ -85,9 +85,24 @@
                                      (overview_rows['all'], False),
                                      (overview_rows['templates'], True))) }}
 
-      {% for readout in readouts.itervalues() %}
-        {{ print_readout(readout, max_rows=20 if readout.slug == 'most-visited-translations' else 10, product=product) }}
-      {% endfor %}
+      <div id="stats-tabs" data-ui-type="tabbed-view">
+        <ul class="cf" data-tab-role="tabs">
+          <li>{{ _('Localization') }}</li>
+          <li>{{ _('Review') }}</li>
+        </ul>
+        <div data-tab-role="panels">
+          <div>
+            {{ print_readout(readouts['most-visited-translations'], max_rows=20, product=product) }}
+          </div>
+          <div>
+            {% for readout in readouts.itervalues() %}
+              {% if readout.slug != 'most-visited-translations' %}
+                {{ print_readout(readout, max_rows=10, product=product) }}
+              {% endif %}
+            {% endfor %}
+          </div>
+        </div>
+      </div>
     </article>
   </div>
 {% endblock %}
