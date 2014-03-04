@@ -7,7 +7,8 @@ from pyquery import PyQuery as pq
 
 from kitsune.users.forms import (
     AuthenticationForm, ProfileForm, RegisterForm, SetPasswordForm,
-    ForgotUsernameForm)
+    ForgotUsernameForm, username_allowed)
+from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import TestCaseBase, user
 
 
@@ -189,3 +190,15 @@ class ForgotUsernameFormTests(TestCaseBase):
         u = user(save=True, email='a@b.com', is_active=True)
         form = ForgotUsernameForm({'email': u.email})
         assert form.is_valid()
+
+
+class Testusername_allowed(TestCase):
+    def test_good_names(self):
+        data = [
+            ('ana', True),
+            ('rlr', True),
+            ('anal', False),
+        ]
+
+        for name, expected in data:
+            eq_(username_allowed(name), expected)
