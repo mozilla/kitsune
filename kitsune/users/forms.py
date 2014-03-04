@@ -8,6 +8,7 @@ from django.contrib.auth.forms import (PasswordResetForm as
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.models import get_current_site
+from django.core.cache import cache
 from django.utils.http import int_to_base36
 
 from tower import ugettext as _, ugettext_lazy as _lazy
@@ -18,7 +19,6 @@ from kitsune.sumo.widgets import ImageWidget
 from kitsune.upload.forms import clean_image_extension
 from kitsune.upload.utils import check_file_size, FileTooLargeError
 from kitsune.users.models import Profile
-from kitsune.users.passwords import username_allowed
 from kitsune.users.widgets import FacebookURLWidget, TwitterURLWidget
 
 
@@ -434,6 +434,29 @@ def _check_password(password):
             msg = _('At least one number and one English letter are required '
                     'in the password.')
             raise forms.ValidationError(msg)
+
+
+USERNAME_CACHE_KEY = 'username-blacklist'
+
+
+def username_allowed(username):
+    if not username:
+        return False
+    """Returns True if the given username is not a blatent bad word."""
+    blacklist = cache.get(USERNAME_CACHE_KEY)
+    if blacklist is None:
+        f = open(settings.USERNAME_BLACKLIST, 'r')
+        blacklist = [w.strip() for w in f.readlines()]
+        cache.set(USERNAME_CACHE_KEY, blacklist, 60 * 60)  # 1 hour
+    # Lowercase
+    username = username.lower()
+    # Add lowercased and non alphanumerics to start.
+    usernames = set([username, re.sub("\W", "", username)])
+    # Add words split on non alphanumerics.
+    for u in re.findall(r'\w+', username):
+        usernames.add(u)
+    # Do any match the bad words?
+    return not usernames.intersection(blacklist)
 
 
 def _check_username(username):
