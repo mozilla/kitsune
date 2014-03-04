@@ -95,14 +95,12 @@
             {{ print_readout(readouts['most-visited-translations'], max_rows=20, product=product) }}
           </div>
           <div>
-            {% for readout in readouts.itervalues() %}
-              {% if readout.slug != 'most-visited-translations' %}
-                {{ print_readout(readout, max_rows=10, product=product) }}
-              {% endif %}
-            {% endfor %}
+            {{ print_readout(readouts['unreviewed'], max_rows=10, product=product) }}
           </div>
         </div>
       </div>
+
+      {{ print_readout(readouts['template-translations'], max_rows=10, product=product) }}
     </article>
   </div>
 {% endblock %}
