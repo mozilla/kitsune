@@ -645,3 +645,55 @@
     }
   }
 }
+
+.localization-dashboard {
+  #stats-tabs {
+    margin-top: 32px;
+
+    > ul {
+      list-style: none;
+      margin: 0;
+      padding: 0 20px;
+
+      > li {
+        .border-radius(6px 6px 0 0);
+        color: @textBlue;
+        cursor: pointer;
+        float: left;
+        margin-right: 2px;
+        padding: 12px 20px;
+
+        &:hover {
+          color: @textDarkBlue;
+        }
+
+        &.selected {
+          background: #fff;
+          color: #000;
+          font-weight: bold;
+        }
+      }
+    }
+
+    > div {
+      padding: 20px;
+      position: relative;
+
+      &:before {
+        .gradient(transparent, #fff, rgba(255, 255, 255, 0));
+        content: '';
+        height: 60px;
+        left: 0;
+        position: absolute;
+        top: 0;
+        width: 100%;
+        z-index: 0;
+      }
+
+      > div {
+        position: relative;
+        z-index: 1;
+      }
+    }
+  }
+}
