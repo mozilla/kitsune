@@ -74,6 +74,7 @@ def generate_sampledata(options):
         topic(product=p, title='Cookies', slug='cookies', save=True)
         topic(product=p, title='Tabs', slug='tabs', save=True)
         topic(product=p, title='Websites', slug='websites', save=True)
+        topic(product=p, title='Other', slug='other', save=True)
 
         # 'hot' topic is created by a migration. Check for it's existence
         # before creating a new one.
