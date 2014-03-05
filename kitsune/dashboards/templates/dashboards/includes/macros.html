@@ -35,7 +35,7 @@
     <summary>{{ _('Overview') }}</summary>
     <table class="overview l10n-overview">
       {% for row, should_color in printed_rows %}
-        {% if row.title == 'Most-Visited Articles' %}
+        {% if row.title == _('Most-Visited Articles') %}
           <tr class="most-visited-row">
             <td class="row-title">
               {{ row.title }}
