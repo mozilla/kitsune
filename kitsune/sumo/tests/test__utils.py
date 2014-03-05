@@ -4,7 +4,8 @@ from mock import patch
 from nose.tools import eq_
 from test_utils import RequestFactory
 
-from kitsune.sumo.utils import smart_int, get_next_url, truncated_json_dumps
+from kitsune.sumo.utils import (
+    chunked, get_next_url, smart_int, truncated_json_dumps)
 from kitsune.sumo.tests import TestCase
 
 
@@ -100,3 +101,23 @@ class JSONTests(TestCase):
         d = {'formula': u'A=πr²'}
         trunc = truncated_json_dumps(d, 25, 'formula')
         eq_(json.dumps(d, ensure_ascii=False), trunc)
+
+
+class ChunkedTests(TestCase):
+    def test_chunked(self):
+        # chunking nothing yields nothing.
+        eq_(list(chunked([], 1)), [])
+
+        # chunking list where len(list) < n
+        eq_(list(chunked([1], 10)), [[1]])
+
+        # chunking a list where len(list) == n
+        eq_(list(chunked([1, 2], 2)), [[1, 2]])
+
+        # chunking list where len(list) > n
+        eq_(list(chunked([1, 2, 3, 4, 5], 2)),
+            [[1, 2], [3, 4], [5]])
+
+        # passing in a length overrides the real len(list)
+        eq_(list(chunked([1, 2, 3, 4, 5, 6, 7], 2, length=4)),
+            [[1, 2], [3, 4]])

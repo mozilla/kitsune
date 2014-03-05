@@ -57,9 +57,11 @@ def build_paged_url(request):
 
 
 # By Ned Batchelder.
-def chunked(seq, n):
+def chunked(seq, n, length=None):
     """
     Yield successive n-sized chunks from seq.
+
+    If length isn't specifed, it is calculated from len(seq).
 
     >>> for group in chunked(range(8), 3):
     ...     print group
@@ -67,7 +69,9 @@ def chunked(seq, n):
     [3, 4, 5]
     [6, 7]
     """
-    for i in xrange(0, len(seq), n):
+    if not length:
+        length = len(seq)
+    for i in xrange(0, length, n):
         yield seq[i:i + n]
 
 
