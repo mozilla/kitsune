@@ -77,28 +77,11 @@
     function initNewQuestion() {
         var $questionForm = $('#question-form');
         new AAQSystemInfo($questionForm);
-        initTitleEdit($questionForm);
         hideDetails($questionForm);
     }
 
     function isLoggedIn() {
         return $('#greeting span.user').length > 0;
-    }
-
-    // The title field become editable on click of the text or edit link
-    function initTitleEdit($form) {
-        $form.find('#title-val').click(function(ev){
-            if($(ev.target).is('a, span')) {
-                ev.preventDefault();
-                var $this = $(this);
-                var $hid = $this.find('input[type="hidden"]');
-                var $textbox = $('<input type="text" name="' +
-                               $hid.attr('name') + '" />');
-                $textbox.val($hid.val());
-                $this.unbind('click').replaceWith($textbox);
-                $textbox.focus();
-            }
-        });
     }
 
     // Handle changes to the details for a question
