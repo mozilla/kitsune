@@ -26,11 +26,7 @@ products = SortedDict([
         'products': ['firefox'],
         'categories': SortedDict([
             # TODO: Just use the IA topics for this.
-            ('get-started', {
-                'name': _lazy(u'Learn the Basics: get started'),
-                'topic': 'get-started',
-                'tags': ['get-started'],
-            }),
+            # See bug 979397
             ('download-and-install', {
                 'name': _lazy(u'Download, install and migration'),
                 'topic': 'download-and-install',
@@ -76,6 +72,11 @@ products = SortedDict([
                 'name': _lazy(u'Websites'),
                 'topic': 'websites',
                 'tags': ['websites'],
+            }),
+            ('other', {
+                'name': _lazy(u'Other'),
+                'topic': 'other',
+                'tags': ['other'],
             }),
         ])
     }),
@@ -87,11 +88,7 @@ products = SortedDict([
         'products': ['mobile'],
         'categories': SortedDict([
             # TODO: Just use the IA topics for this.
-            ('get-started', {
-                'name': _lazy(u'Learn the Basics: get started'),
-                'topic': 'get-started',
-                'tags': ['get-started'],
-            }),
+            # See bug 979397
             ('download-and-install', {
                 'name': _lazy(u'Download, install and migration'),
                 'topic': 'download-and-install',
@@ -138,6 +135,11 @@ products = SortedDict([
                 'topic': 'websites',
                 'tags': ['websites'],
             }),
+            ('other', {
+                'name': _lazy(u'Other'),
+                'topic': 'other',
+                'tags': ['other'],
+            }),
         ])
     }),
     ('firefox-os', {
@@ -148,6 +150,7 @@ products = SortedDict([
         'products': ['firefox-os'],
         'categories': SortedDict([
             # TODO: Just use the IA topics for this.
+            # See bug 979397
             ('download-and-install', {
                 'name': _lazy(u'Download and install apps'),
                 'topic': 'marketplace',
@@ -175,6 +178,7 @@ products = SortedDict([
         'products': ['webmaker'],
         'categories': SortedDict([
             # TODO: Just use the IA topics for this.
+            # See bug 979397
             ('popcorn-maker', {
                 'name': _lazy(u'Using Popcorn Maker'),
                 'topic': 'popcorn-maker',
@@ -209,11 +213,8 @@ products = SortedDict([
         'tags': [],
         'products': ['thunderbird'],
         'categories': SortedDict([
-            ('get-started', {
-                'name': _lazy(u'Learn the Basics: get started'),
-                'topic': 'learn-basics-get-started',
-                'tags': ['get-started'],
-            }),
+            # TODO: Just use the IA topics for this.
+            # See bug 979397
             ('download-and-install', {
                 'name': _lazy(u'Download, install and migration'),
                 'topic': 'download-install-and-migration',
@@ -240,7 +241,12 @@ products = SortedDict([
                 'name': _lazy('Calendar'),
                 'topic': 'calendar',
                 'tags': ['calendar'],
-            })
+            }),
+            ('other', {
+                'name': _lazy(u'Other'),
+                'topic': 'other',
+                'tags': ['other'],
+            }),
         ])
     }),
     ('other', {
