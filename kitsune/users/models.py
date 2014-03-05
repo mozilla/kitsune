@@ -92,6 +92,18 @@ class Profile(ModelBase):
     def get_absolute_url(self):
         return reverse('users.profile', args=[self.user_id])
 
+    def clear(self):
+        """Clears out the users profile"""
+        self.name = ''
+        self.public_email = False
+        self.avatar = None
+        self.bio = ''
+        self.website = ''
+        self.twitter = ''
+        self.facebook = ''
+        self.irc_handle = ''
+        self.city = ''
+
 
 class Setting(ModelBase):
     """User specific value per setting"""

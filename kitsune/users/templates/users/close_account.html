@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% set title = 'Your account was closed' %}
+{% set crumbs = [(None, title)] %}
+
+{% block content %}
+  <article>
+    <h1>{{ _('Your account was sucessfully closed!') }}</h1>
+    <p>{{ _('We\'re sorry to see you go.') }}</p>
+  </article>
+{% endblock %}
