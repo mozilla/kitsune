@@ -64,24 +64,13 @@ we can compute the edit-title URL.
                     {% endif %}
 
                     <li class="{{ li_class }} {% if field.errors %}invalid{% endif %} cf">
-                      {% if field.name == 'title' and not request.GET.edit_title %}
-                        <label>{{ field.label|safe }}</label>
-                        <div id="title-val">
-                          <span title="{{ _('Click to change your question') }}">
-                            {% if form.initial %}{{ form.initial.title }}{% else %}{{ form.title.data }}{% endif %}
-                          </span>
-                          <a href="{{ ''|urlparams(search=request.GET.search, edit_title=1) }}#question-form">edit</a>
-                          {{ field.as_hidden()|safe }}
-                        </div>
+                      {{ field.label_tag()|safe }}
+                      {% if field.name == 'content' %}
+                        {{ content_editor(field) }}
+                      {% elif field.name == 'troubleshooting' %}
+                        {{ troubleshooting_instructions(field) }}
                       {% else %}
-                        {{ field.label_tag()|safe }}
-                        {% if field.name == 'content' %}
-                          {{ content_editor(field) }}
-                        {% elif field.name == 'troubleshooting' %}
-                          {{ troubleshooting_instructions(field) }}
-                        {% else %}
-                          {{ field|safe }}
-                        {% endif %}
+                        {{ field|safe }}
                       {% endif %}
 
                       {% if field.help_text %}
