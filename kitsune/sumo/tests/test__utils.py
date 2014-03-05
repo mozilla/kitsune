@@ -112,7 +112,7 @@ class ChunkedTests(TestCase):
         eq_(list(chunked([1], 10)), [[1]])
 
         # chunking a list where len(list) == n
-        eq_(list(chunked([1, 2], 2)), [[1, 2])
+        eq_(list(chunked([1, 2], 2)), [[1, 2]])
 
         # chunking list where len(list) > n
         eq_(list(chunked([1, 2, 3, 4, 5], 2)),
@@ -120,4 +120,4 @@ class ChunkedTests(TestCase):
 
         # passing in a length overrides the real len(list)
         eq_(list(chunked([1, 2, 3, 4, 5, 6, 7], 2, length=4)),
-            [[1, 2], [3, 4])
+            [[1, 2], [3, 4]])
