@@ -11,7 +11,7 @@ we can compute the edit-title URL.
 {% extends "questions/base.html" %}
 {% from "layout/errorlist.html" import errorlist %}
 {% from "includes/common_macros.html" import content_editor with context %}
-{% from "questions/includes/aaq_macros.html" import selected_product, selected_category %}
+{% from "questions/includes/aaq_macros.html" import selected_product, selected_category, aaq_progress %}
 {% from "questions/includes/aaq_macros.html" import troubleshooting_instructions with context %}
 
 {% block content %}
@@ -24,26 +24,12 @@ we can compute the edit-title URL.
         <div class="inner-wrap">
 
           <div class="cf">
+            {% if current_step %}
+              {{ aaq_progress(step=current_step) }}
+            {% endif %}
             {% block product %}
-              {% if current_product %}
-                {% if current_step %}
-                  {% if not current_category %}
-                    <div class="cf">
-                  {% endif %}
-                    {{ selected_product(current_product, can_edit_product, current_step) }}
-                  {% if not current_category %}
-                    </div>
-                  {% endif %}
-                {% else %}
-                  {{ selected_product(current_product, can_edit_product, -1) }}
-                {% endif %}
-              {% endif %}
             {% endblock %}
-
             {% block category %}
-              {% if current_product and current_category %}
-                {{ selected_category(current_category, current_product, can_edit_category) }}
-              {% endif %}
             {% endblock %}
           </div>
 
@@ -113,6 +99,16 @@ we can compute the edit-title URL.
               </form>
             </div>
           {% endif %}
+
+          <div id="product-topic-changer" class="cf">
+            {% if current_product %}
+              {{ selected_product(current_product, can_edit_product) }}
+
+              {% if current_category %}
+                {{ selected_category(current_category, current_product, can_edit_category) }}
+              {% endif %}
+            {% endif %}
+          </div>
 
         </div>
       </div>

@@ -32,11 +32,7 @@
   </ul>
 {%- endmacro %}
 
-{% macro selected_product(product, can_change, step=1) -%}
-  {% if step >= 0 %}
-    {{ aaq_progress(step=step) }}
-  {% endif %}
-
+{% macro selected_product(product, can_change) -%}
   <div id="selected-product">
     <label>{{ _('Product') }}:</label>
     <span>{{ product.name }}</span>
