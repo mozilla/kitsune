@@ -15,6 +15,7 @@ from twython import Twython
 
 from kitsune.customercare.models import Tweet, Reply
 from kitsune.sumo.redis_utils import redis_client, RedisError
+from kitsune.sumo.utils import chunked
 
 
 LINK_REGEX = re.compile('https?\:', re.IGNORECASE)
@@ -202,30 +203,31 @@ def get_customercare_stats():
     one_week_ago = now - timedelta(days=7)
     yesterday = now - timedelta(days=1)
 
-    for reply in Reply.objects.all():
-        raw = json.loads(reply.raw_json)
-        user = reply.twitter_username
-        if user not in contributor_stats:
-            if 'from_user' in raw:  # For tweets collected using v1 API
-                user_data = raw
-            else:
-                user_data = raw['user']
+    for chunk in chunked(Reply.objects.all(), 2500, Reply.objects.count()):
+        for reply in chunk:
+            user = reply.twitter_username
+            if user not in contributor_stats:
+                raw = json.loads(reply.raw_json)
+                if 'from_user' in raw:  # For tweets collected using v1 API
+                    user_data = raw
+                else:
+                    user_data = raw['user']
 
-            contributor_stats[user] = {
-                'twitter_username': user,
-                'avatar': user_data['profile_image_url'],
-                'avatar_https': user_data['profile_image_url_https'],
-                'all': 0, '1m': 0, '1w': 0, '1d': 0,
-            }
-        contributor = contributor_stats[reply.twitter_username]
+                contributor_stats[user] = {
+                    'twitter_username': user,
+                    'avatar': user_data['profile_image_url'],
+                    'avatar_https': user_data['profile_image_url_https'],
+                    'all': 0, '1m': 0, '1w': 0, '1d': 0,
+                }
+            contributor = contributor_stats[reply.twitter_username]
 
-        contributor['all'] += 1
-        if reply.created > one_month_ago:
-            contributor['1m'] += 1
-            if reply.created > one_week_ago:
-                contributor['1w'] += 1
-                if reply.created > yesterday:
-                    contributor['1d'] += 1
+            contributor['all'] += 1
+            if reply.created > one_month_ago:
+                contributor['1m'] += 1
+                if reply.created > one_week_ago:
+                    contributor['1w'] += 1
+                    if reply.created > yesterday:
+                        contributor['1d'] += 1
 
     sort_key = settings.CC_TOP_CONTRIB_SORT
     limit = settings.CC_TOP_CONTRIB_LIMIT
