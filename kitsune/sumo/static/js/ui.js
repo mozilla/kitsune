@@ -1,5 +1,5 @@
 /*jshint*/
-/*global Modernizr*/
+/*global gettext, Modernizr*/
 ;(function($) {
   "use strict";
 
@@ -93,6 +93,10 @@
 
     $('body').on('click', foldingSelectors + ' header', function() {
       $(this).closest(foldingSelectors).toggleClass('collapsed');
+    });
+
+    $('form[data-confirm]').on('submit', function() {
+      return confirm($(this).data('confirm-text'));
     });
   });
 

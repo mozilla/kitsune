@@ -63,5 +63,11 @@
         </div>
       </form>
     </article>
+    <form method="post" action="{{ url('users.close_account') }}" data-confirm="confirm" data-confirm-text="{{ _('Are you sure you want to close your account? You cannot undo this action.') }}">
+      {{ csrf() }}
+      <p>
+        <button type="submit" class="btn btn-warning">{{ _('Close account and delete all profile information') }}</button>
+      </p>
+    </form>
   </div>
 {% endblock %}

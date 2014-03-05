@@ -34,6 +34,7 @@ users_patterns = patterns(
     url(r'^/register$', views.register, name='users.register'),
     url(r'^/registercontributor$', views.register, {'contributor': True},
         name='users.registercontributor'),
+    url(r'^/close_account$', views.close_account, name='users.close_account'),
 
     url(r'^/activate/(?P<activation_key>\w+)$', views.activate,
         name='users.old_activate'),

@@ -324,6 +324,30 @@ def profile(request, template, user_id):
         'num_documents': user_num_documents(user_profile.user)})
 
 
+@login_required
+@require_POST
+def close_account(request):
+    # Clear the profile
+    profile = get_object_or_404(Profile, user__id=request.user.id)
+    profile.clear()
+    profile.save()
+
+    # Deactivate the user and change key information
+    request.user.username = 'user%s' % request.user.id
+    request.user.email = '%s@example.com' % request.user.id
+    request.user.is_active = False
+
+    # Remove from all groups
+    request.user.groups.clear()
+
+    request.user.save()
+
+    # Log the user out
+    auth.logout(request)
+
+    return render(request, 'users/close_account.html')
+
+
 @require_POST
 @permission_required('users.deactivate_users')
 def deactivate(request):
