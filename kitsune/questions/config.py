@@ -170,6 +170,35 @@ products = SortedDict([
             }),
         ])
     }),
+    ('firefox-windows-8-touch', {
+        'name': _lazy(u'Firefox for Windows 8 Touch'),
+        'subtitle': '',
+        'extra_fields': ['troubleshooting', 'ff_version', 'os', 'plugins'],
+        'tags': ['windows-8-touch'],
+        'products': ['firefox-windows-8-touch'],
+        'categories': SortedDict([
+            ('how-does-it-work', {
+                'name': _lazy('How does it work?'),
+                'topic': 'how-does-it-work',
+                'tags': ['how-does-it-work'],
+            }),
+            ('settings', {
+                'name': _lazy('Settings'),
+                'topic': 'settings',
+                'tags': ['settings'],
+            }),
+            ('problems-websites', {
+                'name': _lazy('Problems with websites'),
+                'topic': 'problems-websites',
+                'tags': ['problems-websites'],
+            }),
+            ('other', {
+                'name': _lazy('Other'),
+                'topic': 'other',
+                'tags': ['other'],
+            }),
+        ])
+    }),
     ('webmaker', {
         'name': _lazy(u'Webmaker'),
         'subtitle': _lazy('Tools for creating and teaching the web'),
