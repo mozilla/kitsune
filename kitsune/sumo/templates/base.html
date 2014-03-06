@@ -129,7 +129,7 @@
       <div class="cf">
         <nav id="aux-nav" role="navigation">
           <ul>
-            {{ aux_nav(user) }}
+            {{ aux_nav(user, hide_aaq_link) }}
             {% set locale_url = url('sumo.locales') %}
             {% if localizable_url %}
               {% set locale_url = locale_url|urlparams(next=localizable_url) %}

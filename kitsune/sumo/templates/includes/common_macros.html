@@ -17,14 +17,16 @@
   </form>
 {% endmacro %}
 
-{% macro aux_nav(user) %}
+{% macro aux_nav(user, hide_aaq_link=False) %}
   {% if not settings.READ_ONLY %}
-    {% if request.LANGUAGE_CODE in settings.AAQ_LANGUAGES %}
-      {% set ask_url = url('questions.aaq_step1') %}
-    {% else %}
-      {% set ask_url = url('wiki.document', 'get-community-support') %}
+    {% if not hide_aaq_link %}
+      {% if request.LANGUAGE_CODE in settings.AAQ_LANGUAGES %}
+        {% set ask_url = url('questions.aaq_step1') %}
+      {% else %}
+        {% set ask_url = url('wiki.document', 'get-community-support') %}
+      {% endif %}
+      <li><a href="{{ ask_url }}" class="ask">{{ _('Ask a question') }}</a></li>
     {% endif %}
-    <li><a href="{{ ask_url }}" class="ask">{{ _('Ask a question') }}</a></li>
     {% if user.is_authenticated() %}
       <li class="dropdown">
         <a href="#">{{ _('Contributor Tools') }}</a>
