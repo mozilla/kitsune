@@ -73,13 +73,14 @@
       <h2>{{ _('Try one of these articles:') }}</h2>
     {% endif %}
     {% if articles %}
-      <ul class="articles select-one">
+      <ul class="topic-list">
         {% if not all_articles %}
           {% set articles = articles[:4 if request.MOBILE else 5] %}
         {% endif %}
         {% for article in articles %}
           <li>
             <a href="{{ article.url }}" {% if not request.MOBILE %}target="_blank"{% endif %}>{{ article.document_title }}</a>
+            {{ article.document_summary }}
           </li>
         {% endfor %}
       </ul>
