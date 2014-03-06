@@ -14,6 +14,8 @@ we can compute the edit-title URL.
 {% from "questions/includes/aaq_macros.html" import selected_product, selected_category, aaq_progress %}
 {% from "questions/includes/aaq_macros.html" import troubleshooting_instructions with context %}
 
+{% set hide_aaq_link = True %}
+
 {% block content %}
   <div class="grid_12">
     <article class="main">
