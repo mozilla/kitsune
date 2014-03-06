@@ -460,7 +460,7 @@ def username_allowed(username):
 
 
 def _check_username(username):
-    if not username_allowed(username):
+    if username and not username_allowed(username):
         msg = _('The user name you entered is inappropriate. Please pick '
                 'another and consider that our helpers are other Firefox '
                 'users just like you.')
