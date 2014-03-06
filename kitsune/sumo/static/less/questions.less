@@ -758,14 +758,15 @@ h2 {
 }
 
 #aaq_progress {
-  margin: 30px 78px 40px 78px;
+  margin: 0 78px -20px;
 
   .legend {
     color: @textGrey;
-    font-size: 14px;
+    font-size: 12px;
     font-weight: normal;
+    line-height: 16px;
     list-style: none;
-    margin: 10px -78px;
+    margin: 5px -78px;
     padding: 0;
     position: relative;
     z-index: 0;
@@ -803,9 +804,19 @@ h2 {
   }
 
   .progress-bar {
+    height: 8px;
+
     > div {
+      height: 8px;
       min-width: 12px;
       padding-right: 12px;
+    }
+
+    .legend {
+      li:before {
+        height: 8px;
+        top: -13px;
+      }
     }
   }
 }
