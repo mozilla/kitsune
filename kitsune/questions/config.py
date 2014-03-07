@@ -175,22 +175,22 @@ products = SortedDict([
         'products': ['firefox-windows-8-touch'],
         'categories': SortedDict([
             ('how-does-it-work', {
-                'name': 'How does it work?',
+                'name': _lazy('How does it work?'),
                 'topic': 'how-does-it-work',
                 'tags': ['how-does-it-work'],
             }),
             ('settings', {
-                'name': 'Settings',
+                'name': _lazy('Settings'),
                 'topic': 'settings',
                 'tags': ['settings'],
             }),
-            ('problems-with-websites', {
-                'name': 'Problems with websites',
-                'topic': 'problems-with-websites',
-                'tags': ['problems-with-websites'],
+            ('problems-websites', {
+                'name': _lazy('Problems with websites'),
+                'topic': 'problems-websites',
+                'tags': ['problems-websites'],
             }),
             ('other', {
-                'name': 'Other',
+                'name': _lazy('Other'),
                 'topic': 'other',
                 'tags': ['other'],
             }),
