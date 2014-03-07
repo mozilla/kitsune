@@ -1,0 +1,115 @@
+# Contributions to the urllib3 project
+
+## Creator & Maintainer
+
+* Andrey Petrov <andrey.petrov@shazow.net>
+
+
+## Contributors
+
+In chronological order:
+
+* victor.vde <http://code.google.com/u/victor.vde/>
+  * HTTPS patch (which inspired HTTPSConnectionPool)
+
+* erikcederstrand <http://code.google.com/u/erikcederstrand/>
+  * NTLM-authenticated HTTPSConnectionPool
+  * Basic-authenticated HTTPSConnectionPool (merged into make_headers)
+
+* niphlod <niphlod@gmail.com>
+  * Client-verified SSL certificates for HTTPSConnectionPool
+  * Response gzip and deflate encoding support
+  * Better unicode support for filepost using StringIO buffers
+
+* btoconnor <brian@btoconnor.net>
+  * Non-multipart encoding for POST requests
+
+* p.dobrogost <http://code.google.com/u/@WBRSRlBZDhBFXQB6/>
+  * Code review, PEP8 compliance, benchmark fix
+
+* kennethreitz <me@kennethreitz.com>
+  * Bugfixes, suggestions, Requests integration
+
+* georgemarshall <http://github.com/georgemarshall>
+  * Bugfixes, Improvements and Test coverage
+
+* Thomas Kluyver <thomas@kluyver.me.uk>
+  * Python 3 support
+
+* brandon-rhodes <http://rhodesmill.org/brandon>
+  * Design review, bugfixes, test coverage.
+
+* studer <theo.studer@gmail.com>
+  * IPv6 url support and test coverage
+
+* Shivaram Lingamneni <slingamn@cs.stanford.edu>
+  * Support for explicitly closing pooled connections
+
+* hartator <hartator@gmail.com>
+  * Corrected multipart behavior for params
+
+* Thomas Weißschuh <thomas@t-8ch.de>
+  * Support for TLS SNI
+  * API unification of ssl_version/cert_reqs
+  * SSL fingerprint and alternative hostname verification
+  * Bugfixes in testsuite
+
+* Sune Kirkeby <mig@ibofobi.dk>
+  * Optional SNI-support for Python 2 via PyOpenSSL.
+
+* Marc Schlaich <marc.schlaich@gmail.com>
+  * Various bugfixes and test improvements.
+
+* Bryce Boe <bbzbryce@gmail.com>
+  * Correct six.moves conflict
+  * Fixed pickle support of some exceptions
+
+* Boris Figovsky <boris.figovsky@ravellosystems.com>
+  * Allowed to skip SSL hostname verification
+
+* Cory Benfield <http://lukasa.co.uk/about/>
+  * Stream method for Response objects.
+  * Return native strings in header values.
+  * Generate 'Host' header when using proxies.
+
+* Jason Robinson <jaywink@basshero.org>
+  * Add missing WrappedSocket.fileno method in PyOpenSSL
+
+* Audrius Butkevicius <audrius.butkevicius@elastichosts.com>
+  * Fixed a race condition
+
+* Stanislav Vitkovskiy <stas.vitkovsky@gmail.com>
+  * Added HTTPS (CONNECT) proxy support
+
+* Stephen Holsapple <sholsapp@gmail.com>
+  * Added abstraction for granular control of request fields
+
+* Martin von Gagern <Martin.vGagern@gmx.net>
+  * Support for non-ASCII header parameters
+
+* Kevin Burke <kev@inburke.com> and Pavel Kirichenko <juanych@yandex-team.ru>
+  * Support for separate connect and request timeouts
+
+* Peter Waller <p@pwaller.net>
+  * HTTPResponse.tell() for determining amount received over the wire
+
+* Nipunn Koorapati <nipunn1313@gmail.com>
+  * Ignore default ports when comparing hosts for equality
+
+* Danilo @dbrgn <http://dbrgn.ch/>
+  * Disabled TLS compression by default on Python 3.2+
+  * Disabled TLS compression in pyopenssl contrib module
+  * Configurable cipher suites in pyopenssl contrib module
+
+* Roman Bogorodskiy <roman.bogorodskiy@ericsson.com>
+  * Account retries on proxy errors
+
+* Nicolas Delaby <nicolas.delaby@ezeep.com>
+  * Use the platform-specific CA certificate locations
+
+* Josh Schneier <https://github.com/jschneier>
+  * HTTPHeaderDict and associated tests and docs
+  * Bugfixes, docs, test coverage
+
+* [Your name or handle] <[email or website]>
+  * [Brief summary of your changes]
