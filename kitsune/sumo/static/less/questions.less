@@ -480,6 +480,37 @@ h2 {
   }
 }
 
+.logo-sprite-tiny {
+  background: url('../img/logos.large.sprite.png?v=3') -12px -12px no-repeat;
+  background-size: 42px;
+  height: 16px;
+  width: 16px;
+
+  &.logo-firefox {
+    background-position: -12px -11px;
+  }
+
+  &.logo-thunderbird {
+    background-position: -12px -53px;
+  }
+
+  &.logo-mobile {
+    background-position: -12px -95px;
+  }
+
+  &.logo-firefox-os {
+    background-position: -12px -137px;
+  }
+
+  &.logo-webmaker {
+    background-position: -12px -179px;
+  }
+
+  &.logo-firefox-windows-8-touch {
+    background-position: -12px -221px;
+  }
+}
+
 .questions {
   list-style: none;
   margin: 0;
@@ -492,7 +523,17 @@ h2 {
 
     h2 {
       font-size: 22px;
-      margin: 4px 0;
+      margin: 4px 0 0;
+    }
+
+    h3 {
+      font-size: 13px;
+      margin: 0 0 4px;
+      font-weight: bold;
+
+      a:visited {
+        color: #0095DD
+      }
     }
 
     .content {
