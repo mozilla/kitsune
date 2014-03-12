@@ -327,15 +327,14 @@ def profile(request, template, user_id):
 @login_required
 @require_POST
 def close_account(request):
-    username = request.user.username
-
     # Clear the profile
     profile = get_object_or_404(Profile, user__id=request.user.id)
     profile.clear()
+    profile.save()
 
     # Deactivate the user and change key information
-    request.user.username = '%s[%s]' % (username, username)
-    request.user.email = '%s@example.com' % username
+    request.user.username = 'user%s' % request.user.id
+    request.user.email = '%s@example.com' % request.user.id
     request.user.is_active = False
 
     # Remove from all groups
@@ -346,8 +345,7 @@ def close_account(request):
     # Log the user out
     auth.logout(request)
 
-    return render(request, 'users/close_account.html', {
-        'username': username})
+    return render(request, 'users/close_account.html')
 
 
 @require_POST
