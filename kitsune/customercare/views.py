@@ -172,7 +172,7 @@ def landing(request):
         'canned_responses': get_common_replies(request.LANGUAGE_CODE),
         'tweets': _get_tweets(locale=request.LANGUAGE_CODE,
                               https=request.is_secure()),
-        'authed': request.twitter.authed,
+        'authed': request.user.is_authenticated() and request.twitter.authed,
         'twitter_user': twitter_user,
         'filters': FILTERS,
         'goal': settings.CC_REPLIES_GOAL,
