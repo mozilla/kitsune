@@ -189,18 +189,6 @@
 
               <div class="content ui-truncatable truncated">
                 <h2><a href="{{ question.get_absolute_url() }}">{{ question.title }}</a></h2>
-                {% for topic in question.topics.all() %}
-                  <h3>
-                    <img src="/static/img/blank.png" class="logo-sprite-tiny logo-{{ topic.product.slug }}">
-                    <a href="{{ request.get_full_path()|urlparams(product=topic.product.slug, topic=None) }}">
-                      {{ _(topic.product.title, 'DB: products.Product.title') }}
-                    </a>
-                    /
-                    <a href="{{ request.get_full_path()|urlparams(product=topic.product.slug, topic=topic.slug) }}">
-                      {{ _(topic.title, 'DB: products.Topic.title') }}
-                    </a>
-                  </h3>
-                {% endfor %}
                 {{ question.content_parsed|truncate_question(170, question.content_parsed)|safe }}
               </div>
 
@@ -231,6 +219,20 @@
                   </a> {{ _('on') }} {{ datetimeformat(question.last_answer.created, format='datetime') }}
                 </div>
               {% endif %}
+
+              {% for topic in question.topics.all() %}
+                <div>
+                  <img src="/static/img/blank.png" class="logo-sprite-tiny logo-{{ topic.product.slug }}">
+                  <a href="{{ request.get_full_path()|urlparams(product=topic.product.slug, topic=None) }}">
+                    {{ _(topic.product.title, 'DB: products.Product.title') }}
+                  </a>
+                  /
+                  <a href="{{ request.get_full_path()|urlparams(product=topic.product.slug, topic=topic.slug) }}">
+                    {{ _(topic.title, 'DB: products.Topic.title') }}
+                  </a>
+                </div>
+              {% endfor %}
+
               {% set tags = question.my_tags %}
               {% if tags %}
                 {{ _('Tags') }}
