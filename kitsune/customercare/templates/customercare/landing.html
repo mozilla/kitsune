@@ -22,7 +22,13 @@
 
     <div id="steps">
       <ol>
-        <li class="grid_2"><a {% if not authed %}id="steps-signin-button"{% endif %} href="#" class="btn btn-submit">{{ _('Sign in with Twitter') }}</a></li>
+        <li class="grid_2">
+          {% if not authed %}
+            <a id="steps-signin-button" href="#" class="btn btn-submit">{{ _('Sign in and connect to Twitter') }}</a>
+          {% else %}
+            {{ _('Sign in and connect to Twitter') }}
+          {% endif %}
+        </li>
         <li class="grid_2">{{ _('Choose a tweet below') }}</li>
         <li class="grid_2">{{ _('Respond to the tweet!') }}</li>
       </ol>
