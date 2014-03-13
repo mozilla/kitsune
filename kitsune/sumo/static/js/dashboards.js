@@ -4,6 +4,7 @@
         initWatchMenu();
         initNeedsChange();
         initAnnouncements();
+        initL10nStringsStats();
     }
 
     // Hook up readout mode links (like "This Week" and "All Time") to swap
@@ -141,6 +142,63 @@
                 }
             });
         });
+    }
+
+    function initL10nStringsStats() {
+        // Create the progress bar for UI string stats in the overview
+        // section of the l10n dashboard.
+        var $tr = $('tr.ui-strings-row');
+        var $tds = $tr.find('td');
+        var now = new Date();
+        var cacheBust = now.getYear().toString() +
+                        now.getMonth().toString() +
+                        now.getDay().toString();
+
+        if ($tr.length === 0) {
+            return;
+        }
+
+        $.getJSON(
+            $('body').data('media-url') +
+                'uploads/l10n_summary.json?_cacke=' + cacheBust,
+            function(data) {
+                var localeData = data['locales'][$('html').attr('lang')];
+                var className = 'bad';
+
+                // Fill in the numbers in the second column.
+                $($tds[1]).html(
+                    interpolate(
+                        gettext('%(num)s <small>of %(total)s</small>'),
+                        {
+                            num: localeData.translated,
+                            total: localeData.total
+                        },
+                        true
+                    )
+                );
+
+                // Fill in the progress bar in the third column.
+                if (localeData.percent >= 20) {
+                    className = 'better';
+                }
+                if (localeData.percent === 100) {
+                    className = 'best';
+                }
+                $($tds[2]).html(
+                    interpolate(
+                        '%(percent)s% ' +
+                        '<div class="percent-graph">' +
+                            '<div style="width: %(percent)%" class="%(className)s">' +
+                            '</div>' +
+                        '</div>',
+                        {
+                            percent: localeData.percent,
+                            className: className
+                        },
+                        true
+                    )
+                );
+            });
     }
 
     $(document).ready(init);
