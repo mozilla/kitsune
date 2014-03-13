@@ -81,7 +81,9 @@
                                    product=product) }}
       {% endif %}
 
-      {{ overview_section(readouts, ((overview_rows['most-visited'], True),
+      {{ overview_section(readouts, ((overview_rows['top-100'], True),
+                                     (overview_rows['top-50'], True),
+                                     (overview_rows['top-20'], True),
                                      (overview_rows['all'], False),
                                      (overview_rows['templates'], True))) }}
 
