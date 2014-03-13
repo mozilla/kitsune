@@ -85,13 +85,22 @@ def make_mail(subject,
               context_vars,
               from_email,
               to_email,
+              headers=None,
               **extra_kwargs):
     """Return an instance of EmailMultiAlternative with both plaintext and
     html versions."""
+    default_headers = {
+        'Reply-To': settings.DEFAULT_REPLY_TO_EMAIL,
+    }
+    if headers is not None:
+        default_headers.update(headers)
+    headers = default_headers
+
     mail = EmailMultiAlternatives(subject,
                                   render_email(text_template, context_vars),
                                   from_email,
                                   [to_email],
+                                  headers=headers,
                                   **extra_kwargs)
 
     if html_template:

@@ -329,3 +329,44 @@ class TestAnswerNotifications(TestCaseBase):
 
         body = re.sub(r'auth=[a-zA-Z0-9%_-]+', 'auth=AUTH', notification.body)
         starts_with(body, ANSWER_EMAIL_TO_ASKER.format(**self.format_args()))
+
+    @override_settings(DEFAULT_REPLY_TO_EMAIL='replyto@example.com')
+    def test_notify_anonymous_reply_to(self):
+        """
+        Test that notifications to the asker have a correct reply to field.
+        """
+        ANON_EMAIL = 'anonymous@example.com'
+        QuestionReplyEvent.notify(ANON_EMAIL, self.question)
+        self.makeAnswer()
+
+        notification = [m for m in mail.outbox if m.to == [ANON_EMAIL]][0]
+        # Headers should be compared case-insensitively.
+        headers = dict((k.lower(), v)
+                       for k, v in notification.extra_headers.items())
+        eq_('replyto@example.com', headers['reply-to'])
+
+    @override_settings(DEFAULT_REPLY_TO_EMAIL='replyto@example.com')
+    def test_notify_arbitrary_reply_to(self):
+        """
+        Test that notifications to the asker have a correct reply to field.
+        """
+        watcher = user(save=True)
+        QuestionReplyEvent.notify(watcher, self.question)
+        self.makeAnswer()
+
+        notification = [m for m in mail.outbox if m.to == [watcher.email]][0]
+        # Headers should be compared case-insensitively.
+        headers = dict((k.lower(), v)
+                       for k, v in notification.extra_headers.items())
+        eq_('replyto@example.com', headers['reply-to'])
+
+    @override_settings(DEFAULT_REPLY_TO_EMAIL='replyto@example.com')
+    def test_notify_asker_reply_to(self):
+        """
+        Test that notifications to the asker have a correct reply to field.
+        """
+        self.makeAnswer()
+        # Headers should be compared case-insensitively.
+        headers = dict((k.lower(), v)
+                       for k, v in mail.outbox[0].extra_headers.items())
+        eq_('replyto@example.com', headers['reply-to'])
