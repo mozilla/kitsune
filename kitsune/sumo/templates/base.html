@@ -58,6 +58,7 @@
       data-readonly="{{ settings.READ_ONLY|json }}"
       data-usernames-api="{{ url('users.api.usernames') }}"
       data-static-url="{{ STATIC_URL }}"
+      data-media-url="{{ MEDIA_URL }}"
       {% if SURVEY_GIZMOS %}
         data-survey-gizmos="{{ SURVEY_GIZMOS|json }}"
       {% else %}
