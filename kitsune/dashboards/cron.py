@@ -51,7 +51,7 @@ def update_l10n_coverage_metrics():
             rows = overview_rows(locale=locale, product=product)
 
             # % of top 20 articles
-            top20 = rows['most-visited']
+            top20 = rows['top-20']
             percent = 100.0 * float(top20['numerator']) / top20['denominator']
             WikiMetric.objects.create(
                 code=L10N_TOP20_CODE,

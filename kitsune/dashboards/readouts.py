@@ -240,15 +240,14 @@ def overview_rows(locale, product=None):
         up_to_date_translation_count,
         prod_param + (locale, True, MEDIUM_SIGNIFICANCE))
 
-    # Of the top 20 most visited English articles, how many have up-to-date
+    # Of the top N most visited English articles, how many have up-to-date
     # translations into German?
     #
     # TODO: Be very suspicious of this query. It selects from a subquery (known
     # to MySQL's EXPLAIN as a "derived" table), and MySQL always materializes
     # such subqueries and never builds indexes on them. However, it seems to be
     # fast in practice.
-    TOP_N = 20
-    popular_translated = int(single_result(  # Driver returns a Decimal.
+    top_n_query = (
         'SELECT SUM(istranslated) FROM '
         '    (SELECT transdoc.current_revision_id IS NOT NULL '
         # And there have been no significant updates since the current
@@ -263,20 +262,49 @@ def overview_rows(locale, product=None):
                         str(TROUBLESHOOTING_CATEGORY) + ',' +
                         str(HOW_TO_CATEGORY) + ',' +
                         str(TEMPLATES_CATEGORY) + ')') +
-        'LIMIT %s) t1 ',
+        'LIMIT %s) t1 ')
+
+    top_20_translated = int(single_result(  # Driver returns a Decimal.
+        top_n_query,
         (MEDIUM_SIGNIFICANCE, locale, LAST_30_DAYS) + prod_param +
-        (settings.WIKI_DEFAULT_LANGUAGE, TOP_N)) or 0)  # SUM can return NULL.
+        (settings.WIKI_DEFAULT_LANGUAGE, 20)) or 0)  # SUM can return NULL.
+    top_50_translated = int(single_result(  # Driver returns a Decimal.
+        top_n_query,
+        (MEDIUM_SIGNIFICANCE, locale, LAST_30_DAYS) + prod_param +
+        (settings.WIKI_DEFAULT_LANGUAGE, 50)) or 0)  # SUM can return NULL.
+    top_100_translated = int(single_result(  # Driver returns a Decimal.
+        top_n_query,
+        (MEDIUM_SIGNIFICANCE, locale, LAST_30_DAYS) + prod_param +
+        (settings.WIKI_DEFAULT_LANGUAGE, 100)) or 0)  # SUM can return NULL.
 
     return {
-        'most-visited': {
-            'title': _('Most-Visited Articles'),
-            'url': '#' + MostVisitedTranslationsReadout.slug,
-            'numerator': popular_translated,
-            'denominator': TOP_N,
-            'percent': percent_or_100(popular_translated, TOP_N),
+        'top-20': {
+            'title': _('Top 20 Articles'),
+            'numerator': top_20_translated,
+            'denominator': 20 if total_docs > 20 else total_docs,
+            'percent': percent_or_100(
+                top_20_translated, 20 if total_docs > 20 else total_docs),
             'description': _('These are the top 20 most visited articles, '
                              'which account for over 50% of the traffic to '
-                             'the Knowledge Base.')
+                             'the Knowledge Base.'),
+        },
+        'top-50': {
+            'title': _('Top 50 Articles'),
+            'numerator': top_50_translated,
+            'denominator': 50 if total_docs > 50 else total_docs,
+            'percent': percent_or_100(
+                top_50_translated, 50 if total_docs > 50 else total_docs),
+            'description': _('These are the top 50 most visited articles.'),
+        },
+        'top-100': {
+            'title': _('Top 100 Articles'),
+            'numerator': top_100_translated,
+            'denominator': 100 if total_docs > 100 else total_docs,
+            'percent': percent_or_100(
+                top_100_translated, 100 if total_docs > 100 else total_docs),
+            'description': _('These are the top 100 most visited articles, '
+                             'which account for over 99% of the traffic to '
+                             'the Knowledge Base.'),
         },
         'templates': {
             'title': _('Templates'),
@@ -287,7 +315,7 @@ def overview_rows(locale, product=None):
             'description': _('Templates are a way of reusing pieces of '
                              'content across KB articles. You can create and '
                              'update a set of instructions in one place, and '
-                             'then refer to it in other pages.')
+                             'then refer to it in other pages.'),
         },
         'all': {
             'title': _('All Knowledge Base Articles'),
@@ -295,7 +323,7 @@ def overview_rows(locale, product=None):
             'denominator': total_docs,
             'percent': percent_or_100(translated_docs, total_docs),
             'description': _('This is the number of all Knowledge Base '
-                             'articles that are ready to be localized.')
+                             'articles that are ready to be localized.'),
         }
     }
 

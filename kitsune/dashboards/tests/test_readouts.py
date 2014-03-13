@@ -129,7 +129,9 @@ class OverviewTests(TestCase):
         """
         t = translated_revision(is_approved=True, save=True)
         overview = overview_rows('de')
-        eq_(1, overview['most-visited']['numerator'])
+        eq_(1, overview['top-20']['numerator'])
+        eq_(1, overview['top-50']['numerator'])
+        eq_(1, overview['top-100']['numerator'])
         eq_(1, overview['all']['numerator'])
 
         # Update the parent with a typo-level revision:
@@ -140,7 +142,9 @@ class OverviewTests(TestCase):
                  save=True)
         # Assert it still shows up in the numerators:
         overview = overview_rows('de')
-        eq_(1, overview['most-visited']['numerator'])
+        eq_(1, overview['top-20']['numerator'])
+        eq_(1, overview['top-50']['numerator'])
+        eq_(1, overview['top-100']['numerator'])
         eq_(1, overview['all']['numerator'])
 
         # Update the parent with a medium-level revision:
@@ -152,14 +156,18 @@ class OverviewTests(TestCase):
         # Assert it no longer shows up in the numerators:
         overview = overview_rows('de')
         eq_(0, overview['all']['numerator'])
-        eq_(0, overview['most-visited']['numerator'])
+        eq_(0, overview['top-20']['numerator'])
+        eq_(0, overview['top-50']['numerator'])
+        eq_(0, overview['top-100']['numerator'])
 
     def test_not_counting_how_to_contribute(self):
         """Articles with the How to contribute category should not be counted.
         """
         t = translated_revision(is_approved=True, save=True)
         overview = overview_rows('de')
-        eq_(1, overview['most-visited']['numerator'])
+        eq_(1, overview['top-20']['numerator'])
+        eq_(1, overview['top-50']['numerator'])
+        eq_(1, overview['top-100']['numerator'])
 
         # Update the parent with the How To Contribute category
         d = t.document.parent
@@ -167,14 +175,18 @@ class OverviewTests(TestCase):
         d.save()
 
         overview = overview_rows('de')
-        eq_(0, overview['most-visited']['numerator'])
+        eq_(0, overview['top-20']['numerator'])
+        eq_(0, overview['top-50']['numerator'])
+        eq_(0, overview['top-100']['numerator'])
 
     def test_not_counting_untranslated(self):
         """Translations with no approved revisions shouldn't count as done.
         """
         translated_revision(is_approved=False, save=True)
         overview = overview_rows('de')
-        eq_(0, overview['most-visited']['numerator'])
+        eq_(0, overview['top-20']['numerator'])
+        eq_(0, overview['top-50']['numerator'])
+        eq_(0, overview['top-100']['numerator'])
         eq_(0, overview['all']['numerator'])
 
     def test_by_product(self):
