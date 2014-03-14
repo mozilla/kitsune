@@ -1,8 +1,8 @@
 import re
 
-from django.conf import settings
 from django.contrib.sites.models import Site
 from django.core import mail
+from django.test.utils import override_settings
 
 import mock
 from nose.tools import eq_
@@ -34,16 +34,16 @@ testserver:
 
 {title}
 
-https://testserver/en-US/questions/{question_id}?auth=AUTH#answer-{answer_id}
+https://testserver/{locale}questions/{question_id}?auth=AUTH#answer-{answer_id}
 
 {replier} wrote:
 "{content}"
 
 See the comment:
-https://testserver/en-US/questions/{question_id}?auth=AUTH#answer-{answer_id}
+https://testserver/{locale}questions/{question_id}?auth=AUTH#answer-{answer_id}
 
 If this comment is helpful, vote on it:
-https://testserver/en-US/questions/{question_id}/vote/{answer_id}?helpful=&\
+https://testserver/{locale}questions/{question_id}/vote/{answer_id}?helpful=&\
 auth=AUTH
 
 Help other Firefox users by browsing for unsolved questions on testserver:
@@ -53,7 +53,7 @@ You might just make someone's day!
 
 --
 Unsubscribe from these emails:
-https://testserver/en-US/unsubscribe"""
+https://testserver/{locale}unsubscribe"""
 ANSWER_EMAIL = u'Hi {to_user},\n\n' + ANSWER_EMAIL_TO_ANONYMOUS
 ANSWER_EMAIL_TO_ASKER = """Hi {asker},
 
@@ -65,7 +65,7 @@ ANSWER_EMAIL_TO_ASKER = """Hi {asker},
 
 If this doesn't solve your problem, let {replier} know by replying on the \
 website:
-https://testserver/en-US/questions/{question_id}?auth=AUTH#answer-{answer_id}
+https://testserver/{locale}questions/{question_id}?auth=AUTH#answer-{answer_id}
 
 If this answer solves your problem, please mark it as "solved":"""
 SOLUTION_EMAIL_TO_ANONYMOUS = """We just wanted to let you know that \
@@ -81,7 +81,7 @@ You can view the solution using the link below.
 Did this answer also help you? Did you find another post more helpful? Let \
 other Firefox users know by voting next to the answer.
 
-https://testserver/en-US/questions/{question_id}#answer-{answer_id}
+https://testserver/{locale}questions/{question_id}#answer-{answer_id}
 
 Did you know that {replier} is a Firefox user just like you? Get started \
 helping other Firefox users by browsing questions at \
@@ -90,15 +90,12 @@ day!
 
 --
 Unsubscribe from these emails:
-https://testserver/en-US/unsubscribe/"""
+https://testserver/{locale}unsubscribe/"""
 SOLUTION_EMAIL = 'Hi {to_user},\n\n' + SOLUTION_EMAIL_TO_ANONYMOUS
 
 
 class NotificationsTests(TestCaseBase):
     """Test that notifications get sent."""
-
-    def setUp(self):
-        super(NotificationsTests, self).setUp()
 
     @mock.patch.object(QuestionReplyEvent, 'fire')
     def test_fire_on_new_answer(self, fire):
@@ -149,8 +146,7 @@ class NotificationsTests(TestCaseBase):
         return q
 
     @mock.patch.object(Site.objects, 'get_current')
-    @mock.patch.object(settings._wrapped, 'TIDINGS_CONFIRM_ANONYMOUS_WATCHES',
-                       False)
+    @override_settings(TIDINGS_CONFIRM_ANONYMOUS_WATCHES=False)
     def test_solution_notification(self, get_current):
         """Assert that hitting the watch toggle toggles and that proper mails
         are sent to anonymous and registered watchers."""
@@ -178,7 +174,8 @@ class NotificationsTests(TestCaseBase):
             title=q.title,
             asker=q.creator.username,
             question_id=q.id,
-            answer_id=a.id))
+            answer_id=a.id,
+            locale='en-US/'))
 
         attrs_eq(mail.outbox[2], to=['anon@ymous.com'],
                  subject='Solution found to Firefox Help question')
@@ -187,87 +184,19 @@ class NotificationsTests(TestCaseBase):
             title=q.title,
             asker=q.creator.username,
             question_id=q.id,
-            answer_id=a.id))
-
-    @mock.patch.object(Site.objects, 'get_current')
-    @mock.patch.object(settings._wrapped, 'TIDINGS_CONFIRM_ANONYMOUS_WATCHES',
-                       False)
-    def test_answer_notification(self, get_current):
-        """Assert that hitting the watch toggle toggles and that proper mails
-        are sent to anonymous users, registered users, and the question
-        asker."""
-        # TODO: This test is way too monolithic, and the fixtures encode
-        # assumptions that aren't obvious here. Split this test into about 5,
-        # each of which tests just 1 thing. Consider using instantiation
-        # helpers.
-        get_current.return_value.domain = 'testserver'
-
-        # An arbitrary registered user watches:
-        watcher = user(save=True)
-        q = self._toggle_watch_question('reply', watcher, turn_on=True)
-
-        # An anonymous user watches:
-        QuestionReplyEvent.notify('anon@ymous.com', q)
-
-        # The question asker watches:
-        QuestionReplyEvent.notify(q.creator, q)
-
-        # Post a reply
-        replier = user(save=True)
-        self.client.login(username=replier.username, password='testpass')
-        post(self.client, 'questions.reply', {'content': 'an answer'},
-             args=[q.id])
-
-        a = Answer.uncached.filter().order_by('-id')[0]
-
-        # Order of emails is not important.
-        eq_(3, len(mail.outbox))
-
-        emails_to = [m.to[0] for m in mail.outbox]
-
-        i = emails_to.index(watcher.email)
-        attrs_eq(mail.outbox[i], to=[watcher.email],
-                 subject='%s commented on a Firefox question '
-                         "you're watching" % a.creator.username)
-        body = mail.outbox[i].body
-        body = re.sub(r'auth=[a-zA-Z0-9%_-]+', r'auth=AUTH', body)
-        starts_with(body, ANSWER_EMAIL.format(
-            to_user=watcher.username,
-            title=q.title,
-            content=a.content,
-            replier=replier.username,
-            question_id=q.id,
-            answer_id=a.id))
-
-        i = emails_to.index(q.creator.email)
-        attrs_eq(mail.outbox[i], to=[q.creator.email],
-                 subject='%s posted an answer to your question "%s"' %
-                         (a.creator.username, q.title))
-        body = mail.outbox[i].body
-        body = re.sub(r'auth=[a-zA-Z0-9%_-]+', r'auth=AUTH', body)
-        starts_with(body, ANSWER_EMAIL_TO_ASKER.format(
-            asker=q.creator.username,
-            title=q.title,
-            content=a.content,
-            replier=replier.username,
-            question_id=q.id,
-            answer_id=a.id))
-
-        i = emails_to.index('anon@ymous.com')
-        attrs_eq(mail.outbox[i], to=['anon@ymous.com'],
-                 subject="%s commented on a Firefox question you're watching" %
-                         a.creator.username)
-        body = mail.outbox[i].body
-        body = re.sub(r'auth=[a-zA-Z0-9%_-]+', r'auth=AUTH', body)
-        starts_with(body, ANSWER_EMAIL_TO_ANONYMOUS.format(
-            title=q.title,
-            content=a.content,
-            replier=replier.username,
-            question_id=q.id,
-            answer_id=a.id))
+            answer_id=a.id,
+            locale='en-US/'))
 
     @mock.patch.object(Site.objects, 'get_current')
     def test_autowatch_reply(self, get_current):
+        """
+        Tests the autowatch setting of users.
+
+        If a user has the setting turned on, they should get
+        notifications after posting in a thread for that thread. If they
+        have that setting turned off, they should not.
+        """
+
         get_current.return_value.domain = 'testserver'
 
         u = user(save=True)
@@ -316,3 +245,87 @@ class NotificationsTests(TestCaseBase):
         # There should be a reply notification and a solved notification.
         eq_(2, len(mail.outbox))
         eq_('Solution found to Firefox Help question', mail.outbox[1].subject)
+
+
+class TestAnswerNotifications(TestCaseBase):
+    """Assert that hitting the watch toggle toggles and that proper mails
+    are sent to anonymous users, registered users, and the question
+    asker."""
+
+    def setUp(self):
+        super(TestAnswerNotifications, self).setUp()
+        self._get_current_mock = mock.patch.object(Site.objects, 'get_current')
+        self._get_current_mock.start().return_value.domain = 'testserver'
+        self.question = question(save=True)
+
+    def tearDown(self):
+        super(TestAnswerNotifications, self).tearDown()
+        self._get_current_mock.stop()
+
+    def makeAnswer(self):
+        self.answer = answer(question=self.question, save=True)
+
+    def format_args(self):
+        return {
+            'title': self.question.title,
+            'content': self.answer.content,
+            'replier': self.answer.creator,
+            'question_id': self.question.id,
+            'answer_id': self.answer.id,
+            'locale': '',
+            'asker': self.question.creator.username,
+        }
+
+    @override_settings(TIDINGS_CONFIRM_ANONYMOUS_WATCHES=False)
+    def test_notify_anonymous(self):
+        """Test that anonymous users are notified of new answers."""
+        ANON_EMAIL = 'anonymous@example.com'
+        QuestionReplyEvent.notify(ANON_EMAIL, self.question)
+        self.makeAnswer()
+
+        # One for the asker's email, and one for the anonymous email.
+        eq_(2, len(mail.outbox))
+        notification = [m for m in mail.outbox if m.to == [ANON_EMAIL]][0]
+
+        eq_([ANON_EMAIL], notification.to)
+        eq_("{0} commented on a Firefox question you're watching"
+            .format(self.answer.creator.username),
+            notification.subject)
+
+        body = re.sub(r'auth=[a-zA-Z0-9%_-]+', 'auth=AUTH', notification.body)
+        starts_with(body, ANSWER_EMAIL_TO_ANONYMOUS
+                    .format(**self.format_args()))
+
+    def test_notify_arbitrary(self):
+        """Test that arbitrary users are notified of new answers."""
+        watcher = user(save=True)
+        QuestionReplyEvent.notify(watcher, self.question)
+        self.makeAnswer()
+
+        # One for the asker's email, and one for the watcher's email.
+        eq_(2, len(mail.outbox))
+        notification = [m for m in mail.outbox if m.to == [watcher.email]][0]
+
+        eq_([watcher.email], notification.to)
+        eq_("{0} commented on a Firefox question you're watching"
+            .format(self.answer.creator.username),
+            notification.subject)
+
+        body = re.sub(r'auth=[a-zA-Z0-9%_-]+', 'auth=AUTH', notification.body)
+        starts_with(body, ANSWER_EMAIL.format(to_user=watcher.username,
+                                              **self.format_args()))
+
+    def test_notify_asker(self):
+        """Test that the answer is notified of answers, without registering."""
+        self.makeAnswer()
+
+        eq_(1, len(mail.outbox))
+        notification = mail.outbox[0]
+
+        eq_([self.question.creator.email], notification.to)
+        eq_('{0} posted an answer to your question "{1}"'
+            .format(self.answer.creator.username, self.question.title),
+            notification.subject)
+
+        body = re.sub(r'auth=[a-zA-Z0-9%_-]+', 'auth=AUTH', notification.body)
+        starts_with(body, ANSWER_EMAIL_TO_ASKER.format(**self.format_args()))
