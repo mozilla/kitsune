@@ -70,7 +70,7 @@ WAFFLE_CACHE_PREFIX = 'w0.7.7a:'
 
 # Addresses email comes from
 DEFAULT_FROM_EMAIL = 'notifications@support.mozilla.org'
-DEFAULT_REPLY_TO_EMAIL = DEFAULT_FROM_EMAIL
+DEFAULT_REPLY_TO_EMAIL = 'atopal@mozilla.com'
 SERVER_EMAIL = 'server-error@support.mozilla.org'
 EMAIL_SUBJECT_PREFIX = '[support] '
 
