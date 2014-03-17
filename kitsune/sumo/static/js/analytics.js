@@ -32,6 +32,7 @@ if (alternateUrl) {
 })();
 
 
+// Track clicks to links with data-ga-click attr.
 $('body').on('click', 'a[data-ga-click]', function(ev) {
   ev.preventDefault();
 
@@ -45,6 +46,24 @@ $('body').on('click', 'a[data-ga-click]', function(ev) {
   // Delay the click navigation by 100ms to ensure the event is tracked.
   setTimeout(function() {
     document.location.href = href;
+  }, 100);
+
+  return false;
+});
+
+// Track clicks to form buttons with data-ga-click attr.
+$('body').on('click', 'button[data-ga-click]', function(ev) {
+  ev.preventDefault();
+
+  var $this = $(this);
+  // Split by '|', and allow for white space on either side.
+  var gaData = $this.data('ga-click').split(/\s*\|\s*/);
+
+  _gaq.push(gaData);
+
+  // Delay the form post by 100ms to ensure the event is tracked.
+  setTimeout(function() {
+    $this.closest('form').submit();
   }, 100);
 
   return false;
