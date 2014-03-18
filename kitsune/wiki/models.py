@@ -657,17 +657,13 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
 
     def add_link_to(self, linked_to, kind):
         """Create a DocumentLink to another Document."""
-        try:
-            DocumentLink(
-                linked_from=self, linked_to=linked_to, kind=kind).save()
-        except IntegrityError:
-            # This link already exists, ok.
-            pass
+        DocumentLink.objects.get_or_create(linked_from=self,
+                                           linked_to=linked_to,
+                                           kind=kind)
 
     @property
     def images(self):
         return Image.objects.filter(documentimage__document=self)
-
 
     def add_image(self, image):
         """Create a DocumentImage to connect self to an Image instance."""
@@ -1125,7 +1121,7 @@ class DocumentImage(ModelBase):
 
     def __unicode__(self):
         return u'<DocumentImage: {doc} includes {img}>'.format(
-            doc=document, img=image)
+            doc=self.document, img=self.image)
 
 
 def _doc_components_from_url(url, required_locale=None, check_host=True):

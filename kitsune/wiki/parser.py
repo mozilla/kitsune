@@ -465,7 +465,7 @@ class WhatLinksHereParser(WikiParser):
         """Record a template link between documents, and then call super()."""
 
         params = name.split('|')
-        template = get_object_fallback(Document, 'Template:' + params.pop(0),
+        template = get_object_fallback(Document, 'Template:' + params[0],
                                        locale=self.locale, is_template=True)
 
         if template:
