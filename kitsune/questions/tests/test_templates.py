@@ -972,7 +972,8 @@ class TaggingViewTestsAsTagger(TestCaseBase):
             category='Escalated',
             subject=u'[Escalated] {title}'.format(title=self.question.title),
             body=u'{url}\n\n{content}'.format(
-                url=question_url, content=self.question.content))
+                url=question_url, content=self.question.content),
+            tags=['escalate'])
 
 
 class TaggingViewTestsAsAdmin(TestCaseBase):

@@ -74,7 +74,7 @@ class MarketplaceAaqTests(TestCase):
                         {'subject': subject, 'body': body, 'category': cat},
                         args=['account'])
         eq_(200, response.status_code)
-        submit_ticket.assert_called_with(self.user.email, cat, subject, body)
+        submit_ticket.assert_called_with(self.user.email, cat, subject, body, [])
 
     @mock.patch.object(kitsune.questions.forms, 'submit_ticket')
     def test_submit_ticket_anon(self, submit_ticket):
@@ -91,7 +91,7 @@ class MarketplaceAaqTests(TestCase):
                          'email': email},
                         args=['account'])
         eq_(200, response.status_code)
-        submit_ticket.assert_called_with(email, cat, subject, body)
+        submit_ticket.assert_called_with(email, cat, subject, body, [])
 
     @mock.patch.object(kitsune.questions.forms, 'submit_ticket')
     def test_submit_refund_request(self, submit_ticket):
@@ -107,7 +107,7 @@ class MarketplaceAaqTests(TestCase):
                          'transaction_id': transaction_id})
         eq_(200, response.status_code)
         body = 'Transaction ID: qwerty12345\nCategory: Defective\nNOW!!'
-        submit_ticket.assert_called_with(self.user.email, cat, subject, body)
+        submit_ticket.assert_called_with(self.user.email, cat, subject, body, [])
 
     @mock.patch.object(kitsune.questions.forms, 'submit_ticket')
     def test_submit_developer_request(self, submit_ticket):
@@ -121,7 +121,7 @@ class MarketplaceAaqTests(TestCase):
                         {'subject': subject, 'body': body, 'category': cat})
         eq_(200, response.status_code)
         body = 'Category: Review Process\nPLEASE!!'
-        submit_ticket.assert_called_with(self.user.email, cat, subject, body)
+        submit_ticket.assert_called_with(self.user.email, cat, subject, body, [])
 
 
 class FauxZendesk(Zendesk):
@@ -142,11 +142,12 @@ class SubmitTicketTests(TestCase):
         zd = FauxZendesk('https://appsmarket.zendesk.com', 'x@y.z', 'pwd')
         get_zendesk.return_value = zd
 
-        submit_ticket('a@b.c', 'cat', 'subject', 'description')
+        submit_ticket('a@b.c', 'cat', 'subject', 'description', ['tag1', 'tag2'])
         zd.client.request.assert_called_with(
             'https://appsmarket.zendesk.com/tickets.json?',
             'POST',
             body='{"ticket": {"requester_email": "a@b.c", "set_tags": "cat", '
+                 '"tags": ["tag1", "tag2"], '
                  '"description": "description", '
                  '"subject": "[TEST] subject"}}',
             headers={
