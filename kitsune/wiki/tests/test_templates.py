@@ -308,6 +308,7 @@ class DocumentTests(TestCaseBase):
         d = r.document
         d.title = 'Template:test'
         d.save()
+        cache.clear()
         response = self.client.get(r.document.get_absolute_url())
         eq_(200, response.status_code)
         doc = pq(response.content)
@@ -326,6 +327,7 @@ class DocumentTests(TestCaseBase):
         d = r.document
         d.is_archived = True
         d.save()
+        cache.clear()
         response = self.client.get(r.document.get_absolute_url())
         eq_(200, response.status_code)
         doc = pq(response.content)
@@ -344,6 +346,7 @@ class DocumentTests(TestCaseBase):
         d = r.document
         d.category = ADMINISTRATION_CATEGORY
         d.save()
+        cache.clear()
         response = self.client.get(r.document.get_absolute_url())
         eq_(200, response.status_code)
         doc = pq(response.content)
@@ -362,6 +365,7 @@ class DocumentTests(TestCaseBase):
         d = r.document
         d.category = CANNED_RESPONSES_CATEGORY
         d.save()
+        cache.clear()
         response = self.client.get(r.document.get_absolute_url())
         eq_(200, response.status_code)
         doc = pq(response.content)
@@ -2431,6 +2435,7 @@ class RelatedThingsTestCase(ElasticTestCase):
         # Change the document to a redirect and it shoulnd't show related now.
         d1.html = '<p>REDIRECT <a href="/kb/test">test</a></p>'
         d1.save()
+        cache.clear()
         response = self.client.get(d1.get_absolute_url() + '?redirect=no')
         doc = pq(response.content)
         related = doc('#doc-related li a')

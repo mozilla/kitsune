@@ -1,4 +1,5 @@
 from datetime import datetime
+import hashlib
 import json
 import logging
 import time
@@ -6,6 +7,7 @@ import time
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.models import User
+from django.core.cache import cache
 from django.core.exceptions import PermissionDenied
 from django.db import connection
 from django.http import (HttpResponse, HttpResponseRedirect,
@@ -54,6 +56,15 @@ log = logging.getLogger('k.wiki')
 @mobile_template('wiki/{mobile/}document.html')
 def document(request, document_slug, template=None):
     """View a wiki document."""
+    # Check for cache if user isn't authed.
+    cache_key = u'doc_html:{locale}:{slug}'.format(
+        locale=request.LANGUAGE_CODE, slug=document_slug)
+    cache_key = hashlib.sha1(cache_key).hexdigest()
+    if not request.user.is_authenticated():
+        html = cache.get(cache_key)
+        if html is not None:
+            return HttpResponse(html)
+
     fallback_reason = None
     # If a slug isn't available in the requested locale, fall back to en-US:
     try:
@@ -145,7 +156,14 @@ def document(request, document_slug, template=None):
         'hide_voting': hide_voting,
         'ga_push': ga_push,
     }
-    return render(request, template, data)
+
+    if request.user.is_authenticated():
+        return render(request, template, data)
+
+    # Cache non auth'd traffic.
+    html = jingo.render_to_string(request, template, data)
+    cache.set(cache_key, html)
+    return HttpResponse(html)
 
 
 def revision(request, document_slug, revision_id):
