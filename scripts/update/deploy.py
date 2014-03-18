@@ -83,7 +83,7 @@ def deploy_app(ctx):
 
 @hostgroups(settings.WEB_HOSTGROUP, remote_kwargs={'ssh_key': settings.SSH_KEY})
 def prime_app(ctx):
-    ctx.remote("for i in {1..10}; do curl -so /dev/null -H 'Host: %s' -I http://localhost:81/ & sleep 1; done" % (settings.REMOTE_HOSTNAME, http_port))
+    ctx.remote("for i in {1..10}; do curl -so /dev/null -H 'Host: %s' -I http://localhost:81/ & sleep 1; done" % settings.REMOTE_HOSTNAME)
 
 
 @hostgroups(settings.CELERY_HOSTGROUP, remote_kwargs={'ssh_key': settings.SSH_KEY})
