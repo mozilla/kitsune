@@ -157,6 +157,7 @@ def questions(request, template):
 
     question_qs = question_qs.select_related(
         'creator', 'last_answer', 'last_answer__creator')
+    question_qs = question_qs.prefetch_related('topics', 'topics__product')
 
     question_qs = question_qs.filter(creator__is_active=1)
 
@@ -421,7 +422,8 @@ def aaq(request, product_key=None, category_key=None, showform=False,
         path = '/' + settings.WIKI_DEFAULT_LANGUAGE + '/' + path
 
         old_lang = settings.LANGUAGES_DICT[request.LANGUAGE_CODE.lower()]
-        new_lang = settings.LANGUAGES_DICT[settings.WIKI_DEFAULT_LANGUAGE.lower()]
+        new_lang = settings.LANGUAGES_DICT[settings.WIKI_DEFAULT_LANGUAGE
+                                           .lower()]
         msg = (_(u"The questions forum isn't available in {old_lang}, we "
                  u"have redirected you to the {new_lang} questions forum.")
                .format(old_lang=old_lang, new_lang=new_lang))
