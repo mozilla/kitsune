@@ -231,6 +231,20 @@
                   </a> {{ _('on') }} {{ datetimeformat(question.last_answer.created, format='datetime') }}
                 </div>
               {% endif %}
+
+              {% for topic in question.topics.all() %}
+                <div>
+                  <img src="/static/img/blank.png" class="logo-sprite-tiny logo-{{ topic.product.slug }}">
+                  <a href="{{ request.get_full_path()|urlparams(product=topic.product.slug, topic=None) }}">
+                    {{ _(topic.product.title, 'DB: products.Product.title') }}
+                  </a>
+                  /
+                  <a href="{{ request.get_full_path()|urlparams(product=topic.product.slug, topic=topic.slug) }}">
+                    {{ _(topic.title, 'DB: products.Topic.title') }}
+                  </a>
+                </div>
+              {% endfor %}
+
               {% set tags = question.my_tags %}
               {% if tags %}
                 {{ _('Tags') }}
