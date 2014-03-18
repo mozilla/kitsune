@@ -230,6 +230,7 @@ NON_SUPPORTED_LOCALES = {
     'nn-NO': 'no',
     'oc': 'fr',
     'sv-SE': 'sv',
+    'xh': None,
 }
 
 ES_LOCALE_ANALYZERS = {
