@@ -38,7 +38,7 @@ def get_zendesk():
         zendesk_url, zendesk_email, zendesk_password, api_version=2)
 
 
-def submit_ticket(email, category, subject, body):
+def submit_ticket(email, category, subject, body, tags):
     """Submit a marketplace ticket to Zendesk.
 
     :arg email: user's email address
@@ -56,6 +56,7 @@ def submit_ticket(email, category, subject, body):
             'subject': settings.ZENDESK_SUBJECT_PREFIX + subject,
             'description': body,
             'set_tags': category,
+            'tags': tags,
         }
     }
     try:

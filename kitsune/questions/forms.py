@@ -354,7 +354,8 @@ class BaseZendeskForm(forms.Form):
             email,
             self.cleaned_data['category'],
             self.cleaned_data['subject'],
-            self.ticket_body)
+            self.ticket_body,
+            [])
 
 
 class MarketplaceAaqForm(BaseZendeskForm):
