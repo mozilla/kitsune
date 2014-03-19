@@ -550,7 +550,7 @@ INSTALLED_APPS = (
     'eadred',
 )
 
-TEST_RUNNER = 'test_utils.runner.RadicalTestSuiteRunner'
+TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
 
 def JINJA_CONFIG():
