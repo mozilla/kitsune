@@ -144,7 +144,7 @@ AAQSystemInfo.prototype = {
             window.mozTroubleshoot.snapshotJSON(function(json) {
                 // Parse the JSON, so we can modify it.
                 json = JSON.parse(json);
-                var modifiedPrefs = json.modifiedPreferences;
+                var modifiedPreferences = json.modifiedPreferences;
                 json.modifiedPreferences = {};
                 for (var key in modifiedPreferences) {
                     if (key.indexOf('print.') !== 0) {
