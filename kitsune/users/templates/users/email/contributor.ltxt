@@ -75,8 +75,6 @@ http://mzl.la/16m82GK
 {# L10n: This is at the end of an email. #}
 {{ _('Welcome to SUMO!') }}
 
-Madalina & Rosana
-
-rosana@mozilla.com
+Madalina
 mana@mozilla.com
-SUMO Community Managers{% endautoescape %}
+SUMO Community Manager{% endautoescape %}
