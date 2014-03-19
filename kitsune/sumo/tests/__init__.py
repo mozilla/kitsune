@@ -9,6 +9,7 @@ from django.test import LiveServerTestCase
 from django.test.client import Client
 from django.test.utils import override_settings
 
+import django_nose
 from nose import SkipTest
 from nose.tools import eq_
 from selenium import webdriver
@@ -22,6 +23,19 @@ from kitsune.sumo.urlresolvers import reverse, split_path
 
 get = lambda c, v, **kw: c.get(reverse(v, **kw), follow=True)
 post = lambda c, v, data={}, **kw: c.post(reverse(v, **kw), data, follow=True)
+
+
+class TestSuiteRunner(django_nose.NoseTestSuiteRunner):
+    def setup_test_environment(self, **kwargs):
+        # If we have a settings_test.py let's roll it into our settings.
+        try:
+            import settings_test
+            # Use setattr to update Django's proxies:
+            for k in dir(settings_test):
+                setattr(settings, k, getattr(settings_test, k))
+        except ImportError:
+            pass
+        super(TestSuiteRunner, self).setup_test_environment(**kwargs)
 
 
 @override_settings(ES_LIVE_INDEX=False)
