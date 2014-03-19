@@ -8,7 +8,7 @@ from django.views.generic.base import RedirectView
 
 import authority
 import badger
-from adminplus import AdminSitePlus
+from adminplus.sites import AdminSitePlus
 from waffle.views import wafflejs
 
 
