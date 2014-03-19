@@ -26,6 +26,7 @@ post = lambda c, v, data={}, **kw: c.post(reverse(v, **kw), data, follow=True)
 
 
 class TestSuiteRunner(django_nose.NoseTestSuiteRunner):
+    """This is a test runner that pulls in settings_test.py."""
     def setup_test_environment(self, **kwargs):
         # If we have a settings_test.py let's roll it into our settings.
         try:
