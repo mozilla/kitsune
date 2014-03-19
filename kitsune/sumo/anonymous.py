@@ -21,10 +21,10 @@ ANONYMOUS_COOKIE_MAX_AGE
 Maximum age of the cookie, in seconds.
 """
 
-
-import time
+import hashlib
 import os
 import random
+import time
 # Use the system (hardware-based) random number generator if it exists.
 if hasattr(random, 'SystemRandom'):
     randrange = random.SystemRandom().randrange
@@ -33,7 +33,6 @@ else:
 
 from django.conf import settings
 from django.utils.http import cookie_date
-from django.utils.hashcompat import md5_constructor
 
 
 MAX_ANONYMOUS_ID = 18446744073709551616L     # 2 << 63
@@ -68,11 +67,11 @@ class AnonymousIdentity(object):
             # No getpid() in Jython, for example
             pid = 1
 
-        anon_id = md5_constructor("%s%s%s%s"
-                                  % (randrange(0, MAX_ANONYMOUS_ID),
-                                     pid, time.time(),
-                                     settings.SECRET_KEY)).hexdigest()
-        return anon_id
+        md5 = hashlib.md5()
+        md5.update('%s%s%s%s' % (
+            randrange(0, MAX_ANONYMOUS_ID),
+            pid, time.time(), settings.SECRET_KEY))
+        return md5.hexdigest()
 
 
 class AnonymousIdentityMiddleware(object):
