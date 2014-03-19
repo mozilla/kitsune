@@ -87,6 +87,19 @@ repo::
    Don't use the ``git@`` url. It will only bring you pain.
 
 
+Removing a Library from ``vendor/src``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Removing an existing submodule is easy if you follow these steps in the
+right order::
+
+    $ rm -rf vendor/src/<submodule>
+    $ git deinit vendor/src/<submodule>
+    $ git rm vendor/src/<submodule>
+    $ vim vendor/kitsune.pth  # Remove the line with ``src/<submodule>``
+    $ git ci -am "Removing <submodule> from vendor."
+
+
 Using PyPI
 ----------
 
