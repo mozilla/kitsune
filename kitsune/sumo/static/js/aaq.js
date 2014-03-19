@@ -142,8 +142,17 @@ AAQSystemInfo.prototype = {
             // Yeah! The user has the addon installed, let's use it.
             $('#troubleshooting-install').remove();
             window.mozTroubleshoot.snapshotJSON(function(json) {
-                // This parse/stringify trick makes `json` pretty printed.
+                // Parse the JSON, so we can modify it.
                 json = JSON.parse(json);
+                var modifiedPreferences = json.modifiedPreferences;
+                json.modifiedPreferences = {};
+                for (var key in modifiedPreferences) {
+                    if (key.indexOf('print.') !== 0) {
+                        json.modifiedPreferences[key] = modifiedPreferences[key];
+                    }
+                }
+                // The last two parameters cause this to pretty print,
+                // in case anyone looks at it.
                 json = JSON.stringify(json, null, "  ");
                 $('#id_troubleshooting').val(json);
                 $('#troubleshooting-manual').remove();
