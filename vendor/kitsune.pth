@@ -49,7 +49,6 @@ src/django-mozilla-product-details
 src/test-utils
 src/schematic
 src/py-wikimarkup
-src/django-debug-toolbar
 src/django-multidb-router
 src/bleach
 src/tower
