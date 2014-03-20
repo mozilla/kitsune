@@ -182,7 +182,7 @@ def questions(request, template):
                                        args=[tags[0].slug]),
                                TaggedQuestionsFeed().title(tags[0])),)
         else:
-            question_qs = Question.objects.get_empty_query_set()
+            question_qs = Question.objects.none()
 
     # Exclude questions over 90 days old without an answer.
     oldest_date = date.today() - timedelta(days=90)

@@ -1118,6 +1118,12 @@ class QuestionsTemplateTestCase(TestCaseBase):
         eq_('/questions?tagged=mobile&show=all',
             doc('link[rel="canonical"]')[0].attrib['href'])
 
+        # Test a tag that doesn't exist. It shouldnt blow up.
+        url = urlparams(
+            reverse('questions.questions'), tagged='garbage-plate', show='all')
+        response = self.client.get(url)
+        eq_(200, response.status_code)
+
     def test_product_filter(self):
         p1 = product(save=True)
         p2 = product(save=True)
