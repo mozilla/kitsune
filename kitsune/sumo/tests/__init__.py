@@ -30,7 +30,7 @@ class TestSuiteRunner(django_nose.NoseTestSuiteRunner):
     def setup_test_environment(self, **kwargs):
         # If we have a settings_test.py let's roll it into our settings.
         try:
-            import settings_test
+            from kitsune import settings_test
             # Use setattr to update Django's proxies:
             for k in dir(settings_test):
                 setattr(settings, k, getattr(settings_test, k))
