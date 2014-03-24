@@ -159,8 +159,7 @@
         }
 
         $.getJSON(
-            $('body').data('media-url') +
-                'uploads/l10n_summary.json?_cacke=' + cacheBust,
+            '/media/uploads/l10n_summary.json?_cache=' + cacheBust,
             function(data) {
                 var localeData = data['locales'][$('html').attr('lang')];
                 var className = 'bad';
