@@ -261,7 +261,8 @@ def search(request):
          })
 
 
-admin.site.register_view('search', search, 'Search - Index Maintenance')
+admin.site.register_view('search', view=search,
+                         name='Search - Index Maintenance')
 
 
 def _fix_value_dicts(values_dict_list):
@@ -325,7 +326,8 @@ def index_view(request):
          })
 
 
-admin.site.register_view('index', index_view, 'Search - Index Browsing')
+admin.site.register_view('index', view=index_view,
+                         name='Search - Index Browsing')
 
 
 class HashableWrapper(object):
@@ -415,5 +417,5 @@ def troubleshooting_view(request):
          })
 
 
-admin.site.register_view('troubleshooting', troubleshooting_view,
-                         'Search - Index Troubleshooting')
+admin.site.register_view('troubleshooting', view=troubleshooting_view,
+                         name='Search - Index Troubleshooting')

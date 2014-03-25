@@ -71,6 +71,5 @@ def offline_admin(request):
                    'totalsize': totalsize})
 
 
-admin.site.register_view('offline',
-                         offline_admin,
-                         'Offline SUMO Administration')
+admin.site.register_view('offline', view=offline_admin,
+                         name='Offline SUMO Administration')

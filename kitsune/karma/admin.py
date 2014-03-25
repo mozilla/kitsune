@@ -82,7 +82,7 @@ def karma(request):
          'username': username,
          'user_karma': user_karma})
 
-admin.site.register_view('karma', karma, 'Karma')
+admin.site.register_view('karma', view=karma, name='Karma')
 
 
 def _user_karma_alltime(user, kmgr):
