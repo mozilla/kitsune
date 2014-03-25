@@ -1,0 +1,33 @@
+<div class="grid_6">
+  {% include "users/includes/login-form.html" %}
+</div>
+<div class="grid_6">
+  <article class="main">
+    <p>
+      <div class="get-involved-icon questions"></div>
+      {% trans %}
+        Having trouble with Firefox and want some help? Our support forums
+        are a great place to ask a question.
+      {% endtrans %}
+    </p>
+    <p>
+      <a href="{{ url('questions.aaq_step1') }}" class="btn">
+        {{ _('Ask a question') }}
+      </a>
+    </p>
+  </article>
+  <article class="main">
+    <p>
+      <div class="get-involved-icon localize"></div>
+      {% trans %}
+        Mozilla Support is a community of enthusiastic volunteers
+        and employees trying to support our users around the globe.
+      {% endtrans %}
+    </p>
+    <p>
+      <a href="{{ url('landings.get_involved') }}" class="btn">
+        {{ _('See what you can do to help') }}
+      </a>
+    </p>
+  </article>
+</div>
