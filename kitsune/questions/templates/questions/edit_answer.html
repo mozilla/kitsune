@@ -5,7 +5,7 @@
 {# L10n: {t} is the title of the question. #}
 {% set title = _('Editing an answer | {t} | Firefox Support Forum')|f(t=answer.question.title) %}
 {% set classes = 'answers' %}
-{% set crumbs = [(url('questions.questions'), _('Support Forum')),
+{% set crumbs = [(url('questions.home'), _('Support Forum')),
                  (url('questions.answers', answer.question.id), answer.question.title),
                  (None, _('Edit an answer'))] %}
 

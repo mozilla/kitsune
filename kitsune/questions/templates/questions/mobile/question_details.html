@@ -5,7 +5,7 @@
 {% set scripts = ('mobile/questions',) %}
 {% set title = _('Question') %}
 {% set headline = title %}
-{% set return_url = url('questions.questions') %}
+{% set return_url = url('questions.list', question.product_slug) %}
 
 {% block content %}
   <section class="collapsable {% if not answers %}expanded{% endif %}" id="question">

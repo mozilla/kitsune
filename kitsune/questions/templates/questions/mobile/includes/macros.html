@@ -3,5 +3,5 @@
   {% if _product == False %}{% set _product = product %}{% endif %}
   {% if _sort == False %}{% set _sort = sort %}{% endif %}
   {% if _tagged == False %}{% set _tagged = tagged %}{% endif %}
-  {{ url('questions.questions')|urlparams(filter=_filter, product=_product, sort=_sort, tagged=_tagged) }}
+  {{ url('questions.list', _product.slug if _product else 'all')|urlparams(filter=_filter, sort=_sort, tagged=_tagged) }}
 {% endmacro %}

@@ -5,7 +5,7 @@
   {% set title = _('There was a problem unsubscribing.') %}
 {% endif %}
 {% set classes = 'questions notifications' %}
-{% set crumbs = [(url('questions.questions'), _('Support Forum')),
+{% set crumbs = [(url('questions.home'), _('Support Forum')),
                  (question.get_absolute_url(), question.title),
                  (None, _('Email updates'))] %}
 

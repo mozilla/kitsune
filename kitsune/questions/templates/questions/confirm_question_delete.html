@@ -1,7 +1,7 @@
 {% extends "questions/base.html" %}
 {# L10n: {t} is the title of the question. #}
 {% set title = _('Delete Question | {t} | Firefox Support Forum')|f(t=question.title) %}
-{% set crumbs = [(url('questions.questions'), _('Support Forum')),
+{% set crumbs = [(url('questions.home'), _('Support Forum')),
                  (url('questions.answers', question.id), question.title),
                  (None, _('Delete question'))] %}
 

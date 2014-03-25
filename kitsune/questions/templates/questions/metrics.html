@@ -1,7 +1,7 @@
 {% extends "questions/base.html" %}
 {% from "dashboards/includes/macros.html" import product_choice_list with context %}
 {% set title = _('Support Forum Metrics') %}
-{% set crumbs = [(url('questions.questions'), _('Support Forum')),
+{% set crumbs = [(url('questions.home'), _('Support Forum')),
                  (None, _('Metrics'))] %}
 {% set scripts = ('rickshaw', 'questions.metrics') %}
 {% set styles = ('rickshaw', 'questions.metrics') %}

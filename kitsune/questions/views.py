@@ -95,8 +95,13 @@ FILTER_GROUPS = {
 }
 
 
-@mobile_template('questions/{mobile/}questions.html')
-def questions(request, template):
+@mobile_template('questions/{mobile/}product_list.html')
+def product_list(request, template):
+    pass
+
+
+@mobile_template('questions/{mobile/}question_list.html')
+def question_list(request, template, product_slug=None):
     """View the questions."""
 
     filter_ = request.GET.get('filter')
@@ -109,10 +114,9 @@ def questions(request, template):
         'offtopic', request.session.get('questions_offtopic', False)))
     tagged = request.GET.get('tagged')
     tags = None
-    product_slug = request.GET.get('product')
     topic_slug = request.GET.get('topic')
 
-    if product_slug:
+    if product_slug != 'all':
         product = get_object_or_404(Product, slug=product_slug)
     else:
         product = None
@@ -263,6 +267,7 @@ def questions(request, template):
             'recent_answered_percent': recent_answered_percent,
             'product_list': product_list,
             'product': product,
+            'product_slug': product_slug,
             'topic_list': topic_list,
             'topic': topic}
 
@@ -344,7 +349,7 @@ def parse_troubleshooting(troubleshooting_json):
     return parsed
 
 
-@mobile_template('questions/{mobile/}answers.html')
+@mobile_template('questions/{mobile/}question_details.html')
 @anonymous_csrf  # Need this so the anon csrf gets set for watch forms.
 def answers(request, template, question_id, form=None, watch_form=None,
             answer_preview=None, **extra_kwargs):
@@ -987,7 +992,7 @@ def add_tag(request, question_id):
         template_data = _answers_data(request, question_id)
         template_data['tag_adding_error'] = UNAPPROVED_TAG
         template_data['tag_adding_value'] = request.POST.get('tag-name', '')
-        return render(request, 'questions/answers.html', template_data)
+        return render(request, 'questions/question_details.html', template_data)
 
     if canonical_name:  # success
         question.clear_cached_tags()
@@ -997,7 +1002,7 @@ def add_tag(request, question_id):
     # No tag provided
     template_data = _answers_data(request, question_id)
     template_data['tag_adding_error'] = NO_TAG
-    return render(request, 'questions/answers.html', template_data)
+    return render(request, 'questions/question_details.html', template_data)
 
 
 @permission_required('questions.tag_question')
@@ -1018,7 +1023,8 @@ def add_tag_async(request, question_id):
     if canonical_name:
         question.clear_cached_tags()
         tag = Tag.objects.get(name=canonical_name)
-        tag_url = urlparams(reverse('questions.questions'), tagged=tag.slug)
+        tag_url = urlparams(reverse(
+            'questions.list', args=[question.product_slug]), tagged=tag.slug)
         data = {'canonicalName': canonical_name,
                 'tagUrl': tag_url}
         return HttpResponse(json.dumps(data),
@@ -1082,6 +1088,9 @@ def delete_question(request, question_id):
         return render(request, 'questions/confirm_question_delete.html', {
             'question': question})
 
+    # Capture the product slug to build the questions.list url below.
+    product = question.product_slug
+
     # Handle confirm delete form POST
     log.warning('User %s is deleting question with id=%s' %
                 (request.user, question.id))
@@ -1089,7 +1098,7 @@ def delete_question(request, question_id):
 
     statsd.incr('questions.delete')
 
-    return HttpResponseRedirect(reverse('questions.questions'))
+    return HttpResponseRedirect(reverse('questions.list', args=[product]))
 
 
 @login_required

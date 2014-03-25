@@ -199,6 +199,17 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         return {}
 
     @property
+    def product_slug(self):
+        """Return the product slug for this question.
+
+        It returns 'all', in the off chance that there are no products."""
+        if not hasattr(self, '_product_slug') or self._product_slug is None:
+            prods = self.products.all()
+            self._product_slug = prods[0].slug if len(prods) > 0 else 'all'
+
+        return self._product_slug
+
+    @property
     def category(self):
         """Return the category this question refers to or an empty mapping if
         unknown."""

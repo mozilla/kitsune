@@ -61,7 +61,7 @@
     {% set ask_url = url('wiki.document', 'get-community-support') %}
   {% endif %}
   <a href="{{ ask_url }}">{{ _('Ask a question') }}</a>
-  <a href="{{ url('questions.questions') }}">{{ _('Support Forum') }}</a>
+  <a href="{{ url('questions.home') }}">{{ _('Support Forum') }}</a>
 
   <header>{{ _('Navigation') }}</header>
   <a href="{{ url('landings.get_involved') }}">{{ _('Help other users') }}</a>
