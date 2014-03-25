@@ -24,6 +24,18 @@
       }
     });
 
+    $('[data-toggle]').each(function() {
+        var $this = $(this);
+        var $target = ($this.data('toggle-target')) ? $($this.data('toggle-target')) : $this;
+        var trigger = ($this.data('toggle-trigger')) ? $this.data('toggle-trigger') : 'click';
+
+        $this.on(trigger, function(ev) {
+            ev.preventDefault();
+            $target.toggleClass($this.data('toggle'));
+            return false;
+        });
+    });
+
     $('[data-ui-type="tabbed-view"]').each(function() {
       var $tv = $(this);
       var $tabs = $tv.children('[data-tab-role="tabs"]').children();
