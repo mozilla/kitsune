@@ -28,7 +28,7 @@ def settings(request):
                                'title': 'Settings'},
                               RequestContext(request, {}))
 
-admin.site.register_view('settings', settings, 'Settings')
+admin.site.register_view('settings', view=settings, name='Settings')
 
 
 def celery_settings(request):
@@ -44,14 +44,14 @@ def celery_settings(request):
                                'title': 'Celery Settings'},
                               RequestContext(request, {}))
 
-admin.site.register_view('celery', celery_settings, 'Celery Settings')
+admin.site.register_view('celery', view=celery_settings, name='Celery Settings')
 
 
 def env(request):
     """Admin view that displays the wsgi env."""
     return http.HttpResponse(u'<pre>%s</pre>' % (jinja2.escape(request)))
 
-admin.site.register_view('env', env, 'WSGI Environment')
+admin.site.register_view('env', view=env, name='WSGI Environment')
 
 
 def schema_version(request):
@@ -64,8 +64,8 @@ def schema_version(request):
                                'title': 'Schema Version'},
                               RequestContext(request, {}))
 
-admin.site.register_view('schema', schema_version,
-                         'Database Schema Version')
+admin.site.register_view('schema', view=schema_version,
+                         name='Database Schema Version')
 
 
 def redis_info(request):
@@ -90,5 +90,4 @@ def redis_info(request):
                                'title': 'Redis Information'},
                               RequestContext(request, {}))
 
-admin.site.register_view('redis', redis_info,
-                         'Redis Information')
+admin.site.register_view('redis', view=redis_info, name='Redis Information')
