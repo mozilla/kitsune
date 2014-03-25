@@ -16,6 +16,12 @@
         </a>
       </li>
     {% endfor %}
+    <li>
+      <a class="cf" href="{{ url('questions.list', 'all') }}">
+        <span class="title">{{ _('<strong>{product}</strong> Support Forum')|fe(product=_('All Products')) }}</span>
+        {{ _('Browse the questions for all the products together in one list.') }}
+      </a>
+    </li>
   </ul>
 {% endblock %}
 
