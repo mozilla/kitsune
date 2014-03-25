@@ -24,7 +24,7 @@ class QuestionsFeed(Feed):
         topic_slug = request.GET.get('topic')
         locale = request.LANGUAGE_CODE
 
-        if product_slug:
+        if product_slug and product_slug != 'all':
             query['product'] = get_object_or_404(Product, slug=product_slug)
 
             if topic_slug:

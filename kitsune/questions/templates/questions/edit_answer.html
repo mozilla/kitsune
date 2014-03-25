@@ -5,8 +5,8 @@
 {# L10n: {t} is the title of the question. #}
 {% set title = _('Editing an answer | {t} | Firefox Support Forum')|f(t=answer.question.title) %}
 {% set classes = 'answers' %}
-{% set crumbs = [(url('questions.questions'), _('Support Forum')),
-                 (url('questions.answers', answer.question.id), answer.question.title),
+{% set crumbs = [(url('questions.home'), _('Support Forum')),
+                 (url('questions.details', answer.question.id), answer.question.title),
                  (None, _('Edit an answer'))] %}
 
 {% block content %}
@@ -54,7 +54,7 @@
               data-preview-url="{{ url('questions.answer_preview_async') }}"
               data-preview-container-id="answer-preview"
               data-preview-content-id="id_content" />
-            <a href="{{ url('questions.answers', answer.question.id) }}">{{ _('Cancel') }}</a>
+            <a href="{{ url('questions.details', answer.question.id) }}">{{ _('Cancel') }}</a>
           </div>
         </form>
 

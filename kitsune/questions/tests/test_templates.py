@@ -124,7 +124,7 @@ class AnswersTemplateTestCase(TestCaseBase):
 
     def test_solve_unsolve(self):
         """Test accepting a solution and undoing."""
-        response = get(self.client, 'questions.answers',
+        response = get(self.client, 'questions.details',
                        args=[self.question.id])
         doc = pq(response.content)
         eq_(0, len(doc('div.solution')))
@@ -154,7 +154,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         # Try as asker
         self.client.login(
             username=self.question.creator.username, password='testpass')
-        response = get(self.client, 'questions.answers',
+        response = get(self.client, 'questions.details',
                        args=[self.question.id])
         doc = pq(response.content)
         eq_(1, len(doc('input[name="solution"]')))
@@ -163,7 +163,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         # Try as a nobody
         u = user(save=True)
         self.client.login(username=u.username, password='testpass')
-        response = get(self.client, 'questions.answers',
+        response = get(self.client, 'questions.details',
                        args=[self.question.id])
         doc = pq(response.content)
         eq_(0, len(doc('input[name="solution"]')))
@@ -199,14 +199,14 @@ class AnswersTemplateTestCase(TestCaseBase):
 
     def test_needs_info_checkbox(self):
         """Test that needs info checkbox is correctly shown"""
-        response = get(self.client, 'questions.answers',
+        response = get(self.client, 'questions.details',
                        args=[self.question.id])
         doc = pq(response.content)
         eq_(1, len(doc('input[name="needsinfo"]')))
 
         self.question.set_needs_info()
 
-        response = get(self.client, 'questions.answers',
+        response = get(self.client, 'questions.details',
                        args=[self.question.id])
         doc = pq(response.content)
         eq_(1, len(doc('input[name="clear_needsinfo"]')))
@@ -220,7 +220,7 @@ class AnswersTemplateTestCase(TestCaseBase):
     def common_vote(self, me_too_count=1):
         """Helper method for question vote tests."""
         # Check that there are no votes and vote form renders
-        response = get(self.client, 'questions.answers',
+        response = get(self.client, 'questions.details',
                        args=[self.question.id])
         doc = pq(response.content)
         assert '0\n' in doc('.have-problem')[0].text
@@ -232,7 +232,7 @@ class AnswersTemplateTestCase(TestCaseBase):
                          {}, HTTP_USER_AGENT=ua)
 
         # Check that there is 1 vote and vote form doesn't render
-        response = get(self.client, 'questions.answers',
+        response = get(self.client, 'questions.details',
                        args=[self.question.id])
         doc = pq(response.content)
         assert '1\n' in doc('.have-problem')[0].text
@@ -244,7 +244,7 @@ class AnswersTemplateTestCase(TestCaseBase):
 
         # Voting again (same user) should not increment vote count
         post(self.client, 'questions.vote', args=[self.question.id])
-        response = get(self.client, 'questions.answers',
+        response = get(self.client, 'questions.details',
                        args=[self.question.id])
         doc = pq(response.content)
         assert '1\n' in doc('.have-problem')[0].text
@@ -265,7 +265,7 @@ class AnswersTemplateTestCase(TestCaseBase):
     def common_answer_vote(self):
         """Helper method for answer vote tests."""
         # Check that there are no votes and vote form renders
-        response = get(self.client, 'questions.answers',
+        response = get(self.client, 'questions.details',
                        args=[self.question.id])
         doc = pq(response.content)
         eq_(1, len(doc('form.helpful input[name="helpful"]')))
@@ -277,7 +277,7 @@ class AnswersTemplateTestCase(TestCaseBase):
                          {'helpful': 'y'}, HTTP_USER_AGENT=ua)
 
         # Check that there is 1 vote and vote form doesn't render
-        response = get(self.client, 'questions.answers',
+        response = get(self.client, 'questions.details',
                        args=[self.question.id])
         doc = pq(response.content)
 
@@ -312,7 +312,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         # Post a new answer by the asker => two votable answers
         q = self.question
         Answer.objects.create(question=q, creator=q.creator, content='test')
-        response = get(self.client, 'questions.answers', args=[q.id])
+        response = get(self.client, 'questions.details', args=[q.id])
         doc = pq(response.content)
         eq_(2, len(doc('form.helpful input[name="helpful"]')))
 
@@ -329,7 +329,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         # Post a new answer by the asker => two solvable answers
         q = self.question
         Answer.objects.create(question=q, creator=q.creator, content='test')
-        response = get(self.client, 'questions.answers', args=[q.id])
+        response = get(self.client, 'questions.details', args=[q.id])
         doc = pq(response.content)
         eq_(2, len(doc('form.solution input[name="solution"]')))
 
@@ -428,7 +428,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         """Editing an answer without permissions returns a 403.
 
         The edit link shouldn't show up on the Answers page."""
-        response = get(self.client, 'questions.answers',
+        response = get(self.client, 'questions.details',
                        args=[self.question.id])
         doc = pq(response.content)
         eq_(0, len(doc('ol.answers li.edit')))
@@ -452,7 +452,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         add_permission(u, Answer, 'change_answer')
         self.client.login(username=u.username, password='testpass')
 
-        response = get(self.client, 'questions.answers',
+        response = get(self.client, 'questions.details',
                        args=[self.question.id])
         doc = pq(response.content)
         eq_(1, len(doc('li.edit')))
@@ -474,7 +474,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         self.client.login(username=u.username, password='testpass')
 
         # Initially there should be no edit links
-        response = get(self.client, 'questions.answers',
+        response = get(self.client, 'questions.details',
                        args=[self.question.id])
         doc = pq(response.content)
         eq_(0, len(doc('ol.answers li.edit')))
@@ -574,7 +574,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         u = self.question.last_answer.creator
         self.client.login(username=u.username, password='testpass')
 
-        response = get(self.client, 'questions.answers',
+        response = get(self.client, 'questions.details',
                        args=[self.question.id])
         doc = pq(response.content)
         eq_(0, len(doc('li.edit')))
@@ -589,7 +589,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         self.client.login(username=u.username, password='testpass')
         add_permission(u, Answer, 'change_answer')
 
-        response = get(self.client, 'questions.answers',
+        response = get(self.client, 'questions.details',
                        args=[self.question.id])
         doc = pq(response.content)
         eq_(1, len(doc('li.edit')))
@@ -755,7 +755,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         self.client.login(username=u.username, password='testpass')
         QuestionReplyEvent.notify(u, self.question)
         QuestionSolvedEvent.notify(u, self.question)
-        response = get(self.client, 'questions.answers',
+        response = get(self.client, 'questions.details',
                        args=[self.question.id])
         eq_(200, response.status_code)
 
@@ -789,7 +789,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         a = self.answer
         a.content = 'testing http://example.com'
         a.save()
-        response = get(self.client, 'questions.answers',
+        response = get(self.client, 'questions.details',
                        args=[self.question.id])
         doc = pq(response.content)
         eq_('nofollow', doc('.question .main-content a')[0].attrib['rel'])
@@ -800,7 +800,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         q = question(save=True)
 
         # A brand new questions shouldn't be noindex'd...
-        response = get(self.client, 'questions.answers', args=[q.id])
+        response = get(self.client, 'questions.details', args=[q.id])
         eq_(200, response.status_code)
         doc = pq(response.content)
         eq_(0, len(doc('meta[name=robots]')))
@@ -808,14 +808,14 @@ class AnswersTemplateTestCase(TestCaseBase):
         # But a 31 day old question should be noindexed...
         q.created = datetime.now() - timedelta(days=31)
         q.save()
-        response = get(self.client, 'questions.answers', args=[q.id])
+        response = get(self.client, 'questions.details', args=[q.id])
         eq_(200, response.status_code)
         doc = pq(response.content)
         eq_(1, len(doc('meta[name=robots]')))
 
         # Except if it has answers.
         answer(question=q, save=True)
-        response = get(self.client, 'questions.answers', args=[q.id])
+        response = get(self.client, 'questions.details', args=[q.id])
         eq_(200, response.status_code)
         doc = pq(response.content)
         eq_(0, len(doc('meta[name=robots]')))
@@ -843,7 +843,7 @@ class TaggingViewTestsAsTagger(TestCaseBase):
         """Assert GETting the add_tag view redirects to the answers page."""
         response = self.client.get(_add_tag_url(self.question.id))
         url = 'http://testserver%s' % reverse(
-            'questions.answers',
+            'questions.details',
             kwargs={'question_id': self.question.id},
             force_locale=True)
         self.assertRedirects(response, url)
@@ -922,7 +922,7 @@ class TaggingViewTestsAsTagger(TestCaseBase):
 
     def _assert_redirects_to_question(self, response, question_id):
         url = 'http://testserver%s' % reverse(
-            'questions.answers', kwargs={'question_id': question_id},
+            'questions.details', kwargs={'question_id': question_id},
             force_locale=True)
         self.assertRedirects(response, url)
 
@@ -1053,7 +1053,7 @@ class QuestionsTemplateTestCase(TestCaseBase):
 
         # u should have a contributor badge on q1 but not q2
         self.client.login(username=u.username, password="testpass")
-        response = self.client.get(urlparams(reverse('questions.questions'),
+        response = self.client.get(urlparams(reverse('questions.list', args=['all']),
                                              show='all'))
         doc = pq(response.content)
         eq_(1,
@@ -1064,7 +1064,7 @@ class QuestionsTemplateTestCase(TestCaseBase):
     def test_top_contributors(self):
         # There should be no top contributors since there are no solutions.
         cache_top_contributors()
-        response = get(self.client, 'questions.questions')
+        response = self.client.get(reverse('questions.list', args=['all']))
         doc = pq(response.content)
         eq_(0, len(doc('#top-contributors ol li')))
 
@@ -1073,7 +1073,7 @@ class QuestionsTemplateTestCase(TestCaseBase):
         a.question.solution = a
         a.question.save()
         cache_top_contributors()
-        response = get(self.client, 'questions.questions')
+        response = self.client.get(reverse('questions.list', args=['all']))
         doc = pq(response.content)
         lis = doc('#top-contributors ol li')
         eq_(1, len(lis))
@@ -1083,7 +1083,7 @@ class QuestionsTemplateTestCase(TestCaseBase):
         a.created = datetime.now() - timedelta(days=8)
         a.save()
         cache_top_contributors()
-        response = get(self.client, 'questions.questions')
+        response = self.client.get(reverse('questions.list', args=['all']))
         doc = pq(response.content)
         eq_(0, len(doc('#top-contributors ol li')))
 
@@ -1093,7 +1093,7 @@ class QuestionsTemplateTestCase(TestCaseBase):
         tagname = 'mobile'
         tag(name=tagname, slug=tagname, save=True)
         self.client.login(username=u.username, password="testpass")
-        tagged = urlparams(reverse('questions.questions'), tagged=tagname,
+        tagged = urlparams(reverse('questions.list', args=['all']), tagged=tagname,
                            show='all')
 
         # First there should be no questions tagged 'mobile'
@@ -1115,12 +1115,12 @@ class QuestionsTemplateTestCase(TestCaseBase):
         response = self.client.get(tagged)
         doc = pq(response.content)
         eq_(1, len(doc('article.questions > section')))
-        eq_('/questions?tagged=mobile&show=all',
+        eq_('/questions/all?tagged=mobile&show=all',
             doc('link[rel="canonical"]')[0].attrib['href'])
 
         # Test a tag that doesn't exist. It shouldnt blow up.
-        url = urlparams(
-            reverse('questions.questions'), tagged='garbage-plate', show='all')
+        url = urlparams(reverse(
+            'questions.list', args=['all']), tagged='garbage-plate', show='all')
         response = self.client.get(url)
         eq_(200, response.status_code)
 
@@ -1137,28 +1137,27 @@ class QuestionsTemplateTestCase(TestCaseBase):
         q3.products.add(p1, p2)
         q3.save()
 
-        url = reverse('questions.questions')
-
-        def check(filter, expected):
-            response = self.client.get(urlparams(url, **filter))
+        def check(product, expected):
+            url = reverse('questions.list', args=[product])
+            response = self.client.get(url)
             doc = pq(response.content)
             # Make sure all questions are there.
 
             # This won't work, because the test case base adds more tests than
             # we expect in it's setUp(). TODO: Fix that.
-            #eq_(len(expected), len(doc('.questions > section')))
+            eq_(len(expected), len(doc('.questions > section')))
 
             for q in expected:
                 eq_(1, len(doc('.questions > section[id=question-%s]' % q.id)))
 
         # No filtering -> All questions.
-        check({}, [q1, q2, q3])
+        check('all', [q1, q2, q3])
         # Filter on p1 -> only q2 and q3
-        check({'product': p1.slug}, [q2, q3])
+        check(p1.slug, [q2, q3])
         # Filter on p2 -> only q3
-        check({'product': p2.slug}, [q3])
+        check(p2.slug, [q3])
         # Filter on p3 -> No results
-        check({'product': p3.slug}, [])
+        check(p3.slug, [])
 
     def test_topic_filter(self):
         p = product(save=True)
@@ -1174,7 +1173,7 @@ class QuestionsTemplateTestCase(TestCaseBase):
         q3.topics.add(t1, t2)
         q3.save()
 
-        url = reverse('questions.questions')
+        url = reverse('questions.list', args=['all'])
 
         def check(filter, expected):
             response = self.client.get(urlparams(url, **filter))
@@ -1199,7 +1198,7 @@ class QuestionsTemplateTestCase(TestCaseBase):
 
     def test_robots_noindex(self):
         """Verify the page is set for noindex by robots."""
-        response = get(self.client, 'questions.questions')
+        response = self.client.get(reverse('questions.list', args=['all']))
         eq_(200, response.status_code)
         doc = pq(response.content)
         eq_(1, len(doc('meta[name=robots]')))
@@ -1210,7 +1209,7 @@ class QuestionsTemplateTestCase(TestCaseBase):
             title='test question lorem ipsum <select></select>',
             content='test question content lorem ipsum <select></select>',
             save=True)
-        response = get(self.client, 'questions.questions')
+        response = self.client.get(reverse('questions.list', args=['all']))
         assert 'test question lorem ipsum' in response.content
         assert 'test question content lorem ipsum' in response.content
         doc = pq(response.content)
@@ -1222,7 +1221,7 @@ class QuestionsTemplateTestCase(TestCaseBase):
         question(
             content='<p>%s</p>' % long_str,
             save=True)
-        response = get(self.client, 'questions.questions')
+        response = self.client.get(reverse('questions.list', args=['all']))
 
         # Verify that the <p> was stripped
         assert '<p class="short-text"><p>' not in response.content
@@ -1232,7 +1231,7 @@ class QuestionsTemplateTestCase(TestCaseBase):
         """Verify the view count is displayed correctly."""
         q = question(save=True)
         q.questionvisits_set.create(visits=1007)
-        response = get(self.client, 'questions.questions')
+        response = self.client.get(reverse('questions.list', args=['all']))
         doc = pq(response.content)
         eq_('1007 views', doc('div.views').text())
 
@@ -1240,7 +1239,7 @@ class QuestionsTemplateTestCase(TestCaseBase):
         ques = question(save=True,
                         created=(datetime.now() - timedelta(days=200)),
                         is_archived=True)
-        response = get(self.client, 'questions.answers', args=[ques.id])
+        response = get(self.client, 'questions.details', args=[ques.id])
         assert 'Archive this post' not in response.content
 
 
@@ -1253,7 +1252,7 @@ class QuestionsTemplateTestCaseNoFixtures(TestCase):
         question(save=True)
         question(is_locked=True, save=True)
 
-        url = reverse('questions.questions')
+        url = reverse('questions.list', args=['all'])
         url = urlparams(url, filter='no-replies')
         response = self.client.get(url)
         doc = pq(response.content)
@@ -1310,7 +1309,7 @@ class QuestionEditingTests(TestCaseBase):
                         kwargs={'question_id': q.id})
 
         # Make sure the form redirects and thus appears to succeed:
-        url = 'http://testserver%s' % reverse('questions.answers',
+        url = 'http://testserver%s' % reverse('questions.details',
                                               kwargs={'question_id': q.id},
                                               force_locale=True)
         self.assertRedirects(response, url)
@@ -1390,7 +1389,7 @@ class AAQTemplateTestCase(TestCaseBase):
         question = Question.objects.filter(title='A test question')[0]
 
         # Make sure question is in questions list
-        response = get(self.client, 'questions.questions')
+        response = self.client.get(reverse('questions.list', args=['all']))
         doc = pq(response.content)
         eq_(1, len(doc('#question-%s' % question.id)))
         # And no email was sent
@@ -1434,7 +1433,7 @@ class AAQTemplateTestCase(TestCaseBase):
         question = Question.objects.filter(title='A test question')[0]
 
         # Make sure question is not in questions list
-        response = get(self.client, 'questions.questions')
+        response = self.client.get(reverse('questions.list', args=['all']))
         doc = pq(response.content)
         eq_(0, len(doc('li#question-%s' % question.id)))
         # And no confirmation email was sent (already sent on registration)
@@ -1510,3 +1509,19 @@ class AAQTemplateTestCase(TestCaseBase):
         response = self.client.get(url)
         eq_(200, response.status_code)
         assert '/questions/new' not in pq(response.content)('#aux-nav').html()
+
+
+class ProductForumTemplateTestCase(TestCaseBase):
+    def test_product_forum_listing(self):
+        firefox = product(title='Firefox', slug='firefox', save=True)
+        android = product(title='Firefox for Android', slug='mobile', save=True)
+        fxos = product(title='Firefox OS', slug='firefox-os', save=True)
+
+        response = self.client.get(reverse('questions.home'))
+        eq_(200, response.status_code)
+        doc = pq(response.content)
+        eq_(4, len(doc('.product-list .product')))
+        product_list_html = doc('.product-list').html()
+        assert firefox.title in product_list_html
+        assert android.title in product_list_html
+        assert fxos.title in product_list_html

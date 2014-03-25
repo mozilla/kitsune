@@ -1,8 +1,8 @@
 {% extends "questions/base.html" %}
 {# L10n: {t} is the title of the question. #}
 {% set title = _('Delete Question | {t} | Firefox Support Forum')|f(t=question.title) %}
-{% set crumbs = [(url('questions.questions'), _('Support Forum')),
-                 (url('questions.answers', question.id), question.title),
+{% set crumbs = [(url('questions.home'), _('Support Forum')),
+                 (url('questions.details', question.id), question.title),
                  (None, _('Delete question'))] %}
 
 {% block content %}
@@ -25,7 +25,7 @@
             {{ _('You are about to permanently delete this question. <strong>This cannot be undone!</strong> Are you sure you want to continue?')|safe }}
           </p>
           <input type="submit" class="btn" value="{{ _('Delete') }}" />
-          <a href="{{ url('questions.answers', question.id) }}">{{ _('Cancel') }}</a>
+          <a href="{{ url('questions.details', question.id) }}">{{ _('Cancel') }}</a>
         </form>
       </div>
     </article>

@@ -4,8 +4,10 @@
 
 {% set styles = ('mobile/questions',) %}
 {% set classes = 'questions' %}
-{% set title = _('Support Forum') %}
+{% set product_title = _(product.title, 'DB: products.Product.title') if product else _('All Products') %}
+{% set title = _('{product} Support Forum')|f(product=product_title) %}
 {% set headline = title %}
+{% set return_url = url('questions.home') %}
 
 {% block after_header %}
   <div class="pulldown-menu">

@@ -383,7 +383,7 @@ class TroubleshootingParsingTests(TestCaseBase):
         q.add_metadata(troubleshooting='{"foo": "bar"}')
 
         # This case should not raise an error.
-        response = get(self.client, 'questions.answers', args=[q.id])
+        response = get(self.client, 'questions.details', args=[q.id])
         eq_(200, response.status_code)
 
     def test_weird_list_troubleshooting_info(self):
@@ -393,7 +393,7 @@ class TroubleshootingParsingTests(TestCaseBase):
         q.add_metadata(troubleshooting='["modifiedPreferences"]')
 
         # This case should not raise an error.
-        response = get(self.client, 'questions.answers', args=[q.id])
+        response = get(self.client, 'questions.details', args=[q.id])
         eq_(200, response.status_code)
 
     def test_string_keys_troubleshooting(self):
@@ -467,7 +467,8 @@ class TestQuestionList(TestCaseBase):
         q4.products.add(p)
 
         def sub_test(locale, *titles):
-            url = urlparams(reverse('questions.questions', locale=locale))
+            url = urlparams(reverse(
+                'questions.list', args=['all'], locale=locale))
             response = self.client.get(url, follow=True)
             doc = pq(response.content)
             eq_msg(len(doc('section[id^=question]')), len(titles),

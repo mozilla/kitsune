@@ -9,7 +9,8 @@ from kitsune.flagit import views as flagit_views
 
 urlpatterns = patterns(
     'kitsune.questions.views',
-    url(r'^$', 'questions', name='questions.questions'),
+    url(r'^$', 'product_list', name='questions.home'),
+
     url(r'^/answer-preview-async$', 'answer_preview_async',
         name='questions.answer_preview_async'),
     url(r'^/dashboard/metrics$', 'metrics', name='questions.metrics'),
@@ -40,7 +41,7 @@ urlpatterns = patterns(
         'marketplace_category', name='questions.marketplace_aaq_category'),
 
     # TODO: Factor out `/(?P<question_id>\d+)` below
-    url(r'^/(?P<question_id>\d+)$', 'answers', name='questions.answers'),
+    url(r'^/(?P<question_id>\d+)$', 'question_details', name='questions.details'),
     url(r'^/(?P<question_id>\d+)/edit$',
         'edit_question', name='questions.edit_question'),
     url(r'^/(?P<question_id>\d+)/edit-details$',
@@ -72,6 +73,10 @@ urlpatterns = patterns(
         name='questions.add_tag_async'),
     url(r'^/(?P<question_id>\d+)/remove-tag-async$', 'remove_tag_async',
         name='questions.remove_tag_async'),
+
+    # Question lists
+    url(r'^/(?P<product_slug>[\w+\-]+)$', 'question_list',
+        name='questions.list'),
 
     # Flag content ("Report this post")
     url(r'^/(?P<object_id>\d+)/flag$', flagit_views.flag,

@@ -5,14 +5,27 @@
 {% from "wiki/includes/flag_form.html" import flag_form with context %}
 {% from "questions/includes/questions.html" import troubleshooting_info %}
 
-{# L10n: {q} is the title of the question. #}
-{% set title = _('{q} | Firefox Support Forum')|f(q=question.title) %}
 {% set classes = 'answers' %}
-{% set crumbs = [(url('questions.questions'), _('Support Forum')), (None, question.title)] %}
-{% set canonical_url = unlocalized_url('questions.answers', question.id) %}
+
+{% if product %}
+  {% set product = product[0] %}
+{% endif %}
+
+{% set product_title = _(product.title, 'DB: products.Product.title') if product else _('All Products') %}
+
+{# L10n: {q} is the title of the question. #}
+{% set title = _('{q} | {product} Support Forum')|f(q=question.title, product=product_title) %}
+
+{% set crumbs = [(url('questions.home'), _('Support Forum')),
+                 (url('questions.list', question.product_slug), product_title),
+                 (None, question.title)] %}
+
+{% set canonical_url = unlocalized_url('questions.details', question.id) %}
+
 {% if answers.number > 1 %}
   {% set canonical_url = canonical_url|urlparams(page=answers.number) %}
 {% endif %}
+
 {% if robots_noindex %}
   {% set meta = (('robots', 'noindex'),) %}
 {% endif %}
@@ -203,7 +216,6 @@
                 <div class="sidebox tight condensed">
                   <span class="title">{{ _('Product') }}</span>
                   {% if product %}
-                    {% set product = product[0] %}
                     <span class="detail">{{ _(product.title, 'DB: products.Product.title') }}</span>
                   {% endif %}
                   {% if user and user.has_perm('questions.change_question') %}
@@ -323,7 +335,7 @@
                   <ul class="tag-list cf{% if not can_tag %} immutable{% endif %}">
                     {% for tag in tags %}
                       <li class="tag">{# -#}
-                        <a class="tag-name" href="{{ url('questions.questions')|urlparams(tagged=tag.slug) }}">{{ tag }}</a>
+                        <a class="tag-name" href="{{ url('questions.list', product.slug if product else 'all')|urlparams(tagged=tag.slug) }}">{{ tag }}</a>
                         {%- if can_tag -%}
                           <button type="submit" class="remover" data-type="submit" data-name="remove-tag-{{ tag }}">&#xd7;</button>
                         {%- endif -%}

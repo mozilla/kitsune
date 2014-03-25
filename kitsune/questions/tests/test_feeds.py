@@ -39,13 +39,13 @@ class ForumTestFeeds(TestCaseBase):
     def test_tagged_feed_link(self):
         """Make sure the tagged feed is discoverable on the questions page."""
         tag(name='green', slug='green', save=True)
-        url = urlparams(reverse('questions.questions'), tagged='green')
+        url = urlparams(reverse('questions.list', args=['all']), tagged='green')
         response = self.client.get(url)
         doc = pq(response.content)
         feed_links = doc('link[type="application/atom+xml"]')
         eq_(2, len(feed_links))
         eq_('Recently updated questions', feed_links[0].attrib['title'])
-        eq_('/en-US/questions/feed', feed_links[0].attrib['href'])
+        eq_('/en-US/questions/feed?product=all', feed_links[0].attrib['href'])
         eq_('Recently updated questions tagged green',
             feed_links[1].attrib['title'])
         eq_('/en-US/questions/tagged/green/feed',
@@ -63,7 +63,7 @@ class ForumTestFeeds(TestCaseBase):
     def test_question_feed_with_product(self):
         """Test that questions feeds with products work."""
         p = product(save=True)
-        url = urlparams(reverse('questions.questions'), product=p.slug)
+        url = reverse('questions.list', args=[p.slug])
         res = self.client.get(url)
         doc = pq(res.content)
 
@@ -77,8 +77,7 @@ class ForumTestFeeds(TestCaseBase):
         """Test that questions feeds with products and topics work."""
         p = product(save=True)
         t = topic(product=p, save=True)
-        url = urlparams(reverse('questions.questions'),
-                        product=p.slug, topic=t.slug)
+        url = urlparams(reverse('questions.list', args=[p.slug]), topic=t.slug)
         res = self.client.get(url)
         doc = pq(res.content)
 
@@ -91,7 +90,7 @@ class ForumTestFeeds(TestCaseBase):
 
     def test_question_feed_with_locale(self):
         """Test that questions feeds with products and topics work."""
-        url = urlparams(reverse('questions.questions', locale='pt-BR'))
+        url = urlparams(reverse('questions.list', args=['all'], locale='pt-BR'))
         res = self.client.get(url)
         doc = pq(res.content)
 
@@ -99,5 +98,5 @@ class ForumTestFeeds(TestCaseBase):
         feed = feed_links[0]
         eq_(1, len(feed_links))
         eq_('Recently updated questions', feed.attrib['title'])
-        eq_(urlparams('/pt-BR/questions/feed'),
+        eq_(urlparams('/pt-BR/questions/feed?product=all'),
             feed.attrib['href'])

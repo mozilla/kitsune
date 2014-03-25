@@ -1,7 +1,7 @@
 {% extends "questions/includes/question_editing_frame.html" %}
 {% set title = _('Edit a Question') %}
-{% set crumbs = [(url('questions.questions'), _('Support Forum')),
-                 (url('questions.answers', question.id), question.title),
+{% set crumbs = [(url('questions.home'), _('Support Forum')),
+                 (url('questions.details', question.id), question.title),
                  (None, _('Edit the question'))] %}
 
 {% set classes = 'edit-question' %}
@@ -15,5 +15,5 @@
 {% block submit_button_value %}{{ _('Save Question') }}{% endblock %}
 
 {% block more_submit_buttons %}
-  <a href="{{ url('questions.answers', question.id) }}" class="cancel">{{ _('Cancel') }}</a>
+  <a href="{{ url('questions.details', question.id) }}" class="cancel">{{ _('Cancel') }}</a>
 {% endblock %}

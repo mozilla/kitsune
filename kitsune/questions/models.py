@@ -199,6 +199,17 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         return {}
 
     @property
+    def product_slug(self):
+        """Return the product slug for this question.
+
+        It returns 'all' in the off chance that there are no products."""
+        if not hasattr(self, '_product_slug') or self._product_slug is None:
+            prods = self.products.all()
+            self._product_slug = prods[0].slug if len(prods) > 0 else 'all'
+
+        return self._product_slug
+
+    @property
     def category(self):
         """Return the category this question refers to or an empty mapping if
         unknown."""
@@ -245,7 +256,7 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
     def get_absolute_url(self):
         # Note: If this function changes, we need to change it in
         # extract_document, too.
-        return reverse('questions.answers',
+        return reverse('questions.details',
                        kwargs={'question_id': self.id})
 
     @property
@@ -394,7 +405,7 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
 
         # Avoid circular import. kitsune.question.views import this.
         import kitsune.questions.views
-        if view != kitsune.questions.views.answers:
+        if view != kitsune.questions.views.question_details:
             return None
 
         question_id = view_kwargs['question_id']
@@ -554,7 +565,7 @@ class QuestionMappingType(SearchMappingType):
         # and we don't want to create an instance because it's a DB
         # hit and expensive. So we do it by hand. get_absolute_url
         # doesn't change much, so this is probably ok.
-        d['url'] = reverse('questions.answers',
+        d['url'] = reverse('questions.details',
                            kwargs={'question_id': obj['id']})
 
         d['indexed_on'] = int(time.time())
@@ -801,7 +812,7 @@ class Answer(ModelBase):
         if self.page > 1:
             query = {'page': self.page}
 
-        url = reverse('questions.answers',
+        url = reverse('questions.details',
                       kwargs={'question_id': self.question_id})
         return urlparams(url, hash='answer-%s' % self.id, **query)
 

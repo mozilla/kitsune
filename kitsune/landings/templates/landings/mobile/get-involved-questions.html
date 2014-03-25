@@ -39,7 +39,7 @@
       <li>
         {% set message = _('Go to our support forum and choose a question to answer') %}
         {% if request.LANGUAGE_CODE in settings.AAQ_LANGUAGES %}
-          <a href="{{ url('questions.questions') }}">{{ message }}</a>
+          <a href="{{ url('questions.home') }}">{{ message }}</a>
         {% else %}
           {{ message }}
         {% endif %}
