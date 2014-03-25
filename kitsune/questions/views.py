@@ -97,12 +97,15 @@ FILTER_GROUPS = {
 
 @mobile_template('questions/{mobile/}product_list.html')
 def product_list(request, template):
-    pass
+    """View to select a product to see relatred quesitons."""
+    return render(request, template, {
+        'products': Product.objects.filter(visible=True)
+    })
 
 
 @mobile_template('questions/{mobile/}question_list.html')
 def question_list(request, template, product_slug=None):
-    """View the questions."""
+    """View the list of questions."""
 
     filter_ = request.GET.get('filter')
     owner = request.GET.get(

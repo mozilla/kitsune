@@ -1,19 +1,27 @@
 {% extends "questions/base.html" %}
-{% from "dashboards/includes/macros.html" import product_selector, topic_selector %}
-{% set title = _('Firefox Support Forum') %}
+{% from "dashboards/includes/macros.html" import topic_selector %}
+
 {% set classes = 'questions' %}
+
 {% if offtopic %}
   {% set classes = classes + ' show-offtopic' %}
 {% endif %}
+
 {% if escalated %}
   {% set classes = classes + ' show-escalated' %}
 {% endif %}
+
 {% set product_title = _(product.title, 'DB: products.Product.title') if product else _('All Products') %}
+
+{% set title = _('Support Forum: {product}')|f(product=product_title) %}
+
 {% set crumbs = [(url('questions.home'), _('Support Forum')), (None, product_title)] %}
+
 {% set canonical_url = unlocalized_url('questions.list', product_slug)|urlparams(None, request.GET) %}
 {% if questions.number > 1 %}
   {% set canonical_url = canonical_url|urlparams(page=questions.number) %}
 {% endif %}
+
 {% set meta = (('robots', 'noindex'),) %}
 
 {# This takes kwargs, even though it doesn't say so, because it uses them.
@@ -28,7 +36,7 @@
       {{ topic_selector(topic_list, topic) }}
     {% endif %}
 
-    <h1>{{ _('Support Forum: {product}')|f(product=product_title) }}</h1>
+    <h1>{{ title }}</h1>
 
     <div id="recent-stats" class="cf">
         <div class="total">
