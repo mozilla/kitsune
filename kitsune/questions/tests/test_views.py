@@ -467,7 +467,8 @@ class TestQuestionList(TestCaseBase):
         q4.products.add(p)
 
         def sub_test(locale, *titles):
-            url = urlparams(reverse('questions.questions', locale=locale))
+            url = urlparams(reverse(
+                'questions.list', args=['all'], locale=locale))
             response = self.client.get(url, follow=True)
             doc = pq(response.content)
             eq_msg(len(doc('section[id^=question]')), len(titles),

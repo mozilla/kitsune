@@ -9,7 +9,8 @@ from kitsune.flagit import views as flagit_views
 
 urlpatterns = patterns(
     'kitsune.questions.views',
-    url(r'^$', 'questions', name='questions.questions'),
+    url(r'^$', 'product_list', name='questions.home'),
+
     url(r'^/answer-preview-async$', 'answer_preview_async',
         name='questions.answer_preview_async'),
     url(r'^/dashboard/metrics$', 'metrics', name='questions.metrics'),
@@ -72,6 +73,10 @@ urlpatterns = patterns(
         name='questions.add_tag_async'),
     url(r'^/(?P<question_id>\d+)/remove-tag-async$', 'remove_tag_async',
         name='questions.remove_tag_async'),
+
+    # Question lists
+    url(r'^/(?P<product_slug>[\w+\-]+)$', 'question_list',
+        name='questions.list'),
 
     # Flag content ("Report this post")
     url(r'^/(?P<object_id>\d+)/flag$', flagit_views.flag,

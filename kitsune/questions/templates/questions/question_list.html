@@ -1,24 +1,33 @@
 {% extends "questions/base.html" %}
-{% from "dashboards/includes/macros.html" import product_selector, topic_selector %}
-{% set title = _('Firefox Support Forum') %}
+{% from "dashboards/includes/macros.html" import topic_selector %}
+
 {% set classes = 'questions' %}
+
 {% if offtopic %}
   {% set classes = classes + ' show-offtopic' %}
 {% endif %}
+
 {% if escalated %}
   {% set classes = classes + ' show-escalated' %}
 {% endif %}
-{% set crumbs = [(None, _('Support Forum'))] %}
-{% set canonical_url = unlocalized_url('questions.questions')|urlparams(None, request.GET) %}
+
+{% set product_title = _(product.title, 'DB: products.Product.title') if product else _('All Products') %}
+
+{% set title = _('Support Forum: {product}')|f(product=product_title) %}
+
+{% set crumbs = [(url('questions.home'), _('Support Forum')), (None, product_title)] %}
+
+{% set canonical_url = unlocalized_url('questions.list', product_slug)|urlparams(None, request.GET) %}
 {% if questions.number > 1 %}
   {% set canonical_url = canonical_url|urlparams(page=questions.number) %}
 {% endif %}
+
 {% set meta = (('robots', 'noindex'),) %}
 
 {# This takes kwargs, even though it doesn't say so, because it uses them.
    It's a Jinja Magic thing. #}
 {% macro questions_url() %}
-  {{ url('questions.questions')|urlparams(None, request.GET, **kwargs) }}
+  {{ url('questions.list', product_slug)|urlparams(None, request.GET, **kwargs) }}
 {% endmacro %}
 
 {% block content %}
@@ -26,9 +35,8 @@
     {% if topic_list %}
       {{ topic_selector(topic_list, topic) }}
     {% endif %}
-    {{ product_selector(product_list, product) }}
 
-    <h1>{{ _('Support Forum') }}</h1>
+    <h1>{{ title }}</h1>
 
     <div id="recent-stats" class="cf">
         <div class="total">
@@ -74,7 +82,7 @@
     <div class="grid_9">
       <div id="owner-tabs" class="cf">
         <a href="{{ questions_url(show='needs-attention', filter=None, page=None) }}" {{ show|class_selected('needs-attention') }}>{{ _('Attention needed') }}</a>
-        <a href="{{ questions_url(show='responded', filter=None, page=None) }}" {{ show|class_selected('responded') }}>{{ _("Responded") }}</a>
+        <a href="{{ questions_url(show='responded', filter=None, page=None) }}" {{ show|class_selected('responded') }}>{{ _('Responded') }}</a>
         <a href="{{ questions_url(show='done', filter=None, page=None) }}" {{ show|class_selected('done') }}>{{ _('Done') }}</a>
         <a href="{{ questions_url(show='all', filter=None, page=None) }}" {{ show|class_selected('all') }}>{{ _('All questions') }}</a>
       </div>
@@ -192,11 +200,11 @@
                 {% for topic in question.topics.all() %}
                   <h3>
                     <img src="/static/img/blank.png" class="logo-sprite-tiny logo-{{ topic.product.slug }}">
-                    <a href="{{ request.get_full_path()|urlparams(product=topic.product.slug, topic=None) }}">
+                    <a href="{{ url('questions.list', topic.product.slug)|urlparams(None, request.GET, topic=None) }}">
                       {{ _(topic.product.title, 'DB: products.Product.title') }}
                     </a>
                     /
-                    <a href="{{ request.get_full_path()|urlparams(product=topic.product.slug, topic=topic.slug) }}">
+                    <a href="{{ url('questions.list', topic.product.slug)|urlparams(None, request.GET, topic=topic.slug) }}">
                       {{ _(topic.title, 'DB: products.Topic.title') }}
                     </a>
                   </h3>

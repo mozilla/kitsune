@@ -1,0 +1,33 @@
+{% extends "questions/base.html" %}
+
+{% set classes = 'questions' %}
+
+{% set title = _('Support Forum') %}
+
+{% set crumbs = [(None, _('Support Forum'))] %}
+
+{% set meta = (('robots', 'noindex'),) %}
+
+{% block content %}
+  <div class="grid_12">
+    <h1>{{ title }}</h1>
+
+    <article class="product-list">
+      {% for product in products %}
+        <div class="product grid_5">
+          <a class="cf" href="{{ url('questions.list', product.slug) }}">
+            <img src="{{ STATIC_URL }}img/blank.png" class="logo-sprite" style="{% if product.image and product.image_offset %}background-image: url({{ product.sprite_url() }}); background-position: -100px -{{ 100 + (product.image_offset * 296) }}px;{% else %}background-image: url({{ product.image_url }}){% endif %}" alt="" />
+            <span class="title">{{ _('<strong>{product}</strong> Support Forum')|fe(product=_(product.title, 'DB: products.Product.title')) }}</span>
+            <span class="description">{{ _(product.description, 'DB: products.Product.description') }}</span>
+          </a>
+        </div>
+      {% endfor %}
+      <div class="product grid_5">
+        <a class="no-image cf" href="{{ url('questions.list', 'all') }}">
+          <span class="title">{{ _('<strong>{product}</strong> Support Forum')|fe(product=_('All Products')) }}</span>
+          <span class="description">{{ _('Browse the questions for all the products together in one list.') }}</span>
+        </a>
+      </div>
+    </article>
+  </div>
+{% endblock %}
