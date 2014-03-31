@@ -1521,7 +1521,7 @@ class ProductForumTemplateTestCase(TestCaseBase):
         eq_(200, response.status_code)
         doc = pq(response.content)
         eq_(4, len(doc('.product-list .product')))
-        product_list_html = doc('.product-list').html
+        product_list_html = doc('.product-list').html()
         assert firefox.title in product_list_html
         assert android.title in product_list_html
         assert fxos.title in product_list_html
