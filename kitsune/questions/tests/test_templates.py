@@ -1137,28 +1137,27 @@ class QuestionsTemplateTestCase(TestCaseBase):
         q3.products.add(p1, p2)
         q3.save()
 
-        url = reverse('questions.list', args=['all'])
-
-        def check(filter, expected):
-            response = self.client.get(urlparams(url, **filter))
+        def check(product, expected):
+            url = reverse('questions.list', args=[product])
+            response = self.client.get(url)
             doc = pq(response.content)
             # Make sure all questions are there.
 
             # This won't work, because the test case base adds more tests than
             # we expect in it's setUp(). TODO: Fix that.
-            #eq_(len(expected), len(doc('.questions > section')))
+            eq_(len(expected), len(doc('.questions > section')))
 
             for q in expected:
                 eq_(1, len(doc('.questions > section[id=question-%s]' % q.id)))
 
         # No filtering -> All questions.
-        check({}, [q1, q2, q3])
+        check('all', [q1, q2, q3])
         # Filter on p1 -> only q2 and q3
-        check({'product': p1.slug}, [q2, q3])
+        check(p1.slug, [q2, q3])
         # Filter on p2 -> only q3
-        check({'product': p2.slug}, [q3])
+        check(p2.slug, [q3])
         # Filter on p3 -> No results
-        check({'product': p3.slug}, [])
+        check(p3.slug, [])
 
     def test_topic_filter(self):
         p = product(save=True)
@@ -1510,3 +1509,19 @@ class AAQTemplateTestCase(TestCaseBase):
         response = self.client.get(url)
         eq_(200, response.status_code)
         assert '/questions/new' not in pq(response.content)('#aux-nav').html()
+
+
+class ProductForumTemplateTestCase(TestCaseBase):
+    def test_product_forum_listing(self):
+        firefox = product(title='Firefox', slug='firefox', save=True)
+        android = product(title='Firefox for Android', slug='mobile', save=True)
+        fxos = product(title='Firefox OS', slug='firefox-os', save=True)
+
+        response = self.client.get(reverse('questions.home'))
+        eq_(200, response.status_code)
+        doc = pq(response.content)
+        eq_(4, len(doc('.product-list .product')))
+        product_list_html = doc('.product-list').html
+        assert firefox.title in product_list_html
+        assert android.title in product_list_html
+        assert fxos.title in product_list_html
