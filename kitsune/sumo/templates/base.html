@@ -242,12 +242,6 @@
 
 <script src="//mozorg.cdn.mozilla.net/{{ request.LANGUAGE_CODE }}/tabzilla/tabzilla.js" async></script>
 
-{# Ethnio tracking - see bugs 683643 and 673544 #}
-{% if request.LANGUAGE_CODE == 'en-US' and waffle.flag('ethnio-all') %}
-  <script type="text/javascript" language="javascript" src="//ethn.io/remotes/92398" async charset="utf-8"> </script>
-{% endif %}
-{# End Ethnio #}
-
 {# Browser ID #}
 {% if waffle.flag('browserid') %}
   <script src="https://login.persona.org/include.js" type="text/javascript"></script>
