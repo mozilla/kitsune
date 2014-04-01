@@ -47,7 +47,8 @@ class QuestionsFeed(Feed):
             if 'topic' in query:
                 slugs['topic'] = query['topic'].slug
 
-        url = reverse('questions.questions', locale=query.get('locale'))
+        url = reverse('questions.list', args=[slugs.get('product', 'all')],
+                      locale=query.get('locale'))
         return urlparams(url, **slugs)
 
     def items(self, query):
@@ -86,7 +87,7 @@ class TaggedQuestionsFeed(QuestionsFeed):
         return _('Recently updated questions tagged %s' % tag.name)
 
     def link(self, tag):
-        return urlparams(reverse('questions.questions'), tagged=tag.slug)
+        return urlparams(reverse('questions.list', args=['all']), tagged=tag.slug)
 
     def items(self, tag):
         qs = Question.objects.filter(creator__is_active=True,
