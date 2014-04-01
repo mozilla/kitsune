@@ -21,9 +21,6 @@ class LocaleListTests(TestCase):
         r = self.client.get(reverse('wiki.locales'))
         eq_(r.status_code, 200)
         doc = pq(r.content)
-        import q
-        for li in doc('#locale-listing li *'):
-            q(li.text)
         eq_(3, len(doc('#locale-listing li')))
 
 
