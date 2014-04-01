@@ -236,8 +236,8 @@ def get_documents(cls, ids):
 def get_analysis():
     """Generate all our custom analyzers, tokenizers, and filters
 
-    This is mostly variants of the Snowball analyzer for various
-    languages, and a custom analyzer for Burmese (my).
+    These are variants of the Snowball analyzer for various languages,
+    but could also include custom analyzers if the need arises.
     """
     analyzers = {}
     tokenizers = {}
@@ -254,31 +254,6 @@ def get_analysis():
             'type': 'snowball',
             'language': lang,
         }
-
-    # Burmese (my) specific custom analyzer.
-    #
-    # Burmese is a language that uses spaces to divide phrases, instead
-    # of words. Because of that, it isn't really possible to split out
-    # words like in other languages. This uses a similar approach to the
-    # built in CJK analyzer (which doesn't work reliably here), which is
-    # shingling, or overlapping substrings.
-    #
-    # Given the string 'abc def', this will result in these tokens being
-    # generated: ['ab', 'bc', 'c ', ' d', 'de', 'ef']. ES understands
-    # this kind of overlapping token, and hopefully this will result in
-    # an ok search experience.
-
-    analyzers['custom-burmese'] = {
-        'type': 'custom',
-        'tokenizer': 'custom-burmese',
-        'char_filter': ['html_strip'],
-    }
-
-    tokenizers['custom-burmese'] = {
-        'type': 'nGram',
-        'min_gram': 2,
-        'max_gram': 2,
-    }
 
     # Done!
     return {
@@ -830,7 +805,7 @@ def es_verify_cmd(log=log):
     log.info('Done! {0}'.format(format_time(time.time() - start_time)))
 
 
-def es_analyzer_for_locale(locale, fallback="standard"):
+def es_analyzer_for_locale(locale, fallback='standard'):
     """Pick an appropriate analyzer for a given locale.
 
     If no analyzer is defined for `locale`, return fallback instead,

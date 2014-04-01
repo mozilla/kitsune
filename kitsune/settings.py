@@ -253,7 +253,6 @@ ES_LOCALE_ANALYZERS = {
     'id': 'indonesian',
     'it': 'snowball-italian',
     'ja': 'cjk',
-    'my': 'custom-burmese',
     'nb-NO': 'snowball-norwegian',
     'nl': 'snowball-dutch',
     'no': 'snowball-norwegian',
