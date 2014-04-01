@@ -46,7 +46,11 @@ def collect_tweets():
 
         search_options = {
             'q': ('firefox OR #fxinput OR @firefoxbrasil OR #firefoxos'
-                  ' OR @firefox_es'),
+                  ' OR @firefox_es -brendan -eich -ceo -cupid -civil'
+                  ' -rights -leadership -protest -lgbt -marriage'
+                  ' -proposition -prop8 -boycott -#boycottfirefox'
+                  ' -opposition -political -donation -$1000'
+                  ' -#mozillagate'),
             'count': settings.CC_TWEETS_PERPAGE,  # Items per page.
             'result_type': 'recent',  # Retrieve tweets by date.
         }
