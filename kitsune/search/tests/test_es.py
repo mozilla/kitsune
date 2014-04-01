@@ -1094,10 +1094,6 @@ class TestAnalyzers(ElasticTestCase):
                 'analyzer': 'arabic',
                 'content': u'لدي اثنين من القطط',
             },
-            'my': {
-                'analyzer': 'custom-burmese',
-                'content': u'အနုပညာ',
-            },
             'he': {
                 'analyzer': 'standard',
                 'content': u'גאולוגיה היא אחד',
@@ -1188,11 +1184,12 @@ class TestAnalyzers(ElasticTestCase):
         actual = set(t['term'] for t in facets['tokens'])
         eq_(actual, expected)
 
-    # These 5 languages were chosen for tokenization testing because
-    # they represent the 5 kinds of languages we have: English, Snowball
-    # supported languages, ES supported languages, Languages with custom
-    # analyzers, and languages with no analyzer, which use the standard
-    # analyzer.
+    # These 4 languages were chosen for tokenization testing because
+    # they represent the 4 kinds of languages we have: English, Snowball
+    # supported languages, ES supported languages and languages with no
+    # analyzer, which use the standard analyzer. There is another
+    # possible case, which is a custom analyzer, but we don't have any
+    # of those right now.
 
     def test_english_tokenization(self):
         """Test that English stemming and stop words work."""
@@ -1210,11 +1207,6 @@ class TestAnalyzers(ElasticTestCase):
         Arabic can improve this test, go for it!
         """
         self._check_locale_tokenization('ar', [u'لد', u'اثن', u'قطط'])
-
-    def test_burmese_tokenization(self):
-        """Test that the shingle analyzer is active for Burmese."""
-        tokens = [u'အန', u'နု', u'ုပ', u'ပည', u'ညာ']
-        self._check_locale_tokenization('my', tokens, False)
 
     def test_herbrew_tokenization(self):
         """Test that Hebrew uses the standard analyzer."""
