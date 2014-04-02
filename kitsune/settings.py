@@ -193,6 +193,7 @@ NON_SUPPORTED_LOCALES = {
     'fur': 'it',
     'fy-NL' : 'nl',
     'gl': 'es',
+    'hsb': 'de',
     'lij': 'it',
     'nb-NO': 'no',
     'nn-NO': 'no',
