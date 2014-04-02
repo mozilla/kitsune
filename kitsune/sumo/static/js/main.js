@@ -125,6 +125,12 @@ window.k = window.k || {};
         disableFormsOnSubmit();
         removeAuthToken();
         userMessageUI();
+
+        /* Skip to search (a11y) */
+        $('#skip-to-search').on('click', function(ev) {
+            ev.preventDefault();
+            $('input[name=q]').last().get(0).focus();
+        });
     });
 
     /*
