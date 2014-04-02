@@ -68,7 +68,7 @@
 
 {% block footer_script %}
 {# Ethnio tracking - see bug 985270 #}
-{% if product.slug == 'firefox' and request.LANGUAGE_CODE == 'en-US' and waffle.flag('ethnio') %}
+{% if product.slug == 'firefox' and request.LANGUAGE_CODE == 'en-US' and waffle.flag('ethnio-all') %}
   <!-- Ethnio Activation Code -->
   <script type="text/javascript" language="javascript" src="//ethn.io/remotes/35931" async="true" charset="utf-8"> </script>
 {% endif %}
