@@ -10,35 +10,14 @@
 {% from "users/includes/macros.html" import login_form %}
 
 {% block content %}
-  {% if waffle.flag('browserid') %}
-    <h2>{{ _('Before you continue, you must sign in') }}</h2>
-    {% if not request.session['browserid-email'] %}
-      <p><span class="btn btn-login browserid-login" data-form="aaq-browserid-form">{{ _('Sign in with email') }}</span></p>
-      <form id="aaq-browserid-form" action="{{ request.get_full_path() }}" method="post">
-        {{ csrf() }}
-        {{ browserid_form }}
-      </form>
-    {% else %}
-      <div id="register-form">
-        <form action="{{ request.get_full_path() }}" method="post">
-          {{ csrf() }}
-          {{ register_form }}
-          <p><button type="submit" class="btn btn-submit">{{ _('Register and continue') }}</button></p>
-        </form>
-      </div>
-    {% endif %}
-  {% else %}
-    {{ mobile_register_forms(register_form, csrf()) }}
-  {% endif %}
+  {{ mobile_register_forms(register_form, csrf()) }}
 {% endblock %}
 
 {% block after_main %}
-  {% if not waffle.flag('browserid') %}
-    <div class="overlay" id="login-overlay" style="display: none;">
-      <header>{{ _('Sign in') }}</header>
-      <div id="login-form" class="wrapper scrollable">
-        {{ login_form(loginform, csrf=csrf(), action='', only_pwreset=True) }}
-      </div>
+  <div class="overlay" id="login-overlay" style="display: none;">
+    <header>{{ _('Sign in') }}</header>
+    <div id="login-form" class="wrapper scrollable">
+      {{ login_form(loginform, csrf=csrf(), action='', only_pwreset=True) }}
     </div>
-  {% endif %}
+  </div>
 {% endblock %}

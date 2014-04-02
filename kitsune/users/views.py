@@ -16,10 +16,6 @@ from django.views.decorators.http import (require_http_methods, require_GET,
 from django.shortcuts import get_object_or_404, render, redirect
 from django.utils.http import base36_to_int
 
-from django_browserid.auth import BrowserIDBackend
-from django_browserid.base import get_audience
-from django_browserid.forms import BrowserIDForm
-
 from axes.decorators import watch_login
 from mobility.decorators import mobile_template
 from session_csrf import anonymous_csrf
@@ -41,7 +37,7 @@ from kitsune.upload.tasks import _create_image_thumbnail
 from kitsune.users.forms import (
     ProfileForm, AvatarForm, EmailConfirmationForm, AuthenticationForm,
     EmailChangeForm, SetPasswordForm, PasswordChangeForm, SettingsForm,
-    ForgotUsernameForm, RegisterForm, PasswordResetForm, BrowserIDSignupForm)
+    ForgotUsernameForm, RegisterForm, PasswordResetForm)
 from kitsune.users.helpers import profile_url
 from kitsune.users.models import (
     CONTRIBUTOR_GROUP, Group, Profile, RegistrationProfile, EmailChange,
@@ -679,90 +675,3 @@ def forgot_username(request, template):
         form = ForgotUsernameForm()
 
     return render(request, template, {'form': form})
-
-
-@csrf_exempt
-@require_POST
-@ssl_required
-def browserid_verify(request):
-    next = request.REQUEST.get('next')
-    redirect_to = next or getattr(settings, 'LOGIN_REDIRECT_URL', '/')
-    redirect_to_failure = getattr(settings, 'LOGIN_REDIRECT_URL_FAILURE', '/')
-
-    form = BrowserIDForm(data=request.POST)
-
-    if form.is_valid():
-        verifier = BrowserIDBackend().get_verifier()
-        result = verifier.verify(form.cleaned_data['assertion'],
-                                 get_audience(request))
-        if result:
-            if (request.user.is_authenticated()
-                    and request.user.email != result.email):
-                # User is already signed and wants to change their email.
-                request.user.email = result.email
-                request.user.save()
-                return redirect(reverse('users.edit_profile'))
-            else:
-                # Verified so log in
-                email = result.email
-                user = User.objects.filter(email=email)
-                contributor = 'contributor' in request.POST
-
-                if len(user) == 0:
-                    # Add the email to the session and redirect to signup
-                    request.session['browserid-email'] = email
-                    signup_url = reverse('users.browserid_signup')
-                    return redirect('%s?%s' % (signup_url,
-                                               urlencode({'next': next})))
-                else:
-                    user = user[0]
-                    user.backend = 'django_browserid.auth.BrowserIDBackend'
-
-                    if contributor:
-                        add_to_contributors(request, user)
-
-                    auth.login(request, user)
-                    return redirect(redirect_to)
-
-    return redirect(redirect_to_failure)
-
-
-@ssl_required
-@anonymous_csrf
-@mobile_template('users/{mobile/}browserid_signup.html')
-def browserid_signup(request, template):
-    next = request.REQUEST.get('next')
-    redirect_to = next or getattr(settings, 'LOGIN_REDIRECT_URL', '/')
-    redirect_to_failure = getattr(settings, 'LOGIN_REDIRECT_URL_FAILURE', '/')
-
-    email = request.session.get('browserid-email', None)
-    contributor = 'contributor' in request.POST
-
-    if email:
-        data = request.POST if request.method == 'POST' else None
-        form = BrowserIDSignupForm(data)
-
-        if form.is_valid():
-            user = User.objects.create_user(form.cleaned_data['username'],
-                                            email)
-            user.save()
-
-            # Create a new profile for the user
-            Profile.objects.create(user=user, locale=request.LANGUAGE_CODE)
-
-            # Check if the user should be added to the contributor group
-            if contributor:
-                add_to_contributors(request, user)
-
-            # Log the user in
-            user.backend = 'django_browserid.auth.BrowserIDBackend'
-            auth.login(request, user)
-
-            return redirect(redirect_to)
-        else:
-            form.fields['username'].initial = suggest_username(email)
-            return render(request, template, {'persona_email': email,
-                                              'next': next, 'form': form,
-                                              'contributor': contributor})
-
-    return redirect(redirect_to_failure)

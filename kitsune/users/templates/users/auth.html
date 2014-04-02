@@ -6,18 +6,9 @@
 {% set classes = 'login register contributor' if contributor else 'login register' %}
 
 {% block content %}
-  {% if waffle.flag('browserid') %}
-    <div class="grid_12">
-      <article>
-        <h1>{{ _('You must be signed in to continue') }}</h1>
-        <a class="btn btn-submit browserid-login" data-next="{{ next_url }}" href="#">{{ _('Sign in with email') }}</a>
-      </article>
-    </div>
+  {% if contributor %}
+    {% include "users/includes/auth_contributor.html" %}
   {% else %}
-    {% if contributor %}
-      {% include "users/includes/auth_contributor.html" %}
-    {% else %}
-      {% include "users/includes/auth.html" %}
-    {% endif %}
+    {% include "users/includes/auth.html" %}
   {% endif %}
 {% endblock %}

@@ -9,10 +9,5 @@
 {% set return_url = next_url %}
 
 {% block content %}
-  {% if waffle.flag('browserid') %}
-    <p>{{ _('You must be signed in to continue') }}</p>
-    <p><a class="btn btn-submit browserid-login" data-next="{{ next_url }}" href="#" >{{ _('Sign in with email') }}</a></p>
-  {% else %}
-    {{ login_form(form, csrf=csrf(), next_url=next_url) }}
-  {% endif %}
+  {{ login_form(form, csrf=csrf(), next_url=next_url) }}
 {% endblock %}

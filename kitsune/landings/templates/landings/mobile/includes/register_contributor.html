@@ -8,17 +8,9 @@
         <button id="sign-up-contributor" class="btn btn-submit">{{ _('Sign me up') }}</button>
       </form>
     {% else %}
-      {% if waffle.flag('browserid') %}
-        <form id="gi-browserid-form" action="{{ url('users.browserid_verify') }}" method="post">
-          <input type="hidden" name="contributor" value="1">
-          {{ browserid_form }}
-        </form>
-        <a id="sign-up-contributor" class="btn btn-submit browserid-login" data-form="gi-browserid-form" data-next="{{ request.get_full_path() }}" href="#">{{ _('Sign me up') }}</a>
-      {% else %}
-        <a id="sign-up-contributor" class="btn btn-submit" href="{{ url('users.registercontributor') }}">
-          {{ _('Sign me up') }}
-        </a>
-      {% endif %}
+      <a id="sign-up-contributor" class="btn btn-submit" href="{{ url('users.registercontributor') }}">
+        {{ _('Sign me up') }}
+      </a>
     {% endif %}
   </div>
 {% endif %}
