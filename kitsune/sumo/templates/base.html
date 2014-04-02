@@ -72,6 +72,16 @@
   {% for attr, val in extra_body_attrs.items() %}{{ attr }}="{{ val }}" {% endfor %}
 {%- endif %}>
 
+{% set locale_picker_url = url('sumo.locales') %}
+{% if localizable_url %}
+  {% set locale_picker_url = locale_picker_url|urlparams(next=localizable_url) %}
+{% endif %}
+  <ul id="nav-access">
+    <li><a href="#main-content">{{ _('Skip to main content') }}</a></li>
+    <li><a href="{{ locale_picker_url }}">{{ _('Switch language') }}</a></li>
+    <li><a href="#search-q">{{ _('Skip to search') }}</a></li>
+  </ul>
+
 {% if waffle.flag('browserid') %}
   {{ render_browserid_form() }}
 {% endif %}
@@ -131,12 +141,8 @@
         <nav id="aux-nav" role="navigation">
           <ul>
             {{ aux_nav(user, hide_aaq_link) }}
-            {% set locale_url = url('sumo.locales') %}
-            {% if localizable_url %}
-              {% set locale_url = locale_url|urlparams(next=localizable_url) %}
-            {% endif %}
             {% if not hide_locale_switcher %}
-              <li><a href="{{ locale_url }}" class="locale-picker">{{ settings.LANGUAGES_DICT[request.LANGUAGE_CODE.lower()] }}</a></li>
+              <li><a href="{{ locale_picker_url }}" class="locale-picker">{{ settings.LANGUAGES_DICT[request.LANGUAGE_CODE.lower()] }}</a></li>
             {% endif %}
           </ul>
         </nav>
@@ -176,7 +182,9 @@
     </aside>
   {% endblock %}
 
-  {% block content %}{% endblock %}
+  <main id="main-content" role="main">
+    {% block content %}{% endblock %}
+  </main>
 </div>
 
 <footer>
