@@ -8,7 +8,7 @@ class Migration(DataMigration):
 
     def forwards(self, orm):
         """Remove any waffle flags with name == 'browserid'"""
-        orm.Flag.objects.filter(name='browserid').delete()
+        orm['waffle.Flag'].objects.filter(name='browserid').delete()
 
     def backwards(self, orm):
         raise RuntimeError('Cannot reverse this migration.')
