@@ -87,7 +87,6 @@ src/oauthlib
 src/requests-oauthlib
 src/twython
 packages/selenium/py
-src/django-browserid
 src/html5lib-python
 src/django-rest-framework
 src/django-filter
