@@ -12,7 +12,7 @@
         <input type="hidden" name="{{ k }}" value="{{ v }}" />
       {% endfor %}
     {% endif %}
-    <input type="search" name="q" required="required" placeholder="{{ _('Search Mozilla Support') }}" class="searchbox" />
+    <input type="search" name="q" required="required" placeholder="{{ _('Search Mozilla Support') }}" class="searchbox" id="search-q" />
     <button type="submit" title="{{ _('Search') }}" class="submit-button">{{ _('Search') }}</button>
   </form>
 {% endmacro %}
