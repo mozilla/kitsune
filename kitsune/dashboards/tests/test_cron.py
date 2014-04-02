@@ -270,9 +270,9 @@ class L10nMetricsTests(TestCase):
         d = document(parent=r2.document, locale='de', save=True)
         revision(document=d, based_on=r2, is_approved=True, save=True)
 
-        # Translate all to ak.
+        # Translate all to ru.
         for r in Revision.objects.filter(document__locale='en-US'):
-            d = document(parent=r.document, locale='ak', save=True)
+            d = document(parent=r.document, locale='ru', save=True)
             revision(document=d, based_on=r, is_approved=True, save=True)
 
         # Call the cronjob
@@ -300,16 +300,16 @@ class L10nMetricsTests(TestCase):
         eq_(10.0, WikiMetric.objects.get(
             locale='de', product=None, code=L10N_ALL_CODE).value)
 
-        # Verify ak metrics.
-        eq_(4, WikiMetric.objects.filter(locale='de').count())
+        # Verify ru metrics.
+        eq_(4, WikiMetric.objects.filter(locale='ru').count())
         eq_(100.0, WikiMetric.objects.get(
-            locale='ak', product=p, code=L10N_TOP20_CODE).value)
+            locale='ru', product=p, code=L10N_TOP20_CODE).value)
         eq_(100.0, WikiMetric.objects.get(
-            locale='ak', product=p, code=L10N_ALL_CODE).value)
+            locale='ru', product=p, code=L10N_ALL_CODE).value)
         eq_(100.0, WikiMetric.objects.get(
-            locale='ak', product=None, code=L10N_TOP20_CODE).value)
+            locale='ru', product=None, code=L10N_TOP20_CODE).value)
         eq_(100.0, WikiMetric.objects.get(
-            locale='ak', product=None, code=L10N_ALL_CODE).value)
+            locale='ru', product=None, code=L10N_ALL_CODE).value)
 
         # Verify it metrics.
         eq_(4, WikiMetric.objects.filter(locale='it').count())
