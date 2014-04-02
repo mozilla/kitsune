@@ -94,7 +94,7 @@ Removing an existing submodule is easy if you follow these steps in the
 right order::
 
     $ rm -rf vendor/src/<submodule>
-    $ git deinit vendor/src/<submodule>
+    $ git submodule deinit vendor/src/<submodule>
     $ git rm vendor/src/<submodule>
     $ vim vendor/kitsune.pth  # Remove the line with ``src/<submodule>``
     $ git ci -am "Removing <submodule> from vendor."
