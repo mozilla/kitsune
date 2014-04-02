@@ -76,11 +76,11 @@
 {% if localizable_url %}
   {% set locale_picker_url = locale_picker_url|urlparams(next=localizable_url) %}
 {% endif %}
-  <ul id="nav-access">
-    <li><a href="#main-content">{{ _('Skip to main content') }}</a></li>
-    <li><a href="{{ locale_picker_url }}">{{ _('Switch language') }}</a></li>
-    <li><a href="#search-q">{{ _('Skip to search') }}</a></li>
-  </ul>
+<ul id="nav-access">
+  <li><a href="#main-content">{{ _('Skip to main content') }}</a></li>
+  <li><a href="{{ locale_picker_url }}">{{ _('Switch language') }}</a></li>
+  <li><a href="#search-q">{{ _('Skip to search') }}</a></li>
+</ul>
 
 {% if waffle.flag('browserid') %}
   {{ render_browserid_form() }}
