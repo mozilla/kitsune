@@ -139,9 +139,6 @@
 [submodule "vendor/src/oauthlib"]
 	path = vendor/src/oauthlib
 	url = https://github.com/idan/oauthlib.git
-[submodule "vendor/src/django-browserid"]
-	path = vendor/src/django-browserid
-	url = https://github.com/mozilla/django-browserid.git
 [submodule "vendor/src/html5lib-python"]
 	path = vendor/src/html5lib-python
 	url = https://github.com/html5lib/html5lib-python.git
