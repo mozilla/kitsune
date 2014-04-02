@@ -9,31 +9,7 @@
 {% block breadcrumbs %}{% endblock %}
 
 {% block articles_and_search_results %}
-  {% if waffle.flag('browserid') %}
-    {{ aaq_progress(step=2) }}
-    {% if not request.session['browserid-email'] %}
-      <form id="aaq-browserid-form" action="{{ request.get_full_path() }}" method="post">
-        {{ csrf() }}
-        {{ browserid_form }}
-      </form>
-      <div class="highlight-box">
-        <h2>{{ _('Before you continue, you must sign in') }}</h2>
-        <p><a href="#" class="btn btn-submit browserid-login" data-form="aaq-browserid-form">{{ _('Sign in with email') }}</a></p>
-      </div>
-    {% else %}
-      <div class="highlight-box">
-        <h2>{{ _('It appears you do not have an existing account') }}</h2>
-        <p>{{ _('Please select a username for your new account.') }}</p>
-        <form action="{{ request.get_full_path() }}" method="post">
-          {{ csrf() }}
-          {{ register_form }}
-          <p><button type="submit" class="btn btn-submit">{{ _('Register and continue') }}</button></p>
-        </form>
-      </div>
-    {% endif %}
-  {% else %}
-    {{ register_login_forms(register_form, login_form, csrf()) }}
-  {% endif %}
+  {{ register_login_forms(register_form, login_form, csrf()) }}
 {% endblock %}
 
 {% block submit_button_value %}{{ _('Post Question') }}{% endblock %}

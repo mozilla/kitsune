@@ -340,7 +340,6 @@ JINGO_EXCLUDE_APPS = [
     'admin',
     'adminplus',
     'authority',
-    'browserid',
     'kadmin',
     'rest_framework',
     'waffle',
@@ -360,7 +359,6 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'kitsune.sumo.context_processors.i18n',
     'jingo_minify.helpers.build_ids',
     'kitsune.messages.context_processors.unread_message_count',
-    'django_browserid.context_processors.browserid',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -416,7 +414,6 @@ MIDDLEWARE_CLASSES = (
 # Auth
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
-    'django_browserid.auth.BrowserIDBackend',
     'kitsune.users.auth.TokenLoginBackend',
 )
 AUTH_PROFILE_MODULE = 'users.Profile'
@@ -458,7 +455,6 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.admin',
-    'django_browserid',
     'kitsune.users',
     'dennis.django_dennis',
     'tower',
@@ -826,16 +822,6 @@ TROUBLESHOOTER_ADDON_URL = 'https://addons.mozilla.org/firefox/downloads/latest/
 # SurveyGizmo API
 SURVEYGIZMO_USER = ''
 SURVEYGIZMO_PASSWORD = ''
-
-# Persona/Browser ID
-# Yo! We're adding this now because we're fast and furious. But this should
-# get moved to settings_local.py on the servers and your development
-# environment plus we should document what it should look like.
-BROWSERID_AUDIENCES = [
-    'https://support-dev.allizom.org',
-    'https://support.allizom.org',
-    'https://support.mozilla.org',
-]
 
 # Django Rest Framework
 REST_FRAMEWORK = {

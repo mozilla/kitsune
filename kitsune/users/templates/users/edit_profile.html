@@ -6,11 +6,6 @@
                  (None, title)] %}
 
 {% block content %}
-  {% if waffle.flag('browserid') %}
-    <form id="browserid-form" action="{{ url('users.browserid_verify') }}" method="post">
-      {{ browserid_form }}
-    </form>
-  {% endif %}
   <div class="grid_9">
     <article id="edit-profile" class="main">
       <h1>{{ title }}</h1>
@@ -41,20 +36,14 @@
               </li>
             </ul>
           </li>
-          {% if not waffle.flag('browserid') %}
-            <li>
-              <label>{{ _('Password:') }}</label>
-              <a href="{{ url('users.pw_change') }}">{{ _('Change') }}</a>
-            </li>
-          {% endif %}
+          <li>
+            <label>{{ _('Password:') }}</label>
+            <a href="{{ url('users.pw_change') }}">{{ _('Change') }}</a>
+          </li>
           <li>
             <label>{{ _('Email:') }}</label>
             {{ user.email }}
-            {% if waffle.flag('browserid') %}
-              <a href="#" id="change-email" class="browserid-login" data-next="{{ request.get_full_path() }}">{{ _('Change with Persona') }}</a>
-            {% else %}
-              <a href="{{ url('users.change_email') }}">{{ _('Change') }}</a>
-            {% endif %}
+            <a href="{{ url('users.change_email') }}">{{ _('Change') }}</a>
           </li>
           {{ form.as_ul()|safe }}
         </ul>

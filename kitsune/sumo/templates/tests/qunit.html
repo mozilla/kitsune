@@ -191,11 +191,7 @@
   <script src="{{ url('jsi18n') }}/build:{{ BUILD_ID_JS }}"></script>
   <script src="{{ url('wafflejs') }}?v={{ timestamp }}"></script>
   {% for jsfile in settings.MINIFY_BUNDLES['js']['common'] %}
-    {% if 'browserid.js' not in jsfile %}
-    {# browserid.js requires a file loaded from persona.org.
-       We don't need it for our unit tests. #}
-      <script src="{{ STATIC_URL + jsfile }}?v={{ timestamp }}"></script>
-    {% endif %}
+    <script src="{{ STATIC_URL + jsfile }}?v={{ timestamp }}"></script>
   {% endfor %}
   <script type="text/javascript" src="{{ url('qunit_js') }}?v={{ timestamp }}"></script>
   <script type="text/javascript" src="{{ STATIC_URL }}js/libs/jquery.mockjax.js?v={{ timestamp }}"></script>

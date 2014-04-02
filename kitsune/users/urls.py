@@ -50,12 +50,6 @@ users_patterns = patterns(
     url(r'^/make_contributor$', views.make_contributor,
         name='users.make_contributor'),
 
-    # Browser ID
-    url(r'^/browserid_verify$', views.browserid_verify,
-        name='users.browserid_verify'),
-    url(r'^/browserid_signup$', views.browserid_signup,
-        name='users.browserid_signup'),
-
     # Password reset
     url(r'^/pwreset$', views.password_reset, name='users.pw_reset'),
     url(r'^/pwresetsent$', views.password_reset_sent,
