@@ -19,7 +19,7 @@ npm list
 echo
 
 echo "Installing ElasticSearch"
-tar xzvf vendor/tarballs/elasticsearch-0.20.5.tar.gz > /dev/null
+tar xzvf vendor/tarballs/elasticsearch-0.90.13.tar.gz > /dev/null
 
 echo "Installing Redis"
 tar xzvf vendor/tarballs/redis-2.6.9.tar.gz > /dev/null
