@@ -24,7 +24,7 @@ echo "Updating product details"
 python manage.py update_product_details
 
 echo "Starting ElasticSearch"
-pushd elasticsearch-0.20.5
+pushd elasticsearch-0.90.10
   # This will daemonize
   ./bin/elasticsearch
 popd
