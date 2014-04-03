@@ -50,7 +50,7 @@ def collect_tweets():
                   ' -rights -leadership -protest -lgbt -marriage'
                   ' -proposition -prop8 -boycott -#boycottfirefox'
                   ' -opposition -political -donation -$1000'
-                  ' -#mozillagate'),
+                  ' -#mozillagate -gay'),
             'count': settings.CC_TWEETS_PERPAGE,  # Items per page.
             'result_type': 'recent',  # Retrieve tweets by date.
         }
