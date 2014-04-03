@@ -1668,4 +1668,21 @@ input[type=button],
   top: -20em;
   width: 100%;
   z-index: 1001;
+  
+  a {
+    background: rgba(255, 255, 255, 0.9);
+    padding: 12px 10px;
+    position: absolute;
+    left: 0;
+    right: 0;
+    font-weight: bold;
+    text-align: center;
+    padding: 0;
+    margin: 0;
+
+    &:focus {
+      top: 20em;
+      text-decoration: none;
+    }
+  }
 }
