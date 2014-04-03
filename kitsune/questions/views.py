@@ -766,12 +766,12 @@ def reply(request, question_id):
         for image_id in request.POST.getlist('delete_image'):
             ImageAttachment.objects.get(pk=image_id).delete()
 
-        return answers(request, question_id=question_id, form=form)
+        return question_details(request, question_id=question_id, form=form)
 
     # NOJS: upload image
     if 'upload_image' in request.POST:
         upload_imageattachment(request, question)
-        return answers(request, question_id=question_id, form=form)
+        return question_details(request, question_id=question_id, form=form)
 
     if form.is_valid() and not request.limited:
         answer = Answer(question=question, creator=request.user,
