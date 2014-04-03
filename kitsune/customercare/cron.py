@@ -50,7 +50,17 @@ def collect_tweets():
                   ' -rights -leadership -protest -lgbt -marriage'
                   ' -proposition -prop8 -boycott -#boycottfirefox'
                   ' -opposition -political -donation -$1000'
-                  ' -#mozillagate -gay'),
+                  ' -#mozillagate -gay -conservative -boycot -political'
+                  ' -tolerance -okcupid -speech -censor -censorship'
+                  ' -resign -resignation -equal -equality -intolerant'
+                  ' -intolerance -christian -StandWithMozilla'
+                  ' -StandWithFirefox -police -freedom -tcot -bigot'
+                  ' -bigots -bigotted -bigoted -liberal -hypocrite'
+                  ' -hypocrites -hypocritical -debacle -gay -marriage'
+                  ' -tea party -#tcot -harassment -belief -beliefs'
+                  ' -fascism -moral -morality -morals -leftists'
+                  ' -bullying -bully -homophobe -homophobic'
+                  ' -homophobia'),
             'count': settings.CC_TWEETS_PERPAGE,  # Items per page.
             'result_type': 'recent',  # Retrieve tweets by date.
         }
