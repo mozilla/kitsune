@@ -10,7 +10,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.cache import cache
 from django.core.urlresolvers import resolve
 from django.conf import settings
-from django.db import models, connection
+from django.db import models, connection, close_old_connections
 from django.db.models import Q
 from django.db.models.signals import post_save, pre_save
 from django.db.utils import IntegrityError
@@ -663,6 +663,10 @@ class QuestionVisits(ModelBase):
         counts = googleanalytics.pageviews_by_question(
             settings.GA_START_DATE, date.today(), verbose=verbose)
         if counts:
+            # Close any existing connections because our load balancer times
+            # them out at 5 minutes and the GA calls take forever.
+            close_old_connections()
+
             for question_id, visits in counts.iteritems():
                 # We are trying to minimize db calls here. Let's try to update
                 # first, that will be the common case.
