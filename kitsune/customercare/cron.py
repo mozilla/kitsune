@@ -45,22 +45,15 @@ def collect_tweets():
                     settings.TWITTER_ACCESS_TOKEN_SECRET)
 
         search_options = {
-            'q': ('firefox OR #fxinput OR @firefoxbrasil OR #firefoxos'
-                  ' OR @firefox_es -brendan -eich -ceo -cupid -civil'
-                  ' -rights -leadership -protest -lgbt -marriage'
-                  ' -proposition -prop8 -boycott -#boycottfirefox'
-                  ' -opposition -political -donation -$1000'
-                  ' -#mozillagate -gay -conservative -boycot -political'
-                  ' -tolerance -okcupid -speech -censor -censorship'
-                  ' -resign -resignation -equal -equality -intolerant'
-                  ' -intolerance -christian -StandWithMozilla'
-                  ' -StandWithFirefox -police -freedom -tcot -bigot'
-                  ' -bigots -bigotted -bigoted -liberal -hypocrite'
-                  ' -hypocrites -hypocritical -debacle -gay -marriage'
-                  ' -tea party -#tcot -harassment -belief -beliefs'
-                  ' -fascism -moral -morality -morals -leftists'
-                  ' -bullying -bully -homophobe -homophobic'
-                  ' -homophobia'),
+            'q': ('firefox OR #fxinput OR @firefoxbrasil OR #firefoxos OR'
+                  ' @firefox_es -brendan -eich -ceo -leadership -protest'
+                  ' -marriage -opposition -political -gay -political'
+                  ' -tolerance -speech -censor -censorship -resign'
+                  ' -resignation -equal -equality -intolerant -intolerance'
+                  ' -StandWithMozilla -StandWithFirefox -freedom -tcot -bigot'
+                  ' -bigots -bigoted -liberal -hypocrite -hypocrites'
+                  ' -hypocritical -harassment -beliefs -leftists -bullying'
+                  ' -bully -homophobic -homophobia'),
             'count': settings.CC_TWEETS_PERPAGE,  # Items per page.
             'result_type': 'recent',  # Retrieve tweets by date.
         }
