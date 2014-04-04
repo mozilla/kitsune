@@ -45,15 +45,15 @@ def collect_tweets():
                     settings.TWITTER_ACCESS_TOKEN_SECRET)
 
         search_options = {
-            'q': ('firefox OR #fxinput OR @firefoxbrasil OR #firefoxos OR'
-                  ' @firefox_es -brendan -eich -ceo -leadership -protest'
-                  ' -marriage -opposition -political -gay -political'
-                  ' -tolerance -speech -censor -censorship -resign'
-                  ' -resignation -equal -equality -intolerant -intolerance'
-                  ' -StandWithMozilla -StandWithFirefox -freedom -tcot -bigot'
-                  ' -bigots -bigoted -liberal -hypocrite -hypocrites'
-                  ' -hypocritical -harassment -beliefs -leftists -bullying'
-                  ' -bully -homophobic -homophobia'),
+            'q': ('firefox OR #fxinput OR @firefoxbrasil OR #firefoxos'
+              ' OR @firefox_es -brendan -eich -ceo -leadership -protest'
+              ' -marriage -boycott -boycottfirefox -opposition -political'
+              ' -gay -political -tolerance -speech -censor -censorship'
+              ' -resign -resignation -equal -equality -intolerant'
+              ' -intolerance -StandWithMozilla -StandWithFirefox -freedom'
+              '  -bigot -bigots -bigoted -liberal -hypocrite -hypocrites'
+              ' -hypocritical -harassment -beliefs -leftists -bullying'
+              ' -bully -homophobic -homophobia'),
             'count': settings.CC_TWEETS_PERPAGE,  # Items per page.
             'result_type': 'recent',  # Retrieve tweets by date.
         }
