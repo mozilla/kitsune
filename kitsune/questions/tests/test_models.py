@@ -17,6 +17,7 @@ from kitsune.sumo.redis_utils import RedisError, redis_client
 from kitsune.questions.cron import auto_archive_old_questions
 from kitsune.questions.events import QuestionReplyEvent
 from kitsune.questions.karma_actions import SolutionAction, AnswerAction
+from kitsune.questions import models
 from kitsune.questions.models import (
     Answer, Question, QuestionMetaData, QuestionVisits,
     _tenths_version, _has_beta, user_num_questions,
@@ -544,8 +545,12 @@ class UserActionCounts(TestCase):
 class QuestionVisitsTests(TestCase):
     """Tests for the pageview statistics gathering."""
 
-    @mock.patch.object(googleanalytics, 'pageviews_by_question')
-    def test_visit_count_from_analytics(self, pageviews_by_question):
+    # Need to monkeypatch close_old_connections out because it
+    # does something screwy with the testing infra around transactions.
+    @mock.patch.object(models, 'close_old_connections')
+    @mock.patch.object(googleanalytics, 'pageviews_by_question', )
+    def test_visit_count_from_analytics(self, pageviews_by_question,
+                                        close_old_connections):
         """Verify stored visit counts from mocked data."""
         q1 = question(save=True)
         q2 = question(save=True)

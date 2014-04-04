@@ -2,6 +2,7 @@
 from mock import patch
 from nose.tools import eq_
 
+from kitsune.dashboards import models
 from kitsune.dashboards.models import (
     WikiDocumentVisits, LAST_7_DAYS, googleanalytics)
 from kitsune.sumo.tests import TestCase
@@ -11,8 +12,12 @@ from kitsune.wiki.tests import document, revision
 class DocumentVisitsTests(TestCase):
     """Tests for the pageview statistics gathering."""
 
+    # Need to monkeypatch close_old_connections out because it
+    # does something screwy with the testing infra around transactions.
+    @patch.object(models, 'close_old_connections')
     @patch.object(googleanalytics, '_build_request')
-    def test_visit_count_from_analytics(self, _build_request):
+    def test_visit_count_from_analytics(self, _build_request,
+                                        close_old_connections):
         """Verify stored visit counts from mocked analytics data.
 
         It has some nasty non-ASCII chars in it.
