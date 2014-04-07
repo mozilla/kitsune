@@ -101,6 +101,15 @@ class TwitterCronTestCase(TestCase):
         self.tweet['text'] = 'My Firefox crashes :-( Any advice?'
         assert _filter_tweet(self.tweet) is not None
 
+    @override_settings(CC_WORD_BLACKLIST=['foo'])
+    def test_word_blacklist(self):
+        # Full words are blocked.
+        self.tweet['text'] = 'the word "foo" should be blocked.'
+        assert _filter_tweet(self.tweet) is None
+        # Substrings aren't blocked.
+        self.tweet['text'] = 'but "food" should not be blocked.'
+        assert _filter_tweet(self.tweet) is not None
+
 
 class GetOldestTweetTestCase(TestCase):
 

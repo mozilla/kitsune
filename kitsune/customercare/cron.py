@@ -31,6 +31,22 @@ ALLOWED_USERS = [
 log = logging.getLogger('k.twitter')
 
 
+def get_word_blacklist_regex():
+    """
+    Make a regex that looks kind of like r'\b(foo|bar|baz)\b'.
+
+    This is a function so that it isn't calculated at import time,
+    and so can be tested more easily.
+
+    This doesn't use raw strings (r'') because the "mismatched" parens
+    were confusing my syntax highlighter, which was confusing me.
+    """
+    return re.compile(
+        '\\b(' +
+        '|'.join(map(re.escape, settings.CC_WORD_BLACKLIST)) +
+        ')\\b')
+
+
 @cronjobs.register
 def collect_tweets():
     # Don't (ab)use the twitter API from dev and stage.
@@ -45,15 +61,8 @@ def collect_tweets():
                     settings.TWITTER_ACCESS_TOKEN_SECRET)
 
         search_options = {
-            'q': ('firefox OR #fxinput OR @firefoxbrasil OR #firefoxos'
-              ' OR @firefox_es -brendan -eich -ceo -leadership -protest'
-              ' -marriage -boycott -boycottfirefox -opposition -political'
-              ' -gay -political -tolerance -speech -censor -censorship'
-              ' -resign -resignation -equal -equality -intolerant'
-              ' -intolerance -StandWithMozilla -StandWithFirefox -freedom'
-              '  -bigot -bigots -bigoted -liberal -hypocrite -hypocrites'
-              ' -hypocritical -harassment -beliefs -leftists -bullying'
-              ' -bully -homophobic -homophobia'),
+            'q': ('firefox OR #fxinput OR @firefoxbrasil OR #firefoxos '
+                  'OR @firefox_es'),
             'count': settings.CC_TWEETS_PERPAGE,  # Items per page.
             'result_type': 'recent',  # Retrieve tweets by date.
         }
@@ -170,6 +179,13 @@ def _filter_tweet(item, allow_links=False):
     # Exclude filtered users
     if item['user']['screen_name'] in settings.CC_IGNORE_USERS:
         statsd.incr('customercare.tweet.rejected.user')
+        return None
+
+    # Exclude problem words
+    match = get_word_blacklist_regex().search(text)
+    if match:
+        bad_word = match.group(1)
+        statsd.incr('customercare.tweet.rejected.blacklist_word.' + bad_word)
         return None
 
     return item
