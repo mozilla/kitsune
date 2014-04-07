@@ -30,7 +30,8 @@ a post
 To view this post on the site, click the following link, or paste it into \
 your browser's location bar:
 
-https://testserver/en-US/kb/%s/discuss/%s#post-%s
+https://testserver/en-US/kb/%s/discuss/%s?utm_campaign=kbforums-post&\
+utm_medium=email&utm_source=notification#post-%s
 
 --
 Unsubscribe from these emails:
@@ -49,7 +50,8 @@ a post
 To view this post on the site, click the following link, or paste it into \
 your browser's location bar:
 
-https://testserver/en-US/kb/%s/discuss/%s
+https://testserver/en-US/kb/%s/discuss/%s?utm_campaign=kbforums-thread&\
+utm_medium=email&utm_source=notification
 
 --
 Unsubscribe from these emails:

@@ -5,19 +5,22 @@ from tower import ugettext_lazy as _lazy
 
 from kitsune.kbforums.models import Thread
 from kitsune.sumo.email_utils import emails_with_users_and_watches
+from kitsune.sumo.helpers import add_utm
 from kitsune.wiki.models import Document
 
 
 def new_post_mails(reply, users_and_watches):
     """Return an interable of EmailMessages to send when a new post is
     created."""
+    post_url = add_utm(reply.get_absolute_url(), 'kbforums-post')
+
     c = {'post': reply.content,
          'post_html': reply.content_parsed,
          'author': reply.creator.username,
          'host': Site.objects.get_current().domain,
          'thread': reply.thread.title,
          'forum': reply.thread.document.title,
-         'post_url': reply.get_absolute_url()}
+         'post_url': post_url}
 
     return emails_with_users_and_watches(
         subject=_lazy(u'Re: {forum} - {thread}'),
@@ -30,13 +33,15 @@ def new_post_mails(reply, users_and_watches):
 def new_thread_mails(post, users_and_watches):
     """Return an interable of EmailMessages to send when a new thread is
     created."""
+    post_url = add_utm(post.thread.get_absolute_url(), 'kbforums-thread')
+
     c = {'post': post.content,
          'post_html': post.content_parsed,
          'author': post.creator.username,
          'host': Site.objects.get_current().domain,
          'thread': post.thread.title,
          'forum': post.thread.document.title,
-         'post_url': post.thread.get_absolute_url()}
+         'post_url': post_url}
 
     return emails_with_users_and_watches(
         subject=_lazy(u'{forum} - {thread}'),

@@ -34,17 +34,22 @@ testserver:
 
 {title}
 
-https://testserver/{locale}questions/{question_id}?auth=AUTH#answer-{answer_id}
+https://testserver/{locale}questions/{question_id}?utm_campaign=\
+questions-reply&utm_medium=email&utm_source=notification&auth=AUTH\
+#answer-{answer_id}
 
 {replier} wrote:
 "{content}"
 
 See the comment:
-https://testserver/{locale}questions/{question_id}?auth=AUTH#answer-{answer_id}
+https://testserver/{locale}questions/{question_id}?utm_campaign=\
+questions-reply&utm_medium=email&utm_source=notification&auth=AUTH\
+#answer-{answer_id}
 
 If this comment is helpful, vote on it:
-https://testserver/{locale}questions/{question_id}/vote/{answer_id}?helpful=&\
-auth=AUTH
+https://testserver/{locale}questions/{question_id}/vote/{answer_id}\
+?utm_campaign=questions-reply&utm_source=notification&utm_medium=\
+email&helpful=&auth=AUTH
 
 Help other Firefox users by browsing for unsolved questions on testserver:
 https://testserver/questions?filter=unsolved
@@ -65,7 +70,9 @@ ANSWER_EMAIL_TO_ASKER = """Hi {asker},
 
 If this doesn't solve your problem, let {replier} know by replying on the \
 website:
-https://testserver/{locale}questions/{question_id}?auth=AUTH#answer-{answer_id}
+https://testserver/{locale}questions/{question_id}?utm_campaign=\
+questions-reply&utm_medium=email&utm_source=notification&auth=AUTH\
+#answer-{answer_id}
 
 If this answer solves your problem, please mark it as "solved":"""
 SOLUTION_EMAIL_TO_ANONYMOUS = """We just wanted to let you know that \
@@ -81,7 +88,8 @@ You can view the solution using the link below.
 Did this answer also help you? Did you find another post more helpful? Let \
 other Firefox users know by voting next to the answer.
 
-https://testserver/{locale}questions/{question_id}#answer-{answer_id}
+https://testserver/{locale}questions/{question_id}?utm_campaign=\
+questions-solved&utm_medium=email&utm_source=notification#answer-{answer_id}
 
 Did you know that {replier} is a Firefox user just like you? Get started \
 helping other Firefox users by browsing questions at \

@@ -5,6 +5,7 @@ from tower import ugettext_lazy as _lazy
 
 from kitsune.forums.models import Thread, Forum
 from kitsune.sumo.email_utils import emails_with_users_and_watches
+from kitsune.sumo.helpers import add_utm
 
 
 class NewPostEvent(InstanceEvent):
@@ -26,13 +27,15 @@ class NewPostEvent(InstanceEvent):
         return EventUnion(self, NewThreadEvent(self.reply)).fire(**kwargs)
 
     def _mails(self, users_and_watches):
+        post_url = add_utm(self.reply.get_absolute_url(), 'forums-post')
+
         c = {'post': self.reply.content,
              'post_html': self.reply.content_parsed,
              'author': self.reply.author.username,
              'host': Site.objects.get_current().domain,
              'thread': self.reply.thread.title,
              'forum': self.reply.thread.forum.name,
-             'post_url': self.reply.get_absolute_url()}
+             'post_url': post_url}
 
         return emails_with_users_and_watches(
             subject=_lazy(u'Re: {forum} - {thread}'),
@@ -54,13 +57,15 @@ class NewThreadEvent(InstanceEvent):
         self.post = post
 
     def _mails(self, users_and_watches):
+        post_url = add_utm(self.post.thread.get_absolute_url(), 'forums-thread')
+
         c = {'post': self.post.content,
              'post_html': self.post.content_parsed,
              'author': self.post.author.username,
              'host': Site.objects.get_current().domain,
              'thread': self.post.thread.title,
              'forum': self.post.thread.forum.name,
-             'post_url': self.post.thread.get_absolute_url()}
+             'post_url': post_url}
 
         return emails_with_users_and_watches(
             subject=_lazy(u'{forum} - {thread}'),
