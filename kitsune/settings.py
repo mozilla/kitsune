@@ -763,6 +763,30 @@ CC_IGNORE_USERS = ['fx4status']  # User names whose tweets to ignore.
 CC_REPLIES_GOAL = 175  # Goal # of replies in 24 hours.
 CC_TWEETS_DAYS = 7  # Limit tweets to those from the last 7 days.
 CC_BANNED_USERS = ['lucasbytegenius']  # Twitter handles banned from AoA
+# If any of these words show up in a tweet, it probably isn't
+# actionable, so don't add it to the AoA.
+CC_WORD_BLACKLIST = [
+    '$1000',
+    'boycott',
+    '#boycottfirefox',
+    'brendan',
+    'ceo',
+    'civil',
+    'cupid',
+    'donation',
+    'eich',
+    'leadership',
+    'lgbt',
+    'marriage',
+    '#mozillagate',
+    'opposition',
+    'political',
+    'prop8',
+    'proposition',
+    'protest',
+    'rights',
+]
+
 
 TWITTER_COOKIE_SECURE = True
 TWITTER_CONSUMER_KEY = ''
