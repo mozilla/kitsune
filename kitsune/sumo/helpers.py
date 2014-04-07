@@ -441,3 +441,10 @@ def linkify(text):
 def showfor_data(products):
     # Markup() marks this data as safe.
     return Markup(jsonlib.dumps(_showfor_data(products)))
+
+
+@register.function
+def add_utm(url_, campaign, source='notification', medium='email'):
+    """Add the utm_* tracking parameters to a URL."""
+    return urlparams(
+        url_, utm_campaign=campaign, utm_source=source, utm_medium=medium)

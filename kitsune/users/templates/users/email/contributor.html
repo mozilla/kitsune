@@ -20,7 +20,7 @@
   </p>
 
   <p>
-    <a href="https://support.mozilla.org/en-US/kb/contributor-news-resources">
+    <a href="{{ add_utm('https://support.mozilla.org/en-US/kb/contributor-news-resources', 'get-involved', source='new-contributor') }}">
       {{ _('Click here to find out where to help.') }}
     </a>
   </p>
@@ -29,29 +29,29 @@
 
   <ul>
     <li>
-      {% trans %}
-        <a href="https://support.mozilla.org/en-US/questions?sort=requested&filter=no-replies">Forum Contributor</a>
+      {% trans url=add_utm('https://support.mozilla.org/en-US/questions?sort=requested&filter=no-replies', 'get-involved', source='new-contributor')%}
+        <a href="{{ url }}">Forum Contributor</a>
         - Answer user support questions that are
         most-requested but have no replies.
       {% endtrans %}
       </a>
     </li>
     <li>
-      {% trans %}
-        <a href="https://support.mozilla.org/army-of-awesome">Twitter Contributor</a>
+      {% trans url=add_utm('https://support.mozilla.org/army-of-awesome', 'get-involved', source='new-contributor') %}
+        <a href="{{ url }}">Twitter Contributor</a>
         - Respond to tweets about Firefox.
       {% endtrans %}
     </li>
     <li>
-      {% trans %}
-        <a href="https://support.mozilla.org/contributors/need-changes">KB Editor</a>
+      {% trans url=add_utm('https://support.mozilla.org/contributors/need-changes', 'get-involved', source='new-contributor') %}
+        <a href="{{ url }}">KB Editor</a>
         - Help to update knowledge base articles that
         need changes or write new articles.
       {% endtrans %}
     </li>
     <li>
-      {% trans %}
-        <a href="https://support.mozilla.org/en-US/kb/localize-firefox-help">L10N Contributor</a>
+      {% trans url=add_utm('https://support.mozilla.org/en-US/kb/localize-firefox-help', 'get-involved', source='new-contributor') %}
+        <a href="{{ url }}">L10N Contributor</a>
         - Help to translate Firefox Help content
         to your language.
       {% endtrans %}

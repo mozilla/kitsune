@@ -13,6 +13,7 @@ from tower import ugettext_lazy as _lazy
 from wikimarkup.parser import ALLOWED_TAGS, ALLOWED_ATTRIBUTES
 
 from kitsune.sumo import email_utils
+from kitsune.sumo.helpers import add_utm
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.wiki.models import Document
 
@@ -101,7 +102,7 @@ class EditDocumentEvent(InstanceEvent):
                       args=[document.slug])
 
         context = context_dict(revision)
-        context['revisions_url'] = url
+        context['revisions_url'] = add_utm(url, 'wiki-edit')
         context['locale'] = document.locale
         context['title'] = document.title
         context['creator'] = revision.creator
@@ -214,7 +215,7 @@ class ReviewableRevisionInLocaleEvent(_RevisionConstructor,
                       args=[document.slug, revision.id])
 
         context = context_dict(revision)
-        context['revision_url'] = url
+        context['revision_url'] = add_utm(url, 'wiki-ready-review')
         context['locale'] = document.locale
         context['title'] = document.title
         context['creator'] = revision.creator
@@ -242,9 +243,10 @@ class ReadyRevisionEvent(_RevisionConstructor, _ProductFilter, Event):
 
         subject = _lazy(u'{title} has a revision ready for localization')
 
+        url = django_reverse('wiki.select_locale', args=[document.slug])
+
         context = context_dict(revision, ready_for_l10n=True)
-        context['l10n_url'] = django_reverse('wiki.select_locale',
-                                             args=[document.slug])
+        context['l10n_url'] = add_utm(url, 'wiki-ready-l10n')
         context['title'] = document.title
 
         return email_utils.emails_with_users_and_watches(
@@ -302,8 +304,10 @@ class ApprovedOrReadyUnion(EventUnion):
                 c = context_dict(revision, ready_for_l10n=True)
                 # TODO: Expose all watches
                 c['watch'] = watches[0]
-                c['l10n_url'] = django_reverse('wiki.select_locale',
-                                               args=[document.slug])
+
+                url = django_reverse(
+                    'wiki.select_locale', args=[document.slug])
+                c['l10n_url'] = add_utm(url, 'wiki-ready-l10n')
 
                 subject = _(u'{title} has a revision ready for '
                             'localization')
@@ -316,7 +320,7 @@ class ApprovedOrReadyUnion(EventUnion):
                                        locale=document.locale,
                                        args=[document.slug])
 
-                c['document_url'] = approved_url
+                c['document_url'] = add_utm(approved_url, 'wiki-approved')
                 # TODO: Expose all watches.
                 c['watch'] = watches[0]
                 c['reviewer'] = revision.reviewer.username

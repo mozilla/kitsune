@@ -27,13 +27,16 @@ def email_private_message(inbox_message_id):
         subject = _(u'[SUMO] You have a new private message from [{sender}]')
         subject = subject.format(sender=inbox_message.sender.username)
 
+        msg_url = reverse('messages.read', kwargs={'msgid': inbox_message.id})
+        settings_url = reverse('users.edit_settings')
+
+        from kitsune.sumo.helpers import add_utm
         context = {
             'sender': inbox_message.sender.username,
             'message': inbox_message.message,
             'message_html': inbox_message.content_parsed,
-            'message_url': reverse('messages.read',
-                                   kwargs={'msgid': inbox_message.id}),
-            'unsubscribe_url': reverse('users.edit_settings'),
+            'message_url': add_utm(msg_url, 'messages-new'),
+            'unsubscribe_url': add_utm(settings_url, 'messages-new'),
             'host': Site.objects.get_current().domain}
 
         mail = make_mail(subject=subject,

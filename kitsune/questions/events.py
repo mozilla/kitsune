@@ -7,7 +7,7 @@ from tower import ugettext as _
 from kitsune.users.auth import get_auth_str
 from kitsune.questions.models import Question
 from kitsune.sumo import email_utils
-from kitsune.sumo.helpers import urlparams
+from kitsune.sumo.helpers import urlparams, add_utm
 from kitsune.sumo.urlresolvers import reverse
 
 
@@ -55,8 +55,9 @@ class QuestionEvent(InstanceEvent):
 
     @classmethod
     def _activation_url(cls, watch):
-        return reverse('questions.activate_watch',
-                       args=[watch.id, watch.secret])
+        url = reverse(
+            'questions.activate_watch', args=[watch.id, watch.secret])
+        return add_utm(url, 'questions-activate')
 
 
 class QuestionReplyEvent(QuestionEvent):
@@ -103,13 +104,15 @@ class QuestionReplyEvent(QuestionEvent):
 
         for u, w in users_and_watches:
             auth_str = get_auth_str(self.answer.question.creator)
-            answer_url = self.answer.get_absolute_url()
-            helpful_url = self.answer.get_helpful_answer_url()
-            solution_url = self.answer.get_solution_url(watch=w[0])
 
-            c['answer_url'] = urlparams(answer_url, auth=auth_str)
-            c['helpful_url'] = urlparams(helpful_url, auth=auth_str)
-            c['solution_url'] = urlparams(solution_url, auth=auth_str)
+            c['answer_url'] = self.answer.get_absolute_url()
+            c['helpful_url'] = self.answer.get_helpful_answer_url()
+            c['solution_url'] = self.answer.get_solution_url(watch=w[0])
+
+            for k in ['answer_url', 'helpful_url', 'solution_url']:
+                c[k] = add_utm(
+                    urlparams(c[k], auth=auth_str), 'questions-reply')
+
             c['username'] = u.username
             c['watch'] = w[0]  # TODO: Expose all watches.
 
@@ -153,11 +156,14 @@ class QuestionSolvedEvent(QuestionEvent):
 
             return mail
 
+        solution_url = add_utm(
+            question.solution.get_absolute_url(), 'questions-solved')
+
         c = {'answerer': question.solution.creator,
              'asker': question.creator.username,
              'question_title': question.title,
              'host': Site.objects.get_current().domain,
-             'solution_url': question.solution.get_absolute_url()}
+             'solution_url': solution_url}
 
         for u, w in users_and_watches:
             c['username'] = u.username  # '' if anonymous
