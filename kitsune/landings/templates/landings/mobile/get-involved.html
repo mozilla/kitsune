@@ -75,7 +75,12 @@
     </p>
   </div>
 
-  {% set user_is_contributor = is_contributor(user) %}
-  {% include 'landings/mobile/includes/register_contributor.html' %}
-
+  <div class="sign-up">
+    <h3>
+      {{ _('Having trouble with Firefox and want some help?') }}
+    </h3>
+    <a class="btn btn-submit" href="{{ url('questions.aaq_step1') }}">
+      {{ _('Ask a question') }}
+    </a>
+  </div>
 {% endblock %}
