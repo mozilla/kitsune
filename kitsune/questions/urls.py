@@ -74,6 +74,15 @@ urlpatterns = patterns(
     url(r'^/(?P<question_id>\d+)/remove-tag-async$', 'remove_tag_async',
         name='questions.remove_tag_async'),
 
+    # Feeds
+    # Note: this needs to be above questions.list because "feed"
+    # matches the product slug regex.
+    url(r'^/feed$', QuestionsFeed(), name='questions.feed'),
+    url(r'^/(?P<question_id>\d+)/feed$', AnswersFeed(),
+        name='questions.answers.feed'),
+    url(r'^/tagged/(?P<tag_slug>[\w\-]+)/feed$', TaggedQuestionsFeed(),
+        name='questions.tagged_feed'),
+
     # Question lists
     url(r'^/(?P<product_slug>[\w+\-]+)$', 'question_list',
         name='questions.list'),
@@ -95,11 +104,4 @@ urlpatterns = patterns(
         name='questions.activate_watch'),
     url(r'^/unsubscribe/(?P<watch_id>\d+)/(?P<secret>\w+)$',
         'unsubscribe_watch', name='questions.unsubscribe'),
-
-    # Feeds
-    url(r'^/feed$', QuestionsFeed(), name='questions.feed'),
-    url(r'^/(?P<question_id>\d+)/feed$', AnswersFeed(),
-        name='questions.answers.feed'),
-    url(r'^/tagged/(?P<tag_slug>[\w\-]+)/feed$', TaggedQuestionsFeed(),
-        name='questions.tagged_feed'),
 )
