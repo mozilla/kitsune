@@ -13,7 +13,13 @@
             {{ _('Sign me up') }} &raquo;
           </a>
         {% endif %}
-        <h3>{{ _('Sign up as a volunteer') }}</h3>
+        <h3>
+          {% if signup_headline %}
+            {{ signup_headline }}
+          {% else %}
+            {{ _('Sign up as a volunteer') }}
+          {% endif %}
+        </h3>
       </div>
     </div>
   </div>
