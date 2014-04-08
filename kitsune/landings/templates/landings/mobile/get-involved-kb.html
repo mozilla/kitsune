@@ -68,6 +68,8 @@
     </li>
   </ul>
 
+  {% set user_is_contributor = is_contributor(user) %}
+  {% set signup_headline = _('Improve our help articles') %}
   {% include 'landings/mobile/includes/register_contributor.html' %}
 
 {% endblock %}

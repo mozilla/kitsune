@@ -29,8 +29,39 @@
         you can do it from the comfort of your couch!
       {% endtrans %}
     </p>
+  </div>
 
-    <div class="centered">
+  <div class="pick-a-way">
+    <div class="padded">
+      <h4>{{ _('Pick a way to get involved') }}</h4>
+    </div>
+
+    <ul class="gi-links">
+      <li>
+        <a href="{{ url('landings.get_involved_aoa') }}">
+          {{ _('Army of Awesome: help users on Twitter') }}
+        </a>
+      </li>
+      <li>
+        <a href="{{ url('landings.get_involved_questions') }}">
+          {{ _('Answer questions in the support forum') }}
+        </a>
+      </li>
+      <li>
+        <a href="{{ url('landings.get_involved_kb') }}">
+          {{ _('Write help articles') }}
+        </a>
+      </li>
+      <li>
+        <a href="{{ url('landings.get_involved_l10n') }}">
+          {{ _('Translate help to your languages') }}
+        </a>
+      </li>
+    </ul>
+  </div>
+
+  <div class="padded">
+    <div class="centered about-banner">
       <img class="smart-width" src="{{ STATIC_URL }}img/moz-heroes.jpg" alt="">
     </div>
 
@@ -42,31 +73,8 @@
         adventure!
       {% endtrans %}
     </p>
-
-    <h4>{{ _('Pick a way to get involved') }}</h4>
   </div>
-  <ul class="gi-links">
-    <li>
-      <a href="{{ url('landings.get_involved_aoa') }}">
-        {{ _('Army of Awesome: help users on Twitter') }}
-      </a>
-    </li>
-    <li>
-      <a href="{{ url('landings.get_involved_questions') }}">
-        {{ _('Answer questions in the support forum') }}
-      </a>
-    </li>
-    <li>
-      <a href="{{ url('landings.get_involved_kb') }}">
-        {{ _('Write help articles') }}
-      </a>
-    </li>
-    <li>
-      <a href="{{ url('landings.get_involved_l10n') }}">
-        {{ _('Translate help to your languages') }}
-      </a>
-    </li>
-  </ul>
+
 
   {% set user_is_contributor = is_contributor(user) %}
   {% include 'landings/mobile/includes/register_contributor.html' %}
