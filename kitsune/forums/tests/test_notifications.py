@@ -35,7 +35,8 @@ a post
 To view this post on the site, click the following link, or paste it into \
 your browser's location bar:
 
-https://testserver/en-US/forums/{forum_slug}/{thread_id}?utm_campaign=forums-post&utm_medium=email&utm_source=notification#post-{post_id}
+https://testserver/en-US/forums/{forum_slug}/{thread_id}?utm_campaign=\
+forums-post&utm_medium=email&utm_source=notification#post-{post_id}
 
 --
 Unsubscribe from these emails:
@@ -55,7 +56,8 @@ a post
 To view this post on the site, click the following link, or paste it into \
 your browser's location bar:
 
-https://testserver/en-US/forums/{forum_slug}/{thread_id}?utm_campaign=forums-thread&utm_medium=email&utm_source=notification
+https://testserver/en-US/forums/{forum_slug}/{thread_id}?utm_campaign=\
+forums-thread&utm_medium=email&utm_source=notification
 
 --
 Unsubscribe from these emails:
