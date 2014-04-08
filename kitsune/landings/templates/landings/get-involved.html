@@ -27,6 +27,36 @@
     </div>
   </div>
 
+  <div class="row cf pick-a-way">
+    <div class="grid_12">
+      <h3>{{ _('Pick a way to get involved') }}</h3>
+    </div>
+    <div class="grid_3">
+      <a href="{{ url('landings.get_involved_aoa') }}">
+        <span class="get-involved-icon aoa"></span>
+        {{ _('Army of Awesome: help users on Twitter') }} &raquo;
+      </a>
+    </div>
+    <div class="grid_3">
+      <a href="{{ url('landings.get_involved_questions') }}">
+        <span class="get-involved-icon questions"></span>
+        {{ _('Answer questions in the support forum') }} &raquo;
+      </a>
+    </div>
+    <div class="grid_3">
+      <a href="{{ url('landings.get_involved_kb') }}">
+        <span class="get-involved-icon kb"></span>
+        {{ _('Write help articles') }} &raquo;
+      </a>
+    </div>
+    <div class="grid_3">
+      <a href="{{ url('landings.get_involved_l10n') }}">
+        <span class="get-involved-icon localize"></span>
+        {{ _('Translate help to your languages') }} &raquo;
+      </a>
+    </div>
+  </div>
+
   <div class="row cf">
     <div class="grid_4">
       <h3>{{ _('About Us') }}</h3>
@@ -39,36 +69,14 @@
     <div class="grid_8"><img class="moz-heroes" src="{{ STATIC_URL }}img/moz-heroes.jpg" alt=""></div>
   </div>
 
-  <div class="row cf pick-a-way">
+  <div class="row cf">
     <div class="grid_12">
-      <h3>{{ _('Pick a way to get involved') }}</h3>
-    </div>
-    <div class="grid_3">
-      <div class="get-involved-icon aoa"></div>
-      <a href="{{ url('landings.get_involved_aoa') }}">
-        {{ _('Army of Awesome: help users on Twitter') }} &raquo;
-      </a>
-    </div>
-    <div class="grid_3">
-      <div class="get-involved-icon questions"></div>
-      <a href="{{ url('landings.get_involved_questions') }}">
-        {{ _('Answer questions in the support forum') }} &raquo;
-      </a>
-    </div>
-    <div class="grid_3">
-      <div class="get-involved-icon kb"></div>
-      <a href="{{ url('landings.get_involved_kb') }}">
-        {{ _('Write help articles') }} &raquo;
-      </a>
-    </div>
-    <div class="grid_3">
-      <div class="get-involved-icon localize"></div>
-      <a href="{{ url('landings.get_involved_l10n') }}">
-        {{ _('Translate help to your languages') }} &raquo;
-      </a>
+      <div class="content-box button-wrapper cf">
+        <a class="btn btn-submit" href="{{ url('questions.aaq_step1') }}">
+          {{ _('Ask a question') }}
+        </a>
+        <h3>{{ _('Having trouble with Firefox and want some help?') }}</h3>
+      </div>
     </div>
   </div>
-
-  {% set user_is_contributor = is_contributor(user) %}
-  {% include 'landings/includes/register_contributor.html' %}
 {% endblock %}
