@@ -32,8 +32,7 @@ Forum Contributor - Answer user support questions that are
 most-requested but have no replies:
 {% endtrans %}
 
-{{ add_utm('https://support.mozilla.org/en-US/questions?sort=requested&filter=no-replies
-', 'get-involved', source='new-contributor') }}
+{{ add_utm('https://support.mozilla.org/en-US/questions?sort=requested&filter=no-replies', 'get-involved', source='new-contributor') }}
 
 {# L10n: This is an email.  Whitespace matters! #}
 {% trans %}
