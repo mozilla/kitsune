@@ -1,33 +1,35 @@
 {% extends 'email/base.html' %}
 
 {% block content %}
+  <p>{{ _('Hi {username},')|f(username=username) }}</p>
+
   <p>
     {% trans %}
-      Welcome to {{ domain }}.
+      Thanks for joining Mozilla Support! To complete registration, you need to
+      verify your email address.
     {% endtrans %}
   </p>
 
   <p>
-    {% trans %}
-      Before you can use your new account you must activate it -
-      this ensures the e-mail address you used is valid and belongs
-      to you.  To activate your account, click the link below or
-      copy and paste the whole thing into your browser's location bar:
-    {% endtrans %}
-  </p>
-
-  <p><a href="https://{{ domain }}{{ activate_url }}?reg=main">https://{{ domain }}{{ activate_url }}?reg=main</a></p>
-
-  <p>
-    {% trans %}
-      Once you've successfully activated your account, you can throw
-      away this e-mail.
-    {% endtrans %}
+    <a class="button" href="https://{{ domain }}{{ activate_url }}?reg={{ reg }}">
+      {{ _('Click here to verify your email address') }}
+    </a>
   </p>
 
   <p>
-    {{ _('Thanks!') }}
-    <br />{{ _('The {domain} team')|f(domain=domain) }}
+    {{ _('If the link above doesn’t work, click here:') }}
+    <br /><a href="https://{{ domain }}{{ activate_url }}?reg={{ reg }}">https://{{ domain }}{{ activate_url }}?reg=main</a>
+  </p>
+
+  <p>
+    {% trans %}
+      Once you’ve clicked on the link, you can throw away this email.
+    {% endtrans %}
+  </p>
+
+  <p>
+    {{ _('Thanks,') }}
+    <br>{{ _('The Mozilla Support team') }}
   </p>
 {% endblock %}
 

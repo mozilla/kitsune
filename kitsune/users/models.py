@@ -159,7 +159,8 @@ class ConfirmationManager(models.Manager):
         email_kwargs = {'activation_key': confirmation_profile.activation_key,
                         'domain': current_site.domain,
                         'activate_url': url,
-                        'login_url': reverse('users.login')}
+                        'login_url': reverse('users.login'),
+                        'reg': 'main'}
         email_kwargs.update(kwargs)
 
         # RegistrationProfile doesn't have a locale attribute. So if
@@ -268,7 +269,7 @@ class RegistrationManager(ConfirmationManager):
                              locale=settings.LANGUAGE_CODE,
                              text_template=None, html_template=None,
                              subject=None, email_data=None,
-                             volunteer_interest=False):
+                             volunteer_interest=False, **kwargs):
         """
         Create a new, inactive ``User`` and ``Profile``, generates a
         ``RegistrationProfile`` and email its activation key to the
@@ -286,7 +287,8 @@ class RegistrationManager(ConfirmationManager):
             text_template,
             html_template,
             subject,
-            email_data)
+            email_data,
+            **kwargs)
 
         if volunteer_interest:
             statsd.incr('user.registered-as-contributor')
@@ -297,7 +299,7 @@ class RegistrationManager(ConfirmationManager):
 
     def send_confirmation_email(self, registration_profile,
                                 text_template=None, html_template=None,
-                                subject=None, email_data=None):
+                                subject=None, email_data=None, **kwargs):
         """Send the user confirmation email."""
         user_id = registration_profile.user.id
         key = registration_profile.activation_key
@@ -310,7 +312,8 @@ class RegistrationManager(ConfirmationManager):
             send_to=registration_profile.user.email,
             expiration_days=settings.ACCOUNT_ACTIVATION_DAYS,
             username=registration_profile.user.username,
-            email_data=email_data)
+            email_data=email_data,
+            **kwargs)
 
     def delete_expired_users(self):
         """
