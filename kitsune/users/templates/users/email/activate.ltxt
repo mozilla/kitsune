@@ -7,7 +7,7 @@ Thanks for joining Mozilla Support! To complete registration, you need to
 verify your email address.
 {% endtrans %}
 
-{{_('Verify your email address:' }}
+{{ _('Verify your email address:') }}
 https://{{ domain }}{{ activate_url }}?reg=main
 
 {{ _('Once you’ve clicked on the link, you can throw away this email.') }}
@@ -16,4 +16,4 @@ https://{{ domain }}{{ activate_url }}?reg=main
 Thanks,
 The Mozilla Support team
 {% endtrans %}
-{% trans %}{% endautoescape %}
+{% endautoescape %}
