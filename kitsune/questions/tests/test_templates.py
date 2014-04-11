@@ -885,9 +885,10 @@ class TaggingViewTestsAsTagger(TestCaseBase):
                                     HTTP_X_REQUESTED_WITH='XMLHttpRequest')
         self.assertContains(response, 'canonicalName')
         tags = Question.objects.get(id=self.question.id).tags.all()
-        eq_([t.name for t in tags],
-            ['purplepurplepurple'])  # Test the backend since we don't have a
-                                     # newly rendered page to rely on.
+
+        # Test the backend since we don't have a newly rendered page to
+        # rely on.
+        eq_([t.name for t in tags], ['purplepurplepurple'])
 
     def test_add_async_no_tag(self):
         """Assert adding an empty tag asynchronously yields an AJAX error."""
@@ -1053,8 +1054,8 @@ class QuestionsTemplateTestCase(TestCaseBase):
 
         # u should have a contributor badge on q1 but not q2
         self.client.login(username=u.username, password="testpass")
-        response = self.client.get(urlparams(reverse('questions.list', args=['all']),
-                                             show='all'))
+        response = self.client.get(
+            urlparams(reverse('questions.list', args=['all']), show='all'))
         doc = pq(response.content)
         eq_(1,
             len(doc('#question-%s .thread-contributed.highlighted' % q1.id)))
@@ -1093,8 +1094,8 @@ class QuestionsTemplateTestCase(TestCaseBase):
         tagname = 'mobile'
         tag(name=tagname, slug=tagname, save=True)
         self.client.login(username=u.username, password="testpass")
-        tagged = urlparams(reverse('questions.list', args=['all']), tagged=tagname,
-                           show='all')
+        tagged = urlparams(reverse(
+            'questions.list', args=['all']), tagged=tagname, show='all')
 
         # First there should be no questions tagged 'mobile'
         response = self.client.get(tagged)
@@ -1119,8 +1120,10 @@ class QuestionsTemplateTestCase(TestCaseBase):
             doc('link[rel="canonical"]')[0].attrib['href'])
 
         # Test a tag that doesn't exist. It shouldnt blow up.
-        url = urlparams(reverse(
-            'questions.list', args=['all']), tagged='garbage-plate', show='all')
+        url = urlparams(
+            reverse('questions.list', args=['all']),
+            tagged='garbage-plate',
+            show='all')
         response = self.client.get(url)
         eq_(200, response.status_code)
 
@@ -1158,6 +1161,12 @@ class QuestionsTemplateTestCase(TestCaseBase):
         check(p2.slug, [q3])
         # Filter on p3 -> No results
         check(p3.slug, [])
+        # Filter on p1,p2
+        check('%s,%s' % (p1.slug, p2.slug), [q2, q3])
+        # Filter on p1,p3
+        check('%s,%s' % (p1.slug, p3.slug), [q2, q3])
+        # Filter on p2,p3
+        check('%s,%s' % (p2.slug, p3.slug), [q3])
 
     def test_topic_filter(self):
         p = product(save=True)
@@ -1182,7 +1191,7 @@ class QuestionsTemplateTestCase(TestCaseBase):
 
             # This won't work, because the test case base adds more tests than
             # we expect in it's setUp(). TODO: Fix that.
-            #eq_(len(expected), len(doc('.questions > section')))
+            # eq_(len(expected), len(doc('.questions > section')))
 
             for q in expected:
                 eq_(1, len(doc('.questions > section[id=question-%s]' % q.id)))
@@ -1514,7 +1523,8 @@ class AAQTemplateTestCase(TestCaseBase):
 class ProductForumTemplateTestCase(TestCaseBase):
     def test_product_forum_listing(self):
         firefox = product(title='Firefox', slug='firefox', save=True)
-        android = product(title='Firefox for Android', slug='mobile', save=True)
+        android = product(
+            title='Firefox for Android', slug='mobile', save=True)
         fxos = product(title='Firefox OS', slug='firefox-os', save=True)
 
         response = self.client.get(reverse('questions.home'))

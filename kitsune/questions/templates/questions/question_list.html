@@ -11,7 +11,13 @@
   {% set classes = classes + ' show-escalated' %}
 {% endif %}
 
-{% set product_title = _(product.title, 'DB: products.Product.title') if product else _('All Products') %}
+{% if all_products %}
+  {% set product_title = _('All Products') %}
+{% elif multiple_products %}
+  {% set product_title = _('Multiple Products') %}
+{% else %}
+  {% set product_title = _(products[0].title, 'DB: products.Product.title') %}
+{% endif %}
 
 {% set title = _('{product} Support Forum')|f(product=product_title) %}
 

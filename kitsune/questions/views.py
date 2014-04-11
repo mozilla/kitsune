@@ -104,7 +104,7 @@ def product_list(request, template):
 
 
 @mobile_template('questions/{mobile/}question_list.html')
-def question_list(request, template, product_slug=None):
+def question_list(request, template, product_slug):
     """View the list of questions."""
 
     filter_ = request.GET.get('filter')
@@ -119,14 +119,23 @@ def question_list(request, template, product_slug=None):
     tags = None
     topic_slug = request.GET.get('topic')
 
-    if product_slug != 'all':
-        product = get_object_or_404(Product, slug=product_slug)
-    else:
-        product = None
+    product_slugs = product_slug.split(',')
+    products = []
 
-    if topic_slug and product:
+    if len(product_slugs) > 1 or product_slugs[0] != 'all':
+        for slug in product_slugs:
+            products.append(get_object_or_404(Product, slug=slug))
+        multiple = len(products) > 1
+    else:
+        # We want all products (no product filtering at all).
+        products = None
+        multiple = True
+
+    if topic_slug and not multiple:
+        # We don't support topics when there is more than one product.
+        # There is no way to know what product the topic applies to.
         try:
-            topic = Topic.objects.get(slug=topic_slug, product=product)
+            topic = Topic.objects.get(slug=topic_slug, product=products[0])
         except Topic.DoesNotExist:
             topic = None
     else:
@@ -195,11 +204,11 @@ def question_list(request, template, product_slug=None):
     oldest_date = date.today() - timedelta(days=90)
     question_qs = question_qs.exclude(created__lt=oldest_date, num_answers=0)
 
-    # Filter by product.
-    if product:
+    # Filter by products.
+    if products:
         # This filter will match if any of the products on a question have the
         # correct id.
-        question_qs = question_qs.filter(products__id__exact=product.id)
+        question_qs = question_qs.filter(products__in=products).distinct()
 
     # Filter by topic.
     if topic:
@@ -243,9 +252,11 @@ def question_list(request, template, product_slug=None):
     # List of products to fill the selector.
     product_list = Product.objects.filter(visible=True)
 
-    # List of topics to fill the selector.
-    if product:
-        topic_list = Topic.objects.filter(visible=True, product=product)[:10]
+    # List of topics to fill the selector. Only shows if there is exactly
+    # one product selected.
+    if products and not multiple:
+        topic_list = Topic.objects.filter(
+            visible=True, product=products[0])[:10]
     else:
         topic_list = []
 
@@ -269,8 +280,10 @@ def question_list(request, template, product_slug=None):
             'recent_unanswered_count': recent_unanswered_count,
             'recent_answered_percent': recent_answered_percent,
             'product_list': product_list,
-            'product': product,
+            'products': products,
             'product_slug': product_slug,
+            'multiple_products': multiple,
+            'all_products': product_slug == 'all',
             'topic_list': topic_list,
             'topic': topic}
 
@@ -799,8 +812,9 @@ def reply(request, question_id):
 
             return HttpResponseRedirect(answer.get_absolute_url())
 
-    return question_details(request, question_id=question_id, form=form,
-                   answer_preview=answer_preview)
+    return question_details(
+        request, question_id=question_id, form=form,
+        answer_preview=answer_preview)
 
 
 def solve(request, question_id, answer_id):
@@ -995,7 +1009,8 @@ def add_tag(request, question_id):
         template_data = _answers_data(request, question_id)
         template_data['tag_adding_error'] = UNAPPROVED_TAG
         template_data['tag_adding_value'] = request.POST.get('tag-name', '')
-        return render(request, 'questions/question_details.html', template_data)
+        return render(
+            request, 'questions/question_details.html', template_data)
 
     if canonical_name:  # success
         question.clear_cached_tags()
