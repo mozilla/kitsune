@@ -4,7 +4,15 @@
 
 {% set styles = ('mobile/questions',) %}
 {% set classes = 'questions' %}
-{% set product_title = _(product.title, 'DB: products.Product.title') if product else _('All Products') %}
+
+{% if all_products %}
+  {% set product_title = _('All Products') %}
+{% elif multiple_products %}
+  {% set product_title = _('Multiple Products') %}
+{% else %}
+  {% set product_title = _(products[0].title, 'DB: products.Product.title') %}
+{% endif %}
+
 {% set title = _('{product} Support Forum')|f(product=product_title) %}
 {% set headline = title %}
 {% set return_url = url('questions.home') %}
@@ -32,8 +40,9 @@
       <section id="product-switcher" class="swipeable">
         <ul>
           {% for p in product_list %}
-            <li class="{% if p == product %}selected{% endif %}">
-              <a href="{% if p == product %}{{ questions_url(_product=None) }}{% else %}{{ questions_url(_product=p.slug) }}{% endif %}">
+            {% set selected = not multiple_products and p == products[0] %}
+            <li{% if selected %} class="selected"{% endif %}>
+              <a href="{% if selected %}{{ questions_url(_product=None) }}{% else %}{{ questions_url(_product=p.slug) }}{% endif %}">
                 <span class="logo-sprite logo-{{ p.slug }}"></span>
                 {{ _(p.title, 'DB: products.Product.title') }}
               </a>

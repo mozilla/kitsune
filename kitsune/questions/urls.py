@@ -41,7 +41,8 @@ urlpatterns = patterns(
         'marketplace_category', name='questions.marketplace_aaq_category'),
 
     # TODO: Factor out `/(?P<question_id>\d+)` below
-    url(r'^/(?P<question_id>\d+)$', 'question_details', name='questions.details'),
+    url(r'^/(?P<question_id>\d+)$', 'question_details',
+        name='questions.details'),
     url(r'^/(?P<question_id>\d+)/edit$',
         'edit_question', name='questions.edit_question'),
     url(r'^/(?P<question_id>\d+)/edit-details$',
@@ -84,7 +85,7 @@ urlpatterns = patterns(
         name='questions.tagged_feed'),
 
     # Question lists
-    url(r'^/(?P<product_slug>[\w+\-]+)$', 'question_list',
+    url(r'^/(?P<product_slug>[\w+\-\,]+)$', 'question_list',
         name='questions.list'),
 
     # Flag content ("Report this post")
