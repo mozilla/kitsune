@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 import mock
 from nose.tools import eq_
 
+from kitsune.products.tests import product
 import kitsune.questions.tasks
 from kitsune.questions import config
 from kitsune.questions.cron import escalate_questions
@@ -25,6 +26,14 @@ class TestEscalateCron(TestCase):
                 created=datetime.now() - timedelta(hours=24, minutes=50),
                 save=True),
         ]
+
+        # Question about Firefox OS
+        fxos = product(slug='firefox-os', save=True)
+        q = question(
+            created=datetime.now() - timedelta(hours=24, minutes=10),
+            save=True)
+        q.products.add(fxos)
+        questions_to_escalate.append(q)
 
         questions_not_to_escalate = [
             # Questions newer than 24 hours without an answer.
@@ -65,6 +74,14 @@ class TestEscalateCron(TestCase):
             save=True)
         q.creator.is_active = False
         q.creator.save()
+        questions_not_to_escalate.append(q)
+
+        # Question about Thunderbird, which is one of the products we exclude.
+        tb = product(slug='thunderbird', save=True)
+        q = question(
+            created=datetime.now() - timedelta(hours=24, minutes=10),
+            save=True)
+        q.products.add(tb)
         questions_not_to_escalate.append(q)
 
         # Run the cron job and verify only 3 questions were escalated.
