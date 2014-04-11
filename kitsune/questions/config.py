@@ -16,7 +16,10 @@ ESCALATE_TAG_NAME = 'escalate'
 NEEDS_INFO_TAG_NAME = 'needsinfo'
 OFFTOPIC_TAG_NAME = 'offtopic'
 
+# Escalation config
+ESCALATE_EXCLUDE_PRODUCTS = ['thunderbird', 'webmaker', 'open-badges']
 
+# AAQ config:
 products = SortedDict([
     ('desktop', {
         'name': _lazy(u'Firefox for Desktop'),
