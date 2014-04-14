@@ -99,7 +99,7 @@ FILTER_GROUPS = {
 def product_list(request, template):
     """View to select a product to see relatred quesitons."""
     return render(request, template, {
-        'products': Product.objects.filter(visible=True)
+        'products': Product.objects.filter(questions_enabled=True)
     })
 
 
