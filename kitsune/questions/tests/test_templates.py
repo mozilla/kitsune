@@ -1522,10 +1522,14 @@ class AAQTemplateTestCase(TestCaseBase):
 
 class ProductForumTemplateTestCase(TestCaseBase):
     def test_product_forum_listing(self):
-        firefox = product(title='Firefox', slug='firefox', save=True)
-        android = product(
-            title='Firefox for Android', slug='mobile', save=True)
-        fxos = product(title='Firefox OS', slug='firefox-os', save=True)
+        firefox = product(
+            title='Firefox', slug='firefox', questions_enabled=True, save=True)
+        android = product(title='Firefox for Android', slug='mobile',
+            questions_enabled=True, save=True)
+        fxos = product(title='Firefox OS', slug='firefox-os',
+            questions_enabled=True, save=True)
+        openbadges = product(title='Open Badges', slug='open-badges',
+            questions_enabled=False, save=True)
 
         response = self.client.get(reverse('questions.home'))
         eq_(200, response.status_code)
@@ -1535,3 +1539,4 @@ class ProductForumTemplateTestCase(TestCaseBase):
         assert firefox.title in product_list_html
         assert android.title in product_list_html
         assert fxos.title in product_list_html
+        assert openbadges.title not in product_list_html

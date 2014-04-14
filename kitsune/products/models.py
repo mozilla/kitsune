@@ -31,8 +31,11 @@ class Product(ModelBase):
     # lists.
     display_order = models.IntegerField()
 
-    # Whether or not this product is visible in the ui to users.
+    # Whether or not this product is visible in the KB ui to users.
     visible = models.BooleanField(default=False)
+
+    # Whether or not this product is enabled in questions
+    questions_enabled = models.BooleanField(default=False)
 
     # Platforms this Product runs on.
     platforms = models.ManyToManyField('Platform')
