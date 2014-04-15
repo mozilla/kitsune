@@ -53,7 +53,7 @@
   <div class="grid_12">
     <section id="help-topics">
       <h1>{{ _('Help Topics') }}</h1>
-      {{ help_topics(topics, show_community_support=True) }}
+      {{ help_topics(topics, show_community_support=product.questions_enabled) }}
     </section>
     <section id="get-involved-button">
       <a class="btn btn-submit" href="{{ url('landings.get_involved') }}">{{ _('Volunteer for Mozilla Support') }}</a>
