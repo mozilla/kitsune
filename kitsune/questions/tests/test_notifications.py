@@ -296,9 +296,7 @@ class TestAnswerNotifications(TestCaseBase):
         notification = [m for m in mail.outbox if m.to == [ANON_EMAIL]][0]
 
         eq_([ANON_EMAIL], notification.to)
-        eq_("{0} commented on a Firefox question you're watching"
-            .format(self.answer.creator.username),
-            notification.subject)
+        eq_("Re: [SUMO] {0}".format(self.question.title), notification.subject)
 
         body = re.sub(r'auth=[a-zA-Z0-9%_-]+', 'auth=AUTH', notification.body)
         starts_with(body, ANSWER_EMAIL_TO_ANONYMOUS
@@ -315,9 +313,7 @@ class TestAnswerNotifications(TestCaseBase):
         notification = [m for m in mail.outbox if m.to == [watcher.email]][0]
 
         eq_([watcher.email], notification.to)
-        eq_("{0} commented on a Firefox question you're watching"
-            .format(self.answer.creator.username),
-            notification.subject)
+        eq_("Re: [SUMO] {0}".format(self.question.title), notification.subject)
 
         body = re.sub(r'auth=[a-zA-Z0-9%_-]+', 'auth=AUTH', notification.body)
         starts_with(body, ANSWER_EMAIL.format(to_user=watcher.username,

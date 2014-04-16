@@ -87,8 +87,7 @@ class QuestionReplyEvent(QuestionEvent):
                 text_template = 'questions/email/new_answer_to_asker.ltxt'
                 html_template = 'questions/email/new_answer_to_asker.html'
             else:
-                subject = _(u'%s commented on a Firefox question '
-                            "you're watching" % self.answer.creator.username)
+                subject = _(u'Re: [SUMO] %s' % self.instance.title)
                 text_template = 'questions/email/new_answer.ltxt'
                 html_template = 'questions/email/new_answer.html'
 
