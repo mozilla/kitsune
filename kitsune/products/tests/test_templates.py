@@ -27,7 +27,7 @@ class ProductViewsTestCase(ElasticTestCase):
     def test_product_landing(self):
         """Verify that /products/<slug> page renders topics."""
         # Create a product.
-        p = product(save=True)
+        p = product(questions_enabled=True, save=True)
 
         # Create some topics.
         topic(slug=HOT_TOPIC_SLUG, product=p, save=True)
