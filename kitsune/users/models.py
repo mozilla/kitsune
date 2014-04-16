@@ -310,6 +310,7 @@ class RegistrationManager(ConfirmationManager):
             send_to=registration_profile.user.email,
             expiration_days=settings.ACCOUNT_ACTIVATION_DAYS,
             username=registration_profile.user.username,
+            reg='main',
             email_data=email_data)
 
     def delete_expired_users(self):

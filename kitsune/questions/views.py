@@ -557,10 +557,11 @@ def aaq(request, product_key=None, category_key=None, showform=False,
             login_form = AuthenticationForm()
             register_form = handle_register(
                 request=request,
-                text_template='questions/email/confirm_question.ltxt',
-                html_template='questions/email/confirm_question.html',
+                text_template='users/email/activate.ltxt',
+                html_template='users/email/activate.html',
                 subject=_('Please confirm your Firefox Help question'),
-                email_data=request.GET.get('search'))
+                email_data=request.GET.get('search')
+                reg='aaq')
 
             if register_form.is_valid():  # Now try to log in.
                 user = auth.authenticate(username=request.POST.get('username'),

@@ -8,7 +8,7 @@ verify your email address.
 {% endtrans %}
 
 {{ _('Verify your email address:') }}
-https://{{ domain }}{{ activate_url }}?reg=main
+https://{{ domain }}{{ activate_url }}?reg={{ reg }}
 
 {{ _('Once you’ve clicked on the link, you can throw away this email.') }}
 
