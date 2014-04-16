@@ -287,7 +287,7 @@ class RegistrationManager(ConfirmationManager):
             text_template,
             html_template,
             subject,
-            email_data
+            email_data,
             **kwargs)
 
         if volunteer_interest:
