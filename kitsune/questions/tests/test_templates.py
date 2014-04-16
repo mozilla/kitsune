@@ -1479,7 +1479,7 @@ class AAQTemplateTestCase(TestCaseBase):
         eq_(1, len(mail.outbox))
         eq_(mail.outbox[0].subject,
             'Please confirm your Firefox Help question')
-        assert mail.outbox[0].body.find('(%s)' % title) > 0
+        assert mail.outbox[0].body.find('?reg=aaq') > 0
 
         # Finally post question
         self.client.post(url, self.data, follow=True)
