@@ -16,7 +16,7 @@ class ProductViewsTestCase(ElasticTestCase):
         """Verify that /products page renders products."""
         # Create some products.
         for i in range(3):
-            product(save=True)
+            product(questions_enabled=True, save=True)
 
         # GET the products page and verify the content.
         r = self.client.get(reverse('products'), follow=True)
