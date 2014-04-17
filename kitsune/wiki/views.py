@@ -1,11 +1,12 @@
-from datetime import datetime
 import json
 import logging
 import time
+from datetime import datetime
 
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.models import User
+from django.core.cache import cache
 from django.core.exceptions import PermissionDenied
 from django.db import connection
 from django.http import (HttpResponse, HttpResponseRedirect,
@@ -16,7 +17,6 @@ from django.views.decorators.http import (require_GET, require_POST,
                                           require_http_methods)
 
 import jingo
-import waffle
 from mobility.decorators import mobile_template
 from ratelimit.decorators import ratelimit
 from statsd import statsd
@@ -40,7 +40,8 @@ from kitsune.wiki.events import (
 from kitsune.wiki.forms import (
     AddContributorForm, DocumentForm, RevisionForm, RevisionFilterForm,
     ReviewForm)
-from kitsune.wiki.models import Document, Revision, HelpfulVote, ImportantDate
+from kitsune.wiki.models import (
+    Document, Revision, HelpfulVote, ImportantDate, doc_html_cache_key)
 from kitsune.wiki.parser import wiki_to_html
 from kitsune.wiki.tasks import (
     send_reviewed_notification, schedule_rebuild_kb,
@@ -50,10 +51,42 @@ from kitsune.wiki.tasks import (
 log = logging.getLogger('k.wiki')
 
 
+def doc_page_cache(view):
+    """Decorator that caches the document page HTML."""
+    def _doc_page_cache_view(request, document_slug, *args, **kwargs):
+        # We skip caching for authed users or if redirect=no
+        # is in the query string.
+        if (request.user.is_authenticated() or
+                request.GET.get('redirect') == 'no'):
+            statsd.incr('wiki.document_view.cache.skip')
+            return view(request, document_slug, *args, **kwargs)
+
+        cache_key = doc_html_cache_key(
+            mobile=request.MOBILE,
+            locale=request.LANGUAGE_CODE,
+            slug=document_slug)
+        html = cache.get(cache_key)
+        if html is not None:
+            statsd.incr('wiki.document_view.cache.hit')
+            return HttpResponse(html)
+
+        statsd.incr('wiki.document_view.cache.miss')
+        response = view(request, document_slug, *args, **kwargs)
+
+        # We only cache if the response returns HTTP 200.
+        if response.status_code == 200:
+            cache.set(cache_key, response.content)
+
+        return response
+    return _doc_page_cache_view
+
+
 @require_GET
+@doc_page_cache
 @mobile_template('wiki/{mobile/}document.html')
-def document(request, document_slug, template=None):
+def document(request, document_slug, template=None, document=None):
     """View a wiki document."""
+
     fallback_reason = None
     # If a slug isn't available in the requested locale, fall back to en-US:
     try:
@@ -127,10 +160,6 @@ def document(request, document_slug, template=None):
         ga_push.append(['_trackEvent', 'Incomplete L10n', 'Not Updated',
                         '%s/%s' % (doc.parent.slug, request.LANGUAGE_CODE)])
 
-    hide_voting = False
-    if (doc.category == TEMPLATES_CATEGORY or
-            waffle.switch_is_active('hide-voting')):
-        hide_voting = True
     data = {
         'document': doc,
         'redirected_from': redirected_from,
@@ -142,9 +171,9 @@ def document(request, document_slug, template=None):
         'topics': topics,
         'product': product,
         'products': products,
-        'hide_voting': hide_voting,
         'ga_push': ga_push,
     }
+
     return render(request, template, data)
 
 
