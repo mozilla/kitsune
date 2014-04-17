@@ -7,7 +7,7 @@ from django.db import models
 class Migration(DataMigration):
 
     def forwards(self, orm):
-        "Write your forwards methods here."
+        """Enable questions for products that currently have AAQ."""
         orm.Product.objects.filter(
             slug__in=['firefox', 'mobile', 'firefox-os', 'webmaker',
                       'thunderbird']
