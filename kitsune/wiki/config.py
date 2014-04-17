@@ -60,3 +60,5 @@ REDIRECT_HTML = '<p>REDIRECT <a '  # how a redirect looks as rendered HTML
 REDIRECT_CONTENT = 'REDIRECT [[%s]]'
 REDIRECT_TITLE = _lazy(u'%(old)s Redirect %(number)i')
 REDIRECT_SLUG = _lazy(u'%(old)s-redirect-%(number)i')
+
+DOC_HTML_CACHE_KEY = u'doc_html:{mobile}:{locale}:{slug}'

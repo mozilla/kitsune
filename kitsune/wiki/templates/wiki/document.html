@@ -50,12 +50,10 @@
       {{ document_messages(document, redirected_from) }}
       {{ document_content(document, fallback_reason, request, settings) }}
 
-      {% if not hide_voting %}
-        <div class="vote-wrap">
-        {# this extra div is to make the js compatible with old theme. TODO: Remove and fix js. #}
-          {{ vote_form(document, 'footer') }}
-        </div>
-      {% endif %}
+      <div class="vote-wrap">
+      {# this extra div is to make the js compatible with old theme. TODO: Remove and fix js. #}
+        {{ vote_form(document, 'footer') }}
+      </div>
 
       {{ contributor_list(contributors) }}
    </article>
@@ -75,9 +73,7 @@
   {{ related(related_documents, _('Related Articles'), 'document_title') }}
   {{ related(related_questions,  _('Related Questions'), 'question_title') }}
   {{ topic_sidebar(topics[:10], [], product) }}
-  {% if not hide_voting %}
-    {{ vote_form(document, 'sidebar') }}
-  {% endif %}
+  {{ vote_form(document, 'sidebar') }}
 {% endblock %}
 
 {% block breadcrumbs %}

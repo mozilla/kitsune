@@ -25,9 +25,9 @@ class DocumentVisitsTests(TestCase):
         execute = _build_request.return_value.get.return_value.execute
         execute.return_value = PAGEVIEWS_BY_DOCUMENT_RESPONSE
 
-        d1 = revision(document=document(slug='hellỗ', save=True),
+        d1 = revision(document=document(slug=u'hellỗ', save=True),
                       is_approved=True, save=True).document
-        d2 = revision(document=document(slug='there', save=True),
+        d2 = revision(document=document(slug=u'there', save=True),
                       is_approved=True, save=True).document
 
         WikiDocumentVisits.reload_period_from_analytics(LAST_7_DAYS)

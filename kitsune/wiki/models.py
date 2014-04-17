@@ -1,3 +1,4 @@
+import hashlib
 import logging
 import time
 from datetime import datetime, timedelta
@@ -11,7 +12,9 @@ from django.core.urlresolvers import resolve
 from django.db import models, IntegrityError
 from django.db.models import Q
 from django.http import Http404
+from django.utils.encoding import smart_str
 
+import waffle
 from pyquery import PyQuery
 from statsd import statsd
 from tidings.models import NotificationsMixin
@@ -33,7 +36,8 @@ from kitsune.wiki import TEMPLATE_TITLE_PREFIX
 from kitsune.wiki.config import (
     CATEGORIES, SIGNIFICANCES, TYPO_SIGNIFICANCE, MEDIUM_SIGNIFICANCE,
     MAJOR_SIGNIFICANCE, REDIRECT_HTML, REDIRECT_CONTENT, REDIRECT_TITLE,
-    REDIRECT_SLUG, CANNED_RESPONSES_CATEGORY, ADMINISTRATION_CATEGORY)
+    REDIRECT_SLUG, CANNED_RESPONSES_CATEGORY, ADMINISTRATION_CATEGORY,
+    TEMPLATES_CATEGORY, DOC_HTML_CACHE_KEY)
 from kitsune.wiki.permissions import DocumentPermissionMixin
 
 
@@ -281,6 +285,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
                 del self.old_title
 
         self.parse_and_calculate_links()
+        self.clear_cached_html()
 
     def __setattr__(self, name, value):
         """Trap setting slug and title, recording initial value."""
@@ -407,10 +412,24 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         return '[%s] %s' % (self.locale, self.title)
 
     def allows_vote(self, request):
-        """Return whether `user` can vote on this document."""
-        return (not self.is_archived and self.current_revision and
-                not self.current_revision.has_voted(request) and
-                not self.redirect_document())
+        """Return whether we should render the vote form for the document."""
+
+        # If the user isn't authenticated, we show the form even if they
+        # may have voted. This is because the page can be cached and we don't
+        # want to cache the page without the vote form. Users that already
+        # voted will see a "You already voted on this Article." message
+        # if they try voting again.
+        authed_and_voted = (
+            request.user.is_authenticated() and
+            self.current_revision and
+            self.current_revision.has_voted(request))
+
+        return (not self.is_archived and
+                self.current_revision and
+                not authed_and_voted and
+                not self.redirect_document() and
+                self.category != TEMPLATES_CATEGORY and
+                not waffle.switch_is_active('hide-voting'))
 
     def translated_to(self, locale):
         """Return the translation of me to the given locale.
@@ -672,6 +691,16 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         except IntegrityError:
             # This DocumentImage already exists, ok.
             pass
+
+    def html_cache_key(self, mobile):
+        cache_key = DOC_HTML_CACHE_KEY.format(
+            mobile=str(mobile), locale=self.locale, slug=self.slug)
+        return hashlib.sha1(smart_str(cache_key)).hexdigest()
+
+    def clear_cached_html(self):
+        # Clear out both mobile and desktop templates.
+        cache.delete(self.html_cache_key(True))
+        cache.delete(self.html_cache_key(False))
 
 
 @register_mapping_type
