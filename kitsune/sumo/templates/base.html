@@ -41,6 +41,9 @@
     {% endfor %}
   {% endif %}
 
+  {# This is to verify "we" own the site for some feature on youtube. See bug 992412. #}
+  <meta name="google-site-verification" content="2URA-2Y9BeYYUf8B2BSsBSVetJJS3TZwlXBOaMx2VfY" />
+
   {% if refresh %}
     <meta http-equiv="refresh" content="{{ refresh[1] }};url={{ refresh[0] }}"/>
   {% endif %}
