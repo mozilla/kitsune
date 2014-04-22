@@ -19,8 +19,22 @@
       var $this = $(this);
       if ($this.data('close-id')) {
         $('#' + $this.data('close-id')).hide();
+        if ($this.data('close-memory') == 'remember') {
+          if (Modernizr.localstorage) {
+            localStorage.setItem($this.data('close-id') + '.closed', true);
+          }
+        }
       } else {
         $this.parent().hide();
+      }
+    });
+
+    $('[data-close-memory="remember"]').each(function() {
+      var id = $this.data('close-id');
+      if (id) {
+        if (localStorage.getItem(id + '.closed') === true) {
+          $('#' + id).hide();
+        }
       }
     });
 
