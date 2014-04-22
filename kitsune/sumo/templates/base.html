@@ -103,8 +103,8 @@
     <a/>
   </div>
 {% else %}
-  <div class="mobile-banner">
-    <div class="close-button">X</div>
+  <div class="mobile-banner" id="mobile-warning">
+    <div class="close-button" data-close-id="mobile-warning" data-close-memory="remember">X</div>
     <a href="?{{ request.QUERY_STRING }}&amp;mobile=1">
       {{ _('Tap here to go to the mobile version of the site.') }}
     </a>
