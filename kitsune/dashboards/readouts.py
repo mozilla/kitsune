@@ -206,7 +206,8 @@ def overview_rows(locale, product=None):
     if product:
         total = total.filter(products=product)
 
-    total_docs = total.filter(is_template=False).count()
+    total_docs = total.filter(is_template=False).exclude(
+        category__in=[HOW_TO_CONTRIBUTE_CATEGORY]).count()
     total_templates = total.filter(is_template=True).count()
 
     if product:
@@ -226,6 +227,8 @@ def overview_rows(locale, product=None):
         '    ON transdoc.current_revision_id=curtransrev.id '
         + extra_joins +
         'WHERE transdoc.locale=%s '
+        '    AND engdoc.category NOT IN '
+        '        (' + str(HOW_TO_CONTRIBUTE_CATEGORY) + ')'
         '    AND transdoc.is_template=%s '
         '    AND NOT transdoc.is_archived '
         '    AND engdoc.latest_localizable_revision_id IS NOT NULL '

@@ -165,6 +165,7 @@ class OverviewTests(TestCase):
         """
         t = translated_revision(is_approved=True, save=True)
         overview = overview_rows('de')
+        eq_(1, overview['all']['numerator'])
         eq_(1, overview['top-20']['numerator'])
         eq_(1, overview['top-50']['numerator'])
         eq_(1, overview['top-100']['numerator'])
@@ -175,6 +176,7 @@ class OverviewTests(TestCase):
         d.save()
 
         overview = overview_rows('de')
+        eq_(0, overview['all']['numerator'])
         eq_(0, overview['top-20']['numerator'])
         eq_(0, overview['top-50']['numerator'])
         eq_(0, overview['top-100']['numerator'])
