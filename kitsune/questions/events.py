@@ -87,7 +87,7 @@ class QuestionReplyEvent(QuestionEvent):
                 text_template = 'questions/email/new_answer_to_asker.ltxt'
                 html_template = 'questions/email/new_answer_to_asker.html'
             else:
-                subject = _(u'Re: [SUMO] %s' % self.instance.title)
+                subject = _(u'Re: %s' % self.instance.title)
                 text_template = 'questions/email/new_answer.ltxt'
                 html_template = 'questions/email/new_answer.html'
 
@@ -96,7 +96,7 @@ class QuestionReplyEvent(QuestionEvent):
                 text_template=text_template,
                 html_template=html_template,
                 context_vars=context,
-                from_email=settings.TIDINGS_FROM_ADDRESS,
+                from_email='Mozilla Support Forum <no-reply@support.mozilla.org>',
                 to_email=user.email)
 
             return mail
