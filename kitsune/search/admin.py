@@ -14,7 +14,7 @@ from kitsune.search.es_utils import (
     get_doctype_stats, get_indexes, delete_index, ES_EXCEPTIONS,
     get_indexable, CHUNK_SIZE, recreate_indexes, write_index, read_index,
     all_read_indexes, all_write_indexes)
-from kitsune.search.models import Record, get_mapping_types
+from kitsune.search.models import Record, get_mapping_types, Synonym
 from kitsune.search.tasks import (
     OUTSTANDING_INDEX_CHUNKS, index_chunk_task, reconcile_task)
 from kitsune.search.utils import chunked, create_batch_id
@@ -418,3 +418,24 @@ def troubleshooting_view(request):
 
 admin.site.register_view('troubleshooting', view=troubleshooting_view,
                          name='Search - Index Troubleshooting')
+
+
+class SynonymAdmin(admin.ModelAdmin):
+    list_display = ('id', 'enabled', 'from_words', 'to_words')
+    list_display_links = ('id', )
+    list_editable = ('enabled', 'from_words', 'to_words')
+    ordering = ('id', )
+
+
+admin.site.register(Synonym, SynonymAdmin)
+
+
+def synonyms_bulk_view(request):
+    synonym_text = '\n'.join(unicode(s) for s in Synonym.objects.all())
+    return render(request, 'admin/search_bulk_synonyms.html', {
+        'synonym_text': synonym_text,
+    })
+
+
+admin.site.register_view('synonym_bulk', view=synonyms_bulk_view,
+                         name='Search - Synonym Bulk Editor')

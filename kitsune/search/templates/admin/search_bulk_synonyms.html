@@ -1,0 +1,64 @@
+{% extends "kadmin/base.html" %}
+
+{% block content_title %}
+  <h1>Elastic Search - Synonym Editor</h1>
+{% endblock %}
+
+{% block content %}
+  <style>
+    .errornote {
+      max-width: 600px;
+    }
+
+    p {
+      max-width: 600px;
+    }
+
+    textarea {
+      width: 600px;
+      height: 400px;
+    }
+  </style>
+
+  <section>
+    <p class="errornote">
+      This is an advanced way to edit synonyms with no training wheels.
+      It is intended for bulk insertion and mass editing by expert users.
+      If that doesn't sound like you, you can use the
+      <a href="{% url 'admin:search_synonym_changelist' %}">simpler interface</a>
+      instead.
+    </p>
+
+    <p>
+      This is <strong>all</strong> the synonyms for the site. If you add a line,
+      it will create a new synonym set. If you delete a line, that synonym will
+      be deleted. Be careful!
+    </p>
+
+    <p>
+
+      The format here is one synonym set per line. A synonym set is a set of
+      words on the left that correspond to a set of words on the right, with a
+      "fat arrow" (<code>=></code>) in between. Each of the words in the left
+      set will be expanded to all of the words on the right. For example a line
+      like <code>social => facebook, twitter</code> would make a search for
+      "social integration" match all of the documents "social integration",
+      "facebook integration", and "twitter integration".
+
+    </p>
+
+    <p>
+      Please keep in mind that changing synonyms will cause a small down time
+      to the search system, during which time users will receive a friendly
+      error message, and some parts of the site will be slower. This downtime
+      should only last a few seconds.
+    </p>
+
+    <form method="POST">
+      <input type="submit" value="Save">
+      <br>
+      <textarea>{{ synonym_text }}</textarea>
+    </form>
+  </section>
+
+{% endblock %}
