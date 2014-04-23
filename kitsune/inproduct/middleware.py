@@ -1,6 +1,3 @@
-import re
-
-
 class EuBuildMiddleware(object):
     """EU Ballot Firefox builds mangle inproduct URLs.
 
@@ -18,11 +15,10 @@ class EuBuildMiddleware(object):
     def process_request(self, request):
         path = request.path_info.lstrip('/')
         if path.startswith('1/'):
-            if path.endswith('/eu'):
-                path = path[:-3]
+            parts = path.split('/')
+            if len(parts) >= 6 and parts[5] == 'eu':
                 request.eu_build = True
-            else:
-                if re.search(r'/eu/', path):
-                    path = path.replace('/eu/', '/')
-                    request.eu_build = True
+                del parts[5]
+                path = '/'.join(parts)
+
             request.path_info = '/' + path

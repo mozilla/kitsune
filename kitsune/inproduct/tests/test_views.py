@@ -26,6 +26,9 @@ class RedirectTestCase(TestCase):
         ('mobile/4.0/MARTIAN/en-US/', 'http://martian.com'),
         ('mobile/4.0/martian/en-US/', 'http://martian.com'),
         ('firefox/4.0/Android/en-US/foo', 404),
+        # Make sure Basque doesn't trigger the EU ballot logic.
+        ('firefox/29.0/Darwin/eu/', '/eu/home'),
+        ('firefox/29.0/Darwin/eu', '/eu/home'),
     )
 
     test_eu_urls = (
@@ -43,6 +46,10 @@ class RedirectTestCase(TestCase):
         ('mobile/4.0/MARTIAN/en-US/eu/', 'http://martian.com'),
         ('mobile/4.0/martian/en-US/eu/', 'http://martian.com'),
         ('firefox/4.0/Android/en-US/eu/foo', 404),
+        # Basque is awesome.
+        ('firefox/30.0/WINNT/eu/eu/', '/eu/home'),
+        ('firefox/4.0/Linux/eu/eu/prefs-applications',
+            '/eu/kb/Applications'),
     )
 
     def setUp(self):
