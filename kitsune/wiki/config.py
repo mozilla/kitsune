@@ -61,4 +61,5 @@ REDIRECT_CONTENT = 'REDIRECT [[%s]]'
 REDIRECT_TITLE = _lazy(u'%(old)s Redirect %(number)i')
 REDIRECT_SLUG = _lazy(u'%(old)s-redirect-%(number)i')
 
+# Template for the cache key of the full article html.
 DOC_HTML_CACHE_KEY = u'doc_html:{mobile}:{locale}:{slug}'

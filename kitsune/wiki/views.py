@@ -1,4 +1,3 @@
-import hashlib
 import json
 import logging
 import time
@@ -33,7 +32,7 @@ from kitsune.sumo.utils import (paginate, smart_int, get_next_url, user_or_ip,
                                 truncated_json_dumps)
 from kitsune.wiki import DOCUMENTS_PER_PAGE
 from kitsune.wiki.config import (
-    CATEGORIES, MAJOR_SIGNIFICANCE, TEMPLATES_CATEGORY, DOC_HTML_CACHE_KEY)
+    CATEGORIES, MAJOR_SIGNIFICANCE, TEMPLATES_CATEGORY)
 from kitsune.wiki.events import (
     EditDocumentEvent, ReviewableRevisionInLocaleEvent,
     ApproveRevisionInLocaleEvent, ApprovedOrReadyUnion,
@@ -41,7 +40,8 @@ from kitsune.wiki.events import (
 from kitsune.wiki.forms import (
     AddContributorForm, DocumentForm, RevisionForm, RevisionFilterForm,
     ReviewForm)
-from kitsune.wiki.models import Document, Revision, HelpfulVote, ImportantDate
+from kitsune.wiki.models import (
+    Document, Revision, HelpfulVote, ImportantDate, doc_html_cache_key)
 from kitsune.wiki.parser import wiki_to_html
 from kitsune.wiki.tasks import (
     send_reviewed_notification, schedule_rebuild_kb,
@@ -51,38 +51,38 @@ from kitsune.wiki.tasks import (
 log = logging.getLogger('k.wiki')
 
 
-def doc_page_cache():
+def doc_page_cache(view):
     """Decorator that caches the document page HTML."""
-    def _doc_page_cache(view):
-        def _doc_page_cache_view(request, document_slug, *args, **kwargs):
-            # We skip caching for authed users or if redirect=no
-            # is in the query string.
-            if (request.user.is_authenticated() or
-                    request.GET.get('redirect') == 'no'):
-                return view(request, document_slug, *args, **kwargs)
+    def _doc_page_cache_view(request, document_slug, *args, **kwargs):
+        # We skip caching for authed users or if redirect=no
+        # is in the query string.
+        if (request.user.is_authenticated() or
+                request.GET.get('redirect') == 'no'):
+            statsd.incr('wiki.document_view.cache.skip')
+            return view(request, document_slug, *args, **kwargs)
 
-            cache_key = DOC_HTML_CACHE_KEY.format(
-                mobile=request.MOBILE,
-                locale=request.LANGUAGE_CODE,
-                slug=document_slug)
-            cache_key = hashlib.sha1(cache_key).hexdigest()
-            html = cache.get(cache_key)
-            if html is not None:
-                return HttpResponse(html)
+        cache_key = doc_html_cache_key(
+            mobile=request.MOBILE,
+            locale=request.LANGUAGE_CODE,
+            slug=document_slug)
+        html = cache.get(cache_key)
+        if html is not None:
+            statsd.incr('wiki.document_view.cache.hit')
+            return HttpResponse(html)
 
-            response = view(request, document_slug, *args, **kwargs)
+        statsd.incr('wiki.document_view.cache.miss')
+        response = view(request, document_slug, *args, **kwargs)
 
-            # We only cache if the response returns HTTP 200.
-            if response.status_code == 200:
-                cache.set(cache_key, response.content)
+        # We only cache if the response returns HTTP 200.
+        if response.status_code == 200:
+            cache.set(cache_key, response.content)
 
-            return response
-        return _doc_page_cache_view
-    return _doc_page_cache
+        return response
+    return _doc_page_cache_view
 
 
 @require_GET
-@doc_page_cache()
+@doc_page_cache
 @mobile_template('wiki/{mobile/}document.html')
 def document(request, document_slug, template=None, document=None):
     """View a wiki document."""

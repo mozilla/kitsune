@@ -692,15 +692,12 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
             # This DocumentImage already exists, ok.
             pass
 
-    def html_cache_key(self, mobile):
-        cache_key = DOC_HTML_CACHE_KEY.format(
-            mobile=str(mobile), locale=self.locale, slug=self.slug)
-        return hashlib.sha1(smart_str(cache_key)).hexdigest()
-
     def clear_cached_html(self):
         # Clear out both mobile and desktop templates.
-        cache.delete(self.html_cache_key(True))
-        cache.delete(self.html_cache_key(False))
+        cache.delete(doc_html_cache_key(
+            locale=self.locale, slug=self.slug, mobile=True))
+        cache.delete(doc_html_cache_key(
+            locale=self.locale, slug=self.slug, mobile=False))
 
 
 @register_mapping_type
@@ -1212,3 +1209,10 @@ def user_redirects(user):
     return (Document.objects
             .filter(revisions__creator=user)
             .filter(html__startswith='<p>REDIRECT <a').distinct())
+
+
+def doc_html_cache_key(locale, slug, mobile):
+    """Returns the cache key for the document html."""
+    cache_key = DOC_HTML_CACHE_KEY.format(
+        locale=locale, slug=slug, mobile=str(mobile))
+    return hashlib.sha1(smart_str(cache_key)).hexdigest()
