@@ -7,7 +7,8 @@ from nose import SkipTest
 from test_utils import TestCase
 
 from kitsune.search import es_utils
-from kitsune.search.models import generate_tasks
+from kitsune.search.models import generate_tasks, Synonym
+from kitsune.sumo.tests import with_save
 
 
 # Dummy request for passing to question_searcher() and brethren.
@@ -75,3 +76,13 @@ class ElasticTestCase(TestCase):
         """Tear down write index"""
         for index in es_utils.all_write_indexes():
             es_utils.delete_index(index)
+
+
+@with_save
+def synonym(**kwargs):
+    defaults = {
+        "from_words": "foo, bar",
+        "to_words": "baz",
+    }
+    defaults.update(kwargs)
+    return Synonym(**defaults)

@@ -278,3 +278,12 @@ class Record(ModelBase):
         if self.starttime and self.endtime:
             return self.endtime - self.starttime
         return None
+
+
+class Synonym(ModelBase):
+    """To be serialized into ES for synonyms."""
+    from_words = models.CharField(max_length=1024)
+    to_words = models.CharField(max_length=1024)
+
+    def __unicode__(self):
+        return u'{0} => {1}'.format(self.from_words, self.to_words)

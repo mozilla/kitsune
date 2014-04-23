@@ -10,13 +10,15 @@ from django.core.exceptions import PermissionDenied
 from django.http import HttpResponseRedirect, Http404
 from django.shortcuts import render
 
+from kitsune.search import synonym_utils
 from kitsune.search.es_utils import (
     get_doctype_stats, get_indexes, delete_index, ES_EXCEPTIONS,
     get_indexable, CHUNK_SIZE, recreate_indexes, write_index, read_index,
     all_read_indexes, all_write_indexes)
-from kitsune.search.models import Record, get_mapping_types
+from kitsune.search.models import Record, get_mapping_types, Synonym
 from kitsune.search.tasks import (
-    OUTSTANDING_INDEX_CHUNKS, index_chunk_task, reconcile_task)
+    OUTSTANDING_INDEX_CHUNKS, index_chunk_task, reconcile_task,
+    update_synonyms_task)
 from kitsune.search.utils import chunked, create_batch_id
 from kitsune.sumo.redis_utils import redis_client, RedisError
 from kitsune.wiki.models import Document, DocumentMappingType
@@ -418,3 +420,68 @@ def troubleshooting_view(request):
 
 admin.site.register_view('troubleshooting', view=troubleshooting_view,
                          name='Search - Index Troubleshooting')
+
+
+class SynonymAdmin(admin.ModelAdmin):
+    list_display = ('id', 'from_words', 'to_words')
+    list_display_links = ('id', )
+    list_editable = ('from_words', 'to_words')
+    ordering = ('from_words', 'id')
+
+
+admin.site.register(Synonym, SynonymAdmin)
+
+
+def synonym_editor(request):
+    parse_errors = []
+    all_synonyms = Synonym.uncached.all()
+
+    if 'sync_synonyms' in request.POST:
+        # This is a task. Normally we would call tasks asyncronously, right?
+        # In this case, since it runs quickly and is in the admin interface,
+        # the advantage of it being run in the request/response cycle
+        # outweight the delay in responding. If this becomes a problem
+        # we should make a better UI and make this .delay() again.
+        update_synonyms_task()
+        return HttpResponseRedirect(request.path)
+
+    synonyms_text = request.POST.get('synonyms_text')
+    if synonyms_text is not None:
+        db_syns = set((s.from_words, s.to_words) for s in all_synonyms)
+
+        try:
+            post_syns = set(synonym_utils.parse_synonyms(synonyms_text))
+        except synonym_utils.SynonymParseError as e:
+            parse_errors = e.errors
+        else:
+            syns_to_add = post_syns - db_syns
+            syns_to_remove = db_syns - post_syns
+
+            for (from_words, to_words) in syns_to_remove:
+                # This uses .get() because I want it to blow up if
+                # there isn't exactly 1 matching synonym.
+                (Synonym.uncached.get(from_words=from_words, to_words=to_words)
+                 .delete())
+
+            for (from_words, to_words) in syns_to_add:
+                Synonym(from_words=from_words, to_words=to_words).save()
+
+            return HttpResponseRedirect(request.path)
+
+    # If synonyms_text is not None, it came from POST, and there were
+    # errors. It shouldn't be modified, so the error messages make sense.
+    if synonyms_text is None:
+        synonyms_text = '\n'.join(unicode(s) for s in all_synonyms)
+
+    synonym_add_count, synonym_remove_count = synonym_utils.count_out_of_date()
+
+    return render(request, 'admin/search_synonyms.html', {
+        'synonyms_text': synonyms_text,
+        'errors': parse_errors,
+        'synonym_add_count': synonym_add_count,
+        'synonym_remove_count': synonym_remove_count,
+    })
+
+
+admin.site.register_view('synonym_bulk', view=synonym_editor,
+                         name='Search - Synonym Editor')

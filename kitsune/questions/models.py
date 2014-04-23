@@ -496,6 +496,14 @@ class QuestionMappingType(SearchMappingType):
                 'question_answer_content']
 
     @classmethod
+    def get_localized_fields(cls):
+        # This is the same list as `get_query_fields`, but it doesn't
+        # have to be, which is why it is typed twice.
+        return ['question_title',
+                'question_content',
+                'question_answer_content']
+
+    @classmethod
     def get_mapping(cls):
         return {
             'properties': {

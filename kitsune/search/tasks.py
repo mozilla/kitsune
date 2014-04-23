@@ -8,8 +8,11 @@ from multidb.pinning import pin_this_thread, unpin_this_thread
 from statsd import statsd
 
 from kitsune.search.es_utils import (
-    get_indexable, index_chunk, reconcile_chunk, UnindexMeBro)
+    get_indexable, index_chunk, reconcile_chunk, UnindexMeBro, write_index,
+    get_analysis)
 from kitsune.sumo.redis_utils import redis_client, RedisError
+
+from elasticutils.contrib.django import get_es
 
 
 # This is present in memcached when reindexing is in progress and
@@ -207,3 +210,24 @@ def unindex_task(cls, id_list, **kw):
                            countdown=RETRY_TIMES[retries])
     finally:
         unpin_this_thread()
+
+
+@task()
+def update_synonyms_task():
+    es = get_es()
+
+    # Close the index, update the settings, then re-open it.
+    # This will cause search to be unavailable for a few seconds.
+    # This updates all of the analyzer settings, which is kind of overkill,
+    # but will make sure everything stays consistent.
+    index = write_index('default')
+    analysis = get_analysis()
+
+    # if anything goes wrong, it is very important to re-open the index.
+    try:
+        es.indices.close(index)
+        es.indices.put_settings(index=index, body={
+            'analysis': analysis,
+        })
+    finally:
+        es.indices.open(index)
