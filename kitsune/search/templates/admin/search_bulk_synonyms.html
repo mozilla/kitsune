@@ -6,22 +6,45 @@
 
 {% block content %}
   <style>
-    .errornote {
+    .errornote,
+    .notice,
+    p,
+    textarea {
+      box-sizing: border-box;
       max-width: 600px;
     }
 
-    p {
-      max-width: 600px;
+    .notice {
+      font-weight: bold;
     }
 
     textarea {
-      width: 600px;
       height: 400px;
+      width: 600px;
+      border-left: 0;
+      margin-left: 0;
+      padding-left: 7px;
+      line-height: 14px;
+    }
+
+    .line-numbers {
+      box-sizing: border-box;
+      display: inline-block;
+      font-size: 9px;
+      line-height: 14px;
+      margin: 2px 0;
+      height: 400px;
+      overflow: hidden;
+      padding: 4px 7px 2px 5px;
+      border: 1px solid #ccc;
+      border-right: 1px dotted #ddd;
+      text-align: right;
+      opacity: 0.8;
     }
   </style>
 
   <section>
-    <p class="errornote">
+    <p class="notice">
       This is an advanced way to edit synonyms with no training wheels.
       It is intended for bulk insertion and mass editing by expert users.
       If that doesn't sound like you, you can use the
@@ -36,7 +59,6 @@
     </p>
 
     <p>
-
       The format here is one synonym set per line. A synonym set is a set of
       words on the left that correspond to a set of words on the right, with a
       "fat arrow" (<code>=></code>) in between. Each of the words in the left
@@ -44,7 +66,6 @@
       like <code>social => facebook, twitter</code> would make a search for
       "social integration" match all of the documents "social integration",
       "facebook integration", and "twitter integration".
-
     </p>
 
     <p>
@@ -54,11 +75,44 @@
       should only last a few seconds.
     </p>
 
+    {% for error in errors %}
+      <span class="errornote">
+        {{ error }}
+      </span>
+    {% endfor %}
+
     <form method="POST">
+      {% csrf_token %}
       <input type="submit" value="Save">
       <br>
-      <textarea>{{ synonym_text }}</textarea>
+      <!-- No space between these elements. -->
+      <div class="line-numbers"></div><textarea name="synonyms_text">{{ synonyms_text }}</textarea>
     </form>
+
+    <p>Note, those are line numbers, not ID numbers.</p>
   </section>
+
+  <script type="text/javascript">
+    // jquery isn't loaded yet. lame.
+    var textbox = document.querySelector('[name=synonyms_text]');
+    var lineNums = document.querySelector('.line-numbers');
+    function makeLineNumbers() {
+      var numLines = textbox.value.match(/\n/g).length + 1;
+
+      var linesHtml = '';
+      for (var i = 1; i <= numLines; i++) {
+        linesHtml += i + '<br>';
+      }
+      lineNums.innerHTML = linesHtml;
+      lineNums.scrollTop = textbox.scrollTop;
+    }
+
+    textbox.addEventListener('change', makeLineNumbers);
+    textbox.addEventListener('keyup', makeLineNumbers);
+    textbox.addEventListener('scroll', function(e) {
+      lineNums.scrollTop = textbox.scrollTop;
+    });
+    makeLineNumbers();
+  </script>
 
 {% endblock %}

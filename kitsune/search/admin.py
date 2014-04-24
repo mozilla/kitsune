@@ -424,16 +424,56 @@ class SynonymAdmin(admin.ModelAdmin):
     list_display = ('id', 'enabled', 'from_words', 'to_words')
     list_display_links = ('id', )
     list_editable = ('enabled', 'from_words', 'to_words')
-    ordering = ('id', )
+    ordering = ('from_words', 'id')
 
 
 admin.site.register(Synonym, SynonymAdmin)
 
 
 def synonyms_bulk_view(request):
-    synonym_text = '\n'.join(unicode(s) for s in Synonym.objects.all())
+    errs = []
+
+    if request.POST.get('synonyms_text'):
+        all_synonyms = Synonym.objects.all()
+        post_syns = set()
+        db_syns = set((s.from_words, s.to_words) for s in all_synonyms)
+
+        for i, line in enumerate(request.POST['synonyms_text'].split('\n'), 1):
+            line = line.strip()
+            if not line:
+                continue
+            count = line.count('=>')
+            if count < 1:
+                errs.append('Syntax error on line %d: No => found.' % i)
+            elif count > 1:
+                errs.append('Syntax error on line %d: Too many => found.' % i)
+            else:
+                from_words, to_words = [s.strip() for s in line.split('=>')]
+                post_syns.add((from_words, to_words))
+
+        if not errs:
+            syns_to_add = post_syns - db_syns
+            syns_to_remove = db_syns - post_syns
+
+            for (from_words, to_words) in syns_to_remove:
+                (Synonym.objects
+                 .filter(from_words=from_words, to_words=to_words)
+                 .delete())
+
+            for (from_words, to_words) in syns_to_add:
+                Synonym(from_words=from_words, to_words=to_words).save()
+
+            return HttpResponseRedirect(request.path)
+
+    synonyms_text = request.POST.get('synonyms_text')
+    if synonyms_text is None:
+        synonyms_text = '\n'.join(unicode(s) for s in
+                                  Synonym.objects.all()
+                                  .order_by('from_words', 'id'))
+
     return render(request, 'admin/search_bulk_synonyms.html', {
-        'synonym_text': synonym_text,
+        'synonyms_text': synonyms_text,
+        'errors': errs,
     })
 
 
