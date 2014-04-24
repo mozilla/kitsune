@@ -30,7 +30,7 @@
     });
 
     $('[data-close-memory="remember"]').each(function() {
-      var id = $this.data('close-id');
+      var id = $(this).data('close-id');
       if (id) {
         if (localStorage.getItem(id + '.closed') === true) {
           $('#' + id).hide();
