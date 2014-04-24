@@ -109,7 +109,7 @@
 
     textbox.addEventListener('change', makeLineNumbers);
     textbox.addEventListener('keyup', makeLineNumbers);
-    textbox.addEventListener('scroll', function(e) {
+    textbox.addEventListener('scroll', function() {
       lineNums.scrollTop = textbox.scrollTop;
     });
     makeLineNumbers();

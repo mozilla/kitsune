@@ -432,9 +432,9 @@ admin.site.register(Synonym, SynonymAdmin)
 
 def synonyms_bulk_view(request):
     errs = []
+    all_synonyms = Synonym.objects.all()
 
     if request.POST.get('synonyms_text'):
-        all_synonyms = Synonym.objects.all()
         post_syns = set()
         db_syns = set((s.from_words, s.to_words) for s in all_synonyms)
 
@@ -467,9 +467,7 @@ def synonyms_bulk_view(request):
 
     synonyms_text = request.POST.get('synonyms_text')
     if synonyms_text is None:
-        synonyms_text = '\n'.join(unicode(s) for s in
-                                  Synonym.objects.all()
-                                  .order_by('from_words', 'id'))
+        synonyms_text = '\n'.join(unicode(s) for s in all_synonyms)
 
     return render(request, 'admin/search_bulk_synonyms.html', {
         'synonyms_text': synonyms_text,
