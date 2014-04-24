@@ -96,8 +96,8 @@
 
 {# These will only be shown on small-ish screens, by media queries. #}
 {% if request.MOBILE %}
-  <div class="mobile-banner">
-    <div class="close-button">X</div>
+  <div class="mobile-banner" id="mobile-warning">
+    <div class="close-button" data-close-id="mobile-warning" data-close-memory="remember">X</div>
     <a href="javascript: history.back();">
       {{ _("This page doesn't have a mobile optimized version. Tap here to go back.") }}
     <a/>
