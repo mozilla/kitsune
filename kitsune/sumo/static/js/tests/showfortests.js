@@ -263,6 +263,30 @@ test('matchesCriteria', function() {
   check(['not fx', 'm'], false);
   check(['fx', 'not m'], true);
   check(['not fx', 'not m'], true);
+
+  // Test "not win"
+  this.showFor.state = {
+    firefox: {
+      enabled: true,
+      platform: 'win8',
+    }
+  };
+
+  var winTestCases = {
+    'winxp': false,
+    'win7': false,
+    'win8': false,
+    'linux': true,
+    'mac': true,
+  };
+
+  for (var winVersion in winTestCases) {
+    console.log('Checking notwin case', winVersion);
+    var expected = winTestCases[winVersion];
+    this.showFor.state.firefox.platform = winVersion;
+    check(['not win'], expected);
+  }
+
 });
 
 })();
