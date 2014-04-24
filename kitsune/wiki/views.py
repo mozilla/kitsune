@@ -2,6 +2,7 @@ import json
 import logging
 import time
 from datetime import datetime
+from functools import wraps
 
 from django.conf import settings
 from django.contrib import messages
@@ -53,6 +54,7 @@ log = logging.getLogger('k.wiki')
 
 def doc_page_cache(view):
     """Decorator that caches the document page HTML."""
+    @wraps(view)
     def _doc_page_cache_view(request, document_slug, *args, **kwargs):
         # We skip caching for authed users or if redirect=no
         # is in the query string.
