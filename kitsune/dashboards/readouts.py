@@ -263,7 +263,6 @@ def overview_rows(locale, product=None):
                         extra_joins,
             extra_where='AND engdoc.category IN (' +
                         str(TROUBLESHOOTING_CATEGORY) + ',' +
-                        str(HOW_TO_CATEGORY) + ',' +
                         str(TEMPLATES_CATEGORY) + ')') +
         'LIMIT %s) t1 ')
 
