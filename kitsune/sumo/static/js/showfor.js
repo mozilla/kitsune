@@ -450,17 +450,20 @@ ShowFor.prototype.matchesCriteria = function(criteria) {
 
         // Special case for windows.
         } else if (name === 'win') {
+            hasPlatform = true;
+
             /* Loop through each of the possible slugs for windows. If
              * any of them match, then this name matches. */
             var windowsTypes = ['winxp', 'win7', 'win8'];
-            hasPlatform = true;
-            var anyWin = false;
+            var winMatches = false;
+
             windowsTypes.forEach(function(fakeName) {
-                if ((enabledPlatforms.indexOf(fakeName) >= 0) !== not) {
-                    anyWin = true;
+                if (enabledPlatforms.indexOf(fakeName) >= 0) {
+                    winMatches = true;
                 }
             });
-            if ((anyWin && !not) || (!anyWin && not)) {
+
+            if (winMatches !== not) {
                 matchPlatform = true;
             }
         }
