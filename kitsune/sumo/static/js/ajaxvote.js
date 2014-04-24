@@ -70,7 +70,7 @@ AjaxVote.prototype = {
                         }
 
                         // Hide other forms
-                        self.$form.filter(function() { return this !== $form; }).remove();
+                        self.$form.filter(function() { return !$form.is(this); }).remove();
                     },
                     error: function() {
                         var msg = gettext('There was an error submitting your vote.');
