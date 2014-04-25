@@ -348,9 +348,6 @@ def search(request, template=None):
                 # sending us sortby values that aren't valid.
                 pass
 
-        import q
-        q('q?')
-
         # Build the query
         if cleaned_q:
             query_fields = chain(*[cls.get_query_fields()

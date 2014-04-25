@@ -886,8 +886,6 @@ def es_analyzer_for_locale(locale, synonyms=False, fallback='standard'):
 def es_query_with_analyzer(query, locale):
     """Transform a query dict to use _analyzer actions for the right fields."""
     analyzer = es_analyzer_for_locale(locale, synonyms=True)
-    import q
-    q(locale, analyzer)
     new_query = {}
 
     # Import locally to avoid circular import
