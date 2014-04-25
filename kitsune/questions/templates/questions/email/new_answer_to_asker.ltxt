@@ -3,14 +3,14 @@
 {# L10n: This is an email. Whitespace matters! #}
 {{ _('Hi {username},')|f(username=username) }}
 
-{{ _('{answerer} has posted an answer to your question on {host}:')|f(answerer=answerer, host=host) }}
+{{ _('{answerer} has posted an answer to your question on {host}:')|f(answerer=answerer.get_profile().display_name, host=host) }}
 {{ question_title }}
 
-{{ _('{answerer} wrote:')|f(answerer=answerer) }}
+{{ _('{answerer} wrote:')|f(answerer=answerer.get_profile().display_name) }}
 "{{ answer }}"
 
 {{ _('If this doesn\'t solve your problem, let {answerer} know by replying
-on the website:')|f(answerer=answerer) }}
+on the website:')|f(answerer=answerer.get_profile().display_name) }}
 https://{{ host }}{{ answer_url }}
 
 {{ _('If this answer solves your problem, please mark it as "solved":') }}

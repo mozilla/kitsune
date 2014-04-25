@@ -4,7 +4,7 @@
 {{ _('Reply to thread: {title}')|f(title=thread) }}
 
 {% trans author=author %}
-User {{ author }} has replied to a thread you're watching. Here
+{{ author }} has replied to a thread you're watching. Here
 is their reply:
 {% endtrans %}
 

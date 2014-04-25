@@ -104,6 +104,10 @@ class Profile(ModelBase):
         self.irc_handle = ''
         self.city = ''
 
+    @property
+    def display_name(self):
+        return self.name if self.name else self.user.username
+
 
 class Setting(ModelBase):
     """User specific value per setting"""
@@ -250,7 +254,7 @@ class RegistrationManager(ConfirmationManager):
                             text_template='users/email/contributor.ltxt',
                             html_template='users/email/contributor.html',
                             send_to=user.email,
-                            username=user.username)
+                            username=user.get_profile().display_name)
 
                     return user
                 else:

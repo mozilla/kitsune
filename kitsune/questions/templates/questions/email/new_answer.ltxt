@@ -5,14 +5,14 @@
 
 {% endif %}
 {# L10n: This is an email. Whitespace matters! #}
-{{ _('{answerer} commented on a Firefox question on {host}:')|f(answerer=answerer, host=host) }}
+{{ _('{answerer} commented on a Firefox question on {host}:')|f(answerer=answerer.get_profile().display_name, host=host) }}
 
 {{ question_title }}
 
 https://{{ host }}{{ answer_url }}
 
 {# L10n: This is in an email. #}
-{{ _('{answerer} wrote:')|f(answerer=answerer) }}
+{{ _('{answerer} wrote:')|f(answerer=answerer.get_profile().display_name) }}
 "{{ answer }}"
 
 {# L10n: This is in an email. #}

@@ -16,7 +16,7 @@ def new_post_mails(reply, users_and_watches):
 
     c = {'post': reply.content,
          'post_html': reply.content_parsed,
-         'author': reply.creator.username,
+         'author': reply.creator.get_profile().display_name,
          'host': Site.objects.get_current().domain,
          'thread': reply.thread.title,
          'forum': reply.thread.document.title,
@@ -37,7 +37,7 @@ def new_thread_mails(post, users_and_watches):
 
     c = {'post': post.content,
          'post_html': post.content_parsed,
-         'author': post.creator.username,
+         'author': post.creator.get_profile().display_name,
          'host': Site.objects.get_current().domain,
          'thread': post.thread.title,
          'forum': post.thread.document.title,

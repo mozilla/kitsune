@@ -31,7 +31,7 @@ class NewPostEvent(InstanceEvent):
 
         c = {'post': self.reply.content,
              'post_html': self.reply.content_parsed,
-             'author': self.reply.author.username,
+             'author': self.reply.author.get_profile().display_name,
              'host': Site.objects.get_current().domain,
              'thread': self.reply.thread.title,
              'forum': self.reply.thread.forum.name,
@@ -61,7 +61,7 @@ class NewThreadEvent(InstanceEvent):
 
         c = {'post': self.post.content,
              'post_html': self.post.content_parsed,
-             'author': self.post.author.username,
+             'author': self.post.author.get_profile().display_name,
              'host': Site.objects.get_current().domain,
              'thread': self.post.thread.title,
              'forum': self.post.thread.forum.name,
