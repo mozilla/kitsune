@@ -5,5 +5,11 @@
   <h1>{{ _('Search Unavailable') }}</h1>
 
   <p>{{ _('Search is temporarily unavailable. Please try again in a few minutes.') }}</p>
+
+  <p>
+    <a class="btn" href="{{ request.META.PATH_INFO + '?' + request.META.QUERY_STRING }}">
+      Try your search again
+    </a>
+  </p>
 </article>
 {% endblock %}
