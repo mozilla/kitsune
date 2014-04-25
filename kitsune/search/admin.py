@@ -434,10 +434,14 @@ admin.site.register(Synonym, SynonymAdmin)
 def synonym_editor(request):
     errs = []
     all_synonyms = Synonym.objects.all()
+    import q
 
+    q(request.POST)
 
     if 'sync_synonyms' in request.POST:
+        q('Queueing synonym sync')
         update_synonyms_task.delay()
+        q('Done queueing synony sync')
         return HttpResponseRedirect(request.path)
 
     if 'synonyms_text' in request.POST:

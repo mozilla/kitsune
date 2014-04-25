@@ -22,7 +22,10 @@ class TestFilterGenerator(TestCase):
     def test_no_synonyms(self):
         """Test that when there are no synonyms an alternate filter is made."""
         _, body = es_utils.es_get_synonym_filter('en-US')
-        eq_(body['type'], 'pattern_replace')
+        eq_(body, {
+            'type': 'synonym',
+            'synonyms': ['firefox => firefox'],
+            })
 
     def test_with_some_synonyms(self):
         synonym(from_words='foo', to_words='bar', save=True)

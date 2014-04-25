@@ -8,7 +8,8 @@ from multidb.pinning import pin_this_thread, unpin_this_thread
 from statsd import statsd
 
 from kitsune.search.es_utils import (
-    get_indexable, index_chunk, reconcile_chunk, UnindexMeBro)
+    get_indexable, index_chunk, reconcile_chunk, UnindexMeBro, read_index,
+    get_analysis)
 from kitsune.sumo.redis_utils import redis_client, RedisError
 
 from elasticutils.contrib.django import get_es
@@ -213,8 +214,20 @@ def unindex_task(cls, id_list, **kw):
 
 @task()
 def update_synonyms_task():
-    # Need to import Synonym here to prevent circular import
-    from kitsune.search.models import Synonym
-    synonyms = Synonym.objects.all()
-    serialized = [unicode(s) for s in synonyms]
-    # XXX: finish me
+    es = get_es()
+
+    # Close the index, update the settings, then re-open it.
+    # This will cause search to be unavailable for a few seconds.
+    # This updates all of the analyzer settings, which is kind of overkill,
+    # but will make sure everything stays consistent.
+    index = read_index('default')
+    analysis = get_analysis()
+
+    # in case anything goes wrong, it is very important to re-open the index.
+    try:
+        es.close_index(index)
+        es.update_settings(index, {
+            'analysis': analysis,
+        })
+    finally:
+        es.open_index(index)

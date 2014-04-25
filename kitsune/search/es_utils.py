@@ -302,10 +302,14 @@ def es_get_synonym_filter(locale):
     else:
         # This is the closest I could find to a no-op filter.
         body = {
-            'type': 'pattern_replace',
-            'pattern': '(.*)',
-            'replace': '$1',
+            'type': 'synonym',
+            'synonyms': ['firefox => firefox'],
         }
+
+    for s in synonyms:
+        s.in_es = True
+        s.save()
+
     return name, body
 
 
@@ -882,6 +886,8 @@ def es_analyzer_for_locale(locale, synonyms=False, fallback='standard'):
 def es_query_with_analyzer(query, locale):
     """Transform a query dict to use _analyzer actions for the right fields."""
     analyzer = es_analyzer_for_locale(locale, synonyms=True)
+    import q
+    q(locale, analyzer)
     new_query = {}
 
     # Import locally to avoid circular import
