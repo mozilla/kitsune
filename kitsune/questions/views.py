@@ -240,8 +240,13 @@ def question_list(request, template, product_slug):
             return HttpResponseRedirect(urlparams(url, page=1))
 
     # Recent answered stats
-    recent_asked_count = Question.recent_asked_count(locale_query)
-    recent_unanswered_count = Question.recent_unanswered_count(locale_query)
+    extra_filters = locale_query
+
+    if products:
+        extra_filters &= Q(products__in=products)
+
+    recent_asked_count = Question.recent_asked_count(extra_filters)
+    recent_unanswered_count = Question.recent_unanswered_count(extra_filters)
     if recent_asked_count:
         recent_answered_percent = int(
             (float(recent_asked_count - recent_unanswered_count) /
