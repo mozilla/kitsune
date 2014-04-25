@@ -1,6 +1,8 @@
 from django.conf import settings
 from django.contrib.sites.models import Site
 
+from babel.dates import format_datetime
+from pytz import timezone
 from tidings.events import InstanceEvent
 from tower import ugettext as _
 
@@ -73,7 +75,6 @@ class QuestionReplyEvent(QuestionEvent):
         c = {'answer': self.answer.content,
              'answer_html': self.answer.content_parsed,
              'answerer': self.answer.creator,
-             'created': self.answer.created,
              'question_title': self.instance.title,
              'host': Site.objects.get_current().domain}
 
@@ -120,8 +121,13 @@ class QuestionReplyEvent(QuestionEvent):
             # profile, so we set the locale to en-US.
             if hasattr(u, 'profile'):
                 locale = u.profile.locale
+                tzinfo = u.profile.timezone
             else:
                 locale = 'en-US'
+                tzinfo = timezone(settings.TIME_ZONE)
+
+            c['created'] = format_datetime(self.answer.created, tzinfo=tzinfo,
+                                           locale=locale.replace('-', '_'))
 
             yield _make_mail(locale, u, c)
 
