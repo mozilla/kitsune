@@ -24,4 +24,11 @@
     <a href="https://{{ host }}/questions?filter=unsolved">{{ _('Browse for unsolved questions and help a Firefox user') }}</a>
     <br/>{{ _("Solving 1 issue helps up to 1,000 users a day!") }}
   </div>
+  <div class="no-reply">
+    {% trans url="https://%s%s" % (host, answer_url) %}
+      This email is automatically sent by a robot. Our robot can’t respond to
+      your question, but our forum contributors can! If you want to respond to
+      them, please <a href="{{ url }}">click here</a>.
+    {% endtrans %}
+  </div>
 {% endblock %}

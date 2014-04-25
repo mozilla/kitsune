@@ -46,6 +46,13 @@
     padding: 24px 10px;
   }
 
+  .no-reply {
+      clear: both;
+      color: #999;
+      line-height: 120%;
+      margin-bottom: 30px;
+  }
+
   .button {
     float: left;
     margin-bottom: 30px;
