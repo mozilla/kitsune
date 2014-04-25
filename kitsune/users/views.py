@@ -449,7 +449,7 @@ def make_contributor(request):
             subject=_('Welcome to SUMO!'),
             text_template='users/email/contributor.ltxt',
             html_template='users/email/contributor.html',
-            context_vars={'username': request.user.username},
+            context_vars={'contributor':request.user},
             from_email=settings.DEFAULT_FROM_EMAIL,
             to_email=request.user.email)
 

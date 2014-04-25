@@ -1,6 +1,6 @@
 {% autoescape false %}
 {# This is an email. Whitespace matters! #}
-{{ _('{sender} sent you the following message:')|f(sender=sender) }}
+{{ _('{sender} sent you the following message:')|f(sender=display_name(sender)) }}
 
 {{ message }}
 

@@ -1,7 +1,7 @@
 {% extends 'email/base.html' %}
 
 {% block content %}
-  <p>{{ _('Hi {username}')|f(username=username) }}</p>
+  <p>{{ _('Hi {username}')|f(username=display_name(contributor)) }}</p>
 
   <p>
     {% trans %}

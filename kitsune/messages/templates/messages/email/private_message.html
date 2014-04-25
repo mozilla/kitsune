@@ -1,7 +1,7 @@
 {% extends 'email/base.html' %}
 
 {% block content %}
-  <p>{{ _('{sender} sent you the following message:')|f(sender=sender) }}</p>
+  <p>{{ _('{sender} sent you the following message:')|f(sender=display_name(sender)) }}</p>
 
   <div class="quote">
     {{ message_html }}

@@ -3,8 +3,8 @@
 {# This is an email. Whitespace matters! #}
 {{ _('New thread: {title}')|f(title=thread) }}
 
-{% trans author=author %}
-User {{ author }} has posted a new thread in a forum you're watching.
+{% trans author=display_name(author) %}
+{{ author }} has posted a new thread in a forum you're watching.
 Here is the thread:
 {% endtrans %}
 

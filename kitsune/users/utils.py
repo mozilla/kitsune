@@ -91,7 +91,7 @@ def add_to_contributors(request, user):
             subject=_('Welcome to SUMO!'),
             text_template='users/email/contributor.ltxt',
             html_template='users/email/contributor.html',
-            context_vars={'username': user.username},
+            context_vars={'contributor': user},
             from_email=settings.DEFAULT_FROM_EMAIL,
             to_email=user.email)
 
