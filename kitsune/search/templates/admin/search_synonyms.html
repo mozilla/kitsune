@@ -52,7 +52,7 @@
     <form method="POST">
       {% csrf_token %}
       <input type="hidden" name="sync_synonyms" value="1">
-      <input type="submit" value="Sync Synonyms to ES">
+      <input type="submit" value="Sync synonyms to ES">
     </form>
 
     <p>
@@ -75,7 +75,7 @@
       It is intended for bulk insertion and mass editing by expert users.
       If that doesn't sound like you, you can use the
       <a href="{% url 'admin:search_synonym_changelist' %}">simpler interface</a>
-      instead. Remember to come back here and click that button above 
+      instead. Remember to come back here and click that sync button above 
       after editing the synonyms.
     </p>
 
@@ -87,12 +87,22 @@
 
     <p>
       The format here is one synonym set per line. A synonym set is a set of
-      words on the left that correspond to a set of words on the right, with a
-      "fat arrow" (<code>=></code>) in between. Each of the words in the left
-      set will be expanded to all of the words on the right. For example a line
+      words on the left that will be transformed into the set of words on the right, with a
+      "fat arrow" (<code>=></code>) in between. Each of the words on the left
+      set will be converted to all of the words on the right. For example a line
       like <code>social => facebook, twitter</code> would make a search for
-      "social integration" match all of the documents "social integration",
-      "facebook integration", and "twitter integration".
+      "social integration" match all of the documents "facebook integration"
+      and "twitter integration". It's fine to have multi-word phrases like
+      <code>address bar, location bar, awesome bar => address bar, location bar, awesome bar</code>,
+      which would make those three phrases completely interchangeable.
+    </p>
+
+    <p>
+      Note that the original word is lost during the conversion. If you want to
+      keep the original words(s) in the search, include those words on the right,
+      For example <code>social => facebook, twitter, social</code>. Also,
+      synonyms are one way only. If you want two way synonyms, you need two
+      lines, or to put all words on both sides.
     </p>
 
     {% for error in errors %}
