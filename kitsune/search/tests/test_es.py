@@ -1119,7 +1119,7 @@ class TestAnalyzers(ElasticTestCase):
             eq_(doc['_analyzer'], self.locale_data[locale]['analyzer'])
 
     def test_query_analyzer_upgrader(self):
-        analyzer = 'snowball-english'
+        analyzer = 'snowball-english-synonyms'
         before = {
             'document_title__text': 'foo',
             'document_locale__text': 'bar',
@@ -1212,3 +1212,22 @@ class TestAnalyzers(ElasticTestCase):
         """Test that Hebrew uses the standard analyzer."""
         tokens = [u'גאולוגיה', u'היא', u'אחד']
         self._check_locale_tokenization('he', tokens)
+
+
+class TestGetAnalyzerForLocale(ElasticTestCase):
+
+    def test_default(self):
+        actual = es_utils.es_analyzer_for_locale('en-US')
+        eq_('snowball-english', actual)
+
+    def test_without_synonyms(self):
+        actual = es_utils.es_analyzer_for_locale('en-US', synonyms=False)
+        eq_('snowball-english', actual)
+
+    def test_with_synonyms_right_locale(self):
+        actual = es_utils.es_analyzer_for_locale('en-US', synonyms=True)
+        eq_('snowball-english-synonyms', actual)
+
+    def test_with_synonyms_wrong_locale(self):
+        actual = es_utils.es_analyzer_for_locale('es', synonyms=True)
+        eq_('snowball-spanish', actual)

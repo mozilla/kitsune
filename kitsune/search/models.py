@@ -282,7 +282,7 @@ class Record(ModelBase):
 
 class Synonym(ModelBase):
     """To be serialized into ES for synonyms."""
-    enabled = models.BooleanField(default=True)
+    in_es = models.BooleanField(default=False)
     from_words = models.CharField(max_length=255)
     to_words = models.CharField(max_length=255)
 

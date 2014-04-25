@@ -44,12 +44,39 @@
   </style>
 
   <section>
+    <p>
+      There are currently {{ synonym_dirty_count }}
+      synonym{{ synonym_dirty_count|pluralize }} that have not been synced to ES.
+    </p>
+
+    <form method="POST">
+      {% csrf_token %}
+      <input type="hidden" name="sync_synonyms" value="1">
+      <input type="submit" value="Sync Synonyms to ES">
+    </form>
+
+    <p>
+      Press this button to update the synonym list in ElasticSearch to match
+      what is in the database.
+    </p>
+    
+    <p>
+      Keep in mind that changing synonyms will cause a small down time
+      to the search system, during which time users will receive a friendly
+      error message, and some parts of the site will be slower. This downtime
+      should only last a few seconds. Consider doing this during off-peak
+      hours, like after 00:00 UTC.
+    </p>
+  </section>
+
+  <section>
     <p class="notice">
       This is an advanced way to edit synonyms with no training wheels.
       It is intended for bulk insertion and mass editing by expert users.
       If that doesn't sound like you, you can use the
       <a href="{% url 'admin:search_synonym_changelist' %}">simpler interface</a>
-      instead.
+      instead. Remember to come back here and click that button above 
+      after editing the synonyms.
     </p>
 
     <p>
@@ -66,13 +93,6 @@
       like <code>social => facebook, twitter</code> would make a search for
       "social integration" match all of the documents "social integration",
       "facebook integration", and "twitter integration".
-    </p>
-
-    <p>
-      Please keep in mind that changing synonyms will cause a small down time
-      to the search system, during which time users will receive a friendly
-      error message, and some parts of the site will be slower. This downtime
-      should only last a few seconds.
     </p>
 
     {% for error in errors %}

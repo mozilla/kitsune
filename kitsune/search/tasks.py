@@ -11,6 +11,8 @@ from kitsune.search.es_utils import (
     get_indexable, index_chunk, reconcile_chunk, UnindexMeBro)
 from kitsune.sumo.redis_utils import redis_client, RedisError
 
+from elasticutils.contrib.django import get_es
+
 
 # This is present in memcached when reindexing is in progress and
 # holds the number of outstanding index chunks. Once it hits 0,
@@ -207,3 +209,12 @@ def unindex_task(cls, id_list, **kw):
                            countdown=RETRY_TIMES[retries])
     finally:
         unpin_this_thread()
+
+
+@task()
+def update_synonyms_task():
+    # Need to import Synonym here to prevent circular import
+    from kitsune.search.models import Synonym
+    synonyms = Synonym.objects.all()
+    serialized = [unicode(s) for s in synonyms]
+    # XXX: finish me

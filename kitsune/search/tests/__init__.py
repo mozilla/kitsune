@@ -83,7 +83,6 @@ def synonym(**kwargs):
     defaults = {
         "from_words": "foo, bar",
         "to_words": "baz",
-        "enabled": True,
     }
     defaults.update(kwargs)
     return Synonym(**defaults)

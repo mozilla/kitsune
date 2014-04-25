@@ -11,6 +11,7 @@ from elasticutils import S as UntypedS
 from elasticutils.contrib.django import S, F, get_es, ES_EXCEPTIONS  # noqa
 from statsd import statsd
 
+from kitsune.search import config
 from kitsune.search.utils import chunked
 
 
@@ -220,26 +221,92 @@ def get_analysis():
     but could also include custom analyzers if the need arises.
     """
     analyzers = {}
-    tokenizers = {}
+    filters = {}
 
-    snowball_langs = [
-        'Armenian', 'Basque', 'Catalan', 'Danish', 'Dutch', 'English',
-        'Finnish', 'French', 'German', 'Hungarian', 'Italian', 'Norwegian',
-        'Portuguese', 'Romanian', 'Russian', 'Spanish', 'Swedish', 'Turkish',
-    ]
+    # The keys are locales to look up to decide the analyzer's name.
+    # The values are the language name to set for Snowball.
+    snowball_langs = {
+        'eu': 'Basque',
+        'ca': 'Catalan',
+        'da': 'Danish',
+        'nl': 'Dutch',
+        'en-US': 'English',
+        'fi': 'Finnish',
+        'fr': 'French',
+        'de': 'German',
+        'hu': 'Hungarian',
+        'it': 'Italian',
+        'no': 'Norwegian',
+        'pt-BR': 'Portuguese',
+        'ro': 'Romanian',
+        'ru': 'Russian',
+        'es': 'Spanish',
+        'sv': 'Swedish',
+        'tr': 'Turkish',
+    }
 
-    for lang in snowball_langs:
-        key = 'snowball-' + lang.lower()
-        analyzers[key] = {
+    for locale, language in snowball_langs.items():
+        analyzer_name = es_analyzer_for_locale(locale, synonyms=False)
+        analyzers[analyzer_name] = {
             'type': 'snowball',
-            'language': lang,
+            'language': language,
+        }
+
+        # The snowball analyzer is actually just a shortcut that does
+        # a particular set of tokenizers and analyzers. According to
+        # the docs[1], the below is the same as that, plus the synonyms.
+
+        if locale in config.ES_SYNONYM_LOCALES:
+            analyzer_name = es_analyzer_for_locale(locale, synonyms=True)
+            analyzers[analyzer_name] = {
+                'type': 'custom',
+                'tokenizer': 'standard',
+                'filter': [
+                    'standard',
+                    'lowercase',
+                    'stop',
+                    'snowball-' + locale,
+                    'synonyms-' + locale,
+                ],
+            }
+
+    for locale in config.ES_SYNONYM_LOCALES:
+        filter_name, filter_body = es_get_synonym_filter(locale)
+        filters[filter_name] = filter_body
+        filters['snowball-' + locale] = {
+            'type': 'snowball',
+            'language': snowball_langs[locale],
         }
 
     # Done!
     return {
         'analyzer': analyzers,
-        'tokenizer': tokenizers,
+        'filter': filters,
     }
+
+
+def es_get_synonym_filter(locale):
+    # Avoid circular import
+    from kitsune.search.models import Synonym
+    # TODO: Someday this should be something like .filter(locale=locale)
+    synonyms = list(Synonym.objects.all())
+    name = 'synonyms-' + locale
+
+    # The synonym filter doesn't like it if the synonyms list is empty.
+    # If there are no synyonms, just make a no-op filter instead.
+    if synonyms:
+        body = {
+            'type': 'synonym',
+            'synonyms': [unicode(s) for s in synonyms],
+        }
+    else:
+        # This is the closest I could find to a no-op filter.
+        body = {
+            'type': 'pattern_replace',
+            'pattern': '(.*)',
+            'replace': '$1',
+        }
+    return name, body
 
 
 def recreate_indexes(es=None, indexes=None):
@@ -787,13 +854,23 @@ def es_verify_cmd(log=log):
     log.info('Done! {0}'.format(format_time(time.time() - start_time)))
 
 
-def es_analyzer_for_locale(locale, fallback='standard'):
+def es_analyzer_for_locale(locale, synonyms=False, fallback='standard'):
     """Pick an appropriate analyzer for a given locale.
 
     If no analyzer is defined for `locale`, return fallback instead,
     which defaults to ES analyzer named "standard".
+
+    If `synonyms` is True, this will return a synonym-using analyzer,
+    if that makes sense. In particular, it doesn't make sense to use
+    synonyms with the fallback analyzer.
     """
-    analyzer = settings.ES_LOCALE_ANALYZERS.get(locale, fallback)
+
+    if locale in settings.ES_LOCALE_ANALYZERS:
+        analyzer = settings.ES_LOCALE_ANALYZERS[locale]
+        if synonyms and locale in config.ES_SYNONYM_LOCALES:
+            analyzer += '-synonyms'
+    else:
+        analyzer = fallback
 
     if (not settings.ES_USE_PLUGINS and
             analyzer in settings.ES_PLUGIN_ANALYZERS):
@@ -804,7 +881,7 @@ def es_analyzer_for_locale(locale, fallback='standard'):
 
 def es_query_with_analyzer(query, locale):
     """Transform a query dict to use _analyzer actions for the right fields."""
-    analyzer = es_analyzer_for_locale(locale)
+    analyzer = es_analyzer_for_locale(locale, synonyms=True)
     new_query = {}
 
     # Import locally to avoid circular import

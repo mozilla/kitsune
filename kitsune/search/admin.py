@@ -16,7 +16,8 @@ from kitsune.search.es_utils import (
     all_read_indexes, all_write_indexes)
 from kitsune.search.models import Record, get_mapping_types, Synonym
 from kitsune.search.tasks import (
-    OUTSTANDING_INDEX_CHUNKS, index_chunk_task, reconcile_task)
+    OUTSTANDING_INDEX_CHUNKS, index_chunk_task, reconcile_task,
+    update_synonyms_task)
 from kitsune.search.utils import chunked, create_batch_id
 from kitsune.sumo.redis_utils import redis_client, RedisError
 from kitsune.wiki.models import Document, DocumentMappingType
@@ -421,20 +422,25 @@ admin.site.register_view('troubleshooting', view=troubleshooting_view,
 
 
 class SynonymAdmin(admin.ModelAdmin):
-    list_display = ('id', 'enabled', 'from_words', 'to_words')
+    list_display = ('id', 'in_es', 'from_words', 'to_words')
     list_display_links = ('id', )
-    list_editable = ('enabled', 'from_words', 'to_words')
+    list_editable = ('from_words', 'to_words')
     ordering = ('from_words', 'id')
 
 
 admin.site.register(Synonym, SynonymAdmin)
 
 
-def synonyms_bulk_view(request):
+def synonym_editor(request):
     errs = []
     all_synonyms = Synonym.objects.all()
 
-    if request.POST.get('synonyms_text'):
+
+    if 'sync_synonyms' in request.POST:
+        update_synonyms_task.delay()
+        return HttpResponseRedirect(request.path)
+
+    if 'synonyms_text' in request.POST:
         post_syns = set()
         db_syns = set((s.from_words, s.to_words) for s in all_synonyms)
 
@@ -469,11 +475,12 @@ def synonyms_bulk_view(request):
     if synonyms_text is None:
         synonyms_text = '\n'.join(unicode(s) for s in all_synonyms)
 
-    return render(request, 'admin/search_bulk_synonyms.html', {
+    return render(request, 'admin/search_synonyms.html', {
         'synonyms_text': synonyms_text,
         'errors': errs,
+        'synonym_dirty_count': Synonym.objects.filter(in_es=False).count(),
     })
 
 
-admin.site.register_view('synonym_bulk', view=synonyms_bulk_view,
-                         name='Search - Synonym Bulk Editor')
+admin.site.register_view('synonym_bulk', view=synonym_editor,
+                         name='Search - Synonym Editor')
