@@ -15,7 +15,7 @@
   <img class="avatar" src="{{ profile_avatar(answerer) }}">
   <div class="user-meta">
     <strong>{{ answerer.username }}</strong>
-    <span>{{ created }}</span>
+    <span>{{ datetimeformat(created, format='datetime') }}</span>
   </div>
   <div class="arrow"></div>
 {% endblock %}
