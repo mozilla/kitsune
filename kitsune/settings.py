@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Django settings for kitsune project."""
 
 import logging
@@ -872,6 +873,9 @@ CC_WORD_BLACKLIST = [
     'gaystapo',
     '#UninstallFirefox',
     '#firefoxboycott',
+    'comercial',
+    '#NoMásComercialMovistarFirefox',
+    '#NoMasComercialMovistarFirefox',
 ]
 
 
