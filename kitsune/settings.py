@@ -872,6 +872,9 @@ CC_WORD_BLACKLIST = [
     'gaystapo',
     '#UninstallFirefox',
     '#firefoxboycott',
+    'comercial',
+    '#NoMásComercialMovistarFirefox',
+    '#NoMasComercialMovistarFirefox',
 ]
 
 
