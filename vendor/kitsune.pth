@@ -73,6 +73,7 @@ src/django-recaptcha
 src/python-recaptcha
 src/oedipus
 src/elasticutils
+src/elasticsearch-py
 src/zendesk
 packages/ordereddict
 src/django-eadred
@@ -80,7 +81,6 @@ src/raven-python
 packages/google-api-python-client
 packages/python-gflags
 src/django-statsd
-src/pyelasticsearch
 src/requests
 src/premailer
 src/oauthlib

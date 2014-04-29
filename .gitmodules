@@ -169,3 +169,6 @@
 [submodule "vendor/src/django-taggit"]
 	path = vendor/src/django-taggit
 	url = https://github.com/alex/django-taggit.git
+[submodule "vendor/src/elasticsearch-py"]
+	path = vendor/src/elasticsearch-py
+	url = https://github.com/elasticsearch/elasticsearch-py.git
