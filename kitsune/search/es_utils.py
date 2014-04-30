@@ -9,7 +9,6 @@ from django.db import reset_queries
 import requests
 from elasticutils import S as UntypedS
 from elasticutils.contrib.django import S, F, get_es, ES_EXCEPTIONS  # noqa
-from pyelasticsearch.exceptions import ElasticHttpNotFoundError
 from statsd import statsd
 
 from kitsune.search.utils import chunked
@@ -153,7 +152,7 @@ def get_indexes(all_indexes=False):
     :returns: A dict like {index_name: document_count}.
     """
     es = get_es()
-    status = es.status()
+    status = es.indices.status()
     indexes = status['indices']
 
     if not all_indexes:
@@ -172,12 +171,9 @@ def get_doctype_stats(index):
     >>> get_doctype_stats()
     {'questions_question': 14216, 'forums_thread': 419, 'wiki_document': 759}
 
-    :throws pyelasticsearch.exceptions.Timeout: if the request
-        times out
-    :throws pyelasticsearch.exceptions.ConnectionError: if there's a
-        connection error
-    :throws pyelasticsearch.exceptions.ElasticHttpNotFound: if the
-        index doesn't exist
+    :throws elasticsearch.exceptions.ConnectionError: if there is a
+        connection error, including a timeout.
+    :throws elasticsearch.exceptions.NotFound: if the index doesn't exist
 
     """
     stats = {}
@@ -195,10 +191,7 @@ def get_doctype_stats(index):
 
 
 def delete_index(index):
-    try:
-        get_es().delete_index(index)
-    except ElasticHttpNotFoundError:
-        pass
+    get_es().indices.delete(index=index, ignore=[404])
 
 
 def format_time(time_to_go):
@@ -271,7 +264,7 @@ def recreate_indexes(es=None, indexes=None):
         # the tokenizers, so live indexing doesn't get a chance to index
         # anything between and infer a bogus mapping (which ES then freaks
         # out over when we try to lay in an incompatible explicit mapping).
-        es.create_index(index, settings={
+        es.indices.create(index=index, body={
             'mappings': get_mappings(index),
             'settings': {
                 'analysis': get_analysis(),
@@ -279,13 +272,13 @@ def recreate_indexes(es=None, indexes=None):
         })
 
     # Wait until the index is there.
-    es.health(wait_for_status='yellow')
+    es.cluster.health(wait_for_status='yellow')
 
 
 def get_index_settings(index):
     """Returns ES settings for this index"""
-    es = get_es()
-    return es.get_settings(index).get(index, {}).get('settings', {})
+    return (get_es().indices.get_settings(index=index)
+            .get(index, {}).get('settings', {}))
 
 
 def get_indexable(percent=100, mapping_types=None):
@@ -461,7 +454,8 @@ def es_reindex_cmd(percent=100, delete=False, mapping_types=None,
         old_refreshes[index] = (get_index_settings(index)
                                 .get('index.refresh_interval', '1s'))
         # Disable automatic refreshing
-        es.update_settings(index, {'index': {'refresh_interval': '-1'}})
+        es.indices.put_settings(index=index,
+                                body={'index': {'refresh_interval': '-1'}})
 
     start_time = time.time()
     for cls, indexable in all_indexable:
@@ -505,7 +499,8 @@ def es_reindex_cmd(percent=100, delete=False, mapping_types=None,
 
     # Re-enable automatic refreshing
     for index, old_refresh in old_refreshes.items():
-        es.update_settings(index, {'index': {'refresh_interval': old_refresh}})
+        es.indices.put_settings(index=index, body={
+                                'index': {'refresh_interval': old_refresh}})
     delta_time = time.time() - start_time
     log.info('done! (%s total)', format_time(delta_time))
 
