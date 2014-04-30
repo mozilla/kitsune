@@ -3,12 +3,12 @@
 {% block content %}
   <p>
     {% if approved %}
-      {% trans reviewer=reviewer.get_profile().display_name %}
+      {% trans reviewer=display_name(reviewer) %}
         A revision you contributed to has been approved.  {{ reviewer }} has
         approved a revision to the document {{ document_title }}.
       {% endtrans %}
     {% else %}
-      {% trans reviewer=reviewer.get_profile().display_name %}
+      {% trans reviewer=display_name(reviewer) %}
         A revision you contributed to has been reviewed.  {{ reviewer }} has
         reviewed a revision to the document {{ document_title }}.
       {% endtrans %}

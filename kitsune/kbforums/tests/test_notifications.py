@@ -19,7 +19,7 @@ from kitsune.wiki.tests import document
 # request. See the long explanation in questions.tests.test_notifications.
 REPLY_EMAIL = u"""Reply to thread: Sticky Thread
 
-User jsocol has replied to a thread you're watching. Here is their reply:
+jsocol has replied to a thread you're watching. Here is their reply:
 
 ========
 
@@ -38,7 +38,7 @@ Unsubscribe from these emails:
 https://testserver/en-US/unsubscribe/"""
 NEW_THREAD_EMAIL = u"""New thread: a title
 
-User jsocol has posted a new thread in a forum you're watching. Here is the \
+jsocol has posted a new thread in a forum you're watching. Here is the \
 thread:
 
 ========

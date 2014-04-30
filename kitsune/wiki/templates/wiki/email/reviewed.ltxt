@@ -3,12 +3,12 @@
 {{ _('Your revision has been reviewed.') }}
 
 {% if approved %}
-{% trans reviewer=reviewer.get_profile().display_name, document_title=document_title %}
+{% trans reviewer=display_name(reviewer), document_title=document_title %}
 {{ reviewer }} has approved your revision to the document
 {{ document_title }}.
 {% endtrans %}
 {% else %}
-{% trans reviewer=reviewer.get_profile().display_name, document_title=document_title %}
+{% trans reviewer=display_name(reviewer), document_title=document_title %}
 {{ reviewer }} has reviewed your revision to the document
 {{ document_title }}.
 {% endtrans %}

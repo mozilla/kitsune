@@ -1,7 +1,7 @@
 {{ _('Congratulations!') }}
 
 {% if award.creator %}
-{% trans awarder=award.creator.get_profile().display_name, title=_(badge.title, 'DB: badger.Badge.title') %}
+{% trans awarder=display_name(award.creator), title=_(badge.title, 'DB: badger.Badge.title') %}
 {{ awarder }} has awarded you the {{ title }} badge!
 {% endtrans %}
 {% else %}

@@ -50,7 +50,7 @@ def display_name(user):
         profile = user.get_profile()
     except Profile.DoesNotExist:
         return user.username
-    return profile.name if profile and profile.name else user.username
+    return profile.display_name if profile else user.username
 
 
 @register.filter

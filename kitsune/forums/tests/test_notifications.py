@@ -24,7 +24,7 @@ from kitsune.users.tests import user
 # questions.tests.test_notifications.
 REPLY_EMAIL = u"""Reply to thread: {thread}
 
-User {username} has replied to a thread you're watching. Here is their reply:
+{username} has replied to a thread you're watching. Here is their reply:
 
 ========
 
@@ -44,7 +44,7 @@ https://testserver/en-US/unsubscribe/"""
 
 NEW_THREAD_EMAIL = u"""New thread: {thread}
 
-User {username} has posted a new thread in a forum you're watching. Here is \
+{username} has posted a new thread in a forum you're watching. Here is \
 the thread:
 
 ========

@@ -14,7 +14,7 @@
   <h1>{{ question_title }}</h1>
   <img class="avatar" src="{{ profile_avatar(answerer) }}">
   <div class="user-meta">
-    <strong>{{ answerer.get_profile().display_name }}</strong>
+    <strong>{{ display_name(answerer) }}</strong>
     <span>{{ created }}</span>
   </div>
   <div class="arrow"></div>

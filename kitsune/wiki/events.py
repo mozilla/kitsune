@@ -323,7 +323,7 @@ class ApprovedOrReadyUnion(EventUnion):
                 c['document_url'] = add_utm(approved_url, 'wiki-approved')
                 # TODO: Expose all watches.
                 c['watch'] = watches[0]
-                c['reviewer'] = revision.reviewer.get_profile().display_name
+                c['reviewer'] = revision.reviewer
 
                 subject = _(u'{title} ({locale}) has a new approved '
                             'revision ({reviewer})')

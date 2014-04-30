@@ -2,7 +2,7 @@
 
 {% block content %}
   <p>
-    {% trans reviewer=reviewer, document_title=document_title %}
+    {% trans reviewer=display_name(reviewer), document_title=document_title %}
       {{ reviewer }} has approved the revision to the document
       {{ document_title }}.
     {% endtrans %}

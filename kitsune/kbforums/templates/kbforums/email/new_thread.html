@@ -4,7 +4,7 @@
   <p>{{ _('New thread: {title}')|f(title=thread) }}</p>
 
   <p>
-    {% trans author=author %}
+    {% trans author=display_name(author) %}
       {{ author }} has posted a new thread in a forum you're watching.
       Here is the thread:
     {% endtrans %}

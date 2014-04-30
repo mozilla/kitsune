@@ -112,7 +112,7 @@ class QuestionReplyEvent(QuestionEvent):
                 c[k] = add_utm(
                     urlparams(c[k], auth=auth_str), 'questions-reply')
 
-            c['username'] = u.get_profile().display_name
+            c['user'] = u
             c['watch'] = w[0]  # TODO: Expose all watches.
 
             # u here can be a Django User model or a Tidings EmailUser
@@ -158,14 +158,14 @@ class QuestionSolvedEvent(QuestionEvent):
         solution_url = add_utm(
             question.solution.get_absolute_url(), 'questions-solved')
 
-        c = {'answerer': question.solution.creator.get_profile().display_name,
-             'asker': question.creator.get_profile().display_name,
+        c = {'answerer': question.solution.creator,
+             'asker': question.creator,
              'question_title': question.title,
              'host': Site.objects.get_current().domain,
              'solution_url': solution_url}
 
         for u, w in users_and_watches:
-            c['username'] = u.get_profile().display_name  # '' if anonymous
+            c['user'] = u  # '' if anonymous
             c['watch'] = w[0]  # TODO: Expose all watches.
 
             # u here can be a Django User model or a Tidings EmailUser

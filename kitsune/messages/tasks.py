@@ -33,7 +33,7 @@ def email_private_message(inbox_message_id):
 
         from kitsune.sumo.helpers import add_utm
         context = {
-            'sender': inbox_message.sender.get_profile().display_name,
+            'sender': inbox_message.sender,
             'message': inbox_message.message,
             'message_html': inbox_message.content_parsed,
             'message_url': add_utm(msg_url, 'messages-new'),

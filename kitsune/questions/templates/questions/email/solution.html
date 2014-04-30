@@ -2,17 +2,17 @@
 
 {% block content %}
   {% if username %}
-    <p>{{ _('Hi {username},')|f(username=username) }}</p>
+    <p>{{ _('Hi {username},')|f(username=display_name(user)) }}</p>
   {% endif %}
 
   <p>
-    {% trans %}
+    {% trans answerer=display_name(answerer) %}
       We just wanted to let you know that {{ answerer }}
       has found a solution to a Firefox question that you're following.
     {% endtrans %}
   </p>
 
-  <p>{{ _("The question: '{title}' was marked as solved by its asker, {asker}.")|f(title=question_title, asker=asker) }}</p>
+  <p>{{ _("The question: '{title}' was marked as solved by its asker, {asker}.")|f(title=question_title, asker=display_name(asker)) }}</p>
 
   <p>
     {% trans %}
@@ -25,7 +25,7 @@
   <p><a href="https://{{ host }}{{ solution_url }}">{{ _('View the solution') }}</a></p>
 
   <p>
-    {% trans %}
+    {% trans answerer=display_name(answerer) %}
       Did you know that {{ answerer }} is a Firefox user
       just like you? Get started helping other Firefox users by
       <a href="https://{{ host }}/questions?filter=unsolved">

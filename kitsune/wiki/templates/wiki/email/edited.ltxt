@@ -1,7 +1,7 @@
 {# This is an email. Whitespace matters! #}
 {% from "includes/unsubscribe_text.ltxt" import unsubscribe_text with context %}
 {% autoescape false %}
-{% trans creator=creator.get_profile().display_name, document_title=document_title %}
+{% trans creator=display_name(creator), document_title=document_title %}
 {{ creator }} created a new revision to the document {{ document_title }}.
 {% endtrans %}
 

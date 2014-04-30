@@ -1,6 +1,6 @@
 {% autoescape false %}
 {# L10n: This is an email.  Whitespace matters! #}
-{{ _('Hi {username}')|f(username=username) }}
+{{ _('Hi {username}')|f(username=display_name(contributor)) }}
 
 {# L10n: This is an email.  Whitespace matters! #}
 {% trans %}

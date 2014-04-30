@@ -2,7 +2,7 @@
 
 {% block content %}
   <p>
-    {% trans creator=creator.get_profile().display_name, document_title=document_title %}
+    {% trans creator=display_name(creator), document_title=document_title %}
       {{ creator }} submitted a new revision to the document
       {{ document_title }}.
     {% endtrans %}

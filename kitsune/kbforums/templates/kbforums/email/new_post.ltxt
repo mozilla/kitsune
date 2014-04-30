@@ -3,7 +3,7 @@
 {# This is an email. Whitespace matters! #}
 {{ _('Reply to thread: {title}')|f(title=thread) }}
 
-{% trans author=author %}
+{% trans author=display_name(author) %}
 {{ author }} has replied to a thread you're watching. Here
 is their reply:
 {% endtrans %}
