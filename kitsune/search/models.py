@@ -8,7 +8,7 @@ from django.db.models.signals import pre_delete, post_save, m2m_changed
 from django.dispatch import receiver
 
 from elasticutils.contrib.django import MappingType, Indexable
-from pyelasticsearch.exceptions import ElasticHttpNotFoundError
+from elasticsearch.exceptions import NotFoundError
 
 from kitsune.search import es_utils
 from kitsune.search.tasks import index_task, unindex_task
@@ -136,7 +136,7 @@ class SearchMappingType(MappingType, Indexable):
 
         try:
             super(SearchMappingType, cls).unindex(*args, **kwargs)
-        except ElasticHttpNotFoundError:
+        except NotFoundError:
             # Ignore the case where we try to delete something that's
             # not there.
             pass

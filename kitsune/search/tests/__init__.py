@@ -29,9 +29,7 @@ class ElasticTestCase(TestCase):
             return
 
         # try to connect to ES and if it fails, skip ElasticTestCases.
-        try:
-            get_es().health()
-        except es_utils.ES_EXCEPTIONS:
+        if not get_es().ping():
             cls.skipme = True
             return
 
@@ -57,9 +55,9 @@ class ElasticTestCase(TestCase):
             generate_tasks()
 
         for index in es_utils.all_write_indexes():
-            es.refresh(index)
+            es.indices.refresh(index=index)
 
-        es.health(wait_for_status='yellow')
+        es.cluster.health(wait_for_status='yellow')
 
     def reindex_and_refresh(self):
         """Reindexes anything in the db"""
@@ -71,7 +69,7 @@ class ElasticTestCase(TestCase):
         """(Re-)create write index"""
         from kitsune.search.es_utils import recreate_indexes
         recreate_indexes()
-        get_es().health(wait_for_status='yellow')
+        get_es().cluster.health(wait_for_status='yellow')
 
     def teardown_indexes(self):
         """Tear down write index"""

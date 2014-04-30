@@ -434,9 +434,9 @@ def search(request, template=None):
             result['object'] = ObjectDict(doc)
             result['search_summary'] = summary
             result['rank'] = rank
-            result['score'] = doc._score
+            result['score'] = doc.es_meta.score
             result['explanation'] = escape(format_explanation(
-                doc._explanation))
+                doc.es_meta.explanation))
             results.append(result)
 
     except ES_EXCEPTIONS as exc:
@@ -585,15 +585,12 @@ def _build_es_excerpt(result, first_only=False):
         if we should show all bits
 
     """
-    bits = [m.strip() for m in
-            chain(*result._highlight.values()) if m]
+    bits = [m.strip() for m in chain(*result.es_meta.highlight.values())]
 
     if first_only and bits:
         excerpt = bits[0]
     else:
-        excerpt = EXCERPT_JOINER.join(
-            [m.strip() for m in
-             chain(*result._highlight.values()) if m])
+        excerpt = EXCERPT_JOINER.join(bits)
 
     return jinja2.Markup(clean_excerpt(excerpt))
 
