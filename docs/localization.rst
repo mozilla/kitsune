@@ -179,6 +179,15 @@ tag::
     {% trans %}
 
 
+You can also provide comments::
+
+    {# L10n: User is a username #}
+    {% trans user=request.user.username %}
+        Thanks for registering, {{ user }}! We're so...
+        hope that you'll...
+    {% trans %}
+
+
 Strings in Python
 -----------------
 
