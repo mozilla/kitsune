@@ -21,7 +21,7 @@ from tower import ugettext_lazy as _lazy, ugettext as _
 
 from kitsune.gallery.models import Image
 from kitsune.products.models import Product, Topic
-from kitsune.search.es_utils import (UnindexMeBro, es_analyzer_for_locale)
+from kitsune.search.es_utils import UnindexMeBro, es_analyzer_for_locale
 from kitsune.search.models import (
     SearchMappingType, SearchMixin, register_for_indexing,
     register_mapping_type)
