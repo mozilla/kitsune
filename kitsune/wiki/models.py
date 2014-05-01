@@ -16,15 +16,12 @@ from django.utils.encoding import smart_str
 
 import waffle
 from pyquery import PyQuery
-from statsd import statsd
 from tidings.models import NotificationsMixin
 from tower import ugettext_lazy as _lazy, ugettext as _
 
 from kitsune.gallery.models import Image
 from kitsune.products.models import Product, Topic
-from kitsune.questions.models import Question
-from kitsune.search.es_utils import (UnindexMeBro, ES_EXCEPTIONS,
-                                     es_analyzer_for_locale)
+from kitsune.search.es_utils import (UnindexMeBro, es_analyzer_for_locale)
 from kitsune.search.models import (
     SearchMappingType, SearchMixin, register_for_indexing,
     register_mapping_type)
@@ -553,90 +550,6 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         start = datetime.now() - timedelta(days=30)
         return HelpfulVote.objects.filter(
             revision__document=self, created__gt=start, helpful=True).count()
-
-    @property
-    def related_documents(self):
-        """Return documents that are 'morelikethis' one."""
-        # Only documents in default IA categories have related.
-        if (self.redirect_url() or not self.current_revision or
-                self.category not in settings.IA_DEFAULT_CATEGORIES):
-            return []
-
-        # First try to get the results from the cache
-        key = 'wiki_document:related_docs:%s' % self.id
-        documents = cache.get(key)
-        if documents is not None:
-            statsd.incr('wiki.related_documents.cache.hit')
-            log.debug('Getting MLT for {doc} from cache.'
-                      .format(doc=repr(self)))
-            return documents
-
-        try:
-            statsd.incr('wiki.related_documents.cache.miss')
-            mt = self.get_mapping_type()
-            documents = mt.morelikethis(
-                self.id,
-                s=mt.search().filter(
-                    document_locale=self.locale,
-                    document_is_archived=False,
-                    document_category__in=settings.IA_DEFAULT_CATEGORIES,
-                    product__in=[p.slug for p in self.get_products()]),
-                fields=[
-                    'document_title',
-                    'document_summary',
-                    'document_content'])[:3]
-            cache.add(key, documents)
-        except ES_EXCEPTIONS:
-            statsd.incr('wiki.related_documents.esexception')
-            log.exception('ES MLT related_documents')
-            documents = []
-
-        return documents
-
-    @property
-    def related_questions(self):
-        """Return questions that are 'morelikethis' document."""
-        # Only documents in default IA categories have related.
-        if (self.redirect_url() or not self.current_revision or
-                self.category not in settings.IA_DEFAULT_CATEGORIES or
-                self.locale not in settings.AAQ_LANGUAGES):
-            return []
-
-        # First try to get the results from the cache
-        key = 'wiki_document:related_questions:%s' % self.id
-        questions = cache.get(key)
-        if questions is not None:
-            statsd.incr('wiki.related_questions.cache.hit')
-            log.debug('Getting MLT questions for {doc} from cache.'
-                      .format(doc=repr(self)))
-            return questions
-
-        try:
-            statsd.incr('wiki.related_questions.cache.miss')
-            max_age = settings.SEARCH_DEFAULT_MAX_QUESTION_AGE
-            start_date = int(time.time()) - max_age
-
-            s = Question.get_mapping_type().search()
-            questions = (
-                s.values_dict('id', 'question_title', 'url')
-                .filter(question_locale=self.locale,
-                        product__in=[p.slug for p in self.get_products()],
-                        question_has_helpful=True,
-                        created__gte=start_date)
-                .query(__mlt={
-                    'fields': ['question_title', 'question_content'],
-                    'like_text': self.title,
-                    'min_term_freq': 1,
-                    'min_doc_freq': 1})
-                [:3])
-            questions = list(questions)
-            cache.add(key, questions)
-        except ES_EXCEPTIONS:
-            statsd.incr('wiki.related_questions.esexception')
-            log.exception('ES MLT related_questions')
-            questions = []
-
-        return questions
 
     @classmethod
     def get_mapping_type(cls):

@@ -141,9 +141,6 @@ def document(request, document_slug, template=None, document=None):
         except Document.DoesNotExist:
             pass
 
-    related_documents = doc.related_documents
-    related_questions = doc.related_questions
-
     contributors = doc.contributors.all()
 
     products = doc.get_products()
@@ -165,8 +162,6 @@ def document(request, document_slug, template=None, document=None):
     data = {
         'document': doc,
         'redirected_from': redirected_from,
-        'related_documents': related_documents,
-        'related_questions': related_questions,
         'contributors': contributors,
         'fallback_reason': fallback_reason,
         'is_aoa_referral': request.GET.get('ref') == 'aoa',
