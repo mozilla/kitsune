@@ -16,8 +16,6 @@ from pyquery import PyQuery as pq
 from wikimarkup.parser import ALLOWED_TAGS, ALLOWED_ATTRIBUTES
 
 from kitsune.products.tests import product, topic
-from kitsune.questions.tests import question, answer, answervote
-from kitsune.search.tests.test_es import ElasticTestCase
 from kitsune.sumo.helpers import urlparams
 from kitsune.sumo.tests import post, get, attrs_eq, MobileTestCase
 from kitsune.sumo.urlresolvers import reverse
@@ -29,7 +27,7 @@ from kitsune.wiki.models import (
     Document, Revision, HelpfulVote, HelpfulVoteMetadata)
 from kitsune.wiki.config import (
     SIGNIFICANCES, MEDIUM_SIGNIFICANCE, ADMINISTRATION_CATEGORY,
-    TROUBLESHOOTING_CATEGORY, TEMPLATES_CATEGORY, CATEGORIES,
+    TROUBLESHOOTING_CATEGORY, CATEGORIES,
     CANNED_RESPONSES_CATEGORY)
 from kitsune.wiki.tasks import send_reviewed_notification
 from kitsune.wiki.tests import (
@@ -843,33 +841,35 @@ class NewRevisionTests(TestCaseBase):
 
         # Assert notifications fired and have the expected content:
         eq_(2, len(mail.outbox))
-        attrs_eq(mail.outbox[0],
-                 subject=u'%s is ready for review (%s)' % (self.d.title,
-                                                           new_rev.creator),
-                 body=READY_FOR_REVIEW_EMAIL_CONTENT % {
-                     'user': self.user.username,
-                     'title': self.d.title,
-                     'slug': self.d.slug,
-                     'new_id': new_rev.id,
-                     'summary': new_rev.summary,
-                     'diff': diff,
-                     'watcher': reviewable_watch.pk,
-                     'secret': reviewable_watch.secret
-                 },
-                 to=['joe@example.com'])
-        attrs_eq(mail.outbox[1],
-                 subject=u'%s was edited by %s' % (self.d.title,
-                                                   new_rev.creator),
-                 body=DOCUMENT_EDITED_EMAIL_CONTENT % {
-                     'user': self.user.username,
-                     'title': self.d.title,
-                     'slug': self.d.slug,
-                     'watcher': edit_watch.pk,
-                     'secret': edit_watch.secret,
-                     'summary': new_rev.summary,
-                     'diff': diff,
-                 },
-                 to=['sam@example.com'])
+        attrs_eq(
+            mail.outbox[0],
+            subject=u'%s is ready for review (%s)' % (
+                self.d.title, new_rev.creator),
+            body=READY_FOR_REVIEW_EMAIL_CONTENT % {
+                'user': self.user.username,
+                'title': self.d.title,
+                'slug': self.d.slug,
+                'new_id': new_rev.id,
+                'summary': new_rev.summary,
+                'diff': diff,
+                'watcher': reviewable_watch.pk,
+                'secret': reviewable_watch.secret
+            },
+            to=['joe@example.com'])
+        attrs_eq(
+            mail.outbox[1],
+            subject=u'%s was edited by %s' % (
+                self.d.title, new_rev.creator),
+            body=DOCUMENT_EDITED_EMAIL_CONTENT % {
+                'user': self.user.username,
+                'title': self.d.title,
+                'slug': self.d.slug,
+                'watcher': edit_watch.pk,
+                'secret': edit_watch.secret,
+                'summary': new_rev.summary,
+                'diff': diff,
+            },
+            to=['sam@example.com'])
 
     @mock.patch.object(ReviewableRevisionInLocaleEvent, 'fire')
     @mock.patch.object(EditDocumentEvent, 'fire')
@@ -957,7 +957,7 @@ class NewRevisionTests(TestCaseBase):
     def test_new_revision_warning(self,):
         """When editing based on current revision, we should show a warning if
         there are newer unapproved revisions."""
-        #self._test_new_revision_warning(self.d)
+        self._test_new_revision_warning(self.d)
 
     def test_new_revision_warning_l10n(self,):
         """When translating based on current revision, we should show a
@@ -2343,156 +2343,6 @@ class SelectLocaleTests(TestCaseBase):
         doc = pq(response.content)
         eq_(len(settings.LANGUAGE_CHOICES) - 1,  # All except for 1 (en-US)
             len(doc('#select-locale ul.locales li')))
-
-
-class RelatedThingsTestCase(ElasticTestCase):
-    def setUp(self):
-        super(RelatedThingsTestCase, self).setUp()
-        self.product = product(save=True)
-
-    def test_related_documents(self):
-        """Verify Related Documents are rendered as expected."""
-        # The document
-        p = product(save=True)
-        d1 = document(title='lorem ipsum', save=True)
-        d1.products.add(p)
-        r1 = revision(document=d1, summary='lorem',
-                      content='lorem ipsum dolor',
-                      is_approved=True, save=True)
-        d1.current_revision = r1
-        d1.save()
-
-        # A document that is similar.
-        d2 = document(title='lorem ipsum sit', save=True)
-        d2.products.add(p)
-        r2 = revision(document=d2, summary='lorem',
-                      content='lorem ipsum dolor sit amet',
-                      is_approved=True, save=True)
-        d2.current_revision = r2
-        d2.save()
-
-        # A document that is similar but a different locale.
-        d3 = document(title='lorem ipsum sit', locale='es', save=True)
-        d3.products.add(p)
-        r3 = revision(document=d3, summary='lorem',
-                      content='lorem ipsum dolor sit amet',
-                      is_approved=True, save=True)
-        d3.current_revision = r3
-        d3.save()
-
-        # A document that is similar but archived.
-        d4 = document(title='lorem ipsum sit amet', save=True)
-        d4.products.add(p)
-        r4 = revision(document=d4, summary='lorem',
-                      content='lorem ipsum dolor sit amet',
-                      is_approved=True, save=True)
-        d4.current_revision = r4
-        d4.is_archived = True
-        d4.save()
-
-        # A document that is similar but a template.
-        d5 = document(title='Template:lorem ipsum sit amet',
-                      category=TEMPLATES_CATEGORY, save=True)
-        d5.products.add(p)
-        r5 = revision(document=d5, summary='lorem',
-                      content='lorem ipsum dolor sit amet',
-                      is_approved=True, save=True)
-        d5.current_revision = r5
-        d5.save()
-
-        # An administration document that is similar.
-        d6 = document(title='admin lorem ipsum sit amet',
-                      category=ADMINISTRATION_CATEGORY, save=True)
-        d6.products.add(p)
-        revision(document=d6, summary='lorem',
-                 content='lorem ipsum dolor sit amet',
-                 is_approved=True, save=True)
-        d6.current_revision = r5
-        d6.save()
-
-        # A document without an approved current_revision
-        d7 = document(title='lorem ipsum ohai', save=True)
-        d7.products.add(p)
-        d7.save()
-        revision(document=d1, summary='lorem',
-                 content='lorem ipsum dolor',
-                 save=True)
-
-        # A document with a different product
-        d8 = document(title='lorem ipsum dolor sit amet', save=True)
-        d8.products.add(product(save=True))
-        r8 = revision(document=d8, summary='lorem',
-                      content='lorem ipsum dolor',
-                      is_approved=True, save=True)
-        d8.current_revision = r8
-        d8.save()
-
-        self.refresh()
-
-        response = self.client.get(d1.get_absolute_url())
-        doc = pq(response.content)
-        related = doc('#doc-related li a')
-        eq_(1, len(related))
-        eq_('lorem ipsum sit', related.text())
-
-        # Change the document to a redirect and it shoulnd't show related now.
-        d1.html = '<p>REDIRECT <a href="/kb/test">test</a></p>'
-        d1.save()
-        cache.clear()
-        response = self.client.get(d1.get_absolute_url() + '?redirect=no')
-        doc = pq(response.content)
-        related = doc('#doc-related li a')
-        eq_(0, len(related))
-
-        # A document not in default category should have no related.
-        response = self.client.get(d6.get_absolute_url())
-        doc = pq(response.content)
-        eq_(0, len(doc('#doc-related li a')))
-
-        # A document without a current_revision should have no related.
-        response = self.client.get(d7.get_absolute_url())
-        doc = pq(response.content)
-        eq_(0, len(doc('#doc-related li a')))
-
-    def test_related_questions(self):
-        """Verify Related Questions are rendered as expected."""
-        # The document
-        d = document(title='lorem ipsum', save=True)
-        d.current_revision = revision(
-            document=d, summary='lorem', content='lorem ipsum dolor',
-            is_approved=True, save=True)
-        d.save()
-        d.products.add(self.product)
-
-        # There should be no related anything yet.
-        response = self.client.get(d.get_absolute_url())
-        doc = pq(response.content)
-        eq_(0, len(doc('#doc-related li a')))
-
-        # Create a question with helpful answer.
-        q = question(title='lorem ipsum question', content='lorem', save=True)
-        a = answer(question=q, save=True)
-        answervote(answer=a, helpful=True, save=True)
-
-        self.refresh()
-        cache.clear()
-
-        # There should still be no related anything yet.
-        response = self.client.get(d.get_absolute_url())
-        doc = pq(response.content)
-        eq_(0, len(doc('#doc-related li a')))
-
-        # Add the product to the question
-        q.products.add(self.product)
-
-        self.refresh()
-        cache.clear()
-
-        response = self.client.get(d.get_absolute_url())
-        doc = pq(response.content)
-        related = doc('#doc-related li a')
-        eq_(1, len(related))
-        eq_('lorem ipsum question', related.text())
 
 
 class RevisionDeleteTestCase(TestCaseBase):
