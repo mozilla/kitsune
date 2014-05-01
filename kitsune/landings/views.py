@@ -1,19 +1,10 @@
 from django.shortcuts import render
-from django.views.decorators.cache import never_cache
 
 from mobility.decorators import mobile_template
 
 from kitsune.products.models import Product
 from kitsune.sumo.decorators import ssl_required
 from kitsune.sumo.views import redirect_to
-
-
-@never_cache
-def desktop_or_mobile(request):
-    """Redirect mobile browsers to /mobile and others to /home."""
-    mobile = 'products'
-    url_name = mobile if request.MOBILE else 'home'
-    return redirect_to(request, url_name, permanent=False)
 
 
 def home(request):

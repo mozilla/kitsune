@@ -12,12 +12,12 @@ from kitsune.sumo.tests import TestCase
 
 class RedirectTestCase(TestCase):
     test_urls = (
-        ('firefox/3.6.12/WINNT/en-US/', '/en-US/home'),
+        ('firefox/3.6.12/WINNT/en-US/', '/en-US/'),
         ('mobile/4.0/Android/en-US/', '/en-US/products/mobile'),
-        ('firefox/3.6.12/MACOSX/en-US', '/en-US/home'),
-        ('firefox/3.6.12/WINNT/fr/', '/fr/home'),
-        ('firefox/3.6.12/WINNT/fr-FR/', '/fr/home'),
-        ('firefox-home/1.1/iPhone/en-US/', '/en-US/home'),
+        ('firefox/3.6.12/MACOSX/en-US', '/en-US/'),
+        ('firefox/3.6.12/WINNT/fr/', '/fr/'),
+        ('firefox/3.6.12/WINNT/fr-FR/', '/fr/'),
+        ('firefox-home/1.1/iPhone/en-US/', '/en-US/'),
         ('firefox/4.0/Linux/en-US/prefs-applications',
             '/en-US/kb/Applications'),
         ('firefox/4.0/Linux/en-US/prefs-applications/',
@@ -27,17 +27,17 @@ class RedirectTestCase(TestCase):
         ('mobile/4.0/martian/en-US/', 'http://martian.com'),
         ('firefox/4.0/Android/en-US/foo', 404),
         # Make sure Basque doesn't trigger the EU ballot logic.
-        ('firefox/29.0/Darwin/eu/', '/eu/home'),
-        ('firefox/29.0/Darwin/eu', '/eu/home'),
+        ('firefox/29.0/Darwin/eu/', '/eu/'),
+        ('firefox/29.0/Darwin/eu', '/eu/'),
     )
 
     test_eu_urls = (
-        ('firefox/3.6.12/WINNT/en-US/eu/', '/en-US/home'),
+        ('firefox/3.6.12/WINNT/en-US/eu/', '/en-US/'),
         ('mobile/4.0/Android/en-US/eu/', '/en-US/products/mobile'),
-        ('firefox/3.6.12/MACOSX/en-US/eu', '/en-US/home'),
-        ('firefox/3.6.12/WINNT/fr/eu/', '/fr/home'),
-        ('firefox/3.6.12/WINNT/fr-FR/eu/', '/fr/home'),
-        ('firefox-home/1.1/iPhone/en-US/eu/', '/en-US/home'),
+        ('firefox/3.6.12/MACOSX/en-US/eu', '/en-US/'),
+        ('firefox/3.6.12/WINNT/fr/eu/', '/fr/'),
+        ('firefox/3.6.12/WINNT/fr-FR/eu/', '/fr/'),
+        ('firefox-home/1.1/iPhone/en-US/eu/', '/en-US/'),
         ('firefox/4.0/Linux/en-US/eu/prefs-applications',
             '/en-US/kb/Applications'),
         ('firefox/4.0/Linux/en-US/eu/prefs-applications/',
@@ -47,7 +47,7 @@ class RedirectTestCase(TestCase):
         ('mobile/4.0/martian/en-US/eu/', 'http://martian.com'),
         ('firefox/4.0/Android/en-US/eu/foo', 404),
         # Basque is awesome.
-        ('firefox/30.0/WINNT/eu/eu/', '/eu/home'),
+        ('firefox/30.0/WINNT/eu/eu/', '/eu/'),
         ('firefox/4.0/Linux/eu/eu/prefs-applications',
             '/eu/kb/Applications'),
     )
@@ -58,11 +58,11 @@ class RedirectTestCase(TestCase):
         # Create redirects to test with.
         redirect(target='kb/Applications', topic='prefs-applications',
                  save=True)
-        redirect(target='home', save=True)
-        redirect(product='mobile', target='/products/mobile', save=True)
-        redirect(platform='iPhone', target='home', save=True)
+        redirect(target='', save=True)
+        redirect(product='mobile', target='products/mobile', save=True)
+        redirect(platform='iPhone', target='', save=True)
         redirect(product='mobile', platform='Android', topic='foo',
-                 target='home', save=True)
+                 target='', save=True)
         redirect(version='5.0', target='does-not-exist', save=True)
         redirect(platform='martian', target='http://martian.com', save=True)
 

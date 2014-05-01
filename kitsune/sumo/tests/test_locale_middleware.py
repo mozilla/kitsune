@@ -92,22 +92,22 @@ class PreferredLanguageTests(TestCase):
         # should set the cookie for the correct language.
         self.client.get('/?lang=zh-CN', follow=True)
         response = self.client.get('/', follow=True)
-        self.assertRedirects(response, '/zh-CN/home')
+        self.assertRedirects(response, '/zh-CN/')
 
         self.client.get('/?lang=en-US', follow=True)
         response = self.client.get('/', follow=True)
-        self.assertRedirects(response, '/en-US/home')
+        self.assertRedirects(response, '/en-US/')
 
     def test_loggedin_preferred_language(self):
         u = user(save=True)
         profile(user=u, locale='zh-CN')
         self.client.login(username=u.username, password='testpass')
         response = self.client.get('/', follow=True)
-        self.assertRedirects(response, '/zh-CN/home')
+        self.assertRedirects(response, '/zh-CN/')
 
         self.client.logout()
         response = self.client.get('/', follow=True, HTTP_ACCEPT_LANGUAGE='xx')
-        self.assertRedirects(response, '/xx/home')
+        self.assertRedirects(response, '/xx/')
 
     def test_anonymous_change_to_login(self):
         u = user(save=True)
@@ -116,17 +116,17 @@ class PreferredLanguageTests(TestCase):
         # anonymous is fr
         self.client.get('/?lang=fr', follow=True)
         response = self.client.get('/', follow=True)
-        self.assertRedirects(response, '/fr/home')
+        self.assertRedirects(response, '/fr/')
 
         # logged in is zh-CN
         self.client.login(username=u.username, password='testpass')
         response = self.client.get('/', follow=True)
-        self.assertRedirects(response, '/zh-CN/home')
+        self.assertRedirects(response, '/zh-CN/')
 
         # anonymous again, session is now destroyed
         self.client.logout()
         response = self.client.get('/', follow=True, HTTP_ACCEPT_LANGUAGE='xx')
-        self.assertRedirects(response, '/xx/home')
+        self.assertRedirects(response, '/xx/')
 
 
 class NonSupportedTests(TestCase):
@@ -141,11 +141,11 @@ class NonSupportedTests(TestCase):
     @mock.patch.object(settings._wrapped, 'NON_SUPPORTED_LOCALES',
                        {'nn-NO': 'no', 'xy': None})
     def test_middleware(self):
-        response = self.client.get('/nn-NO/home', follow=True)
-        self.assertRedirects(response, '/no/home', status_code=302)
+        response = self.client.get('/nn-NO/', follow=True)
+        self.assertRedirects(response, '/no/', status_code=302)
 
-        response = self.client.get('/nn-no/home', follow=True)
-        self.assertRedirects(response, '/no/home', status_code=302)
+        response = self.client.get('/nn-no/', follow=True)
+        self.assertRedirects(response, '/no/', status_code=302)
 
-        response = self.client.get('/xy/home', follow=True)
-        self.assertRedirects(response, '/en-US/home', status_code=302)
+        response = self.client.get('/xy/', follow=True)
+        self.assertRedirects(response, '/en-US/', status_code=302)
