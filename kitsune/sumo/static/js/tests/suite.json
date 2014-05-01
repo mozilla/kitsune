@@ -1,7 +1,6 @@
 {
     "name": "Main Test Suite",
     "extra_media_urls": [
-        "js/libs/jquery.selectbox-1.2.js",
         "js/libs/jquery.mockjax.js",
         "js/browserdetect.js",
         "js/markup.js",
