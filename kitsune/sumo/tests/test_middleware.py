@@ -72,14 +72,14 @@ class PlusToSpaceTestCase(TestCase):
 class MobileSwitchTestCase(TestCase):
 
     def test_mobile_0(self):
-        response = self.client.get(u'/en-US/home?mobile=0')
+        response = self.client.get(u'/en-US/?mobile=0')
         eq_(response.status_code, 200)
         # Make sure a mobile template was not used.
         assert not any('mobile' in t.name for t in response.templates)
         eq_(self.client.cookies.get(mobility.middleware.COOKIE).value, 'off')
 
     def test_mobile_1(self):
-        response = self.client.get(u'/en-US/home?mobile=1', follow=True)
+        response = self.client.get(u'/en-US/?mobile=1', follow=True)
         eq_(response.status_code, 200)
         # Make sure a mobile template was used
         assert any('mobile' in t.name for t in response.templates)

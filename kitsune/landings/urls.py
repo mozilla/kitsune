@@ -5,8 +5,10 @@ from kitsune.sumo.views import redirect_to
 
 urlpatterns = patterns(
     'kitsune.landings.views',
-    url(r'^$', 'desktop_or_mobile', name='home.default'),
-    url(r'^home$', 'home', name='home'),
+    url(r'^$', 'home', name='home'),
+
+    # Redirect from old home url /home to new home /
+    url(r'^home$', redirect_to, {'url': 'home'}, name='old_home'),
 
     url(r'^topics/hot$', redirect_to, {'url': 'products'}, name='hot_topics'),
 
