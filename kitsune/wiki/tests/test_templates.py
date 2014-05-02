@@ -2029,7 +2029,6 @@ class TranslateTests(TestCaseBase):
             {'summary': 'A brief summary', 'content': 'The article content',
              'keywords': 'keyword1 keyword2',
              'based_on': doc.parent.current_revision_id, 'form': 'rev'})
-        print response.content
         eq_(302, response.status_code)
 
         # Keywords should be updated
