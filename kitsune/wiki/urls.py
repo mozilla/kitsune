@@ -80,6 +80,9 @@ urlpatterns = patterns(
     url(r'^$', redirect_to,
         {'url': 'products.product', 'slug': 'firefox'}, name='wiki.landing'),
 
+    url(r'^/How to contribute$', redirect_to,
+            {'url': 'landings.get_involved'}, name='old_get_involved'),
+
     url(r'^/locales$', locale_views.locale_list, name='wiki.locales'),
     url(r'^/locales/(?P<locale_code>[^/]+)', include(locale_patterns)),
 
