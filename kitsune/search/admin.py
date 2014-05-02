@@ -371,7 +371,6 @@ def diff_it_for_realz(seq_a, seq_b):
     results = []
 
     for tag, i1, i2, j1, j2 in opcodes:
-        print tag, i1, i2, j1, j2
         if tag == 'equal':
             for i, j in zip(seq_a[i1:i2], seq_b[j1:j2]):
                 results.append((i.obj, j.obj))
