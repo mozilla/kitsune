@@ -1484,7 +1484,7 @@ def stats_topic_data(bucket_days, start, end, locale=None, product=None):
     #   - ie: [{"created": 1362774285, 'topic-1': 10, 'topic-2': 20}, ...]
 
     for series in histograms_data.itervalues():
-        if series:
+        if series['entries']:
             earliest_point = series['entries'][0]['key']
             break
     else:
