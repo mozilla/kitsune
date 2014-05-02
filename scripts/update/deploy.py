@@ -72,13 +72,19 @@ def install_cron(ctx):
 
 @task
 def checkin_changes(ctx):
+    # Touching the wsgi file forces the app to reload.
+    with ctx.lcd(settings.SRC_DIR):
+        ctx.local('touch wsgi/kitsune.wsgi')
+
     ctx.local(settings.DEPLOY_SCRIPT)
 
 
 @hostgroups(settings.WEB_HOSTGROUP, remote_kwargs={'ssh_key': settings.SSH_KEY})
 def deploy_app(ctx):
     ctx.remote(settings.REMOTE_UPDATE_SCRIPT)
-    ctx.remote('service httpd graceful')
+
+    # Instead of restarting apache, we just touch the wsgi file in `checkin_changes()`
+    # ctx.remote('service httpd graceful')
 
 
 @hostgroups(settings.WEB_HOSTGROUP, remote_kwargs={'ssh_key': settings.SSH_KEY})
@@ -128,7 +134,10 @@ def deploy(ctx):
     install_cron()
     checkin_changes()
     deploy_app()
-    prime_app()
+    # Prime app adds more requests the the filling or full queue. Users
+    # will see slow responses either way. It probably doesn't help much.
+    # Skipping for now.
+    # prime_app()
     update_celery()
 
 
