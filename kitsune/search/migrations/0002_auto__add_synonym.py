@@ -11,9 +11,8 @@ class Migration(SchemaMigration):
         # Adding model 'Synonym'
         db.create_table(u'search_synonym', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('in_es', self.gf('django.db.models.fields.BooleanField')(default=False)),
-            ('from_words', self.gf('django.db.models.fields.CharField')(max_length=255)),
-            ('to_words', self.gf('django.db.models.fields.CharField')(max_length=255)),
+            ('from_words', self.gf('django.db.models.fields.CharField')(max_length=1024)),
+            ('to_words', self.gf('django.db.models.fields.CharField')(max_length=1024)),
         ))
         db.send_create_signal(u'search', ['Synonym'])
 

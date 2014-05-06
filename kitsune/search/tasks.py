@@ -223,11 +223,11 @@ def update_synonyms_task():
     index = read_index('default')
     analysis = get_analysis()
 
-    # in case anything goes wrong, it is very important to re-open the index.
+    # if anything goes wrong, it is very important to re-open the index.
     try:
-        es.close_index(index)
-        es.update_settings(index, {
+        es.indices.close(index)
+        es.indices.put_settings(index=index, body={
             'analysis': analysis,
         })
     finally:
-        es.open_index(index)
+        es.indices.open(index)

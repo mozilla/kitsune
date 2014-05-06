@@ -10,6 +10,7 @@ from django.core.exceptions import PermissionDenied
 from django.http import HttpResponseRedirect, Http404
 from django.shortcuts import render
 
+from kitsune.search import synonym_utils
 from kitsune.search.es_utils import (
     get_doctype_stats, get_indexes, delete_index, ES_EXCEPTIONS,
     get_indexable, CHUNK_SIZE, recreate_indexes, write_index, read_index,
@@ -422,7 +423,7 @@ admin.site.register_view('troubleshooting', view=troubleshooting_view,
 
 
 class SynonymAdmin(admin.ModelAdmin):
-    list_display = ('id', 'in_es', 'from_words', 'to_words')
+    list_display = ('id', 'from_words', 'to_words')
     list_display_links = ('id', )
     list_editable = ('from_words', 'to_words')
     ordering = ('from_words', 'id')
@@ -432,31 +433,27 @@ admin.site.register(Synonym, SynonymAdmin)
 
 
 def synonym_editor(request):
-    errs = []
+    parse_errors = []
     all_synonyms = Synonym.objects.all()
 
     if 'sync_synonyms' in request.POST:
-        update_synonyms_task.delay()
+        # This is a task. Normally we would call tasks asyncronously, right?
+        # In this case, since it runs quickly and is in the admin interface,
+        # the advantage of it being run in the request/response cycle
+        # outweight the delay in responding. If this becomes a problem
+        # we should make a better UI and make this .delay() again.
+        update_synonyms_task()
         return HttpResponseRedirect(request.path)
 
-    if 'synonyms_text' in request.POST:
-        post_syns = set()
+    synonyms_text = request.POST.get('synonyms_text')
+    if synonyms_text:
         db_syns = set((s.from_words, s.to_words) for s in all_synonyms)
 
-        for i, line in enumerate(request.POST['synonyms_text'].split('\n'), 1):
-            line = line.strip()
-            if not line:
-                continue
-            count = line.count('=>')
-            if count < 1:
-                errs.append('Syntax error on line %d: No => found.' % i)
-            elif count > 1:
-                errs.append('Syntax error on line %d: Too many => found.' % i)
-            else:
-                from_words, to_words = [s.strip() for s in line.split('=>')]
-                post_syns.add((from_words, to_words))
-
-        if not errs:
+        try:
+            post_syns = set(synonym_utils.parse_synonyms(synonyms_text))
+        except synonym_utils.SynonymSyntaxError as e:
+            parse_errors = e.errors
+        else:
             syns_to_add = post_syns - db_syns
             syns_to_remove = db_syns - post_syns
 
@@ -470,14 +467,18 @@ def synonym_editor(request):
 
             return HttpResponseRedirect(request.path)
 
-    synonyms_text = request.POST.get('synonyms_text')
+    # If synonyms_text is not None, it came from POST, and there were
+    # errors. It shouldn't be modified, so the error messages make sense.
     if synonyms_text is None:
         synonyms_text = '\n'.join(unicode(s) for s in all_synonyms)
 
+    synonym_add_count, synonym_remove_count = synonym_utils.count_out_of_date()
+
     return render(request, 'admin/search_synonyms.html', {
         'synonyms_text': synonyms_text,
-        'errors': errs,
-        'synonym_dirty_count': Synonym.objects.filter(in_es=False).count(),
+        'errors': parse_errors,
+        'synonym_add_count': synonym_add_count,
+        'synonym_remove_count': synonym_remove_count,
     })
 
 

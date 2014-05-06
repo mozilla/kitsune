@@ -45,8 +45,10 @@
 
   <section>
     <p>
-      There are currently {{ synonym_dirty_count }}
-      synonym{{ synonym_dirty_count|pluralize }} that have not been synced to ES.
+      There are currently {{ synonym_add_count }}
+      synonym{{ synonym_add_count|pluralize }} that have not been synced to ES,
+      and {{ synonym_remove_count }} synonym{{ synonym_add_count|pluralize }}
+      that need to be removed from ES.
     </p>
 
     <form method="POST">
@@ -56,10 +58,10 @@
     </form>
 
     <p>
-      Press this button to update the synonym list in ElasticSearch to match
+      Press this button to update the synonym list in Elasticsearch to match
       what is in the database.
     </p>
-    
+
     <p>
       Keep in mind that changing synonyms will cause a small down time
       to the search system, during which time users will receive a friendly
@@ -75,7 +77,7 @@
       It is intended for bulk insertion and mass editing by expert users.
       If that doesn't sound like you, you can use the
       <a href="{% url 'admin:search_synonym_changelist' %}">simpler interface</a>
-      instead. Remember to come back here and click that sync button above 
+      instead. Remember to come back here and click that sync button above
       after editing the synonyms.
     </p>
 

@@ -288,27 +288,18 @@ def get_analysis():
 def es_get_synonym_filter(locale):
     # Avoid circular import
     from kitsune.search.models import Synonym
-    # TODO: Someday this should be something like .filter(locale=locale)
-    synonyms = list(Synonym.objects.all())
-    name = 'synonyms-' + locale
 
     # The synonym filter doesn't like it if the synonyms list is empty.
-    # If there are no synyonms, just make a no-op filter instead.
-    if synonyms:
-        body = {
-            'type': 'synonym',
-            'synonyms': [unicode(s) for s in synonyms],
-        }
-    else:
-        # This is the closest I could find to a no-op filter.
-        body = {
-            'type': 'synonym',
-            'synonyms': ['firefox => firefox'],
-        }
+    # If there are no synyonms, just make a no-op filter by making a
+    # synonym from one word to itself.
 
-    for s in synonyms:
-        s.in_es = True
-        s.save()
+    # TODO: Someday this should be something like .filter(locale=locale)
+    synonyms = list(Synonym.objects.all()) or ['firefox => firefox']
+    name = 'synonyms-' + locale
+    body = {
+        'type': 'synonym',
+        'synonyms': [unicode(s) for s in synonyms],
+    }
 
     return name, body
 

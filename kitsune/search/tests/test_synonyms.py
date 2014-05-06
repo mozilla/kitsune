@@ -1,6 +1,7 @@
 from nose.tools import eq_
+from textwrap import dedent
 
-from kitsune.search import es_utils
+from kitsune.search import es_utils, synonym_utils
 from kitsune.search.tests import synonym
 from kitsune.sumo.tests import TestCase
 
@@ -42,3 +43,35 @@ class TestFilterGenerator(TestCase):
         }
 
         eq_(body, expected)
+
+
+class TestSynonymParser(TestCase):
+
+    def testItWorks(self):
+        synonym_text = dedent("""
+            one, two => apple, banana
+            three => orange, grape
+            four, five => jellybean
+            """)
+        synonyms = set([
+            ('one, two', 'apple, banana'),
+            ('three', 'orange, grape'),
+            ('four, five', 'jellybean'),
+        ])
+        eq_(synonyms, synonym_utils.parse_synonyms(synonym_text))
+
+    def testTooManyArrows(self):
+        try:
+            synonym_utils.parse_synonyms('foo => bar => baz')
+        except synonym_utils.SynonymParseError as e:
+            eq_(len(e.errors), 1)
+        else:
+            assert False, "Parser did not catch error as expected."
+
+    def testTooFewArrows(self):
+        try:
+            synonym_utils.parse_synonyms('foo, bar, baz')
+        except synonym_utils.SynonymParseError as e:
+            eq_(len(e.errors), 1)
+        else:
+            assert False, "Parser did not catch error as expected."
