@@ -3,71 +3,6 @@
 {% block content %}
   <h1 class="main-heading">Community Hub</h1>
 
-  <article class="community-news">
-    <section>
-      <h1>{{ _('Find your fellow contributors') }}</h1>
-
-      <form name="find-contributor" id="find-contributor" action="community/contributor_results" method="get">
-        {{ csrf() }}
-        <input type="hidden" value="" id="ts-value" name="findby" />
-
-        <div class="selector" data-emulate-select="true">
-          <button type="button" class="ts-select-trigger">
-            <!-- arrow icon using icon font -->
-            <span aria-hidden="true" data-icon-arrow="&#xe800;" class="selector-arrow">
-                <span class='currently-selected'>{{ _('Find By') }}</span>
-            </span>
-          </button>
-          <div class="select-options ts-modal" aria-expanded="false">
-            <ul class="ts-options" tabindex="-1">
-              <li><a href="javascript:void(0);" data-value="username">{{ _('Username') }}</a></li>
-              <li><a href="javascript:void(0);" data-value="display_name">{{ _('Display Name') }}</a></li>
-            </ul>
-          </div>
-        </div>
-
-        <fieldset>
-          <input type="text" name="q" id="search" />
-          <input type="submit" value="{{ _('Search') }}" class="search" />
-        </fieldset>
-      </form>
-
-      <div class="sumo-news">
-        <h2>{{ _('SUMO News') }}</h2>
-        <ul>
-          <li><a href="https://blog.mozilla.org/sumo/2014/04/27/australis-launch-week-starts-tuesday-may29th/">Australis launch week starts Tuesday, April 29th!</a></li>
-          <li><a href="https://blog.mozilla.org/sumo/2014/03/12/top-100-the-sumo-localization-challenge/">"Top 100": the SUMO localization challenge!</a></li>
-          <li><a href="https://blog.mozilla.org/sumo/2014/03/05/localization-of-sumo-focusing-on-our-active-locales/">Localization of SUMO: focusing on our active locales</a></li>
-          <li><a href="https://blog.mozilla.org/sumo/2014/02/21/getting-closer-to-1-million-mozillians/">Getting closer to 1 Million Mozillians</a></li>
-        </ul>
-      </div>
-
-      <div class="latest-discussions">
-        <h2>{{ _('Latest Discussions') }}</h2>
-        <ul>
-          <li><a href="https://support.mozilla.org/questions/997890">How do I get rid of the Google blog which opens when I open Firefox? I do have a Google email address, but that is all I have signed up for.</a></li>
-          <li><a href="https://support.mozilla.org/en-US/questions/997888">I recently updated to the new version of Firefox. The colors are not what they were before updating</a></li>
-          <li><a href="https://support.mozilla.org/en-US/questions/997887">Can dld newer versions of Frfx but they are not getting installed?</a></li>
-        </ul>
-      </div>
-    </section>
-
-    <section>
-      <h2>{{ _('The Weekly Meeting') }}</h2>
-      <p>
-        {% trans %}
-          The SUMO community has a weekly meeting every Monday at <time datetime="17:00Z">9:00AM <abbr title="Pacific Time">PT</abbr></time>. You can find all of the details on how
-          to join the meeting, meeting notes of previous meetings and more <a href="https://wiki.mozilla.org/Support/Weekly_Meetings">on the wiki</a>.
-        {% endtrans %}
-      </p>
-
-      <h3>{{ _('Watch Our Last Meeting') }}</h3>
-      <video controls >
-        <source src="" type='video/webm; codecs="vp8, vorbis"'>
-      </video>
-    </section>
-  </article>
-
   <article class="contributors">
     <h1>{{ _('Top Contributors') }}</h1>
 
@@ -281,6 +216,71 @@
         </li>
       </ul>
       <p><a href="community/view_all" class="view-all">{{ _('See All') }}</a></p>
+    </section>
+  </article>
+
+  <article class="community-news">
+    <section>
+      <h1>{{ _('Find your fellow contributors') }}</h1>
+
+      <form name="find-contributor" id="find-contributor" action="community/contributor_results" method="get">
+        {{ csrf() }}
+        <input type="hidden" value="" id="ts-value" name="findby" />
+
+        <div class="selector" data-emulate-select="true">
+          <button type="button" class="ts-select-trigger">
+            <!-- arrow icon using icon font -->
+            <span aria-hidden="true" data-icon-arrow="&#xe800;" class="selector-arrow">
+                <span class='currently-selected'>{{ _('Find By') }}</span>
+            </span>
+          </button>
+          <div class="select-options ts-modal" aria-expanded="false">
+            <ul class="ts-options" tabindex="-1">
+              <li><a href="javascript:void(0);" data-value="username">{{ _('Username') }}</a></li>
+              <li><a href="javascript:void(0);" data-value="display_name">{{ _('Display Name') }}</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <fieldset>
+          <input type="text" name="q" id="search" />
+          <input type="submit" value="{{ _('Search') }}" class="search" />
+        </fieldset>
+      </form>
+
+      <div class="sumo-news">
+        <h2>{{ _('SUMO News') }}</h2>
+        <ul>
+          <li><a href="https://blog.mozilla.org/sumo/2014/04/27/australis-launch-week-starts-tuesday-may29th/">Australis launch week starts Tuesday, April 29th!</a></li>
+          <li><a href="https://blog.mozilla.org/sumo/2014/03/12/top-100-the-sumo-localization-challenge/">"Top 100": the SUMO localization challenge!</a></li>
+          <li><a href="https://blog.mozilla.org/sumo/2014/03/05/localization-of-sumo-focusing-on-our-active-locales/">Localization of SUMO: focusing on our active locales</a></li>
+          <li><a href="https://blog.mozilla.org/sumo/2014/02/21/getting-closer-to-1-million-mozillians/">Getting closer to 1 Million Mozillians</a></li>
+        </ul>
+      </div>
+
+      <div class="latest-discussions">
+        <h2>{{ _('Latest Discussions') }}</h2>
+        <ul>
+          <li><a href="https://support.mozilla.org/questions/997890">How do I get rid of the Google blog which opens when I open Firefox? I do have a Google email address, but that is all I have signed up for.</a></li>
+          <li><a href="https://support.mozilla.org/en-US/questions/997888">I recently updated to the new version of Firefox. The colors are not what they were before updating</a></li>
+          <li><a href="https://support.mozilla.org/en-US/questions/997887">Can dld newer versions of Frfx but they are not getting installed?</a></li>
+        </ul>
+      </div>
+    </section>
+
+    <section>
+      <h2>{{ _('The Weekly Meeting') }}</h2>
+      <p>
+        {% trans %}
+          The SUMO community has a weekly meeting every Monday at <time datetime="17:00Z">9:00AM <abbr title="Pacific Time">PT</abbr></time>. You can find all of the details on how
+          to join the meeting, meeting notes of previous meetings and more <a href="https://wiki.mozilla.org/Support/Weekly_Meetings">on the wiki</a>.
+        {% endtrans %}
+      </p>
+
+      <h3>{{ _('Watch Our Last Meeting') }}</h3>
+      <video controls >
+        <source src="" type='video/webm; codecs="vp8, vorbis"'>
+      </video>
     </section>
   </article>
 {% endblock %}

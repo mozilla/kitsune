@@ -71,6 +71,7 @@ main {
 }
 .community-news {
   display: inline-block;
+  float: left;
   margin-right: 1rem;
   width: 47%;
 }
@@ -214,3 +215,22 @@ input.accessibly-hidden,
     width: 1px;
     overflow: hidden;
 }
+
+@media only screen and (max-width: 1024px) {
+  .header-content,
+  main {
+    margin: 0 auto;
+    width: 70%;
+  }
+  .contributors {
+    display: inline-block;
+    width: 100%;
+  }
+.community-news {
+  display: inline-block;
+  float: none;
+  margin-right: 1rem;
+  width: 100%;
+}
+}
+
