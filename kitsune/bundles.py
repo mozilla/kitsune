@@ -5,6 +5,10 @@ MINIFY_BUNDLES = {
             'css/normalize.css',
             'less/main.less',
         ),
+        'community': (
+            'less/community.less',
+            'less/select.less',
+        ),
         'mobile/common': (
             'css/normalize.css',
             'less/mobile/main.less',
@@ -140,6 +144,11 @@ MINIFY_BUNDLES = {
             'js/ui.js',
             'js/analytics.js',
             'js/surveygizmo.js',
+        ),
+        'community': (
+            'js/libs/jquery-1.10.1.min.js',
+            'js/community.js',
+            'js/select.js',
         ),
         'mobile/common': (
             'js/i18n.js',
