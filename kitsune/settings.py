@@ -517,6 +517,7 @@ INSTALLED_APPS = (
     'kitsune.postcrash',
     'kitsune.landings',
     'kitsune.announcements',
+    'kitsune.community',
     'kitsune.messages',
     'commonware.response.cookies',
     'kitsune.groups',

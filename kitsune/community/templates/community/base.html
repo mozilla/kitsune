@@ -1,0 +1,91 @@
+<!doctype html>
+<html class="no-js" lang="{{ request.LANGUAGE_CODE }}" {% if DIR %}dir="{{ DIR }}"{% endif %}>
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>{% block title %}{{ _('Mozilla Support Community') }}{% endblock %}</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  {{ css('common') }}
+  {{ css('community') }}
+
+  <link href="//mozorg.cdn.mozilla.net/media/css/tabzilla-min.css" rel="stylesheet" />
+
+  <!--[if lte IE 7]>
+    {{ css('ie') }}
+  <![endif]-->
+  <!--[if IE 8]>
+    {{ css('ie8') }}
+  <![endif]-->
+
+  <!--[if lt IE 9]>
+    {# html5-shiv.js must be inside <head/> to work. #}
+    <script src="{{ STATIC_URL }}js/libs/html5-shiv.js"></script>
+  <![endif]-->
+</head>
+<body class="html-{{ DIR }}">
+
+  <ul id="nav-access">
+    <li><a href="#main-content">{{ _('Skip to main content') }}</a></li>
+    <li><a href="{{ locale_picker_url }}">{{ _('Switch language') }}</a></li>
+    <li><a id="skip-to-search" href="#search-q">{{ _('Skip to search') }}</a></li>
+  </ul>
+
+  <header>
+    <div class="header-content">
+      <a href="http://www.mozilla.org/" id="tabzilla">mozilla</a>
+      <div class="cf">
+        <a href="/community"><img class="logo" alt="mozilla support" src="{{ STATIC_URL }}img/mozilla-support.png" width="300" height="46" /></a>
+      </div>
+    </div>
+  </header>
+
+  <main role="main">
+      {% block content %}{% endblock %}
+  </main>
+
+  <footer>
+    <div class="container_12 cf">
+      <div class="grid_2"><img src="{{ STATIC_URL }}img/mozilla-logo.png" alt="Mozilla" /></div>
+      <div class="grid_4 suffix_1">
+        <div class="fineprint">
+          {% trans %}
+            Portions of this content are &copy;1998–2014
+            <br>by individual mozilla.org contributors. Content
+            <br>available under a
+            <a href="//www.mozilla.org/foundation/licensing/website-content.html">Creative Commons license</a>.
+          {% endtrans %}
+        </div>
+      </div>
+      <div class="grid_2">
+        <ul>
+          <li><a href="http://www.mozilla.org/en-US/contact/spaces/">{{ _('Contact Us') }}</a></li>
+          <li><a href="http://www.mozilla.org/privacy/websites/">{{ _('Privacy Policy') }}</a></li>
+          <li><a href="http://www.mozilla.org/about/legal.html">{{ _('Legal Notices') }}</a></li>
+          <li><a href="http://www.mozilla.org/legal/fraud-report/">{{ _('Report Trademark Abuse') }}</a></li>
+          <li><a href="https://github.com/mozilla/kitsune/">{{ _('Source Code') }}</a></li>
+        </ul>
+      </div>
+      <div class="grid_2 suffix_1">
+        <ul>
+          <li><a href="http://www.twitter.com/mozilla">{{ _('Twitter') }}</a></li>
+          <li><a href="http://www.facebook.com/mozilla">{{ _('Facebook') }}</a></li>
+          <li><a href="http://affiliates.mozilla.org/">{{ _('Firefox Affiliates') }}</a></li>
+          <li><a href="?{{ request.QUERY_STRING }}&amp;mobile=1">{{ _('Switch to mobile site') }}</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  {{ js('community') }}
+  <!--[if (gte IE 6)&(lte IE 8)]>
+    {{ js('ie6-8') }}
+  <![endif]-->
+
+  <script src="//mozorg.cdn.mozilla.net/{{ request.LANGUAGE_CODE }}/tabzilla/tabzilla.js" async></script>
+
+  {% block footer_script %}{% endblock %}
+
+</body>
+</html>
