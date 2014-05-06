@@ -47,7 +47,6 @@ def count_out_of_date():
     synonyms_in_es = set()
     for key, val in settings.items():
         if synonym_key_re.match(key):
-            print '^' * 15
             synonyms_in_es.add(val)
 
     synonyms_in_db = set(unicode(s) for s in Synonym.objects.all())
