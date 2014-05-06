@@ -46,7 +46,6 @@ def count_out_of_date():
 
     synonyms_in_es = set()
     for key, val in settings.items():
-        print key, val
         if synonym_key_re.match(key):
             print '^' * 15
             synonyms_in_es.add(val)
@@ -56,9 +55,6 @@ def count_out_of_date():
     synonyms_to_add = synonyms_in_db - synonyms_in_es
     synonyms_to_remove = synonyms_in_es - synonyms_in_db
 
-    import q
-    q(synonyms_to_remove)
-    q(synonyms_to_add)
     if synonyms_to_remove == set(['firefox => firefox']):
         synonyms_to_remove = set()
 
