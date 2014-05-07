@@ -434,7 +434,7 @@ admin.site.register(Synonym, SynonymAdmin)
 
 def synonym_editor(request):
     parse_errors = []
-    all_synonyms = Synonym.objects.all()
+    all_synonyms = Synonym.uncached.all()
 
     if 'sync_synonyms' in request.POST:
         # This is a task. Normally we would call tasks asyncronously, right?
@@ -458,8 +458,9 @@ def synonym_editor(request):
             syns_to_remove = db_syns - post_syns
 
             for (from_words, to_words) in syns_to_remove:
-                (Synonym.objects
-                 .filter(from_words=from_words, to_words=to_words)
+                # This uses .get() because I want it to blow up if
+                # there isn't exactly 1 matching synonym.
+                (Synonym.uncached.get(from_words=from_words, to_words=to_words)
                  .delete())
 
             for (from_words, to_words) in syns_to_add:
