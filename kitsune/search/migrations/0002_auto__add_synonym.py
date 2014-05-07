@@ -34,7 +34,6 @@ class Migration(SchemaMigration):
             'Meta': {'object_name': 'Synonym'},
             'from_words': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'in_es': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'to_words': ('django.db.models.fields.CharField', [], {'max_length': '255'})
         }
     }

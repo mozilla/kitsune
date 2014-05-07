@@ -264,9 +264,9 @@ def get_analysis():
                 'filter': [
                     'standard',
                     'lowercase',
+                    'synonyms-' + locale,
                     'stop',
                     'snowball-' + locale,
-                    'synonyms-' + locale,
                 ],
             }
 
