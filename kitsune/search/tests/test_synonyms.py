@@ -1,9 +1,16 @@
 from nose.tools import eq_
 from textwrap import dedent
 
+from pyquery import PyQuery as pq
+
 from kitsune.search import es_utils, synonym_utils
+from kitsune.search.tests import ElasticTestCase
 from kitsune.search.tests import synonym
+from kitsune.sumo.tests import LocalizingClient
 from kitsune.sumo.tests import TestCase
+from kitsune.sumo.urlresolvers import reverse
+from kitsune.wiki.tests import document, revision
+from kitsune.search.tasks import update_synonyms_task
 
 
 class TestSynonymModel(TestCase):
@@ -75,3 +82,37 @@ class TestSynonymParser(TestCase):
             eq_(len(e.errors), 1)
         else:
             assert False, "Parser did not catch error as expected."
+
+
+class SearchViewWithSynonyms(ElasticTestCase):
+    client_class = LocalizingClient
+
+    def test_synonyms_work_in_search_view(self):
+        d1 = document(title='frob', save=True)
+        d2 = document(title='glork', save=True)
+        revision(document=d1, is_approved=True, save=True)
+        revision(document=d2, is_approved=True, save=True)
+
+        self.refresh()
+
+        # First search without synonyms
+        response = self.client.get(reverse('search'), {'q': 'frob'})
+        doc = pq(response.content)
+        header = doc.find('#search-results h2').text().strip()
+        eq_(header, 'Found 1 result for frob for All Products')
+
+        # Now add a synonym.
+        synonym(from_words='frob', to_words='frob, glork', save=True)
+        update_synonyms_task()
+
+        # Forward search
+        response = self.client.get(reverse('search'), {'q': 'frob'})
+        doc = pq(response.content)
+        header = doc.find('#search-results h2').text().strip()
+        eq_(header, 'Found 2 results for frob for All Products')
+
+        # Reverse search
+        response = self.client.get(reverse('search'), {'q': 'glork'})
+        doc = pq(response.content)
+        header = doc.find('#search-results h2').text().strip()
+        eq_(header, 'Found 1 result for glork for All Products')
