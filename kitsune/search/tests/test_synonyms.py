@@ -104,6 +104,7 @@ class SearchViewWithSynonyms(ElasticTestCase):
         # Now add a synonym.
         synonym(from_words='frob', to_words='frob, glork', save=True)
         update_synonyms_task()
+        self.refresh()
 
         # Forward search
         response = self.client.get(reverse('search'), {'q': 'frob'})

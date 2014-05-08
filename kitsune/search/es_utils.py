@@ -255,6 +255,7 @@ def get_analysis():
         # The snowball analyzer is actually just a shortcut that does
         # a particular set of tokenizers and analyzers. According to
         # the docs[1], the below is the same as that, plus the synonyms.
+        # [1] http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/analysis-snowball-analyzer.html #noqa
 
         if locale in config.ES_SYNONYM_LOCALES:
             analyzer_name = es_analyzer_for_locale(locale, synonyms=True)

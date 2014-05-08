@@ -286,4 +286,4 @@ class Synonym(ModelBase):
     to_words = models.CharField(max_length=1024)
 
     def __unicode__(self):
-        return '{0} => {1}'.format(self.from_words, self.to_words)
+        return u'{0} => {1}'.format(self.from_words, self.to_words)

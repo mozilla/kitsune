@@ -1,16 +1,34 @@
+"""
+Utitilities for working with synonyms, both in the database and in ES.
+"""
+
 import re
 
 from kitsune.search import es_utils
 from kitsune.search.models import Synonym
 
 
-class SynonymParseError(SyntaxError):
+class SynonymParseError(Exception):
+    """One or more parser errors were found. Has a list of errors found."""
     def __init__(self, errors, *args, **kwargs):
         super(SynonymParseError, self).__init__(*args, **kwargs)
         self.errors = errors
 
 
 def parse_synonyms(text):
+    """
+    Parse synonyms from user entered text.
+
+    The input should look something like
+
+        foo => bar
+        baz, qux => flob, glork
+
+    :returns: A set of 2-tuples, ``(from_words, to_words)``. ``from_words``
+        and ``to_words`` will be strings.
+    :throws: A SynonymParseError, if any errors are found.
+    """
+
     errors = []
     synonyms = set()
 
@@ -34,9 +52,16 @@ def parse_synonyms(text):
 
 
 def count_out_of_date():
+    """
+    Count number of synonyms that differ between the database and ES.
+
+    :returns: A 2-tuple where the first element is the number of synonyms
+        that are in the DB but not in ES, and the second element is the
+        number of synonyms in ES that are not in the DB.
+    """
     es = es_utils.get_es()
 
-    index_name = es_utils.read_index('default')
+    index_name = es_utils.write_index('default')
     settings = (es.indices.get_settings(index_name)
                 .get(index_name, {})
                 .get('settings', {}))
