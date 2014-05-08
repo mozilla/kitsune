@@ -287,9 +287,9 @@ def overview_rows(locale, product=None):
             'denominator': 20 if total_docs > 20 else total_docs,
             'percent': percent_or_100(
                 top_20_translated, 20 if total_docs > 20 else total_docs),
-            'description': _('These are the top 20 most visited articles, '
-                             'which account for over 50% of the traffic to '
-                             'the Knowledge Base.'),
+            'description': _('These are the top 20 most visited articles '
+                             'in the last 30 days, which account for over '
+                             '50% of the traffic to the Knowledge Base.'),
         },
         'top-50': {
             'title': _('Top 50 Articles'),
@@ -297,7 +297,8 @@ def overview_rows(locale, product=None):
             'denominator': 50 if total_docs > 50 else total_docs,
             'percent': percent_or_100(
                 top_50_translated, 50 if total_docs > 50 else total_docs),
-            'description': _('These are the top 50 most visited articles.'),
+            'description': _('These are the top 50 most visited articles '
+                             'in the last 30 days.'),
         },
         'top-100': {
             'title': _('Top 100 Articles'),
@@ -305,9 +306,9 @@ def overview_rows(locale, product=None):
             'denominator': 100 if total_docs > 100 else total_docs,
             'percent': percent_or_100(
                 top_100_translated, 100 if total_docs > 100 else total_docs),
-            'description': _('These are the top 100 most visited articles, '
-                             'which account for over 99% of the traffic to '
-                             'the Knowledge Base.'),
+            'description': _('These are the top 100 most visited articles '
+                             'in the last 30 days, which account for over '
+                             '99% of the traffic to the Knowledge Base.'),
         },
         'templates': {
             'title': _('Templates'),
