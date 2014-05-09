@@ -446,12 +446,12 @@ def synonym_editor(request):
         return HttpResponseRedirect(request.path)
 
     synonyms_text = request.POST.get('synonyms_text')
-    if synonyms_text:
+    if synonyms_text is not None:
         db_syns = set((s.from_words, s.to_words) for s in all_synonyms)
 
         try:
             post_syns = set(synonym_utils.parse_synonyms(synonyms_text))
-        except synonym_utils.SynonymSyntaxError as e:
+        except synonym_utils.SynonymParseError as e:
             parse_errors = e.errors
         else:
             syns_to_add = post_syns - db_syns
