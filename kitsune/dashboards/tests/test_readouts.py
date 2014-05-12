@@ -17,9 +17,9 @@ from kitsune.dashboards.readouts import (
 from kitsune.products.tests import product
 from kitsune.sumo.tests import TestCase
 from kitsune.wiki.config import (
-    MAJOR_SIGNIFICANCE, MEDIUM_SIGNIFICANCE,
-    TYPO_SIGNIFICANCE, HOW_TO_CONTRIBUTE_CATEGORY,
-    ADMINISTRATION_CATEGORY, CANNED_RESPONSES_CATEGORY)
+    MAJOR_SIGNIFICANCE, MEDIUM_SIGNIFICANCE, TYPO_SIGNIFICANCE,
+    HOW_TO_CONTRIBUTE_CATEGORY, TEMPLATES_CATEGORY, ADMINISTRATION_CATEGORY,
+    CANNED_RESPONSES_CATEGORY)
 from kitsune.wiki.tests import revision, translated_revision, document
 
 
@@ -191,6 +191,30 @@ class OverviewTests(TestCase):
         eq_(0, overview['top-100']['numerator'])
         eq_(0, overview['all']['numerator'])
 
+    def test_not_counting_templates(self):
+        """Articles in the Templates category should not be counted.
+        """
+        t = translated_revision(is_approved=True, save=True)
+        overview = overview_rows('de')
+        eq_(1, overview['all']['numerator'])
+        eq_(1, overview['top-20']['numerator'])
+        eq_(1, overview['top-50']['numerator'])
+        eq_(1, overview['top-100']['numerator'])
+
+        # Update the parent and translation to be a template
+        d = t.document.parent
+        d.title = 'Template:Lorem Ipsum Dolor'
+        d.save()
+        t.document.title = 'Template:Lorem Ipsum Dolor'
+        t.document.save()
+
+        overview = overview_rows('de')
+        eq_(0, overview['all']['numerator'])
+        eq_(0, overview['top-20']['numerator'])
+        eq_(0, overview['top-50']['numerator'])
+        eq_(0, overview['top-100']['numerator'])
+    test_not_counting_templates.xx = 1
+
     def test_by_product(self):
         """Test the product filtering of the overview."""
         p = product(title='Firefox', slug='firefox', save=True)
@@ -220,7 +244,11 @@ class OverviewTests(TestCase):
                  content='REDIRECT [[An article]]',
                  save=True)
 
-        eq_(1, overview_rows('de')['all']['numerator'])
+        overview = overview_rows('de')
+        eq_(1, overview['all']['numerator'])
+        eq_(1, overview['top-20']['numerator'])
+        eq_(1, overview['top-50']['numerator'])
+        eq_(1, overview['top-100']['numerator'])
 
 
 class UnreviewedChangesTests(ReadoutTestCase):
