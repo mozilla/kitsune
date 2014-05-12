@@ -261,10 +261,10 @@ def overview_rows(locale, product=None):
             extra_joins='LEFT JOIN wiki_revision curtransrev '
                         'ON transdoc.current_revision_id=curtransrev.id ' +
                         extra_joins,
-            extra_where='AND engdoc.category IN (' +
-                        str(TROUBLESHOOTING_CATEGORY) + ',' +
-                        str(HOW_TO_CATEGORY) + ',' +
-                        str(TEMPLATES_CATEGORY) + ')') +
+            extra_where='AND engdoc.category NOT IN (' +
+                        str(HOW_TO_CONTRIBUTE_CATEGORY) + ') ' +
+                        'AND NOT engdoc.is_template ' +
+                        'AND engdoc.html NOT LIKE "<p>REDIRECT <a%%" ') +
         'LIMIT %s) t1 ')
 
     top_20_translated = int(single_result(  # Driver returns a Decimal.
