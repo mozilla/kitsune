@@ -64,6 +64,31 @@ main {
   select {
     width: 25%;
   }
+  /* temp under construction */
+  .under_contruction {
+    background-color: #659324;
+    background-image: linear-gradient(to bottom, #81BC2E, #659324);
+    box-shadow: 0px 1px 0px 0px rgba(0, 0, 0, 0.2), 0px -1px 0px 0px rgba(0, 0, 0, 0.3) inset;
+    border: 5px solid white;
+    color: white;
+    padding: .5rem;
+    text-align: center;
+    h2,
+    h3,
+    p {
+      margin: 0;
+    }
+    p {
+      padding: 1rem;
+    }
+    a {
+      &:link,
+      &:visited {
+        color: white;
+        text-decoration: underline;
+      }
+    }
+  }
 }
 .contributors {
   display: inline-block;
