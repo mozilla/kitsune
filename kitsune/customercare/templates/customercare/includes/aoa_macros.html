@@ -1,7 +1,7 @@
 {% macro aoa_contributor(contributor) %}
   <div class="aoa-contributor">
     <a href="https://twitter.com/{{ contributor.username }}" target="_blank" class="avatar">
-      <img src="{{ contributor.avatar }}" />
+      <img src="{{ contributor.avatar }}" alt="{{ contributor.username }}" />
     </a>
     <div class="user-meta">
       <a href="https://twitter.com/{{ contributor.twitter_username }}" target="_blank">
