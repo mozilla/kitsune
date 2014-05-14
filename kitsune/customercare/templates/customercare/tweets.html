@@ -1,7 +1,7 @@
 {% for tweet in tweets -%}
   <div class="tweet{% if tweet.reply_to %} reply{% endif %}{% if tweet.hidden %} hidden-reply{% endif %} cf" data-tweet-id="{{ tweet.id }}" id="tweet-{{ tweet.id }}">
     <a href="https://twitter.com/{{ tweet.user }}" class="avatar" target="_blank">
-      <img src="{{ tweet.profile_img }}" />
+      <img src="{{ tweet.profile_img }}" alt="{{ tweet.user }}" />
     </a>
     <div class="tweet-contents">
       <a href="https://twitter.com/{{ tweet.user }}/status/{{ tweet.id }}" class="tweet-time" target="_blank">
