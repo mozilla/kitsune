@@ -642,7 +642,10 @@ SESSION_SERIALIZER = 'django.contrib.sessions.serializers.PickleSerializer'
 # Connection information for Elastic
 ES_URLS = ['http://127.0.0.1:9200']
 # Indexes for reading
-ES_INDEXES = {'default': 'sumo-20130913'}
+ES_INDEXES = {
+    'default': 'sumo-20130913',
+    'metrics': 'sumo-metrics',
+}
 # Indexes for indexing--set this to ES_INDEXES if you want to read to
 # and write to the same index.
 ES_WRITE_INDEXES = ES_INDEXES

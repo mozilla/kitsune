@@ -705,7 +705,7 @@ class QuestionVisits(ModelBase):
                         ' so I kept what I had.')
 
 
-class Answer(ModelBase):
+class Answer(ModelBase, SearchMixin):
     """An answer to a support question."""
     question = models.ForeignKey('Question', related_name='answers')
     creator = models.ForeignKey(User, related_name='answers')
@@ -936,6 +936,90 @@ class Answer(ModelBase):
             images = list(self.images.all())
             cache.add(cache_key, images, CACHE_TIMEOUT)
         return images
+
+    @classmethod
+    def get_mapping_type(cls):
+        return AnswerMetricsMappingType
+
+
+@register_mapping_type
+class AnswerMetricsMappingType(SearchMappingType):
+    @classmethod
+    def get_model(cls):
+        return Answer
+
+    @classmethod
+    def get_index_group(cls):
+        return 'metrics'
+
+    @classmethod
+    def get_query_fields(cls):
+        """Return the list of fields for query"""
+        return []
+
+    @classmethod
+    def get_mapping(cls):
+        return {
+            'properties': {
+                'id': {'type': 'long'},
+                'model': {'type': 'string', 'index': 'not_analyzed'},
+                'url': {'type': 'string', 'index': 'not_analyzed'},
+                'indexed_on': {'type': 'integer'},
+                'created': {'type': 'date'},
+
+                'locale': {'type': 'string', 'index': 'not_analyzed'},
+                'product': {'type': 'string', 'index': 'not_analyzed'},
+                'is_solution': {'type': 'boolean'},
+                'creator_id': {'type': 'long'},
+            }
+        }
+
+    @classmethod
+    def extract_document(cls, obj_id, obj=None):
+        """Extracts indexable attributes from an Answer."""
+        fields = ['id', 'created', 'creator_id', 'question_id']
+        composed_fields = ['question__locale', 'question__solution_id']
+        all_fields = fields + composed_fields
+
+        if obj is None:
+            # Note: Need to keep this in sync with
+            # tasks.update_question_vote_chunk.
+            model = cls.get_model()
+            obj = model.uncached.values(*all_fields).get(pk=obj_id)
+        else:
+            fixed_obj = dict([(field, getattr(obj, field))
+                              for field in fields])
+            fixed_obj['question__locale'] = obj.question.locale
+            fixed_obj['question__solution_id'] = obj.question.solution_id
+            obj = fixed_obj
+
+        d = {}
+        d['id'] = obj['id']
+        d['model'] = cls.get_mapping_type_name()
+
+        # We do this because get_absolute_url is an instance method
+        # and we don't want to create an instance because it's a DB
+        # hit and expensive. So we do it by hand. get_absolute_url
+        # doesn't change much, so this is probably ok.
+        url = reverse('questions.details',
+                      kwargs={'question_id': obj['question_id']})
+        d['url'] = urlparams(url, hash='answer-%s' % obj['id'])
+
+        d['indexed_on'] = int(time.time())
+
+        d['created'] = obj['created']
+
+        d['locale'] = obj['question__locale']
+        d['is_solution'] = (obj['id'] == obj['question__solution_id'])
+        d['creator_id'] = obj['creator_id']
+
+        products = Product.uncached.filter(question__id=obj['question_id'])
+        d['product'] = [p.slug for p in products]
+
+        return d
+
+
+register_for_indexing('answers', Answer)
 
 
 def answer_connector(sender, instance, created, **kw):
