@@ -48,7 +48,7 @@ def display_name(user):
     """Return a display name if set, else the username."""
     try:  # Also mostly for tests.
         profile = user.get_profile()
-    except Profile.DoesNotExist:
+    except (Profile.DoesNotExist, AttributeError):
         return user.username
     return profile.display_name if profile else user.username
 

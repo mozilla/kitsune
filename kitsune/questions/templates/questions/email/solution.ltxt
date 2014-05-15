@@ -1,7 +1,7 @@
 {% from "includes/unsubscribe_text.ltxt" import unsubscribe_text with context %}
 {% autoescape false %}
 {# L10n: This is an email. Whitespace matters! #}
-{% if user %}{{ _('Hi {username},')|f(username=display_name(user)) }}
+{% if display_name(to_user) %}{{ _('Hi {username},')|f(username=display_name(to_user)) }}
 
 {% endif %}
 {# L10n: This is an email. Whitespace matters! #}

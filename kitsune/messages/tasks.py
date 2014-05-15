@@ -24,9 +24,12 @@ def email_private_message(inbox_message_id):
 
     @safe_translation
     def _send_mail(locale):
+        # Avoid circular import issues
+        from kitsune.users.helpers import display_name
+
         subject = _(u'[SUMO] You have a new private message from [{sender}]')
         subject = subject.format(
-            sender=inbox_message.sender.get_profile().display_name)
+            sender=display_name(inbox_message.sender))
 
         msg_url = reverse('messages.read', kwargs={'msgid': inbox_message.id})
         settings_url = reverse('users.edit_settings')

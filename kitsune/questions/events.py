@@ -79,10 +79,13 @@ class QuestionReplyEvent(QuestionEvent):
 
         @email_utils.safe_translation
         def _make_mail(locale, user, context):
+            # Avoid circular import issues
+            from kitsune.users.helpers import display_name
+
             is_asker = asker_id == user.id
             if is_asker:
                 subject = _(u'%s posted an answer to your question "%s"' %
-                            (self.answer.creator.get_profile().display_name,
+                            (display_name(self.answer.creator),
                              self.instance.title))
                 text_template = 'questions/email/new_answer_to_asker.ltxt'
                 html_template = 'questions/email/new_answer_to_asker.html'
@@ -112,7 +115,7 @@ class QuestionReplyEvent(QuestionEvent):
                 c[k] = add_utm(
                     urlparams(c[k], auth=auth_str), 'questions-reply')
 
-            c['user'] = u
+            c['to_user'] = u
             c['watch'] = w[0]  # TODO: Expose all watches.
 
             # u here can be a Django User model or a Tidings EmailUser
@@ -165,7 +168,7 @@ class QuestionSolvedEvent(QuestionEvent):
              'solution_url': solution_url}
 
         for u, w in users_and_watches:
-            c['user'] = u  # '' if anonymous
+            c['to_user'] = u  # '' if anonymous
             c['watch'] = w[0]  # TODO: Expose all watches.
 
             # u here can be a Django User model or a Tidings EmailUser

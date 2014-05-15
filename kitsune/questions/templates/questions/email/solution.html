@@ -1,8 +1,8 @@
 {% extends 'email/base.html' %}
 
 {% block content %}
-  {% if username %}
-    <p>{{ _('Hi {username},')|f(username=display_name(user)) }}</p>
+  {% if display_name(to_user) %}
+    <p>{{ _('Hi {username},')|f(username=display_name(to_user)) }}</p>
   {% endif %}
 
   <p>
