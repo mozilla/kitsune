@@ -28,6 +28,7 @@ py/selenium/webdriver/firefox/firefox_binary.py
 py/selenium/webdriver/firefox/firefox_profile.py
 py/selenium/webdriver/firefox/webdriver.py
 py/selenium/webdriver/firefox/webdriver.xpi
+py/selenium/webdriver/firefox/webdriver_prefs.json
 py/selenium/webdriver/firefox/amd64/x_ignore_nofocus.so
 py/selenium/webdriver/firefox/x86/x_ignore_nofocus.so
 py/selenium/webdriver/ie/__init__.py
@@ -43,9 +44,13 @@ py/selenium/webdriver/remote/__init__.py
 py/selenium/webdriver/remote/command.py
 py/selenium/webdriver/remote/errorhandler.py
 py/selenium/webdriver/remote/remote_connection.py
+py/selenium/webdriver/remote/switch_to.py
 py/selenium/webdriver/remote/utils.py
 py/selenium/webdriver/remote/webdriver.py
 py/selenium/webdriver/remote/webelement.py
+py/selenium/webdriver/safari/__init__.py
+py/selenium/webdriver/safari/service.py
+py/selenium/webdriver/safari/webdriver.py
 py/selenium/webdriver/support/__init__.py
 py/selenium/webdriver/support/abstract_event_listener.py
 py/selenium/webdriver/support/color.py
