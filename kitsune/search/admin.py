@@ -263,7 +263,7 @@ def search(request):
          })
 
 
-admin.site.register_view('search', view=search,
+admin.site.register_view('search-maintenance', view=search,
                          name='Search - Index Maintenance')
 
 
@@ -328,7 +328,7 @@ def index_view(request):
          })
 
 
-admin.site.register_view('index', view=index_view,
+admin.site.register_view('search-index', view=index_view,
                          name='Search - Index Browsing')
 
 
@@ -418,7 +418,7 @@ def troubleshooting_view(request):
          })
 
 
-admin.site.register_view('troubleshooting', view=troubleshooting_view,
+admin.site.register_view('search-troubleshooting', view=troubleshooting_view,
                          name='Search - Index Troubleshooting')
 
 
