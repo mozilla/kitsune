@@ -1020,6 +1020,12 @@ class AnswerMetricsMappingType(SearchMappingType):
 
 
 register_for_indexing('answers', Answer)
+# This below is needed to update the is_solution field on the answer.
+register_for_indexing(
+    'answers',
+    Question,
+    instance_to_indexee=(
+        lambda i: i.solution ))
 
 
 def answer_connector(sender, instance, created, **kw):

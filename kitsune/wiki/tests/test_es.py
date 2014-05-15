@@ -5,11 +5,11 @@ from nose.tools import eq_
 from kitsune.products.tests import product, topic
 from kitsune.search.tests.test_es import ElasticTestCase
 from kitsune.wiki.tests import document, revision, helpful_vote
-from kitsune.wiki.models import DocumentMappingType
+from kitsune.wiki.models import DocumentMappingType, RevisionMetricsMappingType
 from kitsune.wiki.config import REDIRECT_CONTENT
 
 
-class TestPostUpdate(ElasticTestCase):
+class DocumentUpdateTests(ElasticTestCase):
     def test_add_and_delete(self):
         """Adding a doc should add it to the search index; deleting should
         delete it."""
@@ -173,3 +173,33 @@ class TestPostUpdate(ElasticTestCase):
         self.refresh()
         eq_(DocumentMappingType.search().filter(
             document_recent_helpful_votes__gt=0).count(), 1)
+
+
+class RevisionMetricsTests(ElasticTestCase):
+    def test_add_and_delete(self):
+        """Adding a revision should add it to the index.
+
+        Deleting should delete it."""
+        r = revision(save=True)
+        self.refresh()
+        eq_(RevisionMetricsMappingType.search().count(), 1)
+
+        r.delete()
+        self.refresh()
+        eq_(RevisionMetricsMappingType.search().count(), 0)
+
+    def test_data_in_index(self):
+        """Verify the data we are indexing."""
+        p = product(save=True)
+        d = document(locale='es', save=True)
+        d.products.add(p)
+        r = revision(document=d, is_approved=True, save=True)
+
+        self.refresh()
+
+        eq_(RevisionMetricsMappingType.search().count(), 1)
+        data = RevisionMetricsMappingType.search().values_dict()[0]
+        eq_(data['is_approved'], r.is_approved)
+        eq_(data['locale'], d.locale)
+        eq_(data['product'], [p.slug])
+        eq_(data['creator_id'], r.creator_id)
