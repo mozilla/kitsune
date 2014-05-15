@@ -2,6 +2,7 @@ import json
 import logging
 import pprint
 import time
+from datetime import datetime
 
 from django.conf import settings
 from django.db import reset_queries
@@ -755,29 +756,30 @@ def es_verify_cmd(log=log):
     log.info('misfortune.')
     log.info('')
 
-    mappings = get_all_mappings()
-
     log.info('Verifying mappings do not conflict.')
 
-    # Verify mappings don't conflict
-    merged_mapping = {}
+    # Verify mappings that share the same index don't conflict
+    for index in all_write_indexes():
+        merged_mapping = {}
 
-    start_time = time.time()
-    for cls_name, mapping in mappings.items():
-        mapping = mapping['properties']
-        for key, val in mapping.items():
-            if key not in merged_mapping:
-                merged_mapping[key] = (val, [cls_name])
-                continue
+        log.info('Verifying mappings for index: {index}'.format(index=index))
 
-            # FIXME - We're comparing two dicts here. This might not
-            # work for non-trivial dicts.
-            if merged_mapping[key][0] != val:
-                raise MappingMergeError(
-                    '%s key different for %s and %s' %
-                    (key, cls_name, merged_mapping[key][1]))
+        start_time = time.time()
+        for cls_name, mapping in get_mappings(index).items():
+            mapping = mapping['properties']
+            for key, val in mapping.items():
+                if key not in merged_mapping:
+                    merged_mapping[key] = (val, [cls_name])
+                    continue
 
-            merged_mapping[key][1].append(cls_name)
+                # FIXME - We're comparing two dicts here. This might not
+                # work for non-trivial dicts.
+                if merged_mapping[key][0] != val:
+                    raise MappingMergeError(
+                        '%s key different for %s and %s' %
+                        (key, cls_name, merged_mapping[key][1]))
+
+                merged_mapping[key][1].append(cls_name)
 
     log.info('Done! {0}'.format(format_time(time.time() - start_time)))
     log.info('')
@@ -790,7 +792,8 @@ def es_verify_cmd(log=log):
         'string': basestring,
         'integer': (int, long),
         'long': (int, long),
-        'boolean': bool
+        'boolean': bool,
+        'date': datetime,
     }
 
     def verify_obj(mt_name, cls, mapping, obj_id):
@@ -817,6 +820,8 @@ def es_verify_cmd(log=log):
                       .format(mt_name, field, type_['type'], item))
 
     start_time = time.time()
+
+    mappings = get_all_mappings()
 
     log.info('MappingType indexable.')
     for cls, indexable in get_indexable():

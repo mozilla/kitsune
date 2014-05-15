@@ -1,7 +1,8 @@
 from nose.tools import eq_
 
 from kitsune.products.tests import product, topic
-from kitsune.questions.models import QuestionMappingType
+from kitsune.questions.models import (
+    QuestionMappingType, AnswerMetricsMappingType)
 from kitsune.questions.tests import question, answer, answervote, questionvote
 from kitsune.search.tests.test_es import ElasticTestCase
 from kitsune.users.tests import user
@@ -198,3 +199,42 @@ class QuestionSearchTests(ElasticTestCase):
             question_title__text='LOLRUS',
             question_content__text='LOLRUS')
         assert result.count() > 0
+
+
+class AnswerMetricsTests(ElasticTestCase):
+    def test_add_and_delete(self):
+        """Adding an answer should add it to the index.
+
+        Deleting should delete it.
+        """
+        a = answer(save=True)
+        self.refresh()
+        eq_(AnswerMetricsMappingType.search().count(), 1)
+
+        a.delete()
+        self.refresh()
+        eq_(AnswerMetricsMappingType.search().count(), 0)
+
+    def test_data_in_index(self):
+        """Verify the data we are indexing."""
+        p = product(save=True)
+        q = question(locale='pt-BR', save=True)
+        q.products.add(p)
+        a = answer(question=q, save=True)
+
+        self.refresh()
+
+        eq_(AnswerMetricsMappingType.search().count(), 1)
+        data = AnswerMetricsMappingType.search().values_dict()[0]
+        eq_(data['locale'], q.locale)
+        eq_(data['product'], [p.slug])
+        eq_(data['creator_id'], a.creator_id)
+        eq_(data['is_solution'], False)
+
+        # Mark as solution and verify
+        q.solution = a
+        q.save()
+
+        self.refresh()
+        data = AnswerMetricsMappingType.search().values_dict()[0]
+        eq_(data['is_solution'], True)

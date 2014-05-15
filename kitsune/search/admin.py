@@ -274,7 +274,8 @@ def _fix_value_dicts(values_dict_list):
         # Python datetime objects.
         for key in ('indexed_on', 'created', 'updated'):
             if key in dict_:
-                dict_[key] = datetime.fromtimestamp(int(dict_[key]))
+                if not isinstance(dict_[key], datetime):
+                    dict_[key] = datetime.fromtimestamp(int(dict_[key]))
     return values_dict_list
 
 

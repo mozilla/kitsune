@@ -1048,30 +1048,32 @@ class TestMappings(unittest.TestCase):
         # everything is fine. If it fails, then it means things are
         # not fine. Not fine? Yeah, it means that there are two fields
         # with the same name, but different types in the
-        # mappings. That doesn't work in ES.
+        # mappings that share an index. That doesn't work in ES.
 
         # Doing it as a test seemed like a good idea since
         # it's likely to catch epic problems, but isn't in the runtime
         # code.
 
-        merged_mapping = {}
+        # Verify mappings that share the same index don't conflict
+        for index in es_utils.all_read_indexes():
+            merged_mapping = {}
 
-        for cls_name, mapping in es_utils.get_all_mappings().items():
-            mapping = mapping['properties']
+            for cls_name, mapping in es_utils.get_mappings(index).items():
+                mapping = mapping['properties']
 
-            for key, val in mapping.items():
-                if key not in merged_mapping:
-                    merged_mapping[key] = (val, [cls_name])
-                    continue
+                for key, val in mapping.items():
+                    if key not in merged_mapping:
+                        merged_mapping[key] = (val, [cls_name])
+                        continue
 
-                # FIXME - We're comparing two dicts here. This might
-                # not work for non-trivial dicts.
-                if merged_mapping[key][0] != val:
-                    raise es_utils.MappingMergeError(
-                        '%s key different for %s and %s' %
-                        (key, cls_name, merged_mapping[key][1]))
+                    # FIXME - We're comparing two dicts here. This might
+                    # not work for non-trivial dicts.
+                    if merged_mapping[key][0] != val:
+                        raise es_utils.MappingMergeError(
+                            '%s key different for %s and %s' %
+                            (key, cls_name, merged_mapping[key][1]))
 
-                merged_mapping[key][1].append(cls_name)
+                    merged_mapping[key][1].append(cls_name)
 
         # If we get here, then we're fine.
 

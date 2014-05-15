@@ -766,7 +766,7 @@ register_for_indexing(
 MAX_REVISION_COMMENT_LENGTH = 255
 
 
-class Revision(ModelBase):
+class Revision(ModelBase, SearchMixin):
     """A revision of a localized knowledgebase document"""
     document = models.ForeignKey(Document, related_name='revisions')
     summary = models.TextField()  # wiki markup
@@ -979,6 +979,88 @@ class Revision(ModelBase):
             return older_revs[0]
         except IndexError:
             return None
+
+    @classmethod
+    def get_mapping_type(cls):
+        return RevisionMetricsMappingType
+
+
+@register_mapping_type
+class RevisionMetricsMappingType(SearchMappingType):
+    @classmethod
+    def get_model(cls):
+        return Revision
+
+    @classmethod
+    def get_index_group(cls):
+        return 'metrics'
+
+    @classmethod
+    def get_mapping(cls):
+        return {
+            'properties': {
+                'id': {'type': 'long'},
+                'model': {'type': 'string', 'index': 'not_analyzed'},
+                'url': {'type': 'string', 'index': 'not_analyzed'},
+                'indexed_on': {'type': 'integer'},
+                'created': {'type': 'date'},
+                'reviewed': {'type': 'date'},
+
+                'locale': {'type': 'string', 'index': 'not_analyzed'},
+                'product': {'type': 'string', 'index': 'not_analyzed'},
+                'is_approved': {'type': 'boolean'},
+                'creator_id': {'type': 'long'},
+                'reviewer_id': {'type': 'long'},
+            }
+        }
+
+    @classmethod
+    def extract_document(cls, obj_id, obj=None):
+        """Extracts indexable attributes from an Answer."""
+        fields = ['id', 'created', 'creator_id', 'reviewed', 'reviewer_id',
+                  'is_approved', 'document_id']
+        composed_fields = ['document__locale', 'document__slug']
+        all_fields = fields + composed_fields
+
+        if obj is None:
+            model = cls.get_model()
+            obj_dict = model.uncached.values(*all_fields).get(pk=obj_id)
+        else:
+            obj_dict = dict([(field, getattr(obj, field))
+                              for field in fields])
+            obj_dict['document__locale'] = obj.document.locale
+            obj_dict['document__slug'] = obj.document.slug
+
+        d = {}
+        d['id'] = obj_dict['id']
+        d['model'] = cls.get_mapping_type_name()
+
+        # We do this because get_absolute_url is an instance method
+        # and we don't want to create an instance because it's a DB
+        # hit and expensive. So we do it by hand. get_absolute_url
+        # doesn't change much, so this is probably ok.
+        d['url'] = reverse('wiki.revision', kwargs={
+            'revision_id': obj_dict['id'],
+            'document_slug': obj_dict['document__slug']})
+
+        d['indexed_on'] = int(time.time())
+
+        d['created'] = obj_dict['created']
+        d['reviewed']= obj_dict['reviewed']
+
+        d['locale'] = obj_dict['document__locale']
+        d['is_approved'] = obj_dict['is_approved']
+        d['creator_id'] = obj_dict['creator_id']
+        d['reviewer_id'] = obj_dict['reviewer_id']
+
+        products = Product.uncached.filter(
+            document__id=obj_dict['document_id'])
+        d['product'] = [p.slug for p in products]
+
+        return d
+
+
+register_for_indexing('revisions', Revision)
 
 
 class HelpfulVote(ModelBase):
