@@ -165,7 +165,12 @@ class SeleniumTestCase(LiveServerTestCase):
     @classmethod
     def tearDownClass(cls):
         if not cls.skipme:
-            cls.webdriver.quit()
+            try:
+                cls.webdriver.quit()
+            except OSError:
+                # For some reason, sometimes the process may not be
+                # running at this point.
+                pass
         super(SeleniumTestCase, cls).tearDownClass()
 
     def setUp(self):
