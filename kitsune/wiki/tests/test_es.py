@@ -179,7 +179,8 @@ class RevisionMetricsTests(ElasticTestCase):
     def test_add_and_delete(self):
         """Adding a revision should add it to the index.
 
-        Deleting should delete it."""
+        Deleting should delete it.
+        """
         r = revision(save=True)
         self.refresh()
         eq_(RevisionMetricsMappingType.search().count(), 1)

@@ -76,11 +76,6 @@ class ReplyMetricsMappingType(SearchMappingType):
         return 'metrics'
 
     @classmethod
-    def get_query_fields(cls):
-        """Return the list of fields for query"""
-        return []
-
-    @classmethod
     def get_mapping(cls):
         return {
             'properties': {
@@ -101,24 +96,22 @@ class ReplyMetricsMappingType(SearchMappingType):
         fields = ['id', 'created', 'user_id', 'locale']
 
         if obj is None:
-            # Note: Need to keep this in sync with
-            # tasks.update_question_vote_chunk.
             model = cls.get_model()
-            obj = model.uncached.values(*fields).get(pk=obj_id)
+            obj_dict = model.uncached.values(*fields).get(pk=obj_id)
         else:
-            obj = dict([(field, getattr(obj, field))
+            obj_dict = dict([(field, getattr(obj, field))
                               for field in fields])
 
         d = {}
-        d['id'] = obj['id']
+        d['id'] = obj_dict['id']
         d['model'] = cls.get_mapping_type_name()
 
         d['indexed_on'] = int(time.time())
 
-        d['created'] = obj['created']
+        d['created'] = obj_dict['created']
 
-        d['locale'] = obj['locale']
-        d['creator_id'] = obj['user_id']
+        d['locale'] = obj_dict['locale']
+        d['creator_id'] = obj_dict['user_id']
 
         return d
 

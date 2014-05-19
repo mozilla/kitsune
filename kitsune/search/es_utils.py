@@ -759,8 +759,10 @@ def es_verify_cmd(log=log):
     log.info('Verifying mappings do not conflict.')
 
     # Verify mappings that share the same index don't conflict
-    for index in all_read_indexes():
+    for index in all_write_indexes():
         merged_mapping = {}
+
+        log.info('Verifying mappings for index: {index}'.format(index=index))
 
         start_time = time.time()
         for cls_name, mapping in get_mappings(index).items():

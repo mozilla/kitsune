@@ -953,11 +953,6 @@ class AnswerMetricsMappingType(SearchMappingType):
         return 'metrics'
 
     @classmethod
-    def get_query_fields(cls):
-        """Return the list of fields for query"""
-        return []
-
-    @classmethod
     def get_mapping(cls):
         return {
             'properties': {
@@ -982,19 +977,16 @@ class AnswerMetricsMappingType(SearchMappingType):
         all_fields = fields + composed_fields
 
         if obj is None:
-            # Note: Need to keep this in sync with
-            # tasks.update_question_vote_chunk.
             model = cls.get_model()
-            obj = model.uncached.values(*all_fields).get(pk=obj_id)
+            obj_dict = model.uncached.values(*all_fields).get(pk=obj_id)
         else:
-            fixed_obj = dict([(field, getattr(obj, field))
+            obj_dict = dict([(field, getattr(obj, field))
                               for field in fields])
-            fixed_obj['question__locale'] = obj.question.locale
-            fixed_obj['question__solution_id'] = obj.question.solution_id
-            obj = fixed_obj
+            obj_dict['question__locale'] = obj.question.locale
+            obj_dict['question__solution_id'] = obj.question.solution_id
 
         d = {}
-        d['id'] = obj['id']
+        d['id'] = obj_dict['id']
         d['model'] = cls.get_mapping_type_name()
 
         # We do this because get_absolute_url is an instance method
@@ -1002,18 +994,18 @@ class AnswerMetricsMappingType(SearchMappingType):
         # hit and expensive. So we do it by hand. get_absolute_url
         # doesn't change much, so this is probably ok.
         url = reverse('questions.details',
-                      kwargs={'question_id': obj['question_id']})
-        d['url'] = urlparams(url, hash='answer-%s' % obj['id'])
+                      kwargs={'question_id': obj_dict['question_id']})
+        d['url'] = urlparams(url, hash='answer-%s' % obj_dict['id'])
 
         d['indexed_on'] = int(time.time())
 
-        d['created'] = obj['created']
+        d['created'] = obj_dict['created']
 
-        d['locale'] = obj['question__locale']
-        d['is_solution'] = (obj['id'] == obj['question__solution_id'])
-        d['creator_id'] = obj['creator_id']
+        d['locale'] = obj_dict['question__locale']
+        d['is_solution'] = (obj_dict['id'] == obj_dict['question__solution_id'])
+        d['creator_id'] = obj_dict['creator_id']
 
-        products = Product.uncached.filter(question__id=obj['question_id'])
+        products = Product.uncached.filter(question__id=obj_dict['question_id'])
         d['product'] = [p.slug for p in products]
 
         return d

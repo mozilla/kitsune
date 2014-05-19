@@ -205,7 +205,8 @@ class AnswerMetricsTests(ElasticTestCase):
     def test_add_and_delete(self):
         """Adding an answer should add it to the index.
 
-        Deleting should delete it."""
+        Deleting should delete it.
+        """
         a = answer(save=True)
         self.refresh()
         eq_(AnswerMetricsMappingType.search().count(), 1)

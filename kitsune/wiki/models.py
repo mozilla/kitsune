@@ -996,11 +996,6 @@ class RevisionMetricsMappingType(SearchMappingType):
         return 'metrics'
 
     @classmethod
-    def get_query_fields(cls):
-        """Return the list of fields for query"""
-        return []
-
-    @classmethod
     def get_mapping(cls):
         return {
             'properties': {
@@ -1028,19 +1023,16 @@ class RevisionMetricsMappingType(SearchMappingType):
         all_fields = fields + composed_fields
 
         if obj is None:
-            # Note: Need to keep this in sync with
-            # tasks.update_question_vote_chunk.
             model = cls.get_model()
-            obj = model.uncached.values(*all_fields).get(pk=obj_id)
+            obj_dict = model.uncached.values(*all_fields).get(pk=obj_id)
         else:
-            fixed_obj = dict([(field, getattr(obj, field))
+            obj_dict = dict([(field, getattr(obj, field))
                               for field in fields])
-            fixed_obj['document__locale'] = obj.document.locale
-            fixed_obj['document__slug'] = obj.document.slug
-            obj = fixed_obj
+            obj_dict['document__locale'] = obj.document.locale
+            obj_dict['document__slug'] = obj.document.slug
 
         d = {}
-        d['id'] = obj['id']
+        d['id'] = obj_dict['id']
         d['model'] = cls.get_mapping_type_name()
 
         # We do this because get_absolute_url is an instance method
@@ -1048,20 +1040,21 @@ class RevisionMetricsMappingType(SearchMappingType):
         # hit and expensive. So we do it by hand. get_absolute_url
         # doesn't change much, so this is probably ok.
         d['url'] = reverse('wiki.revision', kwargs={
-            'revision_id': obj['id'],
-            'document_slug': obj['document__slug']})
+            'revision_id': obj_dict['id'],
+            'document_slug': obj_dict['document__slug']})
 
         d['indexed_on'] = int(time.time())
 
-        d['created'] = obj['created']
-        d['reviewed']= obj['reviewed']
+        d['created'] = obj_dict['created']
+        d['reviewed']= obj_dict['reviewed']
 
-        d['locale'] = obj['document__locale']
-        d['is_approved'] = obj['is_approved']
-        d['creator_id'] = obj['creator_id']
-        d['reviewer_id'] = obj['reviewer_id']
+        d['locale'] = obj_dict['document__locale']
+        d['is_approved'] = obj_dict['is_approved']
+        d['creator_id'] = obj_dict['creator_id']
+        d['reviewer_id'] = obj_dict['reviewer_id']
 
-        products = Product.uncached.filter(document__id=obj['document_id'])
+        products = Product.uncached.filter(
+            document__id=obj_dict['document_id'])
         d['product'] = [p.slug for p in products]
 
         return d
