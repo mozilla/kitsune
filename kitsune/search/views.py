@@ -350,8 +350,13 @@ def search(request, template=None):
 
         # Build the query
         if cleaned_q:
-            query_fields = chain(*[cls.get_query_fields()
-                                   for cls in get_mapping_types()])
+            query_fields = chain(
+                *[cls.get_query_fields() for cls in [
+                    DocumentMappingType,
+                    ThreadMappingType,
+                    QuestionMappingType]
+                ]
+            )
             query = {}
             # Create text and text_phrase queries for every field
             # we want to search.
