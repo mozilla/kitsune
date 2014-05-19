@@ -2,7 +2,7 @@
 {% from "wiki/includes/flag_form.html" import flag_form with context %}
 {% from "kbadge/includes/macros.html" import awards_list with context %}
 
-{% set title = _('{user} | Profile')|f(user=profile.user.username) %}
+{% set title = _('{user} | Profile')|f(user=profile.user) %}
 {% set classes = 'profile' %}
 {% set canonical_url = unlocalized_url('users.profile', profile.user.pk) %}
 {% set active = 'my-profile' %}
