@@ -16,8 +16,8 @@ def send_award_notification(award):
     """
     @email_utils.safe_translation
     def _make_mail(locale, context, email):
-        subject = _("You were awarded the '{title}' badge!".format(
-            title=_(award.badge.title, 'DB: badger.Badge.title')))
+        subject = _(u"You were awarded the '{title}' badge!").format(
+            title=_(award.badge.title, 'DB: badger.Badge.title'))
 
         mail = email_utils.make_mail(
             subject=subject,
