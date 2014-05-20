@@ -1123,16 +1123,16 @@ class TestAnalyzers(ElasticTestCase):
     def test_query_analyzer_upgrader(self):
         analyzer = 'snowball-english-synonyms'
         before = {
-            'document_title__text': 'foo',
-            'document_locale__text': 'bar',
-            'document_title__text_phrase': 'baz',
-            'document_locale__text_phrase': 'qux'
+            'document_title__match': 'foo',
+            'document_locale__match': 'bar',
+            'document_title__match_phrase': 'baz',
+            'document_locale__match_phrase': 'qux'
         }
         expected = {
-            'document_title__text_analyzer': ('foo', analyzer),
-            'document_locale__text': 'bar',
-            'document_title__text_phrase_analyzer': ('baz', analyzer),
-            'document_locale__text_phrase': 'qux',
+            'document_title__match_analyzer': ('foo', analyzer),
+            'document_locale__match': 'bar',
+            'document_title__match_phrase_analyzer': ('baz', analyzer),
+            'document_locale__match_phrase': 'qux',
         }
         actual = es_utils.es_query_with_analyzer(before, 'en-US')
         eq_(actual, expected)

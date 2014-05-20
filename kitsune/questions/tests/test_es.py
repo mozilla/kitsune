@@ -15,7 +15,7 @@ class QuestionUpdateTests(ElasticTestCase):
         # Create a question--that adds one document to the index.
         q = question(title=u'Does this test work?', save=True)
         self.refresh()
-        query = dict(('%s__text' % field, 'test')
+        query = dict(('%s__match' % field, 'test')
                      for field in QuestionMappingType.get_query_fields())
         eq_(search.query(should=True, **query).count(), 1)
 
@@ -24,13 +24,13 @@ class QuestionUpdateTests(ElasticTestCase):
         a = answer(content=u'There\'s only one way to find out!',
                    question=q)
         self.refresh()
-        query = dict(('%s__text' % field, 'only')
+        query = dict(('%s__match' % field, 'only')
                      for field in QuestionMappingType.get_query_fields())
         eq_(search.query(should=True, **query).count(), 0)
 
         a.save()
         self.refresh()
-        query = dict(('%s__text' % field, 'only')
+        query = dict(('%s__match' % field, 'only')
                      for field in QuestionMappingType.get_query_fields())
         eq_(search.query(should=True, **query).count(), 1)
 
@@ -44,11 +44,11 @@ class QuestionUpdateTests(ElasticTestCase):
 
         q = question(title=u'Does this work?', save=True)
         self.refresh()
-        eq_(search.query(question_title__text='work').count(), 1)
+        eq_(search.query(question_title__match='work').count(), 1)
 
         q.delete()
         self.refresh()
-        eq_(search.query(question_title__text='work').count(), 0)
+        eq_(search.query(question_title__match='work').count(), 0)
 
     def test_question_one_answer_deleted(self):
         search = QuestionMappingType.search()
@@ -59,19 +59,19 @@ class QuestionUpdateTests(ElasticTestCase):
 
         # Question and its answers are a single document--so the
         # index count should be only 1.
-        eq_(search.query(question_title__text='pink').count(), 1)
+        eq_(search.query(question_title__match='pink').count(), 1)
 
         # After deleting the answer, the question document should
         # remain.
         a.delete()
         self.refresh()
-        eq_(search.query(question_title__text='pink').count(), 1)
+        eq_(search.query(question_title__match='pink').count(), 1)
 
         # Delete the question and it should be removed from the
         # index.
         q.delete()
         self.refresh()
-        eq_(search.query(question_title__text='pink').count(), 0)
+        eq_(search.query(question_title__match='pink').count(), 0)
 
     def test_question_questionvote(self):
         search = QuestionMappingType.search()
@@ -154,11 +154,11 @@ class QuestionUpdateTests(ElasticTestCase):
 
         q = question(title=u'Does this work?', save=True)
         self.refresh()
-        eq_(search.query(question_title__text='work').count(), 1)
+        eq_(search.query(question_title__match='work').count(), 1)
 
         q.creator.delete()
         self.refresh()
-        eq_(search.query(question_title__text='work').count(), 0)
+        eq_(search.query(question_title__match='work').count(), 0)
 
     def test_question_is_reindexed_on_username_change(self):
         search = QuestionMappingType.search()
@@ -168,9 +168,9 @@ class QuestionUpdateTests(ElasticTestCase):
         q = question(creator=u, title=u'Hello', save=True)
         a = answer(creator=u, content=u'I love you', save=True)
         self.refresh()
-        eq_(search.query(question_title__text='hello')[0]['question_creator'],
+        eq_(search.query(question_title__match='hello')[0]['question_creator'],
             u'dexter')
-        query = search.query(question_answer_content__text='love')
+        query = search.query(question_answer_content__match='love')
         eq_(query[0]['question_answer_creator'],
             [u'dexter'])
 
@@ -178,9 +178,9 @@ class QuestionUpdateTests(ElasticTestCase):
         u.username = 'walter'
         u.save()
         self.refresh()
-        eq_(search.query(question_title__text='hello')[0]['question_creator'],
+        eq_(search.query(question_title__match='hello')[0]['question_creator'],
             u'walter')
-        query = search.query(question_answer_content__text='love')
+        query = search.query(question_answer_content__match='love')
         eq_(query[0]['question_answer_creator'], [u'walter'])
 
 
@@ -196,8 +196,8 @@ class QuestionSearchTests(ElasticTestCase):
             helpful=True).save()
         self.refresh()
         result = QuestionMappingType.search().query(
-            question_title__text='LOLRUS',
-            question_content__text='LOLRUS')
+            question_title__match='LOLRUS',
+            question_content__match='LOLRUS')
         assert result.count() > 0
 
 

@@ -66,8 +66,8 @@ class AnalyzerMixin(object):
         :arg key: is the field being searched
         :arg val: Is a two-tupe of the text to query for and the name of
             the analyzer to use.
-        :arg action: is the type of query being performed, like text or
-            text_phrase
+        :arg action: is the type of query being performed, like match or
+            match_phrase
         """
         query, analyzer = val
         clause = {
@@ -85,13 +85,13 @@ class AnalyzerMixin(object):
 
         return clause
 
-    def process_query_text_phrase_analyzer(self, key, val, action):
-        """A text phrase query that includes an analyzer."""
-        return self._with_analyzer(key, val, 'text_phrase')
+    def process_query_match_phrase_analyzer(self, key, val, action):
+        """A match phrase query that includes an analyzer."""
+        return self._with_analyzer(key, val, 'match_phrase')
 
-    def process_query_text_analyzer(self, key, val, action):
-        """A text query that includes an analyzer."""
-        return self._with_analyzer(key, val, 'text')
+    def process_query_match_analyzer(self, key, val, action):
+        """A match query that includes an analyzer."""
+        return self._with_analyzer(key, val, 'match')
 
 
 class Sphilastic(S, AnalyzerMixin):

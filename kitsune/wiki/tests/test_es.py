@@ -114,7 +114,7 @@ class DocumentUpdateTests(ElasticTestCase):
         revision(document=doc, is_approved=True, save=True)
         self.refresh()
         eq_(DocumentMappingType.search().query(
-            document_title__text='wool').count(), 1)
+            document_title__match='wool').count(), 1)
 
         # Now create a revision that is a redirect and make sure the
         # document is removed from the index.
@@ -122,7 +122,7 @@ class DocumentUpdateTests(ElasticTestCase):
                  save=True)
         self.refresh()
         eq_(DocumentMappingType.search().query(
-            document_title__text='wool').count(), 0)
+            document_title__match='wool').count(), 0)
 
     def test_wiki_keywords(self):
         """Make sure updating keywords updates the index."""
