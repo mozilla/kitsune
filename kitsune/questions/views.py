@@ -1593,9 +1593,9 @@ def _search_suggestions(request, text, locale, product_slugs):
     results = []
     try:
         # Search for relevant KB documents.
-        query = dict(('%s__text' % field, text)
+        query = dict(('%s__match' % field, text)
                      for field in DocumentMappingType.get_query_fields())
-        query.update(dict(('%s__text_phrase' % field, text)
+        query.update(dict(('%s__match_phrase' % field, text)
                      for field in DocumentMappingType.get_query_fields()))
         query = es_query_with_analyzer(query, locale)
         filter = F()
@@ -1624,9 +1624,9 @@ def _search_suggestions(request, text, locale, product_slugs):
                 pass
 
         # Search for relevant questions.
-        query = dict(('%s__text' % field, text)
+        query = dict(('%s__match' % field, text)
                      for field in QuestionMappingType.get_query_fields())
-        query.update(dict(('%s__text_phrase' % field, text)
+        query.update(dict(('%s__match_phrase' % field, text)
                      for field in QuestionMappingType.get_query_fields()))
 
         max_age = int(time.time()) - settings.SEARCH_DEFAULT_MAX_QUESTION_AGE

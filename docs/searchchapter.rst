@@ -272,21 +272,21 @@ These are the default weights that apply to all searches:
 
 wiki (aka kb)::
 
-    document_title__text           6
-    document_content__text         1
-    document_keywords__text        8
-    document_summary__text         2
+    document_title__match           6
+    document_content__match         1
+    document_keywords__match        8
+    document_summary__match         2
 
 questions (aka support forums)::
 
-    question_title__text           4
-    question_content__text         3
-    question_answer_content__text  3
+    question_title__match           4
+    question_content__match         3
+    question_answer_content__match  3
 
 forums (aka contributor forums)::
 
-    post_title__text               2
-    post_content__text             1
+    post_title__match               2
+    post_content__match             1
 
 
 Elastic Search is built on top of Lucene so the `Lucene documentation

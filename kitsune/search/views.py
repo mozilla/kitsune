@@ -323,8 +323,8 @@ def search(request, template=None):
 
             # Text phrases in document titles and content get an extra
             # boost.
-            document_title__text_phrase=10.0,
-            document_content__text_phrase=8.0)
+            document_title__match_phrase=10.0,
+            document_content__match_phrase=8.0)
 
         # Apply sortby for advanced search of questions
         if cleaned['w'] == constants.WHERE_SUPPORT:
@@ -358,10 +358,10 @@ def search(request, template=None):
                 ]
             )
             query = {}
-            # Create text and text_phrase queries for every field
+            # Create match and match_phrase queries for every field
             # we want to search.
             for field in query_fields:
-                for query_type in ['text', 'text_phrase']:
+                for query_type in ['match', 'match_phrase']:
                     query['%s__%s' % (field, query_type)] = cleaned_q
 
             # Transform the query to use locale aware analyzers.
@@ -530,7 +530,7 @@ def suggestions(request):
     site = Site.objects.get_current()
     locale = locale_or_default(request.LANGUAGE_CODE)
     try:
-        query = dict(('%s__text' % field, term)
+        query = dict(('%s__match' % field, term)
                      for field in DocumentMappingType.get_query_fields())
         # Upgrade the query to an analyzer-aware one.
         query = es_utils.es_query_with_analyzer(query, locale)
@@ -541,7 +541,7 @@ def suggestions(request):
                   .values_dict('document_title', 'url')
                   .query(or_=query)[:5])
 
-        query = dict(('%s__text' % field, term)
+        query = dict(('%s__match' % field, term)
                      for field in QuestionMappingType.get_query_fields())
         question_s = (QuestionMappingType.search()
                       .filter(question_has_helpful=True)
