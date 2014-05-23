@@ -37,7 +37,6 @@ class UserSearchTests(ElasticTestCase):
         self.refresh()
         eq_(UserMappingType.search().count(), 2)
 
-
     def test_suggest_completions(self):
         u1 = user(username='r1cky', email='r@r.com', save=True)
         profile(user=u1, name=u'Rick Róss')

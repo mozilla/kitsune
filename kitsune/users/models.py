@@ -175,7 +175,7 @@ class UserMappingType(SearchMappingType):
             ],
             'output': _(u'{displayname} ({username})').format(
                 displayname=d['display_name'], username=d['username']),
-            'payload' : { 'user_id' : d['id'] },
+            'payload' : {'user_id': d['id'] },
         }
 
         return d
