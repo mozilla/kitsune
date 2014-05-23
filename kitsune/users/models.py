@@ -171,13 +171,7 @@ class UserMappingType(SearchMappingType):
         d['suggest'] = {
             'input': [
                 d['username'],
-                d['display_name'],
-                obj.irc_handle.lower() if obj.irc_handle else None,
-                obj.user.email.lower()
-                # TODO: Add twitter handle to the mix.
-                # I still need to figure out the best way to grab and save the
-                # twitter handle while the user is using AoA. Leaving this for
-                # later.
+                d['display_name']
             ],
             'output': _(u'{displayname} ({username})').format(
                 displayname=d['display_name'], username=d['username']),
