@@ -38,9 +38,9 @@ class UserSearchTests(ElasticTestCase):
         eq_(UserMappingType.search().count(), 2)
 
     def test_suggest_completions(self):
-        u1 = user(username='r1cky', email='r@r.com', save=True)
+        u1 = user(username='r1cky', save=True)
         profile(user=u1, name=u'Rick Róss')
-        u2 = user(username='willkg', email='w@w.com', save=True)
+        u2 = user(username='willkg', save=True)
         profile(user=u2, name=u'Will Cage')
 
         self.refresh()
@@ -57,7 +57,7 @@ class UserSearchTests(ElasticTestCase):
         eq_(u1.id, results[0]['payload']['user_id'])
 
         # Add another Ri....
-        u3 = user(username='richard', email='r2@r.com', save=True)
+        u3 = user(username='richard', save=True)
         profile(user=u3, name=u'Richard Smith')
 
         self.refresh()
@@ -68,3 +68,8 @@ class UserSearchTests(ElasticTestCase):
         texts = [r['text'] for r in results]
         assert u'Rick Róss (r1cky)' in texts
         assert u'Richard Smith (richard)' in texts
+
+        results = UserMappingType.suggest_completions(u'Rick Ró')
+        eq_(1, len(results))
+        texts = [r['text'] for r in results]
+        eq_(u'Rick Róss (r1cky)', results[0]['text'])
