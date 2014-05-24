@@ -1875,6 +1875,7 @@ CREATE TABLE `users_profile` (
   `website` varchar(255) DEFAULT NULL,
   `twitter` varchar(255) DEFAULT NULL,
   `facebook` varchar(255) DEFAULT NULL,
+  `mozillians` varchar(255) DEFAULT NULL,
   `irc_handle` varchar(255) DEFAULT NULL,
   `timezone` varchar(100) DEFAULT NULL,
   `country` varchar(2) DEFAULT NULL,

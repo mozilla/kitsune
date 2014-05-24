@@ -70,6 +70,8 @@ class Profile(ModelBase):
                               verbose_name=_lazy(u'Twitter URL'))
     facebook = models.URLField(max_length=255, null=True, blank=True,
                                verbose_name=_lazy(u'Facebook URL'))
+    mozillians = models.URLField(max_length=255, null=True, blank=True,
+                               verbose_name=_lazy(u'Mozillians URL'))
     irc_handle = models.CharField(max_length=255, null=True, blank=True,
                                   verbose_name=_lazy(u'IRC nickname'))
     timezone = TimeZoneField(null=True, blank=True,
@@ -101,6 +103,7 @@ class Profile(ModelBase):
         self.website = ''
         self.twitter = ''
         self.facebook = ''
+        self.mozillians = ''
         self.irc_handle = ''
         self.city = ''
 

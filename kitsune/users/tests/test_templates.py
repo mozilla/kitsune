@@ -261,6 +261,7 @@ class EditProfileTests(TestCaseBase):
                 'website': 'http://google.com/',
                 'twitter': '',
                 'facebook': '',
+                'mozillians': '',
                 'irc_handle': 'johndoe',
                 'timezone': 'America/New_York',
                 'country': 'US',
