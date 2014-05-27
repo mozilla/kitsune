@@ -213,7 +213,6 @@ class OverviewTests(TestCase):
         eq_(0, overview['top-20']['numerator'])
         eq_(0, overview['top-50']['numerator'])
         eq_(0, overview['top-100']['numerator'])
-    test_not_counting_templates.xx = 1
 
     def test_by_product(self):
         """Test the product filtering of the overview."""
