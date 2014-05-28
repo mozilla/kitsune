@@ -6,6 +6,6 @@ from kitsune.wiki import api
 # API urls
 urlpatterns = patterns(
     '',
-    url(r'documents/?$', api.DocumentList.as_view()),
-    url(r'documents/(?P<slug>[^/]+)$', api.DocumentDetail.as_view()),
+    url(r'^$', api.DocumentList.as_view()),
+    url(r'^(?P<slug>[^/]+)$', api.DocumentDetail.as_view()),
 )

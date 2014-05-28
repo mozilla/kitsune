@@ -1,9 +1,11 @@
+from django.db.models import Q
 from django.shortcuts import get_object_or_404
 
 from rest_framework import generics, serializers, status
-from rest_framework.exceptions import APIException
 
+from kitsune.sumo.api import CORSMixin, GenericAPIException
 from kitsune.wiki.models import Document
+from kitsune.wiki.config import REDIRECT_HTML
 
 
 class DocumentShortSerializer(serializers.ModelSerializer):
@@ -22,27 +24,11 @@ class DocumentDetailSerializer(DocumentShortSerializer):
                   'html')
 
 
-class CORSMixin(object):
-    def finalize_response(self, request, response, *args, **kwargs):
-        response = (super(CORSMixin, self)
-                    .finalize_response(request, response, *args, **kwargs))
-        response['Access-Control-Allow-Origin'] = '*'
-        return response
-
-
-class GenericAPIException(APIException):
-    def __init__(self, status_code, detail, **kwargs):
-        self.status_code = status_code
-        self.detail = detail
-        for key, val in kwargs.items():
-            setattr(self, key, val)
-
-
 class DocumentList(CORSMixin, generics.ListAPIView):
     """List all documents."""
     queryset = Document.objects.all()
     serializer_class = DocumentShortSerializer
-    paginate_by = 10
+    paginate_by = 100
 
     def get_queryset(self):
         queryset = self.queryset
@@ -52,6 +38,7 @@ class DocumentList(CORSMixin, generics.ListAPIView):
         topic = self.request.QUERY_PARAMS.get('topic')
         is_template = self.request.QUERY_PARAMS.get('is_template', False)
         is_archived = self.request.QUERY_PARAMS.get('is_archived', False)
+        is_redirect = self.request.QUERY_PARAMS.get('is_redirect', False)
 
         if locale is not None:
             queryset = queryset.filter(locale=locale)
@@ -70,6 +57,13 @@ class DocumentList(CORSMixin, generics.ListAPIView):
 
         if is_archived is not None:
             queryset = queryset.filter(is_archived=is_archived)
+
+        if is_redirect is not None:
+            redirect_filter = Q(html__startswith=REDIRECT_HTML)
+            if is_redirect:
+                queryset = queryset.filter(redirect_filter)
+            else:
+                queryset = queryset.filter(~redirect_filter)
 
         return queryset
 
