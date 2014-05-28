@@ -511,62 +511,66 @@ def es_reindex_cmd(percent=100, delete=False, mapping_types=None,
     else:
         all_indexable = get_indexable(percent)
 
-    old_refreshes = {}
-    # We're doing a lot of indexing, so we get the refresh_interval of
-    # the index currently, then nix refreshing. Later we'll restore it.
-    for index in indexes:
-        old_refreshes[index] = (get_index_settings(index)
-                                .get('index.refresh_interval', '1s'))
-        # Disable automatic refreshing
-        es.indices.put_settings(index=index,
-                                body={'index': {'refresh_interval': '-1'}})
+    try:
+        old_refreshes = {}
+        # We're doing a lot of indexing, so we get the refresh_interval of
+        # the index currently, then nix refreshing. Later we'll restore it.
+        for index in indexes:
+            old_refreshes[index] = (get_index_settings(index)
+                                    .get('index.refresh_interval', '1s'))
+            # Disable automatic refreshing
+            es.indices.put_settings(index=index,
+                                    body={'index': {'refresh_interval': '-1'}})
 
-    start_time = time.time()
-    for cls, indexable in all_indexable:
-        cls_start_time = time.time()
-        total = len(indexable)
+        start_time = time.time()
+        for cls, indexable in all_indexable:
+            cls_start_time = time.time()
+            total = len(indexable)
 
-        if total == 0:
-            continue
+            if total == 0:
+                continue
 
-        chunk_start_time = time.time()
-        log.info('reconciling %s: %s in db....',
-                 cls.get_mapping_type_name(), total)
-        ret = reconcile_chunk(cls, cls.get_indexable())
-        log.info('   done! reconciled %s index documents (%s total)',
-                 ret, format_time(time.time() - chunk_start_time))
-
-        log.info('reindexing %s. %s to index....',
-                 cls.get_mapping_type_name(), total)
-
-        i = 0
-        for chunk in chunked(indexable, 1000):
             chunk_start_time = time.time()
-            index_chunk(cls, chunk)
+            log.info('reconciling %s: %s in db....',
+                     cls.get_mapping_type_name(), total)
+            ret = reconcile_chunk(cls, cls.get_indexable())
+            log.info('   done! reconciled %s index documents (%s total)',
+                     ret, format_time(time.time() - chunk_start_time))
 
-            i += len(chunk)
-            time_to_go = (total - i) * ((time.time() - cls_start_time) / i)
-            per_1000 = (time.time() - cls_start_time) / (i / 1000.0)
-            this_1000 = time.time() - chunk_start_time
+            log.info('reindexing %s. %s to index....',
+                     cls.get_mapping_type_name(), total)
 
-            log.info('   %s/%s %s... (%s/1000 avg, %s ETA)',
-                     i,
-                     total,
-                     format_time(this_1000),
-                     format_time(per_1000),
-                     format_time(time_to_go))
+            i = 0
+            for chunk in chunked(indexable, 1000):
+                chunk_start_time = time.time()
+                index_chunk(cls, chunk)
 
-        delta_time = time.time() - cls_start_time
-        log.info('   done! (%s total, %s/1000 avg)',
-                 format_time(delta_time),
-                 format_time(delta_time / (total / 1000.0)))
+                i += len(chunk)
+                time_to_go = (total - i) * ((time.time() - cls_start_time) / i)
+                per_1000 = (time.time() - cls_start_time) / (i / 1000.0)
+                this_1000 = time.time() - chunk_start_time
 
-    # Re-enable automatic refreshing
-    for index, old_refresh in old_refreshes.items():
-        es.indices.put_settings(index=index, body={
-                                'index': {'refresh_interval': old_refresh}})
-    delta_time = time.time() - start_time
-    log.info('done! (%s total)', format_time(delta_time))
+                log.info('   %s/%s %s... (%s/1000 avg, %s ETA)',
+                         i,
+                         total,
+                         format_time(this_1000),
+                         format_time(per_1000),
+                         format_time(time_to_go))
+
+            delta_time = time.time() - cls_start_time
+            log.info('   done! (%s total, %s/1000 avg)',
+                     format_time(delta_time),
+                     format_time(delta_time / (total / 1000.0)))
+
+        delta_time = time.time() - start_time
+        log.info('done! (%s total)', format_time(delta_time))
+
+    finally:
+        # Re-enable automatic refreshing
+        for index, old_refresh in old_refreshes.items():
+            es.indices.put_settings(
+                index=index,
+                body={'index': {'refresh_interval': old_refresh}})
 
 
 def es_delete_cmd(index, noinput=False, log=log):
