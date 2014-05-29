@@ -3,7 +3,7 @@ from django.shortcuts import get_object_or_404
 
 from rest_framework import generics, serializers, status
 
-from kitsune.sumo.api import CORSMixin, GenericAPIException
+from kitsune.sumo.api import CORSMixin, GenericAPIException, LocaleNegotiationMixin
 from kitsune.wiki.models import Document
 from kitsune.wiki.config import REDIRECT_HTML
 
@@ -24,7 +24,7 @@ class DocumentDetailSerializer(DocumentShortSerializer):
                   'html')
 
 
-class DocumentList(CORSMixin, generics.ListAPIView):
+class DocumentList(CORSMixin, LocaleNegotiationMixin, generics.ListAPIView):
     """List all documents."""
     queryset = Document.objects.all()
     serializer_class = DocumentShortSerializer
@@ -33,7 +33,7 @@ class DocumentList(CORSMixin, generics.ListAPIView):
     def get_queryset(self):
         queryset = self.queryset
 
-        locale = self.request.QUERY_PARAMS.get('locale')
+        locale = self.get_locale()
         product = self.request.QUERY_PARAMS.get('product')
         topic = self.request.QUERY_PARAMS.get('topic')
         is_template = self.request.QUERY_PARAMS.get('is_template', False)
@@ -68,17 +68,15 @@ class DocumentList(CORSMixin, generics.ListAPIView):
         return queryset
 
 
-class DocumentDetail(CORSMixin, generics.RetrieveAPIView):
+class DocumentDetail(CORSMixin, LocaleNegotiationMixin,
+                    generics.RetrieveAPIView):
     queryset = Document.objects.all()
     serializer_class = DocumentDetailSerializer
 
     def get_object(self):
         queryset = self.get_queryset()
-        filter = {
-            'locale': 'en-US',
-        }
-        filter.update(self.kwargs)
+        queryset = queryset.filter(locale=self.get_locale())
 
-        obj = get_object_or_404(queryset, **filter)
+        obj = get_object_or_404(queryset, **self.kwargs)
         self.check_object_permissions(self.request, obj)
         return obj
