@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 
@@ -32,6 +33,9 @@ class DocumentList(CORSMixin, LocaleNegotiationMixin, generics.ListAPIView):
 
     def get_queryset(self):
         queryset = self.queryset
+
+        queryset = queryset.filter(category__in=settings.IA_DEFAULT_CATEGORIES,
+                                   current_revision__isnull=False)
 
         locale = self.get_locale()
         product = self.request.QUERY_PARAMS.get('product')
