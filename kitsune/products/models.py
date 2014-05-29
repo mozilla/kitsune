@@ -146,6 +146,15 @@ class Topic(ModelBase):
         return os.path.join(
             settings.STATIC_URL, 'img', 'topic_placeholder.png')
 
+    @property
+    def path(self):
+      path = [self.slug]
+      cur = self
+      while cur.parent:
+        cur = cur.parent
+        path = [cur.slug] + path
+      return path
+
 
 class Version(ModelBase):
     name = models.CharField(max_length=255)

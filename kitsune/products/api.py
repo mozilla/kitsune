@@ -31,11 +31,12 @@ class ProductList(CORSMixin, generics.ListAPIView):
 class TopicSerializer(serializers.ModelSerializer):
     parent = serializers.SlugRelatedField(slug_field='slug')
     product = serializers.SlugRelatedField(slug_field='slug')
+    path = serializers.Field(source='path')
 
     class Meta:
         model = Topic
         fields = ('id', 'title', 'slug', 'description', 'parent', 'visible',
-                  'product')
+                  'product', 'path')
 
 
 class TopicList(CORSMixin, generics.ListAPIView):
@@ -44,6 +45,7 @@ class TopicList(CORSMixin, generics.ListAPIView):
 
     def get_queryset(self):
         queryset = self.queryset
+        queryset = queryset.filter(product__slug=self.kwargs['product'])
 
         is_visible = self.request.QUERY_PARAMS.get('is_visible', True)
 

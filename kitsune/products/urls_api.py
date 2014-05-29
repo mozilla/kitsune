@@ -7,5 +7,5 @@ from kitsune.products import api
 urlpatterns = patterns(
     '',
     url(r'^$', api.ProductList.as_view()),
-    url(r'^(?P<slug>[^/]+)/topics$', api.TopicList.as_view()),
+    url(r'^(?P<product>[^/]+)/topics$', api.TopicList.as_view()),
 )
