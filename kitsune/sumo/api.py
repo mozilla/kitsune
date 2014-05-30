@@ -1,5 +1,10 @@
 from django.conf import settings
 from rest_framework.exceptions import APIException
+from rest_framework import fields
+from django import forms
+from tower import ugettext as _
+
+from kitsune.sumo.utils import uselocale
 
 
 class CORSMixin(object):
@@ -42,3 +47,32 @@ class LocaleNegotiationMixin(object):
                     return locale
 
         return settings.WIKI_DEFAULT_LANGUAGE
+
+    def get_serializer_context(self):
+        context = super(LocaleNegotiationMixin, self).get_serializer_context()
+        context['locale'] = self.get_locale()
+        return context
+
+
+class LocalizedCharField(fields.CharField):
+    type_name = 'LocalizedCharField'
+    type_label = 'string'
+    form_field_class = forms.CharField
+    read_only = True
+
+    def __init__(self, *args, **kwargs):
+        self.l10n_context = kwargs.pop('l10n_context', None)
+        super(LocalizedCharField, self).__init__(*args, **kwargs)
+
+    def to_native(self, value):
+        value = super(LocalizedCharField, self).from_native(value)
+        locale = self.context.get('locale')
+
+        if locale is None:
+            return value
+        with uselocale(locale):
+            import q
+            q('translating', locale, self.l10n_context, value)
+            val = _(value, self.l10n_context)
+            q(type(val), val)
+            return val

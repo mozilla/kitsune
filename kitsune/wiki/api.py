@@ -4,7 +4,9 @@ from django.shortcuts import get_object_or_404
 
 from rest_framework import generics, serializers, status
 
-from kitsune.sumo.api import CORSMixin, GenericAPIException, LocaleNegotiationMixin
+from kitsune.sumo.api import (CORSMixin, GenericAPIException,
+                              LocaleNegotiationMixin)
+from kitsune.sumo.utils import uselocale
 from kitsune.wiki.models import Document
 from kitsune.wiki.config import REDIRECT_HTML
 
