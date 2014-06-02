@@ -137,13 +137,17 @@ class UserMappingType(SearchMappingType):
                 'url': {'type': 'string', 'index': 'not_analyzed'},
                 'indexed_on': {'type': 'integer'},
 
-                'username': {'type': 'string', 'analyzer': 'simple'},
-                'display_name': {'type': 'string', 'analyzer': 'simple'},
+                'username': {'type': 'string', 'index': 'not_analyzed'},
+                'display_name': {'type': 'string', 'index': 'not_analyzed'},
+
+                # lower-cased versions for querying:
+                'iusername': {'type': 'string', 'index': 'not_analyzed'},
+                'idisplay_name': {'type': 'string', 'analyzer': 'whitespace'},
 
                 'suggest': {
                     'type': 'completion',
-                    'index_analyzer': 'simple',
-                    'search_analyzer': 'simple',
+                    'index_analyzer': 'whitespace',
+                    'search_analyzer': 'whitespace',
                     'payloads': True,
                 }
             }
@@ -168,10 +172,13 @@ class UserMappingType(SearchMappingType):
         d['username'] = obj.user.username
         d['display_name'] = obj.display_name
 
+        d['iusername'] = obj.user.username.lower()
+        d['idisplay_name'] = obj.display_name.lower()
+
         d['suggest'] = {
             'input': [
-                d['username'],
-                d['display_name']
+                d['iusername'],
+                d['idisplay_name']
             ],
             'output': _(u'{displayname} ({username})').format(
                 displayname=d['display_name'], username=d['username']),
@@ -187,7 +194,7 @@ class UserMappingType(SearchMappingType):
         es = UserMappingType.search().get_es()
         results = es.suggest(cls.get_index(), {
             USER_SUGGEST : {
-                'text': text,
+                'text': text.lower(),
                 'completion' : {
                     'field' : 'suggest'
                 }
