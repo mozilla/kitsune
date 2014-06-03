@@ -171,10 +171,12 @@ def landing(request):
         'contributor_stats': contributor_stats,
         'canned_responses': get_common_replies(request.LANGUAGE_CODE),
         'tweets': _get_tweets(locale=request.LANGUAGE_CODE,
+                              filter='unanswered',
                               https=request.is_secure()),
         'authed': request.user.is_authenticated() and request.twitter.authed,
         'twitter_user': twitter_user,
         'filters': FILTERS,
+        'filter': 'unanswered',
         'goal': settings.CC_REPLIES_GOAL,
         'recent_replied_count': recent_replied_count})
 
