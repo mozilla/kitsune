@@ -144,6 +144,8 @@ class UserMappingType(SearchMappingType):
                 'iusername': {'type': 'string', 'index': 'not_analyzed'},
                 'idisplay_name': {'type': 'string', 'analyzer': 'whitespace'},
 
+                'avatar': {'type': 'string', 'index': 'not_analyzed'},
+
                 'suggest': {
                     'type': 'completion',
                     'index_analyzer': 'whitespace',
@@ -174,6 +176,9 @@ class UserMappingType(SearchMappingType):
 
         d['iusername'] = obj.user.username.lower()
         d['idisplay_name'] = obj.display_name.lower()
+
+        from kitsune.users.helpers import profile_avatar
+        d['avatar'] = profile_avatar(obj.user, size=120)
 
         d['suggest'] = {
             'input': [

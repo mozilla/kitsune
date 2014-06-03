@@ -102,3 +102,15 @@ class UserSearchTests(ElasticTestCase):
             iusername__match='1337mike').values_dict()[0]
         eq_(data['username'], p.user.username)
         eq_(data['display_name'], p.name)
+
+    def test_query_display_name_with_whitespace(self):
+        u1 = user(username='1337miKE', save=True)
+        p = profile(user=u1, name=u'Elite Mike')
+        u2 = user(username='mike', save=True)
+        profile(user=u2, name=u'NotElite Mike')
+
+        self.refresh()
+
+        eq_(UserMappingType.search().count(), 2)
+        eq_(UserMappingType.search().query(
+            idisplay_name__match_whitespace='elite').count(), 1)

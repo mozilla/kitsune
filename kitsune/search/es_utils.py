@@ -93,6 +93,17 @@ class AnalyzerMixin(object):
         """A match query that includes an analyzer."""
         return self._with_analyzer(key, val, 'match')
 
+    def process_query_match_whitespace(self, key, val, action):
+        """A match query that uses the whitespace analyzer."""
+        return  {
+            'match': {
+                key: {
+                    'query': val,
+                    'analyzer': 'whitespace',
+                }
+            }
+        }
+
 
 class Sphilastic(S, AnalyzerMixin):
     """Shim around elasticutils.contrib.django.S.
