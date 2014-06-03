@@ -223,8 +223,9 @@
     <section>
       <h1>{{ _('Find your fellow contributors') }}</h1>
 
-      <form name="find-contributor" id="find-contributor" action="community/contributor_results" method="get">
-        {{ csrf() }}
+      <form name="find-contributor" id="find-contributor" action="{{ url('community.search') }}" method="get">
+
+        {# COMMENT THIS OUT FOR NOW
         <input type="hidden" value="" id="ts-value" name="findby" />
 
         <div class="selector" data-emulate-select="true">
@@ -241,9 +242,10 @@
             </ul>
           </div>
         </div>
+        ENDCOMMENT #}
 
         <fieldset>
-          <input type="text" name="q" id="search" />
+          <input type="text" name="q" id="search" placeholder="{{ _('Username or Display Name') }}" />
           <input type="submit" value="{{ _('Search') }}" class="search" />
         </fieldset>
       </form>
