@@ -173,9 +173,13 @@ def search(request, template=None):
     # Start - support questions filters
 
     if cleaned['w'] & constants.WHERE_SUPPORT:
-        # Solved is set by default if using basic search
+        # Has helpful answers is set by default if using basic search
         if a == '0' and not cleaned['has_helpful']:
             cleaned['has_helpful'] = constants.TERNARY_YES
+
+        # No archived questions in default search.
+        if a == '0' and not cleaned['is_archived']:
+            cleaned['is_archived'] = constants.TERNARY_NO
 
         # These filters are ternary, they can be either YES, NO, or OFF
         ternary_filters = ('is_locked', 'is_solved', 'has_answers',
@@ -257,12 +261,6 @@ def search(request, template=None):
 
             discussion_f &= F(**after)
             question_f &= F(**after)
-
-    # In basic search, we limit questions from the last
-    # SEARCH_DEFAULT_MAX_QUESTION_AGE seconds.
-    if a == '0':
-        start_date = unix_now - settings.SEARCH_DEFAULT_MAX_QUESTION_AGE
-        question_f &= F(created__gte=start_date)
 
     # Note: num_voted (with a d) is a different field than num_votes
     # (with an s). The former is a dropdown and the latter is an

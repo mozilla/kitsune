@@ -1629,7 +1629,6 @@ def _search_suggestions(request, text, locale, product_slugs):
         query.update(dict(('%s__match_phrase' % field, text)
                      for field in QuestionMappingType.get_query_fields()))
 
-        max_age = int(time.time()) - settings.SEARCH_DEFAULT_MAX_QUESTION_AGE
         # Filter questions by language. Questions should be either in English
         # or in the locale's language. This is because we have some questions
         # marked English that are really in other languages. The assumption
@@ -1638,7 +1637,7 @@ def _search_suggestions(request, text, locale, product_slugs):
         # better, so questions incorrectly marked as english can be found too.
         question_filter = F(question_locale=locale)
         question_filter |= F(question_locale=settings.WIKI_DEFAULT_LANGUAGE)
-        question_filter &= F(updated__gte=max_age)
+        question_filter &= F(question_is_archived=False)
 
         raw_results = (question_s.query(or_=query)
                        .filter(question_filter)
