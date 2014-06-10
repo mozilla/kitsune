@@ -11,7 +11,7 @@ save 300 10
 save 60 10000
 <% end %>
 rdbcompression yes
-dbfilename /var/redis/<%= name %>/dump.rdb
+dbfilename dump.rdb
 dir /var/redis/<%= name %>/
 <% unless redis_slaveof_ip.empty? %>
     slaveof <%= redis_slaveof_ip %> <%= port %>
