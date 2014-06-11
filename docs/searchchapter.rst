@@ -27,7 +27,9 @@ There's an installation guide on the Elastic Search site.
 
 http://www.elasticsearch.org/guide/reference/setup/installation.html
 
-We're currently using 0.20.5 in production. Most of us use that version.
+We're currently using `0.90.10
+<http://www.elasticsearch.org/downloads/0-90-10/>`_ in production. Most of us
+use that version.
 
 The directory you install Elastic Search in will hereafter be referred
 to as ``ELASTICDIR``.
