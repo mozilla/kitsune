@@ -75,7 +75,7 @@ class DocumentList(CORSMixin, LocaleNegotiationMixin, generics.ListAPIView):
 
 
 class DocumentDetail(CORSMixin, LocaleNegotiationMixin,
-                    generics.RetrieveAPIView):
+                     generics.RetrieveAPIView):
     queryset = Document.objects.all()
     serializer_class = DocumentDetailSerializer
 

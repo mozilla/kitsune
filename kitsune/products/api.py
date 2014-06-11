@@ -1,4 +1,5 @@
 from rest_framework import generics, serializers
+from django.shortcuts import get_object_or_404
 
 from kitsune.sumo.api import (CORSMixin, LocaleNegotiationMixin,
                               LocalizedCharField)
@@ -21,10 +22,10 @@ class ProductList(CORSMixin, generics.ListAPIView):
     def get_queryset(self):
         queryset = self.queryset
 
-        is_visible = self.request.QUERY_PARAMS.get('is_visible', True)
+        visible = self.request.QUERY_PARAMS.get('visible', True)
 
-        if is_visible is not None:
-            queryset = queryset.filter(visible=is_visible)
+        if visible is not None:
+            queryset = queryset.filter(visible=visible)
 
         return queryset
 
@@ -42,13 +43,29 @@ class TopicSerializer(serializers.ModelSerializer):
                   'product', 'path')
 
 
+class TopicDetail(CORSMixin, LocaleNegotiationMixin, generics.RetrieveAPIView):
+    queryset = Topic.objects.all()
+    serializer_class = TopicSerializer
+
+    def get_object(self):
+        queryset = self.get_queryset()
+        queryset = queryset.filter(
+            visible=True,
+            slug=self.kwargs.pop('topic'),
+            product__slug=self.kwargs.pop('product'))
+
+        obj = get_object_or_404(queryset, **self.kwargs)
+        self.check_object_permissions(self.request, obj)
+        return obj
+
+
 class TopicList(CORSMixin, LocaleNegotiationMixin, generics.ListAPIView):
     queryset = Topic.objects.all()
     serializer_class = TopicSerializer
 
     def get_queryset(self):
         queryset = self.queryset.filter(product__slug=self.kwargs['product'])
-        is_visible = self.request.QUERY_PARAMS.get('is_visible', True)
-        if is_visible is not None:
-            queryset = queryset.filter(visible=is_visible)
+        visible = self.request.QUERY_PARAMS.get('visible', True)
+        if visible is not None:
+            queryset = queryset.filter(visible=visible)
         return queryset

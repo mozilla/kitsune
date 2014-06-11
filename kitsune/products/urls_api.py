@@ -8,4 +8,5 @@ urlpatterns = patterns(
     '',
     url(r'^$', api.ProductList.as_view()),
     url(r'^(?P<product>[^/]+)/topics$', api.TopicList.as_view()),
+    url(r'^(?P<product>[^/]+)/topic/(?P<topic>[^/]+)$', api.TopicDetail.as_view()),
 )
