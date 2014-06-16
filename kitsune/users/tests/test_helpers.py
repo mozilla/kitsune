@@ -19,7 +19,7 @@ class HelperTestCase(TestCase):
         self.u = user(username=u'testuser', save=True)
 
     def test_profile_url(self):
-        eq_(u'/user/%d' % self.u.id, profile_url(self.u))
+        eq_(u'/user/%s' % self.u.username, profile_url(self.u))
 
     def test_profile_avatar_default(self):
         profile(user=self.u)
@@ -63,5 +63,5 @@ class HelperTestCase(TestCase):
         fragment = pq(list)
         eq_(3, len(fragment('a')))
         a = fragment('a')[1]
-        assert a.attrib['href'].endswith(str(u.id))
+        assert a.attrib['href'].endswith(str(u.username))
         eq_(u.username, a.text)

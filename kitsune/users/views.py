@@ -303,8 +303,13 @@ def confirm_change_email(request, activation_key):
 @require_GET
 @mobile_template('users/{mobile/}profile.html')
 def profile(request, template, user_id):
-    user_profile = get_object_or_404(
-        Profile, user__id=user_id)
+    user = User.objects.filter(username=user_id).first()
+
+    if not user:
+        user = get_object_or_404(User, id=user_id)
+        return redirect(reverse('users.profile', args=(user.username,)))
+
+    user_profile = get_object_or_404(Profile, user__id=user.id)
 
     if not (request.user.has_perm('users.deactivate_users')
             or user_profile.user.is_active):
