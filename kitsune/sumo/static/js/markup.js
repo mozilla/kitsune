@@ -944,6 +944,10 @@ Marky.CannedResponsesButton.prototype = $.extend({}, Marky.SimpleButton.prototyp
             var $responseTextbox = $('#id_content');
             var targetContent = $responseTextbox.val();
 
+            if (_gaq) {
+                _gaq.push(['_trackEvent', 'Canned response pasted']);
+            }
+
             $responseTextbox.val(targetContent + sourceContent);
         }
 
