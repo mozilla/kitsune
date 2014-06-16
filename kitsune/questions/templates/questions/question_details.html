@@ -387,7 +387,12 @@
   <div id="question-reply" class="grid_9 suffix_3">
     {% if request.limited %}
       <div class="warning-box">
-        {{ _('You have exceeded the number of answers that can be posted in a given amount of time. Please try again shortly.') }}
+        {% trans url=url('forums.threads', 'contributors') %}
+          In order to prevent spam, we are limiting the number of answers that
+          can be posted within a short period of time. If you want to post more
+          please create a post on the <a href="{{ url }}">contributors
+          forum</a> requesting that you be white-listed.
+        {% endtrans %}
       </div>
     {% endif %}
 
