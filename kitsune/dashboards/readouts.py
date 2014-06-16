@@ -823,10 +823,24 @@ class UnhelpfulReadout(Readout):
             log.error('Redis error: %s' % e)
             output = []
 
-        return [self._format_row(r) for r in output]
+        data = []
+        for r in output:
+            row = self._format_row(r)
+            if row:
+                data.append(row)
+
+        return data
 
     def _format_row(self, strresult):
         result = strresult.split('::')
+
+        # Filter by product
+        if self.product:
+            doc = Document.objects.filter(products__in=[self.product],
+                                          slug=result[5])
+            if not doc.count():
+                return None
+
         helpfulness = Markup('<span title="%+.1f%%">%.1f%%</span>' %
                              (float(result[3]) * 100, float(result[2]) * 100))
         return dict(title=result[6].decode('utf-8'),
