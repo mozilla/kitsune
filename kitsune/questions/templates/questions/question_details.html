@@ -387,7 +387,7 @@
   <div id="question-reply" class="grid_9 suffix_3">
     {% if request.limited %}
       <div class="warning-box">
-        {% trans url="https://support.mozilla.org/forums/contributors" %}
+        {% trans url=url('forums.threads', args=('contributors',)) %}
           In order to prevent spam, we are limiting the number of answers that
           can be posted within a short period of time. If you want to post more
           please create a post on the <a href="{{ url }}">contributors
