@@ -470,13 +470,19 @@ class UserProfileTests(TestCase):
     def setUp(self):
         self.u = user(save=True)
         self.profile = profile(user=self.u)
-        self.url = reverse('users.profile', args=[self.u.pk],
+        self.url = reverse('users.profile', args=[self.u.username],
                            locale='en-US')
         super(UserProfileTests, self).setUp()
 
     def test_profile(self):
         res = self.client.get(self.url)
         self.assertContains(res, self.u.username)
+
+    def test_profile_redirect(self):
+        """Ensure that old profile URL's get redirected."""
+        res = self.client.get(reverse('users.profile', args=[self.u.pk],
+                                      locale='en-US'))
+        eq_(302, res.status_code)
 
     def test_profile_inactive(self):
         """Inactive users don't have a public profile."""

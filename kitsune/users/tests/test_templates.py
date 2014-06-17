@@ -360,13 +360,13 @@ class ViewProfileTests(TestCaseBase):
         # No name set => no optional fields.
         eq_(0, doc('.contact').length)
         # Check canonical url
-        eq_('/user/%d' % self.u.id,
+        eq_('/user/%s' % self.u.username,
             doc('link[rel="canonical"]')[0].attrib['href'])
 
     def test_view_profile_mine(self):
         """Logged in, on my profile, I see an edit link."""
         self.client.login(username=self.u.username, password='testpass')
-        r = self.client.get(reverse('users.profile', args=[self.u.id]))
+        r = self.client.get(reverse('users.profile', args=[self.u.username]))
         eq_(200, r.status_code)
         doc = pq(r.content)
         eq_('Edit settings', doc('#user-nav li:last').text())
@@ -375,7 +375,7 @@ class ViewProfileTests(TestCaseBase):
     def test_bio_links_nofollow(self):
         self.profile.bio = 'http://getseo.com, [http://getseo.com]'
         self.profile.save()
-        r = self.client.get(reverse('users.profile', args=[self.u.id]))
+        r = self.client.get(reverse('users.profile', args=[self.u.username]))
         eq_(200, r.status_code)
         doc = pq(r.content)
         eq_(2, len(doc('.bio a[rel="nofollow"]')))
@@ -386,27 +386,27 @@ class ViewProfileTests(TestCaseBase):
         revision(creator=u, save=True)
         revision(creator=u, save=True)
 
-        r = self.client.get(reverse('users.profile', args=[u.id]))
+        r = self.client.get(reverse('users.profile', args=[u.username]))
         eq_(200, r.status_code)
         assert '2 documents' in r.content
 
     def test_deactivate_button(self):
         """Check that the deactivate button is shown appropriately"""
         p = profile()
-        r = self.client.get(reverse('users.profile', args=[p.user.id]))
+        r = self.client.get(reverse('users.profile', args=[p.user.username]))
         assert 'Deactivate this user' not in r.content
 
         add_permission(self.u, Profile, 'deactivate_users')
         self.client.login(username=self.u.username, password='testpass')
-        r = self.client.get(reverse('users.profile', args=[p.user.id]))
+        r = self.client.get(reverse('users.profile', args=[p.user.username]))
         assert 'Deactivate this user' in r.content
 
         p.user.is_active = False
         p.user.save()
-        r = self.client.get(reverse('users.profile', args=[p.user.id]))
+        r = self.client.get(reverse('users.profile', args=[p.user.username]))
         assert 'This user has been deactivated.' in r.content
 
-        r = self.client.get(reverse('users.profile', args=[self.u.id]))
+        r = self.client.get(reverse('users.profile', args=[self.u.username]))
         assert 'Deactivate this user' not in r.content
 
     def test_badges_listed(self):
@@ -415,7 +415,7 @@ class ViewProfileTests(TestCaseBase):
         b = badge(title=badge_title, save=True)
         u = profile().user
         award(user=u, badge=b, save=True)
-        r = self.client.get(reverse('users.profile', args=[u.id]))
+        r = self.client.get(reverse('users.profile', args=[u.username]))
         assert badge_title in r.content
 
 
