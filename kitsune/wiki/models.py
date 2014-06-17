@@ -138,8 +138,8 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
     def _collides(self, attr, value):
         """Return whether there exists a doc in this locale whose `attr` attr
         is equal to mine."""
-        return Document.uncached.filter(locale=self.locale,
-                                        **{attr: value}).exists()
+        return Document.uncached.filter(
+            locale=self.locale, **{attr: value}).exclude(id=self.id).exists()
 
     def _raise_if_collides(self, attr, exception):
         """Raise an exception if a page of this title/slug already exists."""
@@ -263,18 +263,21 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         slug_changed = hasattr(self, 'old_slug')
         title_changed = hasattr(self, 'old_title')
         if self.current_revision and (slug_changed or title_changed):
-            doc = Document.objects.create(locale=self.locale,
-                                          title=self._attr_for_redirect(
-                                              'title', REDIRECT_TITLE),
-                                          slug=self._attr_for_redirect(
-                                              'slug', REDIRECT_SLUG),
-                                          category=self.category,
-                                          is_localizable=False)
-            Revision.objects.create(document=doc,
-                                    content=REDIRECT_CONTENT % self.title,
-                                    is_approved=True,
-                                    reviewer=self.current_revision.creator,
-                                    creator=self.current_revision.creator)
+            try:
+                doc = Document.objects.create(locale=self.locale,
+                                              title=self._attr_for_redirect(
+                                                  'title', REDIRECT_TITLE),
+                                              slug=self._attr_for_redirect(
+                                                  'slug', REDIRECT_SLUG),
+                                              category=self.category,
+                                              is_localizable=False)
+                Revision.objects.create(document=doc,
+                                        content=REDIRECT_CONTENT % self.title,
+                                        is_approved=True,
+                                        reviewer=self.current_revision.creator,
+                                        creator=self.current_revision.creator)
+            except TitleCollision:
+                pass
 
             if slug_changed:
                 del self.old_slug

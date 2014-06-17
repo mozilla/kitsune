@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import json
 
 from django.conf import settings
@@ -242,6 +244,17 @@ class DocumentEditingTests(TestCase):
         self.client.post(reverse('wiki.edit_document', args=[d.slug]), data)
         eq_(new_title, Document.uncached.get(slug=d.slug).title)
         assert Document.uncached.get(title=old_title).redirect_url()
+
+    def test_retitling_accent(self):
+        d = document(title='Umlaut test', save=True)
+        revision(document=d, is_approved=True, save=True)
+        new_title = u'Ümlaut test'
+        data = new_document_data()
+        data.update({'title': new_title,
+                     'slug': d.slug,
+                     'form': 'doc'})
+        self.client.post(reverse('wiki.edit_document', args=[d.slug]), data)
+        eq_(new_title, Document.uncached.get(slug=d.slug).title)
 
     def test_changing_products(self):
         """Changing products works as expected."""
