@@ -139,7 +139,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         """Return whether there exists a doc in this locale whose `attr` attr
         is equal to mine."""
         return Document.uncached.filter(
-            locale=self.locale, **{attr: value}).exclude(id=self.id)
+            locale=self.locale, **{attr: value}).exclude(id=self.id).exists()
 
     def _raise_if_collides(self, attr, exception):
         """Raise an exception if a page of this title/slug already exists."""
