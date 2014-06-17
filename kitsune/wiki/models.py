@@ -272,10 +272,10 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
                                               category=self.category,
                                               is_localizable=False)
                 Revision.objects.create(document=doc,
-                                    content=REDIRECT_CONTENT % self.title,
-                                    is_approved=True,
-                                    reviewer=self.current_revision.creator,
-                                    creator=self.current_revision.creator)
+                                        content=REDIRECT_CONTENT % self.title,
+                                        is_approved=True,
+                                        reviewer=self.current_revision.creator,
+                                        creator=self.current_revision.creator)
             except TitleCollision:
                 pass
 
