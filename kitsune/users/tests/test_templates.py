@@ -352,7 +352,7 @@ class ViewProfileTests(TestCaseBase):
         self.profile = profile(name='', website='', user=self.u)
 
     def test_view_profile(self):
-        r = self.client.get(reverse('users.profile', args=[self.u.id]))
+        r = self.client.get(reverse('users.profile', args=[self.u.username]))
         eq_(200, r.status_code)
         doc = pq(r.content)
         eq_(0, doc('#edit-profile-link').length)
