@@ -44,7 +44,7 @@ from kitsune.wiki.forms import (
     ReviewForm)
 from kitsune.wiki.models import (
     Document, Revision, HelpfulVote, ImportantDate, doc_html_cache_key,
-    TitleCollision)
+    TitleCollision, SlugCollision)
 from kitsune.wiki.parser import wiki_to_html
 from kitsune.wiki.tasks import (
     send_reviewed_notification, schedule_rebuild_kb,
@@ -389,12 +389,15 @@ def edit_document(request, document_slug, revision_id=None):
                     # Get the possibly new slug for the imminent redirection:
                     try:
                         doc = doc_form.save(None)
-                    except TitleCollision:
+                    except (TitleCollision, SlugCollision) as e:
                         # TODO: .add_error() when we upgrade to Django 1.7
                         errors = doc_form._errors.setdefault('title',
                                                              ErrorList())
-                        errors.append(u'The title you selected is already '
-                                      u'in use.')
+                        which_type = ('title' if isinstance(e, TitleCollision)
+                                      else 'slug')
+                        errors.append(
+                            'The %s you selected is already in use.' % (
+                                which_type))
                     else:
                         # Do we need to rebuild the KB?
                         _maybe_schedule_rebuild(doc_form)
