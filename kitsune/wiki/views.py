@@ -10,6 +10,7 @@ from django.contrib.auth.models import User
 from django.core.cache import cache
 from django.core.exceptions import PermissionDenied
 from django.db import connection
+from django.forms.util import ErrorList
 from django.http import (HttpResponse, HttpResponseRedirect,
                          Http404, HttpResponseBadRequest)
 from django.shortcuts import get_object_or_404, render
@@ -42,7 +43,8 @@ from kitsune.wiki.forms import (
     AddContributorForm, DocumentForm, RevisionForm, RevisionFilterForm,
     ReviewForm)
 from kitsune.wiki.models import (
-    Document, Revision, HelpfulVote, ImportantDate, doc_html_cache_key)
+    Document, Revision, HelpfulVote, ImportantDate, doc_html_cache_key,
+    TitleCollision)
 from kitsune.wiki.parser import wiki_to_html
 from kitsune.wiki.tasks import (
     send_reviewed_notification, schedule_rebuild_kb,
@@ -372,6 +374,12 @@ def edit_document(request, document_slug, revision_id=None):
             if doc.allows(user, 'edit'):
                 post_data = request.POST.copy()
                 post_data.update({'locale': request.LANGUAGE_CODE})
+
+                topics = []
+                for t in post_data.getlist('topics'):
+                    topics.append(long(t))
+                post_data.setlist('topics', topics)
+
                 doc_form = DocumentForm(
                     post_data,
                     instance=doc,
@@ -379,15 +387,22 @@ def edit_document(request, document_slug, revision_id=None):
                     can_edit_needs_change=can_edit_needs_change)
                 if doc_form.is_valid():
                     # Get the possibly new slug for the imminent redirection:
-                    doc = doc_form.save(None)
+                    try:
+                        doc = doc_form.save(None)
+                    except TitleCollision:
+                        # TODO: .add_error() when we upgrade to Django 1.7
+                        errors = doc_form._errors.setdefault('title',
+                                                             ErrorList())
+                        errors.append(u'The title you selected is already '
+                                      u'in use.')
+                    else:
+                        # Do we need to rebuild the KB?
+                        _maybe_schedule_rebuild(doc_form)
 
-                    # Do we need to rebuild the KB?
-                    _maybe_schedule_rebuild(doc_form)
-
-                    return HttpResponseRedirect(
-                        urlparams(reverse('wiki.edit_document',
-                                          args=[doc.slug]),
-                                  opendescription=1))
+                        return HttpResponseRedirect(
+                            urlparams(reverse('wiki.edit_document',
+                                              args=[doc.slug]),
+                                      opendescription=1))
                 disclose_description = True
             else:
                 raise PermissionDenied
