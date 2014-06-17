@@ -213,7 +213,7 @@
         <img src="{{ STATIC_URL }}img/blank.png" class="logo-sprite small sumo">
         <span>{{ _('All Products') }}</span>
       {% else %}
-        <img src="{{ STATIC_URL }}img/blank.png" class="logo-sprite small" style="{% if current.image %}background-image: url({{ current.sprite_url(retina=False) }}); background-position: -100px -{{ 100 + (current.image_offset * 296) }}px;{% else %}background-image: url({{ current.image_url }}){% endif %}" alt="" />
+        <img src="{{ STATIC_URL }}img/blank.png" class="logo-sprite small" style="{% if current.image %}background-image: url({{ current.sprite_url(retina=False) }}); background-position: -50px -{{ 50 + (current.image_offset * 148) }}px;{% else %}background-image: url({{ current.image_url }}){% endif %}" alt="" />
         <span>{{ _(current.title, 'DB: products.Product.title') }}</span>
       {% endif %}
     </div>
