@@ -393,11 +393,11 @@ def edit_document(request, document_slug, revision_id=None):
                         # TODO: .add_error() when we upgrade to Django 1.7
                         errors = doc_form._errors.setdefault('title',
                                                              ErrorList())
-                        which_type = ('title' if isinstance(e, TitleCollision)
-                                      else 'slug')
-                        errors.append(_(
-                            'The %s you selected is already in use.' % (
-                                which_type)))
+                        message = 'The {type} you selected is already in use.'
+                        message = message.format(
+                            type='title' if isinstance(e, TitleCollision) else
+                            'slug')
+                        errors.append(_(message))
                     else:
                         # Do we need to rebuild the KB?
                         _maybe_schedule_rebuild(doc_form)
