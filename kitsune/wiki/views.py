@@ -395,9 +395,9 @@ def edit_document(request, document_slug, revision_id=None):
                                                              ErrorList())
                         which_type = ('title' if isinstance(e, TitleCollision)
                                       else 'slug')
-                        errors.append(
+                        errors.append(_(
                             'The %s you selected is already in use.' % (
-                                which_type))
+                                which_type)))
                     else:
                         # Do we need to rebuild the KB?
                         _maybe_schedule_rebuild(doc_form)
