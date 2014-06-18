@@ -1,13 +1,7 @@
-from django.core.cache import cache
-
 from nose.tools import eq_
-from pyquery import PyQuery as pq
 
-from kitsune.products.models import HOT_TOPIC_SLUG
 from kitsune.products.tests import product, topic
 from kitsune.sumo.tests import TestCase
-from kitsune.sumo.urlresolvers import reverse
-from kitsune.wiki.tests import revision, helpful_vote
 
 
 class TopicModelTests(TestCase):

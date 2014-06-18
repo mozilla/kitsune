@@ -148,12 +148,12 @@ class Topic(ModelBase):
 
     @property
     def path(self):
-      path = [self.slug]
-      cur = self
-      while cur.parent:
-        cur = cur.parent
-        path = [cur.slug] + path
-      return path
+        path = [self.slug]
+        cur = self
+        while cur.parent:
+            cur = cur.parent
+            path = [cur.slug] + path
+        return path
 
 
 class Version(ModelBase):
