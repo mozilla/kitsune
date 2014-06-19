@@ -149,6 +149,12 @@ class RegisterFormTests(TestCaseBase):
                              'password2': 'adssadfsadf1',
                              'email': 'newuser@example.com'})
         assert not form.is_valid()
+        # Plus sign
+        form = RegisterForm({'username': 'ass+assin',
+                             'password': 'adssadfsadf1',
+                             'password2': 'adssadfsadf1',
+                             'email': 'newuser@example.com'})
+        assert not form.is_valid()
         # No match.
         form = RegisterForm({'username': 'assassin',
                              'password': 'adssadfsadf1',

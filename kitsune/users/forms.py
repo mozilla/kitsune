@@ -84,7 +84,7 @@ class RegisterForm(forms.ModelForm):
     """
     username = forms.RegexField(
         label=_lazy(u'Username:'), max_length=30, min_length=4,
-        regex=r'^[\w.+-]+$',
+        regex=r'^[\w.-]+$',
         help_text=_lazy(u'Required. 30 characters or fewer. Letters, digits '
                         u'and ./+/- only.'),
         error_messages={'invalid': USERNAME_INVALID,
