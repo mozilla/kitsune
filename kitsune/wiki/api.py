@@ -52,24 +52,19 @@ class DocumentList(CORSMixin, LocaleNegotiationMixin, generics.ListAPIView):
         if product is not None:
             queryset = queryset.filter(products__slug=product)
             if topic is not None:
-                queryset = queryset.filter(topics__slug=topic,
-                                           topics__product__slug=product)
+                queryset = queryset.filter(topics__slug=topic)
         elif topic is not None:
             raise GenericAPIException(status.HTTP_400_BAD_REQUEST,
                                       'topic requires product')
 
-        if is_template is not None:
-            queryset = queryset.filter(is_template=is_template)
+        queryset = queryset.filter(is_template=is_template)
+        queryset = queryset.filter(is_archived=is_archived)
 
-        if is_archived is not None:
-            queryset = queryset.filter(is_archived=is_archived)
-
-        if is_redirect is not None:
-            redirect_filter = Q(html__startswith=REDIRECT_HTML)
-            if is_redirect:
-                queryset = queryset.filter(redirect_filter)
-            else:
-                queryset = queryset.filter(~redirect_filter)
+        redirect_filter = Q(html__startswith=REDIRECT_HTML)
+        if is_redirect:
+            queryset = queryset.filter(redirect_filter)
+        else:
+            queryset = queryset.filter(~redirect_filter)
 
         return queryset
 

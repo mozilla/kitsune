@@ -1,9 +1,9 @@
 from rest_framework import generics, serializers
 from django.shortcuts import get_object_or_404
 
+from kitsune.products.models import Product, Topic
 from kitsune.sumo.api import (CORSMixin, LocaleNegotiationMixin,
                               LocalizedCharField)
-from kitsune.products.models import Product, Topic
 
 
 class ProductSerializer(serializers.ModelSerializer):
@@ -18,16 +18,6 @@ class ProductList(CORSMixin, generics.ListAPIView):
     """List all documents."""
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
-
-    def get_queryset(self):
-        queryset = self.queryset
-
-        visible = self.request.QUERY_PARAMS.get('visible', True)
-
-        if visible is not None:
-            queryset = queryset.filter(visible=visible)
-
-        return queryset
 
 
 class TopicSerializer(serializers.ModelSerializer):
@@ -66,6 +56,5 @@ class TopicList(CORSMixin, LocaleNegotiationMixin, generics.ListAPIView):
     def get_queryset(self):
         queryset = self.queryset.filter(product__slug=self.kwargs['product'])
         visible = self.request.QUERY_PARAMS.get('visible', True)
-        if visible is not None:
-            queryset = queryset.filter(visible=visible)
+        queryset = queryset.filter(visible=visible)
         return queryset

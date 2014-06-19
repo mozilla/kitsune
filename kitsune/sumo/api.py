@@ -9,6 +9,7 @@ from kitsune.sumo.urlresolvers import get_best_language
 
 
 class CORSMixin(object):
+    """Sets headers on a request to allow cross-origin access to the api."""
     def finalize_response(self, request, response, *args, **kwargs):
         response = (super(CORSMixin, self)
                     .finalize_response(request, response, *args, **kwargs))
@@ -17,6 +18,17 @@ class CORSMixin(object):
 
 
 class GenericAPIException(APIException):
+    """Generic Exception, since DRF doesn't provide one.
+
+    DRF allows views to throw subclasses of APIException to cause non-200
+    status codes to be sent back to API consumers. These subclasses are expected
+    to have a ``status_code`` and ``detail`` property.
+
+    DRF doesn't give a generic way to make an object with these properties.
+    Instead you are expected to make many specific subclasses and make instances
+    of those. That seemed lame, so this class creates instances instead of lots
+    of subclasses.
+    """
     def __init__(self, status_code, detail, **kwargs):
         self.status_code = status_code
         self.detail = detail
@@ -74,8 +86,4 @@ class LocalizedCharField(fields.CharField):
         if locale is None:
             return value
         with uselocale(locale):
-            import q
-            q('translating', locale, self.l10n_context, value)
-            val = _(value, self.l10n_context)
-            q(type(val), val)
-            return val
+            return _(value, self.l10n_context)
