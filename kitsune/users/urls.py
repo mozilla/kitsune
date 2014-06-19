@@ -86,7 +86,7 @@ users_patterns = patterns(
 urlpatterns = patterns(
     '',
     # URLs for a single user.
-    (r'^user/(?P<user_id>[\w@\.\-\+\s]+)', include(detail_patterns)),
+    (r'^user/(?P<user_id>[\w@\.\s+-]+)', include(detail_patterns)),
     url(r'^user/(?P<object_id>\w+)/flag$', kitsune.flagit.views.flag,
         {'content_type': ContentType.objects.get_for_model(Profile).id},
         name='users.flag'),
