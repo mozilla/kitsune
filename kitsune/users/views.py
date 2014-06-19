@@ -303,6 +303,7 @@ def confirm_change_email(request, activation_key):
 @require_GET
 @mobile_template('users/{mobile/}profile.html')
 def profile(request, template, user_id):
+    user_id = user_id.replace(' ', '+')
     user = User.objects.filter(username=user_id).first()
 
     if not user:
