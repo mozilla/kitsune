@@ -303,7 +303,11 @@ def confirm_change_email(request, activation_key):
 @require_GET
 @mobile_template('users/{mobile/}profile.html')
 def profile(request, template, user_id):
+    # The browser replaces '+' in URL's with ' ' but since we never have ' ' in
+    # URL's we can assume everytime we see ' ' it was a '+' that was replaced.
+    # We do this to deal with legacy usernames that have a '+' in them.
     user_id = user_id.replace(' ', '+')
+
     user = User.objects.filter(username=user_id).first()
 
     if not user:
