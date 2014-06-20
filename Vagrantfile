@@ -37,6 +37,6 @@ Vagrant::Config.run do |config|
     config.vm.forward_port 8000, 8000
 
     config.vm.share_folder("vagrant-root", MOUNT_POINT, ".")
-    config.vm.provision "shell", path: "bin/vagrant_provision_travis.sh"
+    config.vm.provision "shell", path: "bin/vagrant_provision.sh"
 end
 
