@@ -42,9 +42,9 @@ class DocumentList(CORSMixin, LocaleNegotiationMixin, generics.ListAPIView):
         locale = self.get_locale()
         product = self.request.QUERY_PARAMS.get('product')
         topic = self.request.QUERY_PARAMS.get('topic')
-        is_template = self.request.QUERY_PARAMS.get('is_template', False)
-        is_archived = self.request.QUERY_PARAMS.get('is_archived', False)
-        is_redirect = self.request.QUERY_PARAMS.get('is_redirect', False)
+        is_template = bool(self.request.QUERY_PARAMS.get('is_template', False))
+        is_archived = bool(self.request.QUERY_PARAMS.get('is_archived', False))
+        is_redirect = bool(self.request.QUERY_PARAMS.get('is_redirect', False))
 
         if locale is not None:
             queryset = queryset.filter(locale=locale)

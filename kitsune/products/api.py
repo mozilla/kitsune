@@ -55,6 +55,6 @@ class TopicList(CORSMixin, LocaleNegotiationMixin, generics.ListAPIView):
 
     def get_queryset(self):
         queryset = self.queryset.filter(product__slug=self.kwargs['product'])
-        visible = self.request.QUERY_PARAMS.get('visible', True)
+        visible = bool(self.request.QUERY_PARAMS.get('visible', True))
         queryset = queryset.filter(visible=visible)
         return queryset
