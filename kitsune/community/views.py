@@ -12,6 +12,7 @@ log = logging.getLogger('k.community')
 
 
 def home(request):
+    """Community hub landing page."""
 
     data = {}
 
