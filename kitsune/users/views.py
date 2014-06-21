@@ -311,7 +311,10 @@ def profile(request, template, user_id):
     user = User.objects.filter(username=user_id).first()
 
     if not user:
-        user = get_object_or_404(User, id=user_id)
+        try:
+            user = get_object_or_404(User, id=user_id)
+        except ValueError:
+            raise Http404('No Profile matches the given query.')
         return redirect(reverse('users.profile', args=(user.username,)))
 
     user_profile = get_object_or_404(Profile, user__id=user.id)
