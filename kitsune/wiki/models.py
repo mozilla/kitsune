@@ -121,6 +121,9 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         u'If checked, this document needs updates.'), db_index=True)
     needs_change_comment = models.CharField(max_length=500, blank=True)
 
+    # A 24 character length gives years before having to alter max_length.
+    share_link = models.CharField(max_length=24, default='')
+
     # firefox_versions,
     # operating_systems:
     #    defined in the respective classes below. Use them as in

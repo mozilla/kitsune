@@ -4,7 +4,6 @@ import waffle
 from itertools import chain
 
 from django.conf import settings
-from django.contrib.auth.models import User
 from django.db.models import F, Q, ObjectDoesNotExist
 
 from statsd import statsd
@@ -13,7 +12,24 @@ from tower import ugettext as _
 from kitsune.search.tasks import index_task
 from kitsune.sumo import email_utils
 from kitsune.wiki import tasks
+from kitsune.wiki.config import REDIRECT_HTML
 from kitsune.wiki.models import Document, DocumentMappingType, Revision, Locale
+
+
+@cronjobs.register
+def generate_missing_share_links():
+    """Generate share links for documents that may be missing them."""
+    documents = (Document.objects.select_related('revision')
+                 .filter(parent=None,
+                         share_link='',
+                         is_template=False,
+                         is_archived=False,
+                         category__in=settings.IA_DEFAULT_CATEGORIES)
+                 .exclude(slug='',
+                          current_revision=None,
+                          html__startswith=REDIRECT_HTML))
+
+    tasks.add_short_links(documents)
 
 
 @cronjobs.register

@@ -881,6 +881,9 @@ CC_WORD_BLACKLIST = [
     '#NoMasComercialMovistarFirefox',
 ]
 
+BITLY_API_URL = 'http://api.bitly.com/v3/shorten?callback=?'
+BITLY_LOGIN = None
+BITLY_API_KEY = None
 
 TWITTER_COOKIE_SECURE = True
 TWITTER_CONSUMER_KEY = ''

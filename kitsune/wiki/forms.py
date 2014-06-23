@@ -11,6 +11,7 @@ from kitsune.sumo.form_fields import MultiUsernameField, StrippedCharField
 from kitsune.wiki.config import SIGNIFICANCES, CATEGORIES
 from kitsune.wiki.models import (
     Document, Revision, MAX_REVISION_COMMENT_LENGTH)
+from kitsune.wiki.tasks import add_short_links
 from kitsune.wiki.widgets import (
     RadioFieldRendererWithHelpText, ProductTopicsAndSubtopicsWidget)
 
@@ -184,6 +185,13 @@ class DocumentForm(forms.ModelForm):
         # If document doesn't need change, clear out the comment.
         if not doc.needs_change:
             doc.needs_change_comment = ''
+
+        # Create the share link if it doesn't exist and is in
+        # a category it should show for.
+        if (doc.category in settings.IA_DEFAULT_CATEGORIES
+                and not doc.share_link):
+            # This operates under the constraints of passing in a list.
+            add_short_links.delay([doc])
 
         doc.save()
         self.save_m2m()

@@ -1,12 +1,18 @@
 from datetime import date, timedelta
 
+import mock
 from nose.tools import eq_
 
 from kitsune.products.tests import product
 from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import user
 from kitsune.wiki.tests import revision, document
-from kitsune.wiki.utils import active_contributors, num_active_contributors
+from kitsune.wiki.utils import (BitlyUnauthorizedException,
+                                BitlyRateLimitException, BitlyException,
+                                active_contributors, num_active_contributors,
+                                generate_short_url)
+
+from django.test.utils import override_settings
 
 
 class ActiveContributorsTestCase(TestCase):
@@ -80,3 +86,52 @@ class ActiveContributorsTestCase(TestCase):
             from_date=start_date, locale='en-US', product=self.product))
         eq_(0, num_active_contributors(
             from_date=start_date, locale='es', product=self.product))
+
+
+@override_settings(BITLY_LOGIN='test', BITLY_API_KEY='test-apikey')
+class GenerateShortUrlTestCase(TestCase):
+
+    def setUp(self):
+        self.test_url = ('https://support.mozilla.org/en-US/kb/'
+                         'update-firefox-latest-version')
+
+    @mock.patch('kitsune.wiki.utils.requests')
+    def test_generate_short_url_200(self, mock_requests):
+        """Tests a valid 200 response for generate_short_url method."""
+        mock_json = mock.Mock()
+        mock_json.json.return_value = {
+            'status_code': 200,
+            'data': {
+                'url': 'http://mzl.la/LFolSf'
+            }
+        }
+        mock_requests.post.return_value = mock_json
+        eq_('http://mzl.la/LFolSf', generate_short_url(self.test_url))
+
+    @mock.patch('kitsune.wiki.utils.requests')
+    def test_generate_short_url_401(self, mock_requests):
+        """Tests a valid 401 response for generate_short_url method."""
+        mock_json = mock.Mock()
+        mock_json.json.return_value = {'status_code': 401}
+        mock_requests.post.return_value = mock_json
+        self.assertRaises(BitlyUnauthorizedException,
+                          generate_short_url,
+                          self.test_url)
+
+    @mock.patch('kitsune.wiki.utils.requests')
+    def test_generate_short_url_403(self, mock_requests):
+        """Tests a valid 403 response for generate_short_url method."""
+        mock_json = mock.Mock()
+        mock_json.json.return_value = {'status_code': 403}
+        mock_requests.post.return_value = mock_json
+        self.assertRaises(BitlyRateLimitException,
+                          generate_short_url,
+                          self.test_url)
+
+    @mock.patch('kitsune.wiki.utils.requests')
+    def test_generate_short_url_other(self, mock_requests):
+        """Tests any other valid response for generate_short_url method."""
+        mock_json = mock.Mock()
+        mock_json.json.return_value = {'status_code': 500}
+        mock_requests.post.return_value = mock_json
+        self.assertRaises(BitlyException, generate_short_url, self.test_url)
