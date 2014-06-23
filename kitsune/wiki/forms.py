@@ -145,6 +145,11 @@ class DocumentForm(forms.ModelForm):
         widget=forms.Textarea(),
         required=False)
 
+    share_link = forms.BooleanField(
+        label=_lazy(u'Share Link:'),
+        initial=True,
+        required=False)
+
     def clean_slug(self):
         slug = self.cleaned_data['slug']
         # Blacklist /, ?, % and +,
@@ -173,8 +178,8 @@ class DocumentForm(forms.ModelForm):
     class Meta:
         model = Document
         fields = ('title', 'slug', 'category', 'is_localizable', 'products',
-                  'topics', 'locale', 'is_archived', 'allow_discussion',
-                  'needs_change', 'needs_change_comment')
+                  'topics', 'locale', 'is_archived', 'share_link',
+                  'allow_discussion', 'needs_change', 'needs_change_comment')
 
     def save(self, parent_doc, **kwargs):
         """Persist the Document form, and return the saved Document."""
@@ -184,6 +189,9 @@ class DocumentForm(forms.ModelForm):
         # If document doesn't need change, clear out the comment.
         if not doc.needs_change:
             doc.needs_change_comment = ''
+
+        if doc.share_link:
+           doc.share_link = 'http://mzl.la/1pvMFux'
 
         doc.save()
         self.save_m2m()
