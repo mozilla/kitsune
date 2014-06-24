@@ -58,6 +58,10 @@ class TopContributorTests(ElasticTestCase):
         de1 = revision(document=d, save=True)
         de2 = revision(document=d, creator=de1.creator, save=True)
 
+        d = document(locale='en-US', save=True)
+        revision(document=d, save=True)
+        revision(document=d, save=True)
+
         self.refresh()
 
         # By default, we should only get 2 top contributors back for 'es'.
@@ -70,6 +74,10 @@ class TopContributorTests(ElasticTestCase):
         top = top_contributors_l10n(locale='de')
         eq_(1, len(top))
         eq_(de1.creator_id, top[0]['term'])
+
+        # If no locale is passed, it includes all locales except en-US.
+        top = top_contributors_l10n()
+        eq_(3, len(top))
 
     def test_top_contributors_aoa(self):
         r1 = reply(user=user(save=True), save=True)

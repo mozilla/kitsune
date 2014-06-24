@@ -6,6 +6,7 @@
   <article class="contributors">
     <h1>{{ _('Top Contributors') }}</h1>
 
+    {# TODO: comment out for now
     <div class="selector block">
       <button type="button" class="ts-select-trigger">
         <!-- arrow icon using icon font -->
@@ -21,202 +22,26 @@
         </ul>
       </div>
     </div>
+    #}
 
     <section class="contributor-group">
-      <h2>SUMO Forum</h2>
-      <ul class="contributor-list">
-        <li>
-          <a href="contributor-detail.html">
-            <img src="{{ STATIC_URL }}img/user.gif" width="60" height="60" alt="contributor name" />
-          </a>
-        </li>
-        <li>
-          <a href="contributor-detail.html">
-            <img src="{{ STATIC_URL }}img/user.gif" width="60" height="60" alt="contributor name" />
-          </a>
-        </li>
-        <li>
-          <a href="contributor-detail.html">
-            <img src="{{ STATIC_URL }}img/user.gif" width="60" height="60" alt="contributor name" />
-          </a>
-        </li>
-
-        <li>
-          <a href="contributor-detail.html">
-            <img src="{{ STATIC_URL }}img/user.gif" width="60" height="60" alt="contributor name" />
-          </a>
-        </li>
-        <li>
-          <a href="contributor-detail.html">
-            <img src="{{ STATIC_URL }}img/user.gif" width="60" height="60" alt="contributor name" />
-          </a>
-        </li>
-        <li>
-          <a href="contributor-detail.html">
-            <img src="{{ STATIC_URL }}img/user.gif" width="60" height="60" alt="contributor name" />
-          </a>
-        </li>
-
-        <li>
-          <a href="contributor-detail.html">
-            <img src="{{ STATIC_URL }}img/user.gif" width="60" height="60" alt="contributor name" />
-          </a>
-        </li>
-        <li>
-          <a href="contributor-detail.html">
-            <img src="{{ STATIC_URL }}img/user.gif" width="60" height="60" alt="contributor name" />
-          </a>
-        </li>
-      </ul>
-      <p><a href="community/view_all" class="view-all">{{ _('See All') }}</a></p>
+      <h2>{{ _('Support Forum') }}</h2>
+      {{ render_contributors(top_contributors_questions, 'questions') }}
     </section>
 
     <section class="contributor-group">
-      <h2>Knowledge Base</h2>
-      <ul class="contributor-list">
-        <li>
-          <a href="contributor-detail.html">
-            <img src="{{ STATIC_URL }}img/user.gif" width="60" height="60" alt="contributor name" />
-          </a>
-        </li>
-        <li>
-          <a href="contributor-detail.html">
-            <img src="{{ STATIC_URL }}img/user.gif" width="60" height="60" alt="contributor name" />
-          </a>
-        </li>
-        <li>
-          <a href="contributor-detail.html">
-            <img src="{{ STATIC_URL }}img/user.gif" width="60" height="60" alt="contributor name" />
-          </a>
-        </li>
-
-        <li>
-          <a href="contributor-detail.html">
-            <img src="{{ STATIC_URL }}img/user.gif" width="60" height="60" alt="contributor name" />
-          </a>
-        </li>
-        <li>
-          <a href="contributor-detail.html">
-            <img src="{{ STATIC_URL }}img/user.gif" width="60" height="60" alt="contributor name" />
-          </a>
-        </li>
-        <li>
-          <a href="contributor-detail.html">
-            <img src="{{ STATIC_URL }}img/user.gif" width="60" height="60" alt="contributor name" />
-          </a>
-        </li>
-
-        <li>
-          <a href="contributor-detail.html">
-            <img src="{{ STATIC_URL }}img/user.gif" width="60" height="60" alt="contributor name" />
-          </a>
-        </li>
-        <li>
-          <a href="contributor-detail.html">
-            <img src="{{ STATIC_URL }}img/user.gif" width="60" height="60" alt="contributor name" />
-          </a>
-        </li>
-      </ul>
-      <p><a href="community/view_all" class="view-all">{{ _('See All') }}</a></p>
+      <h2>{{ _('Knowledge Base') }}</h2>
+      {{ render_contributors(top_contributors_kb, 'kb') }}
     </section>
 
     <section class="contributor-group">
-      <h2><abbr title="Localization">L10n</abbr></h2>
-      <ul class="contributor-list">
-        <li>
-          <a href="contributor-detail.html">
-            <img src="{{ STATIC_URL }}img/user.gif" width="60" height="60" alt="contributor name" />
-          </a>
-        </li>
-        <li>
-          <a href="contributor-detail.html">
-            <img src="{{ STATIC_URL }}img/user.gif" width="60" height="60" alt="contributor name" />
-          </a>
-        </li>
-        <li>
-          <a href="contributor-detail.html">
-            <img src="{{ STATIC_URL }}img/user.gif" width="60" height="60" alt="contributor name" />
-          </a>
-        </li>
-
-        <li>
-          <a href="contributor-detail.html">
-            <img src="{{ STATIC_URL }}img/user.gif" width="60" height="60" alt="contributor name" />
-          </a>
-        </li>
-        <li>
-          <a href="contributor-detail.html">
-            <img src="{{ STATIC_URL }}img/user.gif" width="60" height="60" alt="contributor name" />
-          </a>
-        </li>
-        <li>
-          <a href="contributor-detail.html">
-            <img src="{{ STATIC_URL }}img/user.gif" width="60" height="60" alt="contributor name" />
-          </a>
-        </li>
-
-        <li>
-          <a href="contributor-detail.html">
-            <img src="{{ STATIC_URL }}img/user.gif" width="60" height="60" alt="contributor name" />
-          </a>
-        </li>
-        <li>
-          <a href="contributor-detail.html">
-            <img src="{{ STATIC_URL }}img/user.gif" width="60" height="60" alt="contributor name" />
-          </a>
-        </li>
-      </ul>
-      <p><a href="community/view_all" class="view-all">{{ _('See All') }}</a></p>
+      <h2>{{ _('Localization') }}</h2>
+      {{ render_contributors(top_contributors_l10n, 'l10n') }}
     </section>
 
     <section class="contributor-group">
-      <h2>Army of Awesome</h2>
-      <ul class="contributor-list">
-        <li>
-          <a href="contributor-detail.html">
-            <img src="{{ STATIC_URL }}img/user.gif" width="60" height="60" alt="contributor name" />
-          </a>
-        </li>
-        <li>
-          <a href="contributor-detail.html">
-            <img src="{{ STATIC_URL }}img/user.gif" width="60" height="60" alt="contributor name" />
-          </a>
-        </li>
-        <li>
-          <a href="contributor-detail.html">
-            <img src="{{ STATIC_URL }}img/user.gif" width="60" height="60" alt="contributor name" />
-          </a>
-        </li>
-
-        <li>
-          <a href="contributor-detail.html">
-            <img src="{{ STATIC_URL }}img/user.gif" width="60" height="60" alt="contributor name" />
-          </a>
-        </li>
-        <li>
-          <a href="contributor-detail.html">
-            <img src="{{ STATIC_URL }}img/user.gif" width="60" height="60" alt="contributor name" />
-          </a>
-        </li>
-        <li>
-          <a href="contributor-detail.html">
-            <img src="{{ STATIC_URL }}img/user.gif" width="60" height="60" alt="contributor name" />
-          </a>
-        </li>
-
-        <li>
-          <a href="contributor-detail.html">
-            <img src="{{ STATIC_URL }}img/user.gif" width="60" height="60" alt="contributor name" />
-          </a>
-        </li>
-        <li>
-          <a href="contributor-detail.html">
-            <img src="{{ STATIC_URL }}img/user.gif" width="60" height="60" alt="contributor name" />
-          </a>
-        </li>
-      </ul>
-      <p><a href="community/view_all" class="view-all">{{ _('See All') }}</a></p>
-    </section>
+      <h2>{{ _('Army of Awesome') }}</h2>
+      {{ render_contributors(top_contributors_aoa, 'army-of-awesome') }}
   </article>
 
   <article class="community-news">
@@ -286,3 +111,21 @@
     </section>
   </article>
 {% endblock %}
+
+{% macro render_contributors(results, area) -%}
+  <ul class="contributor-list {{ area }}">
+    {% for result in results %}
+      <li>
+        {% set tooltip = _('{user} - {num} contributions in last 90 days')|f(user=display_name(result['user']), num=result['count']) %}
+        <a href="{{ url('users.profile', result['user'].id) }}" title="{{ tooltip }}">
+          <img src="{{ profile_avatar(result['user'], size=60) }}" width="60" height="60" alt="{{ tooltip }}" />
+        </a>
+      </li>
+    {% endfor %}
+  </ul>
+  <p>
+    <a href="{{ url('community.top_contributors', area=area) }}" class="view-all">
+      {{ _('See All') }}
+    </a>
+  </p>
+{%- endmacro %}

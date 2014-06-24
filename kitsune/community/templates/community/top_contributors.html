@@ -1,0 +1,65 @@
+{% extends "community/base.html" %}
+
+{% if area == 'questions' %}
+  {% set title = _('Top Contributors - Support Forum') %}
+{% elif area == 'kb' %}
+  {% set title = _('Top Contributors - Knowledge Base') %}
+{% elif area == 'l10n' %}
+  {% set title = _('Top Contributors - Localization') %}
+{% elif area == 'army-of-awesome' %}
+  {% set title = _('Top Contributors - Army of Awesome') %}
+{% endif %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+  <h1 class="main-heading">{{ _('Community Hub') }}</h1>
+
+  <article class="community-results">
+
+    <section class="community-results-header">
+      <h1>{{ title }}</h1>
+
+      {# TODO: commenting this out for now
+      <form name="find-contributor" id="find-contributor" action="community/contributor_results" method="post">
+        {{ csrf() }}
+        <input type="hidden" value="" id="ts-value" name="findby" />
+
+        <div class="selector" data-emulate-select="true">
+          <button type="button" class="ts-select-trigger">
+            <!-- arrow icon using icon font -->
+            <span aria-hidden="true" data-icon-arrow="&#xe800;" class="selector-arrow">
+                <span class='current-selected'>{{ _('Sort Contributors By') }}</span>
+            </span>
+          </button>
+          <div class="select-options ts-modal" aria-expanded="false">
+            <ul class="ts-options" tabindex="-1">
+              <li><a href="#contributions" class="selected" aria-checked="true">{{ _('Contributions') }}</a></li>
+              <li><a href="#activity">{{ _('Days Since Last Activity') }}</a></li>
+            </ul>
+          </div>
+        </div>
+      </form>
+      #}
+    </section>
+
+    <ol>
+      {% for result in results %}
+        <li class="results-user">
+          <img src="{{ profile_avatar(result['user'], size=120) }}" width="120" height="120" alt="" class="user-img-results" />
+          <span class="numbered">{{ loop.index }}</span>
+          <div class="user-details">
+            <h2>{{ display_name(result['user']) }}</h2>
+            <ul class="results-user-details">
+              <li>{{ result['user'].username }}
+              <li>{{ _('Contributions in last 90 days: {count}')|f(count=result['count']) }}</li>
+              <li><a href="{{ url('users.profile', result['user'].id) }}">{{ _('View Profile') }}</a></li>
+              <li><a href="{{ url('messages.new')|urlparams(to=result['user'].username) }}">{{ _('Private Message') }}</a></li>
+            </ul>
+          </div>
+        </li>
+      {% endfor %}
+    </ol>
+
+  </article>
+{% endblock %}

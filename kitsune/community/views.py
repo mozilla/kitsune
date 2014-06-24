@@ -1,9 +1,13 @@
 import logging
 
+from django.http import Http404
 from django.shortcuts import render
 
 from statsd import statsd
 
+from kitsune.community.utils import (
+    top_contributors_aoa, top_contributors_questions,
+    top_contributors_kb, top_contributors_l10n)
 from kitsune.search.es_utils import ES_EXCEPTIONS, F
 from kitsune.users.models import UserMappingType
 
@@ -14,9 +18,12 @@ log = logging.getLogger('k.community')
 def home(request):
     """Community hub landing page."""
 
-    data = {}
-
-    return render(request, 'community/index.html', data)
+    return render(request, 'community/index.html', {
+        'top_contributors_aoa': top_contributors_aoa(),
+        'top_contributors_kb': top_contributors_kb(),
+        'top_contributors_l10n': top_contributors_l10n(),
+        'top_contributors_questions': top_contributors_questions(),
+    })
 
 
 def search(request):
@@ -58,8 +65,23 @@ def search(request):
     return render(request, 'community/search.html', data)
 
 
-def view_all(request):
+def top_contributors(request, area):
+    """Top contributors list view."""
 
-    data = {}
+    locale = request.GET.get('locale')
 
-    return render(request, 'community/view_all.html', data)
+    if area == 'army-of-awesome':
+        results = top_contributors_aoa(count=50)
+    elif area == 'questions':
+        results = top_contributors_questions(locale=locale, count=50)
+    elif area == 'kb':
+        results = top_contributors_kb(count=50)
+    elif area == 'l10n':
+        results = top_contributors_l10n(locale=locale, count=50)
+    else:
+        raise Http404
+
+    return render(request, 'community/top_contributors.html', {
+        'results': results,
+        'area': area,
+    })
