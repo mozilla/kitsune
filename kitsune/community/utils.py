@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 
 from kitsune.customercare.models import ReplyMetricsMappingType
 from kitsune.questions.models import AnswerMetricsMappingType
+from kitsune.search.es_utils import F
 from kitsune.wiki.models import RevisionMetricsMappingType
 
 
@@ -27,12 +28,17 @@ def top_contributors_kb(start=None, end=None, count=10):
 
 
 def top_contributors_l10n(
-    start=None, end=None, locale=settings.WIKI_DEFAULT_LANGUAGE, count=10):
+    start=None, end=None, locale=None, count=10):
     """Get the top l10n contributors for the KB."""
     # Get the user ids and contribution count of the top contributors.
     query = (RevisionMetricsMappingType
         .search()
         .facet('creator_id', filtered=True, size=count))
+
+    if locale is None:
+        # If there is no locale specified, exlude en-US only. The rest are
+        # l10n.
+        query = query.filter(~F(locale=settings.WIKI_DEFAULT_LANGUAGE))
 
     query = _apply_filters(query, start, end, locale)
 

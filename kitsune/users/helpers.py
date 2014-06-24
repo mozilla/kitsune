@@ -39,8 +39,14 @@ def profile_avatar(user, size=48):
     else:
         email_hash = '00000000000000000000000000000000'
 
-    return 'https://secure.gravatar.com/avatar/%s?s=%s&d=%s' % (
-        email_hash, size, urllib.quote(avatar))
+    url = 'https://secure.gravatar.com/avatar/%s?s=%s' % (email_hash, size)
+
+    # If the url doesn't start with http (local dev), don't pass it to
+    # to gravatar because it can't use it.
+    if avatar.startswith('http'):
+        url = url + '&d=%s' % urllib.quote(avatar)
+
+    return url
 
 
 @register.function
