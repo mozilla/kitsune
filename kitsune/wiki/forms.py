@@ -8,9 +8,11 @@ from tower import ugettext_lazy as _lazy
 
 from kitsune.products.models import Product, Topic
 from kitsune.sumo.form_fields import MultiUsernameField, StrippedCharField
+from kitsune.sumo.urlresolvers import reverse
 from kitsune.wiki.config import SIGNIFICANCES, CATEGORIES
 from kitsune.wiki.models import (
     Document, Revision, MAX_REVISION_COMMENT_LENGTH)
+from kitsune.wiki.utils import generate_short_url
 from kitsune.wiki.widgets import (
     RadioFieldRendererWithHelpText, ProductTopicsAndSubtopicsWidget)
 
@@ -190,8 +192,13 @@ class DocumentForm(forms.ModelForm):
         if not doc.needs_change:
             doc.needs_change_comment = ''
 
-        if doc.share_link:
-           doc.share_link = 'http://mzl.la/1pvMFux'
+        if doc.share_link == 'True':
+            base_url = 'https://support.mozilla.org%s'
+            endpoint = reverse('wiki.document', locale=doc.locale,
+                                args=[doc.slug])
+            doc.share_link = generate_short_url(base_url % endpoint)
+        else:
+            doc.share_link = ''
 
         doc.save()
         self.save_m2m()

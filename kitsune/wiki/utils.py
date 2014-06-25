@@ -1,5 +1,11 @@
+import json
+
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.db.models import Q
+from django.utils.http import urlencode
+
+import requests
 
 from kitsune.wiki.models import Revision
 
@@ -18,6 +24,26 @@ def active_contributors(from_date, to_date=None, locale=None, product=None):
     return (User.objects.filter(
         id__in=_active_contributors_id(from_date, to_date, locale, product))
         .order_by('username'))
+
+
+def generate_short_url(long_url):
+    """Return a shortned URL for a given long_url via bit.ly's API.
+
+    :arg long_url: URL to shorten
+    """
+
+    keys = {'format': 'json',
+            'longUrl': long_url,
+            'login': settings.BITLY_LOGIN,
+            'apiKey': settings.BITLY_API_KEY}
+    params = urlencode(keys)
+
+    resp = requests.post(settings.BITLY_API_URL, params).json()
+    if resp['status_code'] != 200:
+        raise Exception("Invalid status code.")
+
+    short_url = resp['data']['url']
+    return short_url
 
 
 def num_active_contributors(from_date, to_date=None, locale=None,
