@@ -543,8 +543,14 @@ def review_revision(request, document_slug, revision_id):
                     doc.allows(request.user, 'edit_needs_change') and
                     rev.is_approved):
                 doc.needs_change = form.cleaned_data['needs_change']
-                doc.needs_change_comment = \
-                    form.cleaned_data['needs_change_comment']
+
+                # Remove comment if no changes are needed.
+                if doc.needs_change:
+                    doc.needs_change_comment = \
+                        form.cleaned_data['needs_change_comment']
+                else:
+                    doc.needs_change_comment = ''
+
                 doc.save()
 
             # Send notifications of approvedness and readiness:
