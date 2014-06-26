@@ -8,15 +8,15 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Adding field 'Document.share_link'
-        db.add_column(u'wiki_document', 'share_link',
-                      self.gf('django.db.models.fields.CharField')(default='', max_length=24),
+        # Adding field 'Document.show_share_link'
+        db.add_column(u'wiki_document', 'show_share_link',
+                      self.gf('django.db.models.fields.BooleanField')(default=True, db_index=True),
                       keep_default=False)
 
 
     def backwards(self, orm):
-        # Deleting field 'Document.share_link'
-        db.delete_column(u'wiki_document', 'share_link')
+        # Deleting field 'Document.show_share_link'
+        db.delete_column(u'wiki_document', 'show_share_link')
 
 
     models = {
@@ -123,6 +123,7 @@ class Migration(SchemaMigration):
             'parent': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'translations'", 'null': 'True', 'to': u"orm['wiki.Document']"}),
             'products': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['products.Product']", 'symmetrical': 'False'}),
             'share_link': ('django.db.models.fields.CharField', [], {'max_length': '24'}),
+            'show_share_link': ('django.db.models.fields.BooleanField', [], {'default': 'True', 'db_index': 'True'}),
             'slug': ('django.db.models.fields.CharField', [], {'max_length': '255', 'db_index': 'True'}),
             'title': ('django.db.models.fields.CharField', [], {'max_length': '255', 'db_index': 'True'}),
             'topics': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['products.Topic']", 'symmetrical': 'False'})

@@ -147,7 +147,7 @@ class DocumentForm(forms.ModelForm):
         widget=forms.Textarea(),
         required=False)
 
-    share_link = forms.BooleanField(
+    show_share_link = forms.BooleanField(
         label=_lazy(u'Share Link:'),
         initial=True,
         required=False)
@@ -180,7 +180,7 @@ class DocumentForm(forms.ModelForm):
     class Meta:
         model = Document
         fields = ('title', 'slug', 'category', 'is_localizable', 'products',
-                  'topics', 'locale', 'is_archived', 'share_link',
+                  'topics', 'locale', 'is_archived', 'show_share_link',
                   'allow_discussion', 'needs_change', 'needs_change_comment')
 
     def save(self, parent_doc, **kwargs):
@@ -192,13 +192,11 @@ class DocumentForm(forms.ModelForm):
         if not doc.needs_change:
             doc.needs_change_comment = ''
 
-        if doc.share_link == 'True':
-            base_url = 'https://support.mozilla.org%s'
-            endpoint = reverse('wiki.document', locale=doc.locale,
-                                args=[doc.slug])
-            doc.share_link = generate_short_url(base_url % endpoint)
-        else:
-            doc.share_link = ''
+        # Create share link
+        base_url = 'https://support.mozilla.org%s'
+        endpoint = reverse('wiki.document', locale=doc.locale,
+                            args=[doc.slug])
+        doc.share_link = generate_short_url(base_url % endpoint)
 
         doc.save()
         self.save_m2m()
