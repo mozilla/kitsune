@@ -1,16 +1,14 @@
 {% extends "community/base.html" %}
 
 {% if area == 'questions' %}
-  {% set area_name = _('Support Forum') %}
+  {% set title = _('Top Contributors - Support Forum') %}
 {% elif area == 'kb' %}
-  {% set area_name = _('Knowledge Base') %}
+  {% set title = _('Top Contributors - Knowledge Base') %}
 {% elif area == 'l10n' %}
-  {% set area_name = _('Localization') %}
+  {% set title = _('Top Contributors - Localization') %}
 {% elif area == 'army-of-awesome' %}
-  {% set area_name = _('Army of Awesome') %}
+  {% set title = _('Top Contributors - Army of Awesome') %}
 {% endif %}
-
-{% set title = _('Top Contributors - {area}')|f(area=area_name) %}
 
 {% block title %}{{ title }}{% endblock %}
 
@@ -54,7 +52,7 @@
             <h2>{{ display_name(result['user']) }}</h2>
             <ul class="results-user-details">
               <li>{{ result['user'].username }}
-              <li>{{ _('{count} contributions in last 90 days')|f(count=result['count']) }}</li>
+              <li>{{ _('Contributions in last 90 days: {count}')|f(count=result['count']) }}</li>
               <li><a href="{{ url('users.profile', result['user'].id) }}">{{ _('View Profile') }}</a></li>
               <li><a href="{{ url('messages.new')|urlparams(to=result['user'].username) }}">{{ _('Private Message') }}</a></li>
             </ul>
