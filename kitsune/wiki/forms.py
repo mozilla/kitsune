@@ -192,11 +192,12 @@ class DocumentForm(forms.ModelForm):
         if not doc.needs_change:
             doc.needs_change_comment = ''
 
-        # Create share link
-        base_url = 'https://support.mozilla.org%s'
-        endpoint = reverse('wiki.document', locale=doc.locale,
-                            args=[doc.slug])
-        doc.share_link = generate_short_url(base_url % endpoint)
+        # Create the share link if it doesn't exist.
+        if not doc.share_link:
+            base_url = 'https://support.mozilla.org%s'
+            endpoint = reverse('wiki.document', locale=doc.locale,
+                                args=[doc.slug])
+            doc.share_link = generate_short_url(base_url % endpoint)
 
         doc.save()
         self.save_m2m()
