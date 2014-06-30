@@ -40,6 +40,17 @@
         </h1>
       {% endif %}
 
+      {# Show the description if it is different than the title. Otherwise, don't bother. #}
+      {% if (subtopic and subtopic.title != subtopic.description) or (not subtopic and topic.title != topic.description) %}
+        <h2 class="topic-description cf">
+          {% if subtopic %}
+             {{ _(subtopic.description, 'DB: products.Topic.description') }}
+          {% else %}
+            {{ _(topic.description, 'DB: products.Topic.description') }}
+          {% endif %}
+        </h2>
+      {% endif %}
+
       <ul class="topic-list">
         {% if not subtopic and subtopics %}
           {# only show subtopics on the parent topic page #}
@@ -48,6 +59,9 @@
               <a href="{{ url('products.subtopics', product_slug=product.slug, topic_slug=topic.slug, subtopic_slug=subtopic.slug) }}">
                 {{ _(subtopic.title, 'DB: products.Topic.title') }}
               </a>
+              {% if subtopic.title != subtopic.description %}
+                {{ _(subtopic.description, 'DB: products.Topic.description') }}
+              {% endif %}
             </li>
           {% endfor %}
         {% endif %}
