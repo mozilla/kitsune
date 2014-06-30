@@ -10,7 +10,7 @@ class Migration(SchemaMigration):
     def forwards(self, orm):
         # Adding field 'Document.show_share_link'
         db.add_column(u'wiki_document', 'show_share_link',
-                      self.gf('django.db.models.fields.BooleanField')(default=True, db_index=True),
+                      self.gf('django.db.models.fields.BooleanField')(default=False, db_index=True),
                       keep_default=False)
 
 
