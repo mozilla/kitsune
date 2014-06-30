@@ -53,10 +53,8 @@ function makeMetricsGraph() {
   var $container = $('#questions-metrics');
   $.getJSON($container.data('url'), function(data) {
     // Fill in 0s so bucketing doesn't freak out...
-    var object;
     var objects = data.objects;
-    objects.forEach(function() {
-      object = this;
+    objects.forEach(function(object) {
       object.questions = object.questions || 0;
       object.solved = object.solved || 0
       object.responded_24 = object.responded_24 || 0
