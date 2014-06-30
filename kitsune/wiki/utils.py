@@ -32,17 +32,23 @@ def generate_short_url(long_url):
     :arg long_url: URL to shorten
     """
 
-    keys = {'format': 'json',
-            'longUrl': long_url,
-            'login': settings.BITLY_LOGIN,
-            'apiKey': settings.BITLY_API_KEY}
+    # Don't (ab)use the bit.ly API from dev and stage.
+    if settings.STAGE:
+        return ''
+
+    keys = {
+        'format': 'json',
+        'longUrl': long_url,
+        'login': settings.BITLY_LOGIN,
+        'apiKey': settings.BITLY_API_KEY
+    }
     params = urlencode(keys)
 
     resp = requests.post(settings.BITLY_API_URL, params).json()
     if resp['status_code'] != 200:
         raise Exception("Invalid status code.")
 
-    short_url = resp['data']['url']
+    short_url = resp.get('data', {}).get('url', '')
     return short_url
 
 
