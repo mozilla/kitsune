@@ -2,15 +2,18 @@
 
 set -e
 
+INSTALL_DIR=/home/vagrant
+
 # Check for git submodules
-if [ !"$(ls -A $INSTALL_DIR/kitsune/src/*/*)" ]; then
-     echo "You haven't updated your submodules!"
-     echo "Run: 'git submodule update --init --recursive' to fix the problem."
-     echo "Exiting..."
-     false
+if [ "$(ls -A $INSTALL_DIR/kitsune/vendor/src/*/*)" ]; then
+    echo "Your submodules are up to date!"
+else
+    echo "You haven't updated your submodules!"
+    echo "Run: 'git submodule update --init --recursive' to fix the problem."
+    echo "Exiting..."
+    false
 fi
 
-INSTALL_DIR=/home/vagrant
 cd $INSTALL_DIR/kitsune
 
 # Install package for add-apt-repository
