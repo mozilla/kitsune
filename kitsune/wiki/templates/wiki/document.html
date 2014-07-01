@@ -69,7 +69,7 @@ valueOf()+(h?'&utmxhash='+escape(h.substr(1)):'')+
       {{ document_messages(document, redirected_from) }}
       {{ document_content(document, fallback_reason, request, settings) }}
 
-    {% if document.show_share_link %}
+    {% if document.share_link %}
         <p>
             <br></br>
             Share this article:

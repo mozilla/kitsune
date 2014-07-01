@@ -121,8 +121,6 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         u'If checked, this document needs updates.'), db_index=True)
     needs_change_comment = models.CharField(max_length=500, blank=True)
 
-    show_share_link = models.BooleanField(default=False, help_text=_lazy(
-        u'If checked, show the \'Share this link\' text.'), db_index=True)
     # A 24 character length gives years before having to alter max_length.
     share_link = models.CharField(max_length=24, default='')
 

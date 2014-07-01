@@ -147,11 +147,6 @@ class DocumentForm(forms.ModelForm):
         widget=forms.Textarea(),
         required=False)
 
-    show_share_link = forms.BooleanField(
-        label=_lazy(u'Share Link:'),
-        initial=True,
-        required=False)
-
     def clean_slug(self):
         slug = self.cleaned_data['slug']
         # Blacklist /, ?, % and +,
@@ -180,8 +175,8 @@ class DocumentForm(forms.ModelForm):
     class Meta:
         model = Document
         fields = ('title', 'slug', 'category', 'is_localizable', 'products',
-                  'topics', 'locale', 'is_archived', 'show_share_link',
-                  'allow_discussion', 'needs_change', 'needs_change_comment')
+                  'topics', 'locale', 'is_archived', 'allow_discussion',
+                  'needs_change', 'needs_change_comment')
 
     def save(self, parent_doc, **kwargs):
         """Persist the Document form, and return the saved Document."""
@@ -192,11 +187,14 @@ class DocumentForm(forms.ModelForm):
         if not doc.needs_change:
             doc.needs_change_comment = ''
 
-        # Create the share link if it doesn't exist.
-        if not doc.share_link:
+        # Create the share link if it doesn't exist and is in
+        # a category it should show for.
+        if (doc.category in settings.IA_DEFAULT_CATEGORIES
+                and not doc.share_link):
             base_url = 'https://support.mozilla.org%s'
-            endpoint = reverse('wiki.document', locale=doc.locale,
-                                args=[doc.slug])
+            endpoint = reverse('wiki.document',
+                               locale=doc.locale,
+                               args=[doc.slug])
             doc.share_link = generate_short_url(base_url % endpoint)
 
         doc.save()
