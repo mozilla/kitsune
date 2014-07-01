@@ -155,8 +155,11 @@ def _format_row_with_out_of_dateness(readout_locale, eng_slug, eng_title, slug,
     categorization of how seriously out of date a translation is."""
     if slug:  # A translation exists but may not be approved.
         locale = readout_locale
-        status, view_name, status_class = SIGNIFICANCE_STATUSES.get(
-            significance, REVIEW_STATUSES[needs_review])
+        if needs_review:
+            status, view_name, status_class = REVIEW_STATUSES[needs_review]
+        else:
+            status, view_name, status_class = SIGNIFICANCE_STATUSES.get(
+                significance, REVIEW_STATUSES[needs_review])
         status_url = (reverse(view_name, args=[slug], locale=locale)
                       if view_name else '')
     else:
