@@ -79,6 +79,29 @@ class LandingTests(ElasticTestCase):
         eq_(3, len(doc('ul.questions > li')))
         eq_(4, len(doc('ul.army-of-awesome > li')))
 
+    def test_wiki_section(self):
+        """Verify the wiki doc appears on the landing page."""
+        # If "Mozilla News" article doesn't exist, home page
+        # should still work and omit the section.
+        response = self.client.get(urlparams(reverse('community.home')))
+        eq_(response.status_code, 200)
+        doc = pq(response.content)
+        eq_(len(doc('#doc-content')), 0)
+
+        # Create the "Mozilla News" article and verify it on home page.
+        d = document(
+            title='Community Hub News', slug='community-hub-news', save=True)
+        rev = revision(
+            document=d, content='splendid', is_approved=True, save=True)
+        d.current_revision = rev
+        d.save()
+        response = self.client.get(urlparams(reverse('community.home')))
+        eq_(response.status_code, 200)
+        doc = pq(response.content)
+        community_news = doc('#doc-content')
+        eq_(len(community_news), 1)
+        assert 'splendid' in community_news.text()
+
 
 class TopContributorsTests(ElasticTestCase):
     """Tests for the Community Hub top contributors page."""

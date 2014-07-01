@@ -6,6 +6,7 @@ MINIFY_BUNDLES = {
             'less/main.less',
         ),
         'community': (
+            'less/wiki-content.less',
             'less/community.less',
             'less/select.less',
         ),
@@ -53,6 +54,7 @@ MINIFY_BUNDLES = {
             'css/users.autocomplete.css',
             'css/users.list.css',
             'less/wiki.less',
+            'less/wiki-content.less',
             'css/screencast.css',
         ),
         'mobile/wiki': (

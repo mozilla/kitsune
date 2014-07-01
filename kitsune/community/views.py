@@ -9,16 +9,26 @@ from kitsune.community.utils import (
     top_contributors_aoa, top_contributors_questions,
     top_contributors_kb, top_contributors_l10n)
 from kitsune.search.es_utils import ES_EXCEPTIONS, F
+from kitsune.sumo.parser import get_object_fallback
 from kitsune.users.models import UserMappingType
+from kitsune.wiki.models import Document
 
 
 log = logging.getLogger('k.community')
 
 
+# Doc for the news section:
+COMMUNITY_NEWS_DOC = 'Community Hub News'
+
+
 def home(request):
     """Community hub landing page."""
 
+    community_news = get_object_fallback(
+        Document, COMMUNITY_NEWS_DOC, request.LANGUAGE_CODE)
+
     return render(request, 'community/index.html', {
+        'community_news': community_news,
         'top_contributors_aoa': top_contributors_aoa(),
         'top_contributors_kb': top_contributors_kb(),
         'top_contributors_l10n': top_contributors_l10n(),
