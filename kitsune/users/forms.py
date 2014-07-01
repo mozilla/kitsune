@@ -23,7 +23,7 @@ from kitsune.users.widgets import FacebookURLWidget, TwitterURLWidget
 
 
 USERNAME_INVALID = _lazy(u'Username may contain only English letters, '
-                         'numbers and ./+/-/_ characters.')
+                         'numbers and ./-/_ characters.')
 USERNAME_REQUIRED = _lazy(u'Username is required.')
 USERNAME_SHORT = _lazy(u'Username is too short (%(show_value)s characters). '
                        'It must be at least %(limit_value)s characters.')
@@ -86,7 +86,7 @@ class RegisterForm(forms.ModelForm):
         label=_lazy(u'Username:'), max_length=30, min_length=4,
         regex=r'^[\w.-]+$',
         help_text=_lazy(u'Required. 30 characters or fewer. Letters, digits '
-                        u'and ./+/- only.'),
+                        u'and ./- only.'),
         error_messages={'invalid': USERNAME_INVALID,
                         'required': USERNAME_REQUIRED,
                         'min_length': USERNAME_SHORT,
