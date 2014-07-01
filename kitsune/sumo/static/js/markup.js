@@ -891,17 +891,16 @@ Marky.CannedResponsesButton.prototype = $.extend({}, Marky.SimpleButton.prototyp
                 return;
             }
 
-            articleUrl += '/edit';
             toggleThrobber(true);
 
             $.ajax({
-                url: articleUrl,
+                url: articleUrl + '/edit',
                 dataType: 'html',
                 success: function(data, status) {
                     var article_src = $('#id_content', data).val();
                     var $textbox = $('#response-content');
                     $textbox.val(article_src);
-
+                    $textbox.data('slug', articleUrl)
                     updatePreview();
                 },
                 complete: function() {
@@ -941,11 +940,14 @@ Marky.CannedResponsesButton.prototype = $.extend({}, Marky.SimpleButton.prototyp
 
         function insertResponse() {
             var sourceContent = $('#response-content').val();
+            var slug = $('#response-content').data('slug')
             var $responseTextbox = $('#id_content');
             var targetContent = $responseTextbox.val();
 
             if (_gaq) {
-                _gaq.push(['_trackEvent', 'Canned response pasted']);
+                _gaq.push(['_trackEvent',
+                           'Canned response pasted',
+                           slug]);
             }
 
             $responseTextbox.val(targetContent + sourceContent);
