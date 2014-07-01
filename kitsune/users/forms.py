@@ -22,7 +22,7 @@ from kitsune.users.models import Profile
 from kitsune.users.widgets import FacebookURLWidget, TwitterURLWidget
 
 
-USERNAME_INVALID = _lazy(u'Username may contain only letters, '
+USERNAME_INVALID = _lazy(u'Username may contain only English letters, '
                          'numbers and ./+/-/_ characters.')
 USERNAME_REQUIRED = _lazy(u'Username is required.')
 USERNAME_SHORT = _lazy(u'Username is too short (%(show_value)s characters). '
