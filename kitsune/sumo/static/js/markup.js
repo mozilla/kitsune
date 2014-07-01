@@ -122,7 +122,7 @@ Marky.SimpleButton = function(name, openTag, closeTag, defaultText,
     }
 
     this.html = '<button class="markup-toolbar-button" />';
-}
+};
 
 Marky.SimpleButton.prototype = {
     // Binds the button to a textarea (DOM node).
@@ -622,7 +622,7 @@ Marky.MediaButton = function() {
     this.everyline = false;
 
     this.html = '<button class="markup-toolbar-button" />';
-}
+};
 
 Marky.MediaButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
     // Gets the DOM node for the button.
@@ -687,12 +687,12 @@ Marky.MediaButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
 
         // Handle locale filter
         var $lf = $html.find('div.locale-filter select');
-        $lf.html($('#_languages-select-box').html())
+        $lf.html($('#_languages-select-box').html());
         $lf.on('change', function() {
-            mediaPage = 1
+            mediaPage = 1;
             mediaLocale = $(this).val();
             updateResults();
-        })
+        });
 
         // Handle Search
         $html.find('form#gallery-modal-search').submit(function(e) {
@@ -891,17 +891,16 @@ Marky.CannedResponsesButton.prototype = $.extend({}, Marky.SimpleButton.prototyp
                 return;
             }
 
-            articleUrl += '/edit';
             toggleThrobber(true);
 
             $.ajax({
-                url: articleUrl,
+                url: articleUrl + '/edit',
                 dataType: 'html',
                 success: function(data, status) {
                     var article_src = $('#id_content', data).val();
                     var $textbox = $('#response-content');
                     $textbox.val(article_src);
-
+                    $textbox.data('slug', articleUrl);
                     updatePreview();
                 },
                 complete: function() {
@@ -941,11 +940,14 @@ Marky.CannedResponsesButton.prototype = $.extend({}, Marky.SimpleButton.prototyp
 
         function insertResponse() {
             var sourceContent = $('#response-content').val();
+            var slug = $('#response-content').data('slug');
             var $responseTextbox = $('#id_content');
             var targetContent = $responseTextbox.val();
 
             if (_gaq) {
-                _gaq.push(['_trackEvent', 'Canned response pasted']);
+                _gaq.push(['_trackEvent',
+                           'Canned response usage',
+                           slug]);
             }
 
             $responseTextbox.val(targetContent + sourceContent);
