@@ -12,7 +12,7 @@ from kitsune.sumo.urlresolvers import reverse
 from kitsune.wiki.config import SIGNIFICANCES, CATEGORIES
 from kitsune.wiki.models import (
     Document, Revision, MAX_REVISION_COMMENT_LENGTH)
-from kitsune.wiki.utils import generate_short_url
+from kitsune.wiki.tasks import generate_short_url
 from kitsune.wiki.widgets import (
     RadioFieldRendererWithHelpText, ProductTopicsAndSubtopicsWidget)
 
@@ -195,7 +195,7 @@ class DocumentForm(forms.ModelForm):
             endpoint = reverse('wiki.document',
                                locale=doc.locale,
                                args=[doc.slug])
-            doc.share_link = generate_short_url(base_url % endpoint)
+            doc.share_link = generate_short_url(base_url % endpoint).delay()
 
         doc.save()
         self.save_m2m()
