@@ -1,3 +1,4 @@
+import re
 import cronjobs
 import waffle
 
@@ -12,8 +13,35 @@ from tower import ugettext as _
 
 from kitsune.search.tasks import index_task
 from kitsune.sumo import email_utils
+from kitsune.sumo.urlresolvers import reverse
 from kitsune.wiki import tasks
 from kitsune.wiki.models import Document, DocumentMappingType, Revision, Locale
+
+
+@cronjobs.register
+def generate_missing_share_links():
+    """Generate share links for documents that may be missing them."""
+    base_url = "https://support.mozilla.com%s"
+    re_redirect = re.compile(r'REDIRECT \[\[.*\]\]')
+    documents = (Document.objects.select_related('revision').all()
+                 .filter(parent=None, share_link='', is_template=False,
+                         category__in=settings.IA_DEFAULT_CATEGORIES,
+                         is_archived=False)
+                 .exclude(slug=''))
+    # Revisions made purely for redirects won't have share links.
+    for doc in documents:
+        if not doc.current_revision:
+            continue
+
+        redirect = re_redirect.search(doc.current_revision.content)
+        if redirect:
+            continue
+
+        endpoint = reverse('wiki.document',
+                           locale=doc.locale,
+                           args=[doc.slug])
+        doc.share_link = tasks.generate_short_url(base_url % endpoint)
+        doc.save()
 
 
 @cronjobs.register
