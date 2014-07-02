@@ -882,8 +882,8 @@ CC_WORD_BLACKLIST = [
 ]
 
 BITLY_API_URL = 'http://api.bitly.com/v3/shorten?callback=?'
-BITLY_LOGIN = 'bitly username'
-BITLY_API_KEY = 'bitly api key'
+BITLY_LOGIN = None
+BITLY_API_KEY = None
 
 TWITTER_COOKIE_SECURE = True
 TWITTER_CONSUMER_KEY = ''
