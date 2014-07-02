@@ -41,6 +41,7 @@ HOME = /tmp
 
 # Once per week.
 21 03 * * 3 {{ django }} purge_hashes
+0 4 * * 5 {{ cron }} send_weekly_ready_for_review_digest
 
 # Once per month.
 0 0 1 * * {{ cron }} update_l10n_contributor_metrics
