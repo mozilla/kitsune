@@ -36,8 +36,9 @@ def generate_short_url(long_url):
     :arg long_url: URL to shorten
     """
 
-    # Don't (ab)use the bitly API from dev and stage.
-    if settings.STAGE:
+    # Check for empty credentials.
+    if (settings.BITLY_LOGIN is None or
+            settings.BITLY_API_KEY is None):
         return ''
 
     keys = {
@@ -53,8 +54,7 @@ def generate_short_url(long_url):
         short_url = resp.get('data', {}).get('url', '')
         return short_url
     elif resp['status_code'] == 401:
-        raise Exception("Unauthorized access to bitly's API. Did you forget "
-                        "to add bitly credentials to settings.py?")
+        raise Exception("Unauthorized access to bitly's API")
     elif resp['status_code'] == 403:
         raise Exception("Rate limit exceeded while using bitly's API.")
     else:
