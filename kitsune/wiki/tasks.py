@@ -1,5 +1,6 @@
 import logging
 import time
+import requests
 from datetime import date
 
 from django.conf import settings
@@ -8,6 +9,7 @@ from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.core.mail import mail_admins
 from django.db import transaction
+from django.utils.http import urlencode
 
 from celery import task
 from multidb.pinning import pin_this_thread, unpin_this_thread
@@ -25,6 +27,39 @@ from kitsune.wiki.models import (
 
 
 log = logging.getLogger('k.task')
+
+
+@task(rate_limit='10/m')
+def generate_short_url(long_url):
+    """Return a shortned URL for a given long_url via bitly's API.
+
+    :arg long_url: URL to shorten
+    """
+
+    # Don't (ab)use the bitly API from dev and stage.
+    if settings.STAGE:
+        return ''
+
+    keys = {
+        'format': 'json',
+        'longUrl': long_url,
+        'login': settings.BITLY_LOGIN,
+        'apiKey': settings.BITLY_API_KEY
+    }
+    params = urlencode(keys)
+
+    resp = requests.post(settings.BITLY_API_URL, params).json()
+    if resp['status_code'] == 200:
+        short_url = resp.get('data', {}).get('url', '')
+        return short_url
+    elif resp['status_code'] == 401:
+        raise Exception("Unauthorized access to bitly's API. Did you forget "
+                        "to add bitly credentials to settings.py?")
+    elif resp['status_code'] == 403:
+        raise Exception("Rate limit exceeded while using bitly's API.")
+    else:
+        raise Exception("Error code: {0} recieved from bitly's API."
+                        .format(resp['status_code']))
 
 
 @task()
