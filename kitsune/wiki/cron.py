@@ -7,6 +7,7 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.db.models import F, Q, ObjectDoesNotExist
 
+from statsd import statsd
 from tower import ugettext as _
 
 from kitsune.search.tasks import index_task
@@ -73,3 +74,5 @@ def send_weekly_ready_for_review_digest():
                 'recipient': u,
                 'docs': docs,
             })
+
+            statsd.incr('wiki.cron.weekly-digest-mail')
