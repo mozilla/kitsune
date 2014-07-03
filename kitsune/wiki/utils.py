@@ -8,6 +8,18 @@ from django.utils.http import urlencode
 from kitsune.wiki.models import Revision
 
 
+class BitlyUnauthorizedException(Exception):
+    pass
+
+
+class BitlyRateLimitException(Exception):
+    pass
+
+
+class BitlyException(Exception):
+    pass
+
+
 def active_contributors(from_date, to_date=None, locale=None, product=None):
     """Return active KB contributors for the specified parameters.
 
@@ -48,12 +60,13 @@ def generate_short_url(long_url):
         short_url = resp.get('data', {}).get('url', '')
         return short_url
     elif resp['status_code'] == 401:
-        raise Exception("Unauthorized access to bitly's API")
+        raise BitlyUnauthorizedException("Unauthorized access to bitly's API")
     elif resp['status_code'] == 403:
-        raise Exception("Rate limit exceeded while using bitly's API.")
+        raise BitlyRateLimitException("Rate limit exceeded while using "
+                                      "bitly's API.")
     else:
-        raise Exception("Error code: {0} recieved from bitly's API."
-                        .format(resp['status_code']))
+        raise BitlyException("Error code: {0} recieved from bitly's API."
+                             .format(resp['status_code']))
 
 
 def num_active_contributors(from_date, to_date=None, locale=None,
