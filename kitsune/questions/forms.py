@@ -34,8 +34,6 @@ FREQUENCY_CHOICES = [(u'', u''),
 STARTED_LABEL = _lazy(u'This started when...')
 TITLE_LABEL = _lazy(u'Question')
 CONTENT_LABEL = _lazy(u'Details')
-CONTENT_HELP = _lazy(u'The more information you can provide the better chance '
-                     u'your question will be answered.')
 EMAIL_LABEL = _lazy(u'Email')
 EMAIL_HELP = _lazy(u'A confirmation email will be sent to this address in '
                    u'order to post your question.')
@@ -136,9 +134,8 @@ class EditQuestionForm(forms.Form):
         error_messages = {'required': MSG_CONTENT_REQUIRED,
                           'min_length': MSG_CONTENT_SHORT,
                           'max_length': MSG_CONTENT_LONG}
-        field = StrippedCharField(label=CONTENT_LABEL, help_text=CONTENT_HELP,
-                                  min_length=5, max_length=10000,
-                                  widget=forms.Textarea(),
+        field = StrippedCharField(label=CONTENT_LABEL, min_length=5,
+                                  max_length=10000, widget=forms.Textarea(),
                                   error_messages=error_messages)
         self.fields['content'] = field
 
