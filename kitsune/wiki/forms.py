@@ -8,11 +8,10 @@ from tower import ugettext_lazy as _lazy
 
 from kitsune.products.models import Product, Topic
 from kitsune.sumo.form_fields import MultiUsernameField, StrippedCharField
-from kitsune.sumo.urlresolvers import reverse
 from kitsune.wiki.config import SIGNIFICANCES, CATEGORIES
 from kitsune.wiki.models import (
     Document, Revision, MAX_REVISION_COMMENT_LENGTH)
-from kitsune.wiki.tasks import generate_short_url
+from kitsune.wiki.tasks import add_short_links
 from kitsune.wiki.widgets import (
     RadioFieldRendererWithHelpText, ProductTopicsAndSubtopicsWidget)
 
@@ -191,11 +190,8 @@ class DocumentForm(forms.ModelForm):
         # a category it should show for.
         if (doc.category in settings.IA_DEFAULT_CATEGORIES
                 and not doc.share_link):
-            base_url = 'https://support.mozilla.org%s'
-            endpoint = reverse('wiki.document',
-                               locale=doc.locale,
-                               args=[doc.slug])
-            doc.share_link = generate_short_url(base_url % endpoint).delay()
+            # This operates under the constraints of passing in a list.
+            add_short_links.delay([doc])
 
         doc.save()
         self.save_m2m()

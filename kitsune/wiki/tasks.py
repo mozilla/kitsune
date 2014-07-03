@@ -1,6 +1,5 @@
 import logging
 import time
-import requests
 from datetime import date
 
 from django.conf import settings
@@ -9,7 +8,6 @@ from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.core.mail import mail_admins
 from django.db import transaction
-from django.utils.http import urlencode
 
 from celery import task
 from multidb.pinning import pin_this_thread, unpin_this_thread
@@ -24,42 +22,10 @@ from kitsune.sumo.utils import chunked
 from kitsune.wiki.badges import WIKI_BADGES
 from kitsune.wiki.models import (
     Document, points_to_document_view, SlugCollision, TitleCollision, Revision)
+from kitsune.wiki.utils import generate_short_url
 
 
 log = logging.getLogger('k.task')
-
-
-@task(rate_limit='10/m')
-def generate_short_url(long_url):
-    """Return a shortned URL for a given long_url via bitly's API.
-
-    :arg long_url: URL to shorten
-    """
-
-    # Check for empty credentials.
-    if (settings.BITLY_LOGIN is None or
-            settings.BITLY_API_KEY is None):
-        return ''
-
-    keys = {
-        'format': 'json',
-        'longUrl': long_url,
-        'login': settings.BITLY_LOGIN,
-        'apiKey': settings.BITLY_API_KEY
-    }
-    params = urlencode(keys)
-
-    resp = requests.post(settings.BITLY_API_URL, params).json()
-    if resp['status_code'] == 200:
-        short_url = resp.get('data', {}).get('url', '')
-        return short_url
-    elif resp['status_code'] == 401:
-        raise Exception("Unauthorized access to bitly's API")
-    elif resp['status_code'] == 403:
-        raise Exception("Rate limit exceeded while using bitly's API.")
-    else:
-        raise Exception("Error code: {0} recieved from bitly's API."
-                        .format(resp['status_code']))
 
 
 @task()
@@ -181,6 +147,25 @@ def schedule_rebuild_kb():
     cache.set(settings.WIKI_REBUILD_TOKEN, True)
 
     rebuild_kb.delay()
+
+
+@task(rate_limit='10/m')
+def add_short_links(data):
+    """Create short_url's for a list of docs."""
+    for chunk in chunked(data, 100):
+        _add_short_links_chunked.apply_async(args=[chunk])
+
+
+@task(rate_limit='1/h')
+def _add_short_links_chunked(data):
+    """Create short_url's for a chunked list of docs."""
+    base_url = 'https://{0}%s'.format(Site.objects.get_current().domain)
+    for doc in data:
+        endpoint = reverse('wiki.document',
+                           locale=doc.locale,
+                           args=[doc.slug])
+        doc.share_link = generate_short_url(base_url % endpoint)
+        doc.save()
 
 
 @task(rate_limit='3/h')

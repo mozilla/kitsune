@@ -1,5 +1,9 @@
+import requests
+
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.db.models import Q
+from django.utils.http import urlencode
 
 from kitsune.wiki.models import Revision
 
@@ -18,6 +22,38 @@ def active_contributors(from_date, to_date=None, locale=None, product=None):
     return (User.objects.filter(
         id__in=_active_contributors_id(from_date, to_date, locale, product))
         .order_by('username'))
+
+
+def generate_short_url(long_url):
+    """Return a shortned URL for a given long_url via bitly's API.
+
+    :arg long_url: URL to shorten
+    """
+
+    # Check for empty credentials.
+    if (settings.BITLY_LOGIN is None or
+            settings.BITLY_API_KEY is None):
+        return ''
+
+    keys = {
+        'format': 'json',
+        'longUrl': long_url,
+        'login': settings.BITLY_LOGIN,
+        'apiKey': settings.BITLY_API_KEY
+    }
+    params = urlencode(keys)
+
+    resp = requests.post(settings.BITLY_API_URL, params).json()
+    if resp['status_code'] == 200:
+        short_url = resp.get('data', {}).get('url', '')
+        return short_url
+    elif resp['status_code'] == 401:
+        raise Exception("Unauthorized access to bitly's API")
+    elif resp['status_code'] == 403:
+        raise Exception("Rate limit exceeded while using bitly's API.")
+    else:
+        raise Exception("Error code: {0} recieved from bitly's API."
+                        .format(resp['status_code']))
 
 
 def num_active_contributors(from_date, to_date=None, locale=None,
