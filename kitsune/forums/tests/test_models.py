@@ -5,6 +5,7 @@ from django.contrib.contenttypes.models import ContentType
 from nose.tools import eq_
 
 from kitsune.access.tests import permission
+from kitsune.flagit.models import FlaggedObject
 from kitsune.forums import POSTS_PER_PAGE
 from kitsune.forums.events import NewPostEvent, NewThreadEvent
 from kitsune.forums.models import Forum, Thread, Post
@@ -63,6 +64,18 @@ class ForumModelTestCase(ForumTestCase):
         for p in page1:
             eq_(1, p.page)
         eq_(2, p2.page)
+
+    def test_delete_post_removes_flag(self):
+        """Deleting a post also removes the flags on that post."""
+        p = post(save=True)
+
+        u = user(save=True)
+        FlaggedObject.objects.create(
+            status=0, content_object=p, reason='language', creator_id=u.id)
+        eq_(1, FlaggedObject.objects.count())
+
+        p.delete()
+        eq_(0, FlaggedObject.objects.count())
 
     def test_thread_last_post_url(self):
         t = thread(save=True)
