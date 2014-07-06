@@ -4,12 +4,14 @@ import time
 from django.db import models
 from django.db.models import Q
 from django.db.models.signals import pre_save
+from django.contrib.contenttypes import generic
 from django.contrib.auth.models import User
 
 from tidings.models import NotificationsMixin
 
 from kitsune import forums
 from kitsune.access import has_perm, perm_is_defined_on
+from kitsune.flagit.models import FlaggedObject
 from kitsune.sumo.helpers import urlparams, wiki_to_html
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.models import ModelBase
@@ -295,6 +297,7 @@ class Post(ModelBase):
     updated_by = models.ForeignKey(User,
                                    related_name='post_last_updated_by',
                                    null=True)
+    flags = generic.GenericRelation(FlaggedObject)
 
     class Meta:
         ordering = ['created']

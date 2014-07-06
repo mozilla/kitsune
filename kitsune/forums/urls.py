@@ -1,6 +1,9 @@
 from django.conf.urls import patterns, url, include
+from django.contrib.contenttypes.models import ContentType
 
 from kitsune.forums.feeds import ThreadsFeed, PostsFeed
+from kitsune.forums.models import Post
+from kitsune.flagit import views as flagit_views
 
 
 # These patterns inherit (?P<forum_slug>\d+).
@@ -29,6 +32,11 @@ forum_patterns = patterns(
     url(r'^/(?P<thread_id>\d+)/watch', 'watch_thread',
         name='forums.watch_thread'),
     url(r'^/watch', 'watch_forum', name='forums.watch_forum'),
+
+    # Flag posts
+    url(r'^/(?P<thread_id>\d+)/(?P<object_id>\d+)/flag$', flagit_views.flag,
+        {'content_type': ContentType.objects.get_for_model(Post).id},
+        name='forums.flag_post'),
 )
 
 urlpatterns = patterns(

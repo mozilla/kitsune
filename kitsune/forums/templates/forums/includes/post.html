@@ -1,3 +1,5 @@
+{% from "wiki/includes/flag_form.html" import flag_form with context %}
+
 <div class="author" xmlns="http://www.w3.org/1999/html"
      xmlns="http://www.w3.org/1999/html" xmlns="http://www.w3.org/1999/html">
   <a class="avatar" href="{{ profile_url(post.author) }}">
@@ -35,6 +37,9 @@
   {% endif %}
     {{ datetimeformat(post.created, format='longdatetime') }}
     <a href="#post-{{ post.id }}" class="permalink" title="{{ _('Link to this post.') }}">#</a>
+    {% if post.id %}
+      {{ flag_form(url('forums.flag_post', post.thread.forum.slug, post.thread.id, post.id)) }}
+    {% endif %}
   </div>
   {% if post.updated_by %}
     {{ _('Modified by {name} on {datetime}')|fe(name=display_name(post.updated_by), datetime=datetimeformat(post.updated, format='longdatetime')) }}
