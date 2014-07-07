@@ -19,18 +19,15 @@ from kitsune.wiki.models import Document, DocumentMappingType, Revision, Locale
 @cronjobs.register
 def generate_missing_share_links():
     """Generate share links for documents that may be missing them."""
-    # Filter out redirects and objects without revisions.
-    revision_filter = ~Q(current_revision=None)
-    redirect_filter = ~Q(html__startswith=REDIRECT_HTML)
     documents = (Document.objects.select_related('revision')
-                 .filter(redirect_filter,
-                         revision_filter,
-                         parent=None,
+                 .filter(parent=None,
                          share_link='',
                          is_template=False,
                          is_archived=False,
                          category__in=settings.IA_DEFAULT_CATEGORIES)
-                 .exclude(slug=''))
+                 .exclude(slug='',
+                          current_revision=None,
+                          html__startswith=REDIRECT_HTML))
 
     tasks.add_short_links(documents)
 

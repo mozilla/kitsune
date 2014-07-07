@@ -8,18 +8,18 @@ from django.utils.http import urlencode
 from kitsune.wiki.models import Revision
 
 
-class BitlyUnauthorizedException(Exception):
+class BitlyException(Exception):
+    """Bitly Exception for any other errors."""
+    pass
+
+
+class BitlyUnauthorizedException(BitlyException):
     """Bitly Exception for an unauthorized error."""
     pass
 
 
-class BitlyRateLimitException(Exception):
+class BitlyRateLimitException(BitlyException):
     """Bitly Exception for a rate limiting error."""
-    pass
-
-
-class BitlyException(Exception):
-    """Bitly Exception for any other errors."""
     pass
 
 
