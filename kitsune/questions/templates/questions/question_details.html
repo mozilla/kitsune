@@ -270,6 +270,9 @@
                     {% if question.metadata.ff_version %}
                       <li class="ff">Firefox {{ question.metadata.ff_version }}</li>
                     {% endif %}
+                    {% if question.metadata.device %}
+                      <li>{{ _('Device:') }} {{ question.metadata.device }}</li>
+                    {% endif %}
                   </ul>
                 {% endblock %}
                 <div><a id="show-more-details" href="#more-system-details">{{ _('More system details') }}</a></div>

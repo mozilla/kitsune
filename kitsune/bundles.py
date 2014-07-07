@@ -191,6 +191,10 @@ MINIFY_BUNDLES = {
             'js/mobile/questions.js',
             'js/questions.metrics.js',
         ),
+        'mobile/aaq': (
+            'js/aaq.js',
+            'js/mobile/aaq.js',
+        ),
         'products': (
             'js/products.js',
         ),

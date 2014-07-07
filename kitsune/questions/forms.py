@@ -41,6 +41,7 @@ FF_VERSION_LABEL = _lazy(u'Firefox version')
 OS_LABEL = _lazy(u'Operating system')
 PLUGINS_LABEL = _lazy(u'Installed plugins')
 ADDON_LABEL = _lazy(u'Extension/plugin you are having trouble with')
+DEVICE_LABEL = _lazy(u'Mobile device')
 
 # Validation error messages
 MSG_TITLE_REQUIRED = _lazy(u'Please provide a question.')
@@ -185,8 +186,12 @@ class EditQuestionForm(forms.Form):
             self.fields['troubleshooting'] = field
 
         if 'ff_version' in extra_fields:
-            field = StrippedCharField(label=FF_VERSION_LABEL, required=False)
-            self.fields['ff_version'] = field
+            self.fields['ff_version'] = StrippedCharField(
+                label=FF_VERSION_LABEL, required=False)
+
+        if 'device' in extra_fields:
+            self.fields['device'] = StrippedCharField(label=DEVICE_LABEL,
+                                                      required=False)
 
         if 'os' in extra_fields:
             self.fields['os'] = StrippedCharField(label=OS_LABEL,
