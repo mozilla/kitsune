@@ -148,7 +148,7 @@ products = SortedDict([
     ('firefox-os', {
         'name': _lazy(u'Firefox OS'),
         'subtitle': '',
-        'extra_fields': [],
+        'extra_fields': ['device', 'os'],
         'tags': [],
         'products': ['firefox-os'],
         'categories': SortedDict([

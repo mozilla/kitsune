@@ -54,7 +54,7 @@ we can compute the edit-title URL.
                   {% set li_class='' %}
                   {% for field in form.visible_fields() %}
 
-                    {% if field.name == 'ff_version' %}
+                    {% if field.name == 'ff_version' or field.name == 'device' %}
                       <li class="system-details-info show">
                         <p>
                           {{ _("We've made some educated guesses about your current browser and operating system.") }}

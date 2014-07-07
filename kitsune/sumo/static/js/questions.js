@@ -76,8 +76,8 @@
      */
     function initNewQuestion() {
         var $questionForm = $('#question-form');
-        new AAQSystemInfo($questionForm);
-        hideDetails($questionForm);
+        var aaq = new AAQSystemInfo($questionForm);
+        hideDetails($questionForm, aaq);
     }
 
     function isLoggedIn() {
@@ -118,28 +118,20 @@
 
     // Hide the browser/system details for users on FF with js enabled
     // and are submitting a question for FF on desktop.
-    function hideDetails($form) {
-        if($.browser.mozilla && isDesktopFF()) {
-            $form.find('ol').addClass('hide-details');
-            $form.find('a.show, a.hide').click(function(ev) {
-                ev.preventDefault();
-                $(this).closest('li')
-                    .toggleClass('show')
-                    .toggleClass('hide')
-                    .closest('ol')
-                        .toggleClass('show-details');
-            });
-        }
+    function hideDetails($form, aaq) {
+        $form.find('ol').addClass('hide-details');
+        $form.find('a.show, a.hide').click(function(ev) {
+            ev.preventDefault();
+            $(this).closest('li')
+                .toggleClass('show')
+                .toggleClass('hide')
+                .closest('ol')
+                    .toggleClass('show-details');
+        });
 
-        if(!isDesktopFF()) {
+        if (!aaq.isDesktopFF() && !aaq.isMobileFF() && !aaq.isFirefoxOS()) {
             $form.find('li.system-details-info').hide();
         }
-    }
-
-    // Is the question for FF on the desktop?
-    // TODO: Stop duplicating with AAQSystemInfo.isDesktopFF.
-    function isDesktopFF() {
-        return document.location.pathname.indexOf('desktop') >= 0;
     }
 
     /*
