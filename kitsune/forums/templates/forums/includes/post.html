@@ -37,7 +37,9 @@
   {% endif %}
     {{ datetimeformat(post.created, format='longdatetime') }}
     <a href="#post-{{ post.id }}" class="permalink" title="{{ _('Link to this post.') }}">#</a>
-    {{ flag_form(url('forums.flag_post', post.thread.forum.slug, post.thread.id, post.id)) }}
+    {% if post.id %}
+      {{ flag_form(url('forums.flag_post', post.thread.forum.slug, post.thread.id, post.id)) }}
+    {% endif %}
   </div>
   {% if post.updated_by %}
     {{ _('Modified by {name} on {datetime}')|fe(name=display_name(post.updated_by), datetime=datetimeformat(post.updated, format='longdatetime')) }}
