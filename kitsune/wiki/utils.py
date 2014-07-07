@@ -9,14 +9,17 @@ from kitsune.wiki.models import Revision
 
 
 class BitlyUnauthorizedException(Exception):
+    """Bitly Exception for an unauthorized error."""
     pass
 
 
 class BitlyRateLimitException(Exception):
+    """Bitly Exception for a rate limiting error."""
     pass
 
 
 class BitlyException(Exception):
+    """Bitly Exception for any other errors."""
     pass
 
 

@@ -7,7 +7,9 @@ from kitsune.products.tests import product
 from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import user
 from kitsune.wiki.tests import revision, document
-from kitsune.wiki.utils import (active_contributors, num_active_contributors,
+from kitsune.wiki.utils import (BitlyUnauthorizedException,
+                                BitlyRateLimitException, BitlyException,
+                                active_contributors, num_active_contributors,
                                 generate_short_url)
 
 from django.test.utils import override_settings
@@ -112,7 +114,9 @@ class GenerateShortUrlTestCase(TestCase):
         mock_json = mock.Mock()
         mock_json.json.return_value = {'status_code': 401}
         mock_requests.post.return_value = mock_json
-        self.assertRaises(Exception, generate_short_url, self.test_url)
+        self.assertRaises(BitlyUnauthorizedException,
+                          generate_short_url,
+                          self.test_url)
 
     @mock.patch('kitsune.wiki.utils.requests')
     def test_generate_short_url_403(self, mock_requests):
@@ -120,12 +124,14 @@ class GenerateShortUrlTestCase(TestCase):
         mock_json = mock.Mock()
         mock_json.json.return_value = {'status_code': 403}
         mock_requests.post.return_value = mock_json
-        self.assertRaises(Exception, generate_short_url, self.test_url)
+        self.assertRaises(BitlyRateLimitException,
+                          generate_short_url,
+                          self.test_url)
 
     @mock.patch('kitsune.wiki.utils.requests')
     def test_generate_short_url_other(self, mock_requests):
-        """Tests aany other valid response for generate_short_url method."""
+        """Tests any other valid response for generate_short_url method."""
         mock_json = mock.Mock()
         mock_json.json.return_value = {'status_code': 500}
         mock_requests.post.return_value = mock_json
-        self.assertRaises(Exception, generate_short_url, self.test_url)
+        self.assertRaises(BitlyException, generate_short_url, self.test_url)

@@ -7,7 +7,7 @@ from django.db import models
 class Migration(DataMigration):
 
     def forwards(self, orm):
-        "Write your forwards methods here."
+        """Adds a user to be used for migrations."""
         from django.contrib.auth.models import User
         # Setting password to None makes it an unusable account.
         User.objects.create_user(username='migrations',
@@ -15,7 +15,7 @@ class Migration(DataMigration):
                                  password=None)
 
     def backwards(self, orm):
-        "Write your backwards methods here."
+        """Removes the user to be used for migrations."""
         orm['auth.User'].objects.get(username='migrations').delete()
 
     models = {
