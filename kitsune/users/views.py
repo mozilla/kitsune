@@ -388,7 +388,8 @@ def documents_contributed(request, user_id):
 
 @login_required
 @require_http_methods(['GET', 'POST'])
-def edit_settings(request):
+@mobile_template('users/{mobile/}edit_settings.html')
+def edit_settings(request, template):
     """Edit user settings"""
     if request.method == 'POST':
         form = SettingsForm(request.POST)
@@ -398,8 +399,7 @@ def edit_settings(request):
                                  _(u'Your settings have been saved.'))
             return HttpResponseRedirect(reverse('users.edit_settings'))
         # Invalid form
-        return render(request, 'users/edit_settings.html', {
-            'form': form})
+        return render(request, template, {'form': form})
 
     # Pass the current user's settings as the initial values.
     values = request.user.settings.values()
@@ -414,8 +414,7 @@ def edit_settings(request):
             # but failed so leave it a string.
             initial[v['name']] = v['value']
     form = SettingsForm(initial=initial)
-    return render(request, 'users/edit_settings.html', {
-        'form': form})
+    return render(request, template, {'form': form})
 
 
 @login_required
