@@ -109,19 +109,6 @@
     }
   }
 
-  .done-button {
-    border-left: 1px solid rgba(255, 255, 255, 0.3);
-    .box-shadow(-1px 0 0 0 @mobileHeaderBorder);
-    color: #fff;
-    cursor: pointer;
-    float: right;
-    font-weight: bold;
-    height: 50px;
-    line-height: 50px;
-    margin: 0 -10px 0 10px;
-    padding: 0 10px;
-  }
-
   > .wrapper {
     background: @mobileFormBackground;
   }
@@ -333,4 +320,43 @@
   .wrapper {
     background: @mobileFormBackground;
   }
+}
+
+.user-settings {
+  form {
+    ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+
+      > li {
+        border-bottom: 1px solid @borderLightGrey;
+        display: block;
+        font-size: 18px;
+        padding: 10px 48px 10px 16px;
+        position: relative;
+
+        > input {
+          height: 16px;
+          right: 16px;
+          margin-top: -8px;
+          position: absolute;
+          top: 50%;
+        }
+      }
+    }
+  }
+}
+
+.done-button {
+  border-left: 1px solid rgba(255, 255, 255, 0.3);
+  .box-shadow(-1px 0 0 0 @mobileHeaderBorder);
+  color: #fff;
+  cursor: pointer;
+  float: right;
+  font-weight: bold;
+  height: 50px;
+  line-height: 50px;
+  margin: 0 -10px 0 10px;
+  padding: 0 10px;
 }
