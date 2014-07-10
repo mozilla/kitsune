@@ -45,14 +45,17 @@ def top_contributors_l10n(
     return _get_creator_counts(query)
 
 
-def top_contributors_aoa(start=None, end=None, count=10):
+def top_contributors_aoa(start=None, end=None, locale=None, count=10):
     """Get the top Army of Awesome contributors."""
     # Get the user ids and contribution count of the top contributors.
     query = (ReplyMetricsMappingType
         .search()
         .facet('creator_id', filtered=True, size=count))
 
-    query = _apply_filters(query, start, end)
+    # twitter only does language
+    locale = locale.split('-')[0] if locale else None
+
+    query = _apply_filters(query, start, end, locale)
 
     return _get_creator_counts(query)
 

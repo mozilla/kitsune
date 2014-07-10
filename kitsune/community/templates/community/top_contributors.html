@@ -20,27 +20,39 @@
     <section class="community-results-header">
       <h1>{{ title }}</h1>
 
-      {# TODO: commenting this out for now
-      <form name="find-contributor" id="find-contributor" action="community/contributor_results" method="post">
-        {{ csrf() }}
-        <input type="hidden" value="" id="ts-value" name="findby" />
-
-        <div class="selector" data-emulate-select="true">
+      {% if locales %}
+        <div class="selector">
           <button type="button" class="ts-select-trigger">
             <!-- arrow icon using icon font -->
             <span aria-hidden="true" data-icon-arrow="&#xe800;" class="selector-arrow">
-                <span class='current-selected'>{{ _('Sort Contributors By') }}</span>
+                <span class='current-selected'>
+                  {% if not locale %}
+                    {{ _('Select Top Contributors by Locale') }}
+                  {% else %}
+                    {{ settings.LANGUAGES_DICT[locale.lower()] }}
+                  {% endif %}
+                </span>
             </span>
           </button>
           <div class="select-options ts-modal" aria-expanded="false">
+            {% set base_url = url('community.top_contributors', area=area) %}
             <ul class="ts-options" tabindex="-1">
-              <li><a href="#contributions" class="selected" aria-checked="true">{{ _('Contributions') }}</a></li>
-              <li><a href="#activity">{{ _('Days Since Last Activity') }}</a></li>
+              <li>
+                <a href="{{ base_url }}" {% if not locale %} aria-checked="true" class="selected"{% endif %}>
+                  {{ _('All locales') }}
+                </a>
+              </li>
+              {% for l in locales %}
+                <li>
+                  <a href="{{ base_url|urlparams(locale=l) }}"{% if l == locale %} aria-checked="true" class="selected"{% endif %}>
+                    {{ settings.LANGUAGES_DICT[l.lower()] }}
+                  </a>
+                </li>
+              {% endfor %}
             </ul>
           </div>
         </div>
-      </form>
-      #}
+      {% endif %}
     </section>
 
     <ol>

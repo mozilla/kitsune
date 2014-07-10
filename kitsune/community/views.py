@@ -1,5 +1,6 @@
 import logging
 
+from django.conf import settings
 from django.http import Http404
 from django.shortcuts import render
 
@@ -26,14 +27,38 @@ def home(request):
 
     community_news = get_object_fallback(
         Document, COMMUNITY_NEWS_DOC, request.LANGUAGE_CODE)
+    locale = _validate_locale(request.GET.get('locale'))
 
-    return render(request, 'community/index.html', {
+    data = {
         'community_news': community_news,
-        'top_contributors_aoa': top_contributors_aoa(),
-        'top_contributors_kb': top_contributors_kb(),
-        'top_contributors_l10n': top_contributors_l10n(),
-        'top_contributors_questions': top_contributors_questions(),
-    })
+        'locale': locale,
+    }
+
+    if locale:
+        data['top_contributors_aoa'] = top_contributors_aoa(locale=locale)
+
+        # If the locale is en-US we should top KB contributors, else we show
+        # top l10n contributors for that locale
+        if locale == settings.WIKI_DEFAULT_LANGUAGE:
+            data['top_contributors_kb'] = top_contributors_kb()
+        else:
+            data['top_contributors_l10n'] = top_contributors_l10n(
+                locale=locale)
+
+        # If the locale is enabled for the Support Forum, show the top
+        # contributors for that locale
+        if locale in settings.AAQ_LANGUAGES:
+            data['top_contributors_questions'] = top_contributors_questions(
+                locale=locale)
+    else:
+        # If no locale is specified, we show overall top contributors
+        # across locales.
+        data['top_contributors_aoa'] = top_contributors_aoa()
+        data['top_contributors_kb'] = top_contributors_kb()
+        data['top_contributors_l10n'] = top_contributors_l10n()
+        data['top_contributors_questions'] = top_contributors_questions()
+
+    return render(request, 'community/index.html', data)
 
 
 def search(request):
@@ -78,20 +103,34 @@ def search(request):
 def top_contributors(request, area):
     """Top contributors list view."""
 
-    locale = request.GET.get('locale')
+    locale = _validate_locale(request.GET.get('locale'))
 
     if area == 'army-of-awesome':
-        results = top_contributors_aoa(count=50)
+        results = top_contributors_aoa(locale=locale, count=50)
+        locales = settings.SUMO_LANGUAGES
     elif area == 'questions':
         results = top_contributors_questions(locale=locale, count=50)
+        locales = settings.AAQ_LANGUAGES
     elif area == 'kb':
         results = top_contributors_kb(count=50)
+        locales = None
     elif area == 'l10n':
         results = top_contributors_l10n(locale=locale, count=50)
+        locales = settings.SUMO_LANGUAGES
     else:
         raise Http404
 
     return render(request, 'community/top_contributors.html', {
         'results': results,
         'area': area,
+        'locale': locale,
+        'locales': locales,
     })
+
+
+def _validate_locale(locale):
+    """Make sure the locale is enabled on SUMO."""
+    if locale and locale not in settings.SUMO_LANGUAGES:
+        raise Http404
+
+    return locale

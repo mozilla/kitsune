@@ -6,42 +6,66 @@
   <article class="contributors">
     <h1>{{ _('Top Contributors') }}</h1>
 
-    {# TODO: comment out for now
     <div class="selector block">
       <button type="button" class="ts-select-trigger">
         <!-- arrow icon using icon font -->
         <span aria-hidden="true" data-icon-arrow="&#xe800;" class="selector-arrow">
-            <span class='current-selected'>{{ _('Select Top Contributors by Locale') }}</span>
+            <span class='current-selected'>
+              {% if not locale %}
+                {{ _('Select Top Contributors by Locale') }}
+              {% else %}
+                {{ settings.LANGUAGES_DICT[locale.lower()] }}
+              {% endif %}
+            </span>
         </span>
       </button>
       <div class="select-options ts-modal" aria-expanded="false">
+        {% set base_url = url('community.home') %}
         <ul class="ts-options" tabindex="-1">
-            <li><a href="#en-US" class="selected" aria-checked="true">{{ _('English') }}</a></li>
-            <li><a href="#fr">{{ _('French') }}</a></li>
-            <li><a href="#de">{{ _('German') }}</a></li>
+          <li>
+            <a href="{{ base_url }}" {% if not locale %} aria-checked="true" class="selected"{% endif %}>
+              {{ _('All locales') }}
+            </a>
+          </li>
+          {% for l in settings.LANGUAGE_CHOICES %}
+            <li>
+              <a href="{{ base_url|urlparams(locale=l[0]) }}"{% if l[0] == locale %} aria-checked="true" class="selected"{% endif %}>
+                {{ l[1] }}
+              </a>
+            </li>
+          {% endfor %}
         </ul>
       </div>
     </div>
-    #}
 
+    {% if top_contributors_questions %}
     <section class="contributor-group">
       <h2>{{ _('Support Forum') }}</h2>
-      {{ render_contributors(top_contributors_questions, 'questions') }}
+      {{ render_contributors(top_contributors_questions, 'questions', locale) }}
     </section>
+    {% endif %}
 
-    <section class="contributor-group">
-      <h2>{{ _('Knowledge Base') }}</h2>
-      {{ render_contributors(top_contributors_kb, 'kb') }}
-    </section>
+    {% if top_contributors_kb %}
+      <section class="contributor-group">
+        <h2>{{ _('Knowledge Base') }}</h2>
+        {{ render_contributors(top_contributors_kb, 'kb', locale) }}
+      </section>
+    {% endif %}
 
-    <section class="contributor-group">
-      <h2>{{ _('Localization') }}</h2>
-      {{ render_contributors(top_contributors_l10n, 'l10n') }}
-    </section>
+    {% if top_contributors_l10n %}
+      <section class="contributor-group">
+        <h2>{{ _('Localization') }}</h2>
+        {{ render_contributors(top_contributors_l10n, 'l10n', locale) }}
+      </section>
+    {% endif %}
 
-    <section class="contributor-group">
-      <h2>{{ _('Army of Awesome') }}</h2>
-      {{ render_contributors(top_contributors_aoa, 'army-of-awesome') }}
+    {% if top_contributors_aoa %}
+      <section class="contributor-group">
+        <h2>{{ _('Army of Awesome') }}</h2>
+        {{ render_contributors(top_contributors_aoa, 'army-of-awesome', locale) }}
+      </section>
+    {% endif %}
+
   </article>
 
   <article class="community-news">
@@ -49,26 +73,6 @@
       <h1>{{ _('Find your fellow contributors') }}</h1>
 
       <form name="find-contributor" id="find-contributor" action="{{ url('community.search') }}" method="get">
-
-        {# COMMENT THIS OUT FOR NOW
-        <input type="hidden" value="" id="ts-value" name="findby" />
-
-        <div class="selector" data-emulate-select="true">
-          <button type="button" class="ts-select-trigger">
-            <!-- arrow icon using icon font -->
-            <span aria-hidden="true" data-icon-arrow="&#xe800;" class="selector-arrow">
-                <span class='currently-selected'>{{ _('Find By') }}</span>
-            </span>
-          </button>
-          <div class="select-options ts-modal" aria-expanded="false">
-            <ul class="ts-options" tabindex="-1">
-              <li><a href="javascript:void(0);" data-value="username">{{ _('Username') }}</a></li>
-              <li><a href="javascript:void(0);" data-value="display_name">{{ _('Display Name') }}</a></li>
-            </ul>
-          </div>
-        </div>
-        ENDCOMMENT #}
-
         <fieldset>
           <input type="text" name="q" id="search" placeholder="{{ _('Username or Display Name') }}" />
           <input type="submit" value="{{ _('Search') }}" class="search" />
@@ -86,7 +90,7 @@
   </article>
 {% endblock %}
 
-{% macro render_contributors(results, area) -%}
+{% macro render_contributors(results, area, locale) -%}
   <ul class="contributor-list {{ area }}">
     {% for result in results %}
       <li>
@@ -98,7 +102,11 @@
     {% endfor %}
   </ul>
   <p>
-    <a href="{{ url('community.top_contributors', area=area) }}" class="view-all">
+    {% set all_url = url('community.top_contributors', area=area) %}
+    {% if locale %}
+      {% set all_url = all_url|urlparams(locale=locale) %}
+    {% endif %}
+    <a href="{{ all_url }}" class="view-all">
       {{ _('See All') }}
     </a>
   </p>
