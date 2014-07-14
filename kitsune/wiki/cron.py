@@ -39,7 +39,7 @@ def send_weekly_ready_for_review_digest():
 
     @email_utils.safe_translation
     def _send_mail(locale, user, context):
-        subject = _('[Reviews Pending] SUMO needs your help!')
+        subject = _('[Reviews Pending: %s] SUMO needs your help!' % locale)
 
         mail = email_utils.make_mail(
             subject=subject,
@@ -72,7 +72,7 @@ def send_weekly_ready_for_review_digest():
         try:
             leaders = Locale.objects.get(locale=l).leaders.all()
             reviewers = Locale.objects.get(locale=l).reviewers.all()
-            users = list(chain(leaders, reviewers))
+            users = list(set(chain(leaders, reviewers)))
         except ObjectDoesNotExist:
             # Locale does not exist, so skip to the next locale
             continue
