@@ -25,15 +25,23 @@
     {% endtrans %}
   </p>
 
-  <ul>
-    {% for d in docs %}
-      <li>
-        <a href="{{ url('wiki.document_revisions', d.slug) }}">
-          {{ d.title }}
-        </a>
-      </li>
-    {% endfor %}
-  </ul>
+  {% for p in products %}
+    {% set product_docs = docs.filter(products__in=[p]) %}
+    {% if product_docs %}
+      <p>
+        <strong>{{ _(p.title, 'DB: products.Product.title') }}</strong>
+        <ul>
+          {% for d in product_docs %}
+            <li>
+              <a href="{{ url('wiki.document_revisions', d.slug) }}">
+                {{ d.title }}
+              </a>
+            </li>
+          {% endfor %}
+        </ul>
+      </p>
+    {% endif %}
+  {% endfor %}
 
   <p>
     {% trans %}
