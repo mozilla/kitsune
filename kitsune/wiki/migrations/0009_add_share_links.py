@@ -8,66 +8,13 @@ from django.conf import settings
 
 class Migration(DataMigration):
 
-    depends_on = (
-        ("users", "0006_add_migration_user"),
-    )
-
     def forwards(self, orm):
-        """Copy Share Links from recent Revisions to Documents.
+        pass
 
-        New revisions are created when share links are copied over and
-        'current_revision' is updated to the new revision.
-        """
-
-        re_share_link = re.compile(r'\[\[Template:ShareArticle\|'
-                                   r'link=(.+)\]\]', re.DOTALL)
-        re_redirect = re.compile(r'REDIRECT \[\[.*\]\]')
-        documents = (orm.Document.objects.select_related('revision').all()
-                     .filter(parent=None, share_link='', is_template=False,
-                             category__in=settings.IA_DEFAULT_CATEGORIES,
-                             is_archived=False)
-                     .exclude(slug=''))
-        for doc in documents:
-            rev = doc.current_revision
-            if not rev:
-                continue
-
-            # Revisions made purely for redirects won't have share links.
-            redirect = re_redirect.search(rev.content)
-            if redirect:
-                continue
-
-            match = re_share_link.search(rev.content)
-            if match:
-                share_link = match.group(1)
-                if not share_link.startswith('http://'):
-                    share_link = 'http://' + share_link
-                doc.share_link = share_link
-
-                # Get rid of the 'Share Link' text.
-                new_content = re_share_link.sub('', rev.content).strip()
-                migration_user = (orm['auth.User'].objects
-                                  .get(username='migrations'))
-
-                # Then change what's needed.
-                rev.based_on = rev
-                rev.content = new_content
-                rev.created = datetime.datetime.now()
-                rev.reviewer = migration_user
-                rev.creator = migration_user
-
-                # Setting pk to None will cause rev.save() to create a new
-                # row in the database, rather than save our existing
-                # modifications to the current revision.
-                rev.pk = None
-                rev.save()
-
-                doc.current_revision = rev
-                doc.save()
 
     def backwards(self, orm):
-        "Write your backwards methods here."
-        raise RuntimeError("Cannot reverse this migration.")
+        pass
+
 
     models = {
         u'auth.group': {
