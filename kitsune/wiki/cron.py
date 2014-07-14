@@ -4,16 +4,18 @@ import waffle
 from itertools import chain
 
 from django.conf import settings
-from django.contrib.auth.models import User
 from django.db.models import F, Q, ObjectDoesNotExist
 
 from statsd import statsd
 from tower import ugettext as _
 
+from kitsune.products.models import Product
 from kitsune.search.tasks import index_task
 from kitsune.sumo import email_utils
 from kitsune.wiki import tasks
 from kitsune.wiki.models import Document, DocumentMappingType, Revision, Locale
+from kitsune.wiki.config import (HOW_TO_CATEGORY, TROUBLESHOOTING_CATEGORY,
+                                 TEMPLATES_CATEGORY)
 
 
 @cronjobs.register
@@ -50,11 +52,17 @@ def send_weekly_ready_for_review_digest():
         email_utils.send_messages([mail])
 
     # Get the list of revisions ready for review
-    revs = Revision.objects.filter(reviewed=None).filter(
-        Q(document__current_revision_id__lt=F('id')) |
-        Q(document__current_revision_id=None))
+    categories = (HOW_TO_CATEGORY, TROUBLESHOOTING_CATEGORY,
+                  TEMPLATES_CATEGORY)
+
+    revs = Revision.objects.filter(reviewed=None, document__is_archived=False,
+                                   document__category__in=categories)
+
+    revs = revs.filter(Q(document__current_revision_id__lt=F('id')) |
+                       Q(document__current_revision_id=None))
 
     locales = revs.values_list('document__locale', flat=True).distinct()
+    products = Product.objects.all()
 
     for l in locales:
         docs = revs.filter(document__locale=l).values_list(
@@ -73,6 +81,7 @@ def send_weekly_ready_for_review_digest():
             _send_mail(l, u, {
                 'recipient': u,
                 'docs': docs,
+                'products': products
             })
 
             statsd.incr('wiki.cron.weekly-digest-mail')
