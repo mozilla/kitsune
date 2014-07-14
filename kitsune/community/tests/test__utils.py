@@ -8,6 +8,7 @@ from kitsune.community.utils import (
     top_contributors_kb, top_contributors_l10n, top_contributors_aoa,
     top_contributors_questions)
 from kitsune.customercare.tests import reply
+from kitsune.products.tests import product
 from kitsune.questions.tests import answer
 from kitsune.search.tests.test_es import ElasticTestCase
 from kitsune.sumo.tests import LocalizingClient
@@ -95,7 +96,9 @@ class TopContributorTests(ElasticTestCase):
         eq_(r1.user_id, top[0]['term'])
 
     def test_top_contributors_questions(self):
+        firefox = product(slug='firefox', save=True)
         a1 = answer(save=True)
+        a1.question.products.add(firefox)
         a2 = answer(creator=a1.creator, save=True)
         a3 = answer(save=True)
         a4 = answer(created=datetime.now()-timedelta(days=91),
@@ -107,4 +110,9 @@ class TopContributorTests(ElasticTestCase):
         top = top_contributors_questions()
         eq_(2, len(top))
         assert a4.creator_id not in [u['term'] for u in top]
+        eq_(a1.creator_id, top[0]['term'])
+
+        # Verify, filtering of Firefox questions only.
+        top = top_contributors_questions(product=firefox.slug)
+        eq_(1, len(top))
         eq_(a1.creator_id, top[0]['term'])

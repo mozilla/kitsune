@@ -3,32 +3,33 @@ from django.conf import settings
 from django.contrib.auth.models import User
 
 from kitsune.customercare.models import ReplyMetricsMappingType
+from kitsune.products.models import Product
 from kitsune.questions.models import AnswerMetricsMappingType
 from kitsune.search.es_utils import F
 from kitsune.wiki.models import RevisionMetricsMappingType
 
 
 def top_contributors_questions(
-    start=None, end=None, locale=None, count=10):
+    start=None, end=None, locale=None, product=None, count=10):
     """Get the top Support Forum contributors."""
     # Get the user ids and contribution count of the top contributors.
     query = (AnswerMetricsMappingType
         .search()
         .facet('creator_id', filtered=True, size=count))
 
-    query = _apply_filters(query, start, end, locale)
+    query = _apply_filters(query, start, end, locale, product)
 
     return _get_creator_counts(query)
 
 
-def top_contributors_kb(start=None, end=None, count=10):
+def top_contributors_kb(start=None, end=None, product=None, count=10):
     """Get the top KB editors (locale='en-US')."""
     return top_contributors_l10n(
-        start, end, settings.WIKI_DEFAULT_LANGUAGE, count)
+        start, end, settings.WIKI_DEFAULT_LANGUAGE, product, count)
 
 
 def top_contributors_l10n(
-    start=None, end=None, locale=None, count=10):
+    start=None, end=None, locale=None, product=None, count=10):
     """Get the top l10n contributors for the KB."""
     # Get the user ids and contribution count of the top contributors.
     query = (RevisionMetricsMappingType
@@ -40,7 +41,7 @@ def top_contributors_l10n(
         # l10n.
         query = query.filter(~F(locale=settings.WIKI_DEFAULT_LANGUAGE))
 
-    query = _apply_filters(query, start, end, locale)
+    query = _apply_filters(query, start, end, locale, product)
 
     return _get_creator_counts(query)
 
@@ -60,7 +61,7 @@ def top_contributors_aoa(start=None, end=None, locale=None, count=10):
     return _get_creator_counts(query)
 
 
-def _apply_filters(query, start, end, locale=None):
+def _apply_filters(query, start, end, locale=None, product=None):
     """Apply the date and locale filters to the EU query."""
     if start is None:
         # By default we go back 90 days.
@@ -73,6 +74,11 @@ def _apply_filters(query, start, end, locale=None):
 
     if locale:
         query = query.filter(locale=locale)
+
+    if product:
+        if isinstance(product, Product):
+            product = product.slug
+        query = query.filter(product=product)
 
     return query
 
