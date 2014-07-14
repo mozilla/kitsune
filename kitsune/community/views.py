@@ -2,13 +2,14 @@ import logging
 
 from django.conf import settings
 from django.http import Http404
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 
 from statsd import statsd
 
 from kitsune.community.utils import (
     top_contributors_aoa, top_contributors_questions,
     top_contributors_kb, top_contributors_l10n)
+from kitsune.products.models import Product
 from kitsune.search.es_utils import ES_EXCEPTIONS, F
 from kitsune.sumo.parser import get_object_fallback
 from kitsune.users.models import UserMappingType
@@ -28,10 +29,15 @@ def home(request):
     community_news = get_object_fallback(
         Document, COMMUNITY_NEWS_DOC, request.LANGUAGE_CODE)
     locale = _validate_locale(request.GET.get('locale'))
+    product = request.GET.get('product')
+    if product:
+        product = get_object_or_404(Product, slug=product)
 
     data = {
         'community_news': community_news,
         'locale': locale,
+        'product': product,
+        'products': Product.objects.filter(visible=True),
     }
 
     if locale:
@@ -40,23 +46,23 @@ def home(request):
         # If the locale is en-US we should top KB contributors, else we show
         # top l10n contributors for that locale
         if locale == settings.WIKI_DEFAULT_LANGUAGE:
-            data['top_contributors_kb'] = top_contributors_kb()
+            data['top_contributors_kb'] = top_contributors_kb(product=product)
         else:
             data['top_contributors_l10n'] = top_contributors_l10n(
-                locale=locale)
+                locale=locale, product=product)
 
         # If the locale is enabled for the Support Forum, show the top
         # contributors for that locale
         if locale in settings.AAQ_LANGUAGES:
             data['top_contributors_questions'] = top_contributors_questions(
-                locale=locale)
+                locale=locale, product=product)
     else:
         # If no locale is specified, we show overall top contributors
         # across locales.
         data['top_contributors_aoa'] = top_contributors_aoa()
-        data['top_contributors_kb'] = top_contributors_kb()
-        data['top_contributors_l10n'] = top_contributors_l10n()
-        data['top_contributors_questions'] = top_contributors_questions()
+        data['top_contributors_kb'] = top_contributors_kb(product=product)
+        data['top_contributors_l10n'] = top_contributors_l10n(product=product)
+        data['top_contributors_questions'] = top_contributors_questions(product=product)
 
     return render(request, 'community/index.html', data)
 
@@ -104,18 +110,23 @@ def top_contributors(request, area):
     """Top contributors list view."""
 
     locale = _validate_locale(request.GET.get('locale'))
+    product = request.GET.get('product')
+    if product:
+        product = get_object_or_404(Product, slug=product)
 
     if area == 'army-of-awesome':
         results = top_contributors_aoa(locale=locale, count=50)
         locales = settings.SUMO_LANGUAGES
     elif area == 'questions':
-        results = top_contributors_questions(locale=locale, count=50)
+        results = top_contributors_questions(
+            locale=locale, product=product, count=50)
         locales = settings.AAQ_LANGUAGES
     elif area == 'kb':
-        results = top_contributors_kb(count=50)
+        results = top_contributors_kb(product=product, count=50)
         locales = None
     elif area == 'l10n':
-        results = top_contributors_l10n(locale=locale, count=50)
+        results = top_contributors_l10n(
+            locale=locale, product=product, count=50)
         locales = settings.SUMO_LANGUAGES
     else:
         raise Http404
@@ -125,6 +136,8 @@ def top_contributors(request, area):
         'area': area,
         'locale': locale,
         'locales': locales,
+        'product': product,
+        'products': Product.objects.filter(visible=True),
     })
 
 

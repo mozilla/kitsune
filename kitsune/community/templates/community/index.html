@@ -6,13 +6,14 @@
   <article class="contributors">
     <h1>{{ _('Top Contributors') }}</h1>
 
+    {# Locale Filter #}
     <div class="selector block">
       <button type="button" class="ts-select-trigger">
         <!-- arrow icon using icon font -->
         <span aria-hidden="true" data-icon-arrow="&#xe800;" class="selector-arrow">
             <span class='current-selected'>
               {% if not locale %}
-                {{ _('Select Top Contributors by Locale') }}
+                {{ _('Filter Top Contributors by Locale') }}
               {% else %}
                 {{ settings.LANGUAGES_DICT[locale.lower()] }}
               {% endif %}
@@ -21,6 +22,9 @@
       </button>
       <div class="select-options ts-modal" aria-expanded="false">
         {% set base_url = url('community.home') %}
+        {% if product %}
+          {% set base_url = base_url|urlparams(product=product.slug) %}
+        {% endif %}
         <ul class="ts-options" tabindex="-1">
           <li>
             <a href="{{ base_url }}" {% if not locale %} aria-checked="true" class="selected"{% endif %}>
@@ -31,6 +35,42 @@
             <li>
               <a href="{{ base_url|urlparams(locale=l[0]) }}"{% if l[0] == locale %} aria-checked="true" class="selected"{% endif %}>
                 {{ l[1] }}
+              </a>
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+
+    {# Product Filter #}
+    <div class="selector block">
+      <button type="button" class="ts-select-trigger">
+        <!-- arrow icon using icon font -->
+        <span aria-hidden="true" data-icon-arrow="&#xe800;" class="selector-arrow">
+            <span class='current-selected'>
+              {% if not product %}
+                {{ _('Filter Top Contributors by Product') }}
+              {% else %}
+                {{ _(product.title, 'DB: products.Product.title') }}
+              {% endif %}
+            </span>
+        </span>
+      </button>
+      <div class="select-options ts-modal" aria-expanded="false">
+        {% set base_url = url('community.home') %}
+        {% if locale %}
+          {% set base_url = base_url|urlparams(locale=locale) %}
+        {% endif %}
+        <ul class="ts-options" tabindex="-1">
+          <li>
+            <a href="{{ base_url }}" {% if not product %} aria-checked="true" class="selected"{% endif %}>
+              {{ _('All products') }}
+            </a>
+          </li>
+          {% for p in products %}
+            <li>
+              <a href="{{ base_url|urlparams(product=p.slug) }}"{% if p == product %} aria-checked="true" class="selected"{% endif %}>
+                 {{ _(p.title, 'DB: products.Product.title') }}
               </a>
             </li>
           {% endfor %}
