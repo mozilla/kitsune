@@ -97,10 +97,13 @@ class TopContributorTests(ElasticTestCase):
 
     def test_top_contributors_questions(self):
         firefox = product(slug='firefox', save=True)
+        fxos = product(slug='firefox-os', save=True)
         a1 = answer(save=True)
         a1.question.products.add(firefox)
+        a1.question.products.add(fxos)
         a2 = answer(creator=a1.creator, save=True)
         a3 = answer(save=True)
+        a3.question.products.add(fxos)
         a4 = answer(created=datetime.now()-timedelta(days=91),
                     save=True)
 
@@ -116,3 +119,5 @@ class TopContributorTests(ElasticTestCase):
         top = top_contributors_questions(product=firefox.slug)
         eq_(1, len(top))
         eq_(a1.creator_id, top[0]['term'])
+        top = top_contributors_questions(product=fxos.slug)
+        eq_(2, len(top))

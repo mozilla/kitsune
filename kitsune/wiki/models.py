@@ -1059,9 +1059,8 @@ class RevisionMetricsMappingType(SearchMappingType):
         d['creator_id'] = obj_dict['creator_id']
         d['reviewer_id'] = obj_dict['reviewer_id']
 
-        products = Product.uncached.filter(
-            document__id=obj_dict['document_id'])
-        d['product'] = [p.slug for p in products]
+        doc = Document.uncached.get(id=obj_dict['document_id'])
+        d['product'] = [p.slug for p in doc.get_products(True)]
 
         return d
 

@@ -192,8 +192,9 @@ class RevisionMetricsTests(ElasticTestCase):
     def test_data_in_index(self):
         """Verify the data we are indexing."""
         p = product(save=True)
-        d = document(locale='es', save=True)
-        d.products.add(p)
+        base_doc = document(locale='en-US', save=True)
+        base_doc.products.add(p)
+        d = document(locale='es', parent=base_doc, save=True)
         r = revision(document=d, is_approved=True, save=True)
 
         self.refresh()
@@ -204,3 +205,4 @@ class RevisionMetricsTests(ElasticTestCase):
         eq_(data['locale'], d.locale)
         eq_(data['product'], [p.slug])
         eq_(data['creator_id'], r.creator_id)
+    test_data_in_index.xx = 1
