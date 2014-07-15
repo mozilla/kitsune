@@ -205,4 +205,3 @@ class RevisionMetricsTests(ElasticTestCase):
         eq_(data['locale'], d.locale)
         eq_(data['product'], [p.slug])
         eq_(data['creator_id'], r.creator_id)
-    test_data_in_index.xx = 1
