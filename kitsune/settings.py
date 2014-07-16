@@ -879,6 +879,7 @@ CC_WORD_BLACKLIST = [
     'comercial',
     '#NoMásComercialMovistarFirefox',
     '#NoMasComercialMovistarFirefox',
+    'firefox_53',
 ]
 
 BITLY_API_URL = 'http://api.bitly.com/v3/shorten?callback=?'
