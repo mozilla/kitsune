@@ -71,11 +71,9 @@ valueOf()+(h?'&utmxhash='+escape(h.substr(1)):'')+
 
     {% if document.share_link %}
       <p>
-        <br></br>
-        Share this article:
-        <a href="{{ document.share_link }}">
-          {{ document.share_link }}
-        </a>
+        <br/>
+        {% set share_link='<a href="' + document.share_link + '">' + document.share_link + '</a>' %}
+        {{ _('Share this article: {link}')|f(link=share_link)|safe }}
       </p>
     {% endif %}
 
