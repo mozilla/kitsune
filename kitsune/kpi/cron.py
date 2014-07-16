@@ -16,7 +16,8 @@ from kitsune.kpi.models import (
     SEARCH_CLICKS_METRIC_CODE, EXIT_SURVEY_YES_CODE, EXIT_SURVEY_NO_CODE,
     EXIT_SURVEY_DONT_KNOW_CODE)
 from kitsune.kpi.surveygizmo_utils import (
-    get_email_addresses, add_email_to_campaign, get_exit_survey_results)
+    get_email_addresses, add_email_to_campaign, get_exit_survey_results,
+    SURVEYS)
 from kitsune.questions.models import Answer
 from kitsune.sumo import googleanalytics
 from kitsune.wiki.config import TYPO_SIGNIFICANCE, MEDIUM_SIGNIFICANCE
@@ -403,11 +404,12 @@ def process_exit_surveys():
     startdate = date.today() - timedelta(days=2)
     enddate = date.today() - timedelta(days=1)
 
-    emails = get_email_addresses(startdate, enddate)
-    for email in emails:
-        add_email_to_campaign(email)
+    for survey in SURVEYS.keys():
+        emails = get_email_addresses(survey, startdate, enddate)
+        for email in emails:
+            add_email_to_campaign(survey, email)
 
-    print '%s emails processed...' % len(emails)
+        print '%s emails processed for %s...' % (len(emails), survey)
 
 
 def _process_exit_survey_results():
@@ -429,7 +431,7 @@ def _process_exit_survey_results():
 
     while day < today:
         # Get the aggregated results.
-        results = get_exit_survey_results(day)
+        results = get_exit_survey_results('general', day)
 
         # Store them.
         Metric.objects.create(
