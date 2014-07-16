@@ -797,7 +797,7 @@ CC_STATS_WARNING = 30 * 60 * 60  # Warn if JSON data is older than 30 hours
 CC_IGNORE_USERS = ['fx4status']  # User names whose tweets to ignore.
 CC_REPLIES_GOAL = 175  # Goal # of replies in 24 hours.
 CC_TWEETS_DAYS = 7  # Limit tweets to those from the last 7 days.
-CC_BANNED_USERS = ['lucasbytegenius']  # Twitter handles banned from AoA
+CC_BANNED_USERS = ['lucasbytegenius', 'sandeep81910240', 'balapandu222']  # Twitter handles banned from AoA
 # If any of these words show up in a tweet, it probably isn't
 # actionable, so don't add it to the AoA.
 CC_WORD_BLACKLIST = [
