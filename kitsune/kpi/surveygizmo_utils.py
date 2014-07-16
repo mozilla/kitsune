@@ -5,18 +5,29 @@ from django.conf import settings
 
 import requests
 
-EMAIL_COLLECTION_SURVEY_ID = 1002970
-EXIT_SURVEY_ID = 991425
-EXIT_SURVEY_CAMPAIGN_ID = 878533
+
+SURVEYS = {
+    'general': {
+        'email_collection_survey_id': 1002970,
+        'exit_survey_id': 991425,
+        'exit_survey_campaign_id': 878533,
+    },
+    'questions': {
+        'email_collection_survey_id': 1717268,
+        'exit_survey_id': 1724445,
+        'exit_survey_campaign_id': 1687339,
+    }
+}
 
 
-def get_email_addresses(startdate, enddate):
+def get_email_addresses(survey, startdate, enddate):
     """Get the email addresses collected between startdate and enddate."""
     user = settings.SURVEYGIZMO_USER
     password = settings.SURVEYGIZMO_PASSWORD
     emails = []
     page = 1
     more_pages = True
+    survey_id = SURVEYS[survey]['email_collection_survey_id']
 
     while more_pages:
         response = requests.get(
@@ -31,7 +42,7 @@ def get_email_addresses(startdate, enddate):
             '&resultsperpage=500'
             '&page={page}'
             '&user:pass={user}:{password}'.format(
-                survey=EMAIL_COLLECTION_SURVEY_ID, start=startdate,
+                survey=survey_id, start=startdate,
                 end=enddate, page=page, user=user, password=password),
             timeout=300)
 
@@ -44,10 +55,13 @@ def get_email_addresses(startdate, enddate):
     return emails
 
 
-def add_email_to_campaign(email):
+def add_email_to_campaign(survey, email):
     """Add email to the exit survey campaign."""
     user = settings.SURVEYGIZMO_USER
     password = settings.SURVEYGIZMO_PASSWORD
+
+    survey_id = SURVEYS[survey]['exit_survey_id']
+    campaign_id = SURVEYS[survey]['exit_survey_campaign_id']
 
     try:
         requests.put(
@@ -55,20 +69,21 @@ def add_email_to_campaign(email):
             '/surveycampaign/{campaign}/contact?'
             'semailaddress={email}'
             '&user:pass={user}:{password}'.format(
-                survey=EXIT_SURVEY_ID, campaign=EXIT_SURVEY_CAMPAIGN_ID,
+                survey=survey_id, campaign=campaign_id,
                 email=email, user=user, password=password),
             timeout=30)
     except requests.exceptions.Timeout:
         print 'Timedout adding: %s' % email
 
 
-def get_exit_survey_results(date):
+def get_exit_survey_results(survey, date):
     """Collect and aggregate the exit survey results for the date."""
     user = settings.SURVEYGIZMO_USER
     password = settings.SURVEYGIZMO_PASSWORD
     answers = []
     page = 1
     more_pages = True
+    survey_id = SURVEYS[survey]['exit_survey_id']
 
     while more_pages:
         response = requests.get(
@@ -83,7 +98,7 @@ def get_exit_survey_results(date):
             '&resultsperpage=500'
             '&page={page}'
             '&user:pass={user}:{password}'.format(
-                survey=EXIT_SURVEY_ID,
+                survey=survey_id,
                 start=date,
                 end=date + timedelta(days=1),
                 page=page,
