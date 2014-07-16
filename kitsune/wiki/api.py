@@ -50,9 +50,18 @@ class DocumentList(CORSMixin, LocaleNegotiationMixin, generics.ListAPIView):
             queryset = queryset.filter(locale=locale)
 
         if product is not None:
-            queryset = queryset.filter(products__slug=product)
+            if locale == settings.WIKI_DEFAULT_LANGUAGE:
+                queryset = queryset.filter(products__slug=product)
+            else:
+                # Localized articles inherit product from the parent.
+                queryset = queryset.filter(parent__products__slug=product)
+
             if topic is not None:
-                queryset = queryset.filter(topics__slug=topic)
+                if locale == settings.WIKI_DEFAULT_LANGUAGE:
+                    queryset = queryset.filter(topics__slug=topic)
+                else:
+                    # Localized articles inherit topic from the parent.
+                    queryset = queryset.filter(parent__topics__slug=topic)
         elif topic is not None:
             raise GenericAPIException(status.HTTP_400_BAD_REQUEST,
                                       'topic requires product')
