@@ -794,10 +794,10 @@ CC_TOP_CONTRIB_LIMIT = 10
 
 CC_STATS_CACHE_TIMEOUT = 24 * 60 * 60  # 24 hours
 CC_STATS_WARNING = 30 * 60 * 60  # Warn if JSON data is older than 30 hours
-CC_IGNORE_USERS = ['fx4status', 'firefox_53']  # User names whose tweets to ignore.
+CC_IGNORE_USERS = ['fx4status', 'firefox_53', 'supersole', 'tylerdowner', 'safari_firefox', 'fxh_ebooks', 'mendel', 'cwiiis', 'mistydemeo', '_icze4r', 'latentexistence', 'eevee', 'laikabot', 'maff_ebooks']  # User names whose tweets to ignore.
 CC_REPLIES_GOAL = 175  # Goal # of replies in 24 hours.
 CC_TWEETS_DAYS = 7  # Limit tweets to those from the last 7 days.
-CC_BANNED_USERS = ['lucasbytegenius', 'sandeep81910240', 'balapandu222']  # Twitter handles banned from AoA
+CC_BANNED_USERS = ['lucasbytegenius', 'sandeep81910240', 'balapandu222', 'Pedro2993919', 'mali_krishna', 'The_911_waw']  # Twitter handles banned from AoA
 # If any of these words show up in a tweet, it probably isn't
 # actionable, so don't add it to the AoA.
 CC_WORD_BLACKLIST = [
