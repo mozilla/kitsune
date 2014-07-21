@@ -13,6 +13,20 @@
 
         if($body.is('.new-question')) {
             initNewQuestion();
+
+            if (_gaq) {
+                if (window.location.search.indexOf('step=aaq-register') > -1) {
+                    _gaq.push(['_trackEvent', 'Ask A Question Flow', 'step 1 page']);
+                } else if (window.location.search.indexOf('step=aaq-question') > -1) {
+                    _gaq.push(['_trackEvent', 'Ask A Question Flow', 'step 2 page']);
+                }
+            }
+
+            $(document).on('click', '#aaq-register-button', function() {
+                if (_gaq) {
+                    _gaq.push(['_trackEvent', 'Ask A Question Flow', 'step 2 link']);
+                }
+            });
         }
 
         if($body.is('.questions')) {
@@ -21,6 +35,12 @@
             $('#flag-filter input[type="checkbox"]').on('click', function() {
                 window.location = $(this).data('url');
             });
+
+            if (_gaq) {
+                if (window.location.pathname.indexOf('questions/new/confirm') > -1) {
+                    _gaq.push(['_trackEvent', 'Ask A Question Flow', 'step 3 confirm page']);
+                }
+            }
         }
 
         if($body.is('.answers')) {

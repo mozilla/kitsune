@@ -65,8 +65,8 @@
 
     <form action="{{ url('questions.aaq_step5', product_key=current_product.key, category_key=current_category.key) }}" method="get">
       <input type="hidden" name="search" value="{{ request.GET.search }}" />
-      <input type="hidden" name="step" value="{% if user.is_authenticated() %}aaq-question{% else %}aaq-register{% endif %}" />
-      <button type="submit" data-type="submit" class="btn btn-submit big">{{ button_text }}</button>
+      <input type="hidden" name="step" id="aaq-step" value="{% if user.is_authenticated() %}aaq-question{% else %}aaq-register{% endif %}" />
+      <button type="submit" data-ga-click="_trackEvent | Ask A Question Flow | {% if user.is_authenticated() %}pre-registered question{% else %}step 1 link{% endif %}" data-type="submit" class="btn btn-submit big">{{ button_text }}</button>
     </form>
   {% endif %}
 
@@ -77,3 +77,4 @@
 {% endblock %}
 
 {% block submit_button_value %}{{ _('Post Question') }}{% endblock %}
+{% block submit_button_attrs %}data-ga-click="_trackEvent | Ask A Question Flow | step 3 link"{% endblock %}

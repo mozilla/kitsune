@@ -3,7 +3,7 @@
  * Make public emails clickable.
  */
 
-(function () {
+(function ($) {
     function makeEmailsClickable() {
         // bail if no emails on page
         var $emails = $('.email');
@@ -25,8 +25,14 @@
         });
     }
 
-    $(document).ready(function() {
+    $(function() {
         makeEmailsClickable();
         confirmUserDeactivation();
+
+        if (_gaq) {
+            if ($('body').is('.register') && window.location.search.indexOf('reg=aaq') > -1) {
+                _gaq.push(['_trackEvent', 'Ask A Question Flow', 'step 3 confirmed page'])
+            }
+        }
     });
-}());
+}(jQuery));
