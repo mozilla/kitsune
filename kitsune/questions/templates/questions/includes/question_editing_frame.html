@@ -107,7 +107,7 @@ we can compute the edit-title URL.
                   {% endfor %}
 
                   <li class="submit">
-                    <button type="submit" data-type="submit" class="btn btn-submit big">{% block submit_button_value %}Save Question{% endblock %}</button>
+                    <button type="submit" data-type="submit" class="btn btn-submit big" {% block submit_button_attrs %}{% endblock %}>{% block submit_button_value %}Save Question{% endblock %}</button>
                     {% block more_submit_buttons %}{% endblock %}
                   </li>
                 </ul>
