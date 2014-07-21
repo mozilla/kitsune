@@ -29,10 +29,8 @@
         makeEmailsClickable();
         confirmUserDeactivation();
 
-        if (_gaq) {
-            if ($('body').is('.register') && window.location.search.indexOf('reg=aaq') > -1) {
-                _gaq.push(['_trackEvent', 'Ask A Question Flow', 'step 3 confirmed page'])
-            }
+        if ($('body').is('.register') && window.location.search.indexOf('reg=aaq') > -1) {
+            _gaq.push(['_trackEvent', 'Ask A Question Flow', 'step 3 confirmed page'])
         }
     });
 }(jQuery));
