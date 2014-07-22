@@ -458,6 +458,8 @@ def make_contributor(request):
     @email_utils.safe_translation
     def _make_mail(locale):
         mail = email_utils.make_mail(
+            # L10n: Thank you so much for your translation work! You're
+            # L10n: the best!
             subject=_('Welcome to SUMO!'),
             text_template='users/email/contributor.ltxt',
             html_template='users/email/contributor.html',
