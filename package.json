@@ -5,7 +5,14 @@
         "type": "git",
         "url": "git://github.com/mozilla/kitsune.git"
     },
+    "devDependencies": {
+        "lodash": "2.4.1",
+        "grunt": "0.4.5",
+        "grunt-contrib-watch": "0.6.1",
+        "grunt-nunjucks": "0.1.4"
+    },
     "dependencies": {
-        "less": "1.4.1"
+        "less": "1.4.1",
+        "nunjucks": "1.0.5"
     }
 }
