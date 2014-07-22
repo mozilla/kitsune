@@ -46,12 +46,12 @@ urlpatterns = patterns(
     (r'^admin/', include(admin.site.urls)),
 
     # Javascript translations.
-    url(r'^jsi18n-yaocho/.*$',
-        cache_page(60 * 60 * 24 * 365)(javascript_catalog),
-        {'domain': 'yaocho', 'packages': ['kitsune']},
-        name='jsi18n-yaocho'),
     url(r'^jsi18n/.*$', cache_page(60 * 60 * 24 * 365)(javascript_catalog),
         {'domain': 'javascript', 'packages': ['kitsune']}, name='jsi18n'),
+    # Yaocho translations. These don't need cached because Yaocho downloads
+    # them in a build step, not on the client.
+    url(r'^jsi18n-yaocho/.*$', javascript_catalog,
+        {'domain': 'yaocho', 'packages': ['kitsune']}, name='jsi18n-yaocho'),
     # JavaScript Waffle.
     url(r'^wafflejs$', wafflejs, name='wafflejs'),
 
