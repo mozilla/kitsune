@@ -20,7 +20,7 @@
     {% if product.slug == 'firefox' %}
       <div class="download-firefox">
         <a href="http://www.mozilla.org/firefox/new/#download-fx" class="download-button"
-         data-ga-click="_trackEvent | Download Click | {{ product.slug }}"
+         data-ga-click="_trackEvent | Download Button | Panel Opening"
          data-latest-version="{{ latest_version }}">
           <span class="download-content">
             <strong class="download-title">{{ _('Firefox') }}</strong>
@@ -32,11 +32,14 @@
           <strong>{{ _('You are already using the latest version of Firefox.') }}</strong>
           <ul>
             <li>
-              <a href="{{ url('wiki.document', 'reset-firefox-easily-fix-most-problems') }}">{{ _('Reset your browser for a fresh start') }}</a>
+              <a href="{{ url('wiki.document', 'reset-firefox-easily-fix-most-problems') }}"
+                 data-ga-click="_trackEvent | Download Button | Reset Link">
+                {{ _('Reset your browser for a fresh start') }}
+              </a>
             </li>
             <li>
               <a href="http://www.mozilla.org/firefox/new/#download-fx"
-                 data-ga-click="_trackEvent | External Links | Top Banner - UpToDate">
+                 data-ga-click="_trackEvent | Download Button | Download Link">
                 {{ _('Continue with download') }}
               </a>
             </li>
