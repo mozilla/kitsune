@@ -67,7 +67,7 @@
       <input type="hidden" name="search" value="{{ request.GET.search }}" />
       <input type="hidden" name="step" value="{% if user.is_authenticated() %}aaq-question{% else %}aaq-register{% endif %}" />
       {% set ga_action = 'pre-registered question' if user.is_authenticated() else 'step 1 link' %}
-      <button type="submit" data-ga-click="_trackEvent | Ask A Question Flow | {{ ga_action }}" data-type="submit" class="btn btn-submit big">
+      <button type="submit" data-ga-click="_trackEvent | Ask A Question Flow | {{ ga_action }}" class="btn btn-submit big">
           {{ button_text }}
       </button>
     </form>
