@@ -488,8 +488,9 @@ def search(request, template=None):
 
     if is_json:
         # Models are not json serializable.
-        for r in results:
+        for r in data['results']:
             del r['object']
+        data['total'] = len(data['results'])
         if not results:
             data['message'] = _('No pages matched the search criteria')
         json_data = json.dumps(data)
