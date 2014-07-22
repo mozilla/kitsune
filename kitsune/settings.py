@@ -615,6 +615,7 @@ DOMAIN_METHODS = {
 STANDALONE_DOMAINS = [
     TEXT_DOMAIN,
     'javascript',
+    'yaocho',
 ]
 
 STATICI18N_DOMAIN = 'javascript'

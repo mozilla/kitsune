@@ -48,7 +48,7 @@ urlpatterns = patterns(
     # Javascript translations.
     url(r'^jsi18n-yaocho/.*$',
         cache_page(60 * 60 * 24 * 365)(javascript_catalog),
-        {'domain': 'yaocho', 'packages': []},
+        {'domain': 'yaocho', 'packages': ['kitsune']},
         name='jsi18n-yaocho'),
     url(r'^jsi18n/.*$', cache_page(60 * 60 * 24 * 365)(javascript_catalog),
         {'domain': 'javascript', 'packages': ['kitsune']}, name='jsi18n'),
