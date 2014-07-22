@@ -32,7 +32,7 @@ def product_landing(request, template, slug):
 
     versions = product.versions.filter(default=True)
     if versions:
-        latest_version = versions[0].max_version
+        latest_version = versions[0].min_version
     else:
         latest_version = 0
 
