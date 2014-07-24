@@ -31,6 +31,14 @@ if (alternateUrl) {
   s.parentNode.insertBefore(ga, s);
 })();
 
+function parseAnalyticsData(data) {
+  var items = data.split(/,\s*/);
+  var results = [];
+  $(items).each(function() {
+    results.push(this.split(/\s*\|\s*/));
+  });
+  return results;
+}
 
 // Track clicks to links with data-ga-click attr.
 $('body').on('click', 'a[data-ga-click]', function(ev) {
@@ -38,10 +46,12 @@ $('body').on('click', 'a[data-ga-click]', function(ev) {
 
   var $this = $(this);
   // Split by '|', and allow for white space on either side.
-  var gaData = $this.data('ga-click').split(/\s*\|\s*/);
+  var gaData = parseAnalyticsData($this.data('ga-click'));
   var href = $this.attr('href');
 
-  _gaq.push(gaData);
+  $(gaData).each(function() {
+    _gaq.push(this);
+  });
 
   // Delay the click navigation by 100ms to ensure the event is tracked.
   setTimeout(function() {
@@ -57,9 +67,11 @@ $('body').on('click', 'button[data-ga-click]', function(ev) {
 
   var $this = $(this);
   // Split by '|', and allow for white space on either side.
-  var gaData = $this.data('ga-click').split(/\s*\|\s*/);
+  var gaData = parseAnalyticsData($this.data('ga-click'));
 
-  _gaq.push(gaData);
+  $(gaData).each(function() {
+    _gaq.push(this);
+  });
 
   // Delay the form post by 100ms to ensure the event is tracked.
   setTimeout(function() {

@@ -550,7 +550,8 @@ TEST_RUNNER = 'kitsune.sumo.tests.TestSuiteRunner'
 def JINJA_CONFIG():
     from django.conf import settings
     config = {'extensions': ['tower.template.i18n', 'caching.ext.cache',
-                             'jinja2.ext.autoescape', 'jinja2.ext.with_'],
+                             'jinja2.ext.autoescape', 'jinja2.ext.with_',
+                             'jinja2.ext.do'],
               'finalize': lambda x: x if x is not None else ''}
 
     if not settings.DEBUG:
