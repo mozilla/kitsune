@@ -19,10 +19,6 @@
             } else if (window.location.search.indexOf('step=aaq-question') > -1) {
                 _gaq.push(['_trackEvent', 'Ask A Question Flow', 'step 2 page']);
             }
-
-            $(document).on('click', '#aaq-register-button', function() {
-                _gaq.push(['_trackEvent', 'Ask A Question Flow', 'step 2 link']);
-            });
         }
 
         if($body.is('.questions')) {
