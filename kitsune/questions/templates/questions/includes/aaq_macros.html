@@ -127,7 +127,7 @@
   <div id="register-form" class="grid_12 alpha omega">
     <h2>{{ _('Before you continue, please create a support account') }}</h2>
     <p>{{ _('A support account lets us alert you when people respond to your question.') }}</p>
-    {{ register_form(register, csrf=csrf, action='') }}
+    {{ register_form(register, csrf=csrf, action='', aaq=True) }}
   </div>
 
   <h3 id="show-login"><a href="#login-form">{{ _('I already have an account') }}</a></h3>
