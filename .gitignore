@@ -1,7 +1,7 @@
 *.pyc
 *.pyo
 kitsune/settings_local.py
-kitsune/sumo/static/js/nunjucks-templates.js
+kitsune/sumo/static/js/templates
 pip-log.txt
 .coverage
 coverage.xml

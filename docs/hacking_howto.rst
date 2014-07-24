@@ -191,7 +191,7 @@ need to `install Node.JS and NPM
 
 Now install the javascript dependencies with::
 
-    $ sudo npm install
+    $ npm install
 
 This should create a directory named ``node_modules`` in your git repo.
 

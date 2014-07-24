@@ -6,10 +6,9 @@
         "url": "git://github.com/mozilla/kitsune.git"
     },
     "devDependencies": {
-        "lodash": "2.4.1",
-        "grunt": "0.4.5",
-        "grunt-contrib-watch": "0.6.1",
-        "grunt-nunjucks": "0.1.4"
+        "gulp": "3.8.6",
+        "gulp-watch": "0.6.8",
+        "gulp-nunjucks": "0.2.2"
     },
     "dependencies": {
         "less": "1.4.1",
