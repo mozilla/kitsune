@@ -630,6 +630,8 @@ JAVA_BIN = '/usr/bin/java'
 
 LESS_BIN = 'lessc'
 
+NUNJUCKS_PRECOMPILE_BIN = 'nunjucks-precompile'
+
 #
 # Sessions
 SESSION_COOKIE_AGE = 4 * 7 * 24 * 60 * 60  # 4 weeks

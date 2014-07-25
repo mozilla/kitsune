@@ -464,22 +464,6 @@ def search(request, template=None):
              v in r.getlist(k) if v and k != 'a']
     items.append(('a', '2'))
 
-    if is_json:
-        # Models are not json serializable.
-        for r in results:
-            del r['object']
-        data = {}
-        data['results'] = results
-        data['total'] = len(results)
-        data['query'] = cleaned['q']
-        if not results:
-            data['message'] = _('No pages matched the search criteria')
-        json_data = json.dumps(data)
-        if callback:
-            json_data = callback + '(' + json_data + ');'
-
-        return HttpResponse(json_data, mimetype=mimetype)
-
     fallback_results = None
     if num_results == 0:
         fallback_results = _fallback_results(language, cleaned['product'])
@@ -493,18 +477,34 @@ def search(request, template=None):
 
     product_titles = ', '.join(product_titles)
 
-    results_ = render(request, template, {
+    data = {
         'num_results': num_results,
         'results': results,
         'fallback_results': fallback_results,
+        'product_titles': product_titles,
         'q': cleaned['q'],
         'w': cleaned['w'],
+        'lang_name': lang_name, }
+
+    if is_json:
+        # Models are not json serializable.
+        for r in data['results']:
+            del r['object']
+        data['total'] = len(data['results'])
+        if not results:
+            data['message'] = _('No pages matched the search criteria')
+        json_data = json.dumps(data)
+        if callback:
+            json_data = callback + '(' + json_data + ');'
+
+        return HttpResponse(json_data, mimetype=mimetype)
+
+    data.update({
         'product': product,
         'products': Product.objects.filter(visible=True),
-        'product_titles': product_titles,
         'pages': pages,
-        'search_form': search_form,
-        'lang_name': lang_name, })
+        'search_form': search_form, })
+    results_ = render(request, template, data)
     cache_period = settings.SEARCH_CACHE_PERIOD
     results_['Cache-Control'] = 'max-age=%s' % (cache_period * 60)
     results_['Expires'] = (

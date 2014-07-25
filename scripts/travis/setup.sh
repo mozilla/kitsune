@@ -39,5 +39,6 @@ echo "Starting XVFB for Selenium tests."
 /usr/bin/Xvfb :99 -ac -screen 0 1280x1024x16 >/dev/null 2>/dev/null &
 
 echo "Doing static dance."
+./manage.py nunjucks_precompile
 ./manage.py collectstatic --noinput > /dev/null
 ./manage.py compress_assets > /dev/null
