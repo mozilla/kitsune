@@ -74,7 +74,7 @@ def user_auth(request, contributor=False, register_form=None, login_form=None):
 
 @ssl_required
 @anonymous_csrf
-@watch_login
+# @watch_login
 @mobile_template('users/{mobile/}login.html')
 def login(request, template):
     """Try to log the user in."""
