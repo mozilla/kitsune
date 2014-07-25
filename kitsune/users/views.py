@@ -16,7 +16,7 @@ from django.views.decorators.http import (require_http_methods, require_GET,
 from django.shortcuts import get_object_or_404, render, redirect
 from django.utils.http import base36_to_int
 
-from axes.decorators import watch_login
+# from axes.decorators import watch_login
 from mobility.decorators import mobile_template
 from session_csrf import anonymous_csrf
 from statsd import statsd
@@ -74,7 +74,7 @@ def user_auth(request, contributor=False, register_form=None, login_form=None):
 
 @ssl_required
 @anonymous_csrf
-@watch_login
+# @watch_login
 @mobile_template('users/{mobile/}login.html')
 def login(request, template):
     """Try to log the user in."""

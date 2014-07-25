@@ -437,7 +437,7 @@ MIDDLEWARE_CLASSES = (
     'commonware.middleware.StrictTransportMiddleware',
     'commonware.middleware.XSSProtectionHeader',
     'commonware.middleware.RobotsTagHeader',
-    'axes.middleware.FailedLoginMiddleware'
+    # 'axes.middleware.FailedLoginMiddleware'
 )
 
 # Auth
@@ -528,7 +528,7 @@ INSTALLED_APPS = (
     'kitsune.products',
     'rest_framework',
     'statici18n',
-    'axes',
+    # 'axes',
 
     # App for Sentry:
     'raven.contrib.django',
