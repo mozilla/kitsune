@@ -14,6 +14,16 @@ class Command(BaseCommand):
     help = 'Precompiles nunjuck templates'
 
     def handle(self, *args, **kwargs):
+        try:
+            os.makedirs(path('static/js/templates'))
+        except OSError:
+            pass
+
+        try:
+            os.makedirs(path('static/tpl'))
+        except OSError:
+            pass
+
         files = os.listdir(path('static/tpl'))
 
         for f in files:
