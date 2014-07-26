@@ -16,6 +16,9 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         files = os.listdir(path('static/tpl'))
 
+        if not os.path.exists(path('static/js/templates')):
+            os.makedirs(path('static/js/templates'))
+
         for f in files:
             if f.endswith('.html'):
                 tpl = f[:-5]
