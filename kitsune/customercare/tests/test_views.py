@@ -255,3 +255,18 @@ class TweetReplyTests(TestCase):
         eq_('r1cky', reply.twitter_username)
         eq_(1, reply.reply_to_tweet_id)
         eq_('@foobar try Aurora! #fxhelp', json.loads(reply.raw_json)['text'])
+
+    def test_prevent_multiple_replies(self):
+        t = tweet(save=True)
+        eq_(t.replies.count(), 0)
+
+        tweet(reply_to=t, save=True)
+        eq_(t.replies.count(), 1)
+
+        response = self.client.post(
+            reverse('customercare.twitter_post'),
+            {'reply_to': 1,
+             'content': '@foobar try Aurora! #fxhelp'})
+
+        eq_(response.status_code, 400)
+        eq_(t.replies.count(), 1)
