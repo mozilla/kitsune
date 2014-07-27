@@ -193,6 +193,10 @@ def twitter_post(request):
         # L10n: the tweet needs to be a reply to another tweet.
         return HttpResponseBadRequest(_('Reply-to is empty'))
 
+    original = Tweet.objects.get(pk=reply_to_id)
+    if original.replies.count() > 0:
+        return HttpResponseBadRequest(_('Tweet has already been replied to'))
+
     content = request.POST.get('content', '')
     if len(content) == 0:
         # L10n: the tweet has no content.
