@@ -158,18 +158,24 @@ AAQ_LANGUAGES = (
 # These languages won't show a warning about FxOS when contributors try
 # to add content.
 FXOS_LANGUAGES = [
+    'bn-BD',
     'cs',
+    'de',
     'el',
     'en-US',
     'es',
+    'fr',
+    'hi',
     'hr',
     'hu',
+    'it',
     'nl',
     'pl',
     'pt-BR',
     'pt-PT',
     'ro',
     'ru',
+    'sr',
     'sr-Cyrl',
     'tr',
 ]
