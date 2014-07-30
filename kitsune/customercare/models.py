@@ -11,6 +11,16 @@ from kitsune.search.models import (
 from kitsune.sumo.models import ModelBase
 
 
+class TwitterAccount(ModelBase):
+    """A twitter account associated with AoA."""
+    # 15 characters is the max length for twitter usernames.
+    username = models.CharField(max_length=15)
+    banned = models.BooleanField(default=False, db_index=True)
+
+    class Meta:
+        permissions = (('ban_account', 'Can ban twitter accounts'),)
+
+
 class Tweet(ModelBase):
     """An entry on twitter."""
     tweet_id = models.BigIntegerField(primary_key=True)
