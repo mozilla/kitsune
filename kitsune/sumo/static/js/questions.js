@@ -129,13 +129,13 @@
     // Hide the browser/system details for users on FF with js enabled
     // and are submitting a question for FF on desktop.
     function hideDetails($form, aaq) {
-        $form.find('ol').addClass('hide-details');
+        $form.find('ul').addClass('hide-details');
         $form.find('a.show, a.hide').click(function(ev) {
             ev.preventDefault();
             $(this).closest('li')
                 .toggleClass('show')
                 .toggleClass('hide')
-                .closest('ol')
+                .closest('ul')
                     .toggleClass('show-details');
         });
 
