@@ -1,0 +1,18 @@
+{% extends "customercare/base.html" %}
+{% set title = _('Moderate Twitter Accounts') %}
+
+{% block content %}
+<form method="post">
+{{ _('Username:') }} <input type="text" name="ban_user" placeholder="@spammingisfun"/>
+<button type="submit" class="btn">{{ _('Ban') }}</button></br>
+{{ message }}</br>
+{{ _('Banned Accounts:') }}</br>
+<select name="banned_users" multiple>
+{% set banned_users = ['test1', 'test2'] %}
+{% for banned_user in banned_users %}
+<option>{{ banned_user }}</option>
+{% endfor %}
+</select></br>
+<button type="submit" class="btn">{{ _('Unban') }}</button>
+{{ message }}
+{% endblock %}

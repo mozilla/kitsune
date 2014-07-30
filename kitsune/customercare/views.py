@@ -180,6 +180,12 @@ def landing(request):
         'goal': settings.CC_REPLIES_GOAL,
         'recent_replied_count': recent_replied_count})
 
+def moderate_twitter(request):
+    """Moderate banned AoA twitter handles."""
+
+    return render(request, 'customercare/moderate_twitter.html')
+
+
 
 @require_POST
 @anonymous_csrf
