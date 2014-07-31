@@ -311,7 +311,7 @@ class TweetReplyTests(TestCase):
         request.user.is_authenticated = lambda: False
 
         # Pass the request to the view and verify response.
-        response = twitter_post(request)
+        twitter_post(request)
         eq_(request.twitter.api.update_status.called, False)
 
     def test_post_account_not_banned(self):
@@ -354,7 +354,7 @@ class TweetReplyTests(TestCase):
         request.user.is_authenticated = lambda: False
 
         # Pass the request to the view and verify response.
-        response = twitter_post(request)
+        twitter_post(request)
         eq_(request.twitter.api.update_status.called, True)
 
     def test_post_account_not_exists(self):
@@ -394,5 +394,5 @@ class TweetReplyTests(TestCase):
         request.user.is_authenticated = lambda: False
 
         # Pass the request to the view and verify response.
-        response = twitter_post(request)
+        twitter_post(request)
         eq_(request.twitter.api.update_status.called, True)

@@ -215,7 +215,8 @@ def twitter_post(request):
         credentials = request.twitter.api.verify_credentials()
         username = credentials['screen_name']
         banned = (TwitterAccount.objects
-                  .filter(username=username, banned=True).first())
+                  .filter(username=username, banned=True)
+                  .first())
         if banned:
             return render(request, 'customercare/tweets.html',
                           {'tweets': []})
