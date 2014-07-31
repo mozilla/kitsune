@@ -17,7 +17,7 @@ from tower import ugettext as _, ugettext_lazy as _lazy
 from twython import TwythonAuthError, TwythonError
 
 from kitsune import twitter
-from kitsune.customercare.models import Tweet, Reply
+from kitsune.customercare.models import Tweet, TwitterAccount, Reply
 from kitsune.customercare.replies import get_common_replies
 from kitsune.sumo.decorators import ssl_required
 from kitsune.sumo.redis_utils import redis_client, RedisError
@@ -214,7 +214,9 @@ def twitter_post(request):
     try:
         credentials = request.twitter.api.verify_credentials()
         username = credentials['screen_name']
-        if username in settings.CC_BANNED_USERS:
+        banned = (TwitterAccount.objects
+                  .filter(username=username, banned=True).first())
+        if banned:
             return render(request, 'customercare/tweets.html',
                           {'tweets': []})
         result = request.twitter.api.update_status(
