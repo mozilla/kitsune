@@ -28,8 +28,7 @@ class Migration(DataMigration):
             user.save()
 
         for username in non_existing_users:
-            banned_user = orm.TwitterAccount(username=username, banned=True)
-            banned_user.save()
+            orm.TwitterAccount.objects.create(username=username, banned=True)
 
     def backwards(self, orm):
         # Pulled from settings.py on 07/31/14
