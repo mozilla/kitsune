@@ -10,12 +10,18 @@ helping users.
 
 {{ _('If you have a moment please review these articles:') }}
 
-{% for d in docs %}
-{{ d.title }}
-({{ url('wiki.document_revisions', d.slug) }})
+{% for p in products %}{% set product_docs = docs.filter(products__in=[p]) %}
+{% if product_docs %}
+{{ _(p.title, 'DB: products.Product.title') }}
 
+{% for d in product_docs %}
+{{ d.title }}
+(https://{{ host }}{{ url('wiki.document_revisions', d.slug) }})
 {% endfor %}
 
+
+{% endif %}
+{% endfor %}
 {% trans %}
 Many thanks for your contribution on behalf of SUMO and the happy users who are
 helped by your work!

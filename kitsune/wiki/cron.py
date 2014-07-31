@@ -54,6 +54,10 @@ def reindex_kb():
 def send_weekly_ready_for_review_digest():
     """Sends out the weekly "Ready for review" digest email."""
 
+    # If this is stage, do nothing.
+    if settings.STAGE:
+        return
+
     @email_utils.safe_translation
     def _send_mail(locale, user, context):
         subject = _('[Reviews Pending: %s] SUMO needs your help!' % locale)

@@ -33,7 +33,7 @@
         <ul>
           {% for d in product_docs %}
             <li>
-              <a href="{{ url('wiki.document_revisions', d.slug) }}">
+              <a href="https://{{ host }}{{ url('wiki.document_revisions', d.slug) }}">
                 {{ d.title }}
               </a>
             </li>
