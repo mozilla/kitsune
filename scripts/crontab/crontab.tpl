@@ -39,6 +39,7 @@ HOME = /tmp
 0 0 * * * {{ cron }} generate_missing_share_links
 42 22 * * * {{ django }} cleanup
 30 3 * * * root {{ rscripts }} scripts/l10n_completion.py --truncate 30 locale media/uploads/l10n_history.json media/uploads/l10n_summary.json
+30 3 * * * {{ cron }} send_postatus_errors
 
 # Once per week.
 21 03 * * 3 {{ django }} purge_hashes
