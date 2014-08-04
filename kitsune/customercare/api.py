@@ -1,6 +1,6 @@
 import json
 
-from rest_framework import generics, serializers, permissions, status
+from rest_framework import generics, serializers, status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 
@@ -55,5 +55,5 @@ def unban(request):
 
     # Small hack to keep correct grammar.
     message = {'success': '{0} user{1} unbanned successfully.'
-                .format(len(accounts), 's' * (len(accounts) > 1))}
+               .format(len(accounts), 's' * (len(accounts) > 1))}
     return Response(message)

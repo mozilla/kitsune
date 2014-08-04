@@ -60,9 +60,11 @@
   </div>
 
   <div class="grid_12 cf">
+    {% if user.has_perm('customercare.ban_account') %}
     <div id="tweet-mod-tools">
       <a class='btn btn-warning' href="{{ url('customercare.moderate_twitter') }}">{{_('Moderate Twitter Accounts')}}</a>
     </div>
+    {% endif %}
     <div id="tweet-tools">
       <img id="refresh-busy" src="{{ STATIC_URL }}img/customercare/spinner.gif" alt="{{ _('Loading') }}"/>
       <select id="show">

@@ -118,7 +118,6 @@
     }
 
     $(document).ready(function() {
-
         $('#accordion').accordion({
             'heightStyle': 'content',
             'clearStyle': true,
@@ -429,6 +428,112 @@
 
             $(this).blur();
             e.preventDefault();
+        });
+
+        /* Banning/Unbanning twitter handles */
+        var updateBannedList = function () {
+            var banned_users = $('#banned-users');
+            $.get(
+                '/api/1/customercare/banned',
+                function(data) {
+                    data.forEach(function (user) {
+                        addBannedUser(user.username);
+                    });
+                }
+            );
+        }
+
+        var addBannedUser = function(username) {
+            var li = $(document.createElement('li'))
+                .attr({
+                    id: 'banned-user-' + username,
+                });
+            var checkbox = $(document.createElement('input'))
+                .attr({
+                    type: 'checkbox',
+                });
+            checkbox.val(username);
+            li.append(checkbox)
+            li.append(' ' + username);
+            $('#banned-users').append(li);
+        }
+
+        var removeBannedUser = function(username) {
+            $('#banned-user-' + username).remove();            
+        }
+
+        // Initially fill in the list.
+        // If the element exists we are on the right page.
+        if ($('#banned_users')) {
+            updateBannedList();
+        }
+
+        $('#ban').on('click', function() {
+            var username = $('#ban-username').val();
+            var csrf = $('#csrf input[name=csrfmiddlewaretoken]').val();
+            var msg = $('#ban-message');
+            // Empty message before we give it more content.
+            msg.empty();
+            $.ajax({
+                beforeSend: function(xhr) {
+                    xhr.setRequestHeader('X-CSRFToken', csrf);
+                },
+                url: '/api/1/customercare/ban',
+                type: 'POST',
+                data: JSON.stringify({
+                    username: username
+                }),
+                contentType: 'application/json',
+                success: function(data) {
+                    addBannedUser(username);            
+                    msg.append(gettext('Account banned successfully!'));
+                },
+                error: function(resp) {
+                    if (resp.status === 400) {
+                        msg.append(gettext('Username not provided.</br>'));
+                    }
+                    else if (resp.status === 409) {
+                        msg.append(gettext('This account is already banned!'));
+                    }
+                }
+            });
+        });
+
+        $('#unban').on('click', function () {
+            var usernames = [];
+            $('input[type=checkbox]').each(function () {
+                if (this.checked) {
+                    usernames.push(this.value);
+                }
+            });
+            var csrf = $('#csrf input[name=csrfmiddlewaretoken]').val();
+            var msg = $('#unbans-successful');
+            // Empty message before we give it more content.
+            msg.empty();
+            $.ajax({
+                beforeSend: function(xhr) {
+                    xhr.setRequestHeader('X-CSRFToken', csrf);
+                },
+                url: '/api/1/customercare/unban',
+                type: 'POST',
+                data: JSON.stringify({
+                    usernames: usernames
+                }),
+                contentType: 'application/json',
+                success: function(data) {
+                    usernames.forEach( function(username) {
+                        removeBannedUser(username);
+                    });
+                    var singular = '1 user unbanned successfully!</br>';
+                    var plural = usernames.length + ' users unbanned successfully!';
+                    msg.append(ngettext(singular, plural, 2));
+                },
+                error: function(resp) {
+                    if (resp.status === 400) {
+                        msg.append(gettext('No users selected!</br>'));
+                    }
+                }
+            });
         });
 
         /* Infinite scrolling */
