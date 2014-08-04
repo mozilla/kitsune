@@ -17,6 +17,7 @@ from tower import ugettext as _, ugettext_lazy as _lazy
 from twython import TwythonAuthError, TwythonError
 
 from kitsune import twitter
+from kitsune.access.decorators import permission_required
 from kitsune.customercare.models import Tweet, TwitterAccount, Reply
 from kitsune.customercare.replies import get_common_replies
 from kitsune.sumo.decorators import ssl_required
@@ -180,7 +181,7 @@ def landing(request):
         'goal': settings.CC_REPLIES_GOAL,
         'recent_replied_count': recent_replied_count})
 
-
+@permission_required('customercare.ban_account')
 def moderate_twitter(request):
     """Moderate banned AoA twitter handles."""
 
