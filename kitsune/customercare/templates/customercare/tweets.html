@@ -30,7 +30,7 @@
       {% endif %}
 
       {% if settings.CC_ALLOW_REMOVE and not (tweet.reply_to or tweet.replies) and not tweet.hidden %}
-        <a class="remove-tweet btn" href="{{ url('customercare.hide_tweet') }}">{{ _('Remove') }}</a>
+        <a class="remove-tweet btn" href="{{ url('customercare.hide_tweet') }}" title="{{ _("This tweet doesn't need a response") }}">{{ _('Remove') }}</a>
       {% endif %}
     </div>
   </div>

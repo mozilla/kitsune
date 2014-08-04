@@ -56,6 +56,24 @@
     </div>
   </div>
 
+  <div class="grid_7">
+    <div class="warning-box" id="aoa-tips">
+      <strong>{{ _('How to be effective:') }}</strong>
+      <ul>
+        <li>{{ _('Focus on people who need help or have questions') }}</li>
+        <li>{{ _('Customize canned replies - make each tweet unique') }}</li>
+        <li>{{ _("Remove tweets that aren't really about Firefox or don't need a reply") }}</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="grid_5">
+    <div class="feature-box" id="aoa-forum-box">
+      <strong>{{ _('Have a question about Army of Awesome?') }}</strong>
+      <a href="{{ url('forums.threads', 'social-media') }}">{{ _('Ask other contributors') }}</a>
+    </div>
+  </div>
+
   <div id="tweetcontainer" class="grid_12">
     <div id="tweets-wrap">
       {{ csrf() }}{# CSRF token for AJAX actions. #}
