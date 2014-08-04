@@ -26,6 +26,7 @@ class TwitterCronTestCase(TestCase):
         "created_at": "Mon, 25 Oct 2010 18:12:20 +0000",
         "user": {
             "screen_name": "jspeis",
+            "id": 2142841,
         },
         "metadata": {
             "result_type": "recent",
