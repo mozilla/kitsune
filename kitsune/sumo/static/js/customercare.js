@@ -525,9 +525,10 @@
                     usernames.forEach(function(username) {
                         removeBannedUser(username);
                     });
-                    var singular = '1 user unbanned successfully!</br>';
-                    var plural = usernames.length + ' users unbanned successfully!';
-                    msg.append(ngettext(singular, plural, 2));
+                    var count = usernames.length;
+                    var singular = gettext(count + ' user unbanned successfully!</br>');
+                    var plural = gettext(count + ' users unbanned successfully!');
+                    msg.append(ngettext(singular, plural, count));
                 },
                 error: function(resp) {
                     if (resp.status === 400) {
