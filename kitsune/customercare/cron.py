@@ -151,8 +151,9 @@ def _filter_tweet(item, allow_links=False):
     """
     text = item['text'].lower()
     # No replies, except to ALLOWED_USERS
+    allowed_user_ids = [u['id'] for u in ALLOWED_USERS]
     to_user_id = item.get('to_user_id')
-    if to_user_id and to_user_id not in [u['id'] for u in ALLOWED_USERS]:
+    if to_user_id and to_user_id not in allowed_user_ids:
         statsd.incr('customercare.tweet.rejected.reply_or_mention')
         return None
 
@@ -176,9 +177,15 @@ def _filter_tweet(item, allow_links=False):
         statsd.incr('customercare.tweet.rejected.link')
         return None
 
+    screen_name = item['user']['screen_name']
     # Exclude filtered users
-    if item['user']['screen_name'] in settings.CC_IGNORE_USERS:
+    if screen_name in settings.CC_IGNORE_USERS:
         statsd.incr('customercare.tweet.rejected.user')
+        return None
+
+    # Exlude users with firefox in the handle
+    if ('firefox' in screen_name.lower() and
+            item['user']['id'] not in allowed_user_ids):
         return None
 
     # Exclude problem words

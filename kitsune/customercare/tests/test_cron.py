@@ -26,6 +26,7 @@ class TwitterCronTestCase(TestCase):
         "created_at": "Mon, 25 Oct 2010 18:12:20 +0000",
         "user": {
             "screen_name": "jspeis",
+            "id": 2142841,
         },
         "metadata": {
             "result_type": "recent",
@@ -96,10 +97,13 @@ class TwitterCronTestCase(TestCase):
         self.tweet['user']['screen_name'] = 'fx4status'
         assert _filter_tweet(self.tweet) is None
 
-    def test_username_and_tweet_contain_firefox(self):
-        self.tweet['user']['screen_name'] = 'ilovefirefox4ever'
+    def test_tweet_contains_firefox(self):
         self.tweet['text'] = 'My Firefox crashes :-( Any advice?'
         assert _filter_tweet(self.tweet) is not None
+
+    def test_username_does_not_contain_firefox(self):
+        self.tweet['user']['screen_name'] = 'ilovefirefox4ever'
+        assert _filter_tweet(self.tweet) is None
 
     @override_settings(CC_WORD_BLACKLIST=['foo'])
     def test_word_blacklist(self):
