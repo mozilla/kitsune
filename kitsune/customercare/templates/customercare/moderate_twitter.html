@@ -3,7 +3,7 @@
 
 {% block content %}
 <div id="csrf">
-{{ csrf() }}{# CSRF token for AJAX actions. #}
+  {{ csrf() }}{# CSRF token for AJAX actions. #}
 </div>
 <div id="ban-user">
   {{ _('Username:') }} <input id="ban-username" type="text" placeholder="@spammingisfun"/>

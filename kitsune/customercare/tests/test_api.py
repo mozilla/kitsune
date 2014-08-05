@@ -30,19 +30,19 @@ class BanUser(LiveServerTestCase):
         self.c.login(username=u.username, password='testpass')
 
     def test_account_in_banned_list(self):
-        users = self.c.get(reverse('banned')).data
+        users = self.c.get(reverse('customercare.api.banned')).data
         usernames = [user['username'] for user in users]
         eq_(sorted(usernames), sorted(self.banned_usernames))
 
     def test_account_not_in_banned_list(self):
-        users = self.c.get(reverse('banned')).data
+        users = self.c.get(reverse('customercare.api.banned')).data
         usernames = [user['username'] for user in users]
         for username in self.normal_usernames:
             assert username not in usernames
 
     def test_ban_account(self):
         data = {'username': 'rehan'}
-        self.c.post(reverse('ban'),
+        self.c.post(reverse('customercare.api.ban'),
                     data=json.dumps(data),
                     content_type='application/json')
         user = TwitterAccount.objects.get(username=data['username'])
@@ -50,7 +50,7 @@ class BanUser(LiveServerTestCase):
 
     def test_single_unban_account(self):
         data = {'usernames': ['deanj']}
-        self.c.post(reverse('unban'),
+        self.c.post(reverse('customercare.api.unban'),
                     data=json.dumps(data),
                     content_type='application/json')
 
@@ -64,7 +64,7 @@ class BanUser(LiveServerTestCase):
 
     def test_multiple_unban_account(self):
         data = {'usernames': ['r1cky', 'mythmon']}
-        self.c.post(reverse('unban'),
+        self.c.post(reverse('customercare.api.unban'),
                     data=json.dumps(data),
                     content_type='application/json')
 

@@ -9,6 +9,7 @@ from kitsune.customercare.models import TwitterAccount
 
 
 class TwitterAccountSerializer(serializers.ModelSerializer):
+    """Serializer for the TwitterAccount model."""
     class Meta:
         model = TwitterAccount
 
@@ -22,26 +23,29 @@ class BannedList(generics.ListAPIView):
 @permission_required('customercare.ban_account')
 @api_view(['POST'])
 def ban(request):
+    """Bans a twitter account from using the AoA tool."""
     username = json.loads(request.body).get('username')
     if not username:
         return Response({'error': 'Error: Username not provided.'},
                         status.HTTP_400_BAD_REQUEST)
 
-    account = TwitterAccount.uncached.filter(username=username).first()
-    if account:
+    try:
+        account = TwitterAccount.objects.get(username=username)
         if account.banned:
             return Response({'error': 'This account is already banned!'},
                             status.HTTP_409_CONFLICT)
         account.banned = True
         account.save()
-    else:
+    except:
         TwitterAccount.uncached.create(username=username, banned=True)
+
     return Response({'success': 'Account banned successfully!'})
 
 
 @permission_required('customercare.ban_account')
 @api_view(['POST'])
 def unban(request):
+    """Unbans a twitter account from using the AoA tool."""
     usernames = json.loads(request.body).get('usernames')
     if not usernames:
         return Response({'error': 'Usernames not provided.'},
@@ -53,7 +57,7 @@ def unban(request):
             account.banned = False
             account.save()
 
-    # Small hack to keep correct grammar.
+    # Small hack to keep correct grammar and is developer facing only.
     message = {'success': '{0} user{1} unbanned successfully.'
                .format(len(accounts), 's' * (len(accounts) > 1))}
     return Response(message)

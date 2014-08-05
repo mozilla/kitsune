@@ -118,6 +118,7 @@
     }
 
     $(document).ready(function() {
+
         $('#accordion').accordion({
             'heightStyle': 'content',
             'clearStyle': true,
@@ -431,12 +432,12 @@
         });
 
         /* Banning/Unbanning twitter handles */
-        var updateBannedList = function () {
+        var updateBannedList = function() {
             var banned_users = $('#banned-users');
             $.get(
                 '/api/1/customercare/banned',
                 function(data) {
-                    data.forEach(function (user) {
+                    data.forEach(function(user) {
                         addBannedUser(user.username);
                     });
                 }
@@ -499,9 +500,9 @@
             });
         });
 
-        $('#unban').on('click', function () {
+        $('#unban').on('click', function() {
             var usernames = [];
-            $('input[type=checkbox]').each(function () {
+            $('input[type=checkbox]').each(function() {
                 if (this.checked) {
                     usernames.push(this.value);
                 }
@@ -521,7 +522,7 @@
                 }),
                 contentType: 'application/json',
                 success: function(data) {
-                    usernames.forEach( function(username) {
+                    usernames.forEach(function(username) {
                         removeBannedUser(username);
                     });
                     var singular = '1 user unbanned successfully!</br>';
