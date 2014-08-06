@@ -100,6 +100,21 @@
         };
     }
 
+    function addBannedUser(username) {
+        var li = $('<li id="banned-user-' + username + '">');
+        var checkbox = $('<input type="checkbox" value="' + username + '">');
+        var span = $('<span name="twitter_username"> ' + username + '</span>');
+        li.append(checkbox);
+        li.append(span);
+        $('#banned-users').append(li);
+    }
+
+    function removeBannedUser(username) {
+        $('#banned-user-' + username).remove();            
+    }
+
+
+
     // Return the text of the selected region of the HTML document; '' if none.
     // Based on http://www.quirksmode.org/dom/range_intro.html
     function selectedText() {
@@ -431,110 +446,11 @@
             e.preventDefault();
         });
 
-        /* Banning/Unbanning twitter handles */
-        var updateBannedList = function() {
-            var banned_users = $('#banned-users');
-            $.get(
-                '/api/1/customercare/banned',
-                function(data) {
-                    data.forEach(function(user) {
-                        addBannedUser(user.username);
-                    });
-                }
-            );
-        }
 
-        var addBannedUser = function(username) {
-            var li = $('<li id="banned-user-' + username + '">');
-            var checkbox = $('<input type="checkbox" value="' + username + '">');
-            var span = $('<span name="twitter_username"> ' + username + '</span>');
-            li.append(checkbox);
-            li.append(span);
-            $('#banned-users').append(li);
-        }
 
-        var removeBannedUser = function(username) {
-            $('#banned-user-' + username).remove();            
-        }
 
-        // Initially fill in the list.
-        // If the element exists we are on the right page.
-        if ($('#banned_users')) {
-            updateBannedList();
-        }
 
-        $('#ban').on('click', function() {
-            var username = $('#ban-username').val();
-            var csrf = $('#csrf input[name=csrfmiddlewaretoken]').val();
-            var msg = $('#ban-message');
-            // Empty message before we give it more content.
-            msg.empty();
-            $.ajax({
-                beforeSend: function(xhr) {
-                    xhr.setRequestHeader('X-CSRFToken', csrf);
-                },
-                url: '/api/1/customercare/ban',
-                type: 'POST',
-                data: JSON.stringify({
-                    username: username
-                }),
-                contentType: 'application/json',
-                success: function(data) {
-                    addBannedUser(username);            
-                    msg.append(gettext('Account banned successfully!'));
-                },
-                error: function(resp) {
-                    if (resp.status === 400) {
-                        msg.append(gettext('Username not provided.</br>'));
-                    }
-                    else if (resp.status === 409) {
-                        msg.append(gettext('This account is already banned!'));
-                    }
-                }
-            });
-        });
-
-        $('#unban').on('click', function() {
-            var usernames = [];
-            $('input[type=checkbox]').each(function() {
-                if (this.checked) {
-                    usernames.push(this.value);
-                }
-            });
-            var csrf = $('#csrf input[name=csrfmiddlewaretoken]').val();
-            var msg = $('#unbans-successful');
-            // Empty message before we give it more content.
-            msg.empty();
-            $.ajax({
-                beforeSend: function(xhr) {
-                    xhr.setRequestHeader('X-CSRFToken', csrf);
-                },
-                url: '/api/1/customercare/unban',
-                type: 'POST',
-                data: JSON.stringify({
-                    usernames: usernames
-                }),
-                contentType: 'application/json',
-                success: function(data) {
-                    usernames.forEach(function(username) {
-                        removeBannedUser(username);
-                    });
-                    var count = usernames.length;
-                    var singular = gettext(count + ' user unbanned successfully!</br>');
-                    var plural = gettext(count + ' users unbanned successfully!');
-                    var localized = ngettext('1 user unbanned successfully!',
-                                             '%s users unbanned sucessfully!',
-                                             count);
-                    msg.append(interpolate(localized, [count]));
-                },
-                error: function(resp) {
-                    if (resp.status === 400) {
-                        msg.append(gettext('No users selected!</br>'));
-                    }
-                }
-            });
-        });
-
+        
         /* Infinite scrolling */
         $('#infinite-scroll').bind('enterviewport', function() {
             if (!$('#tweets').children().length) {
@@ -560,5 +476,89 @@
                 }
             );
         }).bullseye();
+
+        // If the element exists we are on the moderation page.
+        if ($('#banned-users')) {
+
+            // Fill in the initial list.
+            $.get(
+                '/api/1/customercare/banned',
+                function(data) {
+                    data.forEach(function(user) {
+                        addBannedUser(user.username);
+                    });
+                }
+            );
+
+            $('#ban').on('click', function() {
+                var username = $('#ban-username').val();
+                var csrf = $('#csrf input[name=csrfmiddlewaretoken]').val();
+                var $msg = $('#ban-message');
+                // Empty message before we give it more content.
+                $msg.empty();
+                $.ajax({
+                    beforeSend: function(xhr) {
+                        xhr.setRequestHeader('X-CSRFToken', csrf);
+                    },
+                    url: '/api/1/customercare/ban',
+                    type: 'POST',
+                    data: JSON.stringify({
+                        username: username
+                    }),
+                    contentType: 'application/json',
+                    success: function(data) {
+                        addBannedUser(username);            
+                        $msg.append(gettext('Account banned successfully!'));
+                    },
+                    error: function(resp) {
+                        if (resp.status === 400) {
+                            $msg.append(gettext('Username not provided.</br>'));
+                        }
+                        else if (resp.status === 409) {
+                            $msg.append(gettext('This account is already banned!'));
+                        }
+                    }
+                });
+            });
+
+            $('#unban').on('click', function() {
+                var usernames = [];
+                $('input[type=checkbox]').each(function() {
+                    if (this.checked) {
+                        usernames.push(this.value);
+                    }
+                });
+                var csrf = $('#csrf input[name=csrfmiddlewaretoken]').val();
+                var $msg = $('#unbans-successful');
+                // Empty message before we give it more content.
+                $msg.empty();
+                $.ajax({
+                    beforeSend: function(xhr) {
+                        xhr.setRequestHeader('X-CSRFToken', csrf);
+                    },
+                    url: '/api/1/customercare/unban',
+                    type: 'POST',
+                    data: JSON.stringify({
+                        usernames: usernames
+                    }),
+                    contentType: 'application/json',
+                    success: function(data) {
+                        usernames.forEach(function(username) {
+                            removeBannedUser(username);
+                        });
+                        var count = usernames.length;
+                        var localized = ngettext('1 user unbanned successfully!',
+                                                 '%s users unbanned sucessfully!',
+                                                 count);
+                        $msg.append(interpolate(localized, [count]));
+                    },
+                    error: function(resp) {
+                        if (resp.status === 400) {
+                            $msg.append(gettext('No users selected!</br>'));
+                        }
+                    }
+                });
+            });
+        }
     });
 }(jQuery));

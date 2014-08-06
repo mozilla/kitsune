@@ -210,6 +210,35 @@ class TweetReplyTests(TestCase):
     """Test for the twitter_post view."""
     client_class = LocalizingClient
 
+    def _create_mocked_tweet_request(self):
+        request = RequestFactory().post(
+            reverse('customercare.twitter_post'),
+            {'reply_to': 1,
+             'content': '@foobar try Aurora! #fxhelp'})
+        request.session = {}
+        request.twitter = Mock()
+        request.twitter.authed = True
+        request.twitter.api = Mock()
+        return_value = {
+            'id': 123456790,
+            'text': '@foobar try Aurora! #fxhelp',
+            'created_at': datetime.strftime(datetime.utcnow(),
+                                            '%a %b %d %H:%M:%S +0000 %Y'),
+            'user': {
+                'lang': 'en',
+                'id': 42,
+                'screen_name': 'r1cky',
+                'profile_image_url': 'http://example.com/profile.jpg',
+                'profile_image_url_https': 'https://example.com/profile.jpg',
+            }
+        }
+        request.twitter.api.update_status.return_value = return_value
+        credentials = {'screen_name': 'r1cky'}
+        request.twitter.api.verify_credentials.return_value = credentials
+        request.user = Mock()
+        request.user.is_authenticated = lambda: False
+        return request
+
     def test_post_reply(self):
         # Create a Tweet to reply to.
         Tweet.objects.create(
@@ -272,93 +301,41 @@ class TweetReplyTests(TestCase):
         eq_(t.replies.count(), 1)
 
     def test_post_account_banned(self):
-        # Create a banned TwitterAccount
-        TwitterAccount.objects.create(username='r1cky', banned=True)
-
-        # Create a Tweet to reply to.
+        # Create a tweet so our request matches.
         Tweet.objects.create(
             pk=1,
             raw_json='{}',
             locale='en',
             created=datetime.now())
 
-        # Create a request and mock all the required properties and methods.
-        request = RequestFactory().post(
-            reverse('customercare.twitter_post'),
-            {'reply_to': 1,
-             'content': '@foobar try Aurora! #fxhelp'})
-        request.session = {}
-        request.twitter = Mock()
-        request.twitter.authed = True
-        request.twitter.api = Mock()
-        return_value = {
-            'id': 123456790,
-            'text': '@foobar try Aurora! #fxhelp',
-            'created_at': datetime.strftime(datetime.utcnow(),
-                                            '%a %b %d %H:%M:%S +0000 %Y'),
-            'user': {
-                'lang': 'en',
-                'id': 42,
-                'screen_name': 'r1cky',
-                'profile_image_url': 'http://example.com/profile.jpg',
-                'profile_image_url_https': 'https://example.com/profile.jpg',
-            }
-        }
-        request.twitter.api.update_status.return_value = return_value
-        credentials = {'screen_name': 'r1cky'}
-        request.twitter.api.verify_credentials.return_value = credentials
-        request.user = Mock()
-        request.user.is_authenticated = lambda: False
+        # Create a banned TwitterAccoun
+        TwitterAccount.objects.create(username='r1cky', banned=True)
 
-        # Pass the request to the view and verify response.
+        # Create a request and mock all the required properties and methods.
+        request = self._create_mocked_tweet_request()
+
         twitter_post(request)
         eq_(request.twitter.api.update_status.called, False)
 
     def test_post_account_not_banned(self):
-        # Create a valid TwitterAccount
-        TwitterAccount.objects.create(username='r1cky', banned=False)
-
-        # Create a Tweet to reply to.
+        # Create a tweet so our request matches.
         Tweet.objects.create(
             pk=1,
             raw_json='{}',
             locale='en',
             created=datetime.now())
 
-        # Create a request and mock all the required properties and methods.
-        request = RequestFactory().post(
-            reverse('customercare.twitter_post'),
-            {'reply_to': 1,
-             'content': '@foobar try Aurora! #fxhelp'})
-        request.session = {}
-        request.twitter = Mock()
-        request.twitter.authed = True
-        request.twitter.api = Mock()
-        return_value = {
-            'id': 123456790,
-            'text': '@foobar try Aurora! #fxhelp',
-            'created_at': datetime.strftime(datetime.utcnow(),
-                                            '%a %b %d %H:%M:%S +0000 %Y'),
-            'user': {
-                'lang': 'en',
-                'id': 42,
-                'screen_name': 'r1cky',
-                'profile_image_url': 'http://example.com/profile.jpg',
-                'profile_image_url_https': 'https://example.com/profile.jpg',
-            }
-        }
-        request.twitter.api.update_status.return_value = return_value
-        credentials = {'screen_name': 'r1cky'}
-        request.twitter.api.verify_credentials.return_value = credentials
-        request.user = Mock()
-        request.user.is_authenticated = lambda: False
+        # Create a valid TwitterAccount
+        TwitterAccount.objects.create(username='r1cky', banned=False)
 
-        # Pass the request to the view and verify response.
+        # Create a request and mock all the required properties and methods.
+        request = self._create_mocked_tweet_request()
+
         twitter_post(request)
         eq_(request.twitter.api.update_status.called, True)
 
     def test_post_account_not_exists(self):
-        # Create a Tweet to reply to.
+        # Create a tweet so our request matches.
         Tweet.objects.create(
             pk=1,
             raw_json='{}',
@@ -366,33 +343,7 @@ class TweetReplyTests(TestCase):
             created=datetime.now())
 
         # Create a request and mock all the required properties and methods.
-        request = RequestFactory().post(
-            reverse('customercare.twitter_post'),
-            {'reply_to': 1,
-             'content': '@foobar try Aurora! #fxhelp'})
-        request.session = {}
-        request.twitter = Mock()
-        request.twitter.authed = True
-        request.twitter.api = Mock()
-        return_value = {
-            'id': 123456790,
-            'text': '@foobar try Aurora! #fxhelp',
-            'created_at': datetime.strftime(datetime.utcnow(),
-                                            '%a %b %d %H:%M:%S +0000 %Y'),
-            'user': {
-                'lang': 'en',
-                'id': 42,
-                'screen_name': 'r1cky',
-                'profile_image_url': 'http://example.com/profile.jpg',
-                'profile_image_url_https': 'https://example.com/profile.jpg',
-            }
-        }
-        request.twitter.api.update_status.return_value = return_value
-        credentials = {'screen_name': 'r1cky'}
-        request.twitter.api.verify_credentials.return_value = credentials
-        request.user = Mock()
-        request.user.is_authenticated = lambda: False
+        request = self._create_mocked_tweet_request()
 
-        # Pass the request to the view and verify response.
         twitter_post(request)
         eq_(request.twitter.api.update_status.called, True)

@@ -1,8 +1,5 @@
 import json
 
-from django.test import LiveServerTestCase
-from django.test.client import Client
-
 from nose.tools import eq_
 
 from kitsune.customercare.models import TwitterAccount
