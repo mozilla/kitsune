@@ -1,0 +1,49 @@
+<div id="search-results">
+  <div class="grid_3">
+    {% set base_doctype_url = base_url %}
+    {% if product %}
+      {% set base_doctype_url = base_doctype_url|urlparams(product=product.slug) %}
+    {% endif %}
+    <ul id="doctype-filter" class="search-filter sidebar-nav">
+      <li {{ w|class_selected(3)|safe }}>
+        <a href="{{ base_doctype_url }}">
+          {{ 'Show Everything'|gettext }}
+        </a>
+      </li>
+      <li {{ w|class_selected(1)|safe }}>
+        <a href="{{ base_doctype_url|urlparams(w=1) }}">
+          {{ 'Help Articles Only'|gettext }}
+        </a>
+      </li>
+      <li {{ w|class_selected(2)|safe }}>
+        <a href="{{ base_doctype_url|urlparams(w=2) }}">
+          {{ 'Community Discussion Only'|gettext }}
+        </a>
+      </li>
+    </ul>
+
+    {% set base_product_url = base_url %}
+    {% if w != 3 %}
+      {% set base_product_url = base_product_url|urlparams(w=w) %}
+    {% endif %}
+    <ul id="product-filter" class="search-filter sidebar-nav">
+      <li {{ product|class_selected(null)|safe }}>
+        <a href="{{ base_product_url }}">
+          {{ 'All Products'|gettext }}
+        </a>
+      </li>
+      {% for p in products %}
+        <li {{ product|class_selected(p.slug)|safe }}>
+          <a href="{{ base_product_url|urlparams(product=p.slug) }}">
+            {{ p.title }}
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+    <br />
+  </div>
+
+  <div class="grid_9" id="search-results-list">
+    {% include 'search-results-list.html' %}
+  </div>
+</div>

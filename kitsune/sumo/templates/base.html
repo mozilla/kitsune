@@ -160,10 +160,10 @@
 </header>
 
 {% block breadcrumbs %}
-  {{ breadcrumbs(crumbs) }}
+  {{ breadcrumbs(crumbs, id='main-breadcrumbs') }}
 {% endblock %}
 
-<div class="container_12 cf">
+<div class="container_12 cf" id="main-container">
   <div class="grid_12">
     {% if messages %}
       <ul class="user-messages">

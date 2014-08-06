@@ -163,7 +163,7 @@ class Paginator(object):
 
 @register.function
 @jinja2.contextfunction
-def breadcrumbs(context, items=list(), add_default=True):
+def breadcrumbs(context, items=list(), add_default=True, id=None):
     """
     Show a list of breadcrumbs. If url is None, it won't be a link.
     Accepts: [(url, label)]
@@ -182,7 +182,7 @@ def breadcrumbs(context, items=list(), add_default=True):
         except TypeError:
             crumbs.append(items)
 
-    c = {'breadcrumbs': crumbs}
+    c = {'breadcrumbs': crumbs, 'id': id}
 
     t = env.get_template('layout/breadcrumbs.html').render(c)
     return jinja2.Markup(t)

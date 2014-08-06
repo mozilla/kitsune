@@ -23,11 +23,11 @@ from kitsune import search as constants
 from kitsune.forums.models import Forum, ThreadMappingType
 from kitsune.products.models import Product
 from kitsune.questions.models import QuestionMappingType
-from kitsune.search.models import get_mapping_types
 from kitsune.search.utils import locale_or_default, clean_excerpt, ComposedList
 from kitsune.search import es_utils
 from kitsune.search.forms import SearchForm
 from kitsune.search.es_utils import ES_EXCEPTIONS, F, AnalyzerS
+from kitsune.sumo.helpers import Paginator
 from kitsune.sumo.utils import paginate, smart_int
 from kitsune.wiki.facets import documents_for
 from kitsune.wiki.models import DocumentMappingType
@@ -491,6 +491,23 @@ def search(request, template=None):
         for r in data['results']:
             del r['object']
         data['total'] = len(data['results'])
+
+        data['products'] = ([{'slug': p.slug, 'title': p.title}
+                             for p in Product.objects.filter(visible=True)])
+
+        pages = Paginator(pages)
+        data['pagination'] = dict(
+            number=pages.pager.number,
+            num_pages=pages.pager.paginator.num_pages,
+            has_next=pages.pager.has_next(),
+            has_previous=pages.pager.has_previous(),
+            max=pages.max,
+            span=pages.span,
+            dotted_upper=pages.pager.dotted_upper,
+            dotted_lower=pages.pager.dotted_lower,
+            page_range=pages.pager.page_range,
+            url=pages.pager.url,
+        )
         if not results:
             data['message'] = _('No pages matched the search criteria')
         json_data = json.dumps(data)
