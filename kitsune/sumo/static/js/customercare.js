@@ -445,17 +445,11 @@
         }
 
         var addBannedUser = function(username) {
-            var li = $(document.createElement('li'))
-                .attr({
-                    id: 'banned-user-' + username,
-                });
-            var checkbox = $(document.createElement('input'))
-                .attr({
-                    type: 'checkbox',
-                });
-            checkbox.val(username);
-            li.append(checkbox)
-            li.append(' ' + username);
+            var li = $('<li id="banned-user-' + username + '">');
+            var checkbox = $('<input type="checkbox" value="' + username + '">');
+            var span = $('<span name="twitter_username"> ' + username + '</span>');
+            li.append(checkbox);
+            li.append(span);
             $('#banned-users').append(li);
         }
 
@@ -528,7 +522,10 @@
                     var count = usernames.length;
                     var singular = gettext(count + ' user unbanned successfully!</br>');
                     var plural = gettext(count + ' users unbanned successfully!');
-                    msg.append(ngettext(singular, plural, count));
+                    var localized = ngettext('1 user unbanned successfully!',
+                                             '%s users unbanned sucessfully!',
+                                             count);
+                    msg.append(interpolate(localized, [count]));
                 },
                 error: function(resp) {
                     if (resp.status === 400) {

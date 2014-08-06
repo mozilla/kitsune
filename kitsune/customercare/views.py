@@ -183,9 +183,9 @@ def landing(request):
 
 
 @permission_required('customercare.ban_account')
-def moderate_twitter(request):
+def moderate(request):
     """Moderate banned AoA twitter handles."""
-    return render(request, 'customercare/moderate_twitter.html')
+    return render(request, 'customercare/moderate.html')
 
 
 @require_POST
