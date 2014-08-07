@@ -445,11 +445,6 @@
             $(this).blur();
             e.preventDefault();
         });
-
-
-
-
-
         
         /* Infinite scrolling */
         $('#infinite-scroll').bind('enterviewport', function() {
@@ -507,6 +502,7 @@
                     }),
                     contentType: 'application/json',
                     success: function(data) {
+                        username = username.replace(/^@/, '');
                         addBannedUser(username);            
                         $msg.append(gettext('Account banned successfully!'));
                     },
