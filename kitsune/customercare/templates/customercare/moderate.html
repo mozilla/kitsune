@@ -2,17 +2,18 @@
 {% set title = _('Moderate Twitter Accounts') %}
 
 {% block content %}
+  <p>{{ _('Ban user will prevent a given twitter handle from using the Army of Awesome tool.') }}</p>
   <div id="csrf">
     {{ csrf() }}{# CSRF token for AJAX actions. #}
   </div>
+  <h2>{{ _('Ban User') }}</h2>
   <div id="ban-user">
-    {{ _('Username:') }} <input id="ban-username" type="text" placeholder="@spammingisfun"/>
-    <button id="ban" type="submit" class="btn">{{ _('Ban') }}</button></br>
+    <input id="ban-username" type="text" placeholder="@spammingisfun"/>
+    <button id="ban" type="submit" class="btn">{{ _('Ban') }}</button>
   </div>
-  <div id="ban-message"></div></br>
-  {{ _('Banned Users:') }}
+  <div id="ban-message"></div>
+  <h2>{{ _('Banned Users') }}</h2>
   <ul id="banned-users"></ul>
   <button id="unban" type="submit" class="btn">{{ _('Unban') }}</button>
-  </br>
   <div id="unbans-successful"></div>
 {% endblock %}
