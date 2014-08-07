@@ -13,7 +13,7 @@ from multidb.pinning import pin_this_thread
 from statsd import statsd
 from twython import Twython
 
-from kitsune.customercare.models import Tweet, Reply
+from kitsune.customercare.models import Tweet, TwitterAccount, Reply
 from kitsune.sumo.redis_utils import redis_client, RedisError
 from kitsune.sumo.utils import chunked
 
@@ -89,7 +89,8 @@ def collect_tweets():
             # Apply filters to tweet before saving
             # Allow links in #fxinput tweets
             statsd.incr('customercare.tweet.collected')
-            item = _filter_tweet(item, allow_links='#fxinput' in item['text'])
+            item = _filter_tweet(item,
+                                 allow_links='#fxinput' in item['text'])
             if not item:
                 continue
 
@@ -173,8 +174,16 @@ def _filter_tweet(item, allow_links=False):
         return None
 
     screen_name = item['user']['screen_name']
+
+    # Django's caching system will save us here.
+    IGNORED_USERS = set(
+        TwitterAccount.objects
+        .filter(ignored=True)
+        .values_list('username', flat=True)
+    )
+
     # Exclude filtered users
-    if screen_name in settings.CC_IGNORE_USERS:
+    if screen_name in IGNORED_USERS:
         statsd.incr('customercare.tweet.rejected.user')
         return None
 

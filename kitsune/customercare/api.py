@@ -16,6 +16,12 @@ class TwitterAccountBanPermission(DjangoModelPermissions):
     }
 
 
+class TwitterAccountIgnorePermission(DjangoModelPermissions):
+    perms_map = {
+        'GET': ['customercare.ignore_account'],
+    }
+
+
 class TwitterAccountSerializer(serializers.ModelSerializer):
     """Serializer for the TwitterAccount model."""
     class Meta:
@@ -27,6 +33,13 @@ class BannedList(generics.ListAPIView):
     queryset = TwitterAccount.uncached.filter(banned=True)
     serializer_class = TwitterAccountSerializer
     permission_classes = (TwitterAccountBanPermission,)
+
+
+class IgnoredList(generics.ListAPIView):
+    """Get all banned users."""
+    queryset = TwitterAccount.uncached.filter(ignored=True)
+    serializer_class = TwitterAccountSerializer
+    permission_classes = (TwitterAccountIgnorePermission,)
 
 
 @permission_required('customercare.ban_account')
@@ -71,5 +84,51 @@ def unban(request):
             account.save()
 
     message = {'success': '{0} users unbanned successfully.'
+               .format(len(accounts))}
+    return Response(message)
+
+
+@permission_required('customercare.ignore_account')
+@api_view(['POST'])
+def ignore(request):
+    """Ignores a twitter account from showing up in the AoA tool."""
+    username = json.loads(request.body).get('username')
+    if not username:
+        raise GenericAPIException(status.HTTP_400_BAD_REQUEST,
+                                  'Username not provided.')
+
+    username = username[1:] if username.startswith('@') else username
+    account, created = TwitterAccount.uncached.get_or_create(
+        username=username,
+        defaults={'ignored': True}
+    )
+    if not created and account.ignored:
+        raise GenericAPIException(
+            status.HTTP_409_CONFLICT,
+            'This account is already in the ignore list!'
+        )
+    else:
+        account.ignored = True
+        account.save()
+
+    return Response({'success': 'Account is now being ignored!'})
+
+
+@permission_required('customercare.ignore_account')
+@api_view(['POST'])
+def unignore(request):
+    """Unignores a twitter account from showing up in the AoA tool."""
+    usernames = json.loads(request.body).get('usernames')
+    if not usernames:
+        raise GenericAPIException(status.HTTP_400_BAD_REQUEST,
+                                  'Usernames not provided.')
+
+    accounts = TwitterAccount.uncached.filter(username__in=usernames)
+    for account in accounts:
+        if account and account.ignored:
+            account.ignored = False
+            account.save()
+
+    message = {'success': '{0} users unignored successfully.'
                .format(len(accounts))}
     return Response(message)

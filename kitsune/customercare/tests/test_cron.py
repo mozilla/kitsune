@@ -13,7 +13,7 @@ from nose.tools import eq_
 from kitsune.customercare.cron import (
     _filter_tweet, _get_oldest_tweet, purge_tweets, get_customercare_stats)
 from kitsune.customercare.models import Tweet, Reply
-from kitsune.customercare.tests import tweet, reply
+from kitsune.customercare.tests import tweet, twitter_account, reply
 from kitsune.sumo.redis_utils import redis_client, RedisError
 from kitsune.sumo.tests import TestCase
 
@@ -97,7 +97,8 @@ class TwitterCronTestCase(TestCase):
 
     def test_fx4status(self):
         """Ensure fx4status tweets are filtered out."""
-        self.tweet['user']['screen_name'] = 'fx4status'
+        ta = twitter_account(username='fx4status', ignored=True, save=True)
+        self.tweet['user']['screen_name'] = ta.username
         assert _filter_tweet(self.tweet) is None
 
     def test_tweet_contains_firefox(self):
@@ -115,6 +116,16 @@ class TwitterCronTestCase(TestCase):
         assert _filter_tweet(self.tweet) is None
         # Substrings aren't blocked.
         self.tweet['text'] = 'but "food" should not be blocked.'
+        assert _filter_tweet(self.tweet) is not None
+
+    def test_ignore_user(self):
+        # Ignore user
+        ta = twitter_account(username='ignoreme', ignored=True, save=True)
+        self.tweet['user']['screen_name'] = ta.username
+        assert _filter_tweet(self.tweet) is None
+        # This user is fine though
+        ta = twitter_account(username='iamfine', ignored=False, save=True)
+        self.tweet['user']['screen_name'] = ta.username
         assert _filter_tweet(self.tweet) is not None
 
 

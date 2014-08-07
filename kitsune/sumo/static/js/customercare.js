@@ -100,20 +100,19 @@
         };
     }
 
-    function addBannedUser(username) {
-        var li = $('<li id="banned-user-' + username + '">');
-        var checkbox = $('<input type="checkbox" value="' + username + '">');
-        var span = $('<span name="twitter_username"> ' + username + '</span>');
+    function addUser(username, usernameList) {
+        var li = $('<li value="' + username + '">');
+        var checkbox = $('<input type="checkbox">');
+        var span = $('<span name="username"> ' + username + '</span>');
         li.append(checkbox);
         li.append(span);
-        $('#banned-users').append(li);
+        usernameList.append(li);
     }
 
-    function removeBannedUser(username) {
-        $('#banned-user-' + username).remove();            
+    function removeUser(username, usernameList) {
+        var $toRemove = usernameList.find('li[value="' + username + '"]').first()
+        $toRemove.remove();
     }
-
-
 
     // Return the text of the selected region of the HTML document; '' if none.
     // Based on http://www.quirksmode.org/dom/range_intro.html
@@ -473,29 +472,69 @@
         }).bullseye();
 
         // If the element exists we are on the moderation page.
-        if ($('#banned-users')) {
-
+        var bannedList = $('#banned-users');
+        var ignoredList= $('#ignored-users');
+        if (bannedList || ignoredList) {
             var csrf = $('#csrf input[name=csrfmiddlewaretoken]').val();
-            // Fill in the initial list.
-            $.get(
-                '/api/1/customercare/banned',
-                function(data) {
-                    data.forEach(function(user) {
-                        addBannedUser(user.username);
-                    });
-                }
-            );
 
-            $('#ban').on('click', function() {
-                var username = $('#ban-username').val();
-                var $msg = $('#ban-message');
+            // Fill in the lists initially
+            if (bannedList) {
+                $.get(
+                    '/api/1/customercare/banned',
+                    function(data) {
+                        data.forEach(function(user) {
+                            addUser(user.username, bannedList);
+                        });
+                    }
+                );
+            }
+
+            if (ignoredList) {
+                $.get(
+                    '/api/1/customercare/ignored',
+                    function(data) {
+                        data.forEach(function(user) {
+                            addUser(user.username, ignoredList);
+                        });
+                    }
+                );
+            }
+
+            $('button[name="username-add"]').on('click', function() {
+                var ulId = $(this).attr('data-username-list');
+                var action = '';
+                var usernameList;
+                if (ulId.indexOf('ban') != -1) {
+                    action = 'ban';
+                    usernameList = bannedList;
+                } else if (ulId.indexOf('ignore') != -1) {
+                    action = 'ignore';
+                    usernameList = ignoredList;
+                }
+                var username = $('#' + action + '-username').val();
+                var $msg = $('#' + action + '-message');
+
+                // Numbers refer to status codes.
+                var responses = {
+                    ban: {
+                        200: gettext('Account banned successfully!'),
+                        400: gettext('Username not provided.'),
+                        409: gettext('This account is already banned!'),
+                    },
+                    ignore: {
+                        200: gettext('Account is now being ignored!'),
+                        400: gettext('Username not provided.'),
+                        409: gettext('This account is already being ignored!'),
+                    },
+                }
+
                 // Empty message before we give it more content.
                 $msg.empty();
                 $.ajax({
                     beforeSend: function(xhr) {
                         xhr.setRequestHeader('X-CSRFToken', csrf);
                     },
-                    url: '/api/1/customercare/ban',
+                    url: '/api/1/customercare/' + action,
                     type: 'POST',
                     data: JSON.stringify({
                         username: username
@@ -503,35 +542,63 @@
                     contentType: 'application/json',
                     success: function(data) {
                         username = username.replace(/^@/, '');
-                        addBannedUser(username);            
-                        $msg.append(gettext('Account banned successfully!'));
+                        addUser(username, usernameList);
+                        $msg.append(responses[action][200]);
                     },
                     error: function(resp) {
-                        if (resp.status === 400) {
-                            $msg.append(gettext('Username not provided.'));
-                        }
-                        else if (resp.status === 409) {
-                            $msg.append(gettext('This account is already banned!'));
-                        }
+                        $msg.append(responses[action][resp.status]);
                     }
                 });
             });
 
-            $('#unban').on('click', function() {
+            $('button[name="username-remove"]').on('click', function() {
                 var usernames = [];
-                $('input[type=checkbox]').each(function() {
-                    if (this.checked) {
-                        usernames.push(this.value);
+                var ulId = $(this).attr('data-username-list');
+                $('#' + ulId).children().each(function() {
+                    var $li = $(this);
+                    var $checkbox = $li.find('input[type="checkbox"]').first();
+                    if ($checkbox.attr('checked')) {
+                        var $span = $li.find('span[name="username"]').first();
+                        usernames.push($span.text().trim());
                     }
                 });
-                var $msg = $('#unbans-successful');
+
+                var action = '';
+                var usernameList;
+                if (ulId.indexOf('ban') != -1) {
+                    action = 'unban';
+                    usernameList = bannedList;
+                } else if (ulId.indexOf('ignore') != -1) {
+                    action = 'unignore';
+                    usernameList = ignoredList;
+                }
+
+                var count = usernames.length;
+                var localizedUnban = ngettext('1 user unbanned successfully!',
+                                              '%s users unbanned sucessfully!',
+                                              count);
+                var localizedUnignore = ngettext('1 user removed from list!',
+                                                 '%s users removed from list!',
+                                                 count);
+                var responses = {
+                    unban: {
+                        200: interpolate(localizedUnban, [count]),
+                        400: gettext('No users selected!'),
+                    },
+                    unignore: {
+                        200: interpolate(localizedUnignore, [count]),
+                        400: gettext('No users selected!'),
+                    },
+                }
+
                 // Empty message before we give it more content.
+                var $msg = $('#' + action + '-message');
                 $msg.empty();
                 $.ajax({
                     beforeSend: function(xhr) {
                         xhr.setRequestHeader('X-CSRFToken', csrf);
                     },
-                    url: '/api/1/customercare/unban',
+                    url: '/api/1/customercare/' + action,
                     type: 'POST',
                     data: JSON.stringify({
                         usernames: usernames
@@ -539,18 +606,12 @@
                     contentType: 'application/json',
                     success: function(data) {
                         usernames.forEach(function(username) {
-                            removeBannedUser(username);
+                            removeUser(username, usernameList);
                         });
-                        var count = usernames.length;
-                        var localized = ngettext('1 user unbanned successfully!',
-                                                 '%s users unbanned sucessfully!',
-                                                 count);
-                        $msg.append(interpolate(localized, [count]));
+                        $msg.append(responses[action][200]);
                     },
                     error: function(resp) {
-                        if (resp.status === 400) {
-                            $msg.append(gettext('No users selected!</br>'));
-                        }
+                        $msg.append(responses[action][resp.status]);
                     }
                 });
             });

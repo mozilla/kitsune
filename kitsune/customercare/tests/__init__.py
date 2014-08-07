@@ -61,6 +61,7 @@ def twitter_account(**kwargs):
     defaults = {
         'username': kwargs.pop('username'),
         'banned': False,
+        'ignored': False,
     }
 
     defaults.update(kwargs)

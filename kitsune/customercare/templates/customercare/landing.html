@@ -36,7 +36,7 @@
   </div>
 
   <div class="grid_12 cf">
-    {% if user.has_perm('customercare.ban_account') %}
+    {% if user.has_perm('customercare.ban_account') or user.has_perm('customercare.ignore_account') %}
       <div id="tweet-mod-tools">
         <a class='btn btn-warning' href="{{ url('customercare.moderate') }}">{{_('Moderate Twitter Accounts')}}</a>
       </div>

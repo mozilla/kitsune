@@ -16,9 +16,11 @@ class TwitterAccount(ModelBase):
     # 15 characters is the max length for twitter usernames.
     username = models.CharField(max_length=15)
     banned = models.BooleanField(default=False, db_index=True)
+    ignored = models.BooleanField(default=False, db_index=True)
 
     class Meta:
-        permissions = (('ban_account', 'Can ban twitter accounts'),)
+        permissions = (('ban_account', 'Can ban twitter accounts'),
+                       ('ignore_account', 'Can tag accounts to ignore'),)
 
 
 class Tweet(ModelBase):
