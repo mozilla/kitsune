@@ -480,6 +480,7 @@
         // If the element exists we are on the moderation page.
         if ($('#banned-users')) {
 
+            var csrf = $('#csrf input[name=csrfmiddlewaretoken]').val();
             // Fill in the initial list.
             $.get(
                 '/api/1/customercare/banned',
@@ -492,7 +493,6 @@
 
             $('#ban').on('click', function() {
                 var username = $('#ban-username').val();
-                var csrf = $('#csrf input[name=csrfmiddlewaretoken]').val();
                 var $msg = $('#ban-message');
                 // Empty message before we give it more content.
                 $msg.empty();
@@ -512,7 +512,7 @@
                     },
                     error: function(resp) {
                         if (resp.status === 400) {
-                            $msg.append(gettext('Username not provided.</br>'));
+                            $msg.append(gettext('Username not provided.'));
                         }
                         else if (resp.status === 409) {
                             $msg.append(gettext('This account is already banned!'));
@@ -528,7 +528,6 @@
                         usernames.push(this.value);
                     }
                 });
-                var csrf = $('#csrf input[name=csrfmiddlewaretoken]').val();
                 var $msg = $('#unbans-successful');
                 // Empty message before we give it more content.
                 $msg.empty();
