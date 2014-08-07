@@ -28,6 +28,9 @@ class TwitterCronTestCase(TestCase):
             "screen_name": "jspeis",
             "id": 2142841,
         },
+        "entities": {
+            "user_mentions": [],
+        },
         "metadata": {
             "result_type": "recent",
         },
@@ -48,17 +51,17 @@ class TwitterCronTestCase(TestCase):
 
     def test_mentions(self):
         """Filter out mentions."""
-        self.tweet['text'] = 'Hey @someone!'
+        self.tweet['entities']['user_mentions'].append({'id': 123456})
         assert _filter_tweet(self.tweet) is None
 
     def test_firefox_mention(self):
         """Don't filter out @firefox mentions."""
-        self.tweet['text'] = 'Hey @firefox!'
+        self.tweet['entities']['user_mentions'].append({'id': 2142731})
         eq_(self.tweet, _filter_tweet(self.tweet))
 
     def test_firefoxbrasil_mention(self):
         """Don't filter out @FirefoxBrasil mentions."""
-        self.tweet['text'] = 'Olá @FirefoxBrasil!'
+        self.tweet['entities']['user_mentions'].append({'id': 150793437})
         eq_(self.tweet, _filter_tweet(self.tweet))
 
     def test_replies(self):
