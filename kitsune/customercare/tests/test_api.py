@@ -3,6 +3,7 @@ import json
 from nose.tools import eq_
 
 from kitsune.customercare.models import TwitterAccount
+from kitsune.customercare.tests import twitter_account
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import add_permission, user
@@ -14,12 +15,12 @@ class BanUser(TestCase):
         # Set up some banned users
         self.banned_usernames = ['deanj', 'r1cky', 'mythmon']
         for username in self.banned_usernames:
-            TwitterAccount.objects.create(username=username, banned=True)
+            twitter_account(username=username, banned=True, save=True)
 
         # Now a few normal users
         self.normal_usernames = ['willkg', 'marcell', 'ian']
         for username in self.normal_usernames:
-            TwitterAccount.objects.create(username=username, banned=False)
+            twitter_account(username=username, banned=False, save=True)
 
         # Create a user with permissions to ban
         u = user(save=True)
@@ -46,7 +47,7 @@ class BanUser(TestCase):
         eq_(user.banned, True)
 
     def test_single_unban_account(self):
-        data = {'usernames': ['deanj']}
+        data = {'usernames': self.banned_usernames[:1]}
         self.client.post(reverse('customercare.api.unban'),
                          data=json.dumps(data),
                          content_type='application/json')
@@ -55,11 +56,12 @@ class BanUser(TestCase):
         eq_(num_banned, 2)
 
         user = (TwitterAccount.objects
-                .filter(username__in=data['usernames'], banned=False).first())
+                .filter(username__in=data['usernames'], banned=False)
+                .first())
         eq_(user.banned, False)
 
     def test_multiple_unban_account(self):
-        data = {'usernames': ['r1cky', 'mythmon']}
+        data = {'usernames': self.banned_usernames[1:]}
         self.client.post(reverse('customercare.api.unban'),
                          data=json.dumps(data),
                          content_type='application/json')

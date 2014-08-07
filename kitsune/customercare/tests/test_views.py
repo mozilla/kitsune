@@ -7,8 +7,8 @@ from mock import patch, Mock
 from nose.tools import eq_
 from test_utils import RequestFactory
 
-from kitsune.customercare.models import Tweet, TwitterAccount, Reply
-from kitsune.customercare.tests import tweet, reply
+from kitsune.customercare.models import Tweet, Reply
+from kitsune.customercare.tests import tweet, twitter_account, reply
 from kitsune.customercare.views import _get_tweets, _count_answered_tweets
 from kitsune.customercare.views import twitter_post
 from kitsune.sumo.tests import TestCase, LocalizingClient
@@ -309,7 +309,7 @@ class TweetReplyTests(TestCase):
             created=datetime.now())
 
         # Create a banned TwitterAccoun
-        TwitterAccount.objects.create(username='r1cky', banned=True)
+        twitter_account(username='r1cky', banned=True, save=True)
 
         # Create a request and mock all the required properties and methods.
         request = self._create_mocked_tweet_request()
@@ -326,7 +326,7 @@ class TweetReplyTests(TestCase):
             created=datetime.now())
 
         # Create a valid TwitterAccount
-        TwitterAccount.objects.create(username='r1cky', banned=False)
+        twitter_account(username='r1cky', banned=False, save=True)
 
         # Create a request and mock all the required properties and methods.
         request = self._create_mocked_tweet_request()
