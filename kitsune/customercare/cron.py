@@ -19,7 +19,6 @@ from kitsune.sumo.utils import chunked
 
 
 LINK_REGEX = re.compile('https?\:', re.IGNORECASE)
-MENTION_REGEX = re.compile('(^|\W)@')
 RT_REGEX = re.compile('^rt\W', re.IGNORECASE)
 
 ALLOWED_USERS = [
@@ -157,15 +156,11 @@ def _filter_tweet(item, allow_links=False):
         statsd.incr('customercare.tweet.rejected.reply_or_mention')
         return None
 
-    # No mentions, except of ALLOWED_USERS. Let's remove
-    # these from the text before checking for mentions.
-    # Note: This has some edge cases like @firefoxrocks that will pass by.
-    filtered_text = text
-    for username in [u['username'].lower() for u in ALLOWED_USERS]:
-        filtered_text = filtered_text.replace('@%s' % username, '')
-    if MENTION_REGEX.search(filtered_text):
-        statsd.incr('customercare.tweet.rejected.reply_or_mention')
-        return None
+    # No mentions, except of ALLOWED_USERS
+    for user in item['entities']['user_mentions']:
+        if user['id'] not in allowed_user_ids:
+            statsd.incr('customercare.tweet.rejected.reply_or_mention')
+            return None
 
     # No retweets
     if RT_REGEX.search(text) or text.find('(via ') > -1:
@@ -184,8 +179,8 @@ def _filter_tweet(item, allow_links=False):
         return None
 
     # Exlude users with firefox in the handle
-    if ('firefox' in screen_name.lower() and
-            item['user']['id'] not in allowed_user_ids):
+    if 'firefox' in screen_name.lower():
+        statsd.incr('customercare.tweet.rejected.firefox_in_handle')
         return None
 
     # Exclude problem words
