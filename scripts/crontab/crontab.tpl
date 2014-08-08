@@ -9,6 +9,9 @@ HOME = /tmp
 # Every minute!
 * * * * * {{ cron }} collect_tweets
 
+# Every 10 minutes!
+*/10 * * * * {{ cron }} record_queue_size
+
 # Every hour.
 59 * * * * {{ cron }} escalate_questions
 

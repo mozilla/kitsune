@@ -3,6 +3,15 @@ from django.core.mail import mail_admins
 
 import cronjobs
 import requests
+from statsd import statsd
+
+from kitsune.sumo.utils import rabbitmq_queue_size
+
+
+@cronjobs.register
+def record_queue_size():
+    """Records the rabbitmq size in statsd"""
+    statsd.gauge('rabbitmq.size', rabbitmq_queue_size())
 
 
 @cronjobs.register
