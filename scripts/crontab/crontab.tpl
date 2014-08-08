@@ -11,6 +11,7 @@ HOME = /tmp
 
 # Every hour.
 59 * * * * {{ cron }} escalate_questions
+0 * * * * {{ cron }} record_queue_size
 
 # Every 6 hours.
 0 */6 * * * {{ django }} update_product_details -q > /dev/null

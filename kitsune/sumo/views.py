@@ -24,7 +24,7 @@ from session_csrf import anonymous_csrf
 from kitsune.search import es_utils
 from kitsune.sumo.redis_utils import redis_client, RedisError
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.sumo.utils import get_next_url
+from kitsune.sumo.utils import get_next_url, rabbitmq_queue_size
 from kitsune.users.forms import AuthenticationForm
 
 
@@ -209,6 +209,8 @@ def monitor(request):
         rabbitmq_results.append(
             (INFO, 'Successfully connected to RabbitMQ.'))
 
+        rabbitmq_results.append(
+            (INFO, 'Queue size: %s' % rabbitmq_queue_size()))
     except (socket.error, IOError) as exc:
         rabbitmq_results.append(
             (ERROR, 'Error connecting to RabbitMQ: %s' % str(exc)))
