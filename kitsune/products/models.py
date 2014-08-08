@@ -155,6 +155,16 @@ class Topic(ModelBase):
             path = [cur.slug] + path
         return path
 
+    @property
+    def documents(self):
+        # Avoid circular imports
+        from kitsune.wiki.models import Document
+        return Document.objects.filter(topics=self, products=self.product)
+
+    @property
+    def subtopics(self):
+        return Topics.objects.filter(parent=self)
+
 
 class Version(ModelBase):
     name = models.CharField(max_length=255)
