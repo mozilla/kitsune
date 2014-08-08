@@ -19,6 +19,7 @@ HOME = /tmp
 0 */6 * * * {{ django }} update_product_details -q > /dev/null
 40 */6 * * * {{ cron }} purge_tweets
 50 */6 * * * {{ cron }} cache_top_contributors
+20 */6 * * {{ cron }} generate_missing_share_links
 
 
 # Once per day.
@@ -39,7 +40,6 @@ HOME = /tmp
 45 4 * * * {{ cron }} build_kb_bundles
 0 0 * * * {{ cron }} rebuild_kb
 0 22 * * * {{ cron }} get_customercare_stats
-0 0 * * * {{ cron }} generate_missing_share_links
 42 22 * * * {{ django }} cleanup
 30 3 * * * root {{ rscripts }} scripts/l10n_completion.py --truncate 30 locale media/uploads/l10n_history.json media/uploads/l10n_summary.json
 30 3 * * * {{ cron }} send_postatus_errors

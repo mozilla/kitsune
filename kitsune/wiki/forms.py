@@ -188,12 +188,12 @@ class DocumentForm(forms.ModelForm):
 
         # Create the share link if it doesn't exist and is in
         # a category it should show for.
+        doc.save()
         if (doc.category in settings.IA_DEFAULT_CATEGORIES
                 and not doc.share_link):
             # This operates under the constraints of passing in a list.
-            add_short_links.delay([doc])
+            add_short_links.delay([doc.pk])
 
-        doc.save()
         self.save_m2m()
 
         if parent_doc:
