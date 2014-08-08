@@ -3,10 +3,17 @@ import json
 from rest_framework import generics, serializers, status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
+from rest_framework.permissions import DjangoModelPermissions
 
 from kitsune.access.decorators import permission_required
 from kitsune.customercare.models import TwitterAccount
 from kitsune.sumo.api import GenericAPIException
+
+
+class TwitterAccountBanPermission(DjangoModelPermissions):
+    perms_map = {
+        'GET': ['customercare.ban_account'],
+    }
 
 
 class TwitterAccountSerializer(serializers.ModelSerializer):
@@ -19,6 +26,7 @@ class BannedList(generics.ListAPIView):
     """Get all banned users."""
     queryset = TwitterAccount.uncached.filter(banned=True)
     serializer_class = TwitterAccountSerializer
+    permission_classes = (TwitterAccountBanPermission,)
 
 
 @permission_required('customercare.ban_account')
