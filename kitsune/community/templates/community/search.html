@@ -35,7 +35,7 @@
         ENDCOMMENT #}
 
         <fieldset>
-          <input type="text" name="q" id="search" class="query" value="{{ q }}" placeholder="{{ _('Username or Display Name') }}" />
+          <input type="text" name="q" id="search" class="query" value="{{ q }}" placeholder="{{ _('Username, Display Name or Twitter Handle') }}" />
           <input type="submit" value="{{ _('Search') }}" class="search" />
         </fieldset>
       </form>
@@ -56,6 +56,12 @@
           <h2>{{ result['display_name'] }}</h2>
           <ul class="results-user-details">
             <li>{{ result['username'] }}</li>
+            <li>
+              {{ _('Twitter Handles:') }}
+              {% for handle in result['twitter_usernames'] %}
+                {{ handle }}
+              {% endfor %}
+            </li>
             <li><a href="{{ url('users.profile', result['id']) }}">{{ _('View Profile') }}</a></li>
             <li><a href="{{ url('messages.new')|urlparams(to=result['username']) }}">{{ _('Private Message') }}</a></li>
           </ul>

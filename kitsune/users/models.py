@@ -16,6 +16,7 @@ from timezones.fields import TimeZoneField, zones, MAX_TIMEZONE_LENGTH
 from tower import ugettext as _
 from tower import ugettext_lazy as _lazy
 
+from kitsune.customercare.models import Reply
 from kitsune.lib.countries import COUNTRIES
 from kitsune.search.es_utils import UnindexMeBro
 from kitsune.search.models import (
@@ -113,6 +114,13 @@ class Profile(ModelBase, SearchMixin):
     def display_name(self):
         return self.name if self.name else self.user.username
 
+    @property
+    def twitter_usernames(self):
+        return list(
+            Reply.objects.filter(user=self.user)
+                         .values_list('twitter_username', flat=True)
+                         .distinct())
+
     @classmethod
     def get_mapping_type(cls):
         return UserMappingType
@@ -139,10 +147,18 @@ class UserMappingType(SearchMappingType):
 
                 'username': {'type': 'string', 'index': 'not_analyzed'},
                 'display_name': {'type': 'string', 'index': 'not_analyzed'},
+                'twitter_usernames': {
+                    'type': 'string',
+                    'index': 'not_analyzed'
+                },
 
                 # lower-cased versions for querying:
                 'iusername': {'type': 'string', 'index': 'not_analyzed'},
                 'idisplay_name': {'type': 'string', 'analyzer': 'whitespace'},
+                'itwitter_usernames': {
+                    'type': 'string',
+                    'index': 'not_analyzed'
+                },
 
                 'avatar': {'type': 'string', 'index': 'not_analyzed'},
 
@@ -173,9 +189,11 @@ class UserMappingType(SearchMappingType):
 
         d['username'] = obj.user.username
         d['display_name'] = obj.display_name
+        d['twitter_usernames'] = obj.twitter_usernames
 
         d['iusername'] = obj.user.username.lower()
         d['idisplay_name'] = obj.display_name.lower()
+        d['itwitter_usernames'] = [u.lower() for u in obj.twitter_usernames]
 
         from kitsune.users.helpers import profile_avatar
         d['avatar'] = profile_avatar(obj.user, size=120)
