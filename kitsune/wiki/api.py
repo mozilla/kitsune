@@ -17,7 +17,7 @@ class DocumentShortSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Document
-        fields = ('id', 'title', 'slug', 'locale', 'products', 'topics')
+        fields = ('title', 'slug')
 
 
 class DocumentDetailSerializer(DocumentShortSerializer):

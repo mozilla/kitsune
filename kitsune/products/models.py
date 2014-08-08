@@ -155,6 +155,19 @@ class Topic(ModelBase):
             path = [cur.slug] + path
         return path
 
+    def documents(self, **kwargs):
+        # Avoid circular imports
+        from kitsune.wiki.models import Document
+        query = {
+            'topics': self,
+            'products': self.product,
+            'is_archived': False,
+            'current_revision__isnull': False,
+            'category__in': settings.IA_DEFAULT_CATEGORIES,
+        }
+        query.update(kwargs)
+        return Document.objects.filter(**query)
+
 
 class Version(ModelBase):
     name = models.CharField(max_length=255)

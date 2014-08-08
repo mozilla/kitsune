@@ -21,6 +21,7 @@ from mobility.decorators import mobile_template
 from PIL import Image
 from session_csrf import anonymous_csrf
 
+from kitsune.sumo.decorators import cors_enabled
 from kitsune.search import es_utils
 from kitsune.sumo.redis_utils import redis_client, RedisError
 from kitsune.sumo.urlresolvers import reverse
@@ -303,3 +304,13 @@ def kitsune_qunit(request, path):
     ctx = django_qunit.views.get_suite_context(request, path)
     ctx.update(timestamp=time())
     return render(request, 'tests/qunit.html', ctx)
+
+
+@cors_enabled('*')
+def serve_cors(*args, **kwargs):
+    """A wrapper around django.views.static.serve that adds CORS headers."""
+    if not settings.DEBUG:
+        raise RuntimeError("Don't use kitsune.sumo.views.serve_cors "
+                           "in production.")
+    from django.views.static import serve
+    return serve(*args, **kwargs)
