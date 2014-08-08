@@ -22,7 +22,7 @@ from kitsune.sumo.utils import chunked
 from kitsune.wiki.badges import WIKI_BADGES
 from kitsune.wiki.models import (
     Document, points_to_document_view, SlugCollision, TitleCollision, Revision)
-from kitsune.wiki.utils import generate_short_url
+from kitsune.wiki.utils import generate_short_url, BitlyRateLimitException
 
 
 log = logging.getLogger('k.task')
@@ -149,23 +149,22 @@ def schedule_rebuild_kb():
     rebuild_kb.delay()
 
 
-@task(rate_limit='10/m')
-def add_short_links(data):
+@task
+def add_short_links(doc_ids):
     """Create short_url's for a list of docs."""
-    for chunk in chunked(data, 100):
-        _add_short_links_chunked.apply_async(args=[chunk])
-
-
-@task(rate_limit='1/h')
-def _add_short_links_chunked(data):
-    """Create short_url's for a chunked list of docs."""
     base_url = 'https://{0}%s'.format(Site.objects.get_current().domain)
-    for doc in data:
-        endpoint = reverse('wiki.document',
-                           locale=doc.locale,
-                           args=[doc.slug])
-        doc.share_link = generate_short_url(base_url % endpoint)
-        doc.save()
+    docs = Document.objects.filter(id__in=doc_ids)
+    try:
+        for doc in docs:
+            endpoint = reverse('wiki.document',
+                               locale=doc.locale,
+                               args=[doc.slug])
+            doc.share_link = generate_short_url(base_url % endpoint)
+            doc.save()
+    except BitlyRateLimitException:
+        # The next run of the `generate_missing_share_links` cron job will
+        # catch all documents that were unable to be processed.
+        pass
 
 
 @task(rate_limit='3/h')

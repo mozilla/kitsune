@@ -22,17 +22,18 @@ from kitsune.wiki.config import (HOW_TO_CATEGORY, TROUBLESHOOTING_CATEGORY,
 @cronjobs.register
 def generate_missing_share_links():
     """Generate share links for documents that may be missing them."""
-    documents = (Document.objects.select_related('revision')
-                 .filter(parent=None,
-                         share_link='',
-                         is_template=False,
-                         is_archived=False,
-                         category__in=settings.IA_DEFAULT_CATEGORIES)
-                 .exclude(slug='',
-                          current_revision=None,
-                          html__startswith=REDIRECT_HTML))
+    document_ids = (Document.objects.select_related('revision')
+                    .filter(parent=None,
+                            share_link='',
+                            is_template=False,
+                            is_archived=False,
+                            category__in=settings.IA_DEFAULT_CATEGORIES)
+                    .exclude(slug='',
+                             current_revision=None,
+                             html__startswith=REDIRECT_HTML)
+                    .values_list('id', flat=True))
 
-    tasks.add_short_links(documents)
+    tasks.add_short_links.delay(document_ids)
 
 
 @cronjobs.register
