@@ -24,6 +24,7 @@ def send_postatus_errors():
 
     def new_section(line):
         return (line.startswith('dennis ')
+                or line.startswith('Totals')
                 or line.startswith('BUSTED')
                 or line.startswith('COMPILED'))
 
@@ -35,8 +36,6 @@ def send_postatus_errors():
     datestamp = lines.pop(0)
 
     errordata = []
-
-    print len(lines)
 
     while lines:
         line = lines.pop(0)
@@ -50,7 +49,7 @@ def send_postatus_errors():
         mail_admins(
             subject='[SUMO] postatus errors %s' % datestamp,
             message=(
-                'These are the errors in the SUMO postatus file:\n\n'
+                'These are the errors in the SUMO postatus file:\n\n' +
                 '\n'.join(errordata)
                 )
             )
