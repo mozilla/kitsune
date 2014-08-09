@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from nose.tools import eq_
 
+from kitsune.customercare.tests import reply
 from kitsune.search.tests.test_es import ElasticTestCase
 from kitsune.users.models import UserMappingType
 from kitsune.users.tests import profile, user
@@ -24,6 +25,8 @@ class UserSearchTests(ElasticTestCase):
         """Verify the data we are indexing."""
         u = user(username='r1cky', email='r@r.com', save=True)
         p = profile(user=u, name=u'Rick Róss')
+        r1 = reply(user=u, twitter_username='r1cardo', save=True)
+        r2 = reply(user=u, twitter_username='r1cky', save=True)
 
         self.refresh()
 
@@ -31,6 +34,8 @@ class UserSearchTests(ElasticTestCase):
         data = UserMappingType.search().values_dict()[0]
         eq_(data['username'], p.user.username)
         eq_(data['display_name'], p.name)
+        assert r1.twitter_username in data['twitter_usernames']
+        assert r2.twitter_username in data['twitter_usernames']
 
         u = user(username='willkg', email='w@w.com', save=True)
         p = profile(user=u, name=u'Will Cage')
@@ -114,3 +119,21 @@ class UserSearchTests(ElasticTestCase):
         eq_(UserMappingType.search().count(), 2)
         eq_(UserMappingType.search().query(
             idisplay_name__match_whitespace='elite').count(), 1)
+
+    def test_query_twitter_usernames(self):
+        u1 = user(username='1337miKE', save=True)
+        p = profile(user=u1, name=u'Elite Mike')
+        u2 = user(username='mike', save=True)
+        profile(user=u2, name=u'NotElite Mike')
+        r1 = reply(user=u1, twitter_username='l33tmIkE', save=True)
+        r2 = reply(user=u2, twitter_username='mikey', save=True)
+
+        self.refresh()
+
+        eq_(UserMappingType.search().query(
+            itwitter_usernames__match='l33tmike').count(), 1)
+        data = UserMappingType.search().query(
+            itwitter_usernames__match='l33tmike').values_dict()[0]
+        eq_(data['username'], p.user.username)
+        eq_(data['display_name'], p.name)
+        assert r1.twitter_username in data['twitter_usernames']

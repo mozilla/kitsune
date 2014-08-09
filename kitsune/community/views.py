@@ -84,8 +84,10 @@ def search(request):
                 .query(
                     iusername__match=lowerq,
                     idisplay_name__match_whitespace=lowerq,
+                    itwitter_usernames__match=lowerq,
                     should=True)
-                .values_dict('id', 'username', 'display_name', 'avatar'))
+                .values_dict('id', 'username', 'display_name', 'avatar',
+                             'twitter_usernames'))
 
             statsd.incr('community.usersearch.success')
         except ES_EXCEPTIONS as exc:
