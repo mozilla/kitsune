@@ -159,13 +159,14 @@ AAQ_LANGUAGES = (
 # to add content.
 FXOS_LANGUAGES = [
     'bn-BD',
+    'bn-IN',
     'cs',
     'de',
     'el',
     'en-US',
     'es',
     'fr',
-    'hi',
+    'hi-IN',
     'hr',
     'hu',
     'it',
@@ -176,6 +177,7 @@ FXOS_LANGUAGES = [
     'ro',
     'ru',
     'sr',
+    'ta',
     'sr-Cyrl',
     'tr',
 ]
