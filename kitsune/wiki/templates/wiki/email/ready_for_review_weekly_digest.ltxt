@@ -17,11 +17,22 @@ helping users.
 {% for d in product_docs %}
 {{ d.title }}
 (https://{{ host }}{{ url('wiki.document_revisions', d.slug) }})
-{% endfor %}
 
+{% endfor %}
 
 {% endif %}
 {% endfor %}
+{% set product_docs = docs.filter(products=None) %}
+{% if product_docs %}
+{{ _('Other documents') }}
+
+{% for d in product_docs %}
+{{ d.title }}
+(https://{{ host }}{{ url('wiki.document_revisions', d.slug) }})
+
+{% endfor %}
+
+{% endif %}
 {% trans %}
 Many thanks for your contribution on behalf of SUMO and the happy users who are
 helped by your work!

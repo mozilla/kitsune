@@ -43,6 +43,22 @@
     {% endif %}
   {% endfor %}
 
+  {% set product_docs = docs.filter(products=None) %}
+  {% if product_docs %}
+    <p>
+        <strong>{{ _('Other documents') }}</strong>
+        <ul>
+          {% for d in product_docs %}
+            <li>
+              <a href="https://{{ host }}{{ url('wiki.document_revisions', d.slug) }}">
+                {{ d.title }}
+              </a>
+            </li>
+          {% endfor %}
+        </ul>
+      </p>
+  {% endif %}
+
   <p>
     {% trans %}
       Many thanks for your contribution in behalf of SUMO and the happy users
