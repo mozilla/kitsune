@@ -155,15 +155,26 @@ class Topic(ModelBase):
             path = [cur.slug] + path
         return path
 
-    @property
-    def documents(self):
+    def documents(self, **kwargs):
         # Avoid circular imports
         from kitsune.wiki.models import Document
-        return Document.objects.filter(topics=self, products=self.product)
+        query = {
+            topic: self,
+            products: self.product,
+            is_archived: False,
+            current_revision__isnull: False,
+            category__in: settings.IA_DEFAULT_CATEGORIES,
+        }
+        query.update(kwargs)
+        return Document.objects.filter(**query)
 
-    @property
-    def subtopics(self):
-        return Topics.objects.filter(parent=self)
+    def subtopics(self, **kwargs):
+        query = {
+            parent: self,
+            is_visible: true,
+        }
+        query.update(kwargs)
+        return Topics.objects.filter(**query)
 
 
 class Version(ModelBase):
