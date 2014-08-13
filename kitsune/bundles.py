@@ -59,6 +59,7 @@ MINIFY_BUNDLES = {
         ),
         'mobile/wiki': (
             'less/mobile/wiki.less',
+            'less/wiki-content.less',
         ),
         'home': (
             'less/home.less',
