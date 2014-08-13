@@ -4,6 +4,7 @@ import waffle
 from itertools import chain
 
 from django.conf import settings
+from django.contrib.sites.models import Site
 from django.db.models import F, Q, ObjectDoesNotExist
 
 from statsd import statsd
@@ -100,6 +101,8 @@ def send_weekly_ready_for_review_digest():
 
         for u in users:
             _send_mail(l, u, {
+                'host': Site.objects.get_current().domain,
+                'locale': l,
                 'recipient': u,
                 'docs': docs,
                 'products': products

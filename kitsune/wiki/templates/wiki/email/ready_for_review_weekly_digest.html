@@ -26,14 +26,18 @@
   </p>
 
   {% for p in products %}
-    {% set product_docs = docs.filter(products__in=[p]) %}
+    {% if docs.parent %}
+      {% set product_docs = docs.filter(parent__products__in=[p]) %}
+    {% else %}
+      {% set product_docs = docs.filter(products__in=[p]) %}
+    {% endif %}
     {% if product_docs %}
       <p>
         <strong>{{ _(p.title, 'DB: products.Product.title') }}</strong>
         <ul>
           {% for d in product_docs %}
             <li>
-              <a href="https://{{ host }}{{ url('wiki.document_revisions', d.slug) }}">
+              <a href="/{{ locale }}{{ url('wiki.document_revisions', d.slug) }}">
                 {{ d.title }}
               </a>
             </li>
@@ -43,14 +47,18 @@
     {% endif %}
   {% endfor %}
 
-  {% set product_docs = docs.filter(products=None) %}
+  {% if docs.parent %}
+    {% set product_docs = docs.filter(parent__products=None) %}
+  {% else %}
+    {% set product_docs = docs.filter(products=None) %}
+  {% endif %}
   {% if product_docs %}
     <p>
         <strong>{{ _('Other documents') }}</strong>
         <ul>
           {% for d in product_docs %}
             <li>
-              <a href="https://{{ host }}{{ url('wiki.document_revisions', d.slug) }}">
+              <a href="/{{ locale }}{{ url('wiki.document_revisions', d.slug) }}">
                 {{ d.title }}
               </a>
             </li>
