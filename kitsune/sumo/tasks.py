@@ -10,5 +10,5 @@ def measure_queue_lag(queued_time):
 
     It saves the data to graphite via statsd.
     """
-    lag = datetime.now() - queued_time
-    statsd.gauge('rabbitmq.lag', lag.seconds)
+    lag = (datetime.now() - queued_time).total_seconds()
+    statsd.gauge('rabbitmq.lag', lag if lag > 0 else 0)
