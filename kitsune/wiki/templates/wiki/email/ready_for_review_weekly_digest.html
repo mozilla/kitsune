@@ -25,39 +25,20 @@
     {% endtrans %}
   </p>
 
-  {% for p in products %}
-    {% set product_docs = docs.filter(products__in=[p]) %}
-    {% if product_docs %}
-      <p>
-        <strong>{{ _(p.title, 'DB: products.Product.title') }}</strong>
-        <ul>
-          {% for d in product_docs %}
-            <li>
-              <a href="https://{{ host }}{{ url('wiki.document_revisions', d.slug) }}">
-                {{ d.title }}
-              </a>
-            </li>
-          {% endfor %}
-        </ul>
-      </p>
-    {% endif %}
-  {% endfor %}
-
-  {% set product_docs = docs.filter(products=None) %}
-  {% if product_docs %}
+  {% for docs in docs_list %}
     <p>
-        <strong>{{ _('Other documents') }}</strong>
-        <ul>
-          {% for d in product_docs %}
-            <li>
-              <a href="https://{{ host }}{{ url('wiki.document_revisions', d.slug) }}">
-                {{ d.title }}
-              </a>
-            </li>
-          {% endfor %}
-        </ul>
-      </p>
-  {% endif %}
+      <strong>{{ docs['product'] }}</strong>
+      <ul>
+        {% for d in docs['docs'] %}
+          <li>
+            <a href="https://{{ host }}{{ url('wiki.document_revisions', d.slug) }}">
+              {{ d.title }}
+            </a>
+          </li>
+        {% endfor %}
+      </ul>
+    </p>
+  {% endfor %}
 
   <p>
     {% trans %}
