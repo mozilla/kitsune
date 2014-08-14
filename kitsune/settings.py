@@ -907,7 +907,13 @@ CC_IGNORE_USERS = [
     '3G_PaCKages', 
     'uOttawaGCH', 
     'WeWeL4u', 
-    'TaNha_PoetS_N'
+    'TaNha_PoetS_N',
+    'WTFgsiegman', 
+    'glynn_ebooks', 
+    'iampalash',
+    'OfficialViews',
+    'Yashsodha',
+    'LegNeato'
 ]
 
 CC_REPLIES_GOAL = 175  # Goal # of replies in 24 hours.
