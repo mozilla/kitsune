@@ -159,22 +159,14 @@ class Topic(ModelBase):
         # Avoid circular imports
         from kitsune.wiki.models import Document
         query = {
-            topic: self,
-            products: self.product,
-            is_archived: False,
-            current_revision__isnull: False,
-            category__in: settings.IA_DEFAULT_CATEGORIES,
+            'topics': self,
+            'products': self.product,
+            'is_archived': False,
+            'current_revision__isnull': False,
+            'category__in': settings.IA_DEFAULT_CATEGORIES,
         }
         query.update(kwargs)
         return Document.objects.filter(**query)
-
-    def subtopics(self, **kwargs):
-        query = {
-            parent: self,
-            is_visible: true,
-        }
-        query.update(kwargs)
-        return Topics.objects.filter(**query)
 
 
 class Version(ModelBase):

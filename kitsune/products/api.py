@@ -40,13 +40,17 @@ class TopicSerializer(serializers.ModelSerializer):
     product = serializers.SlugRelatedField(slug_field='slug')
     title = LocalizedCharField(source='title',
                                l10n_context='DB: products.Topic.title')
-    subtopics = TopicShortSerializer(source='subtopics', many=True)
+    subtopics = serializers.SerializerMethodField('get_subtopics')
     documents = serializers.SerializerMethodField('get_documents')
 
     class Meta:
         model = Topic
         fields = ('id', 'title', 'slug', 'description', 'parent', 'visible',
                   'product', 'path', 'subtopics', 'documents')
+
+    def get_subtopics(self, obj):
+        subtopics = obj.subtopics.filter(visible=True)
+        return TopicShortSerializer(subtopics, many=True).data
 
     def get_documents(self, obj):
         locale = self.context.get('locale', settings.WIKI_DEFAULT_LANGUAGE)
@@ -61,7 +65,6 @@ class TopicDetail(CORSMixin, LocaleNegotiationMixin, generics.RetrieveAPIView):
     def get_object(self):
         queryset = self.get_queryset()
         queryset = queryset.filter(
-            visible=True,
             slug=self.kwargs.pop('topic'),
             product__slug=self.kwargs.pop('product'))
 
