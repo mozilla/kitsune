@@ -37,7 +37,7 @@
         <ul>
           {% for d in product_docs %}
             <li>
-              <a href="/{{ locale }}{{ url('wiki.document_revisions', d.slug) }}">
+              <a href="https://{{ host }}/{{ locale }}{{ url('wiki.document_revisions', d.slug) }}">
                 {{ d.title }}
               </a>
             </li>
@@ -58,7 +58,7 @@
         <ul>
           {% for d in product_docs %}
             <li>
-              <a href="/{{ locale }}{{ url('wiki.document_revisions', d.slug) }}">
+              <a href="https://{{ host }}/{{ locale }}{{ url('wiki.document_revisions', d.slug) }}">
                 {{ d.title }}
               </a>
             </li>
