@@ -9,6 +9,7 @@ from statsd import statsd
 from kitsune.community.utils import (
     top_contributors_aoa, top_contributors_questions,
     top_contributors_kb, top_contributors_l10n)
+from kitsune.forums.models import Thread
 from kitsune.products.models import Product
 from kitsune.search.es_utils import ES_EXCEPTIONS, F
 from kitsune.sumo.parser import get_object_fallback
@@ -33,11 +34,15 @@ def home(request):
     if product:
         product = get_object_or_404(Product, slug=product)
 
+    # Get the 5 most recent Community Discussion threads.
+    recent_threads = Thread.objects.filter(forum__slug='contributors')[:5]
+
     data = {
         'community_news': community_news,
         'locale': locale,
         'product': product,
         'products': Product.objects.filter(visible=True),
+        'threads': recent_threads,
     }
 
     if locale:

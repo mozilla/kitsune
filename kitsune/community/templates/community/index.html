@@ -120,6 +120,26 @@
       </form>
     </section>
 
+    {% if threads %}
+      <section id="recent-threads">
+        <h1>{{ _('Community Discussions') }}</h1>
+
+        <ul>
+          {% for thread in threads %}
+            <li>
+              <a href="{{ thread.get_absolute_url() }}">
+                {{ thread.title }}
+              </a>
+            </li>
+          {% endfor %}
+        </ul>
+        <p>
+          <a href="{{ threads[0].forum.get_absolute_url() }}">
+            {{ _('Go to the SUMO community discussions forum') }}
+          </a>
+        </p>
+      </section>
+    {% endif %}
 
     {% if community_news %}
       <section id="doc-content">
