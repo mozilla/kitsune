@@ -3,6 +3,7 @@ from nose.tools import eq_
 from pyquery import PyQuery as pq
 
 from kitsune.customercare.tests import reply
+from kitsune.forums.tests import thread, forum
 from kitsune.questions.tests import answer
 from kitsune.search.tests.test_es import ElasticTestCase
 from kitsune.sumo.helpers import urlparams
@@ -102,6 +103,18 @@ class LandingTests(ElasticTestCase):
         eq_(len(community_news), 1)
         assert 'splendid' in community_news.text()
 
+    def test_recent_threads(self):
+        """Verify the Community Discussions section."""
+        f = forum(slug='contributors', save=True)
+        t = thread(forum=f, title='we are SUMO!!!!!!', save=True)
+
+        self.refresh()
+
+        response = self.client.get(urlparams(reverse('community.home')))
+        eq_(response.status_code, 200)
+        doc = pq(response.content)
+        eq_(1, len(doc('#recent-threads')))
+        assert 'we are SUMO!' in doc('#recent-threads li').html()
 
 class TopContributorsTests(ElasticTestCase):
     """Tests for the Community Hub top contributors page."""
