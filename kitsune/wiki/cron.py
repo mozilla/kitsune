@@ -100,11 +100,27 @@ def send_weekly_ready_for_review_digest():
             continue
 
         for u in users:
+            docs_list = []
+            for p in products:
+                product_docs = docs.filter(Q(parent=None, products__in=[p]) |
+                                           Q(parent__products__in=[p]))
+                if product_docs:
+                    docs_list.append(dict(
+                        product=_(p.title, 'DB: products.Product.title'),
+                        docs=product_docs))
+
+            product_docs = docs.filter(Q(parent=None, products=None) |
+                                       Q(parent__products=None))
+
+            if product_docs:
+                docs_list.append(dict(product=_('Other products'),
+                                      docs=product_docs))
+
             _send_mail(l, u, {
                 'host': Site.objects.get_current().domain,
                 'locale': l,
                 'recipient': u,
-                'docs': docs,
+                'docs_list': docs_list,
                 'products': products
             })
 
