@@ -2,6 +2,7 @@ import hashlib
 import urllib
 
 from django.conf import settings
+from django.utils.encoding import force_str
 
 from jinja2 import escape, Markup
 from jingo import register
@@ -35,7 +36,7 @@ def profile_avatar(user, size=48):
         avatar = 'https:%s' % avatar
 
     if user and hasattr(user, 'email'):
-        email_hash = hashlib.md5(user.email.lower()).hexdigest()
+        email_hash = hashlib.md5(force_str(user.email.lower())).hexdigest()
     else:
         email_hash = '00000000000000000000000000000000'
 

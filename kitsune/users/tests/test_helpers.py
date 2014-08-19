@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import hashlib
 
 from django.conf import settings
@@ -39,6 +40,13 @@ class HelperTestCase(TestCase):
         email_hash = hashlib.md5(self.u.email.lower()).hexdigest()
         gravatar_url = 'https://secure.gravatar.com/avatar/%s?s=48' % (
             email_hash)
+        assert profile_avatar(self.u).startswith(gravatar_url)
+
+    def test_profile_avatar_unicode(self):
+        self.u.email = u'rápido@example.com'
+        self.u.save()
+        profile(user=self.u)
+        gravatar_url = 'https://secure.gravatar.com/'
         assert profile_avatar(self.u).startswith(gravatar_url)
 
     def test_public_email(self):
