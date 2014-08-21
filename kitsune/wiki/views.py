@@ -214,7 +214,8 @@ def new_document(request):
         rev_form = RevisionForm()
         return render(request, 'wiki/new_document.html', {
             'document_form': doc_form,
-            'revision_form': rev_form})
+            'revision_form': rev_form,
+            'products': Product.objects.filter(visible=True)})
 
     post_data = request.POST.copy()
     post_data.update({'locale': request.LANGUAGE_CODE})
@@ -229,7 +230,8 @@ def new_document(request):
 
     return render(request, 'wiki/new_document.html', {
         'document_form': doc_form,
-        'revision_form': rev_form})
+        'revision_form': rev_form,
+        'products': Product.objects.filter(visible=True)})
 
 
 _document_lock_key = 'sumo::wiki::document::{id}::lock'

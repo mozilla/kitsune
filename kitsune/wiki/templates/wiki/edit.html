@@ -96,6 +96,10 @@
       {% endif %}
     </article>
   </div>
+
+  <script type="application/json" class="showfor-data">
+    {{ showfor_data(document.get_products()) }}
+  </script>
 {% endblock %}
 
 {% block side_top %}
