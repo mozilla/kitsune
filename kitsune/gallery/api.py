@@ -3,7 +3,8 @@ from django.db.models import Q
 from rest_framework import generics, serializers
 
 from kitsune.gallery.models import Image
-from kitsune.sumo.api import CORSMixin, LocaleNegotiationMixin
+from kitsune.sumo.api import (CORSMixin, LocaleNegotiationMixin,
+                              InequalityFilterBackend)
 
 
 class ImageShortSerializer(serializers.ModelSerializer):
@@ -11,7 +12,7 @@ class ImageShortSerializer(serializers.ModelSerializer):
 
     class Meta(object):
         model = Image
-        fields = ('id', 'title', 'url', 'locale')
+        fields = ('id', 'title', 'url', 'locale', 'width', 'height')
 
     def get_url(self, obj):
         return obj.get_absolute_url()
@@ -31,6 +32,8 @@ class ImageList(CORSMixin, LocaleNegotiationMixin, generics.ListAPIView):
     queryset = Image.objects.all()
     serializer_class = ImageShortSerializer
     paginate_by = 100
+    filter_fields = ['height', 'width']
+    filter_backends = [InequalityFilterBackend]
 
     def get_queryset(self):
         not_is_draft = Q(is_draft=None) | Q(is_draft=False)

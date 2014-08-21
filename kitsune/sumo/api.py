@@ -1,7 +1,9 @@
-from django.conf import settings
-from rest_framework.exceptions import APIException
-from rest_framework import fields
 from django import forms
+from django.conf import settings
+
+from rest_framework import fields
+from rest_framework.exceptions import APIException
+from rest_framework.filters import BaseFilterBackend
 from tower import ugettext as _
 
 from kitsune.sumo.utils import uselocale
@@ -87,3 +89,39 @@ class LocalizedCharField(fields.CharField):
             return value
         with uselocale(locale):
             return _(value, self.l10n_context)
+
+
+class InequalityFilterBackend(BaseFilterBackend):
+    """A filter backend that allows for field__gt style filtering."""
+
+    def filter_queryset(self, request, queryset, view):
+        filter_fields = getattr(view, 'filter_fields', [])
+
+        for key, value in request.QUERY_PARAMS.items():
+            splits = key.split('__')
+            if len(splits) != 2:
+                continue
+            field, opname = splits
+            if field not in filter_fields:
+                continue
+            op = getattr(self, 'op_' + opname, None)
+            if op:
+                queryset = op(queryset, field, value)
+
+        return queryset
+
+    def op_gt(self, queryset, key, value):
+        arg = {key + '__gt': value}
+        return queryset.filter(**arg)
+
+    def op_lt(self, queryset, key, value):
+        arg = {key + '__lt': value}
+        return queryset.filter(**arg)
+
+    def op_gte(self, queryset, key, value):
+        arg = {key + '__gte': value}
+        return queryset.filter(**arg)
+
+    def op_lte(self, queryset, key, value):
+        arg = {key + '__lte': value}
+        return queryset.filter(**arg)
