@@ -4,6 +4,7 @@
 {% from "includes/common_macros.html" import content_editor with context %}
 {% from "wiki/includes/flag_form.html" import flag_form with context %}
 {% from "questions/includes/questions.html" import troubleshooting_info %}
+{% from "questions/includes/macros.html" import mark_spam_form, unmark_spam_form with context %}
 
 {% set classes = 'answers' %}
 
@@ -91,6 +92,9 @@
                 {{ question.last_answer.created|timesince }}
               </span>
             </li>
+          {% endif %}
+          {% if question.is_spam %}
+            <li class="marked-as-spam">{{ _('Marked as spam') }}</li>
           {% endif %}
         </ul>
       </div>
@@ -371,6 +375,14 @@
           </div>
         </li>
       </ul>
+
+      {% if user.has_perm('flagit.can_moderate') %}
+        {% if question.is_spam %}
+          {{ unmark_spam_form(question_id=question.id) }}
+        {% else %}
+          {{ mark_spam_form(question_id=question.id) }}
+        {% endif %}
+      {% endif %}
 
       {% if question.allows_flag(user) %}
         {{ flag_form(url('questions.flag', question.id)) }}

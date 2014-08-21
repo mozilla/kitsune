@@ -56,6 +56,14 @@ h2 {
 }
 
 .answers {
+  .answer {
+    &.marked-as-spam {
+      .main-content {
+        color: @textOrange;
+      }
+    }
+  }
+
   .answer-tools {
     margin: 0 0 20px 130px;
     padding: 0 20px;
@@ -101,6 +109,13 @@ h2 {
 
   .is-solution {
     color: @textGreen;
+  }
+
+  .spam-form {
+    .btn {
+      float: right;
+      margin-bottom: 10px;
+    }
   }
 
   .main-content {
@@ -177,6 +192,10 @@ h2 {
 
     span.last-answer-date {
       margin-left: 10px;
+    }
+
+    .marked-as-spam {
+      color: @textOrange;
     }
   }
 
