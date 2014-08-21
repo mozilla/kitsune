@@ -52,7 +52,7 @@ class QuestionsFeed(Feed):
         return urlparams(url, **slugs)
 
     def items(self, query):
-        qs = Question.objects.filter(creator__is_active=True)
+        qs = Question.objects.filter(creator__is_active=True, is_spam=False)
 
         if 'product' in query:
             qs = qs.filter(products=query['product'])
@@ -91,7 +91,8 @@ class TaggedQuestionsFeed(QuestionsFeed):
 
     def items(self, tag):
         qs = Question.objects.filter(creator__is_active=True,
-                                     tags__name__in=[tag.name]).distinct()
+                                     tags__name__in=[tag.name],
+                                     is_spam=False).distinct()
         return qs.order_by('-updated')[:config.QUESTIONS_PER_PAGE]
 
 
@@ -111,7 +112,7 @@ class AnswersFeed(Feed):
         return self.title(question)
 
     def items(self, question):
-        return question.answers.order_by('-created')
+        return question.answers.filter(is_spam=False).order_by('-created')
 
     def item_title(self, item):
         return strip_tags(item.content_parsed)[:100]

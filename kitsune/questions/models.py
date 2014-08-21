@@ -69,6 +69,11 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
     is_archived = models.NullBooleanField(default=False, null=True)
     num_votes_past_week = models.PositiveIntegerField(default=0, db_index=True)
 
+    is_spam = models.BooleanField(default=False)
+    marked_as_spam = models.DateTimeField(default=None, null=True)
+    marked_as_spam_by = models.ForeignKey(
+        User, null=True, related_name='questions_marked_as_spam')
+
     images = generic.GenericRelation(ImageAttachment)
     flags = generic.GenericRelation(FlaggedObject)
 
@@ -715,6 +720,10 @@ class Answer(ModelBase, SearchMixin):
     updated_by = models.ForeignKey(User, null=True,
                                    related_name='answers_updated')
     page = models.IntegerField(default=1)
+    is_spam = models.BooleanField(default=False)
+    marked_as_spam = models.DateTimeField(default=None, null=True)
+    marked_as_spam_by = models.ForeignKey(
+        User, null=True, related_name='answers_marked_as_spam')
 
     images = generic.GenericRelation(ImageAttachment)
     flags = generic.GenericRelation(FlaggedObject)
@@ -765,7 +774,7 @@ class Answer(ModelBase, SearchMixin):
             # uncached on the off chance that fixes it. Plus if we enable
             # caching of counts, this will continue to work.
             self.question.num_answers = Answer.uncached.filter(
-                question=self.question).count()
+                question=self.question, is_spam=False).count()
             self.question.last_answer = self
             self.question.save(update)
             self.question.clear_cached_contributors()
@@ -799,7 +808,8 @@ class Answer(ModelBase, SearchMixin):
         if self.id == question.answers.all().order_by('created')[0].id:
             FirstAnswerAction(user=self.creator, day=self.created).delete()
 
-        question.num_answers = question.answers.count() - 1
+        answers = question.answers.filter(is_spam=False)
+        question.num_answers = answers.count() - 1
         question.save()
         question.clear_cached_contributors()
 

@@ -114,7 +114,8 @@ def update_answer_pages(question):
               (question.pk, question.title))
 
     i = 0
-    for answer in question.answers.using('default').order_by('created').all():
+    answers = question.answers.using('default').order_by('created')
+    for answer in answers.filter(is_spam=False):
         answer.page = i / ANSWERS_PER_PAGE + 1
         answer.save(no_notify=True)
         i += 1

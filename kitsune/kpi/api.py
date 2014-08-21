@@ -118,6 +118,9 @@ class QuestionsMetricList(CachedAPIView):
         # Don't count locked questions
         qs = qs.exclude(is_locked=True)
 
+        # Don't count spam questions
+        qs = qs.exclude(is_spam=True)
+
         if locale:
             qs = qs.filter(locale=locale)
 

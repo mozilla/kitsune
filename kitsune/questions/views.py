@@ -177,6 +177,9 @@ def question_list(request, template, product_slug):
 
     question_qs = question_qs.filter(creator__is_active=1)
 
+    if not request.user.has_perm('flagit.can_moderate'):
+        question_qs = question_qs.filter(is_spam=False)
+
     if owner == 'mine' and request.user.is_authenticated():
         criteria = Q(answers__creator=request.user) | Q(creator=request.user)
         question_qs = question_qs.filter(criteria).distinct()
@@ -1099,6 +1102,48 @@ def remove_tag_async(request, question_id):
                                   mimetype='application/json')
 
 
+@permission_required('flagit.can_moderate')
+@require_POST
+def mark_spam(request):
+    """Mark a question or an answer as spam"""
+    if request.POST.get('question_id'):
+        question_id = request.POST.get('question_id')
+        obj = get_object_or_404(Question, pk=question_id)
+    else:
+        answer_id = request.POST.get('answer_id')
+        obj = get_object_or_404(Answer, pk=answer_id)
+        question_id = obj.question.id
+
+    obj.is_spam = True
+    obj.marked_as_spam = datetime.now()
+    obj.marked_as_spam_by = request.user
+    obj.save()
+
+    return HttpResponseRedirect(reverse('questions.details',
+                                        kwargs={'question_id': question_id}))
+
+
+@permission_required('flagit.can_moderate')
+@require_POST
+def unmark_spam(request):
+    """Mark a question or an answer as spam"""
+    if request.POST.get('question_id'):
+        question_id = request.POST.get('question_id')
+        obj = get_object_or_404(Question, pk=question_id)
+    else:
+        answer_id = request.POST.get('answer_id')
+        obj = get_object_or_404(Answer, pk=answer_id)
+        question_id = obj.question.id
+
+    obj.is_spam = False
+    obj.marked_as_spam = None
+    obj.marked_as_spam_by = None
+    obj.save()
+
+    return HttpResponseRedirect(reverse('questions.details',
+                                        kwargs={'question_id': question_id}))
+
+
 @login_required
 def delete_question(request, question_id):
     """Delete a question"""
@@ -1672,6 +1717,10 @@ def _answers_data(request, question_id, form=None, watch_form=None,
     """Return a map of the minimal info necessary to draw an answers page."""
     question = get_object_or_404(Question, pk=question_id)
     answers_ = question.answers.all()
+
+    if not request.user.has_perm('flagit.can_moderate'):
+        answers_ = answers_.filter(is_spam=False)
+
     if not request.MOBILE:
         answers_ = paginate(request, answers_,
                             per_page=config.ANSWERS_PER_PAGE)
