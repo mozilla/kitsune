@@ -1,5 +1,0 @@
-ordereddict.py
-pip-egg-info/ordereddict.egg-info/PKG-INFO
-pip-egg-info/ordereddict.egg-info/SOURCES.txt
-pip-egg-info/ordereddict.egg-info/dependency_links.txt
-pip-egg-info/ordereddict.egg-info/top_level.txt
