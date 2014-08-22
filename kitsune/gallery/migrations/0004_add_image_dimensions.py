@@ -12,12 +12,12 @@ class Migration(SchemaMigration):
     def forwards(self, orm):
         # Adding field 'Image.height'
         db.add_column(u'gallery_image', 'height',
-                      self.gf('django.db.models.fields.IntegerField')(default=0),
+                      self.gf('django.db.models.fields.IntegerField')(default=0, null=True),
                       keep_default=False)
 
         # Adding field 'Image.width'
         db.add_column(u'gallery_image', 'width',
-                      self.gf('django.db.models.fields.IntegerField')(default=0),
+                      self.gf('django.db.models.fields.IntegerField')(default=0, null=True),
                       keep_default=False)
 
         for img in orm.Image.objects.all():

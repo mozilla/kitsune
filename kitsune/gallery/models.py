@@ -39,8 +39,8 @@ class Image(Media):
     thumbnail = models.ImageField(
         upload_to=settings.GALLERY_IMAGE_THUMBNAIL_PATH, null=True,
         max_length=settings.MAX_FILEPATH_LENGTH)
-    height = models.IntegerField()
-    width = models.IntegerField()
+    height = models.IntegerField(null=True)
+    width = models.IntegerField(null=True)
 
     def get_absolute_url(self):
         return reverse('gallery.media', args=['image', self.id])
