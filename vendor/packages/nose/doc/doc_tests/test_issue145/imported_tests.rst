@@ -1,1 +1,0 @@
-nose-1.1.2/functional_tests/doc_tests/test_issue145/imported_tests.rst
