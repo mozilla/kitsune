@@ -23,7 +23,10 @@ import shlex
 from shutil import rmtree
 from sys import argv, exit
 from tempfile import mkdtemp
-from urlparse import urlparse
+try:
+    from urlparse import urlparse
+except ImportError:
+    from urllib.parse import urlparse  # 3.4
 
 from pkg_resources import require, VersionConflict, DistributionNotFound
 
@@ -50,7 +53,7 @@ from pip.log import logger
 from pip.req import parse_requirements
 
 
-__version__ = 1, 2, 0
+__version__ = 1, 3, 0
 
 
 ITS_FINE_ITS_FINE = 0
@@ -132,15 +135,13 @@ def pip_download(req, argv, temp_path):
     return (set(listdir(temp_path)) - old_contents).pop()
 
 
-def pip_install_archives_from(temp_path):
+def pip_install_archives_from(temp_path, argv):
     """pip install the archives from the ``temp_path`` dir, omitting
     dependencies."""
-    # TODO: Make this preserve any pip options passed in, but strip off -r
-    # options and other things that don't make sense at this point in the
-    # process.
+    other_args = list(requirement_args(argv, want_other=True))
     for filename in listdir(temp_path):
         archive_path = join(temp_path, filename)
-        run_pip(['install', '--no-deps', archive_path])
+        run_pip(['install'] + other_args +  ['--no-deps', archive_path])
 
 
 def hash_of_file(path):
@@ -210,7 +211,7 @@ def version_of_download(filename, package_name):
         # Handle github sha tarball downloads.
         if is_git_sha(filename):
             filename = package_name + '-' + filename
-        if not filename.replace('_', '-').startswith(package_name):
+        if not filename.lower().replace('_', '-').startswith(package_name.lower()):
             # TODO: Should we replace runs of [^a-zA-Z0-9.], not just _, with -?
             give_up(filename, package_name)
         return filename[len(package_name) + 1:]  # Strip off '-' before version.
@@ -436,7 +437,7 @@ def peep_install(argv):
             print('Not proceeding to installation.')
             return SOMETHING_WENT_WRONG
         else:
-            pip_install_archives_from(temp_path)
+            pip_install_archives_from(temp_path, argv)
 
             if satisfied_reqs:
                 print("These packages were already installed, so we didn't need to download or build")

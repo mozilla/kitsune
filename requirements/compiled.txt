@@ -1,5 +1,14 @@
+# sha256: H6pJd-mFBzHot_ih1YuGJzk6N0RUN4jsQ3-0XgbP5AE
 MySQL-python==1.2.3c1
+
+# sha256: GQQPAbOp2MY-TVeTb3hxCQgZm2k3CrRKD3QH3YkfAZs
 Jinja2==2.5.2
+
+# sha256: KGXGizpWOEZrGDe_SmfER-DP33RjMJoGiq0OkKoD9Yo
 Pillow==2.4.0
+
+# sha256: f9NuSlY2DNXXMZ41ewSpDixrg26iIMiPlFHDAK4zzF4
 lxml==2.2.6
+
+# sha256: IeErA6uqDgTsyM2cJRWY9xuuEcnzhTBCNOTqVhjGFjs
 pyOpenSSL==0.13

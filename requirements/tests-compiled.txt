@@ -1,4 +1,6 @@
 -r compiled.txt
 
 coverage
+
+# sha256: v4EqSqakEUfQ6W5j2CbrdYL9prVK2PIlNDVLf4rEVZM
 psutil>=0.2.0
