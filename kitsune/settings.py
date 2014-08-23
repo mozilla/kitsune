@@ -357,6 +357,7 @@ SUPPORTED_NONLOCALES = (
     'robots.txt',
     'services',
     'wafflejs',
+    'geoip-suggestion',
 )
 
 # Make this unique, and don't share it with anybody.
