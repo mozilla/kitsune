@@ -15,7 +15,7 @@ class ImageShortSerializer(serializers.ModelSerializer):
         fields = ('id', 'title', 'url', 'locale', 'width', 'height')
 
     def get_url(self, obj):
-        return obj.get_absolute_url()
+        return obj.file.url
 
 
 class ImageDetailSerializer(ImageShortSerializer):
