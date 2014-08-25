@@ -1,5 +1,7 @@
-from contextlib import contextmanager
 import json
+import sys
+from contextlib import contextmanager
+from datetime import datetime
 
 from django.contrib.sites.models import Site
 from django.db import models
@@ -230,3 +232,67 @@ def rabbitmq_queue_size():
     # to figure it out.
     queue = chan.queue_declare('celery', passive=True)
     return queue.message_count
+
+
+class Progress(object):
+    """A widget to show progress during interactive CLI scripts.
+    
+    Example:
+    
+        prog = Progress(100)
+        prog.draw()
+        for i in range(100):
+            time.sleep(0.1)
+            prog.tick()
+    
+    This will draw a progress indicator that looks like 
+    
+        55/100 (Est 0 min. remaining)
+        
+    TODO
+    * Improve the time estimation, it's quite bad.
+    * Display a progress bar.
+    * Use Blessings instead of manually moving the cursor around.
+    * Dynamically pick time units.
+    * Pick an approriate stride instead of a hard coded one.
+        * Or pick a better stats method that doesn't use a stride.
+    """
+
+    def __init__(self, total, milestone_stride=10):
+        """
+        :param total: The number of items the progress bar will expect.
+        :param milestone_stide: Number of items between stats calculations.
+            Default: 10
+        """
+        self.current = 0
+        self.total = total
+        self.milestone_stride = milestone_stride
+        self.milestone_time = datetime.now()
+        self.estimated = '?'
+
+    def tick(self, incr=1):
+        """Advance the current progress, and redraw the screen.
+        
+        :param incr: Raise the current progress by this amount. Default: 1
+        """
+        self.current += incr
+
+        if self.current and self.current % self.milestone_stride == 0:
+            now = datetime.now()
+            duration = now - self.milestone_time
+            duration = duration.seconds + duration.microseconds / 1e6
+            rate = self.milestone_stride / duration
+            remaining = self.total - self.current
+            self.estimated = int(remaining / rate / 60)
+            self.milestone_time = now
+
+        self.draw()
+
+    def draw(self):
+        """Just redraw the screen."""
+        self._wr('{0.current}/{0.total} (Est. {0.estimated} min. remaining)\r'
+                 .format(self))
+
+    def _wr(self, s):
+        sys.stdout.write(s)
+        sys.stdout.flush()

@@ -70,6 +70,7 @@ urlpatterns = patterns(
     (r'^api/1/kb/', include('kitsune.wiki.urls_api')),
     (r'^api/1/products/', include('kitsune.products.urls_api')),
     (r'^api/1/customercare/', include('kitsune.customercare.urls_api')),
+    (r'^api/1/gallery/', include('kitsune.gallery.urls_api')),
 )
 
 # Handle 404 and 500 errors
