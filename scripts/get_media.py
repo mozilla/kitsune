@@ -4,6 +4,7 @@ Downloads image files for gallery images from the CDN.
 Run this script like `./manage.py runscript get_media`.
 """
 
+import os
 import sys
 from datetime import datetime
 
@@ -24,6 +25,13 @@ def run():
     for img in images:
         url = BASE_URL + img.file.url
         path = img.file.url[1:]  # Remove leading '/'
+
+        try:
+            os.makedirs(os.path.dirname(path))
+        except OSError as e:
+            if e.errno != 17:
+                raise e
+
         try:
             urllib.urlretrieve(url, path)
         except urllib.ContentTooShortError:
