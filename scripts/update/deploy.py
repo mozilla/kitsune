@@ -25,7 +25,6 @@ def update_code(ctx, tag):
         ctx.local("git checkout -f %s" % tag)
         ctx.local("git submodule sync")
         ctx.local("git submodule update --init --recursive")
-        ctx.local('find vendor/ -type f -name "*.pyc" | xargs rm -f')
 
 
 @task
@@ -118,8 +117,16 @@ def update_info(ctx):
 
 
 @task
+def get_dependencies(ctx):
+    with ctx.lcd(settings.SRC_DIR):
+        ctx.local('python scripts/peep.py install -r requirements/requirements_src.txt')
+        ctx.local('python scripts/peep.py install -r requirements/requirements_packages.txt')
+
+
+@task
 def pre_update(ctx, ref=settings.UPDATE_REF):
     update_code(ref)
+    get_dependencies()
     update_info()
 
 
