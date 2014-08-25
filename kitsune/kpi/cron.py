@@ -294,6 +294,10 @@ def update_aoa_contributors_metric(day=None):
 @cronjobs.register
 def update_search_ctr_metric():
     """Get new search CTR data from Google Analytics and save."""
+    if settings.STAGE:
+        # Let's be nice to GA and skip on stage.
+        return
+
     # Start updating the day after the last updated.
     latest_metric = _get_latest_metric(SEARCH_CLICKS_METRIC_CODE)
     if latest_metric is not None:
