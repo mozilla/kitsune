@@ -15,6 +15,9 @@ from commander.deploy import task, hostgroups
 import commander_settings as settings
 
 
+# Setup virtualenv path.
+venv_bin_path = os.path.join(settings.SRC_DIR, 'virtualenv', 'bin')
+os.environ['PATH'] = venv_bin_path + os.pathsep + os.environ['PATH']
 os.environ['DJANGO_SETTINGS_MODULE'] = 'kitsune.settings_local'
 
 
@@ -25,7 +28,6 @@ def update_code(ctx, tag):
         ctx.local("git checkout -f %s" % tag)
         ctx.local("git submodule sync")
         ctx.local("git submodule update --init --recursive")
-        ctx.local('find vendor/ -type f -name "*.pyc" | xargs rm -f')
 
 
 @task
@@ -40,33 +42,29 @@ def update_locales(ctx):
     with ctx.lcd(settings.SRC_DIR):
         ctx.local('date > media/postatus.txt')
         ctx.local('./scripts/compile-linted-mo.sh | /usr/bin/tee -a media/postatus.txt')
-        ctx.local('python2.6 manage.py compilejsi18n')
+        ctx.local('python manage.py compilejsi18n')
 
 
 @task
 def update_assets(ctx):
     with ctx.lcd(settings.SRC_DIR):
-        ctx.local("python2.6 manage.py nunjucks_precompile")
-        ctx.local("python2.6 manage.py collectstatic --noinput")
-        ctx.local("LANG=en_US.UTF-8 python2.6 manage.py compress_assets")
+        ctx.local("python manage.py nunjucks_precompile")
+        ctx.local("python manage.py collectstatic --noinput")
+        ctx.local("LANG=en_US.UTF-8 python manage.py compress_assets")
 
 
 @task
 def db_migrations(ctx):
     with ctx.lcd(settings.SRC_DIR):
-        # This is a no-op after the final 232 migration. We should
-        # remove this at some point once we think all environments and
-        # contributors have updated.
-        ctx.local("python2.6 ./vendor/src/schematic/schematic migrations")
-
-        # This performs South migrations.
-        ctx.local("python2.6 manage.py migrate")
+        # This runs schematic and south migrations.
+        ctx.local('schematic migrations')
+        ctx.local('python manage.py migrate')
 
 
 @task
 def install_cron(ctx):
     with ctx.lcd(settings.SRC_DIR):
-        ctx.local("python2.6 ./scripts/crontab/gen-crons.py -k %s -u apache > /etc/cron.d/.%s" %
+        ctx.local("python ./scripts/crontab/gen-crons.py -k %s -u apache > /etc/cron.d/.%s" %
                   (settings.WWW_DIR, settings.CRON_NAME))
         ctx.local("mv /etc/cron.d/.%s /etc/cron.d/%s" % (settings.CRON_NAME, settings.CRON_NAME))
 
@@ -107,9 +105,8 @@ def update_info(ctx):
         ctx.local("git log -3")
         ctx.local("git status")
         ctx.local("git submodule status")
-        # TODO: Nix this when we nix schematic.
-        ctx.local("python2.6 ./vendor/src/schematic/schematic -v migrations/")
-        ctx.local("python2.6 manage.py migrate --list")
+        print '\n\n\n\n\n' + os.environ['PATH'] + '\n\n\n\n\n'
+        ctx.local("python manage.py migrate --list")
         with ctx.lcd("locale"):
             ctx.local("svn info")
             ctx.local("svn status")
@@ -118,8 +115,33 @@ def update_info(ctx):
 
 
 @task
+def setup_dependencies(ctx):
+    with ctx.lcd(settings.SRC_DIR):
+        # Creating a virtualenv tries to open virtualenv/bin/python for
+        # writing, but because virtualenv is using it, it fails.
+        # So we delete it and let virtualenv create a new one.
+        ctx.local('rm -f virtualenv/bin/python')
+        ctx.local('virtualenv --no-site-packages virtualenv')
+
+        # Activate virtualenv to append to path.
+        activate_env = os.path.join(settings.SRC_DIR, 'virtualenv', 'bin', 'activate_this.py')
+        execfile(activate_env, dict(__file__=activate_env))
+
+        ctx.local('python scripts/peep.py install -r requirements/compiled.txt')
+        ctx.local('python scripts/peep.py install -r requirements/git.txt')
+        ctx.local('python scripts/peep.py install -r requirements/pypi.txt')
+        ctx.local('virtualenv --relocatable virtualenv')
+
+        # Fix lib64 symlink to be relative instead of absolute.
+        ctx.local('rm -f virtualenv/lib64')
+        with ctx.lcd('virtualenv'):
+            ctx.local('ln -s lib lib64')
+
+
+@task
 def pre_update(ctx, ref=settings.UPDATE_REF):
     update_code(ref)
+    setup_dependencies()
     update_info()
 
 
