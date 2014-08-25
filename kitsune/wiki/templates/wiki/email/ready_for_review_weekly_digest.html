@@ -31,7 +31,7 @@
       <ul>
         {% for d in docs['docs'] %}
           <li>
-            <a href="https://{{ host }}{{ url('wiki.document_revisions', d.slug) }}">
+            <a href="https://{{ host }}/{{ locale }}{{ url('wiki.document_revisions', d.slug) }}">
               {{ d.title }}
             </a>
           </li>
