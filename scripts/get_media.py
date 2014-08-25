@@ -19,7 +19,7 @@ BASE_URL = 'https://support.cdn.mozilla.net'
 
 def run():
     # Fetching things from the DB can error, which is sad.
-    images = list(safe_exhaust_queryset(Image.objects.all()))
+    images = list(safe_exhaust(Image.objects.all()))
     progress = Progress(len(images), 100)
     progress.draw()
 
