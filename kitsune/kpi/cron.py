@@ -27,6 +27,10 @@ from kitsune.wiki.models import Revision
 @cronjobs.register
 def update_visitors_metric():
     """Get new visitor data from Google Analytics and save."""
+    if settings.STAGE:
+        # Let's be nice to GA and skip on stage.
+        return
+
     # Start updating the day after the last updated.
     latest_metric = _get_latest_metric(VISITORS_METRIC_CODE)
     if latest_metric is not None:
@@ -78,6 +82,10 @@ def update_l10n_metric():
     * There are only new revisions with TYPO_SIGNIFICANCE not translated
     * There is only one revision of MEDIUM_SIGNIFICANCE not translated
     """
+    if settings.STAGE:
+        # Let's be nice to GA and skip on stage.
+        return
+
     # Get the top 60 visited articles. We will only use the top 50
     # but a handful aren't localizable so we get some extras.
     top_60_docs = _get_top_docs(60)
@@ -117,6 +125,10 @@ def update_l10n_metric():
 @cronjobs.register
 def update_contributor_metrics(day=None):
     """Calculate and save contributor metrics."""
+    if settings.STAGE:
+        # Let's be nice to the admin node and skip on stage.
+        return
+
     update_support_forum_contributors_metric(day)
     update_kb_contributors_metric(day)
     update_aoa_contributors_metric(day)
