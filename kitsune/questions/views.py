@@ -141,7 +141,7 @@ def question_list(request, template, product_slug):
     else:
         topic = None
 
-    question_qs = Question.objects
+    question_qs = Question.objects.all()
 
     if not request.user.has_perm('flagit.can_moderate'):
         question_qs = question_qs.filter(is_spam=False)
