@@ -141,10 +141,7 @@ def question_list(request, template, product_slug):
     else:
         topic = None
 
-    question_qs = Question.objects.all()
-
-    if not request.user.has_perm('flagit.can_moderate'):
-        question_qs = question_qs.filter(is_spam=False)
+    question_qs = Question.objects
 
     if show not in FILTER_GROUPS:
         show = None
@@ -179,6 +176,9 @@ def question_list(request, template, product_slug):
     question_qs = question_qs.prefetch_related('topics', 'topics__product')
 
     question_qs = question_qs.filter(creator__is_active=1)
+
+    if not request.user.has_perm('flagit.can_moderate'):
+        question_qs = question_qs.filter(is_spam=False)
 
     if owner == 'mine' and request.user.is_authenticated():
         criteria = Q(answers__creator=request.user) | Q(creator=request.user)
