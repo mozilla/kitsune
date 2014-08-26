@@ -11,30 +11,8 @@
         'en-US': {
             Indonesia: 'id',
             Bangladesh: 'bn-BD',
-            Pirate: 'xx',
         },
     };
-
-    var qs = {};
-    document.location.search.slice(1).split('&').forEach(function(part) {
-        var key = decodeURIComponent(part.split('=')[0]);
-        var val = decodeURIComponent(part.split('=').slice(1).join('='));
-        qs[key] = val;
-    });
-
-    // Monkey patch for testing that reads country code/name from querystring.
-    window.geoip_country_code = (function() {
-        var orig_country_code = geoip_country_code();
-        return function() {
-            return qs.country_code || orig_country_code;
-        };
-    })();
-    window.geoip_country_name = (function() {
-        var orig_country_name = geoip_country_name();
-        return function() {
-            return qs.country_name || orig_country_name;
-        };
-    })();
 
     var currentLocale = $('html').attr('lang');
     var suggestedLocale = (languageSuggestions[currentLocale] || {})[geoip_country_name()];
