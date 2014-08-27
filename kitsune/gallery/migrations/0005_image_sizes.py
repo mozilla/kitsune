@@ -1,31 +1,34 @@
 # -*- coding: utf-8 -*-
 import datetime
 from south.db import db
-from south.v2 import SchemaMigration
+from south.v2 import DataMigration
 from django.db import models
 
-
-class Migration(SchemaMigration):
+class Migration(DataMigration):
 
     def forwards(self, orm):
-        # Adding field 'Image.height'
-        db.add_column(u'gallery_image', 'height',
-                      self.gf('django.db.models.fields.IntegerField')(default=0, null=True),
-                      keep_default=False)
-
-        # Adding field 'Image.width'
-        db.add_column(u'gallery_image', 'width',
-                      self.gf('django.db.models.fields.IntegerField')(default=0, null=True),
-                      keep_default=False)
-
+        for img in orm.Image.objects.all():
+            # If the image file does not exist, a IOError is raised.
+            # If the image is invalid, a TypeError may be raised.
+            # These are likely to happen in non-production environments.
+            try:
+                img.height = img.file.height
+                img.width = img.file.width
+                img.save()
+            except (TypeError, IOError):
+                pass
 
     def backwards(self, orm):
-        # Deleting field 'Image.height'
-        db.delete_column(u'gallery_image', 'height')
-
-        # Deleting field 'Image.width'
-        db.delete_column(u'gallery_image', 'width')
-
+        for img in orm.Image.objects.all():
+            # If the image file does not exist, a IOError is raised.
+            # If the image is invalid, a TypeError may be raised.
+            # These are likely to happen in non-production environments.
+            try:
+                img.height = None
+                img.width = None
+                img.save()
+            except (TypeError, IOError):
+                pass
 
     models = {
         u'auth.group': {
@@ -70,7 +73,7 @@ class Migration(SchemaMigration):
             'creator': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'gallery_images'", 'to': u"orm['auth.User']"}),
             'description': ('django.db.models.fields.TextField', [], {'max_length': '10000'}),
             'file': ('django.db.models.fields.files.ImageField', [], {'max_length': '250'}),
-            'height': ('django.db.models.fields.IntegerField', [], {}),
+            'height': ('django.db.models.fields.IntegerField', [], {'null': 'True'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'is_draft': ('django.db.models.fields.NullBooleanField', [], {'default': 'None', 'null': 'True', 'blank': 'True'}),
             'locale': ('kitsune.sumo.models.LocaleField', [], {'default': "'en-US'", 'max_length': '7', 'db_index': 'True'}),
@@ -78,7 +81,7 @@ class Migration(SchemaMigration):
             'title': ('django.db.models.fields.CharField', [], {'max_length': '255', 'db_index': 'True'}),
             'updated': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'db_index': 'True'}),
             'updated_by': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']", 'null': 'True'}),
-            'width': ('django.db.models.fields.IntegerField', [], {})
+            'width': ('django.db.models.fields.IntegerField', [], {'null': 'True'})
         },
         u'gallery.video': {
             'Meta': {'ordering': "['-created']", 'unique_together': "(('locale', 'title'), ('is_draft', 'creator'))", 'object_name': 'Video'},
@@ -100,3 +103,4 @@ class Migration(SchemaMigration):
     }
 
     complete_apps = ['gallery']
+    symmetrical = True
