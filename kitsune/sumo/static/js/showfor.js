@@ -186,20 +186,22 @@ ShowFor.prototype.updateUI = function() {
 
     var verSlug, $version;
 
-    if (browser === 'firefox' && this.productSlugs.indexOf('firefox') !== -1) {
-        verSlug = 'fx' + version;
-        $version = productElems.firefox.find('select.version');
-        this.ensureSelect($version, 'version', 'firefox', verSlug);
+    if (version) {
+        if (browser === 'firefox' && this.productSlugs.indexOf('firefox') !== -1) {
+            verSlug = 'fx' + version;
+            $version = productElems.firefox.find('select.version');
+            this.ensureSelect($version, 'version', 'firefox', verSlug);
 
-    } else if (browser === 'mobile' && this.productSlugs.indexOf('mobile') !== -1) {
-        verSlug = 'm' + version;
-        $version = productElems.mobile.find('select.version');
-        this.ensureSelect($version, 'version', 'mobile', verSlug);
+        } else if (browser === 'mobile' && this.productSlugs.indexOf('mobile') !== -1) {
+            verSlug = 'm' + version;
+            $version = productElems.mobile.find('select.version');
+            this.ensureSelect($version, 'version', 'mobile', verSlug);
 
-    } else if (browser === 'firefox-os' && this.productSlugs.indexOf('firefox-os') !== -1) {
-        verSlug = 'fxos' + version.toFixed(1);
-        $version = productElems['firefox-os'].find('select.version');
-        this.ensureSelect($version, 'version', 'firefox-os', verSlug);
+        } else if (browser === 'firefox-os' && this.productSlugs.indexOf('firefox-os') !== -1) {
+            verSlug = 'fxos' + version.toFixed(1);
+            $version = productElems['firefox-os'].find('select.version');
+            this.ensureSelect($version, 'version', 'firefox-os', verSlug);
+        }
     }
 
     $products.find('select.platform').each(function(i, elem) {
