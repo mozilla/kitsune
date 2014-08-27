@@ -970,3 +970,6 @@ AXES_REVERSE_PROXY_HEADER = 'HTTP_X_CLUSTER_CLIENT_IP'
 
 # Set this to True to wrap each HTTP request in a transaction on this database.
 ATOMIC_REQUESTS = True
+
+# XXX Fix this when Bug 1059545 is fixed
+CC_IGNORE_USERS = []
