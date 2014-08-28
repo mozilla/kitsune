@@ -8,9 +8,9 @@ sudo ln -s /usr/lib/`uname -i`-linux-gnu/libjpeg.so ~/virtualenv/python2.6/lib/
 sudo ln -s /usr/lib/`uname -i`-linux-gnu/libz.so ~/virtualenv/python2.6/lib/
 
 echo "Install Python dependencies"
-pip install -r requirements/compiled.txt > /dev/null
-pip install -r requirements/requirements_src.txt > /dev/null
-pip install -r requirements/requirements_packages.txt > /dev/null
+./scripts/peep install -r requirements/compiled.txt > /dev/null
+./scripts/peep install -r requirements/requirements_src.txt > /dev/null
+./scripts/peep install -r requirements/requirements_packages.txt > /dev/null
 pip install nosenicedots > /dev/null
 pip freeze
 echo
