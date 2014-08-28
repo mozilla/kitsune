@@ -63,13 +63,13 @@ class HelperTestCase(TestCase):
         eq_(u'Test User', display_name(self.u))
 
     def test_user_list(self):
-        u = user(username='testuser2', save=True)
+        user(username='testuser2', save=True)
         user(username='testuser3', save=True)
         users = User.objects.all()
         list = user_list(users)
         assert isinstance(list, Markup)
         fragment = pq(list)
-        eq_(3, len(fragment('a')))
+        eq_(len(users), len(fragment('a')))
         a = fragment('a')[1]
-        assert a.attrib['href'].endswith(str(u.username))
-        eq_(u.username, a.text)
+        assert a.attrib['href'].endswith(str(users[1].username))
+        eq_(users[1].username, a.text)
