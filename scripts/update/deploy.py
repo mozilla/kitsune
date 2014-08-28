@@ -124,9 +124,25 @@ def get_dependencies(ctx):
 
 
 @task
+def create_and_source_env(ctx):
+    with ctx.lcd(settings.SRC_DIR):
+        if not os.path.exists('.virtualenv'):
+            ctx.local('virtualenv --system-site-packages --verbose virtualenv')
+        ctx.local('source virtualenv/bin/activate')
+
+
+@task
+def make_packages_relocatable(ctx):
+    with ctx.lcd(settings.SRC_DIR):
+        ctx.local('virtualenv --relocatable virtualenv')
+
+
+@task
 def pre_update(ctx, ref=settings.UPDATE_REF):
     update_code(ref)
+    create_and_source_env()
     get_dependencies()
+    make_packages_relocatable()
     update_info()
 
 

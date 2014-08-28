@@ -4,7 +4,7 @@ from datetime import datetime
 
 try:
     import newrelic.agent
-except ImportError:
+ept ImportError:
     newrelic = False
 
 
@@ -19,14 +19,18 @@ if newrelic:
 # Remember when mod_wsgi loaded this file so we can track it in nagios.
 wsgi_loaded = datetime.now()
 
-# Add the zamboni dir to the python path so we can import manage.
+# Add kitsune to the python path
 wsgidir = os.path.dirname(__file__)
 site.addsitedir(os.path.abspath(os.path.join(wsgidir, '../')))
 
 # For django-celery
 os.environ['CELERY_LOADER'] = 'django'
 
-# manage /vendor to the Python path.
+# Activate virtualenv
+activate_env = os.path.abspath(os.path.join(wsgidir, "../virtualenv/bin/activate_this.py"))
+execfile(activate_env, dict(__file__=activate_env))
+
+# Import for side-effects: set-up
 import manage
 
 import django.conf
