@@ -125,6 +125,51 @@ class Profile(ModelBase, SearchMixin):
     def get_mapping_type(cls):
         return UserMappingType
 
+    @property
+    def last_contribution_date(self):
+        """Get the date of the user's last contribution."""
+        from kitsune.questions.models import Answer
+        from kitsune.wiki.models import Revision
+
+        dates = []
+
+        # Latest Army of Awesome reply:
+        try:
+            aoa_reply = Reply.objects.filter(
+                user=self.user).latest('created')
+            dates.append(aoa_reply.created)
+        except Reply.DoesNotExist:
+            pass
+
+        # Latest Support Forum answer:
+        try:
+            answer = Answer.objects.filter(
+                creator=self.user).latest('created')
+            dates.append(answer.created)
+        except Answer.DoesNotExist:
+            pass
+
+        # Latest KB Revision edited:
+        try:
+            revision = Revision.objects.filter(
+                creator=self.user).latest('created')
+            dates.append(revision.created)
+        except Revision.DoesNotExist:
+            pass
+
+        # Latest KB Revision reviewed:
+        try:
+            revision = Revision.objects.filter(
+                reviewer=self.user).latest('reviewed')
+            dates.append(revision.reviewed)
+        except Revision.DoesNotExist:
+            pass
+
+        if len(dates) == 0:
+            return None
+
+        return max(dates)
+
 
 @register_mapping_type
 class UserMappingType(SearchMappingType):
@@ -151,6 +196,8 @@ class UserMappingType(SearchMappingType):
                     'type': 'string',
                     'index': 'not_analyzed'
                 },
+
+                'last_contribution_date': {'type': 'date'},
 
                 # lower-cased versions for querying:
                 'iusername': {'type': 'string', 'index': 'not_analyzed'},
@@ -190,6 +237,8 @@ class UserMappingType(SearchMappingType):
         d['username'] = obj.user.username
         d['display_name'] = obj.display_name
         d['twitter_usernames'] = obj.twitter_usernames
+
+        d['last_contribution_date'] = obj.last_contribution_date
 
         d['iusername'] = obj.user.username.lower()
         d['idisplay_name'] = obj.display_name.lower()

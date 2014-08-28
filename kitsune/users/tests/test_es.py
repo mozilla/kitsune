@@ -1,10 +1,14 @@
 # -*- coding: utf-8 -*-
+from datetime import datetime
+
 from nose.tools import eq_
 
 from kitsune.customercare.tests import reply
+from kitsune.questions.tests import answer
 from kitsune.search.tests.test_es import ElasticTestCase
 from kitsune.users.models import UserMappingType
 from kitsune.users.tests import profile, user
+from kitsune.wiki.tests import revision
 
 
 class UserSearchTests(ElasticTestCase):
@@ -137,3 +141,58 @@ class UserSearchTests(ElasticTestCase):
         eq_(data['username'], p.user.username)
         eq_(data['display_name'], p.name)
         assert r1.twitter_username in data['twitter_usernames']
+
+    def test_last_contribution_date(self):
+        """Verify the last_contribution_date field works properly."""
+        u = user(username='satdav', save=True)
+        p = profile(user=u)
+
+        self.refresh()
+
+        data = UserMappingType.search().query(
+            username__match='satdav').values_dict()[0]
+        assert not data['last_contribution_date']
+
+        # Add a AoA reply. It should be the last contribution.
+        d = datetime(2014, 1, 1)
+        reply(user=u, created=d, save=True)
+
+        p.save()  # we need to resave the profile to force a reindex
+        self.refresh()
+
+        data = UserMappingType.search().query(
+            username__match='satdav').values_dict()[0]
+        eq_(data['last_contribution_date'], d)
+
+        # Add a Support Forum answer. It should be the last contribution.
+        d = datetime(2014, 1, 2)
+        answer(creator=u, created=d, save=True)
+
+        p.save()  # we need to resave the profile to force a reindex
+        self.refresh()
+
+        data = UserMappingType.search().query(
+            username__match='satdav').values_dict()[0]
+        eq_(data['last_contribution_date'], d)
+
+        # Add a Revision edit. It should be the last contribution.
+        d = datetime(2014, 1, 3)
+        revision(creator=u, created=d, save=True)
+
+        p.save()  # we need to resave the profile to force a reindex
+        self.refresh()
+
+        data = UserMappingType.search().query(
+            username__match='satdav').values_dict()[0]
+        eq_(data['last_contribution_date'], d)
+
+        # Add a Revision review. It should be the last contribution.
+        d = datetime(2014, 1, 4)
+        revision(reviewer=u, reviewed=d, save=True)
+
+        p.save()  # we need to resave the profile to force a reindex
+        self.refresh()
+
+        data = UserMappingType.search().query(
+            username__match='satdav').values_dict()[0]
+        eq_(data['last_contribution_date'], d)
