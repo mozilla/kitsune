@@ -126,7 +126,7 @@ def get_dependencies(ctx):
 @task
 def create_and_source_env(ctx):
     with ctx.lcd(settings.SRC_DIR):
-        if not os.path.exists('.virtualenv'):
+        if not os.path.exists('virtualenv'):
             ctx.local('virtualenv --system-site-packages --verbose virtualenv')
         ctx.local('source virtualenv/bin/activate')
 
