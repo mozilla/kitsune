@@ -117,32 +117,15 @@ def update_info(ctx):
 
 
 @task
-def get_dependencies(ctx):
+def setup_dependencies(ctx):
     with ctx.lcd(settings.SRC_DIR):
-        ctx.local('python scripts/peep.py install -r requirements/requirements_src.txt')
-        ctx.local('python scripts/peep.py install -r requirements/requirements_packages.txt')
-
-
-@task
-def create_and_source_env(ctx):
-    with ctx.lcd(settings.SRC_DIR):
-        if not os.path.exists('virtualenv'):
-            ctx.local('virtualenv --system-site-packages --verbose virtualenv')
-        ctx.local('source virtualenv/bin/activate')
-
-
-@task
-def make_packages_relocatable(ctx):
-    with ctx.lcd(settings.SRC_DIR):
-        ctx.local('virtualenv --relocatable virtualenv')
+        ctx.local('./scripts/update/setup_dependencies.sh')
 
 
 @task
 def pre_update(ctx, ref=settings.UPDATE_REF):
     update_code(ref)
-    create_and_source_env()
-    get_dependencies()
-    make_packages_relocatable()
+    setup_dependencies()
     update_info()
 
 
