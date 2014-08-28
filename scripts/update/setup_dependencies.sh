@@ -3,7 +3,7 @@
 # This creates a virtualenv and installs our requirements into it.
 # CWD should be the project folder, i.e. kitsune/.
 
-if [ ! -d "../virtualenv" ]; then
+if [ ! -d "virtualenv" ]; then
     virtualenv --system-site-packages --verbose virtualenv
 fi
 source virtualenv/bin/activate
