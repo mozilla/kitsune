@@ -4,7 +4,7 @@ from datetime import datetime
 
 try:
     import newrelic.agent
-ept ImportError:
+except ImportError:
     newrelic = False
 
 
