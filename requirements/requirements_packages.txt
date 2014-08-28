@@ -64,9 +64,6 @@ pylint==0.20.0
 # sha256: ZetJzAW3kX_dxh4f5tikUSwpXLU4kd1eyBa8zNzj8aU
 pytz==2013b
 
-# sha256: NNSeUns9hu7orVGyhwg5uPRC-HrHS2kuXNEIEN3wADM
-coverage==3.2b4
-
 # sha256: bxlzSLRvuM358_z8Kn1al9qV2z4uhmfPZXIWJ0_hsAk
 python-dateutil==1.5
 
