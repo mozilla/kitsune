@@ -10,6 +10,7 @@ from statsd import statsd
 from kitsune.search.es_utils import (
     get_indexable, index_chunk, reconcile_chunk, UnindexMeBro, write_index,
     get_analysis)
+from kitsune.sumo.decorators import timeit
 from kitsune.sumo.redis_utils import redis_client, RedisError
 
 from elasticutils.contrib.django import get_es
@@ -51,6 +52,7 @@ class IndexingTaskError(Exception):
 
 
 @task()
+@timeit
 def reconcile_task(write_index, batch_id, mapping_type_name):
     """Reconciles the data in the index with what's in the db
 
@@ -89,6 +91,7 @@ def reconcile_task(write_index, batch_id, mapping_type_name):
 
 
 @task()
+@timeit
 def index_chunk_task(write_index, batch_id, chunk):
     """Index a chunk of things.
 
@@ -150,6 +153,7 @@ MAX_RETRIES = len(RETRY_TIMES)
 
 
 @task()
+@timeit
 def index_task(cls, id_list, **kw):
     """Index documents specified by cls and ids"""
     statsd.incr('search.tasks.index_task.%s' % cls.get_mapping_type_name())
@@ -186,6 +190,7 @@ def index_task(cls, id_list, **kw):
 
 
 @task()
+@timeit
 def unindex_task(cls, id_list, **kw):
     """Unindex documents specified by cls and ids"""
     statsd.incr('search.tasks.unindex_task.%s' % cls.get_mapping_type_name())
@@ -213,6 +218,7 @@ def unindex_task(cls, id_list, **kw):
 
 
 @task()
+@timeit
 def update_synonyms_task():
     es = get_es()
 

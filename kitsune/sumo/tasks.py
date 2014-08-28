@@ -3,8 +3,11 @@ from datetime import datetime
 from celery import task
 from statsd import statsd
 
+from kitsune.sumo.decorators import timeit
+
 
 @task()
+@timeit
 def measure_queue_lag(queued_time):
     """A task that measures the time it was sitting in the queue.
 

@@ -17,6 +17,7 @@ import waffle
 
 from kitsune.kbadge.utils import get_or_create_badge
 from kitsune.sumo import email_utils
+from kitsune.sumo.decorators import timeit
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import chunked
 from kitsune.wiki.badges import WIKI_BADGES
@@ -29,6 +30,7 @@ log = logging.getLogger('k.task')
 
 
 @task()
+@timeit
 def send_reviewed_notification(revision, document, message):
     """Send notification of review to the revision creator."""
     if revision.reviewer == revision.creator:
@@ -80,6 +82,7 @@ def send_reviewed_notification(revision, document, message):
 
 
 @task()
+@timeit
 def send_contributor_notification(based_on, revision, document, message):
     """Send notification of review to the contributors of revisions."""
 
@@ -150,6 +153,7 @@ def schedule_rebuild_kb():
 
 
 @task
+@timeit
 def add_short_links(doc_ids):
     """Create short_url's for a list of docs."""
     base_url = 'https://{0}%s'.format(Site.objects.get_current().domain)
@@ -168,6 +172,7 @@ def add_short_links(doc_ids):
 
 
 @task(rate_limit='3/h')
+@timeit
 def rebuild_kb():
     """Re-render all documents in the KB in chunks."""
     cache.delete(settings.WIKI_REBUILD_TOKEN)
@@ -180,6 +185,7 @@ def rebuild_kb():
 
 
 @task(rate_limit='10/m')
+@timeit
 def _rebuild_kb_chunk(data):
     """Re-render a chunk of documents.
 
@@ -242,6 +248,7 @@ def _rebuild_kb_chunk(data):
 
 
 @task()
+@timeit
 def maybe_award_badge(badge_template, year, user):
     """Award the specific badge to the user if they've earned it."""
     badge = get_or_create_badge(badge_template, year)
@@ -271,6 +278,7 @@ def maybe_award_badge(badge_template, year, user):
 
 
 @task()
+@timeit
 def render_document_cascade(base):
     """Given a document, render it and all documents that may be affected."""
 

@@ -4,10 +4,12 @@ from django.contrib.sites.models import Site
 from celery import task
 from tower import ugettext as _
 
+from kitsune.sumo.decorators import timeit
 from kitsune.sumo import email_utils
 
 
 @task()
+@timeit
 def send_award_notification(award):
     """Sends the award notification email
 

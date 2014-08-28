@@ -19,12 +19,14 @@ from kitsune.questions.karma_actions import AnswerAction, FirstAnswerAction
 from kitsune.questions.marketplace import submit_ticket
 from kitsune.search.es_utils import ES_EXCEPTIONS
 from kitsune.search.tasks import index_task
+from kitsune.sumo.decorators import timeit
 
 
 log = logging.getLogger('k.task')
 
 
 @task(rate_limit='1/s')
+@timeit
 def update_question_votes(question_id):
     from kitsune.questions.models import Question
 
@@ -45,6 +47,7 @@ def update_question_votes(question_id):
 
 
 @task(rate_limit='4/s')
+@timeit
 def update_question_vote_chunk(data):
     """Update num_votes_past_week for a number of questions."""
 
@@ -105,6 +108,7 @@ def update_question_vote_chunk(data):
 
 
 @task(rate_limit='4/m')
+@timeit
 def update_answer_pages(question):
     log.debug('Recalculating answer page numbers for question %s: %s' %
               (question.pk, question.title))
@@ -117,6 +121,7 @@ def update_answer_pages(question):
 
 
 @task()
+@timeit
 def log_answer(answer):
     pin_this_thread()
 
@@ -135,6 +140,7 @@ def log_answer(answer):
 
 
 @task()
+@timeit
 def maybe_award_badge(badge_template, year, user):
     """Award the specific badge to the user if they've earned it."""
     badge = get_or_create_badge(badge_template, year)
@@ -168,6 +174,7 @@ class PickleableZendeskError(Exception):
 
 
 @task()
+@timeit
 def escalate_question(question_id):
     """Escalate a question to zendesk by submitting a ticket."""
     from kitsune.questions.models import Question

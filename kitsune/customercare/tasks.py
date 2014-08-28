@@ -4,9 +4,11 @@ from celery import task
 
 from kitsune.customercare.models import Reply
 from kitsune.kbadge.utils import get_or_create_badge
+from kitsune.sumo.decorators import timeit
 
 
 @task()
+@timeit
 def maybe_award_badge(badge_template, year, user):
     """Award the specific badge to the user if they've earned it."""
     badge = get_or_create_badge(badge_template, year)
