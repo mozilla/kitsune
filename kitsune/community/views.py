@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 
 from django.conf import settings
 from django.http import Http404
@@ -92,7 +93,7 @@ def search(request):
                     itwitter_usernames__match=lowerq,
                     should=True)
                 .values_dict('id', 'username', 'display_name', 'avatar',
-                             'twitter_usernames'))
+                             'twitter_usernames', 'last_contribution_date'))
 
             statsd.incr('community.usersearch.success')
         except ES_EXCEPTIONS as exc:
@@ -103,6 +104,15 @@ def search(request):
     # For now, we're just truncating results at 30 and not doing any
     # pagination. If somebody complains, we can add pagination or something.
     results = list(results[:30])
+
+    # Calculate days since last activity.
+    for r in results:
+        lcd = r['last_contribution_date']
+        if lcd:
+            delta = datetime.now() - lcd
+            r['days_since_last_activity'] = delta.days
+        else:
+            r['days_since_last_activity'] = None
 
     data = {
         'q': q,

@@ -14,26 +14,6 @@
         <h1>{{ _('Find your fellow contributors') }}</h1>
       {% endif %}
       <form name="find-contributor" id="find-contributor" action="" method="get">
-
-        {# COMMENT THIS OUT FOR NOW
-        <input type="hidden" value="" id="ts-value" name="findby" />
-
-        <div class="selector" data-emulate-select="true">
-          <button type="button" class="ts-select-trigger">
-            <!-- arrow icon using icon font -->
-            <span aria-hidden="true" data-icon-arrow="&#xe800;" class="selector-arrow">
-                <span class='current-selected'>{{ _('Find By') }}</span>
-            </span>
-          </button>
-          <div class="select-options ts-modal" aria-expanded="false">
-            <ul class="ts-options" tabindex="-1">
-              <li><a href="#username" class="selected" aria-checked="true">{{ _('Username') }}</a></li>
-              <li><a href="#displayname">{{ _('Display Name') }}</a></li>
-            </ul>
-          </div>
-        </div>
-        ENDCOMMENT #}
-
         <fieldset>
           <input type="text" name="q" id="search" class="query" value="{{ q }}" placeholder="{{ _('Username, Display Name or Twitter Handle') }}" />
           <input type="submit" value="{{ _('Search') }}" class="search" />
@@ -64,6 +44,12 @@
             </li>
             <li><a href="{{ url('users.profile', result['id']) }}">{{ _('View Profile') }}</a></li>
             <li><a href="{{ url('messages.new')|urlparams(to=result['username']) }}">{{ _('Private Message') }}</a></li>
+            {% if result['days_since_last_activity'] %}
+              <li>
+                {{ _('Days since last activity:') }}
+                {{ result['days_since_last_activity'] }}
+              </li>
+            {% endif %}
           </ul>
         </div>
       </section>
