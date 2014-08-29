@@ -33,6 +33,8 @@ def main():
         #     opts.kitsune, python_path, opts.python),
     }
     ctx['cron'] = '%s cron' % ctx['django']
+    # Source the venv, don't mess with manage.py
+    ctx['rscripts'] = 'cd %s; source virtualenv/bin/activate'
 
     if opts.user:
         for k, v in ctx.iteritems():
