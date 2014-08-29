@@ -1,5 +1,7 @@
 from nose.tools import eq_
 
+from django.contrib.auth.models import User
+
 from pyquery import PyQuery as pq
 
 from kitsune.customercare.tests import reply
@@ -70,6 +72,9 @@ class LandingTests(ElasticTestCase):
         reply(user=user(save=True), save=True)
         reply(user=user(save=True), save=True)
 
+        for u in User.objects.all():
+            profile(user=u)
+
         self.refresh()
 
         response = self.client.get(urlparams(reverse('community.home')))
@@ -128,6 +133,8 @@ class TopContributorsTests(ElasticTestCase):
     def test_top_army_of_awesome(self):
         r1 = reply(user=user(save=True), save=True)
         r2 = reply(user=user(save=True), save=True)
+        profile(user=r1.user)
+        profile(user=r2.user)
 
         self.refresh()
 
@@ -142,6 +149,8 @@ class TopContributorsTests(ElasticTestCase):
     def test_top_questions(self):
         a1 = answer(save=True)
         a2 = answer(save=True)
+        profile(user=a1.creator)
+        profile(user=a2.creator)
 
         self.refresh()
 
@@ -157,6 +166,8 @@ class TopContributorsTests(ElasticTestCase):
         d = document(locale='en-US', save=True)
         r1 = revision(document=d, save=True)
         r2 = revision(document=d, save=True)
+        profile(user=r1.creator)
+        profile(user=r2.creator)
 
         self.refresh()
 
@@ -172,6 +183,8 @@ class TopContributorsTests(ElasticTestCase):
         d = document(locale='es', save=True)
         r1 = revision(document=d, save=True)
         r2 = revision(document=d, save=True)
+        profile(user=r1.creator)
+        profile(user=r2.creator)
 
         self.refresh()
 

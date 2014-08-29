@@ -107,8 +107,7 @@ def search(request):
 
     # Calculate days since last activity.
     for r in results:
-        lcd = r['last_contribution_date']
-        print lcd
+        lcd = r.get('last_contribution_date', None)
         if lcd:
             delta = datetime.now() - lcd
             r['days_since_last_activity'] = delta.days

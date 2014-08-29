@@ -1,7 +1,8 @@
 from datetime import datetime, date, timedelta
 
-from nose.tools import eq_
+from django.contrib.auth.models import User
 
+from nose.tools import eq_
 from pyquery import PyQuery as pq
 
 from kitsune.community.utils import (
@@ -12,7 +13,7 @@ from kitsune.products.tests import product
 from kitsune.questions.tests import answer
 from kitsune.search.tests.test_es import ElasticTestCase
 from kitsune.sumo.tests import LocalizingClient
-from kitsune.users.tests import user
+from kitsune.users.tests import user, profile
 from kitsune.wiki.tests import document, revision
 
 
@@ -26,6 +27,9 @@ class TopContributorTests(ElasticTestCase):
         r3 = revision(document=d, save=True)
         r4 = revision(document=d, created=date.today()-timedelta(days=91),
                       save=True)
+
+        for u in User.objects.all():
+            profile(user=u)
 
         self.refresh()
 
@@ -63,6 +67,9 @@ class TopContributorTests(ElasticTestCase):
         revision(document=d, save=True)
         revision(document=d, save=True)
 
+        for u in User.objects.all():
+            profile(user=u)
+
         self.refresh()
 
         # By default, we should only get 2 top contributors back for 'es'.
@@ -87,6 +94,9 @@ class TopContributorTests(ElasticTestCase):
         r4 = reply(user=user(save=True), created=date.today()-timedelta(days=91),
                    save=True)
 
+        for u in User.objects.all():
+            profile(user=u)
+
         self.refresh()
 
         # By default, we should only get 2 top contributors back.
@@ -106,6 +116,9 @@ class TopContributorTests(ElasticTestCase):
         a3.question.products.add(fxos)
         a4 = answer(created=datetime.now()-timedelta(days=91),
                     save=True)
+
+        for u in User.objects.all():
+            profile(user=u)
 
         self.refresh()
 

@@ -154,9 +154,9 @@
   <ul class="contributor-list {{ area }}">
     {% for result in results %}
       <li>
-        {% set tooltip = _('{user} - {num} contributions in last 90 days')|f(user=display_name(result['user']), num=result['count']) %}
-        <a href="{{ url('users.profile', result['user'].id) }}" title="{{ tooltip }}">
-          <img src="{{ profile_avatar(result['user'], size=60) }}" width="60" height="60" alt="{{ tooltip }}" />
+        {% set tooltip = _('{user} - {num} contributions in last 90 days')|f(user=result['user']['display_name'], num=result['count']) %}
+        <a href="{{ url('users.profile', result['user']['id']) }}" title="{{ tooltip }}">
+          <img src="{{ result['user']['avatar'] }}" width="60" height="60" alt="{{ tooltip }}" />
         </a>
       </li>
     {% endfor %}
