@@ -10,23 +10,21 @@
     var cookieCountryCode = $.cookie('geoip_country_code');
 
     if (cookieCountryName) {
-        console.log('got country name from cookie');
         window.geoip_country_name = function() {
             return cookieCountryName;
         };
     } else if (geoip_country_name()) {
-        console.log('got country name from geodude');
-        $.cookie('geoip_country_name', geoip_country_name());
+        // Cookie expires after 30 days.
+        $.cookie('geoip_country_name', geoip_country_name(), {expires: 30});
     }
 
     if (cookieCountryCode) {
-        console.log('got country code from cookie');
         window.geoip_country_code = function() {
             return cookieCountryCode;
         };
     } else if (geoip_country_code()) {
-        console.log('got country code from geodude');
-        $.cookie('geoip_country_code', geoip_country_code());
+        // Cookie expires after 30 days.
+        $.cookie('geoip_country_code', geoip_country_code(), {expires: 30});
     }
 })();
 
