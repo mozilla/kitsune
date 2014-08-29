@@ -6,6 +6,31 @@
  */
 
 (function() {
+    var cookieCountryName = $.cookie('geoip_country_name');
+    var cookieCountryCode = $.cookie('geoip_country_code');
+
+    if (cookieCountryName) {
+        console.log('got country name from cookie');
+        window.geoip_country_name = function() {
+            return cookieCountryName;
+        };
+    } else if (geoip_country_name()) {
+        console.log('got country name from geodude');
+        $.cookie('geoip_country_name', geoip_country_name());
+    }
+
+    if (cookieCountryCode) {
+        console.log('got country code from cookie');
+        window.geoip_country_code = function() {
+            return cookieCountryCode;
+        };
+    } else if (geoip_country_code()) {
+        console.log('got country code from geodude');
+        $.cookie('geoip_country_code', geoip_country_code());
+    }
+})();
+
+(function() {
     // Mapping of {currentLocale: {country_name: suggested_locale}}
     var languageSuggestions = {
         'en-US': {
@@ -15,6 +40,7 @@
     };
 
     var currentLocale = $('html').attr('lang');
+    var currentCountry = geoip_country_name();
     var suggestedLocale = (languageSuggestions[currentLocale] || {})[geoip_country_name()];
     var $announceBar = $('#announce-geoip-suggestion');
 
