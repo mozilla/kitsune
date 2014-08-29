@@ -161,7 +161,8 @@ class Profile(ModelBase, SearchMixin):
         try:
             revision = Revision.objects.filter(
                 reviewer=self.user).latest('reviewed')
-            dates.append(revision.reviewed)
+            # Old revisions don't have the reviewed date.
+            dates.append(revision.reviewed or revision.created)
         except Revision.DoesNotExist:
             pass
 
