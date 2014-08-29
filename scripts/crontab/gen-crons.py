@@ -24,7 +24,7 @@ def main():
         parser.error("-k must be defined")
 
     # To pick up the right PyOpenSSL:
-    python_path = 'PYTHONPATH=/usr/local/lib64/python2.6/site-packages'
+    python_path = 'PYTHONPATH+=:/usr/local/lib64/python2.6/site-packages'
 
     ctx = {
         'django': 'cd %s; source virtualenv/bin/activate; %s %s -W ignore::DeprecationWarning manage.py' % (
