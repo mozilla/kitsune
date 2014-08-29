@@ -178,10 +178,6 @@ https://github.com/celery/billiard/archive/f24a943cb4b6992717fa8d1db7e220d576377
 # sha256: TZ4IUMAsbo3fhQxiIK1u1Ba4-UXvK0mZKvjSBbxQxNA
 https://github.com/jsocol/bleach/archive/ab7c8b3f0a4c169b94da3248dfd60d6fc33b263c.tar.gz#egg=bleach
 
-# django-cronjobs: remotes/origin/rates~1
-# sha256: -BZpyB_ugLGKoP73f1q9MkiBVwd7RGmtu1fsJw7HlMM
-https://github.com/jsocol/django-cronjobs/archive/fa411be81d26619c973ec281c5cce2ce5219bd9c.tar.gz#egg=django-cronjobs
-
 # django-session-csrf: tags/v0.5
 # sha256: AdM_S160nuU1pdfrFvkQ9Eh7P9ToAPD2LauhDLWx_Xk
 https://github.com/mozilla/django-session-csrf/archive/15492526b23cdad56fe3df1342e2d82ec5d17c18.tar.gz#egg=django-session-csrf
@@ -221,4 +217,3 @@ https://github.com/clouserw/tower/archive/af393cd07b1ee02107cb003ab47c6b0b4553b0
 # django-qunit: remotes/origin/django16
 # sha256: ZNTz9pfspTc-l8h66PMO775Ur7WrfDwFZUNAvCAJbkQ
 https://github.com/rlr/django-qunit/archive/2cda783a05912a6cbfaa4799583aa22cf24e184c.tar.gz#egg=django-qunit
-
