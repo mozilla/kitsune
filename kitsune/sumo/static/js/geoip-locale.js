@@ -6,6 +6,29 @@
  */
 
 (function() {
+    var cookieCountryName = $.cookie('geoip_country_name');
+    var cookieCountryCode = $.cookie('geoip_country_code');
+
+    if (cookieCountryName) {
+        window.geoip_country_name = function() {
+            return cookieCountryName;
+        };
+    } else if (geoip_country_name()) {
+        // Cookie expires after 30 days.
+        $.cookie('geoip_country_name', geoip_country_name(), {expires: 30});
+    }
+
+    if (cookieCountryCode) {
+        window.geoip_country_code = function() {
+            return cookieCountryCode;
+        };
+    } else if (geoip_country_code()) {
+        // Cookie expires after 30 days.
+        $.cookie('geoip_country_code', geoip_country_code(), {expires: 30});
+    }
+})();
+
+(function() {
     // Mapping of {currentLocale: {country_name: suggested_locale}}
     var languageSuggestions = {
         'en-US': {
@@ -15,6 +38,7 @@
     };
 
     var currentLocale = $('html').attr('lang');
+    var currentCountry = geoip_country_name();
     var suggestedLocale = (languageSuggestions[currentLocale] || {})[geoip_country_name()];
     var $announceBar = $('#announce-geoip-suggestion');
 

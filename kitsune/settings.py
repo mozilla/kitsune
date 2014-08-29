@@ -395,6 +395,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 
     'kitsune.sumo.context_processors.global_settings',
     'kitsune.sumo.context_processors.i18n',
+    'kitsune.sumo.context_processors.geoip_cache_detector',
     'jingo_minify.helpers.build_ids',
     'kitsune.messages.context_processors.unread_message_count',
 )
