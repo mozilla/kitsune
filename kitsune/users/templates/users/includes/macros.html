@@ -94,5 +94,8 @@
     <li {{ selected|class_selected('edit-settings') }}>
       <a href="{{ url('users.edit_settings') }}">{{ _('Edit settings') }}</a>
     </li>
+    <li {{ selected|class_selected('edit-watches') }}>
+      <a href="{{ url('users.edit_watch_list') }}">{{ _('Manage watch list') }}</a>
+    </li>
   </ul>
 {%- endmacro %}

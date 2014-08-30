@@ -42,6 +42,7 @@ users_patterns = patterns(
         views.activate, name='users.activate'),
     url(r'^/edit$', views.edit_profile, name='users.edit_profile'),
     url(r'^/settings$', views.edit_settings, name='users.edit_settings'),
+    url(r'^/watches$', views.edit_watch_list, name='users.edit_watch_list'),
     url(r'^/avatar$', views.edit_avatar, name='users.edit_avatar'),
     url(r'^/avatar/delete$', views.delete_avatar, name='users.delete_avatar'),
     url(r'^/deactivate$', views.deactivate, name='users.deactivate'),

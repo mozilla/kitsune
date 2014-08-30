@@ -13,9 +13,12 @@ from django.utils.http import int_to_base36
 import mock
 from nose.tools import eq_
 from pyquery import PyQuery as pq
+from tidings.models import Watch
 
 from kitsune.flagit.models import FlaggedObject
 from kitsune.kbadge.tests import award, badge
+from kitsune.questions.events import QuestionReplyEvent
+from kitsune.questions.tests import question
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.helpers import urlparams
 from kitsune.sumo.tests import post, get
@@ -369,7 +372,7 @@ class ViewProfileTests(TestCaseBase):
         r = self.client.get(reverse('users.profile', args=[self.u.username]))
         eq_(200, r.status_code)
         doc = pq(r.content)
-        eq_('Edit settings', doc('#user-nav li:last').text())
+        eq_('Manage watch list', doc('#user-nav li:last').text())
         self.client.logout()
 
     def test_bio_links_nofollow(self):
@@ -559,3 +562,34 @@ class ForgotUsernameTests(TestCaseBase):
         eq_(1, len(mail.outbox))
         assert mail.outbox[0].subject.find('Your username on') == 0
         assert mail.outbox[0].body.find(u.username) > 0
+
+
+class EditWatchListTests(TestCaseBase):
+    """Test manage watch list"""
+
+    def setUp(self):
+        p = profile()
+        p.save()
+        self.user = p.user
+        self.client.login(username=self.user.username, password='testpass')
+
+        self.question = question(creator=self.user, save=True)
+        QuestionReplyEvent.notify(self.user, self.question)
+
+    def test_GET(self):
+        r = self.client.get(reverse('users.edit_watch_list'))
+        eq_(200, r.status_code)
+        assert 'question: ' + self.question.title in r.content
+
+    def test_POST(self):
+        w = Watch.objects.get(object_id=self.question.id, user=self.user)
+        eq_(w.is_active, True)
+
+        r = self.client.post(reverse('users.edit_watch_list'))
+        w = Watch.objects.get(object_id=self.question.id, user=self.user)
+        eq_(w.is_active, False)
+
+        r = self.client.post(reverse('users.edit_watch_list'), {
+            'watch_%s' % self.question.id: '1'})
+        w = Watch.objects.get(object_id=self.question.id, user=self.user)
+        eq_(w.is_active, True)
