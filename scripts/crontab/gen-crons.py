@@ -27,9 +27,9 @@ def main():
     python_path = 'PYTHONPATH+=:/usr/local/lib64/python2.6/site-packages'
 
     ctx = {
-        'django': 'cd %s; source virtualenv/bin/activate; %s %s -W ignore::DeprecationWarning manage.py' % (
+        'django': 'cd %s; source virtualenv/bin/activate; %s python -W ignore::DeprecationWarning manage.py' % (
             opts.kitsune, python_path, opts.python),
-        'scripts': 'cd %s; source virtualenv/bin/activate; %s %s' % (
+        'scripts': 'cd %s; source virtualenv/bin/activate; %s python' % (
             opts.kitsune, python_path, opts.python),
     }
     ctx['cron'] = '%s cron' % ctx['django']
