@@ -20,6 +20,7 @@ from django.utils.http import base36_to_int
 from mobility.decorators import mobile_template
 from session_csrf import anonymous_csrf
 from statsd import statsd
+from tidings.models import Watch
 from tidings.tasks import claim_watches
 from tower import ugettext as _
 
@@ -415,6 +416,30 @@ def edit_settings(request, template):
             initial[v['name']] = v['value']
     form = SettingsForm(initial=initial)
     return render(request, template, {'form': form})
+
+
+@login_required
+@require_http_methods(['GET', 'POST'])
+def edit_watch_list(request):
+    """Edit watch list"""
+    watches = Watch.objects.filter(user=request.user).order_by('content_type')
+
+    watch_list = []
+    for w in watches:
+        if w.content_type.name == 'question':
+            # Only list questions that are not archived
+            if not w.content_object.is_archived:
+                watch_list.append(w)
+        else:
+            watch_list.append(w)
+
+    if request.method == 'POST':
+        for w in watch_list:
+            w.is_active = 'watch_%s' % w.id in request.POST
+            w.save()
+
+    return render(request, 'users/edit_watches.html', {
+        'watch_list': watch_list})
 
 
 @login_required
