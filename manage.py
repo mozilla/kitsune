@@ -11,6 +11,7 @@ from django.conf import settings
 # Import for side-effect: configures our logging handlers.
 from kitsune import log_settings
 
+sys.path.append("/virtualenv/lib/python2.6/site-packages")
 
 if __name__ == "__main__":
     from django.core.management import execute_from_command_line
