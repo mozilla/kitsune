@@ -16,7 +16,6 @@ from timezones.fields import TimeZoneField, zones, MAX_TIMEZONE_LENGTH
 from tower import ugettext as _
 from tower import ugettext_lazy as _lazy
 
-from kitsune.customercare.models import Reply
 from kitsune.lib.countries import COUNTRIES
 from kitsune.search.es_utils import UnindexMeBro
 from kitsune.search.models import (
@@ -116,6 +115,7 @@ class Profile(ModelBase, SearchMixin):
 
     @property
     def twitter_usernames(self):
+        from kitsune.customercare.models import Reply
         return list(
             Reply.objects.filter(user=self.user)
                          .values_list('twitter_username', flat=True)
@@ -128,6 +128,7 @@ class Profile(ModelBase, SearchMixin):
     @property
     def last_contribution_date(self):
         """Get the date of the user's last contribution."""
+        from kitsune.customercare.models import Reply
         from kitsune.questions.models import Answer
         from kitsune.wiki.models import Revision
 
@@ -283,7 +284,7 @@ class UserMappingType(SearchMappingType):
 register_for_indexing('users', Profile)
 
 
-def _get_profile(u):
+def get_profile(u):
     try:
         return u.get_profile()
     except Profile.DoesNotExist:
@@ -294,7 +295,7 @@ register_for_indexing(
     'users',
     User,
     instance_to_indexee=(
-        lambda u: _get_profile(u)))
+        lambda u: get_profile(u)))
 
 
 class Setting(ModelBase):

@@ -157,7 +157,6 @@ class UserSearchTests(ElasticTestCase):
         d = datetime(2014, 1, 1)
         reply(user=u, created=d, save=True)
 
-        p.save()  # we need to resave the profile to force a reindex
         self.refresh()
 
         data = UserMappingType.search().query(
@@ -168,7 +167,6 @@ class UserSearchTests(ElasticTestCase):
         d = datetime(2014, 1, 2)
         answer(creator=u, created=d, save=True)
 
-        p.save()  # we need to resave the profile to force a reindex
         self.refresh()
 
         data = UserMappingType.search().query(
@@ -179,7 +177,6 @@ class UserSearchTests(ElasticTestCase):
         d = datetime(2014, 1, 3)
         revision(creator=u, created=d, save=True)
 
-        p.save()  # we need to resave the profile to force a reindex
         self.refresh()
 
         data = UserMappingType.search().query(
@@ -190,7 +187,6 @@ class UserSearchTests(ElasticTestCase):
         d = datetime(2014, 1, 4)
         revision(reviewer=u, reviewed=d, save=True)
 
-        p.save()  # we need to resave the profile to force a reindex
         self.refresh()
 
         data = UserMappingType.search().query(
