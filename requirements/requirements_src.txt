@@ -10,10 +10,6 @@ https://github.com/bltravis/python-recaptcha/archive/d7db50afc711ef623aec8e472ff
 # sha256: Go2dIsmkcwf28MPrPT3uDp8X23im0q_Tgc2aGp8tJrQ
 https://github.com/jsocol/django-waffle/archive/a5beffb15d07b6c5f92e04dba15ab609ab52e940.tar.gz#egg=django-waffle
 
-# django-mozilla-product-details: master
-# sha256: 0MsiXwQYhuPOW2yJZNlzVtG3UB6XFQof5ROIto_B-14
-https://github.com/mozilla/django-product-details/archive/515d55ddf20688c71b54d77eb157eaee21214859.tar.gz#egg=django-mozilla-product-details
-
 # django-eadred: tags/v0.2
 # sha256: 6fg4iT7EfIPsCuOQtsP2nqjLzhX6v3nR-3-JIbWbssI
 https://github.com/willkg/django-eadred/archive/f77ebbeea7e6802771b91a1748faec002ce83bd6.tar.gz#egg=django-eadred
@@ -217,3 +213,7 @@ https://github.com/clouserw/tower/archive/af393cd07b1ee02107cb003ab47c6b0b4553b0
 # django-qunit: remotes/origin/django16
 # sha256: ZNTz9pfspTc-l8h66PMO775Ur7WrfDwFZUNAvCAJbkQ
 https://github.com/rlr/django-qunit/archive/2cda783a05912a6cbfaa4799583aa22cf24e184c.tar.gz#egg=django-qunit
+
+# django-mozilla-product-details: master
+# sha256: 3w8dxWiq5fW-GDgKRIZrBIKQ3Wq6b_2RwU3RbE9yidw
+https://github.com/mozilla/django-product-details/archive/50d83e16d801ef069738cfb9f6feccc0abaeca01.tar.gz#egg=django-mozilla-product-details
