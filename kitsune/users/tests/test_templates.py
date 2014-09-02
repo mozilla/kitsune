@@ -369,7 +369,7 @@ class ViewProfileTests(TestCaseBase):
         r = self.client.get(reverse('users.profile', args=[self.u.username]))
         eq_(200, r.status_code)
         doc = pq(r.content)
-        eq_('Edit settings', doc('#user-nav li:last').text())
+        eq_('Manage watch list', doc('#user-nav li:last').text())
         self.client.logout()
 
     def test_bio_links_nofollow(self):
