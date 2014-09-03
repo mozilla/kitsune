@@ -509,6 +509,7 @@ INSTALLED_APPS = (
     'badger',
     'cronjobs',
     'tidings',
+    'rest_framework.authtoken',
     'kitsune.questions',
     'adminplus',
     'kitsune.kadmin',
@@ -958,7 +959,13 @@ SURVEYGIZMO_PASSWORD = ''
 
 # Django Rest Framework
 REST_FRAMEWORK = {
-    'DEFAULT_FILTER_BACKENDS': ('rest_framework.filters.DjangoFilterBackend',)
+    'DEFAULT_FILTER_BACKENDS': (
+        'rest_framework.filters.DjangoFilterBackend',
+    ),
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+    ),
 }
 
 # Django-axes settings.

@@ -1,7 +1,7 @@
 from django import forms
 from django.conf import settings
 
-from rest_framework import fields
+from rest_framework import fields, permissions
 from rest_framework.exceptions import APIException
 from rest_framework.filters import BaseFilterBackend
 from tower import ugettext as _
@@ -23,13 +23,13 @@ class GenericAPIException(APIException):
     """Generic Exception, since DRF doesn't provide one.
 
     DRF allows views to throw subclasses of APIException to cause non-200
-    status codes to be sent back to API consumers. These subclasses are expected
-    to have a ``status_code`` and ``detail`` property.
+    status codes to be sent back to API consumers. These subclasses are
+    expected to have a ``status_code`` and ``detail`` property.
 
     DRF doesn't give a generic way to make an object with these properties.
-    Instead you are expected to make many specific subclasses and make instances
-    of those. That seemed lame, so this class creates instances instead of lots
-    of subclasses.
+    Instead you are expected to make many specific subclasses and make
+    instances of those. That seemed lame, so this class creates instances
+    instead of lots of subclasses.
     """
     def __init__(self, status_code, detail, **kwargs):
         self.status_code = status_code
@@ -125,3 +125,15 @@ class InequalityFilterBackend(BaseFilterBackend):
     def op_lte(self, queryset, key, value):
         arg = {key + '__lte': value}
         return queryset.filter(**arg)
+
+
+class GenericDjangoPermission(permissions.BasePermission):
+
+    @property
+    def permissions(self):
+        raise NotImplemented
+
+    def has_permission(self, request, view):
+        u = request.user
+        not_inactive = u.is_anonymous() or u.is_active
+        return not_inactive and all(u.has_perm(p) for p in self.permissions)

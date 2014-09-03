@@ -106,13 +106,14 @@ class IgnoreUser(TestCase):
 
     def test_ignore_account(self):
         data = {'username': 'rehan'}
-        self.client.post(reverse('customercare.api.ignore'),
-                         data=json.dumps(data),
-                         content_type='application/json')
+        res = self.client.post(reverse('customercare.api.ignore'),
+                               data=json.dumps(data),
+                               content_type='application/json')
+        eq_(res.status_code, 200)
         user = TwitterAccount.objects.get(username=data['username'])
         eq_(user.ignored, True)
 
-    def test_single_ignore_account(self):
+    def test_single_unignore_account(self):
         data = {'usernames': self.ignored_usernames[:1]}
         self.client.post(reverse('customercare.api.unignore'),
                          data=json.dumps(data),
@@ -126,7 +127,7 @@ class IgnoreUser(TestCase):
                 .first())
         eq_(user.ignored, False)
 
-    def test_multiple_ignore_account(self):
+    def test_multiple_unignore_account(self):
         data = {'usernames': self.ignored_usernames[1:]}
         self.client.post(reverse('customercare.api.unignore'),
                          data=json.dumps(data),
