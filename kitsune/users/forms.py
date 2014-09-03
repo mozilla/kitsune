@@ -147,8 +147,15 @@ class AuthenticationForm(auth_forms.AuthenticationForm):
     * Doesn't prefill password on validation error.
     * Allows logging in inactive users (initialize with `only_active=False`).
     """
-    password = forms.CharField(label=_lazy(u"Password"),
-                               widget=forms.PasswordInput(render_value=False))
+    username = forms.RegexField(
+        label=_lazy(u'Username:'),
+        regex=r'^[\w.-]+$',
+        error_messages={'invalid': USERNAME_INVALID,
+                        'required': USERNAME_REQUIRED})
+    password = forms.CharField(
+        label=_lazy(u'Password:'),
+        widget=forms.PasswordInput(render_value=False),
+        error_messages={'required': PASSWD_REQUIRED})
 
     def __init__(self, request=None, only_active=True, *args, **kwargs):
         self.only_active = only_active
