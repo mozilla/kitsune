@@ -118,10 +118,6 @@ https://github.com/django-security/django-axes/archive/778f208cc1d3cc42ecb756f73
 # sha256: _Wlp-He7yoYfBlWLdCw41A6prXHFZf3MJ39ONzMdAxk
 https://github.com/jbalogh/django-debug-cache-panel/archive/a6b0f248b721bdd759ee5b5eb843fedc9c33da09.tar.gz#egg=cache-panel
 
-# pystatsd: tags/v0.2.0~7
-# sha256: CLl0ESJBX1tGl2XO3w1oeQLg_2CSdjFw_Wur4Uz08wc
-https://github.com/jsocol/pystatsd/archive/328bc1d64bc22f7821bf7a382f3f5bb12eee0298.tar.gz#egg=pystatsd
-
 # django-ratelimit: tags/v0.4.0~8
 # sha256: 0aNL6oRLRBHhGYsH0mm3D7UQDaSnNbdsHJl_sPuUZGw
 https://github.com/jsocol/django-ratelimit/archive/462c8c3ee31c5f1e3803ecd65c4223929a81390c.tar.gz#egg=django-ratelimit

@@ -106,3 +106,6 @@ httplib2==0.8
 
 # sha256: F3KVsUQkAMks22fo4Y-f9ZRvtEL4WBO50IN4I3IuoI0
 django-cronjobs==0.2.3
+
+# sha256: iwwUgZEicThAdjbIlWf8v2ruD33Bdms1HZcZzyF4CQ8
+statsd==2.0.1
