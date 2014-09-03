@@ -156,7 +156,7 @@
       <li>
         {% set tooltip = _('{user} - {num} contributions in last 90 days')|f(user=result['user']['display_name'], num=result['count']) %}
         <a href="{{ url('users.profile', result['user']['id']) }}" title="{{ tooltip }}">
-          <img src="{{ result['user']['avatar'] }}" width="60" height="60" alt="{{ tooltip }}" />
+          <img src="{{ result['user']['avatar'] }}" alt="{{ tooltip }}" />
         </a>
       </li>
     {% endfor %}
