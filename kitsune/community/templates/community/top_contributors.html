@@ -100,7 +100,7 @@
     <ol>
       {% for result in results %}
         <li class="results-user">
-          <img src="{{ result['user']['avatar'] }}" width="120" height="120" alt="" class="user-img-results" />
+          <img src="{{ result['user']['avatar'] }}" alt="" class="user-img-results" />
           <span class="numbered">{{ loop.index }}</span>
           <div class="user-details">
             <h2>{{ result['user']['display_name'] }}</h2>
