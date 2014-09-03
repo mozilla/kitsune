@@ -259,7 +259,7 @@ class UserMappingType(SearchMappingType):
             ],
             'output': _(u'{displayname} ({username})').format(
                 displayname=d['display_name'], username=d['username']),
-            'payload' : {'user_id': d['id'] },
+            'payload': {'user_id': d['id']},
         }
 
         return d
@@ -270,10 +270,10 @@ class UserMappingType(SearchMappingType):
         USER_SUGGEST = 'user-suggest'
         es = UserMappingType.search().get_es()
         results = es.suggest(cls.get_index(), {
-            USER_SUGGEST : {
+            USER_SUGGEST: {
                 'text': text.lower(),
-                'completion' : {
-                    'field' : 'suggest'
+                'completion': {
+                    'field': 'suggest'
                 }
             }
         })
