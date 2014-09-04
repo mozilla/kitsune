@@ -101,9 +101,7 @@ def update_info(ctx):
         ctx.local("git log -3")
         ctx.local("git status")
         ctx.local("git submodule status")
-        # TODO: Nix this when we nix schematic.
-        ctx.local("schematic -v migrations/")
-        ctx.local("python2.6 manage.py migrate --list")
+        ctx.local("source virtualenv/bin/activate; python manage.py migrate --list")
         with ctx.lcd("locale"):
             ctx.local("svn info")
             ctx.local("svn status")
