@@ -111,4 +111,5 @@ django-cronjobs==0.2.3
 statsd==2.0.1
 
 # sha256: tl3H-YxacpMU0AHruskii-_WJXBanjrgOaXRYMOXb-E
+# sha256: mmQhHJajJiuyVFrMgq9djz2gF1KZ98fpAeTtRVvpZfs
 Django==1.6.7
