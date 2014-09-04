@@ -53,13 +53,8 @@ def update_assets(ctx):
 @task
 def db_migrations(ctx):
     with ctx.lcd(settings.SRC_DIR):
-        # This is a no-op after the final 232 migration. We should
-        # remove this at some point once we think all environments and
-        # contributors have updated.
-        ctx.local("python2.6 ./vendor/src/schematic/schematic migrations")
-
-        # This performs South migrations.
-        ctx.local("python2.6 manage.py migrate")
+        # This runs schematic and south migrations.
+        ctx.local('./scripts/update/migrate.sh')
 
 
 @task
