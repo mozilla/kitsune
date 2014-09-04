@@ -16,7 +16,8 @@ import commander_settings as settings
 
 
 # Setup virtualenv path.
-os.environ['PATH'] = 'virtualenv/bin' + os.pathsep + os.environ['PATH']
+venv_bin_path = os.path.join(settings.SRC_DIR, 'virtualenv', 'bin')
+os.environ['PATH'] = venv_bin_path + os.pathsep + os.environ['PATH']
 os.environ['DJANGO_SETTINGS_MODULE'] = 'kitsune.settings_local'
 
 
@@ -56,6 +57,7 @@ def update_assets(ctx):
 def db_migrations(ctx):
     with ctx.lcd(settings.SRC_DIR):
         # This runs schematic and south migrations.
+        print('PATH=', os.environ['PATH'])
         ctx.local('python schematic migrations')
         ctx.local('python manage.py migrate')
 
