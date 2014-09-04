@@ -294,8 +294,7 @@ def get_profile(u):
 register_for_indexing(
     'users',
     User,
-    instance_to_indexee=(
-        lambda u: get_profile(u)))
+    instance_to_indexee=get_profile)
 
 
 class Setting(ModelBase):
