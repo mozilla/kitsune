@@ -88,9 +88,8 @@ def _get_creator_counts(query, count):
     """Get the list of top contributors with the contribution count."""
     creator_counts = query.facet_counts()['creator_id']['terms']
 
-    # Grab all the users from the DB in one query.
+    # Grab all the users from the user index in ES.
     user_ids = [x['term'] for x in creator_counts]
-    users = User.objects.filter(id__in=user_ids).select_related('profile')
     results = (UserMappingType
         .search()
         .filter(id__in=user_ids)
