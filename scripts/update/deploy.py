@@ -57,8 +57,7 @@ def update_assets(ctx):
 def db_migrations(ctx):
     with ctx.lcd(settings.SRC_DIR):
         # This runs schematic and south migrations.
-        print('PATH=', os.environ['PATH'])
-        ctx.local('python schematic migrations')
+        ctx.local('schematic migrations')
         ctx.local('python manage.py migrate')
 
 
