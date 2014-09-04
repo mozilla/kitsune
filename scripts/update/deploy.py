@@ -15,6 +15,8 @@ from commander.deploy import task, hostgroups
 import commander_settings as settings
 
 
+# Setup virtualenv path.
+os.environ['PATH'] = 'virtualenv/bin' + os.pathsep + os.environ['PATH']
 os.environ['DJANGO_SETTINGS_MODULE'] = 'kitsune.settings_local'
 
 
@@ -39,15 +41,15 @@ def update_locales(ctx):
     with ctx.lcd(settings.SRC_DIR):
         ctx.local('date > media/postatus.txt')
         ctx.local('./scripts/compile-linted-mo.sh | /usr/bin/tee -a media/postatus.txt')
-        ctx.local('python2.6 manage.py compilejsi18n')
+        ctx.local('python manage.py compilejsi18n')
 
 
 @task
 def update_assets(ctx):
     with ctx.lcd(settings.SRC_DIR):
-        ctx.local("python2.6 manage.py nunjucks_precompile")
-        ctx.local("python2.6 manage.py collectstatic --noinput")
-        ctx.local("LANG=en_US.UTF-8 python2.6 manage.py compress_assets")
+        ctx.local("python manage.py nunjucks_precompile")
+        ctx.local("python manage.py collectstatic --noinput")
+        ctx.local("LANG=en_US.UTF-8 python manage.py compress_assets")
 
 
 @task
@@ -60,7 +62,7 @@ def db_migrations(ctx):
 @task
 def install_cron(ctx):
     with ctx.lcd(settings.SRC_DIR):
-        ctx.local("python2.6 ./scripts/crontab/gen-crons.py -k %s -u apache > /etc/cron.d/.%s" %
+        ctx.local("python ./scripts/crontab/gen-crons.py -k %s -u apache > /etc/cron.d/.%s" %
                   (settings.WWW_DIR, settings.CRON_NAME))
         ctx.local("mv /etc/cron.d/.%s /etc/cron.d/%s" % (settings.CRON_NAME, settings.CRON_NAME))
 
