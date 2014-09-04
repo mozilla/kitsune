@@ -3,7 +3,7 @@
 # This creates a virtualenv and installs our requirements into it.
 # CWD should be the project folder, i.e. kitsune/.
 
-set -e -u
+set -e
 
 virtualenv --system-site-packages virtualenv
 
