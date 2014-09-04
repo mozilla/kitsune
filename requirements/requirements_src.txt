@@ -182,10 +182,6 @@ https://github.com/andymccurdy/redis-py/archive/43aa23146ad287959369161038a4e5cd
 # sha256: YpQN6FOWpn2GomK8ZdjXbGNnxpxpA0ypjL1VEs_m8Dc
 https://github.com/pcraciunoiu/py-wikimarkup/archive/ce7d10dbd421533bb9b0c41dd9c9d09298a51a41.tar.gz#egg=py-wikimarkup
 
-# django: tags/1.6.5^0
-# sha256: 407GSg2jbuAQNBo05zNYbzxbOtRVYYhlT-SJ6uB7DDg
-https://github.com/django/django/archive/b5bacdea00c8ca980ff5885e15f7cd7b26b4dbb9.tar.gz#egg=django
-
 # requests-oauthlib: tags/v0.3.3~12
 # sha256: uOoyEafcwZIXaIFQOsl_ffe0JIVmLZzuahgcNqZg78Y
 https://github.com/requests/requests-oauthlib/archive/3d9fe79cd92c6c2e36fba993c19b957804cf8d7f.tar.gz#egg=requests-oauthlib
