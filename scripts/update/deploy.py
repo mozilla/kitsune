@@ -56,7 +56,8 @@ def update_assets(ctx):
 def db_migrations(ctx):
     with ctx.lcd(settings.SRC_DIR):
         # This runs schematic and south migrations.
-        ctx.local('./scripts/update/migrate.sh')
+        ctx.local('python schematic migrations')
+        ctx.local('python manage.py migrate')
 
 
 @task
@@ -103,7 +104,7 @@ def update_info(ctx):
         ctx.local("git log -3")
         ctx.local("git status")
         ctx.local("git submodule status")
-        ctx.local("source virtualenv/bin/activate; python manage.py migrate --list")
+        ctx.local("python manage.py migrate --list")
         with ctx.lcd("locale"):
             ctx.local("svn info")
             ctx.local("svn status")
@@ -114,7 +115,10 @@ def update_info(ctx):
 @task
 def setup_dependencies(ctx):
     with ctx.lcd(settings.SRC_DIR):
-        ctx.local('./scripts/update/setup_dependencies.sh')
+        ctx.local('virtualenv --system-site-packages virtualenv')
+        ctx.local('python scripts/peep.py install -r requirements/git.txt')
+        ctx.local('python scripts/peep.py install -r requirements/pypi.txt')
+        ctx.local('virtualenv --relocatable virtualenv')
 
 
 @task

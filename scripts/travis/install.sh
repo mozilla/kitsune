@@ -9,8 +9,8 @@ sudo ln -s /usr/lib/`uname -i`-linux-gnu/libz.so ~/virtualenv/python2.6/lib/
 
 echo "Install Python dependencies"
 python scripts/peep.py install -r requirements/compiled.txt
-python scripts/peep.py install -r requirements/requirements_src.txt
-python scripts/peep.py install -r requirements/requirements_packages.txt
+python scripts/peep.py install -r requirements/git.txt
+python scripts/peep.py install -r requirements/pypi.txt
 pip install nosenicedots > /dev/null
 pip freeze
 echo
