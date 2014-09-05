@@ -67,8 +67,12 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
                                  null=True)
     is_locked = models.BooleanField(default=False)
     is_archived = models.NullBooleanField(default=False, null=True)
-    is_spam = models.BooleanField(default=False)
     num_votes_past_week = models.PositiveIntegerField(default=0, db_index=True)
+
+    is_spam = models.BooleanField(default=False)
+    marked_as_spam = models.DateTimeField(default=None, null=True)
+    marked_as_spam_by = models.ForeignKey(
+        User, null=True, related_name='questions_marked_as_spam')
 
     images = generic.GenericRelation(ImageAttachment)
     flags = generic.GenericRelation(FlaggedObject)
@@ -717,6 +721,9 @@ class Answer(ModelBase, SearchMixin):
                                    related_name='answers_updated')
     page = models.IntegerField(default=1)
     is_spam = models.BooleanField(default=False)
+    marked_as_spam = models.DateTimeField(default=None, null=True)
+    marked_as_spam_by = models.ForeignKey(
+        User, null=True, related_name='answers_marked_as_spam')
 
     images = generic.GenericRelation(ImageAttachment)
     flags = generic.GenericRelation(FlaggedObject)

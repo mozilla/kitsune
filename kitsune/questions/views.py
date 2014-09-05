@@ -1115,6 +1115,8 @@ def mark_spam(request):
         question_id = obj.question.id
 
     obj.is_spam = True
+    obj.marked_as_spam = datetime.now()
+    obj.marked_as_spam_by = request.user
     obj.save()
 
     return HttpResponseRedirect(reverse('questions.details',
@@ -1134,6 +1136,8 @@ def unmark_spam(request):
         question_id = obj.question.id
 
     obj.is_spam = False
+    obj.marked_as_spam = None
+    obj.marked_as_spam_by = None
     obj.save()
 
     return HttpResponseRedirect(reverse('questions.details',

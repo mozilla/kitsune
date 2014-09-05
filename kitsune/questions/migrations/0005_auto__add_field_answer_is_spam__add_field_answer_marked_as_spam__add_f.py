@@ -13,9 +13,29 @@ class Migration(SchemaMigration):
                       self.gf('django.db.models.fields.BooleanField')(default=False),
                       keep_default=False)
 
+        # Adding field 'Answer.marked_as_spam'
+        db.add_column(u'questions_answer', 'marked_as_spam',
+                      self.gf('django.db.models.fields.DateTimeField')(default=None, null=True),
+                      keep_default=False)
+
+        # Adding field 'Answer.marked_as_spam_by'
+        db.add_column(u'questions_answer', 'marked_as_spam_by',
+                      self.gf('django.db.models.fields.related.ForeignKey')(related_name='answers_marked_as_spam', null=True, to=orm['auth.User']),
+                      keep_default=False)
+
         # Adding field 'Question.is_spam'
         db.add_column(u'questions_question', 'is_spam',
                       self.gf('django.db.models.fields.BooleanField')(default=False),
+                      keep_default=False)
+
+        # Adding field 'Question.marked_as_spam'
+        db.add_column(u'questions_question', 'marked_as_spam',
+                      self.gf('django.db.models.fields.DateTimeField')(default=None, null=True),
+                      keep_default=False)
+
+        # Adding field 'Question.marked_as_spam_by'
+        db.add_column(u'questions_question', 'marked_as_spam_by',
+                      self.gf('django.db.models.fields.related.ForeignKey')(related_name='questions_marked_as_spam', null=True, to=orm['auth.User']),
                       keep_default=False)
 
 
@@ -23,8 +43,20 @@ class Migration(SchemaMigration):
         # Deleting field 'Answer.is_spam'
         db.delete_column(u'questions_answer', 'is_spam')
 
+        # Deleting field 'Answer.marked_as_spam'
+        db.delete_column(u'questions_answer', 'marked_as_spam')
+
+        # Deleting field 'Answer.marked_as_spam_by'
+        db.delete_column(u'questions_answer', 'marked_as_spam_by_id')
+
         # Deleting field 'Question.is_spam'
         db.delete_column(u'questions_question', 'is_spam')
+
+        # Deleting field 'Question.marked_as_spam'
+        db.delete_column(u'questions_question', 'marked_as_spam')
+
+        # Deleting field 'Question.marked_as_spam_by'
+        db.delete_column(u'questions_question', 'marked_as_spam_by_id')
 
 
     models = {
@@ -106,6 +138,8 @@ class Migration(SchemaMigration):
             'creator': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'answers'", 'to': u"orm['auth.User']"}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'is_spam': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'marked_as_spam': ('django.db.models.fields.DateTimeField', [], {'default': 'None', 'null': 'True'}),
+            'marked_as_spam_by': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'answers_marked_as_spam'", 'null': 'True', 'to': u"orm['auth.User']"}),
             'page': ('django.db.models.fields.IntegerField', [], {'default': '1'}),
             'question': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'answers'", 'to': u"orm['questions.Question']"}),
             'updated': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'db_index': 'True'}),
@@ -131,6 +165,8 @@ class Migration(SchemaMigration):
             'is_spam': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'last_answer': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'last_reply_in'", 'null': 'True', 'to': u"orm['questions.Answer']"}),
             'locale': ('kitsune.sumo.models.LocaleField', [], {'default': "'en-US'", 'max_length': '7'}),
+            'marked_as_spam': ('django.db.models.fields.DateTimeField', [], {'default': 'None', 'null': 'True'}),
+            'marked_as_spam_by': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'questions_marked_as_spam'", 'null': 'True', 'to': u"orm['auth.User']"}),
             'num_answers': ('django.db.models.fields.IntegerField', [], {'default': '0', 'db_index': 'True'}),
             'num_votes_past_week': ('django.db.models.fields.PositiveIntegerField', [], {'default': '0', 'db_index': 'True'}),
             'products': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['products.Product']", 'symmetrical': 'False'}),
