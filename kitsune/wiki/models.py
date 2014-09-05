@@ -36,6 +36,7 @@ from kitsune.wiki.config import (
     REDIRECT_SLUG, CANNED_RESPONSES_CATEGORY, ADMINISTRATION_CATEGORY,
     TEMPLATES_CATEGORY, DOC_HTML_CACHE_KEY)
 from kitsune.wiki.permissions import DocumentPermissionMixin
+from kitsune.users.models import get_profile
 
 
 log = logging.getLogger('k.wiki')
@@ -1066,6 +1067,17 @@ class RevisionMetricsMappingType(SearchMappingType):
 
 
 register_for_indexing('revisions', Revision)
+# Also update the creator and reviewer in the users index.
+register_for_indexing(
+    'users1',
+    Revision,
+    instance_to_indexee=(
+        lambda i: get_profile(i.creator)))
+register_for_indexing(
+    'users2',
+    Revision,
+    instance_to_indexee=(
+        lambda i: get_profile(i.reviewer) if i.reviewer else None))
 
 
 class HelpfulVote(ModelBase):
