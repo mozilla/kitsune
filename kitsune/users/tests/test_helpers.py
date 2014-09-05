@@ -61,6 +61,7 @@ class HelperTestCase(TestCase):
         eq_(u'testuser', display_name(self.u))
         profile(user=self.u, name=u'Test User')
         eq_(u'Test User', display_name(self.u))
+        eq_(u'', display_name(AnonymousUser()))
 
     def test_user_list(self):
         user(username='testuser2', save=True)
