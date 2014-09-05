@@ -93,7 +93,10 @@ class Profile(ModelBase, SearchMixin):
                        ('deactivate_users', 'Can deactivate users'),)
 
     def __unicode__(self):
-        return unicode(self.user)
+        try:
+            return unicode(self.user)
+        except Exception as exc:
+            return unicode('%d (%r)' % (self.id, exc))
 
     def get_absolute_url(self):
         return reverse('users.profile', args=[self.user_id])
