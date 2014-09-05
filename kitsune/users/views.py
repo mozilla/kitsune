@@ -426,12 +426,13 @@ def edit_watch_list(request):
 
     watch_list = []
     for w in watches:
-        if w.content_type.name == 'question':
-            # Only list questions that are not archived
-            if not w.content_object.is_archived:
+        if w.content_object is not None:
+            if w.content_type.name == 'question':
+                # Only list questions that are not archived
+                if not w.content_object.is_archived:
+                    watch_list.append(w)
+            else:
                 watch_list.append(w)
-        else:
-            watch_list.append(w)
 
     if request.method == 'POST':
         for w in watch_list:
