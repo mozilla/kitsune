@@ -9,7 +9,6 @@ from kitsune.search.models import (
     SearchMappingType, SearchMixin, register_for_indexing,
     register_mapping_type)
 from kitsune.sumo.models import ModelBase
-from kitsune.users.models import get_profile
 
 
 class TwitterAccount(ModelBase):
@@ -130,9 +129,4 @@ class ReplyMetricsMappingType(SearchMappingType):
 
 
 register_for_indexing('replies', Reply)
-# Also update the creator in the users index.
-register_for_indexing(
-    'users',
-    Reply,
-    instance_to_indexee=(
-        lambda i: get_profile(i.user) if i.user else None))
+

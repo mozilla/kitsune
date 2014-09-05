@@ -42,7 +42,6 @@ from kitsune.sumo.urlresolvers import reverse, split_path
 from kitsune.tags.models import BigVocabTaggableMixin
 from kitsune.tags.utils import add_existing_tag
 from kitsune.upload.models import ImageAttachment
-from kitsune.users.models import get_profile
 
 
 log = logging.getLogger('k.questions')
@@ -1019,12 +1018,6 @@ register_for_indexing(
     Question,
     instance_to_indexee=(
         lambda i: i.solution ))
-# Also update the creator in the users index.
-register_for_indexing(
-    'users',
-    Answer,
-    instance_to_indexee=(
-        lambda i: get_profile(i.creator)))
 
 
 def answer_connector(sender, instance, created, **kw):
