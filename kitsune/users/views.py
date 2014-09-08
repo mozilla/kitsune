@@ -52,6 +52,7 @@ from kitsune.wiki.models import (
 
 @ssl_required
 @anonymous_csrf
+@logout_required
 @require_http_methods(['GET', 'POST'])
 def user_auth(request, contributor=False, register_form=None, login_form=None):
     """Try to log the user in, or register a user.
