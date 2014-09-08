@@ -17,38 +17,44 @@
 
       {{ product_choice_list(products, product, url('dashboards.aggregated_metrics')) }}
 
-      <section id="percent-localized-top20" data-url="{{ url('api.wikimetric_list')|urlparams(product=product_slug, page_size=60000,) }}">
-        <h2>{{ _('Top 20 Articles: % Localized') }}</h2>
-        <div class="rickshaw">
-          <div class="inline-controls"></div>
-          <div class="graph-container">
-            <div class="slider"></div>
-            <div class="graph"></div>
-          </div>
-        </div>
-      </section>
+      <div class="loading-data">
+        {{ _('The dashboard data is being loaded. This may take some time.') }}
+      </div>
 
-      <section id="percent-localized-all" data-url="{{ url('api.wikimetric_list')|urlparams(product=product_slug, page_size=60000,) }}">
-        <h2>{{ _('All Articles: % Localized') }}</h2>
-        <div class="rickshaw">
-          <div class="inline-controls"></div>
-          <div class="graph-container">
-            <div class="slider"></div>
-            <div class="graph"></div>
+      <div id="dashboard-readouts">
+        <section id="percent-localized-top20" data-url="{{ url('api.wikimetric_list')|urlparams(product=product_slug, page_size=1000,) }}">
+          <h2>{{ _('Top 20 Articles: % Localized') }}</h2>
+          <div class="rickshaw">
+            <div class="inline-controls"></div>
+            <div class="graph-container">
+              <div class="slider"></div>
+              <div class="graph"></div>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <section id="active-contributors" data-url="{{ url('api.wikimetric_list')|urlparams(product=product_slug, page_size=60000,) }}">
-        <h2>{{ _('Active Contributors') }}</h2>
-        <div class="rickshaw">
-          <div class="inline-controls"></div>
-          <div class="graph-container">
-            <div class="slider"></div>
-            <div class="graph"></div>
+        <section id="percent-localized-all" data-url="{{ url('api.wikimetric_list')|urlparams(product=product_slug, page_size=1000,) }}">
+          <h2>{{ _('All Articles: % Localized') }}</h2>
+          <div class="rickshaw">
+            <div class="inline-controls"></div>
+            <div class="graph-container">
+              <div class="slider"></div>
+              <div class="graph"></div>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+
+        <section id="active-contributors" data-url="{{ url('api.wikimetric_list')|urlparams(product=product_slug, page_size=1000,) }}">
+          <h2>{{ _('Active Contributors') }}</h2>
+          <div class="rickshaw">
+            <div class="inline-controls"></div>
+            <div class="graph-container">
+              <div class="slider"></div>
+              <div class="graph"></div>
+            </div>
+          </div>
+        </section>
+      </div>
     </article>
   </div>
 {% endblock %}
