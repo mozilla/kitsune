@@ -2,7 +2,30 @@
 @import 'vendors.less';
 @import 'includes/details.less';
 
+.loading-data {
+  margin: 20px;
+  padding: 10px;
+  position: relative;
+  text-align: center;
+  z-index: 1;
+
+  &:before {
+    background: #ffc;
+    bottom: 0;
+    content: '';
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+    z-index: -1;
+  }
+}
+
 .dashboards {
+  #dashboard-readouts {
+    display: none;
+  }
+
   table {
     border-collapse: collapse;
     clear: both;
