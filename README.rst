@@ -2,7 +2,7 @@
 Kitsune
 =======
 
-Kitsune is the platform that powers `SuMo (support.mozilla.org)
+itsune is the platform that powers `SuMo (support.mozilla.org)
 <https://support.mozilla.org>`_
 
 
