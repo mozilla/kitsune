@@ -94,7 +94,11 @@
             </li>
           {% endif %}
           {% if question.is_spam %}
-            <li class="marked-as-spam">{{ _('Marked as spam') }}</li>
+            <li class="marked-as-spam">
+              {% trans marked_by=question.marked_as_spam_by, marked_time=question.marked_as_spam %}
+                Marked as spam by {{ marked_by }} at {{ marked_time }}
+              {% endtrans %}
+            </li>
           {% endif %}
         </ul>
       </div>
