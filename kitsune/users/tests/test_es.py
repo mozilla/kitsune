@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from nose.tools import eq_
 
 from kitsune.customercare.tests import reply
 from kitsune.questions.tests import answer
 from kitsune.search.tests.test_es import ElasticTestCase
+from kitsune.users.cron import reindex_users_that_contributed_yesterday
 from kitsune.users.models import UserMappingType
 from kitsune.users.tests import profile, user
 from kitsune.wiki.tests import revision
@@ -167,6 +168,7 @@ class UserSearchTests(ElasticTestCase):
         d = datetime(2014, 1, 2)
         answer(creator=u, created=d, save=True)
 
+        p.save()  # we need to resave the profile to force a reindex
         self.refresh()
 
         data = UserMappingType.search().query(
@@ -177,6 +179,7 @@ class UserSearchTests(ElasticTestCase):
         d = datetime(2014, 1, 3)
         revision(creator=u, created=d, save=True)
 
+        p.save()  # we need to resave the profile to force a reindex
         self.refresh()
 
         data = UserMappingType.search().query(
@@ -187,8 +190,48 @@ class UserSearchTests(ElasticTestCase):
         d = datetime(2014, 1, 4)
         revision(reviewer=u, reviewed=d, save=True)
 
+        p.save()  # we need to resave the profile to force a reindex
         self.refresh()
 
         data = UserMappingType.search().query(
             username__match='satdav').values_dict()[0]
         eq_(data['last_contribution_date'], d)
+
+    def test_reindex_users_that_contributed_yesterday(self):
+        yesterday = datetime.now() - timedelta(days=1)
+
+        # Verify for answers.
+        u = user(username='answerer', save=True)
+        p = profile(user=u)
+        answer(creator=u, created=yesterday, save=True)
+
+        reindex_users_that_contributed_yesterday()
+        self.refresh()
+
+        data = UserMappingType.search().query(
+            username__match='answerer').values_dict()[0]
+        eq_(data['last_contribution_date'].date(), yesterday.date())
+
+        # Verify for edits.
+        u = user(username='editor', save=True)
+        p = profile(user=u)
+        revision(creator=u, created=yesterday, save=True)
+
+        reindex_users_that_contributed_yesterday()
+        self.refresh()
+
+        data = UserMappingType.search().query(
+            username__match='editor').values_dict()[0]
+        eq_(data['last_contribution_date'].date(), yesterday.date())
+
+        # Verify for reviews.
+        u = user(username='reviewer', save=True)
+        p = profile(user=u)
+        revision(reviewer=u, reviewed=yesterday, save=True)
+
+        reindex_users_that_contributed_yesterday()
+        self.refresh()
+
+        data = UserMappingType.search().query(
+            username__match='reviewer').values_dict()[0]
+        eq_(data['last_contribution_date'].date(), yesterday.date())
