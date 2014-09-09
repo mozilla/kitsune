@@ -13,7 +13,7 @@ from nose.tools import eq_
 from kitsune.customercare.cron import (
     _filter_tweet, _get_oldest_tweet, purge_tweets, get_customercare_stats)
 from kitsune.customercare.models import Tweet, Reply
-from kitsune.customercare.tests import tweet, reply
+from kitsune.customercare.tests import tweet, twitter_account, reply
 from kitsune.sumo.redis_utils import redis_client, RedisError
 from kitsune.sumo.tests import TestCase
 
@@ -26,6 +26,10 @@ class TwitterCronTestCase(TestCase):
         "created_at": "Mon, 25 Oct 2010 18:12:20 +0000",
         "user": {
             "screen_name": "jspeis",
+            "id": 2142841,
+        },
+        "entities": {
+            "user_mentions": [],
         },
         "metadata": {
             "result_type": "recent",
@@ -47,17 +51,17 @@ class TwitterCronTestCase(TestCase):
 
     def test_mentions(self):
         """Filter out mentions."""
-        self.tweet['text'] = 'Hey @someone!'
+        self.tweet['entities']['user_mentions'].append({'id': 123456})
         assert _filter_tweet(self.tweet) is None
 
     def test_firefox_mention(self):
         """Don't filter out @firefox mentions."""
-        self.tweet['text'] = 'Hey @firefox!'
+        self.tweet['entities']['user_mentions'].append({'id': 2142731})
         eq_(self.tweet, _filter_tweet(self.tweet))
 
     def test_firefoxbrasil_mention(self):
         """Don't filter out @FirefoxBrasil mentions."""
-        self.tweet['text'] = 'Olá @FirefoxBrasil!'
+        self.tweet['entities']['user_mentions'].append({'id': 150793437})
         eq_(self.tweet, _filter_tweet(self.tweet))
 
     def test_replies(self):
@@ -93,13 +97,17 @@ class TwitterCronTestCase(TestCase):
 
     def test_fx4status(self):
         """Ensure fx4status tweets are filtered out."""
-        self.tweet['user']['screen_name'] = 'fx4status'
+        ta = twitter_account(username='fx4status', ignored=True, save=True)
+        self.tweet['user']['screen_name'] = ta.username
         assert _filter_tweet(self.tweet) is None
 
-    def test_username_and_tweet_contain_firefox(self):
-        self.tweet['user']['screen_name'] = 'ilovefirefox4ever'
+    def test_tweet_contains_firefox(self):
         self.tweet['text'] = 'My Firefox crashes :-( Any advice?'
         assert _filter_tweet(self.tweet) is not None
+
+    def test_username_does_not_contain_firefox(self):
+        self.tweet['user']['screen_name'] = 'ilovefirefox4ever'
+        assert _filter_tweet(self.tweet) is None
 
     @override_settings(CC_WORD_BLACKLIST=['foo'])
     def test_word_blacklist(self):
@@ -108,6 +116,16 @@ class TwitterCronTestCase(TestCase):
         assert _filter_tweet(self.tweet) is None
         # Substrings aren't blocked.
         self.tweet['text'] = 'but "food" should not be blocked.'
+        assert _filter_tweet(self.tweet) is not None
+
+    def test_ignore_user(self):
+        # Ignore user
+        ta = twitter_account(username='ignoreme', ignored=True, save=True)
+        self.tweet['user']['screen_name'] = ta.username
+        assert _filter_tweet(self.tweet) is None
+        # This user is fine though
+        ta = twitter_account(username='iamfine', ignored=False, save=True)
+        self.tweet['user']['screen_name'] = ta.username
         assert _filter_tweet(self.tweet) is not None
 
 

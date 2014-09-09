@@ -33,10 +33,14 @@ class Media(ModelBase):
 class Image(Media):
     creator = models.ForeignKey(User, related_name='gallery_images')
     file = models.ImageField(upload_to=settings.GALLERY_IMAGE_PATH,
-                             max_length=settings.MAX_FILEPATH_LENGTH)
+                             max_length=settings.MAX_FILEPATH_LENGTH,
+                             width_field='width',
+                             height_field='height')
     thumbnail = models.ImageField(
         upload_to=settings.GALLERY_IMAGE_THUMBNAIL_PATH, null=True,
         max_length=settings.MAX_FILEPATH_LENGTH)
+    height = models.IntegerField(null=True)
+    width = models.IntegerField(null=True)
 
     def get_absolute_url(self):
         return reverse('gallery.media', args=['image', self.id])

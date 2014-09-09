@@ -52,9 +52,18 @@ function makeTopicsGraph() {
 function makeMetricsGraph() {
   var $container = $('#questions-metrics');
   $.getJSON($container.data('url'), function(data) {
+    // Fill in 0s so bucketing doesn't freak out...
+    var objects = data.objects;
+    objects.forEach(function(object) {
+      object.questions = object.questions || 0;
+      object.solved = object.solved || 0
+      object.responded_24 = object.responded_24 || 0
+      object.responded_72 = object.responded_72 || 0
+    });
+
     new k.Graph($container, {
       data: {
-        datums: data.objects,
+        datums: objects,
         seriesSpec: [
           {
             name: gettext('Questions'),

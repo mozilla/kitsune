@@ -11,6 +11,7 @@ from kitsune.questions.events import QuestionReplyEvent, QuestionSolvedEvent
 from kitsune.questions.models import Question, Answer
 from kitsune.questions.tests import TestCaseBase, question, answer
 from kitsune.sumo.tests import post, attrs_eq, starts_with
+from kitsune.users.helpers import display_name
 from kitsune.users.models import Setting
 from kitsune.users.tests import user
 
@@ -177,10 +178,10 @@ class NotificationsTests(TestCaseBase):
         attrs_eq(mail.outbox[1], to=[u.email],
                  subject='Solution found to Firefox Help question')
         starts_with(mail.outbox[1].body, SOLUTION_EMAIL.format(
-            to_user=u.username,
-            replier=a.creator.username,
+            to_user=display_name(u),
+            replier=display_name(a.creator),
             title=q.title,
-            asker=q.creator.username,
+            asker=display_name(q.creator),
             question_id=q.id,
             answer_id=a.id,
             locale='en-US/'))
@@ -188,9 +189,9 @@ class NotificationsTests(TestCaseBase):
         attrs_eq(mail.outbox[2], to=['anon@ymous.com'],
                  subject='Solution found to Firefox Help question')
         starts_with(mail.outbox[2].body, SOLUTION_EMAIL_TO_ANONYMOUS.format(
-            replier=a.creator.username,
+            replier=display_name(a.creator),
             title=q.title,
-            asker=q.creator.username,
+            asker=display_name(q.creator),
             question_id=q.id,
             answer_id=a.id,
             locale='en-US/'))
@@ -281,7 +282,7 @@ class TestAnswerNotifications(TestCaseBase):
             'question_id': self.question.id,
             'answer_id': self.answer.id,
             'locale': '',
-            'asker': self.question.creator.username,
+            'asker': display_name(self.question.creator),
         }
 
     @override_settings(TIDINGS_CONFIRM_ANONYMOUS_WATCHES=False)

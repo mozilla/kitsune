@@ -122,7 +122,7 @@ Marky.SimpleButton = function(name, openTag, closeTag, defaultText,
     }
 
     this.html = '<button class="markup-toolbar-button" />';
-}
+};
 
 Marky.SimpleButton.prototype = {
     // Binds the button to a textarea (DOM node).
@@ -307,7 +307,7 @@ Marky.ShowForButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
                        '<a href="#cancel" class="kbox-cancel"></a></div>' +
                        '</section>'),
             $placeholder = $html.find('div.placeholder'),
-            data = $(this.textarea).data('showfor'),
+            data = JSON.parse($(document).find('.showfor-data').html()),
             kbox;
 
         $html.find('button').text(gettext('Add Rule')).click(function(e){
@@ -320,21 +320,29 @@ Marky.ShowForButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
             kbox.close();
         });
         $html.find('a.kbox-cancel').text(gettext('Cancel'));
-        appendOptions($placeholder, data.versions);
-        appendOptions($placeholder, data.oses);
 
-        function appendOptions($ph, options) {
-            $.each(options, function(i, value) {
-                $ph.append($('<h2/>').text(value[0]));
-                $.each(value[1], function(i, value) {
-                    $ph.append(
-                        $('<label/>').text(value[1]).prepend(
-                            $('<input type="checkbox" name="showfor"/>')
-                                .attr('value', value[0])
-                        )
-                    );
-                });
+        var products = data.products;
+        $.each(products, function(i, product) {
+            $placeholder.append($('<h2/>').text(product.title));
+            $.each(data.versions[product.slug], function(i, version) {
+                appendCheckbox($placeholder, version);
             });
+            $placeholder.append($('<br/>'));
+            $.each(data.platforms[product.slug], function(i, platform) {
+                appendCheckbox($placeholder, platform);
+            });
+        });
+
+        function appendCheckbox($ph, option) {
+            if (!option.visible) {
+                return;
+            }
+            $ph.append(
+                $('<label/>').text(option.name).prepend(
+                    $('<input type="checkbox" name="showfor"/>')
+                        .attr('value', option.slug)
+                )
+            );
         }
 
         kbox = new KBox($html, {
@@ -622,7 +630,7 @@ Marky.MediaButton = function() {
     this.everyline = false;
 
     this.html = '<button class="markup-toolbar-button" />';
-}
+};
 
 Marky.MediaButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
     // Gets the DOM node for the button.
@@ -687,12 +695,12 @@ Marky.MediaButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
 
         // Handle locale filter
         var $lf = $html.find('div.locale-filter select');
-        $lf.html($('#_languages-select-box').html())
+        $lf.html($('#_languages-select-box').html());
         $lf.on('change', function() {
-            mediaPage = 1
+            mediaPage = 1;
             mediaLocale = $(this).val();
             updateResults();
-        })
+        });
 
         // Handle Search
         $html.find('form#gallery-modal-search').submit(function(e) {
@@ -891,17 +899,16 @@ Marky.CannedResponsesButton.prototype = $.extend({}, Marky.SimpleButton.prototyp
                 return;
             }
 
-            articleUrl += '/edit';
             toggleThrobber(true);
 
             $.ajax({
-                url: articleUrl,
+                url: articleUrl + '/edit',
                 dataType: 'html',
                 success: function(data, status) {
                     var article_src = $('#id_content', data).val();
                     var $textbox = $('#response-content');
                     $textbox.val(article_src);
-
+                    $textbox.data('slug', articleUrl);
                     updatePreview();
                 },
                 complete: function() {
@@ -941,8 +948,15 @@ Marky.CannedResponsesButton.prototype = $.extend({}, Marky.SimpleButton.prototyp
 
         function insertResponse() {
             var sourceContent = $('#response-content').val();
+            var slug = $('#response-content').data('slug');
             var $responseTextbox = $('#id_content');
             var targetContent = $responseTextbox.val();
+
+            if (_gaq) {
+                _gaq.push(['_trackEvent',
+                           'Canned response usage',
+                           slug]);
+            }
 
             $responseTextbox.val(targetContent + sourceContent);
         }

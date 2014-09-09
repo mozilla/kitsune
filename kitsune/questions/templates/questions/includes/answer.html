@@ -1,8 +1,9 @@
 {% from "upload/attachments.html" import attachment %}
 {% from "karma/includes/karma_macros.html" import titles %}
 {% from "wiki/includes/flag_form.html" import flag_form with context %}
+{% from "questions/includes/macros.html" import mark_spam_form, unmark_spam_form with context %}
 
-<div class="answer grid_9" {% if answer.id %}id="answer-{{ answer.id }}"{% endif %}>
+<div class="answer grid_9 {% if answer.is_spam %}marked-as-spam{% endif %}" {% if answer.id %}id="answer-{{ answer.id }}"{% endif %}>
   <div class="user-meta">
     <div class="avatar">
       <a href="{{ profile_url(answer.creator) }}">
@@ -73,6 +74,13 @@
             </span>
           {% endif %}
         </form>
+      {% endif %}
+      {% if user.has_perm('flagit.can_moderate') %}
+        {% if answer.is_spam %}
+          {{ unmark_spam_form(answer_id=answer.id) }}
+        {% else %}
+          {{ mark_spam_form(answer_id=answer.id) }}
+        {% endif %}
       {% endif %}
       <a class="reply" href="#question-reply">{{ _('Reply') }}</a>
     </div>

@@ -2,6 +2,7 @@ import hashlib
 import logging
 import random
 import re
+import time
 from datetime import datetime, timedelta
 
 from django.conf import settings
@@ -16,6 +17,10 @@ from tower import ugettext as _
 from tower import ugettext_lazy as _lazy
 
 from kitsune.lib.countries import COUNTRIES
+from kitsune.search.es_utils import UnindexMeBro
+from kitsune.search.models import (
+    SearchMappingType, SearchMixin, register_for_indexing,
+    register_mapping_type)
 from kitsune.sumo import email_utils
 from kitsune.sumo.models import ModelBase, LocaleField
 from kitsune.sumo.urlresolvers import reverse
@@ -50,7 +55,7 @@ add_introspection_rules(rules=[(
 
 
 @auto_delete_files
-class Profile(ModelBase):
+class Profile(ModelBase, SearchMixin):
     """Profile model for django users, get it with user.get_profile()."""
 
     user = models.OneToOneField(User, primary_key=True,
@@ -87,7 +92,10 @@ class Profile(ModelBase):
                        ('deactivate_users', 'Can deactivate users'),)
 
     def __unicode__(self):
-        return unicode(self.user)
+        try:
+            return unicode(self.user)
+        except Exception as exc:
+            return unicode('%d (%r)' % (self.pk, exc))
 
     def get_absolute_url(self):
         return reverse('users.profile', args=[self.user_id])
@@ -103,6 +111,193 @@ class Profile(ModelBase):
         self.facebook = ''
         self.irc_handle = ''
         self.city = ''
+
+    @property
+    def display_name(self):
+        return self.name if self.name else self.user.username
+
+    @property
+    def twitter_usernames(self):
+        from kitsune.customercare.models import Reply
+        return list(
+            Reply.objects.filter(user=self.user)
+                         .values_list('twitter_username', flat=True)
+                         .distinct())
+
+    @classmethod
+    def get_mapping_type(cls):
+        return UserMappingType
+
+    @property
+    def last_contribution_date(self):
+        """Get the date of the user's last contribution."""
+        from kitsune.customercare.models import Reply
+        from kitsune.questions.models import Answer
+        from kitsune.wiki.models import Revision
+
+        dates = []
+
+        # Latest Army of Awesome reply:
+        try:
+            aoa_reply = Reply.objects.filter(
+                user=self.user).latest('created')
+            dates.append(aoa_reply.created)
+        except Reply.DoesNotExist:
+            pass
+
+        # Latest Support Forum answer:
+        try:
+            answer = Answer.objects.filter(
+                creator=self.user).latest('created')
+            dates.append(answer.created)
+        except Answer.DoesNotExist:
+            pass
+
+        # Latest KB Revision edited:
+        try:
+            revision = Revision.objects.filter(
+                creator=self.user).latest('created')
+            dates.append(revision.created)
+        except Revision.DoesNotExist:
+            pass
+
+        # Latest KB Revision reviewed:
+        try:
+            revision = Revision.objects.filter(
+                reviewer=self.user).latest('reviewed')
+            # Old revisions don't have the reviewed date.
+            dates.append(revision.reviewed or revision.created)
+        except Revision.DoesNotExist:
+            pass
+
+        if len(dates) == 0:
+            return None
+
+        return max(dates)
+
+
+@register_mapping_type
+class UserMappingType(SearchMappingType):
+    @classmethod
+    def get_model(cls):
+        return Profile
+
+    @classmethod
+    def get_index_group(cls):
+        return 'non-critical'
+
+    @classmethod
+    def get_mapping(cls):
+        return {
+            'properties': {
+                'id': {'type': 'long'},
+                'model': {'type': 'string', 'index': 'not_analyzed'},
+                'url': {'type': 'string', 'index': 'not_analyzed'},
+                'indexed_on': {'type': 'integer'},
+
+                'username': {'type': 'string', 'index': 'not_analyzed'},
+                'display_name': {'type': 'string', 'index': 'not_analyzed'},
+                'twitter_usernames': {
+                    'type': 'string',
+                    'index': 'not_analyzed'
+                },
+
+                'last_contribution_date': {'type': 'date'},
+
+                # lower-cased versions for querying:
+                'iusername': {'type': 'string', 'index': 'not_analyzed'},
+                'idisplay_name': {'type': 'string', 'analyzer': 'whitespace'},
+                'itwitter_usernames': {
+                    'type': 'string',
+                    'index': 'not_analyzed'
+                },
+
+                'avatar': {'type': 'string', 'index': 'not_analyzed'},
+
+                'suggest': {
+                    'type': 'completion',
+                    'index_analyzer': 'whitespace',
+                    'search_analyzer': 'whitespace',
+                    'payloads': True,
+                }
+            }
+        }
+
+    @classmethod
+    def extract_document(cls, obj_id, obj=None):
+        """Extracts interesting thing from a Thread and its Posts"""
+        if obj is None:
+            model = cls.get_model()
+            obj = model.objects.select_related('user').get(pk=obj_id)
+
+        if not obj.user.is_active:
+            raise UnindexMeBro()
+
+        d = {}
+        d['id'] = obj.pk
+        d['model'] = cls.get_mapping_type_name()
+        d['url'] = obj.get_absolute_url()
+        d['indexed_on'] = int(time.time())
+
+        d['username'] = obj.user.username
+        d['display_name'] = obj.display_name
+        d['twitter_usernames'] = obj.twitter_usernames
+
+        d['last_contribution_date'] = obj.last_contribution_date
+
+        d['iusername'] = obj.user.username.lower()
+        d['idisplay_name'] = obj.display_name.lower()
+        d['itwitter_usernames'] = [u.lower() for u in obj.twitter_usernames]
+
+        from kitsune.users.helpers import profile_avatar
+        d['avatar'] = profile_avatar(obj.user, size=120)
+
+        d['suggest'] = {
+            'input': [
+                d['iusername'],
+                d['idisplay_name']
+            ],
+            'output': _(u'{displayname} ({username})').format(
+                displayname=d['display_name'], username=d['username']),
+            'payload' : {'user_id': d['id'] },
+        }
+
+        return d
+
+    @classmethod
+    def suggest_completions(cls, text):
+        """Suggest completions for the text provided."""
+        USER_SUGGEST = 'user-suggest'
+        es = UserMappingType.search().get_es()
+        results = es.suggest(cls.get_index(), {
+            USER_SUGGEST : {
+                'text': text.lower(),
+                'completion' : {
+                    'field' : 'suggest'
+                }
+            }
+        })
+
+        if results[USER_SUGGEST][0]['length'] > 0:
+            return results[USER_SUGGEST][0]['options']
+
+        return []
+
+
+register_for_indexing('users', Profile)
+
+
+def get_profile(u):
+    try:
+        return u.get_profile()
+    except Profile.DoesNotExist:
+        return None
+
+
+register_for_indexing(
+    'users',
+    User,
+    instance_to_indexee=get_profile)
 
 
 class Setting(ModelBase):
@@ -250,7 +445,7 @@ class RegistrationManager(ConfirmationManager):
                             text_template='users/email/contributor.ltxt',
                             html_template='users/email/contributor.html',
                             send_to=user.email,
-                            username=user.username)
+                            contributor=user)
 
                     return user
                 else:

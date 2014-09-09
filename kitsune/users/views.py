@@ -16,10 +16,11 @@ from django.views.decorators.http import (require_http_methods, require_GET,
 from django.shortcuts import get_object_or_404, render, redirect
 from django.utils.http import base36_to_int
 
-from axes.decorators import watch_login
+# from axes.decorators import watch_login
 from mobility.decorators import mobile_template
 from session_csrf import anonymous_csrf
 from statsd import statsd
+from tidings.models import Watch
 from tidings.tasks import claim_watches
 from tower import ugettext as _
 
@@ -74,7 +75,7 @@ def user_auth(request, contributor=False, register_form=None, login_form=None):
 
 @ssl_required
 @anonymous_csrf
-@watch_login
+# @watch_login
 @mobile_template('users/{mobile/}login.html')
 def login(request, template):
     """Try to log the user in."""
@@ -303,8 +304,21 @@ def confirm_change_email(request, activation_key):
 @require_GET
 @mobile_template('users/{mobile/}profile.html')
 def profile(request, template, user_id):
-    user_profile = get_object_or_404(
-        Profile, user__id=user_id)
+    # The browser replaces '+' in URL's with ' ' but since we never have ' ' in
+    # URL's we can assume everytime we see ' ' it was a '+' that was replaced.
+    # We do this to deal with legacy usernames that have a '+' in them.
+    user_id = user_id.replace(' ', '+')
+
+    user = User.objects.filter(username=user_id).first()
+
+    if not user:
+        try:
+            user = get_object_or_404(User, id=user_id)
+        except ValueError:
+            raise Http404('No Profile matches the given query.')
+        return redirect(reverse('users.profile', args=(user.username,)))
+
+    user_profile = get_object_or_404(Profile, user__id=user.id)
 
     if not (request.user.has_perm('users.deactivate_users')
             or user_profile.user.is_active):
@@ -375,7 +389,8 @@ def documents_contributed(request, user_id):
 
 @login_required
 @require_http_methods(['GET', 'POST'])
-def edit_settings(request):
+@mobile_template('users/{mobile/}edit_settings.html')
+def edit_settings(request, template):
     """Edit user settings"""
     if request.method == 'POST':
         form = SettingsForm(request.POST)
@@ -385,8 +400,7 @@ def edit_settings(request):
                                  _(u'Your settings have been saved.'))
             return HttpResponseRedirect(reverse('users.edit_settings'))
         # Invalid form
-        return render(request, 'users/edit_settings.html', {
-            'form': form})
+        return render(request, template, {'form': form})
 
     # Pass the current user's settings as the initial values.
     values = request.user.settings.values()
@@ -401,8 +415,32 @@ def edit_settings(request):
             # but failed so leave it a string.
             initial[v['name']] = v['value']
     form = SettingsForm(initial=initial)
-    return render(request, 'users/edit_settings.html', {
-        'form': form})
+    return render(request, template, {'form': form})
+
+
+@login_required
+@require_http_methods(['GET', 'POST'])
+def edit_watch_list(request):
+    """Edit watch list"""
+    watches = Watch.objects.filter(user=request.user).order_by('content_type')
+
+    watch_list = []
+    for w in watches:
+        if w.content_object is not None:
+            if w.content_type.name == 'question':
+                # Only list questions that are not archived
+                if not w.content_object.is_archived:
+                    watch_list.append(w)
+            else:
+                watch_list.append(w)
+
+    if request.method == 'POST':
+        for w in watch_list:
+            w.is_active = 'watch_%s' % w.id in request.POST
+            w.save()
+
+    return render(request, 'users/edit_watches.html', {
+        'watch_list': watch_list})
 
 
 @login_required
@@ -446,10 +484,12 @@ def make_contributor(request):
     @email_utils.safe_translation
     def _make_mail(locale):
         mail = email_utils.make_mail(
+            # L10n: Thank you so much for your translation work! You're
+            # L10n: the best!
             subject=_('Welcome to SUMO!'),
             text_template='users/email/contributor.ltxt',
             html_template='users/email/contributor.html',
-            context_vars={'username': request.user.username},
+            context_vars={'contributor':request.user},
             from_email=settings.DEFAULT_FROM_EMAIL,
             to_email=request.user.email)
 

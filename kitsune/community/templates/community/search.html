@@ -1,0 +1,59 @@
+{% extends "community/base.html" %}
+
+{% block title %}{{ _('Contributor Search Results - Mozilla Support Community') }}{% endblock %}
+
+{% block content %}
+  <h1 class="main-heading">{{ _('Community Hub') }}</h1>
+
+  <article class="community-results">
+
+    <section class="community-results-header">
+      {% if q %}
+        <h1>{{ _('Results for: {query}')|f(query=q) }}</h1>
+      {% else %}
+        <h1>{{ _('Find your fellow contributors') }}</h1>
+      {% endif %}
+      <form name="find-contributor" id="find-contributor" action="" method="get">
+        <fieldset>
+          <input type="text" name="q" id="search" class="query" value="{{ q }}" placeholder="{{ _('Username, Display Name or Twitter Handle') }}" />
+          <input type="submit" value="{{ _('Search') }}" class="search" />
+        </fieldset>
+      </form>
+    </section>
+
+    {% if search_errored %}
+      <p>{{ _('Sorry! Search is currently unavailable. Please try again soon.') }}</p>
+    {% endif %}
+
+    {% if q and not results %}
+      <p>{{ _('No users were found for your search query.') }}</p>
+    {% endif %}
+
+    {% for result in results %}
+      <section class="results-user">
+        <img src="{{ result['avatar'] }}" alt="" class="user-img-results" />
+        <div class="user-details">
+          <h2>{{ result['display_name'] }}</h2>
+          <ul class="results-user-details">
+            <li>{{ result['username'] }}</li>
+            <li>
+              {{ _('Twitter Handles:') }}
+              {% for handle in result['twitter_usernames'] %}
+                {{ handle }}
+              {% endfor %}
+            </li>
+            <li><a href="{{ url('users.profile', result['id']) }}">{{ _('View Profile') }}</a></li>
+            <li><a href="{{ url('messages.new')|urlparams(to=result['username']) }}">{{ _('Private Message') }}</a></li>
+            {% if result['days_since_last_activity'] != None %}
+              <li>
+                {{ _('Days since last activity:') }}
+                {{ result['days_since_last_activity'] }}
+              </li>
+            {% endif %}
+          </ul>
+        </div>
+      </section>
+    {% endfor %}
+
+  </article>
+{% endblock %}

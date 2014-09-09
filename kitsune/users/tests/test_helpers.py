@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import hashlib
 
 from django.conf import settings
@@ -19,27 +20,34 @@ class HelperTestCase(TestCase):
         self.u = user(username=u'testuser', save=True)
 
     def test_profile_url(self):
-        eq_(u'/user/%d' % self.u.id, profile_url(self.u))
+        eq_(u'/user/%s' % self.u.username, profile_url(self.u))
 
     def test_profile_avatar_default(self):
         profile(user=self.u)
         email_hash = hashlib.md5(self.u.email.lower()).hexdigest()
-        gravatar_url = 'https://secure.gravatar.com/avatar/%s?s=48&d=%s' % (
-            email_hash, settings.STATIC_URL + settings.DEFAULT_AVATAR)
-        eq_(gravatar_url, profile_avatar(self.u))
+        gravatar_url = 'https://secure.gravatar.com/avatar/%s?s=48' % (
+            email_hash)
+        assert profile_avatar(self.u).startswith(gravatar_url)
 
     def test_profile_avatar_anonymous(self):
         email_hash = '00000000000000000000000000000000'
-        gravatar_url = 'https://secure.gravatar.com/avatar/%s?s=48&d=%s' % (
-            email_hash, settings.STATIC_URL + settings.DEFAULT_AVATAR)
-        eq_(gravatar_url, profile_avatar(AnonymousUser()))
+        gravatar_url = 'https://secure.gravatar.com/avatar/%s?s=48' % (
+            email_hash)
+        assert profile_avatar(AnonymousUser()).startswith(gravatar_url)
 
     def test_profile_avatar(self):
         profile(user=self.u, avatar='images/foo.png')
         email_hash = hashlib.md5(self.u.email.lower()).hexdigest()
-        gravatar_url = 'https://secure.gravatar.com/avatar/%s?s=48&d=%s' % (
-            email_hash, settings.MEDIA_URL + 'images/foo.png')
-        eq_(gravatar_url, profile_avatar(self.u))
+        gravatar_url = 'https://secure.gravatar.com/avatar/%s?s=48' % (
+            email_hash)
+        assert profile_avatar(self.u).startswith(gravatar_url)
+
+    def test_profile_avatar_unicode(self):
+        self.u.email = u'rápido@example.com'
+        self.u.save()
+        profile(user=self.u)
+        gravatar_url = 'https://secure.gravatar.com/'
+        assert profile_avatar(self.u).startswith(gravatar_url)
 
     def test_public_email(self):
         eq_(u'<span class="email">'
@@ -53,15 +61,16 @@ class HelperTestCase(TestCase):
         eq_(u'testuser', display_name(self.u))
         profile(user=self.u, name=u'Test User')
         eq_(u'Test User', display_name(self.u))
+        eq_(u'', display_name(AnonymousUser()))
 
     def test_user_list(self):
-        u = user(username='testuser2', save=True)
+        user(username='testuser2', save=True)
         user(username='testuser3', save=True)
         users = User.objects.all()
         list = user_list(users)
         assert isinstance(list, Markup)
         fragment = pq(list)
-        eq_(3, len(fragment('a')))
+        eq_(len(users), len(fragment('a')))
         a = fragment('a')[1]
-        assert a.attrib['href'].endswith(str(u.id))
-        eq_(u.username, a.text)
+        assert a.attrib['href'].endswith(str(users[1].username))
+        eq_(users[1].username, a.text)

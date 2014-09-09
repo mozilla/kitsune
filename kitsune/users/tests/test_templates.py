@@ -13,9 +13,12 @@ from django.utils.http import int_to_base36
 import mock
 from nose.tools import eq_
 from pyquery import PyQuery as pq
+from tidings.models import Watch
 
 from kitsune.flagit.models import FlaggedObject
 from kitsune.kbadge.tests import award, badge
+from kitsune.questions.events import QuestionReplyEvent
+from kitsune.questions.tests import question
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.helpers import urlparams
 from kitsune.sumo.tests import post, get
@@ -352,7 +355,7 @@ class ViewProfileTests(TestCaseBase):
         self.profile = profile(name='', website='', user=self.u)
 
     def test_view_profile(self):
-        r = self.client.get(reverse('users.profile', args=[self.u.id]))
+        r = self.client.get(reverse('users.profile', args=[self.u.username]))
         eq_(200, r.status_code)
         doc = pq(r.content)
         eq_(0, doc('#edit-profile-link').length)
@@ -360,22 +363,22 @@ class ViewProfileTests(TestCaseBase):
         # No name set => no optional fields.
         eq_(0, doc('.contact').length)
         # Check canonical url
-        eq_('/user/%d' % self.u.id,
+        eq_('/user/%s' % self.u.username,
             doc('link[rel="canonical"]')[0].attrib['href'])
 
     def test_view_profile_mine(self):
         """Logged in, on my profile, I see an edit link."""
         self.client.login(username=self.u.username, password='testpass')
-        r = self.client.get(reverse('users.profile', args=[self.u.id]))
+        r = self.client.get(reverse('users.profile', args=[self.u.username]))
         eq_(200, r.status_code)
         doc = pq(r.content)
-        eq_('Edit settings', doc('#user-nav li:last').text())
+        eq_('Manage watch list', doc('#user-nav li:last').text())
         self.client.logout()
 
     def test_bio_links_nofollow(self):
         self.profile.bio = 'http://getseo.com, [http://getseo.com]'
         self.profile.save()
-        r = self.client.get(reverse('users.profile', args=[self.u.id]))
+        r = self.client.get(reverse('users.profile', args=[self.u.username]))
         eq_(200, r.status_code)
         doc = pq(r.content)
         eq_(2, len(doc('.bio a[rel="nofollow"]')))
@@ -386,27 +389,27 @@ class ViewProfileTests(TestCaseBase):
         revision(creator=u, save=True)
         revision(creator=u, save=True)
 
-        r = self.client.get(reverse('users.profile', args=[u.id]))
+        r = self.client.get(reverse('users.profile', args=[u.username]))
         eq_(200, r.status_code)
         assert '2 documents' in r.content
 
     def test_deactivate_button(self):
         """Check that the deactivate button is shown appropriately"""
         p = profile()
-        r = self.client.get(reverse('users.profile', args=[p.user.id]))
+        r = self.client.get(reverse('users.profile', args=[p.user.username]))
         assert 'Deactivate this user' not in r.content
 
         add_permission(self.u, Profile, 'deactivate_users')
         self.client.login(username=self.u.username, password='testpass')
-        r = self.client.get(reverse('users.profile', args=[p.user.id]))
+        r = self.client.get(reverse('users.profile', args=[p.user.username]))
         assert 'Deactivate this user' in r.content
 
         p.user.is_active = False
         p.user.save()
-        r = self.client.get(reverse('users.profile', args=[p.user.id]))
+        r = self.client.get(reverse('users.profile', args=[p.user.username]))
         assert 'This user has been deactivated.' in r.content
 
-        r = self.client.get(reverse('users.profile', args=[self.u.id]))
+        r = self.client.get(reverse('users.profile', args=[self.u.username]))
         assert 'Deactivate this user' not in r.content
 
     def test_badges_listed(self):
@@ -415,7 +418,7 @@ class ViewProfileTests(TestCaseBase):
         b = badge(title=badge_title, save=True)
         u = profile().user
         award(user=u, badge=b, save=True)
-        r = self.client.get(reverse('users.profile', args=[u.id]))
+        r = self.client.get(reverse('users.profile', args=[u.username]))
         assert badge_title in r.content
 
 
@@ -559,3 +562,34 @@ class ForgotUsernameTests(TestCaseBase):
         eq_(1, len(mail.outbox))
         assert mail.outbox[0].subject.find('Your username on') == 0
         assert mail.outbox[0].body.find(u.username) > 0
+
+
+class EditWatchListTests(TestCaseBase):
+    """Test manage watch list"""
+
+    def setUp(self):
+        p = profile()
+        p.save()
+        self.user = p.user
+        self.client.login(username=self.user.username, password='testpass')
+
+        self.question = question(creator=self.user, save=True)
+        QuestionReplyEvent.notify(self.user, self.question)
+
+    def test_GET(self):
+        r = self.client.get(reverse('users.edit_watch_list'))
+        eq_(200, r.status_code)
+        assert 'question: ' + self.question.title in r.content
+
+    def test_POST(self):
+        w = Watch.objects.get(object_id=self.question.id, user=self.user)
+        eq_(w.is_active, True)
+
+        r = self.client.post(reverse('users.edit_watch_list'))
+        w = Watch.objects.get(object_id=self.question.id, user=self.user)
+        eq_(w.is_active, False)
+
+        r = self.client.post(reverse('users.edit_watch_list'), {
+            'watch_%s' % self.question.id: '1'})
+        w = Watch.objects.get(object_id=self.question.id, user=self.user)
+        eq_(w.is_active, True)

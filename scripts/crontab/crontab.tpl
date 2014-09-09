@@ -9,6 +9,10 @@ HOME = /tmp
 # Every minute!
 * * * * * {{ cron }} collect_tweets
 
+# Every 10 minutes!
+*/10 * * * * {{ cron }} record_queue_size
+*/10 * * * * {{ cron }} enqueue_lag_monitor_task
+
 # Every hour.
 59 * * * * {{ cron }} escalate_questions
 
@@ -16,6 +20,7 @@ HOME = /tmp
 0 */6 * * * {{ django }} update_product_details -q > /dev/null
 40 */6 * * * {{ cron }} purge_tweets
 50 */6 * * * {{ cron }} cache_top_contributors
+20 */6 * * {{ cron }} generate_missing_share_links
 
 
 # Once per day.
@@ -38,9 +43,12 @@ HOME = /tmp
 0 22 * * * {{ cron }} get_customercare_stats
 42 22 * * * {{ django }} cleanup
 30 3 * * * root {{ rscripts }} scripts/l10n_completion.py --truncate 30 locale media/uploads/l10n_history.json media/uploads/l10n_summary.json
+30 3 * * * {{ cron }} send_postatus_errors
+30 1 * * * {{ cron }} reindex_users_that_contributed_yesterday
 
 # Once per week.
 21 03 * * 3 {{ django }} purge_hashes
+0 4 * * 5 {{ cron }} send_weekly_ready_for_review_digest
 
 # Once per month.
 0 0 1 * * {{ cron }} update_l10n_contributor_metrics

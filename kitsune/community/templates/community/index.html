@@ -1,286 +1,173 @@
 {% extends "community/base.html" %}
 
 {% block content %}
-  <h1 class="main-heading">Community Hub</h1>
+  <h1 class="main-heading">{{ _('Community Hub') }}</h1>
 
   <article class="contributors">
     <h1>{{ _('Top Contributors') }}</h1>
 
+    {# Locale Filter #}
     <div class="selector block">
       <button type="button" class="ts-select-trigger">
         <!-- arrow icon using icon font -->
         <span aria-hidden="true" data-icon-arrow="&#xe800;" class="selector-arrow">
-            <span class='current-selected'>{{ _('Select Top Contributors by Locale') }}</span>
+            <span class='current-selected'>
+              {% if not locale %}
+                {{ _('Filter Top Contributors by Locale') }}
+              {% else %}
+                {{ settings.LANGUAGES_DICT[locale.lower()] }}
+              {% endif %}
+            </span>
         </span>
       </button>
       <div class="select-options ts-modal" aria-expanded="false">
+        {% set base_url = url('community.home') %}
+        {% if product %}
+          {% set base_url = base_url|urlparams(product=product.slug) %}
+        {% endif %}
         <ul class="ts-options" tabindex="-1">
-            <li><a href="#en-US" class="selected" aria-checked="true">{{ _('English') }}</a></li>
-            <li><a href="#fr">{{ _('French') }}</a></li>
-            <li><a href="#de">{{ _('German') }}</a></li>
+          <li>
+            <a href="{{ base_url }}" {% if not locale %} aria-checked="true" class="selected"{% endif %}>
+              {{ _('All locales') }}
+            </a>
+          </li>
+          {% for l in settings.LANGUAGE_CHOICES %}
+            <li>
+              <a href="{{ base_url|urlparams(locale=l[0]) }}"{% if l[0] == locale %} aria-checked="true" class="selected"{% endif %}>
+                {{ l[1] }}
+              </a>
+            </li>
+          {% endfor %}
         </ul>
       </div>
     </div>
 
+    {# Product Filter #}
+    <div class="selector block">
+      <button type="button" class="ts-select-trigger">
+        <!-- arrow icon using icon font -->
+        <span aria-hidden="true" data-icon-arrow="&#xe800;" class="selector-arrow">
+            <span class='current-selected'>
+              {% if not product %}
+                {{ _('Filter Top Contributors by Product') }}
+              {% else %}
+                {{ _(product.title, 'DB: products.Product.title') }}
+              {% endif %}
+            </span>
+        </span>
+      </button>
+      <div class="select-options ts-modal" aria-expanded="false">
+        {% set base_url = url('community.home') %}
+        {% if locale %}
+          {% set base_url = base_url|urlparams(locale=locale) %}
+        {% endif %}
+        <ul class="ts-options" tabindex="-1">
+          <li>
+            <a href="{{ base_url }}" {% if not product %} aria-checked="true" class="selected"{% endif %}>
+              {{ _('All products') }}
+            </a>
+          </li>
+          {% for p in products %}
+            <li>
+              <a href="{{ base_url|urlparams(product=p.slug) }}"{% if p == product %} aria-checked="true" class="selected"{% endif %}>
+                 {{ _(p.title, 'DB: products.Product.title') }}
+              </a>
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+
+    {% if top_contributors_questions %}
     <section class="contributor-group">
-      <h2>SUMO Forum</h2>
-      <ul class="contributor-list">
-        <li>
-          <a href="contributor-detail.html">
-            <img src="{{ STATIC_URL }}img/user.gif" width="60" height="60" alt="contributor name" />
-          </a>
-        </li>
-        <li>
-          <a href="contributor-detail.html">
-            <img src="{{ STATIC_URL }}img/user.gif" width="60" height="60" alt="contributor name" />
-          </a>
-        </li>
-        <li>
-          <a href="contributor-detail.html">
-            <img src="{{ STATIC_URL }}img/user.gif" width="60" height="60" alt="contributor name" />
-          </a>
-        </li>
-
-        <li>
-          <a href="contributor-detail.html">
-            <img src="{{ STATIC_URL }}img/user.gif" width="60" height="60" alt="contributor name" />
-          </a>
-        </li>
-        <li>
-          <a href="contributor-detail.html">
-            <img src="{{ STATIC_URL }}img/user.gif" width="60" height="60" alt="contributor name" />
-          </a>
-        </li>
-        <li>
-          <a href="contributor-detail.html">
-            <img src="{{ STATIC_URL }}img/user.gif" width="60" height="60" alt="contributor name" />
-          </a>
-        </li>
-
-        <li>
-          <a href="contributor-detail.html">
-            <img src="{{ STATIC_URL }}img/user.gif" width="60" height="60" alt="contributor name" />
-          </a>
-        </li>
-        <li>
-          <a href="contributor-detail.html">
-            <img src="{{ STATIC_URL }}img/user.gif" width="60" height="60" alt="contributor name" />
-          </a>
-        </li>
-      </ul>
-      <p><a href="community/view_all" class="view-all">{{ _('See All') }}</a></p>
+      <h2>{{ _('Support Forum') }}</h2>
+      {{ render_contributors(top_contributors_questions, 'questions', locale) }}
     </section>
+    {% endif %}
 
-    <section class="contributor-group">
-      <h2>Knowledge Base</h2>
-      <ul class="contributor-list">
-        <li>
-          <a href="contributor-detail.html">
-            <img src="{{ STATIC_URL }}img/user.gif" width="60" height="60" alt="contributor name" />
-          </a>
-        </li>
-        <li>
-          <a href="contributor-detail.html">
-            <img src="{{ STATIC_URL }}img/user.gif" width="60" height="60" alt="contributor name" />
-          </a>
-        </li>
-        <li>
-          <a href="contributor-detail.html">
-            <img src="{{ STATIC_URL }}img/user.gif" width="60" height="60" alt="contributor name" />
-          </a>
-        </li>
+    {% if top_contributors_kb %}
+      <section class="contributor-group">
+        <h2>{{ _('Knowledge Base') }}</h2>
+        {{ render_contributors(top_contributors_kb, 'kb', locale) }}
+      </section>
+    {% endif %}
 
-        <li>
-          <a href="contributor-detail.html">
-            <img src="{{ STATIC_URL }}img/user.gif" width="60" height="60" alt="contributor name" />
-          </a>
-        </li>
-        <li>
-          <a href="contributor-detail.html">
-            <img src="{{ STATIC_URL }}img/user.gif" width="60" height="60" alt="contributor name" />
-          </a>
-        </li>
-        <li>
-          <a href="contributor-detail.html">
-            <img src="{{ STATIC_URL }}img/user.gif" width="60" height="60" alt="contributor name" />
-          </a>
-        </li>
+    {% if top_contributors_l10n %}
+      <section class="contributor-group">
+        <h2>{{ _('Localization') }}</h2>
+        {{ render_contributors(top_contributors_l10n, 'l10n', locale) }}
+      </section>
+    {% endif %}
 
-        <li>
-          <a href="contributor-detail.html">
-            <img src="{{ STATIC_URL }}img/user.gif" width="60" height="60" alt="contributor name" />
-          </a>
-        </li>
-        <li>
-          <a href="contributor-detail.html">
-            <img src="{{ STATIC_URL }}img/user.gif" width="60" height="60" alt="contributor name" />
-          </a>
-        </li>
-      </ul>
-      <p><a href="community/view_all" class="view-all">{{ _('See All') }}</a></p>
-    </section>
+    {% if top_contributors_aoa %}
+      <section class="contributor-group">
+        <h2>{{ _('Army of Awesome') }}</h2>
+        {{ render_contributors(top_contributors_aoa, 'army-of-awesome', locale) }}
+      </section>
+    {% endif %}
 
-    <section class="contributor-group">
-      <h2><abbr title="Localization">L10n</abbr></h2>
-      <ul class="contributor-list">
-        <li>
-          <a href="contributor-detail.html">
-            <img src="{{ STATIC_URL }}img/user.gif" width="60" height="60" alt="contributor name" />
-          </a>
-        </li>
-        <li>
-          <a href="contributor-detail.html">
-            <img src="{{ STATIC_URL }}img/user.gif" width="60" height="60" alt="contributor name" />
-          </a>
-        </li>
-        <li>
-          <a href="contributor-detail.html">
-            <img src="{{ STATIC_URL }}img/user.gif" width="60" height="60" alt="contributor name" />
-          </a>
-        </li>
-
-        <li>
-          <a href="contributor-detail.html">
-            <img src="{{ STATIC_URL }}img/user.gif" width="60" height="60" alt="contributor name" />
-          </a>
-        </li>
-        <li>
-          <a href="contributor-detail.html">
-            <img src="{{ STATIC_URL }}img/user.gif" width="60" height="60" alt="contributor name" />
-          </a>
-        </li>
-        <li>
-          <a href="contributor-detail.html">
-            <img src="{{ STATIC_URL }}img/user.gif" width="60" height="60" alt="contributor name" />
-          </a>
-        </li>
-
-        <li>
-          <a href="contributor-detail.html">
-            <img src="{{ STATIC_URL }}img/user.gif" width="60" height="60" alt="contributor name" />
-          </a>
-        </li>
-        <li>
-          <a href="contributor-detail.html">
-            <img src="{{ STATIC_URL }}img/user.gif" width="60" height="60" alt="contributor name" />
-          </a>
-        </li>
-      </ul>
-      <p><a href="community/view_all" class="view-all">{{ _('See All') }}</a></p>
-    </section>
-
-    <section class="contributor-group">
-      <h2>Army of Awesome</h2>
-      <ul class="contributor-list">
-        <li>
-          <a href="contributor-detail.html">
-            <img src="{{ STATIC_URL }}img/user.gif" width="60" height="60" alt="contributor name" />
-          </a>
-        </li>
-        <li>
-          <a href="contributor-detail.html">
-            <img src="{{ STATIC_URL }}img/user.gif" width="60" height="60" alt="contributor name" />
-          </a>
-        </li>
-        <li>
-          <a href="contributor-detail.html">
-            <img src="{{ STATIC_URL }}img/user.gif" width="60" height="60" alt="contributor name" />
-          </a>
-        </li>
-
-        <li>
-          <a href="contributor-detail.html">
-            <img src="{{ STATIC_URL }}img/user.gif" width="60" height="60" alt="contributor name" />
-          </a>
-        </li>
-        <li>
-          <a href="contributor-detail.html">
-            <img src="{{ STATIC_URL }}img/user.gif" width="60" height="60" alt="contributor name" />
-          </a>
-        </li>
-        <li>
-          <a href="contributor-detail.html">
-            <img src="{{ STATIC_URL }}img/user.gif" width="60" height="60" alt="contributor name" />
-          </a>
-        </li>
-
-        <li>
-          <a href="contributor-detail.html">
-            <img src="{{ STATIC_URL }}img/user.gif" width="60" height="60" alt="contributor name" />
-          </a>
-        </li>
-        <li>
-          <a href="contributor-detail.html">
-            <img src="{{ STATIC_URL }}img/user.gif" width="60" height="60" alt="contributor name" />
-          </a>
-        </li>
-      </ul>
-      <p><a href="community/view_all" class="view-all">{{ _('See All') }}</a></p>
-    </section>
   </article>
 
   <article class="community-news">
     <section>
       <h1>{{ _('Find your fellow contributors') }}</h1>
 
-      <form name="find-contributor" id="find-contributor" action="community/contributor_results" method="get">
-        {{ csrf() }}
-        <input type="hidden" value="" id="ts-value" name="findby" />
-
-        <div class="selector" data-emulate-select="true">
-          <button type="button" class="ts-select-trigger">
-            <!-- arrow icon using icon font -->
-            <span aria-hidden="true" data-icon-arrow="&#xe800;" class="selector-arrow">
-                <span class='currently-selected'>{{ _('Find By') }}</span>
-            </span>
-          </button>
-          <div class="select-options ts-modal" aria-expanded="false">
-            <ul class="ts-options" tabindex="-1">
-              <li><a href="javascript:void(0);" data-value="username">{{ _('Username') }}</a></li>
-              <li><a href="javascript:void(0);" data-value="display_name">{{ _('Display Name') }}</a></li>
-            </ul>
-          </div>
-        </div>
-
+      <form name="find-contributor" id="find-contributor" action="{{ url('community.search') }}" method="get">
         <fieldset>
-          <input type="text" name="q" id="search" />
+          <input type="text" name="q" id="search" placeholder="{{ _('Username, Display Name or Twitter Handle') }}" />
           <input type="submit" value="{{ _('Search') }}" class="search" />
         </fieldset>
       </form>
-
-      <div class="sumo-news">
-        <h2>{{ _('SUMO News') }}</h2>
-        <ul>
-          <li><a href="https://blog.mozilla.org/sumo/2014/04/27/australis-launch-week-starts-tuesday-may29th/">Australis launch week starts Tuesday, April 29th!</a></li>
-          <li><a href="https://blog.mozilla.org/sumo/2014/03/12/top-100-the-sumo-localization-challenge/">"Top 100": the SUMO localization challenge!</a></li>
-          <li><a href="https://blog.mozilla.org/sumo/2014/03/05/localization-of-sumo-focusing-on-our-active-locales/">Localization of SUMO: focusing on our active locales</a></li>
-          <li><a href="https://blog.mozilla.org/sumo/2014/02/21/getting-closer-to-1-million-mozillians/">Getting closer to 1 Million Mozillians</a></li>
-        </ul>
-      </div>
-
-      <div class="latest-discussions">
-        <h2>{{ _('Latest Discussions') }}</h2>
-        <ul>
-          <li><a href="https://support.mozilla.org/questions/997890">How do I get rid of the Google blog which opens when I open Firefox? I do have a Google email address, but that is all I have signed up for.</a></li>
-          <li><a href="https://support.mozilla.org/en-US/questions/997888">I recently updated to the new version of Firefox. The colors are not what they were before updating</a></li>
-          <li><a href="https://support.mozilla.org/en-US/questions/997887">Can dld newer versions of Frfx but they are not getting installed?</a></li>
-        </ul>
-      </div>
     </section>
 
-    <section>
-      <h2>{{ _('The Weekly Meeting') }}</h2>
-      <p>
-        {% trans %}
-          The SUMO community has a weekly meeting every Monday at <time datetime="17:00Z">9:00AM <abbr title="Pacific Time">PT</abbr></time>. You can find all of the details on how
-          to join the meeting, meeting notes of previous meetings and more <a href="https://wiki.mozilla.org/Support/Weekly_Meetings">on the wiki</a>.
-        {% endtrans %}
-      </p>
+    {% if threads %}
+      <section id="recent-threads">
+        <h1>{{ _('Community Discussions') }}</h1>
 
-      <h3>{{ _('Watch Our Last Meeting') }}</h3>
-      <video controls >
-        <source src="" type='video/webm; codecs="vp8, vorbis"'>
-      </video>
-    </section>
+        <ul>
+          {% for thread in threads %}
+            <li>
+              <a href="{{ thread.get_absolute_url() }}">
+                {{ thread.title }}
+              </a>
+            </li>
+          {% endfor %}
+        </ul>
+        <p>
+          <a href="{{ threads[0].forum.get_absolute_url() }}">
+            {{ _('Go to the SUMO community discussions forum') }}
+          </a>
+        </p>
+      </section>
+    {% endif %}
+
+    {% if community_news %}
+      <section id="doc-content">
+        {{ community_news.html|safe }}
+      </section>
+    {% endif %}
+
   </article>
 {% endblock %}
+
+{% macro render_contributors(results, area, locale) -%}
+  <ul class="contributor-list {{ area }}">
+    {% for result in results %}
+      <li>
+        {% set tooltip = _('{user} - {num} contributions in last 90 days')|f(user=result['user']['display_name'], num=result['count']) %}
+        <a href="{{ url('users.profile', result['user']['id']) }}" title="{{ tooltip }}">
+          <img src="{{ result['user']['avatar'] }}" alt="{{ tooltip }}" />
+        </a>
+      </li>
+    {% endfor %}
+  </ul>
+  <p>
+    {% set all_url = url('community.top_contributors', area=area) %}
+    {% if locale %}
+      {% set all_url = all_url|urlparams(locale=locale) %}
+    {% endif %}
+    <a href="{{ all_url }}" class="view-all">
+      {{ _('See All') }}
+    </a>
+  </p>
+{%- endmacro %}

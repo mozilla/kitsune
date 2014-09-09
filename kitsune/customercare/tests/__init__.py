@@ -1,7 +1,7 @@
 import json
 from datetime import datetime
 
-from kitsune.customercare.models import Tweet, Reply
+from kitsune.customercare.models import Tweet, TwitterAccount, Reply
 from kitsune.sumo.tests import with_save
 
 
@@ -49,6 +49,23 @@ def tweet(**kwargs):
         next_tweet_id += 1
 
     return Tweet(**defaults)
+
+
+@with_save
+def twitter_account(**kwargs):
+    """Returns a TwitterAccount with default values or the ones passed in.
+
+    :arg save: Whether to save the TwitterAccount before returning it.
+    :arg username: Username for the TwitterAccount.
+    """
+    defaults = {
+        'username': kwargs.pop('username'),
+        'banned': False,
+        'ignored': False,
+    }
+
+    defaults.update(kwargs)
+    return TwitterAccount(**defaults)
 
 
 @with_save

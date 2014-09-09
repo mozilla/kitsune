@@ -9,10 +9,14 @@ from django.core.files.base import ContentFile
 from celery import task
 from PIL import Image
 
+from kitsune.sumo.decorators import timeit
+
+
 log = logging.getLogger('k.task')
 
 
 @task(rate_limit='15/m')
+@timeit
 def generate_thumbnail(for_obj, from_field, to_field,
                        max_size=settings.THUMBNAIL_SIZE):
     """Generate a thumbnail, given a model instance with from and to fields.
@@ -98,6 +102,7 @@ def _scale_dimensions(width, height, longest_side=settings.THUMBNAIL_SIZE):
 
 
 @task(rate_limit='15/m')
+@timeit
 def compress_image(for_obj, for_field):
     """Compress an image of given field for given object."""
 

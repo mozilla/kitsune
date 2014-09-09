@@ -34,8 +34,6 @@ FREQUENCY_CHOICES = [(u'', u''),
 STARTED_LABEL = _lazy(u'This started when...')
 TITLE_LABEL = _lazy(u'Question')
 CONTENT_LABEL = _lazy(u'Details')
-CONTENT_HELP = _lazy(u'The more information you can provide the better chance '
-                     u'your question will be answered.')
 EMAIL_LABEL = _lazy(u'Email')
 EMAIL_HELP = _lazy(u'A confirmation email will be sent to this address in '
                    u'order to post your question.')
@@ -43,6 +41,7 @@ FF_VERSION_LABEL = _lazy(u'Firefox version')
 OS_LABEL = _lazy(u'Operating system')
 PLUGINS_LABEL = _lazy(u'Installed plugins')
 ADDON_LABEL = _lazy(u'Extension/plugin you are having trouble with')
+DEVICE_LABEL = _lazy(u'Mobile device')
 
 # Validation error messages
 MSG_TITLE_REQUIRED = _lazy(u'Please provide a question.')
@@ -136,9 +135,8 @@ class EditQuestionForm(forms.Form):
         error_messages = {'required': MSG_CONTENT_REQUIRED,
                           'min_length': MSG_CONTENT_SHORT,
                           'max_length': MSG_CONTENT_LONG}
-        field = StrippedCharField(label=CONTENT_LABEL, help_text=CONTENT_HELP,
-                                  min_length=5, max_length=10000,
-                                  widget=forms.Textarea(),
+        field = StrippedCharField(label=CONTENT_LABEL, min_length=5,
+                                  max_length=10000, widget=forms.Textarea(),
                                   error_messages=error_messages)
         self.fields['content'] = field
 
@@ -188,8 +186,12 @@ class EditQuestionForm(forms.Form):
             self.fields['troubleshooting'] = field
 
         if 'ff_version' in extra_fields:
-            field = StrippedCharField(label=FF_VERSION_LABEL, required=False)
-            self.fields['ff_version'] = field
+            self.fields['ff_version'] = StrippedCharField(
+                label=FF_VERSION_LABEL, required=False)
+
+        if 'device' in extra_fields:
+            self.fields['device'] = StrippedCharField(label=DEVICE_LABEL,
+                                                      required=False)
 
         if 'os' in extra_fields:
             self.fields['os'] = StrippedCharField(label=OS_LABEL,

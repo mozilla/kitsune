@@ -49,7 +49,7 @@ main {
     margin: 0;
     padding: 0;
     position: relative;
-    width: 52%;
+    width: 92%;
   }
   input[type="submit"] {
     font-size: 1rem;
@@ -63,31 +63,6 @@ main {
   }
   select {
     width: 25%;
-  }
-  /* temp under construction */
-  .under_contruction {
-    background-color: #659324;
-    background-image: linear-gradient(to bottom, #81BC2E, #659324);
-    box-shadow: 0px 1px 0px 0px rgba(0, 0, 0, 0.2), 0px -1px 0px 0px rgba(0, 0, 0, 0.3) inset;
-    border: 5px solid white;
-    color: white;
-    padding: .5rem;
-    text-align: center;
-    h2,
-    h3,
-    p {
-      margin: 0;
-    }
-    p {
-      padding: 1rem;
-    }
-    a {
-      &:link,
-      &:visited {
-        color: white;
-        text-decoration: underline;
-      }
-    }
   }
 }
 .contributors {
@@ -105,13 +80,7 @@ main {
     background-color: white;
     border-radius: 6px;
     margin: 0 2rem 2rem 0;
-    padding: .1rem 1rem .5rem 1rem;
-  }
-  .sumo-news,
-  .latest-discussions {
-    display: inline-block;
-    vertical-align: top;
-    width: 49%;
+    padding: .1rem 1rem 2rem 1rem;
   }
   ul {
     margin: 0px .5rem 0 1rem;
@@ -119,12 +88,11 @@ main {
   }
   li {
     margin-bottom: 1rem;
-    line-height: 1.5;
+    line-height: 1;
   }
   input[type="text"] {
-    height: 2rem;
     margin-left: .7rem;
-    padding: 1rem;
+    padding: .4rem 1rem;
     width: 100%;
   }
   video {
@@ -134,9 +102,9 @@ main {
 }
 /* contributor search input */
 .query {
-  height: 2rem;
   margin-left: .7rem;
   padding: 1rem;
+  padding: .4rem 1rem;
   width: 100%;
 }
 input.search {
@@ -191,6 +159,8 @@ input.search {
   }
   img {
     border: 5px solid white;
+    height: 60px;
+    width: 60px;
   }
 }
 /* Results */
@@ -204,6 +174,14 @@ input.search {
     text-align: center;
     width: 70%;
   }
+  .numbered {
+    background-color: #c2c3c2;
+    color: #333;
+    left: .6rem;
+    padding: .2rem .5rem;
+    position: absolute;
+    top: .6rem;
+  }
 }
 /* Results user details */
 .results-user {
@@ -211,12 +189,15 @@ input.search {
   display: inline-block;
   height: auto;
   margin: 1rem;
-  padding: 1rem;
+  padding: .6rem;
+  position: relative;
   width: 22%;
   h2 {
     margin: 0;
   }
   img {
+    display: block;
+    height: 120px;
     width: 120px;
   }
   .user-details {
@@ -251,11 +232,21 @@ input.accessibly-hidden,
     display: inline-block;
     width: 100%;
   }
-.community-news {
-  display: inline-block;
-  float: none;
-  margin-right: 1rem;
-  width: 100%;
-}
+  .community-news {
+    display: inline-block;
+    float: none;
+    margin-right: 1rem;
+    width: 100%;
+  }
 }
 
+#doc-content {
+  h1 {
+    font-size: 2.183rem;
+
+    &:first-child {
+      border-top: none;
+      margin-top: 0;
+    }
+  }
+}

@@ -56,6 +56,14 @@ h2 {
 }
 
 .answers {
+  .answer {
+    &.marked-as-spam {
+      .main-content {
+        color: @textOrange;
+      }
+    }
+  }
+
   .answer-tools {
     margin: 0 0 20px 130px;
     padding: 0 20px;
@@ -103,6 +111,13 @@ h2 {
     color: @textGreen;
   }
 
+  .spam-form {
+    .btn {
+      float: right;
+      margin-bottom: 10px;
+    }
+  }
+
   .main-content {
     background: #fff;
     margin: 0 0 20px 130px;
@@ -128,6 +143,10 @@ h2 {
     > label {
       display: block;
       margin-top: 12px;
+    }
+
+    > p {
+      white-space: pre-wrap;
     }
 
     .read-more {
@@ -173,6 +192,10 @@ h2 {
 
     span.last-answer-date {
       margin-left: 10px;
+    }
+
+    .marked-as-spam {
+      color: @textOrange;
     }
   }
 
@@ -1050,6 +1073,11 @@ h2 {
 
 #question-form {
   ol {
+    > li {
+      margin-bottom: 10px;
+    }
+  }
+  ul {
     list-style: none;
     margin: 0;
     padding: 0;
@@ -1386,12 +1414,12 @@ div.ans-attachments {
 #product-selector,
 #topic-selector {
   float: right;
-  font-size: 14px;
+  font-size: 12px;
   margin-left: 10px;
 
   > select {
     padding: 2px;
-    width:  200px;
+    width:  300px;
   }
 }
 

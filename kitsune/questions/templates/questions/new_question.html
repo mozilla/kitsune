@@ -66,14 +66,18 @@
     <form action="{{ url('questions.aaq_step5', product_key=current_product.key, category_key=current_category.key) }}" method="get">
       <input type="hidden" name="search" value="{{ request.GET.search }}" />
       <input type="hidden" name="step" value="{% if user.is_authenticated() %}aaq-question{% else %}aaq-register{% endif %}" />
-      <button type="submit" data-type="submit" class="btn btn-submit big">{{ button_text }}</button>
+      {% set ga_action = 'pre-registered question' if user.is_authenticated() else 'step 1 link' %}
+      <button type="submit" data-ga-click="_trackEvent | Ask A Question Flow | {{ ga_action }}" class="btn btn-submit big">
+          {{ button_text }}
+      </button>
     </form>
   {% endif %}
 
 {% endblock %}
 
 {% block major_detail_instructions %}
-  <h2>{{ _('Fill in the details of your question.') }}</h2>
+  <h2>{{ _('Ask your question to our community of users') }}</h2>
 {% endblock %}
 
 {% block submit_button_value %}{{ _('Post Question') }}{% endblock %}
+{% block submit_button_attrs %}data-ga-click="_trackEvent | Ask A Question Flow | step 3 link"{% endblock %}

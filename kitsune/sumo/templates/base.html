@@ -8,6 +8,7 @@
 <!DOCTYPE html>
 <html class="no-js" lang="{{ request.LANGUAGE_CODE }}" {% if DIR %}dir="{{ DIR }}"{% endif %}>
 <head>
+  {% block head_top %}{% endblock %}
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
   <title>{% block title %}{% if title %}{{ title }} | {% endif %}{{ _('Mozilla Support', 'site_title') }}{% endblock %}</title>
 
@@ -125,6 +126,8 @@
     {% endcall %}
   {% endif %}
 
+  {% call announcement_bar('geoip-suggestion', 'warning') %}{% endcall %}
+
   {% for announ in get_announcements() %}
     {% call announcement_bar(announ.id, 'warn') %}
       {{ announ.content }}
@@ -150,7 +153,7 @@
         {% if not hide_header_search %}
           {{ search_box(settings, id='support-search', params=search_params) }}
         {% endif %}
-        <a href="{{ url('home') }}"><img class="logo" alt="mozilla support" src="{{ STATIC_URL }}img/mozilla-support.png" /></a>
+        <a href="{{ url('home') }}" class="logo"><img alt="mozilla support" src="{{ STATIC_URL }}img/mozilla-support.png" /></a>
       </div>
     </div>
   </div>
@@ -231,6 +234,10 @@
 {% endif %}
 {# End Optimizely #}
 
+{% if include_geoip %}
+    <script src="//geo.mozilla.org/country.js" type="text/javascript"></script>
+{% endif %}
+
 {{ js('common') }}
 <!--[if (gte IE 6)&(lte IE 8)]>
   {{ js('ie6-8') }}
@@ -243,7 +250,7 @@
 
 {# Temporary Pontoon testing - bug 812176 #}
 {% if settings.STAGE %}
-  <script src="https://pontoon-dev.mozillalabs.com/pontoon.js"></script>
+  <script src="https://pontoon.mozilla.org/pontoon.js"></script>
 {% endif %}
 
 {% block footer_script %}

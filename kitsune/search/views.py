@@ -173,9 +173,13 @@ def search(request, template=None):
     # Start - support questions filters
 
     if cleaned['w'] & constants.WHERE_SUPPORT:
-        # Solved is set by default if using basic search
+        # Has helpful answers is set by default if using basic search
         if a == '0' and not cleaned['has_helpful']:
             cleaned['has_helpful'] = constants.TERNARY_YES
+
+        # No archived questions in default search.
+        if a == '0' and not cleaned['is_archived']:
+            cleaned['is_archived'] = constants.TERNARY_NO
 
         # These filters are ternary, they can be either YES, NO, or OFF
         ternary_filters = ('is_locked', 'is_solved', 'has_answers',
@@ -258,12 +262,6 @@ def search(request, template=None):
             discussion_f &= F(**after)
             question_f &= F(**after)
 
-    # In basic search, we limit questions from the last
-    # SEARCH_DEFAULT_MAX_QUESTION_AGE seconds.
-    if a == '0':
-        start_date = unix_now - settings.SEARCH_DEFAULT_MAX_QUESTION_AGE
-        question_f &= F(created__gte=start_date)
-
     # Note: num_voted (with a d) is a different field than num_votes
     # (with an s). The former is a dropdown and the latter is an
     # integer value.
@@ -323,8 +321,8 @@ def search(request, template=None):
 
             # Text phrases in document titles and content get an extra
             # boost.
-            document_title__text_phrase=10.0,
-            document_content__text_phrase=8.0)
+            document_title__match_phrase=10.0,
+            document_content__match_phrase=8.0)
 
         # Apply sortby for advanced search of questions
         if cleaned['w'] == constants.WHERE_SUPPORT:
@@ -350,13 +348,18 @@ def search(request, template=None):
 
         # Build the query
         if cleaned_q:
-            query_fields = chain(*[cls.get_query_fields()
-                                   for cls in get_mapping_types()])
+            query_fields = chain(
+                *[cls.get_query_fields() for cls in [
+                    DocumentMappingType,
+                    ThreadMappingType,
+                    QuestionMappingType]
+                ]
+            )
             query = {}
-            # Create text and text_phrase queries for every field
+            # Create match and match_phrase queries for every field
             # we want to search.
             for field in query_fields:
-                for query_type in ['text', 'text_phrase']:
+                for query_type in ['match', 'match_phrase']:
                     query['%s__%s' % (field, query_type)] = cleaned_q
 
             # Transform the query to use locale aware analyzers.
@@ -461,22 +464,6 @@ def search(request, template=None):
              v in r.getlist(k) if v and k != 'a']
     items.append(('a', '2'))
 
-    if is_json:
-        # Models are not json serializable.
-        for r in results:
-            del r['object']
-        data = {}
-        data['results'] = results
-        data['total'] = len(results)
-        data['query'] = cleaned['q']
-        if not results:
-            data['message'] = _('No pages matched the search criteria')
-        json_data = json.dumps(data)
-        if callback:
-            json_data = callback + '(' + json_data + ');'
-
-        return HttpResponse(json_data, mimetype=mimetype)
-
     fallback_results = None
     if num_results == 0:
         fallback_results = _fallback_results(language, cleaned['product'])
@@ -490,18 +477,34 @@ def search(request, template=None):
 
     product_titles = ', '.join(product_titles)
 
-    results_ = render(request, template, {
+    data = {
         'num_results': num_results,
         'results': results,
         'fallback_results': fallback_results,
+        'product_titles': product_titles,
         'q': cleaned['q'],
         'w': cleaned['w'],
+        'lang_name': lang_name, }
+
+    if is_json:
+        # Models are not json serializable.
+        for r in data['results']:
+            del r['object']
+        data['total'] = len(data['results'])
+        if not results:
+            data['message'] = _('No pages matched the search criteria')
+        json_data = json.dumps(data)
+        if callback:
+            json_data = callback + '(' + json_data + ');'
+
+        return HttpResponse(json_data, mimetype=mimetype)
+
+    data.update({
         'product': product,
         'products': Product.objects.filter(visible=True),
-        'product_titles': product_titles,
         'pages': pages,
-        'search_form': search_form,
-        'lang_name': lang_name, })
+        'search_form': search_form, })
+    results_ = render(request, template, data)
     cache_period = settings.SEARCH_CACHE_PERIOD
     results_['Cache-Control'] = 'max-age=%s' % (cache_period * 60)
     results_['Expires'] = (
@@ -525,7 +528,7 @@ def suggestions(request):
     site = Site.objects.get_current()
     locale = locale_or_default(request.LANGUAGE_CODE)
     try:
-        query = dict(('%s__text' % field, term)
+        query = dict(('%s__match' % field, term)
                      for field in DocumentMappingType.get_query_fields())
         # Upgrade the query to an analyzer-aware one.
         query = es_utils.es_query_with_analyzer(query, locale)
@@ -536,7 +539,7 @@ def suggestions(request):
                   .values_dict('document_title', 'url')
                   .query(or_=query)[:5])
 
-        query = dict(('%s__text' % field, term)
+        query = dict(('%s__match' % field, term)
                      for field in QuestionMappingType.get_query_fields())
         question_s = (QuestionMappingType.search()
                       .filter(question_has_helpful=True)

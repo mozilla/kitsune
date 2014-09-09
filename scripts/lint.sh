@@ -13,7 +13,7 @@
 # new file to the list of ignores.
 
 FLAKE8_IGNORE=(
-    'migrations'
+    '*migrations*'
     'kitsune/settings*'
     'kitsune/sumo/db_strings.py'
     'kitsune/sumo/static/js/libs/ace/kitchen-sink/docs/python.py'

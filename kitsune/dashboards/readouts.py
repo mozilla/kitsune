@@ -155,8 +155,11 @@ def _format_row_with_out_of_dateness(readout_locale, eng_slug, eng_title, slug,
     categorization of how seriously out of date a translation is."""
     if slug:  # A translation exists but may not be approved.
         locale = readout_locale
-        status, view_name, status_class = SIGNIFICANCE_STATUSES.get(
-            significance, REVIEW_STATUSES[needs_review])
+        if needs_review:
+            status, view_name, status_class = REVIEW_STATUSES[needs_review]
+        else:
+            status, view_name, status_class = SIGNIFICANCE_STATUSES.get(
+                significance, REVIEW_STATUSES[needs_review])
         status_url = (reverse(view_name, args=[slug], locale=locale)
                       if view_name else '')
     else:
@@ -261,10 +264,10 @@ def overview_rows(locale, product=None):
             extra_joins='LEFT JOIN wiki_revision curtransrev '
                         'ON transdoc.current_revision_id=curtransrev.id ' +
                         extra_joins,
-            extra_where='AND engdoc.category IN (' +
-                        str(TROUBLESHOOTING_CATEGORY) + ',' +
-                        str(HOW_TO_CATEGORY) + ',' +
-                        str(TEMPLATES_CATEGORY) + ')') +
+            extra_where='AND engdoc.category NOT IN (' +
+                        str(HOW_TO_CONTRIBUTE_CATEGORY) + ') ' +
+                        'AND NOT engdoc.is_template ' +
+                        'AND engdoc.html NOT LIKE "<p>REDIRECT <a%%" ') +
         'LIMIT %s) t1 ')
 
     top_20_translated = int(single_result(  # Driver returns a Decimal.
@@ -823,10 +826,24 @@ class UnhelpfulReadout(Readout):
             log.error('Redis error: %s' % e)
             output = []
 
-        return [self._format_row(r) for r in output]
+        data = []
+        for r in output:
+            row = self._format_row(r)
+            if row:
+                data.append(row)
+
+        return data
 
     def _format_row(self, strresult):
         result = strresult.split('::')
+
+        # Filter by product
+        if self.product:
+            doc = Document.objects.filter(products__in=[self.product],
+                                          slug=result[5])
+            if not doc.count():
+                return None
+
         helpfulness = Markup('<span title="%+.1f%%">%.1f%%</span>' %
                              (float(result[3]) * 100, float(result[2]) * 100))
         return dict(title=result[6].decode('utf-8'),

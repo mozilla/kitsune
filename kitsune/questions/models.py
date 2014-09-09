@@ -69,6 +69,11 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
     is_archived = models.NullBooleanField(default=False, null=True)
     num_votes_past_week = models.PositiveIntegerField(default=0, db_index=True)
 
+    is_spam = models.BooleanField(default=False)
+    marked_as_spam = models.DateTimeField(default=None, null=True)
+    marked_as_spam_by = models.ForeignKey(
+        User, null=True, related_name='questions_marked_as_spam')
+
     images = generic.GenericRelation(ImageAttachment)
     flags = generic.GenericRelation(FlaggedObject)
 
@@ -705,7 +710,7 @@ class QuestionVisits(ModelBase):
                         ' so I kept what I had.')
 
 
-class Answer(ModelBase):
+class Answer(ModelBase, SearchMixin):
     """An answer to a support question."""
     question = models.ForeignKey('Question', related_name='answers')
     creator = models.ForeignKey(User, related_name='answers')
@@ -715,6 +720,10 @@ class Answer(ModelBase):
     updated_by = models.ForeignKey(User, null=True,
                                    related_name='answers_updated')
     page = models.IntegerField(default=1)
+    is_spam = models.BooleanField(default=False)
+    marked_as_spam = models.DateTimeField(default=None, null=True)
+    marked_as_spam_by = models.ForeignKey(
+        User, null=True, related_name='answers_marked_as_spam')
 
     images = generic.GenericRelation(ImageAttachment)
     flags = generic.GenericRelation(FlaggedObject)
@@ -765,7 +774,7 @@ class Answer(ModelBase):
             # uncached on the off chance that fixes it. Plus if we enable
             # caching of counts, this will continue to work.
             self.question.num_answers = Answer.uncached.filter(
-                question=self.question).count()
+                question=self.question, is_spam=False).count()
             self.question.last_answer = self
             self.question.save(update)
             self.question.clear_cached_contributors()
@@ -799,7 +808,8 @@ class Answer(ModelBase):
         if self.id == question.answers.all().order_by('created')[0].id:
             FirstAnswerAction(user=self.creator, day=self.created).delete()
 
-        question.num_answers = question.answers.count() - 1
+        answers = question.answers.filter(is_spam=False)
+        question.num_answers = answers.count() - 1
         question.save()
         question.clear_cached_contributors()
 
@@ -936,6 +946,88 @@ class Answer(ModelBase):
             images = list(self.images.all())
             cache.add(cache_key, images, CACHE_TIMEOUT)
         return images
+
+    @classmethod
+    def get_mapping_type(cls):
+        return AnswerMetricsMappingType
+
+
+@register_mapping_type
+class AnswerMetricsMappingType(SearchMappingType):
+    @classmethod
+    def get_model(cls):
+        return Answer
+
+    @classmethod
+    def get_index_group(cls):
+        return 'metrics'
+
+    @classmethod
+    def get_mapping(cls):
+        return {
+            'properties': {
+                'id': {'type': 'long'},
+                'model': {'type': 'string', 'index': 'not_analyzed'},
+                'url': {'type': 'string', 'index': 'not_analyzed'},
+                'indexed_on': {'type': 'integer'},
+                'created': {'type': 'date'},
+
+                'locale': {'type': 'string', 'index': 'not_analyzed'},
+                'product': {'type': 'string', 'index': 'not_analyzed'},
+                'is_solution': {'type': 'boolean'},
+                'creator_id': {'type': 'long'},
+            }
+        }
+
+    @classmethod
+    def extract_document(cls, obj_id, obj=None):
+        """Extracts indexable attributes from an Answer."""
+        fields = ['id', 'created', 'creator_id', 'question_id']
+        composed_fields = ['question__locale', 'question__solution_id']
+        all_fields = fields + composed_fields
+
+        if obj is None:
+            model = cls.get_model()
+            obj_dict = model.uncached.values(*all_fields).get(pk=obj_id)
+        else:
+            obj_dict = dict([(field, getattr(obj, field))
+                              for field in fields])
+            obj_dict['question__locale'] = obj.question.locale
+            obj_dict['question__solution_id'] = obj.question.solution_id
+
+        d = {}
+        d['id'] = obj_dict['id']
+        d['model'] = cls.get_mapping_type_name()
+
+        # We do this because get_absolute_url is an instance method
+        # and we don't want to create an instance because it's a DB
+        # hit and expensive. So we do it by hand. get_absolute_url
+        # doesn't change much, so this is probably ok.
+        url = reverse('questions.details',
+                      kwargs={'question_id': obj_dict['question_id']})
+        d['url'] = urlparams(url, hash='answer-%s' % obj_dict['id'])
+
+        d['indexed_on'] = int(time.time())
+
+        d['created'] = obj_dict['created']
+
+        d['locale'] = obj_dict['question__locale']
+        d['is_solution'] = (obj_dict['id'] == obj_dict['question__solution_id'])
+        d['creator_id'] = obj_dict['creator_id']
+
+        products = Product.uncached.filter(question__id=obj_dict['question_id'])
+        d['product'] = [p.slug for p in products]
+
+        return d
+
+
+register_for_indexing('answers', Answer)
+# This below is needed to update the is_solution field on the answer.
+register_for_indexing(
+    'answers',
+    Question,
+    instance_to_indexee=(
+        lambda i: i.solution ))
 
 
 def answer_connector(sender, instance, created, **kw):

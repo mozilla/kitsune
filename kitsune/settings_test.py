@@ -4,7 +4,11 @@ import os
 
 ES_LIVE_INDEXING = False
 ES_INDEX_PREFIX = 'sumotest'
-ES_INDEXES = {'default': 'test'}
+ES_INDEXES = {
+    'default': 'test-default',
+    'non-critical': 'test-non-critical',
+    'metrics': 'test-metrics',
+}
 ES_WRITE_INDEXES = ES_INDEXES
 
 # Make sure Celery is EAGER.

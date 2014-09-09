@@ -69,6 +69,10 @@ body {
     .logo {
       float: left;
       margin-top: 20px;
+
+      img{
+       display:block;
+      }
     }
   }
 
@@ -622,6 +626,19 @@ input[type=button],
   background-repeat: no-repeat;
   height: 96px;
   width: 96px;
+
+  &.sumo {
+    background-image: url('../img/sumo-icon.png');
+  }
+
+  &.small {
+    height: 48px;
+    width: 48px;
+
+    &.sumo {
+      background-image: url('../img/sumo-icon-small.png');
+    }
+  }
 }
 
 .nomargin {
@@ -1654,10 +1671,101 @@ input[type=button],
     background-position: -200px center;
     right: 0;
   }
+}
 
-  .logo-sprite {
-    &.sumo {
-      background-image: url('../img/sumo-icon.png');
+.product-picker-dd {
+  margin: 24px 0 0 0;
+  position: relative;
+  z-index: 10;
+
+  > ul {
+    background: #fff;
+    border: 1px solid @borderLightGrey;
+    .box-sizing(border-box);
+    display: none;
+    list-style: none;
+    margin: 0;
+    max-height: 258px;
+    overflow: auto;
+    padding: 0;
+    position: absolute;
+    top: 100%;
+    width: 100%;
+
+    > li {
+      height: 64px;
+
+      > a,
+      > a:visited {
+        color: @textDarkGrey;
+        display: block;
+        font-size: 24px;
+        height: 100%;
+        line-height: 62px;
+        padding: 0 0 0 64px;
+        position: relative;
+
+        .logo-sprite {
+          left: 7px;
+          margin-top: -24px;
+          position: absolute;
+          top: 50%;
+        }
+      }
+
+      > a:hover {
+        background: #e8e8e8;
+        text-decoration: none;
+      }
+
+      &.selected {
+        > a {
+          background: @textBlue;
+          color: #fff;
+        }
+      }
+    }
+  }
+
+  &:hover {
+    > ul {
+      display: block;
+    }
+  }
+
+  .current {
+    background: #fff;
+    border: 1px solid @borderLightGrey;
+    .border-radius(12px);
+    .box-shadow(0 -2px 0 #d0d0d0 inset);
+    font-size: 24px;
+    height: 64px;
+    line-height: 60px;
+    padding: 0 0 0 62px;
+    position: relative;
+
+    .logo-sprite {
+      left: 7px;
+      margin-top: -24px;
+      position: absolute;
+      top: 50%;
+    }
+  }
+
+  .dd-btn {
+    .gradient(#e8e8e8, #e8e8e8, @borderLightGrey);
+    .border-radius(6px);
+    float: right;
+    height: 50px;
+    margin: 6px;
+    position: relative;
+    width: 62px;
+
+    > img {
+      left: 50%;
+      margin: -9px 0 0 -20px;
+      position: absolute;
+      top: 50%;
     }
   }
 }

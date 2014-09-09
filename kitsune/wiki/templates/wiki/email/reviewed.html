@@ -5,12 +5,12 @@
 
   <p>
     {% if approved %}
-      {% trans reviewer=reviewer, document_title=document_title %}
+      {% trans reviewer=display_name(reviewer), document_title=document_title %}
         {{ reviewer }} has approved your revision to the document
         {{ document_title }}.
       {% endtrans %}
     {% else %}
-      {% trans reviewer=reviewer, document_title=document_title %}
+      {% trans reviewer=display_name(reviewer), document_title=document_title %}
         {{ reviewer }} has reviewed your revision to the document
         {{ document_title }}.
       {% endtrans %}

@@ -1,9 +1,11 @@
-from functools import wraps
 import json
+from functools import wraps
 
 from django import http
 from django.conf import settings
 from django.core.exceptions import PermissionDenied
+
+from statsd import statsd
 
 
 def ssl_required(view_func):
@@ -97,3 +99,15 @@ def cors_enabled(origin, methods=['GET']):
             return response
         return decorated_func
     return decorator
+
+
+def timeit(f):
+    """A decorator that records the function execution time to statsd."""
+    @wraps(f)
+    def _timeit(*args, **kwargs):
+        with statsd.timer('{m}.{n}'.format(m=f.__module__, n=f.__name__)):
+            result = f(*args, **kwargs)
+
+        return result
+
+    return _timeit

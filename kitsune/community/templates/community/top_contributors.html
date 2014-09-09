@@ -1,0 +1,125 @@
+{% extends "community/base.html" %}
+
+{% if area == 'questions' %}
+  {% set title = _('Top Contributors - Support Forum') %}
+{% elif area == 'kb' %}
+  {% set title = _('Top Contributors - Knowledge Base') %}
+{% elif area == 'l10n' %}
+  {% set title = _('Top Contributors - Localization') %}
+{% elif area == 'army-of-awesome' %}
+  {% set title = _('Top Contributors - Army of Awesome') %}
+{% endif %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+  <h1 class="main-heading">{{ _('Community Hub') }}</h1>
+
+  <article class="community-results">
+
+    <section class="community-results-header">
+      <h1>{{ title }}</h1>
+
+      {# Locale Filter #}
+      {% if locales %}
+        <div class="selector">
+          <button type="button" class="ts-select-trigger">
+            <!-- arrow icon using icon font -->
+            <span aria-hidden="true" data-icon-arrow="&#xe800;" class="selector-arrow">
+                <span class='current-selected'>
+                  {% if not locale %}
+                    {{ _('Select Top Contributors by Locale') }}
+                  {% else %}
+                    {{ settings.LANGUAGES_DICT[locale.lower()] }}
+                  {% endif %}
+                </span>
+            </span>
+          </button>
+          <div class="select-options ts-modal" aria-expanded="false">
+            {% set base_url = url('community.top_contributors', area=area) %}
+            {% if product %}
+              {% set base_url = base_url|urlparams(product=product.slug) %}
+            {% endif %}
+            <ul class="ts-options" tabindex="-1">
+              <li>
+                <a href="{{ base_url }}" {% if not locale %} aria-checked="true" class="selected"{% endif %}>
+                  {{ _('All locales') }}
+                </a>
+              </li>
+              {% for l in locales %}
+                <li>
+                  <a href="{{ base_url|urlparams(locale=l) }}"{% if l == locale %} aria-checked="true" class="selected"{% endif %}>
+                    {{ settings.LANGUAGES_DICT[l.lower()] }}
+                  </a>
+                </li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+      {% endif %}
+
+      {# Product Filter - Not included in Army of Awesome leaderboard. #}
+      {% if products and area != 'army-of-awesome' %}
+        <div class="selector">
+          <button type="button" class="ts-select-trigger">
+            <!-- arrow icon using icon font -->
+            <span aria-hidden="true" data-icon-arrow="&#xe800;" class="selector-arrow">
+                <span class='current-selected'>
+                  {% if not product %}
+                    {{ _('Filter Top Contributors by Product') }}
+                  {% else %}
+                    {{ _(product.title, 'DB: products.Product.title') }}
+                  {% endif %}
+                </span>
+            </span>
+          </button>
+          <div class="select-options ts-modal" aria-expanded="false">
+            {% set base_url = url('community.top_contributors', area=area) %}
+            {% if locale %}
+              {% set base_url = base_url|urlparams(locale=locale) %}
+            {% endif %}
+            <ul class="ts-options" tabindex="-1">
+              <li>
+                <a href="{{ base_url }}" {% if not product %} aria-checked="true" class="selected"{% endif %}>
+                  {{ _('All products') }}
+                </a>
+              </li>
+              {% for p in products %}
+                <li>
+                  <a href="{{ base_url|urlparams(product=p.slug) }}"{% if p == product %} aria-checked="true" class="selected"{% endif %}>
+                     {{ _(p.title, 'DB: products.Product.title') }}
+                  </a>
+                </li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+      {% endif %}
+    </section>
+
+    <ol>
+      {% for result in results %}
+        <li class="results-user">
+          <img src="{{ result['user']['avatar'] }}" alt="" class="user-img-results" />
+          <span class="numbered">{{ loop.index }}</span>
+          <div class="user-details">
+            <h2>{{ result['user']['display_name'] }}</h2>
+            <ul class="results-user-details">
+              <li>{{ result['user']['username'] }}</li>
+              <li>{{ _('Contributions in last 90 days: {count}')|f(count=result['count']) }}</li>
+              <li><a href="{{ url('users.profile', result['user']['id']) }}">{{ _('View Profile') }}</a></li>
+              <li><a href="{{ url('messages.new')|urlparams(to=result['user']['username']) }}">{{ _('Private Message') }}</a></li>
+              {% if result['user']['days_since_last_activity'] != None %}
+                <li>
+                  {{ _('Days since last activity:') }}
+                  {{ result['user']['days_since_last_activity'] }}
+                </li>
+              {% endif %}
+            </ul>
+          </div>
+        </li>
+      {% endfor %}
+    </ol>
+
+  </article>
+{% endblock %}

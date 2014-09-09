@@ -50,6 +50,15 @@
       {{ document_messages(document, redirected_from) }}
       {{ document_content(document, fallback_reason, request, settings) }}
 
+    {% set share_link = document.share_link or (document.parent and document.parent.share_link) %}
+    {% if share_link %}
+      <p>
+        <br/>
+        {% set link='<a href="' + share_link + '">' + share_link + '</a>' %}
+        {{ _('Share this article: {link}')|f(link=link)|safe }}
+      </p>
+    {% endif %}
+
       <div class="vote-wrap">
       {# this extra div is to make the js compatible with old theme. TODO: Remove and fix js. #}
         {{ vote_form(document, 'footer') }}

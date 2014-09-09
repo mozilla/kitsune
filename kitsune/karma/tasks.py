@@ -8,11 +8,13 @@ from kitsune.questions.karma_actions import (
     AnswerAction, AnswerMarkedHelpfulAction, AnswerMarkedNotHelpfulAction,
     FirstAnswerAction, SolutionAction)
 from kitsune.questions.models import Question, AnswerVote
+from kitsune.sumo.decorators import timeit
 from kitsune.sumo.redis_utils import redis_client
 from kitsune.sumo.utils import chunked
 
 
 @task()
+@timeit
 def init_karma():
     """Flushes the karma redis backend and populates with fresh data.
 
@@ -33,12 +35,14 @@ def init_karma():
 
 
 @task()
+@timeit
 def update_top_contributors():
     """Updates the top contributor sorted sets."""
     _update_top_contributors()
 
 
 @task()
+@timeit
 def recalculate_karma_points():
     """Go through all karma action data and recalculate points."""
     if not waffle.switch_is_active('karma'):
@@ -49,6 +53,7 @@ def recalculate_karma_points():
 
 
 @task()
+@timeit
 def _process_question_chunk(data):
     """Save karma data for a chunk of questions."""
     redis = redis_client(name='karma')
@@ -69,6 +74,7 @@ def _process_question_chunk(data):
 
 
 @task()
+@timeit
 def _process_answer_vote_chunk(data):
     """Save karma data for a chunk of answer votes."""
     redis = redis_client(name='karma')
@@ -83,6 +89,7 @@ def _process_answer_vote_chunk(data):
 
 
 @task()
+@timeit
 def _process_recalculate_chunk(data):
     """Recalculate karma points for a chunk of user ids."""
     mgr = KarmaManager()

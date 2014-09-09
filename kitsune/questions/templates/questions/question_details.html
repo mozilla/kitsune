@@ -4,6 +4,7 @@
 {% from "includes/common_macros.html" import content_editor with context %}
 {% from "wiki/includes/flag_form.html" import flag_form with context %}
 {% from "questions/includes/questions.html" import troubleshooting_info %}
+{% from "questions/includes/macros.html" import mark_spam_form, unmark_spam_form with context %}
 
 {% set classes = 'answers' %}
 
@@ -90,6 +91,13 @@
               <span class="last-answer-date">
                 {{ question.last_answer.created|timesince }}
               </span>
+            </li>
+          {% endif %}
+          {% if question.is_spam %}
+            <li class="marked-as-spam">
+              {% trans marked_by=question.marked_as_spam_by, marked_time=question.marked_as_spam %}
+                Marked as spam by {{ marked_by }} at {{ marked_time }}
+              {% endtrans %}
             </li>
           {% endif %}
         </ul>
@@ -270,6 +278,9 @@
                     {% if question.metadata.ff_version %}
                       <li class="ff">Firefox {{ question.metadata.ff_version }}</li>
                     {% endif %}
+                    {% if question.metadata.device %}
+                      <li>{{ _('Device:') }} {{ question.metadata.device }}</li>
+                    {% endif %}
                   </ul>
                 {% endblock %}
                 <div><a id="show-more-details" href="#more-system-details">{{ _('More system details') }}</a></div>
@@ -369,6 +380,14 @@
         </li>
       </ul>
 
+      {% if user.has_perm('flagit.can_moderate') %}
+        {% if question.is_spam %}
+          {{ unmark_spam_form(question_id=question.id) }}
+        {% else %}
+          {{ mark_spam_form(question_id=question.id) }}
+        {% endif %}
+      {% endif %}
+
       {% if question.allows_flag(user) %}
         {{ flag_form(url('questions.flag', question.id)) }}
       {% endif %}
@@ -387,7 +406,12 @@
   <div id="question-reply" class="grid_9 suffix_3">
     {% if request.limited %}
       <div class="warning-box">
-        {{ _('You have exceeded the number of answers that can be posted in a given amount of time. Please try again shortly.') }}
+        {% trans url=url('forums.threads', 'contributors') %}
+          In order to prevent spam, we are limiting the number of answers that
+          can be posted within a short period of time. If you want to post more
+          please create a post on the <a href="{{ url }}">contributors
+          forum</a> requesting that you be white-listed.
+        {% endtrans %}
       </div>
     {% endif %}
 

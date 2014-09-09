@@ -5,7 +5,8 @@
 <div class="content">{{ object.content_object.content_parsed }}</div>
 <h3>{{ _('Created:') }}</h3>
 <p class="created">
-  {{ date_by_user(object.content_object.created, object.content_object.creator) }}
+  {% set author = object.content_object.author if object.content_object.author else object.content_object.creator %}
+  {{ date_by_user(object.content_object.created, author) }}
 </p>
 {% if object.content_object.updated_by %}
   <h3>{{ _('Updated:') }}</h3>

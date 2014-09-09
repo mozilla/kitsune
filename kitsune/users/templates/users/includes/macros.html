@@ -48,7 +48,7 @@
   </div>
 {%- endmacro %}
 
-{% macro register_form(form, csrf, action=None, contributor=False) -%}
+{% macro register_form(form, csrf, action=None, contributor=False, aaq=False) -%}
   {{ errorlist(form) }}
   <form method="post" action="{{ action if action != None else
                                    url('users.register') }}">
@@ -73,7 +73,10 @@
     </ul>
     <div class="submit">
       <input type="hidden" name="register" value="1">
-      <button type="submit" class="btn btn-submit" {% if contributor %}data-ga-click="_trackEvent | Register Click | Contributor"{% endif %}>
+      {% set ga_data = [] %}
+      {% if aaq %}{% do ga_data.append('_trackEvent | Ask A Question Flow | step 2 link') %}{% endif %}
+      {% if contributor %}{% do ga_data.append('_trackEvent | Register Click | Contributor') %}{% endif %}
+      <button type="submit" class="btn btn-submit" {% if contributor or aaq %}data-ga-click="{{ ', '.join(ga_data) }}"{% endif %}>
         {{ _('Register') }}
       </button>
     </div>
@@ -90,6 +93,9 @@
     </li>
     <li {{ selected|class_selected('edit-settings') }}>
       <a href="{{ url('users.edit_settings') }}">{{ _('Edit settings') }}</a>
+    </li>
+    <li {{ selected|class_selected('edit-watches') }}>
+      <a href="{{ url('users.edit_watch_list') }}">{{ _('Manage watch list') }}</a>
     </li>
   </ul>
 {%- endmacro %}

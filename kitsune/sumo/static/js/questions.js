@@ -13,6 +13,12 @@
 
         if($body.is('.new-question')) {
             initNewQuestion();
+
+            if (window.location.search.indexOf('step=aaq-register') > -1) {
+                _gaq.push(['_trackEvent', 'Ask A Question Flow', 'step 1 page']);
+            } else if (window.location.search.indexOf('step=aaq-question') > -1) {
+                _gaq.push(['_trackEvent', 'Ask A Question Flow', 'step 2 page']);
+            }
         }
 
         if($body.is('.questions')) {
@@ -21,6 +27,10 @@
             $('#flag-filter input[type="checkbox"]').on('click', function() {
                 window.location = $(this).data('url');
             });
+
+            if (window.location.pathname.indexOf('questions/new/confirm') > -1) {
+                _gaq.push(['_trackEvent', 'Ask A Question Flow', 'step 3 confirm page']);
+            }
         }
 
         if($body.is('.answers')) {
@@ -76,8 +86,8 @@
      */
     function initNewQuestion() {
         var $questionForm = $('#question-form');
-        new AAQSystemInfo($questionForm);
-        hideDetails($questionForm);
+        var aaq = new AAQSystemInfo($questionForm);
+        hideDetails($questionForm, aaq);
     }
 
     function isLoggedIn() {
@@ -118,28 +128,20 @@
 
     // Hide the browser/system details for users on FF with js enabled
     // and are submitting a question for FF on desktop.
-    function hideDetails($form) {
-        if($.browser.mozilla && isDesktopFF()) {
-            $form.find('ol').addClass('hide-details');
-            $form.find('a.show, a.hide').click(function(ev) {
-                ev.preventDefault();
-                $(this).closest('li')
-                    .toggleClass('show')
-                    .toggleClass('hide')
-                    .closest('ol')
-                        .toggleClass('show-details');
-            });
-        }
+    function hideDetails($form, aaq) {
+        $form.find('ul').addClass('hide-details');
+        $form.find('a.show, a.hide').click(function(ev) {
+            ev.preventDefault();
+            $(this).closest('li')
+                .toggleClass('show')
+                .toggleClass('hide')
+                .closest('ul')
+                    .toggleClass('show-details');
+        });
 
-        if(!isDesktopFF()) {
+        if (!aaq.isDesktopFF() && !aaq.isMobileFF() && !aaq.isFirefoxOS()) {
             $form.find('li.system-details-info').hide();
         }
-    }
-
-    // Is the question for FF on the desktop?
-    // TODO: Stop duplicating with AAQSystemInfo.isDesktopFF.
-    function isDesktopFF() {
-        return document.location.pathname.indexOf('desktop') >= 0;
     }
 
     /*

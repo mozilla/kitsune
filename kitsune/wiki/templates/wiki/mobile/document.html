@@ -36,6 +36,15 @@
     {{ document_messages(document, redirected_from) }}
     {{ document_content(document, fallback_reason, request, settings) }}
 
+    {% set share_link = document.share_link or (document.parent and document.parent.share_link) %}
+    {% if share_link %}
+      <p>
+        <br/>
+        {% set link='<a href="' + share_link + '">' + share_link + '</a>' %}
+        {{ _('Share this article: {link}')|f(link=link)|safe }}
+      </p>
+    {% endif %}
+
     {% if not waffle.switch('hide-voting') %}
       {{ vote_form(document, source='mobile') }}
     {% endif %}

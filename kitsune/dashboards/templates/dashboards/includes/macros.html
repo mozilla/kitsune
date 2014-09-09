@@ -206,27 +206,33 @@
 {% endmacro %}
 
 {% macro product_choice_list(products, current, url_) %}
-  <div class="product-picker">
-    <div class="cf" data-ui-type="carousel" data-left="pp-left" data-right="pp-right">
-      <ul>
-        <li {{ current|class_selected(None) }}>
-          <a href="{{ url_ }}">
-            <img src="{{ STATIC_URL }}img/blank.png" class="logo-sprite sumo">
-            <span>{{ _('All Products') }}</span>
+  <div class="product-picker-dd">
+    <div class="current">
+      <span class="dd-btn"><img src="{{ STATIC_URL }}img/dd-arrow.png" /></span>
+      {% if current == None %}
+        <img src="{{ STATIC_URL }}img/blank.png" class="logo-sprite small sumo">
+        <span>{{ _('All Products') }}</span>
+      {% else %}
+        <img src="{{ STATIC_URL }}img/blank.png" class="logo-sprite small" style="{% if current.image %}background-image: url({{ current.sprite_url(retina=False) }}); background-position: -50px -{{ 50 + (current.image_offset * 148) }}px;{% else %}background-image: url({{ current.image_url }}){% endif %}" alt="" />
+        <span>{{ _(current.title, 'DB: products.Product.title') }}</span>
+      {% endif %}
+    </div>
+    <ul>
+      <li {{ current|class_selected(None) }}>
+        <a href="{{ url_ }}">
+          <img src="{{ STATIC_URL }}img/blank.png" class="logo-sprite small sumo">
+          <span>{{ _('All Products') }}</span>
+        </a>
+      </li>
+      {% for p in products %}
+        <li {{ current|class_selected(p) }}>
+          <a href="{{ url_|urlparams(product=p.slug) }}">
+            <img src="{{ STATIC_URL }}img/blank.png" class="logo-sprite small" style="{% if p.image %}background-image: url({{ p.sprite_url(retina=False) }}); background-position: -50px -{{ 50 + (p.image_offset * 148) }}px;{% else %}background-image: url({{ p.image_url }}){% endif %}" alt="" />
+            <span>{{ _(p.title, 'DB: products.Product.title') }}</span>
           </a>
         </li>
-        {% for p in products %}
-          <li {{ current|class_selected(p) }}>
-            <a href="{{ url_|urlparams(product=p.slug) }}">
-              <img src="{{ STATIC_URL }}img/blank.png" class="logo-sprite" style="{% if p.image %}background-image: url({{ p.sprite_url() }}); background-position: -100px -{{ 100 + (p.image_offset * 296) }}px;{% else %}background-image: url({{ p.image_url }}){% endif %}" alt="" />
-              <span>{{ _(p.title, 'DB: products.Product.title') }}</span>
-            </a>
-          </li>
-        {% endfor %}
-      </ul>
-    </div>
-    <span class="left" id="pp-left"></span>
-    <span class="right" id="pp-right"></span>
+      {% endfor %}
+    </ul>
   </div>
 {% endmacro %}
 

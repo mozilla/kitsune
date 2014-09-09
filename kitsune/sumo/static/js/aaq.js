@@ -22,7 +22,8 @@ AAQSystemInfo.prototype = {
         // Only guess at OS, FF version, plugins if we are on the desktop
         // asking a firefox desktop question (or s/desktop/mobile/).
         if((BrowserDetect.browser === 'fx' && self.isDesktopFF()) ||
-           (BrowserDetect.browser === 'm' && self.isMobileFF())) {
+           (BrowserDetect.browser === 'm' && self.isMobileFF()) ||
+           (BrowserDetect.browser === 'fxos' && self.isFirefoxOS())) {
             $input = $form.find('input[name="os"]');
             if(!$input.val()) {
                $input.val(self.getOS());
@@ -30,6 +31,10 @@ AAQSystemInfo.prototype = {
             $input = $form.find('input[name="ff_version"]');
             if(!$input.val()) {
                 $input.val(self.getFirefoxVersion());
+            }
+            $input = $form.find('input[name="device"]');
+            if(!$input.val()) {
+                $input.val(self.getDevice());
             }
             $input = $form.find('textarea[name="plugins"]');
             if(!$input.val()) {
@@ -59,6 +64,10 @@ AAQSystemInfo.prototype = {
     },
     getOS: function() {
         // Returns a string representing the user's operating system
+        if (BrowserDetect.OS === 'fxos') {
+            return 'Firefox OS ' + BrowserDetect.version;
+        }
+
         var os = [
                 ['Android', /Android/i],
                 ['Maemo', /Maemo/i],
@@ -122,6 +131,14 @@ AAQSystemInfo.prototype = {
         }
         return '';
     },
+    getDevice: function() {
+        // Returns a string with the device being used
+        var device = /\(Mobile; (.+); .+\)/i.exec(navigator.userAgent);
+        if (device) {
+            return device[1];
+        }
+        return '';
+    },
     isDesktopFF: function() {
         // Is the question for FF on the desktop?
         return document.location.pathname.indexOf('desktop') >= 0;
@@ -129,6 +146,10 @@ AAQSystemInfo.prototype = {
     isMobileFF: function() {
         // Is the question for FF on mobile?
         return document.location.pathname.indexOf('mobile') >= 0;
+    },
+    isFirefoxOS: function() {
+        // Is the question for Firefox OS?
+        return document.location.pathname.indexOf('firefox-os') >= 0;
     },
     getTroubleshootingInfo: function(addEvent) {
         var self = this;

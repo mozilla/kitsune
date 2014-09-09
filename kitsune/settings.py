@@ -127,6 +127,7 @@ SUMO_LANGUAGES = (
     'pt-PT',
     'ro',
     'ru',
+    'si',
     'sk',
     'sl',
     'sq',
@@ -157,18 +158,26 @@ AAQ_LANGUAGES = (
 # These languages won't show a warning about FxOS when contributors try
 # to add content.
 FXOS_LANGUAGES = [
+    'bn-BD',
+    'bn-IN',
     'cs',
+    'de',
     'el',
     'en-US',
     'es',
+    'fr',
+    'hi-IN',
     'hr',
     'hu',
+    'it',
     'nl',
     'pl',
     'pt-BR',
     'pt-PT',
     'ro',
     'ru',
+    'sr',
+    'ta',
     'sr-Cyrl',
     'tr',
 ]
@@ -226,7 +235,6 @@ NON_SUPPORTED_LOCALES = {
     'rm': None,
     'rw': None,
     'sah': None,
-    'si': None,
     'son': None,
     'sv-SE': 'sv',
     'sw': None,
@@ -349,6 +357,7 @@ SUPPORTED_NONLOCALES = (
     'robots.txt',
     'services',
     'wafflejs',
+    'geoip-suggestion',
 )
 
 # Make this unique, and don't share it with anybody.
@@ -386,6 +395,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 
     'kitsune.sumo.context_processors.global_settings',
     'kitsune.sumo.context_processors.i18n',
+    'kitsune.sumo.context_processors.geoip_cache_detector',
     'jingo_minify.helpers.build_ids',
     'kitsune.messages.context_processors.unread_message_count',
 )
@@ -437,7 +447,7 @@ MIDDLEWARE_CLASSES = (
     'commonware.middleware.StrictTransportMiddleware',
     'commonware.middleware.XSSProtectionHeader',
     'commonware.middleware.RobotsTagHeader',
-    'axes.middleware.FailedLoginMiddleware'
+    # 'axes.middleware.FailedLoginMiddleware'
 )
 
 # Auth
@@ -528,7 +538,7 @@ INSTALLED_APPS = (
     'kitsune.products',
     'rest_framework',
     'statici18n',
-    'axes',
+    # 'axes',
 
     # App for Sentry:
     'raven.contrib.django',
@@ -550,7 +560,8 @@ TEST_RUNNER = 'kitsune.sumo.tests.TestSuiteRunner'
 def JINJA_CONFIG():
     from django.conf import settings
     config = {'extensions': ['tower.template.i18n', 'caching.ext.cache',
-                             'jinja2.ext.autoescape', 'jinja2.ext.with_'],
+                             'jinja2.ext.autoescape', 'jinja2.ext.with_',
+                             'jinja2.ext.do'],
               'finalize': lambda x: x if x is not None else ''}
 
     if not settings.DEBUG:
@@ -615,6 +626,7 @@ DOMAIN_METHODS = {
 STANDALONE_DOMAINS = [
     TEXT_DOMAIN,
     'javascript',
+    'yaocho',
 ]
 
 STATICI18N_DOMAIN = 'javascript'
@@ -627,6 +639,8 @@ TOWER_ADD_HEADERS = True
 JAVA_BIN = '/usr/bin/java'
 
 LESS_BIN = 'lessc'
+
+NUNJUCKS_PRECOMPILE_BIN = 'nunjucks-precompile'
 
 #
 # Sessions
@@ -642,7 +656,11 @@ SESSION_SERIALIZER = 'django.contrib.sessions.serializers.PickleSerializer'
 # Connection information for Elastic
 ES_URLS = ['http://127.0.0.1:9200']
 # Indexes for reading
-ES_INDEXES = {'default': 'sumo-20130913'}
+ES_INDEXES = {
+    'default': 'sumo-20130913',
+    'non-critical': 'sumo-non-critical',
+    'metrics': 'sumo-metrics',
+}
 # Indexes for indexing--set this to ES_INDEXES if you want to read to
 # and write to the same index.
 ES_WRITE_INDEXES = ES_INDEXES
@@ -661,7 +679,6 @@ SEARCH_RESULTS_PER_PAGE = 10
 
 # Search default settings
 SEARCH_DEFAULT_CATEGORIES = (10, 20,)
-SEARCH_DEFAULT_MAX_QUESTION_AGE = 180 * 24 * 60 * 60  # seconds
 
 # IA default settings
 IA_DEFAULT_CATEGORIES = (10, 20,)
@@ -788,13 +805,11 @@ CC_ALLOW_REMOVE = True  # Allow users to hide tweets?
 CC_TOP_CONTRIB_CACHE_KEY = 'sumo-cc-top-contrib-stats'
 CC_TOP_CONTRIB_SORT = '1w'
 CC_TOP_CONTRIB_LIMIT = 10
-
 CC_STATS_CACHE_TIMEOUT = 24 * 60 * 60  # 24 hours
 CC_STATS_WARNING = 30 * 60 * 60  # Warn if JSON data is older than 30 hours
-CC_IGNORE_USERS = ['fx4status']  # User names whose tweets to ignore.
 CC_REPLIES_GOAL = 175  # Goal # of replies in 24 hours.
 CC_TWEETS_DAYS = 7  # Limit tweets to those from the last 7 days.
-CC_BANNED_USERS = ['lucasbytegenius']  # Twitter handles banned from AoA
+
 # If any of these words show up in a tweet, it probably isn't
 # actionable, so don't add it to the AoA.
 CC_WORD_BLACKLIST = [
@@ -878,6 +893,9 @@ CC_WORD_BLACKLIST = [
     '#NoMasComercialMovistarFirefox',
 ]
 
+BITLY_API_URL = 'http://api.bitly.com/v3/shorten?callback=?'
+BITLY_LOGIN = None
+BITLY_API_KEY = None
 
 TWITTER_COOKIE_SECURE = True
 TWITTER_CONSUMER_KEY = ''
@@ -953,3 +971,6 @@ AXES_REVERSE_PROXY_HEADER = 'HTTP_X_CLUSTER_CLIENT_IP'
 
 # Set this to True to wrap each HTTP request in a transaction on this database.
 ATOMIC_REQUESTS = True
+
+# XXX Fix this when Bug 1059545 is fixed
+CC_IGNORE_USERS = []

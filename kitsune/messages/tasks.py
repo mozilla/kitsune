@@ -8,6 +8,7 @@ from celery import task
 from tower import ugettext as _
 
 from kitsune.messages.models import InboxMessage
+from kitsune.sumo.decorators import timeit
 from kitsune.sumo.email_utils import make_mail, safe_translation, send_messages
 
 
@@ -15,6 +16,7 @@ log = logging.getLogger('k.task')
 
 
 @task()
+@timeit
 def email_private_message(inbox_message_id):
     """Send notification of a new private message."""
     inbox_message = InboxMessage.objects.get(id=inbox_message_id)
@@ -24,15 +26,19 @@ def email_private_message(inbox_message_id):
 
     @safe_translation
     def _send_mail(locale):
+        # Avoid circular import issues
+        from kitsune.users.helpers import display_name
+
         subject = _(u'[SUMO] You have a new private message from [{sender}]')
-        subject = subject.format(sender=inbox_message.sender.username)
+        subject = subject.format(
+            sender=display_name(inbox_message.sender))
 
         msg_url = reverse('messages.read', kwargs={'msgid': inbox_message.id})
         settings_url = reverse('users.edit_settings')
 
         from kitsune.sumo.helpers import add_utm
         context = {
-            'sender': inbox_message.sender.username,
+            'sender': inbox_message.sender,
             'message': inbox_message.message,
             'message_html': inbox_message.content_parsed,
             'message_url': add_utm(msg_url, 'messages-new'),

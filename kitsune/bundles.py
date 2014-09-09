@@ -6,6 +6,7 @@ MINIFY_BUNDLES = {
             'less/main.less',
         ),
         'community': (
+            'less/wiki-content.less',
             'less/community.less',
             'less/select.less',
         ),
@@ -53,10 +54,12 @@ MINIFY_BUNDLES = {
             'css/users.autocomplete.css',
             'css/users.list.css',
             'less/wiki.less',
+            'less/wiki-content.less',
             'css/screencast.css',
         ),
         'mobile/wiki': (
             'less/mobile/wiki.less',
+            'less/wiki-content.less',
         ),
         'home': (
             'less/home.less',
@@ -141,6 +144,7 @@ MINIFY_BUNDLES = {
             'js/main.js',
             'js/format.js',
             'js/libs/modernizr-2.6.1.js',
+            'js/geoip-locale.js',
             'js/ui.js',
             'js/analytics.js',
             'js/surveygizmo.js',
@@ -188,6 +192,10 @@ MINIFY_BUNDLES = {
         'mobile/questions': (
             'js/mobile/questions.js',
             'js/questions.metrics.js',
+        ),
+        'mobile/aaq': (
+            'js/aaq.js',
+            'js/mobile/aaq.js',
         ),
         'products': (
             'js/products.js',

@@ -1,11 +1,11 @@
 {% from "includes/unsubscribe_text.ltxt" import unsubscribe_text with context %}
 {% autoescape false %}
 {# L10n: This is an email. Whitespace matters! #}
-{% if username %}{{ _('Hi {username},')|f(username=username) }}
+{% if display_name(to_user) %}{{ _('Hi {username},')|f(username=display_name(to_user)) }}
 
 {% endif %}
 {# L10n: This is an email. Whitespace matters! #}
-{% trans %}
+{% trans answerer=display_name(answerer) %}
 We just wanted to let you know that {{ answerer }}
 has found a solution to a Firefox question that you're following.
 {% endtrans %}
@@ -14,7 +14,7 @@ has found a solution to a Firefox question that you're following.
 {{ _('The question:') }}
 {{ question_title }}
 
-{{ _('was marked as solved by its asker, {asker}.')|f(asker=asker) }}
+{{ _('was marked as solved by its asker, {asker}.')|f(asker=display_name(asker)) }}
 
 {{ _('You can view the solution using the link below.') }}
 
@@ -27,7 +27,7 @@ answer.
 
 https://{{ host }}{{ solution_url }}
 
-{% trans %}
+{% trans answerer=display_name(answerer) %}
 Did you know that {{ answerer }} is a Firefox user
 just like you? Get started helping other Firefox users by
 browsing questions at

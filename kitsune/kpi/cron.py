@@ -16,7 +16,8 @@ from kitsune.kpi.models import (
     SEARCH_CLICKS_METRIC_CODE, EXIT_SURVEY_YES_CODE, EXIT_SURVEY_NO_CODE,
     EXIT_SURVEY_DONT_KNOW_CODE)
 from kitsune.kpi.surveygizmo_utils import (
-    get_email_addresses, add_email_to_campaign, get_exit_survey_results)
+    get_email_addresses, add_email_to_campaign, get_exit_survey_results,
+    SURVEYS)
 from kitsune.questions.models import Answer
 from kitsune.sumo import googleanalytics
 from kitsune.wiki.config import TYPO_SIGNIFICANCE, MEDIUM_SIGNIFICANCE
@@ -26,6 +27,10 @@ from kitsune.wiki.models import Revision
 @cronjobs.register
 def update_visitors_metric():
     """Get new visitor data from Google Analytics and save."""
+    if settings.STAGE:
+        # Let's be nice to GA and skip on stage.
+        return
+
     # Start updating the day after the last updated.
     latest_metric = _get_latest_metric(VISITORS_METRIC_CODE)
     if latest_metric is not None:
@@ -77,6 +82,10 @@ def update_l10n_metric():
     * There are only new revisions with TYPO_SIGNIFICANCE not translated
     * There is only one revision of MEDIUM_SIGNIFICANCE not translated
     """
+    if settings.STAGE:
+        # Let's be nice to GA and skip on stage.
+        return
+
     # Get the top 60 visited articles. We will only use the top 50
     # but a handful aren't localizable so we get some extras.
     top_60_docs = _get_top_docs(60)
@@ -116,6 +125,10 @@ def update_l10n_metric():
 @cronjobs.register
 def update_contributor_metrics(day=None):
     """Calculate and save contributor metrics."""
+    if settings.STAGE:
+        # Let's be nice to the admin node and skip on stage.
+        return
+
     update_support_forum_contributors_metric(day)
     update_kb_contributors_metric(day)
     update_aoa_contributors_metric(day)
@@ -281,6 +294,10 @@ def update_aoa_contributors_metric(day=None):
 @cronjobs.register
 def update_search_ctr_metric():
     """Get new search CTR data from Google Analytics and save."""
+    if settings.STAGE:
+        # Let's be nice to GA and skip on stage.
+        return
+
     # Start updating the day after the last updated.
     latest_metric = _get_latest_metric(SEARCH_CLICKS_METRIC_CODE)
     if latest_metric is not None:
@@ -403,11 +420,12 @@ def process_exit_surveys():
     startdate = date.today() - timedelta(days=2)
     enddate = date.today() - timedelta(days=1)
 
-    emails = get_email_addresses(startdate, enddate)
-    for email in emails:
-        add_email_to_campaign(email)
+    for survey in SURVEYS.keys():
+        emails = get_email_addresses(survey, startdate, enddate)
+        for email in emails:
+            add_email_to_campaign(survey, email)
 
-    print '%s emails processed...' % len(emails)
+        print '%s emails processed for %s...' % (len(emails), survey)
 
 
 def _process_exit_survey_results():
@@ -429,7 +447,7 @@ def _process_exit_survey_results():
 
     while day < today:
         # Get the aggregated results.
-        results = get_exit_survey_results(day)
+        results = get_exit_survey_results('general', day)
 
         # Store them.
         Metric.objects.create(

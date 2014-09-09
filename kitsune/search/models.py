@@ -67,12 +67,12 @@ class SearchMixin(object):
     def index_later(self):
         """Register myself to be indexed at the end of the request."""
         _local_tasks().add((index_task.delay,
-                           (self.get_mapping_type(), (self.id,))))
+                           (self.get_mapping_type(), (self.pk,))))
 
     def unindex_later(self):
         """Register myself to be unindexed at the end of the request."""
         _local_tasks().add((unindex_task.delay,
-                           (self.get_mapping_type(), (self.id,))))
+                           (self.get_mapping_type(), (self.pk,))))
 
 
 class SearchMappingType(MappingType, Indexable):
@@ -119,8 +119,8 @@ class SearchMappingType(MappingType, Indexable):
         # through them one at a time in a way that doesn't pull all
         # the data into memory all at once. So we iterate through ids
         # and pull objects one at a time.
-        return cls.get_model().objects.order_by('id').values_list(
-            'id', flat=True)
+        return cls.get_model().objects.order_by('pk').values_list(
+            'pk', flat=True)
 
     @classmethod
     def index(cls, *args, **kwargs):

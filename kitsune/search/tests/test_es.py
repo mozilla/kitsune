@@ -189,6 +189,23 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
         content = json.loads(response.content)
         eq_(content['total'], 2)
 
+        # Archive the article and question. They should no longer appear
+        # in default search results.
+        ques.is_archived = True
+        ques.save()
+        doc.is_archived = True
+        doc.save()
+
+        self.refresh()
+
+        response = self.client.get(reverse('search'), {
+            'q': 'audio', 'format': 'json'})
+
+        eq_(200, response.status_code)
+
+        content = json.loads(response.content)
+        eq_(content['total'], 0)
+
     def test_advanced_search_for_wiki_no_query(self):
         """Tests advanced search with no query"""
         doc = document(locale=u'en-US', category=10, save=True)
@@ -580,31 +597,6 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
         eq_([q1.get_absolute_url()], [r['url'] for r in results])
 
         qs['created'] = constants.INTERVAL_AFTER
-        response = self.client.get(reverse('search'), qs)
-        results = json.loads(response.content)['results']
-        eq_([q2.get_absolute_url()], [r['url'] for r in results])
-
-    def test_created_default(self):
-        """Questions older than 180 days aren't returned by default."""
-        max_age_days = settings.SEARCH_DEFAULT_MAX_QUESTION_AGE / 60 / 60 / 24
-        # Older than max_age_days:
-        created = datetime.now() - timedelta(days=max_age_days + 1)
-        q1 = question(title=u'q1 audio', created=created, save=True)
-        q1.tags.add(u'desktop')
-        ans = answer(question=q1, save=True)
-        answervote(answer=ans, helpful=True, save=True)
-
-        # Younger than max_age_days:
-        created = datetime.now() - timedelta(days=max_age_days - 1)
-        q2 = question(title=u'q2 audio', created=created, save=True)
-        q2.tags.add(u'desktop')
-        ans = answer(question=q2, save=True)
-        answervote(answer=ans, helpful=True, save=True)
-
-        self.refresh()
-
-        qs = {'format': 'json', 'q': 'audio'}
-
         response = self.client.get(reverse('search'), qs)
         results = json.loads(response.content)['results']
         eq_([q2.get_absolute_url()], [r['url'] for r in results])
@@ -1048,30 +1040,32 @@ class TestMappings(unittest.TestCase):
         # everything is fine. If it fails, then it means things are
         # not fine. Not fine? Yeah, it means that there are two fields
         # with the same name, but different types in the
-        # mappings. That doesn't work in ES.
+        # mappings that share an index. That doesn't work in ES.
 
         # Doing it as a test seemed like a good idea since
         # it's likely to catch epic problems, but isn't in the runtime
         # code.
 
-        merged_mapping = {}
+        # Verify mappings that share the same index don't conflict
+        for index in es_utils.all_read_indexes():
+            merged_mapping = {}
 
-        for cls_name, mapping in es_utils.get_all_mappings().items():
-            mapping = mapping['properties']
+            for cls_name, mapping in es_utils.get_mappings(index).items():
+                mapping = mapping['properties']
 
-            for key, val in mapping.items():
-                if key not in merged_mapping:
-                    merged_mapping[key] = (val, [cls_name])
-                    continue
+                for key, val in mapping.items():
+                    if key not in merged_mapping:
+                        merged_mapping[key] = (val, [cls_name])
+                        continue
 
-                # FIXME - We're comparing two dicts here. This might
-                # not work for non-trivial dicts.
-                if merged_mapping[key][0] != val:
-                    raise es_utils.MappingMergeError(
-                        '%s key different for %s and %s' %
-                        (key, cls_name, merged_mapping[key][1]))
+                    # FIXME - We're comparing two dicts here. This might
+                    # not work for non-trivial dicts.
+                    if merged_mapping[key][0] != val:
+                        raise es_utils.MappingMergeError(
+                            '%s key different for %s and %s' %
+                            (key, cls_name, merged_mapping[key][1]))
 
-                merged_mapping[key][1].append(cls_name)
+                    merged_mapping[key][1].append(cls_name)
 
         # If we get here, then we're fine.
 
@@ -1121,16 +1115,16 @@ class TestAnalyzers(ElasticTestCase):
     def test_query_analyzer_upgrader(self):
         analyzer = 'snowball-english-synonyms'
         before = {
-            'document_title__text': 'foo',
-            'document_locale__text': 'bar',
-            'document_title__text_phrase': 'baz',
-            'document_locale__text_phrase': 'qux'
+            'document_title__match': 'foo',
+            'document_locale__match': 'bar',
+            'document_title__match_phrase': 'baz',
+            'document_locale__match_phrase': 'qux'
         }
         expected = {
-            'document_title__text_analyzer': ('foo', analyzer),
-            'document_locale__text': 'bar',
-            'document_title__text_phrase_analyzer': ('baz', analyzer),
-            'document_locale__text_phrase': 'qux',
+            'document_title__match_analyzer': ('foo', analyzer),
+            'document_locale__match': 'bar',
+            'document_title__match_phrase_analyzer': ('baz', analyzer),
+            'document_locale__match_phrase': 'qux',
         }
         actual = es_utils.es_query_with_analyzer(before, 'en-US')
         eq_(actual, expected)

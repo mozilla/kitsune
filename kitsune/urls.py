@@ -48,6 +48,10 @@ urlpatterns = patterns(
     # Javascript translations.
     url(r'^jsi18n/.*$', cache_page(60 * 60 * 24 * 365)(javascript_catalog),
         {'domain': 'javascript', 'packages': ['kitsune']}, name='jsi18n'),
+    # Yaocho translations. These don't need cached because Yaocho downloads
+    # them in a build step, not on the client.
+    url(r'^jsi18n-yaocho/.*$', javascript_catalog,
+        {'domain': 'yaocho', 'packages': ['kitsune']}, name='jsi18n-yaocho'),
     # JavaScript Waffle.
     url(r'^wafflejs$', wafflejs, name='wafflejs'),
 
@@ -61,6 +65,12 @@ urlpatterns = patterns(
 
     # Services and sundry.
     (r'', include('kitsune.sumo.urls')),
+
+    # APIs
+    (r'^api/1/kb/', include('kitsune.wiki.urls_api')),
+    (r'^api/1/products/', include('kitsune.products.urls_api')),
+    (r'^api/1/customercare/', include('kitsune.customercare.urls_api')),
+    (r'^api/1/gallery/', include('kitsune.gallery.urls_api')),
 )
 
 # Handle 404 and 500 errors
@@ -71,6 +81,6 @@ if settings.DEBUG:
     media_url = settings.MEDIA_URL.lstrip('/').rstrip('/')
     urlpatterns += patterns(
         '',
-        (r'^%s/(?P<path>.*)$' % media_url, 'django.views.static.serve',
+        (r'^%s/(?P<path>.*)$' % media_url, 'kitsune.sumo.views.serve_cors',
          {'document_root': settings.MEDIA_ROOT}),
     )

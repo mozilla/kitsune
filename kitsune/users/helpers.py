@@ -2,6 +2,7 @@ import hashlib
 import urllib
 
 from django.conf import settings
+from django.utils.encoding import force_str
 
 from jinja2 import escape, Markup
 from jingo import register
@@ -17,7 +18,7 @@ def profile_url(user, edit=False):
     """Return a URL to the user's profile."""
     if edit:
         return reverse('users.edit_profile', args=[])
-    return reverse('users.profile', args=[user.pk])
+    return reverse('users.profile', args=[user.username])
 
 
 @register.function
@@ -35,12 +36,18 @@ def profile_avatar(user, size=48):
         avatar = 'https:%s' % avatar
 
     if user and hasattr(user, 'email'):
-        email_hash = hashlib.md5(user.email.lower()).hexdigest()
+        email_hash = hashlib.md5(force_str(user.email.lower())).hexdigest()
     else:
         email_hash = '00000000000000000000000000000000'
 
-    return 'https://secure.gravatar.com/avatar/%s?s=%s&d=%s' % (
-        email_hash, size, urllib.quote(avatar))
+    url = 'https://secure.gravatar.com/avatar/%s?s=%s' % (email_hash, size)
+
+    # If the url doesn't start with http (local dev), don't pass it to
+    # to gravatar because it can't use it.
+    if avatar.startswith('http'):
+        url = url + '&d=%s' % urllib.quote(avatar)
+
+    return url
 
 
 @register.function
@@ -48,9 +55,9 @@ def display_name(user):
     """Return a display name if set, else the username."""
     try:  # Also mostly for tests.
         profile = user.get_profile()
-    except Profile.DoesNotExist:
+    except (Profile.DoesNotExist, AttributeError):
         return user.username
-    return profile.name if profile and profile.name else user.username
+    return profile.display_name if profile else user.username
 
 
 @register.filter

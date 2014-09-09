@@ -76,6 +76,11 @@ products = SortedDict([
                 'topic': 'websites',
                 'tags': ['websites'],
             }),
+            ('sync', {
+                'name': _lazy(u'Firefox Sync'),
+                'topic': 'sync',
+                'tags': ['sync'],
+            }),
             ('other', {
                 'name': _lazy(u'Other'),
                 'topic': 'other',
@@ -138,6 +143,11 @@ products = SortedDict([
                 'topic': 'websites',
                 'tags': ['websites'],
             }),
+            ('sync', {
+                'name': _lazy(u'Firefox Sync'),
+                'topic': 'sync',
+                'tags': ['sync'],
+            }),
             ('other', {
                 'name': _lazy(u'Other'),
                 'topic': 'other',
@@ -148,7 +158,7 @@ products = SortedDict([
     ('firefox-os', {
         'name': _lazy(u'Firefox OS'),
         'subtitle': '',
-        'extra_fields': [],
+        'extra_fields': ['device', 'os'],
         'tags': [],
         'products': ['firefox-os'],
         'categories': SortedDict([

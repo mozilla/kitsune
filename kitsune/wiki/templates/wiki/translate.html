@@ -205,6 +205,10 @@
       {% endif %}
     </article>
   </div>
+
+  <script type="application/json" class="showfor-data">
+    {{ showfor_data(parent.get_products()) }}
+  </script>
 {% endblock %}
 
 {% block side_promos %}{% endblock %}

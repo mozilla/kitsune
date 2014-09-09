@@ -152,7 +152,10 @@ var BrowserDetect = {
         18.0: 1.0,
         18.1: 1.1,
         26.0: 1.2,
-        28.0: 1.3
+        28.0: 1.3,
+        30.0: 1.4,
+        32.0: 2.0,
+        34.0: 2.1
     }
 };
 BrowserDetect.init();  // TODO: Do this lazily.

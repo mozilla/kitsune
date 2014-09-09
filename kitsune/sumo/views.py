@@ -20,11 +20,14 @@ from celery.messaging import establish_connection
 from mobility.decorators import mobile_template
 from PIL import Image
 from session_csrf import anonymous_csrf
+from tower import ugettext as _
 
+from kitsune.lib.sumo_locales import LOCALES
 from kitsune.search import es_utils
+from kitsune.sumo.decorators import cors_enabled
 from kitsune.sumo.redis_utils import redis_client, RedisError
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.sumo.utils import get_next_url
+from kitsune.sumo.utils import get_next_url, rabbitmq_queue_size, uselocale
 from kitsune.users.forms import AuthenticationForm
 
 
@@ -38,6 +41,34 @@ def locales(request, template):
 
     return render(request, template, dict(
         next_url=get_next_url(request) or reverse('home')))
+
+
+def geoip_suggestion(request):
+    """
+    Ajax view to return the localized text for GeoIP locale change suggestion.
+
+    Takes one parameter from the querystring:
+
+        * locales - a form encoded list of locales to translate to.
+
+    Example url: /localize?locales[]=es&locales[]=en-US
+    """
+    locales = request.GET.getlist('locales[]')
+
+    response = {'locales': {}}
+    for locale in locales:
+        # English and native names for the language
+        response['locales'][locale] = LOCALES[locale]
+        with uselocale(locale):
+            # This is using our JS-style string formatting.
+            response[locale] = {
+                'suggestion': _('Would you like to view this page in '
+                                '%(language)s instead?'),
+                'confirm': _('Yes'),
+                'cancel': _('No'),
+            }
+
+    return HttpResponse(json.dumps(response), content_type='application/json')
 
 
 @anonymous_csrf
@@ -209,6 +240,8 @@ def monitor(request):
         rabbitmq_results.append(
             (INFO, 'Successfully connected to RabbitMQ.'))
 
+        rabbitmq_results.append(
+            (INFO, 'Queue size: %s' % rabbitmq_queue_size()))
     except (socket.error, IOError) as exc:
         rabbitmq_results.append(
             (ERROR, 'Error connecting to RabbitMQ: %s' % str(exc)))
@@ -301,3 +334,13 @@ def kitsune_qunit(request, path):
     ctx = django_qunit.views.get_suite_context(request, path)
     ctx.update(timestamp=time())
     return render(request, 'tests/qunit.html', ctx)
+
+
+@cors_enabled('*')
+def serve_cors(*args, **kwargs):
+    """A wrapper around django.views.static.serve that adds CORS headers."""
+    if not settings.DEBUG:
+        raise RuntimeError("Don't use kitsune.sumo.views.serve_cors "
+                           "in production.")
+    from django.views.static import serve
+    return serve(*args, **kwargs)

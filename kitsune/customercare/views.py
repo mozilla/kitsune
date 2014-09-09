@@ -17,7 +17,8 @@ from tower import ugettext as _, ugettext_lazy as _lazy
 from twython import TwythonAuthError, TwythonError
 
 from kitsune import twitter
-from kitsune.customercare.models import Tweet, Reply
+from kitsune.access.decorators import permission_required
+from kitsune.customercare.models import Tweet, TwitterAccount, Reply
 from kitsune.customercare.replies import get_common_replies
 from kitsune.sumo.decorators import ssl_required
 from kitsune.sumo.redis_utils import redis_client, RedisError
@@ -171,12 +172,20 @@ def landing(request):
         'contributor_stats': contributor_stats,
         'canned_responses': get_common_replies(request.LANGUAGE_CODE),
         'tweets': _get_tweets(locale=request.LANGUAGE_CODE,
+                              filter='unanswered',
                               https=request.is_secure()),
         'authed': request.user.is_authenticated() and request.twitter.authed,
         'twitter_user': twitter_user,
         'filters': FILTERS,
+        'filter': 'unanswered',
         'goal': settings.CC_REPLIES_GOAL,
         'recent_replied_count': recent_replied_count})
+
+
+@permission_required('customercare.ban_account')
+def moderate(request):
+    """Moderate banned AoA twitter handles."""
+    return render(request, 'customercare/moderate.html')
 
 
 @require_POST
@@ -191,6 +200,10 @@ def twitter_post(request):
         # L10n: the tweet needs to be a reply to another tweet.
         return HttpResponseBadRequest(_('Reply-to is empty'))
 
+    original = Tweet.objects.get(pk=reply_to_id)
+    if original.replies.count() > 0:
+        return HttpResponseBadRequest(_('Tweet has already been replied to'))
+
     content = request.POST.get('content', '')
     if len(content) == 0:
         # L10n: the tweet has no content.
@@ -202,7 +215,10 @@ def twitter_post(request):
     try:
         credentials = request.twitter.api.verify_credentials()
         username = credentials['screen_name']
-        if username in settings.CC_BANNED_USERS:
+        banned = (TwitterAccount.objects
+                  .filter(username=username, banned=True)
+                  .first())
+        if banned:
             return render(request, 'customercare/tweets.html',
                           {'tweets': []})
         result = request.twitter.api.update_status(

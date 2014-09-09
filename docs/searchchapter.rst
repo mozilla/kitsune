@@ -27,7 +27,9 @@ There's an installation guide on the Elastic Search site.
 
 http://www.elasticsearch.org/guide/reference/setup/installation.html
 
-We're currently using 0.20.5 in production. Most of us use that version.
+We're currently using `0.90.10
+<http://www.elasticsearch.org/downloads/0-90-10/>`_ in production. Most of us
+use that version.
 
 The directory you install Elastic Search in will hereafter be referred
 to as ``ELASTICDIR``.
@@ -272,21 +274,21 @@ These are the default weights that apply to all searches:
 
 wiki (aka kb)::
 
-    document_title__text           6
-    document_content__text         1
-    document_keywords__text        8
-    document_summary__text         2
+    document_title__match           6
+    document_content__match         1
+    document_keywords__match        8
+    document_summary__match         2
 
 questions (aka support forums)::
 
-    question_title__text           4
-    question_content__text         3
-    question_answer_content__text  3
+    question_title__match           4
+    question_content__match         3
+    question_answer_content__match  3
 
 forums (aka contributor forums)::
 
-    post_title__text               2
-    post_content__text             1
+    post_title__match               2
+    post_content__match             1
 
 
 Elastic Search is built on top of Lucene so the `Lucene documentation
@@ -332,7 +334,7 @@ Regular search does the following:
 5. (filter) support forum posts tagged with the product
    (e.g. "desktop")
 6. (filter) support forum posts must have an answer marked as helpful
-7. (filter) support forum posts must be from the past 180 days
+7. (filter) support forum posts must not be archived
 
 It scores as specified above.
 

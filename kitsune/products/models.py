@@ -146,6 +146,28 @@ class Topic(ModelBase):
         return os.path.join(
             settings.STATIC_URL, 'img', 'topic_placeholder.png')
 
+    @property
+    def path(self):
+        path = [self.slug]
+        cur = self
+        while cur.parent:
+            cur = cur.parent
+            path = [cur.slug] + path
+        return path
+
+    def documents(self, **kwargs):
+        # Avoid circular imports
+        from kitsune.wiki.models import Document
+        query = {
+            'topics': self,
+            'products': self.product,
+            'is_archived': False,
+            'current_revision__isnull': False,
+            'category__in': settings.IA_DEFAULT_CATEGORIES,
+        }
+        query.update(kwargs)
+        return Document.objects.filter(**query)
+
 
 class Version(ModelBase):
     name = models.CharField(max_length=255)

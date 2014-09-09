@@ -2,6 +2,7 @@ import json
 import logging
 import pprint
 import time
+from datetime import datetime
 
 from django.conf import settings
 from django.db import reset_queries
@@ -65,8 +66,8 @@ class AnalyzerMixin(object):
         :arg key: is the field being searched
         :arg val: Is a two-tupe of the text to query for and the name of
             the analyzer to use.
-        :arg action: is the type of query being performed, like text or
-            text_phrase
+        :arg action: is the type of query being performed, like match or
+            match_phrase
         """
         query, analyzer = val
         clause = {
@@ -84,13 +85,24 @@ class AnalyzerMixin(object):
 
         return clause
 
-    def process_query_text_phrase_analyzer(self, key, val, action):
-        """A text phrase query that includes an analyzer."""
-        return self._with_analyzer(key, val, 'text_phrase')
+    def process_query_match_phrase_analyzer(self, key, val, action):
+        """A match phrase query that includes an analyzer."""
+        return self._with_analyzer(key, val, 'match_phrase')
 
-    def process_query_text_analyzer(self, key, val, action):
-        """A text query that includes an analyzer."""
-        return self._with_analyzer(key, val, 'text')
+    def process_query_match_analyzer(self, key, val, action):
+        """A match query that includes an analyzer."""
+        return self._with_analyzer(key, val, 'match')
+
+    def process_query_match_whitespace(self, key, val, action):
+        """A match query that uses the whitespace analyzer."""
+        return  {
+            'match': {
+                key: {
+                    'query': val,
+                    'analyzer': 'whitespace',
+                }
+            }
+        }
 
 
 class Sphilastic(S, AnalyzerMixin):
@@ -510,62 +522,66 @@ def es_reindex_cmd(percent=100, delete=False, mapping_types=None,
     else:
         all_indexable = get_indexable(percent)
 
-    old_refreshes = {}
-    # We're doing a lot of indexing, so we get the refresh_interval of
-    # the index currently, then nix refreshing. Later we'll restore it.
-    for index in indexes:
-        old_refreshes[index] = (get_index_settings(index)
-                                .get('index.refresh_interval', '1s'))
-        # Disable automatic refreshing
-        es.indices.put_settings(index=index,
-                                body={'index': {'refresh_interval': '-1'}})
+    try:
+        old_refreshes = {}
+        # We're doing a lot of indexing, so we get the refresh_interval of
+        # the index currently, then nix refreshing. Later we'll restore it.
+        for index in indexes:
+            old_refreshes[index] = (get_index_settings(index)
+                                    .get('index.refresh_interval', '1s'))
+            # Disable automatic refreshing
+            es.indices.put_settings(index=index,
+                                    body={'index': {'refresh_interval': '-1'}})
 
-    start_time = time.time()
-    for cls, indexable in all_indexable:
-        cls_start_time = time.time()
-        total = len(indexable)
+        start_time = time.time()
+        for cls, indexable in all_indexable:
+            cls_start_time = time.time()
+            total = len(indexable)
 
-        if total == 0:
-            continue
+            if total == 0:
+                continue
 
-        chunk_start_time = time.time()
-        log.info('reconciling %s: %s in db....',
-                 cls.get_mapping_type_name(), total)
-        ret = reconcile_chunk(cls, cls.get_indexable())
-        log.info('   done! reconciled %s index documents (%s total)',
-                 ret, format_time(time.time() - chunk_start_time))
-
-        log.info('reindexing %s. %s to index....',
-                 cls.get_mapping_type_name(), total)
-
-        i = 0
-        for chunk in chunked(indexable, 1000):
             chunk_start_time = time.time()
-            index_chunk(cls, chunk)
+            log.info('reconciling %s: %s in db....',
+                     cls.get_mapping_type_name(), total)
+            ret = reconcile_chunk(cls, cls.get_indexable())
+            log.info('   done! reconciled %s index documents (%s total)',
+                     ret, format_time(time.time() - chunk_start_time))
 
-            i += len(chunk)
-            time_to_go = (total - i) * ((time.time() - cls_start_time) / i)
-            per_1000 = (time.time() - cls_start_time) / (i / 1000.0)
-            this_1000 = time.time() - chunk_start_time
+            log.info('reindexing %s. %s to index....',
+                     cls.get_mapping_type_name(), total)
 
-            log.info('   %s/%s %s... (%s/1000 avg, %s ETA)',
-                     i,
-                     total,
-                     format_time(this_1000),
-                     format_time(per_1000),
-                     format_time(time_to_go))
+            i = 0
+            for chunk in chunked(indexable, 1000):
+                chunk_start_time = time.time()
+                index_chunk(cls, chunk)
 
-        delta_time = time.time() - cls_start_time
-        log.info('   done! (%s total, %s/1000 avg)',
-                 format_time(delta_time),
-                 format_time(delta_time / (total / 1000.0)))
+                i += len(chunk)
+                time_to_go = (total - i) * ((time.time() - cls_start_time) / i)
+                per_1000 = (time.time() - cls_start_time) / (i / 1000.0)
+                this_1000 = time.time() - chunk_start_time
 
-    # Re-enable automatic refreshing
-    for index, old_refresh in old_refreshes.items():
-        es.indices.put_settings(index=index, body={
-                                'index': {'refresh_interval': old_refresh}})
-    delta_time = time.time() - start_time
-    log.info('done! (%s total)', format_time(delta_time))
+                log.info('   %s/%s %s... (%s/1000 avg, %s ETA)',
+                         i,
+                         total,
+                         format_time(this_1000),
+                         format_time(per_1000),
+                         format_time(time_to_go))
+
+            delta_time = time.time() - cls_start_time
+            log.info('   done! (%s total, %s/1000 avg)',
+                     format_time(delta_time),
+                     format_time(delta_time / (total / 1000.0)))
+
+        delta_time = time.time() - start_time
+        log.info('done! (%s total)', format_time(delta_time))
+
+    finally:
+        # Re-enable automatic refreshing
+        for index, old_refresh in old_refreshes.items():
+            es.indices.put_settings(
+                index=index,
+                body={'index': {'refresh_interval': old_refresh}})
 
 
 def es_delete_cmd(index, noinput=False, log=log):
@@ -755,29 +771,30 @@ def es_verify_cmd(log=log):
     log.info('misfortune.')
     log.info('')
 
-    mappings = get_all_mappings()
-
     log.info('Verifying mappings do not conflict.')
 
-    # Verify mappings don't conflict
-    merged_mapping = {}
+    # Verify mappings that share the same index don't conflict
+    for index in all_write_indexes():
+        merged_mapping = {}
 
-    start_time = time.time()
-    for cls_name, mapping in mappings.items():
-        mapping = mapping['properties']
-        for key, val in mapping.items():
-            if key not in merged_mapping:
-                merged_mapping[key] = (val, [cls_name])
-                continue
+        log.info('Verifying mappings for index: {index}'.format(index=index))
 
-            # FIXME - We're comparing two dicts here. This might not
-            # work for non-trivial dicts.
-            if merged_mapping[key][0] != val:
-                raise MappingMergeError(
-                    '%s key different for %s and %s' %
-                    (key, cls_name, merged_mapping[key][1]))
+        start_time = time.time()
+        for cls_name, mapping in get_mappings(index).items():
+            mapping = mapping['properties']
+            for key, val in mapping.items():
+                if key not in merged_mapping:
+                    merged_mapping[key] = (val, [cls_name])
+                    continue
 
-            merged_mapping[key][1].append(cls_name)
+                # FIXME - We're comparing two dicts here. This might not
+                # work for non-trivial dicts.
+                if merged_mapping[key][0] != val:
+                    raise MappingMergeError(
+                        '%s key different for %s and %s' %
+                        (key, cls_name, merged_mapping[key][1]))
+
+                merged_mapping[key][1].append(cls_name)
 
     log.info('Done! {0}'.format(format_time(time.time() - start_time)))
     log.info('')
@@ -790,7 +807,8 @@ def es_verify_cmd(log=log):
         'string': basestring,
         'integer': (int, long),
         'long': (int, long),
-        'boolean': bool
+        'boolean': bool,
+        'date': datetime,
     }
 
     def verify_obj(mt_name, cls, mapping, obj_id):
@@ -817,6 +835,8 @@ def es_verify_cmd(log=log):
                       .format(mt_name, field, type_['type'], item))
 
     start_time = time.time()
+
+    mappings = get_all_mappings()
 
     log.info('MappingType indexable.')
     for cls, indexable in get_indexable():
