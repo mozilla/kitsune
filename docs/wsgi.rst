@@ -21,9 +21,8 @@ Overview
 ========
 
 Setting up Kitsune to run as a WSGI application is fairly
-straightforward. You will need to install the requirements and clone
-the vendor repo as described in :ref:`the installation chapter
-<hacking-howto-chapter>`.
+straightforward. You will need to install the requirements as described 
+in :ref:`the installation chapter <hacking-howto-chapter>`.
 
 There are 3 steps once Kitsune is installed:
 
@@ -59,7 +58,7 @@ In the Apache config (or ``<VirtualHost>``) you will need the following:
 
     Alias /media/ "/path/to/kitsune/media/"
     Alias /admin-media/ \
-        "/path/to/kitsune/vendor/src/django/django/contrib/admin/media/"
+        "/path/to/virtualenv/lib/python<version>/site-packages/django/django/contrib/admin/media/"
 
     WSGISocketPrefix /var/run/wsgi
 
@@ -127,7 +126,7 @@ and executable.
 
 By default, ``product_details`` stores the JSON files in::
 
-    vendor/src/django-mozilla-product-details/product_details/json
+    path/to/virtualenv/lib/python<version>/site=packages/django-mozilla-product-details/product_details/json
 
 This is configurable. If you have multiple web servers, they should share this
 data. You can set the ``PROD_DETAILS_DIR`` variable in
