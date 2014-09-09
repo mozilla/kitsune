@@ -116,7 +116,8 @@ def update_info(ctx):
 @task
 def setup_dependencies(ctx):
     with ctx.lcd(settings.SRC_DIR):
-        ctx.local('virtualenv --system-site-packages virtualenv')
+        if not os.path.exists(os.path.join(settings.SRC_DIR, 'virtualenv')):
+            ctx.local('virtualenv --system-site-packages virtualenv')
         ctx.local('python scripts/peep.py install -r requirements/git.txt')
         ctx.local('python scripts/peep.py install -r requirements/pypi.txt')
         ctx.local('virtualenv --relocatable virtualenv')
