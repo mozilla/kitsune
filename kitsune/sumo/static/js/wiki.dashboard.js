@@ -173,11 +173,13 @@ function makeAggregatedWikiMetricGraphs() {
   ];
   var graphs = [];
   var results = [];
+  var count = 0;
 
   var callback = function(data) {
+    count++;
     results = results.concat(data.results);
 
-    if (data.next) {
+    if (data.next && count < 60) {
       $.getJSON(data.next, callback);
     } else {
       var resultsByCode = {};
