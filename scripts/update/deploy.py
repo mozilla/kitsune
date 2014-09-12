@@ -16,8 +16,6 @@ import commander_settings as settings
 
 
 # Setup virtualenv path.
-venv_bin_path = os.path.join(settings.SRC_DIR, 'virtualenv', 'bin')
-os.environ['PATH'] = venv_bin_path + os.pathsep + os.environ['PATH']
 os.environ['DJANGO_SETTINGS_MODULE'] = 'kitsune.settings_local'
 
 
@@ -122,9 +120,18 @@ def setup_dependencies(ctx):
         # So we delete it and let virtualenv create a new one.
         ctx.local('rm -f virtualenv/bin/python')
         ctx.local('virtualenv --no-site-packages virtualenv')
+
+        # Activate virtualenv to append to path.
+        activate_env = os.path.join(settings.SRC_DIR, 'virtualenv', 'bin', 'activate_this.py')
+        execfile(activate_env, dict(__file__=activate_env))
+
         ctx.local('python scripts/peep.py install -r requirements/git.txt')
         ctx.local('python scripts/peep.py install -r requirements/pypi.txt')
         ctx.local('virtualenv --system-site-packages --relocatable virtualenv')
+
+        # Ensure we get system site packages on the path too.
+        activate_env = os.path.join(settings.SRC_DIR, 'virtualenv', 'bin', 'activate_this.py')
+        execfile(activate_env, dict(__file__=activate_env))
 
 
 @task
