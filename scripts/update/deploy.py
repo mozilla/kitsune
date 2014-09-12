@@ -116,6 +116,10 @@ def update_info(ctx):
 @task
 def setup_dependencies(ctx):
     with ctx.lcd(settings.SRC_DIR):
+        # Creating a virtualenv tries to open virtualenv/bin/python for
+        # writing, but because virtualenv is using it, it fails.
+        # So we delete it and let virtualenv create a new one.
+        ctx.local('rm -f virtualenv/bin/python')
         ctx.local('virtualenv --no-site-packages virtualenv')
         ctx.local('python scripts/peep.py install -r requirements/git.txt')
         ctx.local('python scripts/peep.py install -r requirements/pypi.txt')
