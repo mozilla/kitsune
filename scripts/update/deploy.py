@@ -105,6 +105,7 @@ def update_info(ctx):
         ctx.local("git log -3")
         ctx.local("git status")
         ctx.local("git submodule status")
+        print '\n\n\n\n\n' + os.environ['PATH'] + '\n\n\n\n\n'
         ctx.local("python manage.py migrate --list")
         with ctx.lcd("locale"):
             ctx.local("svn info")
