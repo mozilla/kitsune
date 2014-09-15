@@ -34,6 +34,10 @@
     $searchContent.html(_.render('search-results.html', context));
   }
 
+  $(document).on('submit', '[data-instant-search="form"]', function(ev) {
+    ev.preventDefault();
+  });
+
   $(document).on('keyup', '[data-instant-search="form"] input[type="search"]', function(ev) {
     var $this = $(this);
     var params = {
