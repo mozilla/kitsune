@@ -14,9 +14,11 @@ curl http://packages.elasticsearch.org/GPG-KEY-elasticsearch | apt-key add -
 echo "deb http://packages.elasticsearch.org/elasticsearch/0.90/debian stable main" \
         > /etc/apt/sources.list.d/elasticsearch.list
 
-# Add the needed repositories for Node/Redis
+# Add the needed repositories for Node/Redis/Python2.6
 add-apt-repository ppa:chris-lea/node.js
 add-apt-repository ppa:chris-lea/redis-server
+add-apt-repository ppa:fkrull/deadsnakes
+
 apt-get update
 
 # Set default password for MariaDB
@@ -29,12 +31,11 @@ debconf-set-selections <<< 'mariadb-server-5.5 mysql-server/root_password_again 
 apt-get install -y sphinx-common libapache2-mod-wsgi python-pip libmysqlclient-dev \
                    libxml2-dev libxslt1-dev zlib1g-dev libjpeg-dev python-dev libssl-dev \
                    openjdk-7-jre-headless mariadb-server-5.5 nodejs elasticsearch redis-server \
-                   memcached
-
+                   memcached python2.6 python2.6-dev
 
 # Setup the virtualenv and start using it
 pip install virtualenv
-virtualenv $INSTALL_DIR/virtualenv
+virtualenv -p /usr/bin/python2.6 $INSTALL_DIR/virtualenv
 chown -R vagrant $INSTALL_DIR/virtualenv
 source $INSTALL_DIR/virtualenv/bin/activate
 
