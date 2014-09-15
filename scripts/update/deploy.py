@@ -134,6 +134,11 @@ def setup_dependencies(ctx):
         # Enable system site package lookup.
         ctx.local('rm -f virtualenv/lib/python2.6/no-global-site-packages.txt')
 
+        # Fix lib64 symlink to be relative instead of absolute.
+        ctx.local('rm -f virtualenv/lib64')
+        with ctx.lcd('virtualenv'):
+            ctx.local('ln -s lib lib64')
+
 
 @task
 def pre_update(ctx, ref=settings.UPDATE_REF):
