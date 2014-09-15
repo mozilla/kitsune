@@ -134,11 +134,6 @@ def setup_dependencies(ctx):
         # Enable system site package lookup.
         ctx.local('rm -f virtualenv/lib/python2.6/no-global-site-packages.txt')
 
-        # Re-activate virtualenv
-        activate_env = os.path.join(settings.SRC_DIR, 'virtualenv', 'bin', 'activate_this.py')
-        execfile(activate_env, dict(__file__=activate_env))
-
-
 
 @task
 def pre_update(ctx, ref=settings.UPDATE_REF):
