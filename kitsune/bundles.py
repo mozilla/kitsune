@@ -133,6 +133,7 @@ MINIFY_BUNDLES = {
         'common': (
             'js/i18n.js',
             'js/libs/underscore.js',
+            'js/libs/moment-2.8.3.js',
             'js/libs/jquery-1.10.1.min.js',
             'js/libs/jquery.migrate.js',
             'js/libs/jquery.cookie.js',
@@ -142,6 +143,8 @@ MINIFY_BUNDLES = {
             'js/templates/search-results.js',
             'js/libs/nunjucks-slim.js',
             'js/nunjucks.js',
+            'js/cached_xhr.js',
+            'js/search_utils.js',
             'js/browserdetect.js',
             'js/kbox.js',
             'js/main.js',

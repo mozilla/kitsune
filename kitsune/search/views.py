@@ -495,6 +495,9 @@ def search(request, template=None):
         data['products'] = ([{'slug': p.slug, 'title': p.title}
                              for p in Product.objects.filter(visible=True)])
 
+        if product:
+            data['product'] = product[0].slug
+
         pages = Paginator(pages)
         data['pagination'] = dict(
             number=pages.pager.number,

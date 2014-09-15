@@ -1,81 +1,98 @@
 (function($, _) {
   var searchTimeout;
-  var lastInstantSearch;
-
   var locale = $('html').attr('lang');
 
-  function search(data) {
-    var cb = function (data) {
-      lastInstantSearch = data['q'];
-      var esab = $('input[name="esab"]').val();
-      if ($('#instant-search-content').length) {
-        var $searchContent = $('#instant-search-content');
-      } else {
-        var $searchContent = $('<div />').attr('id', 'instant-search-content');
-      }
-      $('#main-content').after($searchContent);
-      var ctx = $.extend({}, data);
+  var search = new k.Search('/' + locale + '/search');
+  var cxhr = new k.CachedXHR();
 
-      var base_url = '/' + locale + '/search?q=' + data['q'];
-      if (esab) {
-        base_url += '&esab=' + esab;
-        ctx['esab'] = esab;
-      }
-      ctx['base_url'] = base_url;
-
-      $searchContent.html(_.render('search-results.html', ctx));
-    };
-
-    if (typeof data === 'string') {
-      $.get(data, {}, cb, 'json');
-    } else {
-      $.get('/' + locale + '/search', data, cb, 'json');
-    }
+  function hideContent() {
+    $('#main-content').hide();
+    $('#main-content').siblings('aside').hide();
+    $('#main-breadcrumbs').hide();
   }
 
-  $(document).on('keyup', 'input[type="search"]', function() {
+  function showContent() {
+    $('#main-content').show();
+    $('#main-content').siblings('aside').show();
+    $('#main-breadcrumbs').show();
+    $('#instant-search-content').remove();
+  }
+
+  function render(data) {
+    var context = $.extend({}, data);
+    var base_url = '/' + locale + '/search?q=' + search.lastQuery;
+    base_url += '&' + search.serializeParams();
+    context['base_url'] = base_url;
+
+    if ($('#instant-search-content').length) {
+      var $searchContent = $('#instant-search-content');
+    } else {
+      var $searchContent = $('<div />').attr('id', 'instant-search-content');
+      $('#main-content').after($searchContent);
+    }
+
+    $searchContent.html(_.render('search-results.html', context));
+  }
+
+  $(document).on('keyup', '[data-instant-search="form"] input[type="search"]', function(ev) {
     var $this = $(this);
+    var params = {
+      format: 'json'
+    }
 
     if ($this.val().length === 0) {
       if (searchTimeout) {
         window.clearTimeout(searchTimeout);
       }
-      lastInstantSearch = '';
-      $('#main-content').show();
-      $('#main-breadcrumbs').show();
-      $('#instant-search-content').remove();
-    } else {
-      if ($this.val() !== lastInstantSearch) {
-        if (searchTimeout) {
-          window.clearTimeout(searchTimeout);
-        }
 
-        var esab = $(this).closest('input[name="esab"]').val();
-
-        searchTimeout = setTimeout(function () {
-          var data = {
-            'format': 'json',
-            'q': $this.val()
-          };
-
-          if (esab) {
-            data['esab'] = esab;
-          }
-
-          $('#main-content').hide();
-          $('#main-breadcrumbs').hide();
-
-          search(data);
-        }, 100);
+      showContent();
+    } else if ($this.val() !== search.lastQuery) {
+      if (searchTimeout) {
+        window.clearTimeout(searchTimeout);
       }
+
+      $this.closest('form').find('input').each(function () {
+        if ($(this).attr('type') === 'submit') return true;
+        if ($(this).attr('type') === 'button') return true;
+        if ($(this).attr('name') === 'q')  return true;
+        params[$(this).attr('name')] = $(this).val();
+      });
+
+      searchTimeout = setTimeout(function () {
+        search.setParams(params);
+        search.query($this.val(), render);
+      }, 200);
+
+      hideContent();
     }
   });
 
-  $(document).on('click', '[data-instant-search]', function(ev) {
+  $(document).on('click', '[data-instant-search="link"]', function(ev) {
     ev.preventDefault();
+
     var $this = $(this);
-    if ($this.data('instant-search') === 'link') {
-      search($this.data('href'));
+
+    var setParams = $this.data('instant-search-set-params');
+    if (setParams) {
+      setParams = setParams.split('&');
+      $(setParams).each(function() {
+        var p = this.split('=');
+        search.setParam(p.shift(), p.join('='));
+      });
     }
+
+    var unsetParams = $this.data('instant-search-unset-params');
+    if (unsetParams) {
+      unsetParams = unsetParams.split('&');
+      $(unsetParams).each(function() {
+        search.setParam(this);
+      });
+    }
+
+    cxhr.request($this.data('href'), {
+      data: {format: 'json'},
+      dataType: 'json',
+      success: render
+    });
   });
 })(jQuery, k.nunjucksEnv);
