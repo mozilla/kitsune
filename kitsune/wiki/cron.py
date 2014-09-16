@@ -126,3 +126,21 @@ def send_weekly_ready_for_review_digest():
             })
 
             statsd.incr('wiki.cron.weekly-digest-mail')
+
+
+@cronjobs.register
+def fix_current_revisions():
+    docs = Document.objects.all()
+
+    for d in docs:
+        revs = Revision.objects.filter(document=d, is_approved=True)
+        revs = list(revs.order_by('-reviewed')[:1])
+
+        if len(revs):
+            rev = revs[0]
+
+            if d.current_revision != rev:
+                d.current_revision = rev
+                d.save()
+                print d.get_absolute_url()
+                statsd.incr('wiki.cron.fix-current-revision')
