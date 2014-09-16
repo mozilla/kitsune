@@ -9,11 +9,11 @@ from django.core.exceptions import ValidationError
 from django.core.mail import mail_admins
 from django.db import transaction
 
+import waffle
 from celery import task
 from multidb.pinning import pin_this_thread, unpin_this_thread
 from statsd import statsd
 from tower import ugettext as _
-import waffle
 
 from kitsune.kbadge.utils import get_or_create_badge
 from kitsune.sumo import email_utils
@@ -159,6 +159,7 @@ def add_short_links(doc_ids):
     base_url = 'https://{0}%s'.format(Site.objects.get_current().domain)
     docs = Document.objects.filter(id__in=doc_ids)
     try:
+        pin_this_thread()  # Stick to master.
         for doc in docs:
             endpoint = reverse('wiki.document',
                                locale=doc.locale,
@@ -169,6 +170,8 @@ def add_short_links(doc_ids):
         # The next run of the `generate_missing_share_links` cron job will
         # catch all documents that were unable to be processed.
         pass
+    finally:
+        unpin_this_thread()
 
 
 @task(rate_limit='3/h')
