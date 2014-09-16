@@ -27,8 +27,8 @@ from tower import ugettext as _
 from kitsune import users as constants
 from kitsune.access.decorators import (
     logout_required, login_required, permission_required)
-from kitsune.questions.models import (
-    Question, user_num_answers, user_num_questions, user_num_solutions)
+from kitsune.questions.models import Question
+from kitsune.questions.utils import num_questions, num_answers, num_solutions
 from kitsune.sumo import email_utils
 from kitsune.sumo.decorators import ssl_required
 from kitsune.sumo.helpers import urlparams
@@ -329,9 +329,9 @@ def profile(request, template, user_id):
     return render(request, template, {
         'profile': user_profile,
         'groups': groups,
-        'num_questions': user_num_questions(user_profile.user),
-        'num_answers': user_num_answers(user_profile.user),
-        'num_solutions': user_num_solutions(user_profile.user),
+        'num_questions': num_questions(user_profile.user),
+        'num_answers': num_answers(user_profile.user),
+        'num_solutions': num_solutions(user_profile.user),
         'num_documents': user_num_documents(user_profile.user)})
 
 

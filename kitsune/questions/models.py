@@ -34,6 +34,7 @@ from kitsune.questions.tasks import (
 from kitsune.search.models import (
     SearchMappingType, SearchMixin, register_for_indexing,
     register_mapping_type)
+from kitsune.search.tasks import index_task
 from kitsune.sumo.helpers import urlparams
 from kitsune.sumo.models import ModelBase, LocaleField
 from kitsune.sumo.helpers import wiki_to_html
@@ -845,45 +846,15 @@ class Answer(ModelBase, SearchMixin):
 
     @property
     def creator_num_answers(self):
-        # If karma is enabled, try to use the karma backend (redis) to get
-        # the number of answers. Fallback to database.
-        if waffle.switch_is_active('karma'):
-            try:
-                count = KarmaManager().count(
-                    'all', user=self.creator, type=AnswerAction.action_type)
-                if count is not None:
-                    return count
-            except RedisError as e:
-                statsd.incr('redis.errror')
-                log.error('Redis connection error: %s' % e)
-
-        return Answer.objects.filter(creator=self.creator).count()
+        # Avoid circular import, utils.py imports Question
+        from kitsune.questions.utils import num_answers
+        return num_answers(self.creator)
 
     @property
     def creator_num_solutions(self):
-        # If karma is enabled, try to use the karma backend (redis) to get
-        # the number of solutions. Fallback to database.
-        if waffle.switch_is_active('karma'):
-            try:
-                count = KarmaManager().count(
-                    'all', user=self.creator, type=SolutionAction.action_type)
-                if count is not None:
-                    return count
-            except RedisError as e:
-                statsd.incr('redis.errror')
-                log.error('Redis connection error: %s' % e)
-
-        return Question.objects.filter(
-            solution__in=Answer.objects.filter(creator=self.creator)).count()
-
-    @property
-    def creator_num_points(self):
-        try:
-            return KarmaManager().count(
-                'all', user=self.creator, type='points')
-        except RedisError as e:
-            statsd.incr('redis.errror')
-            log.error('Redis connection error: %s' % e)
+        # Avoid circular import, utils.py imports Question
+        from kitsune.questions.utils import num_solutions
+        return num_solutions(self.creator)
 
     @property
     def num_helpful_votes(self):
@@ -1031,12 +1002,6 @@ class AnswerMetricsMappingType(SearchMappingType):
 
 
 register_for_indexing('answers', Answer)
-# This below is needed to update the is_solution field on the answer.
-register_for_indexing(
-    'answers',
-    Question,
-    instance_to_indexee=(
-        lambda i: i.solution ))
 
 
 def answer_connector(sender, instance, created, **kw):
@@ -1049,6 +1014,19 @@ post_save.connect(answer_connector, sender=Answer,
 
 register_for_indexing(
     'questions', Answer, instance_to_indexee=lambda a: a.question)
+
+# This below is needed to update the is_solution field on the answer.
+def reindex_questions_answers(sender, instance, **kw):
+    """When a question is saved, we need to reindex it's answers.
+
+    This is needed because the solution may have changed."""
+    if instance.id:
+        answer_ids = instance.answers.all().values_list('id', flat=True)
+        index_task.delay(AnswerMetricsMappingType, answer_ids)
+
+post_save.connect(
+    reindex_questions_answers, sender=Question,
+    dispatch_uid='questions_reindex_answers')
 
 
 def user_pre_save(sender, instance, **kw):
@@ -1165,54 +1143,3 @@ def _content_parsed(obj, locale):
         html = wiki_to_html(obj.content, locale)
         cache.add(cache_key, html, CACHE_TIMEOUT)
     return html
-
-
-def user_num_questions(user):
-    """Count the number of questions a user has.
-
-    Unfortunately, we can't use the KarmaManager for this, since questions
-    don't effect karma, so this always counts objects in the database.
-    """
-    return Question.objects.filter(creator=user).count()
-
-
-def user_num_answers(user):
-    """Count the number of answers a user has.
-
-    If karma is enabled, and redis is working, this will query that (much
-    faster), otherwise it will just count objects in the database.
-    """
-    if waffle.switch_is_active('karma'):
-        try:
-            km = KarmaManager()
-            count = km.count(user=user, type=AnswerAction.action_type)
-            if count is not None:
-                return count
-        except RedisError as e:
-            statsd.incr('redis.errror')
-            log.error('Redis connection error: %s' % e)
-
-    return Answer.objects.filter(creator=user).count()
-
-
-def user_num_solutions(user):
-    """Count the number of solutions a user has.
-
-    This means the number of answers the user has submitted that are then
-    marked as the solution to the question they belong to.
-
-    If karma is enabled, and redis is working, this will query that (much
-    faster), otherwise it will just count objects in the database.
-    """
-    if waffle.switch_is_active('karma'):
-        try:
-            km = KarmaManager()
-            count = km.count(user=user, type=SolutionAction.action_type)
-            if count is not None:
-                return count
-        except RedisError as e:
-            statsd.incr('redis.errror')
-            log.error('Redis connection error: %s' % e)
-
-    return Question.objects.filter(
-        solution__in=Answer.objects.filter(creator=user)).count()
