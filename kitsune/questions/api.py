@@ -1,11 +1,13 @@
 from rest_framework import serializers, viewsets
 
-from kitsune.questions.models import Question
+from kitsune.questions.models import Question, Answer
 
 
 class QuestionShortSerializer(serializers.ModelSerializer):
-    # products = serializers.SlugRelatedField(many=True, slug_field='slug')
+    # Use slugs for product and topic instead of ids.
+    products = serializers.SlugRelatedField(many=True, slug_field='slug')
     topics = serializers.SlugRelatedField(many=True, slug_field='slug')
+    # Use usernames for product and topic instead of ids.
     creator = serializers.SlugRelatedField(slug_field='username')
     updated_by = serializers.SlugRelatedField(slug_field='username')
 
@@ -42,7 +44,7 @@ class QuestionDetailSerializer(QuestionShortSerializer):
 class QuestionViewSet(viewsets.ModelViewSet):
     serializer_class = QuestionDetailSerializer
     queryset = Question.objects.all()
-    paginate_by = 5
+    paginate_by = 100
 
     def get_pagination_serializer(self, page):
         """
@@ -51,6 +53,46 @@ class QuestionViewSet(viewsets.ModelViewSet):
         class SerializerClass(self.pagination_serializer_class):
             class Meta:
                 object_serializer_class = QuestionShortSerializer
+
+        context = self.get_serializer_context()
+        return SerializerClass(instance=page, context=context)
+
+
+class AnswerShortSerializer(serializers.ModelSerializer):
+    creator = serializers.SlugRelatedField(slug_field='username')
+    updated_by = serializers.SlugRelatedField(slug_field='username')
+
+    class Meta:
+        model = Answer
+        fields = (
+            'question',
+            'created',
+            'creator',
+            'updated',
+            'updated_by',
+        )
+
+
+class AnswerDetailSerializer(AnswerShortSerializer):
+    class Meta:
+        model = Answer
+        fields = AnswerShortSerializer.Meta.fields + (
+            'content',
+        )
+
+
+class AnswerViewSet(viewsets.ModelViewSet):
+    serializer_class = AnswerDetailSerializer
+    queryset = Answer.objects.all()
+    paginate_by = 100
+
+    def get_pagination_serializer(self, page):
+        """
+        Return a serializer instance to use with paginated data.
+        """
+        class SerializerClass(self.pagination_serializer_class):
+            class Meta:
+                object_serializer_class = AnswerShortSerializer
 
         context = self.get_serializer_context()
         return SerializerClass(instance=page, context=context)
