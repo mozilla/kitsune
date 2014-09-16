@@ -59,10 +59,10 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
 
     created = models.DateTimeField(default=datetime.now, db_index=True)
     updated = models.DateTimeField(default=datetime.now, db_index=True)
-    updated_by = models.ForeignKey(User, null=True,
+    updated_by = models.ForeignKey(User, null=True, blank=True,
                                    related_name='questions_updated')
     last_answer = models.ForeignKey('Answer', related_name='last_reply_in',
-                                    null=True)
+                                    null=True, blank=True)
     num_answers = models.IntegerField(default=0, db_index=True)
     solution = models.ForeignKey('Answer', related_name='solution_for',
                                  null=True)
@@ -718,7 +718,7 @@ class Answer(ModelBase, SearchMixin):
     created = models.DateTimeField(default=datetime.now, db_index=True)
     content = models.TextField()
     updated = models.DateTimeField(default=datetime.now, db_index=True)
-    updated_by = models.ForeignKey(User, null=True,
+    updated_by = models.ForeignKey(User, null=True, blank=True,
                                    related_name='answers_updated')
     page = models.IntegerField(default=1)
     is_spam = models.BooleanField(default=False)
@@ -971,7 +971,7 @@ class AnswerMetricsMappingType(SearchMappingType):
             obj_dict = model.uncached.values(*all_fields).get(pk=obj_id)
         else:
             obj_dict = dict([(field, getattr(obj, field))
-                              for field in fields])
+                             for field in fields])
             obj_dict['question__locale'] = obj.question.locale
             obj_dict['question__solution_id'] = obj.question.solution_id
             obj_dict['question__creator_id'] = obj.question.creator_id
@@ -1007,7 +1007,12 @@ class AnswerMetricsMappingType(SearchMappingType):
 
 
 register_for_indexing('answers', Answer)
-
+# This below is needed to update the is_solution field on the answer.
+register_for_indexing(
+    'answers',
+    Question,
+    instance_to_indexee=(
+        lambda i: i.solution))
 
 def answer_connector(sender, instance, created, **kw):
     if created:
@@ -1041,8 +1046,8 @@ def user_pre_save(sender, instance, **kw):
     if instance.id:
         user = User.objects.get(id=instance.id)
         if user.username != instance.username:
-            questions = (Question.objects
-                .filter(
+            questions = (
+                Question.objects.filter(
                     Q(creator=instance) |
                     Q(answers__creator=instance))
                 .only('id')
