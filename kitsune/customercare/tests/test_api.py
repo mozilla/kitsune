@@ -34,8 +34,6 @@ class BanUser(TestCase):
 
     def test_account_not_in_banned_list(self):
         users = self.client.get(reverse('customercare.api.banned')).data
-        import q
-        q(users)
         usernames = [user['username'] for user in users]
         for username in self.normal_usernames:
             assert username not in usernames
