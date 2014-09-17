@@ -142,4 +142,5 @@ def fix_current_revisions():
             if d.current_revision != rev:
                 d.current_revision = rev
                 d.save()
+                print d.get_absolute_url()
                 statsd.incr('wiki.cron.fix-current-revision')
