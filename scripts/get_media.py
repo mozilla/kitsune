@@ -5,8 +5,6 @@ Run this script like `./manage.py runscript get_media`.
 """
 
 import os
-import sys
-from datetime import datetime
 
 import urllib
 
@@ -18,13 +16,13 @@ BASE_URL = 'https://support.cdn.mozilla.net'
 
 
 def run():
-    images = list(Image.objects.all())
-    progress = Progress(len(images), 100)
+    image_urls = list(Image.objects.values_list('file', flat=True))
+
+    progress = Progress(len(image_urls), 100)
     progress.draw()
 
-    for img in images:
-        url = BASE_URL + img.file.url
-        path = img.file.url[1:]  # Remove leading '/'
+    for path in image_urls:
+        url = BASE_URL + '/' + path
 
         try:
             os.makedirs(os.path.dirname(path))
