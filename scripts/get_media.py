@@ -12,7 +12,7 @@ from kitsune.gallery.models import Image
 from kitsune.sumo.utils import Progress
 
 
-BASE_URL = 'https://support.cdn.mozilla.net'
+BASE_URL = 'https://support.cdn.mozilla.net/media'
 
 
 def run():
