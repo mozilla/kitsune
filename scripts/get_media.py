@@ -12,7 +12,7 @@ from kitsune.gallery.models import Image
 from kitsune.sumo.utils import Progress
 
 
-BASE_URL = 'https://support.cdn.mozilla.net/media'
+BASE_URL = 'https://support.cdn.mozilla.net'
 
 
 def run():
@@ -22,6 +22,7 @@ def run():
     progress.draw()
 
     for path in image_urls:
+        path = 'media/' + path
         url = BASE_URL + '/' + path
 
         try:
