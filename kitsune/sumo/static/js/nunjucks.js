@@ -5,7 +5,16 @@
 
   env.addFilter('gettext', gettext);
   env.addFilter('ngettext', ngettext);
-  env.addFilter('interpolate', interpolate);
+  env.addFilter('interpolate', function(fmt, obj, named) {
+    var keys = Object.keys(obj);
+    var escape = env.getFilter('escape');
+
+    for (var i=0; i < keys.length; i++) {
+      obj[keys[i]] = escape(obj[keys[i]]);
+    }
+
+    return interpolate(fmt, obj, named);
+  });
 
   env.addFilter('urlparams', function(url, params) {
     if (url) {
