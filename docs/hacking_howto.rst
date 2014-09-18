@@ -299,6 +299,22 @@ the initial fetch::
     $ ./manage.py update_product_details
 
 
+Pre-compiling JavaScript Templates
+----------------------------------
+
+We use nunjucks to render Jinja-style templates for front-end use. These
+templates get updated from time to time and you will need to pre-compile them
+to ensure that they render correctly. You have two options here:
+
+- One time pre-compile (use this if you are not modifying the templates)::
+
+      $ ./manage.py nunjucks_precompile
+
+- Use gulp to watch for changes and pre-compile (use this if you are making changes to the templates)::
+
+      $ /path/to/gulp watch
+
+
 Testing it out
 ==============
 
