@@ -151,36 +151,22 @@ terminal window you use.
 Installing dependencies
 =======================
 
-Compiled Packages
------------------
-
-There are a small number of compiled packages, including the MySQL
-Python client.
-
-For development, you should install these with ``pip``, but for
-other situations you may want to use your system package manager.
-
-::
-    $ pip install -r requirements/compiled.txt
-
-If you want to use your system's package manager, you'll need to go
-through ``requirements/compiled.txt`` and install the dependencies by
-hand.
-
-
 Python Packages
 ---------------
 
-All the pure-Python requirements are provided in the ``vendor``
-directory, also known as the "vendor library". This makes the packages
-available to Python without installing them globally and keeps them
-pinned to known-compatible versions.
+All the pure-Python requirements are provided in the requirements
+directory. We use a tool called ``peep`` to install packages and make sure
+versions are pinned.
 
-If you do not have a vendor library, see the section about getting the source
-above.
+::
+    $ ./scripts/peep.py install -r requirements.txt
 
-See the :ref:`vendor library <vendor-chapter>` documentation for more
-information on getting the vendor lib and keeping it up to date.
+If you have any issues installing via ``peep``, be sure you have the required
+header files from the packages listed in the requirements section above.
+
+For more information on ``peep``, refer to the `README
+<https://github.com/erikrose/peep>` on the Github page for the project.
+
 
 Javascript Packages
 -------------------

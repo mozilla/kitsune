@@ -15,7 +15,7 @@ def main():
     parser.add_option("-u", "--user",
                       help=("Prefix cron with this user. "
                            "Only define for cron.d style crontabs"))
-    parser.add_option("-p", "--python", default="/usr/bin/python2.6",
+    parser.add_option("-p", "--python", default="python",
                       help="Python interpreter to use")
 
     (opts, args) = parser.parse_args()
@@ -24,15 +24,16 @@ def main():
         parser.error("-k must be defined")
 
     # To pick up the right PyOpenSSL:
-    python_path = 'PYTHONPATH=/usr/local/lib64/python2.6/site-packages'
+    python_path = 'PYTHONPATH+=:/usr/local/lib64/python2.6/site-packages'
 
     ctx = {
-        'django': 'cd %s; %s %s -W ignore::DeprecationWarning manage.py' % (
+        'django': 'cd %s; source virtualenv/bin/activate; %s %s -W ignore::DeprecationWarning manage.py' % (
             opts.kitsune, python_path, opts.python),
-        'scripts': 'cd %s; %s %s' % (
+        'scripts': 'cd %s; source virtualenv/bin/activate; %s %s' % (
             opts.kitsune, python_path, opts.python),
     }
     ctx['cron'] = '%s cron' % ctx['django']
+    # Source the venv, don't mess with manage.py
     ctx['rscripts'] = ctx['scripts']
 
     if opts.user:

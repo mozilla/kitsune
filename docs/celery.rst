@@ -63,8 +63,8 @@ Celery
 Installing
 ----------
 
-Celery (and Django-Celery) is part of our :ref:`vendor library
-<vendor-chapter>`. You shouldn't need to do any manual installation.
+Celery (and Django-Celery) is part of our dependencies. 
+You shouldn't need to do any manual installation.
 
 
 Configuring and Running

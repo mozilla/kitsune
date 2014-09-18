@@ -1,4 +1,0 @@
--r compiled.txt
-
-coverage
-psutil>=0.2.0

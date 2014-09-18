@@ -31,7 +31,6 @@ Part 2: Developer's Guide
    searchchapter
    armyofawesome
    karma
-   vendor
    wikidocs
    osumo
    notes
