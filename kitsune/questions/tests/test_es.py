@@ -230,6 +230,7 @@ class AnswerMetricsTests(ElasticTestCase):
         eq_(data['product'], [p.slug])
         eq_(data['creator_id'], a.creator_id)
         eq_(data['is_solution'], False)
+        eq_(data['by_asker'], False)
 
         # Mark as solution and verify
         q.solution = a
@@ -238,3 +239,11 @@ class AnswerMetricsTests(ElasticTestCase):
         self.refresh()
         data = AnswerMetricsMappingType.search().values_dict()[0]
         eq_(data['is_solution'], True)
+
+        # Make the answer creator to be the question creator and verify.
+        a.creator = q.creator
+        a.save()
+
+        self.refresh()
+        data = AnswerMetricsMappingType.search().values_dict()[0]
+        eq_(data['by_asker'], True)

@@ -18,6 +18,9 @@ def top_contributors_questions(
         .search()
         .facet('creator_id', filtered=True, size=count))
 
+    # Adding answer to your own question, isn't a contribution.
+    query = query.filter(by_asker=False)
+
     query = _apply_filters(query, start, end, locale, product)
 
     return _get_creator_counts(query, count)
