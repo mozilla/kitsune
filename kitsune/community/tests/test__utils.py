@@ -116,6 +116,7 @@ class TopContributorTests(ElasticTestCase):
         a3.question.products.add(fxos)
         a4 = answer(created=datetime.now()-timedelta(days=91),
                     save=True)
+        answer(creator=a4.question.creator, question=a4.question, save=True)
 
         for u in User.objects.all():
             profile(user=u)

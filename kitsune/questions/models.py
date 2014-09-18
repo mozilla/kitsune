@@ -976,6 +976,7 @@ class AnswerMetricsMappingType(SearchMappingType):
                 'product': {'type': 'string', 'index': 'not_analyzed'},
                 'is_solution': {'type': 'boolean'},
                 'creator_id': {'type': 'long'},
+                'by_asker': {'type': 'boolean'},
             }
         }
 
@@ -983,7 +984,10 @@ class AnswerMetricsMappingType(SearchMappingType):
     def extract_document(cls, obj_id, obj=None):
         """Extracts indexable attributes from an Answer."""
         fields = ['id', 'created', 'creator_id', 'question_id']
-        composed_fields = ['question__locale', 'question__solution_id']
+        composed_fields = [
+            'question__locale',
+            'question__solution_id',
+            'question__creator_id']
         all_fields = fields + composed_fields
 
         if obj is None:
@@ -994,6 +998,7 @@ class AnswerMetricsMappingType(SearchMappingType):
                               for field in fields])
             obj_dict['question__locale'] = obj.question.locale
             obj_dict['question__solution_id'] = obj.question.solution_id
+            obj_dict['question__creator_id'] = obj.question.creator_id
 
         d = {}
         d['id'] = obj_dict['id']
@@ -1012,10 +1017,14 @@ class AnswerMetricsMappingType(SearchMappingType):
         d['created'] = obj_dict['created']
 
         d['locale'] = obj_dict['question__locale']
-        d['is_solution'] = (obj_dict['id'] == obj_dict['question__solution_id'])
+        d['is_solution'] = (
+            obj_dict['id'] == obj_dict['question__solution_id'])
         d['creator_id'] = obj_dict['creator_id']
+        d['by_asker'] = (
+            obj_dict['creator_id'] == obj_dict['question__creator_id'])
 
-        products = Product.uncached.filter(question__id=obj_dict['question_id'])
+        products = Product.uncached.filter(
+            question__id=obj_dict['question_id'])
         d['product'] = [p.slug for p in products]
 
         return d
