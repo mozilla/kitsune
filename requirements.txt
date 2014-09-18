@@ -118,8 +118,8 @@ https://github.com/celery/kombu/archive/00efce7d9f9b8740e8df889987caf55700fd1b77
 https://github.com/jbalogh/schematic/archive/f996182b857769541cfa7659d4f9e864360cddf4.tar.gz#egg=schematic
 
 # jingo-minify: master~6
-# sha256: hTXAHD5UNN8Pci9FIay5UCvFcyzuUmqn4o25yy_kkTE
-https://github.com/dean/jingo-minify/archive/a118eb80b31b7c4226a5e1343093c950d9bf8a34.tar.gz#egg=jingo-minify
+# sha256: BnWzKRSSTYBMnjFYlCF28MqhIPeyN5jjSoJyXkYQt6o
+https://github.com/jsocol/jingo-minify/archive/51c158a18e6c5ff7c6fd030ffa4cba51117893b5.tar.gz#egg=jingo-minify
 
 # django-authority: master
 # sha256: WyjHS7YqJ8QR8vz7AH_hNWt3PCxhne08matcWterpdM
