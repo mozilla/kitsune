@@ -151,23 +151,6 @@ terminal window you use.
 Installing dependencies
 =======================
 
-Compiled Packages
------------------
-
-There are a small number of compiled packages, including the MySQL
-Python client.
-
-For development, you should install these with ``peep``, but for
-other situations you may want to use your system package manager.
-
-::
-    $ ./scripts/peep.py install -r requirements/compiled.txt
-
-If you want to use your system's package manager, you'll need to go
-through ``requirements/compiled.txt`` and install the dependencies by
-hand.
-
-
 Python Packages
 ---------------
 
@@ -176,8 +159,10 @@ directory. We use a tool called ``peep`` to install packages and make sure
 versions are pinned.
 
 ::
-    $ ./scripts/peep.py install -r requirements/git.txt
-    $ ./scripts/peep.py install -r requirements/packages.txt
+    $ ./scripts/peep.py install -r requirements.txt
+
+If you have any issues installing via ``peep``, be sure you have the required
+header files from the packages listed in the requirements section above.
 
 For more information on ``peep``, refer to the `README
 <https://github.com/erikrose/peep>` on the Github page for the project.
