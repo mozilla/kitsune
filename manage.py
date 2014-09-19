@@ -2,6 +2,7 @@
 import os
 import sys
 
+# Now we can import from third-party libraries.
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'kitsune.settings_local')
 os.environ.setdefault('CELERY_CONFIG_MODULE', 'kitsune.settings_local')
