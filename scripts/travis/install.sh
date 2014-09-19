@@ -8,7 +8,6 @@ sudo ln -s /usr/lib/`uname -i`-linux-gnu/libjpeg.so ~/virtualenv/python2.6/lib/
 sudo ln -s /usr/lib/`uname -i`-linux-gnu/libz.so ~/virtualenv/python2.6/lib/
 
 echo "Install Python dependencies"
-python scripts/peep.py install -r requirements/default.txt
 python scripts/peep.py install -r requirements/py26.txt
 pip install nosenicedots > /dev/null
 pip freeze

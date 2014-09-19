@@ -156,13 +156,15 @@ Python Packages
 
 All the pure-Python requirements are provided in the requirements
 directory. We use a tool called ``peep`` to install packages and make sure
-versions are pinned.
+versions are pinned. Depending on the version of python you use, you will
+need to install different files.
+
+Python 2.7
 
 ::
     $ ./scripts/peep.py install -r requirements/default.txt
 
-Additionally, if you're running python2.6 you will need to install our
-python2.6 specific dependencies as well.
+Python 2.6
 
 ::
     $ ./scripts/peep.py install -r requirements/py26.txt
