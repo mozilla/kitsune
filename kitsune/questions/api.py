@@ -1,4 +1,4 @@
-from rest_framework import serializers, viewsets
+from rest_framework import serializers, viewsets, permissions
 
 from kitsune.questions.models import Question, Answer
 
@@ -8,7 +8,8 @@ class QuestionShortSerializer(serializers.ModelSerializer):
     products = serializers.SlugRelatedField(many=True, slug_field='slug')
     topics = serializers.SlugRelatedField(many=True, slug_field='slug')
     # Use usernames for product and topic instead of ids.
-    creator = serializers.SlugRelatedField(slug_field='username')
+    creator = serializers.SlugRelatedField(
+        slug_field='username', default=user_from_request)
     updated_by = serializers.SlugRelatedField(slug_field='username')
 
     class Meta:
@@ -32,7 +33,6 @@ class QuestionShortSerializer(serializers.ModelSerializer):
 
 
 class QuestionDetailSerializer(QuestionShortSerializer):
-
     class Meta:
         model = Question
         fields = QuestionShortSerializer.Meta.fields + (
@@ -45,6 +45,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
     serializer_class = QuestionDetailSerializer
     queryset = Question.objects.all()
     paginate_by = 100
+    permission_classes = [permissions.DjangoModelPermissionsOrAnonReadOnly]
 
     def get_pagination_serializer(self, page):
         """
