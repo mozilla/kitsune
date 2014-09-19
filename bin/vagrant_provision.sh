@@ -39,7 +39,7 @@ virtualenv -p /usr/bin/python2.6 $INSTALL_DIR/virtualenv
 chown -R vagrant $INSTALL_DIR/virtualenv
 source $INSTALL_DIR/virtualenv/bin/activate
 
-python $INSTALL_DIR/kitsune/scripts/peep.py install -r $INSTALL_DIR/kitsune/requirements.txt 
+python $INSTALL_DIR/kitsune/scripts/peep.py install -r $INSTALL_DIR/kitsune/requirements/py26.txt 
 pip install nose-progressive==1.5.0
 
 # Copy configurations for kitsune and mysql
@@ -60,6 +60,7 @@ mysql -e "GRANT ALL ON kitsune.* TO kitsune@localhost IDENTIFIED BY 'password'"
 
 # Install npm and included packages (lessc is the one we need of these)
 npm install 
+./node_modules/.bin/gulp nunjucks
 
 # Retrieve and store historical version data
 ./manage.py update_product_details
