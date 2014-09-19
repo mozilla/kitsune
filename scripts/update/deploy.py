@@ -126,7 +126,8 @@ def setup_dependencies(ctx):
         activate_env = os.path.join(settings.SRC_DIR, 'virtualenv', 'bin', 'activate_this.py')
         execfile(activate_env, dict(__file__=activate_env))
 
-        ctx.local('python scripts/peep.py install -r requirements.txt')
+        ctx.local('python scripts/peep.py install -r requirements/default.txt')
+        ctx.local('python scripts/peep.py install -r requirements/py26.txt')
         ctx.local('virtualenv --relocatable virtualenv')
 
         # Fix lib64 symlink to be relative instead of absolute.

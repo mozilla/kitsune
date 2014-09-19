@@ -159,7 +159,13 @@ directory. We use a tool called ``peep`` to install packages and make sure
 versions are pinned.
 
 ::
-    $ ./scripts/peep.py install -r requirements.txt
+    $ ./scripts/peep.py install -r requirements/default.txt
+
+Additionally, if you're running python2.6 you will need to install our
+python2.6 specific dependencies as well.
+
+::
+    $ ./scripts/peep.py install -r requirements/py26.txt
 
 If you have any issues installing via ``peep``, be sure you have the required
 header files from the packages listed in the requirements section above.
