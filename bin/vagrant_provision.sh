@@ -28,10 +28,16 @@ debconf-set-selections <<< 'mariadb-server-5.5 mysql-server/root_password_again 
 
 # Install services and their dependencies
 # Services: Sphinx, MariaDB, ElasticSearch, Redis, and Memcached
-apt-get install -y sphinx-common libapache2-mod-wsgi python-pip libmysqlclient-dev \
+apt-get install -y sphinx-common libapache2-mod-wsgi python-pip libmysqlclient-dev git \
                    libxml2-dev libxslt1-dev zlib1g-dev libjpeg-dev python-dev libssl-dev \
                    openjdk-7-jre-headless mariadb-server-5.5 nodejs elasticsearch redis-server \
                    memcached python2.6 python2.6-dev
+
+if [ "$(ls -A $INSTALL_DIR/kitsune/sumo/static/js/libs/ace/*)" ]; then
+    echo "Submodules are up to date!"
+else
+    echo "Updating submodules..."
+    git submodule update --init --recursive
 
 # Setup the virtualenv and start using it
 pip install virtualenv
