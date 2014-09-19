@@ -297,9 +297,6 @@ python-dateutil==1.5
 # sha256: pvB08EimOg0ZzRpq4pg3e0gANR7KjhKU0z9wnFzdXlo
 South==0.8.2
 
-# sha256: A5sWk4EEqrlBXA8InmvgSEPc7RZD-7EcFqGJF6951Y4
-importlib==1.0.2
-
 # sha256: 8S2Y66uuDo2j4GnZxwYh0VT2iL0G4HZoGzWZ7Xn7JsQ
 pyflakes==0.4.0
 
