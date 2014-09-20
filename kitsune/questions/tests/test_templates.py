@@ -795,7 +795,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         eq_('nofollow', doc('.question .main-content a')[0].attrib['rel'])
         eq_('nofollow', doc('.answer .main-content a')[0].attrib['rel'])
 
-    def test_robots_noindex(self):
+    def test_robots_noindex_unanswered(self):
         """Verify noindex on unanswered questions over 30 days old."""
         q = question(save=True)
 
@@ -819,6 +819,24 @@ class AnswersTemplateTestCase(TestCaseBase):
         eq_(200, response.status_code)
         doc = pq(response.content)
         eq_(0, len(doc('meta[name=robots]')))
+
+    def test_robots_noindex_spam(self):
+        """Verify noindex on questions marked as spam."""
+        q = question(save=True)
+
+        # A brand new questions shouldn't be noindexed...
+        response = get(self.client, 'questions.details', args=[q.id])
+        eq_(200, response.status_code)
+        doc = pq(response.content)
+        eq_(0, len(doc('meta[name=robots]')))
+
+        # But a question marked as spam should be no indexed...
+        q.is_spam = True
+        q.save()
+        response = get(self.client, 'questions.details', args=[q.id])
+        eq_(200, response.status_code)
+        doc = pq(response.content)
+        eq_(1, len(doc('meta[name=robots]')))
 
 
 class TaggingViewTestsAsTagger(TestCaseBase):
