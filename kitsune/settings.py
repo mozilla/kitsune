@@ -637,9 +637,9 @@ STATICI18N_PACKAGES = ['kitsune.sumo']
 # to True
 TOWER_ADD_HEADERS = True
 
-JAVA_BIN = '/usr/bin/java'
-
 LESS_BIN = 'lessc'
+UGLIFY_BIN = 'uglifyjs'
+CLEANCSS_BIN = 'cleancss'
 
 NUNJUCKS_PRECOMPILE_BIN = 'nunjucks-precompile'
 
