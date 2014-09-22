@@ -111,6 +111,7 @@ INSERT INTO `wiki_locale` (`locale`) VALUES ('te');
 INSERT INTO `wiki_locale` (`locale`) VALUES ('th');
 INSERT INTO `wiki_locale` (`locale`) VALUES ('tr');
 INSERT INTO `wiki_locale` (`locale`) VALUES ('uk');
+INSERT INTO `wiki_locale` (`locale`) VALUES ('ur');
 INSERT INTO `wiki_locale` (`locale`) VALUES ('vi');
 INSERT INTO `wiki_locale` (`locale`) VALUES ('zh-CN');
 INSERT INTO `wiki_locale` (`locale`) VALUES ('zh-TW');
