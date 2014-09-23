@@ -1,7 +1,0 @@
-README
-mimeparse.py
-pip-egg-info/mimeparse.egg-info/PKG-INFO
-pip-egg-info/mimeparse.egg-info/SOURCES.txt
-pip-egg-info/mimeparse.egg-info/dependency_links.txt
-pip-egg-info/mimeparse.egg-info/top_level.txt
-pip-egg-info/mimeparse.egg-info/zip-safe

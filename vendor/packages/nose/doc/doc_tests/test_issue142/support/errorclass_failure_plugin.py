@@ -1,1 +1,0 @@
-nose-1.1.2/functional_tests/doc_tests/test_issue142/support/errorclass_failure_plugin.py

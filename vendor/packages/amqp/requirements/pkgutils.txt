@@ -1,5 +1,0 @@
-paver
-flake8
-flakeplus
-tox
-Sphinx-PyPI-upload

@@ -1,0 +1,70 @@
+{% from 'macros.html' import search_result %}
+
+{% if num_results > 0 %}
+  <h2>
+    {# L10n: {n} is the number of search results, {q} is the search query, {product} is the product. #}
+    {{ 'Found <strong>%(n)s</strong> result for <strong>%(q)s</strong> for <strong>%(product)s</strong>'
+        | ngettext('Found <strong>%(n)s</strong> results for <strong>%(q)s</strong> for <strong>%(product)s</strong>', num_results)
+        | interpolate({n: num_results, q: q, product: product_titles}, true)
+        | safe }}
+  </h2>
+
+  <div class="content-box">
+    {% for doc in results %}
+      {{ search_result(doc, q, doc.rank, esab) }}
+    {% endfor %}
+  </div>
+{% else %}
+  <h2>
+    {# L10n: {q} is the search query, {l} is the language searched. #}
+    {{ "We couldn't find any results for <strong>%(q)s</strong> in <strong>%(l)s</strong>. Maybe one of these articles will be helpful?"
+        | gettext
+        | interpolate({q: q, l: lang_name}, true)
+        | safe }}
+  </h2>
+
+  <div class="content-box">
+    {% for doc in fallback_results %}
+      <div class="result document">
+        <h3><a class="title" href="{{ doc.url }}">{{ doc.document_title }}</a></h3>
+        <a tabindex="-1" href="{{ doc.url }}">{{ doc.document_summary }}</a>
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+{% if pagination.num_pages > 1 %}
+  <ol class="pagination cf">
+  {% if pagination.has_previous %}
+    <li class="prev">
+      <a class="btn-page btn-page-prev" href="#" data-instant-search="link" data-href="{{ pagination.url|urlparams({page: pagination.number - 1}) }}">
+        {{ 'Previous'|gettext }}
+      </a>
+    </li>
+  {% endif %}
+  {% if pagination.dotted_lower %}
+    <li><a href="#" data-instant-search="link" data-href="{{ pagination.url|urlparams({page: 1}) }}">{{ 1 }}</a></li>
+    {% if pagination.page_range[0] != 2 %}
+      <li class="skip">&hellip;</li>
+    {% endif %}
+  {% endif %}
+  {% for x in pagination.page_range %}
+    <li {{ x|class_selected(pagination.number)|safe }}>
+      <a href="#" class="{% if x == pagination.number %}btn-page{% endif %}" data-instant-search="link" data-href="{{ pagination.url|urlparams({page: x}) }}">{{ x }}</a>
+    </li>
+  {% endfor %}
+  {% if page.dotted_upper %}
+    {% if pagination.page_range[-1] != num_pages-1 %}
+      <li class="skip">&hellip;</li>
+    {% endif %}
+    <li><a href="#" data-instant-search="link" data-href="{{ pagination.url|urlparams({page: num_pages}) }}">{{ num_pages }}</a></li>
+  {% endif %}
+  {% if pagination.has_next %}
+    <li class="next">
+      <a class="btn-page btn-page-next" href="#" data-instant-search="link" data-href="{{ pagination.url|urlparams({page: pagination.number + 1}) }}">
+        {{ 'Next'|gettext }}
+      </a>
+    </li>
+  {% endif %}
+  </ol>
+{% endif %}

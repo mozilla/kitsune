@@ -37,9 +37,7 @@ HOME = /tmp
 0 4 * * * {{ cron }} auto_archive_old_questions
 0 5 * * * {{ cron }} reindex_kb
 0 6 * * * {{ cron }} process_exit_surveys
-0 1 * * * {{ cron }} update_l10n_coverage_metrics
-45 4 * * * {{ cron }} build_kb_bundles
-0 0 * * * {{ cron }} rebuild_kb
+0 7 * * * {{ cron }} clear_expired_auth_tokens
 0 22 * * * {{ cron }} get_customercare_stats
 42 22 * * * {{ django }} cleanup
 30 3 * * * root {{ rscripts }} scripts/l10n_completion.py --truncate 30 locale media/uploads/l10n_history.json media/uploads/l10n_summary.json
@@ -49,6 +47,7 @@ HOME = /tmp
 # Once per week.
 21 03 * * 3 {{ django }} purge_hashes
 0 4 * * 5 {{ cron }} send_weekly_ready_for_review_digest
+0 0 * * 0 {{ cron }} fix_current_revisions
 
 # Once per month.
 0 0 1 * * {{ cron }} update_l10n_contributor_metrics

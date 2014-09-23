@@ -194,7 +194,7 @@ and prod, and are not intended to beat on the site to find vulnerabilities.
 
 You don't need a Selenium server to run these, and don't need to install
 anything more than a modern version of Firefox, and the dependencies in
-the vendor library.
+the requirements directory.
 
 These tests use Django's `Live Server TestCase`_ class as a base, which
 causes Django to run a real http server for some of it's tests, instead

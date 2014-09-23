@@ -1,1 +1,0 @@
-nose-1.1.2/functional_tests/doc_tests/test_issue089/support/wanted_package/__init__.py

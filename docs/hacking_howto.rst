@@ -151,36 +151,28 @@ terminal window you use.
 Installing dependencies
 =======================
 
-Compiled Packages
------------------
-
-There are a small number of compiled packages, including the MySQL
-Python client.
-
-For development, you should install these with ``pip``, but for
-other situations you may want to use your system package manager.
-
-::
-    $ pip install -r requirements/compiled.txt
-
-If you want to use your system's package manager, you'll need to go
-through ``requirements/compiled.txt`` and install the dependencies by
-hand.
-
-
 Python Packages
 ---------------
 
-All the pure-Python requirements are provided in the ``vendor``
-directory, also known as the "vendor library". This makes the packages
-available to Python without installing them globally and keeps them
-pinned to known-compatible versions.
+All the pure-Python requirements are provided in the requirements
+directory. We use a tool called ``peep`` to install packages and make sure
+versions are pinned. Depending on the version of python you use, you will
+need to install different files.
 
-If you do not have a vendor library, see the section about getting the source
-above.
+Python 2.7::
 
-See the :ref:`vendor library <vendor-chapter>` documentation for more
-information on getting the vendor lib and keeping it up to date.
+    $ ./scripts/peep.py install -r requirements/default.txt
+
+Python 2.6::
+
+    $ ./scripts/peep.py install -r requirements/py26.txt
+
+If you have any issues installing via ``peep``, be sure you have the required
+header files from the packages listed in the requirements section above.
+
+For more information on ``peep``, refer to the `README
+<https://github.com/erikrose/peep>` on the Github page for the project.
+
 
 Javascript Packages
 -------------------
@@ -311,6 +303,22 @@ within its package directory. To set this up, run this command to do
 the initial fetch::
 
     $ ./manage.py update_product_details
+
+
+Pre-compiling JavaScript Templates
+----------------------------------
+
+We use nunjucks to render Jinja-style templates for front-end use. These
+templates get updated from time to time and you will need to pre-compile them
+to ensure that they render correctly. You have two options here:
+
+- One time pre-compile (use this if you are not modifying the templates)::
+
+      $ ./manage.py nunjucks_precompile
+
+- Use gulp to watch for changes and pre-compile (use this if you are making changes to the templates)::
+
+      $ /path/to/gulp watch
 
 
 Testing it out

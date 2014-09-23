@@ -1,5 +1,5 @@
 {% if breadcrumbs %}
-  <div class="breadcrumbs">
+  <div class="breadcrumbs" {% if id %}id="{{ id }}"{% endif %}>
     <div class="container_12 cf">
       <ol id="breadcrumbs" class="grid_12 cf">
         {% for target, label in breadcrumbs %}

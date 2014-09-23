@@ -1,6 +1,7 @@
+import cronjobs
 from datetime import datetime, timedelta
 
-import cronjobs
+from rest_framework.authtoken.models import Token
 
 from django.conf import settings
 
@@ -49,3 +50,9 @@ def reindex_users_that_contributed_yesterday():
     # Army of Awesome replies are live indexed. No need to do anything here.
 
     index_task.delay(UserMappingType, list(set(user_ids)))
+
+
+@cronjobs.register
+def clear_expired_auth_tokens():
+    too_old = datetime.now() - timedelta(days=30)
+    Token.objects.filter(created__lt=too_old).delete()

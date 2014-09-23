@@ -1,17 +1,19 @@
 {
-    "name": "Kitsune",
-    "description": "Platform for Firefox Help",
-    "repository": {
-        "type": "git",
-        "url": "git://github.com/mozilla/kitsune.git"
-    },
-    "devDependencies": {
-        "gulp": "3.8.6",
-        "gulp-watch": "0.6.8",
-        "gulp-nunjucks": "0.2.2"
-    },
-    "dependencies": {
-        "less": "1.7.0",
-        "nunjucks": "1.0.5"
-    }
+  "name": "Kitsune",
+  "description": "Platform for Firefox Help",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/mozilla/kitsune.git"
+  },
+  "devDependencies": {
+    "gulp": "3.8.6",
+    "gulp-watch": "0.6.8",
+    "gulp-nunjucks": "0.2.2"
+  },
+  "dependencies": {
+    "less": "1.7.0",
+    "nunjucks": "1.0.5",
+    "uglify-js": "2.4.13",
+    "clean-css": "2.2.3"
+  }
 }

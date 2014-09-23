@@ -1,1 +1,0 @@
-nose-1.1.2/functional_tests/doc_tests/test_selector_plugin/support/mypackage/math/__init__.py

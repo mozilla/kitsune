@@ -1,25 +1,19 @@
 import json
 
-from rest_framework import generics, serializers, status
+from rest_framework import generics, serializers, status, decorators
 from rest_framework.response import Response
-from rest_framework.decorators import api_view
-from rest_framework.permissions import DjangoModelPermissions
+from rest_framework.authentication import SessionAuthentication
 
-from kitsune.access.decorators import permission_required
 from kitsune.customercare.models import TwitterAccount
-from kitsune.sumo.api import GenericAPIException
+from kitsune.sumo.api import GenericAPIException, GenericDjangoPermission
 
 
-class TwitterAccountBanPermission(DjangoModelPermissions):
-    perms_map = {
-        'GET': ['customercare.ban_account'],
-    }
+class TwitterAccountBanPermission(GenericDjangoPermission):
+    permissions = ['customercare.ban_account']
 
 
-class TwitterAccountIgnorePermission(DjangoModelPermissions):
-    perms_map = {
-        'GET': ['customercare.ignore_account'],
-    }
+class TwitterAccountIgnorePermission(GenericDjangoPermission):
+    permissions = ['customercare.ignore_account']
 
 
 class TwitterAccountSerializer(serializers.ModelSerializer):
@@ -33,6 +27,7 @@ class BannedList(generics.ListAPIView):
     queryset = TwitterAccount.uncached.filter(banned=True)
     serializer_class = TwitterAccountSerializer
     permission_classes = (TwitterAccountBanPermission,)
+    authentication_classes = (SessionAuthentication,)
 
 
 class IgnoredList(generics.ListAPIView):
@@ -40,10 +35,12 @@ class IgnoredList(generics.ListAPIView):
     queryset = TwitterAccount.uncached.filter(ignored=True)
     serializer_class = TwitterAccountSerializer
     permission_classes = (TwitterAccountIgnorePermission,)
+    authentication_classes = (SessionAuthentication,)
 
 
-@permission_required('customercare.ban_account')
-@api_view(['POST'])
+@decorators.api_view(['POST'])
+@decorators.permission_classes([TwitterAccountBanPermission])
+@decorators.authentication_classes([SessionAuthentication])
 def ban(request):
     """Bans a twitter account from using the AoA tool."""
     username = json.loads(request.body).get('username')
@@ -68,8 +65,9 @@ def ban(request):
     return Response({'success': 'Account banned successfully!'})
 
 
-@permission_required('customercare.ban_account')
-@api_view(['POST'])
+@decorators.api_view(['POST'])
+@decorators.permission_classes([TwitterAccountBanPermission])
+@decorators.authentication_classes([SessionAuthentication])
 def unban(request):
     """Unbans a twitter account from using the AoA tool."""
     usernames = json.loads(request.body).get('usernames')
@@ -88,8 +86,9 @@ def unban(request):
     return Response(message)
 
 
-@permission_required('customercare.ignore_account')
-@api_view(['POST'])
+@decorators.api_view(['POST'])
+@decorators.permission_classes([TwitterAccountIgnorePermission])
+@decorators.authentication_classes([SessionAuthentication])
 def ignore(request):
     """Ignores a twitter account from showing up in the AoA tool."""
     username = json.loads(request.body).get('username')
@@ -114,8 +113,9 @@ def ignore(request):
     return Response({'success': 'Account is now being ignored!'})
 
 
-@permission_required('customercare.ignore_account')
-@api_view(['POST'])
+@decorators.api_view(['POST'])
+@decorators.permission_classes([TwitterAccountIgnorePermission])
+@decorators.authentication_classes([SessionAuthentication])
 def unignore(request):
     """Unignores a twitter account from showing up in the AoA tool."""
     usernames = json.loads(request.body).get('usernames')

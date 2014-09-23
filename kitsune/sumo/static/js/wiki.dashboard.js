@@ -56,7 +56,7 @@ function makeVoteGraph($container, descriptors) {
       graph: {
         width: 600,
         height: 300
-      },
+      }
     }).render();
   });
 }
@@ -145,7 +145,7 @@ function makeWikiMetricGraph($container, descriptors, legend, bucket, results) {
     graph: {
       width: 600,
       height: 300
-    },
+    }
   });
 
   graph.render();
@@ -172,80 +172,93 @@ function makeAggregatedWikiMetricGraphs() {
     }
   ];
   var graphs = [];
+  var results = [];
+  var count = 0;
 
-  $.getJSON($contributors.data('url'), function(data) {
-    var results = data.results;
-    var resultsByCode = {};
-    var resultsByDate;
-    var i, l, result, code, locale, date;
+  var callback = function(data) {
+    count++;
+    results = results.concat(data.results);
 
-    for (i = 0, l = results.length; i < l; i++) {
-      // Split out the results by code:
-      code = results[i].code;
-      locale = results[i].locale;
-      date = results[i].date;
+    if (data.next && count < 60) {
+      $.getJSON(data.next, callback);
+    } else {
+      var resultsByCode = {};
+      var resultsByDate;
+      var i, l, result, code, locale, date;
 
-      // If we don't have an entry for the code, create it.
-      resultsByDate = resultsByCode[code] || {};
+      $('.loading-data').remove();
+      $('#dashboard-readouts').show();
 
-      // If we don't have an entry for that date, create it.
-      result = resultsByDate[date] || {date: date};
-      result[locale] = results[i].value;
-      resultsByDate[date] = result;
-      resultsByCode[code] = resultsByDate;
-    }
+      for (i = 0, l = results.length; i < l; i++) {
+        // Split out the results by code:
+        code = results[i].code;
+        locale = results[i].locale;
+        date = results[i].date;
 
-    // Create the graphs.
-    _.each(graphConfigs, function(config) {
-      graphs.push(makeWikiMetricGraph(
-        $(config.selector),
-        _.map(locales, function(locale) {
-            return {
-              name: locale,
-              slug: locale,
-              func: k.Graph.identity(locale)
+        // If we don't have an entry for the code, create it.
+        resultsByDate = resultsByCode[code] || {};
+
+        // If we don't have an entry for that date, create it.
+        result = resultsByDate[date] || {date: date};
+        result[locale] = results[i].value;
+        resultsByDate[date] = result;
+        resultsByCode[code] = resultsByDate;
+      }
+
+      // Create the graphs.
+      _.each(graphConfigs, function (config) {
+        graphs.push(makeWikiMetricGraph(
+          $(config.selector),
+          _.map(locales, function (locale) {
+              return {
+                name: locale,
+                slug: locale,
+                func: k.Graph.identity(locale)
+              }
             }
-          }
-        ),
-        false,
-        false,
-        _.values(resultsByCode[config.code])
-      ));
-    });
-
-    function updateGraphLocales() {
-      // Update the locale series based on the selected locales.
-      var selectedLocales = _.map($('#locale-picker :checked'), function(el) {
-        return $(el).val();
+          ),
+          false,
+          false,
+          _.values(resultsByCode[config.code])
+        ));
       });
 
-      // Loop through all the graphs...
-      _.each(graphs, function(graph) {
-        // And all the series (locales) in each graph...
-        _.each(graph.data.series, function(series, index) {
-          if (selectedLocales.indexOf(locales[index]) >= 0) {
-            // The locale is selected, show it.
-            series.disabled = false;
-            graph.data.seriesSpec[index].disabled = false;
-          } else {
-            // The locale isn't selected, don't show it.
-            series.disabled = true;
-            graph.data.seriesSpec[index].disabled = true;
-          }
+      var updateGraphLocales = function() {
+        // Update the locale series based on the selected locales.
+        var selectedLocales = _.map($('#locale-picker :checked'), function (el) {
+          return $(el).val();
         });
-        graph.rebucket();
-        graph.update();
-      });
+
+        // Loop through all the graphs...
+        _.each(graphs, function (graph) {
+          // And all the series (locales) in each graph...
+          _.each(graph.data.series, function (series, index) {
+            if (selectedLocales.indexOf(locales[index]) >= 0) {
+              // The locale is selected, show it.
+              series.disabled = false;
+              graph.data.seriesSpec[index].disabled = false;
+            } else {
+              // The locale isn't selected, don't show it.
+              series.disabled = true;
+              graph.data.seriesSpec[index].disabled = true;
+            }
+          });
+          graph.rebucket();
+          graph.update();
+        });
+      };
+
+      // Select the top 10 (exclude #1 which is en-US) locales
+      $('#locale-picker :checkbox').slice(1, 11).attr('checked', 'checked');
+
+      // Update the locale series when the selections change.
+      $('#locale-picker :checkbox').on('change', updateGraphLocales);
+
+      updateGraphLocales();
     }
+  };
 
-    // Select the top 10 (exclude #1 which is en-US) locales
-    $('#locale-picker :checkbox').slice(1,11).attr('checked', 'checked');
-
-    // Update the locale series when the selections change.
-    $('#locale-picker :checkbox').on('change', updateGraphLocales);
-
-    updateGraphLocales();
-  });
+  $.getJSON($contributors.data('url'), callback);
 }
 
 }(jQuery));

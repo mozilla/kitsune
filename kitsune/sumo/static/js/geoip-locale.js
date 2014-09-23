@@ -96,6 +96,8 @@
                 $message.append($('<button class="btn confirm" />').text(data[suggestedLocale].confirm));
                 $message.append($('<button class="btn cancel" />').text(data[suggestedLocale].cancel));
             }
+
+            _gaq.push(['_trackEvent', 'Geo IP Targeting', 'show banner']);
         })
         .error(function(err) {
             console.error('GeoIP suggestion error', err);
@@ -110,13 +112,19 @@
             var $this = $(this);
             $announceBar.find('.close-button').click();
             if ($this.hasClass('confirm')) {
-                var newQsVar = 'lang=' + suggestedLocale;
-                if (window.location.search.length === 0) {
-                    newQsVar = '?' + newQsVar;
-                } else {
-                    newQsVar = '&' + newQsVar;
-                }
-                window.location.search += newQsVar;
+                _gaq.push(['_trackEvent', 'Geo IP Targeting', 'click yes']);
+                // Delay the click navigation by 250ms to ensure the event is tracked.
+                setTimeout(function() {
+                    var newQsVar = 'lang=' + suggestedLocale;
+                    if (window.location.search.length === 0) {
+                        newQsVar = '?' + newQsVar;
+                    } else {
+                        newQsVar = '&' + newQsVar;
+                    }
+                    window.location.search += newQsVar;
+                }, 250);
+            } else {
+                _gaq.push(['_trackEvent', 'Geo IP Targeting', 'click no']);
             }
         });
 

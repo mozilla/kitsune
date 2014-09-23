@@ -7,6 +7,11 @@ from django.views.decorators.http import require_GET
 import waffle
 from statsd import statsd
 
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.decorators import permission_classes, api_view
+
+
 from kitsune.access.decorators import login_required
 from kitsune.sumo.decorators import json_view
 from kitsune.users.models import Profile
@@ -49,3 +54,12 @@ def usernames(request):
         return [{'username': u.username,
                  'display_name': display_name_or_none(u)}
                 for u in users[:10]]
+
+
+@api_view(['GET'])
+@permission_classes((IsAuthenticated,))
+def test_auth(request):
+    return Response({
+        'username': request.user.username,
+        'authorized': True,
+    })
