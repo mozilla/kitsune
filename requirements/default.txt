@@ -322,7 +322,7 @@ python-memcached==1.48
 anyjson==0.3.1
 
 # sha256: zuWf2ql6QKxQW7Bim9yLqbp5AS0JnvEdbTooS342nJw
-httplib2==0.8
+httplib2==0.6
 
 # sha256: F3KVsUQkAMks22fo4Y-f9ZRvtEL4WBO50IN4I3IuoI0
 django-cronjobs==0.2.3
