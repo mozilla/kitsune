@@ -321,8 +321,8 @@ python-memcached==1.48
 # sha256: FkPArbfb7MQzFDfuFO9faj1VtP_KFH2xzJV9yWYGI0A
 anyjson==0.3.1
 
-# sha256: zuWf2ql6QKxQW7Bim9yLqbp5AS0JnvEdbTooS342nJw
-httplib2==0.6
+# sha256: OeqMam2fWVwXehYTT8SamQrY04J1jL9GnIZZZi8vUas
+httplib2==0.9
 
 # sha256: F3KVsUQkAMks22fo4Y-f9ZRvtEL4WBO50IN4I3IuoI0
 django-cronjobs==0.2.3
