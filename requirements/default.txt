@@ -73,10 +73,6 @@ https://github.com/willkg/dennis/archive/fb87f585e8f65ae29f86e849710265040e35b68
 # sha256: 0nLBGC6m-dhcZBqK5r5rN7q32oGo9aLTFvQNSPucCWw
 https://github.com/erikrose/django-tidings/archive/b68cbb1044e7020d3ed02f17dcce39ae53db5414.tar.gz#egg=django-tidings
 
-# django-rest-framework: tags/2.3.6^0
-# sha256: lszAzEZmJb4L6IMHyB-XenxBEcziV9Oka9IZCD_fZZc
-https://github.com/tomchristie/django-rest-framework/archive/7ba2f44a0f0e5ed7bac0fbdbb0112bbfe43f6d24.tar.gz#egg=django-rest-framework
-
 # django-statsd: tags/0.3.8.5
 # sha256: LTn7BrZL1DKwIiETzYeOHlosfAnsk7K7V3zw4Kq_GNk
 https://github.com/andymckay/django-statsd/archive/bb601976056d0f922c5a613d2a9786b81d179b06.tar.gz#egg=django-statsd
@@ -337,3 +333,7 @@ statsd==2.0.1
 # sha256: tl3H-YxacpMU0AHruskii-_WJXBanjrgOaXRYMOXb-E
 # sha256: mmQhHJajJiuyVFrMgq9djz2gF1KZ98fpAeTtRVvpZfs
 Django==1.6.7
+
+# sha256: cVnbFB5A1yz_4Wk_xDAjIf7WfMwBU4vyXrNurfi4n3E
+# sha256: NWZcEPVSRwd27M_RWSLTdI4w18AQLrd_3kfOKX2WuyM
+djangorestframework==2.3.14
