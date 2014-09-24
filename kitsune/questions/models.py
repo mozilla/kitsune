@@ -58,10 +58,10 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
 
     created = models.DateTimeField(default=datetime.now, db_index=True)
     updated = models.DateTimeField(default=datetime.now, db_index=True)
-    updated_by = models.ForeignKey(User, null=True,
+    updated_by = models.ForeignKey(User, null=True, blank=True,
                                    related_name='questions_updated')
     last_answer = models.ForeignKey('Answer', related_name='last_reply_in',
-                                    null=True)
+                                    null=True, blank=True)
     num_answers = models.IntegerField(default=0, db_index=True)
     solution = models.ForeignKey('Answer', related_name='solution_for',
                                  null=True)

@@ -9,8 +9,9 @@ class QuestionShortSerializer(serializers.ModelSerializer):
     topics = serializers.SlugRelatedField(many=True, slug_field='slug')
     # Use usernames for product and topic instead of ids.
     creator = serializers.SlugRelatedField(
-        slug_field='username', default=user_from_request)
-    updated_by = serializers.SlugRelatedField(slug_field='username')
+        slug_field='username', required=False)
+    updated_by = serializers.SlugRelatedField(
+        slug_field='username', required=False)
 
     class Meta:
         model = Question
@@ -30,6 +31,16 @@ class QuestionShortSerializer(serializers.ModelSerializer):
             'updated_by',
             'updated',
         )
+
+    def validate(self, attrs):
+        user = getattr(self.context.get('request'), 'user')
+        is_anonymous = user.is_anonymous() if user else True
+
+        if not is_anonymous:
+            if attrs.get('creator') is None:
+                attrs['creator'] = user
+
+        return attrs
 
 
 class QuestionDetailSerializer(QuestionShortSerializer):
