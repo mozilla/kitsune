@@ -121,6 +121,12 @@ https://github.com/jsocol/django-ratelimit/archive/462c8c3ee31c5f1e3803ecd65c422
 # sha256: n2z5Yyg4yaLniynKdPghPSIBEl_ktNOxaK8ltJWkCB0
 https://github.com/mozilla/django-recaptcha/archive/b3ce0daadfff7735d2a0865b8419711748c9190a.tar.gz#egg=django-recaptcha
 
+# sha256: E_91_bau0KJSZ6_JIBTR8b2alaakyi1OXquychsnX4Y
+elasticutils==0.9.1
+
+# sha256: Y_uAldsYamwLussgySl75CXfqd5MMws1NGD2NYIHxqo
+elasticsearch==0.4.5
+
 # django-session-csrf: tags/v0.5
 # sha256: AdM_S160nuU1pdfrFvkQ9Eh7P9ToAPD2LauhDLWx_Xk
 https://github.com/mozilla/django-session-csrf/archive/15492526b23cdad56fe3df1342e2d82ec5d17c18.tar.gz#egg=django-session-csrf
