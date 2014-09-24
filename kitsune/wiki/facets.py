@@ -116,12 +116,15 @@ def _es_documents_for(locale, topics=None, products=None):
          .filter(document_locale=locale, document_is_archived=False,
                  document_category__in=settings.IA_DEFAULT_CATEGORIES))
 
+
     for topic in topics or []:
         s = s.filter(topic=topic.slug)
     for product in products or []:
         s = s.filter(product=product.slug)
 
-    return list(s.order_by('-document_recent_helpful_votes')[:100])
+    results = list(s.order_by('-document_recent_helpful_votes')[:100])
+    results = DocumentMappingType.reshape(results)
+    return results
 
 
 def _db_documents_for(locale, topics=None, products=None):

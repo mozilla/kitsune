@@ -621,6 +621,11 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
 
 @register_mapping_type
 class DocumentMappingType(SearchMappingType):
+    list_keys = [
+        'topic',
+        'product'
+    ]
+
     @classmethod
     def get_model(cls):
         return Document

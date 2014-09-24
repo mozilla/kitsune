@@ -178,6 +178,11 @@ class Profile(ModelBase, SearchMixin):
 
 @register_mapping_type
 class UserMappingType(SearchMappingType):
+    list_keys = [
+        'twitter_usernames',
+        'itwitter_usernames',
+    ]
+
     @classmethod
     def get_model(cls):
         return Profile

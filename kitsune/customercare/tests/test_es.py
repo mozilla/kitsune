@@ -3,6 +3,7 @@ from nose.tools import eq_
 from kitsune.customercare.models import ReplyMetricsMappingType
 from kitsune.customercare.tests import reply
 from kitsune.search.tests.test_es import ElasticTestCase
+from kitsune.users.tests import user
 
 
 class AnswerMetricsTests(ElasticTestCase):
@@ -21,11 +22,14 @@ class AnswerMetricsTests(ElasticTestCase):
 
     def test_data_in_index(self):
         """Verify the data we are indexing."""
-        r = reply(locale='de', save=True)
-
+        u = user(save=True)
+        r = reply(user=u, locale='de', save=True)
         self.refresh()
 
         eq_(ReplyMetricsMappingType.search().count(), 1)
-        data = ReplyMetricsMappingType.search().values_dict()[0]
+        results = ReplyMetricsMappingType.search().values_dict('locale', 'creator_id')
+        results = ReplyMetricsMappingType.reshape(results)
+        data = results[0]
+
         eq_(data['locale'], r.locale)
         eq_(data['creator_id'], r.user_id)

@@ -491,6 +491,14 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
 
 @register_mapping_type
 class QuestionMappingType(SearchMappingType):
+    list_keys = [
+        'topic',
+        'product',
+        'question_tag',
+        'question_answer_content',
+        'question_answer_creator'
+    ]
+
     @classmethod
     def get_model(cls):
         return Question

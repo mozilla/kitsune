@@ -213,11 +213,11 @@ https://github.com/rlr/django-qunit/archive/2cda783a05912a6cbfaa4799583aa22cf24e
 # sha256: 3w8dxWiq5fW-GDgKRIZrBIKQ3Wq6b_2RwU3RbE9yidw
 https://github.com/mozilla/django-product-details/archive/50d83e16d801ef069738cfb9f6feccc0abaeca01.tar.gz#egg=django-mozilla-product-details
 
-# sha256: E_91_bau0KJSZ6_JIBTR8b2alaakyi1OXquychsnX4Y
-elasticutils==0.9.1
+# sha256: CnOPMnGcdnU38yYRjBBcIZ5nfna3hUfthHxqqvvKDGU
+elasticutils==0.10.1
 
-# sha256: Y_uAldsYamwLussgySl75CXfqd5MMws1NGD2NYIHxqo
-elasticsearch==0.4.5
+# sha256: U6gisBsElN-WWMBOhyFhgOXsvoWxeGc92Eix-AnVwQA
+elasticsearch==1.2.0
 
 # sha256: HDW0rCBs7y0kgWyJ-Jzyid09OM98RJuz-re_bUPwGx8
 ordereddict==1.1

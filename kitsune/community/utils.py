@@ -99,6 +99,8 @@ def _get_creator_counts(query, count):
         .values_dict('id', 'username', 'display_name', 'avatar',
                      'twitter_usernames', 'last_contribution_date'))[:count]
 
+    results = UserMappingType.reshape(results)
+
     # Calculate days since last activity and
     # create a {<user_id>: <user>,...} dict for convenience.
     user_lookup = {}
