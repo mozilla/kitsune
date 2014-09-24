@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError
 from rest_framework import serializers, viewsets, permissions
 
 from kitsune.questions.models import Question, Answer
@@ -32,14 +33,20 @@ class QuestionShortSerializer(serializers.ModelSerializer):
             'updated',
         )
 
-    def validate(self, attrs):
+    def validate_creator(self, attrs, source):
         user = getattr(self.context.get('request'), 'user')
-        is_anonymous = user.is_anonymous() if user else True
+        if user and not user.is_anonymous() and attrs.get('creator') is None:
+            attrs['creator'] = user
+        return attrs
 
-        if not is_anonymous:
-            if attrs.get('creator') is None:
-                attrs['creator'] = user
+    def validate_products(self, attrs, source):
+        if not attrs.get('products', []):
+            raise ValidationError('At least one required.')
+        return attrs
 
+    def validate_topics(self, attrs, source):
+        if not attrs.get('topics', []):
+            raise ValidationError('At least one required.')
         return attrs
 
 
