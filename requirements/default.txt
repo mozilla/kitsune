@@ -37,10 +37,6 @@ https://github.com/jbalogh/django-mobility/archive/e9fc5f7587311350326f044378d5b
 # sha256: BEn5NWyfDXsRFpassWRh5I4QyX2gvgYZu53hJZ1mqhY
 https://github.com/getsentry/raven-python/archive/ab53d276262a0fa2932588b34de4e68ffe22d930.tar.gz#egg=raven-python
 
-# elasticutils: tags/v0.9.1^0
-# sha256: OTZ4mjjiLzXDRK7mbZ5hzOSR7v62NYpUYS_FYNKBoPo
-https://github.com/mozilla/elasticutils/archive/641ccade9cfba1415809077fad674b41b436d174.tar.gz#egg=elasticutils
-
 # test-utils: master
 # sha256: TfVu9q0eiiDx7hMROF0rrBpPv60m3A5ceuuN_sMdgHI
 https://github.com/jbalogh/test-utils/archive/9fa5b26730e36ee390653f7364a74bb7180e9b4c.tar.gz#egg=test-utils
@@ -161,10 +157,6 @@ https://github.com/ryanmcgrath/twython/archive/4327ff30dffb1b17945b08655daf2b169
 # sha256: 1u2Ac4sH1g0umFzMKERI59vXxBaC3Ez2VzTQ2ldvcA4
 https://github.com/mozilla/django-csp/archive/5c5f5a6b55fb78e99db939c79f0f0d8003a62c98.tar.gz#egg=django-csp
 
-# elasticsearch-py: tags/0.4.5
-# sha256: h2WPuVFSAUU-R2QKcYG5P4myRade5QdbG6xz1jb-S4o
-https://github.com/elasticsearch/elasticsearch-py/archive/f8cee704479c5a73af27b31ff4de78a45050638f.tar.gz#egg=elasticsearch-py
-
 # django-extensions: tags/1.3.3
 # sha256: oEiCqdyUMgocSPT2W6xNnQj_MoJgNTkCQK1JnBPLfsc
 https://github.com/django-extensions/django-extensions/archive/47a531c996c92a369755a4a9e0857e51afd25cab.tar.gz#egg=django-extensions
@@ -220,6 +212,12 @@ https://github.com/rlr/django-qunit/archive/2cda783a05912a6cbfaa4799583aa22cf24e
 # django-mozilla-product-details: master
 # sha256: 3w8dxWiq5fW-GDgKRIZrBIKQ3Wq6b_2RwU3RbE9yidw
 https://github.com/mozilla/django-product-details/archive/50d83e16d801ef069738cfb9f6feccc0abaeca01.tar.gz#egg=django-mozilla-product-details
+
+# sha256: E_91_bau0KJSZ6_JIBTR8b2alaakyi1OXquychsnX4Y
+elasticutils==0.9.1
+
+# sha256: Y_uAldsYamwLussgySl75CXfqd5MMws1NGD2NYIHxqo
+elasticsearch==0.4.5
 
 # sha256: HDW0rCBs7y0kgWyJ-Jzyid09OM98RJuz-re_bUPwGx8
 ordereddict==1.1
