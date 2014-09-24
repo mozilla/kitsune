@@ -9,6 +9,7 @@ import mock
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 
+from kitsune.flagit.models import FlaggedObject
 from kitsune.products.models import Product, Topic
 from kitsune.products.tests import product
 from kitsune.questions.models import (
@@ -450,6 +451,15 @@ class TestQuestionReply(TestCaseBase):
         self.client.login(username=u.username, password='testpass')
         self.question = question(save=True)
 
+    def test_reply_to_spam_question(self):
+        self.question.is_spam = True
+        self.question.save()
+
+        res = self.client.post(
+            reverse('questions.reply', args=[self.question.id]),
+            {'content': 'The best reply evar!'})
+        eq_(res.status_code, 404)
+
     def test_needs_info(self):
         eq_(self.question.needs_info, False)
 
@@ -472,6 +482,92 @@ class TestQuestionReply(TestCaseBase):
 
         q = Question.objects.get(id=self.question.id)
         eq_(q.needs_info, False)
+
+
+class TestMarkingSolved(TestCaseBase):
+    def setUp(self):
+        u = user(save=True)
+        self.client.login(username=u.username, password='testpass')
+        self.question = question(creator=u, save=True)
+        self.answer = answer(question=self.question, save=True)
+
+    def test_cannot_mark_spam_answer(self):
+        self.answer.is_spam = True
+        self.answer.save()
+
+        res = self.client.get(
+            reverse('questions.solve',
+                    args=[self.question.id, self.answer.id]))
+        eq_(res.status_code, 404)
+
+    def test_cannot_mark_answers_on_spam_question(self):
+        self.question.is_spam = True
+        self.question.save()
+
+        res = self.client.get(
+            reverse('questions.solve',
+                    args=[self.question.id, self.answer.id]))
+        eq_(res.status_code, 404)
+
+
+class TestVoteAnswers(TestCaseBase):
+    def setUp(self):
+        u = user(save=True)
+        self.client.login(username=u.username, password='testpass')
+        self.question = question(save=True)
+        self.answer = answer(question=self.question, save=True)
+
+    def test_cannot_vote_for_answers_on_spam_question(self):
+        self.question.is_spam = True
+        self.question.save()
+
+        res = self.client.post(
+            reverse('questions.answer_vote',
+                    args=[self.question.id, self.answer.id]))
+        eq_(res.status_code, 404)
+
+    def test_cannot_vote_for_answers_marked_spam(self):
+        self.answer.is_spam = True
+        self.answer.save()
+
+        res = self.client.post(
+            reverse('questions.answer_vote',
+                    args=[self.question.id, self.answer.id]))
+        eq_(res.status_code, 404)
+
+
+class TestVoteQuestions(TestCaseBase):
+    def setUp(self):
+        u = user(save=True)
+        self.client.login(username=u.username, password='testpass')
+        self.question = question(save=True)
+
+    def test_cannot_vote_on_spam_question(self):
+        self.question.is_spam = True
+        self.question.save()
+
+        res = self.client.post(
+            reverse('questions.vote', args=[self.question.id]))
+        eq_(res.status_code, 404)
+
+
+class TestQuestionDetails(TestCaseBase):
+    def setUp(self):
+        self.question = question(save=True)
+
+    def test_mods_can_see_spam_details(self):
+        self.question.is_spam = True
+        self.question.save()
+
+        res = get(self.client, 'questions.details', args=[self.question.id])
+        eq_(404, res.status_code)
+
+        u = user(save=True)
+        add_permission(u, FlaggedObject, 'can_moderate')
+        self.client.login(username=u.username, password='testpass')
+
+        res = get(self.client, 'questions.details', args=[self.question.id])
+        eq_(200, res.status_code)
 
 
 class TestRateLimiting(TestCaseBase):

@@ -820,24 +820,6 @@ class AnswersTemplateTestCase(TestCaseBase):
         doc = pq(response.content)
         eq_(0, len(doc('meta[name=robots]')))
 
-    def test_robots_noindex_spam(self):
-        """Verify noindex on questions marked as spam."""
-        q = question(save=True)
-
-        # A brand new questions shouldn't be noindexed...
-        response = get(self.client, 'questions.details', args=[q.id])
-        eq_(200, response.status_code)
-        doc = pq(response.content)
-        eq_(0, len(doc('meta[name=robots]')))
-
-        # But a question marked as spam should be no indexed...
-        q.is_spam = True
-        q.save()
-        response = get(self.client, 'questions.details', args=[q.id])
-        eq_(200, response.status_code)
-        doc = pq(response.content)
-        eq_(1, len(doc('meta[name=robots]')))
-
 
 class TaggingViewTestsAsTagger(TestCaseBase):
     """Tests for views that add and remove tags, logged in as someone who can
