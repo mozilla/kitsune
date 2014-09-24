@@ -48,11 +48,6 @@ def jsonp_is_valid(func):
     return func_regex.match(func)
 
 
-class ObjectDict(object):
-    def __init__(self, source_dict):
-        self.__dict__.update(source_dict)
-
-
 @mobile_template('search/{mobile/}results.html')
 def search(request, template=None):
     """ES-specific search view"""
@@ -393,7 +388,7 @@ def search(request, template=None):
                 searcher = []
             else:
                 bounds = documents[0][1]
-                searcher = searcher.values_dict()[bounds[0]:bounds[1]]
+                searcher = searcher[bounds[0]:bounds[1]]
 
         results = []
         for i, doc in enumerate(searcher):
@@ -434,7 +429,7 @@ def search(request, template=None):
                     'type': 'thread'}
 
             result['url'] = doc['url']
-            result['object'] = ObjectDict(doc)
+            result['object'] = doc
             result['search_summary'] = summary
             result['rank'] = rank
             result['score'] = doc.es_meta.score

@@ -230,7 +230,7 @@ class AnswerMetricsTests(ElasticTestCase):
         self.refresh()
 
         eq_(AnswerMetricsMappingType.search().count(), 1)
-        data = AnswerMetricsMappingType.search().values_dict()[0]
+        data = AnswerMetricsMappingType.search()[0]
         eq_(data['locale'], q.locale)
         eq_(data['product'], [p.slug])
         eq_(data['creator_id'], a.creator_id)
@@ -242,7 +242,7 @@ class AnswerMetricsTests(ElasticTestCase):
         q.save()
 
         self.refresh()
-        data = AnswerMetricsMappingType.search().values_dict()[0]
+        data = AnswerMetricsMappingType.search()[0]
         eq_(data['is_solution'], True)
 
         # Make the answer creator to be the question creator and verify.
@@ -250,7 +250,7 @@ class AnswerMetricsTests(ElasticTestCase):
         a.save()
 
         self.refresh()
-        data = AnswerMetricsMappingType.search().values_dict()[0]
+        data = AnswerMetricsMappingType.search()[0]
         eq_(data['by_asker'], True)
 
 

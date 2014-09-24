@@ -94,6 +94,7 @@ def search(request):
                     should=True)
                 .values_dict('id', 'username', 'display_name', 'avatar',
                              'twitter_usernames', 'last_contribution_date'))
+            results = UserMappingType.reshape(results)
 
             statsd.incr('community.usersearch.success')
         except ES_EXCEPTIONS as exc:

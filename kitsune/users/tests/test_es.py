@@ -36,7 +36,7 @@ class UserSearchTests(ElasticTestCase):
         self.refresh()
 
         eq_(UserMappingType.search().count(), 1)
-        data = UserMappingType.search().values_dict()[0]
+        data = UserMappingType.search()[0]
         eq_(data['username'], p.user.username)
         eq_(data['display_name'], p.name)
         assert r1.twitter_username in data['twitter_usernames']
@@ -108,8 +108,7 @@ class UserSearchTests(ElasticTestCase):
 
         eq_(UserMappingType.search().query(
             iusername__match='1337mike').count(), 1)
-        data = UserMappingType.search().query(
-            iusername__match='1337mike').values_dict()[0]
+        data = UserMappingType.search().query(iusername__match='1337mike')[0]
         eq_(data['username'], p.user.username)
         eq_(data['display_name'], p.name)
 
@@ -138,7 +137,7 @@ class UserSearchTests(ElasticTestCase):
         eq_(UserMappingType.search().query(
             itwitter_usernames__match='l33tmike').count(), 1)
         data = UserMappingType.search().query(
-            itwitter_usernames__match='l33tmike').values_dict()[0]
+            itwitter_usernames__match='l33tmike')[0]
         eq_(data['username'], p.user.username)
         eq_(data['display_name'], p.name)
         assert r1.twitter_username in data['twitter_usernames']
@@ -150,8 +149,7 @@ class UserSearchTests(ElasticTestCase):
 
         self.refresh()
 
-        data = UserMappingType.search().query(
-            username__match='satdav').values_dict()[0]
+        data = UserMappingType.search().query(username__match='satdav')[0]
         assert not data['last_contribution_date']
 
         # Add a AoA reply. It should be the last contribution.
@@ -160,8 +158,7 @@ class UserSearchTests(ElasticTestCase):
 
         self.refresh()
 
-        data = UserMappingType.search().query(
-            username__match='satdav').values_dict()[0]
+        data = UserMappingType.search().query(username__match='satdav')[0]
         eq_(data['last_contribution_date'], d)
 
         # Add a Support Forum answer. It should be the last contribution.
@@ -171,8 +168,7 @@ class UserSearchTests(ElasticTestCase):
         p.save()  # we need to resave the profile to force a reindex
         self.refresh()
 
-        data = UserMappingType.search().query(
-            username__match='satdav').values_dict()[0]
+        data = UserMappingType.search().query(username__match='satdav')[0]
         eq_(data['last_contribution_date'], d)
 
         # Add a Revision edit. It should be the last contribution.
@@ -182,8 +178,7 @@ class UserSearchTests(ElasticTestCase):
         p.save()  # we need to resave the profile to force a reindex
         self.refresh()
 
-        data = UserMappingType.search().query(
-            username__match='satdav').values_dict()[0]
+        data = UserMappingType.search().query(username__match='satdav')[0]
         eq_(data['last_contribution_date'], d)
 
         # Add a Revision review. It should be the last contribution.
@@ -193,8 +188,7 @@ class UserSearchTests(ElasticTestCase):
         p.save()  # we need to resave the profile to force a reindex
         self.refresh()
 
-        data = UserMappingType.search().query(
-            username__match='satdav').values_dict()[0]
+        data = UserMappingType.search().query(username__match='satdav')[0]
         eq_(data['last_contribution_date'], d)
 
     def test_reindex_users_that_contributed_yesterday(self):
@@ -208,8 +202,7 @@ class UserSearchTests(ElasticTestCase):
         reindex_users_that_contributed_yesterday()
         self.refresh()
 
-        data = UserMappingType.search().query(
-            username__match='answerer').values_dict()[0]
+        data = UserMappingType.search().query(username__match='answerer')[0]
         eq_(data['last_contribution_date'].date(), yesterday.date())
 
         # Verify for edits.
@@ -220,8 +213,7 @@ class UserSearchTests(ElasticTestCase):
         reindex_users_that_contributed_yesterday()
         self.refresh()
 
-        data = UserMappingType.search().query(
-            username__match='editor').values_dict()[0]
+        data = UserMappingType.search().query(username__match='editor')[0]
         eq_(data['last_contribution_date'].date(), yesterday.date())
 
         # Verify for reviews.
@@ -232,6 +224,5 @@ class UserSearchTests(ElasticTestCase):
         reindex_users_that_contributed_yesterday()
         self.refresh()
 
-        data = UserMappingType.search().query(
-            username__match='reviewer').values_dict()[0]
+        data = UserMappingType.search().query(username__match='reviewer')[0]
         eq_(data['last_contribution_date'].date(), yesterday.date())

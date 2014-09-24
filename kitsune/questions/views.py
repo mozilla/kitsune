@@ -1658,11 +1658,14 @@ def _search_suggestions(request, text, locale, product_slugs):
         raw_results = (
             wiki_s.filter(filter)
                   .query(or_=query)
-                  .values_dict('id')[:WIKI_RESULTS])
-        for r in raw_results:
+                  .values_list('id')[:WIKI_RESULTS])
+
+        raw_results = [result[0][0] for result in raw_results]
+
+        for id_ in raw_results:
             try:
                 doc = (Document.objects.select_related('current_revision')
-                                       .get(pk=r['id']))
+                                       .get(pk=id_))
                 results.append({
                     'search_summary': clean_excerpt(
                         doc.current_revision.summary),
@@ -1692,11 +1695,12 @@ def _search_suggestions(request, text, locale, product_slugs):
 
         raw_results = (question_s.query(or_=query)
                        .filter(question_filter)
-                       .values_dict('id')[:QUESTIONS_RESULTS])
+                       .values_list('id')[:QUESTIONS_RESULTS])
+        raw_results = [result[0][0] for result in raw_results]
 
-        for r in raw_results:
+        for id_ in raw_results:
             try:
-                q = Question.objects.get(pk=r['id'])
+                q = Question.objects.get(pk=id_)
                 results.append({
                     'search_summary': clean_excerpt(q.content[0:500]),
                     'url': q.get_absolute_url(),
