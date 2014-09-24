@@ -776,7 +776,7 @@ def _skip_answer_ratelimit(request):
            ip=False, rate='100/d')
 def reply(request, question_id):
     """Post a new answer to a question."""
-    question = get_object_or_404(Question, pk=question_id)
+    question = get_object_or_404(Question, pk=question_id, is_spam=False)
     answer_preview = None
 
     if not question.allows_new_answer(request.user):
@@ -830,7 +830,7 @@ def reply(request, question_id):
 def solve(request, question_id, answer_id):
     """Accept an answer as the solution to the question."""
 
-    question = get_object_or_404(Question, pk=question_id)
+    question = get_object_or_404(Question, pk=question_id, is_spam=False)
 
     # It is possible this was clicked from the email.
     if not request.user.is_authenticated():
@@ -850,7 +850,7 @@ def solve(request, question_id, answer_id):
             # This user is neither authenticated nor using the correct secret
             return HttpResponseForbidden()
 
-    answer = get_object_or_404(Answer, pk=answer_id)
+    answer = get_object_or_404(Answer, pk=answer_id, is_spam=False)
 
     if not question.allows_solve(request.user):
         raise PermissionDenied
@@ -905,7 +905,7 @@ def unsolve(request, question_id, answer_id):
 @ratelimit(keys=user_or_ip('question-vote'), ip=False, rate='10/d')
 def question_vote(request, question_id):
     """I have this problem too."""
-    question = get_object_or_404(Question, pk=question_id)
+    question = get_object_or_404(Question, pk=question_id, is_spam=False)
 
     if not question.editable:
         raise PermissionDenied
@@ -951,7 +951,8 @@ def question_vote(request, question_id):
 @ratelimit(keys=user_or_ip('answer-vote'), ip=False, rate='10/d')
 def answer_vote(request, question_id, answer_id):
     """Vote for Helpful/Not Helpful answers"""
-    answer = get_object_or_404(Answer, pk=answer_id, question=question_id)
+    answer = get_object_or_404(Answer, pk=answer_id, question=question_id,
+                               is_spam=False, question__is_spam=False)
 
     if not answer.question.editable:
         raise PermissionDenied
@@ -1275,7 +1276,7 @@ def edit_answer(request, question_id, answer_id):
 def watch_question(request, question_id):
     """Start watching a question for replies or solution."""
 
-    question = get_object_or_404(Question, pk=question_id)
+    question = get_object_or_404(Question, pk=question_id, is_spam=False)
     form = WatchQuestionForm(request.user, request.POST)
 
     # Process the form
@@ -1345,7 +1346,7 @@ def unsubscribe_watch(request, watch_id, secret):
 @require_GET
 def activate_watch(request, watch_id, secret):
     """Activate watching a question."""
-    watch = get_object_or_404(Watch, pk=watch_id)
+    watch = get_object_or_404(Watch, pk=watch_id, is_spam=False)
     question = watch.content_object
     if watch.secret == secret and isinstance(question, Question):
         watch.activate().save()
