@@ -409,7 +409,7 @@ def question_details(request, template, question_id, form=None,
     if not request.MOBILE:
         no_answers = ans_['answers'].paginator.count == 0
         too_old = question.created < datetime.now() - timedelta(days=30)
-        if question.is_spam or (no_answers and too_old):
+        if no_answers and too_old:
             extra_kwargs.update(robots_noindex=True)
 
     return render(request, template, extra_kwargs)
