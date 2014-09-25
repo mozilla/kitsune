@@ -10,7 +10,9 @@ from kitsune.questions.models import Question, Answer
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        questions = Question.objects.all()
+        answers = Answer.objects.filter(is_spam=True).values_list('id',
+                                                                  flat=True)
+        questions = Question.objects.filter(answer_id__in=answers)
 
         for q in questions:
             q.num_answers = Answer.objects.filter(
