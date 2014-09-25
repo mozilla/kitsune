@@ -16,7 +16,7 @@ class Migration(SchemaMigration):
             q.num_answers = Answer.objects.filter(
                 question=q, is_spam=False).count()
             latest = Answer.uncached.filter(
-                question=q, is_spam=False).order('-created')[:1]
+                question=q, is_spam=False).order_by('-created')[:1]
             q.last_answer = latest[0] if len(latest) else None
             q.save()
 
