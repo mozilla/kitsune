@@ -1,7 +1,8 @@
 from django.core.exceptions import ValidationError
-from rest_framework import serializers, viewsets, permissions
+from rest_framework import serializers, viewsets, permissions, filters
 
 from kitsune.questions.models import Question, Answer
+from kitsune.sumo.api import InequalityFilterBackend
 
 
 class QuestionShortSerializer(serializers.ModelSerializer):
@@ -22,6 +23,7 @@ class QuestionShortSerializer(serializers.ModelSerializer):
             'creator',
             'is_archived',
             'is_locked',
+            'is_spam',
             'last_answer',
             'locale',
             'num_answers',
@@ -64,6 +66,22 @@ class QuestionViewSet(viewsets.ModelViewSet):
     queryset = Question.objects.all()
     paginate_by = 100
     permission_classes = [permissions.DjangoModelPermissionsOrAnonReadOnly]
+    # filter_backends = [InequalityFilterBackend, filters.DjangoFilterBackend]
+    filter_backends = [filters.DjangoFilterBackend]
+    filter_fields = [
+        'creator',
+        'created',
+        'is_archived',
+        'is_locked',
+        'is_spam',
+        'locale',
+        'num_answers',
+        # 'products',
+        'title',
+        # 'topics',
+        'updated',
+        'updated_by',
+    ]
 
     def get_pagination_serializer(self, page):
         """
