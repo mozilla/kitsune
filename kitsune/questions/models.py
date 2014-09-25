@@ -778,7 +778,8 @@ class Answer(ModelBase, SearchMixin):
                 question=self.question, is_spam=False).count()
             latest = Answer.uncached.filter(
                 question=self.question, is_spam=False).order_by('-created')[:1]
-            self.question.last_answer = latest[0] if len(latest) else None
+            self.question.last_answer = (
+                self if new else latest[0] if len(latest) else None)
 
             self.question.save(update)
             self.question.clear_cached_contributors()
