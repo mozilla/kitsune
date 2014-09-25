@@ -769,22 +769,26 @@ class Answer(ModelBase, SearchMixin):
 
         super(Answer, self).save(*args, **kwargs)
 
-        if new:
+        if new or self.is_spam:
             # Occasionally, num_answers seems to get out of sync with the
             # actual number of answers. This changes it to pull from
             # uncached on the off chance that fixes it. Plus if we enable
             # caching of counts, this will continue to work.
             self.question.num_answers = Answer.uncached.filter(
                 question=self.question, is_spam=False).count()
-            self.question.last_answer = self
+            latest = Answer.uncached.filter(
+                question=self.question, is_spam=False).order('-created')[:1]
+            self.question.last_answer = latest[0] if len(latest) else None
+
             self.question.save(update)
             self.question.clear_cached_contributors()
 
-            if not no_notify:
+            if new and not no_notify:
                 # Avoid circular import: events.py imports Question.
                 from kitsune.questions.events import QuestionReplyEvent
                 QuestionReplyEvent(self).fire(exclude=self.creator)
-        else:
+
+        if not new:
             # Clear the attached images cache.
             self.clear_cached_images()
 
