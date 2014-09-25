@@ -12,7 +12,7 @@ class Migration(SchemaMigration):
     def forwards(self, orm):
         answers = Answer.objects.filter(is_spam=True).values_list('id',
                                                                   flat=True)
-        questions = Question.objects.filter(answer_id__in=answers)
+        questions = Question.objects.filter(answers__in=answers)
 
         for q in questions:
             q.num_answers = Answer.objects.filter(
