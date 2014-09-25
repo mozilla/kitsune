@@ -9,6 +9,7 @@ import mock
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 
+from kitsune.flagit.models import FlaggedObject
 from kitsune.products.models import Product, Topic
 from kitsune.products.tests import product
 from kitsune.questions.models import (
@@ -548,6 +549,25 @@ class TestVoteQuestions(TestCaseBase):
         res = self.client.post(
             reverse('questions.vote', args=[self.question.id]))
         eq_(res.status_code, 404)
+
+
+class TestQuestionDetails(TestCaseBase):
+    def setUp(self):
+        self.question = question(save=True)
+
+    def test_mods_can_see_spam_details(self):
+        self.question.is_spam = True
+        self.question.save()
+
+        res = get(self.client, 'questions.details', args=[self.question.id])
+        eq_(404, res.status_code)
+
+        u = user(save=True)
+        add_permission(u, FlaggedObject, 'can_moderate')
+        self.client.login(username=u.username, password='testpass')
+
+        res = get(self.client, 'questions.details', args=[self.question.id])
+        eq_(200, res.status_code)
 
 
 class TestRateLimiting(TestCaseBase):

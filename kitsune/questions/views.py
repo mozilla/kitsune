@@ -382,6 +382,9 @@ def question_details(request, template, question_id, form=None,
                          answer_preview)
     question = ans_['question']
 
+    if question.is_spam and not request.user.has_perm('flagit.can_moderate'):
+        raise Http404('No Questions matches the given query.')
+
     # Try to parse troubleshooting data as JSON.
     troubleshooting_json = question.metadata.get('troubleshooting')
     question.metadata['troubleshooting_parsed'] = (
