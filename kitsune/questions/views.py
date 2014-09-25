@@ -1346,7 +1346,7 @@ def unsubscribe_watch(request, watch_id, secret):
 @require_GET
 def activate_watch(request, watch_id, secret):
     """Activate watching a question."""
-    watch = get_object_or_404(Watch, pk=watch_id, is_spam=False)
+    watch = get_object_or_404(Watch, pk=watch_id)
     question = watch.content_object
     if watch.secret == secret and isinstance(question, Question):
         watch.activate().save()
