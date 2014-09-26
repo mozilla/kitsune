@@ -3,7 +3,7 @@
 "use strict";
 
 function init() {
-  makeKPIGraph($('#kpi-questions'), [
+  makeKPIGraph($('#kpi-questions'), true, [
     {
       name: gettext('Questions'),
       slug: 'questions',
@@ -38,7 +38,7 @@ function init() {
     }
   ]);
 
-  makeKPIGraph($('#kpi-vote'), [
+  makeKPIGraph($('#kpi-vote'), true, [
     {
       name: gettext('Article Votes: % Helpful'),
       slug: 'wiki_percent',
@@ -53,7 +53,7 @@ function init() {
     }
   ]);
 
-  makeKPIGraph($('#kpi-active-contributors'), [
+  makeKPIGraph($('#kpi-active-contributors'), false, [
     {
       name: gettext('en-US KB'),
       slug: 'en_us',
@@ -76,7 +76,7 @@ function init() {
     }
   ]);
 
-  makeKPIGraph($('#kpi-ctr'), [
+  makeKPIGraph($('#kpi-ctr'), true, [
     {
       name: gettext('Click Through Rate %'),
       slug: 'ctr',
@@ -85,7 +85,7 @@ function init() {
     }
   ]);
 
-  makeKPIGraph($('#kpi-visitors'), [
+  makeKPIGraph($('#kpi-visitors'), true, [
     {
       name: gettext('Visitors'),
       slug: 'visitors',
@@ -93,7 +93,7 @@ function init() {
     }
   ]);
 
-  makeKPIGraph($('#kpi-l10n'), [
+  makeKPIGraph($('#kpi-l10n'), true, [
     {
       name: gettext('L10n Coverage'),
       slug: 'l10n',
@@ -103,7 +103,7 @@ function init() {
     }
   ]);
 
-  makeKPIGraph($('#exit-survey'), [
+  makeKPIGraph($('#exit-survey'), true, [
     {
       name: gettext('Percent Yes'),
       slug: 'percent_yes',
@@ -133,7 +133,7 @@ function init() {
 
 }
 
-function makeKPIGraph($container, descriptors) {
+function makeKPIGraph($container, bucket, descriptors) {
   $.getJSON($container.data('url'), function(data) {
     new k.Graph($container, {
       data: {
@@ -143,7 +143,7 @@ function makeKPIGraph($container, descriptors) {
       options: {
         legend: 'mini',
         slider: true,
-        bucket: true
+        bucket: bucket
       },
       graph: {
         width: 880,
