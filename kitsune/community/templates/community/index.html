@@ -1,5 +1,8 @@
 {% extends "community/base.html" %}
 
+{% set title = _('Community Hub') %}
+{% set crumbs = [(None, title)] %}
+
 {% block content %}
   <h1 class="main-heading">{{ _('Community Hub') }}</h1>
 
@@ -7,13 +10,13 @@
     <h1>{{ _('Top Contributors') }}</h1>
 
     {# Locale Filter #}
-    <div class="selector block">
+    <div class="selector">
       <button type="button" class="ts-select-trigger">
         <!-- arrow icon using icon font -->
         <span aria-hidden="true" data-icon-arrow="&#xe800;" class="selector-arrow">
             <span class='current-selected'>
               {% if not locale %}
-                {{ _('Filter Top Contributors by Locale') }}
+                {{ _('Filter by Locale') }}
               {% else %}
                 {{ settings.LANGUAGES_DICT[locale.lower()] }}
               {% endif %}
@@ -43,13 +46,13 @@
     </div>
 
     {# Product Filter #}
-    <div class="selector block">
+    <div class="selector">
       <button type="button" class="ts-select-trigger">
         <!-- arrow icon using icon font -->
         <span aria-hidden="true" data-icon-arrow="&#xe800;" class="selector-arrow">
             <span class='current-selected'>
               {% if not product %}
-                {{ _('Filter Top Contributors by Product') }}
+                {{ _('Filter by Product') }}
               {% else %}
                 {{ _(product.title, 'DB: products.Product.title') }}
               {% endif %}

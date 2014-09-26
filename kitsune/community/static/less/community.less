@@ -20,7 +20,6 @@ main {
   width: 90%;
 }
 main {
-  padding: 0 2rem;
   h1,
   h2,
   h3 {
@@ -67,7 +66,7 @@ main {
 }
 .contributors {
   display: inline-block;
-  width: 49%;
+  width: 51%;
 }
 .community-news {
   display: inline-block;
@@ -79,7 +78,7 @@ main {
   section {
     background-color: white;
     border-radius: 6px;
-    margin: 0 2rem 2rem 0;
+    margin: 0 1rem 0.5rem 0;
     padding: .1rem 1rem 2rem 1rem;
   }
   ul {
@@ -144,7 +143,7 @@ input.search {
   li {
     display: inline-block;
     list-style: none;
-    margin: 0 .4rem .2rem 0;
+    margin: 0 0 .2rem;
   }
   .activity {
     display: inline-block;
@@ -188,10 +187,10 @@ input.search {
   background-color: white;
   display: inline-block;
   height: auto;
-  margin: 1rem;
+  margin: 10px 5px;
   padding: .6rem;
   position: relative;
-  width: 22%;
+  width: 31%;
   h2 {
     margin: 0;
   }
@@ -203,6 +202,10 @@ input.search {
   .user-details {
     display: inline-block;
     vertical-align: top;
+
+    ul {
+      padding: 0 0 0 20px;
+    }
   }
 }
 
@@ -220,24 +223,6 @@ input.accessibly-hidden,
     height: 1px;
     width: 1px;
     overflow: hidden;
-}
-
-@media only screen and (max-width: 1024px) {
-  .header-content,
-  main {
-    margin: 0 auto;
-    width: 70%;
-  }
-  .contributors {
-    display: inline-block;
-    width: 100%;
-  }
-  .community-news {
-    display: inline-block;
-    float: none;
-    margin-right: 1rem;
-    width: 100%;
-  }
 }
 
 #doc-content {
