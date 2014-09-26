@@ -21,7 +21,6 @@ from kitsune.questions.events import QuestionReplyEvent, QuestionSolvedEvent
 from kitsune.questions.models import Question, Answer, VoteMetadata
 from kitsune.questions.tests import TestCaseBase, tags_eq, question, answer
 from kitsune.questions.views import UNAPPROVED_TAG, NO_TAG
-from kitsune.questions.cron import cache_top_contributors
 from kitsune.sumo.helpers import urlparams
 from kitsune.sumo.tests import (
     get, post, attrs_eq, emailmessage_raise_smtp, TestCase, LocalizingClient)
@@ -1061,32 +1060,6 @@ class QuestionsTemplateTestCase(TestCaseBase):
             len(doc('#question-%s .thread-contributed.highlighted' % q1.id)))
         eq_(0,
             len(doc('#question-%s .thread-contributed.highlighted' % q2.id)))
-
-    def test_top_contributors(self):
-        # There should be no top contributors since there are no solutions.
-        cache_top_contributors()
-        response = self.client.get(reverse('questions.list', args=['all']))
-        doc = pq(response.content)
-        eq_(0, len(doc('#top-contributors ol li')))
-
-        # Solve a question and verify we now have a top conributor.
-        a = answer(save=True)
-        a.question.solution = a
-        a.question.save()
-        cache_top_contributors()
-        response = self.client.get(reverse('questions.list', args=['all']))
-        doc = pq(response.content)
-        lis = doc('#top-contributors ol li')
-        eq_(1, len(lis))
-        eq_(a.creator.username, lis[0].text)
-
-        # Make answer 8 days old. There should no be top contributors.
-        a.created = datetime.now() - timedelta(days=8)
-        a.save()
-        cache_top_contributors()
-        response = self.client.get(reverse('questions.list', args=['all']))
-        doc = pq(response.content)
-        eq_(0, len(doc('#top-contributors ol li')))
 
     def test_tagged(self):
         u = user(save=True)
