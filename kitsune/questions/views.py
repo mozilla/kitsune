@@ -35,6 +35,7 @@ from tidings.models import Watch
 from tower import ugettext as _, ugettext_lazy as _lazy
 
 from kitsune.access.decorators import permission_required, login_required
+from kitsune.community.utils import top_contributors_questions
 from kitsune.karma.manager import KarmaManager
 from kitsune.products.models import Product, Topic
 from kitsune.questions import config
@@ -221,8 +222,10 @@ def question_list(request, template, product_slug):
 
     # Filter by locale for AAQ locales, and by locale + default for others.
     if request.LANGUAGE_CODE in settings.AAQ_LANGUAGES:
+        forum_locale = request.LANGUAGE_CODE
         locale_query = Q(locale=request.LANGUAGE_CODE)
     else:
+        forum_locale = settings.WIKI_DEFAULT_LANGUAGE
         locale_query = Q(locale=request.LANGUAGE_CODE)
         locale_query |= Q(locale=settings.WIKI_DEFAULT_LANGUAGE)
 
@@ -274,6 +277,20 @@ def question_list(request, template, product_slug):
         request.session['questions_escalated'] = escalated
         request.session['questions_offtopic'] = offtopic
 
+    # Get the top contributors for the locale and product.
+    # If we are in a product forum, limit the top contributors to that product.
+    if products and len(products) == 1:
+        product = products[0]
+    else:
+        product = None
+    try:
+        top_contributors = top_contributors_questions(
+            locale=forum_locale, product=product)
+    except ES_EXCEPTIONS as exc:
+        top_contributors = []
+        statsd.incr('questions.topcontributors.eserror')
+        log.exception('Support Forum Top contributors query failed.')
+
     data = {'questions': questions_page,
             'feeds': feed_urls,
             'filter': filter_,
@@ -292,19 +309,9 @@ def question_list(request, template, product_slug):
             'product_slug': product_slug,
             'multiple_products': multiple,
             'all_products': product_slug == 'all',
+            'top_contributors': top_contributors,
             'topic_list': topic_list,
             'topic': topic}
-
-    if (waffle.flag_is_active(request, 'karma') and
-            waffle.switch_is_active('karma')):
-        kmgr = KarmaManager()
-        data.update(karma_top=kmgr.top_users('3m', count=20))
-        if request.user.is_authenticated():
-            ranking = kmgr.ranking('3m', request.user)
-            if ranking <= config.HIGHEST_RANKING:
-                data.update(karma_ranking=ranking)
-    else:
-        data.update(top_contributors=_get_top_contributors())
 
     with statsd.timer('questions.view.render'):
         return render(request, template, data)
@@ -1779,14 +1786,6 @@ def _add_tag(request, question_id):
         return question, canonical_name
 
     return None, None
-
-
-def _get_top_contributors():
-    """Retrieves the top contributors from cache, if available.
-
-    These are the users with the most solutions in the last week.
-    """
-    return cache.get(settings.TOP_CONTRIBUTORS_CACHE_KEY)
 
 
 # Initialize a WatchQuestionForm

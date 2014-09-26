@@ -19,9 +19,7 @@ HOME = /tmp
 # Every 6 hours.
 0 */6 * * * {{ django }} update_product_details -q > /dev/null
 40 */6 * * * {{ cron }} purge_tweets
-50 */6 * * * {{ cron }} cache_top_contributors
 20 */6 * * * {{ cron }} generate_missing_share_links
-
 
 # Once per day.
 0 16 * * * {{ cron }} reload_wiki_traffic_stats

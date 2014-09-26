@@ -1,11 +1,16 @@
+from datetime import datetime, timedelta
+
 from nose.tools import eq_
+from pyquery import PyQuery as pq
 
 from kitsune.products.tests import product, topic
 from kitsune.questions.models import (
     QuestionMappingType, AnswerMetricsMappingType)
 from kitsune.questions.tests import question, answer, answervote, questionvote
 from kitsune.search.tests.test_es import ElasticTestCase
-from kitsune.users.tests import user
+from kitsune.sumo.tests import LocalizingClient
+from kitsune.sumo.urlresolvers import reverse
+from kitsune.users.tests import user, profile
 
 
 class QuestionUpdateTests(ElasticTestCase):
@@ -247,3 +252,34 @@ class AnswerMetricsTests(ElasticTestCase):
         self.refresh()
         data = AnswerMetricsMappingType.search().values_dict()[0]
         eq_(data['by_asker'], True)
+
+
+class SupportForumTopContributorsTests(ElasticTestCase):
+    client_class = LocalizingClient
+
+    def test_top_contributors(self):
+        # There should be no top contributors since there are no answers.
+        response = self.client.get(reverse('questions.list', args=['all']))
+        eq_(200, response.status_code)
+        doc = pq(response.content)
+        eq_(0, len(doc('#top-contributors ol li')))
+
+        # Add an answer, we now have a top conributor.
+        a = answer(save=True)
+        profile(user=a.creator)
+        self.refresh()
+        response = self.client.get(reverse('questions.list', args=['all']))
+        eq_(200, response.status_code)
+        doc = pq(response.content)
+        lis = doc('#top-contributors ol li')
+        eq_(1, len(lis))
+        eq_(a.creator.get_profile().display_name, lis[0].text)
+
+        # Make answer 91 days old. There should no be top contributors.
+        a.created = datetime.now() - timedelta(days=91)
+        a.save()
+        self.refresh()
+        response = self.client.get(reverse('questions.list', args=['all']))
+        eq_(200, response.status_code)
+        doc = pq(response.content)
+        eq_(0, len(doc('#top-contributors ol li')))
