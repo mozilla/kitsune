@@ -1,10 +1,10 @@
 {% extends "community/base.html" %}
 
-{% block title %}{{ _('Contributor Search Results - Mozilla Support Community') }}{% endblock %}
+{% set title = _('Community Search Results') %}
+{% set crumbs = [(url('community.home'), _('Community Hub')),
+                 (None, title)] %}
 
 {% block content %}
-  <h1 class="main-heading">{{ _('Community Hub') }}</h1>
-
   <article class="community-results">
 
     <section class="community-results-header">
