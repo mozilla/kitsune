@@ -1027,7 +1027,7 @@ def reindex_questions_answers(sender, instance, **kw):
     This is needed because the solution may have changed."""
     if instance.id:
         answer_ids = instance.answers.all().values_list('id', flat=True)
-        index_task.delay(AnswerMetricsMappingType, answer_ids)
+        index_task.delay(AnswerMetricsMappingType, list(answer_ids))
 
 post_save.connect(
     reindex_questions_answers, sender=Question,
