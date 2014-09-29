@@ -23,7 +23,6 @@ from django.views.decorators.http import (require_POST, require_GET,
 
 import jingo
 import waffle
-from elasticsearch.exceptions import ElasticsearchException
 from ordereddict import OrderedDict
 from mobility.decorators import mobile_template
 from ratelimit.decorators import ratelimit
@@ -287,7 +286,7 @@ def question_list(request, template, product_slug):
     try:
         top_contributors = top_contributors_questions(
             locale=forum_locale, product=product)
-    except ElasticsearchException as exc:
+    except ES_EXCEPTIONS as exc:
         top_contributors = []
         statsd.incr('questions.topcontributors.eserror')
         log.exception('Support Forum Top contributors query failed.')
