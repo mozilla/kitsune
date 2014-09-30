@@ -124,9 +124,6 @@
   {% endif %}
   <li><a href="{{ url('gallery.home') }}">{{ _('Media Gallery') }}</a></li>
   <li><a href="{{ url('search')|urlparams(a=2) }}">{{ _('Advanced Search') }}</a></li>
-  {% if user.has_perm('karma.view_dashboard') %}
-    <li><a href="{{ url('karma.questions_dashboard') }}">{{ _('Karma Dashboard') }}</a></li>
-  {% endif %}
   <li><a href="{{ url('kpi.dashboard') }}">{{ _('KPI Dashboard') }}</a></li>
 {%- endmacro %}
 

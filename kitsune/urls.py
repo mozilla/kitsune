@@ -34,7 +34,7 @@ urlpatterns = patterns(
     (r'^1', include('kitsune.inproduct.urls')),
     (r'^postcrash', include('kitsune.postcrash.urls')),
     (r'^groups', include('kitsune.groups.urls')),
-    (r'^karma', include('kitsune.karma.urls')),
+    (r'^karma-going-away', include('kitsune.karma.urls')),
     (r'^kpi/', include('kitsune.kpi.urls')),
     (r'^products', include('kitsune.products.urls')),
     (r'^announcements', include('kitsune.announcements.urls')),
