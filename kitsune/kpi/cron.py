@@ -478,6 +478,13 @@ def _process_exit_survey_results():
 @cronjobs.register
 def survey_recent_askers():
     """Add question askers to a surveygizmo campaign to get surveyed."""
+    if settings.STAGE:
+        # Only run this on prod, it doesn't need to be running multiple times
+        # from different places.
+        print ('Skipped email address processing in survey_recent_askers(). '
+               'Set settings.STAGE to False to run it for real.')
+        return
+
     # We get the email addresses of all users that asked a question 2 days
     # ago. Then, all we have to do is send the email address to surveygizmo
     # and it does the rest.
