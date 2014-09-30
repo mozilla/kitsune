@@ -495,6 +495,6 @@ def survey_recent_askers():
         .filter(created__gte=two_days_ago, created__lt=yesterday)
         .values_list('creator__email', flat=True))
     for email in emails:
-            add_email_to_campaign(SURVEYS[''], email)
+            add_email_to_campaign(SURVEYS['askers'], email)
 
     print '%s emails added to askers survey...' % len(emails)
