@@ -7,6 +7,7 @@ from django.conf import settings
 from django.contrib.sites.models import Site
 from django.db.models import F, Q, ObjectDoesNotExist
 
+from multidb.pinning import pin_this_thread, unpin_this_thread
 from statsd import statsd
 from tower import ugettext as _
 
@@ -130,17 +131,24 @@ def send_weekly_ready_for_review_digest():
 
 @cronjobs.register
 def fix_current_revisions():
-    docs = Document.objects.all()
+    """Fixes documents that have the current_revision set incorrectly."""
+    try:
+        # Sends all writes to the master DB. Slaves are readonly.
+        pin_this_thread()
 
-    for d in docs:
-        revs = Revision.objects.filter(document=d, is_approved=True)
-        revs = list(revs.order_by('-reviewed')[:1])
+        docs = Document.objects.all()
 
-        if len(revs):
-            rev = revs[0]
+        for d in docs:
+            revs = Revision.objects.filter(document=d, is_approved=True)
+            revs = list(revs.order_by('-reviewed')[:1])
 
-            if d.current_revision != rev:
-                d.current_revision = rev
-                d.save()
-                print d.get_absolute_url()
-                statsd.incr('wiki.cron.fix-current-revision')
+            if len(revs):
+                rev = revs[0]
+
+                if d.current_revision != rev:
+                    d.current_revision = rev
+                    d.save()
+                    print d.get_absolute_url()
+                    statsd.incr('wiki.cron.fix-current-revision')
+    finally:
+        unpin_this_thread()
