@@ -37,7 +37,8 @@ HOME = /tmp
 0 4 * * * {{ cron }} auto_archive_old_questions
 0 5 * * * {{ cron }} reindex_kb
 0 6 * * * {{ cron }} process_exit_surveys
-0 7 * * * {{ cron }} clear_expired_auth_tokens
+0 7 * * * {{ cron }} survey_recent_askers
+0 8 * * * {{ cron }} clear_expired_auth_tokens
 0 22 * * * {{ cron }} get_customercare_stats
 42 22 * * * {{ django }} cleanup
 30 3 * * * root {{ rscripts }} scripts/l10n_completion.py --truncate 30 locale media/uploads/l10n_history.json media/uploads/l10n_summary.json
