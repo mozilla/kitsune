@@ -176,6 +176,11 @@ FXOS_LANGUAGES = [
     'tr',
 ]
 
+# These languages will get a wiki page instead of the product and topic pages.
+SIMPLE_WIKI_LANGUAGES = [
+    'et',
+]
+
 # Languages that should show up in language switcher.
 LANGUAGE_CHOICES = tuple(
     [(lang, LOCALES[lang].native) for lang in SUMO_LANGUAGES

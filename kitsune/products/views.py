@@ -6,9 +6,11 @@ from django.shortcuts import get_object_or_404, render
 from mobility.decorators import mobile_template
 
 from kitsune.products.models import Product, Topic
+from kitsune.wiki.decorators import check_simple_wiki_locale
 from kitsune.wiki.facets import topics_for, documents_for
 
 
+@check_simple_wiki_locale
 @mobile_template('products/{mobile/}products.html')
 def product_list(request, template):
     """The product picker page."""
@@ -17,6 +19,7 @@ def product_list(request, template):
         'products': products})
 
 
+@check_simple_wiki_locale
 @mobile_template('products/{mobile/}product.html')
 def product_landing(request, template, slug):
     """The product landing page."""
@@ -45,6 +48,7 @@ def product_landing(request, template, slug):
     })
 
 
+@check_simple_wiki_locale
 @mobile_template('products/{mobile/}documents.html')
 def document_listing(request, template, product_slug, topic_slug,
                      subtopic_slug=None):
