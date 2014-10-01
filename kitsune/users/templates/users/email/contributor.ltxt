@@ -66,11 +66,13 @@ and we’ll help you get started. It’s great to have you onboard!
 
 {# L10n: This is an email.  Whitespace matters! #}
 {% trans %}
-You can also apply to our buddy program and get guidance from
-our more experienced volunteers:
+You can also apply to our Buddy Program and get guidance from our more
+experienced contributors. Just introduce yourself in the forum for New
+Contributors by starting a new thread. Put your name on the thread title and
+tell us a bit about yourself:
 {% endtrans %}
 
-http://mzl.la/16m82GK
+http://mzl.la/1CGbET4
 
 {# L10n: This is at the end of an email. #}
 {{ _('Welcome to SUMO!') }}
