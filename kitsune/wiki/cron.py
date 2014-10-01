@@ -37,6 +37,9 @@ def generate_missing_share_links():
 
     tasks.add_short_links.delay(document_ids)
 
+    if len(document_ids) > 0:
+        print 'add_short_links() called for %s documents' % len(document_ids)
+
 
 @cronjobs.register
 def rebuild_kb():
