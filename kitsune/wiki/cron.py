@@ -35,7 +35,7 @@ def generate_missing_share_links():
                              html__startswith=REDIRECT_HTML)
                     .values_list('id', flat=True))
 
-    tasks.add_short_links.delay(document_ids)
+    tasks.add_short_links.delay(list(document_ids))
 
     if len(document_ids) > 0:
         print 'add_short_links() called for %s documents' % len(document_ids)
