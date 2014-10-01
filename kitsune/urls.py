@@ -66,12 +66,15 @@ urlpatterns = patterns(
     # Services and sundry.
     (r'', include('kitsune.sumo.urls')),
 
-    # APIs
+    # v1 APIs
     (r'^api/1/kb/', include('kitsune.wiki.urls_api')),
     (r'^api/1/products/', include('kitsune.products.urls_api')),
     (r'^api/1/customercare/', include('kitsune.customercare.urls_api')),
     (r'^api/1/gallery/', include('kitsune.gallery.urls_api')),
     (r'^api/1/users/', include('kitsune.users.urls_api')),
+
+    # v2 APIs
+    (r'^api/2/', include('kitsune.questions.urls_api')),
 )
 
 # Handle 404 and 500 errors
