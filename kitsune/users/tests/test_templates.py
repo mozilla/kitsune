@@ -277,6 +277,53 @@ class EditProfileTests(TestCaseBase):
                 eq_(data[key], getattr(profile, key))
         eq_(data['timezone'], profile.timezone.zone)
 
+    def test_user_cant_edit_others_profile_without_permission(self):
+        u1 = user(save=True)
+        url = reverse('users.edit_profile', args=[u1.username])
+
+        u2 = user(save=True)
+        self.client.login(username=u2.username, password='testpass')
+
+        # Try GET
+        r = self.client.get(url)
+        eq_(403, r.status_code)
+
+        # Try POST
+        r = self.client.post(url, {})
+        eq_(403, r.status_code)
+
+    def test_user_can_edit_others_profile_with_permission(self):
+        u1 = user(save=True)
+        url = reverse('users.edit_profile', args=[u1.username])
+
+        u2 = user(save=True)
+        add_permission(u2, Profile, 'change_profile')
+        self.client.login(username=u2.username, password='testpass')
+
+        # Try GET
+        r = self.client.get(url)
+        eq_(200, r.status_code)
+
+        # Try POST
+        data = {'name': 'John Doe',
+                'public_email': True,
+                'bio': 'my bio',
+                'website': 'http://google.com/',
+                'twitter': '',
+                'facebook': '',
+                'irc_handle': 'johndoe',
+                'timezone': 'America/New_York',
+                'country': 'US',
+                'city': 'Disney World',
+                'locale': 'en-US'}
+        r = self.client.post(url, data)
+        eq_(302, r.status_code)
+        profile = User.objects.get(username=u1.username).get_profile()
+        for key in data:
+            if key != 'timezone':
+                eq_(data[key], getattr(profile, key))
+        eq_(data['timezone'], profile.timezone.zone)
+
 
 class EditAvatarTests(TestCaseBase):
 
