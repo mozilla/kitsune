@@ -117,8 +117,10 @@ class QuestionViewSet(viewsets.ModelViewSet):
 
 
 class AnswerShortSerializer(serializers.ModelSerializer):
-    creator = serializers.SlugRelatedField(slug_field='username')
-    updated_by = serializers.SlugRelatedField(slug_field='username')
+    creator = serializers.SlugRelatedField(slug_field='username',
+                                           required=False)
+    updated_by = serializers.SlugRelatedField(slug_field='username',
+                                              required=False)
 
     class Meta:
         model = Answer
@@ -129,6 +131,12 @@ class AnswerShortSerializer(serializers.ModelSerializer):
             'updated',
             'updated_by',
         )
+
+    def validate_creator(self, attrs, source):
+        user = getattr(self.context.get('request'), 'user')
+        if user and not user.is_anonymous() and attrs.get('creator') is None:
+            attrs['creator'] = user
+        return attrs
 
 
 class AnswerDetailSerializer(AnswerShortSerializer):
