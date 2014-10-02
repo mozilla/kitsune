@@ -779,10 +779,6 @@ WIKI_REBUILD_TOKEN = 'sumo:wiki:full-rebuild'
 ANONYMOUS_COOKIE_NAME = 'SUMO_ANONID'
 ANONYMOUS_COOKIE_MAX_AGE = 30 * 86400  # Seconds
 
-# Top contributors cache settings
-TOP_CONTRIBUTORS_CACHE_KEY = 'sumo:TopContributors'
-TOP_CONTRIBUTORS_CACHE_TIMEOUT = 60 * 60 * 12
-
 # Do not change this without also deleting all wiki documents:
 WIKI_DEFAULT_LANGUAGE = LANGUAGE_CODE
 
