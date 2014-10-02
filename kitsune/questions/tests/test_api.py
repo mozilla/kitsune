@@ -1,11 +1,13 @@
 import mock
 from nose.tools import eq_, ok_
 
+from rest_framework.test import APIClient
+
 from kitsune.sumo.tests import TestCase
 from kitsune.questions import api
 from kitsune.questions.models import Question
 from kitsune.questions.tests import question
-from kitsune.users.tests import profile
+from kitsune.users.tests import profile, user
 from kitsune.products.tests import product, topic
 from kitsune.sumo.urlresolvers import reverse
 
@@ -77,8 +79,12 @@ class TestQuestionSerializer(TestCase):
 
 class TestQuestionViewSet(TestCase):
 
+    def setUp(self):
+        self.client = APIClient()
+
     def test_short_serializer_used_for_lists(self):
-        question(save=True)
+        q = question(save=True)
+        self.client.force_authenticate(user=q.creator)
         res = self.client.get(reverse('question-list'))
         eq_(res.status_code, 200)
         # The short serializer should not include the content field.
@@ -93,14 +99,42 @@ class TestQuestionViewSet(TestCase):
         assert 'content' in res.data
 
     def test_create(self):
+        u = user(save=True)
+        p = product(save=True)
+        t = topic(product=p, save=True)
+        self.client.force_authenticate(user=u)
         data = {
             'title': 'How do I start Firefox?',
             'content': 'Seriously, what do I do?',
+            'products': [p.slug],
+            'topics': [t.slug],
         }
         eq_(Question.objects.count(), 0)
         res = self.client.post(reverse('question-list'), data)
-        eq_(res.status_code, 200)
+        import q
+        q(res.data)
+        eq_(res.status_code, 201)
         eq_(Question.objects.count(), 1)
         q = Question.objects.all()[0]
         eq_(q.title, data['title'])
         eq_(q.content, data['content'])
+
+    def test_delete_permissions(self):
+        u1 = user(save=True)
+        u2 = user(save=True)
+        q = question(creator=u1, save=True)
+
+        # Anonymous user can't delete
+        self.client.force_authenticate(user=None)
+        res = self.client.delete(reverse('question-detail', args=[q.id]))
+        eq_(res.status_code, 401)  # Unauthorized
+
+        # Non-owner can't deletea
+        self.client.force_authenticate(user=u2)
+        res = self.client.delete(reverse('question-detail', args=[q.id]))
+        eq_(res.status_code, 403)  # Forbidden
+
+        # Owner can delete
+        self.client.force_authenticate(user=u1)
+        res = self.client.delete(reverse('question-detail', args=[q.id]))
+        eq_(res.status_code, 204)  # No content

@@ -2,7 +2,25 @@ from django.core.exceptions import ValidationError
 from rest_framework import serializers, viewsets, permissions, filters
 
 from kitsune.questions.models import Question, Answer
-from kitsune.sumo.api import InequalityFilterBackend
+
+
+class OnlyCreatorEdits(permissions.BasePermission):
+    """
+    Only allow objects to be edited and deleted by their creators.
+
+    TODO: This should be tied to user and object permissions better, but
+    for now this is a bandaid.
+    """
+
+    def has_object_permission(self, request, view, obj):
+        # SAFE_METHODS is a list containing all the read-only methods.
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        # If flow gets here, the method will modify something.
+        user = getattr(request, 'user', None)
+        owner = getattr(obj, 'creator', None)
+        # Only the owner can modify things.
+        return user == owner
 
 
 class QuestionShortSerializer(serializers.ModelSerializer):
@@ -65,7 +83,10 @@ class QuestionViewSet(viewsets.ModelViewSet):
     serializer_class = QuestionDetailSerializer
     queryset = Question.objects.all()
     paginate_by = 100
-    permission_classes = [permissions.DjangoModelPermissionsOrAnonReadOnly]
+    permission_classes = [
+        OnlyCreatorEdits,
+        permissions.IsAuthenticatedOrReadOnly,
+    ]
     # filter_backends = [InequalityFilterBackend, filters.DjangoFilterBackend]
     filter_backends = [filters.DjangoFilterBackend]
     filter_fields = [
@@ -122,6 +143,18 @@ class AnswerViewSet(viewsets.ModelViewSet):
     serializer_class = AnswerDetailSerializer
     queryset = Answer.objects.all()
     paginate_by = 100
+    permission_classes = [
+        OnlyCreatorEdits,
+        permissions.IsAuthenticatedOrReadOnly,
+    ]
+    filter_backends = [filters.DjangoFilterBackend]
+    filter_fields = [
+        'question',
+        'created',
+        'creator',
+        'updated',
+        'updated_by',
+    ]
 
     def get_pagination_serializer(self, page):
         """
