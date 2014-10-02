@@ -170,13 +170,15 @@ Python 2.6::
 If you have any issues installing via ``peep``, be sure you have the required
 header files from the packages listed in the requirements section above.
 
-The ``--no-use-wheel`` option is to work around a bug in Pip that causes
-wheels to not properly clean up the packages they replace in some situations.
-See `This Peep issue<https://github.com/erikrose/peep/issues/50>` and
-`This Pip issue<https://github.com/pypa/pip/issues/1825>` for more details
+For more information on ``peep``, refer to the
+`README <https://github.com/erikrose/peep>`_ on the Github page for the project.
 
-For more information on ``peep``, refer to the `README
-<https://github.com/erikrose/peep>` on the Github page for the project.
+.. Note::
+
+   The ``--no-use-wheel`` option is to work around a bug in Pip that causes
+   wheels to not properly clean up the packages they replace in some situations.
+   See `This Peep issue <https://github.com/erikrose/peep/issues/50>`_ and
+   `This Pip issue <https://github.com/pypa/pip/issues/1825>`_ for more details
 
 
 Javascript Packages
