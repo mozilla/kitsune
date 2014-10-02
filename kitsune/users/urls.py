@@ -19,6 +19,7 @@ detail_patterns = patterns(
     '',
     url(r'^$', views.profile, name='users.profile'),
     url(r'^/documents$', views.documents_contributed, name='users.documents'),
+    url(r'^/edit$', views.edit_profile, name='users.edit_profile'),
     # TODO:
     # url('^abuse', views.report_abuse, name='users.abuse'),
 )
@@ -40,7 +41,7 @@ users_patterns = patterns(
         name='users.old_activate'),
     url(r'^/activate/(?P<user_id>\d+)/(?P<activation_key>\w+)$',
         views.activate, name='users.activate'),
-    url(r'^/edit$', views.edit_profile, name='users.edit_profile'),
+    url(r'^/edit$', views.edit_profile, name='users.edit_my_profile'),
     url(r'^/settings$', views.edit_settings, name='users.edit_settings'),
     url(r'^/watches$', views.edit_watch_list, name='users.edit_watch_list'),
     url(r'^/avatar$', views.edit_avatar, name='users.edit_avatar'),
@@ -87,7 +88,7 @@ users_patterns = patterns(
 urlpatterns = patterns(
     '',
     # URLs for a single user.
-    (r'^user/(?P<user_id>[\w@\.\s+-]+)', include(detail_patterns)),
+    (r'^user/(?P<username>[\w@\.\s+-]+)', include(detail_patterns)),
     url(r'^user/(?P<object_id>\w+)/flag$', kitsune.flagit.views.flag,
         {'content_type': ContentType.objects.get_for_model(Profile).id},
         name='users.flag'),
