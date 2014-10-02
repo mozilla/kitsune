@@ -8,7 +8,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.models import Site
 from django.http import (HttpResponsePermanentRedirect, HttpResponseRedirect,
-                         Http404)
+                         Http404, HttpResponseForbidden)
 from django.utils.http import urlencode
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import (require_http_methods, require_GET,
@@ -304,17 +304,17 @@ def confirm_change_email(request, activation_key):
 
 @require_GET
 @mobile_template('users/{mobile/}profile.html')
-def profile(request, template, user_id):
+def profile(request, template, username):
     # The browser replaces '+' in URL's with ' ' but since we never have ' ' in
     # URL's we can assume everytime we see ' ' it was a '+' that was replaced.
     # We do this to deal with legacy usernames that have a '+' in them.
-    user_id = user_id.replace(' ', '+')
+    username = username.replace(' ', '+')
 
-    user = User.objects.filter(username=user_id).first()
+    user = User.objects.filter(username=username).first()
 
     if not user:
         try:
-            user = get_object_or_404(User, id=user_id)
+            user = get_object_or_404(User, id=username)
         except ValueError:
             raise Http404('No Profile matches the given query.')
         return redirect(reverse('users.profile', args=(user.username,)))
@@ -378,9 +378,9 @@ def deactivation_log(request):
 
 
 @require_GET
-def documents_contributed(request, user_id):
+def documents_contributed(request, username):
     user_profile = get_object_or_404(
-        Profile, user__id=user_id, user__is_active=True)
+        Profile, user__username=username, user__is_active=True)
 
     return render(request, 'users/documents_contributed.html', {
         'profile': user_profile,
@@ -447,14 +447,28 @@ def edit_watch_list(request):
 @login_required
 @require_http_methods(['GET', 'POST'])
 @mobile_template('users/{mobile/}edit_profile.html')
-def edit_profile(request, template):
+def edit_profile(request, username=None, template=None):
     """Edit user profile."""
+
+    # If a username is specified, we are editing somebody else's profile.
+    if username is not None and username != request.user.username:
+        try:
+            user = User.objects.get(username=username)
+        except User.DoesNotExist:
+            raise Http404
+
+        # Make sure the auth'd user has permission:
+        if not request.user.has_perm('users.change_profile'):
+            return HttpResponseForbidden()
+    else:
+        user = request.user
+
     try:
-        user_profile = request.user.get_profile()
+        user_profile = user.get_profile()
     except Profile.DoesNotExist:
         # TODO: Once we do user profile migrations, all users should have a
         # a profile. We can remove this fallback.
-        user_profile = Profile.objects.create(user=request.user)
+        user_profile = Profile.objects.create(user=user)
 
     if request.method == 'POST':
         form = ProfileForm(request.POST, request.FILES, instance=user_profile)
@@ -464,7 +478,7 @@ def edit_profile(request, template):
             if request.session.get('timezone', None) != new_timezone:
                 request.session['timezone'] = new_timezone
             return HttpResponseRedirect(reverse('users.profile',
-                                                args=[request.user.id]))
+                                                args=[user.username]))
     else:  # request.method == 'GET'
         form = ProfileForm(instance=user_profile)
 
@@ -535,7 +549,7 @@ def edit_avatar(request):
             # Delete uploaded avatar and replace with thumbnail.
             user_profile.avatar.delete()
             user_profile.avatar.save(name, content, save=True)
-            return HttpResponseRedirect(reverse('users.edit_profile'))
+            return HttpResponseRedirect(reverse('users.edit_my_profile'))
 
     else:  # request.method == 'GET'
         form = AvatarForm(instance=user_profile)
@@ -559,7 +573,7 @@ def delete_avatar(request):
         # Delete avatar here
         if user_profile.avatar:
             user_profile.avatar.delete()
-        return HttpResponseRedirect(reverse('users.edit_profile'))
+        return HttpResponseRedirect(reverse('users.edit_my_profile'))
     # else:  # request.method == 'GET'
 
     return render(request, 'users/confirm_avatar_delete.html', {

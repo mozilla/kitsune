@@ -254,9 +254,9 @@ class PasswordResetTests(TestCaseBase):
 
 class EditProfileTests(TestCaseBase):
 
-    def test_edit_profile(self):
+    def test_edit_my_profile(self):
         u = user(save=True)
-        url = reverse('users.edit_profile')
+        url = reverse('users.edit_my_profile')
         self.client.login(username=u.username, password='testpass')
         data = {'name': 'John Doe',
                 'public_email': True,
@@ -329,7 +329,7 @@ class EditAvatarTests(TestCaseBase):
             r = self.client.post(url, {'avatar': f})
 
         eq_(302, r.status_code)
-        eq_('http://testserver/en-US' + reverse('users.edit_profile'),
+        eq_('http://testserver/en-US' + reverse('users.edit_my_profile'),
             r['location'])
         assert not os.path.exists(old_path), 'Old avatar was not removed.'
 
@@ -343,7 +343,7 @@ class EditAvatarTests(TestCaseBase):
 
         user_profile = Profile.objects.get(user__username=self.u.username)
         eq_(302, r.status_code)
-        eq_('http://testserver/en-US' + reverse('users.edit_profile'),
+        eq_('http://testserver/en-US' + reverse('users.edit_my_profile'),
             r['location'])
         eq_('', user_profile.avatar.name)
 
