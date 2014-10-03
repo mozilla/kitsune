@@ -126,7 +126,7 @@ class TestQuestionViewSet(TestCase):
         res = self.client.delete(reverse('question-detail', args=[q.id]))
         eq_(res.status_code, 401)  # Unauthorized
 
-        # Non-owner can't deletea
+        # Non-owner can't delete
         self.client.force_authenticate(user=u2)
         res = self.client.delete(reverse('question-detail', args=[q.id]))
         eq_(res.status_code, 403)  # Forbidden

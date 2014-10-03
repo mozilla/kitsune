@@ -27,7 +27,7 @@ class QuestionShortSerializer(serializers.ModelSerializer):
     # Use slugs for product and topic instead of ids.
     products = serializers.SlugRelatedField(many=True, slug_field='slug')
     topics = serializers.SlugRelatedField(many=True, slug_field='slug')
-    # Use usernames for product and topic instead of ids.
+    # Use usernames for creator and updated_by instead of ids.
     creator = serializers.SlugRelatedField(
         slug_field='username', required=False)
     updated_by = serializers.SlugRelatedField(
@@ -87,7 +87,6 @@ class QuestionViewSet(viewsets.ModelViewSet):
         OnlyCreatorEdits,
         permissions.IsAuthenticatedOrReadOnly,
     ]
-    # filter_backends = [InequalityFilterBackend, filters.DjangoFilterBackend]
     filter_backends = [filters.DjangoFilterBackend]
     filter_fields = [
         'creator',
