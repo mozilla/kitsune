@@ -2,6 +2,7 @@ import hashlib
 import logging
 import time
 from datetime import datetime, timedelta
+from difflib import SequenceMatcher
 from urlparse import urlparse
 
 from django.conf import settings
@@ -790,6 +791,9 @@ class Revision(ModelBase, SearchMixin):
 
     created = models.DateTimeField(default=datetime.now)
     reviewed = models.DateTimeField(null=True)
+    expires = models.DateTimeField(null=True)
+
+    difference = models.DecimalField(max_digits=5, decimal_places=2, null=True)
 
     # The significance of the initial revision of a document is NULL.
     significance = models.IntegerField(choices=SIGNIFICANCES, null=True)
@@ -871,6 +875,11 @@ class Revision(ModelBase, SearchMixin):
             raise ProgrammingError('Revision.based_on must be None or refer '
                                    'to a revision of the default-'
                                    'language document.')
+
+        # Check if this is a new revision and if it is calculate the diff %
+        if self.id is None and self.based_on:
+            diff = SequenceMatcher(None, self.based_on.content, self.content)
+            self.difference = round((1 - diff.ratio()) * 100, 2)
 
         super(Revision, self).save(*args, **kwargs)
 
