@@ -15,7 +15,7 @@ from kitsune.sumo.urlresolvers import reverse
 from kitsune.wiki.config import (
     REDIRECT_SLUG, REDIRECT_TITLE, REDIRECT_HTML, MAJOR_SIGNIFICANCE,
     CATEGORIES, TYPO_SIGNIFICANCE, REDIRECT_CONTENT)
-from kitsune.wiki.models import Document
+from kitsune.wiki.models import Document, Revision
 from kitsune.wiki.parser import wiki_to_html
 from kitsune.wiki.tests import (
     document, revision, doc_rev, translated_revision)

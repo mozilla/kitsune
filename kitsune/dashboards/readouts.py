@@ -7,25 +7,27 @@ is_ready_for_localization=False do not exist.
 """
 import logging
 
+from datetime import datetime
+
 from django.conf import settings
 from django.db import connections, router
 from django.utils.datastructures import SortedDict
 
 import jingo
 from jinja2 import Markup
+from ordereddict import OrderedDict
 from tower import ugettext as _, ugettext_lazy as _lazy
 
 from kitsune.dashboards import LAST_30_DAYS, PERIODS
 from kitsune.sumo.helpers import urlparams
 from kitsune.sumo.redis_utils import redis_client, RedisError
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.wiki.models import Document
+from kitsune.wiki.models import Document, Revision
 from kitsune.wiki.config import (
     MEDIUM_SIGNIFICANCE, MAJOR_SIGNIFICANCE,
     TYPO_SIGNIFICANCE, REDIRECT_HTML,
     HOW_TO_CONTRIBUTE_CATEGORY, ADMINISTRATION_CATEGORY,
-    CANNED_RESPONSES_CATEGORY, NAVIGATION_CATEGORY, TROUBLESHOOTING_CATEGORY,
-    HOW_TO_CATEGORY, TEMPLATES_CATEGORY)
+    CANNED_RESPONSES_CATEGORY, NAVIGATION_CATEGORY)
 
 
 log = logging.getLogger('k.dashboards.readouts')
@@ -181,7 +183,86 @@ def _format_row_with_out_of_dateness(readout_locale, eng_slug, eng_title, slug,
                 status_url=status_url)
 
 
-def overview_rows(locale, product=None):
+def kb_overview_rows(mode=None, max=None, locale=None, product=None):
+    """Return the iterable of dicts needed to draw the new KB dashboard
+    overview"""
+
+    if mode is None:
+        mode = LAST_30_DAYS
+
+    docs = Document.uncached.filter(locale=settings.WIKI_DEFAULT_LANGUAGE,
+                                    is_archived=False,
+                                    is_template=False,
+                                    current_revision__isnull=False)
+
+    docs = docs.exclude(html__startswith=REDIRECT_HTML)
+
+    select = OrderedDict([
+        ('num_visits', 'SELECT `wdv`.`visits` '
+                       'FROM `dashboards_wikidocumentvisits` as `wdv` '
+                       'WHERE `wdv`.`period`=%s '
+                       'AND `wdv`.`document_id`=`wiki_document`.`id`'),
+    ])
+
+    docs = docs.extra(select=select,
+                      select_params=(mode,))
+
+    if product:
+        docs = docs.filter(products__in=[product])
+
+    docs = docs.order_by('-num_visits', 'title')
+
+    if max:
+        docs = docs[:max]
+
+    rows = []
+
+    if docs.count():
+        max_visits = docs[0].num_visits
+
+    for d in docs:
+        data = {
+            'url': reverse('wiki.document', args=[d.slug],
+                           locale=settings.WIKI_DEFAULT_LANGUAGE),
+            'trans_url': reverse('wiki.show_translations', args=[d.slug],
+                                 locale=settings.WIKI_DEFAULT_LANGUAGE),
+            'title': d.title,
+            'num_visits': d.num_visits,
+            'expiry_date': d.current_revision.expires,
+        }
+
+        if d.num_visits:
+            data['visits_ratio'] = float(d.num_visits) / max_visits
+
+        expiry_date = d.current_revision.expires
+
+        if expiry_date:
+            data['stale'] = expiry_date < datetime.now()
+
+        # Check L10N status
+        unapproved_revs = d.revisions.filter(
+            reviewed=None, id__gt=d.current_revision.id)[:1]
+
+        if unapproved_revs.count():
+            data['revision_comment'] = unapproved_revs[0].comment
+        else:
+            data['latest_revision'] = True
+
+        # Get the translated doc
+        if locale != settings.WIKI_DEFAULT_LANGUAGE:
+            transdoc = d.translations.filter(
+                locale=locale,
+                is_archived=False,
+                current_revision__isnull=False).first()
+
+            if transdoc:
+                data['needs_update'] = transdoc.is_outdated()
+
+        rows.append(data)
+
+    return rows
+
+def l10n_overview_rows(locale, product=None):
     """Return the iterable of dicts needed to draw the Overview table."""
     # The Overview table is a special case: it has only a static number of
     # rows, so it has no expanded, all-rows view, and thus needs no slug, no

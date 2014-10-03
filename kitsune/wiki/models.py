@@ -2,6 +2,7 @@ import hashlib
 import logging
 import time
 from datetime import datetime, timedelta
+from difflib import SequenceMatcher
 from urlparse import urlparse
 
 from django.conf import settings
@@ -790,6 +791,7 @@ class Revision(ModelBase, SearchMixin):
 
     created = models.DateTimeField(default=datetime.now)
     reviewed = models.DateTimeField(null=True)
+    expires = models.DateTimeField(null=True)
 
     # The significance of the initial revision of a document is NULL.
     significance = models.IntegerField(choices=SIGNIFICANCES, null=True)
