@@ -448,6 +448,24 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         delta = datetime.now() - self.created
         return delta.seconds + delta.days * 24 * 60 * 60
 
+    def set_solution(self, answer, solver):
+        """
+        Sets the solution, and fires any needed events.
+
+        Does not check permission of the user making the change.
+        """
+        # Avoid circular import
+        from kitsune.questions.events import QuestionSolvedEvent
+
+        self.solution = answer
+        self.save()
+        self.add_metadata(solver_id=str(solver.id))
+        statsd.incr('questions.solution')
+        QuestionSolvedEvent(answer).fire(exclude=self.creator)
+        SolutionAction(user=answer.creator, day=answer.created).save()
+
+    # Permissions
+
     def allows_edit(self, user):
         """Return whether `user` can edit this question."""
         return (user.has_perm('questions.change_question') or

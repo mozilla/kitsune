@@ -1,5 +1,7 @@
 from django.core.exceptions import ValidationError
-from rest_framework import serializers, viewsets, permissions, filters
+from rest_framework import serializers, viewsets, permissions, filters, status
+from rest_framework.decorators import action
+from rest_framework.response import Response
 
 from kitsune.questions.models import Question, Answer
 
@@ -114,6 +116,21 @@ class QuestionViewSet(viewsets.ModelViewSet):
         context = self.get_serializer_context()
         return SerializerClass(instance=page, context=context)
 
+    @action(methods=['POST'])
+    def solve(self, request, pk=None):
+        """Accept an answer as the solution to the question."""
+        question = self.get_object()
+        answer_id = request.DATA.get('answer')
+
+        try:
+            answer = Answer.objects.get(pk=answer_id)
+        except Answer.DoesNotExist:
+            return Response({'answer': 'This field is required.'},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        question.set_solution(answer, request.user)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 class AnswerShortSerializer(serializers.ModelSerializer):
     creator = serializers.SlugRelatedField(slug_field='username',
@@ -124,6 +141,7 @@ class AnswerShortSerializer(serializers.ModelSerializer):
     class Meta:
         model = Answer
         fields = (
+            'id',
             'question',
             'created',
             'creator',

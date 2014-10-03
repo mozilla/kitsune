@@ -869,13 +869,7 @@ def solve(request, question_id, answer_id):
             not request.user.has_perm('questions.change_solution')):
         return HttpResponseForbidden()
 
-    question.solution = answer
-    question.save()
-    question.add_metadata(solver_id=str(request.user.id))
-
-    statsd.incr('questions.solution')
-    QuestionSolvedEvent(answer).fire(exclude=question.creator)
-    SolutionAction(user=answer.creator, day=answer.created).save()
+    question.set_solution(answer, request.user)
 
     messages.add_message(request, messages.SUCCESS,
                          _('Thank you for choosing a solution!'))

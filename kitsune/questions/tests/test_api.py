@@ -136,6 +136,17 @@ class TestQuestionViewSet(TestCase):
         res = self.client.delete(reverse('question-detail', args=[q.id]))
         eq_(res.status_code, 204)  # No content
 
+    def test_solve(self):
+        q = question(save=True)
+        a = answer(question=q, save=True)
+
+        self.client.force_authenticate(user=q.creator)
+        res = self.client.post(reverse('question-solve', args=[q.id]),
+                               data={'answer': a.id})
+        eq_(res.status_code, 204)
+        q = Question.objects.get(id=q.id)
+        eq_(q.solution, a)
+
 
 class TestAnswerViewSet(TestCase):
 
