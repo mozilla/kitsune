@@ -225,11 +225,16 @@ class RevisionForm(forms.ModelForm):
                         'min_length': CONTENT_SHORT,
                         'max_length': CONTENT_LONG})
 
+    expires = forms.DateField(
+        label=_lazy(u'Expiry date:'),
+        required=False)
+
     comment = StrippedCharField(required=False, label=_lazy(u'Comment:'))
 
     class Meta(object):
         model = Revision
-        fields = ('keywords', 'summary', 'content', 'comment', 'based_on')
+        fields = ('keywords', 'summary', 'content', 'comment', 'based_on',
+                  'expires')
 
     def __init__(self, *args, **kwargs):
         super(RevisionForm, self).__init__(*args, **kwargs)

@@ -40,8 +40,12 @@
         {{ _('Yes') }}
       {% endif %}
     </td>
-    <td>{{ row.expiry_date }}</td>
-    <td>{{  row.difference }}</td>
+    <td>
+      {% if row.expiry_date %}
+        {{ datetimeformat(row.expiry_date, 'date') }}
+      {% endif %}
+    </td>
+    <td>{{ row.difference }}</td>
     <td>
       <a href="{{ row.trans_url }}">
         {{ _('Show translations') }}

@@ -10,6 +10,8 @@
     // Non supported Firefox version
     notifyOutdatedFirefox();
 
+    $('input[type="date"]').datepicker();
+
     $('.ui-truncatable .show-more-link').click(function(ev) {
       ev.preventDefault();
       $(this).closest('.ui-truncatable').removeClass('truncated');
