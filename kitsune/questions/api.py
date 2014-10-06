@@ -84,7 +84,7 @@ class QuestionDetailSerializer(QuestionShortSerializer):
 class QuestionViewSet(viewsets.ModelViewSet):
     serializer_class = QuestionDetailSerializer
     queryset = Question.objects.all()
-    paginate_by = 100
+    paginate_by = 20
     permission_classes = [
         OnlyCreatorEdits,
         permissions.IsAuthenticatedOrReadOnly,
@@ -180,7 +180,7 @@ class AnswerDetailSerializer(AnswerShortSerializer):
 class AnswerViewSet(viewsets.ModelViewSet):
     serializer_class = AnswerDetailSerializer
     queryset = Answer.objects.all()
-    paginate_by = 100
+    paginate_by = 20
     permission_classes = [
         OnlyCreatorEdits,
         permissions.IsAuthenticatedOrReadOnly,
