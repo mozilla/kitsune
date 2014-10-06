@@ -152,6 +152,10 @@ class TestQuestionViewSet(TestCase):
         q2 = question(save=True)
 
         res = self.client.get(reverse('question-list'))
+        eq_(res.data['results'][0]['id'], q2.id)
+        eq_(res.data['results'][1]['id'], q1.id)
+
+        res = self.client.get(reverse('question-list') + '?ordering=id')
         eq_(res.data['results'][0]['id'], q1.id)
         eq_(res.data['results'][1]['id'], q2.id)
 
@@ -221,6 +225,10 @@ class TestAnswerViewSet(TestCase):
         a2 = answer(save=True)
 
         res = self.client.get(reverse('answer-list'))
+        eq_(res.data['results'][0]['id'], a2.id)
+        eq_(res.data['results'][1]['id'], a1.id)
+
+        res = self.client.get(reverse('answer-list') + '?ordering=id')
         eq_(res.data['results'][0]['id'], a1.id)
         eq_(res.data['results'][1]['id'], a2.id)
 
