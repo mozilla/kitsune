@@ -136,6 +136,18 @@ class TestQuestionViewSet(TestCase):
         res = self.client.delete(reverse('question-detail', args=[q.id]))
         eq_(res.status_code, 204)  # No content
 
+    def test_ordering(self):
+        q1 = question(save=True)
+        q2 = question(save=True)
+
+        res = self.client.get(reverse('question-list'))
+        eq_(res.data['results'][0]['id'], q1.id)
+        eq_(res.data['results'][1]['id'], q2.id)
+
+        res = self.client.get(reverse('question-list') + '?ordering=-id')
+        eq_(res.data['results'][0]['id'], q2.id)
+        eq_(res.data['results'][1]['id'], q1.id)
+
 
 class TestAnswerViewSet(TestCase):
 
@@ -192,3 +204,15 @@ class TestAnswerViewSet(TestCase):
         self.client.force_authenticate(user=u1)
         res = self.client.delete(reverse('answer-detail', args=[a.id]))
         eq_(res.status_code, 204)  # No content
+
+    def test_ordering(self):
+        a1 = question(save=True)
+        a2 = question(save=True)
+
+        res = self.client.get(reverse('answer-list'))
+        eq_(res.data['results'][0]['id'], a1.id)
+        eq_(res.data['results'][1]['id'], a2.id)
+
+        res = self.client.get(reverse('answer-list') + '?ordering=-id')
+        eq_(res.data['results'][0]['id'], a2.id)
+        eq_(res.data['results'][1]['id'], a1.id)
