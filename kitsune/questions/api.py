@@ -116,7 +116,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
         'updated',
     ]
     # Default, if not overwritten
-    ordering = ('id',)
+    ordering = ('-id',)
 
     def get_pagination_serializer(self, page):
         """
@@ -202,7 +202,7 @@ class AnswerViewSet(viewsets.ModelViewSet):
         'updated',
     ]
     # Default, if not overwritten
-    ordering = ('id',)
+    ordering = ('-id',)
 
     def get_pagination_serializer(self, page):
         """
