@@ -206,8 +206,8 @@ class TestAnswerViewSet(TestCase):
         eq_(res.status_code, 204)  # No content
 
     def test_ordering(self):
-        a1 = question(save=True)
-        a2 = question(save=True)
+        a1 = answer(save=True)
+        a2 = answer(save=True)
 
         res = self.client.get(reverse('answer-list'))
         eq_(res.data['results'][0]['id'], a1.id)
