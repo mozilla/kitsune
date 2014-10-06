@@ -879,7 +879,9 @@ class Revision(ModelBase, SearchMixin):
         # Check if this is a new revision and if it is calculate the diff %
         if self.id is None and self.based_on:
             diff = SequenceMatcher(None, self.based_on.content, self.content)
-            self.difference = round((1 - diff.ratio()) * 100, 2)
+            # We need to convert to a string for py2.6 to be happy with
+            # converting a float to a decimal.
+            self.difference = str(round((1 - diff.ratio()) * 100, 2))
 
         super(Revision, self).save(*args, **kwargs)
 
