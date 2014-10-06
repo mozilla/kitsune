@@ -144,6 +144,7 @@ class TestQuestionViewSet(TestCase):
         res = self.client.post(reverse('question-solve', args=[q.id]),
                                data={'answer': a.id})
         eq_(res.status_code, 204)
+        q = Question.objects.get(id=q.id)
         eq_(q.solution, a)
 
 
