@@ -137,6 +137,7 @@ class AnswerShortSerializer(serializers.ModelSerializer):
     class Meta:
         model = Answer
         fields = (
+            'id',
             'question',
             'created',
             'creator',
@@ -167,7 +168,10 @@ class AnswerViewSet(viewsets.ModelViewSet):
         OnlyCreatorEdits,
         permissions.IsAuthenticatedOrReadOnly,
     ]
-    filter_backends = [filters.DjangoFilterBackend]
+    filter_backends = [
+        filters.DjangoFilterBackend,
+        filters.OrderingFilter,
+    ]
     filter_fields = [
         'question',
         'created',
@@ -175,6 +179,13 @@ class AnswerViewSet(viewsets.ModelViewSet):
         'updated',
         'updated_by',
     ]
+    ordering_fields = [
+        'id',
+        'created',
+        'updated',
+    ]
+    # Default, if not overwritten
+    ordering = ('id',)
 
     def get_pagination_serializer(self, page):
         """
