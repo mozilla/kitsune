@@ -87,7 +87,10 @@ class QuestionViewSet(viewsets.ModelViewSet):
         OnlyCreatorEdits,
         permissions.IsAuthenticatedOrReadOnly,
     ]
-    filter_backends = [filters.DjangoFilterBackend]
+    filter_backends = [
+        filters.DjangoFilterBackend,
+        filters.OrderingFilter,
+    ]
     filter_fields = [
         'creator',
         'created',
@@ -102,6 +105,16 @@ class QuestionViewSet(viewsets.ModelViewSet):
         'updated',
         'updated_by',
     ]
+    ordering_fields = [
+        'id',
+        'created',
+        'last_answer',
+        'num_answers',
+        'num_votes_past_week',
+        'updated',
+    ]
+    # Default, if not overwritten
+    ordering = ('id',)
 
     def get_pagination_serializer(self, page):
         """
