@@ -25,13 +25,9 @@
         <section id="top-contributors">
           <strong>{{ _('Top contributors') }}</strong>
           <ol>
-            {% if karma_top %}
-              {% for user in karma_top[:10] %}
-                <li>{{ display_name(user) }}</li>
-              {% endfor %}
-            {% elif top_contributors %}
-              {% for user in top_contributors[:10] %}
-                <li>{{ user }}</li>
+            {% if top_contributors %}
+              {% for result in top_contributors[:10] %}
+                <li>{{ result['user']['display_name'] }}</li>
               {% endfor %}
             {% endif %}
           </ol>
