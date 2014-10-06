@@ -147,6 +147,18 @@ class TestQuestionViewSet(TestCase):
         q = Question.objects.get(id=q.id)
         eq_(q.solution, a)
 
+    def test_ordering(self):
+        q1 = question(save=True)
+        q2 = question(save=True)
+
+        res = self.client.get(reverse('question-list'))
+        eq_(res.data['results'][0]['id'], q1.id)
+        eq_(res.data['results'][1]['id'], q2.id)
+
+        res = self.client.get(reverse('question-list') + '?ordering=-id')
+        eq_(res.data['results'][0]['id'], q2.id)
+        eq_(res.data['results'][1]['id'], q1.id)
+
 
 class TestAnswerViewSet(TestCase):
 
