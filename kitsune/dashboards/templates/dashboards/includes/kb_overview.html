@@ -25,9 +25,9 @@
     </td>
     <td class="status {% if not row.latest_revision %}needs-review{% endif %}">
       {% if row.latest_revision %}
-        {{ _('Up to date') }}
+        {{ _('Live') }}
       {% else %}
-        {{ _('Review Needed') }}
+        {{ _('Review Needed: {comment}')|f(comment=row.revision_comment) }}
       {% endif %}
     </td>
     <td class="needs-update {% if row.needs_update %}yes{% endif %}">

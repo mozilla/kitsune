@@ -22,7 +22,7 @@ from kitsune.dashboards import LAST_30_DAYS, PERIODS
 from kitsune.sumo.helpers import urlparams
 from kitsune.sumo.redis_utils import redis_client, RedisError
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.wiki.models import Document
+from kitsune.wiki.models import Document, Revision
 from kitsune.wiki.config import (
     MEDIUM_SIGNIFICANCE, MAJOR_SIGNIFICANCE,
     TYPO_SIGNIFICANCE, REDIRECT_HTML,
@@ -247,21 +247,24 @@ def kb_overview_rows(mode=None, max=None, locale=None, product=None):
         # Check L10N status
         unapproved_revs = d.revisions.filter(
             reviewed=None, id__gt=d.current_revision.id)[:1]
-        latest_revision = unapproved_revs.count() == 0
 
-        data['latest_revision'] = latest_revision
+        if unapproved_revs.count():
+            data['revision_comment'] = unapproved_revs[0].comment
+        else:
+            data['latest_revision'] = True
 
-        if not latest_revision:
+        if not 'latest_revision' in data:
             data['difference'] = unapproved_revs[0].difference
 
         # Get the translated doc
-        transdoc = d.translations.filter(
-            locale=locale,
-            is_archived=False,
-            current_revision__isnull=False).first()
+        if locale != settings.WIKI_DEFAULT_LANGUAGE:
+            transdoc = d.translations.filter(
+                locale=locale,
+                is_archived=False,
+                current_revision__isnull=False).first()
 
-        if transdoc:
-            data['needs_update'] = transdoc.is_outdated()
+            if transdoc:
+                data['needs_update'] = transdoc.is_outdated()
 
         rows.append(data)
 
