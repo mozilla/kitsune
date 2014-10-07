@@ -197,11 +197,6 @@ def kb_overview_rows(mode=None, max=None, locale=None, product=None):
 
     docs = docs.exclude(html__startswith=REDIRECT_HTML)
 
-    docs = docs.exclude(category__in=[ADMINISTRATION_CATEGORY,
-                                      NAVIGATION_CATEGORY,
-                                      CANNED_RESPONSES_CATEGORY,
-                                      HOW_TO_CONTRIBUTE_CATEGORY])
-
     select = OrderedDict([
         ('num_visits', 'SELECT `wdv`.`visits` '
                        'FROM `dashboards_wikidocumentvisits` as `wdv` '
