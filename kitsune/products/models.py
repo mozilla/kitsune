@@ -36,6 +36,7 @@ class Product(ModelBase):
 
     # Whether or not this product is enabled in questions
     questions_enabled = models.BooleanField(default=False)
+    questions_locales_enabled = models.ManyToManyField('wiki.Locale')
 
     # Platforms this Product runs on.
     platforms = models.ManyToManyField('Platform')
