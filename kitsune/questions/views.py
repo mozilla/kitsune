@@ -174,7 +174,7 @@ def question_list(request, template, product_slug):
 
     question_qs = question_qs.select_related(
         'creator', 'last_answer', 'last_answer__creator')
-    question_qs = question_qs.prefetch_related('topics', 'topics__product')
+    question_qs = question_qs.prefetch_related('topic', 'topic__product')
 
     question_qs = question_qs.filter(creator__is_active=1)
 
@@ -212,13 +212,13 @@ def question_list(request, template, product_slug):
     if products:
         # This filter will match if any of the products on a question have the
         # correct id.
-        question_qs = question_qs.filter(products__in=products).distinct()
+        question_qs = question_qs.filter(product__in=products).distinct()
 
     # Filter by topic.
     if topic:
         # This filter will match if any of the topics on a question have the
         # correct id.
-        question_qs = question_qs.filter(topics__id__exact=topic.id)
+        question_qs = question_qs.filter(topic__id=topic.id)
 
     # Filter by locale for AAQ locales, and by locale + default for others.
     if request.LANGUAGE_CODE in settings.AAQ_LANGUAGES:
@@ -249,7 +249,7 @@ def question_list(request, template, product_slug):
     extra_filters = locale_query
 
     if products:
-        extra_filters &= Q(products__in=products)
+        extra_filters &= Q(product__in=products)
 
     recent_asked_count = Question.recent_asked_count(extra_filters)
     recent_unanswered_count = Question.recent_unanswered_count(extra_filters)
@@ -402,14 +402,11 @@ def question_details(request, template, question_id, form=None,
 
     extra_kwargs.update(ans_)
 
-    product = Product.uncached.filter(question=question)
-    topic = Topic.uncached.filter(question=question)
-
     products = Product.objects.filter(visible=True)
-    topics = topics_for(products=[question.products.all()])
+    topics = topics_for(product=question.product)
 
     extra_kwargs.update({'all_products': products, 'all_topics': topics,
-                         'product': product, 'topic': topic})
+                         'product': question.product, 'topic': question.topic})
 
     # Add noindex to questions without answers that are > 30 days old or that
     # are marked as spam.
@@ -437,8 +434,8 @@ def edit_details(request, question_id):
         return HttpResponseBadRequest()
 
     question = get_object_or_404(Question, pk=question_id)
-    question.products = [product]
-    question.topics = [topic]
+    question.product = product
+    question.topic = topic
     question.locale = locale
     question.save()
 
@@ -631,28 +628,29 @@ def aaq(request, product_key=None, category_key=None, showform=False,
                             title=form.cleaned_data['title'],
                             content=form.cleaned_data['content'],
                             locale=request.LANGUAGE_CODE)
+
+        if product_obj:
+            question.product = product_obj
+
+        if category_config:
+            t = category_config.get('topic')
+            if t:
+                question.topic = Topic.objects.get(slug=t, product=product_obj)
+
         question.save()
         # User successfully submitted a new question
         statsd.incr('questions.new')
         question.add_metadata(**form.cleaned_metadata)
+
         if product_config:
             # TODO: This add_metadata call should be removed once we are
             # fully IA-driven (sync isn't special case anymore).
             question.add_metadata(product=product_config['key'])
 
-            if product_config.get('product'):
-                for p in Product.objects.filter(slug=product_config['product']):
-                    question.products.add(p)
-
-            if category_config:
-                # TODO: This add_metadata call should be removed once we are
-                # fully IA-driven (sync isn't special case anymore).
-                question.add_metadata(category=category_config['key'])
-
-                t = category_config.get('topic')
-                if t:
-                    question.topics.add(
-                        Topic.objects.get(slug=t, product=product_obj))
+        if category_config:
+            # TODO: This add_metadata call should be removed once we are
+            # fully IA-driven (sync isn't special case anymore).
+            question.add_metadata(category=category_config['key'])
 
         # The first time a question is saved, automatically apply some tags:
         question.auto_tag()

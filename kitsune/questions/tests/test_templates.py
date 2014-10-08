@@ -1106,11 +1106,9 @@ class QuestionsTemplateTestCase(TestCaseBase):
         p3 = product(save=True)
 
         q1 = question(save=True)
-        q2 = question(save=True)
-        q2.products.add(p1)
+        q2 = question(product=p1, save=True)
         q2.save()
-        q3 = question(save=True)
-        q3.products.add(p1, p2)
+        q3 = question(product=p2, save=True)
         q3.save()
 
         def check(product, expected):
@@ -1128,8 +1126,8 @@ class QuestionsTemplateTestCase(TestCaseBase):
 
         # No filtering -> All questions.
         check('all', [q1, q2, q3])
-        # Filter on p1 -> only q2 and q3
-        check(p1.slug, [q2, q3])
+        # Filter on p1 -> only q2
+        check(p1.slug, [q2])
         # Filter on p2 -> only q3
         check(p2.slug, [q3])
         # Filter on p3 -> No results
@@ -1137,7 +1135,7 @@ class QuestionsTemplateTestCase(TestCaseBase):
         # Filter on p1,p2
         check('%s,%s' % (p1.slug, p2.slug), [q2, q3])
         # Filter on p1,p3
-        check('%s,%s' % (p1.slug, p3.slug), [q2, q3])
+        check('%s,%s' % (p1.slug, p3.slug), [q2])
         # Filter on p2,p3
         check('%s,%s' % (p2.slug, p3.slug), [q3])
 
@@ -1148,12 +1146,8 @@ class QuestionsTemplateTestCase(TestCaseBase):
         t3 = topic(product=p, save=True)
 
         q1 = question(save=True)
-        q2 = question(save=True)
-        q2.topics.add(t1)
-        q2.save()
-        q3 = question(save=True)
-        q3.topics.add(t1, t2)
-        q3.save()
+        q2 = question(topic=t1, save=True)
+        q3 = question(topic=t2, save=True)
 
         url = reverse('questions.list', args=['all'])
 
@@ -1171,8 +1165,8 @@ class QuestionsTemplateTestCase(TestCaseBase):
 
         # No filtering -> All questions.
         check({}, [q1, q2, q3])
-        # Filter on p1 -> only q2 and q3
-        check({'topic': t1.slug}, [q2, q3])
+        # Filter on p1 -> only q2
+        check({'topic': t1.slug}, [q2])
         # Filter on p2 -> only q3
         check({'topic': t2.slug}, [q3])
         # Filter on p3 -> No results
@@ -1282,8 +1276,7 @@ class QuestionEditingTests(TestCaseBase):
     def test_post(self):
         """Posting a valid edit form should save the question."""
         p = product(slug='desktop', save=True)
-        q = question(save=True)
-        q.products.add(p)
+        q = question(product=p, save=True)
         response = post(self.client, 'questions.edit_question',
                         {'title': 'New title',
                          'content': 'New content',
@@ -1378,12 +1371,8 @@ class AAQTemplateTestCase(TestCaseBase):
         eq_(0, len(mail.outbox))
 
         # Verify product and topic assigned to question.
-        topics = question.topics.all()
-        eq_(1, len(topics))
-        eq_('fix-problems', topics[0].slug)
-        products = question.products.all()
-        eq_(1, len(products))
-        eq_('firefox', products[0].slug)
+        eq_('fix-problems', question.topic.slug)
+        eq_('firefox', question.product.slug)
 
         # Verify troubleshooting information
         troubleshooting = question.metadata['troubleshooting']

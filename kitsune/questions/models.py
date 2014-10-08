@@ -612,10 +612,8 @@ class QuestionMappingType(SearchMappingType):
         d['created'] = int(time.mktime(obj['created'].timetuple()))
         d['updated'] = int(time.mktime(obj['updated'].timetuple()))
 
-        # topics = Topic.objects.filter(id=obj['topic_id'])
-        # products = Product.objects.filter(id=obj['product_id'])
-        topics = Topic.uncached.filter(question__id=obj['id'])
-        products = Product.uncached.filter(question__id=obj['id'])
+        topics = Topic.objects.filter(id=obj['topic_id'])
+        products = Product.objects.filter(id=obj['product_id'])
         d['topic'] = [t.slug for t in topics]
         d['product'] = [p.slug for p in products]
 
@@ -662,14 +660,6 @@ register_for_indexing(
     instance_to_indexee=(
         lambda i: (i.content_object if isinstance(i.content_object, Question)
                    else None)))
-register_for_indexing(
-    'questions',
-    Question.topics.through,
-    m2m=True)
-register_for_indexing(
-    'questions',
-    Question.products.through,
-    m2m=True)
 
 
 def _tag_added(sender, question_id, tag_name, **kwargs):
@@ -990,7 +980,8 @@ class AnswerMetricsMappingType(SearchMappingType):
         composed_fields = [
             'question__locale',
             'question__solution_id',
-            'question__creator_id']
+            'question__creator_id',
+            'question__product_id']
         all_fields = fields + composed_fields
 
         if obj is None:
@@ -1002,6 +993,7 @@ class AnswerMetricsMappingType(SearchMappingType):
             obj_dict['question__locale'] = obj.question.locale
             obj_dict['question__solution_id'] = obj.question.solution_id
             obj_dict['question__creator_id'] = obj.question.creator_id
+            obj_dict['question__product_id'] = obj.question.product_id
 
         d = {}
         d['id'] = obj_dict['id']
@@ -1026,8 +1018,7 @@ class AnswerMetricsMappingType(SearchMappingType):
         d['by_asker'] = (
             obj_dict['creator_id'] == obj_dict['question__creator_id'])
 
-        products = Product.uncached.filter(
-            question__id=obj_dict['question_id'])
+        products = Product.objects.filter(id=obj_dict['question__product_id'])
         d['product'] = [p.slug for p in products]
 
         return d

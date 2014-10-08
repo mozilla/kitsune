@@ -109,51 +109,6 @@ class QuestionUpdateTests(ElasticTestCase):
         self.refresh()
         eq_(QuestionMappingType.search().filter(question_tag=tag).count(), 0)
 
-    def test_question_topics(self):
-        """Make sure that adding topics to a Question causes it to
-        refresh the index.
-
-        """
-        p = product(save=True)
-        t = topic(slug=u'hiphop', product=p, save=True)
-        eq_(QuestionMappingType.search().filter(topic=t.slug).count(), 0)
-        q = question(save=True)
-        self.refresh()
-        eq_(QuestionMappingType.search().filter(topic=t.slug).count(), 0)
-        q.topics.add(t)
-        self.refresh()
-        eq_(QuestionMappingType.search().filter(topic=t.slug).count(), 1)
-        q.topics.clear()
-        self.refresh()
-
-        # Make sure the question itself is still there and that we didn't
-        # accidentally delete it through screwed up signal handling:
-        eq_(QuestionMappingType.search().filter().count(), 1)
-
-        eq_(QuestionMappingType.search().filter(topic=t.slug).count(), 0)
-
-    def test_question_products(self):
-        """Make sure that adding products to a Question causes it to
-        refresh the index.
-
-        """
-        p = product(slug=u'desktop', save=True)
-        eq_(QuestionMappingType.search().filter(product=p.slug).count(), 0)
-        q = question(save=True)
-        self.refresh()
-        eq_(QuestionMappingType.search().filter(product=p.slug).count(), 0)
-        q.products.add(p)
-        self.refresh()
-        eq_(QuestionMappingType.search().filter(product=p.slug).count(), 1)
-        q.products.remove(p)
-        self.refresh()
-
-        # Make sure the question itself is still there and that we didn't
-        # accidentally delete it through screwed up signal handling:
-        eq_(QuestionMappingType.search().filter().count(), 1)
-
-        eq_(QuestionMappingType.search().filter(product=p.slug).count(), 0)
-
     def test_question_is_unindexed_on_creator_delete(self):
         search = QuestionMappingType.search()
 
@@ -223,8 +178,7 @@ class AnswerMetricsTests(ElasticTestCase):
     def test_data_in_index(self):
         """Verify the data we are indexing."""
         p = product(save=True)
-        q = question(locale='pt-BR', save=True)
-        q.products.add(p)
+        q = question(locale='pt-BR', product=p, save=True)
         a = answer(question=q, save=True)
 
         self.refresh()
