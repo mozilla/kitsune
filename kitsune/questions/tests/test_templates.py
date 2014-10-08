@@ -30,6 +30,7 @@ from kitsune.products.tests import topic
 from kitsune.upload.models import ImageAttachment
 from kitsune.users.models import RegistrationProfile
 from kitsune.users.tests import user, add_permission
+from kitsune.wiki.tests import locale
 
 
 class AnswersTemplateTestCase(TestCaseBase):
@@ -1485,14 +1486,17 @@ class AAQTemplateTestCase(TestCaseBase):
 
 class ProductForumTemplateTestCase(TestCaseBase):
     def test_product_forum_listing(self):
-        firefox = product(
-            title='Firefox', slug='firefox', questions_enabled=True, save=True)
+        l = locale(locale=settings.LANGUAGE_CODE, save=True)
+        firefox = product(title='Firefox', slug='firefox', save=True)
         android = product(title='Firefox for Android', slug='mobile',
-            questions_enabled=True, save=True)
-        fxos = product(title='Firefox OS', slug='firefox-os',
-            questions_enabled=True, save=True)
+                          save=True)
+        fxos = product(title='Firefox OS', slug='firefox-os', save=True)
         openbadges = product(title='Open Badges', slug='open-badges',
-            questions_enabled=False, save=True)
+                             save=True)
+
+        firefox.questions_locales_enabled.add(l)
+        android.questions_locales_enabled.add(l)
+        fxos.questions_locales_enabled.add(l)
 
         response = self.client.get(reverse('questions.home'))
         eq_(200, response.status_code)

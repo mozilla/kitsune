@@ -1,4 +1,5 @@
 from django.core.cache import cache
+from django.conf import settings
 
 from nose.tools import eq_
 from pyquery import PyQuery as pq
@@ -7,7 +8,7 @@ from kitsune.products.models import HOT_TOPIC_SLUG
 from kitsune.products.tests import product, topic
 from kitsune.search.tests.test_es import ElasticTestCase
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.wiki.tests import revision, helpful_vote
+from kitsune.wiki.tests import revision, helpful_vote, locale
 
 
 class ProductViewsTestCase(ElasticTestCase):
@@ -15,8 +16,12 @@ class ProductViewsTestCase(ElasticTestCase):
     def test_products(self):
         """Verify that /products page renders products."""
         # Create some products.
+        l = locale(locale=settings.LANGUAGE_CODE, save=True)
+
         for i in range(3):
-            product(questions_enabled=True, save=True)
+            p = product(save=True)
+            p.questions_locales_enabled.add(l)
+
 
         # GET the products page and verify the content.
         r = self.client.get(reverse('products'), follow=True)
@@ -27,7 +32,9 @@ class ProductViewsTestCase(ElasticTestCase):
     def test_product_landing(self):
         """Verify that /products/<slug> page renders topics."""
         # Create a product.
-        p = product(questions_enabled=True, save=True)
+        l = locale(locale=settings.LANGUAGE_CODE, save=True)
+        p = product(save=True)
+        p.questions_locales_enabled.add(l)
 
         # Create some topics.
         topic(slug=HOT_TOPIC_SLUG, product=p, save=True)
@@ -46,6 +53,7 @@ class ProductViewsTestCase(ElasticTestCase):
         # GET the product landing page and verify the content.
         url = reverse('products.product', args=[p.slug])
         r = self.client.get(url, follow=True)
+        print r.content
         eq_(200, r.status_code)
         doc = pq(r.content)
         eq_(11, len(doc('#help-topics li')))

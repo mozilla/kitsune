@@ -35,7 +35,6 @@ class Product(ModelBase):
     visible = models.BooleanField(default=False)
 
     # Whether or not this product is enabled in questions
-    questions_enabled = models.BooleanField(default=False)
     questions_locales_enabled = models.ManyToManyField('wiki.Locale')
 
     # Platforms this Product runs on.

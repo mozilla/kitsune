@@ -68,7 +68,7 @@ from kitsune.users.forms import RegisterForm
 from kitsune.users.models import Setting
 from kitsune.users.utils import handle_login, handle_register
 from kitsune.wiki.facets import documents_for, topics_for
-from kitsune.wiki.models import Document, DocumentMappingType
+from kitsune.wiki.models import Document, DocumentMappingType, Locale
 
 
 log = logging.getLogger('k.questions')
@@ -98,10 +98,15 @@ FILTER_GROUPS = {
 
 @mobile_template('questions/{mobile/}product_list.html')
 def product_list(request, template):
-    """View to select a product to see relatred quesitons."""
-    return render(request, template, {
-        'products': Product.objects.filter(questions_enabled=True)
-    })
+    """View to select a product to see related questions."""
+    locale = Locale.objects.get(locale=request.LANGUAGE_CODE)
+
+    if locale:
+        products = Product.objects.filter(questions_locales_enabled=locale)
+    else:
+        products = []
+
+    return render(request, template, {'products': products})
 
 
 @mobile_template('questions/{mobile/}question_list.html')
