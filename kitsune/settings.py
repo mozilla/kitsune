@@ -206,6 +206,7 @@ NON_SUPPORTED_LOCALES = {
     'ast': 'es',
     'az': None,
     'be': 'ru',
+    'bn': 'bn-BD',
     'br': 'fr',
     'csb': 'pl',
     'eo': None,
