@@ -1261,8 +1261,8 @@ class QuestionEditingTests(TestCaseBase):
         # Make sure each extra metadata field is in the form:
         doc = pq(response.content)
         q = Question.objects.get(pk=question_id)
-        extra_fields = (q.product.get('extra_fields', []) +
-                        q.category.get('extra_fields', []))
+        extra_fields = (q.product_config.get('extra_fields', []) +
+                        q.category_config.get('extra_fields', []))
         for field in extra_fields:
             assert (doc('input[name=%s]' % field) or
                     doc('textarea[name=%s]' % field)), (

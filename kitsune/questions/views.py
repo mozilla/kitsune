@@ -740,13 +740,13 @@ def edit_question(request, question_id):
     if request.method == 'GET':
         initial = question.metadata.copy()
         initial.update(title=question.title, content=question.content)
-        form = EditQuestionForm(product=question.product,
-                                category=question.category,
+        form = EditQuestionForm(product=question.product_config,
+                                category=question.category_config,
                                 initial=initial)
     else:
         form = EditQuestionForm(data=request.POST,
-                                product=question.product,
-                                category=question.category)
+                                product=question.product_config,
+                                category=question.category_config)
         if form.is_valid():
             question.title = form.cleaned_data['title']
             question.content = form.cleaned_data['content']
@@ -764,8 +764,8 @@ def edit_question(request, question_id):
     return render(request, 'questions/edit_question.html', {
         'question': question,
         'form': form,
-        'current_product': question.product,
-        'current_category': question.category})
+        'current_product': question.product_config,
+        'current_category': question.category_config})
 
 
 def _skip_answer_ratelimit(request):
