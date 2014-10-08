@@ -14,7 +14,8 @@ class Migration(DataMigration):
     def forwards(self, orm):
         """Copy all the question.{topics,products} to {topic,product} FK."""
 
-        for chunk in chunked(orm.Question.objects.all(), 2500):
+        count = orm.Question.objects.count()
+        for chunk in chunked(orm.Question.objects.all(), 2500, count):
             for question in chunk:
                 question.product = question.products.first()
                 question.topic = question.topics.first()
