@@ -31,6 +31,7 @@ class AAQTests(ElasticTestCase):
 
     def test_bleaching(self):
         """Tests whether summaries are bleached"""
+        product(slug=u'firefox', save=True)
         q = question(
             title=u'cupcakes',
             content=u'<unbleached>Cupcakes are the best</unbleached',

@@ -490,8 +490,7 @@ def aaq(request, product_key=None, category_key=None, showform=False,
         category_key = request.GET.get('category')
 
     if product_config and category_key:
-        product_obj = Product.objects.filter(
-            slug__in=product_config.get('products'))
+        product_obj = Product.objects.get(slug=product_config.get('product'))
         category_config = product_config['categories'].get(category_key)
         if not category_config:
             # If we get an invalid category, redirect to previous step.
@@ -503,7 +502,7 @@ def aaq(request, product_key=None, category_key=None, showform=False,
             html = None
             articles, fallback = documents_for(
                 locale=request.LANGUAGE_CODE,
-                products=product_obj,
+                products=[product_obj],
                 topics=[Topic.objects.get(slug=topic, product=product_obj)])
         else:
             html = category_config.get('html')
@@ -530,7 +529,7 @@ def aaq(request, product_key=None, category_key=None, showform=False,
                 request,
                 search,
                 locale_or_default(request.LANGUAGE_CODE),
-                product_config.get('products'))
+                [product_config.get('product')])
             tried_search = True
         else:
             results = []
@@ -641,8 +640,8 @@ def aaq(request, product_key=None, category_key=None, showform=False,
             # fully IA-driven (sync isn't special case anymore).
             question.add_metadata(product=product_config['key'])
 
-            if product_config.get('products'):
-                for p in Product.objects.filter(slug__in=product_config['products']):
+            if product_config.get('product'):
+                for p in Product.objects.filter(slug=product_config['product']):
                     question.products.add(p)
 
             if category_config:

@@ -1481,6 +1481,7 @@ class AAQTemplateTestCase(TestCaseBase):
         eq_(404, response.status_code)
 
     def test_invalid_category_302(self):
+        product(slug='firefox', save=True)
         url = reverse('questions.aaq_step3', args=['desktop', 'lipsum'])
         response = self.client.get(url)
         eq_(302, response.status_code)
