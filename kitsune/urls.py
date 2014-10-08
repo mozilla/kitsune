@@ -75,6 +75,9 @@ urlpatterns = patterns(
 
     # v2 APIs
     (r'^api/2/', include('kitsune.questions.urls_api')),
+
+    # These API urls include both v1 and v2 urls.
+    (r'^api/', include('kitsune.users.urls_api')),
 )
 
 # Handle 404 and 500 errors

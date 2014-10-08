@@ -1,10 +1,14 @@
 import json
 
-from nose.tools import eq_
+import mock
+from django.contrib.auth.models import User
+from nose.tools import eq_, ok_
 
 from kitsune.sumo.helpers import urlparams
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
+from kitsune.users import api
+from kitsune.users.models import Profile
 from kitsune.users.tests import user
 
 
@@ -44,3 +48,38 @@ class UsernamesTests(TestCase):
         self.client.logout()
         res = self.client.get(self.url, HTTP_X_REQUESTED_WITH='XMLHttpRequest')
         eq_(403, res.status_code)
+
+
+class TestQuestionSerializer(TestCase):
+
+    def setUp(self):
+        self.request = mock.Mock()
+        self.data = {
+            'username': 'bob',
+            'display_name': 'Bobert the Seventh',
+            'password': 'testpass',
+        }
+
+    def test_user_created(self):
+        # There is at least one user in existence due to migrations
+        number_users = User.objects.count()
+        serializer = api.ProfileShortSerializer(data=self.data)
+        eq_(serializer.errors, {})
+        ok_(serializer.is_valid())
+        serializer.save()
+        eq_(User.objects.count(), number_users + 1)
+        eq_(Profile.objects.count(), 1)
+
+    def test_password(self):
+        serializer = api.ProfileShortSerializer(data=self.data)
+        eq_(serializer.errors, {})
+        ok_(serializer.is_valid())
+        assert serializer.object.user.password != 'testpass'
+        ok_(serializer.object.user.check_password('testpass'))
+
+    def test_automatic_display_name(self):
+        del self.data['display_name']
+        serializer = api.ProfileShortSerializer(data=self.data)
+        eq_(serializer.errors, {})
+        ok_(serializer.is_valid())
+        eq_(serializer.object.name, 'bob')
