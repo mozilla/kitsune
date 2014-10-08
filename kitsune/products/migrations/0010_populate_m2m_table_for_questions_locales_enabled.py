@@ -8,11 +8,21 @@ from kitsune.products.models import Product
 from kitsune.wiki.models import Locale
 
 
+AAQ_LANGUAGES = (
+    'en-US',
+    'fi',
+    'hu',
+    'pt-BR',
+    'sl',
+    'sr-Cyrl',
+)
+
+
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
         products = Product.objects.all()
-        locales = Locale.objects.all()
+        locales = Locale.objects.filter(locale__in=AAQ_LANGUAGES)
 
         for p in products:
             if p.questions_enabled:
