@@ -109,13 +109,17 @@ class TopContributorTests(ElasticTestCase):
         firefox = product(slug='firefox', save=True)
         fxos = product(slug='firefox-os', save=True)
         a1 = answer(save=True)
-        a1.question.products.add(firefox)
-        a1.question.products.add(fxos)
+        a1.question.product = firefox
+        a1.question.save()
         a2 = answer(creator=a1.creator, save=True)
         a3 = answer(save=True)
-        a3.question.products.add(fxos)
+        a3.question.product = fxos
+        a3.question.save()
         a4 = answer(created=datetime.now()-timedelta(days=91),
                     save=True)
+        a5 = answer(creator=a1.creator, save=True)
+        a5.question.product = fxos
+        a5.question.save()
         answer(creator=a4.question.creator, question=a4.question, save=True)
 
         for u in User.objects.all():

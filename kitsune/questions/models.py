@@ -78,6 +78,13 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
     images = generic.GenericRelation(ImageAttachment)
     flags = generic.GenericRelation(FlaggedObject)
 
+    product = models.ForeignKey(
+        Product, null=True, default=None, related_name='questions')
+    topic = models.ForeignKey(
+        Topic, null=True, related_name='questions')
+
+    # TODO: remove the two M2Ms below
+
     # List of products this question applies to.
     products = models.ManyToManyField(Product)
 
@@ -196,9 +203,9 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
             return User.objects.get(id=solver_id)
 
     @property
-    def product(self):
-        """Return the product this question is about or an empty mapping if
-        unknown."""
+    def product_config(self):
+        """Return the product config this question is about or an empty
+        mapping if unknown."""
         md = self.metadata
         if 'product' in md:
             return config.products.get(md['product'], {})
@@ -210,18 +217,17 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
 
         It returns 'all' in the off chance that there are no products."""
         if not hasattr(self, '_product_slug') or self._product_slug is None:
-            prods = self.products.all()
-            self._product_slug = prods[0].slug if len(prods) > 0 else 'all'
+            self._product_slug = self.product.slug if self.product else None
 
         return self._product_slug
 
     @property
-    def category(self):
+    def category_config(self):
         """Return the category this question refers to or an empty mapping if
         unknown."""
         md = self.metadata
-        if self.product and 'category' in md:
-            return self.product['categories'].get(md['category'], {})
+        if self.product_config and 'category' in md:
+            return self.product_config['categories'].get(md['category'], {})
         return {}
 
     def auto_tag(self):
@@ -230,7 +236,8 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         You don't need to call save on the question after this.
 
         """
-        to_add = self.product.get('tags', []) + self.category.get('tags', [])
+        to_add = (self.product_config.get('tags', []) +
+                  self.category_config.get('tags', []))
 
         version = self.metadata.get('ff_version', '')
 
@@ -582,7 +589,7 @@ class QuestionMappingType(SearchMappingType):
         """Extracts indexable attributes from a Question and its answers."""
         fields = ['id', 'title', 'content', 'num_answers', 'solution_id',
                   'is_locked', 'is_archived', 'created', 'updated',
-                  'num_votes_past_week', 'locale']
+                  'num_votes_past_week', 'locale', 'product_id', 'topic_id']
         composed_fields = ['creator__username']
         all_fields = fields + composed_fields
 
@@ -613,8 +620,8 @@ class QuestionMappingType(SearchMappingType):
         d['created'] = int(time.mktime(obj['created'].timetuple()))
         d['updated'] = int(time.mktime(obj['updated'].timetuple()))
 
-        topics = Topic.uncached.filter(question__id=obj['id'])
-        products = Product.uncached.filter(question__id=obj['id'])
+        topics = Topic.objects.filter(id=obj['topic_id'])
+        products = Product.objects.filter(id=obj['product_id'])
         d['topic'] = [t.slug for t in topics]
         d['product'] = [p.slug for p in products]
 
@@ -661,14 +668,6 @@ register_for_indexing(
     instance_to_indexee=(
         lambda i: (i.content_object if isinstance(i.content_object, Question)
                    else None)))
-register_for_indexing(
-    'questions',
-    Question.topics.through,
-    m2m=True)
-register_for_indexing(
-    'questions',
-    Question.products.through,
-    m2m=True)
 
 
 def _tag_added(sender, question_id, tag_name, **kwargs):
@@ -993,7 +992,8 @@ class AnswerMetricsMappingType(SearchMappingType):
         composed_fields = [
             'question__locale',
             'question__solution_id',
-            'question__creator_id']
+            'question__creator_id',
+            'question__product_id']
         all_fields = fields + composed_fields
 
         if obj is None:
@@ -1005,6 +1005,7 @@ class AnswerMetricsMappingType(SearchMappingType):
             obj_dict['question__locale'] = obj.question.locale
             obj_dict['question__solution_id'] = obj.question.solution_id
             obj_dict['question__creator_id'] = obj.question.creator_id
+            obj_dict['question__product_id'] = obj.question.product_id
 
         d = {}
         d['id'] = obj_dict['id']
@@ -1029,8 +1030,7 @@ class AnswerMetricsMappingType(SearchMappingType):
         d['by_asker'] = (
             obj_dict['creator_id'] == obj_dict['question__creator_id'])
 
-        products = Product.uncached.filter(
-            question__id=obj_dict['question_id'])
+        products = Product.objects.filter(id=obj_dict['question__product_id'])
         d['product'] = [p.slug for p in products]
 
         return d

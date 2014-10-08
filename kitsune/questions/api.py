@@ -27,8 +27,8 @@ class OnlyCreatorEdits(permissions.BasePermission):
 
 class QuestionShortSerializer(serializers.ModelSerializer):
     # Use slugs for product and topic instead of ids.
-    products = serializers.SlugRelatedField(many=True, slug_field='slug')
-    topics = serializers.SlugRelatedField(many=True, slug_field='slug')
+    product = serializers.SlugRelatedField(required=True, slug_field='slug')
+    topic = serializers.SlugRelatedField(required=True, slug_field='slug')
     # Use usernames for creator and updated_by instead of ids.
     creator = serializers.SlugRelatedField(
         slug_field='username', required=False)
@@ -48,9 +48,9 @@ class QuestionShortSerializer(serializers.ModelSerializer):
             'locale',
             'num_answers',
             'num_votes_past_week',
-            'products',
+            'product',
             'title',
-            'topics',
+            'topic',
             'updated_by',
             'updated',
         )
@@ -59,16 +59,6 @@ class QuestionShortSerializer(serializers.ModelSerializer):
         user = getattr(self.context.get('request'), 'user')
         if user and not user.is_anonymous() and attrs.get('creator') is None:
             attrs['creator'] = user
-        return attrs
-
-    def validate_products(self, attrs, source):
-        if not attrs.get('products', []):
-            raise ValidationError('At least one required.')
-        return attrs
-
-    def validate_topics(self, attrs, source):
-        if not attrs.get('topics', []):
-            raise ValidationError('At least one required.')
         return attrs
 
 
@@ -101,9 +91,9 @@ class QuestionViewSet(viewsets.ModelViewSet):
         'is_spam',
         'locale',
         'num_answers',
-        # 'products',
+        'product',
         'title',
-        # 'topics',
+        'topic',
         'updated',
         'updated_by',
     ]

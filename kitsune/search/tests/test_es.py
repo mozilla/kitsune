@@ -99,8 +99,7 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
         # marks the answer as helpful.  The question should have the
         # "desktop" tag.
         p = product(title=u'firefox', slug=u'desktop', save=True)
-        ques = question(title=u'audio', save=True)
-        ques.products.add(p)
+        ques = question(title=u'audio', product=p, save=True)
         ans = answer(question=ques, content=u'volume', save=True)
         answervote(answer=ans, helpful=True, save=True)
 
@@ -167,8 +166,7 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
 
         """
         p = product(slug=u'desktop', save=True)
-        ques = question(title=u'audio', save=True)
-        ques.products.add(p)
+        ques = question(title=u'audio', product=p, save=True)
         ans = answer(question=ques, content=u'volume', save=True)
         answervote(answer=ans, helpful=True, save=True)
 
@@ -684,11 +682,9 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
         t2 = topic(slug='cookies', product=p, save=True)
         t3 = topic(slug='sync', product=p, save=True)
 
-        q = question(save=True)
-        q.topics.add(t2)
-        q = question(save=True)
-        q.topics.add(t2)
-        q.topics.add(t3)
+        question(topic=t2, save=True)
+        question(topic=t2, save=True)
+        question(topic=t3, save=True)
 
         self.refresh()
 
@@ -696,7 +692,6 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
             (t1.slug, 0),
             (t2.slug, 2),
             (t3.slug, 1),
-            ([t2.slug, t3.slug], 1),
         )
 
         qs = {'a': 1, 'w': 2, 'format': 'json'}
@@ -757,11 +752,9 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
         p2 = product(slug='mobile', save=True)
         p3 = product(slug='desktop', save=True)
 
-        q = question(save=True)
-        q.products.add(p2)
-        q = question(save=True)
-        q.products.add(p2)
-        q.products.add(p3)
+        question(product=p2, save=True)
+        question(product=p2, save=True)
+        question(product=p3, save=True)
 
         self.refresh()
 
@@ -769,7 +762,6 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
             (p1.slug, 0),
             (p2.slug, 2),
             (p3.slug, 1),
-            ([p2.slug, p3.slug], 1),
         )
 
         qs = {'a': 1, 'w': 2, 'format': 'json'}

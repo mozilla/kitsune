@@ -39,7 +39,7 @@ def product_landing(request, template, slug):
     return render(request, template, {
         'product': product,
         'products': Product.objects.filter(visible=True),
-        'topics': topics_for(products=[product], parent=None),
+        'topics': topics_for(product=product, parent=None),
         'search_params': {'product': slug},
         'latest_version': latest_version
     })
@@ -69,8 +69,8 @@ def document_listing(request, template, product_slug, topic_slug,
         'product': product,
         'topic': topic,
         'subtopic': subtopic,
-        'topics': topics_for(products=[product], parent=None),
-        'subtopics': topics_for(products=[product], parent=topic),
+        'topics': topics_for(product=product, parent=None),
+        'subtopics': topics_for(product=product, parent=topic),
         'documents': documents,
         'fallback_documents': fallback_documents,
         'search_params': {'product': product_slug}})

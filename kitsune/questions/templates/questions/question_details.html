@@ -241,7 +241,6 @@
                 <div class="sidebox tight condensed">
                   <span class="title">{{ _('Topic') }}</span>
                   {% if topic %}
-                    {% set topic = topic[0] %}
                     <span class="detail">{{ _(topic.title, 'DB: products.Topic.title') }}</span>
                   {% endif %}
                   {% if user and user.has_perm('questions.change_question') %}
