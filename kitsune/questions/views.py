@@ -482,22 +482,23 @@ def aaq(request, product_key=None, category_key=None, showform=False,
             else:
                 product_key = 'mobile'
 
-    product = config.products.get(product_key)
-    if product_key and not product:
+    product_config = config.products.get(product_key)
+    if product_key and not product_config:
         raise Http404
 
     if category_key is None:
         category_key = request.GET.get('category')
 
-    if product and category_key:
-        product_obj = Product.objects.filter(slug__in=product.get('products'))
-        category = product['categories'].get(category_key)
-        if not category:
+    if product_config and category_key:
+        product_obj = Product.objects.filter(
+            slug__in=product_config.get('products'))
+        category_config = product_config['categories'].get(category_key)
+        if not category_config:
             # If we get an invalid category, redirect to previous step.
             return HttpResponseRedirect(
                 reverse('questions.aaq_step2', args=[product_key]))
-        deadend = category.get('deadend', False)
-        topic = category.get('topic')
+        deadend = category_config.get('deadend', False)
+        topic = category_config.get('topic')
         if topic:
             html = None
             articles, fallback = documents_for(
@@ -505,14 +506,15 @@ def aaq(request, product_key=None, category_key=None, showform=False,
                 products=product_obj,
                 topics=[Topic.objects.get(slug=topic, product=product_obj)])
         else:
-            html = category.get('html')
-            articles = category.get('articles')
+            html = category_config.get('html')
+            articles = category_config.get('articles')
     else:
-        category = None
-        deadend = product.get('deadend', False) if product else False
-        html = product.get('html') if product else None
+        category_config = None
+        deadend = product_config.get(
+            'deadend', False) if product_config else False
+        html = product_config.get('html') if product_config else None
         articles = None
-        if product:
+        if product_config:
             # User is on the select category step
             statsd.incr('questions.aaq.select-category')
         else:
@@ -528,12 +530,12 @@ def aaq(request, product_key=None, category_key=None, showform=False,
                 request,
                 search,
                 locale_or_default(request.LANGUAGE_CODE),
-                product.get('products'))
+                product_config.get('products'))
             tried_search = True
         else:
             results = []
             tried_search = False
-            if category:
+            if category_config:
                 # User is on the "Ask This" step
                 statsd.incr('questions.aaq.search-form')
 
@@ -545,12 +547,13 @@ def aaq(request, product_key=None, category_key=None, showform=False,
                 login_form = AuthenticationForm()
                 register_form = RegisterForm()
                 return render(request, login_t, {
-                    'product': product, 'category': category,
+                    'product': product_config,
+                    'category': category_config,
                     'title': search,
                     'register_form': register_form,
                     'login_form': login_form})
-            form = NewQuestionForm(product=product,
-                                   category=category,
+            form = NewQuestionForm(product=product_config,
+                                   category=category_config,
                                    initial={'title': search})
             # User is on the question details step
             statsd.incr('questions.aaq.details-form')
@@ -565,8 +568,8 @@ def aaq(request, product_key=None, category_key=None, showform=False,
             'results': results,
             'tried_search': tried_search,
             'products': config.products,
-            'current_product': product,
-            'current_category': category,
+            'current_product': product_config,
+            'current_category': category_config,
             'current_html': html,
             'current_articles': articles,
             'current_step': step,
@@ -613,12 +616,13 @@ def aaq(request, product_key=None, category_key=None, showform=False,
             return HttpResponseRedirect(url)
         else:
             return render(request, login_t, {
-                'product': product, 'category': category,
+                'product': product_config,
+                'category': category_config,
                 'title': request.POST.get('title'),
                 'register_form': register_form,
                 'login_form': login_form})
 
-    form = NewQuestionForm(product=product, category=category,
+    form = NewQuestionForm(product=product_config, category=category_config,
                            data=request.POST)
 
     if form.is_valid() and not is_ratelimited(request, increment=True,
@@ -632,24 +636,24 @@ def aaq(request, product_key=None, category_key=None, showform=False,
         # User successfully submitted a new question
         statsd.incr('questions.new')
         question.add_metadata(**form.cleaned_metadata)
-        if product:
+        if product_config:
             # TODO: This add_metadata call should be removed once we are
             # fully IA-driven (sync isn't special case anymore).
-            question.add_metadata(product=product['key'])
+            question.add_metadata(product=product_config['key'])
 
-            if product.get('products'):
-                for p in Product.objects.filter(slug__in=product['products']):
+            if product_config.get('products'):
+                for p in Product.objects.filter(slug__in=product_config['products']):
                     question.products.add(p)
 
-            if category:
+            if category_config:
                 # TODO: This add_metadata call should be removed once we are
                 # fully IA-driven (sync isn't special case anymore).
-                question.add_metadata(category=category['key'])
+                question.add_metadata(category=category_config['key'])
 
-                t = category.get('topic')
+                t = category_config.get('topic')
                 if t:
-                    question.topics.add(Topic.objects.get(slug=t,
-                                                          product=product_obj))
+                    question.topics.add(
+                        Topic.objects.get(slug=t, product=product_obj))
 
         # The first time a question is saved, automatically apply some tags:
         question.auto_tag()
@@ -678,8 +682,8 @@ def aaq(request, product_key=None, category_key=None, showform=False,
     return render(request, template, {
         'form': form,
         'products': config.products,
-        'current_product': product,
-        'current_category': category,
+        'current_product': product_config,
+        'current_category': category_config,
         'current_articles': articles})
 
 
