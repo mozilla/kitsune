@@ -7,10 +7,9 @@ from django.db import models
 
 class Migration(SchemaMigration):
 
-    def forwards(self, orm):
-        if db.dry_run:
-            return
+    no_dry_run = True
 
+    def forwards(self, orm):
         answers = orm.Answer.objects.filter(
             is_spam=True).values_list('id', flat=True)
         questions = orm.Question.objects.filter(answers__in=answers)
