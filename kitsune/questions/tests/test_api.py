@@ -40,42 +40,6 @@ class TestQuestionSerializer(TestCase):
         ok_(serializer.is_valid())
         eq_(serializer.object.creator, self.user)
 
-    def test_product_required_empty_string(self):
-        self.data['product'] = ''
-        serializer = api.QuestionShortSerializer(
-            context=self.context, data=self.data)
-        eq_(serializer.errors, {
-            'product': [u'This field is required.'],
-        })
-        ok_(not serializer.is_valid())
-
-    def test_product_required_missing(self):
-        del self.data['product']
-        serializer = api.QuestionShortSerializer(
-            context=self.context, data=self.data)
-        eq_(serializer.errors, {
-            'product': [u'This field is required.'],
-        })
-        ok_(not serializer.is_valid())
-
-    def test_topic_required_empty_string(self):
-        self.data['topic'] = ''
-        serializer = api.QuestionShortSerializer(
-            context=self.context, data=self.data)
-        eq_(serializer.errors, {
-            'topic': [u'This field is required.'],
-        })
-        ok_(not serializer.is_valid())
-
-    def test_topic_required_missing(self):
-        del self.data['topic']
-        serializer = api.QuestionShortSerializer(
-            context=self.context, data=self.data)
-        eq_(serializer.errors, {
-            'topic': [u'This field is required.'],
-        })
-        ok_(not serializer.is_valid())
-
 
 class TestQuestionViewSet(TestCase):
 

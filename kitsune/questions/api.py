@@ -27,8 +27,8 @@ class OnlyCreatorEdits(permissions.BasePermission):
 
 class QuestionShortSerializer(serializers.ModelSerializer):
     # Use slugs for product and topic instead of ids.
-    product = serializers.SlugRelatedField(slug_field='slug')
-    topic = serializers.SlugRelatedField(slug_field='slug')
+    product = serializers.SlugRelatedField(required=True, slug_field='slug')
+    topic = serializers.SlugRelatedField(required=True, slug_field='slug')
     # Use usernames for creator and updated_by instead of ids.
     creator = serializers.SlugRelatedField(
         slug_field='username', required=False)
@@ -59,16 +59,6 @@ class QuestionShortSerializer(serializers.ModelSerializer):
         user = getattr(self.context.get('request'), 'user')
         if user and not user.is_anonymous() and attrs.get('creator') is None:
             attrs['creator'] = user
-        return attrs
-
-    def validate_product(self, attrs, source):
-        if not attrs.get('product', []):
-            raise ValidationError('This field is required.')
-        return attrs
-
-    def validate_topic(self, attrs, source):
-        if not attrs.get('topic', []):
-            raise ValidationError('This field is required.')
         return attrs
 
 
