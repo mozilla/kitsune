@@ -153,10 +153,10 @@ https://github.com/jsocol/django-waffle/archive/a5beffb15d07b6c5f92e04dba15ab609
 # sha256: NWZcEPVSRwd27M_RWSLTdI4w18AQLrd_3kfOKX2WuyM
 djangorestframework==2.3.14
 
-# sha256: CnOPMnGcdnU38yYRjBBcIZ5nfna3hUfthHxqqvvKDGU
+# sha256: fADkAZ7n55EIe3ahrkBnNW642cQlHyk3zHcOkQrvMko
 elasticutils==0.10.1
 
-# sha256: U6gisBsElN-WWMBOhyFhgOXsvoWxeGc92Eix-AnVwQA
+# sha256: u5PYXKflDWjkGXhSu226YJi7dyUA-C9dsv9KgHEVBck
 elasticsearch==1.2.0
 
 # sha256: A3VLx7JWOXwbZG5QSOIpFZD1CAFxrbiwD04tc4THbu4
