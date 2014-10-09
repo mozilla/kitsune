@@ -125,7 +125,7 @@ class QuestionsMetricList(CachedAPIView):
             qs = qs.filter(locale=locale)
 
         if product:
-            qs = qs.filter(products__slug=product)
+            qs = qs.filter(product__slug=product)
 
         # All answers that were created within 3 days of the question.
         aq_72 = Answer.objects.filter(

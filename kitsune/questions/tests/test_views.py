@@ -31,6 +31,7 @@ class AAQTests(ElasticTestCase):
 
     def test_bleaching(self):
         """Tests whether summaries are bleached"""
+        product(slug=u'firefox', save=True)
         q = question(
             title=u'cupcakes',
             content=u'<unbleached>Cupcakes are the best</unbleached',
@@ -54,8 +55,7 @@ class AAQTests(ElasticTestCase):
         """Verifies the view doesn't kick up an HTTP 500"""
         p = product(slug=u'firefox', save=True)
         topic(title='Fix problems', slug='fix-problems', product=p, save=True)
-        q = question(title=u'CupcakesQuestion cupcakes', save=True)
-        q.products.add(p)
+        q = question(product=p, title=u'CupcakesQuestion cupcakes', save=True)
 
         d = document(title=u'CupcakesKB cupcakes', category=10, save=True)
         d.products.add(p)
@@ -95,14 +95,14 @@ class AAQTests(ElasticTestCase):
         p = product(slug=u'firefox', save=True)
         topic(title='Fix problems', slug='fix-problems', product=p, save=True)
 
-        q1 = question(title='question cupcakes?', save=True, locale='en-US')
-        q1.products.add(p)
-        q2 = question(title='question donuts?', save=True, locale='en-US')
-        q2.products.add(p)
-        q3 = question(title='question pies?', save=True, locale='pt-BR')
-        q3.products.add(p)
-        q4 = question(title='question pastries?', save=True, locale='de')
-        q4.products.add(p)
+        q1 = question(
+            title='question cupcakes?', product=p, save=True, locale='en-US')
+        q2 = question(
+            title='question donuts?', product=p, save=True, locale='en-US')
+        q3 = question(
+            title='question pies?', product=p, save=True, locale='pt-BR')
+        q4 = question(
+            title='question pastries?', product=p, save=True, locale='de')
 
         self.refresh()
 
@@ -419,14 +419,14 @@ class TestQuestionList(TestCaseBase):
         p = product(slug=u'firefox', save=True)
         topic(title='Fix problems', slug='fix-problems', product=p, save=True)
 
-        q1 = question(title='question cupcakes?', save=True, locale='en-US')
-        q1.products.add(p)
-        q2 = question(title='question donuts?', save=True, locale='en-US')
-        q2.products.add(p)
-        q3 = question(title='question pies?', save=True, locale='pt-BR')
-        q3.products.add(p)
-        q4 = question(title='question pastries?', save=True, locale='de')
-        q4.products.add(p)
+        q1 = question(
+            title='question cupcakes?', product=p, save=True, locale='en-US')
+        q2 = question(
+            title='question donuts?', product=p, save=True, locale='en-US')
+        q3 = question(
+            title='question pies?', product=p, save=True, locale='pt-BR')
+        q4 = question(
+            title='question pastries?', product=p, save=True, locale='de')
 
         def sub_test(locale, *titles):
             url = urlparams(reverse(
@@ -711,9 +711,8 @@ class TestStats(ElasticTestCase):
             title=u'cupcakes',
             content=u'Cupcakes rock!',
             created=datetime.now() - timedelta(days=1),
+            topic=t,
             save=True)
-        q.topics.add(t)
-        q.save()
 
         self.refresh()
 
@@ -734,10 +733,7 @@ class TestEditDetails(TestCaseBase):
         p = product(save=True)
         t = topic(product=p, save=True)
 
-        q = question(save=True)
-        q.products.add(p)
-        q.topics.add(t)
-        q.save()
+        q = question(product=p, topic=t, save=True)
 
         self.product = p
         self.topic = t
@@ -825,8 +821,7 @@ class TestEditDetails(TestCaseBase):
 
         q = Question.objects.get(id=self.question.id)
 
-        eq_(1, len(q.topics.all()))
-        eq_(t_new.id, q.topics.all()[0].id)
+        eq_(t_new.id, q.topic.id)
 
     def test_change_product(self):
         """Test changing the product"""
@@ -845,11 +840,9 @@ class TestEditDetails(TestCaseBase):
         response = self._request(data=data)
         eq_(302, response.status_code)
 
-        p = Product.uncached.get(question=self.question)
-        t = Topic.uncached.get(question=self.question)
-
-        eq_(p_new.id, p.id)
-        eq_(t_new.id, t.id)
+        q = Question.objects.get(id=self.question.id)
+        eq_(p_new.id, q.product.id)
+        eq_(t_new.id, q.topic.id)
 
     def test_change_locale(self):
         locale = 'hu'

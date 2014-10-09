@@ -174,7 +174,7 @@ def question_list(request, template, product_slug):
 
     question_qs = question_qs.select_related(
         'creator', 'last_answer', 'last_answer__creator')
-    question_qs = question_qs.prefetch_related('topics', 'topics__product')
+    question_qs = question_qs.prefetch_related('topic', 'topic__product')
 
     question_qs = question_qs.filter(creator__is_active=1)
 
@@ -212,13 +212,13 @@ def question_list(request, template, product_slug):
     if products:
         # This filter will match if any of the products on a question have the
         # correct id.
-        question_qs = question_qs.filter(products__in=products).distinct()
+        question_qs = question_qs.filter(product__in=products).distinct()
 
     # Filter by topic.
     if topic:
         # This filter will match if any of the topics on a question have the
         # correct id.
-        question_qs = question_qs.filter(topics__id__exact=topic.id)
+        question_qs = question_qs.filter(topic__id=topic.id)
 
     # Filter by locale for AAQ locales, and by locale + default for others.
     if request.LANGUAGE_CODE in settings.AAQ_LANGUAGES:
@@ -249,7 +249,7 @@ def question_list(request, template, product_slug):
     extra_filters = locale_query
 
     if products:
-        extra_filters &= Q(products__in=products)
+        extra_filters &= Q(product__in=products)
 
     recent_asked_count = Question.recent_asked_count(extra_filters)
     recent_unanswered_count = Question.recent_unanswered_count(extra_filters)
@@ -402,14 +402,11 @@ def question_details(request, template, question_id, form=None,
 
     extra_kwargs.update(ans_)
 
-    product = Product.uncached.filter(question=question)
-    topic = Topic.uncached.filter(question=question)
-
     products = Product.objects.filter(visible=True)
-    topics = topics_for(products=[question.products.all()])
+    topics = topics_for(product=question.product)
 
     extra_kwargs.update({'all_products': products, 'all_topics': topics,
-                         'product': product, 'topic': topic})
+                         'product': question.product, 'topic': question.topic})
 
     # Add noindex to questions without answers that are > 30 days old or that
     # are marked as spam.
@@ -437,8 +434,8 @@ def edit_details(request, question_id):
         return HttpResponseBadRequest()
 
     question = get_object_or_404(Question, pk=question_id)
-    question.products = [product]
-    question.topics = [topic]
+    question.product = product
+    question.topic = topic
     question.locale = locale
     question.save()
 
@@ -482,37 +479,38 @@ def aaq(request, product_key=None, category_key=None, showform=False,
             else:
                 product_key = 'mobile'
 
-    product = config.products.get(product_key)
-    if product_key and not product:
+    product_config = config.products.get(product_key)
+    if product_key and not product_config:
         raise Http404
 
     if category_key is None:
         category_key = request.GET.get('category')
 
-    if product and category_key:
-        product_obj = Product.objects.filter(slug__in=product.get('products'))
-        category = product['categories'].get(category_key)
-        if not category:
+    if product_config and category_key:
+        product_obj = Product.objects.get(slug=product_config.get('product'))
+        category_config = product_config['categories'].get(category_key)
+        if not category_config:
             # If we get an invalid category, redirect to previous step.
             return HttpResponseRedirect(
                 reverse('questions.aaq_step2', args=[product_key]))
-        deadend = category.get('deadend', False)
-        topic = category.get('topic')
+        deadend = category_config.get('deadend', False)
+        topic = category_config.get('topic')
         if topic:
             html = None
             articles, fallback = documents_for(
                 locale=request.LANGUAGE_CODE,
-                products=product_obj,
+                products=[product_obj],
                 topics=[Topic.objects.get(slug=topic, product=product_obj)])
         else:
-            html = category.get('html')
-            articles = category.get('articles')
+            html = category_config.get('html')
+            articles = category_config.get('articles')
     else:
-        category = None
-        deadend = product.get('deadend', False) if product else False
-        html = product.get('html') if product else None
+        category_config = None
+        deadend = product_config.get(
+            'deadend', False) if product_config else False
+        html = product_config.get('html') if product_config else None
         articles = None
-        if product:
+        if product_config:
             # User is on the select category step
             statsd.incr('questions.aaq.select-category')
         else:
@@ -528,12 +526,12 @@ def aaq(request, product_key=None, category_key=None, showform=False,
                 request,
                 search,
                 locale_or_default(request.LANGUAGE_CODE),
-                product.get('products'))
+                [product_config.get('product')])
             tried_search = True
         else:
             results = []
             tried_search = False
-            if category:
+            if category_config:
                 # User is on the "Ask This" step
                 statsd.incr('questions.aaq.search-form')
 
@@ -545,12 +543,13 @@ def aaq(request, product_key=None, category_key=None, showform=False,
                 login_form = AuthenticationForm()
                 register_form = RegisterForm()
                 return render(request, login_t, {
-                    'product': product, 'category': category,
+                    'product': product_config,
+                    'category': category_config,
                     'title': search,
                     'register_form': register_form,
                     'login_form': login_form})
-            form = NewQuestionForm(product=product,
-                                   category=category,
+            form = NewQuestionForm(product=product_config,
+                                   category=category_config,
                                    initial={'title': search})
             # User is on the question details step
             statsd.incr('questions.aaq.details-form')
@@ -565,8 +564,8 @@ def aaq(request, product_key=None, category_key=None, showform=False,
             'results': results,
             'tried_search': tried_search,
             'products': config.products,
-            'current_product': product,
-            'current_category': category,
+            'current_product': product_config,
+            'current_category': category_config,
             'current_html': html,
             'current_articles': articles,
             'current_step': step,
@@ -613,12 +612,13 @@ def aaq(request, product_key=None, category_key=None, showform=False,
             return HttpResponseRedirect(url)
         else:
             return render(request, login_t, {
-                'product': product, 'category': category,
+                'product': product_config,
+                'category': category_config,
                 'title': request.POST.get('title'),
                 'register_form': register_form,
                 'login_form': login_form})
 
-    form = NewQuestionForm(product=product, category=category,
+    form = NewQuestionForm(product=product_config, category=category_config,
                            data=request.POST)
 
     if form.is_valid() and not is_ratelimited(request, increment=True,
@@ -628,28 +628,29 @@ def aaq(request, product_key=None, category_key=None, showform=False,
                             title=form.cleaned_data['title'],
                             content=form.cleaned_data['content'],
                             locale=request.LANGUAGE_CODE)
+
+        if product_obj:
+            question.product = product_obj
+
+        if category_config:
+            t = category_config.get('topic')
+            if t:
+                question.topic = Topic.objects.get(slug=t, product=product_obj)
+
         question.save()
         # User successfully submitted a new question
         statsd.incr('questions.new')
         question.add_metadata(**form.cleaned_metadata)
-        if product:
+
+        if product_config:
             # TODO: This add_metadata call should be removed once we are
             # fully IA-driven (sync isn't special case anymore).
-            question.add_metadata(product=product['key'])
+            question.add_metadata(product=product_config['key'])
 
-            if product.get('products'):
-                for p in Product.objects.filter(slug__in=product['products']):
-                    question.products.add(p)
-
-            if category:
-                # TODO: This add_metadata call should be removed once we are
-                # fully IA-driven (sync isn't special case anymore).
-                question.add_metadata(category=category['key'])
-
-                t = category.get('topic')
-                if t:
-                    question.topics.add(Topic.objects.get(slug=t,
-                                                          product=product_obj))
+        if category_config:
+            # TODO: This add_metadata call should be removed once we are
+            # fully IA-driven (sync isn't special case anymore).
+            question.add_metadata(category=category_config['key'])
 
         # The first time a question is saved, automatically apply some tags:
         question.auto_tag()
@@ -678,8 +679,8 @@ def aaq(request, product_key=None, category_key=None, showform=False,
     return render(request, template, {
         'form': form,
         'products': config.products,
-        'current_product': product,
-        'current_category': category,
+        'current_product': product_config,
+        'current_category': category_config,
         'current_articles': articles})
 
 
@@ -740,13 +741,13 @@ def edit_question(request, question_id):
     if request.method == 'GET':
         initial = question.metadata.copy()
         initial.update(title=question.title, content=question.content)
-        form = EditQuestionForm(product=question.product,
-                                category=question.category,
+        form = EditQuestionForm(product=question.product_config,
+                                category=question.category_config,
                                 initial=initial)
     else:
         form = EditQuestionForm(data=request.POST,
-                                product=question.product,
-                                category=question.category)
+                                product=question.product_config,
+                                category=question.category_config)
         if form.is_valid():
             question.title = form.cleaned_data['title']
             question.content = form.cleaned_data['content']
@@ -764,8 +765,8 @@ def edit_question(request, question_id):
     return render(request, 'questions/edit_question.html', {
         'question': question,
         'form': form,
-        'current_product': question.product,
-        'current_category': question.category})
+        'current_product': question.product_config,
+        'current_category': question.category_config})
 
 
 def _skip_answer_ratelimit(request):

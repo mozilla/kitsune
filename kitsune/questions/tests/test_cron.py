@@ -31,8 +31,8 @@ class TestEscalateCron(TestCase):
         fxos = product(slug='firefox-os', save=True)
         q = question(
             created=datetime.now() - timedelta(hours=24, minutes=10),
+            product=fxos,
             save=True)
-        q.products.add(fxos)
         questions_to_escalate.append(q)
 
         questions_not_to_escalate = [
@@ -80,8 +80,8 @@ class TestEscalateCron(TestCase):
         tb = product(slug='thunderbird', save=True)
         q = question(
             created=datetime.now() - timedelta(hours=24, minutes=10),
+            product=tb,
             save=True)
-        q.products.add(tb)
         questions_not_to_escalate.append(q)
 
         # Run the cron job and verify only 3 questions were escalated.

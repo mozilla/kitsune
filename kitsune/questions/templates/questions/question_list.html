@@ -184,7 +184,8 @@
 
               <div class="content ui-truncatable truncated">
                 <h2><a href="{{ question.get_absolute_url() }}">{{ question.title }}</a></h2>
-                {% for topic in question.topics.all() %}
+                {% if question.topic %}
+                  {% set topic = question.topic %}
                   <h3>
                     <img src="/static/img/blank.png" class="logo-sprite-tiny logo-{{ topic.product.slug }}">
                     <a href="{{ url('questions.list', topic.product.slug)|urlparams(None, request.GET, topic=None) }}">
@@ -195,7 +196,7 @@
                       {{ _(topic.title, 'DB: products.Topic.title') }}
                     </a>
                   </h3>
-                {% endfor %}
+                {% endif %}
                 {{ question.content_parsed|truncate_question(170, question.content_parsed)|safe }}
               </div>
 

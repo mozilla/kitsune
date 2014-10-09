@@ -134,7 +134,7 @@ def escalate_questions():
         tags__slug__in=[config.ESCALATE_TAG_NAME])
 
     # Exclude certain products.
-    qs = qs.exclude(products__slug__in=config.ESCALATE_EXCLUDE_PRODUCTS)
+    qs = qs.exclude(product__slug__in=config.ESCALATE_EXCLUDE_PRODUCTS)
 
     # Exclude those by inactive users.
     qs = qs.exclude(creator__is_active=False)

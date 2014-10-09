@@ -77,15 +77,11 @@ class TestFacetHelpers(TestCase, TestFacetHelpersMixin):
 
     def test_topics_for_products(self):
         """Verify topics_for() returns topics for passed products."""
-        desktop_topics = topics_for(products=[self.desktop])
+        desktop_topics = topics_for(product=self.desktop)
         eq_(len(desktop_topics), 3)
 
-        mobile_topics = topics_for(products=[self.mobile])
+        mobile_topics = topics_for(product=self.mobile)
         eq_(len(mobile_topics), 2)
-
-        desktop_mobile_topics = topics_for(
-            products=[self.desktop, self.mobile])
-        eq_(len(desktop_mobile_topics), 2)
 
 
 class TestFacetHelpersES(ElasticTestCase, TestFacetHelpersMixin):

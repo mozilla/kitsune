@@ -189,14 +189,14 @@ class TestQuestionMetadata(TestCaseBase):
     def test_product_property(self):
         """Test question.product property."""
         self.question.add_metadata(product='desktop')
-        eq_(products['desktop'], self.question.product)
+        eq_(products['desktop'], self.question.product_config)
 
     def test_category_property(self):
         """Test question.category property."""
         self.question.add_metadata(product='desktop')
         self.question.add_metadata(category='fix-problems')
         eq_(products['desktop']['categories']['fix-problems'],
-            self.question.category)
+            self.question.category_config)
 
     def test_clear_mutable_metadata(self):
         """Make sure it works and clears the internal cache.

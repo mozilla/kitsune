@@ -106,24 +106,20 @@ class KpiApiTests(TestCase):
         firefox = product(slug='firefox', save=True)
 
         # A Firefox OS question with a solution:
-        q = question(save=True)
-        q.products.add(firefox_os)
+        q = question(product=firefox_os, save=True)
         a = answer(question=q, save=True)
         q.solution = a
         q.save()
 
         # A Firefox OS question with an answer:
-        q = question(save=True)
-        q.products.add(firefox_os)
+        q = question(product=firefox_os, save=True)
         answer(question=q, save=True)
 
         # A Firefox OS question without answers:
-        q = question(save=True)
-        q.products.add(firefox_os)
+        q = question(product=firefox_os, save=True)
 
         # A Firefox question without answers:
-        q = question(locale='pt-BR', save=True)
-        q.products.add(firefox)
+        q = question(product=firefox, locale='pt-BR', save=True)
 
         # Verify no product filtering:
         r = self._get_api_result('api.kpi.questions')

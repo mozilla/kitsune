@@ -28,8 +28,8 @@ class TestQuestionSerializer(TestCase):
             'creator': self.user,
             'title': 'How do I test programs?',
             'content': "Help, I don't know what to do.",
-            'products': [self.product.slug],
-            'topics': [self.topic.slug],
+            'product': self.product.slug,
+            'topic': self.topic.slug,
         }
 
     def test_automatic_creator(self):
@@ -40,39 +40,21 @@ class TestQuestionSerializer(TestCase):
         ok_(serializer.is_valid())
         eq_(serializer.object.creator, self.user)
 
-    def test_products_required_empty_list(self):
-        self.data['products'] = []
+    def test_product_required(self):
+        del self.data['product']
         serializer = api.QuestionShortSerializer(
             context=self.context, data=self.data)
         eq_(serializer.errors, {
-            'products': [u'At least one required.'],
+            'product': [u'This field is required.'],
         })
         ok_(not serializer.is_valid())
 
-    def test_products_required_missing(self):
-        del self.data['products']
+    def test_topic_required(self):
+        del self.data['topic']
         serializer = api.QuestionShortSerializer(
             context=self.context, data=self.data)
         eq_(serializer.errors, {
-            'products': [u'At least one required.'],
-        })
-        ok_(not serializer.is_valid())
-
-    def test_topics_required_empty_list(self):
-        self.data['topics'] = []
-        serializer = api.QuestionShortSerializer(
-            context=self.context, data=self.data)
-        eq_(serializer.errors, {
-            'topics': [u'At least one required.'],
-        })
-        ok_(not serializer.is_valid())
-
-    def test_topics_required_missing(self):
-        del self.data['topics']
-        serializer = api.QuestionShortSerializer(
-            context=self.context, data=self.data)
-        eq_(serializer.errors, {
-            'topics': [u'At least one required.'],
+            'topic': [u'This field is required.'],
         })
         ok_(not serializer.is_valid())
 
@@ -105,8 +87,8 @@ class TestQuestionViewSet(TestCase):
         data = {
             'title': 'How do I start Firefox?',
             'content': 'Seriously, what do I do?',
-            'products': [p.slug],
-            'topics': [t.slug],
+            'product': p.slug,
+            'topic': t.slug,
         }
         eq_(Question.objects.count(), 0)
         res = self.client.post(reverse('question-list'), data)
