@@ -53,7 +53,6 @@ class ProductViewsTestCase(ElasticTestCase):
         # GET the product landing page and verify the content.
         url = reverse('products.product', args=[p.slug])
         r = self.client.get(url, follow=True)
-        print r.content
         eq_(200, r.status_code)
         doc = pq(r.content)
         eq_(11, len(doc('#help-topics li')))
