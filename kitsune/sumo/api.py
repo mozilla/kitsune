@@ -11,11 +11,35 @@ from kitsune.sumo.urlresolvers import get_best_language
 
 
 class CORSMixin(object):
-    """Sets headers on a request to allow cross-origin access to the api."""
+    """
+    Mixin to enable cross origin access of an API by setting CORS headers.
+
+    This should come before DRF mixins and base classes in class definitions.
+
+    This allows all requests to work cross origin, with no limit. This should
+    only be used on APIs intended for general public consumption, that have
+    any sensitive parts protected by authorization.
+
+    GET requests to these APIs should not cause write operations, as they can
+    be triggered by things like image tags. All write operations should be in
+    response to POST, PUT, PATCH, or DELETE requests.
+
+    TODO: This should be configurable to not allow 100% of things, if desired.
+    """
     def finalize_response(self, request, response, *args, **kwargs):
         response = (super(CORSMixin, self)
                     .finalize_response(request, response, *args, **kwargs))
+
         response['Access-Control-Allow-Origin'] = '*'
+
+        # OPTION requests are pre-flight requests. We need to tell the browser
+        # it is ok to make the real request.
+        if request.method == 'OPTIONS':
+            response['Access-Control-Allow-Methods'] = '*'
+            response['Access-Control-Allow-Headers'] = '*'
+            response['Access-Control-Allow-Max-Age'] = '3600'
+            response['Access-Control-Allow-Credentials'] = 'true'
+
         return response
 
 
@@ -56,7 +80,7 @@ class LocalizedCharField(fields.CharField):
     """
     This is a field for DRF that localizes itself based on the current locale.
 
-    There should be a locale field on the serialiation context. If the view
+    There should be a locale field on the serialization context. If the view
     that uses this serializer subclasses LocaleNegotiationMixin, the context
     will get a locale field automatically.
 
