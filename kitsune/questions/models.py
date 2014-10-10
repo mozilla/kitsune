@@ -83,6 +83,14 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
     topic = models.ForeignKey(
         Topic, null=True, related_name='questions')
 
+    # TODO: remove the two M2Ms below
+
+    # List of products this question applies to.
+    products = models.ManyToManyField(Product)
+
+    # List of product-specific topics this document applies to.
+    topics = models.ManyToManyField(Topic)
+
     locale = LocaleField(default=settings.WIKI_DEFAULT_LANGUAGE)
 
     html_cache_key = u'question:html:%s'
