@@ -73,6 +73,9 @@ class ProfileShortSerializer(serializers.ModelSerializer):
     # This is a write only field. It is very very important it stays that way!
     password = serializers.WritableField(source='user.password',
                                          write_only=True)
+    email = serializers.WritableField(source='user.email',
+                                      write_only=True,
+                                      required=False)
 
     class Meta:
         model = Profile
@@ -80,6 +83,7 @@ class ProfileShortSerializer(serializers.ModelSerializer):
             'username',
             'display_name',
             'date_joined',
+            'email',
             # Password is here so it can be involved in write operations.
             # It is marked as write-only above, so it will not be visible.
             'password',
