@@ -4,6 +4,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from kitsune.questions.models import Question, Answer
+from kitsune.sumo.api import CORSMixin
 
 
 class OnlyCreatorEdits(permissions.BasePermission):
@@ -71,7 +72,7 @@ class QuestionDetailSerializer(QuestionShortSerializer):
         )
 
 
-class QuestionViewSet(viewsets.ModelViewSet):
+class QuestionViewSet(CORSMixin, viewsets.ModelViewSet):
     serializer_class = QuestionDetailSerializer
     queryset = Question.objects.all()
     paginate_by = 20
@@ -167,7 +168,7 @@ class AnswerDetailSerializer(AnswerShortSerializer):
         )
 
 
-class AnswerViewSet(viewsets.ModelViewSet):
+class AnswerViewSet(CORSMixin, viewsets.ModelViewSet):
     serializer_class = AnswerDetailSerializer
     queryset = Answer.objects.all()
     paginate_by = 20
