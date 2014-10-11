@@ -8,10 +8,6 @@
 
 {% set classes = 'answers' %}
 
-{% if product %}
-  {% set product = product[0] %}
-{% endif %}
-
 {% set product_title = _(product.title, 'DB: products.Product.title') if product else _('All Products') %}
 
 {# L10n: {q} is the title of the question. #}
