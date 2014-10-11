@@ -4,9 +4,6 @@ from south.db import db
 from south.v2 import SchemaMigration
 from django.db import models
 
-from kitsune.products.models import Product
-from kitsune.wiki.models import Locale
-
 
 AAQ_LANGUAGES = (
     'en-US',
@@ -21,8 +18,8 @@ AAQ_LANGUAGES = (
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        products = Product.objects.all()
-        locales = Locale.objects.filter(locale__in=AAQ_LANGUAGES)
+        products = orm.Product.objects.all()
+        locales = orm.Locale.objects.filter(locale__in=AAQ_LANGUAGES)
 
         for p in products:
             if p.questions_enabled:
