@@ -58,6 +58,7 @@ class TestQuestionSerializer(TestCase):
             'username': 'bob',
             'display_name': 'Bobert the Seventh',
             'password': 'testpass',
+            'email': 'bob@example.com',
         }
 
     def test_user_created(self):
@@ -74,6 +75,7 @@ class TestQuestionSerializer(TestCase):
         serializer = api.ProfileShortSerializer(data=self.data)
         eq_(serializer.errors, {})
         ok_(serializer.is_valid())
+        serializer.save()
         assert serializer.object.user.password != 'testpass'
         ok_(serializer.object.user.check_password('testpass'))
 
@@ -83,3 +85,11 @@ class TestQuestionSerializer(TestCase):
         eq_(serializer.errors, {})
         ok_(serializer.is_valid())
         eq_(serializer.object.name, 'bob')
+
+    def test_no_duplicate_emails(self):
+        user(email=self.data['email'], save=True)
+        serializer = api.ProfileShortSerializer(data=self.data)
+        eq_(serializer.errors, {
+            'email': ['A user with that email address already exists.'],
+        })
+        ok_(not serializer.is_valid())

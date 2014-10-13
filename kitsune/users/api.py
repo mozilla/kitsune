@@ -70,12 +70,9 @@ class ProfileShortSerializer(serializers.ModelSerializer):
     username = serializers.WritableField(source='user.username')
     display_name = serializers.WritableField(source='name', required=False)
     date_joined = serializers.Field(source='user.date_joined')
+    email = serializers.WritableField(source='user.email', write_only=True, required=False)
     # This is a write only field. It is very very important it stays that way!
-    password = serializers.WritableField(source='user.password',
-                                         write_only=True)
-    email = serializers.WritableField(source='user.email',
-                                      write_only=True,
-                                      required=False)
+    password = serializers.WritableField(source='user.password', write_only=True)
 
     class Meta:
         model = Profile
@@ -89,17 +86,29 @@ class ProfileShortSerializer(serializers.ModelSerializer):
             'password',
         ]
 
-    def validate(self, attrs):
-        # Create a user for new profiles.
-        u = User(username=attrs['user.username'])
-        u.set_password(attrs['user.password'])
-        u.save()
-        attrs['user_id'] = u.id
+    def restore_object(self, attrs, instance=None):
+        """
+        Override the default behavior to also make a user if one doesn't already exist.
 
-        # Fill in display name from username, if not provided.
+        This user isn't saved here, but will be saved if/when the .save() method of the
+        serializer is called.
+        """
+        instance = super(ProfileShortSerializer, self).restore_object(attrs, instance)
+        if instance.user_id is None:
+            u = User(username=attrs['user.username'])
+            u.set_password(attrs['user.password'])
+            instance._nested_forward_relations['user'] = u
+        return instance
+
+    def validate_display_name(self, attrs, source):
         if attrs.get('name') is None:
             attrs['name'] = attrs['user.username']
+        return attrs
 
+    def validate_email(self, attrs, source):
+        email = attrs.get('user.email')
+        if email and q/User.objects.filter(email=email).exists():
+            raise serializers.ValidationError('A user with that email address already exists.')
         return attrs
 
 
