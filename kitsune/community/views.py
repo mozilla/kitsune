@@ -133,18 +133,18 @@ def top_contributors(request, area):
         product = get_object_or_404(Product, slug=product)
 
     if area == 'army-of-awesome':
-        results = top_contributors_aoa(locale=locale, count=50)
+        results = top_contributors_aoa(locale=locale, count=10000)
         locales = settings.SUMO_LANGUAGES
     elif area == 'questions':
         results = top_contributors_questions(
-            locale=locale, product=product, count=50)
+            locale=locale, product=product, count=10000)
         locales = settings.AAQ_LANGUAGES
     elif area == 'kb':
-        results = top_contributors_kb(product=product, count=50)
+        results = top_contributors_kb(product=product, count=10000)
         locales = None
     elif area == 'l10n':
         results = top_contributors_l10n(
-            locale=locale, product=product, count=50)
+            locale=locale, product=product, count=10000)
         locales = settings.SUMO_LANGUAGES
     else:
         raise Http404
