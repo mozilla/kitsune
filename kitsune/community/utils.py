@@ -10,35 +10,40 @@ from kitsune.users.models import UserMappingType
 from kitsune.wiki.models import RevisionMetricsMappingType
 
 
+# This should be the higher than the max number of contributors for a
+# section.  There isn't a way to tell ES to just return everything.
+BIG_NUMBER = 3000
+
+
 def top_contributors_questions(
-    start=None, end=None, locale=None, product=None, count=10):
+    start=None, end=None, locale=None, product=None, count=10, page=1):
     """Get the top Support Forum contributors."""
     # Get the user ids and contribution count of the top contributors.
     query = (AnswerMetricsMappingType
         .search()
-        .facet('creator_id', filtered=True, size=count))
+        .facet('creator_id', filtered=True, size=BIG_NUMBER))
 
     # Adding answer to your own question, isn't a contribution.
     query = query.filter(by_asker=False)
 
     query = _apply_filters(query, start, end, locale, product)
 
-    return _get_creator_counts(query, count)
+    return _get_creator_counts(query, count, page)
 
 
-def top_contributors_kb(start=None, end=None, product=None, count=10):
+def top_contributors_kb(start=None, end=None, product=None, count=10, page=1):
     """Get the top KB editors (locale='en-US')."""
     return top_contributors_l10n(
         start, end, settings.WIKI_DEFAULT_LANGUAGE, product, count)
 
 
 def top_contributors_l10n(
-    start=None, end=None, locale=None, product=None, count=10):
+    start=None, end=None, locale=None, product=None, count=10, page=1):
     """Get the top l10n contributors for the KB."""
     # Get the user ids and contribution count of the top contributors.
     query = (RevisionMetricsMappingType
         .search()
-        .facet('creator_id', filtered=True, size=count))
+        .facet('creator_id', filtered=True, size=BIG_NUMBER))
 
     if locale is None:
         # If there is no locale specified, exlude en-US only. The rest are
@@ -47,22 +52,22 @@ def top_contributors_l10n(
 
     query = _apply_filters(query, start, end, locale, product)
 
-    return _get_creator_counts(query, count)
+    return _get_creator_counts(query, count, page)
 
 
-def top_contributors_aoa(start=None, end=None, locale=None, count=10):
+def top_contributors_aoa(start=None, end=None, locale=None, count=10, page=1):
     """Get the top Army of Awesome contributors."""
     # Get the user ids and contribution count of the top contributors.
     query = (ReplyMetricsMappingType
         .search()
-        .facet('creator_id', filtered=True, size=count))
+        .facet('creator_id', filtered=True, size=BIG_NUMBER))
 
     # twitter only does language
     locale = locale.split('-')[0] if locale else None
 
     query = _apply_filters(query, start, end, locale)
 
-    return _get_creator_counts(query, count)
+    return _get_creator_counts(query, count, page)
 
 
 def _apply_filters(query, start, end, locale=None, product=None):
@@ -87,9 +92,14 @@ def _apply_filters(query, start, end, locale=None, product=None):
     return query
 
 
-def _get_creator_counts(query, count):
+def _get_creator_counts(query, count, page):
     """Get the list of top contributors with the contribution count."""
     creator_counts = query.facet_counts()['creator_id']['terms']
+
+    total = len(creator_counts)
+
+    # Pagination
+    creator_counts = creator_counts[((page - 1) * count):(page * count)]
 
     # Grab all the users from the user index in ES.
     user_ids = [x['term'] for x in creator_counts]
@@ -117,4 +127,4 @@ def _get_creator_counts(query, count):
     for item in creator_counts:
         item['user'] = user_lookup.get(item['term'], None)
 
-    return [item for item in creator_counts if item['user'] != None]
+    return ([item for item in creator_counts if item['user'] != None], total)

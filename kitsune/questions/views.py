@@ -284,7 +284,7 @@ def question_list(request, template, product_slug):
     else:
         product = None
     try:
-        top_contributors = top_contributors_questions(
+        top_contributors, _ = top_contributors_questions(
             locale=forum_locale, product=product)
     except ES_EXCEPTIONS as exc:
         top_contributors = []
