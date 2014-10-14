@@ -128,44 +128,18 @@
               <label><input data-url="{{ questions_url(offtopic=0 if offtopic else 1, page=None) }}" type="checkbox" {% if offtopic %}checked="checked"{% endif %}> {{ _('Off-topic') }}</label>
             </div>
           </div>
-
-          <div id="more-filters">
-            <div class="cf">
-              <span>{{ _('Filter:') }}</span>
-              <ul>
-                <li><a href="{{ questions_url(filter=None, page=None) }}" {{ filter|class_selected(None) }}>{{ _('All') }}</a></li>
-                {% for f, desc in filters.iteritems() %}
-                  <li><a href="{{ questions_url(filter=f, page=None) }}" {{ filter|class_selected(f) }}>{{ desc }}</a></li>
-                {% endfor %}
-              </ul>
-            </div>
-
-            <div class="cf">
-              <span>{{ _('Show me:') }}</span>
-              <ul>
-                <li><a href="{{ questions_url(owner='all', page=None) }}" {{ owner|class_selected(None) }}>{{ _('Posts from everyone') }}</a></li>
-                {% if request.user.is_authenticated() %}
-                  <li><a href="{{ questions_url(owner='mine', page=None) }}" {{ owner|class_selected('mine') }}>{{ _('My contributions') }}</a></li>
-                {% endif %}
-              </ul>
-            </div>
-          </div>
         </div>
       </div>
     </div>
   </div>
 
   <div class="container_12 cf">
-    <div class="grid_12">
+    <div class="grid_9">
       {% if questions.object_list %}
         <article class="questions">
           {% for question in questions.object_list %}
             <section id="question-{{ question.id }}" class="cf{% if question.is_escalated %} escalated{% endif %}{% if question.is_offtopic %} offtopic{% endif %}">
               <div class="question-meta {% if not question.num_answers %}urgent{% endif %}">
-                <div class="have-problem-this-week">
-                  <h4>{{ question.num_votes_past_week }}</h4>
-                  {{ _('votes this week') }}
-                </div>
                 <div class="replies">
                   <h4>{{ question.num_answers }}</h4>
                   {% trans count=question.num_answers %}
@@ -184,59 +158,22 @@
 
               <div class="content ui-truncatable truncated">
                 <h2><a href="{{ question.get_absolute_url() }}">{{ question.title }}</a></h2>
-                {% if question.topic %}
-                  {% set topic = question.topic %}
-                  <h3>
-                    <img src="/static/img/blank.png" class="logo-sprite-tiny logo-{{ topic.product.slug }}">
-                    <a href="{{ url('questions.list', topic.product.slug)|urlparams(None, request.GET, topic=None) }}">
-                      {{ _(topic.product.title, 'DB: products.Product.title') }}
-                    </a>
-                    /
-                    <a href="{{ url('questions.list', topic.product.slug)|urlparams(None, request.GET, topic=topic.slug) }}">
-                      {{ _(topic.title, 'DB: products.Topic.title') }}
-                    </a>
-                  </h3>
-                {% endif %}
                 {{ question.content_parsed|truncate_question(170, question.content_parsed)|safe }}
-              </div>
 
-              <div class="thread-meta">
-                <div class="thread-solved {% if question.is_solved %}highlighted{% endif %}">
-                  {{ _('Solved') }}
+                <div class="user-meta">
+                  {{ _('asked {when}')|f(when=question.created|timesince) }}
                 </div>
-                <div class="thread-contributed {% if question.is_contributor(user) %}highlighted{% endif %}">
-                  {{ _('Contributed') }}
-                </div>
-                {% if question.is_locked %}
-                  <div class="thread-locked highlighted">{{ _('Locked') }}</div>
-                {% endif %}
-                {% if question.is_archived %}
-                  <div class="thread-archived highlighted">{{ _('Archived') }}</div>
+
+                {% set tags = question.my_tags %}
+                {% if tags %}
+                  <ul class="tag-list">
+                    {% for tag in tags %}
+                      <li><a class="tag-name" href="{{ questions_url(tagged=tag.slug) }}">{{ tag }}</a></li>
+                    {% endfor %}
+                  </ul>
                 {% endif %}
               </div>
             </section>
-            <aside class="{% if question.is_escalated %} escalated{% endif %}{% if question.is_offtopic %} offtopic{% endif %}">
-              <div class="user-meta">
-                {{ _('Posted by {user}')|f(user=display_name(question.creator)) }}
-                {{ _('on') }} {{ datetimeformat(question.created, format='datetime') }}
-              </div>
-              {% if question.num_answers > 0 and question.last_answer %}
-                <div>
-                  <a href="{{ question.last_answer.get_absolute_url() }}">
-                    {{ _('Last reply by {user}')|f(user=display_name(question.last_answer.creator)) }}
-                  </a> {{ _('on') }} {{ datetimeformat(question.last_answer.created, format='datetime') }}
-                </div>
-              {% endif %}
-              {% set tags = question.my_tags %}
-              {% if tags %}
-                {{ _('Tags') }}
-                <ul class="tag-list">
-                  {% for tag in tags %}
-                    <li><a class="tag-name" href="{{ questions_url(tagged=tag.slug) }}">{{ tag }}</a></li>
-                  {% endfor %}
-                </ul>
-              {% endif %}
-            </aside>
           {% endfor %}
         </article>
         {{ questions|quick_paginator }}
@@ -245,6 +182,32 @@
         <p>There are no questions that match the current filter settings.</p>
       {% endif %}
     </div>
+
+    <div class="grid_3">
+      <div class="sidebar-header">{{ _('Filter by') }}</div>
+      <ul class="sidebar-nav">
+        <li {{ filter|class_selected(None) }}><a href="{{ questions_url(filter=None, page=None) }}">{{ _('All') }}</a></li>
+        {% for f, desc in filters.iteritems() %}
+          <li {{ filter|class_selected(f) }}><a href="{{ questions_url(filter=f, page=None) }}">{{ desc }}</a></li>
+        {% endfor %}
+      </ul>
+
+      <div class="sidebar-header">{{ _('Sort options') }}</div>
+      <ul class="sidebar-nav">
+        {% for o, details in orders.iteritems() %}
+          <li {{ order|class_selected(o) }}><a {% if order == o %}class="sort-{{ sort }}"{% endif %} href="{{ questions_url(order=o, sort=None if order != o else 'desc' if sort == 'asc' else 'asc', page=None) }}">{{ details[1] }}</a></li>
+        {% endfor %}
+      </ul>
+
+      <div class="sidebar-header">{{ _('Show me') }}</div>
+      <ul class="sidebar-nav">
+        <li {{ owner|class_selected(None) }}><a href="{{ questions_url(owner='all', page=None) }}">{{ _('Posts from everyone') }}</a></li>
+        {% if request.user.is_authenticated() %}
+          <li {{ owner|class_selected('mine') }}><a href="{{ questions_url(owner='mine', page=None) }}">{{ _('My contributions') }}</a></li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
 {% endblock %}
 
 {% block side %}

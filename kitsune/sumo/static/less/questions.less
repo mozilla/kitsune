@@ -581,7 +581,9 @@ h2 {
 
   > section {
     background: #fff;
-    padding: 20px 30px;
+    .box-shadow(0 5px 5px rgba(0, 0, 0, 0.1));
+    margin-bottom: 20px;
+    padding: 20px;
     position: relative;
 
     h2 {
@@ -600,88 +602,55 @@ h2 {
     }
 
     .content {
-      border-right: 1px dotted @borderLightGrey;
-      margin: 0 190px 0 0;
+      border-left: 0px dotted @borderLightGrey;
+      margin: 0 0 0 90px;
       min-height: 130px;
-      padding: 0 20px 0 0;
-    }
+      padding: 0;
 
-    .thread-meta {
-      background: #fff;
-      left: 0;
-      overflow: hidden;
-      padding: 0 6px;
-      position: absolute;
-      top: 0;
-      width: 18px;
+      .tag-list {
+        display: inline;
+        list-style: none;
+        margin: 0;
+        padding: 0;
 
-      &:hover {
-        border-bottom: 1px solid @borderLightGrey;
-        border-right: 1px solid @borderLightGrey;
-        width: auto;
+        > li {
+          display: inline;
+          margin: 0 3px 0 0;
+
+          &:last-of-type {
+            margin: 0;
+          }
+
+          > a,
+          > a:visited {
+            background: #EAEFF2;
+            color: @textDarkGrey;
+            display: inline-block;
+            padding: 2px 5px;
+
+            &:hover {
+              color: #000;
+            }
+          }
+        }
       }
 
-      > div {
-        background: @iconsSprite 0 0 no-repeat;
-        color: #ccc;
-        font-size: 11px;
-        height: 18px;
-        line-height: 18px;
-        margin: 6px 0;
-        padding: 0 0 0 24px;
-        text-transform: uppercase;
-
-        &.highlighted {
-          color: @textGrey;
-        }
-
-        &.thread-contributed {
-          background-position: -48px -977px;
-
-          &.highlighted {
-            background-position: -48px -1093px;
-          }
-        }
-
-        &.thread-locked {
-          background-position: -49px -2253px;
-        }
-
-        &.thread-archived {
-          background-position: -49px -2369px;
-        }
-
-        &.thread-solved {
-          background-position: -49px -746px;
-
-          &.highlighted {
-            background-position: -49px -862px;
-          }
-        }
+      .user-meta {
+        float: right;
       }
     }
 
     .question-meta {
-      float: right;
+      float: left;
       font-size: 11px;
-      padding: 0 0 0 20px;
+      padding: 0 20px 0 0;
       text-align: center;
       text-transform: uppercase;
-      width: 170px;
+      width: 70px;
 
       > div {
+        margin-bottom: 5px;
         width: 70px;
-
-        &.have-problem-this-week {
-          float: right;
-          font-size: 13px;
-          margin-top: 16px;
-          width: 80px;
-
-          h4 {
-            font-size: 40px;
-          }
-        }
       }
 
       h4 {
@@ -694,28 +663,6 @@ h2 {
           color: #fe9300;
         }
       }
-    }
-  }
-
-  > aside {
-    font-size: 13px;
-    margin: 10px 30px 30px 30px;
-
-    .tag-list {
-      display: inline;
-      list-style: none;
-      margin: 0;
-      padding: 0;
-
-      > li {
-        display: inline;
-        font-style: italic;
-        margin: 0 0 0 10px;
-      }
-    }
-
-    .user-meta {
-      float: right;
     }
   }
 
