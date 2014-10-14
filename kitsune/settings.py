@@ -539,6 +539,7 @@ INSTALLED_APPS = (
     'kitsune.kpi',
     'kitsune.offline',
     'kitsune.products',
+    'kitsune.notifications',
     'rest_framework',
     'statici18n',
     # 'axes',
