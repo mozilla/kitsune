@@ -161,3 +161,22 @@ class GenericDjangoPermission(permissions.BasePermission):
         u = request.user
         not_inactive = u.is_anonymous() or u.is_active
         return not_inactive and all(u.has_perm(p) for p in self.permissions)
+
+
+class OnlyCreatorEdits(permissions.BasePermission):
+    """
+    Only allow objects to be edited and deleted by their creators.
+
+    TODO: This should be tied to user and object permissions better, but
+    for now this is a bandaid.
+    """
+
+    def has_object_permission(self, request, view, obj):
+        # SAFE_METHODS is a list containing all the read-only methods.
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        # If flow gets here, the method will modify something.
+        user = getattr(request, 'user', None)
+        owner = getattr(obj, 'creator', None)
+        # Only the owner can modify things.
+        return user == owner
