@@ -95,7 +95,7 @@ FILTER_GROUPS = {
 
 ORDER_BY = OrderedDict([
     ('updated', ('updated', _lazy('Updated'))),
-    ('views', ('visits', _lazy('Views'))),
+    ('views', ('questionvisits__visits', _lazy('Views'))),
     ('votes', ('num_votes_past_week', _lazy('Votes'))),
     ('replies', ('num_answers', _lazy('Replies'))),
 ])
@@ -118,15 +118,15 @@ def question_list(request, template, product_slug):
     owner = request.GET.get(
         'owner', request.session.get('questions_owner', 'all'))
     show = request.GET.get('show', 'needs-attention')
-    escalated = int(request.GET.get(
-        'escalated', request.session.get('questions_escalated', False)))
-    offtopic = int(request.GET.get(
-        'offtopic', request.session.get('questions_offtopic', False)))
+    escalated = request.GET.get('escalated')
+    offtopic = request.GET.get('offtopic')
     tagged = request.GET.get('tagged')
     tags = None
     topic_slug = request.GET.get('topic')
 
     order = request.GET.get('order', 'updated')
+    if order not in ORDER_BY:
+        order == 'updated'
     sort = request.GET.get('sort', 'desc')
 
     product_slugs = product_slug.split(',')
@@ -159,6 +159,9 @@ def question_list(request, template, product_slug):
         if filter_ not in FILTER_GROUPS[show]:
             filter_ = None
 
+        if escalated or offtopic:
+            filter_ = None
+
         if filter_ == 'new':
             question_qs = question_qs.new()
         elif filter_ == 'unhelpful-answers':
@@ -180,6 +183,13 @@ def question_list(request, template, product_slug):
                 question_qs = question_qs.responded()
             if show == 'done':
                 question_qs = question_qs.done()
+
+    if escalated:
+        question_qs = question_qs.filter(
+            tags__name__in=config.ESCALATE_TAG_NAME)
+    elif offtopic:
+        question_qs = question_qs.filter(
+            tags__name__in=config.OFFTOPIC_TAG_NAME)
 
     question_qs = question_qs.select_related(
         'creator', 'last_answer', 'last_answer__creator')
@@ -285,8 +295,6 @@ def question_list(request, template, product_slug):
     # Store current filters in the session
     if request.user.is_authenticated():
         request.session['questions_owner'] = owner
-        request.session['questions_escalated'] = escalated
-        request.session['questions_offtopic'] = offtopic
 
     # Get the top contributors for the locale and product.
     # If we are in a product forum, limit the top contributors to that product.

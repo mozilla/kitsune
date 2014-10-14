@@ -48,15 +48,41 @@
     });
 
     $('[data-toggle]').each(function() {
-        var $this = $(this);
-        var $target = ($this.data('toggle-target')) ? $($this.data('toggle-target')) : $this;
-        var trigger = ($this.data('toggle-trigger')) ? $this.data('toggle-trigger') : 'click';
+      var $this = $(this);
+      var $target = ($this.data('toggle-target')) ? $($this.data('toggle-target')) : $this;
+      var trigger = ($this.data('toggle-trigger')) ? $this.data('toggle-trigger') : 'click';
+      var targetId = $target.attr('id');
 
-        $this.on(trigger, function(ev) {
-            ev.preventDefault();
-            $target.toggleClass($this.data('toggle'));
-            return false;
-        });
+      if ($this.data('toggle-sticky') && targetId) {
+        if (Modernizr.localstorage) {
+          var classes = localStorage.getItem(targetId + '.classes') || '[]';
+          classes = JSON.parse(classes);
+          $target.addClass(classes.join(' '));
+        }
+      }
+
+      $this.on(trigger, function(ev) {
+        ev.preventDefault();
+        var classname = $this.data('toggle');
+        $target.toggleClass(classname);
+
+        if ($this.data('toggle-sticky') && targetId) {
+          if (Modernizr.localstorage) {
+            var classes = localStorage.getItem(targetId + '.classes') || '[]';
+            classes = JSON.parse(classes);
+            var i = classes.indexOf(classname);
+
+            if ($target.hasClass(classname) && i === -1) {
+              classes.push(classname);
+            } else if (!$target.hasClass(classname) && i > -1) {
+              classes.splice(i, 1);
+            }
+
+            localStorage.setItem(targetId + '.classes', JSON.stringify(classes));
+          }
+        }
+        return false;
+      });
     });
 
     $('[data-ui-type="tabbed-view"]').each(function() {

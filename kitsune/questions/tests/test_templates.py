@@ -1060,21 +1060,6 @@ def _remove_async_tag_url(question_id):
 
 
 class QuestionsTemplateTestCase(TestCaseBase):
-    def test_contributed_badge(self):
-        u = user(save=True)
-        q1 = answer(creator=u, save=True).question
-        q2 = answer(save=True).question
-
-        # u should have a contributor badge on q1 but not q2
-        self.client.login(username=u.username, password="testpass")
-        response = self.client.get(
-            urlparams(reverse('questions.list', args=['all']), show='all'))
-        doc = pq(response.content)
-        eq_(1,
-            len(doc('#question-%s .thread-contributed.highlighted' % q1.id)))
-        eq_(0,
-            len(doc('#question-%s .thread-contributed.highlighted' % q2.id)))
-
     def test_tagged(self):
         u = user(save=True)
         add_permission(u, Question, 'tag_question')

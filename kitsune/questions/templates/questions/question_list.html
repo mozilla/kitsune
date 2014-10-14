@@ -3,14 +3,6 @@
 
 {% set classes = 'questions' %}
 
-{% if offtopic %}
-  {% set classes = classes + ' show-offtopic' %}
-{% endif %}
-
-{% if escalated %}
-  {% set classes = classes + ' show-escalated' %}
-{% endif %}
-
 {% if all_products %}
   {% set product_title = _('All Products') %}
 {% elif multiple_products %}
@@ -116,30 +108,19 @@
     </div>
   </div>
 
-  <div id="filter-section">
-    <div class="container_12 cf">
-      <div class="grid_12">
-        <div id="filters" class="cf">
-          <div id="flag-filter">
-            <div>
-              <label><input data-url="{{ questions_url(escalated=0 if escalated else 1, page=None) }}" type="checkbox" {% if escalated %}checked="checked"{% endif %}> {{ _('Escalated') }}</label>
-            </div>
-            <div>
-              <label><input data-url="{{ questions_url(offtopic=0 if offtopic else 1, page=None) }}" type="checkbox" {% if offtopic %}checked="checked"{% endif %}> {{ _('Off-topic') }}</label>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+  <div id="filter-section"></div>
 
-  <div class="container_12 cf">
+  <div id="questions-list" class="container_12 cf">
     <div class="grid_9">
       {% if questions.object_list %}
         <article class="questions">
           {% for question in questions.object_list %}
-            <section id="question-{{ question.id }}" class="cf{% if question.is_escalated %} escalated{% endif %}{% if question.is_offtopic %} offtopic{% endif %}">
+            <section id="question-{{ question.id }}" class="cf">
               <div class="question-meta {% if not question.num_answers %}urgent{% endif %}">
+                <div class="have-problem-this-week">
+                  <h4>{{ question.num_votes_past_week }}</h4>
+                  {{ _('votes this week') }}
+                </div>
                 <div class="replies">
                   <h4>{{ question.num_answers }}</h4>
                   {% trans count=question.num_answers %}
@@ -150,14 +131,41 @@
                 </div>
                 {% if question.num_visits %}
                   <div class="views">
-                    <h4>{{ question.num_visits }}</h4>
-                    {{ _('views') }}
+                    {{ _('{num_views} views')|f(num_views=question.num_visits) }}
                   </div>
+                {% endif %}
+              </div>
+
+              <div class="thread-meta">
+                <div class="thread-solved {% if question.is_solved %}highlighted{% endif %}">
+                  {{ _('Solved') }}
+                </div>
+                <div class="thread-contributed {% if question.is_contributor(user) %}highlighted{% endif %}">
+                  {{ _('Contributed') }}
+                </div>
+                {% if question.is_locked %}
+                  <div class="thread-locked highlighted">{{ _('Locked') }}</div>
+                {% endif %}
+                {% if question.is_archived %}
+                  <div class="thread-archived highlighted">{{ _('Archived') }}</div>
                 {% endif %}
               </div>
 
               <div class="content ui-truncatable truncated">
                 <h2><a href="{{ question.get_absolute_url() }}">{{ question.title }}</a></h2>
+                {% if question.topic %}
+                  {% set topic = question.topic %}
+                  <h3>
+                    <img src="/static/img/blank.png" class="logo-sprite-tiny logo-{{ topic.product.slug }}">
+                    <a href="{{ url('questions.list', topic.product.slug)|urlparams(None, request.GET, topic=None) }}">
+                      {{ _(topic.product.title, 'DB: products.Product.title') }}
+                    </a>
+                    /
+                    <a href="{{ url('questions.list', topic.product.slug)|urlparams(None, request.GET, topic=topic.slug) }}">
+                      {{ _(topic.title, 'DB: products.Topic.title') }}
+                    </a>
+                  </h3>
+                {% endif %}
                 {{ question.content_parsed|truncate_question(170, question.content_parsed)|safe }}
 
                 <div class="user-meta">
@@ -183,12 +191,14 @@
       {% endif %}
     </div>
 
-    <div class="grid_3">
+    <div class="grid_3 questions-sidebar">
       <div class="sidebar-header">{{ _('Filter by') }}</div>
       <ul class="sidebar-nav">
-        <li {{ filter|class_selected(None) }}><a href="{{ questions_url(filter=None, page=None) }}">{{ _('All') }}</a></li>
+        <li {% if filter == None and offtopic==None and escalated == None %}class="selected"{% endif %}><a href="{{ questions_url(filter=None, escalated=None, offtopic=None, page=None) }}">{{ _('All') }}</a></li>
+        <li {% if filter == None and escalated %}class="selected"{% endif %}><a href="{{ questions_url(escalated=1, offtopic=None, filter=None, page=None) }}">{{ _('Escalated') }}</a></li>
+        <li {% if filter == None and offtopic and escalated == None %}class="selected"{% endif %}><a href="{{ questions_url(offtopic=1, escalated=None, filter=None, page=None) }}">{{ _('Off-topic') }}</a></li>
         {% for f, desc in filters.iteritems() %}
-          <li {{ filter|class_selected(f) }}><a href="{{ questions_url(filter=f, page=None) }}">{{ desc }}</a></li>
+          <li {{ filter|class_selected(f) }}><a href="{{ questions_url(filter=f, escalated=None, offtopic=None, page=None) }}">{{ desc }}</a></li>
         {% endfor %}
       </ul>
 
@@ -206,6 +216,11 @@
           <li {{ owner|class_selected('mine') }}><a href="{{ questions_url(owner='mine', page=None) }}">{{ _('My contributions') }}</a></li>
         {% endif %}
       </ul>
+
+      <div class="toggler">
+        <span class="expand" data-toggle="collapsed" data-toggle-target="#questions-list" data-toggle-sticky="sticky"></span>
+        <span class="collapse" data-toggle="collapsed" data-toggle-target="#questions-list" data-toggle-sticky="sticky"></span>
+      </div>
     </div>
   </div>
 {% endblock %}
