@@ -773,6 +773,19 @@ input[type=button],
   }
 }
 
+.sidebar-header {
+  background: #fff;
+  color: #000;
+  font-weight: bold;
+  margin: 30px 0 2px 0;
+  padding: 16px 20px;
+  text-transform: uppercase;
+
+  &:first-child {
+    margin-top: 0;
+  }
+}
+
 .sidebar-nav {
   font-family: @OpenSans;
   font-size: 13px;
@@ -794,6 +807,34 @@ input[type=button],
       padding: 16px 20px;
       position: relative;
       text-decoration: none;
+
+      &.sort-asc,
+      &.sort-desc {
+        &:after {
+          content: '';
+          display: inline-block;
+          height: 0;
+          margin-bottom: 2px;
+          margin-left: 6px;
+          width: 0;
+        }
+      }
+
+      &.sort-asc {
+        &:after {
+          border-color: transparent transparent #000 transparent;
+          border-style: solid;
+          border-width: 0 6px 6px 6px;
+        }
+      }
+
+      &.sort-desc {
+        &:after {
+          border-color: #000 transparent transparent transparent;
+          border-style: solid;
+          border-width: 6px 6px 0 6px;
+        }
+      }
     }
 
     > span:hover,
@@ -822,7 +863,7 @@ input[type=button],
 
       > span,
       > a {
-        &:after {
+        &:before {
           background: url('../img/sidebar-arrow.gif') 0 3px no-repeat;
           content: '';
           height: 30px;

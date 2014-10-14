@@ -93,6 +93,13 @@ FILTER_GROUPS = {
     ]),
 }
 
+ORDER_BY = OrderedDict([
+    ('updated', ('updated', _lazy('Updated'))),
+    ('views', ('visits', _lazy('Views'))),
+    ('votes', ('num_votes_past_week', _lazy('Votes'))),
+    ('replies', ('num_answers', _lazy('Replies'))),
+])
+
 
 @mobile_template('questions/{mobile/}product_list.html')
 def product_list(request, template):
@@ -118,6 +125,9 @@ def question_list(request, template, product_slug):
     tagged = request.GET.get('tagged')
     tags = None
     topic_slug = request.GET.get('topic')
+
+    order = request.GET.get('order', 'updated')
+    sort = request.GET.get('sort', 'desc')
 
     product_slugs = product_slug.split(',')
     products = []
@@ -231,7 +241,9 @@ def question_list(request, template, product_slug):
     question_qs = question_qs.filter(locale_query)
 
     # Set the order.
-    question_qs = question_qs.order_by('-updated')
+    order_by = ORDER_BY[order][0]
+    question_qs = question_qs.order_by(
+        order_by if sort == 'asc' else '-%s' % order_by)
 
     try:
         with statsd.timer('questions.view.paginate.%s' % filter_):
@@ -296,6 +308,9 @@ def question_list(request, template, product_slug):
             'owner': owner,
             'show': show,
             'filters': FILTER_GROUPS[show],
+            'order': order,
+            'orders': ORDER_BY,
+            'sort': sort,
             'escalated': escalated,
             'offtopic': offtopic,
             'tags': tags,

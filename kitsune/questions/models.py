@@ -689,7 +689,7 @@ class QuestionMetaData(ModelBase):
 
 class QuestionVisits(ModelBase):
     """Web stats for questions."""
-    question = models.ForeignKey(Question, unique=True)
+    question = models.ForeignKey(Question, unique=True, related_name='visits')
     visits = models.IntegerField(db_index=True)
 
     @classmethod
