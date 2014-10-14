@@ -12,10 +12,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.decorators import permission_classes, api_view
 
-
 from kitsune.access.decorators import login_required
 from kitsune.sumo.decorators import json_view
-from kitsune.users.models import Profile
+from kitsune.users.models import Profile, RegistrationProfile
 
 
 def display_name_or_none(user):
@@ -70,9 +69,11 @@ class ProfileShortSerializer(serializers.ModelSerializer):
     username = serializers.WritableField(source='user.username')
     display_name = serializers.WritableField(source='name', required=False)
     date_joined = serializers.Field(source='user.date_joined')
-    email = serializers.WritableField(source='user.email', write_only=True, required=False)
+    email = serializers.WritableField(
+        source='user.email', write_only=True, required=False)
     # This is a write only field. It is very very important it stays that way!
-    password = serializers.WritableField(source='user.password', write_only=True)
+    password = serializers.WritableField(
+        source='user.password', write_only=True)
 
     class Meta:
         model = Profile
@@ -88,15 +89,25 @@ class ProfileShortSerializer(serializers.ModelSerializer):
 
     def restore_object(self, attrs, instance=None):
         """
-        Override the default behavior to also make a user if one doesn't already exist.
+        Override the default behavior to make a user if one doesn't exist.
 
-        This user isn't saved here, but will be saved if/when the .save() method of the
-        serializer is called.
+        This user may not be saved here, but will be saved if/when the .save()
+        method of the serializer is called.
         """
-        instance = super(ProfileShortSerializer, self).restore_object(attrs, instance)
+        instance = (super(ProfileShortSerializer, self)
+                    .restore_object(attrs, instance))
         if instance.user_id is None:
-            u = User(username=attrs['user.username'])
-            u.set_password(attrs['user.password'])
+            # The Profile doesn't have a user, so create one. If an email is
+            # specified, the user will be inactive until the email is
+            # confirmed. Otherwise the user can be created immediately.
+            if 'user.email' in attrs:
+                u = RegistrationProfile.objects.create_inactive_user(
+                    attrs['user.username'],
+                    attrs['user.password'],
+                    attrs['user.email'])
+            else:
+                u = User(username=attrs['user.username'])
+                u.set_password(attrs['user.password'])
             instance._nested_forward_relations['user'] = u
         return instance
 
@@ -107,8 +118,9 @@ class ProfileShortSerializer(serializers.ModelSerializer):
 
     def validate_email(self, attrs, source):
         email = attrs.get('user.email')
-        if email and q/User.objects.filter(email=email).exists():
-            raise serializers.ValidationError('A user with that email address already exists.')
+        if email and User.objects.filter(email=email).exists():
+            raise serializers.ValidationError('A user with that email address '
+                                              'already exists.')
         return attrs
 
 

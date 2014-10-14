@@ -2,6 +2,7 @@ import json
 
 import mock
 from django.contrib.auth.models import User
+from django.core import mail
 from nose.tools import eq_, ok_
 
 from kitsune.sumo.helpers import urlparams
@@ -65,7 +66,6 @@ class TestQuestionSerializer(TestCase):
         # There is at least one user in existence due to migrations
         number_users = User.objects.count()
         serializer = api.ProfileShortSerializer(data=self.data)
-        eq_(serializer.errors, {})
         ok_(serializer.is_valid())
         serializer.save()
         eq_(User.objects.count(), number_users + 1)
@@ -73,7 +73,6 @@ class TestQuestionSerializer(TestCase):
 
     def test_password(self):
         serializer = api.ProfileShortSerializer(data=self.data)
-        eq_(serializer.errors, {})
         ok_(serializer.is_valid())
         serializer.save()
         assert serializer.object.user.password != 'testpass'
@@ -82,7 +81,6 @@ class TestQuestionSerializer(TestCase):
     def test_automatic_display_name(self):
         del self.data['display_name']
         serializer = api.ProfileShortSerializer(data=self.data)
-        eq_(serializer.errors, {})
         ok_(serializer.is_valid())
         eq_(serializer.object.name, 'bob')
 
@@ -93,3 +91,23 @@ class TestQuestionSerializer(TestCase):
             'email': ['A user with that email address already exists.'],
         })
         ok_(not serializer.is_valid())
+
+    def test_users_without_emails_are_active(self):
+        del self.data['email']
+        serializer = api.ProfileShortSerializer(data=self.data)
+        ok_(serializer.is_valid())
+        serializer.save()
+        eq_(serializer.object.user.is_active, True)
+
+    def test_users_with_emails_are_inactive(self):
+        serializer = api.ProfileShortSerializer(data=self.data)
+        ok_(serializer.is_valid())
+        serializer.save()
+        eq_(serializer.object.user.is_active, False)
+
+    def test_users_with_emails_get_confirmation_email(self):
+        serializer = api.ProfileShortSerializer(data=self.data)
+        ok_(serializer.is_valid())
+        serializer.save()
+        eq_(len(mail.outbox), 1)
+        eq_(mail.outbox[0].subject, 'Please confirm your email address')
