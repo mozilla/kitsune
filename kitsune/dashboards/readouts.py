@@ -248,9 +248,6 @@ def kb_overview_rows(mode=None, max=None, locale=None, product=None):
         else:
             data['latest_revision'] = True
 
-        if not 'latest_revision' in data:
-            data['difference'] = unapproved_revs[0].difference
-
         # Get the translated doc
         if locale != settings.WIKI_DEFAULT_LANGUAGE:
             transdoc = d.translations.filter(

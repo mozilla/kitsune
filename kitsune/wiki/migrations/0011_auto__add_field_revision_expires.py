@@ -13,18 +13,10 @@ class Migration(SchemaMigration):
                       self.gf('django.db.models.fields.DateTimeField')(null=True),
                       keep_default=False)
 
-        # Adding field 'Revision.difference'
-        db.add_column(u'wiki_revision', 'difference',
-                      self.gf('django.db.models.fields.DecimalField')(null=True, max_digits=5, decimal_places=2),
-                      keep_default=False)
-
 
     def backwards(self, orm):
         # Deleting field 'Revision.expires'
         db.delete_column(u'wiki_revision', 'expires')
-
-        # Deleting field 'Revision.difference'
-        db.delete_column(u'wiki_revision', 'difference')
 
 
     models = {

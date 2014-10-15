@@ -793,8 +793,6 @@ class Revision(ModelBase, SearchMixin):
     reviewed = models.DateTimeField(null=True)
     expires = models.DateTimeField(null=True)
 
-    difference = models.DecimalField(max_digits=5, decimal_places=2, null=True)
-
     # The significance of the initial revision of a document is NULL.
     significance = models.IntegerField(choices=SIGNIFICANCES, null=True)
 
@@ -875,13 +873,6 @@ class Revision(ModelBase, SearchMixin):
             raise ProgrammingError('Revision.based_on must be None or refer '
                                    'to a revision of the default-'
                                    'language document.')
-
-        # Check if this is a new revision and if it is calculate the diff %
-        if self.id is None and self.based_on:
-            diff = SequenceMatcher(None, self.based_on.content, self.content)
-            # We need to convert to a string for py2.6 to be happy with
-            # converting a float to a decimal.
-            self.difference = str(round((1 - diff.ratio()) * 100, 2))
 
         super(Revision, self).save(*args, **kwargs)
 

@@ -6,7 +6,6 @@
     <th>{{ _('Needs Update') }}</th>
     <th>{{ _('Stale') }}</th>
     <th>{{ _('Expiry Date') }}</th>
-    <th>{{ _('Change in view') }}</th>
     {% if not request.LANGUAGE_CODE == settings.WIKI_DEFAULT_LANGUAGE %}
       <th></th>
     {% endif %}
@@ -45,7 +44,6 @@
         {{ datetimeformat(row.expiry_date, 'date') }}
       {% endif %}
     </td>
-    <td>{{ row.difference }}</td>
     <td>
       <a href="{{ row.trans_url }}">
         {{ _('Show translations') }}
