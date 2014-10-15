@@ -408,12 +408,9 @@ def question_details(request, template, question_id, form=None,
     extra_kwargs.update({'all_products': products, 'all_topics': topics,
                          'product': question.product, 'topic': question.topic})
 
-    # Add noindex to questions without answers that are > 30 days old or that
-    # are marked as spam.
     if not request.MOBILE:
-        no_answers = ans_['answers'].paginator.count == 0
-        too_old = question.created < datetime.now() - timedelta(days=30)
-        if no_answers and too_old:
+        # Add noindex to questions without a solution.
+        if not question.solution_id:
             extra_kwargs.update(robots_noindex=True)
 
     return render(request, template, extra_kwargs)
