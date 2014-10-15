@@ -794,26 +794,26 @@ class AnswersTemplateTestCase(TestCaseBase):
         eq_('nofollow', doc('.question .main-content a')[0].attrib['rel'])
         eq_('nofollow', doc('.answer .main-content a')[0].attrib['rel'])
 
-    def test_robots_noindex_unanswered(self):
-        """Verify noindex on unanswered questions over 30 days old."""
+    def test_robots_noindex_unsolved(self):
+        """Verify noindex on unsolved questions."""
         q = question(save=True)
 
-        # A brand new questions shouldn't be noindex'd...
-        response = get(self.client, 'questions.details', args=[q.id])
-        eq_(200, response.status_code)
-        doc = pq(response.content)
-        eq_(0, len(doc('meta[name=robots]')))
-
-        # But a 31 day old question should be noindexed...
-        q.created = datetime.now() - timedelta(days=31)
-        q.save()
+        # A brand new questions should be noindexed...
         response = get(self.client, 'questions.details', args=[q.id])
         eq_(200, response.status_code)
         doc = pq(response.content)
         eq_(1, len(doc('meta[name=robots]')))
 
-        # Except if it has answers.
-        answer(question=q, save=True)
+        # If it has one answer, it should still be noindexed...
+        a = answer(question=q, save=True)
+        response = get(self.client, 'questions.details', args=[q.id])
+        eq_(200, response.status_code)
+        doc = pq(response.content)
+        eq_(1, len(doc('meta[name=robots]')))
+
+        # If the answer it the solution, then it shouldn't be noindexed anymore.
+        q.solution = a
+        q.save()
         response = get(self.client, 'questions.details', args=[q.id])
         eq_(200, response.status_code)
         doc = pq(response.content)
