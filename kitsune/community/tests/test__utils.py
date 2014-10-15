@@ -34,18 +34,18 @@ class TopContributorTests(ElasticTestCase):
         self.refresh()
 
         # By default, we should only get 2 top contributors back.
-        top = top_contributors_kb()
+        top, _ = top_contributors_kb()
         eq_(2, len(top))
         assert r4.creator_id not in [u['term'] for u in top]
         eq_(r1.creator_id, top[0]['term'])
 
         # If we specify an older start, then we get all 3.
-        top = top_contributors_kb(start=date.today() - timedelta(days=92))
+        top, _ = top_contributors_kb(start=date.today() - timedelta(days=92))
         eq_(3, len(top))
 
         # If we also specify an older end date, we only get the creator for
         # the older revision.
-        top = top_contributors_kb(
+        top, _ = top_contributors_kb(
             start=date.today() - timedelta(days=92),
             end=date.today() - timedelta(days=1))
         eq_(1, len(top))
@@ -73,18 +73,18 @@ class TopContributorTests(ElasticTestCase):
         self.refresh()
 
         # By default, we should only get 2 top contributors back for 'es'.
-        top = top_contributors_l10n(locale='es')
+        top, _ = top_contributors_l10n(locale='es')
         eq_(2, len(top))
         assert es4.creator_id not in [u['term'] for u in top]
         eq_(es1.creator_id, top[0]['term'])
 
          # By default, we should only get 1 top contributors back for 'de'.
-        top = top_contributors_l10n(locale='de')
+        top, _ = top_contributors_l10n(locale='de')
         eq_(1, len(top))
         eq_(de1.creator_id, top[0]['term'])
 
         # If no locale is passed, it includes all locales except en-US.
-        top = top_contributors_l10n()
+        top, _ = top_contributors_l10n()
         eq_(3, len(top))
 
     def test_top_contributors_aoa(self):
@@ -100,7 +100,7 @@ class TopContributorTests(ElasticTestCase):
         self.refresh()
 
         # By default, we should only get 2 top contributors back.
-        top = top_contributors_aoa()
+        top, _ = top_contributors_aoa()
         eq_(2, len(top))
         assert r4.user_id not in [u['term'] for u in top]
         eq_(r1.user_id, top[0]['term'])
@@ -128,14 +128,14 @@ class TopContributorTests(ElasticTestCase):
         self.refresh()
 
         # By default, we should only get 2 top contributors back.
-        top = top_contributors_questions()
+        top, _ = top_contributors_questions()
         eq_(2, len(top))
         assert a4.creator_id not in [u['term'] for u in top]
         eq_(a1.creator_id, top[0]['term'])
 
         # Verify, filtering of Firefox questions only.
-        top = top_contributors_questions(product=firefox.slug)
+        top, _ = top_contributors_questions(product=firefox.slug)
         eq_(1, len(top))
         eq_(a1.creator_id, top[0]['term'])
-        top = top_contributors_questions(product=fxos.slug)
+        top, _ = top_contributors_questions(product=fxos.slug)
         eq_(2, len(top))

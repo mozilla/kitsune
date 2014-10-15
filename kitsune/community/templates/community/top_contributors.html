@@ -93,13 +93,16 @@
           </div>
         </div>
       {% endif %}
+
+      <p>{{ _('There are {total} users with at least one contribution in the last 90 days.')|f(total=total) }}</p>
+
     </section>
 
     <ol>
       {% for result in results %}
         <li class="results-user">
           <img src="{{ result['user']['avatar'] }}" alt="" class="user-img-results" />
-          <span class="numbered">{{ loop.index }}</span>
+          <span class="numbered">{{ loop.index + ((page - 1) * page_size) }}</span>
           <div class="user-details">
             <h2>{{ result['user']['display_name'] }}</h2>
             <ul class="results-user-details">
@@ -118,6 +121,27 @@
         </li>
       {% endfor %}
     </ol>
+
+    {% if total > page_size %}
+      {% set base_url = url('community.top_contributors', area=area) %}
+      {% if product %}
+        {% set base_url = base_url|urlparams(product=product.slug) %}
+      {% endif %}
+      {% if locale %}
+        {% set base_url = base_url|urlparams(locale=locale) %}
+      {% endif %}
+      <section class="pagination">
+        <ol class="pagination cf">
+          {% for i in range((total/page_size)|int) %}
+            <li{% if i + 1 == page %} class="selected"{% endif %}>
+              <a href="{{ base_url|urlparams(page=i + 1) }}"{% if i + 1 == page %} class="btn-page"{% endif %}>
+                {{ i + 1 }}
+              </a>
+            </li>
+          {% endfor %}
+        </ol>
+      <section>
+    {% endif %}
 
   </article>
 {% endblock %}
