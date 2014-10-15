@@ -13,6 +13,14 @@ function init() {
       area: true
     },
     {
+      name: gettext('Solved'),
+      slug: 'num_solved',
+      func: k.Graph.identity('solved'),
+      color: '#aa4643',
+      axisGroup: 'questions',
+      area: true
+    },
+    {
       name: gettext('% Solved'),
       slug: 'solved',
       func: k.Graph.fraction('solved', 'questions'),
@@ -21,12 +29,28 @@ function init() {
       type: 'percent'
     },
     {
+      name: gettext('Responded in 24 hours'),
+      slug: 'num_responded_24',
+      func: k.Graph.identity('responded_24'),
+      color: '#89a54e',
+      axisGroup: 'questions',
+      area: true
+    },
+    {
       name: gettext('% Responded in 24 hours'),
       slug: 'responded_24',
       func: k.Graph.fraction('responded_24', 'questions'),
       color: '#89a54e',
       axisGroup: 'percent',
       type: 'percent'
+    },
+    {
+      name: gettext('Responded in 72 hours'),
+      slug: 'num_responded_72',
+      func: k.Graph.identity('responded_72'),
+      color: '#80699b',
+      axisGroup: 'questions',
+      area: true
     },
     {
       name: gettext('% Responded in 72 hours'),
