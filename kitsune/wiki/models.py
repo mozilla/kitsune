@@ -791,7 +791,7 @@ class Revision(ModelBase, SearchMixin):
 
     created = models.DateTimeField(default=datetime.now)
     reviewed = models.DateTimeField(null=True)
-    expires = models.DateTimeField(null=True)
+    expires = models.DateTimeField(null=True, blank=True)
 
     # The significance of the initial revision of a document is NULL.
     significance = models.IntegerField(choices=SIGNIFICANCES, null=True)
