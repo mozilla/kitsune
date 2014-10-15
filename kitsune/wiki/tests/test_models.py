@@ -689,11 +689,3 @@ class RevisionTests(TestCase):
 
         eq_(r1.previous, None)
         eq_(r2.previous.id, r1.id)
-
-    def test_difference(self):
-        r1 = revision(is_approved=True, content='Test', save=True)
-        d = r1.document
-        r2 = revision(document=d, based_on=r1, content='Testing this',
-                      save=True)
-        r2 = Revision.uncached.get(pk=r2.pk)
-        eq_(r2.difference, 50)
