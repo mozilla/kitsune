@@ -475,8 +475,8 @@ def edit_profile(request, username=None, template=None):
         if form.is_valid():
             user_profile = form.save()
             new_timezone = user_profile.timezone
-            if (user == request.user and
-                    request.session.get('timezone', None) != new_timezone):
+            tz_changed = request.session.get('timezone', None) != new_timezone
+            if tz_changed and user == request.user:
                 request.session['timezone'] = new_timezone
             return HttpResponseRedirect(reverse('users.profile',
                                                 args=[user.username]))
