@@ -34,7 +34,7 @@
                   {{ content_editor(revision_form.content) }}
                 {% endif %}
                 {% if field.name == 'summary' %}
-                  <p><span id="remaining-characters">{{ field.field.max_length }}</span> {{_('characters remaining.') }}</p>
+                  <p><span id="remaining-characters">{{ field.field.max_length }}</span> {{ _('characters remaining.') }}</p>
                 {% endif %}
               </li>
             {% endfor %}
