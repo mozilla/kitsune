@@ -72,6 +72,8 @@
         {% if field.name == 'message' %}
           {{ field.errors }}
           {{ content_editor(field) }}
+          <div id="remaining-characters" data-max-characters="{{ field.field.max_length }}" data-input="#id_message">
+          </div>
         {% else %}
           {{ field|safe }}
         {% endif %}
