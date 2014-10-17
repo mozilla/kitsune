@@ -3,8 +3,35 @@ from rest_framework import serializers, viewsets, permissions, filters, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from kitsune.questions.models import Question, Answer
+from kitsune.questions.models import Question, Answer, QuestionMetaData
 from kitsune.sumo.api import CORSMixin, OnlyCreatorEdits
+
+
+class QuestionMetaDataSerializer(serializers.ModelSerializer):
+    question = serializers.PrimaryKeyRelatedField(
+        required=False, write_only=True)
+
+    class Meta:
+        model = QuestionMetaData
+        fields = ('name', 'value', 'question')
+
+    def get_identity(self, obj):
+        return obj['name']
+
+    def restore_object(self, attrs, instance=None):
+        """
+        Given a dictionary of deserialized field values, either update
+        an existing model instance, or create a new model instance.
+        """
+        if instance is not None:
+            for key in self.Meta.fields:
+                setattr(instance, key, attrs.get(key, getattr(instance, key)))
+            return instance
+        else:
+            obj, created = self.Meta.model.objects.get_or_create(
+                question=attrs['question'], name=attrs['name'],
+                defaults={'value': attrs['value']})
+            return obj
 
 
 class QuestionShortSerializer(serializers.ModelSerializer):
@@ -45,11 +72,15 @@ class QuestionShortSerializer(serializers.ModelSerializer):
 
 
 class QuestionDetailSerializer(QuestionShortSerializer):
+    metadata = QuestionMetaDataSerializer(
+        source='metadata_set', required=False)
+
     class Meta:
         model = Question
         fields = QuestionShortSerializer.Meta.fields + (
             'content',
             'answers',
+            'metadata',
         )
 
 
@@ -115,6 +146,36 @@ class QuestionViewSet(CORSMixin, viewsets.ModelViewSet):
 
         question.set_solution(answer, request.user)
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(methods=['POST'])
+    def set_metadata(self, request, pk=None):
+        data = request.DATA
+        data['question'] = self.get_object().pk
+
+        serializer = QuestionMetaDataSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        else:
+            return Response(serializer.errors,
+                            status=status.HTTP_400_BAD_REQUEST)
+
+    @action(methods=['POST', 'DELETE'])
+    def delete_metadata(self, request, pk=None):
+        question = self.get_object()
+
+        if 'name' not in request.DATA:
+            return Response({'name': 'This field is required.'},
+                             status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            meta = (QuestionMetaData.objects
+                    .get(question=question, name=request.DATA['name']))
+            meta.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except QuestionMetaData.DoesNotExist:
+            return Response({'__all__': 'No matching metadata object found.'},
+                             status=status.HTTP_404_NOT_FOUND)
 
 
 class AnswerShortSerializer(serializers.ModelSerializer):
