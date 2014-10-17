@@ -26,4 +26,31 @@ $(document).ready(function(){
             changeHash: false
         });
     });
+
+    // Character counter for message box.
+    var $summaryCount = $('#remaining-characters'),
+        $summaryBox = $($summaryCount.data('input')),
+        maxCount = $summaryCount.data('max-characters'),
+        updateCount = function() {
+          var currentCount = $summaryBox.val().length;
+          var delta = maxCount - currentCount;
+          var message;
+
+          if (delta < 0) {
+            delta = 0;
+          }
+          message = interpolate(gettext('%s characters remaining'), [delta]);
+          $summaryCount.text(message);
+          if(maxCount - currentCount >= 10) {
+            $summaryCount.css('color', 'black');
+          } else {
+            $summaryCount.css('color', 'red');
+            if(currentCount >= maxCount) {
+              $summaryBox.val($summaryBox.val().substr(0, maxCount));
+            }
+          }
+        };
+
+    updateCount();
+    $summaryBox.bind('input', updateCount);
 });
