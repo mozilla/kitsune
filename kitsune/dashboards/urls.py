@@ -7,6 +7,7 @@ urlpatterns = patterns(
     'kitsune.dashboards.views',
     url(r'^localization$', 'localization', name='dashboards.localization'),
     url(r'^contributors$', 'contributors', name='dashboards.contributors'),
+    url(r'^contributors-old$', 'contributors_old', name='dashboards.contributors_old'),
     url(r'^contributors/overview-rows$', 'contributors_overview_rows',
         name='dashboards.contributors_overview_rows'),
     url(r'^wiki-rows/(?P<readout_slug>[^/]+)', 'wiki_rows',

@@ -129,6 +129,19 @@ def contributors(request):
 
 
 @require_GET
+def contributors_old(request):
+    """Render aggregate data about the articles in the default locale."""
+    product = _get_product(request)
+
+    return render_readouts(
+        request,
+        CONTRIBUTOR_READOUTS,
+        'contributors_old.html',
+        locale=settings.WIKI_DEFAULT_LANGUAGE,
+        product=product)
+
+
+@require_GET
 def wiki_rows(request, readout_slug):
     """Return the table contents HTML for the given readout and mode."""
     product = _get_product(request)
