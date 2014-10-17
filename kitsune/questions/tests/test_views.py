@@ -189,6 +189,10 @@ class AAQTests(ElasticTestCase):
         eq_(302, res.status_code)
         assert res['location'].endswith(url_en)
 
+        p.questions_locales_enabled(locale=locale(locale='fi', save=True))
+        res = self.client.get(url_fi)
+        eq_(200, res.status_code)
+
 
 class MobileAAQTests(MobileTestCase):
     client_class = LocalizingClient
