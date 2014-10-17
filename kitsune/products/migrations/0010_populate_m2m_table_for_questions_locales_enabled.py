@@ -16,6 +16,7 @@ AAQ_LANGUAGES = (
 
 
 class Migration(SchemaMigration):
+    no_dry_run = True
 
     def forwards(self, orm):
         products = orm.Product.objects.all()
