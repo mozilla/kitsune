@@ -1,3 +1,4 @@
+import django_filters
 from django.core.exceptions import ValidationError
 from rest_framework import serializers, viewsets, permissions, filters, status
 from rest_framework.decorators import action
@@ -53,6 +54,27 @@ class QuestionDetailSerializer(QuestionShortSerializer):
         )
 
 
+class QuestionFilter(django_filters.FilterSet):
+    product = django_filters.CharFilter(name='product__slug')
+
+    class Meta(object):
+        model = Question
+        fields = [
+            'creator',
+            'created',
+            'is_archived',
+            'is_locked',
+            'is_spam',
+            'locale',
+            'num_answers',
+            'product',
+            'title',
+            'topic',
+            'updated',
+            'updated_by',
+        ]
+
+
 class QuestionViewSet(CORSMixin, viewsets.ModelViewSet):
     serializer_class = QuestionDetailSerializer
     queryset = Question.objects.all()
@@ -61,23 +83,10 @@ class QuestionViewSet(CORSMixin, viewsets.ModelViewSet):
         OnlyCreatorEdits,
         permissions.IsAuthenticatedOrReadOnly,
     ]
+    filter_class = QuestionFilter
     filter_backends = [
         filters.DjangoFilterBackend,
         filters.OrderingFilter,
-    ]
-    filter_fields = [
-        'creator',
-        'created',
-        'is_archived',
-        'is_locked',
-        'is_spam',
-        'locale',
-        'num_answers',
-        'product',
-        'title',
-        'topic',
-        'updated',
-        'updated_by',
     ]
     ordering_fields = [
         'id',

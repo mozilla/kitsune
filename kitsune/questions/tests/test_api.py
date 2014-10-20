@@ -145,6 +145,17 @@ class TestQuestionViewSet(TestCase):
         eq_(res.data['results'][0]['id'], q2.id)
         eq_(res.data['results'][1]['id'], q1.id)
 
+    def test_filter_product_with_slug(self):
+        p1 = product(save=True)
+        p2 = product(save=True)
+        q1 = question(product=p1, save=True)
+        q2 = question(product=p2, save=True)
+
+        querystring = '?product={0}'.format(p1.slug)
+        res = self.client.get(reverse('question-list') + querystring)
+        eq_(len(res.data['results']), 1)
+        eq_(res.data['results'][0]['id'], q1.id)
+
 
 class TestAnswerViewSet(TestCase):
 
