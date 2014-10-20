@@ -23,3 +23,14 @@ def num_answers(user):
 def num_solutions(user):
     """Returns the number of solutions a user has."""
     return Question.objects.filter(solution__creator=user).count()
+
+
+def flag_content_as_spam(user):
+    """Flag all the questions and answers of the user as spam."""
+    for question in Question.objects.filter(creator=user):
+        question.is_spam = True
+        question.save()
+
+    for answer in Answer.objects.filter(creator=user):
+        answer.is_spam = True
+        answer.save()

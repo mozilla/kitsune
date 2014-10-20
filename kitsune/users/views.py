@@ -28,7 +28,8 @@ from kitsune import users as constants
 from kitsune.access.decorators import (
     logout_required, login_required, permission_required)
 from kitsune.questions.models import Question
-from kitsune.questions.utils import num_questions, num_answers, num_solutions
+from kitsune.questions.utils import (
+    num_questions, num_answers, num_solutions, flag_content_as_spam)
 from kitsune.sumo import email_utils
 from kitsune.sumo.decorators import ssl_required
 from kitsune.sumo.helpers import urlparams
@@ -361,9 +362,13 @@ def close_account(request):
 
 @require_POST
 @permission_required('users.deactivate_users')
-def deactivate(request):
+def deactivate(request, flag_spam=False):
     user = get_object_or_404(User, id=request.POST['user_id'], is_active=True)
     deactivate_user(user, request.user)
+
+    if flag_spam:
+        flag_content_as_spam(user)
+
     return HttpResponseRedirect(profile_url(user))
 
 
