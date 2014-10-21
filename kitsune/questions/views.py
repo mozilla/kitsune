@@ -867,10 +867,15 @@ def solve(request, question_id, answer_id):
             not request.user.has_perm('questions.change_solution')):
         return HttpResponseForbidden()
 
-    question.set_solution(answer, request.user)
+    if not question.solution:
+        question.set_solution(answer, request.user)
 
-    messages.add_message(request, messages.SUCCESS,
-                         _('Thank you for choosing a solution!'))
+        messages.add_message(request, messages.SUCCESS,
+                             _('Thank you for choosing a solution!'))
+    else:
+        # The question was already solved.
+        messages.add_message(request, messages.ERROR,
+                             _('This question already has a solution.'))
 
     return HttpResponseRedirect(question.get_absolute_url())
 

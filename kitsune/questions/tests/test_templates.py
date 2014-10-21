@@ -134,6 +134,7 @@ class AnswersTemplateTestCase(TestCaseBase):
             username=self.question.creator.username, password='testpass')
         response = post(self.client, 'questions.solve',
                         args=[self.question.id, ans.id])
+        eq_(200, response.status_code)
         doc = pq(response.content)
         eq_(1, len(doc('div.solution')))
         div = doc('h3.is-solution')[0].getparent().getparent()
@@ -141,6 +142,16 @@ class AnswersTemplateTestCase(TestCaseBase):
         q = Question.uncached.get(pk=self.question.id)
         eq_(q.solution, ans)
         eq_(q.solver, self.question.creator)
+
+        # Try to solve again with different answer. It shouldn't blow up or
+        # change the solution.
+        a2 = answer(question=q, save=True)
+        response = post(self.client, 'questions.solve',
+                        args=[self.question.id, ans.id])
+        eq_(200, response.status_code)
+        q = Question.uncached.get(pk=self.question.id)
+        eq_(q.solution, ans)
+
         # Unsolve and verify
         response = post(self.client, 'questions.unsolve',
                         args=[self.question.id, ans.id])
