@@ -25,12 +25,15 @@ def num_solutions(user):
     return Question.objects.filter(solution__creator=user).count()
 
 
-def flag_content_as_spam(user):
-    """Flag all the questions and answers of the user as spam."""
+def mark_content_as_spam(user, by_user):
+    """Flag all the questions and answers of the user as spam.
+
+    :arg user: the user whose content should be marked as spam
+    :arg by_user: the user requesting to mark the content as spam
+
+    """
     for question in Question.objects.filter(creator=user):
-        question.is_spam = True
-        question.save()
+        question.mark_as_spam(by_user)
 
     for answer in Answer.objects.filter(creator=user):
-        answer.is_spam = True
-        answer.save()
+        answer.mark_as_spam(by_user)

@@ -505,6 +505,13 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
                 user != self.creator and
                 self.editable)
 
+    def mark_as_spam(self, by_user):
+        """Mark the question as spam by the specified user."""
+        self.is_spam = True
+        self.marked_as_spam = datetime.now()
+        self.marked_as_spam_by = by_user
+        self.save()
+
 
 @register_mapping_type
 class QuestionMappingType(SearchMappingType):
@@ -943,6 +950,13 @@ class Answer(ModelBase, SearchMixin):
     @classmethod
     def get_mapping_type(cls):
         return AnswerMetricsMappingType
+
+    def mark_as_spam(self, by_user):
+        """Mark the answer as spam by the specified user."""
+        self.is_spam = True
+        self.marked_as_spam = datetime.now()
+        self.marked_as_spam_by = by_user
+        self.save()
 
 
 @register_mapping_type

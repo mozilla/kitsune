@@ -47,7 +47,7 @@ users_patterns = patterns(
     url(r'^/avatar$', views.edit_avatar, name='users.edit_avatar'),
     url(r'^/avatar/delete$', views.delete_avatar, name='users.delete_avatar'),
     url(r'^/deactivate$', views.deactivate, name='users.deactivate'),
-    url(r'^/deactivate-spam$', views.deactivate, {'flag_spam': True},
+    url(r'^/deactivate-spam$', views.deactivate, {'mark_spam': True},
         name='users.deactivate-spam'),
     url(r'^/deactivation_log$', views.deactivation_log,
         name='users.deactivation_log'),

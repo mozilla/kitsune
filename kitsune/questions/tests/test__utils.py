@@ -3,7 +3,7 @@ from nose.tools import eq_
 from kitsune.questions.models import Question, Answer
 from kitsune.questions.tests import question, answer
 from kitsune.questions.utils import (
-    num_questions, num_answers, num_solutions, flag_content_as_spam)
+    num_questions, num_answers, num_solutions, mark_content_as_spam)
 from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import user
 
@@ -85,7 +85,7 @@ class FlagUserContentAsSpamTestCase(TestCase):
         eq_(0, Answer.objects.filter(is_spam=True, creator=u).count())
 
         # Flag content as spam and verify it is updated.
-        flag_content_as_spam(u)
+        mark_content_as_spam(u, user(save=True))
         eq_(0, Question.objects.filter(is_spam=False, creator=u).count())
         eq_(2, Question.objects.filter(is_spam=True, creator=u).count())
         eq_(0, Answer.objects.filter(is_spam=False, creator=u).count())

@@ -1118,10 +1118,7 @@ def mark_spam(request):
         obj = get_object_or_404(Answer, pk=answer_id)
         question_id = obj.question.id
 
-    obj.is_spam = True
-    obj.marked_as_spam = datetime.now()
-    obj.marked_as_spam_by = request.user
-    obj.save()
+    obj.mark_as_spam(request.user)
 
     return HttpResponseRedirect(reverse('questions.details',
                                         kwargs={'question_id': question_id}))
