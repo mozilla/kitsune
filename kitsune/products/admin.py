@@ -9,6 +9,7 @@ class ProductAdmin(admin.ModelAdmin):
     list_editable = ('display_order', 'visible')
     readonly_fields = ('id',)
     prepopulated_fields = {'slug': ('title',)}
+    filter_horizontal = ('questions_locales_enabled',)
 
 
 class TopicAdmin(admin.ModelAdmin):

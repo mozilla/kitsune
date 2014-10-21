@@ -23,7 +23,7 @@ from kitsune.sumo.tests import (
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.products.tests import topic
 from kitsune.users.tests import user, add_permission
-from kitsune.wiki.tests import document, revision
+from kitsune.wiki.tests import document, revision, locale
 
 
 class AAQTests(ElasticTestCase):
@@ -55,6 +55,10 @@ class AAQTests(ElasticTestCase):
         """Verifies the view doesn't kick up an HTTP 500"""
         p = product(slug=u'firefox', save=True)
         topic(title='Fix problems', slug='fix-problems', product=p, save=True)
+
+        l = locale(locale=settings.WIKI_DEFAULT_LANGUAGE, save=True)
+        p.questions_locales_enabled.add(l)
+
         q = question(product=p, title=u'CupcakesQuestion cupcakes', save=True)
 
         d = document(title=u'CupcakesKB cupcakes', category=10, save=True)
@@ -93,6 +97,9 @@ class AAQTests(ElasticTestCase):
     def test_search_suggestion_questions_locale(self):
         """Verifies the right languages show up in search suggestions."""
         p = product(slug=u'firefox', save=True)
+        p.questions_locales_enabled.add(locale(locale='en-US', save=True))
+        p.questions_locales_enabled.add(locale(locale='pt-BR', save=True))
+        p.questions_locales_enabled.add(locale(locale='de', save=True))
         topic(title='Fix problems', slug='fix-problems', product=p, save=True)
 
         q1 = question(
@@ -134,6 +141,8 @@ class AAQTests(ElasticTestCase):
                              '10.6; en-US; rv:1.9.2.6) Gecko/20100625 '
                              'Firefox/3.6.6'}
         p = product(slug='firefox', save=True)
+        l = locale(locale=settings.WIKI_DEFAULT_LANGUAGE, save=True)
+        p.questions_locales_enabled.add(l)
         topic(slug='fix-problems', product=p, save=True)
         url = urlparams(
             reverse('questions.aaq_step5', args=['desktop', 'fix-problems']),
@@ -166,6 +175,24 @@ class AAQTests(ElasticTestCase):
         # This has some http://... stuff at the beginning. Ignore that.
         assert res['location'].endswith(url_en)
 
+    def test_redirect_locale_not_enabled(self):
+        url_fi = reverse('questions.aaq_step1', locale='fi')
+        res = self.client.get(url_fi)
+        eq_(200, res.status_code)
+
+        p = product(slug='firefox', save=True)
+
+        url_fi = reverse('questions.aaq_step2', locale='fi', args=['desktop'])
+        url_en = reverse('questions.aaq_step2', locale='en-US',
+                         args=['desktop'])
+        res = self.client.get(url_fi)
+        eq_(302, res.status_code)
+        assert res['location'].endswith(url_en)
+
+        p.questions_locales_enabled(locale=locale(locale='fi', save=True))
+        res = self.client.get(url_fi)
+        eq_(200, res.status_code)
+
 
 class MobileAAQTests(MobileTestCase):
     client_class = LocalizingClient
@@ -182,6 +209,8 @@ class MobileAAQTests(MobileTestCase):
     def _new_question(self, post_it=False):
         """Post a new question and return the response."""
         p = product(slug='mobile', save=True)
+        l = locale(locale=settings.WIKI_DEFAULT_LANGUAGE, save=True)
+        p.questions_locales_enabled.add(l)
         t = topic(slug='fix-problems', product=p, save=True)
         url = urlparams(
             reverse('questions.aaq_step5', args=[p.slug, t.slug]),

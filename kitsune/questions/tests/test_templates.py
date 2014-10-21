@@ -30,6 +30,7 @@ from kitsune.products.tests import topic
 from kitsune.upload.models import ImageAttachment
 from kitsune.users.models import RegistrationProfile
 from kitsune.users.tests import user, add_permission
+from kitsune.wiki.tests import locale
 
 
 class AnswersTemplateTestCase(TestCaseBase):
@@ -1335,13 +1336,16 @@ class AAQTemplateTestCase(TestCaseBase):
         self.user = user(save=True)
         self.client.login(username=self.user.username, password='testpass')
 
-    def _post_new_question(self, locale=None):
+    def _post_new_question(self, lang=None):
         """Post a new question and return the response."""
         p = product(title='Firefox', slug='firefox', save=True)
+        l = locale(locale=settings.WIKI_DEFAULT_LANGUAGE, save=True)
+        p.questions_locales_enabled.add(l)
+        p.questions_locales_enabled.add(locale(locale='pt-BR', save=True))
         topic(slug='fix-problems', product=p, save=True)
         extra = {}
-        if locale is not None:
-            extra['locale'] = locale
+        if lang is not None:
+            extra['locale'] = lang
         url = urlparams(
             reverse('questions.aaq_step5', args=['desktop', 'fix-problems'],
                     **extra),
@@ -1384,7 +1388,7 @@ class AAQTemplateTestCase(TestCaseBase):
         eq_('18.0.2', version)
 
     def test_localized_creation(self):
-        response = self._post_new_question(locale='pt-BR')
+        response = self._post_new_question(lang='pt-BR')
         eq_(200, response.status_code)
         assert 'Done!' in pq(response.content)('ul.user-messages li').text()
 
@@ -1413,6 +1417,8 @@ class AAQTemplateTestCase(TestCaseBase):
     def test_invalid_type(self):
         """Providing an invalid type returns 400."""
         p = product(slug='firefox', save=True)
+        l = locale(locale=settings.WIKI_DEFAULT_LANGUAGE, save=True)
+        p.questions_locales_enabled.add(l)
         topic(slug='fix-problems', product=p, save=True)
         self.client.logout()
 
@@ -1433,6 +1439,8 @@ class AAQTemplateTestCase(TestCaseBase):
         """Registering through AAQ form sends confirmation email."""
         get_current.return_value.domain = 'testserver'
         p = product(slug='firefox', save=True)
+        l = locale(locale=settings.WIKI_DEFAULT_LANGUAGE, save=True)
+        p.questions_locales_enabled.add(l)
         topic(slug='fix-problems', product=p, save=True)
         self.client.logout()
         title = 'A test question'
@@ -1477,6 +1485,9 @@ class AAQTemplateTestCase(TestCaseBase):
 
     def test_no_aaq_link_in_header(self):
         """Verify the ASK A QUESTION link isn't present in header."""
+        p = product(slug='firefox', save=True)
+        l = locale(locale=settings.WIKI_DEFAULT_LANGUAGE, save=True)
+        p.questions_locales_enabled.add(l)
         url = reverse('questions.aaq_step2', args=['desktop'])
         response = self.client.get(url)
         eq_(200, response.status_code)
@@ -1485,14 +1496,17 @@ class AAQTemplateTestCase(TestCaseBase):
 
 class ProductForumTemplateTestCase(TestCaseBase):
     def test_product_forum_listing(self):
-        firefox = product(
-            title='Firefox', slug='firefox', questions_enabled=True, save=True)
+        l = locale(locale=settings.LANGUAGE_CODE, save=True)
+        firefox = product(title='Firefox', slug='firefox', save=True)
         android = product(title='Firefox for Android', slug='mobile',
-            questions_enabled=True, save=True)
-        fxos = product(title='Firefox OS', slug='firefox-os',
-            questions_enabled=True, save=True)
+                          save=True)
+        fxos = product(title='Firefox OS', slug='firefox-os', save=True)
         openbadges = product(title='Open Badges', slug='open-badges',
-            questions_enabled=False, save=True)
+                             save=True)
+
+        firefox.questions_locales_enabled.add(l)
+        android.questions_locales_enabled.add(l)
+        fxos.questions_locales_enabled.add(l)
 
         response = self.client.get(reverse('questions.home'))
         eq_(200, response.status_code)
