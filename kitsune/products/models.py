@@ -58,6 +58,9 @@ class Product(ModelBase):
         url = os.path.join(settings.MEDIA_URL, settings.PRODUCT_IMAGE_PATH, fn)
         return '%s?%s' % (url, self.image_cachebuster)
 
+    def questions_enabled(self, locale):
+        return self.questions_locales.filter(locale=locale).count() > 0
+
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None, regenerate_sprite=True):
         super(Product, self).save(force_insert=force_insert,
