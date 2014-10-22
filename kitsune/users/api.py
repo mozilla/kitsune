@@ -11,8 +11,10 @@ from rest_framework import viewsets, serializers, mixins, filters
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.decorators import permission_classes, api_view
+from rest_framework.authtoken import views as authtoken_views
 
 from kitsune.access.decorators import login_required
+from kitsune.sumo.api import CORSMixin
 from kitsune.sumo.decorators import json_view
 from kitsune.users.models import Profile, RegistrationProfile
 
@@ -63,6 +65,10 @@ def test_auth(request):
         'username': request.user.username,
         'authorized': True,
     })
+
+
+class GetToken(CORSMixin, authtoken_views.ObtainAuthToken):
+    """Add CORS headers to the ObtainAuthToken view."""
 
 
 class ProfileShortSerializer(serializers.ModelSerializer):

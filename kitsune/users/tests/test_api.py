@@ -111,3 +111,24 @@ class TestQuestionSerializer(TestCase):
         serializer.save()
         eq_(len(mail.outbox), 1)
         eq_(mail.outbox[0].subject, 'Please confirm your email address')
+
+
+class TestGetToken(TestCase):
+
+    def setUp(self):
+        self.url = reverse('users.get_token')
+        self.user = user(password='testpass', save=True)
+        self.data = {
+            'username': self.user.username,
+            'password': 'testpass',
+        }
+
+    def test_it_works(self):
+        res = self.client.post(self.url, data=self.data)
+        eq_(res.status_code, 200)
+        eq_(res.data.keys(), ['token'])
+
+    def test_it_has_cors(self):
+        res = self.client.post(self.url, data=self.data)
+        eq_(res.status_code, 200)
+        ok_(res.has_header('Access-Control-Allow-Origin'))
