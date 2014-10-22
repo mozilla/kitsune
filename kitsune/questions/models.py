@@ -735,6 +735,8 @@ class QuestionVisits(ModelBase):
 class QuestionLocale(ModelBase):
     locale = LocaleField(choices=settings.LANGUAGE_CHOICES_ENGLISH,
                          unique=True)
+    products = models.ManyToManyField(Product,
+                                      related_name='questions_locales')
 
     objects = QuestionLocaleManager()
 
