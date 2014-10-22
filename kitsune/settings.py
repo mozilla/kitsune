@@ -275,15 +275,6 @@ ES_PLUGIN_ANALYZERS = [
 
 ES_USE_PLUGINS = False
 
-# These are for the indexer for the offline sumo app.
-LANGUAGES_WITHOUT_SPACES = (
-    'zh-CN',
-    'zh-TW',
-    'ja',
-    'ko',
-    'my'
-)
-
 TEXT_DOMAIN = 'messages'
 
 SITE_ID = 1
@@ -347,7 +338,6 @@ SUPPORTED_NONLOCALES = (
     'api',
     'favicon.ico',
     'media',
-    'offline',
     'postcrash',
     'robots.txt',
     'services',
@@ -531,7 +521,6 @@ INSTALLED_APPS = (
     'kitsune.karma',
     'kitsune.tags',
     'kitsune.kpi',
-    'kitsune.offline',
     'kitsune.products',
     'kitsune.notifications',
     'rest_framework',
