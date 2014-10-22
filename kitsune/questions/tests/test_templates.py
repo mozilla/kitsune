@@ -18,8 +18,10 @@ from tidings.models import Watch
 import kitsune.questions.tasks
 from kitsune.products.tests import product
 from kitsune.questions.events import QuestionReplyEvent, QuestionSolvedEvent
-from kitsune.questions.models import Question, Answer, VoteMetadata
-from kitsune.questions.tests import TestCaseBase, tags_eq, question, answer
+from kitsune.questions.models import (
+    Question, Answer, VoteMetadata, QuestionLocale)
+from kitsune.questions.tests import (
+    TestCaseBase, tags_eq, question, answer)
 from kitsune.questions.views import UNAPPROVED_TAG, NO_TAG
 from kitsune.sumo.helpers import urlparams
 from kitsune.sumo.tests import (
@@ -1496,14 +1498,14 @@ class AAQTemplateTestCase(TestCaseBase):
 
 class ProductForumTemplateTestCase(TestCaseBase):
     def test_product_forum_listing(self):
-        firefox = product(
-            title='Firefox', slug='firefox', questions_enabled=True, save=True)
+        firefox = product(title='Firefox', slug='firefox',
+                          questions_enabled=True, save=True)
         android = product(title='Firefox for Android', slug='mobile',
-            questions_enabled=True, save=True)
+                          questions_enabled=True, save=True)
         fxos = product(title='Firefox OS', slug='firefox-os',
-            questions_enabled=True, save=True)
+                       questions_enabled=True, save=True)
         openbadges = product(title='Open Badges', slug='open-badges',
-            questions_enabled=False, save=True)
+                             questions_enabled=False, save=True)
 
         response = self.client.get(reverse('questions.home'))
         eq_(200, response.status_code)

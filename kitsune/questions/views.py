@@ -10,7 +10,6 @@ from django.contrib import messages
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
-from django.core.cache import cache
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import EmptyPage, PageNotAnInteger
 from django.db.models import Q
@@ -22,7 +21,6 @@ from django.views.decorators.http import (require_POST, require_GET,
                                           require_http_methods)
 
 import jingo
-import waffle
 from ordereddict import OrderedDict
 from mobility.decorators import mobile_template
 from ratelimit.decorators import ratelimit
@@ -36,7 +34,6 @@ from tower import ugettext as _, ugettext_lazy as _lazy
 
 from kitsune.access.decorators import permission_required, login_required
 from kitsune.community.utils import top_contributors_questions
-from kitsune.karma.manager import KarmaManager
 from kitsune.products.models import Product, Topic
 from kitsune.questions import config
 from kitsune.questions.events import QuestionReplyEvent, QuestionSolvedEvent
@@ -51,7 +48,8 @@ from kitsune.questions.karma_actions import (
 from kitsune.questions.marketplace import (
     MARKETPLACE_CATEGORIES, ZendeskError)
 from kitsune.questions.models import (
-    Question, Answer, QuestionVote, AnswerVote, QuestionMappingType)
+    Question, Answer, QuestionVote, AnswerVote, QuestionMappingType,
+    QuestionLocale)
 from kitsune.questions.signals import tag_added
 from kitsune.search.es_utils import (ES_EXCEPTIONS, Sphilastic, F,
                                      es_query_with_analyzer)
@@ -221,7 +219,7 @@ def question_list(request, template, product_slug):
         question_qs = question_qs.filter(topic__id=topic.id)
 
     # Filter by locale for AAQ locales, and by locale + default for others.
-    if request.LANGUAGE_CODE in settings.AAQ_LANGUAGES:
+    if request.LANGUAGE_CODE in QuestionLocale.objects.locales_list():
         forum_locale = request.LANGUAGE_CODE
         locale_query = Q(locale=request.LANGUAGE_CODE)
     else:
@@ -426,7 +424,7 @@ def edit_details(request, question_id):
         locale = request.POST.get('locale')
 
         # If locale is not in AAQ_LANGUAGES throws a ValueError
-        settings.AAQ_LANGUAGES.index(locale)
+        tuple(QuestionLocale.objects.locales_list()).index(locale)
     except (Product.DoesNotExist, Topic.DoesNotExist, ValueError):
         return HttpResponseBadRequest()
 
@@ -451,7 +449,7 @@ def aaq(request, product_key=None, category_key=None, showform=False,
     # boot this user.
     request.session['in-aaq'] = True
 
-    if request.LANGUAGE_CODE not in settings.AAQ_LANGUAGES:
+    if request.LANGUAGE_CODE not in QuestionLocale.objects.locales_list():
         locale, path = split_path(request.path)
         path = '/' + settings.WIKI_DEFAULT_LANGUAGE + '/' + path
 

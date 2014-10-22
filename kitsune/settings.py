@@ -148,16 +148,6 @@ SUMO_LANGUAGES = (
     'zh-TW',
 )
 
-# A list of locales for which AAQ is available.
-AAQ_LANGUAGES = (
-    'en-US',
-    'fi',
-    'hu',
-    'pt-BR',
-    'sl',
-    'sr-Cyrl',
-)
-
 # These languages won't show a warning about FxOS when contributors try
 # to add content.
 FXOS_LANGUAGES = [
@@ -188,6 +178,9 @@ FXOS_LANGUAGES = [
 # Languages that should show up in language switcher.
 LANGUAGE_CHOICES = tuple(
     [(lang, LOCALES[lang].native) for lang in SUMO_LANGUAGES
+     if lang != 'xx'])
+LANGUAGE_CHOICES_ENGLISH = tuple(
+    [(lang, LOCALES[lang].english) for lang in SUMO_LANGUAGES
      if lang != 'xx'])
 LANGUAGES_DICT = dict([(i.lower(), LOCALES[i].native) for i in SUMO_LANGUAGES])
 LANGUAGES = LANGUAGES_DICT.items()
@@ -398,6 +391,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'kitsune.sumo.context_processors.global_settings',
     'kitsune.sumo.context_processors.i18n',
     'kitsune.sumo.context_processors.geoip_cache_detector',
+    'kitsune.sumo.context_processors.aaq_languages',
     'jingo_minify.helpers.build_ids',
     'kitsune.messages.context_processors.unread_message_count',
 )

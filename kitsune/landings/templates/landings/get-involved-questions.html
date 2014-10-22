@@ -33,7 +33,7 @@
       <span class="bullet">1</span>
       <div>
         {% set message =  _('Sign up as a volunteer') %}
-        {% if not user_is_contributor and request.LANGUAGE_CODE in settings.AAQ_LANGUAGES %}
+        {% if not user_is_contributor and request.LANGUAGE_CODE in AAQ_LANGUAGES %}
           <a href="#" data-trigger="click" data-trigger-target="#sign-up-contributor">{{ message }}</a>
         {% else %}
           {{ message }}
@@ -43,7 +43,7 @@
       <span class="bullet">2</span>
       <div>
         {% set message = _('Go to our support forum and choose a question to answer') %}
-        {% if request.LANGUAGE_CODE in settings.AAQ_LANGUAGES %}
+        {% if request.LANGUAGE_CODE in AAQ_LANGUAGES %}
           <a href="{{ url('questions.home') }}">{{ message }}</a>
         {% else %}
           {{ message }}

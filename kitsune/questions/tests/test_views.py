@@ -10,11 +10,11 @@ from nose.tools import eq_
 from pyquery import PyQuery as pq
 
 from kitsune.flagit.models import FlaggedObject
-from kitsune.products.models import Product, Topic
 from kitsune.products.tests import product
 from kitsune.questions.models import (
-    Question, QuestionVote, AnswerVote, Answer)
-from kitsune.questions.tests import answer, question, TestCaseBase
+    Question, QuestionVote, AnswerVote, Answer, QuestionLocale)
+from kitsune.questions.tests import (
+    answer, question, TestCaseBase, questionlocale)
 from kitsune.questions.views import parse_troubleshooting
 from kitsune.search.tests.test_es import ElasticTestCase
 from kitsune.sumo.helpers import urlparams
@@ -89,11 +89,11 @@ class AAQTests(ElasticTestCase):
         assert 'CupcakesQuestion' not in response.content
         assert 'CupcakesKB' not in response.content
 
-    @override_settings(AAQ_LANGUAGES=['en-US', 'pt-BR', 'de'])
     def test_search_suggestion_questions_locale(self):
         """Verifies the right languages show up in search suggestions."""
-        p = product(slug=u'firefox', save=True)
+        p = product(slug=u'firefox', questions_enabled=True, save=True)
         topic(title='Fix problems', slug='fix-problems', product=p, save=True)
+        questionlocale(locale='de', save=True)
 
         q1 = question(
             title='question cupcakes?', product=p, save=True, locale='en-US')
@@ -409,8 +409,6 @@ class TroubleshootingParsingTests(TestCaseBase):
 
 
 class TestQuestionList(TestCaseBase):
-
-    @override_settings(AAQ_LANGUAGES=['en-US', 'pt-BR'])
     def test_locale_filter(self):
         """Only questions for the current locale should be shown on the
         questions front page for AAQ locales."""
@@ -847,7 +845,7 @@ class TestEditDetails(TestCaseBase):
     def test_change_locale(self):
         locale = 'hu'
 
-        assert locale in settings.AAQ_LANGUAGES
+        assert locale in QuestionLocale.objects.locales_list()
         assert locale != self.question.locale
 
         data = {
