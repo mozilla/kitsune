@@ -36,7 +36,8 @@ class CORSMixin(object):
         # it is ok to make the real request.
         if request.method == 'OPTIONS':
             response['Access-Control-Allow-Methods'] = '*'
-            response['Access-Control-Allow-Headers'] = '*'
+            response['Access-Control-Allow-Headers'] = (
+                request.META['HTTP_ACCESS_CONTROL_REQUEST_HEADERS'])
             response['Access-Control-Allow-Max-Age'] = '3600'
             response['Access-Control-Allow-Credentials'] = 'true'
 
