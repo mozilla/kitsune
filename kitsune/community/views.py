@@ -12,7 +12,8 @@ from kitsune.community.utils import (
     top_contributors_kb, top_contributors_l10n)
 from kitsune.forums.models import Thread
 from kitsune.products.models import Product
-from kitsune.search.es_utils import ES_EXCEPTIONS, F
+from kitsune.questions.models import QuestionLocale
+from kitsune.search.es_utils import ES_EXCEPTIONS
 from kitsune.sumo.parser import get_object_fallback
 from kitsune.users.models import UserMappingType
 from kitsune.wiki.models import Document
@@ -60,7 +61,7 @@ def home(request):
 
         # If the locale is enabled for the Support Forum, show the top
         # contributors for that locale
-        if locale in settings.AAQ_LANGUAGES:
+        if locale in QuestionLocale.objects.locales_list():
             data['top_contributors_questions'], _ = top_contributors_questions(
                 locale=locale, product=product)
     else:
@@ -148,7 +149,7 @@ def top_contributors(request, area):
     elif area == 'questions':
         results, total = top_contributors_questions(
             locale=locale, product=product, count=page_size, page=page)
-        locales = settings.AAQ_LANGUAGES
+        locales = QuestionLocale.objects.locales_list()
     elif area == 'kb':
         results, total = top_contributors_kb(
             product=product, count=page_size, page=page)

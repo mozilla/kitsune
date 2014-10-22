@@ -19,6 +19,7 @@ from ordereddict import OrderedDict
 from tower import ugettext as _, ugettext_lazy as _lazy
 
 from kitsune.dashboards import LAST_30_DAYS, PERIODS
+from kitsune.questions.models import QuestionLocale
 from kitsune.sumo.helpers import urlparams
 from kitsune.sumo.redis_utils import redis_client, RedisError
 from kitsune.sumo.urlresolvers import reverse
@@ -1069,7 +1070,7 @@ class CannedResponsesReadout(Readout):
 
     @classmethod
     def should_show_to(cls, request):
-        return request.LANGUAGE_CODE in settings.AAQ_LANGUAGES
+        return request.LANGUAGE_CODE in QuestionLocale.objects.locales_list()
 
     def _query_and_params(self, max):
 

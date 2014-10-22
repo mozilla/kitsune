@@ -3,7 +3,7 @@ from datetime import datetime
 from nose.tools import eq_
 
 from kitsune.questions.models import (
-    Question, QuestionVote, Answer, AnswerVote)
+    Question, QuestionVote, Answer, AnswerVote, QuestionLocale)
 from kitsune.sumo.tests import LocalizingClient, TestCase, with_save
 from kitsune.users.tests import user, profile
 
@@ -41,6 +41,11 @@ def questionvote(**kwargs):
     if 'creator' not in kwargs and 'creator_id' not in kwargs:
         defaults['creator'] = profile().user
     return QuestionVote(**defaults)
+
+
+@with_save
+def questionlocale(**kwargs):
+    return QuestionLocale(**kwargs)
 
 
 @with_save
