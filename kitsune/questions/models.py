@@ -16,18 +16,16 @@ from django.db.models.signals import post_save, pre_save
 from django.db.utils import IntegrityError
 from django.http import Http404
 
-import waffle
 from product_details import product_details
 from statsd import statsd
 from taggit.models import Tag, TaggedItem
 
 from kitsune.flagit.models import FlaggedObject
-from kitsune.karma.manager import KarmaManager
 from kitsune.products.models import Product, Topic
 from kitsune.questions import config
 from kitsune.questions.karma_actions import (
     AnswerAction, FirstAnswerAction, SolutionAction)
-from kitsune.questions.managers import QuestionManager
+from kitsune.questions.managers import QuestionManager, QuestionLocaleManager
 from kitsune.questions.signals import tag_added
 from kitsune.questions.tasks import (
     update_question_votes, update_answer_pages, log_answer, escalate_question)
@@ -38,7 +36,6 @@ from kitsune.search.tasks import index_task
 from kitsune.sumo.helpers import urlparams
 from kitsune.sumo.models import ModelBase, LocaleField
 from kitsune.sumo.helpers import wiki_to_html
-from kitsune.sumo.redis_utils import RedisError
 from kitsune.sumo.urlresolvers import reverse, split_path
 from kitsune.tags.models import BigVocabTaggableMixin
 from kitsune.tags.utils import add_existing_tag
@@ -726,6 +723,16 @@ class QuestionVisits(ModelBase):
         else:
             log.warning('Google Analytics returned no interesting data,'
                         ' so I kept what I had.')
+
+
+class QuestionLocale(ModelBase):
+    locale = LocaleField(choices=settings.LANGUAGE_CHOICES_ENGLISH,
+                         unique=True)
+
+    objects = QuestionLocaleManager()
+
+    class Meta:
+        verbose_name = 'AAQ enabled locale'
 
 
 class Answer(ModelBase, SearchMixin):
