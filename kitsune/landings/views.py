@@ -3,7 +3,6 @@ from django.shortcuts import render
 from mobility.decorators import mobile_template
 
 from kitsune.products.models import Product
-from kitsune.questions.models import QuestionLocale
 from kitsune.sumo.decorators import ssl_required
 from kitsune.sumo.views import redirect_to
 
