@@ -58,3 +58,8 @@ class QuestionManager(ManagerBase):
 
     def escalated(self):
         return self.filter(tags__slug__in=[config.ESCALATE_TAG_NAME])
+
+
+class QuestionLocaleManager(ManagerBase):
+    def locales_list(self):
+        return self.values_list('locale', flat=True)
