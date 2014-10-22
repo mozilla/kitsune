@@ -36,6 +36,8 @@ HOME = /tmp
 0 5 * * * {{ cron }} reindex_kb
 0 6 * * * {{ cron }} process_exit_surveys
 0 7 * * * {{ cron }} survey_recent_askers
+0 1 * * * {{ cron }} update_l10n_coverage_metrics
+0 0 * * * {{ cron }} rebuild_kb
 0 8 * * * {{ cron }} clear_expired_auth_tokens
 0 22 * * * {{ cron }} get_customercare_stats
 42 22 * * * {{ django }} cleanup
