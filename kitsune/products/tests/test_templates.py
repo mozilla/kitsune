@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.core.cache import cache
 
 from nose.tools import eq_
@@ -5,6 +6,7 @@ from pyquery import PyQuery as pq
 
 from kitsune.products.models import HOT_TOPIC_SLUG
 from kitsune.products.tests import product, topic
+from kitsune.questions.models import QuestionLocale
 from kitsune.search.tests.test_es import ElasticTestCase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.wiki.tests import revision, helpful_vote
@@ -16,7 +18,9 @@ class ProductViewsTestCase(ElasticTestCase):
         """Verify that /products page renders products."""
         # Create some products.
         for i in range(3):
-            product(questions_enabled=True, save=True)
+            p = product(save=True)
+            l = QuestionLocale.objects.get(locale=settings.LANGUAGE_CODE)
+            p.questions_locales.add(l)
 
         # GET the products page and verify the content.
         r = self.client.get(reverse('products'), follow=True)
@@ -27,7 +31,9 @@ class ProductViewsTestCase(ElasticTestCase):
     def test_product_landing(self):
         """Verify that /products/<slug> page renders topics."""
         # Create a product.
-        p = product(questions_enabled=True, save=True)
+        p = product(save=True)
+        l = QuestionLocale.objects.get(locale=settings.LANGUAGE_CODE)
+        p.questions_locales.add(l)
 
         # Create some topics.
         topic(slug=HOT_TOPIC_SLUG, product=p, save=True)
