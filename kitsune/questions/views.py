@@ -96,10 +96,9 @@ FILTER_GROUPS = {
 
 @mobile_template('questions/{mobile/}product_list.html')
 def product_list(request, template):
-    """View to select a product to see related questions."""
+    """View to select a product to see relatred quesitons."""
     return render(request, template, {
-        'products': Product.objects.filter(
-            questions_locales__locale__in=[request.LANGUAGE_CODE])
+        'products': Product.objects.filter(questions_enabled=True)
     })
 
 
@@ -478,28 +477,6 @@ def aaq(request, product_key=None, category_key=None, showform=False,
     product_config = config.products.get(product_key)
     if product_key and not product_config:
         raise Http404
-
-    if product_config:
-        product = Product.objects.get(slug=product_config['product'])
-
-        if product:
-            if not product.questions_locales.filter(
-                    locale=request.LANGUAGE_CODE).count():
-                locale, path = split_path(request.path)
-                path = '/' + settings.WIKI_DEFAULT_LANGUAGE + '/' + path
-
-                old_lang = settings.LANGUAGES_DICT[
-                    request.LANGUAGE_CODE.lower()]
-                new_lang = settings.LANGUAGES_DICT[
-                    settings.WIKI_DEFAULT_LANGUAGE.lower()]
-                msg = (_(u"The questions forum isn't available for {product} "
-                         u"in {old_lang}, we have redirected you to the "
-                         u"{new_lang} questions forum.")
-                       .format(product=product.title, old_lang=old_lang,
-                               new_lang=new_lang))
-                messages.add_message(request, messages.WARNING, msg)
-
-                return HttpResponseRedirect(path)
 
     if category_key is None:
         category_key = request.GET.get('category')

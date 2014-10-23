@@ -1351,8 +1351,6 @@ class AAQTemplateTestCase(TestCaseBase):
     def _post_new_question(self, locale=None):
         """Post a new question and return the response."""
         p = product(title='Firefox', slug='firefox', save=True)
-        for l in QuestionLocale.objects.all():
-            p.questions_locales.add(l)
         topic(slug='fix-problems', product=p, save=True)
         extra = {}
         if locale is not None:
@@ -1428,8 +1426,6 @@ class AAQTemplateTestCase(TestCaseBase):
     def test_invalid_type(self):
         """Providing an invalid type returns 400."""
         p = product(slug='firefox', save=True)
-        l = QuestionLocale.objects.get(locale=settings.LANGUAGE_CODE)
-        p.questions_locales.add(l)
         topic(slug='fix-problems', product=p, save=True)
         self.client.logout()
 
@@ -1450,8 +1446,6 @@ class AAQTemplateTestCase(TestCaseBase):
         """Registering through AAQ form sends confirmation email."""
         get_current.return_value.domain = 'testserver'
         p = product(slug='firefox', save=True)
-        l = QuestionLocale.objects.get(locale=settings.LANGUAGE_CODE)
-        p.questions_locales.add(l)
         topic(slug='fix-problems', product=p, save=True)
         self.client.logout()
         title = 'A test question'
@@ -1496,9 +1490,6 @@ class AAQTemplateTestCase(TestCaseBase):
 
     def test_no_aaq_link_in_header(self):
         """Verify the ASK A QUESTION link isn't present in header."""
-        p = product(slug='firefox', save=True)
-        l = QuestionLocale.objects.get(locale=settings.LANGUAGE_CODE)
-        p.questions_locales.add(l)
         url = reverse('questions.aaq_step2', args=['desktop'])
         response = self.client.get(url)
         eq_(200, response.status_code)
@@ -1507,18 +1498,14 @@ class AAQTemplateTestCase(TestCaseBase):
 
 class ProductForumTemplateTestCase(TestCaseBase):
     def test_product_forum_listing(self):
-        firefox = product(title='Firefox', slug='firefox', save=True)
+        firefox = product(title='Firefox', slug='firefox',
+                          questions_enabled=True, save=True)
         android = product(title='Firefox for Android', slug='mobile',
-                          save=True)
+                          questions_enabled=True, save=True)
         fxos = product(title='Firefox OS', slug='firefox-os',
-                       save=True)
+                       questions_enabled=True, save=True)
         openbadges = product(title='Open Badges', slug='open-badges',
-                             save=True)
-
-        l = QuestionLocale.objects.get(locale=settings.LANGUAGE_CODE)
-        firefox.questions_locales.add(l)
-        android.questions_locales.add(l)
-        fxos.questions_locales.add(l)
+                             questions_enabled=False, save=True)
 
         response = self.client.get(reverse('questions.home'))
         eq_(200, response.status_code)
