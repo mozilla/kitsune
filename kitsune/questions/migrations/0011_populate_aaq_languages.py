@@ -147,7 +147,7 @@ class Migration(DataMigration):
         u'questions.questionlocale': {
             'Meta': {'object_name': 'QuestionLocale'},
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'locale': ('kitsune.sumo.models.LocaleField', [], {'default': "'en-US'", 'max_length': '7'})
+            'locale': ('kitsune.sumo.models.LocaleField', [], {'default': "'en-US'", 'max_length': '7', 'unique': 'True'})
         },
         u'questions.questionmetadata': {
             'Meta': {'unique_together': "(('question', 'name'),)", 'object_name': 'QuestionMetaData'},
