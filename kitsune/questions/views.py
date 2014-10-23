@@ -479,10 +479,12 @@ def aaq(request, product_key=None, category_key=None, showform=False,
     if product_key and not product_config:
         raise Http404
 
-    if product_config:
-        product = Product.objects.get(slug=product_config['product'])
-
-        if product:
+    if product_config and 'product' in product_config:
+        try:
+            product = Product.objects.get(slug=product_config['product'])
+        except Product.DoesNotExist:
+            pass
+        else:
             if not product.questions_locales.filter(
                     locale=request.LANGUAGE_CODE).count():
                 locale, path = split_path(request.path)
