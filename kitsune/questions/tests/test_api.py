@@ -32,6 +32,12 @@ class TestQuestionSerializer(TestCase):
             'topic': self.topic.slug,
         }
 
+    def test_it_works(self):
+        serializer = api.QuestionShortSerializer(
+            context=self.context, data=self.data)
+        eq_(serializer.errors, {})
+        ok_(serializer.is_valid())
+
     def test_automatic_creator(self):
         del self.data['creator']
         serializer = api.QuestionShortSerializer(
@@ -46,6 +52,7 @@ class TestQuestionSerializer(TestCase):
             context=self.context, data=self.data)
         eq_(serializer.errors, {
             'product': [u'This field is required.'],
+            'topic': [u'A product must be specified to select a topic.'],
         })
         ok_(not serializer.is_valid())
 
@@ -57,6 +64,17 @@ class TestQuestionSerializer(TestCase):
             'topic': [u'This field is required.'],
         })
         ok_(not serializer.is_valid())
+
+    def test_topic_disambiguation(self):
+        # First make another product, and a colliding topic.
+        # It has the same slug, but a different product.
+        new_product = product(save=True)
+        new_topic = topic(product=new_product, slug=self.topic.slug, save=True)
+        serializer = api.QuestionShortSerializer(
+            context=self.context, data=self.data)
+        eq_(serializer.errors, {})
+        ok_(serializer.is_valid())
+        eq_(serializer.object.topic, self.topic)
 
 
 class TestQuestionViewSet(TestCase):

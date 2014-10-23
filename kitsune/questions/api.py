@@ -4,6 +4,7 @@ from rest_framework import serializers, viewsets, permissions, filters, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from kitsune.products.api import TopicField
 from kitsune.questions.models import Question, Answer, QuestionMetaData
 from kitsune.sumo.api import CORSMixin, OnlyCreatorEdits
 
@@ -38,7 +39,7 @@ class QuestionMetaDataSerializer(serializers.ModelSerializer):
 class QuestionShortSerializer(serializers.ModelSerializer):
     # Use slugs for product and topic instead of ids.
     product = serializers.SlugRelatedField(required=True, slug_field='slug')
-    topic = serializers.SlugRelatedField(required=True, slug_field='slug')
+    topic = TopicField(required=True)
     # Use usernames for creator and updated_by instead of ids.
     creator = serializers.SlugRelatedField(
         slug_field='username', required=False)

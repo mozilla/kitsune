@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, serializers
 from rest_framework.decorators import api_view
@@ -9,6 +10,82 @@ from kitsune.sumo.api import (CORSMixin, LocaleNegotiationMixin,
                               LocalizedCharField)
 from kitsune.wiki.api import DocumentShortSerializer
 from kitsune.wiki.models import Document
+
+
+class TopicField(serializers.SlugRelatedField):
+
+    def __init__(self, slug_field='slug', product_field='product', **kwargs):
+        super(TopicField, self).__init__(slug_field=slug_field, **kwargs)
+        self.product_field = product_field
+        self.error_messages['missing_product'] = (
+            'A product must be specified to select a topic.')
+
+    def from_native(self, topic_slug, product_slug):
+        """
+        Given a topic slug and product slug, get the right topic.
+
+        This is like ``SlugRelatedField.from_native``, except it has been
+        modified to deal with a product slug.
+        """
+        if self.queryset is None:
+            raise Exception('Writable related fields must include a `queryset` argument')
+
+        try:
+            return self.queryset.get(**{
+                self.slug_field: topic_slug,
+                'product__slug': product_slug
+            })
+        except ObjectDoesNotExist:
+            raise ValidationError(self.error_messages['does_not_exist'] %
+                                  (self.slug_field, smart_text(data)))
+        except (TypeError, ValueError):
+            msg = self.error_messages['invalid']
+            raise ValidationError(msg)
+
+    def field_from_native(self, data, files, field_name, into):
+        """
+        Update ``into`` with the topic object specified by the slug in ``data``.
+
+        This is like ``SlugRelatedField.field_from_native``, except it has
+        been modified to also pass data['product']`` to ``from_native`` to
+        disambiguate the topic from other topics with the same slug.
+        """
+        if self.read_only:
+            return
+
+        try:
+            if self.many:
+                try:
+                    # Form data
+                    value = data.getlist(field_name)
+                    if value == [''] or value == []:
+                        raise KeyError
+                except AttributeError:
+                    # Non-form data
+                    value = data[field_name]
+            else:
+                value = data[field_name]
+        except KeyError:
+            if self.partial:
+                return
+            value = self.get_default_value()
+
+        try:
+            product_slug = data[self.product_field]
+        except KeyError:
+            if self.required or value not in self.null_values:
+                raise ValidationError(self.error_messages['missing_product'])
+
+        source = self.source or field_name
+
+        if value in self.null_values:
+            if self.required:
+                raise ValidationError(self.error_messages['required'])
+            into[source] = None
+        elif self.many:
+            into[source] = [self.from_native(item, product_slug) for item in value]
+        else:
+            into[source] = self.from_native(value, product_slug)
 
 
 class ProductSerializer(serializers.ModelSerializer):
