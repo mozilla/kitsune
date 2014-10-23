@@ -17,14 +17,8 @@ class Migration(SchemaMigration):
         ))
         db.create_unique(m2m_table_name, ['questionlocale_id', 'product_id'])
 
-        # Adding unique constraint on 'QuestionLocale', fields ['locale']
-        db.create_unique(u'questions_questionlocale', ['locale'])
-
 
     def backwards(self, orm):
-        # Removing unique constraint on 'QuestionLocale', fields ['locale']
-        db.delete_unique(u'questions_questionlocale', ['locale'])
-
         # Removing M2M table for field products on 'QuestionLocale'
         db.delete_table(db.shorten_name(u'questions_questionlocale_products'))
 
