@@ -174,6 +174,15 @@ class TestQuestionViewSet(TestCase):
         eq_(len(res.data['results']), 1)
         eq_(res.data['results'][0]['id'], q1.id)
 
+    def test_filter_creator_with_username(self):
+        q1 = question(save=True)
+        q2 = question(save=True)
+
+        querystring = '?creator={0}'.format(q1.creator.username)
+        res = self.client.get(reverse('question-list') + querystring)
+        eq_(len(res.data['results']), 1)
+        eq_(res.data['results'][0]['id'], q1.id)
+
 
 class TestAnswerViewSet(TestCase):
 
