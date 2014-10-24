@@ -87,6 +87,7 @@ class QuestionDetailSerializer(QuestionShortSerializer):
 
 class QuestionFilter(django_filters.FilterSet):
     product = django_filters.CharFilter(name='product__slug')
+    creator = django_filters.CharFilter(name='creator__username')
 
     class Meta(object):
         model = Question
