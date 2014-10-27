@@ -143,13 +143,7 @@ class ProfileViewSet(mixins.CreateModelMixin,
         filters.DjangoFilterBackend,
         filters.OrderingFilter,
     ]
-    filter_fields = [
-        'date_joined',
-    ]
-    ordering_fields = [
-        'username',
-        'display_name',
-        'date_joined',
-    ]
+    filter_fields = []
+    ordering_fields = []
     # Default, if not overwritten
-    ordering = ('-date_joined',)
+    ordering = ('-user__date_joined',)
