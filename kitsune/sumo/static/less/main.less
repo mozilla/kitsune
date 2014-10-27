@@ -76,6 +76,55 @@ body {
     }
   }
 
+  &.scroll-header {
+    padding-top: 151px;
+
+    > header {
+      background: #fff;
+      .box-shadow(0 0 5px rgba(0, 0, 0, 0.2));
+      height: 50px;
+      padding: 0;
+      position: fixed;
+      top: 0;
+      width: 100%;
+      z-index: 9999;
+      
+      .logo {
+        left: 0;
+        margin: 13px 0;
+        position: absolute;
+        top: 0;
+
+        img {
+          height: 24px;
+        }
+      }
+
+      #aux-nav {
+        margin-right: 302px;
+
+        > ul {
+          margin-top: 4px;
+
+          .dropdown {
+            display: none;
+          }
+        }
+      }
+
+      #support-search {
+        right: 0;
+        margin-top: 9px;
+        position: absolute;
+        top: 0;
+      }
+
+      #tabzilla {
+        display: none;
+      }
+    }
+  }
+
   .html-rtl {
     header {
       .logo {

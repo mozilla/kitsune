@@ -10,6 +10,14 @@
     // Non supported Firefox version
     notifyOutdatedFirefox();
 
+    $(window).scroll(_.throttle(function() {
+      if ($(window).scrollTop() > $('body > header').outerHeight()) {
+        $('body').addClass('scroll-header');
+      } else {
+        $('body').removeClass('scroll-header');
+      }
+    }, 100));
+
     if ($.datepicker) {
       $('input[type="date"]').datepicker();
     }
