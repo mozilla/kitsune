@@ -47,11 +47,10 @@
       {{ document.html|safe }}
     {% elif fallback_reason == 'no_translation' %}
       <div id="doc-pending-fallback" class="warning-box">
-        {% trans help_link=url('wiki.document', localize-firefox-help) %}
           No one has helped translate this article yet. If you already know how localizing for SUMO works,
           <a href="{{ url('wiki.translate', parent.slug) }}">{{ _('start translating now') }}</a>.
           If you want to learn how to translate articles for SUMO,
-          <a href="{{ help_link }}">please start here</a>.
+          <a href="{{ url('wiki.document', 'localize-firefox-help') }}">{{ _('please start here') }}</a>.
         {% endtrans %}
       </div>
       {{ document.html|safe }}
