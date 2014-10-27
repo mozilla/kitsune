@@ -144,12 +144,12 @@ class ProfileViewSet(mixins.CreateModelMixin,
         filters.OrderingFilter,
     ]
     filter_fields = [
-        'date_joined',
+        'user__date_joined',
     ]
     ordering_fields = [
-        'username',
-        'display_name',
-        'date_joined',
+        'user__username',
+        'name',
+        'user__date_joined',
     ]
     # Default, if not overwritten
-    ordering = ('-date_joined',)
+    ordering = ('-user__date_joined',)
