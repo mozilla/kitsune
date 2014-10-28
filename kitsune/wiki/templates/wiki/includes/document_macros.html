@@ -42,7 +42,6 @@
 {%- endmacro %}
 
 {% macro document_content(document, fallback_reason, request, settings) -%}
-{% macro document_tools(document, parent, user, active, settings, include_showfor=False) -%}
   <section id="doc-content">
     {% if not fallback_reason %}
       {{ document.html|safe }}
