@@ -1,6 +1,5 @@
 import mock
 from nose.tools import eq_, ok_
-
 from rest_framework.test import APIClient
 
 from kitsune.sumo.tests import TestCase
@@ -70,7 +69,9 @@ class TestQuestionSerializer(TestCase):
         # It has the same slug, but a different product.
         new_product = product(save=True)
         new_topic = topic(product=new_product, slug=self.topic.slug, save=True)
-        serializer = api.QuestionSerializer(
+        serializer = api.QuestionShortSerializer(
+        topic(product=new_product, slug=self.topic.slug, save=True)
+        serializer = api.QuestionShortSerializer(
             context=self.context, data=self.data)
         eq_(serializer.errors, {})
         ok_(serializer.is_valid())
@@ -152,7 +153,7 @@ class TestQuestionViewSet(TestCase):
         p1 = product(save=True)
         p2 = product(save=True)
         q1 = question(product=p1, save=True)
-        q2 = question(product=p2, save=True)
+        question(product=p2, save=True)
 
         querystring = '?product={0}'.format(p1.slug)
         res = self.client.get(reverse('question-list') + querystring)
@@ -161,7 +162,7 @@ class TestQuestionViewSet(TestCase):
 
     def test_filter_creator_with_username(self):
         q1 = question(save=True)
-        q2 = question(save=True)
+        question(save=True)
 
         querystring = '?creator={0}'.format(q1.creator.username)
         res = self.client.get(reverse('question-list') + querystring)
