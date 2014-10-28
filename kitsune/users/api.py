@@ -1,13 +1,14 @@
 from datetime import datetime, timedelta
 
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 from django.db.models import Q
 from django.views.decorators.http import require_GET
 
 import waffle
 from statsd import statsd
 
-from rest_framework import viewsets, serializers, mixins, filters
+from rest_framework import viewsets, serializers, mixins, filters, permissions
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.decorators import permission_classes, api_view
@@ -16,6 +17,7 @@ from rest_framework.authtoken import views as authtoken_views
 from kitsune.access.decorators import login_required
 from kitsune.sumo.api import CORSMixin
 from kitsune.sumo.decorators import json_view
+from kitsune.users.helpers import profile_avatar
 from kitsune.users.models import Profile, RegistrationProfile
 
 
@@ -71,13 +73,33 @@ class GetToken(CORSMixin, authtoken_views.ObtainAuthToken):
     """Add CORS headers to the ObtainAuthToken view."""
 
 
-class ProfileShortSerializer(serializers.ModelSerializer):
+class OnlySelfEdits(permissions.BasePermission):
+    """
+    Only allow users/profiles to be edited and deleted by themselves.
+
+    TODO: This should be tied to user and object permissions better, but
+    for now this is a bandaid.
+    """
+
+    def has_object_permission(self, request, view, obj):
+        # SAFE_METHODS is a list containing all the read-only methods.
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        # If flow gets here, the method will modify something.
+        request_user = getattr(request, 'user', None)
+        user = getattr(obj, 'user', None)
+        # Only the owner can modify things.
+        return request_user == user
+
+
+class ProfileSerializer(serializers.ModelSerializer):
     username = serializers.WritableField(source='user.username')
     display_name = serializers.WritableField(source='name', required=False)
     date_joined = serializers.Field(source='user.date_joined')
+    avatar = serializers.SerializerMethodField('get_avatar_url')
+    # These are write only fields. It is very important they stays that way!
     email = serializers.WritableField(
         source='user.email', write_only=True, required=False)
-    # This is a write only field. It is very very important it stays that way!
     password = serializers.WritableField(
         source='user.password', write_only=True)
 
@@ -87,11 +109,27 @@ class ProfileShortSerializer(serializers.ModelSerializer):
             'username',
             'display_name',
             'date_joined',
+            'avatar',
+            'bio',
+            'website',
+            'twitter',
+            'facebook',
+            'irc_handle',
+            'timezone',
+            'country',
+            'city',
+            'locale',
+            # Password and email are here so they can be involved in write
+            # operations. They is marked as write-only above, so will not be
+            # visible.
+            # TODO: Make email visible if the user has opted in, or is the
+            # current user.
             'email',
-            # Password is here so it can be involved in write operations.
-            # It is marked as write-only above, so it will not be visible.
             'password',
         ]
+
+    def get_avatar_url(self, obj):
+        return profile_avatar(obj.user)
 
     def restore_object(self, attrs, instance=None):
         """
@@ -100,7 +138,7 @@ class ProfileShortSerializer(serializers.ModelSerializer):
         This user may not be saved here, but will be saved if/when the .save()
         method of the serializer is called.
         """
-        instance = (super(ProfileShortSerializer, self)
+        instance = (super(ProfileSerializer, self)
                     .restore_object(attrs, instance))
         if instance.user_id is None:
             # The Profile doesn't have a user, so create one. If an email is
@@ -117,28 +155,47 @@ class ProfileShortSerializer(serializers.ModelSerializer):
             instance._nested_forward_relations['user'] = u
         return instance
 
+    def validate_username(self, attrs, source):
+        obj = self.object
+        if obj is None:
+            # This is a create
+            if User.objects.filter(username=attrs['user.username']).exists():
+                raise ValidationError('A user with that username exists')
+        else:
+            # This is an update
+            new_username = attrs.get('user.username', obj.user.username)
+            if new_username != obj.user.username:
+                raise ValidationError("Can't change this field.")
+
+        return attrs
+
     def validate_display_name(self, attrs, source):
         if attrs.get('name') is None:
-            attrs['name'] = attrs['user.username']
+            attrs['name'] = attrs.get('user.username')
         return attrs
 
     def validate_email(self, attrs, source):
         email = attrs.get('user.email')
         if email and User.objects.filter(email=email).exists():
-            raise serializers.ValidationError('A user with that email address '
-                                              'already exists.')
+            raise ValidationError('A user with that email address '
+                                  'already exists.')
         return attrs
 
 
-class ProfileViewSet(mixins.CreateModelMixin,
+class ProfileViewSet(CORSMixin,
+                     mixins.CreateModelMixin,
                      mixins.RetrieveModelMixin,
                      mixins.ListModelMixin,
+                     mixins.UpdateModelMixin,
                      viewsets.GenericViewSet):
     model = Profile
-    serializer_class = ProfileShortSerializer
+    serializer_class = ProfileSerializer
     paginate_by = 20
     # User usernames instead of ids in urls.
     lookup_field = 'user__username'
+    permission_classes = [
+        OnlySelfEdits,
+    ]
     filter_backends = [
         filters.DjangoFilterBackend,
         filters.OrderingFilter,
