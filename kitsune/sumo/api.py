@@ -35,9 +35,12 @@ class CORSMixin(object):
         # OPTION requests are pre-flight requests. We need to tell the browser
         # it is ok to make the real request.
         if request.method == 'OPTIONS':
+            # If the client doesn't care what to allow, allow everything.
+            allowed_methods = request.META.get(
+                'HTTP_ACCESS_CONTROL_REQUEST_HEADERS',
+                'POST,GET,PATCH,DELETE,PUT,OPTIONS,HEAD')
             response['Access-Control-Allow-Methods'] = '*'
-            response['Access-Control-Allow-Headers'] = (
-                request.META['HTTP_ACCESS_CONTROL_REQUEST_HEADERS'])
+            response['Access-Control-Allow-Headers'] = allowed_methods
             response['Access-Control-Allow-Max-Age'] = '3600'
             response['Access-Control-Allow-Credentials'] = 'true'
 
