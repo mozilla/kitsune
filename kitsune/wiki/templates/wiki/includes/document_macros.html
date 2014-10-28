@@ -42,12 +42,13 @@
 {%- endmacro %}
 
 {% macro document_content(document, fallback_reason, request, settings) -%}
+{% macro document_tools(document, parent, user, active, settings, include_showfor=False) -%}
   <section id="doc-content">
     {% if not fallback_reason %}
       {{ document.html|safe }}
     {% elif fallback_reason == 'no_translation' %}
       <div id="doc-pending-fallback" class="warning-box">
-      {% trans help_link=url('wiki.document', 'localize-firefox-help'), trans_link=url('wiki.translate', parent.slug) %}
+      {% trans help_link=url('wiki.document', 'localize-firefox-help'), trans_link=url('wiki.document', document.parent.slug) %}
           No one has helped translate this article yet. If you already know how localizing for SUMO works,
           <a href="{{ trans_link }}">start translating now</a>.
           If you want to learn how to translate articles for SUMO,
