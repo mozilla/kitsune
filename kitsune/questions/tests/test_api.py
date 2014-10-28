@@ -33,14 +33,14 @@ class TestQuestionSerializer(TestCase):
         }
 
     def test_it_works(self):
-        serializer = api.QuestionShortSerializer(
+        serializer = api.QuestionSerializer(
             context=self.context, data=self.data)
         eq_(serializer.errors, {})
         ok_(serializer.is_valid())
 
     def test_automatic_creator(self):
         del self.data['creator']
-        serializer = api.QuestionShortSerializer(
+        serializer = api.QuestionSerializer(
             context=self.context, data=self.data)
         eq_(serializer.errors, {})
         ok_(serializer.is_valid())
@@ -48,7 +48,7 @@ class TestQuestionSerializer(TestCase):
 
     def test_product_required(self):
         del self.data['product']
-        serializer = api.QuestionShortSerializer(
+        serializer = api.QuestionSerializer(
             context=self.context, data=self.data)
         eq_(serializer.errors, {
             'product': [u'This field is required.'],
@@ -58,7 +58,7 @@ class TestQuestionSerializer(TestCase):
 
     def test_topic_required(self):
         del self.data['topic']
-        serializer = api.QuestionShortSerializer(
+        serializer = api.QuestionSerializer(
             context=self.context, data=self.data)
         eq_(serializer.errors, {
             'topic': [u'This field is required.'],
@@ -70,7 +70,7 @@ class TestQuestionSerializer(TestCase):
         # It has the same slug, but a different product.
         new_product = product(save=True)
         new_topic = topic(product=new_product, slug=self.topic.slug, save=True)
-        serializer = api.QuestionShortSerializer(
+        serializer = api.QuestionSerializer(
             context=self.context, data=self.data)
         eq_(serializer.errors, {})
         ok_(serializer.is_valid())
@@ -81,21 +81,6 @@ class TestQuestionViewSet(TestCase):
 
     def setUp(self):
         self.client = APIClient()
-
-    def test_short_serializer_used_for_lists(self):
-        question(save=True)
-        res = self.client.get(reverse('question-list'))
-        eq_(res.status_code, 200)
-        # The short serializer should not include the content field.
-        assert 'content' not in res.data['results'][0]
-
-    def test_detail_serializer_used_for_details(self):
-        """The detail serializer should be used for detail views."""
-        q = question(save=True)
-        res = self.client.get(reverse('question-detail', args=[q.id]))
-        eq_(res.status_code, 200)
-        # The long serializer should include the content field.
-        assert 'content' in res.data
 
     def test_create(self):
         u = user(save=True)
@@ -188,21 +173,6 @@ class TestAnswerViewSet(TestCase):
 
     def setUp(self):
         self.client = APIClient()
-
-    def test_short_serializer_used_for_lists(self):
-        answer(save=True)
-        res = self.client.get(reverse('answer-list'))
-        eq_(res.status_code, 200)
-        # The short serializer should not include the content field.
-        assert 'content' not in res.data['results'][0]
-
-    def test_detail_serializer_used_for_details(self):
-        """The detail serializer should be used for detail views."""
-        a = answer(save=True)
-        res = self.client.get(reverse('answer-detail', args=[a.id]))
-        eq_(res.status_code, 200)
-        # The long serializer should include the content field.
-        assert 'content' in res.data
 
     def test_create(self):
         q = question(save=True)

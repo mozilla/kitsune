@@ -36,7 +36,7 @@ class QuestionMetaDataSerializer(serializers.ModelSerializer):
             return obj
 
 
-class QuestionShortSerializer(serializers.ModelSerializer):
+class QuestionSerializer(serializers.ModelSerializer):
     # Use slugs for product and topic instead of ids.
     product = serializers.SlugRelatedField(required=True, slug_field='slug')
     topic = TopicField(required=True)
@@ -45,6 +45,8 @@ class QuestionShortSerializer(serializers.ModelSerializer):
         slug_field='username', required=False)
     updated_by = serializers.SlugRelatedField(
         slug_field='username', required=False)
+    metadata = QuestionMetaDataSerializer(
+        source='metadata_set', required=False)
 
     class Meta:
         model = Question
@@ -64,6 +66,9 @@ class QuestionShortSerializer(serializers.ModelSerializer):
             'topic',
             'updated_by',
             'updated',
+            'content',
+            'metadata',
+            'answers',
         )
 
     def validate_creator(self, attrs, source):
@@ -71,19 +76,6 @@ class QuestionShortSerializer(serializers.ModelSerializer):
         if user and not user.is_anonymous() and attrs.get('creator') is None:
             attrs['creator'] = user
         return attrs
-
-
-class QuestionDetailSerializer(QuestionShortSerializer):
-    metadata = QuestionMetaDataSerializer(
-        source='metadata_set', required=False)
-
-    class Meta:
-        model = Question
-        fields = QuestionShortSerializer.Meta.fields + (
-            'content',
-            'answers',
-            'metadata',
-        )
 
 
 class QuestionFilter(django_filters.FilterSet):
@@ -109,7 +101,7 @@ class QuestionFilter(django_filters.FilterSet):
 
 
 class QuestionViewSet(CORSMixin, viewsets.ModelViewSet):
-    serializer_class = QuestionDetailSerializer
+    serializer_class = QuestionSerializer
     queryset = Question.objects.all()
     paginate_by = 20
     permission_classes = [
@@ -131,17 +123,6 @@ class QuestionViewSet(CORSMixin, viewsets.ModelViewSet):
     ]
     # Default, if not overwritten
     ordering = ('-id',)
-
-    def get_pagination_serializer(self, page):
-        """
-        Return a serializer instance to use with paginated data.
-        """
-        class SerializerClass(self.pagination_serializer_class):
-            class Meta:
-                object_serializer_class = QuestionShortSerializer
-
-        context = self.get_serializer_context()
-        return SerializerClass(instance=page, context=context)
 
     @action(methods=['POST'])
     def solve(self, request, pk=None):
@@ -189,7 +170,7 @@ class QuestionViewSet(CORSMixin, viewsets.ModelViewSet):
                              status=status.HTTP_404_NOT_FOUND)
 
 
-class AnswerShortSerializer(serializers.ModelSerializer):
+class AnswerSerializer(serializers.ModelSerializer):
     creator = serializers.SlugRelatedField(slug_field='username',
                                            required=False)
     updated_by = serializers.SlugRelatedField(slug_field='username',
@@ -200,10 +181,12 @@ class AnswerShortSerializer(serializers.ModelSerializer):
         fields = (
             'id',
             'question',
+            'content',
             'created',
             'creator',
             'updated',
             'updated_by',
+            'is_spam',
         )
 
     def validate_creator(self, attrs, source):
@@ -213,22 +196,31 @@ class AnswerShortSerializer(serializers.ModelSerializer):
         return attrs
 
 
-class AnswerDetailSerializer(AnswerShortSerializer):
-    class Meta:
+class AnswerFilter(django_filters.FilterSet):
+    creator = django_filters.CharFilter(name='creator__username')
+    question = django_filters.Filter(name='question__id')
+
+    class Meta(object):
         model = Answer
-        fields = AnswerShortSerializer.Meta.fields + (
-            'content',
-        )
+        fields = [
+            'question',
+            'creator',
+            'created',
+            'updated',
+            'updated_by',
+            'is_spam',
+        ]
 
 
 class AnswerViewSet(CORSMixin, viewsets.ModelViewSet):
-    serializer_class = AnswerDetailSerializer
+    serializer_class = AnswerSerializer
     queryset = Answer.objects.all()
     paginate_by = 20
     permission_classes = [
         OnlyCreatorEdits,
         permissions.IsAuthenticatedOrReadOnly,
     ]
+    filter_class = AnswerFilter
     filter_backends = [
         filters.DjangoFilterBackend,
         filters.OrderingFilter,
@@ -254,7 +246,7 @@ class AnswerViewSet(CORSMixin, viewsets.ModelViewSet):
         """
         class SerializerClass(self.pagination_serializer_class):
             class Meta:
-                object_serializer_class = AnswerShortSerializer
+                object_serializer_class = AnswerSerializer
 
         context = self.get_serializer_context()
         return SerializerClass(instance=page, context=context)
