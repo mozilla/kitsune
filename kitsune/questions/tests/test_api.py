@@ -68,10 +68,8 @@ class TestQuestionSerializer(TestCase):
         # First make another product, and a colliding topic.
         # It has the same slug, but a different product.
         new_product = product(save=True)
-        new_topic = topic(product=new_product, slug=self.topic.slug, save=True)
-        serializer = api.QuestionShortSerializer(
         topic(product=new_product, slug=self.topic.slug, save=True)
-        serializer = api.QuestionShortSerializer(
+        serializer = api.QuestionSerializer(
             context=self.context, data=self.data)
         eq_(serializer.errors, {})
         ok_(serializer.is_valid())
