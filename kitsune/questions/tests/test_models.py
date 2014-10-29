@@ -20,9 +20,10 @@ from kitsune.questions.karma_actions import SolutionAction, AnswerAction
 from kitsune.questions import models
 from kitsune.questions.models import (
     Answer, Question, QuestionMetaData, QuestionVisits,
-    _tenths_version, _has_beta)
+    _tenths_version, _has_beta, VoteMetadata)
 from kitsune.questions.tasks import update_answer_pages
-from kitsune.questions.tests import TestCaseBase, tags_eq, question, answer
+from kitsune.questions.tests import (
+    TestCaseBase, tags_eq, question, answer, questionvote)
 from kitsune.questions.config import products
 from kitsune.sumo import googleanalytics
 from kitsune.sumo.tests import TestCase
@@ -510,3 +511,11 @@ class QuestionVisitsTests(TestCase):
         eq_(100, QuestionVisits.uncached.get(question_id=q1.id).visits)
         eq_(200, QuestionVisits.uncached.get(question_id=q2.id).visits)
         eq_(300, QuestionVisits.uncached.get(question_id=q3.id).visits)
+
+
+class QuestionVoteTests(TestCase):
+    def test_add_metadata_over_1000_chars(self):
+        qv = questionvote(save=True)
+        qv.add_metadata('test1', 'a'*1001)
+        metadata = VoteMetadata.objects.all()[0]
+        eq_('a'*1000, metadata.value)
