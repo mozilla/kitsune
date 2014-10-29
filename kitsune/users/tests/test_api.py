@@ -57,10 +57,10 @@ class TestUserSerializer(TestCase):
     def setUp(self):
         self.request = mock.Mock()
         self.data = {
-            'username': 'bob',
-            'display_name': 'Bobert the Seventh',
+            'username': 'bobb',
+            'display_name': 'Bobbert the Seventh',
             'password': 'testpass',
-            'email': 'bob@example.com',
+            'email': 'bobb@example.com',
         }
 
     def test_user_created(self):
@@ -83,7 +83,7 @@ class TestUserSerializer(TestCase):
         del self.data['display_name']
         serializer = api.ProfileSerializer(data=self.data)
         ok_(serializer.is_valid())
-        eq_(serializer.object.name, 'bob')
+        eq_(serializer.object.name, 'bobb')
 
     def test_no_duplicate_emails(self):
         user(email=self.data['email'], save=True)
@@ -115,7 +115,7 @@ class TestUserSerializer(TestCase):
 
     def test_cant_update_username(self):
         p = profile()
-        p.user.username = 'notbob'
+        p.user.username = 'notbobb'
         p.user.save()
 
         serializer = api.ProfileSerializer(data=self.data, instance=p)
@@ -123,6 +123,30 @@ class TestUserSerializer(TestCase):
         eq_(serializer.errors, {
             'username': [u"Can't change this field."],
         })
+
+    def test_username_bad_chars(self):
+        # New users shouldn't be able to have '@' in their username.
+        self.data['username'] = 'bobb@example.com'
+        serializer = api.ProfileSerializer(data=self.data)
+        eq_(serializer.is_valid(), False)
+        eq_(serializer.errors, {'username':
+            [u'Usernames may only be letters, numbers, "." and "-".']})
+
+    def test_username_too_long(self):
+        # Max length is 30
+        self.data['username'] = 'B' * 31
+        serializer = api.ProfileSerializer(data=self.data)
+        eq_(serializer.is_valid(), False)
+        eq_(serializer.errors, {'username':
+            [u'Usernames may only be letters, numbers, "." and "-".']})
+
+    def test_username_too_short(self):
+        # Min length is 4 chars.
+        self.data['username'] = 'bob'
+        serializer = api.ProfileSerializer(data=self.data)
+        eq_(serializer.is_valid(), False)
+        eq_(serializer.errors, {'username':
+            [u'Usernames may only be letters, numbers, "." and "-".']})
 
 
 class TestGetToken(TestCase):

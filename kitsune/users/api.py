@@ -1,3 +1,4 @@
+import re
 from datetime import datetime, timedelta
 
 from django.contrib.auth.models import User
@@ -166,6 +167,10 @@ class ProfileSerializer(serializers.ModelSerializer):
             new_username = attrs.get('user.username', obj.user.username)
             if new_username != obj.user.username:
                 raise ValidationError("Can't change this field.")
+
+        if re.match(r'^[\w.-]{4,30}$', attrs['user.username']) is None:
+            raise ValidationError(
+                'Usernames may only be letters, numbers, "." and "-".')
 
         return attrs
 
