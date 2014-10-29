@@ -960,7 +960,7 @@ def question_vote(request, question_id):
 
             ua = request.META.get('HTTP_USER_AGENT')
             if ua:
-                vote.add_metadata('ua', ua[:1000])  # 1000 max_length
+                vote.add_metadata('ua', ua)
             statsd.incr('questions.votes.question')
 
         if request.is_ajax():
@@ -989,7 +989,7 @@ def answer_vote(request, question_id, answer_id):
 
     if request.limited:
         if request.is_ajax():
-            return HttpResponse(json.dumps({"ignored": True}))
+            return HttpResponse(json.dumps({'ignored': True}))
         else:
             return HttpResponseRedirect(answer.get_absolute_url())
 
@@ -1020,7 +1020,7 @@ def answer_vote(request, question_id, answer_id):
 
         ua = request.META.get('HTTP_USER_AGENT')
         if ua:
-            vote.add_metadata('ua', ua[:1000])  # 1000 max_length
+            vote.add_metadata('ua', ua)
         statsd.incr('questions.votes.answer')
     else:
         message = _('You already voted on this reply.')

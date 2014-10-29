@@ -46,6 +46,7 @@ log = logging.getLogger('k.questions')
 
 
 CACHE_TIMEOUT = 10800  # 3 hours
+VOTE_METADATA_MAX_LENGTH = 1000
 
 
 class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
@@ -1115,7 +1116,8 @@ class QuestionVote(ModelBase):
     anonymous_id = models.CharField(max_length=40, db_index=True)
 
     def add_metadata(self, key, value):
-        VoteMetadata.objects.create(vote=self, key=key, value=value)
+        VoteMetadata.objects.create(
+            vote=self, key=key, value=value[:VOTE_METADATA_MAX_LENGTH])
 
 
 register_for_indexing(
@@ -1132,7 +1134,8 @@ class AnswerVote(ModelBase):
     anonymous_id = models.CharField(max_length=40, db_index=True)
 
     def add_metadata(self, key, value):
-        VoteMetadata.objects.create(vote=self, key=key, value=value)
+        VoteMetadata.objects.create(
+            vote=self, key=key, value=value[:VOTE_METADATA_MAX_LENGTH])
 
 
 # TODO: We only need to update the helpful bit.  It's possible
@@ -1149,7 +1152,7 @@ class VoteMetadata(ModelBase):
     object_id = models.PositiveIntegerField(null=True, blank=True)
     vote = generic.GenericForeignKey()
     key = models.CharField(max_length=40, db_index=True)
-    value = models.CharField(max_length=1000)
+    value = models.CharField(max_length=VOTE_METADATA_MAX_LENGTH)
 
 
 def send_vote_update_task(**kwargs):
