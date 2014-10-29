@@ -50,6 +50,12 @@ class AuthenticationFormTests(TestCaseBase):
             'password': 'testpass'})
         assert form.is_valid()
 
+    def test_ampersand_in_username(self):
+        u = user(username='test@example.com', save=True)
+        form = AuthenticationForm(data={'username': u.username,
+                                        'password': 'testpass'})
+        assert form.is_valid()
+
 
 FACEBOOK_URLS = (
     ('https://facebook.com/valid', True),
