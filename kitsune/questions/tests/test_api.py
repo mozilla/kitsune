@@ -5,7 +5,7 @@ from rest_framework.test import APIClient
 from kitsune.sumo.tests import TestCase
 from kitsune.questions import api
 from kitsune.questions.models import Question, Answer
-from kitsune.questions.tests import question, answer
+from kitsune.questions.tests import question, answer, questionvote
 from kitsune.users.tests import profile, user
 from kitsune.products.tests import product, topic
 from kitsune.sumo.urlresolvers import reverse
@@ -74,6 +74,22 @@ class TestQuestionSerializer(TestCase):
         eq_(serializer.errors, {})
         ok_(serializer.is_valid())
         eq_(serializer.object.topic, self.topic)
+
+
+class TestQuestionSerializerDeserialization(TestCase):
+
+    def test_no_votes(self):
+        q = question(save=True)
+        serializer = api.QuestionSerializer(instance=q)
+        eq_(serializer.data['num_votes'], 0)
+
+    def test_with_votes(self):
+        q = question(save=True)
+        questionvote(question=q, save=True)
+        questionvote(question=q, save=True)
+        questionvote(save=True)
+        serializer = api.QuestionSerializer(instance=q)
+        eq_(serializer.data['num_votes'], 2)
 
 
 class TestQuestionViewSet(TestCase):
