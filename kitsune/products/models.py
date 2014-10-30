@@ -67,7 +67,7 @@ class Product(ModelBase):
         if regenerate_sprite:
             cachebust = uuid4().hex
             logos = []
-            offset = 0;
+            offset = 0
             products = Product.objects.order_by('id').all()
 
             for product in products:

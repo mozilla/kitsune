@@ -147,7 +147,7 @@ class AnswersTemplateTestCase(TestCaseBase):
 
         # Try to solve again with different answer. It shouldn't blow up or
         # change the solution.
-        a2 = answer(question=q, save=True)
+        answer(question=q, save=True)
         response = post(self.client, 'questions.solve',
                         args=[self.question.id, ans.id])
         eq_(200, response.status_code)
@@ -824,7 +824,8 @@ class AnswersTemplateTestCase(TestCaseBase):
         doc = pq(response.content)
         eq_(1, len(doc('meta[name=robots]')))
 
-        # If the answer it the solution, then it shouldn't be noindexed anymore.
+        # If the answer is the solution, then it shouldn't be noindexed
+        # anymore.
         q.solution = a
         q.save()
         response = get(self.client, 'questions.details', args=[q.id])

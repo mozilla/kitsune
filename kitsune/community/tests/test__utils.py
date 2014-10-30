@@ -3,7 +3,6 @@ from datetime import datetime, date, timedelta
 from django.contrib.auth.models import User
 
 from nose.tools import eq_
-from pyquery import PyQuery as pq
 
 from kitsune.community.utils import (
     top_contributors_kb, top_contributors_l10n, top_contributors_aoa,
@@ -23,8 +22,8 @@ class TopContributorTests(ElasticTestCase):
     def test_top_contributors_kb(self):
         d = document(locale='en-US', save=True)
         r1 = revision(document=d, save=True)
-        r2 = revision(document=d, creator=r1.creator, save=True)
-        r3 = revision(document=d, save=True)
+        revision(document=d, creator=r1.creator, save=True)
+        revision(document=d, save=True)
         r4 = revision(document=d, created=date.today()-timedelta(days=91),
                       save=True)
 
@@ -55,13 +54,13 @@ class TopContributorTests(ElasticTestCase):
         d = document(locale='es', save=True)
         es1 = revision(document=d, save=True)
         es1 = revision(document=d, creator=es1.creator, save=True)
-        es3 = revision(document=d, save=True)
-        es4 = revision(document=d, created=date.today()-timedelta(days=91),
-                      save=True)
+        revision(document=d, save=True)
+        es4 = revision(document=d, created=date.today() - timedelta(days=91),
+                       save=True)
 
         d = document(locale='de', save=True)
         de1 = revision(document=d, save=True)
-        de2 = revision(document=d, creator=de1.creator, save=True)
+        revision(document=d, creator=de1.creator, save=True)
 
         d = document(locale='en-US', save=True)
         revision(document=d, save=True)
@@ -78,7 +77,7 @@ class TopContributorTests(ElasticTestCase):
         assert es4.creator_id not in [u['term'] for u in top]
         eq_(es1.creator_id, top[0]['term'])
 
-         # By default, we should only get 1 top contributors back for 'de'.
+        # By default, we should only get 1 top contributors back for 'de'.
         top, _ = top_contributors_l10n(locale='de')
         eq_(1, len(top))
         eq_(de1.creator_id, top[0]['term'])
@@ -89,9 +88,10 @@ class TopContributorTests(ElasticTestCase):
 
     def test_top_contributors_aoa(self):
         r1 = reply(user=user(save=True), save=True)
-        r2 = reply(user=r1.user, save=True)
-        r3 = reply(user=user(save=True), save=True)
-        r4 = reply(user=user(save=True), created=date.today()-timedelta(days=91),
+        reply(user=r1.user, save=True)
+        reply(user=user(save=True), save=True)
+        r4 = reply(user=user(save=True),
+                   created=date.today() - timedelta(days=91),
                    save=True)
 
         for u in User.objects.all():
@@ -111,7 +111,7 @@ class TopContributorTests(ElasticTestCase):
         a1 = answer(save=True)
         a1.question.product = firefox
         a1.question.save()
-        a2 = answer(creator=a1.creator, save=True)
+        answer(creator=a1.creator, save=True)
         a3 = answer(save=True)
         a3.question.product = fxos
         a3.question.save()

@@ -111,7 +111,7 @@ class LandingTests(ElasticTestCase):
     def test_recent_threads(self):
         """Verify the Community Discussions section."""
         f = forum(slug='contributors', save=True)
-        t = thread(forum=f, title='we are SUMO!!!!!!', save=True)
+        thread(forum=f, title='we are SUMO!!!!!!', save=True)
 
         self.refresh()
 
@@ -120,6 +120,7 @@ class LandingTests(ElasticTestCase):
         doc = pq(response.content)
         eq_(1, len(doc('#recent-threads')))
         assert 'we are SUMO!' in doc('#recent-threads li').html()
+
 
 class TopContributorsTests(ElasticTestCase):
     """Tests for the Community Hub top contributors page."""

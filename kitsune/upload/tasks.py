@@ -76,9 +76,9 @@ def _create_image_thumbnail(file_path, longest_side=settings.THUMBNAIL_SIZE,
 def _make_image_square(source_image, side=settings.THUMBNAIL_SIZE):
     """Pads a rectangular image with transparency to make it square."""
     square_image = Image.new('RGBA', (side, side), (255, 255, 255, 0))
-    square_image.paste(source_image,
-                      ((side - source_image.size[0]) / 2,
-                       (side - source_image.size[1]) / 2))
+    width = (side - source_image.size[0]) / 2
+    height = (side - source_image.size[1]) / 2
+    square_image.paste(source_image, (width, height))
     return square_image
 
 

@@ -343,7 +343,6 @@ def delete_post(request, document_slug, thread_id, post_id):
 
     statsd.incr('kbforums.delete_post')
 
-
     try:
         Thread.objects.get(pk=thread_id)
         goto = reverse('wiki.discuss.posts',

@@ -375,7 +375,8 @@ def user_pre_save(sender, instance, **kw):
     if instance.id:
         user = User.objects.get(id=instance.id)
         if user.username != instance.username:
-            threads = (Thread.objects
+            threads = (
+                Thread.objects
                 .filter(
                     Q(creator=instance) |
                     Q(post__author=instance))

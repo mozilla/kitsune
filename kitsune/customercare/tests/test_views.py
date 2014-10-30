@@ -54,8 +54,8 @@ class TweetListTests(TestCase):
 
         # Make sure this id is not in the result, and all tweets are
         # older than max_id.
-        for tweet in tweets_2:
-            assert tweet['id'] < max_id
+        for t in tweets_2:
+            assert t['id'] < max_id
 
     def test_hide_tweets(self):
         """Try hiding tweets."""

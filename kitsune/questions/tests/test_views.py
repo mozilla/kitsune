@@ -3,7 +3,6 @@ from datetime import datetime, timedelta
 
 from django.conf import settings
 from django.contrib.sites.models import Site
-from django.test.utils import override_settings
 
 import mock
 from nose.tools import eq_
@@ -99,16 +98,16 @@ class AAQTests(ElasticTestCase):
 
         for l in QuestionLocale.objects.all():
             p.questions_locales.add(l)
-            
+
         topic(title='Fix problems', slug='fix-problems', product=p, save=True)
 
-        q1 = question(
+        question(
             title='question cupcakes?', product=p, save=True, locale='en-US')
-        q2 = question(
+        question(
             title='question donuts?', product=p, save=True, locale='en-US')
-        q3 = question(
+        question(
             title='question pies?', product=p, save=True, locale='pt-BR')
-        q4 = question(
+        question(
             title='question pastries?', product=p, save=True, locale='de')
 
         self.refresh()
@@ -195,6 +194,7 @@ class AAQTests(ElasticTestCase):
         p.questions_locales.add(l)
         res = self.client.get(url_fi)
         eq_(200, res.status_code)
+
 
 class MobileAAQTests(MobileTestCase):
     client_class = LocalizingClient
@@ -448,13 +448,13 @@ class TestQuestionList(TestCaseBase):
         p = product(slug=u'firefox', save=True)
         topic(title='Fix problems', slug='fix-problems', product=p, save=True)
 
-        q1 = question(
+        question(
             title='question cupcakes?', product=p, save=True, locale='en-US')
-        q2 = question(
+        question(
             title='question donuts?', product=p, save=True, locale='en-US')
-        q3 = question(
+        question(
             title='question pies?', product=p, save=True, locale='pt-BR')
-        q4 = question(
+        question(
             title='question pastries?', product=p, save=True, locale='de')
 
         def sub_test(locale, *titles):
@@ -736,7 +736,7 @@ class TestStats(ElasticTestCase):
         p = product(save=True)
         t = topic(title='Websites', slug='websites', product=p, save=True)
 
-        q = question(
+        question(
             title=u'cupcakes',
             content=u'Cupcakes rock!',
             created=datetime.now() - timedelta(days=1),

@@ -2,7 +2,6 @@ import hashlib
 import logging
 import time
 from datetime import datetime, timedelta
-from difflib import SequenceMatcher
 from urlparse import urlparse
 
 from django.conf import settings
@@ -1040,7 +1039,7 @@ class RevisionMetricsMappingType(SearchMappingType):
             obj_dict = model.uncached.values(*all_fields).get(pk=obj_id)
         else:
             obj_dict = dict([(field, getattr(obj, field))
-                              for field in fields])
+                             for field in fields])
             obj_dict['document__locale'] = obj.document.locale
             obj_dict['document__slug'] = obj.document.slug
 
@@ -1059,7 +1058,7 @@ class RevisionMetricsMappingType(SearchMappingType):
         d['indexed_on'] = int(time.time())
 
         d['created'] = obj_dict['created']
-        d['reviewed']= obj_dict['reviewed']
+        d['reviewed'] = obj_dict['reviewed']
 
         d['locale'] = obj_dict['document__locale']
         d['is_approved'] = obj_dict['is_approved']

@@ -171,7 +171,7 @@ class TestWikiParser(TestCase):
     def test_image_params_align_invalid(self):
         """Align invalid options."""
         _, params = build_hook_params_default('align=zzz')
-        assert not 'align' in params, 'Align is present in params'
+        assert 'align' not in params, 'Align is present in params'
 
     def test_image_params_valign(self):
         """Vertical align valid options."""
@@ -184,7 +184,7 @@ class TestWikiParser(TestCase):
     def test_image_params_valign_invalid(self):
         """Vertical align invalid options."""
         _, params = build_hook_params_default('valign=zzz')
-        assert not 'valign' in params, 'Vertical align is present in params'
+        assert 'valign' not in params, 'Vertical align is present in params'
 
     def test_image_params_alt(self):
         """Image alt override."""
@@ -375,7 +375,7 @@ class TestWikiInternalLinks(TestCase):
         eq_('/fr/kb/a-doc', link.find('a').attr('href'))
         eq_('A doc', link.find('a').text())
 
-         # Approve a revision. Now link should go to fr doc.
+        # Approve a revision. Now link should go to fr doc.
         fr_r = revision(document=fr_d, is_approved=True)
         fr_r.save()
         link = pq(self.p.parse('[[A doc]]', locale='fr'))

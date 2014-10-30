@@ -89,7 +89,8 @@ def search(request):
     if q:
         lowerq = q.lower()
         try:
-            results = (UserMappingType
+            results = (
+                UserMappingType
                 .search()
                 .query(
                     iusername__match=lowerq,
@@ -101,7 +102,7 @@ def search(request):
             results = UserMappingType.reshape(results)
 
             statsd.incr('community.usersearch.success')
-        except ES_EXCEPTIONS as exc:
+        except ES_EXCEPTIONS:
             search_errored = True
             statsd.incr('community.usersearch.error')
             log.exception('User search failed.')

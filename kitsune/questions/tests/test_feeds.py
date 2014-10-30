@@ -39,7 +39,8 @@ class ForumTestFeeds(TestCaseBase):
     def test_tagged_feed_link(self):
         """Make sure the tagged feed is discoverable on the questions page."""
         tag(name='green', slug='green', save=True)
-        url = urlparams(reverse('questions.list', args=['all']), tagged='green')
+        url = urlparams(reverse('questions.list', args=['all']),
+                        tagged='green')
         response = self.client.get(url)
         eq_(200, response.status_code)
         doc = pq(response.content)
@@ -95,7 +96,7 @@ class ForumTestFeeds(TestCaseBase):
 
     def test_question_feed_with_locale(self):
         """Test that questions feeds with products and topics work."""
-        url = urlparams(reverse('questions.list', args=['all'], locale='pt-BR'))
+        url = reverse('questions.list', args=['all'], locale='pt-BR')
         res = self.client.get(url)
         eq_(200, res.status_code)
         doc = pq(res.content)

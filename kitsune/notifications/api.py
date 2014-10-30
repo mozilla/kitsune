@@ -1,4 +1,3 @@
-from django.core.exceptions import ValidationError
 from rest_framework import serializers, viewsets, permissions, mixins
 
 from kitsune.notifications.models import PushNotificationRegistration

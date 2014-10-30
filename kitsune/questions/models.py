@@ -1070,6 +1070,7 @@ def answer_connector(sender, instance, created, **kw):
     if created:
         log_answer.delay(instance)
 
+
 post_save.connect(answer_connector, sender=Answer,
                   dispatch_uid='question_answer_activity')
 

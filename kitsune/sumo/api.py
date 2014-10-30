@@ -1,7 +1,7 @@
 from django import forms
 from django.conf import settings
 
-from rest_framework import fields, permissions, serializers
+from rest_framework import fields, permissions
 from rest_framework.exceptions import APIException
 from rest_framework.filters import BaseFilterBackend
 from tower import ugettext as _

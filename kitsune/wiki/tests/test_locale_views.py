@@ -78,7 +78,7 @@ class AddRemoveLeaderTests(TestCase):
         eq_(200, r.status_code)
         r = self.client.post(url)
         eq_(302, r.status_code)
-        assert not self.leader in self.locale.leaders.all()
+        assert self.leader not in self.locale.leaders.all()
 
 
 class AddRemoveReviewerTests(TestCase):
@@ -108,7 +108,7 @@ class AddRemoveReviewerTests(TestCase):
         eq_(200, r.status_code)
         r = self.client.post(url)
         eq_(302, r.status_code)
-        assert not self.reviewer in self.locale.reviewers.all()
+        assert self.reviewer not in self.locale.reviewers.all()
 
 
 class AddRemoveEditorTests(TestCase):
@@ -138,4 +138,4 @@ class AddRemoveEditorTests(TestCase):
         eq_(200, r.status_code)
         r = self.client.post(url)
         eq_(302, r.status_code)
-        assert not self.editor in self.locale.editors.all()
+        assert self.editor not in self.locale.editors.all()

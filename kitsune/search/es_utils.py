@@ -2,7 +2,6 @@ import json
 import logging
 import pprint
 import time
-from datetime import datetime
 
 from django.conf import settings
 from django.db import reset_queries
@@ -95,7 +94,7 @@ class AnalyzerMixin(object):
 
     def process_query_match_whitespace(self, key, val, action):
         """A match query that uses the whitespace analyzer."""
-        return  {
+        return {
             'match': {
                 key: {
                     'query': val,
@@ -269,8 +268,7 @@ def get_analysis():
 
         # The snowball analyzer is actually just a shortcut that does
         # a particular set of tokenizers and analyzers. According to
-        # the docs[1], the below is the same as that, plus the synonyms.
-        # [1] http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/analysis-snowball-analyzer.html #noqa
+        # the docs, the below is the same as that, plus synonym handling.
 
         if locale in config.ES_SYNONYM_LOCALES:
             analyzer_name = es_analyzer_for_locale(locale, synonyms=True)

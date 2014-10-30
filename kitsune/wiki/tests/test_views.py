@@ -391,7 +391,7 @@ class AddRemoveContributorTests(TestCase):
         eq_(200, r.status_code)
         r = self.client.post(url)
         eq_(302, r.status_code)
-        assert not self.contributor in self.document.contributors.all()
+        assert self.contributor not in self.document.contributors.all()
 
 
 class VoteTests(TestCase):

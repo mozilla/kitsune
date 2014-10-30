@@ -285,7 +285,7 @@ def question_list(request, template, product_slug):
     try:
         top_contributors, _ = top_contributors_questions(
             locale=forum_locale, product=product)
-    except ES_EXCEPTIONS as exc:
+    except ES_EXCEPTIONS:
         top_contributors = []
         statsd.incr('questions.topcontributors.eserror')
         log.exception('Support Forum Top contributors query failed.')
