@@ -47,6 +47,7 @@ class QuestionSerializer(serializers.ModelSerializer):
     metadata = QuestionMetaDataSerializer(
         source='metadata_set', required=False)
     num_votes = serializers.Field(source='num_votes')
+    involved = serializers.SerializerMethodField('get_involved_users')
 
     class Meta:
         model = Question
@@ -70,7 +71,14 @@ class QuestionSerializer(serializers.ModelSerializer):
             'metadata',
             'answers',
             'num_votes',
+            'involved',
         )
+
+    def get_involved_users(self, obj):
+        helpers = obj.answers.values_list('creator__username', flat=True)
+        involved = set([obj.creator.username])
+        involved.update(helpers)
+        return list(involved)
 
     def validate_creator(self, attrs, source):
         user = getattr(self.context.get('request'), 'user')
