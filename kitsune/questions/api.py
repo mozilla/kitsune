@@ -1,5 +1,4 @@
 import django_filters
-from django.core.exceptions import ValidationError
 from rest_framework import serializers, viewsets, permissions, filters, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -47,6 +46,7 @@ class QuestionSerializer(serializers.ModelSerializer):
         slug_field='username', required=False)
     metadata = QuestionMetaDataSerializer(
         source='metadata_set', required=False)
+    involved = serializers.SerializerMethodField('get_involved_users')
 
     class Meta:
         model = Question
@@ -69,7 +69,14 @@ class QuestionSerializer(serializers.ModelSerializer):
             'content',
             'metadata',
             'answers',
+            'involved',
         )
+
+    def get_involved_users(self, obj):
+        helpers = obj.answers.values_list('creator__username', flat=True)
+        involved = set([obj.creator.username])
+        involved.update(helpers)
+        return list(involved)
 
     def validate_creator(self, attrs, source):
         user = getattr(self.context.get('request'), 'user')
@@ -158,7 +165,7 @@ class QuestionViewSet(CORSMixin, viewsets.ModelViewSet):
 
         if 'name' not in request.DATA:
             return Response({'name': 'This field is required.'},
-                             status=status.HTTP_400_BAD_REQUEST)
+                            status=status.HTTP_400_BAD_REQUEST)
 
         try:
             meta = (QuestionMetaData.objects
@@ -167,7 +174,7 @@ class QuestionViewSet(CORSMixin, viewsets.ModelViewSet):
             return Response(status=status.HTTP_204_NO_CONTENT)
         except QuestionMetaData.DoesNotExist:
             return Response({'__all__': 'No matching metadata object found.'},
-                             status=status.HTTP_404_NOT_FOUND)
+                            status=status.HTTP_404_NOT_FOUND)
 
 
 class AnswerSerializer(serializers.ModelSerializer):
