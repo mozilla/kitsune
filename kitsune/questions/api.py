@@ -176,6 +176,8 @@ class AnswerSerializer(serializers.ModelSerializer):
                                            required=False)
     updated_by = serializers.SlugRelatedField(slug_field='username',
                                               required=False)
+    num_helpful_votes = serializers.Field(source='num_helpful_votes')
+    num_unhelpful_votes = serializers.Field(source='num_unhelpful_votes')
 
     class Meta:
         model = Answer
@@ -188,6 +190,8 @@ class AnswerSerializer(serializers.ModelSerializer):
             'updated',
             'updated_by',
             'is_spam',
+            'num_helpful_votes',
+            'num_unhelpful_votes',
         )
 
     def validate_creator(self, attrs, source):

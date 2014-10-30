@@ -65,4 +65,6 @@ def answervote(**kwargs):
     defaults.update(kwargs)
     if 'creator' not in kwargs and 'creator_id' not in kwargs:
         defaults['creator'] = user(save=True)
+    if 'answer' not in kwargs and 'answer_id' not in kwargs:
+        defaults['answer'] = answer(save=True)
     return AnswerVote(**defaults)

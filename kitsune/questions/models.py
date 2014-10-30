@@ -884,6 +884,16 @@ class Answer(ModelBase, SearchMixin):
         return AnswerVote.objects.filter(answer=self).count()
 
     @property
+    def num_helpful_votes(self):
+        """Get the number of helpful votes for this answer."""
+        return AnswerVote.objects.filter(answer=self, helpful=True).count()
+
+    @property
+    def num_unhelpful_votes(self):
+        """Get the number of unhelpful votes for this answer."""
+        return AnswerVote.objects.filter(answer=self, helpful=False).count()
+
+    @property
     def creator_num_answers(self):
         # Avoid circular import, utils.py imports Question
         from kitsune.questions.utils import num_answers
@@ -894,11 +904,6 @@ class Answer(ModelBase, SearchMixin):
         # Avoid circular import, utils.py imports Question
         from kitsune.questions.utils import num_solutions
         return num_solutions(self.creator)
-
-    @property
-    def num_helpful_votes(self):
-        """Get the number of helpful votes for this answer."""
-        return AnswerVote.objects.filter(answer=self, helpful=True).count()
 
     def has_voted(self, request):
         """Did the user already vote for this answer?"""
@@ -1060,6 +1065,7 @@ register_for_indexing(
     instance_to_indexee=(
         lambda i: i.solution))
 
+
 def answer_connector(sender, instance, created, **kw):
     if created:
         log_answer.delay(instance)
@@ -1070,6 +1076,7 @@ post_save.connect(answer_connector, sender=Answer,
 
 register_for_indexing(
     'questions', Answer, instance_to_indexee=lambda a: a.question)
+
 
 # This below is needed to update the is_solution field on the answer.
 def reindex_questions_answers(sender, instance, **kw):
