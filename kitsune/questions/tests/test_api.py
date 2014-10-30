@@ -11,7 +11,7 @@ from kitsune.products.tests import product, topic
 from kitsune.sumo.urlresolvers import reverse
 
 
-class TestQuestionSerializer(TestCase):
+class TestQuestionSerializerSerialization(TestCase):
 
     def setUp(self):
         self.profile = profile()
@@ -74,6 +74,49 @@ class TestQuestionSerializer(TestCase):
         eq_(serializer.errors, {})
         ok_(serializer.is_valid())
         eq_(serializer.object.topic, self.topic)
+
+
+class TestQuestionSerializerDeserialization(TestCase):
+
+    def setUp(self):
+        self.asker = user(save=True)
+        self.helper1 = user(save=True)
+        self.helper2 = user(save=True)
+        self.question = question(creator=self.asker, save=True)
+
+    def _names(self, *users):
+        return sorted(u.username for u in users)
+
+    def _answer(self, user):
+        return answer(question=self.question, creator=user, save=True)
+
+    def test_just_asker(self):
+        serializer = api.QuestionSerializer(instance=self.question)
+        eq_(serializer.data['involved'], self._names(self.asker))
+
+    def test_one_answer(self):
+        self._answer(self.helper1)
+
+        serializer = api.QuestionSerializer(instance=self.question)
+        eq_(sorted(serializer.data['involved']),
+            self._names(self.asker, self.helper1))
+
+    def test_asker_and_response(self):
+        self._answer(self.helper1)
+        self._answer(self.asker)
+
+        serializer = api.QuestionSerializer(instance=self.question)
+        eq_(sorted(serializer.data['involved']),
+            self._names(self.asker, self.helper1))
+
+    def test_asker_and_two_answers(self):
+        self._answer(self.helper1)
+        self._answer(self.asker)
+        self._answer(self.helper2)
+
+        serializer = api.QuestionSerializer(instance=self.question)
+        eq_(sorted(serializer.data['involved']),
+            self._names(self.asker, self.helper1, self.helper2))
 
 
 class TestQuestionViewSet(TestCase):
