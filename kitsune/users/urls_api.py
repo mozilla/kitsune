@@ -12,5 +12,6 @@ urlpatterns = patterns(
     '',
     url('^1/users/test_auth$', api.test_auth, name='users.test_auth'),
     url('^1/users/get_token$', api.GetToken.as_view(), name='users.get_token'),
+    url('^2/user/generate', api.ProfileViewSet.as_view({'post': 'generate'})),
     url('^2/', include(router.urls)),
 )
