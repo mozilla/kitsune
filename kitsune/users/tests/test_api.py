@@ -3,6 +3,7 @@ import json
 import mock
 from django.contrib.auth.models import User
 from django.core import mail
+from django.test.utils import override_settings
 from nose.tools import eq_, ok_
 from rest_framework.test import APIClient
 
@@ -190,3 +191,21 @@ class TestUserView(TestCase):
         url = reverse('user-detail', args=[p.user.username])
         res = self.client.delete(url)
         eq_(res.status_code, 405)
+
+    @override_settings(DEBUG=False, STAGE=False)
+    def test_no_generator_on_prod(self):
+        res = self.client.post(reverse('user-generate'))
+        eq_(res.data, {'detail': 'User generation temporarily only available on stage.'})
+        eq_(res.status_code, 503)
+
+    @override_settings(STAGE=True)
+    def test_generator_on_stage(self):
+        # There is at least one user made during tests.
+        old_user_count = User.objects.count()
+        res = self.client.post(reverse('user-generate'))
+        eq_(res.status_code, 200)
+        eq_(User.objects.count(), old_user_count + 1)
+        new_user = User.objects.order_by('-id')[0]
+        eq_(res.data['user']['username'], new_user.username)
+        assert 'password' in res.data
+        assert 'token' in res.data

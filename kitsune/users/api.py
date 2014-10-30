@@ -1,7 +1,10 @@
+import random
 import re
 from datetime import datetime, timedelta
+from string import letters
 
 from django.contrib.auth.models import User
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db.models import Q
 from django.views.decorators.http import require_GET
@@ -14,9 +17,10 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.decorators import permission_classes, api_view
 from rest_framework.authtoken import views as authtoken_views
+from rest_framework.authtoken.models import Token
 
 from kitsune.access.decorators import login_required
-from kitsune.sumo.api import CORSMixin, DateTimeUTCField
+from kitsune.sumo.api import CORSMixin, DateTimeUTCField, GenericAPIException
 from kitsune.sumo.decorators import json_view
 from kitsune.users.helpers import profile_avatar
 from kitsune.users.models import Profile, RegistrationProfile
@@ -209,3 +213,63 @@ class ProfileViewSet(CORSMixin,
     ordering_fields = []
     # Default, if not overwritten
     ordering = ('-user__date_joined',)
+
+    username_parts = [
+        ['Big', 'Small', 'Cuddly', 'Happy'],  # adjectives
+        ['Red', 'Green', 'Blue', 'Yellow'],  # colors
+        ['Dog', 'Cat', 'Fox', 'Monkey'],  # animals
+    ]
+    number_blacklist = ['666', '69']
+
+    def generate(self, request, **kwargs):
+        """
+        Generate a user with a random username and password.
+
+        The method used here has a fairly low chance of collision. In
+        the case that there are 3 username parts, and each part has 4
+        options, and we include random numbers between 0 and 1000 on
+        usernames, there are about 60K possible usernames. Using 20
+        attempts to find a username means that in order for this method
+        to have a 1% chance of failing, there would need to be about 50K
+        users using this method already.
+
+        Increasing the number of items in each username part category
+        would make this even more favorable fairly quickly. With 5 items
+        in each category, this algorithm can support almost 90K users
+        before there is a 1% chance of failure.
+        """
+        if not settings.STAGE or settings.DEBUG:
+            raise GenericAPIException(503, 'User generation temporarily only available on stage.')
+
+        digits = ''
+        # The loop counter isn't used. This is an escape hatch.
+        for i in range(20):
+            # Build a name consistenting of a random choice from each of the
+            # name parts lists.
+            name = ''.join(map(random.choice, self.username_parts)) + digits
+            # Check if it is taken yet.
+            if not User.objects.filter(username=name).exists():
+                break
+            # Names after the first start to get numbers.
+            digits = str(random.randint(0, 1000))
+            if digits in self.number_blacklist:
+                digits = ''
+        else:
+            # At this point, we just have too many users.
+            return Response({"error": 'Unable to generate username.'},
+                            status=500)
+
+        password = ''.join(random.choice(letters) for _ in range(10))
+
+        u = User.objects.create(username=name)
+        u.set_password(password)
+        u.save()
+        p = Profile.objects.create(user=u)
+        token, _ = Token.objects.get_or_create(user=u)
+        serializer = ProfileSerializer(instance=p)
+
+        return Response({
+            'user': serializer.data,
+            'password': password,
+            'token': token.key,
+        })
