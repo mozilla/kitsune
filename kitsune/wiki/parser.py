@@ -19,11 +19,11 @@ from kitsune.sumo.utils import uselocale
 from kitsune.wiki.models import Document
 
 
+# block elements wikimarkup knows about (and thus preserves)
 BLOCK_LEVEL_ELEMENTS = ['table', 'blockquote', 'h1', 'h2', 'h3', 'h4', 'h5',
                         'h6', 'td', 'th', 'div', 'hr', 'pre', 'p', 'li', 'ul',
                         'ol', 'center', 'dl', 'dt', 'dd', 'ins', 'del',
-                        'section']  # block elements wikimarkup
-                                    # knows about (and thus preserves)
+                        'section']
 TEMPLATE_ARG_REGEX = re.compile('{{{([^{]+?)}}}')
 
 
@@ -219,9 +219,9 @@ class ForParser(object):
                 dehydrated fors for use with unstrip_fors).
 
         """
-        # Replace {for ...} tags:
-        dehydrations = {}  # "attributes" of {for a, b} directives, like
-                           # "a, b", keyed by token number
+        # "attributes" of {for a, b} directives, like "a, b" keyed for token
+        # number
+        dehydrations = {}
         indexes = count()
 
         def dehydrate(match):

@@ -112,8 +112,8 @@ class ReplyMetricsMappingType(SearchMappingType):
             model = cls.get_model()
             obj_dict = model.uncached.values(*fields).get(pk=obj_id)
         else:
-            obj_dict = dict([(field, getattr(obj, field))
-                              for field in fields])
+            obj_dict = dict((field, getattr(obj, field))
+                            for field in fields)
 
         d = {}
         d['id'] = obj_dict['id']

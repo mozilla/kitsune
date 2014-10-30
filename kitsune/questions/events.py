@@ -100,7 +100,8 @@ class QuestionReplyEvent(QuestionEvent):
                 text_template=text_template,
                 html_template=html_template,
                 context_vars=context,
-                from_email='Mozilla Support Forum <no-reply@support.mozilla.org>',
+                from_email='Mozilla Support Forum '
+                           '<no-reply@support.mozilla.org>',
                 to_email=user.email)
 
             return mail

@@ -57,7 +57,8 @@ class NewThreadEvent(InstanceEvent):
         self.post = post
 
     def _mails(self, users_and_watches):
-        post_url = add_utm(self.post.thread.get_absolute_url(), 'forums-thread')
+        post_url = add_utm(self.post.thread.get_absolute_url(),
+                           'forums-thread')
 
         c = {'post': self.post.content,
              'post_html': self.post.content_parsed,

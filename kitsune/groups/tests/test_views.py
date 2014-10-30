@@ -125,7 +125,7 @@ class AddRemoveMemberTests(TestCase):
         eq_(200, r.status_code)
         r = self.client.post(url)
         eq_(302, r.status_code)
-        assert not self.member in self.group_profile.group.user_set.all()
+        assert self.member not in self.group_profile.group.user_set.all()
 
 
 class AddRemoveLeaderTests(TestCase):
@@ -154,7 +154,7 @@ class AddRemoveLeaderTests(TestCase):
         eq_(200, r.status_code)
         r = self.client.post(url)
         eq_(302, r.status_code)
-        assert not self.leader in self.group_profile.leaders.all()
+        assert self.leader not in self.group_profile.leaders.all()
 
 
 class JoinContributorsTests(TestCase):

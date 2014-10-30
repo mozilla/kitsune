@@ -138,7 +138,7 @@ class SearchMappingType(MappingType, Indexable):
         # cheaper to do it in-place.
         return [
             dict((key, (val if key in list_keys else val[0]))
-                  for key, val in result.items())
+                 for key, val in result.items())
             for result in results
         ]
 

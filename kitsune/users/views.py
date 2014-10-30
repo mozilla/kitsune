@@ -9,8 +9,6 @@ from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.models import Site
 from django.http import (HttpResponsePermanentRedirect, HttpResponseRedirect,
                          Http404, HttpResponseForbidden)
-from django.utils.http import urlencode
-from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import (require_http_methods, require_GET,
                                           require_POST)
 from django.shortcuts import get_object_or_404, render, redirect
@@ -45,8 +43,7 @@ from kitsune.users.models import (
     CONTRIBUTOR_GROUP, Group, Profile, RegistrationProfile, EmailChange,
     Deactivation)
 from kitsune.users.utils import (
-    handle_login, handle_register, try_send_email_with_form,
-    add_to_contributors, suggest_username, deactivate_user)
+    handle_login, handle_register, try_send_email_with_form, deactivate_user)
 from kitsune.wiki.models import (
     user_num_documents, user_documents, user_redirects)
 
@@ -510,7 +507,7 @@ def make_contributor(request):
             subject=_('Welcome to SUMO!'),
             text_template='users/email/contributor.ltxt',
             html_template='users/email/contributor.html',
-            context_vars={'contributor':request.user},
+            context_vars={'contributor': request.user},
             from_email=settings.DEFAULT_FROM_EMAIL,
             to_email=request.user.email)
 

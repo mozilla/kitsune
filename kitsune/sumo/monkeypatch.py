@@ -36,7 +36,8 @@ def patch():
         """This function is for use on the base Field class."""
         attrs = field_widget_attrs(self, widget)
         # required="required" isn't supported for groups of checkboxes.
-        if (self.required and (not 'required' in attrs) and
+        if (self.required and
+                'required' not in attrs and
                 not widget.is_hidden and
                 not isinstance(widget, widgets.CheckboxSelectMultiple)):
             attrs['required'] = 'required'

@@ -2,14 +2,12 @@ from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, serializers
-from rest_framework.decorators import api_view
 from tower import ugettext_lazy as _lazy
 
 from kitsune.products.models import Product, Topic
 from kitsune.sumo.api import (CORSMixin, LocaleNegotiationMixin,
                               LocalizedCharField)
 from kitsune.wiki.api import DocumentShortSerializer
-from kitsune.wiki.models import Document
 
 
 class TopicField(serializers.SlugRelatedField):
@@ -28,7 +26,8 @@ class TopicField(serializers.SlugRelatedField):
         modified to deal with a product slug.
         """
         if self.queryset is None:
-            raise Exception('Writable related fields must include a `queryset` argument')
+            raise Exception('Writable related fields must include a '
+                            '`queryset` argument')
 
         try:
             return self.queryset.get(**{
@@ -37,14 +36,14 @@ class TopicField(serializers.SlugRelatedField):
             })
         except ObjectDoesNotExist:
             raise ValidationError(self.error_messages['does_not_exist'] %
-                                  (self.slug_field, smart_text(data)))
+                                  (self.slug_field, topic_slug))
         except (TypeError, ValueError):
             msg = self.error_messages['invalid']
             raise ValidationError(msg)
 
     def field_from_native(self, data, files, field_name, into):
         """
-        Update ``into`` with the topic object specified by the slug in ``data``.
+        Update into with the topic object specified by the slug in data.
 
         This is like ``SlugRelatedField.field_from_native``, except it has
         been modified to also pass data['product']`` to ``from_native`` to
@@ -83,7 +82,8 @@ class TopicField(serializers.SlugRelatedField):
                 raise ValidationError(self.error_messages['required'])
             into[source] = None
         elif self.many:
-            into[source] = [self.from_native(item, product_slug) for item in value]
+            into[source] = [self.from_native(item, product_slug)
+                            for item in value]
         else:
             into[source] = self.from_native(value, product_slug)
 

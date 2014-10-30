@@ -316,7 +316,7 @@ def error(request):
 def version_check(request):
     content_type = 'application/x-json'
     token = settings.VERSION_CHECK_TOKEN
-    if (token is None or not 'token' in request.GET or
+    if (token is None or 'token' not in request.GET or
             token != request.GET['token']):
         return HttpResponse(status=403, content_type=content_type)
 

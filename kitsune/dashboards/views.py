@@ -66,9 +66,9 @@ def contributors_overview(request):
 
     return render(request, 'dashboards/contributors_overview.html', {
         'overview_rows': kb_overview_rows(
-                locale=request.LANGUAGE_CODE, product=product,
-                mode=smart_int(request.GET.get('mode'), None),
-                max=None),
+            locale=request.LANGUAGE_CODE, product=product,
+            mode=smart_int(request.GET.get('mode'), None),
+            max=None),
         'main_dash_view': 'dashboards.contributors',
         'main_dash_title': _('Knowledge Base Dashboard'),
         'locale': request.LANGUAGE_CODE,

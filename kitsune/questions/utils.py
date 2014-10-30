@@ -1,10 +1,6 @@
 import logging
 
-from statsd import statsd
-
-from kitsune.questions.models import (
-    Question, Answer, AnswerMetricsMappingType)
-from kitsune.search.es_utils import ES_EXCEPTIONS
+from kitsune.questions.models import Question, Answer
 
 
 log = logging.getLogger('k.questions')

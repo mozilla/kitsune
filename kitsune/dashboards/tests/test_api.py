@@ -103,7 +103,7 @@ class WikiMetricAPITests(TestCase):
         results = json.loads(response.content)['results']
         eq_(3, len(results))
 
-         # Call and verify the API for locale=fr.
+        # Call and verify the API for locale=fr.
         response = self.client.get(
             urlparams(reverse('api.wikimetric_list'), format='json',
                       locale='fr'))

@@ -114,7 +114,7 @@ class UserSearchTests(ElasticTestCase):
 
     def test_query_display_name_with_whitespace(self):
         u1 = user(username='1337miKE', save=True)
-        p = profile(user=u1, name=u'Elite Mike')
+        profile(user=u1, name=u'Elite Mike')
         u2 = user(username='mike', save=True)
         profile(user=u2, name=u'NotElite Mike')
 
@@ -130,7 +130,7 @@ class UserSearchTests(ElasticTestCase):
         u2 = user(username='mike', save=True)
         profile(user=u2, name=u'NotElite Mike')
         r1 = reply(user=u1, twitter_username='l33tmIkE', save=True)
-        r2 = reply(user=u2, twitter_username='mikey', save=True)
+        reply(user=u2, twitter_username='mikey', save=True)
 
         self.refresh()
 
@@ -196,7 +196,7 @@ class UserSearchTests(ElasticTestCase):
 
         # Verify for answers.
         u = user(username='answerer', save=True)
-        p = profile(user=u)
+        profile(user=u)
         answer(creator=u, created=yesterday, save=True)
 
         reindex_users_that_contributed_yesterday()
@@ -207,7 +207,7 @@ class UserSearchTests(ElasticTestCase):
 
         # Verify for edits.
         u = user(username='editor', save=True)
-        p = profile(user=u)
+        profile(user=u)
         revision(creator=u, created=yesterday, save=True)
 
         reindex_users_that_contributed_yesterday()
@@ -218,7 +218,7 @@ class UserSearchTests(ElasticTestCase):
 
         # Verify for reviews.
         u = user(username='reviewer', save=True)
-        p = profile(user=u)
+        profile(user=u)
         revision(reviewer=u, reviewed=yesterday, save=True)
 
         reindex_users_that_contributed_yesterday()

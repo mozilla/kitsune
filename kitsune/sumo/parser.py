@@ -138,7 +138,7 @@ def build_hook_params(string, locale, allowed_params=[],
     Builds a list of items and returns relevant parameters in a dict.
 
     """
-    if not '|' in string:  # No params? Simple and easy.
+    if '|' not in string:  # No params? Simple and easy.
         string = string.strip()
         return (string, {'alt': string})
 

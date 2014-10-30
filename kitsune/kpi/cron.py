@@ -481,8 +481,8 @@ def survey_recent_askers():
     if settings.STAGE:
         # Only run this on prod, it doesn't need to be running multiple times
         # from different places.
-        print ('Skipped email address processing in survey_recent_askers(). '
-               'Set settings.STAGE to False to run it for real.')
+        print('Skipped email address processing in survey_recent_askers(). '
+              'Set settings.STAGE to False to run it for real.')
         return
 
     # We get the email addresses of all users that asked a question 2 days
@@ -491,7 +491,8 @@ def survey_recent_askers():
     two_days_ago = date.today() - timedelta(days=2)
     yesterday = date.today() - timedelta(days=1)
 
-    emails = (Question.objects
+    emails = (
+        Question.objects
         .filter(created__gte=two_days_ago, created__lt=yesterday)
         .values_list('creator__email', flat=True))
     for email in emails:

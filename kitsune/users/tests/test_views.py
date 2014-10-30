@@ -525,8 +525,8 @@ class UserProfileTests(TestCase):
         p = profile()
         answer(creator=p.user, save=True)
         question(creator=p.user, save=True)
-        res = self.client.post(reverse('users.deactivate-spam', locale='en-US'),
-                               {'user_id': p.user.id})
+        url = reverse('users.deactivate-spam', locale='en-US')
+        res = self.client.post(url, {'user_id': p.user.id})
 
         eq_(302, res.status_code)
         eq_(1, Question.objects.filter(creator=p.user, is_spam=True).count())

@@ -1,6 +1,5 @@
 from datetime import datetime, date, timedelta
 from django.conf import settings
-from django.contrib.auth.models import User
 
 from kitsune.customercare.models import ReplyMetricsMappingType
 from kitsune.products.models import Product
@@ -15,11 +14,12 @@ from kitsune.wiki.models import RevisionMetricsMappingType
 BIG_NUMBER = 3000
 
 
-def top_contributors_questions(
-    start=None, end=None, locale=None, product=None, count=10, page=1):
+def top_contributors_questions(start=None, end=None, locale=None, product=None,
+                               count=10, page=1):
     """Get the top Support Forum contributors."""
     # Get the user ids and contribution count of the top contributors.
-    query = (AnswerMetricsMappingType
+    query = (
+        AnswerMetricsMappingType
         .search()
         .facet('creator_id', filtered=True, size=BIG_NUMBER))
 
@@ -37,11 +37,12 @@ def top_contributors_kb(start=None, end=None, product=None, count=10, page=1):
         start, end, settings.WIKI_DEFAULT_LANGUAGE, product, count)
 
 
-def top_contributors_l10n(
-    start=None, end=None, locale=None, product=None, count=10, page=1):
+def top_contributors_l10n(start=None, end=None, locale=None, product=None,
+                          count=10, page=1):
     """Get the top l10n contributors for the KB."""
     # Get the user ids and contribution count of the top contributors.
-    query = (RevisionMetricsMappingType
+    query = (
+        RevisionMetricsMappingType
         .search()
         .facet('creator_id', filtered=True, size=BIG_NUMBER))
 
@@ -58,7 +59,8 @@ def top_contributors_l10n(
 def top_contributors_aoa(start=None, end=None, locale=None, count=10, page=1):
     """Get the top Army of Awesome contributors."""
     # Get the user ids and contribution count of the top contributors.
-    query = (ReplyMetricsMappingType
+    query = (
+        ReplyMetricsMappingType
         .search()
         .facet('creator_id', filtered=True, size=BIG_NUMBER))
 
@@ -103,7 +105,8 @@ def _get_creator_counts(query, count, page):
 
     # Grab all the users from the user index in ES.
     user_ids = [x['term'] for x in creator_counts]
-    results = (UserMappingType
+    results = (
+        UserMappingType
         .search()
         .filter(id__in=user_ids)
         .values_dict('id', 'username', 'display_name', 'avatar',
@@ -127,4 +130,5 @@ def _get_creator_counts(query, count, page):
     for item in creator_counts:
         item['user'] = user_lookup.get(item['term'], None)
 
-    return ([item for item in creator_counts if item['user'] != None], total)
+    return ([item for item in creator_counts if item['user'] is not None],
+            total)

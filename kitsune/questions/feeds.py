@@ -87,7 +87,8 @@ class TaggedQuestionsFeed(QuestionsFeed):
         return _('Recently updated questions tagged %s' % tag.name)
 
     def link(self, tag):
-        return urlparams(reverse('questions.list', args=['all']), tagged=tag.slug)
+        return urlparams(reverse('questions.list', args=['all']),
+                         tagged=tag.slug)
 
     def items(self, tag):
         qs = Question.objects.filter(creator__is_active=True,

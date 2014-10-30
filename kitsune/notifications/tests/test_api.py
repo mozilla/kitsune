@@ -1,12 +1,9 @@
 import mock
 from nose.tools import eq_, ok_
 
-from rest_framework.test import APIClient
-
 from kitsune.sumo.tests import TestCase
 from kitsune.notifications import api
 from kitsune.users.tests import profile, user
-from kitsune.sumo.urlresolvers import reverse
 
 
 class TestPushNotificationRegistrationSerializer(TestCase):

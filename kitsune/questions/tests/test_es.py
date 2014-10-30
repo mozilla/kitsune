@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 
-from kitsune.products.tests import product, topic
+from kitsune.products.tests import product
 from kitsune.questions.models import (
     QuestionMappingType, AnswerMetricsMappingType)
 from kitsune.questions.tests import question, answer, answervote, questionvote
@@ -125,8 +125,8 @@ class QuestionUpdateTests(ElasticTestCase):
 
         u = user(username='dexter', save=True)
 
-        q = question(creator=u, title=u'Hello', save=True)
-        a = answer(creator=u, content=u'I love you', save=True)
+        question(creator=u, title=u'Hello', save=True)
+        answer(creator=u, content=u'I love you', save=True)
         self.refresh()
         eq_(search.query(question_title__match='hello')[0]['question_creator'],
             u'dexter')

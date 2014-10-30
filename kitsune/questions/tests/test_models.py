@@ -4,19 +4,14 @@ from datetime import datetime, timedelta
 from django.db.models import Q
 
 import mock
-import waffle
-from nose import SkipTest
 from nose.tools import eq_, raises
 from taggit.models import Tag
 
 import kitsune.sumo.models
 from kitsune.flagit.models import FlaggedObject
-from kitsune.karma.manager import KarmaManager
 from kitsune.search.tests.test_es import ElasticTestCase
-from kitsune.sumo.redis_utils import RedisError, redis_client
 from kitsune.questions.cron import auto_archive_old_questions
 from kitsune.questions.events import QuestionReplyEvent
-from kitsune.questions.karma_actions import SolutionAction, AnswerAction
 from kitsune.questions import models
 from kitsune.questions.models import (
     Answer, Question, QuestionMetaData, QuestionVisits,

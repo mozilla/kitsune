@@ -1,17 +1,15 @@
 import logging
 import time
-from datetime import datetime, timedelta, date
+from datetime import datetime, timedelta
 
 from django.conf import settings
-from django.contrib.auth.models import User
-from django.core.cache import cache
 from django.db import connection, transaction
 
 import cronjobs
 
 from kitsune.questions import config
 from kitsune.questions.models import (
-    Question, QuestionVote, QuestionMappingType, QuestionVisits, Answer)
+    Question, QuestionVote, QuestionMappingType, QuestionVisits)
 from kitsune.questions.tasks import (
     escalate_question, update_question_vote_chunk)
 from kitsune.search.es_utils import ES_EXCEPTIONS, get_documents
