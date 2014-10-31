@@ -21,7 +21,11 @@ FLAKE8_IGNORE=(
 
 # Files to lint is either the list of arguments to this script, or the
 # kitsune directory.
-FILES="$@"
+if [[ $# -eq 0 ]]; then
+    FILES="kitsune"
+else
+    FILES="$@"
+fi
 
 FLAKE8_FILES=()
 for f in $FILES; do

@@ -9,7 +9,7 @@ sudo ln -s /usr/lib/`uname -i`-linux-gnu/libz.so ~/virtualenv/python2.6/lib/
 
 echo "Install Python dependencies"
 python scripts/peep.py install -r requirements/py26.txt --no-use-wheel
-pip install nosenicedots > /dev/null
+pip install nosenicedots flake8 > /dev/null
 pip freeze
 echo
 
