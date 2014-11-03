@@ -7,9 +7,6 @@
     initFolding();
     initAnnouncements();
 
-    // Non supported Firefox version
-    notifyOutdatedFirefox();
-
     $(window).scroll(_.throttle(function() {
       if ($(window).scrollTop() > $('body > header').outerHeight()) {
         $('body').addClass('scroll-header');
@@ -246,24 +243,6 @@
       });
     } else {
       $announcements.find('.announce-bar').show();
-    }
-  }
-
-  function notifyOutdatedFirefox() {
-    var b = BrowserDetect.browser;
-    var v = BrowserDetect.version;
-    var closed = false;
-    var show;
-
-    if (Modernizr.localstorage) {
-      closed = localStorage.getItem('announcement-outdated.closed') === 'true';
-    }
-
-    show = (b == 'fx') && (v <= 23 || (v >= 25 && v <= 30)) && (!closed);
-    if (show) {
-      $('#announce-outdated').show();
-    } else {
-      $('#announce-outdated').hide();
     }
   }
 
