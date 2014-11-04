@@ -122,7 +122,7 @@ def robots(request):
         template = 'User-Agent: *\nDisallow: /'
     else:
         template = render(request, 'sumo/robots.html')
-    return HttpResponse(template, mimetype='text/plain')
+    return HttpResponse(template, content_type='text/plain')
 
 
 def test_memcached(host, port):
@@ -314,16 +314,16 @@ def error(request):
 @require_GET
 @never_cache
 def version_check(request):
-    mime = 'application/x-json'
+    content_type = 'application/x-json'
     token = settings.VERSION_CHECK_TOKEN
     if (token is None or not 'token' in request.GET or
             token != request.GET['token']):
-        return HttpResponse(status=403, mimetype=mime)
+        return HttpResponse(status=403, content_type=content_type)
 
     versions = {
         'django': '.'.join(map(str, django.VERSION)),
     }
-    return HttpResponse(json.dumps(versions), mimetype=mime)
+    return HttpResponse(json.dumps(versions), content_type=content_type)
 
 
 # Allows another site to embed the QUnit suite

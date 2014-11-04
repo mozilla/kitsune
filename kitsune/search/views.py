@@ -55,7 +55,8 @@ def search(request, template=None):
     # JSON-specific variables
     is_json = (request.GET.get('format') == 'json')
     callback = request.GET.get('callback', '').strip()
-    mimetype = 'application/x-javascript' if callback else 'application/json'
+    content_type = (
+        'application/x-javascript' if callback else 'application/json')
 
     # Search "Expires" header format
     expires_fmt = '%A, %d %B %Y %H:%M:%S GMT'
@@ -64,7 +65,7 @@ def search(request, template=None):
     if is_json and callback and not jsonp_is_valid(callback):
         return HttpResponse(
             json.dumps({'error': _('Invalid callback function.')}),
-            mimetype=mimetype, status=400)
+            content_type=content_type, status=400)
 
     language = locale_or_default(
         request.GET.get('language', request.LANGUAGE_CODE))
@@ -99,7 +100,7 @@ def search(request, template=None):
         if is_json:
             return HttpResponse(
                 json.dumps({'error': _('Invalid search data.')}),
-                mimetype=mimetype,
+                content_type=content_type,
                 status=400)
 
         t = template if request.MOBILE else 'search/form.html'
@@ -442,7 +443,7 @@ def search(request, template=None):
         # "Search Unavailable" rather than a Django error page.
         if is_json:
             return HttpResponse(json.dumps({'error': _('Search Unavailable')}),
-                                mimetype=mimetype, status=503)
+                                content_type=content_type, status=503)
 
         # Cheating here: Convert from 'Timeout()' to 'timeout' so
         # we have less code, but still have good stats.
@@ -512,7 +513,7 @@ def search(request, template=None):
         if callback:
             json_data = callback + '(' + json_data + ');'
 
-        return HttpResponse(json_data, mimetype=mimetype)
+        return HttpResponse(json_data, content_type=content_type)
 
     data.update({
         'product': product,
@@ -534,11 +535,11 @@ def search(request, template=None):
 @cache_page(60 * 15)  # 15 minutes.
 def suggestions(request):
     """A simple search view that returns OpenSearch suggestions."""
-    mimetype = 'application/x-suggestions+json'
+    content_type = 'application/x-suggestions+json'
 
     term = request.GET.get('q')
     if not term:
-        return HttpResponseBadRequest(mimetype=mimetype)
+        return HttpResponseBadRequest(content_type=content_type)
 
     site = Site.objects.get_current()
     locale = locale_or_default(request.LANGUAGE_CODE)
@@ -574,7 +575,7 @@ def suggestions(request):
             [titleize(r) for r in results],
             [],
             [urlize(r) for r in results]]
-    return HttpResponse(json.dumps(data), mimetype=mimetype)
+    return HttpResponse(json.dumps(data), content_type=content_type)
 
 
 @cache_page(60 * 60 * 168)  # 1 week.

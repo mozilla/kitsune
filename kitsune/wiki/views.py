@@ -925,7 +925,7 @@ def json_view(request):
         'summary': document.current_revision.summary,
         'url': document.get_absolute_url(),
     })
-    return HttpResponse(data, mimetype='application/json')
+    return HttpResponse(data, content_type='application/json')
 
 
 @require_POST
@@ -1049,7 +1049,7 @@ def get_helpful_votes_async(request, document_slug):
 
     if not created_list:
         send = {'datums': [], 'annotations': []}
-        return HttpResponse(json.dumps(send), mimetype='application/json')
+        return HttpResponse(json.dumps(send), content_type='application/json')
 
     min_created = min(created_list)
     max_created = max(created_list)
@@ -1100,7 +1100,7 @@ def get_helpful_votes_async(request, document_slug):
             'data': rev_data,
         })
 
-    return HttpResponse(json.dumps(send), mimetype='application/json')
+    return HttpResponse(json.dumps(send), content_type='application/json')
 
 
 @login_required

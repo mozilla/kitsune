@@ -89,15 +89,15 @@ def cancel_draft(request, media_type='image'):
         drafts['image'] = None
     else:
         msg = _(u'Unrecognized request or nothing to cancel.')
-        mimetype = None
+        content_type = None
         if request.is_ajax():
             msg = json.dumps({'status': 'error', 'message': msg})
-            mimetype = 'application/json'
-        return HttpResponseBadRequest(msg, mimetype=mimetype)
+            content_type = 'application/json'
+        return HttpResponseBadRequest(msg, content_type=content_type)
 
     if request.is_ajax():
         return HttpResponse(json.dumps({'status': 'success'}),
-                            mimetype='application/json')
+                            content_type='application/json')
 
     return HttpResponseRedirect(reverse('gallery.gallery', args=[media_type]))
 

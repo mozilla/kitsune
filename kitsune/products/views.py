@@ -28,7 +28,7 @@ def product_landing(request, template, slug):
         for t in Topic.objects.filter(product=product, visible=True):
             topic_list.append({'id': t.id, 'title': t.title})
         return HttpResponse(json.dumps({'topics': topic_list}),
-                            mimetype='application/json')
+                            content_type='application/json')
 
     versions = product.versions.filter(default=True)
     if versions:
