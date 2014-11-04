@@ -471,7 +471,7 @@ k.Graph.prototype.initDateRange = function() {
     }, true);
 
     $inlines = this.dom.elem.find('.inline-controls');
-    $label = $('<label/>')
+    $label = $('<span/>')
       .html(label_html)
       .appendTo($('<div class="range"/>').appendTo($inlines));
     $presets = $('<div class="range-presets"/>').appendTo($inlines);
