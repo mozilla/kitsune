@@ -33,7 +33,7 @@
 
 {% block content %}
   <article>
-    <div class="question grid_9">
+    <div class="question grid_9" itemscope itemtype="http://schema.org/Question">
       {% if question.is_locked or question.is_archived %}
         <div class="notice">
           {% if question.is_locked and not question.is_archived %}
@@ -50,7 +50,7 @@
         </div>
       {% endif %}
 
-      <h2 class="summary">{{ question.title }}</h2>
+      <h2 class="summary" itemprop="headline">{{ question.title }}</h2>
 
       <div class="question-meta">
         <ul class="cf">
@@ -85,7 +85,7 @@
                 {{ _('Last reply by {user}')|f(user=display_name(question.last_answer.creator)) }}
               </a>
               <span class="last-answer-date">
-                {{ question.last_answer.created|timesince }}
+                <time itemprop="dateModified" datetime="{{ question.last_answer.created }}">{{ question.last_answer.created|timesince }}</time>
               </span>
             </li>
           {% endif %}
@@ -110,12 +110,12 @@
         </div>
         <div class="asked-on">
           {{ _('Posted') }}<br>
-          {{ datetimeformat(question.created) }}
+          <time itemprop="dateCreated" datetime="{{ question.created }}">{{ datetimeformat(question.created) }}</time>
         </div>
       </div>
 
       <div class="main-content">
-        {{ question.content_parsed|safe }}
+        <div itemprop="text">{{ question.content_parsed|safe }}</div>
 
         {% if question.updated_by %}
           <p class="edited">
