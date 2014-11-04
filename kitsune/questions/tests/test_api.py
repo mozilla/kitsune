@@ -218,8 +218,28 @@ class TestQuestionViewSet(TestCase):
 
         querystring = '?creator={0}'.format(q1.creator.username)
         res = self.client.get(reverse('question-list') + querystring)
+        eq_(res.status_code, 200)
         eq_(len(res.data['results']), 1)
         eq_(res.data['results'][0]['id'], q1.id)
+
+    def test_filter_involved(self):
+        q1 = question(save=True)
+        a1 = answer(question=q1, save=True)
+        q2 = question(creator=a1.creator, save=True)
+
+        querystring = '?involved={0}'.format(q1.creator.username)
+        res = self.client.get(reverse('question-list') + querystring)
+        eq_(res.status_code, 200)
+        eq_(len(res.data['results']), 1)
+        eq_(res.data['results'][0]['id'], q1.id)
+
+        querystring = '?involved={0}'.format(q2.creator.username)
+        res = self.client.get(reverse('question-list') + querystring)
+        eq_(res.status_code, 200)
+        eq_(len(res.data['results']), 2)
+        # The API has a default sort, so ordering will be consistent.
+        eq_(res.data['results'][0]['id'], q2.id)
+        eq_(res.data['results'][1]['id'], q1.id)
 
 
 class TestAnswerSerializerDeserialization(TestCase):
