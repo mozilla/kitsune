@@ -85,9 +85,8 @@ https://github.com/willkg/django-eadred/archive/f77ebbeea7e6802771b91a1748faec00
 # sha256: oEiCqdyUMgocSPT2W6xNnQj_MoJgNTkCQK1JnBPLfsc
 https://github.com/django-extensions/django-extensions/archive/47a531c996c92a369755a4a9e0857e51afd25cab.tar.gz#egg=django-extensions
 
-# django-filter: remotes/origin/master~10
-# sha256: R2rIRqA0i_7A8ln472fFcfdBx9WTlO4OfsnurU9WazQ
-https://github.com/alex/django-filter/archive/ba17954ca018d55370faec35c30dc9ea3adcf122.tar.gz#egg=django-filter
+# sha256: GxivwUOH0u6YUuTcmoeqRuNGoJZ6c0qqufsiLtSBzqI
+django-filter==0.8
 
 # django-mobility: master~5
 # sha256: 11NE2ouDylJbghVgmHjrLx3kXHKyhbg5L-Kooyy5SzA
