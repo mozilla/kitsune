@@ -1,4 +1,5 @@
 import django_filters
+from django.db.models import Q
 from rest_framework import serializers, viewsets, permissions, filters, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -90,12 +91,14 @@ class QuestionSerializer(serializers.ModelSerializer):
 class QuestionFilter(django_filters.FilterSet):
     product = django_filters.CharFilter(name='product__slug')
     creator = django_filters.CharFilter(name='creator__username')
+    involved = django_filters.MethodFilter(action='filter_involved')
 
     class Meta(object):
         model = Question
         fields = [
             'creator',
             'created',
+            'involved',
             'is_archived',
             'is_locked',
             'is_spam',
@@ -107,6 +110,11 @@ class QuestionFilter(django_filters.FilterSet):
             'updated',
             'updated_by',
         ]
+
+    def filter_involved(self, queryset, value):
+        creator_filter = Q(creator__username=value)
+        answer_creator_filter = Q(answers__creator__username=value)
+        return queryset.filter(creator_filter | answer_creator_filter)
 
 
 class QuestionViewSet(CORSMixin, viewsets.ModelViewSet):
