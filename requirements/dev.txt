@@ -1,0 +1,19 @@
+# These requirements are helpful, but not required, for working on Kitsune.
+
+# sha256: a_c6l7D-RUKn7i2KYnoTs4KegdERvidVGzag36DCkJk
+q==2.4
+
+# sha256: ku47hrXBkhwtnawhe--JkMX4Usi8TZAYyv4PPzuBzTo
+nosenicedots==0.5
+
+# sha256: KF6L1zDAtv374jwy0pNr_7pAHyPKsTLocixovoDW8YI
+flake8==2.2.5
+
+# sha256: WioXDkfeVZOmq_rh6VQr0sOSSsYrvk5u2WyVPANSJDo
+mccabe==0.2.1
+
+# sha256: FbQhMbJfN2Fl0ZX-ThewooMRGCqvkzDV61dbvtpaaYk
+pep8==1.5.7
+
+# sha256: P6gKELNtUWhr93RPXcmWIs1cmM6O1kAi5imGiq_Bd2k
+pyflakes==0.8.1

@@ -215,9 +215,6 @@ https://github.com/idan/oauthlib/archive/8a7b279e44efacccab7eee6bb60143120c45eca
 # sha256: HDW0rCBs7y0kgWyJ-Jzyid09OM98RJuz-re_bUPwGx8
 ordereddict==1.1
 
-# sha256: CkZy434Ysa90s67yENwmCMdmM3sc8zuCTOuFeo58WrE
-pep8==0.5.0
-
 # sha256: KGXGizpWOEZrGDe_SmfER-DP33RjMJoGiq0OkKoD9Yo
 Pillow==2.4.0
 
@@ -234,12 +231,6 @@ https://github.com/pcraciunoiu/py-wikimarkup/archive/ce7d10dbd421533bb9b0c41dd9c
 
 # sha256: KR27SJO1C3yD8sjfYlFo-hcqZ_h-tE85oHIivjuNnJU
 pyes==0.16.0
-
-# sha256: 8S2Y66uuDo2j4GnZxwYh0VT2iL0G4HZoGzWZ7Xn7JsQ
-pyflakes==0.4.0
-
-# sha256: zQCELtAd0nUdBfJW_CiyZNSO9T544cqscC8DHb-KpjE
-pylint==0.20.0
 
 # sha256: IeErA6uqDgTsyM2cJRWY9xuuEcnzhTBCNOTqVhjGFjs
 pyOpenSSL==0.13
