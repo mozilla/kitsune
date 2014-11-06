@@ -608,14 +608,16 @@ h2 {
       padding: 0;
 
       .tag-list {
-        display: inline;
+        display: inline-block;
+        font-size: 0;
         list-style: none;
         margin: 0;
-        padding: 0;
+        padding: 0 280px 0 0;
 
         > li {
-          display: inline;
-          margin: 0 3px 0 0;
+          font-size: 14px;
+          display: inline-block;
+          margin: 0 3px 3px 0;
 
           &:last-of-type {
             margin: 0;
@@ -635,8 +637,20 @@ h2 {
         }
       }
 
+      .short-text,
+      .long-text {
+        margin-bottom: 32px;
+        min-height: 60px;
+      }
+
       .user-meta {
-        float: right;
+        bottom: 23px;
+        display: inline-block;
+        font-size: 12px;
+        position: absolute;
+        right: 20px;
+        text-align: right;
+        width: 250px;
       }
     }
 
@@ -791,7 +805,7 @@ h2 {
 
   #filter-section {
     .gradient(transparent, #fff, rgba(255, 255, 255, 0.01));
-    height: 100px;
+    height: 60px;
   }
 
   #owner-tabs {

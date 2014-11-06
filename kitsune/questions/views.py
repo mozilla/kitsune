@@ -119,7 +119,6 @@ def question_list(request, template, product_slug):
         'owner', request.session.get('questions_owner', 'all'))
     show = request.GET.get('show', 'needs-attention')
     escalated = request.GET.get('escalated')
-    offtopic = request.GET.get('offtopic')
     tagged = request.GET.get('tagged')
     tags = None
     topic_slug = request.GET.get('topic')
@@ -159,7 +158,7 @@ def question_list(request, template, product_slug):
         if filter_ not in FILTER_GROUPS[show]:
             filter_ = None
 
-        if escalated or offtopic:
+        if escalated:
             filter_ = None
 
         if filter_ == 'new':
@@ -186,10 +185,7 @@ def question_list(request, template, product_slug):
 
     if escalated:
         question_qs = question_qs.filter(
-            tags__name__in=config.ESCALATE_TAG_NAME)
-    elif offtopic:
-        question_qs = question_qs.filter(
-            tags__name__in=config.OFFTOPIC_TAG_NAME)
+            tags__name__in=[config.ESCALATE_TAG_NAME])
 
     question_qs = question_qs.select_related(
         'creator', 'last_answer', 'last_answer__creator')
@@ -320,7 +316,6 @@ def question_list(request, template, product_slug):
             'orders': ORDER_BY,
             'sort': sort,
             'escalated': escalated,
-            'offtopic': offtopic,
             'tags': tags,
             'tagged': tagged,
             'recent_asked_count': recent_asked_count,
