@@ -606,16 +606,19 @@ h2 {
       margin: 0 0 0 90px;
       min-height: 130px;
       padding: 0;
+      position: relative;
 
       .tag-list {
-        display: inline;
+        display: inline-block;
+        font-size: 0;
         list-style: none;
         margin: 0;
-        padding: 0;
+        padding: 0 280px 0 0;
 
         > li {
-          display: inline;
-          margin: 0 3px 0 0;
+          font-size: 14px;
+          display: inline-block;
+          margin: 0 3px 3px 0;
 
           &:last-of-type {
             margin: 0;
@@ -635,8 +638,19 @@ h2 {
         }
       }
 
+      .short-text,
+      .long-text {
+        margin-bottom: 32px;
+      }
+
       .user-meta {
-        float: right;
+        bottom: 3px;
+        display: inline-block;
+        font-size: 12px;
+        position: absolute;
+        right: 0;
+        text-align: right;
+        width: 250px;
       }
     }
 
