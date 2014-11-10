@@ -7,7 +7,10 @@ from django.core.management.base import BaseCommand
 
 ROOT = os.path.realpath(
     os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..'))
-path = lambda *a: os.path.join(ROOT, *a)
+
+
+def path(parts):
+    return os.path.join(ROOT, *parts)
 
 
 class Command(BaseCommand):

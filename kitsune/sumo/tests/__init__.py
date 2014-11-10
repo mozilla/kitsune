@@ -21,8 +21,12 @@ from kitsune import sumo
 from kitsune.sumo.urlresolvers import reverse, split_path
 
 
-get = lambda c, v, **kw: c.get(reverse(v, **kw), follow=True)
-post = lambda c, v, data={}, **kw: c.post(reverse(v, **kw), data, follow=True)
+def get(client, url, **kwargs):
+    return client.get(reverse(url, **kwargs), follow=True)
+
+
+def post(client, url, data={}, **kwargs):
+    return client.post(reverse(url, **kwargs), data, follow=True)
 
 
 class TestSuiteRunner(django_nose.NoseTestSuiteRunner):
