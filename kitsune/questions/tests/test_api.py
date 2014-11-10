@@ -1,6 +1,8 @@
+import json
 import mock
-from nose.tools import eq_, ok_
+from nose.tools import eq_, ok_, raises
 from rest_framework.test import APIClient
+from rest_framework.exceptions import APIException
 
 from kitsune.sumo.tests import TestCase
 from kitsune.questions import api
@@ -339,18 +341,21 @@ class TestAnswerViewSet(TestCase):
 class TestQuestionFilter(TestCase):
 
     def setUp(self):
-        self.filter = api.QuestionFilter()
-        self.qs = Question.objects.all()
+        self.filter_instance = api.QuestionFilter()
+        self.queryset = Question.objects.all()
+
+    def filter(self, filter_data):
+        return self.filter_instance.filter_metadata(self.queryset, json.dumps(filter_data))
 
     def test_filter_involved(self):
         q1 = question(save=True)
         a1 = answer(question=q1, save=True)
         q2 = question(creator=a1.creator, save=True)
 
-        res = self.filter.filter_involved(self.qs, q1.creator.username)
+        res = self.filter_instance.filter_involved(self.queryset, q1.creator.username)
         eq_(list(res), [q1])
 
-        res = self.filter.filter_involved(self.qs, q2.creator.username)
+        res = self.filter_instance.filter_involved(self.queryset, q2.creator.username)
         # The filter does not have a strong order.
         res = sorted(res, key=lambda q: q.id)
         eq_(res, [q1, q2])
@@ -362,8 +367,34 @@ class TestQuestionFilter(TestCase):
         q1.save()
         q2 = question(save=True)
 
-        res = self.filter.filter_is_solved(self.qs, True)
+        res = self.filter_instance.filter_is_solved(self.queryset, True)
         eq_(list(res), [q1])
 
-        res = self.filter.filter_is_solved(self.qs, False)
+        res = self.filter_instance.filter_is_solved(self.queryset, False)
         eq_(list(res), [q2])
+
+    @raises(APIException)
+    def test_metadata_not_json(self):
+        self.filter_instance.filter_metadata(self.queryset, 'not json')
+
+    @raises(APIException)
+    def test_metadata_bad_json(self):
+        self.filter({'foo': []})
+
+    def test_single_filter_match(self):
+        q1 = question(metadata={'os': 'Linux'}, save=True)
+        question(metadata={'os': 'OSX'}, save=True)
+        res = self.filter({'os': 'Linux'})
+        eq_(list(res), [q1])
+
+    def test_single_filter_no_match(self):
+        question(metadata={'os': 'Linux'}, save=True)
+        question(metadata={'os': 'OSX'}, save=True)
+        res = self.filter({"os": "Windows 8"})
+        eq_(list(res), [])
+
+    def test_multi_filter_is_and(self):
+        q1 = question(metadata={'os': 'Linux', 'category': 'troubleshooting'}, save=True)
+        question(metadata={'os': 'OSX', 'category': 'troubleshooting'}, save=True)
+        res = self.filter({'os': 'Linux', 'category': 'troubleshooting'})
+        eq_(list(res), [q1])

@@ -19,8 +19,7 @@ def tags_eq(tagged_object, tag_names):
         sorted(tag_names))
 
 
-@with_save
-def question(**kwargs):
+def question(save=False, **kwargs):
     defaults = dict(title=str(datetime.now()),
                     content='',
                     created=datetime.now(),
@@ -29,7 +28,14 @@ def question(**kwargs):
     defaults.update(kwargs)
     if 'creator' not in kwargs and 'creator_id' not in kwargs:
         defaults['creator'] = profile().user
-    return Question(**defaults)
+    q = Question(**defaults)
+    if save:
+        q.save()
+    if 'metadata' in defaults:
+        if not save:
+            raise ValueError('save must be True if metadata provided.')
+        q.add_metadata(**defaults['metadata'])
+    return q
 
 
 @with_save
