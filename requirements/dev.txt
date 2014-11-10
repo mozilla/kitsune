@@ -12,8 +12,8 @@ flake8==2.2.5
 # sha256: WioXDkfeVZOmq_rh6VQr0sOSSsYrvk5u2WyVPANSJDo
 mccabe==0.2.1
 
-# sha256: FbQhMbJfN2Fl0ZX-ThewooMRGCqvkzDV61dbvtpaaYk
-pep8==1.5.7
+# sha256: ZrOLKZ3UoMt2qFXnvNxkDc4rGfXdFkpW7oeuMWQrUy0
+http://people.mozilla.org/~wkahngreene/pep8/pep8-1.6.0a0-willkg.1.tar.gz#egg=pep8==1.6.0a0-willkg.1
 
 # sha256: P6gKELNtUWhr93RPXcmWIs1cmM6O1kAi5imGiq_Bd2k
 pyflakes==0.8.1
