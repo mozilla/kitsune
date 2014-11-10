@@ -1071,11 +1071,22 @@ h2 {
 }
 
 #question-form {
-  ol {
-    > li {
-      margin-bottom: 10px;
+  h2 {
+    margin-bottom: 0;
+
+    + p {
+      font-family: @OpenSans;
+      margin-top: 5px;
     }
   }
+
+  .info {
+    background: #f1f1f1;
+    border-left: 2px solid @textBlue;
+    font-size: 13px;
+    padding: 16px;
+  }
+
   ul {
     list-style: none;
     margin: 0;
@@ -1086,26 +1097,27 @@ h2 {
     }
 
     label {
-      float: left;
-      width: 120px;
-      padding-right: 20px;
-      text-align: right;
+      display: block;
+      font-size: 12px;
+      font-weight: bold;
+      margin-bottom: 5px;
 
-      + input,
-      + textarea,
-      + div {
+      &[for="id_troubleshooting"] {
         float: left;
+        margin-right: 10px;
+        margin-top: 6px;
       }
+    }
+
+    input[type="text"],
+    textarea {
+      .box-sizing(border-box);
+      width: 100%;
     }
 
     li {
       .cf();
       padding: 10px 0;
-
-      p {
-        clear: both;
-        margin: 0 0 0 140px;
-      }
 
       &.details {
         display: none;
@@ -1136,10 +1148,6 @@ h2 {
       }
     }
 
-    textarea {
-      width: 710px;
-    }
-
     .editor-tools {
       display: none;
     }
@@ -1149,15 +1157,34 @@ h2 {
         margin-left: 140px;
       }
     }
+
+    #troubleshooting-install {
+      margin: 10px 0;
+    }
+
+    #troubleshooting-manual,
+    #troubleshooting-explanation {
+      font-size: 13px;
+      margin: 10px 0;
+    }
+  }
+
+  button {
+    margin-top: 30px;
   }
 
   ol#troubleshooting-help {
     display: none;
+    font-size: 13px;
     list-style: decimal;
-    margin-left: 170px;
+    margin: 0;
 
     li {
       padding: 5px 0;
+
+      &:before {
+        display: block;
+      }
 
       ul {
         margin: 0 0 0 10px;

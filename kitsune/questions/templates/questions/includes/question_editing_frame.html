@@ -45,31 +45,20 @@ we can compute the edit-title URL.
                 {% block major_detail_instructions %}
                   <h2>Do some stuff.</h2>
                 {% endblock %}
-                <h3>{{ _('How to get the best and fastest answer:') }}</h3>
-                <ol>
-                  <li>
-                    {% trans %}
-                      Be nice. Our volunteers are Mozilla users just like you,
-                      who take the time out of their day to help.
-                    {% endtrans %}
-                  </li>
-                  <li>
-                    {% trans %}
-                      Be descriptive. Saying &quot;Playing video on YouTube is
-                      always choppy&quot; will help our volunteers identify
-                      your problem better than saying &quot;Something is
-                      wrong&quot; or &quot;Firefox is broken&quot;.
-                    {% endtrans %}
-                  </li>
-                  <li>
-                    {% trans %}
-                      Follow through. Sometimes, our volunteers would ask you
-                      for more information or to test out certain scenarios.
-                      The sooner you can do this, the sooner they would know
-                      how to fix it.
-                    {% endtrans %}
-                  </li>
-                </ol>
+                <p>
+                  {% trans %}
+                    Be nice. Our volunteers are Mozilla users just like you,
+                    who take the time out of their day to help.
+                  {% endtrans %}
+                </p>
+                <div class="info">
+                  {% trans %}
+                    Be descriptive. Saying &quot;Playing video on YouTube is
+                    always choppy&quot; will help our volunteers identify
+                    your problem better than saying &quot;Something is
+                    wrong&quot; or &quot;Firefox is broken&quot;.
+                  {% endtrans %}
+                </div>
                 {{ errorlist(form) }}
                 {% for field in form.hidden_fields() %}
                   {{ field|safe }}
@@ -99,18 +88,24 @@ we can compute the edit-title URL.
                         {{ field|safe }}
                       {% endif %}
 
-                      {% if field.help_text %}
+                      {% if field.help_text and field.name != 'troubleshooting' %}
                         <p class="help-text">{{ field.help_text|safe }}</p>
                       {% endif %}
                     </li>
-
                   {% endfor %}
-
-                  <li class="submit">
-                    <button type="submit" class="btn btn-submit big" {% block submit_button_attrs %}{% endblock %}>{% block submit_button_value %}Save Question{% endblock %}</button>
-                    {% block more_submit_buttons %}{% endblock %}
-                  </li>
                 </ul>
+
+                <div class="info">
+                  {% trans %}
+                    Follow through. Sometimes, our volunteers would ask you
+                    for more information or to test out certain scenarios.
+                    The sooner you can do this, the sooner they would know
+                    how to fix it.
+                  {% endtrans %}
+                </div>
+
+                <button type="submit" class="btn btn-submit big" {% block submit_button_attrs %}{% endblock %}>{% block submit_button_value %}Save Question{% endblock %}</button>
+                {% block more_submit_buttons %}{% endblock %}
               </form>
             </div>
           {% endif %}

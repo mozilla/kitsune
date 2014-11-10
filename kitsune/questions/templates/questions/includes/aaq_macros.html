@@ -187,18 +187,18 @@
 
 
 {% macro troubleshooting_instructions(field) %}
-  <span id="troubleshooting-install">
-    <a href="{{ settings.TROUBLESHOOTER_ADDON_URL }}" class="btn btn-important" id="install-troubleshooting-addon">
-      {{ _('Automatically add') }}
-    </a>
-    <span>
-      {{ _('A window will open in the top corner. Click <em>Allow</em>, and then click <em>Install</em>.') }}
-    </span>
-  </span>
-  <span id="troubleshooting-manual">
-    {{ _('If the automated way doesn\'t work, <a class="expander" href="{0}">try these manual steps</a>.')|f('#troubleshooting-help,#troubleshooting-field')|safe }}
-  </span>
-  <span id="troubleshooting-explanation">
+  <a href="{{ settings.TROUBLESHOOTER_ADDON_URL }}" class="btn btn-important" id="install-troubleshooting-addon">
+    {{ _('Automatically add') }}
+  </a>
+  <p class="help-text">{{ field.help_text|safe }}</p>
+  <p id="troubleshooting-manual">
+    {% trans url='#troubleshooting-help,#troubleshooting-field' %}
+      A window will open in the top corner. Click Allow, and then click
+      Install. If the automated way doesn't work,
+      <a class="expander" href="{url}">try these manual steps</a>.
+    {% endtrans %}
+  </p>
+  <span id="troubleshooting-explanation" class="cf">
     {{ _('This field was populated automatically with the add-on called <em>Troubleshooter</em>.') }}
     <a href="#troubleshooting-field" class="expander">{{ _('See the data') }}</a>.
   </span>
