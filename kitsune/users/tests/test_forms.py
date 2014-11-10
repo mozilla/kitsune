@@ -101,7 +101,7 @@ class ProfileFormTestCase(TestCaseBase):
             eq_(bool(pattern.match(url)), match)
 
     def test_clean_facebook(self):
-        clean = lambda: self.form.clean_facebook()
+        clean = self.form.clean_facebook
         for url, match in FACEBOOK_URLS:
             self.form.cleaned_data['facebook'] = url
             if match:
@@ -110,7 +110,7 @@ class ProfileFormTestCase(TestCaseBase):
                 self.assertRaises(ValidationError, clean)
 
     def test_clean_twitter(self):
-        clean = lambda: self.form.clean_twitter()
+        clean = self.form.clean_twitter
         for url, match in TWITTER_URLS:
             self.form.cleaned_data['twitter'] = url
             if match:

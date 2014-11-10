@@ -568,9 +568,12 @@ def suggestions(request):
         # set.
         results = []
 
-    urlize = lambda r: u'https://%s%s' % (site, r['url'])
-    titleize = lambda r: (r['document_title'] if 'document_title' in r
-                          else r['question_title'])
+    def urlize(r):
+        return u'https://%s%s' % (site, r['url'])
+
+    def titleize(r):
+        return r.get('document_title', r.get('document_title'))
+
     data = [term,
             [titleize(r) for r in results],
             [],

@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 
 from django.conf import settings
 
-from nose.tools import eq_
+from nose.tools import eq_, raises
 
 from kitsune.forums.models import Thread, Forum, ThreadLockedError
 from kitsune.forums.tests import ForumTestCase, thread, post
@@ -142,15 +142,18 @@ class PostTestCase(ForumTestCase):
             t.replies = replies
             eq_(t.last_page, pages)
 
+    @raises(ThreadLockedError)
     def test_locked_thread(self):
         """Trying to reply to a locked thread should raise an exception."""
         locked = thread(is_locked=True, save=True)
+        user1 = user(save=True)
+        # This should raise an exception
+        locked.new_post(author=user1, content='empty')
+
+    def test_unlocked_thread(self):
         unlocked = thread(save=True)
         user1 = user(save=True)
-        fn = lambda: locked.new_post(author=user1, content='empty')
-        self.assertRaises(ThreadLockedError, fn)
-
-        # This should not raise an exception.
+        # This should not raise an exception
         unlocked.new_post(author=user1, content='empty')
 
     def test_post_no_session(self):

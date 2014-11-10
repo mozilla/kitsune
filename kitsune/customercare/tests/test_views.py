@@ -32,6 +32,10 @@ class TweetListTests(TestCase):
         last = now - timedelta(days=settings.CC_TWEETS_DAYS - 1)
         tweet(save=True, created=last)
 
+    def _hide_tweet(self, id):
+        url = reverse('customercare.hide_tweet', locale='en-US')
+        return self.client.post(url, {'id': id})
+
     def test_limit(self):
         """Do not return more than LIMIT tweets."""
         tweets = _get_tweets(limit=2)
@@ -59,12 +63,8 @@ class TweetListTests(TestCase):
 
     def test_hide_tweets(self):
         """Try hiding tweets."""
-        hide_tweet = lambda id: self.client.post(
-            reverse('customercare.hide_tweet', locale='en-US'),
-            {'id': id})
-
         tw = Tweet.objects.no_cache().filter(reply_to=None, hidden=False)[0]
-        r = hide_tweet(tw.tweet_id)
+        r = self._hide_tweet(tw.tweet_id)
         eq_(r.status_code, 200)
 
         # Re-fetch from database. Should be hidden.
@@ -72,7 +72,7 @@ class TweetListTests(TestCase):
         eq_(tw.hidden, True)
 
         # Hiding it again should work.
-        r = hide_tweet(tw.tweet_id)
+        r = self._hide_tweet(tw.tweet_id)
         eq_(r.status_code, 200)
 
     def test_hide_tweets_with_replies(self):
@@ -89,14 +89,10 @@ class TweetListTests(TestCase):
 
     def test_hide_tweets_invalid_id(self):
         """Invalid tweet IDs shouldn't break anything."""
-        hide_tweet = lambda id: self.client.post(
-            reverse('customercare.hide_tweet', locale='en-US'),
-            {'id': id})
-
-        r = hide_tweet(123)
+        r = self._hide_tweet(123)
         eq_(r.status_code, 404)
 
-        r = hide_tweet('cheesecake')
+        r = self._hide_tweet('cheesecake')
         eq_(r.status_code, 400)
 
     @patch.object(settings._wrapped, 'CC_ALLOW_REMOVE', False)
@@ -236,7 +232,7 @@ class TweetReplyTests(TestCase):
         credentials = {'screen_name': 'r1cky'}
         request.twitter.api.verify_credentials.return_value = credentials
         request.user = Mock()
-        request.user.is_authenticated = lambda: False
+        request.user.is_authenticated.return_value = False
         return request
 
     def test_post_reply(self):
@@ -273,7 +269,7 @@ class TweetReplyTests(TestCase):
         credentials = {'screen_name': 'r1cky'}
         request.twitter.api.verify_credentials.return_value = credentials
         request.user = Mock()
-        request.user.is_authenticated = lambda: False
+        request.user.is_authenticated.return_value = False
 
         # Pass the request to the view and verify response.
         response = twitter_post(request)

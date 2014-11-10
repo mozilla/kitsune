@@ -162,7 +162,8 @@ class SearchMappingType(MappingType, Indexable):
             pass
 
 
-_identity = lambda s: s
+def _identity(s):
+    return s
 
 
 def register_for_indexing(app,

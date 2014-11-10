@@ -1,4 +1,3 @@
-import subprocess
 import time
 from itertools import islice
 
@@ -7,9 +6,6 @@ from django.conf import settings
 import bleach
 
 from kitsune.lib.sumo_locales import LOCALES
-
-
-call = lambda x: subprocess.Popen(x, stdout=subprocess.PIPE).communicate()
 
 
 class FakeLogger(object):

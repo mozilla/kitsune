@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.core.files import File
 
-from nose.tools import eq_
+from nose.tools import eq_, raises
 
 from kitsune.questions.tests import question
 from kitsune.sumo.tests import TestCase
@@ -35,12 +35,13 @@ class CheckFileSizeTestCase(TestCase):
             up_file = File(f)
             check_file_size(up_file, settings.IMAGE_MAX_FILESIZE)
 
+    @raises(FileTooLargeError)
     def test_check_file_size_over(self):
         """FileTooLargeError should be raised"""
         with open('kitsune/upload/tests/media/test.jpg') as f:
             up_file = File(f)
-            fn = lambda: check_file_size(up_file, 0)
-            self.assertRaises(FileTooLargeError, fn)
+            # This should raise
+            check_file_size(up_file, 0)
 
 
 class CreateImageAttachmentTestCase(TestCase):
