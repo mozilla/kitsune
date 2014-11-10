@@ -1,12 +1,14 @@
 import django_filters
+import json
 from django.db.models import Q
+from django.utils import six
 from rest_framework import serializers, viewsets, permissions, filters, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from kitsune.products.api import TopicField
 from kitsune.questions.models import Question, Answer, QuestionMetaData
-from kitsune.sumo.api import CORSMixin, OnlyCreatorEdits
+from kitsune.sumo.api import CORSMixin, OnlyCreatorEdits, GenericAPIException
 
 
 class QuestionMetaDataSerializer(serializers.ModelSerializer):
@@ -94,6 +96,7 @@ class QuestionFilter(django_filters.FilterSet):
     creator = django_filters.CharFilter(name='creator__username')
     involved = django_filters.MethodFilter(action='filter_involved')
     is_solved = django_filters.MethodFilter(action='filter_is_solved')
+    metadata = django_filters.MethodFilter(action='filter_metadata')
 
     class Meta(object):
         model = Question
@@ -126,6 +129,27 @@ class QuestionFilter(django_filters.FilterSet):
         if value:
             filter = ~filter
         return queryset.filter(filter)
+
+    def filter_metadata(self, queryset, value):
+        invalid_exc = GenericAPIException(
+            400, 'metadata must be a JSON object of strings.')
+
+        try:
+            value = json.loads(value)
+        except ValueError:
+            raise invalid_exc
+
+        def is_string(v):
+            return isinstance(v, six.string_types)
+
+        if not (isinstance(value, dict) and
+                all(isinstance(v, six.string_types) for v in value.values())):
+            raise invalid_exc
+
+        for name, value in value.items():
+            queryset = queryset.filter(metadata_set__name=name, metadata_set__value=value)
+
+        return queryset
 
 
 class QuestionViewSet(CORSMixin, viewsets.ModelViewSet):
