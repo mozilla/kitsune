@@ -51,6 +51,14 @@ CACHE_TIMEOUT = 10800  # 3 hours
 VOTE_METADATA_MAX_LENGTH = 1000
 
 
+class InvalidUserException(ValueError):
+    pass
+
+
+class AlreadyTakenException(Exception):
+    pass
+
+
 class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
     """A support question."""
     title = models.CharField(max_length=255)
@@ -84,6 +92,9 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         Topic, null=True, related_name='questions')
 
     locale = LocaleField(default=settings.WIKI_DEFAULT_LANGUAGE)
+
+    taken_by = models.ForeignKey(User, blank=True, null=True)
+    taken_until = models.DateTimeField(blank=True, null=True)
 
     html_cache_key = u'question:html:%s'
     tags_cache_key = u'question:tags:%s'
@@ -592,6 +603,51 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         self.is_spam = True
         self.marked_as_spam = datetime.now()
         self.marked_as_spam_by = by_user
+        self.save()
+
+    @property
+    def is_taken(self):
+        """
+        Convenience method to check that a question is taken.
+
+        Additionally, if ``self.taken_until`` is in the past, this will reset
+        the database fields to expire the setting.
+        """
+        if self.taken_by is None:
+            assert self.taken_until is None
+            return False
+
+        assert self.taken_until is not None
+        if self.taken_until < datetime.now():
+            self.taken_by = None
+            self.taken_until = None
+            self.save()
+            return False
+
+        return True
+
+    def take(self, user, force=False):
+        """
+        Sets the user that is currently working on this question.
+
+        May raise InvalidUserException if the user is not permitted to take
+        the question (such as if the question is owned by the user).
+
+        May raise AlreadyTakenException if the question is already taken
+        by a different user, and the force paramater is not True.
+
+        If the user is the same as the user that currently has the question,
+        the timer will be updated   .
+        """
+
+        if user == self.creator:
+            raise InvalidUserException
+
+        if self.taken_by not in [None, user] and not force:
+            raise AlreadyTakenException
+
+        self.taken_by = user
+        self.taken_until = datetime.now() + timedelta(seconds=config.TAKE_TIMEOUT)
         self.save()
 
 

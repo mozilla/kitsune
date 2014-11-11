@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from django.db.models import Q
 
 import mock
-from nose.tools import eq_, raises
+from nose.tools import eq_, ok_, raises
 from taggit.models import Tag
 
 import kitsune.sumo.models
@@ -15,11 +15,12 @@ from kitsune.questions.events import QuestionReplyEvent
 from kitsune.questions import models
 from kitsune.questions.models import (
     Answer, Question, QuestionMetaData, QuestionVisits,
-    _tenths_version, _has_beta, VoteMetadata)
+    _tenths_version, _has_beta, VoteMetadata, InvalidUserException,
+    AlreadyTakenException)
 from kitsune.questions.tasks import update_answer_pages
 from kitsune.questions.tests import (
     TestCaseBase, tags_eq, question, answer, questionvote)
-from kitsune.questions.config import products
+from kitsune.questions import config
 from kitsune.sumo import googleanalytics
 from kitsune.sumo.tests import TestCase
 from kitsune.tags.tests import tag
@@ -185,13 +186,13 @@ class TestQuestionMetadata(TestCaseBase):
     def test_product_property(self):
         """Test question.product property."""
         self.question.add_metadata(product='desktop')
-        eq_(products['desktop'], self.question.product_config)
+        eq_(config.products['desktop'], self.question.product_config)
 
     def test_category_property(self):
         """Test question.category property."""
         self.question.add_metadata(product='desktop')
         self.question.add_metadata(category='fix-problems')
-        eq_(products['desktop']['categories']['fix-problems'],
+        eq_(config.products['desktop']['categories']['fix-problems'],
             self.question.category_config)
 
     def test_clear_mutable_metadata(self):
@@ -403,6 +404,72 @@ class QuestionTests(TestCaseBase):
         assert abs(q1.age - 10 * 24 * 60 * 60) < 2, ('q1.age (%s) != 10 days'
                                                      % q1.age)
         assert abs(q2.age - 30) < 2, 'q2.age (%s) != 30 seconds' % q2.age
+
+    def test_is_taken(self):
+        q = question(save=True)
+        u = user(save=True)
+        eq_(q.is_taken, False)
+
+        q.taken_by = u
+        q.taken_until = datetime.now() + timedelta(seconds=600)
+        q.save()
+        eq_(q.is_taken, True)
+
+        q.taken_by = None
+        q.taken_until = None
+        q.save()
+        eq_(q.is_taken, False)
+
+    def test_take(self):
+        u = user(save=True)
+        q = question(save=True)
+        q.take(u)
+        eq_(q.taken_by, u)
+        ok_(q.taken_until is not None)
+
+    @raises(InvalidUserException)
+    def test_take_creator(self):
+        q = question(save=True)
+        q.take(q.creator)
+
+    @raises(AlreadyTakenException)
+    def test_take_twice_fails(self):
+        u1 = user(save=True)
+        u2 = user(save=True)
+        q = question(save=True)
+        q.take(u1)
+        q.take(u2)
+
+    def test_take_twice_same_user_refreshes_time(self):
+        u = user(save=True)
+        first_taken_until = datetime.now() - timedelta(minutes=5)
+        q = question(taken_by=u, taken_until=first_taken_until, save=True)
+        q.take(u)
+        ok_(q.taken_until > first_taken_until)
+
+    def test_take_twice_forced(self):
+        u1 = user(save=True)
+        u2 = user(save=True)
+        q = question(save=True)
+        q.take(u1)
+        q.take(u2, force=True)
+        eq_(q.taken_by, u2)
+
+    def test_taken_until_is_set(self):
+        u = user(save=True)
+        q = question(save=True)
+        q.take(u)
+        assert q.taken_until > datetime.now()
+
+    def test_is_taken_clears(self):
+        u = user(save=True)
+        taken_until = datetime.now() - timedelta(seconds=30)
+        q = question(taken_by=u, taken_until=taken_until, save=True)
+        # Testin q.is_taken should clear out ``taken_by`` and ``taken_until``,
+        # since taken_until is in the past.
+        eq_(q.is_taken, False)
+        eq_(q.taken_by, None)
+        eq_(q.taken_until, None)
 
 
 class AddExistingTagTests(TestCaseBase):

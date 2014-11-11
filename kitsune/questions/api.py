@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import django_filters
 import json
 from django.db.models import Q
@@ -6,7 +8,9 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from kitsune.products.api import TopicField
-from kitsune.questions.models import Question, Answer, QuestionMetaData, QuestionVote
+from kitsune.questions.models import (
+    Question, Answer, QuestionMetaData, AlreadyTakenException,
+    InvalidUserException, QuestionVote)
 from kitsune.sumo.api import DateTimeUTCField, OnlyCreatorEdits, GenericAPIException
 from kitsune.users.api import ProfileFKSerializer
 
@@ -24,7 +28,7 @@ class QuestionMetaDataSerializer(serializers.ModelSerializer):
 
     def restore_object(self, attrs, instance=None):
         """
-        Given a dictionary of deserialized field values, either update
+    Given a dictionary of deserialized field values, either update
         an existing model instance, or create a new model instance.
         """
         if instance is not None:
@@ -56,11 +60,11 @@ class QuestionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Question
         fields = (
-            'id',
             'answers',
             'content',
             'created',
             'creator',
+            'id',
             'involved',
             'is_archived',
             'is_locked',
@@ -74,6 +78,8 @@ class QuestionSerializer(serializers.ModelSerializer):
             'num_votes',
             'product',
             'solution',
+            'taken_until',
+            'taken_by',
             'title',
             'topic',
             'updated_by',
@@ -96,8 +102,8 @@ class QuestionFilter(django_filters.FilterSet):
     product = django_filters.CharFilter(name='product__slug')
     creator = django_filters.CharFilter(name='creator__username')
     involved = django_filters.MethodFilter(action='filter_involved')
-    is_solved = django_filters.MethodFilter(action='filter_is_solved')
     metadata = django_filters.MethodFilter(action='filter_metadata')
+    is_solved = django_filters.MethodFilter(action='filter_is_solved')
 
     class Meta(object):
         model = Question
@@ -123,13 +129,26 @@ class QuestionFilter(django_filters.FilterSet):
         answer_creator_filter = Q(answers__creator__username=value)
         return queryset.filter(creator_filter | answer_creator_filter)
 
+    def filter_is_taken(self, queryset, value):
+        field = serializers.BooleanField()
+        value = field.from_native(value)
+        # is_taken doesn't exist. Instead, we decide if a question is taken
+        # based on ``taken_by`` and ``taken_until``.
+        now = datetime.now()
+        if value:
+            # only taken questions
+            return queryset.filter(~Q(taken_by=None), taken_until__gt=now)
+        else:
+            # only not taken questions
+            return queryset.filter(Q(taken_by=None) | Q(taken_until__lt=now))
+
     def filter_is_solved(self, queryset, value):
         field = serializers.BooleanField()
         value = field.from_native(value)
-        filter = Q(solution=None)
+        solved_filter = Q(solution=None)
         if value:
-            filter = ~filter
-        return queryset.filter(filter)
+            solved_filter = ~solved_filter
+        return queryset.filter(solved_filter)
 
     def filter_metadata(self, queryset, value):
         try:
@@ -227,8 +246,22 @@ class QuestionViewSet(viewsets.ModelViewSet):
             meta.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         except QuestionMetaData.DoesNotExist:
-            return Response({'__all__': 'No matching metadata object found.'},
-                            status=status.HTTP_404_NOT_FOUND)
+            raise GenericAPIException(404, 'No matching metadata object found.')
+
+    @action(methods=['POST'], permission_classes=[permissions.IsAuthenticatedOrReadOnly])
+    def take(self, request, pk=None):
+        question = self.get_object()
+        field = serializers.BooleanField()
+        force = field.from_native(request.DATA.get('force', False))
+
+        try:
+            question.take(request.user, force=force)
+        except InvalidUserException:
+            raise GenericAPIException(400, 'Question creator cannot take a question.')
+        except AlreadyTakenException:
+            raise GenericAPIException(409, 'Conflict: question is already taken.')
+
+        return Response(status=204)
 
 
 class AnswerSerializer(serializers.ModelSerializer):

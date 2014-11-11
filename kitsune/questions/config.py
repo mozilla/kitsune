@@ -19,6 +19,9 @@ OFFTOPIC_TAG_NAME = 'offtopic'
 # Escalation config
 ESCALATE_EXCLUDE_PRODUCTS = ['thunderbird', 'webmaker', 'open-badges']
 
+# How long until a question is automatically taken away from a user
+TAKE_TIMEOUT = 600
+
 # AAQ config:
 products = SortedDict([
     ('desktop', {
