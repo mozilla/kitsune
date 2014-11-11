@@ -143,6 +143,30 @@ class QuestionUpdateTests(ElasticTestCase):
         query = search.query(question_answer_content__match='love')
         eq_(query[0]['question_answer_creator'], [u'walter'])
 
+    def test_question_spam_is_unindexed(self):
+        search = QuestionMappingType.search()
+
+        q = question(title=u'I am spam', save=True)
+        self.refresh()
+        eq_(search.query(question_title__match='spam').count(), 1)
+
+        q.is_spam = True
+        q.save()
+        self.refresh()
+        eq_(search.query(question_title__match='spam').count(), 0)
+
+    def test_answer_spam_is_unindexed(self):
+        search = QuestionMappingType.search()
+
+        a = answer(content=u'I am spam', save=True)
+        self.refresh()
+        eq_(search.query(question_answer_content__match='spam').count(), 1)
+
+        a.is_spam = True
+        a.save()
+        self.refresh()
+        eq_(search.query(question_answer_content__match='spam').count(), 0)
+
 
 class QuestionSearchTests(ElasticTestCase):
     """Tests about searching for questions"""

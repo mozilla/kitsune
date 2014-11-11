@@ -29,6 +29,7 @@ from kitsune.questions.managers import QuestionManager, QuestionLocaleManager
 from kitsune.questions.signals import tag_added
 from kitsune.questions.tasks import (
     update_question_votes, update_answer_pages, log_answer, escalate_question)
+from kitsune.search.es_utils import UnindexMeBro
 from kitsune.search.models import (
     SearchMappingType, SearchMixin, register_for_indexing,
     register_mapping_type)
@@ -586,7 +587,8 @@ class QuestionMappingType(SearchMappingType):
         """Extracts indexable attributes from a Question and its answers."""
         fields = ['id', 'title', 'content', 'num_answers', 'solution_id',
                   'is_locked', 'is_archived', 'created', 'updated',
-                  'num_votes_past_week', 'locale', 'product_id', 'topic_id']
+                  'num_votes_past_week', 'locale', 'product_id', 'topic_id',
+                  'is_spam']
         composed_fields = ['creator__username']
         all_fields = fields + composed_fields
 
@@ -600,6 +602,9 @@ class QuestionMappingType(SearchMappingType):
                               for field in fields])
             fixed_obj['creator__username'] = obj.creator.username
             obj = fixed_obj
+
+        if obj['is_spam']:
+            raise UnindexMeBro()
 
         d = {}
         d['id'] = obj['id']
@@ -642,7 +647,7 @@ class QuestionMappingType(SearchMappingType):
         d['question_locale'] = obj['locale']
 
         answer_values = list(Answer.uncached
-                                   .filter(question=obj_id)
+                                   .filter(question=obj_id, is_spam=False)
                                    .values_list('content',
                                                 'creator__username'))
 
