@@ -34,7 +34,7 @@ class TweetListTests(TestCase):
 
     def _hide_tweet(self, id):
         url = reverse('customercare.hide_tweet', locale='en-US')
-        self.client.post(url, {'id': id})
+        return self.client.post(url, {'id': id})
 
     def test_limit(self):
         """Do not return more than LIMIT tweets."""
