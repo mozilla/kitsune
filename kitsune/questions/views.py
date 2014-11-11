@@ -186,10 +186,10 @@ def question_list(request, template, product_slug):
 
     if escalated:
         question_qs = question_qs.filter(
-            tags__name__in=config.ESCALATE_TAG_NAME)
+            tags__name__in=[config.ESCALATE_TAG_NAME])
     elif offtopic:
         question_qs = question_qs.filter(
-            tags__name__in=config.OFFTOPIC_TAG_NAME)
+            tags__name__in=[config.OFFTOPIC_TAG_NAME])
 
     question_qs = question_qs.select_related(
         'creator', 'last_answer', 'last_answer__creator')
