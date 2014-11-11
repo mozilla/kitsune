@@ -1018,32 +1018,48 @@ h2 {
     padding: 0;
   }
 
-  ul {
-    list-style: none;
-    margin: 10px 0;
-    padding: 0;
+  h2 {
+    margin-bottom: 0;
 
-    input {
-      float: left;
-      width: 300px;
+    + h4 {
+      margin-bottom: 10px;
+      margin-top: 5px;
     }
+  }
 
-    label {
-      float: left;
-      padding-right: 12px;
-      text-align: right;
-      width: 130px;
-    }
+  label {
+    font-size: 12px;
+    font-weight: bold;
+  }
 
-    li {
-      display: block;
+  form {
+    ul {
+      list-style: none;
       margin: 10px 0;
+      padding: 0;
+
+      > li {
+        min-height: 100px;
+      }
+
+      input {
+        .box-sizing(border-box);
+        padding: 10px;
+        width: 60%;
+      }
+
+      label {
+        display: block;
+        margin: 10px 0;
+      }
     }
   }
 
   .submit {
     .btn {
-      margin-left: 141px;
+      .box-sizing(border-box);
+      margin-top: 20px;
+      width: 60%;
     }
   }
 }
@@ -1061,11 +1077,8 @@ h2 {
 }
 
 #username-rules, #password-rules {
-  font-size: 85%;
-  margin: 5px 0 0 140px;
-  text-align: left;
-  width: 300px;
-  clear: both;
+  font-size: 12px;
+  width: 60%;
 }
 
 #product-picker {

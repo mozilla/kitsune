@@ -11,6 +11,12 @@ function AAQSystemInfo($form) {
     AAQSystemInfo.prototype.init.call(this, $form);
 }
 
+$(document).on('click', '#show-password', function() {
+  var $form = $(this).closest('form');
+  var $pw = $form.find('input[name="password"]');
+  $pw.attr('type', (this.checked) ? 'text' : 'password');
+});
+
 AAQSystemInfo.prototype = {
     init: function($form) {
         var self = this,

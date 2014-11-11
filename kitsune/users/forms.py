@@ -102,27 +102,17 @@ class RegisterForm(forms.ModelForm):
         widget=forms.PasswordInput(render_value=False),
         error_messages={'required': PASSWD_REQUIRED,
                         'min_length': PASSWD_MIN_LENGTH_MSG})
-    password2 = forms.CharField(
-        label=_lazy(u'Repeat password:'),
-        widget=forms.PasswordInput(render_value=False),
-        error_messages={'required': PASSWD2_REQUIRED},
-        help_text=_lazy(u'Enter the same password as '
-                        u'above, for verification.'))
 
     interested = forms.BooleanField(required=False)
 
     class Meta(object):
         model = User
-        fields = ('username', 'password', 'password2', 'email')
+        fields = ('email', 'username', 'password',)
 
     def clean(self):
         super(RegisterForm, self).clean()
         username = self.cleaned_data.get('username')
         password = self.cleaned_data.get('password')
-        password2 = self.cleaned_data.get('password2')
-
-        if not password == password2:
-            raise forms.ValidationError(_('Passwords must match.'))
 
         _check_password(password)
         _check_username(username)

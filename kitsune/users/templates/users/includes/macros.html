@@ -71,13 +71,17 @@
         </li>
       {% endfor %}
     </ul>
+    <p>
+      <input id="show-password" type="checkbox" />
+      <label for="show-password">{{ _('Reveal password to check that it\'s right') }}</label>
+    </p>
     <div class="submit">
       <input type="hidden" name="register" value="1">
       {% set ga_data = [] %}
       {% if aaq %}{% do ga_data.append('_trackEvent | Ask A Question Flow | step 2 link') %}{% endif %}
       {% if contributor %}{% do ga_data.append('_trackEvent | Register Click | Contributor') %}{% endif %}
       <button type="submit" class="btn btn-submit" {% if contributor or aaq %}data-ga-click="{{ ', '.join(ga_data) }}"{% endif %}>
-        {{ _('Register') }}
+        {{ _('Create my account') }}
       </button>
     </div>
   </form>
