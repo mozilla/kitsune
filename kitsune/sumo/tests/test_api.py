@@ -59,7 +59,7 @@ class TestDateTimeUTCField(TestCase):
 
     def test_translation_of_nonnaive(self):
         field = api.DateTimeUTCField()
-        as_pacific = datetime(2014, 11, 12, 13, 49, 59, timezone=pytz.timezone('US/Pacific'))
+        as_pacific = datetime(2014, 11, 12, 13, 49, 59, tzinfo=pytz.timezone('US/Pacific'))
         as_utc = field.to_native(as_pacific)
         eq_(as_utc.hour, 21)
         eq_(as_utc.tzinfo, pytz.utc)
