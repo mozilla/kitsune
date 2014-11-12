@@ -188,16 +188,6 @@ class RegisterTests(TestCase):
              'password2': 'foo'}, follow=True)
         self.assertContains(response, 'already exists')
 
-    def test_no_match_passwords(self):
-        u = user(save=True)
-        response = self.client.post(
-            reverse('users.registercontributor', locale='en-US'),
-            {'username': u.username,
-             'email': u.email,
-             'password': 'testpass',
-             'password2': 'testbus'}, follow=True)
-        self.assertContains(response, 'must match')
-
     @mock.patch.object(Site.objects, 'get_current')
     def test_active_user_activation(self, get_current):
         """If an already active user tries to activate with a valid key,
