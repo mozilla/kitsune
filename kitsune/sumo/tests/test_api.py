@@ -1,10 +1,12 @@
+import pytz
+from datetime import datetime
 from mock import Mock
 from nose.tools import eq_
 
 from django.test.client import RequestFactory
 from django.test.utils import override_settings
 
-from kitsune.sumo.api import LocaleNegotiationMixin, InequalityFilterBackend
+from kitsune.sumo import api
 from kitsune.sumo.tests import TestCase
 
 
@@ -16,7 +18,7 @@ class TestLanguageNegotiation(TestCase):
     def test_it_works(self):
         """Make sure that the LocaleNegotiationMixin detects locales."""
         factory = RequestFactory()
-        negotiater = LocaleNegotiationMixin()
+        negotiater = api.LocaleNegotiationMixin()
         request = factory.get('/', HTTP_ACCEPT_LANGUAGE='es,en-US')
         negotiater.request = request
         eq_(negotiater.get_locale(), 'es')
@@ -27,7 +29,7 @@ class TestInequalityFilterBackend(TestCase):
     def setUp(self):
         self.request = Mock()
         self.view = Mock()
-        self.backend = InequalityFilterBackend()
+        self.backend = api.InequalityFilterBackend()
         self.queryset = Mock()
 
         self.queryset.filter.return_value = self.queryset
@@ -51,3 +53,15 @@ class TestInequalityFilterBackend(TestCase):
         expected = [('filter', (), {'x__gte': 10}),
                     ('filter', (), {'y__lt': 5})]
         eq_(calls, expected)
+
+
+class TestDateTimeUTCField(TestCase):
+
+    def test_translation_of_nonnaive(self):
+        field = api.DateTimeUTCField()
+        as_pacific = datetime(2014, 11, 12, 13, 49, 59, timezone=pytz.timezone('US/Pacific'))
+        as_utc = field.to_native(as_pacific)
+        eq_(as_utc.hour, 21)
+        eq_(as_utc.tzinfo, pytz.utc)
+
+    # TODO: How can naive datetime conversion be tested?

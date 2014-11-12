@@ -1,6 +1,7 @@
 from django import forms
 from django.conf import settings
 
+import pytz
 from rest_framework import fields, permissions
 from rest_framework.exceptions import APIException
 from rest_framework.filters import BaseFilterBackend
@@ -117,6 +118,19 @@ class LocalizedCharField(fields.CharField):
             return value
         with uselocale(locale):
             return _(value, self.l10n_context)
+
+
+class DateTimeUTCField(fields.DateTimeField):
+    """
+    This is like DateTimeField, except it always outputs in UTC.
+    """
+
+    def to_native(self, value):
+        if value.tzinfo is None:
+            default_tzinfo = pytz.timezone(settings.TIME_ZONE)
+            value = default_tzinfo.localize(value)
+        value = value.astimezone(pytz.utc)
+        return super(DateTimeUTCField, self).to_native(value)
 
 
 class InequalityFilterBackend(BaseFilterBackend):
