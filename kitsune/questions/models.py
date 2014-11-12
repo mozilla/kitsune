@@ -340,7 +340,7 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
 
     @property
     def is_solved(self):
-        return not not self.solution_id
+        return self.solution_id is not None
 
     @property
     def is_escalated(self):
