@@ -318,3 +318,36 @@ class TestAnswerViewSet(TestCase):
         res = self.client.get(reverse('answer-list') + '?ordering=-id')
         eq_(res.data['results'][0]['id'], a2.id)
         eq_(res.data['results'][1]['id'], a1.id)
+
+
+class TestQuestionFilter(TestCase):
+
+    def setUp(self):
+        self.filter = api.QuestionFilter()
+        self.qs = Question.objects.all()
+
+    def test_filter_involved(self):
+        q1 = question(save=True)
+        a1 = answer(question=q1, save=True)
+        q2 = question(creator=a1.creator, save=True)
+
+        res = self.filter.filter_involved(self.qs, q1.creator.username)
+        eq_(list(res), [q1])
+
+        res = self.filter.filter_involved(self.qs, q2.creator.username)
+        # The filter does not have a strong order.
+        res = sorted(res, key=lambda q: q.id)
+        eq_(res, [q1, q2])
+
+    def test_filter_is_solved(self):
+        q1 = question(save=True)
+        a1 = answer(question=q1, save=True)
+        q1.solution = a1
+        q1.save()
+        q2 = question(save=True)
+
+        res = self.filter.filter_is_solved(self.qs, True)
+        eq_(list(res), [q1])
+
+        res = self.filter.filter_is_solved(self.qs, False)
+        eq_(list(res), [q2])

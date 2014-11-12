@@ -41,38 +41,39 @@ class QuestionSerializer(serializers.ModelSerializer):
     product = serializers.SlugRelatedField(required=True, slug_field='slug')
     topic = TopicField(required=True)
     # Use usernames for creator and updated_by instead of ids.
-    creator = serializers.SlugRelatedField(
-        slug_field='username', required=False)
-    updated_by = serializers.SlugRelatedField(
-        slug_field='username', required=False)
-    metadata = QuestionMetaDataSerializer(
-        source='metadata_set', required=False)
-    num_votes = serializers.Field(source='num_votes')
+    creator = serializers.SlugRelatedField(slug_field='username', required=False)
     involved = serializers.SerializerMethodField('get_involved_users')
+    is_solved = serializers.Field(source='is_solved')
+    metadata = QuestionMetaDataSerializer(source='metadata_set', required=False)
+    num_votes = serializers.Field(source='num_votes')
+    solution = serializers.Field()  # Read only
+    updated_by = serializers.SlugRelatedField(slug_field='username', required=False)
 
     class Meta:
         model = Question
         fields = (
             'id',
+            'answers',
+            'content',
             'created',
             'creator',
+            'involved',
             'is_archived',
             'is_locked',
+            'is_solved',
             'is_spam',
             'last_answer',
             'locale',
+            'metadata',
             'num_answers',
             'num_votes_past_week',
+            'num_votes',
             'product',
+            'solution',
             'title',
             'topic',
             'updated_by',
             'updated',
-            'content',
-            'metadata',
-            'answers',
-            'num_votes',
-            'involved',
         )
 
     def get_involved_users(self, obj):
@@ -92,6 +93,7 @@ class QuestionFilter(django_filters.FilterSet):
     product = django_filters.CharFilter(name='product__slug')
     creator = django_filters.CharFilter(name='creator__username')
     involved = django_filters.MethodFilter(action='filter_involved')
+    is_solved = django_filters.MethodFilter(action='filter_is_solved')
 
     class Meta(object):
         model = Question
@@ -102,6 +104,7 @@ class QuestionFilter(django_filters.FilterSet):
             'is_archived',
             'is_locked',
             'is_spam',
+            'is_solved',
             'locale',
             'num_answers',
             'product',
@@ -115,6 +118,14 @@ class QuestionFilter(django_filters.FilterSet):
         creator_filter = Q(creator__username=value)
         answer_creator_filter = Q(answers__creator__username=value)
         return queryset.filter(creator_filter | answer_creator_filter)
+
+    def filter_is_solved(self, queryset, value):
+        field = serializers.BooleanField()
+        value = field.from_native(value)
+        filter = Q(solution=None)
+        if value:
+            filter = ~filter
+        return queryset.filter(filter)
 
 
 class QuestionViewSet(CORSMixin, viewsets.ModelViewSet):
