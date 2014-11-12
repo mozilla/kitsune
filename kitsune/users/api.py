@@ -16,7 +16,7 @@ from rest_framework.decorators import permission_classes, api_view
 from rest_framework.authtoken import views as authtoken_views
 
 from kitsune.access.decorators import login_required
-from kitsune.sumo.api import CORSMixin
+from kitsune.sumo.api import CORSMixin, DateTimeUTCField
 from kitsune.sumo.decorators import json_view
 from kitsune.users.helpers import profile_avatar
 from kitsune.users.models import Profile, RegistrationProfile
@@ -96,7 +96,7 @@ class OnlySelfEdits(permissions.BasePermission):
 class ProfileSerializer(serializers.ModelSerializer):
     username = serializers.WritableField(source='user.username')
     display_name = serializers.WritableField(source='name', required=False)
-    date_joined = serializers.Field(source='user.date_joined')
+    date_joined = DateTimeUTCField(source='user.date_joined', read_only=True)
     avatar = serializers.SerializerMethodField('get_avatar_url')
     # These are write only fields. It is very important they stays that way!
     email = serializers.WritableField(
