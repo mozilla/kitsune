@@ -57,7 +57,9 @@ class JSONTest(ElasticTestCase):
         # Test with flags for advanced search or not
         a_types = (0, 1, 2)
         for a in a_types:
+            # NOTE: We need to follow redirects here because advanced search
+            # is at a different URL and gets redirected.
             response = self.client.get(reverse('search'), {
                 'format': 'json', 'a': a,
-            })
+            }, follow=True)
             eq_(response['Content-Type'], 'application/json')

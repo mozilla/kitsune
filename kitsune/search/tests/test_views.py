@@ -10,7 +10,9 @@ from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import group, user
 
 
-class SearchViewTests(ElasticTestCase):
+# TODO: Move this to test_es.py/AdvancedSearchViewTests
+# OR move all those view tests here.
+class AdvancedSearchViewTests(ElasticTestCase):
     client_class = LocalizingClient
 
     def test_discussion_forum_with_restricted_forums(self):
@@ -28,7 +30,7 @@ class SearchViewTests(ElasticTestCase):
         self.refresh()
 
         # Get the Advanced Search Form as an anonymous user
-        response = self.client.get(reverse('search'), {'a': '2'})
+        response = self.client.get(reverse('search.advanced'), {'a': '2'})
         eq_(200, response.status_code)
 
         # Regular forum should show up
@@ -46,7 +48,7 @@ class SearchViewTests(ElasticTestCase):
 
         # Get the Advanced Search Form as a logged in user
         self.client.login(username=u.username, password='testpass')
-        response = self.client.get(reverse('search'), {'a': '2'})
+        response = self.client.get(reverse('search.advanced'), {'a': '2'})
         eq_(200, response.status_code)
 
         # Both forums should show up for authorized user
