@@ -1062,6 +1062,29 @@ h2 {
       width: 60%;
     }
   }
+
+  .validation-label {
+    .box-sizing(border-box);
+    color: #c00;
+    display: none;
+    float: right;
+    margin-top: 10px;
+    padding-left: 16px;
+    width: 40%;
+
+    &:before {
+      content: '\2718';
+      margin-right: 10px;
+    }
+
+    &.valid {
+      color: #090;
+
+      &:before {
+        content: '\2713';
+      }
+    }
+  }
 }
 
 #show-login {

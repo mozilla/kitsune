@@ -1,3 +1,4 @@
+import json
 import os
 from ast import literal_eval
 from datetime import datetime
@@ -8,7 +9,8 @@ from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.models import Site
 from django.http import (HttpResponsePermanentRedirect, HttpResponseRedirect,
-                         Http404, HttpResponseForbidden)
+                         Http404, HttpResponseForbidden, HttpResponse)
+from django.views.decorators.cache import never_cache
 from django.views.decorators.http import (require_http_methods, require_GET,
                                           require_POST)
 from django.shortcuts import get_object_or_404, render, redirect
@@ -733,3 +735,19 @@ def forgot_username(request, template):
         form = ForgotUsernameForm()
 
     return render(request, template, {'form': form})
+
+
+@require_GET
+@never_cache
+def validate_field(request):
+    content_type = 'application/x-json'
+    data = {'valid': True}
+    if request.GET.get('field') == 'username':
+        if User.objects.filter(username=request.GET.get('value')).exists():
+            data = {
+                'valid': False,
+                'error': _('This username is already taken!')
+            }
+    else:
+        data = {'error': 'Invalid field'}
+    return HttpResponse(json.dumps(data), content_type=content_type)

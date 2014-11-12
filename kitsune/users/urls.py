@@ -53,6 +53,8 @@ users_patterns = patterns(
         name='users.deactivation_log'),
     url(r'^/make_contributor$', views.make_contributor,
         name='users.make_contributor'),
+    url(r'^/validate-field$', views.validate_field,
+        name='users.validate_field'),
 
     # Password reset
     url(r'^/pwreset$', views.password_reset, name='users.pw_reset'),
