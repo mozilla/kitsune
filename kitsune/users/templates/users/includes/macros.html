@@ -58,7 +58,14 @@
     {% endif %}
     <ul>
       {% for field in form if field.name != 'interested' %}
-        <li class="cf" data-validate-url="{{ url('users.validate_field') }}" data-valid-label="{{ _('This username is available.') }}">
+        {% if field.name == 'username' %}
+          {% set valid_label = _('This username is available.') %}
+        {% elif field.name == 'email' %}
+          {% set valid_label = _('This email looks great!') %}
+        {% else %}
+          {% set valid_label = None %}
+        {% endif %}
+        <li class="cf" {% if valid_label %}data-validate-url="{{ url('users.validate_field') }}" data-valid-label="{{ valid_label }}"{% endif %}>
           {{ field|label_with_help }}
           {{ field }}
           <div class="validation-label"></div>

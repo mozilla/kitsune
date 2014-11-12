@@ -17,7 +17,7 @@ $(document).on('click', '#show-password', function() {
   $pw.attr('type', (this.checked) ? 'text' : 'password');
 });
 
-$(document).on('keyup', '[data-validate-url] input', function() {
+var validate_field_cb = function() {
   var $this = $(this);
   var $v = $this.closest('[data-validate-url]');
   var url = $v.data('validate-url');
@@ -39,7 +39,10 @@ $(document).on('keyup', '[data-validate-url] input', function() {
       $label.hide();
     }
   });
-});
+};
+
+$(document).on('keyup', '[data-validate-url] input', validate_field_cb);
+$(document).on('change', '[data-validate-url] input', validate_field_cb);
 
 AAQSystemInfo.prototype = {
     init: function($form) {

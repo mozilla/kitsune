@@ -8,6 +8,8 @@ from django.contrib import auth, messages
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.models import Site
+from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
 from django.http import (HttpResponsePermanentRedirect, HttpResponseRedirect,
                          Http404, HttpResponseForbidden, HttpResponse)
 from django.views.decorators.cache import never_cache
@@ -742,12 +744,40 @@ def forgot_username(request, template):
 def validate_field(request):
     content_type = 'application/x-json'
     data = {'valid': True}
-    if request.GET.get('field') == 'username':
-        if User.objects.filter(username=request.GET.get('value')).exists():
+    field = request.GET.get('field')
+    value = request.GET.get('value')
+    if field == 'username':
+        if len(value) < 4:
             data = {
                 'valid': False,
-                'error': _('This username is already taken!')
+                'error': _('This username is too short!')
             }
+        elif len(value) > 30:
+            data = {
+                'valid': False,
+                'error': _('This username is too long!')
+            }
+        else:
+            exists = User.objects.filter(username=value).exists()
+            if exists:
+                data = {
+                    'valid': False,
+                    'error': _('This username is already taken!')
+                }
+    elif field == 'email':
+        try:
+            validate_email(value)
+        except ValidationError:
+            data = {
+                'valid': False,
+                'error': _('Invalid email')
+            }
+        else:
+            if User.objects.filter(email=request.GET.get('value')).exists():
+                data = {
+                    'valid': False,
+                    'error': _('This email is already in use!')
+                }
     else:
         data = {'error': 'Invalid field'}
     return HttpResponse(json.dumps(data), content_type=content_type)
