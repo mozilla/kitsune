@@ -68,7 +68,7 @@ class SearchTest(ElasticTestCase):
 
         self.refresh()
 
-        response = self.client.get(reverse('search'), {
+        response = self.client.get(reverse('search.advanced'), {
             'a': 1,
             'format': 'json',
             'page': 'invalid'
@@ -143,10 +143,9 @@ class SearchTest(ElasticTestCase):
 
         self.refresh()
 
-        response = self.client.get(reverse('search'), {'a': '1',
-                                                       'product': 'product',
-                                                       'q': 'cookies',
-                                                       'w': '1'})
+        response = self.client.get(
+            reverse('search.advanced'),
+            {'a': '1', 'product': 'product', 'q': 'cookies', 'w': '1'})
 
         assert "We couldn't find any results for" not in response.content
         eq_(200, response.status_code)
@@ -164,7 +163,7 @@ class SearchTest(ElasticTestCase):
 
         self.refresh()
 
-        response = self.client.get(reverse('search'), {
+        response = self.client.get(reverse('search.advanced'), {
             'a': '1',
             'product': ['product-one', 'product-two'],
             'q': 'cookies',

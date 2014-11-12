@@ -32,6 +32,7 @@ from kitsune.wiki.tests import document, revision, helpful_vote
 class ElasticSearchViewPagingTests(ElasticTestCase):
     client_class = LocalizingClient
 
+    # TODO: Get rid of this test and the implementation. It isnt used.
     def test_search_metrics(self):
         """Ensure that query strings are added to search results"""
         # Need at least one search result to get links.
@@ -42,7 +43,7 @@ class ElasticSearchViewPagingTests(ElasticTestCase):
 
         self.refresh()
 
-        response = self.client.get(reverse('search'), {
+        response = self.client.get(reverse('search.advanced'), {
             'q': 'audio', 'tags': 'desktop', 'w': '1', 'a': '1'
         })
         eq_(200, response.status_code)
@@ -212,7 +213,7 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
 
         self.refresh()
 
-        response = self.client.get(reverse('search'), {
+        response = self.client.get(reverse('search.advanced'), {
             'q': '', 'tags': 'desktop', 'w': '1', 'a': '1',
             'format': 'json'
         })
@@ -230,7 +231,7 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
 
         # Advanced search for questions with sortby set to 3 which is
         # '-replies' which is different between Sphinx and ES.
-        response = self.client.get(reverse('search'), {
+        response = self.client.get(reverse('search.advanced'), {
             'q': 'tags', 'tags': 'desktop', 'w': '2', 'a': '1', 'sortby': '3',
             'format': 'json'
         })
@@ -252,7 +253,7 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
         self.reindex_and_refresh()
 
         # r2.document should come first with 1 vote.
-        response = self.client.get(reverse('search'), {
+        response = self.client.get(reverse('search.advanced'), {
             'w': '1', 'a': '1', 'sortby_documents': 'helpful',
             'format': 'json'})
         eq_(200, response.status_code)
@@ -267,7 +268,7 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
         self.setup_indexes()
         self.reindex_and_refresh()
 
-        response = self.client.get(reverse('search'), {
+        response = self.client.get(reverse('search.advanced'), {
             'w': '1', 'a': '1', 'sortby_documents': 'helpful',
             'format': 'json'})
         eq_(200, response.status_code)
@@ -287,7 +288,7 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
 
         # Advanced search for questions with num_votes > 5. The above
         # question should be not in this set.
-        response = self.client.get(reverse('search'), {
+        response = self.client.get(reverse('search.advanced'), {
             'q': '', 'tags': 'desktop', 'w': '2', 'a': '1',
             'num_voted': 2, 'num_votes': 5,
             'format': 'json'
@@ -300,7 +301,7 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
 
         # Advanced search for questions with num_votes < 1. The above
         # question should be not in this set.
-        response = self.client.get(reverse('search'), {
+        response = self.client.get(reverse('search.advanced'), {
             'q': '', 'tags': 'desktop', 'w': '2', 'a': '1',
             'num_voted': 1, 'num_votes': 1,
             'format': 'json'
@@ -319,7 +320,7 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
         self.refresh()
 
         qs = {'q': '', 'w': 2, 'a': 1, 'num_voted': 2, 'num_votes': ''}
-        response = self.client.get(reverse('search'), qs)
+        response = self.client.get(reverse('search.advanced'), qs)
         eq_(200, response.status_code)
 
     def test_forums_search(self):
@@ -329,7 +330,7 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
 
         self.refresh()
 
-        response = self.client.get(reverse('search'), {
+        response = self.client.get(reverse('search.advanced'), {
             'author': '', 'created': '0', 'created_date': '',
             'updated': '0', 'updated_date': '', 'sortby': '0',
             'a': '1', 'w': '4', 'q': 'crash',
@@ -356,7 +357,7 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
 
         # Do a search as an anonymous user but don't specify the
         # forums to filter on. Should only see one of the posts.
-        response = self.client.get(reverse('search'), {
+        response = self.client.get(reverse('search.advanced'), {
             'author': '',
             'created': '0',
             'created_date': '',
@@ -383,7 +384,7 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
                    object_id=forum2.id, group=g, save=True)
 
         self.client.login(username=u.username, password='testpass')
-        response = self.client.get(reverse('search'), {
+        response = self.client.get(reverse('search.advanced'), {
             'author': '',
             'created': '0',
             'created_date': '',
@@ -417,7 +418,7 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
         # Do a search as an anonymous user and specify both
         # forums. Should only see the post from the unrestricted
         # forum.
-        response = self.client.get(reverse('search'), {
+        response = self.client.get(reverse('search.advanced'), {
             'author': '',
             'created': '0',
             'created_date': '',
@@ -445,7 +446,7 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
                    object_id=forum2.id, group=g, save=True)
 
         self.client.login(username=u.username, password='testpass')
-        response = self.client.get(reverse('search'), {
+        response = self.client.get(reverse('search.advanced'), {
             'author': '',
             'created': '0',
             'created_date': '',
@@ -476,7 +477,7 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
 
         # The thread/post should not show up in results for items
         # created AFTER 1/12/2010.
-        response = self.client.get(reverse('search'), {
+        response = self.client.get(reverse('search.advanced'), {
             'author': '', 'created': '2', 'created_date': '01/12/2010',
             'updated': '0', 'updated_date': '', 'sortby': '0',
             'a': '1', 'w': '4', 'q': 'crash',
@@ -490,7 +491,7 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
 
         # The thread/post should show up in results for items created
         # AFTER 1/1/2010.
-        response = self.client.get(reverse('search'), {
+        response = self.client.get(reverse('search.advanced'), {
             'author': '', 'created': '2', 'created_date': '01/01/2010',
             'updated': '0', 'updated_date': '', 'sortby': '0',
             'a': '1', 'w': '4', 'q': 'crash',
@@ -504,7 +505,7 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
 
         # The thread/post should show up in results for items created
         # BEFORE 1/12/2010.
-        response = self.client.get(reverse('search'), {
+        response = self.client.get(reverse('search.advanced'), {
             'author': '', 'created': '1', 'created_date': '01/12/2010',
             'updated': '0', 'updated_date': '', 'sortby': '0',
             'a': '1', 'w': '4', 'q': 'crash',
@@ -518,7 +519,7 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
 
         # The thread/post should NOT show up in results for items
         # created BEFORE 12/31/2009.
-        response = self.client.get(reverse('search'), {
+        response = self.client.get(reverse('search.advanced'), {
             'author': '', 'created': '1', 'created_date': '12/31/2009',
             'updated': '0', 'updated_date': '', 'sortby': '0',
             'a': '1', 'w': '4', 'q': 'crash',
@@ -537,7 +538,7 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
 
         self.refresh()
 
-        response = self.client.get(reverse('search'), {
+        response = self.client.get(reverse('search.advanced'), {
             'q': 'audio', 'q_tags': 'Windows 7', 'w': '2', 'a': '1',
             'sortby': '0', 'format': 'json'
         })
@@ -563,7 +564,7 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
         self.refresh()
 
         qs = {'a': 1, 'w': 3, 'format': 'json', 'category': 'invalid'}
-        response = self.client.get(reverse('search'), qs)
+        response = self.client.get(reverse('search.advanced'), qs)
         eq_(2, json.loads(response.content)['total'])
 
     def test_created(self):
@@ -590,19 +591,19 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
               'sortby': 2, 'created_date': '06/20/2010'}
 
         qs['created'] = constants.INTERVAL_BEFORE
-        response = self.client.get(reverse('search'), qs)
+        response = self.client.get(reverse('search.advanced'), qs)
         results = json.loads(response.content)['results']
         eq_([q1.get_absolute_url()], [r['url'] for r in results])
 
         qs['created'] = constants.INTERVAL_AFTER
-        response = self.client.get(reverse('search'), qs)
+        response = self.client.get(reverse('search.advanced'), qs)
         results = json.loads(response.content)['results']
         eq_([q2.get_absolute_url()], [r['url'] for r in results])
 
     def test_sortby_invalid(self):
         """Invalid created_date is ignored."""
         qs = {'a': 1, 'w': 4, 'format': 'json', 'sortby': ''}
-        response = self.client.get(reverse('search'), qs)
+        response = self.client.get(reverse('search.advanced'), qs)
         eq_(200, response.status_code)
 
     def test_created_date_invalid(self):
@@ -615,13 +616,13 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
         qs = {'a': 1, 'w': 4, 'format': 'json',
               'created': constants.INTERVAL_AFTER,
               'created_date': 'invalid'}
-        response = self.client.get(reverse('search'), qs)
+        response = self.client.get(reverse('search.advanced'), qs)
         eq_(1, json.loads(response.content)['total'])
 
     def test_created_date_nonexistent(self):
         """created is set while created_date is left out of the query."""
         qs = {'a': 1, 'w': 2, 'format': 'json', 'created': 1}
-        response = self.client.get(reverse('search'), qs)
+        response = self.client.get(reverse('search.advanced'), qs)
         eq_(200, response.status_code)
 
     def test_updated_invalid(self):
@@ -633,7 +634,7 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
 
         qs = {'a': 1, 'w': 4, 'format': 'json',
               'updated': 1, 'updated_date': 'invalid'}
-        response = self.client.get(reverse('search'), qs)
+        response = self.client.get(reverse('search.advanced'), qs)
         eq_(1, json.loads(response.content)['total'])
 
     def test_updated_nonexistent(self):
@@ -644,7 +645,7 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
         self.refresh()
 
         qs = {'a': 1, 'w': 2, 'format': 'json', 'updated': 1}
-        response = self.client.get(reverse('search'), qs)
+        response = self.client.get(reverse('search.advanced'), qs)
         eq_(response.status_code, 200)
 
     def test_asked_by(self):
@@ -672,7 +673,7 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
 
         for author, total in author_vals:
             qs.update({'asked_by': author})
-            response = self.client.get(reverse('search'), qs)
+            response = self.client.get(reverse('search.advanced'), qs)
             eq_(total, json.loads(response.content)['total'])
 
     def test_question_topics(self):
@@ -697,7 +698,7 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
         qs = {'a': 1, 'w': 2, 'format': 'json'}
         for topics, number in topic_vals:
             qs.update({'topics': topics})
-            response = self.client.get(reverse('search'), qs)
+            response = self.client.get(reverse('search.advanced'), qs)
             eq_(number, json.loads(response.content)['total'])
 
     def test_wiki_topics(self):
@@ -727,7 +728,7 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
         qs = {'a': 1, 'w': 1, 'format': 'json'}
         for topics, number in topic_vals:
             qs.update({'topics': topics})
-            response = self.client.get(reverse('search'), qs)
+            response = self.client.get(reverse('search.advanced'), qs)
             eq_(number, json.loads(response.content)['total'])
 
     def test_wiki_topics_inherit(self):
@@ -743,7 +744,7 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
         self.refresh()
 
         qs = {'a': 1, 'w': 1, 'format': 'json', 'topics': 'extant'}
-        response = self.client.get(reverse('search', locale='es'), qs)
+        response = self.client.get(reverse('search.advanced', locale='es'), qs)
         eq_(1, json.loads(response.content)['total'])
 
     def test_question_products(self):
@@ -767,7 +768,7 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
         qs = {'a': 1, 'w': 2, 'format': 'json'}
         for products, number in product_vals:
             qs.update({'product': products})
-            response = self.client.get(reverse('search'), qs)
+            response = self.client.get(reverse('search.advanced'), qs)
             eq_(number, json.loads(response.content)['total'])
 
     def test_wiki_products(self):
@@ -791,7 +792,7 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
 
         for prod, total in prod_vals:
             qs.update({'product': prod.slug})
-            response = self.client.get(reverse('search'), qs)
+            response = self.client.get(reverse('search.advanced'), qs)
             eq_(total, json.loads(response.content)['total'])
 
     def test_wiki_products_inherit(self):
@@ -808,7 +809,7 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
         self.refresh()
 
         qs = {'a': 1, 'w': 1, 'format': 'json', 'product': p.slug}
-        response = self.client.get(reverse('search', locale='fr'), qs)
+        response = self.client.get(reverse('search.advanced', locale='fr'), qs)
         eq_(1, json.loads(response.content)['total'])
 
     def test_discussion_filter_author(self):
@@ -831,7 +832,7 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
 
         for author, total in author_vals:
             qs.update({'author': author})
-            response = self.client.get(reverse('search'), qs)
+            response = self.client.get(reverse('search.advanced'), qs)
             eq_(total, json.loads(response.content)['total'])
 
     def test_discussion_filter_sticky(self):
@@ -843,7 +844,7 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
         self.refresh()
 
         qs = {'a': 1, 'w': 4, 'format': 'json', 'thread_type': 1, 'forum': 1}
-        response = self.client.get(reverse('search'), qs)
+        response = self.client.get(reverse('search.advanced'), qs)
         results = json.loads(response.content)['results']
         eq_(len(results), 1)
 
@@ -856,7 +857,7 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
         self.refresh()
 
         qs = {'a': 1, 'w': 4, 'format': 'json', 'thread_type': 2}
-        response = self.client.get(reverse('search'), qs)
+        response = self.client.get(reverse('search.advanced'), qs)
         results = json.loads(response.content)['results']
         eq_(len(results), 1)
 
@@ -869,7 +870,7 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
         self.refresh()
 
         qs = {'a': 1, 'w': 4, 'format': 'json', 'thread_type': (1, 2)}
-        response = self.client.get(reverse('search'), qs)
+        response = self.client.get(reverse('search.advanced'), qs)
         result = json.loads(response.content)['results'][0]
         eq_(thread1.get_absolute_url(), result['url'])
 
@@ -891,12 +892,12 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
               'sortby': 1, 'updated_date': '05/04/2010'}
 
         qs['updated'] = constants.INTERVAL_BEFORE
-        response = self.client.get(reverse('search'), qs)
+        response = self.client.get(reverse('search.advanced'), qs)
         results = json.loads(response.content)['results']
         eq_([thread1.get_absolute_url()], [r['url'] for r in results])
 
         qs['updated'] = constants.INTERVAL_AFTER
-        response = self.client.get(reverse('search'), qs)
+        response = self.client.get(reverse('search.advanced'), qs)
         results = json.loads(response.content)['results']
         eq_([thread2.get_absolute_url()], [r['url'] for r in results])
 
@@ -912,14 +913,14 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
         # include_archived gets the above document
         qs = {'q': 'impalas', 'a': 1, 'w': 1, 'format': 'json',
               'include_archived': 'on'}
-        response = self.client.get(reverse('search'), qs)
+        response = self.client.get(reverse('search.advanced'), qs)
         results = json.loads(response.content)['results']
         eq_(1, len(results))
 
         # no include_archived gets you nothing since the only
         # document in the index is archived
         qs = {'q': 'impalas', 'a': 0, 'w': 1, 'format': 'json'}
-        response = self.client.get(reverse('search'), qs)
+        response = self.client.get(reverse('search.advanced'), qs)
         results = json.loads(response.content)['results']
         eq_(0, len(results))
 
@@ -939,7 +940,7 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
 
         for forum_id in (forum1.id, forum2.id):
             qs['forum'] = int(forum_id)
-            response = self.client.get(reverse('search'), qs)
+            response = self.client.get(reverse('search.advanced'), qs)
             eq_(json.loads(response.content)['total'], 1)
 
 

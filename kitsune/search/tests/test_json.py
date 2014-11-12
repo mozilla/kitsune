@@ -59,5 +59,5 @@ class JSONTest(ElasticTestCase):
         for a in a_types:
             response = self.client.get(reverse('search'), {
                 'format': 'json', 'a': a,
-            })
+            }, follow=True)
             eq_(response['Content-Type'], 'application/json')
