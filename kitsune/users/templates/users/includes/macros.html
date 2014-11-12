@@ -58,7 +58,17 @@
     {% endif %}
     <ul>
       {% for field in form if field.name != 'interested' %}
-        <li class="cf">{{ field|label_with_help }} {{ field }}
+        {% if field.name == 'username' %}
+          {% set valid_label = _('This username is available.') %}
+        {% elif field.name == 'email' %}
+          {% set valid_label = _('This email looks great!') %}
+        {% else %}
+          {% set valid_label = None %}
+        {% endif %}
+        <li class="cf" {% if valid_label %}data-validate-url="{{ url('users.validate_field') }}" data-valid-label="{{ valid_label }}"{% endif %}>
+          {{ field|label_with_help }}
+          {{ field }}
+          <div class="validation-label"></div>
           {% if field.name == "password"  %}
             <p id="password-rules">
               {{ _("Password should be at least 8 characters long and contain at least 1 number.") }}
@@ -73,7 +83,7 @@
     </ul>
     <p>
       <input id="show-password" type="checkbox" />
-      <label for="show-password">{{ _('Reveal password to check that it\'s right') }}</label>
+      <label for="show-password">{{ _("Reveal password to check that it's right") }}</label>
     </p>
     <div class="submit">
       <input type="hidden" name="register" value="1">

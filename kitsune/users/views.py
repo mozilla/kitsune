@@ -7,8 +7,10 @@ from django.contrib import auth, messages
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.models import Site
+from django.core.exceptions import ValidationError
 from django.http import (HttpResponsePermanentRedirect, HttpResponseRedirect,
                          Http404, HttpResponseForbidden)
+from django.views.decorators.cache import never_cache
 from django.views.decorators.http import (require_http_methods, require_GET,
                                           require_POST)
 from django.shortcuts import get_object_or_404, render, redirect
@@ -29,7 +31,7 @@ from kitsune.questions.models import Question
 from kitsune.questions.utils import (
     num_questions, num_answers, num_solutions, mark_content_as_spam)
 from kitsune.sumo import email_utils
-from kitsune.sumo.decorators import ssl_required
+from kitsune.sumo.decorators import ssl_required, json_view
 from kitsune.sumo.helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import get_next_url, simple_paginate
@@ -733,3 +735,43 @@ def forgot_username(request, template):
         form = ForgotUsernameForm()
 
     return render(request, template, {'form': form})
+
+
+@require_GET
+@never_cache
+@json_view
+def validate_field(request):
+    data = {'valid': True}
+
+    field = request.GET.get('field')
+    value = request.GET.get('value')
+    form = RegisterForm()
+
+    try:
+        form.fields[request.GET.get('field')].clean(request.GET.get('value'))
+    except ValidationError, e:
+        data = {
+            'valid': False,
+            'error': e.messages[0]
+        }
+    except KeyError:
+        data = {
+            'valid': False,
+            'error': _('Invalid field')
+        }
+
+    if data['valid']:
+        if field == 'username':
+            if User.objects.filter(username=value).exists():
+                data = {
+                    'valid': False,
+                    'error': _('This username is already taken!')
+                }
+        elif field == 'email':
+            if User.objects.filter(email=request.GET.get('value')).exists():
+                data = {
+                    'valid': False,
+                    'error': _('This email is already in use!')
+                }
+
+    return data

@@ -1045,7 +1045,7 @@ h2 {
       input {
         .box-sizing(border-box);
         padding: 10px;
-        width: 60%;
+        width: 45%;
       }
 
       label {
@@ -1055,11 +1055,39 @@ h2 {
     }
   }
 
+  h2 {
+    font-size: 26px;
+  }
+
   .submit {
     .btn {
       .box-sizing(border-box);
+      height: 45px;
       margin-top: 20px;
-      width: 60%;
+      width: 45%;
+    }
+  }
+
+  .validation-label {
+    .box-sizing(border-box);
+    color: #c00;
+    display: none;
+    float: right;
+    margin-top: 10px;
+    padding-left: 16px;
+    width: 55%;
+
+    &:before {
+      content: '\2718'; /* X mark */
+      margin-right: 10px;
+    }
+
+    &.valid {
+      color: #090;
+
+      &:before {
+        content: '\2713'; /* Check mark */
+      }
     }
   }
 }
@@ -1076,9 +1104,10 @@ h2 {
   margin-top: 10px;
 }
 
-#username-rules, #password-rules {
+#username-rules,
+#password-rules {
   font-size: 12px;
-  width: 60%;
+  width: 45%;
 }
 
 #product-picker {
