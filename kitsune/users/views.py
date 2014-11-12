@@ -1,4 +1,3 @@
-import json
 import os
 from ast import literal_eval
 from datetime import datetime
@@ -11,7 +10,7 @@ from django.contrib.sites.models import Site
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 from django.http import (HttpResponsePermanentRedirect, HttpResponseRedirect,
-                         Http404, HttpResponseForbidden, HttpResponse)
+                         Http404, HttpResponseForbidden)
 from django.views.decorators.cache import never_cache
 from django.views.decorators.http import (require_http_methods, require_GET,
                                           require_POST)
@@ -33,7 +32,7 @@ from kitsune.questions.models import Question
 from kitsune.questions.utils import (
     num_questions, num_answers, num_solutions, mark_content_as_spam)
 from kitsune.sumo import email_utils
-from kitsune.sumo.decorators import ssl_required
+from kitsune.sumo.decorators import ssl_required, json_view
 from kitsune.sumo.helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import get_next_url, simple_paginate
@@ -741,6 +740,7 @@ def forgot_username(request, template):
 
 @require_GET
 @never_cache
+@json_view
 def validate_field(request):
     content_type = 'application/x-json'
     data = {'valid': True}
@@ -780,4 +780,4 @@ def validate_field(request):
                 }
     else:
         data = {'error': 'Invalid field'}
-    return HttpResponse(json.dumps(data), content_type=content_type)
+    return data
