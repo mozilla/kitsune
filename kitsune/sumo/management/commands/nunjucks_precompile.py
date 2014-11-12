@@ -9,7 +9,7 @@ ROOT = os.path.realpath(
     os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..'))
 
 
-def path(parts):
+def path(*parts):
     return os.path.join(ROOT, *parts)
 
 
