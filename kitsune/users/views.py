@@ -742,7 +742,6 @@ def forgot_username(request, template):
 @never_cache
 @json_view
 def validate_field(request):
-    content_type = 'application/x-json'
     data = {'valid': True}
     field = request.GET.get('field')
     value = request.GET.get('value')
