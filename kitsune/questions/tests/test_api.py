@@ -11,7 +11,7 @@ from kitsune.products.tests import product, topic
 from kitsune.sumo.urlresolvers import reverse
 
 
-class TestQuestionSerializerSerialization(TestCase):
+class TestQuestionSerializerDeserialization(TestCase):
 
     def setUp(self):
         self.profile = profile()
@@ -75,8 +75,16 @@ class TestQuestionSerializerSerialization(TestCase):
         ok_(serializer.is_valid())
         eq_(serializer.object.topic, self.topic)
 
+    def test_solution_is_readonly(self):
+        q = question(save=True)
+        a = answer(question=q, save=True)
+        self.data['solution'] = a.id
+        serializer = api.QuestionSerializer(context=self.context, data=self.data, instance=q)
+        serializer.save()
+        eq_(q.solution, None)
 
-class TestQuestionSerializerDeserialization(TestCase):
+
+class TestQuestionSerializerSerialization(TestCase):
 
     def setUp(self):
         self.asker = user(save=True)
@@ -128,6 +136,14 @@ class TestQuestionSerializerDeserialization(TestCase):
         serializer = api.QuestionSerializer(instance=self.question)
         eq_(sorted(serializer.data['involved']),
             self._names(self.asker, self.helper1, self.helper2))
+
+    def test_solution_is_id(self):
+        a = self._answer(self.helper1)
+        self.question.solution = a
+        self.question.save()
+
+        serializer = api.QuestionSerializer(instance=self.question)
+        eq_(serializer.data['solution'], a.id)
 
 
 class TestQuestionViewSet(TestCase):

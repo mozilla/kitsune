@@ -46,7 +46,7 @@ class QuestionSerializer(serializers.ModelSerializer):
     is_solved = serializers.Field(source='is_solved')
     metadata = QuestionMetaDataSerializer(source='metadata_set', required=False)
     num_votes = serializers.Field(source='num_votes')
-    solution = serializers.Field()  # Read only
+    solution = serializers.PrimaryKeyRelatedField(read_only=True)
     updated_by = serializers.SlugRelatedField(slug_field='username', required=False)
 
     class Meta:
