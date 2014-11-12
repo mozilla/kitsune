@@ -10,6 +10,8 @@ from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import group, user
 
 
+# TODO: Move this to test_es.py/AdvancedSearchViewTests
+# OR move all those view tests here.
 class SearchViewTests(ElasticTestCase):
     client_class = LocalizingClient
 

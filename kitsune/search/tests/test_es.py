@@ -56,11 +56,11 @@ class ElasticSearchViewPagingTests(ElasticTestCase):
         eq_('0', q['r'])
 
 
-class ElasticSearchUnifiedViewTests(ElasticTestCase):
+class SimpleSearchViewTests(ElasticTestCase):
     client_class = LocalizingClient
 
     def test_meta_tags(self):
-        """Tests that the search results page  has the right meta tags"""
+        """Tests that the search results page has the right meta tags"""
         url_ = reverse('search')
         response = self.client.get(url_, {'q': 'contribute'})
 
@@ -204,6 +204,67 @@ class ElasticSearchUnifiedViewTests(ElasticTestCase):
 
         content = json.loads(response.content)
         eq_(content['total'], 0)
+
+    def test_filter_by_product(self):
+        desktop = product(slug=u'desktop', save=True)
+        mobile = product(slug=u'mobile', save=True)
+        ques = question(title=u'audio', product=desktop, save=True)
+        ans = answer(question=ques, content=u'volume', save=True)
+        answervote(answer=ans, helpful=True, save=True)
+
+        doc = document(title=u'audio', locale=u'en-US', category=10, save=True)
+        doc.products.add(desktop)
+        doc.products.add(mobile)
+        revision(document=doc, is_approved=True, save=True)
+
+        self.refresh()
+
+        # There should be 2 results for desktop and 1 for mobile.
+        response = self.client.get(reverse('search'), {
+            'q': 'audio', 'format': 'json', 'product': 'desktop'})
+        eq_(200, response.status_code)
+        content = json.loads(response.content)
+        eq_(content['total'], 2)
+
+        response = self.client.get(reverse('search'), {
+            'q': 'audio', 'format': 'json', 'product': 'mobile'})
+        eq_(200, response.status_code)
+        content = json.loads(response.content)
+        eq_(content['total'], 1)
+
+    def test_filter_by_doctype(self):
+        desktop = product(slug=u'desktop', save=True)
+        ques = question(title=u'audio', product=desktop, save=True)
+        ans = answer(question=ques, content=u'volume', save=True)
+        answervote(answer=ans, helpful=True, save=True)
+
+        doc = document(title=u'audio', locale=u'en-US', category=10, save=True)
+        doc.products.add(desktop)
+        revision(document=doc, is_approved=True, save=True)
+
+        doc = document(
+            title=u'audio too', locale=u'en-US', category=10, save=True)
+        doc.products.add(desktop)
+        revision(document=doc, is_approved=True, save=True)
+
+        self.refresh()
+
+        # There should be 2 results for kb (w=1) and 1 for questions (w=2).
+        response = self.client.get(reverse('search'), {
+            'q': 'audio', 'format': 'json', 'w': '1'})
+        eq_(200, response.status_code)
+        content = json.loads(response.content)
+        eq_(content['total'], 2)
+
+        response = self.client.get(reverse('search'), {
+            'q': 'audio', 'format': 'json', 'w': '2'})
+        eq_(200, response.status_code)
+        content = json.loads(response.content)
+        eq_(content['total'], 1)
+
+
+class AdvancedSearchViewTests(ElasticTestCase):
+    client_class = LocalizingClient
 
     def test_advanced_search_for_wiki_no_query(self):
         """Tests advanced search with no query"""
