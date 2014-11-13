@@ -64,7 +64,7 @@ def simple_search(request, template=None):
     * document type (`w=2`, for esample, for Support Forum questions only)
     """
 
-    # Redirect to old Advanced Search URLs to the new URL.
+    # Redirect to old Advanced Search URLs (?a={1,2}) to the new URL.
     a = request.GET.get('a', '0')
     if a in ['1', '2']:
         new_url = reverse('search.advanced') + '?' + request.GET.urlencode()
@@ -87,26 +87,15 @@ def simple_search(request, template=None):
     r = request.GET.copy()
 
     # Search default values
-    try:
-        category = (map(int, r.getlist('category')) or
-                    settings.SEARCH_DEFAULT_CATEGORIES)
-    except ValueError:
-        category = settings.SEARCH_DEFAULT_CATEGORIES
-    r.setlist('category', category)
+    r.setlist('category', settings.SEARCH_DEFAULT_CATEGORIES)
 
-    # Basic form
-    if a == '0':
-        r['w'] = r.get('w', constants.WHERE_BASIC)
-
-    # TODO: Rewrite so SearchForm is unbound initially and we can use
-    # `initial` on the form fields.
-    if 'include_archived' not in r:
-        r['include_archived'] = False
+    # TODO: Do we really need to add this to the URL if it isn't already there?
+    r['w'] = r.get('w', constants.WHERE_BASIC)
 
     search_form = SearchForm(r, auto_id=False)
     search_form.set_allowed_forums(request.user)
 
-    if not search_form.is_valid() or a == '2':
+    if not search_form.is_valid():
         if is_json:
             return HttpResponse(
                 json.dumps({'error': _('Invalid search data.')}),
@@ -126,6 +115,7 @@ def simple_search(request, template=None):
 
     cleaned = search_form.cleaned_data
 
+    # On mobile, we default to just wiki results.
     if request.MOBILE and cleaned['w'] == constants.WHERE_BASIC:
         cleaned['w'] = constants.WHERE_WIKI
 
@@ -145,7 +135,6 @@ def simple_search(request, template=None):
 
     wiki_f = F(model='wiki_document')
     question_f = F(model='questions_question')
-    discussion_f = F(model='forums_thread')
 
     # Start - wiki filters
 
@@ -168,11 +157,7 @@ def simple_search(request, template=None):
             wiki_f &= F(topic=t)
 
         # Archived bit
-        if a == '0' and not cleaned['include_archived']:
-            # Default to NO for basic search:
-            cleaned['include_archived'] = False
-        if not cleaned['include_archived']:
-            wiki_f &= F(document_is_archived=False)
+        wiki_f &= F(document_is_archived=False)
 
     # End - wiki filters
 
@@ -180,32 +165,18 @@ def simple_search(request, template=None):
 
     if cleaned['w'] & constants.WHERE_SUPPORT:
         # Has helpful answers is set by default if using basic search
-        if a == '0' and not cleaned['has_helpful']:
-            cleaned['has_helpful'] = constants.TERNARY_YES
+        cleaned['has_helpful'] = constants.TERNARY_YES
 
         # No archived questions in default search.
-        if a == '0' and not cleaned['is_archived']:
-            cleaned['is_archived'] = constants.TERNARY_NO
+        cleaned['is_archived'] = constants.TERNARY_NO
 
         # These filters are ternary, they can be either YES, NO, or OFF
-        ternary_filters = ('is_locked', 'is_solved', 'has_answers',
-                           'has_helpful', 'is_archived')
+        ternary_filters = ('has_helpful', 'is_archived')
         d = dict(('question_%s' % filter_name,
                   _ternary_filter(cleaned[filter_name]))
                  for filter_name in ternary_filters if cleaned[filter_name])
         if d:
             question_f &= F(**d)
-
-        if cleaned['asked_by']:
-            question_f &= F(question_creator=cleaned['asked_by'])
-
-        if cleaned['answered_by']:
-            question_f &= F(question_answer_creator=cleaned['answered_by'])
-
-        q_tags = [t.strip() for t in cleaned['q_tags'].split(',')]
-        for t in q_tags:
-            if t:
-                question_f &= F(question_tag=t)
 
         # Product filter
         products = cleaned['product']
@@ -219,63 +190,6 @@ def simple_search(request, template=None):
 
     # End - support questions filters
 
-    # Start - discussion forum filters
-
-    if cleaned['w'] & constants.WHERE_DISCUSSION:
-        if cleaned['author']:
-            discussion_f &= F(post_author_ord=cleaned['author'])
-
-        if cleaned['thread_type']:
-            if constants.DISCUSSION_STICKY in cleaned['thread_type']:
-                discussion_f &= F(post_is_sticky=1)
-
-            if constants.DISCUSSION_LOCKED in cleaned['thread_type']:
-                discussion_f &= F(post_is_locked=1)
-
-        valid_forum_ids = [
-            f.id for f in Forum.authorized_forums_for_user(request.user)]
-
-        forum_ids = None
-        if cleaned['forum']:
-            forum_ids = [f for f in cleaned['forum'] if f in valid_forum_ids]
-
-        # If we removed all the forums they wanted to look at or if
-        # they didn't specify, then we filter on the list of all
-        # forums they're authorized to look at.
-        if not forum_ids:
-            forum_ids = valid_forum_ids
-
-        discussion_f &= F(post_forum_id__in=forum_ids)
-
-    # End - discussion forum filters
-
-    # Created filter
-    unix_now = int(time.time())
-    interval_filters = (
-        ('created', cleaned['created'], cleaned['created_date']),
-        ('updated', cleaned['updated'], cleaned['updated_date']))
-    for filter_name, filter_option, filter_date in interval_filters:
-        if filter_option == constants.INTERVAL_BEFORE:
-            before = {filter_name + '__gte': 0,
-                      filter_name + '__lte': max(filter_date, 0)}
-
-            discussion_f &= F(**before)
-            question_f &= F(**before)
-        elif filter_option == constants.INTERVAL_AFTER:
-            after = {filter_name + '__gte': min(filter_date, unix_now),
-                     filter_name + '__lte': unix_now}
-
-            discussion_f &= F(**after)
-            question_f &= F(**after)
-
-    # Note: num_voted (with a d) is a different field than num_votes
-    # (with an s). The former is a dropdown and the latter is an
-    # integer value.
-    if cleaned['num_voted'] == constants.INTERVAL_BEFORE:
-        question_f &= F(question_num_votes__lte=max(cleaned['num_votes'], 0))
-    elif cleaned['num_voted'] == constants.INTERVAL_AFTER:
-        question_f &= F(question_num_votes__gte=cleaned['num_votes'])
-
     # Done with all the filtery stuff--time  to generate results
 
     # Combine all the filters and add to the searcher
@@ -288,10 +202,6 @@ def simple_search(request, template=None):
     if cleaned['w'] & constants.WHERE_SUPPORT:
         doctypes.append(QuestionMappingType.get_mapping_type_name())
         final_filter |= question_f
-
-    if cleaned['w'] & constants.WHERE_DISCUSSION:
-        doctypes.append(ThreadMappingType.get_mapping_type_name())
-        final_filter |= discussion_f
 
     searcher = searcher.doctypes(*doctypes)
     searcher = searcher.filter(final_filter)
@@ -308,7 +218,6 @@ def simple_search(request, template=None):
         searcher = searcher.highlight(
             'question_content',  # support forum
             'document_summary',  # kb
-            'post_content',  # contributor forum
             pre_tags=['<b>'],
             post_tags=['</b>'],
             number_of_fragments=0)
@@ -318,8 +227,6 @@ def simple_search(request, template=None):
             question_title=4.0,
             question_content=3.0,
             question_answer_content=3.0,
-            post_title=2.0,
-            post_content=1.0,
             document_title=6.0,
             document_content=1.0,
             document_keywords=8.0,
@@ -330,34 +237,11 @@ def simple_search(request, template=None):
             document_title__match_phrase=10.0,
             document_content__match_phrase=8.0)
 
-        # Apply sortby for advanced search of questions
-        if cleaned['w'] == constants.WHERE_SUPPORT:
-            sortby = cleaned['sortby']
-            try:
-                searcher = searcher.order_by(
-                    *constants.SORT_QUESTIONS[sortby])
-            except IndexError:
-                # Skip index errors because they imply the user is
-                # sending us sortby values that aren't valid.
-                pass
-
-        # Apply sortby for advanced search of kb documents
-        if cleaned['w'] == constants.WHERE_WIKI:
-            sortby = cleaned['sortby_documents']
-            try:
-                searcher = searcher.order_by(
-                    *constants.SORT_DOCUMENTS[sortby])
-            except IndexError:
-                # Skip index errors because they imply the user is
-                # sending us sortby values that aren't valid.
-                pass
-
         # Build the query
         if cleaned_q:
             query_fields = chain(*[
                 cls.get_query_fields() for cls in [
                     DocumentMappingType,
-                    ThreadMappingType,
                     QuestionMappingType
                 ]
             ])
@@ -432,12 +316,6 @@ def simple_search(request, template=None):
                     'num_answers': doc['question_num_answers'],
                     'num_votes': doc['question_num_votes'],
                     'num_votes_past_week': doc['question_num_votes_past_week']}
-
-            else:
-                summary = _build_es_excerpt(doc, first_only=True)
-                result = {
-                    'title': doc['post_title'],
-                    'type': 'thread'}
 
             result['url'] = doc['url']
             result['object'] = doc
