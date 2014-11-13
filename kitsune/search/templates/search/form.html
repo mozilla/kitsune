@@ -1,6 +1,6 @@
 {% extends "search/base.html" %}
 {% from 'includes/common_macros.html' import for_contributors_sidebar %}
-{% if advanced != '0' %}
+{% if advanced %}
   {% set title = _('Advanced Search') %}
   {% set classes = 'advanced_search' %}
 {% endif %}
@@ -11,8 +11,8 @@
   </div>
   <div class="grid_9">
     <div class="content-box cf" id="advanced-search">
-      {% if advanced != '0' %}
-        <h1 class="nomargin">Advanced Search</h1>
+      {% if advanced %}
+        <h1 class="nomargin">{{ _('Advanced Search') }}</h1>
         <div id="search-tabs">
           <span id="where" style="display: none">{{ search_form.w.data or '' }}</span>
           <ul class="tab-strip cf" id="advanced-search-tabs">

@@ -26,7 +26,7 @@ from kitsune.products.models import Product
 from kitsune.questions.models import QuestionMappingType
 from kitsune.search.utils import locale_or_default, clean_excerpt, ComposedList
 from kitsune.search import es_utils
-from kitsune.search.forms import SearchForm
+from kitsune.search.forms import SimpleSearchForm, SearchForm
 from kitsune.search.es_utils import ES_EXCEPTIONS, F, AnalyzerS
 from kitsune.sumo.helpers import Paginator
 from kitsune.sumo.urlresolvers import reverse
@@ -65,10 +65,11 @@ def simple_search(request, template=None):
     """
 
     # Redirect to old Advanced Search URLs (?a={1,2}) to the new URL.
-    a = request.GET.get('a', '0')
+    a = request.GET.get('a')
     if a in ['1', '2']:
         new_url = reverse('search.advanced') + '?' + request.GET.urlencode()
         return HttpResponseRedirect(new_url)
+    a = '0'
 
     # JSON-specific variables
     is_json = (request.GET.get('format') == 'json')
@@ -86,14 +87,11 @@ def simple_search(request, template=None):
         request.GET.get('language', request.LANGUAGE_CODE))
     r = request.GET.copy()
 
-    # Search default values
-    r.setlist('category', settings.SEARCH_DEFAULT_CATEGORIES)
-
     # TODO: Do we really need to add this to the URL if it isn't already there?
     r['w'] = r.get('w', constants.WHERE_BASIC)
 
-    search_form = SearchForm(r, auto_id=False)
-    search_form.set_allowed_forums(request.user)
+    # TODO: Break out a separate simple search form.
+    search_form = SimpleSearchForm(r, auto_id=False)
 
     if not search_form.is_valid():
         if is_json:
@@ -104,7 +102,7 @@ def simple_search(request, template=None):
 
         t = template if request.MOBILE else 'search/form.html'
         search_ = render(request, t, {
-            'advanced': a, 'request': request,
+            'advanced': False, 'request': request,
             'search_form': search_form})
         cache_period = settings.SEARCH_CACHE_PERIOD
         search_['Cache-Control'] = 'max-age=%s' % (cache_period * 60)
@@ -140,8 +138,7 @@ def simple_search(request, template=None):
 
     if cleaned['w'] & constants.WHERE_WIKI:
         # Category filter
-        if cleaned['category']:
-            wiki_f &= F(document_category__in=cleaned['category'])
+        wiki_f &= F(document_category__in=settings.SEARCH_DEFAULT_CATEGORIES)
 
         # Locale filter
         wiki_f &= F(document_locale=language)
@@ -150,11 +147,6 @@ def simple_search(request, template=None):
         products = cleaned['product']
         for p in products:
             wiki_f &= F(product=p)
-
-        # Topics filter
-        topics = cleaned['topics']
-        for t in topics:
-            wiki_f &= F(topic=t)
 
         # Archived bit
         wiki_f &= F(document_is_archived=False)
@@ -182,11 +174,6 @@ def simple_search(request, template=None):
         products = cleaned['product']
         for p in products:
             question_f &= F(product=p)
-
-        # Topics filter
-        topics = cleaned['topics']
-        for t in topics:
-            question_f &= F(topic=t)
 
     # End - support questions filters
 
@@ -238,24 +225,23 @@ def simple_search(request, template=None):
             document_content__match_phrase=8.0)
 
         # Build the query
-        if cleaned_q:
-            query_fields = chain(*[
-                cls.get_query_fields() for cls in [
-                    DocumentMappingType,
-                    QuestionMappingType
-                ]
-            ])
-            query = {}
-            # Create match and match_phrase queries for every field
-            # we want to search.
-            for field in query_fields:
-                for query_type in ['match', 'match_phrase']:
-                    query['%s__%s' % (field, query_type)] = cleaned_q
+        query_fields = chain(*[
+            cls.get_query_fields() for cls in [
+                DocumentMappingType,
+                QuestionMappingType
+            ]
+        ])
+        query = {}
+        # Create match and match_phrase queries for every field
+        # we want to search.
+        for field in query_fields:
+            for query_type in ['match', 'match_phrase']:
+                query['%s__%s' % (field, query_type)] = cleaned_q
 
-            # Transform the query to use locale aware analyzers.
-            query = es_utils.es_query_with_analyzer(query, language)
+        # Transform the query to use locale aware analyzers.
+        query = es_utils.es_query_with_analyzer(query, language)
 
-            searcher = searcher.query(should=True, **query)
+        searcher = searcher.query(should=True, **query)
 
         num_results = min(searcher.count(), settings.SEARCH_MAX_RESULTS)
 
@@ -407,7 +393,9 @@ def simple_search(request, template=None):
         'product': product,
         'products': Product.objects.filter(visible=True),
         'pages': pages,
-        'search_form': search_form, })
+        'search_form': search_form,
+        'advanced': False,
+    })
     results_ = render(request, template, data)
     cache_period = settings.SEARCH_CACHE_PERIOD
     results_['Cache-Control'] = 'max-age=%s' % (cache_period * 60)
@@ -422,7 +410,7 @@ def simple_search(request, template=None):
 
 @mobile_template('search/{mobile/}results.html')
 def advanced_search(request, template=None):
-    """ES-specific search view"""
+    """ES-specific Advanced search view"""
 
     # JSON-specific variables
     is_json = (request.GET.get('format') == 'json')
@@ -449,18 +437,9 @@ def advanced_search(request, template=None):
         category = settings.SEARCH_DEFAULT_CATEGORIES
     r.setlist('category', category)
 
-    # Basic form
-    if a == '0':
-        r['w'] = r.get('w', constants.WHERE_BASIC)
-    # Advanced form
-    if a == '2':
-        r['language'] = language
-        r['a'] = '1'
-
-    # TODO: Rewrite so SearchForm is unbound initially and we can use
-    # `initial` on the form fields.
-    if 'include_archived' not in r:
-        r['include_archived'] = False
+    r['language'] = language
+    # TODO: Figure out if we can get rid of the 'a' for good. We probably can.
+    r['a'] = '1'
 
     search_form = SearchForm(r, auto_id=False)
     search_form.set_allowed_forums(request.user)
@@ -474,7 +453,7 @@ def advanced_search(request, template=None):
 
         t = template if request.MOBILE else 'search/form.html'
         search_ = render(request, t, {
-            'advanced': a, 'request': request,
+            'advanced': True, 'request': request,
             'search_form': search_form})
         cache_period = settings.SEARCH_CACHE_PERIOD
         search_['Cache-Control'] = 'max-age=%s' % (cache_period * 60)
@@ -527,9 +506,6 @@ def advanced_search(request, template=None):
             wiki_f &= F(topic=t)
 
         # Archived bit
-        if a == '0' and not cleaned['include_archived']:
-            # Default to NO for basic search:
-            cleaned['include_archived'] = False
         if not cleaned['include_archived']:
             wiki_f &= F(document_is_archived=False)
 
@@ -538,14 +514,6 @@ def advanced_search(request, template=None):
     # Start - support questions filters
 
     if cleaned['w'] & constants.WHERE_SUPPORT:
-        # Has helpful answers is set by default if using basic search
-        if a == '0' and not cleaned['has_helpful']:
-            cleaned['has_helpful'] = constants.TERNARY_YES
-
-        # No archived questions in default search.
-        if a == '0' and not cleaned['is_archived']:
-            cleaned['is_archived'] = constants.TERNARY_NO
-
         # These filters are ternary, they can be either YES, NO, or OFF
         ternary_filters = ('is_locked', 'is_solved', 'has_answers',
                            'has_helpful', 'is_archived')
@@ -849,7 +817,9 @@ def advanced_search(request, template=None):
         'product_titles': product_titles,
         'q': cleaned['q'],
         'w': cleaned['w'],
-        'lang_name': lang_name, }
+        'lang_name': lang_name,
+        'advanced': True,
+    }
 
     if is_json:
         # Models are not json serializable.
