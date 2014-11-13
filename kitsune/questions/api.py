@@ -6,7 +6,7 @@ from rest_framework.response import Response
 
 from kitsune.products.api import TopicField
 from kitsune.questions.models import Question, Answer, QuestionMetaData
-from kitsune.sumo.api import CORSMixin, OnlyCreatorEdits
+from kitsune.sumo.api import CORSMixin, OnlyCreatorEdits, DateTimeUTCField
 
 
 class QuestionMetaDataSerializer(serializers.ModelSerializer):
@@ -41,12 +41,14 @@ class QuestionSerializer(serializers.ModelSerializer):
     product = serializers.SlugRelatedField(required=True, slug_field='slug')
     topic = TopicField(required=True)
     # Use usernames for creator and updated_by instead of ids.
+    created = DateTimeUTCField(read_only=True)
     creator = serializers.SlugRelatedField(slug_field='username', required=False)
     involved = serializers.SerializerMethodField('get_involved_users')
     is_solved = serializers.Field(source='is_solved')
     metadata = QuestionMetaDataSerializer(source='metadata_set', required=False)
     num_votes = serializers.Field(source='num_votes')
     solution = serializers.PrimaryKeyRelatedField(read_only=True)
+    updated = DateTimeUTCField(read_only=True)
     updated_by = serializers.SlugRelatedField(slug_field='username', required=False)
 
     class Meta:
@@ -199,10 +201,10 @@ class QuestionViewSet(CORSMixin, viewsets.ModelViewSet):
 
 
 class AnswerSerializer(serializers.ModelSerializer):
-    creator = serializers.SlugRelatedField(slug_field='username',
-                                           required=False)
-    updated_by = serializers.SlugRelatedField(slug_field='username',
-                                              required=False)
+    created = DateTimeUTCField(read_only=True)
+    creator = serializers.SlugRelatedField(slug_field='username', required=False)
+    updated = DateTimeUTCField(read_only=True)
+    updated_by = serializers.SlugRelatedField(slug_field='username', required=False)
     num_helpful_votes = serializers.Field(source='num_helpful_votes')
     num_unhelpful_votes = serializers.Field(source='num_unhelpful_votes')
 
