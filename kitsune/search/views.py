@@ -73,8 +73,6 @@ def simple_search(request, template=None):
     if a in ['1', '2']:
         new_url = reverse('search.advanced') + '?' + request.GET.urlencode()
         return HttpResponseRedirect(new_url)
-    # TODO: nix all dependencies on 'a' in here and advanced_search
-    a = '0'
 
     # JSON-specific variables
     is_json = (request.GET.get('format') == 'json')
@@ -431,6 +429,8 @@ def advanced_search(request, template=None):
     language = locale_or_default(
         request.GET.get('language', request.LANGUAGE_CODE))
     r = request.GET.copy()
+    # TODO: Figure out how to get rid of 'a' and do it.
+    # It basically is used to switch between showing the form or results.
     a = request.GET.get('a', '2')
 
     # Search default values
@@ -446,6 +446,7 @@ def advanced_search(request, template=None):
     search_form = AdvancedSearchForm(r, auto_id=False)
     search_form.set_allowed_forums(request.user)
 
+    # This is all we use a for now I think.
     if not search_form.is_valid() or a == '2':
         if is_json:
             return HttpResponse(
