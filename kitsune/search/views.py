@@ -1,4 +1,5 @@
 import json
+import logging
 import re
 import time
 from datetime import datetime, timedelta
@@ -35,6 +36,9 @@ from kitsune.wiki.facets import documents_for
 from kitsune.wiki.models import DocumentMappingType
 
 
+log = logging.getLogger('k.search')
+
+
 EXCERPT_JOINER = _lazy(u'...', 'between search excerpts')
 
 
@@ -69,6 +73,7 @@ def simple_search(request, template=None):
     if a in ['1', '2']:
         new_url = reverse('search.advanced') + '?' + request.GET.urlencode()
         return HttpResponseRedirect(new_url)
+    # TODO: nix all dependencies on 'a' in here and advanced_search
     a = '0'
 
     # JSON-specific variables
@@ -324,8 +329,7 @@ def simple_search(request, template=None):
         exc_bucket = repr(exc).lower().strip('()')
         statsd.incr('search.esunified.{0}'.format(exc_bucket))
 
-        import logging
-        logging.exception(exc)
+        log.exception(exc)
 
         t = 'search/mobile/down.html' if request.MOBILE else 'search/down.html'
         return render(request, t, {'q': cleaned['q']}, status=503)
@@ -427,7 +431,7 @@ def advanced_search(request, template=None):
     language = locale_or_default(
         request.GET.get('language', request.LANGUAGE_CODE))
     r = request.GET.copy()
-    a = request.GET.get('a', '0')
+    a = request.GET.get('a', '2')
 
     # Search default values
     try:
@@ -438,8 +442,6 @@ def advanced_search(request, template=None):
     r.setlist('category', category)
 
     r['language'] = language
-    # TODO: Figure out if we can get rid of the 'a' for good. We probably can.
-    r['a'] = '1'
 
     search_form = AdvancedSearchForm(r, auto_id=False)
     search_form.set_allowed_forums(request.user)
@@ -787,8 +789,7 @@ def advanced_search(request, template=None):
         exc_bucket = repr(exc).lower().strip('()')
         statsd.incr('search.esunified.{0}'.format(exc_bucket))
 
-        import logging
-        logging.exception(exc)
+        log.exception(exc)
 
         t = 'search/mobile/down.html' if request.MOBILE else 'search/down.html'
         return render(request, t, {'q': cleaned['q']}, status=503)
