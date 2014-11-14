@@ -238,7 +238,7 @@
       {% else %}
         {% from "search/includes/macros.html" import basic_search_form with context %}
         {{ basic_search_form(True) }}
-        <a href="{{ url('search')|urlparams(a=2, q=search_form.q.data) }}">{{ _('Use advanced search') }}</a>
+        <a href="{{ url('search.advanced')|urlparams(q=search_form.q.data) }}">{{ _('Use advanced search') }}</a>
       {% endif %}
     </div>
   </div>
