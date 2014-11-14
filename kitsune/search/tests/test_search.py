@@ -22,19 +22,20 @@ def render(s, context):
     return t.render(context)
 
 
-class SearchTest(ElasticTestCase):
+# TODO: consolidate with the rest of the Simple Search tests.
+class SimpleSearchTests(ElasticTestCase):
     client_class = LocalizingClient
 
     def test_content(self):
         """Ensure template is rendered with no errors for a common search"""
-        response = self.client.get(reverse('search'), {'q': 'audio', 'w': 3})
+        response = self.client.get(reverse('search'), {'q': 'audio'})
         eq_('text/html; charset=utf-8', response['Content-Type'])
         eq_(200, response.status_code)
 
     def test_content_mobile(self):
         """Ensure mobile template is rendered."""
         self.client.cookies[settings.MOBILE_COOKIE] = 'on'
-        response = self.client.get(reverse('search'), {'q': 'audio', 'w': 3})
+        response = self.client.get(reverse('search'), {'q': 'audio'})
         eq_('text/html; charset=utf-8', response['Content-Type'])
         eq_(200, response.status_code)
 
@@ -47,7 +48,7 @@ class SearchTest(ElasticTestCase):
 
     def test_headers(self):
         """Verify caching headers of search forms and search results"""
-        response = self.client.get(reverse('search'), {'q': 'audio', 'w': 3})
+        response = self.client.get(reverse('search'), {'q': 'audio'})
         eq_('max-age=%s' % (settings.SEARCH_CACHE_PERIOD * 60),
             response['Cache-Control'])
         assert 'Expires' in response
@@ -68,8 +69,8 @@ class SearchTest(ElasticTestCase):
 
         self.refresh()
 
-        response = self.client.get(reverse('search.advanced'), {
-            'a': 1,
+        response = self.client.get(reverse('search'), {
+            'q': 'audio',
             'format': 'json',
             'page': 'invalid'
         })
@@ -132,6 +133,11 @@ class SearchTest(ElasticTestCase):
         assert "We couldn't find any results for" in response.content
         doc = pq(response.content)
         eq_(2, len(doc('#search-results .result')))
+
+
+# TODO: consolidate with the rest of the Advanced Search tests.
+class AdvancedSearchTests(ElasticTestCase):
+    client_class = LocalizingClient
 
     def test_search_products(self):
         p = product(title=u'Product One', slug='product', save=True)

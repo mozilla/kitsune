@@ -12,7 +12,7 @@ from kitsune.users.tests import group, user
 
 # TODO: Move this to test_es.py/AdvancedSearchViewTests
 # OR move all those view tests here.
-class SearchViewTests(ElasticTestCase):
+class AdvancedSearchViewTests(ElasticTestCase):
     client_class = LocalizingClient
 
     def test_discussion_forum_with_restricted_forums(self):

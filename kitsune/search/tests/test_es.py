@@ -89,8 +89,8 @@ class SimpleSearchViewTests(ElasticTestCase):
         response = self.client.get(reverse('search'), qs)
         eq_(200, response.status_code)
 
-    def test_default_search_for_questions(self):
-        """This tests whether doing a default search returns
+    def test_include_questions(self):
+        """This tests whether doing a simple search returns
         question results.
 
         Bug #709202.
@@ -130,8 +130,8 @@ class SimpleSearchViewTests(ElasticTestCase):
         content = json.loads(response.content)
         eq_(content['total'], 1)
 
-    def test_default_search_for_wiki(self):
-        """This tests whether doing a default search returns wiki document
+    def test_include_wiki(self):
+        """This tests whether doing a simple search returns wiki document
         results.
 
         Bug #709202.
@@ -156,8 +156,8 @@ class SimpleSearchViewTests(ElasticTestCase):
         content = json.loads(response.content)
         eq_(content['total'], 1)
 
-    def test_default_only_shows_wiki_and_questions(self):
-        """Tests that the default search doesn't show forums
+    def test_only_show_wiki_and_questions(self):
+        """Tests that the simple search doesn't show forums
 
         This verifies that we're only showing documents of the type
         that should be shown and that the filters on model are working
@@ -189,7 +189,7 @@ class SimpleSearchViewTests(ElasticTestCase):
         eq_(content['total'], 2)
 
         # Archive the article and question. They should no longer appear
-        # in default search results.
+        # in simple search results.
         ques.is_archived = True
         ques.save()
         doc.is_archived = True
@@ -266,7 +266,7 @@ class SimpleSearchViewTests(ElasticTestCase):
 class AdvancedSearchViewTests(ElasticTestCase):
     client_class = LocalizingClient
 
-    def test_advanced_search_for_wiki_no_query(self):
+    def test_wiki_no_query(self):
         """Tests advanced search with no query"""
         doc = document(locale=u'en-US', category=10, save=True)
         doc.tags.add(u'desktop')
@@ -284,7 +284,7 @@ class AdvancedSearchViewTests(ElasticTestCase):
         content = json.loads(response.content)
         eq_(content['total'], 1)
 
-    def test_advanced_search_questions_sortby(self):
+    def test_questions_sortby(self):
         """Tests advanced search for questions with a sortby"""
         question(title=u'tags tags tags', save=True)
 
@@ -302,7 +302,7 @@ class AdvancedSearchViewTests(ElasticTestCase):
         content = json.loads(response.content)
         eq_(content['total'], 1)
 
-    def test_advanced_search_sortby_documents_helpful(self):
+    def test_sortby_documents_helpful(self):
         """Tests advanced search with a sortby_documents by helpful"""
         r1 = revision(is_approved=True, save=True)
         r2 = revision(is_approved=True, save=True)
@@ -337,7 +337,7 @@ class AdvancedSearchViewTests(ElasticTestCase):
         content = json.loads(response.content)
         eq_(r1.document.title, content['results'][0]['title'])
 
-    def test_advanced_search_questions_num_votes(self):
+    def test_questions_num_votes(self):
         """Tests advanced search for questions num_votes filter"""
         q = question(title=u'tags tags tags', save=True)
 
