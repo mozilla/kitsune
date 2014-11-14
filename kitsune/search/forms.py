@@ -27,9 +27,6 @@ class SimpleSearchForm(forms.Form):
 
     q = forms.CharField(required=True)
 
-    # TODO: get rid of this.
-    a = forms.IntegerField(required=False, widget=forms.HiddenInput)
-
     w = forms.TypedChoiceField(required=False, coerce=int,
                                widget=forms.HiddenInput,
                                empty_value=constants.WHERE_BASIC,
@@ -44,10 +41,13 @@ class SimpleSearchForm(forms.Form):
         widget=forms.CheckboxSelectMultiple())
 
 
-class SearchForm(SimpleSearchForm):
+class AdvancedSearchForm(forms.Form):
     """Django form for handling display and validation"""
     def __init__(self, *args, **kwargs):
-        super(SearchForm, self).__init__(*args, **kwargs)
+        super(AdvancedSearchForm, self).__init__(*args, **kwargs)
+
+        product_field = self.fields['product']
+        product_field.choices = Product.objects.values_list('slug', 'title')
 
         topics_field = self.fields['topics']
         topics_field.choices = Topic.objects.values_list(
@@ -78,6 +78,17 @@ class SearchForm(SimpleSearchForm):
     # Common fields
     q = forms.CharField(required=False)
 
+    w = forms.TypedChoiceField(required=False, coerce=int,
+                               widget=forms.HiddenInput,
+                               empty_value=constants.WHERE_BASIC,
+                               choices=((constants.WHERE_SUPPORT, None),
+                                        (constants.WHERE_WIKI, None),
+                                        (constants.WHERE_BASIC, None),
+                                        (constants.WHERE_DISCUSSION, None)))
+
+    # TODO: get rid of this.
+    a = forms.IntegerField(required=False, widget=forms.HiddenInput)
+
     # KB fields
     topics = forms.MultipleChoiceField(
         required=False,
@@ -90,6 +101,11 @@ class SearchForm(SimpleSearchForm):
     category = TypedMultipleChoiceField(
         required=False, coerce=int, widget=forms.CheckboxSelectMultiple,
         label=_lazy(u'Category'), choices=CATEGORIES, coerce_only=True)
+
+    product = forms.MultipleChoiceField(
+        required=False,
+        label=_lazy(u'Relevant to'),
+        widget=forms.CheckboxSelectMultiple())
 
     include_archived = forms.BooleanField(
         required=False, label=_lazy(u'Include obsolete articles?'))

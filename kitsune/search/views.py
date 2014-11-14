@@ -26,7 +26,7 @@ from kitsune.products.models import Product
 from kitsune.questions.models import QuestionMappingType
 from kitsune.search.utils import locale_or_default, clean_excerpt, ComposedList
 from kitsune.search import es_utils
-from kitsune.search.forms import SimpleSearchForm, SearchForm
+from kitsune.search.forms import SimpleSearchForm, AdvancedSearchForm
 from kitsune.search.es_utils import ES_EXCEPTIONS, F, AnalyzerS
 from kitsune.sumo.helpers import Paginator
 from kitsune.sumo.urlresolvers import reverse
@@ -441,7 +441,7 @@ def advanced_search(request, template=None):
     # TODO: Figure out if we can get rid of the 'a' for good. We probably can.
     r['a'] = '1'
 
-    search_form = SearchForm(r, auto_id=False)
+    search_form = AdvancedSearchForm(r, auto_id=False)
     search_form.set_allowed_forums(request.user)
 
     if not search_form.is_valid() or a == '2':
