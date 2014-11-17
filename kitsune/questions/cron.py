@@ -110,8 +110,6 @@ def auto_archive_old_questions():
 def reload_question_traffic_stats():
     """Reload question views from the analytics."""
     if settings.STAGE:
-        print ('Skipped reload_question_traffic_stats(). '
-               'Set settings.STAGE to False to run it for real.')
         return
 
     QuestionVisits.reload_from_analytics(verbose=settings.DEBUG)
