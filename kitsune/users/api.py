@@ -238,7 +238,7 @@ class ProfileViewSet(CORSMixin,
         in each category, this algorithm can support almost 90K users
         before there is a 1% chance of failure.
         """
-        if not settings.STAGE or settings.DEBUG:
+        if not (settings.STAGE or settings.DEBUG):
             raise GenericAPIException(503, 'User generation temporarily only available on stage.')
 
         digits = ''

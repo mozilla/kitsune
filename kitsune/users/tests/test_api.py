@@ -209,3 +209,15 @@ class TestUserView(TestCase):
         eq_(res.data['user']['username'], new_user.username)
         assert 'password' in res.data
         assert 'token' in res.data
+
+    @override_settings(DEBUG=True)
+    def test_generator_debug(self):
+        # There is at least one user made during tests.
+        old_user_count = User.objects.count()
+        res = self.client.post(reverse('user-generate'))
+        eq_(res.status_code, 200)
+        eq_(User.objects.count(), old_user_count + 1)
+        new_user = User.objects.order_by('-id')[0]
+        eq_(res.data['user']['username'], new_user.username)
+        assert 'password' in res.data
+        assert 'token' in res.data
