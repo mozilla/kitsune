@@ -8,7 +8,6 @@ from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.models import Site
 from django.core.exceptions import ValidationError
-from django.core.validators import validate_email
 from django.http import (HttpResponsePermanentRedirect, HttpResponseRedirect,
                          Http404, HttpResponseForbidden)
 from django.views.decorators.cache import never_cache
@@ -743,40 +742,36 @@ def forgot_username(request, template):
 @json_view
 def validate_field(request):
     data = {'valid': True}
+
     field = request.GET.get('field')
     value = request.GET.get('value')
-    if field == 'username':
-        if len(value) < 4:
-            data = {
-                'valid': False,
-                'error': _('This username is too short!')
-            }
-        elif len(value) > 30:
-            data = {
-                'valid': False,
-                'error': _('This username is too long!')
-            }
-        else:
-            exists = User.objects.filter(username=value).exists()
-            if exists:
+    form = RegisterForm()
+
+    try:
+        form.fields[request.GET.get('field')].clean(request.GET.get('value'))
+    except ValidationError, e:
+        data = {
+            'valid': False,
+            'error': e.messages[0]
+        }
+    except KeyError:
+        data = {
+            'valid': False,
+            'error': _('Invalid field')
+        }
+
+    if data['valid']:
+        if field == 'username':
+            if User.objects.filter(username=value).exists():
                 data = {
                     'valid': False,
                     'error': _('This username is already taken!')
                 }
-    elif field == 'email':
-        try:
-            validate_email(value)
-        except ValidationError:
-            data = {
-                'valid': False,
-                'error': _('Invalid email')
-            }
-        else:
+        elif field == 'email':
             if User.objects.filter(email=request.GET.get('value')).exists():
                 data = {
                     'valid': False,
                     'error': _('This email is already in use!')
                 }
-    else:
-        data = {'error': 'Invalid field'}
+
     return data

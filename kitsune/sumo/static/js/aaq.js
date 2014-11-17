@@ -11,39 +11,6 @@ function AAQSystemInfo($form) {
     AAQSystemInfo.prototype.init.call(this, $form);
 }
 
-$(document).on('click', '#show-password', function() {
-  var $form = $(this).closest('form');
-  var $pw = $form.find('input[name="password"]');
-  $pw.attr('type', (this.checked) ? 'text' : 'password');
-});
-
-var validate_field_cb = function() {
-  var $this = $(this);
-  var $v = $this.closest('[data-validate-url]');
-  var url = $v.data('validate-url');
-  $.getJSON(url, {
-    field: $this.attr('name'),
-    value: $this.val()
-  }, function(data) {
-    var $label = $v.find('.validation-label');
-    if ($this.val().length) {
-      if (data.valid) {
-        $label.addClass('valid');
-        $label.text($v.data('valid-label'));
-      } else {
-        $label.removeClass('valid');
-        $label.text(data.error);
-      }
-      $label.show();
-    } else {
-      $label.hide();
-    }
-  });
-};
-
-$(document).on('keyup', '[data-validate-url] input', validate_field_cb);
-$(document).on('change', '[data-validate-url] input', validate_field_cb);
-
 AAQSystemInfo.prototype = {
     init: function($form) {
         var self = this,

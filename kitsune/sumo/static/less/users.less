@@ -433,11 +433,10 @@ article {
   margin: 20px 0 0;
 }
 
-#password-rules,
-#username-rules {
-  font-size: 85%;
-  margin: 5px 0 0 170px;
-  width: 240px;
+#username-rules,
+#password-rules {
+  font-size: 12px;
+  width: 60%;
 }
 
 #deactivations-log {
@@ -509,4 +508,88 @@ article {
 form.deactivate {
   clear: both;
   display: inline-block;
+}
+
+#register-form {
+  fieldset {
+    border: 0;
+    margin: 0;
+    padding: 0;
+  }
+
+  h2 {
+    margin-bottom: 0;
+
+    + h4 {
+      margin-bottom: 10px;
+      margin-top: 5px;
+    }
+  }
+
+  label {
+    font-size: 12px;
+    font-weight: bold;
+    padding: 0;
+    text-align: left;
+    width: auto;
+  }
+
+  form {
+    ul {
+      list-style: none;
+      margin: 10px 0;
+      padding: 0;
+
+      > li {
+        min-height: 100px;
+      }
+
+      input[type="text"],
+      input[type="password"],
+      input[type="email"] {
+        .box-sizing(border-box);
+        padding: 10px;
+        width: 60%;
+      }
+
+      label {
+        display: block;
+        margin: 10px 0;
+      }
+    }
+  }
+
+  .submit {
+    margin: 0;
+    padding: 0;
+
+    .btn {
+      .box-sizing(border-box);
+      margin-top: 20px;
+      width: 60%;
+    }
+  }
+
+  .validation-label {
+    .box-sizing(border-box);
+    color: #c00;
+    display: none;
+    float: right;
+    margin-top: 10px;
+    padding-left: 16px;
+    width: 40%;
+
+    &:before {
+      content: '\2718'; /* X mark */
+      margin-right: 10px;
+    }
+
+    &.valid {
+      color: #090;
+
+      &:before {
+        content: '\2713'; /* Check mark */
+      }
+    }
+  }
 }
