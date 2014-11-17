@@ -17,3 +17,7 @@ class FacebookURLWidget(PatternURLWidget):
 class TwitterURLWidget(PatternURLWidget):
     """A URLWidget that requires a Twitter URL."""
     pattern = r'https?://(?:www\.)?twitter\.com/.+'
+
+class MozilliansURLWidget(PatternURLWidget):
+    """A URLWidget that requires a Mozillians URL."""
+    pattern = r'https?://(?:www\.)?mozillians\.org/.+'

@@ -98,7 +98,7 @@
         </section>
       {% endif %}
       {% if profile.public_email or profile.website or profile.twitter or
-            profile.facebook or profile.irc_handle %}
+            profile.facebook or profile.mozillians or profile.irc_handle %}
         <section class="contact">
           <ul>
             {% if profile.public_email and request.user.is_authenticated() %}
@@ -123,6 +123,12 @@
               <li>
                 <label>{{ _('Facebook') }}</label>
                 <a rel="nofollow" href="{{ profile.facebook }}">{{ profile.facebook }}</a>
+              </li>
+            {% endif %}
+            {% if profile.mozillians %}
+              <li>
+                <label>{{ _('Mozillians') }}</label>
+                <a rel="nofollow" href="{{ profile.mozillians }}">{{ profile.mozillians }}</a>
               </li>
             {% endif %}
             {% if profile.irc_handle %}
