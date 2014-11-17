@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from string import letters
 
 from django.contrib.auth.models import User
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db.models import Q
 from django.views.decorators.http import require_GET
@@ -19,7 +20,7 @@ from rest_framework.authtoken import views as authtoken_views
 from rest_framework.authtoken.models import Token
 
 from kitsune.access.decorators import login_required
-from kitsune.sumo.api import CORSMixin, DateTimeUTCField
+from kitsune.sumo.api import CORSMixin, DateTimeUTCField, GenericAPIException
 from kitsune.sumo.decorators import json_view
 from kitsune.users.helpers import profile_avatar
 from kitsune.users.models import Profile, RegistrationProfile
@@ -237,6 +238,9 @@ class ProfileViewSet(CORSMixin,
         in each category, this algorithm can support almost 90K users
         before there is a 1% chance of failure.
         """
+        if not settings.STAGE or settings.DEBUG:
+            raise GenericAPIException(503, 'User generation temporarily only available on stage.')
+
         digits = ''
         # The loop counter isn't used. This is an escape hatch.
         for i in range(20):
