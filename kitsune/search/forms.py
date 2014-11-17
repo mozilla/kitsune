@@ -19,12 +19,6 @@ SEARCH_LANGUAGES = [(k, LOCALES[k].native) for
 
 class SimpleSearchForm(forms.Form):
     """Django form to handle the simple search case."""
-    def __init__(self, *args, **kwargs):
-        super(SimpleSearchForm, self).__init__(*args, **kwargs)
-
-        product_field = self.fields['product']
-        product_field.choices = Product.objects.values_list('slug', 'title')
-
     q = forms.CharField(required=True)
 
     w = forms.TypedChoiceField(required=False, coerce=int,
@@ -40,41 +34,15 @@ class SimpleSearchForm(forms.Form):
         label=_lazy(u'Relevant to'),
         widget=forms.CheckboxSelectMultiple())
 
-
-class AdvancedSearchForm(forms.Form):
-    """Django form for handling display and validation"""
     def __init__(self, *args, **kwargs):
-        super(AdvancedSearchForm, self).__init__(*args, **kwargs)
+        super(SimpleSearchForm, self).__init__(*args, **kwargs)
 
         product_field = self.fields['product']
         product_field.choices = Product.objects.values_list('slug', 'title')
 
-        topics_field = self.fields['topics']
-        topics_field.choices = Topic.objects.values_list(
-            'slug', 'title').distinct()
 
-    def clean(self):
-        """Clean up data and set defaults"""
-        c = self.cleaned_data
-
-        # Validate created and updated dates
-        date_fields = (('created', 'created_date'),
-                       ('updated', 'updated_date'))
-        for field_option, field_date in date_fields:
-            if c[field_date] != '':
-                try:
-                    created_timestamp = time.mktime(
-                        time.strptime(c[field_date], '%m/%d/%Y'))
-                    c[field_date] = int(created_timestamp)
-                except (ValueError, OverflowError):
-                    c[field_option] = None
-            else:
-                c[field_option] = None
-
-        # Empty value defaults to int
-        c['num_votes'] = c.get('num_votes') or 0
-        return c
-
+class AdvancedSearchForm(forms.Form):
+    """Django form for handling display and validation"""
     # Common fields
     q = forms.CharField(required=False)
 
@@ -186,6 +154,38 @@ class AdvancedSearchForm(forms.Form):
                                         'class': 'auto-fill'})
     q_tags = forms.CharField(label=_lazy(u'Tags'), required=False,
                              widget=tag_widget)
+
+    def __init__(self, *args, **kwargs):
+        super(AdvancedSearchForm, self).__init__(*args, **kwargs)
+
+        product_field = self.fields['product']
+        product_field.choices = Product.objects.values_list('slug', 'title')
+
+        topics_field = self.fields['topics']
+        topics_field.choices = Topic.objects.values_list(
+            'slug', 'title').distinct()
+
+    def clean(self):
+        """Clean up data and set defaults"""
+        c = self.cleaned_data
+
+        # Validate created and updated dates
+        date_fields = (('created', 'created_date'),
+                       ('updated', 'updated_date'))
+        for field_option, field_date in date_fields:
+            if c[field_date] != '':
+                try:
+                    created_timestamp = time.mktime(
+                        time.strptime(c[field_date], '%m/%d/%Y'))
+                    c[field_date] = int(created_timestamp)
+                except (ValueError, OverflowError):
+                    c[field_option] = None
+            else:
+                c[field_option] = None
+
+        # Empty value defaults to int
+        c['num_votes'] = c.get('num_votes') or 0
+        return c
 
     def set_allowed_forums(self, user):
         """Sets the 'forum' field choices to forums the user can see."""
