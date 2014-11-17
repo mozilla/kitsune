@@ -4,6 +4,7 @@ from django.conf import settings
 from django.db.models import Count, F
 
 import cronjobs
+from statsd import statsd
 
 from kitsune.customercare.models import Reply
 from kitsune.dashboards import LAST_90_DAYS
@@ -413,8 +414,6 @@ def process_exit_surveys():
     if settings.STAGE:
         # Only run this on prod, it doesn't need to be running multiple times
         # from different places.
-        print ('Skipped email address processing in process_exit_surveys(). '
-               'Set settings.STAGE to False to run it for real.')
         return
 
     startdate = date.today() - timedelta(days=2)
@@ -430,7 +429,7 @@ def process_exit_surveys():
         for email in emails:
             add_email_to_campaign(survey, email)
 
-        print '%s emails processed for %s...' % (len(emails), survey)
+        statsd.gauge('survey.{0}'.format(survey), len(emails))
 
 
 def _process_exit_survey_results():
@@ -481,8 +480,6 @@ def survey_recent_askers():
     if settings.STAGE:
         # Only run this on prod, it doesn't need to be running multiple times
         # from different places.
-        print('Skipped email address processing in survey_recent_askers(). '
-              'Set settings.STAGE to False to run it for real.')
         return
 
     # We get the email addresses of all users that asked a question 2 days
@@ -498,4 +495,4 @@ def survey_recent_askers():
     for email in emails:
             add_email_to_campaign('askers', email)
 
-    print '%s emails added to askers survey...' % len(emails)
+    statsd.gauge('survey.askers', len(emails))

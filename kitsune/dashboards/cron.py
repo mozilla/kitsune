@@ -18,8 +18,6 @@ from kitsune.wiki.utils import num_active_contributors
 @cronjobs.register
 def reload_wiki_traffic_stats():
     if settings.STAGE:
-        print ('Skipped reload_wiki_traffic_stats(). '
-               'Set settings.STAGE to False to run it for real.')
         return
 
     for period, _ in PERIODS:
