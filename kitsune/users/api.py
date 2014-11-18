@@ -150,7 +150,7 @@ class ProfileSerializer(serializers.ModelSerializer):
             # specified, the user will be inactive until the email is
             # confirmed. Otherwise the user can be created immediately.
             if 'user.email' in attrs:
-                u = RegistrationProfile.uncached.create_inactive_user(
+                u = RegistrationProfile.objects.create_inactive_user(
                     attrs['user.username'],
                     attrs['user.password'],
                     attrs['user.email'])
@@ -265,7 +265,7 @@ class ProfileViewSet(CORSMixin,
         u.set_password(password)
         u.save()
         p = Profile.uncached.create(user=u)
-        token, _ = Token.uncached.get_or_create(user=u)
+        token, _ = Token.objects.get_or_create(user=u)
         serializer = ProfileSerializer(instance=p)
 
         return Response({
