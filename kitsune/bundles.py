@@ -151,6 +151,7 @@ MINIFY_BUNDLES = {
             'js/format.js',
             'js/libs/modernizr-2.6.1.js',
             'js/geoip-locale.js',
+            'js/libs/mailcheck.js',
             'js/ui.js',
             'js/analytics.js',
             'js/surveygizmo.js',
