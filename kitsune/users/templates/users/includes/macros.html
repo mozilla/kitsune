@@ -65,7 +65,7 @@
         {% else %}
           {% set valid_label = None %}
         {% endif %}
-        <li class="cf" {% if valid_label %}data-validate-url="{{ url('users.validate_field') }}" data-valid-label="{{ valid_label }}"{% endif %}>
+        <li class="cf" {% if valid_label %}data-validate-url="{{ url('users.validate_field') }}" data-valid-label="{{ valid_label }}" {% if field.name == 'email' %}data-validate-extras='["email"]'{% endif %}{% endif %}>
           {{ field|label_with_help }}
           {{ field }}
           <div class="validation-label"></div>
