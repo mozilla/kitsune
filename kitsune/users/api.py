@@ -48,10 +48,10 @@ def usernames(request):
         return []
     with statsd.timer('users.api.usernames.search'):
         profiles = (
-            Profile.objects.filter(Q(name__istartswith=pre))
+            Profile.uncached.filter(Q(name__istartswith=pre))
             .values_list('user_id', flat=True))
         users = (
-            User.objects.filter(
+            User.uncached.filter(
                 Q(username__istartswith=pre) | Q(id__in=profiles))
             .extra(select={'length': 'Length(username)'})
             .order_by('length').select_related('profile'))
@@ -150,7 +150,7 @@ class ProfileSerializer(serializers.ModelSerializer):
             # specified, the user will be inactive until the email is
             # confirmed. Otherwise the user can be created immediately.
             if 'user.email' in attrs:
-                u = RegistrationProfile.objects.create_inactive_user(
+                u = RegistrationProfile.uncached.create_inactive_user(
                     attrs['user.username'],
                     attrs['user.password'],
                     attrs['user.email'])
@@ -164,7 +164,7 @@ class ProfileSerializer(serializers.ModelSerializer):
         obj = self.object
         if obj is None:
             # This is a create
-            if User.objects.filter(username=attrs['user.username']).exists():
+            if User.uncached.filter(username=attrs['user.username']).exists():
                 raise ValidationError('A user with that username exists')
         else:
             # This is an update
@@ -185,7 +185,7 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     def validate_email(self, attrs, source):
         email = attrs.get('user.email')
-        if email and User.objects.filter(email=email).exists():
+        if email and User.uncached.filter(email=email).exists():
             raise ValidationError('A user with that email address '
                                   'already exists.')
         return attrs
@@ -248,7 +248,7 @@ class ProfileViewSet(CORSMixin,
             # name parts lists.
             name = ''.join(map(random.choice, self.username_parts)) + digits
             # Check if it is taken yet.
-            if not User.objects.filter(username=name).exists():
+            if not User.uncached.filter(username=name).exists():
                 break
             # Names after the first start to get numbers.
             digits = str(random.randint(0, 1000))
@@ -261,11 +261,11 @@ class ProfileViewSet(CORSMixin,
 
         password = ''.join(random.choice(letters) for _ in range(10))
 
-        u = User.objects.create(username=name)
+        u = User.uncached.create(username=name)
         u.set_password(password)
         u.save()
-        p = Profile.objects.create(user=u)
-        token, _ = Token.objects.get_or_create(user=u)
+        p = Profile.uncached.create(user=u)
+        token, _ = Token.uncached.get_or_create(user=u)
         serializer = ProfileSerializer(instance=p)
 
         return Response({
