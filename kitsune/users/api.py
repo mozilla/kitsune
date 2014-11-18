@@ -48,7 +48,7 @@ def usernames(request):
         return []
     with statsd.timer('users.api.usernames.search'):
         profiles = (
-            Profile.objects.filter(Q(name__istartswith=pre))
+            Profile.uncached.filter(Q(name__istartswith=pre))
             .values_list('user_id', flat=True))
         users = (
             User.objects.filter(
@@ -264,7 +264,7 @@ class ProfileViewSet(CORSMixin,
         u = User.objects.create(username=name)
         u.set_password(password)
         u.save()
-        p = Profile.objects.create(user=u)
+        p = Profile.uncached.create(user=u)
         token, _ = Token.objects.get_or_create(user=u)
         serializer = ProfileSerializer(instance=p)
 
