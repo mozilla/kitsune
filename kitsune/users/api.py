@@ -51,7 +51,7 @@ def usernames(request):
             Profile.uncached.filter(Q(name__istartswith=pre))
             .values_list('user_id', flat=True))
         users = (
-            User.uncached.filter(
+            User.objects.filter(
                 Q(username__istartswith=pre) | Q(id__in=profiles))
             .extra(select={'length': 'Length(username)'})
             .order_by('length').select_related('profile'))
@@ -164,7 +164,7 @@ class ProfileSerializer(serializers.ModelSerializer):
         obj = self.object
         if obj is None:
             # This is a create
-            if User.uncached.filter(username=attrs['user.username']).exists():
+            if User.objects.filter(username=attrs['user.username']).exists():
                 raise ValidationError('A user with that username exists')
         else:
             # This is an update
@@ -185,7 +185,7 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     def validate_email(self, attrs, source):
         email = attrs.get('user.email')
-        if email and User.uncached.filter(email=email).exists():
+        if email and User.objects.filter(email=email).exists():
             raise ValidationError('A user with that email address '
                                   'already exists.')
         return attrs
@@ -248,7 +248,7 @@ class ProfileViewSet(CORSMixin,
             # name parts lists.
             name = ''.join(map(random.choice, self.username_parts)) + digits
             # Check if it is taken yet.
-            if not User.uncached.filter(username=name).exists():
+            if not User.objects.filter(username=name).exists():
                 break
             # Names after the first start to get numbers.
             digits = str(random.randint(0, 1000))
@@ -261,7 +261,7 @@ class ProfileViewSet(CORSMixin,
 
         password = ''.join(random.choice(letters) for _ in range(10))
 
-        u = User.uncached.create(username=name)
+        u = User.objects.create(username=name)
         u.set_password(password)
         u.save()
         p = Profile.uncached.create(user=u)
