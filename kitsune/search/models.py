@@ -7,7 +7,7 @@ from django.db import models
 from django.db.models.signals import pre_delete, post_save, m2m_changed
 from django.dispatch import receiver
 
-from elasticutils.contrib.django import MappingType, Indexable
+from elasticutils.contrib.django import MappingType, Indexable, MLT
 from elasticsearch.exceptions import NotFoundError
 
 from kitsune.search import es_utils
@@ -160,6 +160,11 @@ class SearchMappingType(MappingType, Indexable):
             # Ignore the case where we try to delete something that's
             # not there.
             pass
+
+    @classmethod
+    def morelikethis(cls, id_, s, fields):
+        """MoreLikeThis API"""
+        return list(MLT(id_, s, fields, min_term_freq=1, min_doc_freq=1))
 
 
 def _identity(s):

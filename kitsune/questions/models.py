@@ -29,7 +29,7 @@ from kitsune.questions.managers import QuestionManager, QuestionLocaleManager
 from kitsune.questions.signals import tag_added
 from kitsune.questions.tasks import (
     update_question_votes, update_answer_pages, log_answer, escalate_question)
-from kitsune.search.es_utils import UnindexMeBro
+from kitsune.search.es_utils import UnindexMeBro, ES_EXCEPTIONS
 from kitsune.search.models import (
     SearchMappingType, SearchMixin, register_for_indexing,
     register_mapping_type)
@@ -41,6 +41,7 @@ from kitsune.sumo.urlresolvers import reverse, split_path
 from kitsune.tags.models import BigVocabTaggableMixin
 from kitsune.tags.utils import add_existing_tag
 from kitsune.upload.models import ImageAttachment
+from kitsune.wiki.models import Document
 
 
 log = logging.getLogger('k.questions')
@@ -461,6 +462,88 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         statsd.incr('questions.solution')
         QuestionSolvedEvent(answer).fire(exclude=self.creator)
         SolutionAction(user=answer.creator, day=answer.created).save()
+
+    @property
+    def related_documents(self):
+        """Return documents that are 'morelikethis' one"""
+        if not self.product:
+            return []
+
+        # First try to get the results from the cache
+        key = 'questions_question:related_docs:%s' % self.id
+        documents = cache.get(key)
+        if documents is not None:
+            statsd.incr('questions.related_documents.cache.hit')
+            log.debug('Getting MLT documents for {question} from cache.'
+                      .format(question=repr(self)))
+            return documents
+
+        try:
+            statsd.incr('questions.related_documents.cache.miss')
+            s = Document.get_mapping_type().search()
+            documents = (
+                s.values_dict('id', 'document_title', 'url')
+                .filter(document_locale=self.locale,
+                        document_is_archived=False,
+                        document_category__in=settings.IA_DEFAULT_CATEGORIES,
+                        product__in=[self.product.slug])
+                .query(__mlt={
+                    'fields': ['document_title', 'document_summary',
+                               'document_content'],
+                    'like_text': self.title,
+                    'min_term_freq': 1,
+                    'min_doc_freq': 1})
+                [:3])
+            documents = list(documents)
+            cache.add(key, documents)
+        except ES_EXCEPTIONS:
+            statsd.incr('questions.related_documents.esexception')
+            log.exception('ES MLT related_documents')
+            documents = []
+
+        return documents
+
+    @property
+    def related_questions(self):
+        """Return questions that are 'morelikethis' one"""
+        if not self.product:
+            return []
+
+        # First try to get the results from the cache
+        key = 'questions_question:related_questions:%s' % self.id
+        questions = cache.get(key)
+        if questions is not None:
+            statsd.incr('questions.related_questions.cache.hit')
+            log.debug('Getting MLT questions for {question} from cache.'
+                      .format(question=repr(self)))
+            return questions
+
+        try:
+            statsd.incr('questions.related_questions.cache.miss')
+            max_age = settings.SEARCH_DEFAULT_MAX_QUESTION_AGE
+            start_date = int(time.time()) - max_age
+
+            s = self.get_mapping_type().search()
+            questions = (
+                s.values_dict('id', 'question_title', 'url')
+                .filter(question_locale=self.locale,
+                        product__in=[self.product.slug],
+                        question_has_helpful=True,
+                        created__gte=start_date)
+                .query(__mlt={
+                    'fields': ['question_title', 'question_content'],
+                    'like_text': self.title,
+                    'min_term_freq': 1,
+                    'min_doc_freq': 1})
+                [:3])
+            questions = list(questions)
+            cache.add(key, questions)
+        except ES_EXCEPTIONS:
+            statsd.incr('questions.related_questions.esexception')
+            log.exception('ES MLT related_questions')
+            questions = []
+
+        return questions
 
     # Permissions
 

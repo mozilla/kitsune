@@ -435,8 +435,13 @@ def question_details(request, template, question_id, form=None,
     products = Product.objects.filter(visible=True)
     topics = topics_for(product=question.product)
 
+    related_documents = question.related_documents
+    related_questions = question.related_questions
+
     extra_kwargs.update({'all_products': products, 'all_topics': topics,
-                         'product': question.product, 'topic': question.topic})
+                         'product': question.product, 'topic': question.topic,
+                         'related_documents': related_documents,
+                         'related_questions': related_questions})
 
     if not request.MOBILE:
         # Add noindex to questions without a solution.
