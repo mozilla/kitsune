@@ -692,11 +692,10 @@ def advanced_search(request, template=None):
                 ]
             ])
             query = {}
-            # Create match and match_phrase queries for every field
+            # Create a simple_query_search query for every field
             # we want to search.
             for field in query_fields:
-                for query_type in ['match', 'match_phrase']:
-                    query['%s__%s' % (field, query_type)] = cleaned_q
+                query['%s__sqs' % field] = cleaned_q
 
             # Transform the query to use locale aware analyzers.
             query = es_utils.es_query_with_analyzer(query, language)
