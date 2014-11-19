@@ -8,6 +8,7 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from django.core import mail
+from django.core.cache import cache
 
 import mock
 from nose.tools import eq_
@@ -21,8 +22,9 @@ from kitsune.questions.events import QuestionReplyEvent, QuestionSolvedEvent
 from kitsune.questions.models import (
     Question, Answer, VoteMetadata, QuestionLocale)
 from kitsune.questions.tests import (
-    TestCaseBase, tags_eq, question, answer)
+    TestCaseBase, tags_eq, question, answer, answervote)
 from kitsune.questions.views import UNAPPROVED_TAG, NO_TAG
+from kitsune.search.tests import ElasticTestCase
 from kitsune.sumo.helpers import urlparams
 from kitsune.sumo.tests import (
     get, post, attrs_eq, emailmessage_raise_smtp, TestCase, LocalizingClient)
@@ -32,6 +34,7 @@ from kitsune.products.tests import topic
 from kitsune.upload.models import ImageAttachment
 from kitsune.users.models import RegistrationProfile
 from kitsune.users.tests import user, add_permission
+from kitsune.wiki.tests import document, revision
 
 
 class AnswersTemplateTestCase(TestCaseBase):
@@ -1530,3 +1533,70 @@ class ProductForumTemplateTestCase(TestCaseBase):
         assert android.title in product_list_html
         assert fxos.title in product_list_html
         assert openbadges.title not in product_list_html
+
+
+class RelatedThingsTestCase(ElasticTestCase):
+    def setUp(self):
+        super(RelatedThingsTestCase, self).setUp()
+        self.question = question(title='lorem ipsum',
+                                 content='lorem',
+                                 product=product(save=True),
+                                 save=True)
+
+    def test_related_questions(self):
+        response = get(self.client, 'questions.details',
+                       args=[self.question.id])
+        doc = pq(response.content)
+        eq_(0, len(doc('#related-content .related-question')))
+
+        q1 = question(title='lorem ipsum dolor',
+                      content='lorem',
+                      product=self.question.product,
+                      save=True)
+        a1 = answer(question=q1, save=True)
+        answervote(answer=a1, helpful=True, save=True)
+
+        # Questions with no helpful answers should not be shown
+        q2 = question(title='lorem ipsum dolor',
+                      content='lorem',
+                      product=self.question.product,
+                      save=True)
+        answer(question=q2, save=True)
+
+        # Questions that belong to different products should not be shown
+        q3 = question(title='lorem ipsum dolor',
+                      content='lorem',
+                      product=product(save=True),
+                      save=True)
+        a3 = answer(question=q3, save=True)
+        answervote(answer=a3, helpful=True, save=True)
+
+        cache.clear()
+        self.refresh()
+
+        response = get(self.client, 'questions.details',
+                       args=[self.question.id])
+        doc = pq(response.content)
+        eq_(1, len(doc('#related-content .related-question')))
+
+    def test_related_documents(self):
+        response = get(self.client, 'questions.details',
+                       args=[self.question.id])
+        doc = pq(response.content)
+        eq_(0, len(doc('#related-content .related-document')))
+
+        d1 = document(title='lorem ipsum', save=True)
+        d1.products.add(self.question.product)
+        r1 = revision(document=d1, summary='lorem',
+                      content='lorem ipsum dolor',
+                      is_approved=True, save=True)
+        d1.current_revision = r1
+        d1.save()
+
+        cache.clear()
+        self.refresh()
+
+        response = get(self.client, 'questions.details',
+                       args=[self.question.id])
+        doc = pq(response.content)
+        eq_(1, len(doc('#related-content .related-document')))

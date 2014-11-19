@@ -375,6 +375,26 @@
         </li>
       </ul>
 
+      {% if related_documents or related_questions %}
+        <ul class="sidebar-nav sidebar-folding tight">
+          <li id="related-content">
+            <span>{{ _('Related') }}</span>
+            <ul class="sidebar-nav tight">
+              {% for q in related_questions %}
+                <li class="related-question">
+                  <a href="{{ q.url[0] }}">{{ q.question_title[0] }}</a>
+                </li>
+              {% endfor %}
+              {% for d in related_documents %}
+                <li class="related-document">
+                  <a href="{{ d.url[0] }}">{{ d.document_title[0] }}</a>
+                </li>
+              {% endfor %}
+            </ul>
+          </li>
+        </ul>
+      {% endif %}
+
       {% if user.has_perm('flagit.can_moderate') %}
         {% if question.is_spam %}
           {{ unmark_spam_form(question_id=question.id) }}

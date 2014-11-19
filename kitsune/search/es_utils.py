@@ -124,6 +124,19 @@ class Sphilastic(S, AnalyzerMixin):
         # a read context. Therefore, we always return the read index.
         return [read_index(self.type.get_index_group())]
 
+    def process_query_mlt(self, key, val, action):
+        """Add support for a more like this query to our S.
+
+        val is expected to be a dict like:
+            {
+                'fields': ['field1', 'field2'],
+                'like_text': 'text like this one',
+            }
+        """
+        return {
+            'more_like_this': val,
+        }
+
 
 class AnalyzerS(UntypedS, AnalyzerMixin):
     """This is to give the search view support for setting the analyzer.

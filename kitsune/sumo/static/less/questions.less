@@ -398,6 +398,39 @@ h2 {
     }
   }
 
+  #related-content {
+    li {
+      text-transform: none;
+
+      &.related-question,
+      &.related-document {
+        > a {
+          padding-left: 58px;
+          position: relative;
+
+          &:before {
+            background: url('../img/search-icons-sprite.png') no-repeat -23px -23px;
+            .background-size(74px 148px);
+            content: '';
+            height: 28px;
+            left: 20px;
+            position: absolute;
+            top: 12px;
+            width: 28px;
+          }
+        }
+      }
+
+      &.related-question {
+        > a {
+          &:before {
+            background-position: -23px -97px;
+          }
+        }
+      }
+    }
+  }
+
   #vote-thanks-kbox {
     text-align: left;
 
