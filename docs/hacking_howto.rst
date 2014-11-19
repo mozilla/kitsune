@@ -116,16 +116,8 @@ Getting the Source
 
 Grab the source from Github using::
 
-    $ git clone --recursive https://github.com/mozilla/kitsune.git
+    $ git clone https://github.com/mozilla/kitsune.git
     $ cd kitsune
-
-
-.. Note::
-
-   If you forgot to add ``--recursive``, you can still get all the
-   submodules with::
-
-       $ git submodule update --init --recursive
 
 
 Setting up an Environment

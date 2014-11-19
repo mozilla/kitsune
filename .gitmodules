@@ -1,3 +1,0 @@
-[submodule "kitsune/sumo/static/js/libs/ace"]
-	path = kitsune/sumo/static/js/libs/ace
-	url = git://github.com/ajaxorg/ace-builds.git
