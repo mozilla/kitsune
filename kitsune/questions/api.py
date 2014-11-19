@@ -39,6 +39,9 @@ class QuestionMetaDataSerializer(serializers.ModelSerializer):
             obj, created = self.Meta.model.uncached.get_or_create(
                 question=attrs['question'], name=attrs['name'],
                 defaults={'value': attrs['value']})
+            if not created:
+                obj.value = attrs['value']
+                obj.save()
             return obj
 
 

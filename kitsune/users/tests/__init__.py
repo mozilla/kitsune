@@ -5,7 +5,7 @@ from django.contrib.auth.models import User, Group, Permission
 from django.contrib.contenttypes.models import ContentType
 
 from kitsune.sumo.tests import LocalizingClient, TestCase, with_save
-from kitsune.users.models import Profile
+from kitsune.users.models import Profile, Setting
 
 
 class TestCaseBase(TestCase):
@@ -74,3 +74,13 @@ def add_permission(user, model, permission_codename):
                                                name=permission_codename,
                                                content_type=content_type)
     user.user_permissions.add(permission)
+
+
+@with_save
+def setting(**kwargs):
+    defaults = {
+        'name': ''.join(random.choice(letters) for _ in range(10)),
+        'value': ''.join(random.choice(letters) for _ in range(10)),
+    }
+    defaults.update(kwargs)
+    return Setting(**defaults)

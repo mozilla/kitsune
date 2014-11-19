@@ -4,7 +4,7 @@ import mock
 from django.contrib.auth.models import User
 from django.core import mail
 from django.test.utils import override_settings
-from nose.tools import eq_, ok_
+from nose.tools import eq_
 from rest_framework.test import APIClient
 
 from kitsune.sumo.helpers import urlparams
@@ -12,7 +12,7 @@ from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users import api
 from kitsune.users.models import Profile
-from kitsune.users.tests import user, profile
+from kitsune.users.tests import user, profile, setting
 
 
 class UsernamesTests(TestCase):
@@ -68,22 +68,22 @@ class TestUserSerializer(TestCase):
         # There is at least one user in existence due to migrations
         number_users = User.objects.count()
         serializer = api.ProfileSerializer(data=self.data)
-        ok_(serializer.is_valid())
+        assert serializer.is_valid()
         serializer.save()
         eq_(User.objects.count(), number_users + 1)
         eq_(Profile.objects.count(), 1)
 
     def test_password(self):
         serializer = api.ProfileSerializer(data=self.data)
-        ok_(serializer.is_valid())
+        assert serializer.is_valid()
         serializer.save()
         assert serializer.object.user.password != 'testpass'
-        ok_(serializer.object.user.check_password('testpass'))
+        assert serializer.object.user.check_password('testpass')
 
     def test_automatic_display_name(self):
         del self.data['display_name']
         serializer = api.ProfileSerializer(data=self.data)
-        ok_(serializer.is_valid())
+        assert serializer.is_valid()
         eq_(serializer.object.name, 'bobb')
 
     def test_no_duplicate_emails(self):
@@ -92,24 +92,24 @@ class TestUserSerializer(TestCase):
         eq_(serializer.errors, {
             'email': ['A user with that email address already exists.'],
         })
-        ok_(not serializer.is_valid())
+        assert not serializer.is_valid()
 
     def test_users_without_emails_are_active(self):
         del self.data['email']
         serializer = api.ProfileSerializer(data=self.data)
-        ok_(serializer.is_valid())
+        assert serializer.is_valid()
         serializer.save()
         eq_(serializer.object.user.is_active, True)
 
     def test_users_with_emails_are_inactive(self):
         serializer = api.ProfileSerializer(data=self.data)
-        ok_(serializer.is_valid())
+        assert serializer.is_valid()
         serializer.save()
         eq_(serializer.object.user.is_active, False)
 
     def test_users_with_emails_get_confirmation_email(self):
         serializer = api.ProfileSerializer(data=self.data)
-        ok_(serializer.is_valid())
+        assert serializer.is_valid()
         serializer.save()
         eq_(len(mail.outbox), 1)
         eq_(mail.outbox[0].subject, 'Please confirm your email address')
@@ -191,7 +191,7 @@ class TestUserView(TestCase):
 
     @override_settings(DEBUG=True)
     def test_generator_debug(self):
-        # There is at least one user made during tests.
+        # There is at least one user made outside of this test. I blame migrations..
         old_user_count = User.objects.count()
         res = self.client.post(reverse('user-generate'))
         eq_(res.status_code, 200)
@@ -200,3 +200,58 @@ class TestUserView(TestCase):
         eq_(res.data['user']['username'], new_user.username)
         assert 'password' in res.data
         assert 'token' in res.data
+
+    def test_email_visible_when_signed_in(self):
+        p = profile()
+        url = reverse('user-detail', args=[p.user.username])
+        self.client.force_authenticate(user=p.user)
+        res = self.client.get(url)
+        eq_(res.data['email'], p.user.email)
+
+    def test_email_not_visible_when_signed_out(self):
+        p = profile()
+        url = reverse('user-detail', args=[p.user.username])
+        res = self.client.get(url)
+        assert 'email' not in res.data
+
+    def test_set_setting_add(self):
+        p = profile()
+        self.client.force_authenticate(user=p.user)
+        url = reverse('user-set-setting', args=[p.user.username])
+        res = self.client.post(url, {'name': 'foo', 'value': 'bar'})
+        eq_(res.status_code, 200)
+        eq_(p.settings.get(name='foo').value, 'bar')
+
+    def test_set_setting_update(self):
+        p = profile()
+        self.client.force_authenticate(user=p.user)
+        s = setting(user=p.user, name='favorite_fruit', value='apple', save=True)
+        url = reverse('user-set-setting', args=[p.user.username])
+        res = self.client.post(url, {'name': s.name, 'value': 'banana'})
+        eq_(res.status_code, 200)
+        eq_(p.settings.get(name=s.name).value, 'banana')
+
+    def test_delete_setting_exists_with_post(self):
+        p = profile()
+        self.client.force_authenticate(user=p.user)
+        s = setting(user=p.user, save=True)
+        url = reverse('user-delete-setting', args=[p.user.username])
+        res = self.client.post(url, {'name': s.name})
+        eq_(res.status_code, 204)
+        eq_(p.settings.filter(name=s.name).count(), 0)
+
+    def test_delete_setting_exists_with_delete(self):
+        p = profile()
+        self.client.force_authenticate(user=p.user)
+        s = setting(user=p.user, save=True)
+        url = reverse('user-delete-setting', args=[p.user.username])
+        res = self.client.delete(url, {'name': s.name})
+        eq_(res.status_code, 204)
+        eq_(p.settings.filter(name=s.name).count(), 0)
+
+    def test_delete_setting_404(self):
+        p = profile()
+        self.client.force_authenticate(user=p.user)
+        url = reverse('user-delete-setting', args=[p.user.username])
+        res = self.client.post(url, {'name': 'nonexistant'})
+        eq_(res.status_code, 404)

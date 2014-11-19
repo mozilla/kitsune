@@ -158,6 +158,55 @@ class OnlyCreatorEdits(permissions.BasePermission):
             return True
         # If flow gets here, the method will modify something.
         user = getattr(request, 'user', None)
-        owner = getattr(obj, 'creator', None)
-        # Only the owner can modify things.
-        return user == owner
+        creator = getattr(obj, 'creator', None)
+        # Only the creator can modify things.
+        return user == creator
+
+
+def PermissionMod(cls, permissions):
+    """
+    Takes a class and modifies it to conditionally hide based on permissions.
+    """
+    class Modded(cls):
+
+        def __init__(self, **kwargs):
+            super(Modded, self).__init__(**kwargs)
+            self._stealth = False
+
+        def field_to_native(self, obj, field_name):
+            """
+            Return null value if request has no access to that field
+            """
+            if self.check_permissions() and self.check_object_permissions(obj):
+                self._stealth = False
+                return super(Modded, self).field_to_native(obj, field_name)
+            self._stealth = True
+            return None
+
+        # write_only is converted to a property, so that it can be "stealthed."
+        # The write only field is how DRF chooses to include or not include a field
+        # in serialization, so by controlling it, this field can choose when it
+        # is included in serialization output.
+
+        @property
+        def write_only(self):
+            return self._stealth or self._write_only
+
+        @write_only.setter
+        def write_only(self, value):
+            self._write_only = value
+
+        # These methods mimic the methods found on DRF views.
+
+        def get_permissions(self):
+            return (p() for p in permissions)
+
+        def check_permissions(self):
+            request = self.context.get('request', None)
+            return all(p.has_permission(request, self) for p in self.get_permissions())
+
+        def check_object_permissions(self, obj):
+            request = self.context.get('request', None)
+            return all(p.has_object_permission(request, self, obj) for p in self.get_permissions())
+
+    return Modded

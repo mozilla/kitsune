@@ -12,17 +12,17 @@ from django.views.decorators.http import require_GET
 import waffle
 from statsd import statsd
 
-from rest_framework import viewsets, serializers, mixins, filters, permissions
+from rest_framework import viewsets, serializers, mixins, filters, permissions, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.decorators import permission_classes, api_view
+from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.authtoken.models import Token
 
 from kitsune.access.decorators import login_required
-from kitsune.sumo.api import DateTimeUTCField, GenericAPIException
+from kitsune.sumo.api import DateTimeUTCField, GenericAPIException, PermissionMod
 from kitsune.sumo.decorators import json_view
 from kitsune.users.helpers import profile_avatar
-from kitsune.users.models import Profile, RegistrationProfile
+from kitsune.users.models import Profile, RegistrationProfile, Setting
 
 
 def display_name_or_none(user):
@@ -73,7 +73,23 @@ def test_auth(request):
     })
 
 
-class OnlySelfEdits(permissions.BasePermission):
+class OnlySelf(permissions.BasePermission):
+    """
+    Only allows operations when the current user is the object in question.
+
+    Intended for use with PermissionsFields.
+
+    TODO: This should be tied to user and object permissions better, but
+    for now this is a bandaid.
+    """
+
+    def has_object_permission(self, request, view, obj):
+        request_user = getattr(request, 'user', None)
+        user = getattr(obj, 'user', None)
+        return request_user == user
+
+
+class OnlySelfEdits(OnlySelf):
     """
     Only allow users/profiles to be edited and deleted by themselves.
 
@@ -85,11 +101,37 @@ class OnlySelfEdits(permissions.BasePermission):
         # SAFE_METHODS is a list containing all the read-only methods.
         if request.method in permissions.SAFE_METHODS:
             return True
-        # If flow gets here, the method will modify something.
-        request_user = getattr(request, 'user', None)
-        user = getattr(obj, 'user', None)
-        # Only the owner can modify things.
-        return request_user == user
+        else:
+            return super(OnlySelfEdits, self).has_object_permission(request, view, obj)
+
+
+class UserSettingSerializer(serializers.ModelSerializer):
+    user = serializers.PrimaryKeyRelatedField(required=False, write_only=True)
+
+    class Meta:
+        model = Setting
+        fields = ('name', 'value', 'user')
+
+    def get_identity(self, obj):
+        return obj['name']
+
+    def restore_object(self, attrs, instance=None):
+        """
+        Given a dictionary of deserialized field values, either update
+        an existing model instance, or create a new model instance.
+        """
+        if instance is not None:
+            for key in self.Meta.fields:
+                setattr(instance, key, attrs.get(key, getattr(instance, key)))
+            return instance
+        else:
+            user = attrs['user'] or self.context['view'].object
+            obj, created = self.Meta.model.uncached.get_or_create(
+                user=user, name=attrs['name'], defaults={'value': attrs['value']})
+            if not created:
+                obj.value = attrs['value']
+                obj.save()
+            return obj
 
 
 class ProfileSerializer(serializers.ModelSerializer):
@@ -97,11 +139,12 @@ class ProfileSerializer(serializers.ModelSerializer):
     display_name = serializers.WritableField(source='name', required=False)
     date_joined = DateTimeUTCField(source='user.date_joined', read_only=True)
     avatar = serializers.SerializerMethodField('get_avatar_url')
+    email = (PermissionMod(serializers.WritableField, permissions=[OnlySelf])
+             (source='user.email', required=False))
+    settings = (PermissionMod(UserSettingSerializer, permissions=[OnlySelf])
+                (many=True, read_only=True))
     # These are write only fields. It is very important they stays that way!
-    email = serializers.WritableField(
-        source='user.email', write_only=True, required=False)
-    password = serializers.WritableField(
-        source='user.password', write_only=True)
+    password = serializers.WritableField(source='user.password', write_only=True)
 
     class Meta:
         model = Profile
@@ -119,12 +162,11 @@ class ProfileSerializer(serializers.ModelSerializer):
             'country',
             'city',
             'locale',
+            'email',
+            'settings',
             # Password and email are here so they can be involved in write
             # operations. They is marked as write-only above, so will not be
             # visible.
-            # TODO: Make email visible if the user has opted in, or is the
-            # current user.
-            'email',
             'password',
         ]
 
@@ -224,6 +266,7 @@ class ProfileViewSet(mixins.CreateModelMixin,
     ]
     number_blacklist = ['666', '69']
 
+    # This is routed to /api/2/user/generate/
     def generate(self, request, **kwargs):
         """
         Generate a user with a random username and password.
@@ -276,3 +319,30 @@ class ProfileViewSet(mixins.CreateModelMixin,
             'password': password,
             'token': token.key,
         })
+
+    @action(methods=['POST'])
+    def set_setting(self, request, user__username=None):
+        data = request.DATA
+        data['user'] = self.get_object().pk
+
+        serializer = UserSettingSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        else:
+            raise GenericAPIException(400, serializer.errors)
+
+    @action(methods=['POST', 'DELETE'])
+    def delete_setting(self, request, user__username=None):
+        profile = self.get_object()
+
+        if 'name' not in request.DATA:
+            raise GenericAPIException(400, {'name': 'This field is required'})
+
+        try:
+            meta = (Setting.uncached
+                    .get(user=profile.user, name=request.DATA['name']))
+            meta.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except Setting.DoesNotExist:
+            raise GenericAPIException(404, {'detail': 'No matching user setting found.'})

@@ -175,6 +175,10 @@ class Profile(ModelBase, SearchMixin):
 
         return max(dates)
 
+    @property
+    def settings(self):
+        return self.user.settings
+
 
 @register_mapping_type
 class UserMappingType(SearchMappingType):

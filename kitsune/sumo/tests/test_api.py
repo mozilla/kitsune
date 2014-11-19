@@ -6,6 +6,8 @@ from nose.tools import eq_
 from django.test.client import RequestFactory
 from django.test.utils import override_settings
 
+from rest_framework import fields
+
 from kitsune.sumo import api
 from kitsune.sumo.tests import TestCase
 
@@ -65,3 +67,52 @@ class TestDateTimeUTCField(TestCase):
         eq_(as_utc.tzinfo, pytz.utc)
 
     # TODO: How can naive datetime conversion be tested?
+
+
+class TestPermissionMod(TestCase):
+
+    def test_write_only(self):
+        field = api.PermissionMod(fields.WritableField, [])()
+
+        cases = [
+            (False, False, False),
+            (False, True, True),
+            (True, False, True),
+            (True, True, True)
+        ]
+
+        for case in cases:
+            field._write_only, field._stealth, expected = case
+            eq_(field.write_only, expected)
+
+    def test_follows_permissions(self):
+        allow = True
+        allow_obj = True
+
+        class MockPermission(object):
+            def has_permission(self, *args):
+                return allow
+
+            def has_object_permission(self, *args):
+                return allow_obj
+
+        serializer = Mock()
+        obj = Mock()
+        obj.foo = 'bar'
+        field = api.PermissionMod(fields.WritableField, [MockPermission])()
+        field.initialize(serializer, 'foo')
+
+        # If either has_permission or has_object_permission returns False,
+        # then the field should act as a write_only field. Otherwise it shld
+        # act as a read/write field .
+        cases = [
+            (True, True, 'bar', False),
+            (True, False, None, True),
+            (False, True, None, True),
+            (False, False, None, True),
+        ]
+
+        for case in cases:
+            allow, allow_obj, expected_val, expected_write = case
+            eq_(field.field_to_native(obj, 'foo'), expected_val)
+            eq_(field.write_only, expected_write)
