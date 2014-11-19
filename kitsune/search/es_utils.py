@@ -98,7 +98,6 @@ class AnalyzerMixin(object):
             'simple_query_string': {
                 'fields': [key],
                 'query': val,
-                'analyzer': 'snowball',
                 'default_operator': 'or',
             }
         }
