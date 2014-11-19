@@ -104,10 +104,13 @@ SUMO_LANGUAGES = (
     'el',
     'en-US',
     'es',
+    'et',
     'eu',
     'fa',
     'fi',
     'fr',
+    'fy-NL',
+    'gu-IN',
     'he',
     'hi-IN',
     'hr',
@@ -118,7 +121,6 @@ SUMO_LANGUAGES = (
     'km',
     'ko',
     'lt',
-    'ml',
     'ne-NP',
     'nl',
     'no',
@@ -139,20 +141,11 @@ SUMO_LANGUAGES = (
     'th',
     'tr',
     'uk',
+    'ur',
     'vi',
     'xx',  # This is a test locale
     'zh-CN',
     'zh-TW',
-)
-
-# A list of locales for which AAQ is available.
-AAQ_LANGUAGES = (
-    'en-US',
-    'fi',
-    'hu',
-    'pt-BR',
-    'sl',
-    'sr-Cyrl',
 )
 
 # These languages won't show a warning about FxOS when contributors try
@@ -186,6 +179,9 @@ FXOS_LANGUAGES = [
 LANGUAGE_CHOICES = tuple(
     [(lang, LOCALES[lang].native) for lang in SUMO_LANGUAGES
      if lang != 'xx'])
+LANGUAGE_CHOICES_ENGLISH = tuple(
+    [(lang, LOCALES[lang].english) for lang in SUMO_LANGUAGES
+     if lang != 'xx'])
 LANGUAGES_DICT = dict([(i.lower(), LOCALES[i].native) for i in SUMO_LANGUAGES])
 LANGUAGES = LANGUAGES_DICT.items()
 
@@ -202,17 +198,15 @@ NON_SUPPORTED_LOCALES = {
     'ast': 'es',
     'az': None,
     'be': 'ru',
+    'bn': 'bn-BD',
     'br': 'fr',
     'csb': 'pl',
     'eo': None,
-    'et': None,
     'ff': None,
     'fur': 'it',
-    'fy-NL' : 'nl',
     'ga-IE': None,
     'gd': None,
     'gl': 'es',
-    'gu-IN': None,
     'hsb': 'de',
     'hy-AM': None,
     'ilo': None,
@@ -223,6 +217,7 @@ NON_SUPPORTED_LOCALES = {
     'lij': 'it',
     'mai': None,
     'mk': None,
+    'ml': None,
     'mn': None,
     'mr': None,
     'ms': None,
@@ -279,15 +274,6 @@ ES_PLUGIN_ANALYZERS = [
 ]
 
 ES_USE_PLUGINS = False
-
-# These are for the indexer for the offline sumo app.
-LANGUAGES_WITHOUT_SPACES = (
-    'zh-CN',
-    'zh-TW',
-    'ja',
-    'ko',
-    'my'
-)
 
 TEXT_DOMAIN = 'messages'
 
@@ -352,7 +338,6 @@ SUPPORTED_NONLOCALES = (
     'api',
     'favicon.ico',
     'media',
-    'offline',
     'postcrash',
     'robots.txt',
     'services',
@@ -396,6 +381,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'kitsune.sumo.context_processors.global_settings',
     'kitsune.sumo.context_processors.i18n',
     'kitsune.sumo.context_processors.geoip_cache_detector',
+    'kitsune.sumo.context_processors.aaq_languages',
     'jingo_minify.helpers.build_ids',
     'kitsune.messages.context_processors.unread_message_count',
 )
@@ -535,8 +521,8 @@ INSTALLED_APPS = (
     'kitsune.karma',
     'kitsune.tags',
     'kitsune.kpi',
-    'kitsune.offline',
     'kitsune.products',
+    'kitsune.notifications',
     'rest_framework',
     'statici18n',
     # 'axes',
@@ -778,10 +764,6 @@ WIKI_REBUILD_TOKEN = 'sumo:wiki:full-rebuild'
 ANONYMOUS_COOKIE_NAME = 'SUMO_ANONID'
 ANONYMOUS_COOKIE_MAX_AGE = 30 * 86400  # Seconds
 
-# Top contributors cache settings
-TOP_CONTRIBUTORS_CACHE_KEY = 'sumo:TopContributors'
-TOP_CONTRIBUTORS_CACHE_TIMEOUT = 60 * 60 * 12
-
 # Do not change this without also deleting all wiki documents:
 WIKI_DEFAULT_LANGUAGE = LANGUAGE_CODE
 
@@ -814,84 +796,7 @@ CC_TWEETS_DAYS = 7  # Limit tweets to those from the last 7 days.
 # If any of these words show up in a tweet, it probably isn't
 # actionable, so don't add it to the AoA.
 CC_WORD_BLACKLIST = [
-    '$1000',
-    'boycott',
-    '#boycottfirefox',
-    'brendan',
-    'ceo',
-    'civil',
-    'cupid',
-    'donation',
-    'eich',
-    'leadership',
-    'lgbt',
-    'marriage',
-    '#mozillagate',
-    'opposition',
-    'political',
-    'prop8',
-    'proposition',
-    'protest',
-    'rights',
-    'okcupid',
-    '#nozilla',
-    'intolerance',
-    'speech',
-    'employees',
-    'boycott',
-    'fascist',
-    'amendment',
-    'diversity',
-    'bigots',
-    'rights',
-    'conservative',
-    'boycot',
-    'political',
-    'tolerance',
-    'speech',
-    'censor',
-    'censorship',
-    'resign',
-    'resignation',
-    'equal',
-    'equality',
-    'intolerant',
-    'intolerance',
-    'christian',
-    'StandWithMozilla',
-    'StandWithFirefox',
-    'police',
-    'freedom',
-    'tcot',
-    'bigot',
-    'bigots',
-    'bigotted',
-    'bigoted',
-    'liberal',
-    'hypocrite',
-    'hypocrites',
-    'hypocritical',
-    'debacle',
-    '#tcot',
-    'harassment',
-    'belief',
-    'beliefs',
-    'fascism',
-    'moral',
-    'morality',
-    'morals',
-    'leftists',
-    'bullying',
-    'bully',
-    'homophobe',
-    'homophobic',
-    'homophobia',
-    'gaystapo',
     '#UninstallFirefox',
-    '#firefoxboycott',
-    'comercial',
-    '#NoMásComercialMovistarFirefox',
-    '#NoMasComercialMovistarFirefox',
 ]
 
 BITLY_API_URL = 'http://api.bitly.com/v3/shorten?callback=?'

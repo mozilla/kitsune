@@ -12,7 +12,8 @@ from kitsune.community.utils import (
     top_contributors_kb, top_contributors_l10n)
 from kitsune.forums.models import Thread
 from kitsune.products.models import Product
-from kitsune.search.es_utils import ES_EXCEPTIONS, F
+from kitsune.questions.models import QuestionLocale
+from kitsune.search.es_utils import ES_EXCEPTIONS
 from kitsune.sumo.parser import get_object_fallback
 from kitsune.users.models import UserMappingType
 from kitsune.wiki.models import Document
@@ -47,28 +48,31 @@ def home(request):
     }
 
     if locale:
-        data['top_contributors_aoa'] = top_contributors_aoa(locale=locale)
+        data['top_contributors_aoa'], _ = top_contributors_aoa(locale=locale)
 
         # If the locale is en-US we should top KB contributors, else we show
         # top l10n contributors for that locale
         if locale == settings.WIKI_DEFAULT_LANGUAGE:
-            data['top_contributors_kb'] = top_contributors_kb(product=product)
+            data['top_contributors_kb'], _ = top_contributors_kb(
+                product=product)
         else:
-            data['top_contributors_l10n'] = top_contributors_l10n(
+            data['top_contributors_l10n'], _ = top_contributors_l10n(
                 locale=locale, product=product)
 
         # If the locale is enabled for the Support Forum, show the top
         # contributors for that locale
-        if locale in settings.AAQ_LANGUAGES:
-            data['top_contributors_questions'] = top_contributors_questions(
+        if locale in QuestionLocale.objects.locales_list():
+            data['top_contributors_questions'], _ = top_contributors_questions(
                 locale=locale, product=product)
     else:
         # If no locale is specified, we show overall top contributors
         # across locales.
-        data['top_contributors_aoa'] = top_contributors_aoa()
-        data['top_contributors_kb'] = top_contributors_kb(product=product)
-        data['top_contributors_l10n'] = top_contributors_l10n(product=product)
-        data['top_contributors_questions'] = top_contributors_questions(product=product)
+        data['top_contributors_aoa'], _ = top_contributors_aoa()
+        data['top_contributors_kb'], _ = top_contributors_kb(product=product)
+        data['top_contributors_l10n'], _ = top_contributors_l10n(
+            product=product)
+        data['top_contributors_questions'], _ = top_contributors_questions(
+            product=product)
 
     return render(request, 'community/index.html', data)
 
@@ -85,7 +89,8 @@ def search(request):
     if q:
         lowerq = q.lower()
         try:
-            results = (UserMappingType
+            results = (
+                UserMappingType
                 .search()
                 .query(
                     iusername__match=lowerq,
@@ -94,9 +99,10 @@ def search(request):
                     should=True)
                 .values_dict('id', 'username', 'display_name', 'avatar',
                              'twitter_usernames', 'last_contribution_date'))
+            results = UserMappingType.reshape(results)
 
             statsd.incr('community.usersearch.success')
-        except ES_EXCEPTIONS as exc:
+        except ES_EXCEPTIONS:
             search_errored = True
             statsd.incr('community.usersearch.error')
             log.exception('User search failed.')
@@ -126,35 +132,46 @@ def search(request):
 def top_contributors(request, area):
     """Top contributors list view."""
 
+    try:
+        page = int(request.GET.get('page', 1))
+    except ValueError:
+        page = 1
+    page_size = 100
+
     locale = _validate_locale(request.GET.get('locale'))
     product = request.GET.get('product')
     if product:
         product = get_object_or_404(Product, slug=product)
 
     if area == 'army-of-awesome':
-        results = top_contributors_aoa(locale=locale, count=50)
+        results, total = top_contributors_aoa(
+            locale=locale, count=page_size, page=page)
         locales = settings.SUMO_LANGUAGES
     elif area == 'questions':
-        results = top_contributors_questions(
-            locale=locale, product=product, count=50)
-        locales = settings.AAQ_LANGUAGES
+        results, total = top_contributors_questions(
+            locale=locale, product=product, count=page_size, page=page)
+        locales = QuestionLocale.objects.locales_list()
     elif area == 'kb':
-        results = top_contributors_kb(product=product, count=50)
+        results, total = top_contributors_kb(
+            product=product, count=page_size, page=page)
         locales = None
     elif area == 'l10n':
-        results = top_contributors_l10n(
-            locale=locale, product=product, count=50)
+        results, total = top_contributors_l10n(
+            locale=locale, product=product, count=page_size, page=page)
         locales = settings.SUMO_LANGUAGES
     else:
         raise Http404
 
     return render(request, 'community/top_contributors.html', {
         'results': results,
+        'total': total,
         'area': area,
         'locale': locale,
         'locales': locales,
         'product': product,
         'products': Product.objects.filter(visible=True),
+        'page': page,
+        'page_size': page_size,
     })
 
 

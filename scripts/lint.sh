@@ -9,19 +9,17 @@
 # - pyflakes
 #
 # Generated code such as migrations are ignored, as are any other files
-# that would be unreasonable to lint. Think carefully before adding a
-# new file to the list of ignores.
-
-FLAKE8_IGNORE=(
-    '*migrations*'
-    'kitsune/settings*'
-    'kitsune/sumo/db_strings.py'
-    'kitsune/sumo/static/js/libs/ace/kitchen-sink/docs/python.py'
-)
+# that would be unreasonable to lint. Think carefully before adding
+# a new file to the list of ignores. The list of exclusions is in
+# setup.cfg
 
 # Files to lint is either the list of arguments to this script, or the
-# kitsune directory.
-FILES="$@"
+# kitsune directory by default.
+if [[ $# -eq 0 ]]; then
+    FILES="kitsune"
+else
+    FILES="$@"
+fi
 
 FLAKE8_FILES=()
 for f in $FILES; do
@@ -30,11 +28,10 @@ for f in $FILES; do
         FLAKE8_FILES+=($f)
     fi
 done
-FLAKE8_IGNORE=$(IFS=,; echo "${FLAKE8_IGNORE[*]}")
 
 # If there are files to run through flake8, do it.
 if [[ -n ${FLAKE8_FILES[*]} ]]; then
-  flake8 --exclude=$FLAKE8_IGNORE ${FLAKE8_FILES[*]}
+  flake8 ${FLAKE8_FILES[*]}
   FLAKE_RETURN=$?
 else
   FLAKE_RETURN=0

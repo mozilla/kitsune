@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import hashlib
 
-from django.conf import settings
 from django.contrib.auth.models import AnonymousUser, User
 
 from jinja2 import Markup

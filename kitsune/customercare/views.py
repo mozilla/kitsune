@@ -178,6 +178,7 @@ def landing(request):
         'twitter_user': twitter_user,
         'filters': FILTERS,
         'filter': 'unanswered',
+        'time': datetime.now(),
         'goal': settings.CC_REPLIES_GOAL,
         'recent_replied_count': recent_replied_count})
 

@@ -4,7 +4,7 @@ from rest_framework import generics, serializers
 
 from kitsune.gallery.models import Image
 from kitsune.sumo.api import (CORSMixin, LocaleNegotiationMixin,
-                              InequalityFilterBackend)
+                              InequalityFilterBackend, DateTimeUTCField)
 
 
 class ImageShortSerializer(serializers.ModelSerializer):
@@ -19,6 +19,8 @@ class ImageShortSerializer(serializers.ModelSerializer):
 
 
 class ImageDetailSerializer(ImageShortSerializer):
+    created = DateTimeUTCField(read_only=True)
+    updated = DateTimeUTCField(read_only=True)
     updated_by = serializers.SlugRelatedField(slug_field='username')
 
     class Meta(ImageShortSerializer.Meta):

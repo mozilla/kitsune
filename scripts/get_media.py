@@ -22,6 +22,7 @@ def run():
     progress.draw()
 
     for path in image_urls:
+        path = 'media/' + path
         url = BASE_URL + '/' + path
 
         try:

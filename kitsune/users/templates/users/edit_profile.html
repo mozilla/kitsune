@@ -12,39 +12,45 @@
       <form method="post" action="">
         {{ csrf() }}
         <ul>
-          <li id="edit-profile-avatar">
-            <label>{{ _('Avatar:') }}</label>
-            <img src="{{ profile_avatar(profile.user) }}">
-            <ul>
-              <li>
-                <a class="change-avatar" href="https://gravatar.com/emails" target="_blank">
-                  {{ _('Change', 'avatar') }}
-                  <span class="tip">
-                    {% trans %}
-                      <p>
-                        SUMO is now using Gravatars as avatars. You must change
-                        your Gravatar on gravatar.com.
-                      </p>
-                      <p>
-                        It can take a few minutes for the avatar change to take
-                        effect. You may need to wait a few minutes and reload
-                        the page to see your new Gravatar.
-                      </p>
-                    {% endtrans %}
-                  </span>
-                </a>
-              </li>
-            </ul>
-          </li>
           <li>
-            <label>{{ _('Password:') }}</label>
-            <a href="{{ url('users.pw_change') }}">{{ _('Change') }}</a>
+            <label>{{ _('Username:') }}</label>
+            {{ profile.user.username }}
           </li>
-          <li>
-            <label>{{ _('Email:') }}</label>
-            {{ user.email }}
-            <a href="{{ url('users.change_email') }}">{{ _('Change') }}</a>
-          </li>
+          {% if request.user == profile.user %}
+            <li id="edit-profile-avatar">
+              <label>{{ _('Avatar:') }}</label>
+              <img src="{{ profile_avatar(profile.user) }}">
+              <ul>
+                <li>
+                  <a class="change-avatar" href="https://gravatar.com/emails" target="_blank">
+                    {{ _('Change', 'avatar') }}
+                    <span class="tip">
+                      {% trans %}
+                        <p>
+                          SUMO is now using Gravatars as avatars. You must change
+                          your Gravatar on gravatar.com.
+                        </p>
+                        <p>
+                          It can take a few minutes for the avatar change to take
+                          effect. You may need to wait a few minutes and reload
+                          the page to see your new Gravatar.
+                        </p>
+                      {% endtrans %}
+                    </span>
+                  </a>
+                </li>
+              </ul>
+            </li>
+            <li>
+              <label>{{ _('Password:') }}</label>
+              <a href="{{ url('users.pw_change') }}">{{ _('Change') }}</a>
+            </li>
+            <li>
+              <label>{{ _('Email:') }}</label>
+              {{ user.email }}
+              <a href="{{ url('users.change_email') }}">{{ _('Change') }}</a>
+            </li>
+          {% endif %}
           {{ form.as_ul()|safe }}
         </ul>
         <div class="submit">
@@ -52,11 +58,13 @@
         </div>
       </form>
     </article>
-    <form method="post" action="{{ url('users.close_account') }}" data-confirm="confirm" data-confirm-text="{{ _('Are you sure you want to close your account? You cannot undo this action.') }}">
-      {{ csrf() }}
-      <p>
-        <button type="submit" class="btn btn-warning">{{ _('Close account and delete all profile information') }}</button>
-      </p>
-    </form>
+    {% if request.user == profile.user %}
+      <form method="post" action="{{ url('users.close_account') }}" data-confirm="confirm" data-confirm-text="{{ _('Are you sure you want to close your account? You cannot undo this action.') }}">
+        {{ csrf() }}
+        <p>
+          <button type="submit" class="btn btn-warning">{{ _('Close account and delete all profile information') }}</button>
+        </p>
+      </form>
+    {% endif %}
   </div>
 {% endblock %}

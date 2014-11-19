@@ -76,6 +76,55 @@ body {
     }
   }
 
+  &.scroll-header {
+    padding-top: 151px;
+
+    > header {
+      background: #fff;
+      .box-shadow(0 0 5px rgba(0, 0, 0, 0.2));
+      height: 50px;
+      padding: 0;
+      position: fixed;
+      top: 0;
+      width: 100%;
+      z-index: 9999;
+      
+      .logo {
+        left: 0;
+        margin: 13px 0;
+        position: absolute;
+        top: 0;
+
+        img {
+          height: 24px;
+        }
+      }
+
+      #aux-nav {
+        margin-right: 302px;
+
+        > ul {
+          margin-top: 4px;
+
+          .dropdown {
+            display: none;
+          }
+        }
+      }
+
+      #support-search {
+        right: 0;
+        margin-top: 9px;
+        position: absolute;
+        top: 0;
+      }
+
+      #tabzilla {
+        display: none;
+      }
+    }
+  }
+
   .html-rtl {
     header {
       .logo {
@@ -724,6 +773,19 @@ input[type=button],
   }
 }
 
+.sidebar-header {
+  background: #fff;
+  color: #000;
+  font-weight: bold;
+  margin: 30px 0 2px 0;
+  padding: 16px 20px;
+  text-transform: uppercase;
+
+  &:first-child {
+    margin-top: 0;
+  }
+}
+
 .sidebar-nav {
   font-family: @OpenSans;
   font-size: 13px;
@@ -745,6 +807,34 @@ input[type=button],
       padding: 16px 20px;
       position: relative;
       text-decoration: none;
+
+      &.sort-asc,
+      &.sort-desc {
+        &:after {
+          content: '';
+          display: inline-block;
+          height: 0;
+          margin-bottom: 2px;
+          margin-left: 6px;
+          width: 0;
+        }
+      }
+
+      &.sort-asc {
+        &:after {
+          border-color: transparent transparent #000 transparent;
+          border-style: solid;
+          border-width: 0 6px 6px 6px;
+        }
+      }
+
+      &.sort-desc {
+        &:after {
+          border-color: #000 transparent transparent transparent;
+          border-style: solid;
+          border-width: 6px 6px 0 6px;
+        }
+      }
     }
 
     > span:hover,
@@ -773,7 +863,7 @@ input[type=button],
 
       > span,
       > a {
-        &:after {
+        &:before {
           background: url('../img/sidebar-arrow.gif') 0 3px no-repeat;
           content: '';
           height: 30px;
@@ -1352,33 +1442,6 @@ input[type=button],
       z-index: 2;
     }
   }
-
-  &#announce-outdated {
-    .download-button,
-    .download-button:hover {
-      .gradient(#71a92a, #81bc2e, #639927);
-      border-bottom: 2px solid #548322;
-      .border-radius(2px);
-      .box-shadow(0 2px 0 rgba(0, 0, 0, 0.15));
-      color: #fff;
-      font-size: 10px;
-      height: 18px;
-      line-height: 18px;
-      margin: 5px 0 0 8px;
-      padding: 0 5px;
-      text-decoration: none;
-      text-shadow: 1px 1px rgba(0, 0, 0, 0.35);
-      text-transform: uppercase;
-
-      &:before {
-        background: url('../img/ff-logo-16x16.png') 0 0 no-repeat;
-        content: '';
-        height: 16px;
-        margin: 2px 2px 0 0;
-        width: 16px;
-      }
-    }
-  }
 }
 
 
@@ -1811,3 +1874,79 @@ input[type=button],
     }
   }
 }
+.html-rtl {
+  .container_12 {
+    .grid_12 {
+       #product-cards {
+         .logo-sprite {
+           float: right;
+         }
+         .title {
+           text-align: left;
+           margin: 0px 0px 50px 0px;
+         }
+         .description {
+           text-align: left;
+           margin: -37px 0px 0px 0px;
+         }
+       }
+       #help-topics {
+         .card-grid {
+           & > li {
+             & > a {
+               .topic-icon {
+                 float: right;
+               }
+               .title {
+                 text-align: left;
+                 margin-left: 0px;
+               }
+             }
+           }
+         }
+       }
+       h1.product-title {
+         .logo-sprite {
+           float: right;
+         }
+       }
+    }
+  }
+}
+.html-rtl {
+  .container_12 {
+    .grid_9 {
+      .logo-sprite {
+        float: right;
+      }
+    }
+  }
+}
+.html-rtl {
+  .grid_12 {
+    .hero-bar {
+      .column {
+        float: right;
+      }
+      .hero-butler {
+        right: 510px;
+      }
+    }
+    .hero-bar.secondary {
+      background-position: 0px;
+    }
+    .btn.btn-submit {
+      float: left;
+    }
+  }
+}
+.html-rtl {
+  #aux-nav {
+    > ul {
+      > li {
+        padding: 0px;
+      }
+    }
+  }
+}
+

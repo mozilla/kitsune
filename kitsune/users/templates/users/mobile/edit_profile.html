@@ -21,14 +21,16 @@
       {{ form['name'] }}
     </div>
 
-    <div id="email-field">
-      <label>{{ _('Email') }}</label>
-      <div class="value">{{ profile.user.email }}</div>
-      <a class="field-button" href="{{ url('users.change_email') }}" data-next="{{ request.get_full_path() }}">{{ _('Change Email') }}</a>
-    </div>
+    {% if request.user == profile.user %}
+      <div id="email-field">
+        <label>{{ _('Email') }}</label>
+        <div class="value">{{ profile.user.email }}</div>
+        <a class="field-button" href="{{ url('users.change_email') }}" data-next="{{ request.get_full_path() }}">{{ _('Change Email') }}</a>
+      </div>
 
-    <label>{{ _('Password') }}</label>
-    <a class="field-button" href="{{ url('users.pw_change') }}">{{ _('Change Password') }}</a>
+      <label>{{ _('Password') }}</label>
+      <a class="field-button" href="{{ url('users.pw_change') }}">{{ _('Change Password') }}</a>
+    {% endif %}
 
     <div id="bio-field">
       <label>{{ _('Bio') }}</label>

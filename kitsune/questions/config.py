@@ -26,7 +26,7 @@ products = SortedDict([
         'subtitle': _lazy(u'Windows, Mac, or Linux'),
         'extra_fields': ['troubleshooting', 'ff_version', 'os', 'plugins'],
         'tags': ['desktop'],
-        'products': ['firefox'],
+        'product': 'firefox',
         'categories': SortedDict([
             # TODO: Just use the IA topics for this.
             # See bug 979397
@@ -93,7 +93,7 @@ products = SortedDict([
         'subtitle': _lazy(u'Android'),
         'extra_fields': ['ff_version', 'os', 'plugins'],
         'tags': ['mobile'],
-        'products': ['mobile'],
+        'product': 'mobile',
         'categories': SortedDict([
             # TODO: Just use the IA topics for this.
             # See bug 979397
@@ -160,7 +160,7 @@ products = SortedDict([
         'subtitle': '',
         'extra_fields': ['device', 'os'],
         'tags': [],
-        'products': ['firefox-os'],
+        'product': 'firefox-os',
         'categories': SortedDict([
             # TODO: Just use the IA topics for this.
             # See bug 979397
@@ -188,7 +188,7 @@ products = SortedDict([
         'subtitle': _lazy('Tools for creating and teaching the web'),
         'extra_fields': [],
         'tags': [],
-        'products': ['webmaker'],
+        'product': 'webmaker',
         'categories': SortedDict([
             # TODO: Just use the IA topics for this.
             # See bug 979397
@@ -224,7 +224,7 @@ products = SortedDict([
         'subtitle': '',
         'extra_fields': [],
         'tags': [],
-        'products': ['thunderbird'],
+        'product': 'thunderbird',
         'categories': SortedDict([
             # TODO: Just use the IA topics for this.
             # See bug 979397

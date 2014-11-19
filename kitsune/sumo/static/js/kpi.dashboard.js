@@ -3,12 +3,20 @@
 "use strict";
 
 function init() {
-  makeKPIGraph($('#kpi-questions'), [
+  makeKPIGraph($('#kpi-questions'), true, [
     {
       name: gettext('Questions'),
       slug: 'questions',
       func: k.Graph.identity('questions'),
       color: '#5d84b2',
+      axisGroup: 'questions',
+      area: true
+    },
+    {
+      name: gettext('Solved'),
+      slug: 'num_solved',
+      func: k.Graph.identity('solved'),
+      color: '#aa4643',
       axisGroup: 'questions',
       area: true
     },
@@ -21,12 +29,28 @@ function init() {
       type: 'percent'
     },
     {
+      name: gettext('Responded in 24 hours'),
+      slug: 'num_responded_24',
+      func: k.Graph.identity('responded_24'),
+      color: '#89a54e',
+      axisGroup: 'questions',
+      area: true
+    },
+    {
       name: gettext('% Responded in 24 hours'),
       slug: 'responded_24',
       func: k.Graph.fraction('responded_24', 'questions'),
       color: '#89a54e',
       axisGroup: 'percent',
       type: 'percent'
+    },
+    {
+      name: gettext('Responded in 72 hours'),
+      slug: 'num_responded_72',
+      func: k.Graph.identity('responded_72'),
+      color: '#80699b',
+      axisGroup: 'questions',
+      area: true
     },
     {
       name: gettext('% Responded in 72 hours'),
@@ -38,7 +62,7 @@ function init() {
     }
   ]);
 
-  makeKPIGraph($('#kpi-vote'), [
+  makeKPIGraph($('#kpi-vote'), true, [
     {
       name: gettext('Article Votes: % Helpful'),
       slug: 'wiki_percent',
@@ -53,7 +77,7 @@ function init() {
     }
   ]);
 
-  makeKPIGraph($('#kpi-active-contributors'), [
+  makeKPIGraph($('#kpi-active-contributors'), false, [
     {
       name: gettext('en-US KB'),
       slug: 'en_us',
@@ -76,7 +100,7 @@ function init() {
     }
   ]);
 
-  makeKPIGraph($('#kpi-ctr'), [
+  makeKPIGraph($('#kpi-ctr'), true, [
     {
       name: gettext('Click Through Rate %'),
       slug: 'ctr',
@@ -85,7 +109,7 @@ function init() {
     }
   ]);
 
-  makeKPIGraph($('#kpi-visitors'), [
+  makeKPIGraph($('#kpi-visitors'), true, [
     {
       name: gettext('Visitors'),
       slug: 'visitors',
@@ -93,7 +117,7 @@ function init() {
     }
   ]);
 
-  makeKPIGraph($('#kpi-l10n'), [
+  makeKPIGraph($('#kpi-l10n'), true, [
     {
       name: gettext('L10n Coverage'),
       slug: 'l10n',
@@ -103,7 +127,7 @@ function init() {
     }
   ]);
 
-  makeKPIGraph($('#exit-survey'), [
+  makeKPIGraph($('#exit-survey'), true, [
     {
       name: gettext('Percent Yes'),
       slug: 'percent_yes',
@@ -133,7 +157,7 @@ function init() {
 
 }
 
-function makeKPIGraph($container, descriptors) {
+function makeKPIGraph($container, bucket, descriptors) {
   $.getJSON($container.data('url'), function(data) {
     new k.Graph($container, {
       data: {
@@ -143,7 +167,7 @@ function makeKPIGraph($container, descriptors) {
       options: {
         legend: 'mini',
         slider: true,
-        bucket: true
+        bucket: bucket
       },
       graph: {
         width: 880,

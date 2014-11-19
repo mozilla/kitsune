@@ -113,19 +113,6 @@
 {% endif %}
 
 <div id="announcements">
-  {% if not suppress_outdated_warning %}
-    {# This will get conditionally shown (by js) if it is needed. #}
-    {% call announcement_bar('outdated', 'error') %}
-      <span>
-        {{ _('Your Firefox is out of date and may contain a security risk!') }}
-      </span>
-      <a class="download-button" href="http://www.mozilla.org/firefox/new/#download-fx"
-       data-ga-click="_trackEvent | External Links | Top Banner - Firefox Upgrades">
-        {{ _('Upgrade Firefox') }}
-      </a>
-    {% endcall %}
-  {% endif %}
-
   {% call announcement_bar('geoip-suggestion', 'warning') %}{% endcall %}
 
   {% for announ in get_announcements() %}
@@ -138,7 +125,7 @@
 <header>
   <div class="container_12 cf">
     <div class="grid_12">
-      <a href="http://www.mozilla.org/" id="tabzilla">mozilla</a>
+      <a href="http://www.mozilla.org/" id="tabzilla" data-infobar="update">mozilla</a>
       <div class="cf">
         <nav id="aux-nav" role="navigation">
           <ul>

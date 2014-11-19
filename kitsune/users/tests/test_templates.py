@@ -254,9 +254,9 @@ class PasswordResetTests(TestCaseBase):
 
 class EditProfileTests(TestCaseBase):
 
-    def test_edit_profile(self):
+    def test_edit_my_profile(self):
         u = user(save=True)
-        url = reverse('users.edit_profile')
+        url = reverse('users.edit_my_profile')
         self.client.login(username=u.username, password='testpass')
         data = {'name': 'John Doe',
                 'public_email': True,
@@ -272,6 +272,53 @@ class EditProfileTests(TestCaseBase):
         r = self.client.post(url, data)
         eq_(302, r.status_code)
         profile = User.objects.get(username=u.username).get_profile()
+        for key in data:
+            if key != 'timezone':
+                eq_(data[key], getattr(profile, key))
+        eq_(data['timezone'], profile.timezone.zone)
+
+    def test_user_cant_edit_others_profile_without_permission(self):
+        u1 = user(save=True)
+        url = reverse('users.edit_profile', args=[u1.username])
+
+        u2 = user(save=True)
+        self.client.login(username=u2.username, password='testpass')
+
+        # Try GET
+        r = self.client.get(url)
+        eq_(403, r.status_code)
+
+        # Try POST
+        r = self.client.post(url, {})
+        eq_(403, r.status_code)
+
+    def test_user_can_edit_others_profile_with_permission(self):
+        u1 = user(save=True)
+        url = reverse('users.edit_profile', args=[u1.username])
+
+        u2 = user(save=True)
+        add_permission(u2, Profile, 'change_profile')
+        self.client.login(username=u2.username, password='testpass')
+
+        # Try GET
+        r = self.client.get(url)
+        eq_(200, r.status_code)
+
+        # Try POST
+        data = {'name': 'John Doe',
+                'public_email': True,
+                'bio': 'my bio',
+                'website': 'http://google.com/',
+                'twitter': '',
+                'facebook': '',
+                'irc_handle': 'johndoe',
+                'timezone': 'America/New_York',
+                'country': 'US',
+                'city': 'Disney World',
+                'locale': 'en-US'}
+        r = self.client.post(url, data)
+        eq_(302, r.status_code)
+        profile = User.objects.get(username=u1.username).get_profile()
         for key in data:
             if key != 'timezone':
                 eq_(data[key], getattr(profile, key))
@@ -329,7 +376,7 @@ class EditAvatarTests(TestCaseBase):
             r = self.client.post(url, {'avatar': f})
 
         eq_(302, r.status_code)
-        eq_('http://testserver/en-US' + reverse('users.edit_profile'),
+        eq_('http://testserver/en-US' + reverse('users.edit_my_profile'),
             r['location'])
         assert not os.path.exists(old_path), 'Old avatar was not removed.'
 
@@ -343,7 +390,7 @@ class EditAvatarTests(TestCaseBase):
 
         user_profile = Profile.objects.get(user__username=self.u.username)
         eq_(302, r.status_code)
-        eq_('http://testserver/en-US' + reverse('users.edit_profile'),
+        eq_('http://testserver/en-US' + reverse('users.edit_my_profile'),
             r['location'])
         eq_('', user_profile.avatar.name)
 
@@ -585,11 +632,11 @@ class EditWatchListTests(TestCaseBase):
         w = Watch.objects.get(object_id=self.question.id, user=self.user)
         eq_(w.is_active, True)
 
-        r = self.client.post(reverse('users.edit_watch_list'))
+        self.client.post(reverse('users.edit_watch_list'))
         w = Watch.objects.get(object_id=self.question.id, user=self.user)
         eq_(w.is_active, False)
 
-        r = self.client.post(reverse('users.edit_watch_list'), {
+        self.client.post(reverse('users.edit_watch_list'), {
             'watch_%s' % self.question.id: '1'})
         w = Watch.objects.get(object_id=self.question.id, user=self.user)
         eq_(w.is_active, True)

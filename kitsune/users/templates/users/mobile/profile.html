@@ -9,7 +9,7 @@
 
 {% block header_buttons %}
   {% if profile.user.id == request.user.id %}
-    <a href="{{ url('users.edit_profile') }}" class="edit-button icon-sprite"
+    <a href="{{ url('users.edit_my_profile') }}" class="edit-button icon-sprite"
        xmlns="http://www.w3.org/1999/html">Edit Profile</a>
   {% endif %}
 {% endblock %}
@@ -49,7 +49,7 @@
           </div>
         {% endif %}
         {% if num_documents %}
-          <a class="detail" href="{{ url('users.documents', profile.user.id) }}">
+          <a class="detail" href="{{ url('users.documents', profile.user.username) }}">
             {{ ngettext('{0} documents', '{0} documents', num_documents)|f(num_documents) }}
           </a>
         {% endif %}

@@ -3,17 +3,17 @@ from datetime import datetime, timedelta
 
 from django.conf import settings
 from django.contrib.sites.models import Site
-from django.test.utils import override_settings
 
 import mock
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 
-from kitsune.products.models import Product, Topic
+from kitsune.flagit.models import FlaggedObject
 from kitsune.products.tests import product
 from kitsune.questions.models import (
-    Question, QuestionVote, AnswerVote, Answer)
-from kitsune.questions.tests import answer, question, TestCaseBase
+    Question, QuestionVote, AnswerVote, Answer, QuestionLocale)
+from kitsune.questions.tests import (
+    answer, question, TestCaseBase, questionlocale)
 from kitsune.questions.views import parse_troubleshooting
 from kitsune.search.tests.test_es import ElasticTestCase
 from kitsune.sumo.helpers import urlparams
@@ -30,6 +30,7 @@ class AAQTests(ElasticTestCase):
 
     def test_bleaching(self):
         """Tests whether summaries are bleached"""
+        product(slug=u'firefox', save=True)
         q = question(
             title=u'cupcakes',
             content=u'<unbleached>Cupcakes are the best</unbleached',
@@ -52,9 +53,10 @@ class AAQTests(ElasticTestCase):
     def test_search_suggestions_questions(self):
         """Verifies the view doesn't kick up an HTTP 500"""
         p = product(slug=u'firefox', save=True)
+        l = QuestionLocale.objects.get(locale=settings.LANGUAGE_CODE)
+        p.questions_locales.add(l)
         topic(title='Fix problems', slug='fix-problems', product=p, save=True)
-        q = question(title=u'CupcakesQuestion cupcakes', save=True)
-        q.products.add(p)
+        q = question(product=p, title=u'CupcakesQuestion cupcakes', save=True)
 
         d = document(title=u'CupcakesKB cupcakes', category=10, save=True)
         d.products.add(p)
@@ -88,20 +90,25 @@ class AAQTests(ElasticTestCase):
         assert 'CupcakesQuestion' not in response.content
         assert 'CupcakesKB' not in response.content
 
-    @override_settings(AAQ_LANGUAGES=['en-US', 'pt-BR', 'de'])
     def test_search_suggestion_questions_locale(self):
         """Verifies the right languages show up in search suggestions."""
+        questionlocale(locale='de', save=True)
+
         p = product(slug=u'firefox', save=True)
+
+        for l in QuestionLocale.objects.all():
+            p.questions_locales.add(l)
+
         topic(title='Fix problems', slug='fix-problems', product=p, save=True)
 
-        q1 = question(title='question cupcakes?', save=True, locale='en-US')
-        q1.products.add(p)
-        q2 = question(title='question donuts?', save=True, locale='en-US')
-        q2.products.add(p)
-        q3 = question(title='question pies?', save=True, locale='pt-BR')
-        q3.products.add(p)
-        q4 = question(title='question pastries?', save=True, locale='de')
-        q4.products.add(p)
+        question(
+            title='question cupcakes?', product=p, save=True, locale='en-US')
+        question(
+            title='question donuts?', product=p, save=True, locale='en-US')
+        question(
+            title='question pies?', product=p, save=True, locale='pt-BR')
+        question(
+            title='question pastries?', product=p, save=True, locale='de')
 
         self.refresh()
 
@@ -133,6 +140,8 @@ class AAQTests(ElasticTestCase):
                              '10.6; en-US; rv:1.9.2.6) Gecko/20100625 '
                              'Firefox/3.6.6'}
         p = product(slug='firefox', save=True)
+        l = QuestionLocale.objects.get(locale=settings.LANGUAGE_CODE)
+        p.questions_locales.add(l)
         topic(slug='fix-problems', product=p, save=True)
         url = urlparams(
             reverse('questions.aaq_step5', args=['desktop', 'fix-problems']),
@@ -165,6 +174,27 @@ class AAQTests(ElasticTestCase):
         # This has some http://... stuff at the beginning. Ignore that.
         assert res['location'].endswith(url_en)
 
+    def test_redirect_locale_not_enabled(self):
+        """AAQ should redirect for products with questions disabled for the
+        current locale"""
+        url_fi = reverse('questions.aaq_step1', locale='fi')
+        res = self.client.get(url_fi)
+        eq_(200, res.status_code)
+
+        p = product(slug='firefox', save=True)
+
+        url_fi = reverse('questions.aaq_step2', locale='fi', args=['desktop'])
+        url_en = reverse('questions.aaq_step2', locale='en-US',
+                         args=['desktop'])
+        res = self.client.get(url_fi)
+        eq_(302, res.status_code)
+        assert res['location'].endswith(url_en)
+
+        l = QuestionLocale.objects.get(locale='fi')
+        p.questions_locales.add(l)
+        res = self.client.get(url_fi)
+        eq_(200, res.status_code)
+
 
 class MobileAAQTests(MobileTestCase):
     client_class = LocalizingClient
@@ -181,6 +211,8 @@ class MobileAAQTests(MobileTestCase):
     def _new_question(self, post_it=False):
         """Post a new question and return the response."""
         p = product(slug='mobile', save=True)
+        l = QuestionLocale.objects.get(locale=settings.LANGUAGE_CODE)
+        p.questions_locales.add(l)
         t = topic(slug='fix-problems', product=p, save=True)
         url = urlparams(
             reverse('questions.aaq_step5', args=[p.slug, t.slug]),
@@ -408,8 +440,6 @@ class TroubleshootingParsingTests(TestCaseBase):
 
 
 class TestQuestionList(TestCaseBase):
-
-    @override_settings(AAQ_LANGUAGES=['en-US', 'pt-BR'])
     def test_locale_filter(self):
         """Only questions for the current locale should be shown on the
         questions front page for AAQ locales."""
@@ -418,14 +448,14 @@ class TestQuestionList(TestCaseBase):
         p = product(slug=u'firefox', save=True)
         topic(title='Fix problems', slug='fix-problems', product=p, save=True)
 
-        q1 = question(title='question cupcakes?', save=True, locale='en-US')
-        q1.products.add(p)
-        q2 = question(title='question donuts?', save=True, locale='en-US')
-        q2.products.add(p)
-        q3 = question(title='question pies?', save=True, locale='pt-BR')
-        q3.products.add(p)
-        q4 = question(title='question pastries?', save=True, locale='de')
-        q4.products.add(p)
+        question(
+            title='question cupcakes?', product=p, save=True, locale='en-US')
+        question(
+            title='question donuts?', product=p, save=True, locale='en-US')
+        question(
+            title='question pies?', product=p, save=True, locale='pt-BR')
+        question(
+            title='question pastries?', product=p, save=True, locale='de')
 
         def sub_test(locale, *titles):
             url = urlparams(reverse(
@@ -450,6 +480,15 @@ class TestQuestionReply(TestCaseBase):
         self.client.login(username=u.username, password='testpass')
         self.question = question(save=True)
 
+    def test_reply_to_spam_question(self):
+        self.question.is_spam = True
+        self.question.save()
+
+        res = self.client.post(
+            reverse('questions.reply', args=[self.question.id]),
+            {'content': 'The best reply evar!'})
+        eq_(res.status_code, 404)
+
     def test_needs_info(self):
         eq_(self.question.needs_info, False)
 
@@ -472,6 +511,92 @@ class TestQuestionReply(TestCaseBase):
 
         q = Question.objects.get(id=self.question.id)
         eq_(q.needs_info, False)
+
+
+class TestMarkingSolved(TestCaseBase):
+    def setUp(self):
+        u = user(save=True)
+        self.client.login(username=u.username, password='testpass')
+        self.question = question(creator=u, save=True)
+        self.answer = answer(question=self.question, save=True)
+
+    def test_cannot_mark_spam_answer(self):
+        self.answer.is_spam = True
+        self.answer.save()
+
+        res = self.client.get(
+            reverse('questions.solve',
+                    args=[self.question.id, self.answer.id]))
+        eq_(res.status_code, 404)
+
+    def test_cannot_mark_answers_on_spam_question(self):
+        self.question.is_spam = True
+        self.question.save()
+
+        res = self.client.get(
+            reverse('questions.solve',
+                    args=[self.question.id, self.answer.id]))
+        eq_(res.status_code, 404)
+
+
+class TestVoteAnswers(TestCaseBase):
+    def setUp(self):
+        u = user(save=True)
+        self.client.login(username=u.username, password='testpass')
+        self.question = question(save=True)
+        self.answer = answer(question=self.question, save=True)
+
+    def test_cannot_vote_for_answers_on_spam_question(self):
+        self.question.is_spam = True
+        self.question.save()
+
+        res = self.client.post(
+            reverse('questions.answer_vote',
+                    args=[self.question.id, self.answer.id]))
+        eq_(res.status_code, 404)
+
+    def test_cannot_vote_for_answers_marked_spam(self):
+        self.answer.is_spam = True
+        self.answer.save()
+
+        res = self.client.post(
+            reverse('questions.answer_vote',
+                    args=[self.question.id, self.answer.id]))
+        eq_(res.status_code, 404)
+
+
+class TestVoteQuestions(TestCaseBase):
+    def setUp(self):
+        u = user(save=True)
+        self.client.login(username=u.username, password='testpass')
+        self.question = question(save=True)
+
+    def test_cannot_vote_on_spam_question(self):
+        self.question.is_spam = True
+        self.question.save()
+
+        res = self.client.post(
+            reverse('questions.vote', args=[self.question.id]))
+        eq_(res.status_code, 404)
+
+
+class TestQuestionDetails(TestCaseBase):
+    def setUp(self):
+        self.question = question(save=True)
+
+    def test_mods_can_see_spam_details(self):
+        self.question.is_spam = True
+        self.question.save()
+
+        res = get(self.client, 'questions.details', args=[self.question.id])
+        eq_(404, res.status_code)
+
+        u = user(save=True)
+        add_permission(u, FlaggedObject, 'can_moderate')
+        self.client.login(username=u.username, password='testpass')
+
+        res = get(self.client, 'questions.details', args=[self.question.id])
+        eq_(200, res.status_code)
 
 
 class TestRateLimiting(TestCaseBase):
@@ -611,13 +736,12 @@ class TestStats(ElasticTestCase):
         p = product(save=True)
         t = topic(title='Websites', slug='websites', product=p, save=True)
 
-        q = question(
+        question(
             title=u'cupcakes',
             content=u'Cupcakes rock!',
             created=datetime.now() - timedelta(days=1),
+            topic=t,
             save=True)
-        q.topics.add(t)
-        q.save()
 
         self.refresh()
 
@@ -638,10 +762,7 @@ class TestEditDetails(TestCaseBase):
         p = product(save=True)
         t = topic(product=p, save=True)
 
-        q = question(save=True)
-        q.products.add(p)
-        q.topics.add(t)
-        q.save()
+        q = question(product=p, topic=t, save=True)
 
         self.product = p
         self.topic = t
@@ -729,8 +850,7 @@ class TestEditDetails(TestCaseBase):
 
         q = Question.objects.get(id=self.question.id)
 
-        eq_(1, len(q.topics.all()))
-        eq_(t_new.id, q.topics.all()[0].id)
+        eq_(t_new.id, q.topic.id)
 
     def test_change_product(self):
         """Test changing the product"""
@@ -749,16 +869,14 @@ class TestEditDetails(TestCaseBase):
         response = self._request(data=data)
         eq_(302, response.status_code)
 
-        p = Product.uncached.get(question=self.question)
-        t = Topic.uncached.get(question=self.question)
-
-        eq_(p_new.id, p.id)
-        eq_(t_new.id, t.id)
+        q = Question.objects.get(id=self.question.id)
+        eq_(p_new.id, q.product.id)
+        eq_(t_new.id, q.topic.id)
 
     def test_change_locale(self):
         locale = 'hu'
 
-        assert locale in settings.AAQ_LANGUAGES
+        assert locale in QuestionLocale.objects.locales_list()
         assert locale != self.question.locale
 
         data = {

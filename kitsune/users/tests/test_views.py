@@ -12,8 +12,8 @@ from nose.tools import eq_
 from pyquery import PyQuery as pq
 from tidings.tests import watch
 
-from kitsune.questions.tests import question
-from kitsune.questions.models import Question
+from kitsune.questions.tests import question, answer
+from kitsune.questions.models import Question, Answer
 from kitsune.sumo.tests import (TestCase, LocalizingClient,
                                 send_mail_raise_smtp)
 from kitsune.sumo.urlresolvers import reverse
@@ -516,3 +516,20 @@ class UserProfileTests(TestCase):
 
         p = Profile.objects.get(user_id=p.user_id)
         assert not p.user.is_active
+
+    def test_deactivate_and_flag_spam(self):
+        self.client.login(username=self.u.username, password='testpass')
+        add_permission(self.u, Profile, 'deactivate_users')
+
+        # Verify content is flagged as spam when requested.
+        p = profile()
+        answer(creator=p.user, save=True)
+        question(creator=p.user, save=True)
+        url = reverse('users.deactivate-spam', locale='en-US')
+        res = self.client.post(url, {'user_id': p.user.id})
+
+        eq_(302, res.status_code)
+        eq_(1, Question.objects.filter(creator=p.user, is_spam=True).count())
+        eq_(0, Question.objects.filter(creator=p.user, is_spam=False).count())
+        eq_(1, Answer.objects.filter(creator=p.user, is_spam=True).count())
+        eq_(0, Answer.objects.filter(creator=p.user, is_spam=False).count())

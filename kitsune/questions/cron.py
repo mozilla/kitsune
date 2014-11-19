@@ -1,17 +1,15 @@
 import logging
 import time
-from datetime import datetime, timedelta, date
+from datetime import datetime, timedelta
 
 from django.conf import settings
-from django.contrib.auth.models import User
-from django.core.cache import cache
 from django.db import connection, transaction
 
 import cronjobs
 
 from kitsune.questions import config
 from kitsune.questions.models import (
-    Question, QuestionVote, QuestionMappingType, QuestionVisits, Answer)
+    Question, QuestionVote, QuestionMappingType, QuestionVisits)
 from kitsune.questions.tasks import (
     escalate_question, update_question_vote_chunk)
 from kitsune.search.es_utils import ES_EXCEPTIONS, get_documents
@@ -44,23 +42,6 @@ def update_weekly_votes():
     # Chunk them for tasks.
     for chunk in chunked(qs_to_update, 50):
         update_question_vote_chunk.apply_async(args=[chunk])
-
-
-# TODO: remove this and use the karma top list.
-@cronjobs.register
-def cache_top_contributors():
-    """Compute the top contributors and store in cache."""
-    sql = '''SELECT u.*, COUNT(*) AS num_solutions
-             FROM auth_user AS u, questions_answer AS a,
-                  questions_question AS q
-             WHERE u.id = a.creator_id AND a.id = q.solution_id AND
-                   a.created >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
-             GROUP BY u.id
-             ORDER BY num_solutions DESC
-             LIMIT 10'''
-    users = list(User.objects.raw(sql))
-    cache.set(settings.TOP_CONTRIBUTORS_CACHE_KEY, users,
-              settings.TOP_CONTRIBUTORS_CACHE_TIMEOUT)
 
 
 @cronjobs.register
@@ -151,7 +132,7 @@ def escalate_questions():
         tags__slug__in=[config.ESCALATE_TAG_NAME])
 
     # Exclude certain products.
-    qs = qs.exclude(products__slug__in=config.ESCALATE_EXCLUDE_PRODUCTS)
+    qs = qs.exclude(product__slug__in=config.ESCALATE_EXCLUDE_PRODUCTS)
 
     # Exclude those by inactive users.
     qs = qs.exclude(creator__is_active=False)

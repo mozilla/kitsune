@@ -43,8 +43,8 @@ class TestVotesWithElasticSearch(ElasticTestCase):
         # get a Question object which has data from the database and
         # not the index.
         document = (QuestionMappingType.search()
-                    .values_dict('question_num_votes_past_week')
                     .filter(id=q.id))[0]
+
         eq_(document['question_num_votes_past_week'], 0)
 
         vote = questionvote(question=q, anonymous_id='abc123')
@@ -59,6 +59,6 @@ class TestVotesWithElasticSearch(ElasticTestCase):
         eq_(1, q.num_votes_past_week)
 
         document = (QuestionMappingType.search()
-                    .values_dict('question_num_votes_past_week')
                     .filter(id=q.id))[0]
+
         eq_(document['question_num_votes_past_week'], 1)

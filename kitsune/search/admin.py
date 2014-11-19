@@ -267,16 +267,25 @@ admin.site.register_view('search-maintenance', view=search,
                          name='Search - Index Maintenance')
 
 
-def _fix_value_dicts(values_dict_list):
-    """Takes a values dict returned from an S and humanizes it"""
-    for dict_ in values_dict_list:
+def _fix_results(results):
+    """Fixes up the S results for better templating
+
+    1. extract the results_dict from the DefaultMappingType
+       and returns that as a dict
+    2. turns datestamps into Python datetime objects
+
+    Note: This abuses ElasticUtils DefaultMappingType by using
+    the private _results_dict.
+
+    """
+    results = [obj._results_dict for obj in results]
+    for obj in results:
         # Convert datestamps (which are in seconds since epoch) to
         # Python datetime objects.
         for key in ('indexed_on', 'created', 'updated'):
-            if key in dict_:
-                if not isinstance(dict_[key], datetime):
-                    dict_[key] = datetime.fromtimestamp(int(dict_[key]))
-    return values_dict_list
+            if key in obj and not isinstance(obj[key], datetime):
+                obj[key] = datetime.fromtimestamp(int(obj[key]))
+    return results
 
 
 def index_view(request):
@@ -300,10 +309,10 @@ def index_view(request):
             raise Http404
 
         cls = bucket_to_model[requested_bucket]
-        data = list(cls.search().filter(id=requested_id).values_dict())
+        data = list(cls.search().filter(id=requested_id))
         if not data:
             raise Http404
-        data = _fix_value_dicts(data)[0]
+        data = _fix_results(data)[0]
 
     else:
         # Create a list of (class, list-of-dicts) showing us the most
@@ -312,9 +321,7 @@ def index_view(request):
         # ES.
         last_20_by_bucket = [
             (cls_name,
-             _fix_value_dicts(cls.search()
-                                 .values_dict()
-                                 .order_by('-indexed_on')[:20]))
+             _fix_results(cls.search().order_by('-indexed_on')[:20]))
             for cls_name, cls in bucket_to_model.items()]
 
     return render(
@@ -401,9 +408,8 @@ def diff_it_for_realz(seq_a, seq_b):
 
 def troubleshooting_view(request):
     # Build a list of the most recently indexed 50 wiki documents.
-    last_50_indexed = list(_fix_value_dicts(DocumentMappingType.search()
-                                            .values_dict()
-                                            .order_by('-indexed_on')[:50]))
+    last_50_indexed = list(_fix_results(DocumentMappingType.search()
+                                        .order_by('-indexed_on')[:50]))
 
     last_50_reviewed = list(Document.uncached
                             .filter(current_revision__is_approved=True)

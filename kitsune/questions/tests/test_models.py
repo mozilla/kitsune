@@ -4,26 +4,21 @@ from datetime import datetime, timedelta
 from django.db.models import Q
 
 import mock
-import waffle
-from nose import SkipTest
 from nose.tools import eq_, raises
 from taggit.models import Tag
 
 import kitsune.sumo.models
 from kitsune.flagit.models import FlaggedObject
-from kitsune.karma.manager import KarmaManager
 from kitsune.search.tests.test_es import ElasticTestCase
-from kitsune.sumo.redis_utils import RedisError, redis_client
 from kitsune.questions.cron import auto_archive_old_questions
 from kitsune.questions.events import QuestionReplyEvent
-from kitsune.questions.karma_actions import SolutionAction, AnswerAction
 from kitsune.questions import models
 from kitsune.questions.models import (
     Answer, Question, QuestionMetaData, QuestionVisits,
-    _tenths_version, _has_beta, user_num_questions,
-    user_num_answers, user_num_solutions)
+    _tenths_version, _has_beta, VoteMetadata)
 from kitsune.questions.tasks import update_answer_pages
-from kitsune.questions.tests import TestCaseBase, tags_eq, question, answer
+from kitsune.questions.tests import (
+    TestCaseBase, tags_eq, question, answer, questionvote)
 from kitsune.questions.config import products
 from kitsune.sumo import googleanalytics
 from kitsune.sumo.tests import TestCase
@@ -152,25 +147,6 @@ class TestAnswer(TestCaseBase):
 
         eq_(a.creator_num_solutions, 1)
 
-    @mock.patch.object(waffle, 'switch_is_active')
-    def test_creator_nums_redis(self, switch_is_active):
-        """Test creator_num_* pulled from karma data."""
-        try:
-            KarmaManager()
-            redis_client('karma').flushdb()
-        except RedisError:
-            raise SkipTest
-
-        switch_is_active.return_value = True
-        a = answer(save=True)
-
-        AnswerAction(a.creator).save()
-        AnswerAction(a.creator).save()
-        SolutionAction(a.creator).save()
-
-        eq_(a.creator_num_solutions, 1)
-        eq_(a.creator_num_answers, 3)
-
     def test_content_parsed_with_locale(self):
         """Make sure links to localized articles work."""
         rev = translated_revision(locale='es', is_approved=True, save=True)
@@ -209,14 +185,14 @@ class TestQuestionMetadata(TestCaseBase):
     def test_product_property(self):
         """Test question.product property."""
         self.question.add_metadata(product='desktop')
-        eq_(products['desktop'], self.question.product)
+        eq_(products['desktop'], self.question.product_config)
 
     def test_category_property(self):
         """Test question.category property."""
         self.question.add_metadata(product='desktop')
         self.question.add_metadata(category='fix-problems')
         eq_(products['desktop']['categories']['fix-problems'],
-            self.question.category)
+            self.question.category_config)
 
     def test_clear_mutable_metadata(self):
         """Make sure it works and clears the internal cache.
@@ -492,56 +468,6 @@ class OldQuestionsArchiveTest(ElasticTestCase):
             [q1.id])
 
 
-class UserActionCounts(TestCase):
-    def test_user_num_questions(self):
-        """Answers are counted correctly on a user."""
-        u = user(save=True)
-
-        eq_(user_num_questions(u), 0)
-        q1 = question(creator=u, save=True)
-        eq_(user_num_questions(u), 1)
-        q2 = question(creator=u, save=True)
-        eq_(user_num_questions(u), 2)
-        q1.delete()
-        eq_(user_num_questions(u), 1)
-        q2.delete()
-        eq_(user_num_questions(u), 0)
-
-    def test_user_num_answers(self):
-        u = user(save=True)
-        q = question(save=True)
-
-        eq_(user_num_answers(u), 0)
-        a1 = answer(creator=u, question=q, save=True)
-        eq_(user_num_answers(u), 1)
-        a2 = answer(creator=u, question=q, save=True)
-        eq_(user_num_answers(u), 2)
-        a1.delete()
-        eq_(user_num_answers(u), 1)
-        a2.delete()
-        eq_(user_num_answers(u), 0)
-
-    def test_user_num_solutions(self):
-        u = user(save=True)
-        q1 = question(save=True)
-        q2 = question(save=True)
-        a1 = answer(creator=u, question=q1, save=True)
-        a2 = answer(creator=u, question=q2, save=True)
-
-        eq_(user_num_solutions(u), 0)
-        q1.solution = a1
-        q1.save()
-        eq_(user_num_solutions(u), 1)
-        q2.solution = a2
-        q2.save()
-        eq_(user_num_solutions(u), 2)
-        q1.solution = None
-        q1.save()
-        eq_(user_num_solutions(u), 1)
-        a2.delete()
-        eq_(user_num_solutions(u), 0)
-
-
 class QuestionVisitsTests(TestCase):
     """Tests for the pageview statistics gathering."""
 
@@ -580,3 +506,11 @@ class QuestionVisitsTests(TestCase):
         eq_(100, QuestionVisits.uncached.get(question_id=q1.id).visits)
         eq_(200, QuestionVisits.uncached.get(question_id=q2.id).visits)
         eq_(300, QuestionVisits.uncached.get(question_id=q3.id).visits)
+
+
+class QuestionVoteTests(TestCase):
+    def test_add_metadata_over_1000_chars(self):
+        qv = questionvote(save=True)
+        qv.add_metadata('test1', 'a'*1001)
+        metadata = VoteMetadata.objects.all()[0]
+        eq_('a'*1000, metadata.value)

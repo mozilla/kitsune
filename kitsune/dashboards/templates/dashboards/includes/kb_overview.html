@@ -1,0 +1,53 @@
+<thead>
+  <tr>
+    <th>{{ _('Article') }}</th>
+    <th>{{ _('Visits') }}</th>
+    <th>{{ _('Status') }}</th>
+    <th>{{ _('Needs Update') }}</th>
+    <th>{{ _('Stale') }}</th>
+    <th>{{ _('Expiry Date') }}</th>
+    {% if not request.LANGUAGE_CODE == settings.WIKI_DEFAULT_LANGUAGE %}
+      <th></th>
+    {% endif %}
+  </tr>
+</thead>
+{% for row in overview_rows %}
+  <tr>
+    <td>
+      <a href="{{ row.url }}">{{ row.title }}</a>
+    </td>
+    <td>
+      {{ number(row.num_visits) }}
+      {% if row.visits_ratio %}
+        <div class="absolute-graph" style="width: {{ row.visits_ratio * 100 }}%"></div>
+      {% endif %}
+    </td>
+    <td class="status {% if not row.latest_revision %}needs-review{% endif %}">
+      {% if row.latest_revision %}
+        {{ _('Live') }}
+      {% else %}
+        {{ _('Review Needed: {comment}')|f(comment=row.revision_comment) }}
+      {% endif %}
+    </td>
+    <td class="needs-update {% if row.needs_update %}yes{% endif %}">
+      {% if row.needs_update %}
+        {{ _('Yes') }}
+      {% endif %}
+    </td>
+    <td class="stale {% if row.stale %}yes{% endif %}">
+      {% if row.stale %}
+        {{ _('Yes') }}
+      {% endif %}
+    </td>
+    <td>
+      {% if row.expiry_date %}
+        {{ datetimeformat(row.expiry_date, 'date') }}
+      {% endif %}
+    </td>
+    <td>
+      <a href="{{ row.trans_url }}">
+        {{ _('Show translations') }}
+      </a>
+    </td>
+  </tr>
+{% endfor %}

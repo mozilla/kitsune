@@ -44,7 +44,8 @@ def celery_settings(request):
                                'title': 'Celery Settings'},
                               RequestContext(request, {}))
 
-admin.site.register_view('celery', view=celery_settings, name='Celery Settings')
+admin.site.register_view('celery', view=celery_settings,
+                         name='Celery Settings')
 
 
 def env(request):

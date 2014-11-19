@@ -18,7 +18,7 @@ from kitsune.kpi.models import (
 from kitsune.kpi.surveygizmo_utils import (
     get_email_addresses, add_email_to_campaign, get_exit_survey_results,
     SURVEYS)
-from kitsune.questions.models import Answer
+from kitsune.questions.models import Answer, Question
 from kitsune.sumo import googleanalytics
 from kitsune.wiki.config import TYPO_SIGNIFICANCE, MEDIUM_SIGNIFICANCE
 from kitsune.wiki.models import Revision
@@ -421,6 +421,11 @@ def process_exit_surveys():
     enddate = date.today() - timedelta(days=1)
 
     for survey in SURVEYS.keys():
+        if 'email_collection_survey_id' not in SURVEYS[survey]:
+            # Some surveys don't have email collection on the site
+            # (the askers survey, for example).
+            continue
+
         emails = get_email_addresses(survey, startdate, enddate)
         for email in emails:
             add_email_to_campaign(survey, email)
@@ -468,3 +473,29 @@ def _process_exit_survey_results():
 
         # Move on to next day.
         day += timedelta(days=1)
+
+
+@cronjobs.register
+def survey_recent_askers():
+    """Add question askers to a surveygizmo campaign to get surveyed."""
+    if settings.STAGE:
+        # Only run this on prod, it doesn't need to be running multiple times
+        # from different places.
+        print('Skipped email address processing in survey_recent_askers(). '
+              'Set settings.STAGE to False to run it for real.')
+        return
+
+    # We get the email addresses of all users that asked a question 2 days
+    # ago. Then, all we have to do is send the email address to surveygizmo
+    # and it does the rest.
+    two_days_ago = date.today() - timedelta(days=2)
+    yesterday = date.today() - timedelta(days=1)
+
+    emails = (
+        Question.objects
+        .filter(created__gte=two_days_ago, created__lt=yesterday)
+        .values_list('creator__email', flat=True))
+    for email in emails:
+            add_email_to_campaign('askers', email)
+
+    print '%s emails added to askers survey...' % len(emails)

@@ -39,8 +39,10 @@ class ForumTestFeeds(TestCaseBase):
     def test_tagged_feed_link(self):
         """Make sure the tagged feed is discoverable on the questions page."""
         tag(name='green', slug='green', save=True)
-        url = urlparams(reverse('questions.list', args=['all']), tagged='green')
+        url = urlparams(reverse('questions.list', args=['all']),
+                        tagged='green')
         response = self.client.get(url)
+        eq_(200, response.status_code)
         doc = pq(response.content)
         feed_links = doc('link[type="application/atom+xml"]')
         eq_(2, len(feed_links))
@@ -65,6 +67,7 @@ class ForumTestFeeds(TestCaseBase):
         p = product(save=True)
         url = reverse('questions.list', args=[p.slug])
         res = self.client.get(url)
+        eq_(200, res.status_code)
         doc = pq(res.content)
 
         feed_links = doc('link[type="application/atom+xml"]')
@@ -72,6 +75,7 @@ class ForumTestFeeds(TestCaseBase):
         eq_(1, len(feed_links))
         eq_('Recently updated questions', feed.attrib['title'])
         eq_('/en-US/questions/feed?product=' + p.slug, feed.attrib['href'])
+        eq_(200, self.client.get(feed.attrib['href']).status_code)
 
     def test_question_feed_with_product_and_topic(self):
         """Test that questions feeds with products and topics work."""
@@ -79,6 +83,7 @@ class ForumTestFeeds(TestCaseBase):
         t = topic(product=p, save=True)
         url = urlparams(reverse('questions.list', args=[p.slug]), topic=t.slug)
         res = self.client.get(url)
+        eq_(200, res.status_code)
         doc = pq(res.content)
 
         feed_links = doc('link[type="application/atom+xml"]')
@@ -87,11 +92,13 @@ class ForumTestFeeds(TestCaseBase):
         eq_('Recently updated questions', feed.attrib['title'])
         eq_(urlparams('/en-US/questions/feed', product=p.slug, topic=t.slug),
             feed.attrib['href'])
+        eq_(200, self.client.get(feed.attrib['href']).status_code)
 
     def test_question_feed_with_locale(self):
         """Test that questions feeds with products and topics work."""
-        url = urlparams(reverse('questions.list', args=['all'], locale='pt-BR'))
+        url = reverse('questions.list', args=['all'], locale='pt-BR')
         res = self.client.get(url)
+        eq_(200, res.status_code)
         doc = pq(res.content)
 
         feed_links = doc('link[type="application/atom+xml"]')
@@ -100,3 +107,4 @@ class ForumTestFeeds(TestCaseBase):
         eq_('Recently updated questions', feed.attrib['title'])
         eq_(urlparams('/pt-BR/questions/feed?product=all'),
             feed.attrib['href'])
+        eq_(200, self.client.get(feed.attrib['href']).status_code)

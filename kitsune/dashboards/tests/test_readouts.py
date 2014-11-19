@@ -6,7 +6,7 @@ from nose.tools import eq_
 
 from kitsune.dashboards.readouts import (
     UnreviewedReadout,
-    TemplateTranslationsReadout, overview_rows,
+    TemplateTranslationsReadout, l10n_overview_rows,
     MostVisitedDefaultLanguageReadout,
     MostVisitedTranslationsReadout,
     UnreadyForLocalizationReadout,
@@ -18,7 +18,7 @@ from kitsune.products.tests import product
 from kitsune.sumo.tests import TestCase
 from kitsune.wiki.config import (
     MAJOR_SIGNIFICANCE, MEDIUM_SIGNIFICANCE, TYPO_SIGNIFICANCE,
-    HOW_TO_CONTRIBUTE_CATEGORY, TEMPLATES_CATEGORY, ADMINISTRATION_CATEGORY,
+    HOW_TO_CONTRIBUTE_CATEGORY, ADMINISTRATION_CATEGORY,
     CANNED_RESPONSES_CATEGORY)
 from kitsune.wiki.tests import revision, translated_revision, document
 
@@ -45,7 +45,7 @@ class ReadoutTestCase(TestCase):
                 MockRequest(), locale=locale, product=product).rows()]
 
 
-class OverviewTests(TestCase):
+class L10NOverviewTests(TestCase):
     """Tests for Overview readout"""
 
     def test_counting_unready_templates(self):
@@ -60,11 +60,11 @@ class OverviewTests(TestCase):
                      save=True)
 
         # It shouldn't show up in the total:
-        eq_(0, overview_rows('de')['templates']['denominator'])
+        eq_(0, l10n_overview_rows('de')['templates']['denominator'])
 
         r.is_ready_for_localization = True
         r.save()
-        eq_(1, overview_rows('de')['templates']['denominator'])
+        eq_(1, l10n_overview_rows('de')['templates']['denominator'])
 
     def test_counting_unready_docs(self):
         """Docs without a ready-for-l10n rev shouldn't count in total."""
@@ -77,11 +77,11 @@ class OverviewTests(TestCase):
                      save=True)
 
         # It shouldn't show up in the total:
-        eq_(0, overview_rows('de')['all']['denominator'])
+        eq_(0, l10n_overview_rows('de')['all']['denominator'])
 
         r.is_ready_for_localization = True
         r.save()
-        eq_(1, overview_rows('de')['all']['denominator'])
+        eq_(1, l10n_overview_rows('de')['all']['denominator'])
 
     def test_counting_unready_parents(self):
         """Translations with no ready revs don't count in numerator
@@ -103,22 +103,22 @@ class OverviewTests(TestCase):
                  is_approved=True,
                  based_on=parent_rev,
                  save=True)
-        eq_(0, overview_rows('de')['all']['numerator'])
+        eq_(0, l10n_overview_rows('de')['all']['numerator'])
 
     def test_templates_and_docs_disjunct(self):
         """Make sure templates aren't included in the All Articles count."""
         t = translated_revision(is_approved=True, save=True)
         # It shows up in All when it's a normal doc:
-        eq_(1, overview_rows('de')['all']['numerator'])
-        eq_(1, overview_rows('de')['all']['denominator'])
+        eq_(1, l10n_overview_rows('de')['all']['numerator'])
+        eq_(1, l10n_overview_rows('de')['all']['denominator'])
 
         t.document.parent.title = t.document.title = 'Template:thing'
         t.document.parent.is_template = t.document.is_template = True
         t.document.parent.save()
         t.document.save()
         # ...but not when it's a template:
-        eq_(0, overview_rows('de')['all']['numerator'])
-        eq_(0, overview_rows('de')['all']['denominator'])
+        eq_(0, l10n_overview_rows('de')['all']['numerator'])
+        eq_(0, l10n_overview_rows('de')['all']['denominator'])
 
     def test_not_counting_outdated(self):
         """Out-of-date translations shouldn't count as "done".
@@ -128,7 +128,7 @@ class OverviewTests(TestCase):
 
         """
         t = translated_revision(is_approved=True, save=True)
-        overview = overview_rows('de')
+        overview = l10n_overview_rows('de')
         eq_(1, overview['top-20']['numerator'])
         eq_(1, overview['top-50']['numerator'])
         eq_(1, overview['top-100']['numerator'])
@@ -141,7 +141,7 @@ class OverviewTests(TestCase):
                  is_ready_for_localization=True,
                  save=True)
         # Assert it still shows up in the numerators:
-        overview = overview_rows('de')
+        overview = l10n_overview_rows('de')
         eq_(1, overview['top-20']['numerator'])
         eq_(1, overview['top-50']['numerator'])
         eq_(1, overview['top-100']['numerator'])
@@ -154,7 +154,7 @@ class OverviewTests(TestCase):
                  is_ready_for_localization=True,
                  save=True)
         # Assert it no longer shows up in the numerators:
-        overview = overview_rows('de')
+        overview = l10n_overview_rows('de')
         eq_(0, overview['all']['numerator'])
         eq_(0, overview['top-20']['numerator'])
         eq_(0, overview['top-50']['numerator'])
@@ -164,7 +164,7 @@ class OverviewTests(TestCase):
         """Articles with the How to contribute category should not be counted.
         """
         t = translated_revision(is_approved=True, save=True)
-        overview = overview_rows('de')
+        overview = l10n_overview_rows('de')
         eq_(1, overview['all']['numerator'])
         eq_(1, overview['top-20']['numerator'])
         eq_(1, overview['top-50']['numerator'])
@@ -175,7 +175,7 @@ class OverviewTests(TestCase):
         d.category = HOW_TO_CONTRIBUTE_CATEGORY
         d.save()
 
-        overview = overview_rows('de')
+        overview = l10n_overview_rows('de')
         eq_(0, overview['all']['numerator'])
         eq_(0, overview['top-20']['numerator'])
         eq_(0, overview['top-50']['numerator'])
@@ -185,7 +185,7 @@ class OverviewTests(TestCase):
         """Translations with no approved revisions shouldn't count as done.
         """
         translated_revision(is_approved=False, save=True)
-        overview = overview_rows('de')
+        overview = l10n_overview_rows('de')
         eq_(0, overview['top-20']['numerator'])
         eq_(0, overview['top-50']['numerator'])
         eq_(0, overview['top-100']['numerator'])
@@ -195,7 +195,7 @@ class OverviewTests(TestCase):
         """Articles in the Templates category should not be counted.
         """
         t = translated_revision(is_approved=True, save=True)
-        overview = overview_rows('de')
+        overview = l10n_overview_rows('de')
         eq_(1, overview['all']['numerator'])
         eq_(1, overview['top-20']['numerator'])
         eq_(1, overview['top-50']['numerator'])
@@ -208,7 +208,7 @@ class OverviewTests(TestCase):
         t.document.title = 'Template:Lorem Ipsum Dolor'
         t.document.save()
 
-        overview = overview_rows('de')
+        overview = l10n_overview_rows('de')
         eq_(0, overview['all']['numerator'])
         eq_(0, overview['top-20']['numerator'])
         eq_(0, overview['top-50']['numerator'])
@@ -219,19 +219,19 @@ class OverviewTests(TestCase):
         p = product(title='Firefox', slug='firefox', save=True)
         t = translated_revision(is_approved=True, save=True)
 
-        eq_(0, overview_rows('de', product=p)['all']['numerator'])
-        eq_(0, overview_rows('de', product=p)['all']['denominator'])
+        eq_(0, l10n_overview_rows('de', product=p)['all']['numerator'])
+        eq_(0, l10n_overview_rows('de', product=p)['all']['denominator'])
 
         t.document.parent.products.add(p)
 
-        eq_(1, overview_rows('de', product=p)['all']['numerator'])
-        eq_(1, overview_rows('de', product=p)['all']['denominator'])
+        eq_(1, l10n_overview_rows('de', product=p)['all']['numerator'])
+        eq_(1, l10n_overview_rows('de', product=p)['all']['denominator'])
 
     def test_redirects_are_ignored(self):
         """Verify that redirects aren't counted in the overview."""
         translated_revision(is_approved=True, save=True)
 
-        eq_(1, overview_rows('de')['all']['numerator'])
+        eq_(1, l10n_overview_rows('de')['all']['numerator'])
 
         # A redirect shouldn't affect any of the tests.
         revision(document=document(title='A redirect',
@@ -243,7 +243,7 @@ class OverviewTests(TestCase):
                  content='REDIRECT [[An article]]',
                  save=True)
 
-        overview = overview_rows('de')
+        overview = l10n_overview_rows('de')
         eq_(1, overview['all']['numerator'])
         eq_(1, overview['top-20']['numerator'])
         eq_(1, overview['top-50']['numerator'])

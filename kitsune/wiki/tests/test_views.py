@@ -391,7 +391,7 @@ class AddRemoveContributorTests(TestCase):
         eq_(200, r.status_code)
         r = self.client.post(url)
         eq_(302, r.status_code)
-        assert not self.contributor in self.document.contributors.all()
+        assert self.contributor not in self.document.contributors.all()
 
 
 class VoteTests(TestCase):
@@ -549,12 +549,14 @@ class TestDocumentLocking(TestCase):
         users can steal locks, and that when a user submits the edit page, the
         lock is cleared.
         """
-        _login = lambda u: self.client.login(username=u.username,
-                                             password='testpass')
-        assert_is_locked = lambda r: self.assertContains(
-            r, 'id="unlock-button"')
-        assert_not_locked = lambda r: self.assertNotContains(
-            r, 'id="unlock-button"')
+        def _login(user):
+            self.client.login(username=user.username, password='testpass')
+
+        def assert_is_locked(r):
+            self.assertContains(r, 'id="unlock-button"')
+
+        def assert_not_locked(r):
+            self.assertNotContains(r, 'id="unlock-button"')
 
         u1 = user(save=True, password='testpass')
         u2 = user(save=True, password='testpass')

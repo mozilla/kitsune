@@ -18,10 +18,11 @@ from tidings.models import Watch
 import kitsune.questions.tasks
 from kitsune.products.tests import product
 from kitsune.questions.events import QuestionReplyEvent, QuestionSolvedEvent
-from kitsune.questions.models import Question, Answer, VoteMetadata
-from kitsune.questions.tests import TestCaseBase, tags_eq, question, answer
+from kitsune.questions.models import (
+    Question, Answer, VoteMetadata, QuestionLocale)
+from kitsune.questions.tests import (
+    TestCaseBase, tags_eq, question, answer)
 from kitsune.questions.views import UNAPPROVED_TAG, NO_TAG
-from kitsune.questions.cron import cache_top_contributors
 from kitsune.sumo.helpers import urlparams
 from kitsune.sumo.tests import (
     get, post, attrs_eq, emailmessage_raise_smtp, TestCase, LocalizingClient)
@@ -135,6 +136,7 @@ class AnswersTemplateTestCase(TestCaseBase):
             username=self.question.creator.username, password='testpass')
         response = post(self.client, 'questions.solve',
                         args=[self.question.id, ans.id])
+        eq_(200, response.status_code)
         doc = pq(response.content)
         eq_(1, len(doc('div.solution')))
         div = doc('h3.is-solution')[0].getparent().getparent()
@@ -142,6 +144,16 @@ class AnswersTemplateTestCase(TestCaseBase):
         q = Question.uncached.get(pk=self.question.id)
         eq_(q.solution, ans)
         eq_(q.solver, self.question.creator)
+
+        # Try to solve again with different answer. It shouldn't blow up or
+        # change the solution.
+        answer(question=q, save=True)
+        response = post(self.client, 'questions.solve',
+                        args=[self.question.id, ans.id])
+        eq_(200, response.status_code)
+        q = Question.uncached.get(pk=self.question.id)
+        eq_(q.solution, ans)
+
         # Unsolve and verify
         response = post(self.client, 'questions.unsolve',
                         args=[self.question.id, ans.id])
@@ -795,48 +807,31 @@ class AnswersTemplateTestCase(TestCaseBase):
         eq_('nofollow', doc('.question .main-content a')[0].attrib['rel'])
         eq_('nofollow', doc('.answer .main-content a')[0].attrib['rel'])
 
-    def test_robots_noindex_unanswered(self):
-        """Verify noindex on unanswered questions over 30 days old."""
+    def test_robots_noindex_unsolved(self):
+        """Verify noindex on unsolved questions."""
         q = question(save=True)
 
-        # A brand new questions shouldn't be noindex'd...
-        response = get(self.client, 'questions.details', args=[q.id])
-        eq_(200, response.status_code)
-        doc = pq(response.content)
-        eq_(0, len(doc('meta[name=robots]')))
-
-        # But a 31 day old question should be noindexed...
-        q.created = datetime.now() - timedelta(days=31)
-        q.save()
+        # A brand new questions should be noindexed...
         response = get(self.client, 'questions.details', args=[q.id])
         eq_(200, response.status_code)
         doc = pq(response.content)
         eq_(1, len(doc('meta[name=robots]')))
 
-        # Except if it has answers.
-        answer(question=q, save=True)
-        response = get(self.client, 'questions.details', args=[q.id])
-        eq_(200, response.status_code)
-        doc = pq(response.content)
-        eq_(0, len(doc('meta[name=robots]')))
-
-    def test_robots_noindex_spam(self):
-        """Verify noindex on questions marked as spam."""
-        q = question(save=True)
-
-        # A brand new questions shouldn't be noindexed...
-        response = get(self.client, 'questions.details', args=[q.id])
-        eq_(200, response.status_code)
-        doc = pq(response.content)
-        eq_(0, len(doc('meta[name=robots]')))
-
-        # But a question marked as spam should be no indexed...
-        q.is_spam = True
-        q.save()
+        # If it has one answer, it should still be noindexed...
+        a = answer(question=q, save=True)
         response = get(self.client, 'questions.details', args=[q.id])
         eq_(200, response.status_code)
         doc = pq(response.content)
         eq_(1, len(doc('meta[name=robots]')))
+
+        # If the answer is the solution, then it shouldn't be noindexed
+        # anymore.
+        q.solution = a
+        q.save()
+        response = get(self.client, 'questions.details', args=[q.id])
+        eq_(200, response.status_code)
+        doc = pq(response.content)
+        eq_(0, len(doc('meta[name=robots]')))
 
 
 class TaggingViewTestsAsTagger(TestCaseBase):
@@ -1065,47 +1060,6 @@ def _remove_async_tag_url(question_id):
 
 
 class QuestionsTemplateTestCase(TestCaseBase):
-    def test_contributed_badge(self):
-        u = user(save=True)
-        q1 = answer(creator=u, save=True).question
-        q2 = answer(save=True).question
-
-        # u should have a contributor badge on q1 but not q2
-        self.client.login(username=u.username, password="testpass")
-        response = self.client.get(
-            urlparams(reverse('questions.list', args=['all']), show='all'))
-        doc = pq(response.content)
-        eq_(1,
-            len(doc('#question-%s .thread-contributed.highlighted' % q1.id)))
-        eq_(0,
-            len(doc('#question-%s .thread-contributed.highlighted' % q2.id)))
-
-    def test_top_contributors(self):
-        # There should be no top contributors since there are no solutions.
-        cache_top_contributors()
-        response = self.client.get(reverse('questions.list', args=['all']))
-        doc = pq(response.content)
-        eq_(0, len(doc('#top-contributors ol li')))
-
-        # Solve a question and verify we now have a top conributor.
-        a = answer(save=True)
-        a.question.solution = a
-        a.question.save()
-        cache_top_contributors()
-        response = self.client.get(reverse('questions.list', args=['all']))
-        doc = pq(response.content)
-        lis = doc('#top-contributors ol li')
-        eq_(1, len(lis))
-        eq_(a.creator.username, lis[0].text)
-
-        # Make answer 8 days old. There should no be top contributors.
-        a.created = datetime.now() - timedelta(days=8)
-        a.save()
-        cache_top_contributors()
-        response = self.client.get(reverse('questions.list', args=['all']))
-        doc = pq(response.content)
-        eq_(0, len(doc('#top-contributors ol li')))
-
     def test_tagged(self):
         u = user(save=True)
         add_permission(u, Question, 'tag_question')
@@ -1151,11 +1105,9 @@ class QuestionsTemplateTestCase(TestCaseBase):
         p3 = product(save=True)
 
         q1 = question(save=True)
-        q2 = question(save=True)
-        q2.products.add(p1)
+        q2 = question(product=p1, save=True)
         q2.save()
-        q3 = question(save=True)
-        q3.products.add(p1, p2)
+        q3 = question(product=p2, save=True)
         q3.save()
 
         def check(product, expected):
@@ -1173,8 +1125,8 @@ class QuestionsTemplateTestCase(TestCaseBase):
 
         # No filtering -> All questions.
         check('all', [q1, q2, q3])
-        # Filter on p1 -> only q2 and q3
-        check(p1.slug, [q2, q3])
+        # Filter on p1 -> only q2
+        check(p1.slug, [q2])
         # Filter on p2 -> only q3
         check(p2.slug, [q3])
         # Filter on p3 -> No results
@@ -1182,7 +1134,7 @@ class QuestionsTemplateTestCase(TestCaseBase):
         # Filter on p1,p2
         check('%s,%s' % (p1.slug, p2.slug), [q2, q3])
         # Filter on p1,p3
-        check('%s,%s' % (p1.slug, p3.slug), [q2, q3])
+        check('%s,%s' % (p1.slug, p3.slug), [q2])
         # Filter on p2,p3
         check('%s,%s' % (p2.slug, p3.slug), [q3])
 
@@ -1193,12 +1145,8 @@ class QuestionsTemplateTestCase(TestCaseBase):
         t3 = topic(product=p, save=True)
 
         q1 = question(save=True)
-        q2 = question(save=True)
-        q2.topics.add(t1)
-        q2.save()
-        q3 = question(save=True)
-        q3.topics.add(t1, t2)
-        q3.save()
+        q2 = question(topic=t1, save=True)
+        q3 = question(topic=t2, save=True)
 
         url = reverse('questions.list', args=['all'])
 
@@ -1216,8 +1164,8 @@ class QuestionsTemplateTestCase(TestCaseBase):
 
         # No filtering -> All questions.
         check({}, [q1, q2, q3])
-        # Filter on p1 -> only q2 and q3
-        check({'topic': t1.slug}, [q2, q3])
+        # Filter on p1 -> only q2
+        check({'topic': t1.slug}, [q2])
         # Filter on p2 -> only q3
         check({'topic': t2.slug}, [q3])
         # Filter on p3 -> No results
@@ -1306,8 +1254,8 @@ class QuestionEditingTests(TestCaseBase):
         # Make sure each extra metadata field is in the form:
         doc = pq(response.content)
         q = Question.objects.get(pk=question_id)
-        extra_fields = (q.product.get('extra_fields', []) +
-                        q.category.get('extra_fields', []))
+        extra_fields = (q.product_config.get('extra_fields', []) +
+                        q.category_config.get('extra_fields', []))
         for field in extra_fields:
             assert (doc('input[name=%s]' % field) or
                     doc('textarea[name=%s]' % field)), (
@@ -1327,8 +1275,7 @@ class QuestionEditingTests(TestCaseBase):
     def test_post(self):
         """Posting a valid edit form should save the question."""
         p = product(slug='desktop', save=True)
-        q = question(save=True)
-        q.products.add(p)
+        q = question(product=p, save=True)
         response = post(self.client, 'questions.edit_question',
                         {'title': 'New title',
                          'content': 'New content',
@@ -1390,6 +1337,8 @@ class AAQTemplateTestCase(TestCaseBase):
     def _post_new_question(self, locale=None):
         """Post a new question and return the response."""
         p = product(title='Firefox', slug='firefox', save=True)
+        for l in QuestionLocale.objects.all():
+            p.questions_locales.add(l)
         topic(slug='fix-problems', product=p, save=True)
         extra = {}
         if locale is not None:
@@ -1423,12 +1372,8 @@ class AAQTemplateTestCase(TestCaseBase):
         eq_(0, len(mail.outbox))
 
         # Verify product and topic assigned to question.
-        topics = question.topics.all()
-        eq_(1, len(topics))
-        eq_('fix-problems', topics[0].slug)
-        products = question.products.all()
-        eq_(1, len(products))
-        eq_('firefox', products[0].slug)
+        eq_('fix-problems', question.topic.slug)
+        eq_('firefox', question.product.slug)
 
         # Verify troubleshooting information
         troubleshooting = question.metadata['troubleshooting']
@@ -1469,6 +1414,8 @@ class AAQTemplateTestCase(TestCaseBase):
     def test_invalid_type(self):
         """Providing an invalid type returns 400."""
         p = product(slug='firefox', save=True)
+        l = QuestionLocale.objects.get(locale=settings.LANGUAGE_CODE)
+        p.questions_locales.add(l)
         topic(slug='fix-problems', product=p, save=True)
         self.client.logout()
 
@@ -1489,6 +1436,8 @@ class AAQTemplateTestCase(TestCaseBase):
         """Registering through AAQ form sends confirmation email."""
         get_current.return_value.domain = 'testserver'
         p = product(slug='firefox', save=True)
+        l = QuestionLocale.objects.get(locale=settings.LANGUAGE_CODE)
+        p.questions_locales.add(l)
         topic(slug='fix-problems', product=p, save=True)
         self.client.logout()
         title = 'A test question'
@@ -1526,12 +1475,16 @@ class AAQTemplateTestCase(TestCaseBase):
         eq_(404, response.status_code)
 
     def test_invalid_category_302(self):
+        product(slug='firefox', save=True)
         url = reverse('questions.aaq_step3', args=['desktop', 'lipsum'])
         response = self.client.get(url)
         eq_(302, response.status_code)
 
     def test_no_aaq_link_in_header(self):
         """Verify the ASK A QUESTION link isn't present in header."""
+        p = product(slug='firefox', save=True)
+        l = QuestionLocale.objects.get(locale=settings.LANGUAGE_CODE)
+        p.questions_locales.add(l)
         url = reverse('questions.aaq_step2', args=['desktop'])
         response = self.client.get(url)
         eq_(200, response.status_code)
@@ -1540,14 +1493,18 @@ class AAQTemplateTestCase(TestCaseBase):
 
 class ProductForumTemplateTestCase(TestCaseBase):
     def test_product_forum_listing(self):
-        firefox = product(
-            title='Firefox', slug='firefox', questions_enabled=True, save=True)
+        firefox = product(title='Firefox', slug='firefox', save=True)
         android = product(title='Firefox for Android', slug='mobile',
-            questions_enabled=True, save=True)
+                          save=True)
         fxos = product(title='Firefox OS', slug='firefox-os',
-            questions_enabled=True, save=True)
+                       save=True)
         openbadges = product(title='Open Badges', slug='open-badges',
-            questions_enabled=False, save=True)
+                             save=True)
+
+        l = QuestionLocale.objects.get(locale=settings.LANGUAGE_CODE)
+        firefox.questions_locales.add(l)
+        android.questions_locales.add(l)
+        fxos.questions_locales.add(l)
 
         response = self.client.get(reverse('questions.home'))
         eq_(200, response.status_code)

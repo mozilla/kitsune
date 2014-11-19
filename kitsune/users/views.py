@@ -8,9 +8,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.models import Site
 from django.http import (HttpResponsePermanentRedirect, HttpResponseRedirect,
-                         Http404)
-from django.utils.http import urlencode
-from django.views.decorators.csrf import csrf_exempt
+                         Http404, HttpResponseForbidden)
 from django.views.decorators.http import (require_http_methods, require_GET,
                                           require_POST)
 from django.shortcuts import get_object_or_404, render, redirect
@@ -27,8 +25,9 @@ from tower import ugettext as _
 from kitsune import users as constants
 from kitsune.access.decorators import (
     logout_required, login_required, permission_required)
-from kitsune.questions.models import (
-    Question, user_num_answers, user_num_questions, user_num_solutions)
+from kitsune.questions.models import Question
+from kitsune.questions.utils import (
+    num_questions, num_answers, num_solutions, mark_content_as_spam)
 from kitsune.sumo import email_utils
 from kitsune.sumo.decorators import ssl_required
 from kitsune.sumo.helpers import urlparams
@@ -44,8 +43,7 @@ from kitsune.users.models import (
     CONTRIBUTOR_GROUP, Group, Profile, RegistrationProfile, EmailChange,
     Deactivation)
 from kitsune.users.utils import (
-    handle_login, handle_register, try_send_email_with_form,
-    add_to_contributors, suggest_username, deactivate_user)
+    handle_login, handle_register, try_send_email_with_form, deactivate_user)
 from kitsune.wiki.models import (
     user_num_documents, user_documents, user_redirects)
 
@@ -304,17 +302,17 @@ def confirm_change_email(request, activation_key):
 
 @require_GET
 @mobile_template('users/{mobile/}profile.html')
-def profile(request, template, user_id):
+def profile(request, template, username):
     # The browser replaces '+' in URL's with ' ' but since we never have ' ' in
     # URL's we can assume everytime we see ' ' it was a '+' that was replaced.
     # We do this to deal with legacy usernames that have a '+' in them.
-    user_id = user_id.replace(' ', '+')
+    username = username.replace(' ', '+')
 
-    user = User.objects.filter(username=user_id).first()
+    user = User.objects.filter(username=username).first()
 
     if not user:
         try:
-            user = get_object_or_404(User, id=user_id)
+            user = get_object_or_404(User, id=username)
         except ValueError:
             raise Http404('No Profile matches the given query.')
         return redirect(reverse('users.profile', args=(user.username,)))
@@ -329,9 +327,9 @@ def profile(request, template, user_id):
     return render(request, template, {
         'profile': user_profile,
         'groups': groups,
-        'num_questions': user_num_questions(user_profile.user),
-        'num_answers': user_num_answers(user_profile.user),
-        'num_solutions': user_num_solutions(user_profile.user),
+        'num_questions': num_questions(user_profile.user),
+        'num_answers': num_answers(user_profile.user),
+        'num_solutions': num_solutions(user_profile.user),
         'num_documents': user_num_documents(user_profile.user)})
 
 
@@ -361,9 +359,13 @@ def close_account(request):
 
 @require_POST
 @permission_required('users.deactivate_users')
-def deactivate(request):
+def deactivate(request, mark_spam=False):
     user = get_object_or_404(User, id=request.POST['user_id'], is_active=True)
     deactivate_user(user, request.user)
+
+    if mark_spam:
+        mark_content_as_spam(user, request.user)
+
     return HttpResponseRedirect(profile_url(user))
 
 
@@ -378,9 +380,9 @@ def deactivation_log(request):
 
 
 @require_GET
-def documents_contributed(request, user_id):
+def documents_contributed(request, username):
     user_profile = get_object_or_404(
-        Profile, user__id=user_id, user__is_active=True)
+        Profile, user__username=username, user__is_active=True)
 
     return render(request, 'users/documents_contributed.html', {
         'profile': user_profile,
@@ -447,24 +449,39 @@ def edit_watch_list(request):
 @login_required
 @require_http_methods(['GET', 'POST'])
 @mobile_template('users/{mobile/}edit_profile.html')
-def edit_profile(request, template):
+def edit_profile(request, username=None, template=None):
     """Edit user profile."""
+
+    # If a username is specified, we are editing somebody else's profile.
+    if username is not None and username != request.user.username:
+        try:
+            user = User.objects.get(username=username)
+        except User.DoesNotExist:
+            raise Http404
+
+        # Make sure the auth'd user has permission:
+        if not request.user.has_perm('users.change_profile'):
+            return HttpResponseForbidden()
+    else:
+        user = request.user
+
     try:
-        user_profile = request.user.get_profile()
+        user_profile = user.get_profile()
     except Profile.DoesNotExist:
         # TODO: Once we do user profile migrations, all users should have a
         # a profile. We can remove this fallback.
-        user_profile = Profile.objects.create(user=request.user)
+        user_profile = Profile.objects.create(user=user)
 
     if request.method == 'POST':
         form = ProfileForm(request.POST, request.FILES, instance=user_profile)
         if form.is_valid():
             user_profile = form.save()
             new_timezone = user_profile.timezone
-            if request.session.get('timezone', None) != new_timezone:
+            tz_changed = request.session.get('timezone', None) != new_timezone
+            if tz_changed and user == request.user:
                 request.session['timezone'] = new_timezone
             return HttpResponseRedirect(reverse('users.profile',
-                                                args=[request.user.id]))
+                                                args=[user.username]))
     else:  # request.method == 'GET'
         form = ProfileForm(instance=user_profile)
 
@@ -490,7 +507,7 @@ def make_contributor(request):
             subject=_('Welcome to SUMO!'),
             text_template='users/email/contributor.ltxt',
             html_template='users/email/contributor.html',
-            context_vars={'contributor':request.user},
+            context_vars={'contributor': request.user},
             from_email=settings.DEFAULT_FROM_EMAIL,
             to_email=request.user.email)
 
@@ -535,7 +552,7 @@ def edit_avatar(request):
             # Delete uploaded avatar and replace with thumbnail.
             user_profile.avatar.delete()
             user_profile.avatar.save(name, content, save=True)
-            return HttpResponseRedirect(reverse('users.edit_profile'))
+            return HttpResponseRedirect(reverse('users.edit_my_profile'))
 
     else:  # request.method == 'GET'
         form = AvatarForm(instance=user_profile)
@@ -559,7 +576,7 @@ def delete_avatar(request):
         # Delete avatar here
         if user_profile.avatar:
             user_profile.avatar.delete()
-        return HttpResponseRedirect(reverse('users.edit_profile'))
+        return HttpResponseRedirect(reverse('users.edit_my_profile'))
     # else:  # request.method == 'GET'
 
     return render(request, 'users/confirm_avatar_delete.html', {

@@ -390,6 +390,25 @@
   }
 }
 
+#kb-overview-table {
+  td {
+    &.status {
+      background: rgba(0, 255, 0, 0.1);
+
+      &.needs-review {
+        background: rgba(255, 0, 0, 0.1);
+      }
+    }
+
+    &.needs-update,
+    &.stale {
+      &.yes {
+        background: rgba(255, 153, 0, 0.1);
+      }
+    }
+  }
+}
+
 /* Some tweaks for Need Changes table */
 #need-changes-table {
   td {

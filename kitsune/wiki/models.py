@@ -621,6 +621,11 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
 
 @register_mapping_type
 class DocumentMappingType(SearchMappingType):
+    list_keys = [
+        'topic',
+        'product'
+    ]
+
     @classmethod
     def get_model(cls):
         return Document
@@ -785,6 +790,7 @@ class Revision(ModelBase, SearchMixin):
 
     created = models.DateTimeField(default=datetime.now)
     reviewed = models.DateTimeField(null=True)
+    expires = models.DateTimeField(null=True, blank=True)
 
     # The significance of the initial revision of a document is NULL.
     significance = models.IntegerField(choices=SIGNIFICANCES, null=True)
@@ -1033,7 +1039,7 @@ class RevisionMetricsMappingType(SearchMappingType):
             obj_dict = model.uncached.values(*all_fields).get(pk=obj_id)
         else:
             obj_dict = dict([(field, getattr(obj, field))
-                              for field in fields])
+                             for field in fields])
             obj_dict['document__locale'] = obj.document.locale
             obj_dict['document__slug'] = obj.document.slug
 
@@ -1052,7 +1058,7 @@ class RevisionMetricsMappingType(SearchMappingType):
         d['indexed_on'] = int(time.time())
 
         d['created'] = obj_dict['created']
-        d['reviewed']= obj_dict['reviewed']
+        d['reviewed'] = obj_dict['reviewed']
 
         d['locale'] = obj_dict['document__locale']
         d['is_approved'] = obj_dict['is_approved']

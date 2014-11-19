@@ -263,8 +263,8 @@ MINIFY_BUNDLES = {
             'js/diff.js',
         ),
         'wiki.editor': (
-            'js/libs/ace/src-min/ace.js',
-            'js/libs/ace/src-min/ext-language_tools.js',
+            'js/libs/ace/ace.js',
+            'js/libs/ace/ext-language_tools.js',
             'js/ace.mode-sumo.js',
         ),
         'wiki.dashboard': (

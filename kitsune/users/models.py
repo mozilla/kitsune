@@ -178,6 +178,11 @@ class Profile(ModelBase, SearchMixin):
 
 @register_mapping_type
 class UserMappingType(SearchMappingType):
+    list_keys = [
+        'twitter_usernames',
+        'itwitter_usernames',
+    ]
+
     @classmethod
     def get_model(cls):
         return Profile
@@ -269,7 +274,8 @@ class UserMappingType(SearchMappingType):
         """Suggest completions for the text provided."""
         USER_SUGGEST = 'user-suggest'
         es = UserMappingType.search().get_es()
-        results = es.suggest(cls.get_index(), {
+
+        results = es.suggest(index=cls.get_index(), body={
             USER_SUGGEST: {
                 'text': text.lower(),
                 'completion': {

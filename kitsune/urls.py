@@ -34,13 +34,12 @@ urlpatterns = patterns(
     (r'^1', include('kitsune.inproduct.urls')),
     (r'^postcrash', include('kitsune.postcrash.urls')),
     (r'^groups', include('kitsune.groups.urls')),
-    (r'^karma', include('kitsune.karma.urls')),
+    (r'^karma-going-away', include('kitsune.karma.urls')),
     (r'^kpi/', include('kitsune.kpi.urls')),
     (r'^products', include('kitsune.products.urls')),
     (r'^announcements', include('kitsune.announcements.urls')),
     (r'^community', include('kitsune.community.urls')),
     (r'^badges/', include('kitsune.kbadge.urls')),
-    (r'^offline', include('kitsune.offline.urls')),
 
     # Kitsune admin (not Django admin).
     (r'^admin/', include(admin.site.urls)),
@@ -66,12 +65,19 @@ urlpatterns = patterns(
     # Services and sundry.
     (r'', include('kitsune.sumo.urls')),
 
-    # APIs
+    # v1 APIs
     (r'^api/1/kb/', include('kitsune.wiki.urls_api')),
     (r'^api/1/products/', include('kitsune.products.urls_api')),
     (r'^api/1/customercare/', include('kitsune.customercare.urls_api')),
     (r'^api/1/gallery/', include('kitsune.gallery.urls_api')),
     (r'^api/1/users/', include('kitsune.users.urls_api')),
+
+    # v2 APIs
+    (r'^api/2/', include('kitsune.questions.urls_api')),
+    (r'^api/2/', include('kitsune.notifications.urls_api')),
+
+    # These API urls include both v1 and v2 urls.
+    (r'^api/', include('kitsune.users.urls_api')),
 )
 
 # Handle 404 and 500 errors

@@ -32,7 +32,6 @@ Part 2: Developer's Guide
    armyofawesome
    karma
    wikidocs
-   osumo
    notes
    licenses
 

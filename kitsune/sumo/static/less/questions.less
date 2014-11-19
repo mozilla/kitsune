@@ -213,7 +213,6 @@ h2 {
       margin-bottom: 25px;
 
       .answers,
-      .points,
       .solutions {
         display: block;
       }
@@ -582,7 +581,9 @@ h2 {
 
   > section {
     background: #fff;
-    padding: 20px 30px;
+    .box-shadow(0 5px 5px rgba(0, 0, 0, 0.1));
+    margin-bottom: 20px;
+    padding: 20px;
     position: relative;
 
     h2 {
@@ -601,10 +602,56 @@ h2 {
     }
 
     .content {
-      border-right: 1px dotted @borderLightGrey;
-      margin: 0 190px 0 0;
+      border-left: 0px dotted @borderLightGrey;
+      margin: 0 0 0 90px;
       min-height: 130px;
-      padding: 0 20px 0 0;
+      padding: 0;
+
+      .tag-list {
+        display: inline-block;
+        font-size: 0;
+        list-style: none;
+        margin: 0;
+        padding: 0 280px 0 0;
+
+        > li {
+          font-size: 14px;
+          display: inline-block;
+          margin: 0 3px 3px 0;
+
+          &:last-of-type {
+            margin: 0;
+          }
+
+          > a,
+          > a:visited {
+            background: #EAEFF2;
+            color: @textDarkGrey;
+            display: inline-block;
+            padding: 2px 5px;
+
+            &:hover {
+              color: #000;
+            }
+          }
+        }
+      }
+
+      .short-text,
+      .long-text {
+        margin-bottom: 32px;
+        min-height: 60px;
+      }
+
+      .user-meta {
+        bottom: 23px;
+        display: inline-block;
+        font-size: 12px;
+        position: absolute;
+        right: 20px;
+        text-align: right;
+        width: 250px;
+      }
     }
 
     .thread-meta {
@@ -663,25 +710,19 @@ h2 {
     }
 
     .question-meta {
-      float: right;
+      float: left;
       font-size: 11px;
-      padding: 0 0 0 20px;
+      padding: 0 20px 0 0;
       text-align: center;
       text-transform: uppercase;
-      width: 170px;
+      width: 70px;
 
       > div {
+        margin-bottom: 5px;
         width: 70px;
 
-        &.have-problem-this-week {
-          float: right;
-          font-size: 13px;
-          margin-top: 16px;
-          width: 80px;
-
-          h4 {
-            font-size: 40px;
-          }
+        &.views {
+          margin-top: 12px;
         }
       }
 
@@ -695,28 +736,6 @@ h2 {
           color: #fe9300;
         }
       }
-    }
-  }
-
-  > aside {
-    font-size: 13px;
-    margin: 10px 30px 30px 30px;
-
-    .tag-list {
-      display: inline;
-      list-style: none;
-      margin: 0;
-      padding: 0;
-
-      > li {
-        display: inline;
-        font-style: italic;
-        margin: 0 0 0 10px;
-      }
-    }
-
-    .user-meta {
-      float: right;
     }
   }
 
@@ -785,7 +804,8 @@ h2 {
   }
 
   #filter-section {
-    .gradient(transparent, #fff, rgba(255, 255, 255, 0));
+    .gradient(transparent, #fff, rgba(255, 255, 255, 0.01));
+    height: 60px;
   }
 
   #owner-tabs {
@@ -813,6 +833,7 @@ h2 {
   #top-contributors {
     position: relative;
     text-align: center;
+    z-index: 20;
 
     ol {
       display: inline-block;
@@ -1072,11 +1093,22 @@ h2 {
 }
 
 #question-form {
-  ol {
-    > li {
-      margin-bottom: 10px;
+  h2 {
+    margin-bottom: 0;
+
+    + p {
+      font-family: @OpenSans;
+      margin-top: 5px;
     }
   }
+
+  .info {
+    background: #f1f1f1;
+    border-left: 2px solid @textBlue;
+    font-size: 13px;
+    padding: 16px;
+  }
+
   ul {
     list-style: none;
     margin: 0;
@@ -1087,26 +1119,27 @@ h2 {
     }
 
     label {
-      float: left;
-      width: 120px;
-      padding-right: 20px;
-      text-align: right;
+      display: block;
+      font-size: 12px;
+      font-weight: bold;
+      margin-bottom: 5px;
 
-      + input,
-      + textarea,
-      + div {
+      &[for="id_troubleshooting"] {
         float: left;
+        margin-right: 10px;
+        margin-top: 6px;
       }
+    }
+
+    input[type="text"],
+    textarea {
+      .box-sizing(border-box);
+      width: 100%;
     }
 
     li {
       .cf();
       padding: 10px 0;
-
-      p {
-        clear: both;
-        margin: 0 0 0 140px;
-      }
 
       &.details {
         display: none;
@@ -1137,10 +1170,6 @@ h2 {
       }
     }
 
-    textarea {
-      width: 710px;
-    }
-
     .editor-tools {
       display: none;
     }
@@ -1150,15 +1179,34 @@ h2 {
         margin-left: 140px;
       }
     }
+
+    #troubleshooting-install {
+      margin: 10px 0;
+    }
+
+    #troubleshooting-manual,
+    #troubleshooting-explanation {
+      font-size: 13px;
+      margin: 10px 0;
+    }
+  }
+
+  button {
+    margin-top: 30px;
   }
 
   ol#troubleshooting-help {
     display: none;
+    font-size: 13px;
     list-style: decimal;
-    margin-left: 170px;
+    margin: 0;
 
     li {
       padding: 5px 0;
+
+      &:before {
+        display: block;
+      }
 
       ul {
         margin: 0 0 0 10px;
@@ -1450,6 +1498,80 @@ div.ans-attachments {
     > li {
       display: inline;
       margin-right: 10px;
+    }
+  }
+}
+
+.questions-sidebar {
+  position: relative;
+
+  .toggler {
+    > span {
+      .border-radius(2px);
+      cursor: pointer;
+      display: block;
+      height: 28px;
+      position: absolute;
+      right: 0;
+      top: 13px;
+      width: 28px;
+      z-index: 10;
+
+      &:after {
+        border-top: 2px solid #999;
+        border-right: 2px solid #999;
+        content: '';
+        display: block;
+        height: 6px;
+        left: 50%;
+        margin: -4px 0 0 -5px;
+        position: absolute;
+        top: 50%;
+        .transform(rotate(45deg));
+        width: 6px;
+      }
+
+      &.expand {
+        background: @textBlue;
+        display: none;
+
+        &:after {
+          border-color: #fff;
+          margin-left: -2.5px;
+          .transform(rotate(-135deg));
+        }
+      }
+    }
+  }
+}
+
+#questions-list {
+  &.collapsed {
+    .grid_9 {
+      width: 894px;
+    }
+
+    .grid_3 {
+      width: 26px;
+
+      .sidebar-header,
+      .sidebar-nav {
+        display: none;
+      }
+    }
+
+    .questions-sidebar {
+      .toggler {
+        > span {
+          &.expand {
+            display: block;
+          }
+
+          &.collapse {
+            display: none;
+          }
+        }
+      }
     }
   }
 }

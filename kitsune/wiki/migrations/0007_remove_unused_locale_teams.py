@@ -9,6 +9,8 @@ from south.v2 import DataMigration
 
 class Migration(DataMigration):
 
+    no_dry_run = True
+
     def forwards(self, orm):
         """Sync up the locales enabled in settings.py with the locale teams."""
         locale_teams = orm.Locale.objects.all()

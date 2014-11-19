@@ -8,7 +8,7 @@ import cronjobs
 from kitsune.dashboards.models import (
     PERIODS, WikiDocumentVisits, WikiMetric, L10N_TOP20_CODE, L10N_ALL_CODE,
     L10N_ACTIVE_CONTRIBUTORS_CODE)
-from kitsune.dashboards.readouts import overview_rows
+from kitsune.dashboards.readouts import l10n_overview_rows
 from kitsune.products.models import Product
 from kitsune.sumo.redis_utils import redis_client
 from kitsune.wiki.models import Document
@@ -47,8 +47,8 @@ def update_l10n_coverage_metrics():
         # Loop through all enabled products, including None (really All).
         for product in [None] + list(Product.objects.filter(visible=True)):
 
-            # (Ab)use the overview_rows helper from the readouts.
-            rows = overview_rows(locale=locale, product=product)
+            # (Ab)use the l10n_overview_rows helper from the readouts.
+            rows = l10n_overview_rows(locale=locale, product=product)
 
             # % of top 20 articles
             top20 = rows['top-20']

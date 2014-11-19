@@ -7,15 +7,19 @@ import requests
 
 
 SURVEYS = {
-    'general': {
+    'general': {  # This is for users browsing the KB and navigation pages.
         'email_collection_survey_id': 1002970,
         'exit_survey_id': 991425,
         'exit_survey_campaign_id': 878533,
     },
-    'questions': {
+    'questions': {  # This is for users that are browsing questions.
         'email_collection_survey_id': 1717268,
         'exit_survey_id': 1724445,
         'exit_survey_campaign_id': 1687339,
+    },
+    'askers': {  # This is for users that asked a question 2 days ago.
+        'exit_survey_id': 1817790,
+        'exit_survey_campaign_id': 1876443,
     }
 }
 

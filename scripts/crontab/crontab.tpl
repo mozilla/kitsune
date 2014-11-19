@@ -19,9 +19,7 @@ HOME = /tmp
 # Every 6 hours.
 0 */6 * * * {{ django }} update_product_details -q > /dev/null
 40 */6 * * * {{ cron }} purge_tweets
-50 */6 * * * {{ cron }} cache_top_contributors
-20 */6 * * {{ cron }} generate_missing_share_links
-
+20 */6 * * * {{ cron }} generate_missing_share_links
 
 # Once per day.
 0 16 * * * {{ cron }} reload_wiki_traffic_stats
@@ -37,7 +35,10 @@ HOME = /tmp
 0 4 * * * {{ cron }} auto_archive_old_questions
 0 5 * * * {{ cron }} reindex_kb
 0 6 * * * {{ cron }} process_exit_surveys
-0 7 * * * {{ cron }} clear_expired_auth_tokens
+0 7 * * * {{ cron }} survey_recent_askers
+0 1 * * * {{ cron }} update_l10n_coverage_metrics
+0 0 * * * {{ cron }} rebuild_kb
+0 8 * * * {{ cron }} clear_expired_auth_tokens
 0 22 * * * {{ cron }} get_customercare_stats
 42 22 * * * {{ django }} cleanup
 30 3 * * * root {{ rscripts }} scripts/l10n_completion.py --truncate 30 locale media/uploads/l10n_history.json media/uploads/l10n_summary.json

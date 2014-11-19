@@ -10,8 +10,10 @@ from django.views.decorators.http import require_GET
 from tower import ugettext as _
 
 from kitsune.announcements.views import user_can_announce
+from kitsune.dashboards import PERIODS
 from kitsune.dashboards.readouts import (
-    overview_rows, READOUTS, L10N_READOUTS, CONTRIBUTOR_READOUTS)
+    l10n_overview_rows, kb_overview_rows, READOUTS, L10N_READOUTS,
+    CONTRIBUTOR_READOUTS)
 from kitsune.dashboards.utils import render_readouts, get_locales_by_visit
 from kitsune.products.models import Product
 from kitsune.sumo.urlresolvers import reverse
@@ -59,6 +61,22 @@ def contributors_detail(request, readout_slug):
 
 
 @require_GET
+def contributors_overview(request):
+    product = _get_product(request)
+
+    return render(request, 'dashboards/contributors_overview.html', {
+        'overview_rows': kb_overview_rows(
+            locale=request.LANGUAGE_CODE, product=product,
+            mode=smart_int(request.GET.get('mode'), None),
+            max=None),
+        'main_dash_view': 'dashboards.contributors',
+        'main_dash_title': _('Knowledge Base Dashboard'),
+        'locale': request.LANGUAGE_CODE,
+        'product': product,
+        'products': Product.objects.filter(visible=True)})
+
+
+@require_GET
 def localization_detail(request, readout_slug):
     """Show all the rows for the given localizer dashboard table."""
     product = _get_product(request)
@@ -82,7 +100,7 @@ def localization(request):
     product = _get_product(request)
 
     data = {
-        'overview_rows': overview_rows(
+        'overview_rows': l10n_overview_rows(
             request.LANGUAGE_CODE, product=product),
         'user_can_announce': permission,
     }
@@ -100,6 +118,26 @@ def contributors(request):
         CONTRIBUTOR_READOUTS,
         'contributors.html',
         locale=settings.WIKI_DEFAULT_LANGUAGE,
+        product=product,
+        extra_data={
+            'overview_rows': kb_overview_rows(
+                locale=request.LANGUAGE_CODE, product=product,
+                mode=smart_int(request.GET.get('mode'), None),
+                max=smart_int(request.GET.get('max'), 10)),
+            'overview_modes': PERIODS
+        })
+
+
+@require_GET
+def contributors_old(request):
+    """Render aggregate data about the articles in the default locale."""
+    product = _get_product(request)
+
+    return render_readouts(
+        request,
+        CONTRIBUTOR_READOUTS,
+        'contributors_old.html',
+        locale=settings.WIKI_DEFAULT_LANGUAGE,
         product=product)
 
 
@@ -114,6 +152,19 @@ def wiki_rows(request, readout_slug):
                           product=product)
     max_rows = smart_int(request.GET.get('max'), fallback=None)
     return HttpResponse(readout.render(max_rows=max_rows))
+
+
+@require_GET
+def contributors_overview_rows(request):
+    product = _get_product(request)
+
+    overview_rows = kb_overview_rows(
+        locale=request.LANGUAGE_CODE, product=product,
+        mode=smart_int(request.GET.get('mode'), None),
+        max=smart_int(request.GET.get('max'), 10))
+
+    return render(request, 'dashboards/includes/kb_overview.html', {
+        'overview_rows': overview_rows})
 
 
 @require_GET

@@ -39,7 +39,7 @@ class LogoutDeactivatedUsersMiddleware(object):
         user = request.user
 
         if (user.is_authenticated() and not user.is_active
-            and not request.session.get('in-aaq', False)):
+                and not request.session.get('in-aaq', False)):
 
             # The user is auth'd, not active and not in AAQ. /KICK
             logout(request)

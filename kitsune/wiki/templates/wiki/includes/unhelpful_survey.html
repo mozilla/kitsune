@@ -1,4 +1,5 @@
 <div id="unhelpful-survey">
+    <span class="close-button"></span>
     <form action="{{ url('wiki.unhelpful_survey') }}" method="post" data-required="unhelpful-reason">
         <input type="hidden" name="vote_id" value="{{ vote_id }}" />
         <p class="sorry">{{ _('Sorry to hear that.') }}</p>

@@ -2,7 +2,6 @@ import json
 import logging
 import pprint
 import time
-from datetime import datetime
 
 from django.conf import settings
 from django.db import reset_queries
@@ -95,7 +94,7 @@ class AnalyzerMixin(object):
 
     def process_query_match_whitespace(self, key, val, action):
         """A match query that uses the whitespace analyzer."""
-        return  {
+        return {
             'match': {
                 key: {
                     'query': val,
@@ -217,13 +216,16 @@ def format_time(time_to_go):
 def get_documents(cls, ids):
     """Returns a list of ES documents with specified ids and doctype
 
-    :arg cls: the class with a ``.search()`` to use
+    :arg cls: the mapping type class with a ``.search()`` to use
     :arg ids: the list of ids to retrieve documents for
 
     :returns: list of documents as dicts
     """
-    ret = cls.search().filter(id__in=ids).values_dict()[:len(ids)]
-    return list(ret)
+    # FIXME: We pull the field names from the mapping, but I'm not
+    # sure if this works in all cases or not and it's kind of hacky.
+    fields = cls.get_mapping()['properties'].keys()
+    ret = cls.search().filter(id__in=ids).values_dict(*fields)[:len(ids)]
+    return cls.reshape(ret)
 
 
 def get_analysis():
@@ -266,8 +268,7 @@ def get_analysis():
 
         # The snowball analyzer is actually just a shortcut that does
         # a particular set of tokenizers and analyzers. According to
-        # the docs[1], the below is the same as that, plus the synonyms.
-        # [1] http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/analysis-snowball-analyzer.html #noqa
+        # the docs, the below is the same as that, plus synonym handling.
 
         if locale in config.ES_SYNONYM_LOCALES:
             analyzer_name = es_analyzer_for_locale(locale, synonyms=True)
@@ -396,8 +397,8 @@ def reconcile_chunk(cls, db_id_list, reraise=False):
     db_id_list = set(db_id_list)
 
     # Create a set of ids in the index
-    index_id_list = set(item[0] for item in
-                        cls.search().values_list('id').all())
+    index_id_list = set(item[0][0] for item in
+                        cls.search().values_list('id').everything())
 
     # Get the list of ids in the index that aren't in the db.
     index_id_list -= db_id_list
@@ -798,76 +799,6 @@ def es_verify_cmd(log=log):
 
     log.info('Done! {0}'.format(format_time(time.time() - start_time)))
     log.info('')
-
-    log.info('Verifying all documents are correctly typed.')
-
-    # Note: This is some goofy type coercion between ES and Python
-    # types and Python type behavior
-    type_map = {
-        'string': basestring,
-        'integer': (int, long),
-        'long': (int, long),
-        'boolean': bool,
-        'date': datetime,
-    }
-
-    def verify_obj(mt_name, cls, mapping, obj_id):
-        try:
-            doc = cls.extract_document(obj_id=obj_id)
-        except UnindexMeBro:
-            return
-
-        for field, type_ in mapping.items():
-            python_type = type_map[type_['type']]
-            item = doc.get(field)
-
-            if item is None or isinstance(item, python_type):
-                continue
-
-            if isinstance(item, (tuple, list)):
-                for mem in item:
-                    if not isinstance(mem, python_type):
-                        log.error('   bad type: {0} {1} {2} {3}'
-                                  .format(mt_name, field, type_['type'], item))
-                continue
-
-            log.error('   bad type: {0} {1} {2} {3}'
-                      .format(mt_name, field, type_['type'], item))
-
-    start_time = time.time()
-
-    mappings = get_all_mappings()
-
-    log.info('MappingType indexable.')
-    for cls, indexable in get_indexable():
-        count = 0
-        cls_time = time.time()
-
-        mt_name = cls.get_mapping_type_name()
-        mapping = mappings[mt_name]
-        if 'properties' in mapping:
-            mapping = mapping['properties']
-
-        log.info('   Working on {0}'.format(mt_name))
-        for obj in indexable:
-            verify_obj(mt_name, cls, mapping, obj)
-
-            count += 1
-            if count % 1000 == 0:
-                log.info('      {0} ({1}/1000 avg)'.format(
-                         count,
-                         format_time((time.time() - cls_time) * 1000 / count)))
-
-                if settings.DEBUG:
-                    # Nix queries so that this doesn't become a complete
-                    # memory hog and make Will's computer sad when DEBUG=True.
-                    reset_queries()
-
-        log.info('      Done! {0} ({1}/1000 avg)'.format(
-            format_time(time.time() - cls_time),
-            format_time((time.time() - cls_time) * 1000 / count)))
-
-    log.info('Done! {0}'.format(format_time(time.time() - start_time)))
 
 
 def es_analyzer_for_locale(locale, synonyms=False, fallback='standard'):

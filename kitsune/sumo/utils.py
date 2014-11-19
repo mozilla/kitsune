@@ -236,19 +236,19 @@ def rabbitmq_queue_size():
 
 class Progress(object):
     """A widget to show progress during interactive CLI scripts.
-    
+
     Example:
-    
+
         prog = Progress(100)
         prog.draw()
         for i in range(100):
             time.sleep(0.1)
             prog.tick()
-    
-    This will draw a progress indicator that looks like 
-    
+
+    This will draw a progress indicator that looks like
+
         55/100 (Est 0 min. remaining)
-        
+
     TODO
     * Improve the time estimation, it's quite bad.
     * Display a progress bar.
@@ -272,7 +272,7 @@ class Progress(object):
 
     def tick(self, incr=1):
         """Advance the current progress, and redraw the screen.
-        
+
         :param incr: Raise the current progress by this amount. Default: 1
         """
         self.current += incr

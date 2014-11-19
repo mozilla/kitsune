@@ -34,9 +34,6 @@ class Product(ModelBase):
     # Whether or not this product is visible in the KB ui to users.
     visible = models.BooleanField(default=False)
 
-    # Whether or not this product is enabled in questions
-    questions_enabled = models.BooleanField(default=False)
-
     # Platforms this Product runs on.
     platforms = models.ManyToManyField('Platform')
 
@@ -58,6 +55,9 @@ class Product(ModelBase):
         url = os.path.join(settings.MEDIA_URL, settings.PRODUCT_IMAGE_PATH, fn)
         return '%s?%s' % (url, self.image_cachebuster)
 
+    def questions_enabled(self, locale):
+        return self.questions_locales.filter(locale=locale).exists()
+
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None, regenerate_sprite=True):
         super(Product, self).save(force_insert=force_insert,
@@ -67,7 +67,7 @@ class Product(ModelBase):
         if regenerate_sprite:
             cachebust = uuid4().hex
             logos = []
-            offset = 0;
+            offset = 0
             products = Product.objects.order_by('id').all()
 
             for product in products:

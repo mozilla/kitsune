@@ -37,7 +37,7 @@ def period_dates(period):
 class WikiDocumentVisits(ModelBase):
     """Web stats for Knowledge Base Documents"""
 
-    document = models.ForeignKey(Document)
+    document = models.ForeignKey(Document, related_name='visits')
     visits = models.IntegerField(db_index=True)
     period = models.IntegerField(choices=PERIODS)  # indexed by unique_together
 

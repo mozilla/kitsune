@@ -11,10 +11,10 @@ from kitsune.products.models import Topic
 from kitsune.wiki.models import Document, DocumentMappingType
 
 
-def topics_for(products, parent=False):
-    """Returns a list of topics that apply to passed in products and topics.
+def topics_for(product, parent=False):
+    """Returns a list of topics that apply to passed in product.
 
-    :arg products: a list of Product instances
+    :arg product: a Product instance
     :arg parent: (optional) limit to topics with the given parent
     """
     statsd.incr('wiki.facets.topics_for.db')
@@ -23,14 +23,10 @@ def topics_for(products, parent=False):
         locale=settings.WIKI_DEFAULT_LANGUAGE,
         is_archived=False,
         current_revision__isnull=False,
+        products=product,
         category__in=settings.IA_DEFAULT_CATEGORIES)
 
-    for product in products:
-        docs = docs.filter(products=product)
-
-    for product in products:
-        qs = Topic.objects.filter(product=product)
-
+    qs = Topic.objects.filter(product=product)
     qs = (qs.filter(visible=True, document__in=docs)
             .annotate(num_docs=Count('document'))
             .distinct())
@@ -121,7 +117,9 @@ def _es_documents_for(locale, topics=None, products=None):
     for product in products or []:
         s = s.filter(product=product.slug)
 
-    return list(s.order_by('-document_recent_helpful_votes')[:100])
+    results = s.order_by('-document_recent_helpful_votes')[:100]
+    results = DocumentMappingType.reshape(results)
+    return results
 
 
 def _db_documents_for(locale, topics=None, products=None):

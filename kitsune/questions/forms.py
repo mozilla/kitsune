@@ -208,7 +208,10 @@ class EditQuestionForm(forms.Form):
         """Returns the keys of the metadata fields for the current
         form instance"""
         non_metadata_fields = ['title', 'content', 'email']
-        metadata_filter = lambda x: x not in non_metadata_fields
+
+        def metadata_filter(x):
+            return x not in non_metadata_fields
+
         return filter(metadata_filter, self.fields.keys())
 
     @property

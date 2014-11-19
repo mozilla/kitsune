@@ -212,7 +212,9 @@ def datetimeformat(context, value, format='shortdatetime'):
     """
     if not isinstance(value, datetime.datetime):
         # Expecting date value
-        raise ValueError
+        raise ValueError(
+            'Unexpected value {value} passed to datetimeformat'.format(
+                value=value))
 
     request = context.get('request')
 

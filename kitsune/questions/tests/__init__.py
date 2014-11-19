@@ -3,7 +3,7 @@ from datetime import datetime
 from nose.tools import eq_
 
 from kitsune.questions.models import (
-    Question, QuestionVote, Answer, AnswerVote)
+    Question, QuestionVote, Answer, AnswerVote, QuestionLocale)
 from kitsune.sumo.tests import LocalizingClient, TestCase, with_save
 from kitsune.users.tests import user, profile
 
@@ -19,8 +19,7 @@ def tags_eq(tagged_object, tag_names):
         sorted(tag_names))
 
 
-@with_save
-def question(**kwargs):
+def question(save=False, **kwargs):
     defaults = dict(title=str(datetime.now()),
                     content='',
                     created=datetime.now(),
@@ -29,7 +28,14 @@ def question(**kwargs):
     defaults.update(kwargs)
     if 'creator' not in kwargs and 'creator_id' not in kwargs:
         defaults['creator'] = profile().user
-    return Question(**defaults)
+    q = Question(**defaults)
+    if save:
+        q.save()
+    if 'metadata' in defaults:
+        if not save:
+            raise ValueError('save must be True if metadata provided.')
+        q.add_metadata(**defaults['metadata'])
+    return q
 
 
 @with_save
@@ -41,6 +47,11 @@ def questionvote(**kwargs):
     if 'creator' not in kwargs and 'creator_id' not in kwargs:
         defaults['creator'] = profile().user
     return QuestionVote(**defaults)
+
+
+@with_save
+def questionlocale(**kwargs):
+    return QuestionLocale(**kwargs)
 
 
 @with_save
@@ -60,4 +71,6 @@ def answervote(**kwargs):
     defaults.update(kwargs)
     if 'creator' not in kwargs and 'creator_id' not in kwargs:
         defaults['creator'] = user(save=True)
+    if 'answer' not in kwargs and 'answer_id' not in kwargs:
+        defaults['answer'] = answer(save=True)
     return AnswerVote(**defaults)

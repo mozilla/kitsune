@@ -92,6 +92,8 @@ class SearchMappingType(MappingType, Indexable):
     6. implement get_mapping_type on the related model
 
     """
+    list_keys = []
+
     @classmethod
     def search(cls):
         return es_utils.Sphilastic(cls)
@@ -123,6 +125,24 @@ class SearchMappingType(MappingType, Indexable):
             'pk', flat=True)
 
     @classmethod
+    def reshape(cls, results):
+        """Reshapes the results so lists are lists and everything is not"""
+        # FIXME: This is dumb because we're changing the shape of the
+        # results multiple times in a hokey-pokey kind of way. We
+        # should fix this after SUMO is using Elasticsearch 1.x and it
+        # probably involves an ElasticUtils rewrite or whatever the
+        # next generation is.
+        list_keys = cls.list_keys
+
+        # FIXME: This builds a new dict from the old dict. Might be
+        # cheaper to do it in-place.
+        return [
+            dict((key, (val if key in list_keys else val[0]))
+                 for key, val in result.items())
+            for result in results
+        ]
+
+    @classmethod
     def index(cls, *args, **kwargs):
         if not settings.ES_LIVE_INDEXING:
             return
@@ -142,7 +162,8 @@ class SearchMappingType(MappingType, Indexable):
             pass
 
 
-_identity = lambda s: s
+def _identity(s):
+    return s
 
 
 def register_for_indexing(app,

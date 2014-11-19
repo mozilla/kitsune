@@ -8,10 +8,6 @@
 
 {% set classes = 'answers' %}
 
-{% if product %}
-  {% set product = product[0] %}
-{% endif %}
-
 {% set product_title = _(product.title, 'DB: products.Product.title') if product else _('All Products') %}
 
 {# L10n: {q} is the title of the question. #}
@@ -37,7 +33,7 @@
 
 {% block content %}
   <article>
-    <div class="question grid_9">
+    <div class="question grid_9" itemscope itemtype="http://schema.org/Question">
       {% if question.is_locked or question.is_archived %}
         <div class="notice">
           {% if question.is_locked and not question.is_archived %}
@@ -54,7 +50,7 @@
         </div>
       {% endif %}
 
-      <h2 class="summary">{{ question.title }}</h2>
+      <h2 class="summary" itemprop="headline">{{ question.title }}</h2>
 
       <div class="question-meta">
         <ul class="cf">
@@ -89,7 +85,7 @@
                 {{ _('Last reply by {user}')|f(user=display_name(question.last_answer.creator)) }}
               </a>
               <span class="last-answer-date">
-                {{ question.last_answer.created|timesince }}
+                <time itemprop="dateModified" datetime="{{ question.last_answer.created }}">{{ question.last_answer.created|timesince }}</time>
               </span>
             </li>
           {% endif %}
@@ -114,12 +110,12 @@
         </div>
         <div class="asked-on">
           {{ _('Posted') }}<br>
-          {{ datetimeformat(question.created) }}
+          <time itemprop="dateCreated" datetime="{{ question.created }}">{{ datetimeformat(question.created) }}</time>
         </div>
       </div>
 
       <div class="main-content">
-        {{ question.content_parsed|safe }}
+        <div itemprop="text">{{ question.content_parsed|safe }}</div>
 
         {% if question.updated_by %}
           <p class="edited">
@@ -241,7 +237,6 @@
                 <div class="sidebox tight condensed">
                   <span class="title">{{ _('Topic') }}</span>
                   {% if topic %}
-                    {% set topic = topic[0] %}
                     <span class="detail">{{ _(topic.title, 'DB: products.Topic.title') }}</span>
                   {% endif %}
                   {% if user and user.has_perm('questions.change_question') %}
@@ -259,7 +254,7 @@
                   <span class="title">{{ _('Locale') }}</span>
                   <span class="detail">{{ settings.LANGUAGES_DICT[question.locale.lower()] }}</span>
                   <select name="locale">
-                    {% for lang in settings.AAQ_LANGUAGES %}
+                    {% for lang in AAQ_LANGUAGES %}
                       <option {% if question.locale == lang %}selected="selected"{% endif %} value="{{ lang }}">{{ settings.LANGUAGES_DICT[lang.lower()] }}</option>
                     {% endfor %}
                   </select>
@@ -451,7 +446,7 @@
       </form>
     {% elif question.editable and not user.is_authenticated() %}
       <div class="question-tools nopadding">
-        {% if request.LANGUAGE_CODE in settings.AAQ_LANGUAGES %}
+        {% if request.LANGUAGE_CODE in AAQ_LANGUAGES %}
           {% set ask_url = url('questions.aaq_step1') %}
         {% else %}
           {% set ask_url = url('wiki.document', 'get-community-support') %}

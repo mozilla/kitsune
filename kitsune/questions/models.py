@@ -16,28 +16,27 @@ from django.db.models.signals import post_save, pre_save
 from django.db.utils import IntegrityError
 from django.http import Http404
 
-import waffle
 from product_details import product_details
 from statsd import statsd
 from taggit.models import Tag, TaggedItem
 
 from kitsune.flagit.models import FlaggedObject
-from kitsune.karma.manager import KarmaManager
 from kitsune.products.models import Product, Topic
 from kitsune.questions import config
 from kitsune.questions.karma_actions import (
     AnswerAction, FirstAnswerAction, SolutionAction)
-from kitsune.questions.managers import QuestionManager
+from kitsune.questions.managers import QuestionManager, QuestionLocaleManager
 from kitsune.questions.signals import tag_added
 from kitsune.questions.tasks import (
     update_question_votes, update_answer_pages, log_answer, escalate_question)
+from kitsune.search.es_utils import UnindexMeBro
 from kitsune.search.models import (
     SearchMappingType, SearchMixin, register_for_indexing,
     register_mapping_type)
+from kitsune.search.tasks import index_task
 from kitsune.sumo.helpers import urlparams
 from kitsune.sumo.models import ModelBase, LocaleField
 from kitsune.sumo.helpers import wiki_to_html
-from kitsune.sumo.redis_utils import RedisError
 from kitsune.sumo.urlresolvers import reverse, split_path
 from kitsune.tags.models import BigVocabTaggableMixin
 from kitsune.tags.utils import add_existing_tag
@@ -48,6 +47,7 @@ log = logging.getLogger('k.questions')
 
 
 CACHE_TIMEOUT = 10800  # 3 hours
+VOTE_METADATA_MAX_LENGTH = 1000
 
 
 class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
@@ -58,10 +58,10 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
 
     created = models.DateTimeField(default=datetime.now, db_index=True)
     updated = models.DateTimeField(default=datetime.now, db_index=True)
-    updated_by = models.ForeignKey(User, null=True,
+    updated_by = models.ForeignKey(User, null=True, blank=True,
                                    related_name='questions_updated')
     last_answer = models.ForeignKey('Answer', related_name='last_reply_in',
-                                    null=True)
+                                    null=True, blank=True)
     num_answers = models.IntegerField(default=0, db_index=True)
     solution = models.ForeignKey('Answer', related_name='solution_for',
                                  null=True)
@@ -77,11 +77,10 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
     images = generic.GenericRelation(ImageAttachment)
     flags = generic.GenericRelation(FlaggedObject)
 
-    # List of products this question applies to.
-    products = models.ManyToManyField(Product)
-
-    # List of product-specific topics this document applies to.
-    topics = models.ManyToManyField(Topic)
+    product = models.ForeignKey(
+        Product, null=True, default=None, related_name='questions')
+    topic = models.ForeignKey(
+        Topic, null=True, related_name='questions')
 
     locale = LocaleField(default=settings.WIKI_DEFAULT_LANGUAGE)
 
@@ -195,9 +194,9 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
             return User.objects.get(id=solver_id)
 
     @property
-    def product(self):
-        """Return the product this question is about or an empty mapping if
-        unknown."""
+    def product_config(self):
+        """Return the product config this question is about or an empty
+        mapping if unknown."""
         md = self.metadata
         if 'product' in md:
             return config.products.get(md['product'], {})
@@ -209,18 +208,17 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
 
         It returns 'all' in the off chance that there are no products."""
         if not hasattr(self, '_product_slug') or self._product_slug is None:
-            prods = self.products.all()
-            self._product_slug = prods[0].slug if len(prods) > 0 else 'all'
+            self._product_slug = self.product.slug if self.product else None
 
         return self._product_slug
 
     @property
-    def category(self):
+    def category_config(self):
         """Return the category this question refers to or an empty mapping if
         unknown."""
         md = self.metadata
-        if self.product and 'category' in md:
-            return self.product['categories'].get(md['category'], {})
+        if self.product_config and 'category' in md:
+            return self.product_config['categories'].get(md['category'], {})
         return {}
 
     def auto_tag(self):
@@ -229,7 +227,8 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         You don't need to call save on the question after this.
 
         """
-        to_add = self.product.get('tags', []) + self.category.get('tags', [])
+        to_add = (self.product_config.get('tags', []) +
+                  self.category_config.get('tags', []))
 
         version = self.metadata.get('ff_version', '')
 
@@ -341,7 +340,7 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
 
     @property
     def is_solved(self):
-        return not not self.solution_id
+        return self.solution_id is not None
 
     @property
     def is_escalated(self):
@@ -447,6 +446,24 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         delta = datetime.now() - self.created
         return delta.seconds + delta.days * 24 * 60 * 60
 
+    def set_solution(self, answer, solver):
+        """
+        Sets the solution, and fires any needed events.
+
+        Does not check permission of the user making the change.
+        """
+        # Avoid circular import
+        from kitsune.questions.events import QuestionSolvedEvent
+
+        self.solution = answer
+        self.save()
+        self.add_metadata(solver_id=str(solver.id))
+        statsd.incr('questions.solution')
+        QuestionSolvedEvent(answer).fire(exclude=self.creator)
+        SolutionAction(user=answer.creator, day=answer.created).save()
+
+    # Permissions
+
     def allows_edit(self, user):
         """Return whether `user` can edit this question."""
         return (user.has_perm('questions.change_question') or
@@ -487,9 +504,24 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
                 user != self.creator and
                 self.editable)
 
+    def mark_as_spam(self, by_user):
+        """Mark the question as spam by the specified user."""
+        self.is_spam = True
+        self.marked_as_spam = datetime.now()
+        self.marked_as_spam_by = by_user
+        self.save()
+
 
 @register_mapping_type
 class QuestionMappingType(SearchMappingType):
+    list_keys = [
+        'topic',
+        'product',
+        'question_tag',
+        'question_answer_content',
+        'question_answer_creator'
+    ]
+
     @classmethod
     def get_model(cls):
         return Question
@@ -555,7 +587,8 @@ class QuestionMappingType(SearchMappingType):
         """Extracts indexable attributes from a Question and its answers."""
         fields = ['id', 'title', 'content', 'num_answers', 'solution_id',
                   'is_locked', 'is_archived', 'created', 'updated',
-                  'num_votes_past_week', 'locale']
+                  'num_votes_past_week', 'locale', 'product_id', 'topic_id',
+                  'is_spam']
         composed_fields = ['creator__username']
         all_fields = fields + composed_fields
 
@@ -569,6 +602,9 @@ class QuestionMappingType(SearchMappingType):
                               for field in fields])
             fixed_obj['creator__username'] = obj.creator.username
             obj = fixed_obj
+
+        if obj['is_spam']:
+            raise UnindexMeBro()
 
         d = {}
         d['id'] = obj['id']
@@ -586,8 +622,8 @@ class QuestionMappingType(SearchMappingType):
         d['created'] = int(time.mktime(obj['created'].timetuple()))
         d['updated'] = int(time.mktime(obj['updated'].timetuple()))
 
-        topics = Topic.uncached.filter(question__id=obj['id'])
-        products = Product.uncached.filter(question__id=obj['id'])
+        topics = Topic.objects.filter(id=obj['topic_id'])
+        products = Product.objects.filter(id=obj['product_id'])
         d['topic'] = [t.slug for t in topics]
         d['product'] = [p.slug for p in products]
 
@@ -611,7 +647,7 @@ class QuestionMappingType(SearchMappingType):
         d['question_locale'] = obj['locale']
 
         answer_values = list(Answer.uncached
-                                   .filter(question=obj_id)
+                                   .filter(question=obj_id, is_spam=False)
                                    .values_list('content',
                                                 'creator__username'))
 
@@ -634,14 +670,6 @@ register_for_indexing(
     instance_to_indexee=(
         lambda i: (i.content_object if isinstance(i.content_object, Question)
                    else None)))
-register_for_indexing(
-    'questions',
-    Question.topics.through,
-    m2m=True)
-register_for_indexing(
-    'questions',
-    Question.products.through,
-    m2m=True)
 
 
 def _tag_added(sender, question_id, tag_name, **kwargs):
@@ -710,6 +738,18 @@ class QuestionVisits(ModelBase):
                         ' so I kept what I had.')
 
 
+class QuestionLocale(ModelBase):
+    locale = LocaleField(choices=settings.LANGUAGE_CHOICES_ENGLISH,
+                         unique=True)
+    products = models.ManyToManyField(Product,
+                                      related_name='questions_locales')
+
+    objects = QuestionLocaleManager()
+
+    class Meta:
+        verbose_name = 'AAQ enabled locale'
+
+
 class Answer(ModelBase, SearchMixin):
     """An answer to a support question."""
     question = models.ForeignKey('Question', related_name='answers')
@@ -717,7 +757,7 @@ class Answer(ModelBase, SearchMixin):
     created = models.DateTimeField(default=datetime.now, db_index=True)
     content = models.TextField()
     updated = models.DateTimeField(default=datetime.now, db_index=True)
-    updated_by = models.ForeignKey(User, null=True,
+    updated_by = models.ForeignKey(User, null=True, blank=True,
                                    related_name='answers_updated')
     page = models.IntegerField(default=1)
     is_spam = models.BooleanField(default=False)
@@ -768,22 +808,27 @@ class Answer(ModelBase, SearchMixin):
 
         super(Answer, self).save(*args, **kwargs)
 
+        self.question.num_answers = Answer.uncached.filter(
+            question=self.question, is_spam=False).count()
+        latest = Answer.uncached.filter(
+            question=self.question, is_spam=False).order_by('-created')[:1]
+        self.question.last_answer = (
+            self if new else latest[0] if len(latest) else None)
+        self.question.save(update)
+
         if new:
             # Occasionally, num_answers seems to get out of sync with the
             # actual number of answers. This changes it to pull from
             # uncached on the off chance that fixes it. Plus if we enable
             # caching of counts, this will continue to work.
-            self.question.num_answers = Answer.uncached.filter(
-                question=self.question, is_spam=False).count()
-            self.question.last_answer = self
-            self.question.save(update)
             self.question.clear_cached_contributors()
 
             if not no_notify:
                 # Avoid circular import: events.py imports Question.
                 from kitsune.questions.events import QuestionReplyEvent
                 QuestionReplyEvent(self).fire(exclude=self.creator)
-        else:
+
+        if not new:
             # Clear the attached images cache.
             self.clear_cached_images()
 
@@ -844,51 +889,26 @@ class Answer(ModelBase, SearchMixin):
         return AnswerVote.objects.filter(answer=self).count()
 
     @property
-    def creator_num_answers(self):
-        # If karma is enabled, try to use the karma backend (redis) to get
-        # the number of answers. Fallback to database.
-        if waffle.switch_is_active('karma'):
-            try:
-                count = KarmaManager().count(
-                    'all', user=self.creator, type=AnswerAction.action_type)
-                if count is not None:
-                    return count
-            except RedisError as e:
-                statsd.incr('redis.errror')
-                log.error('Redis connection error: %s' % e)
-
-        return Answer.objects.filter(creator=self.creator).count()
-
-    @property
-    def creator_num_solutions(self):
-        # If karma is enabled, try to use the karma backend (redis) to get
-        # the number of solutions. Fallback to database.
-        if waffle.switch_is_active('karma'):
-            try:
-                count = KarmaManager().count(
-                    'all', user=self.creator, type=SolutionAction.action_type)
-                if count is not None:
-                    return count
-            except RedisError as e:
-                statsd.incr('redis.errror')
-                log.error('Redis connection error: %s' % e)
-
-        return Question.objects.filter(
-            solution__in=Answer.objects.filter(creator=self.creator)).count()
-
-    @property
-    def creator_num_points(self):
-        try:
-            return KarmaManager().count(
-                'all', user=self.creator, type='points')
-        except RedisError as e:
-            statsd.incr('redis.errror')
-            log.error('Redis connection error: %s' % e)
-
-    @property
     def num_helpful_votes(self):
         """Get the number of helpful votes for this answer."""
         return AnswerVote.objects.filter(answer=self, helpful=True).count()
+
+    @property
+    def num_unhelpful_votes(self):
+        """Get the number of unhelpful votes for this answer."""
+        return AnswerVote.objects.filter(answer=self, helpful=False).count()
+
+    @property
+    def creator_num_answers(self):
+        # Avoid circular import, utils.py imports Question
+        from kitsune.questions.utils import num_answers
+        return num_answers(self.creator)
+
+    @property
+    def creator_num_solutions(self):
+        # Avoid circular import, utils.py imports Question
+        from kitsune.questions.utils import num_solutions
+        return num_solutions(self.creator)
 
     def has_voted(self, request):
         """Did the user already vote for this answer?"""
@@ -951,9 +971,20 @@ class Answer(ModelBase, SearchMixin):
     def get_mapping_type(cls):
         return AnswerMetricsMappingType
 
+    def mark_as_spam(self, by_user):
+        """Mark the answer as spam by the specified user."""
+        self.is_spam = True
+        self.marked_as_spam = datetime.now()
+        self.marked_as_spam_by = by_user
+        self.save()
+
 
 @register_mapping_type
 class AnswerMetricsMappingType(SearchMappingType):
+    list_keys = [
+        'product'
+    ]
+
     @classmethod
     def get_model(cls):
         return Answer
@@ -987,7 +1018,8 @@ class AnswerMetricsMappingType(SearchMappingType):
         composed_fields = [
             'question__locale',
             'question__solution_id',
-            'question__creator_id']
+            'question__creator_id',
+            'question__product_id']
         all_fields = fields + composed_fields
 
         if obj is None:
@@ -995,10 +1027,11 @@ class AnswerMetricsMappingType(SearchMappingType):
             obj_dict = model.uncached.values(*all_fields).get(pk=obj_id)
         else:
             obj_dict = dict([(field, getattr(obj, field))
-                              for field in fields])
+                             for field in fields])
             obj_dict['question__locale'] = obj.question.locale
             obj_dict['question__solution_id'] = obj.question.solution_id
             obj_dict['question__creator_id'] = obj.question.creator_id
+            obj_dict['question__product_id'] = obj.question.product_id
 
         d = {}
         d['id'] = obj_dict['id']
@@ -1023,8 +1056,7 @@ class AnswerMetricsMappingType(SearchMappingType):
         d['by_asker'] = (
             obj_dict['creator_id'] == obj_dict['question__creator_id'])
 
-        products = Product.uncached.filter(
-            question__id=obj_dict['question_id'])
+        products = Product.objects.filter(id=obj_dict['question__product_id'])
         d['product'] = [p.slug for p in products]
 
         return d
@@ -1036,12 +1068,13 @@ register_for_indexing(
     'answers',
     Question,
     instance_to_indexee=(
-        lambda i: i.solution ))
+        lambda i: i.solution))
 
 
 def answer_connector(sender, instance, created, **kw):
     if created:
         log_answer.delay(instance)
+
 
 post_save.connect(answer_connector, sender=Answer,
                   dispatch_uid='question_answer_activity')
@@ -1051,6 +1084,20 @@ register_for_indexing(
     'questions', Answer, instance_to_indexee=lambda a: a.question)
 
 
+# This below is needed to update the is_solution field on the answer.
+def reindex_questions_answers(sender, instance, **kw):
+    """When a question is saved, we need to reindex it's answers.
+
+    This is needed because the solution may have changed."""
+    if instance.id:
+        answer_ids = instance.answers.all().values_list('id', flat=True)
+        index_task.delay(AnswerMetricsMappingType, list(answer_ids))
+
+post_save.connect(
+    reindex_questions_answers, sender=Question,
+    dispatch_uid='questions_reindex_answers')
+
+
 def user_pre_save(sender, instance, **kw):
     """When a user's username is changed, we must reindex the questions
     they participated in.
@@ -1058,8 +1105,8 @@ def user_pre_save(sender, instance, **kw):
     if instance.id:
         user = User.objects.get(id=instance.id)
         if user.username != instance.username:
-            questions = (Question.objects
-                .filter(
+            questions = (
+                Question.objects.filter(
                     Q(creator=instance) |
                     Q(answers__creator=instance))
                 .only('id')
@@ -1082,7 +1129,8 @@ class QuestionVote(ModelBase):
     anonymous_id = models.CharField(max_length=40, db_index=True)
 
     def add_metadata(self, key, value):
-        VoteMetadata.objects.create(vote=self, key=key, value=value)
+        VoteMetadata.objects.create(
+            vote=self, key=key, value=value[:VOTE_METADATA_MAX_LENGTH])
 
 
 register_for_indexing(
@@ -1099,7 +1147,8 @@ class AnswerVote(ModelBase):
     anonymous_id = models.CharField(max_length=40, db_index=True)
 
     def add_metadata(self, key, value):
-        VoteMetadata.objects.create(vote=self, key=key, value=value)
+        VoteMetadata.objects.create(
+            vote=self, key=key, value=value[:VOTE_METADATA_MAX_LENGTH])
 
 
 # TODO: We only need to update the helpful bit.  It's possible
@@ -1116,7 +1165,7 @@ class VoteMetadata(ModelBase):
     object_id = models.PositiveIntegerField(null=True, blank=True)
     vote = generic.GenericForeignKey()
     key = models.CharField(max_length=40, db_index=True)
-    value = models.CharField(max_length=1000)
+    value = models.CharField(max_length=VOTE_METADATA_MAX_LENGTH)
 
 
 def send_vote_update_task(**kwargs):
@@ -1165,54 +1214,3 @@ def _content_parsed(obj, locale):
         html = wiki_to_html(obj.content, locale)
         cache.add(cache_key, html, CACHE_TIMEOUT)
     return html
-
-
-def user_num_questions(user):
-    """Count the number of questions a user has.
-
-    Unfortunately, we can't use the KarmaManager for this, since questions
-    don't effect karma, so this always counts objects in the database.
-    """
-    return Question.objects.filter(creator=user).count()
-
-
-def user_num_answers(user):
-    """Count the number of answers a user has.
-
-    If karma is enabled, and redis is working, this will query that (much
-    faster), otherwise it will just count objects in the database.
-    """
-    if waffle.switch_is_active('karma'):
-        try:
-            km = KarmaManager()
-            count = km.count(user=user, type=AnswerAction.action_type)
-            if count is not None:
-                return count
-        except RedisError as e:
-            statsd.incr('redis.errror')
-            log.error('Redis connection error: %s' % e)
-
-    return Answer.objects.filter(creator=user).count()
-
-
-def user_num_solutions(user):
-    """Count the number of solutions a user has.
-
-    This means the number of answers the user has submitted that are then
-    marked as the solution to the question they belong to.
-
-    If karma is enabled, and redis is working, this will query that (much
-    faster), otherwise it will just count objects in the database.
-    """
-    if waffle.switch_is_active('karma'):
-        try:
-            km = KarmaManager()
-            count = km.count(user=user, type=SolutionAction.action_type)
-            if count is not None:
-                return count
-        except RedisError as e:
-            statsd.incr('redis.errror')
-            log.error('Redis connection error: %s' % e)
-
-    return Question.objects.filter(
-        solution__in=Answer.objects.filter(creator=user)).count()

@@ -32,7 +32,8 @@ class TagWidget(Widget):
 
     # make_link should be a function that takes a tag slug and returns some
     # kind of meaningful link. Ignored if async_urls is ().
-    make_link = lambda slug: '#'
+    def make_link(self, slug):
+        return '#'
 
     # Allow adding new tags to the vocab:
     can_create_tags = False

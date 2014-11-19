@@ -14,7 +14,7 @@ class MessageForm(forms.Form):
         label=_lazy(u'To:'),
         widget=forms.TextInput(attrs={'placeholder': TO_PLACEHOLDER,
                                       'class': 'user-autocomplete'}))
-    message = forms.CharField(label=_lazy(u'Message:'), max_length=3000,
+    message = forms.CharField(label=_lazy(u'Message:'), max_length=10000,
                               widget=forms.Textarea)
     in_reply_to = forms.IntegerField(widget=forms.HiddenInput, required=False)
 
@@ -22,5 +22,5 @@ class MessageForm(forms.Form):
 class ReplyForm(forms.Form):
     """Form to reply to a private message."""
     to = forms.CharField(widget=forms.HiddenInput)
-    message = forms.CharField(max_length=3000, widget=forms.Textarea)
+    message = forms.CharField(max_length=10000, widget=forms.Textarea)
     in_reply_to = forms.IntegerField(widget=forms.HiddenInput)

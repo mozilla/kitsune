@@ -19,7 +19,8 @@ urlpatterns = patterns(
     ('^services', include(services_patterns)),
 
     url('^locales$', views.locales, name='sumo.locales'),
-    url('^geoip-suggestion$', views.geoip_suggestion, name='sumo.geoip_suggestion'),
+    url('^geoip-suggestion$', views.geoip_suggestion,
+        name='sumo.geoip_suggestion'),
 
     # Shortcuts:
     url('^contribute/?$', RedirectView.as_view(url='/get-involved',

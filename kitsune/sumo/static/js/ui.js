@@ -7,8 +7,17 @@
     initFolding();
     initAnnouncements();
 
-    // Non supported Firefox version
-    notifyOutdatedFirefox();
+    $(window).scroll(_.throttle(function() {
+      if ($(window).scrollTop() > $('body > header').outerHeight()) {
+        $('body').addClass('scroll-header');
+      } else {
+        $('body').removeClass('scroll-header');
+      }
+    }, 100));
+
+    if ($.datepicker) {
+      $('input[type="date"]').datepicker();
+    }
 
     $('.ui-truncatable .show-more-link').click(function(ev) {
       ev.preventDefault();
@@ -39,15 +48,41 @@
     });
 
     $('[data-toggle]').each(function() {
-        var $this = $(this);
-        var $target = ($this.data('toggle-target')) ? $($this.data('toggle-target')) : $this;
-        var trigger = ($this.data('toggle-trigger')) ? $this.data('toggle-trigger') : 'click';
+      var $this = $(this);
+      var $target = ($this.data('toggle-target')) ? $($this.data('toggle-target')) : $this;
+      var trigger = ($this.data('toggle-trigger')) ? $this.data('toggle-trigger') : 'click';
+      var targetId = $target.attr('id');
 
-        $this.on(trigger, function(ev) {
-            ev.preventDefault();
-            $target.toggleClass($this.data('toggle'));
-            return false;
-        });
+      if ($this.data('toggle-sticky') && targetId) {
+        if (Modernizr.localstorage) {
+          var classes = localStorage.getItem(targetId + '.classes') || '[]';
+          classes = JSON.parse(classes);
+          $target.addClass(classes.join(' '));
+        }
+      }
+
+      $this.on(trigger, function(ev) {
+        ev.preventDefault();
+        var classname = $this.data('toggle');
+        $target.toggleClass(classname);
+
+        if ($this.data('toggle-sticky') && targetId) {
+          if (Modernizr.localstorage) {
+            var classes = localStorage.getItem(targetId + '.classes') || '[]';
+            classes = JSON.parse(classes);
+            var i = classes.indexOf(classname);
+
+            if ($target.hasClass(classname) && i === -1) {
+              classes.push(classname);
+            } else if (!$target.hasClass(classname) && i > -1) {
+              classes.splice(i, 1);
+            }
+
+            localStorage.setItem(targetId + '.classes', JSON.stringify(classes));
+          }
+        }
+        return false;
+      });
     });
 
     $('[data-ui-type="tabbed-view"]').each(function() {
@@ -234,24 +269,6 @@
       });
     } else {
       $announcements.find('.announce-bar').show();
-    }
-  }
-
-  function notifyOutdatedFirefox() {
-    var b = BrowserDetect.browser;
-    var v = BrowserDetect.version;
-    var closed = false;
-    var show;
-
-    if (Modernizr.localstorage) {
-      closed = localStorage.getItem('announcement-outdated.closed') === 'true';
-    }
-
-    show = (b == 'fx') && (v <= 16 || (v >= 18 && v <= 23)) && (!closed);
-    if (show) {
-      $('#announce-outdated').show();
-    } else {
-      $('#announce-outdated').hide();
     }
   }
 

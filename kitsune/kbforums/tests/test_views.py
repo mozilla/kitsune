@@ -23,7 +23,6 @@ class ThreadTests(KBForumTestCase):
         # NewPostEvent is not notifying.
         t = thread(document=d, save=True)
         p = t.new_post(creator=t.creator, content='test')
-        #p = d.thread_set.all()[0].post_set.all()[0]
         assert not NewPostEvent.is_notifying(u, p)
 
         post(self.client, 'wiki.discuss.watch_forum', {'watch': 'no'},

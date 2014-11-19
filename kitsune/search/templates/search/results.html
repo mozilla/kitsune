@@ -14,7 +14,7 @@
       {{ basic_search_form(True) }}
     </div>
     <div class="grid_3">
-      {% if not request.GET.get('a') %}
+      {% if not advanced %}
         {# Don't show filtering to advanced search users #}
 
         {% if waffle.flag('search-ab') %}

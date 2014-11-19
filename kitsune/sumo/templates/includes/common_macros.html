@@ -20,7 +20,7 @@
 {% macro aux_nav(user, hide_aaq_link=False) %}
   {% if not settings.READ_ONLY %}
     {% if not hide_aaq_link %}
-      {% if request.LANGUAGE_CODE in settings.AAQ_LANGUAGES %}
+      {% if request.LANGUAGE_CODE in AAQ_LANGUAGES %}
         {% set ask_url = url('questions.aaq_step1') %}
       {% else %}
         {% set ask_url = url('wiki.document', 'get-community-support') %}
@@ -123,11 +123,9 @@
     <li><a href="{{ url('flagit.queue') }}">{{ _('Moderate Forum Content') }}</a></li>
   {% endif %}
   <li><a href="{{ url('gallery.home') }}">{{ _('Media Gallery') }}</a></li>
-  <li><a href="{{ url('search')|urlparams(a=2) }}">{{ _('Advanced Search') }}</a></li>
-  {% if user.has_perm('karma.view_dashboard') %}
-    <li><a href="{{ url('karma.questions_dashboard') }}">{{ _('Karma Dashboard') }}</a></li>
-  {% endif %}
+  <li><a href="{{ url('search.advanced') }}">{{ _('Advanced Search') }}</a></li>
   <li><a href="{{ url('kpi.dashboard') }}">{{ _('KPI Dashboard') }}</a></li>
+  <li><a href="{{ url('community.home') }}">{{ _('Community Hub') }}</a></li>
 {%- endmacro %}
 
 {# This is designed to be used like this:

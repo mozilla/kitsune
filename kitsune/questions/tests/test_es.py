@@ -1,11 +1,16 @@
-from nose.tools import eq_
+from datetime import datetime, timedelta
 
-from kitsune.products.tests import product, topic
+from nose.tools import eq_
+from pyquery import PyQuery as pq
+
+from kitsune.products.tests import product
 from kitsune.questions.models import (
     QuestionMappingType, AnswerMetricsMappingType)
 from kitsune.questions.tests import question, answer, answervote, questionvote
 from kitsune.search.tests.test_es import ElasticTestCase
-from kitsune.users.tests import user
+from kitsune.sumo.tests import LocalizingClient
+from kitsune.sumo.urlresolvers import reverse
+from kitsune.users.tests import user, profile
 
 
 class QuestionUpdateTests(ElasticTestCase):
@@ -104,51 +109,6 @@ class QuestionUpdateTests(ElasticTestCase):
         self.refresh()
         eq_(QuestionMappingType.search().filter(question_tag=tag).count(), 0)
 
-    def test_question_topics(self):
-        """Make sure that adding topics to a Question causes it to
-        refresh the index.
-
-        """
-        p = product(save=True)
-        t = topic(slug=u'hiphop', product=p, save=True)
-        eq_(QuestionMappingType.search().filter(topic=t.slug).count(), 0)
-        q = question(save=True)
-        self.refresh()
-        eq_(QuestionMappingType.search().filter(topic=t.slug).count(), 0)
-        q.topics.add(t)
-        self.refresh()
-        eq_(QuestionMappingType.search().filter(topic=t.slug).count(), 1)
-        q.topics.clear()
-        self.refresh()
-
-        # Make sure the question itself is still there and that we didn't
-        # accidentally delete it through screwed up signal handling:
-        eq_(QuestionMappingType.search().filter().count(), 1)
-
-        eq_(QuestionMappingType.search().filter(topic=t.slug).count(), 0)
-
-    def test_question_products(self):
-        """Make sure that adding products to a Question causes it to
-        refresh the index.
-
-        """
-        p = product(slug=u'desktop', save=True)
-        eq_(QuestionMappingType.search().filter(product=p.slug).count(), 0)
-        q = question(save=True)
-        self.refresh()
-        eq_(QuestionMappingType.search().filter(product=p.slug).count(), 0)
-        q.products.add(p)
-        self.refresh()
-        eq_(QuestionMappingType.search().filter(product=p.slug).count(), 1)
-        q.products.remove(p)
-        self.refresh()
-
-        # Make sure the question itself is still there and that we didn't
-        # accidentally delete it through screwed up signal handling:
-        eq_(QuestionMappingType.search().filter().count(), 1)
-
-        eq_(QuestionMappingType.search().filter(product=p.slug).count(), 0)
-
     def test_question_is_unindexed_on_creator_delete(self):
         search = QuestionMappingType.search()
 
@@ -165,8 +125,8 @@ class QuestionUpdateTests(ElasticTestCase):
 
         u = user(username='dexter', save=True)
 
-        q = question(creator=u, title=u'Hello', save=True)
-        a = answer(creator=u, content=u'I love you', save=True)
+        question(creator=u, title=u'Hello', save=True)
+        answer(creator=u, content=u'I love you', save=True)
         self.refresh()
         eq_(search.query(question_title__match='hello')[0]['question_creator'],
             u'dexter')
@@ -182,6 +142,30 @@ class QuestionUpdateTests(ElasticTestCase):
             u'walter')
         query = search.query(question_answer_content__match='love')
         eq_(query[0]['question_answer_creator'], [u'walter'])
+
+    def test_question_spam_is_unindexed(self):
+        search = QuestionMappingType.search()
+
+        q = question(title=u'I am spam', save=True)
+        self.refresh()
+        eq_(search.query(question_title__match='spam').count(), 1)
+
+        q.is_spam = True
+        q.save()
+        self.refresh()
+        eq_(search.query(question_title__match='spam').count(), 0)
+
+    def test_answer_spam_is_unindexed(self):
+        search = QuestionMappingType.search()
+
+        a = answer(content=u'I am spam', save=True)
+        self.refresh()
+        eq_(search.query(question_answer_content__match='spam').count(), 1)
+
+        a.is_spam = True
+        a.save()
+        self.refresh()
+        eq_(search.query(question_answer_content__match='spam').count(), 0)
 
 
 class QuestionSearchTests(ElasticTestCase):
@@ -218,14 +202,13 @@ class AnswerMetricsTests(ElasticTestCase):
     def test_data_in_index(self):
         """Verify the data we are indexing."""
         p = product(save=True)
-        q = question(locale='pt-BR', save=True)
-        q.products.add(p)
+        q = question(locale='pt-BR', product=p, save=True)
         a = answer(question=q, save=True)
 
         self.refresh()
 
         eq_(AnswerMetricsMappingType.search().count(), 1)
-        data = AnswerMetricsMappingType.search().values_dict()[0]
+        data = AnswerMetricsMappingType.search()[0]
         eq_(data['locale'], q.locale)
         eq_(data['product'], [p.slug])
         eq_(data['creator_id'], a.creator_id)
@@ -237,7 +220,7 @@ class AnswerMetricsTests(ElasticTestCase):
         q.save()
 
         self.refresh()
-        data = AnswerMetricsMappingType.search().values_dict()[0]
+        data = AnswerMetricsMappingType.search()[0]
         eq_(data['is_solution'], True)
 
         # Make the answer creator to be the question creator and verify.
@@ -245,5 +228,36 @@ class AnswerMetricsTests(ElasticTestCase):
         a.save()
 
         self.refresh()
-        data = AnswerMetricsMappingType.search().values_dict()[0]
+        data = AnswerMetricsMappingType.search()[0]
         eq_(data['by_asker'], True)
+
+
+class SupportForumTopContributorsTests(ElasticTestCase):
+    client_class = LocalizingClient
+
+    def test_top_contributors(self):
+        # There should be no top contributors since there are no answers.
+        response = self.client.get(reverse('questions.list', args=['all']))
+        eq_(200, response.status_code)
+        doc = pq(response.content)
+        eq_(0, len(doc('#top-contributors ol li')))
+
+        # Add an answer, we now have a top conributor.
+        a = answer(save=True)
+        profile(user=a.creator)
+        self.refresh()
+        response = self.client.get(reverse('questions.list', args=['all']))
+        eq_(200, response.status_code)
+        doc = pq(response.content)
+        lis = doc('#top-contributors ol li')
+        eq_(1, len(lis))
+        eq_(a.creator.get_profile().display_name, lis[0].text)
+
+        # Make answer 91 days old. There should no be top contributors.
+        a.created = datetime.now() - timedelta(days=91)
+        a.save()
+        self.refresh()
+        response = self.client.get(reverse('questions.list', args=['all']))
+        eq_(200, response.status_code)
+        doc = pq(response.content)
+        eq_(0, len(doc('#top-contributors ol li')))

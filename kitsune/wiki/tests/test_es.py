@@ -200,7 +200,7 @@ class RevisionMetricsTests(ElasticTestCase):
         self.refresh()
 
         eq_(RevisionMetricsMappingType.search().count(), 1)
-        data = RevisionMetricsMappingType.search().values_dict()[0]
+        data = RevisionMetricsMappingType.search()[0]
         eq_(data['is_approved'], r.is_approved)
         eq_(data['locale'], d.locale)
         eq_(data['product'], [p.slug])

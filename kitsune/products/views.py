@@ -28,7 +28,7 @@ def product_landing(request, template, slug):
         for t in Topic.objects.filter(product=product, visible=True):
             topic_list.append({'id': t.id, 'title': t.title})
         return HttpResponse(json.dumps({'topics': topic_list}),
-                            mimetype='application/json')
+                            content_type='application/json')
 
     versions = product.versions.filter(default=True)
     if versions:
@@ -39,7 +39,7 @@ def product_landing(request, template, slug):
     return render(request, template, {
         'product': product,
         'products': Product.objects.filter(visible=True),
-        'topics': topics_for(products=[product], parent=None),
+        'topics': topics_for(product=product, parent=None),
         'search_params': {'product': slug},
         'latest_version': latest_version
     })
@@ -69,8 +69,8 @@ def document_listing(request, template, product_slug, topic_slug,
         'product': product,
         'topic': topic,
         'subtopic': subtopic,
-        'topics': topics_for(products=[product], parent=None),
-        'subtopics': topics_for(products=[product], parent=topic),
+        'topics': topics_for(product=product, parent=None),
+        'subtopics': topics_for(product=product, parent=topic),
         'documents': documents,
         'fallback_documents': fallback_documents,
         'search_params': {'product': product_slug}})

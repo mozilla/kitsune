@@ -1,6 +1,7 @@
 from django import forms
 from django.conf import settings
 
+import pytz
 from rest_framework import fields, permissions
 from rest_framework.exceptions import APIException
 from rest_framework.filters import BaseFilterBackend
@@ -11,11 +12,39 @@ from kitsune.sumo.urlresolvers import get_best_language
 
 
 class CORSMixin(object):
-    """Sets headers on a request to allow cross-origin access to the api."""
+    """
+    Mixin to enable cross origin access of an API by setting CORS headers.
+
+    This should come before DRF mixins and base classes in class definitions.
+
+    This allows all requests to work cross origin, with no limit. This should
+    only be used on APIs intended for general public consumption, that have
+    any sensitive parts protected by authorization.
+
+    GET requests to these APIs should not cause write operations, as they can
+    be triggered by things like image tags. All write operations should be in
+    response to POST, PUT, PATCH, or DELETE requests.
+
+    TODO: This should be configurable to not allow 100% of things, if desired.
+    """
     def finalize_response(self, request, response, *args, **kwargs):
         response = (super(CORSMixin, self)
                     .finalize_response(request, response, *args, **kwargs))
+
         response['Access-Control-Allow-Origin'] = '*'
+
+        # OPTION requests are pre-flight requests. We need to tell the browser
+        # it is ok to make the real request.
+        if request.method == 'OPTIONS':
+            # If the client doesn't care what to allow, allow everything.
+            allowed_methods = request.META.get(
+                'HTTP_ACCESS_CONTROL_REQUEST_HEADERS',
+                'POST,GET,PATCH,DELETE,PUT,OPTIONS,HEAD')
+            response['Access-Control-Allow-Methods'] = '*'
+            response['Access-Control-Allow-Headers'] = allowed_methods
+            response['Access-Control-Allow-Max-Age'] = '3600'
+            response['Access-Control-Allow-Credentials'] = 'true'
+
         return response
 
 
@@ -56,7 +85,7 @@ class LocalizedCharField(fields.CharField):
     """
     This is a field for DRF that localizes itself based on the current locale.
 
-    There should be a locale field on the serialiation context. If the view
+    There should be a locale field on the serialization context. If the view
     that uses this serializer subclasses LocaleNegotiationMixin, the context
     will get a locale field automatically.
 
@@ -89,6 +118,19 @@ class LocalizedCharField(fields.CharField):
             return value
         with uselocale(locale):
             return _(value, self.l10n_context)
+
+
+class DateTimeUTCField(fields.DateTimeField):
+    """
+    This is like DateTimeField, except it always outputs in UTC.
+    """
+
+    def to_native(self, value):
+        if value.tzinfo is None:
+            default_tzinfo = pytz.timezone(settings.TIME_ZONE)
+            value = default_tzinfo.localize(value)
+        value = value.astimezone(pytz.utc)
+        return super(DateTimeUTCField, self).to_native(value)
 
 
 class InequalityFilterBackend(BaseFilterBackend):
@@ -137,3 +179,22 @@ class GenericDjangoPermission(permissions.BasePermission):
         u = request.user
         not_inactive = u.is_anonymous() or u.is_active
         return not_inactive and all(u.has_perm(p) for p in self.permissions)
+
+
+class OnlyCreatorEdits(permissions.BasePermission):
+    """
+    Only allow objects to be edited and deleted by their creators.
+
+    TODO: This should be tied to user and object permissions better, but
+    for now this is a bandaid.
+    """
+
+    def has_object_permission(self, request, view, obj):
+        # SAFE_METHODS is a list containing all the read-only methods.
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        # If flow gets here, the method will modify something.
+        user = getattr(request, 'user', None)
+        owner = getattr(obj, 'creator', None)
+        # Only the owner can modify things.
+        return user == owner

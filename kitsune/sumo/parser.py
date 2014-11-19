@@ -63,7 +63,7 @@ def get_object_fallback(cls, title, locale, default=None, **kwargs):
     """
     try:
         return cls.objects.get(title=title, locale=locale, **kwargs)
-    except cls.DoesNotExist:
+    except (cls.DoesNotExist, IOError):
         pass
 
     # Fallback
@@ -94,7 +94,7 @@ def get_object_fallback(cls, title, locale, default=None, **kwargs):
         # Return the English item:
         return default_lang_doc
     # Okay, all else failed
-    except cls.DoesNotExist:
+    except (cls.DoesNotExist, IOError):
         return default
 
 
@@ -138,7 +138,7 @@ def build_hook_params(string, locale, allowed_params=[],
     Builds a list of items and returns relevant parameters in a dict.
 
     """
-    if not '|' in string:  # No params? Simple and easy.
+    if '|' not in string:  # No params? Simple and easy.
         string = string.strip()
         return (string, {'alt': string})
 

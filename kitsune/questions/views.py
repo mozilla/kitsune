@@ -10,7 +10,6 @@ from django.contrib import messages
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
-from django.core.cache import cache
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import EmptyPage, PageNotAnInteger
 from django.db.models import Q
@@ -22,7 +21,6 @@ from django.views.decorators.http import (require_POST, require_GET,
                                           require_http_methods)
 
 import jingo
-import waffle
 from ordereddict import OrderedDict
 from mobility.decorators import mobile_template
 from ratelimit.decorators import ratelimit
@@ -35,7 +33,7 @@ from tidings.models import Watch
 from tower import ugettext as _, ugettext_lazy as _lazy
 
 from kitsune.access.decorators import permission_required, login_required
-from kitsune.karma.manager import KarmaManager
+from kitsune.community.utils import top_contributors_questions
 from kitsune.products.models import Product, Topic
 from kitsune.questions import config
 from kitsune.questions.events import QuestionReplyEvent, QuestionSolvedEvent
@@ -50,7 +48,8 @@ from kitsune.questions.karma_actions import (
 from kitsune.questions.marketplace import (
     MARKETPLACE_CATEGORIES, ZendeskError)
 from kitsune.questions.models import (
-    Question, Answer, QuestionVote, AnswerVote, QuestionMappingType)
+    Question, Answer, QuestionVote, AnswerVote, QuestionMappingType,
+    QuestionLocale)
 from kitsune.questions.signals import tag_added
 from kitsune.search.es_utils import (ES_EXCEPTIONS, Sphilastic, F,
                                      es_query_with_analyzer)
@@ -94,12 +93,20 @@ FILTER_GROUPS = {
     ]),
 }
 
+ORDER_BY = OrderedDict([
+    ('updated', ('updated', _lazy('Updated'))),
+    ('views', ('questionvisits__visits', _lazy('Views'))),
+    ('votes', ('num_votes_past_week', _lazy('Votes'))),
+    ('replies', ('num_answers', _lazy('Replies'))),
+])
+
 
 @mobile_template('questions/{mobile/}product_list.html')
 def product_list(request, template):
-    """View to select a product to see relatred quesitons."""
+    """View to select a product to see related questions."""
     return render(request, template, {
-        'products': Product.objects.filter(questions_enabled=True)
+        'products': Product.objects.filter(
+            questions_locales__locale__in=[request.LANGUAGE_CODE])
     })
 
 
@@ -111,13 +118,15 @@ def question_list(request, template, product_slug):
     owner = request.GET.get(
         'owner', request.session.get('questions_owner', 'all'))
     show = request.GET.get('show', 'needs-attention')
-    escalated = int(request.GET.get(
-        'escalated', request.session.get('questions_escalated', False)))
-    offtopic = int(request.GET.get(
-        'offtopic', request.session.get('questions_offtopic', False)))
+    escalated = request.GET.get('escalated')
     tagged = request.GET.get('tagged')
     tags = None
     topic_slug = request.GET.get('topic')
+
+    order = request.GET.get('order', 'updated')
+    if order not in ORDER_BY:
+        order == 'updated'
+    sort = request.GET.get('sort', 'desc')
 
     product_slugs = product_slug.split(',')
     products = []
@@ -149,6 +158,9 @@ def question_list(request, template, product_slug):
         if filter_ not in FILTER_GROUPS[show]:
             filter_ = None
 
+        if escalated:
+            filter_ = None
+
         if filter_ == 'new':
             question_qs = question_qs.new()
         elif filter_ == 'unhelpful-answers':
@@ -171,9 +183,13 @@ def question_list(request, template, product_slug):
             if show == 'done':
                 question_qs = question_qs.done()
 
+    if escalated:
+        question_qs = question_qs.filter(
+            tags__name__in=[config.ESCALATE_TAG_NAME])
+
     question_qs = question_qs.select_related(
         'creator', 'last_answer', 'last_answer__creator')
-    question_qs = question_qs.prefetch_related('topics', 'topics__product')
+    question_qs = question_qs.prefetch_related('topic', 'topic__product')
 
     question_qs = question_qs.filter(creator__is_active=1)
 
@@ -211,25 +227,29 @@ def question_list(request, template, product_slug):
     if products:
         # This filter will match if any of the products on a question have the
         # correct id.
-        question_qs = question_qs.filter(products__in=products).distinct()
+        question_qs = question_qs.filter(product__in=products).distinct()
 
     # Filter by topic.
     if topic:
         # This filter will match if any of the topics on a question have the
         # correct id.
-        question_qs = question_qs.filter(topics__id__exact=topic.id)
+        question_qs = question_qs.filter(topic__id=topic.id)
 
     # Filter by locale for AAQ locales, and by locale + default for others.
-    if request.LANGUAGE_CODE in settings.AAQ_LANGUAGES:
+    if request.LANGUAGE_CODE in QuestionLocale.objects.locales_list():
+        forum_locale = request.LANGUAGE_CODE
         locale_query = Q(locale=request.LANGUAGE_CODE)
     else:
+        forum_locale = settings.WIKI_DEFAULT_LANGUAGE
         locale_query = Q(locale=request.LANGUAGE_CODE)
         locale_query |= Q(locale=settings.WIKI_DEFAULT_LANGUAGE)
 
     question_qs = question_qs.filter(locale_query)
 
     # Set the order.
-    question_qs = question_qs.order_by('-updated')
+    order_by = ORDER_BY[order][0]
+    question_qs = question_qs.order_by(
+        order_by if sort == 'asc' else '-%s' % order_by)
 
     try:
         with statsd.timer('questions.view.paginate.%s' % filter_):
@@ -246,7 +266,7 @@ def question_list(request, template, product_slug):
     extra_filters = locale_query
 
     if products:
-        extra_filters &= Q(products__in=products)
+        extra_filters &= Q(product__in=products)
 
     recent_asked_count = Question.recent_asked_count(extra_filters)
     recent_unanswered_count = Question.recent_unanswered_count(extra_filters)
@@ -271,8 +291,20 @@ def question_list(request, template, product_slug):
     # Store current filters in the session
     if request.user.is_authenticated():
         request.session['questions_owner'] = owner
-        request.session['questions_escalated'] = escalated
-        request.session['questions_offtopic'] = offtopic
+
+    # Get the top contributors for the locale and product.
+    # If we are in a product forum, limit the top contributors to that product.
+    if products and len(products) == 1:
+        product = products[0]
+    else:
+        product = None
+    try:
+        top_contributors, _ = top_contributors_questions(
+            locale=forum_locale, product=product)
+    except ES_EXCEPTIONS:
+        top_contributors = []
+        statsd.incr('questions.topcontributors.eserror')
+        log.exception('Support Forum Top contributors query failed.')
 
     data = {'questions': questions_page,
             'feeds': feed_urls,
@@ -280,8 +312,10 @@ def question_list(request, template, product_slug):
             'owner': owner,
             'show': show,
             'filters': FILTER_GROUPS[show],
+            'order': order,
+            'orders': ORDER_BY,
+            'sort': sort,
             'escalated': escalated,
-            'offtopic': offtopic,
             'tags': tags,
             'tagged': tagged,
             'recent_asked_count': recent_asked_count,
@@ -292,19 +326,9 @@ def question_list(request, template, product_slug):
             'product_slug': product_slug,
             'multiple_products': multiple,
             'all_products': product_slug == 'all',
+            'top_contributors': top_contributors,
             'topic_list': topic_list,
             'topic': topic}
-
-    if (waffle.flag_is_active(request, 'karma') and
-            waffle.switch_is_active('karma')):
-        kmgr = KarmaManager()
-        data.update(karma_top=kmgr.top_users('3m', count=20))
-        if request.user.is_authenticated():
-            ranking = kmgr.ranking('3m', request.user)
-            if ranking <= config.HIGHEST_RANKING:
-                data.update(karma_ranking=ranking)
-    else:
-        data.update(top_contributors=_get_top_contributors())
 
     with statsd.timer('questions.view.render'):
         return render(request, template, data)
@@ -382,6 +406,9 @@ def question_details(request, template, question_id, form=None,
                          answer_preview)
     question = ans_['question']
 
+    if question.is_spam and not request.user.has_perm('flagit.can_moderate'):
+        raise Http404('No question matches the given query.')
+
     # Try to parse troubleshooting data as JSON.
     troubleshooting_json = question.metadata.get('troubleshooting')
     question.metadata['troubleshooting_parsed'] = (
@@ -392,21 +419,15 @@ def question_details(request, template, question_id, form=None,
 
     extra_kwargs.update(ans_)
 
-    product = Product.uncached.filter(question=question)
-    topic = Topic.uncached.filter(question=question)
-
     products = Product.objects.filter(visible=True)
-    topics = topics_for(products=[question.products.all()])
+    topics = topics_for(product=question.product)
 
     extra_kwargs.update({'all_products': products, 'all_topics': topics,
-                         'product': product, 'topic': topic})
+                         'product': question.product, 'topic': question.topic})
 
-    # Add noindex to questions without answers that are > 30 days old or that
-    # are marked as spam.
     if not request.MOBILE:
-        no_answers = ans_['answers'].paginator.count == 0
-        too_old = question.created < datetime.now() - timedelta(days=30)
-        if question.is_spam or (no_answers and too_old):
+        # Add noindex to questions without a solution.
+        if not question.solution_id:
             extra_kwargs.update(robots_noindex=True)
 
     return render(request, template, extra_kwargs)
@@ -422,13 +443,13 @@ def edit_details(request, question_id):
         locale = request.POST.get('locale')
 
         # If locale is not in AAQ_LANGUAGES throws a ValueError
-        settings.AAQ_LANGUAGES.index(locale)
+        tuple(QuestionLocale.objects.locales_list()).index(locale)
     except (Product.DoesNotExist, Topic.DoesNotExist, ValueError):
         return HttpResponseBadRequest()
 
     question = get_object_or_404(Question, pk=question_id)
-    question.products = [product]
-    question.topics = [topic]
+    question.product = product
+    question.topic = topic
     question.locale = locale
     question.save()
 
@@ -447,7 +468,7 @@ def aaq(request, product_key=None, category_key=None, showform=False,
     # boot this user.
     request.session['in-aaq'] = True
 
-    if request.LANGUAGE_CODE not in settings.AAQ_LANGUAGES:
+    if request.LANGUAGE_CODE not in QuestionLocale.objects.locales_list():
         locale, path = split_path(request.path)
         path = '/' + settings.WIKI_DEFAULT_LANGUAGE + '/' + path
 
@@ -472,37 +493,62 @@ def aaq(request, product_key=None, category_key=None, showform=False,
             else:
                 product_key = 'mobile'
 
-    product = config.products.get(product_key)
-    if product_key and not product:
+    product_config = config.products.get(product_key)
+    if product_key and not product_config:
         raise Http404
+
+    if product_config and 'product' in product_config:
+        try:
+            product = Product.objects.get(slug=product_config['product'])
+        except Product.DoesNotExist:
+            pass
+        else:
+            if not product.questions_locales.filter(
+                    locale=request.LANGUAGE_CODE).count():
+                locale, path = split_path(request.path)
+                path = '/' + settings.WIKI_DEFAULT_LANGUAGE + '/' + path
+
+                old_lang = settings.LANGUAGES_DICT[
+                    request.LANGUAGE_CODE.lower()]
+                new_lang = settings.LANGUAGES_DICT[
+                    settings.WIKI_DEFAULT_LANGUAGE.lower()]
+                msg = (_(u"The questions forum isn't available for {product} "
+                         u"in {old_lang}, we have redirected you to the "
+                         u"{new_lang} questions forum.")
+                       .format(product=product.title, old_lang=old_lang,
+                               new_lang=new_lang))
+                messages.add_message(request, messages.WARNING, msg)
+
+                return HttpResponseRedirect(path)
 
     if category_key is None:
         category_key = request.GET.get('category')
 
-    if product and category_key:
-        product_obj = Product.objects.filter(slug__in=product.get('products'))
-        category = product['categories'].get(category_key)
-        if not category:
+    if product_config and category_key:
+        product_obj = Product.objects.get(slug=product_config.get('product'))
+        category_config = product_config['categories'].get(category_key)
+        if not category_config:
             # If we get an invalid category, redirect to previous step.
             return HttpResponseRedirect(
                 reverse('questions.aaq_step2', args=[product_key]))
-        deadend = category.get('deadend', False)
-        topic = category.get('topic')
+        deadend = category_config.get('deadend', False)
+        topic = category_config.get('topic')
         if topic:
             html = None
             articles, fallback = documents_for(
                 locale=request.LANGUAGE_CODE,
-                products=product_obj,
+                products=[product_obj],
                 topics=[Topic.objects.get(slug=topic, product=product_obj)])
         else:
-            html = category.get('html')
-            articles = category.get('articles')
+            html = category_config.get('html')
+            articles = category_config.get('articles')
     else:
-        category = None
-        deadend = product.get('deadend', False) if product else False
-        html = product.get('html') if product else None
+        category_config = None
+        deadend = product_config.get(
+            'deadend', False) if product_config else False
+        html = product_config.get('html') if product_config else None
         articles = None
-        if product:
+        if product_config:
             # User is on the select category step
             statsd.incr('questions.aaq.select-category')
         else:
@@ -518,12 +564,12 @@ def aaq(request, product_key=None, category_key=None, showform=False,
                 request,
                 search,
                 locale_or_default(request.LANGUAGE_CODE),
-                product.get('products'))
+                [product_config.get('product')])
             tried_search = True
         else:
             results = []
             tried_search = False
-            if category:
+            if category_config:
                 # User is on the "Ask This" step
                 statsd.incr('questions.aaq.search-form')
 
@@ -535,12 +581,13 @@ def aaq(request, product_key=None, category_key=None, showform=False,
                 login_form = AuthenticationForm()
                 register_form = RegisterForm()
                 return render(request, login_t, {
-                    'product': product, 'category': category,
+                    'product': product_config,
+                    'category': category_config,
                     'title': search,
                     'register_form': register_form,
                     'login_form': login_form})
-            form = NewQuestionForm(product=product,
-                                   category=category,
+            form = NewQuestionForm(product=product_config,
+                                   category=category_config,
                                    initial={'title': search})
             # User is on the question details step
             statsd.incr('questions.aaq.details-form')
@@ -555,8 +602,8 @@ def aaq(request, product_key=None, category_key=None, showform=False,
             'results': results,
             'tried_search': tried_search,
             'products': config.products,
-            'current_product': product,
-            'current_category': category,
+            'current_product': product_config,
+            'current_category': category_config,
             'current_html': html,
             'current_articles': articles,
             'current_step': step,
@@ -603,12 +650,13 @@ def aaq(request, product_key=None, category_key=None, showform=False,
             return HttpResponseRedirect(url)
         else:
             return render(request, login_t, {
-                'product': product, 'category': category,
+                'product': product_config,
+                'category': category_config,
                 'title': request.POST.get('title'),
                 'register_form': register_form,
                 'login_form': login_form})
 
-    form = NewQuestionForm(product=product, category=category,
+    form = NewQuestionForm(product=product_config, category=category_config,
                            data=request.POST)
 
     if form.is_valid() and not is_ratelimited(request, increment=True,
@@ -618,28 +666,29 @@ def aaq(request, product_key=None, category_key=None, showform=False,
                             title=form.cleaned_data['title'],
                             content=form.cleaned_data['content'],
                             locale=request.LANGUAGE_CODE)
+
+        if product_obj:
+            question.product = product_obj
+
+        if category_config:
+            t = category_config.get('topic')
+            if t:
+                question.topic = Topic.objects.get(slug=t, product=product_obj)
+
         question.save()
         # User successfully submitted a new question
         statsd.incr('questions.new')
         question.add_metadata(**form.cleaned_metadata)
-        if product:
+
+        if product_config:
             # TODO: This add_metadata call should be removed once we are
             # fully IA-driven (sync isn't special case anymore).
-            question.add_metadata(product=product['key'])
+            question.add_metadata(product=product_config['key'])
 
-            if product.get('products'):
-                for p in Product.objects.filter(slug__in=product['products']):
-                    question.products.add(p)
-
-            if category:
-                # TODO: This add_metadata call should be removed once we are
-                # fully IA-driven (sync isn't special case anymore).
-                question.add_metadata(category=category['key'])
-
-                t = category.get('topic')
-                if t:
-                    question.topics.add(Topic.objects.get(slug=t,
-                                                          product=product_obj))
+        if category_config:
+            # TODO: This add_metadata call should be removed once we are
+            # fully IA-driven (sync isn't special case anymore).
+            question.add_metadata(category=category_config['key'])
 
         # The first time a question is saved, automatically apply some tags:
         question.auto_tag()
@@ -668,8 +717,8 @@ def aaq(request, product_key=None, category_key=None, showform=False,
     return render(request, template, {
         'form': form,
         'products': config.products,
-        'current_product': product,
-        'current_category': category,
+        'current_product': product_config,
+        'current_category': category_config,
         'current_articles': articles})
 
 
@@ -730,13 +779,13 @@ def edit_question(request, question_id):
     if request.method == 'GET':
         initial = question.metadata.copy()
         initial.update(title=question.title, content=question.content)
-        form = EditQuestionForm(product=question.product,
-                                category=question.category,
+        form = EditQuestionForm(product=question.product_config,
+                                category=question.category_config,
                                 initial=initial)
     else:
         form = EditQuestionForm(data=request.POST,
-                                product=question.product,
-                                category=question.category)
+                                product=question.product_config,
+                                category=question.category_config)
         if form.is_valid():
             question.title = form.cleaned_data['title']
             question.content = form.cleaned_data['content']
@@ -754,8 +803,8 @@ def edit_question(request, question_id):
     return render(request, 'questions/edit_question.html', {
         'question': question,
         'form': form,
-        'current_product': question.product,
-        'current_category': question.category})
+        'current_product': question.product_config,
+        'current_category': question.category_config})
 
 
 def _skip_answer_ratelimit(request):
@@ -776,7 +825,7 @@ def _skip_answer_ratelimit(request):
            ip=False, rate='100/d')
 def reply(request, question_id):
     """Post a new answer to a question."""
-    question = get_object_or_404(Question, pk=question_id)
+    question = get_object_or_404(Question, pk=question_id, is_spam=False)
     answer_preview = None
 
     if not question.allows_new_answer(request.user):
@@ -830,7 +879,7 @@ def reply(request, question_id):
 def solve(request, question_id, answer_id):
     """Accept an answer as the solution to the question."""
 
-    question = get_object_or_404(Question, pk=question_id)
+    question = get_object_or_404(Question, pk=question_id, is_spam=False)
 
     # It is possible this was clicked from the email.
     if not request.user.is_authenticated():
@@ -850,7 +899,7 @@ def solve(request, question_id, answer_id):
             # This user is neither authenticated nor using the correct secret
             return HttpResponseForbidden()
 
-    answer = get_object_or_404(Answer, pk=answer_id)
+    answer = get_object_or_404(Answer, pk=answer_id, is_spam=False)
 
     if not question.allows_solve(request.user):
         raise PermissionDenied
@@ -859,16 +908,15 @@ def solve(request, question_id, answer_id):
             not request.user.has_perm('questions.change_solution')):
         return HttpResponseForbidden()
 
-    question.solution = answer
-    question.save()
-    question.add_metadata(solver_id=str(request.user.id))
+    if not question.solution:
+        question.set_solution(answer, request.user)
 
-    statsd.incr('questions.solution')
-    QuestionSolvedEvent(answer).fire(exclude=question.creator)
-    SolutionAction(user=answer.creator, day=answer.created).save()
-
-    messages.add_message(request, messages.SUCCESS,
-                         _('Thank you for choosing a solution!'))
+        messages.add_message(request, messages.SUCCESS,
+                             _('Thank you for choosing a solution!'))
+    else:
+        # The question was already solved.
+        messages.add_message(request, messages.ERROR,
+                             _('This question already has a solution.'))
 
     return HttpResponseRedirect(question.get_absolute_url())
 
@@ -905,7 +953,7 @@ def unsolve(request, question_id, answer_id):
 @ratelimit(keys=user_or_ip('question-vote'), ip=False, rate='10/d')
 def question_vote(request, question_id):
     """I have this problem too."""
-    question = get_object_or_404(Question, pk=question_id)
+    question = get_object_or_404(Question, pk=question_id, is_spam=False)
 
     if not question.editable:
         raise PermissionDenied
@@ -930,7 +978,7 @@ def question_vote(request, question_id):
 
             ua = request.META.get('HTTP_USER_AGENT')
             if ua:
-                vote.add_metadata('ua', ua[:1000])  # 1000 max_length
+                vote.add_metadata('ua', ua)
             statsd.incr('questions.votes.question')
 
         if request.is_ajax():
@@ -951,14 +999,15 @@ def question_vote(request, question_id):
 @ratelimit(keys=user_or_ip('answer-vote'), ip=False, rate='10/d')
 def answer_vote(request, question_id, answer_id):
     """Vote for Helpful/Not Helpful answers"""
-    answer = get_object_or_404(Answer, pk=answer_id, question=question_id)
+    answer = get_object_or_404(Answer, pk=answer_id, question=question_id,
+                               is_spam=False, question__is_spam=False)
 
     if not answer.question.editable:
         raise PermissionDenied
 
     if request.limited:
         if request.is_ajax():
-            return HttpResponse(json.dumps({"ignored": True}))
+            return HttpResponse(json.dumps({'ignored': True}))
         else:
             return HttpResponseRedirect(answer.get_absolute_url())
 
@@ -989,7 +1038,7 @@ def answer_vote(request, question_id, answer_id):
 
         ua = request.META.get('HTTP_USER_AGENT')
         if ua:
-            vote.add_metadata('ua', ua[:1000])  # 1000 max_length
+            vote.add_metadata('ua', ua)
         statsd.incr('questions.votes.answer')
     else:
         message = _('You already voted on this reply.')
@@ -1045,7 +1094,7 @@ def add_tag_async(request, question_id):
         question, canonical_name = _add_tag(request, question_id)
     except Tag.DoesNotExist:
         return HttpResponse(json.dumps({'error': unicode(UNAPPROVED_TAG)}),
-                            mimetype='application/json',
+                            content_type='application/json',
                             status=400)
 
     if canonical_name:
@@ -1056,10 +1105,10 @@ def add_tag_async(request, question_id):
         data = {'canonicalName': canonical_name,
                 'tagUrl': tag_url}
         return HttpResponse(json.dumps(data),
-                            mimetype='application/json')
+                            content_type='application/json')
 
     return HttpResponse(json.dumps({'error': unicode(NO_TAG)}),
-                        mimetype='application/json',
+                        content_type='application/json',
                         status=400)
 
 
@@ -1097,10 +1146,10 @@ def remove_tag_async(request, question_id):
         question = get_object_or_404(Question, pk=question_id)
         question.tags.remove(name)
         question.clear_cached_tags()
-        return HttpResponse('{}', mimetype='application/json')
+        return HttpResponse('{}', content_type='application/json')
 
     return HttpResponseBadRequest(json.dumps({'error': unicode(NO_TAG)}),
-                                  mimetype='application/json')
+                                  content_type='application/json')
 
 
 @permission_required('flagit.can_moderate')
@@ -1115,10 +1164,7 @@ def mark_spam(request):
         obj = get_object_or_404(Answer, pk=answer_id)
         question_id = obj.question.id
 
-    obj.is_spam = True
-    obj.marked_as_spam = datetime.now()
-    obj.marked_as_spam_by = request.user
-    obj.save()
+    obj.mark_as_spam(request.user)
 
     return HttpResponseRedirect(reverse('questions.details',
                                         kwargs={'question_id': question_id}))
@@ -1275,7 +1321,7 @@ def edit_answer(request, question_id, answer_id):
 def watch_question(request, question_id):
     """Start watching a question for replies or solution."""
 
-    question = get_object_or_404(Question, pk=question_id)
+    question = get_object_or_404(Question, pk=question_id, is_spam=False)
     form = WatchQuestionForm(request.user, request.POST)
 
     # Process the form
@@ -1653,11 +1699,14 @@ def _search_suggestions(request, text, locale, product_slugs):
         raw_results = (
             wiki_s.filter(filter)
                   .query(or_=query)
-                  .values_dict('id')[:WIKI_RESULTS])
-        for r in raw_results:
+                  .values_list('id')[:WIKI_RESULTS])
+
+        raw_results = [result[0][0] for result in raw_results]
+
+        for id_ in raw_results:
             try:
                 doc = (Document.objects.select_related('current_revision')
-                                       .get(pk=r['id']))
+                                       .get(pk=id_))
                 results.append({
                     'search_summary': clean_excerpt(
                         doc.current_revision.summary),
@@ -1687,11 +1736,12 @@ def _search_suggestions(request, text, locale, product_slugs):
 
         raw_results = (question_s.query(or_=query)
                        .filter(question_filter)
-                       .values_dict('id')[:QUESTIONS_RESULTS])
+                       .values_list('id')[:QUESTIONS_RESULTS])
+        raw_results = [result[0][0] for result in raw_results]
 
-        for r in raw_results:
+        for id_ in raw_results:
             try:
-                q = Question.objects.get(pk=r['id'])
+                q = Question.objects.get(pk=id_)
                 results.append({
                     'search_summary': clean_excerpt(q.content[0:500]),
                     'url': q.get_absolute_url(),
@@ -1775,14 +1825,6 @@ def _add_tag(request, question_id):
         return question, canonical_name
 
     return None, None
-
-
-def _get_top_contributors():
-    """Retrieves the top contributors from cache, if available.
-
-    These are the users with the most solutions in the last week.
-    """
-    return cache.get(settings.TOP_CONTRIBUTORS_CACHE_KEY)
 
 
 # Initialize a WatchQuestionForm

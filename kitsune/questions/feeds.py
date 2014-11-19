@@ -55,10 +55,10 @@ class QuestionsFeed(Feed):
         qs = Question.objects.filter(creator__is_active=True, is_spam=False)
 
         if 'product' in query:
-            qs = qs.filter(products=query['product'])
+            qs = qs.filter(product=query['product'])
 
             if 'topic' in query:
-                qs = qs.filter(topics=query['topic'])
+                qs = qs.filter(topic=query['topic'])
 
         if 'locale' in query:
             qs = qs.filter(locale=query['locale'])
@@ -87,7 +87,8 @@ class TaggedQuestionsFeed(QuestionsFeed):
         return _('Recently updated questions tagged %s' % tag.name)
 
     def link(self, tag):
-        return urlparams(reverse('questions.list', args=['all']), tagged=tag.slug)
+        return urlparams(reverse('questions.list', args=['all']),
+                         tagged=tag.slug)
 
     def items(self, tag):
         qs = Question.objects.filter(creator__is_active=True,
