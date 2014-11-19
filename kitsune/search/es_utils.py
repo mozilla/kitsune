@@ -92,6 +92,28 @@ class AnalyzerMixin(object):
         """A match query that includes an analyzer."""
         return self._with_analyzer(key, val, 'match')
 
+    def process_query_sqs(self, key, val, action):
+        """Implements simple_query_string query"""
+        return {
+            'simple_query_string': {
+                'fields': [key],
+                'query': val,
+                'default_operator': 'or',
+            }
+        }
+
+    def process_query_sqs_analyzer(self, key, val, action):
+        """Implements sqs query that includes an analyzer"""
+        query, analyzer = val
+        return {
+            'simple_query_string': {
+                'fields': [key],
+                'query': query,
+                'analyzer': analyzer,
+                'default_operator': 'or',
+            }
+        }
+
     def process_query_match_whitespace(self, key, val, action):
         """A match query that uses the whitespace analyzer."""
         return {
