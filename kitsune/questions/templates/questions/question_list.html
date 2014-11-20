@@ -79,7 +79,7 @@
 
     <div class="grid_9">
       <div id="owner-tabs" class="cf">
-        <a href="{{ questions_url(show='needs-attention', filter=None, page=None) }}" {{ show|class_selected('needs-attention') }}>{{ _('Attention needed') }}</a>
+        <a href="{{ questions_url(show='needs-attention', filter=None, page=None) }}" {{ show|class_selected('needs-attention') }}>{{ _('Attention needed') }} {% if needs_attention_count %}<span class="counter-badge">{{ needs_attention_count }}</span>{% endif %}</a>
         <a href="{{ questions_url(show='responded', filter=None, page=None) }}" {{ show|class_selected('responded') }}>{{ _('Responded') }}</a>
         <a href="{{ questions_url(show='done', filter=None, page=None) }}" {{ show|class_selected('done') }}>{{ _('Done') }}</a>
         <a href="{{ questions_url(show='all', filter=None, page=None) }}" {{ show|class_selected('all') }}>{{ _('All questions') }}</a>
@@ -112,79 +112,13 @@
 
   <div id="questions-list" class="container_12 cf">
     <div class="grid_9">
-      {% if questions.object_list %}
+      {% if questions.object_list or pinned %}
         <article class="questions">
+          {% for question in pinned %}
+            {% include 'questions/includes/question_listing.html' %}
+          {% endfor %}
           {% for question in questions.object_list %}
-            <section id="question-{{ question.id }}" class="cf">
-              <div class="question-meta {% if not question.num_answers %}urgent{% endif %}">
-                <div class="have-problem-this-week">
-                  <h4>{{ question.num_votes_past_week }}</h4>
-                  {{ _('votes this week') }}
-                </div>
-                <div class="replies">
-                  <h4>{{ question.num_answers }}</h4>
-                  {% trans count=question.num_answers %}
-                    reply
-                    {% pluralize %}
-                    replies
-                  {% endtrans %}
-                </div>
-                {% if question.num_visits %}
-                  <div class="views">
-                    {{ _('{num_views} views')|f(num_views=question.num_visits) }}
-                  </div>
-                {% endif %}
-              </div>
-
-              <div class="thread-meta">
-                <div class="thread-solved {% if question.is_solved %}highlighted{% endif %}">
-                  {{ _('Solved') }}
-                </div>
-                <div class="thread-contributed {% if question.is_contributor(user) %}highlighted{% endif %}">
-                  {{ _('Contributed') }}
-                </div>
-                {% if question.is_locked %}
-                  <div class="thread-locked highlighted">{{ _('Locked') }}</div>
-                {% endif %}
-                {% if question.is_archived %}
-                  <div class="thread-archived highlighted">{{ _('Archived') }}</div>
-                {% endif %}
-              </div>
-
-              <div class="content ui-truncatable truncated">
-                <h2><a href="{{ question.get_absolute_url() }}">{{ question.title }}</a></h2>
-                {{ question.content_parsed|truncate_question(170, question.content_parsed)|safe }}
-
-                <div class="user-meta">
-                  {% if question.solution %}
-                    {{ _('answered {when}')|f(when=question.solution.created|timesince) }}
-                  {% else %}
-                    {{ _('asked {when}')|f(when=question.created|timesince) }}
-                    {% if question.last_answer %}
-                      <br>{{ _('last reply by <a href="{url}">{username}</a> {when}')|f(url=profile_url(question.last_answer.creator), username=question.last_answer.creator.username, when=question.last_answer.created|timesince)|safe }}
-                    {% endif %}
-                  {% endif %}
-                </div>
-
-                {% set tags = question.my_tags %}
-                {% if tags %}
-                  <ul class="tag-list">
-                    {% if question.topic %}
-                      {% set topic = question.topic %}
-                      <li>
-                        <a href="{{ url('questions.list', topic.product.slug)|urlparams(None, request.GET, topic=None) }}">
-                          <img src="/static/img/blank.png" class="logo-sprite-tiny logo-{{ topic.product.slug }}">
-                          {{ _(topic.product.title, 'DB: products.Product.title') }}
-                        </a>
-                      </li>
-                    {% endif %}
-                    {% for tag in tags %}
-                      <li><a class="tag-name" href="{{ questions_url(tagged=tag.slug) }}">{{ tag }}</a></li>
-                    {% endfor %}
-                  </ul>
-                {% endif %}
-              </div>
-            </section>
+            {% include 'questions/includes/question_listing.html' %}
           {% endfor %}
         </article>
         {{ questions|quick_paginator }}
@@ -215,7 +149,7 @@
       <ul class="sidebar-nav">
         <li {{ owner|class_selected(None) }}><a href="{{ questions_url(owner='all', page=None) }}">{{ _('Posts from everyone') }}</a></li>
         {% if request.user.is_authenticated() %}
-          <li {{ owner|class_selected('mine') }}><a href="{{ questions_url(owner='mine', page=None) }}">{{ _('My contributions') }}</a></li>
+          <li {{ owner|class_selected('mine') }}><a href="{{ questions_url(owner='mine', page=None) }}">{{ _('My contributions') }} {% if needs_attention_count %}<span class="counter-badge">{{ needs_attention_count }}</span>{% endif %}</a></li>
         {% endif %}
       </ul>
 
