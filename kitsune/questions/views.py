@@ -251,6 +251,17 @@ def question_list(request, template, product_slug):
     question_qs = question_qs.order_by(
         order_by if sort == 'asc' else '-%s' % order_by)
 
+    # Get needs attention count and pinned questions
+    pinned = []
+    needs_attention_count = None
+    if request.user.is_authenticated():
+        needs_attention_count = Question.objects.needs_attention().filter(
+            answers__creator=request.user).count()
+        if show == 'needs-attention':
+            pinned = question_qs.filter(answers__creator=request.user)
+            question_qs = question_qs.exclude(
+                pk__in=pinned.values_list('pk', flat=True))
+
     try:
         with statsd.timer('questions.view.paginate.%s' % filter_):
             questions_page = simple_paginate(
@@ -307,6 +318,8 @@ def question_list(request, template, product_slug):
         log.exception('Support Forum Top contributors query failed.')
 
     data = {'questions': questions_page,
+            'pinned': pinned,
+            'needs_attention_count': needs_attention_count,
             'feeds': feed_urls,
             'filter': filter_,
             'owner': owner,
