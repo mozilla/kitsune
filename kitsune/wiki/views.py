@@ -25,7 +25,6 @@ from statsd import statsd
 from tower import ugettext_lazy as _lazy
 from tower import ugettext as _
 
-import kitsune.wiki as config
 from kitsune.access.decorators import login_required
 from kitsune.products.models import Product, Topic
 from kitsune.sumo.helpers import urlparams
@@ -34,7 +33,8 @@ from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import (paginate, smart_int, get_next_url, user_or_ip,
                                 truncated_json_dumps)
 from kitsune.wiki.config import (
-    CATEGORIES, MAJOR_SIGNIFICANCE, TEMPLATES_CATEGORY)
+    CATEGORIES, MAJOR_SIGNIFICANCE, TEMPLATES_CATEGORY, DOCUMENTS_PER_PAGE,
+    COLLAPSIBLE_DOCUMENTS)
 from kitsune.wiki.events import (
     EditDocumentEvent, ReviewableRevisionInLocaleEvent,
     ApproveRevisionInLocaleEvent, ApprovedOrReadyUnion,
@@ -161,7 +161,7 @@ def document(request, document_slug, template=None, document=None):
         ga_push.append(['_trackEvent', 'Incomplete L10n', 'Not Updated',
                         '%s/%s' % (doc.parent.slug, request.LANGUAGE_CODE)])
 
-    if document_slug in config.COLLAPSIBLE_DOCUMENTS.get(request.LANGUAGE_CODE, []):
+    if document_slug in COLLAPSIBLE_DOCUMENTS.get(request.LANGUAGE_CODE, []):
         document_css_class = 'collapsible'
     else:
         document_css_class = ''
@@ -206,7 +206,7 @@ def list_documents(request, category=None):
         except KeyError:
             raise Http404
 
-    docs = paginate(request, docs, per_page=config.DOCUMENTS_PER_PAGE)
+    docs = paginate(request, docs, per_page=DOCUMENTS_PER_PAGE)
     return render(request, 'wiki/list_documents.html', {
         'documents': docs,
         'category': category})
