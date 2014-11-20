@@ -29,12 +29,11 @@ from kitsune.sumo import ProgrammingError
 from kitsune.sumo.models import ModelBase, LocaleField
 from kitsune.sumo.urlresolvers import reverse, split_path
 from kitsune.tags.models import BigVocabTaggableMixin
-from kitsune.wiki import TEMPLATE_TITLE_PREFIX
 from kitsune.wiki.config import (
     CATEGORIES, SIGNIFICANCES, TYPO_SIGNIFICANCE, MEDIUM_SIGNIFICANCE,
     MAJOR_SIGNIFICANCE, REDIRECT_HTML, REDIRECT_CONTENT, REDIRECT_TITLE,
     REDIRECT_SLUG, CANNED_RESPONSES_CATEGORY, ADMINISTRATION_CATEGORY,
-    TEMPLATES_CATEGORY, DOC_HTML_CACHE_KEY)
+    TEMPLATES_CATEGORY, DOC_HTML_CACHE_KEY, TEMPLATE_TITLE_PREFIX)
 from kitsune.wiki.permissions import DocumentPermissionMixin
 
 
