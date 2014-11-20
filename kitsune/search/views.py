@@ -432,6 +432,8 @@ def advanced_search(request, template=None):
     # TODO: Figure out how to get rid of 'a' and do it.
     # It basically is used to switch between showing the form or results.
     a = request.GET.get('a', '2')
+    # TODO: This is so the 'a=1' stays in the URL for pagination.
+    r['a'] = 1
 
     # Search default values
     try:
