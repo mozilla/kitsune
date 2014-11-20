@@ -125,7 +125,7 @@
 {% macro register_login_forms(register, login, csrf) -%}
   {{ aaq_progress(step=2) }}
   <div id="register-form" class="grid_12 alpha omega">
-    <h2>{{ _('Before you continue, please create a support account') }}</h2>
+    <h2>{{ _('Almost there! We just need you to create a support forum account!') }}</h2>
     <h4>{{ _('Having an account on the support forums lets us notify you when you get a response on your question') }}</h4>
     {{ register_form(register, csrf=csrf, action='', aaq=True) }}
   </div>
