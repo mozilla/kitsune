@@ -138,8 +138,9 @@ class SimpleSearchTests(ElasticTestCase):
         response = self.client.get(url_, {'q': 'contribute'})
 
         doc = pq(response.content)
-        metas = doc('meta')
-        eq_(4, len(metas))
+        eq_(doc('meta[name="WT.oss"]')[0].attrib['content'], 'contribute')
+        eq_(doc('meta[name="WT.oss_r"]')[0].attrib['content'], '0')
+        eq_(doc('meta[name="robots"]')[0].attrib['content'], 'noindex')
 
     def test_search_cookie(self):
         """Set a cookie with the latest search term."""
