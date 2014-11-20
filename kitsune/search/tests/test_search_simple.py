@@ -139,7 +139,7 @@ class SimpleSearchTests(ElasticTestCase):
 
         doc = pq(response.content)
         metas = doc('meta')
-        eq_(4, len(metas))
+        eq_(5, len(metas))
 
     def test_search_cookie(self):
         """Set a cookie with the latest search term."""
