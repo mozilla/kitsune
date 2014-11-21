@@ -3,8 +3,7 @@ from django.db.models import Q
 from rest_framework import generics, serializers
 
 from kitsune.gallery.models import Image
-from kitsune.sumo.api import (CORSMixin, LocaleNegotiationMixin,
-                              InequalityFilterBackend, DateTimeUTCField)
+from kitsune.sumo.api import LocaleNegotiationMixin, InequalityFilterBackend, DateTimeUTCField
 
 
 class ImageShortSerializer(serializers.ModelSerializer):
@@ -29,7 +28,7 @@ class ImageDetailSerializer(ImageShortSerializer):
             'creator')
 
 
-class ImageList(CORSMixin, LocaleNegotiationMixin, generics.ListAPIView):
+class ImageList(LocaleNegotiationMixin, generics.ListAPIView):
     """List all image ids."""
     queryset = Image.objects.all()
     serializer_class = ImageShortSerializer
@@ -51,6 +50,6 @@ class ImageList(CORSMixin, LocaleNegotiationMixin, generics.ListAPIView):
         return queryset
 
 
-class ImageDetail(CORSMixin, generics.RetrieveAPIView):
+class ImageDetail(generics.RetrieveAPIView):
     queryset = Image.objects.all()
     serializer_class = ImageDetailSerializer

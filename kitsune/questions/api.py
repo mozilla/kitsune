@@ -8,7 +8,7 @@ from rest_framework.response import Response
 
 from kitsune.products.api import TopicField
 from kitsune.questions.models import Question, Answer, QuestionMetaData
-from kitsune.sumo.api import DateTimeUTCField, CORSMixin, OnlyCreatorEdits, GenericAPIException
+from kitsune.sumo.api import DateTimeUTCField, OnlyCreatorEdits, GenericAPIException
 
 
 class QuestionMetaDataSerializer(serializers.ModelSerializer):
@@ -154,7 +154,7 @@ class QuestionFilter(django_filters.FilterSet):
         return queryset
 
 
-class QuestionViewSet(CORSMixin, viewsets.ModelViewSet):
+class QuestionViewSet(viewsets.ModelViewSet):
     serializer_class = QuestionSerializer
     queryset = Question.uncached.all()
     paginate_by = 20
@@ -270,7 +270,7 @@ class AnswerFilter(django_filters.FilterSet):
         ]
 
 
-class AnswerViewSet(CORSMixin, viewsets.ModelViewSet):
+class AnswerViewSet(viewsets.ModelViewSet):
     serializer_class = AnswerSerializer
     queryset = Answer.uncached.all()
     paginate_by = 20

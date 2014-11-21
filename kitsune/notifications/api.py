@@ -1,7 +1,7 @@
 from rest_framework import serializers, viewsets, permissions, mixins
 
 from kitsune.notifications.models import PushNotificationRegistration
-from kitsune.sumo.api import CORSMixin, OnlyCreatorEdits
+from kitsune.sumo.api import OnlyCreatorEdits
 
 
 class PushNotificationRegistrationSerializer(serializers.ModelSerializer):
@@ -29,8 +29,7 @@ class PushNotificationRegistrationSerializer(serializers.ModelSerializer):
         return attrs
 
 
-class PushNotificationRegistrationViewSet(CORSMixin,
-                                          mixins.CreateModelMixin,
+class PushNotificationRegistrationViewSet(mixins.CreateModelMixin,
                                           mixins.DestroyModelMixin,
                                           viewsets.GenericViewSet):
     model = PushNotificationRegistration

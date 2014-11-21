@@ -4,6 +4,7 @@
 import logging
 import os
 import platform
+import re
 from datetime import date
 
 from bundles import MINIFY_BUNDLES
@@ -417,6 +418,7 @@ MIDDLEWARE_CLASSES = (
     'kitsune.sumo.middleware.MobileSwitchMiddleware',
 
     'kitsune.sumo.middleware.Forbidden403Middleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'kitsune.sumo.middleware.RemoveSlashMiddleware',
     'kitsune.inproduct.middleware.EuBuildMiddleware',
@@ -480,6 +482,7 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.admin',
+    'corsheaders',
     'kitsune.users',
     'dennis.django_dennis',
     'tower',
@@ -883,6 +886,23 @@ AXES_REVERSE_PROXY_HEADER = 'HTTP_X_CLUSTER_CLIENT_IP'
 
 # Set this to True to wrap each HTTP request in a transaction on this database.
 ATOMIC_REQUESTS = True
+
+# CORS Setup
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_URLS_REGEX = [
+    r'^/api/1/gallery/.*$',
+    r'^/api/1/kb/.*$',
+    r'^/api/1/products/.*',
+    r'^/api/1/users/get_token$',
+    r'^/api/1/users/test_auth$',
+    r'^/api/2/answer/.*$',
+    r'^/api/2/pushnotification/.*$',
+    r'^/api/2/question/.*$',
+    r'^/api/2/user/.*$',
+]
+# Now combine all those regexes with one big "or".
+CORS_URLS_REGEX = re.compile('|'.join('({0})'.format(r) for r in CORS_URLS_REGEX))
+CORS_URLS_REGEX = '.*'
 
 # XXX Fix this when Bug 1059545 is fixed
 CC_IGNORE_USERS = []

@@ -4,8 +4,7 @@ from django.shortcuts import get_object_or_404
 
 from rest_framework import generics, serializers, status
 
-from kitsune.sumo.api import (CORSMixin, GenericAPIException,
-                              LocaleNegotiationMixin)
+from kitsune.sumo.api import GenericAPIException, LocaleNegotiationMixin
 from kitsune.wiki.models import Document
 from kitsune.wiki.config import REDIRECT_HTML
 
@@ -26,7 +25,7 @@ class DocumentDetailSerializer(DocumentShortSerializer):
                   'html')
 
 
-class DocumentList(CORSMixin, LocaleNegotiationMixin, generics.ListAPIView):
+class DocumentList(LocaleNegotiationMixin, generics.ListAPIView):
     """List all documents."""
     queryset = Document.objects.all()
     serializer_class = DocumentShortSerializer
@@ -77,8 +76,7 @@ class DocumentList(CORSMixin, LocaleNegotiationMixin, generics.ListAPIView):
         return queryset
 
 
-class DocumentDetail(CORSMixin, LocaleNegotiationMixin,
-                     generics.RetrieveAPIView):
+class DocumentDetail(LocaleNegotiationMixin, generics.RetrieveAPIView):
     queryset = Document.objects.all()
     serializer_class = DocumentDetailSerializer
 

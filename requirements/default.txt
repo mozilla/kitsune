@@ -70,6 +70,9 @@ https://github.com/jbalogh/django-cache-machine/archive/7c3d3abfc85fc26d0e522fd0
 # sha256: ESLN3T2iyCrFz0i2k9G1Um7goYVPgRaii1DpoxwqmOg
 https://github.com/celery/django-celery/archive/b11b358cbc0d7b3ca15575d27332d4ae37beca27.tar.gz#egg=django-celery
 
+# sha256: LM9zUZ6iBbiNtFP39hcPs9CiGo4yU_JXjvDNUp95pY8
+django-cors-headers==0.13
+
 # sha256: F3KVsUQkAMks22fo4Y-f9ZRvtEL4WBO50IN4I3IuoI0
 django-cronjobs==0.2.3
 
