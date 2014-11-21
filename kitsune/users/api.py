@@ -16,11 +16,10 @@ from rest_framework import viewsets, serializers, mixins, filters, permissions
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.decorators import permission_classes, api_view
-from rest_framework.authtoken import views as authtoken_views
 from rest_framework.authtoken.models import Token
 
 from kitsune.access.decorators import login_required
-from kitsune.sumo.api import CORSMixin, DateTimeUTCField, GenericAPIException
+from kitsune.sumo.api import DateTimeUTCField, GenericAPIException
 from kitsune.sumo.decorators import json_view
 from kitsune.users.helpers import profile_avatar
 from kitsune.users.models import Profile, RegistrationProfile
@@ -72,10 +71,6 @@ def test_auth(request):
         'username': request.user.username,
         'authorized': True,
     })
-
-
-class GetToken(CORSMixin, authtoken_views.ObtainAuthToken):
-    """Add CORS headers to the ObtainAuthToken view."""
 
 
 class OnlySelfEdits(permissions.BasePermission):
@@ -191,8 +186,7 @@ class ProfileSerializer(serializers.ModelSerializer):
         return attrs
 
 
-class ProfileViewSet(CORSMixin,
-                     mixins.CreateModelMixin,
+class ProfileViewSet(mixins.CreateModelMixin,
                      mixins.RetrieveModelMixin,
                      mixins.ListModelMixin,
                      mixins.UpdateModelMixin,

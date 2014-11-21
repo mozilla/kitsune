@@ -5,8 +5,7 @@ from rest_framework import generics, serializers
 from tower import ugettext_lazy as _lazy
 
 from kitsune.products.models import Product, Topic
-from kitsune.sumo.api import (CORSMixin, LocaleNegotiationMixin,
-                              LocalizedCharField)
+from kitsune.sumo.api import LocaleNegotiationMixin, LocalizedCharField
 from kitsune.wiki.api import DocumentShortSerializer
 
 
@@ -96,7 +95,7 @@ class ProductSerializer(serializers.ModelSerializer):
         fields = ('id', 'title', 'slug', 'description', 'platforms', 'visible')
 
 
-class ProductList(CORSMixin, generics.ListAPIView):
+class ProductList(generics.ListAPIView):
     """List all documents."""
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
@@ -135,7 +134,7 @@ class TopicSerializer(serializers.ModelSerializer):
         return DocumentShortSerializer(docs, many=True).data
 
 
-class TopicDetail(CORSMixin, LocaleNegotiationMixin, generics.RetrieveAPIView):
+class TopicDetail(LocaleNegotiationMixin, generics.RetrieveAPIView):
     queryset = Topic.objects.all()
     serializer_class = TopicSerializer
 
@@ -173,7 +172,7 @@ class RootTopicSerializer(TopicShortSerializer):
         }
 
 
-class TopicList(CORSMixin, LocaleNegotiationMixin, generics.ListAPIView):
+class TopicList(LocaleNegotiationMixin, generics.ListAPIView):
     queryset = Topic.objects.filter(parent=None)
     serializer_class = RootTopicSerializer
 

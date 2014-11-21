@@ -150,27 +150,6 @@ class TestUserSerializer(TestCase):
             [u'Usernames may only be letters, numbers, "." and "-".']})
 
 
-class TestGetToken(TestCase):
-
-    def setUp(self):
-        self.url = reverse('users.get_token')
-        self.user = user(password='testpass', save=True)
-        self.data = {
-            'username': self.user.username,
-            'password': 'testpass',
-        }
-
-    def test_it_works(self):
-        res = self.client.post(self.url, data=self.data)
-        eq_(res.status_code, 200)
-        eq_(res.data.keys(), ['token'])
-
-    def test_it_has_cors(self):
-        res = self.client.post(self.url, data=self.data)
-        eq_(res.status_code, 200)
-        ok_(res.has_header('Access-Control-Allow-Origin'))
-
-
 class TestUserView(TestCase):
 
     def setUp(self):
