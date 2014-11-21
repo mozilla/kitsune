@@ -1217,6 +1217,11 @@ class QuestionsTemplateTestCase(TestCaseBase):
         response = get(self.client, 'questions.details', args=[ques.id])
         assert 'Archive this post' not in response.content
 
+    def test_show_is_empty_string_doesnt_500(self):
+        question(save=True)
+        response = self.client.get(urlparams(reverse('questions.list', args=['all']), show=''))
+        eq_(200, response.status_code)
+
 
 class QuestionsTemplateTestCaseNoFixtures(TestCase):
     client_class = LocalizingClient

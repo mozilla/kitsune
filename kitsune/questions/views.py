@@ -117,7 +117,10 @@ def question_list(request, template, product_slug):
     filter_ = request.GET.get('filter')
     owner = request.GET.get(
         'owner', request.session.get('questions_owner', 'all'))
-    show = request.GET.get('show', 'needs-attention')
+    show = request.GET.get('show')
+    # Show defaults to NEEDS ATTENTION
+    if show not in FILTER_GROUPS:
+        show = 'needs-attention'
     escalated = request.GET.get('escalated')
     tagged = request.GET.get('tagged')
     tags = None
@@ -152,36 +155,33 @@ def question_list(request, template, product_slug):
 
     question_qs = Question.objects
 
-    if show not in FILTER_GROUPS:
-        show = None
+    if filter_ not in FILTER_GROUPS[show]:
+        filter_ = None
+
+    if escalated:
+        filter_ = None
+
+    if filter_ == 'new':
+        question_qs = question_qs.new()
+    elif filter_ == 'unhelpful-answers':
+        question_qs = question_qs.unhelpful_answers()
+    elif filter_ == 'needsinfo':
+        question_qs = question_qs.needs_info()
+    elif filter_ == 'solution-provided':
+        question_qs = question_qs.solution_provided()
+    elif filter_ == 'solved':
+        question_qs = question_qs.solved()
+    elif filter_ == 'locked':
+        question_qs = question_qs.locked()
+    elif filter_ == 'recently-unanswered':
+        question_qs = question_qs.recently_unanswered()
     else:
-        if filter_ not in FILTER_GROUPS[show]:
-            filter_ = None
-
-        if escalated:
-            filter_ = None
-
-        if filter_ == 'new':
-            question_qs = question_qs.new()
-        elif filter_ == 'unhelpful-answers':
-            question_qs = question_qs.unhelpful_answers()
-        elif filter_ == 'needsinfo':
-            question_qs = question_qs.needs_info()
-        elif filter_ == 'solution-provided':
-            question_qs = question_qs.solution_provided()
-        elif filter_ == 'solved':
-            question_qs = question_qs.solved()
-        elif filter_ == 'locked':
-            question_qs = question_qs.locked()
-        elif filter_ == 'recently-unanswered':
-            question_qs = question_qs.recently_unanswered()
-        else:
-            if show == 'needs-attention':
-                question_qs = question_qs.needs_attention()
-            if show == 'responded':
-                question_qs = question_qs.responded()
-            if show == 'done':
-                question_qs = question_qs.done()
+        if show == 'needs-attention':
+            question_qs = question_qs.needs_attention()
+        if show == 'responded':
+            question_qs = question_qs.responded()
+        if show == 'done':
+            question_qs = question_qs.done()
 
     if escalated:
         question_qs = question_qs.filter(
