@@ -9,11 +9,11 @@ Babel==0.9.6
 
 # billiard: tags/v2.7.3.34
 # sha256: YKE9uzfN1UL1JUZXDT451i6erJQVPRDdfCT_poTAVy0
-https://github.com/celery/billiard/archive/f24a943cb4b6992717fa8d1db7e220d576377631.tar.gz#egg=billiard
+https://github.com/celery/billiard/archive/f24a943cb4b6992717fa8d1db7e220d576377631.tar.gz#egg=billiard==2.7.3.34
 
 # bleach: tags/v1.2.1
 # sha256: TZ4IUMAsbo3fhQxiIK1u1Ba4-UXvK0mZKvjSBbxQxNA
-https://github.com/jsocol/bleach/archive/ab7c8b3f0a4c169b94da3248dfd60d6fc33b263c.tar.gz#egg=bleach
+https://github.com/jsocol/bleach/archive/ab7c8b3f0a4c169b94da3248dfd60d6fc33b263c.tar.gz#egg=bleach==1.2.1
 
 # cache-panel: master~1
 # sha256: _Wlp-He7yoYfBlWLdCw41A6prXHFZf3MJ39ONzMdAxk
@@ -24,7 +24,7 @@ carrot==0.10.7
 
 # celery: tags/v3.0.24
 # sha256: _ac6RdnCKQYtOWzlu9JE-TNp1GBNPe_6gO2wft0dTAQ
-https://github.com/celery/celery/archive/53aac9e633302af2aeb8fd8089ed95b6d1e0c9d6.tar.gz#egg=celery
+https://github.com/celery/celery/archive/53aac9e633302af2aeb8fd8089ed95b6d1e0c9d6.tar.gz#egg=celery==3.0.24
 
 # check: master~9
 # sha256: BJ7houDdUh-nH8g2T9aYtS4DTrGyKicd-EBjHJJOoAc
@@ -36,15 +36,14 @@ https://github.com/jsocol/commonware/archive/b5544185b2d24adc1eb512735990752400c
 
 # dennis: tags/v0.4.2^0
 # sha256: P7EjNhkJmOMckhvTr4jIQS23fDqqCjXMSpKkasIQGjc
-https://github.com/willkg/dennis/archive/fb87f585e8f65ae29f86e849710265040e35b689.tar.gz#egg=dennis
+https://github.com/willkg/dennis/archive/fb87f585e8f65ae29f86e849710265040e35b689.tar.gz#egg=dennis==0.4.2
 
-# sha256: tl3H-YxacpMU0AHruskii-_WJXBanjrgOaXRYMOXb-E
 # sha256: mmQhHJajJiuyVFrMgq9djz2gF1KZ98fpAeTtRVvpZfs
 Django==1.6.7
 
 # django-adminplus: tags/v0.2.1
 # sha256: hFyepTe0iD7ynH-YlVoiYeg_AZWYzBNed4Y8JHy6Klg
-https://github.com/jsocol/django-adminplus/archive/90c6aca7a9c18f90af20d111141b1670ef6af206.tar.gz#egg=django-adminplus
+https://github.com/jsocol/django-adminplus/archive/90c6aca7a9c18f90af20d111141b1670ef6af206.tar.gz#egg=django-adminplus==0.2.1
 
 # django-appconf: develop
 # sha256: mZygPfnguf9x6Y-dcbTj9z8Wbxh0CnMlB8DXWYh9m10
@@ -56,7 +55,7 @@ https://github.com/jsocol/django-authority/archive/800c42759db817d49eea535fabdfc
 
 # django-axes: tags/1.3.6
 # sha256: MLphOg6GF1VYiBhd2VhAe27GJVu683GIA-Dodx21vUU
-https://github.com/django-security/django-axes/archive/778f208cc1d3cc42ecb756f732f8593e40ebb476.tar.gz#egg=django-axes
+https://github.com/django-security/django-axes/archive/778f208cc1d3cc42ecb756f732f8593e40ebb476.tar.gz#egg=django-axes==1.3.6
 
 # django-badger: master~1
 # sha256: 2o455MmUGi7vRGAnRMjtVBgW3i1jC22t2VkgXtZOLOk
@@ -68,7 +67,7 @@ https://github.com/jbalogh/django-cache-machine/archive/7c3d3abfc85fc26d0e522fd0
 
 # django-celery: tags/v3.0.23
 # sha256: ESLN3T2iyCrFz0i2k9G1Um7goYVPgRaii1DpoxwqmOg
-https://github.com/celery/django-celery/archive/b11b358cbc0d7b3ca15575d27332d4ae37beca27.tar.gz#egg=django-celery
+https://github.com/celery/django-celery/archive/b11b358cbc0d7b3ca15575d27332d4ae37beca27.tar.gz#egg=django-celery==3.0.23
 
 # sha256: LM9zUZ6iBbiNtFP39hcPs9CiGo4yU_JXjvDNUp95pY8
 django-cors-headers==0.13
@@ -86,7 +85,7 @@ https://github.com/willkg/django-eadred/archive/f77ebbeea7e6802771b91a1748faec00
 
 # django-extensions: tags/1.3.3
 # sha256: oEiCqdyUMgocSPT2W6xNnQj_MoJgNTkCQK1JnBPLfsc
-https://github.com/django-extensions/django-extensions/archive/47a531c996c92a369755a4a9e0857e51afd25cab.tar.gz#egg=django-extensions
+https://github.com/django-extensions/django-extensions/archive/47a531c996c92a369755a4a9e0857e51afd25cab.tar.gz#egg=django-extensions==1.3.3
 
 # sha256: GxivwUOH0u6YUuTcmoeqRuNGoJZ6c0qqufsiLtSBzqI
 django-filter==0.8
@@ -105,7 +104,7 @@ https://github.com/jbalogh/django-multidb-router/archive/fffe4323fc0006c6eec20c6
 
 # django-nose: tags/1.2
 # sha256: Vi58jhGncxSR4kHeReF0Y8ucCNuSo3lAQiSawDecN3U
-https://github.com/jbalogh/django-nose/archive/a9f98c10e54b171bf77ddc358cd3866f75bbdf1d.tar.gz#egg=django-nose
+https://github.com/jbalogh/django-nose/archive/a9f98c10e54b171bf77ddc358cd3866f75bbdf1d.tar.gz#egg=django-nose==1.2
 
 # django-picklefield: master~5
 # sha256: jTddtwi8h_bfm7OulO3QG-0su2polKkneF3tmu3pg-8
@@ -125,11 +124,11 @@ https://github.com/mozilla/django-recaptcha/archive/b3ce0daadfff7735d2a0865b8419
 
 # django-session-csrf: tags/v0.5
 # sha256: AdM_S160nuU1pdfrFvkQ9Eh7P9ToAPD2LauhDLWx_Xk
-https://github.com/mozilla/django-session-csrf/archive/15492526b23cdad56fe3df1342e2d82ec5d17c18.tar.gz#egg=django-session-csrf
+https://github.com/mozilla/django-session-csrf/archive/15492526b23cdad56fe3df1342e2d82ec5d17c18.tar.gz#egg=django-session-csrf==0.5
 
 # django-statici18n: tags/v1.0.1
 # sha256: tHEjxI72nEiw3vc6JEmNFbxrXkTqdIVKh9b-Bd-px5Q
-https://github.com/zyegfryed/django-statici18n/archive/6bcc799b800a7237a37e178ddffef90bcb60ac3b.tar.gz#egg=django-statici18n
+https://github.com/zyegfryed/django-statici18n/archive/6bcc799b800a7237a37e178ddffef90bcb60ac3b.tar.gz#egg=django-statici18n==1.0.1
 
 # django-statsd: tags/0.3.8.5
 # sha256: LTn7BrZL1DKwIiETzYeOHlosfAnsk7K7V3zw4Kq_GNk
@@ -151,7 +150,6 @@ https://github.com/brosner/django-timezones/archive/ce12f4538fb98612c61b380421e5
 # sha256: Go2dIsmkcwf28MPrPT3uDp8X23im0q_Tgc2aGp8tJrQ
 https://github.com/jsocol/django-waffle/archive/a5beffb15d07b6c5f92e04dba15ab609ab52e940.tar.gz#egg=django-waffle
 
-# sha256: cVnbFB5A1yz_4Wk_xDAjIf7WfMwBU4vyXrNurfi4n3E
 # sha256: NWZcEPVSRwd27M_RWSLTdI4w18AQLrd_3kfOKX2WuyM
 djangorestframework==2.3.14
 
@@ -169,14 +167,14 @@ google-api-python-client==1.0
 
 # html5lib-python: tags/0.95
 # sha256: D7CX8C1qplaG6PSGwL3BeGytm1N4-EwnI30pFTL0qX4
-https://github.com/html5lib/html5lib-python/archive/f5855f3d0ad6d4202e2b5d02626d85178ff6443a.tar.gz#egg=html5lib-python
+https://github.com/html5lib/html5lib-python/archive/f5855f3d0ad6d4202e2b5d02626d85178ff6443a.tar.gz#egg=html5lib-python==0.95
 
 # sha256: OeqMam2fWVwXehYTT8SamQrY04J1jL9GnIZZZi8vUas
 httplib2==0.9
 
 # jingo: tags/v0.6.1
 # sha256: YSPU9TzrM590ox_yUwL-1QBGuOEFuYihlhhLZVZ9Rb8
-https://github.com/jbalogh/jingo/archive/8a6fe63ded02970888c27fd527a3c5f9e3061119.tar.gz#egg=jingo
+https://github.com/jbalogh/jingo/archive/8a6fe63ded02970888c27fd527a3c5f9e3061119.tar.gz#egg=jingo==0.6.1
 
 # jingo-minify: master~6
 # sha256: BnWzKRSSTYBMnjFYlCF28MqhIPeyN5jjSoJyXkYQt6o
@@ -187,7 +185,7 @@ Jinja2==2.5.2
 
 # kombu: tags/v2.5.15
 # sha256: q7LQnb_YEdLVBSbXyqK6p5foIFShJ_v0jeL-r0fPyb8
-https://github.com/celery/kombu/archive/00efce7d9f9b8740e8df889987caf55700fd1b77.tar.gz#egg=kombu
+https://github.com/celery/kombu/archive/00efce7d9f9b8740e8df889987caf55700fd1b77.tar.gz#egg=kombu==2.5.15
 
 # sha256: _rvld3LyBrrNJG-kH980xSySPl2sB5CxXJ3umX64pww
 logilab-astng==0.20.1
@@ -261,15 +259,15 @@ pytz==2013b
 
 # raven-python: tags/3.6.1
 # sha256: BEn5NWyfDXsRFpassWRh5I4QyX2gvgYZu53hJZ1mqhY
-https://github.com/getsentry/raven-python/archive/ab53d276262a0fa2932588b34de4e68ffe22d930.tar.gz#egg=raven-python
+https://github.com/getsentry/raven-python/archive/ab53d276262a0fa2932588b34de4e68ffe22d930.tar.gz#egg=raven==3.6.1
 
 # redis-py: remotes/origin/2.4~24
 # sha256: pKrx7rUrWH9IbMYyT2MF62gW_bVPony2JPDx0TecNP0
-https://github.com/andymccurdy/redis-py/archive/43aa23146ad287959369161038a4e5cda985a259.tar.gz#egg=redis-py
+https://github.com/andymccurdy/redis-py/archive/43aa23146ad287959369161038a4e5cda985a259.tar.gz#egg=redis
 
 # requests: tags/v1.1.0
 # sha256: LFetLgx3GU1fkbaxtU_ewDWhuM_CTQR3sIcrFsKldDM
-https://github.com/kennethreitz/requests/archive/1a7c91f6581c80122ed8cd1fdf4a8ca38c842453.tar.gz#egg=requests
+https://github.com/kennethreitz/requests/archive/1a7c91f6581c80122ed8cd1fdf4a8ca38c842453.tar.gz#egg=requests==1.1.0
 
 # requests-oauthlib: tags/v0.3.3~12
 # sha256: uOoyEafcwZIXaIFQOsl_ffe0JIVmLZzuahgcNqZg78Y
@@ -328,4 +326,3 @@ Werkzeug==0.5.1
 # zendesk: master
 # sha256: qZay1j0xjnxeqf9KSApA23lDIepStzP_bG2lfvszujs
 https://github.com/eventbrite/zendesk/archive/1b256c3b827a8f3c6bbd3bd1fc09b7b0e2e82347.tar.gz#egg=zendesk
-
