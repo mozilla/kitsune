@@ -237,7 +237,10 @@ Start with this::
         }
 
     LESS_PREPROCESS = True
-    LESS_BIN = '/path/to/kitsune/node_modules/less/bin/lessc'
+    LESS_BIN = path('node_modules/.bin/lessc')
+    UGLIFY_BIN = path('node_modules/.bin/uglifyjs')
+    CLEANCSS_BIN = path('node_modules/.bin/cleancss')
+    NUNJUCKS_PRECOMPILE_BIN = path('node_modules/.bin/nunjucks-precompile')
 
     # Tells django-axes we aren't behind a reverse proxy.
     AXES_BEHIND_REVERSE_PROXY = False
