@@ -53,7 +53,10 @@ REDIS_BACKENDS = {
 }
 
 LESS_PREPROCESS = True
-LESS_BIN = '/home/vagrant/kitsune/node_modules/.bin/lessc'
+LESS_BIN = path('node_modules/.bin/lessc')
+UGLIFY_BIN = path('node_modules/.bin/uglifyjs')
+CLEANCSS_BIN = path('node_modules/.bin/cleancss')
+NUNJUCKS_PRECOMPILE_BIN = path('node_modules/.bin/nunjucks-precompile')
 
 INSTALLED_APPS += ['django_qunit']
 
