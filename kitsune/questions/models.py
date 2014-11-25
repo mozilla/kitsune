@@ -502,8 +502,7 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
             documents = []
 
         return documents
-    
-    
+
     @property
     def related_questions(self):
         """Return questions that are 'morelikethis' one"""
@@ -545,7 +544,6 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
             questions = []
 
         return questions
-
 
     # Permissions
 
