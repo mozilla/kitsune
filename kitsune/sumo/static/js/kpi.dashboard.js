@@ -59,6 +59,20 @@ function init() {
       color: '#80699b',
       axisGroup: 'percent',
       type: 'percent'
+    },
+    {
+      name: gettext('Not responded in 24 hours'),
+      slug: 'not_responded_24',
+      color: '#C98531',
+      func: k.Graph.difference('questions', 'responded_24'),
+      area: true
+    },
+    {
+      name: gettext('Not responded in 72 hours'),
+      slug: 'not_responded_72',
+      color: '#DB75C2',
+      func: k.Graph.difference('questions', 'responded_72'),
+      area: true
     }
   ]);
 

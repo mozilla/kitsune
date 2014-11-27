@@ -766,17 +766,25 @@
     };
   };
 
-// Divides the first key by the second.
-// fraction('foo', 'bar') -> 0.5
+  // Divides the first key by the second.
+  // fraction('foo', 'bar') -> 0.5
   Graph.fraction = function (topKey, bottomKey) {
     return function (d) {
       return d[topKey] / d[bottomKey];
     };
   };
 
-// Takes a date in one of the followign formats and returns seconds
-// since the epoch: Date objects, strings in the format 'YYYY-MM-DD',
-// Integers in second since the epoch form..
+  // Subtract the second key from the first.
+  // difference('foo', 'bar')({foo: 5, bar: 2}) -> 3
+  Graph.difference = function (leftKey, rightKey) {
+    return function(d) {
+      return d[leftKey] - d[rightKey];
+    };
+  };
+
+  // Takes a date in one of the followign formats and returns seconds
+  // since the epoch: Date objects, strings in the format 'YYYY-MM-DD',
+  // Integers in second since the epoch form..
   Graph.toSeconds = function (obj) {
     var type = typeof obj;
     if (type === 'object') {
