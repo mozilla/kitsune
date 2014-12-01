@@ -33,8 +33,6 @@ apt-get install -y sphinx-common libapache2-mod-wsgi python-pip libmysqlclient-d
                    openjdk-7-jre-headless mariadb-server-5.5 nodejs elasticsearch redis-server \
                    memcached python2.6 python2.6-dev
 
-git submodule update --init --recursive
-
 # Setup the virtualenv and start using it
 pip install virtualenv
 virtualenv -p /usr/bin/python2.6 $INSTALL_DIR/virtualenv
