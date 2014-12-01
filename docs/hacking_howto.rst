@@ -276,7 +276,16 @@ To initialize the database, do::
     $ ./manage.py syncdb --migrate
 
 
-This will ask you to create a superuser account. Just follow the prompts.
+.. Note::
+
+   This will ask you to create a superuser account. Say no. We currently have `a bug <https://bugzilla.mozilla.org/show_bug.cgi?id=1056298>`_ to fix this.
+
+   After this step, you can create a super user via the Django shell::
+
+      $ ./manage.py shell
+      >>> from django.contrib.auth.models import User
+      >>> User.objects.create_superuser('login', 'email', 'password')
+
 
 You'll now have an empty but up-to-date database!
 
