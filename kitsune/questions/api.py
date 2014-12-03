@@ -1,7 +1,6 @@
 import django_filters
 import json
 from django.db.models import Q
-from django.utils import six
 from rest_framework import serializers, viewsets, permissions, filters, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -133,23 +132,21 @@ class QuestionFilter(django_filters.FilterSet):
         return queryset.filter(filter)
 
     def filter_metadata(self, queryset, value):
-        invalid_exc = GenericAPIException(
-            400, 'metadata must be a JSON object of strings.')
-
         try:
             value = json.loads(value)
         except ValueError:
-            raise invalid_exc
+            raise GenericAPIException(400, 'metadata must be valid JSON.')
 
-        def is_string(v):
-            return isinstance(v, six.string_types)
-
-        if not (isinstance(value, dict) and
-                all(isinstance(v, six.string_types) for v in value.values())):
-            raise invalid_exc
-
-        for name, value in value.items():
-            queryset = queryset.filter(metadata_set__name=name, metadata_set__value=value)
+        for name, values in value.items():
+            if not isinstance(values, list):
+                values = [values]
+            query = Q()
+            for v in values:
+                if v is None:
+                    query = query | ~Q(metadata_set__name=name)
+                else:
+                    query = query | Q(metadata_set__name=name, metadata_set__value=v)
+            queryset = queryset.filter(query)
 
         return queryset
 

@@ -412,7 +412,7 @@ class TestQuestionFilter(TestCase):
 
     @raises(APIException)
     def test_metadata_bad_json(self):
-        self.filter({'foo': []})
+        self.filter_instance.filter_metadata(self.queryset, 'not json')
 
     def test_single_filter_match(self):
         q1 = question(metadata={'os': 'Linux'}, save=True)
@@ -431,3 +431,23 @@ class TestQuestionFilter(TestCase):
         question(metadata={'os': 'OSX', 'category': 'troubleshooting'}, save=True)
         res = self.filter({'os': 'Linux', 'category': 'troubleshooting'})
         eq_(list(res), [q1])
+
+    def test_list_value_is_or(self):
+        q1 = question(metadata={'os': 'Linux'}, save=True)
+        q2 = question(metadata={'os': 'OSX'}, save=True)
+        question(metadata={'os': 'Windows 7'}, save=True)
+        res = self.filter({'os': ['Linux', 'OSX']})
+        eq_(list(res), [q1, q2])
+
+    def test_none_value_is_missing(self):
+        q1 = question(metadata={}, save=True)
+        question(metadata={'os': 'Linux'}, save=True)
+        res = self.filter({'os': None})
+        eq_(list(res), [q1])
+
+    def test_list_value_with_none(self):
+        q1 = question(metadata={'os': 'Linux'}, save=True)
+        q2 = question(metadata={}, save=True)
+        question(metadata={'os': 'Windows 7'}, save=True)
+        res = self.filter({'os': ['Linux', None]})
+        eq_(list(res), [q1, q2])
