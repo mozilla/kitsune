@@ -9,6 +9,7 @@ from rest_framework.response import Response
 from kitsune.products.api import TopicField
 from kitsune.questions.models import Question, Answer, QuestionMetaData
 from kitsune.sumo.api import DateTimeUTCField, OnlyCreatorEdits, GenericAPIException
+from kitsune.users.api import ProfileFKSerializer
 
 
 class QuestionMetaDataSerializer(serializers.ModelSerializer):
@@ -44,7 +45,7 @@ class QuestionSerializer(serializers.ModelSerializer):
     topic = TopicField(required=True)
     # Use usernames for creator and updated_by instead of ids.
     created = DateTimeUTCField(read_only=True)
-    creator = serializers.SlugRelatedField(slug_field='username', required=False)
+    creator = ProfileFKSerializer(read_only=True, source='creator.get_profile')
     involved = serializers.SerializerMethodField('get_involved_users')
     is_solved = serializers.Field(source='is_solved')
     metadata = QuestionMetaDataSerializer(source='metadata_set', required=False)
@@ -81,14 +82,13 @@ class QuestionSerializer(serializers.ModelSerializer):
         )
 
     def get_involved_users(self, obj):
-        helpers = obj.answers.values_list('creator__username', flat=True)
-        involved = set([obj.creator.username])
-        involved.update(helpers)
+        involved = set([obj.creator])
+        involved.update(a.creator for a in obj.answers.all())
         return list(involved)
 
     def validate_creator(self, attrs, source):
         user = getattr(self.context.get('request'), 'user')
-        if user and not user.is_anonymous() and attrs.get('creator') is None:
+        if user and not user.is_anonymous() and attrs.get(source) is None:
             attrs['creator'] = user
         return attrs
 
@@ -226,7 +226,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
 
 class AnswerSerializer(serializers.ModelSerializer):
     created = DateTimeUTCField(read_only=True)
-    creator = serializers.SlugRelatedField(slug_field='username', required=False)
+    creator = ProfileFKSerializer(read_only=True, source='creator.get_profile')
     updated = DateTimeUTCField(read_only=True)
     updated_by = serializers.SlugRelatedField(slug_field='username', required=False)
     num_helpful_votes = serializers.Field(source='num_helpful_votes')

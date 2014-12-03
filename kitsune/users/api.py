@@ -186,6 +186,15 @@ class ProfileSerializer(serializers.ModelSerializer):
         return attrs
 
 
+class ProfileFKSerializer(ProfileSerializer):
+
+    class Meta(ProfileSerializer.Meta):
+        fields = [
+            'username',
+            'display_name',
+        ]
+
+
 class ProfileViewSet(mixins.CreateModelMixin,
                      mixins.RetrieveModelMixin,
                      mixins.ListModelMixin,
