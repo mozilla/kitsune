@@ -17,16 +17,15 @@ class TestQuestionSerializerDeserialization(TestCase):
 
     def setUp(self):
         self.profile = profile()
-        self.user = self.profile.user
         self.product = product(save=True)
         self.topic = topic(product=self.product, save=True)
         self.request = mock.Mock()
-        self.request.user = self.user
+        self.request.user = self.profile.user
         self.context = {
             'request': self.request,
         }
         self.data = {
-            'creator': self.user,
+            'creator': self.profile,
             'title': 'How do I test programs?',
             'content': "Help, I don't know what to do.",
             'product': self.product.slug,
@@ -45,7 +44,7 @@ class TestQuestionSerializerDeserialization(TestCase):
             context=self.context, data=self.data)
         eq_(serializer.errors, {})
         ok_(serializer.is_valid())
-        eq_(serializer.object.creator, self.user)
+        eq_(serializer.object.creator, self.profile.user)
 
     def test_product_required(self):
         del self.data['product']
@@ -89,9 +88,9 @@ class TestQuestionSerializerDeserialization(TestCase):
 class TestQuestionSerializerSerialization(TestCase):
 
     def setUp(self):
-        self.asker = user(save=True)
-        self.helper1 = user(save=True)
-        self.helper2 = user(save=True)
+        self.asker = profile().user
+        self.helper1 = profile().user
+        self.helper2 = profile().user
         self.question = question(creator=self.asker, save=True)
 
     def _names(self, *users):
@@ -146,6 +145,13 @@ class TestQuestionSerializerSerialization(TestCase):
 
         serializer = api.QuestionSerializer(instance=self.question)
         eq_(serializer.data['solution'], a.id)
+
+    def test_creator_is_object(self):
+        serializer = api.QuestionSerializer(instance=self.question)
+        eq_(serializer.data['creator'], {
+            "username": self.question.creator.username,
+            "display_name": self.question.creator.get_profile().display_name,
+        })
 
 
 class TestQuestionViewSet(TestCase):
