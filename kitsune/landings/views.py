@@ -5,8 +5,10 @@ from mobility.decorators import mobile_template
 from kitsune.products.models import Product
 from kitsune.sumo.decorators import ssl_required
 from kitsune.sumo.views import redirect_to
+from kitsune.wiki.decorators import check_simple_wiki_locale
 
 
+@check_simple_wiki_locale
 def home(request):
     """The home page."""
     if request.MOBILE:
