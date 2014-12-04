@@ -199,7 +199,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
         if not question.editable:
             raise GenericAPIException(403, 'Question not editable')
         if question.has_voted(request):
-            raise GenericAPIException(409, "Cannot vote twice")
+            raise GenericAPIException(409, 'Cannot vote twice')
         QuestionVote(question=question, creator=request.user).save()
         return Response("", status=204)
 
