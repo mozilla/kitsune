@@ -141,13 +141,10 @@ class QuestionFilter(django_filters.FilterSet):
             if not isinstance(values, list):
                 values = [values]
             query = Q()
-            import q
             for v in values:
                 if v is None:
-                    q('filtering on none', name)
                     query = query | ~Q(metadata_set__name=name)
                 else:
-                    q('filtering on something', name, v)
                     query = query | Q(metadata_set__name=name, metadata_set__value=v)
             queryset = queryset.filter(query)
 
