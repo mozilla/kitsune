@@ -7,7 +7,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from kitsune.products.api import TopicField
-from kitsune.questions.models import Question, Answer, QuestionMetaData
+from kitsune.questions.models import Question, Answer, QuestionMetaData, QuestionVote
 from kitsune.sumo.api import DateTimeUTCField, OnlyCreatorEdits, GenericAPIException
 from kitsune.users.api import ProfileFKSerializer
 
@@ -192,6 +192,16 @@ class QuestionViewSet(viewsets.ModelViewSet):
 
         question.set_solution(answer, request.user)
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(methods=['POST'], permission_classes=[permissions.IsAuthenticated])
+    def helpful(self, request, pk=None):
+        question = self.get_object()
+        if not question.editable:
+            raise GenericAPIException(403, 'Question not editable')
+        if question.has_voted(request):
+            raise GenericAPIException(409, 'Cannot vote twice')
+        QuestionVote(question=question, creator=request.user).save()
+        return Response("", status=204)
 
     @action(methods=['POST'])
     def set_metadata(self, request, pk=None):
