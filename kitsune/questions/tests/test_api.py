@@ -209,6 +209,33 @@ class TestQuestionViewSet(TestCase):
         q = Question.objects.get(id=q.id)
         eq_(q.solution, a)
 
+    def test_helpful(self):
+        q = question(save=True)
+        u = profile().user
+        self.client.force_authenticate(user=u)
+        res = self.client.post(reverse('question-helpful', args=[q.id]))
+        eq_(res.status_code, 204)
+        eq_(Question.objects.get(id=q.id).num_votes, 1)
+
+    def test_helpful_double_vote(self):
+        q = question(save=True)
+        u = profile().user
+        questionvote(question=q, creator=u, save=True)
+        self.client.force_authenticate(user=u)
+        res = self.client.post(reverse('question-helpful', args=[q.id]))
+        eq_(res.status_code, 409)
+        # It's 1, not 0, because one was created above. The failure cause is
+        # if the number of votes is 2, one from above and one from the api call.
+        eq_(Question.objects.get(id=q.id).num_votes, 1)
+
+    def test_helpful_question_not_editable(self):
+        q = question(is_locked=True, save=True)
+        u = profile().user
+        self.client.force_authenticate(user=u)
+        res = self.client.post(reverse('question-helpful', args=[q.id]))
+        eq_(res.status_code, 403)
+        eq_(Question.objects.get(id=q.id).num_votes, 0)
+
     def test_ordering(self):
         q1 = question(save=True)
         q2 = question(save=True)
