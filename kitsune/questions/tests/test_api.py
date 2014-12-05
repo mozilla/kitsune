@@ -156,98 +156,6 @@ class TestQuestionSerializerSerialization(TestCase):
         })
 
 
-class TestQuestionFilter(TestCase):
-
-    def setUp(self):
-        self.filter_instance = api.QuestionFilter()
-        self.queryset = Question.objects.all()
-
-    def _filter_metadata(self, filter_data):
-        return self.filter_instance.filter_metadata(self.queryset, json.dumps(filter_data))
-
-    def test_filter_involved(self):
-        q1 = question(save=True)
-        a1 = answer(question=q1, save=True)
-        q2 = question(creator=a1.creator, save=True)
-
-        res = self.filter_instance.filter_involved(self.queryset, q1.creator.username)
-        eq_(list(res), [q1])
-
-        res = self.filter_instance.filter_involved(self.queryset, q2.creator.username)
-        # The filter does not have a strong order.
-        res = sorted(res, key=lambda q: q.id)
-        eq_(res, [q1, q2])
-
-    def test_filter_is_solved(self):
-        q1 = question(save=True)
-        a1 = answer(question=q1, save=True)
-        q1.solution = a1
-        q1.save()
-        q2 = question(save=True)
-
-        res = self.filter_instance.filter_is_solved(self.queryset, True)
-        eq_(list(res), [q1])
-
-        res = self.filter_instance.filter_is_solved(self.queryset, False)
-        eq_(list(res), [q2])
-
-    @raises(APIException)
-    def test_metadata_not_json(self):
-        self.filter_instance.filter_metadata(self.queryset, 'not json')
-
-    @raises(APIException)
-    def test_metadata_bad_json(self):
-        self._filter_metadata({'foo': []})
-
-    def test_metadata_single_filter_match(self):
-        q1 = question(metadata={'os': 'Linux'}, save=True)
-        question(metadata={'os': 'OSX'}, save=True)
-        res = self._filter_metadata({'os': 'Linux'})
-        eq_(list(res), [q1])
-
-    def test_metadata_single_filter_no_match(self):
-        question(metadata={'os': 'Linux'}, save=True)
-        question(metadata={'os': 'OSX'}, save=True)
-        res = self._filter_metadata({"os": "Windows 8"})
-        eq_(list(res), [])
-
-    def test_metadata_multi_filter_is_and(self):
-        q1 = question(metadata={'os': 'Linux', 'category': 'troubleshooting'}, save=True)
-        question(metadata={'os': 'OSX', 'category': 'troubleshooting'}, save=True)
-        res = self._filter_metadata({'os': 'Linux', 'category': 'troubleshooting'})
-        eq_(list(res), [q1])
-
-    def test_is_taken(self):
-        u = user(save=True)
-        taken_until = datetime.now() + timedelta(seconds=30)
-        q = question(taken_by=u, taken_until=taken_until, save=True)
-        question(save=True)
-        res = self.filter_instance.filter_is_taken(self.queryset, True)
-        eq_(list(res), [q])
-
-    def test_is_not_taken(self):
-        u = user(save=True)
-        taken_until = datetime.now() + timedelta(seconds=30)
-        question(taken_by=u, taken_until=taken_until, save=True)
-        q = question(save=True)
-        res = self.filter_instance.filter_is_taken(self.queryset, False)
-        eq_(list(res), [q])
-
-    def test_is_taken_expired(self):
-        u = user(save=True)
-        taken_until = datetime.now() - timedelta(seconds=30)
-        question(taken_by=u, taken_until=taken_until, save=True)
-        res = self.filter_instance.filter_is_taken(self.queryset, True)
-        eq_(list(res), [])
-
-    def test_is_not_taken_expired(self):
-        u = user(save=True)
-        taken_until = datetime.now() - timedelta(seconds=30)
-        q = question(taken_by=u, taken_until=taken_until, save=True)
-        res = self.filter_instance.filter_is_taken(self.queryset, False)
-        eq_(list(res), [q])
-
-
 class TestQuestionViewSet(TestCase):
 
     def setUp(self):
@@ -573,3 +481,33 @@ class TestQuestionFilter(TestCase):
         question(metadata={'os': 'Windows 7'}, save=True)
         res = self.filter({'os': ['Linux', None]})
         eq_(list(res), [q1, q2])
+
+    def test_is_taken(self):
+        u = user(save=True)
+        taken_until = datetime.now() + timedelta(seconds=30)
+        q = question(taken_by=u, taken_until=taken_until, save=True)
+        question(save=True)
+        res = self.filter_instance.filter_is_taken(self.queryset, True)
+        eq_(list(res), [q])
+
+    def test_is_not_taken(self):
+        u = user(save=True)
+        taken_until = datetime.now() + timedelta(seconds=30)
+        question(taken_by=u, taken_until=taken_until, save=True)
+        q = question(save=True)
+        res = self.filter_instance.filter_is_taken(self.queryset, False)
+        eq_(list(res), [q])
+
+    def test_is_taken_expired(self):
+        u = user(save=True)
+        taken_until = datetime.now() - timedelta(seconds=30)
+        question(taken_by=u, taken_until=taken_until, save=True)
+        res = self.filter_instance.filter_is_taken(self.queryset, True)
+        eq_(list(res), [])
+
+    def test_is_not_taken_expired(self):
+        u = user(save=True)
+        taken_until = datetime.now() - timedelta(seconds=30)
+        q = question(taken_by=u, taken_until=taken_until, save=True)
+        res = self.filter_instance.filter_is_taken(self.queryset, False)
+        eq_(list(res), [q])
