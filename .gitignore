@@ -20,3 +20,4 @@ docs/_build
 .DS_Store
 james.ini
 build.py
+.vagrant/
