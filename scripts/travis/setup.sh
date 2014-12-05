@@ -17,6 +17,25 @@ ES_URLS = ['http://localhost:9200']
 INSTALLED_APPS += ('django_qunit',)
 SETTINGS
 
+echo "Making redis.conf"
+cat > redis-config.conf <<SETTINGS
+daemonize yes
+pidfile redis-state/redis-sumo-test.pid
+port 6383
+timeout 30
+loglevel verbose
+logfile stdout
+databases 4
+rdbcompression yes
+dbfilename dump.rdb
+dir redis-state/sumo-test/
+maxmemory 107374182400
+maxmemory-policy allkeys-lru
+appendonly no
+appendfsync everysec
+activerehashing yes
+SETTINGS
+
 echo "Creating test database"
 mysql -e 'create database kitsune'
 
@@ -31,9 +50,8 @@ popd
 
 echo "Starting Redis Servers"
 # This will daemonize
-sudo mkdir -p /var/redis/sumo-test/
-sudo chown `whoami` -R /var/redis/
-./redis-2.6.9/src/redis-server configs/redis/redis-test.conf
+mkdir -p redis-state/sumo-test/
+./redis-2.6.9/src/redis-server redis-config.conf
 
 echo "Starting XVFB for Selenium tests."
 /usr/bin/Xvfb :99 -ac -screen 0 1280x1024x16 >/dev/null 2>/dev/null &
