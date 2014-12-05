@@ -23,7 +23,8 @@ daemonize yes
 pidfile redis-state/redis-sumo-test.pid
 port 6383
 timeout 30
-logfile /dev/null
+loglevel verbose
+logfile stdout
 databases 4
 rdbcompression yes
 dbfilename dump.rdb
@@ -31,6 +32,8 @@ dir redis-state/sumo-test/
 maxmemory 107374182400
 maxmemory-policy allkeys-lru
 appendonly no
+appendfsync everysec
+activerehashing yes
 SETTINGS
 
 echo "Creating test database"
