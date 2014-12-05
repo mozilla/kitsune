@@ -43,8 +43,6 @@ from kitsune.questions.forms import (
     NewQuestionForm, EditQuestionForm, AnswerForm, WatchQuestionForm,
     FREQUENCY_CHOICES, MarketplaceAaqForm, MarketplaceRefundForm,
     MarketplaceDeveloperRequestForm, StatsForm)
-from kitsune.questions.karma_actions import (
-    SolutionAction, AnswerMarkedHelpfulAction, AnswerMarkedNotHelpfulAction)
 from kitsune.questions.marketplace import (
     MARKETPLACE_CATEGORIES, ZendeskError)
 from kitsune.questions.models import (
@@ -931,7 +929,7 @@ def solve(request, question_id, answer_id):
 def unsolve(request, question_id, answer_id):
     """Accept an answer as the solution to the question."""
     question = get_object_or_404(Question, pk=question_id)
-    answer = get_object_or_404(Answer, pk=answer_id)
+    get_object_or_404(Answer, pk=answer_id)
 
     if not question.allows_unsolve(request.user):
         raise PermissionDenied
@@ -945,7 +943,6 @@ def unsolve(request, question_id, answer_id):
     question.remove_metadata('solver_id')
 
     statsd.incr('questions.unsolve')
-    SolutionAction(user=answer.creator, day=answer.created).delete()
 
     messages.add_message(request, messages.SUCCESS,
                          _("The solution was undone successfully."))
@@ -1021,10 +1018,8 @@ def answer_vote(request, question_id, answer_id):
 
         if 'helpful' in request.REQUEST:
             vote.helpful = True
-            AnswerMarkedHelpfulAction(answer.creator).save()
             message = _('Glad to hear it!')
         else:
-            AnswerMarkedNotHelpfulAction(answer.creator).save()
             message = _('Sorry to hear that.')
 
         if request.user.is_authenticated():

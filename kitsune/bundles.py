@@ -104,9 +104,6 @@ MINIFY_BUNDLES = {
             'css/groups.css',
             'css/wiki_syntax.css',
         ),
-        'karma.dashboard': (
-            'less/karma.dashboard.less',
-        ),
         'kpi.dashboard': (
             'less/kpi.dashboard.less',
         ),
@@ -300,10 +297,6 @@ MINIFY_BUNDLES = {
             'js/markup.js',
             'js/groups.js',
             'js/editable.js',
-        ),
-        'karma.dashboard': (
-            'js/libs/backbone.js',
-            'js/karma.dashboard.js',
         ),
         'kpi.dashboard': (
             'js/kpi.dashboard.js',

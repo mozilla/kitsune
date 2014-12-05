@@ -31,7 +31,6 @@ If you want to run three separate Redis servers, add this to
 
     REDIS_BACKENDS = {
             'default': 'redis://localhost:6379?socket_timeout=0.5&db=0',
-            'karma': 'redis://localhost:6381?socket_timeout=0.5&db=0',
             'helpfulvotes': 'redis://localhost:6379?socket_timeout=0.\
                 5&db=1',
         }
