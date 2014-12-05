@@ -50,7 +50,7 @@ popd
 
 echo "Starting Redis Servers"
 # This will daemonize
-mkdir -p redis-state/
+mkdir -p redis-state/sumo-test/
 ./redis-2.6.9/src/redis-server redis-config.conf
 
 echo "Starting XVFB for Selenium tests."
