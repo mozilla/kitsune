@@ -23,12 +23,9 @@ from taggit.models import Tag, TaggedItem
 from kitsune.flagit.models import FlaggedObject
 from kitsune.products.models import Product, Topic
 from kitsune.questions import config
-from kitsune.questions.karma_actions import (
-    AnswerAction, FirstAnswerAction, SolutionAction)
 from kitsune.questions.managers import QuestionManager, QuestionLocaleManager
 from kitsune.questions.signals import tag_added
-from kitsune.questions.tasks import (
-    update_question_votes, update_answer_pages, log_answer, escalate_question)
+from kitsune.questions.tasks import update_question_votes, update_answer_pages, escalate_question
 from kitsune.search.es_utils import UnindexMeBro, ES_EXCEPTIONS
 from kitsune.search.models import (
     SearchMappingType, SearchMixin, register_for_indexing,
@@ -472,7 +469,6 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         self.add_metadata(solver_id=str(solver.id))
         statsd.incr('questions.solution')
         QuestionSolvedEvent(answer).fire(exclude=self.creator)
-        SolutionAction(user=answer.creator, day=answer.created).save()
 
     @property
     def related_documents(self):
@@ -984,14 +980,6 @@ class Answer(ModelBase, SearchMixin):
         if question.solution == self:
             question.solution = None
 
-            # Delete karma solution action.
-            SolutionAction(user=self.creator, day=self.created).delete()
-
-        # Delete karma answer action and first answer action if it was first.
-        AnswerAction(user=self.creator, day=self.created).delete()
-        if self.id == question.answers.all().order_by('created')[0].id:
-            FirstAnswerAction(user=self.creator, day=self.created).delete()
-
         answers = question.answers.filter(is_spam=False)
         question.num_answers = answers.count() - 1
         question.save()
@@ -1208,15 +1196,6 @@ register_for_indexing(
     Question,
     instance_to_indexee=(
         lambda i: i.solution))
-
-
-def answer_connector(sender, instance, created, **kw):
-    if created:
-        log_answer.delay(instance)
-
-
-post_save.connect(answer_connector, sender=Answer,
-                  dispatch_uid='question_answer_activity')
 
 
 register_for_indexing(

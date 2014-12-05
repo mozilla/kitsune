@@ -48,7 +48,6 @@ DATABASES = {
 
 REDIS_BACKENDS = {
     'default': 'redis://localhost:6383?socket_timeout=0.5&db=0',
-    'karma': 'redis://localhost:6383?socket_timeout=0.5&db=1',
     'helpfulvotes': 'redis://localhost:6383?socket_timeout=0.5&db=2',
 }
 

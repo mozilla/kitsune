@@ -15,7 +15,6 @@ from zendesk import ZendeskError
 
 from kitsune.kbadge.utils import get_or_create_badge
 from kitsune.questions.config import ANSWERS_PER_PAGE
-from kitsune.questions.karma_actions import AnswerAction, FirstAnswerAction
 from kitsune.questions.marketplace import submit_ticket
 from kitsune.search.es_utils import ES_EXCEPTIONS
 from kitsune.search.tasks import index_task
@@ -119,25 +118,6 @@ def update_answer_pages(question):
         answer.page = i / ANSWERS_PER_PAGE + 1
         answer.save(no_notify=True)
         i += 1
-
-
-@task()
-@timeit
-def log_answer(answer):
-    pin_this_thread()
-
-    # Record karma actions
-    AnswerAction(answer.creator, answer.created.date()).save()
-    try:
-        from kitsune.questions.models import Answer
-        answers = Answer.uncached.filter(question=answer.question_id)
-        if answer == answers.order_by('created')[0]:
-            FirstAnswerAction(answer.creator, answer.created.date()).save()
-    except IndexError:
-        # If we hit an IndexError, we assume this is the first answer.
-        FirstAnswerAction(answer.creator, answer.created.date()).save()
-
-    unpin_this_thread()
 
 
 @task()
