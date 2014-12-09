@@ -50,7 +50,12 @@ def update_l10n_coverage_metrics():
 
             # % of top 20 articles
             top20 = rows['top-20']
-            percent = 100.0 * float(top20['numerator']) / top20['denominator']
+
+            try:
+                percent = 100.0 * float(top20['numerator']) / top20['denominator']
+            except ZeroDivisionError:
+                percent = 0.0
+
             WikiMetric.objects.create(
                 code=L10N_TOP20_CODE,
                 locale=locale,

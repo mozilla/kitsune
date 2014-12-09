@@ -111,9 +111,9 @@ def get_exit_survey_results(survey, date):
             timeout=300)
 
         results = json.loads(response.content)
-        total_pages = results['total_pages']
+        total_pages = results.get('total_pages', 0)
         more_pages = page < total_pages
-        answers = answers + [r['[question(2)]'] for r in results['data']]
+        answers = answers + [r.get('[question(2)]') for r in results.get('data', [])]
         page += 1
 
     # Aggregate results.
