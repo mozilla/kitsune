@@ -166,7 +166,7 @@ def pageviews_by_document(start_date, end_date, verbose=False):
 
             # Move to next page of results.
             start_index += max_results
-            if start_index > results('totalResults', 0):
+            if start_index > results.get('totalResults', 0):
                 break
 
         end_date_step = start_date_step - timedelta(1)
