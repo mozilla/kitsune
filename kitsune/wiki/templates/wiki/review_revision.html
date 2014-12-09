@@ -13,7 +13,7 @@
       <p>{{ _('Reviewing Revision {id} by {user}')|f(id=revision.id, user=revision.creator) }}.
       <a href="{{ url('wiki.document_revisions', document.slug) }}">{{ _('Back to History') }}</a>
       <br>
-      {{ _('Revision Comment: {comment}'|f(comment=rev.comment) }}
+      {{ _('Revision Comment: {comment}'|f(comment=revision.comment) }}
       </p>
 
       {% if revision.reviewed %}
