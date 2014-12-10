@@ -3,9 +3,6 @@
 {% set styles = ('users',) %}
 {% set scripts = ('users',) %}
 
-{# None of the pages in this app are useful to users searching on Google/Yahoo/Bing/etc. #}
-{% set meta = [('robots', 'noindex')] %}
-
 {% block side_top %}
   {% if not profile and user.is_authenticated() %}
     {% set profile = user.get_profile() %}
