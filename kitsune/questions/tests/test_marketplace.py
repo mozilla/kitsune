@@ -74,6 +74,7 @@ class MarketplaceAaqTests(TestCase):
                         {'subject': subject, 'body': body, 'category': cat},
                         args=['account'])
         eq_(200, response.status_code)
+        body = 'Email: {email}\n{body}'.format(email=self.user.email, body=body)
         submit_ticket.assert_called_with(
             self.user.email, cat, subject, body, [])
 
@@ -92,6 +93,7 @@ class MarketplaceAaqTests(TestCase):
                          'email': email},
                         args=['account'])
         eq_(200, response.status_code)
+        body = 'Email: {email}\n{body}'.format(email=email, body=body)
         submit_ticket.assert_called_with(email, cat, subject, body, [])
 
     @mock.patch.object(kitsune.questions.forms, 'submit_ticket')
@@ -107,7 +109,8 @@ class MarketplaceAaqTests(TestCase):
                         {'subject': subject, 'body': body, 'category': cat,
                          'transaction_id': transaction_id})
         eq_(200, response.status_code)
-        body = 'Transaction ID: qwerty12345\nCategory: Defective\nNOW!!'
+        body = ('Email: {email}\nTransaction ID: qwerty12345\nCategory: Defective\nNOW!!'
+                .format(email=self.user.email))
         submit_ticket.assert_called_with(
             self.user.email, cat, subject, body, [])
 
@@ -122,7 +125,8 @@ class MarketplaceAaqTests(TestCase):
                         'questions.marketplace_developer_request',
                         {'subject': subject, 'body': body, 'category': cat})
         eq_(200, response.status_code)
-        body = 'Category: Review Process\nPLEASE!!'
+        body = 'Email: {email}\nCategory: {cat}\n{body}'.format(
+            email=self.user.email, cat=cat, body=body)
         submit_ticket.assert_called_with(
             self.user.email, cat, subject, body, [])
 
