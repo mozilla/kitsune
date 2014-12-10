@@ -343,10 +343,11 @@ class BaseZendeskForm(forms.Form):
                         'min_length': BODY_CONTENT_SHORT,
                         'max_length': BODY_CONTENT_LONG})
 
-    @property
-    def ticket_body(self):
+    def ticket_body(self, email):
         """Body of the ticket to submit to Zendesk."""
-        return self.cleaned_data['body']
+        return 'Email: {email}\n{body}'.format(
+            email=email,
+            body=self.cleaned_data['body'])
 
     def submit_ticket(self):
         """Submit the ticket to Zendesk."""
@@ -359,7 +360,7 @@ class BaseZendeskForm(forms.Form):
             email,
             self.cleaned_data['category'],
             self.cleaned_data['subject'],
-            self.ticket_body,
+            self.ticket_body(email),
             [])
 
 
@@ -381,10 +382,10 @@ class MarketplaceRefundForm(BaseZendeskForm):
         label=_lazy(u'Category:'),
         choices=REFUND_CATEGORY_CHOICES)
 
-    @property
-    def ticket_body(self):
+    def ticket_body(self, email):
         """Body of the ticket to submit to Zendesk."""
-        return 'Transaction ID: {id}\nCategory: {category}\n{body}'.format(
+        return 'Email: {email}\nTransaction ID: {id}\nCategory: {category}\n{body}'.format(
+            email=email,
             id=self.cleaned_data['transaction_id'],
             category=self.cleaned_data['category'],
             body=self.cleaned_data['body'])
@@ -395,10 +396,10 @@ class MarketplaceDeveloperRequestForm(BaseZendeskForm):
         label=_lazy(u'Category:'),
         choices=DEVELOPER_REQUEST_CATEGORY_CHOICES)
 
-    @property
-    def ticket_body(self):
+    def ticket_body(self, email):
         """Body of the ticket to submit to Zendesk."""
-        return 'Category: {category}\n{body}'.format(
+        return 'Email: {email}\nCategory: {category}\n{body}'.format(
+            email=email,
             category=self.cleaned_data['category'],
             body=self.cleaned_data['body'])
 
