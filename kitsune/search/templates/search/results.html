@@ -24,12 +24,7 @@
       {% if not advanced %}
         {# Don't show filtering to advanced search users #}
 
-        {% if waffle.flag('search-ab') %}
-          {% set esab = 'a' %}
-        {% else %}
-          {% set esab = 'b' %}
-        {% endif %}
-        {% set base_url = url('search')|urlparams(q=q, esab=esab) %}
+        {% set base_url = url('search') %}
 
         {% if product %}
           {# In basic search, you can only filter one product at a time. #}
@@ -94,7 +89,7 @@
 
         <div class="content-box">
           {% for doc in results %}
-            {{ search_result(doc, s=q, r=doc.rank) }}
+            {{ search_result(doc) }}
           {% endfor %}
         </div>
 
