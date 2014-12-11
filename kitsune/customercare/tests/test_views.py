@@ -13,6 +13,7 @@ from kitsune.customercare.views import _get_tweets, _count_answered_tweets
 from kitsune.customercare.views import twitter_post
 from kitsune.sumo.tests import TestCase, LocalizingClient
 from kitsune.sumo.urlresolvers import reverse
+from kitsune.users.tests import user
 
 
 class TweetListTests(TestCase):
@@ -31,6 +32,8 @@ class TweetListTests(TestCase):
         # Create a tweet on the last CC_TWEETS_DAYS day
         last = now - timedelta(days=settings.CC_TWEETS_DAYS - 1)
         tweet(save=True, created=last)
+
+        self.client.login(username=user(save=True), password='testpass')
 
     def _hide_tweet(self, id):
         url = reverse('customercare.hide_tweet', locale='en-US')
@@ -231,8 +234,7 @@ class TweetReplyTests(TestCase):
         request.twitter.api.update_status.return_value = return_value
         credentials = {'screen_name': 'r1cky'}
         request.twitter.api.verify_credentials.return_value = credentials
-        request.user = Mock()
-        request.user.is_authenticated.return_value = False
+        request.user = user(save=True)
         return request
 
     def test_post_reply(self):
@@ -268,8 +270,7 @@ class TweetReplyTests(TestCase):
         request.twitter.api.update_status.return_value = return_value
         credentials = {'screen_name': 'r1cky'}
         request.twitter.api.verify_credentials.return_value = credentials
-        request.user = Mock()
-        request.user.is_authenticated.return_value = False
+        request.user = user(save=True)
 
         # Pass the request to the view and verify response.
         response = twitter_post(request)
@@ -288,6 +289,7 @@ class TweetReplyTests(TestCase):
         tweet(reply_to=t, save=True)
         eq_(t.replies.count(), 1)
 
+        self.client.login(username=user(save=True).username, password='testpass')
         response = self.client.post(
             reverse('customercare.twitter_post'),
             {'reply_to': 1,
