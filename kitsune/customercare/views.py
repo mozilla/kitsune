@@ -11,13 +11,12 @@ from django.utils.datastructures import SortedDict
 from django.views.decorators.http import require_POST, require_GET
 
 import bleach
-from session_csrf import anonymous_csrf
 from statsd import statsd
 from tower import ugettext as _, ugettext_lazy as _lazy
 from twython import TwythonAuthError, TwythonError
 
 from kitsune import twitter
-from kitsune.access.decorators import permission_required
+from kitsune.access.decorators import permission_required, login_required
 from kitsune.customercare.models import Tweet, TwitterAccount, Reply
 from kitsune.customercare.replies import get_common_replies
 from kitsune.sumo.decorators import ssl_required
@@ -134,7 +133,6 @@ def more_tweets(request):
 
 @ssl_required
 @require_GET
-@anonymous_csrf  # Need this so the anon csrf gets set for forms rendered.
 @twitter.auth_wanted
 def landing(request):
     """Customer Care Landing page."""
@@ -190,7 +188,7 @@ def moderate(request):
 
 
 @require_POST
-@anonymous_csrf
+@login_required
 @twitter.auth_required
 def twitter_post(request):
     """Post a tweet, and return a rendering of it (and any replies)."""
@@ -280,7 +278,7 @@ def twitter_post(request):
 
 
 @require_POST
-@anonymous_csrf
+@login_required
 def hide_tweet(request):
     """
     Hide the tweet with a given ID. Only hides tweets that are not replies
