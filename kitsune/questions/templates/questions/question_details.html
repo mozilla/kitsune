@@ -33,7 +33,7 @@
 
 {% block content %}
   <article>
-    <div class="question grid_9" itemscope itemtype="http://schema.org/Question">
+    <div id="question-{{ question.id }}" class="question grid_9" itemscope itemtype="http://schema.org/Question">
       {% if question.is_locked or question.is_archived %}
         <div class="notice">
           {% if question.is_locked and not question.is_archived %}
@@ -106,7 +106,7 @@
           </a>
         </div>
         <div class="asked-by">
-          <a href="{{ profile_url(question.creator, request.user == question.creator) }}">{{ display_name(question.creator) }}</a>
+          <a class="author-name" href="{{ profile_url(question.creator, request.user == question.creator) }}">{{ display_name(question.creator) }}</a>
         </div>
         <div class="asked-on">
           {{ _('Posted') }}<br>
@@ -116,6 +116,7 @@
 
       <div class="main-content">
         <div itemprop="text">{{ question.content_parsed|safe }}</div>
+        <div class="content-raw">{{ question.content }}</div>
 
         {% if question.updated_by %}
           <p class="edited">
@@ -145,7 +146,7 @@
               </form>
             </div>
           {% endif %}
-          <a class="btn" href="#question-reply">{{ _('Post a Reply') }}</a>
+          <a class="btn quoted-reply" href="#question-reply" data-content-id="question-{{ question.id }}">{{ _('Post a Reply') }}</a>
         </div>
       {% endif %}
     </div>

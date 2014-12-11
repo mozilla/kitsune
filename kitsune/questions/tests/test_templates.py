@@ -783,7 +783,7 @@ class AnswersTemplateTestCase(TestCaseBase):
                         args=[self.question.id])
         eq_(200, response.status_code)
         doc = pq(response.content)
-        eq_(content, doc('#answer-preview div.main-content').text())
+        eq_(content, doc('#answer-preview div.content').text())
         eq_(num_answers, self.question.answers.count())
 
     def test_preview_answer_as_admin(self):
