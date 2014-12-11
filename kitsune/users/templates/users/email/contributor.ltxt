@@ -36,6 +36,17 @@ most-requested but have no replies:
 
 {# L10n: This is an email.  Whitespace matters! #}
 {% trans %}
+As you get started answering questions that look easy you
+might run into a few questions. Like, what happens when an
+angry user does not want a work around or what happens next?
+The Contributor Quality Training may have these answered. It
+is possible to get started here:
+{% endtrans %}
+
+http://goo.gl/pKis5g
+
+{# L10n: This is an email.  Whitespace matters! #}
+{% trans %}
 Twitter Contributor - Respond to tweets about Firefox:
 {% endtrans %}
 
