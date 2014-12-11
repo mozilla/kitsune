@@ -34,12 +34,14 @@
     {% elif answer.id and answer.creator == question.creator %}
       <h3 class="is-owner">{{_('Question owner')}}</h3>
     {% endif %}
-    {% if is_preview %}
-      {# Don't use cached content_parsed #}
-      {{ answer.content|wiki_to_html(locale=request.LANGUAGE_CODE) }}
-    {% else %}
-      {{ answer.content_parsed|safe }}
-    {% endif %}
+    <div class="content">
+      {% if is_preview %}
+        {# Don't use cached content_parsed #}
+        {{ answer.content|wiki_to_html(locale=request.LANGUAGE_CODE) }}
+      {% else %}
+        {{ answer.content_parsed|safe }}
+      {% endif %}
+    </div>
 
     <div class="content-raw">{{ answer.content }}</div>
 
