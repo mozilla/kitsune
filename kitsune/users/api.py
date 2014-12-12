@@ -19,6 +19,7 @@ from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.authtoken.models import Token
 
 from kitsune.access.decorators import login_required
+from kitsune.questions.utils import num_answers, num_solutions, num_questions
 from kitsune.sumo.api import DateTimeUTCField, GenericAPIException, PermissionMod
 from kitsune.sumo.decorators import json_view
 from kitsune.users.helpers import profile_avatar
@@ -144,6 +145,9 @@ class ProfileSerializer(serializers.ModelSerializer):
     settings = (PermissionMod(UserSettingSerializer, permissions=[OnlySelf])
                 (many=True, read_only=True))
     helpfulness = serializers.Field(source='answer_helpfulness')
+    answer_count = serializers.SerializerMethodField('get_answer_count')
+    question_count = serializers.SerializerMethodField('get_question_count')
+    solution_count = serializers.SerializerMethodField('get_solution_count')
     # These are write only fields. It is very important they stays that way!
     password = serializers.WritableField(source='user.password', write_only=True)
 
@@ -166,14 +170,26 @@ class ProfileSerializer(serializers.ModelSerializer):
             'email',
             'settings',
             'helpfulness',
+            'question_count',
+            'answer_count',
+            'solution_count',
             # Password and email are here so they can be involved in write
             # operations. They is marked as write-only above, so will not be
             # visible.
             'password',
         ]
 
-    def get_avatar_url(self, obj):
-        return profile_avatar(obj.user)
+    def get_avatar_url(self, profile):
+        return profile_avatar(profile.user)
+
+    def get_question_count(self, profile):
+        return num_questions(profile.user)
+
+    def get_answer_count(self, profile):
+        return num_answers(profile.user)
+
+    def get_solution_count(self, profile):
+        return num_solutions(profile.user)
 
     def restore_object(self, attrs, instance=None):
         """
