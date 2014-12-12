@@ -143,6 +143,7 @@ class ProfileSerializer(serializers.ModelSerializer):
              (source='user.email', required=False))
     settings = (PermissionMod(UserSettingSerializer, permissions=[OnlySelf])
                 (many=True, read_only=True))
+    helpfulness = serializers.Field(source='answer_helpfulness')
     # These are write only fields. It is very important they stays that way!
     password = serializers.WritableField(source='user.password', write_only=True)
 
@@ -164,6 +165,7 @@ class ProfileSerializer(serializers.ModelSerializer):
             'locale',
             'email',
             'settings',
+            'helpfulness',
             # Password and email are here so they can be involved in write
             # operations. They is marked as write-only above, so will not be
             # visible.
