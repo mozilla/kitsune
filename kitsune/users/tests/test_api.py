@@ -10,7 +10,7 @@ from rest_framework.test import APIClient
 from kitsune.sumo.helpers import urlparams
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.questions.tests import answer, answervote
+from kitsune.questions.tests import question, answer, answervote
 from kitsune.users import api
 from kitsune.users.models import Profile
 from kitsune.users.tests import user, profile, setting
@@ -165,6 +165,19 @@ class TestUserSerializer(TestCase):
 
         serializer = api.ProfileSerializer(instance=p)
         eq_(serializer.data['helpfulness'], 3)
+
+    def test_counts(self):
+        p = profile()
+        u = p.user
+        q = question(creator=u, save=True)
+        answer(creator=u, save=True)
+        q.solution = answer(question=q, creator=u, save=True)
+        q.save()
+
+        serializer = api.ProfileSerializer(instance=p)
+        eq_(serializer.data['question_count'], 1)
+        eq_(serializer.data['answer_count'], 2)
+        eq_(serializer.data['solution_count'], 1)
 
 
 class TestUserView(TestCase):
