@@ -179,6 +179,12 @@ class Profile(ModelBase, SearchMixin):
     def settings(self):
         return self.user.settings
 
+    @property
+    def answer_helpfulness(self):
+        # Avoid circular import
+        from kitsune.questions.models import AnswerVote
+        return AnswerVote.objects.filter(answer__creator=self.user, helpful=True).count()
+
 
 @register_mapping_type
 class UserMappingType(SearchMappingType):
