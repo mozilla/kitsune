@@ -289,6 +289,11 @@
             reply_text = reply({'user': user, 'contentId': contentId, 'text': text});
 
             $textarea.val(oldtext + reply_text);
+
+            setTimeout(function() {
+                $textarea.focus();
+            }, 10);
+
             return true;
         });
     }
