@@ -2321,7 +2321,7 @@ class SelectLocaleTests(TestCaseBase):
         response = get(self.client, 'wiki.select_locale', args=[self.d.slug])
         eq_(200, response.status_code)
         doc = pq(response.content)
-        eq_(len(settings.LANGUAGE_CHOICES) - 1,  # All except for 1 (en-US)
+        eq_(len(settings.LANGUAGE_CHOICES),  # All Locals including ' en-US'.
             len(doc('#select-locale ul.locales li')))
 
 
