@@ -631,7 +631,21 @@ def select_locale(request, document_slug):
     """Select a locale to translate the document to."""
     doc = get_object_or_404(
         Document, locale=settings.WIKI_DEFAULT_LANGUAGE, slug=document_slug)
-    return render(request, 'wiki/select_locale.html', {'document': doc})
+    translated_locales = []
+    untranslated_locales = []
+
+    translated_locales.append(doc.locale)
+    translated_locales.extend(doc.translations.all().values_list(
+        'locale', flat=True))
+
+    for locale in settings.LANGUAGE_CHOICES:
+        if not locale[0] in translated_locales:
+            untranslated_locales.append(locale[0])
+
+    return render(request, 'wiki/select_locale.html', {
+        'document': doc,
+        'translated_locales': translated_locales,
+        'untranslated_locales': untranslated_locales})
 
 
 @require_http_methods(['GET', 'POST'])

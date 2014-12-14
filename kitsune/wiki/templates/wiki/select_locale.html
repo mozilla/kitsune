@@ -10,7 +10,7 @@
     <article id="select-locale">
       <h1>{{ _('Select a language to translate to:') }}</h1>
       <ul class="locales">
-        {% for locale in settings.LANGUAGE_CHOICES %}
+        {% for locale in untranslated_locales %}
           {% if locale[0] != settings.WIKI_DEFAULT_LANGUAGE %}
             <li><a href="{{ url('wiki.translate', locale=locale[0], document_slug=document.slug) }}">{{ locale[1] }} ({{ locale[0] }})</a></li>
           {% endif %}
