@@ -146,6 +146,7 @@ MINIFY_BUNDLES = {
             'js/cached_xhr.js',
             'js/search_utils.js',
             'js/browserdetect.js',
+            'js/libs/uitour.js',
             'js/kbox.js',
             'js/main.js',
             'js/format.js',
