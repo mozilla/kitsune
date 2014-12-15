@@ -400,6 +400,34 @@ class TestAnswerViewSet(TestCase):
         eq_(res.data['results'][0]['id'], a2.id)
         eq_(res.data['results'][1]['id'], a1.id)
 
+    def test_helpful(self):
+        a = answer(save=True)
+        u = profile().user
+        self.client.force_authenticate(user=u)
+        res = self.client.post(reverse('answer-helpful', args=[a.id]))
+        eq_(res.status_code, 204)
+        eq_(Answer.objects.get(id=a.id).num_votes, 1)
+
+    def test_helpful_double_vote(self):
+        a = answer(save=True)
+        u = profile().user
+        answervote(answer=a, creator=u, save=True)
+        self.client.force_authenticate(user=u)
+        res = self.client.post(reverse('answer-helpful', args=[a.id]))
+        eq_(res.status_code, 409)
+        # It's 1, not 0, because one was created above. The failure cause is
+        # if the number of votes is 2, one from above and one from the api call.
+        eq_(Answer.objects.get(id=a.id).num_votes, 1)
+
+    def test_helpful_question_not_editable(self):
+        q = question(is_locked=True, save=True)
+        a = answer(question=q, save=True)
+        u = profile().user
+        self.client.force_authenticate(user=u)
+        res = self.client.post(reverse('answer-helpful', args=[a.id]))
+        eq_(res.status_code, 403)
+        eq_(Question.objects.get(id=a.id).num_votes, 0)
+
 
 class TestQuestionFilter(TestCase):
 
