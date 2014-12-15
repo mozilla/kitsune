@@ -334,4 +334,12 @@
   $(document).on('keyup', '[data-validate-url] input', _.throttle(validate_field_cb, 200));
   $(document).on('change', '[data-validate-url] input', _.throttle(validate_field_cb, 200));
 
+  $(document).on('click', '[data-mozilla-ui-reset]', function(ev) {
+    ev.preventDefault();
+    if (Mozilla && Mozilla.UITour) {
+      Mozilla.UITour.resetFirefox();
+    }
+    return false;
+  });
+
 })(jQuery);
