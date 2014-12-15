@@ -10,7 +10,7 @@ from rest_framework.response import Response
 from kitsune.products.api import TopicField
 from kitsune.questions.models import (
     Question, Answer, QuestionMetaData, AlreadyTakenException,
-    InvalidUserException, QuestionVote)
+    InvalidUserException, QuestionVote, AnswerVote)
 from kitsune.sumo.api import DateTimeUTCField, OnlyCreatorEdits, GenericAPIException
 from kitsune.users.api import ProfileFKSerializer
 
@@ -351,3 +351,13 @@ class AnswerViewSet(viewsets.ModelViewSet):
 
         context = self.get_serializer_context()
         return SerializerClass(instance=page, context=context)
+
+    @action(methods=['POST'], permission_classes=[permissions.IsAuthenticated])
+    def helpful(self, request, pk=None):
+        answer = self.get_object()
+        if not answer.question.editable:
+            raise GenericAPIException(403, 'Answer not editable')
+        if answer.has_voted(request):
+            raise GenericAPIException(409, 'Cannot vote twice')
+        AnswerVote(answer=answer, creator=request.user, helpful=True).save()
+        return Response("", status=204)
