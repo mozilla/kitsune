@@ -161,7 +161,7 @@
                   {% else %}
                     {{ _('asked {when}')|f(when=question.created|timesince) }}
                     {% if question.last_answer %}
-                      <br>{{ _('last reply by <a href="{url}">{username}</a> {when}')|f(url=profile_url(question.last_answer.creator), username=question.last_answer.creator.username, when=question.last_answer.created|timesince)|safe }}
+                      <br>{{ _('<a href="{reply_url}">last reply</a> by <a href="{user_url}">{username}</a> {when}')|f(reply_url=question.last_answer.get_absolute_url(), user_url=profile_url(question.last_answer.creator), username=question.last_answer.creator.username, when=question.last_answer.created|timesince)|safe }}
                     {% endif %}
                   {% endif %}
                 </div>
