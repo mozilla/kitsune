@@ -419,14 +419,14 @@ class TestAnswerViewSet(TestCase):
         # if the number of votes is 2, one from above and one from the api call.
         eq_(Answer.objects.get(id=a.id).num_votes, 1)
 
-    def test_helpful_question_not_editable(self):
+    def test_helpful_answer_not_editable(self):
         q = question(is_locked=True, save=True)
         a = answer(question=q, save=True)
         u = profile().user
         self.client.force_authenticate(user=u)
         res = self.client.post(reverse('answer-helpful', args=[a.id]))
         eq_(res.status_code, 403)
-        eq_(Question.objects.get(id=a.id).num_votes, 0)
+        eq_(Answer.objects.get(id=a.id).num_votes, 0)
 
 
 class TestQuestionFilter(TestCase):
