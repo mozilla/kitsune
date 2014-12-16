@@ -45,8 +45,8 @@ print out something like::
     add these "sha256" lines like so:
 
 
-    # sha256: qGhcH7WwvK2QB9lByBSTZo-WE1eK3WMfQG0_lbhM9tA
-    Django==1.6.8
+    # sha256: mmQhHJajJiuyVFrMgq9djz2gF1KZ98fpAeTtRVvpZfs
+    Django==1.6.7
 
 Copy and paste that stanza into the requirements file, replacing the hash-less
 stanza you had before. Now re-run peep to install the file for real. Look
