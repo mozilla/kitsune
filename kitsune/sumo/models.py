@@ -1,13 +1,6 @@
 from django.conf import settings
 from django.db import models
 
-import caching.base
-
-
-# Our apps should subclass ManagerBase instead of models.Manager or
-# caching.base.CachingManager directly.
-ManagerBase = caching.base.CachingManager
-
 
 class NoCacheModelBase(models.Model):
     """Base class for SUMO models that don't want automatic caching.
@@ -44,7 +37,7 @@ class NoCacheModelBase(models.Model):
                                           created=False)
 
 
-class ModelBase(caching.base.CachingMixin, NoCacheModelBase):
+class ModelBase(NoCacheModelBase):
     """
     Base class for SUMO models to abstract some common features.
 
@@ -52,7 +45,7 @@ class ModelBase(caching.base.CachingMixin, NoCacheModelBase):
     * Adds update method.
     """
 
-    objects = ManagerBase()
+    objects = models.Manager()
     uncached = models.Manager()
 
     class Meta:

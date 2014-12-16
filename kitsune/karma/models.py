@@ -1,12 +1,10 @@
 from django.contrib.auth.models import User, Group
 from django.db import models
 
-from caching.base import CachingManager
-
 from kitsune.sumo.models import ModelBase
 
 
-class TitleManager(CachingManager):
+class TitleManager(models.Manager):
     """A custom manager for titles that adds some helper methods
     for dealing with setting automatic titles."""
 

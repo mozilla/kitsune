@@ -7,10 +7,10 @@ from django.contrib.contenttypes import generic
 
 from tower import ugettext_lazy as _lazy
 
-from kitsune.sumo.models import ModelBase, ManagerBase
+from kitsune.sumo.models import ModelBase
 
 
-class FlaggedObjectManager(ManagerBase):
+class FlaggedObjectManager(models.Manager):
     def pending(self):
         """Get all flagged objects that are pending moderation."""
         return self.filter(status=0)
