@@ -4,6 +4,57 @@ Development
 
 This covers loosely how we do big feature changes.
 
+Changes that involve new dependencies
+=====================================
+
+We use peep to install dependencies. That means that all dependencies have an
+associated hash (or several) that are checked at download time. This ensures
+malicious code doesn't sneak in through dependencies being hacked, and also
+makes sure we always get the exact code we developed against. Changes in
+dependencies, malicious or not, will set of red flags and require human
+intervention.
+
+A peep requirement stanza looks something like this::
+
+    # sha256: mmQhHJajJiuyVFrMgq9djz2gF1KZ98fpAeTtRVvpZfs
+    Django==1.6.7
+
+hash lines can be repeated, and other comments can be added. The stanza is
+delimited by non-comment lines (such as blank lines or other requirements).
+
+To add a new dependency, you need to get a hash of the dependency you are
+installing. There are several ways you could go about this. If you already have
+a tarball (or other appropriate installable artifact) you could use ``peep hash
+foo.tar.gz``, which will give the base64 encoded sha256 sum of the artifact,
+which you can then put into a peep stanza.
+
+If you don't already have an artifact, you can simply add a line to the
+requirements file without a hash, for example ``Django``. Without a version,
+peep will grab the latest version of the dependency. If that's not what you
+want, put a version there too, like ``Django==1.6.7``.
+
+Now run peep with::
+
+    python scripts/peep.py install -r requirements/default.txt --no-use-wheel
+
+Peep will download the appropriate artifacts (probably a tarball), hash it, and
+print out something like::
+
+    The following packages had no hashes specified in the requirements file, which
+    leaves them open to tampering. Vet these packages to your satisfaction, then
+    add these "sha256" lines like so:
+
+
+    # sha256: qGhcH7WwvK2QB9lByBSTZo-WE1eK3WMfQG0_lbhM9tA
+    Django==1.6.8
+
+Copy and paste that stanza into the requirements file, replacing the hash-less
+stanza you had before. Now re-run peep to install the file for real. Look
+around and make sure nothing horrible went wrong, and that you got the right
+package. When you are satisfied that you have what you want, commit, push, and
+rejoice.
+
+
 
 Changes that involve database migrations
 ========================================
