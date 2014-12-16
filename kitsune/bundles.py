@@ -182,6 +182,7 @@ MINIFY_BUNDLES = {
             'js/markup.js',
             'js/ajaxvote.js',
             'js/ajaxpreview.js',
+            'js/remote.js',
             'js/aaq.js',
             'js/questions.js',
             'js/libs/jquery.tokeninput.js',

@@ -17,3 +17,6 @@ http://people.mozilla.org/~wkahngreene/pep8/pep8-1.6.0a0-willkg.1.tar.gz#egg=pep
 
 # sha256: P6gKELNtUWhr93RPXcmWIs1cmM6O1kAi5imGiq_Bd2k
 pyflakes==0.8.1
+
+# sha256: Y6KG6ssDzV9kPX60WMbGK3DBEbRjT9jVnyfMrKS3yDo
+django-sslserver==0.14
