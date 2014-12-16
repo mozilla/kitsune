@@ -187,7 +187,7 @@
 
 
 {% macro troubleshooting_instructions(field) %}
-  <a href="{{ settings.TROUBLESHOOTER_ADDON_URL }}" class="btn btn-important" id="install-troubleshooting-addon">
+  <a href="{{ settings.TROUBLESHOOTER_ADDON_URL }}" class="btn btn-important" id="add-troubleshooting-info">
     {{ _('Automatically add') }}
   </a>
   <p class="help-text">{{ field.help_text|safe }}</p>
@@ -199,7 +199,7 @@
     {% endtrans %}
   </p>
   <span id="troubleshooting-explanation" class="cf">
-    {{ _('This field was populated automatically with the add-on called <em>Troubleshooter</em>.') }}
+    {{ _('This field was populated automatically.') }}
     <a href="#troubleshooting-field" class="expander">{{ _('See the data') }}</a>.
   </span>
   <ol id="troubleshooting-help">
