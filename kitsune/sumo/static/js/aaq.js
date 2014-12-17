@@ -152,9 +152,9 @@ AAQSystemInfo.prototype = {
 
         if (addEvent === undefined) addEvent = true;
 
-        // If the troubleshoot input exists, try to find the extension.
+        // If the troubleshoot input exists, try to get the data.
         if ($('#id_troubleshooting').length === 0) {
-            // No troubleshooting form, so no point in looking for the plugin.
+            // No troubleshooting form, so no point in trying to get the data.
             return;
         }
 
