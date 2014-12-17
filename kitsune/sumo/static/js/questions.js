@@ -38,6 +38,23 @@
             $('#support-search input[name=q]')
                 .val(k.unquote($.cookie('last_search')));
 
+            function takeQuestion() {
+              if ($(this).val().length > 0) {
+                var $form = $(this).closest('form');
+                var url = $form.data('take-question-url');
+                var csrftoken = $('input[name=csrfmiddlewaretoken]').val();
+                $.ajax({
+                  url: url,
+                  method: 'POST',
+                  beforeSend: function(xhr, settings) {
+                    xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                  }
+                });
+              }
+            }
+
+            $('#id_content').on('keyup', _.throttle(takeQuestion, 1000));
+
             $(document).on('click', '#details-edit', function(ev) {
                 ev.preventDefault();
                 $('#question-details').addClass('editing');
