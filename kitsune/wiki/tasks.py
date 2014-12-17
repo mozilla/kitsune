@@ -185,11 +185,11 @@ def rebuild_kb():
     d = (Document.objects.using('default')
          .filter(current_revision__isnull=False).values_list('id', flat=True))
 
-    for chunk in chunked(d, 100):
+    for chunk in chunked(d, 50):
         _rebuild_kb_chunk.apply_async(args=[chunk])
 
 
-@task(rate_limit='10/m')
+@task(rate_limit='5/m')
 @timeit
 def _rebuild_kb_chunk(data):
     """Re-render a chunk of documents.
