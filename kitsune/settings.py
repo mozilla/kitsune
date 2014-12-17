@@ -93,6 +93,7 @@ LANGUAGE_CODE = 'en-US'
 # Note: We periodically add locales to this list and it is easier to
 # review with changes with one locale per line.
 SUMO_LANGUAGES = (
+    'af',
     'ar',
     'bg',
     'bn-BD',
@@ -197,7 +198,6 @@ LANGUAGE_URL_MAP = dict([(i.lower(), i) for i in SUMO_LANGUAGES])
 # are an optional fallback locale, or None, to use the LANGUAGE_CODE.
 NON_SUPPORTED_LOCALES = {
     'ach': None,
-    'af': None,
     'ak': None,
     'an': 'es',
     'as': None,
