@@ -29,6 +29,14 @@
 
 {% block above_main %}
   <h1>{{ _('Support Forum') }}</h1>
+
+  {% if question.is_taken %}
+    <div class="taken-notice">
+      {{ _('{user} is currently working on this problem.')|f(user=question.taken_by) }}
+      <a href="#question-reply">{{ _('Post a reply') }}</a> |
+      <a href="{{ url('questions.list', question.product.slug) }}">{{ _('View other questions that need attention.') }}</a>
+    </div>
+  {% endif %}
 {% endblock %}
 
 {% block content %}
@@ -435,7 +443,7 @@
       <div class="answer-tools nopadding">
         <h3>{{ _('Post a Reply') }}</h3>
       </div>
-      <form action="{{ url('questions.reply', question_id=question.id) }}#question-reply" method="post" enctype="multipart/form-data">
+      <form action="{{ url('questions.reply', question_id=question.id) }}#question-reply" method="post" enctype="multipart/form-data" data-take-question-url="{{ url('question-take', question.pk) }}">
         {{ csrf() }}
         {{ errorlist(form) }}
 
