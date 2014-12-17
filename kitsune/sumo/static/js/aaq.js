@@ -165,16 +165,17 @@ AAQSystemInfo.prototype = {
                     browserData = data;
                 });
 
-                $('#troubleshooting-manual').remove();
-                $('#add-troubleshooting-info')
-                    .attr('href', '#add-info')  // clear out the addon URL
-                    .click(function(e) {  // the user must click button for us to save data
+                $('#addon-section').remove();
+                $('#share-data')
+                    .click(function(e) {  // The user must click button to save the data.
                         e.preventDefault();
                         handleData(browserData);
                         return false;
                     });
 
             } else {
+                $('#api-section').remove();
+
                 // If the builtin API isn't available, we try with the addon.
                 if ('mozTroubleshoot' in window) {
                     // Yeah! The user has the addon installed, let's use it.
@@ -203,9 +204,9 @@ AAQSystemInfo.prototype = {
             // The last two parameters cause this to pretty print,
             // in case anyone looks at it.
             data = JSON.stringify(data, null, "  ");
-            $('#add-troubleshooting-info').remove();
+            $('#addon-section').remove();
+            $('#api-section').remove();
             $('#id_troubleshooting').val(data);
-            $('#troubleshooting-manual').remove();
             $('#troubleshooting-explanation').show();
         }
     }
