@@ -42,7 +42,14 @@
               if ($(this).val().length > 0) {
                 var $form = $(this).closest('form');
                 var url = $form.data('take-question-url');
-                $.post(url);
+                var csrftoken = $('input[name=csrfmiddlewaretoken]').val();
+                $.ajax({
+                  url: url,
+                  method: 'POST',
+                  beforeSend: function(xhr, settings) {
+                    xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                  }
+                });
               }
             }
 
