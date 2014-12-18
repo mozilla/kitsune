@@ -110,7 +110,7 @@ class ReplyMetricsMappingType(SearchMappingType):
 
         if obj is None:
             model = cls.get_model()
-            obj_dict = model.uncached.values(*fields).get(pk=obj_id)
+            obj_dict = model.objects.values(*fields).get(pk=obj_id)
         else:
             obj_dict = dict((field, getattr(obj, field))
                             for field in fields)

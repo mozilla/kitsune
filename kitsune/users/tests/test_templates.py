@@ -363,7 +363,7 @@ class EditAvatarTests(TestCaseBase):
 
     def test_upload_avatar(self):
         """Upload a valid avatar."""
-        user_profile = Profile.uncached.get(user__username=self.u.username)
+        user_profile = Profile.objects.get(user__username=self.u.username)
         with open('kitsune/upload/tests/media/test.jpg') as f:
             user_profile.avatar.save('test_old.jpg', File(f), save=True)
         assert user_profile.avatar.name.endswith('92b516.jpg')

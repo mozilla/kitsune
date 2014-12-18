@@ -360,7 +360,7 @@ class AvatarTests(TestCase):
         super(AvatarTests, self).setUp()
 
     def tearDown(self):
-        p = Profile.uncached.get(user=self.u)
+        p = Profile.objects.get(user=self.u)
         if os.path.exists(p.avatar.path):
             os.unlink(p.avatar.path)
         super(AvatarTests, self).tearDown()
@@ -372,7 +372,7 @@ class AvatarTests(TestCase):
             data = {'avatar': f}
             r = self.client.post(url, data)
         eq_(302, r.status_code)
-        p = Profile.uncached.get(user=self.u)
+        p = Profile.objects.get(user=self.u)
         assert p.avatar, 'User has an avatar.'
         assert p.avatar.path.endswith('.png')
 
@@ -387,7 +387,7 @@ class AvatarTests(TestCase):
             data = {'avatar': f}
             r = self.client.post(url, data)
         eq_(302, r.status_code)
-        p = Profile.uncached.get(user=self.u)
+        p = Profile.objects.get(user=self.u)
         assert p.avatar, 'User has an avatar.'
         assert not p.avatar.path.endswith('exist.jpg')
         assert p.avatar.path.endswith('.png')

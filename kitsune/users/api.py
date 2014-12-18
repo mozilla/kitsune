@@ -48,7 +48,7 @@ def usernames(request):
         return []
     with statsd.timer('users.api.usernames.search'):
         profiles = (
-            Profile.uncached.filter(Q(name__istartswith=pre))
+            Profile.objects.filter(Q(name__istartswith=pre))
             .values_list('user_id', flat=True))
         users = (
             User.objects.filter(
@@ -127,7 +127,7 @@ class UserSettingSerializer(serializers.ModelSerializer):
             return instance
         else:
             user = attrs['user'] or self.context['view'].object
-            obj, created = self.Meta.model.uncached.get_or_create(
+            obj, created = self.Meta.model.objects.get_or_create(
                 user=user, name=attrs['name'], defaults={'value': attrs['value']})
             if not created:
                 obj.value = attrs['value']
@@ -328,7 +328,7 @@ class ProfileViewSet(mixins.CreateModelMixin,
         u = User.objects.create(username=name)
         u.set_password(password)
         u.save()
-        p = Profile.uncached.create(user=u)
+        p = Profile.objects.create(user=u)
         token, _ = Token.objects.get_or_create(user=u)
         serializer = ProfileSerializer(instance=p)
 
@@ -358,7 +358,7 @@ class ProfileViewSet(mixins.CreateModelMixin,
             raise GenericAPIException(400, {'name': 'This field is required'})
 
         try:
-            meta = (Setting.uncached
+            meta = (Setting.objects
                     .get(user=profile.user, name=request.DATA['name']))
             meta.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)

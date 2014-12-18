@@ -339,7 +339,7 @@ class Setting(ModelBase):
             raise KeyError(("'{name}' is not a field in "
                             "user.forms.SettingsFrom()").format(name=name))
         try:
-            setting = Setting.uncached.get(user=user, name=name)
+            setting = Setting.objects.get(user=user, name=name)
         except Setting.DoesNotExist:
             value = form.fields[name].initial or ''
             setting = Setting.objects.create(user=user, name=name, value=value)

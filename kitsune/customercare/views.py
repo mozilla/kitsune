@@ -82,10 +82,8 @@ def _get_tweets(locale=settings.LANGUAGE_CODE, limit=MAX_TWEETS, max_id=None,
     """
     locale = settings.LOCALES[locale].iso639_1
     created_limit = datetime.now() - timedelta(days=settings.CC_TWEETS_DAYS)
-    # Uncached so we can immediately see our reply if we switch to the Answered
-    # filter:
 
-    q = Tweet.uncached.filter(
+    q = Tweet.objects.filter(
         locale=locale,
         reply_to=reply_to,
         created__gt=created_limit)
@@ -107,7 +105,7 @@ def _get_tweets(locale=settings.LANGUAGE_CODE, limit=MAX_TWEETS, max_id=None,
 
 
 def _count_answered_tweets(since=None):
-    q = Reply.uncached.values('reply_to_tweet_id').distinct()
+    q = Reply.objects.values('reply_to_tweet_id').distinct()
 
     if since:
         q = q.filter(created__gte=since)

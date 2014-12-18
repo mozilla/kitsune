@@ -177,7 +177,7 @@ def activate(request, template, activation_key, user_id=None):
         statsd.incr('user.activate')
         claim_watches.delay(account)
 
-        my_questions = Question.uncached.filter(creator=account)
+        my_questions = Question.objects.filter(creator=account)
 
         # Update created time to current time
         for q in my_questions:

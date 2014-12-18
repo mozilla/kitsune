@@ -2,8 +2,8 @@ from django.conf import settings
 from django.db import models
 
 
-class NoCacheModelBase(models.Model):
-    """Base class for SUMO models that don't want automatic caching.
+class ModelBase(models.Model):
+    """Base class for SUMO models.
 
     * Adds update method.
     """
@@ -35,21 +35,6 @@ class NoCacheModelBase(models.Model):
         if signal:
             models.signals.post_save.send(sender=cls, instance=self,
                                           created=False)
-
-
-class ModelBase(NoCacheModelBase):
-    """
-    Base class for SUMO models to abstract some common features.
-
-    * Caching.
-    * Adds update method.
-    """
-
-    objects = models.Manager()
-    uncached = models.Manager()
-
-    class Meta:
-        abstract = True
 
 
 # This adds rules that South needs for introspection so it can do

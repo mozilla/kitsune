@@ -27,14 +27,14 @@ def run():
             print '[%s] %s' % (product, old_topic.title)
             print '=========================================================='
             try:
-                topic = Topic.uncached.get(
+                topic = Topic.objects.get(
                     slug=old_topic.slug, product=product)
             except Topic.DoesNotExist:
                 # Get the new parent if it should have one.
                 parent = None
                 if old_topic.parent:
                     try:
-                        parent = Topic.uncached.get(
+                        parent = Topic.objects.get(
                             slug=old_topic.parent.slug, product=product)
                     except Topic.DoesNotExist:
                         # Create the parent.
@@ -64,7 +64,7 @@ def run():
     # Make sure we have hot topics for all products.
     for product in Product.objects.all():
         try:
-            Topic.uncached.get(slug='hot', product=product)
+            Topic.objects.get(slug='hot', product=product)
         except Topic.DoesNotExist:
             # Create the topic.
             topic = Topic.objects.create(

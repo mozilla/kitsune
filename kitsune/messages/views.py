@@ -25,7 +25,7 @@ from kitsune.sumo.utils import user_or_ip, paginate
 @mobile_template('messages/{mobile/}inbox.html')
 def inbox(request, template):
     user = request.user
-    messages = InboxMessage.uncached.filter(to=user).order_by('-created')
+    messages = InboxMessage.objects.filter(to=user).order_by('-created')
     count = messages.count()
 
     messages = paginate(
@@ -62,7 +62,7 @@ def read_outbox(request, template, msgid):
 @mobile_template('messages/{mobile/}outbox.html')
 def outbox(request, template):
     user = request.user
-    messages = OutboxMessage.uncached.filter(sender=user).order_by('-created')
+    messages = OutboxMessage.objects.filter(sender=user).order_by('-created')
     count = messages.count()
 
     messages = paginate(
