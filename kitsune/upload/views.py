@@ -14,7 +14,7 @@ from kitsune.upload.models import ImageAttachment
 from kitsune.upload.utils import upload_imageattachment, FileTooLargeError
 
 
-ALLOWED_MODELS = ['questions.Question', 'questions.Answer']
+ALLOWED_MODELS = ['questions.Question', 'questions.Answer', 'auth.User']
 
 
 @login_required

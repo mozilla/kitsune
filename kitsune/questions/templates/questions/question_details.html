@@ -1,6 +1,6 @@
 {% extends "questions/base.html" %}
 {% from "layout/errorlist.html" import errorlist %}
-{% from "upload/attachments.html" import attachments_form %}
+{% from "upload/attachments.html" import attachments_form, attachment %}
 {% from "includes/common_macros.html" import content_editor with context %}
 {% from "wiki/includes/flag_form.html" import flag_form with context %}
 {% from "questions/includes/questions.html" import troubleshooting_info %}
@@ -125,6 +125,17 @@
       <div class="main-content">
         <div itemprop="text">{{ question.content_parsed|safe }}</div>
         <div class="content-raw">{{ question.content }}</div>
+
+        {% if question.images.count() %}
+          <div class="attachments-title">
+            {{ _('Attached screenshots') }}
+          </div>
+          <div class="question-attachments attachments-list">
+          {% for image in question.images.all() %}
+            {{ attachment(image, user, False) }}
+          {% endfor %}
+          </div>
+        {% endif %}
 
         {% if question.updated_by %}
           <p class="edited">
@@ -463,7 +474,7 @@
           {% endif %}
         </div>
 
-        {{ attachments_form('questions.Question', question.pk, images, settings, user) }}
+        {{ attachments_form('auth.User', user.pk, images, settings, user) }}
 
         <div class="answer-tools nopadding">
           <button type="submit" class="btn btn-submit big">{{ _('Post Reply') }}</button>

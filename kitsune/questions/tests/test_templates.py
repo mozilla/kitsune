@@ -69,7 +69,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         """Posting answer attaches an existing uploaded image to the answer."""
         f = open('kitsune/upload/tests/media/test.jpg')
         post(self.client, 'upload.up_image_async', {'image': f},
-             args=['questions.Question', self.question.id])
+             args=['auth.User', self.user.pk])
         f.close()
 
         content = 'lorem ipsum dolor sit amet'
