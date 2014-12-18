@@ -64,10 +64,56 @@ h2 {
   }
 
   .question-attachments {
-    > a {
-      border: 1px solid @borderLightGrey;
-      float: left;
-      margin: 0 10px 10px 0;
+    .attachment {
+      display: inline-block;
+      position: relative;
+
+      .overlay {
+        background: #ccc url('../img/wait-trans.gif') no-repeat center;
+        bottom: 5px;
+        left: 5px;
+        opacity: .5;
+        position: absolute;
+        right: 5px;
+        top: 5px;
+      }
+
+      img {
+        background: url('../img/wait-trans.gif') no-repeat center;
+        border: 1px solid #ccc;
+        margin: 5px;
+        text-align: center;
+        vertical-align: top;
+      }
+
+      input.delete {
+        background: #000;
+        border: 2px solid #fff;
+        .border-radius(1em);
+        color: #fff;
+        cursor: pointer;
+        display: none;
+        font-family: Verdana;
+        font-weight: bold;
+        opacity: .5;
+        padding: 0 .2em;
+        position: absolute;
+        right: 10px;
+        top: 10px;
+
+        &:hover {
+          opacity: 1;
+        }
+      }
+
+      &:hover input.delete {
+        display: block;
+      }
+    }
+
+    img {
+      max-height: 120px;
+      max-width: 120px;
     }
   }
 

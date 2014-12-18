@@ -1,6 +1,6 @@
 {% extends "questions/base.html" %}
 {% from "layout/errorlist.html" import errorlist %}
-{% from "upload/attachments.html" import attachments_form %}
+{% from "upload/attachments.html" import attachments_form, attachment %}
 {% from "includes/common_macros.html" import content_editor with context %}
 {% from "wiki/includes/flag_form.html" import flag_form with context %}
 {% from "questions/includes/questions.html" import troubleshooting_info %}
@@ -122,11 +122,9 @@
           <div class="attachments-title">
             {{ _('Attached screenshots') }}
           </div>
-          <div class="question-attachments cf">
+          <div class="question-attachments attachments-list">
           {% for image in question.images.all() %}
-            <a href="{{ image.file.url }}">
-              <img src="{{ image.thumbnail_if_set().url }}">
-            </a>
+            {{ attachment(image, user, False) }}
           {% endfor %}
           </div>
         {% endif %}
