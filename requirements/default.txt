@@ -37,8 +37,8 @@ click==3.3
 # sha256: k9gjEUXUPKAuHsPO41UzOvqOcq25z4FXZ-F1lXSXdNQ
 https://github.com/jsocol/commonware/archive/b5544185b2d24adc1eb512735990752400ce9cbd.tar.gz#egg=commonware
 
-# sha256: G_xrUSb6_6yMpfBKgR4A7sOEymS9HcbFiivIPCL5vWU
-dennis==0.6
+# sha256: MxnZwEi7pMyJqWkRgdDgIYei8JtDQ_0vz2zL-EtO4Yo
+dennis==0.6.1
 
 # sha256: mmQhHJajJiuyVFrMgq9djz2gF1KZ98fpAeTtRVvpZfs
 Django==1.6.7
