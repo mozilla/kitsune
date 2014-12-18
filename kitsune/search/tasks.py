@@ -162,7 +162,7 @@ def index_task(cls, id_list, **kw):
         # data.
         pin_this_thread()
 
-        qs = cls.get_model().uncached.filter(pk__in=id_list).values_list(
+        qs = cls.get_model().objects.filter(pk__in=id_list).values_list(
             'pk', flat=True)
         for id_ in qs:
             try:

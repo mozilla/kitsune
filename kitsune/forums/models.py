@@ -147,7 +147,7 @@ class Thread(NotificationsMixin, ModelBase, SearchMixin):
 
     def delete(self, *args, **kwargs):
         """Override delete method to update parent forum info."""
-        forum = Forum.uncached.get(pk=self.forum.id)
+        forum = Forum.objects.get(pk=self.forum.id)
         if forum.last_post and forum.last_post.thread_id == self.id:
             forum.update_last_post(exclude_thread=self)
             forum.save()
@@ -269,7 +269,7 @@ class ThreadMappingType(SearchMappingType):
         author_ords = set()
         content = []
 
-        posts = Post.uncached.filter(
+        posts = Post.objects.filter(
             thread_id=obj.id).select_related('author')
         for post in posts:
             author_ids.add(post.author.id)
@@ -327,13 +327,13 @@ class Post(ModelBase):
 
     def delete(self, *args, **kwargs):
         """Override delete method to update parent thread info."""
-        thread = Thread.uncached.get(pk=self.thread.id)
+        thread = Thread.objects.get(pk=self.thread.id)
         if thread.last_post_id and thread.last_post_id == self.id:
             thread.update_last_post(exclude_post=self)
         thread.replies = thread.post_set.count() - 2
         thread.save()
 
-        forum = Forum.uncached.get(pk=thread.forum.id)
+        forum = Forum.objects.get(pk=thread.forum.id)
         if forum.last_post_id and forum.last_post_id == self.id:
             forum.update_last_post(exclude_post=self)
             forum.save()

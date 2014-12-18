@@ -525,12 +525,12 @@ class OldQuestionsArchiveTest(ElasticTestCase):
         eq_(len(list(Question.objects.all())), 3)
 
         # q2 and q3 are now archived and updated times are the same
-        archived_questions = list(Question.uncached.filter(is_archived=True))
+        archived_questions = list(Question.objects.filter(is_archived=True))
         eq_(sorted([(q.id, q.updated.date()) for q in archived_questions]),
             [(q.id, q.updated.date()) for q in [q2, q3]])
 
         # q1 is still unarchived.
-        archived_questions = list(Question.uncached.filter(is_archived=False))
+        archived_questions = list(Question.objects.filter(is_archived=False))
         eq_(sorted([q.id for q in archived_questions]),
             [q1.id])
 
@@ -557,10 +557,10 @@ class QuestionVisitsTests(TestCase):
         }
 
         QuestionVisits.reload_from_analytics()
-        eq_(3, QuestionVisits.uncached.count())
-        eq_(42, QuestionVisits.uncached.get(question_id=q1.id).visits)
-        eq_(27, QuestionVisits.uncached.get(question_id=q2.id).visits)
-        eq_(1337, QuestionVisits.uncached.get(question_id=q3.id).visits)
+        eq_(3, QuestionVisits.objects.count())
+        eq_(42, QuestionVisits.objects.get(question_id=q1.id).visits)
+        eq_(27, QuestionVisits.objects.get(question_id=q2.id).visits)
+        eq_(1337, QuestionVisits.objects.get(question_id=q3.id).visits)
 
         # Change the data and run again to cover the update case.
         pageviews_by_question.return_value = {
@@ -569,10 +569,10 @@ class QuestionVisitsTests(TestCase):
             q3.id: 300,
         }
         QuestionVisits.reload_from_analytics()
-        eq_(3, QuestionVisits.uncached.count())
-        eq_(100, QuestionVisits.uncached.get(question_id=q1.id).visits)
-        eq_(200, QuestionVisits.uncached.get(question_id=q2.id).visits)
-        eq_(300, QuestionVisits.uncached.get(question_id=q3.id).visits)
+        eq_(3, QuestionVisits.objects.count())
+        eq_(100, QuestionVisits.objects.get(question_id=q1.id).visits)
+        eq_(200, QuestionVisits.objects.get(question_id=q2.id).visits)
+        eq_(300, QuestionVisits.objects.get(question_id=q3.id).visits)
 
 
 class QuestionVoteTests(TestCase):

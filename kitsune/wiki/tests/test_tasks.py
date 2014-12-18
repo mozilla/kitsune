@@ -184,13 +184,8 @@ class ReviewMailTestCase(TestCaseBase):
 class TestDocumentRenderCascades(TestCaseBase):
 
     def _clean(self, d):
-        """
-        Get a clean and normalized version of a documents html.
-
-        This grabs uncached copies from the DB, because the in memory
-        objects used in the test don't get updated during the cascade.
-        """
-        html = Document.uncached.get(slug=d.slug).html
+        """Get a clean and normalized version of a documents html."""
+        html = Document.objects.get(slug=d.slug).html
         return re.sub(r'\s+', ' ', bleach.clean(html, strip=True)).strip()
 
     def test_cascade(self):

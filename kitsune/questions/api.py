@@ -36,7 +36,7 @@ class QuestionMetaDataSerializer(serializers.ModelSerializer):
                 setattr(instance, key, attrs.get(key, getattr(instance, key)))
             return instance
         else:
-            obj, created = self.Meta.model.uncached.get_or_create(
+            obj, created = self.Meta.model.objects.get_or_create(
                 question=attrs['question'], name=attrs['name'],
                 defaults={'value': attrs['value']})
             if not created:
@@ -175,7 +175,7 @@ class QuestionFilter(django_filters.FilterSet):
 
 class QuestionViewSet(viewsets.ModelViewSet):
     serializer_class = QuestionSerializer
-    queryset = Question.uncached.all()
+    queryset = Question.objects.all()
     paginate_by = 20
     permission_classes = [
         OnlyCreatorEdits,
@@ -204,7 +204,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
         answer_id = request.DATA.get('answer')
 
         try:
-            answer = Answer.uncached.get(pk=answer_id)
+            answer = Answer.objects.get(pk=answer_id)
         except Answer.DoesNotExist:
             return Response({'answer': 'This field is required.'},
                             status=status.HTTP_400_BAD_REQUEST)
@@ -244,7 +244,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
                             status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            meta = (QuestionMetaData.uncached
+            meta = (QuestionMetaData.objects
                     .get(question=question, name=request.DATA['name']))
             meta.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
@@ -315,7 +315,7 @@ class AnswerFilter(django_filters.FilterSet):
 
 class AnswerViewSet(viewsets.ModelViewSet):
     serializer_class = AnswerSerializer
-    queryset = Answer.uncached.all()
+    queryset = Answer.objects.all()
     paginate_by = 20
     permission_classes = [
         OnlyCreatorEdits,

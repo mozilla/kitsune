@@ -140,7 +140,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
     def _collides(self, attr, value):
         """Return whether there exists a doc in this locale whose `attr` attr
         is equal to mine."""
-        return Document.uncached.filter(
+        return Document.objects.filter(
             locale=self.locale, **{attr: value}).exclude(id=self.id).exists()
 
     def _raise_if_collides(self, attr, exception):
@@ -178,7 +178,6 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
 
         # Can't make not localizable if it has translations
         # This only applies to documents that already exist, hence self.pk
-        # TODO: Use uncached manager here, if we notice problems
         if self.pk and not self.is_localizable and self.translations.exists():
             raise ValidationError(
                 u'"{0}": document has {1} translations but is not localizable.'
@@ -356,7 +355,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
             return None
         locale, path, slug = components
 
-        doc = cls.uncached
+        doc = cls.objects
         if id_only:
             doc = doc.only('id')
         try:
@@ -523,31 +522,25 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         from kitsune.wiki.events import EditDocumentEvent
         return EditDocumentEvent.is_notifying(user, self)
 
-    def get_topics(self, uncached=False):
+    def get_topics(self):
         """Return the list of new topics that apply to this document.
 
         If the document has a parent, it inherits the parent's topics.
         """
         if self.parent:
             return self.parent.get_topics()
-        if uncached:
-            q = Topic.uncached
-        else:
-            q = Topic.objects
-        return q.filter(document=self)
 
-    def get_products(self, uncached=False):
+        return Topic.objects.filter(document=self)
+
+    def get_products(self):
         """Return the list of products that apply to this document.
 
         If the document has a parent, it inherits the parent's products.
         """
         if self.parent:
-            return self.parent.get_products(uncached)
-        if uncached:
-            q = Product.uncached
-        else:
-            q = Product.objects
-        return q.filter(document=self)
+            return self.parent.get_products()
+
+        return Product.objects.filter(document=self)
 
     @property
     def recent_helpful_votes(self):
@@ -682,7 +675,7 @@ class DocumentMappingType(SearchMappingType):
     def extract_document(cls, obj_id, obj=None):
         if obj is None:
             model = cls.get_model()
-            obj = model.uncached.select_related(
+            obj = model.objects.select_related(
                 'current_revision', 'parent').get(pk=obj_id)
 
         if obj.html.startswith(REDIRECT_HTML):
@@ -698,8 +691,8 @@ class DocumentMappingType(SearchMappingType):
         d['url'] = obj.get_absolute_url()
         d['indexed_on'] = int(time.time())
 
-        d['topic'] = [t.slug for t in obj.get_topics(True)]
-        d['product'] = [p.slug for p in obj.get_products(True)]
+        d['topic'] = [t.slug for t in obj.get_topics()]
+        d['product'] = [p.slug for p in obj.get_products()]
 
         d['document_title'] = obj.title
         d['document_locale'] = obj.locale
@@ -1035,7 +1028,7 @@ class RevisionMetricsMappingType(SearchMappingType):
 
         if obj is None:
             model = cls.get_model()
-            obj_dict = model.uncached.values(*all_fields).get(pk=obj_id)
+            obj_dict = model.objects.values(*all_fields).get(pk=obj_id)
         else:
             obj_dict = dict([(field, getattr(obj, field))
                              for field in fields])
@@ -1064,8 +1057,8 @@ class RevisionMetricsMappingType(SearchMappingType):
         d['creator_id'] = obj_dict['creator_id']
         d['reviewer_id'] = obj_dict['reviewer_id']
 
-        doc = Document.uncached.get(id=obj_dict['document_id'])
-        d['product'] = [p.slug for p in doc.get_products(True)]
+        doc = Document.objects.get(id=obj_dict['document_id'])
+        d['product'] = [p.slug for p in doc.get_products()]
 
         return d
 

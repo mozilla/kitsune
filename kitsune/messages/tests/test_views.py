@@ -27,8 +27,8 @@ class ReadMessageTests(TestCase):
                                 {'id': [i.pk, j.pk], 'mark_read': True},
                                 follow=True)
         eq_(200, resp.status_code)
-        assert InboxMessage.uncached.get(pk=i.pk).read
-        assert InboxMessage.uncached.get(pk=j.pk).read
+        assert InboxMessage.objects.get(pk=i.pk).read
+        assert InboxMessage.objects.get(pk=j.pk).read
 
     def test_mark_bulk_read_none(self):
         url = reverse('messages.bulk_action', locale='en-US')
@@ -44,7 +44,7 @@ class ReadMessageTests(TestCase):
         resp = self.client.get(reverse('messages.read', args=[i.pk]),
                                follow=True)
         eq_(200, resp.status_code)
-        assert InboxMessage.uncached.get(pk=i.pk).read
+        assert InboxMessage.objects.get(pk=i.pk).read
         assert PINNING_COOKIE in resp.cookies
 
     def test_unread_does_not_pin(self):
@@ -54,7 +54,7 @@ class ReadMessageTests(TestCase):
         resp = self.client.get(reverse('messages.read', args=[i.pk]),
                                follow=True)
         eq_(200, resp.status_code)
-        assert InboxMessage.uncached.get(pk=i.pk).read
+        assert InboxMessage.objects.get(pk=i.pk).read
         assert PINNING_COOKIE not in resp.cookies
 
     def test_mark_message_replied(self):
@@ -64,7 +64,7 @@ class ReadMessageTests(TestCase):
         self.client.post(reverse('messages.new', locale='en-US'),
                          {'to': self.user2.username, 'message': 'bar',
                           'in_reply_to': i.pk})
-        assert InboxMessage.uncached.get(pk=i.pk).replied
+        assert InboxMessage.objects.get(pk=i.pk).replied
 
 
 class DeleteMessageTests(TestCase):
@@ -83,7 +83,7 @@ class DeleteMessageTests(TestCase):
                                 {'confirmed': True},
                                 follow=True)
         eq_(200, resp.status_code)
-        eq_(0, InboxMessage.uncached.count())
+        eq_(0, InboxMessage.objects.count())
 
     def test_delete_many_message(self):
         i = InboxMessage.objects.create(to=self.user1, sender=self.user2,
@@ -97,7 +97,7 @@ class DeleteMessageTests(TestCase):
                                       'confirmed': True},
                                 follow=True)
         eq_(200, resp.status_code)
-        eq_(0, InboxMessage.uncached.count())
+        eq_(0, InboxMessage.objects.count())
 
     def test_delete_outbox_message(self):
         i = OutboxMessage.objects.create(sender=self.user1, message='foo')
@@ -107,7 +107,7 @@ class DeleteMessageTests(TestCase):
                                         locale='en-US'),
                                 {'confirmed': True}, follow=True)
         eq_(200, resp.status_code)
-        eq_(0, OutboxMessage.uncached.count())
+        eq_(0, OutboxMessage.objects.count())
 
     def test_bulk_delete_none(self):
         url = reverse('messages.bulk_action', locale='en-US')
@@ -136,11 +136,11 @@ class OutboxTests(TestCase):
         i.to.add(self.user2)
         j = OutboxMessage.objects.create(sender=self.user1, message='foo')
         j.to.add(self.user2)
-        eq_(2, OutboxMessage.uncached.count())
+        eq_(2, OutboxMessage.objects.count())
         url = reverse('messages.outbox_bulk_action', locale='en-US')
         resp = self.client.post(url, {'id': [i.pk, j.pk],
                                       'delete': True,
                                       'confirmed': True},
                                 follow=True)
         eq_(200, resp.status_code)
-        eq_(0, OutboxMessage.uncached.count())
+        eq_(0, OutboxMessage.objects.count())

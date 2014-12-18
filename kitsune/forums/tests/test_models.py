@@ -227,7 +227,7 @@ class ThreadModelTestCase(ForumTestCase):
 
         eq_(1, t.post_set.count())
         t.delete()
-        eq_(0, Thread.uncached.filter(pk=t.id).count())
+        eq_(0, Thread.objects.filter(pk=t.id).count())
 
 
 class SaveDateTestCase(ForumTestCase):
