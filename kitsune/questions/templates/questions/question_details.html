@@ -118,6 +118,19 @@
         <div itemprop="text">{{ question.content_parsed|safe }}</div>
         <div class="content-raw">{{ question.content }}</div>
 
+        {% if question.images.count() %}
+          <div class="attachments-title">
+            {{ _('Attached screenshots') }}
+          </div>
+          <div class="question-attachments cf">
+          {% for image in question.images.all() %}
+            <a href="{{ image.file.url }}">
+              <img src="{{ image.thumbnail_if_set().url }}">
+            </a>
+          {% endfor %}
+          </div>
+        {% endif %}
+
         {% if question.updated_by %}
           <p class="edited">
             {{ _('Modified {datetime} by {name}')|fe(name=display_name(question.updated_by), datetime=datetimeformat(question.updated, format='longdatetime')) }}
@@ -455,7 +468,7 @@
           {% endif %}
         </div>
 
-        {{ attachments_form('questions.Question', question.pk, images, settings, user) }}
+        {{ attachments_form('auth.User', user.pk, images, settings, user) }}
 
         <div class="answer-tools nopadding">
           <button type="submit" class="btn btn-submit big">{{ _('Post Reply') }}</button>

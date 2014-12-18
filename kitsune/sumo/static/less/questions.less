@@ -56,6 +56,21 @@ h2 {
 }
 
 .answers {
+  .attachments-title {
+    border-bottom: 1px solid @textDarkGrey;
+    font-weight: bold;
+    margin: 20px 0 10px;
+    padding: 10px 0;
+  }
+
+  .question-attachments {
+    > a {
+      border: 1px solid @borderLightGrey;
+      float: left;
+      margin: 0 10px 10px 0;
+    }
+  }
+
   .answer {
     &.marked-as-spam {
       .main-content {
@@ -1335,9 +1350,12 @@ h2 {
   margin-top: 25px;
 }
 
+.answers {
+  .attachments-upload {
+    margin: 1.5em 0 1.5em 128px;
+  }
+}
 .attachments-upload {
-  margin: 1.5em 0 1.5em 128px;
-
   label {
     display: block;
     margin: .5em 0;
