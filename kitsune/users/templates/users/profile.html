@@ -98,7 +98,7 @@
         </section>
       {% endif %}
       {% if profile.public_email or profile.website or profile.twitter or
-            profile.facebook or profile.irc_handle %}
+            profile.facebook or profile.mozillians or profile.irc_handle %}
         <section class="contact">
           <ul>
             {% if profile.public_email and request.user.is_authenticated() %}
