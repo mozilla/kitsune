@@ -454,10 +454,15 @@ class RedirectCreationTests(TestCase):
     def test_change_slug(self):
         """Test proper redirect creation on slug change."""
         self.d.slug = 'new-slug'
+        self.d.share_link = 'https://example.com/redirect'
         self.d.save()
         redirect = Document.objects.get(slug=self.old_slug)
         eq_(REDIRECT_CONTENT % self.d.title, redirect.current_revision.content)
         eq_(REDIRECT_TITLE % dict(old=self.d.title, number=1), redirect.title)
+
+        # Verify the share_link got cleared out.
+        doc = Document.objects.get(slug=self.d.slug)
+        eq_('', doc.share_link)
 
     def test_change_title(self):
         """Test proper redirect creation on title change."""

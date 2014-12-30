@@ -256,13 +256,17 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         # we make here, so don't worry:
         self._clean_category()
 
+        slug_changed = hasattr(self, 'old_slug')
+        title_changed = hasattr(self, 'old_title')
+
+        # If the slug changed, we clear out the share link so it gets regenerated.
+        self.share_link = ''
+
         super(Document, self).save(*args, **kwargs)
 
         # Make redirects if there's an approved revision and title or slug
         # changed. Allowing redirects for unapproved docs would (1) be of
         # limited use and (2) require making Revision.creator nullable.
-        slug_changed = hasattr(self, 'old_slug')
-        title_changed = hasattr(self, 'old_title')
         if self.current_revision and (slug_changed or title_changed):
             try:
                 doc = Document.objects.create(locale=self.locale,
