@@ -20,3 +20,6 @@ pyflakes==0.8.1
 
 # sha256: Y6KG6ssDzV9kPX60WMbGK3DBEbRjT9jVnyfMrKS3yDo
 django-sslserver==0.14
+
+# sha256: tBMRWLEc0GKZdw-NE6kxsyx2Obe_tVlVtGe0c_Np9po
+django-debug-toolbar==1.2.2

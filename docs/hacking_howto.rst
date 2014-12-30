@@ -59,9 +59,9 @@ all-in-one installation. This installs all required dependencies and
 sets up your environment in such a way that makes it easy to run.
 
 For help with installation, check out Vagrant's documentation
-`here <https://docs.vagrantup.com/v2/getting-started/>`_. 
+`here <https://docs.vagrantup.com/v2/getting-started/>`_.
 
-Once Vagrant is installed, run ``vagrant up`` to start and configure your 
+Once Vagrant is installed, run ``vagrant up`` to start and configure your
 virtual machine and ``vagrant ssh`` to SSH into the box.
 
 Once inside the virtual machine, you can start the server by running the
@@ -183,6 +183,11 @@ Python 2.6::
 
     $ ./scripts/peep.py install -r requirements/py26.txt --no-use-wheel
 
+Additionally, you may install some useful development tools. These are not
+required, but are helpful::
+
+    $ ./scripts/peep.py install -r requirements/dev.txt --no-use-wheel
+
 If you have any issues installing via ``peep``, be sure you have the required
 header files from the packages listed in the requirements section above.
 
@@ -217,69 +222,18 @@ Configuration and Setup
 settings_local.py
 -----------------
 
-Create a file named ``settings_local.py`` in the ``kitsune/`` directory.
-Start with this::
-
-    from kitsune.settings import *
-
-    DEBUG = True
-    TEMPLATE_DEBUG = DEBUG
-    SESSION_COOKIE_SECURE = False
-
-    # Allows you to run Kitsune without running Celery---all tasks
-    # will be done synchronously.
-    CELERY_ALWAYS_EAGER = True
-
-    # Allows you to specify waffle settings in the querystring.
-    WAFFLE_OVERRIDE = True
-
-    # Change this to True if you're going to be doing search-related
-    # work.
-    ES_LIVE_INDEXING = False
-
-    # Basic cache configuration for development.
-    CACHES = {
-        'default': {
-            'BACKEND': 'caching.backends.memcached.CacheClass',
-            'LOCATION': 'localhost:11211',
-            'PREFIX': 'sumo:',
-            }
-        }
-
-    # Basic database configuration for development.
-    DATABASES = {
-        'default': {
-            'NAME': 'kitsune',
-            'ENGINE': 'django.db.backends.mysql',
-            'HOST': 'localhost',
-            'USER': 'kitsune',
-            'PASSWORD': '<YOUR_PASSWORD>',
-            'OPTIONS': {'init_command': 'SET storage_engine=InnoDB'},
-            'TEST_CHARSET': 'utf8',
-            'TEST_COLLATION': 'utf8_unicode_ci',
-            },
-        }
-
-    LESS_PREPROCESS = True
-    LESS_BIN = path('node_modules/.bin/lessc')
-    UGLIFY_BIN = path('node_modules/.bin/uglifyjs')
-    CLEANCSS_BIN = path('node_modules/.bin/cleancss')
-    NUNJUCKS_PRECOMPILE_BIN = path('node_modules/.bin/nunjucks-precompile')
-
-    # Tells django-axes we aren't behind a reverse proxy.
-    AXES_BEHIND_REVERSE_PROXY = False
-
-
-Don't forget to change ``<YOUR_PASSWORD>`` and update ``LESS_BIN``
-based on your setup.
+There is a file called ``settings_local.py.dist`` in the ``kitsune/`` directory.
+This contains a sample set of local settings. Copy the file, name it
+``settings_local.py``. and edit it, following the instructions within. Don't
+forget to change ``<YOUR_PASSWORD>`` to your actual database password.
 
 Note the two settings ``TEST_CHARSET`` and ``TEST_COLLATION``. Without
 these, the test suite will use MySQL's (moronic) defaults when
 creating the test database (see below) and lots of tests will
 fail. Hundreds.
 
-Now you can copy and modify any settings from ``kitsune/settings.py`` into
-``kitsune/settings_local.py`` and the value will override the default.
+Additionally, you can copy and modify any settings from ``kitsune/settings.py``
+into ``kitsune/settings_local.py`` and the value will override the default.
 
 
 Database
