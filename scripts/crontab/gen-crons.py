@@ -23,14 +23,11 @@ def main():
     if not opts.kitsune:
         parser.error("-k must be defined")
 
-    # To pick up the right PyOpenSSL:
-    python_path = 'PYTHONPATH+=:/usr/local/lib64/python2.6/site-packages'
-
     ctx = {
-        'django': 'cd %s; source virtualenv/bin/activate; %s %s -W ignore::DeprecationWarning manage.py' % (
-            opts.kitsune, python_path, opts.python),
-        'scripts': 'cd %s; source virtualenv/bin/activate; %s %s' % (
-            opts.kitsune, python_path, opts.python),
+        'django': 'cd %s; source virtualenv/bin/activate; %s -W ignore::DeprecationWarning manage.py' % (
+            opts.kitsune, opts.python),
+        'scripts': 'cd %s; source virtualenv/bin/activate; %s' % (
+            opts.kitsune, opts.python),
     }
     ctx['cron'] = '%s cron' % ctx['django']
     # Source the venv, don't mess with manage.py

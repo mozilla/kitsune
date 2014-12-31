@@ -26,8 +26,7 @@ def update_code(ctx, tag):
     with ctx.lcd(settings.SRC_DIR):
         ctx.local("git fetch")
         ctx.local("git checkout -f %s" % tag)
-        ctx.local("git submodule sync")
-        ctx.local("git submodule update --init --recursive")
+        ctx.local("find -name '*.pyc' -delete")
 
 
 @task
@@ -42,15 +41,15 @@ def update_locales(ctx):
     with ctx.lcd(settings.SRC_DIR):
         ctx.local('date > media/postatus.txt')
         ctx.local('./scripts/compile-linted-mo.sh | /usr/bin/tee -a media/postatus.txt')
-        ctx.local('python manage.py compilejsi18n')
+        ctx.local('python2.7 manage.py compilejsi18n')
 
 
 @task
 def update_assets(ctx):
     with ctx.lcd(settings.SRC_DIR):
-        ctx.local("python manage.py nunjucks_precompile")
-        ctx.local("python manage.py collectstatic --noinput")
-        ctx.local("LANG=en_US.UTF-8 python manage.py compress_assets")
+        ctx.local("python2.7 manage.py nunjucks_precompile")
+        ctx.local("python2.7 manage.py collectstatic --noinput")
+        ctx.local("LANG=en_US.UTF-8 python2.7 manage.py compress_assets")
 
 
 @task
@@ -58,13 +57,13 @@ def db_migrations(ctx):
     with ctx.lcd(settings.SRC_DIR):
         # This runs schematic and south migrations.
         ctx.local('schematic migrations')
-        ctx.local('python manage.py migrate')
+        ctx.local('python2.7 manage.py migrate')
 
 
 @task
 def install_cron(ctx):
     with ctx.lcd(settings.SRC_DIR):
-        ctx.local("python ./scripts/crontab/gen-crons.py -k %s -u apache > /etc/cron.d/.%s" %
+        ctx.local("python2.7 ./scripts/crontab/gen-crons.py -k %s -u apache > /etc/cron.d/.%s" %
                   (settings.WWW_DIR, settings.CRON_NAME))
         ctx.local("mv /etc/cron.d/.%s /etc/cron.d/%s" % (settings.CRON_NAME, settings.CRON_NAME))
 
@@ -105,7 +104,7 @@ def update_info(ctx):
         ctx.local("git log -3")
         ctx.local("git status")
         ctx.local("git submodule status")
-        ctx.local("python manage.py migrate --list")
+        ctx.local("python2.7 manage.py migrate --list")
         with ctx.lcd("locale"):
             ctx.local("svn info")
             ctx.local("svn status")
@@ -116,18 +115,18 @@ def update_info(ctx):
 @task
 def setup_dependencies(ctx):
     with ctx.lcd(settings.SRC_DIR):
-        # Creating a virtualenv tries to open virtualenv/bin/python for
-        # writing, but because virtualenv is using it, it fails.
-        # So we delete it and let virtualenv create a new one.
-        ctx.local('rm -f virtualenv/bin/python')
-        ctx.local('virtualenv --no-site-packages virtualenv')
+        # Blow away the virtualenv and start again.
+        ctx.local('rm -rf virtualenv/*')
+        ctx.local('virtualenv-2.7 --no-site-packages virtualenv')
 
-        # Activate virtualenv to append to path.
+        # Activate virtualenv to append to the correct path to $PATH.
         activate_env = os.path.join(settings.SRC_DIR, 'virtualenv', 'bin', 'activate_this.py')
         execfile(activate_env, dict(__file__=activate_env))
 
-        ctx.local('python scripts/peep.py install -r requirements/py26.txt')
-        ctx.local('virtualenv --relocatable virtualenv')
+        ctx.local('pip --version')
+        ctx.local('python2.7 scripts/peep.py install -r requirements/default.txt --no-use-wheel')
+        # Make the virtualenv relocatable
+        ctx.local('virtualenv-2.7 --relocatable virtualenv')
 
         # Fix lib64 symlink to be relative instead of absolute.
         ctx.local('rm -f virtualenv/lib64')
