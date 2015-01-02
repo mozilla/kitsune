@@ -111,6 +111,7 @@ class Profile(ModelBase, SearchMixin):
         self.website = ''
         self.twitter = ''
         self.facebook = ''
+        self.mozillians = ''
         self.irc_handle = ''
         self.city = ''
 
