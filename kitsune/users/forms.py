@@ -179,10 +179,14 @@ class ProfileForm(forms.ModelForm):
         model = Profile
         fields = ('name', 'public_email', 'bio', 'website', 'twitter',
 <<<<<<< HEAD
+<<<<<<< HEAD
                   'facebook', 'Mozillians', 'irc_handle', 'timezone', 'country', 'city',
 =======
                   'facebook', 'mozillians', 'irc_handle', 'timezone', 'country', 'city',
 >>>>>>> 87dfa6d7abdbaea18874cabdff9d422723f12ca8
+=======
+                  'facebook', 'mozillians', 'irc_handle', 'timezone', 'country', 'city',
+>>>>>>> d308b919fc2402c1b4d2d7bced9cebdc441b9b36
                   'locale')
         widgets = {
             'twitter': TwitterURLWidget,
