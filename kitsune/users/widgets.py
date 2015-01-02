@@ -19,6 +19,6 @@ class TwitterURLWidget(PatternURLWidget):
     pattern = r'https?://(?:www\.)?twitter\.com/.+'
 
 
-class TwitterURLWidget(PatternURLWidget):
-    """A URLWidget that requires a Twitter URL."""
+class MozilliansURLWidget(PatternURLWidget):
+    """A URLWidget that requires a Mozillians URL."""
     pattern = r'https?://(?:www\.)?mozillians\.org/.+'
