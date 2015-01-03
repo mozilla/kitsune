@@ -90,6 +90,8 @@ These are required for the minimum installation:
 * libxslt and headers
 * libjpeg and headers
 * zlib and headers
+* libssl library
+* libmysqlclient library
 
 These are optional:
 
