@@ -90,6 +90,7 @@ These are required for the minimum installation:
 * libxslt and headers
 * libjpeg and headers
 * zlib and headers
+* libssl and headers
 
 These are optional:
 
