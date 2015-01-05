@@ -9,7 +9,6 @@ class Migration(DataMigration):
 
     def forwards(self, orm):
         """Adds a user to be used for migrations."""
-        from django.contrib.auth.models import User
         # ``make_password(None)`` makes an unusable password.
         orm['auth.User'].objects.create(
             username='migrations',
