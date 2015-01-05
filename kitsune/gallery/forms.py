@@ -27,7 +27,7 @@ MSG_IMAGE_LONG = _lazy(
     'characters or less. It is currently %(length)s characters.')
 MSG_TITLE_DRAFT = _lazy(u'Please select a different title.')
 
-TITLE_HELP_TEXT = _lazy(u'Include this in wiki syntax with [[Image:title]]')
+TITLE_HELP_TEXT = _lazy(u'Include this in wiki syntax with [[%(type)s:title]]')
 DESCRIPTION_HELP_TEXT = _lazy(u'Provide a brief description of this media.')
 
 
@@ -42,7 +42,7 @@ class MediaForm(forms.ModelForm):
     title = StrippedCharField(
         required=False,
         label=_lazy(u'Title'),
-        help_text=TITLE_HELP_TEXT,
+        help_text=TITLE_HELP_TEXT % {'type': u'Image'},
         min_length=5, max_length=255,
         error_messages={'required': MSG_TITLE_REQUIRED,
                         'min_length': MSG_TITLE_SHORT,

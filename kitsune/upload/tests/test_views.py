@@ -1,6 +1,4 @@
 import json
-import os
-import shutil
 
 from django.conf import settings
 from django.contrib.auth.models import Permission
@@ -169,37 +167,17 @@ class UploadImageTestCase(TestCase):
 
     def test_upload_long_filename(self):
         """Uploading an image with a filename that's too long fails."""
-        # Windows has problems with large file names, so we create the
-        # file in the test and if this fails, we assume we're on a
-        # Windows file system and skip.
-        #
-        # FIXME: Is that an ok assumption to make?
+        path = 'kitsune/upload/tests/media/' + 'long_file_name' * 17 + '.jpg'
+        with open(path) as f:
+            r = self._make_post_request(image=f)
 
-        thisdir = os.path.dirname(__file__)
-        srcfile = os.path.join(thisdir, 'media', 'test.jpg')
-        dstfile = os.path.join(thisdir, 'media', ('long_file_name' * 17) + '.jpg')
-
-        try:
-            shutil.copyfile(srcfile, dstfile)
-
-            # Re-root the absolute path dstfile at the relative
-            # kitsune repo root.
-            path = 'kitsune/upload/tests/' + dstfile[len(thisdir):]
-            with open(path) as f:
-                r = self._make_post_request(image=f)
-
-            eq_(400, r.status_code)
-            json_r = json.loads(r.content)
-            eq_('error', json_r['status'])
-            eq_('Invalid or no image received.', json_r['message'])
-            eq_(MSG_IMAGE_LONG % {'length': 242,
-                                  'max': settings.MAX_FILENAME_LENGTH},
-                json_r['errors']['image'][0])
-
-        finally:
-            # Delete the file after the test if it's deletable.
-            if os.path.exists(dstfile):
-                os.remove(dstfile)
+        eq_(400, r.status_code)
+        json_r = json.loads(r.content)
+        eq_('error', json_r['status'])
+        eq_('Invalid or no image received.', json_r['message'])
+        eq_(MSG_IMAGE_LONG % {'length': 242,
+                              'max': settings.MAX_FILENAME_LENGTH},
+            json_r['errors']['image'][0])
 
     def _make_post_request(self, **kwargs):
         if 'args' not in kwargs:

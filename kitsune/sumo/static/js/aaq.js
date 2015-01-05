@@ -49,6 +49,11 @@ AAQSystemInfo.prototype = {
             $(selector).fadeToggle();
         });
 
+        $('#troubleshooting-install .btn').on('click', function(ev) {
+            // Do not prevent default.
+            $(this).toggleClass('btn-important btn-disable').html(gettext('Installing...'));
+        });
+
         $('#show-login a').on('click', function(ev) {
             $('#login-form').show();
             $(this).remove();
@@ -148,66 +153,38 @@ AAQSystemInfo.prototype = {
     },
     getTroubleshootingInfo: function(addEvent) {
         var self = this;
-        var browserData;
-
         if (addEvent === undefined) addEvent = true;
-
-        // If the troubleshoot input exists, try to get the data.
+        // If the troubleshoot input exists, try to find the extension.
         if ($('#id_troubleshooting').length === 0) {
-            // No troubleshooting form, so no point in trying to get the data.
+            // No troubleshooting form, so no point in looking for the plugin.
             return;
         }
-
-        // First we try to use the builtin API:
-        remoteTroubleshooting.available(function (yesno) {
-            if (yesno) {
-                remoteTroubleshooting.getData(function (data) {
-                    browserData = data;
-                });
-
-                $('#addon-section').remove();
-                $('#share-data')
-                    .click(function(e) {  // The user must click button to save the data.
-                        e.preventDefault();
-                        handleData(browserData);
-                        return false;
-                    });
-
-            } else {
-                $('#api-section').remove();
-
-                // If the builtin API isn't available, we try with the addon.
-                if ('mozTroubleshoot' in window) {
-                    // Yeah! The user has the addon installed, let's use it.
-                    window.mozTroubleshoot.snapshotJSON(function(json) {
-                        handleData(JSON.parse(json));
-                    });
-                } else {
-                    if (addEvent) {
-                        // Well, the user might install it later, so set up a listener.
-                        window.addEventListener('mozTroubleshootDidBecomeAvailable',
-                            self.getTroubleshootingInfo.bind(self, false));
+        if ('mozTroubleshoot' in window) {
+            // Yeah! The user has the addon installed, let's use it.
+            $('#troubleshooting-install').remove();
+            window.mozTroubleshoot.snapshotJSON(function(json) {
+                // Parse the JSON, so we can modify it.
+                json = JSON.parse(json);
+                var modifiedPreferences = json.modifiedPreferences;
+                json.modifiedPreferences = {};
+                for (var key in modifiedPreferences) {
+                    if (key.indexOf('print.') !== 0) {
+                        json.modifiedPreferences[key] = modifiedPreferences[key];
                     }
                 }
+                // The last two parameters cause this to pretty print,
+                // in case anyone looks at it.
+                json = JSON.stringify(json, null, "  ");
+                $('#id_troubleshooting').val(json);
+                $('#troubleshooting-manual').remove();
+                $('#troubleshooting-explanation').show();
+            });
+        } else {
+            if (addEvent) {
+                // Well, the user might install it later, so set up a listener.
+                window.addEventListener('mozTroubleshootDidBecomeAvailable',
+                    self.getTroubleshootingInfo.bind(self, false));
             }
-        });
-
-        // Handle the troubleshooting JSON data.
-        function handleData(data) {
-            var modifiedPreferences = data.modifiedPreferences;
-            data.modifiedPreferences = {};
-            for (var key in modifiedPreferences) {
-                if (key.indexOf('print.') !== 0) {
-                    data.modifiedPreferences[key] = modifiedPreferences[key];
-                }
-            }
-            // The last two parameters cause this to pretty print,
-            // in case anyone looks at it.
-            data = JSON.stringify(data, null, "  ");
-            $('#addon-section').remove();
-            $('#api-section').remove();
-            $('#id_troubleshooting').val(data);
-            $('#troubleshooting-explanation').show();
         }
     }
 };

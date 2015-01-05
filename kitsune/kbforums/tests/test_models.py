@@ -52,7 +52,7 @@ class KBThreadModelTestCase(KBForumTestCase):
         p = t.new_post(creator=t.creator, content="test")
         eq_(1, t.post_set.count())
         p.delete()
-        eq_(0, Thread.objects.filter(pk=t.id).count())
+        eq_(0, Thread.uncached.filter(pk=t.id).count())
 
 
 class KBSaveDateTestCase(KBForumTestCase):

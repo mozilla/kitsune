@@ -15,7 +15,7 @@ class TestVotes(TestCaseBase):
 
         questionvote(question=q, anonymous_id='abc123', save=True)
 
-        q = Question.objects.get(id=q.id)
+        q = Question.uncached.get(id=q.id)
         eq_(1, q.num_votes_past_week)
 
     def test_cron_updates_counts(self):

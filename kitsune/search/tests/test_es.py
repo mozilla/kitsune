@@ -3,18 +3,48 @@ import json
 import unittest
 
 from django.contrib.sites.models import Site
+from django.http import QueryDict
 
 import mock
 from nose.tools import eq_
+from pyquery import PyQuery as pq
 
 from kitsune.questions.models import QuestionMappingType
 from kitsune.questions.tests import question, answer, answervote
 from kitsune.search import es_utils
 from kitsune.search.models import generate_tasks
 from kitsune.search.tests import ElasticTestCase
+from kitsune.sumo.tests import LocalizingClient
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.wiki.models import DocumentMappingType
 from kitsune.wiki.tests import document, revision
+
+
+class ElasticSearchViewPagingTests(ElasticTestCase):
+    client_class = LocalizingClient
+
+    # TODO: Get rid of this test and the implementation. It isnt used.
+    def test_search_metrics(self):
+        """Ensure that query strings are added to search results"""
+        # Need at least one search result to get links.
+        d1 = document(title=u'audio audio', locale=u'en-US', category=10,
+                      save=True)
+        d1.tags.add(u'desktop')
+        revision(document=d1, is_approved=True, save=True)
+
+        self.refresh()
+
+        response = self.client.get(reverse('search.advanced'), {
+            'q': 'audio', 'tags': 'desktop', 'w': '1', 'a': '1'
+        })
+        eq_(200, response.status_code)
+
+        doc = pq(response.content)
+        _, _, qs = doc('a.title:first').attr('href').partition('?')
+        q = QueryDict(qs)
+        eq_('audio', q['s'])
+        eq_('s', q['as'])
+        eq_('0', q['r'])
 
 
 class ElasticSearchSuggestionsTests(ElasticTestCase):

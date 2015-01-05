@@ -230,10 +230,10 @@ def search(request):
     except (RedisError, TypeError):
         pass
 
-    recent_records = Record.objects.order_by('-starttime')[:100]
+    recent_records = Record.uncached.order_by('-starttime')[:100]
 
-    outstanding_records = (Record.objects.filter(endtime__isnull=True)
-                                         .order_by('-starttime'))
+    outstanding_records = (Record.uncached.filter(endtime__isnull=True)
+                                          .order_by('-starttime'))
 
     index_groups = set(settings.ES_INDEXES.keys())
     index_groups |= set(settings.ES_WRITE_INDEXES.keys())
@@ -411,7 +411,7 @@ def troubleshooting_view(request):
     last_50_indexed = list(_fix_results(DocumentMappingType.search()
                                         .order_by('-indexed_on')[:50]))
 
-    last_50_reviewed = list(Document.objects
+    last_50_reviewed = list(Document.uncached
                             .filter(current_revision__is_approved=True)
                             .order_by('-current_revision__reviewed')[:50])
 
@@ -441,7 +441,7 @@ admin.site.register(Synonym, SynonymAdmin)
 
 def synonym_editor(request):
     parse_errors = []
-    all_synonyms = Synonym.objects.all()
+    all_synonyms = Synonym.uncached.all()
 
     if 'sync_synonyms' in request.POST:
         # This is a task. Normally we would call tasks asyncronously, right?
@@ -467,7 +467,7 @@ def synonym_editor(request):
             for (from_words, to_words) in syns_to_remove:
                 # This uses .get() because I want it to blow up if
                 # there isn't exactly 1 matching synonym.
-                (Synonym.objects.get(from_words=from_words, to_words=to_words)
+                (Synonym.uncached.get(from_words=from_words, to_words=to_words)
                  .delete())
 
             for (from_words, to_words) in syns_to_add:

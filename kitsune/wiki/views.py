@@ -1073,8 +1073,8 @@ def get_helpful_votes_async(request, document_slug):
             dates_with_data.add(timestamp)
         timestamp += 24 * 60 * 60
 
-    for flag in ImportantDate.objects.filter(date__gte=min_created,
-                                             date__lte=max_created):
+    for flag in ImportantDate.uncached.filter(date__gte=min_created,
+                                              date__lte=max_created):
         flag_data.append({
             'x': int(time.mktime(flag.date.timetuple())),
             'text': _(flag.text)
@@ -1267,9 +1267,9 @@ def _document_form_initial(document):
             'category': document.category,
             'is_localizable': document.is_localizable,
             'is_archived': document.is_archived,
-            'topics': Topic.objects.filter(
+            'topics': Topic.uncached.filter(
                 document=document).values_list('id', flat=True),
-            'products': Product.objects.filter(
+            'products': Product.uncached.filter(
                 document=document).values_list('id', flat=True),
             'allow_discussion': document.allow_discussion,
             'needs_change': document.needs_change,

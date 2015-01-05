@@ -454,21 +454,18 @@ class RedirectCreationTests(TestCase):
     def test_change_slug(self):
         """Test proper redirect creation on slug change."""
         self.d.slug = 'new-slug'
-        self.d.share_link = 'https://example.com/redirect'
         self.d.save()
-        redirect = Document.objects.get(slug=self.old_slug)
+        redirect = Document.uncached.get(slug=self.old_slug)
+        # "uncached" isn't necessary, but someday a worse caching layer could
+        # make it so.
         eq_(REDIRECT_CONTENT % self.d.title, redirect.current_revision.content)
         eq_(REDIRECT_TITLE % dict(old=self.d.title, number=1), redirect.title)
-
-        # Verify the share_link got cleared out.
-        doc = Document.objects.get(slug=self.d.slug)
-        eq_('', doc.share_link)
 
     def test_change_title(self):
         """Test proper redirect creation on title change."""
         self.d.title = 'New Title'
         self.d.save()
-        redirect = Document.objects.get(title=self.old_title)
+        redirect = Document.uncached.get(title=self.old_title)
         eq_(REDIRECT_CONTENT % self.d.title, redirect.current_revision.content)
         eq_(REDIRECT_SLUG % dict(old=self.d.slug, number=1), redirect.slug)
 
@@ -478,7 +475,7 @@ class RedirectCreationTests(TestCase):
         self.d.slug = 'new-slug'
         self.d.save()
         eq_(REDIRECT_CONTENT % self.d.title,
-            Document.objects.get(
+            Document.uncached.get(
                 slug=self.old_slug,
                 title=self.old_title).current_revision.content)
 
@@ -489,7 +486,7 @@ class RedirectCreationTests(TestCase):
         d.title = 'Weasel'
         d.save()
         # There should be no redirect from Gerbil -> Weasel:
-        assert not Document.objects.filter(title='Gerbil').exists()
+        assert not Document.uncached.filter(title='Gerbil').exists()
 
     def _test_collision_avoidance(self, attr, other_attr, template):
         """When creating redirects, dodge existing docs' titles and slugs."""
@@ -507,8 +504,8 @@ class RedirectCreationTests(TestCase):
         self.d.save()
 
         # It should be called something like Whatever Redirect 2:
-        redirect = Document.objects.get(**{attr: getattr(self,
-                                                         'old_' + attr)})
+        redirect = Document.uncached.get(**{attr: getattr(self,
+                                                          'old_' + attr)})
         eq_(template % dict(old=getattr(self.d, other_attr),
                             number=2), getattr(redirect, other_attr))
 
@@ -524,7 +521,7 @@ class RedirectCreationTests(TestCase):
         """Auto-created redirects should be marked unlocalizable."""
         self.d.slug = 'new-slug'
         self.d.save()
-        redirect = Document.objects.get(slug=self.old_slug)
+        redirect = Document.uncached.get(slug=self.old_slug)
         eq_(False, redirect.is_localizable)
 
 

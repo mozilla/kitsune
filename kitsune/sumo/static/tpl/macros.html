@@ -1,4 +1,4 @@
-{% macro search_result(result) %}
+{% macro search_result(result, s, r, esab) %}
   <div class="result {{ result.type }}">
     <h3><a class="title" href="{{ result.url }}">{{ result.title }}</a></h3>
     <a tabindex="-1" href="{{ result.url }}">{{ result.search_summary | safe }}</a>

@@ -725,7 +725,7 @@ class TestRateLimiting(TestCaseBase):
         for i in range(7):
             self.client.post(url, {'content': content})
 
-        eq_(4, Answer.objects.count())
+        eq_(4, Answer.uncached.count())
 
 
 class TestStats(ElasticTestCase):

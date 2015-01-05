@@ -355,7 +355,7 @@ class NotificationsTests(KBForumTestCase):
         s.value = 'True'
         s.save()
         post(self.client, 'wiki.discuss.new_thread', data, args=[d.slug])
-        t2 = Thread.objects.all().order_by('-id')[0]
+        t2 = Thread.uncached.all().order_by('-id')[0]
         assert NewPostEvent.is_notifying(u, t2), (
             'NewPostEvent should be notifying')
 

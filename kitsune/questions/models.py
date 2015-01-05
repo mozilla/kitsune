@@ -731,7 +731,7 @@ class QuestionMappingType(SearchMappingType):
             # Note: Need to keep this in sync with
             # tasks.update_question_vote_chunk.
             model = cls.get_model()
-            obj = model.objects.values(*all_fields).get(pk=obj_id)
+            obj = model.uncached.values(*all_fields).get(pk=obj_id)
         else:
             fixed_obj = dict([(field, getattr(obj, field))
                               for field in fields])
@@ -781,7 +781,7 @@ class QuestionMappingType(SearchMappingType):
 
         d['question_locale'] = obj['locale']
 
-        answer_values = list(Answer.objects
+        answer_values = list(Answer.uncached
                                    .filter(question=obj_id, is_spam=False)
                                    .values_list('content',
                                                 'creator__username'))
@@ -846,7 +846,7 @@ class QuestionVisits(ModelBase):
             for question_id, visits in counts.iteritems():
                 # We are trying to minimize db calls here. Let's try to update
                 # first, that will be the common case.
-                num = cls.objects.filter(
+                num = cls.uncached.filter(
                     question_id=question_id).update(visits=visits)
 
                 # If we were able to update, we are done.
@@ -862,8 +862,8 @@ class QuestionVisits(ModelBase):
                     # This happens with Django 1.4.6 and South
                     # 0.8.2. If we update either, we might want to see
                     # if this is still a problem.
-                    Question.objects.get(pk=question_id)
-                    cls.objects.create(
+                    Question.uncached.get(pk=question_id)
+                    cls.uncached.create(
                         question_id=question_id, visits=visits)
                 except (Question.DoesNotExist, IntegrityError):
                     # The question doesn't exist anymore, move on.
@@ -943,9 +943,9 @@ class Answer(ModelBase, SearchMixin):
 
         super(Answer, self).save(*args, **kwargs)
 
-        self.question.num_answers = Answer.objects.filter(
+        self.question.num_answers = Answer.uncached.filter(
             question=self.question, is_spam=False).count()
-        latest = Answer.objects.filter(
+        latest = Answer.uncached.filter(
             question=self.question, is_spam=False).order_by('-created')[:1]
         self.question.last_answer = (
             self if new else latest[0] if len(latest) else None)
@@ -969,7 +969,7 @@ class Answer(ModelBase, SearchMixin):
 
     def delete(self, *args, **kwargs):
         """Override delete method to update parent question info."""
-        question = Question.objects.get(pk=self.question.id)
+        question = Question.uncached.get(pk=self.question.id)
         if question.last_answer == self:
             answers = question.answers.all().order_by('-created')
             try:
@@ -1151,7 +1151,7 @@ class AnswerMetricsMappingType(SearchMappingType):
 
         if obj is None:
             model = cls.get_model()
-            obj_dict = model.objects.values(*all_fields).get(pk=obj_id)
+            obj_dict = model.uncached.values(*all_fields).get(pk=obj_id)
         else:
             obj_dict = dict([(field, getattr(obj, field))
                              for field in fields])

@@ -7,7 +7,6 @@ from django.contrib.sites.models import Site
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.core.mail import mail_admins
-from django.core.urlresolvers import reverse as django_reverse
 from django.db import transaction
 
 import waffle
@@ -162,8 +161,9 @@ def add_short_links(doc_ids):
     try:
         pin_this_thread()  # Stick to master.
         for doc in docs:
-            # Use django's reverse so the locale isn't included.
-            endpoint = django_reverse('wiki.document', args=[doc.slug])
+            endpoint = reverse('wiki.document',
+                               locale=doc.locale,
+                               args=[doc.slug])
             doc.share_link = generate_short_url(base_url % endpoint)
             doc.save()
             statsd.incr('wiki.add_short_links.success')
@@ -185,11 +185,11 @@ def rebuild_kb():
     d = (Document.objects.using('default')
          .filter(current_revision__isnull=False).values_list('id', flat=True))
 
-    for chunk in chunked(d, 50):
+    for chunk in chunked(d, 100):
         _rebuild_kb_chunk.apply_async(args=[chunk])
 
 
-@task(rate_limit='5/m')
+@task(rate_limit='10/m')
 @timeit
 def _rebuild_kb_chunk(data):
     """Re-render a chunk of documents.

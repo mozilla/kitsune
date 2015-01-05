@@ -447,7 +447,7 @@ class RevisionTests(TestCaseBase):
 
         eq_(200, response.status_code)
 
-        r2 = Revision.objects.get(pk=r.pk)
+        r2 = Revision.uncached.get(pk=r.pk)
 
         assert fire.called
         assert r2.is_ready_for_localization
@@ -472,7 +472,7 @@ class RevisionTests(TestCaseBase):
 
         eq_(405, response.status_code)
 
-        r2 = Revision.objects.get(pk=r.pk)
+        r2 = Revision.uncached.get(pk=r.pk)
 
         assert not fire.called
         assert not r2.is_ready_for_localization
@@ -494,7 +494,7 @@ class RevisionTests(TestCaseBase):
 
         eq_(403, response.status_code)
 
-        r2 = Revision.objects.get(pk=r.pk)
+        r2 = Revision.uncached.get(pk=r.pk)
 
         assert not fire.called
         assert not r2.is_ready_for_localization
@@ -513,7 +513,7 @@ class RevisionTests(TestCaseBase):
 
         eq_(403, response.status_code)
 
-        r2 = Revision.objects.get(pk=r.pk)
+        r2 = Revision.uncached.get(pk=r.pk)
 
         assert not fire.called
         assert not r2.is_ready_for_localization
@@ -536,7 +536,7 @@ class RevisionTests(TestCaseBase):
 
         eq_(400, response.status_code)
 
-        r2 = Revision.objects.get(pk=r.pk)
+        r2 = Revision.uncached.get(pk=r.pk)
 
         assert not fire.called
         assert not r2.is_ready_for_localization
@@ -987,7 +987,7 @@ class NewRevisionTests(TestCaseBase):
         eq_(302, response.status_code)
 
         # Keywords should be updated now
-        new_rev = Revision.objects.filter(document=doc).order_by('-id')[0]
+        new_rev = Revision.uncached.filter(document=doc).order_by('-id')[0]
         eq_('keyword1 keyword2', new_rev.keywords)
 
 
@@ -1051,7 +1051,7 @@ class DocumentEditTests(TestCaseBase):
         response = post(self.client, 'wiki.edit_document', data,
                         args=[self.d.slug])
         eq_(200, response.status_code)
-        doc = Document.objects.get(pk=self.d.pk)
+        doc = Document.uncached.get(pk=self.d.pk)
         eq_(new_title, doc.title)
 
     def test_change_slug_case(self):
@@ -1063,7 +1063,7 @@ class DocumentEditTests(TestCaseBase):
         response = post(self.client, 'wiki.edit_document', data,
                         args=[self.d.slug])
         eq_(200, response.status_code)
-        doc = Document.objects.get(pk=self.d.pk)
+        doc = Document.uncached.get(pk=self.d.pk)
         eq_(new_slug, doc.slug)
 
     def test_change_title_case(self):
@@ -1075,7 +1075,7 @@ class DocumentEditTests(TestCaseBase):
         response = post(self.client, 'wiki.edit_document', data,
                         args=[self.d.slug])
         eq_(200, response.status_code)
-        doc = Document.objects.get(pk=self.d.pk)
+        doc = Document.uncached.get(pk=self.d.pk)
         eq_(new_title, doc.title)
 
     def test_archive_permission_off(self):
@@ -1089,7 +1089,7 @@ class DocumentEditTests(TestCaseBase):
         response = post(self.client, 'wiki.edit_document', data,
                         args=[self.d.slug])
         eq_(200, response.status_code)
-        doc = Document.objects.get(pk=self.d.pk)
+        doc = Document.uncached.get(pk=self.d.pk)
         assert not doc.is_archived
 
     # TODO: Factor with test_archive_permission_off.
@@ -1104,7 +1104,7 @@ class DocumentEditTests(TestCaseBase):
         response = post(self.client, 'wiki.edit_document', data,
                         args=[self.d.slug])
         eq_(200, response.status_code)
-        doc = Document.objects.get(pk=self.d.pk)
+        doc = Document.uncached.get(pk=self.d.pk)
         assert doc.is_archived
 
     @mock.patch.object(EditDocumentEvent, 'notify')
@@ -1292,7 +1292,7 @@ class ReviewRevisionTests(TestCaseBase):
                         args=[self.document.slug, self.revision.id])
 
         eq_(200, response.status_code)
-        r = Revision.objects.get(pk=self.revision.id)
+        r = Revision.uncached.get(pk=self.revision.id)
         eq_(significance, r.significance)
         assert r.reviewed
         assert r.is_approved
@@ -1372,7 +1372,7 @@ class ReviewRevisionTests(TestCaseBase):
                         args=[self.document.slug, self.revision.id])
 
         eq_(200, response.status_code)
-        r = Revision.objects.get(pk=self.revision.id)
+        r = Revision.uncached.get(pk=self.revision.id)
         assert r.is_ready_for_localization
         eq_(r.reviewer, r.readied_for_localization_by)
         eq_(r.reviewed, r.readied_for_localization)
@@ -1389,7 +1389,7 @@ class ReviewRevisionTests(TestCaseBase):
                          'comment': comment},
                         args=[self.document.slug, self.revision.id])
         eq_(200, response.status_code)
-        r = Revision.objects.get(pk=self.revision.pk)
+        r = Revision.uncached.get(pk=self.revision.pk)
         assert r.reviewed
         assert not r.is_approved
         delay.assert_called_with(r, r.document, comment)
@@ -1414,10 +1414,10 @@ class ReviewRevisionTests(TestCaseBase):
                         {'reject': 'Reject Revision',
                          'comment': comment}, args=[d.slug, self.revision.id])
         eq_(200, response.status_code)
-        r = Revision.objects.get(pk=self.revision.pk)
+        r = Revision.uncached.get(pk=self.revision.pk)
         assert r.reviewed
         assert not r.is_approved
-        d = Document.objects.get(pk=d.pk)
+        d = Document.uncached.get(pk=d.pk)
         assert d.needs_change
         eq_(comment, d.needs_change_comment)
 
@@ -1509,8 +1509,8 @@ class ReviewRevisionTests(TestCaseBase):
                                           'comment': 'something'},
                                     follow=True)
         eq_(200, response.status_code)
-        d = Document.objects.get(pk=doc_es.id)
-        r = Revision.objects.get(pk=rev_es2.id)
+        d = Document.uncached.get(pk=doc_es.id)
+        r = Revision.uncached.get(pk=rev_es2.id)
         eq_(d.current_revision, r)
         assert r.reviewed
         assert r.is_approved
@@ -2437,7 +2437,7 @@ class RevisionDeleteTestCase(TestCaseBase):
         response = post(self.client, 'wiki.delete_revision',
                         args=[doc.slug, rev.id])
         eq_(400, response.status_code)
-        Revision.objects.get(id=rev.id)
+        Revision.uncached.get(id=rev.id)
 
 
 class ApprovedWatchTests(TestCaseBase):

@@ -3,16 +3,16 @@ import datetime
 from south.db import db
 from south.v2 import DataMigration
 from django.db import models
-from django.contrib.auth.hashers import make_password
 
 class Migration(DataMigration):
 
     def forwards(self, orm):
         """Adds a user to be used for migrations."""
-        # ``make_password(None)`` makes an unusable password.
-        orm['auth.User'].objects.create(
-            username='migrations',
-            password=make_password(None))
+        from django.contrib.auth.models import User
+        # Setting password to None makes it an unusable account.
+        User.objects.create_user(username='migrations',
+                                 email='migrations@mozilla.org',
+                                 password=None)
 
     def backwards(self, orm):
         """Removes the user to be used for migrations."""

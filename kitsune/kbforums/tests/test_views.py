@@ -73,7 +73,7 @@ class ThreadTests(KBForumTestCase):
                  {'title': 'new title'}, args=[d.slug, t.id])
         eq_(200, r.status_code)
 
-        edited_t = Thread.objects.get(pk=t.id)
+        edited_t = Thread.uncached.get(pk=t.id)
         eq_('new title', edited_t.title)
 
     def test_disallowed_404(self):

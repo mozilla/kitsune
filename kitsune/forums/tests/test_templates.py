@@ -108,7 +108,7 @@ class PostsTemplateTests(ForumTestCase):
                  {'content': 'More new content'}, args=[f.slug, t.id, p.id])
         eq_(200, r.status_code)
 
-        edited_p = Post.objects.get(pk=p.pk)
+        edited_p = Post.uncached.get(pk=p.pk)
         eq_('More new content', edited_p.content)
 
     def test_preview_reply(self):

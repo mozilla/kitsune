@@ -66,6 +66,10 @@ def upload(request, media_type='image'):
             img = image_form.save(is_draft=None)
             generate_thumbnail.delay(img, 'file', 'thumbnail')
             compress_image.delay(img, 'file')
+            # TODO: We can drop this when we start using Redis.
+            invalidate = Image.objects.exclude(pk=img.pk)
+            if invalidate.exists():
+                Image.objects.invalidate(invalidate[0])
             # Rebuild KB
             schedule_rebuild_kb()
             return HttpResponseRedirect(img.get_absolute_url())

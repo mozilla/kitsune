@@ -9,7 +9,7 @@ DIR=$(dirname $0)
 
 function lint() {
     echo 'Linting...'
-    FILES_TO_LINT=$(git diff --cached --name-only --diff-filter=ACMR)
+    FILES_TO_LINT=$(git diff-index --no-commit-id --name-only -r HEAD | sort | uniq)
     ./scripts/lint.sh $FILES_TO_LINT
     LINT_STATUS=$?
     if [[ $LINT_STATUS -ne 0 ]]; then

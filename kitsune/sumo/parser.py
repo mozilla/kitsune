@@ -13,7 +13,7 @@ from kitsune.sumo.urlresolvers import reverse
 
 
 ALLOWED_ATTRIBUTES = {
-    'a': ['href', 'title', 'class', 'rel', 'data-mozilla-ui-reset'],
+    'a': ['href', 'title', 'class', 'rel'],
     'div': ['id', 'class', 'style', 'data-for', 'title', 'data-target',
             'data-modal'],
     'h1': ['id'],
@@ -198,7 +198,6 @@ class WikiParser(Parser):
         self.registerInternalLinkHook('Image', self._hook_image_tag)
         self.registerInternalLinkHook('Video', self._hook_video)
         self.registerInternalLinkHook('V', self._hook_video)
-        self.registerInternalLinkHook('Button', self._hook_button)
 
         self.youtube_videos = []
 
@@ -341,16 +340,6 @@ class WikiParser(Parser):
             return v
 
         return generate_video(v, params)
-
-    def _hook_button(self, parser, space, btn_type):
-        btn_type, params = build_hook_params(btn_type, self.locale)
-
-        if btn_type == 'refresh':
-            template = 'wikiparser/hook_refresh_button.html'
-        else:
-            return _lazy(u'Button of type "%s" does not exist.') % btn_type
-
-        return jingo.env.get_template(template).render({'params': params})
 
 
 def generate_video(v, params=[]):

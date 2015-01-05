@@ -62,7 +62,7 @@
       </section>
     {% endif %}
     {% if profile.public_email or profile.website or profile.twitter or
-          profile.facebook or profile.mozillians or profile.irc_handle %}
+          profile.facebook or profile.irc_handle %}
       <section>
         {% if profile.public_email and request.user.is_authenticated() %}
           <header>{{ _('Email') }}</header>
@@ -79,10 +79,6 @@
         {% if profile.facebook %}
           <header>{{ _('Facebook') }}</header>
           <a class="detail" rel="nofollow" href="{{ profile.facebook }}">{{ profile.facebook }}</a>
-        {% endif %}
-        {% if profile.mozillians %}
-          <header>{{ _('Mozillians') }}</header>
-          <a class="detail" rel="nofollow" href="{{ profile.mozillians }}">{{ profile.mozillians }}</a>
         {% endif %}
         {% if profile.irc_handle %}
           <header>{{ _('IRC') }}</header>

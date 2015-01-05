@@ -30,15 +30,13 @@ https://github.com/celery/celery/archive/53aac9e633302af2aeb8fd8089ed95b6d1e0c9d
 # sha256: BJ7houDdUh-nH8g2T9aYtS4DTrGyKicd-EBjHJJOoAc
 https://github.com/jbalogh/check/archive/1c73813fcd085020decc6f72caf232f71150db0a.tar.gz#egg=check
 
-# sha256: 95yMBNfrUAcbytZ_0j88EPq2xy1WhXrfhINngGhF1uU
-click==3.3
-
 # commonware: master
 # sha256: k9gjEUXUPKAuHsPO41UzOvqOcq25z4FXZ-F1lXSXdNQ
 https://github.com/jsocol/commonware/archive/b5544185b2d24adc1eb512735990752400ce9cbd.tar.gz#egg=commonware
 
-# sha256: MxnZwEi7pMyJqWkRgdDgIYei8JtDQ_0vz2zL-EtO4Yo
-dennis==0.6.1
+# dennis: tags/v0.4.2^0
+# sha256: P7EjNhkJmOMckhvTr4jIQS23fDqqCjXMSpKkasIQGjc
+https://github.com/willkg/dennis/archive/fb87f585e8f65ae29f86e849710265040e35b689.tar.gz#egg=dennis==0.4.2
 
 # sha256: mmQhHJajJiuyVFrMgq9djz2gF1KZ98fpAeTtRVvpZfs
 Django==1.6.7
@@ -220,8 +218,8 @@ ordereddict==1.1
 # sha256: KGXGizpWOEZrGDe_SmfER-DP33RjMJoGiq0OkKoD9Yo
 Pillow==2.4.0
 
-# sha256: xEI2gj62Insvq4vZ5WYypknmeoAhH4WkouPIXGXIrNk
-polib==1.0.5
+# sha256: eygeXKeZ-QYb8Cny6RHpnfSDoaAu8v-q9z_oAiLyav8
+polib==1.0.3
 
 # premailer: master~49
 # sha256: dtTQM5HdY_jQTr2fEJqDcswNKFyGuc3ekY6sgJWXYGM

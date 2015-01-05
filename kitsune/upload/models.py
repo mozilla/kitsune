@@ -5,12 +5,12 @@ from django.contrib.contenttypes import generic
 from django.db import models
 
 from kitsune.sumo.helpers import reverse
-from kitsune.sumo.models import ModelBase
+from kitsune.sumo.models import NoCacheModelBase
 from kitsune.sumo.utils import auto_delete_files
 
 
 @auto_delete_files
-class ImageAttachment(ModelBase):
+class ImageAttachment(NoCacheModelBase):
     """An image attached to an object using a generic foreign key"""
     file = models.ImageField(upload_to=settings.IMAGE_UPLOAD_PATH,
                              max_length=settings.MAX_FILEPATH_LENGTH)

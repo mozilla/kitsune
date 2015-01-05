@@ -11,7 +11,7 @@
 
   <div class="content-box">
     {% for doc in results %}
-      {{ search_result(doc) }}
+      {{ search_result(doc, q, doc.rank, esab) }}
     {% endfor %}
   </div>
 {% else %}

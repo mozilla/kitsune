@@ -69,7 +69,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         """Posting answer attaches an existing uploaded image to the answer."""
         f = open('kitsune/upload/tests/media/test.jpg')
         post(self.client, 'upload.up_image_async', {'image': f},
-             args=['auth.User', self.user.pk])
+             args=['questions.Question', self.question.id])
         f.close()
 
         content = 'lorem ipsum dolor sit amet'
@@ -144,7 +144,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         eq_(1, len(doc('div.solution')))
         div = doc('h3.is-solution')[0].getparent().getparent()
         eq_('answer-%s' % ans.id, div.attrib['id'])
-        q = Question.objects.get(pk=self.question.id)
+        q = Question.uncached.get(pk=self.question.id)
         eq_(q.solution, ans)
         eq_(q.solver, self.question.creator)
 
@@ -154,13 +154,13 @@ class AnswersTemplateTestCase(TestCaseBase):
         response = post(self.client, 'questions.solve',
                         args=[self.question.id, ans.id])
         eq_(200, response.status_code)
-        q = Question.objects.get(pk=self.question.id)
+        q = Question.uncached.get(pk=self.question.id)
         eq_(q.solution, ans)
 
         # Unsolve and verify
         response = post(self.client, 'questions.unsolve',
                         args=[self.question.id, ans.id])
-        q = Question.objects.get(pk=self.question.id)
+        q = Question.uncached.get(pk=self.question.id)
         eq_(q.solution, None)
         eq_(q.solver, None)
 
@@ -202,13 +202,13 @@ class AnswersTemplateTestCase(TestCaseBase):
         # Solve and verify
         post(self.client, 'questions.solve',
              args=[self.question.id, ans.id])
-        q = Question.objects.get(pk=self.question.id)
+        q = Question.uncached.get(pk=self.question.id)
         eq_(q.solution, ans)
         eq_(q.solver, u)
         # Unsolve and verify
         post(self.client, 'questions.unsolve',
              args=[self.question.id, ans.id])
-        q = Question.objects.get(pk=self.question.id)
+        q = Question.uncached.get(pk=self.question.id)
         eq_(q.solution, None)
         eq_(q.solver, None)
 
@@ -783,7 +783,7 @@ class AnswersTemplateTestCase(TestCaseBase):
                         args=[self.question.id])
         eq_(200, response.status_code)
         doc = pq(response.content)
-        eq_(content, doc('#answer-preview div.content').text())
+        eq_(content, doc('#answer-preview div.main-content').text())
         eq_(num_answers, self.question.answers.count())
 
     def test_preview_answer_as_admin(self):

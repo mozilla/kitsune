@@ -24,7 +24,7 @@ class TwitterAccountSerializer(serializers.ModelSerializer):
 
 class BannedList(generics.ListAPIView):
     """Get all banned users."""
-    queryset = TwitterAccount.objects.filter(banned=True)
+    queryset = TwitterAccount.uncached.filter(banned=True)
     serializer_class = TwitterAccountSerializer
     permission_classes = (TwitterAccountBanPermission,)
     authentication_classes = (SessionAuthentication,)
@@ -32,7 +32,7 @@ class BannedList(generics.ListAPIView):
 
 class IgnoredList(generics.ListAPIView):
     """Get all banned users."""
-    queryset = TwitterAccount.objects.filter(ignored=True)
+    queryset = TwitterAccount.uncached.filter(ignored=True)
     serializer_class = TwitterAccountSerializer
     permission_classes = (TwitterAccountIgnorePermission,)
     authentication_classes = (SessionAuthentication,)
@@ -49,7 +49,7 @@ def ban(request):
                                   'Username not provided.')
 
     username = username[1:] if username.startswith('@') else username
-    account, created = TwitterAccount.objects.get_or_create(
+    account, created = TwitterAccount.uncached.get_or_create(
         username=username,
         defaults={'banned': True}
     )
@@ -75,7 +75,7 @@ def unban(request):
         raise GenericAPIException(status.HTTP_400_BAD_REQUEST,
                                   'Usernames not provided.')
 
-    accounts = TwitterAccount.objects.filter(username__in=usernames)
+    accounts = TwitterAccount.uncached.filter(username__in=usernames)
     for account in accounts:
         if account and account.banned:
             account.banned = False
@@ -97,7 +97,7 @@ def ignore(request):
                                   'Username not provided.')
 
     username = username[1:] if username.startswith('@') else username
-    account, created = TwitterAccount.objects.get_or_create(
+    account, created = TwitterAccount.uncached.get_or_create(
         username=username,
         defaults={'ignored': True}
     )
@@ -123,7 +123,7 @@ def unignore(request):
         raise GenericAPIException(status.HTTP_400_BAD_REQUEST,
                                   'Usernames not provided.')
 
-    accounts = TwitterAccount.objects.filter(username__in=usernames)
+    accounts = TwitterAccount.uncached.filter(username__in=usernames)
     for account in accounts:
         if account and account.ignored:
             account.ignored = False

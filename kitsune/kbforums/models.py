@@ -118,7 +118,7 @@ class Post(ModelBase):
 
     def delete(self, *args, **kwargs):
         """Override delete method to update parent thread info."""
-        thread = Thread.objects.get(pk=self.thread.id)
+        thread = Thread.uncached.get(pk=self.thread.id)
         if thread.last_post_id and thread.last_post_id == self.id:
             thread.update_last_post(exclude_post=self)
         thread.replies = thread.post_set.count() - 2

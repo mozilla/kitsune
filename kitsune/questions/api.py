@@ -4,14 +4,13 @@ import django_filters
 import json
 from django.db.models import Q
 from rest_framework import serializers, viewsets, permissions, filters, status
-from rest_framework.authentication import SessionAuthentication, TokenAuthentication
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from kitsune.products.api import TopicField
 from kitsune.questions.models import (
     Question, Answer, QuestionMetaData, AlreadyTakenException,
-    InvalidUserException, QuestionVote, AnswerVote)
+    InvalidUserException, QuestionVote)
 from kitsune.sumo.api import DateTimeUTCField, OnlyCreatorEdits, GenericAPIException
 from kitsune.users.api import ProfileFKSerializer
 
@@ -37,7 +36,7 @@ class QuestionMetaDataSerializer(serializers.ModelSerializer):
                 setattr(instance, key, attrs.get(key, getattr(instance, key)))
             return instance
         else:
-            obj, created = self.Meta.model.objects.get_or_create(
+            obj, created = self.Meta.model.uncached.get_or_create(
                 question=attrs['question'], name=attrs['name'],
                 defaults={'value': attrs['value']})
             if not created:
@@ -176,7 +175,7 @@ class QuestionFilter(django_filters.FilterSet):
 
 class QuestionViewSet(viewsets.ModelViewSet):
     serializer_class = QuestionSerializer
-    queryset = Question.objects.all()
+    queryset = Question.uncached.all()
     paginate_by = 20
     permission_classes = [
         OnlyCreatorEdits,
@@ -205,7 +204,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
         answer_id = request.DATA.get('answer')
 
         try:
-            answer = Answer.objects.get(pk=answer_id)
+            answer = Answer.uncached.get(pk=answer_id)
         except Answer.DoesNotExist:
             return Response({'answer': 'This field is required.'},
                             status=status.HTTP_400_BAD_REQUEST)
@@ -245,17 +244,14 @@ class QuestionViewSet(viewsets.ModelViewSet):
                             status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            meta = (QuestionMetaData.objects
+            meta = (QuestionMetaData.uncached
                     .get(question=question, name=request.DATA['name']))
             meta.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         except QuestionMetaData.DoesNotExist:
             raise GenericAPIException(404, 'No matching metadata object found.')
 
-    @action(methods=['POST'],
-            permission_classes=[permissions.IsAuthenticatedOrReadOnly],
-            # XXX: Fix this to only allow sessions authentication on non-CORS.
-            authentication_classes=[SessionAuthentication, TokenAuthentication])
+    @action(methods=['POST'], permission_classes=[permissions.IsAuthenticatedOrReadOnly])
     def take(self, request, pk=None):
         question = self.get_object()
         field = serializers.BooleanField()
@@ -319,7 +315,7 @@ class AnswerFilter(django_filters.FilterSet):
 
 class AnswerViewSet(viewsets.ModelViewSet):
     serializer_class = AnswerSerializer
-    queryset = Answer.objects.all()
+    queryset = Answer.uncached.all()
     paginate_by = 20
     permission_classes = [
         OnlyCreatorEdits,
@@ -355,13 +351,3 @@ class AnswerViewSet(viewsets.ModelViewSet):
 
         context = self.get_serializer_context()
         return SerializerClass(instance=page, context=context)
-
-    @action(methods=['POST'], permission_classes=[permissions.IsAuthenticated])
-    def helpful(self, request, pk=None):
-        answer = self.get_object()
-        if not answer.question.editable:
-            raise GenericAPIException(403, 'Answer not editable')
-        if answer.has_voted(request):
-            raise GenericAPIException(409, 'Cannot vote twice')
-        AnswerVote(answer=answer, creator=request.user, helpful=True).save()
-        return Response("", status=204)

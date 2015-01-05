@@ -56,67 +56,6 @@ h2 {
 }
 
 .answers {
-  .attachments-title {
-    border-bottom: 1px solid @textDarkGrey;
-    font-weight: bold;
-    margin: 20px 0 10px;
-    padding: 10px 0;
-  }
-
-  .question-attachments {
-    .attachment {
-      display: inline-block;
-      position: relative;
-
-      .overlay {
-        background: #ccc url('../img/wait-trans.gif') no-repeat center;
-        bottom: 5px;
-        left: 5px;
-        opacity: .5;
-        position: absolute;
-        right: 5px;
-        top: 5px;
-      }
-
-      img {
-        background: url('../img/wait-trans.gif') no-repeat center;
-        border: 1px solid #ccc;
-        margin: 5px;
-        text-align: center;
-        vertical-align: top;
-      }
-
-      input.delete {
-        background: #000;
-        border: 2px solid #fff;
-        .border-radius(1em);
-        color: #fff;
-        cursor: pointer;
-        display: none;
-        font-family: Verdana;
-        font-weight: bold;
-        opacity: .5;
-        padding: 0 .2em;
-        position: absolute;
-        right: 10px;
-        top: 10px;
-
-        &:hover {
-          opacity: 1;
-        }
-      }
-
-      &:hover input.delete {
-        display: block;
-      }
-    }
-
-    img {
-      max-height: 120px;
-      max-width: 120px;
-    }
-  }
-
   .answer {
     &.marked-as-spam {
       .main-content {
@@ -179,14 +118,6 @@ h2 {
     }
   }
 
-  .taken-notice {
-    background: #fff;
-    border-left: 3px @textDarkOrange solid;
-    line-height: 40px;
-    margin: -15px 0 30px 0;
-    padding: 0 10px;
-  }
-
   .main-content {
     background: #fff;
     margin: 0 0 20px 130px;
@@ -214,17 +145,8 @@ h2 {
       margin-top: 12px;
     }
 
-    .content {
-      > p {
-        white-space: pre-wrap;
-      }
-
-      blockquote {
-        background: rgba(180, 192, 200, 0.4);
-        border-radius: 0.3em;
-        margin: 1.5em 0em;
-        padding: 1em;
-      }
+    > p {
+      white-space: pre-wrap;
     }
 
     .read-more {
@@ -763,7 +685,6 @@ h2 {
         text-align: right;
         width: 250px;
       }
-
     }
 
     .thread-meta {
@@ -1338,9 +1259,12 @@ h2 {
       }
     }
 
+    #troubleshooting-install {
+      margin: 10px 0;
+    }
+
     #troubleshooting-manual,
     #troubleshooting-explanation {
-      clear: both;
       font-size: 13px;
       margin: 10px 0;
     }
@@ -1409,12 +1333,9 @@ h2 {
   margin-top: 25px;
 }
 
-.answers {
-  .attachments-upload {
-    margin: 1.5em 0 1.5em 128px;
-  }
-}
 .attachments-upload {
+  margin: 1.5em 0 1.5em 128px;
+
   label {
     display: block;
     margin: .5em 0;
@@ -1630,7 +1551,7 @@ div.ans-attachments {
 }
 
 .edit-question {
-  #add-troubleshooting-info,
+  #troubleshooting-install,
   #troubleshooting-manual {
     display: none;
   }
@@ -1732,12 +1653,4 @@ div.ans-attachments {
       }
     }
   }
-}
-
-.content-raw {
-  display: none;
-}
-
-.help-text {
-  clear: both;
 }

@@ -294,7 +294,7 @@ class NotificationsTests(ForumTestCase):
         s.value = 'True'
         s.save()
         post(self.client, 'forums.new_thread', data, args=[f.slug])
-        t2 = Thread.objects.all().order_by('-id')[0]
+        t2 = Thread.uncached.all().order_by('-id')[0]
         assert NewPostEvent.is_notifying(u, t2), (
             'NewPostEvent should be notifying.')
 

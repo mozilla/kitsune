@@ -242,8 +242,8 @@ class DocumentEditingTests(TestCase):
                      'slug': d.slug,
                      'form': 'doc'})
         self.client.post(reverse('wiki.edit_document', args=[d.slug]), data)
-        eq_(new_title, Document.objects.get(slug=d.slug).title)
-        assert Document.objects.get(title=old_title).redirect_url()
+        eq_(new_title, Document.uncached.get(slug=d.slug).title)
+        assert Document.uncached.get(title=old_title).redirect_url()
 
     def test_retitling_accent(self):
         d = document(title='Umlaut test', save=True)
@@ -254,7 +254,7 @@ class DocumentEditingTests(TestCase):
                      'slug': d.slug,
                      'form': 'doc'})
         self.client.post(reverse('wiki.edit_document', args=[d.slug]), data)
-        eq_(new_title, Document.objects.get(slug=d.slug).title)
+        eq_(new_title, Document.uncached.get(slug=d.slug).title)
 
     def test_changing_products(self):
         """Changing products works as expected."""
@@ -269,7 +269,7 @@ class DocumentEditingTests(TestCase):
                      'form': 'doc'})
         self.client.post(reverse('wiki.edit_document', args=[d.slug]), data)
 
-        eq_(sorted(Document.objects.get(slug=d.slug).products
+        eq_(sorted(Document.uncached.get(slug=d.slug).products
                    .values_list('id', flat=True)),
             sorted([prod.id for prod in [prod_desktop, prod_mobile]]))
 
@@ -277,7 +277,7 @@ class DocumentEditingTests(TestCase):
                      'form': 'doc'})
         self.client.post(reverse('wiki.edit_document', args=[data['slug']]),
                          data)
-        eq_(sorted(Document.objects.get(slug=d.slug).products
+        eq_(sorted(Document.uncached.get(slug=d.slug).products
                    .values_list('id', flat=True)),
             sorted([prod.id for prod in [prod_desktop]]))
 
@@ -344,14 +344,14 @@ class DocumentEditingTests(TestCase):
         # Verify that needs_change can't be set if the user doesn't have
         # the permission.
         self.client.post(reverse('wiki.edit_document', args=[doc.slug]), data)
-        doc = Document.objects.get(pk=doc.pk)
+        doc = Document.uncached.get(pk=doc.pk)
         assert not doc.needs_change
         assert not doc.needs_change_comment
 
         # Give the user permission, now it should work.
         add_permission(self.u, Document, 'edit_needs_change')
         self.client.post(reverse('wiki.edit_document', args=[doc.slug]), data)
-        doc = Document.objects.get(pk=doc.pk)
+        doc = Document.uncached.get(pk=doc.pk)
         assert doc.needs_change
         eq_(comment, doc.needs_change_comment)
 
@@ -359,7 +359,7 @@ class DocumentEditingTests(TestCase):
         data.update({'needs_change': False,
                      'needs_change_comment': comment})
         self.client.post(reverse('wiki.edit_document', args=[doc.slug]), data)
-        doc = Document.objects.get(pk=doc.pk)
+        doc = Document.uncached.get(pk=doc.pk)
         assert not doc.needs_change
         eq_('', doc.needs_change_comment)
 
