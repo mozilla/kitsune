@@ -162,6 +162,7 @@ class ProfileSerializer(serializers.ModelSerializer):
             'website',
             'twitter',
             'facebook',
+            'mozillians',
             'irc_handle',
             'timezone',
             'country',
