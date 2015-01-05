@@ -1,12 +1,11 @@
 from datetime import datetime, timedelta
 
-from django.db.models import Q, F
+from django.db.models import Q, F, Manager
 
 from kitsune.questions import config
-from kitsune.sumo.models import ManagerBase
 
 
-class QuestionManager(ManagerBase):
+class QuestionManager(Manager):
 
     # If question is marked as "locked" or "solved"
     #     the status is "Done"
@@ -60,6 +59,6 @@ class QuestionManager(ManagerBase):
         return self.filter(tags__slug__in=[config.ESCALATE_TAG_NAME])
 
 
-class QuestionLocaleManager(ManagerBase):
+class QuestionLocaleManager(Manager):
     def locales_list(self):
         return self.values_list('locale', flat=True)

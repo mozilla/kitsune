@@ -21,7 +21,7 @@ class ProfileAdmin(admin.ModelAdmin):
                        ('avatar', 'delete_avatar'), 'bio'],
         }),
         ('Contact Info', {
-            'fields': ['website', 'twitter', 'facebook', 'irc_handle'],
+            'fields': ['website', 'twitter', 'facebook', 'mozillians', 'irc_handle'],
             'classes': ['collapse'],
         }),
         ('Location', {

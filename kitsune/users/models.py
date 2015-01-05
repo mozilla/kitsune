@@ -75,6 +75,8 @@ class Profile(ModelBase, SearchMixin):
                               verbose_name=_lazy(u'Twitter URL'))
     facebook = models.URLField(max_length=255, null=True, blank=True,
                                verbose_name=_lazy(u'Facebook URL'))
+    mozillians = models.URLField(max_length=255, null=True, blank=True,
+                               verbose_name=_lazy(u'Mozillians URL'))
     irc_handle = models.CharField(max_length=255, null=True, blank=True,
                                   verbose_name=_lazy(u'IRC nickname'))
     timezone = TimeZoneField(null=True, blank=True,
@@ -178,6 +180,12 @@ class Profile(ModelBase, SearchMixin):
     @property
     def settings(self):
         return self.user.settings
+
+    @property
+    def answer_helpfulness(self):
+        # Avoid circular import
+        from kitsune.questions.models import AnswerVote
+        return AnswerVote.objects.filter(answer__creator=self.user, helpful=True).count()
 
 
 @register_mapping_type
@@ -333,7 +341,7 @@ class Setting(ModelBase):
             raise KeyError(("'{name}' is not a field in "
                             "user.forms.SettingsFrom()").format(name=name))
         try:
-            setting = Setting.uncached.get(user=user, name=name)
+            setting = Setting.objects.get(user=user, name=name)
         except Setting.DoesNotExist:
             value = form.fields[name].initial or ''
             setting = Setting.objects.create(user=user, name=name, value=value)

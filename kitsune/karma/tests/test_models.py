@@ -19,7 +19,7 @@ class KarmaTitleTests(TestCase):
         # Update title to different list of users
         u4 = user(save=True)
         Title.objects.set_top10_contributors([u1.id, u3.id, u4.id])
-        top10_title = Title.uncached.get(name=title)
+        top10_title = Title.objects.get(name=title)
         assert top10_title.is_auto
         eq_(3, len(top10_title.users.all()))
         assert u4 in top10_title.users.all()

@@ -33,9 +33,9 @@ class QuestionVoteTestCase(TestCase):
 
         questionvote(question=q2, save=True)
         questionvote(question=q2, save=True)
-        qs = Question.uncached.all().order_by('-num_votes_past_week')
+        qs = Question.objects.all().order_by('-num_votes_past_week')
         eq_(q1.pk, qs[0].pk)
 
         update_question_vote_chunk([q.pk for q in qs])
-        qs = Question.uncached.all().order_by('-num_votes_past_week')
+        qs = Question.objects.all().order_by('-num_votes_past_week')
         eq_(q2.pk, qs[0].pk)

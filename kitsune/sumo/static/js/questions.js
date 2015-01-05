@@ -38,6 +38,23 @@
             $('#support-search input[name=q]')
                 .val(k.unquote($.cookie('last_search')));
 
+            function takeQuestion() {
+              if ($(this).val().length > 0) {
+                var $form = $(this).closest('form');
+                var url = $form.data('take-question-url');
+                var csrftoken = $('input[name=csrfmiddlewaretoken]').val();
+                $.ajax({
+                  url: url,
+                  method: 'POST',
+                  beforeSend: function(xhr, settings) {
+                    xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                  }
+                });
+              }
+            }
+
+            $('#id_content').on('keyup', _.throttle(takeQuestion, 1000));
+
             $(document).on('click', '#details-edit', function(ev) {
                 ev.preventDefault();
                 $('#question-details').addClass('editing');
@@ -48,6 +65,7 @@
             initCrashIdLinking();
             initEditDetails();
             addReferrerAndQueryToVoteForm();
+            initReplyToAnswer();
             new k.AjaxPreview($('#preview'));
         }
 
@@ -271,6 +289,29 @@
         var postContents = $(".question .main-content, .answer .main-content, #more-system-details");
         postContents.each(function() {
             linkCrashIds($(this));
+        });
+    }
+
+    function initReplyToAnswer() {
+        $('a.quoted-reply').click(function() {
+            var contentId = $(this).data('content-id'),
+                $content = $('#' + contentId),
+                text = $content.find('.content-raw').text(),
+                user = $content.find('.author-name').text(),
+                reply = template("''{user} [[#{contentId}|said]]''\n<blockquote>\n{text}\n</blockquote>\n\n"),
+                reply_text,
+                $textarea = $('#id_content'),
+                oldtext = $textarea.val();
+
+            reply_text = reply({'user': user, 'contentId': contentId, 'text': text});
+
+            $textarea.val(oldtext + reply_text);
+
+            setTimeout(function() {
+                $textarea.focus();
+            }, 10);
+
+            return true;
         });
     }
 

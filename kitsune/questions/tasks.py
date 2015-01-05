@@ -36,7 +36,7 @@ def update_question_votes(question_id):
     pin_this_thread()
 
     try:
-        q = Question.uncached.get(id=question_id)
+        q = Question.objects.get(id=question_id)
         q.sync_num_votes_past_week()
         q.save(force_update=True)
     except Question.DoesNotExist:

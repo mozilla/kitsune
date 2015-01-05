@@ -66,12 +66,12 @@ class TweetListTests(TestCase):
 
     def test_hide_tweets(self):
         """Try hiding tweets."""
-        tw = Tweet.objects.no_cache().filter(reply_to=None, hidden=False)[0]
+        tw = Tweet.objects.filter(reply_to=None, hidden=False)[0]
         r = self._hide_tweet(tw.tweet_id)
         eq_(r.status_code, 200)
 
         # Re-fetch from database. Should be hidden.
-        tw = Tweet.objects.no_cache().get(tweet_id=tw.tweet_id)
+        tw = Tweet.objects.get(tweet_id=tw.tweet_id)
         eq_(tw.hidden, True)
 
         # Hiding it again should work.

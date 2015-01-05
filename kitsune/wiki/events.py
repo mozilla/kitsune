@@ -132,7 +132,7 @@ class _BaseProductFilter(object):
     revision.
     """
     def _filter_by_product(self, all_watchers):
-        products = self.revision.document.get_products(uncached=True)
+        products = self.revision.document.get_products()
         product_hashes = [hash_to_unsigned(s.slug) for s in products]
 
         watchers_and_watches = []

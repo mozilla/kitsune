@@ -1,26 +1,15 @@
 # -*- coding: utf-8 -*-
 import datetime
 from south.db import db
-from south.v2 import SchemaMigration
+from south.v2 import DataMigration
 from django.db import models
 
-
-class Migration(SchemaMigration):
-
-    no_dry_run = True
+class Migration(DataMigration):
 
     def forwards(self, orm):
-        answers = orm.Answer.objects.filter(
-            is_spam=True).values_list('id', flat=True)
-        questions = orm.Question.objects.filter(answers__in=answers)
-
-        for q in questions:
-            q.num_answers = orm.Answer.objects.filter(
-                question=q, is_spam=False).count()
-            latest = orm.Answer.objects.filter(
-                question=q, is_spam=False).order_by('-created')[:1]
-            q.last_answer = latest[0] if len(latest) else None
-            q.save()
+        ct = orm['contenttypes.contenttype'].objects.filter(
+            app_label='questions', model='question')
+        orm.ImageAttachment.objects.filter(content_type=ct).delete()
 
     def backwards(self, orm):
         raise RuntimeError('Cannot reverse this migration.')
@@ -79,7 +68,6 @@ class Migration(SchemaMigration):
             'image_cachebuster': ('django.db.models.fields.CharField', [], {'default': 'None', 'max_length': '32', 'null': 'True'}),
             'image_offset': ('django.db.models.fields.IntegerField', [], {'default': 'None', 'null': 'True'}),
             'platforms': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['products.Platform']", 'symmetrical': 'False'}),
-            'questions_enabled': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'slug': ('django.db.models.fields.SlugField', [], {'max_length': '50'}),
             'sprite_height': ('django.db.models.fields.IntegerField', [], {'default': 'None', 'null': 'True'}),
             'title': ('django.db.models.fields.CharField', [], {'max_length': '255', 'db_index': 'True'}),
@@ -109,7 +97,7 @@ class Migration(SchemaMigration):
             'page': ('django.db.models.fields.IntegerField', [], {'default': '1'}),
             'question': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'answers'", 'to': u"orm['questions.Question']"}),
             'updated': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'db_index': 'True'}),
-            'updated_by': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'answers_updated'", 'null': 'True', 'to': u"orm['auth.User']"})
+            'updated_by': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'answers_updated'", 'null': 'True', 'to': u"orm['auth.User']"})
         },
         u'questions.answervote': {
             'Meta': {'object_name': 'AnswerVote'},
@@ -129,18 +117,24 @@ class Migration(SchemaMigration):
             'is_archived': ('django.db.models.fields.NullBooleanField', [], {'default': 'False', 'null': 'True', 'blank': 'True'}),
             'is_locked': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'is_spam': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'last_answer': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'last_reply_in'", 'null': 'True', 'to': u"orm['questions.Answer']"}),
+            'last_answer': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'last_reply_in'", 'null': 'True', 'to': u"orm['questions.Answer']"}),
             'locale': ('kitsune.sumo.models.LocaleField', [], {'default': "'en-US'", 'max_length': '7'}),
             'marked_as_spam': ('django.db.models.fields.DateTimeField', [], {'default': 'None', 'null': 'True'}),
             'marked_as_spam_by': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'questions_marked_as_spam'", 'null': 'True', 'to': u"orm['auth.User']"}),
             'num_answers': ('django.db.models.fields.IntegerField', [], {'default': '0', 'db_index': 'True'}),
             'num_votes_past_week': ('django.db.models.fields.PositiveIntegerField', [], {'default': '0', 'db_index': 'True'}),
-            'products': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['products.Product']", 'symmetrical': 'False'}),
+            'product': ('django.db.models.fields.related.ForeignKey', [], {'default': 'None', 'related_name': "'questions'", 'null': 'True', 'to': u"orm['products.Product']"}),
             'solution': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'solution_for'", 'null': 'True', 'to': u"orm['questions.Answer']"}),
             'title': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
-            'topics': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['products.Topic']", 'symmetrical': 'False'}),
+            'topic': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'questions'", 'null': 'True', 'to': u"orm['products.Topic']"}),
             'updated': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'db_index': 'True'}),
-            'updated_by': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'questions_updated'", 'null': 'True', 'to': u"orm['auth.User']"})
+            'updated_by': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'questions_updated'", 'null': 'True', 'to': u"orm['auth.User']"})
+        },
+        u'questions.questionlocale': {
+            'Meta': {'object_name': 'QuestionLocale'},
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'locale': ('kitsune.sumo.models.LocaleField', [], {'default': "'en-US'", 'unique': 'True', 'max_length': '7'}),
+            'products': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'questions_locales'", 'symmetrical': 'False', 'to': u"orm['products.Product']"})
         },
         u'questions.questionmetadata': {
             'Meta': {'unique_together': "(('question', 'name'),)", 'object_name': 'QuestionMetaData'},
@@ -170,7 +164,17 @@ class Migration(SchemaMigration):
             'key': ('django.db.models.fields.CharField', [], {'max_length': '40', 'db_index': 'True'}),
             'object_id': ('django.db.models.fields.PositiveIntegerField', [], {'null': 'True', 'blank': 'True'}),
             'value': ('django.db.models.fields.CharField', [], {'max_length': '1000'})
+        },
+        u'upload.imageattachment': {
+            'Meta': {'object_name': 'ImageAttachment'},
+            'content_type': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['contenttypes.ContentType']"}),
+            'creator': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'image_attachments'", 'to': u"orm['auth.User']"}),
+            'file': ('django.db.models.fields.files.ImageField', [], {'max_length': '250'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'object_id': ('django.db.models.fields.PositiveIntegerField', [], {}),
+            'thumbnail': ('django.db.models.fields.files.ImageField', [], {'max_length': '100', 'null': 'True'})
         }
     }
 
-    complete_apps = ['questions']
+    complete_apps = ['questions', 'upload']
+    symmetrical = True

@@ -19,6 +19,7 @@ from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.authtoken.models import Token
 
 from kitsune.access.decorators import login_required
+from kitsune.questions.utils import num_answers, num_solutions, num_questions
 from kitsune.sumo.api import DateTimeUTCField, GenericAPIException, PermissionMod
 from kitsune.sumo.decorators import json_view
 from kitsune.users.helpers import profile_avatar
@@ -47,7 +48,7 @@ def usernames(request):
         return []
     with statsd.timer('users.api.usernames.search'):
         profiles = (
-            Profile.uncached.filter(Q(name__istartswith=pre))
+            Profile.objects.filter(Q(name__istartswith=pre))
             .values_list('user_id', flat=True))
         users = (
             User.objects.filter(
@@ -126,7 +127,7 @@ class UserSettingSerializer(serializers.ModelSerializer):
             return instance
         else:
             user = attrs['user'] or self.context['view'].object
-            obj, created = self.Meta.model.uncached.get_or_create(
+            obj, created = self.Meta.model.objects.get_or_create(
                 user=user, name=attrs['name'], defaults={'value': attrs['value']})
             if not created:
                 obj.value = attrs['value']
@@ -143,6 +144,10 @@ class ProfileSerializer(serializers.ModelSerializer):
              (source='user.email', required=False))
     settings = (PermissionMod(UserSettingSerializer, permissions=[OnlySelf])
                 (many=True, read_only=True))
+    helpfulness = serializers.Field(source='answer_helpfulness')
+    answer_count = serializers.SerializerMethodField('get_answer_count')
+    question_count = serializers.SerializerMethodField('get_question_count')
+    solution_count = serializers.SerializerMethodField('get_solution_count')
     # These are write only fields. It is very important they stays that way!
     password = serializers.WritableField(source='user.password', write_only=True)
 
@@ -157,6 +162,7 @@ class ProfileSerializer(serializers.ModelSerializer):
             'website',
             'twitter',
             'facebook',
+            'mozillians',
             'irc_handle',
             'timezone',
             'country',
@@ -164,14 +170,27 @@ class ProfileSerializer(serializers.ModelSerializer):
             'locale',
             'email',
             'settings',
+            'helpfulness',
+            'question_count',
+            'answer_count',
+            'solution_count',
             # Password and email are here so they can be involved in write
             # operations. They is marked as write-only above, so will not be
             # visible.
             'password',
         ]
 
-    def get_avatar_url(self, obj):
-        return profile_avatar(obj.user)
+    def get_avatar_url(self, profile):
+        return profile_avatar(profile.user)
+
+    def get_question_count(self, profile):
+        return num_questions(profile.user)
+
+    def get_answer_count(self, profile):
+        return num_answers(profile.user)
+
+    def get_solution_count(self, profile):
+        return num_solutions(profile.user)
 
     def restore_object(self, attrs, instance=None):
         """
@@ -310,7 +329,7 @@ class ProfileViewSet(mixins.CreateModelMixin,
         u = User.objects.create(username=name)
         u.set_password(password)
         u.save()
-        p = Profile.uncached.create(user=u)
+        p = Profile.objects.create(user=u)
         token, _ = Token.objects.get_or_create(user=u)
         serializer = ProfileSerializer(instance=p)
 
@@ -340,7 +359,7 @@ class ProfileViewSet(mixins.CreateModelMixin,
             raise GenericAPIException(400, {'name': 'This field is required'})
 
         try:
-            meta = (Setting.uncached
+            meta = (Setting.objects
                     .get(user=profile.user, name=request.DATA['name']))
             meta.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)

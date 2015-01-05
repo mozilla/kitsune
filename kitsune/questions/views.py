@@ -413,7 +413,9 @@ def question_details(request, template, question_id, form=None,
         parse_troubleshooting(troubleshooting_json))
 
     if request.user.is_authenticated():
-        ans_['images'] = question.images.filter(creator=request.user)
+        ct = ContentType.objects.get_for_model(request.user)
+        ans_['images'] = ImageAttachment.objects.filter(creator=request.user,
+                                                        content_type=ct)
 
     extra_kwargs.update(ans_)
 
@@ -662,6 +664,12 @@ def aaq(request, product_key=None, category_key=None, showform=False,
     form = NewQuestionForm(product=product_config, category=category_config,
                            data=request.POST)
 
+    # NOJS: upload image
+    if 'upload_image' in request.POST:
+        upload_imageattachment(request, request.user)
+
+    user_ct = ContentType.objects.get_for_model(request.user)
+
     if form.is_valid() and not is_ratelimited(request, increment=True,
                                               rate='5/d', ip=False,
                                               keys=user_or_ip('aaq-day')):
@@ -679,6 +687,14 @@ def aaq(request, product_key=None, category_key=None, showform=False,
                 question.topic = Topic.objects.get(slug=t, product=product_obj)
 
         question.save()
+
+        qst_ct = ContentType.objects.get_for_model(question)
+        # Move over to the question all of the images I added to the
+        # reply form
+        up_images = ImageAttachment.objects.filter(creator=request.user,
+                                                   content_type=user_ct)
+        up_images.update(content_type=qst_ct, object_id=question.id)
+
         # User successfully submitted a new question
         statsd.incr('questions.new')
         question.add_metadata(**form.cleaned_metadata)
@@ -716,9 +732,13 @@ def aaq(request, product_key=None, category_key=None, showform=False,
     if getattr(request, 'limited', False):
         raise PermissionDenied
 
+    images = ImageAttachment.objects.filter(creator=request.user,
+                                            content_type=user_ct)
+
     statsd.incr('questions.aaq.details-form-error')
     return render(request, template, {
         'form': form,
+        'images': images,
         'products': config.products,
         'current_product': product_config,
         'current_category': category_config,
@@ -779,6 +799,9 @@ def edit_question(request, question_id):
     if not question.allows_edit(user):
         raise PermissionDenied
 
+    ct = ContentType.objects.get_for_model(question)
+    images = ImageAttachment.objects.filter(content_type=ct)
+
     if request.method == 'GET':
         initial = question.metadata.copy()
         initial.update(title=question.title, content=question.content)
@@ -789,6 +812,10 @@ def edit_question(request, question_id):
         form = EditQuestionForm(data=request.POST,
                                 product=question.product_config,
                                 category=question.category_config)
+
+        # NOJS: upload images, if any
+        upload_imageattachment(request, question)
+
         if form.is_valid():
             question.title = form.cleaned_data['title']
             question.content = form.cleaned_data['content']
@@ -806,6 +833,7 @@ def edit_question(request, question_id):
     return render(request, 'questions/edit_question.html', {
         'question': question,
         'form': form,
+        'images': images,
         'current_product': question.product_config,
         'current_category': question.category_config})
 
@@ -845,7 +873,7 @@ def reply(request, question_id):
 
     # NOJS: upload image
     if 'upload_image' in request.POST:
-        upload_imageattachment(request, question)
+        upload_imageattachment(request, request.user)
         return question_details(request, question_id=question_id, form=form)
 
     if form.is_valid() and not request.limited:
@@ -855,11 +883,13 @@ def reply(request, question_id):
             answer_preview = answer
         else:
             answer.save()
-            ct = ContentType.objects.get_for_model(answer)
+            ans_ct = ContentType.objects.get_for_model(answer)
             # Move over to the answer all of the images I added to the
             # reply form
-            up_images = question.images.filter(creator=request.user)
-            up_images.update(content_type=ct, object_id=answer.id)
+            user_ct = ContentType.objects.get_for_model(request.user)
+            up_images = ImageAttachment.objects.filter(creator=request.user,
+                                                       content_type=user_ct)
+            up_images.update(content_type=ans_ct, object_id=answer.id)
             statsd.incr('questions.answer')
 
             # Handle needsinfo tag

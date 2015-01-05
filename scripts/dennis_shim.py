@@ -20,8 +20,8 @@ for item in list(sys.path):
 sys.path[:0] = new_sys_path
 
 # Now we can import from third-party libraries.
-from dennis.cmdline import cmdline_handler
+from dennis.cmdline import click_run
 
 
 if __name__ == '__main__':
-    sys.exit(cmdline_handler("dennis-cmd", sys.argv[1:]))
+    click_run()

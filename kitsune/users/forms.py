@@ -19,7 +19,7 @@ from kitsune.sumo.widgets import ImageWidget
 from kitsune.upload.forms import clean_image_extension
 from kitsune.upload.utils import check_file_size, FileTooLargeError
 from kitsune.users.models import Profile
-from kitsune.users.widgets import FacebookURLWidget, TwitterURLWidget
+from kitsune.users.widgets import FacebookURLWidget, TwitterURLWidget, MozilliansURLWidget
 
 
 USERNAME_INVALID = _lazy(u'Username may contain only English letters, '
@@ -178,11 +178,12 @@ class ProfileForm(forms.ModelForm):
     class Meta(object):
         model = Profile
         fields = ('name', 'public_email', 'bio', 'website', 'twitter',
-                  'facebook', 'irc_handle', 'timezone', 'country', 'city',
+                  'facebook', 'mozillians', 'irc_handle', 'timezone', 'country', 'city',
                   'locale')
         widgets = {
             'twitter': TwitterURLWidget,
             'facebook': FacebookURLWidget,
+            'mozillians': MozilliansURLWidget,
         }
 
     def clean_twitter(self):
@@ -196,7 +197,12 @@ class ProfileForm(forms.ModelForm):
         if facebook and not re.match(FacebookURLWidget.pattern, facebook):
             raise forms.ValidationError(_(u'Please enter a facebook.com URL.'))
         return facebook
-
+        
+    def clean_mozillians(self):
+        mozillians = self.cleaned_data['mozillians']
+        if mozillians and not re.match(MozilliansURLWidget.pattern, mozillians):
+            raise forms.ValidationError(_(u'Please enter a mozillians.org URL.'))
+        return mozillians
 
 class AvatarForm(forms.ModelForm):
     """The form for editing the user's avatar."""

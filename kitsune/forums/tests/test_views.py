@@ -177,7 +177,7 @@ class ThreadTests(ForumTestCase):
         self.client.login(username=u.username, password='testpass')
         post(self.client, 'forums.edit_thread', {'title': 'A new title'},
              args=[t.forum.slug, t.id])
-        edited_t = Thread.uncached.get(id=t.id)
+        edited_t = Thread.objects.get(id=t.id)
         eq_('A new title', edited_t.title)
 
     def test_edit_thread_moderator(self):
@@ -195,7 +195,7 @@ class ThreadTests(ForumTestCase):
         r = post(self.client, 'forums.edit_thread',
                  {'title': 'new title'}, args=[f.slug, t.id])
         eq_(200, r.status_code)
-        edited_t = Thread.uncached.get(id=t.id)
+        edited_t = Thread.objects.get(id=t.id)
         eq_('new title', edited_t.title)
 
     def test_new_thread_redirect(self):
@@ -339,7 +339,7 @@ class ThreadPermissionsTests(ForumTestCase):
                         {'forum': f.id},
                         args=[t.forum.slug, t.id])
         eq_(200, response.status_code)
-        t = Thread.uncached.get(pk=t.pk)
+        t = Thread.objects.get(pk=t.pk)
         eq_(f.id, t.forum.id)
 
     def test_post_edit_403(self):

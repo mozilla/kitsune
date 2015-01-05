@@ -29,7 +29,7 @@ class EditGroupProfileTests(TestCase):
                                      args=[slug]),
                              {'information': '=new info='})
         eq_(r.status_code, 302)
-        gp = GroupProfile.uncached.get(slug=slug)
+        gp = GroupProfile.objects.get(slug=slug)
         eq_(gp.information, '=new info=')
 
     def test_edit_with_perm(self):
@@ -95,7 +95,7 @@ class EditAvatarTests(TestCase):
         eq_(302, r.status_code)
         url = reverse('groups.profile', args=[self.group_profile.slug])
         eq_('http://testserver/en-US' + url, r['location'])
-        gp = GroupProfile.uncached.get(slug=self.group_profile.slug)
+        gp = GroupProfile.objects.get(slug=self.group_profile.slug)
         eq_('', gp.avatar.name)
 
 

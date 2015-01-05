@@ -1,22 +1,23 @@
 # -*- coding: utf-8 -*-
 import datetime
 from south.db import db
-from south.v2 import DataMigration
+from south.v2 import SchemaMigration
 from django.db import models
-from django.contrib.auth.hashers import make_password
 
-class Migration(DataMigration):
+
+class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        """Adds a user to be used for migrations."""
-        # ``make_password(None)`` makes an unusable password.
-        orm['auth.User'].objects.create(
-            username='migrations',
-            password=make_password(None))
+        # Adding field 'Profile.mozillians'
+        db.add_column(u'users_profile', 'mozillians',
+                      self.gf('django.db.models.fields.URLField')(max_length=255, null=True, blank=True),
+                      keep_default=False)
+
 
     def backwards(self, orm):
-        """Removes the user to be used for migrations."""
-        orm['auth.User'].objects.get(username='migrations').delete()
+        # Deleting field 'Profile.mozillians'
+        db.delete_column(u'users_profile', 'mozillians')
+
 
     models = {
         u'auth.group': {
@@ -78,6 +79,7 @@ class Migration(DataMigration):
             'facebook': ('django.db.models.fields.URLField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'}),
             'irc_handle': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'}),
             'locale': ('kitsune.sumo.models.LocaleField', [], {'default': "'en-US'", 'max_length': '7'}),
+            'mozillians': ('django.db.models.fields.URLField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'}),
             'public_email': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'timezone': ('timezones.fields.TimeZoneField', [], {'null': 'True', 'blank': 'True'}),
@@ -101,4 +103,3 @@ class Migration(DataMigration):
     }
 
     complete_apps = ['users']
-    symmetrical = True

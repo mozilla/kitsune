@@ -73,6 +73,14 @@ TWITTER_URLS = (
     ('http://twitter.com/', False),
 )
 
+MOZILLIANS_URLS = (
+    ('https://mozillians.org/valid', True),
+    ('http://www.mozillians.org/valid', True),
+    ('htt://mozillians.org/invalid', False),
+    ('http://notmozillians.org/invalid', False),
+    ('http://mozillians.org/', False),
+)
+
 
 class ProfileFormTestCase(TestCaseBase):
     form = ProfileForm()
@@ -99,6 +107,16 @@ class ProfileFormTestCase(TestCaseBase):
         pattern = re.compile(twitter.attrib['pattern'])
         for url, match in TWITTER_URLS:
             eq_(bool(pattern.match(url)), match)
+            
+    def test_mozillians_pattern_attr(self):
+        """Mozillians field has the correct pattern attribute."""
+        fragment = pq(self.form.as_ul())
+        mozillians = fragment('#id_mozillians')[0]
+        assert 'pattern' in mozillians.attrib
+
+        pattern = re.compile(mozillians.attrib['pattern'])
+        for url, match in MOZILLIANS_URLS:
+            eq_(bool(pattern.match(url)), match)
 
     def test_clean_facebook(self):
         clean = self.form.clean_facebook
@@ -117,7 +135,15 @@ class ProfileFormTestCase(TestCaseBase):
                 clean()  # Should not raise.
             else:
                 self.assertRaises(ValidationError, clean)
-
+    
+    def test_clean_mozillians(self):
+        clean = self.form.clean_mozillians
+        for url, match in MOZILLIANS_URLS:
+            self.form.cleaned_data['mozillians'] = url
+            if match:
+                clean()  # Should not raise.
+            else:
+                self.assertRaises(ValidationError, clean)
 
 class RegisterFormTests(TestCaseBase):
     """RegisterForm tests."""

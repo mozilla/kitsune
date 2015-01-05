@@ -192,10 +192,10 @@ def kb_overview_rows(mode=None, max=None, locale=None, product=None):
     if mode is None:
         mode = LAST_30_DAYS
 
-    docs = Document.uncached.filter(locale=settings.WIKI_DEFAULT_LANGUAGE,
-                                    is_archived=False,
-                                    is_template=False,
-                                    current_revision__isnull=False)
+    docs = Document.objects.filter(locale=settings.WIKI_DEFAULT_LANGUAGE,
+                                   is_archived=False,
+                                   is_template=False,
+                                   current_revision__isnull=False)
 
     docs = docs.exclude(html__startswith=REDIRECT_HTML)
 
@@ -281,7 +281,7 @@ def l10n_overview_rows(locale, product=None):
         cursor.execute(sql, params)
         return cursor.fetchone()[0]
 
-    total = Document.uncached.filter(
+    total = Document.objects.filter(
         locale=settings.WIKI_DEFAULT_LANGUAGE,
         is_archived=False,
         current_revision__isnull=False,

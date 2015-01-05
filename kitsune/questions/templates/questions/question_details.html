@@ -1,6 +1,6 @@
 {% extends "questions/base.html" %}
 {% from "layout/errorlist.html" import errorlist %}
-{% from "upload/attachments.html" import attachments_form %}
+{% from "upload/attachments.html" import attachments_form, attachment %}
 {% from "includes/common_macros.html" import content_editor with context %}
 {% from "wiki/includes/flag_form.html" import flag_form with context %}
 {% from "questions/includes/questions.html" import troubleshooting_info %}
@@ -29,11 +29,19 @@
 
 {% block above_main %}
   <h1>{{ _('Support Forum') }}</h1>
+
+  {% if question.is_taken %}
+    <div class="taken-notice">
+      {{ _('{user} is currently working on this problem.')|f(user=question.taken_by) }}
+      <a href="#question-reply">{{ _('Post a reply') }}</a> |
+      <a href="{{ url('questions.list', question.product.slug) }}">{{ _('View other questions that need attention.') }}</a>
+    </div>
+  {% endif %}
 {% endblock %}
 
 {% block content %}
   <article>
-    <div class="question grid_9" itemscope itemtype="http://schema.org/Question">
+    <div id="question-{{ question.id }}" class="question grid_9" itemscope itemtype="http://schema.org/Question">
       {% if question.is_locked or question.is_archived %}
         <div class="notice">
           {% if question.is_locked and not question.is_archived %}
@@ -106,7 +114,7 @@
           </a>
         </div>
         <div class="asked-by">
-          <a href="{{ profile_url(question.creator, request.user == question.creator) }}">{{ display_name(question.creator) }}</a>
+          <a class="author-name" href="{{ profile_url(question.creator, request.user == question.creator) }}">{{ display_name(question.creator) }}</a>
         </div>
         <div class="asked-on">
           {{ _('Posted') }}<br>
@@ -116,6 +124,18 @@
 
       <div class="main-content">
         <div itemprop="text">{{ question.content_parsed|safe }}</div>
+        <div class="content-raw">{{ question.content }}</div>
+
+        {% if question.images.count() %}
+          <div class="attachments-title">
+            {{ _('Attached screenshots') }}
+          </div>
+          <div class="question-attachments attachments-list">
+          {% for image in question.images.all() %}
+            {{ attachment(image, user, False) }}
+          {% endfor %}
+          </div>
+        {% endif %}
 
         {% if question.updated_by %}
           <p class="edited">
@@ -145,7 +165,7 @@
               </form>
             </div>
           {% endif %}
-          <a class="btn" href="#question-reply">{{ _('Post a Reply') }}</a>
+          <a class="btn quoted-reply" href="#question-reply" data-content-id="question-{{ question.id }}">{{ _('Post a Reply') }}</a>
         </div>
       {% endif %}
     </div>
@@ -434,7 +454,7 @@
       <div class="answer-tools nopadding">
         <h3>{{ _('Post a Reply') }}</h3>
       </div>
-      <form action="{{ url('questions.reply', question_id=question.id) }}#question-reply" method="post" enctype="multipart/form-data">
+      <form action="{{ url('questions.reply', question_id=question.id) }}#question-reply" method="post" enctype="multipart/form-data" data-take-question-url="{{ url('question-take', question.pk) }}">
         {{ csrf() }}
         {{ errorlist(form) }}
 
@@ -454,7 +474,7 @@
           {% endif %}
         </div>
 
-        {{ attachments_form('questions.Question', question.pk, images, settings, user) }}
+        {{ attachments_form('auth.User', user.pk, images, settings, user) }}
 
         <div class="answer-tools nopadding">
           <button type="submit" class="btn btn-submit big">{{ _('Post Reply') }}</button>

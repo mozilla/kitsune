@@ -77,7 +77,7 @@ class DeleteEditImageTests(TestCase):
                  args=['image', img.id])
 
         eq_(200, r.status_code)
-        eq_('arrr', Image.uncached.get().description)
+        eq_('arrr', Image.objects.get().description)
 
     def test_edit_image_without_permissions(self):
         """Can't edit an image I didn't create."""
