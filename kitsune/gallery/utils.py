@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.conf import settings
 from django.core.exceptions import PermissionDenied
 from django.core.files import File
@@ -62,4 +64,5 @@ def check_media_permissions(media, user, perm_type):
 
 
 def get_draft_title(user):
-    return u'Draft for user %s' % user.username
+    return u'Draft for user %s. Created at: %s' % (user.username,
+                                                   datetime.now())
