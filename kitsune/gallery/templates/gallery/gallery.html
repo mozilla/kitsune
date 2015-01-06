@@ -1,6 +1,9 @@
 {% extends "base.html" %}
 {% set title = _('Media Gallery') %}
 {% set styles = ('gallery',) %}
+{% if submitted %}
+  {% set classes = 'submitted' %}
+{% endif %}
 {% set scripts = ('wiki', 'gallery') %}
 {% set crumbs = [(None, _('Media Gallery'))] %}
 

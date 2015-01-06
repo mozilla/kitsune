@@ -472,8 +472,9 @@
 
     // Open modal window from media page
     if (document.location.hash === '#upload' ||
-        $('#gallery-upload-type').hasClass('draft')) {
-        $('#btn-upload').click();
+        $('#gallery-upload-type').hasClass('draft') ||
+        $('body').hasClass('submitted')) {
+      $('#btn-upload').click();
     }
 
 })(jQuery);

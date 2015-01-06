@@ -51,7 +51,8 @@ def gallery(request, media_type='image'):
     return render(request, 'gallery/gallery.html', {
         'media': media,
         'media_type': media_type,
-        'image_form': image_form})
+        'image_form': image_form,
+        'submitted': request.method == 'POST'})
 
 
 @login_required
