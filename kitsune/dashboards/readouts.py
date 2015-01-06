@@ -708,14 +708,28 @@ class MostVisitedTranslationsReadout(MostVisitedDefaultLanguageReadout):
         else:
             period = self.default_mode
 
+        ignore_categories = [str(ADMINISTRATION_CATEGORY),
+                             str(NAVIGATION_CATEGORY),
+                             str(HOW_TO_CONTRIBUTE_CATEGORY)]
+
         # Filter by product if specified.
         if self.product:
             extra_joins = PRODUCT_FILTER
             params = (self.locale, period, self.product.id,
                       settings.WIKI_DEFAULT_LANGUAGE)
+
+            has_forum = self.product.questions_locales.filter(
+                locale=self.locale).exists()
         else:
             extra_joins = ''
             params = (self.locale, period, settings.WIKI_DEFAULT_LANGUAGE)
+
+        if not self.product or not has_forum:
+            ignore_categories.append(str(CANNED_RESPONSES_CATEGORY))
+
+        extra_where = ('AND NOT engdoc.category IN (' +
+                       ', '.join(ignore_categories) +
+                       ') ')
 
         # Immediate Update Needed or Update Needed: link to /edit.
         # Review Needed: link to /history.
@@ -726,7 +740,7 @@ class MostVisitedTranslationsReadout(MostVisitedDefaultLanguageReadout):
             MOST_SIGNIFICANT_CHANGE_READY_TO_TRANSLATE + ', ' +
             NEEDS_REVIEW +
             most_visited_translation_from(extra_joins=extra_joins,
-                                          extra_where='') +
+                                          extra_where=extra_where) +
             self._limit_clause(max), params)
 
     def _format_row(self, columns):
