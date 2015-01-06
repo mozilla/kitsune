@@ -159,6 +159,17 @@ body {
 
     #instant-search-form {
       display: none;
+      position: relative;
+
+      &:after {
+        color: @textGrey;
+        content: '\f002';
+        font-family: 'FontAwesome';
+        left: 24px;
+        position: absolute;
+        top: 17px;
+        z-index: 1;
+      }
 
       input[type=search] {
         border: 0;
@@ -169,7 +180,7 @@ body {
         font-size: 14px;
         outline: none;
         margin: 13px;
-        padding: 4px 10px;
+        padding: 4px 10px 4px 34px;
         width: calc(~'100% - 140px');
       }
     }
@@ -845,6 +856,14 @@ input[type="submit"]:visited {
     content: '\f002'; // Search icon
     font-family: FontAwesome;
     font-size: 24px;
+  }
+}
+
+.searching {
+  #search-button {
+    &:before {
+      content: '\f00d' // Multiplication sign
+    }
   }
 }
 

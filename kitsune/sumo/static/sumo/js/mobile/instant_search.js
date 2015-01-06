@@ -19,7 +19,15 @@
   window.k.InstantSearchSettings.render = render;
 
   $(document).on('click', '#search-button', function() {
-    $('body > header').addClass('searching');
-    $('#instant-search-form input[type="search"]').focus();
+    var $header = $('body > header');
+    var $searchField = $('#instant-search-form input[type="search"]');
+
+    $header.toggleClass('searching');
+    if ($header.is('searching')) {
+      $searchField.focus();
+    } else {
+      $searchField.val('');
+      $searchField.trigger('keyup'); // Trigger a keyup to simulate the field changing
+    }
   });
 })(jQuery);
