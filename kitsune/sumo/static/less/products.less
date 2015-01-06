@@ -278,8 +278,127 @@
     right: auto;
   }
 
+  .download-thunderbird {
+    left: 20px;
+    right: auto;
+  }
+
   h1.product-title .logo-sprite {
     float: right;
     margin: 0 0 0 8px;
   }
 }
+
+.download-thunderbird {
+  font-family: georgia,"Bitstream Charter",serif;
+  position: absolute;
+  right: 0;
+  top: 0;
+
+  .download-button {
+    .gradient(#81BC2E, #81BC2E, #659324);
+    .border-radius(6px);
+    .box-shadow(~"0 3px 0 0 rgba(0,0,0,0.1), 0 -4px 0 0 rgba(0,0,0,0.1) inset");
+    display: block;
+    line-height: 20px;
+    position: relative;
+    text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
+    transition: top 0s;
+    transition: all 0.5s;
+    width: 250px;
+
+     .download-content {
+       background: url('../img/thunderbird-download.png') no-repeat;
+       color: #B5E786;
+       display: block;
+       height: 79px;
+       margin-left: -50px;
+       padding: 10px 20px 8px 73px;
+
+       .download-title {
+         color: #FFFFFF;
+         display: block;
+         font-size: 26px;
+         font-weight: normal;
+         font-family: georgia,"Bitstream Charter",serif;
+         line-height: 28px;
+         margin-top: 10px;
+         margin-left: 35px;
+         padding-right: 25px;
+         text-align: left;
+        }
+
+       .download-subtitle{
+         color: #fff;
+         display: block;
+         font-size: 18px;
+         font-weight: normal;
+         font-style: italic;
+         font-family: georgia,"Bitstream Charter",serif;
+         line-height: 18px;
+         margin-left: 36px;
+         padding-right: 25px;
+         position: relative;
+         text-align: left;
+        }
+
+       .download-lang{
+         display: block;
+         margin-top: 3px;
+         font-size: 12px;
+         font-style: normal;
+         line-height: 15px;
+         color: #346012;
+         position: relative;
+         left: 38px;
+         text-shadow: 0px 1px rgba(255, 255, 255, 0.2);
+         text-align: left;
+      }
+    }
+
+    &:hover {
+      .box-shadow(~"0 2px 0 0 rgba(0, 0, 0, 0.1), 0 -2px 0 0 rgba(0, 0, 0, 0.2) inset, 0 12px 24px 2px #83C822 inset");
+      text-decoration: none;
+    }
+
+    &:active {
+      .box-shadow(~"0 2px 0 0 rgba(0, 0, 0, 0.1), 0 -1px 0 0 rgba(0, 0, 0, 0.3) inset, 0 12px 24px 2px #83C822 inset");
+    }
+  }
+    ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+
+      > li {
+        border-bottom: 0;
+        padding: 12px 0;
+
+        &:last-of-type {
+          border-bottom: 0;
+          padding-bottom: 0;
+        }
+      }
+    }
+  }
+
+  ul.info {
+    font-size: 0.7em;
+    margin: 2px 0 0 0;
+    padding: 0;
+
+    li {
+      list-style: none;
+      display: inline;
+
+      a {
+        color: #999;
+      }
+
+      &:not(:first-child):before {
+        content: "|";
+        color: #999;
+        padding-right: 3px;
+      }
+    }
+  }

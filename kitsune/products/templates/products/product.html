@@ -52,6 +52,25 @@
         </ul>
       </div>
     {% endif %}
+
+    {% if product.slug == 'thunderbird' %}
+      <div class="download-thunderbird">
+        <a href="http://www.mozilla.org/thunderbird" class="download-button"
+         data-ga-click="_trackEvent | Download Button | Download Thunderbird">
+          <span class="download-content">
+            <strong class="download-title">{{ _('Thunderbird') }}</strong>
+            <span class="download-subtitle">{{ _('Free Download') }}</span>
+            <span class="download-lang">{{ _('English (US)') }}</span>
+          </span>
+        </a>
+        <ul class="info">
+          <li><a href="http://www.mozilla.org/thunderbird/all.html">{{ _('Systems and Languages') }}</a></li>
+          <li><a href="http://www.mozilla.org/thunderbird/releases">{{ _('Release Notes') }}</a></li>
+          <li><a href="http://www.mozilla.org/thunderbird/legal/privacy">{{ _('Privacy') }}</a></li>
+        </ul>
+      </div>
+    {% endif %}
+
   </div>
 
   <div class="grid_12">
