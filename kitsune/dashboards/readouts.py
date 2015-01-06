@@ -292,9 +292,18 @@ def l10n_overview_rows(locale, product=None):
 
     if product:
         total = total.filter(products=product)
+        has_forum = product.questions_locales.filter(locale=locale).exists()
 
-    total_docs = total.filter(is_template=False).exclude(
-        category__in=[HOW_TO_CONTRIBUTE_CATEGORY]).count()
+    ignore_categories = [str(ADMINISTRATION_CATEGORY),
+                         str(NAVIGATION_CATEGORY),
+                         str(HOW_TO_CONTRIBUTE_CATEGORY)]
+
+    if not product or not has_forum:
+        ignore_categories.append(str(CANNED_RESPONSES_CATEGORY))
+
+    total = total.exclude(category__in=ignore_categories)
+
+    total_docs = total.filter(is_template=False).count()
     total_templates = total.filter(is_template=True).count()
 
     if product:
@@ -315,7 +324,7 @@ def l10n_overview_rows(locale, product=None):
         + extra_joins +
         'WHERE transdoc.locale=%s '
         '    AND engdoc.category NOT IN '
-        '        (' + str(HOW_TO_CONTRIBUTE_CATEGORY) + ')'
+        '        (' + ','.join(ignore_categories) + ')'
         '    AND transdoc.is_template=%s '
         '    AND NOT transdoc.is_archived '
         '    AND engdoc.latest_localizable_revision_id IS NOT NULL '
@@ -349,7 +358,7 @@ def l10n_overview_rows(locale, product=None):
                         'ON transdoc.current_revision_id=curtransrev.id ' +
                         extra_joins,
             extra_where='AND engdoc.category NOT IN (' +
-                        str(HOW_TO_CONTRIBUTE_CATEGORY) + ') ' +
+                        ','.join(ignore_categories) + ') ' +
                         'AND NOT engdoc.is_template ' +
                         'AND engdoc.html NOT LIKE "<p>REDIRECT <a%%" ') +
         'LIMIT %s) t1 ')
@@ -708,14 +717,27 @@ class MostVisitedTranslationsReadout(MostVisitedDefaultLanguageReadout):
         else:
             period = self.default_mode
 
+        ignore_categories = [str(ADMINISTRATION_CATEGORY),
+                             str(NAVIGATION_CATEGORY),
+                             str(HOW_TO_CONTRIBUTE_CATEGORY)]
+
         # Filter by product if specified.
         if self.product:
             extra_joins = PRODUCT_FILTER
             params = (self.locale, period, self.product.id,
                       settings.WIKI_DEFAULT_LANGUAGE)
+
+            has_forum = self.product.questions_locales.filter(locale=self.locale).exists()
         else:
             extra_joins = ''
             params = (self.locale, period, settings.WIKI_DEFAULT_LANGUAGE)
+
+        if not self.product or not has_forum:
+            ignore_categories.append(str(CANNED_RESPONSES_CATEGORY))
+
+        extra_where = ('AND NOT engdoc.category IN (' +
+                       ', '.join(ignore_categories) +
+                       ') ')
 
         # Immediate Update Needed or Update Needed: link to /edit.
         # Review Needed: link to /history.
@@ -726,7 +748,7 @@ class MostVisitedTranslationsReadout(MostVisitedDefaultLanguageReadout):
             MOST_SIGNIFICANT_CHANGE_READY_TO_TRANSLATE + ', ' +
             NEEDS_REVIEW +
             most_visited_translation_from(extra_joins=extra_joins,
-                                          extra_where='') +
+                                          extra_where=extra_where) +
             self._limit_clause(max), params)
 
     def _format_row(self, columns):
