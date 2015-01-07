@@ -22,6 +22,12 @@
 
     <article id="edit-document" {% if locked %}class="locked"{% endif %} data-slug="{{ document.slug }}">
       <h1>{{ _('<em>Editing</em> {title}')|fe(title=document.title) }}</h1>
+      {% if document.needs_change %}
+        <p>
+          {% trans comment=document.needs_change_comment %} <b>Needs Change:</b> {{comment}} {% endtrans %}
+        </p>
+      {% endif %}
+
       {% if document_form %}
         <div id="document-form">
           <details class="h2"{% if disclose_description %} open="open"{% endif %}>
