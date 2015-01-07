@@ -164,8 +164,7 @@ def add_short_links(doc_ids):
         for doc in docs:
             # Use django's reverse so the locale isn't included.
             endpoint = django_reverse('wiki.document', args=[doc.slug])
-            doc.share_link = generate_short_url(base_url % endpoint)
-            doc.save()
+            doc.update(share_link=generate_short_url(base_url % endpoint))
             statsd.incr('wiki.add_short_links.success')
     except BitlyRateLimitException:
         # The next run of the `generate_missing_share_links` cron job will
