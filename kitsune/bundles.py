@@ -204,9 +204,6 @@ MINIFY_BUNDLES = {
             'js/aaq.js',
             'js/mobile/aaq.js',
         ),
-        'products': (
-            'js/products.js',
-        ),
         'search': (
             'js/search.js',
         ),
