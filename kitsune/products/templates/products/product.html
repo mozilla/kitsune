@@ -28,28 +28,25 @@
             <span class="download-lang">{{ _('English (US)') }}</span>
           </span>
         </a>
-        <div class="help-bubble">
-          <strong>{{ _('You are already using the latest version of Firefox.') }}</strong>
-          <ul>
-            <li>
-              <a href="{{ url('wiki.document', 'reset-firefox-easily-fix-most-problems') }}"
-                 data-ga-click="_trackEvent | Download Button | Reset Link">
-                {{ _('Reset your browser for a fresh start') }}
-              </a>
-            </li>
-            <li>
-              <a href="http://www.mozilla.org/firefox/new/#download-fx"
-                 data-ga-click="_trackEvent | Download Button | Download Link">
-                {{ _('Continue with download') }}
-              </a>
-            </li>
-          </ul>
-        </div>
         <ul class="info">
           <li><a href="http://www.mozilla.org/firefox/all/">{{ _('Systems and Languages') }}</a></li>
           <li><a href="http://www.mozilla.org/en-US/firefox/notes">{{ _("What's New") }}</a></li>
           <li><a href="http://www.mozilla.org/legal/privacy/firefox">{{ _('Privacy') }}</a></li>
         </ul>
+      </div>
+      <div class="refresh-firefox">
+        <div class="help-text">{{ _('Give Firefox a tune up') }}</div>
+        <a data-mozilla-ui-reset="reset" class="btn btn-submit">
+          {{ _('Refresh Firefox') }}
+        </a>
+        <a class="reset-link" href="{{ url('wiki.document', 'reset-firefox-easily-fix-most-problems') }}">
+          {{ _('How does it work?') }}
+        </a>
+        <a href="http://www.mozilla.org/firefox/new/#download-fx"
+         data-ga-click="_trackEvent | Download Button | Panel Opening"
+         data-latest-version="{{ latest_version }}">
+          {{ _('Download a fresh copy') }}
+        </a>
       </div>
     {% endif %}
 
