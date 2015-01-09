@@ -10,7 +10,7 @@ class Migration(SchemaMigration):
     def forwards(self, orm):
         # Adding field 'Profile.mozillians'
         db.add_column(u'users_profile', 'mozillians',
-                      self.gf('django.db.models.fields.URLField')(max_length=255, null=True, blank=True),
+                      self.gf('django.db.models.fields.CharField')(max_length=255, null=True, blank=True),
                       keep_default=False)
 
 
@@ -79,7 +79,7 @@ class Migration(SchemaMigration):
             'facebook': ('django.db.models.fields.URLField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'}),
             'irc_handle': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'}),
             'locale': ('kitsune.sumo.models.LocaleField', [], {'default': "'en-US'", 'max_length': '7'}),
-            'mozillians': ('django.db.models.fields.URLField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'}),
+            'mozillians': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'}),
             'public_email': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'timezone': ('timezones.fields.TimeZoneField', [], {'null': 'True', 'blank': 'True'}),
