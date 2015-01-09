@@ -76,7 +76,7 @@ class Profile(ModelBase, SearchMixin):
     facebook = models.URLField(max_length=255, null=True, blank=True,
                                verbose_name=_lazy(u'Facebook URL'))
     mozillians = models.CharField(max_length=255, null=True, blank=True,
-                                 verbose_name=_lazy(u'Mozillians Username'))
+                                  verbose_name=_lazy(u'Mozillians Username'))
     irc_handle = models.CharField(max_length=255, null=True, blank=True,
                                   verbose_name=_lazy(u'IRC nickname'))
     timezone = TimeZoneField(null=True, blank=True,
