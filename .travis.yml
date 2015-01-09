@@ -2,16 +2,22 @@ sudo: no
 language: python
 python: "2.6"
 node: "0.10"
-env: DJANGO_LIVE_TEST_SERVER_ADDRESS="localhost:9900-9999" PIP_DOWNLOAD_CACHE="pip_cache"
+
+env:
+  globals:
+    - DJANGO_LIVE_TEST_SERVER_ADDRESS="localhost:9900-9999"
+    - PIP_DOWNLOAD_CACHE="pip_cache"
+  matrix:
+    - TEST_SUITE=lint
+    - TEST_SUITE=django
+
 cache:
   directories:
     - pip_cache
 
 install: scripts/travis/install.sh
 before_script: scripts/travis/setup.sh
-script:
-  - scripts/lint.sh
-  - scripts/travis/test.sh
+script: scripts/travis/dispatch.sh $TEST_SUITE
 
 notifications:
     email: false
