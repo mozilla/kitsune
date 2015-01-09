@@ -156,7 +156,7 @@
                 {{ question.content_parsed|truncate_question(170, question.content_parsed)|safe }}
 
                 <div class="user-meta">
-                  {{ _('asked by <a href="{user_url}">{username}</a> {when}')|fe(user_url=profile_url(question.creator), display_name(username=question.creator), when=question.created|timesince) }}
+                  {{ _('asked by <a href="{user_url}">{username}</a> {when}')|fe(user_url=profile_url(question.creator), username=display_name(question.creator), when=question.created|timesince) }}
                   {% if question.solution %}
                     <br>{{ _('answered by <a href="{user_url}">{username}</a> {when}')|fe(user_url=profile_url(question.solution.creator), username=display_name(question.solution.creator), when=question.solution.created|timesince) }}
                   {% else %}
