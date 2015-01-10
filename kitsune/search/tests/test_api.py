@@ -4,7 +4,6 @@ from rest_framework.test import APIClient
 
 from kitsune.search.tests.test_es import ElasticTestCase
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.questions.models import QuestionMappingType, Question
 from kitsune.questions.tests import question, answer, answervote
 from kitsune.products.tests import product
 
