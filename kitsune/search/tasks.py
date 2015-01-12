@@ -82,7 +82,10 @@ def reconcile_task(write_index, batch_id, mapping_type_name):
 
     except Exception:
         rec.text = u'{0}: Errored out {1} {2}'.format(
-            rec.text, sys.exc_type, sys.exc_value)
+            rec.text, sys.exc_type, sys.exc_value)[:255]  # Truncate at 255 chars.
+
+        log.exception('Error while reconciling')
+
         raise IndexingTaskError()
 
     finally:
@@ -121,7 +124,10 @@ def index_chunk_task(write_index, batch_id, chunk):
 
     except Exception:
         rec.text = u'{0}: Errored out {1} {2}'.format(
-            rec.text, sys.exc_type, sys.exc_value)
+            rec.text, sys.exc_type, sys.exc_value)[:255]  # Truncate at 255 chars.
+
+        log.exception('Error while indexing a chunk')
+
         # Some exceptions aren't pickleable and we need this to throw
         # things that are pickleable.
         raise IndexingTaskError()
