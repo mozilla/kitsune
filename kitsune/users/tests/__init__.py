@@ -16,10 +16,17 @@ class TestCaseBase(TestCase):
 
 def profile(**kwargs):
     """Return a saved profile for a given user."""
-    defaults = {'name': 'Test K. User', 'bio': 'Some bio.',
-                'website': 'http://support.mozilla.com',
-                'timezone': None, 'country': 'US', 'city': 'Mountain View',
-                'locale': 'en-US'}
+    # Many tests check for user identity based on the display name, so it's
+    # helpful to make `name` here probably unique.
+    defaults = {
+        'name': 'Test K. User ({0})'.format(random.randint(0, 1000)),
+        'bio': 'Some bio.',
+        'website': 'http://support.mozilla.com',
+        'timezone': None,
+        'country': 'US',
+        'city': 'Mountain View',
+        'locale': 'en-US',
+    }
     if 'user' not in kwargs:
         u = user(save=True)
         defaults['user'] = u
