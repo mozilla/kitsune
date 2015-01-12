@@ -96,7 +96,9 @@ class TestQuestionSerializerSerialization(TestCase):
         self.question = question(creator=self.asker, save=True)
 
     def _names(self, *users):
-        return sorted(u.username for u in users)
+        return sorted(
+            ({'username': u.username, 'display_name': u.get_profile().name} for u in users),
+            key=lambda o: o['username'])
 
     def _answer(self, user):
         return answer(question=self.question, creator=user, save=True)
@@ -120,16 +122,14 @@ class TestQuestionSerializerSerialization(TestCase):
         self._answer(self.helper1)
 
         serializer = api.QuestionSerializer(instance=self.question)
-        eq_(sorted(serializer.data['involved']),
-            self._names(self.asker, self.helper1))
+        eq_(sorted(serializer.data['involved']), self._names(self.asker, self.helper1))
 
     def test_asker_and_response(self):
         self._answer(self.helper1)
         self._answer(self.asker)
 
         serializer = api.QuestionSerializer(instance=self.question)
-        eq_(sorted(serializer.data['involved']),
-            self._names(self.asker, self.helper1))
+        eq_(sorted(serializer.data['involved']), self._names(self.asker, self.helper1))
 
     def test_asker_and_two_answers(self):
         self._answer(self.helper1)
@@ -162,7 +162,7 @@ class TestQuestionViewSet(TestCase):
         self.client = APIClient()
 
     def test_create(self):
-        u = user(save=True)
+        u = profile().user
         p = product(save=True)
         t = topic(product=p, save=True)
         self.client.force_authenticate(user=u)
