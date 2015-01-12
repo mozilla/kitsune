@@ -72,8 +72,9 @@ urlpatterns = patterns(
     (r'^api/1/users/', include('kitsune.users.urls_api')),
 
     # v2 APIs
-    (r'^api/2/', include('kitsune.questions.urls_api')),
     (r'^api/2/', include('kitsune.notifications.urls_api')),
+    (r'^api/2/', include('kitsune.questions.urls_api')),
+    (r'^api/2/', include('kitsune.search.urls_api')),
 
     # These API urls include both v1 and v2 urls.
     (r'^api/', include('kitsune.users.urls_api')),
