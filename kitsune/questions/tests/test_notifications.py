@@ -278,7 +278,7 @@ class TestAnswerNotifications(TestCaseBase):
         return {
             'title': self.question.title,
             'content': self.answer.content,
-            'replier': self.answer.creator,
+            'replier': display_name(self.answer.creator),
             'question_id': self.question.id,
             'answer_id': self.answer.id,
             'locale': '',
@@ -317,8 +317,7 @@ class TestAnswerNotifications(TestCaseBase):
         eq_("Re: {0}".format(self.question.title), notification.subject)
 
         body = re.sub(r'auth=[a-zA-Z0-9%_-]+', 'auth=AUTH', notification.body)
-        starts_with(body, ANSWER_EMAIL.format(to_user=watcher.username,
-                                              **self.format_args()))
+        starts_with(body, ANSWER_EMAIL.format(to_user=display_name(watcher), **self.format_args()))
 
     def test_notify_asker(self):
         """Test that the answer is notified of answers, without registering."""
@@ -329,7 +328,7 @@ class TestAnswerNotifications(TestCaseBase):
 
         eq_([self.question.creator.email], notification.to)
         eq_('{0} posted an answer to your question "{1}"'
-            .format(self.answer.creator.username, self.question.title),
+            .format(display_name(self.answer.creator), self.question.title),
             notification.subject)
 
         body = re.sub(r'auth=[a-zA-Z0-9%_-]+', 'auth=AUTH', notification.body)

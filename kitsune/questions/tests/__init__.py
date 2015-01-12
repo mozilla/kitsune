@@ -5,7 +5,7 @@ from nose.tools import eq_
 from kitsune.questions.models import (
     Question, QuestionVote, Answer, AnswerVote, QuestionLocale)
 from kitsune.sumo.tests import LocalizingClient, TestCase, with_save
-from kitsune.users.tests import user, profile
+from kitsune.users.tests import profile
 
 
 class TestCaseBase(TestCase):
@@ -61,7 +61,7 @@ def answer(**kwargs):
     if 'question' not in kwargs and 'question_id' not in kwargs:
         defaults['question'] = question(save=True)
     if 'creator' not in kwargs and 'creator_id' not in kwargs:
-        defaults['creator'] = user(save=True)
+        defaults['creator'] = profile().user
     return Answer(**defaults)
 
 
@@ -70,7 +70,7 @@ def answervote(**kwargs):
     defaults = dict(created=datetime.now(), helpful=False)
     defaults.update(kwargs)
     if 'creator' not in kwargs and 'creator_id' not in kwargs:
-        defaults['creator'] = user(save=True)
+        defaults['creator'] = profile().user
     if 'answer' not in kwargs and 'answer_id' not in kwargs:
         defaults['answer'] = answer(save=True)
     return AnswerVote(**defaults)
