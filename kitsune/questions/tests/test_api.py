@@ -96,9 +96,9 @@ class TestQuestionSerializerSerialization(TestCase):
         self.question = question(creator=self.asker, save=True)
 
     def _names(self, *users):
-        return sorted(
-            ({'username': u.username, 'display_name': u.get_profile().name} for u in users),
-            key=lambda o: o['username'])
+        return sorted({'username': u.username, 'display_name': u.get_profile().name}
+                      for u in users)
+
 
     def _answer(self, user):
         return answer(question=self.question, creator=user, save=True)
