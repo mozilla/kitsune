@@ -52,14 +52,15 @@ class QuestionSerializer(serializers.ModelSerializer):
     topic = TopicField(required=True)
     # Use usernames for creator and updated_by instead of ids.
     created = DateTimeUTCField(read_only=True)
-    creator = ProfileFKSerializer(read_only=True, source='creator.get_profile')
+    creator = ProfileFKSerializer(source='creator.get_profile', read_only=True)
     involved = serializers.SerializerMethodField('get_involved_users')
     is_solved = serializers.Field(source='is_solved')
     metadata = QuestionMetaDataSerializer(source='metadata_set', required=False)
     num_votes = serializers.Field(source='num_votes')
     solution = serializers.PrimaryKeyRelatedField(read_only=True)
+    taken_by = ProfileFKSerializer(source='taken_by.get_profile', read_only=True)
     updated = DateTimeUTCField(read_only=True)
-    updated_by = serializers.SlugRelatedField(slug_field='username', required=False)
+    updated_by = ProfileFKSerializer(source='updated_by.get_profile', read_only=True)
 
     class Meta:
         model = Question
@@ -91,9 +92,9 @@ class QuestionSerializer(serializers.ModelSerializer):
         )
 
     def get_involved_users(self, obj):
-        involved = set([obj.creator])
-        involved.update(a.creator for a in obj.answers.all())
-        return list(involved)
+        involved = set([obj.creator.get_profile()])
+        involved.update(a.creator.get_profile() for a in obj.answers.all())
+        return ProfileFKSerializer(involved, many=True).data
 
     def validate_creator(self, attrs, source):
         user = getattr(self.context.get('request'), 'user')
@@ -275,7 +276,7 @@ class AnswerSerializer(serializers.ModelSerializer):
     created = DateTimeUTCField(read_only=True)
     creator = ProfileFKSerializer(read_only=True, source='creator.get_profile')
     updated = DateTimeUTCField(read_only=True)
-    updated_by = serializers.SlugRelatedField(slug_field='username', required=False)
+    updated_by = ProfileFKSerializer(read_only=True, source='updated_by.get_profile')
     num_helpful_votes = serializers.Field(source='num_helpful_votes')
     num_unhelpful_votes = serializers.Field(source='num_unhelpful_votes')
 
