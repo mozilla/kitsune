@@ -303,8 +303,7 @@ def l10n_overview_rows(locale, product=None):
 
     total = total.exclude(category__in=ignore_categories)
 
-    total_docs = total.filter(is_template=False).exclude(
-        category__in=[HOW_TO_CONTRIBUTE_CATEGORY]).count()
+    total_docs = total.filter(is_template=False).count()
     total_templates = total.filter(is_template=True).count()
 
     if product:
@@ -359,7 +358,7 @@ def l10n_overview_rows(locale, product=None):
                         'ON transdoc.current_revision_id=curtransrev.id ' +
                         extra_joins,
             extra_where='AND engdoc.category NOT IN (' +
-                        str(HOW_TO_CONTRIBUTE_CATEGORY) + ') ' +
+                        ','.join(ignore_categories) + ') ' +
                         'AND NOT engdoc.is_template ' +
                         'AND engdoc.html NOT LIKE "<p>REDIRECT <a%%" ') +
         'LIMIT %s) t1 ')
