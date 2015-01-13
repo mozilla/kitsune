@@ -564,6 +564,31 @@
         "english": "Sakha",
         "native": "Сахалыы"
     },
+    "ee": {
+        "iso639_1": "ee",
+        "english": "Ewe",
+        "native": "Èʋegbe"
+    },
+    "ha": {
+        "iso639_1": "ha",
+        "english": "Hausa",
+        "native": "هَرْشَن هَوْسَ"
+    },
+    "ig": {
+        "iso639_1": "ig",
+        "english": "Igbo",
+        "native": "Asụsụ Igbo"
+    },
+    "ln": {
+        "iso639_1": "ln",
+        "english": "Lingala",
+        "native": "Lingála"
+    },
+    "yo": {
+        "iso639_1": "yo",
+        "english": "Yoruba",
+        "native": "èdè Yorùbá"
+    },
     "xx": {
         "iso639_1": "xx",
         "english": "Pirate",
