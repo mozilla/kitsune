@@ -292,6 +292,16 @@ def l10n_overview_rows(locale, product=None):
 
     if product:
         total = total.filter(products=product)
+        has_forum = product.questions_locales.filter(locale=locale).exists()
+
+    ignore_categories = [str(ADMINISTRATION_CATEGORY),
+                         str(NAVIGATION_CATEGORY),
+                         str(HOW_TO_CONTRIBUTE_CATEGORY)]
+
+    if not product or not has_forum:
+        ignore_categories.append(str(CANNED_RESPONSES_CATEGORY))
+
+    total = total.exclude(category__in=ignore_categories)
 
     total_docs = total.filter(is_template=False).exclude(
         category__in=[HOW_TO_CONTRIBUTE_CATEGORY]).count()
@@ -315,7 +325,7 @@ def l10n_overview_rows(locale, product=None):
         + extra_joins +
         'WHERE transdoc.locale=%s '
         '    AND engdoc.category NOT IN '
-        '        (' + str(HOW_TO_CONTRIBUTE_CATEGORY) + ')'
+        '        (' + ','.join(ignore_categories) + ')'
         '    AND transdoc.is_template=%s '
         '    AND NOT transdoc.is_archived '
         '    AND engdoc.latest_localizable_revision_id IS NOT NULL '
@@ -718,8 +728,7 @@ class MostVisitedTranslationsReadout(MostVisitedDefaultLanguageReadout):
             params = (self.locale, period, self.product.id,
                       settings.WIKI_DEFAULT_LANGUAGE)
 
-            has_forum = self.product.questions_locales.filter(
-                locale=self.locale).exists()
+            has_forum = self.product.questions_locales.filter(locale=self.locale).exists()
         else:
             extra_joins = ''
             params = (self.locale, period, settings.WIKI_DEFAULT_LANGUAGE)
