@@ -40,8 +40,8 @@ https://github.com/jsocol/commonware/archive/b5544185b2d24adc1eb512735990752400c
 # sha256: MxnZwEi7pMyJqWkRgdDgIYei8JtDQ_0vz2zL-EtO4Yo
 dennis==0.6.1
 
-# sha256: mmQhHJajJiuyVFrMgq9djz2gF1KZ98fpAeTtRVvpZfs
-Django==1.6.7
+# sha256: VOtZznhUAcfR_e7SRe_OWX6Q-BHWog9rXGkxwASdY6Y
+Django==1.6.10
 
 # django-adminplus: tags/v0.2.1
 # sha256: hFyepTe0iD7ynH-YlVoiYeg_AZWYzBNed4Y8JHy6Klg
