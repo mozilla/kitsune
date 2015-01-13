@@ -19,18 +19,20 @@
 
     {% if product.slug == 'firefox' %}
       <div class="download-firefox">
-        <div class="help-text">{{ _('Give Firefox a tune up') }}</div>
-        <a data-mozilla-ui-reset="reset">
-          {{ _('Refresh Firefox') }}
-        </a>
-        <ul class="info">
-          <li><a href="{{ url('wiki.document', 'reset-firefox-easily-fix-most-problems') }}">{{ _('How does it work?') }}</a></li>
-        </ul>
-        <a href="http://www.mozilla.org/firefox/new/#download-fx"
+        <a href="http://www.mozilla.org/firefox/new/#download-fx" class="download-button"
          data-ga-click="_trackEvent | Download Button | Panel Opening"
          data-latest-version="{{ latest_version }}">
-          {{ _('Download a fresh copy') }}
+          <span class="download-content">
+            <strong class="download-title">{{ _('Firefox') }}</strong>
+            <span class="download-subtitle">{{ _('Free Download') }}</span>
+            <span class="download-lang">{{ _('English (US)') }}</span>
+          </span>
         </a>
+        <ul class="info">
+          <li><a href="http://www.mozilla.org/firefox/all/">{{ _('Systems and Languages') }}</a></li>
+          <li><a href="http://www.mozilla.org/en-US/firefox/notes">{{ _("What's New") }}</a></li>
+          <li><a href="http://www.mozilla.org/legal/privacy/firefox">{{ _('Privacy') }}</a></li>
+        </ul>
       </div>
       <div class="refresh-firefox">
         <div class="help-text">{{ _('Give Firefox a tune up') }}</div>
@@ -40,7 +42,7 @@
         <a class="reset-link" href="{{ url('wiki.document', 'reset-firefox-easily-fix-most-problems') }}">
           {{ _('How does it work?') }}
         </a>
-        <a href="http://www.mozilla.org/firefox/new/#download-fx" class="download-link"
+        <a href="http://www.mozilla.org/firefox/new/#download-fx"
          data-ga-click="_trackEvent | Download Button | Panel Opening"
          data-latest-version="{{ latest_version }}">
           {{ _('Download a fresh copy') }}
