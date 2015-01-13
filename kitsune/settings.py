@@ -93,6 +93,7 @@ LANGUAGE_CODE = 'en-US'
 # Note: We periodically add locales to this list and it is easier to
 # review with changes with one locale per line.
 SUMO_LANGUAGES = (
+    'af',
     'ar',
     'bg',
     'bn-BD',
@@ -102,6 +103,7 @@ SUMO_LANGUAGES = (
     'cs',
     'da',
     'de',
+    'ee',
     'el',
     'en-US',
     'es',
@@ -112,15 +114,18 @@ SUMO_LANGUAGES = (
     'fr',
     'fy-NL',
     'gu-IN',
+    'ha',
     'he',
     'hi-IN',
     'hr',
     'hu',
     'id',
+    'ig',
     'it',
     'ja',
     'km',
     'ko',
+    'ln',
     'lt',
     'ne-NP',
     'nl',
@@ -135,6 +140,7 @@ SUMO_LANGUAGES = (
     'sl',
     'sq',
     'sr-Cyrl',
+    'sw',
     'sv',
     'ta',
     'ta-LK',
@@ -144,26 +150,35 @@ SUMO_LANGUAGES = (
     'uk',
     'ur',
     'vi',
+    'wo',
+    'xh',
     'xx',  # This is a test locale
+    'yo',
     'zh-CN',
     'zh-TW',
+    'zu',
 )
 
 # These languages won't show a warning about FxOS when contributors try
 # to add content.
 FXOS_LANGUAGES = [
+    'af'
     'bn-BD',
     'bn-IN',
     'cs',
     'de',
+    'ee',
     'el',
     'en-US',
     'es',
     'fr',
+    'ha',
     'hi-IN',
     'hr',
     'hu',
+    'ig',
     'it',
+    'ln',
     'nl',
     'pl',
     'pt-BR',
@@ -173,7 +188,11 @@ FXOS_LANGUAGES = [
     'sr',
     'ta',
     'sr-Cyrl',
+    'sw',
     'tr',
+    'wo',
+    'xh',
+    'yo',
 ]
 
 # These languages will get a wiki page instead of the product and topic pages.
@@ -197,7 +216,6 @@ LANGUAGE_URL_MAP = dict([(i.lower(), i) for i in SUMO_LANGUAGES])
 # are an optional fallback locale, or None, to use the LANGUAGE_CODE.
 NON_SUPPORTED_LOCALES = {
     'ach': None,
-    'af': None,
     'ak': None,
     'an': 'es',
     'as': None,
@@ -238,9 +256,6 @@ NON_SUPPORTED_LOCALES = {
     'sah': None,
     'son': None,
     'sv-SE': 'sv',
-    'sw': None,
-    'xh': None,
-    'zu': None,
 }
 
 ES_LOCALE_ANALYZERS = {
