@@ -31,6 +31,20 @@
           {{ _('Download a fresh copy') }}
         </a>
       </div>
+      <div class="refresh-firefox">
+        <div class="help-text">{{ _('Give Firefox a tune up') }}</div>
+        <a data-mozilla-ui-reset="reset" class="btn btn-submit">
+          {{ _('Refresh Firefox') }}
+        </a>
+        <a class="reset-link" href="{{ url('wiki.document', 'reset-firefox-easily-fix-most-problems') }}">
+          {{ _('How does it work?') }}
+        </a>
+        <a href="http://www.mozilla.org/firefox/new/#download-fx" class="download-link"
+         data-ga-click="_trackEvent | Download Button | Panel Opening"
+         data-latest-version="{{ latest_version }}">
+          {{ _('Download a fresh copy') }}
+        </a>
+      </div>
     {% endif %}
 
     {% if product.slug == 'thunderbird' %}
