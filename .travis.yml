@@ -14,8 +14,9 @@ env:
     - TEST_SUITE=django
 
 matrix:
-  allowed_failures:
+  allow_failures:
     - python: 2.7
+  fast_finish: true
 
 cache:
   directories:
