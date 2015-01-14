@@ -63,9 +63,6 @@ def suggest(request):
     # Transform query to be locale aware.
     query = es_utils.es_query_with_analyzer(query, locale)
 
-    query = dict(('%s__match' % field, 'emails')
-                 for field in QuestionMappingType.get_query_fields())
-
     searcher = (
         es_utils.AnalyzerS()
         .es(urls=settings.ES_URLS)
