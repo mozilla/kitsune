@@ -4,7 +4,7 @@ set -e
 
 # None of this is needed for lint tests.
 if [[ $TEST_SUITE == "lint" ]]; then
-  return 0
+  exit 0
 fi
 
 echo "Making settings_local.py"
