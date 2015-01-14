@@ -215,7 +215,8 @@ class TestQuestionViewSet(TestCase):
         u = profile().user
         self.client.force_authenticate(user=u)
         res = self.client.post(reverse('question-helpful', args=[q.id]))
-        eq_(res.status_code, 204)
+        eq_(res.status_code, 200)
+        eq_(res.data, {'num_votes': 1})
         eq_(Question.objects.get(id=q.id).num_votes, 1)
 
     def test_helpful_double_vote(self):
@@ -404,7 +405,8 @@ class TestAnswerViewSet(TestCase):
         u = profile().user
         self.client.force_authenticate(user=u)
         res = self.client.post(reverse('answer-helpful', args=[a.id]))
-        eq_(res.status_code, 204)
+        eq_(res.status_code, 200)
+        eq_(res.data, {'num_helpful_votes': 1, 'num_unhelpful_votes': 0})
         eq_(Answer.objects.get(id=a.id).num_votes, 1)
 
     def test_helpful_double_vote(self):

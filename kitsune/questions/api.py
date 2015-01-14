@@ -217,12 +217,15 @@ class QuestionViewSet(viewsets.ModelViewSet):
     @action(methods=['POST'], permission_classes=[permissions.IsAuthenticated])
     def helpful(self, request, pk=None):
         question = self.get_object()
+
         if not question.editable:
             raise GenericAPIException(403, 'Question not editable')
         if question.has_voted(request):
             raise GenericAPIException(409, 'Cannot vote twice')
+
         QuestionVote(question=question, creator=request.user).save()
-        return Response("", status=204)
+        num_votes = QuestionVote.objects.filter(question=question).count()
+        return Response({'num_votes': num_votes})
 
     @action(methods=['POST'])
     def set_metadata(self, request, pk=None):
@@ -360,9 +363,16 @@ class AnswerViewSet(viewsets.ModelViewSet):
     @action(methods=['POST'], permission_classes=[permissions.IsAuthenticated])
     def helpful(self, request, pk=None):
         answer = self.get_object()
+
         if not answer.question.editable:
             raise GenericAPIException(403, 'Answer not editable')
         if answer.has_voted(request):
             raise GenericAPIException(409, 'Cannot vote twice')
+
         AnswerVote(answer=answer, creator=request.user, helpful=True).save()
-        return Response("", status=204)
+        num_helpful_votes = AnswerVote.objects.filter(answer=answer, helpful=True).count()
+        num_unhelpful_votes = AnswerVote.objects.filter(answer=answer, helpful=False).count()
+        return Response({
+            'num_helpful_votes': num_helpful_votes,
+            'num_unhelpful_votes': num_unhelpful_votes,
+        })
