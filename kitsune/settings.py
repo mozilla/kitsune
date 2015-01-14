@@ -193,6 +193,7 @@ FXOS_LANGUAGES = [
     'wo',
     'xh',
     'yo',
+    'zu',
 ]
 
 # These languages will get a wiki page instead of the product and topic pages.
