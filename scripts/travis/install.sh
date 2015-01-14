@@ -20,7 +20,7 @@ fi
 if [[ $TRAVIS_PYTHON_VERSION == 2.6 ]]; then
   MAIN_REQ_FILE="requirements/py26.txt"
 else
-  MAIN_REQ_FILE="requirements/py26.txt"
+  MAIN_REQ_FILE="requirements/default.txt"
 fi
 python scripts/peep.py install \
   -r $MAIN_REQ_FILE \
