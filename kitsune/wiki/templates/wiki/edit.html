@@ -24,7 +24,9 @@
       <h1>{{ _('<em>Editing</em> {title}')|fe(title=document.title) }}</h1>
       {% if document.needs_change %}
         <p>
-          {% trans comment=document.needs_change_comment %} <strong>Needs Change:</strong> {{comment}} {% endtrans %}
+          {% trans comment=document.needs_change_comment %}
+          <label>Needs Change:</label> {{comment}} 
+          {% endtrans %}
         </p>
       {% endif %}
 
