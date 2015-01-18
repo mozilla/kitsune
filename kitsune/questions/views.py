@@ -800,7 +800,7 @@ def edit_question(request, question_id):
         raise PermissionDenied
 
     ct = ContentType.objects.get_for_model(question)
-    images = ImageAttachment.objects.filter(content_type=ct)
+    images = ImageAttachment.objects.filter(content_type=ct, object_id=question.pk)
 
     if request.method == 'GET':
         initial = question.metadata.copy()
