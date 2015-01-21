@@ -24,7 +24,7 @@
       {% if not advanced %}
         {# Don't show filtering to advanced search users #}
 
-        {% set base_url = url('search') %}
+        {% set base_url = url('search')|urlparams(q=q) %}
 
         {% if product %}
           {# In basic search, you can only filter one product at a time. #}
