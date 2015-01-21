@@ -87,7 +87,7 @@ def doc_page_cache(view):
 
 @require_GET
 @doc_page_cache
-@mobile_template('wiki/{mobile/}document.html')
+@mobile_template('wiki/{mobile/}')
 def document(request, document_slug, template=None, document=None):
     """View a wiki document."""
 
@@ -165,6 +165,11 @@ def document(request, document_slug, template=None, document=None):
         document_css_class = 'collapsible'
     else:
         document_css_class = ''
+
+    if request.MOBILE and 'minimal' in request.GET:
+        template = '%sdocument-minimal.html' % template
+    else:
+        template = '%sdocument.html' % template
 
     data = {
         'document': doc,
