@@ -76,7 +76,7 @@ AAQSystemInfo.prototype = {
                 ['Windows 7', /(Windows NT 6.1)/i],
                 ['Windows 8', /(Windows NT 6.2)/i],
                 ['Windows 8.1', /(Windows NT 6.3)/i],
-                ['Windows 10', /(Windows NT 6.4)/i],
+                ['Windows 10', /(Windows NT 6.4)|(Windows NT 10.0)/i],
                 ['Windows NT 4.0', /(Windows NT 4.0)|(WinNT4.0)/i],
                 ['Windows ME', /Windows ME/i],
                 ['Windows', /(Windows)|(WinNT)/i],
