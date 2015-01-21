@@ -1,5 +1,4 @@
 import re
-
 from django.forms import ValidationError
 
 from nose.tools import eq_
@@ -10,6 +9,7 @@ from kitsune.users.forms import (
     ForgotUsernameForm, username_allowed)
 from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import TestCaseBase, user
+from kitsune.users.validators import TwitterValidator
 
 
 class AuthenticationFormTests(TestCaseBase):
@@ -65,14 +65,6 @@ FACEBOOK_URLS = (
     ('http://facebook.com/', False),
 )
 
-TWITTER_URLS = (
-    ('https://twitter.com/valid', True),
-    ('http://www.twitter.com/valid', True),
-    ('htt://twitter.com/invalid', False),
-    ('http://nottwitter.com/invalid', False),
-    ('http://twitter.com/', False),
-)
-
 
 class ProfileFormTestCase(TestCaseBase):
     form = ProfileForm()
@@ -90,16 +82,6 @@ class ProfileFormTestCase(TestCaseBase):
         for url, match in FACEBOOK_URLS:
             eq_(bool(pattern.match(url)), match)
 
-    def test_twitter_pattern_attr(self):
-        """Twitter field has the correct pattern attribute."""
-        fragment = pq(self.form.as_ul())
-        twitter = fragment('#id_twitter')[0]
-        assert 'pattern' in twitter.attrib
-
-        pattern = re.compile(twitter.attrib['pattern'])
-        for url, match in TWITTER_URLS:
-            eq_(bool(pattern.match(url)), match)
-
     def test_clean_facebook(self):
         clean = self.form.clean_facebook
         for url, match in FACEBOOK_URLS:
@@ -109,14 +91,27 @@ class ProfileFormTestCase(TestCaseBase):
             else:
                 self.assertRaises(ValidationError, clean)
 
-    def test_clean_twitter(self):
-        clean = self.form.clean_twitter
-        for url, match in TWITTER_URLS:
-            self.form.cleaned_data['twitter'] = url
-            if match:
-                clean()  # Should not raise.
-            else:
-                self.assertRaises(ValidationError, clean)
+
+class TwitterValidatorTestCase(TestCase):
+
+    def setUp(self):
+
+        def test_valid(self):
+            TwitterValidator('a_valid_name')
+
+        def test_has_number(self):
+            TwitterValidator('valid123')
+
+        def test_has_letter_number_underscore(self):
+            TwitterValidator('valid_name_123')
+
+    def test_has_slash(self):
+        # Twitter usernames can not have slash "/"
+        self.assertRaises(ValidationError, lambda: TwitterValidator('x/'))
+
+    def test_has_at_sign(self):
+        # Dont Accept Twitter Username with "@"
+        self.assertRaises(ValidationError, lambda: TwitterValidator('@x'))
 
 
 class RegisterFormTests(TestCaseBase):

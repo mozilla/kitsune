@@ -25,6 +25,7 @@ from kitsune.sumo import email_utils
 from kitsune.sumo.models import ModelBase, LocaleField
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import auto_delete_files, chunked
+from kitsune.users.validators import TwitterValidator
 
 
 log = logging.getLogger('k.users')
@@ -71,8 +72,8 @@ class Profile(ModelBase, SearchMixin):
                            verbose_name=_lazy(u'Biography'))
     website = models.URLField(max_length=255, null=True, blank=True,
                               verbose_name=_lazy(u'Website'))
-    twitter = models.URLField(max_length=255, null=True, blank=True,
-                              verbose_name=_lazy(u'Twitter URL'))
+    twitter = models.CharField(max_length=15, null=True, blank=True, validators=[TwitterValidator],
+                               verbose_name=_lazy(u'Twitter Username'))
     facebook = models.URLField(max_length=255, null=True, blank=True,
                                verbose_name=_lazy(u'Facebook URL'))
     mozillians = models.CharField(max_length=255, null=True, blank=True,
