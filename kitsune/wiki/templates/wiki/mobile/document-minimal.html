@@ -1,22 +1,9 @@
 {% extends 'mobile/minimal.html' %}
 
-{% from "includes/common_macros.html" import list_view_item %}
 {% from "wiki/includes/document_macros.html" import contributor_list, document_title, document_messages, document_content  %}
-{% from "wiki/mobile/includes/document_macros.html" import vote_form with context %}
 
 {% set title = _('{t} | {c}')|f(t=document.title, c=document.get_category_display()) %}
-{% set headline = title %}
 
-{% if products.all()[0] and topics.all()[0] %}
-  {% set return_url = url('products.documents', product_slug=products.all()[0].slug, topic_slug=topics.all()[0].slug) %}
-{% elif products.all()[0] %}
-  {% set return_url = url('products.product', slug=products.all()[0].slug) %}
-{% else %}
-  {% set return_url = url('products') %}
-{% endif %}
-
-{% set show_search = 'bottom' %}
-{% set include_showfor = True %}
 {% set styles = ('mobile/wiki-minimal',) %}
 {% set classes = 'document' %}
 {% set scripts = ('mobile/wiki-minimal',) %}
@@ -43,10 +30,6 @@
         {% set link='<a href="' + share_link + '">' + share_link + '</a>' %}
         {{ _('Share this article: {link}')|f(link=link)|safe }}
       </p>
-    {% endif %}
-
-    {% if not waffle.switch('hide-voting') %}
-      {{ vote_form(document, source='mobile') }}
     {% endif %}
 
     {{ contributor_list(contributors) }}
