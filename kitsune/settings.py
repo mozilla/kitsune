@@ -563,6 +563,10 @@ INSTALLED_APPS = (
 
     # App for sample data
     'eadred',
+
+    # In Django <= 1.6, this "must be placed somewhere after all the apps that
+    # are going to be generating activities". Putting it at the end is the safest.
+    'actstream',
 )
 
 TEST_RUNNER = 'kitsune.sumo.tests.TestSuiteRunner'
@@ -916,3 +920,7 @@ CORS_URLS_REGEX = re.compile('|'.join('({0})'.format(r) for r in CORS_URLS_REGEX
 
 # XXX Fix this when Bug 1059545 is fixed
 CC_IGNORE_USERS = []
+
+ACTSTREAM_SETTINGS = {
+    'USE_JSONFIELD': True,
+}
