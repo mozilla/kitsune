@@ -17,7 +17,6 @@ echo "deb http://packages.elasticsearch.org/elasticsearch/0.90/debian stable mai
 # Add the needed repositories for Node/Redis/Python2.6
 add-apt-repository ppa:chris-lea/node.js
 add-apt-repository ppa:chris-lea/redis-server
-add-apt-repository ppa:fkrull/deadsnakes
 
 apt-get update
 
@@ -31,15 +30,15 @@ debconf-set-selections <<< 'mariadb-server-5.5 mysql-server/root_password_again 
 apt-get install -y sphinx-common libapache2-mod-wsgi python-pip libmysqlclient-dev git \
                    libxml2-dev libxslt1-dev zlib1g-dev libjpeg-dev python-dev libssl-dev \
                    openjdk-7-jre-headless mariadb-server-5.5 nodejs elasticsearch redis-server \
-                   memcached python2.6 python2.6-dev
+                   memcached
 
 # Setup the virtualenv and start using it
 pip install virtualenv
-virtualenv -p /usr/bin/python2.6 $INSTALL_DIR/virtualenv
+virtualenv $INSTALL_DIR/virtualenv
 chown -R vagrant $INSTALL_DIR/virtualenv
 source $INSTALL_DIR/virtualenv/bin/activate
 
-python $INSTALL_DIR/kitsune/scripts/peep.py install -r $INSTALL_DIR/kitsune/requirements/py26.txt --no-use-wheel
+python $INSTALL_DIR/kitsune/scripts/peep.py install -r $INSTALL_DIR/kitsune/requirements/default.txt --no-use-wheel
 pip install nose-progressive==1.5.0
 
 # Copy configurations for kitsune and mysql
@@ -59,7 +58,7 @@ mysql -e 'CREATE DATABASE kitsune CHARACTER SET utf8 COLLATE utf8_unicode_ci'
 mysql -e "GRANT ALL ON kitsune.* TO kitsune@localhost IDENTIFIED BY 'password'"
 
 # Install npm and included packages (lessc is the one we need of these)
-npm install 
+npm install
 ./node_modules/.bin/gulp nunjucks
 
 # Retrieve and store historical version data
