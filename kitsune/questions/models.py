@@ -10,12 +10,15 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.cache import cache
 from django.core.urlresolvers import resolve
 from django.conf import settings
+from django.dispatch import receiver
 from django.db import models, connection, close_old_connections
 from django.db.models import Q
 from django.db.models.signals import post_save, pre_save
 from django.db.utils import IntegrityError
 from django.http import Http404
 
+import actstream
+import actstream.registry
 from product_details import product_details
 from statsd import statsd
 from taggit.models import Tag, TaggedItem
@@ -1332,3 +1335,26 @@ def _content_parsed(obj, locale):
         html = wiki_to_html(obj.content, locale)
         cache.add(cache_key, html, CACHE_TIMEOUT)
     return html
+
+
+actstream.registry.register(Question)
+actstream.registry.register(Answer)
+
+
+@receiver(post_save, sender=Question, dispatch_uid='question_create_actionstream')
+def add_action_for_new_question(sender, instance, created, **kwargs):
+    if created:
+        actstream.action.send(
+            instance.creator,
+            verb='asked',
+            action_object=instance)
+
+
+@receiver(post_save, sender=Answer, dispatch_uid='answer_create_actionstream')
+def add_action_for_new_answer(sender, instance, created, **kwargs):
+    if created:
+        actstream.action.send(
+            instance.creator,
+            verb='answered',
+            action_object=instance,
+            target=instance.question)

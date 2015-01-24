@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from django.db.models import Q
 
 import mock
+from actstream.models import Action
 from nose.tools import eq_, ok_, raises
 from taggit.models import Tag
 
@@ -581,3 +582,36 @@ class QuestionVoteTests(TestCase):
         qv.add_metadata('test1', 'a'*1001)
         metadata = VoteMetadata.objects.all()[0]
         eq_('a'*1000, metadata.value)
+
+
+class TestSignals(TestCase):
+    def test_question_create_action(self):
+        """When a question is created, an Action is created too."""
+        q = question(save=True)
+        a = Action.objects.action_object(q).get()
+        eq_(a.actor, q.creator)
+        eq_(a.verb, 'asked')
+        eq_(a.target, None)
+
+    def test_answer_create_action(self):
+        """When an answer is created, an Action is created too."""
+        q = question(save=True)
+        ans = answer(question=q, save=True)
+        act = Action.objects.action_object(ans).get()
+        eq_(act.actor, ans.creator)
+        eq_(act.verb, 'answered')
+        eq_(act.target, q)
+
+    def test_question_change_no_action(self):
+        """When a question is changed, no action should be created."""
+        q = question(save=True)
+        Action.objects.all().delete()
+        q.save()  # trigger another post_save hook
+        eq_(Action.objects.count(), 0)
+
+    def test_answer_change_no_action(self):
+        """When an answer is changed, no action should be created."""
+        a = question(save=True)
+        Action.objects.all().delete()
+        a.save()  # trigger another post_save hook
+        eq_(Action.objects.count(), 0)
