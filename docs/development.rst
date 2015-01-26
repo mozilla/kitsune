@@ -130,6 +130,8 @@ For questions that aren't answered there, ask someone and/or try
 Googling the answer.
 
 
+.. _changes_reindexing:
+
 Changes that involve reindexing
 ===============================
 
