@@ -7,9 +7,8 @@ anyjson==0.3.1
 # sha256: SjoIXs8fzSc2VzU4_6EU8fQzGzu73Wk4Hm4XLEnJdQ8
 Babel==0.9.6
 
-# billiard: tags/v3.3.0.9
-# sha256: JHw2XY75uDAZW1znrmH9ufpEYQJalYhyMNKpcPEmrpM
-https://github.com/celery/billiard/archive/5652fe69e0a0623cea8f9f0c2810e001d4ad53df.tar.gz#egg=billiard
+# sha256: czbsWbjQoTKh7p8WagY9RKXn8tL-FfefvO3aWDu9YcE
+billiard==3.3.0.9
 
 # bleach: tags/v1.2.1
 # sha256: TZ4IUMAsbo3fhQxiIK1u1Ba4-UXvK0mZKvjSBbxQxNA
@@ -22,9 +21,8 @@ https://github.com/jbalogh/django-debug-cache-panel/archive/a6b0f248b721bdd759ee
 # sha256: y0Y3TzyIPFgNFCp50mCYg3E6hnzIbgUUFjrc54TOJGg
 carrot==0.10.7
 
-# celery: tags/v3.1.17
-# sha256: j-caPcm7jTVr_BSOPaM1MLF7EBtlmH_no2IeVKCwKKg
-https://github.com/celery/celery/archive/a4acff48ef1f98e822f5b09b5bf389179fec5049.tar.gz#egg=celery
+# sha256: z-K2UyaL1Ybi0Ip16Ib3vjvlW6Ny9y4vV0eut2xHA2I
+celery==3.1.17
 
 # check: master~9
 # sha256: BJ7houDdUh-nH8g2T9aYtS4DTrGyKicd-EBjHJJOoAc
@@ -185,9 +183,8 @@ https://github.com/jsocol/jingo-minify/archive/51c158a18e6c5ff7c6fd030ffa4cba511
 # sha256: GQQPAbOp2MY-TVeTb3hxCQgZm2k3CrRKD3QH3YkfAZs
 Jinja2==2.5.2
 
-# kombu: tags/v3.0.24
-# sha256: cwj3G8RrlHtkLMohfObd2NqKEcLWyfnFKNaOt6bdGu4
-https://github.com/celery/kombu/archive/161d87b1ea4496b449941c3af07f9b63880e962f.tar.gz#egg=kombu
+# sha256: uf8EN2BxE66nAf1RIsKvpAwF3_bx2k9YsvHqGNnyv40
+kombu==3.0.24
 
 # sha256: _rvld3LyBrrNJG-kH980xSySPl2sB5CxXJ3umX64pww
 logilab-astng==0.20.1
