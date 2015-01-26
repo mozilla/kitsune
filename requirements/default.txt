@@ -24,10 +24,6 @@ carrot==0.10.7
 # sha256: z-K2UyaL1Ybi0Ip16Ib3vjvlW6Ny9y4vV0eut2xHA2I
 celery==3.1.17
 
-# check: master~9
-# sha256: BJ7houDdUh-nH8g2T9aYtS4DTrGyKicd-EBjHJJOoAc
-https://github.com/jbalogh/check/archive/1c73813fcd085020decc6f72caf232f71150db0a.tar.gz#egg=check
-
 # sha256: 95yMBNfrUAcbytZ_0j88EPq2xy1WhXrfhINngGhF1uU
 click==3.3
 
