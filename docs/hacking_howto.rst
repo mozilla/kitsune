@@ -173,7 +173,7 @@ Python Packages
 
 All the pure-Python requirements are provided in the requirements
 directory. We use a tool called ``peep`` to install packages and make sure
-versions are pinned.
+versions are pinned. ::
 
     $ ./scripts/peep.py install -r requirements/default.txt --no-use-wheel
 
