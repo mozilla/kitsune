@@ -28,7 +28,7 @@ Master
 The ``master`` branch is our main integration points. All new patches should be
 based on the latest ``master`` (or rebased to it).
 
-Pull requests are created from those branche. Pull requests may be opened at
+Pull requests are created from those branches. Pull requests may be opened at
 any time, including before any code has been written.
 
 Pull requests get reviewed.
