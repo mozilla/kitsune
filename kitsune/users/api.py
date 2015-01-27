@@ -3,10 +3,13 @@ import re
 from datetime import datetime, timedelta
 from string import letters
 
-from django.contrib.auth.models import User
 from django.conf import settings
+from django.contrib.auth.models import User
+from django.contrib.auth.tokens import default_token_generator
+from django.contrib.sites.models import get_current_site
 from django.core.exceptions import ValidationError
 from django.db.models import Q
+from django.utils.http import int_to_base36
 from django.views.decorators.http import require_GET
 
 import waffle
@@ -20,6 +23,7 @@ from rest_framework.authtoken.models import Token
 
 from kitsune.access.decorators import login_required
 from kitsune.questions.utils import num_answers, num_solutions, num_questions
+from kitsune.sumo import email_utils
 from kitsune.sumo.api import DateTimeUTCField, GenericAPIException, PermissionMod
 from kitsune.sumo.decorators import json_view
 from kitsune.users.helpers import profile_avatar
@@ -368,3 +372,41 @@ class ProfileViewSet(mixins.CreateModelMixin,
             return Response(status=status.HTTP_204_NO_CONTENT)
         except Setting.DoesNotExist:
             raise GenericAPIException(404, {'detail': 'No matching user setting found.'})
+
+    @action(methods=['GET'])
+    def request_password_reset(self, request, user__username=None):
+        profile = self.get_object()
+
+        current_site = get_current_site(request)
+        site_name = current_site.name
+        domain = current_site.domain
+
+        c = {
+            'email': profile.user.email,
+            'domain': domain,
+            'site_name': site_name,
+            'uid': int_to_base36(profile.user.id),
+            'user': profile.user,
+            'token': default_token_generator.make_token(profile.user),
+            'protocol': 'https' if request.is_secure() else 'http',
+        }
+
+        subject = email_utils.render_email('users/email/pw_reset_subject.ltxt', c)
+        # Email subject *must not* contain newlines
+        subject = ''.join(subject.splitlines())
+
+        @email_utils.safe_translation
+        def _make_mail(locale):
+            mail = email_utils.make_mail(
+                subject=subject,
+                text_template='users/email/pw_reset.ltxt',
+                html_template='users/email/pw_reset.html',
+                context_vars=c,
+                from_email=None,
+                to_email=profile.user.email)
+
+            return mail
+
+        email_utils.send_messages([_make_mail(profile.locale)])
+
+        return Response('', status=204)
