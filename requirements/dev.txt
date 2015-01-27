@@ -1,10 +1,10 @@
 # These requirements are helpful, but not required, for working on Kitsune.
 
-# sha256: a_c6l7D-RUKn7i2KYnoTs4KegdERvidVGzag36DCkJk
-q==2.4
+# sha256: 6U6syZbt8Rq7o3Lw3APp2PHQCIn9KeiTXE6bvZuir9w
+django-debug-toolbar==1.2.2
 
-# sha256: ku47hrXBkhwtnawhe--JkMX4Usi8TZAYyv4PPzuBzTo
-nosenicedots==0.5
+# sha256: Y6KG6ssDzV9kPX60WMbGK3DBEbRjT9jVnyfMrKS3yDo
+django-sslserver==0.14
 
 # sha256: KF6L1zDAtv374jwy0pNr_7pAHyPKsTLocixovoDW8YI
 flake8==2.2.5
@@ -12,14 +12,21 @@ flake8==2.2.5
 # sha256: WioXDkfeVZOmq_rh6VQr0sOSSsYrvk5u2WyVPANSJDo
 mccabe==0.2.1
 
+# sha256: ku47hrXBkhwtnawhe--JkMX4Usi8TZAYyv4PPzuBzTo
+nosenicedots==0.5
+
 # sha256: ZrOLKZ3UoMt2qFXnvNxkDc4rGfXdFkpW7oeuMWQrUy0
 http://people.mozilla.org/~wkahngreene/pep8/pep8-1.6.0a0-willkg.1.tar.gz#egg=pep8==1.6.0a0-willkg.1
 
 # sha256: P6gKELNtUWhr93RPXcmWIs1cmM6O1kAi5imGiq_Bd2k
 pyflakes==0.8.1
 
-# sha256: Y6KG6ssDzV9kPX60WMbGK3DBEbRjT9jVnyfMrKS3yDo
-django-sslserver==0.14
+# sha256: a_c6l7D-RUKn7i2KYnoTs4KegdERvidVGzag36DCkJk
+q==2.4
 
-# sha256: 6U6syZbt8Rq7o3Lw3APp2PHQCIn9KeiTXE6bvZuir9w
-django-debug-toolbar==1.2.2
+# sha256: lJM7ZOL-CAfaBhLFdKAhwNrCjHvTxKI3I65aOeqPPQQ
+Sphinx==1.2.3
+
+# sha256: x9txeBCraWX2bIzwOYqYydjfmC2jm0zX8WKRHriVlvo
+docutils==0.12
+
