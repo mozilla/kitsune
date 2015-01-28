@@ -131,6 +131,12 @@ class Profile(ModelBase, SearchMixin):
     def get_mapping_type(cls):
         return UserMappingType
 
+    @classmethod
+    def get_generic_fk_serializer(cls):
+        # Avoid circular import
+        from kitsune.users.api import ProfileFKSerializer
+        return ProfileFKSerializer
+
     @property
     def last_contribution_date(self):
         """Get the date of the user's last contribution."""
