@@ -15,6 +15,7 @@ from django.http import (HttpResponse, HttpResponseRedirect,
                          Http404, HttpResponseBadRequest)
 from django.shortcuts import get_object_or_404, render
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.decorators.http import (require_GET, require_POST,
                                           require_http_methods)
 
@@ -87,7 +88,8 @@ def doc_page_cache(view):
 
 @require_GET
 @doc_page_cache
-@mobile_template('wiki/{mobile/}document.html')
+@xframe_options_exempt
+@mobile_template('wiki/{mobile/}')
 def document(request, document_slug, template=None, document=None):
     """View a wiki document."""
 
@@ -165,6 +167,11 @@ def document(request, document_slug, template=None, document=None):
         document_css_class = 'collapsible'
     else:
         document_css_class = ''
+
+    if request.MOBILE and 'minimal' in request.GET:
+        template = '%sdocument-minimal.html' % template
+    else:
+        template = '%sdocument.html' % template
 
     data = {
         'document': doc,
