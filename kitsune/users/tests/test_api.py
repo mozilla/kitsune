@@ -285,3 +285,16 @@ class TestUserView(TestCase):
         url = reverse('user-delete-setting', args=[p.user.username])
         res = self.client.post(url, {'name': 'nonexistant'})
         eq_(res.status_code, 404)
+
+    def test_is_active_visible_when_signed_in(self):
+        p = profile()
+        url = reverse('user-detail', args=[p.user.username])
+        self.client.force_authenticate(user=p.user)
+        res = self.client.get(url)
+        assert 'is_active' in res.data
+
+    def test_is_active_not_visible_when_signed_out(self):
+        p = profile()
+        url = reverse('user-detail', args=[p.user.username])
+        res = self.client.get(url)
+        assert 'is_active' not in res.data

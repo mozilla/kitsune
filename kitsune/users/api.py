@@ -150,6 +150,8 @@ class ProfileSerializer(serializers.ModelSerializer):
     solution_count = serializers.SerializerMethodField('get_solution_count')
     # These are write only fields. It is very important they stays that way!
     password = serializers.WritableField(source='user.password', write_only=True)
+    is_active = (PermissionMod(serializers.BooleanField, permissions=[OnlySelf])
+                 (source='user.is_active', read_only=True))
 
     class Meta:
         model = Profile
@@ -178,6 +180,7 @@ class ProfileSerializer(serializers.ModelSerializer):
             # operations. They is marked as write-only above, so will not be
             # visible.
             'password',
+            'is_active',
         ]
 
     def get_avatar_url(self, profile):
