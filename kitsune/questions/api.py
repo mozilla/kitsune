@@ -55,6 +55,7 @@ class QuestionSerializer(serializers.ModelSerializer):
     creator = ProfileFKSerializer(source='creator.get_profile', read_only=True)
     involved = serializers.SerializerMethodField('get_involved_users')
     is_solved = serializers.Field(source='is_solved')
+    is_taken = serializers.Field(source='is_taken')
     metadata = QuestionMetaDataSerializer(source='metadata_set', required=False)
     num_votes = serializers.Field(source='num_votes')
     solution = serializers.PrimaryKeyRelatedField(read_only=True)
@@ -75,6 +76,7 @@ class QuestionSerializer(serializers.ModelSerializer):
             'is_locked',
             'is_solved',
             'is_spam',
+            'is_taken',
             'last_answer',
             'locale',
             'metadata',
@@ -107,8 +109,10 @@ class QuestionFilter(django_filters.FilterSet):
     product = django_filters.CharFilter(name='product__slug')
     creator = django_filters.CharFilter(name='creator__username')
     involved = django_filters.MethodFilter(action='filter_involved')
-    metadata = django_filters.MethodFilter(action='filter_metadata')
     is_solved = django_filters.MethodFilter(action='filter_is_solved')
+    is_taken = django_filters.MethodFilter(action='filter_is_taken')
+    metadata = django_filters.MethodFilter(action='filter_metadata')
+    taken_by = django_filters.CharFilter(name='taken_by__username')
 
     class Meta(object):
         model = Question
@@ -118,11 +122,13 @@ class QuestionFilter(django_filters.FilterSet):
             'involved',
             'is_archived',
             'is_locked',
-            'is_spam',
             'is_solved',
+            'is_spam',
+            'is_taken',
             'locale',
             'num_answers',
             'product',
+            'taken_by',
             'title',
             'topic',
             'updated',
@@ -217,12 +223,15 @@ class QuestionViewSet(viewsets.ModelViewSet):
     @action(methods=['POST'], permission_classes=[permissions.IsAuthenticated])
     def helpful(self, request, pk=None):
         question = self.get_object()
+
         if not question.editable:
             raise GenericAPIException(403, 'Question not editable')
         if question.has_voted(request):
             raise GenericAPIException(409, 'Cannot vote twice')
+
         QuestionVote(question=question, creator=request.user).save()
-        return Response("", status=204)
+        num_votes = QuestionVote.objects.filter(question=question).count()
+        return Response({'num_votes': num_votes})
 
     @action(methods=['POST'])
     def set_metadata(self, request, pk=None):
@@ -360,9 +369,16 @@ class AnswerViewSet(viewsets.ModelViewSet):
     @action(methods=['POST'], permission_classes=[permissions.IsAuthenticated])
     def helpful(self, request, pk=None):
         answer = self.get_object()
+
         if not answer.question.editable:
             raise GenericAPIException(403, 'Answer not editable')
         if answer.has_voted(request):
             raise GenericAPIException(409, 'Cannot vote twice')
+
         AnswerVote(answer=answer, creator=request.user, helpful=True).save()
-        return Response("", status=204)
+        num_helpful_votes = AnswerVote.objects.filter(answer=answer, helpful=True).count()
+        num_unhelpful_votes = AnswerVote.objects.filter(answer=answer, helpful=False).count()
+        return Response({
+            'num_helpful_votes': num_helpful_votes,
+            'num_unhelpful_votes': num_unhelpful_votes,
+        })

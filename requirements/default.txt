@@ -7,9 +7,8 @@ anyjson==0.3.1
 # sha256: SjoIXs8fzSc2VzU4_6EU8fQzGzu73Wk4Hm4XLEnJdQ8
 Babel==0.9.6
 
-# billiard: tags/v2.7.3.34
-# sha256: YKE9uzfN1UL1JUZXDT451i6erJQVPRDdfCT_poTAVy0
-https://github.com/celery/billiard/archive/f24a943cb4b6992717fa8d1db7e220d576377631.tar.gz#egg=billiard==2.7.3.34
+# sha256: czbsWbjQoTKh7p8WagY9RKXn8tL-FfefvO3aWDu9YcE
+billiard==3.3.0.9
 
 # bleach: tags/v1.2.1
 # sha256: TZ4IUMAsbo3fhQxiIK1u1Ba4-UXvK0mZKvjSBbxQxNA
@@ -22,13 +21,8 @@ https://github.com/jbalogh/django-debug-cache-panel/archive/a6b0f248b721bdd759ee
 # sha256: y0Y3TzyIPFgNFCp50mCYg3E6hnzIbgUUFjrc54TOJGg
 carrot==0.10.7
 
-# celery: tags/v3.0.24
-# sha256: _ac6RdnCKQYtOWzlu9JE-TNp1GBNPe_6gO2wft0dTAQ
-https://github.com/celery/celery/archive/53aac9e633302af2aeb8fd8089ed95b6d1e0c9d6.tar.gz#egg=celery==3.0.24
-
-# check: master~9
-# sha256: BJ7houDdUh-nH8g2T9aYtS4DTrGyKicd-EBjHJJOoAc
-https://github.com/jbalogh/check/archive/1c73813fcd085020decc6f72caf232f71150db0a.tar.gz#egg=check
+# sha256: z-K2UyaL1Ybi0Ip16Ib3vjvlW6Ny9y4vV0eut2xHA2I
+celery==3.1.17
 
 # sha256: 95yMBNfrUAcbytZ_0j88EPq2xy1WhXrfhINngGhF1uU
 click==3.3
@@ -40,8 +34,8 @@ https://github.com/jsocol/commonware/archive/b5544185b2d24adc1eb512735990752400c
 # sha256: MxnZwEi7pMyJqWkRgdDgIYei8JtDQ_0vz2zL-EtO4Yo
 dennis==0.6.1
 
-# sha256: mmQhHJajJiuyVFrMgq9djz2gF1KZ98fpAeTtRVvpZfs
-Django==1.6.7
+# sha256: VOtZznhUAcfR_e7SRe_OWX6Q-BHWog9rXGkxwASdY6Y
+Django==1.6.10
 
 # django-adminplus: tags/v0.2.1
 # sha256: hFyepTe0iD7ynH-YlVoiYeg_AZWYzBNed4Y8JHy6Klg
@@ -67,9 +61,9 @@ https://github.com/mozilla/django-badger/archive/c04372aa76dfaa2de7db838359cba2c
 # sha256: Z9bMfMcy--u-CtXQ0FvcEt3DgzBjGWVknYaYEu34e8c
 https://github.com/jbalogh/django-cache-machine/archive/7c3d3abfc85fc26d0e522fd05e9a42fc9b9a5430.tar.gz#egg=django-cache-machine
 
-# django-celery: tags/v3.0.23
-# sha256: ESLN3T2iyCrFz0i2k9G1Um7goYVPgRaii1DpoxwqmOg
-https://github.com/celery/django-celery/archive/b11b358cbc0d7b3ca15575d27332d4ae37beca27.tar.gz#egg=django-celery==3.0.23
+# django-celery: master
+# sha256: fv5_GlUdCxO2Ads3OkhBwbJs-yIir3I4yxmiXIi4JQo
+https://github.com/celery/django-celery/archive/9f8738e43251c2b42e4f68b4a65a8bc215aec149.tar.gz#egg=django-celery
 
 # sha256: LM9zUZ6iBbiNtFP39hcPs9CiGo4yU_JXjvDNUp95pY8
 django-cors-headers==0.13
@@ -185,9 +179,8 @@ https://github.com/jsocol/jingo-minify/archive/51c158a18e6c5ff7c6fd030ffa4cba511
 # sha256: GQQPAbOp2MY-TVeTb3hxCQgZm2k3CrRKD3QH3YkfAZs
 Jinja2==2.5.2
 
-# kombu: tags/v2.5.15
-# sha256: q7LQnb_YEdLVBSbXyqK6p5foIFShJ_v0jeL-r0fPyb8
-https://github.com/celery/kombu/archive/00efce7d9f9b8740e8df889987caf55700fd1b77.tar.gz#egg=kombu==2.5.15
+# sha256: uf8EN2BxE66nAf1RIsKvpAwF3_bx2k9YsvHqGNnyv40
+kombu==3.0.24
 
 # sha256: _rvld3LyBrrNJG-kH980xSySPl2sB5CxXJ3umX64pww
 logilab-astng==0.20.1

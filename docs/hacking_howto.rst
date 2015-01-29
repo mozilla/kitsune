@@ -81,7 +81,7 @@ Requirements
 These are required for the minimum installation:
 
 * git
-* Python 2.6 or 2.7
+* Python 2.7
 * pip: `<http://www.pip-installer.org/en/latest/>`_
 * virtualenv
 * MariaDB 5.5 server and client headers
@@ -90,6 +90,7 @@ These are required for the minimum installation:
 * libxslt and headers
 * libjpeg and headers
 * zlib and headers
+* libssl and headers
 
 These are optional:
 
@@ -172,16 +173,9 @@ Python Packages
 
 All the pure-Python requirements are provided in the requirements
 directory. We use a tool called ``peep`` to install packages and make sure
-versions are pinned. Depending on the version of python you use, you will
-need to install different files.
-
-Python 2.7::
+versions are pinned. ::
 
     $ ./scripts/peep.py install -r requirements/default.txt --no-use-wheel
-
-Python 2.6::
-
-    $ ./scripts/peep.py install -r requirements/py26.txt --no-use-wheel
 
 Additionally, you may install some useful development tools. These are not
 required, but are helpful::

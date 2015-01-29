@@ -15,8 +15,7 @@ The Source
 ==========
 
 All of the source code for Kitsune lives in `a single Github repo
-<https://github.com/mozilla/kitsune>`_. There are two important branches and we
-use tags.
+<https://github.com/mozilla/kitsune>`_.
 
 
 Branches
@@ -29,15 +28,14 @@ Master
 The ``master`` branch is our main integration points. All new patches should be
 based on the latest ``master`` (or rebased to it).
 
-Pull requests are created from those branches when they're "done".
+Pull requests are created from those branches. Pull requests may be opened at
+any time, including before any code has been written.
 
 Pull requests get reviewed.
 
-Once reviewed, the branch is rebased against ``master`` and then landed on
-``master``.
-
-Our `dev server <https://support-dev.allizom.org/>`_ runs ``master``, and it
-updates every 15 minutes via a cron job.
+Once reviewed, the branch is merged into ``master``, except in special cases
+such as changes that require re-indexing. See
+:ref:`Changes that involve reindexing <changes_reindexing>`.
 
 We deploy to production from ``master``.
 
@@ -45,8 +43,8 @@ We deploy to production from ``master``.
 Dev
 ===
 
-Dev runs whatever is in master and updates on every commit via github hooks
-to an updater script.
+Dev is a small environment that is updated manually. We use it primarily to
+develop infrastructure changes, like uprading to Python 2.7.
 
 
 Stage

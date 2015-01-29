@@ -2,6 +2,11 @@
 # pwd is the git repo.
 set -e
 
+# None of this is needed for lint tests.
+if [[ $TEST_SUITE == "lint" ]]; then
+  exit 0
+fi
+
 echo "Making settings_local.py"
 cat > kitsune/settings_local.py <<SETTINGS
 from settings import *

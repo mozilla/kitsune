@@ -210,12 +210,61 @@ class TestQuestionViewSet(TestCase):
         q = Question.objects.get(id=q.id)
         eq_(q.solution, a)
 
+    def test_filter_is_taken_true(self):
+        q1 = question(save=True)
+        q2 = question(save=True)
+        q2.take(q1.creator)
+
+        url = reverse('question-list') + '?is_taken=1'
+        res = self.client.get(url)
+
+        eq_(res.status_code, 200)
+        eq_(res.data['count'], 1)
+        eq_(res.data['results'][0]['id'], q2.id)
+
+    def test_filter_is_taken_false(self):
+        q1 = question(save=True)
+        q2 = question(save=True)
+        q2.take(q1.creator)
+
+        url = reverse('question-list') + '?is_taken=0'
+        res = self.client.get(url)
+
+        eq_(res.status_code, 200)
+        eq_(res.data['count'], 1)
+        eq_(res.data['results'][0]['id'], q1.id)
+
+    def test_filter_is_taken_expired(self):
+        q = question(save=True)
+        # "take" the question, but with an expired timer.
+        q.taken_by = profile().user
+        q.taken_until = datetime.now() - timedelta(seconds=60)
+
+        url = reverse('question-list') + '?is_taken=1'
+        res = self.client.get(url)
+
+        eq_(res.status_code, 200)
+        eq_(res.data['count'], 0)
+
+    def test_filter_taken_by_username(self):
+        q1 = question(save=True)
+        q2 = question(save=True)
+        q2.take(q1.creator)
+
+        url = reverse('question-list') + '?taken_by=' + q1.creator.username
+        res = self.client.get(url)
+
+        eq_(res.status_code, 200)
+        eq_(res.data['count'], 1)
+        eq_(res.data['results'][0]['id'], q2.id)
+
     def test_helpful(self):
         q = question(save=True)
         u = profile().user
         self.client.force_authenticate(user=u)
         res = self.client.post(reverse('question-helpful', args=[q.id]))
-        eq_(res.status_code, 204)
+        eq_(res.status_code, 200)
+        eq_(res.data, {'num_votes': 1})
         eq_(Question.objects.get(id=q.id).num_votes, 1)
 
     def test_helpful_double_vote(self):
@@ -292,6 +341,15 @@ class TestQuestionViewSet(TestCase):
         # The API has a default sort, so ordering will be consistent.
         eq_(res.data['results'][0]['id'], q2.id)
         eq_(res.data['results'][1]['id'], q1.id)
+
+    def test_is_taken(self):
+        q = question(save=True)
+        u = profile().user
+        q.take(u)
+        url = reverse('question-detail', args=[q.id])
+        res = self.client.get(url)
+        eq_(res.status_code, 200)
+        eq_(res.data['taken_by']['username'], u.username)
 
     def test_take(self):
         q = question(save=True)
@@ -404,7 +462,8 @@ class TestAnswerViewSet(TestCase):
         u = profile().user
         self.client.force_authenticate(user=u)
         res = self.client.post(reverse('answer-helpful', args=[a.id]))
-        eq_(res.status_code, 204)
+        eq_(res.status_code, 200)
+        eq_(res.data, {'num_helpful_votes': 1, 'num_unhelpful_votes': 0})
         eq_(Answer.objects.get(id=a.id).num_votes, 1)
 
     def test_helpful_double_vote(self):

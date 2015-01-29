@@ -1,6 +1,6 @@
 sudo: no
 language: python
-python: "2.6"
+python: 2.7
 node: "0.10"
 
 env:
@@ -10,6 +10,9 @@ env:
   matrix:
     - TEST_SUITE=lint
     - TEST_SUITE=django
+
+matrix:
+  fast_finish: true
 
 cache:
   directories:

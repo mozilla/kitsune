@@ -2,6 +2,7 @@ import json
 
 import mock
 from django.contrib.auth.models import User
+from django.contrib.sites.models import Site
 from django.core import mail
 from django.test.utils import override_settings
 from nose.tools import eq_
@@ -285,3 +286,25 @@ class TestUserView(TestCase):
         url = reverse('user-delete-setting', args=[p.user.username])
         res = self.client.post(url, {'name': 'nonexistant'})
         eq_(res.status_code, 404)
+
+    def test_is_active_visible_when_signed_in(self):
+        p = profile()
+        url = reverse('user-detail', args=[p.user.username])
+        self.client.force_authenticate(user=p.user)
+        res = self.client.get(url)
+        assert 'is_active' in res.data
+
+    def test_is_active_not_visible_when_signed_out(self):
+        p = profile()
+        url = reverse('user-detail', args=[p.user.username])
+        res = self.client.get(url)
+        assert 'is_active' not in res.data
+
+    @mock.patch.object(Site.objects, 'get_current')
+    def test_request_password_reset(self, get_current):
+        get_current.return_value.domain = 'testserver'
+        p = profile()
+        url = reverse('user-request-password-reset', args=[p.user.username])
+        res = self.client.get(url)
+        eq_(res.status_code, 204)
+        eq_(1, len(mail.outbox))

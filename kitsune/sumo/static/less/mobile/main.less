@@ -169,6 +169,13 @@ body {
     z-index: 1;
   }
 
+  &.minimal {
+    > .wrapper {
+      .box-shadow(none);
+      top: 0;
+    }
+  }
+
   &[data-orientation='right'] {
     > nav,
     .slide-on-exposed {
