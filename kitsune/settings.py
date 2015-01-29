@@ -113,6 +113,7 @@ SUMO_LANGUAGES = (
     'fi',
     'fr',
     'fy-NL',
+    'ga-IE'
     'gl',
     'gu-IN',
     'ha',
@@ -173,8 +174,6 @@ FXOS_LANGUAGES = [
     'en-US',
     'es',
     'fr',
-    'ga-IE',
-    'gl',
     'ha',
     'hi-IN',
     'hr',
