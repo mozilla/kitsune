@@ -2,7 +2,6 @@ import json
 
 from rest_framework import generics, serializers, status, decorators
 from rest_framework.response import Response
-from rest_framework.authentication import SessionAuthentication
 
 from kitsune.customercare.models import TwitterAccount
 from kitsune.sumo.api import GenericAPIException, GenericDjangoPermission
@@ -27,7 +26,6 @@ class BannedList(generics.ListAPIView):
     queryset = TwitterAccount.objects.filter(banned=True)
     serializer_class = TwitterAccountSerializer
     permission_classes = (TwitterAccountBanPermission,)
-    authentication_classes = (SessionAuthentication,)
 
 
 class IgnoredList(generics.ListAPIView):
@@ -35,12 +33,10 @@ class IgnoredList(generics.ListAPIView):
     queryset = TwitterAccount.objects.filter(ignored=True)
     serializer_class = TwitterAccountSerializer
     permission_classes = (TwitterAccountIgnorePermission,)
-    authentication_classes = (SessionAuthentication,)
 
 
 @decorators.api_view(['POST'])
 @decorators.permission_classes([TwitterAccountBanPermission])
-@decorators.authentication_classes([SessionAuthentication])
 def ban(request):
     """Bans a twitter account from using the AoA tool."""
     username = json.loads(request.body).get('username')
@@ -67,7 +63,6 @@ def ban(request):
 
 @decorators.api_view(['POST'])
 @decorators.permission_classes([TwitterAccountBanPermission])
-@decorators.authentication_classes([SessionAuthentication])
 def unban(request):
     """Unbans a twitter account from using the AoA tool."""
     usernames = json.loads(request.body).get('usernames')
@@ -88,7 +83,6 @@ def unban(request):
 
 @decorators.api_view(['POST'])
 @decorators.permission_classes([TwitterAccountIgnorePermission])
-@decorators.authentication_classes([SessionAuthentication])
 def ignore(request):
     """Ignores a twitter account from showing up in the AoA tool."""
     username = json.loads(request.body).get('username')
@@ -115,7 +109,6 @@ def ignore(request):
 
 @decorators.api_view(['POST'])
 @decorators.permission_classes([TwitterAccountIgnorePermission])
-@decorators.authentication_classes([SessionAuthentication])
 def unignore(request):
     """Unignores a twitter account from showing up in the AoA tool."""
     usernames = json.loads(request.body).get('usernames')
