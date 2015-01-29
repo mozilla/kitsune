@@ -904,14 +904,15 @@ CORS_URLS_REGEX = [
     r'^/api/1/products/.*',
     r'^/api/1/users/get_token$',
     r'^/api/1/users/test_auth$',
+
     r'^/api/2/answer/.*$',
     r'^/api/2/pushnotification/.*$',
     r'^/api/2/question/.*$',
+    r'^/api/2/search/.*$',
     r'^/api/2/user/.*$',
 ]
 # Now combine all those regexes with one big "or".
 CORS_URLS_REGEX = re.compile('|'.join('({0})'.format(r) for r in CORS_URLS_REGEX))
-CORS_URLS_REGEX = '.*'
 
 # XXX Fix this when Bug 1059545 is fixed
 CC_IGNORE_USERS = []
