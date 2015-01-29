@@ -113,7 +113,7 @@ SUMO_LANGUAGES = (
     'fi',
     'fr',
     'fy-NL',
-    'ga-IE'
+    'ga-IE',
     'gl',
     'gu-IN',
     'ha',
