@@ -4,7 +4,6 @@ import django_filters
 import json
 from django.db.models import Q
 from rest_framework import serializers, viewsets, permissions, filters, status
-from rest_framework.authentication import SessionAuthentication, TokenAuthentication
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -262,10 +261,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
         except QuestionMetaData.DoesNotExist:
             raise GenericAPIException(404, 'No matching metadata object found.')
 
-    @action(methods=['POST'],
-            permission_classes=[permissions.IsAuthenticatedOrReadOnly],
-            # XXX: Fix this to only allow sessions authentication on non-CORS.
-            authentication_classes=[SessionAuthentication, TokenAuthentication])
+    @action(methods=['POST'], permission_classes=[permissions.IsAuthenticatedOrReadOnly])
     def take(self, request, pk=None):
         question = self.get_object()
         field = serializers.BooleanField()
