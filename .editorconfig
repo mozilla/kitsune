@@ -1,0 +1,14 @@
+# http://editorconfig.org/
+# This file is a hint to smart editors about how to behave in this project.
+
+[*]
+indent_style = space
+indent_size = 4
+end_of_line = lf
+charset = utf-8
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+[.travis.yml]
+# The travis CLI tool forces 2 spaces. No use fighting it.
+indent_size = 2

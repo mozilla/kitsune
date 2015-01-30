@@ -1,31 +1,26 @@
-sudo: no
+sudo: false
 language: python
 python: 2.7
-node: "0.10"
-
+node: '0.10'
 env:
   globals:
-    - DJANGO_LIVE_TEST_SERVER_ADDRESS="localhost:9900-9999"
-    - PIP_DOWNLOAD_CACHE="pip_cache"
+  - DJANGO_LIVE_TEST_SERVER_ADDRESS="localhost:9900-9999"
+  - PIP_DOWNLOAD_CACHE="pip_cache"
   matrix:
-    - TEST_SUITE=lint
-    - TEST_SUITE=django
-
+  - TEST_SUITE=lint
+  - TEST_SUITE=django
 matrix:
   fast_finish: true
-
 cache:
   directories:
-    - pip_cache
-
+  - pip_cache
 install: scripts/travis/install.sh
 before_script: scripts/travis/setup.sh
 script: scripts/travis/dispatch.sh $TEST_SUITE
-
 notifications:
-    email: false
-    irc:
-        channels:
-            - "irc.mozilla.org#sumodev"
-        on_success: always
-        on_failure: always
+  email: false
+  irc:
+    channels:
+    - irc.mozilla.org#sumodev
+    on_success: always
+    on_failure: always
