@@ -133,7 +133,6 @@ def calculate_percents(data):
         total = float(data['total'])
         translated = float(data['translated'])
         data['percent'] = int(translated / total * 100.00)
-)
 
     # traverse the tree to calculate additional percents
     for key, val in data.items():
