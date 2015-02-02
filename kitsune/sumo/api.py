@@ -1,8 +1,10 @@
 from django import forms
 from django.conf import settings
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.auth.models import User
 
 import pytz
-from rest_framework import fields, permissions
+from rest_framework import fields, permissions, relations, serializers
 from rest_framework.exceptions import APIException
 from rest_framework.filters import BaseFilterBackend
 from tower import ugettext as _
@@ -94,6 +96,34 @@ class DateTimeUTCField(fields.DateTimeField):
             value = default_tzinfo.localize(value)
         value = value.astimezone(pytz.utc)
         return super(DateTimeUTCField, self).to_native(value)
+
+
+class _IDSerializer(serializers.Serializer):
+    id = fields.Field(source='pk')
+
+    class Meta:
+        fields = ('id', )
+
+
+class GenericRelatedField(relations.RelatedField):
+    """
+    Serializes GenericForeignKey relations.
+    """
+
+    def to_native(self, value):
+        content_type = ContentType.objects.get_for_model(value)
+        data = {'type': content_type.model}
+
+        if isinstance(value, User):
+            value = value.get_profile()
+
+        if hasattr(value, 'get_generic_fk_serializer'):
+            SerializerClass = value.get_generic_fk_serializer()
+        else:
+            SerializerClass = _IDSerializer
+        data.update(SerializerClass(instance=value).data)
+
+        return data
 
 
 class InequalityFilterBackend(BaseFilterBackend):

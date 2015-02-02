@@ -68,3 +68,7 @@ class Migration(SchemaMigration):
     }
 
     complete_apps = ['products']
+
+    depends_on = (
+        ('questions', '0013_populate_question_locale_products'),
+    )

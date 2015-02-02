@@ -37,6 +37,9 @@ dennis==0.6.1
 # sha256: VOtZznhUAcfR_e7SRe_OWX6Q-BHWog9rXGkxwASdY6Y
 Django==1.6.10
 
+# sha256: M7YuOXN4svxB-YixuXUuT1Y5rfNYJN5wxGqKDmv1pVs
+django-activity-stream==0.5.1
+
 # django-adminplus: tags/v0.2.1
 # sha256: hFyepTe0iD7ynH-YlVoiYeg_AZWYzBNed4Y8JHy6Klg
 https://github.com/jsocol/django-adminplus/archive/90c6aca7a9c18f90af20d111141b1670ef6af206.tar.gz#egg=django-adminplus==0.2.1
@@ -85,6 +88,9 @@ https://github.com/django-extensions/django-extensions/archive/47a531c996c92a369
 
 # sha256: GxivwUOH0u6YUuTcmoeqRuNGoJZ6c0qqufsiLtSBzqI
 django-filter==0.8
+
+# sha256: Eq491FQ_jcXMX0vdf2_RaPTRYkQU11OkQVc8zBh6jkM
+django-jsonfield==0.9.13
 
 # django-mobility: master~5
 # sha256: 11NE2ouDylJbghVgmHjrLx3kXHKyhbg5L-Kooyy5SzA
