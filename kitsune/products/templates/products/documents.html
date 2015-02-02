@@ -8,6 +8,11 @@
 {% endif %}
 {% set styles = ('products',) %}
 
+{% if product.slug == 'mobile' %}
+  {# Firefox for Android has a special separate survey. #}
+  {% set extra_body_attrs = {'data-surveygizmo-url': 'http://qsurvey.mozilla.com/s3/63ac9fdb1ce1'} %}
+{% endif %}
+
 {% block title %}{{ _(topic.title, 'DB: products.Topic.title') }} | {{ _('{product} Help')|f(product=_(product.title, 'DB: products.Product.title')) }}{% endblock %}
 
 {% block content %}

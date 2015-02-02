@@ -20,7 +20,12 @@ SURVEYS = {
     'askers': {  # This is for users that asked a question 2 days ago.
         'exit_survey_id': 1817790,
         'exit_survey_campaign_id': 1876443,
-    }
+    },
+    'kb-firefox-android': {  # This is for KB users looking at Firefox for Android pages.
+        'email_collection_survey_id': 1983780,
+        'exit_survey_id': 1979872,
+        'exit_survey_campaign_id': 2208951,
+    },
 }
 
 
