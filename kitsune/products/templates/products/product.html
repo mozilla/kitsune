@@ -32,7 +32,7 @@
           <span class="download-content">
             <strong class="download-title">{{ _('Firefox') }}</strong>
             <span class="download-subtitle">{{ _('Free Download') }}</span>
-            <span class="download-lang">{{ _('English (US)') }}</span>
+            <span class="download-lang">{{ settings.LANGUAGES_DICT[request.LANGUAGE_CODE.lower()] }}</span>
           </span>
         </a>
         <ul class="info">
@@ -64,7 +64,7 @@
           <span class="download-content">
             <strong class="download-title">{{ _('Thunderbird') }}</strong>
             <span class="download-subtitle">{{ _('Free Download') }}</span>
-            <span class="download-lang">{{ _('English (US)') }}</span>
+            <span class="download-lang">{{ settings.LANGUAGES_DICT[request.LANGUAGE_CODE.lower()] }}</span>
           </span>
         </a>
         <ul class="info">
