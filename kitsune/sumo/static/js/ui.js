@@ -337,6 +337,11 @@
   $(document).on('click', '[data-mozilla-ui-reset]', function(ev) {
     ev.preventDefault();
     if (Mozilla && Mozilla.UITour) {
+      // Send event to GA for metrics/reporting purposes.
+      if (_gaq) {
+        _gaq.push(['_trackEvent', 'Refresh Firefox', 'click refresh button']);
+      }
+
       Mozilla.UITour.resetFirefox();
     }
     return false;
