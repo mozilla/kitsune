@@ -2,7 +2,7 @@ from nose.tools import eq_
 
 from actstream.actions import follow
 from actstream.signals import action
-from actstream.models import Action
+from actstream.models import Action, Follow
 
 from kitsune.notifications.models import Notification
 from kitsune.questions.tests import answer, question
@@ -16,6 +16,8 @@ class TestNotificationsSentFromActions(TestCase):
         follower = profile().user
         followed = profile().user
         q = question(creator=followed, save=True)
+        # The above might make follows, which this test isn't about. Clear them out.
+        Follow.objects.all().delete()
         follow(follower, followed)
 
         # Make a new action for the above. This should trigger notifications
@@ -30,6 +32,8 @@ class TestNotificationsSentFromActions(TestCase):
         follower = profile().user
         q = question(save=True)
         ans = answer(question=q, save=True)
+        # The above might make follows, which this test isn't about. Clear them out.
+        Follow.objects.all().delete()
         follow(follower, q, actor_only=False)
 
         # Make a new action for the above. This should trigger notifications.
@@ -43,6 +47,8 @@ class TestNotificationsSentFromActions(TestCase):
     def test_following_action_object(self):
         follower = profile().user
         q = question(save=True)
+        # The above might make follows, which this test isn't about. Clear them out.
+        Follow.objects.all().delete()
         follow(follower, q, actor_only=False)
 
         # Make a new action for the above. This should trigger notifications.

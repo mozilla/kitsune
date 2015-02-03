@@ -2,7 +2,7 @@ from datetime import datetime
 
 from actstream.actions import follow
 from actstream.signals import action
-from actstream.models import Action
+from actstream.models import Action, Follow
 import mock
 from nose.tools import eq_, ok_
 from rest_framework.test import APIClient
@@ -54,6 +54,8 @@ class TestNotificationSerializer(TestCase):
         follower = profile()
         followed = profile()
         q = question(creator=followed.user, save=True)
+        # The above might make follows, which this test isn't about. Clear them out.
+        Follow.objects.all().delete()
         follow(follower.user, followed.user)
 
         # Make a new action for the above. This should trigger notifications
@@ -85,6 +87,9 @@ class TestNotificationViewSet(TestCase):
         follower = profile()
         followed = profile()
         q = question(creator=followed.user, save=True)
+        # The above might make follows, which this test isn't about. Clear them out.
+        Follow.objects.all().delete()
+
         follow(follower.user, followed.user)
 
         # Make a new action for the above. This should trigger notifications

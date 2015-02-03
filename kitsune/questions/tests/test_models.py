@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from django.db.models import Q
 
 import mock
-from actstream.models import Action
+from actstream.models import Action, Follow
 from nose.tools import eq_, ok_, raises
 from taggit.models import Tag
 
@@ -160,6 +160,19 @@ class TestAnswer(TestCaseBase):
         a = answer(question=q, content='[[%s]]' % doc.title, save=True)
 
         assert 'es/kb/%s' % doc.slug in a.content_parsed
+
+    def test_creator_follows(self):
+        a = answer(save=True)
+        follows = Follow.objects.filter(user=a.creator)
+
+        # It's a pain to filter this from the DB, since follow_object is a
+        # ContentType field, so instead, do it in Python.
+        eq_(len(follows), 2)
+        answer_follow = [f for f in follows if f.follow_object == a][0]
+        question_follow = [f for f in follows if f.follow_object == a.question][0]
+
+        eq_(question_follow.actor_only, False)
+        eq_(answer_follow.actor_only, False)
 
 
 class TestQuestionMetadata(TestCaseBase):
@@ -471,6 +484,12 @@ class QuestionTests(TestCaseBase):
         eq_(q.is_taken, False)
         eq_(q.taken_by, None)
         eq_(q.taken_until, None)
+
+    def test_creator_follows(self):
+        q = question(save=True)
+        f = Follow.objects.get(user=q.creator)
+        eq_(f.follow_object, q)
+        eq_(f.actor_only, False)
 
 
 class AddExistingTagTests(TestCaseBase):
