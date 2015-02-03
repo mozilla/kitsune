@@ -164,7 +164,7 @@ SUMO_LANGUAGES = (
 # These languages won't show a warning about FxOS when contributors try
 # to add content.
 FXOS_LANGUAGES = [
-    'af'
+    'af',
     'bn-BD',
     'bn-IN',
     'cs',
