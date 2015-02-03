@@ -1,5 +1,6 @@
 from datetime import datetime
 
+import actstream.actions
 import django_filters
 import json
 from django.db.models import Q
@@ -232,6 +233,18 @@ class QuestionViewSet(viewsets.ModelViewSet):
         num_votes = QuestionVote.objects.filter(question=question).count()
         return Response({'num_votes': num_votes})
 
+    @action(methods=['POST'], permission_classes=[permissions.IsAuthenticated])
+    def follow(self, request, pk=None):
+        question = self.get_object()
+        actstream.actions.follow(request.user, question, actor_only=False)
+        return Response('', status=204)
+
+    @action(methods=['POST'], permission_classes=[permissions.IsAuthenticated])
+    def unfollow(self, request, pk=None):
+        question = self.get_object()
+        actstream.actions.unfollow(request.user, question)
+        return Response('', status=204)
+
     @action(methods=['POST'])
     def set_metadata(self, request, pk=None):
         data = request.DATA
@@ -378,3 +391,15 @@ class AnswerViewSet(viewsets.ModelViewSet):
             'num_helpful_votes': num_helpful_votes,
             'num_unhelpful_votes': num_unhelpful_votes,
         })
+
+    @action(methods=['POST'], permission_classes=[permissions.IsAuthenticated])
+    def follow(self, request, pk=None):
+        answer = self.get_object()
+        actstream.actions.follow(request.user, answer, actor_only=False)
+        return Response('', status=204)
+
+    @action(methods=['POST'], permission_classes=[permissions.IsAuthenticated])
+    def unfollow(self, request, pk=None):
+        answer = self.get_object()
+        actstream.actions.unfollow(request.user, answer)
+        return Response('', status=204)

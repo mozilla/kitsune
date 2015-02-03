@@ -19,6 +19,7 @@ from django.http import Http404
 
 import actstream
 import actstream.registry
+import actstream.actions
 from product_details import product_details
 from statsd import statsd
 from taggit.models import Tag, TaggedItem
@@ -153,10 +154,15 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         super(Question, self).save(*args, **kwargs)
 
         if new:
+            # Tidings
             # Avoid circular import, events.py imports Question
             from kitsune.questions.events import QuestionReplyEvent
             # Authors should automatically watch their own questions.
             QuestionReplyEvent.notify(self.creator, self)
+
+            # actstream
+            # Authors should automatically follow their own questions.
+            actstream.actions.follow(self.creator, self, actor_only=False)
 
     def add_metadata(self, **kwargs):
         """Add (save to db) the passed in metadata.
@@ -962,9 +968,14 @@ class Answer(ModelBase, SearchMixin):
             self.question.clear_cached_contributors()
 
             if not no_notify:
+                # tidings
                 # Avoid circular import: events.py imports Question.
                 from kitsune.questions.events import QuestionReplyEvent
                 QuestionReplyEvent(self).fire(exclude=self.creator)
+
+                # actstream
+                actstream.actions.follow(self.creator, self, actor_only=False)
+                actstream.actions.follow(self.creator, self.question, actor_only=False)
 
         if not new:
             # Clear the attached images cache.

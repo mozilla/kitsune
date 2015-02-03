@@ -2,6 +2,8 @@ import json
 from datetime import datetime, timedelta
 
 import mock
+import actstream.actions
+from actstream.models import Follow
 from nose.tools import eq_, ok_, raises
 from rest_framework.test import APIClient
 from rest_framework.exceptions import APIException
@@ -379,6 +381,26 @@ class TestQuestionViewSet(TestCase):
         q = Question.objects.get(id=q.id)
         eq_(q.taken_by, u1)
 
+    def test_follow(self):
+        q = question(save=True)
+        u = profile().user
+        self.client.force_authenticate(user=u)
+        res = self.client.post(reverse('question-follow', args=[q.id]))
+        eq_(res.status_code, 204)
+        f = Follow.objects.get(user=u)
+        eq_(f.follow_object, q)
+        eq_(f.actor_only, False)
+
+    def test_unfollow(self):
+        q = question(save=True)
+        u = profile().user
+        actstream.actions.follow(u, q, actor_only=False)
+        eq_(Follow.objects.filter(user=u).count(), 1)  # pre-condition
+        self.client.force_authenticate(user=u)
+        res = self.client.post(reverse('question-unfollow', args=[q.id]))
+        eq_(res.status_code, 204)
+        eq_(Follow.objects.filter(user=u).count(), 0)
+
 
 class TestAnswerSerializerDeserialization(TestCase):
 
@@ -485,6 +507,27 @@ class TestAnswerViewSet(TestCase):
         res = self.client.post(reverse('answer-helpful', args=[a.id]))
         eq_(res.status_code, 403)
         eq_(Answer.objects.get(id=a.id).num_votes, 0)
+
+    def test_follow(self):
+        a = answer(save=True)
+        u = profile().user
+        self.client.force_authenticate(user=u)
+        eq_(Follow.objects.filter(user=u).count(), 0)  # pre-condition
+        res = self.client.post(reverse('answer-follow', args=[a.id]))
+        eq_(res.status_code, 204)
+        f = Follow.objects.get(user=u)
+        eq_(f.follow_object, a)
+        eq_(f.actor_only, False)
+
+    def test_unfollow(self):
+        a = answer(save=True)
+        u = profile().user
+        actstream.actions.follow(u, a, actor_only=False)
+        eq_(Follow.objects.filter(user=u).count(), 1)  # pre-condition
+        self.client.force_authenticate(user=u)
+        res = self.client.post(reverse('answer-unfollow', args=[a.id]))
+        eq_(res.status_code, 204)
+        eq_(Follow.objects.filter(user=u).count(), 0)
 
 
 class TestQuestionFilter(TestCase):
