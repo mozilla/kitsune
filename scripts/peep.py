@@ -78,9 +78,20 @@ try:
 except ImportError:
     from pip import logger  # 6.0
 from pip.req import parse_requirements
+try:
+    from pip.utils.ui import DownloadProgressBar, DownloadProgressSpinner
+except ImportError:
+    class NullProgressBar(object):
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def iter(self, ret, *args, **kwargs):
+            return ret
+
+    DownloadProgressBar = DownloadProgressSpinner = NullProgressBar
 
 
-__version__ = 2, 1, 1
+__version__ = 2, 2, 0
 
 
 ITS_FINE_ITS_FINE = 0
@@ -487,14 +498,31 @@ class DownloadedReq(object):
             return filename
 
         # Descended from _download_url() in pip 1.4.1
-        def pipe_to_file(response, path):
-            """Pull the data off an HTTP response, and shove it in a new file."""
-            # TODO: Indicate progress.
-            with open(path, 'wb') as file:
+        def pipe_to_file(response, path, size=0):
+            """Pull the data off an HTTP response, shove it in a new file, and
+            show progress.
+
+            :arg response: A file-like object to read from
+            :arg path: The path of the new file
+            :arg size: The expected size, in bytes, of the download. 0 for
+                unknown or to suppress progress indication (as for cached
+                downloads)
+
+            """
+            def response_chunks(chunk_size):
                 while True:
-                    chunk = response.read(4096)
+                    chunk = response.read(chunk_size)
                     if not chunk:
                         break
+                    yield chunk
+
+            print('Downloading %s%s...' % (
+                self._req.req,
+                (' (%sK)' % (size / 1000)) if size > 1000 else ''))
+            progress_indicator = (DownloadProgressBar(max=size).iter if size
+                                  else DownloadProgressSpinner().iter)
+            with open(path, 'wb') as file:
+                for chunk in progress_indicator(response_chunks(4096), 4096):
                     file.write(chunk)
 
         url = link.url.split('#', 1)[0]
@@ -503,7 +531,11 @@ class DownloadedReq(object):
         except (HTTPError, IOError) as exc:
             raise DownloadError(link, exc)
         filename = best_filename(link, response)
-        pipe_to_file(response, join(self._temp_path, filename))
+        try:
+            size = int(response.headers['content-length'])
+        except (ValueError, KeyError, TypeError):
+            size = 0
+        pipe_to_file(response, join(self._temp_path, filename), size=size)
         return filename
 
 
@@ -722,6 +754,7 @@ def first_every_last(iterable, first, every, last):
     did_first = False
     for item in iterable:
         if not did_first:
+            did_first = True
             first(item)
         every(item)
     if did_first:
@@ -760,8 +793,7 @@ def peep_install(argv):
 
     """
     output = []
-    #out = output.append
-    out = print
+    out = output.append
     reqs = []
     try:
         req_paths = list(requirement_args(argv, want_paths=True))

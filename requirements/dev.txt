@@ -1,5 +1,8 @@
 # These requirements are helpful, but not required, for working on Kitsune.
 
+# sha256: yfS7goDAxl8gqd_IQRV_y0eUYeyuaXKoozNj52k6qRc
+chief-james==1.0.0
+
 # sha256: 6U6syZbt8Rq7o3Lw3APp2PHQCIn9KeiTXE6bvZuir9w
 django-debug-toolbar==1.2.2
 
@@ -11,6 +14,9 @@ flake8==2.2.5
 
 # sha256: WioXDkfeVZOmq_rh6VQr0sOSSsYrvk5u2WyVPANSJDo
 mccabe==0.2.1
+
+# sha256: e5YBIl0vUwZjVn0DMm8o8ipKZCPlasGBLWH9IEEmM_I
+ndg-httpsclient==0.3.3
 
 # sha256: ku47hrXBkhwtnawhe--JkMX4Usi8TZAYyv4PPzuBzTo
 nosenicedots==0.5
@@ -29,4 +35,3 @@ Sphinx==1.2.3
 
 # sha256: x9txeBCraWX2bIzwOYqYydjfmC2jm0zX8WKRHriVlvo
 docutils==0.12
-

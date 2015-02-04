@@ -596,7 +596,7 @@ class TestQuestionFilter(TestCase):
         q2 = question(metadata={'os': 'OSX'}, save=True)
         question(metadata={'os': 'Windows 7'}, save=True)
         res = self.filter({'os': ['Linux', 'OSX']})
-        eq_(list(res), [q1, q2])
+        eq_(sorted(res, key=lambda q: q.id), [q1, q2])
 
     def test_none_value_is_missing(self):
         q1 = question(metadata={}, save=True)
@@ -609,7 +609,7 @@ class TestQuestionFilter(TestCase):
         q2 = question(metadata={}, save=True)
         question(metadata={'os': 'Windows 7'}, save=True)
         res = self.filter({'os': ['Linux', None]})
-        eq_(list(res), [q1, q2])
+        eq_(sorted(res, key=lambda q: q.id), [q1, q2])
 
     def test_is_taken(self):
         u = user(save=True)
