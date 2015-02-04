@@ -27,9 +27,15 @@ celery==3.1.17
 # sha256: 95yMBNfrUAcbytZ_0j88EPq2xy1WhXrfhINngGhF1uU
 click==3.3
 
+# sha256: JTLZ46-ePG0PcQ_JiwKVtWPH85z9l90iQr02-_SQBhA
+cffi==0.8.6
+
 # commonware: master
 # sha256: k9gjEUXUPKAuHsPO41UzOvqOcq25z4FXZ-F1lXSXdNQ
 https://github.com/jsocol/commonware/archive/b5544185b2d24adc1eb512735990752400ce9cbd.tar.gz#egg=commonware
+
+# sha256: -rf83eNg7GYURC0DIdzQ7_XkNUTLMNl16ddakUpM33g
+cryptography==0.7.2
 
 # sha256: MxnZwEi7pMyJqWkRgdDgIYei8JtDQ_0vz2zL-EtO4Yo
 dennis==0.6.1
@@ -161,6 +167,9 @@ elasticutils==0.10.1
 # sha256: u5PYXKflDWjkGXhSu226YJi7dyUA-C9dsv9KgHEVBck
 elasticsearch==1.2.0
 
+# sha256: 08GfJqajRinBjHdfWd_F3VlXZMcitXotpW6_tpuU5Ec
+enum34==1.0.4
+
 # sha256: A3VLx7JWOXwbZG5QSOIpFZD1CAFxrbiwD04tc4THbu4
 GitPython==0.1.7
 
@@ -209,9 +218,8 @@ MySQL-python==1.2.3c1
 # sha256: sboSwcRTI_2Glb5oznIoRWuG5RI08WcCfrvEzNqFLGE
 nose==1.1.2
 
-# oauthlib: tags/0.5.0~18
-# sha256: tHdrttt9XnQAFXwSPTMZ_al_OxYhfBpgeLLXuSbH_L0
-https://github.com/idan/oauthlib/archive/8a7b279e44efacccab7eee6bb60143120c45eca1.tar.gz#egg=oauthlib
+# sha256: oFHwTujsMwUFWrNNh7NsmkSTdeB8fWoFvK-kgynKx8M
+oauthlib==0.7.2
 
 # sha256: HDW0rCBs7y0kgWyJ-Jzyid09OM98RJuz-re_bUPwGx8
 ordereddict==1.1
@@ -233,8 +241,8 @@ https://github.com/pcraciunoiu/py-wikimarkup/archive/ce7d10dbd421533bb9b0c41dd9c
 # sha256: KR27SJO1C3yD8sjfYlFo-hcqZ_h-tE85oHIivjuNnJU
 pyes==0.16.0
 
-# sha256: IeErA6uqDgTsyM2cJRWY9xuuEcnzhTBCNOTqVhjGFjs
-pyOpenSSL==0.13
+# sha256: qZ245ZwSATitinLuztzCS0UQ0u7TzkghO34y8izE7m4
+pyOpenSSL==0.14
 
 # sha256: 0XVN8IAYcdBalvHO9QpPMuXUDUnqJKocbKlSnL1WIAU
 pyparsing==1.5.5
@@ -251,6 +259,12 @@ python-gflags==2.0
 # sha256: ZrvGLZUZ-dUxsfd-aH2fL15SHLkG8f1yMfQDmX4BEMQ
 python-memcached==1.48
 
+# sha256: 5PgdU8Uz9r2VJrBH8Ef3sQHCSrFzOcGnrY-YslwQHqs
+pyasn1==0.1.7
+
+# sha256: lX2YtmHAtktYCrb5SxJeCbZxQVTuUd5AvKFtPwB2uGw
+pycparser==2.10
+
 # python-recaptcha: ssl-enabled
 # sha256: eptgBDruYdbl_f_FcsZDFOptnKCa_w0vKpPOe6jTOxk
 https://github.com/bltravis/python-recaptcha/archive/d7db50afc711ef623aec8e472ff55627e66fcd87.tar.gz#egg=python-recaptcha
@@ -266,13 +280,11 @@ https://github.com/getsentry/raven-python/archive/ab53d276262a0fa2932588b34de4e6
 # sha256: pKrx7rUrWH9IbMYyT2MF62gW_bVPony2JPDx0TecNP0
 https://github.com/andymccurdy/redis-py/archive/43aa23146ad287959369161038a4e5cda985a259.tar.gz#egg=redis
 
-# requests: tags/v1.1.0
-# sha256: LFetLgx3GU1fkbaxtU_ewDWhuM_CTQR3sIcrFsKldDM
-https://github.com/kennethreitz/requests/archive/1a7c91f6581c80122ed8cd1fdf4a8ca38c842453.tar.gz#egg=requests==1.1.0
+# sha256: e3c179Ox4jI9yfzvBgs4DQX18YvQ8kf16edKYoJ53mY
+requests==2.5.1
 
-# requests-oauthlib: tags/v0.3.3~12
-# sha256: uOoyEafcwZIXaIFQOsl_ffe0JIVmLZzuahgcNqZg78Y
-https://github.com/requests/requests-oauthlib/archive/3d9fe79cd92c6c2e36fba993c19b957804cf8d7f.tar.gz#egg=requests-oauthlib
+# sha256: ngIjuJUY7axhqXtW_3jycQVs4IyKF8a2RK7yRPrIPyM
+requests-oauthlib==0.4.2
 
 # schematic: master
 # sha256: ELrq_ifCkWujoqbRrfIsQakd640Hn1kJAu2P36B6Nf8
@@ -288,8 +300,8 @@ setuptools==0.9.8
 # sha256: _lMoR-CPEVj4EJr9NJdUBZ4QFYMNsYjXOwHi7MD35Sg
 simplejson==3.1.2
 
-# sha256: 8EWv1t_7dVzAQRrLfOmsxN4OcSYdS1-R3i5o2apfg2c
-six==1.4.1
+# sha256: 4kBSQR_E-9H2cmNVN8P8IzDZSBsYwDF2lbRiWVEskdU
+six==1.9.0
 
 # sha256: pvB08EimOg0ZzRpq4pg3e0gANR7KjhKU0z9wnFzdXlo
 South==0.8.2
