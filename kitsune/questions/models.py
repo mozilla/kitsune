@@ -162,7 +162,7 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
 
             # actstream
             # Authors should automatically follow their own questions.
-            actstream.actions.follow(self.creator, self, actor_only=False)
+            actstream.actions.follow(self.creator, self, send_action=False, actor_only=False)
 
     def add_metadata(self, **kwargs):
         """Add (save to db) the passed in metadata.
@@ -974,8 +974,9 @@ class Answer(ModelBase, SearchMixin):
                 QuestionReplyEvent(self).fire(exclude=self.creator)
 
                 # actstream
-                actstream.actions.follow(self.creator, self, actor_only=False)
-                actstream.actions.follow(self.creator, self.question, actor_only=False)
+                actstream.actions.follow(self.creator, self, send_action=False, actor_only=False)
+                actstream.actions.follow(
+                    self.creator, self.question, send_action=False, actor_only=False)
 
         if not new:
             # Clear the attached images cache.
