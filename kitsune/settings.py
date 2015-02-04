@@ -113,6 +113,8 @@ SUMO_LANGUAGES = (
     'fi',
     'fr',
     'fy-NL',
+    'ga-IE',
+    'gl',
     'gu-IN',
     'ha',
     'he',
@@ -162,7 +164,7 @@ SUMO_LANGUAGES = (
 # These languages won't show a warning about FxOS when contributors try
 # to add content.
 FXOS_LANGUAGES = [
-    'af'
+    'af',
     'bn-BD',
     'bn-IN',
     'cs',
@@ -199,6 +201,8 @@ FXOS_LANGUAGES = [
 # These languages will get a wiki page instead of the product and topic pages.
 SIMPLE_WIKI_LANGUAGES = [
     'et',
+    'ga-IE',
+    'gl',
 ]
 
 # Languages that should show up in language switcher.
@@ -229,9 +233,7 @@ NON_SUPPORTED_LOCALES = {
     'eo': None,
     'ff': None,
     'fur': 'it',
-    'ga-IE': None,
     'gd': None,
-    'gl': 'es',
     'hsb': 'de',
     'hy-AM': None,
     'ilo': None,
