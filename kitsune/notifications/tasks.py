@@ -6,9 +6,10 @@ from actstream.models import Action, Follow
 from celery import task
 
 from kitsune.notifications.models import Notification
+from kitsune.notifications.decorators import notification_handlers
 
 
-@task()
+@task(ignore_result=True)
 def add_notification_for_action(action_id):
     action = Action.objects.get(id=action_id)
 
@@ -33,9 +34,19 @@ def add_notification_for_action(action_id):
             object_id=action.action_object.pk,
             actor_only=False)
 
+    query = query & ~Q(user=action.actor)
+
     # execute the above query, iterate through the results, get every user
     # assocated with those Follow objects, and fire off a  notification to
     # every one of them. Use a set to only notify each user once.
     users_to_notify = set(f.user for f in Follow.objects.filter(query))
     notifications = [Notification(owner=u, action=action) for u in users_to_notify]
     Notification.objects.bulk_create(notifications)
+
+
+@task(ignore_result=True)
+def send_notification(notification_id):
+    """Call every notification handler for a notification."""
+    notification = Notification.objects.get(id=notification_id)
+    for handler in notification_handlers:
+        handler(notification)
