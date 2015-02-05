@@ -4,7 +4,8 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 from kitsune.products.models import Product
-from kitsune.questions.models import QuestionMappingType
+from kitsune.questions.models import Question, QuestionMappingType
+from kitsune.questions.api import QuestionSerializer
 from kitsune.search import es_utils
 from kitsune.sumo.api import GenericAPIException
 from kitsune.wiki.models import DocumentMappingType
@@ -59,10 +60,8 @@ def _question_suggestions(searcher, text, locale, product, max_results):
     searcher = _query(searcher, QuestionMappingType, search_filter, text, locale)
 
     for result in searcher[:max_results]:
-        questions.append({
-            'id': result['id'],
-            'title': result['question_title'],
-        })
+        q = Question.objects.get(id=result['id'])
+        questions.append(QuestionSerializer(instance=q).data)
 
     return questions
 
