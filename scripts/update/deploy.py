@@ -119,7 +119,7 @@ def setup_dependencies(ctx):
         # writing, but because virtualenv is using it, it fails.
         # So we delete it and let virtualenv create a new one.
         ctx.local('rm -f virtualenv/bin/python')
-        ctx.local('virtualenv --no-site-packages virtualenv')
+        ctx.local('virtualenv-2.7 --no-site-packages virtualenv')
 
         # Activate virtualenv to append to the correct path to $PATH.
         activate_env = os.path.join(settings.SRC_DIR, 'virtualenv', 'bin', 'activate_this.py')
