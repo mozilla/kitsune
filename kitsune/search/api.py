@@ -1,5 +1,3 @@
-import itertools
-
 from django.conf import settings
 
 from rest_framework.decorators import api_view
@@ -36,60 +34,74 @@ def suggest(request):
     if errors:
         raise GenericAPIException(400, errors)
 
-    wiki_f = es_utils.F(
-        model='wiki_document',
-        document_category__in=settings.SEARCH_DEFAULT_CATEGORIES,
-        document_locale=locale,
-        document_is_archived=False)
+    searcher = (
+        es_utils.AnalyzerS()
+        .es(urls=settings.ES_URLS)
+        .indexes(es_utils.read_index('default')))
 
-    questions_f = es_utils.F(
+    return Response({
+        'questions': _question_suggestions(searcher, text, locale, product, max_questions),
+        'documents': _document_suggestions(searcher, text, locale, product, max_documents),
+    })
+
+
+def _question_suggestions(searcher, text, locale, product, max_results):
+    search_filter = es_utils.F(
         model='questions_question',
         question_is_archived=False,
         question_is_locked=False,
         question_has_helpful=True)
 
     if product is not None:
-        wiki_f &= es_utils.F(product=product)
-        questions_f &= es_utils.F(product=product)
+        search_filter &= es_utils.F(product=product)
 
-    mapping_types = [QuestionMappingType, DocumentMappingType]
-    query_fields = itertools.chain(*[cls.get_query_fields() for cls in mapping_types])
+    questions = []
+    searcher = _query(searcher, QuestionMappingType, search_filter, text, locale)
+
+    for result in searcher[:max_results]:
+        questions.append({
+            'id': result['id'],
+            'title': result['question_title'],
+        })
+
+    return questions
+
+
+def _document_suggestions(searcher, text, locale, product, max_results):
+    search_filter = es_utils.F(
+        model='wiki_document',
+        document_category__in=settings.SEARCH_DEFAULT_CATEGORIES,
+        document_locale=locale,
+        document_is_archived=False)
+
+    if product is not None:
+        search_filter &= es_utils.F(product=product)
+
+    documents = []
+    searcher = _query(searcher, DocumentMappingType, search_filter, text, locale)
+
+    for result in searcher[:max_results]:
+        documents.append({
+            'title': result['document_title'],
+            'slug': result['document_slug'],
+            'summary': result['document_summary'],
+        })
+
+    return documents
+
+
+def _query(searcher, mapping_type, search_filter, query_text, locale):
+    query_fields = mapping_type.get_query_fields()
     query = {}
     for field in query_fields:
         for query_type in ['match', 'match_phrase']:
             key = '{0}__{1}'.format(field, query_type)
-            query[key] = text
+            query[key] = query_text
 
     # Transform query to be locale aware.
     query = es_utils.es_query_with_analyzer(query, locale)
 
-    searcher = (
-        es_utils.AnalyzerS()
-        .es(urls=settings.ES_URLS)
-        .indexes(es_utils.read_index('default'))
-        .doctypes(*[cls.get_mapping_type_name() for cls in mapping_types])
-        .filter(wiki_f | questions_f)
-        .query(should=True, **query))
-
-    documents = []
-    questions = []
-
-    for result in searcher[:(max_documents + max_questions) * 2]:
-        if result['model'] == 'wiki_document':
-            documents.append({
-                'title': result['document_title'],
-                'slug': result['document_slug'],
-                'summary': result['document_summary'],
-            })
-        elif result['model'] == 'questions_question':
-            questions.append({
-                'id': result['id'],
-                'title': result['question_title'],
-            })
-        if len(documents) >= max_documents and len(questions) >= max_questions:
-            break
-
-    return Response({
-        'questions': questions[:max_questions],
-        'documents': documents[:max_documents],
-    })
+    return (searcher
+            .doctypes(mapping_type.get_mapping_type_name())
+            .filter(search_filter)
+            .query(should=True, **query))
