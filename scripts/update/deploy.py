@@ -115,9 +115,11 @@ def update_info(ctx):
 @task
 def setup_dependencies(ctx):
     with ctx.lcd(settings.SRC_DIR):
-        # Blow away the virtualenv and start again.
-        ctx.local('rm -rf virtualenv/*')
-        ctx.local('virtualenv-2.7 --no-site-packages virtualenv')
+        # Creating a virtualenv tries to open virtualenv/bin/python for
+        # writing, but because virtualenv is using it, it fails.
+        # So we delete it and let virtualenv create a new one.
+        ctx.local('rm -f virtualenv/bin/python')
+        ctx.local('virtualenv --no-site-packages virtualenv')
 
         # Activate virtualenv to append to the correct path to $PATH.
         activate_env = os.path.join(settings.SRC_DIR, 'virtualenv', 'bin', 'activate_this.py')
