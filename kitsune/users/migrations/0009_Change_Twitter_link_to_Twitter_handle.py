@@ -21,8 +21,10 @@ class Migration(DataMigration):
 
 
     def backwards(self, orm):
-        """Add twitter.com/ URL before the the Twitter username"""
-        for profile in orm.Profile.objects.exclude(twitter=None):
+        """Add twitter.com/ URL before the the Twitter username."""
+        # Backwards is different because this should not add link to
+        # the Null field and the field where there is no entry
+        for profile in orm.Profile.objects.exclude(twitter=None).exclude(twitter=''):
             profile.twitter = "https://www.twitter.com/" + profile.twitter
             profile.save()
 
