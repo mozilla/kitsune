@@ -31,7 +31,7 @@
     </td>
     <td class="needs-update {% if row.needs_update %}yes{% endif %}">
       {% if row.needs_update %}
-        {{ _('Yes') }}
+        {{ row.needs_update_comment or _('Yes') }}
       {% endif %}
     </td>
     <td class="stale {% if row.stale %}yes{% endif %}">

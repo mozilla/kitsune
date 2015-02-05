@@ -8,7 +8,7 @@ from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import user
 from kitsune.wiki.models import HelpfulVote
-from kitsune.wiki.tests import locale
+from kitsune.wiki.tests import locale, revision
 
 
 class LocalizationDashTests(TestCase):
@@ -76,6 +76,18 @@ class ContributorDashTests(TestCase):
                     args=[CONTRIBUTOR_READOUTS[readoutKey].slug],
                     locale='en-US'))
         eq_(200, response.status_code)
+
+    def test_needs_change_comment_is_shown(self):
+        rev = revision(is_approved=True, save=True)
+        doc = rev.document
+        doc.needs_change = True
+        doc.needs_change_comment = 'lorem OMG FIX ipsum dolor'
+        doc.save()
+
+        response = self.client.get(reverse('dashboards.contributors',
+                                           locale='en-US'))
+        eq_(200, response.status_code)
+        assert doc.needs_change_comment in response.content
 
 
 def _add_vote_in_past(rev, vote, days_back):

@@ -260,6 +260,10 @@ def kb_overview_rows(mode=None, max=None, locale=None, product=None):
             if transdoc:
                 data['needs_update'] = transdoc.is_outdated()
 
+        else:  # For en-US we show the needs_changes comment.
+            data['needs_update'] = d.needs_change
+            data['needs_update_comment'] = d.needs_change_comment
+
         rows.append(data)
 
     return rows
