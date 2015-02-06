@@ -758,8 +758,8 @@
    * {created: 1367270055, foo: 10, bar: 20, baz: 30} and return a number.
    */
 
-// Returns the value associated with a key.
-// identity('foo') -> 10
+  // Returns the value associated with a key.
+  // identity('foo') -> 10
   Graph.identity = function (key) {
     return function (d) {
       return d[key];
@@ -821,7 +821,7 @@
   };
 
 
-// Monkey Patches. Agh!
+  // Monkey Patches. Agh!
   Graph.monkeyPatch = function (graph) {
 
     // The bar render's _frequentInterval function normally replaces itself
@@ -964,7 +964,7 @@
       var eventX = e.offsetX || e.layerX;
       var eventY = e.offsetY || e.layerY;
 
-      var i, j = 0, k;
+      var i, j, k;
       var points = [];
       var nearestPoint;
 
@@ -977,8 +977,7 @@
       for (i = 0; i < active.length; i += 1) {
         series = active[i];
 
-        j += 1;
-        data = this.graph.stackedData[j];
+        data = this.graph.stackedData[i];
         domainX = graph.x.invert(eventX);
 
         domainIndexScale = d3.scale.linear()
@@ -1014,7 +1013,7 @@
         point = {
           series: series,
           value: value,
-          order: j,
+          order: i,
           name: series.name
         };
 
@@ -1065,7 +1064,7 @@
     } else {
       $(this.graph.element).parent()
         .after($axis)
-        .css('margin-right', '20px');
+        .css('margin-right', '10px');
     }
 
     var oldWidth = $(this.graph.element).outerWidth();

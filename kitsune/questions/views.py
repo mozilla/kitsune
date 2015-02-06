@@ -1665,9 +1665,15 @@ def metrics(request, locale_code=None):
         start = date.today() - timedelta(days=30)
         end = date.today()
 
+    graph_data = stats_topic_data(bucket_days, start, end, locale_code, product)
+
+    for group in graph_data:
+        for name, count in group.items():
+            if count == 0:
+                del group[name]
+
     data = {
-        'graph': stats_topic_data(
-            bucket_days, start, end, locale_code, product),
+        'graph': graph_data,
         'form': form,
         'current_locale': locale_code,
         'product': product,

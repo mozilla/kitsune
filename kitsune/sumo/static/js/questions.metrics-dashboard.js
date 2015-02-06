@@ -19,9 +19,6 @@
 
         datums = $topics.data('graph');
         seriesSpec = [];
-        window.datums = datums;
-
-        var min = 3;
 
         for (key in datums[0]) {
             if (key === 'date' || !datums[0].hasOwnProperty(key)) continue;
