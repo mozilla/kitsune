@@ -6,6 +6,7 @@ from kitsune.search.tests.test_es import ElasticTestCase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.questions.tests import question, answer, answervote
 from kitsune.products.tests import product
+from kitsune.wiki.tests import document, revision
 
 
 class SuggestViewTests(ElasticTestCase):
@@ -42,6 +43,19 @@ class SuggestViewTests(ElasticTestCase):
         q.save()
         return q
 
+    def _make_document(self, **kwargs):
+        defaults = {
+            'title': 'How to make a pie from scratch with email',
+            'category': 10,
+            'save': True
+        }
+
+        defaults.update(kwargs)
+        d = document(**defaults)
+        revision(document=d, is_approved=True, save=True)
+        d.save()
+        return d
+
     def test_invalid_product(self):
         res = self.client.get(reverse('search.suggest'), {
             'product': 'nonexistant',
@@ -69,17 +83,36 @@ class SuggestViewTests(ElasticTestCase):
 
     def test_it_works(self):
         q1 = self._make_question()
+        d1 = self._make_document()
         self.refresh()
 
         req = self.client.get(reverse('search.suggest'), {'q': 'emails'})
         eq_([q['id'] for q in req.data['questions']], [q1.id])
+        eq_([d['title'] for d in req.data['documents']], [d1.title])
 
-    def test_max_results_0(self):
+    def test_questions_max_results_0(self):
         self._make_question()
         self.refresh()
 
+        # Make sure something matches the query first.
+        req = self.client.get(reverse('search.suggest'), {'q': 'emails'})
+        eq_(len(req.data['questions']), 1)
+
+        # If we specify "don't give me any" make sure we don't get any.
         req = self.client.get(reverse('search.suggest'), {'q': 'emails', 'max_questions': '0'})
         eq_(len(req.data['questions']), 0)
+
+    def test_documents_max_results_0(self):
+        self._make_document()
+        self.refresh()
+
+        # Make sure something matches the query first.
+        req = self.client.get(reverse('search.suggest'), {'q': 'emails'})
+        eq_(len(req.data['documents']), 1)
+
+        # If we specify "don't give me any" make sure we don't get any.
+        req = self.client.get(reverse('search.suggest'), {'q': 'emails', 'max_documents': '0'})
+        eq_(len(req.data['documents']), 0)
 
     def test_product_filter_works(self):
         p1 = product(save=True)

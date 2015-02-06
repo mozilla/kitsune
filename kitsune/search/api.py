@@ -70,6 +70,9 @@ def _question_suggestions(searcher, text, locale, product, max_results):
 
 
 def _document_suggestions(searcher, text, locale, product, max_results):
+    if max_results <= 0:
+        return []
+
     search_filter = es_utils.F(
         model='wiki_document',
         document_category__in=settings.SEARCH_DEFAULT_CATEGORIES,
