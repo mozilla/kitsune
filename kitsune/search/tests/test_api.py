@@ -74,6 +74,13 @@ class SuggestViewTests(ElasticTestCase):
         req = self.client.get(reverse('search.suggest'), {'q': 'emails'})
         eq_([q['id'] for q in req.data['questions']], [q1.id])
 
+    def test_max_results_0(self):
+        self._make_question()
+        self.refresh()
+
+        req = self.client.get(reverse('search.suggest'), {'q': 'emails', 'max_questions': '0'})
+        eq_(len(req.data['questions']), 0)
+
     def test_product_filter_works(self):
         p1 = product(save=True)
         p2 = product(save=True)
