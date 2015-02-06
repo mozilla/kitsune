@@ -95,6 +95,7 @@ LANGUAGE_CODE = 'en-US'
 SUMO_LANGUAGES = (
     'af',
     'ar',
+    'az',
     'bg',
     'bn-BD',
     'bn-IN',
@@ -200,6 +201,7 @@ FXOS_LANGUAGES = [
 
 # These languages will get a wiki page instead of the product and topic pages.
 SIMPLE_WIKI_LANGUAGES = [
+    'az',
     'et',
     'ga-IE',
     'gl',
@@ -225,7 +227,6 @@ NON_SUPPORTED_LOCALES = {
     'an': 'es',
     'as': None,
     'ast': 'es',
-    'az': None,
     'be': 'ru',
     'bn': 'bn-BD',
     'br': 'fr',
