@@ -47,6 +47,9 @@ def suggest(request):
 
 
 def _question_suggestions(searcher, text, locale, product, max_results):
+    if max_results <= 0:
+        return []
+
     search_filter = es_utils.F(
         model='questions_question',
         question_is_archived=False,
