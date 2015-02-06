@@ -133,6 +133,7 @@ VISITORS_BY_LOCALE_RESPONSE = {
         [u'/ar/', u'3362'],
         [u'/as/', u'10'],
         [u'/ast/', u'6'],
+        [u'/az/', u'41'],
         [u'/be/', u'13'],
         [u'/bg/', u'989'],
         [u'/bn-BD/', u'21'],
