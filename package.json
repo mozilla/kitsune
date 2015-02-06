@@ -1,6 +1,6 @@
 {
   "name": "Kitsune",
-  "description": "Platform for Firefox Help",
+  "description": "Platform for Mozilla Support",
   "repository": {
     "type": "git",
     "url": "git://github.com/mozilla/kitsune.git"
