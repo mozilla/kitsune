@@ -1,4 +1,5 @@
 import json
+from datetime import datetime, timedelta
 
 import mock
 from django.contrib.auth.models import User
@@ -231,6 +232,24 @@ class TestUserView(TestCase):
         eq_(res.data['user']['username'], new_user.username)
         assert 'password' in res.data
         assert 'token' in res.data
+
+    def test_weekly_solutions(self):
+        eight_days_ago = datetime.now() - timedelta(days=8)
+        # ``a1`` is a solution in the right range.
+        # ``a2`` is a solution, but it is too old.
+        # The third answer is not a solution.
+        a1 = answer(save=True)
+        a1.question.solution = a1
+        a1.question.save()
+        a2 = answer(created=eight_days_ago, save=True)
+        a2.question.solution = a2
+        a2.question.save()
+        answer(save=True)
+
+        res = self.client.get(reverse('user-weekly-solutions'))
+        eq_(res.status_code, 200)
+        eq_(len(res.data), 1)
+        eq_(res.data[0]['username'], a1.creator.username)
 
     def test_email_visible_when_signed_in(self):
         p = profile()
