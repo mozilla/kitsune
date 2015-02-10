@@ -21,8 +21,8 @@ ndg-httpsclient==0.3.3
 # sha256: ku47hrXBkhwtnawhe--JkMX4Usi8TZAYyv4PPzuBzTo
 nosenicedots==0.5
 
-# sha256: ZrOLKZ3UoMt2qFXnvNxkDc4rGfXdFkpW7oeuMWQrUy0
-http://people.mozilla.org/~wkahngreene/pep8/pep8-1.6.0a0-willkg.1.tar.gz#egg=pep8==1.6.0a0-willkg.1
+# sha256: VzZ3y4X_CJJEsPma-VX3bC43RWYyYQtt7aYWcTnOFVo
+pep8==1.6.1
 
 # sha256: P6gKELNtUWhr93RPXcmWIs1cmM6O1kAi5imGiq_Bd2k
 pyflakes==0.8.1
