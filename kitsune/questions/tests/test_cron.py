@@ -35,12 +35,18 @@ class TestEscalateCron(TestCase):
             save=True)
         questions_to_escalate.append(q)
 
-        questions_not_to_escalate = [
-            # Questions newer than 24 hours without an answer.
-            question(save=True),
-            question(created=datetime.now() - timedelta(hours=11), save=True),
-            question(created=datetime.now() - timedelta(hours=21), save=True),
-        ]
+        # Questions not to escalate
+
+        # Questions newer than 24 hours without an answer.
+        question(save=True)
+        question(created=datetime.now() - timedelta(hours=11), save=True)
+        question(created=datetime.now() - timedelta(hours=21), save=True)
+
+        # Questions older than 25 hours (The cronjob runs once an hour)
+        question(created=datetime.now() - timedelta(hours=26), save=True)
+
+        # Question in the correct time range, but not in the default language.
+        question(created=datetime.now() - timedelta(hours=24, minutes=10), locale='de', save=True)
 
         # Question older than 24 hours with a recent answer.
         q = question(
@@ -50,7 +56,6 @@ class TestEscalateCron(TestCase):
                save=True)
         answer(created=datetime.now() - timedelta(hours=1), creator=q.creator,
                question=q, save=True)
-        questions_not_to_escalate.append(q)
 
         # Question older than 24 hours with a recent answer by the asker.
         q = question(
@@ -59,14 +64,12 @@ class TestEscalateCron(TestCase):
         answer(
             created=datetime.now() - timedelta(hours=15), creator=q.creator,
             question=q, save=True)
-        questions_not_to_escalate.append(q)
 
         # Question older than 24 hours without an answer already escalated.
         q = question(
             created=datetime.now() - timedelta(hours=24, minutes=10),
             save=True)
         q.tags.add(config.ESCALATE_TAG_NAME)
-        questions_not_to_escalate.append(q)
 
         # Question with an inactive user.
         q = question(
@@ -74,7 +77,6 @@ class TestEscalateCron(TestCase):
             save=True)
         q.creator.is_active = False
         q.creator.save()
-        questions_not_to_escalate.append(q)
 
         # Question about Thunderbird, which is one of the products we exclude.
         tb = product(slug='thunderbird', save=True)
@@ -82,7 +84,6 @@ class TestEscalateCron(TestCase):
             created=datetime.now() - timedelta(hours=24, minutes=10),
             product=tb,
             save=True)
-        questions_not_to_escalate.append(q)
 
         # Run the cron job and verify only 3 questions were escalated.
         eq_(len(questions_to_escalate), escalate_questions())

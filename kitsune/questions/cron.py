@@ -129,6 +129,9 @@ def escalate_questions():
     qs = Question.objects.needs_attention().exclude(
         tags__slug__in=[config.ESCALATE_TAG_NAME])
 
+    # Only include English.
+    qs = qs.filter(locale=settings.WIKI_DEFAULT_LANGUAGE)
+
     # Exclude certain products.
     qs = qs.exclude(product__slug__in=config.ESCALATE_EXCLUDE_PRODUCTS)
 
