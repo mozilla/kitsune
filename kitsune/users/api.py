@@ -373,7 +373,7 @@ class ProfileViewSet(mixins.CreateModelMixin,
         profiles = Profile.objects.filter(user__username__in=username_to_count.keys())
         result = ProfileFKSerializer(instance=profiles, many=True).data
 
-        # Pair up the profiles and the solutino counts.
+        # Pair up the profiles and the solution counts.
         for u in result:
             u['weekly_solutions'] = username_to_count[u['username']]
 
