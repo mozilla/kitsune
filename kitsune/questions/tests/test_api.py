@@ -12,9 +12,10 @@ from kitsune.sumo.tests import TestCase
 from kitsune.questions import api
 from kitsune.questions.models import Question, Answer
 from kitsune.questions.tests import question, answer, questionvote, answervote
-from kitsune.users.tests import profile, user
 from kitsune.products.tests import product, topic
 from kitsune.sumo.urlresolvers import reverse
+from kitsune.users.helpers import profile_avatar
+from kitsune.users.tests import profile, user
 
 
 class TestQuestionSerializerDeserialization(TestCase):
@@ -98,8 +99,13 @@ class TestQuestionSerializerSerialization(TestCase):
         self.question = question(creator=self.asker, save=True)
 
     def _names(self, *users):
-        return sorted({'username': u.username, 'display_name': u.get_profile().name}
-                      for u in users)
+        return sorted(
+            {
+                'username': u.username,
+                'display_name': u.get_profile().name,
+                'avatar': profile_avatar(u),
+            }
+            for u in users)
 
     def _answer(self, user):
         return answer(question=self.question, creator=user, save=True)
@@ -152,8 +158,9 @@ class TestQuestionSerializerSerialization(TestCase):
     def test_creator_is_object(self):
         serializer = api.QuestionSerializer(instance=self.question)
         eq_(serializer.data['creator'], {
-            "username": self.question.creator.username,
-            "display_name": self.question.creator.get_profile().display_name,
+            'username': self.question.creator.username,
+            'display_name': self.question.creator.get_profile().display_name,
+            'avatar': profile_avatar(self.question.creator),
         })
 
 

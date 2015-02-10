@@ -13,6 +13,7 @@ from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.questions.tests import question
 from kitsune.users.tests import profile, user
+from kitsune.users.helpers import profile_avatar
 
 
 class TestPushNotificationRegistrationSerializer(TestCase):
@@ -69,7 +70,8 @@ class TestNotificationSerializer(TestCase):
         eq_(serializer.data['actor'], {
             'type': 'user',
             'username': followed.user.username,
-            'display_name': followed.name
+            'display_name': followed.name,
+            'avatar': profile_avatar(followed.user),
         })
         eq_(serializer.data['verb'], 'asked')
         eq_(serializer.data['action_object'], {
