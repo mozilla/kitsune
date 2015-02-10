@@ -8,7 +8,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.models import get_current_site
 from django.core.exceptions import ValidationError
-from django.db.models import Q
+from django.db.models import Q, Count
 from django.utils.http import int_to_base36
 from django.views.decorators.http import require_GET
 
@@ -22,6 +22,7 @@ from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.authtoken.models import Token
 
 from kitsune.access.decorators import login_required
+from kitsune.questions.models import Answer
 from kitsune.questions.utils import num_answers, num_solutions, num_questions
 from kitsune.sumo import email_utils
 from kitsune.sumo.api import DateTimeUTCField, GenericAPIException, PermissionMod
@@ -260,6 +261,7 @@ class ProfileFKSerializer(ProfileSerializer):
         fields = [
             'username',
             'display_name',
+            'avatar',
         ]
 
 
@@ -345,6 +347,39 @@ class ProfileViewSet(mixins.CreateModelMixin,
             'password': password,
             'token': token.key,
         })
+
+    # This is routed to /api/2/user/weekly-solutions/
+    def weekly_solutions(self, request, **kwargs):
+        """
+        Return the most helpful users in the past week.
+        """
+        start = datetime.now() - timedelta(days=7)
+        # Get a list of users and the number of solutions they have in the last week.
+        # It looks like [{'creator__username': 'bob', 'creator__count': 12}, ...]
+        # This uses ``username`` instead of ``id``, because ``username`` appears
+        # in the output of ``ProfileFKSerializer``, whereas ``id`` does not.
+        raw_counts = (
+            Answer.objects
+            .exclude(solution_for=None)
+            .filter(created__gt=start)
+            .values('creator__username')
+            .annotate(Count('creator'))
+            )
+
+        # Turn that list into a dictionary from username -> count.
+        username_to_count = {u['creator__username']: u['creator__count'] for u in raw_counts}
+
+        # Get all the profiles mentioned in the above.
+        profiles = Profile.objects.filter(user__username__in=username_to_count.keys())
+        result = ProfileFKSerializer(instance=profiles, many=True).data
+
+        # Pair up the profiles and the solution counts.
+        for u in result:
+            u['weekly_solutions'] = username_to_count[u['username']]
+
+        # Return the top 10.
+        result.sort(key=lambda u: u['weekly_solutions'], reverse=True)
+        return Response(result[:10])
 
     @action(methods=['POST'])
     def set_setting(self, request, user__username=None):
