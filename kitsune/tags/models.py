@@ -1,5 +1,6 @@
 from django.db import models
 
+from south.modelsinspector import add_ignored_fields
 from taggit.managers import TaggableManager
 
 from kitsune.tags.forms import TagField
@@ -23,7 +24,6 @@ class BigVocabTaggableManager(TaggableManager):
 #
 # Note: If we end up adding models to this module, then we'll need to
 # rethink this.
-from south.modelsinspector import add_ignored_fields
 add_ignored_fields(["^kitsune\.tags\.models"])
 
 

@@ -11,6 +11,7 @@ from django.contrib.sites.models import Site
 from django.db import models
 
 from celery.task import task
+from south.modelsinspector import add_introspection_rules
 from statsd import statsd
 from timezones.fields import TimeZoneField, zones, MAX_TIMEZONE_LENGTH
 from tower import ugettext as _
@@ -43,7 +44,6 @@ CONTRIBUTOR_GROUP = 'Registered as contributor'
 # centralize this hack.
 #
 # See https://github.com/brosner/django-timezones/pull/19
-from south.modelsinspector import add_introspection_rules
 add_introspection_rules(rules=[(
     (TimeZoneField,),
     [],

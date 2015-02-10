@@ -3,7 +3,7 @@ from django.conf.urls import patterns, url
 import badger
 badger.autodiscover()
 
-from kitsune.kbadge import views
+from kitsune.kbadge import views  # noqa
 
 
 urlpatterns = patterns(

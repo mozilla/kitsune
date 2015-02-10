@@ -3,11 +3,11 @@ class ProgrammingError(Exception):
 
 
 # MONKEYPATCH! WOO HOO!
-from kitsune.sumo.monkeypatch import patch
+from kitsune.sumo.monkeypatch import patch  # noqa
 patch()
 
 
-from south.signals import post_migrate
+from south.signals import post_migrate  # noqa
 
 
 # Courtesy of http://devwithpassion.com/felipe/south-django-permissions/

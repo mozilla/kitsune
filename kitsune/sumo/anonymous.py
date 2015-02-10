@@ -25,15 +25,15 @@ import hashlib
 import os
 import random
 import time
+
+from django.conf import settings
+from django.utils.http import cookie_date
+
 # Use the system (hardware-based) random number generator if it exists.
 if hasattr(random, 'SystemRandom'):
     randrange = random.SystemRandom().randrange
 else:
     randrange = random.randrange
-
-from django.conf import settings
-from django.utils.http import cookie_date
-
 
 MAX_ANONYMOUS_ID = 18446744073709551616L     # 2 << 63
 
