@@ -44,6 +44,7 @@ HOME = /tmp
 30 3 * * * root {{ rscripts }} scripts/l10n_completion.py --truncate 30 locale media/uploads/l10n_history.json media/uploads/l10n_summary.json
 30 3 * * * {{ cron }} send_postatus_errors
 30 1 * * * {{ cron }} reindex_users_that_contributed_yesterday
+11 1 * * * {{ cron }} report_employee_answers
 
 # Once per week.
 21 03 * * 3 {{ django }} purge_hashes
