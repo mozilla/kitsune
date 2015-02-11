@@ -914,6 +914,7 @@ CORS_URLS_REGEX = [
 
     r'^/api/2/answer/.*$',
     r'^/api/2/pushnotification/.*$',
+    r'^/api/2/notification/.*$',
     r'^/api/2/question/.*$',
     r'^/api/2/search/.*$',
     r'^/api/2/user/.*$',
