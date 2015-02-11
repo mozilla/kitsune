@@ -32,13 +32,13 @@ class NotificationSerializer(serializers.ModelSerializer):
     class Meta:
         model = PushNotificationRegistration
         fields = (
-            'is_read',
-            # 'read_at',
-            'timestamp',
-            'actor',
-            'verb',
             'action_object',
-            'target'
+            'actor',
+            'id',
+            'is_read',
+            'target',
+            'timestamp',
+            'verb',
         )
 
 
@@ -81,6 +81,7 @@ class PushNotificationRegistrationSerializer(serializers.ModelSerializer):
         model = PushNotificationRegistration
         fields = (
             'creator',
+            'id',
             'push_url',
         )
 
