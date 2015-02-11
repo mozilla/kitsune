@@ -7,12 +7,14 @@ from django.db.models import Q
 from rest_framework import serializers, viewsets, permissions, filters, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from taggit.models import Tag
 
 from kitsune.products.api import TopicField
 from kitsune.questions.models import (
     Question, Answer, QuestionMetaData, AlreadyTakenException,
     InvalidUserException, QuestionVote, AnswerVote)
 from kitsune.sumo.api import DateTimeUTCField, OnlyCreatorEdits, GenericAPIException
+from kitsune.tags.utils import add_existing_tag
 from kitsune.users.api import ProfileFKSerializer
 
 
@@ -46,6 +48,15 @@ class QuestionMetaDataSerializer(serializers.ModelSerializer):
             return obj
 
 
+class QuestionTagSerializer(serializers.ModelSerializer):
+    question = serializers.PrimaryKeyRelatedField(
+        required=False, write_only=True)
+
+    class Meta:
+        model = Tag
+        fields = ('name', 'slug')
+
+
 class QuestionSerializer(serializers.ModelSerializer):
     # Use slugs for product and topic instead of ids.
     product = serializers.SlugRelatedField(required=True, slug_field='slug')
@@ -57,6 +68,7 @@ class QuestionSerializer(serializers.ModelSerializer):
     is_solved = serializers.Field(source='is_solved')
     is_taken = serializers.Field(source='is_taken')
     metadata = QuestionMetaDataSerializer(source='metadata_set', required=False)
+    tags = QuestionTagSerializer(source='tags', read_only=True)
     num_votes = serializers.Field(source='num_votes')
     solution = serializers.PrimaryKeyRelatedField(read_only=True)
     taken_by = ProfileFKSerializer(source='taken_by.get_profile', read_only=True)
@@ -80,6 +92,7 @@ class QuestionSerializer(serializers.ModelSerializer):
             'last_answer',
             'locale',
             'metadata',
+            'tags',
             'num_answers',
             'num_votes_past_week',
             'num_votes',
@@ -288,6 +301,29 @@ class QuestionViewSet(viewsets.ModelViewSet):
             raise GenericAPIException(409, 'Conflict: question is already taken.')
 
         return Response(status=204)
+
+    @action(methods=['POST'], permission_classes=[permissions.IsAuthenticated])
+    def add_tag(self, request, pk=None):
+        question = self.get_object()
+        tag = request.DATA['tag']
+
+        try:
+            canonical_name = add_existing_tag(tag, question.tags)
+        except Tag.DoesNotExist:
+            if request.user.has_perm('taggit.add_tag'):
+                question.tags.add(tag)
+                canonical_name = tag
+            else:
+                raise GenericAPIException(403, 'You are not authorized to create new tags.')
+
+        return Response(canonical_name)
+
+    @action(methods=['POST', 'DELETE'], permission_classes=[permissions.IsAuthenticated])
+    def remove_tag(self, request, pk=None):
+        question = self.get_object()
+        tag = request.DATA['tag']
+        question.tags.remove(tag)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class AnswerSerializer(serializers.ModelSerializer):
