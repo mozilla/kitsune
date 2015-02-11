@@ -10,8 +10,10 @@ from django.utils import translation
 from django.utils.http import urlencode, is_safe_url
 
 import tower
+import ratelimit.helpers
 
 from kitsune.sumo import paginator
+from kitsune.journal.models import Record
 
 
 def paginate(request, queryset, per_page=20, count=None):
@@ -296,3 +298,22 @@ class Progress(object):
     def _wr(self, s):
         sys.stdout.write(s)
         sys.stdout.flush()
+
+
+def is_ratelimited(request, name, rate, method=['POST'], skip_if=lambda r: False):
+    """
+    Reimplement ``ratelimit.helpers.is_ratelimited``, with sumo-specific details:
+
+    * Always check for the bypass rate limit permission.
+    * Log times when users are rate limited.
+    * Always uses ``user_or_ip`` for the rate limit key.
+    """
+    if skip_if(request) or request.user.has_perm('sumo.bypass_ratelimit'):
+        request.limited = False
+    else:
+        ratelimit.helpers.is_ratelimited(
+            request, increment=True, ip=False, rate=rate, keys=user_or_ip(name))
+        if request.limited:
+            Record.objects.info('sumo.ratelimit', 'user {user} hit the rate limit for {name}',
+                                user=request.user.username, name=name)
+    return request.limited

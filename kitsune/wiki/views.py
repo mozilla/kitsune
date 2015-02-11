@@ -21,18 +21,17 @@ from django.views.decorators.http import (require_GET, require_POST,
 
 import jingo
 from mobility.decorators import mobile_template
-from ratelimit.decorators import ratelimit
 from statsd import statsd
 from tower import ugettext_lazy as _lazy
 from tower import ugettext as _
 
 from kitsune.access.decorators import login_required
 from kitsune.products.models import Product, Topic
+from kitsune.sumo.decorators import ratelimit
 from kitsune.sumo.helpers import urlparams
 from kitsune.sumo.redis_utils import redis_client, RedisError
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.sumo.utils import (paginate, smart_int, get_next_url, user_or_ip,
-                                truncated_json_dumps)
+from kitsune.sumo.utils import paginate, smart_int, get_next_url, truncated_json_dumps
 from kitsune.wiki.config import (
     CATEGORIES, MAJOR_SIGNIFICANCE, TEMPLATES_CATEGORY, DOCUMENTS_PER_PAGE,
     COLLAPSIBLE_DOCUMENTS)
@@ -960,7 +959,7 @@ def json_view(request):
 
 @require_POST
 @csrf_exempt
-@ratelimit(keys=user_or_ip('document-vote'), ip=False, rate='10/d')
+@ratelimit('document-vote', '10/d')
 def helpful_vote(request, document_slug):
     """Vote for Helpful/Not Helpful document"""
     if 'revision_id' not in request.POST:

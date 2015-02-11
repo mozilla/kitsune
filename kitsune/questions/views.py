@@ -23,8 +23,6 @@ from django.views.decorators.http import (require_POST, require_GET,
 import jingo
 from ordereddict import OrderedDict
 from mobility.decorators import mobile_template
-from ratelimit.decorators import ratelimit
-from ratelimit.helpers import is_ratelimited
 from session_csrf import anonymous_csrf
 from statsd import statsd
 from taggit.models import Tag
@@ -52,11 +50,10 @@ from kitsune.questions.signals import tag_added
 from kitsune.search.es_utils import (ES_EXCEPTIONS, Sphilastic, F,
                                      es_query_with_analyzer)
 from kitsune.search.utils import locale_or_default, clean_excerpt
-from kitsune.sumo.decorators import ssl_required
+from kitsune.sumo.decorators import ssl_required, ratelimit
 from kitsune.sumo.helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse, split_path
-from kitsune.sumo.utils import (
-    paginate, simple_paginate, build_paged_url, user_or_ip)
+from kitsune.sumo.utils import paginate, simple_paginate, build_paged_url, is_ratelimited
 from kitsune.tags.utils import add_existing_tag
 from kitsune.upload.models import ImageAttachment
 from kitsune.upload.views import upload_imageattachment
@@ -670,9 +667,7 @@ def aaq(request, product_key=None, category_key=None, showform=False,
 
     user_ct = ContentType.objects.get_for_model(request.user)
 
-    if form.is_valid() and not is_ratelimited(request, increment=True,
-                                              rate='5/d', ip=False,
-                                              keys=user_or_ip('aaq-day')):
+    if form.is_valid() and not is_ratelimited(request, 'aaq-day', '5/d'):
         question = Question(creator=request.user,
                             title=form.cleaned_data['title'],
                             content=form.cleaned_data['content'],
@@ -843,17 +838,13 @@ def _skip_answer_ratelimit(request):
 
     Also exclude users with the questions.bypass_ratelimit permission.
     """
-    return ('delete_images' in request.POST or
-            'upload_image' in request.POST or
-            request.user.has_perm('questions.bypass_answer_ratelimit'))
+    return 'delete_images' in request.POST or 'upload_image' in request.POST
 
 
 @require_POST
 @login_required
-@ratelimit(keys=user_or_ip('answer-min'), skip_if=_skip_answer_ratelimit,
-           ip=False, rate='4/m')
-@ratelimit(keys=user_or_ip('answer-day'), skip_if=_skip_answer_ratelimit,
-           ip=False, rate='100/d')
+@ratelimit('answer-min', '4/m', skip_if=_skip_answer_ratelimit)
+@ratelimit('answer-day', '100/d', skip_if=_skip_answer_ratelimit)
 def reply(request, question_id):
     """Post a new answer to a question."""
     question = get_object_or_404(Question, pk=question_id, is_spam=False)
@@ -982,7 +973,7 @@ def unsolve(request, question_id, answer_id):
 
 @require_POST
 @csrf_exempt
-@ratelimit(keys=user_or_ip('question-vote'), ip=False, rate='10/d')
+@ratelimit('question-vote', '10/d')
 def question_vote(request, question_id):
     """I have this problem too."""
     question = get_object_or_404(Question, pk=question_id, is_spam=False)
@@ -1028,7 +1019,7 @@ def question_vote(request, question_id):
 
 
 @csrf_exempt
-@ratelimit(keys=user_or_ip('answer-vote'), ip=False, rate='10/d')
+@ratelimit('answer-vote', '10/d')
 def answer_vote(request, question_id, answer_id):
     """Vote for Helpful/Not Helpful answers"""
     answer = get_object_or_404(Answer, pk=answer_id, question=question_id,

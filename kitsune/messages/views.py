@@ -9,7 +9,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 
 from mobility.decorators import mobile_template
 from multidb.pinning import mark_as_write
-from ratelimit.helpers import is_ratelimited
+from kitsune.sumo.utils import is_ratelimited
 from statsd import statsd
 from tower import ugettext as _
 
@@ -18,7 +18,7 @@ from kitsune.messages import send_message, MESSAGES_PER_PAGE
 from kitsune.messages.forms import MessageForm, ReplyForm
 from kitsune.messages.models import InboxMessage, OutboxMessage
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.sumo.utils import user_or_ip, paginate
+from kitsune.sumo.utils import paginate
 
 
 @login_required
@@ -91,8 +91,7 @@ def new_message(request, template):
     form = MessageForm(request.POST or None, initial={'to': to})
 
     if (request.method == 'POST' and form.is_valid() and
-            not is_ratelimited(request, increment=True, rate='50/d', ip=False,
-                               keys=user_or_ip('private-message-day'))):
+            not is_ratelimited(request, 'primate-message-day', '50/d')):
         send_message(form.cleaned_data['to'], form.cleaned_data['message'],
                      request.user)
         if form.cleaned_data['in_reply_to']:
