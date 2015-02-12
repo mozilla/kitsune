@@ -90,3 +90,19 @@ class TestSimplePushNotifier(TestCase):
         """Verify that no request is made when there is no SimplePush registration."""
         notification(save=True)
         requests.put.assert_not_called()
+
+    def test_from_action_to_simple_push(self, requests):
+        """Test that when an action is created, it results in a push notification being sent."""
+        # Create a user.
+        u = profile().user
+        # Register them to receive push notifications.
+        url = 'http://example.com/simple_push/asdf'
+        PushNotificationRegistration.objects.create(creator=u, push_url=url)
+        # Make them follow an object.
+        q = question(save=True)
+        follow(u, q, actor_only=False)
+        # Create an action involving that object
+        action.send(profile().user, verb='looked at funny', action_object=q)
+        n = Notification.objects.get(owner=u)
+        # Assert that they got notified.
+        requests.put.assert_called_once_with(url, 'version={}'.format(n.id))
