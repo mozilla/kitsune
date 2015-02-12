@@ -316,11 +316,17 @@ class QuestionViewSet(viewsets.ModelViewSet):
             else:
                 raise GenericAPIException(403, 'You are not authorized to create new tags.')
 
-        return Response(canonical_name)
+        tag = Tag.objects.get(name=canonical_name)
+        return Response(QuestionTagSerializer(instance=tag).data)
 
     @action(methods=['POST', 'DELETE'], permission_classes=[permissions.IsAuthenticated])
     def remove_tag(self, request, pk=None):
         question = self.get_object()
+
+        if 'tag' not in request.DATA:
+            return Response({'tag': 'This field is required.'},
+                            status=status.HTTP_400_BAD_REQUEST)
+
         tag = request.DATA['tag']
         question.tags.remove(tag)
         return Response(status=status.HTTP_204_NO_CONTENT)
