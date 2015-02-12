@@ -7,6 +7,7 @@ from actstream.models import Follow
 from nose.tools import eq_, ok_, raises
 from rest_framework.test import APIClient
 from rest_framework.exceptions import APIException
+from taggit.models import Tag
 
 from kitsune.sumo.tests import TestCase
 from kitsune.questions import api
@@ -15,7 +16,7 @@ from kitsune.questions.tests import question, answer, questionvote, answervote
 from kitsune.products.tests import product, topic
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.helpers import profile_avatar
-from kitsune.users.tests import profile, user
+from kitsune.users.tests import profile, user, add_permission
 
 
 class TestQuestionSerializerDeserialization(TestCase):
@@ -407,6 +408,31 @@ class TestQuestionViewSet(TestCase):
         res = self.client.post(reverse('question-unfollow', args=[q.id]))
         eq_(res.status_code, 204)
         eq_(Follow.objects.filter(user=u).count(), 0)
+
+    def test_add_tag(self):
+        q = question(save=True)
+        eq_(0, q.tags.count())
+
+        u = profile().user
+        add_permission(u, Tag, 'add_tag')
+        self.client.force_authenticate(user=u)
+
+        res = self.client.post(reverse('question-add-tag', args=[q.id]), data={'tag': 'test'})
+        eq_(res.status_code, 200)
+        eq_(1, q.tags.count())
+
+    def test_remove_tag(self):
+        q = question(save=True)
+        q.tags.add('test')
+        eq_(1, q.tags.count())
+
+        u = profile().user
+        add_permission(u, Tag, 'add_tag')
+        self.client.force_authenticate(user=u)
+
+        res = self.client.post(reverse('question-remove-tag', args=[q.id]), data={'tag': 'test'})
+        eq_(res.status_code, 204)
+        eq_(0, q.tags.count())
 
 
 class TestAnswerSerializerDeserialization(TestCase):
