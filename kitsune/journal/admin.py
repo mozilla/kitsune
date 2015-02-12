@@ -11,7 +11,7 @@ class RecordAdmin(admin.ModelAdmin):
         'msg',
         'created',
     )
-    list_filter = ('app', 'src')
+    list_filter = ('src',)
 
 
 admin.site.register(Record, RecordAdmin)
