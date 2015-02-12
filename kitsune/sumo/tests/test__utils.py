@@ -1,12 +1,17 @@
 # -*- coding: utf8 -*-
 import json
-from mock import patch
+
+from django.contrib.auth.models import Permission
+
+from mock import patch, Mock
 from nose.tools import eq_
 from test_utils import RequestFactory
 
+from kitsune.journal.models import Record
 from kitsune.sumo.utils import (
-    chunked, get_next_url, smart_int, truncated_json_dumps)
+    chunked, get_next_url, is_ratelimited, smart_int, truncated_json_dumps)
 from kitsune.sumo.tests import TestCase
+from kitsune.users.tests import profile
 
 
 class SmartIntTestCase(TestCase):
@@ -121,3 +126,47 @@ class ChunkedTests(TestCase):
         # passing in a length overrides the real len(list)
         eq_(list(chunked([1, 2, 3, 4, 5, 6, 7], 2, length=4)),
             [[1, 2], [3, 4]])
+
+
+class IsRatelimitedTest(TestCase):
+
+    def test_ratelimited(self):
+        u = profile().user
+        request = Mock()
+        request.user = u
+        request.limited = False
+        request.method = 'POST'
+
+        # One call to the rate limit won't trigger it.
+        eq_(is_ratelimited(request, 'test-ratelimited', '1/min'), False)
+        # But two will
+        eq_(is_ratelimited(request, 'test-ratelimited', '1/min'), True)
+
+    def test_ratelimit_bypass(self):
+        u = profile().user
+        bypass = Permission.objects.get(codename='bypass_ratelimit')
+        u.user_permissions.add(bypass)
+        request = Mock()
+        request.user = u
+        request.limited = False
+        request.method = 'POST'
+
+        # One call to the rate limit won't trigger it.
+        eq_(is_ratelimited(request, 'test-ratelimited', '1/min'), False)
+        # And a second one still won't, because the user has the bypass permission.
+        eq_(is_ratelimited(request, 'test-ratelimited', '1/min'), False)
+
+    def test_ratelimit_logging(self):
+        u = profile().user
+        request = Mock()
+        request.user = u
+        request.limited = False
+        request.method = 'POST'
+
+        eq_(Record.objects.count(), 0)
+
+        # Two calls will trigger the ratelimit once.
+        is_ratelimited(request, 'test-ratelimited', '1/min')
+        is_ratelimited(request, 'test-ratelimited', '1/min')
+
+        eq_(Record.objects.count(), 1)

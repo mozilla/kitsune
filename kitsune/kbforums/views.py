@@ -6,7 +6,6 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.views.decorators.http import require_POST
 
-from ratelimit.helpers import is_ratelimited
 from statsd import statsd
 
 from kitsune import kbforums
@@ -19,7 +18,7 @@ from kitsune.kbforums.forms import (
 from kitsune.kbforums.models import Thread, Post
 from kitsune.lib.sumo_locales import LOCALES
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.sumo.utils import paginate, get_next_url, user_or_ip
+from kitsune.sumo.utils import paginate, get_next_url, is_ratelimited
 from kitsune.users.models import Setting
 from kitsune.wiki.models import Document
 
@@ -122,10 +121,8 @@ def _is_ratelimited(request):
     They are ratelimited together with the same key.
     """
     return (
-        is_ratelimited(request, increment=True, rate='4/m', ip=False,
-                       keys=user_or_ip('kbforum-post-min')) or
-        is_ratelimited(request, increment=True, rate='50/d', ip=False,
-                       keys=user_or_ip('kbforum-post-day')))
+        is_ratelimited(request, 'kbforum-post-min', '4/m') or
+        is_ratelimited(request, 'kbforum-post-day', '50/d'))
 
 
 @login_required

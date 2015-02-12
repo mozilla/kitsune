@@ -7,6 +7,8 @@ from django.core.exceptions import PermissionDenied
 
 from statsd import statsd
 
+from kitsune.sumo.utils import is_ratelimited
+
 
 def ssl_required(view_func):
     """A view decorator that enforces HTTPS.
@@ -111,3 +113,19 @@ def timeit(f):
         return result
 
     return _timeit
+
+
+def ratelimit(name, rate, method=['POST'], skip_if=lambda r: False):
+    """
+    Reimplement ``ratelimit.decorators.ratelimit``, using a sumo-specic ``is_ratelimited``.
+
+    This discards a lot of the flexibility of the original, and in turn is a lot simpler.
+    """
+    def _decorator(fn):
+        @wraps(fn)
+        def _wrapped(request, *args, **kwargs):
+            # Sets ``request.limited`` on ``request``.
+            is_ratelimited(request, name, rate, method, skip_if)
+            return fn(request, *args, **kwargs)
+        return _wrapped
+    return _decorator
