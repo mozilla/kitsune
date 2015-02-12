@@ -305,6 +305,11 @@ class QuestionViewSet(viewsets.ModelViewSet):
     @action(methods=['POST'], permission_classes=[permissions.IsAuthenticated])
     def add_tag(self, request, pk=None):
         question = self.get_object()
+
+        if 'tag' not in request.DATA:
+            return Response({'tag': 'This field is required.'},
+                            status=status.HTTP_400_BAD_REQUEST)
+
         tag = request.DATA['tag']
 
         try:
