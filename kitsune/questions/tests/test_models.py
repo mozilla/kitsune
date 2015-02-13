@@ -603,7 +603,8 @@ class QuestionVoteTests(TestCase):
         eq_('a'*1000, metadata.value)
 
 
-class TestSignals(TestCase):
+class TestActions(TestCase):
+
     def test_question_create_action(self):
         """When a question is created, an Action is created too."""
         q = question(save=True)
@@ -622,15 +623,26 @@ class TestSignals(TestCase):
         eq_(act.target, q)
 
     def test_question_change_no_action(self):
-        """When a question is changed, no action should be created."""
+        """When a question is changed, no Action should be created."""
         q = question(save=True)
         Action.objects.all().delete()
         q.save()  # trigger another post_save hook
         eq_(Action.objects.count(), 0)
 
     def test_answer_change_no_action(self):
-        """When an answer is changed, no action should be created."""
-        a = question(save=True)
+        """When an answer is changed, no Action should be created."""
+        q = question(save=True)
         Action.objects.all().delete()
-        a.save()  # trigger another post_save hook
+        q.save()  # trigger another post_save hook
         eq_(Action.objects.count(), 0)
+
+    def test_question_solved_makes_action(self):
+        """When an answer is marked as the solution to a question, an Action should be created."""
+        ans = answer(save=True)
+        Action.objects.all().delete()
+        ans.question.set_solution(ans, ans.question.creator)
+
+        act = Action.objects.action_object(ans).get()
+        eq_(act.actor, ans.question.creator)
+        eq_(act.verb, 'marked as a solution')
+        eq_(act.target, ans.question)

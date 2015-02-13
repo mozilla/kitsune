@@ -478,6 +478,8 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         self.add_metadata(solver_id=str(solver.id))
         statsd.incr('questions.solution')
         QuestionSolvedEvent(answer).fire(exclude=self.creator)
+        actstream.action.send(
+            solver, verb='marked as a solution', action_object=answer, target=self)
 
     @property
     def related_documents(self):
