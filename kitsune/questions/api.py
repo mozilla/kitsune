@@ -118,6 +118,17 @@ class QuestionSerializer(serializers.ModelSerializer):
         return attrs
 
 
+class QuestionFKSerializer(QuestionSerializer):
+
+    class Meta:
+        model = Question
+        fields = (
+            'creator',
+            'id',
+            'title',
+        )
+
+
 class QuestionFilter(django_filters.FilterSet):
     product = django_filters.CharFilter(name='product__slug')
     creator = django_filters.CharFilter(name='creator__username')
@@ -365,6 +376,17 @@ class AnswerSerializer(serializers.ModelSerializer):
         if user and not user.is_anonymous() and attrs.get('creator') is None:
             attrs['creator'] = user
         return attrs
+
+
+class AnswerFKSerializer(AnswerSerializer):
+
+    class Meta:
+        model = Answer
+        fields = (
+            'id',
+            'question',
+            'creator',
+        )
 
 
 class AnswerFilter(django_filters.FilterSet):
