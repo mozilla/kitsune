@@ -249,13 +249,13 @@ class QuestionViewSet(viewsets.ModelViewSet):
     @action(methods=['POST'], permission_classes=[permissions.IsAuthenticated])
     def follow(self, request, pk=None):
         question = self.get_object()
-        actstream.actions.follow(request.user, question, actor_only=False)
+        actstream.actions.follow(request.user, question, actor_only=False, send_action=False)
         return Response('', status=204)
 
     @action(methods=['POST'], permission_classes=[permissions.IsAuthenticated])
     def unfollow(self, request, pk=None):
         question = self.get_object()
-        actstream.actions.unfollow(request.user, question)
+        actstream.actions.unfollow(request.user, question, send_action=False)
         return Response('', status=204)
 
     @action(methods=['POST'])
