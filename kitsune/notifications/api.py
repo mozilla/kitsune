@@ -1,3 +1,4 @@
+import django_filters
 from rest_framework import serializers, viewsets, permissions, mixins, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -42,6 +43,26 @@ class NotificationSerializer(serializers.ModelSerializer):
         )
 
 
+class NotificationFilter(django_filters.FilterSet):
+    is_read = django_filters.MethodFilter(action='filter_is_read')
+
+    class Meta(object):
+        model = Notification
+        fields = [
+            'is_read',
+        ]
+
+    # This has to be a method filter because ``is_read`` is not a database field
+    # of ``Notification``, so BooleanFilter (and friends) don't work on it.
+    def filter_is_read(self, queryset, value):
+        if value in ['1', 'true', 'True', 1, True]:
+            return queryset.exclude(read_at=None)
+        elif value in ['0', 'false', 'False', 0, False]:
+            return queryset.filter(read_at=None)
+        else:
+            return queryset
+
+
 class NotificationViewSet(mixins.ListModelMixin,
                           mixins.RetrieveModelMixin,
                           viewsets.GenericViewSet):
@@ -51,9 +72,12 @@ class NotificationViewSet(mixins.ListModelMixin,
         permissions.IsAuthenticated,
         OnlyOwner,
     ]
+    filter_class = NotificationFilter
+    filter_fields = ['is_read']
 
     def get_queryset(self, *args, **kwargs):
-        return self.model.objects.filter(owner=self.request.user)
+        qs = super(NotificationViewSet, self).get_queryset(*args, **kwargs)
+        return qs.filter(owner=self.request.user)
 
     @action(methods=['POST'])
     def mark_read(self, request, pk=None):
