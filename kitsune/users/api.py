@@ -200,6 +200,11 @@ class ProfileSerializer(serializers.ModelSerializer):
     def get_solution_count(self, profile):
         return num_solutions(profile.user)
 
+    def save_object(self, obj, **kwargs):
+        """It is universally a bad idea to force_insert=True on this object. So don't."""
+        kwargs.pop('force_insert', None)
+        return super(ProfileSerializer, self).save_object(obj, **kwargs)
+
     def restore_object(self, attrs, instance=None):
         """
         Override the default behavior to make a user if one doesn't exist.
@@ -214,14 +219,18 @@ class ProfileSerializer(serializers.ModelSerializer):
             # specified, the user will be inactive until the email is
             # confirmed. Otherwise the user can be created immediately.
             if 'user.email' in attrs:
+                # This is a bit of cheat. The user shouldn't be saved yet, but
+                # ``create_inactive_user`` saves it, so their isn't much of a choice.
                 u = RegistrationProfile.objects.create_inactive_user(
                     attrs['user.username'],
                     attrs['user.password'],
                     attrs['user.email'])
+                instance.user_id = u.id
+                instance.save()
             else:
                 u = User(username=attrs['user.username'])
                 u.set_password(attrs['user.password'])
-            instance._nested_forward_relations['user'] = u
+                instance._nested_forward_relations['user'] = u
         return instance
 
     def validate_username(self, attrs, source):
