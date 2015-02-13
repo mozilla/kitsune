@@ -86,32 +86,51 @@ class TestNotificationViewSet(TestCase):
     def setUp(self):
         self.client = APIClient()
 
-        follower = profile()
-        followed = profile()
-        q = question(creator=followed.user, save=True)
+        self.follower = profile().user
+        self.followed = profile().user
+        self.question = question(creator=self.followed, save=True)
         # The above might make follows, which this test isn't about. Clear them out.
         Follow.objects.all().delete()
+        follow(self.follower, self.followed)
 
-        follow(follower.user, followed.user)
-
-        # Make a new action for the above. This should trigger notifications
-        action.send(followed.user, verb='asked', action_object=q)
+    def _makeNotification(self, is_read=False):
+        # Make a new action. This should trigger notifications
+        action.send(self.followed, verb='asked', action_object=self.question)
         act = Action.objects.order_by('-id')[0]
-        self.notification = Notification.objects.get(action=act)
+        n = Notification.objects.get(action=act)
+        if is_read:
+            n.is_read = True
+            n.save()
+        return n
 
     def test_mark_read(self):
-        eq_(self.notification.is_read, False)
-        self.client.force_authenticate(user=self.notification.owner)
-        req = self.client.post(reverse('notification-mark-read', args=[self.notification.id]))
+        n = self._makeNotification()
+        self.client.force_authenticate(user=self.follower)
+        req = self.client.post(reverse('notification-mark-read', args=[n.id]))
         eq_(req.status_code, 204)
-        n = Notification.objects.get(id=self.notification.id)
+        n = Notification.objects.get(id=n.id)
         eq_(n.is_read, True)
 
     def test_mark_unread(self):
-        self.notification.is_read = True
-        self.notification.save()
-        self.client.force_authenticate(user=self.notification.owner)
-        req = self.client.post(reverse('notification-mark-unread', args=[self.notification.id]))
+        n = self._makeNotification(is_read=True)
+        self.client.force_authenticate(user=self.follower)
+        req = self.client.post(reverse('notification-mark-unread', args=[n.id]))
         eq_(req.status_code, 204)
-        n = Notification.objects.get(id=self.notification.id)
+        n = Notification.objects.get(id=n.id)
         eq_(n.is_read, False)
+
+    def test_filter_is_read_false(self):
+        n = self._makeNotification(is_read=False)
+        self._makeNotification(is_read=True)
+        self.client.force_authenticate(user=self.follower)
+        req = self.client.get(reverse('notification-list') + '?is_read=0')
+        eq_(req.status_code, 200)
+        eq_([d['id'] for d in req.data], [n.id])
+
+    def test_filter_is_read_true(self):
+        self._makeNotification(is_read=False)
+        n = self._makeNotification(is_read=True)
+        self.client.force_authenticate(user=self.follower)
+        req = self.client.get(reverse('notification-list') + '?is_read=1')
+        eq_(req.status_code, 200)
+        eq_([d['id'] for d in req.data], [n.id])
