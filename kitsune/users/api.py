@@ -189,7 +189,9 @@ class ProfileSerializer(serializers.ModelSerializer):
         ]
 
     def get_avatar_url(self, profile):
-        return profile_avatar(profile.user)
+        request = self.context.get('request')
+        size = request.REQUEST.get('avatar_size', 48) if request else 48
+        return profile_avatar(profile.user, size=size)
 
     def get_question_count(self, profile):
         return num_questions(profile.user)

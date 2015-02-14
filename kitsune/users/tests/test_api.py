@@ -327,3 +327,13 @@ class TestUserView(TestCase):
         res = self.client.get(url)
         eq_(res.status_code, 204)
         eq_(1, len(mail.outbox))
+
+    def test_avatar_size(self):
+        p = profile()
+        url = reverse('user-detail', args=[p.user.username])
+
+        res = self.client.get(url)
+        assert '?s=48' in res.data['avatar']
+
+        res = self.client.get(url, {'avatar_size': 128})
+        assert '?s=128' in res.data['avatar']
