@@ -181,6 +181,14 @@ class TestUserSerializer(TestCase):
         eq_(serializer.data['answer_count'], 2)
         eq_(serializer.data['solution_count'], 1)
 
+    def test_last_answer_date(self):
+        p = profile()
+        u = p.user
+        answer(creator=u, save=True)
+
+        serializer = api.ProfileSerializer(instance=p)
+        eq_(serializer.data['last_answer_date'], u.answers.last().created)
+
 
 class TestUserView(TestCase):
 

@@ -153,6 +153,7 @@ class ProfileSerializer(serializers.ModelSerializer):
     answer_count = serializers.SerializerMethodField('get_answer_count')
     question_count = serializers.SerializerMethodField('get_question_count')
     solution_count = serializers.SerializerMethodField('get_solution_count')
+    last_answer_date = serializers.SerializerMethodField('get_last_answer_date')
     # These are write only fields. It is very important they stays that way!
     password = serializers.WritableField(source='user.password', write_only=True)
     is_active = (PermissionMod(serializers.BooleanField, permissions=[OnlySelf])
@@ -181,6 +182,7 @@ class ProfileSerializer(serializers.ModelSerializer):
             'question_count',
             'answer_count',
             'solution_count',
+            'last_answer_date',
             # Password and email are here so they can be involved in write
             # operations. They is marked as write-only above, so will not be
             # visible.
@@ -201,6 +203,10 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     def get_solution_count(self, profile):
         return num_solutions(profile.user)
+
+    def get_last_answer_date(self, profile):
+        last_answer = profile.user.answers.order_by('-created').first()
+        return last_answer.created if last_answer else None
 
     def restore_object(self, attrs, instance=None):
         """
