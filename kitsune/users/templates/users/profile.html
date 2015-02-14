@@ -119,10 +119,10 @@
                 <a rel="nofollow" href="https://www.twitter.com/{{profile.twitter}}">{{ profile.twitter }}</a>
               </li>
             {% endif %}
-            {% if profile.facebook %}
+            {% if facebook_username %}
               <li>
                 <label>{{ _('Facebook') }}</label>
-                <a rel="nofollow" href="{{ profile.facebook }}">{{ profile.facebook }}</a>
+                <a rel="nofollow" href="{{ profile.facebook }}">{{ facebook_username }}</a>
               </li>
             {% endif %}
             {% if profile.mozillians %}

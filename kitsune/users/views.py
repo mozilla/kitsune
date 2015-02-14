@@ -1,4 +1,5 @@
 import os
+import requests
 from ast import literal_eval
 from datetime import datetime
 
@@ -326,13 +327,31 @@ def profile(request, template, username):
         raise Http404('No Profile matches the given query.')
 
     groups = user_profile.user.groups.all()
+
+    if user.profile.facebook:
+        # Get Facebook Username only from Facebook profile URL by using Facebook Graph API
+        # More about Facebook Graph API can be get from
+        # here: https://developers.facebook.com/docs/graph-api
+        facebook_graph_url = user.profile.facebook.replace(
+            'www.facebook.com', 'graph.facebook.com').replace(
+            'facebook.com', 'graph.facebook.com').replace(
+            'profile.php?id=', '')
+        facebook_profile_data = requests.get(facebook_graph_url).json()
+
+    try:
+        facebook_profile_data['username']
+        facebook_username = facebook_profile_data['username']
+    except:
+        facebook_username = ''
+
     return render(request, template, {
         'profile': user_profile,
         'groups': groups,
         'num_questions': num_questions(user_profile.user),
         'num_answers': num_answers(user_profile.user),
         'num_solutions': num_solutions(user_profile.user),
-        'num_documents': user_num_documents(user_profile.user)})
+        'num_documents': user_num_documents(user_profile.user),
+        'facebook_username': facebook_username})
 
 
 @login_required
