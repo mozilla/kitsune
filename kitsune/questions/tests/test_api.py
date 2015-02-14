@@ -409,7 +409,7 @@ class TestQuestionViewSet(TestCase):
         eq_(res.status_code, 204)
         eq_(Follow.objects.filter(user=u).count(), 0)
 
-    def test_add_tag(self):
+    def test_add_tags(self):
         q = question(save=True)
         eq_(0, q.tags.count())
 
@@ -417,22 +417,25 @@ class TestQuestionViewSet(TestCase):
         add_permission(u, Tag, 'add_tag')
         self.client.force_authenticate(user=u)
 
-        res = self.client.post(reverse('question-add-tag', args=[q.id]), data={'tag': 'test'})
+        res = self.client.post(reverse('question-add-tags', args=[q.id]),
+                               data={'tags': '["test", "more", "tags"]'})
         eq_(res.status_code, 200)
-        eq_(1, q.tags.count())
+        eq_(3, q.tags.count())
 
-    def test_remove_tag(self):
+    def test_remove_tags(self):
         q = question(save=True)
         q.tags.add('test')
-        eq_(1, q.tags.count())
+        q.tags.add('more')
+        q.tags.add('tags')
+        eq_(3, q.tags.count())
 
         u = profile().user
-        add_permission(u, Tag, 'add_tag')
         self.client.force_authenticate(user=u)
 
-        res = self.client.post(reverse('question-remove-tag', args=[q.id]), data={'tag': 'test'})
+        res = self.client.post(reverse('question-remove-tags', args=[q.id]),
+                               data={'tags': '["more", "tags"]'})
         eq_(res.status_code, 204)
-        eq_(0, q.tags.count())
+        eq_(1, q.tags.count())
 
 
 class TestAnswerSerializerDeserialization(TestCase):

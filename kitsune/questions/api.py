@@ -303,37 +303,46 @@ class QuestionViewSet(viewsets.ModelViewSet):
         return Response(status=204)
 
     @action(methods=['POST'], permission_classes=[permissions.IsAuthenticated])
-    def add_tag(self, request, pk=None):
+    def add_tags(self, request, pk=None):
         question = self.get_object()
 
-        if 'tag' not in request.DATA:
-            return Response({'tag': 'This field is required.'},
+        if 'tags' not in request.DATA:
+            return Response({'tags': 'This field is required.'},
                             status=status.HTTP_400_BAD_REQUEST)
-
-        tag = request.DATA['tag']
 
         try:
-            canonical_name = add_existing_tag(tag, question.tags)
-        except Tag.DoesNotExist:
-            if request.user.has_perm('taggit.add_tag'):
-                question.tags.add(tag)
-                canonical_name = tag
-            else:
-                raise GenericAPIException(403, 'You are not authorized to create new tags.')
+            tags = json.loads(request.DATA['tags'])
+        except ValueError:
+            raise GenericAPIException(400, 'tags must be valid JSON.')
 
-        tag = Tag.objects.get(name=canonical_name)
-        return Response(QuestionTagSerializer(instance=tag).data)
+        for tag in tags:
+            try:
+                add_existing_tag(tag, question.tags)
+            except Tag.DoesNotExist:
+                if request.user.has_perm('taggit.add_tag'):
+                    question.tags.add(tag)
+                else:
+                    raise GenericAPIException(403, 'You are not authorized to create new tags.')
+
+        tags = question.tags.all()
+        return Response(QuestionTagSerializer(tags).data)
 
     @action(methods=['POST', 'DELETE'], permission_classes=[permissions.IsAuthenticated])
-    def remove_tag(self, request, pk=None):
+    def remove_tags(self, request, pk=None):
         question = self.get_object()
 
-        if 'tag' not in request.DATA:
-            return Response({'tag': 'This field is required.'},
+        if 'tags' not in request.DATA:
+            return Response({'tags': 'This field is required.'},
                             status=status.HTTP_400_BAD_REQUEST)
 
-        tag = request.DATA['tag']
-        question.tags.remove(tag)
+        try:
+            tags = json.loads(request.DATA['tags'])
+        except ValueError:
+            raise GenericAPIException(400, 'tags must be valid JSON.')
+
+        for tag in tags:
+            question.tags.remove(tag)
+
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
