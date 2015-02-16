@@ -74,10 +74,8 @@ class TestNotificationSerializer(TestCase):
             'avatar': profile_avatar(followed.user),
         })
         eq_(serializer.data['verb'], 'asked')
-        eq_(serializer.data['action_object'], {
-            'type': 'question',
-            'id': q.id,
-        })
+        eq_(serializer.data['action_object']['type'], 'question')
+        eq_(serializer.data['action_object']['id'], q.id)
         eq_(serializer.data['target'], None)
         eq_(type(serializer.data['timestamp']), datetime)
 

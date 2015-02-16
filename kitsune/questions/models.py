@@ -383,6 +383,12 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         return QuestionMappingType
 
     @classmethod
+    def get_generic_fk_serializer(cls):
+        # Avoid circular import
+        from kitsune.questions.api import QuestionFKSerializer
+        return QuestionFKSerializer
+
+    @classmethod
     def recent_asked_count(cls, extra_filter=None):
         """Returns the number of questions asked in the last 24 hours."""
         start = datetime.now() - timedelta(hours=24)
@@ -478,6 +484,8 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         self.add_metadata(solver_id=str(solver.id))
         statsd.incr('questions.solution')
         QuestionSolvedEvent(answer).fire(exclude=self.creator)
+        actstream.action.send(
+            solver, verb='marked as a solution', action_object=answer, target=self)
 
     @property
     def related_documents(self):
@@ -1112,6 +1120,12 @@ class Answer(ModelBase, SearchMixin):
     @classmethod
     def get_mapping_type(cls):
         return AnswerMetricsMappingType
+
+    @classmethod
+    def get_generic_fk_serializer(cls):
+        # Avoid circular import
+        from kitsune.questions.api import AnswerFKSerializer
+        return AnswerFKSerializer
 
     def mark_as_spam(self, by_user):
         """Mark the answer as spam by the specified user."""
