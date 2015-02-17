@@ -133,6 +133,6 @@ class TestEmployeeReportCron(TestCase):
 
         assert 'Number of questions asked: 3' in email.body
         assert 'Number of questions answered: 2' in email.body
-        assert 'users: 1' in email.body
+        assert '{username}: 1'.format(username=tracked_user.username) in email.body
 
         eq_([report_user.email], email.to)
