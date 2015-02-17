@@ -186,9 +186,11 @@ def report_employee_answers():
     num_answered = questions.filter(num_answers__gt=0).count()
 
     # Total number of questions answered by user in tracked_group
-    num_answered_by_tracked = Answer.objects.filter(
-        question__in=questions,
-        creator__in=tracked_users).values_list('question_id').distinct().count()
+    num_answered_by_tracked = {}
+    for user in tracked_users:
+        num_answered_by_tracked[user.username] = Answer.objects.filter(
+            question__in=questions,
+            creator=user).values_list('question_id').distinct().count()
 
     email_subject = 'Support Forum answered report for {date}'.format(date=day_before_yesterday)
 
@@ -196,13 +198,15 @@ def report_employee_answers():
         Date: {date}
         Number of questions asked: {num_questions}
         Number of questions answered: {num_answered}
-        Number of questions with answer from 'Support Forum Tracked' users: {num_by_tracked}
         """)
     email_body = email_body_tmpl.format(
         date=day_before_yesterday,
         num_questions=num_questions,
-        num_answered=num_answered,
-        num_by_tracked=num_answered_by_tracked)
+        num_answered=num_answered)
+
+    for username, count in num_answered_by_tracked.items():
+        email_body += 'Number of questions answered by {username}: {count}\n'.format(
+            username=username, count=count)
 
     email_addresses = [u.email for u in report_recipients]
 
