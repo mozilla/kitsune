@@ -1,5 +1,6 @@
 import json
 from datetime import datetime, timedelta
+from random import random
 
 import mock
 from django.contrib.auth.models import User
@@ -345,3 +346,38 @@ class TestUserView(TestCase):
 
         res = self.client.get(url, {'avatar_size': 128})
         assert '?s=128' in res.data['avatar']
+
+    def test_create_user_no_email(self):
+        # There is at least one user in existence due to migrations
+        number_users = User.objects.count()
+
+        url = reverse('user-list')
+        res = self.client.post(url, {
+            'username': 'kris',
+            'password': 'testpass'
+        })
+
+        eq_(res.status_code, 201)
+        eq_(User.objects.count(), number_users + 1)
+        u = User.objects.order_by('-id')[0]
+        eq_(u.username, 'kris')
+        eq_(u.is_active, True)
+
+    def test_create_user_with_email(self):
+        # There is at least one user in existence due to migrations
+        number_users = User.objects.count()
+
+        username = 'kris-{}'.format(random())
+        url = reverse('user-list')
+        res = self.client.post(url, {
+            'username': username,
+            'password': 'testpass',
+            'email': 'kris@example.com'
+        })
+
+        eq_(res.status_code, 201)
+        eq_(User.objects.count(), number_users + 1)
+        u = User.objects.order_by('-id')[0]
+        eq_(u.username, username)
+        eq_(u.email, 'kris@example.com')
+        eq_(u.is_active, False)
