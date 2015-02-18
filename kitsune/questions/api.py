@@ -159,10 +159,16 @@ class QuestionFilter(django_filters.FilterSet):
             'updated_by',
         ]
 
-    def filter_involved(self, queryset, value):
-        creator_filter = Q(creator__username=value)
-        answer_creator_filter = Q(answers__creator__username=value)
-        return queryset.filter(creator_filter | answer_creator_filter)
+    def filter_involved(self, queryset, username):
+        # This will remain unevaluated, and become a subquery of the final query.
+        # Using a subquery instead of a JOIN like Django would normally do
+        # should be faster in this case.
+        questions_user_answered = (
+            Answer.objects.filter(creator__username=username).values('question_id'))
+
+        answered_filter = Q(id__in=questions_user_answered)
+        creator_filter = Q(creator__username=username)
+        return queryset.filter(creator_filter | answered_filter)
 
     def filter_is_taken(self, queryset, value):
         field = serializers.BooleanField()
