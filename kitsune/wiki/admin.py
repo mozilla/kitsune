@@ -81,7 +81,6 @@ class LocaleAdmin(admin.ModelAdmin):
     list_display = ('locale',)
     list_display_links = ('locale',)
     raw_id_fields = ('leaders', 'reviewers', 'editors')
-    readonly_fields = ('locale',)
     search_fields = ('locale',)
 
 

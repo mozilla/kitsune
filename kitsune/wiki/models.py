@@ -1101,7 +1101,7 @@ class ImportantDate(ModelBase):
 # the M2M tables, etc.
 class Locale(ModelBase):
     """A localization team."""
-    locale = models.CharField(max_length=7, db_index=True)
+    locale = LocaleField(db_index=True)
     leaders = models.ManyToManyField(
         User, blank=True, related_name='locales_leader')
     reviewers = models.ManyToManyField(
