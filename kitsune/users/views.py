@@ -1,5 +1,5 @@
 import os
-import requests
+import re
 from ast import literal_eval
 from datetime import datetime
 
@@ -328,30 +328,20 @@ def profile(request, template, username):
 
     groups = user_profile.user.groups.all()
 
-    if user.profile.facebook:
-        # Get Facebook Username only from Facebook profile URL by using Facebook Graph API
-        # More about Facebook Graph API can be get from
-        # here: https://developers.facebook.com/docs/graph-api
-        facebook_graph_url = user.profile.facebook.replace(
-            'www.facebook.com', 'graph.facebook.com').replace(
-            'facebook.com', 'graph.facebook.com').replace(
-            'profile.php?id=', '')
-        facebook_profile_data = requests.get(facebook_graph_url).json()
-
-    try:
-        facebook_profile_data['username']
-        facebook_username = facebook_profile_data['username']
-    except:
-        facebook_username = ''
+    facebook = user.profile.facebook
+    # Get Facebook Username from the Facebook profile URL. "profile.php\?id=" is used because of
+    # past Facebook URL pattern was like that.
+    if facebook:
+        facebook = re.sub(r'https?://(?:www\.)?facebook\.com/(?:profile.php\?id=)?', '', facebook)
 
     return render(request, template, {
         'profile': user_profile,
         'groups': groups,
+        'facebook_username': facebook,
         'num_questions': num_questions(user_profile.user),
         'num_answers': num_answers(user_profile.user),
         'num_solutions': num_solutions(user_profile.user),
-        'num_documents': user_num_documents(user_profile.user),
-        'facebook_username': facebook_username})
+        'num_documents': user_num_documents(user_profile.user)})
 
 
 @login_required
