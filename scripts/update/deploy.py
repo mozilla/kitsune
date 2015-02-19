@@ -10,9 +10,8 @@ import sys
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from commander.deploy import task, hostgroups
-
-import commander_settings as settings
+from commander.deploy import task, hostgroups  # noqa
+import commander_settings as settings  # noqa
 
 
 # Setup virtualenv path.
@@ -85,11 +84,6 @@ def deploy_app(ctx):
     # ctx.remote('service httpd graceful')
 
 
-@hostgroups(settings.WEB_HOSTGROUP, remote_kwargs={'ssh_key': settings.SSH_KEY})
-def prime_app(ctx):
-    ctx.remote("for i in {1..10}; do curl -so /dev/null -H 'Host: %s' -I http://localhost:81/ & sleep 1; done" % settings.REMOTE_HOSTNAME)
-
-
 @hostgroups(settings.CELERY_HOSTGROUP, remote_kwargs={'ssh_key': settings.SSH_KEY})
 def update_celery(ctx):
     ctx.remote(settings.REMOTE_UPDATE_SCRIPT)
@@ -155,10 +149,6 @@ def deploy(ctx):
     install_cron()
     checkin_changes()
     deploy_app()
-    # Prime app adds more requests the the filling or full queue. Users
-    # will see slow responses either way. It probably doesn't help much.
-    # Skipping for now.
-    # prime_app()
     update_celery()
 
 
