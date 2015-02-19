@@ -84,14 +84,5 @@ class LocaleAdmin(admin.ModelAdmin):
     readonly_fields = ('locale',)
     search_fields = ('locale',)
 
-    # Disable adding and deleting new locales from the admin.
-    # Use migrations instead.
-
-    def has_add_permission(self, request):
-        return False
-
-    def has_delete_permission(self, request, *args, **kwargs):
-        return False
-
 
 admin.site.register(Locale, LocaleAdmin)
