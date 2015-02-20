@@ -154,10 +154,9 @@ class ProfileSerializer(serializers.ModelSerializer):
     question_count = serializers.SerializerMethodField('get_question_count')
     solution_count = serializers.SerializerMethodField('get_solution_count')
     last_answer_date = serializers.SerializerMethodField('get_last_answer_date')
+    is_active = serializers.BooleanField(source='user.is_active', read_only=True)
     # These are write only fields. It is very important they stays that way!
     password = serializers.WritableField(source='user.password', write_only=True)
-    is_active = (PermissionMod(serializers.BooleanField, permissions=[OnlySelf])
-                 (source='user.is_active', read_only=True))
 
     class Meta:
         model = Profile
