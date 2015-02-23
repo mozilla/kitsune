@@ -327,10 +327,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
             return Response({'tags': 'This field is required.'},
                             status=status.HTTP_400_BAD_REQUEST)
 
-        try:
-            tags = json.loads(request.DATA['tags'])
-        except ValueError:
-            raise GenericAPIException(400, 'tags must be valid JSON.')
+        tags = request.DATA['tags']
 
         for tag in tags:
             try:
@@ -352,10 +349,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
             return Response({'tags': 'This field is required.'},
                             status=status.HTTP_400_BAD_REQUEST)
 
-        try:
-            tags = json.loads(request.DATA['tags'])
-        except ValueError:
-            raise GenericAPIException(400, 'tags must be valid JSON.')
+        tags = request.DATA['tags']
 
         for tag in tags:
             question.tags.remove(tag)

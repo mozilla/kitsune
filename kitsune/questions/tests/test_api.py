@@ -418,7 +418,8 @@ class TestQuestionViewSet(TestCase):
         self.client.force_authenticate(user=u)
 
         res = self.client.post(reverse('question-add-tags', args=[q.id]),
-                               data={'tags': '["test", "more", "tags"]'})
+                               content_type='application/json',
+                               data=json.dumps({'tags': ['test', 'more', 'tags']}))
         eq_(res.status_code, 200)
         eq_(3, q.tags.count())
 
@@ -433,7 +434,8 @@ class TestQuestionViewSet(TestCase):
         self.client.force_authenticate(user=u)
 
         res = self.client.post(reverse('question-remove-tags', args=[q.id]),
-                               data={'tags': '["more", "tags"]'})
+                               content_type='application/json',
+                               data=json.dumps({'tags': ['more', 'tags']}))
         eq_(res.status_code, 204)
         eq_(1, q.tags.count())
 
