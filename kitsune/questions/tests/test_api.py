@@ -582,13 +582,13 @@ class TestQuestionFilter(TestCase):
         a1 = answer(question=q1, save=True)
         q2 = question(creator=a1.creator, save=True)
 
-        res = self.filter_instance.filter_involved(self.queryset, q1.creator.username)
-        eq_(list(res), [q1])
+        qs = self.filter_instance.filter_involved(self.queryset, q1.creator.username)
+        eq_(list(qs), [q1])
 
-        res = self.filter_instance.filter_involved(self.queryset, q2.creator.username)
+        qs = self.filter_instance.filter_involved(self.queryset, q2.creator.username)
         # The filter does not have a strong order.
-        res = sorted(res, key=lambda q: q.id)
-        eq_(res, [q1, q2])
+        qs = sorted(qs, key=lambda q: q.id)
+        eq_(qs, [q1, q2])
 
     def test_filter_is_solved(self):
         q1 = question(save=True)
@@ -597,11 +597,11 @@ class TestQuestionFilter(TestCase):
         q1.save()
         q2 = question(save=True)
 
-        res = self.filter_instance.filter_is_solved(self.queryset, True)
-        eq_(list(res), [q1])
+        qs = self.filter_instance.filter_is_solved(self.queryset, True)
+        eq_(list(qs), [q1])
 
-        res = self.filter_instance.filter_is_solved(self.queryset, False)
-        eq_(list(res), [q2])
+        qs = self.filter_instance.filter_is_solved(self.queryset, False)
+        eq_(list(qs), [q2])
 
     def test_filter_solved_by(self):
         q1 = question(save=True)
@@ -617,11 +617,11 @@ class TestQuestionFilter(TestCase):
         q3.solution = a3
         q3.save()
 
-        res = self.filter_instance.filter_solved_by(self.queryset, a1.creator.username)
-        eq_(list(res), [q1, q2])
+        qs = self.filter_instance.filter_solved_by(self.queryset, a1.creator.username)
+        eq_(list(qs), [q1, q2])
 
-        res = self.filter_instance.filter_solved_by(self.queryset, a3.creator.username)
-        eq_(list(res), [q3])
+        qs = self.filter_instance.filter_solved_by(self.queryset, a3.creator.username)
+        eq_(list(qs), [q3])
 
     @raises(APIException)
     def test_metadata_not_json(self):
