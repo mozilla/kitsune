@@ -199,7 +199,7 @@ class QuestionFilter(django_filters.FilterSet):
         question_user_solved = (
             Question.objects.filter(solution__creator__username=username).values('id'))
 
-        return queryset.filter(Q(id__in=question_user_solved))
+        return queryset.filter(id__in=question_user_solved)
 
     def filter_metadata(self, queryset, value):
         try:
