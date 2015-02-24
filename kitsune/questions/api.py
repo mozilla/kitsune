@@ -70,6 +70,7 @@ class QuestionSerializer(serializers.ModelSerializer):
     product = serializers.SlugRelatedField(required=True, slug_field='slug')
     tags = QuestionTagSerializer(source='tags', read_only=True)
     solution = serializers.PrimaryKeyRelatedField(read_only=True)
+    solved_by = serializers.SerializerMethodField('get_solved_by')
     taken_by = ProfileFKSerializer(source='taken_by.get_profile', read_only=True)
     topic = TopicField(required=True)
     updated = DateTimeUTCField(read_only=True)
@@ -110,6 +111,9 @@ class QuestionSerializer(serializers.ModelSerializer):
         involved = set([obj.creator.get_profile()])
         involved.update(a.creator.get_profile() for a in obj.answers.all())
         return ProfileFKSerializer(involved, many=True).data
+
+    def get_solved_by(self, obj):
+        return ProfileFKSerializer(obj.solution.creator) if obj.solution else None
 
     def validate_creator(self, attrs, source):
         user = getattr(self.context.get('request'), 'user')
@@ -190,6 +194,12 @@ class QuestionFilter(django_filters.FilterSet):
         if value:
             solved_filter = ~solved_filter
         return queryset.filter(solved_filter)
+
+    def filter_solved_by(self, queryset, username):
+        question_user_solved = (
+            Question.objects.filter(solution__creator__username=username).values('id'))
+
+        return queryset.filter(id__in=question_user_solved)
 
     def filter_metadata(self, queryset, value):
         try:
