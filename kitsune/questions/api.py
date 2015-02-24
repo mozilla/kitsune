@@ -140,6 +140,7 @@ class QuestionFilter(django_filters.FilterSet):
     is_solved = django_filters.MethodFilter(action='filter_is_solved')
     is_taken = django_filters.MethodFilter(action='filter_is_taken')
     metadata = django_filters.MethodFilter(action='filter_metadata')
+    solved_by = django_filters.MethodFilter(action='filter_solved_by')
     taken_by = django_filters.CharFilter(name='taken_by__username')
 
     class Meta(object):
@@ -156,6 +157,7 @@ class QuestionFilter(django_filters.FilterSet):
             'locale',
             'num_answers',
             'product',
+            'solved_by',
             'taken_by',
             'title',
             'topic',

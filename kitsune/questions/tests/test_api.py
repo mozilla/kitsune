@@ -627,16 +627,14 @@ class TestQuestionFilter(TestCase):
         q1.solution = a1
         q1.save()
         q2 = question(save=True)
-        a2 = answer(question=q2, creator=a1.creator, save=True)
-        q2.solution = a2
-        q2.save()
+        answer(question=q2, creator=a1.creator, save=True)
         q3 = question(save=True)
         a3 = answer(question=q3, save=True)
         q3.solution = a3
         q3.save()
 
         qs = self.filter_instance.filter_solved_by(self.queryset, a1.creator.username)
-        eq_(list(qs), [q1, q2])
+        eq_(list(qs), [q1])
 
         qs = self.filter_instance.filter_solved_by(self.queryset, a3.creator.username)
         eq_(list(qs), [q3])
