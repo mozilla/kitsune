@@ -603,6 +603,26 @@ class TestQuestionFilter(TestCase):
         res = self.filter_instance.filter_is_solved(self.queryset, False)
         eq_(list(res), [q2])
 
+    def test_filter_solved_by(self):
+        q1 = question(save=True)
+        a1 = answer(question=q1, save=True)
+        q1.solution = a1
+        q1.save()
+        q2 = question(save=True)
+        a2 = answer(question=q2, creator=a1.creator, save=True)
+        q2.solution = a2
+        q2.save()
+        q3 = question(save=True)
+        a3 = answer(question=q3, save=True)
+        q3.solution = a3
+        q3.save()
+
+        res = self.filter_instance.filter_solved_by(self.queryset, a1.creator.username)
+        eq_(list(res), [q1, q2])
+
+        res = self.filter_instance.filter_solved_by(self.queryset, a3.creator.username)
+        eq_(list(res), [q3])
+
     @raises(APIException)
     def test_metadata_not_json(self):
         self.filter_instance.filter_metadata(self.queryset, 'not json')
