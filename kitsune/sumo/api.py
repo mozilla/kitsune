@@ -7,6 +7,7 @@ import pytz
 from rest_framework import fields, permissions, relations, serializers
 from rest_framework.exceptions import APIException
 from rest_framework.filters import BaseFilterBackend
+from rest_framework.fields import get_component
 from tower import ugettext as _
 
 from kitsune.sumo.utils import uselocale
@@ -71,9 +72,9 @@ class LocalizedCharField(fields.CharField):
     form_field_class = forms.CharField
     read_only = True
 
-    def __init__(self, *args, **kwargs):
-        self.l10n_context = kwargs.pop('l10n_context', None)
-        super(LocalizedCharField, self).__init__(*args, **kwargs)
+    def __init__(self, l10n_context=None, **kwargs):
+        self.l10n_context = l10n_context
+        super(LocalizedCharField, self).__init__(**kwargs)
 
     def to_native(self, value):
         value = super(LocalizedCharField, self).from_native(value)
@@ -83,6 +84,104 @@ class LocalizedCharField(fields.CharField):
             return value
         with uselocale(locale):
             return _(value, self.l10n_context)
+
+
+class SplitSourceField(fields.WritableField):
+    """
+    This allows reading from one field and writing to another under the same
+    name in the serialized/deserialized data.
+
+    A serializer can use this field like this:
+
+        class FooSerializer(serializers.ModelSerializer):
+            content = SplitSourceField(read_source='content_parsed', write_source='content')
+
+            class Meta:
+                model = Foo
+                fields = ('id', 'content')
+
+    The normal field parameter ``source`` is no longer allowed. Instead use
+    ``read_source`` and ``write_source``.
+
+    :args read_source: The field to read from for serialization.
+    :args write_source: The field to write to for deserialization.
+    """
+    type_name = 'SplitSourceField'
+    read_only = False
+
+    def __init__(self, write_source=None, read_source=None, source=None, **kwargs):
+        if source is not None:
+            raise ValueError("Use read_source and write_source with SplitSourceField.")
+        self.read_source = read_source
+        self.write_source = write_source
+        super(SplitSourceField, self).__init__(**kwargs)
+
+    def field_to_native(self, obj, field_name):
+        """
+        Get a value for serialization from an object.
+
+        This is mostly copy/paste from ``fields.Field``.
+
+        :args obj: The object to reead the value from.
+        :args field_name: The name of the field to read from obj.
+        """
+        if obj is None:
+            return self.empty
+
+        if self.read_source == '*':
+            return self.to_native(obj)
+
+        source = self.read_source or field_name
+        value = obj
+
+        for component in source.split('.'):
+            value = get_component(value, component)
+            if value is None:
+                break
+
+        return self.to_native(value)
+
+    def field_from_native(self, data, files, field_name, into):
+        """
+        Update a ``field_name`` on a dictionary ``into`` with a deserialized value.
+
+        This is mostly copy/paste from ``fields.WritableField``.
+
+        :arg data: The serialized data to process.
+        :arg files: The serialized files to process.
+        :arg field_name: The name of the field to store the value on in ``into``.
+        :arg into: The dictionary to update.
+        """
+        if self.read_only:
+            return
+
+        try:
+            data = data or {}
+            if self.use_files:
+                files = files or {}
+                try:
+                    native = files[field_name]
+                except KeyError:
+                    native = data[field_name]
+            else:
+                native = data[field_name]
+        except KeyError:
+            if self.default is not None and not self.partial:
+                # Note: partial updates shouldn't set defaults
+                native = self.get_default_value()
+            else:
+                if self.required:
+                    raise serializers.ValidationError(self.error_messages['required'])
+                return
+
+        value = self.from_native(native)
+        if self.source == '*':
+            if value:
+                into.update(value)
+        else:
+            self.validate(value)
+            self.run_validators(value)
+            into[self.write_source or field_name] = value
 
 
 class DateTimeUTCField(fields.DateTimeField):

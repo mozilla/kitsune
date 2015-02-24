@@ -13,7 +13,8 @@ from kitsune.products.api import TopicField
 from kitsune.questions.models import (
     Question, Answer, QuestionMetaData, AlreadyTakenException,
     InvalidUserException, QuestionVote, AnswerVote)
-from kitsune.sumo.api import DateTimeUTCField, OnlyCreatorEdits, GenericAPIException
+from kitsune.sumo.api import (
+    DateTimeUTCField, OnlyCreatorEdits, GenericAPIException, SplitSourceField)
 from kitsune.tags.utils import add_existing_tag
 from kitsune.users.api import ProfileFKSerializer
 
@@ -31,7 +32,7 @@ class QuestionMetaDataSerializer(serializers.ModelSerializer):
 
     def restore_object(self, attrs, instance=None):
         """
-    Given a dictionary of deserialized field values, either update
+        Given a dictionary of deserialized field values, either update
         an existing model instance, or create a new model instance.
         """
         if instance is not None:
@@ -58,20 +59,19 @@ class QuestionTagSerializer(serializers.ModelSerializer):
 
 
 class QuestionSerializer(serializers.ModelSerializer):
-    # Use slugs for product and topic instead of ids.
-    product = serializers.SlugRelatedField(required=True, slug_field='slug')
-    topic = TopicField(required=True)
-    # Use usernames for creator and updated_by instead of ids.
+    content = SplitSourceField(read_source='content_parsed', write_source='content')
     created = DateTimeUTCField(read_only=True)
     creator = ProfileFKSerializer(source='creator.get_profile', read_only=True)
     involved = serializers.SerializerMethodField('get_involved_users')
     is_solved = serializers.Field(source='is_solved')
     is_taken = serializers.Field(source='is_taken')
     metadata = QuestionMetaDataSerializer(source='metadata_set', required=False)
-    tags = QuestionTagSerializer(source='tags', read_only=True)
     num_votes = serializers.Field(source='num_votes')
+    product = serializers.SlugRelatedField(required=True, slug_field='slug')
+    tags = QuestionTagSerializer(source='tags', read_only=True)
     solution = serializers.PrimaryKeyRelatedField(read_only=True)
     taken_by = ProfileFKSerializer(source='taken_by.get_profile', read_only=True)
+    topic = TopicField(required=True)
     updated = DateTimeUTCField(read_only=True)
     updated_by = ProfileFKSerializer(source='updated_by.get_profile', read_only=True)
 
@@ -358,12 +358,13 @@ class QuestionViewSet(viewsets.ModelViewSet):
 
 
 class AnswerSerializer(serializers.ModelSerializer):
+    content = SplitSourceField(read_source='content_parsed', write_source='content')
     created = DateTimeUTCField(read_only=True)
     creator = ProfileFKSerializer(read_only=True, source='creator.get_profile')
-    updated = DateTimeUTCField(read_only=True)
-    updated_by = ProfileFKSerializer(read_only=True, source='updated_by.get_profile')
     num_helpful_votes = serializers.Field(source='num_helpful_votes')
     num_unhelpful_votes = serializers.Field(source='num_unhelpful_votes')
+    updated = DateTimeUTCField(read_only=True)
+    updated_by = ProfileFKSerializer(read_only=True, source='updated_by.get_profile')
 
     class Meta:
         model = Answer

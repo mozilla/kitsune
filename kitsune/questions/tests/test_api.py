@@ -188,6 +188,7 @@ class TestQuestionViewSet(TestCase):
         q = Question.objects.all()[0]
         eq_(q.title, data['title'])
         eq_(q.content, data['content'])
+        eq_(q.content_parsed, res.data['content'])
 
     def test_delete_permissions(self):
         u1 = user(save=True)
@@ -439,6 +440,14 @@ class TestQuestionViewSet(TestCase):
         eq_(res.status_code, 204)
         eq_(1, q.tags.count())
 
+    def test_bleaching(self):
+        """Tests whether question content is bleached."""
+        q = question(content=u'<unbleached>Cupcakes are the best</unbleached>', save=True)
+        url = reverse('question-detail', args=[q.id])
+        res = self.client.get(url)
+        eq_(res.status_code, 200)
+        assert '<unbleached>' not in res.data['content']
+
 
 class TestAnswerSerializerDeserialization(TestCase):
 
@@ -479,6 +488,7 @@ class TestAnswerViewSet(TestCase):
         eq_(Answer.objects.count(), 1)
         a = Answer.objects.all()[0]
         eq_(a.content, data['content'])
+        eq_(a.content_parsed, res.data['content'])
         eq_(a.question, q)
 
     def test_delete_permissions(self):
@@ -566,6 +576,14 @@ class TestAnswerViewSet(TestCase):
         res = self.client.post(reverse('answer-unfollow', args=[a.id]))
         eq_(res.status_code, 204)
         eq_(Follow.objects.filter(user=u).count(), 0)
+
+    def test_bleaching(self):
+        """Tests whether answer content is bleached."""
+        a = answer(content=u'<unbleached>Cupcakes are the best</unbleached>', save=True)
+        url = reverse('answer-detail', args=[a.id])
+        res = self.client.get(url)
+        eq_(res.status_code, 200)
+        assert '<unbleached>' not in res.data['content']
 
 
 class TestQuestionFilter(TestCase):
