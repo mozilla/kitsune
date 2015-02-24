@@ -59,11 +59,10 @@
       </form>
     </article>
     {% if request.user == profile.user %}
-      <form method="post" action="{{ url('users.close_account') }}" data-confirm="confirm" data-confirm-text="{{ _('Are you sure you want to close your account? You cannot undo this action.') }}">
+      <form method="post" action="{{ url('users.close_account') }}" data-confirm="confirm" data-confirm-text="{{ _('Are you sure you want to close your account? You cannot undo this action.') }}" id="delete-profile">
         {{ csrf() }}
-        <p>
-          <button type="submit" class="btn btn-warning">{{ _('Close account and delete all profile information') }}</button>
-        </p>
+        <p><input type="checkbox" class="acknowledge"> </input> I acknowledge that deleting my account will prevent me from answering/posting questions in Mozilla Support.</p>
+        <button type="submit" disabled="disabled" class="delete-profile-btn btn btn-warning">{{ _('Close account and delete all profile information') }}</button>
       </form>
     {% endif %}
   </div>

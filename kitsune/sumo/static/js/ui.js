@@ -7,6 +7,14 @@
     initFolding();
     initAnnouncements();
 
+    $('#delete-profile').click(function(){
+      if($("input[type='checkbox'].acknowledge:checked").length){
+        $(".delete-profile-btn").removeAttr('disabled');
+      }else{
+        $(".delete-profile-btn").attr('disabled','disabled');
+      }
+    });    
+
     $(window).scroll(_.throttle(function() {
       if ($(window).scrollTop() > $('body > header').outerHeight()) {
         $('body').addClass('scroll-header');
