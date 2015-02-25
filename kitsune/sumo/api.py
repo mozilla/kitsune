@@ -206,8 +206,12 @@ class _IDSerializer(serializers.Serializer):
 
 class GenericRelatedField(relations.RelatedField):
     """
-    Serializes GenericForeignKey relations.
+    Serializes GenericForeignKey relations using specified type of serializer.
     """
+
+    def __init__(self, serializer_type='fk', **kwargs):
+        self.serializer_type = serializer_type
+        super(GenericRelatedField, self).__init__(**kwargs)
 
     def to_native(self, value):
         content_type = ContentType.objects.get_for_model(value)
@@ -216,8 +220,8 @@ class GenericRelatedField(relations.RelatedField):
         if isinstance(value, User):
             value = value.get_profile()
 
-        if hasattr(value, 'get_generic_fk_serializer'):
-            SerializerClass = value.get_generic_fk_serializer()
+        if hasattr(value, 'get_serializer'):
+            SerializerClass = value.get_serializer(self.serializer_type)
         else:
             SerializerClass = _IDSerializer
         data.update(SerializerClass(instance=value).data)

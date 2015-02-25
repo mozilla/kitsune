@@ -383,10 +383,15 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         return QuestionMappingType
 
     @classmethod
-    def get_generic_fk_serializer(cls):
+    def get_serializer(cls, serializer_type='full'):
         # Avoid circular import
-        from kitsune.questions.api import QuestionFKSerializer
-        return QuestionFKSerializer
+        from kitsune.questions import api
+        if serializer_type == 'full':
+            return api.QuestionSerializer
+        elif serializer_type == 'fk':
+            return api.QuestionFKSerializer
+        else:
+            raise ValueError('Unknown serializer type "{}".'.format(serializer_type))
 
     @classmethod
     def recent_asked_count(cls, extra_filter=None):
@@ -1122,10 +1127,15 @@ class Answer(ModelBase, SearchMixin):
         return AnswerMetricsMappingType
 
     @classmethod
-    def get_generic_fk_serializer(cls):
+    def get_serializer(cls, serializer_type='full'):
         # Avoid circular import
-        from kitsune.questions.api import AnswerFKSerializer
-        return AnswerFKSerializer
+        from kitsune.questions import api
+        if serializer_type == 'full':
+            return api.AnswerSerializer
+        elif serializer_type == 'fk':
+            return api.AnswerFKSerializer
+        else:
+            raise ValueError('Unknown serializer type "{}".'.format(serializer_type))
 
     def mark_as_spam(self, by_user):
         """Mark the answer as spam by the specified user."""

@@ -1,11 +1,14 @@
+from django.contrib.contenttypes.models import ContentType
+
 from actstream.actions import follow
 from actstream.signals import action
 from actstream.models import Action, Follow
 from mock import patch
 from nose.tools import eq_
 
-from kitsune.notifications import models as notification_models
-from kitsune.notifications.models import Notification, PushNotificationRegistration
+from kitsune.notifications import tasks as notification_tasks
+from kitsune.notifications.models import (
+    Notification, PushNotificationRegistration, RealtimeRegistration)
 from kitsune.notifications.tests import notification
 from kitsune.questions.tests import answer, question
 from kitsune.sumo.tests import TestCase
@@ -75,7 +78,7 @@ class TestNotificationsSentFromActions(TestCase):
         eq_(Notification.objects.filter(action=act).count(), 0)
 
 
-@patch.object(notification_models, 'requests')
+@patch.object(notification_tasks, 'requests')
 class TestSimplePushNotifier(TestCase):
 
     def test_simple_push_send(self, requests):
@@ -106,3 +109,21 @@ class TestSimplePushNotifier(TestCase):
         n = Notification.objects.get(owner=u)
         # Assert that they got notified.
         requests.put.assert_called_once_with(url, 'version={}'.format(n.id))
+
+    def test_from_action_to_realtime_notification(self, requests):
+        """
+        Test that when an action is created, it results in a realtime notification being sent.
+        """
+        # Create a user
+        u = profile().user
+        # Register realtime notifications for that user on a question
+        q = question(save=True)
+        url = 'http://example.com/simple_push/asdf'
+        ct = ContentType.objects.get_for_model(q)
+        RealtimeRegistration.objects.create(
+            creator=u, endpoint=url, content_type=ct, object_id=q.id)
+        # Create an action involving that question
+        action.send(profile().user, verb='looked at funny', action_object=q)
+        a = Action.objects.order_by('-id')[0]
+        # Assert that they got notified.
+        requests.put.assert_called_once_with(url, 'version={}'.format(a.id))

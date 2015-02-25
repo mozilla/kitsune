@@ -1,9 +1,13 @@
+from django.db.models import Q
+
 import django_filters
+from actstream.models import Action
 from rest_framework import serializers, viewsets, permissions, mixins, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from kitsune.notifications.models import PushNotificationRegistration, Notification
+from kitsune.notifications.models import (
+    PushNotificationRegistration, Notification, RealtimeRegistration)
 from kitsune.sumo.api import OnlyCreatorEdits, DateTimeUTCField, GenericRelatedField
 
 
@@ -131,3 +135,77 @@ class PushNotificationRegistrationViewSet(mixins.CreateModelMixin,
         permissions.IsAuthenticated,
         OnlyCreatorEdits,
     ]
+
+
+class RealtimeRegistrationSerializer(serializers.ModelSerializer):
+    endpoint = serializers.CharField(write_only=True)
+    creator = serializers.SlugRelatedField(slug_field='username', required=False)
+    content_type = serializers.SlugRelatedField(slug_field='name')
+
+    class Meta:
+        model = RealtimeRegistration
+        fields = [
+            'id',
+            'creator',
+            'created',
+            'endpoint',
+            'content_type',
+            'object_id',
+        ]
+
+    def validate_creator(self, attrs, source):
+        authed_user = getattr(self.context.get('request'), 'user')
+        creator = attrs.get('creator')
+
+        if creator is None:
+            attrs['creator'] = authed_user
+        elif creator != authed_user:
+            raise serializers.ValidationError(
+                "Can't register push notifications for another user.")
+
+        return attrs
+
+
+class RealtimeActionSerializer(serializers.ModelSerializer):
+    action_object = GenericRelatedField(serializer_type='full')
+    actor = GenericRelatedField(serializer_type='full')
+    target = GenericRelatedField(serializer_type='full')
+    verb = serializers.CharField()
+    timestamp = DateTimeUTCField()
+
+    class Meta:
+        model = PushNotificationRegistration
+        fields = (
+            'action_object',
+            'actor',
+            'id',
+            'target',
+            'timestamp',
+            'verb',
+        )
+
+
+class RealtimeRegistrationViewSet(mixins.CreateModelMixin,
+                                  mixins.DestroyModelMixin,
+                                  viewsets.GenericViewSet):
+    model = RealtimeRegistration
+    serializer_class = RealtimeRegistrationSerializer
+    permission_classes = [
+        permissions.IsAuthenticated,
+        OnlyCreatorEdits,
+    ]
+
+    @action(methods=['GET'])
+    def updates(self, request, pk=None):
+        """Get all the actions that correspond to this registration."""
+        reg = self.get_object()
+
+        query = Q(actor_content_type=reg.content_type, actor_object_id=reg.object_id)
+        query |= Q(target_content_type=reg.content_type, target_object_id=reg.object_id)
+        query |= Q(action_object_content_type=reg.content_type,
+                   action_object_object_id=reg.object_id)
+
+        actions = Action.objects.filter(query)
+        serializer = RealtimeActionSerializer(actions, many=True)
+
+        return Response(serializer.data)

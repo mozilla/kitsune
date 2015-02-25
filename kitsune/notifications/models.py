@@ -1,21 +1,16 @@
-import logging
 from datetime import datetime
 
 from django.contrib.auth.models import User
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.contenttypes import generic
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 import actstream.registry
 from actstream.models import Action
-import requests
-from requests.exceptions import RequestException
 
 from kitsune.sumo.models import ModelBase
-from kitsune.notifications.decorators import notification_handler
-
-
-logger = logging.getLogger('k.notifications')
 
 
 class Notification(ModelBase):
@@ -62,21 +57,19 @@ def send_notification(sender, instance, created, **kwargs):
     tasks.send_notification.delay(instance.id)
 
 
-@notification_handler
-def simple_push(notification):
-    """
-    Send simple push notifications to users that have opted in to them.
+class RealtimeRegistration(ModelBase):
+    creator = models.ForeignKey(User)
+    created = models.DateTimeField(default=datetime.now)
+    endpoint = models.CharField(max_length=256)
 
-    This will be called as a part of a celery task.
-    """
-    registrations = PushNotificationRegistration.objects.filter(creator=notification.owner)
-    for reg in registrations:
-        try:
-            r = requests.put(reg.push_url, 'version={}'.format(notification.id))
-            # If something does wrong, the SimplePush server will give back
-            # json encoded error messages.
-            if r.status_code != 200:
-                logger.error('SimplePush error: %s %s', r.status_code, r.json())
-        except RequestException as e:
-            # This will go to Sentry.
-            logger.error('SimplePush PUT failed: %s', e)
+    content_type = models.ForeignKey(ContentType)
+    object_id = models.PositiveIntegerField()
+    target = generic.GenericForeignKey('content_type', 'object_id')
+
+
+@receiver(post_save, sender=Action, dispatch_uid='action_send_realtimes')
+def send_realtimes_for_action(sender, instance, created, **kwargs):
+    if not created:
+        return
+    from kitsune.notifications import tasks  # avoid circular import
+    tasks.send_realtimes_for_action.delay(instance.id)

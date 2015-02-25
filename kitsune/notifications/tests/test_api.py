@@ -1,17 +1,20 @@
 from datetime import datetime
 
+from django.contrib.contenttypes.models import ContentType
+
 from actstream.actions import follow
 from actstream.signals import action
 from actstream.models import Action, Follow
-import mock
+from mock import Mock, patch
 from nose.tools import eq_, ok_
 from rest_framework.test import APIClient
 
 from kitsune.notifications import api
-from kitsune.notifications.models import Notification
+from kitsune.notifications import tasks as notification_tasks
+from kitsune.notifications.models import Notification, RealtimeRegistration
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.questions.tests import question
+from kitsune.questions.tests import question, answer
 from kitsune.users.tests import profile, user
 from kitsune.users.helpers import profile_avatar
 
@@ -21,7 +24,7 @@ class TestPushNotificationRegistrationSerializer(TestCase):
     def setUp(self):
         self.profile = profile()
         self.user = self.profile.user
-        self.request = mock.Mock()
+        self.request = Mock()
         self.request.user = self.user
         self.context = {
             'request': self.request,
@@ -81,6 +84,7 @@ class TestNotificationSerializer(TestCase):
 
 
 class TestNotificationViewSet(TestCase):
+
     def setUp(self):
         self.client = APIClient()
 
@@ -104,16 +108,16 @@ class TestNotificationViewSet(TestCase):
     def test_mark_read(self):
         n = self._makeNotification()
         self.client.force_authenticate(user=self.follower)
-        req = self.client.post(reverse('notification-mark-read', args=[n.id]))
-        eq_(req.status_code, 204)
+        res = self.client.post(reverse('notification-mark-read', args=[n.id]))
+        eq_(res.status_code, 204)
         n = Notification.objects.get(id=n.id)
         eq_(n.is_read, True)
 
     def test_mark_unread(self):
         n = self._makeNotification(is_read=True)
         self.client.force_authenticate(user=self.follower)
-        req = self.client.post(reverse('notification-mark-unread', args=[n.id]))
-        eq_(req.status_code, 204)
+        res = self.client.post(reverse('notification-mark-unread', args=[n.id]))
+        eq_(res.status_code, 204)
         n = Notification.objects.get(id=n.id)
         eq_(n.is_read, False)
 
@@ -121,14 +125,47 @@ class TestNotificationViewSet(TestCase):
         n = self._makeNotification(is_read=False)
         self._makeNotification(is_read=True)
         self.client.force_authenticate(user=self.follower)
-        req = self.client.get(reverse('notification-list') + '?is_read=0')
-        eq_(req.status_code, 200)
-        eq_([d['id'] for d in req.data], [n.id])
+        res = self.client.get(reverse('notification-list') + '?is_read=0')
+        eq_(res.status_code, 200)
+        eq_([d['id'] for d in res.data], [n.id])
 
     def test_filter_is_read_true(self):
         self._makeNotification(is_read=False)
         n = self._makeNotification(is_read=True)
         self.client.force_authenticate(user=self.follower)
-        req = self.client.get(reverse('notification-list') + '?is_read=1')
-        eq_(req.status_code, 200)
-        eq_([d['id'] for d in req.data], [n.id])
+        res = self.client.get(reverse('notification-list') + '?is_read=1')
+        eq_(res.status_code, 200)
+        eq_([d['id'] for d in res.data], [n.id])
+
+
+@patch.object(notification_tasks, 'requests')
+class RealtimeViewSet(TestCase):
+
+    def setUp(self):
+        self.client = APIClient()
+
+    def test_updates_subview(self, requests):
+        requests.put.return_value.status_code = 200
+
+        u = profile().user
+        q = question(content='asdf', save=True)
+        ct = ContentType.objects.get_for_model(q)
+        rt = RealtimeRegistration.objects.create(
+            creator=u, content_type=ct, object_id=q.id, endpoint='http://example.com/')
+        # Some of the above may have created actions, which we don't care about.
+        Action.objects.all().delete()
+        # This shuld create an action that will trigger the above.
+        a = answer(question=q, content='asdf', save=True)
+
+        self.client.force_authenticate(user=u)
+        url = reverse('realtimeregistration-updates', args=[rt.id])
+        res = self.client.get(url)
+        eq_(res.status_code, 200)
+
+        eq_(len(res.data), 1)
+        act = res.data[0]
+        import q as Q
+        Q(str(act))
+        eq_(act['actor']['username'], a.creator.username)
+        eq_(act['target']['content'], q.content_parsed)
+        eq_(act['action_object']['content'], a.content_parsed)
