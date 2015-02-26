@@ -54,7 +54,8 @@ def _question_suggestions(searcher, text, locale, product, max_results):
         model='questions_question',
         question_is_archived=False,
         question_is_locked=False,
-        question_has_helpful=True)
+        question_has_helpful=True,
+        question_is_solved=True)
 
     if product is not None:
         search_filter &= es_utils.F(product=product)

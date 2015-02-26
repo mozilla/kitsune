@@ -132,3 +132,18 @@ class SuggestViewTests(ElasticTestCase):
         req = self.client.get(reverse('search.suggest'), {'q': 'emails'})
         # Check that a field that is only available from the DB is in the response.
         assert 'metadata' in req.data['questions'][0]
+
+    def test_only_solved(self):
+        """Test that only solved questoins are suggested."""
+        q1 = self._make_question()
+        a = answer(question=q1, save=True)
+        q1.solution = a
+        q1.save()
+        q2 = self._make_question()
+        self.refresh()
+
+        req = self.client.get(reverse('search.suggest'), {'q': 'emails'})
+        ids = [q['id'] for q in req.data['questions']]
+        assert q1.id in ids
+        assert q2.id not in ids
+        eq_(len(ids), 1)
