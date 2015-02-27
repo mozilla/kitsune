@@ -169,9 +169,6 @@ elasticsearch==1.2.0
 # sha256: 08GfJqajRinBjHdfWd_F3VlXZMcitXotpW6_tpuU5Ec
 enum34==1.0.4
 
-# sha256: 1wEkmeUt5aRBPiKu1R34lIUzaFRS3-FrQQAfKPnOWxw
-factory-boy==2.4.1
-
 # sha256: A3VLx7JWOXwbZG5QSOIpFZD1CAFxrbiwD04tc4THbu4
 GitPython==0.1.7
 
