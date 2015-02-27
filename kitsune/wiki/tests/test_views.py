@@ -625,3 +625,36 @@ class TestDocumentLocking(TestCase):
         es_doc = Document.objects.get(slug=data['slug'])
         eq_(es_doc.locale, 'es')
         self._lock_workflow(es_doc, edit_url)
+
+
+class MinimalViewTests(TestCase):
+
+    def setUp(self):
+        self.doc, _ = doc_rev()
+        p = product(save=True)
+        self.doc.products.add(p)
+        self.doc.save()
+
+    def test_it_works(self):
+        url = reverse('wiki.document', args=[self.doc.slug], locale='en-US')
+        url += '?minimal=1&mobile=1'
+        res = self.client.get(url)
+        self.assertTemplateUsed(res, 'wiki/mobile/document-minimal.html')
+
+    def test_only_if_mobile(self):
+        url = reverse('wiki.document', args=[self.doc.slug], locale='en-US')
+        url += '?minimal=1'
+        res = self.client.get(url)
+        self.assertTemplateUsed(res, 'wiki/document.html')
+
+    def test_xframe_options(self):
+        url = reverse('wiki.document', args=[self.doc.slug], locale='en-US')
+        url += '?minimal=1&mobile=1'
+        res = self.client.get(url)
+        # If it is not set to "DENY", then it is allowed.
+        assert 'x-frame-options' not in res._headers
+
+    def test_xframe_options_deny_not_minimal(self):
+        url = reverse('wiki.document', args=[self.doc.slug], locale='en-US')
+        res = self.client.get(url)
+        eq_(res._headers['x-frame-options'][1], 'DENY')
