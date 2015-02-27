@@ -164,8 +164,6 @@ class RealtimeViewSet(TestCase):
 
         eq_(len(res.data), 1)
         act = res.data[0]
-        import q as Q
-        Q(str(act))
         eq_(act['actor']['username'], a.creator.username)
         eq_(act['target']['content'], q.content_parsed)
         eq_(act['action_object']['content'], a.content_parsed)
