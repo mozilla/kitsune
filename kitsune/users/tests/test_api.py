@@ -97,16 +97,9 @@ class TestUserSerializer(TestCase):
         })
         assert not serializer.is_valid()
 
-    def test_users_without_emails_are_active(self):
-        del self.data['email']
-        serializer = api.ProfileSerializer(data=self.data)
-        serializer.is_valid()
-        assert serializer.is_valid()
-        serializer.save()
-        eq_(serializer.object.user.is_active, True)
-
     def test_users_with_emails_are_inactive(self):
         serializer = api.ProfileSerializer(data=self.data)
+        serializer.is_valid()
         assert serializer.is_valid()
         serializer.save()
         eq_(serializer.object.user.is_active, False)
@@ -326,23 +319,7 @@ class TestUserView(TestCase):
         res = self.client.get(url, {'avatar_size': 128})
         assert '?s=128' in res.data['avatar']
 
-    def test_create_user_no_email(self):
-        # There is at least one user in existence due to migrations
-        number_users = User.objects.count()
-
-        url = reverse('user-list')
-        res = self.client.post(url, {
-            'username': 'kris',
-            'password': 'testpass'
-        })
-
-        eq_(res.status_code, 201)
-        eq_(User.objects.count(), number_users + 1)
-        u = User.objects.order_by('-id')[0]
-        eq_(u.username, 'kris')
-        eq_(u.is_active, True)
-
-    def test_create_user_with_email(self):
+    def test_create_use(self):
         # There is at least one user in existence due to migrations
         number_users = User.objects.count()
 
@@ -360,3 +337,44 @@ class TestUserView(TestCase):
         eq_(u.username, username)
         eq_(u.email, 'kris@example.com')
         eq_(u.is_active, False)
+
+    def test_invalid_email(self):
+        username = 'sarah-{}'.format(random())
+        url = reverse('user-list')
+        res = self.client.post(url, {
+            'username': username,
+            'password': 'testpass',
+            'email': 'sarah',  # invalid
+        })
+        eq_(res.status_code, 400)
+        eq_(res.data, {'email': [u'Enter a valid email address.']})
+
+    def test_invalid_username(self):
+        url = reverse('user-list')
+        res = self.client.post(url, {
+            'username': '&',  # invalid
+            'password': 'testpass',
+            'email': 'lucy@example.com',
+        })
+        eq_(res.status_code, 400)
+        eq_(res.data, {'username': [u'Usernames may only be letters, numbers, "." and "-".']})
+
+    def test_too_short_username(self):
+        url = reverse('user-list')
+        res = self.client.post(url, {
+            'username': 'a',  # too short
+            'password': 'testpass',
+            'email': 'lucy@example.com',
+        })
+        eq_(res.status_code, 400)
+        eq_(res.data, {'username': [u'Usernames may only be letters, numbers, "." and "-".']})
+
+    def test_too_long_username(self):
+        url = reverse('user-list')
+        res = self.client.post(url, {
+            'username': 'a' * 100,  # too long
+            'password': 'testpass',
+            'email': 'lucy@example.com',
+        })
+        eq_(res.status_code, 400)
+        eq_(res.data, {'username': [u'Usernames may only be letters, numbers, "." and "-".']})

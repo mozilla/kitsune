@@ -144,8 +144,8 @@ class ProfileSerializer(serializers.ModelSerializer):
     display_name = serializers.WritableField(source='name', required=False)
     date_joined = DateTimeUTCField(source='user.date_joined', read_only=True)
     avatar = serializers.SerializerMethodField('get_avatar_url')
-    email = (PermissionMod(serializers.WritableField, permissions=[OnlySelf])
-             (source='user.email', required=False))
+    email = (PermissionMod(serializers.EmailField, permissions=[OnlySelf])
+             (source='user.email', required=True))
     settings = (PermissionMod(UserSettingSerializer, permissions=[OnlySelf])
                 (many=True, read_only=True))
     helpfulness = serializers.Field(source='answer_helpfulness')
@@ -221,22 +221,14 @@ class ProfileSerializer(serializers.ModelSerializer):
         instance = (super(ProfileSerializer, self)
                     .restore_object(attrs, instance))
         if instance.user_id is None:
-            # The Profile doesn't have a user, so create one. If an email is
-            # specified, the user will be inactive until the email is
-            # confirmed. Otherwise the user can be created immediately.
-            if 'user.email' in attrs:
-                # This is a bit of cheat. The user shouldn't be saved yet, but
-                # ``create_inactive_user`` saves it, so their isn't much of a choice.
-                u = RegistrationProfile.objects.create_inactive_user(
-                    attrs['user.username'],
-                    attrs['user.password'],
-                    attrs['user.email'])
-                instance.user_id = u.id
-                instance.save()
-            else:
-                u = User(username=attrs['user.username'])
-                u.set_password(attrs['user.password'])
-                instance._nested_forward_relations['user'] = u
+            # This is a bit of cheat. The user shouldn't be saved yet, but
+            # ``create_inactive_user`` saves it, so their isn't much of a choice.
+            u = RegistrationProfile.objects.create_inactive_user(
+                attrs['user.username'],
+                attrs['user.password'],
+                attrs['user.email'])
+            instance.user_id = u.id
+            instance.save()
         return instance
 
     def validate_username(self, attrs, source):
