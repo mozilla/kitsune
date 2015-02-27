@@ -133,10 +133,15 @@ class Profile(ModelBase, SearchMixin):
         return UserMappingType
 
     @classmethod
-    def get_generic_fk_serializer(cls):
+    def get_serializer(cls, serializer_type='full'):
         # Avoid circular import
-        from kitsune.users.api import ProfileFKSerializer
-        return ProfileFKSerializer
+        from kitsune.users import api
+        if serializer_type == 'full':
+            return api.ProfileSerializer
+        elif serializer_type == 'fk':
+            return api.ProfileFKSerializer
+        else:
+            raise ValueError('Unknown serializer type "{}".'.format(serializer_type))
 
     @property
     def last_contribution_date(self):

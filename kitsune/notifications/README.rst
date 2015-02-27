@@ -105,3 +105,23 @@ Notifications have only a few properties:
 
 Notifications also don't have any direct alerting properties, but they are used
 by other systems to alert users in some way.
+
+Realtime Notifications
+======================
+
+Realtime notifications are generally similar to the Notifications above in
+function. They have different semantics however. Realtime notification
+registrations are meant to be short lived, about one session. They also are not
+intended to be a general notifications, and will not be shown to clients beside
+the requesting client. Most importantly, they are unaffected by a user's follow
+preferences.
+
+A realtime registration links a particular object to a simple push end point.
+When any Action (as above) is created, it checks for any matching Realtime
+registrations and then sends a SimplePush message. Clients are then expected to
+check what actions they are being notified about.
+
+In the view clients check for actions in, much more information is provided
+compared to when a user checks for notifications. This is because the action list
+is intended to be used to populate a UI in realtime, as opposed to sending short
+notifications to users.
