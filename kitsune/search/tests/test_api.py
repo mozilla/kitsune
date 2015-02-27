@@ -4,7 +4,7 @@ from rest_framework.test import APIClient
 
 from kitsune.search.tests.test_es import ElasticTestCase
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.questions.tests import question, answer, answervote
+from kitsune.questions.tests import question, answer
 from kitsune.products.tests import product
 from kitsune.wiki.tests import document, revision
 
@@ -12,7 +12,7 @@ from kitsune.wiki.tests import document, revision
 class SuggestViewTests(ElasticTestCase):
     client_class = APIClient
 
-    def _make_question(self, **kwargs):
+    def _make_question(self, solved=True, **kwargs):
         defaults = {
             'title': 'Login to website comments disabled',
             'content': """
@@ -37,8 +37,9 @@ class SuggestViewTests(ElasticTestCase):
         }
         defaults.update(kwargs)
         q = question(**defaults)
-        a = answer(question=q, save=True)
-        answervote(answer=a, helpful=True, save=True)
+        if solved:
+            a = answer(question=q, save=True)
+            q.solution = a
         # Trigger a reindex for the question.
         q.save()
         return q
@@ -132,3 +133,15 @@ class SuggestViewTests(ElasticTestCase):
         req = self.client.get(reverse('search.suggest'), {'q': 'emails'})
         # Check that a field that is only available from the DB is in the response.
         assert 'metadata' in req.data['questions'][0]
+
+    def test_only_solved(self):
+        """Test that only solved questions are suggested."""
+        q1 = self._make_question(solved=True)
+        q2 = self._make_question(solved=False)
+        self.refresh()
+
+        req = self.client.get(reverse('search.suggest'), {'q': 'emails'})
+        ids = [q['id'] for q in req.data['questions']]
+        assert q1.id in ids
+        assert q2.id not in ids
+        eq_(len(ids), 1)
