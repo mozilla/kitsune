@@ -6,7 +6,6 @@ import mock
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from django.core import mail
-from django.test.utils import override_settings
 from nose.tools import eq_
 from rest_framework.test import APIClient
 
@@ -213,13 +212,6 @@ class TestUserView(TestCase):
         res = self.client.delete(url)
         eq_(res.status_code, 405)
 
-    @override_settings(DEBUG=False, STAGE=False)
-    def test_no_generator_on_prod(self):
-        res = self.client.post(reverse('user-generate'))
-        eq_(res.data, {'detail': 'User generation temporarily only available on stage.'})
-        eq_(res.status_code, 503)
-
-    @override_settings(STAGE=True)
     def test_generator_on_stage(self):
         # There is at least one user made during tests.
         old_user_count = User.objects.count()
@@ -231,19 +223,6 @@ class TestUserView(TestCase):
         assert 'password' in res.data
         assert 'token' in res.data
 
-    @override_settings(DEBUG=True)
-    def test_generator_debug(self):
-        # There is at least one user made outside of this test. I blame migrations..
-        old_user_count = User.objects.count()
-        res = self.client.post(reverse('user-generate'))
-        eq_(res.status_code, 200)
-        eq_(User.objects.count(), old_user_count + 1)
-        new_user = User.objects.order_by('-id')[0]
-        eq_(res.data['user']['username'], new_user.username)
-        assert 'password' in res.data
-        assert 'token' in res.data
-
-    @override_settings(STAGE=True)
     def test_generated_users_tagged(self):
         res = self.client.post(reverse('user-generate'))
         eq_(res.status_code, 200)
