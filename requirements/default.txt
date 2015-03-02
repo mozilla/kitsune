@@ -71,8 +71,8 @@ https://github.com/mozilla/django-badger/archive/c04372aa76dfaa2de7db838359cba2c
 https://github.com/jbalogh/django-cache-machine/archive/7c3d3abfc85fc26d0e522fd05e9a42fc9b9a5430.tar.gz#egg=django-cache-machine
 
 # django-celery: master
-# sha256: fv5_GlUdCxO2Ads3OkhBwbJs-yIir3I4yxmiXIi4JQo
-https://github.com/celery/django-celery/archive/9f8738e43251c2b42e4f68b4a65a8bc215aec149.tar.gz#egg=django-celery
+# sha256: dmqn4o32-wsXoiX4O6IFfsRPcLOZVrEhtByqvQs81Ms
+https://github.com/celery/django-celery/archive/da0b98caf9dc96c4d9ec91c09e00c5e19dcb0da3.tar.gz#egg=django-celery==3.2.0a1
 
 # sha256: LM9zUZ6iBbiNtFP39hcPs9CiGo4yU_JXjvDNUp95pY8
 django-cors-headers==0.13
