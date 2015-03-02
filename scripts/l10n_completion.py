@@ -15,18 +15,11 @@ For usage help, type::
 
 """
 
-from optparse import OptionParser
 import json
 import os
-import site
-
-# Add site path to pick up libs
-SCRIPTS_DIR = os.path.dirname(__file__)
-site.addsitedir(os.path.join(SCRIPTS_DIR, '..', 'vendor'))
-
-
 import sys
 import time
+from optparse import OptionParser
 
 import polib
 
@@ -193,7 +186,6 @@ def main(argv):
         data = old_data
 
     if options.truncate and len(data) > options.truncate:
-        print 'Truncating ...'
         data = data[len(data) - options.truncate:]
 
     with open(full_file, 'wb') as fp:
