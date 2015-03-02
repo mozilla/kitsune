@@ -652,9 +652,9 @@ class MinimalViewTests(TestCase):
         url += '?minimal=1&mobile=1'
         res = self.client.get(url)
         # If it is not set to "DENY", then it is allowed.
-        assert 'x-frame-options' not in res._headers
+        assert 'X-Frame-Options' not in res
 
     def test_xframe_options_deny_not_minimal(self):
         url = reverse('wiki.document', args=[self.doc.slug], locale='en-US')
         res = self.client.get(url)
-        eq_(res._headers['x-frame-options'][1], 'DENY')
+        eq_(res['X-Frame-Options'], 'DENY')

@@ -167,3 +167,16 @@ class RealtimeViewSet(TestCase):
         eq_(act['actor']['username'], a.creator.username)
         eq_(act['target']['content'], q.content_parsed)
         eq_(act['action_object']['content'], a.content_parsed)
+
+    def test_is_cors(self, requests):
+        u = profile().user
+        q = question(save=True)
+        self.client.force_authenticate(user=u)
+        url = reverse('realtimeregistration-list')
+        data = {
+            'content_type': 'question',
+            'object_id': q.id,
+            'endpoint': 'http://example.com',
+        }
+        res = self.client.post(url, data, HTTP_ORIGIN='http://example.com')
+        eq_(res['Access-Control-Allow-Origin'], '*')
