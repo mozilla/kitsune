@@ -146,8 +146,8 @@ https://github.com/andymckay/django-statsd/archive/bb601976056d0f922c5a613d2a978
 https://github.com/alex/django-taggit/archive/1f4ffa629c8deddea2f75779b8407c6c97fe3e4b.tar.gz#egg=django-taggit
 
 # django-tidings: master
-# sha256: 0nLBGC6m-dhcZBqK5r5rN7q32oGo9aLTFvQNSPucCWw
-https://github.com/erikrose/django-tidings/archive/b68cbb1044e7020d3ed02f17dcce39ae53db5414.tar.gz#egg=django-tidings
+# sha256: xWhrliMNAKzA_ehYs3UAhjHrol2z2N-B1Fbxo1Q4ovg
+https://github.com/erikrose/django-tidings/archive/ea57792f82496a9d78fec3f9b0db74964494b42b.tar.gz#egg=django-tidings==1.0.0.1
 
 # django-timezones: master~2
 # sha256: oQq2W0PNuSKyEZW5OaqP3tEjDRnAVaqBUWNnUgLdT78
