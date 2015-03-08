@@ -20,6 +20,9 @@ CACHE_BACKEND = 'caching.backends.locmem://'
 ES_INDEX_PREFIX = 'sumo'
 ES_URLS = ['http://localhost:9200']
 INSTALLED_APPS += ('django_qunit',)
+PIPELINE_LESS_BINARY = path('node_modules/.bin/lessc')
+PIPELINE_UGLIFYJS_BINARY = path('node_modules/.bin/uglifyjs')
+PIPELINE_CSSMIN_BINARY = path('node_modules/.bin/cssmin')
 SETTINGS
 
 echo "Making redis.conf"
@@ -64,4 +67,3 @@ echo "Starting XVFB for Selenium tests."
 echo "Doing static dance."
 ./manage.py nunjucks_precompile
 ./manage.py collectstatic --noinput > /dev/null
-./manage.py compress_assets > /dev/null
