@@ -357,7 +357,7 @@ STATICFILES_FINDERS = (
     'kitsune.sumo.static_finders.WTFinder',
     'pipeline.finders.PipelineFinder',
 )
-STATICFILES_STORAGE = 'pipeline.storage.PipelineCachedStorage'
+STATICFILES_STORAGE = 'pipeline.storage.PipelineStorage'
 
 # Paths that don't require a locale prefix.
 SUPPORTED_NONLOCALES = (
