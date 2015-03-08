@@ -14,6 +14,6 @@
     "less": "1.7.0",
     "nunjucks": "1.0.5",
     "uglify-js": "2.4.13",
-    "clean-css": "2.2.3"
+    "cssmin": "0.4.3"
   }
 }

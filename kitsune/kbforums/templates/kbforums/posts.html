@@ -7,8 +7,8 @@
 {% set crumbs = [(document.get_absolute_url(), document.title),
                  (url('wiki.discuss.threads', document.slug), _('Discuss')),
                  (None, thread.title)] %}
-{% set styles = ('forums', 'jqueryui/jqueryui') %}
-{% set scripts = ('forums', 'libs/jqueryui') %}
+{% set styles = ('forums', 'jqueryui') %}
+{% set scripts = ('forums', 'jqueryui') %}
 
 {% block side_top_top %}
   <ul id="thread-actions" class="sidebar-nav">
