@@ -31,6 +31,12 @@ npm list
 echo
 
 
+echo "Intalling front end dependencies"
+./node_modules/.bin/bower install > /dev/null 2> /dev/null
+./node_modules/.bin/bower list -o
+echo
+
+
 echo "Installing ElasticSearch"
 tar xzvf vendor/tarballs/elasticsearch-0.90.10.tar.gz > /dev/null
 
