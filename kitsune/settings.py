@@ -354,7 +354,6 @@ STATIC_URL = '/static/'
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-    'kitsune.sumo.static_finders.WTFinder',
     'pipeline.finders.PipelineFinder',
 )
 STATICFILES_STORAGE = 'pipeline.storage.PipelineStorage'
