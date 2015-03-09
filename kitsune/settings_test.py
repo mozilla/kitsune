@@ -42,3 +42,6 @@ logging.getLogger('south').setLevel(logging.INFO)
 
 # Tells django-axes we aren't behind a reverse proxy.
 AXES_BEHIND_REVERSE_PROXY = False
+
+# Make sure pipeline is enabled so it does not collectstatic on every test
+PIPELINE_ENABLED = True

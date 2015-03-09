@@ -5,6 +5,7 @@ from os.path import join, dirname
 from smtplib import SMTPRecipientsRefused
 
 from django.conf import settings
+from django.core.management import call_command
 from django.test import LiveServerTestCase
 from django.test.client import Client
 from django.test.utils import override_settings
@@ -40,6 +41,10 @@ class TestSuiteRunner(django_nose.NoseTestSuiteRunner):
                 setattr(settings, k, getattr(settings_test, k))
         except ImportError:
             pass
+
+        # Collect static files for pipeline to work correctly
+        call_command('collectstatic', interactive=False)
+
         super(TestSuiteRunner, self).setup_test_environment(**kwargs)
 
 
