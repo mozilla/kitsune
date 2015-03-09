@@ -118,7 +118,9 @@
         </div>
         <div class="asked-on">
           {{ _('Posted') }}<br>
-          <time itemprop="dateCreated" datetime="{{ question.created }}">{{ datetimeformat(question.created) }}</time>
+					<span itemprop="dateCreated">
+						{{ datetimeformat(question.created) }}
+					</span>
         </div>
       </div>
 
