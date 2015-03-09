@@ -91,6 +91,7 @@ These are required for the minimum installation:
 * libjpeg and headers
 * zlib and headers
 * libssl and headers
+* libffi and headers
 
 These are optional:
 
@@ -175,12 +176,12 @@ All the pure-Python requirements are provided in the requirements
 directory. We use a tool called ``peep`` to install packages and make sure
 versions are pinned. ::
 
-    $ ./scripts/peep.py install -r requirements/default.txt --no-use-wheel
+    $ python ./scripts/peep.py install -r requirements/default.txt --no-use-wheel
 
 Additionally, you may install some useful development tools. These are not
 required, but are helpful::
 
-    $ ./scripts/peep.py install -r requirements/dev.txt --no-use-wheel
+    $ python ./scripts/peep.py install -r requirements/dev.txt --no-use-wheel
 
 If you have any issues installing via ``peep``, be sure you have the required
 header files from the packages listed in the requirements section above.
