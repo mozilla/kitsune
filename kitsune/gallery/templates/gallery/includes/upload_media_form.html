@@ -16,7 +16,7 @@
 {% macro form_row(form, field_name, classes='') %}
   {% set html = form[field_name] %}
   {% if form[field_name].help_text %}
-    {% set html = '{old_html}<div class="details">{details}</div>'|f(
+    {% set html = to_unicode('{old_html}<div class="details">{details}</div>')|f(
                     old_html=html, details=form[field_name].help_text) %}
   {% endif %}
   {{ raw_row(html,
