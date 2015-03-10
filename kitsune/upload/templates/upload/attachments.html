@@ -23,7 +23,7 @@
       {% endif %}
     {% endif %}
     <a class="image" href="{{ image.file.url }}">
-      <img src="{{ image.thumbnail_if_set().url }}"/>
+      <img src="{{ image.thumbnail_if_set().url }}" alt=""/>
     </a>
   </div>
 {%- endmacro %}
