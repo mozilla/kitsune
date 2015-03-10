@@ -450,3 +450,8 @@ def add_utm(url_, campaign, source='notification', medium='email'):
     """Add the utm_* tracking parameters to a URL."""
     return urlparams(
         url_, utm_campaign=campaign, utm_source=source, utm_medium=medium)
+
+
+@register.function
+def to_unicode(str):
+    return unicode(str)
