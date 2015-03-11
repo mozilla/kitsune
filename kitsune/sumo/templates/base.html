@@ -21,19 +21,19 @@
     {% endfor %}
   {% endif %}
 
-  {{ css('common') }}
-  {{ css('print', 'print') }}
+  {% stylesheet 'common' %}
+  {% stylesheet 'print' %}
   {% for style in styles %}
-    {{ css(style) }}
+    {% stylesheet style %}
   {% endfor %}
 
   <link href="//mozorg.cdn.mozilla.net/media/css/tabzilla-min.css" rel="stylesheet" />
 
   <!--[if lte IE 7]>
-    {{ css('ie') }}
+    {% stylesheet 'ie' %}
   <![endif]-->
   <!--[if IE 8]>
-    {{ css('ie8') }}
+    {% stylesheet 'ie8' %}
   <![endif]-->
 
   {% if meta %}
@@ -226,12 +226,12 @@
     <script src="//geo.mozilla.org/country.js" type="text/javascript"></script>
 {% endif %}
 
-{{ js('common') }}
+{% javascript 'common' %}
 <!--[if (gte IE 6)&(lte IE 8)]>
-  {{ js('ie6-8') }}
+  {% javascript 'ie6-8' %}
 <![endif]-->
 {% for script in scripts %}
-  {{ js(script) }}
+  {% javascript script %}
 {% endfor %}
 
 <script src="//mozorg.cdn.mozilla.net/{{ request.LANGUAGE_CODE }}/tabzilla/tabzilla.js" async></script>

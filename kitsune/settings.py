@@ -7,7 +7,7 @@ import platform
 import re
 from datetime import date
 
-from bundles import MINIFY_BUNDLES
+from bundles import PIPELINE_CSS, PIPELINE_JS
 from kitsune.lib.sumo_locales import LOCALES
 
 DEBUG = True
@@ -354,7 +354,10 @@ STATIC_URL = '/static/'
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-    'kitsune.sumo.static_finders.WTFinder')
+    'kitsune.sumo.static_finders.WTFinder',
+    'pipeline.finders.PipelineFinder',
+)
+STATICFILES_STORAGE = 'pipeline.storage.PipelineStorage'
 
 # Paths that don't require a locale prefix.
 SUPPORTED_NONLOCALES = (
@@ -407,7 +410,6 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'kitsune.sumo.context_processors.i18n',
     'kitsune.sumo.context_processors.geoip_cache_detector',
     'kitsune.sumo.context_processors.aaq_languages',
-    'jingo_minify.helpers.build_ids',
     'kitsune.messages.context_processors.unread_message_count',
 )
 
@@ -510,7 +512,7 @@ INSTALLED_APPS = (
     'kitsune.users',
     'dennis.django_dennis',
     'tower',
-    'jingo_minify',
+    'pipeline',
     'authority',
     'timezones',
     'waffle',
@@ -580,7 +582,7 @@ def JINJA_CONFIG():
     from django.conf import settings
     config = {'extensions': ['tower.template.i18n', 'caching.ext.cache',
                              'jinja2.ext.autoescape', 'jinja2.ext.with_',
-                             'jinja2.ext.do'],
+                             'jinja2.ext.do', 'pipeline.jinja2.ext.PipelineExtension'],
               'finalize': lambda x: x if x is not None else ''}
 
     return config
@@ -642,9 +644,22 @@ STATICI18N_PACKAGES = ['kitsune.sumo']
 # to True
 TOWER_ADD_HEADERS = True
 
-LESS_BIN = 'lessc'
-UGLIFY_BIN = 'uglifyjs'
-CLEANCSS_BIN = 'cleancss'
+#
+# Django Pipline
+PIPELINE_COMPILERS = (
+  'pipeline.compilers.less.LessCompiler',
+)
+
+PIPELINE_DISABLE_WRAPPER = True
+
+PIPELINE_JS_COMPRESSOR = 'pipeline.compressors.uglifyjs.UglifyJSCompressor'
+PIPELINE_UGLIFYJS_BINARY = 'uglifyjs'
+PIPELINE_UGLIFYJS_ARGUMENTS = '-r "\$super"'
+
+PIPELINE_CSS_COMPRESSOR = 'pipeline.compressors.cssmin.CSSMinCompressor'
+PIPELINE_CSSMIN_BINARY = 'cssmin'
+
+PIPELINE_LESS_BINARY = 'lessc'
 
 NUNJUCKS_PRECOMPILE_BIN = 'nunjucks-precompile'
 

@@ -3,7 +3,7 @@
 {% set title = _('Search') %}
 {% set headline = title %}
 {% set classes = 'results' %}
-{% set styles = ('mobile/search',) %}
+{% set styles = ('mobile-search',) %}
 
 {% if num_results == 0 %}
   {% set ga_push = [['_trackEvent', 'Zero Search Results', q]] %}

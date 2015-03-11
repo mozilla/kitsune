@@ -11,8 +11,8 @@
 {% if posts.number > 1 %}
   {% set canonical_url = canonical_url|urlparams(page=posts.number) %}
 {% endif %}
-{% set styles = ('forums', 'jqueryui/jqueryui') %}
-{% set scripts = ('forums', 'libs/jqueryui') %}
+{% set styles = ('forums', 'jqueryui') %}
+{% set scripts = ('forums', 'jqueryui') %}
 
 {% block above_main %}
   <h1 id="forum-title">{{ forum.name }}</h1>

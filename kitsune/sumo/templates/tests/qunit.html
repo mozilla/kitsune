@@ -190,7 +190,7 @@
 
   <script src="{{ url('jsi18n') }}/build:{{ BUILD_ID_JS }}"></script>
   <script src="{{ url('wafflejs') }}?v={{ timestamp }}"></script>
-  {% for jsfile in settings.MINIFY_BUNDLES['js']['common'] %}
+  {% for jsfile in settings.PIPELINE_JS['common']['source_filenames'] %}
     <script src="{{ STATIC_URL + jsfile }}?v={{ timestamp }}"></script>
   {% endfor %}
   <script type="text/javascript" src="{{ url('qunit_js') }}?v={{ timestamp }}"></script>
@@ -208,7 +208,7 @@
   <hr>
 
   <ul>
-    <li>{{ settings.MINIFY_BUNDLES['js']['common'] }}</li>
+    <li>{{ settings.PIPELINE_JS['common']['source_filenames'] }}</li>
     <li>{{ url('qunit_js') }}</li>
     <li>{{ suite.extra_urls }}</li>
     <li>{{ suite.extra_media_urls }}</li>
