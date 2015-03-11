@@ -159,8 +159,8 @@ django-waffle==0.10.1
 # sha256: NWZcEPVSRwd27M_RWSLTdI4w18AQLrd_3kfOKX2WuyM
 djangorestframework==2.3.14
 
-# sha256: fADkAZ7n55EIe3ahrkBnNW642cQlHyk3zHcOkQrvMko
-elasticutils==0.10.1
+# sha256: iPK5G4pJjgyQPk5wr7H7rnTSP2L5i76WjCIVQVfL6VU
+elasticutils==0.10.3
 
 # sha256: u5PYXKflDWjkGXhSu226YJi7dyUA-C9dsv9KgHEVBck
 elasticsearch==1.2.0
