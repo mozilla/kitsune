@@ -2,7 +2,7 @@ from collections import defaultdict
 from datetime import datetime, timedelta
 
 from elasticutils import F
-from rest_framework import views
+from rest_framework import views, fields
 from rest_framework.response import Response
 
 from kitsune.questions.models import AnswerMetricsMappingType
@@ -22,15 +22,29 @@ class TopContributorsQuestions(views.APIView):
     def get_filters(self):
         f = F(by_asker=False)
 
-        for key, value in self.request.GET.items():
+        self.filter_values = {
+            'startdate': (datetime.now() - timedelta(days=90)).strftime('%Y-%m-%d'),
+            'enddate': datetime.now().strftime('%Y-%m-%d'),
+        }
+        # request.GET is a multidict, so simple `.update(request.GET)` causes
+        # everything to be a list. This converts it into a plain single dict.
+        self.filter_values.update(dict(self.request.GET.items()))
+
+        for key, value in self.filter_values.items():
             filter_method = getattr(self, 'filter_' + key, lambda v: F())
             f &= filter_method(value)
 
-        start = datetime.now() - timedelta(days=90)
-        end = datetime.now()
-        f &= F(created__gte=start, created__lt=end)
-
         return f
+
+    def filter_startdate(self, value):
+        date = fields.DateField().from_native(value)
+        dt = datetime.combine(date, datetime.min.time())
+        return F(created__gte=dt)
+
+    def filter_enddate(self, value):
+        date = fields.DateField().from_native(value)
+        dt = datetime.combine(date, datetime.max.time())
+        return F(created__lte=dt)
 
     def filter_username(self, value):
         username_lower = value.lower()
@@ -162,4 +176,5 @@ class TopContributorsQuestions(views.APIView):
         return {
             'results': data,
             'count': full_count,
+            'filters': self.filter_values,
         }

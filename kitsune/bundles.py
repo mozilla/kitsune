@@ -17,6 +17,15 @@ PIPELINE_CSS = {
         ),
         'output_filename': 'community-min.css'
     },
+    'community-new': {
+        'source_filenames': (
+            'css/font-awesome.css',
+            'less/wiki-content.less',
+            'less/community-new.less',
+            'less/select.less',
+        ),
+        'output_filename': 'community-new-min.css'
+    },
     'mobile-common': {
         'source_filenames': (
             'bower/normalize-css/normalize.css',
@@ -254,7 +263,7 @@ PIPELINE_JS = {
             'js/templates/macros.js',
             'js/templates/search-results-list.js',
             'js/templates/search-results.js',
-            'bower/nunjucks/browsers/nunjucks-slim.js',
+            'bower/nunjucks/browser/nunjucks-slim.js',
             'js/nunjucks.js',
             'js/cached_xhr.js',
             'js/search_utils.js',
@@ -271,7 +280,7 @@ PIPELINE_JS = {
             'js/surveygizmo.js',
             'js/instant_search.js',
         ),
-        'output_filename': 'common-min.js'
+        'output_filename': 'common-min.js',
     },
     'community': {
         'source_filenames': (
@@ -281,6 +290,17 @@ PIPELINE_JS = {
             'js/select.js',
         ),
         'output_filename': 'community-min.js'
+    },
+    'community-new': {
+        'source_filenames': (
+            # This uses the minified version because it is optimized to leave
+            # out lots of debug stuff, so it is significantly smaller than
+            # just minifying react.js.
+            # TODO: Figure out how to include the full sized version in dev.
+            'bower/react/react.min.js',
+            'js/community-new.browserify.js',
+        ),
+        'output_filename': 'community-new-min.js'
     },
     'mobile-common': {
         'source_filenames': (
