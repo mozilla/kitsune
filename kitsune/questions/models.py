@@ -1174,6 +1174,8 @@ class AnswerMetricsMappingType(SearchMappingType):
                 'is_solution': {'type': 'boolean'},
                 'creator_id': {'type': 'long'},
                 'by_asker': {'type': 'boolean'},
+                'helpful_count': {'type': 'integer'},
+                'unhelpful_count': {'type': 'integer'},
             }
         }
 
@@ -1224,6 +1226,10 @@ class AnswerMetricsMappingType(SearchMappingType):
 
         products = Product.objects.filter(id=obj_dict['question__product_id'])
         d['product'] = [p.slug for p in products]
+
+        related_votes = AnswerVote.objects.filter(answer_id=obj_dict['id'])
+        d['helpful_count'] = related_votes.filter(helpful=True).count()
+        d['unhelpful_count'] = related_votes.filter(helpful=False).count()
 
         return d
 
