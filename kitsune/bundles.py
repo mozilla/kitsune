@@ -11,6 +11,12 @@ MINIFY_BUNDLES = {
             'less/community.less',
             'less/select.less',
         ),
+        'community-new': (
+            'css/font-awesome.css',
+            'less/wiki-content.less',
+            'less/community-new.less',
+            'less/select.less',
+        ),
         'mobile/common': (
             'css/normalize.css',
             'less/mobile/main.less',
@@ -163,8 +169,18 @@ MINIFY_BUNDLES = {
         ),
         'community': (
             'js/libs/jquery-1.10.1.min.js',
+            'js/libs/jquery.placeholder.js',
+            'js/main.js',
             'js/community.js',
             'js/select.js',
+        ),
+        'community-new': (
+            'js/libs/jquery-1.10.1.min.js',
+            'js/libs/jquery.placeholder.js',
+            'js/libs/underscore.js',
+            'js/libs/moment-2.8.3.js',
+            'js/libs/react/react.js',
+            'js/libs/react/JSXTransformer.js',
         ),
         'mobile/common': (
             'js/i18n.js',
