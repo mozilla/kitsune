@@ -22,6 +22,7 @@
     CONSTANTS.messages['file'] = {
         'server': CONSTANTS.messages['server'],
         'invalid': gettext('Invalid image. Please select a valid image file.'),
+        'toolarge': gettext('Image too large. Please select a smaller image file.'),
         'cancelled': gettext('Upload cancelled. Please select an image file.'),
         'deleted': gettext('File deleted. Please select an image file.'),
         'del': gettext('Delete this image')};
@@ -59,8 +60,8 @@
      * Summary:
      * init: initialize DOM events, dispatch on draft vs new upload
      * validateForm: prevent form submission if data is not valid
-     * isValidFile: boolean result for each type of file, checks size and
-     *              extenson
+     * isValidFile: boolean result for each type of file, checks extension
+     * isTooLarge: boolean result for each type of file, checks size
      * startUpload: validates before upload and initiates progress
      * uploadComplete: once upload is done, dispatch to success or error
      * uploadSuccess: successful upload is shown in a preview
@@ -105,6 +106,10 @@
                     beforeSubmit: function($input) {
                         if (!self.isValidFile($file)) {
                             self.uploadError($file, 'invalid');
+                            return false;
+                        }
+                        if (self.isTooLarge($file)) {
+                            self.uploadError($file, 'toolarge');
                             return false;
                         }
                         return self.startUpload($file);
@@ -203,11 +208,15 @@
             var file = $input[0].files[0],
                 type = $input.attr('name');
             var file_ext = file.name.split(/\./).pop().toLowerCase();
-            return (in_array(file_ext, CONSTANTS.extensions[type]) &&
-                    file.size < CONSTANTS.max_size[type]);
+            return (in_array(file_ext, CONSTANTS.extensions[type]));
+        },
+        isTooLarge: function ($input) {
+            var file = $input[0].files[0],
+                type = $input.attr('name');
+            return (file.size >= CONSTANTS.max_size[type]);
         },
         /*
-         * Fired when upload starts, if isValidFile returns true
+         * Fired when upload starts, if isValidFile and isTooLarge return true
          * -- hide the file input
          * -- show progress
          * -- show metadata
@@ -256,8 +265,8 @@
             self.uploadSuccess($input, iframeJSON, options.filename);
         },
         /*
-         * Fired after upload is complete, if isValidFile is true, and server
-         * returned succes.
+         * Fired after upload is complete, if isValidFile and isNotLarge
+         * are true, and server returned succes.
          * -- hide progress
          * -- generate image preview
          * -- create cancel button and bind its click event
@@ -309,7 +318,7 @@
                   .html(message);
         },
         /*
-         * Fired if isValidFile is false or server returned failure.
+         * Fired if isValidFile or isTooLarge is false or server returned failure.
          * -- hide progress (i.e. click the cancel button)
          * -- show an error message
          */
