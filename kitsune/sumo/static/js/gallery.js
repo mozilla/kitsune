@@ -61,7 +61,6 @@
      * init: initialize DOM events, dispatch on draft vs new upload
      * validateForm: prevent form submission if data is not valid
      * isValidFile: boolean result for each type of file, checks extension
-     * isNotTooLarge: boolean result for each type of file, checks size
      * startUpload: validates before upload and initiates progress
      * uploadComplete: once upload is done, dispatch to success or error
      * uploadSuccess: successful upload is shown in a preview
