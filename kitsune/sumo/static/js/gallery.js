@@ -108,7 +108,7 @@
                             self.uploadError($file, 'invalid');
                             return false;
                         }
-                        if (!self.isNotTooLarge($file)) {
+                        if ($file[0].files[0].size >= CONSTANTS.max_size[$file.attr('name')]) {
                             self.uploadError($file, 'toolarge');
                             return false;
                         }
@@ -210,13 +210,8 @@
             var file_ext = file.name.split(/\./).pop().toLowerCase();
             return (in_array(file_ext, CONSTANTS.extensions[type]));
         },
-        isNotTooLarge: function ($input) {
-            var file = $input[0].files[0],
-                type = $input.attr('name');
-            return (file.size < CONSTANTS.max_size[type]);
-        },
         /*
-         * Fired when upload starts, if isValidFile and isNotTooLarge return true
+         * Fired when upload starts, if isValidFile returns true
          * -- hide the file input
          * -- show progress
          * -- show metadata
@@ -265,8 +260,8 @@
             self.uploadSuccess($input, iframeJSON, options.filename);
         },
         /*
-         * Fired after upload is complete, if isValidFile and isNotTooLarge
-         * are true, and server returned succes.
+         * Fired after upload is complete, if isValidFile is true, and server
+         * returned succes.
          * -- hide progress
          * -- generate image preview
          * -- create cancel button and bind its click event
@@ -318,7 +313,7 @@
                   .html(message);
         },
         /*
-         * Fired if isValidFile or isNotTooLarge is false or server returned failure.
+         * Fired if isValidFile is false or server returned failure.
          * -- hide progress (i.e. click the cancel button)
          * -- show an error message
          */
