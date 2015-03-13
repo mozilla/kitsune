@@ -1,12 +1,16 @@
 /* jshint esnext: true */
 /* globals React:false */
+
+var dataEl = document.querySelector('script[name="locale-data"]');
+const locales = JSON.parse(dataEl.innerHTML);
+
 export class CommunityResults extends React.Component {
     render() {
         var filters = this.props.data.filters;
         var results = this.props.data.results;
         var fullCount = this.props.data.count;
 
-        var setfilters = this.props.setFilters;
+        var setFilters = this.props.setFilters;
         var pageCount = Math.ceil(fullCount / Math.max(results.length, 1));
 
         return <article className="community-results">
@@ -56,6 +60,13 @@ class CommunityFilters extends React.Component {
             {this.makeInput('username')}
             {this.makeInput('startdate')}
             {this.makeInput('enddate')}
+
+            <select name="locale" defaultValue={this.props.filters.locale} onChange={this.handleChange.bind(this)}>
+                <option value="">Select a locale</option>
+                {
+                    locales.map(([name, code]) => <option key={code} value={code}>{name}</option>)
+                }
+            </select>
         </div>;
     }
 }
