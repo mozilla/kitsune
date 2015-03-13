@@ -18,14 +18,13 @@ export class CommunityResults extends React.Component {
     }
 }
 
-var CommunityHeader = React.createClass({
-    render: function() {
+class CommunityHeader extends React.Component {
+    render() {
         return <div>
             <h1>Top Contributors - Support Forum</h1>
-            <h2>Last 90 days</h2>
         </div>;
-    },
-});
+    }
+}
 
 class CommunityFilters extends React.Component {
     handleChange(ev) {
@@ -61,51 +60,52 @@ class CommunityFilters extends React.Component {
     }
 }
 
-var ContributorsTable = React.createClass({
-    getInitialState: function() {
-        return {
-            selections: this.props.contributors.map(function() { return false; })
-        };
-    },
+class ContributorsTable extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            selections: props.contributors.map(function() { return false; })
+        }
+    }
 
-    handleSelection: function(index, value) {
+    handleSelection(index, value) {
         var selections = this.state.selections;
         selections[index] = value;
         this.setState({selections: selections});
-    },
+    }
 
-    handleSelectAll: function(value) {
+    handleSelectAll(value) {
         var selections = this.state.selections;
         selections = selections.map(function() { return value; });
         this.setState({selections: selections});
-    },
+    }
 
-    render: function() {
+    render() {
         if (this.props.contributors.length > 0) {
             return <div>
                 <table className="top-contributors">
                     <ContributorsTableHeader
                         selections={this.state.selections}
-                        onSelectAll={this.handleSelectAll}/>
+                        onSelectAll={this.handleSelectAll.bind(this)}/>
                     <ContributorsTableBody
                         contributors={this.props.contributors}
                         selections={this.state.selections}
-                        onSelect={this.handleSelection}/>
+                        onSelect={this.handleSelection.bind(this)}/>
                 </table>
             </div>;
         } else {
             return <h2>No contributors match filters.</h2>;
         }
     }
-});
+}
 
-var ContributorsTableHeader = React.createClass({
-    handleChange: function(e) {
+class ContributorsTableHeader extends React.Component {
+    handleChange(e) {
         e.stopPropagation();
         this.props.onSelectAll(e.target.checked);
-    },
+    }
 
-    render: function() {
+    render() {
         function and(a, b) { return a && b; }
         var allSelected = this.props.selections.reduce(and, true);
 
@@ -115,7 +115,7 @@ var ContributorsTableHeader = React.createClass({
                     <th data-column="select">
                         <input type="checkbox" ref="selectAll"
                             checked={allSelected}
-                            onChange={this.handleChange}/>
+                            onChange={this.handleChange.bind(this)}/>
                     </th>
                     <th data-column="rank">Rank</th>
                     <th data-column="user">Name</th>
@@ -128,35 +128,35 @@ var ContributorsTableHeader = React.createClass({
             </thead>
         );
     }
-});
+}
 
-var ContributorsTableBody = React.createClass({
-    render: function() {
+class ContributorsTableBody extends React.Component {
+    render() {
         return (
             <tbody>
                 {this.props.contributors.map(function(contributor, i) {
                     return <ContributorsTableRow
                         selected={this.props.selections[i]}
-                        onSelection={this.props.onSelect.bind(null, i)}
+                        onSelect={(val) => this.props.onSelect(i, val)}
                         key={contributor.user.username}
                         {...contributor}/>;
                 }.bind(this))}
             </tbody>
         );
     }
-});
+}
 
-var ContributorsTableRow = React.createClass({
-    handleChange: function(e) {
+class ContributorsTableRow extends React.Component {
+    handleChange(e) {
         e.stopPropagation();
-        this.props.onSelection(e.target.checked);
-    },
+        this.props.onSelect(e.target.checked);
+    }
 
-    render: function() {
+    render() {
         return (
             <tr className="top-contributors-row">
                 <td data-column="select">
-                    <input type="checkbox" checked={this.props.selected} onChange={this.handleChange}/>
+                    <input type="checkbox" checked={this.props.selected} onChange={this.handleChange.bind(this)}/>
                 </td>
                 <td data-column="rank">
                     {this.props.rank}
@@ -182,10 +182,10 @@ var ContributorsTableRow = React.createClass({
             </tr>
         );
     }
-});
+}
 
-var UserChip = React.createClass({
-    render: function() {
+class UserChip extends React.Component {
+    render() {
         return (
             <span className="user-chip" title={this.props.username}>
                 <img src={this.props.avatar}/>
@@ -193,16 +193,10 @@ var UserChip = React.createClass({
             </span>
         );
     }
-});
+}
 
-var RelativeTime = React.createClass({
-    getDefaultProps: function() {
-        return {
-            future: true
-        };
-    },
-
-    render: function() {
+class RelativeTime extends React.Component {
+    render() {
         var timestamp = moment(this.props.timestamp);
         if (!timestamp.isValid()) {
             return <span>Never</span>;
@@ -213,22 +207,33 @@ var RelativeTime = React.createClass({
         }
         return <time dateTime={this.props.timestamp}>{timestamp.fromNow()}</time>;
     }
-});
+}
+RelativeTime.defaultProps = { future: true };
 
-var Icon = React.createClass({
-    render: function() {
+class Icon extends React.Component {
+    render() {
         return <i className={'fa fa-' + this.props.name}/>;
     }
-});
+}
 
-var Paginator = React.createClass({
-    changePage: function(ev) {
+class Paginator extends React.Component {
+    changePage(ev) {
         ev.preventDefault();
         ev.stopPropagation();
         this.props.setFilters({page: ev.target.dataset.page});
-    },
+    }
 
-    render: function() {
+    makeSelector(page, {text=null, selected=false}={}) {
+        return <PaginatorSelector
+                filters={this.props.filters}
+                changePage={this.changePage.bind(this)}
+                page={page}
+                text={text}
+                key={`page-${text || page}`}
+                selected={selected}/>
+    }
+
+    render() {
         var currentPage = parseInt(this.props.filters.page);
         if (isNaN(currentPage)) {
             currentPage = 1;
@@ -237,64 +242,36 @@ var Paginator = React.createClass({
         var firstPage = Math.max(1, currentPage - 4);
         var lastPage = Math.min(currentPage + 5, pageCount);
         var pageSelectors = [];
-        var pageFilters;
-        var pageUrl;
 
         // Previous button
         if (currentPage > 1) {
-            pageSelectors.push(<PaginatorSelector
-                filters={this.props.filters}
-                changePage={this.changePage}
-                page={currentPage - 1}
-                text="Previous"
-                key="page-previous"/>);
+            pageSelectors.push(this.makeSelector(currentPage - 1, {text: 'Previous'}));
         }
 
         // First page button
         if (firstPage >= 2) {
-            pageSelectors.push(<PaginatorSelector
-                filters={this.props.filters}
-                changePage={this.changePage}
-                key="page-1"/>);
+            pageSelectors.push(this.makeSelector(1));
         }
         if (firstPage >= 3) {
-            pageSelectors.push(<li class="skip">…</li>);
+            pageSelectors.push(<li key="skip" className="skip">…</li>);
         }
 
         // Normal buttons
         for (var i = firstPage; i <= lastPage; i++) {
-            pageSelectors.push(<PaginatorSelector
-                filters={this.props.filters}
-                changePage={this.changePage}
-                page={i}
-                selected={i === currentPage}
-                key={"page-" + i} />);
+            pageSelectors.push(this.makeSelector(i, {selected: i === currentPage}));
         }
 
         // Next button
         if (currentPage < pageCount) {
-            pageSelectors.push(<PaginatorSelector
-                filters={this.props.filters}
-                changePage={this.changePage}
-                page={currentPage + 1}
-                text="Next"
-                key="page-next"/>);
+            pageSelectors.push(this.makeSelector(currentPage + 1, {text: 'Next'}));
         }
 
         return <ol className="pagination">{pageSelectors}</ol>;
     }
-});
+}
 
-var PaginatorSelector = React.createClass({
-    getDefaultProps: function() {
-        return {
-            page: 1,
-            text: null,
-            selected: false
-        }
-    },
-
-    render: function() {
+class PaginatorSelector extends React.Component {
+    render() {
         var page = this.props.page;
         var pageFilters = _.extend({}, this.props.filters, {page: page});
         var pageUrl = k.queryParamStringFromDict(pageFilters);
@@ -320,9 +297,10 @@ var PaginatorSelector = React.createClass({
             </li>
         );
     }
-});
+}
 
-
-var k = window.k || {};
-k.react = k.react || {};
-k.react.CommunityResults = CommunityResults;
+PaginatorSelector.defaultProps = {
+    page: 1,
+    text: null,
+    selected: false,
+};
