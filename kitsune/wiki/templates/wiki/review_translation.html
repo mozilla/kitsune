@@ -78,7 +78,7 @@
           <div id="doc-content">
             {{ revision.content_parsed|safe }}
           </div>
-          {{ show_for(header=_('Article is for:')) }}
+          {{ show_for(document.get_products(), _('Article is for:')) }}
         </details>
       {% else %}
         <p>{{ _('This document does not have a current translation.') }}</p>
