@@ -117,6 +117,9 @@ django-nose==1.3
 # sha256: jTddtwi8h_bfm7OulO3QG-0su2polKkneF3tmu3pg-8
 https://github.com/gintas/django-picklefield/archive/54b11bdb177fd6140c3ae7d6e9744eaa2deda261.tar.gz#egg=django-picklefield
 
+# sha256: tA777GxXkjVRMquS0OBIu9C7mdSOoxIcDdeIUE68oto
+django-pipeline==1.4.6
+
 # django-qunit: remotes/origin/django16
 # sha256: ZNTz9pfspTc-l8h66PMO775Ur7WrfDwFZUNAvCAJbkQ
 https://github.com/rlr/django-qunit/archive/2cda783a05912a6cbfaa4799583aa22cf24e184c.tar.gz#egg=django-qunit
@@ -159,8 +162,8 @@ django-waffle==0.10.1
 # sha256: NWZcEPVSRwd27M_RWSLTdI4w18AQLrd_3kfOKX2WuyM
 djangorestframework==2.3.14
 
-# sha256: fADkAZ7n55EIe3ahrkBnNW642cQlHyk3zHcOkQrvMko
-elasticutils==0.10.1
+# sha256: iPK5G4pJjgyQPk5wr7H7rnTSP2L5i76WjCIVQVfL6VU
+elasticutils==0.10.3
 
 # sha256: u5PYXKflDWjkGXhSu226YJi7dyUA-C9dsv9KgHEVBck
 elasticsearch==1.2.0
@@ -184,10 +187,6 @@ httplib2==0.9
 # jingo: master
 # sha256: 5Yt-sicAUr_gY1Y-SwW6W_mvvxyBuUe2gzPpoB-3VbQ
 https://github.com/jbalogh/jingo/archive/fce09043542e71d972cc97d2ae703740741f80d0.tar.gz#egg=jingo==0.6.1.1
-
-# jingo-minify: master~6
-# sha256: BnWzKRSSTYBMnjFYlCF28MqhIPeyN5jjSoJyXkYQt6o
-https://github.com/jsocol/jingo-minify/archive/51c158a18e6c5ff7c6fd030ffa4cba51117893b5.tar.gz#egg=jingo-minify
 
 # sha256: GQQPAbOp2MY-TVeTb3hxCQgZm2k3CrRKD3QH3YkfAZs
 Jinja2==2.5.2

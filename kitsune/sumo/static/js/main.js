@@ -28,6 +28,19 @@ window.k = window.k || {};
       urlParams[d(e[1])] = d(e[2]);
     }
     return urlParams;
+  };
+
+  k.queryParamStringFromDict = function(obj) {
+    var qs = '';
+    _.forEach(obj, function(value, key) {
+      if (value === undefined || value === null) {
+        return;
+      }
+      qs += key + '=' + encodeURIComponent(value);
+      qs += '&';
+    });
+    qs = qs.slice(0, -1);
+    return '?' + qs;
   }
 
   k.getReferrer = function(urlParams) {
