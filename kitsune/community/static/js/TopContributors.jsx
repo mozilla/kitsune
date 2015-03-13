@@ -1,12 +1,12 @@
 /* jshint esnext: true */
-import React from 'react';
-
+/* globals React:false */
 export class CommunityResults extends React.Component {
     render() {
-        var filters = this.props.filters;
-        var setfilters = this.props.setFilters;
+        var filters = this.props.data.filters;
         var results = this.props.data.results;
         var fullCount = this.props.data.count;
+
+        var setfilters = this.props.setFilters;
         var pageCount = Math.ceil(fullCount / Math.max(results.length, 1));
 
         return <article className="community-results">
@@ -14,7 +14,7 @@ export class CommunityResults extends React.Component {
             <CommunityFilters filters={filters} setFilters={setFilters}/>
             <ContributorsTable contributors={results}/>
             <Paginator filters={filters} setFilters={setFilters} pageCount={pageCount} />
-        </article>
+        </article>;
     }
 }
 
@@ -27,12 +27,11 @@ var CommunityHeader = React.createClass({
     },
 });
 
-var CommunityFilters = React.createClass({
-    handleChange: function(ev) {
+class CommunityFilters extends React.Component {
+    handleChange(ev) {
         // React does some goofy stuff with events, so using when
         // something like _.throttle, the event has already been destroyed
-        // by the time the throttled handler runs. So here we do it by hand
-        // with loads of binding and parameter passing. :(
+        // by the time the throttled handler runs. So here we do it by hand.
         var value = ev.target.value;
         var newFilters = {page: null};
 
@@ -44,17 +43,23 @@ var CommunityFilters = React.createClass({
 
         clearTimeout(this._timer);
         this._timer = setTimeout(this.props.setFilters.bind(null, newFilters), 200);
-    },
+    }
 
-    render: function() {
+    makeInput(name) {
+        return <input name={name}
+            autoComplete="off"
+            defaultValue={this.props.filters[name]}
+            onChange={this.handleChange.bind(this)}/>
+    }
+
+    render() {
         return <div className="filters">
-            <input name="username"
-                autoComplete="off"
-                defaultValue={this.props.filters.username}
-                onChange={this.handleChange}/>
+            {this.makeInput('username')}
+            {this.makeInput('startdate')}
+            {this.makeInput('enddate')}
         </div>;
     }
-});
+}
 
 var ContributorsTable = React.createClass({
     getInitialState: function() {
@@ -71,7 +76,7 @@ var ContributorsTable = React.createClass({
 
     handleSelectAll: function(value) {
         var selections = this.state.selections;
-        selections = selections.map(function() { return value; })
+        selections = selections.map(function() { return value; });
         this.setState({selections: selections});
     },
 
@@ -87,7 +92,7 @@ var ContributorsTable = React.createClass({
                         selections={this.state.selections}
                         onSelect={this.handleSelection}/>
                 </table>
-            </div>
+            </div>;
         } else {
             return <h2>No contributors match filters.</h2>;
         }
@@ -101,7 +106,7 @@ var ContributorsTableHeader = React.createClass({
     },
 
     render: function() {
-        function and(a, b) { return a && b }
+        function and(a, b) { return a && b; }
         var allSelected = this.props.selections.reduce(and, true);
 
         return (
@@ -134,7 +139,7 @@ var ContributorsTableBody = React.createClass({
                         selected={this.props.selections[i]}
                         onSelection={this.props.onSelect.bind(null, i)}
                         key={contributor.user.username}
-                        {...contributor}/>
+                        {...contributor}/>;
                 }.bind(this))}
             </tbody>
         );
@@ -194,7 +199,7 @@ var RelativeTime = React.createClass({
     getDefaultProps: function() {
         return {
             future: true
-        }
+        };
     },
 
     render: function() {

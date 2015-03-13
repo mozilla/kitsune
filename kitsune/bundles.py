@@ -293,6 +293,11 @@ PIPELINE_JS = {
     },
     'community-new': {
         'source_filenames': (
+            # This uses the minified version because it is optimized to leave
+            # out lots of debug stuff, so it is significantly smaller than
+            # just minifying react.js.
+            # TODO: Figure out how to include the full sized version in dev.
+            'bower/react/react.min.js',
             'js/community-new.browserify.js',
         ),
         'output_filename': 'community-new-min.js'
