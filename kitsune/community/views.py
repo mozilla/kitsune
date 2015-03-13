@@ -181,8 +181,13 @@ def top_contributors(request, area):
 def top_contributors_new(request, area):
     to_json = JSONRenderer().render
     contributors = api.TopContributorsQuestions().get_data(request)
+
+    locales = sorted((settings.LOCALES[code].english, code)
+                     for code in QuestionLocale.objects.locales_list())
+
     return render(request, 'community/top_contributors_react.html', {
         'contributors_json': to_json(contributors),
+        'locales_json': to_json(locales),
     })
 
 

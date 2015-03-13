@@ -25,17 +25,19 @@ function setFilters(newFilters) {
 
     _.extend(filters, newFilters);
     var qs = k.queryParamStringFromDict(filters);
-    history.replaceState(null, '', qs);
+    history.pushState(null, '', qs);
     refresh();
 }
-
-window.setFilters = setFilters;
 
 function render(data) {
     var el = <CommunityResults
         data={data}
         setFilters={setFilters}/>;
     React.render(el, mainContentEl);
+}
+
+window.onpopstate = function() {
+    refresh();
 }
 
 function refresh() {
