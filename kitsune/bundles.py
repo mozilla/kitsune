@@ -19,10 +19,9 @@ PIPELINE_CSS = {
     },
     'community-new': {
         'source_filenames': (
-            'css/font-awesome.css',
+            'bower/fontawesome/css/font-awesome.css',
             'less/wiki-content.less',
             'less/community-new.less',
-            'less/select.less',
         ),
         'output_filename': 'community-new-min.css'
     },
@@ -280,7 +279,7 @@ PIPELINE_JS = {
             'js/surveygizmo.js',
             'js/instant_search.js',
         ),
-        'output_filename': 'common-min.js',
+        'output_filename': 'common-min.js'
     },
     'community': {
         'source_filenames': (
