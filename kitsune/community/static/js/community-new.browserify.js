@@ -2,52 +2,56 @@
 /* globals React:false */
 import {CommunityResults} from './TopContributors.jsx';
 
-var mainContentEl = document.querySelector('#main-content');
-var filters = k.getQueryParamsAsDict() || {};
-
-function firstLoad() {
-    var dataEl = document.querySelector('script[name="contributor-data"]');
-    var data = JSON.parse(dataEl.innerHTML);
-    render(data);
-}
-
-function setFilters(newFilters) {
-    var allSame = true;
-    _.map(newFilters, function(value, key) {
-        if (filters[key] !== value) {
-            allSame = false;
-        }
-    });
-
-    if (allSame) {
-        return;
+class TopContributors {
+    constructor(targetEl) {
+        this.targetEl = targetEl;
+        this.filters = k.getQueryParamsAsDict() || {};
+        var dataEl = document.querySelector('script[name="contributor-data"]');
+        this.data = JSON.parse(dataEl.innerHTML);
     }
 
-    _.extend(filters, newFilters);
-    var qs = k.queryParamStringFromDict(filters);
-    history.pushState(null, '', qs);
-    refresh();
-}
+    setFilters(newFilters) {
+        var allSame = true;
+        _.forEach(newFilters, (value, key) => {
+            if (this.filters[key] !== value) {
+                allSame = false;
+            }
+        });
 
-function render(data) {
-    var el = <CommunityResults
-        data={data}
-        setFilters={setFilters}/>;
-    React.render(el, mainContentEl);
+        if (allSame) {
+            return;
+        }
+
+        _.extend(this.filters, newFilters);
+        var qs = k.queryParamStringFromDict(this.filters);
+        history.pushState(null, '', qs);
+        this.refresh();
+    }
+
+    refresh() {
+        var qs = window.location.search;
+        var url = '/api/2/topcontributors/questions/' + qs;
+        $.getJSON(url)
+        .done((data) => {
+            this.data = data;
+            this.render();
+        })
+        .fail(function(err) {
+            this.targetEl.textContent = 'Something went wrong! ' + JSON.stringify(err);
+        });
+    }
+
+    render() {
+        var el = <CommunityResults
+            data={this.data}
+            setFilters={this.setFilters.bind(this)}/>;
+        React.render(el, this.targetEl);
+    }
 }
 
 window.onpopstate = function() {
     refresh();
 }
 
-function refresh() {
-    var qs = window.location.search;
-    var url = '/api/2/topcontributors/questions/' + qs;
-    $.getJSON(url)
-    .done(render)
-    .fail(function(err) {
-        mainContentEl.textContent = 'Something went wrong! ' + JSON.stringify(err);
-    });
-}
-
-firstLoad();
+var controller = new TopContributors(document.querySelector('#main-content'));
+controller.render();
