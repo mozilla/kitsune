@@ -1,3 +1,4 @@
+
 import logging
 from datetime import datetime
 
@@ -5,8 +6,10 @@ from django.conf import settings
 from django.http import Http404
 from django.shortcuts import render, get_object_or_404
 
+from rest_framework.renderers import JSONRenderer
 from statsd import statsd
 
+from kitsune.community import api
 from kitsune.community.utils import (
     top_contributors_aoa, top_contributors_questions,
     top_contributors_kb, top_contributors_l10n)
@@ -172,6 +175,19 @@ def top_contributors(request, area):
         'products': Product.objects.filter(visible=True),
         'page': page,
         'page_size': page_size,
+    })
+
+
+def top_contributors_new(request, area):
+    to_json = JSONRenderer().render
+    contributors = api.TopContributorsQuestions().get_data(request)
+
+    locales = sorted((settings.LOCALES[code].english, code)
+                     for code in QuestionLocale.objects.locales_list())
+
+    return render(request, 'community/top_contributors_react.html', {
+        'contributors_json': to_json(contributors),
+        'locales_json': to_json(locales),
     })
 
 
