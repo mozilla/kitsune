@@ -8,7 +8,7 @@
 
 function init() {
     // Marky for information edit:
-    var buttons = Marky.allButtonsExceptShowfor();
+    var buttons = Marky.allButtons();
     Marky.createCustomToolbar('.editor-tools', '#id_information', buttons);
 }
 
