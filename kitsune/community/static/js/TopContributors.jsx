@@ -79,6 +79,14 @@ class ContributorsTable extends React.Component {
         }
     }
 
+    didReceiveProps() {
+        var {selections} = this.state;
+        for (var i = 0; i < this.props.contributors.length; i++) {
+            selections[i] = !!selections[i];
+        }
+        this.setState({selections});
+    }
+
     handleSelection(index, value) {
         var selections = this.state.selections;
         selections[index] = value;
