@@ -63,9 +63,7 @@ var Marky = {
     },
     createFullToolbar: function(toolbarSel, textareaSel) {
         var SB = Marky.SimpleButton,
-            buttons = Marky.allButtonsExceptShowfor();
-        buttons.push(new Marky.Separator());
-        buttons.push(new Marky.ShowForButton());
+            buttons = Marky.allButtons();
         Marky.createCustomToolbar(toolbarSel, textareaSel, buttons);
     },
     createCustomToolbar: function(toolbarSel, textareaSel, partsArray) {
@@ -75,7 +73,7 @@ var Marky = {
             $toolbar.append(partsArray[i].bind(textarea).node());
         }
     },
-    allButtonsExceptShowfor: function() {
+    allButtons: function() {
         var SB = Marky.SimpleButton;
         return [
             new SB(gettext('Bold'), "'''", "'''", gettext('bold text'),
@@ -267,97 +265,6 @@ Marky.SimpleButton.prototype = {
         });
     }
 };
-
-/*
- * The showfor helper link.
- */
-Marky.ShowForButton = function() {
-    this.name = gettext('Show for...');
-    this.classes = 'btn-showfor';
-    this.openTag = '{for}';
-    this.closeTag = '{/for}';
-    this.defaultText = 'Show for text.';
-    this.everyline = false;
-    this.tooltip = gettext('Show content only for specific versions of Firefox or operating systems.');
-
-    this.html = interpolate('<a class="markup-toolbar-link" href="#show-for" title="%s">%s</a>',
-                            [this.tooltip, this.name]);
-};
-
-Marky.ShowForButton.prototype = $.extend({}, Marky.SimpleButton.prototype, {
-    // Renders the html.
-    render: function() {
-        return $(this.html);
-    },
-    // Gets the DOM node for the button.
-    node: function() {
-        var me = this,
-            $btn = this.render();
-        $btn.click(function(e) {
-            me.openModal(e);
-        });
-        return $btn[0];
-    },
-    openModal: function(e) {
-        var me = this,
-            // TODO: look at using a js template solution (jquery-tmpl?)
-            $html = $('<section class="marky">' +
-                       '<div class="placeholder"/>' +
-                       '<div class="submit"><button type="button" class="btn btn-important"></button>' +
-                       '<a href="#cancel" class="kbox-cancel"></a></div>' +
-                       '</section>'),
-            $placeholder = $html.find('div.placeholder'),
-            data = JSON.parse($(document).find('.showfor-data').html()),
-            kbox;
-
-        $html.find('button').text(gettext('Add Rule')).click(function(e){
-            var showfor = '';
-            $('#showfor-modal input:checked').each(function(){
-                showfor += ($(this).val() + ',');
-            });
-            me.openTag = '{for ' + showfor.slice(0,showfor.length-1) + '}';
-            me.handleClick(e);
-            kbox.close();
-        });
-        $html.find('a.kbox-cancel').text(gettext('Cancel'));
-
-        var products = data.products;
-        $.each(products, function(i, product) {
-            $placeholder.append($('<h2/>').text(product.title));
-            $.each(data.versions[product.slug], function(i, version) {
-                appendCheckbox($placeholder, version);
-            });
-            $placeholder.append($('<br/>'));
-            $.each(data.platforms[product.slug], function(i, platform) {
-                appendCheckbox($placeholder, platform);
-            });
-        });
-
-        function appendCheckbox($ph, option) {
-            if (!option.visible) {
-                return;
-            }
-            $ph.append(
-                $('<label/>').text(option.name).prepend(
-                    $('<input type="checkbox" name="showfor"/>')
-                        .attr('value', option.slug)
-                )
-            );
-        }
-
-        kbox = new KBox($html, {
-            title: this.name,
-            destroy: true,
-            modal: true,
-            id: 'showfor-modal',
-            container: $('body')
-        });
-        kbox.open();
-
-        e.preventDefault();
-        return false;
-    }
-});
 
 /*
  * A button separator.
