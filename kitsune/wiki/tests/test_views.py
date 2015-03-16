@@ -652,9 +652,19 @@ class MinimalViewTests(TestCase):
         url += '?minimal=1&mobile=1'
         res = self.client.get(url)
         # If it is not set to "DENY", then it is allowed.
-        assert 'X-Frame-Options' not in res
+        eq_(res.get('X-Frame-Options', 'ALLOW').lower(), 'allow')
 
     def test_xframe_options_deny_not_minimal(self):
         url = reverse('wiki.document', args=[self.doc.slug], locale='en-US')
         res = self.client.get(url)
         eq_(res['X-Frame-Options'], 'DENY')
+
+    def test_caching(self):
+        """Test that the cached version of the page also allows framing."""
+        url = reverse('wiki.document', args=[self.doc.slug], locale='en-US')
+        url += '?minimal=1&mobile=1'
+        res = self.client.get(url)
+        eq_(res.get('X-Frame-Options', 'ALLOW').lower(), 'allow')
+        # Now do it again. This one should hit the cache.
+        res = self.client.get(url)
+        eq_(res.get('X-Frame-Options', 'ALLOW').lower(), 'allow')

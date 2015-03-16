@@ -1,4 +1,5 @@
 import hashlib
+import itertools
 import logging
 import time
 from datetime import datetime, timedelta
@@ -609,10 +610,8 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
 
     def clear_cached_html(self):
         # Clear out both mobile and desktop templates.
-        cache.delete(doc_html_cache_key(
-            locale=self.locale, slug=self.slug, mobile=True))
-        cache.delete(doc_html_cache_key(
-            locale=self.locale, slug=self.slug, mobile=False))
+        for mobile, minimal in itertools.product([True, False], repeat=2):
+            cache.delete(doc_html_cache_key(self.locale, self.slug, mobile, minimal))
 
 
 @register_mapping_type
@@ -1213,8 +1212,8 @@ def user_redirects(user):
             .filter(html__startswith='<p>REDIRECT <a').distinct())
 
 
-def doc_html_cache_key(locale, slug, mobile):
+def doc_html_cache_key(locale, slug, mobile, minimal):
     """Returns the cache key for the document html."""
     cache_key = DOC_HTML_CACHE_KEY.format(
-        locale=locale, slug=slug, mobile=str(mobile))
+        locale=locale, slug=slug, mobile=str(mobile), minimal=str(minimal))
     return hashlib.sha1(smart_str(cache_key)).hexdigest()

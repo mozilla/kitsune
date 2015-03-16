@@ -67,18 +67,23 @@ def doc_page_cache(view):
         cache_key = doc_html_cache_key(
             mobile=request.MOBILE,
             locale=request.LANGUAGE_CODE,
-            slug=document_slug)
-        html = cache.get(cache_key)
+            slug=document_slug,
+            minimal=request.GET.get('minimal', '0'))
+
+        html, headers = cache.get(cache_key, (None, None))
         if html is not None:
             statsd.incr('wiki.document_view.cache.hit')
-            return HttpResponse(html)
+            res = HttpResponse(html)
+            for key, val in headers.items():
+                res[key] = val
+            return res
 
         statsd.incr('wiki.document_view.cache.miss')
         response = view(request, document_slug, *args, **kwargs)
 
         # We only cache if the response returns HTTP 200.
         if response.status_code == 200:
-            cache.set(cache_key, response.content)
+            cache.set(cache_key, (response.content, dict(response._headers.values())))
 
         return response
     return _doc_page_cache_view
@@ -187,7 +192,7 @@ def document(request, document_slug, template=None, document=None):
 
     response = render(request, template, data)
     if minimal:
-        response.xframe_options_exempt = True
+        response['X-Frame-Options'] = 'ALLOW'
     return response
 
 
