@@ -5,10 +5,16 @@
     "type": "git",
     "url": "git://github.com/mozilla/kitsune.git"
   },
+  "scripts": {
+    "preinstall": "./scripts/lockdown.js"
+  },
   "devDependencies": {
     "gulp": "3.8.6",
     "gulp-watch": "0.6.8",
-    "gulp-nunjucks": "0.2.2"
+    "gulp-nunjucks": "0.2.2",
+    "npmconf": "2.1.1",
+    "osenv": "0.1.0",
+    "read-installed": "3.1.5"
   },
   "dependencies": {
     "less": "1.7.0",
