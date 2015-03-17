@@ -17,27 +17,59 @@
   "asap": {
     "1.0.0": "b2a45da5fdfa20b0496fc3768cc27c12fa916a7d"
   },
+  "asn1": {
+    "0.1.11": "559be18376d08a4ec4dbe80877d27818639b2df7"
+  },
+  "assert-plus": {
+    "0.1.5": "ee74009413002d84cec7219c6ac811812e723160"
+  },
   "async": {
-    "0.2.10": "b6bbe0b0674b9d719708ca38de8c237cb526c3d1"
+    "0.2.10": "b6bbe0b0674b9d719708ca38de8c237cb526c3d1",
+    "0.9.0": "ac3613b1da9bed1b47510bb4651b8931e47146c7"
+  },
+  "aws-sign2": {
+    "0.5.0": "c57103f7a17fc037f02d7c2e64b602ea223f7d63"
   },
   "balanced-match": {
     "0.2.0": "38f6730c03aab6d5edbb52bd934885e756d71674"
   },
+  "bl": {
+    "0.9.4": "4702ddf72fbe0ecd82787c00c113aea1935ad0e7"
+  },
+  "boom": {
+    "2.6.1": "4dc8ef9b6dfad9c43bbbfbe71fa4c21419f22753"
+  },
   "brace-expansion": {
     "1.1.0": "c9b7d03c03f37bc704be100e522b40db8f6cfcd9"
+  },
+  "camelcase": {
+    "1.0.2": "7912eac1d496836782c976c2d73e874dc54f2eaf"
+  },
+  "camelcase-keys": {
+    "1.0.0": "bd1a11bf9b31a1ce493493a930de1a0baf4ad7ec"
+  },
+  "caseless": {
+    "0.9.0": "b7b65ce6bf1413886539cfd533f0b30effa9cf88"
   },
   "chalk": {
     "0.5.1": "663b3a648b68b55d04690d49167aa837858f2174"
   },
   "chokidar": {
-    "0.8.2": "767e2509aaa040fd8a23cc46225a783dc1bfc899"
+    "0.8.4": "3b2b5066817086534ba81a092bdcf4be25b8bee0"
   },
   "clean-css": {
     "2.1.8": "2b4b2fd60f32441096216ae25a21faa74580dc83",
     "2.2.3": "425f82253e9ee3c13d2629dfed8f7a99d6cb6c3e"
   },
+  "clone": {
+    "0.1.19": "613fb68639b26a494ac53253e15b1a6bd88ada85",
+    "0.2.0": "c6126a90ad4f72dbf5acdb243cc37724fe93fc1f"
+  },
   "clone-stats": {
     "0.0.1": "b88f94a82cf38b8791d58046ea4029ad88ca99d1"
+  },
+  "combined-stream": {
+    "0.0.7": "0137e657baa5a7541c57ac37ac5fc07d73b4dc1f"
   },
   "commander": {
     "2.1.0": "d121bbae860d9992a3d517ba96f56588e47c6781",
@@ -52,14 +84,23 @@
   "core-util-is": {
     "1.0.1": "6b07085aef9a3ccac6ee53bf9d3df0c1521a5538"
   },
-  "cssmin": {
-    "0.4.3": "c9194077e0ebdacd691d5f59015b9d819f38d015"
+  "cryptiles": {
+    "2.0.4": "09ea1775b9e1c7de7e60a99d42ab6f08ce1a1285"
+  },
+  "ctype": {
+    "0.5.3": "82c18c2461f74114ef16c135224ad0b9144ca12f"
   },
   "dateformat": {
-    "1.0.8-1.2.3": "5d60c5d574dc778a7f98139156c6cfc9d851d1e7"
+    "1.0.11": "f27cbee7a012bbfb82ea051562d3977f6093dbb1"
   },
   "debuglog": {
     "1.0.1": "aa24ffb9ac3df9a2351837cfb2d279360cd78492"
+  },
+  "defaults": {
+    "1.0.2": "6902e25aa047649a501e19ef9e98f3e8365c109a"
+  },
+  "delayed-stream": {
+    "0.0.5": "d4b1f43a93e8296dfe02694f4680bc37a313c73f"
   },
   "deprecated": {
     "0.0.1": "f9c9af5464afa1e7a971458a8bdef2aa94d5bb19"
@@ -77,25 +118,37 @@
     "0.1.5": "8e177206c3c80837d85632e8b9359dfe8b2f6eaf"
   },
   "escape-string-regexp": {
-    "1.0.1": "78c76393afb84f102230d949a6125c7f3cf65904"
+    "1.0.3": "9e2d8b25bc2555c3336723750e03f099c2735bb5"
   },
   "event-stream": {
     "3.1.7": "b4c540012d0fe1498420f3d8946008db6393c37a"
   },
   "extend": {
-    "1.2.1": "a0f5fd6cfc83a5fe49ef698d60ec8a624dd4576c"
+    "1.3.0": "d1516fb0ff5624d2ebf9123ea1dac5a1994004f8"
+  },
+  "find-index": {
+    "0.1.1": "675d358b2ca3892d795a1ab47232f8b6e2e0dde4"
   },
   "findup-sync": {
     "0.1.3": "7f3e7a97b82392c653bf06589bd85190e93c3683"
   },
   "first-chunk-stream": {
-    "0.1.0": "755d3ec14d49a86e3d2fcc08beead5c0ca2b9c0a"
+    "1.0.0": "59bfb50cd905f60d7c394cd3d9acaab4e6ad934e"
+  },
+  "forever-agent": {
+    "0.5.2": "6d0e09c4921f94a27f63d3b49c5feff1ea4c5130"
+  },
+  "form-data": {
+    "0.2.0": "26f8bc26da6440e299cbdcfb69035c4f77a6e466"
   },
   "from": {
     "0.1.3": "ef63ac2062ac32acf7862e0d40b44b896f22f3bc"
   },
   "gaze": {
     "0.5.1": "22e731078ef3e49d1c4ab1115ac091192051824c"
+  },
+  "get-stdin": {
+    "4.0.1": "b968c6b0a04384324902e8bf1a5df32579a450fe"
   },
   "github-url-from-git": {
     "1.4.0": "285e6b520819001bde128674704379e4ff03e0de"
@@ -106,25 +159,22 @@
   "glob": {
     "3.1.21": "d29e0a055dea5138f4d07ed40e8982e83c2066cd",
     "3.2.11": "4a973f635b9190f715d10987d5c00fd2815ebe3d",
-    "4.0.4": "730ce0190d87eca7812398018e21be712b4d69d2",
     "4.5.3": "c6cb73d3226c1efef04de3c56d012f03377ee15f"
   },
   "glob-stream": {
-    "3.1.14": "4a01ac53219c9582404858c6b76008fba0b10bf8"
+    "3.1.18": "9170a5f12b790306fdfe598f313f8f7954fd143b"
   },
   "glob-watcher": {
     "0.0.6": "b95b4a8df74b39c83298b0c05c978b4d9a3b710b"
   },
   "glob2base": {
-    "0.0.10": "2858bd8ac842e2dcd180a009c81644e46100dbb3",
-    "0.0.9": "50a7bb1fc1260e1eb5ba1b136003569a1fe57f98"
+    "0.0.12": "9d419b3e28f12e83a362164a277055922c9c0d56"
   },
   "globule": {
     "0.1.0": "d9c8edde1da79d125a151b79533b978676346ae5"
   },
   "graceful-fs": {
     "1.2.3": "15a4806a57547cb2d2dbf27f42e89a8c3451b364",
-    "3.0.2": "2cb5bf7f742bea8ad47c754caeee032b7e71a577",
     "3.0.6": "dce3a18351cb94cdc82e688b2e3dd2842d1b09bb"
   },
   "gulp": {
@@ -145,6 +195,18 @@
   "has-ansi": {
     "0.1.0": "84f265aae8c0e6a88a12d7022894b7568894c62e"
   },
+  "hawk": {
+    "2.3.1": "1e731ce39447fa1d0f6d707f7bceebec0fd1ec1f"
+  },
+  "hoek": {
+    "2.11.1": "3839a8b72f86aade3312100afaf80648af155b38"
+  },
+  "http-signature": {
+    "0.10.1": "4fbdac132559aa8323121e540779c0a012b27e66"
+  },
+  "indent-string": {
+    "1.2.1": "294c5930792f8bb5b14462a4aa425b94f07d3a56"
+  },
   "inflight": {
     "1.0.4": "6cbb4521ebd51ce0ec0a936bfd7657ef7e9b172a"
   },
@@ -156,7 +218,10 @@
     "1.3.3": "c07e34aef1de06aff21d413b458e52b21533a11e"
   },
   "interpret": {
-    "0.3.5": "0dc629e6f9d4dc05e429e18a4741880770f56c5d"
+    "0.3.10": "088c25de731c6c5b112a90f0071cfaf459e5a7bb"
+  },
+  "is-finite": {
+    "1.0.0": "2b1dbad1162cdca6a4dc89f12b2f3dae12393282"
   },
   "is-utf8": {
     "0.2.0": "b8aa54125ae626bfe4e3beb965f16a89c58a1137"
@@ -164,42 +229,30 @@
   "isarray": {
     "0.0.1": "8a18acfca9a8f4177e09abfc6038939b05d1eedf"
   },
+  "isstream": {
+    "0.1.2": "47e63f7af55afa6f92e1500e690eb8b8529c099a"
+  },
   "jju": {
     "1.2.0": "add5b586fec853b44929d78bf94864ab577c02e9"
   },
   "json-parse-helpfulerror": {
     "1.0.3": "13f14ce02eed4e981297b64eb9e3b932e2dd13dc"
   },
+  "json-stringify-safe": {
+    "5.0.0": "4c1f228b5050837eba9d21f50c2e6e320624566e"
+  },
   "less": {
     "1.7.0": "6f1293bac1f402c932c2ce21ba7337f7c635ba84"
   },
   "liftoff": {
-    "0.12.0": "8cc991cb362ba60458460d943c0d031605cbe086"
+    "0.12.1": "bcaa49759c68396b83b984ad0b2d8cc226f9526d"
+  },
+  "lockdown": {
+    "0.0.8-dev": "075c0c1852e7cf746e4e85ccab8113b381f0b6e0"
   },
   "lodash": {
     "1.0.1": "57945732498d92310e5bd4b1ff4f273a79e6c9fc",
     "2.4.1": "5b7723034dda4d262e5a46fb2c58d7cc22f71420"
-  },
-  "lodash._arraypool": {
-    "2.4.1": "e88eecb92e2bb84c9065612fd958a0719cd47f94"
-  },
-  "lodash._basebind": {
-    "2.4.1": "e940b9ebdd27c327e0a8dab1b55916c5341e9575"
-  },
-  "lodash._basecreate": {
-    "2.4.1": "f8e6f5b578a9e34e541179b56b8eeebf4a287e08"
-  },
-  "lodash._basecreatecallback": {
-    "2.4.1": "7d0b267649cb29e7a139d0103b7c11fae84e4851"
-  },
-  "lodash._basecreatewrapper": {
-    "2.4.1": "4d31f2e7de7e134fbf2803762b8150b32519666f"
-  },
-  "lodash._baseisequal": {
-    "2.4.1": "6b1e62e587c5523111f6f228553dab19e445fc03"
-  },
-  "lodash._createwrapper": {
-    "2.4.1": "51d6957973da4ed556e37290d8c1a18c53de1607"
   },
   "lodash._escapehtmlchar": {
     "2.4.1": "df67c3bb6b7e8e1e831ab48bfa0795b92afe899d"
@@ -207,17 +260,11 @@
   "lodash._escapestringchar": {
     "2.4.1": "ecfe22618a2ade50bfeea43937e51df66f0edb72"
   },
-  "lodash._getarray": {
-    "2.4.1": "faf1f7f810fa985a251c2187404481094839e5ee"
-  },
   "lodash._htmlescapes": {
     "2.4.1": "32d14bf0844b6de6f8b62a051b4f67c228b624cb"
   },
   "lodash._isnative": {
     "2.4.1": "3ea6404b784a7be836c7b57580e1cdf79b14832c"
-  },
-  "lodash._maxpoolsize": {
-    "2.4.1": "9d482f463b8e66afbe59c2c14edb117060172334"
   },
   "lodash._objecttypes": {
     "2.4.1": "7c0b7f69d98a1f76529f890b0cdb1b4dfec11c11"
@@ -225,26 +272,11 @@
   "lodash._reinterpolate": {
     "2.4.1": "4f1227aa5a8711fc632f5b07a1f4607aab8b3222"
   },
-  "lodash._releasearray": {
-    "2.4.1": "a6139630d76d1536b07ddc80962889b082f6a641"
-  },
   "lodash._reunescapedhtml": {
     "2.4.1": "747c4fc40103eb3bb8a0976e571f7a2659e93ba7"
   },
-  "lodash._setbinddata": {
-    "2.4.1": "f7c200cd1b92ef236b399eecf73c648d17aa94d2"
-  },
   "lodash._shimkeys": {
     "2.4.1": "6e9cc9666ff081f0b5a6c978b83e242e6949d203"
-  },
-  "lodash._slice": {
-    "2.4.1": "745cf41a53597b18f688898544405efa2b06d90f"
-  },
-  "lodash.bind": {
-    "2.4.1": "5d19fa005c8c4d236faf4742c7b7a1fcabe29267"
-  },
-  "lodash.createcallback": {
-    "2.4.1": "c81645ac3a1d7f9dc6b36b8bc0d84c013c98ea95"
   },
   "lodash.defaults": {
     "2.4.1": "a7e8885f05e68851144b6e12a8f3678026bc4c54"
@@ -252,32 +284,11 @@
   "lodash.escape": {
     "2.4.1": "2ce12c5e084db0a57dda5e5d1eeeb9f5d175a3b4"
   },
-  "lodash.findindex": {
-    "2.4.1": "738d108641cf2ef087207f35f2c6a5eacf807caa"
-  },
-  "lodash.forin": {
-    "2.4.1": "8089eaed7d25b08672b7c66fd07ac55d062320eb"
-  },
-  "lodash.identity": {
-    "2.4.1": "6694cffa65fef931f7c31ce86c74597cf560f4f1"
-  },
-  "lodash.isfunction": {
-    "2.4.1": "2cfd575c73e498ab57e319b77fa02adef13a94d1"
-  },
   "lodash.isobject": {
     "2.4.1": "5a2e47fe69953f1ee631a7eba1fe64d2d06558f5"
   },
   "lodash.keys": {
     "2.4.1": "48dea46df8ff7632b10d706b8acb26591e2b3727"
-  },
-  "lodash.noop": {
-    "2.4.1": "4fb54f816652e5ae10e8f72f717a388c7326538a"
-  },
-  "lodash.property": {
-    "2.4.1": "4049c0549daf5a7102bc5e93eeaebb379deb132f"
-  },
-  "lodash.support": {
-    "2.4.1": "320e0b67031673c28d7a2bb5d9e0331a45240515"
   },
   "lodash.template": {
     "2.4.1": "9e611007edf629129a974ab3c48b817b3e1cf20d"
@@ -291,11 +302,23 @@
   "lru-cache": {
     "2.5.0": "d82388ae9c960becbea0c73bb9eb79b6c6ce9aeb"
   },
+  "map-obj": {
+    "1.0.0": "bcbdf6756758763c182daf79e18094a2f1c85766"
+  },
   "map-stream": {
     "0.1.0": "e56aa94c4c8055a16404a0674b78f215f7c8e194"
   },
+  "meow": {
+    "3.1.0": "5974708a0fe0dcbf27e0e6a49120b4c5e82c3cea"
+  },
   "mime": {
     "1.2.11": "58203eed86e3a5ef17aed2b7d9ebd47f0a60dd10"
+  },
+  "mime-db": {
+    "1.8.0": "82a9b385f22b0f5954dec4d445faba0722c4ad25"
+  },
+  "mime-types": {
+    "2.0.10": "eacd81bb73cab2a77447549a078d4f2018c67b4d"
   },
   "minimatch": {
     "0.2.14": "c74e780574f63c6f9a090e90efbe6ef53a6a756a",
@@ -305,15 +328,18 @@
   "minimist": {
     "0.0.10": "de3f98543dbf96082be48ad1a0c7cda836301dcf",
     "0.0.8": "857fcabfc3397d2625b8228262e86aa7a011b05d",
-    "0.1.0": "99df657a52574c21c9057497df742790b2b4c0de",
-    "0.2.0": "4dffe525dae2b864c66c2e23c6271d7afdecefce"
+    "0.2.0": "4dffe525dae2b864c66c2e23c6271d7afdecefce",
+    "1.1.1": "1bc2bc71658cdca5712475684363615b0b4f695b"
   },
   "mkdirp": {
     "0.3.5": "de3e5f8961c88c787ee1368df849ac4413eca8d7",
     "0.5.0": "1d73076a6df986cd9344e15e71fcc05a4c9abf12"
   },
   "multipipe": {
-    "0.1.1": "bc271fbb2bf3a5ed3e43cc6ba3d7dbc1c4eb07fb"
+    "0.1.2": "2a8f2ddf70eed564dff2d57f1e1a137d9f05078b"
+  },
+  "node-uuid": {
+    "1.4.3": "319bb7a56e7cb63f00b5c0cd7851cd4b4ddf1df9"
   },
   "nopt": {
     "3.0.1": "bce5c42446a3291f47622a370abbf158fbbacbfd"
@@ -322,19 +348,22 @@
     "1.0.3": "8be955b8907af975f1a4584ea8bb9b41492312f5"
   },
   "npmconf": {
-    "2.1.1": "a266c7e5c56695eb7f55caf3a5a7328f24510dae"
+    "1.1.5": "07777bea48d78eed75a4258962a09f3dc7b6b916"
   },
   "nunjucks": {
     "1.0.5": "8e3f4e7cdd5a311a6e2f8038aa31f4f97eb4ca52"
   },
+  "oauth-sign": {
+    "0.6.0": "7dbeae44f6ca454e1f168451d630746735813ce3"
+  },
   "object-assign": {
-    "0.2.2": "e0a78bc56af9c092051167f6b8f23249e7dde1a6"
+    "0.2.2": "e0a78bc56af9c092051167f6b8f23249e7dde1a6",
+    "2.0.0": "f8309b09083b01261ece3ef7373f2b57b8dd7042"
   },
   "object-keys": {
     "0.4.0": "28a6aae7428dd2c3a92f3d95f21335dd204e0336"
   },
   "once": {
-    "1.3.0": "151af86bfc1f08c4b9f07d06ab250ffcbeb56581",
     "1.3.1": "f3f3e4da5b7d27b5c732969ee3e67e729457b31f"
   },
   "optimist": {
@@ -345,7 +374,7 @@
     "0.3.7": "c45064e22c5a2a7b99734f409a95ffedc7d3c3df"
   },
   "ordered-read-streams": {
-    "0.0.8": "fd921331b1a130b66aeef711b219aee01d89e0c5"
+    "0.1.0": "fd565a9af8eb4473ba69b6ed8a34352cb552f126"
   },
   "osenv": {
     "0.1.0": "61668121eec584955030b9f470b1d2309504bfcb"
@@ -354,20 +383,26 @@
     "0.0.11": "fe5a34b0cbce12b5aa6a2b403ee2e73b602f1445"
   },
   "pretty-hrtime": {
-    "0.2.1": "f341d39215fa5f7bff50af7d8572f8d4ec9d12f6"
+    "0.2.2": "d4fd88351e3a4741f8173af7d6a4b846f9895c00"
   },
   "proto-list": {
     "1.2.3": "6235554a1bca1f0d15e3ca12ca7329d5def42bd9"
   },
+  "punycode": {
+    "1.3.2": "9653a036fb7c1ee42342f2325cceefea3926c48d"
+  },
+  "qs": {
+    "2.3.3": "e9e85adbe75da0bbe4c8e0476a086290f863b404"
+  },
   "read-installed": {
-    "3.1.5": "4ae36081afd3e2204dc2e279807aaa52c30c8c0c"
+    "3.1.0": "47075ba8828147ed495084df779f29a4329ad3df"
   },
   "read-package-json": {
     "1.3.2": "5228bc7ad1f33ded75184ece48710036101affa2"
   },
   "readable-stream": {
-    "1.0.27-1": "6b67983c20357cefd07f0165001a16d710d91078",
-    "1.1.13-1": "fc6f04f3366bf37bae21bec2e411c1b4d2cf1a46"
+    "1.0.33": "3a360dd66c1b1d7fd4705389860eda1d0f61126c",
+    "1.1.13": "f6eef764f514c89e2b9e23146a75ba106756d23e"
   },
   "readdir-scoped-modules": {
     "1.0.1": "5c2a77f3e08250a8fddf53fa58cdc17900b808b9"
@@ -375,12 +410,18 @@
   "recursive-readdir": {
     "0.0.2": "0bc47dc4838e646dccfba0507b5e57ffbff35f7c"
   },
+  "repeating": {
+    "1.1.2": "dcced290c4d22df9818746eb5257679d27fe0283"
+  },
+  "request": {
+    "2.53.0": "180a3ae92b7b639802e4f9545dd8fcdeb71d760c"
+  },
   "resolve": {
     "0.7.4": "395a9ef9e873fbfe12bd14408bd91bb936003d69"
   },
   "semver": {
     "2.3.2": "b9848f25d6cf36333073ec9ef8856d42f1233e52",
-    "4.3.1": "beb0129575b95f76110b29af08d370fd9eeb34bf"
+    "3.0.1": "720ac012515a252f91fb0dd2e99a56a70d6cf078"
   },
   "sequencify": {
     "0.0.7": "90cff19d02e07027fd767f5ead3e7b95d1e7380c"
@@ -391,8 +432,11 @@
   "slide": {
     "1.1.6": "56eb027d65b4d2dce6cb2e2d32c4d4afc9e1d707"
   },
+  "sntp": {
+    "1.0.9": "6541184cc90aeea6c6e7b35e2659082443c66198"
+  },
   "source-map": {
-    "0.1.39": "64ad329c4761ab956ff7d011c6b205aeb66a2d4a"
+    "0.1.43": "c24bc146ca517c1471f5dacbe2571b2b7f9e3346"
   },
   "split": {
     "0.2.10": "67097c601d697ce1368f418f06cd201cf0521a57"
@@ -404,26 +448,36 @@
     "0.1.0": "a41ead1a6d6081ceb79f65b061901b6d8f3d1d0f"
   },
   "string_decoder": {
-    "0.10.25-1": "f387babd95d23a2bb73b1fbf2cb3efab6f78baab"
+    "0.10.31": "62e203bc41766c6c28c9fc84301dab1c5310fa94"
+  },
+  "stringstream": {
+    "0.0.4": "0f0e3423f942960b5692ac324a57dd093bc41a92"
   },
   "strip-ansi": {
     "0.3.0": "25f48ea22ca79187f3174a4db8759347bb126220"
   },
   "strip-bom": {
-    "0.3.1": "9e8a39eff456ff9abc2f059f5f2225bb0f3f7ca5"
+    "1.0.0": "85b8862f3844b5a6d5ec8467a93598173a36f794"
   },
   "supports-color": {
     "0.2.0": "d92de2694eb3f67323973d7ae3d8b55b4c22190a"
   },
   "through": {
-    "2.3.4": "495e40e8d8a8eaebc7c275ea88c2b8fc14c56455"
+    "2.3.6": "26681c0f524671021d4e29df7c36bce2d0ecf2e8"
   },
   "through2": {
     "0.4.2": "dbf5866031151ec8352bb6c4db64a2292a840b9b",
-    "0.5.1": "dfdd012eb9c700e2323fd334f38ac622ab372da7"
+    "0.5.1": "dfdd012eb9c700e2323fd334f38ac622ab372da7",
+    "0.6.3": "795292fde9f254c2a368b38f9cc5d1bd4663afb6"
   },
   "tildify": {
     "0.2.0": "70e639947af67d6ab6b822bbed0a6806fd81e430"
+  },
+  "tough-cookie": {
+    "0.12.1": "8220c7e21abd5b13d96804254bd5a81ebf2c7d62"
+  },
+  "tunnel-agent": {
+    "0.4.0": "b1184e312ffbcf70b3b4c78e8c219de7ebb1c550"
   },
   "uglify-js": {
     "2.4.13": "18debc9e6ecfc20db1a5ea035f839d436a605aba"
@@ -441,10 +495,11 @@
     "1.0.1": "bb703b79480293ddcdcfb3c6a9fea20f483415bc"
   },
   "vinyl": {
-    "0.2.3": "bca938209582ec5a49ad538a00fa1f125e513252"
+    "0.2.3": "bca938209582ec5a49ad538a00fa1f125e513252",
+    "0.4.6": "2f356c87a550a255461f36bbeb2a5ba8bf784847"
   },
   "vinyl-fs": {
-    "0.3.4": "0df7154a9e07d47b14d2fcff914303439da97a84"
+    "0.3.13": "3d384c5b3032e356cd388023e3a085303382ac23"
   },
   "wordwrap": {
     "0.0.2": "b79669bb42ecb409f83d583cad52ca17eaa1643f"
@@ -454,6 +509,7 @@
   },
   "xtend": {
     "2.1.2": "6efecc2a4dad8e6962c4901b337ce7ba87b5d28b",
-    "3.0.0": "5cce7407baf642cba7becda568111c493f59665a"
+    "3.0.0": "5cce7407baf642cba7becda568111c493f59665a",
+    "4.0.0": "8bc36ff87aedbe7ce9eaf0bca36b2354a743840f"
   }
 }

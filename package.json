@@ -12,9 +12,7 @@
     "gulp": "3.8.6",
     "gulp-watch": "0.6.8",
     "gulp-nunjucks": "0.2.2",
-    "npmconf": "2.1.1",
-    "osenv": "0.1.0",
-    "read-installed": "3.1.5"
+    "lockdown": "mozilla/npm-lockdown#c7ceb9ca37fab4ba2639b89f94b88703d4e4d0d2"
   },
   "dependencies": {
     "less": "1.7.0",
