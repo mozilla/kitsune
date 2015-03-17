@@ -14,8 +14,9 @@ class Migration(DataMigration):
         ]
 
         for category in categories:
-            name = 'category:{}'.format(category)
-            orm['taggit.tag'].objects.create(name=name, slug=name)
+            orm['taggit.tag'].objects.create(
+                name='category:{}'.format(category),
+                slug='category{}'.format(category))
 
     def backwards(self, orm):
         orm['taggit.tag'].objects.filter(name__startswith='category:').delete()
