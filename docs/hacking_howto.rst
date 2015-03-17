@@ -217,6 +217,12 @@ Node dependencies securely. This means if you add a new dependency you will need
 
 This will update ``lockdown.json`` with the appropriate hashes.
 
+.. Note::
+
+    If you see a "npm ERR! notarget No valid targets found." error while installing the Node
+    packages, this is due to npm-lockdown being unable to find a package that matches the hash in
+    ``lockdown.json``.
+
 
 Configuration and Setup
 =======================
