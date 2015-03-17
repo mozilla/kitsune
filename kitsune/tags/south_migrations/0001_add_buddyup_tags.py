@@ -14,7 +14,7 @@ class Migration(DataMigration):
         ]
 
         for category in categories:
-            orm['taggit.tag'].objects.create(
+            orm['taggit.tag'].objects.get_or_create(
                 name='category:{}'.format(category),
                 slug='category{}'.format(category))
 
