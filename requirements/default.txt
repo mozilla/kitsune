@@ -63,8 +63,8 @@ https://github.com/jsocol/django-authority/archive/800c42759db817d49eea535fabdfc
 https://github.com/django-security/django-axes/archive/778f208cc1d3cc42ecb756f732f8593e40ebb476.tar.gz#egg=django-axes==1.3.6
 
 # django-badger: master~1
-# sha256: 2o455MmUGi7vRGAnRMjtVBgW3i1jC22t2VkgXtZOLOk
-https://github.com/mozilla/django-badger/archive/c04372aa76dfaa2de7db838359cba2cc10cd61cd.tar.gz#egg=django-badger
+# sha256: gAyhfNW8sSP1nj9wpInx4hrEC8mYtA5HJI7pE_RQ1Mc
+https://github.com/mozilla/django-badger/archive/3e9fded1a5bd17a69a852d410eaa4b79686bdd32.tar.gz#egg=django-badger==0.0.0.1
 
 # django-cache-machine: master~1
 # sha256: Z9bMfMcy--u-CtXQ0FvcEt3DgzBjGWVknYaYEu34e8c
