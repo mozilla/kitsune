@@ -36,7 +36,7 @@ class TopContributors {
             this.data = data;
             this.render();
         })
-        .fail(function(err) {
+        .fail((err) => {
             this.targetEl.textContent = 'Something went wrong! ' + JSON.stringify(err);
         });
     }

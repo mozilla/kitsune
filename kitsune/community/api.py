@@ -6,7 +6,9 @@ from rest_framework import views, fields
 from rest_framework.response import Response
 
 from kitsune.questions.models import AnswerMetricsMappingType
+from kitsune.sumo.api import GenericAPIException
 from kitsune.users.models import UserMappingType
+from kitsune.wiki.models import RevisionMetricsMappingType
 
 
 # This should be the higher than the max number of contributors for a
@@ -14,7 +16,7 @@ from kitsune.users.models import UserMappingType
 BIG_NUMBER = 10000
 
 
-class TopContributorsQuestions(views.APIView):
+class TopContributorsBase(views.APIView):
 
     def get(self, request):
         return Response(self.get_data(request))
@@ -22,19 +24,29 @@ class TopContributorsQuestions(views.APIView):
     def get_filters(self):
         f = F(by_asker=False)
 
-        self.filter_values = {
-            'startdate': (datetime.now() - timedelta(days=90)).strftime('%Y-%m-%d'),
-            'enddate': datetime.now().strftime('%Y-%m-%d'),
-        }
+        self.filter_values = self.get_default_filters()
         # request.GET is a multidict, so simple `.update(request.GET)` causes
         # everything to be a list. This converts it into a plain single dict.
         self.filter_values.update(dict(self.request.GET.items()))
 
         for key, value in self.filter_values.items():
-            filter_method = getattr(self, 'filter_' + key, lambda v: F())
+            method_name = 'filter_' + key
+            if not hasattr(self, method_name):
+                raise GenericAPIException(400, 'Unknown filter field {}'.format(key))
+            filter_method = getattr(self, 'filter_' + key)
             f &= filter_method(value)
 
         return f
+
+    def get_default_filters(self):
+        return {
+            'startdate': (datetime.now() - timedelta(days=90)).strftime('%Y-%m-%d'),
+            'enddate': datetime.now().strftime('%Y-%m-%d'),
+        }
+
+    def filter_page(self, value):
+        """No-op, so that unknown filters can be blocked."""
+        return F()
 
     def filter_startdate(self, value):
         date = fields.DateField().from_native(value)
@@ -66,6 +78,9 @@ class TopContributorsQuestions(views.APIView):
     def filter_locale(self, value):
         return F(locale=value)
 
+
+class TopContributorsQuestions(TopContributorsBase):
+
     def get_data(self, request):
         # So filters can use the request.
         self.request = request
@@ -73,16 +88,16 @@ class TopContributorsQuestions(views.APIView):
         # This is the base of all the metrics. Each metric branches off from
         # this to get a particular metric type, since we can't do Aggregates.
         query = AnswerMetricsMappingType.search()
-        base_filter = self.get_filters()
+        base_filters = self.get_filters()
 
         # This branch is to get the total number of answers for each user.
         answer_query = (
             query
-            .filter(base_filter)
+            .filter(base_filters)
             .facet('creator_id', filtered=True, size=BIG_NUMBER))
 
         # This branch gets the number of answers that are solutions for each user.
-        solutions_filter = base_filter & F(is_solution=True)
+        solutions_filter = base_filters & F(is_solution=True)
         solutions_query = (
             query
             .filter(solutions_filter)
@@ -100,7 +115,7 @@ class TopContributorsQuestions(views.APIView):
                         'key_field': 'creator_id',
                         'value_field': 'helpful_count',
                     },
-                    'facet_filter': query._process_filters(base_filter.filters),
+                    'facet_filter': query._process_filters(base_filters.filters),
                 }))
 
         # Collect three lists of objects that correlates users and the appropriate metric count
@@ -168,6 +183,99 @@ class TopContributorsQuestions(views.APIView):
 
         # One last sort, since ES didn't return the users in any particular order.
         data.sort(key=lambda d: d['answer_count'], reverse=True)
+
+        # Add ranks to the objects.
+        for i, contributor in enumerate(data, 1):
+            contributor['rank'] = page_start + i
+
+        return {
+            'results': data,
+            'count': full_count,
+            'filters': self.filter_values,
+        }
+
+
+class TopContributorsLocalization(TopContributorsBase):
+
+    def get_data(self, request):
+        # So filters can use the request.
+        self.request = request
+
+        # This is the base of all the metrics. Each metric branches off from
+        # this to get a particular metric type, since we can't do Aggregates.
+        base_query = RevisionMetricsMappingType.search()
+        base_filters = self.get_filters()
+
+        # This branch is to get the number of revisions made by each user.
+        revision_query = (
+            base_query
+            .filter(base_filters)
+            .facet('creator_id'))
+
+        # This branch is to get the number of reviews done by each user.
+        reviewer_query = (
+            base_query
+            .filter(base_filters)
+            .facet('reviewer_id'))
+
+        # Collect two lists of objects that correlates users and the appropriate metric count
+        revision_creator_counts = revision_query.facet_counts()['creator_id']['terms']
+        revision_reviewer_counts = reviewer_query.facet_counts()['reviewer_id']['terms']
+
+        # Combine all the metric types into one big list.
+        combined = defaultdict(lambda: {
+            'revision_count': 0,
+            'review_count': 0,
+        })
+
+        for d in revision_creator_counts:
+            combined[d['term']]['user_id'] = d['term']
+            combined[d['term']]['revision_count'] = d['count']
+
+        for d in revision_reviewer_counts:
+            combined[d['term']]['user_id'] = d['term']
+            combined[d['term']]['review_count'] = d['count']
+
+        # Sort by revision count, and get just the ids into a list.
+        top_contributors = combined.values()
+        top_contributors.sort(key=lambda d: d['revision_count'], reverse=True)
+        user_ids = [c['user_id'] for c in top_contributors]
+        full_count = len(user_ids)
+
+        # Paginate those user ids.
+        try:
+            page = int(self.request.GET.get('page', 1))
+        except ValueError:
+            page = 1
+        count = 10
+        page_start = (page - 1) * count
+        page_end = page_start + count
+        user_ids = user_ids[page_start:page_end]
+
+        # Get full user objects for every id on this page.
+        users = UserMappingType.reshape(
+            UserMappingType
+            .search()
+            .filter(id__in=user_ids)
+            .values_dict('id', 'username', 'display_name', 'avatar', 'last_contribution_date')
+            [:count])
+
+        # For ever user object found, mix in the metrics counts for that user,
+        # and then reshape the data to make more sense to clients.
+        data = []
+        for u in users:
+            d = combined[u['id']]
+            d['user'] = u
+            d['last_contribution_date'] = d['user'].get('last_contribution_date', None)
+            if 'user_id' in d:
+                del d['user_id']
+            del d['user']['id']
+            if 'last_contribution_date' in d['user']:
+                del d['user']['last_contribution_date']
+            data.append(d)
+
+        # One last sort, since ES didn't return the users in any particular order.
+        data.sort(key=lambda d: d['revision_count'], reverse=True)
 
         # Add ranks to the objects.
         for i, contributor in enumerate(data, 1):
