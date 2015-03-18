@@ -1,8 +1,12 @@
+import ContributorsList from './ContributorsList.jsx';
+
 export default class ContributorsController {
-    constructor(area, Component, targetEl) {
+    constructor({area, target, title, columns}) {
         this.area = area;
-        this.Component = Component;
-        this.targetEl = targetEl;
+        this.columns = columns;
+        this.target = target;
+        this.title = title;
+
         this.filters = k.getQueryParamsAsDict() || {};
         var dataEl = document.querySelector('script[name="contributor-data"]');
         this.data = JSON.parse(dataEl.innerHTML);
@@ -35,13 +39,17 @@ export default class ContributorsController {
             this.render();
         })
         .fail((err) => {
-            this.targetEl.textContent = 'Something went wrong! ' + JSON.stringify(err);
+            this.target.textContent = 'Something went wrong! ' + JSON.stringify(err);
         });
     }
 
     render() {
         React.render(
-            <this.Component data={this.data} setFilters={this.setFilters.bind(this)}/>,
-            this.targetEl);
+            <ContributorsList
+                data={this.data}
+                setFilters={this.setFilters.bind(this)}
+                title={this.title}
+                columns={this.columns} />,
+            this.target);
     }
 }
