@@ -4,7 +4,7 @@
 var dataEl = document.querySelector('script[name="locale-data"]');
 const locales = JSON.parse(dataEl.innerHTML);
 
-export class CommunityResults extends React.Component {
+export default class L10nContributors extends React.Component {
     render() {
         var filters = this.props.data.filters;
         var results = this.props.data.results;
@@ -138,9 +138,8 @@ class ContributorsTableHeader extends React.Component {
                     </th>
                     <th data-column="rank">Rank</th>
                     <th data-column="user">Name</th>
-                    <th data-column="answer-count">Answers</th>
-                    <th data-column="solution-count">Solutions</th>
-                    <th data-column="helpful-vote-count">Helpful Votes</th>
+                    <th data-column="answer-count">Revisions</th>
+                    <th data-column="solution-count">Reviews</th>
                     <th data-column="last-activity">Last Activity</th>
                     <th data-column="actions"></th>
                 </tr>
@@ -183,14 +182,11 @@ class ContributorsTableRow extends React.Component {
                 <td data-column="user">
                     <UserChip {...this.props.user}/>
                 </td>
-                <td data-column="answer-count">
-                    {this.props.answer_count}
+                <td data-column="revision-count">
+                    {this.props.revision_count}
                 </td>
-                <td data-column="solution-count">
-                    {this.props.solution_count}
-                </td>
-                <td data-column="helpful-vote-count">
-                    {this.props.helpful_vote_count}
+                <td data-column="review_count">
+                    {this.props.review_count}
                 </td>
                 <td data-column="last-contribution-date">
                     <RelativeTime timestamp={this.props.last_contribution_date} future={false}/>

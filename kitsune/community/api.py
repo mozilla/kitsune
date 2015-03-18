@@ -22,12 +22,12 @@ class TopContributorsBase(views.APIView):
         return Response(self.get_data(request))
 
     def get_filters(self):
-        f = F(by_asker=False)
-
         self.filter_values = self.get_default_filters()
         # request.GET is a multidict, so simple `.update(request.GET)` causes
         # everything to be a list. This converts it into a plain single dict.
         self.filter_values.update(dict(self.request.GET.items()))
+
+        f = F()
 
         for key, value in self.filter_values.items():
             method_name = 'filter_' + key
@@ -80,6 +80,11 @@ class TopContributorsBase(views.APIView):
 
 
 class TopContributorsQuestions(TopContributorsBase):
+
+    def get_filters(self):
+        f = super(TopContributorsQuestions, self).get_filters()
+        f &= F(by_asker=False)
+        return f
 
     def get_data(self, request):
         # So filters can use the request.
@@ -210,13 +215,13 @@ class TopContributorsLocalization(TopContributorsBase):
         revision_query = (
             base_query
             .filter(base_filters)
-            .facet('creator_id'))
+            .facet('creator_id', filtered=True, size=BIG_NUMBER))
 
         # This branch is to get the number of reviews done by each user.
         reviewer_query = (
             base_query
             .filter(base_filters)
-            .facet('reviewer_id'))
+            .facet('reviewer_id', filtered=True, size=BIG_NUMBER))
 
         # Collect two lists of objects that correlates users and the appropriate metric count
         revision_creator_counts = revision_query.facet_counts()['creator_id']['terms']

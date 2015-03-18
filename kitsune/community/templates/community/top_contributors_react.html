@@ -1,7 +1,11 @@
 {% extends "base.html" %}
 
 {% set styles = ('common', 'community-new',) %}
-{% set scripts = ('community-new',) %}
+{% if area == 'questions' %}
+    {% set scripts = ('community-new-questions',) %}
+{% elif area == 'l10n' %}
+    {% set scripts = ('community-new-l10n',) %}
+{% endif %}
 
 {% if area == 'questions' %}
     {% set title = _('Top Contributors - Support Forum') %}

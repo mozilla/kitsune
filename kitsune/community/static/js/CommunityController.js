@@ -1,9 +1,7 @@
-/* jshint esnext: true */
-/* globals React:false */
-import {CommunityResults} from './TopContributors.jsx';
-
-class TopContributors {
-    constructor(targetEl) {
+export default class ContributorsController {
+    constructor(area, Component, targetEl) {
+        this.area = area;
+        this.Component = Component;
         this.targetEl = targetEl;
         this.filters = k.getQueryParamsAsDict() || {};
         var dataEl = document.querySelector('script[name="contributor-data"]');
@@ -30,7 +28,7 @@ class TopContributors {
 
     refresh() {
         var qs = window.location.search;
-        var url = '/api/2/topcontributors/questions/' + qs;
+        var url = `/api/2/topcontributors/${this.area}/${qs}`;
         $.getJSON(url)
         .done((data) => {
             this.data = data;
@@ -42,16 +40,8 @@ class TopContributors {
     }
 
     render() {
-        var el = <CommunityResults
-            data={this.data}
-            setFilters={this.setFilters.bind(this)}/>;
-        React.render(el, this.targetEl);
+        React.render(
+            <this.Component data={this.data} setFilters={this.setFilters.bind(this)}/>,
+            this.targetEl);
     }
 }
-
-window.onpopstate = function() {
-    refresh();
-}
-
-var controller = new TopContributors(document.querySelector('#main-content'));
-controller.render();

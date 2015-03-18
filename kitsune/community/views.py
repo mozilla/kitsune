@@ -180,12 +180,20 @@ def top_contributors(request, area):
 
 def top_contributors_new(request, area):
     to_json = JSONRenderer().render
-    contributors = api.TopContributorsQuestions().get_data(request)
 
-    locales = sorted((settings.LOCALES[code].english, code)
-                     for code in QuestionLocale.objects.locales_list())
+    if area == 'questions':
+        contributors = api.TopContributorsQuestions().get_data(request)
+        locales = sorted((settings.LOCALES[code].english, code)
+                         for code in QuestionLocale.objects.locales_list())
+    elif area == 'l10n':
+        contributors = api.TopContributorsLocalization().get_data(request)
+        locales = sorted((settings.LOCALES[code].english, code)
+                         for code in settings.SUMO_LANGUAGES)
+    else:
+        raise Http404
 
     return render(request, 'community/top_contributors_react.html', {
+        'area': area,
         'contributors_json': to_json(contributors),
         'locales_json': to_json(locales),
     })

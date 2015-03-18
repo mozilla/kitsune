@@ -290,17 +290,31 @@ PIPELINE_JS = {
         ),
         'output_filename': 'community-min.js'
     },
-    'community-new': {
+    'community-new-questions': {
         'source_filenames': (
             # This uses the minified version because it is optimized to leave
             # out lots of debug stuff, so it is significantly smaller than
             # just minifying react.js.
-            # TODO: Figure out how to include the full sized version in dev.
-            # 'bower/react/react.min.js',
-            'bower/react/react.js',
-            'js/community-new.browserify.js',
+            # TODO: Figure out how to include the full sized version in dev,
+            # because it produces much nicer error messages.
+            'bower/react/react.min.js',
+            # 'bower/react/react.js',
+            'js/community-questions.browserify.js',
         ),
-        'output_filename': 'community-new-min.js'
+        'output_filename': 'community-questions-min.js'
+    },
+    'community-new-l10n': {
+        'source_filenames': (
+            # This uses the minified version because it is optimized to leave
+            # out lots of debug stuff, so it is significantly smaller than
+            # just minifying react.js.
+            # TODO: Figure out how to include the full sized version in dev,
+            # because it produces much nicer error messages.
+            'bower/react/react.min.js',
+            # 'bower/react/react.js',
+            'js/community-l10n.browserify.js',
+        ),
+        'output_filename': 'community-l10n-min.js'
     },
     'mobile-common': {
         'source_filenames': (
