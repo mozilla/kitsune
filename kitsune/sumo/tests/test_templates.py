@@ -1,11 +1,11 @@
 from django.conf import settings
+from django.test.client import RequestFactory
 from django.utils import translation
 
 import jingo
 import mock
 from nose.tools import eq_
 from pyquery import PyQuery as pq
-from test_utils import RequestFactory
 
 from kitsune.sumo.tests import LocalizingClient, TestCase
 from kitsune.sumo.urlresolvers import reverse

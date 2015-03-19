@@ -21,7 +21,7 @@ class LocaleListTests(TestCase):
         r = self.client.get(reverse('wiki.locales'))
         eq_(r.status_code, 200)
         doc = pq(r.content)
-        eq_(3, len(doc('#locale-listing li')))
+        eq_(Locale.objects.count(), len(doc('#locale-listing li')))
 
 
 class LocaleDetailsTests(TestCase):

@@ -312,10 +312,6 @@ sqlparse==0.1.1
 # sha256: iwwUgZEicThAdjbIlWf8v2ruD33Bdms1HZcZzyF4CQ8
 statsd==2.0.1
 
-# test-utils: master
-# sha256: TfVu9q0eiiDx7hMROF0rrBpPv60m3A5ceuuN_sMdgHI
-https://github.com/jbalogh/test-utils/archive/9fa5b26730e36ee390653f7364a74bb7180e9b4c.tar.gz#egg=test-utils
-
 # tower: tags/v0.4.0~10
 # sha256: SUBIuWRLwj-FjRiYUuI3vgSTuyjtMQZaipayJ4SVcUI
 https://github.com/clouserw/tower/archive/af393cd07b1ee02107cb003ab47c6b0b4553b0b7.tar.gz#egg=tower

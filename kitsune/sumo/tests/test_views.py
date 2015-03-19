@@ -4,11 +4,11 @@ import django
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.http import HttpResponseRedirect, HttpResponsePermanentRedirect
+from django.test.client import RequestFactory
 
 import mock
 from nose.tools import eq_
 from pyquery import PyQuery as pq
-from test_utils import RequestFactory
 
 from kitsune.sumo.helpers import urlparams
 from kitsune.sumo.middleware import LocaleURLMiddleware

@@ -3,9 +3,9 @@ import copy
 from django.conf import settings
 from django.db import models
 from django.db.utils import DatabaseError
+from django.test import TestCase
 from django.utils import importlib
 
-import test_utils
 from nose.tools import assert_raises, eq_
 from pyquery import PyQuery as pq
 
@@ -14,7 +14,7 @@ from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import user
 
 
-class ReadOnlyModeTest(test_utils.TestCase):
+class ReadOnlyModeTest(TestCase):
     extra = ('kitsune.sumo.middleware.ReadOnlyMiddleware',)
 
     def setUp(self):

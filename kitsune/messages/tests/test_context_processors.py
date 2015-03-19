@@ -1,8 +1,8 @@
 from django.contrib.auth.models import AnonymousUser
+from django.test.client import RequestFactory
 
 import mock
 from nose.tools import eq_
-from test_utils import RequestFactory
 
 from kitsune import messages
 from kitsune.messages.context_processors import unread_message_count

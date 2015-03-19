@@ -639,6 +639,6 @@ class EditWatchListTests(TestCaseBase):
         eq_(w.is_active, False)
 
         self.client.post(reverse('users.edit_watch_list'), {
-            'watch_%s' % self.question.id: '1'})
+            'watch_%s' % w.id: '1'})
         w = Watch.objects.get(object_id=self.question.id, user=self.user)
         eq_(w.is_active, True)

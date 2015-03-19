@@ -2,10 +2,10 @@ from datetime import datetime, timedelta
 import json
 
 from django.conf import settings
+from django.test.client import RequestFactory
 
 from mock import patch, Mock
 from nose.tools import eq_
-from test_utils import RequestFactory
 
 from kitsune.customercare.models import Tweet, Reply
 from kitsune.customercare.tests import tweet, twitter_account, reply

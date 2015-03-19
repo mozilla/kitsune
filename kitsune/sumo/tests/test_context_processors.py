@@ -1,5 +1,6 @@
+from django.test.client import RequestFactory
+
 from nose.tools import eq_
-from test_utils import RequestFactory
 
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.context_processors import geoip_cache_detector
