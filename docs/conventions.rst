@@ -13,9 +13,10 @@ We follow most of the practices as detailed in the `Mozilla webdev
 bootcamp guide
 <http://mozweb.readthedocs.org/en/latest/coding.html>`_.
 
-If you don't have an editor that checks PEP-8 issues and runs pyflakes
-for you, it's worth setting it up. Use `check.py
-<https://github.com/jbalogh/check>`_ because it's awesome.
+It is recommended that you install the linter we provide as a pre-commit
+hook::
+
+    $ ./scripts/hooks/lint.pre-commit
 
 
 Git conventions
