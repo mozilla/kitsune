@@ -1,4 +1,5 @@
-import {CommunityFilters, Paginator} from './contributors-common.jsx';
+import {Paginator} from './contributors-common.jsx';
+import CommunityFilters from './CommunityFilters.jsx';
 import SelectTable from './SelectTable.jsx';
 
 export default class ContributorsList extends React.Component {
@@ -8,7 +9,8 @@ export default class ContributorsList extends React.Component {
         var fullCount = this.props.data.count;
 
         var setFilters = this.props.setFilters;
-        var pageCount = Math.ceil(fullCount / Math.max(results.length, 1));
+        var pageSize = 10;
+        var pageCount = Math.ceil(fullCount / pageSize);
 
         return <article className="community-results">
             <h1>{this.props.title}</h1>

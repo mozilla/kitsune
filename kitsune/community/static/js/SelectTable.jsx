@@ -12,9 +12,9 @@ export default class SelectTable extends React.Component {
         }
     }
 
-    didReceiveProps() {
+    componentWillReceiveProps(newProps) {
         var {selections} = this.state;
-        for (var i = 0; i < this.props.contributors.length; i++) {
+        for (var i = 0; i < newProps.contributors.length; i++) {
             selections[i] = !!selections[i];
         }
         this.setState({selections});

@@ -53,3 +53,112 @@ table.top-contributors {
         width: 25px;
     }
 }
+
+.date-range-picker {
+    display: inline-block;
+    position: relative;
+
+    .summary-button {
+        background: #eee;
+        border: 1px solid #aaa;
+        border-radius: 4px;
+        padding: 3px 5px;
+        cursor: pointer;
+
+        .summary {
+            padding: 0 5px;
+        }
+    }
+
+    .detail-window {
+        background: #fff;
+        box-shadow: 0px 2px 3px rgba(0, 0, 0, 0.3);
+        display: flex;
+        flex-direction: column;
+        padding: 3px;
+        position: absolute;
+        left: -60px;
+        top: 36px;
+        z-index: 2;
+
+        &::before {
+            background: #fff;
+            box-shadow: -1px -1px 2px rgba(0, 0, 0, 0.1);
+            content: "";
+            height: 16px;
+            position: absolute;
+            left: 268px;
+            top: -8px;
+            transform: rotate(45deg);
+            width: 16px;
+            z-index: -1;
+        }
+
+        .row {
+            display: flex;
+            flex-direction: row;
+        }
+
+        .calendar {
+            flex-grow: 0;
+            margin: 3px;
+
+            input {
+                display: none;
+            }
+        }
+
+        .input-label-group {
+            display: inline-block;
+            margin: 3px;
+
+            label {
+                display: inline;
+                font-weight: bold;
+                margin-right: 3px;
+
+                &:after {
+                    content: ":";
+                }
+            }
+
+            input {
+                display: inline;
+                width: 100px;
+            }
+        }
+
+        .errors {
+            color: #e00;
+            padding: 5px;
+        }
+
+        .actions {
+            flex-grow: 1;
+            text-align: right;
+        }
+
+        .preset-picker {
+            flex-grow: 1;
+            list-style: none;
+            padding: 0;
+            margin: 3px;
+            width: 150px;
+
+            .preset {
+                background: #f0f0f0;
+                border-radius: 5px;
+                color: #0089CA;
+                cursor: pointer;
+                margin-bottom: 5px;
+                padding: 2px 6px;
+
+                &.selected {
+                    background: #0089ca;
+                    color: #f0f0f0;
+                    cursor: default;
+                }
+            }
+        }
+    }
+}
