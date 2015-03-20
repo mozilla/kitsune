@@ -17,6 +17,12 @@ COLLAPSIBLE_DOCUMENTS = {
     ],
     u'de': [
         u'Firefox-baut-unaufgeforderte-Verbindungen-auf',
+    ],
+    u'it': [
+        u'firefox-connessioni-non-richieste',
+    ],
+    u'pt-BR': [
+        u'como-fazer-o-firefox-parar-de-se-conectar-automati',
     ]
 }
 
