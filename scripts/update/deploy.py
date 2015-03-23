@@ -130,7 +130,7 @@ def setup_dependencies(ctx):
             ctx.local('ln -s lib lib64')
 
         # Install Node dependencies
-        ctx.local('npm install --production')
+        ctx.local('npm install --production --unsafe-perm')
 
 
 @task
