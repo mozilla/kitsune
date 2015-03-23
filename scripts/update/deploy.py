@@ -129,6 +129,9 @@ def setup_dependencies(ctx):
         with ctx.lcd('virtualenv'):
             ctx.local('ln -s lib lib64')
 
+        # Install Node dependencies
+        ctx.local('npm install --production --unsafe-perm')
+
 
 @task
 def pre_update(ctx, ref=settings.UPDATE_REF):

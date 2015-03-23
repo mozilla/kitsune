@@ -210,6 +210,19 @@ Now install the javascript dependencies with::
 
 This should create a directory named ``node_modules`` in your git repo.
 
+We are now using `npm-lockdown <https://github.com/mozilla/npm-lockdown>`_ to handle installing the
+Node dependencies securely. This means if you add a new dependency you will need to run::
+
+    $ ./node_modules/.bin/lockdown-relock
+
+This will update ``lockdown.json`` with the appropriate hashes.
+
+.. Note::
+
+    If you see a "npm ERR! notarget No valid targets found." error while installing the Node
+    packages, this is due to npm-lockdown being unable to find a package that matches the hash in
+    ``lockdown.json``.
+
 
 Configuration and Setup
 =======================
