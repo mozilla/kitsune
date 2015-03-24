@@ -52,9 +52,6 @@ REDIS_BACKENDS = {
     'helpfulvotes': 'redis://localhost:6383?socket_timeout=0.5&db=1',
 }
 
-PIPELINE_LESS_BINARY = path('node_modules/.bin/lessc')
-PIPELINE_UGLIFYJS_BINARY = path('node_modules/.bin/uglifyjs')
-PIPELINE_CSSMIN_BINARY = path('node_modules/.bin/cssmin')
 NUNJUCKS_PRECOMPILE_BIN = path('node_modules/.bin/nunjucks-precompile')
 
 # Tells django-axes we aren't behind a reverse proxy.
