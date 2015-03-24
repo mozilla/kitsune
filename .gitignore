@@ -12,6 +12,7 @@ kitsune/build.py
 **-min.js
 media/uploads
 node_modules
+bower_components
 tmp
 locale
 docs/_build
