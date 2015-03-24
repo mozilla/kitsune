@@ -299,7 +299,7 @@ PIPELINE_JS = {
     'ie6-8': {
         'source_filenames': (
             'bower/nwmatcher/src/nwmatcher.js',
-            'bower/selectivizr/selectivizr.js',
+            'js/libs/selectivizr-1.0.2.js',
         ),
         'output_filename': 'ie6-8-min.js'
     },
