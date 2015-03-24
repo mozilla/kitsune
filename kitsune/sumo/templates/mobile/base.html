@@ -20,9 +20,9 @@
 
   <link rel="search" type="application/opensearchdescription+xml" title="{{ _('Mozilla Support') }}" href="{{ url('search.plugin') }}"/>
 
-  {{ css('mobile/common') }}
+  {% stylesheet 'mobile-common' %}
   {% for style in styles %}
-    {{ css(style) }}
+    {% stylesheet style %}
   {% endfor %}
   {% if meta %}
     {% for tag in meta %}
@@ -151,9 +151,9 @@
    before. #}
 <script src="{{ STATIC_URL }}jsi18n/{{ request.LANGUAGE_CODE|lower }}/javascript.js?{{ BUILD_ID_JS }}"></script>
 
-{{ js('mobile/common') }}
+{% javascript 'mobile-common' %}
 {% for script in scripts %}
-  {{ js(script) }}
+  {% javascript script %}
 {% endfor %}
 
 </body>

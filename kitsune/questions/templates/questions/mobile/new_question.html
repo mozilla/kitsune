@@ -12,8 +12,8 @@
 {% if not tried_search and (current_articles or current_html) and not search_results and not form %}
   {% set return_url = url('questions.aaq_step2', product_key=current_product.key) %}
 {% endif %}
-{% set styles = ('mobile/aaq',) %}
-{% set scripts = ('mobile/aaq',) %}
+{% set styles = ('mobile-aaq',) %}
+{% set scripts = ('mobile-aaq',) %}
 {% set hide_locale_switcher = True %}
 {% set meta = [('robots', 'noindex')] %}
 

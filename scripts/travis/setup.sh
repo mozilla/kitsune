@@ -64,4 +64,3 @@ echo "Starting XVFB for Selenium tests."
 echo "Doing static dance."
 ./manage.py nunjucks_precompile
 ./manage.py collectstatic --noinput > /dev/null
-./manage.py compress_assets > /dev/null
