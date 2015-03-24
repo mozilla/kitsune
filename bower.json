@@ -21,7 +21,6 @@
     "normalize-css": "normalize-css#3.0.2",
     "nunjucks": "nunjucks#1.0.5",
     "nwmatcher": "nwmatcher#1.3.4",
-    "selectivizr": "selectivizr#1.0.2",
     "underscore": "underscore#1.2.1"
   }
 }
