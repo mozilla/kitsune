@@ -341,6 +341,7 @@
       if (_gaq) {
         _gaq.push(['_trackEvent', 'Refresh Firefox', 'click refresh button']);
       }
+      $.cookie('showFirefoxResetSurvey', '1', {expires: 365});
 
       Mozilla.UITour.resetFirefox();
     }
