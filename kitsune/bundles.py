@@ -254,7 +254,7 @@ PIPELINE_JS = {
             'js/templates/macros.js',
             'js/templates/search-results-list.js',
             'js/templates/search-results.js',
-            'bower/nunjucks/browsers/nunjucks-slim.js',
+            'bower/nunjucks/browser/nunjucks-slim.js',
             'js/nunjucks.js',
             'js/cached_xhr.js',
             'js/search_utils.js',
