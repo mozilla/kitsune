@@ -109,7 +109,7 @@ function isAMoment(props, propName, componentName) {
     if (obj == undefined) {
         return;
     }
-    if (!obj._isAMoment) {
+    if (!obj._isAMomentObject) {
         return new Error(`${componentName}.${propName} is required to be a Moment object.`);
     }
 }
@@ -127,8 +127,8 @@ DateRangePicker.propTypes = {
     startKey: React.PropTypes.string,
     endKey: React.PropTypes.string.isRequired,
     summaryDateFormat: React.PropTypes.string,
-    min: isAMoment.isRequired,
-    max: isAMoment.isRequired,
+    min: isAMoment,
+    max: isAMoment,
 };
 
 DateRangePicker.defaultProps = {

@@ -2,10 +2,6 @@
 import CommunityController from './CommunityController.js';
 import {UserChip, RelativeTime} from './contributors-common.jsx';
 
-window.onpopstate = function() {
-    refresh();
-}
-
 var controller = new CommunityController({
     area: 'l10n',
     target: document.querySelector('#main-content'),
@@ -23,3 +19,7 @@ var controller = new CommunityController({
     ],
 });
 controller.render();
+
+window.onpopstate = function() {
+    controller.refresh();
+}

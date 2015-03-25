@@ -1,3 +1,5 @@
+import cx from 'classnames';
+
 var dataEl = document.querySelector('script[name="locale-data"]');
 export const locales = JSON.parse(dataEl.innerHTML);
 
@@ -29,7 +31,8 @@ RelativeTime.defaultProps = { future: true };
 
 export class Icon extends React.Component {
     render() {
-        return <i className={'fa fa-' + this.props.name}/>;
+        var cn = cx(this.props.classNAme, 'fa', `fa-${this.props.name}`);
+        return <i className={cn}/>;
     }
 }
 

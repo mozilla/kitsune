@@ -1,20 +1,17 @@
+import cx from 'classnames';
 import {Icon} from './contributors-common.jsx';
-
-function cssifyName(name) {
-    return name.replace(/_/g, '-');
-}
 
 export default class SelectTable extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            selections: props.contributors.map(function() { return false; })
+            selections: props.data.map(function() { return false; })
         }
     }
 
     componentWillReceiveProps(newProps) {
         var {selections} = this.state;
-        for (var i = 0; i < newProps.contributors.length; i++) {
+        for (var i = 0; i < newProps.data.length; i++) {
             selections[i] = !!selections[i];
         }
         this.setState({selections});
@@ -33,15 +30,18 @@ export default class SelectTable extends React.Component {
     }
 
     render() {
-        if (this.props.contributors.length > 0) {
+        if (this.props.data.length > 0) {
             return <div>
                 <table className="top-contributors">
                     <SelectTableHeader
                         selections={this.state.selections}
                         onSelectAll={this.handleSelectAll.bind(this)}
-                        columns={this.props.columns}/>
+                        columns={this.props.columns}
+                        filters={this.props.filters}
+                        setFilters={this.props.setFilters}
+                        allowedOrderings={this.props.allowedOrderings}/>
                     <SelectTableBody
-                        contributors={this.props.contributors}
+                        data={this.props.data}
                         selections={this.state.selections}
                         onSelect={this.handleSelection.bind(this)}
                         columns={this.props.columns}/>
@@ -53,15 +53,38 @@ export default class SelectTable extends React.Component {
     }
 }
 
+SelectTable.propTypes = {
+    data: React.PropTypes.arrayOf(React.PropTypes.object).isRequired,
+    columns: React.PropTypes.arrayOf(React.PropTypes.object).isRequired,
+    setFilters: React.PropTypes.func.isRequired,
+    filters: React.PropTypes.object.isRequired,
+    allowedOrderings: React.PropTypes.arrayOf(React.PropTypes.string).isRequired,
+};
+
+
 class SelectTableHeader extends React.Component {
-    handleChange(e) {
-        e.stopPropagation();
+    handleSelectAll(ev) {
+        ev.stopPropagation();
         this.props.onSelectAll(e.target.checked);
     }
 
+    handleSortClick(name, ev) {
+        ev.preventDefault();
+        this.props.setFilters({ordering: name});
+    }
+
     render() {
-        function and(a, b) { return a && b; }
-        var allSelected = this.props.selections.reduce(and, true);
+        var allSelected = this.props.selections.reduce((a, b) => a && b, true);
+
+        let sortState = (key) => {
+            if (key === this.props.filters.ordering) {
+                return 'ascending';
+            } else if (`-${key}` === this.props.filters.ordering) {
+                return 'descending';
+            } else {
+                return 'idle';
+            }
+        };
 
         return (
             <thead>
@@ -69,13 +92,32 @@ class SelectTableHeader extends React.Component {
                     <th data-column="select">
                         <input type="checkbox" ref="selectAll"
                             checked={allSelected}
-                            onChange={this.handleChange.bind(this)}/>
+                            onChange={this.handleSelectAll.bind(this)}/>
                     </th>
-                    {this.props.columns.map((info) => (
-                        <th key={info.key} data-column={cssifyName(info.key)}>
-                            {info.title}
-                        </th>
-                    ))}
+                    {this.props.columns.map((info) => {
+                        var nextOrdering;
+                        if (this.props.filters.ordering === `-${info.key}`) {
+                            nextOrdering = info.key;
+                        } else {
+                            nextOrdering = `-${info.key}`;
+                        }
+                        var pageFilters = _.extend({}, this.props.filters, {ordering: nextOrdering});
+                        var pageUrl = k.queryParamStringFromDict(pageFilters);
+
+                        return (
+                            <th key={info.key} data-column={info.key}>
+                                {this.props.allowedOrderings.indexOf(info.key) >= 0
+                                    ? (
+                                        <a href={pageUrl} onClick={this.handleSortClick.bind(this, nextOrdering)}>
+                                            {info.title}
+                                            <SortWidget state={sortState(info.key)}/>
+                                        </a>
+                                    )
+                                    : info.title
+                                }
+                            </th>
+                        );
+                    })}
                     <th data-column="actions">Actions</th>
                 </tr>
             </thead>
@@ -83,11 +125,39 @@ class SelectTableHeader extends React.Component {
     }
 }
 
+SelectTableHeader.propTypes = {
+    selections: React.PropTypes.arrayOf(React.PropTypes.bool).isRequired,
+    onSelectAll: React.PropTypes.func.isRequired,
+    columns: React.PropTypes.arrayOf(React.PropTypes.object).isRequired,
+    setFilters: React.PropTypes.func.isRequired,
+    filters: React.PropTypes.object.isRequired,
+    allowedOrderings: React.PropTypes.arrayOf(React.PropTypes.string).isRequired,
+};
+
+
+class SortWidget extends React.Component {
+    render() {
+        var state = this.props.state;
+        if (state === 'ascending') {
+            return <Icon className="sort-widget" name="sort-asc"/>;
+        } else if (state === 'descending') {
+            return <Icon className="sort-widget" name="sort-desc"/>;
+        } else {
+            return null;
+        }
+    }
+}
+
+SortWidget.propTypes = {
+    state: React.PropTypes.oneOf(['ascending', 'descending', 'idle']).isRequired,
+}
+
+
 class SelectTableBody extends React.Component {
     render() {
         return (
             <tbody>
-                {this.props.contributors.map(function(contributor, i) {
+                {this.props.data.map(function(contributor, i) {
                     return <SelectTableRow
                         selected={this.props.selections[i]}
                         onSelect={(val) => this.props.onSelect(i, val)}
@@ -113,7 +183,7 @@ class SelectTableRow extends React.Component {
                     <input type="checkbox" checked={this.props.selected} onChange={this.handleChange.bind(this)}/>
                 </td>
                 {this.props.columns.map((info) => (
-                    <td key={info.key} data-column={cssifyName(info.key)}>
+                    <td key={info.key} data-column={info.key}>
                         {(info.transform || (d) => d)(this.props[info.key])}
                     </td>
                 ))}

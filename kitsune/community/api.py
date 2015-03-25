@@ -48,6 +48,10 @@ class TopContributorsBase(views.APIView):
         """No-op, so that unknown filters can be blocked."""
         return F()
 
+    def filter_ordering(self, value):
+        """No-op, so that unknown filters can be blocked."""
+        return F()
+
     def filter_startdate(self, value):
         date = fields.DateField().from_native(value)
         dt = datetime.combine(date, datetime.min.time())
@@ -80,6 +84,11 @@ class TopContributorsBase(views.APIView):
 
 
 class TopContributorsQuestions(TopContributorsBase):
+
+    def get_default_filters(self):
+        filters = super(TopContributorsQuestions, self).get_default_filters()
+        filters['ordering'] = '-answer_count'
+        return filters
 
     def get_filters(self):
         f = super(TopContributorsQuestions, self).get_filters()
@@ -149,8 +158,15 @@ class TopContributorsQuestions(TopContributorsBase):
             combined[d['term']]['helpful_vote_count'] = d['total']
 
         # Sort by answer count, and get just the ids into a list.
+        sort_key = self.filter_values['ordering']
+        if sort_key[0] == '-':
+            sort_reverse = True
+            sort_key = sort_key[1:]
+        else:
+            sort_reverse = False
+
         top_contributors = combined.values()
-        top_contributors.sort(key=lambda d: d['answer_count'], reverse=True)
+        top_contributors.sort(key=lambda d: d[sort_key], reverse=sort_reverse)
         user_ids = [c['user_id'] for c in top_contributors]
         full_count = len(user_ids)
 
@@ -187,7 +203,7 @@ class TopContributorsQuestions(TopContributorsBase):
             data.append(d)
 
         # One last sort, since ES didn't return the users in any particular order.
-        data.sort(key=lambda d: d['answer_count'], reverse=True)
+        data.sort(key=lambda d: d[sort_key], reverse=sort_reverse)
 
         # Add ranks to the objects.
         for i, contributor in enumerate(data, 1):
@@ -197,10 +213,20 @@ class TopContributorsQuestions(TopContributorsBase):
             'results': data,
             'count': full_count,
             'filters': self.filter_values,
+            'allowed_orderings': [
+                'answer_count',
+                'solution_count',
+                'helpful_vote_count',
+            ],
         }
 
 
 class TopContributorsLocalization(TopContributorsBase):
+
+    def get_default_filters(self):
+        filters = super(TopContributorsLocalization, self).get_default_filters()
+        filters['ordering'] = '-revision_count'
+        return filters
 
     def get_data(self, request):
         # So filters can use the request.
@@ -242,8 +268,15 @@ class TopContributorsLocalization(TopContributorsBase):
             combined[d['term']]['review_count'] = d['count']
 
         # Sort by revision count, and get just the ids into a list.
+        sort_key = self.filter_values['ordering']
+        if sort_key[0] == '-':
+            sort_reverse = True
+            sort_key = sort_key[1:]
+        else:
+            sort_reverse = False
+
         top_contributors = combined.values()
-        top_contributors.sort(key=lambda d: d['revision_count'], reverse=True)
+        top_contributors.sort(key=lambda d: d[sort_key], reverse=sort_reverse)
         user_ids = [c['user_id'] for c in top_contributors]
         full_count = len(user_ids)
 
@@ -280,7 +313,7 @@ class TopContributorsLocalization(TopContributorsBase):
             data.append(d)
 
         # One last sort, since ES didn't return the users in any particular order.
-        data.sort(key=lambda d: d['revision_count'], reverse=True)
+        data.sort(key=lambda d: d[sort_key], reverse=sort_reverse)
 
         # Add ranks to the objects.
         for i, contributor in enumerate(data, 1):
@@ -290,4 +323,8 @@ class TopContributorsLocalization(TopContributorsBase):
             'results': data,
             'count': full_count,
             'filters': self.filter_values,
+            'allowed_orderings': [
+                'revision_count',
+                'review_count',
+            ],
         }
