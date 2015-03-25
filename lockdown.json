@@ -6,13 +6,27 @@
     "0.1.0": "3ca9735cf1dde0edf7a4bf6641709c8024f9b227"
   },
   "ansi-regex": {
-    "0.2.1": "0d8e946967a3d8143f93e24e298525fc1b2235f9"
+    "0.1.0": "55ca60db6900857c423ae9297980026f941ed903",
+    "0.2.1": "0d8e946967a3d8143f93e24e298525fc1b2235f9",
+    "1.1.1": "41c847194646375e6a1a5d10c3ca054ef9fc980d"
   },
   "ansi-styles": {
     "1.1.0": "eaecbf66cd706882760b2f4691582b8f55d7a7de"
   },
   "archy": {
     "0.0.2": "910f43bf66141fc335564597abc189df44b3d35e"
+  },
+  "argparse": {
+    "1.0.2": "bcfae39059656d1973d0b9e6a1a74154b5a9a136"
+  },
+  "array-filter": {
+    "0.0.1": "7da8cf2e26628ed732803581fd21f67cacd2eeec"
+  },
+  "array-map": {
+    "0.0.0": "88a2bab73d1cf7bcd5c1b118a003f66f665fa662"
+  },
+  "array-reduce": {
+    "0.0.0": "173899d3ffd1c7d9383e4479525dbe278cab5f2b"
   },
   "asap": {
     "1.0.0": "b2a45da5fdfa20b0496fc3768cc27c12fa916a7d"
@@ -33,14 +47,39 @@
   "balanced-match": {
     "0.2.0": "38f6730c03aab6d5edbb52bd934885e756d71674"
   },
+  "binary": {
+    "0.3.0": "9f60553bc5ce8c3386f3b553cff47462adecaa79"
+  },
   "bl": {
     "0.9.4": "4702ddf72fbe0ecd82787c00c113aea1935ad0e7"
   },
   "boom": {
+    "0.4.2": "7a636e9ded4efcefb19cef4947a3c67dfaee911b",
     "2.6.1": "4dc8ef9b6dfad9c43bbbfbe71fa4c21419f22753"
+  },
+  "bower": {
+    "1.3.12": "37de0edb3904baf90aee13384a1a379a05ee214c"
+  },
+  "bower-config": {
+    "0.5.2": "1f7d2e899e99b70c29a613e70d4c64590414b22e"
+  },
+  "bower-endpoint-parser": {
+    "0.2.2": "00b565adbfab6f2d35addde977e97962acbcb3f6"
+  },
+  "bower-json": {
+    "0.4.0": "a99c3ccf416ef0590ed0ded252c760f1c6d93766"
+  },
+  "bower-logger": {
+    "0.2.2": "39be07e979b2fc8e03a94634205ed9422373d381"
+  },
+  "bower-registry-client": {
+    "0.2.4": "269fc7e898b627fb939d1144a593254d7fbbeebc"
   },
   "brace-expansion": {
     "1.1.0": "c9b7d03c03f37bc704be100e522b40db8f6cfcd9"
+  },
+  "buffers": {
+    "0.1.1": "b24579c3bed4d6d396aeee6d9a8ae7f5482ab7bb"
   },
   "camelcase": {
     "1.0.2": "7912eac1d496836782c976c2d73e874dc54f2eaf"
@@ -48,17 +87,32 @@
   "camelcase-keys": {
     "1.0.0": "bd1a11bf9b31a1ce493493a930de1a0baf4ad7ec"
   },
+  "cardinal": {
+    "0.4.0": "7d10aafb20837bde043c45e43a0c8c28cdaae45e"
+  },
   "caseless": {
+    "0.6.0": "8167c1ab8397fb5bb95f96d28e5a81c50f247ac4",
+    "0.8.0": "5bca2881d41437f54b2407ebe34888c7b9ad4f7d",
     "0.9.0": "b7b65ce6bf1413886539cfd533f0b30effa9cf88"
   },
+  "chainsaw": {
+    "0.1.0": "5eab50b28afe58074d0d58291388828b5e5fbc98"
+  },
   "chalk": {
+    "0.5.0": "375dfccbc21c0a60a8b61bc5b78f3dc2a55c212f",
     "0.5.1": "663b3a648b68b55d04690d49167aa837858f2174"
+  },
+  "chmodr": {
+    "0.1.0": "e09215a1d51542db2a2576969765bcf6125583eb"
   },
   "chokidar": {
     "0.8.4": "3b2b5066817086534ba81a092bdcf4be25b8bee0"
   },
   "clean-css": {
     "2.1.8": "2b4b2fd60f32441096216ae25a21faa74580dc83"
+  },
+  "cli-color": {
+    "0.3.3": "12d5bdd158ff8a0b0db401198913c03df069f6f5"
   },
   "clone": {
     "0.1.19": "613fb68639b26a494ac53253e15b1a6bd88ada85",
@@ -79,10 +133,14 @@
   "config-chain": {
     "1.1.8": "0943d0b7227213a20d4eaff4434f4a1c0a052cad"
   },
+  "configstore": {
+    "0.3.2": "25e4c16c3768abf75c5a65bc61761f495055b459"
+  },
   "core-util-is": {
     "1.0.1": "6b07085aef9a3ccac6ee53bf9d3df0c1521a5538"
   },
   "cryptiles": {
+    "0.2.2": "ed91ff1f17ad13d3748288594f8a48a0d26f325c",
     "2.0.4": "09ea1775b9e1c7de7e60a99d42ab6f08ce1a1285"
   },
   "cssmin": {
@@ -91,11 +149,20 @@
   "ctype": {
     "0.5.3": "82c18c2461f74114ef16c135224ad0b9144ca12f"
   },
+  "d": {
+    "0.1.1": "da184c535d18d8ee7ba2aa229b914009fae11309"
+  },
   "dateformat": {
     "1.0.11": "f27cbee7a012bbfb82ea051562d3977f6093dbb1"
   },
   "debuglog": {
     "1.0.1": "aa24ffb9ac3df9a2351837cfb2d279360cd78492"
+  },
+  "decompress-zip": {
+    "0.0.8": "4a265b22c7b209d7b24fa66f2b2dfbced59044f3"
+  },
+  "deep-extend": {
+    "0.2.11": "7a16ba69729132340506170494bc83f7076fe08f"
   },
   "defaults": {
     "1.0.2": "6902e25aa047649a501e19ef9e98f3e8365c109a"
@@ -116,16 +183,41 @@
     "0.0.2": "c614dcf67e2fb14995a91711e5a617e8a60a31db"
   },
   "end-of-stream": {
-    "0.1.5": "8e177206c3c80837d85632e8b9359dfe8b2f6eaf"
+    "0.1.5": "8e177206c3c80837d85632e8b9359dfe8b2f6eaf",
+    "1.0.0": "d4596e702734a93e40e9af864319eabd99ff2f0e",
+    "1.1.0": "e9353258baa9108965efc41cb0ef8ade2f3cfb07"
+  },
+  "es5-ext": {
+    "0.10.6": "e27d5750401a11c08259e3b9b5d3bdd3281df00a"
+  },
+  "es6-iterator": {
+    "0.1.3": "d6f58b8c4fc413c249b4baa19768f8e4d7c8944e"
+  },
+  "es6-symbol": {
+    "0.1.1": "9cf7fab2edaff1b1da8fe8e68bfe3f5aca6ca218",
+    "2.0.1": "761b5c67cfd4f1d18afb234f691d678682cb3bf3"
+  },
+  "es6-weak-map": {
+    "0.1.2": "bc5b5fab73f68f6f77a6b39c481fce3d7856d385"
   },
   "escape-string-regexp": {
     "1.0.3": "9e2d8b25bc2555c3336723750e03f099c2735bb5"
+  },
+  "esprima": {
+    "1.0.4": "9f557e08fc3b4d26ece9dd34f8fbf476b62585ad",
+    "2.0.0": "609ac5c2667eae5433b41eb9ecece2331b41498f"
+  },
+  "event-emitter": {
+    "0.3.3": "df8e806541c68ab8ff20a79a1841b91abaa1bee4"
   },
   "event-stream": {
     "3.1.7": "b4c540012d0fe1498420f3d8946008db6393c37a"
   },
   "extend": {
     "1.3.0": "d1516fb0ff5624d2ebf9123ea1dac5a1994004f8"
+  },
+  "figures": {
+    "1.3.5": "d1a31f4e1d2c2938ecde5c06aa16134cf29f4771"
   },
   "find-index": {
     "0.1.1": "675d358b2ca3892d795a1ab47232f8b6e2e0dde4"
@@ -140,10 +232,17 @@
     "0.5.2": "6d0e09c4921f94a27f63d3b49c5feff1ea4c5130"
   },
   "form-data": {
+    "0.1.4": "91abd788aba9702b1aabfa8bc01031a2ac9e3b12",
     "0.2.0": "26f8bc26da6440e299cbdcfb69035c4f77a6e466"
   },
   "from": {
     "0.1.3": "ef63ac2062ac32acf7862e0d40b44b896f22f3bc"
+  },
+  "fstream": {
+    "1.0.4": "6c52298473fd6351fd22fc4bf9254fcfebe80f2b"
+  },
+  "fstream-ignore": {
+    "1.0.2": "18c891db01b782a74a7bff936a0f24997741c7ab"
   },
   "gaze": {
     "0.5.1": "22e731078ef3e49d1c4ab1115ac091192051824c"
@@ -160,6 +259,7 @@
   "glob": {
     "3.1.21": "d29e0a055dea5138f4d07ed40e8982e83c2066cd",
     "3.2.11": "4a973f635b9190f715d10987d5c00fd2815ebe3d",
+    "4.0.6": "695c50bdd4e2fb5c5d370b091f388d3707e291a7",
     "4.5.3": "c6cb73d3226c1efef04de3c56d012f03377ee15f"
   },
   "glob-stream": {
@@ -174,8 +274,12 @@
   "globule": {
     "0.1.0": "d9c8edde1da79d125a151b79533b978676346ae5"
   },
+  "got": {
+    "0.3.0": "888ec66ca4bc735ab089dbe959496d0f79485493"
+  },
   "graceful-fs": {
     "1.2.3": "15a4806a57547cb2d2dbf27f42e89a8c3451b364",
+    "2.0.3": "7cd2cdb228a4a3f36e95efa6cc142de7d1a136d0",
     "3.0.6": "dce3a18351cb94cdc82e688b2e3dd2842d1b09bb"
   },
   "gulp": {
@@ -193,13 +297,18 @@
   "gulp-watch": {
     "0.6.8": "4bdf185bb5022389e46667fc3dbf43ea313fba58"
   },
+  "handlebars": {
+    "2.0.0": "6e9d7f8514a3467fa5e9f82cc158ecfc1d5ac76f"
+  },
   "has-ansi": {
     "0.1.0": "84f265aae8c0e6a88a12d7022894b7568894c62e"
   },
   "hawk": {
+    "1.1.1": "87cd491f9b46e4e2aeaca335416766885d2d1ed9",
     "2.3.1": "1e731ce39447fa1d0f6d707f7bceebec0fd1ec1f"
   },
   "hoek": {
+    "0.9.1": "3d322462badf07716ea7eb85baf88079cddce505",
     "2.11.1": "3839a8b72f86aade3312100afaf80648af155b38"
   },
   "http-signature": {
@@ -218,11 +327,24 @@
   "ini": {
     "1.3.3": "c07e34aef1de06aff21d413b458e52b21533a11e"
   },
+  "inquirer": {
+    "0.6.0": "614d7bb3e48f9e6a8028e94a0c38f23ef29823d3",
+    "0.7.1": "b8acf140165bd581862ed1198fb6d26430091fac"
+  },
+  "insight": {
+    "0.4.3": "76d653c5c0d8048b03cdba6385a6948f74614af0"
+  },
   "interpret": {
     "0.3.10": "088c25de731c6c5b112a90f0071cfaf459e5a7bb"
   },
+  "intersect": {
+    "0.0.3": "c1a4a5e5eac6ede4af7504cc07e0ada7bc9f4920"
+  },
   "is-finite": {
     "1.0.0": "2b1dbad1162cdca6a4dc89f12b2f3dae12393282"
+  },
+  "is-root": {
+    "1.0.0": "07b6c233bc394cd9d02ba15c966bd6660d6342d5"
   },
   "is-utf8": {
     "0.2.0": "b8aa54125ae626bfe4e3beb965f16a89c58a1137"
@@ -236,11 +358,23 @@
   "jju": {
     "1.2.0": "add5b586fec853b44929d78bf94864ab577c02e9"
   },
+  "js-yaml": {
+    "3.2.7": "102790f265d986fe95a4d0f2a792e7a7bd886eec"
+  },
   "json-parse-helpfulerror": {
     "1.0.3": "13f14ce02eed4e981297b64eb9e3b932e2dd13dc"
   },
   "json-stringify-safe": {
     "5.0.0": "4c1f228b5050837eba9d21f50c2e6e320624566e"
+  },
+  "jsonify": {
+    "0.0.0": "2c74b6ee41d93ca51b7b5aaee8f503631d252a73"
+  },
+  "junk": {
+    "1.0.1": "824ef8925f02026f61bc6e6fa346b25fa8f3938b"
+  },
+  "latest-version": {
+    "0.2.0": "adaf898d5f22380d3f9c45386efdff0a1b5b7501"
   },
   "less": {
     "1.7.0": "6f1293bac1f402c932c2ce21ba7337f7c635ba84"
@@ -251,9 +385,13 @@
   "lockdown": {
     "0.0.8-dev": "075c0c1852e7cf746e4e85ccab8113b381f0b6e0"
   },
+  "lockfile": {
+    "1.0.0": "b3a7609dda6012060083bacb0ab0ecbca58e9203"
+  },
   "lodash": {
     "1.0.1": "57945732498d92310e5bd4b1ff4f273a79e6c9fc",
-    "2.4.1": "5b7723034dda4d262e5a46fb2c58d7cc22f71420"
+    "2.4.1": "5b7723034dda4d262e5a46fb2c58d7cc22f71420",
+    "3.5.0": "19bb3f4d51278f0b8c818ed145c74ecf9fe40e6d"
   },
   "lodash._escapehtmlchar": {
     "2.4.1": "df67c3bb6b7e8e1e831ab48bfa0795b92afe899d"
@@ -279,17 +417,26 @@
   "lodash._shimkeys": {
     "2.4.1": "6e9cc9666ff081f0b5a6c978b83e242e6949d203"
   },
+  "lodash.debounce": {
+    "2.4.1": "d8cead246ec4b926e8b85678fc396bfeba8cc6fc"
+  },
   "lodash.defaults": {
     "2.4.1": "a7e8885f05e68851144b6e12a8f3678026bc4c54"
   },
   "lodash.escape": {
     "2.4.1": "2ce12c5e084db0a57dda5e5d1eeeb9f5d175a3b4"
   },
+  "lodash.isfunction": {
+    "2.4.1": "2cfd575c73e498ab57e319b77fa02adef13a94d1"
+  },
   "lodash.isobject": {
     "2.4.1": "5a2e47fe69953f1ee631a7eba1fe64d2d06558f5"
   },
   "lodash.keys": {
     "2.4.1": "48dea46df8ff7632b10d706b8acb26591e2b3727"
+  },
+  "lodash.now": {
+    "2.4.1": "6872156500525185faf96785bb7fe7fe15b562c6"
   },
   "lodash.template": {
     "2.4.1": "9e611007edf629129a974ab3c48b817b3e1cf20d"
@@ -301,13 +448,20 @@
     "2.4.1": "abf514436b3cb705001627978cbcf30b1280eea4"
   },
   "lru-cache": {
+    "2.3.1": "b3adf6b3d856e954e2c390e6cef22081245a53d6",
     "2.5.0": "d82388ae9c960becbea0c73bb9eb79b6c6ce9aeb"
+  },
+  "lru-queue": {
+    "0.1.0": "2738bd9f0d3cf4f84490c5736c48699ac632cda3"
   },
   "map-obj": {
     "1.0.0": "bcbdf6756758763c182daf79e18094a2f1c85766"
   },
   "map-stream": {
     "0.1.0": "e56aa94c4c8055a16404a0674b78f215f7c8e194"
+  },
+  "memoizee": {
+    "0.3.8": "b5faf419f02fafe3c2cc1cf5d3907c210fc7efdc"
   },
   "meow": {
     "3.1.0": "5974708a0fe0dcbf27e0e6a49120b4c5e82c3cea"
@@ -319,11 +473,13 @@
     "1.8.0": "82a9b385f22b0f5954dec4d445faba0722c4ad25"
   },
   "mime-types": {
+    "1.0.2": "995ae1392ab8affcbfcb2641dd054e943c0d5dce",
     "2.0.10": "eacd81bb73cab2a77447549a078d4f2018c67b4d"
   },
   "minimatch": {
     "0.2.14": "c74e780574f63c6f9a090e90efbe6ef53a6a756a",
     "0.3.0": "275d8edaac4f1bb3326472089e7949c8394699dd",
+    "1.0.0": "e0dd2120b49e1b724ce8d714c520822a9438576d",
     "2.0.4": "83bea115803e7a097a78022427287edb762fafed"
   },
   "minimist": {
@@ -336,36 +492,59 @@
     "0.3.5": "de3e5f8961c88c787ee1368df849ac4413eca8d7",
     "0.5.0": "1d73076a6df986cd9344e15e71fcc05a4c9abf12"
   },
+  "mkpath": {
+    "0.1.0": "7554a6f8d871834cc97b5462b122c4c124d6de91"
+  },
+  "mout": {
+    "0.9.1": "84f0f3fd6acc7317f63de2affdcc0cee009b0477"
+  },
   "multipipe": {
     "0.1.2": "2a8f2ddf70eed564dff2d57f1e1a137d9f05078b"
+  },
+  "mute-stream": {
+    "0.0.4": "a9219960a6d5d5d046597aee51252c6655f7177e"
+  },
+  "next-tick": {
+    "0.2.2": "75da4a927ee5887e39065880065b7336413b310d"
   },
   "node-uuid": {
     "1.4.3": "319bb7a56e7cb63f00b5c0cd7851cd4b4ddf1df9"
   },
   "nopt": {
+    "1.0.10": "6ddd21bd2a31417b92727dd585f8a6f37608ebee",
+    "2.2.1": "2aa09b7d1768487b3b89a9c5aa52335bff0baea7",
     "3.0.1": "bce5c42446a3291f47622a370abbf158fbbacbfd"
   },
   "normalize-package-data": {
     "1.0.3": "8be955b8907af975f1a4584ea8bb9b41492312f5"
   },
   "npmconf": {
-    "1.1.5": "07777bea48d78eed75a4258962a09f3dc7b6b916"
+    "1.1.5": "07777bea48d78eed75a4258962a09f3dc7b6b916",
+    "2.1.1": "a266c7e5c56695eb7f55caf3a5a7328f24510dae"
   },
   "nunjucks": {
     "1.0.5": "8e3f4e7cdd5a311a6e2f8038aa31f4f97eb4ca52"
   },
   "oauth-sign": {
+    "0.4.0": "f22956f31ea7151a821e5f2fb32c113cad8b9f69",
+    "0.5.0": "d767f5169325620eab2e087ef0c472e773db6461",
     "0.6.0": "7dbeae44f6ca454e1f168451d630746735813ce3"
   },
   "object-assign": {
     "0.2.2": "e0a78bc56af9c092051167f6b8f23249e7dde1a6",
+    "0.3.1": "060e2a2a27d7c0d77ec77b78f11aa47fd88008d2",
+    "1.0.0": "e65dc8766d3b47b4b8307465c8311da030b070a6",
     "2.0.0": "f8309b09083b01261ece3ef7373f2b57b8dd7042"
   },
   "object-keys": {
     "0.4.0": "28a6aae7428dd2c3a92f3d95f21335dd204e0336"
   },
   "once": {
+    "1.2.0": "de1905c636af874a8fba862d9aabddd1f920461c",
     "1.3.1": "f3f3e4da5b7d27b5c732969ee3e67e729457b31f"
+  },
+  "opn": {
+    "1.0.1": "c2dce2a5c41ab9589a7486aaff4d8de002d041ca"
   },
   "optimist": {
     "0.3.7": "c90941ad59e4273328923074d2cf2e7cbc6ec0d9",
@@ -377,8 +556,21 @@
   "ordered-read-streams": {
     "0.1.0": "fd565a9af8eb4473ba69b6ed8a34352cb552f126"
   },
+  "os-name": {
+    "1.0.3": "1b379f64835af7c5a7f498b357cb95215c159edf"
+  },
   "osenv": {
+    "0.0.3": "cd6ad8ddb290915ad9e22765576025d411f29cb6",
     "0.1.0": "61668121eec584955030b9f470b1d2309504bfcb"
+  },
+  "osx-release": {
+    "1.0.0": "02bee80f3b898aaa88922d2f86e178605974beac"
+  },
+  "p-throttler": {
+    "0.1.0": "1b16907942c333e6f1ddeabcb3479204b8c417c4"
+  },
+  "package-json": {
+    "0.2.0": "0316e177b8eb149985d34f706b4a5543b274bec5"
   },
   "pause-stream": {
     "0.0.11": "fe5a34b0cbce12b5aa6a2b403ee2e73b602f1445"
@@ -386,14 +578,28 @@
   "pretty-hrtime": {
     "0.2.2": "d4fd88351e3a4741f8173af7d6a4b846f9895c00"
   },
+  "promptly": {
+    "0.2.0": "73ef200fa8329d5d3a8df41798950b8646ca46d9"
+  },
   "proto-list": {
     "1.2.3": "6235554a1bca1f0d15e3ca12ca7329d5def42bd9"
+  },
+  "pump": {
+    "0.3.5": "ae5ff8c1f93ed87adc6530a97565b126f585454b"
   },
   "punycode": {
     "1.3.2": "9653a036fb7c1ee42342f2325cceefea3926c48d"
   },
+  "q": {
+    "0.9.7": "4de2e6cb3b29088c9e4cbc03bf9d42fb96ce2f75",
+    "1.0.1": "11872aeedee89268110b10a718448ffb10112a14"
+  },
   "qs": {
+    "1.2.2": "19b57ff24dc2a99ce1f8bdf6afcda59f8ef61f88",
     "2.3.3": "e9e85adbe75da0bbe4c8e0476a086290f863b404"
+  },
+  "read": {
+    "1.0.5": "007a3d169478aa710a491727e453effb92e76203"
   },
   "read-installed": {
     "3.1.0": "47075ba8828147ed495084df779f29a4329ad3df"
@@ -408,24 +614,56 @@
   "readdir-scoped-modules": {
     "1.0.1": "5c2a77f3e08250a8fddf53fa58cdc17900b808b9"
   },
+  "readline2": {
+    "0.1.1": "99443ba6e83b830ef3051bfd7dc241a82728d568"
+  },
   "recursive-readdir": {
     "0.0.2": "0bc47dc4838e646dccfba0507b5e57ffbff35f7c"
+  },
+  "redeyed": {
+    "0.4.4": "37e990a6f2b21b2a11c2e6a48fd4135698cba97f"
+  },
+  "registry-url": {
+    "0.1.1": "1739427b81b110b302482a1c7cd727ffcc82d5be"
   },
   "repeating": {
     "1.1.2": "dcced290c4d22df9818746eb5257679d27fe0283"
   },
   "request": {
+    "2.42.0": "572bd0148938564040ac7ab148b96423a063304a",
+    "2.51.0": "35d00bbecc012e55f907b1bd9e0dbd577bfef26e",
     "2.53.0": "180a3ae92b7b639802e4f9545dd8fcdeb71d760c"
+  },
+  "request-progress": {
+    "0.3.0": "bdf2062bfc197c5d492500d44cb3aff7865b492e"
+  },
+  "request-replay": {
+    "0.2.0": "9b693a5d118b39f5c596ead5ed91a26444057f60"
   },
   "resolve": {
     "0.7.4": "395a9ef9e873fbfe12bd14408bd91bb936003d69"
+  },
+  "retry": {
+    "0.6.0": "1c010713279a6fd1e8def28af0c3ff1871caa537"
+  },
+  "rimraf": {
+    "2.2.8": "e439be2aaee327321952730f99a8929e4fc50582"
+  },
+  "rx": {
+    "2.4.6": "ac93b9f132f226b5aba76ff24c4f9a869a37aa5b"
   },
   "semver": {
     "2.3.2": "b9848f25d6cf36333073ec9ef8856d42f1233e52",
     "3.0.1": "720ac012515a252f91fb0dd2e99a56a70d6cf078"
   },
+  "semver-diff": {
+    "0.1.0": "4f6057ca3eba23cc484b51f64aaf88b131a3855d"
+  },
   "sequencify": {
     "0.0.7": "90cff19d02e07027fd767f5ead3e7b95d1e7380c"
+  },
+  "shell-quote": {
+    "1.4.3": "952c44e0b1ed9013ef53958179cc643e8777466b"
   },
   "sigmund": {
     "1.0.0": "66a2b3a749ae8b5fb89efd4fcc01dc94fbe02296"
@@ -434,6 +672,7 @@
     "1.1.6": "56eb027d65b4d2dce6cb2e2d32c4d4afc9e1d707"
   },
   "sntp": {
+    "0.2.4": "fb885f18b0f3aad189f824862536bceeec750900",
     "1.0.9": "6541184cc90aeea6c6e7b35e2659082443c66198"
   },
   "source-map": {
@@ -442,26 +681,46 @@
   "split": {
     "0.2.10": "67097c601d697ce1368f418f06cd201cf0521a57"
   },
+  "sprintf-js": {
+    "1.0.2": "11e4d84ff32144e35b0bf3a66f8587f38d8f9978"
+  },
   "stream-combiner": {
     "0.0.4": "4d5e433c185261dde623ca3f44c586bcf5c4ad14"
   },
   "stream-consume": {
     "0.1.0": "a41ead1a6d6081ceb79f65b061901b6d8f3d1d0f"
   },
+  "string-length": {
+    "0.1.2": "ab04bb33867ee74beed7fb89bb7f089d392780f2"
+  },
   "string_decoder": {
     "0.10.31": "62e203bc41766c6c28c9fc84301dab1c5310fa94"
+  },
+  "stringify-object": {
+    "1.0.1": "86d35e7dbfbce9aa45637d7ecdd7847e159db8a2"
   },
   "stringstream": {
     "0.0.4": "0f0e3423f942960b5692ac324a57dd093bc41a92"
   },
   "strip-ansi": {
-    "0.3.0": "25f48ea22ca79187f3174a4db8759347bb126220"
+    "0.2.2": "854d290c981525fc8c397a910b025ae2d54ffc08",
+    "0.3.0": "25f48ea22ca79187f3174a4db8759347bb126220",
+    "2.0.1": "df62c1aa94ed2f114e1d0f21fd1d50482b79a60e"
   },
   "strip-bom": {
     "1.0.0": "85b8862f3844b5a6d5ec8467a93598173a36f794"
   },
   "supports-color": {
     "0.2.0": "d92de2694eb3f67323973d7ae3d8b55b4c22190a"
+  },
+  "tar-fs": {
+    "0.5.2": "0f59424be7eeee45232316e302f66d3f6ea6db3e"
+  },
+  "tar-stream": {
+    "0.4.7": "1f1d2ce9ebc7b42765243ca0e8f1b7bfda0aadcd"
+  },
+  "throttleit": {
+    "0.0.2": "cfedf88e60c00dd9697b61fdd2a8343a9b680eaf"
   },
   "through": {
     "2.3.6": "26681c0f524671021d4e29df7c36bce2d0ecf2e8"
@@ -474,13 +733,26 @@
   "tildify": {
     "0.2.0": "70e639947af67d6ab6b822bbed0a6806fd81e430"
   },
+  "timers-ext": {
+    "0.1.0": "00345a2ca93089d1251322054389d263e27b77e2"
+  },
+  "tmp": {
+    "0.0.23": "de874aa5e974a85f0a32cdfdbd74663cb3bd9c74"
+  },
+  "touch": {
+    "0.0.2": "a65a777795e5cbbe1299499bdc42281ffb21b5f4"
+  },
   "tough-cookie": {
     "0.12.1": "8220c7e21abd5b13d96804254bd5a81ebf2c7d62"
+  },
+  "traverse": {
+    "0.3.9": "717b8f220cc0bb7b44e40514c22b2e8bbc70d8b9"
   },
   "tunnel-agent": {
     "0.4.0": "b1184e312ffbcf70b3b4c78e8c219de7ebb1c550"
   },
   "uglify-js": {
+    "2.3.6": "fa0984770b428b7a9b2a8058f46355d14fef211a",
     "2.4.13": "18debc9e6ecfc20db1a5ea035f839d436a605aba"
   },
   "uglify-to-browserify": {
@@ -492,8 +764,17 @@
   "unique-stream": {
     "1.0.0": "d59a4a75427447d9aa6c91e70263f8d26a4b104b"
   },
+  "update-notifier": {
+    "0.2.0": "a010c928adcf02090b8e0ce7fef6fb0a7cacc34a"
+  },
+  "user-home": {
+    "1.1.1": "2b5be23a32b63a7c9deb8d0f28d485724a3df190"
+  },
   "util-extend": {
     "1.0.1": "bb703b79480293ddcdcfb3c6a9fea20f483415bc"
+  },
+  "uuid": {
+    "2.0.1": "c2a30dedb3e535d72ccf82e343941a50ba8533ac"
   },
   "vinyl": {
     "0.2.3": "bca938209582ec5a49ad538a00fa1f125e513252",
@@ -502,11 +783,20 @@
   "vinyl-fs": {
     "0.3.13": "3d384c5b3032e356cd388023e3a085303382ac23"
   },
+  "which": {
+    "1.0.9": "460c1da0f810103d0321a9b633af9e575e64486f"
+  },
+  "win-release": {
+    "1.0.0": "8993308dedbd8d30ad5594b6b7382a8c1d96ae5a"
+  },
   "wordwrap": {
     "0.0.2": "b79669bb42ecb409f83d583cad52ca17eaa1643f"
   },
   "wrappy": {
     "1.0.1": "1e65969965ccbc2db4548c6b84a6f2c5aedd4739"
+  },
+  "xdg-basedir": {
+    "1.0.1": "14ff8f63a4fdbcb05d5b6eea22b36f3033b9f04e"
   },
   "xtend": {
     "2.1.2": "6efecc2a4dad8e6962c4901b337ce7ba87b5d28b",

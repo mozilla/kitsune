@@ -3,7 +3,7 @@
 PIPELINE_CSS = {
     'common': {
         'source_filenames': (
-            'css/normalize.css',
+            'normalize-css/normalize.css',
             'less/main.less',
             'less/search.less',
         ),
@@ -19,7 +19,7 @@ PIPELINE_CSS = {
     },
     'mobile-common': {
         'source_filenames': (
-            'css/normalize.css',
+            'normalize-css/normalize.css',
             'less/mobile/main.less',
         ),
         'output_filename': 'mobile-common-min.css'
@@ -106,7 +106,7 @@ PIPELINE_CSS = {
     },
     'mobile-wiki-minimal': {
         'source_filenames': (
-            'css/normalize.css',
+            'normalize-css/normalize.css',
             'less/mobile/main.less',
             'less/mobile/wiki.less',
             'less/wiki-content.less',
@@ -245,16 +245,16 @@ PIPELINE_JS = {
     'common': {
         'source_filenames': (
             'js/i18n.js',
-            'js/libs/underscore.js',
-            'js/libs/moment-2.8.3.js',
-            'js/libs/jquery-1.10.1.min.js',
-            'js/libs/jquery.migrate.js',
+            'underscore/underscore.js',
+            'moment/moment.js',
+            'jquery/jquery.min.js',
+            'jquery/jquery-migrate.js',
             'js/libs/jquery.cookie.js',
             'js/libs/jquery.placeholder.js',
             'js/templates/macros.js',
             'js/templates/search-results-list.js',
             'js/templates/search-results.js',
-            'js/libs/nunjucks-slim.js',
+            'nunjucks/browser/nunjucks-slim.js',
             'js/nunjucks.js',
             'js/cached_xhr.js',
             'js/search_utils.js',
@@ -263,9 +263,9 @@ PIPELINE_JS = {
             'js/kbox.js',
             'js/main.js',
             'js/format.js',
-            'js/libs/modernizr-2.6.1.js',
+            'modernizr/modernizr.js',
             'js/geoip-locale.js',
-            'js/libs/mailcheck.js',
+            'mailcheck/src/mailcheck.js',
             'js/ui.js',
             'js/analytics.js',
             'js/surveygizmo.js',
@@ -275,7 +275,8 @@ PIPELINE_JS = {
     },
     'community': {
         'source_filenames': (
-            'js/libs/jquery-1.10.1.min.js',
+            'jquery/jquery.min.js',
+            'jquery/jquery-migrate.js',
             'js/community.js',
             'js/select.js',
         ),
@@ -284,10 +285,10 @@ PIPELINE_JS = {
     'mobile-common': {
         'source_filenames': (
             'js/i18n.js',
-            'js/libs/underscore.js',
-            'js/libs/jquery-1.10.1.min.js',
-            'js/libs/jquery.migrate.js',
-            'js/libs/modernizr-2.6.1.js',
+            'underscore/underscore.js',
+            'jquery/jquery.min.js',
+            'jquery/jquery-migrate.js',
+            'modernizr/modernizr.js',
             'js/browserdetect.js',
             'js/aaq.js',
             'js/mobile/ui.js',
@@ -297,14 +298,24 @@ PIPELINE_JS = {
     },
     'ie6-8': {
         'source_filenames': (
-            'js/libs/nwmatcher-1.2.5.js',
+            'nwmatcher/src/nwmatcher.js',
             'js/libs/selectivizr-1.0.2.js',
         ),
         'output_filename': 'ie6-8-min.js'
     },
     'jqueryui': {
         'source_filenames': (
-            'js/libs/jqueryui.js',
+            'jquery/jquery.ui.core.js',
+            'jquery/jquery.ui.widget.js',
+            'jquery/jquery.ui.mouse.js',
+            'jquery/jquery.ui.position.js',
+            'jquery/jquery.ui.sortable.js',
+            'jquery/jquery.ui.accordion.js',
+            'jquery/jquery.ui.autocomplete.js',
+            'jquery/jquery.ui.datepicker.js',
+            'jquery/jquery.ui.menu.js',
+            'jquery/jquery.ui.slider.js',
+            'jquery/jquery.ui.tabs.js',
         ),
         'output_filename': 'jqueryui-min.js'
     },
@@ -397,8 +408,7 @@ PIPELINE_JS = {
     },
     'rickshaw': {
         'source_filenames': (
-            'js/libs/jqueryui.js',
-            'js/libs/d3.js',
+            'd3/d3.js',
             'js/libs/d3.layout.min.js',
             'js/libs/rickshaw.js',
             'js/rickshaw_utils.js',
@@ -407,7 +417,7 @@ PIPELINE_JS = {
     },
     'mobile-wiki': {
         'source_filenames': (
-            'js/libs/underscore.js',
+            'underscore/underscore.js',
             'js/libs/jquery.cookie.js',
             'js/libs/jquery.lazyload.js',
             'js/browserdetect.js',
@@ -421,10 +431,10 @@ PIPELINE_JS = {
     'mobile-wiki-minimal': {
         'source_filenames': (
             'js/i18n.js',
-            'js/libs/underscore.js',
-            'js/libs/jquery-1.10.1.min.js',
-            'js/libs/jquery.migrate.js',
-            'js/libs/modernizr-2.6.1.js',
+            'underscore/underscore.js',
+            'jquery/jquery.min.js',
+            'jquery/jquery-migrate.js',
+            'modernizr/modernizr.js',
             'js/browserdetect.js',
             'js/mobile/ui.js',
             'js/analytics.js',
@@ -452,8 +462,8 @@ PIPELINE_JS = {
     },
     'wiki.editor': {
         'source_filenames': (
-            'js/libs/ace/ace.js',
-            'js/libs/ace/ext-language_tools.js',
+            'ace/src/ace.js',
+            'ace/src/ext-language_tools.js',
             'js/ace.mode-sumo.js',
         ),
         'output_filename': 'wiki.editor-min.js'
