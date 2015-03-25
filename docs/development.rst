@@ -4,8 +4,8 @@ Development
 
 This covers loosely how we do big feature changes.
 
-Changes that involve new dependencies
-=====================================
+Changes that involve new Python dependencies
+============================================
 
 We use peep to install dependencies. That means that all dependencies have an
 associated hash (or several) that are checked at download time. This ensures
@@ -54,6 +54,23 @@ around and make sure nothing horrible went wrong, and that you got the right
 package. When you are satisfied that you have what you want, commit, push, and
 rejoice.
 
+
+Changes that involve new Node.js dependencies
+=============================================
+
+We are using `npm-lockdown <https://github.com/mozilla/npm-lockdown>`_ to
+handle installing the Node dependencies securely. To add a new package to the
+lockdown file, install it as normal with ``npm install package``, and then
+run lockdown-relock::
+
+    $ ./node_modules/.bin/lockdown-relock
+
+This will update ``lockdown.json`` with the appropriate hashes.
+
+Lockdown works by proxying between NPM and the package registry. Each file
+downloaded hash its hash checked, and if it does not match, Lockdown responds
+to NPM with a 404. This causes NPM to give the error: "npm ERR! notarget No
+valid targets found."
 
 
 Changes that involve database migrations

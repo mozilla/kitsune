@@ -29,6 +29,7 @@ Part 2: Developer's Guide
    email
    localization
    searchchapter
+   frontend
    armyofawesome
    karma
    wikidocs
@@ -65,4 +66,3 @@ Indices and tables
 
 * :ref:`genindex`
 * :ref:`modindex`
-
