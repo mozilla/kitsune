@@ -351,6 +351,9 @@ MEDIA_URL = '/media/'
 
 STATIC_ROOT = path('static')
 STATIC_URL = '/static/'
+STATICFILES_DIRS = (
+    path('bower_components'),
+)
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
