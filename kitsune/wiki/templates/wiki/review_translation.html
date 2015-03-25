@@ -11,7 +11,10 @@
     <article id="review-revision">
       <h1>{{ _('Review Translation of {title}')|f(title=document.parent.title) }}</h1>
       <p>{{ _('Reviewing Translation {id} in {language} by {user}')|f(id=revision.id, user=revision.creator, language=settings.LANGUAGES_DICT[document.locale.lower()]) }}.
-      <a href="{{ url('wiki.document_revisions', document.slug) }}">{{ _('Back to History') }}</a></p>
+        <a href="{{ url('wiki.document_revisions', document.slug) }}">{{ _('Back to History') }}</a>
+        <br>
+        {{ _('Translation Comment: {comment}')|f(comment=revision.comment) }}
+      </p>
 
       {% if revision.reviewed %}
         <p>
