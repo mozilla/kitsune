@@ -49,8 +49,13 @@ python manage.py update_product_details
 
 echo "Starting ElasticSearch"
 pushd elasticsearch-${ELASTICSEARCH_VERSION}
-  # This will daemonize
-  ./bin/elasticsearch
+  if [[ ELASTICSEARCH_VERSION = '0.90.10' ]]; then
+    # This will daemonize
+    ./bin/elasticsearch
+  else
+    # -d to daemonize
+    ./bin/elasticsearch -d
+  fi
 popd
 
 echo "Starting Redis Servers"
