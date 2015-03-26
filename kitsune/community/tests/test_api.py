@@ -3,10 +3,11 @@ from nose.tools import eq_, raises
 from django.test.client import RequestFactory
 
 from kitsune.community import api
-from kitsune.questions.tests import answer, answervote
+from kitsune.products.tests import product
+from kitsune.questions.tests import answer, answervote, question
 from kitsune.search.tests import ElasticTestCase
 from kitsune.users.tests import profile
-from kitsune.wiki.tests import revision
+from kitsune.wiki.tests import document, revision
 
 
 class TestTopContributorsBase(ElasticTestCase):
@@ -64,6 +65,29 @@ class TestTopContributorsQuestions(ElasticTestCase):
         eq_(data['results'][1]['helpful_vote_count'], 1)
         eq_(data['results'][1]['last_contribution_date'], a3.created.replace(microsecond=0))
 
+    def test_filter_by_product(self):
+        u1 = profile().user
+        u2 = profile().user
+
+        p1 = product(save=True)
+        p2 = product(save=True)
+
+        q1 = question(product=p1, save=True)
+        answer(question=q1, creator=u1, save=True)
+        q2 = question(product=p2, save=True)
+        answer(question=q2, creator=u1, save=True)
+        q3 = question(product=p2, save=True)
+        answer(question=q3, creator=u2, save=True)
+
+        self.refresh()
+
+        req = self.factory.get('/', {'product': p1.slug})
+        data = self.api.get_data(req)
+
+        eq_(data['count'], 1)
+        eq_(data['results'][0]['user']['username'], u1.username)
+        eq_(data['results'][0]['answer_count'], 1)
+
 
 class TestTopContributorsLocalization(ElasticTestCase):
     def setUp(self):
@@ -100,3 +124,31 @@ class TestTopContributorsLocalization(ElasticTestCase):
         eq_(data['results'][1]['revision_count'], 1)
         eq_(data['results'][1]['review_count'], 1)
         eq_(data['results'][1]['last_contribution_date'], r3.created.replace(microsecond=0))
+
+    def test_filter_by_product(self):
+        u1 = profile().user
+        u2 = profile().user
+
+        p1 = product(save=True)
+        p2 = product(save=True)
+
+        d1 = document(save=True)
+        d1.products.add(p1)
+        revision(document=d1, creator=u1, save=True)
+
+        d2 = document(save=True)
+        d2.products.add(p2)
+        revision(document=d2, creator=u1, save=True)
+
+        d3 = document(save=True)
+        d3.products.add(p2)
+        revision(document=d3, creator=u2, save=True)
+
+        self.refresh()
+
+        req = self.factory.get('/', {'product': p1.slug})
+        data = self.api.get_data(req)
+
+        eq_(data['count'], 1)
+        eq_(data['results'][0]['user']['username'], u1.username)
+        eq_(data['results'][0]['revision_count'], 1)
