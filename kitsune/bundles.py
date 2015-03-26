@@ -19,8 +19,8 @@ PIPELINE_CSS = {
     },
     'community-new': {
         'source_filenames': (
-            'bower/fontawesome/css/font-awesome.css',
-            'bower/pikaday/css/pikaday.css',
+            'fontawesome/css/font-awesome.css',
+            'pikaday/css/pikaday.css',
             'less/wiki-content.less',
             'less/community-new.less',
         ),
@@ -298,9 +298,9 @@ PIPELINE_JS = {
             # just minifying react.js.
             # TODO: Figure out how to include the full sized version in dev,
             # because it produces much nicer error messages.
-            'bower/react/react.min.js',
-            # 'bower/react/react.js',
-            'bower/pikaday/pikaday.js',
+            'react/react.min.js',
+            # 'react/react.js',
+            'pikaday/pikaday.js',
             'js/community-questions.browserify.js',
         ),
         'output_filename': 'community-questions-min.js'
@@ -312,9 +312,9 @@ PIPELINE_JS = {
             # just minifying react.js.
             # TODO: Figure out how to include the full sized version in dev,
             # because it produces much nicer error messages.
-            'bower/react/react.min.js',
-            # 'bower/react/react.js',
-            'bower/pikaday/pikaday.js',
+            'react/react.min.js',
+            # 'react/react.js',
+            'pikaday/pikaday.js',
             'js/community-l10n.browserify.js',
         ),
         'output_filename': 'community-l10n-min.js'

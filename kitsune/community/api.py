@@ -2,11 +2,10 @@ from collections import defaultdict
 from datetime import datetime, timedelta
 
 from elasticutils import F
-from rest_framework import views, fields
+from rest_framework import views, fields, exceptions
 from rest_framework.response import Response
 
 from kitsune.questions.models import AnswerMetricsMappingType
-from kitsune.sumo.api import GenericAPIException
 from kitsune.users.models import UserMappingType
 from kitsune.wiki.models import RevisionMetricsMappingType
 
@@ -16,29 +15,38 @@ from kitsune.wiki.models import RevisionMetricsMappingType
 BIG_NUMBER = 10000
 
 
+class InvalidFilterNameException(exceptions.APIException):
+    """A filter was requested which does not exist."""
+    def __init__(self, detail, **kwargs):
+        self.status_code = 400
+        self.detail = detail
+        for key, val in kwargs.items():
+            setattr(self, key, val)
+
+
 class TopContributorsBase(views.APIView):
 
     def get(self, request):
         return Response(self.get_data(request))
 
     def get_filters(self):
-        self.filter_values = self.get_default_filters()
+        self.query_values = self.get_default_query()
         # request.GET is a multidict, so simple `.update(request.GET)` causes
         # everything to be a list. This converts it into a plain single dict.
-        self.filter_values.update(dict(self.request.GET.items()))
+        self.query_values.update(dict(self.request.GET.items()))
 
         f = F()
 
-        for key, value in self.filter_values.items():
-            method_name = 'filter_' + key
-            if not hasattr(self, method_name):
-                raise GenericAPIException(400, 'Unknown filter field {}'.format(key))
+        for key, value in self.query_values.items():
+            filter_method = getattr(self, 'filter_' + key, None)
+            if filter_method is None:
+                raise InvalidFilterNameException('Unknown filter {}'.format(key))
             filter_method = getattr(self, 'filter_' + key)
             f &= filter_method(value)
 
         return f
 
-    def get_default_filters(self):
+    def get_default_query(self):
         return {
             'startdate': (datetime.now() - timedelta(days=90)).strftime('%Y-%m-%d'),
             'enddate': datetime.now().strftime('%Y-%m-%d'),
@@ -85,8 +93,8 @@ class TopContributorsBase(views.APIView):
 
 class TopContributorsQuestions(TopContributorsBase):
 
-    def get_default_filters(self):
-        filters = super(TopContributorsQuestions, self).get_default_filters()
+    def get_default_query(self):
+        filters = super(TopContributorsQuestions, self).get_default_query()
         filters['ordering'] = '-answer_count'
         return filters
 
@@ -155,10 +163,10 @@ class TopContributorsQuestions(TopContributorsBase):
         for d in creator_helpful_counts:
             combined[d['term']]['user_id'] = d['term']
             # Since this is a term_stats filter, not just a term filter, it is total, not count.
-            combined[d['term']]['helpful_vote_count'] = d['total']
+            combined[d['term']]['helpful_vote_count'] = int(d['total'])
 
         # Sort by answer count, and get just the ids into a list.
-        sort_key = self.filter_values['ordering']
+        sort_key = self.query_values['ordering']
         if sort_key[0] == '-':
             sort_reverse = True
             sort_key = sort_key[1:]
@@ -195,11 +203,9 @@ class TopContributorsQuestions(TopContributorsBase):
             d = combined[u['id']]
             d['user'] = u
             d['last_contribution_date'] = d['user'].get('last_contribution_date', None)
-            if 'user_id' in d:
-                del d['user_id']
-            del d['user']['id']
-            if 'last_contribution_date' in d['user']:
-                del d['user']['last_contribution_date']
+            d.pop('user_id', None)
+            d['user'].pop('id', None)
+            d['user'].pop('last_contribution_date', None)
             data.append(d)
 
         # One last sort, since ES didn't return the users in any particular order.
@@ -212,7 +218,7 @@ class TopContributorsQuestions(TopContributorsBase):
         return {
             'results': data,
             'count': full_count,
-            'filters': self.filter_values,
+            'filters': self.query_values,
             'allowed_orderings': [
                 'answer_count',
                 'solution_count',
@@ -223,8 +229,8 @@ class TopContributorsQuestions(TopContributorsBase):
 
 class TopContributorsLocalization(TopContributorsBase):
 
-    def get_default_filters(self):
-        filters = super(TopContributorsLocalization, self).get_default_filters()
+    def get_default_query(self):
+        filters = super(TopContributorsLocalization, self).get_default_query()
         filters['ordering'] = '-revision_count'
         return filters
 
@@ -268,7 +274,7 @@ class TopContributorsLocalization(TopContributorsBase):
             combined[d['term']]['review_count'] = d['count']
 
         # Sort by revision count, and get just the ids into a list.
-        sort_key = self.filter_values['ordering']
+        sort_key = self.query_values['ordering']
         if sort_key[0] == '-':
             sort_reverse = True
             sort_key = sort_key[1:]
@@ -305,11 +311,9 @@ class TopContributorsLocalization(TopContributorsBase):
             d = combined[u['id']]
             d['user'] = u
             d['last_contribution_date'] = d['user'].get('last_contribution_date', None)
-            if 'user_id' in d:
-                del d['user_id']
-            del d['user']['id']
-            if 'last_contribution_date' in d['user']:
-                del d['user']['last_contribution_date']
+            d.pop('user_id', None)
+            d['user'].pop('id', None)
+            d['user'].pop('last_contribution_date', None)
             data.append(d)
 
         # One last sort, since ES didn't return the users in any particular order.
@@ -322,7 +326,7 @@ class TopContributorsLocalization(TopContributorsBase):
         return {
             'results': data,
             'count': full_count,
-            'filters': self.filter_values,
+            'filters': self.query_values,
             'allowed_orderings': [
                 'revision_count',
                 'review_count',

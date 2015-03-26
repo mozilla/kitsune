@@ -226,7 +226,7 @@ front-end dependencies run::
 
    $ ./node_modules/.bin/bower install
 
-This will download dependencies into ``static/bower``.
+This will download dependencies into ``bower_components``.
 
 
 Configuration and Setup
