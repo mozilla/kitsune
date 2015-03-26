@@ -15,15 +15,7 @@ Running the Test Suite
 If you followed the steps in :ref:`the installation docs
 <hacking-howto-chapter>`, then you should be all set setup-wise.
 
-The tests run the server code with ``DEBUG=False``, so before running
-the tests, you need to collect the static files and compress the
-assets::
-
-    ./manage.py collectstatic
-    ./manage.py compress_assets
-
-
-After that, to run the tests, you need to do::
+To run the tests, you need to do::
 
     ./manage.py test
 
@@ -67,6 +59,15 @@ You can specify specific tests::
     ./manage.py test kitsune.wiki.tests.test_views:VersionGroupTests.test_version_groups
 
 See the output of ``./manage.py test --help`` for more arguments.
+
+
+Running tests without collecting static files
+---------------------------------------------
+
+By default the test runner will run ``collectstatic`` to ensure that all the required assets have
+been collected to the static folder. If you do not want this default behavior you can run::
+
+    REUSE_STATIC=1 ./manage.py test
 
 
 The Test Database
