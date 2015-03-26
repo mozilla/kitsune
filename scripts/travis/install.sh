@@ -38,7 +38,12 @@ echo
 
 
 echo "Installing ElasticSearch"
-tar xzvf vendor/tarballs/elasticsearch-0.90.10.tar.gz > /dev/null
+es_tarball="vendor/tarballs/elasticsearch-${ELASTICSEARCH_VERSION}.tar.gz"
+if [[ ! -f $es_tarball ]]; then
+  echo "Invalid version ElasticSearch. Can't find ${es_tarball}."
+  exit 1
+fi
+tar xzvf $es_tarball > /dev/null
 
 echo "Installing Redis"
 tar xzvf vendor/tarballs/redis-2.6.9.tar.gz > /dev/null

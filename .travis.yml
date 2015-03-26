@@ -8,7 +8,8 @@ env:
   - PIP_DOWNLOAD_CACHE="pip_cache"
   matrix:
   - TEST_SUITE=lint
-  - TEST_SUITE=django
+  - TEST_SUITE=django ELASTICSEARCH_VERSION=0.90.10
+  - TEST_SUITE=django ELASTICSEARCH_VERSION=1.2.4
 matrix:
   fast_finish: true
 cache:
