@@ -287,8 +287,8 @@ requests-oauthlib==0.4.2
 # sha256: ELrq_ifCkWujoqbRrfIsQakd640Hn1kJAu2P36B6Nf8
 https://github.com/jbalogh/schematic/archive/f996182b857769541cfa7659d4f9e864360cddf4.tar.gz#egg=schematic
 
-# sha256: elhy9Ody_o4zi1hYlXAeQxaSACWSPPI_4E0ENQ1OT5w
-selenium==2.41.0
+# sha256: cjlM5ykoyH02UBp1_MU1c30WZU_v1sIWwxUVgpS8wSY
+selenium==2.45.0
 
 # sha256: Qr9imks6STO7PPrPYAXJW3SU_YjNYqe60ajD5kZH6ww
 # sha256: v445sBLQFGpK6vVBNT9bm5Ywu8tawnUFhJrIlrz_L2o
