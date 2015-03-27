@@ -1,4 +1,3 @@
-
 import logging
 from datetime import datetime
 
@@ -15,6 +14,7 @@ from kitsune.community.utils import (
     top_contributors_kb, top_contributors_l10n)
 from kitsune.forums.models import Thread
 from kitsune.products.models import Product
+from kitsune.products.api import ProductSerializer
 from kitsune.questions.models import QuestionLocale
 from kitsune.search.es_utils import ES_EXCEPTIONS
 from kitsune.sumo.parser import get_object_fallback
@@ -192,10 +192,13 @@ def top_contributors_new(request, area):
     else:
         raise Http404
 
+    products = ProductSerializer(Product.objects.filter(visible=True), many=True)
+
     return render(request, 'community/top_contributors_react.html', {
         'area': area,
         'contributors_json': to_json(contributors),
         'locales_json': to_json(locales),
+        'products_json': to_json(products.data),
     })
 
 

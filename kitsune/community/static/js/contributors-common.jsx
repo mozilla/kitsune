@@ -1,7 +1,10 @@
 import cx from 'classnames';
 
-var dataEl = document.querySelector('script[name="locale-data"]');
-export const locales = JSON.parse(dataEl.innerHTML);
+let localeDataEl = document.querySelector('script[name="locale-data"]');
+export const locales = JSON.parse(localeDataEl.innerHTML);
+
+let productsDataEl = document.querySelector('script[name="products-data"]');
+export const products = JSON.parse(productsDataEl.innerHTML);
 
 export class UserChip extends React.Component {
     render() {
