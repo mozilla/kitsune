@@ -48,6 +48,9 @@ Some other helpful flags are:
 ``--pdb-fail``:
   Drop into PDB on a test failure. This usually drops you right at the
   assertion.
+``--no-skip``:
+  All SkipTests show up as errors. This is handy when things shouldn't be
+  skipping silently with reckless abandon.
 
 
 Running a Subset of Tests

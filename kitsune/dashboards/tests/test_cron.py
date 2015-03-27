@@ -3,7 +3,6 @@ from datetime import date, timedelta
 
 from django.conf import settings
 
-from nose import SkipTest
 from nose.tools import eq_
 
 from kitsune.dashboards.cron import (
@@ -14,7 +13,7 @@ from kitsune.dashboards.models import (
     WikiMetric, L10N_TOP20_CODE, L10N_ALL_CODE)
 from kitsune.products.tests import product
 from kitsune.sumo.redis_utils import redis_client, RedisError
-from kitsune.sumo.tests import TestCase
+from kitsune.sumo.tests import SkipTest, TestCase
 from kitsune.users.tests import user
 from kitsune.wiki.models import HelpfulVote, Revision
 from kitsune.wiki.tests import revision, document

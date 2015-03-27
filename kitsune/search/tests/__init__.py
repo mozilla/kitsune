@@ -3,12 +3,11 @@ from django.test.client import RequestFactory
 from django.test.utils import override_settings
 
 from elasticutils.contrib.django import get_es
-from nose import SkipTest
 from test_utils import TestCase
 
 from kitsune.search import es_utils
 from kitsune.search.models import generate_tasks, Synonym
-from kitsune.sumo.tests import with_save
+from kitsune.sumo.tests import SkipTest, with_save
 
 
 # Dummy request for passing to question_searcher() and brethren.

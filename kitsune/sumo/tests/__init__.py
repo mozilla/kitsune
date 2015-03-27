@@ -1,4 +1,6 @@
+import os
 import re
+import sys
 from functools import wraps
 from os import listdir
 from os.path import join, dirname
@@ -11,7 +13,6 @@ from django.test.client import Client
 from django.test.utils import override_settings
 
 import django_nose
-from nose import SkipTest
 from nose.tools import eq_
 from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
@@ -20,6 +21,15 @@ from test_utils import TestCase as OriginalTestCase
 
 from kitsune import sumo
 from kitsune.sumo.urlresolvers import reverse, split_path
+
+
+# We do this gooftastic thing because nose uses unittest.SkipTest in
+# Python 2.7 which doesn't work with the whole --no-skip thing.
+if '--no-skip' in sys.argv or 'NOSE_WITHOUT_SKIP' in os.environ:
+    class SkipTest(Exception):
+        pass
+else:
+    from nose import SkipTest
 
 
 def get(client, url, **kwargs):

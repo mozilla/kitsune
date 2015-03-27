@@ -7,7 +7,6 @@ from django.conf import settings
 from django.test.utils import override_settings
 
 from mock import patch
-from nose import SkipTest
 from nose.tools import eq_
 
 from kitsune.customercare.cron import (
@@ -15,7 +14,7 @@ from kitsune.customercare.cron import (
 from kitsune.customercare.models import Tweet, Reply
 from kitsune.customercare.tests import tweet, twitter_account, reply
 from kitsune.sumo.redis_utils import redis_client, RedisError
-from kitsune.sumo.tests import TestCase
+from kitsune.sumo.tests import SkipTest, TestCase
 
 
 class TwitterCronTestCase(TestCase):
