@@ -1,6 +1,6 @@
 import re
 from functools import wraps
-from os import listdir
+from os import getenv, listdir
 from os.path import join, dirname
 from smtplib import SMTPRecipientsRefused
 
@@ -42,8 +42,9 @@ class TestSuiteRunner(django_nose.NoseTestSuiteRunner):
         except ImportError:
             pass
 
-        # Collect static files for pipeline to work correctly
-        call_command('collectstatic', interactive=False)
+        if not getenv('REUSE_STATIC', 'false').lower() in ('true', '1', ''):
+            # Collect static files for pipeline to work correctly
+            call_command('collectstatic', interactive=False)
 
         super(TestSuiteRunner, self).setup_test_environment(**kwargs)
 
