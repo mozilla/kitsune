@@ -9,7 +9,7 @@ from django.utils import translation
 
 import jingo
 from premailer import transform
-from test_utils import RequestFactory
+from django.test.client import RequestFactory
 
 from kitsune.sumo.utils import uselocale
 

@@ -2,10 +2,10 @@
 import json
 
 from django.contrib.auth.models import Permission
+from django.test.client import RequestFactory
 
 from mock import patch, Mock
 from nose.tools import eq_
-from test_utils import RequestFactory
 
 from kitsune.journal.models import Record
 from kitsune.sumo.utils import (

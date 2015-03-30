@@ -1,6 +1,5 @@
 from django.contrib.contenttypes.models import ContentType
-
-import test_utils
+from django.test.client import RequestFactory
 
 from kitsune.access.helpers import has_perm, has_perm_or_owns
 from kitsune.access.tests import permission
@@ -14,7 +13,7 @@ class ForumTestPermissions(ForumTestCase):
 
     def setUp(self):
         url = reverse('forums.threads', args=[u'test-forum'])
-        self.context = {'request': test_utils.RequestFactory().get(url)}
+        self.context = {'request': RequestFactory().get(url)}
 
         self.group = group(save=True)
 

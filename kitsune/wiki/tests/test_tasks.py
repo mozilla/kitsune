@@ -6,12 +6,12 @@ from django.conf import settings
 from django.contrib.sites.models import Site
 from django.core import mail
 from django.core.cache import cache
+from django.test.client import RequestFactory
 
 import bleach
 import mock
 import waffle
 from nose.tools import eq_
-from test_utils import RequestFactory
 
 from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import add_permission, user

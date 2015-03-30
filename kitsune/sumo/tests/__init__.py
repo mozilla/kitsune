@@ -5,10 +5,12 @@ from os.path import join, dirname
 from smtplib import SMTPRecipientsRefused
 
 from django.conf import settings
+from django.core.cache import cache
 from django.core.management import call_command
-from django.test import LiveServerTestCase
+from django.test import LiveServerTestCase, TestCase as OriginalTestCase
 from django.test.client import Client
 from django.test.utils import override_settings
+from django.utils.translation import trans_real
 
 import django_nose
 from nose import SkipTest
@@ -16,7 +18,6 @@ from nose.tools import eq_
 from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.firefox import firefox_binary
-from test_utils import TestCase as OriginalTestCase
 
 from kitsune import sumo
 from kitsune.sumo.urlresolvers import reverse, split_path
@@ -51,8 +52,13 @@ class TestSuiteRunner(django_nose.NoseTestSuiteRunner):
 
 @override_settings(ES_LIVE_INDEX=False)
 class TestCase(OriginalTestCase):
-    """A modification of ``test_utils.TestCase`` that skips live indexing."""
-    pass
+    """TestCase that skips live indexing."""
+    def _pre_setup(self):
+        cache.clear()
+        trans_real.deactivate()
+        trans_real._translations = {}  # Django fails to clear this cache.
+        trans_real.activate(settings.LANGUAGE_CODE)
+        super(TestCase, self)._pre_setup()
 
 
 def attrs_eq(received, **expected):

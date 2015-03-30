@@ -564,7 +564,6 @@ INSTALLED_APPS = (
 
     # Extra apps for testing.
     'django_nose',
-    'test_utils',
 
     # Extra app for python migrations.
     'django_extensions',

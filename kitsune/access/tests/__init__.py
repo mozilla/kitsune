@@ -1,6 +1,6 @@
 from django.contrib.contenttypes.models import ContentType
+from django.test.client import RequestFactory
 
-import test_utils
 from authority.models import Permission
 from nose.tools import eq_
 
@@ -21,7 +21,7 @@ class AccessTests(TestCase):
     """Test stuff in access/__init__.py"""
     def setUp(self):
         url = reverse('forums.threads', args=[u'test-forum'])
-        self.context = {'request': test_utils.RequestFactory().get(url)}
+        self.context = {'request': RequestFactory().get(url)}
 
     def test_admin_perm_thread(self):
         """Super user can do anything on any forum."""

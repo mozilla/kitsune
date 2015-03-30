@@ -2,10 +2,10 @@ import collections
 
 from django import forms
 from django.conf import settings
+from django.test.client import RequestFactory
 from django.utils.safestring import mark_safe
 
 import jingo
-from test_utils import RequestFactory
 
 from kitsune.products.models import Topic
 from kitsune.wiki.config import SIGNIFICANCES_HELP

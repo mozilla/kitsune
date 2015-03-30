@@ -1,8 +1,8 @@
 from django.http import HttpResponsePermanentRedirect
+from django.test.client import RequestFactory
 
 import mobility
 from nose.tools import eq_
-from test_utils import RequestFactory
 
 from kitsune.sumo.middleware import (
     PlusToSpaceMiddleware, DetectMobileMiddleware)

@@ -3,10 +3,10 @@ from django.contrib.admin.options import ModelAdmin
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from django.core import mail
+from django.test.client import RequestFactory
 
 import mock
 from nose.tools import eq_
-import test_utils
 
 from kitsune.forums.events import NewPostEvent, NewThreadEvent
 from kitsune.forums.models import Thread, Post
@@ -340,7 +340,7 @@ class NotificationsTests(ForumTestCase):
         self.client.login(username=admin_user.username, password='testpass')
         self._toggle_watch_thread_as(t, watcher, turn_on=True)
         url = reverse('admin:auth_user_delete', args=[u.id])
-        request = test_utils.RequestFactory().get(url)
+        request = RequestFactory().get(url)
         request.user = admin_user
         request.session = self.client.session
         # The following blows up without our monkeypatch.

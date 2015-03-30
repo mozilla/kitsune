@@ -3,9 +3,9 @@ from collections import namedtuple
 from datetime import datetime
 
 from django.forms.fields import CharField
+from django.test.client import RequestFactory
 
 import jingo
-import test_utils
 from babel.dates import format_date, format_time, format_datetime
 from mock import Mock
 from nose.tools import eq_, assert_raises
@@ -100,7 +100,7 @@ class TestDateTimeFormat(TestCase):
         self.timezone = timezone('US/Pacific')
         self.locale = 'en_US'
         url_ = reverse('forums.threads', args=['testslug'])
-        self.context = {'request': test_utils.RequestFactory().get(url_)}
+        self.context = {'request': RequestFactory().get(url_)}
         self.context['request'].LANGUAGE_CODE = self.locale
         user_profile = profile(timezone=self.timezone, locale=self.locale)
         self.context['request'].user = user_profile
