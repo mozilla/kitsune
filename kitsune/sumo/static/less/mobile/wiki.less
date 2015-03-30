@@ -1,5 +1,4 @@
 @import '../variables.less';
-@import '../vendors.less';
 
 @import '../includes/wiki-common.less';
 
@@ -51,7 +50,7 @@
 
     #unhelpful-survey {
       textarea {
-        .box-sizing(border-box);
+        box-sizing: border-box;
         width: 100%;
       }
 
@@ -66,12 +65,12 @@
           border-bottom-width: 0;
 
           &:first-of-type {
-            .border-radius(6px 6px 0 0);
+            border-radius: 6px 6px 0 0;
           }
 
           &:last-of-type {
             border-bottom-width: 1px;
-            .border-radius(0 0 6px 6px);
+            border-radius: 0 0 6px 6px;
           }
 
           label {

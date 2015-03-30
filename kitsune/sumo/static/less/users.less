@@ -1,5 +1,4 @@
 @import 'variables.less';
-@import 'vendors.less';
 
 article {
   background: #fff;
@@ -547,7 +546,7 @@ form.deactivate {
       input[type="text"],
       input[type="password"],
       input[type="email"] {
-        .box-sizing(border-box);
+        box-sizing: border-box;
         padding: 10px;
         width: 45%;
       }
@@ -564,7 +563,7 @@ form.deactivate {
     padding: 0;
 
     .btn {
-      .box-sizing(border-box);
+      box-sizing: border-box;
       height: 45px;
       margin-top: 20px;
       width: 45%;
@@ -572,7 +571,7 @@ form.deactivate {
   }
 
   .validation-label {
-    .box-sizing(border-box);
+    box-sizing: border-box;
     color: #c00;
     display: none;
     float: right;

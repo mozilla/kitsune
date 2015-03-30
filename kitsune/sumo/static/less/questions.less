@@ -1,5 +1,4 @@
 @import 'variables.less';
-@import 'vendors.less';
 @import 'includes/editor-tools.less';
 @import 'includes/search-result.less';
 @import 'includes/mixins.less';
@@ -89,7 +88,7 @@ h2 {
       input.delete {
         background: #000;
         border: 2px solid #fff;
-        .border-radius(1em);
+        border-radius: 1em;
         color: #fff;
         cursor: pointer;
         display: none;
@@ -376,7 +375,7 @@ h2 {
 
   #question-details {
     select {
-      .box-sizing(border-box);
+      box-sizing: border-box;
       display: none;
       width: 100%;
     }
@@ -488,7 +487,7 @@ h2 {
 
           &:before {
             background: url('../img/search-icons-sprite.png') no-repeat -23px -23px;
-            .background-size(74px 148px);
+            background-size: 74px 148px;
             content: '';
             height: 28px;
             left: 20px;
@@ -692,7 +691,7 @@ h2 {
 
   > section {
     background: #fff;
-    .box-shadow(0 5px 5px rgba(0, 0, 0, 0.1));
+    box-shadow: 0 5px 5px rgba(0, 0, 0, 0.1);
     margin-bottom: 20px;
     padding: 20px;
     position: relative;
@@ -908,7 +907,7 @@ h2 {
     }
 
     #flag-filter {
-      .box-sizing(border-box);
+      box-sizing: border-box;
       float: right;
       padding-left: 25px;
       width: 21%;
@@ -916,7 +915,8 @@ h2 {
   }
 
   #filter-section {
-    .gradient(transparent, #fff, rgba(255, 255, 255, 0.01));
+    background: transparent;
+    background: linear-gradient(to bottom, #fff, rgba(255, 255, 255, 0.01));
     height: 60px;
   }
 
@@ -925,7 +925,7 @@ h2 {
 
     a,
     a:hover {
-      .border-radius(6px 6px 0 0);
+      border-radius: 6px 6px 0 0;
       float: left;
       font-size: 16px;
       height: 52px;
@@ -1102,8 +1102,7 @@ h2 {
   .complete {
     > div {
       background: #489615;
-      background: -moz-linear-gradient(#84C63C, #489615) repeat scroll 0 0 transparent;
-      background: -webkit-gradient(linear, left top, left bottom, from(#84C63C), to(#489615));
+      background: linear-gradient(to bottom, #84C63C, #489615);
     }
   }
 
@@ -1119,8 +1118,8 @@ h2 {
 
 #register-form,
 #login-form {
-  .border-box();
   background: #fff;
+  box-sizing: border-box;
   margin-bottom: 60px;
   padding: 0 60px 30px;
 
@@ -1155,7 +1154,7 @@ h2 {
       }
 
       input {
-        .box-sizing(border-box);
+        box-sizing: border-box;
         padding: 10px;
         width: 45%;
       }
@@ -1173,7 +1172,7 @@ h2 {
 
   .submit {
     .btn {
-      .box-sizing(border-box);
+      box-sizing: border-box;
       height: 45px;
       margin-top: 20px;
       width: 45%;
@@ -1181,7 +1180,7 @@ h2 {
   }
 
   .validation-label {
-    .box-sizing(border-box);
+    box-sizing: border-box;
     color: #c00;
     display: none;
     float: right;
@@ -1291,7 +1290,7 @@ h2 {
 
     input[type="text"],
     textarea {
-      .box-sizing(border-box);
+      box-sizing: border-box;
       width: 100%;
     }
 
@@ -1463,7 +1462,7 @@ h2 {
     input.delete {
       background: #000;
       border: 2px solid #fff;
-      .border-radius(1em);
+      border-radius: 1em;
       color: #fff;
       cursor: pointer;
       display: none;
@@ -1549,7 +1548,7 @@ div.ans-attachments {
     input.delete {
       background: #000;
       border: 2px solid #fff;
-      .border-radius(1em);
+      border-radius: 1em;
       color: #fff;
       cursor: pointer;
       display: none;
@@ -1665,7 +1664,7 @@ div.ans-attachments {
 
   .toggler {
     > span {
-      .border-radius(2px);
+      border-radius: 2px;
       cursor: pointer;
       display: block;
       height: 28px;
@@ -1685,7 +1684,7 @@ div.ans-attachments {
         margin: -4px 0 0 -5px;
         position: absolute;
         top: 50%;
-        .transform(rotate(45deg));
+        transform: rotate(45deg);
         width: 6px;
       }
 
@@ -1696,7 +1695,7 @@ div.ans-attachments {
         &:after {
           border-color: #fff;
           margin-left: -2.5px;
-          .transform(rotate(-135deg));
+          transform: rotate(-135deg);
         }
       }
     }

@@ -662,6 +662,7 @@ PIPELINE_CSS_COMPRESSOR = 'pipeline.compressors.cssmin.CSSMinCompressor'
 PIPELINE_CSSMIN_BINARY = path('node_modules/.bin/cssmin')
 
 PIPELINE_LESS_BINARY = path('node_modules/.bin/lessc')
+PIPELINE_LESS_ARGUMENTS = '--autoprefix="> 1%, last 2 versions, ff <= 36"'
 
 PIPELINE_BROWSERIFY_BINARY = path('node_modules/.bin/browserify')
 PIPELINE_BROWSERIFY_ARGUMENTS = '-t babelify -t debowerify'

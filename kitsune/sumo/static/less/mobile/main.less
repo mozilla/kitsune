@@ -1,6 +1,5 @@
 @import '../fonts.less';
 @import '../variables.less';
-@import '../vendors.less';
 @import '../includes/mixins.less';
 @import 'mixins.less';
 
@@ -36,7 +35,7 @@ body {
   width: 100%;
 
   > * {
-    -webkit-transform: translateZ(0px);
+    transform: translateZ(0px);
   }
 
   > nav {
@@ -44,7 +43,6 @@ body {
     color: #fff;
     display: none;
     height: 100%;
-    height: -webkit-calc(100%);
     left: 0;
     overflow: auto;
     position: fixed;
@@ -68,7 +66,8 @@ body {
     }
 
     > header {
-      .linear-gradient-top(#1a2122, #1a2122, 0, #1b2324, 100%, url('../../img/grain.png'));
+      background: #1a2122;
+      background: url('../../img/grain.png'), linear-gradient(to bottom, #1a2122, #1b2324);
       font-size: 14px;
       font-weight: bold;
       height: 29px;
@@ -77,8 +76,9 @@ body {
     }
 
     #search-bar {
-      .linear-gradient-top(#253132, #2c393b, 0, #253132, 100%, url('../../img/grain.png'));
-      .box-shadow(0 0 3px 0 rgba(0, 0, 0, 0.75));
+      background: #253132;
+      background: url('../../img/grain.png'), linear-gradient(to bottom, #2c393b, #253132);
+      box-shadow: 0 0 3px 0 rgba(0, 0, 0, 0.75);
       padding: 10px 16px;
 
       form {
@@ -103,9 +103,9 @@ body {
         input[type='search'] {
           background: #283235;
           border: 1px solid rgba(0, 0, 0, 0.25);
-          .border-radius(3px);
-          .box-shadow(2px 2px 3px 0 rgba(0, 0, 0, 0.25) inset);
-          .box-sizing(border-box);
+          border-radius: 3px;
+          box-shadow: 2px 2px 3px 0 rgba(0, 0, 0, 0.25) inset;
+          box-sizing: border-box;
           color: #849b9f;
           font-family: @Moz;
           font-size: 14px;
@@ -129,14 +129,15 @@ body {
 
   .slide-on-exposed {
     left: 0;
-    .transition-property(~'left, right');
-    .transition-duration(0.5s);
+    transition-property: left, right;
+    transition-duration: 0.5s;
   }
 
   > header {
-    .gradient(#cd6723, #cd6723, #bb482d);
+    background: #cd6723;
+    background: linear-gradient(to bottom, #cd6723, #bb482d);
     border-bottom: 1px solid @mobileHeaderBorder;
-    .box-shadow(0 0 4px 0 rgba(0, 0, 0, 0.75));
+    box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.75);
     color: #fff;
     height: 50px;
     overflow: hidden;
@@ -159,10 +160,8 @@ body {
 
   > .wrapper {
     background: #fff;
-    .box-shadow(0 0 10px 0 rgba(0, 0, 0, 0.8));
-    min-height: calc(~'100% - 51px');
-    min-height: -moz-calc(~'100% - 51px');
-    min-height: -webkit-calc(~'100% - 51px');
+    box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.8);
+    min-height: calc(100% - 51px);
     position: absolute;
     top: 51px;
     width: 100%;
@@ -171,7 +170,7 @@ body {
 
   &.minimal {
     > .wrapper {
-      .box-shadow(none);
+      box-shadow: none;
       top: 0;
     }
   }
@@ -185,7 +184,7 @@ body {
 
     #menu-button {
       border-right: 0;
-      .box-shadow(0 0 0 1px @mobileHeaderBorder);
+      box-shadow: 0 0 0 1px @mobileHeaderBorder;
       float: right;
       margin-left: 10px;
       margin-right: 0;
@@ -224,9 +223,9 @@ select,
 textarea {
   background: #fff;
   border: 1px solid @mobileInputBorder;
-  .border-radius(3px);
-  .box-shadow(0 1px 2px 0 rgba(0, 0, 0, 0.1) inset);
-  .box-sizing(border-box);
+  border-radius: 3px;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.1) inset;
+  box-sizing: border-box;
   display: inline-block;
   font-family: @Moz;
   font-size: 14px;
@@ -237,6 +236,7 @@ textarea {
 }
 
 select {
+  -moz-appearance: none;
   -webkit-appearance: none;
   height: 41px;
 }
@@ -244,7 +244,7 @@ select {
 .add-button {
   background-position: -36px -1153px;
   border-left: 1px solid rgba(255, 255, 255, 0.3);
-  .box-shadow(0 0 0 1px @mobileHeaderBorder);
+  box-shadow: 0 0 0 1px @mobileHeaderBorder;
   cursor: pointer;
   float: right;
   height: 24px;
@@ -258,10 +258,11 @@ select {
 .btn:visited,
 input[type="submit"],
 input[type="submit"]:visited {
-  .gradient(#e3e3e3, #fafafa, #cdcdcd);
+  background: #e3e3e3;
+  background: linear-gradient(to bottom, #fafafa, #cdcdcd);
   border: 1px solid #ababab;
-  .border-radius(2px);
-  .box-sizing(border-box);
+  border-radius: 2px;
+  box-sizing: border-box;
   color: @textDarkGrey;
   cursor: pointer;
   display: block;
@@ -277,7 +278,8 @@ input[type="submit"]:visited {
   width: 100%;
 
   &.btn-submit {
-    .gradient(#00caf2, #00caf2, #00aacd);
+    background: #00caf2;
+    background: linear-gradient(to bottom, #00caf2, #00aacd);
     border: 0;
     font-size: 17px;
     padding: 8px 0;
@@ -435,7 +437,7 @@ input[type="submit"]:visited {
 
   > header {
     border-bottom: 1px solid rgba(255, 255, 255, 0.25);
-    .box-shadow(0 0 10px 0 rgba(0, 0, 0, 0.5));
+    box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.5);
     color: #fff;
     cursor: pointer;
     height: 50px;
@@ -516,7 +518,7 @@ input[type="submit"]:visited {
   padding: 10px 16px;
 
   li {
-    .box-sizing(border-box);
+    box-sizing: border-box;
     float: left;
     width: 27.5%;
 
@@ -543,7 +545,7 @@ input[type="submit"]:visited {
 .progress-bar {
   background: rgba(0, 0, 0, 0.1) url('../../img/grain.png');
   border: 1px solid rgba(0, 0, 0, 0.03);
-  .border-radius(12px);
+  border-radius: 12px;
   color: #fff;
   font-size: 20px;
   font-weight: bold;
@@ -555,7 +557,7 @@ input[type="submit"]:visited {
 
   &:after {
     border-bottom: 1px solid rgba(255, 255, 255, 0.3);
-    .border-radius(13px);
+    border-radius: 13px;
     bottom: -2px;
     content: '';
     left: 0;
@@ -567,7 +569,7 @@ input[type="submit"]:visited {
 
   &:before {
     border: 2px solid rgba(0, 0, 0, 0.01);
-    .border-radius(12px);
+    border-radius: 12px;
     bottom: 0;
     content: '';
     left: 0;
@@ -578,8 +580,9 @@ input[type="submit"]:visited {
   }
 
   > div {
-    .gradient(#ff9500, #ff9500, #ed7000);
-    .border-radius(12px);
+    background: #ff9500;
+    background: linear-gradient(to bottom, #ff9500, #ed7000);
+    border-radius: 12px;
     height: 24px;
     position: relative;
     z-index: 5;
@@ -592,7 +595,7 @@ input[type="submit"]:visited {
 
 .pulldown-menu {
   background: @mobileNavBackground url('../../img/grain.png');
-  .box-shadow(0 0 5px rgba(0, 0, 0, 0.6));
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.6);
   left: 0;
   margin-top: 51px;
   position: absolute;
@@ -602,8 +605,8 @@ input[type="submit"]:visited {
   .pulldown-panel {
     max-height: 0;
     overflow: hidden;
-    .transition-property(max-height);
-    .transition-duration(0.5s);
+    transition-property: max-height;
+    transition-duration: 0.5s;
 
     > section {
       border-bottom: 1px solid #2f393b;
@@ -623,7 +626,7 @@ input[type="submit"]:visited {
   &.open {
     .pulldown-panel {
       max-height: 800px;
-      .transition-duration(1.55s)
+      transition-duration: 1.55s;
     }
   }
 
@@ -642,7 +645,7 @@ input[type="submit"]:visited {
 .return-button {
   background-position: -48px -286px;
   border-right: 1px solid @mobileHeaderBorder;
-  .box-shadow(0 0 0 1px rgba(255, 255, 255, 0.3));
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.3);
   float: left;
   height: 24px;
   margin: 0 8px 0 0;
@@ -658,7 +661,7 @@ input[type="submit"]:visited {
 .select-box {
   background: #e7e7e7;
   border: 1px solid rgba(0, 0, 0, 0.35);
-  .border-radius(2px);
+  border-radius: 2px;
   color: #333;
   cursor: pointer;
   float: left;
@@ -744,7 +747,7 @@ input[type="submit"]:visited {
 .trash-button {
   background-position: -36px -1400px;
   border-left: 1px solid rgba(255, 255, 255, 0.3);
-  .box-shadow(0 0 0 1px @mobileHeaderBorder);
+  box-shadow: 0 0 0 1px @mobileHeaderBorder;
   cursor: pointer;
   float: right;
   height: 24px;
@@ -757,7 +760,7 @@ input[type="submit"]:visited {
 #cancel-button {
   background-position: -53px -781px;
   border-right: 1px solid @mobileHeaderBorder;
-  .box-shadow(0 0 0 1px rgba(255, 255, 255, 0.3));
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.3);
   cursor: pointer;
   float: left;
   height: 24px;
@@ -771,7 +774,7 @@ input[type="submit"]:visited {
   background-position: -37px -37px;
   border-left: 1px solid rgba(255, 255, 255, 0.3);
   border-right: 1px solid @mobileHeaderBorder;
-  .box-shadow(0 0 0 1px rgba(255, 255, 255, 0.3));
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.3);
   cursor: pointer;
   float: left;
   height: 24px;
@@ -809,7 +812,7 @@ input[type="submit"]:visited {
 #reply-button {
   background-position: -36px -905px;
   border-left: 1px solid rgba(255, 255, 255, 0.3);
-  .box-shadow(0 0 0 1px @mobileHeaderBorder);
+  box-shadow: 0 0 0 1px @mobileHeaderBorder;
   cursor: pointer;
   float: right;
   height: 24px;
@@ -822,7 +825,7 @@ input[type="submit"]:visited {
 #send-button {
   background-position: -35px -1029px;
   border-left: 1px solid rgba(255, 255, 255, 0.3);
-  .box-shadow(0 0 0 1px @mobileHeaderBorder);
+  box-shadow: 0 0 0 1px @mobileHeaderBorder;
   cursor: pointer;
   float: right;
   height: 24px;
@@ -877,16 +880,12 @@ input[type="submit"]:visited {
 @media only screen and (max-width: 319px) {
   body {
     > nav {
-      width: calc(~'100% - 50px');
-      width: -moz-calc(~'100% - 50px');
-      width: -webkit-calc(~'100% - 50px');
+      width: calc(100% - 50px);
     }
 
     &.exposed {
       .slide-on-exposed {
-        left: calc(~'100% - 50px');
-        left: -moz-calc(~'100% - 50px');
-        left: -moz-calc(~'100% - 50px');
+        left: calc(100% - 50px);
       }
     }
 
@@ -894,9 +893,7 @@ input[type="submit"]:visited {
       &.exposed {
         .slide-on-exposed {
           left: auto;
-          right: calc(~'100% - 50px');
-          right: -moz-calc(~'100% - 50px');
-          right: -moz-calc(~'100% - 50px');
+          right: calc(100% - 50px);
         }
       }
     }
@@ -910,18 +907,18 @@ input[type="submit"]:visited {
 
   .logo-sprite {
     background-image: url('../../img/mobile/logos-sprite-2x.png?v=2');
-    .background-size(148px 888px)
+    background-size: 148px 888px;
   }
 
   .topic-sprite {
     background-image: url('../../img/mobile/topics-sprite-2x.png?v=1');
-    .background-size(148px 1628px);
+    background-size: 148px 1628px;
   }
 
   .pulldown-menu {
     .pulldown-handle {
       background-image: url('../../img/mobile/handle-2x.png');
-      .background-size(85px 19px);
+      background-size: 85px 19px;
     }
   }
 }

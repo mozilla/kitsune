@@ -1,5 +1,4 @@
 @import '../variables.less';
-@import '../vendors.less';
 
 @import 'includes/product-switcher.less';
 
@@ -44,7 +43,7 @@
 
   .search-bar {
     background: @mobileFormBackground;
-    .box-sizing(border-box);
+    box-sizing: border-box;
     height: 36px;
     padding: 5px 16px;
     position: fixed;
@@ -65,18 +64,16 @@
 
     input {
       border: 1px solid #666;
-      .box-sizing(border-box);
+      box-sizing: border-box;
       float: left;
       height: 26px;
-      width: calc(~'100% - 80px');
-      width: -moz-calc(~'100% - 80px');
-      width: -webkit-calc(~'100% - 80px');
+      width: calc(100% - 80px);
     }
   }
 
   .search-filters {
     background: @mobileSubheaderBackground;
-    .box-shadow(0 0 4px 0 rgba(0, 0, 0, 0.75));
+    box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.75);
     height: 24px;
     padding: 5px 0;
     position: fixed;
@@ -91,7 +88,7 @@
 
       li {
         background: url('../../img/mobile/search-sprite.png') -23px -25px no-repeat;
-        .box-sizing(border-box);
+        box-sizing: border-box;
         float: left;
         height: 24px;
         opacity: 0.5;
@@ -125,7 +122,7 @@
     .search-filters {
       li {
         background-image: url('../../img/mobile/search-sprite-2x.png');
-        .background-size(74px 148px);
+        background-size: 74px 148px;
       }
     }
   }

@@ -1,5 +1,4 @@
 @import '../variables.less';
-@import '../vendors.less';
 
 @import 'includes/product-switcher.less';
 
@@ -8,13 +7,11 @@
     padding: 10px 8px;
 
     .btn {
-      .box-sizing(border-box);
+      box-sizing: border-box;
       float: left;
       font-size: 14px;
       margin: 0 8px;
-      width: calc(~'50% - 16px');
-      width: -moz-calc(~'50% - 16px');
-      width: -webkit-calc(~'50% - 16px');
+      width: calc(50% - 16px);
     }
 
     &.deadend {
