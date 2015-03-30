@@ -46,9 +46,8 @@ Django==1.6.11
 # sha256: M7YuOXN4svxB-YixuXUuT1Y5rfNYJN5wxGqKDmv1pVs
 django-activity-stream==0.5.1
 
-# django-adminplus: tags/v0.2.1
-# sha256: hFyepTe0iD7ynH-YlVoiYeg_AZWYzBNed4Y8JHy6Klg
-https://github.com/jsocol/django-adminplus/archive/90c6aca7a9c18f90af20d111141b1670ef6af206.tar.gz#egg=django-adminplus==0.2.1
+# sha256: JL4TJtBHNh5HWbqZkqyoPtZd9Vg3UN_ovoEOscEx2HY
+django-adminplus==0.3
 
 # django-appconf: develop
 # sha256: mZygPfnguf9x6Y-dcbTj9z8Wbxh0CnMlB8DXWYh9m10
