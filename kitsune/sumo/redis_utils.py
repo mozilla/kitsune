@@ -1,6 +1,6 @@
 from django.conf import settings
-from django.core.cache import parse_backend_uri
 
+from caching.invalidation import parse_backend_uri
 from redis import Redis, ConnectionError
 
 
@@ -19,7 +19,7 @@ def redis_client(name):
             '{k} is not defined in settings.REDIS_BACKENDS'.format(k=name))
 
     uri = settings.REDIS_BACKENDS[name]
-    _, server, params = parse_backend_uri(uri)
+    server, params = parse_backend_uri(uri)
     db = params.pop('db', 1)
     try:
         db = int(db)

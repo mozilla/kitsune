@@ -18,7 +18,6 @@ from django.db.utils import IntegrityError
 from django.http import Http404
 
 import actstream
-import actstream.registry
 import actstream.actions
 from product_details import product_details
 from statsd import statsd
@@ -1377,10 +1376,6 @@ def _content_parsed(obj, locale):
         html = wiki_to_html(obj.content, locale)
         cache.add(cache_key, html, CACHE_TIMEOUT)
     return html
-
-
-actstream.registry.register(Question)
-actstream.registry.register(Answer)
 
 
 @receiver(post_save, sender=Question, dispatch_uid='question_create_actionstream')

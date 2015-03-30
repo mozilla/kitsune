@@ -82,6 +82,15 @@ def patch():
 
     util.NestedObjects.collect = _collect
 
+    # Monkey-patch admin site.
+    from django.contrib import admin
+    from django.contrib.auth.decorators import login_required
+    from adminplus.sites import AdminSitePlus
+
+    # Patch the admin
+    admin.site = AdminSitePlus()
+    admin.site.login = login_required(admin.site.login)
+
     # Make |safe less necessary for form fields
     import jingo.monkey
     jingo.monkey.patch()
