@@ -111,6 +111,21 @@ class TopContributorsBase(views.APIView):
         dt = datetime.combine(date, datetime.max.time())
         return F(created__lte=dt)
 
+    def filter_locale(self, value):
+        return F(locale=value)
+
+    def _filter_by_users(self, users_filter):
+        users = UserMappingType.reshape(
+            UserMappingType
+            .search()
+            .filter(users_filter)
+            .values_dict('id')
+            .everything())
+
+        user_ids = [u['id'] for u in users]
+
+        return F(creator_id__in=user_ids)
+
     def filter_username(self, value):
         username_lower = value.lower()
 
@@ -119,17 +134,17 @@ class TopContributorsBase(views.APIView):
             F(idisplay_name__prefix=username_lower) |
             F(itwitter_usernames__prefix=username_lower))
 
-        users = UserMappingType.reshape(
-            UserMappingType
-            .search()
-            .filter(username_filter)
-            .values_dict('id')
-            [:BIG_NUMBER])
+        return self._filter_by_users(username_filter)
 
-        return F(creator_id__in=[u['id'] for u in users])
+    def filter_last_contribution_date__gt(self, value):
+        date = fields.DateField().from_native(value)
+        dt = datetime.combine(date, datetime.max.time())
+        return self._filter_by_users(F(last_contribution_date__gt=dt))
 
-    def filter_locale(self, value):
-        return F(locale=value)
+    def filter_last_contribution_date__lt(self, value):
+        date = fields.DateField().from_native(value)
+        dt = datetime.combine(date, datetime.max.time())
+        return self._filter_by_users(F(last_contribution_date__lt=dt))
 
     def filter_product(self, value):
         return F(product=value)

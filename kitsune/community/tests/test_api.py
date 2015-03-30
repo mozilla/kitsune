@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 from nose.tools import eq_
 
 from django.test.client import RequestFactory
@@ -109,6 +111,40 @@ class TestTopContributorsQuestions(ElasticTestCase):
         eq_(data['count'], 2)
         eq_(len(data['results']), 1)
 
+    def test_filter_last_contribution(self):
+        u1 = profile().user
+        u2 = profile().user
+
+        today = datetime.now()
+        yesterday = today - timedelta(days=1)
+        day_before_yesterday = yesterday - timedelta(days=1)
+
+        answer(creator=u1, created=today, save=True)
+        answer(creator=u1, created=day_before_yesterday, save=True)
+        answer(creator=u2, created=day_before_yesterday, save=True)
+
+        self.refresh()
+
+        # Test 1
+
+        req = self.factory.get('/', {'last_contribution_date__gt': yesterday.strftime('%Y-%m-%d')})
+        data = self.api.get_data(req)
+
+        eq_(data['count'], 1)
+        eq_(data['results'][0]['user']['username'], u1.username)
+        # Even though only 1 contribution was made in the time range, this filter
+        # is only checking the last contribution time, so both are included.
+        eq_(data['results'][0]['answer_count'], 2)
+
+        # Test 2
+
+        req = self.factory.get('/', {'last_contribution_date__lt': yesterday.strftime('%Y-%m-%d')})
+        data = self.api.get_data(req)
+
+        eq_(data['count'], 1)
+        eq_(data['results'][0]['user']['username'], u2.username)
+        eq_(data['results'][0]['answer_count'], 1)
+
 
 class TestTopContributorsLocalization(ElasticTestCase):
     def setUp(self):
@@ -195,3 +231,37 @@ class TestTopContributorsLocalization(ElasticTestCase):
         data = self.api.get_data(req)
         eq_(data['count'], 2)
         eq_(len(data['results']), 1)
+
+    def test_filter_last_contribution(self):
+        u1 = profile().user
+        u2 = profile().user
+
+        today = datetime.now()
+        yesterday = today - timedelta(days=1)
+        day_before_yesterday = yesterday - timedelta(days=1)
+
+        revision(creator=u1, created=today, save=True)
+        revision(creator=u1, created=day_before_yesterday, save=True)
+        revision(creator=u2, created=day_before_yesterday, save=True)
+
+        self.refresh()
+
+        # Test 1
+
+        req = self.factory.get('/', {'last_contribution_date__gt': yesterday.strftime('%Y-%m-%d')})
+        data = self.api.get_data(req)
+
+        eq_(data['count'], 1)
+        eq_(data['results'][0]['user']['username'], u1.username)
+        # Even though only 1 contribution was made in the time range, this filter
+        # is only checking the last contribution time, so both are included.
+        eq_(data['results'][0]['revision_count'], 2)
+
+        # Test 2
+
+        req = self.factory.get('/', {'last_contribution_date__lt': yesterday.strftime('%Y-%m-%d')})
+        data = self.api.get_data(req)
+
+        eq_(data['count'], 1)
+        eq_(data['results'][0]['user']['username'], u2.username)
+        eq_(data['results'][0]['revision_count'], 1)
