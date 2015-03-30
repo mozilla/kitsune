@@ -73,6 +73,7 @@
       {% if ga_alternate_url %}
         data-ga-alternate-url="{{ ga_alternate_url }}"
       {% endif %}
+      data-waffle-refresh-survey="{{ waffle.sample('refresh-survey')|json }}"
 {% if extra_body_attrs -%}
   {% for attr, val in extra_body_attrs.items() %}{{ attr }}="{{ val }}" {% endfor %}
 {%- endif %}>
