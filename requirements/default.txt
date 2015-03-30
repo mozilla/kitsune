@@ -66,9 +66,9 @@ https://github.com/django-security/django-axes/archive/778f208cc1d3cc42ecb756f73
 # sha256: gAyhfNW8sSP1nj9wpInx4hrEC8mYtA5HJI7pE_RQ1Mc
 https://github.com/mozilla/django-badger/archive/3e9fded1a5bd17a69a852d410eaa4b79686bdd32.tar.gz#egg=django-badger==0.0.0.1
 
-# django-cache-machine: master~1
-# sha256: Z9bMfMcy--u-CtXQ0FvcEt3DgzBjGWVknYaYEu34e8c
-https://github.com/jbalogh/django-cache-machine/archive/7c3d3abfc85fc26d0e522fd05e9a42fc9b9a5430.tar.gz#egg=django-cache-machine
+# django-cache-machine: master
+# sha256: p-Yr1lnav6P4qQqFB3WFeG8vAakSp1Tlnkfa0vghB98
+https://github.com/django-cache-machine/django-cache-machine/archive/6b2b37ebbcac85a9f86e0e3b64c1c54243f50006.tar.gz#egg=django-cache-machine==0.8.0.1
 
 # django-celery: master
 # sha256: dmqn4o32-wsXoiX4O6IFfsRPcLOZVrEhtByqvQs81Ms
