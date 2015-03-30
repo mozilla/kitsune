@@ -187,7 +187,7 @@
                     interpolate(
                         '%(percent)s% ' +
                         '<div class="percent-graph">' +
-                            '<div style="width: %(percent)%" class="%(className)s">' +
+                            '<div style="width: %(percent)s%" class="%(className)s">' +
                             '</div>' +
                         '</div>',
                         {
