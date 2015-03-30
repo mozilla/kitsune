@@ -1,11 +1,10 @@
-from nose import SkipTest
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 
 from kitsune.gallery.models import Image, Video
 from kitsune.gallery.tests import image, video
 from kitsune.sumo.helpers import urlparams
-from kitsune.sumo.tests import TestCase, get, LocalizingClient, post
+from kitsune.sumo.tests import SkipTest, TestCase, get, LocalizingClient, post
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import user
 

@@ -10,14 +10,13 @@ from django.utils.encoding import smart_str
 
 import mock
 from bleach import clean
-from nose import SkipTest
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 from wikimarkup.parser import ALLOWED_TAGS, ALLOWED_ATTRIBUTES
 
 from kitsune.products.tests import product, topic
 from kitsune.sumo.helpers import urlparams
-from kitsune.sumo.tests import post, get, attrs_eq, MobileTestCase
+from kitsune.sumo.tests import SkipTest, post, get, attrs_eq, MobileTestCase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import user, add_permission
 from kitsune.wiki.events import (

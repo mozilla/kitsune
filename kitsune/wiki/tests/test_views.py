@@ -7,11 +7,10 @@ from django.contrib.sites.models import Site
 
 import mock
 from nose.tools import eq_
-from nose import SkipTest
 from pyquery import PyQuery as pq
 
 from kitsune.products.tests import product
-from kitsune.sumo.tests import TestCase, LocalizingClient
+from kitsune.sumo.tests import SkipTest, TestCase, LocalizingClient
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.redis_utils import redis_client, RedisError
 from kitsune.users.tests import user, add_permission
