@@ -14,6 +14,14 @@ from kitsune.users.models import Profile
 
 
 @register.function
+def get_profile(user):
+    try:
+        return Profile.objects.get(user_id=user.id)
+    except Profile.DoesNotExist:
+        return None
+
+
+@register.function
 def profile_url(user, edit=False):
     """Return a URL to the user's profile."""
     if edit:
@@ -25,7 +33,7 @@ def profile_url(user, edit=False):
 def profile_avatar(user, size=48):
     """Return a URL to the user's avatar."""
     try:  # This is mostly for tests.
-        profile = user.get_profile()
+        profile = Profile.objects.get(user_id=user.id)
     except (Profile.DoesNotExist, AttributeError):
         avatar = settings.STATIC_URL + settings.DEFAULT_AVATAR
     else:
@@ -54,7 +62,7 @@ def profile_avatar(user, size=48):
 def display_name(user):
     """Return a display name if set, else the username."""
     try:  # Also mostly for tests.
-        profile = user.get_profile()
+        profile = Profile.objects.get(user_id=user.id)
     except (Profile.DoesNotExist, AttributeError):
         return user.username
     return profile.display_name if profile else user.username

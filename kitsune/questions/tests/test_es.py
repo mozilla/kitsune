@@ -10,6 +10,7 @@ from kitsune.questions.tests import question, answer, answervote, questionvote
 from kitsune.search.tests.test_es import ElasticTestCase
 from kitsune.sumo.tests import LocalizingClient
 from kitsune.sumo.urlresolvers import reverse
+from kitsune.users.models import Profile
 from kitsune.users.tests import user, profile
 
 
@@ -251,7 +252,7 @@ class SupportForumTopContributorsTests(ElasticTestCase):
         doc = pq(response.content)
         lis = doc('#top-contributors ol li')
         eq_(1, len(lis))
-        eq_(a.creator.get_profile().display_name, lis[0].text)
+        eq_(Profile.objects.get(user=a.creator).display_name, lis[0].text)
 
         # Make answer 91 days old. There should no be top contributors.
         a.created = datetime.now() - timedelta(days=91)

@@ -57,7 +57,7 @@ add_introspection_rules(rules=[(
 
 @auto_delete_files
 class Profile(ModelBase, SearchMixin):
-    """Profile model for django users, get it with user.get_profile()."""
+    """Profile model for django users."""
 
     user = models.OneToOneField(User, primary_key=True,
                                 verbose_name=_lazy(u'User'))
@@ -320,7 +320,7 @@ register_for_indexing('users', Profile)
 
 def get_profile(u):
     try:
-        return u.get_profile()
+        return Profile.objects.get(user=u)
     except Profile.DoesNotExist:
         return None
 

@@ -16,6 +16,7 @@ from kitsune.questions.tests import question, answer, questionvote, answervote
 from kitsune.products.tests import product, topic
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.helpers import profile_avatar
+from kitsune.users.models import Profile
 from kitsune.users.tests import profile, user, add_permission
 
 
@@ -103,7 +104,7 @@ class TestQuestionSerializerSerialization(TestCase):
         return sorted(
             {
                 'username': u.username,
-                'display_name': u.get_profile().name,
+                'display_name': Profile.objects.get(user=u).name,
                 'avatar': profile_avatar(u),
             }
             for u in users)
@@ -160,7 +161,7 @@ class TestQuestionSerializerSerialization(TestCase):
         serializer = api.QuestionSerializer(instance=self.question)
         eq_(serializer.data['creator'], {
             'username': self.question.creator.username,
-            'display_name': self.question.creator.get_profile().display_name,
+            'display_name': Profile.objects.get(user=self.question.creator).display_name,
             'avatar': profile_avatar(self.question.creator),
         })
 
@@ -476,7 +477,7 @@ class TestAnswerViewSet(TestCase):
 
     def test_create(self):
         q = question(save=True)
-        u = user(save=True)
+        u = profile().user
         self.client.force_authenticate(user=u)
         data = {
             'question': q.id,

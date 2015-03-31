@@ -468,7 +468,7 @@ def edit_profile(request, username=None, template=None):
         user = request.user
 
     try:
-        user_profile = user.get_profile()
+        user_profile = Profile.objects.get(user=user)
     except Profile.DoesNotExist:
         # TODO: Once we do user profile migrations, all users should have a
         # a profile. We can remove this fallback.
@@ -528,7 +528,7 @@ def make_contributor(request):
 def edit_avatar(request):
     """Edit user avatar."""
     try:
-        user_profile = request.user.get_profile()
+        user_profile = Profile.objects.get(user=request.user)
     except Profile.DoesNotExist:
         # TODO: Once we do user profile migrations, all users should have a
         # a profile. We can remove this fallback.
@@ -568,7 +568,7 @@ def edit_avatar(request):
 def delete_avatar(request):
     """Delete user avatar."""
     try:
-        user_profile = request.user.get_profile()
+        user_profile = Profile.objects.get(user=request.user)
     except Profile.DoesNotExist:
         # TODO: Once we do user profile migrations, all users should have a
         # a profile. We can remove this fallback.

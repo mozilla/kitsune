@@ -272,7 +272,7 @@ class EditProfileTests(TestCaseBase):
                 'locale': 'en-US'}
         r = self.client.post(url, data)
         eq_(302, r.status_code)
-        profile = User.objects.get(username=u.username).get_profile()
+        profile = Profile.objects.get(user=u)
         for key in data:
             if key != 'timezone':
                 eq_(data[key], getattr(profile, key))
@@ -320,7 +320,7 @@ class EditProfileTests(TestCaseBase):
                 'locale': 'en-US'}
         r = self.client.post(url, data)
         eq_(302, r.status_code)
-        profile = User.objects.get(username=u1.username).get_profile()
+        profile = Profile.objects.get(user=u1)
         for key in data:
             if key != 'timezone':
                 eq_(data[key], getattr(profile, key))

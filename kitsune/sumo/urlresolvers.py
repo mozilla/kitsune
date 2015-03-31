@@ -140,7 +140,7 @@ class Prefixer(object):
                     self.locale = language
             else:
                 try:
-                    self.locale = request.user.get_profile().locale
+                    self.locale = Profile.objects.get(user=request.user).locale
                 except Profile.DoesNotExist:
                     pass
 

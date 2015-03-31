@@ -9,20 +9,10 @@ from nose.tools import eq_
 from kitsune.sumo.tests import TestCase
 from kitsune.users.models import RegistrationProfile, Setting
 from kitsune.users.forms import SettingsForm
-from kitsune.users.tests import user, profile
+from kitsune.users.tests import user
 
 
 log = logging.getLogger('k.users')
-
-
-class ProfileTests(TestCase):
-
-    def test_user_get_profile(self):
-        """user.get_profile() returns what you'd expect."""
-        u = user(save=True)
-        p = profile(user=u)
-
-        eq_(p, u.get_profile())
 
 
 class RegistrationProfileTests(TestCase):
