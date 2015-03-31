@@ -26,6 +26,9 @@ class InboxMessage(ModelBase):
         from kitsune.sumo.helpers import wiki_to_html
         return wiki_to_html(self.message)
 
+    class Meta:
+        db_table = 'messages_inboxmessage'
+
 
 class OutboxMessage(ModelBase):
     sender = models.ForeignKey(User, related_name='outbox')
@@ -41,3 +44,6 @@ class OutboxMessage(ModelBase):
     def content_parsed(self):
         from kitsune.sumo.helpers import wiki_to_html
         return wiki_to_html(self.message)
+
+    class Meta:
+        db_table = 'messages_outboxmessage'
