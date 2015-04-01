@@ -11,7 +11,7 @@ from mobility.decorators import mobile_template
 from multidb.pinning import mark_as_write
 from kitsune.sumo.utils import is_ratelimited
 from statsd import statsd
-from tower import ugettext as _
+from tower import ugettext as _, ungettext
 
 from kitsune.access.decorators import login_required
 from kitsune.messages import send_message, MESSAGES_PER_PAGE
@@ -115,7 +115,7 @@ def bulk_action(request, msgtype='inbox'):
 
     if len(msgids) == 0:
         contrib_messages.add_message(request, contrib_messages.ERROR,
-                                     "No messages selected. Please try again.")
+                                     _("No messages selected. Please try again."))
     else:
         if 'delete' in request.POST:
             return delete(request, msgtype=msgtype)
@@ -151,13 +151,12 @@ def delete(request, template, msgid=None, msgtype='inbox'):
     if request.method == 'POST' and 'confirmed' in request.POST:
         if messages.count() != len(msgids):
             contrib_messages.add_message(request, contrib_messages.ERROR,
-                                         "Messages didn't add up. Try again.")
+                                         _("Messages didn't add up. Try again."))
         else:
             messages.delete()
-            if len(msgids) > 1:
-                msg = _('The messages were deleted!')
-            else:
-                msg = _('The message was deleted!')
+            msg = ungettext(u'The message was deleted!',
+                            u'The messages were deleted!',
+                            len(msgids))
             contrib_messages.add_message(request, contrib_messages.SUCCESS,
                                          msg)
 
