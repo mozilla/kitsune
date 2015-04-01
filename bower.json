@@ -12,7 +12,9 @@
   ],
   "dependencies": {
     "ace": "ace-builds#1.1.8",
+    "classnames": "~1.1.4",
     "d3": "d3#3.1.5",
+    "fontawesome": "#4.3.0",
     "jquery": "jquery#1.10.1",
     "jquery-ui": "jquery-ui#1.10.2",
     "mailcheck": "mailcheck#1.1.0",
@@ -21,6 +23,8 @@
     "normalize-css": "normalize-css#3.0.2",
     "nunjucks": "nunjucks#1.0.5",
     "nwmatcher": "nwmatcher#1.3.4",
+    "pikaday": "~1.3.2",
+    "react": "#0.13.0",
     "underscore": "underscore#1.2.1"
   }
 }

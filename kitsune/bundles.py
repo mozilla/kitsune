@@ -17,6 +17,15 @@ PIPELINE_CSS = {
         ),
         'output_filename': 'community-min.css'
     },
+    'community-new': {
+        'source_filenames': (
+            'fontawesome/css/font-awesome.css',
+            'pikaday/css/pikaday.css',
+            'less/wiki-content.less',
+            'less/community-new.less',
+        ),
+        'output_filename': 'community-new-min.css'
+    },
     'mobile-common': {
         'source_filenames': (
             'normalize-css/normalize.css',
@@ -281,6 +290,34 @@ PIPELINE_JS = {
             'js/select.js',
         ),
         'output_filename': 'community-min.js'
+    },
+    'community-new-questions': {
+        'source_filenames': (
+            # This uses the minified version because it is optimized to leave
+            # out lots of debug stuff, so it is significantly smaller than
+            # just minifying react.js.
+            # TODO: Figure out how to include the full sized version in dev,
+            # because it produces much nicer error messages.
+            'react/react.min.js',
+            # 'react/react.js',
+            'pikaday/pikaday.js',
+            'js/community-questions.browserify.js',
+        ),
+        'output_filename': 'community-questions-min.js'
+    },
+    'community-new-l10n': {
+        'source_filenames': (
+            # This uses the minified version because it is optimized to leave
+            # out lots of debug stuff, so it is significantly smaller than
+            # just minifying react.js.
+            # TODO: Figure out how to include the full sized version in dev,
+            # because it produces much nicer error messages.
+            'react/react.min.js',
+            # 'react/react.js',
+            'pikaday/pikaday.js',
+            'js/community-l10n.browserify.js',
+        ),
+        'output_filename': 'community-l10n-min.js'
     },
     'mobile-common': {
         'source_filenames': (

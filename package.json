@@ -15,10 +15,13 @@
     "lockdown": "mozilla/npm-lockdown#c7ceb9ca37fab4ba2639b89f94b88703d4e4d0d2"
   },
   "dependencies": {
+    "babelify": "^5.0.4",
     "bower": "1.3.12",
+    "browserify": "^9.0.3",
+    "cssmin": "0.4.3",
+    "debowerify": "^1.2.0",
     "less": "1.7.0",
     "nunjucks": "1.0.5",
-    "uglify-js": "2.4.13",
-    "cssmin": "0.4.3"
+    "uglify-js": "2.4.13"
   }
 }

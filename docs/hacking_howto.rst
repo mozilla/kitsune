@@ -197,31 +197,36 @@ For more information on ``peep``, refer to the
    `This Pip issue <https://github.com/pypa/pip/issues/1825>`_ for more details
 
 
-Javascript Packages
+Node.js Packages
 -------------------
 
-Kitsune relies on a small number of Javascript packages. To get those, you will
-need to `install Node.JS and NPM
+Kitsune relies on some Node.js packages. To get those, you will need to
+`install Node.js and NPM
 <https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager>`_.
 
-Now install the javascript dependencies with::
+Now install the Node.js dependencies with::
 
     $ npm install
 
 This should create a directory named ``node_modules`` in your git repo.
 
-We are now using `npm-lockdown <https://github.com/mozilla/npm-lockdown>`_ to handle installing the
-Node dependencies securely. This means if you add a new dependency you will need to run::
-
-    $ ./node_modules/.bin/lockdown-relock
-
-This will update ``lockdown.json`` with the appropriate hashes.
-
 .. Note::
 
-    If you see a "npm ERR! notarget No valid targets found." error while installing the Node
-    packages, this is due to npm-lockdown being unable to find a package that matches the hash in
-    ``lockdown.json``.
+    If you see a "npm ERR! notarget No valid targets found." error while
+    installing the Node packages, this is due to npm-lockdown being unable to
+    find a package that matches the hash in ``lockdown.json``.
+
+
+Frontend Packages
+-----------------
+
+Kitsune gets libraries and dependencies for client side code from Bower. Bower
+is installed as a part of the NPM packages in the last step. To install these
+front-end dependencies run::
+
+   $ ./node_modules/.bin/bower install
+
+This will download dependencies into ``bower_components``.
 
 
 Configuration and Setup
@@ -256,11 +261,9 @@ database settings. For example, using the settings above::
     mysql> CREATE DATABASE kitsune CHARACTER SET utf8 COLLATE utf8_unicode_ci;
     mysql> GRANT ALL ON kitsune.* TO kitsune@localhost IDENTIFIED BY '<YOUR_PASSWORD>';
 
-
 To initialize the database, do::
 
     $ ./manage.py syncdb --migrate
-
 
 This will ask you to create a superuser account. Just follow the prompts.
 

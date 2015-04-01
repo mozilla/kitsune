@@ -50,6 +50,45 @@ test('google url', function() {
 });
 
 
+module('k.queryParamStringFromDict');
+
+test('empty dict', function() {
+    var data = {};
+    var expected = '?';
+    var actual = k.queryParamStringFromDict(data);
+    equal(expected, actual);
+});
+
+test('one arg', function() {
+    var data = {foo: 1};
+    var expected = '?foo=1';
+    var actual = k.queryParamStringFromDict(data);
+    equal(expected, actual);
+});
+
+test('two args', function() {
+    var data = {foo: 1, bar: 2};
+    var expected = '?foo=1&bar=2';
+    var actual = k.queryParamStringFromDict(data);
+    equal(expected, actual);
+});
+
+test('undefined and null add nothing to string', function() {
+    var data = {foo: undefined, bar: 2, baz: null};
+    var expected = '?bar=2';
+    var actual = k.queryParamStringFromDict(data);
+    equal(expected, actual);
+});
+
+test('three args', function() {
+    var data = {foo: 1, bar: 2, baz: 3};
+    var expected = '?foo=1&bar=2&baz=3';
+    var actual = k.queryParamStringFromDict(data);
+    equal(expected, actual);
+});
+
+
+
 module('k.getReferrer');
 
 test('search', function() {

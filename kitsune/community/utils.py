@@ -47,7 +47,7 @@ def top_contributors_l10n(start=None, end=None, locale=None, product=None,
         .facet('creator_id', filtered=True, size=BIG_NUMBER))
 
     if locale is None:
-        # If there is no locale specified, exlude en-US only. The rest are
+        # If there is no locale specified, exclude en-US only. The rest are
         # l10n.
         query = query.filter(~F(locale=settings.WIKI_DEFAULT_LANGUAGE))
 
