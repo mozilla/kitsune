@@ -341,6 +341,9 @@
       if (_gaq) {
         _gaq.push(['_trackEvent', 'Refresh Firefox', 'click refresh button']);
       }
+      if (JSON.parse($('body').data('waffle-refresh-survey'))) {
+        $.cookie('showFirefoxResetSurvey', '1', {expires: 365});
+      }
 
       Mozilla.UITour.resetFirefox();
     }
