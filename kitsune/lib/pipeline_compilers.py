@@ -1,3 +1,5 @@
+import re
+
 from django.conf import settings
 from django.utils.encoding import smart_bytes
 
@@ -9,7 +11,8 @@ class BrowserifyCompiler(CompilerBase):
     output_extension = 'browserified.js'
 
     def match_file(self, path):
-        return path.endswith('.browserify.js')
+        # Allow for cache busting hashes between ".browserify" and ".js"
+        return re.search(r'\.browserify(\.[a-fA-F0-9]+)?\.js$', path) is not None
 
     def compile_file(self, infile, outfile, outdated=False, force=False):
         command = "%s %s %s > %s" % (
