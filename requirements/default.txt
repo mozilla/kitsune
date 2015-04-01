@@ -120,9 +120,9 @@ https://github.com/gintas/django-picklefield/archive/54b11bdb177fd6140c3ae7d6e97
 # sha256: tA777GxXkjVRMquS0OBIu9C7mdSOoxIcDdeIUE68oto
 django-pipeline==1.4.6
 
-# django-qunit: remotes/origin/django16
-# sha256: ZNTz9pfspTc-l8h66PMO775Ur7WrfDwFZUNAvCAJbkQ
-https://github.com/rlr/django-qunit/archive/2cda783a05912a6cbfaa4799583aa22cf24e184c.tar.gz#egg=django-qunit
+# django-qunit: master
+# sha256: E0vdgFaBorOxgVp2_oCm3NRB_4-GqWDCMjQnc8mudFI
+https://github.com/rlr/django-qunit/archive/66771c945872776fd582104b3a2c641469afe07e.tar.gz#egg=django-qunit==0.1.1.1
 
 # django-ratelimit: tags/v0.4.0~8
 # sha256: 0aNL6oRLRBHhGYsH0mm3D7UQDaSnNbdsHJl_sPuUZGw
