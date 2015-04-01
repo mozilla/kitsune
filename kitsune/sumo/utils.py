@@ -95,7 +95,11 @@ def delete_files_for_obj(sender, **kwargs):
         if not hasattr(obj, field_name):
             continue
         # Get the class and value of the field.
-        field_class = sender._meta.get_field(field_name)
+        try:
+            field_class = sender._meta.get_field(field_name)
+        except models.FieldDoesNotExist:
+            # This works around a weird issue in Django 1.7.
+            continue
         field_value = getattr(obj, field_name)
         # Check if it's a FileField instance and the field is set.
         if isinstance(field_class, models.FileField) and field_value:
