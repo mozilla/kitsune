@@ -17,6 +17,7 @@ from kitsune.sumo.api import (
     DateTimeUTCField, OnlyCreatorEdits, GenericAPIException, SplitSourceField)
 from kitsune.tags.utils import add_existing_tag
 from kitsune.users.api import ProfileFKSerializer
+from kitsune.users.models import Profile
 
 
 class QuestionMetaDataSerializer(serializers.ModelSerializer):
@@ -61,7 +62,7 @@ class QuestionTagSerializer(serializers.ModelSerializer):
 class QuestionSerializer(serializers.ModelSerializer):
     content = SplitSourceField(read_source='content_parsed', write_source='content')
     created = DateTimeUTCField(read_only=True)
-    creator = ProfileFKSerializer(source='creator.get_profile', read_only=True)
+    creator = serializers.SerializerMethodField('get_creator')
     involved = serializers.SerializerMethodField('get_involved_users')
     is_solved = serializers.Field(source='is_solved')
     is_taken = serializers.Field(source='is_taken')
@@ -71,10 +72,10 @@ class QuestionSerializer(serializers.ModelSerializer):
     tags = QuestionTagSerializer(source='tags', read_only=True)
     solution = serializers.PrimaryKeyRelatedField(read_only=True)
     solved_by = serializers.SerializerMethodField('get_solved_by')
-    taken_by = ProfileFKSerializer(source='taken_by.get_profile', read_only=True)
+    taken_by = serializers.SerializerMethodField('get_taken_by')
     topic = TopicField(required=True)
     updated = DateTimeUTCField(read_only=True)
-    updated_by = ProfileFKSerializer(source='updated_by.get_profile', read_only=True)
+    updated_by = serializers.SerializerMethodField('get_updated_by')
 
     class Meta:
         model = Question
@@ -108,12 +109,23 @@ class QuestionSerializer(serializers.ModelSerializer):
         )
 
     def get_involved_users(self, obj):
-        involved = set([obj.creator.get_profile()])
-        involved.update(a.creator.get_profile() for a in obj.answers.all())
+        involved = set([Profile.objects.get(user=obj.creator)])
+        involved.update(Profile.objects.get(user=a.creator) for a in obj.answers.all())
         return ProfileFKSerializer(involved, many=True).data
 
     def get_solved_by(self, obj):
-        return ProfileFKSerializer(obj.solution.creator) if obj.solution else None
+        return ProfileFKSerializer(obj.solution.creator).data if obj.solution else None
+
+    def get_creator(self, obj):
+        return ProfileFKSerializer(Profile.objects.get(user=obj.creator)).data
+
+    def get_taken_by(self, obj):
+        taken_by = Profile.objects.get(user=obj.taken_by) if obj.taken_by else None
+        return ProfileFKSerializer(taken_by).data if taken_by else None
+
+    def get_updated_by(self, obj):
+        updated_by = Profile.objects.get(user=obj.updated_by) if obj.updated_by else None
+        return ProfileFKSerializer(updated_by).data if updated_by else None
 
     def validate_creator(self, attrs, source):
         user = getattr(self.context.get('request'), 'user')
@@ -372,11 +384,11 @@ class QuestionViewSet(viewsets.ModelViewSet):
 class AnswerSerializer(serializers.ModelSerializer):
     content = SplitSourceField(read_source='content_parsed', write_source='content')
     created = DateTimeUTCField(read_only=True)
-    creator = ProfileFKSerializer(read_only=True, source='creator.get_profile')
+    creator = serializers.SerializerMethodField('get_creator')
     num_helpful_votes = serializers.Field(source='num_helpful_votes')
     num_unhelpful_votes = serializers.Field(source='num_unhelpful_votes')
     updated = DateTimeUTCField(read_only=True)
-    updated_by = ProfileFKSerializer(read_only=True, source='updated_by.get_profile')
+    updated_by = serializers.SerializerMethodField('get_updated_by')
 
     class Meta:
         model = Answer
@@ -392,6 +404,13 @@ class AnswerSerializer(serializers.ModelSerializer):
             'num_helpful_votes',
             'num_unhelpful_votes',
         )
+
+    def get_creator(self, obj):
+        return ProfileFKSerializer(Profile.objects.get(user=obj.creator)).data
+
+    def get_updated_by(self, obj):
+        updated_by = Profile.objects.get(user=obj.updated_by) if obj.updated_by else None
+        return ProfileFKSerializer(updated_by).data if updated_by else None
 
     def validate_creator(self, attrs, source):
         user = getattr(self.context.get('request'), 'user')

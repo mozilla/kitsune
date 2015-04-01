@@ -228,7 +228,7 @@ def datetimeformat(context, value, format='shortdatetime'):
     if 'timezone' not in request.session:
         if request.user.is_authenticated():
             try:
-                convert_tzinfo = (request.user.get_profile().timezone or
+                convert_tzinfo = (Profile.objects.get(user=request.user).timezone or
                                   default_tzinfo)
             except (Profile.DoesNotExist, AttributeError):
                 pass

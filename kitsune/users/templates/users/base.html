@@ -5,7 +5,7 @@
 
 {% block side_top %}
   {% if not profile and user.is_authenticated() %}
-    {% set profile = user.get_profile() %}
+    {% set profile = get_profile(user) %}
   {% endif %}
   {% if profile %}
     {% if request.user == profile.user %}

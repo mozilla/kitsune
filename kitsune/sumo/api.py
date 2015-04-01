@@ -12,6 +12,7 @@ from tower import ugettext as _
 
 from kitsune.sumo.utils import uselocale
 from kitsune.sumo.urlresolvers import get_best_language
+from kitsune.users.models import Profile
 
 
 class GenericAPIException(APIException):
@@ -218,7 +219,7 @@ class GenericRelatedField(relations.RelatedField):
         data = {'type': content_type.model}
 
         if isinstance(value, User):
-            value = value.get_profile()
+            value = Profile.objects.get(user=value)
 
         if hasattr(value, 'get_serializer'):
             SerializerClass = value.get_serializer(self.serializer_type)
