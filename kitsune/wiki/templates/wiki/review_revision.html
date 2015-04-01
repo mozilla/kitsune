@@ -20,13 +20,13 @@
         <p>
           {{ _('This revision was already reviewed by {user} on {date}.')|fe(user=revision.reviewer, date=datetimeformat(revision.reviewed, format='longdatetime')) }}
         </p>
-      {% elif document.current_revision > revision %}
+      {% elif current_revision_id > revision.id %}
         <p>
           {{ _('A newer revision has already been reviewed.') }}
-          {% if latest_revision(revision, Q(is_approved=False)) > document.current_revision %}
-            <a href="{{ url('wiki.review_revision', document.slug, latest_revision(revision, Q(is_approved=False))) }}">{{ _('Please review the latest revision') }}</a>.
-          {% else %}
-            <a href="{{ url('wiki.document_revisions', document.slug) }}">{{ _('Please go back to history') }}</a>.
+          {% if latest_unapproved_revision_id > current_revision_id %}
+              <br>
+              {{ _('But there is another latest revision which is waiting for review.') }}
+              <a href="{{ url('wiki.review_revision', document.slug, latest_unapproved_revision_id) }}">{{ _('Please review the latest revision.') }}</a>
           {% endif %}
         </p>
       {% elif document.current_revision %}

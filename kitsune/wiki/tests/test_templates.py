@@ -1626,6 +1626,37 @@ class ReviewRevisionTests(TestCaseBase):
         assert rev1.creator.username in label
         assert u.username not in label
 
+    def test_review_past_revision(self):
+        """Verify that its not possible to review a revision older than the current revision"""
+        r1 = revision(is_approved=False, save=True)
+        r2 = revision(document=r1.document, is_approved=True, save=True)
+        r1.document.current_revision = r2
+        r1.document.save()
+        u = user(save=True)
+        add_permission(u, Revision, 'review_revision')
+        self.client.login(username=u.username, password='testpass')
+
+        # Get the data of the document
+        response = get(self.client, 'wiki.review_revision',
+                       args=[r1.document.slug, r1.id])
+        eq_(200, response.status_code)
+        message1 = 'A newer revision has already been reviewed.'
+        message2 = 'But there is another latest revision which is waiting for review.'
+
+        # While there is no unapproved revision after the current revision.
+        doc = pq(response.content)
+        doc_content = doc('#review-revision').text()
+        assert message1 in doc_content
+        assert message2 not in doc_content
+        # While there is Unapproved revision after the Current Revision
+        revision(document=r1.document, is_approved=False, save=True)
+        response = get(self.client, 'wiki.review_revision',
+                       args=[r1.document.slug, r1.id])
+        doc = pq(response.content)
+        doc_content = doc('#review-revision').text()
+        assert message1 in doc_content
+        assert message2 in doc_content
+
 
 class CompareRevisionTests(TestCaseBase):
     """Tests for Review Revisions"""
