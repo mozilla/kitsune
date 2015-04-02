@@ -9,6 +9,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('products', '0001_initial'),
+        ('wiki', '0001_initial'),
     ]
 
     operations = [
@@ -18,6 +19,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('visits', models.IntegerField(db_index=True)),
                 ('period', models.IntegerField(choices=[(0, 'Last 7 days'), (2, 'Last 30 days'), (3, 'Last 90 days'), (1, 'All Time')])),
+                ('document', models.ForeignKey(related_name='visits', to='wiki.Document')),
             ],
             options={
             },
@@ -41,5 +43,9 @@ class Migration(migrations.Migration):
         migrations.AlterUniqueTogether(
             name='wikimetric',
             unique_together=set([('code', 'product', 'locale', 'date')]),
+        ),
+        migrations.AlterUniqueTogether(
+            name='wikidocumentvisits',
+            unique_together=set([('period', 'document')]),
         ),
     ]

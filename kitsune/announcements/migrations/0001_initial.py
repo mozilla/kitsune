@@ -11,6 +11,7 @@ class Migration(migrations.Migration):
     dependencies = [
         ('auth', '0001_initial'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
+        ('wiki', '0001_initial'),
     ]
 
     operations = [
@@ -24,6 +25,7 @@ class Migration(migrations.Migration):
                 ('content', models.TextField(help_text=b"Use wiki syntax or HTML. It will display similar to a document's content.", max_length=10000)),
                 ('creator', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
                 ('group', models.ForeignKey(blank=True, to='auth.Group', null=True)),
+                ('locale', models.ForeignKey(blank=True, to='wiki.Locale', null=True)),
             ],
             options={
                 'abstract': False,
