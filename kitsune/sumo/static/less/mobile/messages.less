@@ -1,5 +1,4 @@
 @import '../variables.less';
-@import '../vendors.less';
 
 .half-width {
   float: left;
@@ -40,7 +39,7 @@
   .footer-overlay {
     .trash-button {
       border: 0;
-      .box-shadow(none);
+      box-shadow: none;
       float: none;
       left: 50%;
       margin: 0 0 0 -25px;
@@ -99,7 +98,7 @@
   .mailbox-tabs {
     background: #fff;
     border-bottom: 1px solid #727272;
-    .box-shadow(0 0 4px 0 rgba(0, 0, 0, 0.75));
+    box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.75);
     color: #000;
     font-size: 18px;
     font-weight: bold;
@@ -193,7 +192,7 @@
         > a {
           &:before {
             background: #52b6cc;
-            .border-radius(5px);
+            border-radius: 5px;
             content: '';
             height: 10px;
             left: 7px;
@@ -225,7 +224,7 @@
     .checkbox {
       background: #fff;
       border: 2px solid #b70404;
-      .border-radius(22px);
+      border-radius: 22px;
       color: #fff;
       cursor: pointer;
       display: none;
@@ -306,10 +305,11 @@
   }
 
   .name-tag {
-    .gradient(#f7f7f7, #efefef, #f7f7f7);
+    background: #f7f7f7;
+    background: linear-gradient(to bottom, #efefef, #f7f7f7);
     border: 1px solid #d6d6d6;
-    .border-radius(13px);
-    .box-shadow(0 2px 0 #fff inset);
+    border-radius: 13px;
+    box-shadow: 0 2px 0 #fff inset;
     color: #000;
     display: inline-block;
     padding: 2px 12px 1px;
@@ -329,8 +329,8 @@
     textarea {
       bottom: 0;
       border: 0;
-      .border-radius(0);
-      .box-shadow(none);
+      border-radius: 0;
+      box-shadow: none;
       left: 0;
       margin: 0;
       outline: none;
@@ -358,9 +358,7 @@
     top: 0;
 
     textarea {
-      height: calc(~'100% - 58px');
-      height: -moz-calc(~'100% - 58px');
-      height: -webkit-calc(~'100% - 58px');
+      height: calc(100% - 58px);
     }
   }
 }
@@ -372,18 +370,17 @@
     list-style: none;
     margin: 0;
     padding: 0;
-    width: calc(~'100% - 40px');
-    width: -moz-calc(~'100% - 40px');
-    width: -webkit-calc(~'100% - 40px');
+    width: calc(100% - 40px);
 
     > li {
       display: inline;
 
       &.token-input-token-facebook {
-        .gradient(#f7f7f7, #efefef, #f7f7f7);
+        background: #f7f7f7;
+        background: linear-gradient(to bottom, #efefef, #f7f7f7);
         border: 1px solid #d6d6d6;
-        .border-radius(13px);
-        .box-shadow(0 2px 0 #fff inset);
+        border-radius: 13px;
+        box-shadow: 0 2px 0 #fff inset;
         color: #000;
         display: inline-block;
         margin-right: 4px;
@@ -397,7 +394,7 @@
 
         .token-input-delete-token-facebook {
           background: #000;
-          .border-radius(10px);
+          border-radius: 10px;
           color: #fff;
           cursor: pointer;
           float: right;
@@ -414,7 +411,7 @@
 
     input[type="text"] {
       border: 0;
-      .box-shadow(none);
+      box-shadow: none;
       display: inline;
       margin: 0;
       outline: none;

@@ -1,5 +1,4 @@
 @import 'variables.less';
-@import 'vendors.less';
 
 @import 'includes/editor-tools.less';
 @import 'includes/details.less';
@@ -20,7 +19,7 @@ article {
   }
 
   > * {
-    .transition(opacity 1s);
+    transition: opacity 1s;
   }
 }
 
@@ -543,8 +542,8 @@ textarea[name="content"] {
 
   .showfor {
     background: #fff;
-    .border-radius(10px);
-    .box-shadow(0 4px 10px #999);
+    border-radius: 10px;
+    box-shadow: 0 4px 10px #999;
     left: 10px;
     margin: -90px 0 0;
     padding: 15px;
@@ -579,8 +578,8 @@ textarea[name="content"] {
 #review-revision {
   .showfor {
     background: #fff;
-    .border-radius(10px);
-    .box-shadow(0 4px 10px #999);
+    border-radius: 10px;
+    box-shadow: 0 4px 10px #999;
     display: none;
     left: 10px;
     margin: -90px 0 0;
@@ -788,8 +787,8 @@ body.review {
 
     div.help-text {
       background: #fff;
-      .border-radius(0 0 10px 10px);
-      .box-shadow(~"0 10px 10px rgba(0,0,0,0.25), inset -1px -1px 1px rgba(0,0,0,0.125), inset 1px 0 1px rgba(255,255,255,0.25)");
+      border-radius: 0 0 10px 10px;
+      box-shadow: 0 10px 10px rgba(0,0,0,0.25), inset -1px -1px 1px rgba(0,0,0,0.125), inset 1px 0 1px rgba(255,255,255,0.25);
       color: #000;
       display: none;
       left: 23px;
@@ -800,8 +799,8 @@ body.review {
     }
 
     &:hover {
-      .border-radius(10px 10px 0 10px);
-      .box-shadow(~"0 0 10px rgba(0,0,0,0.25), inset -1px -1px 1px rgba(0,0,0,0.125), inset 1px 0 1px rgba(255,255,255,0.25)");
+      border-radius: 10px 10px 0 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.25), inset -1px -1px 1px rgba(0,0,0,0.125), inset 1px 0 1px rgba(255,255,255,0.25);
 
       label {
         position: relative;
@@ -947,14 +946,14 @@ article {
 
     &:after {
       background: #fff;
-      .box-shadow(-2px 2px 2px rgba(0,0,0,0.3));
+      box-shadow: -2px 2px 2px rgba(0,0,0,0.3);
       content: '';
       display: block;
       height: 10px;
       left: -5px;
       position: absolute;
       top: 15px;
-      .transform(rotate(45deg));
+      transform: rotate(45deg);
       width: 10px;
       z-index: 1;
     }
@@ -964,7 +963,7 @@ article {
 #unhelpful-survey {
   background: #fff;
   border: solid 1px #ccc;
-  .box-shadow(0 1px 2px rgba(0,0,0,0.3));
+  box-shadow: 0 1px 2px rgba(0,0,0,0.3);
   display: inline-block;
   z-index: 1;
 

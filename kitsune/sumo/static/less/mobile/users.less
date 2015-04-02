@@ -1,5 +1,4 @@
 @import '../variables.less';
-@import '../vendors.less';
 
 .login,
 .register {
@@ -94,8 +93,8 @@
     .detail {
       background: #fff;
       border: 1px solid @borderLightGrey;
-      .border-radius(3px);
-      .box-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+      border-radius: 3px;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
       color: #000;
       display: block;
       font-weight: bold;
@@ -145,9 +144,9 @@
       border-color: @mobileInputBorder;
       border-style: solid;
       border-width: 1px 0 1px 1px;
-      .border-radius(3px 0 0 3px);
-      .box-shadow(0 1px 2px 0 rgba(0, 0, 0, 0.1) inset);
-      .box-sizing(border-box);
+      border-radius: 3px 0 0 3px;
+      box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.1) inset;
+      box-sizing: border-box;
       display: block;
       float: left;
       font-family: @Moz;
@@ -162,11 +161,9 @@
       & + textarea,
       & + .value,
       & + .field-button {
-        .border-radius(0 3px 3px 0);
+        border-radius: 0 3px 3px 0;
         margin-left: 96px;
-        width: calc(~'100% - 96px');
-        width: -moz-calc(~'100% - 96px');
-        width: -webkit-calc(~'100% - 96px');
+        width: calc(100% - 96px);
       }
 
       &.big {
@@ -178,9 +175,7 @@
         & + .value,
         & + .field-button {
           margin-left: 150px;
-          width: calc(~'100% - 180px');
-          width: -moz-calc(~'100% - 180px');
-          width: -webkit-calc(~'100% - 180px');
+          width: calc(100% - 180px);
         }
       }
     }
@@ -191,17 +186,15 @@
       + input {
         margin-left: 60px;
         margin-top: 3px;
-        width: calc(~'100% - 60px');
-        width: -moz-calc(~'100% - 60px');
-        width: -webkit-calc(~'100% - 60px');
+        width: calc(100% - 60px);
       }
     }
 
     .field-button {
       background: @mobileFormBackground;
       border: 1px solid @mobileInputBorder;
-      .border-radius(0 3px 3px 0);
-      .box-sizing(border-box);
+      border-radius: 0 3px 3px 0;
+      box-sizing: border-box;
       color: #000;
       display: block;
       font-family: @Moz;
@@ -227,8 +220,8 @@
     .value {
       background: @mobileFormBackground;
       border: 1px solid @mobileInputBorder;
-      .box-shadow(0 1px 2px 0 rgba(0, 0, 0, 0.1) inset);
-      .box-sizing(border-box);
+      box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.1) inset;
+      box-sizing: border-box;
       display: block;
       font-family: @Moz;
       font-size: 14px;
@@ -245,17 +238,17 @@
 
     #email-field {
       label {
-        .border-radius(3px 0 0 0);
+        border-radius: 3px 0 0 0;
         margin-bottom: 0;
       }
 
       .value {
-        .border-radius(0 3px 0 0);
+        border-radius: 0 3px 0 0;
         margin-bottom: 0;
       }
 
       .field-button {
-        .border-radius(0 0 3px 3px);
+        border-radius: 0 0 3px 3px;
         border-width: 0 1px 1px 1px;
       }
     }
@@ -268,9 +261,7 @@
     float: left;
     height: 39px;
     line-height: 29px;
-    width: calc(~'50% - 5px');
-    width: -moz-calc(~'50% - 5px');
-    width: -webkit-calc(~'50% - 5px');
+    width: calc(50% - 5px);
   }
 
   .btn-submit {
@@ -350,7 +341,7 @@
 
 .done-button {
   border-left: 1px solid rgba(255, 255, 255, 0.3);
-  .box-shadow(-1px 0 0 0 @mobileHeaderBorder);
+  box-shadow: -1px 0 0 0 @mobileHeaderBorder;
   color: #fff;
   cursor: pointer;
   float: right;
