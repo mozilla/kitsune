@@ -663,7 +663,7 @@ PIPELINE_CSSMIN_BINARY = path('node_modules/.bin/cssmin')
 
 PIPELINE_LESS_BINARY = path('node_modules/.bin/lessc')
 
-PIPELINE_BROWSERIFY_BINARY = 'browserify'
+PIPELINE_BROWSERIFY_BINARY = path('node_modules/.bin/browserify')
 PIPELINE_BROWSERIFY_ARGUMENTS = '-t babelify -t debowerify'
 if DEBUG:
     PIPELINE_BROWSERIFY_ARGUMENTS += ' -d'
