@@ -1,7 +1,7 @@
 from nose.tools import eq_
 
-from kitsune.messages import send_message
 from kitsune.messages.models import InboxMessage, OutboxMessage
+from kitsune.messages.utils import send_message
 from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import user
 

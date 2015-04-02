@@ -14,9 +14,10 @@ from statsd import statsd
 from tower import ugettext as _, ungettext
 
 from kitsune.access.decorators import login_required
-from kitsune.messages import send_message, MESSAGES_PER_PAGE
+from kitsune.messages import MESSAGES_PER_PAGE
 from kitsune.messages.forms import MessageForm, ReplyForm
 from kitsune.messages.models import InboxMessage, OutboxMessage
+from kitsune.messages.utils import send_message
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import paginate
 

@@ -1,4 +1,4 @@
-from kitsune import messages
+from kitsune.messages.utils import unread_count_for
 
 
 def unread_message_count(request):
@@ -9,5 +9,5 @@ def unread_message_count(request):
     """
     count = 0
     if (hasattr(request, 'user') and request.user.is_authenticated()):
-        count = messages.unread_count_for(request.user)
+        count = unread_count_for(request.user)
     return {'unread_message_count': count}
