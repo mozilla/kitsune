@@ -1,4 +1,4 @@
-import {locales} from './contributors-common.jsx';
+import {locales, products} from './contributors-common.jsx';
 import DateRangePicker from './DateRangePicker.jsx';
 
 export default class CommunityFilters extends React.Component {
@@ -35,6 +35,11 @@ export default class CommunityFilters extends React.Component {
             <select name="locale" defaultValue={this.props.filters.locale} onChange={this.handleChange.bind(this)}>
                 <option value="">Select a locale</option>
                 {locales.map(([name, code]) => <option key={code} value={code}>{name}</option>)}
+            </select>
+
+            <select name="product" defaultValue={this.props.filters.product} onChange={this.handleChange.bind(this)}>
+                <option value="">Select a product</option>
+                {products.map((prod) => <option key={prod.slug} value={prod.slug}>{prod.title}</option>)}
             </select>
         </div>;
     }

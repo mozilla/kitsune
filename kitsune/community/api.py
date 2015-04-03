@@ -90,6 +90,9 @@ class TopContributorsBase(views.APIView):
     def filter_locale(self, value):
         return F(locale=value)
 
+    def filter_product(self, value):
+        return F(product=value)
+
 
 class TopContributorsQuestions(TopContributorsBase):
 
