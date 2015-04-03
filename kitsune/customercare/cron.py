@@ -54,10 +54,14 @@ def collect_tweets():
 
     """Collect new tweets about Firefox."""
     with statsd.timer('customercare.tweets.time_elapsed'):
-        t = Twython(settings.TWITTER_CONSUMER_KEY,
-                    settings.TWITTER_CONSUMER_SECRET,
-                    settings.TWITTER_ACCESS_TOKEN,
-                    settings.TWITTER_ACCESS_TOKEN_SECRET)
+        t = Twython(
+            settings.TWITTER_CONSUMER_KEY,
+            settings.TWITTER_CONSUMER_SECRET,
+            settings.TWITTER_ACCESS_TOKEN,
+            settings.TWITTER_ACCESS_TOKEN_SECRET,
+            client_args={
+                'timeout': 10,
+            })
 
         search_options = {
             'q': ('firefox OR #fxinput OR @firefoxbrasil OR #firefoxos '

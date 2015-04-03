@@ -43,8 +43,7 @@ class SessionMiddleware(object):
             request.twitter.api = Twython(settings.TWITTER_CONSUMER_KEY,
                                           settings.TWITTER_CONSUMER_SECRET,
                                           request.twitter.key,
-                                          request.twitter.secret,
-                                          ssl_verify=True)
+                                          request.twitter.secret)
             return
 
         verifier = request.GET.get('oauth_verifier')
@@ -54,14 +53,11 @@ class SessionMiddleware(object):
             request_key = request.COOKIES.get(REQUEST_KEY_NAME)
             request_secret = request.COOKIES.get(REQUEST_SECRET_NAME)
 
-            if (validate_token(request_key) and
-                    validate_token(request_secret)):
-
+            if validate_token(request_key) and validate_token(request_secret):
                 t = Twython(settings.TWITTER_CONSUMER_KEY,
                             settings.TWITTER_CONSUMER_SECRET,
                             request_key,
-                            request_secret,
-                            ssl_verify=True)
+                            request_secret)
 
                 try:
                     tokens = t.get_authorized_tokens(verifier)
@@ -90,9 +86,7 @@ class SessionMiddleware(object):
 
         elif request.REQUEST.get('twitter_auth_request'):
             # We are requesting Twitter auth
-            t = Twython(settings.TWITTER_CONSUMER_KEY,
-                        settings.TWITTER_CONSUMER_SECRET,
-                        ssl_verify=True)
+            t = Twython(settings.TWITTER_CONSUMER_KEY, settings.TWITTER_CONSUMER_SECRET)
             try:
                 auth_props = t.get_authentication_tokens(
                     callback_url=ssl_url)

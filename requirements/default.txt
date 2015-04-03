@@ -317,9 +317,8 @@ https://github.com/clouserw/tower/archive/af393cd07b1ee02107cb003ab47c6b0b4553b0
 # sha256: AoMvOxsHHvrLI1tFkP1Ux-0NiRHejXL0awh9DIayE1A
 translate-toolkit==1.6.0
 
-# twython: master~57
-# sha256: LEiH_9B8dm4Kl2b-LcD5RGoTDb2jH6yN-lu-KbnpNNc
-https://github.com/ryanmcgrath/twython/archive/4327ff30dffb1b17945b08655daf2b16998a239b.tar.gz#egg=twython
+# sha256: qw3sUihmd-lE3cAOr2oOuJr0ixpmljJOopNRNC0cSD8
+twython==3.2.0
 
 # sha256: Gon6G0PSd8-t8ijMkLnHXyVIGOo6Gqt7_7AiPLt7sV0
 urllib3==1.8
