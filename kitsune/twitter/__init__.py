@@ -3,6 +3,8 @@ import logging
 from django import http
 from django.conf import settings
 
+from twython import Twython
+
 
 log = logging.getLogger('k')
 
@@ -87,3 +89,19 @@ class Session(object):
         request.session[self.key_key] = self.key
         request.session[self.key_secret] = self.secret
         response.set_cookie(REDIRECT_NAME, '1', max_age=MAX_AGE)
+
+
+def get_twitter_api(
+        access_token=settings.TWITTER_ACCESS_TOKEN,
+        access_token_secret=settings.TWITTER_ACCESS_TOKEN_SECRET):
+
+    return Twython(
+        settings.TWITTER_CONSUMER_KEY,
+        settings.TWITTER_CONSUMER_SECRET,
+        access_token,
+        access_token_secret,
+        client_args={
+            # 10 second connect timeout, and 10 second read timeout.
+            # This is passed to the requests library.
+            'timeout': 10,
+        })
