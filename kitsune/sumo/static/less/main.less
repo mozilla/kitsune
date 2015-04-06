@@ -56,6 +56,25 @@ body {
     > header .logo {
       float: right;
     }
+
+    &.scroll-header {
+      > header {
+        .logo {
+          left: auto;
+          right: 0;
+        }
+
+        #support-search {
+          left: 0;
+          right: auto;
+        }
+
+        #aux-nav {
+          margin-left: 302px;
+          margin-right: 0;
+        }
+      }
+    }
   }
 
   > header {
