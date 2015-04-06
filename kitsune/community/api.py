@@ -26,8 +26,20 @@ class InvalidFilterNameException(exceptions.APIException):
 
 class TopContributorsBase(views.APIView):
 
+    def __init__(self):
+        super(TopContributorsBase, self)
+        self.warnings = []
+
     def get(self, request):
         return Response(self.get_data(request))
+
+    def get_data(self, request):
+        # So filters can use the request.
+        self.request = request
+        return {}
+
+    def get_allowed_orderings(self):
+        return []
 
     def get_filters(self):
         self.query_values = self.get_default_query()
@@ -40,24 +52,53 @@ class TopContributorsBase(views.APIView):
         for key, value in self.query_values.items():
             filter_method = getattr(self, 'filter_' + key, None)
             if filter_method is None:
-                raise InvalidFilterNameException('Unknown filter {}'.format(key))
-            filter_method = getattr(self, 'filter_' + key)
-            f &= filter_method(value)
+                self.warnings.append('Unknown filter {}'.format(key))
+            else:
+                f &= filter_method(value)
 
         return f
 
     def get_default_query(self):
         return {
+            'page': 1,
+            'page_size': 20,
             'startdate': (datetime.now() - timedelta(days=90)).strftime('%Y-%m-%d'),
             'enddate': datetime.now().strftime('%Y-%m-%d'),
         }
 
     def filter_page(self, value):
-        """No-op, so that unknown filters can be blocked."""
+        """Validate the page numbers, but don't return any filters."""
+        try:
+            page = fields.IntegerField().from_native(value)
+        except fields.ValidationError:
+            page = 1
+
+        if page < 1:
+            page = 1
+
+        self.query_values['page'] = page
+
+        return F()
+
+    def filter_page_size(self, value):
+        """Validate the page sizes, but don't return any filters."""
+        try:
+            page_size = fields.IntegerField().from_native(value)
+        except fields.ValidationError:
+            page_size = 20
+
+        if not (1 <= page_size < 100):
+            page_size = 100
+
+        self.query_values['page_size'] = page_size
+
         return F()
 
     def filter_ordering(self, value):
-        """No-op, so that unknown filters can be blocked."""
+        """Validate sort order, but don't return any filters."""
+        if value not in self.get_allowed_orderings():
+            self.warnings.append('Invalid sort order: {}'.format(value))
+
         return F()
 
     def filter_startdate(self, value):
@@ -101,14 +142,20 @@ class TopContributorsQuestions(TopContributorsBase):
         filters['ordering'] = '-answer_count'
         return filters
 
+    def get_allowed_orderings(self):
+        return [
+            'answer_count',
+            'solution_count',
+            'helpful_vote_count',
+        ]
+
     def get_filters(self):
         f = super(TopContributorsQuestions, self).get_filters()
         f &= F(by_asker=False)
         return f
 
     def get_data(self, request):
-        # So filters can use the request.
-        self.request = request
+        super(TopContributorsQuestions, self).get_data(request)
 
         # This is the base of all the metrics. Each metric branches off from
         # this to get a particular metric type, since we can't do Aggregates.
@@ -182,13 +229,8 @@ class TopContributorsQuestions(TopContributorsBase):
         full_count = len(user_ids)
 
         # Paginate those user ids.
-        try:
-            page = int(self.request.GET.get('page', 1))
-        except ValueError:
-            page = 1
-        count = 10
-        page_start = (page - 1) * count
-        page_end = page_start + count
+        page_start = (self.query_values['page'] - 1) * self.query_values['page_size']
+        page_end = page_start + self.query_values['page_size']
         user_ids = user_ids[page_start:page_end]
 
         # Get full user objects for every id on this page.
@@ -197,7 +239,7 @@ class TopContributorsQuestions(TopContributorsBase):
             .search()
             .filter(id__in=user_ids)
             .values_dict('id', 'username', 'display_name', 'avatar', 'last_contribution_date')
-            [:count])
+            [:self.query_values['page_size']])
 
         # For ever user object found, mix in the metrics counts for that user,
         # and then reshape the data to make more sense to clients.
@@ -222,11 +264,8 @@ class TopContributorsQuestions(TopContributorsBase):
             'results': data,
             'count': full_count,
             'filters': self.query_values,
-            'allowed_orderings': [
-                'answer_count',
-                'solution_count',
-                'helpful_vote_count',
-            ],
+            'allowed_orderings': self.get_allowed_orderings(),
+            'warnings': self.warnings,
         }
 
 
@@ -237,9 +276,14 @@ class TopContributorsLocalization(TopContributorsBase):
         filters['ordering'] = '-revision_count'
         return filters
 
+    def get_allowed_orderings(self):
+        return [
+            'revision_count',
+            'review_count',
+        ]
+
     def get_data(self, request):
-        # So filters can use the request.
-        self.request = request
+        super(TopContributorsLocalization, self).get_data(request)
 
         # This is the base of all the metrics. Each metric branches off from
         # this to get a particular metric type, since we can't do Aggregates.
@@ -290,13 +334,8 @@ class TopContributorsLocalization(TopContributorsBase):
         full_count = len(user_ids)
 
         # Paginate those user ids.
-        try:
-            page = int(self.request.GET.get('page', 1))
-        except ValueError:
-            page = 1
-        count = 10
-        page_start = (page - 1) * count
-        page_end = page_start + count
+        page_start = (self.query_values['page'] - 1) * self.query_values['page_size']
+        page_end = page_start + self.query_values['page_size']
         user_ids = user_ids[page_start:page_end]
 
         # Get full user objects for every id on this page.
@@ -305,7 +344,7 @@ class TopContributorsLocalization(TopContributorsBase):
             .search()
             .filter(id__in=user_ids)
             .values_dict('id', 'username', 'display_name', 'avatar', 'last_contribution_date')
-            [:count])
+            [:self.query_values['page_size']])
 
         # For ever user object found, mix in the metrics counts for that user,
         # and then reshape the data to make more sense to clients.
@@ -330,8 +369,6 @@ class TopContributorsLocalization(TopContributorsBase):
             'results': data,
             'count': full_count,
             'filters': self.query_values,
-            'allowed_orderings': [
-                'revision_count',
-                'review_count',
-            ],
+            'allowed_orderings': self.get_allowed_orderings(),
+            'warnings': self.warnings,
         }

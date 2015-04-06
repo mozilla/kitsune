@@ -1,4 +1,4 @@
-from nose.tools import eq_, raises
+from nose.tools import eq_
 
 from django.test.client import RequestFactory
 
@@ -19,11 +19,11 @@ class TestTopContributorsBase(ElasticTestCase):
         self.api = api.TopContributorsBase()
         self.api.get_data = lambda request: {}
 
-    @raises(api.InvalidFilterNameException)
-    def test_test_invalid_filter_name(self):
+    def test_invalid_filter_name(self):
         req = self.factory.get('/', {'not_valid': 'wrong'})
         self.api.request = req
         self.api.get_filters()
+        eq_(self.api.warnings, ['Unknown filter not_valid'])
 
 
 class TestTopContributorsQuestions(ElasticTestCase):
@@ -87,6 +87,27 @@ class TestTopContributorsQuestions(ElasticTestCase):
         eq_(data['count'], 1)
         eq_(data['results'][0]['user']['username'], u1.username)
         eq_(data['results'][0]['answer_count'], 1)
+
+    def test_page_size(self):
+        u1 = profile().user
+        u2 = profile().user
+
+        q1 = question(save=True)
+        answer(question=q1, creator=u1, save=True)
+        q2 = question(save=True)
+        answer(question=q2, creator=u2, save=True)
+
+        self.refresh()
+
+        req = self.factory.get('/', {'page_size': 2})
+        data = self.api.get_data(req)
+        eq_(data['count'], 2)
+        eq_(len(data['results']), 2)
+
+        req = self.factory.get('/', {'page_size': 1})
+        data = self.api.get_data(req)
+        eq_(data['count'], 2)
+        eq_(len(data['results']), 1)
 
 
 class TestTopContributorsLocalization(ElasticTestCase):
@@ -152,3 +173,25 @@ class TestTopContributorsLocalization(ElasticTestCase):
         eq_(data['count'], 1)
         eq_(data['results'][0]['user']['username'], u1.username)
         eq_(data['results'][0]['revision_count'], 1)
+
+    def test_page_size(self):
+        u1 = profile().user
+        u2 = profile().user
+
+        d1 = document(save=True)
+        revision(document=d1, creator=u1, save=True)
+
+        d2 = document(save=True)
+        revision(document=d2, creator=u2, save=True)
+
+        self.refresh()
+
+        req = self.factory.get('/', {'page_size': 2})
+        data = self.api.get_data(req)
+        eq_(data['count'], 2)
+        eq_(len(data['results']), 2)
+
+        req = self.factory.get('/', {'page_size': 1})
+        data = self.api.get_data(req)
+        eq_(data['count'], 2)
+        eq_(len(data['results']), 1)
