@@ -40,16 +40,16 @@ export class Icon extends React.Component {
 }
 
 export class Paginator extends React.Component {
-    changePage(ev) {
+    handleChange(ev) {
+        console.log('handleChange', ev);
         ev.preventDefault();
-        ev.stopPropagation();
-        this.props.setFilters({page: ev.target.dataset.page});
+        this.props.setFilters({[ev.target.name]: ev.target.value || ev.target.attributes.value.value});
     }
 
     makeSelector(page, {text=null, selected=false}={}) {
         return <PaginatorSelector
                 filters={this.props.filters}
-                changePage={this.changePage.bind(this)}
+                changePage={this.handleChange.bind(this)}
                 page={page}
                 text={text}
                 key={`page-${text || page}`}
@@ -89,7 +89,24 @@ export class Paginator extends React.Component {
             pageSelectors.push(this.makeSelector(currentPage + 1, {text: 'Next'}));
         }
 
-        return <ol className="pagination">{pageSelectors}</ol>;
+        let page_size = this.props.filters.page_size;
+
+        return <div className="Pager">
+            <ol className="Pager__selectors pagination">{pageSelectors}</ol>
+
+            <div className="Pager__pageSize">
+                <label>Page Size</label>
+                <select name="page_size" defaultValue={page_size} onChange={this.handleChange.bind(this)}>
+                    <option value={10}>10</option>
+                    <option value={20}>20</option>
+                    <option value={50}>50</option>
+                    <option value={100}>100</option>
+                    {[10, 20, 50, 100].indexOf(page_size) === -1
+                        ? <option value={page_size}>{page_size}</option>
+                        : null}
+                </select>
+            </div>
+        </div>
     }
 }
 
@@ -114,7 +131,7 @@ class PaginatorSelector extends React.Component {
 
         return (
             <li className={liClasses.join(' ')}>
-                <a href={pageUrl} className={aClasses.join(' ')} data-page={page} onClick={this.props.changePage}>
+                <a href={pageUrl} className={aClasses.join(' ')} name="page" value={page} onClick={this.props.changePage}>
                     {this.props.text || this.props.page}
                 </a>
             </li>

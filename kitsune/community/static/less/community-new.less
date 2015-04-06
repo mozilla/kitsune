@@ -1,10 +1,6 @@
 .community-results {
     min-height: 550px;
 
-    * {
-        box-sizing: border-box;
-    }
-
     h1, h2 {
         text-align: center;
     }
@@ -159,6 +155,26 @@ table.top-contributors {
                     cursor: default;
                 }
             }
+        }
+    }
+}
+
+.Pager {
+    display: flex;
+    margin-top: 20px;
+
+    &__selectors {
+        margin: 0;
+        flex-grow: 1;
+    }
+
+    &__pageSize {
+        flex-grow: 0;
+
+        & label {
+            margin-right: 6px;
+            font-weight: bold;
+            font-size: 0.9em;
         }
     }
 }
