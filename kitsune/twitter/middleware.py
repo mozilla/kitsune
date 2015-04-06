@@ -6,7 +6,9 @@ from django.conf import settings
 
 from kitsune.twitter import (
     url, Session, REQUEST_KEY_NAME, REQUEST_SECRET_NAME)
-from twython import Twython, TwythonError, TwythonAuthError
+from twython import TwythonError, TwythonAuthError
+
+from kitsune.twitter import get_twitter_api
 
 
 log = logging.getLogger('k')
@@ -40,10 +42,7 @@ class SessionMiddleware(object):
             return
 
         if request.twitter.authed:
-            request.twitter.api = Twython(settings.TWITTER_CONSUMER_KEY,
-                                          settings.TWITTER_CONSUMER_SECRET,
-                                          request.twitter.key,
-                                          request.twitter.secret)
+            request.twitter.api = get_twitter_api(request.twitter.key, request.twitter.secret)
             return
 
         verifier = request.GET.get('oauth_verifier')
@@ -54,10 +53,7 @@ class SessionMiddleware(object):
             request_secret = request.COOKIES.get(REQUEST_SECRET_NAME)
 
             if validate_token(request_key) and validate_token(request_secret):
-                t = Twython(settings.TWITTER_CONSUMER_KEY,
-                            settings.TWITTER_CONSUMER_SECRET,
-                            request_key,
-                            request_secret)
+                t = get_twitter_api(request_key, request_secret)
 
                 try:
                     tokens = t.get_authorized_tokens(verifier)
@@ -86,7 +82,7 @@ class SessionMiddleware(object):
 
         elif request.REQUEST.get('twitter_auth_request'):
             # We are requesting Twitter auth
-            t = Twython(settings.TWITTER_CONSUMER_KEY, settings.TWITTER_CONSUMER_SECRET)
+            t = get_twitter_api(None, None)
             try:
                 auth_props = t.get_authentication_tokens(
                     callback_url=ssl_url)

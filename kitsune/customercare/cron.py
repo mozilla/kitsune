@@ -11,11 +11,11 @@ from django.db.utils import IntegrityError
 import cronjobs
 from multidb.pinning import pin_this_thread
 from statsd import statsd
-from twython import Twython
 
 from kitsune.customercare.models import Tweet, TwitterAccount, Reply
 from kitsune.sumo.redis_utils import redis_client, RedisError
 from kitsune.sumo.utils import chunked
+from kitsune.twitter import get_twitter_api
 
 
 LINK_REGEX = re.compile('https?\:', re.IGNORECASE)
@@ -54,14 +54,7 @@ def collect_tweets():
 
     """Collect new tweets about Firefox."""
     with statsd.timer('customercare.tweets.time_elapsed'):
-        t = Twython(
-            settings.TWITTER_CONSUMER_KEY,
-            settings.TWITTER_CONSUMER_SECRET,
-            settings.TWITTER_ACCESS_TOKEN,
-            settings.TWITTER_ACCESS_TOKEN_SECRET,
-            client_args={
-                'timeout': 10,
-            })
+        t = get_twitter_api()
 
         search_options = {
             'q': ('firefox OR #fxinput OR @firefoxbrasil OR #firefoxos '
