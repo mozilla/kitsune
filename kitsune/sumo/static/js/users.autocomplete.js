@@ -24,7 +24,9 @@ function init() {
     var prefill = [];
 
     if($("#id_to").val()) {
-        prefill = [{username: k.safeString($("#id_to").val()), display_name: null}];
+        prefill = $('#id_to').val().split(',').map(function(username) {
+            return {username: k.safeString(username), display_name: null};
+        });
     }
 
     var tokenInputSettings = {
