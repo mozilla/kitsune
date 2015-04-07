@@ -82,7 +82,8 @@ def new_message(request, template):
     to = request.GET.get('to')
     if to:
         try:
-            User.objects.get(username=to)
+            for username in to.split(','):
+                User.objects.get(username=username)
         except User.DoesNotExist:
             contrib_messages.add_message(
                 request, contrib_messages.ERROR,
