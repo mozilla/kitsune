@@ -31,6 +31,8 @@
       <h3 class="is-solution"{% if solver %} title="{{ _('Solution chosen by {user}')|f(user=solver.username) }}"{% endif %}>{{_('Chosen Solution')}}</h3>
     {% elif answer.id and answer in helpful_replies %}
       <h3 class="is-helpful">{{_('Helpful Reply')}}</h3>
+    {% elif answer.is_spam %}
+      <h3 class="is-spam">{{ _('Marked as spam') }}</h3>
     {% elif answer.id and answer.creator == question.creator %}
       <h3 class="is-owner">{{_('Question owner')}}</h3>
     {% endif %}
