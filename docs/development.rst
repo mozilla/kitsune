@@ -79,9 +79,6 @@ Changes that involve database migrations
 Any changes to the database (model fields, model field data, adding
 permissions, ...) require a migration.
 
-We use `South <http://south.readthedocs.org/en/latest/index.html>`_
-for migrations.
-
 
 Running migrations
 ------------------
@@ -93,58 +90,90 @@ To run migrations, you do::
 It'll perform any migrations that haven't been performed for all apps.
 
 
-Setting up an app for migrations
---------------------------------
+Creating a schema migration
+---------------------------
 
-New apps need to have the migration structure initialized. To do that,
-do::
+To create a new migration the automatic way:
 
-    $ ./manage.py schemamigration <appname> --initial
+1. make your model changes
+2. run::
 
-
-Creating a new migration
-------------------------
-
-There are two kinds of migrations: schema migrations and data
-migrations.
-
-To create a new schema migration, do::
-
-    $ ./manage.py schemamigration <appname> --auto
+       ./manage.py makemigrations <app>
 
 
-South can figure out a lot of it for you. You can see the list of
-things it'll probably get right `in the South autodetector docs
-<http://south.readthedocs.org/en/latest/autodetector.html#autodetector-supported-actions>`_.
+   where ``<app>`` is the app name (sumo, wiki, questions, ...).
 
-For everything else, you can run the auto and then tweak the migration.
+3. add a module-level docstring to the new migration file specifying
+   what it's doing since we can't easily infer that from the code
+   because the code shows the new state and not the differences
+   between the old state and the new stage
 
-To create a new data migration, do::
+4. run the migration on your machine::
 
-    $ ./manage.py datamigration <appname>
+       ./manage.py migrate
+
+5. run the tests to make sure everything works
+6. add the new migration files to git
+7. commit
 
 
-For obvious reasons, there is no "auto" mode for data migrations.
+.. seealso::
+
+   https://docs.djangoproject.com/en/1.7/topics/migrations/#adding-migrations-to-apps
+     Django documentation: Adding migrations to apps
 
 
-More about migrations
----------------------
+Creating a data migration
+=========================
 
-Definitely read the chapter of the South tutorial on `teams and
-workflow
-<http://south.readthedocs.org/en/latest/tutorial/part5.html>`_.
-That'll answer a lot of questions about how to write and test
-migrations.
+Creating data migrations is pretty straight-forward in most cases.
 
-For many of your questions, `the South tutorial
-<http://south.readthedocs.org/en/latest/tutorial/index.html>`_
-contains the answers.
+To create a data migration the automatic way:
 
-For other questions, definitely check out the `South documentation
-<http://south.readthedocs.org/en/latest/index.html>`_.
+1. run::
 
-For questions that aren't answered there, ask someone and/or try
-Googling the answer.
+       ./manage.py makemigrations --empty <app>
+
+   where ``<app>`` is the app name (sumo, wiki, questions, ...).
+
+2. edit the data migration you just created to do what you need it to
+   do
+3. make sure to add `reverse_code` arguments to all `RunPython` operations
+   which undoes the changes
+4. add a module-level docstring explaining what this migration is doing
+5. run the migration forwards and backwards to make sure it works
+   correctly
+6. add the new migration file to git
+7. commit
+
+.. seealso::
+
+   https://docs.djangoproject.com/en/1.7/topics/migrations/#data-migrations
+     Django documentation: Data Migrations
+
+.. seealso::
+
+   https://docs.djangoproject.com/en/1.7/ref/migration-operations/#runpython
+
+
+Data migrations for data in non-kitsune apps
+------------------------------------------
+
+If you're doing a data migration that adds data to an app that's not
+part of kitsune, but is instead a library (e.g. django-waffle), then
+create the data migration in the sumo app and add a dependency to
+the latest migration in the library app.
+
+For example, this adds a dependency to django-waffle's initial migration::
+
+    class Migration(migrations.Migration):
+
+        dependencies = [
+            ...
+            ('waffle', '0001_initial'),
+            ...
+        ]
+
 
 
 .. _changes_reindexing:
