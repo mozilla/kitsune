@@ -38,7 +38,7 @@ virtualenv $INSTALL_DIR/virtualenv
 chown -R vagrant $INSTALL_DIR/virtualenv
 source $INSTALL_DIR/virtualenv/bin/activate
 
-python $INSTALL_DIR/kitsune/peep.sh install -r $INSTALL_DIR/kitsune/requirements/default.txt
+$INSTALL_DIR/kitsune/peep.sh install -r $INSTALL_DIR/kitsune/requirements/default.txt
 pip install nose-progressive==1.5.0
 
 # Copy configurations for kitsune and mysql
