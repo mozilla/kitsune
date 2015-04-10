@@ -256,7 +256,7 @@ ShowFor.prototype.persist = function() {
 };
 
 /* Parse the state of the form elements and store it.
- * 
+ *
  * This gets stored in this object's internal state, in the url via a
  * has, and into sessionstorage (if available) */
 ShowFor.prototype.updateState = function() {

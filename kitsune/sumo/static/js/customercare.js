@@ -444,7 +444,7 @@
             $(this).blur();
             e.preventDefault();
         });
-        
+
         /* Infinite scrolling */
         $('#infinite-scroll').bind('enterviewport', function() {
             if (!$('#tweets').children().length) {
