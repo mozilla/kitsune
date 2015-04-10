@@ -7,6 +7,7 @@
     -   id: check-merge-conflict
     -   id: check-yaml
     -   id: debug-statements
+    -   id: trailing-whitespace
     -   id: flake8
         exclude: "\
             (.*migrations.*)|\
@@ -20,4 +21,3 @@
             (scripts/sprint_report.py)|\
             (scripts/year_in_review.py)"
         args: [--max-line-length=99]
-    -   id: trailing-whitespace

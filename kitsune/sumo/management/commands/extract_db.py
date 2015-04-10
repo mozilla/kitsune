@@ -74,6 +74,7 @@ class Command(BaseCommand):
                 comments = s['comments']
                 if comments:
                     for c in comments:
-                        f.write('# {comment}\n'.format(comment=c))
-                f.write('_("""{id}""", "{context}")\n'.format(
-                    id=s['id'], context=s['context']))
+                        f.write(u'# {comment}\n'.format(comment=c).encode('utf8'))
+
+                f.write(u'_("""{id}""", "{context}")\n'.format(id=s['id'], context=s['context'])
+                        .encode('utf8'))
