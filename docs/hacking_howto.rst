@@ -277,6 +277,28 @@ running this command::
     $ ./manage.py generatedata
 
 
+Install linting tools
+---------------------
+
+Kitsune uses `Yelps Pre-commit <http://pre-commit.com/>`_ for linting. It is
+installed as a part of the dev dependencies in ``requirements/dev.txt``. To
+install it as a Git pre-commit hook, run it::
+
+   $ venv/bin/pre-commit install
+
+After this, every time you commit, Pre-commit will check your changes for style
+problems. To run it manually, you can use the command::
+
+   $ venv/bin/pre-commit run
+
+which will run the checks for only your changes, or if you want to run the lint
+checks for all files::
+
+   $ venv/bin/pre-commit run --all-files
+
+For more details see the `Pre-commit docs <http://pre-commit.com/>`_.
+
+
 Product Details Initialization
 ------------------------------
 

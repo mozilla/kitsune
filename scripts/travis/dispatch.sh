@@ -8,7 +8,7 @@ case $SUITE in
         scripts/lint.sh
         ;;
     lint )
-        scripts/lint.sh
+        pre-commit run --all-files
         ;;
     django )
         scripts/travis/test.sh

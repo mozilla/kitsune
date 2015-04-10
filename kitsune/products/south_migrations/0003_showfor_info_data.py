@@ -23,7 +23,7 @@ class Migration(DataMigration):
         mac = platform('Mac', 'mac', 3)
         linux = platform('Linux', 'linux', 2)
         android = platform('Android', 'android', 1)
-        # "The web is the platform". This is for things like FxOS and Webmaker 
+        # "The web is the platform". This is for things like FxOS and Webmaker
         web = platform('Web', 'web', 0)
 
         # Assign platforms to products.
@@ -78,7 +78,7 @@ class Migration(DataMigration):
                 continue
 
             version_for_slug('mobile', {
-                'name': 'Version %d' % i, 
+                'name': 'Version %d' % i,
                 'slug': 'm%d' % i,
                 'min_version': i,
                 'max_version': i + 1,
