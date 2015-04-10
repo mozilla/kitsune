@@ -176,26 +176,18 @@ All the pure-Python requirements are provided in the requirements
 directory. We use a tool called ``peep`` to install packages and make sure
 versions are pinned. ::
 
-    $ python ./scripts/peep.py install -r requirements/default.txt --no-use-wheel
+    $ python ./peep.sh install -r requirements/default.txt
 
 Additionally, you may install some useful development tools. These are not
 required, but are helpful::
 
-    $ python ./scripts/peep.py install -r requirements/dev.txt --no-use-wheel
+    $ python ./peep.sh install -r requirements/dev.txt
 
 If you have any issues installing via ``peep``, be sure you have the required
 header files from the packages listed in the requirements section above.
 
 For more information on ``peep``, refer to the
 `README <https://github.com/erikrose/peep>`_ on the Github page for the project.
-
-.. Note::
-
-   The ``--no-use-wheel`` option is to work around a bug in Pip that causes
-   wheels to not properly clean up the packages they replace in some situations.
-   See `This Peep issue <https://github.com/erikrose/peep/issues/50>`_ and
-   `This Pip issue <https://github.com/pypa/pip/issues/1825>`_ for more details
-
 
 Node.js Packages
 -------------------

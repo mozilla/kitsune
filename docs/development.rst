@@ -35,7 +35,7 @@ want, put a version there too, like ``Django==1.6.7``.
 
 Now run peep with::
 
-    python scripts/peep.py install -r requirements/default.txt --no-use-wheel
+    ./peep.sh install -r requirements/default.txt
 
 Peep will download the appropriate artifacts (probably a tarball), hash it, and
 print out something like::
