@@ -4,6 +4,7 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render
 
 from mobility.decorators import mobile_template
+from product_details import product_details
 
 from kitsune.products.models import Product, Topic
 from kitsune.wiki.decorators import check_simple_wiki_locale
@@ -33,11 +34,14 @@ def product_landing(request, template, slug):
         return HttpResponse(json.dumps({'topics': topic_list}),
                             content_type='application/json')
 
-    versions = product.versions.filter(default=True)
-    if versions:
-        latest_version = versions[0].min_version
+    if slug == 'firefox':
+        latest_version = product_details.json_data['firefox_versions']['LATEST_FIREFOX_VERSION']
     else:
-        latest_version = 0
+        versions = product.versions.filter(default=True)
+        if versions:
+            latest_version = versions[0].min_version
+        else:
+            latest_version = 0
 
     return render(request, template, {
         'product': product,

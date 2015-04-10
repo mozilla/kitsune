@@ -396,6 +396,7 @@ PIPELINE_JS = {
     },
     'products': {
         'source_filenames': (
+            'js/compare_versions.js',
             'js/products.js',
         ),
         'output_filename': 'products-min.js'
