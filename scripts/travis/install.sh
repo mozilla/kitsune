@@ -15,7 +15,7 @@ if [[ $TEST_SUITE == "lint" ]]; then
   exit 0
 fi
 
-./peep.py install -r "requirements/default.txt"
+./peep.sh install -r "requirements/default.txt"
 # Print the installed packages for the world to see.
 pip freeze
 echo
