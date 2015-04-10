@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -eu
+
 # Get pip version number
 PIPVER=`pip --version | awk '{print $2}'`
 ARGS=""
@@ -27,6 +29,6 @@ esac
 
 # Execute peep with the command line args plus the additional args
 # if any.
-python ./bin/peep-2.2.py "$@" $ARGS
+python ./scripts/peep.py "$@" $ARGS
 
 echo "peep.sh: Done!"
