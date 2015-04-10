@@ -555,6 +555,7 @@ INSTALLED_APPS = (
     'kitsune.products',
     'kitsune.notifications',
     'kitsune.journal',
+    'kitsune.tidings',
     'rest_framework',
     'statici18n',
     # 'axes',
