@@ -31,7 +31,7 @@ export default class SelectTable extends React.Component {
 
     render() {
         if (this.props.data.length > 0) {
-            return <div>
+            return <div className="SelectTable">
                 <table className="top-contributors">
                     <SelectTableHeader
                         selections={this.state.selections}
@@ -39,13 +39,18 @@ export default class SelectTable extends React.Component {
                         columns={this.props.columns}
                         filters={this.props.filters}
                         setFilters={this.props.setFilters}
-                        allowedOrderings={this.props.allowedOrderings}/>
+                        allowedOrderings={this.props.allowedOrderings}
+                        actions={this.props.actions}/>
                     <SelectTableBody
                         data={this.props.data}
                         selections={this.state.selections}
                         onSelect={this.handleSelection.bind(this)}
-                        columns={this.props.columns}/>
+                        columns={this.props.columns}
+                        actions={this.props.actions}/>
                 </table>
+                <SelectTableActionBox
+                    actions={this.props.actions}
+                    selected={this.props.data.filter((data, i) => this.state.selections[i])}/>
             </div>;
         } else {
             return <h2>No contributors match filters.</h2>;
@@ -59,13 +64,19 @@ SelectTable.propTypes = {
     setFilters: React.PropTypes.func.isRequired,
     filters: React.PropTypes.object.isRequired,
     allowedOrderings: React.PropTypes.arrayOf(React.PropTypes.string).isRequired,
+    actions: React.PropTypes.arrayOf(React.PropTypes.object),
 };
+
+SelectTable.defaultProps = {
+    actions: [],
+};
+
 
 
 class SelectTableHeader extends React.Component {
     handleSelectAll(ev) {
         ev.stopPropagation();
-        this.props.onSelectAll(e.target.checked);
+        this.props.onSelectAll(ev.target.checked);
     }
 
     handleSortClick(name, ev) {
@@ -118,7 +129,9 @@ class SelectTableHeader extends React.Component {
                             </th>
                         );
                     })}
-                    <th data-column="actions">Actions</th>
+                    {this.props.actions.length > 0
+                        ? <th data-column="actions">Actions</th>
+                        : null}
                 </tr>
             </thead>
         );
@@ -163,7 +176,8 @@ class SelectTableBody extends React.Component {
                         onSelect={(val) => this.props.onSelect(i, val)}
                         key={contributor.user.username}
                         columns={this.props.columns}
-                        {...contributor}/>;
+                        actions={this.props.actions}
+                        data={contributor}/>;
                 }.bind(this))}
             </tbody>
         );
@@ -184,13 +198,48 @@ class SelectTableRow extends React.Component {
                 </td>
                 {this.props.columns.map((info) => (
                     <td key={info.key} data-column={info.key}>
-                        {(info.transform || (d) => d)(this.props[info.key])}
+                        {(info.transform || (d) => d)(this.props.data[info.key])}
                     </td>
                 ))}
-                <td data-column="actions">
-                    <Icon name="paper-plane"/>
-                </td>
+
+                {this.props.actions.length > 0
+                    ? (
+                        <td data-column="actions">
+                            {this.props.actions.map((action) => (
+                                <span title={action.hover} onClick={(ev) => action.onClick([this.props.data])}>
+                                    <Icon name={action.icon}/>
+                                </span>
+                            ))}
+                        </td>
+                    )
+                    : null}
             </tr>
         );
+    }
+}
+
+
+class SelectTableActionBox extends React.Component {
+    render() {
+        if (this.props.selected.length === 0) {
+            return null;
+        } else {
+            console.log('SelectTableActionBox', this.props);
+            return (
+                <div className="SelectTable__actionBox">
+                    <span className="SelectTable__actionBox__count">
+                        {this.props.selected.length} users selected.
+                    </span>
+                    <span className="SelectTable__actionBox__actions">
+                        {this.props.actions.map((action) => (
+                            <span onClick={() => action.onClick(this.props.selected)}>
+                                <Icon name={action.icon}/>
+                                {action.hover}
+                            </span>
+                        ))}
+                    </span>
+                </div>
+            );
+        }
     }
 }

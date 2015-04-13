@@ -6,37 +6,73 @@
     }
 }
 
-table.top-contributors {
-    width: 100%;
+.SelectTable {
+    table.top-contributors {
+        width: 100%;
 
-    thead {
-        tr {
-            th {
-                padding-bottom: 5px;
+        thead {
+            tr {
+                th {
+                    padding-bottom: 5px;
+                }
+            }
+        }
+
+        tbody {
+            tr {
+                height: 40px;
+
+                td {
+                    background: #fff;
+                    border-bottom: 2px solid #EAEFF2;
+                    min-width: 25px;
+                }
+            }
+        }
+
+        [data-column="select"] {
+            text-align: center;
+        }
+
+        [data-column="actions"] {
+            padding-right: 10px;
+            text-align: center;
+            width: 0; // As small as possible.
+
+            .fa {
+                cursor: pointer;
             }
         }
     }
 
-    tbody {
-        tr {
-            height: 40px;
+    &__actionBox {
+        background: rgba(0, 0, 0, 0.8);
+        bottom: 0;
+        color: #fff;
+        display: flex;
+        left: 50%;
+        padding: 15px;
+        position: fixed;
+        transform: translate(-50%, 0);
 
-            td {
-                background: #fff;
-                border-bottom: 2px solid #EAEFF2;
-                min-width: 25px;
+        &__count {
+            min-width: 200px;
+        }
+
+        &__actions {
+            span {
+                font-weight: bold;
+                cursor: pointer;
+
+                &:hover {
+                    text-decoration: underline;
+                }
+
+                .fa {
+                    margin-right: 5px;
+                }
             }
         }
-    }
-
-    [data-column="select"] {
-        text-align: center;
-    }
-
-    [data-column="actions"] {
-        padding-right: 10px;
-        text-align: center;
-        width: 0; // As small as possible.
     }
 }
 

@@ -11,7 +11,9 @@ export class UserChip extends React.Component {
         return (
             <span className="user-chip" title={this.props.username}>
                 <img src={this.props.avatar}/>
-                {this.props.display_name || this.props.username}
+                <a href={`/user/${this.props.username}`}>
+                    {this.props.display_name || this.props.username}
+                </a>
             </span>
         );
     }
