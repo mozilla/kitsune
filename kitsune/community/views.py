@@ -182,16 +182,22 @@ def top_contributors_new(request, area):
     to_json = JSONRenderer().render
 
     if area == 'questions':
-        contributors = api.TopContributorsQuestions().get_data(request)
+        api_endpoint = api.TopContributorsQuestions
         locales = sorted((settings.LOCALES[code].english, code)
                          for code in QuestionLocale.objects.locales_list())
     elif area == 'l10n':
-        contributors = api.TopContributorsLocalization().get_data(request)
+        api_endpoint = api.TopContributorsLocalization
         locales = sorted((settings.LOCALES[code].english, code)
                          for code in settings.SUMO_LANGUAGES)
     else:
         raise Http404
 
+    if request.LANGUAGE_CODE != 'en-US' and request.LANGUAGE_CODE in [l[1] for l in locales]:
+        new_get = {'locale': request.LANGUAGE_CODE}
+        new_get.update(request.GET)
+        request.GET = new_get
+
+    contributors = api_endpoint().get_data(request)
     products = ProductSerializer(Product.objects.filter(visible=True), many=True)
 
     return render(request, 'community/top_contributors_react.html', {
