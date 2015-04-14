@@ -9,4 +9,4 @@ memory: 256
 debug_mode: false
 
 # set this to "gui" if vagrant cannot connect
-boot_mode: none
+boot_mode: gui

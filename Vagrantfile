@@ -19,8 +19,8 @@ CONF = _config
 MOUNT_POINT = '/home/vagrant/kitsune'
 
 Vagrant::Config.run do |config|
-    config.vm.box = "ubuntu-14.04"
-    config.vm.box_url = "https://oss-binaries.phusionpassenger.com/vagrant/boxes/latest/ubuntu-14.04-amd64-vbox.box"
+    config.vm.box = "ubuntu/trusty32"
+    config.vm.box_url = "https://atlas.hashicorp.com/ubuntu/boxes/trusty32/versions/14.04/providers/virtualbox.box"
 
     Vagrant.configure("1") do |config|
         config.vm.customize ["modifyvm", :id, "--memory", CONF['memory']]

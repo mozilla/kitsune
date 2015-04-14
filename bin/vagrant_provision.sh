@@ -30,8 +30,10 @@ debconf-set-selections <<< 'mariadb-server-5.5 mysql-server/root_password_again 
 apt-get install -y sphinx-common libapache2-mod-wsgi python-pip libmysqlclient-dev git \
                    libxml2-dev libxslt1-dev zlib1g-dev libjpeg-dev python-dev libssl-dev \
                    openjdk-7-jre-headless mariadb-server-5.5 nodejs elasticsearch redis-server \
-                   memcached
+                   memcached libssl-dev libffi-dev
 
+# Install pip 6.0.3 as the latest version is not working with peep
+pip install pip==6.0.3
 # Setup the virtualenv and start using it
 pip install virtualenv
 virtualenv $INSTALL_DIR/virtualenv
@@ -39,7 +41,6 @@ chown -R vagrant $INSTALL_DIR/virtualenv
 source $INSTALL_DIR/virtualenv/bin/activate
 
 $INSTALL_DIR/kitsune/peep.sh install -r $INSTALL_DIR/kitsune/requirements/default.txt
-pip install nose-progressive==1.5.0
 
 # Copy configurations for kitsune and mysql
 # MySQL Default User: root
@@ -57,8 +58,9 @@ service redis-server restart
 mysql -e 'CREATE DATABASE kitsune CHARACTER SET utf8 COLLATE utf8_unicode_ci'
 mysql -e "GRANT ALL ON kitsune.* TO kitsune@localhost IDENTIFIED BY 'password'"
 
-# Install npm and included packages (lessc is the one we need of these)
+# Install npm, frontend packages and included packages (lessc is the one we need of these)
 npm install
+./node_modules/.bin/bower install
 ./node_modules/.bin/gulp nunjucks
 
 # Retrieve and store historical version data
