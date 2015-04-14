@@ -5,9 +5,10 @@ from kitsune.wiki.models import Document, ImportantDate, Locale
 
 class DocumentAdmin(admin.ModelAdmin):
     exclude = ('tags',)
-    list_display = ('locale', 'title', 'category', 'is_localizable',
+    list_display = ('locale', 'title', 'display_order', 'category', 'is_localizable',
                     'is_archived', 'allow_discussion')
     list_display_links = ('title',)
+    list_editable = ('display_order',)
     list_filter = ('is_template', 'is_localizable', 'category', 'locale',
                    'is_archived', 'allow_discussion', 'topics')
     raw_id_fields = ('parent', 'contributors')
