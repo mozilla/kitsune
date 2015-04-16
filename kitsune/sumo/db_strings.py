@@ -162,7 +162,7 @@ _("""Keep your information safe with Firefox OS locks, privacy features and more
 _("""Settings""", "DB: products.Topic.title")
 _("""Learn how to configure the Internet connection, display and time on your Firefox OS device.""", "DB: products.Topic.description")
 _("""Internet and Connections""", "DB: products.Topic.title")
-_("""Learn more about WI-FI, Bluetooth and NFC connections.""", "DB: products.Topic.description")
+_("""Learn more about Wi-Fi, Bluetooth and NFC connections.""", "DB: products.Topic.description")
 _("""Fix problems""", "DB: products.Topic.title")
 _("""Learn how to troubleshoot issues on your Firefox OS phone.""", "DB: products.Topic.description")
 _("""Get community support""", "DB: products.Topic.title")
