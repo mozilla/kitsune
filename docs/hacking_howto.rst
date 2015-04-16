@@ -58,8 +58,8 @@ We also have an option of using a virtual machine with Vagrant for an
 all-in-one installation. This installs all required dependencies and
 sets up your environment in such a way that makes it easy to run.
 
-For help with installation, check out Vagrant's documentation
-`here <https://docs.vagrantup.com/v2/getting-started/>`_.
+For full instruction about installing kitsune via vagrant, check this
+:ref:`installation-vagrant` article.
 
 Once Vagrant is installed, run ``vagrant up`` to start and configure your
 virtual machine and ``vagrant ssh`` to SSH into the box.
