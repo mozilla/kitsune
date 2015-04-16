@@ -22,3 +22,4 @@ docs/_build
 james.ini
 build.py
 .vagrant/
+venv/
