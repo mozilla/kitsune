@@ -8,27 +8,19 @@ ARGS=""
 
 echo "peep.sh: Using pip $PIPVER"
 
-# If we're using pip 1.5, 1.6 or 6.0, then toss on the --no-use-wheel
-# argument.
-#
-# Note: If we encounter other versions of pip here that require other
-# things, we can toss them in.
+# Add pip arguments that vary according to the version of pip, here:
 case $PIPVER in
-    1.5*|1.6*|6.0*)
+    1.5*|6.*)
+        # Pip uses the wheel format packages by default in pip 1.5+.
+        # However in pip < 6.0+ wheel support is broken, and even with pip 6.0+
+        # we intentionally don't use the wheel packages, since otherwise each
+        # package in the requirements files would need multiple hashes.
         echo "peep.sh: Wheel-using pip detected, so passing --no-use-wheel."
         ARGS="--no-use-wheel"
         ;;
-    6.1*)
-        echo
-        echo "Error: peep does not support pip >= 6.1."
-        echo "Please downgrade your version of pip by running:"
-        echo ""
-        echo "    pip install --upgrade 'pip<6.1'"
-        exit 1
 esac
 
-# Execute peep with the command line args plus the additional args
-# if any.
+# Add the version specific arguments to those passed on the command line.
 python ./scripts/peep.py "$@" $ARGS
 
 echo "peep.sh: Done!"
