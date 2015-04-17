@@ -127,9 +127,11 @@ SUMO_LANGUAGES = (
     'it',
     'ja',
     'km',
+    'kn',
     'ko',
     'ln',
     'lt',
+    'ml',
     'ne-NP',
     'nl',
     'no',
@@ -205,6 +207,8 @@ SIMPLE_WIKI_LANGUAGES = [
     'et',
     'ga-IE',
     'gl',
+    'kn',
+    'ml',
 ]
 
 # Languages that should show up in language switcher.
@@ -240,12 +244,10 @@ NON_SUPPORTED_LOCALES = {
     'ilo': None,
     'is': None,
     'kk': None,
-    'kn': None,
     'lg': None,
     'lij': 'it',
     'mai': None,
     'mk': None,
-    'ml': None,
     'mn': None,
     'mr': None,
     'ms': None,
@@ -260,6 +262,7 @@ NON_SUPPORTED_LOCALES = {
     'sah': None,
     'son': None,
     'sv-SE': 'sv',
+    'tn': 'en',
 }
 
 ES_LOCALE_ANALYZERS = {
