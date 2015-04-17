@@ -171,7 +171,7 @@
             <div class="approved">
               <h3>{{ _('Approved {default_locale} version:')|f(default_locale=settings.LANGUAGES_DICT[settings.WIKI_DEFAULT_LANGUAGE.lower()]) }}</h3>
               <div id="content-or-diff" class="content">
-                <textarea readonly="readonly">{{ based_on.content }}</textarea>
+                <textarea readonly="readonly"{% if settings.WIKI_DEFAULT_LANGUAGE.lower() not in settings.LANGUAGES_BIDI %} dir="ltr"{% endif %}>{{ based_on.content }}</textarea>
               </div>
             </div>
             <div class="localized">
