@@ -82,7 +82,7 @@ class ProductViewsTestCase(ElasticTestCase):
         eq_(p.slug, doc('#support-search input[name=product]').attr['value'])
 
     def test_document_listing_order(self):
-        """Verify documents are listed in order of helpful votes."""
+        """Verify documents are sorted by display_order and number of helpful votes."""
         # Create topic, product and documents.
         p = product(save=True)
         t = topic(product=p, save=True)
