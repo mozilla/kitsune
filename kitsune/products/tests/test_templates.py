@@ -109,6 +109,7 @@ class ProductViewsTestCase(ElasticTestCase):
         helpful_vote(revision=rev, helpful=True, save=True)
         docs[2].save()  # Votes don't trigger a reindex.
         self.refresh()
+        cache.clear()  # documents_for() is cached
         url = reverse('products.documents', args=[p.slug, t.slug])
         r = self.client.get(url, follow=True)
         eq_(200, r.status_code)
