@@ -19,6 +19,9 @@ log = logging.getLogger('k.email')
 
 def send_messages(messages):
     """Sends a a bunch of EmailMessages."""
+    if not messages:
+        return
+
     conn = mail.get_connection(fail_silently=True)
     conn.open()
 
@@ -30,6 +33,9 @@ def safe_translation(f):
     """Call `f` which has first argument `locale`. If `f` raises an
     exception indicative of a bad localization of a string, try again in
     `settings.WIKI_DEFAULT_LANGUAGE`.
+
+    The translation system will be manipulated for each call to make normal
+    calls to `gettext` and friends use the appropriate language.
 
     NB: This means `f` will be called up to two times!
     """
