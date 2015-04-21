@@ -152,7 +152,7 @@ class DateRangeSummaryButton extends React.Component {
 
     render() {
         return (
-            <div className="summary-button" onClick={this.props.onClick}>
+            <div className="summary-button Filters__item--button" onClick={this.props.onClick}>
                 <Icon name="calendar"/>
                 <span className="summary">{this.getSummary()}</span>
                 <Icon name="caret-down"/>
@@ -176,7 +176,7 @@ class DateRangeDetail extends React.Component {
 
     render() {
         return (
-            <div className="detail-window">
+            <div className="Filters__window">
                 <div className="row">
                     <Calendar date={this.props.start}
                         min={this.props.min}
