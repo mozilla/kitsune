@@ -13,7 +13,7 @@ const availableFilters = {
             /* Yes, these are backwards. It is beceause the real data type is
              * a date, but we are dealing with relative days.
              * "less than 3 days ago" translates to "date > (now - 3 days)"
-             * The subtraction flips the comparotor.
+             * The subtraction flips the comparator.
              */
             'gt': 'less than',
             'lt': 'greater than',
