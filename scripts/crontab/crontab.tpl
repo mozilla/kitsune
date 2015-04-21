@@ -6,6 +6,9 @@ MAILTO=cron-sumo@mozilla.com
 
 HOME = /tmp
 
+# Each line is minute, hour, day of month, day of week, month.
+# Entries are sorted in chronological order.
+
 # Every minute!
 * * * * * {{ cron }} collect_tweets
 
