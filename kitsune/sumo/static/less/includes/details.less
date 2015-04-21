@@ -52,18 +52,44 @@ details {
 }
 
 /* Make sure summary remains visible, and apply a pointer cursor upon hover to indicate it's a clickable element */
-.no-details details summary {
-  background: transparent url(../img/wiki/bkg.collapsibles.png) no-repeat 5px 13px;
-  cursor: pointer;
-  display: block;
-  margin: 10px 0 30px;
-  padding: 0 0 0 30px;
-}
+.no-details {
+  details {
+    summary {
+      cursor: pointer;
+      display: block;
+      margin: 10px 0 30px;
+      padding: 0 0 0 30px;
+      position: relative;
 
-.html-rtl .no-details details summary {
-  padding: 0 30px 0 0;
-}
+      &:before {
+        background: transparent url(../img/wiki/bkg.collapsibles.png) no-repeat 5px 13px;
+        content: '';
+        height: 100%;
+        left: 0;
+        position: absolute;
+        width: 30px;
+      }
+    }
 
-.no-details details.open summary {
-  background-position: 5px -37px;
+    &.open {
+      summary {
+        &:before {
+          background-position: 5px -37px;
+        }
+      }
+    }
+  }
+
+  .html-rtl {
+    details {
+      summary {
+        padding: 0 30px 0 0;
+
+        &:before {
+          left: auto;
+          right: 0;
+        }
+      }
+    }
+  }
 }
