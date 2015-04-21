@@ -117,7 +117,7 @@ def _es_documents_for(locale, topics=None, products=None):
     for product in products or []:
         s = s.filter(product=product.slug)
 
-    results = s.order_by('display_order', '-document_recent_helpful_votes')[:100]
+    results = s.order_by('document_display_order', '-document_recent_helpful_votes')[:100]
     results = DocumentMappingType.reshape(results)
     return results
 
