@@ -58,7 +58,7 @@ urlpatterns = patterns(
     (r'^', include('kitsune.dashboards.urls')),
     (r'^', include('kitsune.landings.urls')),
     (r'^', include('kitsune.kpi.urls_api')),
-    (r'^', include('kitsune.tidings.urls')),
+    (r'^', include('kitsune.motidings.urls')),
 
     # Users
     ('', include('kitsune.users.urls')),
