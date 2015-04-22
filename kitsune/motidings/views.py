@@ -27,11 +27,11 @@ def unsubscribe(request, watch_id):
         if secret != watch.secret:
             raise Watch.DoesNotExist
     except Watch.DoesNotExist:
-        return render(request, 'tidings/unsubscribe_error.html')
+        return render(request, 'motidings/unsubscribe_error.html')
 
     if request.method == 'POST':
         watch.delete()
-        return render(request, 'tidings/unsubscribe_success.html')
+        return render(request, 'motidings/unsubscribe_success.html')
 
-    return render(request, 'tidings/unsub.html', {
+    return render(request, 'motidings/unsub.html', {
         'watch': watch})

@@ -7,7 +7,6 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-import actstream.registry
 from actstream.models import Action
 
 from kitsune.sumo.models import ModelBase
@@ -35,9 +34,6 @@ class PushNotificationRegistration(ModelBase):
     creator = models.ForeignKey(User, db_index=True)
     created = models.DateTimeField(default=datetime.now)
     push_url = models.CharField(max_length=256)
-
-
-actstream.registry.register(User)
 
 
 @receiver(post_save, sender=Action, dispatch_uid='action_create_notifications')

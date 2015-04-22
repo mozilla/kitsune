@@ -255,11 +255,13 @@ database settings. For example, using the settings above::
 
 To initialize the database, do::
 
-    $ ./manage.py syncdb --migrate
+    $ ./manage.py migrate
 
-This will ask you to create a superuser account. Just follow the prompts.
+Then we create a superuser to log into kitsune::
 
-You'll now have an empty but up-to-date database!
+    ./manage.py createsuperuser
+
+You'll now have an up-to-date database!
 
 After logging in, you can create a profile for the user by going to
 ``/users/edit`` in your browser.

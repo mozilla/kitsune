@@ -263,7 +263,7 @@ def search(request):
          })
 
 
-admin.site.register_view('search-maintenance', view=search,
+admin.site.register_view(path='search-maintenance', view=search,
                          name='Search - Index Maintenance')
 
 
@@ -336,7 +336,7 @@ def index_view(request):
          })
 
 
-admin.site.register_view('search-index', view=index_view,
+admin.site.register_view(path='search-index', view=index_view,
                          name='Search - Index Browsing')
 
 
@@ -425,7 +425,7 @@ def troubleshooting_view(request):
          })
 
 
-admin.site.register_view('search-troubleshooting', view=troubleshooting_view,
+admin.site.register_view(path='search-troubleshooting', view=troubleshooting_view,
                          name='Search - Index Troubleshooting')
 
 
@@ -490,5 +490,5 @@ def synonym_editor(request):
     })
 
 
-admin.site.register_view('synonym_bulk', view=synonym_editor,
+admin.site.register_view(path='synonym_bulk', view=synonym_editor,
                          name='Search - Synonym Editor')

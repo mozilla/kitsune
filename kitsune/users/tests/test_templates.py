@@ -507,8 +507,8 @@ class PasswordChangeTests(TestCaseBase):
                                         'new_password2': self.new_pw + '1'})
         eq_(200, r.status_code)
         doc = pq(r.content)
-        eq_("Your old password was entered incorrectly. Please enter it "
-            "again. The two password fields didn't match.",
+        eq_("The two password fields didn't match. Your old password was "
+            "entered incorrectly. Please enter it again.",
             doc('ul.errorlist').text())
 
 
