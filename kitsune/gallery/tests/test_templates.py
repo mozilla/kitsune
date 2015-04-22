@@ -4,7 +4,7 @@ from pyquery import PyQuery as pq
 from kitsune.gallery.models import Image, Video
 from kitsune.gallery.tests import image, video
 from kitsune.sumo.helpers import urlparams
-from kitsune.sumo.tests import SkipTest, TestCase, get, LocalizingClient, post
+from kitsune.sumo.tests import TestCase, get, LocalizingClient, post
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import user
 
@@ -133,10 +133,6 @@ class GalleryUploadTestCase(TestCase):
         doc = pq(response.content)
         eq_('fr',
             doc('#gallery-upload-image option[selected="selected"]').val())
-
-    def test_invalid_messages(self):
-        # TODO(paul) POSTing invalid data shows error messages and pre-fills
-        raise SkipTest('Not implemented')
 
 
 class MediaPageCase(TestCase):
