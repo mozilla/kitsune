@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 
 from django.conf import settings
 from django.contrib.sites.models import Site
+from django.test.utils import override_settings
 
 import mock
 from nose.tools import eq_
@@ -173,6 +174,14 @@ class AAQTests(ElasticTestCase):
         eq_(302, res.status_code)
         # This has some http://... stuff at the beginning. Ignore that.
         assert res['location'].endswith(url_en)
+
+    @override_settings(WIKI_DEFAULT_LANGUAGE='fr')
+    def test_no_redirect_english(self):
+        """The default language should never redirect, even if it isn't an AAQ language."""
+        """Non-AAQ locales should redirect."""
+        url_fr = reverse('questions.aaq_step1', locale='fr')
+        res = self.client.get(url_fr)
+        eq_(200, res.status_code)
 
     def test_redirect_locale_not_enabled(self):
         """AAQ should redirect for products with questions disabled for the
