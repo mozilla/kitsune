@@ -36,6 +36,7 @@ class Migration(migrations.Migration):
                 ('needs_change', models.BooleanField(default=False, help_text='If checked, this document needs updates.', db_index=True)),
                 ('needs_change_comment', models.CharField(max_length=500, blank=True)),
                 ('share_link', models.CharField(default=b'', max_length=24)),
+                ('display_order', models.IntegerField(default=1, db_index=True)),
                 ('contributors', models.ManyToManyField(to=settings.AUTH_USER_MODEL)),
             ],
             options={
