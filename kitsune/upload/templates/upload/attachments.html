@@ -23,7 +23,7 @@
       {% endif %}
     {% endif %}
     <a class="image" href="{{ image.file.url }}">
-      <img src="{{ image.thumbnail_if_set().url }}"/>
+      <img src="{{ image.thumbnail_if_set().url }}" alt=""/>
     </a>
   </div>
 {%- endmacro %}
@@ -47,7 +47,7 @@
     </div>
     <div class="add-attachment">
       <label for="id_image">{{ _('Add images:') }}</label>
-      <input type="file" id="id_image" name="image" size="30"
+      <input type="file" id="id_image" name="image"
              accept="{{ settings.IMAGE_ALLOWED_MIMETYPES }}"
              title="{{ _('Browse for an image to upload.') }}"/>
       <noscript>

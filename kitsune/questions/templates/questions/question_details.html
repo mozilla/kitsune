@@ -110,7 +110,7 @@
       <div class="user-meta">
         <div class="avatar">
           <a href="{{ profile_url(question.creator, request.user == question.creator) }}">
-            <img src="{{ profile_avatar(question.creator) }}" height="48" width="48" alt="{{ display_name(question.creator) }}"/>
+            <img src="{{ profile_avatar(question.creator) }}" height="48" width="48" alt="{{ display_name(question.creator) }}" alt=""/>
           </a>
         </div>
         <div class="asked-by">
@@ -118,7 +118,9 @@
         </div>
         <div class="asked-on">
           {{ _('Posted') }}<br>
-          <time itemprop="dateCreated" datetime="{{ question.created }}">{{ datetimeformat(question.created) }}</time>
+          <span itemprop="dateCreated">
+            {{ datetimeformat(question.created) }}
+          </span>
         </div>
       </div>
 
@@ -250,7 +252,7 @@
                       {% endfor %}
                     </select>
                   {% endif %}
-                  </span>
+
                 </div>
               {% endif %}
 
