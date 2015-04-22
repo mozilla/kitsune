@@ -1,4 +1,5 @@
 import os
+import re
 from ast import literal_eval
 from datetime import datetime
 
@@ -326,9 +327,17 @@ def profile(request, template, username):
         raise Http404('No Profile matches the given query.')
 
     groups = user_profile.user.groups.all()
+
+    facebook = user.profile.facebook
+    # Get Facebook Username from the Facebook profile URL. "profile.php\?id=" is used because of
+    # past Facebook URL pattern was like that.
+    if facebook:
+        facebook = re.sub(r'https?://(?:www\.)?facebook\.com/(?:profile.php\?id=)?', '', facebook)
+
     return render(request, template, {
         'profile': user_profile,
         'groups': groups,
+        'facebook_username': facebook,
         'num_questions': num_questions(user_profile.user),
         'num_answers': num_answers(user_profile.user),
         'num_solutions': num_solutions(user_profile.user),
