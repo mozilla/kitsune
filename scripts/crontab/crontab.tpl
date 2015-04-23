@@ -13,7 +13,6 @@ HOME = /tmp
 * * * * * {{ cron }} collect_tweets
 
 # Every 10 minutes!
-*/10 * * * * {{ cron }} record_queue_size
 */10 * * * * {{ cron }} enqueue_lag_monitor_task
 
 # Every hour.

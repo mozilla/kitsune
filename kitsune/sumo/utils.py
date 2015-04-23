@@ -226,6 +226,8 @@ def rabbitmq_queue_size():
        pretty important.
 
     """
+    # FIXME: 2015-04-23: This is busted.
+
     from celery import current_app
 
     # FIXME: This uses a private method, but I'm not sure how else to
