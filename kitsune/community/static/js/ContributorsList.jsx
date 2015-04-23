@@ -1,8 +1,14 @@
+/* globals React:false */
 import {Paginator} from './contributors-common.jsx';
 import CommunityFilters from './CommunityFilters.jsx';
 import SelectTable from './SelectTable.jsx';
 
 export default class ContributorsList extends React.Component {
+    sendMessage(data) {
+        var usernames = data.map((contributor) => contributor.user.username);
+        window.location = `/messages/new?to=${usernames.join(',')}`;
+    }
+
     render() {
         var filters = this.props.data.filters;
         var results = this.props.data.results;
@@ -21,7 +27,10 @@ export default class ContributorsList extends React.Component {
                 columns={this.props.columns}
                 filters={filters}
                 setFilters={setFilters}
-                allowedOrderings={allowedOrderings}/>
+                allowedOrderings={allowedOrderings}
+                actions={[
+                    {icon: 'paper-plane', onClick: this.sendMessage.bind(this), hover: 'Send PM'},
+                ]}/>
             <Paginator filters={filters} setFilters={setFilters} pageCount={pageCount} />
         </article>;
     }

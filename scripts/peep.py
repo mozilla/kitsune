@@ -9,6 +9,18 @@ local PyPI mirror or use a vendor lib. Just update the version numbers and
 hashes in requirements.txt, and you're all set.
 
 """
+# This is here so embedded copies of peep.py are MIT-compliant:
+# Copyright (c) 2013 Erik Rose
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to
+# deal in the Software without restriction, including without limitation the
+# rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+# sell copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
 from __future__ import print_function
 try:
     xrange = xrange
@@ -23,7 +35,6 @@ from itertools import chain
 from linecache import getline
 import mimetypes
 from optparse import OptionParser
-from os import listdir
 from os.path import join, basename, splitext, isdir
 from pickle import dumps, loads
 import re
@@ -49,6 +60,8 @@ from pkg_resources import require, VersionConflict, DistributionNotFound
 # say `pip install peep.tar.gz` and thus pull down an untrusted copy of pip
 # from PyPI. Instead, we make sure it's installed and new enough here and spit
 # out an error message if not:
+
+
 def activate(specifier):
     """Make a compatible version of pip importable. Raise a RuntimeError if we
     couldn't."""
@@ -59,9 +72,10 @@ def activate(specifier):
         raise RuntimeError('The installed version of pip is too old; peep '
                            'requires ' + specifier)
 
-activate('pip>=0.6.2')  # Before 0.6.2, the log module wasn't there, so some
-                        # of our monkeypatching fails. It probably wouldn't be
-                        # much work to support even earlier, though.
+# Before 0.6.2, the log module wasn't there, so some
+# of our monkeypatching fails. It probably wouldn't be
+# much work to support even earlier, though.
+activate('pip>=0.6.2')
 
 import pip
 from pip.commands.install import InstallCommand
@@ -91,7 +105,7 @@ except ImportError:
     DownloadProgressBar = DownloadProgressSpinner = NullProgressBar
 
 
-__version__ = 2, 2, 0
+__version__ = 2, 4, 0
 
 
 ITS_FINE_ITS_FINE = 0
@@ -213,7 +227,8 @@ HASH_COMMENT_RE = re.compile(
                                #   just trailing whitespace if there is no
                                #   comment. Also strip trailing newlines.
     (?:\#(?P<comment>.*))?     # Comments can be anything after a whitespace+#
-    $""", re.X)                #   and are optional.
+                               #   and are optional.
+    $""", re.X)
 
 
 def peep_hash(argv):
@@ -328,7 +343,7 @@ class DownloadedReq(object):
     expensive things.
 
     """
-    def __init__(self, req, argv):
+    def __init__(self, req, argv, finder):
         """Download a requirement, compare its hashes, and return a subclass
         of DownloadedReq depending on its state.
 
@@ -338,6 +353,8 @@ class DownloadedReq(object):
         """
         self._req = req
         self._argv = argv
+        self._finder = finder
+
 
         # We use a separate temp dir for each requirement so requirements
         # (from different indices) that happen to have the same archive names
@@ -389,7 +406,9 @@ class DownloadedReq(object):
             return version
 
         def give_up(filename, package_name):
-            raise RuntimeError("The archive '%s' didn't start with the package name '%s', so I couldn't figure out the version number. My bad; improve me." %
+            raise RuntimeError("The archive '%s' didn't start with the package name "
+                               "'%s', so I couldn't figure out the version number. "
+                               "My bad; improve me." %
                                (filename, package_name))
 
         get_version = (version_of_wheel
@@ -407,7 +426,7 @@ class DownloadedReq(object):
         # If this is a github sha tarball, then it is always unsatisfied
         # because the url has a commit sha in it and not the version
         # number.
-        url = self._req.url
+        url = self._url()
         if url:
             filename = filename_from_url(url)
             if filename.endswith(ARCHIVE_EXTENSIONS):
@@ -422,7 +441,7 @@ class DownloadedReq(object):
 
         """
         path, line = (re.match(r'-r (.*) \(line (\d+)\)$',
-                      self._req.comes_from).groups())
+                               self._req.comes_from).groups())
         return path, int(line)
 
     @memoize  # Avoid hitting the file[cache] over and over.
@@ -538,7 +557,6 @@ class DownloadedReq(object):
         pipe_to_file(response, join(self._temp_path, filename), size=size)
         return filename
 
-
     # Based on req_set.prepare_files() in pip bb2a8428d4aebc8d313d05d590f386fa3f0bbd0f
     @memoize  # Avoid re-downloading.
     def _downloaded_filename(self):
@@ -559,13 +577,9 @@ class DownloadedReq(object):
 
         # TODO: Stop on reqs that are editable or aren't ==.
 
-        finder = package_finder(self._argv)
-
         # If the requirement isn't already specified as a URL, get a URL
         # from an index:
-        link = (finder.find_requirement(self._req, upgrade=False)
-                if self._req.url is None
-                else Link(self._req.url))
+        link = self._link() or self._finder.find_requirement(self._req, upgrade=False)
 
         if link:
             lower_scheme = link.scheme.lower()  # pip lower()s it for some reason.
@@ -628,8 +642,17 @@ class DownloadedReq(object):
     def _name(self):
         return self._req.name
 
+    def _link(self):
+        try:
+            return self._req.link
+        except AttributeError:
+            # The link attribute isn't available prior to pip 6.1.0, so fall
+            # back to the now deprecated 'url' attribute.
+            return Link(self._req.url) if self._req.url else None
+
     def _url(self):
-        return self._req.url
+        link = self._link()
+        return link.url if link else None
 
     @memoize  # Avoid re-running expensive check_if_exists().
     def _is_satisfied(self):
@@ -682,9 +705,9 @@ class MissingReq(DownloadedReq):
 
     def error(self):
         if self._url():
+            # _url() always contains an #egg= part, or this would be a
+            # MalformedRequest.
             line = self._url()
-            if self._name() not in filename_from_url(self._url()):
-                line = '%s#egg=%s' % (line, self._name())
         else:
             line = '%s==%s' % (self._name(), self._version())
         return '# sha256: %s\n%s\n' % (self._actual_hash(), line)
@@ -699,14 +722,14 @@ class MismatchedReq(DownloadedReq):
                 "freak out, because someone has tampered with the packages.\n\n")
 
     def error(self):
-        preamble = '    %s: expected%s' % (
-                self._project_name(),
-                ' one of' if len(self._expected_hashes()) > 1 else '')
-        return '%s %s\n%s got %s' % (
-            preamble,
-            ('\n' + ' ' * (len(preamble) + 1)).join(self._expected_hashes()),
-            ' ' * (len(preamble) - 4),
-            self._actual_hash())
+        preamble = '    %s: expected' % self._project_name()
+        if len(self._expected_hashes()) > 1:
+            preamble += ' one of'
+        padding = '\n' + ' ' * (len(preamble) + 1)
+        return '%s %s\n%s got %s' % (preamble,
+                                     padding.join(self._expected_hashes()),
+                                     ' ' * (len(preamble) - 4),
+                                     self._actual_hash())
 
     @classmethod
     def foot(cls):
@@ -769,12 +792,15 @@ def downloaded_reqs_from_path(path, argv):
     :arg argv: The commandline args, starting after the subcommand
 
     """
+    finder = package_finder(argv)
+
     def downloaded_reqs(parsed_reqs):
         """Just avoid repeating this list comp."""
-        return [DownloadedReq(req, argv) for req in parsed_reqs]
+        return [DownloadedReq(req, argv, finder) for req in parsed_reqs]
 
     try:
-        return downloaded_reqs(parse_requirements(path, options=EmptyOptions()))
+        return downloaded_reqs(parse_requirements(
+            path, options=EmptyOptions(), finder=finder))
     except TypeError:
         # session is a required kwarg as of pip 6.0 and will raise
         # a TypeError if missing. It needs to be a PipSession instance,
@@ -782,7 +808,7 @@ def downloaded_reqs_from_path(path, argv):
         # (nor do we need it at all) so we only import it in this except block
         from pip.download import PipSession
         return downloaded_reqs(parse_requirements(
-                path, options=EmptyOptions(), session=PipSession()))
+            path, options=EmptyOptions(), session=PipSession(), finder=finder))
 
 
 def peep_install(argv):

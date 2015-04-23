@@ -1,16 +1,15 @@
 @import '../variables.less';
-@import '../vendors.less';
 
 @import 'includes/product-switcher.less';
 
 .answers {
   .answer-bar {
     background: @mobileNavBackground url('../../img/grain.png');
-    .box-shadow(0 0 4px rgba(0, 0, 0, 0.5));
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
 
     .answer-nav {
       border-top: 1px solid rgba(0, 0, 0, 0.3);
-      .box-shadow(0 1px 0 rgba(255, 255, 255, 0.2) inset);
+      box-shadow: 0 1px 0 rgba(255, 255, 255, 0.2) inset;
       overflow: auto;
       -webkit-overflow-scrolling: touch;
       margin: 6px 0 0 0;
@@ -40,8 +39,8 @@
           &.selected {
             background-color: rgba(0, 0, 0, 0.3);
             border-bottom-color: rgba(255, 255, 255, 0.2);
-            .border-radius(6px);
-            .box-shadow(0 0 10px 0 rgba(0, 0, 0, 0.2) inset);
+            border-radius: 6px;
+            box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.2) inset;
             color: #fff;
           }
 
@@ -82,7 +81,7 @@
       li {
         border-left: 1px solid rgba(255, 255, 255, 0.2);
         border-right: 1px solid rgba(0, 0, 0, 0.4);
-        .box-sizing(border-box);
+        box-sizing: border-box;
         color: rgba(255, 255, 255, 0.3);
         cursor: pointer;
         float: left;
@@ -101,7 +100,8 @@
         }
 
         &.selected {
-          .gradient(transparent, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0));
+          background: transparent;
+          background: linear-gradient(to bottom, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0));
           color: #fff;
         }
       }
@@ -247,9 +247,7 @@
 
     .btn {
       float: left;
-      width: calc(~'50% - 8px');
-      width: -moz-calc(~'50% - 8px');
-      width: -webkit-calc(~'50% - 8px');
+      width: calc(50% - 8px);
 
       &:first-of-type {
         margin-right: 16px;
@@ -308,7 +306,8 @@
 
   #top-contributors {
     ol {
-      .linear-gradient-left(transparent, rgba(0, 0, 0, 0.2), 0%, rgba(0, 0, 0, 0), 5%, rgba(0, 0, 0, 0), 95%, rgba(0, 0, 0, 0.2), 100%);
+      background: transparent;
+      background: linear-gradient(to right, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0) 5%, rgba(0, 0, 0, 0) 95%, rgba(0, 0, 0, 0.2));
       color: #fff;
       margin: 6px 0 0 0;
       overflow: auto;
@@ -381,7 +380,7 @@
         > ul {
           > li {
             background-image: url('../../img/mobile/answers-sprite-2x.png');
-            .background-size(150px 600px);
+            background-size: 150px 600px;
           }
         }
       }

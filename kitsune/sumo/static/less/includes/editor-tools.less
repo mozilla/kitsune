@@ -1,6 +1,6 @@
 div.editor-tools {
   background: #daedf6;
-  .gradient(#e7f6fd, #e7f6fd, #daedf6);
+  background: linear-gradient(to bottom, #e7f6fd, #daedf6);
   height: 40px;
   line-height: 30px;
   padding: 5px 5px 0;
@@ -167,16 +167,16 @@ section.marky {
   left: 50%;
   margin-left: -380px;
   max-height: 510px;
-  max-height: -moz-calc(100%); /* let it continue to grow in FF4 */
+  max-height: calc(100%); /* let it continue to grow in FF4 */
   min-height: 400px;
-  min-height: -moz-calc(0%); /* let it continue to shrink in FF4 */
+  min-height: calc(0%); /* let it continue to shrink in FF4 */
   position: fixed;
   top: 7%;
   width: 760px;
 
   div.placeholder {
     height: 65%;
-    height:  -moz-calc(~"100% - 225px");
+    height:  calc(100% - 225px);
     left: 15px;
     position: absolute;
     top: 135px;
@@ -194,7 +194,7 @@ section.marky {
 
   #media-list {
     height: 80%;
-    height: -moz-calc(~"100% - 50px");
+    height: calc(100% - 50px);
     overflow: auto;
 
     li {

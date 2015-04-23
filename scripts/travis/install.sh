@@ -8,18 +8,14 @@ ln -sf /usr/lib/`uname -i`-linux-gnu/libjpeg.so ~/virtualenv/python2.6/lib/
 ln -sf /usr/lib/`uname -i`-linux-gnu/libz.so ~/virtualenv/python2.6/lib/
 
 echo "Install Python dependencies"
-python scripts/peep.py install \
-  -r requirements/dev.txt \
-  --no-use-wheel
+./peep.sh install -r requirements/dev.txt
 
 # Optimization: None of the rest is needed for lint tests.
 if [[ $TEST_SUITE == "lint" ]]; then
   exit 0
 fi
 
-python scripts/peep.py install \
-  -r "requirements/default.txt" \
-  --no-use-wheel
+./peep.sh install -r "requirements/default.txt"
 # Print the installed packages for the world to see.
 pip freeze
 echo

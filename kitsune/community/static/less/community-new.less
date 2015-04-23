@@ -1,46 +1,78 @@
 .community-results {
     min-height: 550px;
 
-    * {
-        box-sizing: border-box;
-    }
-
     h1, h2 {
         text-align: center;
     }
 }
 
-table.top-contributors {
-    width: 100%;
+.SelectTable {
+    table.top-contributors {
+        width: 100%;
 
-    thead {
-        tr {
-            th {
-                padding-bottom: 5px;
+        thead {
+            tr {
+                th {
+                    padding-bottom: 5px;
+                }
+            }
+        }
+
+        tbody {
+            tr {
+                height: 40px;
+
+                td {
+                    background: #fff;
+                    border-bottom: 2px solid #EAEFF2;
+                    min-width: 25px;
+                }
+            }
+        }
+
+        [data-column="select"] {
+            text-align: center;
+        }
+
+        [data-column="actions"] {
+            padding-right: 10px;
+            text-align: center;
+            width: 0; // As small as possible.
+
+            .fa {
+                cursor: pointer;
             }
         }
     }
 
-    tbody {
-        tr {
-            height: 40px;
+    &__actionBox {
+        background: rgba(0, 0, 0, 0.8);
+        bottom: 0;
+        color: #fff;
+        display: flex;
+        left: 50%;
+        padding: 15px;
+        position: fixed;
+        transform: translate(-50%, 0);
 
-            td {
-                background: #fff;
-                border-bottom: 2px solid #EAEFF2;
-                min-width: 25px;
+        &__count {
+            min-width: 200px;
+        }
+
+        &__actions {
+            span {
+                font-weight: bold;
+                cursor: pointer;
+
+                &:hover {
+                    text-decoration: underline;
+                }
+
+                .fa {
+                    margin-right: 5px;
+                }
             }
         }
-    }
-
-    [data-column="select"] {
-        text-align: center;
-    }
-
-    [data-column="actions"] {
-        padding-right: 10px;
-        text-align: center;
-        width: 0; // As small as possible.
     }
 }
 
@@ -54,30 +86,29 @@ table.top-contributors {
     }
 }
 
-.date-range-picker {
-    display: inline-block;
+.Filters {
     position: relative;
 
-    .summary-button {
+    &__item,
+    &__item--button {
+        display: inline-block;
+        margin-right: 5px;
+    }
+
+    &__item--button {
         background: #eee;
         border: 1px solid #aaa;
         border-radius: 4px;
         padding: 3px 5px;
         cursor: pointer;
-
-        .summary {
-            padding: 0 5px;
-        }
     }
 
-    .detail-window {
+    &__window {
         background: #fff;
         box-shadow: 0px 2px 3px rgba(0, 0, 0, 0.3);
-        display: flex;
-        flex-direction: column;
         padding: 3px;
         position: absolute;
-        left: -60px;
+        left: 0px;
         top: 36px;
         z-index: 2;
 
@@ -93,6 +124,22 @@ table.top-contributors {
             width: 16px;
             z-index: -1;
         }
+    }
+}
+
+.date-range-picker {
+    display: inline-block;
+
+    .summary-button {
+        .summary {
+            padding: 0 5px;
+        }
+    }
+
+    .Filters__window {
+        display: flex;
+        flex-direction: column;
+        left: 124px;
 
         .row {
             display: flex;
@@ -159,6 +206,73 @@ table.top-contributors {
                     cursor: default;
                 }
             }
+        }
+    }
+}
+
+.Pager {
+    display: flex;
+    margin-top: 20px;
+
+    &__selectors {
+        margin: 0;
+        flex-grow: 1;
+    }
+
+    &__pageSize {
+        flex-grow: 0;
+
+        label {
+            font-weight: bold;
+            font-size: 0.9em;
+            margin-right: 6px;
+        }
+    }
+}
+
+
+.AdvancedFilters {
+    display: inline-block;
+    float: right;
+
+    &__summary {
+        position: relative;
+
+        &__number {
+            background: #33AFFE;
+            border-radius: 2px;
+            color: #fff;
+            font-weight: bold;
+            font-size: 10px;
+            height: 14px;
+            position: absolute;
+            right: -7px;
+            text-align: center;
+            top: -5px;
+            width: 14px;
+        }
+    }
+
+    &__detail {
+        left: auto;
+        min-height: 100px;
+        min-width: 400px;
+        right: 0;
+
+        &::before {
+            left: auto;
+            right: 12px;
+        }
+
+        ul {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        &__actions {
+            padding: 5px;
+            text-align: right;
         }
     }
 }

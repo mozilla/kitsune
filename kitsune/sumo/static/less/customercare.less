@@ -1,5 +1,4 @@
 @import 'variables.less';
-@import 'vendors.less';
 
 #infinite-scroll {
   text-align: center;
@@ -62,7 +61,7 @@
 
       &:before {
         background: #fff;
-        .border-radius(13px);
+        border-radius: 13px;
         content: counter(item);
         height: 26px;
         left: 0;
@@ -172,14 +171,14 @@
     position: relative;
 
     .avatar {
+      background: #fff;
+      box-shadow: 0px 0px 2px 1px rgba(0, 0, 0, 0.2);
       float: left;
+      height: 48px;
+      margin-right: 8px;
       position: relative;
       top: 8px;
       width: 48px;
-      height: 48px;
-      background: #fff;
-      margin-right: 8px;
-      .box-shadow(0px 0px 2px 1px rgba(0, 0, 0, 0.2));
     }
 
     .user-meta {
@@ -188,9 +187,9 @@
 
       .twittername {
         color: @textGrey;
+        display: block;
         font-family: @OpenSansLight;
         font-size: 20px;
-        display: block;
       }
     }
 
@@ -279,8 +278,6 @@
 #reply-container,
 #reply-container #replies {
   border-radius: 4px;
-  -moz-border-radius: 4px;
-  -webkit-border-radius: 4px;
 }
 
 #initial-tweet img {
@@ -329,8 +326,7 @@
 
 #reply-container #replies {
   background: #8fc1da;
-  background: -moz-linear-gradient(center top, #8fc1da, #e5f1f7) repeat;
-  background: -webkit-gradient(linear, center top, center bottom, from(#8fc1da), to(#e5f1f7));
+  background: linear-gradient(to bottom, #8fc1da, #e5f1f7);
   margin-top: 20px;
   padding: 15px 20px;
 }
@@ -339,8 +335,6 @@
   background: #f0f0f0 url('../img/customercare/expander-closed.png') 8px 50% no-repeat;
   border: 1px solid #b2b2b2;
   border-radius: 3px;
-  -moz-border-radius: 3px;
-  -webkit-border-radius: 3px;
   font-family: Verdana, sans-serif;
   font-size: 12px;
   margin: 0 0 9px 0;
@@ -452,18 +446,13 @@
 }
 
 #reply .submitButton {
-  background: -moz-linear-gradient(center top, #eed052 15px, #ebb04f 18px, #e79f30, #e0752b);
-/* color-stop percentages according to height */
-  background: -webkit-gradient(linear, center top, center bottom, color-stop(.417, #eed052), color-stop(.5, #ebb04f), color-stop(.75, #e79f30), to(#e0752b));
+  background: linear-gradient(to bottom, #eed052 15px, #ebb04f 18px, #e79f30, #e0752b);
   border-left: 1px solid #d4661a;
   border-right: 1px solid #d4661a;
   border-top: 1px solid #d19f7c;
   border-bottom: 1px solid #ba5c1c;
   border-radius: 6px;
-  -moz-border-radius: 6px;
-  -webkit-border-radius: 6px;
   box-shadow: 0 0 5px #777;
-  -moz-box-shadow: 0 0 5px #777;
   color: #b01a04;
   cursor: pointer;
   float: right;
@@ -483,8 +472,7 @@
 }
 
 #reply .submitButton.busy {
-  background: -moz-linear-gradient(center top, #ccc 15px, #ccc 18px, #aaa, #aaa);
-  background: -webkit-gradient(linear, center top, center bottom, color-stop(.417, #ccc), color-stop(.5, #ccc), color-stop(.75, #aaa), to(#aaa));
+  background: linear-gradient(to bottom, #ccc 15px, #ccc 18px, #aaa, #aaa);
   border-color: #aaa;
   color: #666;
 }

@@ -1,5 +1,6 @@
-import {locales} from './contributors-common.jsx';
+import {locales, products} from './contributors-common.jsx';
 import DateRangePicker from './DateRangePicker.jsx';
+import AdvancedFilters from './AdvancedFilters.jsx';
 
 export default class CommunityFilters extends React.Component {
     handleChange(ev) {
@@ -19,23 +20,32 @@ export default class CommunityFilters extends React.Component {
         this._timer = setTimeout(this.props.setFilters.bind(null, newFilters), 200);
     }
 
-    makeInput(name) {
-        return <input name={name}
-            autoComplete="off"
-            value={this.props.filters[name]}
-            onChange={this.handleChange.bind(this)}/>
-    }
-
     render() {
-        return <div className="filters">
-            {this.makeInput('username')}
+        return <div className="Filters">
+            <input
+                className="Filters__item"
+                name="username"
+                autoComplete="off"
+                defaultValue={this.props.filters.username}
+                onChange={this.handleChange.bind(this)}
+                placeholder="Filter by username"/>
 
             <DateRangePicker max={moment()} setFilters={this.props.setFilters} filters={this.props.filters} />
 
-            <select name="locale" defaultValue={this.props.filters.locale} onChange={this.handleChange.bind(this)}>
+            <select className="Filters__item"
+                    name="locale"
+                    defaultValue={this.props.filters.locale}
+                    onChange={this.handleChange.bind(this)}>
                 <option value="">Select a locale</option>
                 {locales.map(([name, code]) => <option key={code} value={code}>{name}</option>)}
             </select>
+
+            <select name="product" defaultValue={this.props.filters.product} onChange={this.handleChange.bind(this)}>
+                <option value="">Select a product</option>
+                {products.map((prod) => <option key={prod.slug} value={prod.slug}>{prod.title}</option>)}
+            </select>
+
+            <AdvancedFilters {...this.props}/>
         </div>;
     }
 }

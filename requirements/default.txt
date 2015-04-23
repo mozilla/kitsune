@@ -116,8 +116,8 @@ django-nose==1.3
 # sha256: jTddtwi8h_bfm7OulO3QG-0su2polKkneF3tmu3pg-8
 https://github.com/gintas/django-picklefield/archive/54b11bdb177fd6140c3ae7d6e9744eaa2deda261.tar.gz#egg=django-picklefield
 
-# sha256: tA777GxXkjVRMquS0OBIu9C7mdSOoxIcDdeIUE68oto
-django-pipeline==1.4.6
+# sha256: Vibe-NP1i9L1ne67vn7-KckiAGpFFQblwH3VtKSQ_8M
+django-pipeline==1.4.7
 
 # django-qunit: master
 # sha256: E0vdgFaBorOxgVp2_oCm3NRB_4-GqWDCMjQnc8mudFI
@@ -317,9 +317,8 @@ https://github.com/clouserw/tower/archive/af393cd07b1ee02107cb003ab47c6b0b4553b0
 # sha256: AoMvOxsHHvrLI1tFkP1Ux-0NiRHejXL0awh9DIayE1A
 translate-toolkit==1.6.0
 
-# twython: master~57
-# sha256: LEiH_9B8dm4Kl2b-LcD5RGoTDb2jH6yN-lu-KbnpNNc
-https://github.com/ryanmcgrath/twython/archive/4327ff30dffb1b17945b08655daf2b16998a239b.tar.gz#egg=twython
+# sha256: qw3sUihmd-lE3cAOr2oOuJr0ixpmljJOopNRNC0cSD8
+twython==3.2.0
 
 # sha256: Gon6G0PSd8-t8ijMkLnHXyVIGOo6Gqt7_7AiPLt7sV0
 urllib3==1.8

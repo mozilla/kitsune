@@ -155,7 +155,7 @@ test('showAndHide', function() {
   // The last element (#3) doesn't have a show func.
 
   this.showFor.showAndHide();
-  
+
   // 0's show-func returns true. it should be visible
   ok($elems.eq(0).is(':visible'));
   // 1 and 2's show-funcs returns false. they should be hidden.

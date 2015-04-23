@@ -1,5 +1,4 @@
 @import 'variables.less';
-@import 'vendors.less';
 @import 'grid.less';
 @import 'fonts.less';
 
@@ -57,10 +56,30 @@ body {
     > header .logo {
       float: right;
     }
+
+    &.scroll-header {
+      > header {
+        .logo {
+          left: auto;
+          right: 0;
+        }
+
+        #support-search {
+          left: 0;
+          right: auto;
+        }
+
+        #aux-nav {
+          margin-left: 302px;
+          margin-right: 0;
+        }
+      }
+    }
   }
 
   > header {
-    .linear-gradient-top(#dee7ee, #cae1f4, 0%, #dee7ee, 65%, #d4dce4, 100%, url('../img/grain.png'));
+    background: #dee7ee;
+    background: url('../img/grain.png'), linear-gradient(#cae1f4, #dee7ee 65%, #d4dce4);
     border-bottom: 1px solid #b3b8bc;
     border-top: 2px solid #fff;
     margin-bottom: 20px;
@@ -81,7 +100,7 @@ body {
 
     > header {
       background: #fff;
-      .box-shadow(0 0 5px rgba(0, 0, 0, 0.2));
+      box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
       height: 50px;
       padding: 0;
       position: fixed;
@@ -195,14 +214,14 @@ input[type="date"],
 textarea {
   background: #fff;
   border: 1px solid #b2b2b2;
-  .border-radius(5px);
-  .box-shadow(0 0 0 1px #efefef);
+  border-radius: 5px;
+  box-shadow: 0 0 0 1px #efefef;
   font-family: @OpenSans;
   transition: all linear .1s;
 
   &:focus {
     border-color: #42a4e0;
-    .box-shadow(0 0 2px rgba(73,173,227,0.4));
+    box-shadow: 0 0 2px rgba(73,173,227,0.4);
   }
 }
 
@@ -212,8 +231,8 @@ input[type="submit"]{
   &.link-btn {
     background: none;
     border: none;
-    .border-radius(0);
-    .box-shadow(none);
+    border-radius: 0;
+    box-shadow: none;
     color: @textBlue;
     cursor: pointer;
     font-weight: normal;
@@ -222,7 +241,7 @@ input[type="submit"]{
     white-space: normal;
 
     &:hover {
-      .box-shadow(none);
+      box-shadow: none;
       text-decoration: underline;
     }
   }
@@ -308,11 +327,10 @@ input[type=button],
   background: #fff;
   border: 0;
   border-bottom: 2px solid #e8e8e8;
-  .border-radius(6px);
-  .box-shadow(~"inset 0 0 12px rgba(230, 230, 230, 0.2), 0 0 0 1px #d0d0d0");
+  border-radius: 6px;
+  box-shadow: inset 0 0 12px rgba(230, 230, 230, 0.2), 0 0 0 1px #d0d0d0;
   color: @textDarkGrey;
   cursor: pointer;
-  display: -moz-inline-stack; /* FF2 */
   display: inline-block;
   font-family: @OpenSans;
   font-size: 14px;
@@ -338,7 +356,7 @@ input[type=button],
   &.btn-warning {
     border: 0;
     border-bottom: 2px solid #bec0c2;
-    .box-shadow(none);
+    box-shadow: none;
     color: #fff;
     font-family: @OpenSansLight;
     font-weight: normal;
@@ -347,7 +365,7 @@ input[type=button],
 
     &:before {
       bottom: 0;
-      .border-radius(5px);
+      border-radius: 5px;
       content: '';
       left: 0;
       position: absolute;
@@ -364,21 +382,24 @@ input[type=button],
 
   &.btn-important {
     &:before {
-      .gradient(#81bc2e, #81bc2e, #629827);
+      background: #81bc2e;
+      background: linear-gradient(to bottom, #81bc2e, #629827);
       border-bottom: 2px solid #548322;
     }
   }
 
   &.btn-submit {
     &:before {
-      .gradient(#3c88cc, #3c88cc, #3173ae);
+      background: #3c88cc;
+      background: linear-gradient(to bottom, #3c88cc, #3173ae);
       border-bottom: 2px solid #2b659a;
     }
   }
 
   &.btn-warning {
     &:before {
-      .gradient(#d15646, #d15646, #a64030);
+      background: #d15646;
+      background: linear-gradient(#d15646, #a64030);
       border-bottom: 2px solid #9f2519;
     }
   }
@@ -397,7 +418,6 @@ input[type=button],
   background: url('../img/page-button-bg.png') top left repeat-x;
   color: #fff;
   cursor: pointer;
-  display: -moz-inline-stack; /* FF2 */
   display: inline-block;
   font-weight: bold;
   height: 32px;
@@ -459,9 +479,10 @@ input[type=button],
   padding: 0;
 
   > li {
-    .gradient(#ccc, #ddd, #bbb);
-    .border-radius(6px);
-    .box-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+    background: #ccc;
+    background: linear-gradient(to bottom, #ddd, #bbb);
+    border-radius: 6px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     display: inline-block;
     margin: 0 8px 20px;
     padding: 1px;
@@ -473,7 +494,7 @@ input[type=button],
 
     &:before {
       background: #fff;
-      .border-radius(5px);
+      border-radius: 5px;
       bottom: 1px;
       content: '';
       left: 1px;
@@ -719,7 +740,7 @@ input[type=button],
 .progress-bar {
   background: #e5eaed url('../img/grain.png');
   border: 1px solid #dbe0e3;
-  .border-radius(12px);
+  border-radius: 12px;
   color: #fff;
   font-size: 20px;
   font-weight: bold;
@@ -731,7 +752,7 @@ input[type=button],
 
   &:after {
     border-bottom: 1px solid #f9f9f9;
-    .border-radius(13px);
+    border-radius: 13px;
     bottom: -2px;
     content: '';
     left: 0;
@@ -743,7 +764,7 @@ input[type=button],
 
   &:before {
     border: 2px solid rgba(0, 0, 0, 0.01);
-    .border-radius(12px);
+    border-radius: 12px;
     bottom: 0;
     content: '';
     left: 0;
@@ -754,8 +775,9 @@ input[type=button],
   }
 
   > div {
-    .gradient(#ff9500, #ff9500, #ed7000);
-    .border-radius(12px);
+    background: #ff9500;
+    background: linear-gradient(to bottom, #ff9500, #ed7000);
+    border-radius: 12px;
     height: 24px;
     position: relative;
     z-index: 5;
@@ -1021,7 +1043,7 @@ input[type=button],
 .tab-strip {
   background: #fafafa;
   border: 1px solid #efefef;
-  .box-shadow(inset 0 0 0 2px #f7f7f7);
+  box-shadow: inset 0 0 0 2px #f7f7f7;
   list-style: none;
   margin: 0;
   padding: 4px 2px;
@@ -1090,13 +1112,7 @@ input[type=button],
       &.dropdown {
         > a:after,
         > span:after {
-          -moz-border-bottom-colors: none;
-          -moz-border-image: none;
-          -moz-border-left-colors: none;
-          -moz-border-right-colors: none;
-          -moz-border-top-colors: none;
           border-color: #666666 transparent transparent;
-          border-right: 4px solid transparent;
           border-style: solid;
           border-width: 4px;
           content: " ";
@@ -1136,7 +1152,7 @@ input[type=button],
 
       > ul {
         background: #fff;
-        .box-shadow(0 3px 3px rgba(0, 0, 0, 0.1));
+        box-shadow: 0 3px 3px rgba(0, 0, 0, 0.1);
         display: none;
         left: 0;
         list-style: none;
@@ -1200,11 +1216,12 @@ input[type=button],
 
   .unread-message-count {
     background: @textGrey;
-    .border-radius(2px);
+    border-radius: 2px;
     color: #FFFFFF;
     font-size: 78%;
     font-weight: bold;
-    .gradient(#0095dd, #0095dd, #00539f);
+    background: #0095dd;
+    background: linear-gradient(to bottom, #0095dd, #00539f);
     left: 3px;
     padding: 2px 4px;
     position: relative;
@@ -1270,8 +1287,8 @@ input[type=button],
 #stage-banner {
   background: rgba(0, 0, 0, 0.7);
   border: 1px solid #000;
-  .border-radius(6px);
-  .box-shadow(0 0 8px rgba(0, 0, 0, 0.2));
+  border-radius: 6px;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
   color: #fff;
   left: 32px;
   padding: 12px 20px 12px 30px;
@@ -1288,8 +1305,8 @@ input[type=button],
   .close-button {
     background: #000;
     border: 2px solid #fff;
-    .border-radius(15px);
-    .box-shadow(0 0 8px rgba(0, 0, 0, 0.2));
+    border-radius: 15px;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
     cursor: pointer;
     height: 24px;
     left: -8px;
@@ -1328,10 +1345,11 @@ input[type=button],
   }
 
   .searchbox {
-    .linear-gradient-top(#8d969e, #8d969e, 0%, #a8b0b7, 100%, url('../img/grain.png'));
+    background: #8d969e;
+    background: url('../img/grain.png'), linear-gradient(to bottom, #8d969e, #a8b0b7);
     border: 0;
-    .border-radius(30px);
-    .box-shadow(inset 1px 1px 1px rgba(0, 0, 0, 0.5));
+    border-radius: 30px;
+    box-shadow: inset 1px 1px 1px rgba(0, 0, 0, 0.5);
     color: #fff;
     font-size: 14px;
     height: 18px;
@@ -1340,26 +1358,14 @@ input[type=button],
     &:focus {
       outline: none;
 
-      &:-webkit-input-placeholder {
-        color: rgba(255, 255, 255, 0);
+      &::placeholder {
+        color: #fff;
       }
     }
 
-    &::-webkit-input-placeholder {
-      color: #fff;
-    }
-
-    &::-moz-placeholder {
+    &::placeholder {
       color: #fff;
       opacity: 1;
-    }
-
-    &:-moz-placeholder {
-      color: #fff;
-    }
-
-    &:-ms-placeholder {
-      color: #fff;
     }
   }
 }
@@ -1457,7 +1463,7 @@ input[type=button],
 .ajax-vote-box {
   background: #fff;
   border: solid 1px #ccc;
-  .box-shadow(0 1px 2px rgba(0,0,0,0.3));
+  box-shadow: 0 1px 2px rgba(0,0,0,0.3);
   font-family: Georgia;
   font-size: 14px;
   left: 0;
@@ -1467,7 +1473,7 @@ input[type=button],
 
   &:after {
     background: #fff;
-    .box-shadow(2px 2px 2px rgba(0,0,0,0.3));
+    box-shadow: 2px 2px 2px rgba(0,0,0,0.3);
     content: '';
     display: block;
     height: 20px;
@@ -1475,7 +1481,7 @@ input[type=button],
     margin-left: -20px;
     position: absolute;
     top: 20px;
-    .transform(rotate(45deg));
+    transform: rotate(45deg);
     width: 20px;
     z-index: 1;
   }
@@ -1525,7 +1531,8 @@ input[type=button],
     }
 
     input[type="submit"] {
-      .gradient(#3c88cc, #3c88cc, #3173ae);
+      background: #3c88cc;
+      background: linear-gradient(to bottom, #3c88cc, #3173ae);
       border-bottom: 2px solid #2b659a;
       color: #fff;
       font-size: 17px;
@@ -1555,8 +1562,8 @@ input[type=button],
     .close-button {
       background: #000;
       border: 0.5pt solid #fff;
-      .border-radius(50%);
-      .box-shadow(0 0 3pt rgba(0, 0, 0, 0.2));
+      border-radius: 50%;
+      box-shadow: 0 0 3pt rgba(0, 0, 0, 0.2);
       cursor: pointer;
       height: @close_button_size;
       width: @close_button_size;
@@ -1593,7 +1600,7 @@ input[type=button],
   padding: 0;
 
   > li {
-    .box-shadow(0 0 2px 0 rgba(0, 0, 0, 0.2));
+    box-shadow: 0 0 2px 0 rgba(0, 0, 0, 0.2);
     padding: 15px 20px;
     position: relative;
 
@@ -1665,7 +1672,7 @@ input[type=button],
         float: left;
         margin-right: 20px;
         opacity: 0.6;
-        .transition(opacity 0.4s);
+        transition: opacity 0.4s;
         width: 135px;
 
         &:hover {
@@ -1690,8 +1697,8 @@ input[type=button],
         > a:visited {
           background: #fff;
           border: 1px solid @borderLightGrey;
-          .border-radius(6px);
-          .box-sizing(border-box);
+          border-radius: 6px;
+          box-sizing: border-box;
           color: @textDarkGrey;
           display: block;
           height: 100%;
@@ -1744,7 +1751,7 @@ input[type=button],
   > ul {
     background: #fff;
     border: 1px solid @borderLightGrey;
-    .box-sizing(border-box);
+    box-sizing: border-box;
     display: none;
     list-style: none;
     margin: 0;
@@ -1799,8 +1806,8 @@ input[type=button],
   .current {
     background: #fff;
     border: 1px solid @borderLightGrey;
-    .border-radius(12px);
-    .box-shadow(0 -2px 0 #d0d0d0 inset);
+    border-radius: 12px;
+    box-shadow: 0 -2px 0 #d0d0d0 inset;
     font-size: 24px;
     height: 64px;
     line-height: 60px;
@@ -1816,8 +1823,9 @@ input[type=button],
   }
 
   .dd-btn {
-    .gradient(#e8e8e8, #e8e8e8, @borderLightGrey);
-    .border-radius(6px);
+    background: #e8e8e8;
+    background: linear-gradient(to bottom, #e8e8e8, @borderLightGrey);
+    border-radius: 6px;
     float: right;
     height: 50px;
     margin: 6px;

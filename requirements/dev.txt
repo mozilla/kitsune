@@ -1,5 +1,14 @@
 # These requirements are helpful, but not required, for working on Kitsune.
 
+# sha256: s6eaI9N7WgL6pVC5LLu-vrSqHXfmScPrOcGav1Ji2gQ
+argparse==1.3.0
+
+# sha256: qRNwGDrqY8h9hIfns5ntLZmnwvFLEI0nwLyK2e9ZXZo
+aspy.yaml==0.2.1
+
+# sha256: BBpgphbVmxMCbJi44fK4K39OoEm8_0SobUoCU7oeJ2g
+cached-property==1.0.0
+
 # sha256: yfS7goDAxl8gqd_IQRV_y0eUYeyuaXKoozNj52k6qRc
 chief-james==1.0.0
 
@@ -9,8 +18,14 @@ django-debug-toolbar==1.2.2
 # sha256: Y6KG6ssDzV9kPX60WMbGK3DBEbRjT9jVnyfMrKS3yDo
 django-sslserver==0.14
 
+# sha256: x9txeBCraWX2bIzwOYqYydjfmC2jm0zX8WKRHriVlvo
+docutils==0.12
+
 # sha256: KF6L1zDAtv374jwy0pNr_7pAHyPKsTLocixovoDW8YI
 flake8==2.2.5
+
+# sha256: Epii8bL0xKe5IczNFZ5OQvbXsPt1yGwM3s_HHwYYM_o
+jsonschema==2.4.0
 
 # sha256: WioXDkfeVZOmq_rh6VQr0sOSSsYrvk5u2WyVPANSJDo
 mccabe==0.2.1
@@ -18,14 +33,23 @@ mccabe==0.2.1
 # sha256: e5YBIl0vUwZjVn0DMm8o8ipKZCPlasGBLWH9IEEmM_I
 ndg-httpsclient==0.3.3
 
+# sha256: z-plZ1KzlnhB98MAocl1ZSYBPuGfOsR9srdxNP84tQk
+nodeenv==0.13.1
+
 # sha256: ku47hrXBkhwtnawhe--JkMX4Usi8TZAYyv4PPzuBzTo
 nosenicedots==0.5
 
 # sha256: VzZ3y4X_CJJEsPma-VX3bC43RWYyYQtt7aYWcTnOFVo
 pep8==1.6.1
 
+# sha256: jnbbT3Kv6QCHxHRntYjQ3j2_hvbj7nYqok7KqmyhuwM
+pre-commit==0.4.4
+
 # sha256: P6gKELNtUWhr93RPXcmWIs1cmM6O1kAi5imGiq_Bd2k
 pyflakes==0.8.1
+
+# sha256: w2yTiocuX_SUk4szsUqqFWy0OexnVI_Ks1Nbt4sIRug
+PyYAML==3.11
 
 # sha256: a_c6l7D-RUKn7i2KYnoTs4KegdERvidVGzag36DCkJk
 q==2.4
@@ -33,5 +57,8 @@ q==2.4
 # sha256: lJM7ZOL-CAfaBhLFdKAhwNrCjHvTxKI3I65aOeqPPQQ
 Sphinx==1.2.3
 
-# sha256: x9txeBCraWX2bIzwOYqYydjfmC2jm0zX8WKRHriVlvo
-docutils==0.12
+# sha256: kHGqy9l6mpFQlsGq8NxoSsJnKQTNh221kECF1trJgQ4
+tabulate==0.7.5
+
+# sha256: PIjPffEUwyzwZR0S-Xm421VtmS1kdJPlvbvigovkAAc
+virtualenv==12.1.1

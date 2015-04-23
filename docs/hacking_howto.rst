@@ -176,26 +176,18 @@ All the pure-Python requirements are provided in the requirements
 directory. We use a tool called ``peep`` to install packages and make sure
 versions are pinned. ::
 
-    $ python ./scripts/peep.py install -r requirements/default.txt --no-use-wheel
+    $ ./peep.sh install -r requirements/default.txt
 
 Additionally, you may install some useful development tools. These are not
 required, but are helpful::
 
-    $ python ./scripts/peep.py install -r requirements/dev.txt --no-use-wheel
+    $ ./peep.sh install -r requirements/dev.txt
 
 If you have any issues installing via ``peep``, be sure you have the required
 header files from the packages listed in the requirements section above.
 
 For more information on ``peep``, refer to the
 `README <https://github.com/erikrose/peep>`_ on the Github page for the project.
-
-.. Note::
-
-   The ``--no-use-wheel`` option is to work around a bug in Pip that causes
-   wheels to not properly clean up the packages they replace in some situations.
-   See `This Peep issue <https://github.com/erikrose/peep/issues/50>`_ and
-   `This Pip issue <https://github.com/pypa/pip/issues/1825>`_ for more details
-
 
 Node.js Packages
 -------------------
@@ -283,6 +275,28 @@ We include some sample data to get you started. You can install it by
 running this command::
 
     $ ./manage.py generatedata
+
+
+Install linting tools
+---------------------
+
+Kitsune uses `Yelps Pre-commit <http://pre-commit.com/>`_ for linting. It is
+installed as a part of the dev dependencies in ``requirements/dev.txt``. To
+install it as a Git pre-commit hook, run it::
+
+   $ venv/bin/pre-commit install
+
+After this, every time you commit, Pre-commit will check your changes for style
+problems. To run it manually, you can use the command::
+
+   $ venv/bin/pre-commit run
+
+which will run the checks for only your changes, or if you want to run the lint
+checks for all files::
+
+   $ venv/bin/pre-commit run --all-files
+
+For more details see the `Pre-commit docs <http://pre-commit.com/>`_.
 
 
 Product Details Initialization

@@ -127,9 +127,11 @@ SUMO_LANGUAGES = (
     'it',
     'ja',
     'km',
+    'kn',
     'ko',
     'ln',
     'lt',
+    'ml',
     'ne-NP',
     'nl',
     'no',
@@ -205,6 +207,8 @@ SIMPLE_WIKI_LANGUAGES = [
     'et',
     'ga-IE',
     'gl',
+    'kn',
+    'ml',
 ]
 
 # Languages that should show up in language switcher.
@@ -240,12 +244,10 @@ NON_SUPPORTED_LOCALES = {
     'ilo': None,
     'is': None,
     'kk': None,
-    'kn': None,
     'lg': None,
     'lij': 'it',
     'mai': None,
     'mk': None,
-    'ml': None,
     'mn': None,
     'mr': None,
     'ms': None,
@@ -260,6 +262,7 @@ NON_SUPPORTED_LOCALES = {
     'sah': None,
     'son': None,
     'sv-SE': 'sv',
+    'tn': 'en',
 }
 
 ES_LOCALE_ANALYZERS = {
@@ -555,6 +558,7 @@ INSTALLED_APPS = (
     'kitsune.products',
     'kitsune.notifications',
     'kitsune.journal',
+    'kitsune.tidings',
     'rest_framework',
     'statici18n',
     # 'axes',
@@ -662,6 +666,7 @@ PIPELINE_CSS_COMPRESSOR = 'pipeline.compressors.cssmin.CSSMinCompressor'
 PIPELINE_CSSMIN_BINARY = path('node_modules/.bin/cssmin')
 
 PIPELINE_LESS_BINARY = path('node_modules/.bin/lessc')
+PIPELINE_LESS_ARGUMENTS = '--autoprefix="> 1%, last 2 versions, ff > 1"'
 
 PIPELINE_BROWSERIFY_BINARY = path('node_modules/.bin/browserify')
 PIPELINE_BROWSERIFY_ARGUMENTS = '-t babelify -t debowerify'
