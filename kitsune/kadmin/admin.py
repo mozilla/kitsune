@@ -1,7 +1,7 @@
 import re
 import sys
 
-from django import http
+from django import VERSION
 from django.conf import settings as django_settings
 from django.contrib import admin
 from django.db import connection
@@ -9,7 +9,6 @@ from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.views import debug
 
-import jinja2
 from celery import current_app
 from redis import ConnectionError
 
@@ -49,10 +48,14 @@ admin.site.register_view('celery', view=celery_settings,
 
 
 def env(request):
-    """Admin view that displays the wsgi env."""
-    return http.HttpResponse(u'<pre>%s</pre>' % (jinja2.escape(request)))
+    """Admin view that displays env info."""
+    return render_to_response('kadmin/env_view.html', {
+        'request': request,
+        'pythonver': sys.version,
+        'djangover': VERSION,
+    })
 
-admin.site.register_view('env', view=env, name='WSGI Environment')
+admin.site.register_view('env', view=env, name='Environment')
 
 
 def schema_version(request):
