@@ -167,22 +167,20 @@
                 </div>
 
                 {% set tags = question.my_tags %}
-                {% if tags %}
-                  <ul class="tag-list">
-                    {% if question.topic %}
-                      {% set topic = question.topic %}
-                      <li>
-                        <a href="{{ url('questions.list', topic.product.slug)|urlparams(None, request.GET, topic=None) }}">
-                          <img src="/static/img/blank.png" class="logo-sprite-tiny logo-{{ topic.product.slug }}">
-                          {{ _(topic.product.title, 'DB: products.Product.title') }}
-                        </a>
-                      </li>
-                    {% endif %}
-                    {% for tag in tags %}
-                      <li><a class="tag-name" href="{{ questions_url(tagged=tag.slug) }}">{{ tag }}</a></li>
-                    {% endfor %}
-                  </ul>
-                {% endif %}
+                <ul class="tag-list">
+                  {% if question.topic %}
+                    {% set topic = question.topic %}
+                    <li>
+                      <a href="{{ url('questions.list', topic.product.slug)|urlparams(None, request.GET, topic=None) }}">
+                        <img src="/static/img/blank.png" class="logo-sprite-tiny logo-{{ topic.product.slug }}">
+                        {{ _(topic.product.title, 'DB: products.Product.title') }}
+                      </a>
+                    </li>
+                  {% endif %}
+                  {% for tag in tags %}
+                    <li><a class="tag-name" href="{{ questions_url(tagged=tag.slug) }}">{{ tag }}</a></li>
+                  {% endfor %}
+                </ul>
               </div>
             </section>
           {% endfor %}
