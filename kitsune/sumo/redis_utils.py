@@ -1,5 +1,6 @@
 from django.conf import settings
-from django.core.cache import parse_backend_uri
+from django.core.cache.backends.base import InvalidCacheBackendError
+from django.utils.six.moves.urllib.parse import parse_qsl
 
 from redis import Redis, ConnectionError
 
@@ -48,3 +49,30 @@ def redis_client(name):
         raise RedisError(
             'Unable to connect to redis backend: {k}'.format(k=name))
     return redis
+
+
+# Copy/pasted from django 1.6:
+# https://github.com/django/django/blob/9d915ac1be1e7b8cfea3c92f707a4aeff4e62583/django/core/cache/__init__.py
+def parse_backend_uri(backend_uri):
+    """
+    Converts the "backend_uri" into a cache scheme ('db', 'memcached', etc), a
+    host and any extra params that are required for the backend. Returns a
+    (scheme, host, params) tuple.
+    """
+    if backend_uri.find(':') == -1:
+        raise InvalidCacheBackendError("Backend URI must start with scheme://")
+    scheme, rest = backend_uri.split(':', 1)
+    if not rest.startswith('//'):
+        raise InvalidCacheBackendError("Backend URI must start with scheme://")
+
+    host = rest[2:]
+    qpos = rest.find('?')
+    if qpos != -1:
+        params = dict(parse_qsl(rest[qpos+1:]))
+        host = rest[2:qpos]
+    else:
+        params = {}
+    if host.endswith('/'):
+        host = host[:-1]
+
+    return scheme, host, params

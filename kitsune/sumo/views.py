@@ -27,7 +27,7 @@ from kitsune.search import es_utils
 from kitsune.sumo.decorators import cors_enabled
 from kitsune.sumo.redis_utils import redis_client, RedisError
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.sumo.utils import get_next_url, rabbitmq_queue_size, uselocale
+from kitsune.sumo.utils import get_next_url, uselocale
 from kitsune.users.forms import AuthenticationForm
 
 
@@ -235,13 +235,10 @@ def monitor(request):
     # Check RabbitMQ.
     rabbitmq_results = []
     try:
-        rabbit_conn = establish_connection(connect_timeout=2)
+        rabbit_conn = establish_connection(connect_timeout=5)
         rabbit_conn.connect()
         rabbitmq_results.append(
             (INFO, 'Successfully connected to RabbitMQ.'))
-
-        rabbitmq_results.append(
-            (INFO, 'Queue size: %s' % rabbitmq_queue_size()))
     except (socket.error, IOError) as exc:
         rabbitmq_results.append(
             (ERROR, 'Error connecting to RabbitMQ: %s' % str(exc)))

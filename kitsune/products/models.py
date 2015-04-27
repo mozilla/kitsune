@@ -176,8 +176,8 @@ class Version(ModelBase):
     min_version = models.FloatField()
     max_version = models.FloatField()
     product = models.ForeignKey('Product', related_name='versions')
-    visible = models.BooleanField()
-    default = models.BooleanField()
+    visible = models.BooleanField(default=False)
+    default = models.BooleanField(default=False)
 
     class Meta(object):
         ordering = ['-max_version']
@@ -186,7 +186,7 @@ class Version(ModelBase):
 class Platform(ModelBase):
     name = models.CharField(max_length=255)
     slug = models.SlugField()
-    visible = models.BooleanField()
+    visible = models.BooleanField(default=False)
     # Dictates the order in which products are displayed in product
     # lists.
     display_order = models.IntegerField()

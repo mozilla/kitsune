@@ -7,7 +7,6 @@ export DISPLAY=:99.0
 
 python manage.py test \
   --noinput --logging-clear-handlers \
-  --with-fixture-bundling \
   --no-skip \
   --with-nicedots
 echo 'Booyahkasha!'

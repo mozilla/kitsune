@@ -54,9 +54,9 @@ def update_assets(ctx):
 @task
 def db_migrations(ctx):
     with ctx.lcd(settings.SRC_DIR):
-        # This runs schematic and south migrations.
+        # This runs schematic and django migrations.
         ctx.local('schematic migrations')
-        ctx.local('python2.7 manage.py migrate')
+        ctx.local('python2.7 manage.py migrate --noinput --fake')
 
 
 @task

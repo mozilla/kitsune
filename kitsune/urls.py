@@ -1,20 +1,22 @@
 from django.conf.urls import include, patterns, url
 from django.conf import settings
-from django.contrib import admin
-from django.contrib.auth.decorators import login_required
 from django.views.i18n import javascript_catalog
 from django.views.decorators.cache import cache_page
 from django.views.generic.base import RedirectView
 
 import authority
 import badger
-from adminplus.sites import AdminSitePlus
 from waffle.views import wafflejs
 
 
-admin.site = AdminSitePlus()
+# Note: This must come before importing admin because it patches the
+# admin.
+from kitsune.sumo.monkeypatch import patch
+patch()
+
+from django.contrib import admin
 admin.autodiscover()
-admin.site.login = login_required(admin.site.login)
+
 authority.autodiscover()
 badger.autodiscover()
 
@@ -56,7 +58,7 @@ urlpatterns = patterns(
     (r'^', include('kitsune.dashboards.urls')),
     (r'^', include('kitsune.landings.urls')),
     (r'^', include('kitsune.kpi.urls_api')),
-    (r'^', include('kitsune.tidings.urls')),
+    (r'^', include('kitsune.motidings.urls')),
 
     # Users
     ('', include('kitsune.users.urls')),
