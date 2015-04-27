@@ -190,7 +190,7 @@ def edit_media(request, media_id, media_type='image'):
         raise Http404
 
     if request.method == 'POST' and media_form.is_valid():
-        media = media_form.save(update_user=request.user)
+        media = media_form.save(update_user=request.user, is_draft=False)
         return HttpResponseRedirect(
             reverse('gallery.media', args=[media_type, media_id]))
 
