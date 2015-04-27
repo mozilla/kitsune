@@ -86,30 +86,29 @@
     }
 }
 
-.date-range-picker {
-    display: inline-block;
+.Filters {
     position: relative;
 
-    .summary-button {
+    &__item,
+    &__item--button {
+        display: inline-block;
+        margin-right: 5px;
+    }
+
+    &__item--button {
         background: #eee;
         border: 1px solid #aaa;
         border-radius: 4px;
         padding: 3px 5px;
         cursor: pointer;
-
-        .summary {
-            padding: 0 5px;
-        }
     }
 
-    .detail-window {
+    &__window {
         background: #fff;
         box-shadow: 0px 2px 3px rgba(0, 0, 0, 0.3);
-        display: flex;
-        flex-direction: column;
         padding: 3px;
         position: absolute;
-        left: -60px;
+        left: 0px;
         top: 36px;
         z-index: 2;
 
@@ -125,6 +124,22 @@
             width: 16px;
             z-index: -1;
         }
+    }
+}
+
+.date-range-picker {
+    display: inline-block;
+
+    .summary-button {
+        .summary {
+            padding: 0 5px;
+        }
+    }
+
+    .Filters__window {
+        display: flex;
+        flex-direction: column;
+        left: 124px;
 
         .row {
             display: flex;
@@ -211,6 +226,53 @@
             font-weight: bold;
             font-size: 0.9em;
             margin-right: 6px;
+        }
+    }
+}
+
+
+.AdvancedFilters {
+    display: inline-block;
+    float: right;
+
+    &__summary {
+        position: relative;
+
+        &__number {
+            background: #33AFFE;
+            border-radius: 2px;
+            color: #fff;
+            font-weight: bold;
+            font-size: 10px;
+            height: 14px;
+            position: absolute;
+            right: -7px;
+            text-align: center;
+            top: -5px;
+            width: 14px;
+        }
+    }
+
+    &__detail {
+        left: auto;
+        min-height: 100px;
+        min-width: 400px;
+        right: 0;
+
+        &::before {
+            left: auto;
+            right: 12px;
+        }
+
+        ul {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        &__actions {
+            padding: 5px;
+            text-align: right;
         }
     }
 }

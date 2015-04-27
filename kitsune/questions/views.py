@@ -470,7 +470,9 @@ def aaq(request, product_key=None, category_key=None, showform=False,
     # boot this user.
     request.session['in-aaq'] = True
 
-    if request.LANGUAGE_CODE not in QuestionLocale.objects.locales_list():
+    if (request.LANGUAGE_CODE not in QuestionLocale.objects.locales_list()
+            and request.LANGUAGE_CODE != settings.WIKI_DEFAULT_LANGUAGE):
+
         locale, path = split_path(request.path)
         path = '/' + settings.WIKI_DEFAULT_LANGUAGE + '/' + path
 

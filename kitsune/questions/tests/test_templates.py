@@ -1225,6 +1225,17 @@ class QuestionsTemplateTestCase(TestCaseBase):
         response = self.client.get(urlparams(reverse('questions.list', args=['all']), show=''))
         eq_(200, response.status_code)
 
+    def test_product_shows_without_tags(self):
+        p = product(save=True)
+        t = topic(product=p, save=True)
+        q = question(topic=t, save=True)
+
+        response = self.client.get(urlparams(reverse('questions.list', args=['all']), show=''))
+        doc = pq(response.content)
+        tag = doc('#question-{id} .tag-list li img'.format(id=q.id))
+        # Even though there are no tags, the product should be displayed.
+        assert 'logo-{}'.format(p.slug) in tag.attr('class')
+
 
 class QuestionsTemplateTestCaseNoFixtures(TestCase):
     client_class = LocalizingClient

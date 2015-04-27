@@ -16,7 +16,7 @@ from wikimarkup.parser import ALLOWED_TAGS, ALLOWED_ATTRIBUTES
 
 from kitsune.products.tests import product, topic
 from kitsune.sumo.helpers import urlparams
-from kitsune.sumo.tests import SkipTest, post, get, attrs_eq, MobileTestCase
+from kitsune.sumo.tests import post, get, attrs_eq, MobileTestCase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import user, add_permission
 from kitsune.wiki.events import (
@@ -596,11 +596,6 @@ class NewDocumentTests(TestCaseBase):
     @mock.patch.object(Site.objects, 'get_current')
     def test_new_document_other_locale(self, get_current, ready_fire):
         """Make sure we can create a document in a non-default locale."""
-        # You shouldn't be able to make a new doc in a non-default locale
-        # without marking it as non-localizable. Unskip this when the non-
-        # localizable bool is implemented.
-        raise SkipTest('Not implemented')
-
         get_current.return_value.domain = 'testserver'
 
         self.client.login(username='admin', password='testpass')

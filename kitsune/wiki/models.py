@@ -124,6 +124,9 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
     # A 24 character length gives years before having to alter max_length.
     share_link = models.CharField(max_length=24, default='')
 
+    # Dictates the order in which articles are displayed.
+    display_order = models.IntegerField(default=1, db_index=True)
+
     # firefox_versions,
     # operating_systems:
     #    defined in the respective classes below. Use them as in
@@ -133,6 +136,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
     # how MySQL uses indexes, we probably don't need individual indexes on
     # title and locale as well as a combined (title, locale) one.
     class Meta(object):
+        ordering = ['display_order', 'id']
         unique_together = (('parent', 'locale'), ('title', 'locale'),
                            ('slug', 'locale'))
         permissions = [('archive_document', 'Can archive document'),
@@ -670,7 +674,8 @@ class DocumentMappingType(SearchMappingType):
                 'document_category': {'type': 'integer'},
                 'document_slug': {'type': 'string', 'index': 'not_analyzed'},
                 'document_is_archived': {'type': 'boolean'},
-                'document_recent_helpful_votes': {'type': 'integer'}
+                'document_recent_helpful_votes': {'type': 'integer'},
+                'document_display_order': {'type': 'integer'}
             }
         }
 
@@ -704,6 +709,7 @@ class DocumentMappingType(SearchMappingType):
         d['document_category'] = obj.category
         d['document_slug'] = obj.slug
         d['document_is_archived'] = obj.is_archived
+        d['document_display_order'] = obj.original.display_order
 
         if obj.current_revision is not None:
             d['document_summary'] = obj.current_revision.summary

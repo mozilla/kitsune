@@ -91,7 +91,7 @@ def print_bugzilla_stats(from_date, to_date):
     print ''
     creators = sorted(creators.items(), reverse=True, key=lambda item: item[1])
     for person, count in creators:
-        print ' %34s : %s' % (person[:30], count)
+        print ' %34s : %s' % (person[:30].encode('utf-8'), count)
     print ''
 
     # ------------------------------------------------
@@ -202,7 +202,7 @@ def print_bugzilla_stats(from_date, to_date):
     resolvers = sorted(resolvers.items(), reverse=True,
                        key=lambda item: item[1])
     for person, count in resolvers:
-        print ' %34s : %s' % (person[:30], count)
+        print ' %34s : %s' % (person[:30].encode('utf-8'), count)
 
     print ''
     print 'Commenters: %s' % len(commenters)
@@ -210,7 +210,7 @@ def print_bugzilla_stats(from_date, to_date):
     commenters = sorted(commenters.items(), reverse=True,
                         key=lambda item: item[1])
     for person, count in commenters:
-        print ' %34s : %s' % (person[:30], count)
+        print ' %34s : %s' % (person[:30].encode('utf-8'), count)
 
 
 def git(*args):
@@ -234,26 +234,24 @@ def print_git_stats(from_date, to_date):
     changes = {}
 
     for commit in all_commits:
-        author = git('git', 'log', '--format=%an',
-                     '{0}~..{1}'.format(commit, commit))
-
-        author = author.strip()
-        # FIXME - this is lame. what's going on is that there are
-        # merge commits which have multiple authors, so we just grab
-        # the second one.
-        if '\n' in author:
-            author = author.splitlines()[1]
+        author = git('git', 'show', '-s', '--format=%an', commit)
+        author = author.strip().decode('utf-8')
 
         committers[author] = committers.get(author, 0) + 1
         all_people.add(author)
 
-        diff_data = git('git', 'diff', '--numstat', '--find-copies-harder',
-                        '{0}~..{1}'.format(commit, commit))
+        diff_data = git('git', 'show', '--numstat', '--format=oneline',
+                        '--find-copies-harder', commit)
         total_added = 0
         total_deleted = 0
         total_files = 0
 
-        for line in diff_data.splitlines():
+        # Skip the first line because it's the oneline summary and that's
+        # not part of the numstat data we want.
+        lines = diff_data.splitlines()[1:]
+        for line in lines:
+            if not line:
+                continue
             added, deleted, fn = line.split('\t')
             if fn.startswith('vendor/'):
                 continue
@@ -277,7 +275,7 @@ def print_git_stats(from_date, to_date):
         committers.items(), key=lambda item: item[1], reverse=True)
     for person, count in committers:
         print '  %20s : %5s  (+%s, -%s, files %s)' % (
-            person, count,
+            person.encode('utf-8'), count,
             changes[person][0], changes[person][1], changes[person][2])
         all_people.add(person)
 
@@ -293,10 +291,10 @@ def print_all_people():
     # duplicates since we're pulling names from three different forms
     # between Bugzilla and git. You're still going to have to go
     # through it by hand to remove duplicates.
-    people = sorted(all_people, key=lambda a: a.decode('utf-8').lower())
+    people = sorted(all_people, key=lambda a: a.lower())
 
     for person in people:
-        print '    ' + person
+        print '    %s' % person.encode('utf-8')
 
 
 def print_header(text):
@@ -323,6 +321,7 @@ def main(argv):
     if len(argv) == 1:
         from_date = datetime.date(year, 1, 1)
         to_date = datetime.date(year, 12, 31)
+
         print_header('Year %s (%s -> %s)' % (year, from_date, to_date))
 
     else:
@@ -336,6 +335,9 @@ def main(argv):
 
         print_header('Quarter %sq%s (%s -> %s)' % (
             year, quarter, from_date, to_date))
+
+    # Add 1 day because we do less-than.
+    to_date = to_date + datetime.timedelta(days=1)
 
     print_header('Bugzilla')
     print_bugzilla_stats(from_date, to_date)
