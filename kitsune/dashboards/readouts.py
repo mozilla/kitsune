@@ -194,8 +194,7 @@ def kb_overview_rows(mode=None, max=None, locale=None, product=None):
 
     docs = Document.objects.filter(locale=settings.WIKI_DEFAULT_LANGUAGE,
                                    is_archived=False,
-                                   is_template=False,
-                                   current_revision__isnull=False)
+                                   is_template=False)
 
     docs = docs.exclude(html__startswith=REDIRECT_HTML)
 
@@ -246,15 +245,12 @@ def kb_overview_rows(mode=None, max=None, locale=None, product=None):
             unapproved_revs = d.revisions.filter(
                 reviewed=None, id__gt=d.current_revision.id)[:1]
         else:
-            unapproved_revs = None
+            unapproved_revs = d.revisions.all()
 
-        if unapproved_revs is None:
-            data['latest_revision'] = False
+        if unapproved_revs.count():
+            data['revision_comment'] = unapproved_revs[0].comment
         else:
-            if unapproved_revs.count():
-                data['revision_comment'] = unapproved_revs[0].comment
-            else:
-                data['latest_revision'] = True
+            data['latest_revision'] = True
 
         # Get the translated doc
         if locale != settings.WIKI_DEFAULT_LANGUAGE:
@@ -264,7 +260,6 @@ def kb_overview_rows(mode=None, max=None, locale=None, product=None):
 
             if transdoc:
                 data['needs_update'] = transdoc.is_outdated()
-
         else:  # For en-US we show the needs_changes comment.
             data['needs_update'] = d.needs_change
             data['needs_update_comment'] = d.needs_change_comment
