@@ -24,6 +24,7 @@ badger.autodiscover()
 urlpatterns = patterns(
     '',
     (r'^search', include('kitsune.search.urls')),
+    (r'^coolsearch', include('kitsune.coolsearch.urls')),
     (r'^forums', include('kitsune.forums.urls')),
     (r'^questions', include('kitsune.questions.urls')),
     (r'^flagged', include('kitsune.flagit.urls')),
@@ -79,6 +80,7 @@ urlpatterns = patterns(
     (r'^api/2/', include('kitsune.notifications.urls_api')),
     (r'^api/2/', include('kitsune.questions.urls_api')),
     (r'^api/2/', include('kitsune.search.urls_api')),
+    (r'^api/2/', include('kitsune.coolsearch.urls_api')),
     (r'^api/2/', include('kitsune.community.urls_api')),
 
     # These API urls include both v1 and v2 urls.

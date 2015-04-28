@@ -1,0 +1,32 @@
+#coolsearch {
+
+    form {
+        margin-top: 10px;
+
+        fieldset {
+            border: none;
+            margin: 5px 0;
+        }
+
+        fieldset.query {
+            input {
+                width: 500px;
+                float: right;
+                padding: 4px 8px;
+            }
+        }
+
+        fieldset.controls {
+            text-align: center;
+        }
+    }
+
+    #search-results {
+        margin-top: 10px;
+    }
+
+    /* Overwrite the default behaviour of the SwipeView library to hide navbar */
+    .SwipeView {
+        overflow-y: inherit;
+    }
+}
