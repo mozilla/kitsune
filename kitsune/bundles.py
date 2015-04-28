@@ -407,6 +407,19 @@ PIPELINE_JS = {
         ),
         'output_filename': 'search-min.js'
     },
+    'coolsearch': {
+        'source_filenames': (
+            # This uses the minified version because it is optimized to leave
+            # out lots of debug stuff, so it is significantly smaller than
+            # just minifying react.js.
+            # TODO: Figure out how to include the full sized version in dev,
+            # because it produces much nicer error messages.
+            # 'react/react.min.js',
+            'react/react.js',
+            'js/search.browserify.js',
+        ),
+        'output_filename': 'coolsearch-min.js'
+    },
     'forums': {
         'source_filenames': (
             'js/markup.js',
