@@ -230,32 +230,37 @@ def kb_overview_rows(mode=None, max=None, locale=None, product=None):
                                  locale=settings.WIKI_DEFAULT_LANGUAGE),
             'title': d.title,
             'num_visits': d.num_visits,
-            'expiry_date': d.current_revision.expires,
         }
+
+        if d.current_revision:
+            data['expiry_date'] = d.current_revision.expires
 
         if d.num_visits:
             data['visits_ratio'] = float(d.num_visits) / max_visits
 
-        expiry_date = d.current_revision.expires
-
-        if expiry_date:
-            data['stale'] = expiry_date < datetime.now()
+        if 'expiry_date' in data and data['expiry_date']:
+            data['stale'] = data['expiry_date'] < datetime.now()
 
         # Check L10N status
-        unapproved_revs = d.revisions.filter(
-            reviewed=None, id__gt=d.current_revision.id)[:1]
-
-        if unapproved_revs.count():
-            data['revision_comment'] = unapproved_revs[0].comment
+        if d.current_revision:
+            unapproved_revs = d.revisions.filter(
+                reviewed=None, id__gt=d.current_revision.id)[:1]
         else:
-            data['latest_revision'] = True
+            unapproved_revs = None
+
+        if unapproved_revs is None:
+            data['latest_revision'] = False
+        else:
+            if unapproved_revs.count():
+                data['revision_comment'] = unapproved_revs[0].comment
+            else:
+                data['latest_revision'] = True
 
         # Get the translated doc
         if locale != settings.WIKI_DEFAULT_LANGUAGE:
             transdoc = d.translations.filter(
                 locale=locale,
-                is_archived=False,
-                current_revision__isnull=False).first()
+                is_archived=False).first()
 
             if transdoc:
                 data['needs_update'] = transdoc.is_outdated()
