@@ -5,7 +5,7 @@ from django.conf import settings
 from nose.tools import eq_
 
 from kitsune.dashboards.readouts import (
-    UnreviewedReadout,
+    UnreviewedReadout, kb_overview_rows,
     TemplateTranslationsReadout, l10n_overview_rows,
     MostVisitedDefaultLanguageReadout,
     MostVisitedTranslationsReadout,
@@ -43,6 +43,16 @@ class ReadoutTestCase(TestCase):
         """Return the titles shown by the Unreviewed Changes readout."""
         return [row['title'] for row in self.readout(
                 MockRequest(), locale=locale, product=product).rows()]
+
+
+class KBOverviewTests(TestCase):
+    def test_unapproved_articles(self):
+        eq_(0, len(kb_overview_rows()))
+
+        d = document(save=True)
+        revision(document=d, save=True)
+
+        eq_(1, len(kb_overview_rows()))
 
 
 class L10NOverviewTests(TestCase):

@@ -194,8 +194,7 @@ def kb_overview_rows(mode=None, max=None, locale=None, product=None):
 
     docs = Document.objects.filter(locale=settings.WIKI_DEFAULT_LANGUAGE,
                                    is_archived=False,
-                                   is_template=False,
-                                   current_revision__isnull=False)
+                                   is_template=False)
 
     docs = docs.exclude(html__startswith=REDIRECT_HTML)
 
@@ -230,20 +229,23 @@ def kb_overview_rows(mode=None, max=None, locale=None, product=None):
                                  locale=settings.WIKI_DEFAULT_LANGUAGE),
             'title': d.title,
             'num_visits': d.num_visits,
-            'expiry_date': d.current_revision.expires,
         }
+
+        if d.current_revision:
+            data['expiry_date'] = d.current_revision.expires
 
         if d.num_visits:
             data['visits_ratio'] = float(d.num_visits) / max_visits
 
-        expiry_date = d.current_revision.expires
-
-        if expiry_date:
-            data['stale'] = expiry_date < datetime.now()
+        if 'expiry_date' in data and data['expiry_date']:
+            data['stale'] = data['expiry_date'] < datetime.now()
 
         # Check L10N status
-        unapproved_revs = d.revisions.filter(
-            reviewed=None, id__gt=d.current_revision.id)[:1]
+        if d.current_revision:
+            unapproved_revs = d.revisions.filter(
+                reviewed=None, id__gt=d.current_revision.id)[:1]
+        else:
+            unapproved_revs = d.revisions.all()
 
         if unapproved_revs.count():
             data['revision_comment'] = unapproved_revs[0].comment
@@ -254,12 +256,10 @@ def kb_overview_rows(mode=None, max=None, locale=None, product=None):
         if locale != settings.WIKI_DEFAULT_LANGUAGE:
             transdoc = d.translations.filter(
                 locale=locale,
-                is_archived=False,
-                current_revision__isnull=False).first()
+                is_archived=False).first()
 
             if transdoc:
                 data['needs_update'] = transdoc.is_outdated()
-
         else:  # For en-US we show the needs_changes comment.
             data['needs_update'] = d.needs_change
             data['needs_update_comment'] = d.needs_change_comment
