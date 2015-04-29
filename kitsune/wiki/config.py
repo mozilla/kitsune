@@ -24,8 +24,14 @@ COLLAPSIBLE_DOCUMENTS = {
     u'it': [
         u'firefox-connessioni-non-richieste',
     ],
+    u'ja': [
+        u'how-stop-firefox-automatically-making-connections',
+    ],
     u'pt-BR': [
         u'como-fazer-o-firefox-parar-de-se-conectar-automati',
+    ],
+    u'ru': [
+        u'kak-ostanovit-firefox-ot-avtomaticheskogo-podklyuc',
     ]
 }
 
