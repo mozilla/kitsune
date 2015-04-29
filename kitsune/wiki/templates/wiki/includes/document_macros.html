@@ -41,8 +41,8 @@
   {% endif %}
 {%- endmacro %}
 
-{% macro document_content(document, fallback_reason, request, settings, css_class='') -%}
-  <section id="doc-content" class="{{ css_class }}">
+{% macro document_content(document, fallback_reason, request, settings) -%}
+  <section id="doc-content">
     {% if not fallback_reason %}
       {{ document.html|safe }}
     {% elif fallback_reason == 'no_translation' %}
