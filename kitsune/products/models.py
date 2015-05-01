@@ -7,6 +7,7 @@ from PIL import Image
 from uuid import uuid4
 
 from kitsune.sumo.models import ModelBase
+from kitsune.sumo.urlresolvers import reverse
 
 
 HOT_TOPIC_SLUG = 'hot'
@@ -108,6 +109,9 @@ class Product(ModelBase):
                     settings.MEDIA_ROOT, settings.PRODUCT_IMAGE_PATH,
                     'logo-sprite.png'))
 
+    def get_absolute_url(self):
+        return reverse('products.product', kwargs={'slug': self.slug})
+
 
 # Note: This is the "new" Topic class
 class Topic(ModelBase):
@@ -167,6 +171,20 @@ class Topic(ModelBase):
         }
         query.update(kwargs)
         return Document.objects.filter(**query)
+
+    def get_absolute_url(self):
+        if self.parent is None:
+            return reverse('products.documents', kwargs={
+                'product_slug': self.product.slug,
+                'topic_slug': self.slug,
+            })
+        else:
+            assert self.parent.parent is None
+            return reverse('products.subtopics', kwargs={
+                'product_slug': self.product.slug,
+                'topic_slug': self.parent.slug,
+                'subtopic_slug': self.slug,
+            })
 
 
 class Version(ModelBase):
