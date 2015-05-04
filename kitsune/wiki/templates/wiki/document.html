@@ -83,6 +83,6 @@
     {% set parent = doc.parent %}
   {% endif %}
   {{ document_tools(doc, parent, user, 'article', settings, include_showfor=True) }}
-  {{ topic_sidebar(topics[:10], [], product) }}
+  {{ topic_sidebar(product_topics[:10], [], product) }}
   {{ vote_form(document, 'sidebar') }}
 {% endblock %}
