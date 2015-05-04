@@ -151,6 +151,7 @@ SUMO_LANGUAGES = (
     'ta-LK',
     'te',
     'th',
+    'tn',
     'tr',
     'uk',
     'ur',
@@ -209,6 +210,7 @@ SIMPLE_WIKI_LANGUAGES = [
     'gl',
     'kn',
     'ml',
+    'tn',
 ]
 
 # Languages that should show up in language switcher.
@@ -262,7 +264,6 @@ NON_SUPPORTED_LOCALES = {
     'sah': None,
     'son': None,
     'sv-SE': 'sv',
-    'tn': 'en',
 }
 
 ES_LOCALE_ANALYZERS = {
