@@ -13,7 +13,6 @@ HOME = /tmp
 * * * * * {{ cron }} collect_tweets
 
 # Every 10 minutes!
-*/10 * * * * {{ cron }} record_queue_size
 */10 * * * * {{ cron }} enqueue_lag_monitor_task
 
 # Every hour.
@@ -47,7 +46,7 @@ HOME = /tmp
 00 23 * * * {{ cron }} reload_question_traffic_stats
 00 21 * * * {{ cron }} cache_most_unhelpful_kb_articles
 00 22 * * * {{ cron }} get_customercare_stats
-42 22 * * * {{ django }} cleanup
+42 22 * * * {{ django }} clearsessions
 
 # Once per week.
 21 03 * * 3 {{ django }} purge_hashes

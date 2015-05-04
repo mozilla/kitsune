@@ -15,6 +15,7 @@ LOG_LEVEL = logging.ERROR
 DATABASES['default']['NAME'] = 'kitsune'
 DATABASES['default']['HOST'] = 'localhost'
 DATABASES['default']['USER'] = 'travis'
+DATABASES['default']['CONN_MAX_AGE'] = 600
 CELERY_ALWAYS_EAGER = True
 CACHE_BACKEND = 'caching.backends.locmem://'
 ES_INDEX_PREFIX = 'sumo'
@@ -40,6 +41,13 @@ appendonly no
 appendfsync everysec
 activerehashing yes
 SETTINGS
+
+echo "Setting mysql params to get around 'mysql has gone away' errors"
+mysql -e "SET GLOBAL sql_mode = 'NO_ENGINE_SUBSTITUTION,STRICT_TRANS_TABLES'"
+mysql -e "SET GLOBAL wait_timeout = 36000;"
+mysql -e "SHOW VARIABLES LIKE 'wait_timeout';"
+mysql -e "SET GLOBAL max_allowed_packet = 134209536;"
+mysql -e "SHOW VARIABLES LIKE 'max_allowed_packet';"
 
 echo "Creating test database"
 mysql -e 'create database kitsune'
