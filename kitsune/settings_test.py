@@ -27,18 +27,10 @@ STAGE = False
 
 SESSION_COOKIE_SECURE = False
 
-# Don't run migrations on syncdb when we create the test database
-SOUTH_TESTS_MIGRATE = False
-
 # The way we do live server test cases is greedy with ports. This gives
 # it more ports, but won't clobber settings from the environment.
 if 'DJANGO_LIVE_TEST_SERVER_ADDRESS' not in os.environ:
     os.environ['DJANGO_LIVE_TEST_SERVER_ADDRESS'] = 'localhost:8081-8090'
-
-# This quells south's crazy debug logging
-import logging
-import south.logger
-logging.getLogger('south').setLevel(logging.INFO)
 
 # Tells django-axes we aren't behind a reverse proxy.
 AXES_BEHIND_REVERSE_PROXY = False

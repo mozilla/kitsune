@@ -298,9 +298,6 @@ simplejson==3.1.2
 # sha256: 4kBSQR_E-9H2cmNVN8P8IzDZSBsYwDF2lbRiWVEskdU
 six==1.9.0
 
-# sha256: 02C9MYmPnfWfb6p4ZVEGW7pFs15-48ObOBtPv-9zkvQ
-South==1.0.2
-
 # sha256: xDk0Lw5v1G9WRDHJrksEoAiIlyFCZeLRjUGugY09b_E
 sqlalchemy==0.6.4
 
