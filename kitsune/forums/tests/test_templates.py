@@ -79,13 +79,13 @@ class PostsTemplateTests(ForumTestCase):
 
     def test_long_title_truncated_in_crumbs(self):
         """A very long thread title gets truncated in the breadcrumbs"""
-        t = thread(title='A thread with a very very long title', save=True)
+        t = thread(title='A thread with a very very very very long title', save=True)
         forum_post(thread=t, save=True)
 
         response = get(self.client, 'forums.posts', args=[t.forum.slug, t.id])
         doc = pq(response.content)
         crumb = doc('#breadcrumbs li:last-child')
-        eq_(crumb.text(), 'A thread with a very very ...')
+        eq_(crumb.text(), 'A thread with a very very very very ...')
 
     def test_edit_post_moderator(self):
         """Editing post as a moderator works."""

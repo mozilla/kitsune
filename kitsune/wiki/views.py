@@ -154,7 +154,7 @@ def document(request, document_slug, template=None, document=None):
     else:
         product = products[0]
 
-    topics = Topic.objects.filter(product=product, visible=True, parent=None)
+    product_topics = Topic.objects.filter(product=product, visible=True, parent=None)
 
     ga_push = []
     if fallback_reason is not None:
@@ -171,16 +171,40 @@ def document(request, document_slug, template=None, document=None):
         template = '%sdocument.html' % template
         minimal = False
 
+    # Build a set of breadcrumbs, ending with the document's title, and
+    # starting with the product, with the topic(s) in between.
+    # The breadcrumbs are built backwards, and then reversed.
+
+    # Get document title. If it is like "Title - Subtitle", strip off the subtitle.
+    trimmed_title = doc.title.split(' - ')[0].strip()
+    breadcrumbs = [(None, trimmed_title)]
+    # Get the dominant topic, and all parent topics. Save the topic chosen for
+    # picking a product later.
+    document_topics = doc.topics.order_by('display_order')
+    if len(document_topics) > 0:
+        topic = document_topics[0]
+        first_topic = topic
+        while topic is not None:
+            breadcrumbs.append((topic.get_absolute_url(), topic.title))
+            topic = topic.parent
+        # Get the product
+        breadcrumbs.append((first_topic.product.get_absolute_url(), first_topic.product.title))
+    else:
+        breadcrumbs.append((product.get_absolute_url(), product.title))
+    # The list above was built backwards, so flip this.
+    breadcrumbs.reverse()
+
     data = {
         'document': doc,
         'redirected_from': redirected_from,
         'contributors': contributors,
         'fallback_reason': fallback_reason,
         'is_aoa_referral': request.GET.get('ref') == 'aoa',
-        'topics': topics,
+        'product_topics': product_topics,
         'product': product,
         'products': products,
         'ga_push': ga_push,
+        'breadcrumb_items': breadcrumbs,
     }
 
     response = render(request, template, data)

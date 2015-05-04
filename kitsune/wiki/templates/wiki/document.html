@@ -35,6 +35,10 @@
   {% set extra_body_attrs = {'data-surveygizmo-url': 'http://qsurvey.mozilla.com/s3/63ac9fdb1ce1'} %}
 {% endif %}
 
+{% block breadcrumbs %}
+  {{ breadcrumbs(breadcrumb_items, id='main-breadcrumbs') }}
+{% endblock %}
+
 {% block above_main %}
   <h1 class="product-title cf">
     {% set prod_url = url('products.product', slug=product.slug) %}
@@ -60,7 +64,7 @@
     {% endif %}
 
       <div class="vote-wrap">
-      {# this extra div is to make the js compatible with old theme. TODO: Remove and fix js. #}
+        {# this extra div is to make the js compatible with old theme. TODO: Remove and fix js. #}
         {{ vote_form(document, 'footer') }}
       </div>
 
@@ -79,9 +83,6 @@
     {% set parent = doc.parent %}
   {% endif %}
   {{ document_tools(doc, parent, user, 'article', settings, include_showfor=True) }}
-  {{ topic_sidebar(topics[:10], [], product) }}
+  {{ topic_sidebar(product_topics[:10], [], product) }}
   {{ vote_form(document, 'sidebar') }}
-{% endblock %}
-
-{% block breadcrumbs %}
 {% endblock %}
