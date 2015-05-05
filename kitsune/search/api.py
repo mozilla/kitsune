@@ -90,6 +90,7 @@ def _document_suggestions(searcher, text, locale, product, max_results):
             'title': result['document_title'],
             'slug': result['document_slug'],
             'summary': result['document_summary'],
+            'url': result['url'],
         })
 
     return documents
