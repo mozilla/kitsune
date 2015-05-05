@@ -125,6 +125,14 @@ class SuggestViewTests(ElasticTestCase):
         req = self.client.get(reverse('search.suggest'), {'q': 'emails', 'product': p1.slug})
         eq_([q['id'] for q in req.data['questions']], [q1.id])
 
+    def test_document_fields(self):
+        self._make_document()
+        self.refresh()
+
+        req = self.client.get(reverse('search.suggest'), {'q': 'emails'})
+        eq_(len(req.data['documents']), 1)
+        eq_(sorted(req.data['documents'][0].keys()), ['slug', 'summary', 'title', 'url'])
+
     def test_serializer_fields(self):
         """Test that fields from the serializer are included."""
         self._make_question()
