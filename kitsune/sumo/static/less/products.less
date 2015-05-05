@@ -126,21 +126,18 @@
   margin-bottom: 0;
 
   &.has-image {
-    margin-top: 0px;
-    margin-left: 88px;
+    display: flex;
+    height: 96px;
+    flex-direction: column;
+    justify-content: center;
   }
 
   &.cf {
     margin-bottom: 20px;
-    
-    &:nth-child(2){
-      display: table-cell;
-      height: 96px;
-      vertical-align: middle;
-    }
   }
 
   & + .topic-title {
+    height: auto;
     margin-bottom: 0;
     margin-top: 0;
     padding-left: 28px;
