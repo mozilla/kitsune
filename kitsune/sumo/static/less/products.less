@@ -126,10 +126,10 @@
   margin-bottom: 0;
 
   &.has-image {
-    margin-left: 88px;
-    display: table-cell;
+    display: flex;
     height: 96px;
-    vertical-align: middle;
+    flex-direction: column;
+    justify-content: center;
   }
 
   &.cf {
@@ -137,6 +137,7 @@
   }
 
   & + .topic-title {
+    height: auto;
     margin-bottom: 0;
     margin-top: 0;
     padding-left: 28px;
