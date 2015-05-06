@@ -76,9 +76,11 @@ class SuggestViewTests(ElasticTestCase):
         eq_(res.data['detail'], {'locale': 'Could not find locale "bad-medicine".'})
 
     def test_invalid_fallback_locale(self):
-        for locale, fallback in settings.NON_SUPPORTED_LOCALES.items():
-            if fallback is not None:
-                break
+        non_none_locale_fallback_pairs = [
+            (key, val) for key, val in sorted(settings.NON_SUPPORTED_LOCALES.items())
+            if val is not None
+        ]
+        locale, fallback = non_none_locale_fallback_pairs[0]
 
         res = self.client.get(reverse('search.suggest'), {
             'locale': locale,
