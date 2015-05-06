@@ -75,7 +75,8 @@ class SuggestViewTests(ElasticTestCase):
         eq_(res.status_code, 400)
         eq_(res.data['detail'], {'locale': 'Could not find locale "bad-medicine".'})
 
-    def test_invalid_fallback_locale(self):
+    def test_invalid_fallback_locale_none_case(self):
+        # Test the locale -> locale case.
         non_none_locale_fallback_pairs = [
             (key, val) for key, val in sorted(settings.NON_SUPPORTED_LOCALES.items())
             if val is not None
@@ -91,6 +92,25 @@ class SuggestViewTests(ElasticTestCase):
             res.data['detail'],
             {'locale': 'Locale "{0}" is not supported, but has fallback locale "{1}".'.format(
                 locale, fallback)}
+        )
+
+    def test_invalid_fallback_locale_non_none_case(self):
+        # Test the locale -> None case which falls back to WIKI_DEFAULT_LANGUAGE.
+        has_none_locale_fallback_pairs = [
+            (key, val) for key, val in sorted(settings.NON_SUPPORTED_LOCALES.items())
+            if val is None
+        ]
+        locale, fallback = has_none_locale_fallback_pairs[0]
+
+        res = self.client.get(reverse('search.suggest'), {
+            'locale': locale,
+            'q': 'search',
+        })
+        eq_(res.status_code, 400)
+        eq_(
+            res.data['detail'],
+            {'locale': 'Locale "{0}" is not supported, but has fallback locale "{1}".'.format(
+                locale, settings.WIKI_DEFAULT_LANGUAGE)}
         )
 
     def test_invalid_numbers(self):
