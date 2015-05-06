@@ -32,6 +32,15 @@ def suggest(request):
         errors['q'] = 'This field is required.'
     if product is not None and not Product.objects.filter(slug=product).exists():
         errors['product'] = 'Could not find product with slug "{0}".'.format(product)
+    if locale not in settings.SUMO_LANGUAGES:
+        if settings.NON_SUPPORTED_LOCALES.get(locale):
+            errors['locale'] = (
+                'Locale "{0}" is not supported, but has fallback locale "{1}".'.format(
+                    locale, settings.NON_SUPPORTED_LOCALES[locale])
+            )
+        else:
+            errors['locale'] = 'Could not find locale "{0}".'.format(locale)
+
     if errors:
         raise GenericAPIException(400, errors)
 
@@ -55,9 +64,10 @@ def _question_suggestions(searcher, text, locale, product, max_results):
         question_is_archived=False,
         question_is_locked=False,
         question_is_solved=True)
-
     if product is not None:
         search_filter &= es_utils.F(product=product)
+    if locale is not None:
+        search_filter &= es_utils.F(question_locale=locale)
 
     questions = []
     searcher = _query(searcher, QuestionMappingType, search_filter, text, locale)
