@@ -59,12 +59,28 @@
       </form>
     </article>
     {% if request.user == profile.user %}
-      <form method="post" action="{{ url('users.close_account') }}" data-confirm="confirm" data-confirm-text="{{ _('Are you sure you want to close your account? You cannot undo this action.') }}">
+    <p>
+      <a id="delete-profile" class="btn btn-warning">{{ _('Close account and delete all profile information') }}</a>
+    </p>
+
+    <div class="kbox" title="{{ _('Are you sure') }}" data-target="#delete-profile" data-modal="true">
+      <form method="post" action="{{ url('users.close_account') }}">
         {{ csrf() }}
         <p>
-          <button type="submit" class="btn btn-warning">{{ _('Close account and delete all profile information') }}</button>
+          {{ _('Deleting your account will prevent you from answering or posting questions in Mozilla Support. This action will clear your profile and cannot be restored again.') }}
+        </p>
+        <p>
+          {{ _('Please type in your username to confirm') }}
+        </p>
+        <p>
+          <input id="delete-profile-username-input" name="entered_username" type="text">
+          <input id="delete-profile-username" name="account_username" type="hidden" value="{{ profile.user.username }}">
+        </p>
+        <p>
+          <button type="submit" id="delete-profile-button" class="btn btn-warning" disabled>{{ _('Delete My Account') }}</button>
         </p>
       </form>
+    </div>
     {% endif %}
   </div>
 {% endblock %}

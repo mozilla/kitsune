@@ -7,6 +7,16 @@
     initFolding();
     initAnnouncements();
 
+    $('#delete-profile-username-input').keyup(function(ev) {
+      var username = $('#delete-profile-username').val();
+      var inputUsername = $('#delete-profile-username-input').val();
+      if (inputUsername === username) {
+        $('#delete-profile-button').prop('disabled', false);
+      } else {
+        $('#delete-profile-button').prop('disabled', true)
+      }
+    });
+
     $(window).scroll(_.throttle(function() {
       if ($(window).scrollTop() > $('body > header').outerHeight()) {
         $('body').addClass('scroll-header');
