@@ -51,8 +51,6 @@ def send_welcome_emails():
     for user in User.objects.filter(id__in=answer_recipient_ids):
         messages.append(_make_answer_email(user.profile.locale, user))
 
-    Profile.objects.filter(user__id__in=answer_recipient_ids).update(first_answer_email_sent=True)
-
     # Localization
 
     l10n_filter = Q(created__lte=wait_period)
@@ -74,7 +72,8 @@ def send_welcome_emails():
             from_email=settings.TIDINGS_FROM_ADDRESS,
             to_email=user.email))
 
-    Profile.objects.filter(user__id__in=l10n_recipient_ids).update(first_l10n_email_sent=True)
-
     # Release the Kraken!
     send_messages(messages)
+
+    Profile.objects.filter(user__id__in=answer_recipient_ids).update(first_answer_email_sent=True)
+    Profile.objects.filter(user__id__in=l10n_recipient_ids).update(first_l10n_email_sent=True)

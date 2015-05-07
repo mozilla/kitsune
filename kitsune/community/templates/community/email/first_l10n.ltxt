@@ -1,58 +1,52 @@
 {# This is an email.  Whitespace matters! #}
+{# This does not need translated, since it is being sent to localizers. #}
 {% autoescape false %}
-{% trans %}
-Thank you for your first contribution to the Mozilla support forums! You just
-made somebody's day!
-{% endtrans %}
 
-{% trans %}
-Mozilla support is fully powered by our volunteer community that is helping
-hundreds of users everyday. This community is formed by passionate Firefox and
-Thunderbird users who take some of their spare time to help others. We couldn't
-do it without your passion and enthusiasm. Your contribution, as minor as it
-might seem, has tremendous value. Solving one issue in the support forums can
-help up to 1000 users a day!
-{% endtrans %}
+Thank you for your first contribution to our Knowledge Base in your language!
+You can consider yourself an Open Web rockstar on the rise. :-) Your
+contribution will now undergo review by our awesome community members and
+should be published soon.
+
+SUMO has millions of visitors each month and more than 60% of them view pages
+in languages other than English. You may think that you translated just one
+page, but for all the users who speak your language it makes a *huge* difference.
 
 ---
-{{ _('Tell us about yourself!') }}
+Team up
 
-{% trans %}
-We are always very happy to hear from new people who like helping on the forums
-so If you haven’t met our community yet please take a minute to introduce
-yourself. If you want to stay low-profile, that’s also ok :). You can also find
-us all hanging out on IRC, on the #sumo channel on irc.mozilla.org.
-{% endtrans %}
+It’s always a good idea to get in touch with your Locale Leaders. You can find
+them clicking your language’s name on the locale page, linked below Send them
+a Private Message - they are there to help you help others through your
+localizing skills!
 
-{% trans url='https://support.mozilla.org/en-US/forums/contributors' %}
-The community forum is at {{ url }}.
-{% endtrans %}
+* Locale Page - https://support.mozilla.org/kb/locales
 
----
-{{ _('Learn new things') }}
+If you want to get in touch with other people localizing SUMO in your language
+you can check out the forums or our IRC channels.
 
-{% trans %}
-If you are interested in learning more about how this whole support thing
-works, check out our contributor training. This includes some cool
-troubleshooting info, guidelines, how to questions, and info about where to
-find more help if stuck.
-{% endtrans %}
-https://support.mozilla.org/en-US/kb/introduction-contributor-quality-training
+* L10n forums - https://support.mozilla.org/forums/l10n-forum/711196?last=64679
+* L10n IRC channel - https://www.mibbit.com/?server=irc.mozilla.org&channel=%23sumo-l10ns
+* General SUMO IRC channel - https://www.mibbit.com/?server=irc.mozilla.org&channel=%23sumo
 
 ---
-{{ _('Stay in touch') }}
+Stay in touch
 
-{% trans %}
 Finally, if you want to follow all news related to SUMO, don’t forget about our
-{% endtrans %}
 
-* {{ _('Community forums') }} (https://support.mozilla.org/forums/contributors
-* {{ _('Official blog') }} (http://blog.mozilla.org/sumo/)
-* {{ _('Twitter account') }} (http://twitter.com/sumo_mozilla)
-* {{ _('Weekly meetings') }} (https://wiki.mozilla.org/Support/Weekly_Meetings)
+* {{ _('Community forums') }} - {{ host }}/forums/contributors
+* {{ _('Official blog') }} - http://blog.mozilla.org/sumo/
+* {{ _('Twitter account') }} - http://twitter.com/sumo_mozilla
+* {{ _('Weekly meetings') }} - https://wiki.mozilla.org/Support/Weekly_Meetings
 
-{% trans %}
-Thank you once more. We are looking forward to seeing you more often around
-SUMO! Keep rocking!
-{% endtrans %}
+---
+Keep rocking
+
+So, now that you know how easy it is to improve our community-powered support
+wiki in your language, why not localize another article?
+
+* Localization dashboard: https://support.mozilla.org/localization
+localize another article
+
+Thank you once more. We are looking forward to seeing you more often
+around SUMO!
 {% endautoescape %}

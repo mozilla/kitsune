@@ -1,13 +1,18 @@
 # -*- coding: utf-8 -*-
 """
-Set the `first_{revision,question}_email_sent` flags for existing users, to
-avoid back filling welcome emails to contributors.
+Set the `first_{revision,question}_email_sent` flags for existing users that
+have made the appropriate type of contribution. This is to avoid back filling
+welcome emails to contributors.
 """
 from __future__ import unicode_literals
+
+import sys
 
 from django.conf import settings
 from django.db import migrations
 from django.db.models import F
+
+from kitsune.sumo.migrations import MigrationStatusPrinter
 
 
 def contrib_email_flags_forwards(apps, schema_editor):
@@ -30,6 +35,11 @@ def contrib_email_flags_forwards(apps, schema_editor):
     (Profile.objects
         .filter(user__id__in=answer_contributor_ids)
         .update(first_answer_email_sent=True))
+
+    if '--test' not in sys.argv:
+        status = MigrationStatusPrinter()
+        status.info('set first_l10n_email_sent on {0} profiles.', len(l10n_contributor_ids))
+        status.info('set first_answer_email_sent on {0} profiles.', len(answer_contributor_ids))
 
 
 def contrib_email_flags_backwards(apps, schema_editor):

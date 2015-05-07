@@ -16,8 +16,8 @@ HOME = /tmp
 */10 * * * * {{ cron }} enqueue_lag_monitor_task
 
 # Every hour.
-59 * * * * {{ cron }} escalate_questions
 30 * * * * {{ cron }} send_welcome_emails
+59 * * * * {{ cron }} escalate_questions
 
 # Every 6 hours.
 00 */6 * * * {{ django }} update_product_details -q > /dev/null

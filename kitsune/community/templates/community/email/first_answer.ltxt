@@ -19,13 +19,16 @@ help up to 1000 users a day!
 
 {% trans %}
 We are always very happy to hear from new people who like helping on the forums
-so If you haven’t met our community yet please take a minute to introduce
+so if you haven’t met our community yet please take a minute to introduce
 yourself. If you want to stay low-profile, that’s also ok :). You can also find
 us all hanging out on IRC, on the #sumo channel on irc.mozilla.org.
 {% endtrans %}
 
+* Introductions - {{ host }}/en-US/forums/contributors
+* IRC - https://www.mibbit.com/?server=irc.mozilla.org&channel=#sumo
+
 {% trans url='https://support.mozilla.org/en-US/forums/contributors' %}
-The community forum is at {{ url }}.
+The community forum is at {{ url }} .
 {% endtrans %}
 
 ---
@@ -34,7 +37,7 @@ The community forum is at {{ url }}.
 {% trans %}
 If you are interested in learning more about how this whole support thing
 works, check out our contributor training. This includes some cool
-troubleshooting info, guidelines, how to questions, and info about where to
+troubleshooting info, guidelines, how-to questions, and info about where to
 find more help if stuck.
 {% endtrans %}
 https://support.mozilla.org/en-US/kb/introduction-contributor-quality-training
@@ -46,10 +49,10 @@ https://support.mozilla.org/en-US/kb/introduction-contributor-quality-training
 Finally, if you want to follow all news related to SUMO, don’t forget about our
 {% endtrans %}
 
-* {{ _('Community forums') }} (https://support.mozilla.org/forums/contributors
-* {{ _('Official blog') }} (http://blog.mozilla.org/sumo/)
-* {{ _('Twitter account') }} (http://twitter.com/sumo_mozilla)
-* {{ _('Weekly meetings') }} (https://wiki.mozilla.org/Support/Weekly_Meetings)
+* {{ _('Community forums') }} - {{ host }}/forums/contributors
+* {{ _('Official blog') }} - http://blog.mozilla.org/sumo/
+* {{ _('Twitter account') }} - http://twitter.com/sumo_mozilla
+* {{ _('Weekly meetings') }} - https://wiki.mozilla.org/Support/Weekly_Meetings
 
 {% trans %}
 Thank you once more. We are looking forward to seeing you more often around
