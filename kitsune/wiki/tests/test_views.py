@@ -10,9 +10,9 @@ from nose.tools import eq_
 from pyquery import PyQuery as pq
 
 from kitsune.products.tests import product
-from kitsune.sumo.tests import SkipTest, TestCase, LocalizingClient
-from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.redis_utils import redis_client, RedisError
+from kitsune.sumo.tests import SkipTest, TestCase, LocalizingClient, MobileTestCase
+from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import user, add_permission
 from kitsune.wiki.config import (
     TEMPLATES_CATEGORY, TYPO_SIGNIFICANCE,
@@ -629,6 +629,7 @@ class TestDocumentLocking(TestCase):
 class MinimalViewTests(TestCase):
 
     def setUp(self):
+        super(MinimalViewTests, self).setUp()
         self.doc, _ = doc_rev()
         p = product(save=True)
         self.doc.products.add(p)
@@ -667,3 +668,19 @@ class MinimalViewTests(TestCase):
         # Now do it again. This one should hit the cache.
         res = self.client.get(url)
         eq_(res.get('X-Frame-Options', 'ALLOW').lower(), 'allow')
+
+
+class MobileDocumentTests(MobileTestCase):
+
+    def setUp(self):
+        super(MobileDocumentTests, self).setUp()
+        self.doc, _ = doc_rev()
+        p = product(save=True)
+        self.doc.products.add(p)
+        self.doc.save()
+
+    def test_it_works(self):
+        url = reverse('wiki.document', args=[self.doc.slug], locale='en-US')
+        res = self.client.get(url)
+        eq_(res.status_code, 200)
+        self.assertTemplateUsed(res, 'wiki/mobile/document.html')
