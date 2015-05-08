@@ -32,11 +32,11 @@
       <h2 class="location">
         {% if profile.city and profile.country %}
           {{ _('{city}, {country}')|f(city=profile.city,
-                                      country=profile.country) }}
+                                      country=profile.get_country_display() ) }}
         {% elif profile.city %}
           {{ profile.city }}
         {% elif profile.country %}
-          {{ profile.country }}
+          {{ profile.get_country_display() }}
         {% endif %}
       </h2>
       <div class="pm-or-signout">
