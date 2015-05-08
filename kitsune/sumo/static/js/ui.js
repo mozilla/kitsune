@@ -58,12 +58,14 @@
       var $this = $(this);
       var id = $this.data('close-id');
       if (id) {
-        if (localStorage.getItem(id + '.closed') === 'true') {
-          var $target = $('#' + id);
-          if ($this.data('close-type') === 'remove') {
-            $target.remove();
-          } else {
-            $('#' + id).hide();
+        if (Modernizr.localstorage) {
+          if (localStorage.getItem(id + '.closed') === 'true') {
+            var $target = $('#' + id);
+            if ($this.data('close-type') === 'remove') {
+              $target.remove();
+            } else {
+              $('#' + id).hide();
+            }
           }
         }
       }

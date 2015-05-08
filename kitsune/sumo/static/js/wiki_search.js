@@ -1,4 +1,4 @@
-(function($, _) {
+(function($) {
   var searchTimeout;
   var locale = $('html').attr('lang');
 
@@ -12,6 +12,7 @@
   function createResultsList() {
     $resultsList = $('<div />').addClass('input-dropdown');
     $searchField.after($resultsList);
+    $resultsList.css('width', $searchField.outerWidth());
     $resultsList.show();
 
     $resultsList.on('click', '[data-pk]', function() {
@@ -28,7 +29,7 @@
           }
         };
 
-        $relatedDocsList.append(_.render('wiki-related-doc.html', context));
+        $relatedDocsList.append(k.nunjucksEnv.render('wiki-related-doc.html', context));
       }
     });
   }
@@ -37,22 +38,19 @@
     if (!$resultsList) {
       createResultsList();
     }
-    $resultsList.html(_.render('wiki-search-results.html', data));
+    $resultsList.html(k.nunjucksEnv.render('wiki-search-results.html', data));
   }
 
   function handleSearch() {
     var $this = $(this);
     if ($this.val().length === 0) {
-      if (searchTimeout) {
-        window.clearTimeout(searchTimeout);
+      window.clearTimeout(searchTimeout);
+      if ($resultsList) {
+        $resultsList.html('');
+        $resultsList.hide();
       }
-      $resultsList.html('');
-      $resultsList.hide();
     } else if ($this.val() !== search.lastQuery) {
-      if (searchTimeout) {
-        window.clearTimeout(searchTimeout);
-      }
-
+      window.clearTimeout(searchTimeout);
       searchTimeout = window.setTimeout(function () {
         search.query($this.val(), showResults);
       }, 200);
@@ -75,4 +73,4 @@
       }, 100);
     }
   });
-})(jQuery, k.nunjucksEnv);
+})(jQuery);
