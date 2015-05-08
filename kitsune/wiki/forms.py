@@ -71,6 +71,9 @@ class DocumentForm(forms.ModelForm):
         products_field = self.fields['products']
         products_field.choices = Product.objects.values_list('id', 'title')
 
+        related_documents_field = self.fields['related_documents']
+        related_documents_field.choices = Document.objects.values_list('id', 'title')
+
         # If user hasn't permission to frob is_archived, remove the field. This
         # causes save() to skip it as well.
         if not can_archive:
@@ -181,7 +184,7 @@ class DocumentForm(forms.ModelForm):
         model = Document
         fields = ('title', 'slug', 'category', 'is_localizable', 'products',
                   'topics', 'locale', 'is_archived', 'allow_discussion',
-                  'needs_change', 'needs_change_comment')
+                  'needs_change', 'needs_change_comment', 'related_documents')
 
     def save(self, parent_doc, **kwargs):
         """Persist the Document form, and return the saved Document."""
