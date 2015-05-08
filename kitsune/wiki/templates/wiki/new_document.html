@@ -23,7 +23,6 @@
             {% for field in document_form.visible_fields() if (field.name != 'is_localizable' or settings.WIKI_DEFAULT_LANGUAGE == request.LANGUAGE_CODE) %}
               <li>{{ field|label_with_help }}{{ field|safe }}</li>
             {% endfor %}
-            {% include 'wiki/includes/related_docs_widget.html' %}
           </ul>
           <ul>
             {% for field in revision_form.visible_fields() %}
