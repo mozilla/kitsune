@@ -33,10 +33,10 @@ Stay in touch
 
 Finally, if you want to follow all news related to SUMO, don’t forget about our
 
-* {{ _('Community forums') }} - {{ host }}/forums/contributors
-* {{ _('Official blog') }} - http://blog.mozilla.org/sumo/
-* {{ _('Twitter account') }} - http://twitter.com/sumo_mozilla
-* {{ _('Weekly meetings') }} - https://wiki.mozilla.org/Support/Weekly_Meetings
+* Community forums - {{ host }}/forums/contributors
+* Official blog - http://blog.mozilla.org/sumo/
+* Twitter account - http://twitter.com/sumo_mozilla
+* Weekly meetings - https://wiki.mozilla.org/Support/Weekly_Meetings
 
 ---
 Keep rocking
