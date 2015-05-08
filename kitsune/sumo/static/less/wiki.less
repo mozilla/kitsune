@@ -615,6 +615,48 @@ textarea[name="content"] {
   }
 }
 
+#related-docs-list {
+  margin-top: 10px;
+
+  > li {
+    background: #f0f0f0;
+    border: 1px solid @borderLightGrey;
+    display: block;
+    margin-bottom: 8px;
+    padding: 8px 26px 8px 5px;
+    position: relative;
+    width: auto;
+
+    input {
+      display: none;
+    }
+
+    .close-button {
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: bold;
+      height: 16px;
+      line-height: 16px;
+      margin-top: -8px;
+      position: absolute;
+      right: 5px;
+      text-align: center;
+      top: 50%;
+      width: 16px;
+
+      &:before {
+        content: '\2715';
+      }
+    }
+  }
+
+  > li.empty-message {
+    background: transparent;
+    border: 0;
+    padding: 0;
+  }
+}
+
 /* Translate specific */
 
 .translate {

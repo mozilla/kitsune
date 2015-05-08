@@ -9,6 +9,7 @@ import jingo
 
 from kitsune.products.models import Topic
 from kitsune.wiki.config import SIGNIFICANCES_HELP
+from kitsune.wiki.models import Document
 
 
 class ProductTopicsAndSubtopicsWidget(forms.widgets.SelectMultiple):
@@ -49,6 +50,31 @@ class ProductTopicsAndSubtopicsWidget(forms.widgets.SelectMultiple):
             topic.checked = True
         else:
             topic.checked = False
+
+
+class RelatedDocumentsWidget(forms.widgets.SelectMultiple):
+    """A widget to render the related documents list and search field."""
+
+    def render(self, name, value, attrs=None):
+        if isinstance(value, (int, long)):
+            related_documents = Document.objects.filter(id__in=[value])
+        elif not isinstance(value, basestring) and isinstance(value, collections.Iterable):
+            related_documents = Document.objects.filter(id__in=value)
+        else:
+            related_documents = Document.objects.none()
+
+        # Create a fake request to make jingo happy.
+        req = RequestFactory()
+        req.META = {}
+        req.locale = settings.WIKI_DEFAULT_LANGUAGE
+
+        return jingo.render_to_string(
+            req,
+            'wiki/includes/related_docs_widget.html',
+            {
+                'related_documents': related_documents,
+                'name': name
+            })
 
 
 class RadioInputWithHelpText(forms.widgets.RadioInput):

@@ -127,6 +127,9 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
     # Dictates the order in which articles are displayed.
     display_order = models.IntegerField(default=1, db_index=True)
 
+    # List of related documents
+    related_documents = models.ManyToManyField('self')
+
     # firefox_versions,
     # operating_systems:
     #    defined in the respective classes below. Use them as in

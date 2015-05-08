@@ -13,7 +13,8 @@ from kitsune.wiki.models import (
     Document, Revision, MAX_REVISION_COMMENT_LENGTH)
 from kitsune.wiki.tasks import add_short_links
 from kitsune.wiki.widgets import (
-    RadioFieldRendererWithHelpText, ProductTopicsAndSubtopicsWidget)
+    RadioFieldRendererWithHelpText, ProductTopicsAndSubtopicsWidget,
+    RelatedDocumentsWidget)
 
 
 TITLE_REQUIRED = _lazy(u'Please provide a title.')
@@ -133,6 +134,11 @@ class DocumentForm(forms.ModelForm):
         label=_lazy(u'Topics:'),
         required=False,
         widget=ProductTopicsAndSubtopicsWidget())
+
+    related_documents = forms.MultipleChoiceField(
+        label=_lazy(u'Related documents:'),
+        required=False,
+        widget=RelatedDocumentsWidget())
 
     locale = forms.CharField(widget=forms.HiddenInput())
 

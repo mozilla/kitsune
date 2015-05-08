@@ -441,6 +441,9 @@ PIPELINE_JS = {
             'js/dashboards.js',
             'js/editable.js',
             'js/wiki.metrics.js',
+            'js/templates/wiki-related-doc.js',
+            'js/templates/wiki-search-results.js',
+            'js/wiki_search.js',
         ),
         'output_filename': 'wiki-min.js'
     },

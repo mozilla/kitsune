@@ -1548,6 +1548,27 @@ input[type=button],
   margin-top: 10px;
 }
 
+.input-dropdown {
+  background: #fff;
+  border: 1px solid @borderLightGrey;
+  position: absolute;
+  z-index: 10;
+
+  > ul {
+    > li {
+      cursor: pointer;
+      display: block;
+      padding: 8px 5px;
+      width: auto;
+
+      &:hover {
+        background: @textBlue;
+        color: #fff;
+      }
+    }
+  }
+}
+
 @media only screen and (max-device-width: 800px) {
   .mobile-banner {
     position: relative;
