@@ -203,6 +203,7 @@ def document(request, document_slug, template=None, document=None):
         'product_topics': product_topics,
         'product': product,
         'products': products,
+        'related_products': doc.related_products.exclude(pk=product.pk),
         'ga_push': ga_push,
         'breadcrumb_items': breadcrumbs,
     }
