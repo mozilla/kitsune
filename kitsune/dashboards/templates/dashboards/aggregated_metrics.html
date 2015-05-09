@@ -22,6 +22,17 @@
       </div>
 
       <div id="dashboard-readouts">
+        <section id="percent-localized-top100" data-url="{{ url('api.wikimetric_list')|urlparams(product=product_slug, page_size=1000,) }}">
+          <h2>{{ _('Top 100 Articles: % Localized') }}</h2>
+          <div class="rickshaw">
+            <div class="inline-controls"></div>
+            <div class="graph-container">
+              <div class="slider"></div>
+              <div class="graph"></div>
+            </div>
+          </div>
+        </section>
+
         <section id="percent-localized-top20" data-url="{{ url('api.wikimetric_list')|urlparams(product=product_slug, page_size=1000,) }}">
           <h2>{{ _('Top 20 Articles: % Localized') }}</h2>
           <div class="rickshaw">
