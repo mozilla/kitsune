@@ -90,7 +90,9 @@ def new_message(request, template):
                 _('Invalid username provided. Enter a new username below.'))
             return HttpResponseRedirect(reverse('messages.new'))
 
-    form = MessageForm(request.POST or None, initial={'to': to})
+    message = request.GET.get('message')
+
+    form = MessageForm(request.POST or None, initial={'to': to, 'message': message})
 
     if (request.method == 'POST' and form.is_valid() and
             not is_ratelimited(request, 'primate-message-day', '50/d')):
