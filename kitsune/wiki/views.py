@@ -1319,6 +1319,8 @@ def _document_form_initial(document):
                 document=document).values_list('id', flat=True),
             'products': Product.objects.filter(
                 document=document).values_list('id', flat=True),
+            'related_documents': Document.objects.filter(
+                related_documents=document).values_list('id', flat=True),
             'allow_discussion': document.allow_discussion,
             'needs_change': document.needs_change,
             'needs_change_comment': document.needs_change_comment}

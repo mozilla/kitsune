@@ -313,6 +313,7 @@ def simple_search(request, template=None):
             result['score'] = doc.es_meta.score
             result['explanation'] = escape(format_explanation(
                 doc.es_meta.explanation))
+            result['id'] = doc['id']
             results.append(result)
 
     except ES_EXCEPTIONS as exc:
