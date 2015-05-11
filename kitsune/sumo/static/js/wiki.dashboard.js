@@ -104,6 +104,11 @@ function makeWikiMetricGraphs() {
             name: gettext('Top 20 Articles: % Localized'),
             slug: 'percent_localized_top20',
             func: k.Graph.identity('percent_localized_top20')
+          },
+          {
+            name: gettext('Top 100 Articles: % Localized'),
+            slug: 'percent_localized_top100',
+            func: k.Graph.identity('percent_localized_top100')
           }
         ],
         'mini',
@@ -161,6 +166,10 @@ function makeAggregatedWikiMetricGraphs() {
     {
       selector: '#percent-localized-top20',
       code: 'percent_localized_top20'
+    },
+    {
+      selector: '#percent-localized-top100',
+      code: 'percent_localized_top100'
     },
     {
       selector: '#percent-localized-all',
