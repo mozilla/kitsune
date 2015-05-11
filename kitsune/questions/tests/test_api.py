@@ -717,7 +717,9 @@ class TestQuestionFilter(TestCase):
         eq_(list(res), [q])
 
     def test_it_works_with_users_who_have_gotten_first_contrib_emails(self):
-        # Yes, really.
+        # This flag caused a regression, tracked in bug 1163855.
+        # The error was that the help text on the field was a str instead of a
+        # unicode. Yes, really, that matters apparently.
         u = profile(first_answer_email_sent=True).user
         question(creator=u, save=True)
         url = reverse('question-list')
