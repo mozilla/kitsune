@@ -89,7 +89,7 @@
     if (unsetParams) {
       unsetParams = unsetParams.split('&');
       $(unsetParams).each(function() {
-        search.setParam(this);
+        search.unsetParam(this);
       });
     }
 

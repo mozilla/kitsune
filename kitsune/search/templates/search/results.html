@@ -61,7 +61,7 @@
         {% endif %}
         <ul id="product-filter" class="search-filter sidebar-nav">
           <li {{ product|class_selected(None) }}>
-            <a href="{{ base_product_url }}">
+            <a href="{{ base_product_url|urlparams(all_products=1) }}">
               {{ _('All Products') }}
             </a>
           </li>
