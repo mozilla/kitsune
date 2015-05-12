@@ -79,6 +79,7 @@
 
 {% macro related_products_sidebar(products) -%}
   {% if products %}
+    <h4>{{ _('Related products') }}</h4>
     <ul class="sidebar-nav related-products">
       {% for product in products %}
         <li>

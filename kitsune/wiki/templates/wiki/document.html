@@ -85,9 +85,6 @@
   {{ document_tools(doc, parent, user, 'article', settings, include_showfor=True) }}
   <h4>{{ _('Explore more topics') }}</h4>
   {{ topic_sidebar(product_topics[:10], [], product) }}
-  {% if related_products %}
-    <h4>{{ _('Related products') }}</h4>
-    {{ related_products_sidebar(related_products) }}
-  {% endif %}
+  {{ related_products_sidebar(related_products) }}
   {{ vote_form(document, 'sidebar') }}
 {% endblock %}
