@@ -1,5 +1,6 @@
 from django.conf import settings
 
+from rest_framework import serializers
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
@@ -11,49 +12,75 @@ from kitsune.sumo.api import GenericAPIException
 from kitsune.wiki.models import DocumentMappingType
 
 
+def positive_integer(value):
+    if value < 0:
+        raise serializers.ValidationError('This field must be positive.')
+
+
+def valid_product(value):
+    if not value:
+        return
+
+    if not Product.objects.filter(slug=value).exists():
+        raise serializers.ValidationError(
+            'Could not find product with slug "{0}".'.format(value)
+        )
+
+
+def valid_locale(value):
+    if not value:
+        return
+
+    if value not in settings.SUMO_LANGUAGES:
+        if value in settings.NON_SUPPORTED_LOCALES:
+            fallback = settings.NON_SUPPORTED_LOCALES[value] or settings.WIKI_DEFAULT_LANGUAGE
+            raise serializers.ValidationError(
+                '"{0}" is not supported, but has fallback locale "{1}".'.format(
+                    value, fallback))
+        else:
+            raise serializers.ValidationError(
+                'Could not find locale "{0}".'.format(value)
+            )
+
+
+class SuggestSerializer(serializers.Serializer):
+    q = serializers.CharField(required=True)
+    locale = serializers.CharField(
+        required=False, default=settings.WIKI_DEFAULT_LANGUAGE,
+        validators=[valid_locale])
+    product = serializers.CharField(
+        required=False, default='',
+        validators=[valid_product])
+    max_questions = serializers.IntegerField(
+        required=False, default=10,
+        validators=[positive_integer])
+    max_documents = serializers.IntegerField(
+        required=False, default=10,
+        validators=[positive_integer])
+
+
 @api_view(['GET', 'POST'])
 def suggest(request):
-    text = request.body or request.GET.get('q')
-    locale = request.GET.get('locale', settings.WIKI_DEFAULT_LANGUAGE)
-    product = request.GET.get('product')
-    max_questions = request.GET.get('max_questions', 10)
-    max_documents = request.GET.get('max_documents', 10)
+    if request.DATA and request.GET:
+        raise GenericAPIException(
+            400, 'Put all parameters either in the querystring or the HTTP request body.')
 
-    errors = {}
-    try:
-        max_questions = int(max_questions)
-    except ValueError:
-        errors['max_questions'] = 'This field must be an integer.'
-    try:
-        max_documents = int(max_documents)
-    except ValueError:
-        errors['max_documents'] = 'This field must be an integer.'
-    if text is None:
-        errors['q'] = 'This field is required.'
-    if product is not None and not Product.objects.filter(slug=product).exists():
-        errors['product'] = 'Could not find product with slug "{0}".'.format(product)
-    if locale not in settings.SUMO_LANGUAGES:
-        if locale in settings.NON_SUPPORTED_LOCALES:
-            fallback = settings.NON_SUPPORTED_LOCALES[locale] or settings.WIKI_DEFAULT_LANGUAGE
-            errors['locale'] = (
-                'Locale "{0}" is not supported, but has fallback locale "{1}".'.format(
-                    locale, fallback
-                )
-            )
-        else:
-            errors['locale'] = 'Could not find locale "{0}".'.format(locale)
-
-    if errors:
-        raise GenericAPIException(400, errors)
+    serializer = SuggestSerializer(data=(request.DATA or request.GET))
+    if not serializer.is_valid():
+        raise GenericAPIException(400, serializer.errors)
 
     searcher = (
         es_utils.AnalyzerS()
         .es(urls=settings.ES_URLS)
         .indexes(es_utils.read_index('default')))
 
+    data = serializer.object
+
     return Response({
-        'questions': _question_suggestions(searcher, text, locale, product, max_questions),
-        'documents': _document_suggestions(searcher, text, locale, product, max_documents),
+        'questions': _question_suggestions(
+            searcher, data['q'], data['locale'], data['product'], data['max_questions']),
+        'documents': _document_suggestions(
+            searcher, data['q'], data['locale'], data['product'], data['max_documents']),
     })
 
 
@@ -66,9 +93,9 @@ def _question_suggestions(searcher, text, locale, product, max_results):
         question_is_archived=False,
         question_is_locked=False,
         question_is_solved=True)
-    if product is not None:
+    if product:
         search_filter &= es_utils.F(product=product)
-    if locale is not None:
+    if locale:
         search_filter &= es_utils.F(question_locale=locale)
 
     questions = []
@@ -91,7 +118,7 @@ def _document_suggestions(searcher, text, locale, product, max_results):
         document_locale=locale,
         document_is_archived=False)
 
-    if product is not None:
+    if product:
         search_filter &= es_utils.F(product=product)
 
     documents = []

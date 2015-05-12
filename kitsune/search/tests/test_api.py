@@ -1,3 +1,4 @@
+import json
 from nose.tools import eq_
 
 from rest_framework.test import APIClient
@@ -65,7 +66,7 @@ class SuggestViewTests(ElasticTestCase):
             'q': 'search',
         })
         eq_(res.status_code, 400)
-        eq_(res.data['detail'], {'product': 'Could not find product with slug "nonexistant".'})
+        eq_(res.data['detail'], {'product': [u'Could not find product with slug "nonexistant".']})
 
     def test_invalid_locale(self):
         res = self.client.get(reverse('search.suggest'), {
@@ -73,7 +74,7 @@ class SuggestViewTests(ElasticTestCase):
             'q': 'search',
         })
         eq_(res.status_code, 400)
-        eq_(res.data['detail'], {'locale': 'Could not find locale "bad-medicine".'})
+        eq_(res.data['detail'], {'locale': [u'Could not find locale "bad-medicine".']})
 
     def test_invalid_fallback_locale_none_case(self):
         # Test the locale -> locale case.
@@ -90,8 +91,8 @@ class SuggestViewTests(ElasticTestCase):
         eq_(res.status_code, 400)
         eq_(
             res.data['detail'],
-            {'locale': 'Locale "{0}" is not supported, but has fallback locale "{1}".'.format(
-                locale, fallback)}
+            {'locale': [u'"{0}" is not supported, but has fallback locale "{1}".'.format(
+                locale, fallback)]}
         )
 
     def test_invalid_fallback_locale_non_none_case(self):
@@ -109,8 +110,8 @@ class SuggestViewTests(ElasticTestCase):
         eq_(res.status_code, 400)
         eq_(
             res.data['detail'],
-            {'locale': 'Locale "{0}" is not supported, but has fallback locale "{1}".'.format(
-                locale, settings.WIKI_DEFAULT_LANGUAGE)}
+            {'locale': [u'"{0}" is not supported, but has fallback locale "{1}".'.format(
+                locale, settings.WIKI_DEFAULT_LANGUAGE)]}
         )
 
     def test_invalid_numbers(self):
@@ -121,14 +122,14 @@ class SuggestViewTests(ElasticTestCase):
         })
         eq_(res.status_code, 400)
         eq_(res.data['detail'], {
-            'max_questions': 'This field must be an integer.',
-            'max_documents': 'This field must be an integer.',
+            'max_questions': [u'Enter a whole number.'],
+            'max_documents': [u'Enter a whole number.'],
         })
 
     def test_q_required(self):
         res = self.client.get(reverse('search.suggest'))
         eq_(res.status_code, 400)
-        eq_(res.data['detail'], {'q': 'This field is required.'})
+        eq_(res.data['detail'], {'q': [u'This field is required.']})
 
     def test_it_works(self):
         q1 = self._make_question()
@@ -138,6 +139,38 @@ class SuggestViewTests(ElasticTestCase):
         req = self.client.get(reverse('search.suggest'), {'q': 'emails'})
         eq_([q['id'] for q in req.data['questions']], [q1.id])
         eq_([d['title'] for d in req.data['documents']], [d1.title])
+
+    def test_filters_in_postdata(self):
+        q1 = self._make_question()
+        d1 = self._make_document()
+        self.refresh()
+
+        data = json.dumps({'q': 'emails'})
+        # Note: Have to use .generic() because .get() will convert the
+        # data into querystring params and then it's clownshoes all
+        # the way down.
+        req = self.client.generic(
+            'GET', reverse('search.suggest'), data=data,
+            content_type='application/json')
+        eq_(req.status_code, 200)
+        eq_([q['id'] for q in req.data['questions']], [q1.id])
+        eq_([d['title'] for d in req.data['documents']], [d1.title])
+
+    def test_both_querystring_and_body_raises_error(self):
+        self._make_question()
+        self._make_document()
+        self.refresh()
+
+        data = json.dumps({'q': 'emails'})
+        # Note: Have to use .generic() because .get() will convert the
+        # data into querystring params and then it's clownshoes all
+        # the way down.
+        req = self.client.generic(
+            'GET', reverse('search.suggest') + '?max_documents=3', data=data,
+            content_type='application/json')
+        eq_(req.status_code, 400)
+        eq_(req.data,
+            {u'detail': 'Put all parameters either in the querystring or the HTTP request body.'})
 
     def test_questions_max_results_0(self):
         self._make_question()
