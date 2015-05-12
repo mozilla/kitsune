@@ -70,9 +70,9 @@ class Profile(ModelBase, SearchMixin):
     locale = LocaleField(default=settings.LANGUAGE_CODE,
                          verbose_name=_lazy(u'Preferred language'))
     first_answer_email_sent = models.BooleanField(
-        default=False, help_text=_lazy('Has been sent a first answer contribution email.'))
+        default=False, help_text=_lazy(u'Has been sent a first answer contribution email.'))
     first_l10n_email_sent = models.BooleanField(
-        default=False, help_text=_lazy('Has been sent a first revision contribution email.'))
+        default=False, help_text=_lazy(u'Has been sent a first revision contribution email.'))
 
     class Meta(object):
         permissions = (('view_karma_points', 'Can view karma points'),
