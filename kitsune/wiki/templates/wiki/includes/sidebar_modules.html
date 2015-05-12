@@ -76,3 +76,21 @@
     </div>
   {% endif %}
 {%- endmacro %}
+
+{% macro related_products_sidebar(products) -%}
+  {% if products %}
+    <h4>{{ _('Related products') }}</h4>
+    <ul class="sidebar-nav related-products">
+      {% for product in products %}
+        <li>
+          <a href="{{ url('products.product', product) }}">
+            <span>
+              <img src="{{ STATIC_URL }}img/blank.png" style="background-image: url('{% if product.image %}{{ product.image.url }}{% else %}{{ STATIC_URL }}img/product_placeholder.png{% endif %}');" >
+              {{ product.title }}
+            </span>
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+{%- endmacro %}

@@ -329,6 +329,12 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         return settings.LANGUAGES_DICT[self.locale.lower()]
 
     @property
+    def related_products(self):
+        related_pks = [d.pk for d in self.related_documents.all()]
+        related_pks.append(self.pk)
+        return Product.objects.filter(document__in=related_pks).distinct()
+
+    @property
     def is_hidden_from_search_engines(self):
         return (self.is_template or self.is_archived or
                 self.category in (ADMINISTRATION_CATEGORY,

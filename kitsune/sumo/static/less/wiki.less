@@ -61,6 +61,34 @@ article {
   }
 }
 
+.sidebar-nav {
+  &.related-products {
+    > li {
+      > a {
+        > span {
+          box-sizing: border-box;
+          display: block;
+          min-height: 24px;
+          padding-left: 34px;
+          padding-top: 3px;
+          position: relative;
+
+          img {
+            background-repeat: no-repeat;
+            background-size: cover;
+            height: 24px;
+            left: 0;
+            margin-top: -12px;
+            position: absolute;
+            top: 50%;
+            width: 24px;
+          }
+        }
+      }
+    }
+  }
+}
+
 #os_input,
 #browser_input {
   cursor: pointer;
@@ -959,6 +987,13 @@ div.video .kbox-container {
 
 /* Unhelpful vote survey */
 aside {
+  h4 {
+    margin-bottom: 6px;
+    margin-top: 24px;
+    font-size: 12px;
+    text-transform: uppercase;
+  }
+
   .document-vote {
     span {
       display: block;
