@@ -28,13 +28,13 @@
     {% endif %}
     <ul id="product-filter" class="search-filter sidebar-nav">
       <li {{ product|class_selected(null)|safe }}>
-        <a href="#" data-instant-search-unset-params="product" data-instant-search="link" data-href="{{ base_product_url }}">
+        <a href="#" data-instant-search-unset-params="product" data-instant-search-set-params="all_products=1" data-instant-search="link" data-href="{{ base_product_url|urlparams(all_products=1) }}">
           {{ 'All Products'|gettext }}
         </a>
       </li>
       {% for p in products %}
         <li {{ product|class_selected(p.slug)|safe }}>
-          <a href="#" data-instant-search-set-params="product={{ p.slug }}" data-instant-search="link" data-href="{{ base_product_url|urlparams(product=p.slug) }}">
+          <a href="#" data-instant-search-set-params="product={{ p.slug }}" data-instant-search-unset-params="all_products" data-instant-search="link" data-href="{{ base_product_url|urlparams(product=p.slug) }}">
             {{ p.title }}
           </a>
         </li>
