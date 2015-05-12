@@ -69,7 +69,18 @@
       </div>
 
       {{ contributor_list(contributors) }}
-   </article>
+    </article>
+
+    {% if document.related_documents.count() %}
+      <div id="related-documents">
+        <h4>{{ _('See also:') }}</h4>
+        <ul>
+          {% for related in document.related_documents.all() %}
+            <li><a href="{{ url('wiki.document', related.slug) }}">{{ related.title }}</a></li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
   </div>
 {% endblock %}
 
