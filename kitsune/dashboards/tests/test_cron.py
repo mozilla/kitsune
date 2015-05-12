@@ -10,7 +10,7 @@ from kitsune.dashboards.cron import (
     _get_current_unhelpful, update_l10n_coverage_metrics,
     update_l10n_contributor_metrics)
 from kitsune.dashboards.models import (
-    WikiMetric, L10N_TOP20_CODE, L10N_ALL_CODE)
+    WikiMetric, L10N_TOP20_CODE, L10N_TOP100_CODE, L10N_ALL_CODE)
 from kitsune.products.tests import product
 from kitsune.sumo.redis_utils import redis_client, RedisError
 from kitsune.sumo.tests import SkipTest, TestCase
@@ -278,46 +278,62 @@ class L10nMetricsTests(TestCase):
         update_l10n_coverage_metrics()
 
         # Verify es metrics.
-        eq_(4, WikiMetric.objects.filter(locale='es').count())
+        eq_(6, WikiMetric.objects.filter(locale='es').count())
         eq_(5.0, WikiMetric.objects.get(
             locale='es', product=p, code=L10N_TOP20_CODE).value)
+        eq_(5.0, WikiMetric.objects.get(
+            locale='es', product=None, code=L10N_TOP100_CODE).value)
         eq_(5.0, WikiMetric.objects.get(
             locale='es', product=p, code=L10N_ALL_CODE).value)
         eq_(5.0, WikiMetric.objects.get(
             locale='es', product=None, code=L10N_TOP20_CODE).value)
         eq_(5.0, WikiMetric.objects.get(
+            locale='es', product=None, code=L10N_TOP100_CODE).value)
+        eq_(5.0, WikiMetric.objects.get(
             locale='es', product=None, code=L10N_ALL_CODE).value)
 
         # Verify de metrics.
-        eq_(4, WikiMetric.objects.filter(locale='de').count())
+        eq_(6, WikiMetric.objects.filter(locale='de').count())
         eq_(10.0, WikiMetric.objects.get(
             locale='de', product=p, code=L10N_TOP20_CODE).value)
+        eq_(10.0, WikiMetric.objects.get(
+            locale='de', product=None, code=L10N_TOP100_CODE).value)
         eq_(10.0, WikiMetric.objects.get(
             locale='de', product=p, code=L10N_ALL_CODE).value)
         eq_(10.0, WikiMetric.objects.get(
             locale='de', product=None, code=L10N_TOP20_CODE).value)
         eq_(10.0, WikiMetric.objects.get(
+            locale='de', product=None, code=L10N_TOP100_CODE).value)
+        eq_(10.0, WikiMetric.objects.get(
             locale='de', product=None, code=L10N_ALL_CODE).value)
 
         # Verify ru metrics.
-        eq_(4, WikiMetric.objects.filter(locale='ru').count())
+        eq_(6, WikiMetric.objects.filter(locale='ru').count())
         eq_(100.0, WikiMetric.objects.get(
             locale='ru', product=p, code=L10N_TOP20_CODE).value)
+        eq_(100.0, WikiMetric.objects.get(
+            locale='ru', product=None, code=L10N_TOP100_CODE).value)
         eq_(100.0, WikiMetric.objects.get(
             locale='ru', product=p, code=L10N_ALL_CODE).value)
         eq_(100.0, WikiMetric.objects.get(
             locale='ru', product=None, code=L10N_TOP20_CODE).value)
         eq_(100.0, WikiMetric.objects.get(
+            locale='ru', product=None, code=L10N_TOP100_CODE).value)
+        eq_(100.0, WikiMetric.objects.get(
             locale='ru', product=None, code=L10N_ALL_CODE).value)
 
         # Verify it metrics.
-        eq_(4, WikiMetric.objects.filter(locale='it').count())
+        eq_(6, WikiMetric.objects.filter(locale='it').count())
         eq_(0.0, WikiMetric.objects.get(
             locale='it', product=p, code=L10N_TOP20_CODE).value)
+        eq_(0.0, WikiMetric.objects.get(
+            locale='it', product=None, code=L10N_TOP100_CODE).value)
         eq_(0.0, WikiMetric.objects.get(
             locale='it', product=p, code=L10N_ALL_CODE).value)
         eq_(0.0, WikiMetric.objects.get(
             locale='it', product=None, code=L10N_TOP20_CODE).value)
+        eq_(0.0, WikiMetric.objects.get(
+            locale='it', product=None, code=L10N_TOP100_CODE).value)
         eq_(0.0, WikiMetric.objects.get(
             locale='it', product=None, code=L10N_ALL_CODE).value)
 
