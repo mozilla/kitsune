@@ -1,5 +1,4 @@
-/* globals k:false */
-/**
+/*
  * wiki.js
  * Scripts for the wiki app.
  */
@@ -737,20 +736,9 @@
 
   $(document).ready(init);
 
-  /**
-   * Collapse sections in a wiki article.
-   *
-   * Only collapses articles with a table of contents (TOC).
-   *
-   * @returns {boolean} Whether anything was collapsed.
-   */
   window.k.makeWikiCollapsable = function() {
-    var $toc = $('#toc');
-    if ($toc.length === 0) {
-      return false;
-    }
     // Hide the TOC
-    $toc.hide();
+    $('#toc').hide();
 
     // Make sections collapsable
     $('#doc-content h1').each(function() {
@@ -782,10 +770,11 @@
     $('#doc-content').on('click', 'h1', function() {
       $(this).closest('.wiki-section').toggleClass('collapsed');
     });
-    return true;
   }
 
-  k.makeWikiCollapsable();
+  if ($('#doc-content').is('.collapsible')) {
+    k.makeWikiCollapsable();
+  }
 
   function initExitSupportFor() {
     $('#support-for-exit').live('click', function() {
@@ -794,3 +783,4 @@
   }
 
 }(jQuery));
+

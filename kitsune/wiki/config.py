@@ -3,6 +3,32 @@ from tower import ugettext_lazy as _lazy
 TEMPLATE_TITLE_PREFIX = 'Template:'
 DOCUMENTS_PER_PAGE = 100
 
+COLLAPSIBLE_DOCUMENTS = {
+    u'en-US': [
+        u'firefox-os-support-forum-contributors-training',
+        u'firefox-android-support-forum-contributors',
+        u'firefox-support-forum-contributors',
+        u'introduction-contributor-quality-training',
+        u'angry-user-training',
+        u'evaluating-solution-forum',
+        u'how-answer-escalated-questions',
+        u'navigate-support-forum-platform',
+        u'how-stop-firefox-making-automatic-connections',
+    ],
+    u'cs': [
+        u'jak-firefoxu-zabranit-v-automatickem-navazovani-sp',
+    ],
+    u'de': [
+        u'Firefox-baut-unaufgeforderte-Verbindungen-auf',
+    ],
+    u'it': [
+        u'firefox-connessioni-non-richieste',
+    ],
+    u'pt-BR': [
+        u'como-fazer-o-firefox-parar-de-se-conectar-automati',
+    ]
+}
+
 # Wiki configuration.
 
 # Defines products supported, categories, edit significances and
