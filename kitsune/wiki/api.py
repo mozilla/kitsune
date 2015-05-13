@@ -19,10 +19,13 @@ class DocumentShortSerializer(serializers.ModelSerializer):
 
 
 class DocumentDetailSerializer(DocumentShortSerializer):
+    summary = serializers.CharField(source='summary', read_only=True)
+    url = serializers.CharField(source='get_absolute_url', read_only=True)
+
     class Meta:
         model = Document
-        fields = ('id', 'title', 'slug', 'locale', 'products', 'topics',
-                  'html')
+        fields = ('id', 'title', 'slug', 'url', 'locale', 'products', 'topics',
+                  'summary', 'html')
 
 
 class DocumentList(LocaleNegotiationMixin, generics.ListAPIView):
