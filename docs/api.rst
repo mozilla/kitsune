@@ -80,10 +80,15 @@ With an HTTP 200, you'll get back a set of results in JSON.
    {
        "documents": [
            {
+               "id": ...                  # id of kb article
                "title": ...               # title of kb article
                "url": ...                 # url of kb article
                "slug": ...                # slug of kb article
+               "locale": ...              # locale of the article
+               "products": ...            # list of products for the article
+               "topics": ...              # list of topics for the article
                "summary": ...             # paragraph summary of kb article (plaintext)
+               "html": ...                # html of the article
            }
            ...
        ],

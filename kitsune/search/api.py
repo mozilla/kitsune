@@ -9,7 +9,8 @@ from kitsune.questions.models import Question, QuestionMappingType
 from kitsune.questions.api import QuestionSerializer
 from kitsune.search import es_utils
 from kitsune.sumo.api import GenericAPIException
-from kitsune.wiki.models import DocumentMappingType
+from kitsune.wiki.api import DocumentDetailSerializer
+from kitsune.wiki.models import Document, DocumentMappingType
 
 
 def positive_integer(value):
@@ -101,9 +102,11 @@ def _question_suggestions(searcher, text, locale, product, max_results):
     questions = []
     searcher = _query(searcher, QuestionMappingType, search_filter, text, locale)
 
-    for result in searcher[:max_results]:
-        q = Question.objects.get(id=result['id'])
-        questions.append(QuestionSerializer(instance=q).data)
+    question_ids = [result['id'] for result in searcher]
+    questions = [
+        QuestionSerializer(instance=q).data
+        for q in Question.objects.filter(id__in=question_ids)
+    ]
 
     return questions
 
@@ -124,13 +127,12 @@ def _document_suggestions(searcher, text, locale, product, max_results):
     documents = []
     searcher = _query(searcher, DocumentMappingType, search_filter, text, locale)
 
-    for result in searcher[:max_results]:
-        documents.append({
-            'title': result['document_title'],
-            'slug': result['document_slug'],
-            'summary': result['document_summary'],
-            'url': result['url'],
-        })
+    doc_ids = [result['id'] for result in searcher]
+
+    documents = [
+        DocumentDetailSerializer(instance=doc).data
+        for doc in Document.objects.filter(id__in=doc_ids)
+    ]
 
     return documents
 

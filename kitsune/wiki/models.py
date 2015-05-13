@@ -325,6 +325,12 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         return self.current_revision.content_parsed
 
     @property
+    def summary(self):
+        if not self.current_revision:
+            return ''
+        return self.current_revision.summary
+
+    @property
     def language(self):
         return settings.LANGUAGES_DICT[self.locale.lower()]
 
@@ -720,8 +726,8 @@ class DocumentMappingType(SearchMappingType):
         d['document_is_archived'] = obj.is_archived
         d['document_display_order'] = obj.original.display_order
 
+        d['document_summary'] = obj.summary
         if obj.current_revision is not None:
-            d['document_summary'] = obj.current_revision.summary
             d['document_keywords'] = obj.current_revision.keywords
             d['updated'] = int(time.mktime(
                 obj.current_revision.created.timetuple()))
