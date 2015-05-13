@@ -20,6 +20,15 @@
         <p>
           {{ _('This translation was already reviewed by {user} on {date}.')|fe(user=revision.reviewer, date=datetimeformat(revision.reviewed, format='longdatetime')) }}
         </p>
+      {% elif current_revision_id > revision.id %}
+        <p>
+          {{ _('A newer version has already been reviewed.') }}
+          {% if latest_unapproved_revision_id > current_revision_id %}
+            <br>
+            {{ _('But there is another latest version which is waiting for review.') }}
+            <a href="{{ url('wiki.review_revision', document.slug, latest_unapproved_revision_id) }}">{{ _('Please review the latest version.') }}</a>
+          {% endif %}
+        </p>
       {% elif document.current_revision %}
         {# If there is a parent revision to diff, and this translation is not already based on it. #}
         {% if parent_revision and document.current_revision.based_on and
