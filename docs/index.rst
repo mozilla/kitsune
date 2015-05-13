@@ -43,6 +43,7 @@ Part 3: SUMO
 .. toctree::
    :maxdepth: 2
 
+   api
    bots
    deployments
    sop
