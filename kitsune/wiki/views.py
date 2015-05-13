@@ -32,7 +32,8 @@ from kitsune.sumo.redis_utils import redis_client, RedisError
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import paginate, smart_int, get_next_url, truncated_json_dumps
 from kitsune.wiki.config import (
-    CATEGORIES, MAJOR_SIGNIFICANCE, TEMPLATES_CATEGORY, DOCUMENTS_PER_PAGE)
+    CATEGORIES, MAJOR_SIGNIFICANCE, TEMPLATES_CATEGORY, DOCUMENTS_PER_PAGE,
+    COLLAPSIBLE_DOCUMENTS)
 from kitsune.wiki.events import (
     EditDocumentEvent, ReviewableRevisionInLocaleEvent,
     ApproveRevisionInLocaleEvent, ApprovedOrReadyUnion,
@@ -164,6 +165,11 @@ def document(request, document_slug, template=None, document=None):
         ga_push.append(['_trackEvent', 'Incomplete L10n', 'Not Updated',
                         '%s/%s' % (doc.parent.slug, request.LANGUAGE_CODE)])
 
+    if document_slug in COLLAPSIBLE_DOCUMENTS.get(request.LANGUAGE_CODE, []):
+        document_css_class = 'collapsible'
+    else:
+        document_css_class = ''
+
     if request.MOBILE and 'minimal' in request.GET:
         template = '%sdocument-minimal.html' % template
         minimal = True
@@ -206,6 +212,7 @@ def document(request, document_slug, template=None, document=None):
         'related_products': doc.related_products.exclude(pk=product.pk),
         'ga_push': ga_push,
         'breadcrumb_items': breadcrumbs,
+        'document_css_class': document_css_class,
     }
 
     response = render(request, template, data)
