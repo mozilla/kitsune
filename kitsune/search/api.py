@@ -102,7 +102,7 @@ def _question_suggestions(searcher, text, locale, product, max_results):
     questions = []
     searcher = _query(searcher, QuestionMappingType, search_filter, text, locale)
 
-    question_ids = [result['id'] for result in searcher]
+    question_ids = [result['id'] for result in searcher[:max_results]]
     questions = [
         QuestionSerializer(instance=q).data
         for q in Question.objects.filter(id__in=question_ids)
@@ -127,7 +127,7 @@ def _document_suggestions(searcher, text, locale, product, max_results):
     documents = []
     searcher = _query(searcher, DocumentMappingType, search_filter, text, locale)
 
-    doc_ids = [result['id'] for result in searcher]
+    doc_ids = [result['id'] for result in searcher[:max_results]]
 
     documents = [
         DocumentDetailSerializer(instance=doc).data
