@@ -1,6 +1,7 @@
 import json
-from nose.tools import eq_
+import time
 
+from nose.tools import eq_
 from rest_framework.test import APIClient
 
 from django.conf import settings
@@ -17,7 +18,7 @@ class SuggestViewTests(ElasticTestCase):
 
     def _make_question(self, solved=True, **kwargs):
         defaults = {
-            'title': 'Login to website comments disabled',
+            'title': 'Login to website comments disabled ' + str(time.time()),
             'content': """
                 readersupportednews.org, sends me emails with a list of
                 articles to read.
@@ -49,7 +50,7 @@ class SuggestViewTests(ElasticTestCase):
 
     def _make_document(self, **kwargs):
         defaults = {
-            'title': 'How to make a pie from scratch with email',
+            'title': 'How to make a pie from scratch with email ' + str(time.time()),
             'category': 10,
             'save': True
         }
@@ -184,6 +185,22 @@ class SuggestViewTests(ElasticTestCase):
         req = self.client.get(reverse('search.suggest'), {'q': 'emails', 'max_questions': '0'})
         eq_(len(req.data['questions']), 0)
 
+    def test_questions_max_results_non_0(self):
+        self._make_question()
+        self._make_question()
+        self._make_question()
+        self._make_question()
+        self._make_question()
+        self.refresh()
+
+        # Make sure something matches the query first.
+        req = self.client.get(reverse('search.suggest'), {'q': 'emails'})
+        eq_(len(req.data['questions']), 5)
+
+        # Make sure we get only 3.
+        req = self.client.get(reverse('search.suggest'), {'q': 'emails', 'max_questions': '3'})
+        eq_(len(req.data['questions']), 3)
+
     def test_documents_max_results_0(self):
         self._make_document()
         self.refresh()
@@ -195,6 +212,22 @@ class SuggestViewTests(ElasticTestCase):
         # If we specify "don't give me any" make sure we don't get any.
         req = self.client.get(reverse('search.suggest'), {'q': 'emails', 'max_documents': '0'})
         eq_(len(req.data['documents']), 0)
+
+    def test_documents_max_results_non_0(self):
+        self._make_document()
+        self._make_document()
+        self._make_document()
+        self._make_document()
+        self._make_document()
+        self.refresh()
+
+        # Make sure something matches the query first.
+        req = self.client.get(reverse('search.suggest'), {'q': 'emails'})
+        eq_(len(req.data['documents']), 5)
+
+        # Make sure we get only 3.
+        req = self.client.get(reverse('search.suggest'), {'q': 'emails', 'max_documents': '3'})
+        eq_(len(req.data['documents']), 3)
 
     def test_product_filter_works(self):
         p1 = product(save=True)
