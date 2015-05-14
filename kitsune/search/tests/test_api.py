@@ -197,7 +197,7 @@ class SuggestViewTests(ElasticTestCase):
         req = self.client.get(reverse('search.suggest'), {'q': 'emails'})
         eq_(len(req.data['questions']), 5)
 
-        # If we specify "don't give me any" make sure we don't get any.
+        # Make sure we get only 3.
         req = self.client.get(reverse('search.suggest'), {'q': 'emails', 'max_questions': '3'})
         eq_(len(req.data['questions']), 3)
 
@@ -225,7 +225,7 @@ class SuggestViewTests(ElasticTestCase):
         req = self.client.get(reverse('search.suggest'), {'q': 'emails'})
         eq_(len(req.data['documents']), 5)
 
-        # If we specify "don't give me any" make sure we don't get any.
+        # Make sure we get only 3.
         req = self.client.get(reverse('search.suggest'), {'q': 'emails', 'max_documents': '3'})
         eq_(len(req.data['documents']), 3)
 
