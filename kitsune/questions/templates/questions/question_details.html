@@ -30,7 +30,7 @@
 {% block above_main %}
   <h1>{{ _('Support Forum') }}</h1>
 
-  {% if question.is_taken %}
+  {% if question.is_taken and question.taken_by != request.user %}
     <div class="taken-notice">
       {{ _('{user} is currently working on this problem.')|f(user=question.taken_by) }}
       <a href="#question-reply">{{ _('Post a reply') }}</a> |
