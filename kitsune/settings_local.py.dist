@@ -27,7 +27,7 @@ ES_LIVE_INDEXING = False
 # Basic cache configuration for development.
 CACHES = {
     'default': {
-        'BACKEND': 'caching.backends.memcached.CacheClass',
+        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
         'LOCATION': 'localhost:11211',
         'PREFIX': 'sumo:',
     }
