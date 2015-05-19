@@ -61,7 +61,7 @@ SLAVE_DATABASES = []
 # Cache Settings
 # CACHES = {
 #     'default': {
-#         'BACKEND': 'caching.backends.memcached.MemcachedCache',
+#         'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
 #         'LOCATION': ['localhost:11211'],
 #         'PREFIX': 'sumo:',
 #     },
@@ -584,9 +584,11 @@ TEST_RUNNER = 'kitsune.sumo.tests.TestSuiteRunner'
 
 def JINJA_CONFIG():
     from django.conf import settings
-    config = {'extensions': ['tower.template.i18n', 'caching.ext.cache',
-                             'jinja2.ext.autoescape', 'jinja2.ext.with_',
-                             'jinja2.ext.do', 'pipeline.jinja2.ext.PipelineExtension'],
+    config = {'extensions': ['tower.template.i18n',
+                             'jinja2.ext.autoescape',
+                             'jinja2.ext.with_',
+                             'jinja2.ext.do',
+                             'pipeline.jinja2.ext.PipelineExtension'],
               'finalize': lambda x: x if x is not None else ''}
 
     return config

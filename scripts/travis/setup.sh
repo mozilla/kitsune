@@ -17,7 +17,6 @@ DATABASES['default']['HOST'] = 'localhost'
 DATABASES['default']['USER'] = 'travis'
 DATABASES['default']['CONN_MAX_AGE'] = 600
 CELERY_ALWAYS_EAGER = True
-CACHE_BACKEND = 'caching.backends.locmem://'
 ES_INDEX_PREFIX = 'sumo'
 ES_URLS = ['http://localhost:9200']
 INSTALLED_APPS += ('django_qunit',)
