@@ -24,10 +24,10 @@ yourself. If you want to stay low-profile, that’s also ok :). You can also fin
 us all hanging out on IRC, on the #sumo channel on irc.mozilla.org.
 {% endtrans %}
 
-* Introductions - {{ host }}/en-US/forums/contributors
+* Introductions - https://{{ host }}/forums/contributors
 * IRC - https://www.mibbit.com/?server=irc.mozilla.org&channel=#sumo
 
-{% trans url='https://support.mozilla.org/en-US/forums/contributors' %}
+{% trans url='https://{{ host }}/forums/contributors' %}
 The community forum is at {{ url }} .
 {% endtrans %}
 
@@ -40,7 +40,7 @@ works, check out our contributor training. This includes some cool
 troubleshooting info, guidelines, how-to questions, and info about where to
 find more help if stuck.
 {% endtrans %}
-https://support.mozilla.org/en-US/kb/introduction-contributor-quality-training
+https://{{ host }}/kb/introduction-contributor-quality-training
 
 ---
 {{ _('Stay in touch') }}
@@ -49,7 +49,7 @@ https://support.mozilla.org/en-US/kb/introduction-contributor-quality-training
 Finally, if you want to follow all news related to SUMO, don’t forget about our
 {% endtrans %}
 
-* {{ _('Community forums') }} - {{ host }}/forums/contributors
+* {{ _('Community forums') }} - https://{{ host }}/forums/contributors
 * {{ _('Official blog') }} - http://blog.mozilla.org/sumo/
 * {{ _('Twitter account') }} - http://twitter.com/sumo_mozilla
 * {{ _('Weekly meetings') }} - https://wiki.mozilla.org/Support/Weekly_Meetings
