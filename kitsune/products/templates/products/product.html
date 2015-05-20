@@ -5,7 +5,7 @@
 {% set styles = ('products',) %}
 {% set scripts = ('products',) %}
 {% set classes = 'product-landing' %}
-
+{% set search_params = {'product': product.slug} %}
 
 {% if product.slug == 'mobile' %}
   {# Firefox for Android has a special separate survey. #}
