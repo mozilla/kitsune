@@ -1651,6 +1651,68 @@ class ReviewRevisionTests(TestCaseBase):
         assert message1 in doc_content
         assert message2 in doc_content
 
+    def test_revision_comments(self):
+        """Verify that reviewing revision comment and past revision comments are showing"""
+        d = self.document
+        # Create 7 Revisions in the Document
+        revs = [revision(document=d, is_approved=False, comment="test-{0}".format(i), save=True)
+                for i in range(7)]
+        # Create a user with Review permission and login with the user
+        u = user(save=True)
+        add_permission(u, Revision, 'review_revision')
+        self.client.login(username=u.username, password='testpass')
+
+        # Review the latest revision and Get the data of the document
+        response = get(self.client, 'wiki.review_revision',
+                       args=[d.slug, revs[6].id])
+        eq_(200, response.status_code)
+
+        # Check there is comment of the revision that is being reviewed
+        doc = pq(response.content)
+        doc_content = doc('#review-revision').text()
+        assert revs[6].comment in doc_content
+
+        # Check that the Plural message is shown when there are multiple revision comments
+        subject = doc('.unreviewed-revision').text()
+        message = 'Unreviewed Revisions:'
+        assert message in subject
+
+        # Check whether past revisions Comments are there
+        # As the comments are reversed means that the latest ones comment will be at 1st
+        # the 2nd latest ones comment will be at second and like that.
+        # So the revs[5] comment will be at first and revs[1] comment will be at last
+        revision_comment = doc('ul.revision-comment li')
+        assert revs[5].comment in revision_comment[0].text_content()
+        assert revs[4].comment in revision_comment[1].text_content()
+        assert revs[3].comment in revision_comment[2].text_content()
+        assert revs[2].comment in revision_comment[3].text_content()
+        assert revs[1].comment in revision_comment[4].text_content()
+        # Verify that there is highest 5 revision comments. The 6th revision comment is not there
+        assert revs[0].comment not in revision_comment.text()
+
+        # Check that there is no comment of the revisions which is older than Current Revision
+        # Also there is no comment of Current Revision
+        revs[4].reviewed = datetime.now()
+        revs[4].is_approved = True
+        revs[4].save()
+        d.current_revision = revs[4]
+        d.save()
+        response = get(self.client, 'wiki.review_revision',
+                       args=[d.slug, revs[6].id])
+        doc = pq(response.content)
+        revision_comment = doc('ul.revision-comment li').text()
+        assert revs[5].comment in revision_comment
+        assert revs[4].comment not in revision_comment
+        assert revs[3].comment not in revision_comment
+        assert revs[2].comment not in revision_comment
+        assert revs[1].comment not in revision_comment
+        assert revs[0].comment not in revision_comment
+
+        # Check that the Singular message is shown when there is single revision comment
+        subject = doc('.unreviewed-revision').text()
+        message = 'Unreviewed Revision:'
+        assert message in subject
+
 
 class CompareRevisionTests(TestCaseBase):
     """Tests for Review Revisions"""
