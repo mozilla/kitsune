@@ -23,9 +23,9 @@ def pq_img(p, text, selector='img', locale=settings.WIKI_DEFAULT_LANGUAGE):
     return doc(selector)
 
 
-def doc_rev_parser(content, title='Installing Firefox', parser_cls=WikiParser):
+def doc_rev_parser(content, title='Installing Firefox', parser_cls=WikiParser, **kwargs):
     p = parser_cls()
-    d = document(title=title)
+    d = document(title=title, **kwargs)
     d.save()
     r = revision(document=d, content=content, is_approved=True)
     r.save()

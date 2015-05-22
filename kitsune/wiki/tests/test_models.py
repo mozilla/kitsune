@@ -14,11 +14,11 @@ from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.wiki.config import (
     REDIRECT_SLUG, REDIRECT_TITLE, REDIRECT_HTML, MAJOR_SIGNIFICANCE,
-    CATEGORIES, TYPO_SIGNIFICANCE, REDIRECT_CONTENT)
+    CATEGORIES, TYPO_SIGNIFICANCE, REDIRECT_CONTENT, TEMPLATES_CATEGORY)
 from kitsune.wiki.models import Document
 from kitsune.wiki.parser import wiki_to_html
 from kitsune.wiki.tests import (
-    document, revision, doc_rev, translated_revision)
+    document, revision, doc_rev, translated_revision, DocumentFactory, TemplateDocumentFactory)
 
 
 def _objects_eq(manager, list_):
@@ -39,17 +39,18 @@ class DocumentTests(TestCase):
 
     def test_document_is_template(self):
         """is_template stays in sync with the title"""
-        d = document(title='test')
-        d.save()
+        d = DocumentFactory(title='test')
 
         assert not d.is_template
 
         d.title = 'Template:test'
+        d.category = TEMPLATES_CATEGORY
         d.save()
 
         assert d.is_template
 
         d.title = 'Back to document'
+        d.category = CATEGORIES[0][0]
         d.save()
 
         assert not d.is_template
@@ -312,6 +313,71 @@ class DocumentTests(TestCase):
         # Localized document inherits parent's topics.
         document(parent=en_us, save=True)
         eq_(2, len(en_us.get_products()))
+
+    def test_template_title_and_category_to_template(self):
+        d = DocumentFactory()
+
+        # First, try and change just the title. It should fail.
+        d.title = 'Template:' + d.title
+        self.assertRaises(ValidationError, d.save)
+
+        # Next, try and change just the category. It should also fail.
+        d = Document.objects.get(id=d.id)  # reset
+        d.category = TEMPLATES_CATEGORY
+        self.assertRaises(ValidationError, d.save)
+
+        # Finally, try and change both title and category. It should work.
+        d = Document.objects.get(id=d.id)  # reset
+        d.title = 'Template:' + d.title
+        d.category = TEMPLATES_CATEGORY
+        d.save()
+
+    def test_template_title_and_category_from_template(self):
+        d = TemplateDocumentFactory()
+
+        # First, try and change just the title. It should fail.
+        d.title = 'Not A Template'
+        self.assertRaises(ValidationError, d.save)
+
+        # Next, try and change just the category. It should also fail.
+        d = Document.objects.get(id=d.id)  # reset
+        d.category = CATEGORIES[0][0]
+        self.assertRaises(ValidationError, d.save)
+
+        # Finally, try and change both title and category. It should work.
+        d = Document.objects.get(id=d.id)  # reset
+        d.title = 'Not A Template'
+        d.category = CATEGORIES[0][0]
+        d.save()
+
+    def test_template_title_and_category_localized(self):
+        # Because localized articles are required to match templates with their
+        # parents, this deserves extra testing.
+
+        d_en = DocumentFactory()
+        d_fr = DocumentFactory(parent=d_en, locale='fr')
+
+        # Just changing the title isn't enough
+        d_fr.title = 'Template:' + d_fr.title
+        self.assertRaises(ValidationError, d_fr.save)
+
+        # Trying to change the category won't work, since `d_en` will force the
+        # old category.
+        d_fr = Document.objects.get(id=d_fr.id)  # reset
+        d_fr.title = 'Template:' + d_fr.title
+        d_fr.category = TEMPLATES_CATEGORY
+        self.assertRaises(ValidationError, d_fr.save)
+
+        # Change the parent
+        d_en.title = 'Template:' + d_en.title
+        d_en.category = TEMPLATES_CATEGORY
+        d_en.save()
+
+        # Now the French article can be changed too.
+        d_fr = Document.objects.get(id=d_fr.id)  # reset
+        d_fr.title = 'Template:' + d_fr.title
+        d_fr.category = TEMPLATES_CATEGORY
+        d_fr.save()
 
 
 class FromUrlTests(TestCase):
