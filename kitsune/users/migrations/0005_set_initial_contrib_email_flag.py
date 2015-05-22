@@ -36,10 +36,9 @@ def contrib_email_flags_forwards(apps, schema_editor):
         .filter(user__id__in=answer_contributor_ids)
         .update(first_answer_email_sent=True))
 
-    if '--test' not in sys.argv:
-        status = MigrationStatusPrinter()
-        status.info('set first_l10n_email_sent on {0} profiles.', len(l10n_contributor_ids))
-        status.info('set first_answer_email_sent on {0} profiles.', len(answer_contributor_ids))
+    status = MigrationStatusPrinter()
+    status.info('set first_l10n_email_sent on {0} profiles.', len(l10n_contributor_ids))
+    status.info('set first_answer_email_sent on {0} profiles.', len(answer_contributor_ids))
 
 
 def contrib_email_flags_backwards(apps, schema_editor):
