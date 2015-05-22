@@ -323,7 +323,7 @@ class DocumentEditingTests(TestCase):
                      'form': 'doc'})
         self.client.post(reverse('wiki.edit_document', args=[d.slug]), data)
 
-        eq_(sorted(Document.objects.get(slug=d.slug).products
+        eq_(sorted(Document.objects.get(id=d.id).products
                    .values_list('id', flat=True)),
             sorted([prod.id for prod in [prod_desktop, prod_mobile]]))
 
@@ -331,7 +331,7 @@ class DocumentEditingTests(TestCase):
                      'form': 'doc'})
         self.client.post(reverse('wiki.edit_document', args=[data['slug']]),
                          data)
-        eq_(sorted(Document.objects.get(slug=d.slug).products
+        eq_(sorted(Document.objects.get(id=d.id).products
                    .values_list('id', flat=True)),
             sorted([prod.id for prod in [prod_desktop]]))
 
