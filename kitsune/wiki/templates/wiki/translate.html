@@ -185,7 +185,7 @@
                we allow the localizer to keep the translation out of date
                with this new revision. #}
             {{ submit_revision(revision_form, show_no_update_checkbox=(document and document.current_revision), include_diff=True) }}
-            <div id="preview"></div>
+            <div id="preview" class="cf"></div>
             <div id="preview-diff">
                 <div class="from">{{ revision_form.content.value() }}</div>
                 <div class="to"></div>
