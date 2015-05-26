@@ -1218,6 +1218,11 @@ article {
   position: absolute;
   right: 0;
   top: 0;
+
+  .CodeMirror {
+    color: #666;
+    height: 100%;
+  }
 }
 
 #editor_wrapper {
@@ -1226,49 +1231,43 @@ article {
   position: relative;
 }
 
-.ace_quote {
+.cm-quote {
   background-color: black;
-  color: white;
+  color: white !important;
 }
 
-.ace_variable,
-.ace_tag {
+.cm-variable,
+.cm-tag {
   color:  #d98484 !important;
 }
 
-.ace_other.ace_link {
+.cm-other.cm-link {
   color: #5757c2 !important;
 }
 
-/* Variable font-spacing support rules */
-/* Un-comment the following rules
-   when https://github.com/ajaxorg/ace/issues/460 is fixed: */
-/*
-.ace_variable,
-.ace_tag {
-  font-family: 'Monaco','Menlo','Ubuntu Mono','Droid Sans Mono','Consolas',monospace;
-}
-
-.ace_tag {
-  font-weight: bold;
-}
-
-.ace_editor {
- font-family: 'OpenSans', Arial, Helvetica, sans-serif !important;
-}
-*/
-/* Remove the following rules
-   when https://github.com/ajaxorg/ace/issues/460 is fixed: */
-.ace_bold {
+.cm-bold {
+  color: #000;
   font-weight: normal !important;
 }
 
-.ace_strikethrough {
+.cm-strikethrough {
   text-decoration: line-through;
 }
 
-.ace_editor .ace_identifier,
-.ace_editor .ace_italic,
-.ace_editor .ace_underline {
+.cm-italic {
+  font-style: italic;
+}
+
+.cm-underline {
+  text-decoration: underline;
+}
+
+.cm-comment {
+  color: #090 !important;
+}
+
+.cm-editor .cm-identifier,
+.cm-editor .cm-italic,
+.cm-editor .cm-underline {
   color: #666666 !important;
 }

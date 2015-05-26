@@ -49,7 +49,7 @@
       initNeedsChange();
       initSummaryCount();
       initFormLock();
-      initAceEditor();
+      initCodeMirrorEditor();
 
       $('img.lazy').loadnow();
 
@@ -535,19 +535,20 @@
     });
   }
 
-  function initAceEditor() {
+  function initCodeMirrorEditor() {
+    window.codemirror = true;
     window.highlighting = {};
 
     var editor = $("<div id='editor'></div>");
     var editor_wrapper = $("<div id='editor_wrapper'></div>");
 
     var updateHighlightingEditor = function() {
-      var session = window.highlighting.session;
-      if(!session)
+      var editor = window.highlighting.editor;
+      if(!editor)
         return;
 
       var content = $("#id_content").val();
-      session.setValue(content);
+      editor.setValue(content);
     };
     window.highlighting.updateEditor = updateHighlightingEditor;
 
@@ -571,27 +572,22 @@
     editor_wrapper.append(editor);
     $("#id_content").after(switch_link).after(editor_wrapper).hide();
 
-    window.addEventListener("load", function() {
-      var ace_editor = ace.edit("editor");
-      window.highlighting.editor = ace_editor;
-      var session = ace_editor.getSession();
-      window.highlighting.session = session;
-      session.setMode("ace/mode/sumo");
-      session.setUseWrapMode(true);
-      ace.config.loadModule('ace/ext/language_tools', function() {
-        ace_editor.setOptions({
-          enableBasicAutocompletion: true,
-          enableSnippets: true
-        });
+    window.addEventListener('load', function() {
+      var cm_editor = CodeMirror(document.getElementById('editor'), {
+        mode: 'sumo',
+        value: $("#id_content").val(),
+        lineNumbers: true,
+        lineWrapping: true
       });
+      window.highlighting.editor = cm_editor;
 
       $("#id_content").bind("keyup", updateHighlightingEditor);
       updateHighlightingEditor();
 
-      session.on('change', function(e) {
+      cm_editor.on('change', function(e) {
         if(!highlightingEnabled())
           return;
-        $("#id_content").val(session.getValue());
+        $("#id_content").val(cm_editor.getValue());
       });
     }, false);
   }

@@ -11,8 +11,8 @@
     "tests"
   ],
   "dependencies": {
-    "ace": "ace-builds#1.1.8",
     "classnames": "~1.1.4",
+    "codemirror": "#5.3.0",
     "d3": "d3#3.1.5",
     "fontawesome": "#4.3.0",
     "jquery": "jquery#1.10.1",

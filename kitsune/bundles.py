@@ -106,6 +106,12 @@ PIPELINE_CSS = {
         ),
         'output_filename': 'wiki-min.css'
     },
+    'wiki-editor': {
+        'source_filenames': (
+            'codemirror/lib/codemirror.css',
+        ),
+        'output_filename': 'wiki-editor-min.css'
+    },
     'mobile-wiki': {
         'source_filenames': (
             'less/mobile/wiki.less',
@@ -503,9 +509,9 @@ PIPELINE_JS = {
     },
     'wiki.editor': {
         'source_filenames': (
-            'ace/src/ace.js',
-            'ace/src/ext-language_tools.js',
-            'js/ace.mode-sumo.js',
+            'codemirror/lib/codemirror.js',
+            'js/libs/codemirror.addon.simplemode.js',
+            'js/codemirror.sumo-mode.js',
         ),
         'output_filename': 'wiki.editor-min.js'
     },
