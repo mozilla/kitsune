@@ -550,11 +550,14 @@ def review_revision(request, document_slug, revision_id):
     revision_contributors = list(set(
         based_on_revs.values_list('creator__username', flat=True)))
 
+    # Get Unreviewed Revisions
+    unreviewed_revisions = Revision.objects.filter(document=doc,
+                                                   is_approved=False,
+                                                   reviewed=None).order_by('-id')
+
     # Get latest revision which is still not approved. Use **latest_revision_id** to get the id.
     try:
-        latest_unapproved_revision = Revision.objects.filter(
-            document=doc,
-            is_approved=False).order_by('-id')[0]
+        latest_unapproved_revision = unreviewed_revisions[0]
         latest_unapproved_revision_id = latest_unapproved_revision.id
     except IndexError:
         latest_unapproved_revision_id = None
@@ -563,8 +566,12 @@ def review_revision(request, document_slug, revision_id):
     # Return None if there is no current revision
     if doc.current_revision is not None:
         current_revision_id = doc.current_revision.id
+        unreviewed_revisions = unreviewed_revisions.exclude(id__lt=current_revision_id)
     else:
         current_revision_id = None
+
+    # Get latest 5 unapproved revisions and exclude the revision which is being reviewed
+    unreviewed_revisions = unreviewed_revisions.exclude(id=rev.id)[:5]
 
     # Don't include the reviewer in the recent contributors list.
     if request.user.username in revision_contributors:
@@ -651,7 +658,8 @@ def review_revision(request, document_slug, revision_id):
             'revision_contributors': list(revision_contributors),
             'should_ask_significance': should_ask_significance,
             'latest_unapproved_revision_id': latest_unapproved_revision_id,
-            'current_revision_id': current_revision_id}
+            'current_revision_id': current_revision_id,
+            'unreviewed_revisions': unreviewed_revisions}
     return render(request, template, data)
 
 
