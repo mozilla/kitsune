@@ -1,0 +1,21 @@
+@import '../../sumo/less/variables.less';
+
+.AAQApp {
+  &__ProductSelector {
+    &__ProductCard {
+      &.selected {
+        &::before {
+          box-shadow: 0 0 10px #0f0 inset;
+        }
+      }
+    }
+  }
+
+  &__TopicSelector {
+    &__Topic {
+      &.selected {
+        font-weight: bold;
+      }
+    }
+  }
+}

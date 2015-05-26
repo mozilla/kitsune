@@ -45,7 +45,7 @@ PIPELINE_CSS = {
     # TODO: remove dependency on jquery ui CSS and use our own
     'jqueryui': {
         'source_filenames': (
-            'sumo/css/jqueryui/jqueryui.css',
+            'sumo/css/jqueryui/jqueryui.ess',
         ),
         'output_filename': 'build/jqueryui-min.css'
     },
@@ -69,6 +69,12 @@ PIPELINE_CSS = {
             'sumo/less/questions.metrics.less',
         ),
         'output_filename': 'build/questions.metrics-min.css'
+    },
+    'questions.aaq.react': {
+        'source_filenames': (
+            'questions/less/questions.aaq.react.less',
+        ),
+        'output_filename': 'build/questions.aaq.react-min.css'
     },
     'mobile-questions': {
         'source_filenames': (
@@ -385,6 +391,23 @@ PIPELINE_JS = {
             'sumo/js/questions.metrics-dashboard.js',
         ),
         'output_filename': 'build/questions.metrics-min.js'
+    },
+    'questions.aaq.react': {
+        'source_filenames': (
+            # This uses the minified version because it is optimized to leave
+            # out lots of debug stuff, so it is significantly smaller than
+            # just minifying react.js.
+            # TODO: Figure out how to include the full sized version in dev,
+            # because it produces much nicer error messages.
+            'react/react.min.js',
+            # 'react/react.js',
+            'flux/dist/Flux.js',
+            'underscore/underscore.js',
+
+            'questions/js/aaq.browserify.js',
+
+        ),
+        'output_filename': 'build/questions.aaq.react-min.js',
     },
     'mobile-questions': {
         'source_filenames': (

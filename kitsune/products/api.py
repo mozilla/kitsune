@@ -89,10 +89,14 @@ class TopicField(serializers.SlugRelatedField):
 
 class ProductSerializer(serializers.ModelSerializer):
     platforms = serializers.SlugRelatedField(many=True, slug_field='slug')
+    image = serializers.Field(source='image.url')
 
     class Meta:
         model = Product
-        fields = ('id', 'title', 'slug', 'description', 'platforms', 'visible')
+        fields = ('id', 'title', 'slug', 'description', 'platforms', 'visible', 'image')
+
+    def get_image_url(self, product):
+        return product.image.url
 
 
 class ProductList(generics.ListAPIView):

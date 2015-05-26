@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% set styles = ('common', 'questions', 'questions.aaq.react',) %}
+{% set scripts = ('questions.aaq.react',) %}
+
+{% set title = _('Ask a Question') %}
+{% block breadcrumbs %}{% endblock %}
+
+{% block content %}
+  <script type="application/json" class="data" name="products">{{ products_json|safe }}</script>
+  <script type="application/json" class="data" name="topics">{{ topics_json|safe }}</script>
+  <div class="apptarget"></div>
+  {% endblock %}
