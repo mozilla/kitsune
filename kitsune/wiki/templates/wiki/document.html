@@ -42,7 +42,7 @@
 {% block above_main %}
   <h1 class="product-title cf">
     {% set prod_url = url('products.product', slug=product.slug) %}
-    <img src="{{ STATIC_URL }}img/blank.png" alt="" class="logo-sprite" style="background-image: url('{{ product.image_url }}');" />
+    <img src="{{ STATIC_URL }}sumo/img/blank.png" alt="" class="logo-sprite" style="background-image: url('{{ product.image_url }}');" />
     <a href="{{ prod_url }}">{{ _(product.title, 'DB: products.Product.title') }}</a>
   </h1>
 {% endblock %}

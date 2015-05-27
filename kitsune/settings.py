@@ -477,7 +477,7 @@ AUTHENTICATION_BACKENDS = (
 )
 AUTH_PROFILE_MODULE = 'users.Profile'
 USER_AVATAR_PATH = 'uploads/avatars/'
-DEFAULT_AVATAR = 'img/avatar.png'
+DEFAULT_AVATAR = 'sumo/img/avatar.png'
 AVATAR_SIZE = 48  # in pixels
 MAX_AVATAR_FILE_SIZE = 131072  # 100k, in bytes
 GROUP_AVATAR_PATH = 'uploads/groupavatars/'
@@ -876,7 +876,7 @@ GA_START_DATE = date(2012, 11, 10)
 MOBILE_COOKIE = 'msumo'
 
 # Directory of JavaScript test files for django_qunit to run
-QUNIT_TEST_DIRECTORY = os.path.join('kitsune', 'sumo', 'static', 'js', 'tests')
+QUNIT_TEST_DIRECTORY = os.path.join('kitsune', 'sumo', 'static', 'sumo', 'js', 'tests')
 
 # Key to access /services/version. Set to None to disallow.
 VERSION_CHECK_TOKEN = None

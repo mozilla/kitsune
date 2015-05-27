@@ -48,8 +48,7 @@ class Product(ModelBase):
     def image_url(self):
         if self.image:
             return self.image.url
-        return os.path.join(
-            settings.STATIC_URL, 'img', 'product_placeholder.png')
+        return os.path.join(settings.STATIC_URL, 'products', 'img', 'product_placeholder.png')
 
     def sprite_url(self, retina=True):
         fn = 'logo-sprite-2x.png' if retina else 'logo-sprite.png'
@@ -147,8 +146,7 @@ class Topic(ModelBase):
     def image_url(self):
         if self.image:
             return self.image.url
-        return os.path.join(
-            settings.STATIC_URL, 'img', 'topic_placeholder.png')
+        return os.path.join(settings.STATIC_URL, 'products', 'img', 'topic_placeholder.png')
 
     @property
     def path(self):

@@ -58,7 +58,7 @@
 
   <!--[if lt IE 9]>
 {# html5-shiv.js must be inside <head/> to work. #}
-<script src="{{ STATIC_URL }}js/libs/html5-shiv.js"></script>
+<script src="{{ STATIC_URL }}sumo/js/libs/html5-shiv.js"></script>
 <![endif]-->
 </head>
 <body class="html-{{ DIR }} logged-{% if user.is_authenticated() %}in{% else %}out{% endif %} {{ classes }} {{ request.LANGUAGE_CODE }}"
@@ -144,7 +144,7 @@
         {% if not hide_header_search %}
           {{ search_box(settings, id='support-search', params=search_params) }}
         {% endif %}
-        <a href="{{ url('home') }}" class="logo"><img alt="mozilla support" src="{{ STATIC_URL }}img/mozilla-support.png" /></a>
+        <a href="{{ url('home') }}" class="logo"><img alt="mozilla support" src="{{ STATIC_URL }}sumo/img/mozilla-support.png" /></a>
       </div>
     </div>
   </div>
@@ -182,7 +182,7 @@
 
 <footer>
   <div class="container_12 cf">
-    <div class="grid_2"><img src="{{ STATIC_URL }}img/mozilla-logo.png" alt="Mozilla" /></div>
+    <div class="grid_2"><img src="{{ STATIC_URL }}sumo/img/mozilla-logo.png" alt="Mozilla" /></div>
     <div class="grid_4 suffix_1">
       <div class="fineprint">
         {% trans %}
