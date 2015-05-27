@@ -1,1 +1,0 @@
-This file is here so that the containing directory gets copies over when collecting static files.
