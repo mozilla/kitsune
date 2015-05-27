@@ -16,20 +16,14 @@ if [[ $TEST_SUITE == "lint" ]]; then
 fi
 
 ./peep.sh install -r "requirements/default.txt"
-# Print the installed packages for the world to see.
-pip freeze
 echo
-
 
 echo "Installing Node.js dependencies"
-npm install > /dev/null 2> /dev/null
-npm list
+./scripts/lockdown.js
 echo
 
-
-echo "Intalling front end dependencies"
-./node_modules/.bin/bower install > /dev/null 2> /dev/null
-./node_modules/.bin/bower list -o
+echo "Installing front end dependencies"
+./node_modules/.bin/bower install
 echo
 
 
