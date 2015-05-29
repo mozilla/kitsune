@@ -6,7 +6,6 @@
     "url": "git://github.com/mozilla/kitsune.git"
   },
   "scripts": {
-    "preinstall": "./scripts/lockdown.js"
   },
   "devDependencies": {
     "gulp": "3.8.6",
@@ -15,11 +14,11 @@
     "lockdown": "mozilla/npm-lockdown#c7ceb9ca37fab4ba2639b89f94b88703d4e4d0d2"
   },
   "dependencies": {
-    "babelify": "^5.0.4",
+    "babelify": "5.0.4",
     "bower": "1.4.1",
-    "browserify": "^9.0.3",
+    "browserify": "9.0.3",
     "cssmin": "0.4.3",
-    "debowerify": "^1.2.0",
+    "debowerify": "1.2.0",
     "less": "2.4.0",
     "less-plugin-autoprefix": "1.4.1",
     "nunjucks": "1.0.5",
