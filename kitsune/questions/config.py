@@ -158,6 +158,45 @@ products = SortedDict([
             }),
         ])
     }),
+    ('ios', {
+        'name': _lazy(u'Firefox for iOS'),
+        'subtitle': '',
+        'extra_fields': ['ff_version', 'os', 'plugins'],
+        'tags': ['ios'],
+        'product': 'ios',
+        'categories': SortedDict([
+            ('install-and-update-firefox-ios', {
+                'name': _lazy(u'Install and Update'),
+                'topic': 'install-and-update-firefox-ios',
+                'tags': ['install-and-update-firefox-ios']
+            }),
+            ('bookmarks-and-tabs-firefox-ios', {
+                'name': _lazy(u'Bookmarks and tabs'),
+                'topic': 'bookmarks-and-tabs-firefox-ios',
+                'tags': ['bookmarks-and-tabs-firefox-ios']
+            }),
+            ('history-firefox-ios', {
+                'name': _lazy(u'History'),
+                'topic': 'history-firefox-ios',
+                'tags': ['history-firefox-ios']
+            }),
+            ('reader-view-and-list', {
+                'name': _lazy(u'Reader View and List'),
+                'topic': 'reader-view-and-list',
+                'tags': ['reader-view-and-list']
+            }),
+            ('save-and-share-firefox-ios', {
+                'name': _lazy(u'Sharing'),
+                'topic': 'save-and-share-firefox-ios',
+                'tags': ['save-and-share-firefox-ios']
+            }),
+            ('crashes-errors-and-other-issues', {
+                'name': _lazy(u'Crashes, errors and other issues'),
+                'topic': 'crashes-errors-and-other-issues',
+                'tags': ['crashes-errors-and-other-issues']
+            }),
+        ])
+    }),
     ('firefox-os', {
         'name': _lazy(u'Firefox OS'),
         'subtitle': '',
