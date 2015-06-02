@@ -32,7 +32,7 @@
   <div>
     {% if post.id and user.is_authenticated() and not thread.is_locked and forum.allows_posting_by(user) %}
     <span class="post-action">
-      <a class="reply" data-post="{{ post.id }}" href="#thread-reply">{{ _('Reply') }}</a>
+      <a class="reply" data-post="{{ post.id }}" href="#thread-reply">{{ _('Quote') }}</a>
     </span>
   {% endif %}
     {{ datetimeformat(post.created, format='longdatetime') }}
