@@ -510,7 +510,7 @@ PIPELINE_JS = {
     'wiki.editor': {
         'source_filenames': (
             'codemirror/lib/codemirror.js',
-            'js/libs/codemirror.addon.simplemode.js',
+            'codemirror/addon/mode/simple.js',
             'js/codemirror.sumo-mode.js',
         ),
         'output_filename': 'wiki.editor-min.js'
