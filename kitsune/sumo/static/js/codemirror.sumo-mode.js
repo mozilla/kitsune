@@ -163,9 +163,8 @@
     fx_version_os_version: [
       {
         token: ['markup.italic'],
-        regex: /((,\s?)?(not\s)?((win(xp|7|8)?|mac|linux|android|maemo)|=?(fx|tb|m)\d*))+/,
-        next: 'close_tag',
-        condense: true
+        regex: /((?:,\s?)?(?:not\s)?(?:(?:win(?:xp|7|8)?|mac|linux|android|maemo)|=?(?:fx|tb|m)\d*))+/,
+        next: 'close_tag'
       },
       {
         token: 'variable.language',
