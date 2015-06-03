@@ -9,14 +9,13 @@ ln -sf /usr/lib/`uname -i`-linux-gnu/libz.so ~/virtualenv/python2.6/lib/
 
 echo "Install Python dependencies"
 ./peep.sh install -r requirements/dev.txt
+./peep.sh install -r "requirements/default.txt"
+echo
 
 # Optimization: None of the rest is needed for lint tests.
 if [[ $TEST_SUITE == "lint" ]]; then
   exit 0
 fi
-
-./peep.sh install -r "requirements/default.txt"
-echo
 
 echo "Installing Node.js dependencies"
 ./scripts/lockdown.js
