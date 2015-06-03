@@ -5,7 +5,7 @@ SUITE=${1:-all}
 case $SUITE in
     all )
         scripts/travis/test.sh
-        scripts/lint.sh
+        pre-commit run --all-files
         ;;
     lint )
         pre-commit run --all-files
