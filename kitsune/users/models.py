@@ -76,7 +76,8 @@ class Profile(ModelBase, SearchMixin):
 
     class Meta(object):
         permissions = (('view_karma_points', 'Can view karma points'),
-                       ('deactivate_users', 'Can deactivate users'),)
+                       ('deactivate_users', 'Can deactivate users'),
+                       ('screen_share', 'Can screen share'),)
 
     def __unicode__(self):
         try:
