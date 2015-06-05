@@ -8,6 +8,14 @@
     this.params = $.extend({}, params);
   };
 
+  Search.prototype._buildQueryUrl = function(query, params) {
+    var url = this.baseUrl + '?q=' + query;
+    if (params) {
+      url += '&' + params;
+    }
+    return url;
+  };
+
   Search.prototype.setParam = function(key, value) {
     this.params[key] = value;
     return this;
@@ -31,7 +39,19 @@
   Search.prototype.clearLastQuery = function() {
     this.lastQuery = '';
     this.lastParams = '';
-  }
+  };
+
+  Search.prototype.hasLastQuery = function() {
+    return !!this.lastQuery;
+  };
+
+  Search.prototype.lastQueryUrl = function() {
+    return this._buildQueryUrl(this.lastQuery, this.lastParams);
+  };
+
+  Search.prototype.queryUrl = function(query) {
+    return this._buildQueryUrl(this.lastQuery, this.serializeParams());
+  };
 
   Search.prototype.serializeParams= function(extra) {
     var params = $.extend({}, this.params, extra);
