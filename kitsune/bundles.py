@@ -4,40 +4,40 @@ PIPELINE_CSS = {
     'common': {
         'source_filenames': (
             'normalize-css/normalize.css',
-            'less/main.less',
-            'less/search.less',
+            'sumo/less/main.less',
+            'sumo/less/search.less',
         ),
-        'output_filename': 'common-min.css'
+        'output_filename': 'build/common-min.css'
     },
     'community': {
         'source_filenames': (
-            'less/wiki-content.less',
-            'less/community.less',
-            'less/select.less',
+            'sumo/less/wiki-content.less',
+            'community/less/community.less',
+            'community/less/select.less',
         ),
-        'output_filename': 'community-min.css'
+        'output_filename': 'build/community-min.css'
     },
     'community-new': {
         'source_filenames': (
             'fontawesome/css/font-awesome.css',
             'pikaday/css/pikaday.css',
-            'less/wiki-content.less',
-            'less/community-new.less',
+            'sumo/less/wiki-content.less',
+            'community/less/community-new.less',
         ),
-        'output_filename': 'community-new-min.css'
+        'output_filename': 'build/community-new-min.css'
     },
     'mobile-common': {
         'source_filenames': (
             'normalize-css/normalize.css',
-            'less/mobile/main.less',
+            'sumo/less/mobile/main.less',
         ),
-        'output_filename': 'mobile-common-min.css'
+        'output_filename': 'build/mobile-common-min.css'
     },
     'print': {
         'source_filenames': (
-            'css/print.css',
+            'sumo/css/print.css',
         ),
-        'output_filename': 'print-min.css',
+        'output_filename': 'build/print-min.css',
         'extra_context': {
             'media': 'print',
         }
@@ -45,66 +45,66 @@ PIPELINE_CSS = {
     # TODO: remove dependency on jquery ui CSS and use our own
     'jqueryui': {
         'source_filenames': (
-            'css/jqueryui/jqueryui.css',
+            'sumo/css/jqueryui/jqueryui.css',
         ),
-        'output_filename': 'jqueryui-min.css'
+        'output_filename': 'build/jqueryui-min.css'
     },
     'forums': {
         'source_filenames': (
-            'less/forums.less',
-            'less/reportabuse.less',
+            'sumo/less/forums.less',
+            'sumo/less/reportabuse.less',
         ),
-        'output_filename': 'forums-min.css'
+        'output_filename': 'build/forums-min.css'
     },
     'questions': {
         'source_filenames': (
-            'less/questions.less',
-            'css/cannedresponses.css',
-            'less/reportabuse.less',
+            'sumo/less/questions.less',
+            'sumo/css/cannedresponses.css',
+            'sumo/less/reportabuse.less',
         ),
-        'output_filename': 'questions-min.css'
+        'output_filename': 'build/questions-min.css'
     },
     'questions.metrics': {
         'source_filenames': (
-            'less/questions.metrics.less',
+            'sumo/less/questions.metrics.less',
         ),
-        'output_filename': 'questions.metrics-min.css'
+        'output_filename': 'build/questions.metrics-min.css'
     },
     'mobile-questions': {
         'source_filenames': (
-            'less/mobile/questions.less',
+            'sumo/less/mobile/questions.less',
         ),
-        'output_filename': 'mobile-questions-min.css'
+        'output_filename': 'build/mobile-questions-min.css'
     },
     'mobile-aaq': {
         'source_filenames': (
-            'less/mobile/aaq.less',
+            'sumo/less/mobile/aaq.less',
         ),
-        'output_filename': 'mobile-aaq-min.css'
+        'output_filename': 'build/mobile-aaq-min.css'
     },
     'rickshaw': {
         'source_filenames': (
-            'css/jqueryui/jqueryui.css',
-            'css/rickshaw.css',
-            'less/rickshaw.sumo.less',
+            'sumo/css/jqueryui/jqueryui.css',
+            'sumo/css/rickshaw.css',
+            'sumo/less/rickshaw.sumo.less',
         ),
-        'output_filename': 'rickshaw-min.css'
+        'output_filename': 'build/rickshaw-min.css'
     },
     'mobile-search': {
         'source_filenames': (
-            'less/mobile/search.less',
+            'sumo/less/mobile/search.less',
         ),
-        'output_filename': 'mobile-search-min.css'
+        'output_filename': 'build/mobile-search-min.css'
     },
     'wiki': {
         'source_filenames': (
-            'css/users.autocomplete.css',
-            'css/users.list.css',
-            'less/wiki.less',
-            'less/wiki-content.less',
-            'css/screencast.css',
+            'sumo/css/users.autocomplete.css',
+            'sumo/css/users.list.css',
+            'sumo/less/wiki.less',
+            'sumo/less/wiki-content.less',
+            'sumo/css/screencast.css',
         ),
-        'output_filename': 'wiki-min.css'
+        'output_filename': 'build/wiki-min.css'
     },
     'wiki-editor': {
         'source_filenames': (
@@ -114,188 +114,188 @@ PIPELINE_CSS = {
     },
     'mobile-wiki': {
         'source_filenames': (
-            'less/mobile/wiki.less',
-            'less/wiki-content.less',
+            'sumo/less/mobile/wiki.less',
+            'sumo/less/wiki-content.less',
         ),
-        'output_filename': 'mobile-wiki-min.css'
+        'output_filename': 'build/mobile-wiki-min.css'
     },
     'mobile-wiki-minimal': {
         'source_filenames': (
             'normalize-css/normalize.css',
-            'less/mobile/main.less',
-            'less/mobile/wiki.less',
-            'less/wiki-content.less',
+            'sumo/less/mobile/main.less',
+            'sumo/less/mobile/wiki.less',
+            'sumo/less/wiki-content.less',
         ),
-        'output_filename': 'mobile-wiki-minimal-min.css'
+        'output_filename': 'build/mobile-wiki-minimal-min.css'
     },
     'home': {
         'source_filenames': (
-            'less/home.less',
+            'sumo/less/home.less',
         ),
-        'output_filename': 'home-min.css'
+        'output_filename': 'build/home-min.css'
     },
     'gallery': {
         'source_filenames': (
-            'less/gallery.less',
+            'sumo/less/gallery.less',
         ),
-        'output_filename': 'gallery-min.css'
+        'output_filename': 'build/gallery-min.css'
     },
     'ie': {
         'source_filenames': (
-            'css/ie.css',
-            'css/ie8.css',
+            'sumo/css/ie.css',
+            'sumo/css/ie8.css',
         ),
-        'output_filename': 'ie-min.css'
+        'output_filename': 'build/ie-min.css'
     },
     'ie8': {
         'source_filenames': (  # IE 8 needs some specific help.
-            'css/ie8.css',
+            'sumo/css/ie8.css',
         ),
-        'output_filename': 'ie8-min.css'
+        'output_filename': 'build/ie8-min.css'
     },
     'customercare': {
         'source_filenames': (
-            'less/customercare.less',
+            'sumo/less/customercare.less',
         ),
-        'output_filename': 'customercare-min.css'
+        'output_filename': 'build/customercare-min.css'
     },
     'users': {
         'source_filenames': (
-            'less/users.less',
-            'less/reportabuse.less',
+            'sumo/less/users.less',
+            'sumo/less/reportabuse.less',
         ),
-        'output_filename': 'users-min.css'
+        'output_filename': 'build/users-min.css'
     },
     'mobile-users': {
         'source_filenames': (
-            'less/mobile/users.less',
+            'sumo/less/mobile/users.less',
         ),
-        'output_filename': 'mobile-users-min.css'
+        'output_filename': 'build/mobile-users-min.css'
     },
     'monitor': {
         'source_filenames': (
-            'css/monitor.css',
+            'sumo/css/monitor.css',
         ),
-        'output_filename': 'monitor-min.css'
+        'output_filename': 'build/monitor-min.css'
     },
     'messages': {
         'source_filenames': (
-            'css/users.autocomplete.css',
-            'less/messages.less',
+            'sumo/css/users.autocomplete.css',
+            'sumo/less/messages.less',
         ),
-        'output_filename': 'messages-min.css'
+        'output_filename': 'build/messages-min.css'
     },
     'mobile-messages': {
         'source_filenames': (
-            'less/mobile/messages.less',
+            'sumo/less/mobile/messages.less',
         ),
-        'output_filename': 'mobile-messages-min.css'
+        'output_filename': 'build/mobile-messages-min.css'
     },
     'products': {
         'source_filenames': (
-            'less/products.less',
+            'sumo/less/products.less',
         ),
-        'output_filename': 'products-min.css'
+        'output_filename': 'build/products-min.css'
     },
     'mobile-products': {
         'source_filenames': (
-            'less/mobile/products.less',
+            'sumo/less/mobile/products.less',
         ),
-        'output_filename': 'mobile-products-min.css'
+        'output_filename': 'build/mobile-products-min.css'
     },
     'groups': {
         'source_filenames': (
-            'css/users.autocomplete.css',
-            'css/users.list.css',
-            'css/groups.css',
-            'css/wiki_syntax.css',
+            'sumo/css/users.autocomplete.css',
+            'sumo/css/users.list.css',
+            'sumo/css/groups.css',
+            'sumo/css/wiki_syntax.css',
         ),
-        'output_filename': 'groups-min.css'
+        'output_filename': 'build/groups-min.css'
     },
     'kpi.dashboard': {
         'source_filenames': (
-            'less/kpi.dashboard.less',
+            'sumo/less/kpi.dashboard.less',
         ),
-        'output_filename': 'kpi.dashboard-min.css'
+        'output_filename': 'build/kpi.dashboard-min.css'
     },
     'locale-switcher': {
         'source_filenames': (
-            'less/locale-switcher.less',
+            'sumo/less/locale-switcher.less',
         ),
-        'output_filename': 'locale-switcher-min.css'
+        'output_filename': 'build/locale-switcher-min.css'
     },
     'mobile-locale-switcher': {
         'source_filenames': (
-            'less/mobile/locales.less',
+            'sumo/less/mobile/locales.less',
         ),
-        'output_filename': 'mobile-locale-switcher-min.css'
+        'output_filename': 'build/mobile-locale-switcher-min.css'
     },
     'kbdashboards': {
         'source_filenames': (
-            'less/kbdashboards.less',
+            'sumo/less/kbdashboards.less',
         ),
-        'output_filename': 'kbdashboards-min.css'
+        'output_filename': 'build/kbdashboards-min.css'
     },
     'landings-get-involved': {
         'source_filenames': (
-            'less/landings/get-involved.less',
+            'sumo/less/landings/get-involved.less',
         ),
-        'output_filename': 'landings-get-involved-min.css'
+        'output_filename': 'build/landings-get-involved-min.css'
     },
     'mobile-landings-get-involved': {
         'source_filenames': (
-            'less/mobile/landings/get-involved.less',
+            'sumo/less/mobile/landings/get-involved.less',
         ),
-        'output_filename': 'mobile-landings-get-involved-min.css'
+        'output_filename': 'build/mobile-landings-get-involved-min.css'
     },
     'badges': {
         'source_filenames': (
-            'less/badges.less',
+            'sumo/less/badges.less',
         ),
-        'output_filename': 'badges-min.css'
+        'output_filename': 'build/badges-min.css'
     }
 }
 
 PIPELINE_JS = {
     'common': {
         'source_filenames': (
-            'js/i18n.js',
+            'sumo/js/i18n.js',
             'underscore/underscore.js',
             'moment/moment.js',
             'jquery/jquery.min.js',
             'jquery/jquery-migrate.js',
-            'js/libs/jquery.cookie.js',
-            'js/libs/jquery.placeholder.js',
-            'js/templates/macros.js',
-            'js/templates/search-results-list.js',
-            'js/templates/search-results.js',
+            'sumo/js/libs/jquery.cookie.js',
+            'sumo/js/libs/jquery.placeholder.js',
+            'sumo/js/templates/macros.js',
+            'sumo/js/templates/search-results-list.js',
+            'sumo/js/templates/search-results.js',
             'nunjucks/browser/nunjucks-slim.js',
-            'js/nunjucks.js',
-            'js/cached_xhr.js',
-            'js/search_utils.js',
-            'js/browserdetect.js',
-            'js/libs/uitour.js',
-            'js/kbox.js',
-            'js/main.js',
-            'js/format.js',
+            'sumo/js/nunjucks.js',
+            'sumo/js/cached_xhr.js',
+            'sumo/js/search_utils.js',
+            'sumo/js/browserdetect.js',
+            'sumo/js/libs/uitour.js',
+            'sumo/js/kbox.js',
+            'sumo/js/main.js',
+            'sumo/js/format.js',
             'modernizr/modernizr.js',
-            'js/geoip-locale.js',
+            'sumo/js/geoip-locale.js',
             'mailcheck/src/mailcheck.js',
-            'js/ui.js',
-            'js/analytics.js',
-            'js/surveygizmo.js',
-            'js/instant_search.js',
+            'sumo/js/ui.js',
+            'sumo/js/analytics.js',
+            'sumo/js/surveygizmo.js',
+            'sumo/js/instant_search.js',
         ),
-        'output_filename': 'common-min.js'
+        'output_filename': 'build/common-min.js'
     },
     'community': {
         'source_filenames': (
             'jquery/jquery.min.js',
             'jquery/jquery-migrate.js',
-            'js/community.js',
-            'js/select.js',
+            'community/js/community.js',
+            'community/js/select.js',
         ),
-        'output_filename': 'community-min.js'
+        'output_filename': 'build/community-min.js'
     },
     'community-new-questions': {
         'source_filenames': (
@@ -307,9 +307,9 @@ PIPELINE_JS = {
             'react/react.min.js',
             # 'react/react.js',
             'pikaday/pikaday.js',
-            'js/community-questions.browserify.js',
+            'community/js/community-questions.browserify.js',
         ),
-        'output_filename': 'community-questions-min.js'
+        'output_filename': 'build/community-questions-min.js'
     },
     'community-new-l10n': {
         'source_filenames': (
@@ -321,30 +321,30 @@ PIPELINE_JS = {
             'react/react.min.js',
             # 'react/react.js',
             'pikaday/pikaday.js',
-            'js/community-l10n.browserify.js',
+            'community/js/community-l10n.browserify.js',
         ),
-        'output_filename': 'community-l10n-min.js'
+        'output_filename': 'build/community-l10n-min.js'
     },
     'mobile-common': {
         'source_filenames': (
-            'js/i18n.js',
+            'sumo/js/i18n.js',
             'underscore/underscore.js',
             'jquery/jquery.min.js',
             'jquery/jquery-migrate.js',
             'modernizr/modernizr.js',
-            'js/browserdetect.js',
-            'js/aaq.js',
-            'js/mobile/ui.js',
-            'js/analytics.js',
+            'sumo/js/browserdetect.js',
+            'sumo/js/aaq.js',
+            'sumo/js/mobile/ui.js',
+            'sumo/js/analytics.js',
         ),
-        'output_filename': 'mobile-common-min.js'
+        'output_filename': 'build/mobile-common-min.js'
     },
     'ie6-8': {
         'source_filenames': (
             'nwmatcher/src/nwmatcher.js',
-            'js/libs/selectivizr-1.0.2.js',
+            'sumo/js/libs/selectivizr-1.0.2.js',
         ),
-        'output_filename': 'ie6-8-min.js'
+        'output_filename': 'build/ie6-8-min.js'
     },
     'jqueryui': {
         'source_filenames': (
@@ -360,216 +360,216 @@ PIPELINE_JS = {
             'jquery-ui/ui/jquery.ui.slider.js',
             'jquery-ui/ui/jquery.ui.tabs.js',
         ),
-        'output_filename': 'jqueryui-min.js'
+        'output_filename': 'build/jqueryui-min.js'
     },
     'questions': {
         'source_filenames': (
-            'js/markup.js',
-            'js/ajaxvote.js',
-            'js/ajaxpreview.js',
-            'js/remote.js',
-            'js/aaq.js',
-            'js/questions.js',
-            'js/libs/jquery.tokeninput.js',
-            'js/tags.filter.js',
-            'js/tags.js',
-            'js/reportabuse.js',
-            'js/questions.metrics.js',
-            'js/libs/jquery.ajaxupload.js',
-            'js/upload.js',
+            'sumo/js/markup.js',
+            'sumo/js/ajaxvote.js',
+            'sumo/js/ajaxpreview.js',
+            'sumo/js/remote.js',
+            'sumo/js/aaq.js',
+            'sumo/js/questions.js',
+            'sumo/js/libs/jquery.tokeninput.js',
+            'sumo/js/tags.filter.js',
+            'sumo/js/tags.js',
+            'sumo/js/reportabuse.js',
+            'sumo/js/questions.metrics.js',
+            'sumo/js/libs/jquery.ajaxupload.js',
+            'sumo/js/upload.js',
         ),
-        'output_filename': 'questions-min.js'
+        'output_filename': 'build/questions-min.js'
     },
     'questions.metrics': {
         'source_filenames': (
-            'js/questions.metrics-dashboard.js',
+            'sumo/js/questions.metrics-dashboard.js',
         ),
-        'output_filename': 'questions.metrics-min.js'
+        'output_filename': 'build/questions.metrics-min.js'
     },
     'mobile-questions': {
         'source_filenames': (
-            'js/mobile/questions.js',
-            'js/questions.metrics.js',
+            'sumo/js/mobile/questions.js',
+            'sumo/js/questions.metrics.js',
         ),
-        'output_filename': 'mobile-questions-min.js'
+        'output_filename': 'build/mobile-questions-min.js'
     },
     'mobile-aaq': {
         'source_filenames': (
-            'js/aaq.js',
-            'js/mobile/aaq.js',
+            'sumo/js/aaq.js',
+            'sumo/js/mobile/aaq.js',
         ),
-        'output_filename': 'mobile-aaq-min.js'
+        'output_filename': 'build/mobile-aaq-min.js'
     },
     'products': {
         'source_filenames': (
-            'js/compare_versions.js',
-            'js/products.js',
+            'sumo/js/compare_versions.js',
+            'sumo/js/products.js',
         ),
-        'output_filename': 'products-min.js'
+        'output_filename': 'build/products-min.js'
     },
     'search': {
         'source_filenames': (
-            'js/search.js',
+            'sumo/js/search.js',
         ),
-        'output_filename': 'search-min.js'
+        'output_filename': 'build/search-min.js'
     },
     'forums': {
         'source_filenames': (
-            'js/markup.js',
-            'js/ajaxpreview.js',
-            'js/forums.js',
-            'js/reportabuse.js',
+            'sumo/js/markup.js',
+            'sumo/js/ajaxpreview.js',
+            'sumo/js/forums.js',
+            'sumo/js/reportabuse.js',
         ),
-        'output_filename': 'forums-min.js'
+        'output_filename': 'build/forums-min.js'
     },
     'gallery': {
         'source_filenames': (
-            'js/libs/jquery.ajaxupload.js',
-            'js/gallery.js',
+            'sumo/js/libs/jquery.ajaxupload.js',
+            'sumo/js/gallery.js',
         ),
-        'output_filename': 'gallery-min.js'
+        'output_filename': 'build/gallery-min.js'
     },
     'wiki': {
         'source_filenames': (
-            'js/markup.js',
-            'js/libs/django/urlify.js',
-            'js/libs/django/prepopulate.js',
-            'js/libs/swfobject.js',
-            'js/libs/jquery.lazyload.js',
-            'js/libs/jquery.tokeninput.js',
-            'js/users.autocomplete.js',
-            'js/screencast.js',
-            'js/showfor.js',
-            'js/ajaxvote.js',
-            'js/ajaxpreview.js',
-            'js/wiki.js',
-            'js/tags.js',
-            'js/dashboards.js',
-            'js/editable.js',
-            'js/wiki.metrics.js',
-            'js/templates/wiki-related-doc.js',
-            'js/templates/wiki-search-results.js',
-            'js/wiki_search.js',
+            'sumo/js/markup.js',
+            'sumo/js/libs/django/urlify.js',
+            'sumo/js/libs/django/prepopulate.js',
+            'sumo/js/libs/swfobject.js',
+            'sumo/js/libs/jquery.lazyload.js',
+            'sumo/js/libs/jquery.tokeninput.js',
+            'sumo/js/users.autocomplete.js',
+            'sumo/js/screencast.js',
+            'sumo/js/showfor.js',
+            'sumo/js/ajaxvote.js',
+            'sumo/js/ajaxpreview.js',
+            'sumo/js/wiki.js',
+            'sumo/js/tags.js',
+            'sumo/js/dashboards.js',
+            'sumo/js/editable.js',
+            'sumo/js/wiki.metrics.js',
+            'sumo/js/templates/wiki-related-doc.js',
+            'sumo/js/templates/wiki-search-results.js',
+            'sumo/js/wiki_search.js',
         ),
-        'output_filename': 'wiki-min.js'
+        'output_filename': 'build/wiki-min.js'
     },
     'rickshaw': {
         'source_filenames': (
             'd3/d3.js',
-            'js/libs/d3.layout.min.js',
-            'js/libs/rickshaw.js',
-            'js/rickshaw_utils.js',
+            'sumo/js/libs/d3.layout.min.js',
+            'sumo/js/libs/rickshaw.js',
+            'sumo/js/rickshaw_utils.js',
         ),
-        'output_filename': 'rickshaw-min.js'
+        'output_filename': 'build/rickshaw-min.js'
     },
     'mobile-wiki': {
         'source_filenames': (
             'underscore/underscore.js',
-            'js/libs/jquery.cookie.js',
-            'js/libs/jquery.lazyload.js',
-            'js/browserdetect.js',
-            'js/showfor.js',
-            'js/ajaxform.js',
-            'js/mobile/wiki.js',
-            'js/wiki.metrics.js',
+            'sumo/js/libs/jquery.cookie.js',
+            'sumo/js/libs/jquery.lazyload.js',
+            'sumo/js/browserdetect.js',
+            'sumo/js/showfor.js',
+            'sumo/js/ajaxform.js',
+            'sumo/js/mobile/wiki.js',
+            'sumo/js/wiki.metrics.js',
         ),
-        'output_filename': 'mobile-wiki-min.js'
+        'output_filename': 'build/mobile-wiki-min.js'
     },
     'mobile-wiki-minimal': {
         'source_filenames': (
-            'js/i18n.js',
+            'sumo/js/i18n.js',
             'underscore/underscore.js',
             'jquery/jquery.min.js',
             'jquery/jquery-migrate.js',
             'modernizr/modernizr.js',
-            'js/browserdetect.js',
-            'js/mobile/ui.js',
-            'js/analytics.js',
-            'js/libs/jquery.cookie.js',
-            'js/libs/jquery.lazyload.js',
-            'js/showfor.js',
-            'js/ajaxform.js',
-            'js/mobile/wiki.js',
-            'js/wiki.metrics.js',
+            'sumo/js/browserdetect.js',
+            'sumo/js/mobile/ui.js',
+            'sumo/js/analytics.js',
+            'sumo/js/libs/jquery.cookie.js',
+            'sumo/js/libs/jquery.lazyload.js',
+            'sumo/js/showfor.js',
+            'sumo/js/ajaxform.js',
+            'sumo/js/mobile/wiki.js',
+            'sumo/js/wiki.metrics.js',
         ),
-        'output_filename': 'mobile-wiki-minimal-min.js'
+        'output_filename': 'build/mobile-wiki-minimal-min.js'
     },
     'wiki.history': {
         'source_filenames': (
-            'js/historycharts.js',
+            'sumo/js/historycharts.js',
         ),
-        'output_filename': 'wiki.history-min.js'
+        'output_filename': 'build/wiki.history-min.js'
     },
     'wiki.diff': {
         'source_filenames': (
-            'js/libs/diff_match_patch_uncompressed.js',
-            'js/diff.js',
+            'sumo/js/libs/diff_match_patch_uncompressed.js',
+            'sumo/js/diff.js',
         ),
-        'output_filename': 'wiki.diff-min.js'
+        'output_filename': 'build/wiki.diff-min.js'
     },
     'wiki.editor': {
         'source_filenames': (
             'codemirror/lib/codemirror.js',
             'codemirror/addon/mode/simple.js',
-            'js/codemirror.sumo-mode.js',
+            'sumo/js/codemirror.sumo-mode.js',
         ),
-        'output_filename': 'wiki.editor-min.js'
+        'output_filename': 'build/wiki.editor-min.js'
     },
     'wiki.dashboard': {
         'source_filenames': (
-            'js/wiki.dashboard.js',
+            'sumo/js/wiki.dashboard.js',
         ),
-        'output_filename': 'wiki.dashboard-min.js'
+        'output_filename': 'build/wiki.dashboard-min.js'
     },
     'customercare': {
         'source_filenames': (
-            'js/libs/jquery.cookie.js',
-            'js/libs/jquery.bullseye-1.0.min.js',
-            'js/libs/twitter-text.js',
-            'js/customercare.js',
-            'js/users.js',
+            'sumo/js/libs/jquery.cookie.js',
+            'sumo/js/libs/jquery.bullseye-1.0.min.js',
+            'sumo/js/libs/twitter-text.js',
+            'sumo/js/customercare.js',
+            'sumo/js/users.js',
         ),
-        'output_filename': 'customercare-min.js'
+        'output_filename': 'build/customercare-min.js'
     },
     'users': {
         'source_filenames': (
-            'js/users.js',
-            'js/reportabuse.js',
+            'sumo/js/users.js',
+            'sumo/js/reportabuse.js',
         ),
-        'output_filename': 'users-min.js'
+        'output_filename': 'build/users-min.js'
     },
     'messages': {
         'source_filenames': (
-            'js/markup.js',
-            'js/libs/jquery.autoresize.js',
-            'js/libs/jquery.tokeninput.js',
-            'js/users.autocomplete.js',
-            'js/ajaxpreview.js',
-            'js/messages.js',
+            'sumo/js/markup.js',
+            'sumo/js/libs/jquery.autoresize.js',
+            'sumo/js/libs/jquery.tokeninput.js',
+            'sumo/js/users.autocomplete.js',
+            'sumo/js/ajaxpreview.js',
+            'sumo/js/messages.js',
         ),
-        'output_filename': 'messages-min.js'
+        'output_filename': 'build/messages-min.js'
     },
     'mobile-messages': {
         'source_filenames': (
-            'js/libs/jquery.tokeninput.js',
-            'js/users.autocomplete.js',
+            'sumo/js/libs/jquery.tokeninput.js',
+            'sumo/js/users.autocomplete.js',
         ),
-        'output_filename': 'mobile-messages-min.js'
+        'output_filename': 'build/mobile-messages-min.js'
     },
     'groups': {
         'source_filenames': (
-            'js/libs/jquery.tokeninput.js',
-            'js/users.autocomplete.js',
-            'js/markup.js',
-            'js/groups.js',
-            'js/editable.js',
+            'sumo/js/libs/jquery.tokeninput.js',
+            'sumo/js/users.autocomplete.js',
+            'sumo/js/markup.js',
+            'sumo/js/groups.js',
+            'sumo/js/editable.js',
         ),
-        'output_filename': 'groups-min.js'
+        'output_filename': 'build/groups-min.js'
     },
     'kpi.dashboard': {
         'source_filenames': (
-            'js/kpi.dashboard.js',
+            'sumo/js/kpi.dashboard.js',
         ),
-        'output_filename': 'kpi.dashboard-min.js'
+        'output_filename': 'build/kpi.dashboard-min.js'
     }
 }

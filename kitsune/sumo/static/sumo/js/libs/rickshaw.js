@@ -2846,4 +2846,3 @@ Rickshaw.Series.FixedDuration = Rickshaw.Class.create(Rickshaw.Series, {
 		return this.currentIndex;
 	}
 } );
-

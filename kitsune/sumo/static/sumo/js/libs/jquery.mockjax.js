@@ -254,7 +254,7 @@
 										return function() {
 											return (function() {
 												// The request has returned
-											 	this.status 		= m.status;
+												this.status 		= m.status;
 												this.readyState 	= 4;
 
 												// We have an executable function, call it to give
@@ -352,7 +352,7 @@
 		//url:        null,
 		//type:       'GET',
 		log:          function(msg) {
-		              	window['console'] && window.console.log && window.console.log(msg);
+				window['console'] && window.console.log && window.console.log(msg);
 		              },
 		status:       200,
 		responseTime: 500,

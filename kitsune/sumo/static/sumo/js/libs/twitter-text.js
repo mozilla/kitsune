@@ -1213,7 +1213,7 @@
     twttr.txt.modifyIndicesFromUTF16ToUnicode(text, urlsWithIndices);
 
     for (var i = 0; i < urlsWithIndices.length; i++) {
-    	// Subtract the length of the original URL
+	// Subtract the length of the original URL
       textLength += urlsWithIndices[i].indices[0] - urlsWithIndices[i].indices[1];
 
       // Add 23 characters for URL starting with https://

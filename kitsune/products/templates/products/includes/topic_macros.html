@@ -4,7 +4,7 @@
     <li>
       {% set topic_url = url('products.documents', product_slug=product.slug, topic_slug=topic.slug) %}
       <a href="{{ topic_url }}" class="cf">
-        <img src="{{ STATIC_URL }}img/blank.png" class="topic-icon" style="background-image: url('{{ topic.image_url }}')" alt="" />
+        <img src="{{ STATIC_URL }}sumo/img/blank.png" class="topic-icon" style="background-image: url('{{ topic.image_url }}')" alt="" />
         <span class="title">{{ _(topic.title, 'DB: products.Topic.title') }}</span>
       </a>
     </li>
@@ -12,7 +12,7 @@
       {% if show_community_support %}
         <li class="community-support">
           <a href="{{ url('wiki.document', 'get-community-support') }}" class="cf">
-            <img src="{{ STATIC_URL }}img/blank.png" class="topic-icon" alt="" />
+            <img src="{{ STATIC_URL }}sumo/img/blank.png" class="topic-icon" alt="" />
             <span class="title">{{ _('Get community support') }}</span>
           </a>
         </li>

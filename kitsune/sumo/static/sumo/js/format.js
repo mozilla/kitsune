@@ -19,4 +19,3 @@ var format = (function() {
 function template(s) {
     return function(args) { return format(s, args); };
 }
-

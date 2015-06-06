@@ -2,8 +2,8 @@
   <div id="reply-container">
 
     <div id="initial-tweet">
-      <a href="" class="avatar" target="_blank"><img src="{{ STATIC_URL }}img/product_placeholder.png"  alt="" /></a>
-      <img src="{{ STATIC_URL }}img/customercare/initial-tweet-arrow.png" alt="" id="arrow" />
+      <a href="" class="avatar" target="_blank"><img src="{{ STATIC_URL }}products/img/product_placeholder.png"  alt="" /></a>
+      <img src="{{ STATIC_URL }}sumo/img/customercare/initial-tweet-arrow.png" alt="" id="arrow" />
       <span class="box">
         <a href="" class="twittername" target="_blank"></a>
         <a href="" class="permalink" target="_blank">
@@ -47,13 +47,13 @@
           <form action="{{ url('customercare.twitter_post') }}" method="POST">
             {{ csrf() }}
             <div class="inner-container">
-              <img src="{{ STATIC_URL }}img/customercare/reply-arrow.png" alt="{{ _('Reply') }}" id="reply-arrow" />
+              <img src="{{ STATIC_URL }}sumo/img/customercare/reply-arrow.png" alt="{{ _('Reply') }}" id="reply-arrow" />
               <textarea id="reply-message"></textarea>
             </div>
 
             <span id="submit-message">{{ _('Your message was sent!') }}</span>
             <span id="error-message"></span>
-            <button type="submit" class="submitButton" id="submit">{{ _('Submit') }} <img id="submit-busy" src="{{ STATIC_URL }}img/customercare/spinner.gif" alt="{{ _('Loading') }}" /></button>
+            <button type="submit" class="submitButton" id="submit">{{ _('Submit') }} <img id="submit-busy" src="{{ STATIC_URL }}sumo/img/customercare/spinner.gif" alt="{{ _('Loading') }}" /></button>
           </form>
         </div>
       </div>
