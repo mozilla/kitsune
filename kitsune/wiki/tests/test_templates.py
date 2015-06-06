@@ -1635,7 +1635,8 @@ class ReviewRevisionTests(TestCaseBase):
                        args=[r1.document.slug, r1.id])
         eq_(200, response.status_code)
         message1 = 'A newer revision has already been reviewed.'
-        message2 = 'But there is another latest revision which is waiting for review.'
+        message2 = ('This revision is outdated, but there is a new revision available. '
+                    'Please review the latest revision.')
 
         # While there is no unapproved revision after the current revision.
         doc = pq(response.content)
@@ -1648,7 +1649,7 @@ class ReviewRevisionTests(TestCaseBase):
                        args=[r1.document.slug, r1.id])
         doc = pq(response.content)
         doc_content = doc('#review-revision').text()
-        assert message1 in doc_content
+        assert message1 not in doc_content
         assert message2 in doc_content
 
     def test_revision_comments(self):
