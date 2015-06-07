@@ -40,11 +40,11 @@
         </p>
       {% elif current_revision_id > revision.id %}
         <p>
-          {{ _('A newer revision has already been reviewed.') }}
           {% if latest_unapproved_revision_id > current_revision_id %}
-              <br>
-              {{ _('But there is another latest revision which is waiting for review.') }}
-              <a href="{{ url('wiki.review_revision', document.slug, latest_unapproved_revision_id) }}">{{ _('Please review the latest revision.') }}</a>
+            {{ _('This revision is outdated, but there is a new revision available.') }}
+            <a href="{{ url('wiki.review_revision', document.slug, latest_unapproved_revision_id) }}">{{ _('Please review the latest revision.') }}</a>
+          {% else %}
+            {{ _('A newer revision has already been reviewed.') }}
           {% endif %}
         </p>
       {% elif document.current_revision %}
