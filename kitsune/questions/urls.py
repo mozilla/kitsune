@@ -74,6 +74,8 @@ urlpatterns = patterns(
         name='questions.add_tag_async'),
     url(r'^/(?P<question_id>\d+)/remove-tag-async$', 'remove_tag_async',
         name='questions.remove_tag_async'),
+    url(r'^/(?P<question_id>\d+)/screen-share/$', 'screen_share',
+        name='questions.screen_share'),
 
     # Feeds
     # Note: this needs to be above questions.list because "feed"

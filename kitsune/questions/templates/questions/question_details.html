@@ -416,6 +416,13 @@
         </ul>
       {% endif %}
 
+      {% if user.has_perm('users.screen_share') %}
+        <form class="screen-share-form cf" method="post" action="{{ url('questions.screen_share', question.id) }}">
+          {{ csrf() }}
+          <a href="#" class="btn btn-submit" data-type="submit">{{ _('Invite to share screen') }}</a>
+        </form>
+      {% endif %}
+
       {% if user.has_perm('flagit.can_moderate') %}
         {% if question.is_spam %}
           {{ unmark_spam_form(question_id=question.id) }}
