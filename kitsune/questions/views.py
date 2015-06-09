@@ -1692,8 +1692,9 @@ def screen_share(request, question_id):
     answer.save()
     statsd.incr('questions.answer')
 
-    if Setting.get_for_user(request.user,
-                            'questions_watch_after_reply'):
+    question.add_metadata('screen_sharing', 'true')
+
+    if Setting.get_for_user(request.user, 'questions_watch_after_reply'):
         QuestionReplyEvent.notify(request.user, question)
 
     message = jingo.render_to_string(request, 'questions/message/screen_share.ltxt', {

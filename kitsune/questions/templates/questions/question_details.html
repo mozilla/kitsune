@@ -419,7 +419,7 @@
       {% if user.has_perm('users.screen_share') %}
         <form class="screen-share-form cf" method="post" action="{{ url('questions.screen_share', question.id) }}">
           {{ csrf() }}
-          <a href="#" class="btn btn-submit"data-type="submit">{{ _('Invite to share screen') }}</a>
+          <a href="#" class="btn btn-submit" data-type="submit">{{ _('Invite to share screen') }}</a>
         </form>
       {% endif %}
 
