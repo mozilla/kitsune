@@ -11,7 +11,7 @@
     "gulp": "3.8.6",
     "gulp-watch": "0.6.8",
     "gulp-nunjucks": "0.2.2",
-    "lockdown": "mozilla/npm-lockdown#c7ceb9ca37fab4ba2639b89f94b88703d4e4d0d2"
+    "lockdown": "mozilla/npm-lockdown#24d14171727b097296568ab2cb1dcba46f716433"
   },
   "dependencies": {
     "babelify": "5.0.4",
@@ -20,7 +20,7 @@
     "cssmin": "0.4.3",
     "debowerify": "1.2.0",
     "less": "2.4.0",
-    "less-plugin-autoprefix": "1.4.1",
+    "less-plugin-autoprefix": "1.4.2",
     "nunjucks": "1.0.5",
     "uglify-js": "2.4.13"
   }
