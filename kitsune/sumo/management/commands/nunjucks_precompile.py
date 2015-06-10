@@ -18,22 +18,22 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         try:
-            os.makedirs(path('static/js/templates'))
+            os.makedirs(path('static/sumo/js/templates'))
         except OSError:
             pass
 
         try:
-            os.makedirs(path('static/tpl'))
+            os.makedirs(path('static/sumo/tpl'))
         except OSError:
             pass
 
-        files = os.listdir(path('static/tpl'))
+        files = os.listdir(path('static/sumo/tpl'))
 
         for f in files:
             if f.endswith('.html'):
                 tpl = f[:-5]
                 cmd = '%s %s > %s' % (
                     settings.NUNJUCKS_PRECOMPILE_BIN,
-                    path('static/tpl'),
-                    path('static/js/templates/%s.js' % tpl))
+                    path('static/sumo/tpl'),
+                    path('static/sumo/js/templates/%s.js' % tpl))
                 subprocess.call(cmd, shell=True)
