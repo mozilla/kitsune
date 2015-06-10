@@ -1692,7 +1692,7 @@ def screen_share(request, question_id):
     answer.save()
     statsd.incr('questions.answer')
 
-    question.add_metadata('screen_sharing', 'true')
+    question.add_metadata(screen_sharing='true')
 
     if Setting.get_for_user(request.user, 'questions_watch_after_reply'):
         QuestionReplyEvent.notify(request.user, question)
