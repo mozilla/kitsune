@@ -75,6 +75,7 @@
         search.setParams(params);
         search.query($this.val(), k.InstantSearchSettings.render);
         _gaq.push(['_trackEvent', 'Instant Search', 'Search', search.lastQueryUrl()]);
+        _gaq.push(['_trackPageview', search.lastQueryUrl()]);
       }, 200);
 
       k.InstantSearchSettings.hideContent();
@@ -109,6 +110,7 @@
     }
 
     _gaq.push(['_trackEvent', 'Instant Search', 'Search', $this.data('href')]);
+    _gaq.push(['_trackPageview', $this.data('href')]);
 
     cxhr.request($this.data('href'), {
       data: {format: 'json'},
