@@ -172,7 +172,7 @@
                     {% set topic = question.topic %}
                     <li>
                       <a href="{{ url('questions.list', topic.product.slug)|urlparams(None, request.GET, topic=None) }}">
-                        <img src="/static/img/blank.png" class="logo-sprite-tiny logo-{{ topic.product.slug }}">
+                        <img src="{{ STATIC_URL }}sumo/img/blank.png" class="logo-sprite-tiny logo-{{ topic.product.slug }}">
                         {{ _(topic.product.title, 'DB: products.Product.title') }}
                       </a>
                     </li>
