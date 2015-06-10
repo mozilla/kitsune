@@ -4,6 +4,8 @@ from string import letters
 from django.contrib.auth.models import User, Group, Permission
 from django.contrib.contenttypes.models import ContentType
 
+import factory
+
 from kitsune.sumo.tests import LocalizingClient, TestCase, with_save
 from kitsune.users.models import Profile, Setting
 
@@ -12,6 +14,35 @@ class TestCaseBase(TestCase):
     """Base TestCase for the users app test cases."""
 
     client_class = LocalizingClient
+
+
+class UserFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = User
+
+    username = factory.Sequence(lambda n: 'test-user-{}'.format(n))
+    email = factory.LazyAttribute(lambda u: '{}@example.com'.format(u.username))
+    password = factory.PostGenerationMethodCall('set_password', 'testpass')
+
+    @factory.post_generation
+    def profile(user, created, extracted, **kwargs):
+        if type(extracted) == Profile:
+            return
+        ProfileFactory(user=user)
+
+
+class ProfileFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = Profile
+
+    name = factory.Sequence(lambda n: 'Test K. User {}'.format(n))
+    bio = 'Some bio.'
+    website = 'http://support.example.com'
+    timezone = None
+    country = 'US'
+    city = 'Portland'
+    locale = 'en-US'
+    user = factory.SubFactory(UserFactory)
 
 
 def profile(**kwargs):
