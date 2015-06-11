@@ -33,7 +33,7 @@ from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import paginate, smart_int, get_next_url, truncated_json_dumps, get_browser
 from kitsune.wiki.config import (
     CATEGORIES, MAJOR_SIGNIFICANCE, TEMPLATES_CATEGORY, DOCUMENTS_PER_PAGE,
-    COLLAPSIBLE_DOCUMENTS)
+    COLLAPSIBLE_DOCUMENTS, FALLBACK_LOCALS)
 from kitsune.wiki.events import (
     EditDocumentEvent, ReviewableRevisionInLocaleEvent,
     ApproveRevisionInLocaleEvent, ApprovedOrReadyUnion,
@@ -127,6 +127,31 @@ def document(request, document_slug, template=None, document=None):
 
     any_localizable_revision = doc.revisions.filter(is_approved=True,
                                                     is_ready_for_localization=True).exists()
+    # If any local has fallback locals and the docmunet is missing localization in that local
+    # So show the fallback local's document. There can be highest two fallback local for any local
+    # Fallback locals can be add in kitsune/wiki/config.py
+    if fallback_reason == 'no_translation' and (request.LANGUAGE_CODE in FALLBACK_LOCALS.keys()):
+        # Get fallback locals for the requested local
+        fallback_local_code = FALLBACK_LOCALS.get(request.LANGUAGE_CODE)
+        # Get the locals in which the document is already translated
+        translated_locales = doc.translations.all().values_list('locale', flat=True)
+        # If the document is translated in first fallback local, show that local version
+        if fallback_local_code[0] in translated_locales:
+            translation = doc.translated_to(fallback_local_code[0])
+            doc = Document.objects.get(locale=fallback_local_code[0],
+                                       slug=translation.slug)
+        else:
+            # If the document is missing translation in first fallback local
+            # try the second fallback local
+            if fallback_local_code[1] in translated_locales:
+                translation = doc.translated_to(fallback_local_code[1])
+                doc = Document.objects.get(locale=fallback_local_code[1],
+                                           slug=translation.slug)
+            # If the document is also missing translation in second fallback local
+            # Lets show the English version
+            else:
+                doc = get_object_or_404(Document, locale=settings.WIKI_DEFAULT_LANGUAGE,
+                                        slug=document_slug)
 
     # Obey explicit redirect pages:
     # Don't redirect on redirect=no (like Wikipedia), so we can link from a

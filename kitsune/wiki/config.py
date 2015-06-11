@@ -29,6 +29,11 @@ COLLAPSIBLE_DOCUMENTS = {
     ]
 }
 
+FALLBACK_LOCALS = {
+    'bn-IN': ['bn-BD', 'in'],
+    'pt-PT': ['pt-BR', 'in']
+}
+
 # Wiki configuration.
 
 # Defines products supported, categories, edit significances and
