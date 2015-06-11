@@ -1,4 +1,5 @@
 import re
+from datetime import datetime
 
 from django import forms
 from django.conf import settings
@@ -20,6 +21,7 @@ from kitsune.upload.forms import clean_image_extension
 from kitsune.upload.utils import check_file_size, FileTooLargeError
 from kitsune.users.models import Profile
 from kitsune.users.widgets import FacebookURLWidget
+from kitsune.users.widgets import MonthYearWidget
 
 
 USERNAME_INVALID = _lazy(u'Username may contain only English letters, '
@@ -175,11 +177,17 @@ class AuthenticationForm(auth_forms.AuthenticationForm):
 class ProfileForm(forms.ModelForm):
     """The form for editing the user's profile."""
 
+    involved_from = forms.DateField(
+        required=False,
+        label=_lazy(u'Involved with Mozilla from'),
+        widget=MonthYearWidget(years=range(1998, datetime.today().year + 1),
+                               required=False))
+
     class Meta(object):
         model = Profile
         fields = ('name', 'public_email', 'bio', 'website', 'twitter',
                   'facebook', 'mozillians', 'irc_handle', 'timezone', 'country', 'city',
-                  'locale')
+                  'locale', 'involved_from')
         widgets = {
             'facebook': FacebookURLWidget,
         }

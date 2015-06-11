@@ -64,10 +64,15 @@
         {% endif %}
       {% endif %}
 
-      {% if num_answers or num_questions or num_solutions or num_documents %}
+      {% if num_answers or num_questions or num_solutions or num_documents or profile.involved_from %}
         <section class="contributions">
           <h2>Contributions</h2>
           <ul>
+            {% if profile.involved_from %}
+              <li>
+                {{ _('Involved with Mozilla since {date}')|f(date=profile.involved_from.strftime('%b %Y')) }}
+              </li>
+            {% endif %}
             {% if num_questions %}
               <li>
                 <a href="{{ url('search')|urlparams(asked_by=profile.user.username, sortby=1, a=1, w=2) }}">
