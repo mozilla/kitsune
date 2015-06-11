@@ -161,9 +161,9 @@
       & + textarea,
       & + .value,
       & + .field-button {
+        float: left;
         border-radius: 0 3px 3px 0;
-        margin-left: 96px;
-        width: calc(100% - 96px);
+        width: calc(~"100% - 96px");
       }
 
       &.big {
@@ -174,8 +174,8 @@
         & + textarea,
         & + .value,
         & + .field-button {
-          margin-left: 150px;
-          width: calc(100% - 180px);
+          float: left;
+          width: calc(~"100% - 180px");
         }
       }
     }
@@ -184,9 +184,10 @@
       margin-bottom: 12px;
 
       + input {
-        margin-left: 60px;
+        float: left;
+        margin-left: 12px;
         margin-top: 3px;
-        width: calc(100% - 60px);
+        width: calc(~"100% - 60px");
       }
     }
 
@@ -261,7 +262,7 @@
     float: left;
     height: 39px;
     line-height: 29px;
-    width: calc(50% - 5px);
+    width: calc(~"50% - 5px");
   }
 
   .btn-submit {

@@ -161,7 +161,7 @@ body {
   > .wrapper {
     background: #fff;
     box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.8);
-    min-height: calc(100% - 51px);
+    min-height: calc(~"100% - 51px");
     position: absolute;
     top: 51px;
     width: 100%;
@@ -880,12 +880,12 @@ input[type="submit"]:visited {
 @media only screen and (max-width: 319px) {
   body {
     > nav {
-      width: calc(100% - 50px);
+      width: calc(~"100% - 50px");
     }
 
     &.exposed {
       .slide-on-exposed {
-        left: calc(100% - 50px);
+        left: calc(~"100% - 50px");
       }
     }
 
@@ -893,7 +893,7 @@ input[type="submit"]:visited {
       &.exposed {
         .slide-on-exposed {
           left: auto;
-          right: calc(100% - 50px);
+          right: calc(~"100% - 50px");
         }
       }
     }
