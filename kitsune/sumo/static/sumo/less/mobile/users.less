@@ -147,7 +147,7 @@
       border-radius: 3px 0 0 3px;
       box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.1) inset;
       box-sizing: border-box;
-      display: block;
+      display: inline-block;
       float: left;
       font-family: @Moz;
       font-size: 14px;
@@ -159,11 +159,9 @@
       & + input,
       & + select,
       & + textarea,
-      & + .value,
-      & + .field-button {
+      & + .value {
         border-radius: 0 3px 3px 0;
-        margin-left: 96px;
-        width: calc(100% - 96px);
+        width: calc(~"100% - 96px");
       }
 
       &.big {
@@ -174,8 +172,7 @@
         & + textarea,
         & + .value,
         & + .field-button {
-          margin-left: 150px;
-          width: calc(100% - 180px);
+          width: calc(~"100% - 180px");
         }
       }
     }
@@ -184,16 +181,16 @@
       margin-bottom: 12px;
 
       + input {
-        margin-left: 60px;
+        margin-left: 10px;
         margin-top: 3px;
-        width: calc(100% - 60px);
+        width: calc(~"100% - 60px");
       }
     }
 
     .field-button {
       background: @mobileFormBackground;
       border: 1px solid @mobileInputBorder;
-      border-radius: 0 3px 3px 0;
+      border-radius: 3px;
       box-sizing: border-box;
       color: #000;
       display: block;
@@ -245,6 +242,7 @@
       .value {
         border-radius: 0 3px 0 0;
         margin-bottom: 0;
+        margin-left: 96px;
       }
 
       .field-button {
@@ -261,7 +259,7 @@
     float: left;
     height: 39px;
     line-height: 29px;
-    width: calc(50% - 5px);
+    width: calc(~"50% - 5px");
   }
 
   .btn-submit {
