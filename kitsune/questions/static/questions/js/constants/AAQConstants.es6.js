@@ -19,6 +19,8 @@ function constantMap(names) {
 export const actionTypes = constantMap([
   'SET_PRODUCT',
   'SET_TOPIC',
+  'SET_TITLE',
+  'SET_CONTENT',
 ]);
 
 export default {actionTypes};

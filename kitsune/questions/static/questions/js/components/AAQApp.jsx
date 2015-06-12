@@ -28,35 +28,61 @@ export default class AAQApp extends React.Component {
   }
 
   render() {
+    console.log('AAQApp::render()');
     return (
       <div className="AAQApp">
         <ProductSelector question={this.state.question}/>
         <TopicSelector question={this.state.question}/>
         <TitleContentEditor question={this.state.question}/>
+        <SubmitQuestion question={this.state.question}/>
       </div>
     );
   }
 }
 
 
-class ProductSelector extends React.Component {
+class AAQStep extends React.Component {
   render() {
+    let heading = this.heading();
     return (
-      <div className="AAQApp__ProductSelector">
-        <h2>Which product would you like to ask a question about?</h2>
-        <ul id="product-picker" className="card-grid cf">
-          {products.map((product) => {
-            const selected = (this.props.question.product === product.slug);
-            return <ProductCard key={product.slug} product={product} selected={selected} />;
-          })}
-        </ul>
+      <div className="AAQApp__Step highlight-box">
+        {heading
+          ? <h2>{heading}</h2>
+          : null}
+        {this.shouldExpand()
+          ? this.body()
+          : null}
       </div>
     );
   }
 }
-ProductSelector.propTypes = {
+AAQStep.propTypes = {
   question: React.PropTypes.object.isRequired,
 };
+
+
+class ProductSelector extends AAQStep {
+  shouldExpand() {
+    // The Product selector is always visible.
+    return true;
+  }
+
+  heading() {
+    return 'Which product would you like to ask a question about?';
+  }
+
+  body() {
+    return (
+      <ul id="product-picker" className="card-grid cf">
+        {products.map((product) => {
+          const selected = (this.props.question.product === product.slug);
+          return <ProductCard key={product.slug} product={product} selected={selected} />;
+        })}
+      </ul>
+    );
+  }
+}
+
 
 class ProductCard extends React.Component {
   handleSelect(ev) {
@@ -82,33 +108,29 @@ ProductCard.propTypes = {
   selected: React.PropTypes.bool.isRequired,
 };
 
-class TopicSelector extends React.Component {
-  render() {
-    if (this.props.question.product === null) {
-      return (
-        <div className="AAQApp__TopicSelector">
-          <h3>Pick a product first.</h3>
-        </div>
-      );
-    } else {
-      return (
-        <div className="AAQApp__TopicSelector">
-          <h2>Which category best describes your problem?</h2>
-          <ul>
-            {topics.filter((t) => t.product === this.props.question.product)
-              .map((topic) => {
-                var selected = this.props.question.topic === topic.slug;
-                return <TopicItem key={topic.slug} topic={topic} selected={selected}/>;
-              })}
-          </ul>
-        </div>
-      );
-    }
+
+class TopicSelector extends AAQStep {
+  shouldExpand() {
+    return !!this.props.question.product;
+  }
+
+  heading() {
+    return 'Which topic best describes your question?';
+  }
+
+  body() {
+    return (
+      <ul>
+        {topics.filter((t) => t.product === this.props.question.product)
+          .map((topic) => {
+            var selected = this.props.question.topic === topic.slug;
+            return <TopicItem key={topic.slug} topic={topic} selected={selected}/>;
+          })}
+      </ul>
+    );
   }
 }
-TopicSelector.propTypes = {
-  question: React.PropTypes.object.isRequired,
-};
+
 
 class TopicItem extends React.Component {
   handleSelect(ev) {
@@ -130,40 +152,67 @@ TopicItem.propTypes = {
   selected: React.PropTypes.bool.isRequired,
 };
 
-class TitleContentEditor extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      title: this.props.question.title,
-    };
-  }
 
+class TitleContentEditor extends AAQStep {
   handleChange(ev) {
-    console.log('change!');
+    let {name, value} = ev.target;
+    if (name === 'title') {
+      AAQActions.setTitle(value);
+    } else if (name === 'content') {
+      AAQActions.setContent(value);
+    } else {
+      throw new Error(`Unknown field name ${name} in TitleContentEditor.`);
+    }
   }
 
-  handleBlur(ev) {
-    console.log('blur!');
+  shouldExpand() {
+    return (this.props.question.topic !== null &&
+            this.props.question.product !== null);
   }
 
-  render() {
+  heading() {
+    return 'Provide details about your question.';
+  }
+
+  body() {
     return (
-      <div className="AAQApp__TitleContentEditor">
-        <input
-          type="text"
-          name="title"
-          value={this.props.question.title}
-          onChange={this.handleChange.bind(this)}
-          onBlur={this.handleBlur.bind(this)}/>
-        <textarea
-          name="content"
-          value={this.props.question.content}
-          onChange={this.handleChange.bind(this)}
-          onBlur={this.handleBlur.bind(this)}/>
+      <div>
+        <p>
+          <label>Subject</label>
+          <input
+            type="text"
+            name="title"
+            value={this.props.question.title}
+            onChange={this.handleChange.bind(this)}
+            onBlur={this.handleChange.bind(this)}/>
+        </p>
+        <p>
+          <label>More Details</label>
+          <textarea
+            name="content"
+            value={this.props.question.content}
+            onChange={this.handleChange.bind(this)}
+            onBlur={this.handleChange.bind(this)}/>
+        </p>
       </div>
     );
   }
 }
-TitleContentEditor.propTypes = {
-  question: React.PropTypes.object.isRequired,
-};
+
+class SubmitQuestion extends AAQStep {
+  shouldExpand() {
+    return true;
+  }
+
+  heading() {
+    return null;
+  }
+
+  body() {
+    return (
+      <pre>
+        {JSON.stringify(this.props.question, null, 2)}
+      </pre>
+    );
+  }
+}

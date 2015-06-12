@@ -15,4 +15,23 @@ export function setTopic(topic) {
   });
 }
 
-export default {setProduct, setTopic};
+export function setTitle(title) {
+  AAQDispatcher.dispatch({
+    type: actionTypes.SET_TITLE,
+    title,
+  });
+}
+
+export function setContent(content) {
+  AAQDispatcher.dispatch({
+    type: actionTypes.SET_CONTENT,
+    content,
+  });
+}
+
+export default {
+  setProduct,
+  setTopic,
+  setTitle,
+  setContent,
+};

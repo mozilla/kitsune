@@ -34,6 +34,23 @@ QuestionEditStore.dispatchToken = AAQDispatcher.register((action) => {
         QuestionEditStore.emitChange();
       }
       break;
+
+    case AAQConstants.actionTypes.SET_TITLE:
+      if (question.title !== action.title) {
+        question.title = action.title;
+        QuestionEditStore.emitChange();
+      }
+      break;
+
+    case AAQConstants.actionTypes.SET_CONTENT:
+      if (question.content !== action.content) {
+        question.content = action.content;
+        QuestionEditStore.emitChange();
+      }
+      break;
+
+    default:
+      // do nothing
   }
 });
 
