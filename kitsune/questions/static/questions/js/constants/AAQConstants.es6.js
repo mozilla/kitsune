@@ -21,6 +21,7 @@ export const actionTypes = constantMap([
   'SET_TOPIC',
   'SET_TITLE',
   'SET_CONTENT',
+  'SET_SUGGESTIONS',
 ]);
 
 export default {actionTypes};

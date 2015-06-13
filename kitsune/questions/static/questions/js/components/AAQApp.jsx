@@ -23,17 +23,17 @@ export default class AAQApp extends React.Component {
 
   getStateFromStores() {
     return {
-      question: QuestionEditStore.get(),
+      question: QuestionEditStore.getQuestion(),
+      suggestions: QuestionEditStore.getSuggestions(),
     };
   }
 
   render() {
-    console.log('AAQApp::render()');
     return (
       <div className="AAQApp">
         <ProductSelector question={this.state.question}/>
         <TopicSelector question={this.state.question}/>
-        <TitleContentEditor question={this.state.question}/>
+        <TitleContentEditor question={this.state.question} suggestions={this.state.suggestions}/>
         <SubmitQuestion question={this.state.question}/>
       </div>
     );
@@ -73,7 +73,7 @@ class ProductSelector extends AAQStep {
 
   body() {
     return (
-      <ul id="product-picker" className="card-grid cf">
+      <ul id="product-picker" className="AAQApp__ProductSelector card-grid cf">
         {products.map((product) => {
           const selected = (this.props.question.product === product.slug);
           return <ProductCard key={product.slug} product={product} selected={selected} />;
@@ -120,7 +120,7 @@ class TopicSelector extends AAQStep {
 
   body() {
     return (
-      <ul>
+      <ul className="AAQApp__TopicSelector">
         {topics.filter((t) => t.product === this.props.question.product)
           .map((topic) => {
             var selected = this.props.question.topic === topic.slug;
@@ -142,7 +142,7 @@ class TopicItem extends React.Component {
     let className = cx('AAQApp__TopicSelector__Topic', {selected: this.props.selected});
     return (
       <li onClick={this.handleSelect.bind(this)} className={className}>
-        {this.props.topic.title}
+        {this.props.topic.title} ({this.props.topic.slug})
       </li>
     );
   }
@@ -151,6 +151,7 @@ TopicItem.propTypes = {
   topic: React.PropTypes.object.isRequired,
   selected: React.PropTypes.bool.isRequired,
 };
+
 
 
 class TitleContentEditor extends AAQStep {
@@ -176,28 +177,71 @@ class TitleContentEditor extends AAQStep {
 
   body() {
     return (
-      <div>
-        <p>
-          <label>Subject</label>
-          <input
-            type="text"
-            name="title"
-            value={this.props.question.title}
-            onChange={this.handleChange.bind(this)}
-            onBlur={this.handleChange.bind(this)}/>
-        </p>
-        <p>
-          <label>More Details</label>
-          <textarea
-            name="content"
-            value={this.props.question.content}
-            onChange={this.handleChange.bind(this)}
-            onBlur={this.handleChange.bind(this)}/>
-        </p>
+      <div className="AAQApp__TitleContentEditor">
+        <div className="AAQApp__TitleContentEditor__Editor">
+          <div className="AAQApp__TitleContentEditor__Editor__Title">
+            <label>Subject</label>
+            <input
+              type="text"
+              name="title"
+              value={this.props.question.title}
+              onChange={this.handleChange.bind(this)}
+              ref="title"/>
+          </div>
+          <div className="AAQApp__TitleContentEditor__Editor__Content">
+            <label>More Details</label>
+            <textarea
+              name="content"
+              value={this.props.question.content}
+              onChange={this.handleChange.bind(this)}
+              ref="content"/>
+          </div>
+        </div>
+        <SuggestionList suggestions={this.props.suggestions}/>
       </div>
     );
   }
 }
+TitleContentEditor.propTypes = {
+  className: React.PropTypes.string,
+  question: React.PropTypes.object.isRequired,
+  suggestions: React.PropTypes.array.isRequired,
+};
+
+
+class SuggestionList extends React.Component {
+  render() {
+    return (
+      <div className="AAQApp__SuggestionList">
+        <h3>Do any of these articles answer your question?</h3>
+        <ul>
+          {this.props.suggestions.map((suggestion) => (
+            <SuggestionItem key={suggestion.slug} suggestion={suggestion}/>))}
+        </ul>
+      </div>
+    );
+  }
+}
+SuggestionList.propTypes = {
+  suggestions: React.PropTypes.array.isRequired,
+};
+
+
+class SuggestionItem extends React.Component {
+  render() {
+    let suggestion = this.props.suggestion;
+    return (
+      <li className="AAQApp__SuggestionList__SuggestionItem">
+        <a href={suggestion.url}>{suggestion.title}</a>
+        <div dangerouslySetInnerHTML={{__html: suggestion.summary}}/>
+      </li>
+    );
+  }
+}
+SuggestionItem.propTypes = {
+  suggestion: React.PropTypes.object.isRequired,
+};
+
 
 class SubmitQuestion extends AAQStep {
   shouldExpand() {

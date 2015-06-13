@@ -468,7 +468,7 @@ def aaq_react(request):
     to_json = JSONRenderer().render
 
     products = ProductSerializer(Product.objects.filter(visible=True), many=True)
-    topics = TopicSerializer(Topic.objects.filter(visible=True), many=True)
+    topics = TopicSerializer(Topic.objects.filter(visible=True, parent=None), many=True)
 
     return render(request, 'questions/new_question_react.html', {
         'products_json': to_json(products.data),

@@ -9,9 +9,15 @@ var question = {
   topic: null,
 };
 
+var suggestions = [];
+
 class _QuestionEditStore extends BaseStore {
-  get() {
+  getQuestion() {
     return _.clone(question);
+  }
+
+  getSuggestions() {
+    return _.clone(suggestions);
   }
 }
 
@@ -47,6 +53,11 @@ QuestionEditStore.dispatchToken = AAQDispatcher.register((action) => {
         question.content = action.content;
         QuestionEditStore.emitChange();
       }
+      break;
+
+    case AAQConstants.actionTypes.SET_SUGGESTIONS:
+      suggestions = action.suggestions;
+      QuestionEditStore.emitChange();
       break;
 
     default:

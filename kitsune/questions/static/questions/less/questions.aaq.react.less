@@ -18,4 +18,39 @@
       }
     }
   }
+
+  &__TitleContentEditor {
+    display: flex;
+
+    &__Editor {
+      flex: 0 0 50%;
+      display: flex;
+      flex-direction: column;
+
+     > div:not(:last-child) {
+       margin-bottom: 10px;
+     }
+
+      &__Title {
+        flex: 0 0;
+      }
+
+      &__Content {
+        flex: 1 1 100%;
+
+        textarea {
+          height: 90%;
+        }
+      }
+
+      label {
+        display: block;
+      }
+
+      input,
+      textarea {
+        width: 100%;
+      }
+    }
+  }
 }
