@@ -12,11 +12,12 @@ from django.core.exceptions import PermissionDenied
 from django.db import connection
 from django.forms.util import ErrorList
 from django.http import (HttpResponse, HttpResponseRedirect,
-                         Http404, HttpResponseBadRequest)
+                         Http404, HttpResponseBadRequest, HttpRequest)
 from django.shortcuts import get_object_or_404, render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import (require_GET, require_POST,
                                           require_http_methods)
+from django.utils.translation.trans_real import parse_accept_lang_header
 
 import jingo
 from mobility.decorators import mobile_template
@@ -33,7 +34,7 @@ from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import paginate, smart_int, get_next_url, truncated_json_dumps, get_browser
 from kitsune.wiki.config import (
     CATEGORIES, MAJOR_SIGNIFICANCE, TEMPLATES_CATEGORY, DOCUMENTS_PER_PAGE,
-    COLLAPSIBLE_DOCUMENTS, FALLBACK_LOCALS)
+    COLLAPSIBLE_DOCUMENTS, FALLBACK_LOCALES)
 from kitsune.wiki.events import (
     EditDocumentEvent, ReviewableRevisionInLocaleEvent,
     ApproveRevisionInLocaleEvent, ApprovedOrReadyUnion,
@@ -127,31 +128,23 @@ def document(request, document_slug, template=None, document=None):
 
     any_localizable_revision = doc.revisions.filter(is_approved=True,
                                                     is_ready_for_localization=True).exists()
-    # If any local has fallback locals and the docmunet is missing localization in that local
-    # So show the fallback local's document. There can be highest two fallback local for any local
-    # Fallback locals can be add in kitsune/wiki/config.py
-    if fallback_reason == 'no_translation' and (request.LANGUAGE_CODE in FALLBACK_LOCALS.keys()):
-        # Get fallback locals for the requested local
-        fallback_local_code = FALLBACK_LOCALS.get(request.LANGUAGE_CODE)
-        # Get the locals in which the document is already translated
-        translated_locales = doc.translations.all().values_list('locale', flat=True)
-        # If the document is translated in first fallback local, show that local version
-        if fallback_local_code[0] in translated_locales:
-            translation = doc.translated_to(fallback_local_code[0])
-            doc = Document.objects.get(locale=fallback_local_code[0],
+    # If any document is not translated into requested locale, we will try to find out the
+    # Fallback locale and show the docment in the fallback locale rather than showing in english.
+    # The fallback Locale would be chosen by Accepted_language header, Local mapping of setting
+    # And Custom fallbacks locale for wiki.
+    # Custom Fallback locales for Wiki can be add in kitsune/wiki/config.py.
+    # See bug 800880 for more details.
+    if fallback_reason == 'no_translation':
+        fallback_locale = get_fallback_locale(doc, request)
+
+        if not fallback_locale is None:
+            translation = doc.translated_to(fallback_locale)
+            doc = Document.objects.get(locale=fallback_locale,
                                        slug=translation.slug)
+            fallback_reason = 'fallback_locale'
         else:
-            # If the document is missing translation in first fallback local
-            # try the second fallback local
-            if fallback_local_code[1] in translated_locales:
-                translation = doc.translated_to(fallback_local_code[1])
-                doc = Document.objects.get(locale=fallback_local_code[1],
-                                           slug=translation.slug)
-            # If the document is also missing translation in second fallback local
-            # Lets show the English version
-            else:
-                doc = get_object_or_404(Document, locale=settings.WIKI_DEFAULT_LANGUAGE,
-                                        slug=document_slug)
+            doc = get_object_or_404(Document, locale=settings.WIKI_DEFAULT_LANGUAGE,
+                                    slug=document_slug)
 
     # Obey explicit redirect pages:
     # Don't redirect on redirect=no (like Wikipedia), so we can link from a
@@ -1495,3 +1488,59 @@ def what_links_here(request, document_slug):
     }
 
     return render(request, 'wiki/what_links_here.html', c)
+
+
+def get_fallback_locale(doc, request):
+    """Get best fallback local based on locale Mapping"""
+
+    # Get the Translated locales which have current revision
+    translated_locales = doc.translations.all().values_list('locale', flat=True).exclude(current_revision=None)
+    # Get the Accepted_language header from user request
+    header_locales = parse_accept_lang_header(request.META.get('HTTP_ACCEPT_LANGUAGE'))
+    # Get the Locale mapping from setting
+    NON_SUPPORTED_LOCALES = settings.NON_SUPPORTED_LOCALES
+
+    # Check if the document is translated to any of the locale mentioned in Accepted_Language Header
+    for locale, _ in header_locales:
+        if locale in translated_locales:
+            fallback_locale = locale
+            break
+    else:
+        # If any locale of Accpeted_Language Header is not in translated_locale
+        # Check if we have any fallback local for the locales of Accpeted_Languge Header
+        # This locale mapping is mentioned in kitsune/settings.py
+        for locale, _ in header_locales:
+            if locale in settings.NON_SUPPORTED_LOCALES and NON_SUPPORTED_LOCALES[local] in translated_locales:
+                fallback_locale = NON_SUPPORTED_LOCALES[local]
+                break
+        else:
+            # If above does not match, then we would check if we have custom Locale mapping
+            # for the locale user requested.
+            # This custom Locale Wiki Mapping is mentioned in kitsune/wiki/config.py
+            if request.LANGUAGE_CODE in FALLBACK_LOCALES:
+                for locale in FALLBACK_LOCALES[locale]:
+                    if locale in translated_locales:
+                        fallback_locale = local
+                        break
+                else:
+                    # If above does not match, then we would check if any fallback local of
+                    # in Accepted_Language Header is in the Custom Wiki Locale mappping
+                    for locale in header_locales:
+                        if locale in FALLBACK_LOCALES and FALLBACK_LOCALES[locale] in translated_locales:
+                            fallback_locale = locale
+                            break
+                    else:
+                        # If all fails, return None as fallback Locale
+                        fallback_locale = None
+            # If Custom Locale Mapping is not available for the requested locale, then we will
+            # check if We have any translated fallback locale available for the Accpeted_Launguage
+            # Header in the Custom Wiki locale mapping.
+            else:
+                for locale in header_locales:
+                    if locale in FALLBACK_LOCALES and FALLBACK_LOCALES[locale] in translated_locales:
+                        fallback_locale = locale
+                        break
+                else:
+                    # If all fails, return None as fallback Locale
+                    fallback_locale = None
+    return fallback_locale
