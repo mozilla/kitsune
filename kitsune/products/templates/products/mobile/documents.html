@@ -45,6 +45,13 @@
         <a class="cf" href="{{ document['url'] }}">{{ document['document_title'] }}</a>
       </li>
     {% endfor %}
+    {% if product.questions_enabled(request.LANGUAGE_CODE) %}
+      <li class="community-support">
+        <a href="{{ url('wiki.document', 'get-community-support') }}">
+          {{ _('Get community support') }}
+        </a>
+      </li>
+    {% endif %}
   </ul>
 
   {% if fallback_documents %}
