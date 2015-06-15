@@ -16,9 +16,7 @@ class UnsubscribeTests(TestCase):
         self.assertTemplateUsed('motidings/unsub.html')
 
     def test_view_post_success(self):
-        watch = WatchFactory(
-            secret='ou812'
-        )
+        watch = WatchFactory(secret='ou812')
 
         url = reverse('tidings.unsubscribe', args=(watch.id,), locale='en-US')
         resp = self.client.post(url + '?s={0}'.format(watch.secret))
