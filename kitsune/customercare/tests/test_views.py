@@ -6,11 +6,12 @@ from django.test.client import RequestFactory
 
 from mock import patch, Mock
 from nose.tools import eq_
+from pyquery import PyQuery as pq
 
 from kitsune.customercare.models import Tweet, Reply
 from kitsune.customercare.tests import tweet, twitter_account, reply
-from kitsune.customercare.views import _get_tweets, _count_answered_tweets
-from kitsune.customercare.views import twitter_post
+from kitsune.customercare.views import (
+    _get_tweets, _count_answered_tweets, more_tweets, twitter_post)
 from kitsune.sumo.tests import TestCase, LocalizingClient
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import user
@@ -33,7 +34,8 @@ class TweetListTests(TestCase):
         last = now - timedelta(days=settings.CC_TWEETS_DAYS - 1)
         tweet(save=True, created=last)
 
-        self.client.login(username=user(save=True), password='testpass')
+        self.user = user(save=True)
+        self.client.login(username=self.user.username, password='testpass')
 
     def _hide_tweet(self, id):
         url = reverse('customercare.hide_tweet', locale='en-US')
@@ -106,6 +108,23 @@ class TweetListTests(TestCase):
             reverse('customercare.hide_tweet', locale='en-US'),
             {'id': tw.tweet_id})
         eq_(r.status_code, 418)  # Don't tell a teapot to brew coffee.
+
+    def test_remove_in_infinite_scroll(self):
+        max_id = max(t['id'] for t in _get_tweets())
+
+        req = RequestFactory().get(
+            reverse('customercare.more_tweets', locale='en-US'),
+            {'max_id': max_id + 1})
+        req.session = {}
+        req.twitter = Mock()
+        req.twitter.authed = True
+        req.user = self.user
+        req.LANGUAGE_CODE = 'en-US'
+
+        res = more_tweets(req)
+        eq_(res.status_code, 200)
+        doc = pq(res.content)
+        assert len(doc('.results-user')) > 0
 
 
 class CountTests(TestCase):
