@@ -109,12 +109,15 @@ class TweetListTests(TestCase):
             {'id': tw.tweet_id})
         eq_(r.status_code, 418)  # Don't tell a teapot to brew coffee.
 
+
+class MoreTweetsTests(TestCase):
+
     def test_remove_in_infinite_scroll(self):
-        max_id = max(t['id'] for t in _get_tweets())
+        tw = tweet(save=True)
 
         req = RequestFactory().get(
             reverse('customercare.more_tweets', locale='en-US'),
-            {'max_id': max_id + 1})
+            {'max_id': tw.id + 1})
         req.session = {}
         req.twitter = Mock()
         req.twitter.authed = True
@@ -124,7 +127,7 @@ class TweetListTests(TestCase):
         res = more_tweets(req)
         eq_(res.status_code, 200)
         doc = pq(res.content)
-        assert len(doc('.results-user')) > 0
+        eq_(len(doc('.results-user')), 1)
 
 
 class CountTests(TestCase):
