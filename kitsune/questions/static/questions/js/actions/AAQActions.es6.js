@@ -56,6 +56,7 @@ function searchSuggestions(title) {
     console.log('suggest error:', err);
   });
 }
+searchSuggestions = _.throttle(searchSuggestions, 500);
 
 export function setSuggestions(suggestions) {
   AAQDispatcher.dispatch({
@@ -71,9 +72,38 @@ export function setContent(content) {
   });
 }
 
+export function submitQuestion() {
+  AAQDispatcher.dispatch({
+    type: actionTypes.QUESTION_SUBMIT_OPTIMISTIC,
+  });
+  let questionData = QuestionEditStore.getQuestion();
+  $.ajax({
+    url: '/api/2/question/',
+    type: 'POST',
+    data: questionData,
+    beforeSend: function(xhr) {
+      let csrf = document.querySelector('input[name=csrfmiddlewaretoken]').value;
+      xhr.setRequestHeader('X-CSRFToken', csrf);
+    },
+  })
+  .done((...args) => {
+    console.log('done', args);
+    AAQDispatcher.dispatch({
+      type: actionTypes.QUESTION_SUBMIT_SUCCESS,
+    });
+  })
+  .fail((err) => {
+    AAQDispatcher.dispatch({
+      type: actionTypes.QUESTION_SUBMIT_FAILURE,
+      error: err.statusText,
+    });
+  });
+}
+
 export default {
   setProduct,
   setTopic,
   setTitle,
   setContent,
+  submitQuestion,
 };

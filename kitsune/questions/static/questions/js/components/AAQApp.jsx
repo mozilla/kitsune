@@ -25,16 +25,18 @@ export default class AAQApp extends React.Component {
     return {
       question: QuestionEditStore.getQuestion(),
       suggestions: QuestionEditStore.getSuggestions(),
+      validationErrors: QuestionEditStore.getValidationErrors(),
+      questionState: QuestionEditStore.getState(),
     };
   }
 
   render() {
     return (
       <div className="AAQApp">
-        <ProductSelector question={this.state.question}/>
-        <TopicSelector question={this.state.question}/>
-        <TitleContentEditor question={this.state.question} suggestions={this.state.suggestions}/>
-        <SubmitQuestion question={this.state.question}/>
+        <ProductSelector {...this.state}/>
+        <TopicSelector {...this.state}/>
+        <TitleContentEditor {...this.state}/>
+        <SubmitQuestion {...this.state}/>
       </div>
     );
   }
@@ -244,6 +246,10 @@ SuggestionItem.propTypes = {
 
 
 class SubmitQuestion extends AAQStep {
+  handleSubmit() {
+    AAQActions.submitQuestion();
+  }
+
   shouldExpand() {
     return true;
   }
@@ -254,9 +260,16 @@ class SubmitQuestion extends AAQStep {
 
   body() {
     return (
-      <pre>
-        {JSON.stringify(this.props.question, null, 2)}
-      </pre>
+      <div>
+        <pre>
+          {JSON.stringify(this.props.question, null, 2)}
+        </pre>
+        <button className="btn" onClick={this.handleSubmit}>Submit</button>
+        <pre>
+          {this.props.questionState}
+          {this.props.validationErrors}
+        </pre>
+      </div>
     );
   }
 }

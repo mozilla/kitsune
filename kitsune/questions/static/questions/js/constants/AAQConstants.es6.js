@@ -22,6 +22,9 @@ export const actionTypes = constantMap([
   'SET_TITLE',
   'SET_CONTENT',
   'SET_SUGGESTIONS',
+  'QUESTION_SUBMIT_OPTIMISTIC',
+  'QUESTION_SUBMIT_SUCCESS',
+  'QUESTION_SUBMIT_FAILURE',
 ]);
 
 export default {actionTypes};

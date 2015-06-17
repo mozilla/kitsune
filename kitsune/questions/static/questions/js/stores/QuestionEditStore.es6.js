@@ -7,9 +7,13 @@ import AAQConstants from '../constants/AAQConstants.es6.js';
 var question = {
   product: null,
   topic: null,
+  title: null,
+  content: null,
 };
 
 var suggestions = [];
+var state = 'editing';
+var validationErrors = {};
 
 class _QuestionEditStore extends BaseStore {
   getQuestion() {
@@ -18,6 +22,14 @@ class _QuestionEditStore extends BaseStore {
 
   getSuggestions() {
     return _.clone(suggestions);
+  }
+
+  getState() {
+    return state;
+  }
+
+  getValidationErrors() {
+    return _.clone(validationErrors);
   }
 }
 
@@ -57,6 +69,23 @@ QuestionEditStore.dispatchToken = AAQDispatcher.register((action) => {
 
     case AAQConstants.actionTypes.SET_SUGGESTIONS:
       suggestions = action.suggestions;
+      QuestionEditStore.emitChange();
+      break;
+
+    case AAQConstants.actionTypes.QUESTION_SUBMIT_OPTIMISTIC:
+      state = 'pending';
+      QuestionEditStore.emitChange();
+      break;
+
+    case AAQConstants.actionTypes.QUESTION_SUBMIT_SUCCESS:
+      state = 'submitted';
+      validationErrors.server = {};
+      QuestionEditStore.emitChange();
+      break;
+
+    case AAQConstants.actionTypes.QUESTION_SUBMIT_FAILURE:
+      state = 'error';
+      validationErrors.server = [action.error];
       QuestionEditStore.emitChange();
       break;
 
