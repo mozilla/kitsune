@@ -1,4 +1,4 @@
-(function($, _) {
+(function($) {
   var searchTimeout;
   var locale = $('html').attr('lang');
 
@@ -31,8 +31,15 @@
       $('#main-content').after($searchContent);
     }
 
-    $searchContent.html(_.render('search-results.html', context));
+    $searchContent.html(k.nunjucksEnv.render('search-results.html', context));
   }
+
+  window.k.InstantSearchSettings = {
+    hideContent: hideContent,
+    showContent: showContent,
+    render: render,
+    searchClient: search
+  };
 
   $(document).on('submit', '[data-instant-search="form"]', function(ev) {
     ev.preventDefault();
@@ -42,14 +49,14 @@
     var $this = $(this);
     var params = {
       format: 'json'
-    }
+    };
 
     if ($this.val().length === 0) {
       if (searchTimeout) {
         window.clearTimeout(searchTimeout);
       }
 
-      showContent();
+      window.k.InstantSearchSettings.showContent();
     } else if ($this.val() !== search.lastQuery) {
       if (searchTimeout) {
         window.clearTimeout(searchTimeout);
@@ -64,10 +71,10 @@
 
       searchTimeout = setTimeout(function () {
         search.setParams(params);
-        search.query($this.val(), render);
+        search.query($this.val(), k.InstantSearchSettings.render);
       }, 200);
 
-      hideContent();
+      k.InstantSearchSettings.hideContent();
     }
   });
 
@@ -96,7 +103,7 @@
     cxhr.request($this.data('href'), {
       data: {format: 'json'},
       dataType: 'json',
-      success: render
+      success: k.InstantSearchSettings.render
     });
   });
-})(jQuery, k.nunjucksEnv);
+})(jQuery);
