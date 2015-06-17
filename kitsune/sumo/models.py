@@ -1,8 +1,6 @@
 from django.conf import settings
 from django.db import models
 
-from south.modelsinspector import add_introspection_rules
-
 
 class ModelBase(models.Model):
     """Base class for SUMO models.
@@ -37,11 +35,6 @@ class ModelBase(models.Model):
         if signal:
             models.signals.post_save.send(sender=cls, instance=self,
                                           created=False)
-
-
-# This adds rules that South needs for introspection so it can do
-# migrations correctly.
-add_introspection_rules([], ["^kitsune\.sumo\.models\.LocaleField"])
 
 
 class LocaleField(models.CharField):

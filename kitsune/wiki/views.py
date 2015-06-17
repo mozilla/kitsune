@@ -32,7 +32,8 @@ from kitsune.sumo.redis_utils import redis_client, RedisError
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import paginate, smart_int, get_next_url, truncated_json_dumps
 from kitsune.wiki.config import (
-    CATEGORIES, MAJOR_SIGNIFICANCE, TEMPLATES_CATEGORY, DOCUMENTS_PER_PAGE)
+    CATEGORIES, MAJOR_SIGNIFICANCE, TEMPLATES_CATEGORY, DOCUMENTS_PER_PAGE,
+    COLLAPSIBLE_DOCUMENTS)
 from kitsune.wiki.events import (
     EditDocumentEvent, ReviewableRevisionInLocaleEvent,
     ApproveRevisionInLocaleEvent, ApprovedOrReadyUnion,
@@ -154,7 +155,7 @@ def document(request, document_slug, template=None, document=None):
     else:
         product = products[0]
 
-    topics = Topic.objects.filter(product=product, visible=True, parent=None)
+    product_topics = Topic.objects.filter(product=product, visible=True, parent=None)
 
     ga_push = []
     if fallback_reason is not None:
@@ -164,6 +165,11 @@ def document(request, document_slug, template=None, document=None):
         ga_push.append(['_trackEvent', 'Incomplete L10n', 'Not Updated',
                         '%s/%s' % (doc.parent.slug, request.LANGUAGE_CODE)])
 
+    if document_slug in COLLAPSIBLE_DOCUMENTS.get(request.LANGUAGE_CODE, []):
+        document_css_class = 'collapsible'
+    else:
+        document_css_class = ''
+
     if request.MOBILE and 'minimal' in request.GET:
         template = '%sdocument-minimal.html' % template
         minimal = True
@@ -171,16 +177,42 @@ def document(request, document_slug, template=None, document=None):
         template = '%sdocument.html' % template
         minimal = False
 
+    # Build a set of breadcrumbs, ending with the document's title, and
+    # starting with the product, with the topic(s) in between.
+    # The breadcrumbs are built backwards, and then reversed.
+
+    # Get document title. If it is like "Title - Subtitle", strip off the subtitle.
+    trimmed_title = doc.title.split(' - ')[0].strip()
+    breadcrumbs = [(None, trimmed_title)]
+    # Get the dominant topic, and all parent topics. Save the topic chosen for
+    # picking a product later.
+    document_topics = doc.topics.order_by('display_order')
+    if len(document_topics) > 0:
+        topic = document_topics[0]
+        first_topic = topic
+        while topic is not None:
+            breadcrumbs.append((topic.get_absolute_url(), topic.title))
+            topic = topic.parent
+        # Get the product
+        breadcrumbs.append((first_topic.product.get_absolute_url(), first_topic.product.title))
+    else:
+        breadcrumbs.append((product.get_absolute_url(), product.title))
+    # The list above was built backwards, so flip this.
+    breadcrumbs.reverse()
+
     data = {
         'document': doc,
         'redirected_from': redirected_from,
         'contributors': contributors,
         'fallback_reason': fallback_reason,
         'is_aoa_referral': request.GET.get('ref') == 'aoa',
-        'topics': topics,
+        'product_topics': product_topics,
         'product': product,
         'products': products,
+        'related_products': doc.related_products.exclude(pk=product.pk),
         'ga_push': ga_push,
+        'breadcrumb_items': breadcrumbs,
+        'document_css_class': document_css_class,
     }
 
     response = render(request, template, data)
@@ -518,6 +550,29 @@ def review_revision(request, document_slug, revision_id):
     revision_contributors = list(set(
         based_on_revs.values_list('creator__username', flat=True)))
 
+    # Get Unreviewed Revisions
+    unreviewed_revisions = Revision.objects.filter(document=doc,
+                                                   is_approved=False,
+                                                   reviewed=None).order_by('-id')
+
+    # Get latest revision which is still not approved. Use **latest_revision_id** to get the id.
+    try:
+        latest_unapproved_revision = unreviewed_revisions[0]
+        latest_unapproved_revision_id = latest_unapproved_revision.id
+    except IndexError:
+        latest_unapproved_revision_id = None
+
+    # Get Current Revision id only if there is any approved revision.
+    # Return None if there is no current revision
+    if doc.current_revision is not None:
+        current_revision_id = doc.current_revision.id
+        unreviewed_revisions = unreviewed_revisions.exclude(id__lt=current_revision_id)
+    else:
+        current_revision_id = None
+
+    # Get latest 5 unapproved revisions and exclude the revision which is being reviewed
+    unreviewed_revisions = unreviewed_revisions.exclude(id=rev.id)[:5]
+
     # Don't include the reviewer in the recent contributors list.
     if request.user.username in revision_contributors:
         revision_contributors.remove(request.user.username)
@@ -601,7 +656,10 @@ def review_revision(request, document_slug, revision_id):
     data = {'revision': rev, 'document': doc, 'form': form,
             'parent_revision': parent_revision,
             'revision_contributors': list(revision_contributors),
-            'should_ask_significance': should_ask_significance}
+            'should_ask_significance': should_ask_significance,
+            'latest_unapproved_revision_id': latest_unapproved_revision_id,
+            'current_revision_id': current_revision_id,
+            'unreviewed_revisions': unreviewed_revisions}
     return render(request, template, data)
 
 
@@ -1295,6 +1353,8 @@ def _document_form_initial(document):
                 document=document).values_list('id', flat=True),
             'products': Product.objects.filter(
                 document=document).values_list('id', flat=True),
+            'related_documents': Document.objects.filter(
+                related_documents=document).values_list('id', flat=True),
             'allow_discussion': document.allow_discussion,
             'needs_change': document.needs_change,
             'needs_change_comment': document.needs_change_comment}

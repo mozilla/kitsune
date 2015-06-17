@@ -23,7 +23,7 @@
     <ul id="thread-actions" class="sidebar-nav">
       {% if not thread.is_locked and
         has_perm_or_owns('forums_forum.thread_edit_forum', thread, forum) %}
-        <li><a href="{{ url('forums.edit_thread', forum.slug, thread.id) }}">{{ _('Edit this thread') }}</a></li>
+        <li><a href="{{ url('forums.edit_thread', forum.slug, thread.id) }}">{{ _('Edit Thread Title') }}</a></li>
       {% endif %}
       {% if has_perm('forums_forum.thread_delete_forum', forum) %}
         <li><a href="{{ url('forums.delete_thread', forum.slug, thread.id) }}">{{ _('Delete this thread') }}</a></li>
@@ -82,7 +82,7 @@
           {% set watch = _('Watch this thread') %}
           <input type="hidden" name="watch" value="yes" />
         {% endif %}
-        <button type="submit" title="{{ watch }}" class="btn" id="watch-thread-toggle"><img src="{{ STATIC_URL }}img/blank.png" alt="" /> {{ watch }}</button>
+        <button type="submit" title="{{ watch }}" class="btn" id="watch-thread-toggle"><img src="{{ STATIC_URL }}sumo/img/blank.png" alt="" /> {{ watch }}</button>
       </form>
     {% endif %}
 

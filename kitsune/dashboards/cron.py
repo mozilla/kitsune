@@ -6,7 +6,7 @@ from django.db import connection
 import cronjobs
 
 from kitsune.dashboards.models import (
-    PERIODS, WikiDocumentVisits, WikiMetric, L10N_TOP20_CODE, L10N_ALL_CODE,
+    PERIODS, WikiDocumentVisits, WikiMetric, L10N_TOP20_CODE, L10N_TOP100_CODE, L10N_ALL_CODE,
     L10N_ACTIVE_CONTRIBUTORS_CODE)
 from kitsune.dashboards.readouts import l10n_overview_rows
 from kitsune.products.models import Product
@@ -58,6 +58,21 @@ def update_l10n_coverage_metrics():
 
             WikiMetric.objects.create(
                 code=L10N_TOP20_CODE,
+                locale=locale,
+                product=product,
+                date=today,
+                value=percent)
+
+            # % of top 100 articles
+            top100 = rows['top-100']
+
+            try:
+                percent = 100.0 * float(top100['numerator']) / top100['denominator']
+            except ZeroDivisionError:
+                percent = 0.0
+
+            WikiMetric.objects.create(
+                code=L10N_TOP100_CODE,
                 locale=locale,
                 product=product,
                 date=today,

@@ -137,6 +137,24 @@ def simple_search(request, template=None):
     wiki_f = F(model='wiki_document')
     question_f = F(model='questions_question')
 
+    cleaned_q = cleaned['q']
+    products = cleaned['product']
+
+    if not products and 'all_products' not in request.GET:
+        lowered_q = cleaned_q.lower()
+
+        if 'thunderbird' in lowered_q:
+            products.append('thunderbird')
+        elif 'android' in lowered_q:
+            products.append('mobile')
+        elif ('ios' in lowered_q or 'ipad' in lowered_q or 'ipod' in lowered_q or
+              'iphone' in lowered_q):
+            products.append('ios')
+        elif 'firefox os' in lowered_q:
+            products.append('firefox-os')
+        elif 'firefox' in lowered_q:
+            products.append('firefox')
+
     # Start - wiki filters
 
     if cleaned['w'] & constants.WHERE_WIKI:
@@ -147,7 +165,6 @@ def simple_search(request, template=None):
         wiki_f &= F(document_locale=language)
 
         # Product filter
-        products = cleaned['product']
         for p in products:
             wiki_f &= F(product=p)
 
@@ -174,7 +191,6 @@ def simple_search(request, template=None):
             question_f &= F(**d)
 
         # Product filter
-        products = cleaned['product']
         for p in products:
             question_f &= F(product=p)
 
@@ -202,8 +218,6 @@ def simple_search(request, template=None):
     documents = ComposedList()
 
     try:
-        cleaned_q = cleaned['q']
-
         # Set up the highlights. Show the entire field highlighted.
         searcher = searcher.highlight(
             'question_content',  # support forum
@@ -313,6 +327,7 @@ def simple_search(request, template=None):
             result['score'] = doc.es_meta.score
             result['explanation'] = escape(format_explanation(
                 doc.es_meta.explanation))
+            result['id'] = doc['id']
             results.append(result)
 
     except ES_EXCEPTIONS as exc:

@@ -16,9 +16,36 @@
       {{ _('Revision Comment: {comment}')|f(comment=revision.comment) }}
       </p>
 
+      {% if unreviewed_revisions %}
+        <p>
+          <div class="unreviewed-revision"> {{ ngettext('Unreviewed Revision:', 'Unreviewed Revisions:', unreviewed_revisions|length) }} </div>
+          <br>
+          <ul class="revision-comment">
+            {% for revision in unreviewed_revisions %}
+              <li>
+                {{ _('Revision {id} by {user}')|f(id=revision.id, user=revision.creator) }}.
+                <br>
+                {{ _('<label>Revision Comment:</label> {comment}')|f(comment=revision.comment) }}
+                <br>
+                <a href="{{ url('wiki.review_revision', document.slug, revision.id) }}">{{ _('Review Revision {id}')|f(id=revision.id) }}</a>
+              </li>
+            {% endfor %}
+          </ul>
+        </p>
+      {% endif %}
+
       {% if revision.reviewed %}
         <p>
           {{ _('This revision was already reviewed by {user} on {date}.')|fe(user=revision.reviewer, date=datetimeformat(revision.reviewed, format='longdatetime')) }}
+        </p>
+      {% elif current_revision_id > revision.id %}
+        <p>
+          {% if latest_unapproved_revision_id > current_revision_id %}
+            {{ _('This revision is outdated, but there is a new revision available.') }}
+            <a href="{{ url('wiki.review_revision', document.slug, latest_unapproved_revision_id) }}">{{ _('Please review the latest revision.') }}</a>
+          {% else %}
+            {{ _('A newer revision has already been reviewed.') }}
+          {% endif %}
         </p>
       {% elif document.current_revision %}
         <details class="h2" open="open">

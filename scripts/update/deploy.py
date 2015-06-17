@@ -46,6 +46,7 @@ def update_locales(ctx):
 @task
 def update_assets(ctx):
     with ctx.lcd(settings.SRC_DIR):
+        ctx.local("git clean -fxd -- static")
         ctx.local("python2.7 manage.py nunjucks_precompile")
         ctx.local("./node_modules/.bin/bower install --allow-root")
         ctx.local("python2.7 manage.py collectstatic --noinput")

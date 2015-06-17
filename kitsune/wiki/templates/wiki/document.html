@@ -1,5 +1,5 @@
 {% extends "wiki/base.html" %}
-{% from "wiki/includes/sidebar_modules.html" import document_tools, document_notifications with context %}
+{% from "wiki/includes/sidebar_modules.html" import document_tools, document_notifications, related_products_sidebar with context %}
 {% from 'products/includes/topic_macros.html' import topic_sidebar %}
 {% from "wiki/includes/document_macros.html" import contributor_list, document_title, document_messages, document_content, topic_list %}
 {% from "wiki/includes/document_macros.html" import vote_form with context %}
@@ -35,10 +35,14 @@
   {% set extra_body_attrs = {'data-surveygizmo-url': 'http://qsurvey.mozilla.com/s3/63ac9fdb1ce1'} %}
 {% endif %}
 
+{% block breadcrumbs %}
+  {{ breadcrumbs(breadcrumb_items, id='main-breadcrumbs') }}
+{% endblock %}
+
 {% block above_main %}
   <h1 class="product-title cf">
     {% set prod_url = url('products.product', slug=product.slug) %}
-    <img src="{{ STATIC_URL }}img/blank.png" alt="" class="logo-sprite" style="background-image: url('{{ product.image_url }}');" />
+    <img src="{{ STATIC_URL }}sumo/img/blank.png" alt="" class="logo-sprite" style="background-image: url('{{ product.image_url }}');" />
     <a href="{{ prod_url }}">{{ _(product.title, 'DB: products.Product.title') }}</a>
   </h1>
 {% endblock %}
@@ -48,7 +52,7 @@
     <article class="wiki-doc">
       {{ document_title(document) }}
       {{ document_messages(document, redirected_from) }}
-      {{ document_content(document, fallback_reason, request, settings) }}
+      {{ document_content(document, fallback_reason, request, settings, document_css_class) }}
 
     {% set share_link = document.share_link or (document.parent and document.parent.share_link) %}
     {% if share_link %}
@@ -60,12 +64,23 @@
     {% endif %}
 
       <div class="vote-wrap">
-      {# this extra div is to make the js compatible with old theme. TODO: Remove and fix js. #}
+        {# this extra div is to make the js compatible with old theme. TODO: Remove and fix js. #}
         {{ vote_form(document, 'footer') }}
       </div>
 
       {{ contributor_list(contributors) }}
-   </article>
+    </article>
+
+    {% if document.related_documents.count() %}
+      <div id="related-documents">
+        <h4>{{ _('See also:') }}</h4>
+        <ul>
+          {% for related in document.related_documents.all() %}
+            <li><a href="{{ url('wiki.document', related.slug) }}">{{ related.title }}</a></li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
   </div>
 {% endblock %}
 
@@ -79,9 +94,8 @@
     {% set parent = doc.parent %}
   {% endif %}
   {{ document_tools(doc, parent, user, 'article', settings, include_showfor=True) }}
-  {{ topic_sidebar(topics[:10], [], product) }}
+  <h4>{{ _('Explore more topics') }}</h4>
+  {{ topic_sidebar(product_topics[:10], [], product) }}
+  {{ related_products_sidebar(related_products) }}
   {{ vote_form(document, 'sidebar') }}
-{% endblock %}
-
-{% block breadcrumbs %}
 {% endblock %}

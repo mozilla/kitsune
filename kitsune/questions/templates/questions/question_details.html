@@ -30,7 +30,7 @@
 {% block above_main %}
   <h1>{{ _('Support Forum') }}</h1>
 
-  {% if question.is_taken %}
+  {% if question.is_taken and question.taken_by != request.user %}
     <div class="taken-notice">
       {{ _('{user} is currently working on this problem.')|f(user=question.taken_by) }}
       <a href="#question-reply">{{ _('Post a reply') }}</a> |
@@ -414,6 +414,13 @@
             </ul>
           </li>
         </ul>
+      {% endif %}
+
+      {% if user.has_perm('users.screen_share') %}
+        <form class="screen-share-form cf" method="post" action="{{ url('questions.screen_share', question.id) }}">
+          {{ csrf() }}
+          <a href="#" class="btn btn-submit" data-type="submit">{{ _('Invite to share screen') }}</a>
+        </form>
       {% endif %}
 
       {% if user.has_perm('flagit.can_moderate') %}

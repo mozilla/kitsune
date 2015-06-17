@@ -17,7 +17,7 @@
       {{ _('(Redirected from <a href="{href}">{title}</a>)')|fe(href=redirected_from.get_absolute_url()|urlparams(redirect='no'), title=redirected_from.title) }}
     </div>
   {% endif %}
-  {% if document.is_majorly_outdated() %}
+  {% if document.is_majorly_outdated() and not document.is_archived %}
     <div class="warning-box">
       {% trans url=document.parent.get_absolute_url(), title=document.parent.title %}
         <p>This article may be out of date.</p>
@@ -41,19 +41,21 @@
   {% endif %}
 {%- endmacro %}
 
-{% macro document_content(document, fallback_reason, request, settings) -%}
-  <section id="doc-content">
+{% macro document_content(document, fallback_reason, request, settings, css_class='') -%}
+  <section id="doc-content" class="{{ css_class }}">
     {% if not fallback_reason %}
       {{ document.html|safe }}
     {% elif fallback_reason == 'no_translation' %}
-      <div id="doc-pending-fallback" class="warning-box">
-      {% trans help_link=url('wiki.document', 'localize-firefox-help'), document_trans_link=url('wiki.translate', document.slug) %}
-          No one has helped translate this article yet. If you already know how localizing for SUMO works,
-          <a href="{{ document_trans_link }}">start translating now</a>.
-          If you want to learn how to translate articles for SUMO,
-          <a href="{{ help_link }}">please start here</a>.
-        {% endtrans %}
-      </div>
+      {% if not document.is_archived %}
+        <div id="doc-pending-fallback" class="warning-box">
+          {% trans help_link=url('wiki.document', 'localize-firefox-help'), document_trans_link=url('wiki.translate', document.slug) %}
+            No one has helped translate this article yet. If you already know how localizing for SUMO works,
+            <a href="{{ document_trans_link }}">start translating now</a>.
+            If you want to learn how to translate articles for SUMO,
+            <a href="{{ help_link }}">please start here</a>.
+          {% endtrans %}
+        </div>
+      {% endif %}
       {{ document.html|safe }}
     {% elif fallback_reason == 'translation_not_approved' %}
       <div id="doc-pending-fallback" class="warning-box">
@@ -296,7 +298,7 @@
           {% endif %}
           <input type="submit" class="btn" name="helpful" value="{{ _('Yes') }}" />
           <input type="submit" class="btn" name="not-helpful" value="{{ _('No') }}" />
-          <img class="wait" src="{{ settings.STATIC_URL }}img/customercare/spinner.gif" alt="{{ _('Please wait...') }}" />
+          <img class="wait" src="{{ settings.STATIC_URL }}sumo/img/customercare/spinner.gif" alt="{{ _('Please wait...') }}" />
         </p>
       </form>
     </div>

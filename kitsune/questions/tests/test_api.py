@@ -715,3 +715,13 @@ class TestQuestionFilter(TestCase):
         q = question(taken_by=u, taken_until=taken_until, save=True)
         res = self.filter_instance.filter_is_taken(self.queryset, False)
         eq_(list(res), [q])
+
+    def test_it_works_with_users_who_have_gotten_first_contrib_emails(self):
+        # This flag caused a regression, tracked in bug 1163855.
+        # The error was that the help text on the field was a str instead of a
+        # unicode. Yes, really, that matters apparently.
+        u = profile(first_answer_email_sent=True).user
+        question(creator=u, save=True)
+        url = reverse('question-list')
+        res = self.client.get(url)
+        eq_(res.status_code, 200)

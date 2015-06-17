@@ -3,17 +3,51 @@ from datetime import datetime
 
 from django.template.defaultfilters import slugify
 
+import factory
+
 from kitsune.products.models import Product
 from kitsune.products.tests import product, topic
 from kitsune.sumo.tests import LocalizingClient, TestCase, with_save
-from kitsune.users.tests import user
+from kitsune.users.tests import user, UserFactory
 from kitsune.wiki.models import Document, Revision, HelpfulVote, Locale
-from kitsune.wiki.config import CATEGORIES, SIGNIFICANCES
+from kitsune.wiki.config import (
+    CATEGORIES, SIGNIFICANCES, TEMPLATES_CATEGORY, TEMPLATE_TITLE_PREFIX)
 
 
 class TestCaseBase(TestCase):
     """Base TestCase for the wiki app test cases."""
     client_class = LocalizingClient
+
+
+class DocumentFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = Document
+
+    category = CATEGORIES[0][0]
+    title = factory.Sequence(lambda n: u'đoc-{}'.format(n))
+    slug = factory.LazyAttribute(lambda o: slugify(o.title))
+
+
+class TemplateDocumentFactory(DocumentFactory):
+    category = TEMPLATES_CATEGORY
+    title = factory.Sequence(lambda n: u'{}:τmpl-{}'.format(TEMPLATE_TITLE_PREFIX, n))
+
+
+class RevisionFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = Revision
+
+    document = factory.SubFactory(DocumentFactory)
+    summary = 'đSome summary.'
+    content = 'đSome summary.'
+    significance = SIGNIFICANCES[0][0]
+    comment = 'đSome comment',
+    creator = factory.SubFactory(UserFactory)
+    document = factory.SubFactory(DocumentFactory)
+
+
+class ApprovedRevisionFactory(RevisionFactory):
+    is_approved = True
 
 
 # Model makers. These make it clearer and more concise to create objects in

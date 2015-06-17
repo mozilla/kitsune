@@ -7,6 +7,7 @@
   {% set crumbs = crumbs + [(None, _(topic.title, 'DB: products.Topic.title'))] %}
 {% endif %}
 {% set styles = ('products',) %}
+{% set search_params = {'product': product.slug} %}
 
 {% if product.slug == 'mobile' %}
   {# Firefox for Android has a special separate survey. #}
@@ -19,7 +20,7 @@
   <div class="grid_12">
     <h1 class="product-title cf">
       {% set prod_url = url('products.product', slug=product.slug) %}
-      <img src="{{ STATIC_URL }}img/blank.png" alt="" class="logo-sprite" style="background-image: url('{{ product.image_url }}');" />
+      <img src="{{ STATIC_URL }}sumo/img/blank.png" alt="" class="logo-sprite" style="background-image: url('{{ product.image_url }}');" />
       <a href="{{ prod_url }}">{{ _(product.title, 'DB: products.Product.title') }}</a>
     </h1>
   </div>
@@ -28,7 +29,7 @@
   </aside>
   <div class="grid_9">
     <article id="document-list">
-      {% if topic.image %}<img src="{{ STATIC_URL }}img/blank.png" alt="" class="logo-sprite" style="background-image: url('{{ topic.image_url }}');" />{% endif %}
+      {% if topic.image %}<img src="{{ STATIC_URL }}sumo/img/blank.png" alt="" class="logo-sprite" style="background-image: url('{{ topic.image_url }}');" />{% endif %}
       <h1 class="topic-title {% if topic.image %}has-image{% endif %} {% if not subtopic %}cf{% endif %}">
         {% if subtopic %}
           <a href="{{ url('products.documents', product_slug=product.slug, topic_slug=topic.slug) }}">

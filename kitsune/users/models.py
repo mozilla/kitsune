@@ -11,9 +11,8 @@ from django.contrib.sites.models import Site
 from django.db import models
 
 from celery.task import task
-from south.modelsinspector import add_introspection_rules
 from statsd import statsd
-from timezones.fields import TimeZoneField, zones, MAX_TIMEZONE_LENGTH
+from timezones.fields import TimeZoneField
 from tower import ugettext as _
 from tower import ugettext_lazy as _lazy
 
@@ -34,25 +33,6 @@ log = logging.getLogger('k.users')
 
 SHA1_RE = re.compile('^[a-f0-9]{40}$')
 CONTRIBUTOR_GROUP = 'Registered as contributor'
-
-
-# Add south introspection for timezones.fields.TimeZoneField
-#
-# We do this here because django-timezone is long in the tooth and
-# they haven't fixed it there, yet. Need to do this before it gets
-# used. If we end up using TimeZoneField elsewhere, then we should
-# centralize this hack.
-#
-# See https://github.com/brosner/django-timezones/pull/19
-add_introspection_rules(rules=[(
-    (TimeZoneField,),
-    [],
-    {
-        "max_length": ["max_length", {"default": MAX_TIMEZONE_LENGTH}],
-        "default": ["default", {"default": settings.TIME_ZONE}],
-        "choices": ["choices", {"default": zones.PRETTY_TIMEZONE_CHOICES}],
-    }
-)], patterns=["^timezones\.fields\."])
 
 
 @auto_delete_files
@@ -89,10 +69,15 @@ class Profile(ModelBase, SearchMixin):
                             verbose_name=_lazy(u'City'))
     locale = LocaleField(default=settings.LANGUAGE_CODE,
                          verbose_name=_lazy(u'Preferred language'))
+    first_answer_email_sent = models.BooleanField(
+        default=False, help_text=_lazy(u'Has been sent a first answer contribution email.'))
+    first_l10n_email_sent = models.BooleanField(
+        default=False, help_text=_lazy(u'Has been sent a first revision contribution email.'))
 
     class Meta(object):
         permissions = (('view_karma_points', 'Can view karma points'),
-                       ('deactivate_users', 'Can deactivate users'),)
+                       ('deactivate_users', 'Can deactivate users'),
+                       ('screen_share', 'Can screen share'),)
 
     def __unicode__(self):
         try:

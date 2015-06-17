@@ -40,8 +40,8 @@ cryptography==0.7.2
 # sha256: MxnZwEi7pMyJqWkRgdDgIYei8JtDQ_0vz2zL-EtO4Yo
 dennis==0.6.1
 
-# sha256: SBb4kgY1acqad1hPojy0mVwbO5VO-HUQKoIZIpy9LjM
-Django==1.7.7
+# sha256: 8KsSx8iKAzaB5E4uS_SpPZPIXVsejpyHW0uRerskaSE
+Django==1.7.8
 
 # sha256: M7YuOXN4svxB-YixuXUuT1Y5rfNYJN5wxGqKDmv1pVs
 django-activity-stream==0.5.1
@@ -64,10 +64,6 @@ https://github.com/django-security/django-axes/archive/778f208cc1d3cc42ecb756f73
 # django-badger: master~1
 # sha256: gAyhfNW8sSP1nj9wpInx4hrEC8mYtA5HJI7pE_RQ1Mc
 https://github.com/mozilla/django-badger/archive/3e9fded1a5bd17a69a852d410eaa4b79686bdd32.tar.gz#egg=django-badger==0.0.0.1
-
-# django-cache-machine: master
-# sha256: p-Yr1lnav6P4qQqFB3WFeG8vAakSp1Tlnkfa0vghB98
-https://github.com/django-cache-machine/django-cache-machine/archive/6b2b37ebbcac85a9f86e0e3b64c1c54243f50006.tar.gz#egg=django-cache-machine==0.8.0.1
 
 # django-celery: master
 # sha256: dmqn4o32-wsXoiX4O6IFfsRPcLOZVrEhtByqvQs81Ms
@@ -109,8 +105,8 @@ https://github.com/mozilla/django-product-details/archive/50d83e16d801ef069738cf
 # sha256: H1ypqtnca2OqjPPqsBVW-PnuftghanQS1gAt7OM-RBk
 https://github.com/jbalogh/django-multidb-router/archive/fffe4323fc0006c6eec20c696a5577ee902a85d9.tar.gz#egg=django-multidb-router
 
-# sha256: NmfSakH-wwNkoO9yWAgyylMogC1VP21ucq9awhyzY2U
-django-nose==1.3
+# sha256: Js7zxvYt8u7pVaJRld5veTiBMXwPX9GhxvniLzUakxM
+django-nose==1.4
 
 # django-picklefield: master~5
 # sha256: jTddtwi8h_bfm7OulO3QG-0su2polKkneF3tmu3pg-8
@@ -168,6 +164,9 @@ elasticsearch==1.2.0
 
 # sha256: 08GfJqajRinBjHdfWd_F3VlXZMcitXotpW6_tpuU5Ec
 enum34==1.0.4
+
+# sha256: zYMG5kw6EV3soTZoXpRduI_-FxOCAS7JOO0kGiDdfro
+factory-boy==2.5.2
 
 # sha256: A3VLx7JWOXwbZG5QSOIpFZD1CAFxrbiwD04tc4THbu4
 GitPython==0.1.7
@@ -275,8 +274,8 @@ https://github.com/getsentry/raven-python/archive/ab53d276262a0fa2932588b34de4e6
 # sha256: pKrx7rUrWH9IbMYyT2MF62gW_bVPony2JPDx0TecNP0
 https://github.com/andymccurdy/redis-py/archive/43aa23146ad287959369161038a4e5cda985a259.tar.gz#egg=redis
 
-# sha256: e3c179Ox4jI9yfzvBgs4DQX18YvQ8kf16edKYoJ53mY
-requests==2.5.1
+# sha256: Vdf1YZ2q6U7Enuge2Mhl5aKkfwu_jgbPlGNr7hA-r2U
+requests==2.5.3
 
 # sha256: ngIjuJUY7axhqXtW_3jycQVs4IyKF8a2RK7yRPrIPyM
 requests-oauthlib==0.4.2
@@ -297,9 +296,6 @@ simplejson==3.1.2
 
 # sha256: 4kBSQR_E-9H2cmNVN8P8IzDZSBsYwDF2lbRiWVEskdU
 six==1.9.0
-
-# sha256: 02C9MYmPnfWfb6p4ZVEGW7pFs15-48ObOBtPv-9zkvQ
-South==1.0.2
 
 # sha256: xDk0Lw5v1G9WRDHJrksEoAiIlyFCZeLRjUGugY09b_E
 sqlalchemy==0.6.4

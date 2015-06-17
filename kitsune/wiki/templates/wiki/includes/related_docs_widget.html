@@ -1,0 +1,14 @@
+<input type="search" id="search-related" placeholder="{{ _('Search for documents...') }}">
+<ul id="related-docs-list">
+  {% if related_documents.count() %}
+    {% for doc in related_documents.all() %}
+      <li data-pk="{{ doc.pk }}">
+        <input type="checkbox" name="{{ name }}" value="{{ doc.pk }}" checked/>
+        {{ doc.title }}
+        <span data-close-type="remove" class="close-button"></span>
+      </li>
+    {% endfor %}
+  {% else %}
+    <li class="empty-message">{{ _('No related documents.') }}</li>
+  {% endif %}
+</ul>

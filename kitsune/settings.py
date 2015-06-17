@@ -61,7 +61,7 @@ SLAVE_DATABASES = []
 # Cache Settings
 # CACHES = {
 #     'default': {
-#         'BACKEND': 'caching.backends.memcached.MemcachedCache',
+#         'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
 #         'LOCATION': ['localhost:11211'],
 #         'PREFIX': 'sumo:',
 #     },
@@ -477,7 +477,7 @@ AUTHENTICATION_BACKENDS = (
 )
 AUTH_PROFILE_MODULE = 'users.Profile'
 USER_AVATAR_PATH = 'uploads/avatars/'
-DEFAULT_AVATAR = 'img/avatar.png'
+DEFAULT_AVATAR = 'sumo/img/avatar.png'
 AVATAR_SIZE = 48  # in pixels
 MAX_AVATAR_FILE_SIZE = 131072  # 100k, in bytes
 GROUP_AVATAR_PATH = 'uploads/groupavatars/'
@@ -584,9 +584,11 @@ TEST_RUNNER = 'kitsune.sumo.tests.TestSuiteRunner'
 
 def JINJA_CONFIG():
     from django.conf import settings
-    config = {'extensions': ['tower.template.i18n', 'caching.ext.cache',
-                             'jinja2.ext.autoescape', 'jinja2.ext.with_',
-                             'jinja2.ext.do', 'pipeline.jinja2.ext.PipelineExtension'],
+    config = {'extensions': ['tower.template.i18n',
+                             'jinja2.ext.autoescape',
+                             'jinja2.ext.with_',
+                             'jinja2.ext.do',
+                             'pipeline.jinja2.ext.PipelineExtension'],
               'finalize': lambda x: x if x is not None else ''}
 
     return config
@@ -843,6 +845,9 @@ CC_TWEETS_DAYS = 7  # Limit tweets to those from the last 7 days.
 # actionable, so don't add it to the AoA.
 CC_WORD_BLACKLIST = [
     '#UninstallFirefox',
+    'pocket',  # bug 1164008
+    'vagina',
+    'slut',
 ]
 
 BITLY_API_URL = 'http://api.bitly.com/v3/shorten?callback=?'
@@ -871,7 +876,7 @@ GA_START_DATE = date(2012, 11, 10)
 MOBILE_COOKIE = 'msumo'
 
 # Directory of JavaScript test files for django_qunit to run
-QUNIT_TEST_DIRECTORY = os.path.join('kitsune', 'sumo', 'static', 'js', 'tests')
+QUNIT_TEST_DIRECTORY = os.path.join('kitsune', 'sumo', 'static', 'sumo', 'js', 'tests')
 
 # Key to access /services/version. Set to None to disallow.
 VERSION_CHECK_TOKEN = None

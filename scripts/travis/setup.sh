@@ -17,7 +17,6 @@ DATABASES['default']['HOST'] = 'localhost'
 DATABASES['default']['USER'] = 'travis'
 DATABASES['default']['CONN_MAX_AGE'] = 600
 CELERY_ALWAYS_EAGER = True
-CACHE_BACKEND = 'caching.backends.locmem://'
 ES_INDEX_PREFIX = 'sumo'
 ES_URLS = ['http://localhost:9200']
 INSTALLED_APPS += ('django_qunit',)
@@ -74,6 +73,10 @@ mkdir -p redis-state/sumo-test/
 
 echo "Starting XVFB for Selenium tests."
 /usr/bin/Xvfb :99 -ac -screen 0 1280x1024x16 >/dev/null 2>/dev/null &
+
+echo "Running migrations"
+./manage.py migrate --list
+./manage.py migrate
 
 echo "Doing static dance."
 ./manage.py nunjucks_precompile
