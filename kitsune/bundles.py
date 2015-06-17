@@ -418,7 +418,7 @@ PIPELINE_JS = {
             'sumo/js/instant_search.js',
             'sumo/js/mobile/products.js',
         ),
-        'output_fiename': 'build/mobile-products-min.js'
+        'output_filename': 'build/mobile-products-min.js'
     },
     'search': {
         'source_filenames': (
