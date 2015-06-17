@@ -1,0 +1,7 @@
+<ul class="document-list">
+  {% for doc in results %}
+    <li>
+      <a href="{{ doc.url }}">{{ doc.title }}</a>
+    </li>
+  {% endfor %}
+</ul>

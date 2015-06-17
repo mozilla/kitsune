@@ -407,6 +407,19 @@ PIPELINE_JS = {
         ),
         'output_filename': 'build/products-min.js'
     },
+    'mobile-products': {
+        'source_filenames': (
+            'sumo/js/templates/mobile-product-search-results.js',
+            'nunjucks/browser/nunjucks-slim.js',
+            'sumo/js/nunjucks.js',
+            'moment/moment.js',
+            'sumo/js/cached_xhr.js',
+            'sumo/js/search_utils.js',
+            'sumo/js/instant_search.js',
+            'sumo/js/mobile/products.js',
+        ),
+        'output_fiename': 'build/mobile-products-min.js'
+    },
     'search': {
         'source_filenames': (
             'sumo/js/search.js',
