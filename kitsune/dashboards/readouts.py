@@ -302,7 +302,7 @@ def l10n_overview_rows(locale, product=None):
                          str(NAVIGATION_CATEGORY),
                          str(HOW_TO_CONTRIBUTE_CATEGORY)]
 
-    if not product or not has_forum:
+    if product and not has_forum:
         ignore_categories.append(str(CANNED_RESPONSES_CATEGORY))
 
     total = total.exclude(category__in=ignore_categories)
@@ -736,7 +736,7 @@ class MostVisitedTranslationsReadout(MostVisitedDefaultLanguageReadout):
             extra_joins = ''
             params = (self.locale, period, settings.WIKI_DEFAULT_LANGUAGE)
 
-        if not self.product or not has_forum:
+        if self.product and not has_forum:
             ignore_categories.append(str(CANNED_RESPONSES_CATEGORY))
 
         extra_where = ('AND NOT engdoc.category IN (' +
