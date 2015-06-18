@@ -20,8 +20,7 @@
 
   function render(data) {
     var context = $.extend({}, data);
-    var base_url = '/' + locale + '/search?q=' + search.lastQuery;
-    base_url += '&' + search.serializeParams();
+    var base_url = search.lastQueryUrl();
     context['base_url'] = base_url;
 
     if ($('#instant-search-content').length) {
@@ -70,8 +69,13 @@
       });
 
       searchTimeout = setTimeout(function () {
+        if (search.hasLastQuery) {
+          _gaq.push(['_trackEvent', 'Instant Search', 'Exit Search', search.lastQueryUrl()]);
+        }
         search.setParams(params);
         search.query($this.val(), k.InstantSearchSettings.render);
+        _gaq.push(['_trackEvent', 'Instant Search', 'Search', search.lastQueryUrl()]);
+        _gaq.push(['_trackPageview', search.lastQueryUrl()]);
       }, 200);
 
       k.InstantSearchSettings.hideContent();
@@ -82,6 +86,11 @@
     ev.preventDefault();
 
     var $this = $(this);
+
+    if (search.hasLastQuery) {
+      _gaq.push(['_trackEvent', 'Instant Search', 'Exit Search',
+        search.queryUrl(search.lastQuery)]);
+    }
 
     var setParams = $this.data('instant-search-set-params');
     if (setParams) {
@@ -99,6 +108,9 @@
         search.unsetParam(this);
       });
     }
+
+    _gaq.push(['_trackEvent', 'Instant Search', 'Search', $this.data('href')]);
+    _gaq.push(['_trackPageview', $this.data('href')]);
 
     cxhr.request($this.data('href'), {
       data: {format: 'json'},
