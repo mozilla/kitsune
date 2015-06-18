@@ -1,0 +1,44 @@
+ecmaFeatures:
+  arrowFunctions: true
+  binaryLiterals: true
+  blockBindings: true
+  classes: true
+  defaultParams: true
+  destructuring: true
+  forOf: true
+  generators: true
+  modules: true
+  objectLiteralComputedProperties: true
+  objectLiteralDuplicateProperties: true
+  objectLiteralShorthandMethods: true
+  objectLiteralShorthandProperties: true
+  octalLiterals: true
+  regexUFlag: true
+  regexYFlag: true
+  spread: true
+  superInFunctions: true
+  templateStrings: true
+  unicodeCodePointEscapes: true
+  jsx: true
+
+rules:
+  quotes: [2, single, avoid-escape]
+  no-shadow: [2, {hoist: all}]
+  no-alert: [2]
+  no-console: [0]
+  no-unused-vars: [0]
+  no-var: [0]
+  comma-dangle: [0]
+  new-cap: [0]
+  no-underscore-dangle: [0]
+  no-use-before-define: [2, nofunc]
+  camelcase: [0]
+
+env:
+  es6: true
+  browser: true
+
+settings:
+  resolve.root:
+    - node_modules
+    - src
