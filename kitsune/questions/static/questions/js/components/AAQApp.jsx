@@ -3,6 +3,7 @@ import cx from 'classnames';
 
 import QuestionEditStore from '../stores/QuestionEditStore.es6.js';
 import AAQActions from '../actions/AAQActions.es6.js';
+import scrollTo from '../../../sumo/js/utils/scrollTo.es6.js';
 
 
 const products = JSON.parse(document.querySelector('.data[name=products]').innerHTML);
@@ -57,6 +58,18 @@ class AAQStep extends React.Component {
       </div>
     );
   }
+
+  scrollToNextStep() {
+    let currentStep = React.findDOMNode(this); // will throw if not mounted
+    let nextStep = currentStep.nextElementSibling;
+    if (nextStep === null) {
+      throw 'Tried to call scrollToNextStep(), but this is the last step.';
+    }
+    if (!nextStep.classList.contains('AAQApp__Step')) {
+      throw 'Tried to call scrollToNextStep(), but the next element is not an AAQStep.';
+    }
+    scrollTo(nextStep);
+  }
 }
 AAQStep.propTypes = {
   question: React.PropTypes.object.isRequired,
@@ -78,7 +91,11 @@ class ProductSelector extends AAQStep {
       <ul id="product-picker" className="AAQApp__ProductSelector card-grid cf">
         {products.map((product) => {
           const selected = (this.props.question.product === product.slug);
-          return <ProductCard key={product.slug} product={product} selected={selected} />;
+          return <ProductCard
+            key={product.slug}
+            product={product}
+            selected={selected}
+            scrollToNextStep={this.scrollToNextStep.bind(this)}/>;
         })}
       </ul>
     );
@@ -90,6 +107,7 @@ class ProductCard extends React.Component {
   handleSelect(ev) {
     ev.preventDefault();
     AAQActions.setProduct(this.props.product.slug);
+    this.props.scrollToNextStep();
   }
 
   render() {
@@ -126,7 +144,11 @@ class TopicSelector extends AAQStep {
         {topics.filter((t) => t.product === this.props.question.product)
           .map((topic) => {
             var selected = this.props.question.topic === topic.slug;
-            return <TopicItem key={topic.slug} topic={topic} selected={selected}/>;
+            return <TopicItem
+              key={topic.slug}
+              topic={topic}
+              selected={selected}
+              scrollToNextStep={this.scrollToNextStep.bind(this)}/>;
           })}
       </ul>
     );
@@ -138,6 +160,7 @@ class TopicItem extends React.Component {
   handleSelect(ev) {
     ev.preventDefault();
     AAQActions.setTopic(this.props.topic.slug);
+    this.props.scrollToNextStep();
   }
 
   render() {
