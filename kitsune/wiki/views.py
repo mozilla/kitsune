@@ -12,7 +12,7 @@ from django.core.exceptions import PermissionDenied
 from django.db import connection
 from django.forms.util import ErrorList
 from django.http import (HttpResponse, HttpResponseRedirect,
-                         Http404, HttpResponseBadRequest, HttpRequest)
+                         Http404, HttpResponseBadRequest)
 from django.shortcuts import get_object_or_404, render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import (require_GET, require_POST,
@@ -137,11 +137,15 @@ def document(request, document_slug, template=None, document=None):
     if fallback_reason == 'no_translation':
         fallback_locale = get_fallback_locale(doc, request)
 
-        if not fallback_locale is None:
+        # If there is any falllback locale, show in that locale.
+        if fallback_locale is not None:
+            # Get the fallback Locale and show doc in the locale
             translation = doc.translated_to(fallback_locale)
             doc = Document.objects.get(locale=fallback_locale,
                                        slug=translation.slug)
+            # For showing message to users.
             fallback_reason = 'fallback_locale'
+        # If no fallback locale is found, show in default English version
         else:
             doc = get_object_or_404(Document, locale=settings.WIKI_DEFAULT_LANGUAGE,
                                     slug=document_slug)
@@ -1494,52 +1498,65 @@ def get_fallback_locale(doc, request):
     """Get best fallback local based on locale Mapping"""
 
     # Get the Translated locales which have current revision
-    translated_locales = doc.translations.all().values_list('locale', flat=True).exclude(current_revision=None)
+    translated_locales = (doc.translations.all()
+                                          .values_list('locale', flat=True)
+                                          .exclude(current_revision=None))
     # Get the Accepted_language header from user request
-    header_locales = parse_accept_lang_header(request.META.get('HTTP_ACCEPT_LANGUAGE'))
+    browser_language_code = request.META.get('HTTP_ACCEPT_LANGUAGE', None)
+    if browser_language_code is not None:
+        header_locales = parse_accept_lang_header(browser_language_code)
+    else:
+        header_locales = ''
     # Get the Locale mapping from setting
     NON_SUPPORTED_LOCALES = settings.NON_SUPPORTED_LOCALES
 
-    # Check if the document is translated to any of the locale mentioned in Accepted_Language Header
-    for locale, _ in header_locales:
+    # Check if the document is translated to any of the locale listed in Accepted_Language Header
+    for locale, __ in header_locales:
         if locale in translated_locales:
             fallback_locale = locale
             break
     else:
-        # If any locale of Accpeted_Language Header is not in translated_locale
+        # If any locale of Accpeted_Language Header is not in translated_locale,
         # Check if we have any fallback local for the locales of Accpeted_Languge Header
         # This locale mapping is mentioned in kitsune/settings.py
-        for locale, _ in header_locales:
-            if locale in settings.NON_SUPPORTED_LOCALES and NON_SUPPORTED_LOCALES[local] in translated_locales:
-                fallback_locale = NON_SUPPORTED_LOCALES[local]
+        for locale, __ in header_locales:
+            if (locale in settings.NON_SUPPORTED_LOCALES and
+                    NON_SUPPORTED_LOCALES[locale] in translated_locales):
+                fallback_locale = NON_SUPPORTED_LOCALES[locale]
                 break
         else:
-            # If above does not match, then we would check if we have custom Locale mapping
-            # for the locale user requested.
-            # This custom Locale Wiki Mapping is mentioned in kitsune/wiki/config.py
+            # If above does not match, then check if we have custom Wiki Locale mapping
+            # for the user requested locale.
+            # This custom Wiki Locale Mapping is mentioned in kitsune/wiki/config.py
             if request.LANGUAGE_CODE in FALLBACK_LOCALES:
                 for locale in FALLBACK_LOCALES[locale]:
                     if locale in translated_locales:
-                        fallback_locale = local
+                        fallback_locale = locale
                         break
                 else:
-                    # If above does not match, then we would check if any fallback local of
-                    # in Accepted_Language Header is in the Custom Wiki Locale mappping
-                    for locale in header_locales:
-                        if locale in FALLBACK_LOCALES and FALLBACK_LOCALES[locale] in translated_locales:
-                            fallback_locale = locale
-                            break
+                    # If above does not match, then we would check if any locale of
+                    # Accepted_Language Header is in the Custom Wiki Locale mappping
+                    for locale, __ in header_locales:
+                        if locale in FALLBACK_LOCALES:
+                            # Check if the document is trnaslated into the fallback locale
+                            for locale in FALLBACK_LOCALES[locale]:
+                                if locale in translated_locales:
+                                    fallback_locale = locale
+                                    break
                     else:
                         # If all fails, return None as fallback Locale
                         fallback_locale = None
-            # If Custom Locale Mapping is not available for the requested locale, then we will
-            # check if We have any translated fallback locale available for the Accpeted_Launguage
-            # Header in the Custom Wiki locale mapping.
+            # If Custom Wiki Locale Mapping is not available for the locale user requesed, then we
+            # will check if We have any fallback locale available in Custom Wiki locale
+            # mapping for the locales of Accpeted_Launguage Header.
             else:
-                for locale in header_locales:
-                    if locale in FALLBACK_LOCALES and FALLBACK_LOCALES[locale] in translated_locales:
-                        fallback_locale = locale
-                        break
+                for locale, __ in header_locales:
+                    if locale in FALLBACK_LOCALES:
+                        # Check if the document is trnaslated into the fallback locale
+                        for locale in FALLBACK_LOCALES[locale]:
+                            if locale in translated_locales:
+                                fallback_locale = locale
+                                break
                 else:
                     # If all fails, return None as fallback Locale
                     fallback_locale = None
