@@ -49,6 +49,7 @@ from kitsune.wiki.parser import wiki_to_html
 from kitsune.wiki.tasks import (
     send_reviewed_notification, schedule_rebuild_kb,
     send_contributor_notification, render_document_cascade)
+from kitsune.lib.sumo_locales import LOCALES
 
 
 log = logging.getLogger('k.wiki')
@@ -97,6 +98,7 @@ def document(request, document_slug, template=None, document=None):
     """View a wiki document."""
 
     fallback_reason = None
+    full_locale_name = None
     # If a slug isn't available in the requested locale, fall back to en-US:
     try:
         doc = Document.objects.get(locale=request.LANGUAGE_CODE,
@@ -145,6 +147,8 @@ def document(request, document_slug, template=None, document=None):
                                        slug=translation.slug)
             # For showing message to users.
             fallback_reason = 'fallback_locale'
+            full_locale_name = {request.LANGUAGE_CODE: LOCALES[request.LANGUAGE_CODE].native,
+                                fallback_locale: LOCALES[fallback_locale].native}
         # If no fallback locale is found, show in default English version
         else:
             doc = get_object_or_404(Document, locale=settings.WIKI_DEFAULT_LANGUAGE,
@@ -244,6 +248,7 @@ def document(request, document_slug, template=None, document=None):
         'document_css_class': document_css_class,
         'any_localizable_revision': any_localizable_revision,
         'show_fx_download': show_fx_download,
+        'full_locale_name': full_locale_name
     }
 
     response = render(request, template, data)

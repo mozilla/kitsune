@@ -71,6 +71,15 @@
       {% else %}
         {{ document.parent.html|safe }}
       {% endif %}
+    {% elif fallback_reason == 'fallback_locale' %}
+      <div id="doc-pending-fallback" class="warning-box">
+        {% trans locale=full_locale_name[request.LANGUAGE_CODE], fallback_locale=full_locale_name[document.locale], help_link=url('wiki.document', 'localize-firefox-help'), eng_link=document.parent.get_absolute_url() %}
+          This page does not exist in {{ locale }}. You have been redirected to the {{ fallback_locale }} version instead.
+          If you would like to localize it into {{ locale }}, <a href="{{ help_link }}">click here</a>.
+          You can also see the <a href="{{ eng_link }}">English</a> version of this page.
+        {% endtrans %}
+      </div>
+        {{ document.html|safe }}
     {% else %}
       {{ _("This article doesn't have approved content yet.") }}
     {% endif %}
