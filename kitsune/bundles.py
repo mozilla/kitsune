@@ -109,6 +109,7 @@ PIPELINE_CSS = {
     'wiki-editor': {
         'source_filenames': (
             'codemirror/lib/codemirror.css',
+            'codemirror/addon/hint/show-hint.css',
         ),
         'output_filename': 'wiki-editor-min.css'
     },
@@ -511,6 +512,8 @@ PIPELINE_JS = {
         'source_filenames': (
             'codemirror/lib/codemirror.js',
             'codemirror/addon/mode/simple.js',
+            'codemirror/addon/hint/show-hint.js',
+            'sumo/js/codemirror.sumo-hint.js',
             'sumo/js/codemirror.sumo-mode.js',
         ),
         'output_filename': 'build/wiki.editor-min.js'
