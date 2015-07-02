@@ -1,6 +1,7 @@
 from datetime import date
 
 from kitsune.customercare.badges import AOA_BADGE
+from kitsune.customercare.models import Reply
 from kitsune.customercare.tests import reply
 from kitsune.kbadge.tests import badge
 from kitsune.sumo.tests import TestCase
@@ -21,8 +22,13 @@ class TestAOABadges(TestCase):
             save=True)
 
         # Create 49 replies.
-        for i in range(49):
-            reply(user=u, save=True)
+        replies = []
+        for i in range(48):
+            replies.append(reply(user=u))
+        Reply.objects.bulk_create(replies)
+
+        # Create the 49th reply separately so the signals are triggered.
+        reply(user=u, save=True)
 
         # User should NOT have the badge yet.
         assert not b.is_awarded_to(u)
