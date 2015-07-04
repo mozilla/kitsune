@@ -6,7 +6,7 @@ Join this project!
 
 Kitsune is the software that runs `SUMO (support.mozilla.org)
 <http://support.mozilla.org/>`_ which provides support for Firefox and
-other Mozilla software.
+other Mozilla products.
 
 Interested in helping out? Here's a bunch of things we need your help
 with.
@@ -27,11 +27,8 @@ For more information on this, see the `quickstart guide
 Help with hacking!
 ==================
 
-First step is to set up Kitsune so you can run it and hack on it. For
-that, see the :ref:`hacking-howto-chapter`.
-
-If you have problems, please let us know! See
-:ref:`contact-us-chapter`.
+First step is to set up Kitsune so you can run it and hack on it.
+If you have problems, please let `us <https://github.com/mozilla/kitsune/graphs/contributors>`_ know!
 
 After you've got it up and running, check out the list of bugs that
 are marked for mentoring:
