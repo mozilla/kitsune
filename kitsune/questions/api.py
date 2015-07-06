@@ -301,7 +301,8 @@ class QuestionViewSet(viewsets.ModelViewSet):
 
     @action(methods=['POST'])
     def set_metadata(self, request, pk=None):
-        data = request.DATA
+        data = {}
+        data.update(request.DATA)
         data['question'] = self.get_object().pk
 
         serializer = QuestionMetaDataSerializer(data=data)

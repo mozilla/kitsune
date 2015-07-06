@@ -1,3 +1,4 @@
+/* globals $:false */
 // Use a global k to share data accross JS files
 window.k = window.k || {};
 
@@ -113,7 +114,8 @@ window.k = window.k || {};
   // Pass CSRF token in XHR header
   $.ajaxSetup({
     beforeSend: function(xhr, settings) {
-      xhr.setRequestHeader("X-CSRFToken", $.cookie('csrftoken'));
+      var csrf = $.cookie('csrftoken') || document.querySelector('input[name=csrfmiddlewaretoken]').value;
+      xhr.setRequestHeader('X-CSRFToken', csrf);
     }
   });
 
