@@ -54,6 +54,12 @@
       }
     });
 
+    $(document).on('change', 'select[data-submit]', function() {
+      var $this = $(this);
+      var $form = ($this.data('submit')) ? $('#' + $this.data('submit')) : $this.closest('form');
+      $form.submit();
+    });
+
     $('[data-close-memory="remember"]').each(function() {
       var $this = $(this);
       var id = $this.data('close-id');

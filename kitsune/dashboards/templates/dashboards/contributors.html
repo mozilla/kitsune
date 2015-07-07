@@ -15,6 +15,21 @@
 
       {{ product_choice_list(products, product, url('dashboards.contributors')) }}
 
+      <div class="category-filter">
+        <form method="get">
+          {% if product %}
+            <input type="hidden" name="product" value="{{ product }}">
+          {% endif %}
+          <label>{{ _('Filter by type:') }}</label>
+          <select data-submit name="category">
+            <option value="">{{ _('All') }}</option>
+            {% for c in categories %}
+              <option value="{{ c[0] }}" {% if category == c[0] %}selected="selected"{% endif %}>{{ c[1] }}</option>
+            {% endfor %}
+          </select>
+        </form>
+      </div>
+
       {% if default_locale_name != request_locale_name %}
         <div class="choice-list">
           <label>{{ _('Show information for:') }}</label>
