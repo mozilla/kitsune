@@ -4,6 +4,7 @@ import json
 
 from django.conf import settings
 from django.contrib.sites.models import Site
+from django.test import Client
 
 import mock
 from nose.tools import eq_
@@ -779,3 +780,101 @@ class MobileDocumentTests(MobileTestCase):
         res = self.client.get(url)
         eq_(res.status_code, 200)
         self.assertTemplateUsed(res, 'wiki/mobile/document.html')
+
+
+class FallbackSystem(TestCase):
+    "Check Article Wise Fallback Locale is working correclty"
+
+    def setUp(self):
+        super(FallbackSystem, self).setUp()
+        product(save=True)
+
+    def create_documents(self, locale):
+        """Create a English Document and a translated document of the locale"""
+        en = settings.WIKI_DEFAULT_LANGUAGE
+        en_content = 'This artcile is in English'
+        trans_content = 'This artcile is translated into %slocale' % locale
+        en_doc = document(locale=en, save=True)
+        revision(document=en_doc, content=en_content, is_approved=True,
+                 is_ready_for_localization=True, save=True)
+        trans_doc = document(parent=en_doc, title='Translated to', locale=locale, save=True)
+        trans_rev = revision(document=trans_doc, content=trans_content,
+                             is_approved=True, save=True)
+        trans_doc.current_revision = trans_rev
+        trans_doc.save()
+        return en_doc, trans_doc
+
+    def get_data_from_translated_document(self, header, create_doc_locale, req_doc_locale):
+        client = Client(HTTP_ACCEPT_LANGUAGE=header)
+        en_doc, trans_doc = self.create_documents(create_doc_locale)
+        url = reverse('wiki.document', args=[en_doc.slug], locale=req_doc_locale)
+        response = client.get(url, follow=True)
+        eq_(200, response.status_code)
+        doc = pq(response.content)
+        doc_content = doc('#doc-content').text()
+        return doc_content
+
+    def test_header_locales_in_translated_list(self):
+        """Test while the document is not translated to requested locale but translated to
+        any of the locale mentioned in ACCEPT_LANGUAGE Header"""
+        header = 'es,fr;q=0.7,ja;q=0.3,'
+        doc_content = self.get_data_from_translated_document(header=header,
+                                                             create_doc_locale='fr',
+                                                             req_doc_locale='es')
+        en_content = 'This artcile is in English'
+        trans_content = 'This artcile is translated into fr'
+        assert en_content not in doc_content
+        assert trans_content in doc_content
+
+    def test_header_locales_not_in_translated_list(self):
+        """Test while the document is not translated into requested locale nor the document
+        translated into any of the locale of ACCEPT_LANGUAGE header. But we have a fallback_locale
+        Mentioned in kitsune/settings.py for one of the locale of ACCEPT_LANGUAGE header"""
+
+        header = 'de,an;q=0.7,ja;q=0.3,'
+        doc_content = self.get_data_from_translated_document(header=header,
+                                                             create_doc_locale='es',
+                                                             req_doc_locale='de')
+        en_content = 'This artcile is in English'
+        trans_content = 'This artcile is translated into es'
+        assert en_content not in doc_content
+        assert trans_content in doc_content
+
+    def test_custom_locale_mapping(self):
+        """Test while the document is not translated into requested locale but
+        We have custom wiki fallback for the requested locale.
+        The Custom wiki fallback locale mentioned in kitsune/wiki.config.py"""
+
+        doc_content = self.get_data_from_translated_document(header=None,
+                                                             create_doc_locale='bn-BD',
+                                                             req_doc_locale='bn-IN')
+        en_content = 'This artcile is in English'
+        trans_content = 'This artcile is translated into bn-BD'
+        assert en_content not in doc_content
+        assert trans_content in doc_content
+
+    def test_custom_locale_mapping_for_header_locale(self):
+        """Test while the document is not translated into any of the locale of ACCEPT_LANGUAGE
+        Header. But we have fallback locale mentioned in Custom wiki fallback locale for one
+        of the locale of ACCEPT_LANGUAGE Header"""
+
+        # While the requested locale also in custom wiki fallback locale but none of the
+        # fallback locale for requested locale is translated
+        header = 'ca,pt-PT;q=0.7,ja;q=0.3,'
+        doc_content = self.get_data_from_translated_document(header=header,
+                                                             create_doc_locale='pt-BR',
+                                                             req_doc_locale='ca')
+        en_content = 'This artcile is in English'
+        trans_content = 'This artcile is translated into pt-BR'
+        assert en_content not in doc_content
+        assert trans_content in doc_content
+
+        # While the Requested locale not in Custom Wiki fallback locale
+        header = 'ar,bn-IN;q=0.7,ja;q=0.3,'
+        doc_content = self.get_data_from_translated_document(header=header,
+                                                             create_doc_locale='bn-BD',
+                                                             req_doc_locale='ar')
+        en_content = 'This artcile is in English'
+        trans_content = 'This artcile is translated into bn-BD'
+        assert en_content not in doc_content
+        assert trans_content in doc_content

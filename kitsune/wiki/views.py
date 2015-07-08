@@ -1,6 +1,7 @@
 import json
 import logging
 import time
+import re
 from datetime import datetime
 from functools import wraps
 
@@ -17,7 +18,6 @@ from django.shortcuts import get_object_or_404, render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import (require_GET, require_POST,
                                           require_http_methods)
-from django.utils.translation.trans_real import parse_accept_lang_header
 
 import jingo
 from mobility.decorators import mobile_template
@@ -1525,8 +1525,8 @@ def get_fallback_locale(doc, request):
         # Check if we have any fallback local for the locales of Accpeted_Languge Header
         # This locale mapping is mentioned in kitsune/settings.py
         for locale, __ in header_locales:
-            if (locale in settings.NON_SUPPORTED_LOCALES and
-                    NON_SUPPORTED_LOCALES[locale] in translated_locales):
+            if (locale in NON_SUPPORTED_LOCALES and
+                    NON_SUPPORTED_LOCALES.get(locale) in translated_locales):
                 fallback_locale = NON_SUPPORTED_LOCALES[locale]
                 break
         else:
@@ -1534,7 +1534,7 @@ def get_fallback_locale(doc, request):
             # for the user requested locale.
             # This custom Wiki Locale Mapping is mentioned in kitsune/wiki/config.py
             if request.LANGUAGE_CODE in FALLBACK_LOCALES:
-                for locale in FALLBACK_LOCALES[locale]:
+                for locale in FALLBACK_LOCALES[request.LANGUAGE_CODE]:
                     if locale in translated_locales:
                         fallback_locale = locale
                         break
@@ -1548,9 +1548,13 @@ def get_fallback_locale(doc, request):
                                 if locale in translated_locales:
                                     fallback_locale = locale
                                     break
+                            else:
+                                continue
+                            break
                     else:
                         # If all fails, return None as fallback Locale
                         fallback_locale = None
+
             # If Custom Wiki Locale Mapping is not available for the locale user requesed, then we
             # will check if We have any fallback locale available in Custom Wiki locale
             # mapping for the locales of Accpeted_Launguage Header.
@@ -1562,7 +1566,42 @@ def get_fallback_locale(doc, request):
                             if locale in translated_locales:
                                 fallback_locale = locale
                                 break
+                        else:
+                            continue
+                        break
                 else:
                     # If all fails, return None as fallback Locale
                     fallback_locale = None
     return fallback_locale
+
+
+# Import from django.utils.translation.trans_real and changed some
+def parse_accept_lang_header(lang_string):
+    """
+    Parses the lang_string, which is the body of an HTTP Accept-Language
+    header, and returns a list of (lang, q-value), ordered by 'q' values.
+    Any format errors in lang_string results in an empty list being returned.
+    """
+    accept_language_re = re.compile(r'''
+        ([A-Za-z]{1,8}(?:-[A-Za-z0-9]{1,8})*|\*)      # "en", "en-au", "x-y-z", "es-419", "*"
+        (?:\s*;\s*q=(0(?:\.\d{,3})?|1(?:.0{,3})?))?   # Optional "q=1.00", "q=0.8"
+        (?:\s*,\s*|$)                                 # Multiple accepts per header.
+        ''', re.VERBOSE)
+    result = []
+    pieces = accept_language_re.split(lang_string)   # Changed here. Removed lower()
+    if pieces[-1]:
+        return []
+    for i in range(0, len(pieces) - 1, 3):
+        first, lang, priority = pieces[i:i + 3]
+        if first:
+            return []
+        if priority:
+            try:
+                priority = float(priority)
+            except ValueError:
+                return []
+        if not priority:        # if priority is 0.0 at this point make it 1.0
+            priority = 1.0
+        result.append((lang, priority))
+    result.sort(key=lambda k: k[1], reverse=True)
+    return result
