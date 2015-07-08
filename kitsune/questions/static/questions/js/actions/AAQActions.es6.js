@@ -1,4 +1,5 @@
 /* globals $:false, _:false */
+import apiFetch from '../../../sumo/js/utils/apiFetch.es6.js';
 import AAQDispatcher from '../dispatchers/AAQDispatcher.es6.js';
 import {actionTypes} from '../constants/AAQConstants.es6.js';
 import QuestionEditStore from '../stores/QuestionEditStore.es6.js';
@@ -27,9 +28,7 @@ export function setTitle(title) {
 }
 
 function searchSuggestions(title) {
-  $.ajax({
-    type: 'GET',
-    url: '/api/2/search/suggest',
+  apiFetch('/api/2/search/suggest', {
     data: {
       q: title,
       max_questions: 2,
@@ -37,8 +36,7 @@ function searchSuggestions(title) {
       product: QuestionEditStore.getQuestion().product,
     },
   })
-  .done((data) => {
-    console.log('suggest:', data);
+  .then(data => {
     let docSuggestions = data.documents.map((document) => {
       document.type = 'document';
       return document;
@@ -52,7 +50,7 @@ function searchSuggestions(title) {
     let suggestions = docSuggestions.concat(questionSuggestions);
     setSuggestions(suggestions);
   })
-  .fail((err) => {
+  .catch(err => {
     console.log('suggest error:', err);
   });
 }
@@ -76,39 +74,56 @@ export function submitQuestion() {
   AAQDispatcher.dispatch({
     type: actionTypes.QUESTION_SUBMIT_OPTIMISTIC,
   });
-  let questionData = QuestionEditStore.getQuestion();
 
-  function handleError(err) {
+  const csrf = document.querySelector('input[name=csrfmiddlewaretoken]').value;
+  let questionData = QuestionEditStore.getQuestion();
+  let locale = document.querySelector('html').getAttribute('lang');
+  questionData.locale = locale;
+  let metadata = questionData.metadata || {};
+  delete questionData.metadata;
+  let questionUrl;
+
+  metadata.useragent = navigator.userAgent;
+  metadata.source = 'Single page AAQ';
+
+  apiFetch('/api/2/question/?format=json', {
+    method: 'post',
+    data: questionData,
+    credentials: 'include',
+    headers: {
+      'X-CSRFToken': csrf,
+    },
+  })
+  .then(question => {
+    questionUrl = `/${locale}/questions/${question.id}`;
+
+    let promises = [];
+    for (let key in metadata) {
+      promises.push(apiFetch(`/api/2/question/${question.id}/set_metadata/?format=json`, {
+        method: 'post',
+        credentials: 'include',
+        data: {
+          name: key,
+          value: metadata[key],
+        },
+        headers: {
+          'X-CSRFToken': csrf,
+        },
+      }));
+    }
+
+    return Promise.all(promises);
+  })
+  .then(() => {
+    AAQDispatcher.dispatch({type: actionTypes.QUESTION_SUBMIT_SUCCESS});
+    document.location = questionUrl;
+  })
+  .catch((err) => {
     AAQDispatcher.dispatch({
       type: actionTypes.QUESTION_SUBMIT_FAILURE,
-      error: err.statusText,
+      error: err.message,
     });
-  }
-
-  $.ajax({
-    url: '/api/2/question/',
-    type: 'POST',
-    contentType: 'application/json',
-    data: JSON.stringify(questionData),
-  })
-  .done((question) => {
-    $.ajax({
-      url: `/api/2/question/${question.id}/set_metadata/`,
-      type: 'POST',
-      contentType: 'application/json',
-      data: JSON.stringify({
-        name: 'useragent',
-        value: navigator.userAgent,
-      }),
-    })
-    .done(() => {
-      AAQDispatcher.dispatch({
-        type: actionTypes.QUESTION_SUBMIT_SUCCESS,
-      });
-    })
-    .fail(handleError);
-  })
-  .fail(handleError);
+  });
 }
 
 export default {

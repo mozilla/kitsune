@@ -282,14 +282,25 @@ class SubmitQuestion extends AAQStep {
   }
 
   body() {
+    let buttonTexts = {
+      editing: 'Submit',
+      pending: 'Submitting...',
+      submitted: 'Done!',
+      error: 'Error!',
+    };
+
     return (
       <div>
         <pre>
           {JSON.stringify(this.props.question, null, 2)}
         </pre>
-        <button className="btn" onClick={this.handleSubmit}>Submit</button>
+        <button className="btn btn-submit"
+                onClick={this.handleSubmit}
+                disabled={this.props.questionState !== 'editing'}>
+          {buttonTexts[this.props.questionState]}
+        </button>
         <pre>
-          {this.props.questionState}
+          {this.props.questionState}<br/>
           {this.props.validationErrors}
         </pre>
       </div>

@@ -22,9 +22,6 @@ $(() => {
   if (!hadScrollHeaderClass) {
     $body.removeClass('scroll-header');
   }
-
-  console.log('threshold:', floatingHeaderThreshold);
-  console.log('offset:', floatingHeaderOffset);
 });
 
 
