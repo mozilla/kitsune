@@ -402,6 +402,35 @@ class DocumentTests(TestCaseBase):
         doc = pq(response.content)
         assert 'rel' not in doc('#doc-content a')[0].attrib
 
+    def test_document_with_fallback_locale(self):
+        """The document template falls back to fallback locale if there is
+        custom wiki fallback mapping for the locale and the locale have no translation
+        exists."""
+        # Create a English Document and a pt-BR Document
+        en_rev = revision(save=True, content='Some text.',
+                          is_approved=True, is_ready_for_localization=True)
+        trans_doc = document(parent=en_rev.document, locale='pt-BR', save=True)
+        trans_rev = revision(document=trans_doc, save=True,
+                             content='Translated text.', is_approved=True)
+        # Make the revision as current revision of the document
+        trans_doc.current_revision = trans_rev
+        trans_doc.save()
+
+        # Now get the pt-PT version of the document. As pt-PT has a fallback locale pt-BR
+        # in wiki/config.py, it would should show pt-BR content to the user.
+        url = reverse('wiki.document', args=[en_rev.document.slug], locale='pt-PT')
+        response = self.client.get(url)
+        doc = pq(response.content)
+        eq_(trans_doc.title, doc('article h1.title').text())
+
+        # There will be a fallback message to user about this.
+        eq_(1, len(doc('#doc-pending-fallback')))
+        # Removing this as it shows up in text(), and we don't want to depend
+        # on its localization.
+        doc('#doc-pending-fallback').remove()
+        # Check Included content is in the pt-BR
+        eq_(pq(trans_doc.html)('div').text(), doc('#doc-content div').text())
+
 
 class MobileArticleTemplate(MobileTestCase):
     def setUp(self):
