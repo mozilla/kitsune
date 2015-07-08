@@ -27,4 +27,12 @@ export const actionTypes = constantMap([
   'QUESTION_SUBMIT_FAILURE',
 ]);
 
-export default {actionTypes};
+export const questionEditState = constantMap([
+  'QUESTION_INVALID',
+  'QUESTION_VALID',
+  'QUESTION_PENDING',
+  'QUESTION_SUBMITTED',
+  'QUESTION_ERROR',
+]);
+
+export default {actionTypes, questionEditState};

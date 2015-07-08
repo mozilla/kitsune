@@ -4,6 +4,7 @@ import cx from 'classnames';
 import QuestionEditStore from '../stores/QuestionEditStore.es6.js';
 import AAQActions from '../actions/AAQActions.es6.js';
 import scrollTo from '../../../sumo/js/utils/scrollTo.es6.js';
+import {questionEditState} from '../constants/AAQConstants.es6.js';
 
 
 const products = JSON.parse(document.querySelector('.data[name=products]').innerHTML);
@@ -283,10 +284,11 @@ class SubmitQuestion extends AAQStep {
 
   body() {
     let buttonTexts = {
-      editing: 'Submit',
-      pending: 'Submitting...',
-      submitted: 'Done!',
-      error: 'Error!',
+      [questionEditState.INVALID]: 'Submit',
+      [questionEditState.VALID]: 'Submit',
+      [questionEditState.PENDING]: 'Submitting...',
+      [questionEditState.SUBMITTED]: 'Done!',
+      [questionEditState.ERROR]: 'Error!',
     };
 
     return (
@@ -296,7 +298,7 @@ class SubmitQuestion extends AAQStep {
         </pre>
         <button className="btn btn-submit"
                 onClick={this.handleSubmit}
-                disabled={this.props.questionState !== 'editing'}>
+                disabled={this.props.questionState !== questionEditState.VALID}>
           {buttonTexts[this.props.questionState]}
         </button>
         <pre>
