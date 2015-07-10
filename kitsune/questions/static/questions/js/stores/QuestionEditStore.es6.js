@@ -1,8 +1,8 @@
 /* globals _:false */
 
-import BaseStore from '../../../sumo/js/stores/BaseStore.es6.js';
-import AAQDispatcher from '../dispatchers/AAQDispatcher.es6.js';
-import {actionTypes, questionEditState} from '../constants/AAQConstants.es6.js';
+import BaseStore from '../../../sumo/js/stores/BaseStore.es6';
+import Dispatcher from '../../../sumo/js/Dispatcher.es6';
+import {actionTypes, questionEditState} from '../constants/AAQConstants.es6';
 
 var question = {
   product: null,
@@ -12,7 +12,7 @@ var question = {
 };
 
 var suggestions = [];
-var state = questionEditState.QUESION_INVALID;
+var state = questionEditState.INVALID;
 var validationErrors = {};
 
 class _QuestionEditStore extends BaseStore {
@@ -56,7 +56,7 @@ function updateState() {
 // Stores are singletons.
 const QuestionEditStore = new _QuestionEditStore();
 
-QuestionEditStore.dispatchToken = AAQDispatcher.register((action) => {
+QuestionEditStore.dispatchToken = Dispatcher.register((action) => {
   switch (action.type) {
     case actionTypes.SET_PRODUCT:
       if (question.product !== action.product) {

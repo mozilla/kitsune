@@ -1,20 +1,4 @@
-class Constant {
-  constructor(name) {
-    this.name = name;
-  }
-
-  toString() {
-    return this.name;
-  }
-}
-
-function constantMap(names) {
-  let constants = {};
-  for (let name of names) {
-    constants[name] = new Constant(name);
-  }
-  return constants;
-}
+import constantMap from '../../../sumo/js/utils/constantMap.es6';
 
 export const actionTypes = constantMap([
   'SET_PRODUCT',
@@ -28,11 +12,11 @@ export const actionTypes = constantMap([
 ]);
 
 export const questionEditState = constantMap([
-  'QUESTION_INVALID',
-  'QUESTION_VALID',
-  'QUESTION_PENDING',
-  'QUESTION_SUBMITTED',
-  'QUESTION_ERROR',
+  'INVALID',
+  'VALID',
+  'PENDING',
+  'SUBMITTED',
+  'ERROR',
 ]);
 
 export default {actionTypes, questionEditState};

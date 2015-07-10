@@ -1,11 +1,10 @@
 /* globals Flux:false */
 
-// Dispatchers are singletons.
-const AAQDispatcher = new Flux.Dispatcher();
-export default AAQDispatcher;
+// The Dispatcher is a singleton.
+const Dispatcher = new Flux.Dispatcher();
+export default Dispatcher;
 
-
-AAQDispatcher.register((event) => {
+Dispatcher.register((event) => {
   if (event.type === undefined) {
     throw new Error(['Event with undefined type dispatched!', JSON.stringify(event)]);
   }

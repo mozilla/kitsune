@@ -1,25 +1,25 @@
 /* globals $:false, _:false */
 import apiFetch from '../../../sumo/js/utils/apiFetch.es6.js';
-import AAQDispatcher from '../dispatchers/AAQDispatcher.es6.js';
+import Dispatcher from '../../../sumo/js/Dispatcher.es6.js';
 import {actionTypes} from '../constants/AAQConstants.es6.js';
 import QuestionEditStore from '../stores/QuestionEditStore.es6.js';
 
 export function setProduct(product) {
-  AAQDispatcher.dispatch({
+  Dispatcher.dispatch({
     type: actionTypes.SET_PRODUCT,
     product,
   });
 }
 
 export function setTopic(topic) {
-  AAQDispatcher.dispatch({
+  Dispatcher.dispatch({
     type: actionTypes.SET_TOPIC,
     topic,
   });
 }
 
 export function setTitle(title) {
-  AAQDispatcher.dispatch({
+  Dispatcher.dispatch({
     type: actionTypes.SET_TITLE,
     title,
   });
@@ -57,21 +57,21 @@ function searchSuggestions(title) {
 searchSuggestions = _.throttle(searchSuggestions, 500);
 
 export function setSuggestions(suggestions) {
-  AAQDispatcher.dispatch({
+  Dispatcher.dispatch({
     type: actionTypes.SET_SUGGESTIONS,
     suggestions,
   });
 }
 
 export function setContent(content) {
-  AAQDispatcher.dispatch({
+  Dispatcher.dispatch({
     type: actionTypes.SET_CONTENT,
     content,
   });
 }
 
 export function submitQuestion() {
-  AAQDispatcher.dispatch({
+  Dispatcher.dispatch({
     type: actionTypes.QUESTION_SUBMIT_OPTIMISTIC,
   });
 
@@ -115,11 +115,11 @@ export function submitQuestion() {
     return Promise.all(promises);
   })
   .then(() => {
-    AAQDispatcher.dispatch({type: actionTypes.QUESTION_SUBMIT_SUCCESS});
+    Dispatcher.dispatch({type: actionTypes.QUESTION_SUBMIT_SUCCESS});
     document.location = questionUrl;
   })
   .catch((err) => {
-    AAQDispatcher.dispatch({
+    Dispatcher.dispatch({
       type: actionTypes.QUESTION_SUBMIT_FAILURE,
       error: err.message,
     });
