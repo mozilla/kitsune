@@ -231,8 +231,13 @@ def kb_overview_rows(mode=None, max=None, locale=None, product=None):
             'num_visits': d.num_visits,
         }
 
+        ready_for_l10n_filters = {'is_approved': True, 'is_ready_for_localization': True}
+
         if d.current_revision:
             data['expiry_date'] = d.current_revision.expires
+            ready_for_l10n_filters['id__gt'] = d.current_revision.id
+
+        data['ready_for_l10n'] = d.revisions.filter(**ready_for_l10n_filters).exists()
 
         if d.num_visits:
             data['visits_ratio'] = float(d.num_visits) / max_visits
