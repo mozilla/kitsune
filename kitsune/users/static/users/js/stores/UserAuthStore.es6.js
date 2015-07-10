@@ -4,26 +4,26 @@ import BaseStore from '../../../sumo/js/stores/BaseStore.es6';
 import Dispatcher from '../../../sumo/js/Dispatcher.es6';
 import {actionTypes} from '../constants/UserAuthConstants.es6';
 
-var state = {
-  isLoggedIn: null,
+var data = {
+  state: null,
   username: null,
 };
 
 class _UserAuthStore extends BaseStore {
-  isLoggedIn() {
-    return state.isLoggedIn;
+  getState() {
+    return data.state;
   }
 
   getUsername() {
-    return state.username;
+    return data.username;
   }
 
   getToken() {
-    return state.token;
+    return data.token;
   }
 
   getAll() {
-    return _.clone(state);
+    return _.clone(data);
   }
 }
 
@@ -32,15 +32,11 @@ const UserAuthStore = new _UserAuthStore();
 
 UserAuthStore.dispatchToken = Dispatcher.register((action) => {
   switch (action.type) {
-    case actionTypes.AUTH_LOGGED_IN:
-      state.isLoggedIn = true;
-      state.username = action.username;
+    case actionTypes.AUTH_SET_STATE:
+      data.state = action.state;
+      data.username = action.username || null;
       UserAuthStore.emitChange();
-
-    case actionTypes.AUTH_LOGGED_OUT:
-      state.isLoggedIn = false;
-      state.username = null;
-      UserAuthStore.emitChange();
+      break;
 
     default:
       // do nothing

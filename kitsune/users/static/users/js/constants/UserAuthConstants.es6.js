@@ -1,6 +1,16 @@
 import constantMap from '../../../sumo/js/utils/constantMap.es6';
 
 export const actionTypes = constantMap([
-  'AUTH_LOGGED_IN',
-  'AUTH_LOGGED_OUT',
+  'AUTH_SET_STATE',
 ]);
+
+export const userAuthStates = constantMap([
+  'LOGGED_IN',
+  'LOGGING_IN',
+  'REGISTERING',
+]);
+
+export default {
+  actionTypes,
+  userAuthStates,
+};

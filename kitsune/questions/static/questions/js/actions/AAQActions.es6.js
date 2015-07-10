@@ -1,4 +1,4 @@
-/* globals $:false, _:false */
+/* globals _:false */
 import apiFetch from '../../../sumo/js/utils/apiFetch.es6.js';
 import Dispatcher from '../../../sumo/js/Dispatcher.es6.js';
 import {actionTypes} from '../constants/AAQConstants.es6.js';
