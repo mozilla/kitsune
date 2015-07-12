@@ -112,7 +112,7 @@ AAQSystemInfo.prototype = {
             strtemp = navigator.plugins[i].name;
             if (navigator.plugins[i].version) strtemp += ' ' + navigator.plugins[i].version;
             if (navigator.plugins[i].filename) strtemp += ' (' + navigator.plugins[i].filename + ')';
-            d = strtemp.replace(/<[^>]+>/ig,'');
+            d = strtemp.replace(/<[^>]+>/ig, '');
             if (plugins.indexOf(d) == -1) {
                 plugins.push(d);
             }
