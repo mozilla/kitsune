@@ -107,9 +107,12 @@ AAQSystemInfo.prototype = {
     getPlugins: function() {
         // Returns wiki markup for the list of plugins
         var plugins = [],
-            i, d;
+            i, strtemp, d;
         for (i = 0; i < navigator.plugins.length; i++) {
-            d = navigator.plugins[i].description.replace(/<[^>]+>/ig,'');
+            strtemp = navigator.plugins[i].name;
+            if (navigator.plugins[i].version) strtemp += ' ' + navigator.plugins[i].version;
+            if (navigator.plugins[i].filename) strtemp += ' (' + navigator.plugins[i].filename + ')';
+            d = strtemp.replace(/<[^>]+>/ig,'');
             if (plugins.indexOf(d) == -1) {
                 plugins.push(d);
             }
