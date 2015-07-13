@@ -291,9 +291,6 @@ selenium==2.45.0
 # sha256: v445sBLQFGpK6vVBNT9bm5Ywu8tawnUFhJrIlrz_L2o
 setuptools==0.9.8
 
-# sha256: _lMoR-CPEVj4EJr9NJdUBZ4QFYMNsYjXOwHi7MD35Sg
-simplejson==3.1.2
-
 # sha256: 4kBSQR_E-9H2cmNVN8P8IzDZSBsYwDF2lbRiWVEskdU
 six==1.9.0
 
