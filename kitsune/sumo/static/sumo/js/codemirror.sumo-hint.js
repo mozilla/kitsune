@@ -2,7 +2,7 @@
   "use strict";
 
   CodeMirror.registerHelper("hint", "sumo", function(editor, options) {
-    options = $.extend({}, options, {word: /[\w$-]+/, range: 500});
+    options = $.extend({}, {word: /[\w$-]+/, range: 500}, options);
     var cur = editor.getCursor(), curLine = editor.getLine(cur.line);
     var end = cur.ch, start = end;
     while (start && word.test(curLine.charAt(start - 1))) --start;
