@@ -4,6 +4,7 @@
     <th>{{ _('Visits') }}</th>
     <th>{{ _('Status') }}</th>
     <th>{{ _('Needs Update') }}</th>
+    <th>{{ _('Ready for L10N') }}</th>
     <th>{{ _('Stale') }}</th>
     <th>{{ _('Expiry Date') }}</th>
     {% if not request.LANGUAGE_CODE == settings.WIKI_DEFAULT_LANGUAGE %}
@@ -32,6 +33,13 @@
     <td class="needs-update {% if row.needs_update %}yes{% endif %}">
       {% if row.needs_update %}
         {{ row.needs_update_comment or _('Yes') }}
+      {% endif %}
+    </td>
+    <td class="ready-for-l10n {% if row.ready_for_l10n %}yes{% endif %}">
+      {% if row.ready_for_l10n %}
+        {{ _('Yes') }}
+      {% else %}
+        {{ _('No') }}
       {% endif %}
     </td>
     <td class="stale {% if row.stale %}yes{% endif %}">

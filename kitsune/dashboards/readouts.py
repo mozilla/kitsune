@@ -229,6 +229,8 @@ def kb_overview_rows(mode=None, max=None, locale=None, product=None):
                                  locale=settings.WIKI_DEFAULT_LANGUAGE),
             'title': d.title,
             'num_visits': d.num_visits,
+            'ready_for_l10n': d.revisions.filter(is_approved=True,
+                                                 is_ready_for_localization=True).exists()
         }
 
         if d.current_revision:

@@ -54,6 +54,21 @@ class KBOverviewTests(TestCase):
 
         eq_(1, len(kb_overview_rows()))
 
+    def test_ready_for_l10n(self):
+        d = document(save=True)
+        r = revision(document=d, save=True)
+        d.current_revision = r
+        d.save()
+
+        data = kb_overview_rows()
+        eq_(1, len(data))
+        eq_(False, data[0]['ready_for_l10n'])
+
+        revision(document=d, is_approved=True, is_ready_for_localization=True, save=True)
+
+        data = kb_overview_rows()
+        eq_(True, data[0]['ready_for_l10n'])
+
 
 class L10NOverviewTests(TestCase):
     """Tests for Overview readout"""
