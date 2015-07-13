@@ -75,8 +75,8 @@ class KBOverviewTests(TestCase):
         revision(document=d, save=True)
 
         eq_(1, len(kb_overview_rows()))
-        eq_(0, len(kb_overview_rows(category=CATEGORIES[0][1])))
-        eq_(1, len(kb_overview_rows(category=CATEGORIES[1][1])))
+        eq_(0, len(kb_overview_rows(category=CATEGORIES[0][0])))
+        eq_(1, len(kb_overview_rows(category=CATEGORIES[1][0])))
 
 
 class L10NOverviewTests(TestCase):
