@@ -447,7 +447,6 @@ PIPELINE_JS = {
             'sumo/js/markup.js',
             'sumo/js/libs/django/urlify.js',
             'sumo/js/libs/django/prepopulate.js',
-            'sumo/js/libs/swfobject.js',
             'sumo/js/libs/jquery.lazyload.js',
             'sumo/js/libs/jquery.tokeninput.js',
             'sumo/js/users.autocomplete.js',
