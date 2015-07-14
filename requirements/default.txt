@@ -40,8 +40,8 @@ cryptography==0.7.2
 # sha256: MxnZwEi7pMyJqWkRgdDgIYei8JtDQ_0vz2zL-EtO4Yo
 dennis==0.6.1
 
-# sha256: 8KsSx8iKAzaB5E4uS_SpPZPIXVsejpyHW0uRerskaSE
-Django==1.7.8
+# sha256: Tz-f5OXSD_jtapC10vLfLY_AVOR4zcw9uBxrKb0heGA
+Django==1.7.9
 
 # sha256: M7YuOXN4svxB-YixuXUuT1Y5rfNYJN5wxGqKDmv1pVs
 django-activity-stream==0.5.1
@@ -290,9 +290,6 @@ selenium==2.45.0
 # sha256: Qr9imks6STO7PPrPYAXJW3SU_YjNYqe60ajD5kZH6ww
 # sha256: v445sBLQFGpK6vVBNT9bm5Ywu8tawnUFhJrIlrz_L2o
 setuptools==0.9.8
-
-# sha256: _lMoR-CPEVj4EJr9NJdUBZ4QFYMNsYjXOwHi7MD35Sg
-simplejson==3.1.2
 
 # sha256: 4kBSQR_E-9H2cmNVN8P8IzDZSBsYwDF2lbRiWVEskdU
 six==1.9.0
