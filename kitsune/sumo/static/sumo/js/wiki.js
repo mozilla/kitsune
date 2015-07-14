@@ -257,7 +257,7 @@
         new ShowFor();
         $preview.find('select.enable-if-js').removeAttr('disabled');
         $preview.find('.kbox').kbox();
-        k.initVideo();
+        // k.initVideo();
         $('#preview-diff .output').empty();
       }
     });

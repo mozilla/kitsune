@@ -68,15 +68,15 @@
      * for the SWF player
      */
     function initFallbackSupport() {
-        $('div.video video').each(function initializeVideo(i) {
-            initVideoFallback($(this));
-        });
+        // $('div.video video').each(function initializeVideo(i) {
+        //     initVideoFallback($(this));
+        // });
     };
 
-    $(document).ready(function () {
-        initFallbackSupport();
-    });
+    // $(document).ready(function () {
+    //     initFallbackSupport();
+    // });
 
     // add this to window.k
-    k.initVideo = initFallbackSupport;
+    // k.initVideo = initFallbackSupport;
 }());
