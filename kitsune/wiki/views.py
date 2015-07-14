@@ -1511,22 +1511,22 @@ def get_fallback_locale(doc, request):
     if browser_language_code is not None:
         header_locales = parse_accept_lang_header(browser_language_code)
     else:
-        header_locales = ''
+        header_locales = []
     # Get the Locale mapping from setting
     NON_SUPPORTED_LOCALES = settings.NON_SUPPORTED_LOCALES
 
     # Check if the document is translated to any of the locale listed in Accepted_Language Header
-    for locale, __ in header_locales:
+    for locale in header_locales:
         if locale in translated_locales:
             fallback_locale = locale
             break
     else:
-        # If any locale of Accpeted_Language Header is not in translated_locale,
-        # Check if we have any fallback local for the locales of Accpeted_Languge Header
+        # If any locale of Accpeted_Language Header is not in translated locale,
+        # Check if we have any fallback local for the locales of Accpeted_Languge Header and
+        # the document is translated into that fallback locale
         # This locale mapping is mentioned in kitsune/settings.py
-        for locale, __ in header_locales:
-            if (locale in NON_SUPPORTED_LOCALES and
-                    NON_SUPPORTED_LOCALES.get(locale) in translated_locales):
+        for locale in header_locales:
+            if NON_SUPPORTED_LOCALES.get(locale) in translated_locales:
                 fallback_locale = NON_SUPPORTED_LOCALES[locale]
                 break
         else:
@@ -1541,7 +1541,7 @@ def get_fallback_locale(doc, request):
                 else:
                     # If above does not match, then we would check if any locale of
                     # Accepted_Language Header is in the Custom Wiki Locale mappping
-                    for locale, __ in header_locales:
+                    for locale in header_locales:
                         if locale in FALLBACK_LOCALES:
                             # Check if the document is trnaslated into the fallback locale
                             for locale in FALLBACK_LOCALES[locale]:
@@ -1559,7 +1559,7 @@ def get_fallback_locale(doc, request):
             # will check if We have any fallback locale available in Custom Wiki locale
             # mapping for the locales of Accpeted_Launguage Header.
             else:
-                for locale, __ in header_locales:
+                for locale in header_locales:
                     if locale in FALLBACK_LOCALES:
                         # Check if the document is trnaslated into the fallback locale
                         for locale in FALLBACK_LOCALES[locale]:
@@ -1575,11 +1575,13 @@ def get_fallback_locale(doc, request):
     return fallback_locale
 
 
-# Import from django.utils.translation.trans_real and changed some
+# Import from django.utils.translation.trans_real and changed as below
+#  * Removed lower() from piece to get the locale name as needed
+#  * As we need only the locale name, added code to get only locale name
 def parse_accept_lang_header(lang_string):
     """
     Parses the lang_string, which is the body of an HTTP Accept-Language
-    header, and returns a list of (lang, q-value), ordered by 'q' values.
+    header, and returns a list of lang, ordered by 'q' values.
     Any format errors in lang_string results in an empty list being returned.
     """
     accept_language_re = re.compile(r'''
@@ -1588,7 +1590,8 @@ def parse_accept_lang_header(lang_string):
         (?:\s*,\s*|$)                                 # Multiple accepts per header.
         ''', re.VERBOSE)
     result = []
-    pieces = accept_language_re.split(lang_string)   # Changed here. Removed lower()
+    pieces = accept_language_re.split(lang_string)
+    print pieces   # Changed here. Removed lower()
     if pieces[-1]:
         return []
     for i in range(0, len(pieces) - 1, 3):
@@ -1604,4 +1607,6 @@ def parse_accept_lang_header(lang_string):
             priority = 1.0
         result.append((lang, priority))
     result.sort(key=lambda k: k[1], reverse=True)
+    # Changed here to get the locale name only
+    result = [k for k, v in result]
     return result
