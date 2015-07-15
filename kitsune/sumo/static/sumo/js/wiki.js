@@ -547,7 +547,7 @@
       if(!editor)
         return;
 
-      var content = $("#id_content").val();
+      var content = $('#id_content').val();
       editor.setValue(content);
     };
     window.highlighting.updateEditor = updateHighlightingEditor;
@@ -557,11 +557,11 @@
         .css({cssFloat: "right", cursor: "pointer"})
         .toggle(function() {
           editor_wrapper.css("display", "none");
-          $("#id_content").css("display", "block");
+          $('#id_content').css("display", "block");
         }, function() {
           updateHighlightingEditor();
           editor_wrapper.css("display", "block");
-          $("#id_content").css("display", "none");
+          $('#id_content').css("display", "none");
         });
 
     var highlightingEnabled = function() {
@@ -570,24 +570,25 @@
     window.highlighting.isEnabled = highlightingEnabled;
 
     editor_wrapper.append(editor);
-    $("#id_content").after(switch_link).after(editor_wrapper).hide();
+    $('#id_content').after(switch_link).after(editor_wrapper).hide();
 
     window.addEventListener('load', function() {
       var cm_editor = CodeMirror(document.getElementById('editor'), {
-        mode: 'sumo',
-        value: $("#id_content").val(),
+        mode: {'name': 'sumo'},
+        value: $('#id_content').val(),
         lineNumbers: true,
-        lineWrapping: true
+        lineWrapping: true,
+        extraKeys: {'Ctrl-Space': 'autocomplete'}
       });
       window.highlighting.editor = cm_editor;
 
-      $("#id_content").bind("keyup", updateHighlightingEditor);
+      $('#id_content').bind('keyup', updateHighlightingEditor);
       updateHighlightingEditor();
 
       cm_editor.on('change', function(e) {
         if(!highlightingEnabled())
           return;
-        $("#id_content").val(cm_editor.getValue());
+        $('#id_content').val(cm_editor.getValue());
       });
     }, false);
   }
