@@ -1,7 +1,4 @@
 {% from 'includes/common_macros.html' import announcement_bar, search_box, aux_nav, favicon with context %}
-{% if request.LANGUAGE_CODE == settings.WIKI_DEFAULT_LANGUAGE and waffle.flag('surveygizmo') %}
-  {% set SURVEY_GIZMOS = (SURVEY_GIZMOS or []) + ['site_survey', 'firefox_refresh'] %}
-{% endif %}
 {% if request.LANGUAGE_CODE == 'xx' %}
   {% set meta = [('robots', 'noindex')] %}
 {% endif %}
@@ -66,11 +63,6 @@
       data-usernames-api="{{ url('users.api.usernames') }}"
       data-static-url="{{ STATIC_URL }}"
       data-media-url="{{ MEDIA_URL }}"
-      {% if SURVEY_GIZMOS %}
-        data-survey-gizmos="{{ SURVEY_GIZMOS|json }}"
-      {% else %}
-        data-survey-gizmos="[]"
-      {% endif %}
       data-ga-push="{{ ga_push_attribute() }}"
       {% if ga_alternate_url %}
         data-ga-alternate-url="{{ ga_alternate_url }}"
