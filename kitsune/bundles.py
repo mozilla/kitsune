@@ -45,7 +45,7 @@ PIPELINE_CSS = {
     # TODO: remove dependency on jquery ui CSS and use our own
     'jqueryui': {
         'source_filenames': (
-            'sumo/css/jqueryui/jqueryui.ess',
+            'sumo/css/jqueryui/jqueryui.css',
         ),
         'output_filename': 'build/jqueryui-min.css'
     },
