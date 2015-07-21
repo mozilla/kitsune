@@ -90,7 +90,7 @@ class L10NOverviewTests(TestCase):
     def test_counting_unready_docs(self):
         """Docs without a ready-for-l10n rev shouldn't count in total."""
         # Make a doc with an approved but not-ready-for-l10n rev:
-        d = TemplateDocumentFactory(is_localizable=True)
+        d = DocumentFactory(is_localizable=True)
         r = ApprovedRevisionFactory(document=d, is_ready_for_localization=False)
 
         # It shouldn't show up in the total:
