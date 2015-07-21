@@ -1,4 +1,4 @@
-import constantMap from '../../../sumo/js/utils/constantMap.es6';
+import constantMap from '../../../sumo/js/utils/constantMap.es6.js';
 
 export const actionTypes = constantMap([
   'AUTH_SET_STATE',

@@ -1,8 +1,8 @@
 /* globals _:false */
 
-import BaseStore from '../../../sumo/js/stores/BaseStore.es6';
-import Dispatcher from '../../../sumo/js/Dispatcher.es6';
-import {actionTypes} from '../constants/UserAuthConstants.es6';
+import BaseStore from '../../../sumo/js/stores/BaseStore.es6.js';
+import Dispatcher from '../../../sumo/js/Dispatcher.es6.js';
+import {actionTypes} from '../constants/UserAuthConstants.es6.js';
 
 var data = {
   state: null,

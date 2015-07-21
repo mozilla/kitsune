@@ -1,8 +1,8 @@
 /* globals _:false */
 
-import BaseStore from '../../../sumo/js/stores/BaseStore.es6';
-import Dispatcher from '../../../sumo/js/Dispatcher.es6';
-import {actionTypes, questionEditState} from '../constants/AAQConstants.es6';
+import BaseStore from '../../../sumo/js/stores/BaseStore.es6.js';
+import Dispatcher from '../../../sumo/js/Dispatcher.es6.js';
+import {actionTypes, questionEditState} from '../constants/AAQConstants.es6.js';
 
 var question = {
   product: null,
