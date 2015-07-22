@@ -73,6 +73,8 @@ class Profile(ModelBase, SearchMixin):
         default=False, help_text=_lazy(u'Has been sent a first answer contribution email.'))
     first_l10n_email_sent = models.BooleanField(
         default=False, help_text=_lazy(u'Has been sent a first revision contribution email.'))
+    involved_from = models.DateField(null=True, blank=True,
+                                     verbose_name=_lazy(u'Involved with Mozilla from'))
 
     class Meta(object):
         permissions = (('view_karma_points', 'Can view karma points'),
