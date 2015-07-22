@@ -1,3 +1,4 @@
+/* globals k:false, _:false, React:true, $:false */
 import ContributorsList from './ContributorsList.jsx';
 
 export default class ContributorsController {

@@ -1,3 +1,4 @@
+/* global $:false */
 $(function() {
     var selectTrigger = $('.ts-select-trigger');
     var options = $('.ts-options');

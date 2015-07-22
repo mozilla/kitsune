@@ -1,5 +1,4 @@
-/* globals ShowFor:false, module:false, tests:false, test:false, equals:false,
-   deepEqual:false, assert:false, console:false, ok:false */
+/* globals ShowFor:false, BrowserDetect:false */
 (function() {
 
 /* Tests for showfor */

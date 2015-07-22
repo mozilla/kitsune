@@ -1,5 +1,6 @@
+/* globals gettext:false, jQuery:false, Modernizr:false, interpolate:false */
 (function($) {
-    "use strict";
+    'use strict';
 
     $(document).ready(function() {
       $('#media-type-select').on('change', function() {
@@ -18,9 +19,9 @@
             }
         };
 
-    CONSTANTS.messages['server'] = gettext('Could not upload file. Please try again later.');
-    CONSTANTS.messages['file'] = {
-        'server': CONSTANTS.messages['server'],
+    CONSTANTS.messages.server = gettext('Could not upload file. Please try again later.');
+    CONSTANTS.messages.file = {
+        'server': CONSTANTS.messages.server,
         'invalid': gettext('Invalid image. Please select a valid image file.'),
         'toolarge': gettext('Image too large. Please select a smaller image file.'),
         'cancelled': gettext('Upload cancelled. Please select an image file.'),
@@ -51,7 +52,7 @@
      * array arr.
      */
     function in_array(needle, haystack) {
-        return (-1 !== Array.prototype.indexOf.call(haystack, needle));
+        return (Array.prototype.indexOf.call(haystack, needle) !== -1);
     }
 
     /*
@@ -148,7 +149,7 @@
                     self.deleteUpload($input);
                     return false;
                 });
-            }
+            };
 
             // Metadata should be required.
             self.$modal.find('.metadata input,.metadata textarea')
@@ -184,7 +185,7 @@
             var self = this,
                 $form = $input.closest('.upload-form');
             // An image must be uploaded
-            if ($form[0] == self.forms.$image[0] &&
+            if ($form[0] === self.forms.$image[0] &&
                 $form.find('.on input[type="file"]').length) {
                 return false;
             }
@@ -259,7 +260,7 @@
 
             if (upStatus !== 'success') {
                 self.uploadError($input, 'invalid');
-                return false;
+                return;
             }
             // Success!
             self.uploadSuccess($input, iframeJSON, options.filename);

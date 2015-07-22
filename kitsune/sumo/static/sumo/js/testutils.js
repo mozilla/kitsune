@@ -1,3 +1,4 @@
+/* globals test:false, tests:true, ok:false, start:false, $:false, k:false */
 /*
     Utilities for testing jQuery-based JavaScript code.
 */
@@ -25,7 +26,7 @@ tests.waitFor = function(checkCondition, config) {
         **config.timeout**
           milliseconds to wait before giving up on condition
     */
-    if (typeof(config) === 'undefined') {
+    if (typeof config === 'undefined') {
         config = {};
     }
     var interval = config.interval || 5,
@@ -37,17 +38,15 @@ tests.waitFor = function(checkCondition, config) {
     run = function() {
         if (timeSpent > timeout) {
             var cond = checkCondition.toString();
-            ok(false, "Spent too long waiting for: " + cond);
+            ok(false, 'Spent too long waiting for: ' + cond);
             start();
         }
         timeSpent += interval;
         var ready = checkCondition();
         if (!ready) {
             setTimeout(run, interval);
-        } else {
-            if (typeof runWhenReady === 'function') {
-                runWhenReady();
-            }
+        } else if (typeof runWhenReady === 'function') {
+            runWhenReady();
         }
     };
     setTimeout(run, interval);
@@ -55,7 +54,7 @@ tests.waitFor = function(checkCondition, config) {
         thenDo: function(fn) {
             runWhenReady = fn;
         }
-    }
+    };
 };
 
 tests._sbCounter = 0;
@@ -85,7 +84,7 @@ tests.createSandbox = function(tmpl) {
             });
     */
     tests._sbCounter++;
-    var sb = $('<div id="sandbox-'+tests._sbCounter.toString()+'"></div>');
+    var sb = $('<div id="sandbox-' + tests._sbCounter.toString() + '"></div>');
     if (tmpl) {
         sb.append($(tmpl).html());
     }
@@ -120,11 +119,11 @@ tests.StubOb = function(Orig, overrides) {
         Be sure to assign the original class back when you're done testing.
     */
     return function() {
-        var ob = {}
+        var ob = {};
         Orig.apply(ob, this.arguments);
-        for (k in overrides) {
-            ob[k] = overrides[k];
+        for (var key in overrides) {
+            ob[key] = overrides[key];
         }
         return ob;
-    }
+    };
 };

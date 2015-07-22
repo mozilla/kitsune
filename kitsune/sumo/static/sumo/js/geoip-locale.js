@@ -1,3 +1,4 @@
+/* globals $:false, interpolate:false, _gaq:false */
 /* geo.mozilla.org will inject a couple functions that look like this, though
  * with the correct country code/name for the current client.
  *
@@ -15,7 +16,7 @@
         };
     } else if (window.geoip_country_name) {
         // Cookie expires after 30 days.
-        $.cookie('geoip_country_name', geoip_country_name(), {expires: 30});
+        $.cookie('geoip_country_name', window.geoip_country_name(), {expires: 30});
     } else {
         window.geoip_country_name = function() {
             return 'Unknown';
@@ -28,7 +29,7 @@
         };
     } else if (window.geoip_country_code) {
         // Cookie expires after 30 days.
-        $.cookie('geoip_country_code', geoip_country_code(), {expires: 30});
+        $.cookie('geoip_country_code', window.geoip_country_code(), {expires: 30});
     } else {
         window.geoip_country_code = function() {
             return '??';
@@ -46,8 +47,8 @@
     };
 
     var currentLocale = $('html').attr('lang');
-    var currentCountry = geoip_country_name();
-    var suggestedLocale = (languageSuggestions[currentLocale] || {})[geoip_country_name()];
+    var currentCountry = window.geoip_country_name();
+    var suggestedLocale = (languageSuggestions[currentLocale] || {})[window.geoip_country_name()];
     var $announceBar = $('#announce-geoip-suggestion');
 
     if (suggestedLocale) {
@@ -72,7 +73,7 @@
              * language, instead of repeating the same message twice.
              */
             var languageInCurrentLocale = data.locales[suggestedLocale][0];
-            var languageInNativeLocale =  data.locales[suggestedLocale][1];
+            var languageInNativeLocale = data.locales[suggestedLocale][1];
 
             var currentLocaleSuggestion = interpolate(
                 data[currentLocale].suggestion,

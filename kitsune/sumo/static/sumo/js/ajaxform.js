@@ -1,6 +1,7 @@
+/* globals gettext:false, jQuery:false */
 (function($) {
 
-    "use strict";
+    'use strict';
 
     function AjaxForm(form, options) {
         AjaxForm.prototype.init.call(this, form, options);
@@ -107,4 +108,4 @@
     window.k = window.k || {};
     window.k.AjaxForm = AjaxForm;
 
-}(jQuery));
+})(jQuery);

@@ -1,3 +1,4 @@
+/* globals k:false, $:false */
 (function() {
 
 'use strict';

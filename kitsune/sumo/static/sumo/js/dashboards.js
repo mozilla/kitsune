@@ -1,3 +1,4 @@
+/* globals interpolate:false, jQuery:false, gettext:false */
 (function ($) {
     function init() {
         initReadoutModes();
@@ -10,26 +11,26 @@
     // Hook up readout mode links (like "This Week" and "All Time") to swap
     // table data.
     function initReadoutModes() {
-        $(".readout-modes").each(
+        $('.readout-modes').each(
             function attachClickHandler() {
                 var $modes = $(this),
-                    slug = $modes.attr("data-slug");
-                $modes.find(".mode").each(
+                    slug = $modes.attr('data-slug');
+                $modes.find('.mode').each(
                     function() {
                         var $button = $(this);
                         $button.click(
                             function switchMode() {
                                 // Dim table to convey that its data isn't what
                                 // the select mode indicates:
-                                var $table = $("#" + slug + "-table");
-                                $table.addClass("busy");
+                                var $table = $('#' + slug + '-table');
+                                $table.addClass('busy');
 
                                 // Update button appearance:
-                                $modes.find(".mode").removeClass("active");
-                                $button.addClass("active");
-                                $.get($button.attr("data-url"),
+                                $modes.find('.mode').removeClass('active');
+                                $button.addClass('active');
+                                $.get($button.attr('data-url'),
                                     function succeed(html) {
-                                        $table.html(html).removeClass("busy");
+                                        $table.html(html).removeClass('busy');
                                     });
                                 return false;
                             });
@@ -38,36 +39,36 @@
     }
 
     function initWatchMenu() {
-        var $watchDiv = $("#doc-watch"),
-            $menu = $watchDiv.find(".popup-menu");
+        var $watchDiv = $('#doc-watch'),
+            $menu = $watchDiv.find('.popup-menu');
 
         // Initialize popup menu behavior:
-        $watchDiv.find(".popup-trigger").click(
+        $watchDiv.find('.popup-trigger').click(
             function toggleMenu() {
                 $menu.toggle();
             });
 
         // Teach checkboxes to dim and post on click:
-        $watchDiv.find("input[type=checkbox]").click(
+        $watchDiv.find('input[type=checkbox]').click(
             // Dim the checkbox, post the watch change, then undim.
             function post() {
                 var $box = $(this),
-                    csrf = $box.closest("form")
-                               .find("input[name=csrfmiddlewaretoken]").val(),
-                    isChecked = $box.attr("checked");
-                $box.attr("disabled", "disabled");
+                    csrf = $box.closest('form')
+                               .find('input[name=csrfmiddlewaretoken]').val(),
+                    isChecked = $box.attr('checked');
+                $box.attr('disabled', 'disabled');
                 $.ajax({
-                        type: "POST",
-                        url: isChecked ? $box.data("action-watch")
-                                       : $box.data("action-unwatch"),
+                        type: 'POST',
+                        url: isChecked ? $box.data('action-watch')
+                                       : $box.data('action-unwatch'),
                         data: {csrfmiddlewaretoken: csrf},
                         success: function() {
-                                $box.attr("disabled", "");
+                                $box.attr('disabled', '');
                             },
                         error: function() {
-                                $box.attr("checked", isChecked ? ""
-                                                               : "checked")
-                                    .attr("disabled", "");
+                                $box.attr('checked', isChecked ? ''
+                                                               : 'checked')
+                                    .attr('disabled', '');
                             }
                     });
             });
@@ -77,7 +78,7 @@
         // Expand rows on click
         $('#need-changes-table tr').click(function(e) {
             // Don't expand if a link was clicked.
-            if(!$(e.target).is('a')) {
+            if (!$(e.target).is('a')) {
                 $(this).toggleClass('active');
             }
         });
@@ -135,7 +136,7 @@
                 type: 'POST',
                 url: $this.prop('href'),
                 data: {
-                    'csrfmiddlewaretoken': $("input[name=csrfmiddlewaretoken]").val()
+                    'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val()
                 },
                 success: function() {
                     $this.closest('li').remove();
@@ -161,7 +162,7 @@
         $.getJSON(
             '/media/uploads/l10n_summary.json?_cache=' + cacheBust,
             function(data) {
-                var localeData = data['locales'][$('html').attr('lang')];
+                var localeData = data.locales[$('html').attr('lang')];
                 var className = 'bad';
 
                 // Fill in the numbers in the second column.
@@ -201,4 +202,4 @@
     }
 
     $(document).ready(init);
-}(jQuery));
+})(jQuery);

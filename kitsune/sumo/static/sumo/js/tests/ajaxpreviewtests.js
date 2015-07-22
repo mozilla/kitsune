@@ -1,5 +1,4 @@
-'use strict';
-
+/* globals $:false, k:false */
 var ajaxPreviewFixture = {
     setup: function() {
         this.sandbox = tests.createSandbox('#ajaxpreview');
@@ -51,7 +50,7 @@ asyncTest('ajax preview events', function() {
 asyncTest('integrated (with DOM events) ajax preview', function() {
     var $sandbox = this.sandbox,
         $preview = $sandbox.find('#preview-container');
-    new k.AjaxPreview($sandbox.find('#preview'));
+    new k.AjaxPreview($sandbox.find('#preview')); // eslint-disable-line
     $sandbox.find('#preview').click();
     tests.waitFor(function() {
         return $preview.text().length > 0;

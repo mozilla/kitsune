@@ -1,10 +1,10 @@
-/*global Marky, document, jQuery */
+/* global Marky:false, jQuery:false, template:false, gettext:false, KBox:false */
 /*
  * forums.js
  * Scripts for the forums app.
  */
 
-(function($){
+(function($) {
 
     function init() {
         Marky.createSimpleToolbar(
@@ -12,7 +12,7 @@
             '#reply-content, #id_content',
             {mediaButton: true});
 
-        new k.AjaxPreview($('#preview'));
+        new k.AjaxPreview($('#preview')); // eslint-disable-line
 
         $('span.post-action a.reply').click(function() {
             var post = $(this).data('post'),
@@ -37,12 +37,12 @@
             var form = $(this);
             $.post(form.attr('action'), form.serialize(), function() {
                 form.find('a').toggleClass('yes').toggleClass('no');
-                form.find('a.no').attr("title", gettext("You are not watching this thread"));
-                form.find('a.yes').attr("title", gettext("You are watching this thread"));
+                form.find('a.no').attr('title', gettext('You are not watching this thread'));
+                form.find('a.yes').attr('title', gettext('You are watching this thread'));
             }).error(function() {
                 // error growl
             });
-            return false
+            return false;
         });
 
     }
@@ -52,7 +52,7 @@
         var $this = $(this);
 
         // If the image is already linked do not do this
-        if ($this.parents('a').length == 0) {
+        if ($this.parents('a').length === 0) {
             $this.on('click', function(ev) {
                 ev.preventDefault();
                 var imgUrl = $this.attr('src'),
@@ -83,4 +83,4 @@
 
     $(document).ready(init);
 
-}(jQuery));
+})(jQuery);

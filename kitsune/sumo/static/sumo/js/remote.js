@@ -39,7 +39,7 @@ window.remoteTroubleshooting = window.remoteTroubleshooting || {};
             return;
         }
 
-        if (!(window.hasOwnProperty('CustomEvent') && typeof window.CustomEvent == 'function')) {
+        if (!(window.hasOwnProperty('CustomEvent') && typeof window.CustomEvent === 'function')) {
             // console.log('remoteTroubleshooting: browser does not support CustomEvent');
             data = {};
             window.setTimeout(function() { callback(data); });
@@ -60,9 +60,9 @@ window.remoteTroubleshooting = window.remoteTroubleshooting || {};
 
         // Listen to the WebChannelMessageToContent event and handle
         // incoming remote-troubleshooting messages.
-        window.addEventListener("WebChannelMessageToContent", function (e) {
+        window.addEventListener('WebChannelMessageToContent', function (e) {
             // FIXME: handle failure cases
-            if (e.detail.id === "remote-troubleshooting") {
+            if (e.detail.id === 'remote-troubleshooting') {
                 window.clearTimeout(timeoutId);
 
                 data = e.detail.message;
@@ -78,11 +78,11 @@ window.remoteTroubleshooting = window.remoteTroubleshooting || {};
 
         // Create the remote-troubleshooting event requesting data and
         // kick it off.
-        var event = new window.CustomEvent("WebChannelMessageToChrome", {
+        var event = new window.CustomEvent('WebChannelMessageToChrome', {
             detail: {
-                id: "remote-troubleshooting",
+                id: 'remote-troubleshooting',
                 message: {
-                    command: "request"
+                    command: 'request'
                 }
             }
         });
@@ -105,12 +105,12 @@ window.remoteTroubleshooting = window.remoteTroubleshooting || {};
      * @returns {bool} true if it's available, false if it isn't
      */
     remoteTroubleshooting.available = function(callback, timeout) {
-        remoteTroubleshooting.getData(function (data) {
+        remoteTroubleshooting.getData(function (troubleShootingData) {
             // FIXME: This relies on the fact that 'application' is a
             // valid key with data in it. If it's not then, this will
             // be wrong.
-            callback(!!data.application);
+            callback(!!troubleShootingData.application);
         }, timeout);
     };
 
-}(window, window.remoteTroubleshooting));
+})(window, window.remoteTroubleshooting);

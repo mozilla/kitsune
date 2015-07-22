@@ -1,5 +1,6 @@
+/* globals moment:false, k:false, jQuery:false */
 (function($) {
-  window.k = k || {};
+  window.k = window.k || {};
 
   var cache = {};
 
@@ -12,7 +13,7 @@
   CachedXHR.prototype.clearCache = function() {
     cache = {};
     return this;
-  }
+  };
 
   CachedXHR.prototype.fetch = function(url, cacheKey) {
     var key = url;
@@ -32,7 +33,7 @@
       'data': data,
       'textStatus': textStatus,
       'jqXHR': jqXHR
-    }
+    };
     return this;
   };
 

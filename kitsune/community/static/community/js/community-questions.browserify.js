@@ -18,10 +18,10 @@ var controller = new CommunityController({
             transform: (timestamp) => <RelativeTime timestamp={timestamp} future={false}/>
         },
     ],
-})
+});
 
 controller.render();
 
 window.onpopstate = function() {
     controller.refresh();
-}
+};

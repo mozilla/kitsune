@@ -1,3 +1,4 @@
+/* globals _gaq:false, k:false, _:false, Marky:false, AAQSystemInfo:false, KBox:false, gettext:false, template:false, jQuery:false */
 /*
  * questions.js
  * Scripts for the questions app.
@@ -6,12 +7,12 @@
 // TODO: Figure out how to break out the functionality here into
 // testable parts.
 
-(function($){
+(function($) {
 
     function init() {
         var $body = $('body');
 
-        if($body.is('.new-question')) {
+         if ($body.is('.new-question')) {
             initNewQuestion();
 
             if (window.location.search.indexOf('step=aaq-register') > -1) {
@@ -21,7 +22,7 @@
             }
         }
 
-        if($body.is('.questions')) {
+        if ($body.is('.questions')) {
             initTagFilterToggle();
 
             $('#flag-filter input[type="checkbox"]').on('click', function() {
@@ -33,7 +34,7 @@
             }
         }
 
-        if($body.is('.answers')) {
+        if ($body.is('.answers')) {
             // Put last search query into search box
             $('#support-search input[name=q]')
                 .val(k.unquote($.cookie('last_search')));
@@ -47,7 +48,7 @@
                   url: url,
                   method: 'POST',
                   beforeSend: function(xhr, settings) {
-                    xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                    xhr.setRequestHeader('X-CSRFToken', csrftoken);
                   }
                 });
               }
@@ -66,7 +67,7 @@
             initEditDetails();
             addReferrerAndQueryToVoteForm();
             initReplyToAnswer();
-            new k.AjaxPreview($('#preview'));
+            new k.AjaxPreview($('#preview')); // eslint-disable-line
         }
 
         Marky.createSimpleToolbar('.editor-tools', '#reply-content, #id_content', {cannedResponses: !$body.is('.new-question')});
@@ -77,9 +78,9 @@
             var queryParams = k.getQueryParamsAsDict(document.location.toString());
 
             if (val === '') {
-                delete queryParams['product'];
+                delete queryParams.product;
             } else {
-                queryParams['product'] = val;
+                queryParams.product = val;
             }
             document.location = document.location.pathname + '?' + $.param(queryParams);
         });
@@ -90,9 +91,9 @@
             var queryParams = k.getQueryParamsAsDict(document.location.toString());
 
             if (val === '') {
-                delete queryParams['topic'];
+                delete queryParams.topic;
             } else {
-                queryParams['topic'] = val;
+                queryParams.topic = val;
             }
             document.location = document.location.pathname + '?' + $.param(queryParams);
         });
@@ -129,7 +130,7 @@
             $.ajax($selected.data('url'), {
                 'dataType': 'json',
                 'success': function(data) {
-                    for (var i=0; i < data.topics.length; i++) {
+                    for (var i = 0; i < data.topics.length; i++) {
                         var topic = data.topics[i];
                         var $opt = $('<option />');
 
@@ -171,7 +172,7 @@
         $container.find('input').click(function() {
             $(this).attr('disabled', 'disabled');
         });
-        $container.delegate('.kbox-close, .kbox-cancel', 'click', function(ev){
+        $container.delegate('.kbox-close, .kbox-cancel', 'click', function(ev) {
             ev.preventDefault();
             $container.unbind().remove();
         });
@@ -194,7 +195,7 @@
      */
     function initHelpfulVote() {
         $('li.answer div.side-section, .answer-tools').each(function() {
-            new k.AjaxVote($(this).find('form.helpful'), {
+            new k.AjaxVote($(this).find('form.helpful'), { // eslint-disable-line
                 positionMessage: true,
                 removeForm: true
             });
@@ -204,7 +205,7 @@
     // Helper
     function initAjaxForm($container, formSelector, boxSelector,
                           onKboxClose) {
-        $container.delegate(formSelector, 'submit', function(ev){
+        $container.delegate(formSelector, 'submit', function(ev) {
             ev.preventDefault();
             var $form = $(this);
             var url = $form.attr('action');
@@ -217,7 +218,7 @@
                 dataType: 'json',
                 success: function(response) {
                     if (response.html) {
-                        if($(boxSelector).length === 0) {
+                        if ($(boxSelector).length === 0) {
                             // We don't have a modal set up yet.
                             var kbox = new KBox(response.html, {
                                container: $container,
@@ -240,8 +241,8 @@
                     }
                 },
                 error: function() {
-                    var message = gettext("There was an error.");
-                    alert(message);
+                    var message = gettext('There was an error.');
+                    alert(message); // eslint-disable-line
                 }
             });
 
@@ -261,13 +262,13 @@
      * Links all crash IDs found in the passed HTML container elements
      */
     function linkCrashIds(container) {
-        if(!container) {
+        if (!container) {
             return;
         }
-        var crashIDRegex = new RegExp("(bp-[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})", "g");
-        var crashStatsBase = "https://crash-stats.mozilla.com/report/index/";
-        var helpingWithCrashesArticle = "/kb/helping-crashes";
-        var iconPath = $('body').data('static-url') + "img/questions/icon.questionmark.png";
+        var crashIDRegex = new RegExp('(bp-[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})', 'g');
+        var crashStatsBase = 'https://crash-stats.mozilla.com/report/index/';
+        var helpingWithCrashesArticle = '/kb/helping-crashes';
+        var iconPath = $('body').data('static-url') + 'img/questions/icon.questionmark.png';
         var crashReportContainer =
             "<span class='crash-report'>" +
             "<a href='" + crashStatsBase + "$1' target='_blank'>$1</a>" +
@@ -286,7 +287,7 @@
      * Initialize the automatic linking of crash IDs
      */
     function initCrashIdLinking() {
-        var postContents = $(".question .main-content, .answer .main-content, #more-system-details");
+        var postContents = $('.question .main-content, .answer .main-content, #more-system-details');
         postContents.each(function() {
             linkCrashIds($(this));
         });
@@ -317,4 +318,4 @@
 
     $(document).ready(init);
 
-}(jQuery));
+})(jQuery);

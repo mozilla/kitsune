@@ -10,10 +10,15 @@
 var format = (function() {
     var re = /\{([^}]+)\}/g;
     return function(s, args) {
-        if (!args) return;
-        if (!(args instanceof Array || args instanceof Object))
+        if (!args) {
+            return s;
+        }
+        if (!(args instanceof Array || args instanceof Object)) {
             args = Array.prototype.slice.call(arguments, 1);
-        return s.replace(re, function(_, match){ return args[match]; });
+        }
+        return s.replace(re, function(_, match) {
+            return args[match];
+        });
     };
 })();
 function template(s) {

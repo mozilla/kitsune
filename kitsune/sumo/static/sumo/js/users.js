@@ -1,3 +1,4 @@
+/* globals gettext:false, _gaq:false, jQuery */
 /*
  * users.js
  * Make public emails clickable.
@@ -12,7 +13,7 @@
         }
         $emails.each(function () {
             var email_val = $(this).text();
-            $a = $('<a/>').attr('href', 'mailto:' + email_val)
+            var $a = $('<a/>').attr('href', 'mailto:' + email_val)
                           .html(email_val);
             $(this).html($a);
         });
@@ -21,7 +22,7 @@
     var CONFIRM_TEXT = gettext('WARNING! Are you sure you want to deactivate this user? This cannot be undone!');
     function confirmUserDeactivation() {
         $('.deactivate').submit(function() {
-            return confirm(CONFIRM_TEXT);
+            return confirm(CONFIRM_TEXT); // eslint-disable-line
         });
     }
 
@@ -30,7 +31,7 @@
         confirmUserDeactivation();
 
         if ($('body').is('.register') && window.location.search.indexOf('reg=aaq') > -1) {
-            _gaq.push(['_trackEvent', 'Ask A Question Flow', 'step 3 confirmed page'])
+            _gaq.push(['_trackEvent', 'Ask A Question Flow', 'step 3 confirmed page']);
         }
     });
-}(jQuery));
+})(jQuery);

@@ -1,3 +1,4 @@
+/* globals jQuery:false */
 (function($) {
     $(function() {
         function refreshAnswers() {
@@ -24,8 +25,8 @@
             });
         });
 
-        $('.answer-tabs > li').each(function(){
-            $(this).on('click', function(){
+        $('.answer-tabs > li').each(function() {
+            $(this).on('click', function() {
                 $(this).siblings().removeClass('selected').each(function() {
                     var className = $(this).data('class');
                     if (className) {
@@ -41,4 +42,4 @@
             });
         });
     });
-}(jQuery));
+})(jQuery);

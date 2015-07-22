@@ -1,3 +1,4 @@
+/* globals k:false, interpolate:false, Modernizr:false, jQuery:false */
 window.k = window.k || {};
 
 (function($) {
@@ -23,7 +24,7 @@ window.k = window.k || {};
                 obj[j] = k.safeString(obj[j]);
             }
         } else {
-            for (var i=0, l=obj.length; i<l; i++) {
+            for (var i = 0, l = obj.length; i < l; i++) {
                 obj[i] = k.safeString(obj[i]);
             }
         }
@@ -63,9 +64,9 @@ window.k = window.k || {};
         }
 
         if (Modernizr.localstorage) {
-            $('#notifications > .announcement').each(function(){
+            $('#notifications > .announcement').each(function() {
                 if (localStorage.getItem($(this).attr('id') + '.closed') === 'true') {
-                    $(this).remove()
+                    $(this).remove();
                 }
             });
         }
@@ -73,7 +74,7 @@ window.k = window.k || {};
         showNotification($('#notifications > li').fadeOut(0));
 
         $('#cancel-button').on('click', function() {
-            if (!confirm(gettext('Are you sure you wish to cancel?'))) {
+            if (!confirm(gettext('Are you sure you wish to cancel?'))) { // eslint-disable-line
                 return false;
             }
         });
@@ -122,7 +123,7 @@ window.k = window.k || {};
         });
 
         $(document).on('click', '[data-checkbox]', function() {
-            var cb =  $('#' + $(this).data('checkbox'))[0];
+            var cb = $('#' + $(this).data('checkbox'))[0];
             if (cb) {
                 cb.checked = !cb.checked;
             }
@@ -157,7 +158,7 @@ window.k = window.k || {};
         });
 
         // iOS Standalone Web App Fix
-        if (("standalone" in window.navigator) && window.navigator.standalone) {
+        if (('standalone' in window.navigator) && window.navigator.standalone) {
             $(document).on('click', 'a', function(event) {
                 var href = $(event.target).attr('href');
 
@@ -170,7 +171,7 @@ window.k = window.k || {};
 
         if ($('body').is('.aaq')) {
             // Pre-populate form with user's system info
-            new AAQSystemInfo($('#question-form'));
+            new AAQSystemInfo($('#question-form')); // eslint-disable-line
         }
     });
-})(jQuery)
+})(jQuery);

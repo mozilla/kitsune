@@ -22,4 +22,4 @@ controller.render();
 
 window.onpopstate = function() {
     controller.refresh();
-}
+};

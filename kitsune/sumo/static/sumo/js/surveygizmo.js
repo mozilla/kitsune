@@ -1,13 +1,13 @@
 /* globals $:false */
 (function() {
     function launchWindow(url) {
-        var sg_div = document.createElement("div");
+        var sg_div = document.createElement('div');
         sg_div.innerHTML = (
             '<h1>You have been selected for a survey</h1>' +
             '<p>We appreciate your feedback!</p><p><a href="' + url + '">Please click here to start it now.</a></p>' +
             '<a href="#" onclick="document.getElementById(\'sg-popup\').style.display = \'none\';return false;">No, thank you.</a>'
         );
-        sg_div.id = "sg-popup";
+        sg_div.id = 'sg-popup';
         document.body.appendChild(sg_div);
     }
 

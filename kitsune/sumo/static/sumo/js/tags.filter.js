@@ -1,10 +1,9 @@
+/* globals _:false, k:false, jQuery:false */
 /*
  * A tag filtering form.
  */
 
 (function($) {
-
-"use strict";
 
 function init($container) {
     var $form = $container ? $container.find('form') : $('#tag-filter form'),
@@ -40,7 +39,7 @@ function init($container) {
 
     // Set up autocomplete
     // Skip if the autocomplete plugin isn't available (qunit tests).
-    if($tags.autocomplete) {
+    if ($tags.autocomplete) {
         $tags.autocomplete({
             source: _.keys(vocab),
             delay: 0,
@@ -64,7 +63,7 @@ function init($container) {
                 slugNames.push(slug);
             } else if (trimmed) {
                 invalid = true;
-                alert(interpolate(gettext('Invalid tag entered: %s'), [tag]));
+                alert(interpolate(gettext('Invalid tag entered: %s'), [tag])); // eslint-disable-line
             }
         });
 
@@ -72,7 +71,7 @@ function init($container) {
         if (invalid || slugNames.length === 0) {
             $form.trigger('ajaxComplete');
             if (!invalid) {
-                alert(gettext('No tags entered.'));
+                alert(gettext('No tags entered.')); // eslint-disable-line
             }
             return false;
         }
@@ -94,4 +93,4 @@ $(document).ready(function() {
     k.TagsFilter.init();
 });
 
-}(jQuery));
+})(jQuery);

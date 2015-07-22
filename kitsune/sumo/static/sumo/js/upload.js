@@ -1,3 +1,4 @@
+/* globals $:false, gettext:false, KBox:false, interpolate:false */
 $(document).ready(function () {
     var UPLOAD = {
             max_filename_length: 80,  // max filename length in characters
@@ -73,7 +74,7 @@ $(document).ready(function () {
                 try {
                     iframeJSON = $.parseJSON(iframeContent);
                 } catch(err) {
-                    if (err.substr(0, 12)  === 'Invalid JSON') {
+                    if (err.substr(0, 12) === 'Invalid JSON') {
                         dialogSet(UPLOAD.error_login, UPLOAD.error_title_up);
                     }
                 }
@@ -81,7 +82,7 @@ $(document).ready(function () {
                 upStatus = iframeJSON.status;
 
                 $options.progress.removeClass('show');
-                if (upStatus == 'success') {
+                if (upStatus === 'success') {
                     upFile = iframeJSON.file;
                     // HTML decode the name.
                     upFile.name = $('<div/>').html(upFile.name).text();
@@ -149,10 +150,10 @@ $(document).ready(function () {
     initImageModal();
 
     // Workaround to IE6's lack of div:hover support
-    if($.browser.msie && $.browser.version=="6.0") {
+    if ($.browser.msie && $.browser.version === '6.0') {
         $('div.attachments-upload').delegate('div.attachment', 'hover',
             function(ev) {
-                if (ev.type == 'mouseover' || ev.type == 'mouseenter') {
+                if (ev.type === 'mouseover' || ev.type === 'mouseenter') {
                     $(this).addClass('hover');
                 } else {
                     $(this).removeClass('hover');

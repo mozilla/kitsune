@@ -1,10 +1,11 @@
+/* globals gettext:false, jQuery:false */
 /*
  * Wiki content previews - ajaxified.
  */
 
 (function($) {
 
-"use strict";
+'use strict';
 
 function AjaxPreview(el, options) {
     /* Args:

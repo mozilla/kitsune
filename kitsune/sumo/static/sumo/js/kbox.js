@@ -1,3 +1,4 @@
+/* globals jQuery:false */
 /**
  * A KBox type and a corresponding jQuery plugin.
  *
@@ -70,7 +71,7 @@
 
 (function($) {
 
-"use strict"; // Giving this a shot!
+'use strict'; // Giving this a shot!
 
 var TEMPLATE =
     '<div class="kbox-container">' +
@@ -154,10 +155,14 @@ KBox.prototype = {
         }
 
         // Set the id if it was specified
-        self.options.id && self.$kbox.attr('id', self.options.id);
+        if (self.options.id) {
+            self.$kbox.attr('id', self.options.id);
+        }
 
         // Set the title if it was specified.
-        self.options.title && self.$kbox.find('.kbox-title').text(self.options.title);
+        if (self.options.title) {
+            self.$kbox.find('.kbox-title').text(self.options.title);
+        }
 
         // Insert the content.
         self.$kbox.find('.kbox-placeholder').replaceWith(self.$el.detach());
@@ -181,15 +186,19 @@ KBox.prototype = {
             return;
         }
         self.isOpen = true;
-        self.rendered || self.render();
+        if (!self.rendered) {
+            self.render();
+        }
         self.$kbox.addClass('kbox-open');
         self.setPosition();
-        self.options.modal && self.createOverlay();
+        if (self.options.modal) {
+            self.createOverlay();
+        }
 
         // Handle ESC
         if (self.options.closeOnEsc) {
             self.keypressHandler = function(ev) {
-                if(ev.keyCode === 27) {
+                if (ev.keyCode === 27) {
                     self.close();
                 }
             };
@@ -259,8 +268,12 @@ KBox.prototype = {
         }
         self.isOpen = false;
         self.$kbox.removeClass('kbox-open');
-        self.options.modal && self.destroyOverlay();
-        self.options.destroy && self.destroy();
+        if (self.options.modal) {
+            self.destroyOverlay();
+        }
+        if (self.options.destroy) {
+            self.destroy();
+        }
         if (self.options.closeOnEsc) {
             $('body').unbind('keypress', self.keypressHandler);
         }
@@ -292,7 +305,7 @@ KBox.prototype = {
 // Create the jQuery plugin.
 $.fn.kbox = function(options) {
     return this.each(function() {
-        new KBox(this, options);
+        new KBox(this, options); // eslint-disable-line
     });
 };
 

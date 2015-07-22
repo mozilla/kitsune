@@ -1,7 +1,8 @@
+/* globals jQuery:false */
 (function($) {
     var $body = $('body');
 
-    new ShowFor();
+    new ShowFor(); // eslint-disable-line
 
     if ($body.is('.document')) {
         var focusOn = window.location.hash;
@@ -15,7 +16,7 @@
                     removeForm: true,
                     validate: function(data) {
                         if (data['unhelpful-reason'] === 'other') {
-                            if (data['comment'].length < 1) {
+                            if (data.comment.length < 1) {
                                 return false;
                             }
                         }
@@ -27,7 +28,7 @@
 
         $('.vote-bar').on('change', 'input[type="radio"]', function() {
             var $ul = $(this).closest('ul');
-            $ul.children().each(function(){
+            $ul.children().each(function() {
                $(this).removeClass('checked');
             });
             if (this.checked) {
@@ -69,7 +70,7 @@
         }
 
         $('#toc').on('click', 'a', function(e) {
-            focusOn = $(this).attr('href')
+            focusOn = $(this).attr('href');
             refocus(focusOn);
             return false;
         });

@@ -1,17 +1,18 @@
+/* globals gettext:false, jQuery:false */
 /*
  * Inline editable sections
  */
 
 (function($) {
 
-"use strict";
+'use strict';
 
 function initInlineEditing() {
     // Enable managing of member and leader lists.
     $('.editable a.edit').each(function() {
         var $this = $(this),
             originalText = $this.text();
-        $this.click(function(ev){
+        $this.click(function(ev) {
             var $container = $this.closest('.editable');
             $container.toggleClass('edit-on');
             if ($container.hasClass('edit-on')) {
@@ -26,4 +27,4 @@ function initInlineEditing() {
 
 $(document).ready(initInlineEditing);
 
-}(jQuery));
+})(jQuery);

@@ -1,3 +1,4 @@
+/* globals $:false */
 var _gaq = _gaq || [];
 var extraPush = $('body').data('ga-push');
 var alternateUrl = $('body').data('ga-alternate-url');

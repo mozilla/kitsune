@@ -1,10 +1,11 @@
+/* globals k:false, gettext:false, _:false, jQuery:false */
 /*
  * kb dashboard chart
  */
 
-(function($){
+(function($) {
 
-"use strict";
+'use strict';
 
 $(document).ready(function() {
   if ($('body').is('.locale-metrics')) {
@@ -33,9 +34,9 @@ $(document).ready(function() {
     var queryParams = k.getQueryParamsAsDict(document.location.toString());
 
     if (val === '') {
-      delete queryParams['product'];
+      delete queryParams.product;
     } else {
-      queryParams['product'] = val;
+      queryParams.product = val;
     }
     document.location = document.location.pathname + '?' + $.param(queryParams);
   });
@@ -193,7 +194,7 @@ function makeAggregatedWikiMetricGraphs() {
     } else {
       var resultsByCode = {};
       var resultsByDate;
-      var i, l, result, code, locale, date;
+      var i, l, result, code, date;
 
       $('.loading-data').remove();
       $('#dashboard-readouts').show();
@@ -201,7 +202,6 @@ function makeAggregatedWikiMetricGraphs() {
       for (i = 0, l = results.length; i < l; i++) {
         // Split out the results by code:
         code = results[i].code;
-        locale = results[i].locale;
         date = results[i].date;
 
         // If we don't have an entry for the code, create it.
@@ -209,7 +209,7 @@ function makeAggregatedWikiMetricGraphs() {
 
         // If we don't have an entry for that date, create it.
         result = resultsByDate[date] || {date: date};
-        result[locale] = results[i].value;
+        result[results[i].locale] = results[i].value;
         resultsByDate[date] = result;
         resultsByCode[code] = resultsByDate;
       }
@@ -223,7 +223,7 @@ function makeAggregatedWikiMetricGraphs() {
                 name: locale,
                 slug: locale,
                 func: k.Graph.identity(locale)
-              }
+              };
             }
           ),
           false,
@@ -270,4 +270,4 @@ function makeAggregatedWikiMetricGraphs() {
   $.getJSON($contributors.data('url'), callback);
 }
 
-}(jQuery));
+})(jQuery);

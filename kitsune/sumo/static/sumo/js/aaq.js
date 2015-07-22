@@ -1,11 +1,11 @@
-/*globals console, BrowserDetect, gettext*/
+/* globals BrowserDetect:false, gettext:false, remoteTroubleshooting:false, jQuery:false */
 /*
  * Prepopulate system info in AAQ form
  */
 
 (function($) {
 
-"use strict";
+'use strict';
 
 function AAQSystemInfo($form) {
     AAQSystemInfo.prototype.init.call(this, $form);
@@ -21,23 +21,23 @@ AAQSystemInfo.prototype = {
 
         // Only guess at OS, FF version, plugins if we are on the desktop
         // asking a firefox desktop question (or s/desktop/mobile/).
-        if((BrowserDetect.browser === 'fx' && self.isDesktopFF()) ||
+        if ((BrowserDetect.browser === 'fx' && self.isDesktopFF()) ||
            (BrowserDetect.browser === 'm' && self.isMobileFF()) ||
            (BrowserDetect.browser === 'fxos' && self.isFirefoxOS())) {
             $input = $form.find('input[name="os"]');
-            if(!$input.val()) {
+            if (!$input.val()) {
                $input.val(self.getOS());
             }
             $input = $form.find('input[name="ff_version"]');
-            if(!$input.val()) {
+            if (!$input.val()) {
                 $input.val(self.getFirefoxVersion());
             }
             $input = $form.find('input[name="device"]');
-            if(!$input.val()) {
+            if (!$input.val()) {
                 $input.val(self.getDevice());
             }
             $input = $form.find('textarea[name="plugins"]');
-            if(!$input.val()) {
+            if (!$input.val()) {
                 $input.val(self.getPlugins());
             }
         }
@@ -97,7 +97,7 @@ AAQSystemInfo.prototype = {
             ],
             ua = navigator.userAgent,
             i, l;
-        for (i=0, l=os.length; i<l; i++) {
+        for (i = 0, l = os.length; i < l; i++) {
             if (os[i][1].test(ua)) {
                 return os[i][0];
             }
@@ -109,15 +109,15 @@ AAQSystemInfo.prototype = {
         var plugins = [],
             i, d;
         for (i = 0; i < navigator.plugins.length; i++) {
-            d = navigator.plugins[i].description.replace(/<[^>]+>/ig,'');
-            if (plugins.indexOf(d) == -1) {
+            d = navigator.plugins[i].description.replace(/<[^>]+>/ig, '');
+            if (plugins.indexOf(d) === -1) {
                 plugins.push(d);
             }
         }
         if (plugins.length > 0) {
-            plugins = "* " + plugins.join("\n* ");
+            plugins = '* ' + plugins.join('\n* ');
         } else {
-            plugins = "";
+            plugins = '';
         }
         return plugins;
     },
@@ -153,7 +153,9 @@ AAQSystemInfo.prototype = {
         var self = this;
         var browserData;
 
-        if (addEvent === undefined) addEvent = true;
+        if (addEvent === undefined) {
+            addEvent = true;
+        }
 
         // If the troubleshoot input exists, try to get the data.
         if ($('#id_troubleshooting').length === 0) {
@@ -185,12 +187,10 @@ AAQSystemInfo.prototype = {
                     window.mozTroubleshoot.snapshotJSON(function(json) {
                         handleData(JSON.parse(json));
                     });
-                } else {
-                    if (addEvent) {
-                        // Well, the user might install it later, so set up a listener.
-                        window.addEventListener('mozTroubleshootDidBecomeAvailable',
-                            self.getTroubleshootingInfo.bind(self, false));
-                    }
+                } else if (addEvent) {
+                    // Well, the user might install it later, so set up a listener.
+                    window.addEventListener('mozTroubleshootDidBecomeAvailable',
+                        self.getTroubleshootingInfo.bind(self, false));
                 }
             }
         });
@@ -206,7 +206,7 @@ AAQSystemInfo.prototype = {
             }
             // The last two parameters cause this to pretty print,
             // in case anyone looks at it.
-            data = JSON.stringify(data, null, "  ");
+            data = JSON.stringify(data, null, '  ');
             $('#addon-section').remove();
             $('#api-section').remove();
             $('#id_troubleshooting').val(data);

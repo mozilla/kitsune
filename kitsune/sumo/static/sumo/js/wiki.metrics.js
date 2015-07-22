@@ -1,3 +1,4 @@
+/* globals _gaq:false, jQuery:false */
 // Collect wiki metrics.
 
 (function ($) {
@@ -68,4 +69,4 @@
 
     $(document).ready(init);
 
-}(jQuery));
+})(jQuery);

@@ -1,10 +1,11 @@
+/* globals Marky:false, jQuery:false */
 /*
  * JS for Groups app
  */
 
 (function($) {
 
-"use strict";
+'use strict';
 
 function init() {
     // Marky for information edit:
@@ -14,4 +15,4 @@ function init() {
 
 $(document).ready(init);
 
-}(jQuery));
+})(jQuery);

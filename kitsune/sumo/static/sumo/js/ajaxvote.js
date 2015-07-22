@@ -1,11 +1,11 @@
-/*global gettext, k*/
+/* global gettext:false, k:false, jQuery:false */
 /*
  * Voting form ajaxified.
  */
 
 (function($) {
 
-"use strict";
+'use strict';
 
 function AjaxVote(form, options) {
     /* Args:
@@ -21,8 +21,8 @@ function AjaxVote(form, options) {
 AjaxVote.prototype = {
     init: function(form, options) {
         var self = this,
-            $form = $(form),
-            $btns = $form.find('input[type="submit"], .btn[data-type="submit"]');
+            $ajaxForm = $(form),
+            $btns = $ajaxForm.find('input[type="submit"], .btn[data-type="submit"]');
 
         options = $.extend({
             positionMessage: false,
@@ -31,7 +31,7 @@ AjaxVote.prototype = {
         }, options);
         self.options = options;
         self.voted = false;
-        self.$form = $form;
+        self.$form = $ajaxForm;
 
         $btns.click(function(e) {
             if (!self.voted) {
@@ -98,7 +98,7 @@ AjaxVote.prototype = {
             $('body').append($html);
             $html.css({
                 top: offset.top - $html.height() - 30,
-                left: offset.left + $showAbove.width()/2 - $html.width()/2
+                left: offset.left + $showAbove.width() / 2 - $html.width() / 2
             });
             var timer = setTimeout(fadeOut, 10000);
             $('body').one('click', fadeOut);
@@ -112,11 +112,11 @@ AjaxVote.prototype = {
         }
 
         function fadeOut() {
-            $html.fadeOut(function(){
+            $html.fadeOut(function() {
                 $html.remove();
             });
             if (self.options.removeForm) {
-                self.$form.fadeOut(function(){
+                self.$form.fadeOut(function() {
                     self.$form.remove();
                 });
             }
@@ -171,7 +171,7 @@ AjaxVote.prototype = {
 
         $radios.bind('change', validate);
 
-        new k.AjaxVote($survey.find('form'), {
+        new k.AjaxVote($survey.find('form'), { // eslint-disable-line
             replaceFormWithMessage: true
         });
     }

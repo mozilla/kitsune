@@ -1,3 +1,4 @@
+/* globals k:false, jQuery:false */
 (function($) {
   var searchTimeout;
   var locale = $('html').attr('lang');

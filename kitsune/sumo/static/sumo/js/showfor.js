@@ -1,4 +1,4 @@
-/*global BrowserDetect:false, jQuery:false */
+/* global BrowserDetect:false, jQuery:false */
 /*
  * ShowFor is a system to customize an article for an individual. It
  * will show or hide parts of an article based on spans with the class
@@ -262,22 +262,22 @@
   ShowFor.prototype.updateState = function() {
     this.state = {};
 
-    this.$container.find('.product').each(function(i, elem) {
-      var $elem = $(elem);
-      var slug = $elem.data('product');
+    this.$container.find('.product').each(function(i, productElem) {
+      var $productElem = $(productElem);
+      var slug = $productElem.data('product');
       this.state[slug] = {
-        enabled: $elem.find('input[type=checkbox]').prop('checked')
+        enabled: $productElem.find('input[type=checkbox]').prop('checked')
       };
 
-      $elem.find('select').each(function(i, elem) {
-        var $elem = $(elem);
-        var combined = $elem.val();
+      $productElem.find('select').each(function(j, selectElem) {
+        var $selectElem = $(selectElem);
+        var combined = $selectElem.val();
         var parts = combined.split(':');
         var type = parts[0];
         var data = parts[1];
 
         if (type === 'version') {
-          var $option = $elem.find('option:selected');
+          var $option = $selectElem.find('option:selected');
           data = {
             slug: data,
             min: parseFloat($option.data('min')),
@@ -348,7 +348,7 @@
       } else {
         $elem.show();
       }
-    }.bind(this));
+    });
   };
 
   /* Checks if the current state of this object matches criteria.

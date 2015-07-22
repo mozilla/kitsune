@@ -1,7 +1,7 @@
-/*jshint*/
-/*global gettext, Modernizr*/
-;(function($) {
-  "use strict";
+/* global gettext:false, Modernizr:false, _:false, jQuery:false, Mailcheck:false,
+          interpolate:false, Mozilla:false, _gaq:false */
+(function($) {
+  'use strict';
 
   $(document).ready(function() {
     initFolding();
@@ -13,7 +13,7 @@
       if (inputUsername === username) {
         $('#delete-profile-button').prop('disabled', false);
       } else {
-        $('#delete-profile-button').prop('disabled', true)
+        $('#delete-profile-button').prop('disabled', true);
       }
     });
 
@@ -39,7 +39,7 @@
       var $target;
       if ($this.data('close-id')) {
         $target = $('#' + $this.data('close-id'));
-        if ($this.data('close-memory') == 'remember') {
+        if ($this.data('close-memory') === 'remember') {
           if (Modernizr.localstorage) {
             localStorage.setItem($this.data('close-id') + '.closed', true);
           }
@@ -85,9 +85,9 @@
 
       if ($this.data('toggle-sticky') && targetId) {
         if (Modernizr.localstorage) {
-          var classes = localStorage.getItem(targetId + '.classes') || '[]';
-          classes = JSON.parse(classes);
-          $target.addClass(classes.join(' '));
+          var targetClasses = localStorage.getItem(targetId + '.classes') || '[]';
+          targetClasses = JSON.parse(targetClasses);
+          $target.addClass(targetClasses.join(' '));
         }
       }
 
@@ -126,7 +126,7 @@
           $panels.eq(i).show();
           $tabs.removeClass('selected');
           $tabs.eq(i).addClass('selected');
-        })
+        });
       });
 
       $tabs.first().trigger('click');
@@ -187,14 +187,14 @@
     });
 
     $('form[data-confirm]').on('submit', function() {
-      return confirm($(this).data('confirm-text'));
+      return confirm($(this).data('confirm-text')); // eslint-disable-line
     });
   });
 
   $(window).load(function() {
     $('[data-ui-type="carousel"]').each(function() {
       var $this = $(this);
-      var $container = $(this).children().first()
+      var $container = $(this).children().first();
 
       var width = 0;
       var height = 0;
@@ -322,7 +322,7 @@
 
       var ignoreList = $this.data('mailcheck-ignore') || [];
 
-      if (corrected && corrected != domain && !_.contains(ignoreList, $this.val())) {
+      if (corrected && corrected !== domain && !_.contains(ignoreList, $this.val())) {
         var $ignore = $('<a />').attr('href', '#').addClass('ignore-email').text(gettext('No, ignore'));
         $ignore.on('click', function(ev) {
           ev.preventDefault();

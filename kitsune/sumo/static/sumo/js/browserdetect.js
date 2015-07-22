@@ -1,15 +1,17 @@
-// Detect the set of OSes and browsers we care about in the wiki and AAQ.
-// Adapted from http://www.quirksmode.org/js/detect.html with these changes:
-//
-// * Changed the dataOS identity properties to lowercase to match the {for}
-//   abbreviations in models.OPERATING_SYSTEMS.
-// * Added Maemo and Android OS detection. Removed iPhone.
-// * Added Fennec browser detection.
-// * Changed Firefox's browser identity to "fx" and Fennec's to "m" to match
-//   {for} syntax and avoid yet another representation.
-// * Removed fallbacks to the string "an unknown ____" in favor of just
-//   returning undefined.
-// * Deleted the browsers we don't care about.
+/* globals _:false */
+/* Detect the set of OSes and browsers we care about in the wiki and AAQ.
+ * Adapted from http://www.quirksmode.org/js/detect.html with these changes:
+ *
+ * - Changed the dataOS identity properties to lowercase to match the {for}
+ *   abbreviations in models.OPERATING_SYSTEMS.
+ * - Added Maemo and Android OS detection. Removed iPhone.
+ * - Added Fennec browser detection.
+ * - Changed Firefox's browser identity to "fx" and Fennec's to "m" to match
+ *   {for} syntax and avoid yet another representation.
+ * - Removed fallbacks to the string "an unknown ____" in favor of just
+ *   returning undefined.
+ * - Deleted the browsers we don't care about.
+ */
 var BrowserDetect = {
   init: function () {
     var detected = this.detect();
@@ -60,9 +62,9 @@ var BrowserDetect = {
   searchVersion: function (dataString) {
     var index = dataString.indexOf(this.versionSearchString);
     if (index === -1) {
-      return;
+      return null;
     }
-    return parseFloat(dataString.substring(index+this.versionSearchString.length+1));  // Turns '1.1.1' into 1.1 rather than 1.11. :-(
+    return parseFloat(dataString.substring(index + this.versionSearchString.length + 1));  // Turns '1.1.1' into 1.1 rather than 1.11. :-(
   },
 
   fxosSpecialCase: function(ua, browser, version, os) {
@@ -99,7 +101,7 @@ var BrowserDetect = {
       identity: 'fx'
     }
   ],
-  dataOS : [
+  dataOS: [
     {
       // 6.2 is Windows 8. 6.3 is Windows 8.1.
       string: navigator.userAgent,

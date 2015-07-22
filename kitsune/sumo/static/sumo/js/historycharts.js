@@ -1,3 +1,4 @@
+/* globals gettext:false, k:false, jQuery:false */
 /*
  * Scripts to support Graphs on wiki article history.
  */
@@ -11,9 +12,8 @@
     }
 
     function initGraph() {
-        var data, dateToRevID;
         $.ajax({
-            type: "GET",
+            type: 'GET',
             url: $('#helpful-graph').data('url'),
             success: function (data) {
                 if (data.datums.length > 0) {
@@ -84,4 +84,4 @@
     }
 
     $('#show-graph').click(init);
-}(jQuery));
+})(jQuery);

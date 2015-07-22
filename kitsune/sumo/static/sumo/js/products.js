@@ -1,5 +1,6 @@
+/* globals Mozilla:false, jQuery:false, BrowserDetect:false */
 (function($, BD) {
-    "use strict";
+    'use strict';
 
     $(function() {
       var latestVersion = $('.download-firefox .download-button').data('latest-version');
@@ -11,6 +12,6 @@
             $('.download-firefox').hide();
           }
         });
-      };
+      }
     });
 })(jQuery, BrowserDetect);

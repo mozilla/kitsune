@@ -1,3 +1,4 @@
+/* global nunjucks:false, gettext:false, ngettext:false, interpolate:false, k:false, jQuery:false */
 (function($) {
   window.k = window.k || {};
 
@@ -9,7 +10,7 @@
     var keys = Object.keys(obj);
     var escape = env.getFilter('escape');
 
-    for (var i=0; i < keys.length; i++) {
+    for (var i = 0; i < keys.length; i++) {
       obj[keys[i]] = escape(obj[keys[i]]);
     }
 
@@ -46,7 +47,7 @@
   });
 
   env.addFilter('class_selected', function(v1, v2) {
-    if (v1 == v2) {
+    if (v1 === v2) {
       return ' class="selected" ';
     }
     return '';

@@ -1,3 +1,4 @@
+/* globals BrowserDetect:false */
 (function() {
 
 'use strict';

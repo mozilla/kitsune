@@ -1,12 +1,11 @@
-/*jshint*/
-/*global gettext, _ */
+/* global gettext:false, _:false, jQuery:false */
 /*
  * Report abuse UI.
  */
 
 (function($) {
 
-"use strict";
+'use strict';
 
 $(document).ready(function() {
   $('#report-abuse > a').on('click', function() {

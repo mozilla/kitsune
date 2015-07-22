@@ -1,3 +1,4 @@
+/* globals $:false, Modernizr:false, swfobject:false, k:false */
 /*
  * screencast.js
  * Scripts for Media, such as <video>
@@ -16,7 +17,9 @@
      * Initializes flash fallback for a video object.
      */
     function initVideoFallback($video) {
-        if ($video[0].tagName.toUpperCase() !== 'VIDEO') return;
+        if ($video[0].tagName.toUpperCase() !== 'VIDEO') {
+            return;
+        }
 
         var formats = {ogg: false, webm: false}, i,
             width = Number($video.data('width')),
@@ -43,7 +46,7 @@
             // or do we have an ogg it can play?
             (formats.ogg && Modernizr.video.ogg)) {
             // good news everyone! No need to fall back!
-            return false;
+            return;
         }
 
         // Get the video fallback URL
@@ -61,7 +64,7 @@
         } else {
             $video.hide();
         }
-    };
+    }
 
     /*
      * Checks if fallback is necessary and sets objects in place
@@ -71,7 +74,7 @@
         // $('div.video video').each(function initializeVideo(i) {
         //     initVideoFallback($(this));
         // });
-    };
+    }
 
     // $(document).ready(function () {
     //     initFallbackSupport();
@@ -79,4 +82,4 @@
 
     // add this to window.k
     // k.initVideo = initFallbackSupport;
-}());
+})();

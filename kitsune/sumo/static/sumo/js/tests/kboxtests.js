@@ -1,3 +1,4 @@
+/* global $:false */
 (function() {
 
 'use strict';
@@ -29,7 +30,7 @@ test('declarative', function() {
         equals($(this).attr('title') || $(this).attr('data-title'),
                $sandbox.find('.kbox-title').text(),
                'kbox title is correct');
-        if($(this).data('modal')) {
+        if ($(this).data('modal')) {
             ok($('#kbox-overlay').length === 1 &&
                $('#kbox-overlay').is(':visible'), 'overlay for modal kbox');
         }

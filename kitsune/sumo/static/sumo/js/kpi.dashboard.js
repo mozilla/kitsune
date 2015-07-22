@@ -1,6 +1,7 @@
+/* globals $:false, gettext:false, k:false */
 (function() {
 
-"use strict";
+'use strict';
 
 function init() {
   makeKPIGraph($('#kpi-questions'), true, [
@@ -136,7 +137,7 @@ function init() {
       name: gettext('L10n Coverage'),
       slug: 'l10n',
       // the api returns 0 to 100, we want 0.0 to 1.0.
-      func: function(d) { return d['coverage'] / 100; },
+      func: function(d) { return d.coverage / 100; },
       type: 'percent'
     }
   ]);

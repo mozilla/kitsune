@@ -1,3 +1,4 @@
+/* globals $:false, k:false, gettext:false */
 (function() {
 
     function init() {
@@ -21,7 +22,9 @@
         seriesSpec = [];
 
         for (key in datums[0]) {
-            if (key === 'date' || !datums[0].hasOwnProperty(key)) continue;
+            if (key === 'date' || !datums[0].hasOwnProperty(key)) {
+                continue;
+            }
             // TODO: these names should be localized.
             seriesSpec.push({
                 name: key,
@@ -53,9 +56,9 @@
             var objects = data.objects;
             objects.forEach(function(object) {
                 object.questions = object.questions || 0;
-                object.solved = object.solved || 0
-                object.responded_24 = object.responded_24 || 0
-                object.responded_72 = object.responded_72 || 0
+                object.solved = object.solved || 0;
+                object.responded_24 = object.responded_24 || 0;
+                object.responded_72 = object.responded_72 || 0;
             });
 
             new k.Graph($container, {

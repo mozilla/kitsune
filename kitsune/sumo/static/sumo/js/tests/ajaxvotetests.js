@@ -1,4 +1,4 @@
-'use strict';
+/* globals $:false, k:false */
 
 var ajaxVoteFixture = {
     setup: function() {
@@ -29,7 +29,7 @@ module('ajaxvote', ajaxVoteFixture);
 asyncTest('helpful vote', function() {
     var $sandbox = this.sandbox,
         $messageBox;
-    new k.AjaxVote($sandbox.find('form.vote'), {
+    new k.AjaxVote($sandbox.find('form.vote'), { // eslint-disable-line
         positionMessage: true,
         removeForm: true
     });
@@ -49,7 +49,7 @@ asyncTest('helpful vote', function() {
 asyncTest('not helpful vote', function() {
     var $sandbox = this.sandbox,
         $messageBox;
-    new k.AjaxVote($sandbox.find('form.vote'), {
+    new k.AjaxVote($sandbox.find('form.vote'), { // eslint-disable-line
         positionMessage: false,
         removeForm: true
     });

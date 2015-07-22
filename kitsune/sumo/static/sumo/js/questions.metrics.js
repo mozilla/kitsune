@@ -1,3 +1,4 @@
+/* globals _gaq:false, jQuery:false */
 // Collect questions metrics.
 
 (function ($) {
@@ -20,7 +21,7 @@
             if (_gaq) {
                 if (lastPart === 'vote') {
                     // This is a vote on the question.
-                    value = 'Me Too'
+                    value = 'Me Too';
                     questionPart = secondToLastPart;
                     answerPart = '';
 
@@ -48,4 +49,4 @@
 
     $(document).ready(init);
 
-}(jQuery));
+})(jQuery);
