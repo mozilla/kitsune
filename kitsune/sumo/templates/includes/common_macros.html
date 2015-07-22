@@ -1,6 +1,7 @@
 {% macro search_box(settings, id=False, prefix=None, target=None,
                     params=None) %}
   <form data-instant-search="form" {% if id %}id="{{ id }}"{% endif %} action="{{ url('search') }}" method="get" {% if target %} target="{{ target }}"{% endif %} class="simple-search-form">
+    {{ csrf() }}
     {% if params %}
       {% for k, v in params.items() %}
         <input type="hidden" name="{{ k }}" value="{{ v }}" />
