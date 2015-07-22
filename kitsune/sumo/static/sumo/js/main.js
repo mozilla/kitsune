@@ -114,8 +114,14 @@ window.k = window.k || {};
   // Pass CSRF token in XHR header
   $.ajaxSetup({
     beforeSend: function(xhr, settings) {
-      var csrf = $.cookie('csrftoken') || document.querySelector('input[name=csrfmiddlewaretoken]').value;
-      xhr.setRequestHeader('X-CSRFToken', csrf);
+      var csrfElem = document.querySelector('input[name=csrfmiddlewaretoken]');
+      var csrf = $.cookie('csrftoken');
+      if (!csrf && csrfElem) {
+        csrf = csrfElem.value;
+      }
+      if (csrf) {
+        xhr.setRequestHeader('X-CSRFToken', csrf);
+      }
     }
   });
 
