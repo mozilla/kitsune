@@ -1,3 +1,37 @@
+rules:
+  # Turning on extra rules
+  quotes: [2, "single", "avoid-escape"]
+  no-shadow: [2, {"hoist": "all"}]
+  no-alert: [2]
+  no-use-before-define: [2, "nofunc"]
+  space-before-blocks: [2, "always"]
+  space-after-keywords: [2]
+  block-scoped-var: [2]
+  dot-location: [2, "property"]
+  wrap-iife: [2, "inside"]
+  brace-style: [2, "1tbs", {"allowSingleLine": true}]
+  comma-style: [2]
+  linebreak-style: [2]
+  no-lonely-if: [2]
+  spaced-comment: [2]
+  no-this-before-super: [2]
+  constructor-super: [2]
+
+  # Turn on extra warnings
+  prefer-const: [1]
+
+  # Turning off default rules. Should some of these be warnings?
+  no-console: [0]
+  no-unused-vars: [0]
+  no-var: [0]
+  comma-dangle: [0]
+  new-cap: [0]
+  no-underscore-dangle: [0]
+  camelcase: [0]
+  no-extra-strict: [0]
+  no-inner-declarations: [0]
+  no-loop-func: [0]
+
 ecmaFeatures:
   arrowFunctions: true
   binaryLiterals: true
@@ -21,21 +55,7 @@ ecmaFeatures:
   unicodeCodePointEscapes: true
   jsx: true
 
-rules:
-  quotes: [2, single, avoid-escape]
-  no-shadow: [2, {hoist: all}]
-  no-alert: [2]
-  no-console: [0]
-  no-unused-vars: [0]
-  no-var: [0]
-  comma-dangle: [0]
-  new-cap: [0]
-  no-underscore-dangle: [0]
-  no-use-before-define: [2, nofunc]
-  camelcase: [0]
-
 env:
-  es6: true
   browser: true
 
 settings:

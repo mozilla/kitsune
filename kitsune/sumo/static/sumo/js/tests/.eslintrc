@@ -1,0 +1,7 @@
+globals:
+  test: false
+  module: false
+  test: false
+  tests: false
+  equal: false
+  equals: false
