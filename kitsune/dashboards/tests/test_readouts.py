@@ -595,7 +595,6 @@ class TemplateTranslationsTests(ReadoutTestCase):
         """Test the product filtering of the readout."""
         p = product(title='Firefox', slug='firefox', save=True)
         d = TemplateDocumentFactory()
-        d = document(title='Template:test', category=TEMPLATES_CATEGORY, save=True)
         ApprovedRevisionFactory(document=d, is_ready_for_localization=True)
 
         # There shouldn't be any rows yet.

@@ -9,7 +9,7 @@ import kitsune.sumo.tests.test_parser
 from kitsune.gallery.models import Video
 from kitsune.gallery.tests import image, video
 from kitsune.sumo.tests import TestCase
-from kitsune.wiki.config import TEMPLATES_CATEGORY
+from kitsune.wiki.config import TEMPLATES_CATEGORY, TEMPLATE_TITLE_PREFIX
 from kitsune.wiki.models import Document
 from kitsune.wiki.parser import (
     WikiParser, ForParser, PATTERNS, RECURSION_MESSAGE, _key_split,
@@ -24,7 +24,7 @@ def doc_rev_parser(*args, **kwargs):
 
 def doc_parse_markup(content, markup):
     """Create a doc with given content and parse given markup."""
-    _, _, p = doc_rev_parser(content, 'Template:test', category=TEMPLATES_CATEGORY)
+    _, _, p = doc_rev_parser(content, TEMPLATE_TITLE_PREFIX + 'test', category=TEMPLATES_CATEGORY)
     doc = pq(p.parse(markup))
     return (doc, p)
 
@@ -193,7 +193,8 @@ class TestWikiTemplate(TestCase):
         """Localized template is returned."""
         py_doc, p = doc_parse_markup('English content', '[[Template:test]]')
         parent = TemplateDocumentFactory()
-        d = TemplateDocumentFactory(parent=parent, title='Template:test', locale='fr')
+        d = TemplateDocumentFactory(
+            parent=parent, title=TEMPLATE_TITLE_PREFIX + 'test', locale='fr')
         ApprovedRevisionFactory(content='French Content', document=d)
         eq_(py_doc.text(), 'English content')
         py_doc = pq(p.parse('[[T:test]]', locale='fr'))
@@ -296,7 +297,7 @@ class TestWikiTemplate(TestCase):
         eq_({'1': 'a', 'hi': 'test', '3': 'z'}, _btp(['hi=test', 'a', '3=z']))
 
     def test_unapproved_template(self):
-        TemplateDocumentFactory(title='Template:new')
+        TemplateDocumentFactory(title=TEMPLATE_TITLE_PREFIX + 'new')
         p = WikiParser()
         doc = pq(p.parse('[[T:new]]'))
         eq_('The template "new" does not exist or has no approved revision.',
@@ -304,10 +305,10 @@ class TestWikiTemplate(TestCase):
 
     def test_for_in_template(self):
         """Verify that {for}'s render correctly in template."""
-        d = TemplateDocumentFactory(title='Template:for')
+        d = TemplateDocumentFactory(title=TEMPLATE_TITLE_PREFIX + 'for')
         ApprovedRevisionFactory(document=d, content='{for win}windows{/for}{for mac}mac{/for}')
         p = WikiParser()
-        content = p.parse('[[Template:for]]')
+        content = p.parse('[[{}for]]'.format(TEMPLATE_TITLE_PREFIX))
         eq_('<p><span class="for" data-for="win">windows</span>'
             '<span class="for" data-for="mac">mac</span>\n\n</p>',
             content)
@@ -334,22 +335,25 @@ class TestWikiTemplate(TestCase):
 
     def test_direct_recursion(self):
         """Make sure direct recursion is caught on the very first nesting."""
-        d = TemplateDocumentFactory(title='Template:Boo')
+        d = TemplateDocumentFactory(title=TEMPLATE_TITLE_PREFIX + 'Boo')
 
         # Twice so the second revision sees content identical to itself:
-        for _ in range(2):
-            ApprovedRevisionFactory(document=d, content='Fine [[Template:Boo]] Fellows')
+        ApprovedRevisionFactory.create_batch(
+            2, document=d, content='Fine [[{}Boo]] Fellows'.format(TEMPLATE_TITLE_PREFIX))
 
-        eq_('<p>Fine %s Fellows\n</p>' % (RECURSION_MESSAGE % 'Template:Boo'),
-            d.content_parsed)
+        recursion_message = RECURSION_MESSAGE % (TEMPLATE_TITLE_PREFIX + 'Boo')
+        expected = '<p>Fine %s Fellows\n</p>' % recursion_message
+        eq_(expected, d.content_parsed)
 
     def test_indirect_recursion(self):
         """Make sure indirect recursion is caught."""
-        boo = TemplateDocumentFactory(title='Template:Boo')
-        yah = TemplateDocumentFactory(title='Template:Yah')
-        ApprovedRevisionFactory(document=boo, content='Paper [[Template:Yah]] Cups')
-        ApprovedRevisionFactory(document=yah, content='Wooden [[Template:Boo]] Bats')
-        recursion_message = RECURSION_MESSAGE % 'Template:Boo'
+        boo = TemplateDocumentFactory(title=TEMPLATE_TITLE_PREFIX + 'Boo')
+        yah = TemplateDocumentFactory(title=TEMPLATE_TITLE_PREFIX + 'Yah')
+        ApprovedRevisionFactory(
+            document=boo, content='Paper [[{}Yah]] Cups'.format(TEMPLATE_TITLE_PREFIX))
+        ApprovedRevisionFactory(
+            document=yah, content='Wooden [[{}Boo]] Bats'.format(TEMPLATE_TITLE_PREFIX))
+        recursion_message = RECURSION_MESSAGE % (TEMPLATE_TITLE_PREFIX + 'Boo')
         eq_('<p>Paper Wooden %s Bats\n Cups\n</p>' % recursion_message, boo.content_parsed)
 
 
@@ -828,7 +832,8 @@ class WhatLinksHereTests(TestCase):
         eq_([d.linked_from.title for d in d2.links_to()], ['D3'])
 
     def test_templates(self):
-        d1, _, _ = doc_rev_parser('Oh hai', title='Template:D1', category=TEMPLATES_CATEGORY)
+        d1, _, _ = doc_rev_parser(
+            'Oh hai', title=TEMPLATE_TITLE_PREFIX + 'D1', category=TEMPLATES_CATEGORY)
         d2, _, _ = doc_rev_parser('[[Template:D1]]', title='D2')
 
         eq_(len(d1.links_to()), 1)

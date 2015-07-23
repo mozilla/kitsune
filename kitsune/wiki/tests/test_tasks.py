@@ -15,7 +15,7 @@ from nose.tools import eq_
 
 from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import add_permission, user
-from kitsune.wiki.config import TEMPLATES_CATEGORY
+from kitsune.wiki.config import TEMPLATES_CATEGORY, TEMPLATE_TITLE_PREFIX
 from kitsune.wiki.models import Revision, Document
 from kitsune.wiki.tasks import (
     send_reviewed_notification, rebuild_kb, schedule_rebuild_kb,
@@ -190,8 +190,10 @@ class TestDocumentRenderCascades(TestCaseBase):
         return re.sub(r'\s+', ' ', bleach.clean(html, strip=True)).strip()
 
     def test_cascade(self):
-        d1, _, _ = doc_rev_parser('one ', title='Template:D1', category=TEMPLATES_CATEGORY)
-        d2, _, _ = doc_rev_parser('[[T:D1]] two', title='Template:D2', category=TEMPLATES_CATEGORY)
+        d1, _, _ = doc_rev_parser(
+            'one ', title=TEMPLATE_TITLE_PREFIX + 'D1', category=TEMPLATES_CATEGORY)
+        d2, _, _ = doc_rev_parser(
+            '[[T:D1]] two', title=TEMPLATE_TITLE_PREFIX + 'D2', category=TEMPLATES_CATEGORY)
         d3, _, _ = doc_rev_parser('[[T:D1]] [[T:D2]] three', title='D3')
 
         eq_(self._clean(d3), u'one one two three')

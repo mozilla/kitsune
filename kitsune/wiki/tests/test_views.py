@@ -15,7 +15,8 @@ from kitsune.sumo.tests import SkipTest, TestCase, LocalizingClient, MobileTestC
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import user, add_permission
 from kitsune.wiki.config import (
-    CATEGORIES, TEMPLATES_CATEGORY, TYPO_SIGNIFICANCE, MEDIUM_SIGNIFICANCE, MAJOR_SIGNIFICANCE)
+    CATEGORIES, TEMPLATES_CATEGORY, TYPO_SIGNIFICANCE, MEDIUM_SIGNIFICANCE, MAJOR_SIGNIFICANCE,
+    TEMPLATE_TITLE_PREFIX)
 from kitsune.wiki.models import Document, HelpfulVoteMetadata, HelpfulVote
 from kitsune.wiki.tests import (
     doc_rev, document, helpful_vote, new_document_data, revision,
@@ -287,7 +288,7 @@ class DocumentEditingTests(TestCase):
         d = TemplateDocumentFactory()
         RevisionFactory(document=d)
         eq_(d.category, TEMPLATES_CATEGORY)
-        assert d.title.startswith('Template:')
+        assert d.title.startswith(TEMPLATE_TITLE_PREFIX)
 
         # First try and change the category without also changing the title. It should fail.
         data = new_document_data()

@@ -223,16 +223,15 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
     def _clean_template_status(self):
         if (self.category == TEMPLATES_CATEGORY and
                 not self.title.startswith(TEMPLATE_TITLE_PREFIX)):
-            # L10n: Note, do not translate "Template:" in this string.
             raise ValidationError(_(u'Documents in the Template category must have titles that '
-                                    u'start with "Template:". (Current title is "{}")'
-                                    .format(self.title)))
+                                    u'start with "{prefix}". (Current title is "{title}")')
+                                  .format(prefix=TEMPLATE_TITLE_PREFIX, title=self.title))
 
         if self.title.startswith(TEMPLATE_TITLE_PREFIX) and self.category != TEMPLATES_CATEGORY:
-            # L10n: Note, do not translate "Template:" in this string.
-            raise ValidationError(_(u'Documents with titles that start with "Template:" must be '
-                                    u'in the templates category. (Current category is "{}")'
-                                    .format(self.get_category_display())))
+            raise ValidationError(_(u'Documents with titles that start with "{prefix}" must be in '
+                                    u'the templates category. (Current category is "{category}")')
+                                  .format(prefix=TEMPLATE_TITLE_PREFIX,
+                                          category=self.get_category_display()))
 
     def _attr_for_redirect(self, attr, template):
         """Return the slug or title for a new redirect.

@@ -13,8 +13,8 @@ from kitsune.sumo import ProgrammingError
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.wiki.config import (
-    REDIRECT_SLUG, REDIRECT_TITLE, REDIRECT_HTML, MAJOR_SIGNIFICANCE,
-    CATEGORIES, TYPO_SIGNIFICANCE, REDIRECT_CONTENT, TEMPLATES_CATEGORY)
+    REDIRECT_SLUG, REDIRECT_TITLE, REDIRECT_HTML, MAJOR_SIGNIFICANCE, CATEGORIES,
+    TYPO_SIGNIFICANCE, REDIRECT_CONTENT, TEMPLATES_CATEGORY, TEMPLATE_TITLE_PREFIX)
 from kitsune.wiki.models import Document
 from kitsune.wiki.parser import wiki_to_html
 from kitsune.wiki.tests import (
@@ -43,7 +43,7 @@ class DocumentTests(TestCase):
 
         assert not d.is_template
 
-        d.title = 'Template:test'
+        d.title = TEMPLATE_TITLE_PREFIX + 'test'
         d.category = TEMPLATES_CATEGORY
         d.save()
 
@@ -318,7 +318,7 @@ class DocumentTests(TestCase):
         d = DocumentFactory()
 
         # First, try and change just the title. It should fail.
-        d.title = 'Template:' + d.title
+        d.title = TEMPLATE_TITLE_PREFIX + d.title
         self.assertRaises(ValidationError, d.save)
 
         # Next, try and change just the category. It should also fail.
@@ -328,7 +328,7 @@ class DocumentTests(TestCase):
 
         # Finally, try and change both title and category. It should work.
         d = Document.objects.get(id=d.id)  # reset
-        d.title = 'Template:' + d.title
+        d.title = TEMPLATE_TITLE_PREFIX + d.title
         d.category = TEMPLATES_CATEGORY
         d.save()
 
@@ -358,24 +358,24 @@ class DocumentTests(TestCase):
         d_fr = DocumentFactory(parent=d_en, locale='fr')
 
         # Just changing the title isn't enough
-        d_fr.title = 'Template:' + d_fr.title
+        d_fr.title = TEMPLATE_TITLE_PREFIX + d_fr.title
         self.assertRaises(ValidationError, d_fr.save)
 
         # Trying to change the category won't work, since `d_en` will force the
         # old category.
         d_fr = Document.objects.get(id=d_fr.id)  # reset
-        d_fr.title = 'Template:' + d_fr.title
+        d_fr.title = TEMPLATE_TITLE_PREFIX + d_fr.title
         d_fr.category = TEMPLATES_CATEGORY
         self.assertRaises(ValidationError, d_fr.save)
 
         # Change the parent
-        d_en.title = 'Template:' + d_en.title
+        d_en.title = TEMPLATE_TITLE_PREFIX + d_en.title
         d_en.category = TEMPLATES_CATEGORY
         d_en.save()
 
         # Now the French article can be changed too.
         d_fr = Document.objects.get(id=d_fr.id)  # reset
-        d_fr.title = 'Template:' + d_fr.title
+        d_fr.title = TEMPLATE_TITLE_PREFIX + d_fr.title
         d_fr.category = TEMPLATES_CATEGORY
         d_fr.save()
 
