@@ -283,12 +283,6 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         slug_changed = hasattr(self, 'old_slug')
         title_changed = hasattr(self, 'old_title')
 
-        templateness_changed = (
-            title_changed and
-            # If the title was a template before, and is not now, or vice-versa
-            (self.title.startswith(TEMPLATE_TITLE_PREFIX) !=
-             self.old_title.startswith(TEMPLATE_TITLE_PREFIX)))
-
         if slug_changed:
             # Clear out the share link so it gets regenerated.
             self.share_link = ''
@@ -299,12 +293,9 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         # changed. Allowing redirects for unapproved docs would (1) be of
         # limited use and (2) require making Revision.creator nullable.
         #
-        # If the "templateness" changed, don't try and make a redirect.
-        # The category and the title-prefix have to stay consistent, and
-        # redirects are in the same category as their targets. There is not
-        # a clear way to construct the redirect without invalidating one of
-        # those conditions.
-        if self.current_revision and (slug_changed or title_changed) and not templateness_changed:
+        # Having redirects for templates doesn't really make sense, and
+        # none of the rest of the KB really deals with it, so don't bother.
+        if self.current_revision and (slug_changed or title_changed) and not self.is_template:
             try:
                 doc = Document.objects.create(
                     locale=self.locale,
@@ -338,8 +329,14 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
             if name in ('slug', 'title') and hasattr(self, name):
                 old_name = 'old_' + name
                 if not hasattr(self, old_name):
-                    # Case insensitive comparison:
-                    if getattr(self, name).lower() != value.lower():
+                    prefix = TEMPLATE_TITLE_PREFIX
+                    # Two cases here:
+                    # 1. Normal articles are compared cse-insensitively
+                    # 2. Articles that have a changed title are checked
+                    # case-sensitively for the title prefix changing.
+                    if (getattr(self, name).lower() != value.lower() or
+                            (name == 'title' and
+                             (self.title.startswith(prefix) != value.startswith(prefix)))):
                         # Save original value:
                         setattr(self, old_name, getattr(self, name))
                 elif value == getattr(self, old_name):
