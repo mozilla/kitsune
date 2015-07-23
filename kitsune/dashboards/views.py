@@ -222,8 +222,6 @@ def _get_category(request):
 
     if category:
         for c in CATEGORIES:
-            print c[0]
-            print category
             if str(c[0]) == category:
                 return c[0]
         raise Http404('Invalid category.')
