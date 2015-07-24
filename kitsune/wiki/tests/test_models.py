@@ -379,6 +379,22 @@ class DocumentTests(TestCase):
         d_fr.category = TEMPLATES_CATEGORY
         d_fr.save()
 
+    # It may seem like there is a missing case here. That is because
+    # there is. There is no test for changing the title and the
+    # category of a translated document at once. This action would be
+    # valid for a non-translated document. Translated documents have an
+    # additional constraint that the category of a translated document
+    # must match the category of the parent.
+    #
+    # Additionally, the UI does not provide a user any way to do this.
+    # The only way this could happen is by direct changes to the
+    # database.
+    #
+    # Due to these reasons, I've left the case of renaming and
+    # recategorizing a template undefined in the tests. If this becomes
+    # something we do in the future, we should revisit this and define
+    # the behavior in a test.
+
 
 class FromUrlTests(TestCase):
     """Tests for Document.from_url()"""

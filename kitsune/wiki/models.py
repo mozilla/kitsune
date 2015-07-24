@@ -329,16 +329,17 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
             if name in ('slug', 'title') and hasattr(self, name):
                 old_name = 'old_' + name
                 if not hasattr(self, old_name):
-                    prefix = TEMPLATE_TITLE_PREFIX
-                    # Two cases here:
-                    # 1. Normal articles are compared cse-insensitively
-                    # 2. Articles that have a changed title are checked
+                    # Normal articles are compared case-insensitively
+                    if getattr(self, name).lower() != value.lower():
+                        setattr(self, old_name, getattr(self, name))
+
+                    # Articles that have a changed title are checked
                     # case-sensitively for the title prefix changing.
-                    if (getattr(self, name).lower() != value.lower() or
-                            (name == 'title' and
-                             (self.title.startswith(prefix) != value.startswith(prefix)))):
+                    ttp = TEMPLATE_TITLE_PREFIX
+                    if name == 'title' and self.title.startswith(ttp) != value.startswith(ttp):
                         # Save original value:
                         setattr(self, old_name, getattr(self, name))
+
                 elif value == getattr(self, old_name):
                     # They changed the attr back to its original value.
                     delattr(self, old_name)
