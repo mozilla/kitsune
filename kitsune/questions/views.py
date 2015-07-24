@@ -465,8 +465,8 @@ def edit_details(request, question_id):
 @ssl_required
 @anonymous_csrf
 def aaq_react(request):
+    request.session['in-aaq'] = True
     to_json = JSONRenderer().render
-
     products = ProductSerializer(Product.objects.filter(visible=True), many=True)
     topics = TopicSerializer(Topic.objects.filter(visible=True, parent=None), many=True)
 

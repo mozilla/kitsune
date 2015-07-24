@@ -28,7 +28,7 @@ export function setTitle(title) {
 }
 
 function searchSuggestions(title) {
-  apiFetch('/api/2/search/suggest', {
+  apiFetch('/api/2/search/suggest/', {
     data: {
       q: title,
       max_questions: 2,
@@ -51,7 +51,7 @@ function searchSuggestions(title) {
     setSuggestions(suggestions);
   })
   .catch(err => {
-    console.log('suggest error:', err);
+    console.log('suggest error');
   });
 }
 searchSuggestions = _.throttle(searchSuggestions, 500);

@@ -18,6 +18,9 @@ export default class AAQApp extends React.Component {
     QuestionEditStore.addChangeListener(() => {
       this.setState(this.getStateFromStores());
     });
+    UserAuthStore.addChangeListener(() => {
+      this.setState(this.getStateFromStores());
+    });
   }
 
   getStateFromStores() {
@@ -36,7 +39,7 @@ export default class AAQApp extends React.Component {
         <ProductSelector {...this.state}/>
         <TopicSelector {...this.state}/>
         <TitleContentEditor {...this.state}/>
-        <UserAuth {...this.state.userAuth}/>
+        <UserAuth userAuth={this.state.userAuth}/>
         <SubmitQuestion {...this.state}/>
       </div>
     );
