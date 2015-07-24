@@ -25,13 +25,12 @@ from kitsune.wiki.events import (
 from kitsune.wiki.models import (
     Document, Revision, HelpfulVote, HelpfulVoteMetadata)
 from kitsune.wiki.config import (
-    SIGNIFICANCES, MEDIUM_SIGNIFICANCE, ADMINISTRATION_CATEGORY,
-    TROUBLESHOOTING_CATEGORY, CATEGORIES,
-    CANNED_RESPONSES_CATEGORY)
+    SIGNIFICANCES, MEDIUM_SIGNIFICANCE, ADMINISTRATION_CATEGORY, TROUBLESHOOTING_CATEGORY,
+    CATEGORIES, CANNED_RESPONSES_CATEGORY, TEMPLATES_CATEGORY, TEMPLATE_TITLE_PREFIX)
 from kitsune.wiki.tasks import send_reviewed_notification
 from kitsune.wiki.tests import (
-    TestCaseBase, document, revision, new_document_data, translated_revision,
-    locale)
+    TestCaseBase, document, revision, new_document_data, translated_revision, locale,
+    DocumentFactory, ApprovedRevisionFactory)
 
 
 READY_FOR_REVIEW_EMAIL_CONTENT = """\
@@ -298,21 +297,26 @@ class DocumentTests(TestCaseBase):
     def test_templates_noindex(self):
         """Document templates should have a noindex meta tag."""
         # Create a document and verify there is no robots:noindex
-        r = revision(save=True, content='Some text.', is_approved=True)
+        d = DocumentFactory()
+        r = ApprovedRevisionFactory(document=d)
+
         response = self.client.get(r.document.get_absolute_url())
         eq_(200, response.status_code)
         doc = pq(response.content)
         eq_(0, len(doc('meta[name=robots]')))
 
         # Convert the document to a template and verify robots:noindex
-        d = r.document
-        d.title = 'Template:test'
+        d.category = TEMPLATES_CATEGORY
+        d.title = TEMPLATE_TITLE_PREFIX + d.title
         d.save()
+
+        # This page is cached
         cache.clear()
+
         response = self.client.get(r.document.get_absolute_url())
         eq_(200, response.status_code)
         doc = pq(response.content)
-        eq_('noindex', doc('meta[name=robots]')[0].attrib['content'])
+        eq_(doc('meta[name=robots]')[0].attrib['content'], 'noindex')
 
     def test_archived_noindex(self):
         """Archived documents should have a noindex meta tag."""

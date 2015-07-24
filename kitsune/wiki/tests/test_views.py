@@ -15,12 +15,12 @@ from kitsune.sumo.tests import SkipTest, TestCase, LocalizingClient, MobileTestC
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import user, add_permission
 from kitsune.wiki.config import (
-    TEMPLATES_CATEGORY, TYPO_SIGNIFICANCE,
-    MEDIUM_SIGNIFICANCE, MAJOR_SIGNIFICANCE)
+    CATEGORIES, TEMPLATES_CATEGORY, TYPO_SIGNIFICANCE, MEDIUM_SIGNIFICANCE, MAJOR_SIGNIFICANCE,
+    TEMPLATE_TITLE_PREFIX)
 from kitsune.wiki.models import Document, HelpfulVoteMetadata, HelpfulVote
 from kitsune.wiki.tests import (
     doc_rev, document, helpful_vote, new_document_data, revision,
-    translated_revision)
+    translated_revision, TemplateDocumentFactory, RevisionFactory)
 from kitsune.wiki.views import (
     _document_lock_check, _document_lock_clear, _document_lock_steal)
 
@@ -241,7 +241,7 @@ class DocumentEditingTests(TestCase):
                      'slug': d.slug,
                      'form': 'doc'})
         self.client.post(reverse('wiki.edit_document', args=[d.slug]), data)
-        eq_(new_title, Document.objects.get(slug=d.slug).title)
+        eq_(new_title, Document.objects.get(id=d.id).title)
         assert Document.objects.get(title=old_title).redirect_url()
 
     def test_retitling_accent(self):
@@ -253,7 +253,63 @@ class DocumentEditingTests(TestCase):
                      'slug': d.slug,
                      'form': 'doc'})
         self.client.post(reverse('wiki.edit_document', args=[d.slug]), data)
-        eq_(new_title, Document.objects.get(slug=d.slug).title)
+        eq_(new_title, Document.objects.get(id=d.id).title)
+
+    def test_retitling_template(self):
+        d = TemplateDocumentFactory()
+        RevisionFactory(document=d)
+
+        old_title = d.title
+        new_title = 'Not a template'
+
+        # First try and change the title without also changing the category. It should fail.
+        data = new_document_data()
+        data.update({
+            'title': new_title,
+            'category': d.category,
+            'slug': d.slug,
+            'form': 'doc'
+        })
+        url = reverse('wiki.edit_document', args=[d.slug])
+        res = self.client.post(url, data, follow=True)
+        eq_(Document.objects.get(id=d.id).title, old_title)
+        # This message gets HTML encoded.
+        assert ('Documents in the Template category must have titles that start with '
+                '&#34;Template:&#34;.'
+                in res.content)
+
+        # Now try and change the title while also changing the category.
+        data['category'] = CATEGORIES[0][0]
+        url = reverse('wiki.edit_document', args=[d.slug])
+        self.client.post(url, data, follow=True)
+        eq_(Document.objects.get(id=d.id).title, new_title)
+
+    def test_removing_template_category(self):
+        d = TemplateDocumentFactory()
+        RevisionFactory(document=d)
+        eq_(d.category, TEMPLATES_CATEGORY)
+        assert d.title.startswith(TEMPLATE_TITLE_PREFIX)
+
+        # First try and change the category without also changing the title. It should fail.
+        data = new_document_data()
+        data.update({
+            'title': d.title,
+            'category': CATEGORIES[0][0],
+            'slug': d.slug,
+            'form': 'doc'
+        })
+        url = reverse('wiki.edit_document', args=[d.slug])
+        res = self.client.post(url, data, follow=True)
+        eq_(Document.objects.get(id=d.id).category, TEMPLATES_CATEGORY)
+        # This message gets HTML encoded.
+        assert ('Documents with titles that start with &#34;Template:&#34; must be in the '
+                'templates category.' in res.content)
+
+        # Now try and change the title while also changing the category.
+        data['title'] = 'not a template'
+        url = reverse('wiki.edit_document', args=[d.slug])
+        self.client.post(url, data)
+        eq_(Document.objects.get(id=d.id).category, CATEGORIES[0][0])
 
     def test_changing_products(self):
         """Changing products works as expected."""
@@ -268,7 +324,7 @@ class DocumentEditingTests(TestCase):
                      'form': 'doc'})
         self.client.post(reverse('wiki.edit_document', args=[d.slug]), data)
 
-        eq_(sorted(Document.objects.get(slug=d.slug).products
+        eq_(sorted(Document.objects.get(id=d.id).products
                    .values_list('id', flat=True)),
             sorted([prod.id for prod in [prod_desktop, prod_mobile]]))
 
@@ -276,7 +332,7 @@ class DocumentEditingTests(TestCase):
                      'form': 'doc'})
         self.client.post(reverse('wiki.edit_document', args=[data['slug']]),
                          data)
-        eq_(sorted(Document.objects.get(slug=d.slug).products
+        eq_(sorted(Document.objects.get(id=d.id).products
                    .values_list('id', flat=True)),
             sorted([prod.id for prod in [prod_desktop]]))
 
@@ -412,8 +468,8 @@ class VoteTests(TestCase):
         """
         Throw helpful_vote a document that is a template and see if it 400s.
         """
-        d = document(save=True, slug="somedoc", category=TEMPLATES_CATEGORY)
-        r = revision(save=True, document=d)
+        d = TemplateDocumentFactory()
+        r = RevisionFactory(document=d)
         response = self.client.post(reverse('wiki.document_vote', args=['hi']),
                                     {'revision_id': r.id})
         eq_(400, response.status_code)

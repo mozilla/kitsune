@@ -1,4 +1,5 @@
 from __future__ import print_function
+import sys
 
 
 class MigrationStatusPrinter(object):
@@ -21,6 +22,9 @@ class MigrationStatusPrinter(object):
         self.printed_yet = False
 
     def info(self, msg, *args, **kwargs):
+        if 'test' in sys.argv:
+            return
+
         if not self.printed_yet:
             print('\n   ', end='')
             self.printed_yet = True
