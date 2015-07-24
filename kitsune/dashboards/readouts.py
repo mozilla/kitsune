@@ -185,7 +185,7 @@ def _format_row_with_out_of_dateness(readout_locale, eng_slug, eng_title, slug,
                 status_url=status_url)
 
 
-def kb_overview_rows(mode=None, max=None, locale=None, product=None):
+def kb_overview_rows(mode=None, max=None, locale=None, product=None, category=None):
     """Return the iterable of dicts needed to draw the new KB dashboard
     overview"""
 
@@ -210,6 +210,9 @@ def kb_overview_rows(mode=None, max=None, locale=None, product=None):
 
     if product:
         docs = docs.filter(products__in=[product])
+
+    if category:
+        docs = docs.filter(category__in=[category])
 
     docs = docs.order_by('-num_visits', 'title')
 

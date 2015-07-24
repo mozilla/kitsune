@@ -20,6 +20,7 @@ from kitsune.wiki.config import (
     MAJOR_SIGNIFICANCE, MEDIUM_SIGNIFICANCE, TYPO_SIGNIFICANCE,
     HOW_TO_CONTRIBUTE_CATEGORY, ADMINISTRATION_CATEGORY,
     CANNED_RESPONSES_CATEGORY)
+from kitsune.wiki.config import CATEGORIES
 from kitsune.wiki.tests import revision, translated_revision, document
 
 
@@ -68,6 +69,14 @@ class KBOverviewTests(TestCase):
 
         data = kb_overview_rows()
         eq_(True, data[0]['ready_for_l10n'])
+
+    def test_filter_by_category(self):
+        d = document(save=True, category=CATEGORIES[1][0])
+        revision(document=d, save=True)
+
+        eq_(1, len(kb_overview_rows()))
+        eq_(0, len(kb_overview_rows(category=CATEGORIES[0][0])))
+        eq_(1, len(kb_overview_rows(category=CATEGORIES[1][0])))
 
 
 class L10NOverviewTests(TestCase):
