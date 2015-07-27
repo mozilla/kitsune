@@ -390,8 +390,7 @@ def edit_document(request, document_slug, revision_id=None):
     if revision_id:
         rev = get_object_or_404(Revision, pk=revision_id, document=doc)
     else:
-        rev = doc.current_revision or doc.revisions.order_by('-created',
-                                                             '-id')[0]
+        rev = doc.current_revision or doc.revisions.order_by('-created', '-id')[0]
 
     disclose_description = bool(request.GET.get('opendescription'))
     doc_form = rev_form = None

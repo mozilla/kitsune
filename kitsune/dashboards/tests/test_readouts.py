@@ -17,10 +17,12 @@ from kitsune.dashboards.readouts import (
 from kitsune.products.tests import product
 from kitsune.sumo.tests import TestCase
 from kitsune.wiki.config import (
-    MAJOR_SIGNIFICANCE, MEDIUM_SIGNIFICANCE, TYPO_SIGNIFICANCE,
-    HOW_TO_CONTRIBUTE_CATEGORY, ADMINISTRATION_CATEGORY,
-    CANNED_RESPONSES_CATEGORY)
-from kitsune.wiki.tests import revision, translated_revision, document
+    MAJOR_SIGNIFICANCE, MEDIUM_SIGNIFICANCE, TYPO_SIGNIFICANCE, HOW_TO_CONTRIBUTE_CATEGORY,
+    ADMINISTRATION_CATEGORY, CANNED_RESPONSES_CATEGORY, TEMPLATES_CATEGORY)
+from kitsune.wiki.config import CATEGORIES
+from kitsune.wiki.tests import (
+    revision, translated_revision, document,
+    DocumentFactory, RevisionFactory, TemplateDocumentFactory, ApprovedRevisionFactory)
 
 
 class MockRequest(object):
@@ -69,6 +71,14 @@ class KBOverviewTests(TestCase):
         data = kb_overview_rows()
         eq_(True, data[0]['ready_for_l10n'])
 
+    def test_filter_by_category(self):
+        d = document(save=True, category=CATEGORIES[1][0])
+        revision(document=d, save=True)
+
+        eq_(1, len(kb_overview_rows()))
+        eq_(0, len(kb_overview_rows(category=CATEGORIES[0][0])))
+        eq_(1, len(kb_overview_rows(category=CATEGORIES[1][0])))
+
 
 class L10NOverviewTests(TestCase):
     """Tests for Overview readout"""
@@ -76,13 +86,8 @@ class L10NOverviewTests(TestCase):
     def test_counting_unready_templates(self):
         """Templates without a ready-for-l10n rev don't count"""
         # Make a template with an approved but not-ready-for-l10n rev:
-        r = revision(document=document(title='Template:smoo',
-                                       is_localizable=True,
-                                       is_template=True,
-                                       save=True),
-                     is_ready_for_localization=False,
-                     is_approved=True,
-                     save=True)
+        d = TemplateDocumentFactory(is_localizable=True)
+        r = ApprovedRevisionFactory(document=d, is_ready_for_localization=False)
 
         # It shouldn't show up in the total:
         eq_(0, l10n_overview_rows('de')['templates']['denominator'])
@@ -94,12 +99,8 @@ class L10NOverviewTests(TestCase):
     def test_counting_unready_docs(self):
         """Docs without a ready-for-l10n rev shouldn't count in total."""
         # Make a doc with an approved but not-ready-for-l10n rev:
-        r = revision(document=document(title='smoo',
-                                       is_localizable=True,
-                                       save=True),
-                     is_ready_for_localization=False,
-                     is_approved=True,
-                     save=True)
+        d = DocumentFactory(is_localizable=True)
+        r = ApprovedRevisionFactory(document=d, is_ready_for_localization=False)
 
         # It shouldn't show up in the total:
         eq_(0, l10n_overview_rows('de')['all']['denominator'])
@@ -138,7 +139,9 @@ class L10NOverviewTests(TestCase):
         eq_(1, l10n_overview_rows('de')['all']['denominator'])
 
         t.document.parent.title = t.document.title = 'Template:thing'
-        t.document.parent.is_template = t.document.is_template = True
+        t.document.parent.category = TEMPLATES_CATEGORY
+        # is_template will be automatically set for both templates, and so will
+        # the child document's category.
         t.document.parent.save()
         t.document.save()
         # ...but not when it's a template:
@@ -229,6 +232,7 @@ class L10NOverviewTests(TestCase):
         # Update the parent and translation to be a template
         d = t.document.parent
         d.title = 'Template:Lorem Ipsum Dolor'
+        d.category = TEMPLATES_CATEGORY
         d.save()
         t.document.title = 'Template:Lorem Ipsum Dolor'
         t.document.save()
@@ -350,14 +354,10 @@ class TemplateTests(ReadoutTestCase):
         locale = settings.WIKI_DEFAULT_LANGUAGE
         p = product(title='Firefox', slug='firefox', save=True)
 
-        d = document(save=True)
-        t = document(title='Template:test', save=True)
-
-        revision(document=d, is_approved=True, save=True)
-        revision(document=t, is_approved=True, save=True)
-
-        d.products.add(p)
-        t.products.add(p)
+        d = DocumentFactory(products=[p])
+        t = TemplateDocumentFactory(products=[p])
+        ApprovedRevisionFactory(document=d)
+        ApprovedRevisionFactory(document=TemplateDocumentFactory())
 
         eq_(1, len(self.rows(locale=locale, product=p)))
         eq_(t.title, self.row(locale=locale, product=p)['title'])
@@ -366,8 +366,8 @@ class TemplateTests(ReadoutTestCase):
     def test_needs_changes(self):
         """Test status for article that needs changes"""
         locale = settings.WIKI_DEFAULT_LANGUAGE
-        d = document(title='Template:test', needs_change=True, save=True)
-        revision(document=d, is_approved=True, save=True)
+        d = TemplateDocumentFactory(needs_change=True)
+        ApprovedRevisionFactory(document=d)
 
         row = self.row(locale=locale)
 
@@ -377,8 +377,8 @@ class TemplateTests(ReadoutTestCase):
     def test_needs_review(self):
         """Test status for article that needs review"""
         locale = settings.WIKI_DEFAULT_LANGUAGE
-        d = document(title='Template:test', save=True)
-        revision(document=d, save=True)
+        d = TemplateDocumentFactory()
+        RevisionFactory(document=d)
 
         row = self.row(locale=locale)
 
@@ -388,10 +388,10 @@ class TemplateTests(ReadoutTestCase):
     def test_unready_for_l10n(self):
         """Test status for article that is not ready for l10n"""
         locale = settings.WIKI_DEFAULT_LANGUAGE
-        d = document(title='Template:test', save=True)
-        revision(document=d, is_ready_for_localization=True, save=True)
-        revision(document=d, is_ready_for_localization=False, is_approved=True,
-                 significance=MAJOR_SIGNIFICANCE, save=True)
+        d = TemplateDocumentFactory()
+        RevisionFactory(document=d, is_ready_for_localization=True)
+        ApprovedRevisionFactory(
+            document=d, is_ready_for_localization=False, significance=MAJOR_SIGNIFICANCE)
 
         row = self.row(locale=locale)
 
@@ -594,11 +594,8 @@ class TemplateTranslationsTests(ReadoutTestCase):
 
     def test_untranslated(self):
         """Assert untranslated templates are labeled as such."""
-        d = document(title='Template:test', save=True)
-        untranslated = revision(is_approved=True,
-                                is_ready_for_localization=True,
-                                document=d,
-                                save=True)
+        d = TemplateDocumentFactory()
+        untranslated = ApprovedRevisionFactory(document=d, is_ready_for_localization=True)
         row = self.row()
         eq_(row['title'], untranslated.document.title)
         eq_(unicode(row['status']), 'Translation Needed')
@@ -606,11 +603,8 @@ class TemplateTranslationsTests(ReadoutTestCase):
     def test_by_product(self):
         """Test the product filtering of the readout."""
         p = product(title='Firefox', slug='firefox', save=True)
-        d = document(title='Template:test', save=True)
-        revision(is_approved=True,
-                 is_ready_for_localization=True,
-                 document=d,
-                 save=True)
+        d = TemplateDocumentFactory()
+        ApprovedRevisionFactory(document=d, is_ready_for_localization=True)
 
         # There shouldn't be any rows yet.
         eq_(0, len(self.rows(product=p)))

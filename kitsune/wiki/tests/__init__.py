@@ -27,6 +27,16 @@ class DocumentFactory(factory.DjangoModelFactory):
     title = factory.Sequence(lambda n: u'đoc-{}'.format(n))
     slug = factory.LazyAttribute(lambda o: slugify(o.title))
 
+    @factory.post_generation
+    def products(doc, create, extracted, **kwargs):
+        if not create:
+            # Simple build, do nothing
+            return
+
+        if extracted is not None:
+            for p in extracted:
+                doc.products.add(p)
+
 
 class TemplateDocumentFactory(DocumentFactory):
     category = TEMPLATES_CATEGORY
