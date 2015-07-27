@@ -32,7 +32,7 @@
 
 {% if product.slug == 'mobile' %}
   {# Firefox for Android has a special separate survey. #}
-  {% set extra_body_attrs = {'data-surveygizmo-url': 'http://qsurvey.mozilla.com/s3/63ac9fdb1ce1'} %}
+  {% set SURVEY_GIZMOS = ['mobile'] %}
 {% endif %}
 
 {% block breadcrumbs %}
