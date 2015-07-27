@@ -192,6 +192,7 @@
   });
 
   $(window).load(function() {
+    correctFixedHeader();
     $('[data-ui-type="carousel"]').each(function() {
       var $this = $(this);
       var $container = $(this).children().first()
@@ -272,6 +273,14 @@
           }
         }
       });
+    }
+  }
+
+  function correctFixedHeader(){
+    var headerHeight = document.querySelector('header');
+    var scrollHeight = headerHeight.scrollHeight;
+    if(window.location.hash && document.querySelector(window.location.hash)){
+      window.scrollBy(0,-scrollHeight);
     }
   }
 
