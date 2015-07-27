@@ -209,10 +209,8 @@ class DocumentTests(TestCaseBase):
         # Marking the document and the revision ready for localization
         r2 = revision(save=True, document=r.document, content='Some text.',
                       is_approved=True, is_ready_for_localization=True)
-        r2.document.current_revision = r2
-        r2.document.is_localizable = True
-        r2.document.save()
 
+        url = reverse('wiki.document', args=[r.document.slug], locale='de')
         response = self.client.get(url)
         doc = pq(response.content)
 
