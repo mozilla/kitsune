@@ -30,7 +30,7 @@ from kitsune.sumo.decorators import ratelimit
 from kitsune.sumo.helpers import urlparams
 from kitsune.sumo.redis_utils import redis_client, RedisError
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.sumo.utils import paginate, smart_int, get_next_url, truncated_json_dumps
+from kitsune.sumo.utils import paginate, smart_int, get_next_url, truncated_json_dumps, get_browser
 from kitsune.wiki.config import (
     CATEGORIES, MAJOR_SIGNIFICANCE, TEMPLATES_CATEGORY, DOCUMENTS_PER_PAGE,
     COLLAPSIBLE_DOCUMENTS)
@@ -203,6 +203,10 @@ def document(request, document_slug, template=None, document=None):
     # The list above was built backwards, so flip this.
     breadcrumbs.reverse()
 
+    user_agent = request.META.get('HTTP_USER_AGENT', '')
+    browser = get_browser(user_agent)
+    show_fx_download = (product.slug == 'thunderbird' and browser != 'Firefox')
+
     data = {
         'document': doc,
         'redirected_from': redirected_from,
@@ -217,6 +221,7 @@ def document(request, document_slug, template=None, document=None):
         'breadcrumb_items': breadcrumbs,
         'document_css_class': document_css_class,
         'any_localizable_revision': any_localizable_revision,
+        'show_fx_download': show_fx_download,
     }
 
     response = render(request, template, data)
