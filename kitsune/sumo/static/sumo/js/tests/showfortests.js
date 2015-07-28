@@ -25,7 +25,7 @@ module('ShowFor', {
   },
   teardown: function() {
     this.$sandbox.remove();
-  },
+  }
 });
 
 test('loadData', function() {
@@ -46,7 +46,7 @@ test('loadData', function() {
 
   // Assert that the denormalized forms were pulled out
   unorderedEquals(this.showFor.productSlugs, ['firefox', 'mobile', 'firefox-os']);
-  unorderedEquals(this.showFor.platformSlugs, ['web', 'android', 'linux', 'mac', 'winxp', 'win7', 'win8']);
+  unorderedEquals(this.showFor.platformSlugs, ['web', 'android', 'linux', 'mac', 'winxp', 'win7', 'win8', 'win10']);
   equals(this.showFor.versionSlugs.fx24, 'firefox');
   equals(this.showFor.versionSlugs['fxos1.2'], 'firefox-os');
   equals(this.showFor.versionSlugs.m24, 'mobile');
@@ -56,7 +56,7 @@ test('updateUI', function() {
   var _orig = {
     browser: BrowserDetect.browser,
     version: BrowserDetect.version,
-    OS: BrowserDetect.OS,
+    OS: BrowserDetect.OS
   };
 
   this.showFor.loadData();
@@ -230,7 +230,7 @@ test('matchesCriteria', function() {
     mobile: {
       enabled: true,
       version: {min: 24, max: 25, slug: 'm24'}
-    },
+    }
   };
 
   // This is basically an OR.
@@ -247,11 +247,11 @@ test('matchesCriteria', function() {
   // What about disabled stuff?
   this.showFor.state = {
     firefox: {
-      enabled: true,
+      enabled: true
     },
     mobile: {
-      enabled: false,
-    },
+      enabled: false
+    }
   };
 
   check(['fx'], true);
@@ -268,7 +268,7 @@ test('matchesCriteria', function() {
   this.showFor.state = {
     firefox: {
       enabled: true,
-      platform: 'win8',
+      platform: 'win8'
     }
   };
 
@@ -276,8 +276,9 @@ test('matchesCriteria', function() {
     'winxp': false,
     'win7': false,
     'win8': false,
+    'win10': false,
     'linux': true,
-    'mac': true,
+    'mac': true
   };
 
   for (var winVersion in winTestCases) {
