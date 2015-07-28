@@ -191,13 +191,32 @@ class DocumentTests(TestCaseBase):
 
     def test_document_fallback_no_translation(self):
         """The document template falls back to English if no translation
-        exists."""
+        exists. The fallback message is not shown if there is no revision
+        ready for localization."""
         r = revision(save=True, content='Some text.', is_approved=True)
         url = reverse('wiki.document', args=[r.document.slug], locale='fr')
         response = self.client.get(url)
         doc = pq(response.content)
         eq_(r.document.title, doc('article h1.title').text())
 
+        # Fallback message is not shown because the revision is not ready for
+        # localization.
+        eq_(0, len(doc('#doc-pending-fallback')))
+        # Included content is English.
+        eq_(pq(r.document.html)('div').text(), doc('#doc-content div').text())
+
+    def test_document_fallback_no_translation_ready_for_l10n(self):
+        """The document template falls back to English if no translation
+        exists. The fallback message is shown if there is any revision
+        ready for localization."""
+        # Creating a revision ready for localization
+        r = revision(save=True, content='Some text.', is_approved=True,
+                     is_ready_for_localization=True)
+        url = reverse('wiki.document', args=[r.document.slug], locale='de')
+        response = self.client.get(url)
+        doc = pq(response.content)
+
+        eq_(r.document.title, doc('article h1.title').text())
         # Fallback message is shown.
         eq_(1, len(doc('#doc-pending-fallback')))
         # Removing this as it shows up in text(), and we don't want to depend
