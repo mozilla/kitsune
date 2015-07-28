@@ -7,6 +7,7 @@ from mobility.decorators import mobile_template
 from product_details import product_details
 
 from kitsune.products.models import Product, Topic
+from kitsune.sumo.utils import get_browser
 from kitsune.wiki.decorators import check_simple_wiki_locale
 from kitsune.wiki.facets import topics_for, documents_for
 
@@ -43,12 +44,17 @@ def product_landing(request, template, slug):
         else:
             latest_version = 0
 
+    user_agent = request.META.get('HTTP_USER_AGENT', '')
+    browser = get_browser(user_agent)
+    show_fx_download = (product.slug == 'thunderbird' and browser != 'Firefox')
+
     return render(request, template, {
         'product': product,
         'products': Product.objects.filter(visible=True),
         'topics': topics_for(product=product, parent=None),
         'search_params': {'product': slug},
-        'latest_version': latest_version
+        'latest_version': latest_version,
+        'show_fx_download': show_fx_download
     })
 
 

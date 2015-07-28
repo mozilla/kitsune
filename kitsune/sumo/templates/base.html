@@ -137,6 +137,12 @@
             {% if not hide_locale_switcher %}
               <li><a href="{{ locale_picker_url }}" class="locale-picker">{{ settings.LANGUAGES_DICT[request.LANGUAGE_CODE.lower()] }}</a></li>
             {% endif %}
+            {% if show_fx_download and not user.is_authenticated() %}
+              <a href="https://www.mozilla.org/en-US/firefox/new/?scene=2&utm_source=support.mozilla.org&utm_medium=referral&utm_campaign=non-fx-button#download-fx"
+                class="firefox-download-button" data-ga-click="_trackEvent | Download Button | Firefox button on Thunderbird article">
+                <strong class="download-title">{{ _('Download Firefox') }}</strong>
+              </a>
+            {% endif %}
           </ul>
         </nav>
       </div>
