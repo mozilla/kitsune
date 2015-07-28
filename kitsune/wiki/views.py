@@ -125,6 +125,9 @@ def document(request, document_slug, template=None, document=None):
             # and OK to fall back to parent (parent is approved).
             fallback_reason = 'no_translation'
 
+    any_localizable_revision = doc.revisions.filter(is_approved=True,
+                                                    is_ready_for_localization=True).exists()
+
     # Obey explicit redirect pages:
     # Don't redirect on redirect=no (like Wikipedia), so we can link from a
     # redirected-to-page back to a "Redirected from..." link, so you can edit
@@ -213,6 +216,7 @@ def document(request, document_slug, template=None, document=None):
         'ga_push': ga_push,
         'breadcrumb_items': breadcrumbs,
         'document_css_class': document_css_class,
+        'any_localizable_revision': any_localizable_revision,
     }
 
     response = render(request, template, data)
