@@ -1182,7 +1182,7 @@ class DocumentLink(ModelBase):
         unique_together = ('linked_from', 'linked_to', 'kind')
 
     def __unicode__(self):
-        return (u'<DocumentLink: %s from %r to %r>' %
+        return (u'<DocumentLink: %s from %s to %s>' %
                 (self.kind, self.linked_from, self.linked_to))
 
 
