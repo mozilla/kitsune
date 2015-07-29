@@ -245,16 +245,16 @@
     function mapHandler(datum) {
       var val = desc.func(datum);
 
-        if (isNaN(val) ) {
-          val = 0;
-        }
+      if (isNaN(val) ) {
+        val = 0;
+      }
 
-        if (windowMin <= datum.date && datum.date <= windowMax) {
-          min = Math.min(min, val);
-          max = Math.max(max, val);
-        }
+      if (windowMin <= datum.date && datum.date <= windowMax) {
+        min = Math.min(min, val);
+        max = Math.max(max, val);
+      }
 
-        return {x: datum.date, y: val};
+      return {x: datum.date, y: val};
     }
 
     function yFormatter(value) {

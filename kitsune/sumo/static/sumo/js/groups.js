@@ -5,14 +5,14 @@
 
 (function($) {
 
-'use strict';
+  'use strict';
 
-function init() {
+  function init() {
     // Marky for information edit:
     var buttons = Marky.allButtons();
     Marky.createCustomToolbar('.editor-tools', '#id_information', buttons);
-}
+  }
 
-$(document).ready(init);
+  $(document).ready(init);
 
 })(jQuery);

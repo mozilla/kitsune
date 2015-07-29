@@ -8,19 +8,19 @@
  * (Stolen from Zamboni.)
  */
 var format = (function() {
-    var re = /\{([^}]+)\}/g;
-    return function(s, args) {
-        if (!args) {
-            return s;
-        }
-        if (!(args instanceof Array || args instanceof Object)) {
-            args = Array.prototype.slice.call(arguments, 1);
-        }
-        return s.replace(re, function(_, match) {
-            return args[match];
-        });
-    };
+  var re = /\{([^}]+)\}/g;
+  return function(s, args) {
+    if (!args) {
+      return s;
+    }
+    if (!(args instanceof Array || args instanceof Object)) {
+      args = Array.prototype.slice.call(arguments, 1);
+    }
+    return s.replace(re, function(_, match) {
+      return args[match];
+    });
+  };
 })();
 function template(s) {
-    return function(args) { return format(s, args); };
+  return function(args) { return format(s, args); };
 }
