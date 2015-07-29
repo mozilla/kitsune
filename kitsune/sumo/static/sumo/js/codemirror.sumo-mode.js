@@ -1,10 +1,10 @@
-/*global CodeMirror */
+/* global CodeMirror */
 
 (function() {
-  "use strict";
+  'use strict';
 
-  CodeMirror.defineSimpleMode("sumo", {
-    start : [
+  CodeMirror.defineSimpleMode('sumo', {
+    start: [
       {
         token: 'variable.language',
         regex: '__TOC__'
@@ -108,21 +108,21 @@
         sol: true
       },
       {
-        token : 'comment',
-        merge : true,
-        regex : '<\\!--',
-        next : 'comment'
+        token: 'comment',
+        merge: true,
+        regex: '<\\!--',
+        next: 'comment'
       }
     ],
     comment: [
       {
-        token : 'comment',
-        regex : '.*?-->',
-        next : 'start'
+        token: 'comment',
+        regex: '.*?-->',
+        next: 'start'
       }, {
-        token : 'comment',
-        merge : true,
-        regex : '.+'
+        token: 'comment',
+        merge: true,
+        regex: '.+'
       }
     ],
     nowiki: [
@@ -156,8 +156,8 @@
     ],
     space: [
       {
-        token : 'text',
-        regex : '\\s+'
+        token: 'text',
+        regex: '\\s+'
       }
     ],
     fx_version_os_version: [

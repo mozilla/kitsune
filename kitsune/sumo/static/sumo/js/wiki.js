@@ -1,3 +1,5 @@
+/* globals k:false, jQuery:false, ShowFor:false, Marky:false, VERSIONS:false,
+           BrowserDetect:false, gettext:false, KBox:false, CodeMirror:false */
 /*
  * wiki.js
  * Scripts for the wiki app.
@@ -16,14 +18,14 @@
       // Put last search query into search box
       $('#support-search input[name=q]')
           .val(k.unquote($.cookie('last_search')));
-      new ShowFor();
+      new ShowFor(); // eslint-disable-line
       addReferrerAndQueryToVoteForm();
-      new k.AjaxVote('.document-vote form', {
+      new k.AjaxVote('.document-vote form', { // eslint-disable-line
         positionMessage: true
       });
       initAOABanner();
     } else if ($body.is('.review')) { // Review pages
-      new ShowFor();
+      new ShowFor(); // eslint-disable-line
       initNeedsChange();
 
       $('img.lazy').loadnow();
@@ -35,7 +37,7 @@
     if ($body.is('.edit, .new, .translate')) { // Document form page
       // Submit form
       $('#id_comment').keypress(function(e) {
-        if(e.which == 13) {
+        if (e.which === 13) {
           $(this).blur();
           $(this).closest('form').find('input[type=submit]').focus().click();
           return false;
@@ -61,9 +63,9 @@
       // collapse the topics listing per product and show only one topic list
       // at at a time
       $(function () {
-        $("#accordion").accordion({
+        $('#accordion').accordion({
           collapsible: true,
-          heightStyle: "content",
+          heightStyle: 'content',
           active: false
         });
       });
@@ -160,18 +162,17 @@
           // Toggle the `open` attribute of the `details` element
           if (typeof $details.attr('open') !== 'undefined') {
             $details.removeAttr('open');
-          }
-          else {
+          } else {
             $details.attr('open', 'open');
           }
           // Toggle the additional information in the `details` element
           $detailsNotSummary.slideToggle();
           $details.toggleClass('open');
         }).keyup(function(event) {
-              if (13 === event.keyCode || 32 === event.keyCode) {
+              if (event.keyCode === 13 || event.keyCode === 32) {
                 // Enter or Space is pressed -- trigger the `click` event on the `summary` element
                 // Opera already seems to trigger the `click` event when Enter is pressed
-                if (!($.browser.opera && 13 === event.keyCode)) {
+                if (!($.browser.opera && event.keyCode === 13)) {
                   event.preventDefault();
                   $detailsSummary.click();
                 }
@@ -187,7 +188,7 @@
   function detectBrowser() {
     function getVersionGroup(browser, version) {
       if ((browser === undefined) || (version === undefined) || !VERSIONS[browser]) {
-        return;
+        return undefined;
       }
 
       for (var i = 0; i < VERSIONS[browser].length; i++) {
@@ -227,18 +228,18 @@
         updateCount = function() {
           var currentCount = $summaryBox.val().length;
           $summaryCount.text(warningCount - currentCount);
-          if(warningCount - currentCount >= 0) {
-            $summaryCount.css("color", "black");
+          if (warningCount - currentCount >= 0) {
+            $summaryCount.css('color', 'black');
           } else {
-            $summaryCount.css("color", "red");
-            if(currentCount >= maxCount) {
+            $summaryCount.css('color', 'red');
+            if (currentCount >= maxCount) {
               $summaryBox.val($summaryBox.val().substr(0, maxCount));
             }
           }
         };
 
     updateCount();
-    $summaryBox.bind("input", updateCount);
+    $summaryBox.bind('input', updateCount);
   }
 
   /*
@@ -251,10 +252,10 @@
           contentElement: $('#id_content'),
           previewElement: $preview
         });
-    $(preview).bind('done', function(e, success){
+    $(preview).bind('done', function(e, success) {
       if (success) {
         $previewBottom.show();
-        new ShowFor();
+        new ShowFor(); // eslint-disable-line
         $preview.find('select.enable-if-js').removeAttr('disabled');
         $preview.find('.kbox').kbox();
         // k.initVideo();
@@ -273,7 +274,7 @@
       $diff.find('.to').text($('#id_content').val());
       k.initDiff($diff.parent());
       $previewBottom.show();
-      $('#preview').empty()
+      $('#preview').empty();
     });
   }
 
@@ -328,7 +329,7 @@
           }
         },
         error: function(xhr, error) {
-          if(xhr.status === 404) {
+          if (xhr.status === 405) {
             // We are good!!
           } else {
             // Something went wrong, just fallback to server-side
@@ -413,7 +414,7 @@
           },
           error: function() {
             var message = gettext('There was an error.');
-            alert(message);
+            alert(message); // eslint-disable-line
           }
         });
       });
@@ -433,34 +434,34 @@
           kbox.close();
           $diff.replaceWith(html);
           initDiffPicker();
-          k.initDiff()
+          k.initDiff();
         }
       });
     });
   }
 
   function initReadyForL10n() {
-    var $watchDiv = $("#revision-list div.l10n"),
+    var $watchDiv = $('#revision-list div.l10n'),
         post_url, checkbox_id;
 
-    $watchDiv.find("a.markasready").click(function() {
+    $watchDiv.find('a.markasready').click(function() {
       var $check = $(this);
-      post_url = $check.data("url");
-      checkbox_id = $check.attr("id");
-      $("#ready-for-l10n-modal span.revtime").html("("+$check.data("revdate")+")");
+      post_url = $check.data('url');
+      checkbox_id = $check.attr('id');
+      $('#ready-for-l10n-modal span.revtime').html('(' + $check.data('revdate') + ')');
     });
 
-    $("#ready-for-l10n-modal input[type=submit], #ready-for-l10n-modal button[type=submit]").click(function() {
-      var csrf = $("#ready-for-l10n-modal input[name=csrfmiddlewaretoken]").val(),
-          kbox = $("#ready-for-l10n-modal").data("kbox");
-      if(post_url != undefined && checkbox_id != undefined) {
+    $('#ready-for-l10n-modal input[type=submit], #ready-for-l10n-modal button[type=submit]').click(function() {
+      var csrf = $('#ready-for-l10n-modal input[name=csrfmiddlewaretoken]').val(),
+          kbox = $('#ready-for-l10n-modal').data('kbox');
+      if (post_url !== undefined && checkbox_id !== undefined) {
         $.ajax({
-          type: "POST",
+          type: 'POST',
           url: post_url,
           data: {csrfmiddlewaretoken: csrf},
           success: function(response) {
-            $("#" + checkbox_id).removeClass("markasready").addClass("yes");
-            $("#" + checkbox_id).unbind("click");
+            $('#' + checkbox_id).removeClass('markasready').addClass('yes');
+            $('#' + checkbox_id).unbind('click');
             kbox.close();
           },
           error: function() {
@@ -511,11 +512,11 @@
     $('.watch-form').click(function() {
       var form = $(this);
       $.post(form.attr('action'), form.serialize(), function() {
-        form.find('.watchtoggle').toggleClass('on')
+        form.find('.watchtoggle').toggleClass('on');
       }).error(function() {
-            // error growl
-          });
-      return false
+        // error growl
+      });
+      return false;
     });
   }
 
@@ -543,29 +544,30 @@
     var editor_wrapper = $("<div id='editor_wrapper'></div>");
 
     var updateHighlightingEditor = function() {
-      var editor = window.highlighting.editor;
-      if(!editor)
+      var currentEditor = window.highlighting.editor;
+      if (!currentEditor) {
         return;
+      }
 
       var content = $('#id_content').val();
-      editor.setValue(content);
+      currentEditor.setValue(content);
     };
     window.highlighting.updateEditor = updateHighlightingEditor;
 
-    var switch_link = $("<a></a>")
-        .text(gettext("Toggle syntax highlighting"))
-        .css({cssFloat: "right", cursor: "pointer"})
+    var switch_link = $('<a></a>')
+        .text(gettext('Toggle syntax highlighting'))
+        .css({cssFloat: 'right', cursor: 'pointer'})
         .toggle(function() {
-          editor_wrapper.css("display", "none");
-          $('#id_content').css("display", "block");
+          editor_wrapper.css('display', 'none');
+          $('#id_content').css('display', 'block');
         }, function() {
           updateHighlightingEditor();
-          editor_wrapper.css("display", "block");
-          $('#id_content').css("display", "none");
+          editor_wrapper.css('display', 'block');
+          $('#id_content').css('display', 'none');
         });
 
     var highlightingEnabled = function() {
-      return editor_wrapper.css("display") == 'block';
+      return editor_wrapper.css('display') === 'block';
     };
     window.highlighting.isEnabled = highlightingEnabled;
 
@@ -586,8 +588,9 @@
       updateHighlightingEditor();
 
       cm_editor.on('change', function(e) {
-        if(!highlightingEnabled())
+        if (!highlightingEnabled()) {
           return;
+        }
         $('#id_content').val(cm_editor.getValue());
       });
     }, false);
@@ -637,7 +640,9 @@
 
   function initRevisionList() {
     var $form = $('#revision-list form.filter');
-    if(!$form.length) return;
+    if (!$form.length) {
+      return;
+    }
 
     // This function grabs a fragment from the server and replaces
     // the content of the div with it.
@@ -654,7 +659,7 @@
       var scrollPos = Math.min($(document).scrollTop(),
           $('#revision-list').offset().top);
       $(document).scrollTop(scrollPos);
-      history.replaceState({}, "", url);
+      history.replaceState({}, '', url);
       $('#revisions-fragment').css('opacity', 0);
 
       $.get(url + '&fragment=1', function(data) {
@@ -758,7 +763,7 @@
       var $section = $('<section />');
       $foldingSection.append($section);
 
-      for (var i=0; i < sectionElems.length; i++) {
+      for (var i = 0; i < sectionElems.length; i++) {
         $section.append(sectionElems[i]);
       }
     });
@@ -767,7 +772,7 @@
     $('#doc-content').on('click', 'h1', function() {
       $(this).closest('.wiki-section').toggleClass('collapsed');
     });
-  }
+  };
 
   if ($('#doc-content').is('.collapsible')) {
     k.makeWikiCollapsable();
@@ -779,4 +784,4 @@
     });
   }
 
-}(jQuery));
+})(jQuery);

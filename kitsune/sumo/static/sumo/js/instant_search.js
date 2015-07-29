@@ -1,3 +1,4 @@
+/* globals k:false, _gaq:false, jQuery:false */
 (function($) {
   var searchTimeout;
   var locale = $('html').attr('lang');
@@ -21,12 +22,13 @@
   function render(data) {
     var context = $.extend({}, data);
     var base_url = search.lastQueryUrl();
-    context['base_url'] = base_url;
+    var $searchContent;
+    context.base_url = base_url;
 
     if ($('#instant-search-content').length) {
-      var $searchContent = $('#instant-search-content');
+      $searchContent = $('#instant-search-content');
     } else {
-      var $searchContent = $('<div />').attr('id', 'instant-search-content');
+      $searchContent = $('<div />').attr('id', 'instant-search-content');
       $('#main-content').after($searchContent);
     }
 
@@ -62,9 +64,15 @@
       }
 
       $this.closest('form').find('input').each(function () {
-        if ($(this).attr('type') === 'submit') return true;
-        if ($(this).attr('type') === 'button') return true;
-        if ($(this).attr('name') === 'q')  return true;
+        if ($(this).attr('type') === 'submit') {
+          return true;
+        }
+        if ($(this).attr('type') === 'button') {
+          return true;
+        }
+        if ($(this).attr('name') === 'q') {
+          return true;
+        }
         params[$(this).attr('name')] = $(this).val();
       });
 

@@ -1,9 +1,9 @@
-/*global CodeMirror, jQuery */
+/* global CodeMirror, jQuery */
 
 (function($) {
-  "use strict";
+  'use strict';
 
-  CodeMirror.registerHelper("hint", "sumo", function(editor, options) {
+  CodeMirror.registerHelper('hint', 'sumo', function(editor, options) {
     options = $.extend({}, {word: /[\w$-]+/, range: 500}, options);
 
     var word = options.word;
@@ -20,7 +20,7 @@
     var curWord = (start !== end && curLine.slice(start, end));
     var list = [];
     var seen = {};
-    var re = new RegExp(word.source, "g");
+    var re = new RegExp(word.source, 'g');
 
     for (var dir = -1; dir <= 1; dir += 2) {
       var line = cur.line;

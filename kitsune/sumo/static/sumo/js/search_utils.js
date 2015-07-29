@@ -1,3 +1,4 @@
+/* globals k:false, jQuery:false */
 (function($, _) {
   window.k = k || {};
 
@@ -6,7 +7,7 @@
   function Search(baseUrl, params) {
     this.baseUrl = baseUrl;
     this.params = $.extend({}, params);
-  };
+  }
 
   Search.prototype._buildQueryUrl = function(query, params) {
     var url = this.baseUrl + '?q=' + query;
@@ -27,8 +28,7 @@
   };
 
   Search.prototype.getParam = function(key) {
-    this.params[key] = value;
-    return this;
+    return this.params[key];
   };
 
   Search.prototype.unsetParam = function(key) {
@@ -53,7 +53,7 @@
     return this._buildQueryUrl(this.lastQuery, this.serializeParams());
   };
 
-  Search.prototype.serializeParams= function(extra) {
+  Search.prototype.serializeParams = function(extra) {
     var params = $.extend({}, this.params, extra);
     var keys = Object.keys(params);
     var paramStrings = [];
