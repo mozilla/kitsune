@@ -219,7 +219,7 @@
         this.$success_msg.hide();
       };
 
-      this.$el = $('#reply-modale');
+      this.$el = $('#reply-modal');
 
       this.$tweet_el = this.$el.find('#initial-tweet');
       this._tweet = new Tweet(this.$tweet_el);
