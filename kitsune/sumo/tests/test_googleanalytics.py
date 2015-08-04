@@ -199,7 +199,7 @@ VISITORS_BY_LOCALE_RESPONSE = {
         [u'/sl/', u'530'],
         [u'/son/', u'1'],
         [u'/sq/', u'27'],
-        [u'/sr-Cyrl/', u'256'],
+        [u'/sr/', u'256'],
         [u'/sv/', u'1488'],
         [u'/ta-LK/', u'13'],
         [u'/ta/', u'13'],
