@@ -85,7 +85,8 @@ def login(request, template):
         return HttpResponsePermanentRedirect(url)
 
     next_url = get_next_url(request) or reverse('home')
-    form = handle_login(request)
+    only_active = request.POST.get('inactive', '0') != '1'
+    form = handle_login(request, only_active=only_active)
 
     if request.user.is_authenticated():
         # Add a parameter so we know the user just logged in.

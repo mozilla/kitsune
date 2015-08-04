@@ -219,6 +219,8 @@
   </div>
 </footer>{# /#footer #}
 
+{{ csrf() }}
+
 {# TODO: The BUILD_ID_JS changes whenever our js code changes.
    But this should get cached busted whenever a locale is updated.
    It's complicatred to fix. But for now it isn't more broken than

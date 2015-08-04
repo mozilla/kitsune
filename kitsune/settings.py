@@ -432,8 +432,6 @@ MIDDLEWARE_CLASSES = (
     'commonware.middleware.NoVarySessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
 
-    'kitsune.users.middleware.LogoutDeactivatedUsersMiddleware',
-
     # This should come before TokenLoginMiddleware, because
     # TokenLoginMiddleware uses this to tell users they have been
     # automatically logged. It also has to come after
@@ -923,7 +921,7 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.TokenAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
+        'kitsune.sumo.api.InactiveSessionAuthentication',
     ),
 }
 
