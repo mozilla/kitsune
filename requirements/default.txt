@@ -280,10 +280,6 @@ requests==2.5.3
 # sha256: ngIjuJUY7axhqXtW_3jycQVs4IyKF8a2RK7yRPrIPyM
 requests-oauthlib==0.4.2
 
-# schematic: master
-# sha256: ELrq_ifCkWujoqbRrfIsQakd640Hn1kJAu2P36B6Nf8
-https://github.com/jbalogh/schematic/archive/f996182b857769541cfa7659d4f9e864360cddf4.tar.gz#egg=schematic
-
 # sha256: cjlM5ykoyH02UBp1_MU1c30WZU_v1sIWwxUVgpS8wSY
 selenium==2.45.0
 
