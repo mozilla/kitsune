@@ -11,6 +11,12 @@ def create_waffle_flag(apps, schema_editor):
     f.save()
 
 
+def delete_waffle_flag(apps, schema_editor):
+    Flag = apps.get_model('waffle', 'Flag')
+    f = Flag.objects.get(name='new_aaq')
+    f.delete()
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -19,5 +25,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(create_waffle_flag),
+        migrations.RunPython(create_waffle_flag, delete_waffle_flag),
     ]
