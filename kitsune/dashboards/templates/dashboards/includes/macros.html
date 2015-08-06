@@ -249,6 +249,23 @@
   </div>
 {% endmacro %}
 
+{% macro category_filter() %}
+  <div class="category-filter">
+    <form method="get">
+      {% if product %}
+        <input type="hidden" name="product" value="{{ product }}">
+      {% endif %}
+      <label>{{ _('Filter by type:') }}</label>
+      <select data-submit name="category">
+        <option value="">{{ _('All') }}</option>
+        {% for c in categories %}
+          <option value="{{ c[0] }}" {% if category == c[0] %}selected="selected"{% endif %}>{{ c[1] }}</option>
+        {% endfor %}
+      </select>
+    </form>
+  </div>
+{% endmacro %}
+
 {% macro localization_sidebar_nav(locale, active, is_default_locale=False) %}
   <ul class="sidebar-nav">
     <li {{ active|class_selected('dashboard') }}>

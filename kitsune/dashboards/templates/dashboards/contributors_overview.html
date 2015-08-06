@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% from "includes/common_macros.html" import for_contributors_sidebar %}
 {% from "dashboards/includes/macros.html" import product_selector %}
+{% from "dashboards/includes/macros.html" import category_filter with context %}
 {% set title = 'Knowledge Base Overview' %}
 {% set scripts = ('wiki', 'wiki.dashboard') %}
 {% set styles = ('kbdashboards',) %}
@@ -8,7 +9,13 @@
 {# TODO: Move required dashboard scripts out of wiki.js into their own #}
 
 {% block content %}
-  {{ product_selector(products, product) }}
+  <div class="cf">
+    {{ product_selector(products, product) }}
+  </div>
+
+  <div class="cf">
+    {{ category_filter() }}
+  </div>
 
   <div class="grid_9">
     <article class="main dashboards dashboards-detail">
