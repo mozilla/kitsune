@@ -3,6 +3,7 @@ import cx from 'classnames';
 import AAQStep from './AAQStep.jsx';
 import AAQActions from '../actions/AAQActions.es6.js';
 import {questionEditState} from '../constants/AAQConstants.es6.js';
+import {authStates} from '../../../users/js/constants/UserAuthConstants.es6.js';
 
 export default class SubmitQuestion extends AAQStep {
   handleSubmit() {
@@ -14,7 +15,8 @@ export default class SubmitQuestion extends AAQStep {
   }
 
   enabled() {
-    return this.props.questionState === questionEditState.VALID;
+    return this.props.questionState === questionEditState.VALID &&
+      this.props.userAuth.state === authStates.LOGGED_IN;
   }
 
   render() {
@@ -32,11 +34,6 @@ export default class SubmitQuestion extends AAQStep {
                 onClick={this.handleSubmit.bind(this)}>
           {buttonTexts[this.props.questionState]}
         </button>
-        <pre>
-          {JSON.stringify(this.props.question, null, 2)}
-        </pre>
-        <pre>{this.props.questionState}</pre>
-        <pre>{this.props.validationErrors}</pre>
       </div>
     );
   }
@@ -46,4 +43,5 @@ SubmitQuestion.propTypes = {
   question: React.PropTypes.object.isRequired,
   questionState: React.PropTypes.object.isRequired,
   validationErrors: React.PropTypes.object.isRequired,
+  userAuth: React.PropTypes.object.isRequired,
 };

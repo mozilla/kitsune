@@ -18,8 +18,6 @@ urlpatterns = patterns(
         name='questions.locale_metrics'),
 
     # AAQ
-    url(r'^/newreact$', 'aaq_react', name='questions.aaq_step1'),
-
     url(r'^/new$', 'aaq', name='questions.aaq_step1'),
     url(r'^/new/confirm$', 'aaq_confirm', name='questions.aaq_confirm'),
     url(r'^/new/(?P<product_key>[\w\-]+)$',

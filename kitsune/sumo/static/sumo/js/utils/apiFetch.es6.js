@@ -1,9 +1,17 @@
 /* globals k:false */
 
-// import 'fetch'; // polyfill
-import cx from 'classnames';
+export default function apiFetch(url, options={}) {
+  return apiFetchRaw(url, options)
+  .then(res => {
+    if (res.status >= 400) {
+      throw new Error(res.statusText);
+    } else {
+      return res.json();
+    }
+  });
+}
 
-export default function apiFetch(url, options) {
+export function apiFetchRaw(url, options={}) {
   if (url.indexOf('?') === -1) {
     url += '?format=json&';
   } else {
@@ -30,12 +38,5 @@ export default function apiFetch(url, options) {
   }
   options.headers['Content-Type'] = 'application/json';
 
-  return fetch(url, options)
-  .then(res => {
-    if (res.status >= 400) {
-      throw new Error(res.statusText);
-    } else {
-      return res.json();
-    }
-  });
+  return fetch(url, options);
 }

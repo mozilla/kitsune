@@ -21,6 +21,7 @@ from django.views.decorators.http import (require_POST, require_GET,
                                           require_http_methods)
 
 import jingo
+import waffle
 from ordereddict import OrderedDict
 from mobility.decorators import mobile_template
 from rest_framework.renderers import JSONRenderer
@@ -465,8 +466,8 @@ def edit_details(request, question_id):
 @ssl_required
 @anonymous_csrf
 def aaq_react(request):
+    request.session['in-aaq'] = True
     to_json = JSONRenderer().render
-
     products = ProductSerializer(Product.objects.filter(visible=True), many=True)
     topics = TopicSerializer(Topic.objects.filter(visible=True, parent=None), many=True)
 
@@ -482,6 +483,10 @@ def aaq_react(request):
 def aaq(request, product_key=None, category_key=None, showform=False,
         template=None, step=0):
     """Ask a new question."""
+
+    # Use react version if waffle flag is set
+    if waffle.flag_is_active(request, 'new_aaq'):
+        return aaq_react(request)
 
     # This tells our LogoutDeactivatedUsersMiddleware not to
     # boot this user.

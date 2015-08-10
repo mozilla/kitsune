@@ -41,12 +41,12 @@
   {% endif %}
 {%- endmacro %}
 
-{% macro document_content(document, fallback_reason, request, settings, css_class='') -%}
+{% macro document_content(document, fallback_reason, request, settings, css_class='', any_localizable_revision) -%}
   <section id="doc-content" class="{{ css_class }}">
     {% if not fallback_reason %}
       {{ document.html|safe }}
     {% elif fallback_reason == 'no_translation' %}
-      {% if not document.is_archived %}
+      {% if document.is_localizable and any_localizable_revision and not document.is_archived %}
         <div id="doc-pending-fallback" class="warning-box">
           {% trans help_link=url('wiki.document', 'localize-firefox-help'), document_trans_link=url('wiki.translate', document.slug) %}
             No one has helped translate this article yet. If you already know how localizing for SUMO works,

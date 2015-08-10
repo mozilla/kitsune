@@ -7,6 +7,7 @@ from mobility.decorators import mobile_template
 from product_details import product_details
 
 from kitsune.products.models import Product, Topic
+from kitsune.sumo.utils import get_browser
 from kitsune.wiki.decorators import check_simple_wiki_locale
 from kitsune.wiki.facets import topics_for, documents_for
 
@@ -73,6 +74,10 @@ def document_listing(request, template, product_slug, topic_slug,
 
     documents, fallback_documents = documents_for(**doc_kw)
 
+    user_agent = request.META.get('HTTP_USER_AGENT', '')
+    browser = get_browser(user_agent)
+    show_fx_download = (product.slug == 'thunderbird' and browser != 'Firefox')
+
     return render(request, template, {
         'product': product,
         'topic': topic,
@@ -81,4 +86,5 @@ def document_listing(request, template, product_slug, topic_slug,
         'subtopics': topics_for(product=product, parent=topic),
         'documents': documents,
         'fallback_documents': fallback_documents,
-        'search_params': {'product': product_slug}})
+        'search_params': {'product': product_slug},
+        'show_fx_download': show_fx_download})

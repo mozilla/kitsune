@@ -122,6 +122,8 @@ SUMO_LANGUAGES = (
     'hi-IN',
     'hr',
     'hu',
+    'dsb',
+    'hsb',
     'id',
     'ig',
     'it',
@@ -209,6 +211,8 @@ SIMPLE_WIKI_LANGUAGES = [
     'et',
     'ga-IE',
     'gl',
+    'dsb',
+    'hsb',
     'kn',
     'ml',
     'tn',
@@ -242,7 +246,6 @@ NON_SUPPORTED_LOCALES = {
     'ff': None,
     'fur': 'it',
     'gd': None,
-    'hsb': 'de',
     'hy-AM': None,
     'ilo': None,
     'is': None,
@@ -428,8 +431,6 @@ MIDDLEWARE_CLASSES = (
     # loaded before the LocaleURLMiddleware
     'commonware.middleware.NoVarySessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-
-    'kitsune.users.middleware.LogoutDeactivatedUsersMiddleware',
 
     # This should come before TokenLoginMiddleware, because
     # TokenLoginMiddleware uses this to tell users they have been
@@ -920,7 +921,7 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.TokenAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
+        'kitsune.sumo.api.InactiveSessionAuthentication',
     ),
 }
 
