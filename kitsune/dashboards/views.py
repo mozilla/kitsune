@@ -64,17 +64,20 @@ def contributors_detail(request, readout_slug):
 @require_GET
 def contributors_overview(request):
     product = _get_product(request)
+    category = _get_category(request)
 
     return render(request, 'dashboards/contributors_overview.html', {
         'overview_rows': kb_overview_rows(
             locale=request.LANGUAGE_CODE, product=product,
             mode=smart_int(request.GET.get('mode'), None),
-            max=None),
+            max=None, category=category),
         'main_dash_view': 'dashboards.contributors',
         'main_dash_title': _('Knowledge Base Dashboard'),
         'locale': request.LANGUAGE_CODE,
         'product': product,
-        'products': Product.objects.filter(visible=True)})
+        'products': Product.objects.filter(visible=True),
+        'category': category,
+        'categories': CATEGORIES})
 
 
 @require_GET
