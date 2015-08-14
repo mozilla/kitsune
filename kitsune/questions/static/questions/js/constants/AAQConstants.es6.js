@@ -12,6 +12,7 @@ export const actionTypes = constantMap([
   'TROUBLESHOOTING_OPT_IN',
   'TROUBLESHOOTING_OPT_OUT',
   'TROUBLESHOOTING_SET_DATA',
+  'TROUBLESHOOTING_AVAILABLE',
 ]);
 
 export const questionEditState = constantMap([

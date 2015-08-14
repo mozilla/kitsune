@@ -14,6 +14,10 @@ export default class TitleContentEditor extends AAQStep {
     }
   }
 
+  componentDidMount() {
+    AAQActions.checkTroubleshootingAvailable();
+  }
+
   shouldExpand() {
     return (this.props.question.topic !== null &&
             this.props.question.product !== null);
@@ -49,9 +53,11 @@ export default class TitleContentEditor extends AAQStep {
           <SuggestionList suggestions={this.props.suggestions}/>
         </div>
 
-        <div className="row">
-          <TroubleshootingData {...this.props.troubleshooting}/>
-        </div>
+        {this.props.troubleshooting.available
+          ? <div className="row">
+              <TroubleshootingData {...this.props.troubleshooting}/>
+            </div>
+          : null}
       </div>
     );
   }

@@ -87,6 +87,15 @@ export function setTroubleshootingOptIn(optIn) {
   }
 }
 
+export function checkTroubleshootingAvailable() {
+  remoteTroubleshooting.available(available => {
+    Dispatcher.dispatch({
+      type: actionTypes.TROUBLESHOOTING_AVAILABLE,
+      available: available
+    });
+  });
+}
+
 function getTroubleshootingInfo() {
   return new Promise((resolve, reject) => {
     remoteTroubleshooting.available(function (yesno) {
@@ -182,5 +191,6 @@ export default {
   setTitle,
   setContent,
   setTroubleshootingOptIn,
+  checkTroubleshootingAvailable,
   submitQuestion,
 };
