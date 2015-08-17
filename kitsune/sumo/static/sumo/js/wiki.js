@@ -772,6 +772,9 @@
     $('#doc-content').on('click', 'h1', function() {
       $(this).closest('.wiki-section').toggleClass('collapsed');
     });
+
+    // Expand section if deeplinked to it
+    $(window.location.hash).closest('.wiki-section').removeClass('collapsed');
   };
 
   if ($('#doc-content').is('.collapsible')) {
