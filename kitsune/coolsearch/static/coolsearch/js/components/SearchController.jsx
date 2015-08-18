@@ -15,7 +15,7 @@ export default class SearchController {
                     title="It's like Advanced Search, but cooler">Cool Search</h1>
                 <SearchForm />
                 <SearchResults
-                    data={[{title: "Hello", content: "World"}]} />
+                    data={[]} />
             </div>,
             this.target
         );

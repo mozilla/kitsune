@@ -1,27 +1,30 @@
-import SearchDispatcher from '../dispatcher/SearchDispatcher.js';
+import Dispatcher from '../../../sumo/js/Dispatcher.es6.js';
 import ActionConstants from '../constants/ActionConstants.js';
 
 
 var _dispatch = function (action, query) {
-  SearchDispatcher.dispatch({
+  Dispatcher.dispatch({
     type: action,
     query: query,
   });
 };
 
-var QueryActionCreator = {
-  updateQueryWiki: function (query) {
-    _dispatch(ActionConstants.UPDATE_WIKI, query);
-  },
-  updateQueryQuestion: function (query) {
-    _dispatch(ActionConstants.UPDATE_QUESTION, query);
-  },
-  updateQueryForum: function (query) {
-    _dispatch(ActionConstants.UPDATE_FORUM, query);
-  },
-  updateCurrentForm: function (currentForm) {
-    _dispatch(ActionConstants.SWITCH_FORM_TAB, currentForm);
-  },
-};
+export function updateQueryWiki(query) {
+  _dispatch(ActionConstants.UPDATE_WIKI, query);
+}
+export function updateQueryQuestion(query) {
+  _dispatch(ActionConstants.UPDATE_QUESTION, query);
+}
+export function updateQueryForum(query) {
+  _dispatch(ActionConstants.UPDATE_FORUM, query);
+}
+export function updateCurrentForm(currentForm) {
+  _dispatch(ActionConstants.SWITCH_FORM_TAB, currentForm);
+}
 
-export default QueryActionCreator;
+export default {
+  updateQueryWiki,
+  updateQueryQuestion,
+  updateQueryForum,
+  updateCurrentForm
+};

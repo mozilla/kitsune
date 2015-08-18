@@ -2,9 +2,10 @@ import json
 from itertools import chain
 
 from django.conf import settings
-from django.http import HttpResponse
 from django.utils.html import escape
-from django.views.generic import View
+
+from rest_framework import views
+from rest_framework.response import Response
 
 import bleach
 import jinja2
@@ -23,16 +24,29 @@ from kitsune.wiki.models import DocumentMappingType
 EXCERPT_JOINER = _lazy(u'...', 'between search excerpts')
 
 
-class SearchView(View):
+class SearchView(views.APIView):
     content_type = 'application/json'
 
     def get(self, request):
+        data = self.get_data(request)
+        status = None
+
+        if isinstance(data, tuple):
+            data = data[0]
+            status = data[1]
+
+        return Response(
+            data,
+            status=status,
+            content_type=self.content_type,
+        )
+
+    def get_data(self, request):
         search_form = self.form_class(request.GET)
         if not search_form.is_valid():
-            return HttpResponse(
+            return (
                 json.dumps({'error': _('Invalid search data.')}),
-                content_type=self.content_type,
-                status=400,
+                400,
             )
 
         language = locale_or_default(
@@ -61,6 +75,7 @@ class SearchView(View):
 
         # Add the simple string query.
         cleaned_q = search_form.cleaned_data.get('query')
+        print '>', search_form.cleaned_data
 
         if cleaned_q:
             query_fields = self.get_query_fields()
@@ -119,10 +134,9 @@ class SearchView(View):
                 results.append(result)
 
         except es_utils.ES_EXCEPTIONS:
-            return HttpResponse(
+            return (
                 json.dumps({'error': _('Search Unavailable')}),
-                content_type=self.content_type,
-                status=503,
+                503,
             )
 
         data = {
@@ -134,8 +148,7 @@ class SearchView(View):
         if not results:
             data['message'] = _('No pages matched the search criteria')
 
-        json_data = json.dumps(data)
-        return HttpResponse(json_data, content_type=self.content_type)
+        return data
 
     def get_doctypes(self):
         raise NotImplementedError()

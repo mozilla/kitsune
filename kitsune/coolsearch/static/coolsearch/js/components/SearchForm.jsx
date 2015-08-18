@@ -15,21 +15,20 @@ import QueryActionCreator from '../actions/QueryActionCreator.js';
 import SearchActionCreator from '../actions/SearchActionCreator.js';
 
 
-var getStateFromStores = function () {
-  return {
-    query: QueryStore.getCurrentQuery()
-  };
-};
-
-
 export default class SearchForm extends React.Component {
   constructor(props) {
     super(props);
 
-    this.state = getStateFromStores();
-    this.currentForm = 'wiki';
+    this.state = this._getStateFromStores();
 
-    this.startQuery = _.debounce(this.startQuery.bind(this), 300);
+    this.startQuery = _.debounce(this.getResults.bind(this), 300);
+  }
+
+  _getStateFromStores () {
+    return {
+      query: QueryStore.getCurrentQuery(),
+      currentForm: QueryStore.getCurrentForm()
+    };
   }
 
   componentDidMount() {
@@ -37,7 +36,7 @@ export default class SearchForm extends React.Component {
   }
 
   _onChange() {
-    this.setState(getStateFromStores());
+    this.setState(this._getStateFromStores());
     this.startQuery();
   }
 
@@ -46,18 +45,13 @@ export default class SearchForm extends React.Component {
       e.preventDefault();
     }
 
-    SearchActionCreator.runSearch(this.currentForm, this.state.query);
-  }
-
-  /** A debounced proxy to getResults(). */
-  startQuery() {
-    this.getResults();
+    SearchActionCreator.runSearch(this.state.currentForm, this.state.query);
   }
 
   handleSelect(index) {
     var tabsOrder = ['wiki', 'question', 'forum'];
-    this.currentForm = tabsOrder[index];
-    QueryActionCreator.updateCurrentForm(this.currentForm);
+    var currentForm = tabsOrder[index];
+    QueryActionCreator.updateCurrentForm(currentForm);
   }
 
   render() {

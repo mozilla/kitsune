@@ -1,48 +1,42 @@
-import SearchDispatcher from '../dispatcher/SearchDispatcher.js';
+/* globals _:false */
+
+import Dispatcher from '../../../sumo/js/Dispatcher.es6.js';
+import BaseStore from '../../../sumo/js/stores/BaseStore.es6.js';
+
 import ActionConstants from '../constants/ActionConstants.js';
-import { EventEmitter } from 'events';
 
-const CHANGE_EVENT = 'change';
 
-var _query = {
+var queryData = {
   currentForm: 'wiki',
   wiki: {},
   question: {},
   forum: {},
 };
 
-class _QueryStore extends EventEmitter {
-  emitChange() {
-    this.emit(CHANGE_EVENT);
-  }
-
-  addChangeListener(callback) {
-    this.on(CHANGE_EVENT, callback);
-  }
-
-  removeChangeListener(callback) {
-    this.removeListener(CHANGE_EVENT, callback);
-  }
-
+class _QueryStore extends BaseStore {
   getCurrentQuery() {
-    return _query[_query.currentForm];
+    return _.clone(queryData[queryData.currentForm]);
+  }
+
+  getCurrentForm() {
+    return queryData.currentForm;
   }
 }
 
 // Stores are singletons.
-const store = new _QueryStore();
+const QueryStore = new _QueryStore();
 
 var setQuery = function (query, type) {
-  _query[type] = query;
-  store.emitChange();
+  queryData[type] = query;
+  QueryStore.emitChange();
 };
 
 var setCurrentForm = function (currentForm) {
-  _query.currentForm = currentForm;
-  store.emitChange();
+  queryData.currentForm = currentForm;
+  QueryStore.emitChange();
 };
 
-store.dispatchToken = SearchDispatcher.register(function (action) {
+QueryStore.dispatchToken = Dispatcher.register(function (action) {
   switch (action.type) {
     case ActionConstants.UPDATE_WIKI:
       setQuery(action.query, 'wiki');
@@ -59,4 +53,4 @@ store.dispatchToken = SearchDispatcher.register(function (action) {
   }
 });
 
-export default store;
+export default QueryStore;

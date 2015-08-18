@@ -1,12 +1,12 @@
-var i = 0;
+import constantMap from '../../../sumo/js/utils/constantMap.es6.js';
 
-var ActionConstants = {
-  CLICK_SEARCH: i++,
-  RECEIVE_RESULTS: i++,
-  UPDATE_WIKI: i++,
-  UPDATE_QUESTION: i++,
-  UPDATE_FORUM: i++,
-  SWITCH_FORM_TAB: i++,
-};
+const ActionConstants = constantMap([
+  'CLICK_SEARCH',
+  'RECEIVE_RESULTS',
+  'UPDATE_WIKI',
+  'UPDATE_QUESTION',
+  'UPDATE_FORUM',
+  'SWITCH_FORM_TAB',
+]);
 
 export default ActionConstants;

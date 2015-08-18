@@ -1,45 +1,35 @@
-import SearchDispatcher from '../dispatcher/SearchDispatcher.js';
+/* globals _:false */
+
+import Dispatcher from '../../../sumo/js/Dispatcher.es6.js';
+import BaseStore from '../../../sumo/js/stores/BaseStore.es6.js';
+
 import ActionConstants from '../constants/ActionConstants.js';
-import { EventEmitter } from 'events';
 
-const CHANGE_EVENT = 'change';
 
-var _total = 0;
-var _results = [];
+var total = 0;
+var results = [];
 
-class ResultsStore extends EventEmitter {
-  emitChange() {
-    this.emit(CHANGE_EVENT);
-  }
-
-  addChangeListener(callback) {
-    this.on(CHANGE_EVENT, callback);
-  }
-
-  removeChangeListener(callback) {
-    this.removeListener(CHANGE_EVENT, callback);
-  }
-
+class _ResultsStore extends BaseStore {
   getAll() {
-    return _results;
+    return _.clone(results);
   }
 
   getCount() {
-    return _total;
+    return total;
   }
 }
 
 // Stores are singletons.
-var store = new ResultsStore();
+const ResultsStore = new _ResultsStore();
 
-function setResults(results) {
-  _total = results.num_results;
-  _results = results.results;
+function setResults(data) {
+  total = data.num_results;
+  results = data.results;
 
-  store.emitChange();
+  ResultsStore.emitChange();
 }
 
-store.dispatchToken = SearchDispatcher.register(function (action) {
+ResultsStore.dispatchToken = Dispatcher.register(function (action) {
   switch (action.type) {
     case ActionConstants.RECEIVE_RESULTS:
       setResults(action.results);
@@ -47,4 +37,4 @@ store.dispatchToken = SearchDispatcher.register(function (action) {
   }
 });
 
-export default store;
+export default ResultsStore;
