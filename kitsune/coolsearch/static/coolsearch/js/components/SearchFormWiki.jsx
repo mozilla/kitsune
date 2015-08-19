@@ -5,28 +5,14 @@ Shows the inputs to search the "wiki" documents.
 */
 
 import QueryActionCreator from '../actions/QueryActionCreator.js';
+import SearchFormBase from './SearchFormBase.jsx';
 
 
-export default class SearchFormWiki extends React.Component {
-  updateQuery(event) {
-    var query = {
-      query: event.target.value.trim(),
-    };
+export default class SearchFormForum extends SearchFormBase {
+  constructor(props) {
+    super(props);
 
-    QueryActionCreator.updateQueryWiki(query);
-  }
-
-  render() {
-    return (
-      <div>
-        <fieldset className="query">
-          <span>Article contains: </span>
-          <input
-            type="text"
-            placeholder="crashes on youtube"
-            onChange={this.updateQuery.bind(this)} />
-        </fieldset>
-      </div>
-    );
+    this.itemName = 'Article';
+    this.updateQueryFunction = QueryActionCreator.updateQueryWiki;
   }
 }

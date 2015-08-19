@@ -1,4 +1,3 @@
-import json
 from itertools import chain
 
 from django.conf import settings
@@ -45,7 +44,7 @@ class SearchView(views.APIView):
         search_form = self.form_class(request.GET)
         if not search_form.is_valid():
             return (
-                json.dumps({'error': _('Invalid search data.')}),
+                {'error': _('Invalid search data.')},
                 400,
             )
 
@@ -75,7 +74,6 @@ class SearchView(views.APIView):
 
         # Add the simple string query.
         cleaned_q = search_form.cleaned_data.get('query')
-        print '>', search_form.cleaned_data
 
         if cleaned_q:
             query_fields = self.get_query_fields()
@@ -135,7 +133,7 @@ class SearchView(views.APIView):
 
         except es_utils.ES_EXCEPTIONS:
             return (
-                json.dumps({'error': _('Search Unavailable')}),
+                {'error': _('Search Unavailable')},
                 503,
             )
 

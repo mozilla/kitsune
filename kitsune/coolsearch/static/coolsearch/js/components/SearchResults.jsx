@@ -30,11 +30,21 @@ export default class SearchResults extends React.Component {
       result => <SearchResult key={result.title} data={result} />
     );
 
+    var resultsCountText = 'Run a search to get some results.';
+    if (this.state.started) {
+      if (this.state.count == 1) {
+        resultsCountText = this.state.count + ' result found';
+      }
+      else {
+        resultsCountText = this.state.count + ' results found';
+      }
+    }
+
     return (
       <section id="search-results">
         <div className="content-box">
           <div>
-            {this.state.started ? this.state.count + ' results found' : 'Run a search to get some results.'}
+            {resultsCountText}
           </div>
           {results}
         </div>
