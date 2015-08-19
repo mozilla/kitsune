@@ -104,8 +104,7 @@ ORDER_BY = OrderedDict([
 def product_list(request, template):
     """View to select a product to see related questions."""
     return render(request, template, {
-        'products': Product.objects.filter(
-            questions_locales__locale__in=[request.LANGUAGE_CODE])
+        'products': Product.objects.filter(questions_locales__locale=request.LANGUAGE_CODE)
     })
 
 
@@ -468,7 +467,9 @@ def edit_details(request, question_id):
 def aaq_react(request):
     request.session['in-aaq'] = True
     to_json = JSONRenderer().render
-    products = ProductSerializer(Product.objects.filter(visible=True), many=True)
+    products = ProductSerializer(
+        Product.objects.filter(questions_locales__locale=request.LANGUAGE_CODE),
+        many=True)
     topics = TopicSerializer(Topic.objects.filter(visible=True, parent=None), many=True)
 
     return render(request, 'questions/new_question_react.html', {
