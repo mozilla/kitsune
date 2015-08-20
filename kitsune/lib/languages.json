@@ -589,6 +589,11 @@
         "english": "Yoruba",
         "native": "èdè Yorùbá"
     },
+    "bm": {
+        "iso639_1": "bm",
+        "english": "Bambara",
+        "native": "Bamanankan"
+    },
     "xx": {
         "iso639_1": "xx",
         "english": "Pirate",
