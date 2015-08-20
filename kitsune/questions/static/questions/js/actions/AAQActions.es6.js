@@ -3,6 +3,10 @@ import apiFetch from '../../../sumo/js/utils/apiFetch.es6.js';
 import Dispatcher from '../../../sumo/js/Dispatcher.es6.js';
 import {actionTypes} from '../constants/AAQConstants.es6.js';
 import QuestionEditStore from '../stores/QuestionEditStore.es6.js';
+import TroubleshootingDataStore from '../stores/TroubleshootingDataStore.es6.js';
+import '../../../sumo/js/remote.js';
+
+const remoteTroubleshooting = window.remoteTroubleshooting;
 
 export function setProduct(product) {
   Dispatcher.dispatch({
@@ -70,6 +74,56 @@ export function setContent(content) {
   });
 }
 
+export function setTroubleshootingOptIn(optIn) {
+  if (optIn) {
+    Dispatcher.dispatch({
+      type: actionTypes.TROUBLESHOOTING_OPT_IN,
+    });
+    getTroubleshootingInfo();
+  } else {
+    Dispatcher.dispatch({
+      type: actionTypes.TROUBLESHOOTING_OPT_OUT,
+    });
+  }
+}
+
+export function checkTroubleshootingAvailable() {
+  remoteTroubleshooting.available(available => {
+    Dispatcher.dispatch({
+      type: actionTypes.TROUBLESHOOTING_AVAILABLE,
+      available: available
+    });
+  });
+}
+
+function getTroubleshootingInfo() {
+  return new Promise((resolve, reject) => {
+    remoteTroubleshooting.available(function (yesno) {
+      if (yesno) {
+        remoteTroubleshooting.getData(function (data) {
+          resolve(data);
+        });
+      } else {
+        resolve(null);
+      }
+    });
+  })
+  .then(data => {
+    // Clean out the verbose and not very useful print preferences.
+    var modifiedPreferences = data.modifiedPreferences;
+    data.modifiedPreferences = {};
+    for (var key in modifiedPreferences) {
+      if (key.indexOf('print.') !== 0) {
+        data.modifiedPreferences[key] = modifiedPreferences[key];
+      }
+    }
+    Dispatcher.dispatch({
+      type: actionTypes.TROUBLESHOOTING_SET_DATA,
+      data,
+    });
+  });
+}
+
 export function submitQuestion() {
   Dispatcher.dispatch({
     type: actionTypes.QUESTION_SUBMIT_OPTIMISTIC,
@@ -95,6 +149,10 @@ export function submitQuestion() {
     },
   })
   .then(question => {
+    if (TroubleshootingDataStore.getOptedIn()) {
+      metadata.troubleshooting = JSON.stringify(TroubleshootingDataStore.getData());
+    }
+
     questionUrl = `/${locale}/questions/${question.id}`;
 
     let promises = [];
@@ -126,10 +184,13 @@ export function submitQuestion() {
   });
 }
 
+
 export default {
   setProduct,
   setTopic,
   setTitle,
   setContent,
+  setTroubleshootingOptIn,
+  checkTroubleshootingAvailable,
   submitQuestion,
 };

@@ -9,6 +9,10 @@ export const actionTypes = constantMap([
   'QUESTION_SUBMIT_OPTIMISTIC',
   'QUESTION_SUBMIT_SUCCESS',
   'QUESTION_SUBMIT_FAILURE',
+  'TROUBLESHOOTING_OPT_IN',
+  'TROUBLESHOOTING_OPT_OUT',
+  'TROUBLESHOOTING_SET_DATA',
+  'TROUBLESHOOTING_AVAILABLE',
 ]);
 
 export const questionEditState = constantMap([

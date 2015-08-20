@@ -7,20 +7,29 @@ import TopicSelector from './TopicSelector.jsx';
 import TitleContentEditor from './TitleContentEditor.jsx';
 import UserAuth from './UserAuth.jsx';
 import SubmitQuestion from './SubmitQuestion.jsx';
+import TroubleshootingDataStore from '../stores/TroubleshootingDataStore.es6.js';
 
 export default class AAQApp extends React.Component {
   constructor(props) {
     super(props);
     this.state = this.getStateFromStores();
+    this.onChange = this.onChange.bind(this);
   }
 
   componentDidMount() {
-    QuestionEditStore.addChangeListener(() => {
-      this.setState(this.getStateFromStores());
-    });
-    UserAuthStore.addChangeListener(() => {
-      this.setState(this.getStateFromStores());
-    });
+    QuestionEditStore.addChangeListener(this.onChange);
+    UserAuthStore.addChangeListener(this.onChange);
+    TroubleshootingDataStore.addChangeListener(this.onChange);
+  }
+
+  componentWillUnmount() {
+    QuestionEditStore.removeChangeListener(this.onChange);
+    UserAuthStore.removeChangeListener(this.onChange);
+    TroubleshootingDataStore.removeChangeListener(this.onChange);
+  }
+
+  onChange() {
+    this.setState(this.getStateFromStores());
   }
 
   getStateFromStores() {
@@ -30,6 +39,7 @@ export default class AAQApp extends React.Component {
       validationErrors: QuestionEditStore.getValidationErrors(),
       questionState: QuestionEditStore.getState(),
       userAuth: UserAuthStore.getAll(),
+      troubleshooting: TroubleshootingDataStore.getAll(),
     };
   }
 

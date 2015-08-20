@@ -20,38 +20,56 @@
   }
 
   &__TitleContentEditor {
-    display: flex;
-
-    &__Editor {
-      flex: 0 0 50%;
+    .row {
       display: flex;
-      flex-direction: column;
 
-     > div:not(:last-child) {
-       margin-bottom: 10px;
-     }
+      .AAQApp__TitleContentEditor__Editor {
+        display: flex;
+        flex: 0 0 50%;
+        flex-direction: column;
 
-      &__Title {
-        flex: 0 0;
-      }
+       > div:not(:last-child) {
+         margin-bottom: 10px;
+       }
 
-      &__Content {
-        flex: 1 1 100%;
+        &__Title {
+          flex: 0 0;
+        }
 
+        &__Content {
+          flex: 1 1 100%;
+
+          textarea {
+            height: 90%;
+            min-height: 350px;
+          }
+        }
+
+        label {
+          display: block;
+        }
+
+        input,
         textarea {
-          height: 90%;
-          min-height: 350px;
+          width: 100%;
         }
       }
+    }
+  }
 
-      label {
-        display: block;
-      }
+  &__TroubleshootingData {
+    width: 100%;
 
-      input,
-      textarea {
-        width: 100%;
-      }
+    label {
+      margin-right: 10px;
+    }
+
+    &__dataView {
+      background: #eee;
+      border: 1px solid #888;
+      border-radius: 3px;
+      max-height: 200px;
+      overyflow-y: auto;
     }
   }
 
