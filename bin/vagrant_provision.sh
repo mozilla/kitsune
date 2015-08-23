@@ -61,6 +61,7 @@ mysql -e "GRANT ALL ON kitsune.* TO kitsune@localhost IDENTIFIED BY 'password'"
 # Install npm and included packages (lessc is the one we need of these)
 npm install
 ./node_modules/.bin/gulp nunjucks
+./node_modules/.bin/bower install
 
 # Retrieve and store historical version data
 ./manage.py update_product_details
