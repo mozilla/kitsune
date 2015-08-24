@@ -38,7 +38,7 @@ virtualenv $INSTALL_DIR/virtualenv
 chown -R vagrant $INSTALL_DIR/virtualenv
 source $INSTALL_DIR/virtualenv/bin/activate
 
-pip install -U 'pip<1.7'
+pip install -U 'pip<7'
 $INSTALL_DIR/kitsune/peep.sh install -r $INSTALL_DIR/kitsune/requirements/default.txt
 $INSTALL_DIR/kitsune/peep.sh install -r $INSTALL_DIR/kitsune/requirements/dev.txt
 
