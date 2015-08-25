@@ -14,9 +14,9 @@
   AAQSystemInfo.prototype = {
     init: function($form) {
       var self = this,
-      $input;
+        $input;
 
-      // Autofill the user agent via js
+      // Autofill the user agent
       $form.find('input[name="useragent"]').val(navigator.userAgent);
 
       // Only guess at OS, FF version, plugins if we are on the desktop
@@ -64,39 +64,39 @@
       }
 
       var os = [
-        ['Android', /Android/i],
-        ['Maemo', /Maemo/i],
-        ['Windows 3.11', /Win16/i],
-        ['Windows 95', /(Windows 95)|(Win95)|(Windows_95)/i],
-        ['Windows 98', /(Windows 98)|(Win98)/i],
-        ['Windows 2000', /(Windows NT 5.0)|(Windows 2000)/i],
-        ['Windows XP', /(Windows NT 5.1)|(Windows XP)/i],
-        ['Windows Server 2003', /(Windows NT 5.2)/i],
-        ['Windows Vista', /(Windows NT 6.0)/i],
-        ['Windows 7', /(Windows NT 6.1)/i],
-        ['Windows 8', /(Windows NT 6.2)/i],
-        ['Windows 8.1', /(Windows NT 6.3)/i],
-        ['Windows 10', /(Windows NT 6.4)|(Windows NT 10.0)/i],
-        ['Windows NT 4.0', /(Windows NT 4.0)|(WinNT4.0)/i],
-        ['Windows ME', /Windows ME/i],
-        ['Windows', /(Windows)|(WinNT)/i],
-        ['OpenBSD', /OpenBSD/i],
-        ['SunOS', /SunOS/i],
-        ['Linux', /(Linux)|(X11)/i],
-        ['Mac OS X 10.4', /(Mac OS X 10.4)/i],
-        ['Mac OS X 10.5', /(Mac OS X 10.5)/i],
-        ['Mac OS X 10.6', /(Mac OS X 10.6)/i],
-        ['Mac OS X 10.7', /(Mac OS X 10.7)/i],
-        ['Mac OS X 10.8', /(Mac OS X 10.8)/i],
-        ['Mac OS X 10.9', /(Mac OS X 10.9)/i],
-        ['Mac OS X 10.10', /(Mac OS X 10.10)/i],
-        ['Mac OS', /(Mac_PowerPC)|(Macintosh)/i],
-        ['QNX', /QNX/i],
-        ['BeOS', /BeOS/i],
-        ['OS/2', /OS\/2/i]
-      ],
-      ua = navigator.userAgent,
-      i, l;
+          ['Android', /Android/i],
+          ['Maemo', /Maemo/i],
+          ['Windows 3.11', /Win16/i],
+          ['Windows 95', /(Windows 95)|(Win95)|(Windows_95)/i],
+          ['Windows 98', /(Windows 98)|(Win98)/i],
+          ['Windows 2000', /(Windows NT 5.0)|(Windows 2000)/i],
+          ['Windows XP', /(Windows NT 5.1)|(Windows XP)/i],
+          ['Windows Server 2003', /(Windows NT 5.2)/i],
+          ['Windows Vista', /(Windows NT 6.0)/i],
+          ['Windows 7', /(Windows NT 6.1)/i],
+          ['Windows 8', /(Windows NT 6.2)/i],
+          ['Windows 8.1', /(Windows NT 6.3)/i],
+          ['Windows 10', /(Windows NT 6.4)|(Windows NT 10.0)/i],
+          ['Windows NT 4.0', /(Windows NT 4.0)|(WinNT4.0)/i],
+          ['Windows ME', /Windows ME/i],
+          ['Windows', /(Windows)|(WinNT)/i],
+          ['OpenBSD', /OpenBSD/i],
+          ['SunOS', /SunOS/i],
+          ['Linux', /(Linux)|(X11)/i],
+          ['Mac OS X 10.4', /(Mac OS X 10.4)/i],
+          ['Mac OS X 10.5', /(Mac OS X 10.5)/i],
+          ['Mac OS X 10.6', /(Mac OS X 10.6)/i],
+          ['Mac OS X 10.7', /(Mac OS X 10.7)/i],
+          ['Mac OS X 10.8', /(Mac OS X 10.8)/i],
+          ['Mac OS X 10.9', /(Mac OS X 10.9)/i],
+          ['Mac OS X 10.10', /(Mac OS X 10.10)/i],
+          ['Mac OS', /(Mac_PowerPC)|(Macintosh)/i],
+          ['QNX', /QNX/i],
+          ['BeOS', /BeOS/i],
+          ['OS/2', /OS\/2/i]
+        ],
+        ua = navigator.userAgent,
+        i, l;
       for (i = 0, l = os.length; i < l; i++) {
         if (os[i][1].test(ua)) {
           return os[i][0];
@@ -107,7 +107,7 @@
     getPlugins: function() {
       // Returns wiki markup for the list of plugins
       var plugins = [],
-      i, d;
+        i, d;
       for (i = 0; i < navigator.plugins.length; i++) {
         d = navigator.plugins[i].description.replace(/<[^>]+>/ig, '');
         if (plugins.indexOf(d) === -1) {

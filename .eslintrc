@@ -14,7 +14,7 @@ rules:
   spaced-comment: [2]
   no-this-before-super: [2]
   constructor-super: [2]
-  indent: [2, 2, {"indentSwitchCase": true}]
+  indent: [2, 2]
 
   # Turning off default rules. Should some of these be warnings?
   no-console: [0]
