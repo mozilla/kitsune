@@ -470,7 +470,7 @@ def aaq_react(request):
     products = ProductSerializer(
         Product.objects.filter(questions_locales__locale=request.LANGUAGE_CODE),
         many=True)
-    topics = TopicSerializer(Topic.objects.filter(visible=True, parent=None), many=True)
+    topics = TopicSerializer(Topic.objects.filter(in_aaq=True), many=True)
 
     return render(request, 'questions/new_question_react.html', {
         'products_json': to_json(products.data),

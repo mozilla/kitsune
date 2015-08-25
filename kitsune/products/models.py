@@ -134,6 +134,9 @@ class Topic(ModelBase):
 
     # Whether or not this topic is visible in the ui to users.
     visible = models.BooleanField(default=False)
+    # Whether or not this topic is used in the AAQ.
+    in_aaq = models.BooleanField(
+        default=False, help_text='Whether this topic is shown to users in the AAQ or not.')
 
     class Meta(object):
         ordering = ['product', 'display_order']

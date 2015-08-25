@@ -16,10 +16,9 @@ class TopicAdmin(admin.ModelAdmin):
         return obj.parent
     parent.short_description = 'Parent'
 
-    list_display = ('product', 'title', 'slug', parent, 'display_order',
-                    'visible')
+    list_display = ('product', 'title', 'slug', parent, 'display_order', 'visible', 'in_aaq')
     list_display_links = ('title', 'slug')
-    list_editable = ('display_order', 'visible')
+    list_editable = ('display_order', 'visible', 'in_aaq')
     list_filter = ('product', 'parent', 'slug')
     readonly_fields = ('id',)
     prepopulated_fields = {'slug': ('title',)}

@@ -45,7 +45,8 @@ class TopicItem extends React.Component {
     let className = cx('AAQApp__TopicSelector__Topic', {selected: this.props.selected});
     return (
       <li onClick={this.handleSelect.bind(this)} className={className}>
-        {this.props.topic.title} ({this.props.topic.slug})
+        <h3>{this.props.topic.title}</h3>
+        <p>{this.props.topic.description}</p>
       </li>
     );
   }
