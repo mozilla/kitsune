@@ -381,18 +381,6 @@ def remove(list_, item):
     return [i for i in list_ if i != item]
 
 
-IDEVICE_USER_AGENTS = re.compile('iphone|ipad|ipod')
-
-
-@register.function
-def is_idevice(request):
-    """Return True if the user agent is detected to be an i{phone,pad,pod}."""
-    if hasattr(request, 'META'):
-        ua = request.META.get('HTTP_USER_AGENT', '').lower()
-        return IDEVICE_USER_AGENTS.search(ua)
-    return False
-
-
 @register.function
 @jinja2.contextfunction
 def ga_push_attribute(context):
