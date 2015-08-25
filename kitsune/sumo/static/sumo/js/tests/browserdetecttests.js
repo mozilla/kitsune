@@ -89,4 +89,26 @@
     deepEqual(BrowserDetect.detect(ua), ['fxos', 1.3, 'fxos']);
   });
 
+  test('Firefox iOS all platforms', function() {
+    var uas = [
+      'Mozilla/5.0 (iPhone; CPU iPhone OS 8_3 like Mac OS X) AppleWebKit/600.1.4 (KHTML, like Gecko) FxiOS/1.0 Mobile/12F69 Safari/600.1.4',
+      'Mozilla/5.0 (iPad; CPU iPhone OS 8_3 like Mac OS X) AppleWebKit/600.1.4 (KHTML, like Gecko) FxiOS/1.0 Mobile/12F69 Safari/600.1.4',
+      'Mozilla/5.0 (iPod touch; CPU iPhone OS 8_4 like Mac OS X) AppleWebKit/600.1.4 (KHTML, like Gecko) FxiOS/1.0 Mobile/12H143 Safari/600.1.4'
+    ];
+    for (var i = 0; i < uas.length; i++) {
+      deepEqual(BrowserDetect.detect(uas[i]), ['fxios', 1.0, 'ios']);
+    }
+  });
+
+  test('Firefox OS versions', function() {
+    var ua;
+
+    ua = 'Mozilla/5.0 (iPhone; CPU iPhone OS 8_2 like Mac OS X) AppleWebKit/600.1.4 (KHTML, like Gecko) FxiOS/1.0.0 Mobile/12D508 Safari/600.1.4';
+    equal(BrowserDetect.detect(ua)[1], 1.0);
+    ua = 'Mozilla/5.0 (iPhone; CPU iPhone OS 8_2 like Mac OS X) AppleWebKit/600.1.4 (KHTML, like Gecko) FxiOS/1.0.1 Mobile/12D508 Safari/600.1.4';
+    equal(BrowserDetect.detect(ua)[1], 1.0);
+    ua = 'Mozilla/5.0 (iPhone; CPU iPhone OS 8_2 like Mac OS X) AppleWebKit/600.1.4 (KHTML, like Gecko) FxiOS/1.1.0 Mobile/12D508 Safari/600.1.4';
+    equal(BrowserDetect.detect(ua)[1], 1.1);
+  });
+
 })();

@@ -23,7 +23,8 @@
       // asking a firefox desktop question (or s/desktop/mobile/).
       if ((BrowserDetect.browser === 'fx' && self.isDesktopFF()) ||
       (BrowserDetect.browser === 'm' && self.isMobileFF()) ||
-      (BrowserDetect.browser === 'fxos' && self.isFirefoxOS())) {
+      (BrowserDetect.browser === 'fxos' && self.isFirefoxOS()) ||
+      (BrowserDetect.browser === 'fxios' && self.isFirefoxIOS())) {
         $input = $form.find('input[name="os"]');
         if (!$input.val()) {
           $input.val(self.getOS());
@@ -83,6 +84,7 @@
           ['OpenBSD', /OpenBSD/i],
           ['SunOS', /SunOS/i],
           ['Linux', /(Linux)|(X11)/i],
+          ['iOS', /(iPhone)|(iPad)|(iPod touch)/i],
           ['Mac OS X 10.4', /(Mac OS X 10.4)/i],
           ['Mac OS X 10.5', /(Mac OS X 10.5)/i],
           ['Mac OS X 10.6', /(Mac OS X 10.6)/i],
@@ -127,11 +129,19 @@
       if (version) {
         return version[1];
       }
+      version = /FxiOS\/(\S+)/i.exec(navigator.userAgent);
+      if (version) {
+        return version[1];
+      }
       return '';
     },
     getDevice: function() {
       // Returns a string with the device being used
       var device = /\(Mobile; (.+); .+\)/i.exec(navigator.userAgent);
+      if (device) {
+        return device[1];
+      }
+      device = /\((iPad|iPhone|iPod touch);/.exec(navigator.userAgent);
       if (device) {
         return device[1];
       }
@@ -148,6 +158,10 @@
     isFirefoxOS: function() {
       // Is the question for Firefox OS?
       return document.location.pathname.indexOf('firefox-os') >= 0;
+    },
+    isFirefoxIOS: function() {
+      // Is the question for Firefox for iOS?
+      return document.location.pathname.indexOf('fxios') >= 0;
     },
     getTroubleshootingInfo: function(addEvent) {
       var self = this;
