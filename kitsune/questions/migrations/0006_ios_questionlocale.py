@@ -20,8 +20,8 @@ def create_questionlocale(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('questions', '0004_new_aaq_waffle_flag'),
-        ('products', '0001_initial')
+        ('questions', '0005_change_locale_sr_Cyrl_to_sr'),
+        ('products', '0001_initial'),
     ]
 
     operations = [
