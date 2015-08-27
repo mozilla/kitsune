@@ -24,7 +24,7 @@
       if ((BrowserDetect.browser === 'fx' && self.isDesktopFF()) ||
       (BrowserDetect.browser === 'm' && self.isMobileFF()) ||
       (BrowserDetect.browser === 'fxos' && self.isFirefoxOS()) ||
-      (BrowserDetect.browser === 'fxios' && self.isFirefoxIOS())) {
+      (BrowserDetect.browser === 'fxios' && self.isFirefoxForIOS())) {
         $input = $form.find('input[name="os"]');
         if (!$input.val()) {
           $input.val(self.getOS());
@@ -159,7 +159,7 @@
       // Is the question for Firefox OS?
       return document.location.pathname.indexOf('firefox-os') >= 0;
     },
-    isFirefoxIOS: function() {
+    isFirefoxForIOS: function() {
       // Is the question for Firefox for iOS?
       return document.location.pathname.indexOf('fxios') >= 0;
     },
