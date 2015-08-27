@@ -517,6 +517,8 @@ def aaq(request, product_key=None, category_key=None, showform=False,
             ua = request.META.get('HTTP_USER_AGENT', '').lower()
             if 'firefox' in ua and 'android' not in ua:
                 product_key = 'firefox-os'
+            elif 'fxios' in ua:
+                product_key = 'fxios'
             else:
                 product_key = 'mobile'
 
