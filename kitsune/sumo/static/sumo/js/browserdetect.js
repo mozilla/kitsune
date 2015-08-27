@@ -137,7 +137,7 @@ var BrowserDetect = {
     },
     {
       string: navigator.userAgent,
-      subStrings: [/iPad|iPhone/],
+      subStrings: [/iPad|iPhone|iPod Touch/],
       identity: 'ios',
     },
     {
