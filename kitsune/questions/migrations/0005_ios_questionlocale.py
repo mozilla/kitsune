@@ -1,0 +1,29 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
+from django.db import models, migrations
+
+
+def create_questionlocale(apps, schema_editor):
+    Product = apps.get_model('products', 'Product')
+    QuestionLocale = apps.get_model('questions', 'QuestionLocale')
+
+    p = Product.objects.get_or_create(slug='ios', defaults={
+        'title': 'Firefox for iOS',
+        'description': 'Firefox for iPhone, iPad and iPod touch devices',
+        'display_order': 0,
+        'visible': False})
+
+    QuestionLocale.get_or_create(locale='en-US', product=p)
+
+
+class Migration(migrations.Migration):
+
+    dependencies = [
+        ('questions', '0004_new_aaq_waffle_flag'),
+        ('products', '0001_initial')
+    ]
+
+    operations = [
+        migrations.RunPython(create_questionlocale),
+    ]
