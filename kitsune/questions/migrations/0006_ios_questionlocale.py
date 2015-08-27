@@ -8,13 +8,14 @@ def create_questionlocale(apps, schema_editor):
     Product = apps.get_model('products', 'Product')
     QuestionLocale = apps.get_model('questions', 'QuestionLocale')
 
-    p = Product.objects.get_or_create(slug='ios', defaults={
+    p, created = Product.objects.get_or_create(slug='ios', defaults={
         'title': 'Firefox for iOS',
         'description': 'Firefox for iPhone, iPad and iPod touch devices',
         'display_order': 0,
         'visible': False})
 
-    QuestionLocale.objects.get_or_create(locale='en-US', product=p)
+    ql, created = QuestionLocale.objects.get_or_create(locale='en-US')
+    ql.products.add(p)
 
 
 class Migration(migrations.Migration):
