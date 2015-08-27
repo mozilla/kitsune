@@ -14,7 +14,7 @@ def create_questionlocale(apps, schema_editor):
         'display_order': 0,
         'visible': False})
 
-    QuestionLocale.get_or_create(locale='en-US', product=p)
+    QuestionLocale.objects.get_or_create(locale='en-US', product=p)
 
 
 class Migration(migrations.Migration):
