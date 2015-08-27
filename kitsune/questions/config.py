@@ -170,30 +170,15 @@ products = SortedDict([
                 'topic': 'install-and-update-firefox-ios',
                 'tags': ['install-and-update-firefox-ios']
             }),
-            ('bookmarks-and-tabs-firefox-ios', {
-                'name': _lazy(u'Bookmarks and tabs'),
-                'topic': 'bookmarks-and-tabs-firefox-ios',
-                'tags': ['bookmarks-and-tabs-firefox-ios']
+            ('how-to-use-firefox-ios', {
+                'name': _lazy(u'How to use Firefox for iOS'),
+                'topic': 'how-to-use-firefox-ios',
+                'tags': ['how-to-use-firefox-ios']
             }),
-            ('history-firefox-ios', {
-                'name': _lazy(u'History'),
-                'topic': 'history-firefox-ios',
-                'tags': ['history-firefox-ios']
-            }),
-            ('reader-view-and-list', {
-                'name': _lazy(u'Reader View and List'),
-                'topic': 'reader-view-and-list',
-                'tags': ['reader-view-and-list']
-            }),
-            ('save-and-share-firefox-ios', {
-                'name': _lazy(u'Sharing'),
-                'topic': 'save-and-share-firefox-ios',
-                'tags': ['save-and-share-firefox-ios']
-            }),
-            ('crashes-errors-and-other-issues', {
-                'name': _lazy(u'Crashes, errors and other issues'),
-                'topic': 'crashes-errors-and-other-issues',
-                'tags': ['crashes-errors-and-other-issues']
+            ('firefox-ios-not-working-expected', {
+                'name': _lazy(u'Firefox for iOS is not working as expected'),
+                'topic': 'firefox-ios-not-working-expected',
+                'tags': ['firefox-ios-not-working-expected']
             }),
         ])
     }),
