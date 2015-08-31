@@ -1327,14 +1327,18 @@ def show_translations(request, document_slug):
         Document, locale=settings.WIKI_DEFAULT_LANGUAGE, slug=document_slug)
     translated_locales = []
     untranslated_locales = []
+    # Translated locales Code will be stored
+    translated_locales_code = []
 
-    translated_locales.append(document.locale)
-    translated_locales.extend(document.translations.all().values_list(
+    translated_locales_code.append(document.locale)
+    translated_locales_code.extend(document.translations.all().values_list(
         'locale', flat=True))
-
+    # Seperating Translated and Untranslated locales
     for locale in settings.LANGUAGE_CHOICES:
-        if not locale[0] in translated_locales:
-            untranslated_locales.append(locale[0])
+        if not locale[0] in translated_locales_code:
+            untranslated_locales.append(locale)
+        else:
+            translated_locales.append(locale)
 
     return render(request, 'wiki/show_translations.html', {
         'document': document,
