@@ -1344,9 +1344,9 @@ def show_translations(request, document_slug):
 
     for locale in settings.LANGUAGE_CHOICES:
         if not locale[0] in translated_locales_code:
-            untranslated_locales.append(locale[1] + ' ('+locale[0] + ')')
+            untranslated_locales.append(locale)
         else:
-            translated_locales.append(locale[1] + ' ('+locale[0] + ')')
+            translated_locales.append(locale)
 
     return render(request, 'wiki/show_translations.html', {
         'document': document,
