@@ -33,11 +33,13 @@ class TopicFactory(factory.DjangoModelFactory):
         model = Topic
 
     title = FuzzyUnicode()
+    slug = factory.LazyAttribute(lambda o: slugify(o.title))
+    description = FuzzyUnicode()
+    image = factory.django.ImageField()
+    product = factory.SubFactory(ProductFactory)
     display_order = factory.fuzzy.FuzzyInteger(10)
     visible = factory.fuzzy.FuzzyChoice([True, False])
     in_aaq = factory.fuzzy.FuzzyChoice([True, False])
-    slug = factory.LazyAttribute(lambda o: slugify(o.title))
-    product = factory.SubFactory(ProductFactory)
 
 
 @with_save
