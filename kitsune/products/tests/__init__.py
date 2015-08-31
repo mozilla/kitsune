@@ -4,8 +4,33 @@ from random import randint
 
 from django.template.defaultfilters import slugify
 
+import factory
+import factory.fuzzy
+
 from kitsune.products.models import Product, Topic, Version
-from kitsune.sumo.tests import with_save
+from kitsune.sumo.tests import with_save, FuzzyUnicode
+
+
+class ProductFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = Product
+
+    title = FuzzyUnicode()
+    display_order = factory.fuzzy.FuzzyInteger(10)
+    visible = factory.fuzzy.FuzzyChoice([True, False])
+    slug = factory.LazyAttribute(lambda o: slugify(o.title))
+
+
+class TopicFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = Topic
+
+    title = FuzzyUnicode()
+    display_order = factory.fuzzy.FuzzyInteger(10)
+    visible = factory.fuzzy.FuzzyChoice([True, False])
+    in_aaq = factory.fuzzy.FuzzyChoice([True, False])
+    slug = factory.LazyAttribute(lambda o: slugify(o.title))
+    product = factory.SubFactory(ProductFactory)
 
 
 @with_save

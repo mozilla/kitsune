@@ -8,6 +8,7 @@ from django.test.utils import override_settings
 import mock
 from nose.tools import eq_
 from pyquery import PyQuery as pq
+from waffle.models import Flag
 
 from kitsune.flagit.models import FlaggedObject
 from kitsune.products.tests import product
@@ -21,7 +22,7 @@ from kitsune.sumo.helpers import urlparams
 from kitsune.sumo.tests import (
     get, MobileTestCase, LocalizingClient, eq_msg)
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.products.tests import topic
+from kitsune.products.tests import topic, TopicFactory
 from kitsune.users.models import Profile
 from kitsune.users.tests import user, add_permission
 from kitsune.wiki.tests import document, revision
@@ -297,6 +298,29 @@ class MobileAAQTests(MobileTestCase):
         doc = pq(res.content)
         eq_(1, len(doc('#login-form input[name=login]')))
         eq_(1, len(doc('#register-form input[name=register]')))
+
+
+class ReactAAQTests(TestCaseBase):
+
+    def setUp(self):
+        Flag.objects.update_or_create(name='new_aaq', defaults={'everyone': True})
+
+    def test_waffle_flag(self):
+        url = reverse('questions.aaq_step1')
+        response = self.client.get(url, follow=True)
+        self.assertTemplateUsed(response, 'questions/new_question_react.html')
+
+    def test_only_marked_topics(self):
+        t1 = TopicFactory(in_aaq=True)
+        TopicFactory(in_aaq=False)
+
+        url = reverse('questions.aaq_step1')
+        response = self.client.get(url, follow=True)
+        doc = pq(response.content)
+        topics = json.loads(doc('.data[name=topics]').text())
+
+        eq_(len(topics), 1)
+        eq_(topics[0]['id'], t1.id)
 
 
 class TestQuestionUpdates(TestCaseBase):

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import os
 import sys
 from functools import wraps
@@ -13,6 +14,7 @@ from django.test.utils import override_settings
 from django.utils.translation import trans_real
 
 import django_nose
+import factory.fuzzy
 from nose.tools import eq_
 from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
@@ -180,3 +182,10 @@ def eq_msg(a, b, msg=None):
     """Shorthand for 'assert a == b, "%s %r != %r" % (msg, a, b)'
     """
     assert a == b, (str(msg) or '') + ' (%r != %r)' % (a, b)
+
+
+class FuzzyUnicode(factory.fuzzy.FuzzyText):
+    """A FuzzyText factory that contains at least one non-ASCII character."""
+
+    def fuzz(self):
+        return u'đ{}'.format(super(FuzzyUnicode, self).fuzz())
