@@ -14,7 +14,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='topic',
             name='in_aaq',
-            field=models.BooleanField(default=False, help_text=b'Whether this topic is shown to users in the AAQ or not.'),
+            field=models.BooleanField(default=False, help_text='Whether this topic is shown to users in the AAQ or not.'),
             preserve_default=True,
         ),
     ]

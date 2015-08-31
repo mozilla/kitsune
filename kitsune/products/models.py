@@ -4,6 +4,7 @@ import os
 from django.conf import settings
 from django.db import models
 from PIL import Image
+from tower import ugettext_lazy as _lazy
 from uuid import uuid4
 
 from kitsune.sumo.models import ModelBase
@@ -136,7 +137,7 @@ class Topic(ModelBase):
     visible = models.BooleanField(default=False)
     # Whether or not this topic is used in the AAQ.
     in_aaq = models.BooleanField(
-        default=False, help_text='Whether this topic is shown to users in the AAQ or not.')
+        default=False, help_text=_lazy(u'Whether this topic is shown to users in the AAQ or not.'))
 
     class Meta(object):
         ordering = ['product', 'display_order']
