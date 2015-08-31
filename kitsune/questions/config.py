@@ -158,6 +158,30 @@ products = SortedDict([
             }),
         ])
     }),
+    ('ios', {
+        'name': _lazy(u'Firefox for iOS'),
+        'subtitle': '',
+        'extra_fields': ['ff_version', 'os', 'plugins'],
+        'tags': ['ios'],
+        'product': 'ios',
+        'categories': SortedDict([
+            ('install-and-update-firefox-ios', {
+                'name': _lazy(u'Install and Update'),
+                'topic': 'install-and-update-firefox-ios',
+                'tags': ['install-and-update-firefox-ios']
+            }),
+            ('how-to-use-firefox-ios', {
+                'name': _lazy(u'How to use Firefox for iOS'),
+                'topic': 'how-to-use-firefox-ios',
+                'tags': ['how-to-use-firefox-ios']
+            }),
+            ('firefox-ios-not-working-expected', {
+                'name': _lazy(u'Firefox for iOS is not working as expected'),
+                'topic': 'firefox-ios-not-working-expected',
+                'tags': ['firefox-ios-not-working-expected']
+            }),
+        ])
+    }),
     ('firefox-os', {
         'name': _lazy(u'Firefox OS'),
         'subtitle': '',
