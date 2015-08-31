@@ -8,7 +8,6 @@ from django.test.utils import override_settings
 import mock
 from nose.tools import eq_
 from pyquery import PyQuery as pq
-from waffle.models import Flag
 
 from kitsune.flagit.models import FlaggedObject
 from kitsune.products.tests import product
@@ -19,8 +18,7 @@ from kitsune.questions.tests import (
 from kitsune.questions.views import parse_troubleshooting
 from kitsune.search.tests.test_es import ElasticTestCase
 from kitsune.sumo.helpers import urlparams
-from kitsune.sumo.tests import (
-    get, MobileTestCase, LocalizingClient, eq_msg)
+from kitsune.sumo.tests import get, MobileTestCase, LocalizingClient, eq_msg, set_waffle_flag
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.products.tests import topic, TopicFactory
 from kitsune.users.models import Profile
@@ -300,10 +298,8 @@ class MobileAAQTests(MobileTestCase):
         eq_(1, len(doc('#register-form input[name=register]')))
 
 
+@set_waffle_flag('new_aaq')
 class ReactAAQTests(TestCaseBase):
-
-    def setUp(self):
-        Flag.objects.update_or_create(name='new_aaq', defaults={'everyone': True})
 
     def test_waffle_flag(self):
         url = reverse('questions.aaq_step1')

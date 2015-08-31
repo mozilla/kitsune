@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import inspect
 import os
 import sys
 from functools import wraps
@@ -19,6 +20,7 @@ from nose.tools import eq_
 from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.firefox import firefox_binary
+from waffle.models import Flag
 
 from kitsune.sumo.urlresolvers import reverse, split_path
 
@@ -189,3 +191,84 @@ class FuzzyUnicode(factory.fuzzy.FuzzyText):
 
     def fuzz(self):
         return u'đ{}'.format(super(FuzzyUnicode, self).fuzz())
+
+
+class set_waffle_flag(object):
+    """
+    Decorator/context manager that sets a given waffle flag.
+
+    When applied to a function or method, it sets the value of the flag
+    before the function is called, and resets the flag to its original
+    value afterwards.
+
+    When applies to a class, it decorates every method in the class
+    that has a name beginning with "test" with this decorator.
+
+    When used as a context manager, enables the flag before running the
+    wrapped code, and resets the flag afterwards.
+
+    Usage::
+
+        @set_waffle_flag('some_flag')
+        class TestClass(TestCase):
+            def test_the_thing(self):
+                ...
+
+        @set_waffle_flag('some_flag', everyone=False)
+        def test_my_view():
+            ...
+
+        with set_waffle_flag('some_flag', everyone=True):
+            ...
+    """
+
+    def __init__(self, flagname, **kwargs):
+        self.flagname = flagname
+        self.kwargs = kwargs or {'everyone': True}
+
+        try:
+            self.origflag = Flag.objects.get(name=self.flagname)
+        except Flag.DoesNotExist:
+            self.origflag = None
+
+    def __call__(self, func_or_class):
+        """Decorate a class or function"""
+        if inspect.isclass(func_or_class):
+            # If func_or_class is a class, decorate all of its methods
+            # that start with 'test'.
+            for attr in func_or_class.__dict__.keys():
+                prop = getattr(func_or_class, attr)
+                if attr.startswith('test') and callable(prop):
+                    setattr(func_or_class, attr, self.decorate(prop))
+            return func_or_class
+        else:
+            # If func_or_class is a function, decorate it directly
+            return self.decorate(func_or_class)
+
+    def __enter__(self):
+        """Start acting like a context manager."""
+        self.make_flag()
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        """Stop acting like a context manager."""
+        self.restore_flag()
+
+    def decorate(self, func):
+        """Decorates a function to enable the waffle flag."""
+        @wraps(func)
+        def _give_me_waffles(*args, **kwargs):
+            self.make_flag()
+            try:
+                func(*args, **kwargs)
+            finally:
+                self.restore_flag()
+        return _give_me_waffles
+
+    def make_flag(self):
+        """Ensure that the flag is created and has the correct values."""
+        Flag.objects.update_or_create(name=self.flagname, defaults=self.kwargs)
+
+    def restore_flag(self):
+        """Ensure that the flag is reset back to its original value."""
+        Flag.objects.filter(name=self.flagname).delete()
+        self.origflag.save()
