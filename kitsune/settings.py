@@ -646,6 +646,7 @@ STANDALONE_DOMAINS = [
     TEXT_DOMAIN,
     'javascript',
     'yaocho',
+    'buddyup',
 ]
 
 STATICI18N_DOMAIN = 'javascript'
