@@ -381,3 +381,17 @@ class InactiveSessionAuthentication(SessionAuthentication):
         if reason:
             # CSRF failed, bail with explicit error message
             raise AuthenticationFailed('CSRF Failed: %s' % reason)
+
+
+class ImageUrlField(fields.ImageField):
+    """An image field that serializes to a url instead of a file name.
+
+    Additionally, if there is no file associated with this image, this
+    returns ``None`` instead of erroring.
+    """
+
+    def to_native(self, value):
+        try:
+            return value.url
+        except ValueError:
+            return None

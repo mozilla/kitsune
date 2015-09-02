@@ -5,7 +5,7 @@ from rest_framework import generics, serializers
 from tower import ugettext_lazy as _lazy
 
 from kitsune.products.models import Product, Topic
-from kitsune.sumo.api import LocaleNegotiationMixin, LocalizedCharField
+from kitsune.sumo.api import LocaleNegotiationMixin, LocalizedCharField, ImageUrlField
 from kitsune.wiki.api import DocumentShortSerializer
 
 
@@ -89,14 +89,11 @@ class TopicField(serializers.SlugRelatedField):
 
 class ProductSerializer(serializers.ModelSerializer):
     platforms = serializers.SlugRelatedField(many=True, slug_field='slug')
-    image = serializers.Field(source='image.url')
+    image = ImageUrlField()
 
     class Meta:
         model = Product
         fields = ('id', 'title', 'slug', 'description', 'platforms', 'visible', 'image')
-
-    def get_image_url(self, product):
-        return product.image.url
 
 
 class ProductList(generics.ListAPIView):

@@ -3,18 +3,16 @@ from django.db.models import Q
 from rest_framework import generics, serializers
 
 from kitsune.gallery.models import Image
-from kitsune.sumo.api import LocaleNegotiationMixin, InequalityFilterBackend, DateTimeUTCField
+from kitsune.sumo.api import (
+    LocaleNegotiationMixin, InequalityFilterBackend, DateTimeUTCField, ImageUrlField)
 
 
 class ImageShortSerializer(serializers.ModelSerializer):
-    url = serializers.SerializerMethodField('get_url')
+    url = ImageUrlField(source='file')
 
     class Meta(object):
         model = Image
         fields = ('id', 'title', 'url', 'locale', 'width', 'height')
-
-    def get_url(self, obj):
-        return obj.file.url
 
 
 class ImageDetailSerializer(ImageShortSerializer):
