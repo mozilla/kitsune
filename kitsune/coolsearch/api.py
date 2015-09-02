@@ -3,7 +3,7 @@ from itertools import chain
 from django.conf import settings
 from django.utils.html import escape
 
-from rest_framework import views
+from rest_framework import views, status
 from rest_framework.response import Response
 
 import bleach
@@ -16,6 +16,7 @@ from kitsune.forums.models import ThreadMappingType
 from kitsune.questions.models import QuestionMappingType
 from kitsune.search import es_utils
 from kitsune.search.utils import locale_or_default, clean_excerpt, ComposedList
+from kitsune.sumo.api import GenericAPIException
 from kitsune.sumo.utils import smart_int
 from kitsune.wiki.models import DocumentMappingType
 
@@ -28,24 +29,18 @@ class SearchView(views.APIView):
 
     def get(self, request):
         data = self.get_data(request)
-        status = None
-
-        if isinstance(data, tuple):
-            data = data[0]
-            status = data[1]
 
         return Response(
             data,
-            status=status,
             content_type=self.content_type,
         )
 
     def get_data(self, request):
         search_form = self.form_class(request.GET)
         if not search_form.is_valid():
-            return (
-                {'error': _('Invalid search data.')},
-                400,
+            raise GenericAPIException(
+                status.HTTP_400_BAD_REQUEST,
+                _('Invalid search data.')
             )
 
         language = locale_or_default(
@@ -132,9 +127,9 @@ class SearchView(views.APIView):
                 results.append(result)
 
         except es_utils.ES_EXCEPTIONS:
-            return (
-                {'error': _('Search Unavailable')},
-                503,
+            raise GenericAPIException(
+                status.HTTP_503_SERVICE_UNAVAILABLE,
+                _('Search Unavailable')
             )
 
         data = {

@@ -68,12 +68,6 @@ export default class SearchForm extends React.Component {
             <SearchFormForum query={this.state.query}/>
           </div>
         </SwipeViews>
-
-        <fieldset className="controls">
-          <button className="btn btn-important big" type="submit">
-            Search Mozilla Support
-          </button>
-        </fieldset>
       </form>
     );
   }

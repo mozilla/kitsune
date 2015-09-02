@@ -464,8 +464,8 @@ PIPELINE_JS = {
             # just minifying react.js.
             # TODO: Figure out how to include the full sized version in dev,
             # because it produces much nicer error messages.
-            # 'react/react.min.js',
-            'react/react.js',
+            'react/react.min.js',
+            # 'react/react.js',
             'react-swipe-views/lib/react-swipe-views.js',
             'flux/dist/Flux.js',
             'underscore/underscore.js',
