@@ -228,8 +228,10 @@ class set_waffle_flag(object):
 
         try:
             self.origflag = Flag.objects.get(name=self.flagname)
+            self.origid = self.origflag.id
         except Flag.DoesNotExist:
             self.origflag = None
+            self.origid = None
 
     def __call__(self, func_or_class):
         """Decorate a class or function"""
@@ -271,4 +273,6 @@ class set_waffle_flag(object):
     def restore_flag(self):
         """Ensure that the flag is reset back to its original value."""
         Flag.objects.filter(name=self.flagname).delete()
-        self.origflag.save()
+        if self.origflag is not None:
+            self.origflag.id = self.origid
+            self.origflag.save()
