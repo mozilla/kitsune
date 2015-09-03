@@ -158,12 +158,12 @@ products = SortedDict([
             }),
         ])
     }),
-    ('ios', {
+    ('fxios', {
         'name': _lazy(u'Firefox for iOS'),
         'subtitle': '',
         'extra_fields': ['ff_version', 'os', 'plugins'],
-        'tags': ['ios'],
-        'product': 'ios',
+        'tags': ['fxios'],
+        'product': 'fxios',
         'categories': SortedDict([
             ('install-and-update-firefox-ios', {
                 'name': _lazy(u'Install and Update'),
