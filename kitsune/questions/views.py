@@ -518,7 +518,7 @@ def aaq(request, product_key=None, category_key=None, showform=False,
             if 'firefox' in ua and 'android' not in ua:
                 product_key = 'firefox-os'
             elif 'fxios' in ua:
-                product_key = 'fxios'
+                product_key = 'ios'
             else:
                 product_key = 'mobile'
 
