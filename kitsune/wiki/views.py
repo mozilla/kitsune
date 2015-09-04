@@ -1329,17 +1329,23 @@ def show_translations(request, document_slug):
     untranslated_locales = []
     # Translated locales Code will be stored
     translated_locales_code = []
+    # Modified list to isolate "en_US"
+    isolation_list = []
 
     translated_locales_code.append(document.locale)
-    translated_locales_code.extend(document.translations.all().values_list(
-        'locale', flat=True))
+    translated_locales_code.extend(document.translations.all().values_list('locale', flat=True))
     # Seperating Translated and Untranslated locales
     for locale in settings.LANGUAGE_CHOICES:
         if not locale[0] in translated_locales_code:
             untranslated_locales.append(locale)
         else:
-            translated_locales.append(locale)
+            isolation_list.append(locale)
 
+    # Let's isolate ("en_US", "English")
+    isolation_list.remove(("en-US", "English"))
+    translated_locales = isolation_list
+    # Put ("en-US", "English") back at it's own place
+    translated_locales.insert(0, ("en-US", "English"))
     return render(request, 'wiki/show_translations.html', {
         'document': document,
         'translated_locales': translated_locales,
