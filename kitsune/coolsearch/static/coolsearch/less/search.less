@@ -1,4 +1,10 @@
+@import '../../sumo/less/variables.less';
+
 #coolsearch {
+
+    h1 {
+        float: left;
+    }
 
     form {
         margin-top: 10px;
@@ -28,5 +34,33 @@
     /* Overwrite the default behaviour of the SwipeView library to hide navbar */
     .SwipeView {
         overflow-y: inherit;
+    }
+
+    /* Style the tabs */
+    .sumo-tabs-nav {
+        float: right;
+
+        ul {
+            margin: 0;
+            padding: 0;
+
+            li {
+                border-bottom: 1.5px solid #ccc;
+                display: inline-block;
+                padding: 14px 10px;
+                cursor: pointer;
+            }
+        }
+
+        .sumo-tabs-nav-active {
+            font-weight: bold;
+            border-bottom: 3px solid @textBlue;
+        }
+        .sumo-tabs-nav-inactive {
+            padding-bottom: 16px;
+        }
+    }
+    .sumo-tabs-content {
+        clear: both;
     }
 }

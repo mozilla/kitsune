@@ -26,7 +26,6 @@
     "nwmatcher": "nwmatcher#1.3.4",
     "pikaday": "~1.3.2",
     "react": "#0.13.3",
-    "react-swipe-views": "#0.0.9",
     "underscore": "underscore#1.8.2",
     "fetch": "#0.9.0",
     "es6-promise": "~2.2.0"

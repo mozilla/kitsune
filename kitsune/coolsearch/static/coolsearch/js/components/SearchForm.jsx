@@ -3,7 +3,7 @@ React component that controls the behavior of the Search form.
 Handles the tabs of the form and the triggering of search queries.
 */
 
-import SwipeViews from 'react-swipe-views';
+import {Tabs, Tab} from '../../../sumo/js/libs/sumo-tabs.jsx';
 
 import SearchFormWiki from './SearchFormWiki.jsx';
 import SearchFormQuestion from './SearchFormQuestion.jsx';
@@ -57,17 +57,17 @@ export default class SearchForm extends React.Component {
   render() {
     return (
       <form method="get" action="" onSubmit={this.getResults.bind(this)}>
-        <SwipeViews onIndexChange={this.handleSelect.bind(this)}>
-          <div title="Knowledge Base">
+        <Tabs onSelect={this.handleSelect.bind(this)}>
+          <Tab title="Knowledge Base">
             <SearchFormWiki query={this.state.query}/>
-          </div>
-          <div title="Support Questions">
+          </Tab>
+          <Tab title="Support Questions">
             <SearchFormQuestion query={this.state.query}/>
-          </div>
-          <div title="Discussion Forums">
+          </Tab>
+          <Tab title="Discussion Forums">
             <SearchFormForum query={this.state.query}/>
-          </div>
-        </SwipeViews>
+          </Tab>
+        </Tabs>
       </form>
     );
   }

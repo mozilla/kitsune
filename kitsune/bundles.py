@@ -466,7 +466,6 @@ PIPELINE_JS = {
             # because it produces much nicer error messages.
             # 'react/react.min.js',
             'react/react.js',
-            'react-swipe-views/lib/react-swipe-views.js',
             'flux/dist/Flux.js',
             'underscore/underscore.js',
 

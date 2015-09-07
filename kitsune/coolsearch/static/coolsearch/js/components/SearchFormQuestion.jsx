@@ -8,7 +8,7 @@ import QueryActionCreator from '../actions/QueryActionCreator.js';
 import SearchFormBase from './SearchFormBase.jsx';
 
 
-export default class SearchFormForum extends SearchFormBase {
+export default class SearchFormQuestion extends SearchFormBase {
   constructor(props) {
     super(props);
 
