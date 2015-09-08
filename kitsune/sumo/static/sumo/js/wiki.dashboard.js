@@ -28,6 +28,12 @@
       makeAggregatedWikiMetricGraphs();
     }
 
+    if ($('body').is('.localization-dashboard')) {
+      // Add's datepicker to the create announcement pop-up
+      addDatePicker('#id_show_after');
+      addDatePicker('#id_show_until');
+    }
+
     // product selector page reloading
     $('#product-selector select').change(function() {
       var val = $(this).val();
@@ -41,6 +47,12 @@
       document.location = document.location.pathname + '?' + $.param(queryParams);
     });
   });
+
+  function addDatePicker(inputId) {
+    $(inputId).datepicker({
+      dateFormat: 'yy-mm-dd'
+    });
+  }
 
   function makeVoteGraph($container, descriptors) {
     $.getJSON($container.data('url'), function(data) {
