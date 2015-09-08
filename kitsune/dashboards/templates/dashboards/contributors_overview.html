@@ -9,16 +9,14 @@
 {# TODO: Move required dashboard scripts out of wiki.js into their own #}
 
 {% block content %}
-  <div class="cf">
-    {{ product_selector(products, product) }}
-  </div>
-
-  <div class="cf">
-    {{ category_filter() }}
-  </div>
-
   <div class="grid_9">
     <article class="main dashboards dashboards-detail">
+      <div class="cf">
+        {{ product_selector(products, product) }}
+      </div>
+      <div class="cf">
+        {{ category_filter() }}
+      </div>
       <h1>{{ title }}</h1>
       <ul class="readout-modes" data-slug="kb-overview">
         {% for key, name in overview_modes %}
