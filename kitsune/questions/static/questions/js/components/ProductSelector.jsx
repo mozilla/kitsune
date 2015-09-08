@@ -6,6 +6,10 @@ import AAQActions from '../actions/AAQActions.es6.js';
 const products = JSON.parse(document.querySelector('.data[name=products]').innerHTML);
 
 export default class ProductSelector extends AAQStep {
+  visible() {
+    return true;
+  }
+
   heading() {
     return 'Which product would you like to ask a question about?';
   }
@@ -20,7 +24,7 @@ export default class ProductSelector extends AAQStep {
               key={product.slug}
               product={product}
               selected={selected}
-              scrollToNextStep={this.scrollToNextStep.bind(this)}/>
+              switchToNextStep={this.switchToNextStep.bind(this)}/>
           );
         })}
       </ul>
@@ -32,7 +36,7 @@ class ProductCard extends React.Component {
   handleSelect(ev) {
     ev.preventDefault();
     AAQActions.setProduct(this.props.product.slug);
-    this.props.scrollToNextStep();
+    this.props.switchToNextStep();
   }
 
   render() {
@@ -51,5 +55,5 @@ class ProductCard extends React.Component {
 ProductCard.propTypes = {
   product: React.PropTypes.object.isRequired,
   selected: React.PropTypes.bool.isRequired,
-  scrollToNextStep: React.PropTypes.func.isRequired,
+  switchToNextStep: React.PropTypes.func.isRequired,
 };

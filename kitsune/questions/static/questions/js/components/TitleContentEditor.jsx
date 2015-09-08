@@ -24,7 +24,7 @@ export default class TitleContentEditor extends AAQStep {
   }
 
   heading() {
-    return 'Provide details about your question.';
+    return 'Summarize your question in a sentence';
   }
 
   body() {
@@ -32,17 +32,18 @@ export default class TitleContentEditor extends AAQStep {
       <div className="AAQApp__TitleContentEditor">
         <div className="row">
           <div className="AAQApp__TitleContentEditor__Editor">
-            <div className="AAQApp__TitleContentEditor__Editor__Title">
-              <label>Subject</label>
+            <div className="AAQApp__TitleContentEditor__Editor__Title simple-search-form">
               <input
                 type="text"
                 name="title"
+                className="searchbox"
                 value={this.props.question.title}
                 onChange={this.handleChange.bind(this)}
                 ref="title"/>
             </div>
+            <SuggestionList suggestions={this.props.suggestions} />
             <div className="AAQApp__TitleContentEditor__Editor__Content">
-              <label>More Details</label>
+              <h3>Details</h3>
               <textarea
                 name="content"
                 value={this.props.question.content}
@@ -50,7 +51,7 @@ export default class TitleContentEditor extends AAQStep {
                 ref="content"/>
             </div>
           </div>
-          <SuggestionList suggestions={this.props.suggestions}/>
+
         </div>
 
         {this.props.troubleshooting.available
@@ -71,10 +72,13 @@ TitleContentEditor.propTypes = {
 
 class SuggestionList extends React.Component {
   render() {
+    let style = {
+      display: this.props.suggestions.length > 0 ? 'block' : 'none'
+    };
     return (
-      <div className="AAQApp__SuggestionList">
+      <div className="AAQApp__SuggestionList" style={style}>
         <h3>Do any of these articles answer your question?</h3>
-        <ul>
+        <ul className="highlight-box">
           {this.props.suggestions.map((suggestion) => (
             <SuggestionItem key={suggestion.slug} suggestion={suggestion}/>))}
         </ul>
@@ -89,8 +93,9 @@ SuggestionList.propTypes = {
 class SuggestionItem extends React.Component {
   render() {
     let suggestion = this.props.suggestion;
+    let classString = 'AAQApp__SuggestionList__SuggestionItem ' + suggestion.type;
     return (
-      <li className="AAQApp__SuggestionList__SuggestionItem">
+      <li className={classString}>
         <a href={suggestion.url}>{suggestion.title}</a>
         <div dangerouslySetInnerHTML={{__html: suggestion.summary}}/>
       </li>
