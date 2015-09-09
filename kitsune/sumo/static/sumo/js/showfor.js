@@ -458,7 +458,6 @@
          * any of them match, then this name matches. */
         var windowsTypes = ['winxp', 'win7', 'win8', 'win10'];
         var winMatches = false;
-        console.log(enabledPlatforms);
 
         windowsTypes.forEach(function(fakeName) {
           if (enabledPlatforms.indexOf(fakeName) >= 0) {

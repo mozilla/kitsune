@@ -1,4 +1,3 @@
-from django.conf import settings
 from django.conf.urls import patterns, url, include
 from django.views.generic.base import RedirectView
 
@@ -28,11 +27,3 @@ urlpatterns = patterns(
     url(r'^windows7-support(?:\\/)?$',
         RedirectView.as_view(url='/home/?as=u', permanent=False)),
 )
-
-
-if 'django_qunit' in settings.INSTALLED_APPS:
-    urlpatterns += patterns(
-        '',
-        url(r'^qunit/(?P<path>.*)', views.kitsune_qunit),
-        url(r'^_qunit/', include('django_qunit.urls')),
-    )

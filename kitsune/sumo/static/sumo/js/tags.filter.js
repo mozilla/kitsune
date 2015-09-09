@@ -38,7 +38,7 @@
     });
 
     // Set up autocomplete
-    // Skip if the autocomplete plugin isn't available (qunit tests).
+    // Skip if the autocomplete plugin isn't available (unit tests).
     if ($tags.autocomplete) {
       $tags.autocomplete({
         source: _.keys(vocab),

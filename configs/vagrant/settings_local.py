@@ -57,8 +57,6 @@ UGLIFY_BIN = path('node_modules/.bin/uglifyjs')
 CLEANCSS_BIN = path('node_modules/.bin/cleancss')
 NUNJUCKS_PRECOMPILE_BIN = path('node_modules/.bin/nunjucks-precompile')
 
-INSTALLED_APPS += ['django_qunit']
-
 AXES_BEHIND_REVERSE_PROXY = False
 
 

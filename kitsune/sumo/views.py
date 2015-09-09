@@ -3,7 +3,6 @@ import logging
 import os
 import socket
 import StringIO
-from time import time
 
 import django
 from django.conf import settings
@@ -12,10 +11,8 @@ from django.http import (HttpResponsePermanentRedirect, HttpResponseRedirect,
                          HttpResponse, Http404)
 from django.shortcuts import render
 from django.views.decorators.cache import never_cache
-from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.decorators.http import require_GET
 
-import django_qunit.views
 from celery.messaging import establish_connection
 from mobility.decorators import mobile_template
 from PIL import Image
@@ -321,16 +318,6 @@ def version_check(request):
         'django': '.'.join(map(str, django.VERSION)),
     }
     return HttpResponse(json.dumps(versions), content_type=content_type)
-
-
-# Allows another site to embed the QUnit suite
-# in an iframe (for CI).
-@xframe_options_exempt
-def kitsune_qunit(request, path):
-    """View that hosts QUnit tests."""
-    ctx = django_qunit.views.get_suite_context(request, path)
-    ctx.update(timestamp=time())
-    return render(request, 'tests/qunit.html', ctx)
 
 
 @cors_enabled('*')

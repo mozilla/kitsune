@@ -1,11 +1,4 @@
-globals:
-  test: false
-  module: false
-  asyncTest: false
-  test: false
-  tests: false
-  equal: false
-  equals: false
-  ok: false
-  start: false
-  deepEqual: false
+env:
+  node: true
+  browser: false
+  mocha: true
