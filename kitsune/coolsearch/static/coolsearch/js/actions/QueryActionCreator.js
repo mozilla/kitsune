@@ -2,29 +2,29 @@ import Dispatcher from '../../../sumo/js/Dispatcher.es6.js';
 import ActionConstants from '../constants/ActionConstants.js';
 
 
-var _dispatch = function (action, query) {
+var _dispatch = function (action, data) {
   Dispatcher.dispatch({
     type: action,
-    query: query,
+    data: data,
   });
 };
 
-export function updateQueryWiki(query) {
-  _dispatch(ActionConstants.UPDATE_WIKI, query);
+export function updateFiltersWiki(filters) {
+  _dispatch(ActionConstants.UPDATE_WIKI, filters);
 }
-export function updateQueryQuestion(query) {
-  _dispatch(ActionConstants.UPDATE_QUESTION, query);
+export function updateFiltersQuestion(filters) {
+  _dispatch(ActionConstants.UPDATE_QUESTION, filters);
 }
-export function updateQueryForum(query) {
-  _dispatch(ActionConstants.UPDATE_FORUM, query);
+export function updateFiltersForum(filters) {
+  _dispatch(ActionConstants.UPDATE_FORUM, filters);
 }
 export function updateCurrentForm(currentForm) {
   _dispatch(ActionConstants.SWITCH_FORM_TAB, currentForm);
 }
 
 export default {
-  updateQueryWiki,
-  updateQueryQuestion,
-  updateQueryForum,
+  updateFiltersWiki,
+  updateFiltersQuestion,
+  updateFiltersForum,
   updateCurrentForm
 };

@@ -2,65 +2,65 @@
 
 #coolsearch {
 
-    h1 {
-        float: left;
+  h1 {
+    float: left;
+  }
+
+  form {
+    fieldset {
+      border: none;
+      margin: 5px 0;
+
+      &.query {
+        input {
+          width: 480px;
+          float: right;
+          padding: 6px 8px;
+        }
+      }
+
+      span {
+        line-height: 2.2;
+      }
     }
 
-    form {
-        margin-top: 10px;
+    /* Style the Select boxes */
+    .Select {
+      width: 496px;
+      float: right;
+    }
+  }
 
-        fieldset {
-            border: none;
-            margin: 5px 0;
-        }
+  #search-results {
+    margin-top: 10px;
+  }
 
-        fieldset.query {
-            input {
-                width: 500px;
-                float: right;
-                padding: 4px 8px;
-            }
-        }
+  /* Style the tabs */
+  .sumo-tabs-nav {
+    float: right;
 
-        fieldset.controls {
-            text-align: center;
-        }
+    ul {
+      margin: 0;
+      padding: 0;
+
+      li {
+        border-bottom: 1.5px solid #ccc;
+        display: inline-block;
+        padding: 14px 10px;
+        cursor: pointer;
+      }
     }
 
-    #search-results {
-        margin-top: 10px;
+    .sumo-tabs-nav-active {
+      font-weight: bold;
+      border-bottom: 3px solid @textBlue;
     }
-
-    /* Overwrite the default behaviour of the SwipeView library to hide navbar */
-    .SwipeView {
-        overflow-y: inherit;
+    .sumo-tabs-nav-inactive {
+      padding-bottom: 16px;
     }
-
-    /* Style the tabs */
-    .sumo-tabs-nav {
-        float: right;
-
-        ul {
-            margin: 0;
-            padding: 0;
-
-            li {
-                border-bottom: 1.5px solid #ccc;
-                display: inline-block;
-                padding: 14px 10px;
-                cursor: pointer;
-            }
-        }
-
-        .sumo-tabs-nav-active {
-            font-weight: bold;
-            border-bottom: 3px solid @textBlue;
-        }
-        .sumo-tabs-nav-inactive {
-            padding-bottom: 16px;
-        }
-    }
-    .sumo-tabs-content {
-        clear: both;
-    }
+  }
+  .sumo-tabs-content {
+    clear: both;
+    padding-top: 20px;
+  }
 }

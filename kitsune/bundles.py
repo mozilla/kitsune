@@ -104,7 +104,7 @@ PIPELINE_CSS = {
     },
     'coolsearch': {
         'source_filenames': (
-            'react-swipe-views/lib/react-swipe-views.css',
+            'react-select/dist/default.css',
             'coolsearch/less/search.less',
         ),
         'output_filename': 'build/coolsearch-min.css'
@@ -464,8 +464,11 @@ PIPELINE_JS = {
             # just minifying react.js.
             # TODO: Figure out how to include the full sized version in dev,
             # because it produces much nicer error messages.
-            # 'react/react.min.js',
-            'react/react.js',
+            'react/react.min.js',
+            # 'react/react.js',
+            'classnames/index.js',
+            'react-input-autosize/dist/react-input-autosize.min.js',
+            'react-select/dist/react-select.min.js',
             'flux/dist/Flux.js',
             'underscore/underscore.js',
 

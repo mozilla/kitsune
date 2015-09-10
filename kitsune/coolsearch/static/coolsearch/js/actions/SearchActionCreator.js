@@ -8,15 +8,17 @@ var SearchActionCreator = {
     var apiUrl = `/api/2/coolsearch/search/${dataType}/`;
 
     // Send an AJAX query to the API.
-    $.getJSON(
-      apiUrl,
-      payload,
-      function success(results) {
+    $.ajax({
+      dataType: 'json',
+      url: apiUrl,
+      data: payload,
+      traditional: true,
+      success: function success(results) {
         // When we receive the data, send an action to the Dispatcher to notify
         // that new data has arrived.
         ResultsActionCreator.createResults(results);
       }
-    );
+    });
   }
 };
 
