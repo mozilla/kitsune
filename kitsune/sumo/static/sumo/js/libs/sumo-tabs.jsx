@@ -1,13 +1,13 @@
 /*
 A tabs implementation for React using ES6 syntax. Does only the bare minimum
 that is required of tabs.
+
+This component is stateless. The index of the currently active tab needs to
+be saved in the state of your app, and passed as a prop called `index`.
+Children must be instances of the `Tab` component.
 */
 
 class TabNav extends React.Component {
-  constructor(props) {
-    super(props);
-  }
-
   render() {
     var tabClass = 'sumo-tabs-nav-inactive';
 
@@ -30,10 +30,6 @@ class TabNav extends React.Component {
 
 
 export class Tab extends React.Component {
-  constructor(props) {
-    super(props);
-  }
-
   render() {
     var tabClass = 'sumo-tabs-tab-hidden';
     var style = {
@@ -55,108 +51,40 @@ export class Tab extends React.Component {
 
 
 export class Tabs extends React.Component {
-  constructor(props) {
-    super(props);
+  _switchTab(index, e) {
+    this.props.onSelect(index);
+  }
 
-    var self = this;
-
+  render() {
+    var activeIndex = this.props.index;
     var navLinks = [];
     var tabsContent = [];
 
-    var index = this.props.index;
+    React.Children.forEach(this.props.children, (elem, i) => {
+      var title = elem.props.title;
+      var active = false;
 
-    if (!Number.isInteger(this.props.index) || this.props.index < 0) {
-      index = 0;
-    }
-
-    this.state = {
-      index: index
-    };
-
-    // Generate navigation and content.
-    this.props.children.forEach(function (elem, i) {
-      if (elem.type !== Tab) {
-        return;
+      if (i === activeIndex) {
+        active = true;
       }
 
-      var title = elem.props.title;
       navLinks.push(
         <TabNav
           index={i}
-          active={false}
-          switchTab={self._switchTab.bind(self)}
+          active={active}
+          switchTab={this._switchTab.bind(this, i)}
+          key={'tabs-nav-' + i}
         >
           {title}
         </TabNav>
       );
 
       tabsContent.push(
-        <Tab index={i} key={'tabs-content-tab-' + i}>
+        <Tab index={i} key={'tabs-content-tab-' + i} visible={active}>
           {elem.props.children}
         </Tab>
       );
     });
-
-    this.navLinks = navLinks;
-    this.tabsContent = tabsContent;
-  }
-
-  _getNavLinks(activeIndex) {
-    var self = this;
-    return this.navLinks.map(function (elem, i) {
-      var active = false;
-      var index = elem.props.index;
-
-      if (index === activeIndex) {
-        active = true;
-      }
-
-      return (
-        <TabNav
-          index={index}
-          active={active}
-          switchTab={self._switchTab.bind(self)}
-        >
-          {elem.props.children}
-        </TabNav>
-      );
-    });
-  }
-
-  _getTabsContent(activeIndex) {
-    return this.tabsContent.map(function (elem, i) {
-      var visible = false;
-
-      if (elem.props.index === activeIndex) {
-        visible = true;
-      }
-
-      return (
-        <Tab index={i} key={'tabs-content-tab-' + i} visible={visible}>
-          {elem.props.children}
-        </Tab>
-      );
-    });
-  }
-
-  _switchTab(e) {
-    var index = parseInt(e.target.dataset.index);
-    this._showTab(index);
-    if (typeof(this.props.onSelect) === 'function') {
-      this.props.onSelect(index);
-    }
-  }
-
-  _showTab(index) {
-    this.setState({
-      index: index
-    });
-  }
-
-  render() {
-    var activeIndex = this.state.index;
-    var navLinks = this._getNavLinks(activeIndex);
-    var tabsContent = this._getTabsContent(activeIndex);
 
     return (
       <div className="sumo-tabs">
@@ -173,6 +101,15 @@ export class Tabs extends React.Component {
     );
   }
 }
+
+Tabs.propTypes = {
+  index: React.PropTypes.number.isRequired,
+  onSelect: React.PropTypes.func.isRequired,
+  children: React.PropTypes.oneOfType([
+    React.PropTypes.instanceOf(Tab),
+    React.PropTypes.arrayOf(Tab),
+  ]),
+};
 
 
 export default {

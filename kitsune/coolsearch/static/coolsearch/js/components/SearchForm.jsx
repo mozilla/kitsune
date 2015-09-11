@@ -20,6 +20,7 @@ export default class SearchForm extends React.Component {
     super(props);
 
     this.state = this._getStateFromStores();
+    this.state.tabIndex = 0;
 
     this.startQuery = _.debounce(this.getResults.bind(this), 300);
   }
@@ -52,12 +53,13 @@ export default class SearchForm extends React.Component {
     var tabsOrder = ['wiki', 'question', 'forum'];
     var currentForm = tabsOrder[index];
     QueryActionCreator.updateCurrentForm(currentForm);
+    this.setState({tabIndex: index});
   }
 
   render() {
     return (
       <form method="get" action="" onSubmit={this.getResults.bind(this)}>
-        <Tabs onSelect={this.handleSelect.bind(this)}>
+        <Tabs index={this.state.tabIndex} onSelect={this.handleSelect.bind(this)}>
           <Tab title="Knowledge Base">
             <SearchFormWiki query={this.state.query}/>
           </Tab>
