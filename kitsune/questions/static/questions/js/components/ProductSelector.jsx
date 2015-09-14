@@ -6,10 +6,6 @@ import AAQActions from '../actions/AAQActions.es6.js';
 const products = JSON.parse(document.querySelector('.data[name=products]').innerHTML);
 
 export default class ProductSelector extends AAQStep {
-  visible() {
-    return true;
-  }
-
   heading() {
     return 'Which product would you like to ask a question about?';
   }

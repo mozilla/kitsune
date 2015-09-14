@@ -8,7 +8,6 @@ import TitleContentEditor from './TitleContentEditor.jsx';
 import UserAuth from './UserAuth.jsx';
 import SubmitQuestion from './SubmitQuestion.jsx';
 import TroubleshootingDataStore from '../stores/TroubleshootingDataStore.es6.js';
-import {authStates} from '../../../users/js/constants/UserAuthConstants.es6.js';
 
 export default class AAQApp extends React.Component {
   constructor(props) {
@@ -45,7 +44,7 @@ export default class AAQApp extends React.Component {
   }
 
   setStep(step) {
-    this.setState({step: step});
+    this.setState({step});
   }
 
   render() {
