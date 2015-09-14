@@ -19,7 +19,7 @@ venv_bin_path = os.path.join(settings.SRC_DIR, 'virtualenv', 'bin')
 os.environ['PATH'] = venv_bin_path + os.pathsep + os.environ['PATH']
 os.environ['DJANGO_SETTINGS_MODULE'] = 'kitsune.settings_local'
 if 'HOME' not in os.environ:
-    print 'Setting HOME to "{}" (wtf?)'.format(settings.SRC_DIR)
+    print 'Setting HOME to "{0}" (wtf?)'.format(settings.SRC_DIR)
     os.environ['HOME'] = settings.SRC_DIR
 
 
