@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% from 'includes/common_macros.html' import for_contributors_sidebar %}
+
+{% if not title %}
+  {% set title = _('Cool Search') %}
+{% endif %}
+
+{% set styles = ('common', 'coolsearch',) %}
+{% set scripts = ('coolsearch',) %}
+
+{% if not crumbs %}
+  {% set crumbs = [(None, title)] %}
+{% endif %}
+
+{% block content %}
+  <div class="grid_3">
+    {{ for_contributors_sidebar(user, settings.WIKI_DEFAULT_LANGUAGE) }}
+  </div>
+  <div class="grid_9">
+    <div class="content-box cf" id="advanced-search">
+    </div>
+  </div>
+{% endblock %}
