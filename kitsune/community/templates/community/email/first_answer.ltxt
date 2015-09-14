@@ -27,7 +27,7 @@ us all hanging out on IRC, on the #sumo channel on irc.mozilla.org.
 * Introductions - https://{{ host }}/forums/contributors
 * IRC - https://www.mibbit.com/?server=irc.mozilla.org&channel=#sumo
 
-{% trans url='https://{{ host }}/forums/contributors' %}
+{% trans url='https://' + host + '/forums/contributors' %}
 The community forum is at {{ url }} .
 {% endtrans %}
 
