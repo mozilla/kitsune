@@ -12,7 +12,7 @@
  *   returning undefined.
  * - Deleted the browsers we don't care about.
  */
-var BrowserDetect = {
+var BrowserDetect = window.BrowserDetect = {
   init: function () {
     var detected = this.detect();
     this.browser = detected[0];

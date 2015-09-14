@@ -132,54 +132,45 @@ that functionality should move to that package, too.
 JavaScript Tests
 ================
 
-Frontend JavaScript is currently tested with QUnit_, a simple set of
-functions for test setup/teardown and assertions.
+Frontend JavaScript is currently tested with Mocha_.
 
 
 Running JavaScript Tests
 ------------------------
 
-You can run the tests a few different ways but during development you
-probably want to run them in a web browser by opening this page:
-http://127.0.0.1:8000/en-US/qunit/
+To run tests, make sure you have have the NPM dependencies installed, and
+then run::
 
-Before you can load that page, you'll need to adjust your
-``kitsune/settings_local.py`` file so it includes django-qunit::
-
-    INSTALLED_APPS += (
-        # ...
-        'django_qunit',
-    )
-
+  $ scripts/mocha.sh
 
 Writing JavaScript Tests
 ------------------------
 
-QUnit_ tests for the HTML page above are discovered automatically.  Just add
-some_test.js to ``media/js/tests/`` and it will run in the suite.  If
-you need to include a library file to test against, edit
-``media/js/tests/suite.json``.
+Mocha tests are discovered using the pattern
+``kitsune/*/static/*/js/tests/**/*.js``. That means that any app can
+have a `tests` directory in its JavaScript directory, and the files in
+there will all be considered test files. Files that don't define tests
+won't cause issues, so it is safe to put testing utilities in these
+directories as well.
 
-QUnit_ has some good examples for writing tests.  Here are a few
-additional tips:
 
-* Any HTML required for your test should go in a sandbox using
-  ``tests.createSandbox('#your-template')``.
-  See js/testutils.js for details.
-* To make a useful test based on an actual production template, you can create
-  a snippet and include that in ``templates/tests/qunit.html`` assigned to its own
-  div.  During test setup, reference the div in createSandbox()
-* You can use `$.mockjax`_ to test how your code handles server responses,
-  errors, and timeouts.
+Here are a few tips for writing tests:
 
-.. _Qunit: http://docs.jquery.com/Qunit
-.. _`$.mockjax`: http://enterprisejquery.com/2010/07/mock-your-ajax-requests-with-mockjax-for-rapid-development/
+* Any HTML required for your test should be added by the tests or a
+  ``beforeEach`` function in that test suite. React is useful for this.
+* You can use `sinon` to mock out parts of libraries or functions under
+  test. This is useful for testing AJAX.
+* The tests run in a Node.js environment. A browser environment can be
+  simulated using ``jsdom``. Specifically, ``mocha-jsdom`` is useful to
+  set up and tear down the simulated environment.
+
+.. _Mocha: https://mochajs.org/
 
 
 In-Suite Selenium Tests
 =======================
 
-Front end testing that can't be done with QUnit can be done with
+Front end testing that can't be done with Mocha can be done with
 Selenium_, a system for remote-controlling real browser windows and
 verifying behavior. Currently the tests are hard coded to use a local
 instance of Firefox.

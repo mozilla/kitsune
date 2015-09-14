@@ -882,9 +882,6 @@ GA_START_DATE = date(2012, 11, 10)
 
 MOBILE_COOKIE = 'msumo'
 
-# Directory of JavaScript test files for django_qunit to run
-QUNIT_TEST_DIRECTORY = os.path.join('kitsune', 'sumo', 'static', 'sumo', 'js', 'tests')
-
 # Key to access /services/version. Set to None to disallow.
 VERSION_CHECK_TOKEN = None
 

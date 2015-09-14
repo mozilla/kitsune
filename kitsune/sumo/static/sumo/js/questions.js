@@ -181,8 +181,8 @@
   function addReferrerAndQueryToVoteForm() {
     // Add the source/referrer and query terms to the helpful vote form
     var urlParams = k.getQueryParamsAsDict(),
-    referrer = k.getReferrer(urlParams),
-    query = k.getSearchQuery(urlParams, referrer);
+      referrer = k.getReferrer(urlParams),
+      query = k.getSearchQuery(urlParams, referrer);
     $('form.helpful, .me-too form')
     .append($('<input type="hidden" name="referrer"/>')
     .attr('value', referrer))
@@ -293,13 +293,13 @@
   function initReplyToAnswer() {
     $('a.quoted-reply').click(function() {
       var contentId = $(this).data('content-id'),
-      $content = $('#' + contentId),
-      text = $content.find('.content-raw').text(),
-      user = $content.find('.author-name').text(),
-      reply = template("''{user} [[#{contentId}|said]]''\n<blockquote>\n{text}\n</blockquote>\n\n"),
-      reply_text,
-      $textarea = $('#id_content'),
-      oldtext = $textarea.val();
+        $content = $('#' + contentId),
+        text = $content.find('.content-raw').text(),
+        user = $content.find('.author-name').text(),
+        reply = template("''{user} [[#{contentId}|said]]''\n<blockquote>\n{text}\n</blockquote>\n\n"),
+        reply_text,
+        $textarea = $('#id_content'),
+        oldtext = $textarea.val();
 
       reply_text = reply({'user': user, 'contentId': contentId, 'text': text});
 

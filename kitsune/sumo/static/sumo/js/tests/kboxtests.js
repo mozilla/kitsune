@@ -1,47 +1,82 @@
-/* global $:false */
-(function() {
+import {default as mochaJsdom, rerequire} from 'mocha-jsdom';
+import {default as chai, expect} from 'chai';
+import React from 'react';
+import chaiLint from 'chai-lint';
 
-  'use strict';
+import mochaK from './fixtures/mochaK.js';
+import mochaJquery from './fixtures/mochaJquery.js';
+import mochaGettext from './fixtures/mochaGettext.js';
+import mochaMarky from './fixtures/mochaMarky.js';
 
-  var kboxFixture = {
-    setup: function() {
-      this.sandbox = tests.createSandbox('#kbox');
-    },
-    teardown: function() {
-      this.sandbox.remove();
-    }
-  };
+chai.use(chaiLint);
 
-  module('kbox', kboxFixture);
+describe('kbox', () => {
+  mochaJsdom({useEach: true});
+  mochaJquery();
+  mochaK();
+  mochaGettext();
+  mochaMarky();
+  /* globals window, document, $ */
 
-  test('declarative', function() {
-    var $sandbox = this.sandbox;
-    $sandbox.find('.kbox').kbox().each(function() {
-      // kboxes shouldn't be visible initially
-      ok($(this).is(':hidden'), 'kbox starts hidden');
-      // If there is a target, click it. Otherwise, open programmatically.
-      var target = $(this).attr('data-target');
-      if (target) {
-        $(target).click();
-      } else {
-        $(this).data('kbox').open();
-      }
-      ok($(this).is(':visible'), 'kbox is now visible');
-      equals($(this).attr('title') || $(this).attr('data-title'),
-      $sandbox.find('.kbox-title').text(),
-      'kbox title is correct');
-      if ($(this).data('modal')) {
-        ok($('#kbox-overlay').length === 1 &&
-        $('#kbox-overlay').is(':visible'), 'overlay for modal kbox');
-      }
-      var kbox = $(this).data('kbox');
+  describe('declarative', () => {
+    let $kbox, kbox;
+
+    beforeEach(() => {
+      rerequire('../kbox.js');
+
+      let sandbox = (
+        <div id="sandbox">
+          <div className="kbox"
+               data-title="ignored title"
+               title="test kbox"
+               data-target="#sandbox a.kbox-target"
+               data-modal="true">
+            <p>lorem ipsum dolor sit amet.</p>
+          </div>
+          <a href="#" className="kbox-target">click me</a>
+        </div>
+      );
+      React.render(sandbox, document.body);
+
+      $kbox = $('.kbox');
+      kbox = new window.KBox($kbox);
+    });
+
+    afterEach(() => {
+      React.unmountComponentAtNode(document.body);
+    });
+
+    it('should open when the target is clicked', () => {
+      $('.kbox-target').click();
+      expect($kbox.is(':visible')).to.beTrue();
+    });
+
+    it('should open programmatically', () => {
+      kbox.open();
+      expect($kbox.is(':visible')).to.beTrue();
+    });
+
+    it('should close programmatically', () => {
       kbox.close();
-      ok($(this).is(':hidden'), 'kbox is not visible anymore');
+      expect($kbox.is(':visible')).to.beTrue();
+    });
+
+    it('should have the right title', () => {
+      kbox.open();
+      expect($('.kbox-title').text()).to.equal('test kbox');
+    });
+
+    it('should have a modal overlay', () => {
+      expect($('#kbox-overlay').length).to.equal(0);
+      kbox.open();
+      expect($('#kbox-overlay').length).to.equal(1);
+    });
+
+    it('destroy should clean up the container', () => {
+      kbox.open();
+      expect($('.kbox-container').length).to.equal(1);
       kbox.destroy();
-      equals(0, $sandbox.find('.kbox-container').length,
-      'destroy cleans up kbox properly');
-      ok($('#kbox-overlay').length === 0, 'overlay cleaned up');
+      expect($('.kbox-container').length).to.equal(0);
     });
   });
-
-})();
+});

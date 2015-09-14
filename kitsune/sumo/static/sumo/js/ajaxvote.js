@@ -21,8 +21,8 @@
   AjaxVote.prototype = {
     init: function(form, options) {
       var self = this,
-      $ajaxForm = $(form),
-      $btns = $ajaxForm.find('input[type="submit"], .btn[data-type="submit"]');
+        $ajaxForm = $(form),
+        $btns = $ajaxForm.find('input[type="submit"], .btn[data-type="submit"]');
 
       options = $.extend({
         positionMessage: false,
@@ -36,11 +36,11 @@
       $btns.click(function(e) {
         if (!self.voted) {
           var $btn = $(this),
-          $form = $btn.closest('form'),
-          url = $form.attr('action'),
-          formDataArray = $form.serializeArray(),
-          data = {},
-          i, l;
+            $form = $btn.closest('form'),
+            url = $form.attr('action'),
+            formDataArray = $form.serializeArray(),
+            data = {},
+            i, l;
           $btns.attr('disabled', 'disabled');
           $form.addClass('busy');
           for (i = 0, l = formDataArray.length; i < l; i++) {
@@ -89,8 +89,8 @@
     showMessage: function(message, $showAbove, $form) {
       // TODO: Tweak KBox to handle this case.
       var self = this,
-      $html = $('<div class="ajax-vote-box"><p class="msg"></p></div>'),
-      offset = $showAbove.offset();
+        $html = $('<div class="ajax-vote-box"><p class="msg"></p></div>'),
+        offset = $showAbove.offset();
       $html.find('p').html(message);
 
       if (self.options.positionMessage) {
