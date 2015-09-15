@@ -385,8 +385,25 @@ def steal_lock(request, document_slug, revision_id=None):
 @login_required
 def edit_document(request, document_slug, revision_id=None):
     """Create a new revision of a wiki document, or edit document metadata."""
-    doc = get_object_or_404(
-        Document, locale=request.LANGUAGE_CODE, slug=document_slug)
+    try:
+        doc = Document.objects.get(locale=request.LANGUAGE_CODE, slug=document_slug)
+    except Document.DoesNotExist:
+        # Check if the document slug is available in default language.
+        parent_doc = get_object_or_404(Document, locale=settings.WIKI_DEFAULT_LANGUAGE,
+                                       slug=document_slug)
+        # If the document is available in default language, show the user the translation page
+        # of the requested locale
+        translation = parent_doc.translated_to(request.LANGUAGE_CODE)
+        # If the document is translated into the requested locale, show them the edit article
+        # page of that translated document
+        if translation:
+            doc = translation
+        # If the document is not translated into the requested locale, redirect them to translate
+        # the article page.
+        else:
+            url = reverse('wiki.translate', locale=request.LANGUAGE_CODE, args=[document_slug])
+            return HttpResponseRedirect(url)
+
     user = request.user
 
     can_edit_needs_change = doc.allows(user, 'edit_needs_change')

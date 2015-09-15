@@ -20,7 +20,7 @@ from kitsune.wiki.config import (
 from kitsune.wiki.models import Document, HelpfulVoteMetadata, HelpfulVote
 from kitsune.wiki.tests import (
     doc_rev, document, helpful_vote, new_document_data, revision,
-    translated_revision, TemplateDocumentFactory, RevisionFactory)
+    translated_revision, TemplateDocumentFactory, RevisionFactory, DocumentFactory)
 from kitsune.wiki.views import (
     _document_lock_check, _document_lock_clear, _document_lock_steal)
 
@@ -368,6 +368,45 @@ class DocumentEditingTests(TestCase):
         self.assertRedirects(response, reverse('wiki.document_revisions',
                                                args=[data['slug']],
                                                locale='en-US'))
+
+    def test_translate_with_parent_slug_while_trans_article_available(self):
+        doc = DocumentFactory(locale=settings.WIKI_DEFAULT_LANGUAGE)
+        r = RevisionFactory(document=doc)
+        trans_doc = DocumentFactory(parent=doc, locale='bn-BD', slug='bn-BD_slug')
+        RevisionFactory(document=trans_doc, based_on=r)
+        url = reverse('wiki.edit_document', args=[doc.slug], locale=trans_doc.locale)
+        response = self.client.get(url)
+        eq_(response.status_code, 200)
+        # Check translate article template is being used
+        self.assertTemplateUsed(response, 'wiki/translate.html')
+        content = pq(response.content)
+        eq_(content('#id_title').val(), trans_doc.title)
+        eq_(content('#id_slug').val(), trans_doc.slug)
+
+    def test_translate_with_parent_slug_while_trans_article_not_available(self):
+        doc = DocumentFactory(locale=settings.WIKI_DEFAULT_LANGUAGE)
+        RevisionFactory(document=doc)
+        url = reverse('wiki.edit_document', args=[doc.slug], locale='bn-BD')
+        response = self.client.get(url)
+        # Check redirect is happening
+        eq_(response.status_code, 302)
+        # get the redirected url
+        response = self.client.get(url, follow=True)
+        eq_(response.status_code, 200)
+        # Check translate article template is being used
+        self.assertTemplateUsed(response, 'wiki/translate.html')
+        content = pq(response.content)
+        # While first translation, the slug and title field is always blank.
+        # So the value field should be None
+        eq_(content('#id_title').val(), None)
+        eq_(content('#id_slug').val(), None)
+
+    def test_while_there_is_no_parent_slug(self):
+        doc = DocumentFactory(locale=settings.WIKI_DEFAULT_LANGUAGE)
+        invalid_slug = doc.slug + 'invalid_slug'
+        url = reverse('wiki.edit_document', args=[invalid_slug], locale='bn-BD')
+        response = self.client.get(url)
+        eq_(response.status_code, 404)
 
     def test_localized_based_on(self):
         """Editing a localized article 'based on' an older revision of the
