@@ -1,0 +1,31 @@
+version: 0
+metadata:
+  name: "Kitsune tests"
+  description: "All tests for Kitsune"
+  owner: "{{ event.head.user.email }}"
+  source: "{{ event.head.repo.url }}"
+tasks:
+  - provisionerId: "{{ taskcluster.docker.provisionerId }}"
+    workerType: "{{ taskcluster.docker.workerType }}"
+    extra:
+      github:
+        env: true
+        events:
+          - pull_request.opened
+          - pull_request.synchronize
+          - pull_request.reopened
+          - push
+    payload:
+      maxRunTime: 3600 # seconds
+      image: "quay.io/mrrrgn/ubuntu-ci:0.0.1"
+      command:                                  # A command to run, list entries are arguments
+        - "/bin/bash"
+        - "--login"
+        - "-c"
+        - "checkout-pull-request && ./scripts/travis/install.sh && ./scripts/travis/setup.sh && pre-commit run --all-files && ./scripts/travis/test.sh"
+    # Each task also requires explicit metadata
+    metadata:
+      name: "Kitsune tests"
+      description: "All tests for Kitsune"
+      owner: "{{ event.head.user.email }}"
+      source: "{{ event.head.repo.url }}"
