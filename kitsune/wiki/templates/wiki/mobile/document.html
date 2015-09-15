@@ -44,6 +44,9 @@
         {{ _('Share this article: {link}')|f(link=link|safe) }}
       </p>
     {% endif %}
+    <p>
+      Last Update: {{ latest_approved_revision.created.date() }}
+    </p>
 
     {% if not waffle.switch('hide-voting') %}
       {{ vote_form(document, source='mobile') }}

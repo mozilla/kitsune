@@ -207,6 +207,9 @@ def document(request, document_slug, template=None, document=None):
     browser = get_browser(user_agent)
     show_fx_download = (product.slug == 'thunderbird' and browser != 'Firefox')
 
+    # Get latest approved revision of the document
+    latest_approved_revision = doc.revisions.filter(is_approved=True).order_by('created').last()
+
     data = {
         'document': doc,
         'redirected_from': redirected_from,
@@ -222,6 +225,7 @@ def document(request, document_slug, template=None, document=None):
         'document_css_class': document_css_class,
         'any_localizable_revision': any_localizable_revision,
         'show_fx_download': show_fx_download,
+        'latest_approved_revision': latest_approved_revision,
     }
 
     response = render(request, template, data)
