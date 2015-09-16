@@ -34,6 +34,8 @@ log = logging.getLogger('k.users')
 SHA1_RE = re.compile('^[a-f0-9]{40}$')
 CONTRIBUTOR_GROUP = 'Registered as contributor'
 
+TV = TwitterValidator
+
 
 @auto_delete_files
 class Profile(ModelBase, SearchMixin):
