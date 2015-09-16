@@ -17,7 +17,7 @@ tasks:
           - push
     payload:
       maxRunTime: 3600 # seconds
-      image: "quay.io/mrrrgn/ubuntu-ci:0.0.1"
+      image: "quay.io/mythmon/kitsune-ci:latest"
       command:                                  # A command to run, list entries are arguments
         - "/bin/bash"
         - "--login"

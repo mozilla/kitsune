@@ -1,0 +1,7 @@
+#!/bin/bash
+
+if [ -z "$GITHUB_HEAD_REPO_URL" -o -z "$GITHUB_HEAD_BRANCH" ]; then
+    echo "No \$GITHUB_HEAD_REPO_URL or \$GITHUB_HEAD_BRANCH set, skipping project checkout."
+else
+    git clone $GITHUB_HEAD_REPO_URL repo && cd repo && git checkout $GITHUB_HEAD_BRANCH
+fi
