@@ -3,6 +3,8 @@
 set -e
 
 echo "Install Python dependencies"
+# Peep. Sigh
+pip install 'pip<7'
 ./peep.sh install -r requirements/dev.txt
 ./peep.sh install -r "requirements/default.txt"
 echo
@@ -19,7 +21,6 @@ echo
 echo "Installing front end dependencies"
 ./node_modules/.bin/bower install
 echo
-
 
 echo "Installing ElasticSearch"
 es_tarball="vendor/tarballs/elasticsearch-${ELASTICSEARCH_VERSION}.tar.gz"
