@@ -19,6 +19,10 @@ class Page(object):
         self.selenium = testsetup.selenium
         self.timeout = testsetup.timeout
 
+    def go_to_page(self):
+        self.selenium.get(self.base_url + self._url)
+        self.is_the_current_page
+
     @property
     def is_the_current_page(self):
         if self._page_title:
