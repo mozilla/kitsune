@@ -278,9 +278,6 @@ requests==2.7.0
 # sha256: ngIjuJUY7axhqXtW_3jycQVs4IyKF8a2RK7yRPrIPyM
 requests-oauthlib==0.4.2
 
-# sha256: cjlM5ykoyH02UBp1_MU1c30WZU_v1sIWwxUVgpS8wSY
-selenium==2.45.0
-
 # sha256: Qr9imks6STO7PPrPYAXJW3SU_YjNYqe60ajD5kZH6ww
 # sha256: v445sBLQFGpK6vVBNT9bm5Ywu8tawnUFhJrIlrz_L2o
 setuptools==0.9.8
