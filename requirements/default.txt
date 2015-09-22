@@ -34,6 +34,9 @@ cffi==0.8.6
 # sha256: k9gjEUXUPKAuHsPO41UzOvqOcq25z4FXZ-F1lXSXdNQ
 https://github.com/jsocol/commonware/archive/b5544185b2d24adc1eb512735990752400ce9cbd.tar.gz#egg=commonware
 
+# sha256: BTWn4nAUh0snrjpNM-h0njRb36YnZhlSCLeZa_EQBoI
+cssselect==0.9.1
+
 # sha256: -rf83eNg7GYURC0DIdzQ7_XkNUTLMNl16ddakUpM33g
 cryptography==0.7.2
 
@@ -187,8 +190,8 @@ Jinja2==2.5.2
 # sha256: uf8EN2BxE66nAf1RIsKvpAwF3_bx2k9YsvHqGNnyv40
 kombu==3.0.24
 
-# sha256: f9NuSlY2DNXXMZ41ewSpDixrg26iIMiPlFHDAK4zzF4
-lxml==2.2.6
+# sha256: s9NiusRxFydHzaNRMjjxFcvWxfi45jGb9ql6eJJyQJk
+lxml==3.4.4
 
 # sha256: U0_2_u_hzQOYT0ROZBWqzHnAqF87ho7EGi_VADAEwx4
 mimeparse==0.1.3
@@ -231,8 +234,8 @@ pyOpenSSL==0.14
 # sha256: 0XVN8IAYcdBalvHO9QpPMuXUDUnqJKocbKlSnL1WIAU
 pyparsing==1.5.5
 
-# sha256: KXcQ12LNo5YUC-xKy4cfHWUxs3Dy0phjoEnPMHZDD9o
-pyquery==0.5
+# sha256: RsUeuHi3h-gU7o-XN7CmIREDSutNHAZFCsWo6lpw5gI
+pyquery==1.2.9
 
 # sha256: bxlzSLRvuM358_z8Kn1al9qV2z4uhmfPZXIWJ0_hsAk
 python-dateutil==1.5

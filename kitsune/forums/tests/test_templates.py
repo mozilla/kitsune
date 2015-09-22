@@ -1,13 +1,13 @@
 from django.contrib.contenttypes.models import ContentType
 
 from nose.tools import eq_
-from pyquery import PyQuery as pq
 
 from kitsune.access.tests import permission
 from kitsune.forums.models import Post
 from kitsune.forums.tests import (
     ForumTestCase, forum, thread, post as forum_post)
 from kitsune.sumo.tests import get, post
+from kitsune.sumo.tests import SumoPyQuery as pq
 from kitsune.users.tests import user, group
 
 
@@ -365,7 +365,7 @@ class ForumsTemplateTests(ForumTestCase):
         r = get(self.client, 'forums.forums')
         eq_(200, r.status_code)
         doc = pq(r.content)
-        eq_(forum1.name, doc('ol.forums > li a:first').text())
+        eq_(forum1.name, doc('ol.forums > li a').first().text())
 
         forum1.display_order = 3
         forum1.save()
@@ -374,7 +374,7 @@ class ForumsTemplateTests(ForumTestCase):
         r = get(self.client, 'forums.forums')
         eq_(200, r.status_code)
         doc = pq(r.content)
-        eq_(forum2.name, doc('ol.forums > li a:first').text())
+        eq_(forum2.name, doc('ol.forums > li a').first().text())
 
     def test_is_listed(self):
         """Verify is_listed is respected."""
