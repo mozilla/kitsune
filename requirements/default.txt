@@ -286,9 +286,6 @@ setuptools==0.9.8
 # sha256: 4kBSQR_E-9H2cmNVN8P8IzDZSBsYwDF2lbRiWVEskdU
 six==1.9.0
 
-# sha256: xDk0Lw5v1G9WRDHJrksEoAiIlyFCZeLRjUGugY09b_E
-sqlalchemy==0.6.4
-
 # sha256: YEk4WnAyYoyam8KsV4zhgm5BebCoqfM7U18CL6vY0-o
 sqlparse==0.1.1
 
