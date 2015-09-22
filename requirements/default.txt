@@ -187,12 +187,6 @@ Jinja2==2.5.2
 # sha256: uf8EN2BxE66nAf1RIsKvpAwF3_bx2k9YsvHqGNnyv40
 kombu==3.0.24
 
-# sha256: _rvld3LyBrrNJG-kH980xSySPl2sB5CxXJ3umX64pww
-logilab-astng==0.20.1
-
-# sha256: 79Sm-_24veOJAa5AqAHcKlzWoPOFkKfBM3wlwCdAKQQ
-logilab-common==0.50.3
-
 # sha256: f9NuSlY2DNXXMZ41ewSpDixrg26iIMiPlFHDAK4zzF4
 lxml==2.2.6
 
