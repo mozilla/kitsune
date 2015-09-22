@@ -213,8 +213,8 @@ oauthlib==0.7.2
 # sha256: HDW0rCBs7y0kgWyJ-Jzyid09OM98RJuz-re_bUPwGx8
 ordereddict==1.1
 
-# sha256: KGXGizpWOEZrGDe_SmfER-DP33RjMJoGiq0OkKoD9Yo
-Pillow==2.4.0
+# sha256: DxedfnXnyDtjQblZXKHzlN5wgUhKnjUq1m1VOhw9qik
+Pillow==2.9.0
 
 # sha256: xEI2gj62Insvq4vZ5WYypknmeoAhH4WkouPIXGXIrNk
 polib==1.0.5
