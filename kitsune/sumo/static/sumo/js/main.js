@@ -1,3 +1,4 @@
+/* globals $:false, k:false, _:false, interpolate:false, Modernizr:false */
 // Use a global k to share data accross JS files
 window.k = window.k || {};
 
@@ -13,7 +14,7 @@ window.k = window.k || {};
       e,
       a = /\+/g,  // Regex for replacing addition symbol with a space
       r = /([^&=]+)=?([^&]*)/g,
-      d = function (s) { return decodeURIComponent(s.replace(a, " ")); };
+      d = function (s) { return decodeURIComponent(s.replace(a, ' ')); };
 
     if (url) {
       splitUrl = url.split('?');
@@ -24,8 +25,10 @@ window.k = window.k || {};
       queryString = window.location.search.substring(1);
     }
 
-    while (e = r.exec(queryString)) {
+    e = r.exec(queryString);
+    while (e) {
       urlParams[d(e[1])] = d(e[2]);
+      e = r.exec(queryString);
     }
     return urlParams;
   };
@@ -41,7 +44,7 @@ window.k = window.k || {};
     });
     qs = qs.slice(0, -1);
     return '?' + qs;
-  }
+  };
 
   k.getReferrer = function(urlParams) {
     /*
@@ -50,24 +53,24 @@ window.k = window.k || {};
      - 'inproduct' - if current url has as=u
      - actual referrer URL - if none of the above
      */
-    if (urlParams['as'] === 's') {
+    if (urlParams.as === 's') {
       return 'search';
-    } else if (urlParams['as'] === 'u') {
+    } else if (urlParams.as === 'u') {
       return 'inproduct';
     } else {
       return document.referrer;
     }
-  }
+  };
 
   k.getSearchQuery = function(urlParams, referrer) {
     // If the referrer is a search page, return the search keywords.
     if (referrer === 'search') {
-      return urlParams['s'];
+      return urlParams.s;
     } else if (referrer !== 'inproduct') {
-      return k.getQueryParamsAsDict(referrer)['q'] || '';
+      return k.getQueryParamsAsDict(referrer).q || '';
     }
     return '';
-  }
+  };
 
   k.unquote = function(str) {
     if (str) {
@@ -79,7 +82,7 @@ window.k = window.k || {};
       }
     }
     return str;
-  }
+  };
 
   var UNSAFE_CHARS = {
     '&': '&amp;',
@@ -102,7 +105,7 @@ window.k = window.k || {};
         obj[j] = k.safeString(obj[j]);
       }
     } else {
-      for (var i=0, l=obj.length; i<l; i++) {
+      for (var i = 0, l = obj.length; i < l; i++) {
         obj[i] = k.safeString(obj[i]);
       }
     }
@@ -113,7 +116,14 @@ window.k = window.k || {};
   // Pass CSRF token in XHR header
   $.ajaxSetup({
     beforeSend: function(xhr, settings) {
-      xhr.setRequestHeader("X-CSRFToken", $.cookie('csrftoken'));
+      var csrfElem = document.querySelector('input[name=csrfmiddlewaretoken]');
+      var csrf = $.cookie('csrftoken');
+      if (!csrf && csrfElem) {
+        csrf = csrfElem.value;
+      }
+      if (csrf) {
+        xhr.setRequestHeader('X-CSRFToken', csrf);
+      }
     }
   });
 
@@ -126,7 +136,7 @@ window.k = window.k || {};
     });
 
     if ($('body').data('readonly')) {
-      $forms = $('form[method=post]');
+      var $forms = $('form[method=post]');
       $forms.find('input, button, select, textarea').attr('disabled', 'disabled');
       $forms.find('input[type=image]').css('opacity', .5);
       $('div.editor-tools').remove();
@@ -176,7 +186,7 @@ window.k = window.k || {};
           $this.data('disabled', false).removeClass('disabled');
         }
 
-        $this.ajaxComplete(function(){
+        $this.ajaxComplete(function() {
           enableForm();
           $this.unbind('ajaxComplete');
         });

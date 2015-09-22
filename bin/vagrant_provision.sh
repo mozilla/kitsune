@@ -30,7 +30,7 @@ debconf-set-selections <<< 'mariadb-server-5.5 mysql-server/root_password_again 
 apt-get install -y sphinx-common libapache2-mod-wsgi python-pip libmysqlclient-dev git \
                    libxml2-dev libxslt1-dev zlib1g-dev libjpeg-dev python-dev libssl-dev \
                    openjdk-7-jre-headless mariadb-server-5.5 nodejs elasticsearch redis-server \
-                   memcached
+                   memcached libffi-dev
 
 # Setup the virtualenv and start using it
 pip install virtualenv
@@ -38,8 +38,9 @@ virtualenv $INSTALL_DIR/virtualenv
 chown -R vagrant $INSTALL_DIR/virtualenv
 source $INSTALL_DIR/virtualenv/bin/activate
 
+pip install -U 'pip<7'
 $INSTALL_DIR/kitsune/peep.sh install -r $INSTALL_DIR/kitsune/requirements/default.txt
-pip install nose-progressive==1.5.0
+$INSTALL_DIR/kitsune/peep.sh install -r $INSTALL_DIR/kitsune/requirements/dev.txt
 
 # Copy configurations for kitsune and mysql
 # MySQL Default User: root
@@ -60,10 +61,11 @@ mysql -e "GRANT ALL ON kitsune.* TO kitsune@localhost IDENTIFIED BY 'password'"
 # Install npm and included packages (lessc is the one we need of these)
 npm install
 ./node_modules/.bin/gulp nunjucks
+./node_modules/.bin/bower install
 
 # Retrieve and store historical version data
 ./manage.py update_product_details
 
 # Setup tables and generate some data
-./manage.py syncdb --migrate --noinput
+./manage.py migrate
 ./manage.py generatedata

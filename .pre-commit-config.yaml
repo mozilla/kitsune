@@ -21,3 +21,10 @@
             (scripts/sprint_report.py)|\
             (scripts/year_in_review.py)"
         args: [--max-line-length=99]
+-   repo: git://github.com/pre-commit/mirrors-eslint
+    sha: '4c6f4aba847a057b7aa1f36838743e460d3e4573'
+    hooks:
+    -   id: eslint
+        exclude: "\
+            (kitsune/sumo/static/sumo/js/libs/.*)|\
+            (scripts/lockdown.js)"

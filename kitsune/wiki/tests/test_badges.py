@@ -6,6 +6,7 @@ from kitsune.kbadge.tests import badge
 from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import profile
 from kitsune.wiki.badges import WIKI_BADGES
+from kitsune.wiki.models import Revision
 from kitsune.wiki.tests import revision, document
 
 
@@ -25,8 +26,13 @@ class TestWikiBadges(TestCase):
 
         # Create 9 approved en-US revisions.
         d = document(locale=settings.WIKI_DEFAULT_LANGUAGE, save=True)
-        for i in range(9):
-            revision(creator=u, document=d, is_approved=True, save=True)
+        revisions = []
+        for i in range(8):
+            revisions.append(revision(creator=u, document=d, is_approved=True))
+        Revision.objects.bulk_create(revisions)
+
+        # Create the 9th revision separately so signals get triggered.
+        revision(creator=u, document=d, is_approved=True, save=True)
 
         # User should NOT have the badge yet
         assert not b.is_awarded_to(u)
@@ -51,8 +57,13 @@ class TestWikiBadges(TestCase):
 
         # Create 9 approved es revisions.
         d = document(locale='es', save=True)
-        for i in range(9):
-            revision(creator=u, document=d, is_approved=True, save=True)
+        revisions = []
+        for i in range(8):
+            revisions.append(revision(creator=u, document=d, is_approved=True))
+        Revision.objects.bulk_create(revisions)
+
+        # Create the 9th revision separately so signals get triggered.
+        revision(creator=u, document=d, is_approved=True, save=True)
 
         # User should NOT have the badge yet
         assert not b.is_awarded_to(u)

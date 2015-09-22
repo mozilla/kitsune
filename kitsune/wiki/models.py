@@ -162,6 +162,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         """Translations can't be localizable."""
         self._clean_is_localizable()
         self._clean_category()
+        self._clean_template_status()
         self._ensure_inherited_attr('is_archived')
 
     def _clean_is_localizable(self):
@@ -209,14 +210,28 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
                 self.translations.all().update(**{attr: getattr(self, attr)})
 
     def _clean_category(self):
-        """Make sure a doc's category is the same as its parent's."""
+        """Make sure a doc's category is valid."""
         if (not self.parent and
                 self.category not in (id for id, name in CATEGORIES)):
             # All we really need to do here is make sure category != '' (which
             # is what it is when it's missing from the DocumentForm). The extra
             # validation is just a nicety.
             raise ValidationError(_('Please choose a category.'))
+
         self._ensure_inherited_attr('category')
+
+    def _clean_template_status(self):
+        if (self.category == TEMPLATES_CATEGORY and
+                not self.title.startswith(TEMPLATE_TITLE_PREFIX)):
+            raise ValidationError(_(u'Documents in the Template category must have titles that '
+                                    u'start with "{prefix}". (Current title is "{title}")')
+                                  .format(prefix=TEMPLATE_TITLE_PREFIX, title=self.title))
+
+        if self.title.startswith(TEMPLATE_TITLE_PREFIX) and self.category != TEMPLATES_CATEGORY:
+            raise ValidationError(_(u'Documents with titles that start with "{prefix}" must be in '
+                                    u'the templates category. (Current category is "{category}")')
+                                  .format(prefix=TEMPLATE_TITLE_PREFIX,
+                                          category=self.get_category_display()))
 
     def _attr_for_redirect(self, attr, template):
         """Return the slug or title for a new redirect.
@@ -263,39 +278,44 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         # which would cause a rollback, which would negate any category changes
         # we make here, so don't worry:
         self._clean_category()
+        self._clean_template_status()
 
         slug_changed = hasattr(self, 'old_slug')
         title_changed = hasattr(self, 'old_title')
 
-        # If the slug changed, we clear out the share link so it gets regenerated.
-        self.share_link = ''
+        if slug_changed:
+            # Clear out the share link so it gets regenerated.
+            self.share_link = ''
 
         super(Document, self).save(*args, **kwargs)
 
         # Make redirects if there's an approved revision and title or slug
         # changed. Allowing redirects for unapproved docs would (1) be of
         # limited use and (2) require making Revision.creator nullable.
-        if self.current_revision and (slug_changed or title_changed):
+        #
+        # Having redirects for templates doesn't really make sense, and
+        # none of the rest of the KB really deals with it, so don't bother.
+        if self.current_revision and (slug_changed or title_changed) and not self.is_template:
             try:
-                doc = Document.objects.create(locale=self.locale,
-                                              title=self._attr_for_redirect(
-                                                  'title', REDIRECT_TITLE),
-                                              slug=self._attr_for_redirect(
-                                                  'slug', REDIRECT_SLUG),
-                                              category=self.category,
-                                              is_localizable=False)
-                Revision.objects.create(document=doc,
-                                        content=REDIRECT_CONTENT % self.title,
-                                        is_approved=True,
-                                        reviewer=self.current_revision.creator,
-                                        creator=self.current_revision.creator)
+                doc = Document.objects.create(
+                    locale=self.locale,
+                    title=self._attr_for_redirect('title', REDIRECT_TITLE),
+                    slug=self._attr_for_redirect('slug', REDIRECT_SLUG),
+                    category=self.category,
+                    is_localizable=False)
+                Revision.objects.create(
+                    document=doc,
+                    content=REDIRECT_CONTENT % self.title,
+                    is_approved=True,
+                    reviewer=self.current_revision.creator,
+                    creator=self.current_revision.creator)
             except TitleCollision:
                 pass
 
-            if slug_changed:
-                del self.old_slug
-            if title_changed:
-                del self.old_title
+        if slug_changed:
+            del self.old_slug
+        if title_changed:
+            del self.old_title
 
         self.parse_and_calculate_links()
         self.clear_cached_html()
@@ -309,10 +329,17 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
             if name in ('slug', 'title') and hasattr(self, name):
                 old_name = 'old_' + name
                 if not hasattr(self, old_name):
-                    # Case insensitive comparison:
+                    # Normal articles are compared case-insensitively
                     if getattr(self, name).lower() != value.lower():
+                        setattr(self, old_name, getattr(self, name))
+
+                    # Articles that have a changed title are checked
+                    # case-sensitively for the title prefix changing.
+                    ttp = TEMPLATE_TITLE_PREFIX
+                    if name == 'title' and self.title.startswith(ttp) != value.startswith(ttp):
                         # Save original value:
                         setattr(self, old_name, getattr(self, name))
+
                 elif value == getattr(self, old_name):
                     # They changed the attr back to its original value.
                     delattr(self, old_name)
@@ -418,8 +445,8 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
                 # changing to (or staying within) a specific locale.
                 full_url = anchors[0].get('href')
                 (dest_locale, url) = split_path(full_url)
-                if (source_locale != dest_locale
-                        and dest_locale == settings.LANGUAGE_CODE):
+                if (source_locale != dest_locale and
+                        dest_locale == settings.LANGUAGE_CODE):
                     return '/' + source_locale + '/' + url
                 return full_url
 
@@ -1155,7 +1182,7 @@ class DocumentLink(ModelBase):
         unique_together = ('linked_from', 'linked_to', 'kind')
 
     def __unicode__(self):
-        return (u'<DocumentLink: %s from %r to %r>' %
+        return (u'<DocumentLink: %s from %s to %s>' %
                 (self.kind, self.linked_from, self.linked_to))
 
 

@@ -1,3 +1,4 @@
+/* eslint-env node */
 var gulp = require('gulp');
 var nunjucks = require('gulp-nunjucks');
 var watch = require('gulp-watch');

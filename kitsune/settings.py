@@ -97,6 +97,7 @@ SUMO_LANGUAGES = (
     'ar',
     'az',
     'bg',
+    'bm',
     'bn-BD',
     'bn-IN',
     'bs',
@@ -122,6 +123,8 @@ SUMO_LANGUAGES = (
     'hi-IN',
     'hr',
     'hu',
+    'dsb',
+    'hsb',
     'id',
     'ig',
     'it',
@@ -131,6 +134,8 @@ SUMO_LANGUAGES = (
     'ko',
     'ln',
     'lt',
+    'mg',
+    'mk',
     'ml',
     'ne-NP',
     'nl',
@@ -144,7 +149,7 @@ SUMO_LANGUAGES = (
     'sk',
     'sl',
     'sq',
-    'sr-Cyrl',
+    'sr',
     'sw',
     'sv',
     'ta',
@@ -169,6 +174,7 @@ SUMO_LANGUAGES = (
 # to add content.
 FXOS_LANGUAGES = [
     'af',
+    'bm',
     'bn-BD',
     'bn-IN',
     'cs',
@@ -185,6 +191,7 @@ FXOS_LANGUAGES = [
     'ig',
     'it',
     'ln',
+    'mg',
     'nl',
     'pl',
     'pt-BR',
@@ -193,7 +200,7 @@ FXOS_LANGUAGES = [
     'ru',
     'sr',
     'ta',
-    'sr-Cyrl',
+    'sr',
     'sw',
     'tr',
     'wo',
@@ -208,6 +215,8 @@ SIMPLE_WIKI_LANGUAGES = [
     'et',
     'ga-IE',
     'gl',
+    'dsb',
+    'hsb',
     'kn',
     'ml',
     'tn',
@@ -241,7 +250,6 @@ NON_SUPPORTED_LOCALES = {
     'ff': None,
     'fur': 'it',
     'gd': None,
-    'hsb': 'de',
     'hy-AM': None,
     'ilo': None,
     'is': None,
@@ -249,7 +257,6 @@ NON_SUPPORTED_LOCALES = {
     'lg': None,
     'lij': 'it',
     'mai': None,
-    'mk': None,
     'mn': None,
     'mr': None,
     'ms': None,
@@ -429,8 +436,6 @@ MIDDLEWARE_CLASSES = (
     'commonware.middleware.NoVarySessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
 
-    'kitsune.users.middleware.LogoutDeactivatedUsersMiddleware',
-
     # This should come before TokenLoginMiddleware, because
     # TokenLoginMiddleware uses this to tell users they have been
     # automatically logged. It also has to come after
@@ -523,6 +528,7 @@ INSTALLED_APPS = (
     'kitsune.access',
     'kitsune.sumo',
     'kitsune.search',
+    'kitsune.coolsearch',
     'kitsune.forums',
     'djcelery',
     'badger',
@@ -641,6 +647,7 @@ STANDALONE_DOMAINS = [
     TEXT_DOMAIN,
     'javascript',
     'yaocho',
+    'buddyup',
 ]
 
 STATICI18N_DOMAIN = 'javascript'
@@ -875,9 +882,6 @@ GA_START_DATE = date(2012, 11, 10)
 
 MOBILE_COOKIE = 'msumo'
 
-# Directory of JavaScript test files for django_qunit to run
-QUNIT_TEST_DIRECTORY = os.path.join('kitsune', 'sumo', 'static', 'sumo', 'js', 'tests')
-
 # Key to access /services/version. Set to None to disallow.
 VERSION_CHECK_TOKEN = None
 
@@ -920,7 +924,7 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.TokenAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
+        'kitsune.sumo.api.InactiveSessionAuthentication',
     ),
 }
 

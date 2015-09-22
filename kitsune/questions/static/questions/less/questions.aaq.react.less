@@ -1,0 +1,80 @@
+@import '../../sumo/less/variables.less';
+
+.AAQApp {
+  &__ProductSelector {
+    &__ProductCard {
+      &.selected {
+        &::before {
+          box-shadow: 0 0 10px #0f0 inset;
+        }
+      }
+    }
+  }
+
+  &__TopicSelector {
+    &__Topic {
+      &.selected {
+        font-weight: bold;
+      }
+    }
+  }
+
+  &__TitleContentEditor {
+    .row {
+      display: flex;
+
+      .AAQApp__TitleContentEditor__Editor {
+        display: flex;
+        flex: 0 0 50%;
+        flex-direction: column;
+
+       > div:not(:last-child) {
+         margin-bottom: 10px;
+       }
+
+        &__Title {
+          flex: 0 0;
+        }
+
+        &__Content {
+          flex: 1 1 100%;
+
+          textarea {
+            height: 90%;
+            min-height: 350px;
+          }
+        }
+
+        label {
+          display: block;
+        }
+
+        input,
+        textarea {
+          width: 100%;
+        }
+      }
+    }
+  }
+
+  &__TroubleshootingData {
+    width: 100%;
+
+    label {
+      margin-right: 10px;
+    }
+
+    &__dataView {
+      background: #eee;
+      border: 1px solid #888;
+      border-radius: 3px;
+      max-height: 200px;
+      overyflow-y: auto;
+    }
+  }
+
+  #register-form {
+    margin: 0;
+    padding: 0;
+  }
+}

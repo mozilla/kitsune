@@ -24,6 +24,7 @@ badger.autodiscover()
 urlpatterns = patterns(
     '',
     (r'^search', include('kitsune.search.urls')),
+    (r'^coolsearch', include('kitsune.coolsearch.urls')),
     (r'^forums', include('kitsune.forums.urls')),
     (r'^questions', include('kitsune.questions.urls')),
     (r'^flagged', include('kitsune.flagit.urls')),
@@ -48,10 +49,12 @@ urlpatterns = patterns(
     # Javascript translations.
     url(r'^jsi18n/.*$', cache_page(60 * 60 * 24 * 365)(javascript_catalog),
         {'domain': 'javascript', 'packages': ['kitsune']}, name='jsi18n'),
-    # Yaocho translations. These don't need cached because Yaocho downloads
-    # them in a build step, not on the client.
+    # App translations. These don't need cached because they are downloaded
+    # in a build step, not on the client.
     url(r'^jsi18n-yaocho/.*$', javascript_catalog,
         {'domain': 'yaocho', 'packages': ['kitsune']}, name='jsi18n-yaocho'),
+    url(r'^jsi18n-buddyup/.*$', javascript_catalog,
+        {'domain': 'buddyup', 'packages': ['kitsune']}, name='jsi18n-buddyup'),
     # JavaScript Waffle.
     url(r'^wafflejs$', wafflejs, name='wafflejs'),
 
@@ -77,6 +80,7 @@ urlpatterns = patterns(
     (r'^api/2/', include('kitsune.notifications.urls_api')),
     (r'^api/2/', include('kitsune.questions.urls_api')),
     (r'^api/2/', include('kitsune.search.urls_api')),
+    (r'^api/2/', include('kitsune.coolsearch.urls_api')),
     (r'^api/2/', include('kitsune.community.urls_api')),
 
     # These API urls include both v1 and v2 urls.

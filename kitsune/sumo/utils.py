@@ -1,4 +1,5 @@
 import json
+import re
 import sys
 from contextlib import contextmanager
 from datetime import datetime
@@ -328,3 +329,14 @@ def is_ratelimited(request, name, rate, method=['POST'], skip_if=lambda r: False
             Record.objects.info('sumo.ratelimit', '{key} hit the rate limit for {name}',
                                 key=key, name=name)
     return request.limited
+
+
+def get_browser(user_agent):
+    """Get Browser Name from User Agent"""
+
+    match = re.search(r'(?i)(firefox|msie|chrome|safari|trident)', user_agent, re.IGNORECASE)
+    if match:
+        browser = match.group(1)
+    else:
+        browser = None
+    return browser

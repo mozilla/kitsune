@@ -1,6 +1,6 @@
-/* globals Rickshaw:false */
+/* globals Rickshaw:false, k:false, $:false, _:false, interpolate:false, gettext:false, d3:false */
 (function () {
-  "use strict";
+  'use strict';
 
   window.k = k || {};
 
@@ -163,8 +163,8 @@
       // Get midnight of today (ie, the boundary between today and yesterday)
       chopLimit = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     }
-    bucketed = _.filter(bucketed, function (d) {
-      return d.date < chopLimit / 1000;
+    bucketed = _.filter(bucketed, function (datum) {
+      return datum.date < chopLimit / 1000;
     });
 
     this.data.series = this.makeSeries(bucketed, this.data.seriesSpec);
@@ -245,16 +245,16 @@
     function mapHandler(datum) {
       var val = desc.func(datum);
 
-        if (isNaN(val) ) {
-          val = 0;
-        }
+      if (isNaN(val) ) {
+        val = 0;
+      }
 
-        if (windowMin <= datum.date && datum.date <= windowMax) {
-          min = Math.min(min, val);
-          max = Math.max(max, val);
-        }
+      if (windowMin <= datum.date && datum.date <= windowMax) {
+        min = Math.min(min, val);
+        max = Math.max(max, val);
+      }
 
-        return {x: datum.date, y: val};
+      return {x: datum.date, y: val};
     }
 
     function yFormatter(value) {
@@ -275,9 +275,9 @@
       if (this.graph.renderer === 'area') {
         stroke = desc.color || palette.color(desc.name);
         if (desc.area) {
-          r = parseInt(desc.color.slice(1,3), 16);
-          g = parseInt(desc.color.slice(3,5), 16);
-          b = parseInt(desc.color.slice(5,7), 16);
+          r = parseInt(desc.color.slice(1, 3), 16);
+          g = parseInt(desc.color.slice(3, 5), 16);
+          b = parseInt(desc.color.slice(5, 7), 16);
           fill = interpolate('rgba(%s,%s,%s,0.5)', [r, g, b]);
         } else {
           fill = 'rgba(0, 0, 0, 0.0)';
@@ -308,8 +308,8 @@
     }
 
     // Rickshaw gets angry when its data isn't sorted.
-    function sortCallback (a, b) {
-      return a.x - b.x;
+    function sortCallback (v1, v2) {
+      return v1.x - v2.x;
     }
 
     for (i = 0; i < descriptors.length; i += 1) {
@@ -349,7 +349,7 @@
       .appendTo(this.dom.elem.find('.inline-controls'));
     var $select = $('<select>');
 
-    for (i=0; i < bucketSizes.length; i += 1) {
+    for (i = 0; i < bucketSizes.length; i += 1) {
       $('<option name="bucketing">')
         .val(bucketSizes[i].value)
         .text(bucketSizes[i].text)
@@ -538,7 +538,7 @@
     this.d3.axises = {};
 
     if (this.options.xAxis) {
-      new Rickshaw.Graph.Axis.Time({
+      new Rickshaw.Graph.Axis.Time({ // eslint-disable-line
         graph: this.rickshaw.graph
       });
     }
@@ -582,7 +582,7 @@
         .appendTo(this.dom.elem.find('.inline-controls'));
       $series = $('<ul>');
 
-      for (i=0; i < this.data.series.length; i += 1) {
+      for (i = 0; i < this.data.series.length; i += 1) {
         line = this.data.series[i];
         $li = $('<li>')
           .toggleClass('disabled', line.disabled)
@@ -626,12 +626,12 @@
         element: this.dom.legend[0] // legend can't handle jQuery objects
       });
 
-      new Rickshaw.Graph.Behavior.Series.Toggle({
+      new Rickshaw.Graph.Behavior.Series.Toggle({ // eslint-disable-line
         graph: this.rickshaw.graph,
         legend: this.rickshaw.legend
       });
 
-      new Rickshaw.Graph.Behavior.Series.Order({
+      new Rickshaw.Graph.Behavior.Series.Order({ // eslint-disable-line
         graph: this.rickshaw.graph,
         legend: this.rickshaw.legend
       });
@@ -648,7 +648,7 @@
       var $timelines = $(this.dom.timelines);
       this.rickshaw.timelines = [];
 
-      for (i=0; i < this.data.annotations.length; i += 1) {
+      for (i = 0; i < this.data.annotations.length; i += 1) {
         annot = this.data.annotations[i];
         $timeline = $('<div class="timeline"/>').appendTo($timelines);
 
@@ -657,7 +657,7 @@
           'element': $timeline[0]
         });
 
-        for (j=0; j < annot.data.length; j += 1) {
+        for (j = 0; j < annot.data.length; j += 1) {
           timeline.add(annot.data[j].x, annot.data[j].text);
         }
 
@@ -714,7 +714,7 @@
   Graph.prototype.render = function () {
     var i;
 
-    for (i=0; i < this.toRender.length; i += 1) {
+    for (i = 0; i < this.toRender.length; i += 1) {
       this.toRender[i].render();
     }
 
@@ -847,18 +847,18 @@
         // The magnitude key in this object was added in the monkey patch.
         var frequentInterval = { count: 0, magnitude: 1 };
 
-        Rickshaw.keys(intervalCounts).forEach( function (i) {
-          if (frequentInterval.count < intervalCounts[i]) {
+        Rickshaw.keys(intervalCounts).forEach(function (j) {
+          if (frequentInterval.count < intervalCounts[j]) {
 
             frequentInterval = {
-              count: intervalCounts[i],
-              magnitude: i
+              count: intervalCounts[j],
+              magnitude: j
             };
           }
         } );
 
         // This is the line the monkey patch rips out.
-        //this._frequentInterval = function () { return frequentInterval };
+        // this._frequentInterval = function () { return frequentInterval };
 
         return frequentInterval;
       };
@@ -1185,7 +1185,7 @@
       // Sometimes the data has holes in it. In that case, the dataIndex
       // will be wrong. Walk around the graph until we are at about the
       // right point.
-      while (0 <= dataIndex && dataIndex < data.length - 1) {
+      while (dataIndex >= 0 && dataIndex < data.length - 1) {
         if (data[dataIndex].x <= domainX && domainX <= data[dataIndex + 1].x) {
           // the right one.
           break;

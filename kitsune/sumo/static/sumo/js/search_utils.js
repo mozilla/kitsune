@@ -1,3 +1,4 @@
+/* globals k:false, jQuery:false */
 (function($, _) {
   window.k = k || {};
 
@@ -6,6 +7,14 @@
   function Search(baseUrl, params) {
     this.baseUrl = baseUrl;
     this.params = $.extend({}, params);
+  }
+
+  Search.prototype._buildQueryUrl = function(query, params) {
+    var url = this.baseUrl + '?q=' + query;
+    if (params) {
+      url += '&' + params;
+    }
+    return url;
   };
 
   Search.prototype.setParam = function(key, value) {
@@ -19,8 +28,7 @@
   };
 
   Search.prototype.getParam = function(key) {
-    this.params[key] = value;
-    return this;
+    return this.params[key];
   };
 
   Search.prototype.unsetParam = function(key) {
@@ -31,9 +39,21 @@
   Search.prototype.clearLastQuery = function() {
     this.lastQuery = '';
     this.lastParams = '';
-  }
+  };
 
-  Search.prototype.serializeParams= function(extra) {
+  Search.prototype.hasLastQuery = function() {
+    return !!this.lastQuery;
+  };
+
+  Search.prototype.lastQueryUrl = function() {
+    return this._buildQueryUrl(this.lastQuery, this.lastParams);
+  };
+
+  Search.prototype.queryUrl = function(query) {
+    return this._buildQueryUrl(this.lastQuery, this.serializeParams());
+  };
+
+  Search.prototype.serializeParams = function(extra) {
     var params = $.extend({}, this.params, extra);
     var keys = Object.keys(params);
     var paramStrings = [];

@@ -391,7 +391,8 @@
 
 #kb-overview-table {
   td {
-    &.status {
+    &.status,
+    &.ready-for-l10n.yes {
       background: rgba(0, 255, 0, 0.1);
 
       &.needs-review {
@@ -435,6 +436,11 @@
     max-height: 50px;
     overflow: hidden;
   }
+}
+
+.category-filter {
+  float: right;
+  margin-top: 10px;
 }
 
 /* Email notifications */

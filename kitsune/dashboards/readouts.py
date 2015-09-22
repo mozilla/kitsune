@@ -185,7 +185,7 @@ def _format_row_with_out_of_dateness(readout_locale, eng_slug, eng_title, slug,
                 status_url=status_url)
 
 
-def kb_overview_rows(mode=None, max=None, locale=None, product=None):
+def kb_overview_rows(mode=None, max=None, locale=None, product=None, category=None):
     """Return the iterable of dicts needed to draw the new KB dashboard
     overview"""
 
@@ -211,6 +211,9 @@ def kb_overview_rows(mode=None, max=None, locale=None, product=None):
     if product:
         docs = docs.filter(products__in=[product])
 
+    if category:
+        docs = docs.filter(category__in=[category])
+
     docs = docs.order_by('-num_visits', 'title')
 
     if max:
@@ -229,6 +232,8 @@ def kb_overview_rows(mode=None, max=None, locale=None, product=None):
                                  locale=settings.WIKI_DEFAULT_LANGUAGE),
             'title': d.title,
             'num_visits': d.num_visits,
+            'ready_for_l10n': d.revisions.filter(is_approved=True,
+                                                 is_ready_for_localization=True).exists()
         }
 
         if d.current_revision:
@@ -302,7 +307,7 @@ def l10n_overview_rows(locale, product=None):
                          str(NAVIGATION_CATEGORY),
                          str(HOW_TO_CONTRIBUTE_CATEGORY)]
 
-    if not product or not has_forum:
+    if product and not has_forum:
         ignore_categories.append(str(CANNED_RESPONSES_CATEGORY))
 
     total = total.exclude(category__in=ignore_categories)
@@ -736,7 +741,7 @@ class MostVisitedTranslationsReadout(MostVisitedDefaultLanguageReadout):
             extra_joins = ''
             params = (self.locale, period, settings.WIKI_DEFAULT_LANGUAGE)
 
-        if not self.product or not has_forum:
+        if self.product and not has_forum:
             ignore_categories.append(str(CANNED_RESPONSES_CATEGORY))
 
         extra_where = ('AND NOT engdoc.category IN (' +

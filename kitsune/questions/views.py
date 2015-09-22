@@ -21,8 +21,10 @@ from django.views.decorators.http import (require_POST, require_GET,
                                           require_http_methods)
 
 import jingo
+import waffle
 from ordereddict import OrderedDict
 from mobility.decorators import mobile_template
+from rest_framework.renderers import JSONRenderer
 from session_csrf import anonymous_csrf
 from statsd import statsd
 from taggit.models import Tag
@@ -32,6 +34,7 @@ from tower import ugettext as _, ugettext_lazy as _lazy
 
 from kitsune.access.decorators import permission_required, login_required
 from kitsune.community.utils import top_contributors_questions
+from kitsune.products.api import ProductSerializer, TopicSerializer
 from kitsune.products.models import Product, Topic
 from kitsune.questions import config
 from kitsune.questions.events import QuestionReplyEvent, QuestionSolvedEvent
@@ -101,8 +104,7 @@ ORDER_BY = OrderedDict([
 def product_list(request, template):
     """View to select a product to see related questions."""
     return render(request, template, {
-        'products': Product.objects.filter(
-            questions_locales__locale__in=[request.LANGUAGE_CODE])
+        'products': Product.objects.filter(questions_locales__locale=request.LANGUAGE_CODE)
     })
 
 
@@ -461,18 +463,38 @@ def edit_details(request, question_id):
 
 
 @ssl_required
+@anonymous_csrf
+def aaq_react(request):
+    request.session['in-aaq'] = True
+    to_json = JSONRenderer().render
+    products = ProductSerializer(
+        Product.objects.filter(questions_locales__locale=request.LANGUAGE_CODE),
+        many=True)
+    topics = TopicSerializer(Topic.objects.filter(in_aaq=True), many=True)
+
+    return render(request, 'questions/new_question_react.html', {
+        'products_json': to_json(products.data),
+        'topics_json': to_json(topics.data),
+    })
+
+
+@ssl_required
 @mobile_template('questions/{mobile/}new_question.html')
 @anonymous_csrf  # This view renders a login form
 def aaq(request, product_key=None, category_key=None, showform=False,
         template=None, step=0):
     """Ask a new question."""
 
+    # Use react version if waffle flag is set
+    if waffle.flag_is_active(request, 'new_aaq'):
+        return aaq_react(request)
+
     # This tells our LogoutDeactivatedUsersMiddleware not to
     # boot this user.
     request.session['in-aaq'] = True
 
-    if (request.LANGUAGE_CODE not in QuestionLocale.objects.locales_list()
-            and request.LANGUAGE_CODE != settings.WIKI_DEFAULT_LANGUAGE):
+    if (request.LANGUAGE_CODE not in QuestionLocale.objects.locales_list() and
+            request.LANGUAGE_CODE != settings.WIKI_DEFAULT_LANGUAGE):
 
         locale, path = split_path(request.path)
         path = '/' + settings.WIKI_DEFAULT_LANGUAGE + '/' + path
@@ -495,6 +517,8 @@ def aaq(request, product_key=None, category_key=None, showform=False,
             ua = request.META.get('HTTP_USER_AGENT', '').lower()
             if 'firefox' in ua and 'android' not in ua:
                 product_key = 'firefox-os'
+            elif 'fxios' in ua:
+                product_key = 'ios'
             else:
                 product_key = 'mobile'
 

@@ -1,9 +1,9 @@
+# -*- coding: utf-8 -*-
+import inspect
 import os
-import re
 import sys
 from functools import wraps
-from os import getenv, listdir
-from os.path import join, dirname
+from os import getenv
 from smtplib import SMTPRecipientsRefused
 
 from django.conf import settings
@@ -15,12 +15,13 @@ from django.test.utils import override_settings
 from django.utils.translation import trans_real
 
 import django_nose
+import factory.fuzzy
 from nose.tools import eq_
 from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.firefox import firefox_binary
+from waffle.models import Flag
 
-from kitsune import sumo
 from kitsune.sumo.urlresolvers import reverse, split_path
 
 
@@ -116,52 +117,6 @@ class LocalizingClient(Client):
     # prepending in a one-off case or do it outside a mock request.
 
 
-class MigrationTests(TestCase):
-    """Sanity checks for the SQL migration scripts"""
-
-    @staticmethod
-    def _migrations_path():
-        """Return the absolute path to the migration script folder."""
-        return join(dirname(dirname(dirname(sumo.__file__))), 'migrations')
-
-    def test_unique(self):
-        """Assert that the numeric prefixes of the DB migrations are unique."""
-        leading_digits = re.compile(r'^\d+')
-        seen_numbers = set()
-        path = self._migrations_path()
-        for filename in listdir(path):
-            match = leading_digits.match(filename)
-            if match:
-                number = match.group()
-                if number in seen_numbers:
-                    self.fail('There is more than one migration #%s in %s.' %
-                              (number, path))
-                seen_numbers.add(number)
-
-    def test_innodb_and_utf8(self):
-        """Make sure each created table uses the InnoDB engine and UTF-8."""
-        # Heuristic: make sure there are at least as many "ENGINE=InnoDB"s as
-        # "CREATE TABLE"s. (There might be additional "InnoDB"s in ALTER TABLE
-        # statements, which are fine.)
-        path = self._migrations_path()
-        for filename in sorted(listdir(path)):
-            with open(join(path, filename)) as f:
-                contents = f.read()
-            # Skip migrations that have special comment 'SKIP MIGRATION TESTS'
-            if 'SKIP MIGRATION TESTS' in contents:
-                continue
-            creates = contents.count('CREATE TABLE')
-            engines = contents.count('ENGINE=InnoDB')
-            encodings = (contents.count('CHARSET=utf8') +
-                         contents.count('CHARACTER SET utf8'))
-            assert engines >= creates, (
-                "There weren't as many occurrences of 'ENGINE=InnoDB' as "
-                "of 'CREATE TABLE' in migration %s." % filename)
-            assert encodings >= creates, (
-                "There weren't as many UTF-8 declarations as"
-                "'CREATE TABLE' occurrences in migration %s." % filename)
-
-
 class MobileTestCase(TestCase):
     def setUp(self):
         super(MobileTestCase, self).setUp()
@@ -229,3 +184,95 @@ def eq_msg(a, b, msg=None):
     """Shorthand for 'assert a == b, "%s %r != %r" % (msg, a, b)'
     """
     assert a == b, (str(msg) or '') + ' (%r != %r)' % (a, b)
+
+
+class FuzzyUnicode(factory.fuzzy.FuzzyText):
+    """A FuzzyText factory that contains at least one non-ASCII character."""
+
+    def fuzz(self):
+        return u'đ{}'.format(super(FuzzyUnicode, self).fuzz())
+
+
+class set_waffle_flag(object):
+    """
+    Decorator/context manager that sets a given waffle flag.
+
+    When applied to a function or method, it sets the value of the flag
+    before the function is called, and resets the flag to its original
+    value afterwards.
+
+    When applies to a class, it decorates every method in the class
+    that has a name beginning with "test" with this decorator.
+
+    When used as a context manager, enables the flag before running the
+    wrapped code, and resets the flag afterwards.
+
+    Usage::
+
+        @set_waffle_flag('some_flag')
+        class TestClass(TestCase):
+            def test_the_thing(self):
+                ...
+
+        @set_waffle_flag('some_flag', everyone=False)
+        def test_my_view():
+            ...
+
+        with set_waffle_flag('some_flag', everyone=True):
+            ...
+    """
+
+    def __init__(self, flagname, **kwargs):
+        self.flagname = flagname
+        self.kwargs = kwargs or {'everyone': True}
+
+        try:
+            self.origflag = Flag.objects.get(name=self.flagname)
+            self.origid = self.origflag.id
+        except Flag.DoesNotExist:
+            self.origflag = None
+            self.origid = None
+
+    def __call__(self, func_or_class):
+        """Decorate a class or function"""
+        if inspect.isclass(func_or_class):
+            # If func_or_class is a class, decorate all of its methods
+            # that start with 'test'.
+            for attr in func_or_class.__dict__.keys():
+                prop = getattr(func_or_class, attr)
+                if attr.startswith('test') and callable(prop):
+                    setattr(func_or_class, attr, self.decorate(prop))
+            return func_or_class
+        else:
+            # If func_or_class is a function, decorate it directly
+            return self.decorate(func_or_class)
+
+    def __enter__(self):
+        """Start acting like a context manager."""
+        self.make_flag()
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        """Stop acting like a context manager."""
+        self.restore_flag()
+
+    def decorate(self, func):
+        """Decorates a function to enable the waffle flag."""
+        @wraps(func)
+        def _give_me_waffles(*args, **kwargs):
+            self.make_flag()
+            try:
+                func(*args, **kwargs)
+            finally:
+                self.restore_flag()
+        return _give_me_waffles
+
+    def make_flag(self):
+        """Ensure that the flag is created and has the correct values."""
+        Flag.objects.update_or_create(name=self.flagname, defaults=self.kwargs)
+
+    def restore_flag(self):
+        """Ensure that the flag is reset back to its original value."""
+        Flag.objects.filter(name=self.flagname).delete()
+        if self.origflag is not None:
+            self.origflag.id = self.origid
+            self.origflag.save()

@@ -70,6 +70,12 @@ PIPELINE_CSS = {
         ),
         'output_filename': 'build/questions.metrics-min.css'
     },
+    'questions.aaq.react': {
+        'source_filenames': (
+            'questions/less/questions.aaq.react.less',
+        ),
+        'output_filename': 'build/questions.aaq.react-min.css'
+    },
     'mobile-questions': {
         'source_filenames': (
             'sumo/less/mobile/questions.less',
@@ -96,6 +102,13 @@ PIPELINE_CSS = {
         ),
         'output_filename': 'build/mobile-search-min.css'
     },
+    'coolsearch': {
+        'source_filenames': (
+            'react-swipe-views/lib/react-swipe-views.css',
+            'coolsearch/less/search.less',
+        ),
+        'output_filename': 'build/coolsearch-min.css'
+    },
     'wiki': {
         'source_filenames': (
             'sumo/css/users.autocomplete.css',
@@ -109,6 +122,7 @@ PIPELINE_CSS = {
     'wiki-editor': {
         'source_filenames': (
             'codemirror/lib/codemirror.css',
+            'codemirror/addon/hint/show-hint.css',
         ),
         'output_filename': 'wiki-editor-min.css'
     },
@@ -386,6 +400,23 @@ PIPELINE_JS = {
         ),
         'output_filename': 'build/questions.metrics-min.js'
     },
+    'questions.aaq.react': {
+        'source_filenames': (
+            # This uses the minified version because it is optimized to leave
+            # out lots of debug stuff, so it is significantly smaller than
+            # just minifying react.js.
+            # TODO: Figure out how to include the full sized version in dev,
+            # because it produces much nicer error messages.
+            'react/react.min.js',
+            # 'react/react.js',
+            'flux/dist/Flux.js',
+            'underscore/underscore.js',
+
+            'questions/js/aaq.browserify.js',
+
+        ),
+        'output_filename': 'build/questions.aaq.react-min.js',
+    },
     'mobile-questions': {
         'source_filenames': (
             'sumo/js/mobile/questions.js',
@@ -407,11 +438,40 @@ PIPELINE_JS = {
         ),
         'output_filename': 'build/products-min.js'
     },
+    'mobile-products': {
+        'source_filenames': (
+            'sumo/js/templates/mobile-product-search-results.js',
+            'nunjucks/browser/nunjucks-slim.js',
+            'sumo/js/nunjucks.js',
+            'moment/moment.js',
+            'sumo/js/cached_xhr.js',
+            'sumo/js/search_utils.js',
+            'sumo/js/instant_search.js',
+            'sumo/js/mobile/products.js',
+        ),
+        'output_filename': 'build/mobile-products-min.js'
+    },
     'search': {
         'source_filenames': (
             'sumo/js/search.js',
         ),
         'output_filename': 'build/search-min.js'
+    },
+    'coolsearch': {
+        'source_filenames': (
+            # This uses the minified version because it is optimized to leave
+            # out lots of debug stuff, so it is significantly smaller than
+            # just minifying react.js.
+            # TODO: Figure out how to include the full sized version in dev,
+            # because it produces much nicer error messages.
+            # 'react/react.min.js',
+            'react/react.js',
+            'flux/dist/Flux.js',
+            'underscore/underscore.js',
+
+            'coolsearch/js/search.browserify.js',
+        ),
+        'output_filename': 'build/search.react-min.js'
     },
     'forums': {
         'source_filenames': (
@@ -434,7 +494,6 @@ PIPELINE_JS = {
             'sumo/js/markup.js',
             'sumo/js/libs/django/urlify.js',
             'sumo/js/libs/django/prepopulate.js',
-            'sumo/js/libs/swfobject.js',
             'sumo/js/libs/jquery.lazyload.js',
             'sumo/js/libs/jquery.tokeninput.js',
             'sumo/js/users.autocomplete.js',
@@ -511,6 +570,8 @@ PIPELINE_JS = {
         'source_filenames': (
             'codemirror/lib/codemirror.js',
             'codemirror/addon/mode/simple.js',
+            'codemirror/addon/hint/show-hint.js',
+            'sumo/js/codemirror.sumo-hint.js',
             'sumo/js/codemirror.sumo-mode.js',
         ),
         'output_filename': 'build/wiki.editor-min.js'

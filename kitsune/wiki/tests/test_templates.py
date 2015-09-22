@@ -25,13 +25,12 @@ from kitsune.wiki.events import (
 from kitsune.wiki.models import (
     Document, Revision, HelpfulVote, HelpfulVoteMetadata)
 from kitsune.wiki.config import (
-    SIGNIFICANCES, MEDIUM_SIGNIFICANCE, ADMINISTRATION_CATEGORY,
-    TROUBLESHOOTING_CATEGORY, CATEGORIES,
-    CANNED_RESPONSES_CATEGORY)
+    SIGNIFICANCES, MEDIUM_SIGNIFICANCE, ADMINISTRATION_CATEGORY, TROUBLESHOOTING_CATEGORY,
+    CATEGORIES, CANNED_RESPONSES_CATEGORY, TEMPLATES_CATEGORY, TEMPLATE_TITLE_PREFIX)
 from kitsune.wiki.tasks import send_reviewed_notification
 from kitsune.wiki.tests import (
-    TestCaseBase, document, revision, new_document_data, translated_revision,
-    locale)
+    TestCaseBase, document, revision, new_document_data, translated_revision, locale,
+    DocumentFactory, ApprovedRevisionFactory)
 
 
 READY_FOR_REVIEW_EMAIL_CONTENT = """\
@@ -191,21 +190,39 @@ class DocumentTests(TestCaseBase):
         eq_(pq(r.document.html).text(), doc('#doc-content').text())
 
     def test_document_fallback_no_translation(self):
-        """The document template falls back to English if no translation
-        exists."""
+        """The document template falls back to English if no translation exists."""
         r = revision(save=True, content='Some text.', is_approved=True)
         url = reverse('wiki.document', args=[r.document.slug], locale='fr')
         response = self.client.get(url)
         doc = pq(response.content)
         eq_(r.document.title, doc('article h1.title').text())
-
-        # Fallback message is shown.
-        eq_(1, len(doc('#doc-pending-fallback')))
         # Removing this as it shows up in text(), and we don't want to depend
         # on its localization.
         doc('#doc-pending-fallback').remove()
         # Included content is English.
         eq_(pq(r.document.html)('div').text(), doc('#doc-content div').text())
+
+    def test_document_fallback_no_translation_not_ready_for_l10n(self):
+        """Prompt to localize an article isn't shown when there is a pending localization."""
+        # Creating a revision not ready for localization
+        r = revision(save=True, content='Some text.', is_approved=True,
+                     is_ready_for_localization=False)
+        url = reverse('wiki.document', args=[r.document.slug], locale='de')
+        response = self.client.get(url)
+        doc = pq(response.content)
+        # Fallback message is not shown.
+        eq_(0, len(doc('#doc-pending-fallback')))
+
+    def test_document_fallback_no_translation_ready_for_l10n(self):
+        """Prompt to localize an article is shown when there are no pending localizations."""
+        # Creating a revision ready for localization
+        r = revision(save=True, content='Some text.', is_approved=True,
+                     is_ready_for_localization=True)
+        url = reverse('wiki.document', args=[r.document.slug], locale='de')
+        response = self.client.get(url)
+        doc = pq(response.content)
+        # Fallback message is shown.
+        eq_(1, len(doc('#doc-pending-fallback')))
 
     def test_redirect(self):
         """Make sure documents with REDIRECT directives redirect properly.
@@ -298,21 +315,26 @@ class DocumentTests(TestCaseBase):
     def test_templates_noindex(self):
         """Document templates should have a noindex meta tag."""
         # Create a document and verify there is no robots:noindex
-        r = revision(save=True, content='Some text.', is_approved=True)
+        d = DocumentFactory()
+        r = ApprovedRevisionFactory(document=d)
+
         response = self.client.get(r.document.get_absolute_url())
         eq_(200, response.status_code)
         doc = pq(response.content)
         eq_(0, len(doc('meta[name=robots]')))
 
         # Convert the document to a template and verify robots:noindex
-        d = r.document
-        d.title = 'Template:test'
+        d.category = TEMPLATES_CATEGORY
+        d.title = TEMPLATE_TITLE_PREFIX + d.title
         d.save()
+
+        # This page is cached
         cache.clear()
+
         response = self.client.get(r.document.get_absolute_url())
         eq_(200, response.status_code)
         doc = pq(response.content)
-        eq_('noindex', doc('meta[name=robots]')[0].attrib['content'])
+        eq_(doc('meta[name=robots]')[0].attrib['content'], 'noindex')
 
     def test_archived_noindex(self):
         """Archived documents should have a noindex meta tag."""

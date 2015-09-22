@@ -19,7 +19,6 @@ DATABASES['default']['CONN_MAX_AGE'] = 600
 CELERY_ALWAYS_EAGER = True
 ES_INDEX_PREFIX = 'sumo'
 ES_URLS = ['http://localhost:9200']
-INSTALLED_APPS += ('django_qunit',)
 SETTINGS
 
 echo "Making redis.conf"

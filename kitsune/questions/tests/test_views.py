@@ -18,10 +18,9 @@ from kitsune.questions.tests import (
 from kitsune.questions.views import parse_troubleshooting
 from kitsune.search.tests.test_es import ElasticTestCase
 from kitsune.sumo.helpers import urlparams
-from kitsune.sumo.tests import (
-    get, MobileTestCase, LocalizingClient, eq_msg)
+from kitsune.sumo.tests import get, MobileTestCase, LocalizingClient, eq_msg, set_waffle_flag
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.products.tests import topic
+from kitsune.products.tests import topic, TopicFactory
 from kitsune.users.models import Profile
 from kitsune.users.tests import user, add_permission
 from kitsune.wiki.tests import document, revision
@@ -297,6 +296,27 @@ class MobileAAQTests(MobileTestCase):
         doc = pq(res.content)
         eq_(1, len(doc('#login-form input[name=login]')))
         eq_(1, len(doc('#register-form input[name=register]')))
+
+
+@set_waffle_flag('new_aaq')
+class ReactAAQTests(TestCaseBase):
+
+    def test_waffle_flag(self):
+        url = reverse('questions.aaq_step1')
+        response = self.client.get(url, follow=True)
+        self.assertTemplateUsed(response, 'questions/new_question_react.html')
+
+    def test_only_marked_topics(self):
+        t1 = TopicFactory(in_aaq=True)
+        TopicFactory(in_aaq=False)
+
+        url = reverse('questions.aaq_step1')
+        response = self.client.get(url, follow=True)
+        doc = pq(response.content)
+        topics = json.loads(doc('.data[name=topics]').text())
+
+        eq_(len(topics), 1)
+        eq_(topics[0]['id'], t1.id)
 
 
 class TestQuestionUpdates(TestCaseBase):

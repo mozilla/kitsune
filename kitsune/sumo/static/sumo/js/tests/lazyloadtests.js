@@ -1,16 +1,27 @@
-(function() {
+import {default as mochaJsdom, rerequire} from 'mocha-jsdom';
+import {default as chai, expect} from 'chai';
+import React from 'react';
+import chaiLint from 'chai-lint';
 
-'use strict';
+import mochaJquery from './fixtures/mochaJquery.js';
 
-module('lazyload');
+chai.use(chaiLint);
 
-test('load original image', function() {
-    var img = new Image();
-    $(img).addClass('lazy');
-    $(img).data('original-src', 'http://example.com/test.jpg');
-    $.fn.lazyload.loadOriginalImage($(img));
-    equals($(img).attr('src'), 'http://example.com/test.jpg', 'src attribute set correctly');
-    equals($(img).data('original-src'), undefined, 'original-src data attribute cleared correctly');
+describe('lazyload', () => {
+  mochaJsdom({useEach: true});
+  mochaJquery();
+  /* globals document, $ */
+
+  beforeEach(() => {
+    rerequire('../libs/jquery.lazyload.js');
+  });
+
+  it('should load original image', () => {
+    let img = <img className="lazy" data-original-src="http://example.com/test.jpg"/>;
+    React.render(img, document.body);
+    let $img = $('img');
+
+    $.fn.lazyload.loadOriginalImage($img);
+    expect($img.attr('src')).to.equal('http://example.com/test.jpg');
+  });
 });
-
-})();

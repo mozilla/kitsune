@@ -18,6 +18,7 @@ from kitsune.dashboards.utils import render_readouts, get_locales_by_visit
 from kitsune.products.models import Product
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import smart_int
+from kitsune.wiki.config import CATEGORIES
 from kitsune.wiki.models import Locale
 
 
@@ -63,17 +64,20 @@ def contributors_detail(request, readout_slug):
 @require_GET
 def contributors_overview(request):
     product = _get_product(request)
+    category = _get_category(request)
 
     return render(request, 'dashboards/contributors_overview.html', {
         'overview_rows': kb_overview_rows(
             locale=request.LANGUAGE_CODE, product=product,
             mode=smart_int(request.GET.get('mode'), None),
-            max=None),
+            max=None, category=category),
         'main_dash_view': 'dashboards.contributors',
         'main_dash_title': _('Knowledge Base Dashboard'),
         'locale': request.LANGUAGE_CODE,
         'product': product,
-        'products': Product.objects.filter(visible=True)})
+        'products': Product.objects.filter(visible=True),
+        'category': category,
+        'categories': CATEGORIES})
 
 
 @require_GET
@@ -112,6 +116,7 @@ def localization(request):
 def contributors(request):
     """Render aggregate data about the articles in the default locale."""
     product = _get_product(request)
+    category = _get_category(request)
 
     return render_readouts(
         request,
@@ -123,8 +128,11 @@ def contributors(request):
             'overview_rows': kb_overview_rows(
                 locale=request.LANGUAGE_CODE, product=product,
                 mode=smart_int(request.GET.get('mode'), None),
-                max=smart_int(request.GET.get('max'), 10)),
-            'overview_modes': PERIODS
+                max=smart_int(request.GET.get('max'), 10),
+                category=category),
+            'overview_modes': PERIODS,
+            'category': category,
+            'categories': CATEGORIES,
         })
 
 
@@ -208,5 +216,17 @@ def _get_product(request):
     product_slug = request.GET.get('product')
     if product_slug:
         return get_object_or_404(Product, slug=product_slug)
+
+    return None
+
+
+def _get_category(request):
+    category = request.GET.get('category')
+
+    if category:
+        for c in CATEGORIES:
+            if str(c[0]) == category:
+                return c[0]
+        raise Http404('Invalid category.')
 
     return None

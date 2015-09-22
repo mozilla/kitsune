@@ -1,6 +1,6 @@
 {% extends 'mobile/base.html' %}
 
-{% set title = _('Join our Army of Awesome') %}
+{% set title = _('Answer questions in the forum') %}
 {% set headline = title %}
 
 {% set styles = ('mobile-landings-get-involved',) %}
@@ -23,6 +23,9 @@
 
     <div class="centered">
       <img class="smart-width" src="{{ STATIC_URL }}sumo/img/gi-visual-questions.png" alt="">
+      <p>
+        {{ _('Solving 1 issue helps up to 1,000 users a day') }}
+      </p>
     </div>
 
     <h4>{{ _('How it works') }}</h4>

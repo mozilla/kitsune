@@ -57,8 +57,6 @@ NUNJUCKS_PRECOMPILE_BIN = path('node_modules/.bin/nunjucks-precompile')
 # Tells django-axes we aren't behind a reverse proxy.
 AXES_BEHIND_REVERSE_PROXY = False
 
-INSTALLED_APPS += ['django_qunit']
-
 # Enable this to add more debugging in all pages. You'll also need to install
 # the developer packages, listed in ``requirements/dev.txt``.
 USE_DEBUG_TOOLBAR = False

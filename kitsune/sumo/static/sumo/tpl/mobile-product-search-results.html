@@ -1,0 +1,12 @@
+<div class="search-header">{{ 'Search results'|gettext }}</div>
+<ul class="document-list">
+  {% if num_results > 0 %}
+    {% for doc in results %}
+      <li>
+        <a href="{{ doc.url }}">{{ doc.title }}</a>
+      </li>
+    {% endfor %}
+  {% else %}
+    <li><a href="#">{{ 'No results found.'|gettext }}</a></li>
+  {% endif %}
+</ul>

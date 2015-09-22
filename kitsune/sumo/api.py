@@ -5,7 +5,8 @@ from django.contrib.auth.models import User
 
 import pytz
 from rest_framework import fields, permissions, relations, serializers
-from rest_framework.exceptions import APIException
+from rest_framework.authentication import SessionAuthentication, CSRFCheck
+from rest_framework.exceptions import APIException, AuthenticationFailed
 from rest_framework.filters import BaseFilterBackend
 from rest_framework.fields import get_component
 from tower import ugettext as _
@@ -344,3 +345,53 @@ def PermissionMod(cls, permissions):
             return all(p.has_object_permission(request, self, obj) for p in self.get_permissions())
 
     return Modded
+
+
+class InactiveSessionAuthentication(SessionAuthentication):
+    """
+    Use Django's session framework for authentication.
+
+    Allows inactive users.
+    """
+
+    def authenticate(self, request):
+        """
+        Returns a `User` if the request session currently has a logged in user.
+        Otherwise returns `None`.
+        """
+
+        # Get the underlying HttpRequest object
+        request = request._request
+        user = getattr(request, 'user', None)
+
+        # Unauthenticated, CSRF validation not required
+        if not user or user.is_anonymous():
+            return None
+
+        self.enforce_csrf(request)
+
+        # CSRF passed with authenticated user
+        return (user, None)
+
+    def enforce_csrf(self, request):
+        """
+        Enforce CSRF validation for session based authentication.
+        """
+        reason = CSRFCheck().process_view(request, None, (), {})
+        if reason:
+            # CSRF failed, bail with explicit error message
+            raise AuthenticationFailed('CSRF Failed: %s' % reason)
+
+
+class ImageUrlField(fields.ImageField):
+    """An image field that serializes to a url instead of a file name.
+
+    Additionally, if there is no file associated with this image, this
+    returns ``None`` instead of erroring.
+    """
+
+    def to_native(self, value):
+        try:
+            return value.url
+        except ValueError:
+            return None

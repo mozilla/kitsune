@@ -226,7 +226,7 @@
       </li>
       {% for p in products %}
         <li {{ current|class_selected(p) }}>
-          <a href="{{ url_|urlparams(product=p.slug) }}">
+          <a href="{{ url_|urlparams(product=p.slug, category=category) }}">
             <img src="{{ STATIC_URL }}sumo/img/blank.png" class="logo-sprite small" style="{% if p.image %}background-image: url({{ p.sprite_url(retina=False) }}); background-position: -50px -{{ 50 + (p.image_offset * 148) }}px;{% else %}background-image: url({{ p.image_url }}){% endif %}" alt="" />
             <span>{{ _(p.title, 'DB: products.Product.title') }}</span>
           </a>
@@ -246,6 +246,23 @@
         </option>
       {% endfor %}
     </select>
+  </div>
+{% endmacro %}
+
+{% macro category_filter() %}
+  <div class="category-filter">
+    <form method="get">
+      {% if product %}
+        <input type="hidden" name="product" value="{{ product }}">
+      {% endif %}
+      <label>{{ _('Filter by type:') }}</label>
+      <select data-submit name="category">
+        <option value="">{{ _('All') }}</option>
+        {% for c in categories %}
+          <option value="{{ c[0] }}" {% if category == c[0] %}selected="selected"{% endif %}>{{ c[1] }}</option>
+        {% endfor %}
+      </select>
+    </form>
   </div>
 {% endmacro %}
 

@@ -2,10 +2,22 @@
 
 {% set title = _(product.title, 'DB: products.Product.title') %}
 {% set headline = title %}
+{% set classes = 'product-landing' %}
 {% set styles = ('mobile-products',) %}
+{% set scripts = ('mobile-products',) %}
 {% set return_url = url('products') %}
 
 {% block title %}{{ _('{product} Help')|f(product=_(product.title, 'DB: products.Product.title')) }}{% endblock %}
+
+{% block after_header %}
+  <div class="search-bar slide-on-exposed">
+    <form data-instant-search="form" action="{{ url('search') }}" method="get">
+      <input type="hidden" name="product" value="{{ product.slug }}" />
+      <input type="hidden" name="w" value="1" />
+      <input type="search" name="q" required="required" aria-required="true" placeholder="{{ _('Search support articles') }}" class="searchbox" id="search-q" />
+    </form>
+  </div>
+{% endblock %}
 
 {% block content %}
   <ul id="topics">

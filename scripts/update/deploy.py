@@ -14,10 +14,13 @@ from commander.deploy import task, hostgroups  # noqa
 import commander_settings as settings  # noqa
 
 
-# Setup virtualenv path.
+# Setup environment
 venv_bin_path = os.path.join(settings.SRC_DIR, 'virtualenv', 'bin')
 os.environ['PATH'] = venv_bin_path + os.pathsep + os.environ['PATH']
 os.environ['DJANGO_SETTINGS_MODULE'] = 'kitsune.settings_local'
+if 'HOME' not in os.environ:
+    print 'Setting HOME to "{0}" (wtf?)'.format(settings.SRC_DIR)
+    os.environ['HOME'] = settings.SRC_DIR
 
 
 @task
@@ -55,8 +58,6 @@ def update_assets(ctx):
 @task
 def db_migrations(ctx):
     with ctx.lcd(settings.SRC_DIR):
-        # This runs schematic and django migrations.
-        ctx.local('schematic migrations')
         ctx.local('python2.7 manage.py migrate --noinput')
 
 

@@ -1,4 +1,4 @@
-/*global window, document, jQuery, gettext */
+/* global jQuery:false, gettext:false, _gaq:false, KBox:false */
 /*
   Marky, the markup toolbar builder
 
@@ -21,7 +21,7 @@
     ]);
   </script>
 */
-(function($, gettext, document){
+(function($, gettext, document) {
 
   var Marky = {
     createSimpleToolbar: function(toolbarSel, textareaSel, options) {
@@ -53,7 +53,7 @@
         buttons.push(new Marky.Separator(),
           new Marky.CannedResponsesButton());
       }
-      if(settings.privateMessaging) {
+      if (settings.privateMessaging) {
         buttons.push(new Marky.Separator(),
           new Marky.QuoteButton());
       }
@@ -68,7 +68,7 @@
     createCustomToolbar: function(toolbarSel, textareaSel, partsArray) {
       var $toolbar = $(toolbarSel || '.editor-tools'),
         textarea = $(textareaSel || '#reply-content, #id_content')[0];
-      for (var i=0, l=partsArray.length; i<l; i++) {
+      for (var i = 0, l = partsArray.length; i < l; i++) {
         $toolbar.append(partsArray[i].bind(textarea).node());
       }
     },
@@ -152,11 +152,11 @@
         return editor.getSelection();
       }
 
-      if(document.selection && document.selection.createRange) {
+      if (document.selection && document.selection.createRange) {
         // IE/Opera
         selText = document.selection.createRange().text;
-      } else if(this.textarea.selectionStart ||
-        this.textarea.selectionStart == '0') {
+      } else if (this.textarea.selectionStart ||
+        this.textarea.selectionStart === '0') {
         // Firefox/Safari/Chrome/etc.
         selText = this.textarea.value.substring(
           this.textarea.selectionStart, this.textarea.selectionEnd);
@@ -170,7 +170,7 @@
         scrollTop = $(textarea).scrollTop(),
         editor = window.highlighting && window.highlighting.editor;
 
-      if(window.codemirror && window.highlighting && window.highlighting.isEnabled()) {
+      if (window.codemirror && window.highlighting && window.highlighting.isEnabled()) {
         selText = (editor.somethingSelected()) ? editor.getSelection() : this.defaultText;
         selText = this.openTag + selText + this.closeTag;
         editor.replaceSelection(selText);
@@ -185,18 +185,18 @@
         // IE/Opera
         range = document.selection.createRange();
         selText = range.text;
-        if(!selText.length) {
+        if (!selText.length) {
           selText = this.defaultText;
         }
 
-        if(this.everyline && -~selText.indexOf('\n')) {
+        if (this.everyline && -~selText.indexOf('\n')) {
           splitText = this._applyEveryLine(this.openTag, this.closeTag,
             selText);
           range.text = splitText.join('\n');
         } else {
           range.text = this.openTag + selText + this.closeTag;
 
-          if(range.moveStart) {
+          if (range.moveStart) {
             range.moveStart('character', (-1 * this.openTag.length) -
               selText.length);
             range.moveEnd('character', (-1 * this.closeTag.length));
@@ -204,16 +204,16 @@
         }
 
         range.select();
-      } else if (textarea.selectionStart || textarea.selectionStart == '0') {
+      } else if (textarea.selectionStart || textarea.selectionStart === '0') { // yes, this is really a string.
         // Firefox/Safari/Chrome/etc.
         selStart = textarea.selectionStart;
         selEnd = textarea.selectionEnd;
         selText = textarea.value.substring(selStart, selEnd);
-        if(!selText.length) {
+        if (!selText.length) {
           selText = this.defaultText;
         }
 
-        if(this.everyline && -~selText.indexOf('\n')) {
+        if (this.everyline && -~selText.indexOf('\n')) {
           splitText = this._applyEveryLine(this.openTag, this.closeTag,
             selText).join('\n');
           textarea.value =
@@ -296,7 +296,7 @@
       this.closeTag = this.origCloseTag;
       this.defaultText = this.origDefaultText;
     },
-    openModal: function(e) {
+    openModal: function(ev) {
       var me = this,
       // TODO: look at using a js template solution (jquery-tmpl?)
         $html = $(
@@ -326,15 +326,15 @@
       // Perform a query for the sections of an article if
       // last character is a pound:
       var performSectionSearch = function(request) {
-        return (request.term.indexOf("#") == request.term.length - 1);
+        return (request.term.indexOf('#') === request.term.length - 1);
       };
 
       var results = [];
 
-      //Get the article URL by providing the article name:
+      // Get the article URL by providing the article name:
       var getArticleURL = function(name) {
-        for(var i = 0; i < results.length; i++) {
-          if(name == results[i].label) {
+        for (var i = 0; i < results.length; i++) {
+          if (name === results[i].label) {
             return results[i].url;
           }
         }
@@ -345,7 +345,7 @@
       var articleSearch = function(request, response) {
         results = [];
         $.ajax({
-          url: "/en-US/search",
+          url: '/en-US/search',
           data: {
             format: 'json',
             q: request.term,
@@ -367,25 +367,25 @@
       };
 
       var sectionSearch = function(request, response) {
-        var articleName = request.term.split("#")[0];
+        var articleName = request.term.split('#')[0];
         var articleURL = getArticleURL(articleName);
 
-        if(!articleURL) {
+        if (!articleURL) {
           return;
         }
 
         $.ajax({
           url: articleURL,
-          dataType: "text",
+          dataType: 'text',
           success: function(data, status) {
             var headings = $("[id^='w_']", data);
             var array = [];
 
-            if(headings.length === 0) {
+            if (headings.length === 0) {
               array.push({
-                label: gettext("No sections found"),
-                value: request.term.replace("#", ""),
-                target: ""
+                label: gettext('No sections found'),
+                value: request.term.replace('#', ''),
+                target: ''
               });
             }
 
@@ -393,7 +393,7 @@
               var element = this.nodeName;
               var level = element.substring(1);
               var label = $(this).text();
-              var target = $(this).attr("id");
+              var target = $(this).attr('id');
               var value = request.term + target;
 
               array.push({
@@ -409,26 +409,25 @@
 
       $html.find('input[name="internal"]').autocomplete({
         source: function(request, response) {
-          if(performSectionSearch(request)) {
+          if (performSectionSearch(request)) {
             sectionSearch(request, response);
-          }
-          else {
+          } else {
             articleSearch(request, response);
           }
         },
         select: function(event, ui) {
-          if(!ui.item.target) {
+          if (!ui.item.target) {
             return;
           }
 
           var $linktext = $html.find('input[name=link-text]');
-          if($linktext.val() === "") {
+          if ($linktext.val() === '') {
             $linktext.val(ui.item.label);
           }
         }
       });
 
-      $html.find('button').text(gettext('Insert Link')).click(function(e){
+      $html.find('button').text(gettext('Insert Link')).click(function(e) {
         // Generate the wiki markup based on what the user has selected
         // (interval vs external links) and entered into the textboxes,
         // if anything.
@@ -439,8 +438,8 @@
         me.reset();
         if (val === 'internal') {
           var title = $internal.val();
-          if(title) {
-            if(title === selectedText) {
+          if (title) {
+            if (title === selectedText) {
               // The title wasn't changed, so lets keep it selected.
               me.openTag = '[[';
               me.closeTag = ']]';
@@ -460,7 +459,7 @@
           } else {
             me.openTag = '[[';
             me.closeTag = ']]';
-            if(text) {
+            if (text) {
               me.closeTag = '|' + text + ']]';
             }
             me.defaultText = gettext('Knowledge Base Article');
@@ -501,7 +500,7 @@
       });
       kbox.open();
 
-      e.preventDefault();
+      ev.preventDefault();
       return false;
     }
   });
@@ -535,7 +534,7 @@
       this.closeTag = '';
       this.defaultText = '';
     },
-    openModal: function(e) {
+    openModal: function(ev) {
       var me = this,
         $editor = $(me.textarea).closest('.editor'),
         mediaSearchUrl = $editor.data('media-search-url'),
@@ -570,7 +569,7 @@
       // Handle Images/Videos filter
       $html.find('div.type li').click(function(e) {
         var $this = $(this);
-        if(!$this.is('.selected')) {
+        if (!$this.is('.selected')) {
           $html.find('div.type li.selected').removeClass('selected');
           $this.addClass('selected');
           mediaType = $this.data('type');
@@ -605,7 +604,7 @@
         kbox.close();
       });
 
-      //Handle pagination
+      // Handle pagination
       $html.delegate('ol.pagination a', 'click', function(e) {
         mediaPage = parseInt($(this).attr('href').split('&page=')[1], 10);
         updateResults();
@@ -620,12 +619,12 @@
 
         var $selected = $html.find('#media-list > li.selected');
         if ($selected.length < 1) {
-          alert(gettext('Please select an image or video to insert.'));
+          alert(gettext('Please select an image or video to insert.')); // eslint-disable-line
           return false;
         }
 
         me.openTag = '[[';
-        me.openTag += (mediaType == 'image') ? 'Image' : 'Video';
+        me.openTag += (mediaType === 'image') ? 'Image' : 'Video';
         me.openTag += ':' + $selected.find('a').attr('title') + ']] ';
 
         me.handleClick(e);
@@ -655,7 +654,7 @@
             });
           },
           error: function() {
-            var message = gettext("Oops, there was an error.");
+            var message = gettext('Oops, there was an error.');
             $html.find('div.placeholder').html('<div class="msg">' +
               message + '</div>');
           },
@@ -675,7 +674,7 @@
       });
       kbox.open();
 
-      e.preventDefault();
+      ev.preventDefault();
       return false;
     }
   });
@@ -783,7 +782,7 @@
       function getContent(articleUrl) {
         // If the article doesn't exist, it has /new in its URL
         // Don't query nonexisting articles
-        if(!articleUrl || articleUrl.indexOf('/new') !== -1) {
+        if (!articleUrl || articleUrl.indexOf('/new') !== -1) {
           return;
         }
 
@@ -806,28 +805,27 @@
       }
 
       function toggleThrobber(busy) {
-        var $previewLabel = $('.preview-label');
-        if(busy) {
-          $previewLabel.addClass('busy');
-        }
-        else {
-          $previewLabel.removeClass('busy');
+        var $label = $('.preview-label');
+        if (busy) {
+          $label.addClass('busy');
+        } else {
+          $label.removeClass('busy');
         }
       }
 
       function isAllowedToUseResponse(response_target) {
-        if(response_target.indexOf('#') === -1) {
-          //No permission markers: Everyone's allowed
+        if (response_target.indexOf('#') === -1) {
+          // No permission markers: Everyone's allowed
           return true;
         }
 
-        var articleUrl = response_target.split("#")[0];
+        var articleUrl = response_target.split('#')[0];
         var permBits = response_target.split('#')[1];
         response_target = articleUrl;
 
-        for(var i = 0; i < permBits.length; i++) {
+        for (var i = 0; i < permBits.length; i++) {
           var bit = permBits[i];
-          if(me.permissionBits.indexOf(bit) !== -1) {
+          if (me.permissionBits.indexOf(bit) !== -1) {
             return true;
           }
         }
@@ -858,7 +856,7 @@
         var $responseListArea = $html.find('#response-list-area');
         var $responsesArea = $html.find('#responses-area');
 
-        if(term === '') {
+        if (term === '') {
           $searchHeading.text(gettext('Responses'));
           $responseListArea.removeClass('filtered');
           $responsesArea.removeClass('filtered');
@@ -876,10 +874,9 @@
 
         $responses.each(function() {
           var text = $(this).text().toLowerCase();
-          if(text.indexOf(term) === -1) {
+          if (text.indexOf(term) === -1) {
             $(this).hide();
-          }
-          else {
+          } else {
             $(this).show();
           }
         });
@@ -887,7 +884,7 @@
 
       function loadCannedResponses() {
         var siteLanguage = window.location.pathname.split('/')[1];
-        var targetUrl = "/" + siteLanguage + cannedResponsesUrl;
+        var targetUrl = '/' + siteLanguage + cannedResponsesUrl;
 
         $.ajax({
           url: targetUrl,
@@ -901,7 +898,7 @@
             $categoryList.empty();
             $responsesList.empty();
 
-            $categories.each(function(el, i) {
+            $categories.each(function() {
               var label = $(this).text(),
                 $headingItem = $(document.createElement('li')),
                 $responses = $(document.createElement('ul')).addClass('sidebar-nav').hide(),
@@ -910,13 +907,13 @@
                 $otherResponses,
                 $otherHeadings;
 
-              $catResponses.each(function(el, i) {
+              $catResponses.each(function() {
                 var $response = $(document.createElement('li')).addClass('response').text($(this).text());
                 var response_target = $(this).attr('href');
                 var canUseResponse = isAllowedToUseResponse(response_target);
                 response_target = response_target.split('#')[0];
 
-                if(canUseResponse) {
+                if (canUseResponse) {
                   $response.click(function() {
                     $('.response-list li').not($(this)).removeClass('selected');
                     $(this).addClass('selected');
@@ -1007,7 +1004,7 @@
     getPermissionBits: function() {
       var profile_link = $('#aux-nav .user').attr('href'),
         me = this;
-      if(!profile_link || profile_link === "")  {
+      if (!profile_link || profile_link === '') {
         return;
       }
 
@@ -1020,17 +1017,17 @@
             var group = $(this).text();
 
             // Contributors:
-            if(group === 'Contributors') {
+            if (group === 'Contributors') {
               me.permissionBits.push('c');
             }
 
             // Moderators:
-            if(group === 'Forum Moderators') {
+            if (group === 'Forum Moderators') {
               me.permissionBits.push('m');
             }
 
             // Administrators:
-            if(group === 'Administrators') {
+            if (group === 'Administrators') {
               me.permissionBits.push('a');
             }
           });
@@ -1058,4 +1055,4 @@
 
   window.Marky = Marky;
 
-}(jQuery, gettext, document));
+})(jQuery, gettext, document);

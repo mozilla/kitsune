@@ -1,4 +1,5 @@
-(function($, _) {
+/* globals k:false, _gaq:false, jQuery:false */
+(function($) {
   var searchTimeout;
   var locale = $('html').attr('lang');
 
@@ -20,19 +21,26 @@
 
   function render(data) {
     var context = $.extend({}, data);
-    var base_url = '/' + locale + '/search?q=' + search.lastQuery;
-    base_url += '&' + search.serializeParams();
-    context['base_url'] = base_url;
+    var base_url = search.lastQueryUrl();
+    var $searchContent;
+    context.base_url = base_url;
 
     if ($('#instant-search-content').length) {
-      var $searchContent = $('#instant-search-content');
+      $searchContent = $('#instant-search-content');
     } else {
-      var $searchContent = $('<div />').attr('id', 'instant-search-content');
+      $searchContent = $('<div />').attr('id', 'instant-search-content');
       $('#main-content').after($searchContent);
     }
 
-    $searchContent.html(_.render('search-results.html', context));
+    $searchContent.html(k.nunjucksEnv.render('search-results.html', context));
   }
+
+  window.k.InstantSearchSettings = {
+    hideContent: hideContent,
+    showContent: showContent,
+    render: render,
+    searchClient: search
+  };
 
   $(document).on('submit', '[data-instant-search="form"]', function(ev) {
     ev.preventDefault();
@@ -42,32 +50,43 @@
     var $this = $(this);
     var params = {
       format: 'json'
-    }
+    };
 
     if ($this.val().length === 0) {
       if (searchTimeout) {
         window.clearTimeout(searchTimeout);
       }
 
-      showContent();
+      window.k.InstantSearchSettings.showContent();
     } else if ($this.val() !== search.lastQuery) {
       if (searchTimeout) {
         window.clearTimeout(searchTimeout);
       }
 
       $this.closest('form').find('input').each(function () {
-        if ($(this).attr('type') === 'submit') return true;
-        if ($(this).attr('type') === 'button') return true;
-        if ($(this).attr('name') === 'q')  return true;
+        if ($(this).attr('type') === 'submit') {
+          return true;
+        }
+        if ($(this).attr('type') === 'button') {
+          return true;
+        }
+        if ($(this).attr('name') === 'q') {
+          return true;
+        }
         params[$(this).attr('name')] = $(this).val();
       });
 
       searchTimeout = setTimeout(function () {
+        if (search.hasLastQuery) {
+          _gaq.push(['_trackEvent', 'Instant Search', 'Exit Search', search.lastQueryUrl()]);
+        }
         search.setParams(params);
-        search.query($this.val(), render);
+        search.query($this.val(), k.InstantSearchSettings.render);
+        _gaq.push(['_trackEvent', 'Instant Search', 'Search', search.lastQueryUrl()]);
+        _gaq.push(['_trackPageview', search.lastQueryUrl()]);
       }, 200);
 
-      hideContent();
+      k.InstantSearchSettings.hideContent();
     }
   });
 
@@ -75,6 +94,11 @@
     ev.preventDefault();
 
     var $this = $(this);
+
+    if (search.hasLastQuery) {
+      _gaq.push(['_trackEvent', 'Instant Search', 'Exit Search',
+        search.queryUrl(search.lastQuery)]);
+    }
 
     var setParams = $this.data('instant-search-set-params');
     if (setParams) {
@@ -93,10 +117,13 @@
       });
     }
 
+    _gaq.push(['_trackEvent', 'Instant Search', 'Search', $this.data('href')]);
+    _gaq.push(['_trackPageview', $this.data('href')]);
+
     cxhr.request($this.data('href'), {
       data: {format: 'json'},
       dataType: 'json',
-      success: render
+      success: k.InstantSearchSettings.render
     });
   });
-})(jQuery, k.nunjucksEnv);
+})(jQuery);

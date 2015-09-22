@@ -32,7 +32,7 @@
 
 {% if product.slug == 'mobile' %}
   {# Firefox for Android has a special separate survey. #}
-  {% set extra_body_attrs = {'data-surveygizmo-url': 'http://qsurvey.mozilla.com/s3/63ac9fdb1ce1'} %}
+  {% set SURVEY_GIZMOS = ['mobile'] %}
 {% endif %}
 
 {% block breadcrumbs %}
@@ -52,7 +52,7 @@
     <article class="wiki-doc">
       {{ document_title(document) }}
       {{ document_messages(document, redirected_from) }}
-      {{ document_content(document, fallback_reason, request, settings, document_css_class) }}
+      {{ document_content(document, fallback_reason, request, settings, document_css_class, any_localizable_revision) }}
 
     {% set share_link = document.share_link or (document.parent and document.parent.share_link) %}
     {% if share_link %}

@@ -32,7 +32,7 @@ class GoogleAnalyticsTests(TestCase):
         visits = googleanalytics.visitors_by_locale(
             date(2013, 01, 16), date(2013, 01, 16))
 
-        eq_(57, len(visits))
+        eq_(58, len(visits))
         eq_(221447, visits['en-US'])
         eq_(24432, visits['es'])
 
@@ -199,7 +199,7 @@ VISITORS_BY_LOCALE_RESPONSE = {
         [u'/sl/', u'530'],
         [u'/son/', u'1'],
         [u'/sq/', u'27'],
-        [u'/sr-Cyrl/', u'256'],
+        [u'/sr/', u'256'],
         [u'/sv/', u'1488'],
         [u'/ta-LK/', u'13'],
         [u'/ta/', u'13'],
