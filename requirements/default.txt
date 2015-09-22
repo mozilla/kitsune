@@ -1,3 +1,8 @@
+# Note: This has to be listed first so it gets installed first and
+# thus affects the rest of the installs.
+# sha256: jEqwxPIncwUZ3B4CD4dbPvl-ZDyPQ6mKT6DEb7rRJFA
+setuptools==18.3.2
+
 # sha256: HegYoUcr9iVxLF06QwEw03dJz4qUE8th6UEeLr4X2ok
 amqp==1.4.2
 
