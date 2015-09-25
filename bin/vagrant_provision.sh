@@ -9,10 +9,14 @@ cd $INSTALL_DIR/kitsune
 # Install package for add-apt-repository
 apt-get install -y software-properties-common
 
-# ElasticSearch key add/setup
-curl http://packages.elasticsearch.org/GPG-KEY-elasticsearch | apt-key add -
-echo "deb http://packages.elasticsearch.org/elasticsearch/0.90/debian stable main" \
-        > /etc/apt/sources.list.d/elasticsearch.list
+# Install Elasticsearch 1.2.4 and set it up
+curl https://packages.elastic.co/GPG-KEY-elasticsearch | apt-key add -
+echo "deb https://packages.elastic.co/elasticsearch/1.2/debian stable main" \
+    > /etc/apt/sources.list.d/elasticsearch.list
+apt-get update
+apt-get install -y -q openjdk-7-jre-headless
+apt-get install elasticsearch=1.2.4
+update-rc.d elasticsearch defaults 95 10
 
 # Add the needed repositories for Node/Redis/Python2.6
 add-apt-repository ppa:chris-lea/node.js
@@ -26,11 +30,10 @@ debconf-set-selections <<< 'mariadb-server-5.5 mysql-server/root_password passwo
 debconf-set-selections <<< 'mariadb-server-5.5 mysql-server/root_password_again password rootpass'
 
 # Install services and their dependencies
-# Services: Sphinx, MariaDB, ElasticSearch, Redis, and Memcached
-apt-get install -y sphinx-common libapache2-mod-wsgi python-pip libmysqlclient-dev git \
+# Services: Sphinx, MariaDB, Redis, and Memcached
+apt-get install -y libapache2-mod-wsgi python-pip libmysqlclient-dev git \
                    libxml2-dev libxslt1-dev zlib1g-dev libjpeg-dev python-dev libssl-dev \
-                   openjdk-7-jre-headless mariadb-server-5.5 nodejs elasticsearch redis-server \
-                   memcached libffi-dev
+                   mariadb-server-5.5 nodejs redis-server memcached libffi-dev
 
 # Setup the virtualenv and start using it
 pip install virtualenv
