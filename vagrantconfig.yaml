@@ -3,7 +3,7 @@
 # Don't change this; use vagrantconfig_local.yaml to override these
 # settings instead.
 
-memory: 256
+memory: 1024
 
 # enable this to see verbose and debug puppet output
 debug_mode: false
