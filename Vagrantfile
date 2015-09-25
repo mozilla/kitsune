@@ -18,25 +18,19 @@ end
 CONF = _config
 MOUNT_POINT = '/home/vagrant/kitsune'
 
-Vagrant::Config.run do |config|
-    config.vm.box = "ubuntu-14.04"
-    config.vm.box_url = "https://oss-binaries.phusionpassenger.com/vagrant/boxes/latest/ubuntu-14.04-amd64-vbox.box"
+Vagrant.configure(2) do |config|
+    config.vm.box = "ubuntu/trusty64"
 
-    Vagrant.configure("1") do |config|
-        config.vm.customize ["modifyvm", :id, "--memory", CONF['memory']]
+    config.vm.network "forwarded_port", guest:8000, host:8000
+
+    config.vm.network "private_network", ip: "33.33.33.77"
+
+    config.vm.synced_folder ".", "/vagrant", disabled: true
+    config.vm.synced_folder ".", MOUNT_POINT
+
+    config.vm.provider "virtualbox" do |vb|
+        vb.memory = CONF['memory']
     end
 
-    Vagrant.configure("2") do |config|
-        config.vm.provider "virtualbox" do |v|
-          v.name = "KITSUNE_VM"
-          v.customize ["modifyvm", :id, "--memory", CONF['memory']]
-        end
-    end
-
-    config.vm.network :hostonly, "33.33.33.77"
-    config.vm.forward_port 8000, 8000
-
-    config.vm.share_folder("vagrant-root", MOUNT_POINT, ".")
     config.vm.provision "shell", path: "bin/vagrant_provision.sh"
 end
-
