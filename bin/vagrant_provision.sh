@@ -90,3 +90,24 @@ cd ~/kitsune
 ./manage.py migrate
 ./manage.py generatedata
 EOF
+
+
+cat <<EOF
+
+************************************************************************
+
+If it gets here, then the Vagrant VM is provisioned. You should be all
+set.
+
+Consult the documentation on how to use and maintain this VM.
+
+https://kitsune.readthedocs.org/
+
+Next steps:
+
+1. hop on #sumodev on irc.mozilla.org and say hi
+2. find a bug to work on
+
+************************************************************************
+
+EOF
