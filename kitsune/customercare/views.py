@@ -113,6 +113,7 @@ def _count_answered_tweets(since=None):
     return q.count()
 
 
+# @ssl_required
 @require_GET
 def more_tweets(request):
     """AJAX view returning a list of tweets."""
@@ -126,7 +127,9 @@ def more_tweets(request):
             locale=request.LANGUAGE_CODE,
             max_id=max_id,
             filter=filter,
-            https=request.is_secure())})
+            https=request.is_secure()),
+        'authed': request.user.is_authenticated() and request.twitter.authed,
+    })
 
 
 @ssl_required
