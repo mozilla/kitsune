@@ -17,6 +17,7 @@ from django.utils.translation import trans_real
 import django_nose
 import factory.fuzzy
 from nose.tools import eq_
+from pyquery import PyQuery
 from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.firefox import firefox_binary
@@ -276,3 +277,10 @@ class set_waffle_flag(object):
         if self.origflag is not None:
             self.origflag.id = self.origid
             self.origflag.save()
+
+
+class SumoPyQuery(PyQuery):
+    """Extends PyQuery with some niceties to alleviate its bugs"""
+    def first(self):
+        """:first doesn't work, so this is a meh substitute"""
+        return self.items().next()

@@ -11,12 +11,12 @@ from django.utils.encoding import smart_str
 import mock
 from bleach import clean
 from nose.tools import eq_
-from pyquery import PyQuery as pq
 from wikimarkup.parser import ALLOWED_TAGS, ALLOWED_ATTRIBUTES
 
 from kitsune.products.tests import product, topic
 from kitsune.sumo.helpers import urlparams
 from kitsune.sumo.tests import post, get, attrs_eq, MobileTestCase
+from kitsune.sumo.tests import SumoPyQuery as pq
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import user, add_permission
 from kitsune.wiki.events import (
@@ -436,7 +436,7 @@ class RevisionTests(TestCaseBase):
         eq_(200, response.status_code)
         doc = pq(response.content)
         eq_('Revision id: %s' % r.id,
-            doc('div.revision-info li:first').text())
+            doc('div.revision-info li').first().text())
         eq_(d.title, doc('h1.title').text())
         eq_(pq(r.content_parsed)('div').text(),
             doc('#doc-content div').text())
@@ -1195,7 +1195,7 @@ class DocumentRevisionsTests(TestCaseBase):
         # Verify there is no Review link
         eq_(0, len(doc('#revision-list div.status a')))
         eq_('Unreviewed',
-            doc('#revision-list li:not(.header) div.status:first').text())
+            doc('#revision-list li:not(.header) div.status').first().text())
 
         # Log in as user with permission to review
         u = user(save=True)
@@ -1208,7 +1208,7 @@ class DocumentRevisionsTests(TestCaseBase):
         # Verify there are Review links now
         eq_(2, len(doc('#revision-list div.status a')))
         eq_('Review',
-            doc('#revision-list li:not(.header) div.status:first').text())
+            doc('#revision-list li:not(.header) div.status').first().text())
         # Verify edit revision link
         eq_('/en-US/kb/test-document/edit/{r}'.format(r=r2.id),
             doc('#revision-list div.edit a')[0].attrib['href'])
@@ -2103,7 +2103,7 @@ class TranslateTests(TestCaseBase):
         doc = pq(r.content)
         translated_locales = doc(".translated_locale")
         eq_(translated_locales.length, 2)
-        eq_("en-US", doc(".translated_locale:first").text())
+        eq_("en-US", doc(".translated_locale").first().text())
         eq_("de", doc(".translated_locale:eq(1)").text())
 
     def test_keywords_dont_require_permission(self):

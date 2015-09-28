@@ -54,11 +54,6 @@ class SendMessageTestCase(TestCase):
         eq_(self.user2.username,
             pq(response.content)('#id_to')[0].attrib['value'])
 
-    def test_no_markup_in_message_list(self):
-        response = self._test_send_message_to(self.user2.username)
-        eq_(pq(response.content)('read').text(),
-            pq(response.content)('read').html())
-
     def test_send_message_ratelimited(self):
         """Verify that after 50 messages, no more are sent."""
         # Try to send 53 messages.
