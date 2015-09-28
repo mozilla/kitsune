@@ -13,6 +13,7 @@ from django.views.decorators.http import require_GET
 
 import waffle
 from statsd import statsd
+from tower import ugettext_lazy as _
 
 from rest_framework import viewsets, serializers, mixins, filters, permissions, status
 from rest_framework.permissions import IsAuthenticated
@@ -236,16 +237,16 @@ class ProfileSerializer(serializers.ModelSerializer):
         if obj is None:
             # This is a create
             if User.objects.filter(username=attrs['user.username']).exists():
-                raise ValidationError('A user with that username exists')
+                raise ValidationError(_('A user with that username exists'))
         else:
             # This is an update
             new_username = attrs.get('user.username', obj.user.username)
             if new_username != obj.user.username:
-                raise ValidationError("Can't change this field.")
+                raise ValidationError(_("Can't change this field."))
 
         if re.match(r'^[\w.-]{4,30}$', attrs['user.username']) is None:
             raise ValidationError(
-                'Usernames may only be letters, numbers, "." and "-".')
+                _('Usernames may only be letters, numbers, "." and "-".'))
 
         return attrs
 
@@ -257,8 +258,7 @@ class ProfileSerializer(serializers.ModelSerializer):
     def validate_email(self, attrs, source):
         email = attrs.get('user.email')
         if email and User.objects.filter(email=email).exists():
-            raise ValidationError('A user with that email address '
-                                  'already exists.')
+            raise ValidationError(_('A user with that email address already exists.'))
         return attrs
 
 
@@ -302,7 +302,7 @@ class ProfileViewSet(mixins.CreateModelMixin,
         Generate a user with a random username and password.
         """
         # The loop counter isn't used. This is an escape hatch.
-        for _ in range(10):
+        for __ in range(10):
             # Generate a user of the form "buddy#"
             digits = random.randint(100, 10000)
             if digits in self.number_blacklist:
@@ -313,10 +313,10 @@ class ProfileViewSet(mixins.CreateModelMixin,
                 break
         else:
             # At this point, we just have too many users.
-            return Response({"error": 'Unable to generate username.'},
+            return Response({"error": _('Unable to generate username.')},
                             status=500)
 
-        password = ''.join(random.choice(letters) for _ in range(10))
+        password = ''.join(random.choice(letters) for __ in range(10))
         # Capitalize the 'b' in 'buddy'
         display_name = 'B' + username[1:]
 
@@ -329,7 +329,7 @@ class ProfileViewSet(mixins.CreateModelMixin,
         # This simulates the user being logged in, for purposes of exposing
         # fields in the serializer below.
         request.user = u
-        token, _ = Token.objects.get_or_create(user=u)
+        token, __ = Token.objects.get_or_create(user=u)
         serializer = ProfileSerializer(instance=p, context={'request': request})
 
         return Response({
@@ -388,7 +388,7 @@ class ProfileViewSet(mixins.CreateModelMixin,
         profile = self.get_object()
 
         if 'name' not in request.DATA:
-            raise GenericAPIException(400, {'name': 'This field is required'})
+            raise GenericAPIException(400, {'name': _('This field is required')})
 
         try:
             meta = (Setting.objects
@@ -396,7 +396,7 @@ class ProfileViewSet(mixins.CreateModelMixin,
             meta.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         except Setting.DoesNotExist:
-            raise GenericAPIException(404, {'detail': 'No matching user setting found.'})
+            raise GenericAPIException(404, {'detail': _('No matching user setting found.')})
 
     @action(methods=['GET'])
     def request_password_reset(self, request, user__username=None):
