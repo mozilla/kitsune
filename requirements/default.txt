@@ -272,8 +272,8 @@ https://github.com/getsentry/raven-python/archive/ab53d276262a0fa2932588b34de4e6
 # sha256: pKrx7rUrWH9IbMYyT2MF62gW_bVPony2JPDx0TecNP0
 https://github.com/andymccurdy/redis-py/archive/43aa23146ad287959369161038a4e5cda985a259.tar.gz#egg=redis
 
-# sha256: Vdf1YZ2q6U7Enuge2Mhl5aKkfwu_jgbPlGNr7hA-r2U
-requests==2.5.3
+# sha256: OYo9ttYYmdJf1KBsbKEgUbDOFx1wXezX7VURUXtLuT0
+requests==2.7.0
 
 # sha256: ngIjuJUY7axhqXtW_3jycQVs4IyKF8a2RK7yRPrIPyM
 requests-oauthlib==0.4.2
