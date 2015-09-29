@@ -9,7 +9,7 @@ from smtplib import SMTPRecipientsRefused
 from django.conf import settings
 from django.core.cache import cache
 from django.core.management import call_command
-from django.test import LiveServerTestCase, TestCase as OriginalTestCase
+from django.test import TestCase as OriginalTestCase
 from django.test.client import Client
 from django.test.utils import override_settings
 from django.utils.translation import trans_real
@@ -18,9 +18,6 @@ import django_nose
 import factory.fuzzy
 from nose.tools import eq_
 from pyquery import PyQuery
-from selenium import webdriver
-from selenium.common.exceptions import WebDriverException
-from selenium.webdriver.firefox import firefox_binary
 from waffle.models import Flag
 
 from kitsune.sumo.urlresolvers import reverse, split_path
@@ -32,7 +29,7 @@ if '--no-skip' in sys.argv or 'NOSE_WITHOUT_SKIP' in os.environ:
     class SkipTest(Exception):
         pass
 else:
-    from nose import SkipTest
+    from nose import SkipTest  # noqa
 
 
 def get(client, url, **kwargs):
@@ -122,46 +119,6 @@ class MobileTestCase(TestCase):
     def setUp(self):
         super(MobileTestCase, self).setUp()
         self.client.cookies[settings.MOBILE_COOKIE] = 'on'
-
-
-class SeleniumTestCase(LiveServerTestCase):
-
-    skipme = False
-
-    @classmethod
-    def setUpClass(cls):
-        try:
-            firefox_path = getattr(settings, 'SELENIUM_FIREFOX_PATH', None)
-            if firefox_path:
-                firefox_bin = firefox_binary.FirefoxBinary(
-                    firefox_path=firefox_path)
-                kwargs = {'firefox_binary': firefox_bin}
-            else:
-                kwargs = {}
-            cls.webdriver = webdriver.Firefox(**kwargs)
-        except (RuntimeError, WebDriverException):
-            cls.skipme = True
-
-        super(SeleniumTestCase, cls).setUpClass()
-
-    @classmethod
-    def tearDownClass(cls):
-        if not cls.skipme:
-            try:
-                cls.webdriver.quit()
-            except OSError:
-                # For some reason, sometimes the process may not be
-                # running at this point.
-                pass
-        super(SeleniumTestCase, cls).tearDownClass()
-
-    def setUp(self):
-        # Don't run if Selenium isn't available
-        if self.skipme:
-            raise SkipTest('Selenium unavailable.')
-
-        # Go to an empty page before every test
-        self.webdriver.get('')
 
 
 def with_save(func):
