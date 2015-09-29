@@ -17,10 +17,8 @@ Setting up to run the tests
 ===========================
 
 I suggest using a different virtual environment for these tests than the
-rest of Kitsune so you're not mixing requirements::
-
-    $ mkvirtualenv kitsune-smoketests
-    $ pip install -r requirements.txt
+rest of Kitsune so you're not mixing requirements. The requirements are
+listed in requirements.txt.
 
 
 Running the tests
