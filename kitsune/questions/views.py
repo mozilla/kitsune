@@ -532,20 +532,15 @@ def aaq(request, product_key=None, category_key=None, showform=False,
         except Product.DoesNotExist:
             pass
         else:
-            if not product.questions_locales.filter(
-                    locale=request.LANGUAGE_CODE).count():
+            if not product.questions_locales.filter(locale=request.LANGUAGE_CODE).count():
                 locale, path = split_path(request.path)
                 path = '/' + settings.WIKI_DEFAULT_LANGUAGE + '/' + path
 
-                old_lang = settings.LANGUAGES_DICT[
-                    request.LANGUAGE_CODE.lower()]
-                new_lang = settings.LANGUAGES_DICT[
-                    settings.WIKI_DEFAULT_LANGUAGE.lower()]
-                msg = (_(u"The questions forum isn't available for {product} "
-                         u"in {old_lang}, we have redirected you to the "
-                         u"{new_lang} questions forum.")
-                       .format(product=product.title, old_lang=old_lang,
-                               new_lang=new_lang))
+                old_lang = settings.LANGUAGES_DICT[request.LANGUAGE_CODE.lower()]
+                new_lang = settings.LANGUAGES_DICT[settings.WIKI_DEFAULT_LANGUAGE.lower()]
+                msg = (_(u"The questions forum isn't available for {product} in {old_lang}, we "
+                         u"have redirected you to the {new_lang} questions forum.")
+                       .format(product=product.title, old_lang=old_lang, new_lang=new_lang))
                 messages.add_message(request, messages.WARNING, msg)
 
                 return HttpResponseRedirect(path)
@@ -558,8 +553,7 @@ def aaq(request, product_key=None, category_key=None, showform=False,
         category_config = product_config['categories'].get(category_key)
         if not category_config:
             # If we get an invalid category, redirect to previous step.
-            return HttpResponseRedirect(
-                reverse('questions.aaq_step2', args=[product_key]))
+            return HttpResponseRedirect(reverse('questions.aaq_step2', args=[product_key]))
         deadend = category_config.get('deadend', False)
         topic = category_config.get('topic')
         if topic:
@@ -573,8 +567,7 @@ def aaq(request, product_key=None, category_key=None, showform=False,
             articles = category_config.get('articles')
     else:
         category_config = None
-        deadend = product_config.get(
-            'deadend', False) if product_config else False
+        deadend = product_config.get('deadend', False) if product_config else False
         html = product_config.get('html') if product_config else None
         articles = None
         if product_config:
@@ -584,8 +577,11 @@ def aaq(request, product_key=None, category_key=None, showform=False,
             # User is on the select product step
             statsd.incr('questions.aaq.select-product')
 
-    login_t = ('questions/mobile/new_question_login.html' if request.MOBILE
-               else 'questions/new_question_login.html')
+    if request.MOBILE:
+        login_t = 'questions/mobile/new_question_login.html'
+    else:
+        login_t = 'questions/new_question_login.html'
+
     if request.method == 'GET':
         search = request.GET.get('search', '')
         if search:
@@ -615,9 +611,10 @@ def aaq(request, product_key=None, category_key=None, showform=False,
                     'title': search,
                     'register_form': register_form,
                     'login_form': login_form})
-            form = NewQuestionForm(product=product_config,
-                                   category=category_config,
-                                   initial={'title': search})
+            form = NewQuestionForm(
+                product=product_config,
+                category=category_config,
+                initial={'title': search})
             # User is on the question details step
             statsd.incr('questions.aaq.details-form')
         else:
@@ -662,15 +659,16 @@ def aaq(request, product_key=None, category_key=None, showform=False,
                 reg='aaq')
 
             if register_form.is_valid():  # Now try to log in.
-                user = auth.authenticate(username=request.POST.get('username'),
-                                         password=request.POST.get('password'))
+                user = auth.authenticate(
+                    username=request.POST.get('username'),
+                    password=request.POST.get('password'))
                 auth.login(request, user)
                 statsd.incr('questions.user.register')
         else:
             # L10n: This shouldn't happen unless people tamper with POST data.
             message = _lazy('Request type not recognized.')
-            return render(request, 'handlers/400.html', {
-                'message': message}, status=400)
+            return render(request, 'handlers/400.html', {'message': message}, status=400)
+
         if request.user.is_authenticated():
             # Redirect to GET the current URL replacing the step parameter.
             # This is also required for the csrf middleware to set the auth'd
@@ -685,8 +683,7 @@ def aaq(request, product_key=None, category_key=None, showform=False,
                 'register_form': register_form,
                 'login_form': login_form})
 
-    form = NewQuestionForm(product=product_config, category=category_config,
-                           data=request.POST)
+    form = NewQuestionForm(product=product_config, category=category_config, data=request.POST)
 
     # NOJS: upload image
     if 'upload_image' in request.POST:
@@ -695,10 +692,11 @@ def aaq(request, product_key=None, category_key=None, showform=False,
     user_ct = ContentType.objects.get_for_model(request.user)
 
     if form.is_valid() and not is_ratelimited(request, 'aaq-day', '5/d'):
-        question = Question(creator=request.user,
-                            title=form.cleaned_data['title'],
-                            content=form.cleaned_data['content'],
-                            locale=request.LANGUAGE_CODE)
+        question = Question(
+            creator=request.user,
+            title=form.cleaned_data['title'],
+            content=form.cleaned_data['content'],
+            locale=request.LANGUAGE_CODE)
 
         if product_obj:
             question.product = product_obj
@@ -711,10 +709,8 @@ def aaq(request, product_key=None, category_key=None, showform=False,
         question.save()
 
         qst_ct = ContentType.objects.get_for_model(question)
-        # Move over to the question all of the images I added to the
-        # reply form
-        up_images = ImageAttachment.objects.filter(creator=request.user,
-                                                   content_type=user_ct)
+        # Move over to the question all of the images I added to the reply form
+        up_images = ImageAttachment.objects.filter(creator=request.user, content_type=user_ct)
         up_images.update(content_type=qst_ct, object_id=question.id)
 
         # User successfully submitted a new question
@@ -738,15 +734,14 @@ def aaq(request, product_key=None, category_key=None, showform=False,
         question_vote(request, question.id)
 
         if request.user.is_active:
-            messages.add_message(request, messages.SUCCESS,
-                                 _('Done! Your question is now posted on the '
-                                   'Mozilla community support forum.'))
+            messages.add_message(
+                request, messages.SUCCESS,
+                _('Done! Your question is now posted on the Mozilla community support forum.'))
 
             # Done with AAQ.
             request.session['in-aaq'] = False
 
-            url = reverse('questions.details',
-                          kwargs={'question_id': question.id})
+            url = reverse('questions.details', kwargs={'question_id': question.id})
             return HttpResponseRedirect(url)
 
         return HttpResponseRedirect(reverse('questions.aaq_confirm'))
