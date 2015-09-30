@@ -244,18 +244,17 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         You don't need to call save on the question after this.
 
         """
-        to_add = (self.product_config.get('tags', []) +
-                  self.category_config.get('tags', []))
-
+        to_add = (self.product_config.get('tags', []) + self.category_config.get('tags', []))
         version = self.metadata.get('ff_version', '')
 
         # Remove the beta (b*), aurora (a2) or nightly (a1) suffix.
         version = re.split('[a-b]', version)[0]
 
         dev_releases = product_details.firefox_history_development_releases
-        if version in dev_releases or \
-           version in product_details.firefox_history_stability_releases or \
-           version in product_details.firefox_history_major_releases:
+
+        if (version in dev_releases or
+                version in product_details.firefox_history_stability_releases or
+                version in product_details.firefox_history_major_releases):
             to_add.append('Firefox %s' % version)
             tenths = _tenths_version(version)
             if tenths:
