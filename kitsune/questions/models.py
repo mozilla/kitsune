@@ -244,7 +244,7 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         You don't need to call save on the question after this.
 
         """
-        to_add = (self.product_config.get('tags', []) + self.category_config.get('tags', []))
+        to_add = self.product_config.get('tags', []) + self.category_config.get('tags', [])
         version = self.metadata.get('ff_version', '')
 
         # Remove the beta (b*), aurora (a2) or nightly (a1) suffix.
