@@ -25,7 +25,7 @@ export default class TopicSelector extends AAQStep {
                 key={topic.slug}
                 topic={topic}
                 selected={selected}
-                scrollToNextStep={this.scrollToNextStep.bind(this)}/>
+                switchToNextStep={this.switchToNextStep.bind(this)}/>
             );
           })}
       </ul>
@@ -38,7 +38,7 @@ class TopicItem extends React.Component {
   handleSelect(ev) {
     ev.preventDefault();
     AAQActions.setTopic(this.props.topic.slug);
-    this.props.scrollToNextStep();
+    this.props.switchToNextStep();
   }
 
   render() {
@@ -54,5 +54,5 @@ class TopicItem extends React.Component {
 TopicItem.propTypes = {
   topic: React.PropTypes.object.isRequired,
   selected: React.PropTypes.bool.isRequired,
-  scrollToNextStep: React.PropTypes.func.isRequired,
+  switchToNextStep: React.PropTypes.func.isRequired,
 };

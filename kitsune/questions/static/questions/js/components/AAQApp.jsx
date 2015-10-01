@@ -39,17 +39,30 @@ export default class AAQApp extends React.Component {
       validationErrors: QuestionEditStore.getValidationErrors(),
       questionState: QuestionEditStore.getState(),
       userAuth: UserAuthStore.getAll(),
-      troubleshooting: TroubleshootingDataStore.getAll(),
+      troubleshooting: TroubleshootingDataStore.getAll()
     };
+  }
+
+  setStep(step) {
+    this.setState({step});
   }
 
   render() {
     return (
       <div className="AAQApp">
-        <ProductSelector {...this.state}/>
-        <TopicSelector {...this.state}/>
-        <TitleContentEditor {...this.state}/>
-        <UserAuth userAuth={this.state.userAuth}/>
+        {(() => {
+          switch (this.state.step) {
+            case 'topic':
+              return <TopicSelector {...this.state} setStep={this.setStep.bind(this)} next="title"/>;
+            case 'title':
+              return [
+                <TitleContentEditor {...this.state}/>,
+                <UserAuth userAuth={this.state.userAuth}/>
+              ];
+            default:
+              return <ProductSelector {...this.state} setStep={this.setStep.bind(this)} next="topic"/>;
+          }
+        })()}
         <SubmitQuestion {...this.state}/>
       </div>
     );

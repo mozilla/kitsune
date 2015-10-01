@@ -5,7 +5,7 @@ export default class AAQStep extends React.Component {
   render() {
     let heading = this.heading();
     return (
-      <div className="AAQApp__Step highlight-box">
+      <div className="AAQApp__Step">
         {heading
           ? <h2>{heading}</h2>
           : null}
@@ -28,18 +28,10 @@ export default class AAQStep extends React.Component {
     return null;
   }
 
-  scrollToNextStep() {
-    let currentStep = React.findDOMNode(this); // will throw if not mounted
-    let nextStep = currentStep.nextElementSibling;
-    if (nextStep === null) {
-      throw 'Tried to call scrollToNextStep(), but this is the last step.';
-    }
-    if (!nextStep.classList.contains('AAQApp__Step')) {
-      throw 'Tried to call scrollToNextStep(), but the next element is not an AAQStep.';
-    }
-    scrollTo(nextStep);
+  switchToNextStep() {
+    this.props.setStep(this.props.next);
   }
 }
 AAQStep.propTypes = {
-  question: React.PropTypes.object.isRequired,
+  question: React.PropTypes.object.isRequired
 };
