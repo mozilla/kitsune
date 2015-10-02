@@ -45,8 +45,8 @@ cssselect==0.9.1
 # sha256: -rf83eNg7GYURC0DIdzQ7_XkNUTLMNl16ddakUpM33g
 cryptography==0.7.2
 
-# sha256: MxnZwEi7pMyJqWkRgdDgIYei8JtDQ_0vz2zL-EtO4Yo
-dennis==0.6.1
+# sha256: _eJnrrA6jUnjNB5_caIoxnSNzkO1wA9lWBeA2Ztwstk
+dennis==0.7
 
 # sha256: uTV9LOvmGZcFXUF9YH-cZQ6BfNGjg7mhuIvx7a15fHU
 Django==1.7.10
