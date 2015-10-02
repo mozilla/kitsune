@@ -35,7 +35,7 @@ def generate_sampledata(options):
         # Note: This matches migration 156. When run in the tests, the
         # migrations don't happen.
         mobile = Product(
-            title='Firefox for Mobile',
+            title='Firefox for Android',
             description='Web browser for Android smartphones and tablets',
             display_order=2,
             visible=True,
