@@ -44,16 +44,19 @@
         {{ _('Share this article: {link}')|f(link=link|safe) }}
       </p>
     {% endif %}
-    {% if document.current_revision %}
-      <p>
-        Last Update: {{ document.current_revision.created.date() }}
-      </p>
-    {% endif %}
 
     {% if not waffle.switch('hide-voting') %}
       {{ vote_form(document, source='mobile') }}
     {% endif %}
 
     {{ contributor_list(contributors) }}
+
+    {% if document.current_revision %}
+      <div class="last_update">
+        <p>
+          {{ _('Last Update: {date}')|f(date=document.current_revision.created.date()) }}
+        </p>
+      </div>
+    {% endif %}
   </article>
 {% endblock %}
