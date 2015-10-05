@@ -128,7 +128,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
     display_order = models.IntegerField(default=1, db_index=True)
 
     # List of related documents
-    related_documents = models.ManyToManyField('self')
+    related_documents = models.ManyToManyField('self', blank=True)
 
     # firefox_versions,
     # operating_systems:
