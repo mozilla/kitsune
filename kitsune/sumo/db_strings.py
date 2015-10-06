@@ -338,7 +338,11 @@ _("""Contributor articles""", "DB: products.Product.description")
 # This is a karma title.
 _("""Administrator""", "DB: karma.Title.name")
 # This is a karma title.
+_("""Locale Leader""", "DB: karma.Title.name")
+# This is a karma title.
 _("""Moderator""", "DB: karma.Title.name")
+# This is a karma title.
+_("""SUMO Warrior""", "DB: karma.Title.name")
 # This is a karma title.
 _("""Top 10 Contributor""", "DB: karma.Title.name")
 # This is a karma title.
