@@ -6,7 +6,6 @@ from datetime import datetime, timedelta
 from itertools import chain
 
 from django.conf import settings
-from django.contrib.sites.models import Site
 from django.http import (
     HttpResponse, HttpResponseBadRequest, HttpResponseRedirect)
 from django.shortcuts import render
@@ -890,7 +889,7 @@ def advanced_search(request, template=None):
 
 
 @cache_page(60 * 15)  # 15 minutes.
-def suggestions(request):
+def opensearch_suggestions(request):
     """A simple search view that returns OpenSearch suggestions."""
     content_type = 'application/x-suggestions+json'
 
@@ -898,8 +897,11 @@ def suggestions(request):
     if not term:
         return HttpResponseBadRequest(content_type=content_type)
 
-    site = Site.objects.get_current()
     locale = locale_or_default(request.LANGUAGE_CODE)
+
+    # FIXME: Rewrite this using the simple search search business
+    # logic. This currently returns templates (amongst other things)
+    # which is totally wrong.
     try:
         query = dict(('%s__match' % field, term)
                      for field in DocumentMappingType.get_query_fields())
@@ -926,25 +928,39 @@ def suggestions(request):
         results = []
 
     def urlize(r):
-        return u'https://%s%s' % (site, r['url'])
+        return u'%s://%s%s' % (
+            'https' if request.is_secure() else 'http',
+            request.get_host(),
+            r['url'][0]
+        )
 
     def titleize(r):
-        return r.get('document_title', r.get('document_title'))
+        # NB: Elasticsearch returns an array of strings as the value,
+        # so we mimic that and then pull out the first (and only)
+        # string.
+        return r.get('document_title', r.get('question_title', [_('No title')]))[0]
 
-    data = [term,
-            [titleize(r) for r in results],
-            [],
-            [urlize(r) for r in results]]
+    data = [
+        term,
+        [titleize(r) for r in results],
+        [],
+        [urlize(r) for r in results]
+    ]
     return HttpResponse(json.dumps(data), content_type=content_type)
 
 
 @cache_page(60 * 60 * 168)  # 1 week.
-def plugin(request):
+def opensearch_plugin(request):
     """Render an OpenSearch Plugin."""
-    site = Site.objects.get_current()
-    return render(request, 'search/plugin.html', {
-        'site': site, 'locale': request.LANGUAGE_CODE},
-        content_type='application/opensearchdescription+xml')
+    host = u'%s://%s' % ('https' if request.is_secure() else 'http', request.get_host())
+
+    return render(
+        request, 'search/plugin.html', {
+            'host': host,
+            'locale': request.LANGUAGE_CODE
+        },
+        content_type='application/opensearchdescription+xml'
+    )
 
 
 def _ternary_filter(ternary_value):
