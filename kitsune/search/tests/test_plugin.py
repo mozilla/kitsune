@@ -1,6 +1,3 @@
-from django.contrib.sites.models import Site
-
-import mock
 from nose.tools import eq_
 
 from kitsune.sumo.tests import TestCase
@@ -10,26 +7,28 @@ from kitsune.sumo.urlresolvers import reverse
 class OpenSearchTestCase(TestCase):
     """Test the SUMO OpenSearch plugin."""
 
-    @mock.patch.object(Site.objects, 'get_current')
-    def test_plugin(self, get_current):
-        """The plugin loads with the correct mimetype."""
-        get_current.return_value.domain = 'testserver'
+    def test_host(self):
+        response = self.client.get(reverse('search.plugin', locale='fr'))
+        eq_(response.status_code, 200)
+        # FIXME: This is silly. The better test would be to parse out
+        # the content and then go through and make sure all the urls
+        # were correct.
+        assert 'http://testserver/fr/search/suggestions' in response.content
+        assert 'en-US' not in response.content
 
-        response = self.client.get(reverse('search.plugin',
-                                           locale='en-US'))
-        eq_(200, response.status_code)
+    def test_plugin_expires_and_mimetype(self):
+        response = self.client.get(reverse('search.plugin', locale='en-US'))
+        eq_(response.status_code, 200)
+        # Verify that it has the Expires: HTTP header
         assert 'expires' in response
-        eq_('application/opensearchdescription+xml', response['content-type'])
+        # Verify the mimetype is correct
+        eq_(response['content-type'], 'application/opensearchdescription+xml')
 
-    @mock.patch.object(Site.objects, 'get_current')
-    def test_localized_plugin(self, get_current):
-        """Every locale gets its own plugin!"""
-        get_current.return_value.domain = 'testserver'
-
-        response = self.client.get(reverse('search.plugin',
-                                           locale='en-US'))
+    def test_plugin_uses_correct_locale(self):
+        response = self.client.get(reverse('search.plugin', locale='en-US'))
         assert '/en-US/search' in response.content
 
-        response = self.client.get(reverse('search.plugin',
-                                           locale='fr'))
+        response = self.client.get(reverse('search.plugin', locale='fr'))
         assert '/fr/search' in response.content
+
+    # FIXME: test plugin results
