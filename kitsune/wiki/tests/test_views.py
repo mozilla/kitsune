@@ -922,16 +922,16 @@ class FallbackSystem(TestCase):
         # but the article is not localized into that fallback locale
 
         # Define a client with ca, pt-PT, ja as locale choices in the ACCEPT_LANGUAGE header
-        header = 'ca,pt-PT;q=0.7,ja;q=0.3,'
+        header = 'ca,bn-IN;q=0.7,ja;q=0.3,'
         # Create a document localized into pt-BR
         # Attempt to resolve to the ca version of the document with the client defined before
         doc_content = self.get_data_from_translated_document(header=header,
-                                                             create_doc_locale='pt-BR',
+                                                             create_doc_locale='bn-BD',
                                                              req_doc_locale='ca')
         # Show the pt-BR version of the document based on existing custom wiki locale mapping
         # for pt-PT, as it is not localized into ca
         en_content = 'This article is in English'
-        trans_content = 'This article is translated into pt-BR'
+        trans_content = 'This article is translated into bn-BD'
         assert en_content not in doc_content
         assert trans_content in doc_content
 

@@ -34,12 +34,8 @@ FALLBACK_LOCALES = {
     'ca': ['es'],  # Bug 800880
     'eu': ['es'],  # Bug 800880
     'gl': ['es'],  # Bug 800880
-    'gu-IN': ['hi-IN'],  # Bug 800880
     'wo': ['fr'],  # Bug 800880
     'fy-NL': ['nl'],  # Bug 800880
-    'pt-PT': ['pt-BR'],  # Bug 800880
-    'ta-LK': ['ta'],  # Bug 800880
-    'zh-HK': ['zh-TW'],  # Bug 800880
 }
 
 # Wiki configuration.
