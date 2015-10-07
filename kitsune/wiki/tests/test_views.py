@@ -21,7 +21,8 @@ from kitsune.wiki.config import (
 from kitsune.wiki.models import Document, HelpfulVoteMetadata, HelpfulVote
 from kitsune.wiki.tests import (
     doc_rev, document, helpful_vote, new_document_data, revision,
-    translated_revision, TemplateDocumentFactory, RevisionFactory, DocumentFactory)
+    translated_revision, TemplateDocumentFactory, RevisionFactory,
+    DocumentFactory, ApprovedRevisionFactory)
 from kitsune.wiki.views import (
     _document_lock_check, _document_lock_clear, _document_lock_steal)
 
@@ -795,13 +796,12 @@ class FallbackSystem(TestCase):
         en_content = 'This article is in English'
         trans_content = 'This article is translated into %slocale' % locale
         # Create an English article and a translation for the locale
-        en_doc = document(locale=en, save=True)
-        revision(document=en_doc, content=en_content, is_approved=True,
-                 is_ready_for_localization=True, save=True)
-        trans_doc = document(parent=en_doc, title='Translated to', locale=locale, save=True)
+        en_doc = DocumentFactory(locale=en)
+        ApprovedRevisionFactory(document=en_doc, content=en_content,
+                                is_ready_for_localization=True)
+        trans_doc = DocumentFactory(parent=en_doc, title='Translated to', locale=locale)
         # Create a new revision of the localized document
-        trans_rev = revision(document=trans_doc, content=trans_content,
-                             is_approved=True, save=True)
+        trans_rev = ApprovedRevisionFactory(document=trans_doc, content=trans_content)
         # Make the created revision the current one for the localized document
         trans_doc.current_revision = trans_rev
         trans_doc.save()

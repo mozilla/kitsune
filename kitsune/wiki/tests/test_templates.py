@@ -407,11 +407,9 @@ class DocumentTests(TestCaseBase):
         custom wiki fallback mapping for the locale and the locale have no translation
         exists."""
         # Create an English document and a pt-BR translated document
-        en_rev = revision(save=True, content='Some text.',
-                          is_approved=True, is_ready_for_localization=True)
-        trans_doc = document(parent=en_rev.document, locale='pt-BR', save=True)
-        trans_rev = revision(document=trans_doc, save=True,
-                             content='Translated text.', is_approved=True)
+        en_rev = ApprovedRevisionFactory(is_ready_for_localization=True)
+        trans_doc = DocumentFactory(parent=en_rev.document, locale='pt-BR')
+        trans_rev = ApprovedRevisionFactory(document=trans_doc)
         # Mark the created revision as the current revision for the document
         trans_doc.current_revision = trans_rev
         trans_doc.save()
@@ -423,10 +421,11 @@ class DocumentTests(TestCaseBase):
         response = self.client.get(url)
         doc = pq(response.content)
         eq_(trans_doc.title, doc('article h1.title').text())
-        assert 'Translate Article' in doc('#editing-tools-sidebar').text()
 
         # Display fallback message to the user.
         eq_(1, len(doc('#doc-pending-fallback')))
+        # Check Translate article is showing in the side tools bar
+        assert 'Translate Article' in doc('#editing-tools-sidebar').text()
         # Removing this as it shows up in text(), and we don't want to depend
         # on its localization.
         doc('#doc-pending-fallback').remove()
