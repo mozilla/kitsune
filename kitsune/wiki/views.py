@@ -128,8 +128,6 @@ def document(request, document_slug, template=None, document=None):
             # and OK to fall back to parent (parent is approved).
             fallback_reason = 'no_translation'
 
-    any_localizable_revision = doc.revisions.filter(is_approved=True,
-                                                    is_ready_for_localization=True).exists()
     # Find and show the defined fallback locale rather than the English version of the document
     # The fallback locale is defined based on the ACCEPT_LANGUAGE header,
     # site-wide locale mapping and custom fallback locale
@@ -142,8 +140,7 @@ def document(request, document_slug, template=None, document=None):
         if fallback_locale is not None:
             # Get the fallback Locale and show doc in the locale
             translation = doc.translated_to(fallback_locale)
-            doc = Document.objects.get(locale=fallback_locale,
-                                       slug=translation.slug)
+            doc = translation
             # For showing the fallback locale explanation message to the user
             fallback_reason = 'fallback_locale'
             full_locale_name = {request.LANGUAGE_CODE: LOCALES[request.LANGUAGE_CODE].native,
@@ -153,6 +150,8 @@ def document(request, document_slug, template=None, document=None):
             doc = get_object_or_404(Document, locale=settings.WIKI_DEFAULT_LANGUAGE,
                                     slug=document_slug)
 
+    any_localizable_revision = doc.revisions.filter(is_approved=True,
+                                                    is_ready_for_localization=True).exists()
     # Obey explicit redirect pages:
     # Don't redirect on redirect=no (like Wikipedia), so we can link from a
     # redirected-to-page back to a "Redirected from..." link, so you can edit
@@ -1509,7 +1508,10 @@ def get_fallback_locale(doc, request):
 
     # Build a list of the request locale and all the ACCEPT_LANGUAGE locales.
     accept_header = request.META.get('HTTP_ACCEPT_LANGUAGE') or ''
-    request_locales = [request.LANGUAGE_CODE] + parse_accept_lang_header(accept_header)
+    header_locales = parse_accept_lang_header(accept_header)
+    all_accepted_locales = []
+    all_accepted_locales.append(request.LANGUAGE_CODE)
+    all_accepted_locales.extend(header_locales)
 
     # For each locale specified in the user's ACCEPT_LANGUAGE header
     # check for, in order:
@@ -1517,11 +1519,11 @@ def get_fallback_locale(doc, request):
     #   * global overrides for the locale in settings.NON_SUPPORTED_LOCALES
     #   * wiki fallbacks for that locale
 
-    for locale in request_locales:
+    for locale in all_accepted_locales:
         if locale in translated_locales:
             return locale
 
-        if settings.NON_SUPPORTED_LOCALES.get(locale) in translated_locales:
+        elif settings.NON_SUPPORTED_LOCALES.get(locale) in translated_locales:
             return settings.NON_SUPPORTED_LOCALES[locale]
 
         for fallback in FALLBACK_LOCALES.get(locale, []):
