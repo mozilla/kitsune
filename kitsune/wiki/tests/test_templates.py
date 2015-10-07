@@ -423,6 +423,7 @@ class DocumentTests(TestCaseBase):
         response = self.client.get(url)
         doc = pq(response.content)
         eq_(trans_doc.title, doc('article h1.title').text())
+        assert 'Translate Article' in doc('#editing-tools-sidebar').text()
 
         # Display fallback message to the user.
         eq_(1, len(doc('#doc-pending-fallback')))
