@@ -8,6 +8,8 @@ import TitleContentEditor from './TitleContentEditor.jsx';
 import UserAuth from './UserAuth.jsx';
 import SubmitQuestion from './SubmitQuestion.jsx';
 import TroubleshootingDataStore from '../stores/TroubleshootingDataStore.es6.js';
+import UrlStore from '../../../sumo/js/stores/UrlStore.es6.js';
+import UrlActions from '../../../sumo/js/actions/UrlActions.es6.js';
 
 export default class AAQApp extends React.Component {
   constructor(props) {
@@ -20,12 +22,16 @@ export default class AAQApp extends React.Component {
     QuestionEditStore.addChangeListener(this.onChange);
     UserAuthStore.addChangeListener(this.onChange);
     TroubleshootingDataStore.addChangeListener(this.onChange);
+    UrlStore.addChangeListener(this.onChange);
+
+    UrlActions.updateQueryStringDefaults({step: 'product'});
   }
 
   componentWillUnmount() {
     QuestionEditStore.removeChangeListener(this.onChange);
     UserAuthStore.removeChangeListener(this.onChange);
     TroubleshootingDataStore.removeChangeListener(this.onChange);
+    UrlStore.removeChangeListener(this.onChange);
   }
 
   onChange() {
@@ -39,12 +45,13 @@ export default class AAQApp extends React.Component {
       validationErrors: QuestionEditStore.getValidationErrors(),
       questionState: QuestionEditStore.getState(),
       userAuth: UserAuthStore.getAll(),
-      troubleshooting: TroubleshootingDataStore.getAll()
+      troubleshooting: TroubleshootingDataStore.getAll(),
+      step: UrlStore.get('step'),
     };
   }
 
   setStep(step) {
-    this.setState({step});
+    UrlActions.updateQueryString({step});
   }
 
   render() {
@@ -52,15 +59,19 @@ export default class AAQApp extends React.Component {
       <div className="AAQApp">
         {(() => {
           switch (this.state.step) {
+            case 'product':
+              return <ProductSelector {...this.state} setStep={this.setStep.bind(this, 'topic')}/>;
             case 'topic':
-              return <TopicSelector {...this.state} setStep={this.setStep.bind(this)} next="title"/>;
+              return <TopicSelector {...this.state} setStep={this.setStep.bind(this, 'title')}/>;
             case 'title':
               return [
                 <TitleContentEditor {...this.state}/>,
                 <UserAuth userAuth={this.state.userAuth}/>
               ];
+            case undefined:
+              return '...';
             default:
-              return <ProductSelector {...this.state} setStep={this.setStep.bind(this)} next="topic"/>;
+              throw new Error(`Unknown AAQ step: ${this.state.step}`);
           }
         })()}
         <SubmitQuestion {...this.state}/>

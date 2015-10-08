@@ -156,6 +156,10 @@ window.k = window.k || {};
     });
   });
 
+  window.addEventListener('popstate', function() {
+    setTimeout(layoutTweaks, 0);
+  });
+
   /*
    * Initialize some selects so that they auto-submit on change.
    */
