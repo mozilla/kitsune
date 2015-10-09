@@ -22,12 +22,16 @@ export default class SearchForm extends React.Component {
     this.state = this._getStateFromStores();
     this.state.tabIndex = 0;
 
+    var filtersDataElt = document.querySelector('script[name="filters-data"]');
+    this.state.parameters = JSON.parse(filtersDataElt.innerHTML);
+
     this.startQuery = _.debounce(this.getResults.bind(this), 300);
   }
 
   _getStateFromStores () {
     return {
-      query: QueryStore.getCurrentQuery(),
+      filters: QueryStore.getCurrentFilters(),
+      query: QueryStore.getQuery(),
       currentForm: QueryStore.getCurrentForm()
     };
   }
@@ -46,10 +50,11 @@ export default class SearchForm extends React.Component {
       e.preventDefault();
     }
 
-    SearchActionCreator.runSearch(this.state.currentForm, this.state.query);
+    SearchActionCreator.runSearch(this.state.currentForm, this.state.filters);
   }
 
   handleSelect(index) {
+    this.state.tabIndex = index;
     var tabsOrder = ['wiki', 'question', 'forum'];
     var currentForm = tabsOrder[index];
     QueryActionCreator.updateCurrentForm(currentForm);
@@ -61,13 +66,27 @@ export default class SearchForm extends React.Component {
       <form method="get" action="" onSubmit={this.getResults.bind(this)}>
         <Tabs index={this.state.tabIndex} onSelect={this.handleSelect.bind(this)}>
           <Tab title="Knowledge Base">
-            <SearchFormWiki query={this.state.query}/>
+            <SearchFormWiki
+              query={this.state.query}
+              filters={this.state.filters}
+              parameters={this.state.parameters}
+            />
           </Tab>
+
           <Tab title="Support Questions">
-            <SearchFormQuestion query={this.state.query}/>
+            <SearchFormQuestion
+              query={this.state.query}
+              filters={this.state.filters}
+              parameters={this.state.parameters}
+            />
           </Tab>
+
           <Tab title="Discussion Forums">
-            <SearchFormForum query={this.state.query}/>
+            <SearchFormForum
+              query={this.state.query}
+              filters={this.state.filters}
+              parameters={this.state.parameters}
+            />
           </Tab>
         </Tabs>
       </form>

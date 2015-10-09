@@ -13,6 +13,13 @@ export default class SearchFormForum extends SearchFormBase {
     super(props);
 
     this.itemName = 'Thread';
-    this.updateQueryFunction = QueryActionCreator.updateQueryForum;
+    this.updateFiltersFunction = QueryActionCreator.updateFiltersForum;
+  }
+
+  render() {
+    return this._render(
+      <fieldset>
+      </fieldset>
+    );
   }
 }

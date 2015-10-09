@@ -11,7 +11,7 @@ import jinja2
 from elasticutils.utils import format_explanation
 from tower import ugettext as _, ugettext_lazy as _lazy
 
-from kitsune.coolsearch.forms import SearchForm
+from kitsune.coolsearch.forms import ForumSearchForm, QuestionSearchForm, WikiSearchForm
 from kitsune.forums.models import ThreadMappingType
 from kitsune.questions.models import QuestionMappingType
 from kitsune.search import es_utils
@@ -51,6 +51,7 @@ class SearchView(views.APIView):
             lang_name = settings.LANGUAGES_DICT[lang]
         else:
             lang_name = ''
+        self.language = language
 
         page = max(smart_int(request.GET.get('page')), 1)
         offset = (page - 1) * settings.SEARCH_RESULTS_PER_PAGE
@@ -64,7 +65,7 @@ class SearchView(views.APIView):
         doctypes = self.get_doctypes()
         searcher = searcher.doctypes(*doctypes)
 
-        filters = self.get_filters()
+        filters = self.get_filters(search_form.cleaned_data)
         searcher = searcher.filter(filters)
 
         # Add the simple string query.
@@ -157,7 +158,7 @@ class SearchView(views.APIView):
 
 
 class SearchWikiView(SearchView):
-    form_class = SearchForm
+    form_class = WikiSearchForm
 
     def get_doctypes(self):
         return [DocumentMappingType.get_mapping_type_name()]
@@ -165,8 +166,28 @@ class SearchWikiView(SearchView):
     def get_query_fields(self):
         return DocumentMappingType.get_query_fields()
 
-    def get_filters(self):
-        return es_utils.F()
+    def get_filters(self, form_cleaned):
+        wiki_f = es_utils.F(model='wiki_document')
+
+        if form_cleaned['category']:
+            wiki_f &= es_utils.F(
+                document_category__in=form_cleaned['category']
+            )
+
+        # Locale filter
+        wiki_f &= es_utils.F(document_locale=self.language)
+
+        # Product filter
+        products = form_cleaned['product']
+        for p in products:
+            wiki_f &= es_utils.F(product=p)
+
+        # Topics filter
+        topics = form_cleaned['topics']
+        for t in topics:
+            wiki_f &= es_utils.F(topic=t)
+
+        return wiki_f
 
     def format_result(self, doc):
         summary = _build_es_excerpt(doc)
@@ -181,7 +202,7 @@ class SearchWikiView(SearchView):
 
 
 class SearchQuestionView(SearchView):
-    form_class = SearchForm
+    form_class = QuestionSearchForm
 
     def get_doctypes(self):
         return [QuestionMappingType.get_mapping_type_name()]
@@ -189,8 +210,20 @@ class SearchQuestionView(SearchView):
     def get_query_fields(self):
         return QuestionMappingType.get_query_fields()
 
-    def get_filters(self):
-        return es_utils.F()
+    def get_filters(self, form_cleaned):
+        question_f = es_utils.F(model='questions_question')
+
+        # Product filter
+        products = form_cleaned['product']
+        for p in products:
+            question_f &= es_utils.F(product=p)
+
+        # Topics filter
+        topics = form_cleaned['topics']
+        for t in topics:
+            question_f &= es_utils.F(topic=t)
+
+        return question_f
 
     def format_result(self, doc):
         summary = _build_es_excerpt(doc)
@@ -217,7 +250,7 @@ class SearchQuestionView(SearchView):
 
 
 class SearchForumView(SearchView):
-    form_class = SearchForm
+    form_class = ForumSearchForm
 
     def get_doctypes(self):
         return [ThreadMappingType.get_mapping_type_name()]
@@ -225,7 +258,7 @@ class SearchForumView(SearchView):
     def get_query_fields(self):
         return ThreadMappingType.get_query_fields()
 
-    def get_filters(self):
+    def get_filters(self, form_cleaned):
         return es_utils.F()
 
     def format_result(self, doc):
