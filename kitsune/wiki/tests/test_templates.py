@@ -406,18 +406,18 @@ class DocumentTests(TestCaseBase):
         """The document template falls back to fallback locale if there is
         custom wiki fallback mapping for the locale and the locale have no translation
         exists."""
-        # Create an English document and a pt-BR translated document
+        # Create an English document and a bn-BD translated document
         en_rev = ApprovedRevisionFactory(is_ready_for_localization=True)
-        trans_doc = DocumentFactory(parent=en_rev.document, locale='pt-BR')
+        trans_doc = DocumentFactory(parent=en_rev.document, locale='bn-BD')
         trans_rev = ApprovedRevisionFactory(document=trans_doc)
         # Mark the created revision as the current revision for the document
         trans_doc.current_revision = trans_rev
         trans_doc.save()
 
-        # Get the pt-PT version of the document.
-        # Resolve to the pt-BR version
-        # because pt-PT has pt-BR set in FALLBACK_LOCALES in wiki/config.py
-        url = reverse('wiki.document', args=[en_rev.document.slug], locale='pt-PT')
+        # Get the bn-IN version of the document.
+        # Resolve to the bn-BD version
+        # because bn-IN has bn-BD set in FALLBACK_LOCALES in wiki/config.py
+        url = reverse('wiki.document', args=[en_rev.document.slug], locale='bn-IN')
         response = self.client.get(url)
         doc = pq(response.content)
         eq_(trans_doc.title, doc('article h1.title').text())
@@ -429,7 +429,7 @@ class DocumentTests(TestCaseBase):
         # Removing this as it shows up in text(), and we don't want to depend
         # on its localization.
         doc('#doc-pending-fallback').remove()
-        # Check that content is available in pt-BR
+        # Check that content is available in bn-BD
         eq_(pq(trans_doc.html)('div').text(), doc('#doc-content div').text())
 
 

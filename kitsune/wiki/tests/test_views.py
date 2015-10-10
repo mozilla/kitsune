@@ -799,7 +799,7 @@ class FallbackSystem(TestCase):
         en_doc = DocumentFactory(locale=en)
         ApprovedRevisionFactory(document=en_doc, content=en_content,
                                 is_ready_for_localization=True)
-        trans_doc = DocumentFactory(parent=en_doc, title='Translated to', locale=locale)
+        trans_doc = DocumentFactory(parent=en_doc, locale=locale)
         # Create a new revision of the localized document
         trans_rev = ApprovedRevisionFactory(document=trans_doc, content=trans_content)
         # Make the created revision the current one for the localized document
