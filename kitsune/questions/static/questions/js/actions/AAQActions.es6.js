@@ -5,6 +5,8 @@ import {actionTypes} from '../constants/AAQConstants.es6.js';
 import QuestionEditStore from '../stores/QuestionEditStore.es6.js';
 import TroubleshootingDataStore from '../stores/TroubleshootingDataStore.es6.js';
 import '../../../sumo/js/remote.js';
+import '../../../sumo/js/aaq.js';
+import '../../../sumo/js/browserdetect.js';
 
 const remoteTroubleshooting = window.remoteTroubleshooting;
 
@@ -124,6 +126,30 @@ function getTroubleshootingInfo() {
   });
 }
 
+function getMetadata(question) {
+  let metadata = question.metadata || {};
+
+  metadata.source = 'Single page AAQ';
+  metadata.useragent = navigator.userAgent;
+
+  if (TroubleshootingDataStore.getOptedIn()) {
+    metadata.troubleshooting = JSON.stringify(TroubleshootingDataStore.getData());
+  }
+
+  metadata.os = window.AAQSystemInfo.prototype.getOS();
+  metadata.ff_version = window.AAQSystemInfo.prototype.getFirefoxVersion();
+  metadata.device = window.AAQSystemInfo.prototype.getDevice();
+  metadata.plugins = window.AAQSystemInfo.prototype.getPlugins();
+
+  for (let key in metadata) {
+    if (metadata[key] === '') {
+      delete metadata[key];
+    }
+  }
+
+  return metadata;
+}
+
 export function submitQuestion() {
   Dispatcher.dispatch({
     type: actionTypes.QUESTION_SUBMIT_OPTIMISTIC,
@@ -133,12 +159,8 @@ export function submitQuestion() {
   let questionData = QuestionEditStore.getQuestion();
   let locale = document.querySelector('html').getAttribute('lang');
   questionData.locale = locale;
-  let metadata = questionData.metadata || {};
+  let metadata = getMetadata(questionData);
   delete questionData.metadata;
-  let questionUrl;
-
-  metadata.useragent = navigator.userAgent;
-  metadata.source = 'Single page AAQ';
 
   apiFetch('/api/2/question/?format=json', {
     method: 'post',
@@ -148,16 +170,13 @@ export function submitQuestion() {
       'X-CSRFToken': csrf,
     },
   })
-  .then(question => {
-    if (TroubleshootingDataStore.getOptedIn()) {
-      metadata.troubleshooting = JSON.stringify(TroubleshootingDataStore.getData());
-    }
+  .then(data => {
+    questionData = data;
 
-    questionUrl = `/${locale}/questions/${question.id}`;
-
+    // Add all metadata items to the question in parallel.
     let promises = [];
     for (let key in metadata) {
-      promises.push(apiFetch(`/api/2/question/${question.id}/set_metadata/?format=json`, {
+      promises.push(apiFetch(`/api/2/question/${questionData.id}/set_metadata/?format=json`, {
         method: 'post',
         credentials: 'include',
         data: {
@@ -173,8 +192,17 @@ export function submitQuestion() {
     return Promise.all(promises);
   })
   .then(() => {
+    return apiFetch(`/api/2/question/${questionData.id}/auto_tag/?format=json`, {
+      method: 'post',
+      credentials: 'include',
+      headers: {
+        'X-CSRFToken': csrf,
+      },
+    });
+  })
+  .then(() => {
     Dispatcher.dispatch({type: actionTypes.QUESTION_SUBMIT_SUCCESS});
-    document.location = questionUrl;
+    document.location = `/${locale}/questions/${questionData.id}`;
   })
   .catch((err) => {
     Dispatcher.dispatch({
@@ -183,7 +211,6 @@ export function submitQuestion() {
     });
   });
 }
-
 
 export default {
   setProduct,

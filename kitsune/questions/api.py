@@ -310,8 +310,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
             serializer.save()
             return Response(serializer.data)
         else:
-            return Response(serializer.errors,
-                            status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @action(methods=['POST', 'DELETE'])
     def delete_metadata(self, request, pk=None):
@@ -379,6 +378,12 @@ class QuestionViewSet(viewsets.ModelViewSet):
         for tag in tags:
             question.tags.remove(tag)
 
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(methods=['POST'], permission_classes=[permissions.IsAuthenticated])
+    def auto_tag(self, request, pk=None):
+        question = self.get_object()
+        question.auto_tag()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
