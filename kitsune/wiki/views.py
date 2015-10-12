@@ -1327,16 +1327,16 @@ def show_translations(request, document_slug):
         Document, locale=settings.WIKI_DEFAULT_LANGUAGE, slug=document_slug)
     translated_locales = []
     untranslated_locales = []
+    translated_locales_code = []
     from kitsune.lib.sumo_locales import LOCALES  # Holds full locale information
     # Makes sure, en-US is always on the first list
     translated_locales.append((document.locale, LOCALES[document.locale].native))
-    # Iterates through all translated locales and appends them
-    for locale in document.translations.all().values_list('locale', flat=True):
-        translated_locales.append((locale, LOCALES[locale].native))
-    # Seperating Translated and Untranslated locales
+    translated_locales_code.extend(document.translations.all().values_list('locale', flat=True))
     for locale in settings.LANGUAGE_CHOICES:
         # LANGUAGE_CHOICES converts locale code to full locale information
-        if locale not in translated_locales:
+        if locale[0] in translated_locales_code:
+            translated_locales.append(locale)
+        else:
             untranslated_locales.append(locale)
     return render(request, 'wiki/show_translations.html', {
         'document': document,
