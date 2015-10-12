@@ -28,6 +28,7 @@ from kitsune.search.utils import locale_or_default, clean_excerpt, ComposedList
 from kitsune.search import es_utils
 from kitsune.search.forms import SimpleSearchForm, AdvancedSearchForm
 from kitsune.search.es_utils import ES_EXCEPTIONS, F, AnalyzerS
+from kitsune.search.simple_search import generate_simple_search
 from kitsune.sumo.helpers import Paginator
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import paginate, smart_int
@@ -59,41 +60,33 @@ EXPIRES_FMT = '%A, %d %B %Y %H:%M:%S GMT'
 
 @mobile_template('search/{mobile/}results.html')
 def simple_search(request, template=None):
-    """ES-specific simple search view.
+    """Elasticsearch-specific simple search view.
 
     This view is for end user searching of the Knowledge Base and
     Support Forum. Filtering options are limited to:
-    * product (`product=firefox`, for example, for only Firefox results)
-    * document type (`w=2`, for esample, for Support Forum questions only)
-    """
 
+    * product (`product=firefox`, for example, for only Firefox results)
+    * document type (`w=2`, for example, for Support Forum questions only)
+
+    """
     # Redirect to old Advanced Search URLs (?a={1,2}) to the new URL.
-    a = request.GET.get('a')
-    if a in ['1', '2']:
+    if request.GET.get('a') in ['1', '2']:
         new_url = reverse('search.advanced') + '?' + request.GET.urlencode()
         return HttpResponseRedirect(new_url)
 
     # JSON-specific variables
     is_json = (request.GET.get('format') == 'json')
     callback = request.GET.get('callback', '').strip()
-    content_type = (
-        'application/x-javascript' if callback else 'application/json')
+    content_type = 'application/x-javascript' if callback else 'application/json'
 
     # Check callback is valid
     if is_json and callback and not jsonp_is_valid(callback):
         return HttpResponse(
             json.dumps({'error': _('Invalid callback function.')}),
-            content_type=content_type, status=400)
+            content_type=content_type,
+            status=400)
 
-    language = locale_or_default(
-        request.GET.get('language', request.LANGUAGE_CODE))
-    r = request.GET.copy()
-
-    # TODO: Do we really need to add this to the URL if it isn't already there?
-    r['w'] = r.get('w', constants.WHERE_BASIC)
-
-    # TODO: Break out a separate simple search form.
-    search_form = SimpleSearchForm(r, auto_id=False)
+    search_form = SimpleSearchForm(request.GET, auto_id=False)
 
     if not search_form.is_valid():
         if is_json:
@@ -104,7 +97,8 @@ def simple_search(request, template=None):
 
         t = template if request.MOBILE else 'search/form.html'
         search_ = render(request, t, {
-            'advanced': False, 'request': request,
+            'advanced': False,
+            'request': request,
             'search_form': search_form})
         cache_period = settings.SEARCH_CACHE_PERIOD
         search_['Cache-Control'] = 'max-age=%s' % (cache_period * 60)
@@ -119,146 +113,16 @@ def simple_search(request, template=None):
     if request.MOBILE and cleaned['w'] == constants.WHERE_BASIC:
         cleaned['w'] = constants.WHERE_WIKI
 
+    language = locale_or_default(cleaned['language'] or request.LANGUAGE_CODE)
+    lang = language.lower()
+    lang_name = settings.LANGUAGES_DICT.get(lang) or ''
+
+    searcher = generate_simple_search(search_form, language, with_highlights=True)
+
     page = max(smart_int(request.GET.get('page')), 1)
     offset = (page - 1) * settings.SEARCH_RESULTS_PER_PAGE
 
-    lang = language.lower()
-    if settings.LANGUAGES_DICT.get(lang):
-        lang_name = settings.LANGUAGES_DICT[lang]
-    else:
-        lang_name = ''
-
-    # We use a regular S here because we want to search across
-    # multiple doctypes.
-    searcher = (AnalyzerS().es(urls=settings.ES_URLS)
-                .indexes(es_utils.read_index('default')))
-
-    wiki_f = F(model='wiki_document')
-    question_f = F(model='questions_question')
-
-    cleaned_q = cleaned['q']
-    products = cleaned['product']
-
-    if not products and 'all_products' not in request.GET:
-        lowered_q = cleaned_q.lower()
-
-        if 'thunderbird' in lowered_q:
-            products.append('thunderbird')
-        elif 'android' in lowered_q:
-            products.append('mobile')
-        elif ('ios' in lowered_q or 'ipad' in lowered_q or 'ipod' in lowered_q or
-              'iphone' in lowered_q):
-            products.append('ios')
-        elif 'firefox os' in lowered_q:
-            products.append('firefox-os')
-        elif 'firefox' in lowered_q:
-            products.append('firefox')
-
-    # Start - wiki filters
-
-    if cleaned['w'] & constants.WHERE_WIKI:
-        # Category filter
-        wiki_f &= F(document_category__in=settings.SEARCH_DEFAULT_CATEGORIES)
-
-        # Locale filter
-        wiki_f &= F(document_locale=language)
-
-        # Product filter
-        for p in products:
-            wiki_f &= F(product=p)
-
-        # Archived bit
-        wiki_f &= F(document_is_archived=False)
-
-    # End - wiki filters
-
-    # Start - support questions filters
-
-    if cleaned['w'] & constants.WHERE_SUPPORT:
-        # Has helpful answers is set by default if using basic search
-        cleaned['has_helpful'] = constants.TERNARY_YES
-
-        # No archived questions in default search.
-        cleaned['is_archived'] = constants.TERNARY_NO
-
-        # These filters are ternary, they can be either YES, NO, or OFF
-        ternary_filters = ('has_helpful', 'is_archived')
-        d = dict(('question_%s' % filter_name,
-                  _ternary_filter(cleaned[filter_name]))
-                 for filter_name in ternary_filters if cleaned[filter_name])
-        if d:
-            question_f &= F(**d)
-
-        # Product filter
-        for p in products:
-            question_f &= F(product=p)
-
-    # End - support questions filters
-
-    # Done with all the filtery stuff--time  to generate results
-
-    # Combine all the filters and add to the searcher
-    doctypes = []
-    final_filter = F()
-    if cleaned['w'] & constants.WHERE_WIKI:
-        doctypes.append(DocumentMappingType.get_mapping_type_name())
-        final_filter |= wiki_f
-
-    if cleaned['w'] & constants.WHERE_SUPPORT:
-        doctypes.append(QuestionMappingType.get_mapping_type_name())
-        final_filter |= question_f
-
-    searcher = searcher.doctypes(*doctypes)
-    searcher = searcher.filter(final_filter)
-
-    if 'explain' in request.GET and request.GET['explain'] == '1':
-        searcher = searcher.explain()
-
-    documents = ComposedList()
-
     try:
-        # Set up the highlights. Show the entire field highlighted.
-        searcher = searcher.highlight(
-            'question_content',  # support forum
-            'document_summary',  # kb
-            pre_tags=['<b>'],
-            post_tags=['</b>'],
-            number_of_fragments=0)
-
-        # Set up boosts
-        searcher = searcher.boost(
-            question_title=4.0,
-            question_content=3.0,
-            question_answer_content=3.0,
-            document_title=6.0,
-            document_content=1.0,
-            document_keywords=8.0,
-            document_summary=2.0,
-
-            # Text phrases in document titles and content get an extra
-            # boost.
-            document_title__match_phrase=10.0,
-            document_content__match_phrase=8.0)
-
-        # Build the query
-        query_fields = chain(*[
-            cls.get_query_fields() for cls in [
-                DocumentMappingType,
-                QuestionMappingType
-            ]
-        ])
-        query = {}
-        # Create match and match_phrase queries for every field
-        # we want to search.
-        for field in query_fields:
-            for query_type in ['match', 'match_phrase']:
-                query['%s__%s' % (field, query_type)] = cleaned_q
-
-        # Transform the query to use locale aware analyzers.
-        query = es_utils.es_query_with_analyzer(query, language)
-
-        searcher = searcher.query(should=True, **query)
-
         num_results = min(searcher.count(), settings.SEARCH_MAX_RESULTS)
 
         # TODO - Can ditch the ComposedList here, but we need
@@ -269,13 +133,11 @@ def simple_search(request, template=None):
         results_per_page = settings.SEARCH_RESULTS_PER_PAGE
         pages = paginate(request, documents, results_per_page)
 
-        # If we know there aren't any results, let's cheat and in
-        # doing that, not hit ES again.
+        # If we know there aren't any results, let's cheat and doing that, not hit ES again
         if num_results == 0:
             searcher = []
         else:
-            # Get the documents we want to show and add them to
-            # docs_for_page
+            # Get the documents we want to show and add them to docs_for_page
             documents = documents[offset:offset + results_per_page]
 
             if len(documents) == 0:
@@ -308,8 +170,7 @@ def simple_search(request, template=None):
                     # question_content excerpts. In that case, just
                     # show the question--but only the first 500
                     # characters.
-                    summary = bleach.clean(
-                        doc['question_content'], strip=True)[:500]
+                    summary = bleach.clean(doc['question_content'], strip=True)[:500]
 
                 result = {
                     'title': doc['question_title'],
@@ -346,21 +207,17 @@ def simple_search(request, template=None):
         t = 'search/mobile/down.html' if request.MOBILE else 'search/down.html'
         return render(request, t, {'q': cleaned['q']}, status=503)
 
-    items = [(k, v) for k in search_form.fields for
-             v in r.getlist(k) if v and k != 'a']
-    items.append(('a', '2'))
-
     fallback_results = None
     if num_results == 0:
         fallback_results = _fallback_results(language, cleaned['product'])
 
     product = Product.objects.filter(slug__in=cleaned['product'])
     if product:
-        product_titles = [_(p.title, 'DB: products.Product.title')
-                          for p in product]
+        product_titles = [_(p.title, 'DB: products.Product.title') for p in product]
     else:
         product_titles = [_('All Products')]
 
+    # FIXME: This is probably bad l10n.
     product_titles = ', '.join(product_titles)
 
     data = {
@@ -370,7 +227,7 @@ def simple_search(request, template=None):
         'product_titles': product_titles,
         'q': cleaned['q'],
         'w': cleaned['w'],
-        'lang_name': lang_name, }
+        'lang_name': lang_name}
 
     if is_json:
         # Models are not json serializable.
@@ -426,13 +283,12 @@ def simple_search(request, template=None):
 
 @mobile_template('search/{mobile/}results.html')
 def advanced_search(request, template=None):
-    """ES-specific Advanced search view"""
+    """Elasticsearch-specific Advanced search view"""
 
     # JSON-specific variables
     is_json = (request.GET.get('format') == 'json')
     callback = request.GET.get('callback', '').strip()
-    content_type = (
-        'application/x-javascript' if callback else 'application/json')
+    content_type = 'application/x-javascript' if callback else 'application/json'
 
     # Check callback is valid
     if is_json and callback and not jsonp_is_valid(callback):
@@ -490,10 +346,7 @@ def advanced_search(request, template=None):
     offset = (page - 1) * settings.SEARCH_RESULTS_PER_PAGE
 
     lang = language.lower()
-    if settings.LANGUAGES_DICT.get(lang):
-        lang_name = settings.LANGUAGES_DICT[lang]
-    else:
-        lang_name = ''
+    lang_name = settings.LANGUAGES_DICT.get(lang, '') or ''
 
     # We use a regular S here because we want to search across
     # multiple doctypes.
@@ -893,39 +746,15 @@ def opensearch_suggestions(request):
     """A simple search view that returns OpenSearch suggestions."""
     content_type = 'application/x-suggestions+json'
 
-    term = request.GET.get('q')
-    if not term:
+    search_form = SimpleSearchForm(request.GET, auto_id=False)
+    if not search_form.is_valid():
         return HttpResponseBadRequest(content_type=content_type)
 
-    locale = locale_or_default(request.LANGUAGE_CODE)
-
-    # FIXME: Rewrite this using the simple search search business
-    # logic. This currently returns templates (amongst other things)
-    # which is totally wrong.
-    try:
-        query = dict(('%s__match' % field, term)
-                     for field in DocumentMappingType.get_query_fields())
-        # Upgrade the query to an analyzer-aware one.
-        query = es_utils.es_query_with_analyzer(query, locale)
-
-        wiki_s = (DocumentMappingType.search()
-                  .filter(document_is_archived=False)
-                  .filter(document_locale=locale)
-                  .values_dict('document_title', 'url')
-                  .query(or_=query)[:5])
-
-        query = dict(('%s__match' % field, term)
-                     for field in QuestionMappingType.get_query_fields())
-        question_s = (QuestionMappingType.search()
-                      .filter(question_has_helpful=True)
-                      .values_dict('question_title', 'url')
-                      .query(or_=query)[:5])
-
-        results = list(chain(question_s, wiki_s))
-    except ES_EXCEPTIONS:
-        # If we have ES problems, we just send back an empty result
-        # set.
-        results = []
+    cleaned = search_form.cleaned_data
+    language = locale_or_default(cleaned['language'] or request.LANGUAGE_CODE)
+    searcher = generate_simple_search(search_form, language, with_highlights=False)
+    searcher = searcher.values_dict('document_title', 'question_title', 'url')
+    results = searcher[:10]
 
     def urlize(r):
         return u'%s://%s%s' % (
@@ -940,12 +769,18 @@ def opensearch_suggestions(request):
         # string.
         return r.get('document_title', r.get('question_title', [_('No title')]))[0]
 
-    data = [
-        term,
-        [titleize(r) for r in results],
-        [],
-        [urlize(r) for r in results]
-    ]
+    try:
+        data = [
+            cleaned['q'],
+            [titleize(r) for r in results],
+            [],
+            [urlize(r) for r in results]
+        ]
+    except ES_EXCEPTIONS:
+        # If we have Elasticsearch problems, we just send back an empty
+        # set of results.
+        data = []
+
     return HttpResponse(json.dumps(data), content_type=content_type)
 
 

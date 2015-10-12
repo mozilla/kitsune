@@ -29,6 +29,10 @@ class SimpleSearchForm(forms.Form):
                                         (constants.WHERE_BASIC, None),
                                         (constants.WHERE_DISCUSSION, None)))
 
+    explain = forms.BooleanField(required=False)
+    all_products = forms.BooleanField(required=False)
+    language = forms.CharField(required=False)
+
     product = forms.MultipleChoiceField(
         required=False,
         label=_lazy(u'Relevant to'),
@@ -39,6 +43,30 @@ class SimpleSearchForm(forms.Form):
 
         product_field = self.fields['product']
         product_field.choices = Product.objects.values_list('slug', 'title')
+
+    def clean_products(self):
+        products = self.cleaned_data['products']
+        # If products were specified or all_products was set, then we return
+        # the products as is.
+        if products or self.cleaned_data['all_products']:
+            return products
+
+        # If no products were specified and we're not looking for all_products,
+        # then populate products by looking at things in the query.
+        lowered_q = self.cleaned_data['q'].lower()
+
+        if 'thunderbird' in lowered_q:
+            products.append('thunderbird')
+        elif 'android' in lowered_q:
+            products.append('mobile')
+        elif ('ios' in lowered_q or 'ipad' in lowered_q or 'ipod' in lowered_q or
+              'iphone' in lowered_q):
+            products.append('ios')
+        elif 'firefox os' in lowered_q:
+            products.append('firefox-os')
+        elif 'firefox' in lowered_q:
+            products.append('firefox')
+        return products
 
 
 class AdvancedSearchForm(forms.Form):
