@@ -118,39 +118,39 @@ def simple_search(request, template=None):
     lang_name = settings.LANGUAGES_DICT.get(lang) or ''
 
     searcher = generate_simple_search(search_form, language, with_highlights=True)
-
-    page = max(smart_int(request.GET.get('page')), 1)
-    offset = (page - 1) * settings.SEARCH_RESULTS_PER_PAGE
+    searcher = searcher[:settings.SEARCH_MAX_RESULTS]
 
     try:
-        num_results = min(searcher.count(), settings.SEARCH_MAX_RESULTS)
+        # paginator = Paginator(searcher, settings.SEARCH_RESULTS_PER_PAGE)
+        # page = paginator.page(page_num)
+        # offset = page.start_index()
+        pages = paginate(request, searcher, settings.SEARCH_RESULTS_PER_PAGE)
+        offset = pages.start_index()
 
-        # TODO - Can ditch the ComposedList here, but we need
-        # something that paginate can use to figure out the paging.
-        documents = ComposedList()
-        documents.set_count(('results', searcher), num_results)
+    except ES_EXCEPTIONS as exc:
+        # Handle timeout and all those other transient errors with a
+        # "Search Unavailable" rather than a Django error page.
+        if is_json:
+            return HttpResponse(json.dumps({'error': _('Search Unavailable')}),
+                                content_type=content_type, status=503)
 
-        results_per_page = settings.SEARCH_RESULTS_PER_PAGE
-        pages = paginate(request, documents, results_per_page)
+        # Cheating here: Convert from 'Timeout()' to 'timeout' so
+        # we have less code, but still have good stats.
+        exc_bucket = repr(exc).lower().strip('()')
+        statsd.incr('search.esunified.{0}'.format(exc_bucket))
 
-        # If we know there aren't any results, let's cheat and doing that, not hit ES again
-        if num_results == 0:
-            searcher = []
-        else:
-            # Get the documents we want to show and add them to docs_for_page
-            documents = documents[offset:offset + results_per_page]
+        log.exception(exc)
 
-            if len(documents) == 0:
-                # If the user requested a page that's beyond the
-                # pagination, then documents is an empty list and
-                # there are no results to show.
-                searcher = []
-            else:
-                bounds = documents[0][1]
-                searcher = searcher[bounds[0]:bounds[1]]
+        t = 'search/mobile/down.html' if request.MOBILE else 'search/down.html'
+        return render(request, t, {'q': cleaned['q']}, status=503)
 
-        results = []
-        for i, doc in enumerate(searcher):
+    fallback_results = None
+    results = []
+    if pages.paginator.count == 0:
+        fallback_results = _fallback_results(language, cleaned['product'])
+
+    else:
+        for i, doc in enumerate(pages):
             rank = i + offset
 
             if doc['model'] == 'wiki_document':
@@ -190,27 +190,6 @@ def simple_search(request, template=None):
             result['id'] = doc['id']
             results.append(result)
 
-    except ES_EXCEPTIONS as exc:
-        # Handle timeout and all those other transient errors with a
-        # "Search Unavailable" rather than a Django error page.
-        if is_json:
-            return HttpResponse(json.dumps({'error': _('Search Unavailable')}),
-                                content_type=content_type, status=503)
-
-        # Cheating here: Convert from 'Timeout()' to 'timeout' so
-        # we have less code, but still have good stats.
-        exc_bucket = repr(exc).lower().strip('()')
-        statsd.incr('search.esunified.{0}'.format(exc_bucket))
-
-        log.exception(exc)
-
-        t = 'search/mobile/down.html' if request.MOBILE else 'search/down.html'
-        return render(request, t, {'q': cleaned['q']}, status=503)
-
-    fallback_results = None
-    if num_results == 0:
-        fallback_results = _fallback_results(language, cleaned['product'])
-
     product = Product.objects.filter(slug__in=cleaned['product'])
     if product:
         product_titles = [_(p.title, 'DB: products.Product.title') for p in product]
@@ -221,13 +200,14 @@ def simple_search(request, template=None):
     product_titles = ', '.join(product_titles)
 
     data = {
-        'num_results': num_results,
+        'num_results': pages.paginator.count,
         'results': results,
         'fallback_results': fallback_results,
         'product_titles': product_titles,
         'q': cleaned['q'],
         'w': cleaned['w'],
-        'lang_name': lang_name}
+        'lang_name': lang_name
+    }
 
     if is_json:
         # Models are not json serializable.
@@ -235,8 +215,8 @@ def simple_search(request, template=None):
             del r['object']
         data['total'] = len(data['results'])
 
-        data['products'] = ([{'slug': p.slug, 'title': p.title}
-                             for p in Product.objects.filter(visible=True)])
+        data['products'] = [{'slug': p.slug, 'title': p.title}
+                            for p in Product.objects.filter(visible=True)]
 
         if product:
             data['product'] = product[0].slug
