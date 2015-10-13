@@ -20,20 +20,40 @@
     }
   }
 
-  .vote-bar {
+  .vote-bar,
+  #related-documents {
     border-top: 1px solid @mobileInputBorder;
     font-size: 16px;
     margin: 10px 0;
     padding: 16px 0;
 
+    header {
+      margin-bottom: 6px;
+    }
+  }
+
+  #related-documents {
+    > ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+
+      > li {
+        margin-bottom: 10px;
+        padding: 6px 0;
+
+        &:last-child {
+          margin-bottom: 0;
+        }
+      }
+    }
+  }
+
+  .vote-bar {
     form {
       &.voted {
         display: none;
       }
-    }
-
-    header {
-      margin-bottom: 6px;
     }
 
     .helpful {
