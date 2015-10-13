@@ -25,8 +25,8 @@ TAKE_TIMEOUT = 600
 # AAQ config:
 products = SortedDict([
     ('desktop', {
-        'name': _lazy(u'Firefox for Desktop'),
-        'subtitle': _lazy(u'Windows, Mac, or Linux'),
+        'name': _lazy(u'Firefox'),
+        'subtitle': _lazy(u'Web browser for Windows, Mac and Linux'),
         'extra_fields': ['troubleshooting', 'ff_version', 'os', 'plugins'],
         'tags': ['desktop'],
         'product': 'firefox',
@@ -93,7 +93,7 @@ products = SortedDict([
     }),
     ('mobile', {
         'name': _lazy(u'Firefox for Android'),
-        'subtitle': _lazy(u'Android'),
+        'subtitle': _lazy(u'Web browser for Android smartphones and tablets'),
         'extra_fields': ['ff_version', 'os', 'plugins'],
         'tags': ['mobile'],
         'product': 'mobile',
@@ -160,7 +160,7 @@ products = SortedDict([
     }),
     ('ios', {
         'name': _lazy(u'Firefox for iOS'),
-        'subtitle': '',
+        'subtitle': 'Firefox for iPhone, iPad and iPod touch devices',
         'extra_fields': ['ff_version', 'os', 'plugins'],
         'tags': ['ios'],
         'product': 'ios',
@@ -184,7 +184,7 @@ products = SortedDict([
     }),
     ('firefox-os', {
         'name': _lazy(u'Firefox OS'),
-        'subtitle': '',
+        'subtitle': 'Mobile OS for smartphones',
         'extra_fields': ['device', 'os'],
         'tags': [],
         'product': 'firefox-os',
@@ -248,7 +248,7 @@ products = SortedDict([
     }),
     ('thunderbird', {
         'name': _lazy(u'Thunderbird'),
-        'subtitle': '',
+        'subtitle': 'Email software for Windows, Mac and Linux',
         'extra_fields': [],
         'tags': [],
         'product': 'thunderbird',
