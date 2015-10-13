@@ -33,7 +33,7 @@
 {% block content %}
   {% if breadcrumb_items[1] %}
     <div class="filter-bar">
-      <a class="return-link" href="{{ breadcrumb_items[1][0] }}">{{ breadcrumb_items[1][1] }}</a>
+      <a class="return-link" href="{{ breadcrumb_items[-2][0] }}">{{ breadcrumb_items[-2][1] }}</a>
     </div>
   {% endif %}
   <article id="wiki-doc">
