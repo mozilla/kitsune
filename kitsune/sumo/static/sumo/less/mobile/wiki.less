@@ -1,11 +1,37 @@
 @import '../variables.less';
-
+@import 'mixins.less';
 @import '../includes/wiki-common.less';
 
 .document {
   article {
     font-size: 14px;
     padding: 10px 16px;
+  }
+
+  .filter-bar {
+    background: @mobileSubheaderBackground;
+    color: #fff;
+    font-size: 15px;
+
+    .return-link {
+      color: #fff;
+      display: block;
+      line-height: 40px;
+      padding: 10px 16px 10px 46px;
+      position: relative;
+
+      &:before {
+        background-position: -52px -1664px;
+        .icons-sprite();
+        content: '';
+        height: 20px;
+        left: 16px;
+        margin-top: -10px;
+        position: absolute;
+        top: 50%;
+        width: 20px;
+      }
+    }
   }
 
   .title-bar {
