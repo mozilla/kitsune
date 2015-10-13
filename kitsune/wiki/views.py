@@ -49,6 +49,7 @@ from kitsune.wiki.tasks import (
     send_reviewed_notification, schedule_rebuild_kb,
     send_contributor_notification, render_document_cascade)
 
+from kitsune.lib.sumo_locales import LOCALES  # Holds full locale information
 
 log = logging.getLogger('k.wiki')
 
@@ -1328,7 +1329,6 @@ def show_translations(request, document_slug):
     translated_locales = []
     untranslated_locales = []
     translated_locales_code = []
-    from kitsune.lib.sumo_locales import LOCALES  # Holds full locale information
     # Makes sure, en-US is always on the first list
     translated_locales.append((document.locale, LOCALES[document.locale].native))
     translated_locales_code.extend(document.translations.all().values_list('locale', flat=True))
