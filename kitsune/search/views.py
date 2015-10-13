@@ -121,9 +121,6 @@ def simple_search(request, template=None):
     searcher = searcher[:settings.SEARCH_MAX_RESULTS]
 
     try:
-        # paginator = Paginator(searcher, settings.SEARCH_RESULTS_PER_PAGE)
-        # page = paginator.page(page_num)
-        # offset = page.start_index()
         pages = paginate(request, searcher, settings.SEARCH_RESULTS_PER_PAGE)
         offset = pages.start_index()
 
@@ -164,12 +161,10 @@ def simple_search(request, template=None):
             elif doc['model'] == 'questions_question':
                 summary = _build_es_excerpt(doc)
                 if not summary:
-                    # We're excerpting only question_content, so if
-                    # the query matched question_title or
-                    # question_answer_content, then there won't be any
-                    # question_content excerpts. In that case, just
-                    # show the question--but only the first 500
-                    # characters.
+                    # We're excerpting only question_content, so if the query matched
+                    # question_title or question_answer_content, then there won't be any
+                    # question_content excerpts. In that case, just show the question--but
+                    # only the first 500 characters.
                     summary = bleach.clean(doc['question_content'], strip=True)[:500]
 
                 result = {
@@ -206,8 +201,7 @@ def simple_search(request, template=None):
         'product_titles': product_titles,
         'q': cleaned['q'],
         'w': cleaned['w'],
-        'lang_name': lang_name
-    }
+        'lang_name': lang_name}
 
     if is_json:
         # Models are not json serializable.
@@ -326,7 +320,7 @@ def advanced_search(request, template=None):
     offset = (page - 1) * settings.SEARCH_RESULTS_PER_PAGE
 
     lang = language.lower()
-    lang_name = settings.LANGUAGES_DICT.get(lang, '') or ''
+    lang_name = settings.LANGUAGES_DICT.get(lang) or ''
 
     # We use a regular S here because we want to search across
     # multiple doctypes.
@@ -744,9 +738,8 @@ def opensearch_suggestions(request):
         )
 
     def titleize(r):
-        # NB: Elasticsearch returns an array of strings as the value,
-        # so we mimic that and then pull out the first (and only)
-        # string.
+        # NB: Elasticsearch returns an array of strings as the value, so we mimic that and
+        # then pull out the first (and only) string.
         return r.get('document_title', r.get('question_title', [_('No title')]))[0]
 
     try:
@@ -757,8 +750,7 @@ def opensearch_suggestions(request):
             [urlize(r) for r in results]
         ]
     except ES_EXCEPTIONS:
-        # If we have Elasticsearch problems, we just send back an empty
-        # set of results.
+        # If we have Elasticsearch problems, we just send back an empty set of results.
         data = []
 
     return HttpResponse(json.dumps(data), content_type=content_type)
