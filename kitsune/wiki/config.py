@@ -28,6 +28,15 @@ COLLAPSIBLE_DOCUMENTS = {
         u'como-fazer-o-firefox-parar-de-se-conectar-automati',
     ]
 }
+FALLBACK_LOCALES = {
+    'bn-IN': ['bn-BD'],  # Bug 800880
+    'bn-BD': ['bn-IN'],  # Bug 800880
+    'ca': ['es'],  # Bug 800880
+    'eu': ['es'],  # Bug 800880
+    'gl': ['es'],  # Bug 800880
+    'wo': ['fr'],  # Bug 800880
+    'fy-NL': ['nl'],  # Bug 800880
+}
 
 # Wiki configuration.
 

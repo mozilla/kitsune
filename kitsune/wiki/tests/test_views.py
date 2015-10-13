@@ -4,6 +4,7 @@ import json
 
 from django.conf import settings
 from django.contrib.sites.models import Site
+from django.test import Client
 
 import mock
 from nose.tools import eq_
@@ -20,7 +21,8 @@ from kitsune.wiki.config import (
 from kitsune.wiki.models import Document, HelpfulVoteMetadata, HelpfulVote
 from kitsune.wiki.tests import (
     doc_rev, document, helpful_vote, new_document_data, revision,
-    translated_revision, TemplateDocumentFactory, RevisionFactory, DocumentFactory)
+    translated_revision, TemplateDocumentFactory, RevisionFactory,
+    DocumentFactory, ApprovedRevisionFactory)
 from kitsune.wiki.views import (
     _document_lock_check, _document_lock_clear, _document_lock_steal)
 
@@ -779,3 +781,172 @@ class MobileDocumentTests(MobileTestCase):
         res = self.client.get(url)
         eq_(res.status_code, 200)
         self.assertTemplateUsed(res, 'wiki/mobile/document.html')
+
+
+class FallbackSystem(TestCase):
+    """Check that fallback locales on article level are working correctly."""
+
+    def setUp(self):
+        super(FallbackSystem, self).setUp()
+        product(save=True)
+
+    def create_documents(self, locale):
+        """Create a document in English and a translated document for the locale"""
+        en = settings.WIKI_DEFAULT_LANGUAGE
+        en_content = 'This article is in English'
+        trans_content = 'This article is translated into %slocale' % locale
+        # Create an English article and a translation for the locale
+        en_doc = DocumentFactory(locale=en)
+        ApprovedRevisionFactory(document=en_doc, content=en_content,
+                                is_ready_for_localization=True)
+        trans_doc = DocumentFactory(parent=en_doc, locale=locale)
+        # Create a new revision of the localized document
+        trans_rev = ApprovedRevisionFactory(document=trans_doc, content=trans_content)
+        # Make the created revision the current one for the localized document
+        trans_doc.current_revision = trans_rev
+        trans_doc.save()
+        # Return both the English version and the localized version of the document
+        return en_doc, trans_doc
+
+    def get_data_from_translated_document(self, header, create_doc_locale, req_doc_locale):
+        """Create documents and get provided locale document data"""
+        # Create a client with provided ACCEPT_LANGUAGE header information
+        client = Client(HTTP_ACCEPT_LANGUAGE=header)
+        # Create an English and a localized version of the document, based on create_doc_locale
+        en_doc, trans_doc = self.create_documents(create_doc_locale)
+        # Get the data of the requested locale version of the document
+        url = reverse('wiki.document', args=[en_doc.slug], locale=req_doc_locale)
+        response = client.get(url, follow=True)
+        eq_(200, response.status_code)
+        doc = pq(response.content)
+        doc_content = doc('#doc-content').text()
+        return doc_content
+
+    def test_header_locales_in_translated_list(self):
+        """
+        Test that the article is showing in the header locale
+
+        Test cases when the document is not localized to locale requested by the user,
+        but is localized to a locale mentioned in the ACCEPT_LANGUAGE header
+        """
+        # Define a client with es, fr, ja as locale choices in the ACCEPT_LANGUAGE header
+        header = 'es,fr;q=0.7,ja;q=0.3,'
+        # Create a document localized into fr
+        # Attempt to resolve to the es version of the document with the client defined before
+        doc_content = self.get_data_from_translated_document(header=header,
+                                                             create_doc_locale='fr',
+                                                             req_doc_locale='es')
+        # Show the fr version of the document based on existing client header,
+        # as it is not localized into es
+        en_content = 'This article is in English'
+        trans_content = 'This article is translated into fr'
+        assert en_content not in doc_content
+        assert trans_content in doc_content
+
+    def test_header_locales_not_in_translated_list(self):
+        """
+        Test that the article is showing in the header locale, with the following conditions:
+
+        * the article is not localized into the user-requested locale
+        * the article is not localized to any of the locales listed in the ACCEPT_LANGUAGE header
+        * there is a fallback locale defined for one of the locales listed in the the
+          ACCEPT LANGUAGE header
+           ** it is set in kitsune/settings.py
+
+        Test that the fallback locale is used
+        """
+
+        # Define a client with de, an, ja as locale choices in the ACCEPT_LANGUAGE header
+        header = 'de,an;q=0.7,ja;q=0.3,'
+        # Create a document localized into es
+        # Attempt to resolve to the de version of the document with the client defined before
+        doc_content = self.get_data_from_translated_document(header=header,
+                                                             create_doc_locale='es',
+                                                             req_doc_locale='de')
+        # Show the es version of the document based on the fallback locale for an set in
+        # kitsune/settings.py, as it is not localized into de and there is no available
+        # locale based on the client header
+        en_content = 'This article is in English'
+        trans_content = 'This article is translated into es'
+        assert en_content not in doc_content
+        assert trans_content in doc_content
+
+    def test_custom_locale_mapping(self):
+        """
+        Test that the article is showing according to defined locale fallback options
+        (more than one), with the following conditions:
+
+        * the article is not localized into the user-requested locale
+        * the article is not localized into any of the locales listed in the ACCEPT_LANGUAGE header
+        * None of the ACCEPT_LANGUAGE header locales has a defined fallback locale
+        * the user-requested locale has more than one fallback locale defined and
+          the requested article is localized into one of the defined fallback locales
+            ** the fallback locale is set in kitsune/settings.py
+
+        Test that the article is shown in the defined fallback locale
+        """
+
+        # Create a document localized into bn-BD. Attempt to resolve to the bn-IN version
+        # of the document without defining locale options for the client
+
+        # of the document. While we the client have no language choices.
+        doc_content = self.get_data_from_translated_document(header=None,
+                                                             create_doc_locale='bn-BD',
+                                                             req_doc_locale='bn-IN')
+        # Show the bn-BD version of the document based on the fallback locale,
+        # as it is not localized into bn-IN and there is no available locale
+        # from the ACCEPT_LANGUAGE header
+        en_content = 'This article is in English'
+        trans_content = 'This article is translated into bn-BD'
+        assert en_content not in doc_content
+        assert trans_content in doc_content
+
+    def test_custom_locale_mapping_for_header_locale(self):
+        """
+        Test that defined locale fallbacks are used as header locales,
+        with the following conditions:
+
+        * the article is not localized into the user-requested locale
+        * the article is not localized to any of the locales listed in the ACCEPT_LANGUAGE header
+        * the header locales do not have a defined fallback locale OR the article is not localized
+          into any of those defined fallback locales
+        * the user-requested locale has a defined fallback locale, but the article is
+          not localized into it
+        * one of the locales listed in the ACCEPT_LANGUAGE headers has a defined fallback locale
+          and the article is localized into that fallback locale
+
+        Test that the defined fallback locale is used
+        """
+
+        # The user-requested locale has a defined custom wiki fallback locale,
+        # but the article is not localized into that fallback locale
+
+        # Define a client with ca, pt-PT, ja as locale choices in the ACCEPT_LANGUAGE header
+        header = 'ca,bn-IN;q=0.7,ja;q=0.3,'
+        # Create a document localized into pt-BR
+        # Attempt to resolve to the ca version of the document with the client defined before
+        doc_content = self.get_data_from_translated_document(header=header,
+                                                             create_doc_locale='bn-BD',
+                                                             req_doc_locale='ca')
+        # Show the pt-BR version of the document based on existing custom wiki locale mapping
+        # for pt-PT, as it is not localized into ca
+        en_content = 'This article is in English'
+        trans_content = 'This article is translated into bn-BD'
+        assert en_content not in doc_content
+        assert trans_content in doc_content
+
+        # If the user-requested locale does not have a custom wiki fallback locale
+        # Define a client with ca, bn-IN, ja as locale choices in the ACCEPT_LANGUAGE header
+        header = 'ar,bn-IN;q=0.7,ja;q=0.3,'
+        # Create a document localized into bn-BD
+        # Attempt to resolve to the ar version of the document with the client defined before
+        doc_content = self.get_data_from_translated_document(header=header,
+                                                             create_doc_locale='bn-BD',
+                                                             req_doc_locale='ar')
+        # Show the article in bn-BD based on the custom wiki fallback locale mapping for bn-IN,
+        # as it is localized neither into any of the locales listed in the
+        # ACCEPT_LANGUAGE header, nor into ar
+        en_content = 'This article is in English'
+        trans_content = 'This article is translated into bn-BD'
+        assert en_content not in doc_content
+        assert trans_content in doc_content

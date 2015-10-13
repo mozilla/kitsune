@@ -1,6 +1,7 @@
 import json
 import logging
 import time
+import re
 from datetime import datetime
 from functools import wraps
 
@@ -33,7 +34,7 @@ from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import paginate, smart_int, get_next_url, truncated_json_dumps, get_browser
 from kitsune.wiki.config import (
     CATEGORIES, MAJOR_SIGNIFICANCE, TEMPLATES_CATEGORY, DOCUMENTS_PER_PAGE,
-    COLLAPSIBLE_DOCUMENTS)
+    COLLAPSIBLE_DOCUMENTS, FALLBACK_LOCALES)
 from kitsune.wiki.events import (
     EditDocumentEvent, ReviewableRevisionInLocaleEvent,
     ApproveRevisionInLocaleEvent, ApprovedOrReadyUnion,
@@ -48,6 +49,7 @@ from kitsune.wiki.parser import wiki_to_html
 from kitsune.wiki.tasks import (
     send_reviewed_notification, schedule_rebuild_kb,
     send_contributor_notification, render_document_cascade)
+from kitsune.lib.sumo_locales import LOCALES
 
 
 log = logging.getLogger('k.wiki')
@@ -96,6 +98,7 @@ def document(request, document_slug, template=None, document=None):
     """View a wiki document."""
 
     fallback_reason = None
+    full_locale_name = None
     # If a slug isn't available in the requested locale, fall back to en-US:
     try:
         doc = Document.objects.get(locale=request.LANGUAGE_CODE,
@@ -125,9 +128,30 @@ def document(request, document_slug, template=None, document=None):
             # and OK to fall back to parent (parent is approved).
             fallback_reason = 'no_translation'
 
+    # Find and show the defined fallback locale rather than the English version of the document
+    # The fallback locale is defined based on the ACCEPT_LANGUAGE header,
+    # site-wide locale mapping and custom fallback locale
+    # The custom fallback locale is defined in the FALLBACK_LOCALES array in
+    # kitsune/wiki/config.py. See bug 800880 for more details
+    if fallback_reason == 'no_translation':
+        fallback_locale = get_fallback_locale(doc, request)
+
+        # If a fallback locale is defined, show the document in that locale.
+        if fallback_locale is not None:
+            # Get the fallback Locale and show doc in the locale
+            translation = doc.translated_to(fallback_locale)
+            doc = translation
+            # For showing the fallback locale explanation message to the user
+            fallback_reason = 'fallback_locale'
+            full_locale_name = {request.LANGUAGE_CODE: LOCALES[request.LANGUAGE_CODE].native,
+                                fallback_locale: LOCALES[fallback_locale].native}
+        # If there is no defined fallback locale, show the document in English
+        else:
+            doc = get_object_or_404(Document, locale=settings.WIKI_DEFAULT_LANGUAGE,
+                                    slug=document_slug)
+
     any_localizable_revision = doc.revisions.filter(is_approved=True,
                                                     is_ready_for_localization=True).exists()
-
     # Obey explicit redirect pages:
     # Don't redirect on redirect=no (like Wikipedia), so we can link from a
     # redirected-to-page back to a "Redirected from..." link, so you can edit
@@ -222,6 +246,7 @@ def document(request, document_slug, template=None, document=None):
         'document_css_class': document_css_class,
         'any_localizable_revision': any_localizable_revision,
         'show_fx_download': show_fx_download,
+        'full_locale_name': full_locale_name
     }
 
     response = render(request, template, data)
@@ -1470,3 +1495,76 @@ def what_links_here(request, document_slug):
     }
 
     return render(request, 'wiki/what_links_here.html', c)
+
+
+def get_fallback_locale(doc, request):
+    """Get best fallback local based on locale mapping"""
+
+    # Get locales that the current article is translated into.
+    translated_locales = (
+        doc.translations
+        .values_list('locale', flat=True)
+        .exclude(current_revision=None))
+
+    # Build a list of the request locale and all the ACCEPT_LANGUAGE locales.
+    accept_header = request.META.get('HTTP_ACCEPT_LANGUAGE') or ''
+    header_locales = parse_accept_lang_header(accept_header)
+    all_accepted_locales = []
+    all_accepted_locales.append(request.LANGUAGE_CODE)
+    all_accepted_locales.extend(header_locales)
+
+    # For each locale specified in the user's ACCEPT_LANGUAGE header
+    # check for, in order:
+    #   * translations in that locale
+    #   * global overrides for the locale in settings.NON_SUPPORTED_LOCALES
+    #   * wiki fallbacks for that locale
+
+    for locale in all_accepted_locales:
+        if locale in translated_locales:
+            return locale
+
+        elif settings.NON_SUPPORTED_LOCALES.get(locale) in translated_locales:
+            return settings.NON_SUPPORTED_LOCALES[locale]
+
+        for fallback in FALLBACK_LOCALES.get(locale, []):
+            if fallback in translated_locales:
+                return fallback
+
+    # If all fails, return None as fallback Locale
+    return None
+
+
+# Import from django.utils.translation.trans_real and changed as following
+#  * Removed lower() from piece to get the locale name as needed
+#  * As we need only the locale name, added code to get only locale name
+def parse_accept_lang_header(lang_string):
+    """
+    Parses the lang_string, which is the body of an HTTP Accept-Language
+    header, and returns a list of lang, ordered by 'q' values.
+    Any format errors in lang_string results in an empty list being returned.
+    """
+    accept_language_re = re.compile(r'''
+        ([A-Za-z]{1,8}(?:-[A-Za-z0-9]{1,8})*|\*)      # "en", "en-au", "x-y-z", "es-419", "*"
+        (?:\s*;\s*q=(0(?:\.\d{,3})?|1(?:.0{,3})?))?   # Optional "q=1.00", "q=0.8"
+        (?:\s*,\s*|$)                                 # Multiple accepts per header.
+        ''', re.VERBOSE)
+    result = []
+    pieces = accept_language_re.split(lang_string)   # Changed here. Removed lower()
+    if pieces[-1]:
+        return []
+    for i in range(0, len(pieces) - 1, 3):
+        first, lang, priority = pieces[i:i + 3]
+        if first:
+            return []
+        if priority:
+            try:
+                priority = float(priority)
+            except ValueError:
+                return []
+        if not priority:        # if priority is 0.0 at this point make it 1.0
+            priority = 1.0
+        result.append((lang, priority))
+    result.sort(key=lambda k: k[1], reverse=True)
+    # Changed here to get the locale name only
+    result = [k for k, v in result]
+    return result

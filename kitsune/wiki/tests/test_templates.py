@@ -402,6 +402,36 @@ class DocumentTests(TestCaseBase):
         doc = pq(response.content)
         assert 'rel' not in doc('#doc-content a')[0].attrib
 
+    def test_document_with_fallback_locale(self):
+        """The document template falls back to fallback locale if there is
+        custom wiki fallback mapping for the locale and the locale have no translation
+        exists."""
+        # Create an English document and a bn-BD translated document
+        en_rev = ApprovedRevisionFactory(is_ready_for_localization=True)
+        trans_doc = DocumentFactory(parent=en_rev.document, locale='bn-BD')
+        trans_rev = ApprovedRevisionFactory(document=trans_doc)
+        # Mark the created revision as the current revision for the document
+        trans_doc.current_revision = trans_rev
+        trans_doc.save()
+
+        # Get the bn-IN version of the document.
+        # Resolve to the bn-BD version
+        # because bn-IN has bn-BD set in FALLBACK_LOCALES in wiki/config.py
+        url = reverse('wiki.document', args=[en_rev.document.slug], locale='bn-IN')
+        response = self.client.get(url)
+        doc = pq(response.content)
+        eq_(trans_doc.title, doc('article h1.title').text())
+
+        # Display fallback message to the user.
+        eq_(1, len(doc('#doc-pending-fallback')))
+        # Check Translate article is showing in the side tools bar
+        assert 'Translate Article' in doc('#editing-tools-sidebar').text()
+        # Removing this as it shows up in text(), and we don't want to depend
+        # on its localization.
+        doc('#doc-pending-fallback').remove()
+        # Check that content is available in bn-BD
+        eq_(pq(trans_doc.html)('div').text(), doc('#doc-content div').text())
+
 
 class MobileArticleTemplate(MobileTestCase):
     def setUp(self):
