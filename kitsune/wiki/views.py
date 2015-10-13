@@ -25,6 +25,7 @@ from tower import ugettext_lazy as _lazy
 from tower import ugettext as _
 
 from kitsune.access.decorators import login_required
+from kitsune.lib.sumo_locales import LOCALES
 from kitsune.products.models import Product, Topic
 from kitsune.sumo.decorators import ratelimit
 from kitsune.sumo.helpers import urlparams
@@ -1353,13 +1354,18 @@ def show_translations(request, document_slug):
     translated_locales = []
     untranslated_locales = []
 
-    translated_locales.append(document.locale)
-    translated_locales.extend(document.translations.all().values_list(
-        'locale', flat=True))
+    # Makes sure "English (en-US)" is always on top!
+    translated_locales.append((document.locale, LOCALES[document.locale].native))
+
+    # Gets all the locale code "ONLY" for translated locales
+    # Note: en-US is not a translated locale, it's the default
+    translated_locales_code = document.translations.all().values_list('locale', flat=True)
 
     for locale in settings.LANGUAGE_CHOICES:
-        if not locale[0] in translated_locales:
-            untranslated_locales.append(locale[0])
+        if locale[0] in translated_locales_code:
+            translated_locales.append(locale)
+        else:
+            untranslated_locales.append(locale)
 
     return render(request, 'wiki/show_translations.html', {
         'document': document,
