@@ -31,8 +31,13 @@
 {% endif %}
 
 {% block content %}
-  <div class="title-bar">{{ document_title(document) }}</div>
+  {% if breadcrumb_items[1] %}
+    <div class="filter-bar">
+      <a class="return-link" href="{{ breadcrumb_items[-2][0] }}">{{ breadcrumb_items[-2][1] }}</a>
+    </div>
+  {% endif %}
   <article id="wiki-doc">
+    {{ document_title(document) }}
     {{ document_messages(document, redirected_from) }}
     {{ document_content(document, fallback_reason, request, settings) }}
 
