@@ -75,8 +75,8 @@ class SimpleSearchTests(ElasticTestCase):
         eq_(200, response.status_code)
         eq_(1, json.loads(response.content)['total'])
 
-    def test_clean_excerpt(self):
-        """Ensure we clean html out of excerpts."""
+    def test_clean_question_excerpt(self):
+        """Ensure we clean html out of question excerpts."""
         q = question(title='audio',
                      content='<script>alert("hacked");</script>', save=True)
         a = answer(question=q, save=True)
