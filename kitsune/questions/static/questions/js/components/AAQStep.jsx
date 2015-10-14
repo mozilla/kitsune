@@ -29,7 +29,7 @@ export default class AAQStep extends React.Component {
   }
 
   switchToNextStep() {
-    this.props.setStep(this.props.next);
+    this.props.setStep();
   }
 }
 AAQStep.propTypes = {
