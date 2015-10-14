@@ -157,7 +157,7 @@ To create a data migration the automatic way:
 
 
 Data migrations for data in non-kitsune apps
-------------------------------------------
+--------------------------------------------
 
 If you're doing a data migration that adds data to an app that's not
 part of kitsune, but is instead a library (e.g. django-waffle), then

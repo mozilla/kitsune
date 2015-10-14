@@ -1,9 +1,9 @@
 Kitsune via Vagrant
-================
+===================
 
 Its easy to run Kitsune in a `Vagrant`_-managed virtual machine so we can run
 the entire Kitsune easily.
-If you're on Mac OS X or Linux or even Windows and looking for a quick way to get started, you 
+If you're on Mac OS X or Linux or even Windows and looking for a quick way to get started, you
 should try these instructions.
 
 .. note:: **If you have problems getting vagrant up**, please :ref:`contact-us-chapter`.
