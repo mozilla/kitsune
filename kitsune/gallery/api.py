@@ -3,7 +3,7 @@ from django.db.models import Q
 from rest_framework import generics, serializers
 
 from kitsune.gallery.models import Image
-from kitsune.sumo.api import (
+from kitsune.sumo.api_utils import (
     LocaleNegotiationMixin, InequalityFilterBackend, DateTimeUTCField, ImageUrlField)
 
 

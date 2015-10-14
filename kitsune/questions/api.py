@@ -13,7 +13,7 @@ from kitsune.products.api import TopicField
 from kitsune.questions.models import (
     Question, Answer, QuestionMetaData, AlreadyTakenException,
     InvalidUserException, QuestionVote, AnswerVote)
-from kitsune.sumo.api import (
+from kitsune.sumo.api_utils import (
     DateTimeUTCField, OnlyCreatorEdits, GenericAPIException, SplitSourceField)
 from kitsune.tags.utils import add_existing_tag
 from kitsune.users.api import ProfileFKSerializer

@@ -924,7 +924,7 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.TokenAuthentication',
-        'kitsune.sumo.api.InactiveSessionAuthentication',
+        'kitsune.sumo.api_utils.InactiveSessionAuthentication',
     ),
 }
 

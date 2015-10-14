@@ -8,7 +8,7 @@ from django.test.utils import override_settings
 
 from rest_framework import fields
 
-from kitsune.sumo import api
+from kitsune.sumo import api_utils
 from kitsune.sumo.tests import TestCase
 
 
@@ -20,7 +20,7 @@ class TestLanguageNegotiation(TestCase):
     def test_it_works(self):
         """Make sure that the LocaleNegotiationMixin detects locales."""
         factory = RequestFactory()
-        negotiater = api.LocaleNegotiationMixin()
+        negotiater = api_utils.LocaleNegotiationMixin()
         request = factory.get('/', HTTP_ACCEPT_LANGUAGE='es,en-US')
         negotiater.request = request
         eq_(negotiater.get_locale(), 'es')
@@ -31,7 +31,7 @@ class TestInequalityFilterBackend(TestCase):
     def setUp(self):
         self.request = Mock()
         self.view = Mock()
-        self.backend = api.InequalityFilterBackend()
+        self.backend = api_utils.InequalityFilterBackend()
         self.queryset = Mock()
 
         self.queryset.filter.return_value = self.queryset
@@ -60,7 +60,7 @@ class TestInequalityFilterBackend(TestCase):
 class TestDateTimeUTCField(TestCase):
 
     def test_translation_of_nonnaive(self):
-        field = api.DateTimeUTCField()
+        field = api_utils.DateTimeUTCField()
         as_pacific = datetime(2014, 11, 12, 13, 49, 59, tzinfo=pytz.timezone('US/Pacific'))
         as_utc = field.to_native(as_pacific)
         eq_(as_utc.hour, 21)
@@ -72,7 +72,7 @@ class TestDateTimeUTCField(TestCase):
 class TestPermissionMod(TestCase):
 
     def test_write_only(self):
-        field = api.PermissionMod(fields.WritableField, [])()
+        field = api_utils.PermissionMod(fields.WritableField, [])()
 
         cases = [
             (False, False, False),
@@ -99,7 +99,7 @@ class TestPermissionMod(TestCase):
         serializer = Mock()
         obj = Mock()
         obj.foo = 'bar'
-        field = api.PermissionMod(fields.WritableField, [MockPermission])()
+        field = api_utils.PermissionMod(fields.WritableField, [MockPermission])()
         field.initialize(serializer, 'foo')
 
         # If either has_permission or has_object_permission returns False,

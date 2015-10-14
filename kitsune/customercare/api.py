@@ -4,7 +4,7 @@ from rest_framework import generics, serializers, status, decorators
 from rest_framework.response import Response
 
 from kitsune.customercare.models import TwitterAccount
-from kitsune.sumo.api import GenericAPIException, GenericDjangoPermission
+from kitsune.sumo.api_utils import GenericAPIException, GenericDjangoPermission
 
 
 class TwitterAccountBanPermission(GenericDjangoPermission):
