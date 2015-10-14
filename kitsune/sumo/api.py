@@ -16,16 +16,11 @@ def locales_api_view(request):
         if lang == 'xx':
             continue
 
-        # FIXME: should we add something based on SIMPLE_WIKI_LANGUAGES?
         locale = {
             'name': LOCALES[lang].english,
             'localized_name': LOCALES[lang].native,
+            'aaq_enabled': QuestionLocale.objects.filter(locale=lang).exists()
         }
-        try:
-            QuestionLocale.objects.get(locale=lang)
-            locale['aaq_enabled'] = True
-        except QuestionLocale.DoesNotExist:
-            locale['aaq_enabled'] = False
         locales[lang] = locale
 
     return Response(locales)
