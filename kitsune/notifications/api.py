@@ -8,7 +8,7 @@ from rest_framework.response import Response
 
 from kitsune.notifications.models import (
     PushNotificationRegistration, Notification, RealtimeRegistration)
-from kitsune.sumo.api import OnlyCreatorEdits, DateTimeUTCField, GenericRelatedField
+from kitsune.sumo.api_utils import OnlyCreatorEdits, DateTimeUTCField, GenericRelatedField
 
 
 class OnlyOwner(permissions.BasePermission):

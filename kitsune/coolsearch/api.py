@@ -16,7 +16,7 @@ from kitsune.forums.models import ThreadMappingType
 from kitsune.questions.models import QuestionMappingType
 from kitsune.search import es_utils
 from kitsune.search.utils import locale_or_default, clean_excerpt, ComposedList
-from kitsune.sumo.api import GenericAPIException
+from kitsune.sumo.api_utils import GenericAPIException
 from kitsune.sumo.utils import smart_int
 from kitsune.wiki.models import DocumentMappingType
 

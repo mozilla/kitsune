@@ -5,7 +5,7 @@ from rest_framework import generics, serializers
 from tower import ugettext_lazy as _lazy
 
 from kitsune.products.models import Product, Topic
-from kitsune.sumo.api import LocaleNegotiationMixin, LocalizedCharField, ImageUrlField
+from kitsune.sumo.api_utils import LocaleNegotiationMixin, LocalizedCharField, ImageUrlField
 from kitsune.wiki.api import DocumentShortSerializer
 
 
