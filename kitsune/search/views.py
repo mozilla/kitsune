@@ -119,10 +119,54 @@ def simple_search(request, template=None):
 
     searcher = generate_simple_search(search_form, language, with_highlights=True)
     searcher = searcher[:settings.SEARCH_MAX_RESULTS]
+    fallback_results = None
 
     try:
         pages = paginate(request, searcher, settings.SEARCH_RESULTS_PER_PAGE)
         offset = pages.start_index()
+
+        results = []
+        if pages.paginator.count == 0:
+            fallback_results = _fallback_results(language, cleaned['product'])
+
+        else:
+            for i, doc in enumerate(pages):
+                rank = i + offset
+
+                if doc['model'] == 'wiki_document':
+                    summary = _build_es_excerpt(doc)
+                    if not summary:
+                        summary = doc['document_summary']
+                    result = {
+                        'title': doc['document_title'],
+                        'type': 'document'}
+
+                elif doc['model'] == 'questions_question':
+                    summary = _build_es_excerpt(doc)
+                    if not summary:
+                        # We're excerpting only question_content, so if the query matched
+                        # question_title or question_answer_content, then there won't be any
+                        # question_content excerpts. In that case, just show the question--but
+                        # only the first 500 characters.
+                        summary = bleach.clean(doc['question_content'], strip=True)[:500]
+
+                    result = {
+                        'title': doc['question_title'],
+                        'type': 'question',
+                        'is_solved': doc['question_is_solved'],
+                        'num_answers': doc['question_num_answers'],
+                        'num_votes': doc['question_num_votes'],
+                        'num_votes_past_week': doc['question_num_votes_past_week']}
+
+                result['url'] = doc['url']
+                result['object'] = doc
+                result['search_summary'] = summary
+                result['rank'] = rank
+                result['score'] = doc.es_meta.score
+                result['explanation'] = escape(format_explanation(
+                    doc.es_meta.explanation))
+                result['id'] = doc['id']
+                results.append(result)
 
     except ES_EXCEPTIONS as exc:
         # Handle timeout and all those other transient errors with a
@@ -140,50 +184,6 @@ def simple_search(request, template=None):
 
         t = 'search/mobile/down.html' if request.MOBILE else 'search/down.html'
         return render(request, t, {'q': cleaned['q']}, status=503)
-
-    fallback_results = None
-    results = []
-    if pages.paginator.count == 0:
-        fallback_results = _fallback_results(language, cleaned['product'])
-
-    else:
-        for i, doc in enumerate(pages):
-            rank = i + offset
-
-            if doc['model'] == 'wiki_document':
-                summary = _build_es_excerpt(doc)
-                if not summary:
-                    summary = doc['document_summary']
-                result = {
-                    'title': doc['document_title'],
-                    'type': 'document'}
-
-            elif doc['model'] == 'questions_question':
-                summary = _build_es_excerpt(doc)
-                if not summary:
-                    # We're excerpting only question_content, so if the query matched
-                    # question_title or question_answer_content, then there won't be any
-                    # question_content excerpts. In that case, just show the question--but
-                    # only the first 500 characters.
-                    summary = bleach.clean(doc['question_content'], strip=True)[:500]
-
-                result = {
-                    'title': doc['question_title'],
-                    'type': 'question',
-                    'is_solved': doc['question_is_solved'],
-                    'num_answers': doc['question_num_answers'],
-                    'num_votes': doc['question_num_votes'],
-                    'num_votes_past_week': doc['question_num_votes_past_week']}
-
-            result['url'] = doc['url']
-            result['object'] = doc
-            result['search_summary'] = summary
-            result['rank'] = rank
-            result['score'] = doc.es_meta.score
-            result['explanation'] = escape(format_explanation(
-                doc.es_meta.explanation))
-            result['id'] = doc['id']
-            results.append(result)
 
     product = Product.objects.filter(slug__in=cleaned['product'])
     if product:
