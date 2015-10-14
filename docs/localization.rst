@@ -498,10 +498,9 @@ Done!
 Reporting errors in .po files
 ==============================
 
-We use `Dennis <https://github.com/willkg/dennis>`_ to lint .po files
-for errors that cause HTTP 500 errors in production. Things like
-malformed variables, variables in the translated string that aren't in
-the original and that sort of thing.
+We use Dennis to lint .po files for errors that cause HTTP 500 errors in
+production. Things like malformed variables, variables in the translated
+string that aren't in the original and that sort of thing.
 
 When we do a deployment to production, we dump all the Dennis output into:
 

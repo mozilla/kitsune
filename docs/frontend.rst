@@ -61,10 +61,10 @@ These files are recognized by the ES6 compiler by an extension of ``.es6``, and
 below.
 
 For more information about ES6 syntax and features, see
-`lukehoban/es6featurse`_.
+`lukehoban/es6features`_.
 
 .. _Babel: https://babeljs.io/
-.. _es6: https://github.com/lukehoban/es6features
+.. _lukehoban/es6features: https://github.com/lukehoban/es6features
 
 JSX
 ---
