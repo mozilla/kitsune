@@ -111,7 +111,8 @@ class AdvancedSearchTests(ElasticTestCase):
         # r2.document should come first with 1 vote.
         response = self.client.get(reverse('search.advanced'), {
             'w': '1', 'a': '1', 'sortby_documents': 'helpful',
-            'format': 'json'})
+            'format': 'json'
+        })
         eq_(200, response.status_code)
 
         content = json.loads(response.content)
