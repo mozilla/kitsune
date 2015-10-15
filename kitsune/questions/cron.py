@@ -210,5 +210,4 @@ def report_employee_answers():
 
     email_addresses = [u.email for u in report_recipients]
 
-    send_mail(email_subject, email_body, settings.TIDINGS_FROM_ADDRESS, email_addresses,
-              fail_silently=False)
+    send_mail(email_subject, email_body, settings.TIDINGS_FROM_ADDRESS, email_addresses)
