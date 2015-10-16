@@ -21,7 +21,7 @@
   <div class="title-bar">{{ document_title(document) }}</div>
   <article id="wiki-doc">
     {{ document_messages(document, redirected_from) }}
-    {{ document_content(document, fallback_reason, request, settings) }}
+    {{ document_content(document, fallback_reason, request, settings, document_css_class, any_localizable_revision, full_locale_name) }}
 
     {% set share_link = document.share_link or (document.parent and document.parent.share_link) %}
     {% if share_link %}
