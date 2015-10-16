@@ -4,7 +4,7 @@
 Search
 ======
 
-Kitsune uses `Elastic Search <http://www.elasticsearch.org/>`_ to
+Kitsune uses `Elasticsearch <http://www.elasticsearch.org/>`_ to
 power its on-site search facility.
 
 It gives us a number of advantages over MySQL's full-text search or
@@ -20,24 +20,23 @@ Google's site search.
 * We can fine-tune the algorithm and scoring.
 
 
-Installing Elastic Search
-=========================
+Installing Elasticsearch
+========================
 
-There's an installation guide on the Elastic Search site.
+There's an installation guide on the Elasticsearch site:
 
-http://www.elasticsearch.org/guide/reference/setup/installation.html
+https://www.elastic.co/guide/en/elasticsearch/reference/1.3/setup-service.html
 
-We're currently using `0.90.10
-<http://www.elasticsearch.org/downloads/0-90-10/>`_ in production. Most of us
-use that version.
+We're currently using `1.2.4 <https://www.elastic.co/downloads/past-releases/elasticsearch-1-2-4>`_
+in production.
 
-The directory you install Elastic Search in will hereafter be referred
+The directory you install Elasticsearch in will hereafter be referred
 to as ``ELASTICDIR``.
 
-You can configure Elastic Search with the configuration file at
+You can configure Elasticsearch with the configuration file at
 ``ELASTICDIR/config/elasticsearch.yml``.
 
-Elastic Search uses several settings in ``kitsune/settings.py`` that you
+Elasticsearch uses several settings in ``kitsune/settings.py`` that you
 need to override in ``kitsune/settings_local.py``. Here's an example::
 
     # Connection information for Elastic
@@ -52,7 +51,7 @@ These settings explained:
 
     Defaults to ``['http://127.0.0.1:9200']``.
 
-    Points to the url for your Elastic Search instance.
+    Points to the url for your Elasticsearch instance.
 
     .. Warning::
 
@@ -109,8 +108,8 @@ These settings explained:
 
 
 There are a few other settings you can set in your
-``kitsune/settings_local.py`` file that override Elastic Utils defaults.  See
-`the Elastic Utils docs
+``kitsune/settings_local.py`` file that override ElasticUtils defaults.  See
+`the ElasticUtils docs
 <http://elasticutils.readthedocs.org/en/latest/installation.html#configure>`_
 for details.
 
@@ -136,11 +135,11 @@ Other things you can change:
 
     You can also set ``ES_LIVE_INDEXING`` in your
     ``kitsune/settings_local.py`` file. This affects whether Kitsune does
-    Elastic indexing when data changes in the ``post_save`` and
+    Elasticsearch indexing when data changes in the ``post_save`` and
     ``pre_delete`` hooks.
 
     For tests, ``ES_LIVE_INDEXING`` is set to ``False`` except for
-    Elastic specific tests so we're not spending a ton of time
+    Elasticsearch specific tests so we're not spending a ton of time
     indexing things we're not using.
 
 ``ES_TIMEOUT``
@@ -153,17 +152,17 @@ Other things you can change:
     might be helpful.
 
 
-Using Elastic Search
-====================
+Using Elasticsearch
+===================
 
 Running
 -------
 
-Start Elastic Search by::
+Start Elasticsearch by::
 
     $ ELASTICDIR/bin/elasticsearch
 
-That launches Elastic Search in the background.
+That launches Elasticsearch in the background.
 
 
 Indexing
@@ -227,7 +226,7 @@ See ``--help`` for more details::
 Health/statistics
 -----------------
 
-You can see Elastic Search index status with::
+You can see Elasticsearch index status with::
 
     $ ./manage.py esstatus
 
@@ -291,7 +290,7 @@ forums (aka contributor forums)::
     post_content__match             1
 
 
-Elastic Search is built on top of Lucene so the `Lucene documentation
+Elasticsearch is built on top of Lucene so the `Lucene documentation
 on scoring
 <http://lucene.apache.org/core/old_versioned_docs/versions/3_5_0/scoring.html>`_
 covers how a document is scored in regards to the search query and its
@@ -361,8 +360,8 @@ Troubleshooting category, then we add a filter where the result has to
 be in the Troubleshooting category.
 
 
-Link to the Elastic Search code
--------------------------------
+Link to the Elasticsearch code
+------------------------------
 
 Here's a link to the search view in the master branch:
 
