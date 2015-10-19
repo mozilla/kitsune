@@ -360,7 +360,7 @@ _("""The SUMO KB 2014 mini-badge is part of the SUMO series. It represents contr
 _("""2014 Support Forum Badge""", "DB: badger.Badge.title")
 _("""The SUMO Forum 2014 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2014 in this case: 30 replies in the English SUMO Forum. Congrats to all SUMO Forum 2014 badge earners for advancing the Mozilla Mission!""", "DB: badger.Badge.description")
 _("""Firefox 29 Launch Team""", "DB: badger.Badge.title")
-_("""Awarded to support contributors who contributed (KB article documentation, answering Forum Questions, localizing KB article documentation, tweets, etc) to the launch of Firefox 29, thanks! Firefox 29 features: 1. Firefox Desktop: Australis new look and feel AND Firefox Accounts based sync 2. Firefox for Android: Firefox Accounts based sync MOAR: https://sumo.etherpad.mozilla.org/sumo-australis-badges""", "DB: badger.Badge.description")
+_("""Awarded to support contributors who contributed (KB article documentation, answering Forum Questions, localizing KB article documentation, tweets, etc) to the launch of Firefox 29, thanks! Firefox 29 features: 1. Firefox Desktop: Australis new look and feel AND Firefox Accounts based sync 2. Firefox for Android: Firefox Accounts based sync""", "DB: badger.Badge.description")
 _("""2008 L10n Badge""", "DB: badger.Badge.title")
 _("""This badge is awarded to contributors with 10 approved translations edits during 2008.""", "DB: badger.Badge.description")
 _("""2009 L10n Badge""", "DB: badger.Badge.title")
