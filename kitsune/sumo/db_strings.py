@@ -292,7 +292,7 @@ _("""Collect and retain information only when it is necessary to a project or ta
 _("""No Surprises""", "DB: products.Topic.title")
 _("""Only use and share information about our users for their benefit and as disclosed in our notices.""", "DB: products.Topic.description")
 _("""User Control""", "DB: products.Topic.title")
-_("""Do not disclose personal user information without the user’s consent.""", "DB: products.Topic.description")
+_("""Do not disclose personal user information without the user's consent.""", "DB: products.Topic.description")
 _("""Sensible Settings""", "DB: products.Topic.title")
 _("""Give our users actionable and informed choices by informing and educating at the point of collection and providing a choice to opt-out whenever possible.""", "DB: products.Topic.description")
 _("""Defense in Depth""", "DB: products.Topic.title")
