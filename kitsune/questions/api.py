@@ -5,11 +5,12 @@ import django_filters
 import json
 from django.db.models import Q
 from rest_framework import serializers, viewsets, permissions, filters, status
-from rest_framework.decorators import action
+from rest_framework.decorators import detail_route
 from rest_framework.response import Response
 from taggit.models import Tag
 
-from kitsune.products.api import TopicField
+from kitsune.products.api_utils import TopicField
+from kitsune.products.models import Product, Topic
 from kitsune.questions.models import (
     Question, Answer, QuestionMetaData, AlreadyTakenException,
     InvalidUserException, QuestionVote, AnswerVote)
@@ -22,60 +23,42 @@ from kitsune.users.models import Profile
 
 class QuestionMetaDataSerializer(serializers.ModelSerializer):
     question = serializers.PrimaryKeyRelatedField(
-        required=False, write_only=True)
+        required=False,
+        write_only=True,
+        queryset=Question.objects.all())
 
     class Meta:
         model = QuestionMetaData
         fields = ('name', 'value', 'question')
 
-    def get_identity(self, obj):
-        return obj['name']
-
-    def restore_object(self, attrs, instance=None):
-        """
-        Given a dictionary of deserialized field values, either update
-        an existing model instance, or create a new model instance.
-        """
-        if instance is not None:
-            for key in self.Meta.fields:
-                setattr(instance, key, attrs.get(key, getattr(instance, key)))
-            return instance
-        else:
-            obj, created = self.Meta.model.objects.get_or_create(
-                question=attrs['question'], name=attrs['name'],
-                defaults={'value': attrs['value']})
-            if not created:
-                obj.value = attrs['value']
-                obj.save()
-            return obj
-
 
 class QuestionTagSerializer(serializers.ModelSerializer):
-    question = serializers.PrimaryKeyRelatedField(
-        required=False, write_only=True)
-
     class Meta:
         model = Tag
         fields = ('name', 'slug')
 
 
 class QuestionSerializer(serializers.ModelSerializer):
+    answers = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
     content = SplitSourceField(read_source='content_parsed', write_source='content')
     created = DateTimeUTCField(read_only=True)
-    creator = serializers.SerializerMethodField('get_creator')
-    involved = serializers.SerializerMethodField('get_involved_users')
-    is_solved = serializers.Field(source='is_solved')
-    is_taken = serializers.Field(source='is_taken')
-    metadata = QuestionMetaDataSerializer(source='metadata_set', required=False)
-    num_votes = serializers.Field(source='num_votes')
-    product = serializers.SlugRelatedField(required=True, slug_field='slug')
-    tags = QuestionTagSerializer(source='tags', read_only=True)
+    creator = serializers.SerializerMethodField()
+    involved = serializers.SerializerMethodField()
+    is_solved = serializers.ReadOnlyField()
+    is_taken = serializers.ReadOnlyField()
+    metadata = QuestionMetaDataSerializer(source='metadata_set', read_only=True, many=True)
+    num_votes = serializers.ReadOnlyField()
+    product = serializers.SlugRelatedField(
+        required=True,
+        slug_field='slug',
+        queryset=Product.objects.all())
+    tags = QuestionTagSerializer(read_only=True, many=True)
     solution = serializers.PrimaryKeyRelatedField(read_only=True)
-    solved_by = serializers.SerializerMethodField('get_solved_by')
-    taken_by = serializers.SerializerMethodField('get_taken_by')
-    topic = TopicField(required=True)
+    solved_by = serializers.SerializerMethodField()
+    taken_by = serializers.SerializerMethodField()
+    topic = TopicField(required=True, queryset=Topic.objects.all())
     updated = DateTimeUTCField(read_only=True)
-    updated_by = serializers.SerializerMethodField('get_updated_by')
+    updated_by = serializers.SerializerMethodField()
 
     class Meta:
         model = Question
@@ -100,6 +83,7 @@ class QuestionSerializer(serializers.ModelSerializer):
             'num_votes',
             'product',
             'solution',
+            'solved_by',
             'taken_until',
             'taken_by',
             'title',
@@ -108,30 +92,37 @@ class QuestionSerializer(serializers.ModelSerializer):
             'updated',
         )
 
-    def get_involved_users(self, obj):
-        involved = set([Profile.objects.get(user=obj.creator)])
-        involved.update(Profile.objects.get(user=a.creator) for a in obj.answers.all())
+    def get_involved(self, obj):
+        involved = set([obj.creator.profile])
+        involved.update(a.creator.profile for a in obj.answers.all())
         return ProfileFKSerializer(involved, many=True).data
 
     def get_solved_by(self, obj):
-        return ProfileFKSerializer(obj.solution.creator).data if obj.solution else None
+        if obj.solution:
+            return ProfileFKSerializer(obj.solution.creator.profile).data
+        else:
+            return None
 
     def get_creator(self, obj):
-        return ProfileFKSerializer(Profile.objects.get(user=obj.creator)).data
+        return ProfileFKSerializer(obj.creator.profile).data
 
     def get_taken_by(self, obj):
-        taken_by = Profile.objects.get(user=obj.taken_by) if obj.taken_by else None
-        return ProfileFKSerializer(taken_by).data if taken_by else None
+        if obj.taken_by:
+            return ProfileFKSerializer(obj.taken_by.profile).data
+        else:
+            return None
 
     def get_updated_by(self, obj):
-        updated_by = Profile.objects.get(user=obj.updated_by) if obj.updated_by else None
-        return ProfileFKSerializer(updated_by).data if updated_by else None
+        if obj.updated_by:
+            return ProfileFKSerializer(obj.updated_by.profile).data
+        else:
+            return None
 
-    def validate_creator(self, attrs, source):
+    def validate(self, data):
         user = getattr(self.context.get('request'), 'user')
-        if user and not user.is_anonymous() and attrs.get(source) is None:
-            attrs['creator'] = user
-        return attrs
+        if user and not user.is_anonymous() and data.get('creator') is None:
+            data['creator'] = user
+        return data
 
 
 class QuestionFKSerializer(QuestionSerializer):
@@ -190,7 +181,7 @@ class QuestionFilter(django_filters.FilterSet):
 
     def filter_is_taken(self, queryset, value):
         field = serializers.BooleanField()
-        value = field.from_native(value)
+        value = field.to_internal_value(value)
         # is_taken doesn't exist. Instead, we decide if a question is taken
         # based on ``taken_by`` and ``taken_until``.
         now = datetime.now()
@@ -203,7 +194,7 @@ class QuestionFilter(django_filters.FilterSet):
 
     def filter_is_solved(self, queryset, value):
         field = serializers.BooleanField()
-        value = field.from_native(value)
+        value = field.to_internal_value(value)
         solved_filter = Q(solution=None)
         if value:
             solved_filter = ~solved_filter
@@ -259,11 +250,11 @@ class QuestionViewSet(viewsets.ModelViewSet):
     # Default, if not overwritten
     ordering = ('-id',)
 
-    @action(methods=['POST'])
+    @detail_route(methods=['POST'])
     def solve(self, request, pk=None):
         """Accept an answer as the solution to the question."""
         question = self.get_object()
-        answer_id = request.DATA.get('answer')
+        answer_id = request.data.get('answer')
 
         try:
             answer = Answer.objects.get(pk=answer_id)
@@ -274,7 +265,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
         question.set_solution(answer, request.user)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    @action(methods=['POST'], permission_classes=[permissions.IsAuthenticated])
+    @detail_route(methods=['POST'], permission_classes=[permissions.IsAuthenticated])
     def helpful(self, request, pk=None):
         question = self.get_object()
 
@@ -287,22 +278,22 @@ class QuestionViewSet(viewsets.ModelViewSet):
         num_votes = QuestionVote.objects.filter(question=question).count()
         return Response({'num_votes': num_votes})
 
-    @action(methods=['POST'], permission_classes=[permissions.IsAuthenticated])
+    @detail_route(methods=['POST'], permission_classes=[permissions.IsAuthenticated])
     def follow(self, request, pk=None):
         question = self.get_object()
         actstream.actions.follow(request.user, question, actor_only=False, send_action=False)
         return Response('', status=204)
 
-    @action(methods=['POST'], permission_classes=[permissions.IsAuthenticated])
+    @detail_route(methods=['POST'], permission_classes=[permissions.IsAuthenticated])
     def unfollow(self, request, pk=None):
         question = self.get_object()
         actstream.actions.unfollow(request.user, question, send_action=False)
         return Response('', status=204)
 
-    @action(methods=['POST'])
+    @detail_route(methods=['POST'])
     def set_metadata(self, request, pk=None):
         data = {}
-        data.update(request.DATA)
+        data.update(request.data)
         data['question'] = self.get_object().pk
 
         serializer = QuestionMetaDataSerializer(data=data)
@@ -312,27 +303,27 @@ class QuestionViewSet(viewsets.ModelViewSet):
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    @action(methods=['POST', 'DELETE'])
+    @detail_route(methods=['POST', 'DELETE'])
     def delete_metadata(self, request, pk=None):
         question = self.get_object()
 
-        if 'name' not in request.DATA:
+        if 'name' not in request.data:
             return Response({'name': 'This field is required.'},
                             status=status.HTTP_400_BAD_REQUEST)
 
         try:
             meta = (QuestionMetaData.objects
-                    .get(question=question, name=request.DATA['name']))
+                    .get(question=question, name=request.data['name']))
             meta.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         except QuestionMetaData.DoesNotExist:
             raise GenericAPIException(404, 'No matching metadata object found.')
 
-    @action(methods=['POST'], permission_classes=[permissions.IsAuthenticatedOrReadOnly])
+    @detail_route(methods=['POST'], permission_classes=[permissions.IsAuthenticatedOrReadOnly])
     def take(self, request, pk=None):
         question = self.get_object()
         field = serializers.BooleanField()
-        force = field.from_native(request.DATA.get('force', False))
+        force = field.to_internal_value(request.data.get('force', False))
 
         try:
             question.take(request.user, force=force)
@@ -343,15 +334,15 @@ class QuestionViewSet(viewsets.ModelViewSet):
 
         return Response(status=204)
 
-    @action(methods=['POST'], permission_classes=[permissions.IsAuthenticated])
+    @detail_route(methods=['POST'], permission_classes=[permissions.IsAuthenticated])
     def add_tags(self, request, pk=None):
         question = self.get_object()
 
-        if 'tags' not in request.DATA:
+        if 'tags' not in request.data:
             return Response({'tags': 'This field is required.'},
                             status=status.HTTP_400_BAD_REQUEST)
 
-        tags = request.DATA['tags']
+        tags = request.data['tags']
 
         for tag in tags:
             try:
@@ -365,15 +356,15 @@ class QuestionViewSet(viewsets.ModelViewSet):
         tags = question.tags.all()
         return Response(QuestionTagSerializer(tags, many=True).data)
 
-    @action(methods=['POST', 'DELETE'], permission_classes=[permissions.IsAuthenticated])
+    @detail_route(methods=['POST', 'DELETE'], permission_classes=[permissions.IsAuthenticated])
     def remove_tags(self, request, pk=None):
         question = self.get_object()
 
-        if 'tags' not in request.DATA:
+        if 'tags' not in request.data:
             return Response({'tags': 'This field is required.'},
                             status=status.HTTP_400_BAD_REQUEST)
 
-        tags = request.DATA['tags']
+        tags = request.data['tags']
 
         for tag in tags:
             question.tags.remove(tag)
@@ -390,11 +381,11 @@ class QuestionViewSet(viewsets.ModelViewSet):
 class AnswerSerializer(serializers.ModelSerializer):
     content = SplitSourceField(read_source='content_parsed', write_source='content')
     created = DateTimeUTCField(read_only=True)
-    creator = serializers.SerializerMethodField('get_creator')
-    num_helpful_votes = serializers.Field(source='num_helpful_votes')
-    num_unhelpful_votes = serializers.Field(source='num_unhelpful_votes')
+    creator = serializers.SerializerMethodField()
+    num_helpful_votes = serializers.ReadOnlyField()
+    num_unhelpful_votes = serializers.ReadOnlyField()
     updated = DateTimeUTCField(read_only=True)
-    updated_by = serializers.SerializerMethodField('get_updated_by')
+    updated_by = serializers.SerializerMethodField()
 
     class Meta:
         model = Answer
@@ -418,11 +409,11 @@ class AnswerSerializer(serializers.ModelSerializer):
         updated_by = Profile.objects.get(user=obj.updated_by) if obj.updated_by else None
         return ProfileFKSerializer(updated_by).data if updated_by else None
 
-    def validate_creator(self, attrs, source):
+    def validate(self, data):
         user = getattr(self.context.get('request'), 'user')
-        if user and not user.is_anonymous() and attrs.get('creator') is None:
-            attrs['creator'] = user
-        return attrs
+        if user and not user.is_anonymous() and data.get('creator') is None:
+            data['creator'] = user
+        return data
 
 
 class AnswerFKSerializer(AnswerSerializer):
@@ -491,7 +482,7 @@ class AnswerViewSet(viewsets.ModelViewSet):
         context = self.get_serializer_context()
         return SerializerClass(instance=page, context=context)
 
-    @action(methods=['POST'], permission_classes=[permissions.IsAuthenticated])
+    @detail_route(methods=['POST'], permission_classes=[permissions.IsAuthenticated])
     def helpful(self, request, pk=None):
         answer = self.get_object()
 
@@ -508,13 +499,13 @@ class AnswerViewSet(viewsets.ModelViewSet):
             'num_unhelpful_votes': num_unhelpful_votes,
         })
 
-    @action(methods=['POST'], permission_classes=[permissions.IsAuthenticated])
+    @detail_route(methods=['POST'], permission_classes=[permissions.IsAuthenticated])
     def follow(self, request, pk=None):
         answer = self.get_object()
         actstream.actions.follow(request.user, answer, actor_only=False)
         return Response('', status=204)
 
-    @action(methods=['POST'], permission_classes=[permissions.IsAuthenticated])
+    @detail_route(methods=['POST'], permission_classes=[permissions.IsAuthenticated])
     def unfollow(self, request, pk=None):
         answer = self.get_object()
         actstream.actions.unfollow(request.user, answer)

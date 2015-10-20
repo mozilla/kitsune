@@ -1,4 +1,5 @@
 from django.db.models import Q
+from django.contrib.auth.models import User
 
 from rest_framework import generics, serializers
 
@@ -18,7 +19,7 @@ class ImageShortSerializer(serializers.ModelSerializer):
 class ImageDetailSerializer(ImageShortSerializer):
     created = DateTimeUTCField(read_only=True)
     updated = DateTimeUTCField(read_only=True)
-    updated_by = serializers.SlugRelatedField(slug_field='username')
+    updated_by = serializers.SlugRelatedField(slug_field='username', queryset=User.objects.all())
 
     class Meta(ImageShortSerializer.Meta):
         fields = ImageShortSerializer.Meta.fields + (

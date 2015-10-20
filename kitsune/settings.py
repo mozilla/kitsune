@@ -925,6 +925,7 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',
         'kitsune.sumo.api_utils.InactiveSessionAuthentication',
     ),
+    'UNICODE_JSON': False,
 }
 
 # Django-axes settings.

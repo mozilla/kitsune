@@ -4,10 +4,13 @@ from rest_framework.relations import SlugRelatedField
 from rest_framework.serializers import ModelSerializer
 
 from kitsune.dashboards.models import WikiMetric
+from kitsune.products.models import Product
 
 
 class WikiMetricSerializer(ModelSerializer):
-    product = SlugRelatedField(slug_field='slug')
+    product = SlugRelatedField(
+        slug_field='slug',
+        queryset=Product.objects.all())
 
     class Meta:
         model = WikiMetric
