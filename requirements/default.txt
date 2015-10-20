@@ -143,8 +143,8 @@ https://github.com/zyegfryed/django-statici18n/archive/6bcc799b800a7237a37e178dd
 # sha256: LTn7BrZL1DKwIiETzYeOHlosfAnsk7K7V3zw4Kq_GNk
 https://github.com/andymckay/django-statsd/archive/bb601976056d0f922c5a613d2a9786b81d179b06.tar.gz#egg=django-statsd
 
-# sha256: aqWWpbXiEAKGmNfUj41hnb8A9DhzOGTeEt7wZBGriF4
-django-taggit==0.12.3
+# sha256: M-mvjpWziqCTqCVTrDap53uqltuxwcYFhcK7oDSMcqo
+django-taggit==0.17.1
 
 # django-tidings: master
 # sha256: xWhrliMNAKzA_ehYs3UAhjHrol2z2N-B1Fbxo1Q4ovg
