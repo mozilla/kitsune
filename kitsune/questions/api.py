@@ -364,7 +364,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
                     raise GenericAPIException(403, 'You are not authorized to create new tags.')
 
         tags = question.tags.all()
-        return Response(QuestionTagSerializer(tags).data)
+        return Response(QuestionTagSerializer(tags, many=True).data)
 
     @action(methods=['POST', 'DELETE'], permission_classes=[permissions.IsAuthenticated])
     def remove_tags(self, request, pk=None):
