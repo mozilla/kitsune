@@ -1,9 +1,11 @@
 from django.db.models import Q
+from django.contrib.auth.models import User
+from django.contrib.contenttypes.models import ContentType
 
 import django_filters
 from actstream.models import Action
 from rest_framework import serializers, viewsets, permissions, mixins, status
-from rest_framework.decorators import action
+from rest_framework.decorators import detail_route
 from rest_framework.response import Response
 
 from kitsune.notifications.models import (
@@ -27,7 +29,7 @@ class OnlyOwner(permissions.BasePermission):
 
 
 class NotificationSerializer(serializers.ModelSerializer):
-    is_read = serializers.Field(source='is_read')
+    is_read = serializers.ReadOnlyField()
     timestamp = DateTimeUTCField(source='action.timestamp')
     actor = GenericRelatedField(source='action.actor')
     verb = serializers.CharField(source='action.verb')
@@ -70,7 +72,7 @@ class NotificationFilter(django_filters.FilterSet):
 class NotificationViewSet(mixins.ListModelMixin,
                           mixins.RetrieveModelMixin,
                           viewsets.GenericViewSet):
-    model = Notification
+    queryset = Notification.objects.all()
     serializer_class = NotificationSerializer
     permission_classes = [
         permissions.IsAuthenticated,
@@ -78,12 +80,13 @@ class NotificationViewSet(mixins.ListModelMixin,
     ]
     filter_class = NotificationFilter
     filter_fields = ['is_read']
+    pagination_class = None
 
     def get_queryset(self, *args, **kwargs):
         qs = super(NotificationViewSet, self).get_queryset(*args, **kwargs)
         return qs.filter(owner=self.request.user)
 
-    @action(methods=['POST'])
+    @detail_route(methods=['POST'])
     def mark_read(self, request, pk=None):
         """Mark the notification as read."""
         notification = self.get_object()
@@ -91,7 +94,7 @@ class NotificationViewSet(mixins.ListModelMixin,
         notification.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    @action(methods=['POST'])
+    @detail_route(methods=['POST'])
     def mark_unread(self, request, pk=None):
         """Mark the notification as unread."""
         notification = self.get_object()
@@ -102,8 +105,10 @@ class NotificationViewSet(mixins.ListModelMixin,
 
 class PushNotificationRegistrationSerializer(serializers.ModelSerializer):
     # Use usernames to reference users.
-    creator = serializers.SlugRelatedField(slug_field='username',
-                                           required=False)
+    creator = serializers.SlugRelatedField(
+        slug_field='username',
+        required=False,
+        queryset=User.objects.all())
 
     class Meta:
         model = PushNotificationRegistration
@@ -113,23 +118,24 @@ class PushNotificationRegistrationSerializer(serializers.ModelSerializer):
             'push_url',
         )
 
-    def validate_creator(self, attrs, source):
+    def validate(self, data):
         authed_user = getattr(self.context.get('request'), 'user')
-        creator = attrs.get('creator')
+        creator = data.get('creator')
 
         if creator is None:
-            attrs['creator'] = authed_user
+            data['creator'] = authed_user
         elif creator != authed_user:
-            raise serializers.ValidationError(
-                "Can't register push notifications for another user.")
+            raise serializers.ValidationError({
+                'creator': "Can't register push notifications for another user."
+            })
 
-        return attrs
+        return data
 
 
 class PushNotificationRegistrationViewSet(mixins.CreateModelMixin,
                                           mixins.DestroyModelMixin,
                                           viewsets.GenericViewSet):
-    model = PushNotificationRegistration
+    queryset = PushNotificationRegistration.objects.all()
     serializer_class = PushNotificationRegistrationSerializer
     permission_classes = [
         permissions.IsAuthenticated,
@@ -139,8 +145,13 @@ class PushNotificationRegistrationViewSet(mixins.CreateModelMixin,
 
 class RealtimeRegistrationSerializer(serializers.ModelSerializer):
     endpoint = serializers.CharField(write_only=True)
-    creator = serializers.SlugRelatedField(slug_field='username', required=False)
-    content_type = serializers.SlugRelatedField(slug_field='name')
+    creator = serializers.SlugRelatedField(
+        slug_field='username',
+        required=False,
+        queryset=User.objects.all())
+    content_type = serializers.SlugRelatedField(
+        slug_field='name',
+        queryset=ContentType.objects.all())
 
     class Meta:
         model = RealtimeRegistration
@@ -153,17 +164,18 @@ class RealtimeRegistrationSerializer(serializers.ModelSerializer):
             'object_id',
         ]
 
-    def validate_creator(self, attrs, source):
+    def validate(self, data):
+        data = super(RealtimeRegistrationSerializer, self).validate(data)
         authed_user = getattr(self.context.get('request'), 'user')
-        creator = attrs.get('creator')
+        creator = data.get('creator')
 
         if creator is None:
-            attrs['creator'] = authed_user
+            data['creator'] = authed_user
         elif creator != authed_user:
             raise serializers.ValidationError(
                 "Can't register push notifications for another user.")
 
-        return attrs
+        return data
 
 
 class RealtimeActionSerializer(serializers.ModelSerializer):
@@ -188,14 +200,14 @@ class RealtimeActionSerializer(serializers.ModelSerializer):
 class RealtimeRegistrationViewSet(mixins.CreateModelMixin,
                                   mixins.DestroyModelMixin,
                                   viewsets.GenericViewSet):
-    model = RealtimeRegistration
+    queryset = RealtimeRegistration.objects.all()
     serializer_class = RealtimeRegistrationSerializer
     permission_classes = [
         permissions.IsAuthenticated,
         OnlyCreatorEdits,
     ]
 
-    @action(methods=['GET'])
+    @detail_route(methods=['GET'])
     def updates(self, request, pk=None):
         """Get all the actions that correspond to this registration."""
         reg = self.get_object()

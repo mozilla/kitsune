@@ -4,11 +4,10 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import User
 
 import pytz
-from rest_framework import fields, permissions, relations, serializers
+from rest_framework import fields, permissions, serializers
 from rest_framework.authentication import SessionAuthentication, CSRFCheck
 from rest_framework.exceptions import APIException, AuthenticationFailed
 from rest_framework.filters import BaseFilterBackend
-from rest_framework.fields import get_component
 from tower import ugettext as _
 
 from kitsune.sumo.utils import uselocale
@@ -88,7 +87,7 @@ class LocalizedCharField(fields.CharField):
             return _(value, self.l10n_context)
 
 
-class SplitSourceField(fields.WritableField):
+class SplitSourceField(fields.Field):
     """
     This allows reading from one field and writing to another under the same
     name in the serialized/deserialized data.
@@ -118,72 +117,28 @@ class SplitSourceField(fields.WritableField):
         self.write_source = write_source
         super(SplitSourceField, self).__init__(**kwargs)
 
-    def field_to_native(self, obj, field_name):
+    def get_value(self, dictionary):
         """
-        Get a value for serialization from an object.
-
-        This is mostly copy/paste from ``fields.Field``.
-
-        :args obj: The object to reead the value from.
-        :args field_name: The name of the field to read from obj.
+        Given the *incoming* primitive data, return the value for this field
+        that should be validated and transformed to a native value.
         """
-        if obj is None:
-            return self.empty
+        # NB: This doesn't support reading from HTML input, unlike normal fields.
+        return dictionary.get(self.write_source, fields.empty)
 
-        if self.read_source == '*':
-            return self.to_native(obj)
-
-        source = self.read_source or field_name
-        value = obj
-
-        for component in source.split('.'):
-            value = get_component(value, component)
-            if value is None:
-                break
-
-        return self.to_native(value)
-
-    def field_from_native(self, data, files, field_name, into):
+    def get_attribute(self, instance):
         """
-        Update a ``field_name`` on a dictionary ``into`` with a deserialized value.
-
-        This is mostly copy/paste from ``fields.WritableField``.
-
-        :arg data: The serialized data to process.
-        :arg files: The serialized files to process.
-        :arg field_name: The name of the field to store the value on in ``into``.
-        :arg into: The dictionary to update.
+        Given the *outgoing* object instance, return the primitive value
+        that should be used for this field.
         """
-        if self.read_only:
-            return
+        # NB: This is a lot less robust than the DRF original, but it
+        # should be fine for our purposes.
+        return getattr(instance, self.read_source)
 
-        try:
-            data = data or {}
-            if self.use_files:
-                files = files or {}
-                try:
-                    native = files[field_name]
-                except KeyError:
-                    native = data[field_name]
-            else:
-                native = data[field_name]
-        except KeyError:
-            if self.default is not None and not self.partial:
-                # Note: partial updates shouldn't set defaults
-                native = self.get_default_value()
-            else:
-                if self.required:
-                    raise serializers.ValidationError(self.error_messages['required'])
-                return
+    def to_representation(self, obj):
+        return obj
 
-        value = self.from_native(native)
-        if self.source == '*':
-            if value:
-                into.update(value)
-        else:
-            self.validate(value)
-            self.run_validators(value)
-            into[self.write_source or field_name] = value
+    def to_internal_value(self, data):
+        return data
 
 
 class DateTimeUTCField(fields.DateTimeField):
@@ -191,12 +146,12 @@ class DateTimeUTCField(fields.DateTimeField):
     This is like DateTimeField, except it always outputs in UTC.
     """
 
-    def to_native(self, value):
+    def to_representation(self, value):
         if value.tzinfo is None:
             default_tzinfo = pytz.timezone(settings.TIME_ZONE)
             value = default_tzinfo.localize(value)
         value = value.astimezone(pytz.utc)
-        return super(DateTimeUTCField, self).to_native(value)
+        return super(DateTimeUTCField, self).to_representation(value)
 
 
 class _IDSerializer(serializers.Serializer):
@@ -206,7 +161,7 @@ class _IDSerializer(serializers.Serializer):
         fields = ('id', )
 
 
-class GenericRelatedField(relations.RelatedField):
+class GenericRelatedField(fields.ReadOnlyField):
     """
     Serializes GenericForeignKey relations using specified type of serializer.
     """
@@ -215,7 +170,7 @@ class GenericRelatedField(relations.RelatedField):
         self.serializer_type = serializer_type
         super(GenericRelatedField, self).__init__(**kwargs)
 
-    def to_native(self, value):
+    def to_representation(self, value):
         content_type = ContentType.objects.get_for_model(value)
         data = {'type': content_type.model}
 
@@ -298,51 +253,35 @@ class OnlyCreatorEdits(permissions.BasePermission):
         return user == creator
 
 
-def PermissionMod(cls, permissions):
+PermissionListSerializer = None
+
+
+def PermissionMod(field, permissions=[]):
     """
     Takes a class and modifies it to conditionally hide based on permissions.
     """
-    class Modded(cls):
 
-        def __init__(self, **kwargs):
-            super(Modded, self).__init__(**kwargs)
-            self._stealth = False
+    class Modded(field):
+        @classmethod
+        def many_init(cls, *args, **kwargs):
+            kwargs['child'] = field()
+            return PermissionMod(serializers.ListSerializer, permissions)(*args, **kwargs)
 
-        def field_to_native(self, obj, field_name):
-            """
-            Return null value if request has no access to that field
-            """
-            if self.check_permissions() and self.check_object_permissions(obj):
-                self._stealth = False
-                return super(Modded, self).field_to_native(obj, field_name)
-            self._stealth = True
-            return None
+        def get_attribute(self, instance):
+            if self.check_permissions(instance):
+                return super(Modded, self).get_attribute(instance)
+            else:
+                raise fields.SkipField()
 
-        # write_only is converted to a property, so that it can be "stealthed."
-        # The write only field is how DRF chooses to include or not include a field
-        # in serialization, so by controlling it, this field can choose when it
-        # is included in serialization output.
-
-        @property
-        def write_only(self):
-            return self._stealth or self._write_only
-
-        @write_only.setter
-        def write_only(self, value):
-            self._write_only = value
-
-        # These methods mimic the methods found on DRF views.
-
-        def get_permissions(self):
-            return (p() for p in permissions)
-
-        def check_permissions(self):
-            request = self.context.get('request', None)
-            return all(p.has_permission(request, self) for p in self.get_permissions())
-
-        def check_object_permissions(self, obj):
-            request = self.context.get('request', None)
-            return all(p.has_object_permission(request, self, obj) for p in self.get_permissions())
+        def check_permissions(self, obj):
+            request = self.context.get('request')
+            for Perm in permissions:
+                perm = Perm()
+                if not perm.has_permission(request, self):
+                    return False
+                if not perm.has_object_permission(request, self, obj):
+                    return False
+            return True
 
     return Modded
 
