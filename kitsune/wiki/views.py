@@ -186,8 +186,12 @@ def document(request, document_slug, template=None, document=None):
 
     ga_push = []
     if fallback_reason is not None:
-        ga_push.append(['_trackEvent', 'Incomplete L10n', 'Not Localized',
-                        '%s/%s' % (doc.slug, request.LANGUAGE_CODE)])
+        if fallback_reason == 'fallback_locale':
+            ga_push.append(['_trackEvent', 'Incomplete L10n', 'Fallback Locale',
+                            '%s/%s/%s' % (doc.parent.slug, request.LANGUAGE_CODE, doc.locale)])
+        else:
+            ga_push.append(['_trackEvent', 'Incomplete L10n', 'Not Localized',
+                            '%s/%s' % (doc.slug, request.LANGUAGE_CODE)])
     elif doc.is_outdated():
         ga_push.append(['_trackEvent', 'Incomplete L10n', 'Not Updated',
                         '%s/%s' % (doc.parent.slug, request.LANGUAGE_CODE)])
