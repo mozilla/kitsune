@@ -163,6 +163,25 @@ class LocalizationAnalyticsTests(TestCase):
         assert '"Not Localized"' in doc('body').attr('data-ga-push')
         assert '"Not Updated"' not in doc('body').attr('data-ga-push')
 
+    def test_custom_event_while_fallback_locale(self):
+        """If a document is shown in fallback locale because the document is not
+        available in requested locale, it should fire a "Fallback Locale" GA event"""
+        # A Approved revision ready for localization
+        r = ApprovedRevisionFactory(is_ready_for_localization=True)
+        # A document and revision in bn-BD locale
+        trans = DocumentFactory(parent=r.document, locale='bn-BD')
+        ApprovedRevisionFactory(document=trans, based_on=r)
+        # Get the bn-IN locale version of the document
+        url = reverse('wiki.document', args=[r.document.slug], locale='bn-IN')
+        response = self.client.get(url)
+        eq_(200, response.status_code)
+
+        doc = pq(response.content)
+        ga_data = r.document.slug + "/bn-IN" + "/bn-BD"
+        assert ga_data in doc('body').attr('data-ga-push')
+        assert '"Fallback Locale"' in doc('body').attr('data-ga-push')
+        assert '"Not Localized"' not in doc('body').attr('data-ga-push')
+
 
 class JsonViewTests(TestCase):
     def setUp(self):
