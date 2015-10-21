@@ -632,32 +632,39 @@ h2 {
   height: 96px;
   width: 96px;
 
+  /* Vertical position = 100px + i * 296 */
+
   &.logo-firefox {
     background-position: -100px -100px;
-  }
-
-  &.logo-firefox-os {
-    background-position: -100px -988px;
-  }
-
-  &.logo-mobile {
-    background-position: -100px -692px;
-  }
-
-  &.logo-webmaker {
-    background-position: -100px -1284px;
   }
 
   &.logo-thunderbird {
     background-position: -100px -396px;
   }
 
-  &.logo-ios {
-    background-position: -100px -1876px;
+  &.logo-mobile {
+    background-position: -100px -692px;
+  }
+
+  &.logo-firefox-os {
+    background-position: -100px -988px;
+  }
+
+  &.logo-webmaker {
+    background-position: -100px -1284px;
   }
 
   &.logo-other {
     background-position: -100px -1580px;
+  }
+
+  &.logo-ios {
+    background-position: -100px -1876px;
+  }
+
+  &.logo-signal {
+    /* Use temporary logo for now */
+    background-position: -100px -1580;
   }
 }
 
@@ -666,6 +673,8 @@ h2 {
   background-size: 42px;
   height: 16px;
   width: 16px;
+
+  /* Vertical position = 11px + i * 42 */
 
   &.logo-firefox {
     background-position: -12px -11px;
@@ -687,7 +696,16 @@ h2 {
     background-position: -12px -179px;
   }
 
-  &.logo-firefox-windows-8-touch {
+  &.logo-other {
+    background-position: -12px -221px;
+  }
+
+  &.logo-ios {
+    background-position: -12px -263px;
+  }
+
+  &.logo-signal {
+    /* use temporary logo for now */
     background-position: -12px -221px;
   }
 }

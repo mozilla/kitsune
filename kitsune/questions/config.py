@@ -91,6 +91,7 @@ products = SortedDict([
             }),
         ])
     }),
+
     ('mobile', {
         'name': _lazy(u'Firefox for Android'),
         'subtitle': _lazy(u'Web browser for Android smartphones and tablets'),
@@ -158,6 +159,7 @@ products = SortedDict([
             }),
         ])
     }),
+
     ('ios', {
         'name': _lazy(u'Firefox for iOS'),
         'subtitle': 'Firefox for iPhone, iPad and iPod touch devices',
@@ -182,6 +184,22 @@ products = SortedDict([
             }),
         ])
     }),
+
+    ('signal', {
+        'name': _lazy(u'Signal'),
+        'subtitle': 'test',
+        'extra_fields': ['os'],
+        'tags': ['signal'],
+        'product': 'signal',
+        'categories': SortedDict([
+            ('get-started', {
+                'name': _lazy(u'Get started'),
+                'topic': 'get-started',
+                'tags': []
+            }),
+        ])
+    }),
+
     ('firefox-os', {
         'name': _lazy(u'Firefox OS'),
         'subtitle': 'Mobile OS for smartphones',
@@ -210,6 +228,7 @@ products = SortedDict([
             }),
         ])
     }),
+
     ('webmaker', {
         'name': _lazy(u'Webmaker'),
         'subtitle': _lazy('Tools for creating and teaching the web'),
@@ -246,6 +265,7 @@ products = SortedDict([
             }),
         ])
     }),
+
     ('thunderbird', {
         'name': _lazy(u'Thunderbird'),
         'subtitle': 'Email software for Windows, Mac and Linux',
@@ -289,6 +309,7 @@ products = SortedDict([
             }),
         ])
     }),
+
     ('other', {
         'name': _lazy(u'Other Mozilla products'),
         'subtitle': '',
