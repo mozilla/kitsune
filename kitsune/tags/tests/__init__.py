@@ -2,9 +2,18 @@ from datetime import datetime
 
 from django.template.defaultfilters import slugify
 
+import factory
 from taggit.models import Tag
 
-from kitsune.sumo.tests import with_save
+from kitsune.sumo.tests import with_save, FuzzyUnicode
+
+
+class TagFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = Tag
+
+    name = FuzzyUnicode()
+    slug = factory.LazyAttribute(lambda o: slugify(o.name))
 
 
 @with_save

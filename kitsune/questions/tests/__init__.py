@@ -1,11 +1,12 @@
 from datetime import datetime
 
 from nose.tools import eq_
+import factory
 
 from kitsune.questions.models import (
     Question, QuestionVote, Answer, AnswerVote, QuestionLocale)
-from kitsune.sumo.tests import LocalizingClient, TestCase, with_save
-from kitsune.users.tests import profile
+from kitsune.sumo.tests import LocalizingClient, TestCase, with_save, FuzzyUnicode
+from kitsune.users.tests import profile, UserFactory
 
 
 class TestCaseBase(TestCase):
@@ -17,6 +18,15 @@ def tags_eq(tagged_object, tag_names):
     """Assert that the names of the tags on tagged_object are tag_names."""
     eq_(sorted([t.name for t in tagged_object.tags.all()]),
         sorted(tag_names))
+
+
+class QuestionFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = Question
+
+    title = FuzzyUnicode()
+    content = FuzzyUnicode()
+    creator = factory.SubFactory(UserFactory)
 
 
 def question(save=False, **kwargs):

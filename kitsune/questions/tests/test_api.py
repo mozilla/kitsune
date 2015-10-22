@@ -12,9 +12,11 @@ from taggit.models import Tag
 from kitsune.sumo.tests import TestCase
 from kitsune.questions import api
 from kitsune.questions.models import Question, Answer
-from kitsune.questions.tests import question, answer, questionvote, answervote
+from kitsune.questions.tests import (
+    tags_eq, question, answer, questionvote, answervote, QuestionFactory)
 from kitsune.products.tests import product, topic
 from kitsune.sumo.urlresolvers import reverse
+from kitsune.tags.tests import TagFactory
 from kitsune.users.helpers import profile_avatar
 from kitsune.users.models import Profile
 from kitsune.users.tests import profile, user, add_permission
@@ -448,6 +450,26 @@ class TestQuestionViewSet(TestCase):
         res = self.client.get(url)
         eq_(res.status_code, 200)
         assert '<unbleached>' not in res.data['content']
+
+    def test_auto_tagging(self):
+        """Test that questions created via the API are auto-tagged."""
+        TagFactory(name='desktop')
+        q = QuestionFactory()
+        self.client.force_authenticate(user=q.creator)
+        tags_eq(q, [])
+
+        res = self.client.post(
+            reverse('question-set-metadata', args=[q.id]),
+            content_type='application/json',
+            data=json.dumps({'name': 'product', 'value': 'desktop'}))
+        eq_(res.status_code, 200)
+        tags_eq(q, [])
+
+        res = self.client.post(
+            reverse('question-auto-tag', args=[q.id]),
+            content_type='application/json')
+        eq_(res.status_code, 204)
+        tags_eq(q, ['desktop'])
 
 
 class TestAnswerSerializerDeserialization(TestCase):
