@@ -4,6 +4,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
 
 import actstream.registry
+import simplejson
 import requests
 from actstream.models import Action, Follow
 from celery import task
@@ -48,7 +49,10 @@ def _send_simple_push(endpoint, version):
         # If something does wrong, the SimplePush server will give back
         # json encoded error messages.
         if r.status_code != 200:
-            logger.error('SimplePush error: %s %s', r.status_code, r.json())
+            try:
+                logger.error('SimplePush error: %s %s', r.status_code, r.json())
+            except simplejson.scanner.JSONDecodeError:
+                logger.error('SimplePush error (also not JSON?!): %s %s', r.status_code, r.text)
     except RequestException as e:
         # This will go to Sentry.
         logger.error('SimplePush PUT failed: %s', e)
