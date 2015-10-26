@@ -30,9 +30,12 @@
   {% set meta = meta + [('description', document.current_revision.summary)] %}
 {% endif %}
 
-{% if product.slug == 'mobile' %}
-  {# Firefox for Android has a special separate survey. #}
-  {% set SURVEY_GIZMOS = ['mobile'] %}
+{% if waffle.flag('surveygizmo') %}
+  {% if product.slug == 'mobile' %}
+    {% set SURVEY_GIZMOS = ['mobile'] %}
+  {% elseif product.slug == 'firefox' %}
+    {% set SURVEY_GIZMOS = ['beacon'] %}
+  {% endif %}
 {% endif %}
 
 {% block breadcrumbs %}

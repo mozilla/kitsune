@@ -6,4 +6,6 @@
   {% set scripts = ('questions', 'jqueryui') %}
 {% endif %}
 
-{% set SURVEY_GIZMOS = ['questions'] %}
+{% if waffle.flag('surveygizmo') %}
+  {% set SURVEY_GIZMOS = ['questions'] %}
+{% endif %}
