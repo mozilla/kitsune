@@ -282,6 +282,9 @@ requests-oauthlib==0.4.2
 # sha256: v445sBLQFGpK6vVBNT9bm5Ywu8tawnUFhJrIlrz_L2o
 setuptools==0.9.8
 
+# sha256: Y9f3sUog8p90Mlpp5ttFkl6vbjoAPqtGwCNP0FCoyT8
+simplejson==3.7.3
+
 # sha256: 4kBSQR_E-9H2cmNVN8P8IzDZSBsYwDF2lbRiWVEskdU
 six==1.9.0
 

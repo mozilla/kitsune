@@ -57,9 +57,6 @@ PyYAML==3.11
 # sha256: a_c6l7D-RUKn7i2KYnoTs4KegdERvidVGzag36DCkJk
 q==2.4
 
-# sha256: Y9f3sUog8p90Mlpp5ttFkl6vbjoAPqtGwCNP0FCoyT8
-simplejson==3.7.3
-
 # sha256: lJM7ZOL-CAfaBhLFdKAhwNrCjHvTxKI3I65aOeqPPQQ
 Sphinx==1.2.3
 
