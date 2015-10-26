@@ -58,9 +58,14 @@ def _send_simple_push(endpoint, version):
         logger.error('SimplePush PUT failed: %s', e)
 
 
-@task(ignore_result=True)
-def add_notification_for_action(action_id):
-    action = Action.objects.get(id=action_id)
+@task(bind=True)
+def add_notification_for_action(self, action_id):
+    try:
+        action = Action.objects.get(id=action_id)
+    except Action.DoesNotExist as exc:
+        # Maybe database replication is lagging a bit, retry after a few seconds.
+        raise self.retry(exc=exc, max_retries=1, countdown=30)
+
     query = _full_ct_query(action, actor_only=False)
     # Don't send notifications to a user about actions they take.
     query &= ~Q(user=action.actor)
