@@ -8,6 +8,7 @@ import simplejson
 import requests
 from actstream.models import Action, Follow
 from celery import task
+from multidb.pinning import use_master
 from requests.exceptions import RequestException
 
 from kitsune.notifications.models import (
@@ -80,14 +81,11 @@ def _send_simple_push(endpoint, version, max_retries=3, _retry_count=0):
             logger.error('SimplePush error: %s %s', r.status_code, r.json())
 
 
-@task(bind=True)
-def add_notification_for_action(self, action_id):
-    try:
-        action = Action.objects.get(id=action_id)
-    except Action.DoesNotExist as exc:
-        # Maybe database replication is lagging a bit, retry after a few seconds.
-        raise self.retry(exc=exc, max_retries=1, countdown=30)
-
+@task(ignore_result=True)
+@use_master
+def add_notification_for_action(action_id):
+    action = Action.objects.get(id=action_id)
+    
     query = _full_ct_query(action, actor_only=False)
     # Don't send notifications to a user about actions they take.
     query &= ~Q(user=action.actor)
@@ -102,6 +100,7 @@ def add_notification_for_action(self, action_id):
 
 
 @task(ignore_result=True)
+@use_master
 def send_realtimes_for_action(action_id):
     action = Action.objects.get(id=action_id)
     query = _full_ct_query(action)
