@@ -9,6 +9,7 @@ var question = {
   topic: null,
   title: '',
   content: '',
+  images: JSON.parse(document.querySelector('.data[name=images]').innerHTML),
 };
 
 var suggestions = [];
@@ -58,6 +59,18 @@ const QuestionEditStore = new _QuestionEditStore();
 
 QuestionEditStore.dispatchToken = Dispatcher.register((action) => {
   switch (action.type) {
+    case actionTypes.ADD_IMAGE:
+      question.images.push(action.image);
+      updateState();
+      QuestionEditStore.emitChange();
+      break;
+
+    case actionTypes.REMOVE_IMAGE:
+      question.images = _.without(question.images, action.image);
+      updateState();
+      QuestionEditStore.emitChange();
+      break;
+
     case actionTypes.SET_PRODUCT:
       if (question.product !== action.product) {
         question.product = action.product;

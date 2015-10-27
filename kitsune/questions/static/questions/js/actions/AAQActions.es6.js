@@ -77,6 +77,56 @@ export function setContent(content) {
   });
 }
 
+export function uploadImage(url, file) {
+  let data = new FormData();
+  data.append('image', file, file.name);
+
+  let xhr = new XMLHttpRequest();
+  xhr.open('POST', url, true);
+
+  const csrf = document.querySelector('input[name=csrfmiddlewaretoken]').value;
+  xhr.setRequestHeader('X-CSRFToken', csrf);
+
+  xhr.onreadystatechange = function() {
+    if (XMLHttpRequest.DONE === xhr.readyState && xhr.status === 200) {
+      let response = JSON.parse(xhr.responseText);
+      addImage(response.file);
+    }
+  };
+
+  xhr.send(data);
+}
+
+export function addImage(image) {
+  Dispatcher.dispatch({
+    type: actionTypes.ADD_IMAGE,
+    image
+  });
+}
+
+export function deleteImage(image) {
+  let xhr = new XMLHttpRequest();
+  xhr.open('POST', image.delete_url, true);
+
+  const csrf = document.querySelector('input[name=csrfmiddlewaretoken]').value;
+  xhr.setRequestHeader('X-CSRFToken', csrf);
+
+  xhr.onreadystatechange = function() {
+    if (XMLHttpRequest.DONE === xhr.readyState && xhr.status === 200) {
+      removeImage(image);
+    }
+  };
+
+  xhr.send();
+}
+
+export function removeImage(image) {
+  Dispatcher.dispatch({
+    type: actionTypes.REMOVE_IMAGE,
+    image
+  });
+}
+
 export function setTroubleshootingOptIn(optIn) {
   if (optIn) {
     Dispatcher.dispatch({
@@ -202,6 +252,15 @@ export function submitQuestion() {
     });
   })
   .then(() => {
+    return apiFetch(`/api/2/question/${questionData.id}/attach_images/?format=json`, {
+      method: 'post',
+      credentials: 'include',
+      headers: {
+        'X-CSRFToken': csrf,
+      }
+    });
+  })
+  .then(() => {
     Dispatcher.dispatch({type: actionTypes.QUESTION_SUBMIT_SUCCESS});
     aaqGa.trackEvent('question posted');
     document.location = `/${locale}/questions/${questionData.id}`;
@@ -220,6 +279,8 @@ export default {
   setTopic,
   setTitle,
   setContent,
+  uploadImage,
+  deleteImage,
   setTroubleshootingOptIn,
   checkTroubleshootingAvailable,
   submitQuestion,

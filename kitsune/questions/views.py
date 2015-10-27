@@ -58,6 +58,7 @@ from kitsune.sumo.helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse, split_path
 from kitsune.sumo.utils import paginate, simple_paginate, build_paged_url, is_ratelimited
 from kitsune.tags.utils import add_existing_tag
+from kitsune.upload.api import ImageAttachmentSerializer
 from kitsune.upload.models import ImageAttachment
 from kitsune.upload.views import upload_imageattachment
 from kitsune.users.forms import RegisterForm
@@ -472,9 +473,14 @@ def aaq_react(request):
         many=True)
     topics = TopicSerializer(Topic.objects.filter(in_aaq=True), many=True)
 
+    user_ct = ContentType.objects.get_for_model(request.user)
+    images = ImageAttachmentSerializer(
+        ImageAttachment.objects.filter(creator=request.user, content_type=user_ct), many=True)
+
     return render(request, 'questions/new_question_react.html', {
         'products_json': to_json(products.data),
         'topics_json': to_json(topics.data),
+        'images_json': to_json(images.data),
     })
 
 

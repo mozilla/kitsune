@@ -5,6 +5,7 @@ import UserAuthStore from '../../../users/js/stores/UserAuthStore.es6.js';
 import ProductSelector from './ProductSelector.jsx';
 import TopicSelector from './TopicSelector.jsx';
 import TitleContentEditor from './TitleContentEditor.jsx';
+import AttachmentField from './AttachmentField.jsx';
 import UserAuth from './UserAuth.jsx';
 import SubmitQuestion from './SubmitQuestion.jsx';
 import TroubleshootingDataStore from '../stores/TroubleshootingDataStore.es6.js';
@@ -68,6 +69,7 @@ export default class AAQApp extends React.Component {
             case 'title':
               return [
                 <TitleContentEditor {...this.state}/>,
+                <AttachmentField {...this.state} />,
                 <UserAuth userAuth={this.state.userAuth}/>
               ];
             case undefined:
