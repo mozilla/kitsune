@@ -1,6 +1,6 @@
 {% from 'includes/common_macros.html' import announcement_bar, search_box, aux_nav, favicon with context %}
 {% if request.LANGUAGE_CODE == settings.WIKI_DEFAULT_LANGUAGE %}
-  {% set SURVEY_GIZMOS = SURVEY_GIZMOS + ['firefox_refresh'] %}
+  {% set SURVEY_GIZMOS = (SURVEY_GIZMOS or []) + ['firefox_refresh'] %}
 {% else %}
   {% set SURVEY_GIZMOS = [] %}
 {% endif %}
