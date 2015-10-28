@@ -1,9 +1,9 @@
 from django.contrib.contenttypes.models import ContentType
 
+import mock
 from actstream.actions import follow
 from actstream.signals import action
 from actstream.models import Action, Follow
-from mock import patch
 from nose.tools import eq_
 
 from kitsune.notifications import tasks as notification_tasks
@@ -78,7 +78,7 @@ class TestNotificationsSentFromActions(TestCase):
         eq_(Notification.objects.filter(action=act).count(), 0)
 
 
-@patch.object(notification_tasks, 'requests')
+@mock.patch.object(notification_tasks, 'requests')
 class TestSimplePushNotifier(TestCase):
 
     def test_simple_push_send(self, requests):
@@ -93,6 +93,25 @@ class TestSimplePushNotifier(TestCase):
         """Verify that no request is made when there is no SimplePush registration."""
         notification(save=True)
         requests.put.assert_not_called()
+
+    def test_simple_push_retry(self, requests):
+        response = mock.MagicMock()
+        response.status_code = 503
+        response.json.return_value = {'errno': 202}
+        requests.put.return_value = response
+
+        u = profile().user
+        url = u'http://example.com/simple_push/asdf'
+        PushNotificationRegistration.objects.create(creator=u, push_url=url)
+        n = notification(owner=u, save=True)
+
+        # The push notification handler should try, and then retry 3 times before giving up.
+        eq_(requests.put.call_args_list, [
+            ((url, 'version={}'.format(n.id)), {}),
+            ((url, 'version={}'.format(n.id)), {}),
+            ((url, 'version={}'.format(n.id)), {}),
+            ((url, 'version={}'.format(n.id)), {}),
+        ])
 
     def test_from_action_to_simple_push(self, requests):
         """Test that when an action is created, it results in a push notification being sent."""

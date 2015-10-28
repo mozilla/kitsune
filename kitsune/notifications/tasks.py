@@ -4,9 +4,11 @@ from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
 
 import actstream.registry
+import simplejson
 import requests
 from actstream.models import Action, Follow
 from celery import task
+from multidb.pinning import use_master
 from requests.exceptions import RequestException
 
 from kitsune.notifications.models import (
@@ -37,26 +39,53 @@ def _full_ct_query(action, actor_only=None):
     return query
 
 
-def _send_simple_push(endpoint, version):
+def _send_simple_push(endpoint, version, max_retries=3, _retry_count=0):
     """
     Hit a simple push endpoint to send a notification to a user.
 
-    Handles and record any HTTP errors.
+    Handles and record any HTTP errors. May retry up to ``max_retries``
+    times by recursing.
+
+    This function tries hard to handle any potential errors, so it may
+    be used in a loop that iterates over many actions to send, without
+    the loop needing to contain error handling logic.
+
+    @param endpoint: The url to PUT to.
+    @param version: The version to include in the push. Should be an integer
+        greater than the version used every other time this endpoint has
+        been called. Timestamps and DB auto increment fields work well.
+    @param max_retries: The maximum number of times to try again.
     """
+
     try:
         r = requests.put(endpoint, 'version={}'.format(version))
-        # If something does wrong, the SimplePush server will give back
-        # json encoded error messages.
-        if r.status_code != 200:
-            logger.error('SimplePush error: %s %s', r.status_code, r.json())
     except RequestException as e:
-        # This will go to Sentry.
-        logger.error('SimplePush PUT failed: %s', e)
+        # This is something like connection error, not a server error.
+        if _retry_count < max_retries:
+            return _send_simple_push(endpoint, version, max_retries, _retry_count + 1)
+        else:
+            logger.error('SimplePush PUT failed: %s', e)
+            return
+
+    # If something does wrong, the SimplePush server should give back json encoded error messages.
+    if r.status_code >= 400:
+        try:
+            data = r.json()
+        except simplejson.scanner.JSONDecodeError:
+            logger.error('SimplePush error (also not JSON?!): %s %s', r.status_code, r.text)
+            return
+
+        if r.status_code == 503 and data['errno'] == 202 and _retry_count < max_retries:
+            return _send_simple_push(endpoint, version, max_retries, _retry_count + 1)
+        else:
+            logger.error('SimplePush error: %s %s', r.status_code, r.json())
 
 
 @task(ignore_result=True)
+@use_master
 def add_notification_for_action(action_id):
     action = Action.objects.get(id=action_id)
+
     query = _full_ct_query(action, actor_only=False)
     # Don't send notifications to a user about actions they take.
     query &= ~Q(user=action.actor)
@@ -71,6 +100,7 @@ def add_notification_for_action(action_id):
 
 
 @task(ignore_result=True)
+@use_master
 def send_realtimes_for_action(action_id):
     action = Action.objects.get(id=action_id)
     query = _full_ct_query(action)
