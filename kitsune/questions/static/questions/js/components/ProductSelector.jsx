@@ -2,6 +2,7 @@
 import cx from 'classnames';
 import AAQStep from './AAQStep.jsx';
 import AAQActions from '../actions/AAQActions.es6.js';
+import {aaqGa} from '../utils/';
 
 const products = JSON.parse(document.querySelector('.data[name=products]').innerHTML);
 
@@ -31,7 +32,9 @@ export default class ProductSelector extends AAQStep {
 class ProductCard extends React.Component {
   handleSelect(ev) {
     ev.preventDefault();
-    AAQActions.setProduct(this.props.product.slug);
+    let slug = this.props.product.slug;
+    aaqGa.trackEvent('product selected', slug);
+    AAQActions.setProduct(slug);
     this.props.switchToNextStep();
   }
 

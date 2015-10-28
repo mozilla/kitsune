@@ -4,6 +4,7 @@ import Dispatcher from '../../../sumo/js/Dispatcher.es6.js';
 import {actionTypes} from '../constants/AAQConstants.es6.js';
 import QuestionEditStore from '../stores/QuestionEditStore.es6.js';
 import TroubleshootingDataStore from '../stores/TroubleshootingDataStore.es6.js';
+import {aaqGa} from '../utils/';
 import '../../../sumo/js/remote.js';
 import '../../../sumo/js/aaq.js';
 import '../../../sumo/js/browserdetect.js';
@@ -202,9 +203,11 @@ export function submitQuestion() {
   })
   .then(() => {
     Dispatcher.dispatch({type: actionTypes.QUESTION_SUBMIT_SUCCESS});
+    aaqGa.trackEvent('question posted');
     document.location = `/${locale}/questions/${questionData.id}`;
   })
   .catch((err) => {
+    aaqGa.trackEvent('submit failed', err.message);
     Dispatcher.dispatch({
       type: actionTypes.QUESTION_SUBMIT_FAILURE,
       error: err.message,

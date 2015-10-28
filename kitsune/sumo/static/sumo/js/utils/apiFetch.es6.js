@@ -6,7 +6,14 @@ export default function apiFetch(url, options={}) {
     if (res.status >= 400) {
       throw new Error(res.statusText);
     } else {
-      return res.json();
+      return res.text()
+      .then(text => {
+        if (text === '') {
+          return {};
+        } else {
+          return JSON.parse(text);
+        }
+      });
     }
   });
 }

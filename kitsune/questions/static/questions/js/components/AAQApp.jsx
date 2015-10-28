@@ -10,6 +10,7 @@ import SubmitQuestion from './SubmitQuestion.jsx';
 import TroubleshootingDataStore from '../stores/TroubleshootingDataStore.es6.js';
 import UrlStore from '../../../sumo/js/stores/UrlStore.es6.js';
 import UrlActions from '../../../sumo/js/actions/UrlActions.es6.js';
+import {aaqGa} from '../utils/';
 
 export default class AAQApp extends React.Component {
   constructor(props) {
@@ -25,6 +26,7 @@ export default class AAQApp extends React.Component {
     UrlStore.addChangeListener(this.onChange);
 
     UrlActions.updateQueryStringDefaults({step: 'product'});
+    aaqGa.trackEvent('AAQ SPA loaded');
   }
 
   componentWillUnmount() {
