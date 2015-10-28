@@ -85,7 +85,7 @@ def _send_simple_push(endpoint, version, max_retries=3, _retry_count=0):
 @use_master
 def add_notification_for_action(action_id):
     action = Action.objects.get(id=action_id)
-    
+
     query = _full_ct_query(action, actor_only=False)
     # Don't send notifications to a user about actions they take.
     query &= ~Q(user=action.actor)
