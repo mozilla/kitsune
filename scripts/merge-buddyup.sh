@@ -14,9 +14,15 @@ if [[ ($# -ne 1) || (! -d "$1") ]]; then
     usage
 fi
 
-POTFILE=`find $1 -type f -name "buddyup.pot"`
+LOCALEDIR="$1"
+POTFILE="${LOCALEDIR}/templates/LC_MESSAGES/buddyup.pot"
 
-for lang in `find $1 -type f -name "buddyup.po"`; do
+if [ ! -e "${POTFILE}" ]; then
+    echo "${POTFILE} does not exist. exiting."
+    exit 1
+fi
+
+for lang in $(find $1 -type f -name "buddyup.po"); do
     echo -n "working on ${lang} "
     msgmerge --update ${lang} ${POTFILE}
 done
