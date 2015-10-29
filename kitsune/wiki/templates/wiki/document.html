@@ -33,7 +33,7 @@
 {% if waffle.flag('surveygizmo') %}
   {% if product.slug == 'mobile' %}
     {% set SURVEY_GIZMOS = ['mobile'] %}
-  {% elseif product.slug == 'firefox' %}
+  {% elif product.slug == 'firefox' %}
     {% set SURVEY_GIZMOS = ['beacon'] %}
   {% endif %}
 {% endif %}
