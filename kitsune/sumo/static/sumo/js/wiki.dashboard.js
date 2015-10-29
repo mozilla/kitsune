@@ -30,8 +30,8 @@
 
     if ($('body').is('.localization-dashboard')) {
       // Add's datepicker to the create announcement pop-up
-      $('#id_show_after').datepicker('option', 'dateFormat', 'yy-mm-dd');
-      $('#id_show_until').datepicker('option', 'dateFormat', 'yy-mm-dd');
+      addDatePicker('#id_show_after');
+      addDatePicker('#id_show_until');
     }
 
     // product selector page reloading
@@ -47,6 +47,10 @@
       document.location = document.location.pathname + '?' + $.param(queryParams);
     });
   });
+
+  function addDatePicker(inputId) {
+    $(inputId).datepicker('option', 'dateFormat', 'yy-mm-dd');
+  }
 
   function makeVoteGraph($container, descriptors) {
     $.getJSON($container.data('url'), function(data) {
