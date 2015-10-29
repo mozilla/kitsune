@@ -2,7 +2,7 @@
 import UserAuthActions from '../actions/UserAuthActions.es6.js';
 import {authStates} from '../constants/UserAuthConstants.es6.js';
 import {Errors} from './AuthCommon.jsx';
-import {userGa} from '../utils/';
+import userGa from '../utils/userGa.es6.js';
 
 /* A form that can register users. Users that are registered are
  * automatically logged in. */

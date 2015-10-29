@@ -4,7 +4,7 @@ import UserAuthActions from '../../../users/js/actions/UserAuthActions.es6.js';
 import {authStates} from '../../../users/js/constants/UserAuthConstants.es6.js';
 import LoginForm from '../../../users/js/components/LoginForm.jsx';
 import RegisterForm from '../../../users/js/components/RegisterForm.jsx';
-import {aaqGa} from '../utils/';
+import aaqGa from '../utils/aaqGa.es6.js';
 
 export default class UserAuth extends AAQStep {
   constructor(props) {

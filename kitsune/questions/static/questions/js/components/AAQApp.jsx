@@ -10,7 +10,7 @@ import SubmitQuestion from './SubmitQuestion.jsx';
 import TroubleshootingDataStore from '../stores/TroubleshootingDataStore.es6.js';
 import UrlStore from '../../../sumo/js/stores/UrlStore.es6.js';
 import UrlActions from '../../../sumo/js/actions/UrlActions.es6.js';
-import {aaqGa} from '../utils/';
+import aaqGa from '../utils/aaqGa.es6.js';
 
 export default class AAQApp extends React.Component {
   constructor(props) {

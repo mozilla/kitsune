@@ -4,7 +4,7 @@ import Dispatcher from '../../../sumo/js/Dispatcher.es6.js';
 import {actionTypes} from '../constants/AAQConstants.es6.js';
 import QuestionEditStore from '../stores/QuestionEditStore.es6.js';
 import TroubleshootingDataStore from '../stores/TroubleshootingDataStore.es6.js';
-import {aaqGa} from '../utils/';
+import aaqGa from '../utils/aaqGa.es6.js';
 import '../../../sumo/js/remote.js';
 import '../../../sumo/js/aaq.js';
 import '../../../sumo/js/browserdetect.js';

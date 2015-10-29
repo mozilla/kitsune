@@ -2,7 +2,7 @@
 import cx from 'classnames';
 import AAQStep from './AAQStep.jsx';
 import AAQActions from '../actions/AAQActions.es6.js';
-import {aaqGa} from '../utils/';
+import aaqGa from '../utils/aaqGa.es6.js';
 
 const topics = JSON.parse(document.querySelector('.data[name=topics]').innerHTML);
 

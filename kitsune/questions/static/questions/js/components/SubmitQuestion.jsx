@@ -4,7 +4,7 @@ import AAQStep from './AAQStep.jsx';
 import AAQActions from '../actions/AAQActions.es6.js';
 import {questionEditState} from '../constants/AAQConstants.es6.js';
 import {authStates} from '../../../users/js/constants/UserAuthConstants.es6.js';
-import {aaqGa} from '../utils/';
+import aaqGa from '../utils/aaqGa.es6.js';
 
 export default class SubmitQuestion extends AAQStep {
   handleSubmit() {

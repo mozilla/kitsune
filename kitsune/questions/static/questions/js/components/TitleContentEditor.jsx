@@ -1,7 +1,7 @@
 /* globals React:false */
 import AAQStep from './AAQStep.jsx';
 import AAQActions from '../actions/AAQActions.es6.js';
-import {aaqGa} from '../utils/';
+import aaqGa from '../utils/aaqGa.es6.js';
 
 export default class TitleContentEditor extends AAQStep {
   handleChange(ev) {
