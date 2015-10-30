@@ -371,7 +371,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    @action(methods=['POST'], permission_classes=[permissions.IsAuthenticated])
+    @detail_route(methods=['POST'], permission_classes=[permissions.IsAuthenticated])
     def auto_tag(self, request, pk=None):
         question = self.get_object()
         question.auto_tag()
