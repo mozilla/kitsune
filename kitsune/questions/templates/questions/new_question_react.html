@@ -11,5 +11,5 @@
   <script type="application/json" class="data" name="products">{{ products_json|safe }}</script>
   <script type="application/json" class="data" name="topics">{{ topics_json|safe }}</script>
   <script type="application/json" class="data" name="images">{{ images_json|safe }}</script>
-  <div class="apptarget" data-image-upload-url="{{ url('upload.up_image_async', 'auth.User', request.user.pk)}}"></div>
+  <div class="apptarget"></div>
 {% endblock %}

@@ -2,6 +2,7 @@
 import apiFetch from '../../../sumo/js/utils/apiFetch.es6.js';
 import Dispatcher from '../../../sumo/js/Dispatcher.es6.js';
 import {actionTypes} from '../constants/AAQConstants.es6.js';
+import UserAuthStore from '../../../users/js/stores/UserAuthStore.es6.js';
 import QuestionEditStore from '../stores/QuestionEditStore.es6.js';
 import TroubleshootingDataStore from '../stores/TroubleshootingDataStore.es6.js';
 import aaqGa from '../utils/aaqGa.es6.js';
@@ -77,12 +78,15 @@ export function setContent(content) {
   });
 }
 
-export function uploadImage(url, file) {
+export function uploadImage(file) {
   let data = new FormData();
   data.append('image', file, file.name);
 
+  let locale = document.querySelector('html').getAttribute('lang');
+  let userData = UserAuthStore.getAll();
+
   let xhr = new XMLHttpRequest();
-  xhr.open('POST', url, true);
+  xhr.open('POST', `/${locale}/upload/image/auth.User/${userData.id}`, true);
 
   const csrf = document.querySelector('input[name=csrfmiddlewaretoken]').value;
   xhr.setRequestHeader('X-CSRFToken', csrf);

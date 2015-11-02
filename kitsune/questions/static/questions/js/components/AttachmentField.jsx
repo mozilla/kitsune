@@ -1,6 +1,7 @@
 /* globals React:false */
 import AAQStep from './AAQStep.jsx';
 import AAQActions from '../actions/AAQActions.es6.js';
+import {authStates} from '../../../users/js/constants/UserAuthConstants.es6.js';
 
 export default class AttachmentField extends AAQStep {
   handleChange(ev) {
@@ -9,7 +10,7 @@ export default class AttachmentField extends AAQStep {
     let files = ev.target.files;
 
     for (var file of files) {
-      AAQActions.uploadImage($('[data-image-upload-url]').data('image-upload-url'), file);
+      AAQActions.uploadImage(file);
     }
   }
 
@@ -18,21 +19,31 @@ export default class AttachmentField extends AAQStep {
   }
 
   body() {
-    return (
-      <div className="AAQApp__AttachmentField">
-        <input type="file" name="image" size="30" title="Browse for an image to upload."
-               onChange={this.handleChange.bind(this)} />
-        <ul className="AAQApp__AttachmentField__Attachments">
-          {this.props.question.images.map((image) => {
-            return (
-              <Attachment image={image} />
-            );
-          })}
-        </ul>
-      </div>
-    );
+    if (this.props.userAuth.state === authStates.LOGGED_IN) {
+      return (
+        <div className="AAQApp__AttachmentField">
+          <input type="file" name="image" size="30" title="Browse for an image to upload."
+                 onChange={this.handleChange.bind(this)}/>
+          <ul className="AAQApp__AttachmentField__Attachments">
+            {this.props.question.images.map((image) => {
+              return (
+                <Attachment image={image}/>
+              );
+            })}
+          </ul>
+        </div>
+      );
+    } else {
+      return (
+        <div>Log in to upload images.</div>
+      )
+    }
   }
 }
+AttachmentField.propTypes = {
+  userAuth: React.PropTypes.object.isRequired,
+  question: React.PropTypes.object.isRequired,
+};
 
 class Attachment extends React.Component {
   handleChange() {
@@ -48,3 +59,6 @@ class Attachment extends React.Component {
     )
   }
 }
+Attachment.propTypes = {
+  image: React.PropTypes.object.isRequired,
+};

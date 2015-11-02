@@ -473,15 +473,20 @@ def aaq_react(request):
         many=True)
     topics = TopicSerializer(Topic.objects.filter(in_aaq=True), many=True)
 
-    user_ct = ContentType.objects.get_for_model(request.user)
-    images = ImageAttachmentSerializer(
-        ImageAttachment.objects.filter(creator=request.user, content_type=user_ct), many=True)
-
-    return render(request, 'questions/new_question_react.html', {
+    ctx = {
         'products_json': to_json(products.data),
         'topics_json': to_json(topics.data),
-        'images_json': to_json(images.data),
-    })
+    }
+
+    if request.user.is_authenticated():
+        user_ct = ContentType.objects.get_for_model(request.user)
+        images = ImageAttachmentSerializer(
+            ImageAttachment.objects.filter(creator=request.user, content_type=user_ct), many=True)
+        ctx['images_json'] = to_json(images.data)
+    else:
+        ctx['images_json'] = to_json([])
+
+    return render(request, 'questions/new_question_react.html', ctx)
 
 
 @ssl_required

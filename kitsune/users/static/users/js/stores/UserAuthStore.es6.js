@@ -6,6 +6,7 @@ import {actionTypes, authStates} from '../constants/UserAuthConstants.es6.js';
 
 var data = {
   state: null,
+  id: null,
   username: null,
   pending: true,
   errors: null
@@ -43,6 +44,10 @@ class _UserAuthStore extends BaseStore {
     return data.username;
   }
 
+  getID() {
+    return data.id;
+  }
+
   getAll() {
     return _.clone(data);
   }
@@ -61,6 +66,7 @@ UserAuthStore.dispatchToken = Dispatcher.register((action) => {
 
     case actionTypes.AUTH_LOG_IN_SUCCESS:
       data.state = authStates.LOGGED_IN;
+      data.id = action.id;
       data.username = action.username;
       data.pending = false;
       resetErrors();
@@ -92,6 +98,7 @@ UserAuthStore.dispatchToken = Dispatcher.register((action) => {
 
     case actionTypes.AUTH_LOG_OUT:
       data.state = authStates.LOGGED_OUT;
+      data.id = null;
       data.username = null;
       data.pending = false;
       UserAuthStore.emitChange();
@@ -99,12 +106,14 @@ UserAuthStore.dispatchToken = Dispatcher.register((action) => {
 
     case actionTypes.AUTH_SHOW_LOGIN:
       data.state = authStates.LOGGING_IN;
+      data.id = null;
       data.username = null;
       UserAuthStore.emitChange();
       break;
 
     case actionTypes.AUTH_SHOW_REGISTER:
       data.state = authStates.REGISTERING;
+      data.id = null;
       data.username = null;
       UserAuthStore.emitChange();
       break;
