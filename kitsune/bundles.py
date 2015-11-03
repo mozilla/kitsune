@@ -28,8 +28,10 @@ PIPELINE_CSS = {
     },
     'mobile-common': {
         'source_filenames': (
+            'fontawesome/css/font-awesome.css',
             'normalize-css/normalize.css',
             'sumo/less/mobile/main.less',
+            'sumo/less/mobile/search.less',
         ),
         'output_filename': 'build/mobile-common-min.css'
     },
@@ -341,15 +343,23 @@ PIPELINE_JS = {
     },
     'mobile-common': {
         'source_filenames': (
+            'sumo/js/templates/mobile-search-results.js',
+            'moment/moment.js',
             'sumo/js/i18n.js',
             'underscore/underscore.js',
             'jquery/jquery.min.js',
             'jquery/jquery-migrate.js',
             'modernizr/modernizr.js',
+            'nunjucks/browser/nunjucks-slim.js',
+            'sumo/js/nunjucks.js',
             'sumo/js/browserdetect.js',
+            'sumo/js/cached_xhr.js',
+            'sumo/js/search_utils.js',
             'sumo/js/aaq.js',
             'sumo/js/mobile/ui.js',
             'sumo/js/analytics.js',
+            'sumo/js/instant_search.js',
+            'sumo/js/mobile/instant_search.js',
         ),
         'output_filename': 'build/mobile-common-min.js'
     },

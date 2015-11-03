@@ -1,0 +1,14 @@
+{% if results %}
+  <ol class="search-results">
+    {% for doc in results %}
+      <li class="{{ doc.type }}">
+        <a href="{{ doc.url|urlparams(s=q, as='s') }}">
+          <span class="title">{{ doc.title }}</span>
+          {{ doc.search_summary|safe }}
+        </a>
+      </li>
+    {% endfor %}
+  </ol>
+{% else %}
+  {{ _('No results found') }}
+{% endif %}
