@@ -221,12 +221,17 @@ class ReviewableRevisionInLocaleEvent(_RevisionConstructor,
         context['creator'] = revision.creator
         context['comment'] = revision.comment
 
+        users = []
+        for u, w in users_and_watches:
+            if document.allows(u, 'review_revision'):
+                users.append((u, w))
+
         return email_utils.emails_with_users_and_watches(
             subject=subject,
             text_template='wiki/email/ready_for_review.ltxt',
             html_template='wiki/email/ready_for_review.html',
             context_vars=context,
-            users_and_watches=users_and_watches,
+            users_and_watches=users,
             default_locale=document.locale)
 
 
