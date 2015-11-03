@@ -62,20 +62,14 @@ class SuggestViewTests(ElasticTestCase):
         return d
 
     def test_invalid_product(self):
-        res = self.client.get(reverse('search.suggest'), {
-            'product': 'nonexistant',
-            'q': 'search',
-        })
+        res = self.client.get(reverse('search.suggest'), {'product': 'nonexistant', 'q': 'search'})
         eq_(res.status_code, 400)
-        eq_(res.data['detail'], {'product': [u'Could not find product with slug "nonexistant".']})
+        eq_(res.data, {'product': [u'Could not find product with slug "nonexistant".']})
 
     def test_invalid_locale(self):
-        res = self.client.get(reverse('search.suggest'), {
-            'locale': 'bad-medicine',
-            'q': 'search',
-        })
+        res = self.client.get(reverse('search.suggest'), {'locale': 'bad-medicine', 'q': 'search'})
         eq_(res.status_code, 400)
-        eq_(res.data['detail'], {'locale': [u'Could not find locale "bad-medicine".']})
+        eq_(res.data, {'locale': [u'Could not find locale "bad-medicine".']})
 
     def test_invalid_fallback_locale_none_case(self):
         # Test the locale -> locale case.
@@ -85,16 +79,11 @@ class SuggestViewTests(ElasticTestCase):
         ]
         locale, fallback = non_none_locale_fallback_pairs[0]
 
-        res = self.client.get(reverse('search.suggest'), {
-            'locale': locale,
-            'q': 'search',
-        })
+        res = self.client.get(reverse('search.suggest'), {'locale': locale, 'q': 'search'})
         eq_(res.status_code, 400)
-        eq_(
-            res.data['detail'],
-            {'locale': [u'"{0}" is not supported, but has fallback locale "{1}".'.format(
-                locale, fallback)]}
-        )
+        error_message = (u'"{0}" is not supported, but has fallback locale "{1}".'
+                         .format(locale, fallback))
+        eq_(res.data, {'locale': [error_message]})
 
     def test_invalid_fallback_locale_non_none_case(self):
         # Test the locale -> None case which falls back to WIKI_DEFAULT_LANGUAGE.
@@ -104,16 +93,11 @@ class SuggestViewTests(ElasticTestCase):
         ]
         locale, fallback = has_none_locale_fallback_pairs[0]
 
-        res = self.client.get(reverse('search.suggest'), {
-            'locale': locale,
-            'q': 'search',
-        })
+        res = self.client.get(reverse('search.suggest'), {'locale': locale, 'q': 'search'})
         eq_(res.status_code, 400)
-        eq_(
-            res.data['detail'],
-            {'locale': [u'"{0}" is not supported, but has fallback locale "{1}".'.format(
-                locale, settings.WIKI_DEFAULT_LANGUAGE)]}
-        )
+        error_message = (u'"{0}" is not supported, but has fallback locale "{1}".'
+                         .format(locale, settings.WIKI_DEFAULT_LANGUAGE))
+        eq_(res.data, {'locale': [error_message]})
 
     def test_invalid_numbers(self):
         res = self.client.get(reverse('search.suggest'), {
@@ -122,15 +106,15 @@ class SuggestViewTests(ElasticTestCase):
             'q': 'search',
         })
         eq_(res.status_code, 400)
-        eq_(res.data['detail'], {
-            'max_questions': [u'Enter a whole number.'],
-            'max_documents': [u'Enter a whole number.'],
+        eq_(res.data, {
+            'max_questions': [u'A valid integer is required.'],
+            'max_documents': [u'A valid integer is required.'],
         })
 
     def test_q_required(self):
         res = self.client.get(reverse('search.suggest'))
         eq_(res.status_code, 400)
-        eq_(res.data['detail'], {'q': [u'This field is required.']})
+        eq_(res.data, {'q': [u'This field is required.']})
 
     def test_it_works(self):
         q1 = self._make_question()

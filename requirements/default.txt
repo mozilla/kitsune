@@ -157,8 +157,8 @@ https://github.com/brosner/django-timezones/archive/ce12f4538fb98612c61b380421e5
 # sha256: dEJWIK08Kh8FFR8MyFGrfiYYbaOfsDma_Aqo7uu9IBs
 django-waffle==0.10.1
 
-# sha256: ZAtwWueBXsYFAWMbe2EQheUcf3ZgfZBVi_4ojz-Et6o
-djangorestframework==2.4.8
+# sha256: 34H2jOePiMcYbLbS8wzQAW-pa-2ICW5C1XUn5NJcXn4
+djangorestframework==3.2.4
 
 # sha256: iPK5G4pJjgyQPk5wr7H7rnTSP2L5i76WjCIVQVfL6VU
 elasticutils==0.10.3

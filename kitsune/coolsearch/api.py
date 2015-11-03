@@ -285,4 +285,4 @@ def _build_es_excerpt(result, first_only=False):
     else:
         excerpt = EXCERPT_JOINER.join(bits)
 
-    return jinja2.Markup(clean_excerpt(excerpt))
+    return clean_excerpt(excerpt)
