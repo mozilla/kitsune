@@ -102,13 +102,6 @@ PIPELINE_CSS = {
         ),
         'output_filename': 'build/mobile-search-min.css'
     },
-    'coolsearch': {
-        'source_filenames': (
-            'react-select/dist/default.css',
-            'coolsearch/less/search.less',
-        ),
-        'output_filename': 'build/coolsearch-min.css'
-    },
     'wiki': {
         'source_filenames': (
             'sumo/css/users.autocomplete.css',
@@ -456,25 +449,6 @@ PIPELINE_JS = {
             'sumo/js/search.js',
         ),
         'output_filename': 'build/search-min.js'
-    },
-    'coolsearch': {
-        'source_filenames': (
-            # This uses the minified version because it is optimized to leave
-            # out lots of debug stuff, so it is significantly smaller than
-            # just minifying react.js.
-            # TODO: Figure out how to include the full sized version in dev,
-            # because it produces much nicer error messages.
-            'react/react.min.js',
-            # 'react/react.js',
-            'classnames/index.js',
-            'react-input-autosize/dist/react-input-autosize.min.js',
-            'react-select/dist/react-select.min.js',
-            'flux/dist/Flux.js',
-            'underscore/underscore.js',
-
-            'coolsearch/js/search.browserify.js',
-        ),
-        'output_filename': 'build/search.react-min.js'
     },
     'forums': {
         'source_filenames': (
