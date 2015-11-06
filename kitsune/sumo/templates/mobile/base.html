@@ -97,27 +97,33 @@
 
 <header class="slide-on-exposed">
   <div id="menu-button" class="icon-sprite"></div>
-  {% block header_buttons %}{% endblock %}
-  {% if cancel_url %}
-    <a href="{{ cancel_url }}" id="cancel-button" class="icon-sprite">Cancel</a>
-  {% endif %}
-  {% if return_url and False %}
-    <a href="{{ return_url }}" class="return-button icon-sprite">Back</a>
-  {% endif %}
-  {% block header %}
-    <h1>
-      {% if headline %}
-        {{ headline }}
-      {% else %}
-        {{ _('Mozilla Support') }}
-      {% endif %}
-    </h1>
-  {% endblock %}
+  <div id="search-button"></div>
+  <div id="header-components">
+    {% block header_buttons %}{% endblock %}
+    {% if cancel_url %}
+      <a href="{{ cancel_url }}" id="cancel-button" class="icon-sprite">Cancel</a>
+    {% endif %}
+    {% if return_url and False %}
+      <a href="{{ return_url }}" class="return-button icon-sprite">Back</a>
+    {% endif %}
+    {% block header %}
+      <h1>
+        {% if headline %}
+          {{ headline }}
+        {% else %}
+          {{ _('Mozilla Support') }}
+        {% endif %}
+      </h1>
+    {% endblock %}
+  </div>
+  <form id="instant-search-form" data-instant-search="form">
+    <input type="search" placeholder="{{ _('Start typing to search...') }}">
+  </form>
 </header>
 
 {% block after_header %}{% endblock %}
 
-<div class="wrapper slide-on-exposed">
+<div id="main-content" class="wrapper slide-on-exposed">
   <section id="content">
     {% block content %}{% endblock %}
 

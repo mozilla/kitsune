@@ -156,6 +156,33 @@ body {
       text-overflow: ellipsis;
       white-space: nowrap;
     }
+
+    #instant-search-form {
+      display: none;
+
+      input[type=search] {
+        border: 0;
+        box-sizing: border-box;
+        box-shadow: none;
+        color: #000;
+        height: 24px;
+        font-size: 14px;
+        outline: none;
+        margin: 13px;
+        padding: 4px 10px;
+        width: calc(~'100% - 140px');
+      }
+    }
+
+    &.searching {
+      #instant-search-form {
+        display: block;
+      }
+
+      #header-components {
+        display: none;
+      }
+    }
   }
 
   > .wrapper {
@@ -185,6 +212,10 @@ body {
     #menu-button {
       border-right: 0;
       box-shadow: 0 0 0 1px @mobileHeaderBorder;
+      float: right;
+    }
+
+    #search-button {
       float: right;
       margin-left: 10px;
       margin-right: 0;
@@ -786,10 +817,25 @@ input[type="submit"]:visited {
   cursor: pointer;
   float: left;
   height: 24px;
-  margin-right: 10px;
   padding: 13px;
   text-indent: -9999px;
   width: 24px;
+}
+
+#search-button {
+  cursor: pointer;
+  float: left;
+  height: 50px;
+  line-height: 50px;
+  margin-right: 10px;
+  text-align: center;
+  width: 50px;
+
+  &:before {
+    content: '\f002'; // Search icon
+    font-family: FontAwesome;
+    font-size: 24px;
+  }
 }
 
 #notifications {
