@@ -20,9 +20,9 @@ body > header a {
 }
 
 body.html-ltr .container_12 {
-    width: auto;
     margin: 0;
     padding: 0;
+    width: auto;
 }
 
 div#main-breadcrumbs {
