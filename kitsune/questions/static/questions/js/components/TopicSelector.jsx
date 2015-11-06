@@ -2,6 +2,7 @@
 import cx from 'classnames';
 import AAQStep from './AAQStep.jsx';
 import AAQActions from '../actions/AAQActions.es6.js';
+import aaqGa from '../utils/aaqGa.es6.js';
 
 const topics = JSON.parse(document.querySelector('.data[name=topics]').innerHTML);
 
@@ -37,7 +38,9 @@ export default class TopicSelector extends AAQStep {
 class TopicItem extends React.Component {
   handleSelect(ev) {
     ev.preventDefault();
-    AAQActions.setTopic(this.props.topic.slug);
+    let slug = this.props.topic.slug;
+    aaqGa.trackEvent('topic selected', slug);
+    AAQActions.setTopic(slug);
     this.props.switchToNextStep();
   }
 

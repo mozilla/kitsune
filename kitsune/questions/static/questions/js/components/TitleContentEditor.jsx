@@ -1,10 +1,12 @@
 /* globals React:false */
 import AAQStep from './AAQStep.jsx';
 import AAQActions from '../actions/AAQActions.es6.js';
+import aaqGa from '../utils/aaqGa.es6.js';
 
 export default class TitleContentEditor extends AAQStep {
   handleChange(ev) {
     let {name, value} = ev.target;
+    aaqGa.trackEventOnce(`${name} input`);
     if (name === 'title') {
       AAQActions.setTitle(value);
     } else if (name === 'content') {
@@ -96,7 +98,12 @@ class SuggestionItem extends React.Component {
     let classString = 'AAQApp__SuggestionList__SuggestionItem ' + suggestion.type;
     return (
       <li className={classString}>
-        <a href={suggestion.url}>{suggestion.title}</a>
+        <a
+          href={suggestion.url}
+          data-ga-click="Ask A Question Flow - SPA | suggested article selected"
+        >
+          {suggestion.title}
+        </a>
         <div dangerouslySetInnerHTML={{__html: suggestion.summary}}/>
       </li>
     );
@@ -115,12 +122,18 @@ class TroubleshootingData extends React.Component {
   }
 
   handleOpt({target: {checked}}) {
+    if (checked) {
+      aaqGa.trackEvent('share data selected');
+    }
     AAQActions.setTroubleshootingOptIn(checked);
   }
 
   toggleExpand(ev) {
     ev.preventDefault();
-    this.setState(state => ({expand: !this.state.expand}));
+    if (!this.state.expand) {
+      aaqGa.trackEvent('showing data selected');
+    }
+    this.setState(state => ({expand: !state.expand}));
   }
 
   render() {

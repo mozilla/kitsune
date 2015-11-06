@@ -2,6 +2,7 @@
 import UserAuthActions from '../actions/UserAuthActions.es6.js';
 import {authStates} from '../constants/UserAuthConstants.es6.js';
 import {Errors} from './AuthCommon.jsx';
+import userGa from '../utils/userGa.es6.js';
 
 /* A form that can register users. Users that are registered are
  * automatically logged in. */
@@ -12,15 +13,18 @@ export default class RegisterForm extends React.Component {
       username: '',
       email: '',
       password: '',
+      showPassword: false,
     };
   }
 
   handleChange({target: {name, value}}) {
+    userGa.trackEventOnce(`${name} input`);
     this.setState({[name]: value});
   }
 
   showLoginForm(ev) {
     ev.preventDefault();
+    userGa.trackEvent('login requested');
     UserAuthActions.showLogin();
   }
 
@@ -30,6 +34,13 @@ export default class RegisterForm extends React.Component {
     .then(() => {
       UserAuthActions.login(this.state.username, this.state.password, {inactive: true});
     });
+  }
+
+  showPassword({target: {checked}}) {
+    if (checked) {
+      userGa.trackEvent('show password selected');
+    }
+    this.setState({showPassword: checked});
   }
 
   render() {
@@ -53,7 +64,11 @@ export default class RegisterForm extends React.Component {
             </li>
             <li>
               <label htmlFor="password">Password:</label>
-              <input type="password" name="password" value={this.state.password} onChange={this.handleChange.bind(this)}/>
+              <input
+                name="password"
+                type={this.state.showPassword ? 'text': 'password'}
+                value={this.state.password}
+                onChange={this.handleChange.bind(this)}/>
               <div className="validation-label"/>
               <p id="password-rules">
                 Password should be at least 8 characters long and contain at least 1 number.
@@ -61,7 +76,7 @@ export default class RegisterForm extends React.Component {
             </li>
           </ul>
           <p>
-            <input id="show-password" type="checkbox"/>{' '}
+            <input type="checkbox" onClick={this.showPassword.bind(this)}/>{' '}
             <label htmlFor="show-password">Reveal password to check that it's right.</label>
           </p>
           <div className="submit">
