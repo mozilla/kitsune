@@ -20,6 +20,44 @@ from kitsune.wiki.tests import document, revision, helpful_vote
 class AdvancedSearchTests(ElasticTestCase):
     client_class = LocalizingClient
 
+    def test_json_format(self):
+        """JSON without callback should return application/json"""
+        response = self.client.get(reverse('search'), {
+            'q': 'bookmarks',
+            'a': '1',
+            'format': 'json',
+        }, follow=True)
+        eq_(response.status_code, 200)
+        eq_(response['Content-Type'], 'application/json')
+
+    def test_json_callback_validation(self):
+        """Various json callbacks -- validation"""
+        response = self.client.get(reverse('search'), {
+            'q': 'bookmarks',
+            'a': '1',
+            'format': 'json',
+            'callback': 'callback',
+        }, follow=True)
+        eq_(response.status_code, 200)
+        eq_(response['Content-Type'], 'application/x-javascript')
+
+    def test_json_empty_query_a_1(self):
+        """Empty query returns JSON format"""
+        response = self.client.get(reverse('search'), {
+            'format': 'json', 'a': 1,
+        }, follow=True)
+        eq_(response.status_code, 200)
+        eq_(response['Content-Type'], 'application/json')
+
+    def test_json_empty_query_a_2(self):
+        """Empty query asking for form returns 400"""
+        # Test with flags for advanced search or not
+        response = self.client.get(reverse('search'), {
+            'format': 'json', 'a': 2,
+        }, follow=True)
+        eq_(response.status_code, 400)
+        eq_(response['Content-Type'], 'application/json')
+
     def test_search_products(self):
         p = product(title=u'Product One', slug='product', save=True)
         doc1 = document(title=u'cookies', locale='en-US', category=10,

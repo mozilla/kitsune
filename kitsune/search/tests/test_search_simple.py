@@ -55,6 +55,33 @@ class SimpleSearchTests(ElasticTestCase):
             response['Cache-Control'])
         assert 'Expires' in response
 
+    def test_json_format(self):
+        """JSON without callback should return application/json"""
+        response = self.client.get(reverse('search'), {
+            'q': 'bookmarks',
+            'format': 'json',
+        })
+        eq_(response['Content-Type'], 'application/json')
+
+    def test_json_callback_validation(self):
+        """Various json callbacks -- validation"""
+        response = self.client.get(reverse('search'), {
+            'q': 'bookmarks',
+            'format': 'json',
+            'callback': 'callback',
+        })
+        eq_(response['Content-Type'], 'application/x-javascript')
+        eq_(response.status_code, 200)
+
+    def test_json_empty_query(self):
+        """Empty query returns JSON format"""
+        # NOTE: We need to follow redirects here because advanced search
+        # is at a different URL and gets redirected.
+        response = self.client.get(reverse('search'), {
+            'format': 'json', 'a': 0,
+        }, follow=True)
+        eq_(response['Content-Type'], 'application/json')
+
     def test_page_invalid(self):
         """Ensure non-integer param doesn't throw exception."""
         doc = document(

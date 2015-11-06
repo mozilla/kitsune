@@ -1,6 +1,5 @@
 import json
 import logging
-import re
 import time
 from datetime import datetime, timedelta
 from itertools import chain
@@ -28,8 +27,9 @@ from kitsune.search.utils import locale_or_default, clean_excerpt
 from kitsune.search import es_utils
 from kitsune.search.forms import SimpleSearchForm, AdvancedSearchForm
 from kitsune.search.es_utils import F, AnalyzerS, handle_es_errors
-from kitsune.search.simple_search import apply_boosts, generate_simple_search
+from kitsune.search.search_utils import apply_boosts, generate_simple_search
 from kitsune.sumo.helpers import Paginator
+from kitsune.sumo.json_utils import markup_json
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import paginate
 from kitsune.wiki.facets import documents_for
@@ -42,18 +42,6 @@ log = logging.getLogger('k.search')
 EXCERPT_JOINER = _lazy(u'...', 'between search excerpts')
 
 
-def jsonp_is_valid(func):
-    func_regex = re.compile(r"""
-        ^[a-zA-Z_\$]
-        [a-zA-Z0-9_\$]*
-        (\[[a-zA-Z0-9_\$]*\])*
-        (\.[a-zA-Z0-9_\$]+
-            (\[[a-zA-Z0-9_\$]*\])*
-        )*$
-    """, re.VERBOSE)
-    return func_regex.match(func)
-
-
 def cache_control(resp, cache_period):
     """Inserts cache/expires headers"""
     resp['Cache-Control'] = 'max-age=%s' % (cache_period * 60)
@@ -63,43 +51,14 @@ def cache_control(resp, cache_period):
     return resp
 
 
-def markup_json(fun):
-    """Marks up the request object with JSON bits
-
-    * ``IS_JSON``: whether or not this is a json request
-    * ``JSON_CALLBACK``: the json callback function to wrap with
-    * ``CONTENT_TYPE``: the content type to return
-
-    Further, this verifies the ``JSON_CALLBACK`` if there is one and if it's not
-    valid, it returns an error response.
-
-    """
-    def _markup_json(request, *args, **kwargs):
-        request.IS_JSON = request.GET.get('format') == 'json'
-        if request.IS_JSON:
-            request.JSON_CALLBACK = request.GET.get('callback', '').strip()
-        else:
-            request.JSON_CALLBACK = ''
-        if request.IS_JSON:
-            request.CONTENT_TYPE = (
-                'application/x-javascript' if request.JSON_CALLBACK else 'application/json')
-        else:
-            request.CONTENT_TYPE = 'text/html'
-
-        # Check callback is valid
-        if request.JSON_CALLBACK and not jsonp_is_valid(request.JSON_CALLBACK):
-            return HttpResponse(
-                json.dumps({'error': _('Invalid callback function.')}),
-                content_type=request.CONTENT_TYPE,
-                status=400)
-
-        return fun(request, *args, **kwargs)
-    return _markup_json
-
-
 def _es_down_template(request, *args, **kwargs):
     """Returns the appropriate "Elasticsearch is down!" template"""
     return 'search/mobile/down.html' if request.MOBILE else 'search/down.html'
+
+
+class UnknownDocType(Exception):
+    """Signifies a doctype for which there's no handling"""
+    pass
 
 
 def build_results_list(pages, is_json):
@@ -140,11 +99,14 @@ def build_results_list(pages, is_json):
                 'num_votes': doc['question_num_votes'],
                 'num_votes_past_week': doc['question_num_votes_past_week']}
 
-        else:
+        elif doc['model'] == 'forums_thread':
             summary = _build_es_excerpt(doc, first_only=True)
             result = {
                 'title': doc['post_title'],
                 'type': 'thread'}
+
+        else:
+            raise UnknownDocType('%s is an unknown doctype' % doc['model'])
 
         result['url'] = doc['url']
         if not is_json:
