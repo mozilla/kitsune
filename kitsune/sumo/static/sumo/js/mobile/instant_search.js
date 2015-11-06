@@ -20,5 +20,6 @@
 
   $(document).on('click', '#search-button', function() {
     $('body > header').addClass('searching');
+    $('#instant-search-form input[type="search"]').focus();
   });
 })(jQuery);
