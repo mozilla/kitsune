@@ -256,7 +256,7 @@ class OnlyCreatorEdits(permissions.BasePermission):
 PermissionListSerializer = None
 
 
-def PermissionMod(field, permissions=[]):
+def PermissionMod(field, permissions):
     """
     Takes a class and modifies it to conditionally hide based on permissions.
     """

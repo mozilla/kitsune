@@ -239,11 +239,11 @@ class ProfileSerializer(serializers.ModelSerializer):
         if self.instance:
             # update
             if username != self.instance.user.username:
-                raise ValidationError({'username': "Can't change this field."})
+                raise ValidationError("Can't change this field.")
         else:
             # create
             if User.objects.filter(username=username).exists():
-                raise ValidationError({'username': 'A user with that username exists'})
+                raise ValidationError('A user with that username exists')
 
         return username
 
@@ -251,7 +251,7 @@ class ProfileSerializer(serializers.ModelSerializer):
         if not self.instance:
             # create
             if User.objects.filter(email=email).exists():
-                raise ValidationError({'email': 'A user with that email address already exists.'})
+                raise ValidationError('A user with that email address already exists.')
         return email
 
 

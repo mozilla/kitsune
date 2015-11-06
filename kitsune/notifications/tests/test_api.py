@@ -81,6 +81,8 @@ class TestNotificationSerializer(TestCase):
         eq_(serializer.data['action_object']['type'], 'question')
         eq_(serializer.data['action_object']['id'], q.id)
         eq_(serializer.data['target'], None)
+        # Check that the serialized data is in the correct format. If it is
+        # not, this will throw an exception.
         datetime.strptime(serializer.data['timestamp'], '%Y-%m-%dT%H:%M:%SZ')
 
 
