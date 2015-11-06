@@ -23,10 +23,6 @@
   }
 
   var surveys = {
-    site_survey: function() {
-      basicSurvey('https://www.surveygizmo.com/s3/popup/1002970/46488f9ad4eb');
-    },
-
     mobile: function() {
       basicSurvey('http://qsurvey.mozilla.com/s3/63ac9fdb1ce1');
     },

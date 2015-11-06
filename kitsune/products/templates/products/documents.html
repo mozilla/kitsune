@@ -9,9 +9,12 @@
 {% set styles = ('products',) %}
 {% set search_params = {'product': product.slug} %}
 
-{% if product.slug == 'mobile' %}
-  {# Firefox for Android has a special separate survey. #}
-  {% set SURVEY_GIZMOS = ['mobile'] %}
+{% if waffle.flag('surveygizmo') %}
+  {% if product.slug == 'mobile' %}
+    {% set SURVEY_GIZMOS = ['mobile'] %}
+  {% elif product.slug == 'firefox' %}
+    {% set SURVEY_GIZMOS = ['beacon'] %}
+  {% endif %}
 {% endif %}
 
 {% block title %}{{ _(topic.title, 'DB: products.Topic.title') }} | {{ _('{product} Help')|f(product=_(product.title, 'DB: products.Product.title')) }}{% endblock %}
