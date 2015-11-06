@@ -49,9 +49,7 @@
   });
 
   function addDatePicker(inputId) {
-    $(inputId).datepicker({
-      dateFormat: 'yy-mm-dd'
-    });
+    $(inputId).datepicker('option', 'dateFormat', 'yy-mm-dd');
   }
 
   function makeVoteGraph($container, descriptors) {
