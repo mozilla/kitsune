@@ -835,9 +835,15 @@ class NewRevisionTests(TestCaseBase):
         # Sign up for notifications:
         edit_watch = EditDocumentEvent.notify('sam@example.com', self.d)
         edit_watch.activate().save()
-        reviewable_watch = ReviewableRevisionInLocaleEvent.notify(
-            'joe@example.com', locale='en-US')
+
+        review_user = user(email='joe@example.com', save=True)
+        add_permission(review_user, Revision, 'review_revision')
+        reviewable_watch = ReviewableRevisionInLocaleEvent.notify(review_user, locale='en-US')
         reviewable_watch.activate().save()
+
+        reviewable_watch_no_permission = ReviewableRevisionInLocaleEvent.notify(
+            user(save=True), locale='en-US')
+        reviewable_watch_no_permission.activate().save()
 
         # Edit a document:
         response = self.client.post(
