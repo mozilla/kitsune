@@ -8,11 +8,28 @@ from kitsune.search import es_utils
 from kitsune.wiki.models import DocumentMappingType
 
 
+def apply_boosts(searcher):
+    """Returns searcher with boosts applied"""
+    return searcher.boost(
+        question_title=4.0,
+        question_content=3.0,
+        question_answer_content=3.0,
+        post_title=2.0,
+        post_content=1.0,
+        document_title=6.0,
+        document_content=1.0,
+        document_keywords=8.0,
+        document_summary=2.0,
+
+        # Text phrases in document titles and content get an extra boost.
+        document_title__match_phrase=10.0,
+        document_content__match_phrase=8.0)
+
+
 def generate_simple_search(search_form, language, with_highlights=False):
     """Generates an S given a form
 
-    :arg search_form: a SimpleSearch form that's already had ``.is_valid()``
-        called on it
+    :arg search_form: a validated SimpleSearch form
     :arg language: the language code
     :arg with_highlights: whether or not to ask for highlights
 
@@ -76,21 +93,7 @@ def generate_simple_search(search_form, language, with_highlights=False):
             number_of_fragments=0
         )
 
-    # Set up boosts
-    searcher = searcher.boost(
-        question_title=4.0,
-        question_content=3.0,
-        question_answer_content=3.0,
-        document_title=6.0,
-        document_content=1.0,
-        document_keywords=8.0,
-        document_summary=2.0,
-
-        # Text phrases in document titles and content get an extra
-        # boost.
-        document_title__match_phrase=10.0,
-        document_content__match_phrase=8.0
-    )
+    searcher = apply_boosts(searcher)
 
     # Build the query
     query_fields = chain(*[

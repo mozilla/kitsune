@@ -215,6 +215,12 @@ class AdvancedSearchForm(forms.Form):
         c['num_votes'] = c.get('num_votes') or 0
         return c
 
+    def clean_category(self):
+        category = self.cleaned_data['category']
+        if not category:
+            category = settings.SEARCH_DEFAULT_CATEGORIES
+        return category
+
     def set_allowed_forums(self, user):
         """Sets the 'forum' field choices to forums the user can see."""
         forums = [(f.id, f.name)

@@ -2,14 +2,18 @@ import json
 import logging
 import pprint
 import time
+from functools import wraps
 
 from django.conf import settings
 from django.db import reset_queries
+from django.http import HttpResponse
+from django.shortcuts import render
 
 import requests
 from elasticutils import S as UntypedS
 from elasticutils.contrib.django import S, F, get_es, ES_EXCEPTIONS  # noqa
 from statsd import statsd
+from tower import ugettext as _
 
 from kitsune.search import config
 from kitsune.search.utils import chunked
@@ -886,3 +890,48 @@ def indexes_for_doctypes(doctype):
     # Import locally to avoid circular import.
     from kitsune.search.models import get_mapping_types
     return set(d.get_index() for d in get_mapping_types(doctype))
+
+
+def handle_es_errors(template, status_code=503):
+    """Handles Elasticsearch exceptions for views
+
+    Wrap the entire view in this and don't worry about Elasticsearch exceptions
+    again!
+
+    :arg template: template path string or function to generate the template
+        path string for HTML requests
+    :arg status_code: status code to return
+
+    :returns: content-type-appropriate HttpResponse
+
+    """
+    def handler(fun):
+        @wraps(fun)
+        def _handler(request, *args, **kwargs):
+            try:
+                return fun(request, *args, **kwargs)
+
+            except ES_EXCEPTIONS as exc:
+                is_json = (request.GET.get('format') == 'json')
+                callback = request.GET.get('callback', '').strip()
+                content_type = 'application/x-javascript' if callback else 'application/json'
+                if is_json:
+                    return HttpResponse(
+                        json.dumps({'error': _('Search Unavailable')}),
+                        content_type=content_type,
+                        status=status_code)
+
+                # If template is a function, call it with the request, args
+                # and kwargs to get the template.
+                if callable(template):
+                    actual_template = template(request, *args, **kwargs)
+                else:
+                    actual_template = template
+
+                # Log exceptions so this isn't failing silently
+                log.exception(exc)
+
+                return render(request, actual_template, status=503)
+
+        return _handler
+    return handler

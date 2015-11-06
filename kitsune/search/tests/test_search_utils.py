@@ -1,7 +1,7 @@
 from nose.tools import ok_
 
 from kitsune.search.forms import SimpleSearchForm
-from kitsune.search.simple_search import generate_simple_search
+from kitsune.search.search_utils import generate_simple_search
 from kitsune.sumo.tests import TestCase
 
 
