@@ -25,11 +25,7 @@ export default class AttachmentField extends AAQStep {
           <input type="file" name="image" size="30" title="Browse for an image to upload."
                  onChange={this.handleChange.bind(this)}/>
           <ul className="AAQApp__AttachmentField__Attachments">
-            {this.props.question.images.map((image) => {
-              return (
-                <Attachment image={image}/>
-              );
-            })}
+            {this.props.question.images.map(image => <Attachment image={image}/>)}
           </ul>
         </div>
       );
