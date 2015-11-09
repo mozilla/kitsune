@@ -5,14 +5,52 @@ body {
     margin: 0;
     padding: 0;
 }
+
+body.scroll-header {
+    padding-top: 0;
+}
+
+body > header {
+    padding-bottom: 5px;
+    position: relative;
+}
+
+body > header a {
+    border-bottom: 0;
+}
+
+body.html-ltr .container_12 {
+    margin: 0;
+    padding: 0;
+    width: auto;
+}
+
+div#main-breadcrumbs {
+    border: 0;
+}
+
+ol#breadcrumbs {
+    margin: 10px;
+}
+
+body.document #main-content > div.grid_9 {
+    width: 940px;
+}
+
+article.wiki-doc {
+    padding: 0;
+}
+
 a.permalink,
 aside,
+aside[class*="grid_"],
 button,
 div.announcements,
 div.document-vote,
 div.mobile-banner,
 div.post-actions,
 div.thread-actions,
+div.youtube-embed,
 div#filter,
 div#header,
 div#more-help,
@@ -20,6 +58,7 @@ div#side,
 div#thread-reply,
 div#toc,
 footer,
+h1.product-title img.logo-sprite,
 input,
 li.answer div.side-section,
 nav#aux-nav,
