@@ -30,6 +30,9 @@
     .errorspan img {
       transform: translate(0,-1px);
     }
+    table.reindextable td.explanation {
+       width: 40%;
+    }
   </style>
 {% endblock %}
 
@@ -191,107 +194,133 @@
 
   <section>
     <h1>Reindex</h1>
-    {% if outstanding_chunks %}
-      <p class="errornote">
-        WARNING! There are outstanding index tasks! Don't launch another
-        indexing pass unless you really know you want to.
-      </p>
-    {% endif %}
-    {% if not settings.ES_LIVE_INDEXING %}
-      <p class="errornote">
-        WARNING! <tt>ES_LIVE_INDEXING</tt> is False so you can't
-        reindex via the admin. Either enable <tt>ES_LIVE_INDEXING</tt>
-        or use the command line <tt>./manage.py esreindex</tt>.
-      </p>
-    {% endif %}
-    {% if doctype_write_stats != None %}
-      <h2>Reindex into existing index</h2>
-      <p>
-        Reindex into the existing WRITE index. Don't do this if you've
-        made mapping changes since this does not recreate the index with
-        the new mappings.
-      </p>
-      <form method="POST">
-        {% csrf_token %}
-        {% for index, stats in doctype_write_stats.items %}
-          <h3>{{ index }}</h3>
-          {% for doctype, count in stats.items %}
-            <input id="check_{{ doctype }}" type="checkbox" name="check_{{ doctype }}" value="yes" checked>
-            <label for="check_{{ doctype }}">{{ doctype }}</label><br>
-          {% endfor %}
-        {% endfor %}
-        <input type="submit" name="reindex"
-               value="Reindex into write indexes"
-               {% if not settings.ES_LIVE_INDEXING or outstanding_chunks %}disabled{% endif %}>
-      </form>
-    {% endif %}
+    <table class="reindextable">
+      <tr>
+        <td colspan="2">
+          <h2>Reindex into existing index</h2>
+        </td>
+      </tr>
+      <tr>
+        <td class="explanation">
+          <p>
+            Reindex into the existing WRITE index. Don't do this if you've
+            made mapping changes since this does not recreate the index with
+            the new mappings.
+          </p>
+          {% if outstanding_chunks %}
+            <p class="errornote">
+              WARNING! There are outstanding index tasks! Don't launch another
+              indexing pass unless you really know you want to.
+            </p>
+          {% endif %}
+          {% if not settings.ES_LIVE_INDEXING %}
+            <p class="errornote">
+              WARNING! <tt>ES_LIVE_INDEXING</tt> is False so you can't
+              reindex via the admin. Either enable <tt>ES_LIVE_INDEXING</tt>
+              or use the command line <tt>./manage.py esreindex</tt>.
+            </p>
+          {% endif %}
+        </td>
+        <td>
+          {% if doctype_write_stats != None %}
+            <form method="POST">
+              {% csrf_token %}
+              {% for index, stats in doctype_write_stats.items %}
+                <h3>{{ index }}</h3>
+                {% for doctype, count in stats.items %}
+                  <input id="check_{{ doctype }}" type="checkbox" name="check_{{ doctype }}" value="yes" checked>
+                  <label for="check_{{ doctype }}">{{ doctype }}</label><br>
+                {% endfor %}
+              {% endfor %}
+              <input type="submit" name="reindex" value="Reindex into write indexes"
+              {% if not settings.ES_LIVE_INDEXING or outstanding_chunks %}disabled{% endif %}>
+            </form>
+          {% endif %}
+        </td>
+      </tr>
 
-    <h2>DELETE existing index group's write index, recreate it and reindex</h2>
-    <p>
-      This <strong>DELETES</strong> the existing WRITE index for a
-      group, recreates it with the mappings, and indexes into the new
-      index. You should have to do this only when the search mapping
-      changes or when setting up the site for the first time.
-    </p>
+      <tr>
+        <td colspan="2">
+          <h2>DELETE existing index group's write index, recreate it and reindex</h2>
+        </td>
+      <tr>
+        <td class="explanation">
+          <p>
+            This <strong>DELETES</strong> the existing WRITE index for a
+            group, recreates it with the mappings, and indexes into the new
+            index. You should have to do this only when the search mapping
+            changes or when setting up the site for the first time.
+          </p>
+          {% if read_indexes == write_indexes %}
+            <p class="errornote">
+              WARNING! All read and write indexes are the same! Deleting and
+              rebuilding the index would be really bad!
+            </p>
+          {% endif %}
+        </td>
+        <td>
+          <form method="POST">
+            <table>
+              <tr>
+                <th></th>
+                <th>Group</th>
+                <th>Read Index</th>
+                <th>Write Index</th>
+              </tr>
+              {% for group, group_read_index, group_write_index in index_group_data %}
+                <tr>
+                  <td>
+                    <input id="check_{{ group }}" type="checkbox" name="check_{{ group }}" value="yes"
+                           {% if group_read_index != group_write_index %}checked{% endif %}>
+                  </td>
+                  <td><label for="check_{{ group }}">{{ group }}</label></td>
+                  <td>{{ group_read_index }}</td>
+                  <td>{{ group_write_index }}</td>
+                  <td>
+                    {% if group_read_index == group_write_index %}
+                      <span class="errorspan">
+                        <img src="/static/admin/img/icon_error.gif" />
+                        This group's write index is a read index!
+                      </span>
+                    {% endif %}
+                  </td>
+                </tr>
+              {% endfor %}
+            </table>
 
-    {% if read_indexes == write_indexes %}
-      <p class="errornote">
-        WARNING! All read and write indexes are the same! Deleting and
-        rebuilding the index would be really bad!
-      </p>
-    {% endif %}
+            {% csrf_token %}
+            <input class="DANGER" type="submit" name="recreate_index" value="DELETE selected indexes and reindex"
+                   {% if not settings.ES_LIVE_INDEXING or outstanding_chunks %}disabled{% endif %}>
+          </form>
+        </td>
+      </tr>
 
-    <form method="POST">
-      <table>
-        <tr>
-          <th></th>
-          <th>Group</th>
-          <th>Read Index</th>
-          <th>Write Index</th>
-        </tr>
-        {% for group, group_read_index, group_write_index in index_group_data %}
-          <tr>
-            <td>
-              <input id="check_{{ group }}" type="checkbox" name="check_{{ group }}" value="yes"
-                     {% if group_read_index != group_write_index %}checked{% endif %}>
-            </td>
-            <td><label for="check_{{ group }}">{{ group }}</label></td>
-            <td>{{ group_read_index }}</td>
-            <td>{{ group_write_index }}</td>
-            <td>
-              {% if group_read_index == group_write_index %}
-                <span class="errorspan">
-                  <img src="/static/admin/img/icon_error.gif" />
-                  This group's write index is a read index!
-                </span>
-              {% endif %}
-            </td>
-          </tr>
-        {% endfor %}
-      </table>
-
-      {% csrf_token %}
-      <input class="DANGER" type="submit" name="recreate_index"
-             value="DELETE selected indexes and reindex"
-             {% if not settings.ES_LIVE_INDEXING or outstanding_chunks %}disabled{% endif %}>
-    </form>
-
-    <h2>RESET scoreboard</h2>
-    <p>
-      This resets the redis key which we use as a scoreboard for keeping
-      track of how many outstanding indexing tasks there are.
-    </p>
-    <p>
-      If you believe that the scoreboard is wrong and that it doesn't
-      represent the number of outstanding tasks and that there are no
-      outstanding tasks, then you should reset the scoreboard.
-    </p>
-    <form method="POST">
-      {% csrf_token %}
-      <input type="hidden" name="reset_scoreboard" value="1">
-      <input type="submit" name="reset"
-             value="Reset scoreboard">
-    </form>
+      <tr>
+        <td colspan="2">
+          <h2>RESET scoreboard</h2>
+        </td>
+      </tr>
+      <tr>
+        <td class="explanation">
+          <p>
+            This resets the redis key which we use as a scoreboard for keeping
+            track of how many outstanding indexing tasks there are.
+          </p>
+          <p>
+            If you believe that the scoreboard is wrong and that it doesn't
+            represent the number of outstanding tasks and that there are no
+            outstanding tasks, then you should reset the scoreboard.
+          </p>
+        </td>
+        <td>
+          <form method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="reset_scoreboard" value="1">
+            <input type="submit" name="reset" value="Reset scoreboard">
+          </form>
+        </td>
+      </tr>
+    </table>
   </section>
 
   <section>
