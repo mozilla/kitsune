@@ -62,11 +62,11 @@ class SuggestSerializer(serializers.Serializer):
 
 @api_view(['GET', 'POST'])
 def suggest(request):
-    if request.DATA and request.GET:
+    if request.data and request.GET:
         raise GenericAPIException(
             400, 'Put all parameters either in the querystring or the HTTP request body.')
 
-    serializer = SuggestSerializer(data=(request.DATA or request.GET))
+    serializer = SuggestSerializer(data=(request.data or request.GET))
     if not serializer.is_valid():
         raise GenericAPIException(400, serializer.errors)
 
@@ -75,7 +75,7 @@ def suggest(request):
         .es(urls=settings.ES_URLS)
         .indexes(es_utils.read_index('default')))
 
-    data = serializer.object
+    data = serializer.validated_data
 
     return Response({
         'questions': _question_suggestions(

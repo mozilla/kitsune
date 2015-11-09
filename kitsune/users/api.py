@@ -17,7 +17,7 @@ from statsd import statsd
 from rest_framework import viewsets, serializers, mixins, filters, permissions, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, detail_route
 from rest_framework.authtoken.models import Token
 
 from kitsune.access.decorators import login_required
@@ -111,7 +111,10 @@ class OnlySelfEdits(OnlySelf):
 
 
 class UserSettingSerializer(serializers.ModelSerializer):
-    user = serializers.PrimaryKeyRelatedField(required=False, write_only=True)
+    user = serializers.PrimaryKeyRelatedField(
+        required=False,
+        write_only=True,
+        queryset=User.objects.all())
 
     class Meta:
         model = Setting
@@ -120,72 +123,68 @@ class UserSettingSerializer(serializers.ModelSerializer):
     def get_identity(self, obj):
         return obj['name']
 
-    def restore_object(self, attrs, instance=None):
-        """
-        Given a dictionary of deserialized field values, either update
-        an existing model instance, or create a new model instance.
-        """
-        if instance is not None:
-            for key in self.Meta.fields:
-                setattr(instance, key, attrs.get(key, getattr(instance, key)))
-            return instance
-        else:
-            user = attrs['user'] or self.context['view'].object
-            obj, created = self.Meta.model.objects.get_or_create(
-                user=user, name=attrs['name'], defaults={'value': attrs['value']})
-            if not created:
-                obj.value = attrs['value']
-                obj.save()
-            return obj
+    def create(self, data):
+        user = data['user'] or self.context['view'].object
+        obj, created = self.Meta.model.objects.get_or_create(
+            user=user, name=data['name'], defaults={'value': data['value']})
+        if not created:
+            obj.value = data['value']
+            obj.save()
+        return obj
+
+    def update(self, instance, data):
+        for key in self.Meta.fields:
+            setattr(instance, key, data.get(key, getattr(instance, key)))
+        instance.save()
+        return instance
 
 
 class ProfileSerializer(serializers.ModelSerializer):
-    username = serializers.WritableField(source='user.username')
-    display_name = serializers.WritableField(source='name', required=False)
+    username = serializers.CharField(source='user.username')
+    display_name = serializers.CharField(source='name', required=False)
     date_joined = DateTimeUTCField(source='user.date_joined', read_only=True)
     avatar = serializers.SerializerMethodField('get_avatar_url')
     email = (PermissionMod(serializers.EmailField, permissions=[OnlySelf])
              (source='user.email', required=True))
     settings = (PermissionMod(UserSettingSerializer, permissions=[OnlySelf])
                 (many=True, read_only=True))
-    helpfulness = serializers.Field(source='answer_helpfulness')
-    answer_count = serializers.SerializerMethodField('get_answer_count')
-    question_count = serializers.SerializerMethodField('get_question_count')
-    solution_count = serializers.SerializerMethodField('get_solution_count')
-    last_answer_date = serializers.SerializerMethodField('get_last_answer_date')
+    helpfulness = serializers.ReadOnlyField(source='answer_helpfulness')
+    answer_count = serializers.SerializerMethodField()
+    question_count = serializers.SerializerMethodField()
+    solution_count = serializers.SerializerMethodField()
+    last_answer_date = serializers.SerializerMethodField()
     is_active = serializers.BooleanField(source='user.is_active', read_only=True)
-    # These are write only fields. It is very important they stays that way!
-    password = serializers.WritableField(source='user.password', write_only=True)
+    # This is a write only field. It is very important it stays that way!
+    password = serializers.CharField(source='user.password', write_only=True)
 
     class Meta:
         model = Profile
         fields = [
-            'username',
-            'display_name',
-            'date_joined',
+            'answer_count',
             'avatar',
             'bio',
-            'website',
-            'twitter',
-            'facebook',
-            'mozillians',
-            'irc_handle',
-            'timezone',
-            'country',
             'city',
-            'locale',
+            'country',
+            'date_joined',
+            'display_name',
             'email',
-            'settings',
+            'facebook',
             'helpfulness',
-            'question_count',
-            'answer_count',
-            'solution_count',
-            'last_answer_date',
-            # Password and email are here so they can be involved in write
-            # operations. They is marked as write-only above, so will not be
-            # visible.
-            'password',
+            'irc_handle',
             'is_active',
+            'last_answer_date',
+            'locale',
+            'mozillians',
+            # Password is here so it can be involved in write operations. It is
+            # marked as write-only above, so will not be visible.
+            'password',
+            'question_count',
+            'settings',
+            'solution_count',
+            'timezone',
+            'twitter',
+            'username',
+            'website',
         ]
 
     def get_avatar_url(self, profile):
@@ -206,60 +205,54 @@ class ProfileSerializer(serializers.ModelSerializer):
         last_answer = profile.user.answers.order_by('-created').first()
         return last_answer.created if last_answer else None
 
-    def save_object(self, obj, **kwargs):
-        """It is universally a bad idea to force_insert=True on this object. So don't."""
-        kwargs.pop('force_insert', None)
-        return super(ProfileSerializer, self).save_object(obj, **kwargs)
+    def validate(self, data):
+        if data.get('name') is None:
+            username = data.get('user', {}).get('username')
+            data['name'] = username
 
-    def restore_object(self, attrs, instance=None):
-        """
-        Override the default behavior to make a user if one doesn't exist.
+        return data
 
-        This user may not be saved here, but will be saved if/when the .save()
-        method of the serializer is called.
-        """
-        instance = (super(ProfileSerializer, self)
-                    .restore_object(attrs, instance))
-        if instance.user_id is None:
-            # This is a bit of cheat. The user shouldn't be saved yet, but
-            # ``create_inactive_user`` saves it, so their isn't much of a choice.
-            u = RegistrationProfile.objects.create_inactive_user(
-                attrs['user.username'],
-                attrs['user.password'],
-                attrs['user.email'])
-            instance.user_id = u.id
-            instance.save()
-        return instance
+    def create(self, validated_data):
+        user_data = validated_data.pop('user')
+        u = RegistrationProfile.objects.create_inactive_user(
+            user_data['username'],
+            user_data['password'],
+            user_data['email'])
+        p = u.profile
+        for key, val in validated_data.items():
+            setattr(p, key, val)
+        p.save()
+        return p
 
-    def validate_username(self, attrs, source):
-        obj = self.object
-        if obj is None:
-            # This is a create
-            if User.objects.filter(username=attrs['user.username']).exists():
-                raise ValidationError('A user with that username exists')
-        else:
-            # This is an update
-            new_username = attrs.get('user.username', obj.user.username)
-            if new_username != obj.user.username:
+    def update(self, instance, validated_data):
+        if 'user' in validated_data:
+            user_data = validated_data.pop('user')
+            for key, val in user_data.items():
+                setattr(instance.user, key, val)
+            instance.user.save()
+        return super(ProfileSerializer, self).update(instance, validated_data)
+
+    def validate_username(self, username):
+        if re.match(r'^[\w.-]{4,30}$', username) is None:
+            raise ValidationError('Usernames may only be letters, numbers, "." and "-".')
+
+        if self.instance:
+            # update
+            if username != self.instance.user.username:
                 raise ValidationError("Can't change this field.")
+        else:
+            # create
+            if User.objects.filter(username=username).exists():
+                raise ValidationError('A user with that username exists')
 
-        if re.match(r'^[\w.-]{4,30}$', attrs['user.username']) is None:
-            raise ValidationError(
-                'Usernames may only be letters, numbers, "." and "-".')
+        return username
 
-        return attrs
-
-    def validate_display_name(self, attrs, source):
-        if attrs.get('name') is None:
-            attrs['name'] = attrs.get('user.username')
-        return attrs
-
-    def validate_email(self, attrs, source):
-        email = attrs.get('user.email')
-        if email and User.objects.filter(email=email).exists():
-            raise ValidationError('A user with that email address '
-                                  'already exists.')
-        return attrs
+    def validate_email(self, email):
+        if not self.instance:
+            # create
+            if User.objects.filter(email=email).exists():
+                raise ValidationError('A user with that email address already exists.')
+        return email
 
 
 class ProfileFKSerializer(ProfileSerializer):
@@ -277,9 +270,8 @@ class ProfileViewSet(mixins.CreateModelMixin,
                      mixins.ListModelMixin,
                      mixins.UpdateModelMixin,
                      viewsets.GenericViewSet):
-    model = Profile
+    queryset = Profile.objects.all()
     serializer_class = ProfileSerializer
-    paginate_by = 20
     # User usernames instead of ids in urls.
     lookup_field = 'user__username'
     permission_classes = [
@@ -371,34 +363,39 @@ class ProfileViewSet(mixins.CreateModelMixin,
         result.sort(key=lambda u: u['weekly_solutions'], reverse=True)
         return Response(result[:10])
 
-    @action(methods=['POST'])
+    @detail_route(methods=['POST'])
     def set_setting(self, request, user__username=None):
-        data = request.DATA
-        data['user'] = self.get_object().pk
+        user = self.get_object().user
+        request.data['user'] = user.pk
 
-        serializer = UserSettingSerializer(data=data)
+        try:
+            setting = Setting.objects.get(user=user, name=request.data['name'])
+        except Setting.DoesNotExist:
+            setting = None
+
+        serializer = UserSettingSerializer(instance=setting, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
         else:
             raise GenericAPIException(400, serializer.errors)
 
-    @action(methods=['POST', 'DELETE'])
+    @detail_route(methods=['POST', 'DELETE'])
     def delete_setting(self, request, user__username=None):
         profile = self.get_object()
 
-        if 'name' not in request.DATA:
+        if 'name' not in request.data:
             raise GenericAPIException(400, {'name': 'This field is required'})
 
         try:
             meta = (Setting.objects
-                    .get(user=profile.user, name=request.DATA['name']))
+                    .get(user=profile.user, name=request.data['name']))
             meta.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         except Setting.DoesNotExist:
             raise GenericAPIException(404, {'detail': 'No matching user setting found.'})
 
-    @action(methods=['GET'])
+    @detail_route(methods=['GET'])
     def request_password_reset(self, request, user__username=None):
         profile = self.get_object()
 
