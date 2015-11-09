@@ -3,10 +3,11 @@
 {% if num_results > 0 %}
   <h2>
     {# L10n: {n} is the number of search results, {q} is the search query, {product} is the product. #}
-    {{ 'Found <strong>%(n)s</strong> result for <strong>%(q)s</strong> for <strong>%(product)s</strong>'
-        | ngettext('Found <strong>%(n)s</strong> results for <strong>%(q)s</strong> for <strong>%(product)s</strong>', num_results)
-        | interpolate({n: num_results, q: q, product: product_titles}, true)
-        | safe }}
+    {{ ngettext('Found <strong>%(n)s</strong> result for <strong>%(q)s</strong> for <strong>%(product)s</strong>',
+                'Found <strong>%(n)s</strong> results for <strong>%(q)s</strong> for <strong>%(product)s</strong>',
+                num_results)
+       | f({n: num_results, q: q, product: product_titles}, true)
+       | safe }}
   </h2>
 
   <div class="content-box">
@@ -17,9 +18,8 @@
 {% else %}
   <h2>
     {# L10n: {q} is the search query, {l} is the language searched. #}
-    {{ "We couldn't find any results for <strong>%(q)s</strong> in <strong>%(l)s</strong>. Maybe one of these articles will be helpful?"
-        | gettext
-        | interpolate({q: q, l: lang_name}, true)
+    {{ _("We couldn't find any results for <strong>%(q)s</strong> in <strong>%(l)s</strong>. Maybe one of these articles will be helpful?")
+        | f({q: q, l: lang_name}, true)
         | safe }}
   </h2>
 
@@ -38,7 +38,7 @@
   {% if pagination.has_previous %}
     <li class="prev">
       <a class="btn-page btn-page-prev" href="#" data-instant-search="link" data-href="{{ pagination.url|urlparams({page: pagination.number - 1}) }}">
-        {{ 'Previous'|gettext }}
+        {{ _('Previous') }}
       </a>
     </li>
   {% endif %}
@@ -62,7 +62,7 @@
   {% if pagination.has_next %}
     <li class="next">
       <a class="btn-page btn-page-next" href="#" data-instant-search="link" data-href="{{ pagination.url|urlparams({page: pagination.number + 1}) }}">
-        {{ 'Next'|gettext }}
+        {{ _('Next') }}
       </a>
     </li>
   {% endif %}
