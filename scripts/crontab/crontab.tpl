@@ -34,7 +34,6 @@ HOME = /tmp
 00 02 * * * {{ cron }} update_search_ctr_metric
 47 02 * * * {{ cron }} remove_expired_registration_profiles
 00 03 * * * {{ cron }} update_contributor_metrics
-30 03 * * * root {{ rscripts }} scripts/l10n_completion.py --truncate 30 locale media/uploads/l10n_history.json media/uploads/l10n_summary.json
 30 03 * * * {{ cron }} send_postatus_errors
 00 04 * * * {{ cron }} auto_archive_old_questions
 00 05 * * * {{ cron }} reindex_kb
