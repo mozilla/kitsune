@@ -15,6 +15,7 @@ export function checkAuthState() {
     if (status === 200) {
       Dispatcher.dispatch({
         type: actionTypes.AUTH_LOG_IN_SUCCESS,
+        id: data.id,
         username: data.username,
       });
     } else if (status === 401) {
