@@ -45,11 +45,11 @@ class DocumentList(LocaleNegotiationMixin, generics.ListAPIView):
                                    current_revision__isnull=False)
 
         locale = self.get_locale()
-        product = self.request.QUERY_PARAMS.get('product')
-        topic = self.request.QUERY_PARAMS.get('topic')
-        is_template = bool(self.request.QUERY_PARAMS.get('is_template', False))
-        is_archived = bool(self.request.QUERY_PARAMS.get('is_archived', False))
-        is_redirect = bool(self.request.QUERY_PARAMS.get('is_redirect', False))
+        product = self.request.query_params.get('product')
+        topic = self.request.query_params.get('topic')
+        is_template = bool(self.request.query_params.get('is_template', False))
+        is_archived = bool(self.request.query_params.get('is_archived', False))
+        is_redirect = bool(self.request.query_params.get('is_redirect', False))
 
         if locale is not None:
             queryset = queryset.filter(locale=locale)
