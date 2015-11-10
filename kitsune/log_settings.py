@@ -22,7 +22,7 @@ config = {
             'class': 'logging.handlers.SysLogHandler',
             'formatter': 'default',
             'facility': logging.handlers.SysLogHandler.LOG_LOCAL7,
-            'level': settings.LOG_LEVEL,
+            'level': logging.DEBUG,
         },
         'mail_admins': {
             'class': 'django.utils.log.AdminEmailHandler',
@@ -42,14 +42,17 @@ config = {
         'k': {
             'handlers': ['syslog'],
             'propogate': True,
-            # Use the most permissive setting. It is filtered in the handlers.
+            'level': settings.LOG_LEVEL,
+        },
+        'k.lib.email': {
+            'handlers': ['syslog'],
+            'propogate': True,
             'level': logging.DEBUG,
         },
         'django.request': {
             'handlers': ['syslog'],
             'propogate': True,
-            # Use the most permissive setting. It is filtered in the handlers.
-            'level': logging.DEBUG,
+            'level': settings.LOG_LEVEL,
         },
         'raven': {
             'level': logging.ERROR,
