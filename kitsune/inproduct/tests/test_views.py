@@ -6,7 +6,7 @@ import mock
 import waffle
 from nose.tools import eq_
 
-from kitsune.inproduct.tests import redirect
+from kitsune.inproduct.tests import RedirectFactory
 from kitsune.sumo.tests import TestCase
 
 
@@ -56,15 +56,13 @@ class RedirectTestCase(TestCase):
         super(RedirectTestCase, self).setUp()
 
         # Create redirects to test with.
-        redirect(target='kb/Applications', topic='prefs-applications',
-                 save=True)
-        redirect(target='', save=True)
-        redirect(product='mobile', target='products/mobile', save=True)
-        redirect(platform='iPhone', target='', save=True)
-        redirect(product='mobile', platform='Android', topic='foo',
-                 target='', save=True)
-        redirect(version='5.0', target='does-not-exist', save=True)
-        redirect(platform='martian', target='http://martian.com', save=True)
+        RedirectFactory(target='kb/Applications', topic='prefs-applications')
+        RedirectFactory(target='')
+        RedirectFactory(product='mobile', target='products/mobile')
+        RedirectFactory(platform='iPhone', target='')
+        RedirectFactory(product='mobile', platform='Android', topic='foo', target='')
+        RedirectFactory(version='5.0', target='does-not-exist')
+        RedirectFactory(platform='martian', target='http://martian.com')
 
     def test_target(self):
         """Test that we can vary on any parameter and targets work."""

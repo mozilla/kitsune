@@ -3,17 +3,17 @@ from datetime import datetime
 from nose.tools import eq_
 
 from kitsune.announcements.models import Announcement
-from kitsune.announcements.tests import announcement
+from kitsune.announcements.tests import AnnouncementFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.users.tests import user, add_permission
-from kitsune.wiki.tests import locale
+from kitsune.users.tests import UserFactory, add_permission
+from kitsune.wiki.tests import LocaleFactory
 
 
 class TestCreateLocaleAnnouncement(TestCase):
 
     def setUp(self):
-        self.locale = locale(save=True, locale='es')
+        self.locale = LocaleFactory(locale='es')
 
     def _create_test(self, status, count):
         """Login, or other setup, then call this."""
@@ -26,25 +26,25 @@ class TestCreateLocaleAnnouncement(TestCase):
         eq_(Announcement.objects.count(), count)
 
     def test_create(self):
-        u = user(save=True, is_superuser=1)
+        u = UserFactory(is_superuser=1)
         self.client.login(username=u.username, password='testpass')
         self._create_test(200, 1)
 
     def test_leader(self):
-        u = user(save=True)
+        u = UserFactory()
         self.locale.leaders.add(u)
         self.locale.save()
         self.client.login(username=u.username, password='testpass')
         self._create_test(200, 1)
 
     def test_has_permission(self):
-        u = user(save=True)
+        u = UserFactory()
         add_permission(u, Announcement, 'add_announcement')
         self.client.login(username=u.username, password='testpass')
         self._create_test(200, 1)
 
     def test_no_perms(self):
-        u = user(save=True)
+        u = UserFactory()
         self.client.login(username=u.username, password='testpass')
         self._create_test(403, 0)
 
@@ -55,16 +55,18 @@ class TestCreateLocaleAnnouncement(TestCase):
 class TestDeleteAnnouncement(TestCase):
 
     def setUp(self):
-        self.locale = locale(save=True, locale='es')
+        self.locale = LocaleFactory(locale='es')
 
-        self.u = user(save=True)
+        self.u = UserFactory()
 
         self.locale.leaders.add(self.u)
         self.locale.save()
 
-        self.announcement = announcement(
-            creator=self.u, locale=self.locale, content="Look at me!",
-            show_after=datetime(2012, 01, 01, 0, 0, 0), save=True)
+        self.announcement = AnnouncementFactory(
+            creator=self.u,
+            locale=self.locale,
+            content="Look at me!",
+            show_after=datetime(2012, 1, 1, 0, 0, 0))
 
     def _delete_test(self, id, status, count):
         """Login, or other setup, then call this."""
@@ -74,7 +76,7 @@ class TestDeleteAnnouncement(TestCase):
         eq_(Announcement.objects.count(), count)
 
     def test_delete(self):
-        u = user(save=True, is_superuser=1)
+        u = UserFactory(is_superuser=1)
         self.client.login(username=u.username, password='testpass')
         self._delete_test(self.announcement.id, 204, 0)
 
@@ -84,13 +86,13 @@ class TestDeleteAnnouncement(TestCase):
         self._delete_test(self.announcement.id, 204, 0)
 
     def test_has_permission(self):
-        u = user(save=True)
+        u = UserFactory()
         add_permission(u, Announcement, 'add_announcement')
         self.client.login(username=u.username, password='testpass')
         self._delete_test(self.announcement.id, 204, 0)
 
     def test_no_perms(self):
-        u = user(save=True)
+        u = UserFactory()
         self.client.login(username=u.username, password='testpass')
         self._delete_test(self.announcement.id, 403, 1)
 

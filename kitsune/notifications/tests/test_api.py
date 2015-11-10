@@ -14,16 +14,16 @@ from kitsune.notifications import tasks as notification_tasks
 from kitsune.notifications.models import Notification, RealtimeRegistration
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.questions.tests import question, answer
-from kitsune.users.tests import profile, user
+from kitsune.questions.tests import QuestionFactory, AnswerFactory
+from kitsune.users.tests import UserFactory
 from kitsune.users.helpers import profile_avatar
 
 
 class TestPushNotificationRegistrationSerializer(TestCase):
 
     def setUp(self):
-        self.profile = profile()
-        self.user = self.profile.user
+        self.user = UserFactory()
+        self.profile = self.user.profile
         self.request = Mock()
         self.request.user = self.user
         self.context = {
@@ -44,7 +44,7 @@ class TestPushNotificationRegistrationSerializer(TestCase):
         eq_(obj.creator, self.user)
 
     def test_cant_register_for_other_users(self):
-        wrong_user = user(save=True)
+        wrong_user = UserFactory()
         self.data['creator'] = wrong_user
         serializer = api.PushNotificationRegistrationSerializer(
             context=self.context, data=self.data)
@@ -56,15 +56,15 @@ class TestPushNotificationRegistrationSerializer(TestCase):
 
 class TestNotificationSerializer(TestCase):
     def test_correct_fields(self):
-        follower = profile()
-        followed = profile()
-        q = question(creator=followed.user, save=True)
+        follower = UserFactory()
+        followed = UserFactory()
+        q = QuestionFactory(creator=followed)
         # The above might make follows, which this test isn't about. Clear them out.
         Follow.objects.all().delete()
-        follow(follower.user, followed.user)
+        follow(follower, followed)
 
         # Make a new action for the above. This should trigger notifications
-        action.send(followed.user, verb='asked', action_object=q)
+        action.send(followed, verb='asked', action_object=q)
         act = Action.objects.order_by('-id')[0]
         notification = Notification.objects.get(action=act)
 
@@ -73,9 +73,9 @@ class TestNotificationSerializer(TestCase):
         eq_(serializer.data['is_read'], False)
         eq_(serializer.data['actor'], {
             'type': 'user',
-            'username': followed.user.username,
-            'display_name': followed.name,
-            'avatar': profile_avatar(followed.user),
+            'username': followed.username,
+            'display_name': followed.profile.name,
+            'avatar': profile_avatar(followed),
         })
         eq_(serializer.data['verb'], 'asked')
         eq_(serializer.data['action_object']['type'], 'question')
@@ -91,9 +91,9 @@ class TestNotificationViewSet(TestCase):
     def setUp(self):
         self.client = APIClient()
 
-        self.follower = profile().user
-        self.followed = profile().user
-        self.question = question(creator=self.followed, save=True)
+        self.follower = UserFactory()
+        self.followed = UserFactory()
+        self.question = QuestionFactory(creator=self.followed)
         # The above might make follows, which this test isn't about. Clear them out.
         Follow.objects.all().delete()
         follow(self.follower, self.followed)
@@ -150,15 +150,15 @@ class RealtimeViewSet(TestCase):
     def test_updates_subview(self, requests):
         requests.put.return_value.status_code = 200
 
-        u = profile().user
-        q = question(content='asdf', save=True)
+        u = UserFactory()
+        q = QuestionFactory(content='asdf')
         ct = ContentType.objects.get_for_model(q)
         rt = RealtimeRegistration.objects.create(
             creator=u, content_type=ct, object_id=q.id, endpoint='http://example.com/')
         # Some of the above may have created actions, which we don't care about.
         Action.objects.all().delete()
         # This should create an action that will trigger the above.
-        a = answer(question=q, content='asdf', save=True)
+        a = AnswerFactory(question=q, content='asdf')
 
         self.client.force_authenticate(user=u)
         url = reverse('realtimeregistration-updates', args=[rt.id])
@@ -172,8 +172,8 @@ class RealtimeViewSet(TestCase):
         eq_(act['action_object']['content'], a.content_parsed)
 
     def test_is_cors(self, requests):
-        u = profile().user
-        q = question(save=True)
+        u = UserFactory()
+        q = QuestionFactory()
         self.client.force_authenticate(user=u)
         url = reverse('realtimeregistration-list')
         data = {

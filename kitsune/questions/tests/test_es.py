@@ -3,15 +3,16 @@ from datetime import datetime, timedelta
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 
-from kitsune.products.tests import product
+from kitsune.products.tests import ProductFactory
 from kitsune.questions.models import (
     QuestionMappingType, AnswerMetricsMappingType)
-from kitsune.questions.tests import question, answer, answervote, questionvote
+from kitsune.questions.tests import (
+    QuestionFactory, AnswerFactory, AnswerVoteFactory, QuestionVoteFactory)
 from kitsune.search.tests.test_es import ElasticTestCase
 from kitsune.sumo.tests import LocalizingClient
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.models import Profile
-from kitsune.users.tests import user, profile
+from kitsune.users.tests import UserFactory
 
 
 class QuestionUpdateTests(ElasticTestCase):
@@ -19,36 +20,27 @@ class QuestionUpdateTests(ElasticTestCase):
         search = QuestionMappingType.search()
 
         # Create a question--that adds one document to the index.
-        q = question(title=u'Does this test work?', save=True)
+        q = QuestionFactory(title=u'Does this test work?')
         self.refresh()
-        query = dict(('%s__match' % field, 'test')
-                     for field in QuestionMappingType.get_query_fields())
-        eq_(search.query(should=True, **query).count(), 1)
+        eq_(search.count(), 1)
+        eq_(search.query(question_title__match='test').count(), 1)
 
-        # Create an answer for the question. It shouldn't be searchable
-        # until the answer is saved.
-        a = answer(content=u'There\'s only one way to find out!',
-                   question=q)
+        # No answer exist, so none should be searchable.
+        eq_(search.query(question_answer_content__match='only').count(), 0)
+
+        # Create an answer for the question. It should be searchable now.
+        AnswerFactory(content=u"There's only one way to find out!", question=q)
         self.refresh()
-        query = dict(('%s__match' % field, 'only')
-                     for field in QuestionMappingType.get_query_fields())
-        eq_(search.query(should=True, **query).count(), 0)
+        eq_(search.query(question_answer_content__match='only').count(), 1)
 
-        a.save()
-        self.refresh()
-        query = dict(('%s__match' % field, 'only')
-                     for field in QuestionMappingType.get_query_fields())
-        eq_(search.query(should=True, **query).count(), 1)
-
-        # Make sure that there's only one question document in the
-        # index--creating an answer should have updated the existing
-        # one.
+        # Make sure that there's only one question document in the index--creating an answer
+        # should have updated the existing one.
         eq_(search.count(), 1)
 
     def test_question_no_answers_deleted(self):
         search = QuestionMappingType.search()
 
-        q = question(title=u'Does this work?', save=True)
+        q = QuestionFactory(title=u'Does this work?')
         self.refresh()
         eq_(search.query(question_title__match='work').count(), 1)
 
@@ -59,22 +51,19 @@ class QuestionUpdateTests(ElasticTestCase):
     def test_question_one_answer_deleted(self):
         search = QuestionMappingType.search()
 
-        q = question(title=u'are model makers the new pink?', save=True)
-        a = answer(content=u'yes.', question=q, save=True)
+        q = QuestionFactory(title=u'are model makers the new pink?')
+        a = AnswerFactory(content=u'yes.', question=q)
         self.refresh()
 
-        # Question and its answers are a single document--so the
-        # index count should be only 1.
+        # Question and its answers are a single document--so the index count should be only 1.
         eq_(search.query(question_title__match='pink').count(), 1)
 
-        # After deleting the answer, the question document should
-        # remain.
+        # After deleting the answer, the question document should remain.
         a.delete()
         self.refresh()
         eq_(search.query(question_title__match='pink').count(), 1)
 
-        # Delete the question and it should be removed from the
-        # index.
+        # Delete the question and it should be removed from the index.
         q.delete()
         self.refresh()
         eq_(search.query(question_title__match='pink').count(), 0)
@@ -84,12 +73,12 @@ class QuestionUpdateTests(ElasticTestCase):
 
         # Create a question and verify it doesn't show up in a
         # query for num_votes__gt=0.
-        q = question(title=u'model makers will inherit the earth', save=True)
+        q = QuestionFactory(title=u'model makers will inherit the earth')
         self.refresh()
         eq_(search.filter(question_num_votes__gt=0).count(), 0)
 
         # Add a QuestionVote--it should show up now.
-        questionvote(question=q, save=True)
+        QuestionVoteFactory(question=q)
         self.refresh()
         eq_(search.filter(question_num_votes__gt=0).count(), 1)
 
@@ -100,7 +89,7 @@ class QuestionUpdateTests(ElasticTestCase):
         """
         tag = u'hiphop'
         eq_(QuestionMappingType.search().filter(question_tag=tag).count(), 0)
-        q = question(save=True)
+        q = QuestionFactory()
         self.refresh()
         eq_(QuestionMappingType.search().filter(question_tag=tag).count(), 0)
         q.tags.add(tag)
@@ -113,7 +102,7 @@ class QuestionUpdateTests(ElasticTestCase):
     def test_question_is_unindexed_on_creator_delete(self):
         search = QuestionMappingType.search()
 
-        q = question(title=u'Does this work?', save=True)
+        q = QuestionFactory(title=u'Does this work?')
         self.refresh()
         eq_(search.query(question_title__match='work').count(), 1)
 
@@ -124,10 +113,10 @@ class QuestionUpdateTests(ElasticTestCase):
     def test_question_is_reindexed_on_username_change(self):
         search = QuestionMappingType.search()
 
-        u = user(username='dexter', save=True)
+        u = UserFactory(username='dexter')
 
-        question(creator=u, title=u'Hello', save=True)
-        answer(creator=u, content=u'I love you', save=True)
+        QuestionFactory(creator=u, title=u'Hello')
+        AnswerFactory(creator=u, content=u'I love you')
         self.refresh()
         eq_(search.query(question_title__match='hello')[0]['question_creator'],
             u'dexter')
@@ -147,7 +136,7 @@ class QuestionUpdateTests(ElasticTestCase):
     def test_question_spam_is_unindexed(self):
         search = QuestionMappingType.search()
 
-        q = question(title=u'I am spam', save=True)
+        q = QuestionFactory(title=u'I am spam')
         self.refresh()
         eq_(search.query(question_title__match='spam').count(), 1)
 
@@ -159,7 +148,7 @@ class QuestionUpdateTests(ElasticTestCase):
     def test_answer_spam_is_unindexed(self):
         search = QuestionMappingType.search()
 
-        a = answer(content=u'I am spam', save=True)
+        a = AnswerFactory(content=u'I am spam')
         self.refresh()
         eq_(search.query(question_answer_content__match='spam').count(), 1)
 
@@ -173,13 +162,10 @@ class QuestionSearchTests(ElasticTestCase):
     """Tests about searching for questions"""
     def test_case_insensitive_search(self):
         """Ensure the default searcher is case insensitive."""
-        answervote(
-            answer=answer(question=question(title='lolrus',
-                                            content='I am the lolrus.',
-                                            save=True),
-                          save=True),
-            helpful=True).save()
+        q = QuestionFactory(title='lolrus', content='I am the lolrus.')
+        AnswerVoteFactory(answer__question=q)
         self.refresh()
+        # This is an AND operation
         result = QuestionMappingType.search().query(
             question_title__match='LOLRUS',
             question_content__match='LOLRUS')
@@ -192,7 +178,7 @@ class AnswerMetricsTests(ElasticTestCase):
 
         Deleting should delete it.
         """
-        a = answer(save=True)
+        a = AnswerFactory()
         self.refresh()
         eq_(AnswerMetricsMappingType.search().count(), 1)
 
@@ -202,9 +188,9 @@ class AnswerMetricsTests(ElasticTestCase):
 
     def test_data_in_index(self):
         """Verify the data we are indexing."""
-        p = product(save=True)
-        q = question(locale='pt-BR', product=p, save=True)
-        a = answer(question=q, save=True)
+        p = ProductFactory()
+        q = QuestionFactory(locale='pt-BR', product=p)
+        a = AnswerFactory(question=q)
 
         self.refresh()
 
@@ -244,8 +230,7 @@ class SupportForumTopContributorsTests(ElasticTestCase):
         eq_(0, len(doc('#top-contributors ol li')))
 
         # Add an answer, we now have a top conributor.
-        a = answer(save=True)
-        profile(user=a.creator)
+        a = AnswerFactory()
         self.refresh()
         response = self.client.get(reverse('questions.list', args=['all']))
         eq_(200, response.status_code)

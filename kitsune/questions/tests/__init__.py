@@ -3,10 +3,9 @@ from datetime import datetime
 from nose.tools import eq_
 import factory
 
-from kitsune.questions.models import (
-    Question, QuestionVote, Answer, AnswerVote, QuestionLocale)
-from kitsune.sumo.tests import LocalizingClient, TestCase, with_save, FuzzyUnicode
-from kitsune.users.tests import profile, UserFactory
+from kitsune.questions.models import Question, QuestionVote, Answer, AnswerVote, QuestionLocale
+from kitsune.sumo.tests import LocalizingClient, TestCase, FuzzyUnicode
+from kitsune.users.tests import UserFactory
 
 
 class TestCaseBase(TestCase):
@@ -28,59 +27,55 @@ class QuestionFactory(factory.DjangoModelFactory):
     content = FuzzyUnicode()
     creator = factory.SubFactory(UserFactory)
 
+    @factory.post_generation
+    def metadata(q, create, extracted, **kwargs):
+        if not create:
+            # Simple build, do nothing
+            return
 
-def question(save=False, **kwargs):
-    defaults = dict(title=str(datetime.now()),
-                    content='',
-                    created=datetime.now(),
-                    num_answers=0,
-                    is_locked=0)
-    defaults.update(kwargs)
-    if 'creator' not in kwargs and 'creator_id' not in kwargs:
-        defaults['creator'] = profile().user
-    q = Question(**defaults)
-    if save:
-        q.save()
-    if 'metadata' in defaults:
-        if not save:
-            raise ValueError('save must be True if metadata provided.')
-        q.add_metadata(**defaults['metadata'])
-    return q
+        if extracted is not None:
+            q.add_metadata(**extracted)
 
+    @factory.post_generation
+    def tags(q, create, extracted, **kwargs):
+        if not create:
+            # Simple build, do nothing
+            return
 
-@with_save
-def questionvote(**kwargs):
-    defaults = dict(created=datetime.now())
-    defaults.update(kwargs)
-    if 'question' not in kwargs and 'queation_id' not in kwargs:
-        defaults['question'] = question(save=True)
-    if 'creator' not in kwargs and 'creator_id' not in kwargs:
-        defaults['creator'] = profile().user
-    return QuestionVote(**defaults)
+        if extracted is not None:
+            for tag in extracted:
+                q.tags.add(tag)
 
 
-@with_save
-def questionlocale(**kwargs):
-    return QuestionLocale(**kwargs)
+class QuestionVoteFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = QuestionVote
+
+    created = factory.LazyAttribute(lambda o: datetime.now())
+    question = factory.SubFactory(QuestionFactory)
+    creator = factory.SubFactory(UserFactory)
 
 
-@with_save
-def answer(**kwargs):
-    defaults = dict(created=datetime.now(), content='')
-    defaults.update(kwargs)
-    if 'question' not in kwargs and 'question_id' not in kwargs:
-        defaults['question'] = question(save=True)
-    if 'creator' not in kwargs and 'creator_id' not in kwargs:
-        defaults['creator'] = profile().user
-    return Answer(**defaults)
+class QuestionLocaleFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = QuestionLocale
 
 
-@with_save
-def answervote(**kwargs):
-    defaults = dict(created=datetime.now(), helpful=False)
-    defaults.update(kwargs)
-    if 'creator' not in kwargs and 'creator_id' not in kwargs:
-        defaults['creator'] = profile().user
-    if 'answer' not in kwargs and 'answer_id' not in kwargs:
-        defaults['answer'] = answer(save=True)
-    return AnswerVote(**defaults)
+class AnswerFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = Answer
+
+    content = FuzzyUnicode()
+    created = factory.LazyAttribute(lambda a: datetime.now())
+    creator = factory.SubFactory(UserFactory)
+    question = factory.SubFactory(QuestionFactory)
+
+
+class AnswerVoteFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = AnswerVote
+
+    created = factory.LazyAttribute(lambda a: datetime.now())
+    helpful = factory.fuzzy.FuzzyChoice([True, False])
+    creator = factory.SubFactory(UserFactory)
+    answer = factory.SubFactory(AnswerFactory)

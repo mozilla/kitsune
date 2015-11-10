@@ -1,7 +1,7 @@
 from nose.tools import eq_, raises
 
 from kitsune.customercare.models import Tweet
-from kitsune.customercare.tests import tweet
+from kitsune.customercare.tests import TweetFactory
 from kitsune.sumo.tests import TestCase
 
 
@@ -10,9 +10,8 @@ class TweetTests(TestCase):
 
     def test_latest(self):
         """Test the latest() class method when there is a latest tweet."""
-        NUM = 2
-        for x in xrange(NUM):
-            last = tweet(save=True)
+        TweetFactory()
+        last = TweetFactory()
         eq_(last.tweet_id, Tweet.latest().tweet_id)
 
     @raises(Tweet.DoesNotExist)

@@ -229,9 +229,11 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
 
         if self.title.startswith(TEMPLATE_TITLE_PREFIX) and self.category != TEMPLATES_CATEGORY:
             raise ValidationError(_(u'Documents with titles that start with "{prefix}" must be in '
-                                    u'the templates category. (Current category is "{category}")')
+                                    u'the templates category. (Current category is "{category}". '
+                                    u'Current title is "{title}".)')
                                   .format(prefix=TEMPLATE_TITLE_PREFIX,
-                                          category=self.get_category_display()))
+                                          category=self.get_category_display(),
+                                          title=self.title))
 
     def _attr_for_redirect(self, attr, template):
         """Return the slug or title for a new redirect.
@@ -264,7 +266,16 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
             return unique_attr()
 
     def save(self, *args, **kwargs):
-        self.is_template = self.title.startswith(TEMPLATE_TITLE_PREFIX)
+        slug_changed = hasattr(self, 'old_slug')
+        title_changed = hasattr(self, 'old_title')
+
+        self.is_template = (
+            self.title.startswith(TEMPLATE_TITLE_PREFIX) or
+            self.category == TEMPLATES_CATEGORY or
+            (self.parent.category if self.parent else None) == TEMPLATES_CATEGORY)
+        treat_as_template = (
+            self.is_template or
+            (self.old_title if title_changed else '').startswith(TEMPLATE_TITLE_PREFIX))
 
         self._raise_if_collides('slug', SlugCollision)
         self._raise_if_collides('title', TitleCollision)
@@ -280,9 +291,6 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         self._clean_category()
         self._clean_template_status()
 
-        slug_changed = hasattr(self, 'old_slug')
-        title_changed = hasattr(self, 'old_title')
-
         if slug_changed:
             # Clear out the share link so it gets regenerated.
             self.share_link = ''
@@ -295,7 +303,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         #
         # Having redirects for templates doesn't really make sense, and
         # none of the rest of the KB really deals with it, so don't bother.
-        if self.current_revision and (slug_changed or title_changed) and not self.is_template:
+        if self.current_revision and (slug_changed or title_changed) and not treat_as_template:
             try:
                 doc = Document.objects.create(
                     locale=self.locale,
@@ -1002,6 +1010,13 @@ class Revision(ModelBase, SearchMixin):
         return u'[%s] %s #%s: %s' % (self.document.locale,
                                      self.document.title,
                                      self.id, self.content[:50])
+
+    def __repr__(self):
+        return '<Revision [{!r}] {!r} #{!r}: {!r:.50}>'.format(
+            self.document.locale,
+            self.document.title,
+            self.id,
+            self.content)
 
     @property
     def content_parsed(self):

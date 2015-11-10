@@ -5,11 +5,11 @@ from nose.tools import eq_
 from django.test.client import RequestFactory
 
 from kitsune.community import api
-from kitsune.products.tests import product
-from kitsune.questions.tests import answer, answervote, question
+from kitsune.products.tests import ProductFactory
+from kitsune.questions.tests import AnswerFactory, AnswerVoteFactory
 from kitsune.search.tests import ElasticTestCase
-from kitsune.users.tests import profile
-from kitsune.wiki.tests import document, revision
+from kitsune.users.tests import UserFactory
+from kitsune.wiki.tests import RevisionFactory
 
 
 class TestTopContributorsBase(ElasticTestCase):
@@ -35,16 +35,16 @@ class TestTopContributorsQuestions(ElasticTestCase):
         self.api = api.TopContributorsQuestions()
 
     def test_it_works(self):
-        u1 = profile().user
-        u2 = profile().user
+        u1 = UserFactory()
+        u2 = UserFactory()
 
-        a1 = answer(creator=u1, save=True)  # noqa
-        a2 = answer(creator=u1, save=True)
-        a3 = answer(creator=u2, save=True)
+        a1 = AnswerFactory(creator=u1)
+        a2 = AnswerFactory(creator=u1)
+        a3 = AnswerFactory(creator=u2)
 
         a1.question.solution = a1
         a1.question.save()
-        answervote(answer=a3, helpful=True, save=True)
+        AnswerVoteFactory(answer=a3, helpful=True)
 
         self.refresh()
 
@@ -68,18 +68,15 @@ class TestTopContributorsQuestions(ElasticTestCase):
         eq_(data['results'][1]['last_contribution_date'], a3.created.replace(microsecond=0))
 
     def test_filter_by_product(self):
-        u1 = profile().user
-        u2 = profile().user
+        u1 = UserFactory()
+        u2 = UserFactory()
 
-        p1 = product(save=True)
-        p2 = product(save=True)
+        p1 = ProductFactory()
+        p2 = ProductFactory()
 
-        q1 = question(product=p1, save=True)
-        answer(question=q1, creator=u1, save=True)
-        q2 = question(product=p2, save=True)
-        answer(question=q2, creator=u1, save=True)
-        q3 = question(product=p2, save=True)
-        answer(question=q3, creator=u2, save=True)
+        AnswerFactory(question__product=p1, creator=u1)
+        AnswerFactory(question__product=p2, creator=u1)
+        AnswerFactory(question__product=p2, creator=u2)
 
         self.refresh()
 
@@ -91,13 +88,11 @@ class TestTopContributorsQuestions(ElasticTestCase):
         eq_(data['results'][0]['answer_count'], 1)
 
     def test_page_size(self):
-        u1 = profile().user
-        u2 = profile().user
+        u1 = UserFactory()
+        u2 = UserFactory()
 
-        q1 = question(save=True)
-        answer(question=q1, creator=u1, save=True)
-        q2 = question(save=True)
-        answer(question=q2, creator=u2, save=True)
+        AnswerFactory(creator=u1)
+        AnswerFactory(creator=u2)
 
         self.refresh()
 
@@ -112,16 +107,16 @@ class TestTopContributorsQuestions(ElasticTestCase):
         eq_(len(data['results']), 1)
 
     def test_filter_last_contribution(self):
-        u1 = profile().user
-        u2 = profile().user
+        u1 = UserFactory()
+        u2 = UserFactory()
 
         today = datetime.now()
         yesterday = today - timedelta(days=1)
         day_before_yesterday = yesterday - timedelta(days=1)
 
-        answer(creator=u1, created=today, save=True)
-        answer(creator=u1, created=day_before_yesterday, save=True)
-        answer(creator=u2, created=day_before_yesterday, save=True)
+        AnswerFactory(creator=u1, created=today)
+        AnswerFactory(creator=u1, created=day_before_yesterday)
+        AnswerFactory(creator=u2, created=day_before_yesterday)
 
         self.refresh()
 
@@ -153,15 +148,12 @@ class TestTopContributorsLocalization(ElasticTestCase):
         self.api = api.TopContributorsLocalization()
 
     def test_it_works(self):
-        u1 = profile().user
-        u2 = profile().user
+        u1 = UserFactory()
+        u2 = UserFactory()
 
-        r1 = revision(creator=u1, save=True)  # noqa
-        r2 = revision(creator=u1, save=True)
-        r3 = revision(creator=u2, save=True)
-
-        r2.reviewer = u2
-        r2.save()
+        RevisionFactory(creator=u1)
+        r2 = RevisionFactory(creator=u1, reviewer=u2)
+        r3 = RevisionFactory(creator=u2)
 
         self.refresh()
 
@@ -183,23 +175,15 @@ class TestTopContributorsLocalization(ElasticTestCase):
         eq_(data['results'][1]['last_contribution_date'], r3.created.replace(microsecond=0))
 
     def test_filter_by_product(self):
-        u1 = profile().user
-        u2 = profile().user
+        u1 = UserFactory()
+        u2 = UserFactory()
 
-        p1 = product(save=True)
-        p2 = product(save=True)
+        p1 = ProductFactory()
+        p2 = ProductFactory()
 
-        d1 = document(save=True)
-        d1.products.add(p1)
-        revision(document=d1, creator=u1, save=True)
-
-        d2 = document(save=True)
-        d2.products.add(p2)
-        revision(document=d2, creator=u1, save=True)
-
-        d3 = document(save=True)
-        d3.products.add(p2)
-        revision(document=d3, creator=u2, save=True)
+        RevisionFactory(document__products=[p1], creator=u1)
+        RevisionFactory(document__products=[p2], creator=u1)
+        RevisionFactory(document__products=[p2], creator=u2)
 
         self.refresh()
 
@@ -211,14 +195,11 @@ class TestTopContributorsLocalization(ElasticTestCase):
         eq_(data['results'][0]['revision_count'], 1)
 
     def test_page_size(self):
-        u1 = profile().user
-        u2 = profile().user
+        u1 = UserFactory()
+        u2 = UserFactory()
 
-        d1 = document(save=True)
-        revision(document=d1, creator=u1, save=True)
-
-        d2 = document(save=True)
-        revision(document=d2, creator=u2, save=True)
+        RevisionFactory(creator=u1)
+        RevisionFactory(creator=u2)
 
         self.refresh()
 
@@ -233,16 +214,16 @@ class TestTopContributorsLocalization(ElasticTestCase):
         eq_(len(data['results']), 1)
 
     def test_filter_last_contribution(self):
-        u1 = profile().user
-        u2 = profile().user
+        u1 = UserFactory()
+        u2 = UserFactory()
 
         today = datetime.now()
         yesterday = today - timedelta(days=1)
         day_before_yesterday = yesterday - timedelta(days=1)
 
-        revision(creator=u1, created=today, save=True)
-        revision(creator=u1, created=day_before_yesterday, save=True)
-        revision(creator=u2, created=day_before_yesterday, save=True)
+        RevisionFactory(creator=u1, created=today)
+        RevisionFactory(creator=u1, created=day_before_yesterday)
+        RevisionFactory(creator=u2, created=day_before_yesterday)
 
         self.refresh()
 

@@ -1,27 +1,23 @@
 from datetime import datetime, timedelta
-import difflib
 import json
 
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.core import mail
 from django.core.cache import cache
-from django.utils.encoding import smart_str
 
 import mock
-from bleach import clean
 from nose.tools import eq_
-from wikimarkup.parser import ALLOWED_TAGS, ALLOWED_ATTRIBUTES
 
-from kitsune.products.tests import product, topic
+from kitsune.products.tests import ProductFactory, TopicFactory
 from kitsune.sumo.helpers import urlparams
 from kitsune.sumo.tests import post, get, attrs_eq, MobileTestCase
 from kitsune.sumo.tests import SumoPyQuery as pq
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.users.tests import user, add_permission
+from kitsune.users.tests import UserFactory, add_permission
 from kitsune.wiki.events import (
     EditDocumentEvent, ReadyRevisionEvent, ReviewableRevisionInLocaleEvent,
-    ApproveRevisionInLocaleEvent)
+    ApproveRevisionInLocaleEvent, get_diff_for)
 from kitsune.wiki.models import (
     Document, Revision, HelpfulVote, HelpfulVoteMetadata)
 from kitsune.wiki.config import (
@@ -29,11 +25,11 @@ from kitsune.wiki.config import (
     CATEGORIES, CANNED_RESPONSES_CATEGORY, TEMPLATES_CATEGORY, TEMPLATE_TITLE_PREFIX)
 from kitsune.wiki.tasks import send_reviewed_notification
 from kitsune.wiki.tests import (
-    TestCaseBase, document, revision, new_document_data, translated_revision, locale,
-    DocumentFactory, ApprovedRevisionFactory)
+    TestCaseBase, DocumentFactory, RevisionFactory, ApprovedRevisionFactory,
+    RedirectRevisionFactory, TranslatedRevisionFactory, LocaleFactory, new_document_data)
 
 
-READY_FOR_REVIEW_EMAIL_CONTENT = """\
+READY_FOR_REVIEW_EMAIL_CONTENT = u"""\
 %(user)s submitted a new revision to the document %(title)s.
 
 Fixing all the typos!!!!!11!!!one!!!!
@@ -58,7 +54,7 @@ https://testserver/en-US/unsubscribe/%(watcher)s?s=%(secret)s
 """
 
 
-DOCUMENT_EDITED_EMAIL_CONTENT = """\
+DOCUMENT_EDITED_EMAIL_CONTENT = u"""\
 %(user)s created a new revision to the document %(title)s.
 
 Fixing all the typos!!!!!11!!!one!!!!
@@ -83,7 +79,7 @@ https://testserver/en-US/unsubscribe/%(watcher)s?s=%(secret)s
 """
 
 
-APPROVED_EMAIL_CONTENT = """\
+APPROVED_EMAIL_CONTENT = u"""\
 %(reviewer)s has approved the revision to the document %(document_title)s.
 
 To view the updated document, click the following link, or paste it into \
@@ -111,12 +107,11 @@ class DocumentTests(TestCaseBase):
 
     def setUp(self):
         super(DocumentTests, self).setUp()
-        product(save=True)
+        ProductFactory()
 
     def test_document_view(self):
         """Load the document view page and verify the title and content."""
-        r = revision(save=True, summary='search summary', content='Some text.',
-                     is_approved=True)
+        r = ApprovedRevisionFactory(summary='search summary', content='Some text.')
         response = self.client.get(r.document.get_absolute_url())
         eq_(200, response.status_code)
         doc = pq(response.content)
@@ -130,7 +125,7 @@ class DocumentTests(TestCaseBase):
 
     def test_english_document_no_approved_content(self):
         """Load an English document with no approved content."""
-        r = revision(save=True, content='Some text.', is_approved=False)
+        r = RevisionFactory(content='Some text.', is_approved=False)
         response = self.client.get(r.document.get_absolute_url())
         eq_(200, response.status_code)
         doc = pq(response.content)
@@ -141,9 +136,9 @@ class DocumentTests(TestCaseBase):
     def test_translation_document_no_approved_content(self):
         """Load a non-English document with no approved content, with a parent
         with no approved content either."""
-        r = revision(save=True, content='Some text.', is_approved=False)
-        d2 = document(parent=r.document, locale='fr', slug='french', save=True)
-        revision(document=d2, save=True, content='Moartext', is_approved=False)
+        r = RevisionFactory(content='Some text.', is_approved=False)
+        d2 = DocumentFactory(parent=r.document, locale='fr', slug='french')
+        RevisionFactory(document=d2, content='Moartext', is_approved=False)
         response = self.client.get(d2.get_absolute_url())
         eq_(200, response.status_code)
         doc = pq(response.content)
@@ -155,9 +150,9 @@ class DocumentTests(TestCaseBase):
     def test_document_fallback_with_translation(self):
         """The document template falls back to English if translation exists
         but it has no approved revisions."""
-        r = revision(save=True, content='Test', is_approved=True)
-        d2 = document(parent=r.document, locale='fr', slug='french', save=True)
-        revision(document=d2, is_approved=False, save=True)
+        r = ApprovedRevisionFactory(content='Test')
+        d2 = DocumentFactory(parent=r.document, locale='fr', slug='french')
+        RevisionFactory(document=d2, is_approved=False)
         url = reverse('wiki.document', args=[d2.slug], locale='fr')
         response = self.client.get(url)
         doc = pq(response.content)
@@ -174,9 +169,9 @@ class DocumentTests(TestCaseBase):
     def test_document_fallback_with_translation_english_slug(self):
         """The document template falls back to English if translation exists
         but it has no approved revisions, while visiting the English slug."""
-        r = revision(save=True, content='Test', is_approved=True)
-        d2 = document(parent=r.document, locale='fr', slug='french', save=True)
-        revision(document=d2, is_approved=False, save=True)
+        r = ApprovedRevisionFactory(content='Test')
+        d2 = DocumentFactory(parent=r.document, locale='fr', slug='french')
+        RevisionFactory(document=d2, is_approved=False)
         url = reverse('wiki.document', args=[r.document.slug], locale='fr')
         response = self.client.get(url, follow=True)
         eq_('http://testserver/fr/kb/french', response.redirect_chain[0][0])
@@ -191,7 +186,7 @@ class DocumentTests(TestCaseBase):
 
     def test_document_fallback_no_translation(self):
         """The document template falls back to English if no translation exists."""
-        r = revision(save=True, content='Some text.', is_approved=True)
+        r = ApprovedRevisionFactory(content='Some text.')
         url = reverse('wiki.document', args=[r.document.slug], locale='fr')
         response = self.client.get(url)
         doc = pq(response.content)
@@ -205,8 +200,7 @@ class DocumentTests(TestCaseBase):
     def test_document_fallback_no_translation_not_ready_for_l10n(self):
         """Prompt to localize an article isn't shown when there is a pending localization."""
         # Creating a revision not ready for localization
-        r = revision(save=True, content='Some text.', is_approved=True,
-                     is_ready_for_localization=False)
+        r = ApprovedRevisionFactory(content='Some text.', is_ready_for_localization=False)
         url = reverse('wiki.document', args=[r.document.slug], locale='de')
         response = self.client.get(url)
         doc = pq(response.content)
@@ -216,8 +210,7 @@ class DocumentTests(TestCaseBase):
     def test_document_fallback_no_translation_ready_for_l10n(self):
         """Prompt to localize an article is shown when there are no pending localizations."""
         # Creating a revision ready for localization
-        r = revision(save=True, content='Some text.', is_approved=True,
-                     is_ready_for_localization=True)
+        r = ApprovedRevisionFactory(content='Some text.', is_ready_for_localization=True)
         url = reverse('wiki.document', args=[r.document.slug], locale='de')
         response = self.client.get(url)
         doc = pq(response.content)
@@ -230,20 +223,17 @@ class DocumentTests(TestCaseBase):
         Also check the backlink to the redirect page.
 
         """
-        target = document(save=True)
+        target = DocumentFactory()
         target_url = target.get_absolute_url()
 
         # Ordinarily, a document with no approved revisions cannot have HTML,
         # but we shove it in manually here as a shortcut:
-        redirect = document(
-            html='<p>REDIRECT <a href="%s">Boo</a></p>' % target_url)
-        redirect.save()
+        redirect = RedirectRevisionFactory(target=target).document
         redirect_url = redirect.get_absolute_url()
         response = self.client.get(redirect_url, follow=True)
-        self.assertRedirects(response,
-                             urlparams(target_url,
-                                       redirectlocale=redirect.locale,
-                                       redirectslug=redirect.slug))
+        self.assertRedirects(
+            response,
+            urlparams(target_url, redirectlocale=redirect.locale, redirectslug=redirect.slug))
         self.assertContains(response, redirect_url + '?redirect=no')
         # There's a canonical URL in the <head>.
         doc = pq(response.content)
@@ -252,11 +242,8 @@ class DocumentTests(TestCaseBase):
     def test_redirect_no_vote(self):
         """Make sure documents with REDIRECT directives have no vote form.
         """
-        target = document(save=True)
-        target_url = target.get_absolute_url()
-        redirect = document(
-            html='<p>REDIRECT <a href="%s">Boo</a></p>' % target_url)
-        redirect.save()
+        target = DocumentFactory()
+        redirect = RedirectRevisionFactory(target=target).document
         redirect_url = redirect.get_absolute_url()
         response = self.client.get(redirect_url + '?redirect=no')
         doc = pq(response.content)
@@ -265,7 +252,7 @@ class DocumentTests(TestCaseBase):
     def test_redirect_from_nonexistent(self):
         """The template shouldn't crash or print a backlink if the "from" page
         doesn't exist."""
-        d = document(save=True)
+        d = DocumentFactory()
         response = self.client.get(urlparams(d.get_absolute_url(),
                                              redirectlocale='en-US',
                                              redirectslug='nonexistent'))
@@ -273,18 +260,18 @@ class DocumentTests(TestCaseBase):
 
     def test_watch_includes_csrf(self):
         """The watch/unwatch forms should include the csrf tag."""
-        u = user(save=True)
+        u = UserFactory()
         self.client.login(username=u.username, password='testpass')
-        d = document(save=True)
+        d = DocumentFactory()
         resp = self.client.get(d.get_absolute_url())
         doc = pq(resp.content)
         assert doc('#doc-watch input[type=hidden]')
 
     def test_non_localizable_translate_disabled(self):
         """Non localizable document doesn't show tab for 'Localize'."""
-        u = user(save=True)
+        u = UserFactory()
         self.client.login(username=u.username, password='testpass')
-        d = document(is_localizable=True, save=True)
+        d = DocumentFactory(is_localizable=True)
         resp = self.client.get(d.get_absolute_url())
         doc = pq(resp.content)
         assert 'Translate' in doc('#doc-tools li').text()
@@ -298,15 +285,15 @@ class DocumentTests(TestCaseBase):
 
     def test_obsolete_hide_edit(self):
         """Make sure Edit sidebar link is hidden for obsolete articles."""
-        d = document(is_archived=True, save=True)
+        d = DocumentFactory(is_archived=True)
         r = self.client.get(d.get_absolute_url())
         doc = pq(r.content)
         assert not doc('#doc-tabs li.edit')
 
     def test_obsolete_no_vote(self):
         """No voting on is_archived documents."""
-        d = document(is_archived=True, save=True)
-        revision(document=d, is_approved=True, save=True)
+        d = DocumentFactory(is_archived=True)
+        RevisionFactory(document=d, is_approved=True)
         response = self.client.get(d.get_absolute_url())
         eq_(200, response.status_code)
         doc = pq(response.content)
@@ -339,7 +326,7 @@ class DocumentTests(TestCaseBase):
     def test_archived_noindex(self):
         """Archived documents should have a noindex meta tag."""
         # Create a document and verify there is no robots:noindex
-        r = revision(save=True, content='Some text.', is_approved=True)
+        r = ApprovedRevisionFactory(content='Some text.')
         response = self.client.get(r.document.get_absolute_url())
         eq_(200, response.status_code)
         doc = pq(response.content)
@@ -358,7 +345,7 @@ class DocumentTests(TestCaseBase):
     def test_administration_noindex(self):
         """Administration documents should have a noindex meta tag."""
         # Create a document and verify there is no robots:noindex
-        r = revision(save=True, content='Some text.', is_approved=True)
+        r = ApprovedRevisionFactory(content='Some text.')
         response = self.client.get(r.document.get_absolute_url())
         eq_(200, response.status_code)
         doc = pq(response.content)
@@ -377,7 +364,7 @@ class DocumentTests(TestCaseBase):
     def test_canned_responses_noindex(self):
         """Canned response documents should have a noindex meta tag."""
         # Create a document and verify there is no robots:noindex
-        r = revision(save=True, content='Some text.', is_approved=True)
+        r = ApprovedRevisionFactory(content='Some text.')
         response = self.client.get(r.document.get_absolute_url())
         eq_(200, response.status_code)
         doc = pq(response.content)
@@ -395,8 +382,7 @@ class DocumentTests(TestCaseBase):
 
     def test_links_follow(self):
         """Links in kb should not have rel=nofollow"""
-        r = revision(save=True, content='Some link http://test.com',
-                     is_approved=True)
+        r = ApprovedRevisionFactory(content='Some link http://test.com')
         response = self.client.get(r.document.get_absolute_url())
         eq_(200, response.status_code)
         doc = pq(response.content)
@@ -436,11 +422,11 @@ class DocumentTests(TestCaseBase):
 class MobileArticleTemplate(MobileTestCase):
     def setUp(self):
         super(MobileArticleTemplate, self).setUp()
-        product(save=True)
+        ProductFactory()
 
     def test_document_view(self):
         """Verify mobile template doesn't 500."""
-        r = revision(save=True, content='Some text.', is_approved=True)
+        r = ApprovedRevisionFactory(content='Some text.')
         response = self.client.get(r.document.get_absolute_url())
         eq_(200, response.status_code)
         self.assertTemplateUsed(response, 'wiki/mobile/document.html')
@@ -482,14 +468,13 @@ class RevisionTests(TestCaseBase):
     @mock.patch.object(ReadyRevisionEvent, 'fire')
     def test_mark_as_ready_POST(self, fire):
         """HTTP POST to mark a revision as ready for l10n."""
-        u = user(save=True)
+        u = UserFactory()
         add_permission(u, Revision, 'mark_ready_for_l10n')
         self.client.login(username=u.username, password='testpass')
 
-        r = revision(is_approved=True,
-                     is_ready_for_localization=False,
-                     significance=MEDIUM_SIGNIFICANCE,
-                     save=True)
+        r = ApprovedRevisionFactory(
+            is_ready_for_localization=False,
+            significance=MEDIUM_SIGNIFICANCE)
 
         url = reverse('wiki.mark_ready_for_l10n_revision',
                       args=[r.document.slug, r.id])
@@ -509,10 +494,9 @@ class RevisionTests(TestCaseBase):
     @mock.patch.object(ReadyRevisionEvent, 'fire')
     def test_mark_as_ready_GET(self, fire):
         """HTTP GET to mark a revision as ready for l10n must fail."""
-        r = revision(is_approved=True,
-                     is_ready_for_localization=False, save=True)
+        r = ApprovedRevisionFactory(is_ready_for_localization=False)
 
-        u = user(save=True)
+        u = UserFactory()
         add_permission(u, Revision, 'mark_ready_for_l10n')
         self.client.login(username=u.username, password='testpass')
 
@@ -532,10 +516,9 @@ class RevisionTests(TestCaseBase):
     def test_mark_as_ready_no_perm(self, fire):
         """Mark a revision as ready for l10n without perm must fail."""
 
-        r = revision(is_approved=True,
-                     is_ready_for_localization=False, save=True)
+        r = ApprovedRevisionFactory()
 
-        u = user(save=True)
+        u = UserFactory()
         self.client.login(username=u.username, password='testpass')
 
         url = reverse('wiki.mark_ready_for_l10n_revision',
@@ -554,8 +537,7 @@ class RevisionTests(TestCaseBase):
     def test_mark_as_ready_no_login(self, fire):
         """Mark a revision as ready for l10n without login must fail."""
 
-        r = revision(is_approved=True,
-                     is_ready_for_localization=False, save=True)
+        r = ApprovedRevisionFactory(is_ready_for_localization=False)
 
         url = reverse('wiki.mark_ready_for_l10n_revision',
                       args=[r.document.slug, r.id])
@@ -573,10 +555,9 @@ class RevisionTests(TestCaseBase):
     def test_mark_as_ready_no_approval(self, fire):
         """Mark an unapproved revision as ready for l10n must fail."""
 
-        r = revision(is_approved=False,
-                     is_ready_for_localization=False, save=True)
+        r = RevisionFactory(is_approved=False, is_ready_for_localization=False)
 
-        u = user(save=True)
+        u = UserFactory()
         add_permission(u, Revision, 'mark_ready_for_l10n')
         self.client.login(username=u.username, password='testpass')
 
@@ -599,7 +580,7 @@ class NewDocumentTests(TestCaseBase):
     def setUp(self):
         super(NewDocumentTests, self).setUp()
 
-        u = user(save=True)
+        u = UserFactory()
         self.client.login(username=u.username, password='testpass')
 
     def test_new_document_GET_with_perm(self):
@@ -764,7 +745,7 @@ class NewDocumentTests(TestCaseBase):
         data['slug'] = 'ask'
         response = self.client.post(reverse('wiki.new_document'), data)
         eq_(302, response.status_code)
-        eq_('ask', Document.objects.all()[0].slug)
+        eq_('ask', Document.objects.order_by('-id')[0].slug)
 
 
 class NewRevisionTests(TestCaseBase):
@@ -772,9 +753,10 @@ class NewRevisionTests(TestCaseBase):
 
     def setUp(self):
         super(NewRevisionTests, self).setUp()
-        self.d = _create_document()
+        rev = ApprovedRevisionFactory(document__topics=[])
+        self.d = rev.document
 
-        self.user = user(save=True)
+        self.user = UserFactory()
         self.client.login(username=self.user.username, password='testpass')
 
     def test_new_revision_GET_logged_out(self):
@@ -806,7 +788,7 @@ class NewRevisionTests(TestCaseBase):
         r = Revision(document=self.d, keywords='ky1, kw2',
                      summary='the summary',
                      content='<div>The content here</div>',
-                     creator_id=user(save=True).id)
+                     creator_id=UserFactory().id)
         r.save()
 
         add_permission(self.user, Revision, 'edit_keywords')
@@ -836,13 +818,13 @@ class NewRevisionTests(TestCaseBase):
         edit_watch = EditDocumentEvent.notify('sam@example.com', self.d)
         edit_watch.activate().save()
 
-        review_user = user(email='joe@example.com', save=True)
+        review_user = UserFactory(email='joe@example.com')
         add_permission(review_user, Revision, 'review_revision')
         reviewable_watch = ReviewableRevisionInLocaleEvent.notify(review_user, locale='en-US')
         reviewable_watch.activate().save()
 
         reviewable_watch_no_permission = ReviewableRevisionInLocaleEvent.notify(
-            user(save=True), locale='en-US')
+            UserFactory(), locale='en-US')
         reviewable_watch_no_permission.activate().save()
 
         # Edit a document:
@@ -858,17 +840,7 @@ class NewRevisionTests(TestCaseBase):
         eq_(self.d.current_revision, new_rev.based_on)
 
         if new_rev.based_on is not None:
-            fromfile = u'[%s] %s #%s' % (new_rev.based_on.document.locale,
-                                         new_rev.based_on.document.title,
-                                         new_rev.based_on.id)
-            tofile = u'[%s] %s #%s' % (new_rev.document.locale,
-                                       new_rev.document.title,
-                                       new_rev.id)
-            diff = clean(''.join(difflib.unified_diff(
-                smart_str(new_rev.based_on.content).splitlines(1),
-                smart_str(new_rev.content).splitlines(1),
-                fromfile=fromfile,
-                tofile=tofile)), ALLOWED_TAGS, ALLOWED_ATTRIBUTES)
+            diff = get_diff_for(new_rev.based_on.document, new_rev.based_on, new_rev)
         else:
             diff = ''  # No based_on, so diff wouldn't make sense.
 
@@ -879,7 +851,7 @@ class NewRevisionTests(TestCaseBase):
             subject=u'%s is ready for review (%s)' % (
                 self.d.title, new_rev.creator),
             body=READY_FOR_REVIEW_EMAIL_CONTENT % {
-                'user': self.user.username,
+                'user': self.user.profile.name,
                 'title': self.d.title,
                 'slug': self.d.slug,
                 'new_id': new_rev.id,
@@ -894,7 +866,7 @@ class NewRevisionTests(TestCaseBase):
             subject=u'%s was edited by %s' % (
                 self.d.title, new_rev.creator),
             body=DOCUMENT_EDITED_EMAIL_CONTENT % {
-                'user': self.user.username,
+                'user': self.user.profile.name,
                 'title': self.d.title,
                 'slug': self.d.slug,
                 'watcher': edit_watch.pk,
@@ -937,14 +909,13 @@ class NewRevisionTests(TestCaseBase):
         that document."""
         self.d.current_revision = None
         self.d.save()
-        topics = [topic(save=True), topic(save=True), topic(save=True)]
+        topics = [TopicFactory(), TopicFactory(), TopicFactory()]
         self.d.topics.add(*topics)
         eq_(self.d.topics.count(), len(topics))
-        new_topics = [topics[0], topic(save=True)]
-        data = new_document_data([t.id for t in new_topics])
+        new_topics = [topics[0], TopicFactory()]
+        data = new_document_data(t.id for t in new_topics)
         data['form'] = 'doc'
-        self.client.post(reverse('wiki.edit_document', args=[self.d.slug]),
-                         data)
+        self.client.post(reverse('wiki.edit_document', args=[self.d.slug]), data)
         topic_ids = self.d.topics.values_list('id', flat=True)
         eq_(2, len(topic_ids))
         assert new_topics[0].id in topic_ids
@@ -966,7 +937,7 @@ class NewRevisionTests(TestCaseBase):
         there are newer unapproved revisions."""
         # Create a new revision that is at least 1 second newer than current
         created = datetime.now() + timedelta(seconds=1)
-        r = revision(document=doc, created=created, save=True)
+        r = RevisionFactory(document=doc, created=created)
 
         # Verify there is a warning box
         response = self.client.get(
@@ -981,7 +952,7 @@ class NewRevisionTests(TestCaseBase):
 
         # Create a newer unreviewed revision and now warning shows
         created = created + timedelta(seconds=1)
-        revision(document=doc, created=created, save=True)
+        RevisionFactory(document=doc, created=created)
         response = self.client.get(
             reverse('wiki.new_revision_based_on', locale=doc.locale,
                     args=[doc.slug, r.id]))
@@ -1001,8 +972,8 @@ class NewRevisionTests(TestCaseBase):
         r.save()
 
         # Create the localization.
-        l10n = document(parent=self.d, locale='es', save=True)
-        r = revision(document=l10n, is_approved=True, save=True)
+        l10n = DocumentFactory(parent=self.d, locale='es')
+        r = RevisionFactory(document=l10n, is_approved=True)
         l10n.current_revision = r
         l10n.save()
         self._test_new_revision_warning(l10n)
@@ -1012,7 +983,7 @@ class NewRevisionTests(TestCaseBase):
         doc = self.d
         old_rev = doc.current_revision
 
-        u = user(save=True)
+        u = UserFactory()
         self.client.login(username=u.username, password='testpass')
 
         # Edit the document:
@@ -1053,7 +1024,7 @@ class HistoryTests(TestCaseBase):
     def test_history_noindex(self):
         """Document history should have a noindex meta tag."""
         # Create a document and verify there is no robots:noindex
-        r = revision(save=True, content='Some text.', is_approved=True)
+        r = ApprovedRevisionFactory(content='Some text.')
         response = get(self.client, 'wiki.document_revisions',
                        args=[r.document.slug])
         eq_(200, response.status_code)
@@ -1063,10 +1034,8 @@ class HistoryTests(TestCaseBase):
     def test_history_category_appears(self):
         """Document history should have a category on page"""
         category = CATEGORIES[1]
-        r = revision(save=True, content='Some text.', is_approved=True,
-                     document=document(category=category[0], save=True))
-        response = get(self.client, 'wiki.document_revisions',
-                       args=[r.document.slug])
+        r = ApprovedRevisionFactory(content='Some text.', document__category=category[0])
+        response = get(self.client, 'wiki.document_revisions', args=[r.document.slug])
         eq_(200, response.status_code)
         self.assertContains(response, category[1])
 
@@ -1078,7 +1047,7 @@ class DocumentEditTests(TestCaseBase):
         super(DocumentEditTests, self).setUp()
         self.d = _create_document()
 
-        u = user(save=True)
+        u = UserFactory()
         add_permission(u, Document, 'change_document')
         self.client.login(username=u.username, password='testpass')
 
@@ -1132,7 +1101,7 @@ class DocumentEditTests(TestCaseBase):
 
     def test_archive_permission_off(self):
         """Shouldn't be able to change is_archive bit without permission."""
-        u = user(save=True)
+        u = UserFactory()
         add_permission(u, Document, 'change_document')
         self.client.login(username=u.username, password='testpass')
         data = new_document_data()
@@ -1147,7 +1116,7 @@ class DocumentEditTests(TestCaseBase):
     # TODO: Factor with test_archive_permission_off.
     def test_archive_permission_on(self):
         """Shouldn't be able to change is_archive bit without permission."""
-        u = user(save=True)
+        u = UserFactory()
         add_permission(u, Document, 'change_document')
         add_permission(u, Document, 'archive_document')
         self.client.login(username=u.username, password='testpass')
@@ -1215,52 +1184,65 @@ class DocumentRevisionsTests(TestCaseBase):
 
     def test_document_revisions_list(self):
         """Verify the document revisions list view."""
-        d = _create_document()
-        user_ = user(save=True)
-        r1 = revision(summary="a tweak", content='lorem ipsum dolor',
-                      keywords='kw1 kw2', document=d, creator=user_)
-        r1.save()
-        r2 = revision(summary="another tweak", content='lorem dimsum dolor',
-                      keywords='kw1 kw2', document=d, creator=user_)
-        r2.save()
-        response = self.client.get(reverse('wiki.document_revisions',
-                                   args=[d.slug]))
+        creator = UserFactory()
+        d = DocumentFactory()
+        ApprovedRevisionFactory(document=d)
+        RevisionFactory(
+            summary="a tweak",
+            content='lorem ipsum dolor',
+            keywords='kw1 kw2',
+            document=d,
+            reviewed=None,
+            creator=creator)
+        r2 = RevisionFactory(
+            summary="another tweak",
+            content='lorem dimsum dolor',
+            keywords='kw1 kw2',
+            document=d,
+            reviewed=None,
+            creator=creator)
+        response = self.client.get(reverse('wiki.document_revisions', args=[d.slug]))
         eq_(200, response.status_code)
         doc = pq(response.content)
         eq_(4, len(doc('#revision-list li')))
         # Verify there is no Review link
         eq_(0, len(doc('#revision-list div.status a')))
-        eq_('Unreviewed',
-            doc('#revision-list li:not(.header) div.status').first().text())
+        eq_('Unreviewed', doc('#revision-list li:not(.header) div.status').first().text())
 
         # Log in as user with permission to review
-        u = user(save=True)
-        add_permission(u, Revision, 'review_revision')
-        self.client.login(username=u.username, password='testpass')
-        response = self.client.get(reverse('wiki.document_revisions',
-                                   args=[d.slug]))
+        reviewer = UserFactory()
+        add_permission(reviewer, Revision, 'review_revision')
+        self.client.login(username=reviewer.username, password='testpass')
+        response = self.client.get(reverse('wiki.document_revisions', args=[d.slug]))
         eq_(200, response.status_code)
         doc = pq(response.content)
+
         # Verify there are Review links now
         eq_(2, len(doc('#revision-list div.status a')))
-        eq_('Review',
-            doc('#revision-list li:not(.header) div.status').first().text())
+        eq_('Review', doc('#revision-list li:not(.header) div.status').first().text())
+
         # Verify edit revision link
-        eq_('/en-US/kb/test-document/edit/{r}'.format(r=r2.id),
+        eq_('/en-US/kb/{slug}/edit/{rev_id}'.format(slug=d.slug, rev_id=r2.id),
             doc('#revision-list div.edit a')[0].attrib['href'])
 
     def test_revisions_ready_for_l10n(self):
         """Verify that the ready for l10n icon is only present on en-US."""
         d = _create_document()
-        user_ = user(save=True)
-        r1 = revision(summary="a tweak", content='lorem ipsum dolor',
-                      keywords='kw1 kw2', document=d, creator=user_)
-        r1.save()
+        user = UserFactory()
+        r1 = RevisionFactory(
+            summary="a tweak",
+            content='lorem ipsum dolor',
+            keywords='kw1 kw2',
+            document=d,
+            creator=user)
 
         d2 = _create_document(locale='es')
-        r2 = revision(summary="a tweak", content='lorem ipsum dolor',
-                      keywords='kw1 kw2', document=d2, creator=user_)
-        r2.save()
+        RevisionFactory(
+            summary="a tweak",
+            content='lorem ipsum dolor',
+            keywords='kw1 kw2',
+            document=d2,
+            creator=user)
 
         response = self.client.get(reverse('wiki.document_revisions',
                                    args=[r1.document.slug]))
@@ -1281,7 +1263,7 @@ class ReviewRevisionTests(TestCaseBase):
     def setUp(self):
         super(ReviewRevisionTests, self).setUp()
         self.document = _create_document()
-        user_ = user(save=True)
+        user_ = UserFactory()
         self.revision = Revision(summary="lipsum",
                                  content='<div>Lorem {for mac}Ipsum{/for} '
                                          'Dolor</div>',
@@ -1289,7 +1271,7 @@ class ReviewRevisionTests(TestCaseBase):
                                  creator=user_)
         self.revision.save()
 
-        self.user = user(save=True)
+        self.user = UserFactory()
         add_permission(self.user, Revision, 'review_revision')
         add_permission(self.user, Document, 'edit_needs_change')
         self.client.login(username=self.user.username, password='testpass')
@@ -1324,14 +1306,12 @@ class ReviewRevisionTests(TestCaseBase):
         get_current.return_value.domain = 'testserver'
 
         # Subscribe to approvals:
-        watch = ApproveRevisionInLocaleEvent.notify('joe@example.com',
-                                                    locale='en-US')
+        watch = ApproveRevisionInLocaleEvent.notify('joe@example.com', locale='en-US')
         watch.activate().save()
 
         # Subscribe the approver to approvals so we can assert (by counting the
         # mails) that he didn't get notified.
-        ApproveRevisionInLocaleEvent.notify(self.user,
-                                            locale='en-US').activate().save()
+        ApproveRevisionInLocaleEvent.notify(self.user, locale='en-US').activate().save()
 
         # Approve something:
         significance = SIGNIFICANCES[0][0]
@@ -1360,52 +1340,26 @@ class ReviewRevisionTests(TestCaseBase):
         reviewed_delay.assert_called_with(r, r.document, 'something')
 
         if r.based_on is not None:
-            fromfile = u'[%s] %s #%s' % (r.document.locale,
-                                         r.document.title,
-                                         r.document.current_revision.id)
-            tofile = u'[%s] %s #%s' % (r.document.locale,
-                                       r.document.title,
-                                       r.id)
-            diff = clean(''.join(difflib.unified_diff(
-                r.document.current_revision.content.splitlines(1),
-                r.content.splitlines(1),
-                fromfile=fromfile,
-                tofile=tofile)), ALLOWED_TAGS, ALLOWED_ATTRIBUTES)
-
+            old_rev = r.document.current_Revision
         else:
-            approved = r.document.revisions.filter(is_approved=True)
-            approved_rev = approved.order_by('-created')[1]
+            old_rev = r.document.revisions.filter(is_approved=True).order_by('-created')[1]
 
-            fromfile = u'[%s] %s #%s' % (r.document.locale,
-                                         r.document.title,
-                                         approved_rev.id)
-            tofile = u'[%s] %s #%s' % (r.document.locale,
-                                       r.document.title,
-                                       r.id)
-
-            diff = clean(
-                u''.join(
-                    difflib.unified_diff(
-                        approved_rev.content.splitlines(1),
-                        r.content.splitlines(1),
-                        fromfile=fromfile, tofile=tofile)),
-                ALLOWED_TAGS, ALLOWED_ATTRIBUTES)
+        diff = get_diff_for(r.document, old_rev, r)
 
         expected_body = (APPROVED_EMAIL_CONTENT % {
-            'reviewer': r.reviewer.username,
+            'reviewer': r.reviewer.profile.name,
             'document_title': self.document.title,
             'document_slug': self.document.slug,
             'watcher': watch.pk,
             'secret': watch.secret,
-            'summary': approved_rev.summary,
+            'summary': old_rev.summary,
             'diff': diff,
             'content': r.content})
 
         eq_(1, len(mail.outbox))
         attrs_eq(mail.outbox[0],
-                 subject=('{0} ({1}) has a new approved revision ({2})'
-                          .format(self.document.title, self.document.locale,
-                                  self.user.username)),
+                 subject=(u'{0} ({1}) has a new approved revision ({2})'
+                          .format(self.document.title, self.document.locale, self.user.username)),
                  body=expected_body,
                  to=['joe@example.com'])
 
@@ -1475,7 +1429,7 @@ class ReviewRevisionTests(TestCaseBase):
 
     def test_review_without_permission(self):
         """Make sure unauthorized users can't review revisions."""
-        u = user(save=True)
+        u = UserFactory()
         self.client.login(username=u.username, password='testpass')
         response = post(self.client, 'wiki.review_revision',
                         {'reject': 'Reject Revision'},
@@ -1484,8 +1438,8 @@ class ReviewRevisionTests(TestCaseBase):
 
     def test_review_as_l10n_leader(self):
         """Reviewing a revision as an l10n leader should work."""
-        u = user(save=True)
-        l10n = locale(locale='en-US', save=True)
+        u = UserFactory()
+        l10n = LocaleFactory(locale='en-US')
         l10n.leaders.add(u)
         self.client.login(username=u.username, password='testpass')
         response = post(self.client, 'wiki.review_revision',
@@ -1495,8 +1449,8 @@ class ReviewRevisionTests(TestCaseBase):
 
     def test_review_as_l10n_reviewer(self):
         """Reviewing a revision as an l10n reviewer should work."""
-        u = user(save=True)
-        l10n = locale(locale='en-US', save=True)
+        u = UserFactory()
+        l10n = LocaleFactory(locale='en-US')
         l10n.reviewers.add(u)
         self.client.login(username=u.username, password='testpass')
         response = post(self.client, 'wiki.review_revision',
@@ -1522,7 +1476,7 @@ class ReviewRevisionTests(TestCaseBase):
         """Make sure it works for localizations as well."""
         get_current.return_value.domain = 'testserver'
         doc = self.document
-        user_ = user(save=True)
+        user = UserFactory()
 
         # Create the translated document based on the current revision
         doc_es = _create_document(locale='es', parent=doc)
@@ -1531,19 +1485,23 @@ class ReviewRevisionTests(TestCaseBase):
         rev_es1.save()
 
         # Add a new revision to the parent and set it as the current one
-        rev = revision(summary="another tweak", content='lorem dimsum dolor',
-                       significance=SIGNIFICANCES[0][0], keywords='kw1 kw2',
-                       document=doc, creator=user_, is_approved=True,
-                       based_on=self.revision)
+        rev = ApprovedRevisionFactory(
+            summary="another tweak",
+            content='lorem dimsum dolor',
+            significance=SIGNIFICANCES[0][0],
+            keywords='kw1 kw2',
+            document=doc,
+            creator=user,
+            based_on=self.revision)
         rev.save()
 
         # Create a new translation based on the new current revision
-        rev_es2 = Revision(summary="lipsum",
-                           content='<div>Lorem {for mac}Ipsum{/for} '
-                                   'Dolor</div>',
-                           keywords='kw1 kw2', document=doc_es,
-                           creator=user_, based_on=doc.current_revision)
-        rev_es2.save()
+        rev_es2 = RevisionFactory(
+            summary="lipsum",
+            content='<div>Lorem {for mac}Ipsum{/for} Dolor</div>',
+            keywords='kw1 kw2', document=doc_es,
+            creator=user,
+            based_on=doc.current_revision)
 
         # Whew, now render the review page
         self.client.login(username='admin', password='testpass')
@@ -1575,16 +1533,17 @@ class ReviewRevisionTests(TestCaseBase):
         English revision.
 
         """
-        en_revision = revision(is_approved=False, save=True)
+        en_revision = RevisionFactory(is_approved=False)
 
         # Create the translated document based on the current revision
-        es_document = document(locale='es', parent=en_revision.document,
-                               save=True)
+        es_document = DocumentFactory(locale='es', parent=en_revision.document)
         # Create first revision
-        revision(document=es_document, is_approved=True, save=True)
-        es_revision = revision(document=es_document, reviewed=None,
-                               is_approved=False,
-                               reviewer=None, save=True)
+        RevisionFactory(document=es_document, is_approved=True)
+        es_revision = RevisionFactory(
+            document=es_document,
+            reviewed=None,
+            is_approved=False,
+            reviewer=None)
 
         # Now render the review page
         self.client.login(username='admin', password='testpass')
@@ -1607,18 +1566,18 @@ class ReviewRevisionTests(TestCaseBase):
         has only rejected revisions should show a message.
 
         """
-        user_ = user(save=True)
-        en_revision = revision(is_approved=False, save=True, reviewer=user_,
-                               reviewed=datetime.now())
+        user = UserFactory()
+        en_revision = RevisionFactory(is_approved=False, reviewer=user, reviewed=datetime.now())
 
         # Create the translated document based on the current revision
-        es_document = document(locale='es', parent=en_revision.document,
-                               save=True)
+        es_document = DocumentFactory(locale='es', parent=en_revision.document)
         # Create first revision
-        revision(document=es_document, is_approved=True, save=True)
-        es_revision = revision(document=es_document, reviewed=None,
-                               is_approved=False,
-                               reviewer=None, save=True)
+        RevisionFactory(document=es_document, is_approved=True)
+        es_revision = RevisionFactory(
+            document=es_document,
+            reviewed=None,
+            is_approved=False,
+            reviewer=None)
 
         # Now render the review page
         self.client.login(username='admin', password='testpass')
@@ -1646,7 +1605,7 @@ class ReviewRevisionTests(TestCaseBase):
 
         Textarea for approve/defer message should not be included in the page.
         """
-        rev = revision(is_approved=False, save=True)
+        rev = RevisionFactory(is_approved=False)
         u = rev.creator
         add_permission(u, Revision, 'review_revision')
         self.client.login(username=u.username, password='testpass')
@@ -1662,8 +1621,8 @@ class ReviewRevisionTests(TestCaseBase):
 
         Textarea for approve/defer message should be included in the page.
         """
-        rev1 = revision(is_approved=False, save=True)
-        rev2 = revision(is_approved=False, document=rev1.document, save=True)
+        rev1 = RevisionFactory(is_approved=False)
+        rev2 = RevisionFactory(is_approved=False, document=rev1.document)
         u = rev2.creator
         add_permission(u, Revision, 'review_revision')
         self.client.login(username=u.username, password='testpass')
@@ -1680,11 +1639,11 @@ class ReviewRevisionTests(TestCaseBase):
 
     def test_review_past_revision(self):
         """Verify that its not possible to review a revision older than the current revision"""
-        r1 = revision(is_approved=False, save=True)
-        r2 = revision(document=r1.document, is_approved=True, save=True)
+        r1 = RevisionFactory(is_approved=False)
+        r2 = RevisionFactory(document=r1.document, is_approved=True)
         r1.document.current_revision = r2
         r1.document.save()
-        u = user(save=True)
+        u = UserFactory()
         add_permission(u, Revision, 'review_revision')
         self.client.login(username=u.username, password='testpass')
 
@@ -1702,7 +1661,7 @@ class ReviewRevisionTests(TestCaseBase):
         assert message1 in doc_content
         assert message2 not in doc_content
         # While there is Unapproved revision after the Current Revision
-        revision(document=r1.document, is_approved=False, save=True)
+        RevisionFactory(document=r1.document, is_approved=False)
         response = get(self.client, 'wiki.review_revision',
                        args=[r1.document.slug, r1.id])
         doc = pq(response.content)
@@ -1714,10 +1673,10 @@ class ReviewRevisionTests(TestCaseBase):
         """Verify that reviewing revision comment and past revision comments are showing"""
         d = self.document
         # Create 7 Revisions in the Document
-        revs = [revision(document=d, is_approved=False, comment="test-{0}".format(i), save=True)
+        revs = [RevisionFactory(document=d, is_approved=False, comment="test-{0}".format(i))
                 for i in range(7)]
         # Create a user with Review permission and login with the user
-        u = user(save=True)
+        u = UserFactory()
         add_permission(u, Revision, 'review_revision')
         self.client.login(username=u.username, password='testpass')
 
@@ -1780,14 +1739,14 @@ class CompareRevisionTests(TestCaseBase):
         super(CompareRevisionTests, self).setUp()
         self.document = _create_document()
         self.revision1 = self.document.current_revision
-        u = user(save=True)
+        u = UserFactory()
         self.revision2 = Revision(summary="lipsum",
                                   content='<div>Lorem Ipsum Dolor</div>',
                                   keywords='kw1 kw2',
                                   document=self.document, creator=u)
         self.revision2.save()
 
-        u = user(save=True)
+        u = UserFactory()
         self.client.login(username=u.username, password='testpass')
 
     def test_compare_revisions(self):
@@ -1836,7 +1795,7 @@ class TranslateTests(TestCaseBase):
         super(TranslateTests, self).setUp()
         self.d = _create_document()
 
-        self.user = user(save=True)
+        self.user = UserFactory()
         self.client.login(username=self.user.username, password='testpass')
 
     def test_translate_GET_logged_out(self):
@@ -1931,7 +1890,7 @@ class TranslateTests(TestCaseBase):
                             significance=SIGNIFICANCES[0][0],
                             keywords='kw1 kw2',
                             document=self.d,
-                            creator_id=user(save=True).id,
+                            creator_id=UserFactory().id,
                             is_ready_for_localization=True,
                             is_approved=True)
         rev_enUS.save()
@@ -2026,8 +1985,7 @@ class TranslateTests(TestCaseBase):
         # Create the base revision
         base_rev = self._create_and_approve_first_translation()
         # Create a new current revision
-        r = revision(document=base_rev.document, is_approved=True)
-        r.save()
+        r = ApprovedRevisionFactory(document=base_rev.document)
         d = Document.objects.get(pk=base_rev.document.id)
         eq_(r, base_rev.document.current_revision)
 
@@ -2040,12 +1998,10 @@ class TranslateTests(TestCaseBase):
 
     def test_translate_rejected_parent(self):
         """Translate view of rejected English document shows warning."""
-        user_ = user(save=True)
-        en_revision = revision(is_approved=False, save=True, reviewer=user_,
-                               reviewed=datetime.now())
+        user = UserFactory()
+        en_revision = RevisionFactory(is_approved=False, reviewer=user, reviewed=datetime.now())
 
-        url = reverse('wiki.translate', locale='es',
-                      args=[en_revision.document.slug])
+        url = reverse('wiki.translate', locale='es', args=[en_revision.document.slug])
         response = self.client.get(url)
         doc = pq(response.content)
         assert doc('.user-messages .warning').text()
@@ -2054,16 +2010,12 @@ class TranslateTests(TestCaseBase):
         """Never offer an unready-for-localization revision as initial
         translation source text."""
         # Create an English document all ready to translate:
-        en_doc = document(is_localizable=True, save=True)
-        revision(document=en_doc,
-                 is_approved=True,
-                 is_ready_for_localization=True,
-                 save=True,
-                 content='I am the ready!')
-        revision(document=en_doc,
-                 is_approved=True,
-                 is_ready_for_localization=False,
-                 save=True)
+        en_doc = DocumentFactory(is_localizable=True)
+        ApprovedRevisionFactory(
+            document=en_doc,
+            is_ready_for_localization=True,
+            content='I am the ready!')
+        ApprovedRevisionFactory(document=en_doc, is_ready_for_localization=False)
 
         url = reverse('wiki.translate', locale='de', args=[en_doc.slug])
         response = self.client.get(url)
@@ -2074,18 +2026,13 @@ class TranslateTests(TestCaseBase):
         bringing an already translated article up to date."""
         # Create an initial translated revision so the version of the template
         # with the English-to-English diff shows up:
-        initial_rev = translated_revision(is_approved=True, save=True)
-        en_doc = initial_rev.document.parent
-        ready = revision(document=en_doc,
-                         is_approved=True,
-                         is_ready_for_localization=True,
-                         save=True)
-        revision(document=en_doc,
-                 is_approved=True,
-                 is_ready_for_localization=False,
-                 save=True)
+        initial_rev = TranslatedRevisionFactory(is_approved=True)
+        doc = initial_rev.document
+        en_doc = doc.parent
+        ready = ApprovedRevisionFactory(document=en_doc, is_ready_for_localization=True)
+        ApprovedRevisionFactory(document=en_doc, is_ready_for_localization=False)
 
-        url = reverse('wiki.translate', locale='de', args=[en_doc.slug])
+        url = reverse('wiki.translate', locale=doc.locale, args=[en_doc.slug])
         response = self.client.get(url)
         eq_(200, response.status_code)
         # Get the link to the rev on the right side of the diff:
@@ -2102,11 +2049,7 @@ class TranslateTests(TestCaseBase):
         base_es_rev.save()
 
         # Create a new current revision on the parent document.
-        r = revision(
-            document=es_doc.parent,
-            is_ready_for_localization=True,
-            is_approved=True,
-            save=True)
+        r = ApprovedRevisionFactory(document=es_doc.parent, is_ready_for_localization=True)
 
         url = reverse('wiki.edit_document', locale='es', args=[es_doc.slug])
         data = _translation_data()
@@ -2129,8 +2072,8 @@ class TranslateTests(TestCaseBase):
 
     def test_show_translations_page(self):
         en = settings.WIKI_DEFAULT_LANGUAGE
-        en_doc = document(save=True, locale=en, slug='english-slug')
-        document(save=True, locale='de', parent=en_doc)
+        en_doc = DocumentFactory(locale=en, slug='english-slug')
+        DocumentFactory(locale='de', parent=en_doc)
 
         url = reverse('wiki.show_translations',
                       locale=settings.WIKI_DEFAULT_LANGUAGE,
@@ -2147,7 +2090,7 @@ class TranslateTests(TestCaseBase):
         old_rev = self._create_and_approve_first_translation()
         doc = old_rev.document
 
-        u = user(save=True)
+        u = UserFactory()
         self.client.login(username=u.username, password='testpass')
 
         # Edit the document:
@@ -2175,9 +2118,7 @@ def _test_form_maintains_based_on_rev(client, doc, view, post_data,
         int(pq(response.content)('input[name=based_on]').attr('value')))
 
     # While Fred is editing the above, Martha approves a new rev:
-    martha_rev = revision(document=doc)
-    martha_rev.is_approved = True
-    martha_rev.save()
+    ApprovedRevisionFactory(document=doc)
 
     # Then Fred saves his edit:
     post_data_copy = {'based_on': orig_rev.id}
@@ -2195,9 +2136,9 @@ class DocumentWatchTests(TestCaseBase):
     def setUp(self):
         super(DocumentWatchTests, self).setUp()
         self.document = _create_document()
-        product(save=True)
+        ProductFactory()
 
-        self.user = user(save=True)
+        self.user = UserFactory()
         self.client.login(username=self.user.username, password='testpass')
 
     def test_watch_GET_405(self):
@@ -2234,7 +2175,7 @@ class LocaleWatchTests(TestCaseBase):
     def setUp(self):
         super(LocaleWatchTests, self).setUp()
 
-        self.user = user(save=True)
+        self.user = UserFactory()
         self.client.login(username=self.user, password='testpass')
 
     def test_watch_GET_405(self):
@@ -2282,7 +2223,7 @@ class ArticlePreviewTests(TestCaseBase):
     def setUp(self):
         super(ArticlePreviewTests, self).setUp()
 
-        u = user(save=True)
+        u = UserFactory()
         self.client.login(username=u.username, password='testpass')
 
     def test_preview_GET_405(self):
@@ -2327,12 +2268,12 @@ class HelpfulVoteTests(TestCaseBase):
         super(HelpfulVoteTests, self).setUp()
 
         self.document = _create_document()
-        product(save=True)
+        ProductFactory()
 
     def test_vote_yes(self):
         """Test voting helpful."""
         r = self.document.current_revision
-        user_ = user(save=True)
+        user_ = UserFactory()
         referrer = 'http://google.com/?q=test'
         query = 'test'
         self.client.login(username=user_.username, password='testpass')
@@ -2353,7 +2294,7 @@ class HelpfulVoteTests(TestCaseBase):
     def test_vote_no(self):
         """Test voting not helpful."""
         r = self.document.current_revision
-        user_ = user(save=True)
+        user_ = UserFactory()
         referrer = 'inproduct'
         query = ''
         self.client.login(username=user_.username, password='testpass')
@@ -2459,7 +2400,7 @@ class SelectLocaleTests(TestCaseBase):
         super(SelectLocaleTests, self).setUp()
         self.d = _create_document()
 
-        u = user(save=True)
+        u = UserFactory()
         self.client.login(username=u.username, password='testpass')
 
     def test_page_renders_locales(self):
@@ -2472,72 +2413,66 @@ class SelectLocaleTests(TestCaseBase):
 
 
 class RevisionDeleteTestCase(TestCaseBase):
-    def setUp(self):
-        super(RevisionDeleteTestCase, self).setUp()
-        self.d = _create_document()
-        self.r = revision(document=self.d)
-        self.r.save()
-
     def test_delete_revision_without_permissions(self):
         """Deleting a revision without permissions sends 403."""
-        u = user(save=True)
+        u = UserFactory()
+        doc = DocumentFactory()
+        rev = ApprovedRevisionFactory(document=doc)
         self.client.login(username=u.username, password='testpass')
-        response = get(self.client, 'wiki.delete_revision',
-                       args=[self.d.slug, self.r.id])
+        response = get(self.client, 'wiki.delete_revision', args=[doc.slug, rev.id])
         eq_(403, response.status_code)
 
-        response = post(self.client, 'wiki.delete_revision',
-                        args=[self.d.slug, self.r.id])
+        response = post(self.client, 'wiki.delete_revision', args=[doc.slug, rev.id])
         eq_(403, response.status_code)
 
     def test_delete_revision_logged_out(self):
         """Deleting a revision while logged out redirects to login."""
-        response = get(self.client, 'wiki.delete_revision',
-                       args=[self.d.slug, self.r.id])
+        doc = DocumentFactory()
+        rev = RevisionFactory(document=doc)
+        response = get(self.client, 'wiki.delete_revision', args=[doc.slug, rev.id])
         redirect = response.redirect_chain[0]
         eq_(302, redirect[1])
         eq_('http://testserver/%s%s?next=/en-US/kb/%s/revision/%s/delete' %
-            (settings.LANGUAGE_CODE, settings.LOGIN_URL, self.d.slug,
-                self.r.id),
+            (settings.LANGUAGE_CODE, settings.LOGIN_URL, doc.slug, rev.id),
             redirect[0])
 
-        response = post(self.client, 'wiki.delete_revision',
-                        args=[self.d.slug, self.r.id])
+        response = post(self.client, 'wiki.delete_revision', args=[doc.slug, rev.id])
         redirect = response.redirect_chain[0]
         eq_(302, redirect[1])
         eq_('http://testserver/%s%s?next=/en-US/kb/%s/revision/%s/delete' %
-            (settings.LANGUAGE_CODE, settings.LOGIN_URL, self.d.slug,
-                self.r.id),
+            (settings.LANGUAGE_CODE, settings.LOGIN_URL, doc.slug, rev.id),
             redirect[0])
 
     def _test_delete_revision_with_permission(self):
-        response = get(self.client, 'wiki.delete_revision',
-                       args=[self.d.slug, self.r.id])
+        doc = DocumentFactory()
+        rev1 = ApprovedRevisionFactory(document=doc)
+        rev2 = ApprovedRevisionFactory(document=doc)
+        response = get(self.client, 'wiki.delete_revision', args=[doc.slug, rev2.id])
         eq_(200, response.status_code)
-
-        response = post(self.client, 'wiki.delete_revision',
-                        args=[self.d.slug, self.r.id])
-        eq_(0, Revision.objects.filter(pk=self.r.id).count())
+        response = post(self.client, 'wiki.delete_revision', args=[doc.slug, rev2.id])
+        eq_(200, response.status_code)
+        assert not Revision.objects.filter(pk=rev2.id).exists()
+        assert Revision.objects.filter(pk=rev1.id).exists()
 
     def test_delete_revision_with_permission(self):
         """Deleting a revision with permissions should work."""
-        u = user(save=True)
+        u = UserFactory()
         add_permission(u, Revision, 'delete_revision')
         self.client.login(username=u.username, password='testpass')
         self._test_delete_revision_with_permission()
 
     def test_delete_revision_as_l10n_leader(self):
         """Deleting a revision as l10n leader should work."""
-        u = user(save=True)
-        l10n = locale(locale='en-US', save=True)
+        u = UserFactory()
+        l10n = LocaleFactory(locale='en-US')
         l10n.leaders.add(u)
         self.client.login(username=u.username, password='testpass')
         self._test_delete_revision_with_permission()
 
     def test_delete_revision_as_l10n_reviewer(self):
         """Deleting a revision as l10n reviewer should work."""
-        u = user(save=True)
-        l10n = locale(locale='en-US', save=True)
+        u = UserFactory()
+        l10n = LocaleFactory(locale='en-US')
         l10n.reviewers.add(u)
         self.client.login(username=u.username, password='testpass')
         self._test_delete_revision_with_permission()
@@ -2545,32 +2480,29 @@ class RevisionDeleteTestCase(TestCaseBase):
     def test_delete_current_revision(self):
         """Deleting the current_revision of a document should update
         the current_revision to previous version."""
-        u = user(save=True)
+        doc = DocumentFactory()
+        rev1 = ApprovedRevisionFactory(document=doc)
+        rev2 = ApprovedRevisionFactory(document=doc)
+
+        u = UserFactory()
         add_permission(u, Revision, 'delete_revision')
         self.client.login(username=u.username, password='testpass')
-        prev_revision = self.d.current_revision
-        prev_revision.reviewed = datetime.now() - timedelta(days=1)
-        prev_revision.save()
-        self.r.is_approved = True
-        self.r.reviewed = datetime.now()
-        self.r.save()
-        d = Document.objects.get(pk=self.d.pk)
-        eq_(self.r, d.current_revision)
+        eq_(rev2, doc.current_revision)
 
-        post(self.client, 'wiki.delete_revision',
-             args=[self.d.slug, self.r.id])
-        d = Document.objects.get(pk=d.pk)
-        eq_(prev_revision, d.current_revision)
+        res = post(self.client, 'wiki.delete_revision', args=[doc.slug, rev2.id])
+        eq_(res.status_code, 200)
+        doc = Document.objects.get(pk=doc.pk)
+        eq_(rev1, doc.current_revision)
 
     def test_delete_only_revision(self):
         """If there is only one revision, it can't be deleted."""
-        u = user(save=True)
+        u = UserFactory()
         add_permission(u, Revision, 'delete_revision')
         self.client.login(username=u.username, password='testpass')
 
         # Create document with only 1 revision
-        doc = document(save=True)
-        rev = revision(document=doc, save=True)
+        doc = DocumentFactory()
+        rev = RevisionFactory(document=doc)
 
         # Confirm page should show the message
         response = get(self.client, 'wiki.delete_revision',
@@ -2592,7 +2524,7 @@ class ApprovedWatchTests(TestCaseBase):
     def setUp(self):
         super(ApprovedWatchTests, self).setUp()
 
-        self.user = user(save=True)
+        self.user = UserFactory()
         self.client.login(username=self.user.username, password='testpass')
 
     def test_watch_GET_405(self):
@@ -2626,8 +2558,8 @@ class DocumentDeleteTestCase(TestCaseBase):
     """Tests for document delete."""
     def setUp(self):
         super(DocumentDeleteTestCase, self).setUp()
-        self.document = document(save=True)
-        self.user = user(username='testuser', save=True)
+        self.document = DocumentFactory()
+        self.user = UserFactory(username='testuser')
 
     def test_delete_document_without_permissions(self):
         """Deleting a document without permissions sends 403."""
@@ -2662,13 +2594,13 @@ class DocumentDeleteTestCase(TestCaseBase):
 
     def test_document_as_l10n_leader(self):
         """Deleting a document as l10n leader should work."""
-        l10n = locale(locale='en-US', save=True)
+        l10n = LocaleFactory(locale='en-US')
         l10n.leaders.add(self.user)
         self._test_delete_document_with_permission()
 
     def test_document_as_l10n_reviewer(self):
         """Deleting a document as l10n leader should NOT work."""
-        l10n = locale(locale='en-US', save=True)
+        l10n = LocaleFactory(locale='en-US')
         l10n.reviewers.add(self.user)
         self.test_delete_document_without_permissions()
 
@@ -2691,8 +2623,8 @@ class DocumentDeleteTestCase(TestCaseBase):
 class RecentRevisionsTest(TestCaseBase):
 
     def setUp(self):
-        self.u1 = user(save=True)
-        self.u2 = user(save=True)
+        self.u1 = UserFactory()
+        self.u2 = UserFactory()
 
         eq_(Document.objects.count(), 0)
 
@@ -2765,19 +2697,27 @@ class RecentRevisionsTest(TestCaseBase):
         eq_(len(doc('#revisions-fragment ul li:not(.header)')), 1)
 
 
-# TODO: Merge with wiki.tests.doc_rev()?
-def _create_document(title='Test Document', parent=None,
-                     locale=settings.WIKI_DEFAULT_LANGUAGE,
+# TODO: This should be a model maker subclass
+def _create_document(title='Test Document', parent=None, locale=settings.WIKI_DEFAULT_LANGUAGE,
                      doc_kwargs={}, rev_kwargs={}):
-    d = document(title=title, html='<div>Lorem Ipsum</div>',
-                 category=TROUBLESHOOTING_CATEGORY, locale=locale,
-                 parent=parent, is_localizable=True, **doc_kwargs)
+    d = DocumentFactory(
+        title=title,
+        html='<div>Lorem Ipsum</div>',
+        category=TROUBLESHOOTING_CATEGORY,
+        locale=locale,
+        parent=parent,
+        is_localizable=True,
+        **doc_kwargs)
     d.save()
-    r = revision(document=d, keywords='key1, key2', summary='lipsum',
-                 content='<div>Lorem Ipsum</div>',
-                 significance=SIGNIFICANCES[0][0], is_approved=True,
-                 is_ready_for_localization=True,
-                 comment="Good job!", **rev_kwargs)
+    r = ApprovedRevisionFactory(
+        document=d,
+        keywords='key1, key2',
+        summary='lipsum',
+        content='<div>Lorem Ipsum</div>',
+        significance=SIGNIFICANCES[0][0],
+        is_ready_for_localization=True,
+        comment="Good job!",
+        **rev_kwargs)
     r.created = r.created - timedelta(days=10)
     r.save()
     return d

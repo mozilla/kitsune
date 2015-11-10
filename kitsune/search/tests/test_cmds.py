@@ -2,11 +2,11 @@ from django.core.management import call_command
 
 import mock
 
-from kitsune.products.tests import product
+from kitsune.products.tests import ProductFactory
 from kitsune.search import es_utils
 from kitsune.search.tests import ElasticTestCase
 from kitsune.search.utils import FakeLogger
-from kitsune.wiki.tests import document, revision
+from kitsune.wiki.tests import DocumentFactory, RevisionFactory
 
 
 class ESCommandTests(ElasticTestCase):
@@ -15,10 +15,9 @@ class ESCommandTests(ElasticTestCase):
         """Test that es_search command doesn't fail"""
         call_command('essearch', 'cupcakes')
 
-        doc = document(title=u'cupcakes rock', locale=u'en-US', category=10,
-                       save=True)
-        doc.products.add(product(title=u'firefox', slug=u'desktop', save=True))
-        revision(document=doc, is_approved=True, save=True)
+        p = ProductFactory(title=u'firefox', slug=u'desktop')
+        doc = DocumentFactory(title=u'cupcakes rock', locale=u'en-US', category=10, products=[p])
+        RevisionFactory(document=doc, is_approved=True)
 
         self.refresh()
 
@@ -26,10 +25,9 @@ class ESCommandTests(ElasticTestCase):
 
     @mock.patch.object(FakeLogger, '_out')
     def test_reindex(self, _out):
-        doc = document(title=u'cupcakes rock', locale=u'en-US', category=10,
-                       save=True)
-        doc.products.add(product(title=u'firefox', slug=u'desktop', save=True))
-        revision(document=doc, is_approved=True, save=True)
+        p = ProductFactory(title=u'firefox', slug=u'desktop')
+        doc = DocumentFactory(title=u'cupcakes rock', locale=u'en-US', category=10, products=[p])
+        RevisionFactory(document=doc, is_approved=True)
 
         self.refresh()
 
@@ -41,10 +39,9 @@ class ESCommandTests(ElasticTestCase):
 
     @mock.patch.object(FakeLogger, '_out')
     def test_status(self, _out):
-        doc = document(title=u'cupcakes rock', locale=u'en-US', category=10,
-                       save=True)
-        doc.products.add(product(title=u'firefox', slug=u'desktop', save=True))
-        revision(document=doc, is_approved=True, save=True)
+        p = ProductFactory(title=u'firefox', slug=u'desktop')
+        doc = DocumentFactory(title=u'cupcakes rock', locale=u'en-US', category=10, products=[p])
+        RevisionFactory(document=doc, is_approved=True)
 
         self.refresh()
 

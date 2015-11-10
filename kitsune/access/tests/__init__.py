@@ -1,20 +1,21 @@
 from django.contrib.contenttypes.models import ContentType
 from django.test.client import RequestFactory
 
+import factory
 from authority.models import Permission
 from nose.tools import eq_
 
 from kitsune import access
-from kitsune.sumo.tests import TestCase, with_save
+from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.users.tests import user
+from kitsune.users.tests import UserFactory
 
 
-@with_save
-def permission(**kwargs):
-    if 'approved' not in kwargs:
-        kwargs['approved'] = True
-    return Permission(**kwargs)
+class PermissionFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = Permission
+
+    approved = True
 
 
 class AccessTests(TestCase):
@@ -25,11 +26,11 @@ class AccessTests(TestCase):
 
     def test_admin_perm_thread(self):
         """Super user can do anything on any forum."""
-        from kitsune.forums.tests import restricted_forum
-        f1 = restricted_forum()
-        f2 = restricted_forum()
+        from kitsune.forums.tests import RestrictedForumFactory
+        f1 = RestrictedForumFactory()
+        f2 = RestrictedForumFactory()
 
-        admin = user(is_staff=True, is_superuser=True, save=True)
+        admin = UserFactory(is_staff=True, is_superuser=True)
 
         # Loop over all forums perms and both forums
         perms = ('thread_edit_forum', 'thread_delete_forum', 'post_edit_forum',
@@ -42,10 +43,10 @@ class AccessTests(TestCase):
 
     def test_util_has_perm_or_owns_sanity(self):
         """Sanity check for access.has_perm_or_owns."""
-        from kitsune.forums.tests import thread
-        me = user(save=True)
-        my_t = thread(creator=me, save=True)
-        other_t = thread(save=True)
+        from kitsune.forums.tests import ThreadFactory
+        me = UserFactory()
+        my_t = ThreadFactory(creator=me)
+        other_t = ThreadFactory()
         perm = 'forums_forum.thread_edit_forum'
         allowed = access.has_perm_or_owns(me, perm, my_t, my_t.forum)
         eq_(allowed, True)
@@ -54,16 +55,15 @@ class AccessTests(TestCase):
 
     def test_has_perm_per_object(self):
         """Assert has_perm checks per-object permissions correctly."""
-        from kitsune.forums.tests import restricted_forum
-        f1 = restricted_forum()
-        f2 = restricted_forum()
+        from kitsune.forums.tests import RestrictedForumFactory
+        f1 = RestrictedForumFactory()
+        f2 = RestrictedForumFactory()
 
         # Give user permission to one of the forums
-        u = user(save=True)
+        u = UserFactory()
         perm = 'forums_forum.view_in_forum'
         ct = ContentType.objects.get_for_model(f1)
-        permission(codename=perm, content_type=ct,
-                   object_id=f1.id, user=u, save=True)
+        PermissionFactory(codename=perm, content_type=ct, object_id=f1.id, user=u)
         assert access.has_perm(u, perm, f1)
         assert not access.has_perm(u, perm, f2)
 
@@ -73,9 +73,9 @@ class AccessTests(TestCase):
         Test whether we check for permission relationship, independent
         of whether the permission is actually assigned to anyone.
         """
-        from kitsune.forums.tests import forum, restricted_forum
-        f1 = restricted_forum()
-        f2 = forum(save=True)
+        from kitsune.forums.tests import ForumFactory, RestrictedForumFactory
+        f1 = RestrictedForumFactory()
+        f2 = ForumFactory()
         perm = 'forums_forum.view_in_forum'
         assert access.perm_is_defined_on(perm, f1)
         assert not access.perm_is_defined_on(perm, f2)

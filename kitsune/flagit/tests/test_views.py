@@ -5,17 +5,17 @@ from nose.tools import eq_
 from kitsune.flagit.tests import TestCaseBase
 from kitsune.flagit.models import FlaggedObject
 from kitsune.questions.models import Question
-from kitsune.questions.tests import question
+from kitsune.questions.tests import QuestionFactory
 from kitsune.sumo.tests import post
-from kitsune.users.tests import user
+from kitsune.users.tests import UserFactory
 
 
 class FlagTestCase(TestCaseBase):
     """Test the flag view."""
     def setUp(self):
         super(FlagTestCase, self).setUp()
-        self.user = user(save=True)
-        self.question = question(creator=self.user, save=True)
+        self.user = UserFactory()
+        self.question = QuestionFactory(creator=self.user)
 
         self.client.login(username=self.user.username, password='testpass')
 

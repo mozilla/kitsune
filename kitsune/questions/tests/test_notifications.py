@@ -8,12 +8,12 @@ import mock
 from nose.tools import eq_
 
 from kitsune.questions.events import QuestionReplyEvent, QuestionSolvedEvent
-from kitsune.questions.models import Question, Answer
-from kitsune.questions.tests import TestCaseBase, question, answer
+from kitsune.questions.models import Question
+from kitsune.questions.tests import TestCaseBase, QuestionFactory, AnswerFactory
 from kitsune.sumo.tests import post, attrs_eq, starts_with
 from kitsune.users.helpers import display_name
 from kitsune.users.models import Setting
-from kitsune.users.tests import user
+from kitsune.users.tests import UserFactory
 
 
 # These mails are generated using reverse() calls, which return different
@@ -30,7 +30,7 @@ from kitsune.users.tests import user
 # never prepend a locale code unless passed force_locale=True. Thus, these
 # test-emails with locale prefixes are not identical to the ones sent in
 # production.
-ANSWER_EMAIL_TO_ANONYMOUS = """{replier} commented on a Firefox question on \
+ANSWER_EMAIL_TO_ANONYMOUS = u"""{replier} commented on a Firefox question on \
 testserver:
 
 {title}
@@ -60,8 +60,10 @@ You might just make someone's day!
 --
 Unsubscribe from these emails:
 https://testserver/{locale}unsubscribe"""
+
 ANSWER_EMAIL = u'Hi {to_user},\n\n' + ANSWER_EMAIL_TO_ANONYMOUS
-ANSWER_EMAIL_TO_ASKER = """Hi {asker},
+
+ANSWER_EMAIL_TO_ASKER = u"""Hi {asker},
 
 {replier} has posted an answer to your question on testserver:
 {title}
@@ -76,7 +78,8 @@ questions-reply&utm_medium=email&utm_source=notification&auth=AUTH\
 #answer-{answer_id}
 
 If this answer solves your problem, please mark it as "solved":"""
-SOLUTION_EMAIL_TO_ANONYMOUS = """We just wanted to let you know that \
+
+SOLUTION_EMAIL_TO_ANONYMOUS = u"""We just wanted to let you know that \
 {replier} has found a solution to a Firefox question that you're following.
 
 The question:
@@ -100,7 +103,8 @@ day!
 --
 Unsubscribe from these emails:
 https://testserver/{locale}unsubscribe/"""
-SOLUTION_EMAIL = 'Hi {to_user},\n\n' + SOLUTION_EMAIL_TO_ANONYMOUS
+
+SOLUTION_EMAIL = u'Hi {to_user},\n\n' + SOLUTION_EMAIL_TO_ANONYMOUS
 
 
 class NotificationsTests(TestCaseBase):
@@ -109,15 +113,15 @@ class NotificationsTests(TestCaseBase):
     @mock.patch.object(QuestionReplyEvent, 'fire')
     def test_fire_on_new_answer(self, fire):
         """The event fires when a new answer is saved."""
-        q = question(save=True)
-        Answer.objects.create(question=q, creator=user(save=True))
+        q = QuestionFactory()
+        AnswerFactory(question=q)
 
         assert fire.called
 
     @mock.patch.object(QuestionSolvedEvent, 'fire')
     def test_fire_on_solution(self, fire):
         """The event also fires when an answer is marked as a solution."""
-        a = answer(save=True)
+        a = AnswerFactory()
         q = a.question
 
         self.client.login(username=q.creator, password='testpass')
@@ -128,7 +132,7 @@ class NotificationsTests(TestCaseBase):
     def _toggle_watch_question(self, event_type, user, turn_on=True):
         """Helper to watch/unwatch a question. Fails if called twice with
         the same turn_on value."""
-        q = question(save=True)
+        q = QuestionFactory()
 
         self.client.login(username=user.username, password='testpass')
 
@@ -162,11 +166,11 @@ class NotificationsTests(TestCaseBase):
         # TODO: Too monolithic. Split this test into several.
         get_current.return_value.domain = 'testserver'
 
-        u = user(save=True)
+        u = UserFactory()
         q = self._toggle_watch_question('solution', u, turn_on=True)
         QuestionSolvedEvent.notify('anon@ymous.com', q)
 
-        a = answer(question=q, save=True)
+        a = AnswerFactory(question=q)
 
         # Mark a solution
         self.client.login(username=q.creator.username, password='testpass')
@@ -208,9 +212,9 @@ class NotificationsTests(TestCaseBase):
 
         get_current.return_value.domain = 'testserver'
 
-        u = user(save=True)
-        t1 = question(save=True)
-        t2 = question(save=True)
+        u = UserFactory()
+        t1 = QuestionFactory()
+        t2 = QuestionFactory()
         assert not QuestionReplyEvent.is_notifying(u, t1)
         assert not QuestionReplyEvent.is_notifying(u, t2)
 
@@ -237,7 +241,7 @@ class NotificationsTests(TestCaseBase):
         """
         get_current.return_value.domain = 'testserver'
 
-        a = answer(save=True)
+        a = AnswerFactory()
         q = a.question
         q.solution = a
         q.save()
@@ -265,14 +269,14 @@ class TestAnswerNotifications(TestCaseBase):
         super(TestAnswerNotifications, self).setUp()
         self._get_current_mock = mock.patch.object(Site.objects, 'get_current')
         self._get_current_mock.start().return_value.domain = 'testserver'
-        self.question = question(save=True)
+        self.question = QuestionFactory()
 
     def tearDown(self):
         super(TestAnswerNotifications, self).tearDown()
         self._get_current_mock.stop()
 
     def makeAnswer(self):
-        self.answer = answer(question=self.question, save=True)
+        self.answer = AnswerFactory(question=self.question)
 
     def format_args(self):
         return {
@@ -297,7 +301,7 @@ class TestAnswerNotifications(TestCaseBase):
         notification = [m for m in mail.outbox if m.to == [ANON_EMAIL]][0]
 
         eq_([ANON_EMAIL], notification.to)
-        eq_("Re: {0}".format(self.question.title), notification.subject)
+        eq_(u'Re: {0}'.format(self.question.title), notification.subject)
 
         body = re.sub(r'auth=[a-zA-Z0-9%_-]+', 'auth=AUTH', notification.body)
         starts_with(body, ANSWER_EMAIL_TO_ANONYMOUS
@@ -305,7 +309,7 @@ class TestAnswerNotifications(TestCaseBase):
 
     def test_notify_arbitrary(self):
         """Test that arbitrary users are notified of new answers."""
-        watcher = user(save=True)
+        watcher = UserFactory()
         QuestionReplyEvent.notify(watcher, self.question)
         self.makeAnswer()
 
@@ -314,7 +318,7 @@ class TestAnswerNotifications(TestCaseBase):
         notification = [m for m in mail.outbox if m.to == [watcher.email]][0]
 
         eq_([watcher.email], notification.to)
-        eq_("Re: {0}".format(self.question.title), notification.subject)
+        eq_(u'Re: {0}'.format(self.question.title), notification.subject)
 
         body = re.sub(r'auth=[a-zA-Z0-9%_-]+', 'auth=AUTH', notification.body)
         starts_with(body, ANSWER_EMAIL.format(to_user=display_name(watcher), **self.format_args()))
@@ -327,7 +331,7 @@ class TestAnswerNotifications(TestCaseBase):
         notification = mail.outbox[0]
 
         eq_([self.question.creator.email], notification.to)
-        eq_('{0} posted an answer to your question "{1}"'
+        eq_(u'{0} posted an answer to your question "{1}"'
             .format(display_name(self.answer.creator), self.question.title),
             notification.subject)
 
@@ -354,7 +358,7 @@ class TestAnswerNotifications(TestCaseBase):
         """
         Test that notifications to the asker have a correct reply to field.
         """
-        watcher = user(save=True)
+        watcher = UserFactory()
         QuestionReplyEvent.notify(watcher, self.question)
         self.makeAnswer()
 

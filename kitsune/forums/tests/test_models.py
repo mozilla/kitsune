@@ -4,15 +4,15 @@ from django.contrib.contenttypes.models import ContentType
 
 from nose.tools import eq_
 
-from kitsune.access.tests import permission
+from kitsune.access.tests import PermissionFactory
 from kitsune.flagit.models import FlaggedObject
 from kitsune.forums import POSTS_PER_PAGE
 from kitsune.forums.events import NewPostEvent, NewThreadEvent
 from kitsune.forums.models import Forum, Thread, Post
-from kitsune.forums.tests import ForumTestCase, forum, thread, post
+from kitsune.forums.tests import ForumTestCase, ForumFactory, ThreadFactory, PostFactory
 from kitsune.sumo.helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.users.tests import user
+from kitsune.users.tests import UserFactory
 
 
 YESTERDAY = datetime.now() - timedelta(days=1)
@@ -20,26 +20,25 @@ YESTERDAY = datetime.now() - timedelta(days=1)
 
 class ForumModelTestCase(ForumTestCase):
     def test_forum_absolute_url(self):
-        f = forum(save=True)
+        f = ForumFactory()
 
         eq_('/forums/%s' % f.slug,
             f.get_absolute_url())
 
     def test_thread_absolute_url(self):
-        t = thread(save=True)
+        t = ThreadFactory()
 
         eq_('/forums/%s/%s' % (t.forum.slug, t.id),
             t.get_absolute_url())
 
     def test_post_absolute_url(self):
-        t = thread(save=True)
+        t = ThreadFactory(posts=[])
 
         # Fill out the first page with posts from yesterday.
-        p1 = post(thread=t, created=YESTERDAY, save=True)
-        for i in range(POSTS_PER_PAGE - 1):
-            post(thread=t, created=YESTERDAY, save=True)
+        p1 = PostFactory(thread=t, created=YESTERDAY)
+        PostFactory.create_batch(POSTS_PER_PAGE - 1, created=YESTERDAY, thread=t)
         # Second page post from today.
-        p2 = post(thread=t, save=True)
+        p2 = PostFactory(thread=t)
 
         url = reverse('forums.posts',
                       kwargs={'forum_slug': p1.thread.forum.slug,
@@ -53,13 +52,11 @@ class ForumModelTestCase(ForumTestCase):
         eq_(exp_, p2.get_absolute_url())
 
     def test_post_page(self):
-        t = thread(save=True)
+        t = ThreadFactory()
         # Fill out the first page with posts from yesterday.
-        page1 = []
-        for i in range(POSTS_PER_PAGE):
-            page1.append(post(thread=t, created=YESTERDAY, save=True))
+        page1 = PostFactory.create_batch(POSTS_PER_PAGE, thread=t, created=YESTERDAY)
         # Second page post from today.
-        p2 = post(thread=t, save=True)
+        p2 = PostFactory(thread=t)
 
         for p in page1:
             eq_(1, p.page)
@@ -67,9 +64,9 @@ class ForumModelTestCase(ForumTestCase):
 
     def test_delete_post_removes_flag(self):
         """Deleting a post also removes the flags on that post."""
-        p = post(save=True)
+        p = PostFactory()
 
-        u = user(save=True)
+        u = UserFactory()
         FlaggedObject.objects.create(
             status=0, content_object=p, reason='language', creator_id=u.id)
         eq_(1, FlaggedObject.objects.count())
@@ -78,8 +75,7 @@ class ForumModelTestCase(ForumTestCase):
         eq_(0, FlaggedObject.objects.count())
 
     def test_thread_last_post_url(self):
-        t = thread(save=True)
-        post(thread=t, save=True)
+        t = ThreadFactory()
         lp = t.last_post
         f = t.forum
         url = t.get_last_post_url()
@@ -91,11 +87,11 @@ class ForumModelTestCase(ForumTestCase):
     def test_last_post_updated(self):
         # Adding/Deleting the last post in a thread and forum should
         # update the last_post field
-        orig_post = post(created=YESTERDAY, save=True)
+        orig_post = PostFactory(created=YESTERDAY)
         t = orig_post.thread
 
         # add a new post, then check that last_post is updated
-        new_post = post(thread=t, content="test", save=True)
+        new_post = PostFactory(thread=t, content="test")
         f = Forum.objects.get(id=t.forum_id)
         t = Thread.objects.get(id=t.id)
         eq_(f.last_post.id, new_post.id)
@@ -113,8 +109,8 @@ class ForumModelTestCase(ForumTestCase):
         # at appropriate times.
 
         # By default, users have access to forums that aren't restricted.
-        u = user(save=True)
-        f = forum(save=True)
+        u = UserFactory()
+        f = ForumFactory()
         assert f.allows_viewing_by(u)
         assert f.allows_posting_by(u)
 
@@ -123,14 +119,12 @@ class ForumModelTestCase(ForumTestCase):
         # If the a forum has 'forums_forum.view_in_forum' permission defined,
         # then it isn't public by default. If it has
         # 'forums_forum.post_in_forum', then it isn't postable to by default.
-        f = forum(save=True)
+        f = ForumFactory()
         ct = ContentType.objects.get_for_model(f)
-        permission(codename='forums_forum.view_in_forum', content_type=ct,
-                   object_id=f.id, save=True)
-        permission(codename='forums_forum.post_in_forum', content_type=ct,
-                   object_id=f.id, save=True)
+        PermissionFactory(codename='forums_forum.view_in_forum', content_type=ct, object_id=f.id)
+        PermissionFactory(codename='forums_forum.post_in_forum', content_type=ct, object_id=f.id)
 
-        unprivileged_user = user(save=True)
+        unprivileged_user = UserFactory()
         assert not f.allows_viewing_by(unprivileged_user)
         assert not f.allows_posting_by(unprivileged_user)
 
@@ -141,16 +135,16 @@ class ForumModelTestCase(ForumTestCase):
         # delete the old forum. [bug 588994]
 
         # Setup forum to move latest thread from.
-        old_forum = forum(save=True)
-        t1 = thread(forum=old_forum, save=True)
-        p1 = post(thread=t1, created=YESTERDAY, save=True)
-        t2 = thread(forum=old_forum, save=True)
-        p2 = post(thread=t2, save=True)  # Newest post of all.
+        old_forum = ForumFactory()
+        t1 = ThreadFactory(forum=old_forum, posts=[])
+        p1 = PostFactory(thread=t1, created=YESTERDAY)
+        t2 = ThreadFactory(forum=old_forum, posts=[])
+        p2 = PostFactory(thread=t2)  # Newest post of all.
 
         # Setup forum to move latest thread to.
-        new_forum = forum(save=True)
-        t3 = thread(forum=new_forum, save=True)
-        p3 = post(thread=t3, created=YESTERDAY, save=True)
+        new_forum = ForumFactory()
+        t3 = ThreadFactory(forum=new_forum, posts=[])
+        p3 = PostFactory(thread=t3, created=YESTERDAY)
 
         # Verify the last_post's are correct.
         eq_(p2, Forum.objects.get(id=old_forum.id).last_post)
@@ -173,7 +167,7 @@ class ForumModelTestCase(ForumTestCase):
         eq_(1, Forum.objects.filter(id=new_forum.id).count())
 
     def test_delete_removes_watches(self):
-        f = forum(save=True)
+        f = ForumFactory()
         NewThreadEvent.notify('me@me.com', f)
         assert NewThreadEvent.is_notifying('me@me.com', f)
         f.delete()
@@ -182,28 +176,27 @@ class ForumModelTestCase(ForumTestCase):
     def test_last_post_creator_deleted(self):
         """Delete the creator of the last post and verify forum survives."""
         # Create a post and verify it is the last one in the forum.
-        post_ = post(content="test", save=True)
-        forum_ = post_.thread.forum
-        eq_(forum_.last_post.id, post_.id)
+        post = PostFactory(content="test")
+        forum = post.thread.forum
+        eq_(forum.last_post.id, post.id)
 
         # Delete the post creator, then check the forum still exists
-        post_.author.delete()
-        forum_ = Forum.objects.get(id=forum_.id)
-        eq_(forum_.last_post, None)
+        post.author.delete()
+        forum = Forum.objects.get(id=forum.id)
+        eq_(forum.last_post, None)
 
 
 class ThreadModelTestCase(ForumTestCase):
     def test_delete_thread_with_last_forum_post(self):
         # Deleting the thread with a forum's last post should update
         # the last_post field on the forum
-        t = thread(save=True)
-        post(thread=t, save=True)
+        t = ThreadFactory()
         f = t.forum
         last_post = f.last_post
 
         # add a new thread and post, verify last_post updated
-        t = thread(title="test", forum=f, save=True)
-        p = post(thread=t, content="test", author=t.creator, save=True)
+        t = ThreadFactory(title="test", forum=f, posts=[])
+        p = PostFactory(thread=t, content="test", author=t.creator)
         f = Forum.objects.get(id=f.id)
         eq_(f.last_post.id, p.id)
 
@@ -214,7 +207,7 @@ class ThreadModelTestCase(ForumTestCase):
         eq_(Thread.objects.filter(pk=t.id).count(), 0)
 
     def test_delete_removes_watches(self):
-        t = thread(save=True)
+        t = ThreadFactory()
         NewPostEvent.notify('me@me.com', t)
         assert NewPostEvent.is_notifying('me@me.com', t)
         t.delete()
@@ -222,9 +215,7 @@ class ThreadModelTestCase(ForumTestCase):
 
     def test_delete_last_and_only_post_in_thread(self):
         """Deleting the only post in a thread should delete the thread"""
-        t = thread(save=True)
-        post(thread=t, save=True)
-
+        t = ThreadFactory()
         eq_(1, t.post_set.count())
         t.delete()
         eq_(0, Thread.objects.filter(pk=t.id).count())
@@ -241,8 +232,8 @@ class SaveDateTestCase(ForumTestCase):
     def setUp(self):
         super(SaveDateTestCase, self).setUp()
 
-        self.user = user(save=True)
-        self.thread = thread(save=True)
+        self.user = UserFactory()
+        self.thread = ThreadFactory()
         self.forum = self.thread.forum
 
     def assertDateTimeAlmostEqual(self, a, b, delta, msg=None):
@@ -253,9 +244,7 @@ class SaveDateTestCase(ForumTestCase):
 
     def test_save_thread_no_created(self):
         """Saving a new thread should behave as if auto_add_now was set."""
-        t = thread(forum=self.forum, title='foo', creator=self.user,
-                   save=True)
-        t.save()
+        t = ThreadFactory(forum=self.forum, title='foo', creator=self.user)
         now = datetime.now()
         self.assertDateTimeAlmostEqual(now, t.created, self.delta)
 
@@ -263,19 +252,16 @@ class SaveDateTestCase(ForumTestCase):
         # Saving a new thread that already has a created date should
         # respect that created date.
         created = datetime(1992, 1, 12, 9, 48, 23)
-        t = thread(forum=self.forum, title='foo', creator=self.user,
-                   created=created, save=True)
-        t.save()
+        t = Thread(forum=self.forum, title='foo', creator=self.user, created=created)
         eq_(created, t.created)
 
     def test_save_old_thread_created(self):
         """Saving an old thread should not change its created date."""
-        t = thread(created=YESTERDAY, save=True)
+        t = ThreadFactory(created=YESTERDAY)
         t = Thread.objects.get(id=t.id)
         created = t.created
 
-        # Now make an update to the thread and resave. Created shouldn't
-        # change.
+        # Now make an update to the thread and resave. Created shouldn't change.
         t.title = 'new title'
         t.save()
         t = Thread.objects.get(id=t.id)
@@ -284,8 +270,7 @@ class SaveDateTestCase(ForumTestCase):
     def test_save_new_post_no_timestamps(self):
         # Saving a new post should behave as if auto_add_now was set on
         # created and auto_now set on updated.
-        p = post(thread=self.thread, content='bar', author=self.user,
-                 save=True)
+        p = PostFactory(thread=self.thread, content='bar', author=self.user)
         now = datetime.now()
         self.assertDateTimeAlmostEqual(now, p.created, self.delta)
         self.assertDateTimeAlmostEqual(now, p.updated, self.delta)
@@ -294,8 +279,7 @@ class SaveDateTestCase(ForumTestCase):
         """Saving an existing post should update the updated date."""
         created = datetime(2010, 5, 4, 14, 4, 22)
         updated = datetime(2010, 5, 4, 14, 4, 31)
-        p = post(thread=self.thread, created=created, updated=updated,
-                 save=True)
+        p = PostFactory(thread=self.thread, created=created, updated=updated)
 
         eq_(updated, p.updated)
 
@@ -319,5 +303,5 @@ class SaveDateTestCase(ForumTestCase):
 
     def test_content_parsed_sanity(self):
         """The content_parsed field is populated."""
-        p = post(thread=self.thread, content='yet another post', save=True)
+        p = PostFactory(thread=self.thread, content='yet another post')
         eq_('<p>yet another post\n</p>', p.content_parsed)

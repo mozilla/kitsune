@@ -1,73 +1,57 @@
 from nose.tools import eq_
 
-from kitsune.products.tests import product, topic
+from kitsune.products.tests import ProductFactory, TopicFactory
 from kitsune.search.tests.test_es import ElasticTestCase
 from kitsune.sumo.tests import TestCase
 from kitsune.wiki.facets import (
     topics_for, documents_for, _documents_for, _db_documents_for)
-from kitsune.wiki.tests import revision
+from kitsune.wiki.tests import (
+    DocumentFactory, TemplateDocumentFactory, RevisionFactory, ApprovedRevisionFactory)
 
 
 class TestFacetHelpersMixin(object):
     def facets_setUp(self):
         # Create products
-        self.desktop = product(slug='firefox', save=True)
-        self.mobile = product(slug='mobile', save=True)
+        self.desktop = ProductFactory(slug='firefox')
+        self.mobile = ProductFactory(slug='mobile')
 
         # Create topics
-        self.general_d = topic(
-            product=self.desktop, slug='general', save=True)
-        self.bookmarks_d = topic(
-            product=self.desktop, slug='bookmarks', save=True)
-        self.sync_d = topic(product=self.desktop, slug='sync', save=True)
-        self.general_m = topic(
-            product=self.mobile, slug='general', save=True)
-        self.bookmarks_m = topic(
-            product=self.mobile, slug='bookmarks', save=True)
-        self.sync_m = topic(product=self.mobile, slug='sync', save=True)
+        self.general_d = TopicFactory(product=self.desktop, slug='general')
+        self.bookmarks_d = TopicFactory(product=self.desktop, slug='bookmarks')
+        self.sync_d = TopicFactory(product=self.desktop, slug='sync')
+        self.general_m = TopicFactory(product=self.mobile, slug='general')
+        self.bookmarks_m = TopicFactory(product=self.mobile, slug='bookmarks')
+        self.sync_m = TopicFactory(product=self.mobile, slug='sync')
 
         # Set up documents.
-        doc1 = revision(is_approved=True, save=True).document
-        doc1.topics.add(self.general_d)
-        doc1.topics.add(self.bookmarks_d)
-        doc1.products.add(self.desktop)
+        doc1 = DocumentFactory(products=[self.desktop], topics=[self.general_d, self.bookmarks_d])
+        ApprovedRevisionFactory(document=doc1)
 
-        doc2 = revision(is_approved=True, save=True).document
-        doc2.topics.add(self.bookmarks_d)
-        doc2.topics.add(self.bookmarks_m)
-        doc2.topics.add(self.sync_d)
-        doc2.topics.add(self.sync_m)
-        doc2.products.add(self.desktop)
-        doc2.products.add(self.mobile)
+        doc2 = DocumentFactory(
+            products=[self.desktop, self.mobile],
+            topics=[self.bookmarks_d, self.bookmarks_m, self.sync_d, self.sync_m])
+        ApprovedRevisionFactory(document=doc2)
 
         # An archived article shouldn't show up
-        doc3 = revision(is_approved=True, save=True).document
-        doc3.is_archived = True
-        doc3.save()
-        doc3.topics.add(self.general_d)
-        doc3.topics.add(self.bookmarks_d)
-        doc3.products.add(self.desktop)
+        doc3 = DocumentFactory(
+            is_archived=True,
+            products=[self.desktop],
+            topics=[self.general_d, self.bookmarks_d])
+        ApprovedRevisionFactory(document=doc3)
 
         # A template article shouldn't show up either
-        doc4 = revision(is_approved=True, save=True).document
-        doc4.category = 60
-        doc4.title = 'Template: Test'
-        doc4.save()
-        doc4.topics.add(self.general_d)
-        doc4.topics.add(self.bookmarks_d)
-        doc4.products.add(self.desktop)
+        doc4 = TemplateDocumentFactory(
+            products=[self.desktop],
+            topics=[self.general_d, self.bookmarks_d])
+        ApprovedRevisionFactory(document=doc4)
 
         # An article without current revision should be "invisible"
         # to everything.
-        doc5 = revision(is_approved=False, save=True).document
-        doc5.topics.add(self.general_d)
-        doc5.topics.add(self.general_m)
-        doc5.topics.add(self.bookmarks_d)
-        doc5.topics.add(self.bookmarks_m)
-        doc5.topics.add(self.sync_d)
-        doc5.topics.add(self.sync_m)
-        doc5.products.add(self.desktop)
-        doc5.products.add(self.mobile)
+        doc5 = DocumentFactory(
+            products=[self.desktop, self.mobile],
+            topics=[self.general_d, self.bookmarks_d, self.sync_d,
+                    self.general_m, self.bookmarks_m, self.sync_m])
+        RevisionFactory(is_approved=False, document=doc5)
 
 
 class TestFacetHelpers(TestCase, TestFacetHelpersMixin):

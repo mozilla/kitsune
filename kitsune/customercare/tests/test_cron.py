@@ -12,7 +12,7 @@ from nose.tools import eq_
 from kitsune.customercare.cron import (
     _filter_tweet, _get_oldest_tweet, purge_tweets, get_customercare_stats)
 from kitsune.customercare.models import Tweet, Reply
-from kitsune.customercare.tests import tweet, twitter_account, reply
+from kitsune.customercare.tests import TweetFactory, TwitterAccountFactory, ReplyFactory
 from kitsune.sumo.redis_utils import redis_client, RedisError
 from kitsune.sumo.tests import SkipTest, TestCase
 
@@ -96,7 +96,7 @@ class TwitterCronTestCase(TestCase):
 
     def test_fx4status(self):
         """Ensure fx4status tweets are filtered out."""
-        ta = twitter_account(username='fx4status', ignored=True, save=True)
+        ta = TwitterAccountFactory(username='fx4status', ignored=True)
         self.tweet['user']['screen_name'] = ta.username
         assert _filter_tweet(self.tweet) is None
 
@@ -119,11 +119,11 @@ class TwitterCronTestCase(TestCase):
 
     def test_ignore_user(self):
         # Ignore user
-        ta = twitter_account(username='ignoreme', ignored=True, save=True)
+        ta = TwitterAccountFactory(username='ignoreme', ignored=True)
         self.tweet['user']['screen_name'] = ta.username
         assert _filter_tweet(self.tweet) is None
         # This user is fine though
-        ta = twitter_account(username='iamfine', ignored=False, save=True)
+        ta = TwitterAccountFactory(username='iamfine', ignored=False)
         self.tweet['user']['screen_name'] = ta.username
         assert _filter_tweet(self.tweet) is not None
 
@@ -131,24 +131,9 @@ class TwitterCronTestCase(TestCase):
 class GetOldestTweetTestCase(TestCase):
 
     def setUp(self):
-        tweet(
-            tweet_id=1,
-            locale='en',
-            created='2010-09-23 13:50:00',
-            save=True
-        )
-        tweet(
-            tweet_id=2,
-            locale='en',
-            created='2010-09-23 13:53:00',
-            save=True
-        )
-        tweet(
-            tweet_id=3,
-            created='2010-09-23 13:57:00',
-            locale='en',
-            save=True
-        )
+        TweetFactory(tweet_id=1, locale='en', created=datetime(2010, 9, 23, 13, 50, 0))
+        TweetFactory(tweet_id=2, locale='en', created=datetime(2010, 9, 23, 13, 53, 0))
+        TweetFactory(tweet_id=3, locale='en', created=datetime(2010, 9, 23, 13, 57, 0))
 
     def test_get_oldest_tweet_exists(self):
         eq_(1, _get_oldest_tweet('en', 2).pk)
@@ -175,11 +160,7 @@ class PurgeTweetsTestCase(TestCase):
             else:
                 locale = 'en'
 
-            tweet(
-                locale=locale,
-                created=datetime.now() - timedelta(hours=i),
-                save=True
-            )
+            TweetFactory(locale=locale, created=datetime.now() - timedelta(hours=i))
 
     @patch.object(settings._wrapped, 'CC_MAX_TWEETS', 1)
     def test_purge_tweets_two_locales(self):
@@ -219,8 +200,7 @@ class TopContributors(TestCase):
         }
         for who, what in data.items():
             for when, how_many in what:
-                for _ in range(how_many):
-                    reply(created=when, twitter_username=who, save=True)
+                ReplyFactory.create_batch(how_many, created=when, twitter_username=who)
 
     def test_setUp(self):
         """Since the setup above is non-trivial, test it."""

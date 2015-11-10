@@ -1,7 +1,11 @@
+import factory
+
 from kitsune.groups.models import GroupProfile
-from kitsune.sumo.tests import with_save
+from kitsune.users.tests import GroupFactory
 
 
-@with_save
-def group_profile(**kwargs):
-    return GroupProfile(**kwargs)
+class GroupProfileFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = GroupProfile
+
+    group = factory.SubFactory(GroupFactory)

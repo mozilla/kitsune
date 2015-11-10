@@ -3,10 +3,10 @@ import json
 from nose.tools import eq_
 
 from kitsune.customercare.models import TwitterAccount
-from kitsune.customercare.tests import twitter_account
+from kitsune.customercare.tests import TwitterAccountFactory
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.tests import TestCase
-from kitsune.users.tests import add_permission, user
+from kitsune.users.tests import add_permission, UserFactory
 
 
 class BanUser(TestCase):
@@ -15,15 +15,15 @@ class BanUser(TestCase):
         # Set up some banned users
         self.banned_usernames = ['deanj', 'r1cky', 'mythmon']
         for username in self.banned_usernames:
-            twitter_account(username=username, banned=True, save=True)
+            TwitterAccountFactory(username=username, banned=True)
 
         # Now a few normal users
         self.normal_usernames = ['willkg', 'marcell', 'ian']
         for username in self.normal_usernames:
-            twitter_account(username=username, banned=False, save=True)
+            TwitterAccountFactory(username=username, banned=False)
 
         # Create a user with permissions to ban
-        u = user(save=True)
+        u = UserFactory()
         add_permission(u, TwitterAccount, 'ban_account')
         self.client.login(username=u.username, password='testpass')
 
@@ -81,15 +81,15 @@ class IgnoreUser(TestCase):
         # Set up some ignored users
         self.ignored_usernames = ['deanj', 'r1cky', 'mythmon']
         for username in self.ignored_usernames:
-            twitter_account(username=username, ignored=True, save=True)
+            TwitterAccountFactory(username=username, ignored=True)
 
         # Now a few normal users
         self.normal_usernames = ['willkg', 'marcell', 'ian']
         for username in self.normal_usernames:
-            twitter_account(username=username, ignored=False, save=True)
+            TwitterAccountFactory(username=username, ignored=False)
 
         # Create a user with permissions to ignore
-        u = user(save=True)
+        u = UserFactory()
         add_permission(u, TwitterAccount, 'ignore_account')
         self.client.login(username=u.username, password='testpass')
 

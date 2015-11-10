@@ -1,9 +1,8 @@
 from nose.tools import eq_
 
 from kitsune.customercare.models import ReplyMetricsMappingType
-from kitsune.customercare.tests import reply
+from kitsune.customercare.tests import ReplyFactory
 from kitsune.search.tests.test_es import ElasticTestCase
-from kitsune.users.tests import user
 
 
 class AnswerMetricsTests(ElasticTestCase):
@@ -12,7 +11,7 @@ class AnswerMetricsTests(ElasticTestCase):
 
         Deleting should delete it.
         """
-        r = reply(save=True)
+        r = ReplyFactory()
         self.refresh()
         eq_(ReplyMetricsMappingType.search().count(), 1)
 
@@ -22,8 +21,7 @@ class AnswerMetricsTests(ElasticTestCase):
 
     def test_data_in_index(self):
         """Verify the data we are indexing."""
-        u = user(save=True)
-        r = reply(user=u, locale='de', save=True)
+        r = ReplyFactory(locale='de')
         self.refresh()
 
         eq_(ReplyMetricsMappingType.search().count(), 1)

@@ -12,10 +12,10 @@ from rest_framework.test import APIClient
 from kitsune.sumo.helpers import urlparams
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.questions.tests import question, answer, answervote
+from kitsune.questions.tests import QuestionFactory, AnswerFactory, AnswerVoteFactory
 from kitsune.users import api
 from kitsune.users.models import Profile, Setting
-from kitsune.users.tests import user, profile, setting, UserFactory
+from kitsune.users.tests import ProfileFactory, SettingFactory, UserFactory
 
 
 class UsernamesTests(TestCase):
@@ -23,7 +23,7 @@ class UsernamesTests(TestCase):
     url = reverse('users.api.usernames', locale='en-US')
 
     def setUp(self):
-        self.u = user(username='testUser', save=True)
+        self.u = UserFactory(username='testUser')
         self.client.login(username=self.u.username, password='testpass')
 
     def tearDown(self):
@@ -91,7 +91,7 @@ class TestUserSerializer(TestCase):
         eq_(obj.name, 'bobb')
 
     def test_no_duplicate_emails(self):
-        user(email=self.data['email'], save=True)
+        UserFactory(email=self.data['email'])
         serializer = api.ProfileSerializer(data=self.data)
         assert not serializer.is_valid()
         eq_(serializer.errors, {
@@ -112,9 +112,7 @@ class TestUserSerializer(TestCase):
         eq_(mail.outbox[0].subject, 'Please confirm your email address')
 
     def test_cant_update_username(self):
-        p = profile()
-        p.user.username = 'notbobb'
-        p.user.save()
+        p = ProfileFactory(user__username='notbob')
 
         serializer = api.ProfileSerializer(data=self.data, instance=p)
         eq_(serializer.is_valid(), False)
@@ -147,27 +145,27 @@ class TestUserSerializer(TestCase):
             [u'Usernames may only be letters, numbers, "." and "-".']})
 
     def test_helpfulness(self):
-        p = profile()
-        u = p.user
-        a1 = answer(creator=u, save=True)
-        a2 = answer(creator=u, save=True)
+        u = UserFactory()
+        p = u.profile
+        a1 = AnswerFactory(creator=u)
+        a2 = AnswerFactory(creator=u)
 
-        answervote(answer=a1, helpful=True, save=True)
-        answervote(answer=a2, helpful=True, save=True)
-        answervote(answer=a2, helpful=True, save=True)
+        AnswerVoteFactory(answer=a1, helpful=True)
+        AnswerVoteFactory(answer=a2, helpful=True)
+        AnswerVoteFactory(answer=a2, helpful=True)
         # Some red herrings.
-        answervote(creator=u, save=True)
-        answervote(answer=a1, helpful=False, save=True)
+        AnswerVoteFactory(creator=u)
+        AnswerVoteFactory(answer=a1, helpful=False)
 
         serializer = api.ProfileSerializer(instance=p)
         eq_(serializer.data['helpfulness'], 3)
 
     def test_counts(self):
-        p = profile()
-        u = p.user
-        q = question(creator=u, save=True)
-        answer(creator=u, save=True)
-        q.solution = answer(question=q, creator=u, save=True)
+        u = UserFactory()
+        p = u.profile
+        q = QuestionFactory(creator=u)
+        AnswerFactory(creator=u)
+        q.solution = AnswerFactory(question=q, creator=u)
         q.save()
 
         serializer = api.ProfileSerializer(instance=p)
@@ -176,9 +174,9 @@ class TestUserSerializer(TestCase):
         eq_(serializer.data['solution_count'], 1)
 
     def test_last_answer_date(self):
-        p = profile()
+        p = ProfileFactory()
         u = p.user
-        answer(creator=u, save=True)
+        AnswerFactory(creator=u)
 
         serializer = api.ProfileSerializer(instance=p)
         eq_(serializer.data['last_answer_date'], u.answers.last().created)
@@ -190,8 +188,8 @@ class TestUserView(TestCase):
         self.client = APIClient()
 
     def test_only_self_edits(self):
-        p1 = profile()
-        p2 = profile()
+        p1 = ProfileFactory()
+        p2 = ProfileFactory()
         self.client.force_authenticate(user=p2.user)
         url = reverse('user-detail', args=[p1.user.username])
         res = self.client.patch(url, {})
@@ -199,7 +197,7 @@ class TestUserView(TestCase):
         eq_(res.status_code, 403)
 
     def test_cant_delete(self):
-        p = profile()
+        p = ProfileFactory()
         self.client.force_authenticate(user=p.user)
         url = reverse('user-detail', args=[p.user.username])
         res = self.client.delete(url)
@@ -227,13 +225,13 @@ class TestUserView(TestCase):
         # ``a1`` is a solution in the right range.
         # ``a2`` is a solution, but it is too old.
         # The third answer is not a solution.
-        a1 = answer(save=True)
+        a1 = AnswerFactory()
         a1.question.solution = a1
         a1.question.save()
-        a2 = answer(created=eight_days_ago, save=True)
+        a2 = AnswerFactory(created=eight_days_ago)
         a2.question.solution = a2
         a2.question.save()
-        answer(save=True)
+        AnswerFactory()
 
         res = self.client.get(reverse('user-weekly-solutions'))
         eq_(res.status_code, 200)
@@ -241,20 +239,20 @@ class TestUserView(TestCase):
         eq_(res.data[0]['username'], a1.creator.username)
 
     def test_email_visible_when_signed_in(self):
-        p = profile()
+        p = ProfileFactory()
         url = reverse('user-detail', args=[p.user.username])
         self.client.force_authenticate(user=p.user)
         res = self.client.get(url)
         eq_(res.data['email'], p.user.email)
 
     def test_email_not_visible_when_signed_out(self):
-        p = profile()
+        p = ProfileFactory()
         url = reverse('user-detail', args=[p.user.username])
         res = self.client.get(url)
         assert 'email' not in res.data
 
     def test_set_setting_add(self):
-        p = profile()
+        p = ProfileFactory()
         self.client.force_authenticate(user=p.user)
         url = reverse('user-set-setting', args=[p.user.username])
         res = self.client.post(url, {'name': 'foo', 'value': 'bar'})
@@ -262,9 +260,9 @@ class TestUserView(TestCase):
         eq_(p.settings.get(name='foo').value, 'bar')
 
     def test_set_setting_update(self):
-        p = profile()
+        p = ProfileFactory()
         self.client.force_authenticate(user=p.user)
-        s = setting(user=p.user, name='favorite_fruit', value='apple', save=True)
+        s = SettingFactory(user=p.user, name='favorite_fruit', value='apple')
         url = reverse('user-set-setting', args=[p.user.username])
         res = self.client.post(url, {'name': 'favorite_fruit', 'value': 'banana'})
         eq_(res.status_code, 200)
@@ -273,32 +271,32 @@ class TestUserView(TestCase):
         eq_(s.value, 'banana')
 
     def test_delete_setting_exists_with_post(self):
-        p = profile()
+        p = ProfileFactory()
         self.client.force_authenticate(user=p.user)
-        s = setting(user=p.user, save=True)
+        s = SettingFactory(user=p.user)
         url = reverse('user-delete-setting', args=[p.user.username])
         res = self.client.post(url, {'name': s.name})
         eq_(res.status_code, 204)
         eq_(p.settings.filter(name=s.name).count(), 0)
 
     def test_delete_setting_exists_with_delete(self):
-        p = profile()
+        p = ProfileFactory()
         self.client.force_authenticate(user=p.user)
-        s = setting(user=p.user, save=True)
+        s = SettingFactory(user=p.user)
         url = reverse('user-delete-setting', args=[p.user.username])
         res = self.client.delete(url, {'name': s.name})
         eq_(res.status_code, 204)
         eq_(p.settings.filter(name=s.name).count(), 0)
 
     def test_delete_setting_404(self):
-        p = profile()
+        p = ProfileFactory()
         self.client.force_authenticate(user=p.user)
         url = reverse('user-delete-setting', args=[p.user.username])
         res = self.client.post(url, {'name': 'nonexistant'})
         eq_(res.status_code, 404)
 
     def test_settings_visible_when_signed_in(self):
-        p = profile()
+        p = ProfileFactory()
         p.settings.create(name='foo', value='bar')
         url = reverse('user-detail', args=[p.user.username])
         self.client.force_authenticate(user=p.user)
@@ -306,14 +304,14 @@ class TestUserView(TestCase):
         eq_(res.data['settings'], [{'name': 'foo', 'value': 'bar'}])
 
     def test_settings_not_visible_when_signed_out(self):
-        p = profile()
+        p = ProfileFactory()
         p.settings.create(name='foo', value='bar')
         url = reverse('user-detail', args=[p.user.username])
         res = self.client.get(url)
         assert 'settings' not in res.data
 
     def test_is_active(self):
-        p = profile()
+        p = ProfileFactory()
         url = reverse('user-detail', args=[p.user.username])
         res = self.client.get(url)
         assert 'is_active' in res.data
@@ -321,14 +319,14 @@ class TestUserView(TestCase):
     @mock.patch.object(Site.objects, 'get_current')
     def test_request_password_reset(self, get_current):
         get_current.return_value.domain = 'testserver'
-        p = profile()
+        p = ProfileFactory()
         url = reverse('user-request-password-reset', args=[p.user.username])
         res = self.client.get(url)
         eq_(res.status_code, 204)
         eq_(1, len(mail.outbox))
 
     def test_avatar_size(self):
-        p = profile()
+        p = ProfileFactory()
         url = reverse('user-detail', args=[p.user.username])
 
         res = self.client.get(url)

@@ -5,18 +5,18 @@ from django.core.files import File
 from nose.tools import eq_
 
 from kitsune.groups.models import GroupProfile
-from kitsune.groups.tests import group_profile
+from kitsune.groups.tests import GroupProfileFactory
 from kitsune.sumo.helpers import urlparams
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.users.tests import user, group, add_permission
+from kitsune.users.tests import UserFactory, GroupFactory, add_permission
 
 
 class EditGroupProfileTests(TestCase):
     def setUp(self):
         super(EditGroupProfileTests, self).setUp()
-        self.user = user(save=True)
-        self.group_profile = group_profile(group=group(save=True), save=True)
+        self.user = UserFactory()
+        self.group_profile = GroupProfileFactory()
         self.client.login(username=self.user.username, password='testpass')
 
     def _verify_get_and_post(self):
@@ -55,9 +55,9 @@ class EditGroupProfileTests(TestCase):
 class EditAvatarTests(TestCase):
     def setUp(self):
         super(EditAvatarTests, self).setUp()
-        self.user = user(save=True)
+        self.user = UserFactory()
         add_permission(self.user, GroupProfile, 'change_groupprofile')
-        self.group_profile = group_profile(group=group(save=True), save=True)
+        self.group_profile = GroupProfileFactory()
         self.client.login(username=self.user.username, password='testpass')
 
     def tearDown(self):
@@ -102,10 +102,10 @@ class EditAvatarTests(TestCase):
 class AddRemoveMemberTests(TestCase):
     def setUp(self):
         super(AddRemoveMemberTests, self).setUp()
-        self.user = user(save=True)
-        self.member = user(save=True)
+        self.user = UserFactory()
+        self.member = UserFactory()
         add_permission(self.user, GroupProfile, 'change_groupprofile')
-        self.group_profile = group_profile(group=group(save=True), save=True)
+        self.group_profile = GroupProfileFactory()
         self.client.login(username=self.user.username, password='testpass')
 
     def test_add_member(self):
@@ -131,10 +131,10 @@ class AddRemoveMemberTests(TestCase):
 class AddRemoveLeaderTests(TestCase):
     def setUp(self):
         super(AddRemoveLeaderTests, self).setUp()
-        self.user = user(save=True)
+        self.user = UserFactory()
         add_permission(self.user, GroupProfile, 'change_groupprofile')
-        self.leader = user(save=True)
-        self.group_profile = group_profile(group=group(save=True), save=True)
+        self.leader = UserFactory()
+        self.group_profile = GroupProfileFactory()
         self.client.login(username=self.user.username, password='testpass')
 
     def test_add_leader(self):
@@ -160,9 +160,9 @@ class AddRemoveLeaderTests(TestCase):
 class JoinContributorsTests(TestCase):
     def setUp(self):
         super(JoinContributorsTests, self).setUp()
-        self.user = user(save=True)
+        self.user = UserFactory()
         self.client.login(username=self.user.username, password='testpass')
-        group(name='Contributors', save=True)
+        GroupFactory(name='Contributors')
 
     def test_join_contributors(self):
         next = reverse('groups.list')

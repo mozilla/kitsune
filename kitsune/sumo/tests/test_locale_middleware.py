@@ -5,7 +5,7 @@ from nose.tools import eq_
 
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import get_best_language, get_non_supported
-from kitsune.users.tests import user, profile
+from kitsune.users.tests import UserFactory
 
 
 class TestLocaleMiddleware(TestCase):
@@ -42,7 +42,7 @@ class TestLocaleMiddleware(TestCase):
         self.assertRedirects(reponse, '/fr/search', status_code=302)
 
     def test_partial_redirect(self):
-        """Ensure that /en/ gets directed to /en-US/."""
+        """Ensure that /en/ gets directed t /en-US/."""
         response = self.client.get('/en/search', follow=True)
         self.assertRedirects(response, '/en-US/search', status_code=302)
 
@@ -99,8 +99,7 @@ class PreferredLanguageTests(TestCase):
         self.assertRedirects(response, '/en-US/')
 
     def test_loggedin_preferred_language(self):
-        u = user(save=True)
-        profile(user=u, locale='zh-CN')
+        u = UserFactory(profile__locale='zh-CN')
         self.client.login(username=u.username, password='testpass')
         response = self.client.get('/', follow=True)
         self.assertRedirects(response, '/zh-CN/')
@@ -110,8 +109,7 @@ class PreferredLanguageTests(TestCase):
         self.assertRedirects(response, '/xx/')
 
     def test_anonymous_change_to_login(self):
-        u = user(save=True)
-        profile(user=u, locale='zh-CN')
+        u = UserFactory(profile__locale='zh-CN')
 
         # anonymous is fr
         self.client.get('/?lang=fr', follow=True)

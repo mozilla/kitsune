@@ -8,11 +8,11 @@ from django.contrib.contenttypes.models import ContentType
 
 from nose.tools import eq_
 
-from kitsune.questions.tests import question
+from kitsune.questions.tests import QuestionFactory
 from kitsune.sumo.tests import post, LocalizingClient, TestCase
 from kitsune.upload.forms import MSG_IMAGE_LONG
 from kitsune.upload.models import ImageAttachment
-from kitsune.users.tests import user
+from kitsune.users.tests import UserFactory
 
 
 class UploadImageTestCase(TestCase):
@@ -20,8 +20,8 @@ class UploadImageTestCase(TestCase):
 
     def setUp(self):
         super(UploadImageTestCase, self).setUp()
-        self.user = user(username='berker', save=True)
-        self.question = question(save=True)
+        self.user = UserFactory(username='berker')
+        self.question = QuestionFactory()
         self.client.login(username=self.user.username, password='testpass')
 
     def tearDown(self):
@@ -101,7 +101,7 @@ class UploadImageTestCase(TestCase):
 
     def test_delete_image_no_permission(self):
         """Can't delete an image without permission."""
-        u = user(username='tagger', save=True)
+        u = UserFactory(username='tagger')
         assert not u.has_perm('upload.delete_imageattachment')
         self.test_upload_image()
         im = ImageAttachment.objects.all()[0]

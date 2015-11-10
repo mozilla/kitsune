@@ -10,19 +10,18 @@ import mock
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 
-from kitsune.products.tests import product
+from kitsune.products.tests import ProductFactory
 from kitsune.sumo.redis_utils import redis_client, RedisError
 from kitsune.sumo.tests import SkipTest, TestCase, LocalizingClient, MobileTestCase
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.users.tests import user, add_permission
+from kitsune.users.tests import UserFactory, add_permission
 from kitsune.wiki.config import (
     CATEGORIES, TEMPLATES_CATEGORY, TYPO_SIGNIFICANCE, MEDIUM_SIGNIFICANCE, MAJOR_SIGNIFICANCE,
     TEMPLATE_TITLE_PREFIX)
 from kitsune.wiki.models import Document, HelpfulVoteMetadata, HelpfulVote
 from kitsune.wiki.tests import (
-    doc_rev, document, helpful_vote, new_document_data, revision,
-    translated_revision, TemplateDocumentFactory, RevisionFactory,
-    DocumentFactory, ApprovedRevisionFactory)
+    HelpfulVoteFactory, new_document_data, RevisionFactory, TranslatedRevisionFactory,
+    TemplateDocumentFactory, DocumentFactory, ApprovedRevisionFactory, RedirectRevisionFactory)
 from kitsune.wiki.views import (
     _document_lock_check, _document_lock_clear, _document_lock_steal)
 
@@ -32,14 +31,13 @@ class RedirectTests(TestCase):
 
     def setUp(self):
         super(RedirectTests, self).setUp()
-        product(save=True)
+        ProductFactory()
 
     def test_redirect_suppression(self):
         """The document view shouldn't redirect when passed redirect=no."""
-        redirect, _ = doc_rev('REDIRECT [[http://smoo/]]')
-        response = self.client.get(
-            redirect.get_absolute_url() + '?redirect=no',
-            follow=True)
+        rev = RedirectRevisionFactory()
+        redirect = rev.document
+        response = self.client.get(redirect.get_absolute_url() + '?redirect=no', follow=True)
         self.assertContains(response, 'REDIRECT ')
 
 
@@ -49,7 +47,7 @@ class LocaleRedirectTests(TestCase):
 
     def setUp(self):
         super(LocaleRedirectTests, self).setUp()
-        product(save=True)
+        ProductFactory()
 
     def test_fallback_to_translation(self):
         """If a slug isn't found in the requested locale but is in the default
@@ -71,12 +69,9 @@ class LocaleRedirectTests(TestCase):
 
     def _create_en_and_de_docs(self):
         en = settings.WIKI_DEFAULT_LANGUAGE
-        en_doc = document(locale=en, slug='english-slug')
-        en_doc.save()
-        de_doc = document(locale='de', parent=en_doc)
-        de_doc.save()
-        de_rev = revision(document=de_doc, is_approved=True)
-        de_rev.save()
+        en_doc = DocumentFactory(locale=en, slug='english-slug')
+        de_doc = DocumentFactory(locale='de', parent=en_doc)
+        RevisionFactory(document=de_doc, is_approved=True)
         return en_doc, de_doc
 
 
@@ -84,19 +79,20 @@ class LocalizationAnalyticsTests(TestCase):
 
     def setUp(self):
         super(LocalizationAnalyticsTests, self).setUp()
-        product(save=True)
+        ProductFactory()
 
     def test_not_fired(self):
         """Test that the Not Localized and Not Updated events don't fire
         when they are not appropriate."""
-        trans = translated_revision(is_approved=True, save=True)
+        trans = TranslatedRevisionFactory(is_approved=True)
         trans_doc = trans.document
 
         # Add a parent revision of TYPO significance. This shouldn't do
         # anything, since it isn't significant enough.
-        revision(document=trans.document.parent, is_approved=True,
-                 is_ready_for_localization=True,
-                 significance=TYPO_SIGNIFICANCE, save=True)
+        ApprovedRevisionFactory(
+            document=trans.document.parent,
+            is_ready_for_localization=True,
+            significance=TYPO_SIGNIFICANCE)
 
         url = reverse('wiki.document', args=[trans_doc.slug],
                       locale=trans_doc.locale)
@@ -112,15 +108,15 @@ class LocalizationAnalyticsTests(TestCase):
         not been updated, it should fire a "Not Updated" GA event."""
 
         # Make a document, and a translation of it.
-        trans = translated_revision(is_approved=True, save=True)
+        trans = TranslatedRevisionFactory(is_approved=True)
 
         # Add a parent revision of MAJOR significance:
-        revision(document=trans.document.parent, is_approved=True,
-                 is_ready_for_localization=True,
-                 significance=MAJOR_SIGNIFICANCE, save=True)
+        ApprovedRevisionFactory(
+            document=trans.document.parent,
+            is_ready_for_localization=True,
+            significance=MAJOR_SIGNIFICANCE)
 
-        url = reverse('wiki.document', args=[trans.document.slug],
-                      locale=trans.document.locale)
+        url = reverse('wiki.document', args=[trans.document.slug], locale=trans.document.locale)
         response = self.client.get(url, follow=True)
         eq_(200, response.status_code)
 
@@ -133,15 +129,15 @@ class LocalizationAnalyticsTests(TestCase):
         not been updated, it should fire a "Not Updated" GA event."""
 
         # Make a document, and a translation of it.
-        trans = translated_revision(is_approved=True, save=True)
+        trans = TranslatedRevisionFactory(is_approved=True)
 
         # Add a parent revision of MEDIUM significance:
-        revision(document=trans.document.parent, is_approved=True,
-                 is_ready_for_localization=True,
-                 significance=MEDIUM_SIGNIFICANCE, save=True)
+        ApprovedRevisionFactory(
+            document=trans.document.parent,
+            is_ready_for_localization=True,
+            significance=MEDIUM_SIGNIFICANCE)
 
-        url = reverse('wiki.document', args=[trans.document.slug],
-                      locale=trans.document.locale)
+        url = reverse('wiki.document', args=[trans.document.slug], locale=trans.document.locale)
         response = self.client.get(url, follow=True)
         eq_(200, response.status_code)
 
@@ -153,8 +149,7 @@ class LocalizationAnalyticsTests(TestCase):
         """If a document is requested in a locale it is not translated
         to, it should fire a "Not Localized" GA event."""
         # This will make a document and revision suitable for translation.
-        r = revision(is_approved=True, is_ready_for_localization=True,
-                     save=True)
+        r = RevisionFactory(is_approved=True, is_ready_for_localization=True)
         url = reverse('wiki.document', args=[r.document.slug], locale='fr')
         response = self.client.get(url)
         eq_(200, response.status_code)
@@ -187,9 +182,8 @@ class JsonViewTests(TestCase):
     def setUp(self):
         super(JsonViewTests, self).setUp()
 
-        d = document(
-            title='an article title', slug='article-title', save=True)
-        revision(document=d, is_approved=True, save=True)
+        d = DocumentFactory(title='an article title', slug='article-title')
+        RevisionFactory(document=d, is_approved=True)
 
     def test_json_view_by_title(self):
         """Verify checking for an article by title."""
@@ -216,10 +210,10 @@ class JsonViewTests(TestCase):
 
 class WhatLinksWhereTests(TestCase):
     def test_what_links_here(self):
-        d1 = document(title='D1', save=True)
-        revision(document=d1, content='', is_approved=True, save=True)
-        d2 = document(title='D2', save=True)
-        revision(document=d2, content='[[D1]]', is_approved=True, save=True)
+        d1 = DocumentFactory(title='D1')
+        RevisionFactory(document=d1, content='', is_approved=True)
+        d2 = DocumentFactory(title='D2')
+        RevisionFactory(document=d2, content='[[D1]]', is_approved=True)
 
         url = reverse('wiki.what_links_here', args=[d1.slug])
         resp = self.client.get(url, follow=True)
@@ -227,10 +221,10 @@ class WhatLinksWhereTests(TestCase):
         assert 'D2' in resp.content
 
     def test_what_links_here_locale_filtering(self):
-        d1 = document(title='D1', save=True, locale='de')
-        revision(document=d1, content='', is_approved=True, save=True)
-        d2 = document(title='D2', save=True, locale='fr')
-        revision(document=d2, content='[[D1]]', is_approved=True, save=True)
+        d1 = DocumentFactory(title='D1', locale='de')
+        ApprovedRevisionFactory(document=d1, content='')
+        d2 = DocumentFactory(title='D2', locale='fr')
+        ApprovedRevisionFactory(document=d2, content='[[D1]]')
 
         url = reverse('wiki.what_links_here', args=[d1.slug], locale='de')
         resp = self.client.get(url, follow=True)
@@ -245,7 +239,7 @@ class DocumentEditingTests(TestCase):
 
     def setUp(self):
         super(DocumentEditingTests, self).setUp()
-        self.u = user(save=True)
+        self.u = UserFactory()
         add_permission(self.u, Document, 'change_document')
         self.client.login(username=self.u.username, password='testpass')
 
@@ -255,19 +249,18 @@ class DocumentEditingTests(TestCase):
         # slug+title changes. If title changes work in the view, the rest
         # should also.
         new_title = 'Some New Title'
-        d, r = doc_rev()
+        r = ApprovedRevisionFactory()
+        d = r.document
         old_title = d.title
         data = new_document_data()
-        data.update({'title': new_title,
-                     'slug': d.slug,
-                     'form': 'doc'})
+        data.update({'title': new_title, 'slug': d.slug, 'form': 'doc'})
         self.client.post(reverse('wiki.edit_document', args=[d.slug]), data)
         eq_(new_title, Document.objects.get(id=d.id).title)
         assert Document.objects.get(title=old_title).redirect_url()
 
     def test_retitling_accent(self):
-        d = document(title='Umlaut test', save=True)
-        revision(document=d, is_approved=True, save=True)
+        d = DocumentFactory(title='Umlaut test')
+        RevisionFactory(document=d, is_approved=True)
         new_title = u'Ümlaut test'
         data = new_document_data()
         data.update({'title': new_title,
@@ -334,9 +327,10 @@ class DocumentEditingTests(TestCase):
 
     def test_changing_products(self):
         """Changing products works as expected."""
-        d, r = doc_rev()
-        prod_desktop = product(title=u'desktop', save=True)
-        prod_mobile = product(title=u'mobile', save=True)
+        r = ApprovedRevisionFactory()
+        d = r.document
+        prod_desktop = ProductFactory(title=u'desktop')
+        prod_mobile = ProductFactory(title=u'mobile')
 
         data = new_document_data()
         data.update({'products': [prod_desktop.id, prod_mobile.id],
@@ -432,13 +426,11 @@ class DocumentEditingTests(TestCase):
     def test_localized_based_on(self):
         """Editing a localized article 'based on' an older revision of the
         localization is OK."""
-        en_r = revision(save=True)
-        fr_d = document(parent=en_r.document, locale='fr', save=True)
-        revision(document=fr_d, based_on=en_r, is_approved=True, save=True)
-        fr_r = revision(document=fr_d, based_on=en_r, keywords="oui",
-                        summary="lipsum", save=True)
-        url = reverse('wiki.new_revision_based_on',
-                      locale='fr', args=(fr_d.slug, fr_r.pk,))
+        en_r = RevisionFactory()
+        fr_d = DocumentFactory(parent=en_r.document, locale='fr')
+        RevisionFactory(document=fr_d, based_on=en_r, is_approved=True)
+        fr_r = RevisionFactory(document=fr_d, based_on=en_r, keywords="oui", summary="lipsum")
+        url = reverse('wiki.new_revision_based_on', locale='fr', args=(fr_d.slug, fr_r.pk,))
         response = self.client.get(url)
         doc = pq(response.content)
         input = doc('#id_based_on')[0]
@@ -450,7 +442,7 @@ class DocumentEditingTests(TestCase):
         """Test setting and unsetting the needs change flag"""
         # Create a new document and edit it, setting needs_change.
         comment = 'Please update for Firefix.next'
-        doc = revision(save=True).document
+        doc = RevisionFactory().document
         data = new_document_data()
         data.update({'needs_change': True,
                      'needs_change_comment': comment,
@@ -482,11 +474,11 @@ class DocumentEditingTests(TestCase):
 class AddRemoveContributorTests(TestCase):
     def setUp(self):
         super(AddRemoveContributorTests, self).setUp()
-        self.user = user(save=True)
-        self.contributor = user(save=True)
+        self.user = UserFactory()
+        self.contributor = UserFactory()
         add_permission(self.user, Document, 'change_document')
         self.client.login(username=self.user.username, password='testpass')
-        self.revision = revision(save=True)
+        self.revision = RevisionFactory()
         self.document = self.revision.document
 
     def test_add_contributor(self):
@@ -536,7 +528,7 @@ class VoteTests(TestCase):
 
     def test_unhelpful_survey(self):
         """The unhelpful survey is stored as vote metadata"""
-        vote = helpful_vote(save=True)
+        vote = HelpfulVoteFactory()
         url = reverse('wiki.unhelpful_survey')
         data = {'vote_id': vote.id,
                 'button': 'Submit',
@@ -564,7 +556,7 @@ class VoteTests(TestCase):
 
     def test_unhelpful_survey_on_helpful_vote(self):
         """Verify a survey doesn't get saved on helpful votes."""
-        vote = helpful_vote(helpful=True, save=True)
+        vote = HelpfulVoteFactory(helpful=True)
         url = reverse('wiki.unhelpful_survey')
         data = {'vote_id': vote.id,
                 'button': 'Submit',
@@ -579,7 +571,7 @@ class VoteTests(TestCase):
 
         It should be truncated safely, instead of generating bad JSON.
         """
-        vote = helpful_vote(save=True)
+        vote = HelpfulVoteFactory()
         too_long_comment = ('lorem ipsum' * 100) + 'bad data'
         self.client.post(reverse('wiki.unhelpful_survey'),
                          {'vote_id': vote.id,
@@ -593,7 +585,7 @@ class VoteTests(TestCase):
 
     def test_source(self):
         """Test that the source metadata field works."""
-        rev = revision(save=True)
+        rev = RevisionFactory()
         url = reverse('wiki.document_vote', kwargs={
             'document_slug': rev.document.slug
         })
@@ -608,7 +600,7 @@ class VoteTests(TestCase):
     def test_rate_limiting(self):
         """Verify only 10 votes are counted in a day."""
         for i in range(13):
-            rev = revision(save=True)
+            rev = RevisionFactory()
             url = reverse('wiki.document_vote', kwargs={
                 'document_slug': rev.document.slug})
             self.client.post(url, {
@@ -630,8 +622,8 @@ class TestDocumentLocking(TestCase):
             raise SkipTest
 
     def _test_lock_helpers(self, doc):
-        u1 = user(save=True)
-        u2 = user(save=True)
+        u1 = UserFactory()
+        u2 = UserFactory()
 
         # No one has the document locked yet.
         eq_(_document_lock_check(doc.id), None)
@@ -649,12 +641,12 @@ class TestDocumentLocking(TestCase):
         eq_(_document_lock_check(doc.id), None)
 
     def test_lock_helpers_doc(self):
-        doc = document(save=True)
+        doc = DocumentFactory()
         self._test_lock_helpers(doc)
 
     def test_lock_helpers_translation(self):
-        doc_en = document(save=True)
-        doc_de = document(parent=doc_en, locale='de', save=True)
+        doc_en = DocumentFactory()
+        doc_de = DocumentFactory(parent=doc_en, locale='de')
         self._test_lock_helpers(doc_de)
 
     def _lock_workflow(self, doc, edit_url):
@@ -673,8 +665,8 @@ class TestDocumentLocking(TestCase):
         def assert_not_locked(r):
             self.assertNotContains(r, 'id="unlock-button"')
 
-        u1 = user(save=True, password='testpass')
-        u2 = user(save=True, password='testpass')
+        u1 = UserFactory(password='testpass')
+        u2 = UserFactory(password='testpass')
 
         # With u1, edit the document. No lock should be found.
         _login(u1)
@@ -713,14 +705,16 @@ class TestDocumentLocking(TestCase):
 
     def test_doc_lock_workflow(self):
         """End to end test of locking on an english document."""
-        doc, rev = doc_rev()
+        rev = ApprovedRevisionFactory()
+        doc = rev.document
         url = reverse('wiki.edit_document', args=[doc.slug], locale='en-US')
         self._lock_workflow(doc, url)
 
     def test_trans_lock_workflow(self):
         """End to end test of locking on a translated document."""
-        doc, _ = doc_rev()
-        u = user(save=True, password='testpass')
+        rev = ApprovedRevisionFactory()
+        doc = rev.document
+        u = UserFactory(password='testpass')
 
         # Create a new translation of doc() using the translation view
         self.client.login(username=u.username, password='testpass')
@@ -746,8 +740,9 @@ class MinimalViewTests(TestCase):
 
     def setUp(self):
         super(MinimalViewTests, self).setUp()
-        self.doc, _ = doc_rev()
-        p = product(save=True)
+        rev = ApprovedRevisionFactory()
+        self.doc = rev.document
+        p = ProductFactory()
         self.doc.products.add(p)
         self.doc.save()
 
@@ -790,8 +785,9 @@ class MobileDocumentTests(MobileTestCase):
 
     def setUp(self):
         super(MobileDocumentTests, self).setUp()
-        self.doc, _ = doc_rev()
-        p = product(save=True)
+        rev = ApprovedRevisionFactory()
+        self.doc = rev.document
+        p = ProductFactory()
         self.doc.products.add(p)
         self.doc.save()
 
@@ -807,7 +803,7 @@ class FallbackSystem(TestCase):
 
     def setUp(self):
         super(FallbackSystem, self).setUp()
-        product(save=True)
+        ProductFactory()
 
     def create_documents(self, locale):
         """Create a document in English and a translated document for the locale"""
@@ -879,9 +875,8 @@ class FallbackSystem(TestCase):
         header = 'de,an;q=0.7,ja;q=0.3,'
         # Create a document localized into es
         # Attempt to resolve to the de version of the document with the client defined before
-        doc_content = self.get_data_from_translated_document(header=header,
-                                                             create_doc_locale='es',
-                                                             req_doc_locale='de')
+        doc_content = self.get_data_from_translated_document(
+            header=header, create_doc_locale='es', req_doc_locale='de')
         # Show the es version of the document based on the fallback locale for an set in
         # kitsune/settings.py, as it is not localized into de and there is no available
         # locale based on the client header
@@ -909,9 +904,8 @@ class FallbackSystem(TestCase):
         # of the document without defining locale options for the client
 
         # of the document. While we the client have no language choices.
-        doc_content = self.get_data_from_translated_document(header=None,
-                                                             create_doc_locale='bn-BD',
-                                                             req_doc_locale='bn-IN')
+        doc_content = self.get_data_from_translated_document(
+            header=None, create_doc_locale='bn-BD', req_doc_locale='bn-IN')
         # Show the bn-BD version of the document based on the fallback locale,
         # as it is not localized into bn-IN and there is no available locale
         # from the ACCEPT_LANGUAGE header
@@ -944,9 +938,8 @@ class FallbackSystem(TestCase):
         header = 'ca,bn-IN;q=0.7,ja;q=0.3,'
         # Create a document localized into pt-BR
         # Attempt to resolve to the ca version of the document with the client defined before
-        doc_content = self.get_data_from_translated_document(header=header,
-                                                             create_doc_locale='bn-BD',
-                                                             req_doc_locale='ca')
+        doc_content = self.get_data_from_translated_document(
+            header=header, create_doc_locale='bn-BD', req_doc_locale='ca')
         # Show the pt-BR version of the document based on existing custom wiki locale mapping
         # for pt-PT, as it is not localized into ca
         en_content = 'This article is in English'
@@ -959,9 +952,8 @@ class FallbackSystem(TestCase):
         header = 'ar,bn-IN;q=0.7,ja;q=0.3,'
         # Create a document localized into bn-BD
         # Attempt to resolve to the ar version of the document with the client defined before
-        doc_content = self.get_data_from_translated_document(header=header,
-                                                             create_doc_locale='bn-BD',
-                                                             req_doc_locale='ar')
+        doc_content = self.get_data_from_translated_document(
+            header=header, create_doc_locale='bn-BD', req_doc_locale='ar')
         # Show the article in bn-BD based on the custom wiki fallback locale mapping for bn-IN,
         # as it is localized neither into any of the locales listed in the
         # ACCEPT_LANGUAGE header, nor into ar

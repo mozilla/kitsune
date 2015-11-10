@@ -6,20 +6,21 @@ from pyquery import PyQuery as pq
 
 from kitsune.groups.helpers import group_avatar, group_link
 from kitsune.groups.models import GroupProfile
+from kitsune.groups.tests import GroupProfileFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.users.tests import group
+from kitsune.users.tests import GroupFactory
 
 
 class GroupHelperTests(TestCase):
 
     def test_group_link_no_profile(self):
-        g = group()
+        g = GroupFactory()
         text = group_link(g)
         eq_(g.name, text)
 
     def test_group_link_with_profile(self):
-        g = group()
+        g = GroupFactory()
         g.save()
         p = GroupProfile.objects.create(group=g, slug='foo')
         text = group_link(g)
@@ -30,19 +31,19 @@ class GroupHelperTests(TestCase):
 
     def test_right_group_profile(self):
         """Make sure we get the right group profile."""
-        g1 = group(pk=100)
+        g1 = GroupFactory(pk=100)
         g1.save()
         eq_(100, g1.pk)
-        g2 = group(pk=101)
+        g2 = GroupFactory(pk=101)
         g2.save()
         eq_(101, g2.pk)
-        p = GroupProfile.objects.create(pk=100, group=g2, slug='foo')
+        p = GroupProfileFactory(pk=100, group=g2, slug='foo')
         eq_(100, p.pk)
 
         eq_(group_link(g1), g1.name)
 
     def test_group_avatar(self):
-        g = group()
+        g = GroupFactory()
         g.save()
         p = GroupProfile.objects.create(group=g, slug='foo')
         url = group_avatar(p)

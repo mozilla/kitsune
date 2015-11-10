@@ -9,7 +9,7 @@ from nose.tools import eq_
 from kitsune.sumo.tests import TestCase
 from kitsune.users.models import RegistrationProfile, Setting
 from kitsune.users.forms import SettingsForm
-from kitsune.users.tests import user
+from kitsune.users.tests import UserFactory
 
 
 log = logging.getLogger('k.users')
@@ -58,7 +58,7 @@ class RegistrationProfileTests(TestCase):
 class UserSettingsTests(TestCase):
 
     def setUp(self):
-        self.u = user(save=True)
+        self.u = UserFactory()
 
     def test_non_existant_setting(self):
         form = SettingsForm()

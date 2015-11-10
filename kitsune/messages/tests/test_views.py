@@ -4,15 +4,15 @@ from nose.tools import eq_
 from kitsune.messages.models import InboxMessage, OutboxMessage
 from kitsune.sumo.tests import TestCase, LocalizingClient
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.users.tests import user
+from kitsune.users.tests import UserFactory
 
 
 class ReadMessageTests(TestCase):
 
     def setUp(self):
         super(ReadMessageTests, self).setUp()
-        self.user1 = user(save=True)
-        self.user2 = user(save=True)
+        self.user1 = UserFactory()
+        self.user2 = UserFactory()
         self.client.login(username=self.user1.username, password='testpass')
 
     def test_mark_bulk_message_read(self):
@@ -70,8 +70,8 @@ class ReadMessageTests(TestCase):
 class DeleteMessageTests(TestCase):
     def setUp(self):
         super(DeleteMessageTests, self).setUp()
-        self.user1 = user(save=True)
-        self.user2 = user(save=True)
+        self.user1 = UserFactory()
+        self.user2 = UserFactory()
         self.client.login(username=self.user1.username, password='testpass')
 
     def test_delete_inbox_message(self):
@@ -121,8 +121,8 @@ class OutboxTests(TestCase):
 
     def setUp(self):
         super(OutboxTests, self).setUp()
-        self.user1 = user(save=True)
-        self.user2 = user(save=True)
+        self.user1 = UserFactory()
+        self.user2 = UserFactory()
         self.client.login(username=self.user1.username, password='testpass')
 
     def test_message_without_recipients(self):

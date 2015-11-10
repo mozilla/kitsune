@@ -3,14 +3,14 @@ from nose.tools import eq_
 
 from django.contrib.contenttypes.models import ContentType
 
-from kitsune.access.tests import permission
+from kitsune.access.tests import PermissionFactory
 from kitsune.forums.events import NewThreadEvent, NewPostEvent
 from kitsune.forums.models import Forum, Thread
 from kitsune.forums.tests import (
-    ForumTestCase, forum, restricted_forum, thread, post as forum_post)
+    ForumTestCase, ForumFactory, RestrictedForumFactory, ThreadFactory, PostFactory)
 from kitsune.sumo.tests import get, post
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.users.tests import user, group
+from kitsune.users.tests import UserFactory, GroupFactory
 
 
 class PostPermissionsTests(ForumTestCase):
@@ -18,17 +18,17 @@ class PostPermissionsTests(ForumTestCase):
 
     def test_read_without_permission(self):
         """Listing posts without the view_in_forum permission should 404."""
-        rforum = restricted_forum()
-        t = thread(forum=rforum, save=True)
+        rforum = RestrictedForumFactory()
+        t = ThreadFactory(forum=rforum)
 
         response = get(self.client, 'forums.posts', args=[t.forum.slug, t.id])
         eq_(404, response.status_code)
 
     def test_reply_without_view_permission(self):
         """Posting without view_in_forum permission should 404."""
-        rforum = restricted_forum()
-        t = thread(forum=rforum, save=True)
-        u = user(save=True)
+        rforum = RestrictedForumFactory()
+        t = ThreadFactory(forum=rforum)
+        u = UserFactory()
 
         self.client.login(username=u.username, password='testpass')
         response = post(self.client, 'forums.reply', {'content': 'Blahs'},
@@ -37,10 +37,9 @@ class PostPermissionsTests(ForumTestCase):
 
     def test_reply_without_post_permission(self):
         """Posting without post_in_forum permission should 403."""
-        rforum = restricted_forum(
-            permission_code='forums_forum.post_in_forum')
-        t = thread(forum=rforum, save=True)
-        u = user(save=True)
+        rforum = RestrictedForumFactory(permission_code='forums_forum.post_in_forum')
+        t = ThreadFactory(forum=rforum)
+        u = UserFactory()
 
         self.client.login(username=u.username, password='testpass')
         with patch.object(Forum, 'allows_viewing_by', Mock(return_value=True)):
@@ -50,12 +49,11 @@ class PostPermissionsTests(ForumTestCase):
 
     def test_reply_thread_405(self):
         """Replying to a thread via a GET instead of a POST request."""
-        t = thread(save=True)
-        u = user(save=True)
+        t = ThreadFactory()
+        u = UserFactory()
 
         self.client.login(username=u.username, password='testpass')
-        response = get(self.client, 'forums.reply',
-                       args=[t.forum.slug, t.id])
+        response = get(self.client, 'forums.reply', args=[t.forum.slug, t.id])
         eq_(405, response.status_code)
 
 
@@ -64,9 +62,9 @@ class ThreadAuthorityPermissionsTests(ForumTestCase):
 
     def test_new_thread_without_view_permission(self):
         """Making a new thread without view permission should 404."""
-        rforum = restricted_forum()
-        thread(forum=rforum, save=True)
-        u = user(save=True)
+        rforum = RestrictedForumFactory()
+        ThreadFactory(forum=rforum)
+        u = UserFactory()
 
         self.client.login(username=u.username, password='testpass')
         response = post(self.client, 'forums.new_thread',
@@ -76,9 +74,8 @@ class ThreadAuthorityPermissionsTests(ForumTestCase):
 
     def test_new_thread_without_post_permission(self):
         """Making a new thread without post permission should 403."""
-        rforum = restricted_forum(
-            permission_code='forums_forum.post_in_forum')
-        u = user(save=True)
+        rforum = RestrictedForumFactory(permission_code='forums_forum.post_in_forum')
+        u = UserFactory()
 
         self.client.login(username=u.username, password='testpass')
         with patch.object(Forum, 'allows_viewing_by', Mock(return_value=True)):
@@ -89,8 +86,8 @@ class ThreadAuthorityPermissionsTests(ForumTestCase):
 
     def test_watch_GET_405(self):
         """Watch forum with HTTP GET results in 405."""
-        f = forum(save=True)
-        u = user(save=True)
+        f = ForumFactory()
+        u = UserFactory()
 
         self.client.login(username=u.username, password='testpass')
         response = get(self.client, 'forums.watch_forum', args=[f.id])
@@ -99,8 +96,8 @@ class ThreadAuthorityPermissionsTests(ForumTestCase):
     def test_watch_forum_without_permission(self):
         """Watching forums without the view_in_forum permission should 404.
         """
-        rforum = restricted_forum()
-        u = user(save=True)
+        rforum = RestrictedForumFactory()
+        u = UserFactory()
 
         self.client.login(username=u.username, password='testpass')
         response = self.client.post(reverse('forums.watch_forum',
@@ -111,9 +108,9 @@ class ThreadAuthorityPermissionsTests(ForumTestCase):
     def test_watch_thread_without_permission(self):
         """Watching threads without the view_in_forum permission should 404.
         """
-        rforum = restricted_forum()
-        t = thread(forum=rforum, save=True)
-        u = user(save=True)
+        rforum = RestrictedForumFactory()
+        t = ThreadFactory(forum=rforum)
+        u = UserFactory()
 
         self.client.login(username=u.username, password='testpass')
         response = self.client.post(reverse('forums.watch_thread',
@@ -124,10 +121,8 @@ class ThreadAuthorityPermissionsTests(ForumTestCase):
     def test_read_without_permission(self):
         """Listing threads without the view_in_forum permission should 404.
         """
-        rforum = restricted_forum()
-
-        response = get(self.client, 'forums.threads',
-                       args=[rforum.slug])
+        rforum = RestrictedForumFactory()
+        response = get(self.client, 'forums.threads', args=[rforum.slug])
         eq_(404, response.status_code)
 
 
@@ -136,9 +131,9 @@ class ThreadTests(ForumTestCase):
 
     def test_watch_forum(self):
         """Watch then unwatch a forum."""
-        f = forum(save=True)
-        forum_post(thread=thread(forum=f, save=True), save=True)
-        u = user(save=True)
+        f = ForumFactory()
+        PostFactory(thread__forum=f)
+        u = UserFactory()
 
         self.client.login(username=u.username, password='testpass')
 
@@ -154,13 +149,12 @@ class ThreadTests(ForumTestCase):
 
     def test_watch_thread(self):
         """Watch then unwatch a thread."""
-        t = thread(save=True)
-        u = user(save=True)
+        t = ThreadFactory()
+        u = UserFactory()
 
         self.client.login(username=u.username, password='testpass')
 
-        post(self.client, 'forums.watch_thread', {'watch': 'yes'},
-             args=[t.forum.slug, t.id])
+        post(self.client, 'forums.watch_thread', {'watch': 'yes'}, args=[t.forum.slug, t.id])
         assert NewPostEvent.is_notifying(u, t)
         # NewThreadEvent is not notifying.
         assert not NewThreadEvent.is_notifying(u, t.forum)
@@ -171,7 +165,7 @@ class ThreadTests(ForumTestCase):
 
     def test_edit_thread_creator(self):
         """Changing thread title as the thread creator works."""
-        t = forum_post(save=True).thread
+        t = ThreadFactory()
         u = t.creator
 
         self.client.login(username=u.username, password='testpass')
@@ -182,13 +176,13 @@ class ThreadTests(ForumTestCase):
 
     def test_edit_thread_moderator(self):
         """Editing post as a moderator works."""
-        t = forum_post(save=True).thread
+        t = ThreadFactory()
         f = t.forum
-        u = user(save=True)
-        g = group(save=True)
+        u = UserFactory()
+        g = GroupFactory()
         ct = ContentType.objects.get_for_model(f)
-        permission(codename='forums_forum.thread_edit_forum', content_type=ct,
-                   object_id=f.id, group=g, save=True)
+        PermissionFactory(codename='forums_forum.thread_edit_forum', content_type=ct,
+                          object_id=f.id, group=g)
         g.user_set.add(u)
 
         self.client.login(username=u.username, password='testpass')
@@ -200,8 +194,8 @@ class ThreadTests(ForumTestCase):
 
     def test_new_thread_redirect(self):
         """Posting a new thread should redirect."""
-        f = forum(save=True)
-        u = user(save=True)
+        f = ForumFactory()
+        u = UserFactory()
 
         self.client.login(username=u.username, password='testpass')
         url = reverse('forums.new_thread', args=[f.slug])
@@ -213,8 +207,8 @@ class ThreadTests(ForumTestCase):
 
     def test_reply_redirect(self):
         """Posting a reply should redirect."""
-        t = thread(save=True)
-        u = user(save=True)
+        t = ThreadFactory()
+        u = UserFactory()
 
         self.client.login(username=u.username, password='testpass')
         url = reverse('forums.reply', args=[t.forum.slug, t.id])
@@ -229,80 +223,73 @@ class ThreadTests(ForumTestCase):
 class ThreadPermissionsTests(ForumTestCase):
     def test_edit_thread_403(self):
         """Editing a thread without permissions returns 403."""
-        t = forum_post(save=True).thread
-        u = user(save=True)
+        t = ThreadFactory()
+        u = UserFactory()
 
         self.client.login(username=u.username, password='testpass')
-        response = get(self.client, 'forums.edit_thread',
-                       args=[t.forum.slug, t.id])
+        response = get(self.client, 'forums.edit_thread', args=[t.forum.slug, t.id])
         eq_(403, response.status_code)
 
     def test_edit_locked_thread_403(self):
         """Editing a locked thread returns 403."""
-        locked = thread(is_locked=True, save=True)
+        locked = ThreadFactory(is_locked=True)
         u = locked.creator
-        forum_post(thread=locked, author=u, save=True)
+        PostFactory(thread=locked, author=u)
 
         self.client.login(username=u.username, password='testpass')
-        response = get(self.client, 'forums.edit_thread',
-                       args=[locked.forum.slug, locked.id])
+        response = get(self.client, 'forums.edit_thread', args=[locked.forum.slug, locked.id])
         eq_(403, response.status_code)
 
     def test_delete_thread_403(self):
         """Deleting a thread without permissions returns 403."""
-        t = forum_post(save=True).thread
-        u = user(save=True)
+        t = ThreadFactory()
+        u = UserFactory()
 
         self.client.login(username=u.username, password='testpass')
-        response = get(self.client, 'forums.delete_thread',
-                       args=[t.forum.slug, t.id])
+        response = get(self.client, 'forums.delete_thread', args=[t.forum.slug, t.id])
         eq_(403, response.status_code)
 
     def test_sticky_thread_405(self):
         """Marking a thread sticky with a HTTP GET returns 405."""
-        t = forum_post(save=True).thread
-        u = user(save=True)
+        t = ThreadFactory()
+        u = UserFactory()
 
         self.client.login(username=u.username, password='testpass')
-        response = get(self.client, 'forums.sticky_thread',
-                       args=[t.forum.slug, t.id])
+        response = get(self.client, 'forums.sticky_thread', args=[t.forum.slug, t.id])
         eq_(405, response.status_code)
 
     def test_sticky_thread_403(self):
         """Marking a thread sticky without permissions returns 403."""
-        t = forum_post(save=True).thread
-        u = user(save=True)
+        t = ThreadFactory()
+        u = UserFactory()
 
         self.client.login(username=u.username, password='testpass')
-        response = post(self.client, 'forums.sticky_thread',
-                        args=[t.forum.slug, t.id])
+        response = post(self.client, 'forums.sticky_thread', args=[t.forum.slug, t.id])
         eq_(403, response.status_code)
 
     def test_locked_thread_403(self):
         """Marking a thread locked without permissions returns 403."""
-        t = forum_post(save=True).thread
-        u = user(save=True)
+        t = ThreadFactory()
+        u = UserFactory()
 
         self.client.login(username=u.username, password='testpass')
-        response = post(self.client, 'forums.lock_thread',
-                        args=[t.forum.slug, t.id])
+        response = post(self.client, 'forums.lock_thread', args=[t.forum.slug, t.id])
         eq_(403, response.status_code)
 
     def test_locked_thread_405(self):
         """Marking a thread locked via a GET instead of a POST request."""
-        t = forum_post(save=True).thread
-        u = user(save=True)
+        t = ThreadFactory()
+        u = UserFactory()
 
         self.client.login(username=u.username, password='testpass')
-        response = get(self.client, 'forums.lock_thread',
-                       args=[t.forum.slug, t.id])
+        response = get(self.client, 'forums.lock_thread', args=[t.forum.slug, t.id])
         eq_(405, response.status_code)
 
     def test_move_thread_403(self):
         """Moving a thread without permissions returns 403."""
-        t = forum_post(save=True).thread
-        f = forum(save=True)
-        u = user(save=True)
+        t = ThreadFactory()
+        f = ForumFactory()
+        u = UserFactory()
 
         self.client.login(username=u.username, password='testpass')
         response = post(self.client, 'forums.move_thread', {'forum': f.id},
@@ -311,8 +298,8 @@ class ThreadPermissionsTests(ForumTestCase):
 
     def test_move_thread_405(self):
         """Moving a thread via a GET instead of a POST request."""
-        t = forum_post(save=True).thread
-        u = user(save=True)
+        t = ThreadFactory()
+        u = UserFactory()
 
         self.client.login(username=u.username, password='testpass')
         response = get(self.client, 'forums.move_thread',
@@ -321,17 +308,17 @@ class ThreadPermissionsTests(ForumTestCase):
 
     def test_move_thread(self):
         """Move a thread."""
-        t = forum_post(save=True).thread
-        f = forum(save=True)
-        u = user(save=True)
-        g = group(save=True)
+        t = ThreadFactory()
+        f = ForumFactory()
+        u = UserFactory()
+        g = GroupFactory()
 
         # Give the user permission to move threads between the two forums.
         ct = ContentType.objects.get_for_model(f)
-        permission(codename='forums_forum.thread_move_forum', content_type=ct,
-                   object_id=f.id, group=g, save=True)
-        permission(codename='forums_forum.thread_move_forum', content_type=ct,
-                   object_id=t.forum.id, group=g, save=True)
+        PermissionFactory(codename='forums_forum.thread_move_forum', content_type=ct,
+                          object_id=f.id, group=g)
+        PermissionFactory(codename='forums_forum.thread_move_forum', content_type=ct,
+                          object_id=t.forum.id, group=g)
         g.user_set.add(u)
 
         self.client.login(username=u.username, password='testpass')
@@ -344,22 +331,20 @@ class ThreadPermissionsTests(ForumTestCase):
 
     def test_post_edit_403(self):
         """Editing a post without permissions returns 403."""
-        p = forum_post(save=True)
+        p = PostFactory()
         t = p.thread
-        u = user(save=True)
+        u = UserFactory()
 
         self.client.login(username=u.username, password='testpass')
-        response = get(self.client, 'forums.edit_post',
-                       args=[t.forum.slug, t.id, p.id])
+        response = get(self.client, 'forums.edit_post', args=[t.forum.slug, t.id, p.id])
         eq_(403, response.status_code)
 
     def test_post_delete_403(self):
         """Deleting a post without permissions returns 403."""
-        p = forum_post(save=True)
+        p = PostFactory()
         t = p.thread
-        u = user(save=True)
+        u = UserFactory()
 
         self.client.login(username=u.username, password='testpass')
-        response = get(self.client, 'forums.delete_post',
-                       args=[t.forum.slug, t.id, p.id])
+        response = get(self.client, 'forums.delete_post', args=[t.forum.slug, t.id, p.id])
         eq_(403, response.status_code)

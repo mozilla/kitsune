@@ -1,10 +1,9 @@
 from nose.tools import eq_
 
-from kitsune.postcrash.models import Signature
+from kitsune.postcrash.tests import SignatureFactory
 from kitsune.sumo.helpers import urlparams
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.wiki.tests import document
 
 
 class ApiTests(TestCase):
@@ -22,13 +21,9 @@ class ApiTests(TestCase):
         eq_('text/plain', response['content-type'])
 
     def test_known_signature(self):
-        slug = 'foo'
-        doc = document(slug=slug)
-        doc.save()
-        sig = Signature(signature=slug, document=doc)
-        sig.save()
-        url = urlparams(reverse('postcrash.api'), s=slug)
+        sig = SignatureFactory()
+        url = urlparams(reverse('postcrash.api'), s=sig.signature)
         response = self.client.get(url)
         eq_(200, response.status_code)
-        eq_('https://example.com/kb/%s' % slug, response.content)
+        eq_('https://example.com/kb/%s' % sig.document.slug, response.content)
         eq_('text/plain', response['content-type'])

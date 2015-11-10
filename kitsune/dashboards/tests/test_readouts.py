@@ -5,24 +5,19 @@ from django.conf import settings
 from nose.tools import eq_
 
 from kitsune.dashboards.readouts import (
-    UnreviewedReadout, kb_overview_rows,
-    TemplateTranslationsReadout, l10n_overview_rows,
-    MostVisitedDefaultLanguageReadout,
-    MostVisitedTranslationsReadout,
-    UnreadyForLocalizationReadout,
-    NeedsChangesReadout,
-    TemplateReadout,
-    HowToContributeReadout,
+    UnreviewedReadout, kb_overview_rows, TemplateTranslationsReadout, l10n_overview_rows,
+    MostVisitedDefaultLanguageReadout, MostVisitedTranslationsReadout,
+    UnreadyForLocalizationReadout, NeedsChangesReadout, TemplateReadout, HowToContributeReadout,
     AdministrationReadout, CannedResponsesReadout)
-from kitsune.products.tests import product
+from kitsune.products.tests import ProductFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.wiki.config import (
     MAJOR_SIGNIFICANCE, MEDIUM_SIGNIFICANCE, TYPO_SIGNIFICANCE, HOW_TO_CONTRIBUTE_CATEGORY,
     ADMINISTRATION_CATEGORY, CANNED_RESPONSES_CATEGORY, TEMPLATES_CATEGORY)
 from kitsune.wiki.config import CATEGORIES
 from kitsune.wiki.tests import (
-    revision, translated_revision, document,
-    DocumentFactory, RevisionFactory, TemplateDocumentFactory, ApprovedRevisionFactory)
+    TranslatedRevisionFactory, DocumentFactory, RevisionFactory, TemplateDocumentFactory,
+    ApprovedRevisionFactory, RedirectRevisionFactory)
 
 
 class MockRequest(object):
@@ -50,15 +45,12 @@ class ReadoutTestCase(TestCase):
 class KBOverviewTests(TestCase):
     def test_unapproved_articles(self):
         eq_(0, len(kb_overview_rows()))
-
-        d = document(save=True)
-        revision(document=d, save=True)
-
+        RevisionFactory()
         eq_(1, len(kb_overview_rows()))
 
     def test_ready_for_l10n(self):
-        d = document(save=True)
-        r = revision(document=d, save=True)
+        d = DocumentFactory()
+        r = RevisionFactory(document=d)
         d.current_revision = r
         d.save()
 
@@ -66,14 +58,13 @@ class KBOverviewTests(TestCase):
         eq_(1, len(data))
         eq_(False, data[0]['ready_for_l10n'])
 
-        revision(document=d, is_approved=True, is_ready_for_localization=True, save=True)
+        ApprovedRevisionFactory(document=d, is_ready_for_localization=True)
 
         data = kb_overview_rows()
         eq_(True, data[0]['ready_for_l10n'])
 
     def test_filter_by_category(self):
-        d = document(save=True, category=CATEGORIES[1][0])
-        revision(document=d, save=True)
+        RevisionFactory(document__category=CATEGORIES[1][0])
 
         eq_(1, len(kb_overview_rows()))
         eq_(0, len(kb_overview_rows(category=CATEGORIES[0][0])))
@@ -116,24 +107,23 @@ class L10NOverviewTests(TestCase):
         parents....
 
         """
-        parent_rev = revision(document=document(is_localizable=True,
-                                                save=True),
-                              is_approved=True,
-                              is_ready_for_localization=False,
-                              save=True)
-        translation = document(parent=parent_rev.document,
-                               locale='de',
-                               is_localizable=False,
-                               save=True)
-        revision(document=translation,
-                 is_approved=True,
-                 based_on=parent_rev,
-                 save=True)
+        parent_rev = RevisionFactory(
+            document__is_localizable=True,
+            is_approved=True,
+            is_ready_for_localization=False)
+        translation = DocumentFactory(
+            parent=parent_rev.document,
+            locale='de',
+            is_localizable=False)
+        RevisionFactory(
+            document=translation,
+            is_approved=True,
+            based_on=parent_rev)
         eq_(0, l10n_overview_rows('de')['all']['numerator'])
 
     def test_templates_and_docs_disjunct(self):
         """Make sure templates aren't included in the All Articles count."""
-        t = translated_revision(is_approved=True, save=True)
+        t = TranslatedRevisionFactory(document__locale='de', is_approved=True)
         # It shows up in All when it's a normal doc:
         eq_(1, l10n_overview_rows('de')['all']['numerator'])
         eq_(1, l10n_overview_rows('de')['all']['denominator'])
@@ -155,7 +145,7 @@ class L10NOverviewTests(TestCase):
         only thing we don't care about is typo-level outdatedness.
 
         """
-        t = translated_revision(is_approved=True, save=True)
+        t = TranslatedRevisionFactory(document__locale='de', is_approved=True)
         overview = l10n_overview_rows('de')
         eq_(1, overview['top-20']['numerator'])
         eq_(1, overview['top-50']['numerator'])
@@ -163,11 +153,10 @@ class L10NOverviewTests(TestCase):
         eq_(1, overview['all']['numerator'])
 
         # Update the parent with a typo-level revision:
-        revision(document=t.document.parent,
-                 significance=TYPO_SIGNIFICANCE,
-                 is_approved=True,
-                 is_ready_for_localization=True,
-                 save=True)
+        ApprovedRevisionFactory(
+            document=t.document.parent,
+            significance=TYPO_SIGNIFICANCE,
+            is_ready_for_localization=True)
         # Assert it still shows up in the numerators:
         overview = l10n_overview_rows('de')
         eq_(1, overview['top-20']['numerator'])
@@ -176,11 +165,10 @@ class L10NOverviewTests(TestCase):
         eq_(1, overview['all']['numerator'])
 
         # Update the parent with a medium-level revision:
-        revision(document=t.document.parent,
-                 significance=MEDIUM_SIGNIFICANCE,
-                 is_approved=True,
-                 is_ready_for_localization=True,
-                 save=True)
+        ApprovedRevisionFactory(
+            document=t.document.parent,
+            significance=MEDIUM_SIGNIFICANCE,
+            is_ready_for_localization=True)
         # Assert it no longer shows up in the numerators:
         overview = l10n_overview_rows('de')
         eq_(0, overview['all']['numerator'])
@@ -191,7 +179,7 @@ class L10NOverviewTests(TestCase):
     def test_not_counting_how_to_contribute(self):
         """Articles with the How to contribute category should not be counted.
         """
-        t = translated_revision(is_approved=True, save=True)
+        t = TranslatedRevisionFactory(document__locale='de', is_approved=True)
         overview = l10n_overview_rows('de')
         eq_(1, overview['all']['numerator'])
         eq_(1, overview['top-20']['numerator'])
@@ -212,7 +200,7 @@ class L10NOverviewTests(TestCase):
     def test_not_counting_untranslated(self):
         """Translations with no approved revisions shouldn't count as done.
         """
-        translated_revision(is_approved=False, save=True)
+        TranslatedRevisionFactory(document__locale='de', is_approved=False)
         overview = l10n_overview_rows('de')
         eq_(0, overview['top-20']['numerator'])
         eq_(0, overview['top-50']['numerator'])
@@ -222,7 +210,7 @@ class L10NOverviewTests(TestCase):
     def test_not_counting_templates(self):
         """Articles in the Templates category should not be counted.
         """
-        t = translated_revision(is_approved=True, save=True)
+        t = TranslatedRevisionFactory(document__locale='de', is_approved=True)
         overview = l10n_overview_rows('de')
         eq_(1, overview['all']['numerator'])
         eq_(1, overview['top-20']['numerator'])
@@ -245,8 +233,8 @@ class L10NOverviewTests(TestCase):
 
     def test_by_product(self):
         """Test the product filtering of the overview."""
-        p = product(title='Firefox', slug='firefox', save=True)
-        t = translated_revision(is_approved=True, save=True)
+        p = ProductFactory(title='Firefox', slug='firefox')
+        t = TranslatedRevisionFactory(is_approved=True, document__locale='de')
 
         eq_(0, l10n_overview_rows('de', product=p)['all']['numerator'])
         eq_(0, l10n_overview_rows('de', product=p)['all']['denominator'])
@@ -258,19 +246,15 @@ class L10NOverviewTests(TestCase):
 
     def test_redirects_are_ignored(self):
         """Verify that redirects aren't counted in the overview."""
-        translated_revision(is_approved=True, save=True)
+        TranslatedRevisionFactory(document__locale='de', is_approved=True)
 
         eq_(1, l10n_overview_rows('de')['all']['numerator'])
 
         # A redirect shouldn't affect any of the tests.
-        revision(document=document(title='A redirect',
-                                   is_localizable=True,
-                                   is_template=True,
-                                   save=True),
-                 is_ready_for_localization=True,
-                 is_approved=True,
-                 content='REDIRECT [[An article]]',
-                 save=True)
+        RedirectRevisionFactory(
+            document__is_localizable=True,
+            document__is_template=True,
+            is_ready_for_localization=True)
 
         overview = l10n_overview_rows('de')
         eq_(1, overview['all']['numerator'])
@@ -291,26 +275,40 @@ class UnreviewedChangesTests(ReadoutTestCase):
     def test_unrevieweds_after_current(self):
         """Show unreviewed revisions with later creation dates than current
         """
-        current = translated_revision(is_approved=True, save=True,
-                                      created=datetime(2000, 1, 1))
-        unreviewed = revision(document=current.document, save=True,
-                              created=datetime(2000, 2, 1))
+        current = TranslatedRevisionFactory(
+            document__locale='de',
+            reviewed=None,
+            is_approved=True,
+            created=datetime(2000, 1, 1))
+        unreviewed = RevisionFactory(
+            reviewed=None,
+            document=current.document,
+            created=datetime(2000, 2, 1))
         assert unreviewed.document.title in self.titles()
 
     def test_current_revision_null(self):
         """Show all unreviewed revisions if none have been approved yet."""
-        unreviewed = translated_revision(save=True)
+        unreviewed = TranslatedRevisionFactory(
+            is_approved=False,
+            reviewed=None,
+            document__locale='de')
         assert unreviewed.document.title in self.titles()
 
     def test_rejected_newer_than_current(self):
         """Don't show reviewed but unapproved revs newer than current rev"""
-        rejected = translated_revision(reviewed=datetime.now(), save=True)
+        rejected = TranslatedRevisionFactory(
+            document__locale='de',
+            reviewed=datetime.now(),
+            is_approved=False)
         assert rejected.document.title not in self.titles()
 
     def test_by_product(self):
         """Test the product filtering of the readout."""
-        p = product(title='Firefox', slug='firefox', save=True)
-        unreviewed = translated_revision(save=True)
+        p = ProductFactory(title='Firefox', slug='firefox')
+        unreviewed = TranslatedRevisionFactory(
+            is_approved=False,
+            reviewed=None,
+            document__locale='de')
 
         # There shouldn't be any rows yet.
         eq_(0, len(self.rows(product=p)))
@@ -327,9 +325,9 @@ class MostVisitedDefaultLanguageTests(ReadoutTestCase):
     def test_by_product(self):
         """Test the product filtering of the readout."""
         locale = settings.WIKI_DEFAULT_LANGUAGE
-        p = product(title='Firefox', slug='firefox', save=True)
-        d = document(save=True)
-        revision(document=d, is_approved=True, save=True)
+        p = ProductFactory(title='Firefox', slug='firefox')
+        d = DocumentFactory()
+        ApprovedRevisionFactory(document=d)
 
         # There shouldn't be any rows yet.
         eq_(0, len(self.rows(locale=locale, product=p)))
@@ -340,9 +338,7 @@ class MostVisitedDefaultLanguageTests(ReadoutTestCase):
 
     def test_redirects_not_shown(self):
         """Redirects shouldn't appear in Most Visited readout."""
-        revision(is_approved=True, is_ready_for_localization=True,
-                 content='REDIRECT [[Foo Bar]]', save=True)
-
+        RedirectRevisionFactory(is_ready_for_localization=True)
         eq_(0, len(self.titles()))
 
 
@@ -352,7 +348,7 @@ class TemplateTests(ReadoutTestCase):
     def test_only_templates(self):
         """Test that only templates are shown"""
         locale = settings.WIKI_DEFAULT_LANGUAGE
-        p = product(title='Firefox', slug='firefox', save=True)
+        p = ProductFactory(title='Firefox', slug='firefox')
 
         d = DocumentFactory(products=[p])
         t = TemplateDocumentFactory(products=[p])
@@ -405,17 +401,13 @@ class HowToContributeTests(ReadoutTestCase):
     def test_only_how_to_contribute(self):
         """Test that only How To Contribute articles are shown"""
         locale = settings.WIKI_DEFAULT_LANGUAGE
-        p = product(title='Firefox', slug='firefox', save=True)
+        p = ProductFactory(title='Firefox', slug='firefox')
 
-        d1 = document(save=True)
-        d2 = document(title='How To', category=HOW_TO_CONTRIBUTE_CATEGORY,
-                      save=True)
+        d1 = DocumentFactory(products=[p])
+        d2 = DocumentFactory(title='How To', category=HOW_TO_CONTRIBUTE_CATEGORY, products=[p])
 
-        revision(document=d1, is_approved=True, save=True)
-        revision(document=d2, is_approved=True, save=True)
-
-        d1.products.add(p)
-        d2.products.add(p)
+        ApprovedRevisionFactory(document=d1)
+        ApprovedRevisionFactory(document=d2)
 
         eq_(1, len(self.rows(locale=locale, product=p)))
         eq_(d2.title, self.row(locale=locale, product=p)['title'])
@@ -428,17 +420,13 @@ class AdministrationTests(ReadoutTestCase):
     def test_only_how_to_contribute(self):
         """Test that only Administration articles are shown"""
         locale = settings.WIKI_DEFAULT_LANGUAGE
-        p = product(title='Firefox', slug='firefox', save=True)
+        p = ProductFactory(title='Firefox', slug='firefox')
 
-        d1 = document(save=True)
-        d2 = document(title='Admin', category=ADMINISTRATION_CATEGORY,
-                      save=True)
+        d1 = DocumentFactory(products=[p])
+        d2 = DocumentFactory(title='Admin', category=ADMINISTRATION_CATEGORY, products=[p])
 
-        revision(document=d1, is_approved=True, save=True)
-        revision(document=d2, is_approved=True, save=True)
-
-        d1.products.add(p)
-        d2.products.add(p)
+        ApprovedRevisionFactory(document=d1)
+        ApprovedRevisionFactory(document=d2)
 
         eq_(1, len(self.rows(locale=locale, product=p)))
         eq_(d2.title, self.row(locale=locale, product=p)['title'])
@@ -456,17 +444,17 @@ class MostVisitedTranslationsTests(ReadoutTestCase):
 
     def test_unreviewed(self):
         """Assert articles in need of review are labeled as such."""
-        unreviewed = translated_revision(is_approved=False, save=True)
+        unreviewed = TranslatedRevisionFactory(
+            document__locale='de',
+            reviewed=None,
+            is_approved=False)
         row = self.row()
         eq_(row['title'], unreviewed.document.title)
         eq_(row['status'], 'Review Needed')
 
     def test_unlocalizable(self):
         """Unlocalizable docs shouldn't show up in the list."""
-        revision(
-            document=document(is_localizable=False, save=True),
-            is_approved=True,
-            save=True)
+        ApprovedRevisionFactory(document__is_localizable=False)
         self.assertRaises(IndexError, self.row)
 
     def _test_significance(self, significance, status):
@@ -476,12 +464,11 @@ class MostVisitedTranslationsTests(ReadoutTestCase):
         status `status`.
 
         """
-        translation = translated_revision(is_approved=True, save=True)
-        revision(document=translation.document.parent,
-                 is_approved=True,
-                 is_ready_for_localization=True,
-                 significance=significance,
-                 save=True)
+        translation = TranslatedRevisionFactory(document__locale='de', is_approved=True)
+        ApprovedRevisionFactory(
+            document=translation.document.parent,
+            is_ready_for_localization=True,
+            significance=significance)
         row = self.row()
         eq_(row['title'], translation.document.title)
         eq_(row['status'], status)
@@ -496,9 +483,7 @@ class MostVisitedTranslationsTests(ReadoutTestCase):
 
     def test_untranslated(self):
         """Assert untranslated documents are labeled as such."""
-        untranslated = revision(is_approved=True,
-                                is_ready_for_localization=True,
-                                save=True)
+        untranslated = ApprovedRevisionFactory(is_ready_for_localization=True)
         row = self.row()
         eq_(row['title'], untranslated.document.title)
         eq_(unicode(row['status']), 'Translation Needed')
@@ -506,7 +491,7 @@ class MostVisitedTranslationsTests(ReadoutTestCase):
     def test_up_to_date(self):
         """Show up-to-date translations have no status, just a happy class.
         """
-        translation = translated_revision(is_approved=True, save=True)
+        translation = TranslatedRevisionFactory(document__locale='de', is_approved=True)
         row = self.row()
         eq_(row['title'], translation.document.title)
         eq_(unicode(row['status']), '')
@@ -514,16 +499,17 @@ class MostVisitedTranslationsTests(ReadoutTestCase):
 
     def test_one_rejected_revision(self):
         """Translation with 1 rejected rev shows as Needs Translation"""
-        translated_revision(is_approved=False,
-                            reviewed=datetime.now(),
-                            save=True)
+        TranslatedRevisionFactory(
+            document__locale='de',
+            is_approved=False,
+            reviewed=datetime.now())
 
         row = self.row()
         eq_(row['status_class'], 'untranslated')
 
     def test_spam(self):
         """Don't offer unapproved (often spam) articles for translation."""
-        revision(is_approved=False, save=True)
+        ApprovedRevisionFactory()
         eq_([], MostVisitedTranslationsReadout(MockRequest()).rows())
 
     def test_consider_max_significance(self):
@@ -533,34 +519,32 @@ class MostVisitedTranslationsTests(ReadoutTestCase):
         since translation, use the max significance of the approved
         revisions, not just that of the latest ready-to-localize one.
         """
-        translation = translated_revision(is_approved=True, save=True)
-        revision(document=translation.document.parent,
-                 is_approved=True,
-                 is_ready_for_localization=False,  # should still count
-                 significance=MAJOR_SIGNIFICANCE,
-                 save=True)
-        revision(document=translation.document.parent,
-                 is_approved=True,
-                 is_ready_for_localization=True,
-                 significance=MEDIUM_SIGNIFICANCE,
-                 save=True)
+        translation = TranslatedRevisionFactory(document__locale='de', is_approved=True)
+        ApprovedRevisionFactory(
+            document=translation.document.parent,
+            is_ready_for_localization=False,  # should still count
+            significance=MAJOR_SIGNIFICANCE)
+        ApprovedRevisionFactory(
+            document=translation.document.parent,
+            is_ready_for_localization=True,
+            significance=MEDIUM_SIGNIFICANCE)
         row = self.row()
         eq_(row['title'], translation.document.title)
         eq_(unicode(row['status']), 'Immediate Update Needed')
 
     def test_consider_only_approved_significances(self):
         """Consider only approved significances when computing the max."""
-        translation = translated_revision(is_approved=True, save=True)
-        revision(document=translation.document.parent,
-                 is_approved=False,  # shouldn't count
-                 is_ready_for_localization=False,
-                 significance=MAJOR_SIGNIFICANCE,
-                 save=True)
-        revision(document=translation.document.parent,
-                 is_approved=True,
-                 is_ready_for_localization=True,
-                 significance=MEDIUM_SIGNIFICANCE,
-                 save=True)
+        translation = TranslatedRevisionFactory(document__locale='de', is_approved=True)
+        RevisionFactory(
+            document=translation.document.parent,
+            is_approved=False,  # shouldn't count
+            is_ready_for_localization=False,
+            significance=MAJOR_SIGNIFICANCE)
+        RevisionFactory(
+            document=translation.document.parent,
+            is_approved=True,
+            is_ready_for_localization=True,
+            significance=MEDIUM_SIGNIFICANCE)
         row = self.row()
         eq_(row['title'], translation.document.title)
         # This should show as medium significance, because the revision with
@@ -569,8 +553,8 @@ class MostVisitedTranslationsTests(ReadoutTestCase):
 
     def test_by_product(self):
         """Test the product filtering of the readout."""
-        p = product(title='Firefox', slug='firefox', save=True)
-        r = translated_revision(is_approved=True, save=True)
+        p = ProductFactory(title='Firefox', slug='firefox')
+        r = TranslatedRevisionFactory(document__locale='de', is_approved=True)
         d = r.document
 
         # There shouldn't be any rows yet.
@@ -589,7 +573,7 @@ class TemplateTranslationsTests(ReadoutTestCase):
     def test_not_template(self):
         """Documents that are not templates shouldn't show up in the list.
         """
-        translated_revision(is_approved=False, save=True)
+        TranslatedRevisionFactory(document__locale='de', is_approved=False)
         self.assertRaises(IndexError, self.row)
 
     def test_untranslated(self):
@@ -602,7 +586,7 @@ class TemplateTranslationsTests(ReadoutTestCase):
 
     def test_by_product(self):
         """Test the product filtering of the readout."""
-        p = product(title='Firefox', slug='firefox', save=True)
+        p = ProductFactory(title='Firefox', slug='firefox')
         d = TemplateDocumentFactory()
         ApprovedRevisionFactory(document=d, is_ready_for_localization=True)
 
@@ -621,30 +605,30 @@ class UnreadyTests(ReadoutTestCase):
 
     def test_no_approved_revs(self):
         """Articles with no approved revisions should not appear."""
-        revision(is_approved=False,
-                 is_ready_for_localization=False,
-                 significance=MAJOR_SIGNIFICANCE,
-                 save=True)
+        RevisionFactory(
+            is_approved=False,
+            is_ready_for_localization=False,
+            significance=MAJOR_SIGNIFICANCE)
         eq_([], self.titles())
 
     def test_unapproved_revs(self):
         """Don't show articles with unreviewed or rejected revs after latest
         """
-        d = document(save=True)
-        revision(document=d,
-                 is_approved=True,
-                 is_ready_for_localization=True,
-                 save=True)
-        revision(document=d,
-                 is_approved=False,
-                 reviewed=None,
-                 is_ready_for_localization=False,
-                 save=True)
-        revision(document=d,
-                 is_approved=False,
-                 reviewed=datetime.now(),
-                 is_ready_for_localization=False,
-                 save=True)
+        d = DocumentFactory()
+        RevisionFactory(
+            document=d,
+            is_approved=True,
+            is_ready_for_localization=True)
+        RevisionFactory(
+            document=d,
+            is_approved=False,
+            reviewed=None,
+            is_ready_for_localization=False)
+        RevisionFactory(
+            document=d,
+            is_approved=False,
+            reviewed=datetime.now(),
+            is_ready_for_localization=False)
         eq_([], self.titles())
 
     def test_first_rev(self):
@@ -654,51 +638,41 @@ class UnreadyTests(ReadoutTestCase):
         latest_localizable_revision are not necessarily excluded.
 
         """
-        r = revision(is_approved=True,
-                     reviewed=datetime.now(),
-                     is_ready_for_localization=False,
-                     significance=None,
-                     save=True)
+        r = ApprovedRevisionFactory(
+            reviewed=datetime.now(),
+            is_ready_for_localization=False,
+            significance=None)
         eq_([r.document.title], self.titles())
 
     def test_insignificant_revs(self):
         # Articles with approved, unready, but insignificant revisions
         # newer than their latest ready-for-l10n ones should not
         # appear.
-        ready = revision(is_approved=True,
-                         is_ready_for_localization=True,
-                         save=True)
-        revision(document=ready.document,
-                 is_approved=True,
-                 is_ready_for_localization=False,
-                 significance=TYPO_SIGNIFICANCE,
-                 save=True)
+        ready = ApprovedRevisionFactory(is_ready_for_localization=True)
+        ApprovedRevisionFactory(
+            document=ready.document,
+            is_ready_for_localization=False,
+            significance=TYPO_SIGNIFICANCE)
         eq_([], self.titles())
 
     def test_significant_revs(self):
         # Articles with approved, significant, but unready revisions
         # newer than their latest ready-for-l10n ones should appear.
-        ready = revision(is_approved=True,
-                         is_ready_for_localization=True,
-                         save=True)
-        revision(document=ready.document,
-                 is_approved=True,
-                 is_ready_for_localization=False,
-                 significance=MEDIUM_SIGNIFICANCE,
-                 save=True)
+        ready = ApprovedRevisionFactory(is_ready_for_localization=True)
+        ApprovedRevisionFactory(
+            document=ready.document,
+            is_ready_for_localization=False,
+            significance=MEDIUM_SIGNIFICANCE)
         eq_([ready.document.title], self.titles())
 
     def test_by_product(self):
         """Test the product filtering of the readout."""
-        p = product(title='Firefox', slug='firefox', save=True)
-        ready = revision(is_approved=True,
-                         is_ready_for_localization=True,
-                         save=True)
-        revision(document=ready.document,
-                 is_approved=True,
-                 is_ready_for_localization=False,
-                 significance=MEDIUM_SIGNIFICANCE,
-                 save=True)
+        p = ProductFactory(title='Firefox', slug='firefox')
+        ready = ApprovedRevisionFactory(is_ready_for_localization=True)
+        ApprovedRevisionFactory(
+            document=ready.document,
+            is_ready_for_localization=False,
+            significance=MEDIUM_SIGNIFICANCE)
 
         # There shouldn't be any rows yet.
         eq_(0, len(self.rows(product=p)))
@@ -714,21 +688,21 @@ class NeedsChangesTests(ReadoutTestCase):
 
     def test_unrevieweds_after_current(self):
         """A document marked with needs_change=True should show up."""
-        document = revision(save=True).document
-        document.needs_change = True
-        document.needs_change_comment = "Please update for Firefox.next"
-        document.save()
+        document = DocumentFactory(
+            needs_change=True,
+            needs_change_comment='Please update for Firefox.next')
+        RevisionFactory(document=document)
         titles = self.titles()
         eq_(1, len(titles))
         assert document.title in titles
 
     def test_by_product(self):
         """Test the product filtering of the readout."""
-        p = product(title='Firefox', slug='firefox', save=True)
-        d = revision(save=True).document
-        d.needs_change = True
-        d.needs_change_comment = "Please update for Firefox.next"
-        d.save()
+        p = ProductFactory(title='Firefox', slug='firefox')
+        d = DocumentFactory(
+            needs_change=True,
+            needs_change_comment='Please update for Firefox.next')
+        RevisionFactory(document=d)
 
         # There shouldn't be any rows yet.
         eq_(0, len(self.rows(product=p)))
@@ -743,27 +717,24 @@ class CannedResponsesTests(ReadoutTestCase):
 
     def test_canned(self):
         """Test the readout."""
-        d = document(title='Foo', category=CANNED_RESPONSES_CATEGORY,
-                     save=True)
-        revision(is_approved=True,
-                 is_ready_for_localization=True,
-                 document=d,
-                 save=True)
-
+        ApprovedRevisionFactory(
+            is_ready_for_localization=True,
+            document__category=CANNED_RESPONSES_CATEGORY)
         eq_(1, len(self.rows()))
 
     def test_translation_state(self):
-        eng_doc = document(category=CANNED_RESPONSES_CATEGORY, save=True)
-        eng_rev = revision(is_approved=True, is_ready_for_localization=True,
-                           document=eng_doc, save=True)
+        eng_doc = DocumentFactory(category=CANNED_RESPONSES_CATEGORY)
+        eng_rev = ApprovedRevisionFactory(is_ready_for_localization=True, document=eng_doc)
 
         eq_('untranslated', self.row()['status_class'])
 
         # Now translate it, but don't approve
-        de_doc = document(category=CANNED_RESPONSES_CATEGORY, parent=eng_doc,
-                          locale='de', save=True)
-        de_rev = revision(is_approved=False, document=de_doc, based_on=eng_rev,
-                          save=True)
+        de_doc = DocumentFactory(category=CANNED_RESPONSES_CATEGORY, parent=eng_doc, locale='de')
+        de_rev = RevisionFactory(
+            document=de_doc,
+            based_on=eng_rev,
+            is_approved=False,
+            reviewed=None)
 
         eq_('review', self.row()['status_class'])
 
@@ -774,28 +745,26 @@ class CannedResponsesTests(ReadoutTestCase):
         eq_('ok', self.row()['status_class'])
 
         # Now update the parent, so it becomes minorly out of date
-        revision(is_approved=True, is_ready_for_localization=True,
-                 document=eng_doc, significance=MEDIUM_SIGNIFICANCE,
-                 save=True)
+        ApprovedRevisionFactory(
+            is_ready_for_localization=True,
+            document=eng_doc,
+            significance=MEDIUM_SIGNIFICANCE)
 
         eq_('update', self.row()['status_class'])
 
         # Now update the parent, so it becomes majorly out of date
-        revision(is_approved=True, is_ready_for_localization=True,
-                 document=eng_doc, significance=MAJOR_SIGNIFICANCE,
-                 save=True)
+        ApprovedRevisionFactory(
+            is_ready_for_localization=True,
+            document=eng_doc,
+            significance=MAJOR_SIGNIFICANCE)
 
         eq_('out-of-date', self.row()['status_class'])
 
     def test_by_product(self):
         """Test the product filtering of the readout."""
-        p = product(title='Firefox', slug='firefox', save=True)
-        d = document(title='Foo', category=CANNED_RESPONSES_CATEGORY,
-                     save=True)
-        revision(is_approved=True,
-                 is_ready_for_localization=True,
-                 document=d,
-                 save=True)
+        p = ProductFactory(title='Firefox', slug='firefox')
+        d = DocumentFactory(title='Foo', category=CANNED_RESPONSES_CATEGORY)
+        ApprovedRevisionFactory(document=d, is_ready_for_localization=True)
 
         # There shouldn't be any rows yet.
         eq_(0, len(self.rows(product=p)))

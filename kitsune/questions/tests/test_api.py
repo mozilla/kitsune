@@ -13,28 +13,28 @@ from kitsune.sumo.tests import TestCase
 from kitsune.questions import api
 from kitsune.questions.models import Question, Answer
 from kitsune.questions.tests import (
-    tags_eq, question, answer, questionvote, answervote, QuestionFactory)
-from kitsune.products.tests import product, topic
+    tags_eq, QuestionFactory, AnswerFactory, QuestionVoteFactory, AnswerVoteFactory)
+from kitsune.products.tests import ProductFactory, TopicFactory
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.tags.tests import TagFactory
 from kitsune.users.helpers import profile_avatar
 from kitsune.users.models import Profile
-from kitsune.users.tests import profile, user, add_permission
+from kitsune.users.tests import UserFactory, add_permission
 
 
 class TestQuestionSerializerDeserialization(TestCase):
 
     def setUp(self):
-        self.profile = profile()
-        self.product = product(save=True)
-        self.topic = topic(product=self.product, save=True)
+        self.user = UserFactory()
+        self.product = ProductFactory()
+        self.topic = TopicFactory(product=self.product)
         self.request = mock.Mock()
-        self.request.user = self.profile.user
+        self.request.user = self.user
         self.context = {
             'request': self.request,
         }
         self.data = {
-            'creator': self.profile,
+            'creator': self.user.profile,
             'title': 'How do I test programs?',
             'content': "Help, I don't know what to do.",
             'product': self.product.slug,
@@ -52,7 +52,7 @@ class TestQuestionSerializerDeserialization(TestCase):
             context=self.context, data=self.data)
         serializer.is_valid(raise_exception=True)
         obj = serializer.save()
-        eq_(obj.creator, self.profile.user)
+        eq_(obj.creator, self.user)
 
     def test_product_required(self):
         del self.data['product']
@@ -76,8 +76,8 @@ class TestQuestionSerializerDeserialization(TestCase):
     def test_topic_disambiguation(self):
         # First make another product, and a colliding topic.
         # It has the same slug, but a different product.
-        new_product = product(save=True)
-        topic(product=new_product, slug=self.topic.slug, save=True)
+        new_product = ProductFactory()
+        TopicFactory(product=new_product, slug=self.topic.slug)
         serializer = api.QuestionSerializer(
             context=self.context, data=self.data)
         serializer.is_valid(raise_exception=True)
@@ -85,8 +85,8 @@ class TestQuestionSerializerDeserialization(TestCase):
         eq_(obj.topic, self.topic)
 
     def test_solution_is_readonly(self):
-        q = question(save=True)
-        a = answer(question=q, save=True)
+        q = QuestionFactory()
+        a = AnswerFactory(question=q)
         self.data['solution'] = a.id
         serializer = api.QuestionSerializer(context=self.context, data=self.data, instance=q)
         serializer.is_valid(raise_exception=True)
@@ -97,10 +97,10 @@ class TestQuestionSerializerDeserialization(TestCase):
 class TestQuestionSerializerSerialization(TestCase):
 
     def setUp(self):
-        self.asker = profile().user
-        self.helper1 = profile().user
-        self.helper2 = profile().user
-        self.question = question(creator=self.asker, save=True)
+        self.asker = UserFactory()
+        self.helper1 = UserFactory()
+        self.helper2 = UserFactory()
+        self.question = QuestionFactory(creator=self.asker)
 
     def _names(self, *users):
         return sorted(
@@ -112,16 +112,16 @@ class TestQuestionSerializerSerialization(TestCase):
             for u in users)
 
     def _answer(self, user):
-        return answer(question=self.question, creator=user, save=True)
+        return AnswerFactory(question=self.question, creator=user)
 
     def test_no_votes(self):
         serializer = api.QuestionSerializer(instance=self.question)
         eq_(serializer.data['num_votes'], 0)
 
     def test_with_votes(self):
-        questionvote(question=self.question, save=True)
-        questionvote(question=self.question, save=True)
-        questionvote(save=True)
+        QuestionVoteFactory(question=self.question)
+        QuestionVoteFactory(question=self.question)
+        QuestionVoteFactory()
         serializer = api.QuestionSerializer(instance=self.question)
         eq_(serializer.data['num_votes'], 2)
 
@@ -174,9 +174,9 @@ class TestQuestionViewSet(TestCase):
         self.client = APIClient()
 
     def test_create(self):
-        u = profile().user
-        p = product(save=True)
-        t = topic(product=p, save=True)
+        u = UserFactory()
+        p = ProductFactory()
+        t = TopicFactory(product=p)
         self.client.force_authenticate(user=u)
         data = {
             'title': 'How do I start Firefox?',
@@ -194,9 +194,9 @@ class TestQuestionViewSet(TestCase):
         eq_(q.content_parsed, res.data['content'])
 
     def test_delete_permissions(self):
-        u1 = user(save=True)
-        u2 = user(save=True)
-        q = question(creator=u1, save=True)
+        u1 = UserFactory()
+        u2 = UserFactory()
+        q = QuestionFactory(creator=u1)
 
         # Anonymous user can't delete
         self.client.force_authenticate(user=None)
@@ -214,8 +214,8 @@ class TestQuestionViewSet(TestCase):
         eq_(res.status_code, 204)  # No content
 
     def test_solve(self):
-        q = question(save=True)
-        a = answer(question=q, save=True)
+        q = QuestionFactory()
+        a = AnswerFactory(question=q)
 
         self.client.force_authenticate(user=q.creator)
         res = self.client.post(reverse('question-solve', args=[q.id]),
@@ -225,8 +225,8 @@ class TestQuestionViewSet(TestCase):
         eq_(q.solution, a)
 
     def test_filter_is_taken_true(self):
-        q1 = question(save=True)
-        q2 = question(save=True)
+        q1 = QuestionFactory()
+        q2 = QuestionFactory()
         q2.take(q1.creator)
 
         url = reverse('question-list') + '?is_taken=1'
@@ -237,8 +237,8 @@ class TestQuestionViewSet(TestCase):
         eq_(res.data['results'][0]['id'], q2.id)
 
     def test_filter_is_taken_false(self):
-        q1 = question(save=True)
-        q2 = question(save=True)
+        q1 = QuestionFactory()
+        q2 = QuestionFactory()
         q2.take(q1.creator)
 
         url = reverse('question-list') + '?is_taken=0'
@@ -249,9 +249,9 @@ class TestQuestionViewSet(TestCase):
         eq_(res.data['results'][0]['id'], q1.id)
 
     def test_filter_is_taken_expired(self):
-        q = question(save=True)
+        q = QuestionFactory()
         # "take" the question, but with an expired timer.
-        q.taken_by = profile().user
+        q.taken_by = UserFactory()
         q.taken_until = datetime.now() - timedelta(seconds=60)
 
         url = reverse('question-list') + '?is_taken=1'
@@ -261,8 +261,8 @@ class TestQuestionViewSet(TestCase):
         eq_(res.data['count'], 0)
 
     def test_filter_taken_by_username(self):
-        q1 = question(save=True)
-        q2 = question(save=True)
+        q1 = QuestionFactory()
+        q2 = QuestionFactory()
         q2.take(q1.creator)
 
         url = reverse('question-list') + '?taken_by=' + q1.creator.username
@@ -273,8 +273,8 @@ class TestQuestionViewSet(TestCase):
         eq_(res.data['results'][0]['id'], q2.id)
 
     def test_helpful(self):
-        q = question(save=True)
-        u = profile().user
+        q = QuestionFactory()
+        u = UserFactory()
         self.client.force_authenticate(user=u)
         res = self.client.post(reverse('question-helpful', args=[q.id]))
         eq_(res.status_code, 200)
@@ -282,9 +282,9 @@ class TestQuestionViewSet(TestCase):
         eq_(Question.objects.get(id=q.id).num_votes, 1)
 
     def test_helpful_double_vote(self):
-        q = question(save=True)
-        u = profile().user
-        questionvote(question=q, creator=u, save=True)
+        q = QuestionFactory()
+        u = UserFactory()
+        QuestionVoteFactory(question=q, creator=u)
         self.client.force_authenticate(user=u)
         res = self.client.post(reverse('question-helpful', args=[q.id]))
         eq_(res.status_code, 409)
@@ -293,16 +293,16 @@ class TestQuestionViewSet(TestCase):
         eq_(Question.objects.get(id=q.id).num_votes, 1)
 
     def test_helpful_question_not_editable(self):
-        q = question(is_locked=True, save=True)
-        u = profile().user
+        q = QuestionFactory(is_locked=True)
+        u = UserFactory()
         self.client.force_authenticate(user=u)
         res = self.client.post(reverse('question-helpful', args=[q.id]))
         eq_(res.status_code, 403)
         eq_(Question.objects.get(id=q.id).num_votes, 0)
 
     def test_ordering(self):
-        q1 = question(save=True)
-        q2 = question(save=True)
+        q1 = QuestionFactory()
+        q2 = QuestionFactory()
 
         res = self.client.get(reverse('question-list'))
         eq_(res.data['results'][0]['id'], q2.id)
@@ -317,10 +317,10 @@ class TestQuestionViewSet(TestCase):
         eq_(res.data['results'][1]['id'], q1.id)
 
     def test_filter_product_with_slug(self):
-        p1 = product(save=True)
-        p2 = product(save=True)
-        q1 = question(product=p1, save=True)
-        question(product=p2, save=True)
+        p1 = ProductFactory()
+        p2 = ProductFactory()
+        q1 = QuestionFactory(product=p1)
+        QuestionFactory(product=p2)
 
         querystring = '?product={0}'.format(p1.slug)
         res = self.client.get(reverse('question-list') + querystring)
@@ -328,8 +328,8 @@ class TestQuestionViewSet(TestCase):
         eq_(res.data['results'][0]['id'], q1.id)
 
     def test_filter_creator_with_username(self):
-        q1 = question(save=True)
-        question(save=True)
+        q1 = QuestionFactory()
+        QuestionFactory()
 
         querystring = '?creator={0}'.format(q1.creator.username)
         res = self.client.get(reverse('question-list') + querystring)
@@ -338,9 +338,9 @@ class TestQuestionViewSet(TestCase):
         eq_(res.data['results'][0]['id'], q1.id)
 
     def test_filter_involved(self):
-        q1 = question(save=True)
-        a1 = answer(question=q1, save=True)
-        q2 = question(creator=a1.creator, save=True)
+        q1 = QuestionFactory()
+        a1 = AnswerFactory(question=q1)
+        q2 = QuestionFactory(creator=a1.creator)
 
         querystring = '?involved={0}'.format(q1.creator.username)
         res = self.client.get(reverse('question-list') + querystring)
@@ -357,8 +357,8 @@ class TestQuestionViewSet(TestCase):
         eq_(res.data['results'][1]['id'], q1.id)
 
     def test_is_taken(self):
-        q = question(save=True)
-        u = profile().user
+        q = QuestionFactory()
+        u = UserFactory()
         q.take(u)
         url = reverse('question-detail', args=[q.id])
         res = self.client.get(url)
@@ -366,8 +366,8 @@ class TestQuestionViewSet(TestCase):
         eq_(res.data['taken_by']['username'], u.username)
 
     def test_take(self):
-        q = question(save=True)
-        u = user(save=True)
+        q = QuestionFactory()
+        u = UserFactory()
         self.client.force_authenticate(user=u)
         res = self.client.post(reverse('question-take', args=[q.id]))
         eq_(res.status_code, 204)
@@ -375,7 +375,7 @@ class TestQuestionViewSet(TestCase):
         eq_(q.taken_by, u)
 
     def test_take_by_owner(self):
-        q = question(save=True)
+        q = QuestionFactory()
         self.client.force_authenticate(user=q.creator)
         res = self.client.post(reverse('question-take', args=[q.id]))
         eq_(res.status_code, 400)
@@ -383,10 +383,10 @@ class TestQuestionViewSet(TestCase):
         eq_(q.taken_by, None)
 
     def test_take_conflict(self):
-        u1 = user(save=True)
-        u2 = user(save=True)
+        u1 = UserFactory()
+        u2 = UserFactory()
         taken_until = datetime.now() + timedelta(seconds=30)
-        q = question(save=True, taken_until=taken_until, taken_by=u1)
+        q = QuestionFactory(taken_until=taken_until, taken_by=u1)
         self.client.force_authenticate(user=u2)
         res = self.client.post(reverse('question-take', args=[q.id]))
         eq_(res.status_code, 409)
@@ -394,8 +394,8 @@ class TestQuestionViewSet(TestCase):
         eq_(q.taken_by, u1)
 
     def test_follow(self):
-        q = question(save=True)
-        u = profile().user
+        q = QuestionFactory()
+        u = UserFactory()
         self.client.force_authenticate(user=u)
         res = self.client.post(reverse('question-follow', args=[q.id]))
         eq_(res.status_code, 204)
@@ -404,8 +404,8 @@ class TestQuestionViewSet(TestCase):
         eq_(f.actor_only, False)
 
     def test_unfollow(self):
-        q = question(save=True)
-        u = profile().user
+        q = QuestionFactory()
+        u = UserFactory()
         actstream.actions.follow(u, q, actor_only=False)
         eq_(Follow.objects.filter(user=u).count(), 1)  # pre-condition
         self.client.force_authenticate(user=u)
@@ -414,10 +414,10 @@ class TestQuestionViewSet(TestCase):
         eq_(Follow.objects.filter(user=u).count(), 0)
 
     def test_add_tags(self):
-        q = question(save=True)
+        q = QuestionFactory()
         eq_(0, q.tags.count())
 
-        u = profile().user
+        u = UserFactory()
         add_permission(u, Tag, 'add_tag')
         self.client.force_authenticate(user=u)
 
@@ -428,13 +428,13 @@ class TestQuestionViewSet(TestCase):
         eq_(3, q.tags.count())
 
     def test_remove_tags(self):
-        q = question(save=True)
+        q = QuestionFactory()
         q.tags.add('test')
         q.tags.add('more')
         q.tags.add('tags')
         eq_(3, q.tags.count())
 
-        u = profile().user
+        u = UserFactory()
         self.client.force_authenticate(user=u)
 
         res = self.client.post(reverse('question-remove-tags', args=[q.id]),
@@ -445,7 +445,7 @@ class TestQuestionViewSet(TestCase):
 
     def test_bleaching(self):
         """Tests whether question content is bleached."""
-        q = question(content=u'<unbleached>Cupcakes are the best</unbleached>', save=True)
+        q = QuestionFactory(content=u'<unbleached>Cupcakes are the best</unbleached>')
         url = reverse('question-detail', args=[q.id])
         res = self.client.get(url)
         eq_(res.status_code, 200)
@@ -475,17 +475,17 @@ class TestQuestionViewSet(TestCase):
 class TestAnswerSerializerDeserialization(TestCase):
 
     def test_no_votes(self):
-        a = answer(save=True)
+        a = AnswerFactory()
         serializer = api.AnswerSerializer(instance=a)
         eq_(serializer.data['num_helpful_votes'], 0)
         eq_(serializer.data['num_unhelpful_votes'], 0)
 
     def test_with_votes(self):
-        a = answer(save=True)
-        answervote(answer=a, helpful=True, save=True)
-        answervote(answer=a, helpful=True, save=True)
-        answervote(answer=a, helpful=False, save=True)
-        answervote(save=True)
+        a = AnswerFactory()
+        AnswerVoteFactory(answer=a, helpful=True)
+        AnswerVoteFactory(answer=a, helpful=True)
+        AnswerVoteFactory(answer=a, helpful=False)
+        AnswerVoteFactory()
 
         serializer = api.AnswerSerializer(instance=a)
         eq_(serializer.data['num_helpful_votes'], 2)
@@ -498,8 +498,8 @@ class TestAnswerViewSet(TestCase):
         self.client = APIClient()
 
     def test_create(self):
-        q = question(save=True)
-        u = profile().user
+        q = QuestionFactory()
+        u = UserFactory()
         self.client.force_authenticate(user=u)
         data = {
             'question': q.id,
@@ -515,9 +515,9 @@ class TestAnswerViewSet(TestCase):
         eq_(a.question, q)
 
     def test_delete_permissions(self):
-        u1 = user(save=True)
-        u2 = user(save=True)
-        a = answer(creator=u1, save=True)
+        u1 = UserFactory()
+        u2 = UserFactory()
+        a = AnswerFactory(creator=u1)
 
         # Anonymous user can't delete
         self.client.force_authenticate(user=None)
@@ -535,8 +535,8 @@ class TestAnswerViewSet(TestCase):
         eq_(res.status_code, 204)  # No content
 
     def test_ordering(self):
-        a1 = answer(save=True)
-        a2 = answer(save=True)
+        a1 = AnswerFactory()
+        a2 = AnswerFactory()
 
         res = self.client.get(reverse('answer-list'))
         eq_(res.data['results'][0]['id'], a2.id)
@@ -551,8 +551,8 @@ class TestAnswerViewSet(TestCase):
         eq_(res.data['results'][1]['id'], a1.id)
 
     def test_helpful(self):
-        a = answer(save=True)
-        u = profile().user
+        a = AnswerFactory()
+        u = UserFactory()
         self.client.force_authenticate(user=u)
         res = self.client.post(reverse('answer-helpful', args=[a.id]))
         eq_(res.status_code, 200)
@@ -560,9 +560,9 @@ class TestAnswerViewSet(TestCase):
         eq_(Answer.objects.get(id=a.id).num_votes, 1)
 
     def test_helpful_double_vote(self):
-        a = answer(save=True)
-        u = profile().user
-        answervote(answer=a, creator=u, save=True)
+        a = AnswerFactory()
+        u = UserFactory()
+        AnswerVoteFactory(answer=a, creator=u)
         self.client.force_authenticate(user=u)
         res = self.client.post(reverse('answer-helpful', args=[a.id]))
         eq_(res.status_code, 409)
@@ -571,17 +571,17 @@ class TestAnswerViewSet(TestCase):
         eq_(Answer.objects.get(id=a.id).num_votes, 1)
 
     def test_helpful_answer_not_editable(self):
-        q = question(is_locked=True, save=True)
-        a = answer(question=q, save=True)
-        u = profile().user
+        q = QuestionFactory(is_locked=True)
+        a = AnswerFactory(question=q)
+        u = UserFactory()
         self.client.force_authenticate(user=u)
         res = self.client.post(reverse('answer-helpful', args=[a.id]))
         eq_(res.status_code, 403)
         eq_(Answer.objects.get(id=a.id).num_votes, 0)
 
     def test_follow(self):
-        a = answer(save=True)
-        u = profile().user
+        a = AnswerFactory()
+        u = UserFactory()
         self.client.force_authenticate(user=u)
         eq_(Follow.objects.filter(user=u).count(), 0)  # pre-condition
         res = self.client.post(reverse('answer-follow', args=[a.id]))
@@ -591,8 +591,8 @@ class TestAnswerViewSet(TestCase):
         eq_(f.actor_only, False)
 
     def test_unfollow(self):
-        a = answer(save=True)
-        u = profile().user
+        a = AnswerFactory()
+        u = UserFactory()
         actstream.actions.follow(u, a, actor_only=False)
         eq_(Follow.objects.filter(user=u).count(), 1)  # pre-condition
         self.client.force_authenticate(user=u)
@@ -602,7 +602,7 @@ class TestAnswerViewSet(TestCase):
 
     def test_bleaching(self):
         """Tests whether answer content is bleached."""
-        a = answer(content=u'<unbleached>Cupcakes are the best</unbleached>', save=True)
+        a = AnswerFactory(content=u'<unbleached>Cupcakes are the best</unbleached>')
         url = reverse('answer-detail', args=[a.id])
         res = self.client.get(url)
         eq_(res.status_code, 200)
@@ -619,9 +619,9 @@ class TestQuestionFilter(TestCase):
         return self.filter_instance.filter_metadata(self.queryset, json.dumps(filter_data))
 
     def test_filter_involved(self):
-        q1 = question(save=True)
-        a1 = answer(question=q1, save=True)
-        q2 = question(creator=a1.creator, save=True)
+        q1 = QuestionFactory()
+        a1 = AnswerFactory(question=q1)
+        q2 = QuestionFactory(creator=a1.creator)
 
         qs = self.filter_instance.filter_involved(self.queryset, q1.creator.username)
         eq_(list(qs), [q1])
@@ -632,11 +632,11 @@ class TestQuestionFilter(TestCase):
         eq_(qs, [q1, q2])
 
     def test_filter_is_solved(self):
-        q1 = question(save=True)
-        a1 = answer(question=q1, save=True)
+        q1 = QuestionFactory()
+        a1 = AnswerFactory(question=q1)
         q1.solution = a1
         q1.save()
-        q2 = question(save=True)
+        q2 = QuestionFactory()
 
         qs = self.filter_instance.filter_is_solved(self.queryset, True)
         eq_(list(qs), [q1])
@@ -645,14 +645,14 @@ class TestQuestionFilter(TestCase):
         eq_(list(qs), [q2])
 
     def test_filter_solved_by(self):
-        q1 = question(save=True)
-        a1 = answer(question=q1, save=True)
+        q1 = QuestionFactory()
+        a1 = AnswerFactory(question=q1)
         q1.solution = a1
         q1.save()
-        q2 = question(save=True)
-        answer(question=q2, creator=a1.creator, save=True)
-        q3 = question(save=True)
-        a3 = answer(question=q3, save=True)
+        q2 = QuestionFactory()
+        AnswerFactory(question=q2, creator=a1.creator)
+        q3 = QuestionFactory()
+        a3 = AnswerFactory(question=q3)
         q3.solution = a3
         q3.save()
 
@@ -671,70 +671,70 @@ class TestQuestionFilter(TestCase):
         self.filter_instance.filter_metadata(self.queryset, 'not json')
 
     def test_single_filter_match(self):
-        q1 = question(metadata={'os': 'Linux'}, save=True)
-        question(metadata={'os': 'OSX'}, save=True)
+        q1 = QuestionFactory(metadata={'os': 'Linux'})
+        QuestionFactory(metadata={'os': 'OSX'})
         res = self.filter({'os': 'Linux'})
         eq_(list(res), [q1])
 
     def test_single_filter_no_match(self):
-        question(metadata={'os': 'Linux'}, save=True)
-        question(metadata={'os': 'OSX'}, save=True)
+        QuestionFactory(metadata={'os': 'Linux'})
+        QuestionFactory(metadata={'os': 'OSX'})
         res = self.filter({"os": "Windows 8"})
         eq_(list(res), [])
 
     def test_multi_filter_is_and(self):
-        q1 = question(metadata={'os': 'Linux', 'category': 'troubleshooting'}, save=True)
-        question(metadata={'os': 'OSX', 'category': 'troubleshooting'}, save=True)
+        q1 = QuestionFactory(metadata={'os': 'Linux', 'category': 'troubleshooting'})
+        QuestionFactory(metadata={'os': 'OSX', 'category': 'troubleshooting'})
         res = self.filter({'os': 'Linux', 'category': 'troubleshooting'})
         eq_(list(res), [q1])
 
     def test_list_value_is_or(self):
-        q1 = question(metadata={'os': 'Linux'}, save=True)
-        q2 = question(metadata={'os': 'OSX'}, save=True)
-        question(metadata={'os': 'Windows 7'}, save=True)
+        q1 = QuestionFactory(metadata={'os': 'Linux'})
+        q2 = QuestionFactory(metadata={'os': 'OSX'})
+        QuestionFactory(metadata={'os': 'Windows 7'})
         res = self.filter({'os': ['Linux', 'OSX']})
         eq_(sorted(res, key=lambda q: q.id), [q1, q2])
 
     def test_none_value_is_missing(self):
-        q1 = question(metadata={}, save=True)
-        question(metadata={'os': 'Linux'}, save=True)
+        q1 = QuestionFactory(metadata={})
+        QuestionFactory(metadata={'os': 'Linux'})
         res = self.filter({'os': None})
         eq_(list(res), [q1])
 
     def test_list_value_with_none(self):
-        q1 = question(metadata={'os': 'Linux'}, save=True)
-        q2 = question(metadata={}, save=True)
-        question(metadata={'os': 'Windows 7'}, save=True)
+        q1 = QuestionFactory(metadata={'os': 'Linux'})
+        q2 = QuestionFactory(metadata={})
+        QuestionFactory(metadata={'os': 'Windows 7'})
         res = self.filter({'os': ['Linux', None]})
         eq_(sorted(res, key=lambda q: q.id), [q1, q2])
 
     def test_is_taken(self):
-        u = user(save=True)
+        u = UserFactory()
         taken_until = datetime.now() + timedelta(seconds=30)
-        q = question(taken_by=u, taken_until=taken_until, save=True)
-        question(save=True)
+        q = QuestionFactory(taken_by=u, taken_until=taken_until)
+        QuestionFactory()
         res = self.filter_instance.filter_is_taken(self.queryset, True)
         eq_(list(res), [q])
 
     def test_is_not_taken(self):
-        u = user(save=True)
+        u = UserFactory()
         taken_until = datetime.now() + timedelta(seconds=30)
-        question(taken_by=u, taken_until=taken_until, save=True)
-        q = question(save=True)
+        QuestionFactory(taken_by=u, taken_until=taken_until)
+        q = QuestionFactory()
         res = self.filter_instance.filter_is_taken(self.queryset, False)
         eq_(list(res), [q])
 
     def test_is_taken_expired(self):
-        u = user(save=True)
+        u = UserFactory()
         taken_until = datetime.now() - timedelta(seconds=30)
-        question(taken_by=u, taken_until=taken_until, save=True)
+        QuestionFactory(taken_by=u, taken_until=taken_until)
         res = self.filter_instance.filter_is_taken(self.queryset, True)
         eq_(list(res), [])
 
     def test_is_not_taken_expired(self):
-        u = user(save=True)
+        u = UserFactory()
         taken_until = datetime.now() - timedelta(seconds=30)
-        q = question(taken_by=u, taken_until=taken_until, save=True)
+        q = QuestionFactory(taken_by=u, taken_until=taken_until)
         res = self.filter_instance.filter_is_taken(self.queryset, False)
         eq_(list(res), [q])
 
@@ -742,8 +742,8 @@ class TestQuestionFilter(TestCase):
         # This flag caused a regression, tracked in bug 1163855.
         # The error was that the help text on the field was a str instead of a
         # unicode. Yes, really, that matters apparently.
-        u = profile(first_answer_email_sent=True).user
-        question(creator=u, save=True)
+        u = UserFactory(profile__first_answer_email_sent=True)
+        QuestionFactory(creator=u)
         url = reverse('question-list')
         res = self.client.get(url)
         eq_(res.status_code, 200)

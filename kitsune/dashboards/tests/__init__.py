@@ -1,17 +1,15 @@
 from datetime import date
 
+import factory
+
 from kitsune.dashboards.models import WikiMetric, METRIC_CODE_CHOICES
-from kitsune.sumo.tests import with_save
 
 
-@with_save
-def wikimetric(**kwargs):
-    """A model maker for WikiMetric."""
-    defaults = {'code': METRIC_CODE_CHOICES[0][0],
-                'locale': 'es',
-                'date': date.today(),
-                'value': 42.0}
+class WikiMetricFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = WikiMetric
 
-    defaults.update(kwargs)
-
-    return WikiMetric(**defaults)
+    code = METRIC_CODE_CHOICES[0][0]
+    locale = 'es'
+    date = date.today()
+    value = 42.0

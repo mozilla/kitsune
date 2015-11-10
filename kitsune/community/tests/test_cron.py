@@ -9,10 +9,10 @@ import mock
 from nose.tools import eq_
 
 from kitsune.community import cron
-from kitsune.questions.tests import answer, question
+from kitsune.questions.tests import AnswerFactory, QuestionFactory
 from kitsune.sumo.tests import attrs_eq, TestCase
-from kitsune.users.tests import profile
-from kitsune.wiki.tests import document, revision
+from kitsune.users.tests import UserFactory
+from kitsune.wiki.tests import DocumentFactory, RevisionFactory
 
 
 class WelcomeEmailsTests(TestCase):
@@ -21,16 +21,16 @@ class WelcomeEmailsTests(TestCase):
     def test_answer_welcome_email(self, get_current):
         get_current.return_value.domain = 'testserver'
 
-        u1 = profile().user
-        u2 = profile(first_answer_email_sent=True).user
-        u3 = profile().user
+        u1 = UserFactory()
+        u2 = UserFactory(profile__first_answer_email_sent=True)
+        u3 = UserFactory()
 
         two_days = datetime.now() - timedelta(hours=48)
 
-        q = question(creator=u1, save=True)
-        answer(question=q, creator=u1, created=two_days, save=True)
-        answer(question=q, creator=u2, created=two_days, save=True)
-        answer(question=q, creator=u3, created=two_days, save=True)
+        q = QuestionFactory(creator=u1)
+        AnswerFactory(question=q, creator=u1, created=two_days)
+        AnswerFactory(question=q, creator=u2, created=two_days)
+        AnswerFactory(question=q, creator=u3, created=two_days)
 
         # Clear out the notifications that were sent
         mail.outbox = []
@@ -64,14 +64,14 @@ class WelcomeEmailsTests(TestCase):
     def test_l10n_welcome_email(self, get_current):
         get_current.return_value.domain = 'testserver'
 
-        u1 = profile().user
-        u2 = profile(first_l10n_email_sent=True).user
+        u1 = UserFactory()
+        u2 = UserFactory(profile__first_l10n_email_sent=True)
 
         two_days = datetime.now() - timedelta(hours=48)
 
-        d = document(locale='ru', save=True)
-        revision(document=d, creator=u1, created=two_days, save=True)
-        revision(document=d, creator=u2, created=two_days, save=True)
+        d = DocumentFactory(locale='ru')
+        RevisionFactory(document=d, creator=u1, created=two_days)
+        RevisionFactory(document=d, creator=u2, created=two_days)
 
         # Clear out the notifications that were sent
         mail.outbox = []

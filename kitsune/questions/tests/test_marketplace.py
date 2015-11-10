@@ -7,7 +7,7 @@ import kitsune.questions.forms
 from kitsune import questions
 from kitsune.questions.marketplace import submit_ticket
 from kitsune.sumo.tests import TestCase, LocalizingClient, get, post
-from kitsune.users.tests import user
+from kitsune.users.tests import UserFactory
 
 
 class MarketplaceAaqTests(TestCase):
@@ -16,7 +16,7 @@ class MarketplaceAaqTests(TestCase):
     def setUp(self):
         super(MarketplaceAaqTests, self).setUp()
 
-        self.user = user(email='s@s.com', save=True)
+        self.user = UserFactory(email='s@s.com')
         self.client.login(username=self.user.username, password='testpass')
 
     def test_aaq_page(self):

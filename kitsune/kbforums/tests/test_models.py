@@ -3,23 +3,23 @@ import datetime
 from nose.tools import eq_
 
 from kitsune.kbforums.models import Thread
-from kitsune.kbforums.tests import KBForumTestCase, thread, post as post_
+from kitsune.kbforums.tests import KBForumTestCase, ThreadFactory, PostFactory
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.helpers import urlparams
-from kitsune.users.tests import user
-from kitsune.wiki.tests import document
+from kitsune.users.tests import UserFactory
+from kitsune.wiki.tests import DocumentFactory
 
 
 class KBForumModelTestCase(KBForumTestCase):
 
     def test_thread_absolute_url(self):
-        t = thread(save=True)
+        t = ThreadFactory()
         exp_ = reverse('wiki.discuss.posts', locale=t.document.locale,
                        args=[t.document.slug, t.id])
         eq_(exp_, t.get_absolute_url())
 
     def test_post_absolute_url(self):
-        t = thread(save=True)
+        t = ThreadFactory()
         p = t.new_post(creator=t.creator, content='foo')
         url_ = reverse('wiki.discuss.posts',
                        locale=p.thread.document.locale,
@@ -31,8 +31,8 @@ class KBForumModelTestCase(KBForumTestCase):
         """Adding/Deleting the last post in a thread should
         update the last_post field
         """
-        t = thread(save=True)
-        u = user(save=True)
+        t = ThreadFactory()
+        u = UserFactory()
 
         # add a new post, then check that last_post is updated
         new_post = t.new_post(creator=u, content="test")
@@ -47,8 +47,7 @@ class KBThreadModelTestCase(KBForumTestCase):
 
     def test_delete_last_and_only_post_in_thread(self):
         """Deleting the only post in a thread should delete the thread"""
-        d = document(save=True)
-        t = thread(title="test", document=d, save=True)
+        t = ThreadFactory(title="test")
         p = t.new_post(creator=t.creator, content="test")
         eq_(1, t.post_set.count())
         p.delete()
@@ -66,10 +65,9 @@ class KBSaveDateTestCase(KBForumTestCase):
     def setUp(self):
         super(KBSaveDateTestCase, self).setUp()
 
-        self.user = user(save=True)
-        self.doc = document(save=True)
-        self.thread = thread(created=datetime.datetime(2010, 1, 12, 9, 48, 23),
-                             save=True)
+        self.user = UserFactory()
+        self.doc = DocumentFactory()
+        self.thread = ThreadFactory(created=datetime.datetime(2010, 1, 12, 9, 48, 23))
 
     def assertDateTimeAlmostEqual(self, a, b, delta, msg=None):
         """
@@ -98,7 +96,7 @@ class KBSaveDateTestCase(KBForumTestCase):
 
     def test_save_old_thread_created(self):
         """Saving an old thread should not change its created date."""
-        t = thread(save=True)
+        t = ThreadFactory()
         created = t.created
         t.save()
         eq_(created, t.created)
@@ -134,9 +132,7 @@ class KBSaveDateTestCase(KBForumTestCase):
         auto_now-like functionality.
         """
         created_ = datetime.datetime(1992, 1, 12, 10, 12, 32)
-        p = post_(thread=self.thread, content='bar', creator=self.user,
-                  created=created_, updated=created_)
-        p.save()
+        p = PostFactory(thread=self.thread, creator=self.user, created=created_, updated=created_)
 
         now = datetime.datetime.now()
         self.assertDateTimeAlmostEqual(now, p.created, self.delta)
@@ -144,5 +140,5 @@ class KBSaveDateTestCase(KBForumTestCase):
 
     def test_content_parsed_sanity(self):
         """The content_parsed field is populated."""
-        p = post_(content='yet another post', save=True)
+        p = PostFactory(content='yet another post')
         eq_('<p>yet another post\n</p>', p.content_parsed)

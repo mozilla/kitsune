@@ -1,11 +1,11 @@
 from nose.tools import eq_
 
 from kitsune.kbforums.models import Thread
-from kitsune.kbforums.tests import KBForumTestCase, thread
+from kitsune.kbforums.tests import KBForumTestCase, ThreadFactory
 from kitsune.kbforums.events import NewThreadEvent, NewPostEvent
 from kitsune.sumo.tests import get, post
-from kitsune.users.tests import user, add_permission
-from kitsune.wiki.tests import document
+from kitsune.users.tests import UserFactory, add_permission
+from kitsune.wiki.tests import DocumentFactory
 
 
 class ThreadTests(KBForumTestCase):
@@ -13,28 +13,27 @@ class ThreadTests(KBForumTestCase):
 
     def test_watch_forum(self):
         """Watch then unwatch a forum."""
-        u = user(save=True)
+        u = UserFactory()
         self.client.login(username=u.username, password='testpass')
 
-        d = document(save=True)
+        d = DocumentFactory()
         post(self.client, 'wiki.discuss.watch_forum', {'watch': 'yes'},
              args=[d.slug])
         assert NewThreadEvent.is_notifying(u, d)
         # NewPostEvent is not notifying.
-        t = thread(document=d, save=True)
+        t = ThreadFactory(document=d)
         p = t.new_post(creator=t.creator, content='test')
         assert not NewPostEvent.is_notifying(u, p)
 
-        post(self.client, 'wiki.discuss.watch_forum', {'watch': 'no'},
-             args=[d.slug])
+        post(self.client, 'wiki.discuss.watch_forum', {'watch': 'no'}, args=[d.slug])
         assert not NewThreadEvent.is_notifying(u, d)
 
     def test_watch_thread(self):
         """Watch then unwatch a thread."""
-        u = user(save=True)
+        u = UserFactory()
         self.client.login(username=u.username, password='testpass')
 
-        t = thread(save=True)
+        t = ThreadFactory()
         post(self.client, 'wiki.discuss.watch_thread', {'watch': 'yes'},
              args=[t.document.slug, t.id])
         assert NewPostEvent.is_notifying(u, t)
@@ -47,11 +46,11 @@ class ThreadTests(KBForumTestCase):
 
     def test_edit_thread(self):
         """Changing thread title works."""
-        u = user(save=True)
+        u = UserFactory()
         self.client.login(username=u.username, password='testpass')
 
-        d = document(save=True)
-        t = thread(title='Sticky Thread', document=d, creator=u, save=True)
+        d = DocumentFactory()
+        t = ThreadFactory(title='Sticky Thread', document=d, creator=u)
         post(self.client, 'wiki.discuss.edit_thread', {'title': 'A new title'},
              args=[d.slug, t.id])
         edited_t = d.thread_set.get(pk=t.id)
@@ -61,9 +60,9 @@ class ThreadTests(KBForumTestCase):
 
     def test_edit_thread_moderator(self):
         """Editing post as a moderator works."""
-        u = user(save=True)
+        u = UserFactory()
         add_permission(u, Thread, 'change_thread')
-        t = thread(title='Sticky Thread', save=True)
+        t = ThreadFactory(title='Sticky Thread')
         d = t.document
         self.client.login(username=u.username, password='testpass')
 
@@ -78,9 +77,9 @@ class ThreadTests(KBForumTestCase):
 
     def test_disallowed_404(self):
         """If document.allow_discussion is false, should return 404."""
-        u = user(username='berkerpeksag', save=True)
+        u = UserFactory()
         self.client.login(username=u.username, password='testpass')
-        doc = document(allow_discussion=False, save=True)
+        doc = DocumentFactory(allow_discussion=False)
 
         def check(url):
             response = get(self.client, url, args=[doc.slug])
@@ -95,13 +94,12 @@ class ThreadPermissionsTests(KBForumTestCase):
 
     def setUp(self):
         super(ThreadPermissionsTests, self).setUp()
-        self.doc = document(save=True)
-        self.u = user(save=True)
-        self.thread = thread(document=self.doc, creator=self.u, save=True)
-        self.post = self.thread.new_post(creator=self.thread.creator,
-                                         content='foo')
+        self.doc = DocumentFactory()
+        self.u = UserFactory()
+        self.thread = ThreadFactory(document=self.doc, creator=self.u)
+        self.post = self.thread.new_post(creator=self.thread.creator, content='foo')
         # Login for testing 403s
-        u2 = user(save=True)
+        u2 = UserFactory()
         self.client.login(username=u2.username, password='testpass')
 
     def tearDown(self):
@@ -116,8 +114,7 @@ class ThreadPermissionsTests(KBForumTestCase):
 
     def test_edit_locked_thread_403(self):
         """Editing a locked thread returns 403."""
-        t = thread(document=self.doc, creator=self.u, is_locked=True,
-                   save=True)
+        t = ThreadFactory(document=self.doc, creator=self.u, is_locked=True)
         response = get(self.client, 'wiki.discuss.edit_thread',
                        args=[self.doc.slug, t.id])
         eq_(403, response.status_code)

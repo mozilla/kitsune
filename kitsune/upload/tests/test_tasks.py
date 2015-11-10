@@ -8,13 +8,13 @@ import mock
 from nose.tools import eq_
 
 import kitsune.upload.tasks
-from kitsune.questions.tests import question
+from kitsune.questions.tests import QuestionFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.upload.models import ImageAttachment
 from kitsune.upload.tasks import (
     _scale_dimensions, _create_image_thumbnail, compress_image,
     generate_thumbnail)
-from kitsune.users.tests import user
+from kitsune.users.tests import UserFactory
 
 
 class ScaleDimensionsTestCase(TestCase):
@@ -90,8 +90,8 @@ class GenerateThumbnail(TestCase):
 
     def setUp(self):
         super(GenerateThumbnail, self).setUp()
-        self.user = user(save=True)
-        self.obj = question(save=True)
+        self.user = UserFactory()
+        self.obj = QuestionFactory()
 
     def tearDown(self):
         ImageAttachment.objects.all().delete()
@@ -149,8 +149,8 @@ class CompressImageTestCase(TestCase):
 
     def setUp(self):
         super(CompressImageTestCase, self).setUp()
-        self.user = user(save=True)
-        self.obj = question(save=True)
+        self.user = UserFactory()
+        self.obj = QuestionFactory()
 
     def tearDown(self):
         ImageAttachment.objects.all().delete()

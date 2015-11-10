@@ -4,7 +4,7 @@ from nose.tools import eq_
 
 from kitsune.questions.forms import NewQuestionForm, WatchQuestionForm
 from kitsune.questions.tests import TestCaseBase
-from kitsune.users.tests import user
+from kitsune.users.tests import UserFactory
 
 
 class WatchQuestionFormTests(TestCaseBase):
@@ -22,13 +22,14 @@ class WatchQuestionFormTests(TestCaseBase):
         eq_('Please provide an email.', form.errors['email'][0])
 
     def test_registered_watch_with_email(self):
-        form = WatchQuestionForm(user(), data={'email': 'wo@ot.com',
-                                               'event_type': 'reply'})
+        form = WatchQuestionForm(
+            UserFactory(),
+            data={'email': 'wo@ot.com', 'event_type': 'reply'})
         assert form.is_valid()
         assert not form.cleaned_data['email']
 
     def test_registered_watch_without_email(self):
-        form = WatchQuestionForm(user(), data={'event_type': 'reply'})
+        form = WatchQuestionForm(UserFactory(), data={'event_type': 'reply'})
         assert form.is_valid()
 
 

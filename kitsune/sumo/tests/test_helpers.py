@@ -7,7 +7,6 @@ from django.test.client import RequestFactory
 
 import jingo
 from babel.dates import format_date, format_time, format_datetime
-from mock import Mock
 from nose.tools import eq_, assert_raises
 from pyquery import PyQuery as pq
 from pytz import timezone
@@ -17,8 +16,6 @@ from kitsune.sumo.helpers import (
     timesince, label_with_help, urlparams, yesno, number, remove)
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
-
-from kitsune.users.tests import profile
 
 
 def render(s, context={}):
@@ -102,9 +99,6 @@ class TestDateTimeFormat(TestCase):
         url_ = reverse('forums.threads', args=['testslug'])
         self.context = {'request': RequestFactory().get(url_)}
         self.context['request'].LANGUAGE_CODE = self.locale
-        user_profile = profile(timezone=self.timezone, locale=self.locale)
-        self.context['request'].user = user_profile
-        self.context['request'].user.is_authenticated = Mock(return_value=True)
         self.context['request'].session = {'timezone': self.timezone}
 
     def _get_datetime_result(self, locale, timezone, format='short',
@@ -149,8 +143,7 @@ class TestDateTimeFormat(TestCase):
         """Expects date format."""
         value_test = datetime.fromordinal(733900)
         value_expected = format_date(value_test, locale=self.locale)
-        value_returned = datetimeformat(self.context, value_test,
-                                        format='date')
+        value_returned = datetimeformat(self.context, value_test, format='date')
         eq_(pq(value_returned)('time').text(), value_expected)
 
     def test_time(self):

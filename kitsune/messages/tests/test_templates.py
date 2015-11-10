@@ -5,15 +5,15 @@ from kitsune.messages.models import OutboxMessage
 from kitsune.sumo.helpers import urlparams
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.users.tests import user
+from kitsune.users.tests import UserFactory
 
 
 class SendMessageTestCase(TestCase):
     def setUp(self):
         super(SendMessageTestCase, self).setUp()
-        self.user1 = user(save=True)
-        self.user2 = user(save=True)
-        self.user3 = user(save=True)
+        self.user1 = UserFactory()
+        self.user2 = UserFactory()
+        self.user3 = UserFactory()
         self.client.login(username=self.user1.username, password='testpass')
 
     def test_send_message_page(self):
@@ -70,7 +70,7 @@ class MessagePreviewTests(TestCase):
     """Tests for preview."""
     def setUp(self):
         super(MessagePreviewTests, self).setUp()
-        self.user = user(save=True)
+        self.user = UserFactory()
         self.client.login(username=self.user.username, password='testpass')
 
     def test_preview(self):

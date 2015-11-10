@@ -8,32 +8,30 @@ from mock import patch, Mock
 from nose.tools import eq_
 
 from kitsune.customercare.models import Tweet, Reply
-from kitsune.customercare.tests import tweet, twitter_account, reply
+from kitsune.customercare.tests import TweetFactory, TwitterAccountFactory, ReplyFactory
 from kitsune.customercare.views import _get_tweets, _count_answered_tweets
 from kitsune.customercare.views import twitter_post
 from kitsune.sumo.tests import TestCase, LocalizingClient
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.users.tests import user
+from kitsune.users.tests import UserFactory
 
 
 class TweetListTests(TestCase):
     """Tests for the customer care tweet list."""
 
     def setUp(self):
-        for i in range(0, 11):
-            tweet(save=True)
-
+        TweetFactory.create_batch(11)
         now = datetime.now()
 
         # Create a tweet older than CC_TWEETS_DAYS days
         older = now - timedelta(days=settings.CC_TWEETS_DAYS)
-        tweet(save=True, created=older)
+        TweetFactory(created=older)
 
         # Create a tweet on the last CC_TWEETS_DAYS day
         last = now - timedelta(days=settings.CC_TWEETS_DAYS - 1)
-        tweet(save=True, created=last)
+        TweetFactory(created=last)
 
-        self.client.login(username=user(save=True), password='testpass')
+        self.client.login(username=UserFactory(), password='testpass')
 
     def _hide_tweet(self, id):
         url = reverse('customercare.hide_tweet', locale='en-US')
@@ -80,10 +78,8 @@ class TweetListTests(TestCase):
 
     def test_hide_tweets_with_replies(self):
         """Hiding tweets with replies is not allowed."""
-        tw = tweet(save=True)
-        reply_tw = tweet(save=True)
-        reply_tw.reply_to_id = tw.tweet_id
-        reply_tw.save()
+        tw = TweetFactory()
+        TweetFactory(reply_to_id=tw.tweet_id)
 
         r = self.client.post(
             reverse('customercare.hide_tweet', locale='en-US'),
@@ -111,12 +107,12 @@ class TweetListTests(TestCase):
 class CountTests(TestCase):
     def test_count_replies(self):
         """Test filtering when counting tweets"""
-        tweet(save=True)
+        TweetFactory()
         id = Tweet.latest().tweet_id
 
-        reply(reply_to_tweet_id=id, created=datetime.now(), save=True)
-        reply(reply_to_tweet_id=id, created=datetime.now(), save=True)
-        reply(created=datetime.now() - timedelta(days=1, minutes=1), save=True)
+        ReplyFactory(reply_to_tweet_id=id, created=datetime.now())
+        ReplyFactory(reply_to_tweet_id=id, created=datetime.now())
+        ReplyFactory(created=datetime.now() - timedelta(days=1, minutes=1))
 
         yesterday = datetime.now() - timedelta(days=1)
         count_recent_answered = _count_answered_tweets(since=yesterday)
@@ -150,10 +146,10 @@ class FilterTests(FilterTestCase):
         """
         super(FilterTests, self).setUp()
 
-        tweet(text='YO_UNANSWERED').save()
-        cry_for_help = tweet(text='YO_HELP_ME', save=True)
-        tweet(text='YO_REPLY', reply_to=cry_for_help).save()
-        tweet(text='YO_HIDDEN', hidden=True).save()
+        TweetFactory(raw_json__text='YO_UNANSWERED')
+        cry_for_help = TweetFactory(raw_json__text='YO_HELP_ME')
+        TweetFactory(raw_json__text='YO_REPLY', reply_to=cry_for_help)
+        TweetFactory(raw_json__text='YO_HIDDEN', hidden=True)
 
     def _test_a_filter(self, filter, should_show_unanswered,
                        should_show_answered, should_show_reply,
@@ -189,17 +185,17 @@ class FilterCachingTests(FilterTestCase):
         """Refiltering list after replying shows replied-to tweet"""
         # We need at least one existing answer to get the list of answered
         # tweets to cache:
-        question = tweet(save=True)
-        tweet(reply_to=question).save()
+        question = TweetFactory()
+        TweetFactory(reply_to=question)
 
         # Make a sad, sad, unanswered tweet:
-        cry_for_help = tweet(text='YO_UNANSWERED', save=True)
+        cry_for_help = TweetFactory(raw_json__text='YO_UNANSWERED')
 
         # Cache the list of answered tweets:
         self._tweet_list('answered')
 
         # Reply to the lonely tweet:
-        tweet(text='YO_REPLY', reply_to=cry_for_help).save()
+        TweetFactory(raw_json__text='YO_REPLY', reply_to=cry_for_help)
 
         # And make sure we can immediately see that we replied:
         assert 'YO_UNANSWERED' in self._tweet_list('answered')
@@ -234,7 +230,7 @@ class TweetReplyTests(TestCase):
         request.twitter.api.update_status.return_value = return_value
         credentials = {'screen_name': 'r1cky'}
         request.twitter.api.verify_credentials.return_value = credentials
-        request.user = user(save=True)
+        request.user = UserFactory()
         return request
 
     def test_post_reply(self):
@@ -270,7 +266,7 @@ class TweetReplyTests(TestCase):
         request.twitter.api.update_status.return_value = return_value
         credentials = {'screen_name': 'r1cky'}
         request.twitter.api.verify_credentials.return_value = credentials
-        request.user = user(save=True)
+        request.user = UserFactory()
 
         # Pass the request to the view and verify response.
         response = twitter_post(request)
@@ -283,13 +279,13 @@ class TweetReplyTests(TestCase):
         eq_('@foobar try Aurora! #fxhelp', json.loads(reply.raw_json)['text'])
 
     def test_prevent_multiple_replies(self):
-        t = tweet(save=True)
+        t = TweetFactory()
         eq_(t.replies.count(), 0)
 
-        tweet(reply_to=t, save=True)
+        TweetFactory(reply_to=t)
         eq_(t.replies.count(), 1)
 
-        self.client.login(username=user(save=True).username, password='testpass')
+        self.client.login(username=UserFactory().username, password='testpass')
         response = self.client.post(
             reverse('customercare.twitter_post'),
             {'reply_to': 1,
@@ -300,14 +296,10 @@ class TweetReplyTests(TestCase):
 
     def test_post_account_banned(self):
         # Create a tweet so our request matches.
-        Tweet.objects.create(
-            pk=1,
-            raw_json='{}',
-            locale='en',
-            created=datetime.now())
+        TweetFactory(pk=1, raw_json='{}', locale='en', created=datetime.now())
 
-        # Create a banned TwitterAccoun
-        twitter_account(username='r1cky', banned=True, save=True)
+        # Create a banned Twitter account
+        TwitterAccountFactory(username='r1cky', banned=True)
 
         # Create a request and mock all the required properties and methods.
         request = self._create_mocked_tweet_request()
@@ -317,14 +309,10 @@ class TweetReplyTests(TestCase):
 
     def test_post_account_not_banned(self):
         # Create a tweet so our request matches.
-        Tweet.objects.create(
-            pk=1,
-            raw_json='{}',
-            locale='en',
-            created=datetime.now())
+        TweetFactory(pk=1, raw_json='{}', locale='en', created=datetime.now())
 
         # Create a valid TwitterAccount
-        twitter_account(username='r1cky', banned=False, save=True)
+        TwitterAccountFactory(banned=False)
 
         # Create a request and mock all the required properties and methods.
         request = self._create_mocked_tweet_request()
@@ -334,11 +322,7 @@ class TweetReplyTests(TestCase):
 
     def test_post_account_not_exists(self):
         # Create a tweet so our request matches.
-        Tweet.objects.create(
-            pk=1,
-            raw_json='{}',
-            locale='en',
-            created=datetime.now())
+        TweetFactory(pk=1, raw_json='{}', locale='en', created=datetime.now())
 
         # Create a request and mock all the required properties and methods.
         request = self._create_mocked_tweet_request()

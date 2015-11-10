@@ -1,25 +1,26 @@
 import re
 
 from django.conf import settings
+from django.test.utils import override_settings
 
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 
 import kitsune.sumo.tests.test_parser
 from kitsune.gallery.models import Video
-from kitsune.gallery.tests import image, video
+from kitsune.gallery.tests import ImageFactory, VideoFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.wiki.config import TEMPLATES_CATEGORY, TEMPLATE_TITLE_PREFIX
 from kitsune.wiki.models import Document
 from kitsune.wiki.parser import (
     WikiParser, ForParser, PATTERNS, RECURSION_MESSAGE, _key_split,
     _build_template_params as _btp, _format_template_content as _ftc)
-from kitsune.wiki.tests import document, revision, TemplateDocumentFactory, ApprovedRevisionFactory
+from kitsune.wiki.tests import (
+    DocumentFactory, TemplateDocumentFactory, RevisionFactory, ApprovedRevisionFactory)
 
 
 def doc_rev_parser(*args, **kwargs):
-    return kitsune.sumo.tests.test_parser.doc_rev_parser(
-        *args, parser_cls=WikiParser, **kwargs)
+    return kitsune.sumo.tests.test_parser.doc_rev_parser(*args, parser_cls=WikiParser, **kwargs)
 
 
 def doc_parse_markup(content, markup):
@@ -157,7 +158,7 @@ class SimpleSyntaxTestCase(TestCase):
         p = WikiParser()
 
         # Create a new article
-        rev = revision(is_approved=True, save=True)
+        rev = ApprovedRevisionFactory()
         doc = rev.document
         doc.current_revision = rev
         doc.title = 'Real article'
@@ -325,7 +326,7 @@ class TestWikiTemplate(TestCase):
 
     def test_button_image_for_nesting(self):
         """You can nest [[Image:]] inside {for} inside {button}."""
-        image(title='image-file.png')
+        ImageFactory(title='image-file.png')
         text = '{button {for mac}[[Image:image-file.png]]{/for} text}'
         p = WikiParser()
         doc = pq(p.parse(text))
@@ -360,6 +361,7 @@ class TestWikiTemplate(TestCase):
 class TestWikiInclude(TestCase):
     def test_revision_include(self):
         """Simple include markup."""
+        p = WikiParser()
         _, _, p = doc_rev_parser('Test content', 'Test title')
 
         # Existing title returns document's content
@@ -380,39 +382,26 @@ class TestWikiInclude(TestCase):
         doc = pq(p.parse('[[I:Test title]]', locale='fr'))
         eq_('English content', doc.text())
         # Create the French article, and test again
-        parent_rev = revision()
-        d = document(parent=parent_rev.document, title='Test title',
-                     locale='fr')
-        d.save()
-        r = revision(document=d, content='French content', is_approved=True)
-        r.save()
+        parent_rev = RevisionFactory()
+        d = DocumentFactory(parent=parent_rev.document, title='Test title', locale='fr')
+        ApprovedRevisionFactory(document=d, content='French content')
         # Parsing in French should find the French article
         doc = pq(p.parse('[[Include:Test title]]', locale='fr'))
         eq_('French content', doc.text())
 
     def test_direct_recursion(self):
         """Make sure direct recursion is caught on the very first nesting."""
-        d = document(title='Boo')
-        d.save()
-
+        d = DocumentFactory(title='Boo')
         # Twice so the second revision sees content identical to itself:
-        for i in range(2):
-            revision(document=d, content='Fine [[Include:Boo]] Fellows',
-                     is_approved=True).save()
-
-        eq_('<p>Fine %s Fellows\n</p>' % (RECURSION_MESSAGE % 'Boo'),
-            d.content_parsed)
+        ApprovedRevisionFactory.create_batch(2, document=d, content='Fine [[Include:Boo]] Fellows')
+        eq_('<p>Fine %s Fellows\n</p>' % (RECURSION_MESSAGE % 'Boo'), d.content_parsed)
 
     def test_indirect_recursion(self):
         """Make sure indirect recursion is caught."""
-        boo = document(title='Boo')
-        boo.save()
-        yah = document(title='Yah')
-        yah.save()
-        revision(document=boo, content='Paper [[Include:Yah]] Cups',
-                 is_approved=True).save()
-        revision(document=yah, content='Wooden [[Include:Boo]] Bats',
-                 is_approved=True).save()
+        boo = DocumentFactory(title='Boo')
+        yah = DocumentFactory(title='Yah')
+        ApprovedRevisionFactory(document=boo, content='Paper [[Include:Yah]] Cups')
+        ApprovedRevisionFactory(document=yah, content='Wooden [[Include:Boo]] Bats')
         recursion_message = RECURSION_MESSAGE % 'Boo'
 
         # boo.content_parsed is something like <p>Paper </p><p>Wooden
@@ -429,8 +418,8 @@ class TestWikiVideo(TestCase):
 
     def test_video_english(self):
         """Video is created and found in English."""
-        v = video()
-        d, _, p = doc_rev_parser('[[V:Some title]]')
+        v = VideoFactory()
+        d = ApprovedRevisionFactory(content='[[V:%s]]' % v.title).document
         doc = pq(d.html)
         eq_('video', doc('div.video').attr('class'))
 
@@ -462,8 +451,9 @@ class TestWikiVideo(TestCase):
     def test_video_fallback_french(self):
         """English video is found in French."""
         p = WikiParser()
-        self.test_video_english()
-        doc = pq(p.parse('[[V:Some title]]', locale='fr'))
+        # self.test_video_english()
+        v = VideoFactory()
+        doc = pq(p.parse('[[V:%s]]' % v.title, locale='fr'))
         eq_('video', doc('div.video').attr('class'))
         eq_(1, len(doc('video')))
         eq_(2, len(doc('source')))
@@ -473,45 +463,39 @@ class TestWikiVideo(TestCase):
     def test_video_not_exist(self):
         """Video does not exist."""
         p = WikiParser()
-        doc = pq(p.parse('[[V:Some title]]', locale='fr'))
-        eq_('The video "Some title" does not exist.', doc.text())
+        doc = pq(p.parse('[[V:404]]', locale='fr'))
+        eq_('The video "404" does not exist.', doc.text())
 
     def test_video_modal(self):
         """Video modal defaults for plcaeholder and text."""
-        v = video()
-        replacement = ('<img class="video-thumbnail" src="%s"/>' %
-                       v.thumbnail_url_if_set())
-        d, _, p = doc_rev_parser(
-            '[[V:Some title|modal]]')
+        v = VideoFactory()
+        replacement = ('<img class="video-thumbnail" src="%s"/>' % v.thumbnail_url_if_set())
+        d = ApprovedRevisionFactory(content='[[V:%s|modal]]' % v.title).document
         doc = pq(d.html)
-        eq_('Some title', doc('.video-modal')[0].attrib['title'])
+        eq_(v.title, doc('.video-modal')[0].attrib['title'])
         eq_(1, doc('.video video').length)
         eq_(replacement, doc('.video-placeholder').html().strip())
         eq_('video modal-trigger', doc('div.video').attr('class'))
 
     def test_video_modal_caption_text(self):
         """Video modal can change title and placeholder text."""
-        video()
-        d, _, p = doc_rev_parser(
-            '[[V:Some title|modal|placeholder=Place<b>holder</b>|title=WOOT]]')
+        v = VideoFactory()
+        r = ApprovedRevisionFactory(
+            content='[[V:%s|modal|placeholder=Place<b>holder</b>|title=WOOT]]' % v.title)
+        d = r.document
         doc = pq(d.html)
         eq_('WOOT', doc('.video-modal')[0].attrib['title'])
         eq_('Place<b>holder</b>', doc('.video-placeholder').html().strip())
 
+    @override_settings(GALLERY_VIDEO_URL='http://videos.mozilla.org/serv/sumo/')
     def test_video_cdn(self):
         """Video URLs can link to the CDN if a CDN setting is set."""
-        video()
-        cdn_url = 'http://videos.mozilla.org/serv/sumo/'
-
-        self.old_settings = settings.GALLERY_VIDEO_URL
-        settings.GALLERY_VIDEO_URL = cdn_url
-        d, _, p = doc_rev_parser('[[V:Some title]]')
-        settings.GALLERY_VIDEO_URL = self.old_settings
-
+        v = VideoFactory()
+        d = ApprovedRevisionFactory(content='[[V:%s]]' % v.title).document
         doc = pq(d.html)
-        assert cdn_url in doc('video').attr('data-fallback')
-        assert cdn_url in doc('source').eq(0).attr('src')
-        assert cdn_url in doc('source').eq(1).attr('src')
+        assert settings.GALLERY_VIDEO_URL in doc('source').eq(1).attr('src')
+        assert settings.GALLERY_VIDEO_URL in doc('video').attr('data-fallback')
+        assert settings.GALLERY_VIDEO_URL in doc('source').eq(0).attr('src')
 
     def test_youtube_video(self):
         """Verify youtube embeds."""
@@ -870,12 +854,12 @@ class WhatLinksHereTests(TestCase):
 
     def test_locales_exists(self):
         """Links should use the correct locale."""
-        d1 = document(title='Foo', locale='en-US', save=True)
-        revision(document=d1, content='', is_approved=True, save=True)
-        d2 = document(title='Foo', locale='de', save=True)
-        revision(document=d2, content='', is_approved=True, save=True)
-        d3 = document(title='Bar', locale='de', save=True)
-        revision(document=d3, content='[[Foo]]', is_approved=True, save=True)
+        d1 = DocumentFactory(title='Foo', locale='en-US')
+        RevisionFactory(document=d1, content='', is_approved=True)
+        d2 = DocumentFactory(title='Foo', locale='de')
+        RevisionFactory(document=d2, content='', is_approved=True)
+        d3 = DocumentFactory(title='Bar', locale='de')
+        RevisionFactory(document=d3, content='[[Foo]]', is_approved=True)
 
         eq_(len(d1.links_to()), 0)
         eq_(len(d1.links_from()), 0)
@@ -889,12 +873,12 @@ class WhatLinksHereTests(TestCase):
     def test_locales_renames(self):
         """Links should use the correct locale, even if the title has
         been translated."""
-        d1 = document(title='Foo', locale='en-US', save=True)
-        revision(document=d1, content='', is_approved=True, save=True)
-        d2 = document(title='German Foo', locale='de', parent=d1, save=True)
-        revision(document=d2, content='', is_approved=True, save=True)
-        d3 = document(title='German Bar', locale='de', save=True)
-        revision(document=d3, content='[[Foo]]', is_approved=True, save=True)
+        d1 = DocumentFactory(title='Foo', locale='en-US')
+        RevisionFactory(document=d1, content='', is_approved=True)
+        d2 = DocumentFactory(title='German Foo', locale='de', parent=d1)
+        RevisionFactory(document=d2, content='', is_approved=True)
+        d3 = DocumentFactory(title='German Bar', locale='de')
+        RevisionFactory(document=d3, content='[[Foo]]', is_approved=True)
 
         eq_(len(d1.links_to()), 0)
         eq_(len(d1.links_from()), 0)
@@ -908,12 +892,10 @@ class WhatLinksHereTests(TestCase):
     def test_unicode(self):
         """Unicode is hard. Test that."""
         # \u03C0 is pi and \u2764 is a heart symbol.
-        d1 = document(title=u'\u03C0', slug='pi', save=True)
-        revision(document=d1, content=u'I \u2764 \u03C0', is_approved=True,
-                 save=True)
-        d2 = document(title=u'\u2764', slug='heart', save=True)
-        revision(document=d2, content=u'What do you think about [[\u03C0]]?',
-                 is_approved=True, save=True)
+        d1 = DocumentFactory(title=u'\u03C0', slug='pi')
+        ApprovedRevisionFactory(document=d1, content=u'I \u2764 \u03C0')
+        d2 = DocumentFactory(title=u'\u2764', slug='heart')
+        ApprovedRevisionFactory(document=d2, content=u'What do you think about [[\u03C0]]?')
 
         eq_(len(d1.links_to()), 1)
         eq_(len(d1.links_from()), 0)
@@ -924,17 +906,16 @@ class WhatLinksHereTests(TestCase):
 
     def test_old_revisions(self):
         """Bug 862436. Updating old revisions could cause bad WLH data."""
-        d1 = document(title='D1', save=True)
-        revision(document=d1, content='', is_approved=True, save=True)
-        d2 = document(title='D2', save=True)
-        revision(document=d2, content='', is_approved=True, save=True)
+        d1 = DocumentFactory(title='D1')
+        RevisionFactory(document=d1, content='', is_approved=True)
+        d2 = DocumentFactory(title='D2')
+        RevisionFactory(document=d2, content='', is_approved=True)
 
         # Make D3, then make a revision that links to D1, then a
         # revision that links to D2. Only the link to D2 should count.
-        d3 = document(title='D3', save=True)
-        r3_old = revision(document=d3, content='[[D1]]', is_approved=True,
-                          save=True)
-        revision(document=d3, content='[[D2]]', is_approved=True, save=True)
+        d3 = DocumentFactory(title='D3')
+        r3_old = ApprovedRevisionFactory(document=d3, content='[[D1]]')
+        ApprovedRevisionFactory(document=d3, content='[[D2]]')
 
         # This could cause stale data
         r3_old.content_parsed
@@ -948,7 +929,7 @@ class WhatLinksHereTests(TestCase):
         eq_(len(d3.links_from()), 1)
 
     def test_images(self):
-        img = image(title='image-file.png')
+        img = ImageFactory(title='image-file.png')
         d1, _, _ = doc_rev_parser('[[Image:image-file.png]]', title='D1')
 
         eq_(len(d1.images), 1)
@@ -961,7 +942,7 @@ class TestLazyWikiImageTags(TestCase):
     def setUp(self):
         self.d, self.r, self.p = doc_rev_parser(
             'Test content', 'Installing Firefox')
-        self.img = image(title='test.jpg')
+        self.img = ImageFactory(title='test.jpg')
 
     def tearDown(self):
         self.img.delete()

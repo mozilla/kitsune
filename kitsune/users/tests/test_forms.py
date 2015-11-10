@@ -8,7 +8,7 @@ from kitsune.users.forms import (
     AuthenticationForm, ProfileForm, RegisterForm, SetPasswordForm,
     ForgotUsernameForm, username_allowed)
 from kitsune.sumo.tests import TestCase
-from kitsune.users.tests import TestCaseBase, user
+from kitsune.users.tests import TestCaseBase, UserFactory
 from kitsune.users.validators import TwitterValidator
 
 
@@ -17,13 +17,8 @@ class AuthenticationFormTests(TestCaseBase):
 
     def setUp(self):
         # create active and inactive users
-        self.active_user = user(save=True,
-                                username='activeuser',
-                                is_active=True)
-
-        self.inactive_user = user(save=True,
-                                  username='inactiveuser',
-                                  is_active=False)
+        self.active_user = UserFactory(username='activeuser', is_active=True)
+        self.inactive_user = UserFactory(username='inactiveuser', is_active=False)
 
     def test_only_active(self):
         # Verify with active user
@@ -51,7 +46,7 @@ class AuthenticationFormTests(TestCaseBase):
         assert form.is_valid()
 
     def test_at_in_username(self):
-        u = user(username='test@example.com', save=True)
+        u = UserFactory(username='test@example.com')
         form = AuthenticationForm(data={'username': u.username,
                                         'password': 'testpass'})
         assert form.is_valid()
@@ -177,7 +172,7 @@ class PasswordChangeFormFormTests(TestCaseBase):
     """PasswordChangeForm tests."""
 
     def test_common_password(self):
-        u = user(save=True)
+        u = UserFactory()
         form = SetPasswordForm(u, data={'new_password1': 'password',
                                         'new_password2': 'password',
                                         'old_password': 'testpass'})
@@ -194,7 +189,7 @@ class ForgotUsernameFormTests(TestCaseBase):
 
     def test_valid_email(self):
         """"If an account with email exists, form is valid."""
-        u = user(save=True, email='a@b.com', is_active=True)
+        u = UserFactory(email='a@b.com', is_active=True)
         form = ForgotUsernameForm({'email': u.email})
         assert form.is_valid()
 

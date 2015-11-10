@@ -4,19 +4,18 @@ from textwrap import dedent
 from pyquery import PyQuery as pq
 
 from kitsune.search import es_utils, synonym_utils
-from kitsune.search.tests import ElasticTestCase
-from kitsune.search.tests import synonym
+from kitsune.search.tests import ElasticTestCase, SynonymFactory
 from kitsune.sumo.tests import LocalizingClient
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.wiki.tests import document, revision
+from kitsune.wiki.tests import DocumentFactory, RevisionFactory
 from kitsune.search.tasks import update_synonyms_task
 
 
 class TestSynonymModel(TestCase):
 
     def test_serialize(self):
-        syn = synonym(from_words="foo", to_words="bar", save=True)
+        syn = SynonymFactory(from_words="foo", to_words="bar")
         eq_("foo => bar", unicode(syn))
 
 
@@ -36,8 +35,8 @@ class TestFilterGenerator(TestCase):
             })
 
     def test_with_some_synonyms(self):
-        synonym(from_words='foo', to_words='bar', save=True)
-        synonym(from_words='baz', to_words='qux', save=True)
+        SynonymFactory(from_words='foo', to_words='bar')
+        SynonymFactory(from_words='baz', to_words='qux')
 
         _, body = es_utils.es_get_synonym_filter('en-US')
 
@@ -88,10 +87,10 @@ class SearchViewWithSynonyms(ElasticTestCase):
     client_class = LocalizingClient
 
     def test_synonyms_work_in_search_view(self):
-        d1 = document(title='frob', save=True)
-        d2 = document(title='glork', save=True)
-        revision(document=d1, is_approved=True, save=True)
-        revision(document=d2, is_approved=True, save=True)
+        d1 = DocumentFactory(title='frob')
+        d2 = DocumentFactory(title='glork')
+        RevisionFactory(document=d1, is_approved=True)
+        RevisionFactory(document=d2, is_approved=True)
 
         self.refresh()
 
@@ -102,7 +101,7 @@ class SearchViewWithSynonyms(ElasticTestCase):
         eq_(header, 'Found 1 result for frob for All Products')
 
         # Now add a synonym.
-        synonym(from_words='frob', to_words='frob, glork', save=True)
+        SynonymFactory(from_words='frob', to_words='frob, glork')
         update_synonyms_task()
         self.refresh()
 

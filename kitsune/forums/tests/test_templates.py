@@ -2,21 +2,20 @@ from django.contrib.contenttypes.models import ContentType
 
 from nose.tools import eq_
 
-from kitsune.access.tests import permission
+from kitsune.access.tests import PermissionFactory
 from kitsune.forums.models import Post
-from kitsune.forums.tests import (
-    ForumTestCase, forum, thread, post as forum_post)
+from kitsune.forums.tests import ForumTestCase, ForumFactory, ThreadFactory, PostFactory
 from kitsune.sumo.tests import get, post
 from kitsune.sumo.tests import SumoPyQuery as pq
-from kitsune.users.tests import user, group
+from kitsune.users.tests import UserFactory, GroupFactory
 
 
 class PostsTemplateTests(ForumTestCase):
 
     def test_empty_reply_errors(self):
         """Posting an empty reply shows errors."""
-        u = user(save=True)
-        t = forum_post(save=True).thread
+        u = UserFactory()
+        t = ThreadFactory()
 
         self.client.login(username=u.username, password='testpass')
         response = post(self.client, 'forums.reply', {'content': ''},
@@ -28,7 +27,7 @@ class PostsTemplateTests(ForumTestCase):
 
     def test_edit_post_errors(self):
         """Changing post content works."""
-        p = forum_post(save=True)
+        p = PostFactory()
         t = p.thread
         u = p.author
 
@@ -44,7 +43,7 @@ class PostsTemplateTests(ForumTestCase):
 
     def test_edit_thread_template(self):
         """The edit-post template should render."""
-        p = forum_post(save=True)
+        p = PostFactory()
         u = p.author
 
         self.client.login(username=u.username, password='testpass')
@@ -56,7 +55,7 @@ class PostsTemplateTests(ForumTestCase):
 
     def test_edit_post(self):
         """Changing post content works."""
-        p = forum_post(save=True)
+        p = PostFactory()
         t = p.thread
         u = p.author
 
@@ -69,7 +68,7 @@ class PostsTemplateTests(ForumTestCase):
 
     def test_posts_fr(self):
         """Posts render for [fr] locale."""
-        t = forum_post(save=True).thread
+        t = ThreadFactory()
 
         response = get(self.client, 'forums.posts', args=[t.forum.slug, t.id],
                        locale='fr')
@@ -79,8 +78,8 @@ class PostsTemplateTests(ForumTestCase):
 
     def test_long_title_truncated_in_crumbs(self):
         """A very long thread title gets truncated in the breadcrumbs"""
-        t = thread(title='A thread with a very very very very long title', save=True)
-        forum_post(thread=t, save=True)
+        t = ThreadFactory(title='A thread with a very very very very long title')
+        PostFactory(thread=t)
 
         response = get(self.client, 'forums.posts', args=[t.forum.slug, t.id])
         doc = pq(response.content)
@@ -89,17 +88,17 @@ class PostsTemplateTests(ForumTestCase):
 
     def test_edit_post_moderator(self):
         """Editing post as a moderator works."""
-        p = forum_post(save=True)
+        p = PostFactory()
         t = p.thread
         f = t.forum
 
         # Create the moderator group, give it the edit permission
         # and add a moderator.
-        moderator_group = group(save=True)
+        moderator_group = GroupFactory()
         ct = ContentType.objects.get_for_model(f)
-        permission(codename='forums_forum.post_edit_forum', content_type=ct,
-                   object_id=f.id, group=moderator_group, save=True)
-        moderator = user(save=True)
+        PermissionFactory(codename='forums_forum.post_edit_forum', content_type=ct,
+                          object_id=f.id, group=moderator_group)
+        moderator = UserFactory()
         moderator_group.user_set.add(moderator)
 
         self.client.login(username=moderator.username, password='testpass')
@@ -113,7 +112,7 @@ class PostsTemplateTests(ForumTestCase):
 
     def test_preview_reply(self):
         """Preview a reply."""
-        t = forum_post(save=True).thread
+        t = ThreadFactory()
         u = t.creator
 
         content = 'Full of awesome.'
@@ -128,8 +127,8 @@ class PostsTemplateTests(ForumTestCase):
 
     def test_watch_thread(self):
         """Watch and unwatch a thread."""
-        t = forum_post(save=True).thread
-        u = user(save=True)
+        t = ThreadFactory()
+        u = UserFactory()
 
         self.client.login(username=u.username, password='testpass')
 
@@ -143,8 +142,8 @@ class PostsTemplateTests(ForumTestCase):
 
     def test_show_reply_fields(self):
         """Reply fields show if user has permission to post."""
-        t = forum_post(save=True).thread
-        u = user(save=True)
+        t = ThreadFactory()
+        u = UserFactory()
 
         self.client.login(username=u.username, password='testpass')
         response = get(self.client, 'forums.posts', args=[t.forum.slug, t.pk])
@@ -152,14 +151,13 @@ class PostsTemplateTests(ForumTestCase):
 
     def test_restricted_hide_reply(self):
         """Reply fields don't show if user has no permission to post."""
-        t = forum_post(save=True).thread
+        t = ThreadFactory()
         f = t.forum
         ct = ContentType.objects.get_for_model(f)
         # If the forum has the permission and the user isn't assigned said
         # permission, then they can't post.
-        permission(codename='forums_forum.post_in_forum', content_type=ct,
-                   object_id=f.id, save=True)
-        u = user(save=True)
+        PermissionFactory(codename='forums_forum.post_in_forum', content_type=ct, object_id=f.id)
+        u = UserFactory()
 
         self.client.login(username=u.username, password='testpass')
         response = get(self.client, 'forums.posts', args=[f.slug, t.pk])
@@ -167,7 +165,7 @@ class PostsTemplateTests(ForumTestCase):
 
     def test_links_nofollow(self):
         """Links posted should have rel=nofollow."""
-        p = forum_post(content='linking http://test.org', save=True)
+        p = PostFactory(content='linking http://test.org')
         t = p.thread
         f = t.forum
 
@@ -177,14 +175,14 @@ class PostsTemplateTests(ForumTestCase):
 
     def test_num_replies(self):
         """Verify the number of replies label."""
-        t = forum_post(save=True).thread
+        t = ThreadFactory()
 
         response = get(self.client, 'forums.posts', args=[t.forum.slug, t.id])
         eq_(200, response.status_code)
         assert '0 Replies' in response.content
 
-        forum_post(thread=t, save=True)
-        forum_post(thread=t, save=True)
+        PostFactory(thread=t)
+        PostFactory(thread=t)
 
         response = get(self.client, 'forums.posts', args=[t.forum.slug, t.id])
         eq_(200, response.status_code)
@@ -192,8 +190,8 @@ class PostsTemplateTests(ForumTestCase):
 
     def test_youtube_in_post(self):
         """Verify youtube video embedding."""
-        u = user(save=True)
-        t = forum_post(save=True).thread
+        u = UserFactory()
+        t = ThreadFactory()
 
         self.client.login(username=u.username, password='testpass')
         response = post(
@@ -212,8 +210,8 @@ class ThreadsTemplateTests(ForumTestCase):
     def test_last_thread_post_link_has_post_id(self):
         """Make sure the last post url links to the last post (#post-<id>).
         """
-        t = forum_post(save=True).thread
-        last = forum_post(thread=t, save=True)
+        t = ThreadFactory()
+        last = PostFactory(thread=t)
 
         response = get(self.client, 'forums.threads', args=[t.forum.slug])
         doc = pq(response.content)
@@ -223,8 +221,8 @@ class ThreadsTemplateTests(ForumTestCase):
 
     def test_empty_thread_errors(self):
         """Posting an empty thread shows errors."""
-        f = forum(save=True)
-        u = user(save=True)
+        f = ForumFactory()
+        u = UserFactory()
 
         self.client.login(username=u.username, password='testpass')
         response = post(self.client, 'forums.new_thread',
@@ -236,8 +234,8 @@ class ThreadsTemplateTests(ForumTestCase):
 
     def test_new_short_thread_errors(self):
         """Posting a short new thread shows errors."""
-        f = forum(save=True)
-        u = user(save=True)
+        f = ForumFactory()
+        u = UserFactory()
 
         self.client.login(username=u.username, password='testpass')
         response = post(self.client, 'forums.new_thread',
@@ -254,7 +252,7 @@ class ThreadsTemplateTests(ForumTestCase):
 
     def test_edit_thread_errors(self):
         """Editing thread with too short of a title shows errors."""
-        t = forum_post(save=True).thread
+        t = ThreadFactory()
         creator = t.creator
 
         self.client.login(username=creator.username, password='testpass')
@@ -269,7 +267,7 @@ class ThreadsTemplateTests(ForumTestCase):
 
     def test_edit_thread_template(self):
         """The edit-thread template should render."""
-        t = forum_post(save=True).thread
+        t = ThreadFactory()
         creator = t.creator
 
         self.client.login(username=creator.username, password='testpass')
@@ -281,8 +279,8 @@ class ThreadsTemplateTests(ForumTestCase):
 
     def test_watch_forum(self):
         """Watch and unwatch a forum."""
-        f = forum(save=True)
-        u = user(save=True)
+        f = ForumFactory()
+        u = UserFactory()
 
         self.client.login(username=u.username, password='testpass')
 
@@ -296,7 +294,7 @@ class ThreadsTemplateTests(ForumTestCase):
 
     def test_canonical_url(self):
         """Verify the canonical URL is set correctly."""
-        f = forum(save=True)
+        f = ForumFactory()
 
         response = get(self.client, 'forums.threads', args=[f.slug])
         eq_('/forums/%s' % f.slug,
@@ -304,8 +302,8 @@ class ThreadsTemplateTests(ForumTestCase):
 
     def test_show_new_thread(self):
         """'Post new thread' shows if user has permission to post."""
-        f = forum(save=True)
-        u = user(save=True)
+        f = ForumFactory()
+        u = UserFactory()
 
         self.client.login(username=u.username, password='testpass')
         response = get(self.client, 'forums.threads', args=[f.slug])
@@ -314,13 +312,12 @@ class ThreadsTemplateTests(ForumTestCase):
     def test_restricted_hide_new_thread(self):
         """'Post new thread' doesn't show if user has no permission to post.
         """
-        f = forum(save=True)
+        f = ForumFactory()
         ct = ContentType.objects.get_for_model(f)
         # If the forum has the permission and the user isn't assigned said
         # permission, then they can't post.
-        permission(codename='forums_forum.post_in_forum', content_type=ct,
-                   object_id=f.id, save=True)
-        u = user(save=True)
+        PermissionFactory(codename='forums_forum.post_in_forum', content_type=ct, object_id=f.id)
+        u = UserFactory()
 
         self.client.login(username=u.username, password='testpass')
         response = get(self.client, 'forums.threads', args=[f.slug])
@@ -332,7 +329,7 @@ class ForumsTemplateTests(ForumTestCase):
     def test_last_post_link_has_post_id(self):
         """Make sure the last post url links to the last post (#post-<id>).
         """
-        p = forum_post(save=True)
+        p = PostFactory()
 
         response = get(self.client, 'forums.forums')
         doc = pq(response.content)
@@ -342,11 +339,11 @@ class ForumsTemplateTests(ForumTestCase):
 
     def test_restricted_is_invisible(self):
         """Forums with restricted view_in permission shouldn't show up."""
-        restricted_forum = forum(save=True)
+        restricted_forum = ForumFactory()
         # Make it restricted.
         ct = ContentType.objects.get_for_model(restricted_forum)
-        permission(codename='forums_forum.view_in_forum', content_type=ct,
-                   object_id=restricted_forum.id, save=True)
+        PermissionFactory(codename='forums_forum.view_in_forum', content_type=ct,
+                          object_id=restricted_forum.id)
 
         response = get(self.client, 'forums.forums')
         self.assertNotContains(response, restricted_forum.slug)
@@ -358,8 +355,8 @@ class ForumsTemplateTests(ForumTestCase):
 
     def test_display_order(self):
         """Verify the display_order is respected."""
-        forum1 = forum(display_order=1, save=True)
-        forum2 = forum(display_order=2, save=True)
+        forum1 = ForumFactory(display_order=1)
+        forum2 = ForumFactory(display_order=2)
 
         # forum1 should be listed first
         r = get(self.client, 'forums.forums')
@@ -378,8 +375,8 @@ class ForumsTemplateTests(ForumTestCase):
 
     def test_is_listed(self):
         """Verify is_listed is respected."""
-        forum1 = forum(is_listed=True, save=True)
-        forum2 = forum(is_listed=True, save=True)
+        forum1 = ForumFactory(is_listed=True)
+        forum2 = ForumFactory(is_listed=True)
 
         # Both forums should be listed.
         r = get(self.client, 'forums.forums')
@@ -401,8 +398,8 @@ class ForumsTemplateTests(ForumTestCase):
 class NewThreadTemplateTests(ForumTestCase):
     def test_preview(self):
         """Preview the thread post."""
-        f = forum(save=True)
-        u = user(save=True)
+        f = ForumFactory()
+        u = UserFactory()
 
         self.client.login(username=u.username, password='testpass')
         content = 'Full of awesome.'

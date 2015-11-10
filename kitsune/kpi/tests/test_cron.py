@@ -12,18 +12,18 @@ from kitsune.kpi.models import (
     Metric, VISITORS_METRIC_CODE, L10N_METRIC_CODE, SEARCH_CLICKS_METRIC_CODE,
     SEARCH_SEARCHES_METRIC_CODE, EXIT_SURVEY_YES_CODE, EXIT_SURVEY_NO_CODE,
     EXIT_SURVEY_DONT_KNOW_CODE)
-from kitsune.kpi.tests import metric_kind, metric
+from kitsune.kpi.tests import MetricKindFactory, MetricFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.wiki.config import (
     MAJOR_SIGNIFICANCE, MEDIUM_SIGNIFICANCE, TYPO_SIGNIFICANCE)
-from kitsune.wiki.tests import document, revision
+from kitsune.wiki.tests import DocumentFactory, ApprovedRevisionFactory
 
 
 class CronJobTests(TestCase):
     @patch.object(googleanalytics, 'visitors')
     def test_update_visitors_cron(self, visitors):
         """Verify the cron job inserts the right rows."""
-        visitor_kind = metric_kind(code=VISITORS_METRIC_CODE, save=True)
+        visitor_kind = MetricKindFactory(code=VISITORS_METRIC_CODE)
         visitors.return_value = {'2012-01-13': 42,
                                  '2012-01-14': 193,
                                  '2012-01-15': 33}
@@ -34,33 +34,27 @@ class CronJobTests(TestCase):
         eq_(3, len(metrics))
         eq_(42, metrics[0].value)
         eq_(193, metrics[1].value)
-        eq_(date(2012, 01, 15), metrics[2].start)
+        eq_(date(2012, 1, 15), metrics[2].start)
 
     @patch.object(kitsune.kpi.cron, '_get_top_docs')
     @patch.object(googleanalytics, 'visitors_by_locale')
     def test_update_l10n_metric_cron(self, visitors_by_locale, _get_top_docs):
         """Verify the cron job creates the correct metric."""
-        l10n_kind = metric_kind(code=L10N_METRIC_CODE, save=True)
+        l10n_kind = MetricKindFactory(code=L10N_METRIC_CODE)
 
         # Create the en-US document with an approved revision.
-        doc = document(save=True)
-        rev = revision(
+        doc = DocumentFactory()
+        rev = ApprovedRevisionFactory(
             document=doc,
             significance=MEDIUM_SIGNIFICANCE,
-            is_approved=True,
-            is_ready_for_localization=True,
-            save=True)
+            is_ready_for_localization=True)
 
         # Create an es translation that is up to date.
-        es_doc = document(parent=doc, locale='es', save=True)
-        revision(
-            document=es_doc,
-            is_approved=True,
-            based_on=rev,
-            save=True)
+        es_doc = DocumentFactory(parent=doc, locale='es')
+        ApprovedRevisionFactory(document=es_doc, based_on=rev)
 
         # Create a de translation without revisions.
-        document(parent=doc, locale='de', save=True)
+        DocumentFactory(parent=doc, locale='de')
 
         # Mock some calls.
         visitors_by_locale.return_value = {
@@ -80,12 +74,10 @@ class CronJobTests(TestCase):
 
         # Create a new revision with TYPO_SIGNIFICANCE. It shouldn't
         # affect the results.
-        revision(
+        ApprovedRevisionFactory(
             document=doc,
             significance=TYPO_SIGNIFICANCE,
-            is_approved=True,
-            is_ready_for_localization=True,
-            save=True)
+            is_ready_for_localization=True)
         Metric.objects.all().delete()
         update_l10n_metric()
         metrics = Metric.objects.filter(kind=l10n_kind)
@@ -94,12 +86,10 @@ class CronJobTests(TestCase):
 
         # Create a new revision with MEDIUM_SIGNIFICANCE. The coverage
         # should now be 62% (0.5/1 * 25/100 + 1/1 * 50/100)
-        m1 = revision(
+        m1 = ApprovedRevisionFactory(
             document=doc,
             significance=MEDIUM_SIGNIFICANCE,
-            is_approved=True,
-            is_ready_for_localization=True,
-            save=True)
+            is_ready_for_localization=True)
         Metric.objects.all().delete()
         update_l10n_metric()
         metrics = Metric.objects.filter(kind=l10n_kind)
@@ -108,12 +98,10 @@ class CronJobTests(TestCase):
 
         # And another new revision with MEDIUM_SIGNIFICANCE makes the
         # coverage 50% (1/1 * 50/100).
-        m2 = revision(
+        m2 = ApprovedRevisionFactory(
             document=doc,
             significance=MEDIUM_SIGNIFICANCE,
-            is_approved=True,
-            is_ready_for_localization=True,
-            save=True)
+            is_ready_for_localization=True)
         Metric.objects.all().delete()
         update_l10n_metric()
         metrics = Metric.objects.filter(kind=l10n_kind)
@@ -124,12 +112,10 @@ class CronJobTests(TestCase):
         # MAJOR_SIGNIFICANCE revision, the coverage is 50% as well.
         m1.delete()
         m2.delete()
-        revision(
+        ApprovedRevisionFactory(
             document=doc,
             significance=MAJOR_SIGNIFICANCE,
-            is_approved=True,
-            is_ready_for_localization=True,
-            save=True)
+            is_ready_for_localization=True)
         Metric.objects.all().delete()
         update_l10n_metric()
         metrics = Metric.objects.filter(kind=l10n_kind)
@@ -139,8 +125,8 @@ class CronJobTests(TestCase):
     @patch.object(googleanalytics, 'search_ctr')
     def test_update_search_ctr(self, search_ctr):
         """Verify the cron job inserts the right rows."""
-        clicks_kind = metric_kind(code=SEARCH_CLICKS_METRIC_CODE, save=True)
-        metric_kind(code=SEARCH_SEARCHES_METRIC_CODE, save=True)
+        clicks_kind = MetricKindFactory(code=SEARCH_CLICKS_METRIC_CODE)
+        MetricKindFactory(code=SEARCH_SEARCHES_METRIC_CODE)
         search_ctr.return_value = {'2013-06-06': 42.123456789,
                                    '2013-06-07': 13.7654321,
                                    '2013-06-08': 99.55555}
@@ -159,13 +145,13 @@ class CronJobTests(TestCase):
         requests.get.return_value.content = SURVEY_GIZMO_EXIT_SURVEY_RESPONSE
 
         # Create the kinds.
-        yes_kind = metric_kind(code=EXIT_SURVEY_YES_CODE, save=True)
-        no_kind = metric_kind(code=EXIT_SURVEY_NO_CODE, save=True)
-        dunno_kind = metric_kind(code=EXIT_SURVEY_DONT_KNOW_CODE, save=True)
+        yes_kind = MetricKindFactory(code=EXIT_SURVEY_YES_CODE)
+        no_kind = MetricKindFactory(code=EXIT_SURVEY_NO_CODE)
+        dunno_kind = MetricKindFactory(code=EXIT_SURVEY_DONT_KNOW_CODE)
         two_days_back = date.today() - timedelta(days=2)
 
         # Add a metric for 2 days ago so only 1 new day is collected.
-        metric(kind=yes_kind, start=two_days_back, save=True)
+        MetricFactory(kind=yes_kind, start=two_days_back)
 
         # Collect and process.
         _process_exit_survey_results()

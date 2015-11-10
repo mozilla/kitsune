@@ -11,11 +11,11 @@ from nose.tools import eq_
 from kitsune.forums.events import NewPostEvent, NewThreadEvent
 from kitsune.forums.models import Thread, Post
 from kitsune.forums.tests import (
-    ForumTestCase, thread, forum, post as forum_post)
+    ForumTestCase, ThreadFactory, ForumFactory, PostFactory)
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.tests import post, attrs_eq, starts_with
 from kitsune.users.models import Setting
-from kitsune.users.tests import user
+from kitsune.users.tests import UserFactory
 
 
 # Some of these contain a locale prefix on included links, while
@@ -70,8 +70,8 @@ class NotificationsTests(ForumTestCase):
     @mock.patch.object(NewPostEvent, 'fire')
     def test_fire_on_reply(self, fire):
         """The event fires when there is a reply."""
-        u = user(save=True)
-        t = thread(save=True)
+        u = UserFactory()
+        t = ThreadFactory()
         self.client.login(username=u.username, password='testpass')
         post(self.client, 'forums.reply', {'content': 'a post'},
              args=[t.forum.slug, t.id])
@@ -81,8 +81,8 @@ class NotificationsTests(ForumTestCase):
     @mock.patch.object(NewThreadEvent, 'fire')
     def test_fire_on_new_thread(self, fire):
         """The event fires when there is a new thread."""
-        u = user(save=True)
-        f = forum(save=True)
+        u = UserFactory()
+        f = ForumFactory()
         self.client.login(username=u.username, password='testpass')
         post(self.client, 'forums.new_thread',
              {'title': 'a title', 'content': 'a post'},
@@ -123,10 +123,10 @@ class NotificationsTests(ForumTestCase):
         """The event fires and sends emails when watching a thread."""
         get_current.return_value.domain = 'testserver'
 
-        t = thread(save=True)
+        t = ThreadFactory()
         f = t.forum
-        poster = user(save=True)
-        watcher = user(save=True)
+        poster = UserFactory()
+        watcher = UserFactory()
 
         self._toggle_watch_thread_as(t, watcher, turn_on=True)
         self.client.login(username=poster.username, password='testpass')
@@ -135,9 +135,9 @@ class NotificationsTests(ForumTestCase):
 
         p = Post.objects.all().order_by('-id')[0]
         attrs_eq(mail.outbox[0], to=[watcher.email],
-                 subject='Re: {f} - {t}'.format(f=f, t=t))
+                 subject=u'Re: {f} - {t}'.format(f=f, t=t))
         body = REPLY_EMAIL.format(
-            username=poster.username,
+            username=poster.profile.name,
             forum_slug=f.slug,
             thread=t.title,
             thread_id=t.id,
@@ -147,10 +147,10 @@ class NotificationsTests(ForumTestCase):
     def test_watch_other_thread_then_reply(self):
         # Watching a different thread than the one we're replying to
         # shouldn't notify.
-        t1 = thread(save=True)
-        t2 = thread(save=True)
-        poster = user(save=True)
-        watcher = user(save=True)
+        t1 = ThreadFactory()
+        t2 = ThreadFactory()
+        poster = UserFactory()
+        watcher = UserFactory()
 
         self._toggle_watch_thread_as(t1, watcher, turn_on=True)
         self.client.login(username=poster.username, password='testpass')
@@ -164,9 +164,9 @@ class NotificationsTests(ForumTestCase):
         """Watching a forum and creating a new thread should send email."""
         get_current.return_value.domain = 'testserver'
 
-        f = forum(save=True)
-        poster = user(save=True)
-        watcher = user(save=True)
+        f = ForumFactory()
+        poster = UserFactory(username='POSTER', profile__name='Poster')
+        watcher = UserFactory(username='WATCHER', profile__name='Watcher')
 
         self._toggle_watch_forum_as(f, watcher, turn_on=True)
         self.client.login(username=poster.username, password='testpass')
@@ -174,10 +174,9 @@ class NotificationsTests(ForumTestCase):
              {'title': 'a title', 'content': 'a post'}, args=[f.slug])
 
         t = Thread.objects.all().order_by('-id')[0]
-        attrs_eq(mail.outbox[0], to=[watcher.email],
-                 subject='{f} - {t}'.format(f=f, t=t))
+        attrs_eq(mail.outbox[0], to=[watcher.email], subject=u'{f} - {t}'.format(f=f, t=t))
         body = NEW_THREAD_EMAIL.format(
-            username=poster.username,
+            username=poster.profile.name,
             forum_slug=f.slug,
             thread=t.title,
             thread_id=t.id)
@@ -189,8 +188,8 @@ class NotificationsTests(ForumTestCase):
         # not send email.
         get_current.return_value.domain = 'testserver'
 
-        f = forum(save=True)
-        watcher = user(save=True)
+        f = ForumFactory()
+        watcher = UserFactory()
 
         self._toggle_watch_forum_as(f, watcher, turn_on=True)
         self.client.login(username=watcher.username, password='testpass')
@@ -204,11 +203,11 @@ class NotificationsTests(ForumTestCase):
         """Watching a forum and replying to a thread should send email."""
         get_current.return_value.domain = 'testserver'
 
-        t = thread(save=True)
+        t = ThreadFactory()
         f = t.forum
-        forum_post(thread=t, save=True)
-        poster = user(save=True)
-        watcher = user(save=True)
+        PostFactory(thread=t)
+        poster = UserFactory()
+        watcher = UserFactory()
 
         self._toggle_watch_forum_as(f, watcher, turn_on=True)
         self.client.login(username=poster.username, password='testpass')
@@ -217,9 +216,9 @@ class NotificationsTests(ForumTestCase):
 
         p = Post.objects.all().order_by('-id')[0]
         attrs_eq(mail.outbox[0], to=[watcher.email],
-                 subject='Re: {f} - {t}'.format(f=f, t=t))
+                 subject=u'Re: {f} - {t}'.format(f=f, t=t))
         body = REPLY_EMAIL.format(
-            username=poster.username,
+            username=poster.profile.name,
             forum_slug=f.slug,
             thread=t.title,
             thread_id=t.id,
@@ -231,10 +230,10 @@ class NotificationsTests(ForumTestCase):
         """Watching a forum and replying as myself should not send email."""
         get_current.return_value.domain = 'testserver'
 
-        t = thread(save=True)
+        t = ThreadFactory()
         f = t.forum
-        forum_post(thread=t, save=True)
-        watcher = user(save=True)
+        PostFactory(thread=t)
+        watcher = UserFactory()
 
         self._toggle_watch_forum_as(f, watcher, turn_on=True)
         self.client.login(username=watcher.username, password='testpass')
@@ -250,11 +249,11 @@ class NotificationsTests(ForumTestCase):
         Replying to a thread should send ONE email."""
         get_current.return_value.domain = 'testserver'
 
-        t = thread(save=True)
+        t = ThreadFactory()
         f = t.forum
-        forum_post(thread=t, save=True)
-        poster = user(save=True)
-        watcher = user(save=True)
+        PostFactory(thread=t)
+        poster = UserFactory()
+        watcher = UserFactory()
 
         self._toggle_watch_forum_as(f, watcher, turn_on=True)
         self._toggle_watch_thread_as(t, watcher, turn_on=True)
@@ -265,9 +264,9 @@ class NotificationsTests(ForumTestCase):
         eq_(1, len(mail.outbox))
         p = Post.objects.all().order_by('-id')[0]
         attrs_eq(mail.outbox[0], to=[watcher.email],
-                 subject='Re: {f} - {t}'.format(f=f, t=t))
+                 subject=u'Re: {f} - {t}'.format(f=f, t=t))
         body = REPLY_EMAIL.format(
-            username=poster.username,
+            username=poster.profile.name,
             forum_slug=f.slug,
             thread=t.title,
             thread_id=t.id,
@@ -279,8 +278,8 @@ class NotificationsTests(ForumTestCase):
         """Creating a new thread should email responses"""
         get_current.return_value.domain = 'testserver'
 
-        f = forum(save=True)
-        u = user(save=True)
+        f = ForumFactory()
+        u = UserFactory()
 
         self.client.login(username=u.username, password='testpass')
         s = Setting.objects.create(user=u, name='forums_watch_new_thread',
@@ -303,9 +302,9 @@ class NotificationsTests(ForumTestCase):
         """Replying to a thread creates a watch."""
         get_current.return_value.domain = 'testserver'
 
-        u = user(save=True)
-        t1 = thread(save=True)
-        t2 = thread(save=True)
+        u = UserFactory()
+        t1 = ThreadFactory()
+        t2 = ThreadFactory()
 
         assert not NewPostEvent.is_notifying(u, t1)
         assert not NewPostEvent.is_notifying(u, t2)
@@ -332,10 +331,10 @@ class NotificationsTests(ForumTestCase):
         """Test the admin delete view for a user with a watched thread."""
         get_current.return_value.domain = 'testserver'
 
-        t = thread(save=True)
+        t = ThreadFactory()
         u = t.creator
-        watcher = user(save=True)
-        admin_user = user(is_staff=True, is_superuser=True, save=True)
+        watcher = UserFactory()
+        admin_user = UserFactory(is_staff=True, is_superuser=True)
 
         self.client.login(username=admin_user.username, password='testpass')
         self._toggle_watch_thread_as(t, watcher, turn_on=True)
