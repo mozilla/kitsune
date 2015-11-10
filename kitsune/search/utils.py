@@ -50,14 +50,6 @@ def locale_or_default(locale):
     return locale
 
 
-def create_batch_id():
-    """Returns a batch_id"""
-    # TODO: This is silly, but it's a good enough way to distinguish
-    # between batches by looking at a Record. This is just over the
-    # number of seconds in a day.
-    return str(int(time.time()))[-6:]
-
-
 def chunked(iterable, n):
     """Returns chunks of n length of iterable
 
@@ -77,3 +69,36 @@ def chunked(iterable, n):
             yield t
         else:
             return
+
+
+def to_class_path(cls):
+    """Returns class path for a class
+
+    Takes a class and returns the class path which is composed of the
+    module plus the class name. This can be reversed later to get the
+    class using ``from_class_path``.
+
+    :returns: string
+
+    >>> from kitsune.search.models import Record
+    >>> to_class_path(Record)
+    'kitsune.search.models:Record'
+
+    """
+    return ':'.join([cls.__module__, cls.__name__])
+
+
+def from_class_path(cls_path):
+    """Returns the class
+
+    Takes a class path and returns the class for it.
+
+    :returns: varies
+
+    >>> from_class_path('kitsune.search.models:Record')
+    <Record ...>
+
+    """
+    module_path, cls_name = cls_path.split(':')
+    module = __import__(module_path, fromlist=[cls_name])
+    return getattr(module, cls_name)

@@ -1,4 +1,5 @@
 import logging
+import time
 from datetime import datetime
 from difflib import SequenceMatcher
 
@@ -17,10 +18,8 @@ from kitsune.search.es_utils import (
     all_read_indexes, all_write_indexes)
 from kitsune.search.models import Record, get_mapping_types, Synonym
 from kitsune.search.tasks import (
-    OUTSTANDING_INDEX_CHUNKS, index_chunk_task, reconcile_task,
-    update_synonyms_task)
-from kitsune.search.utils import chunked, create_batch_id
-from kitsune.sumo.redis_utils import redis_client, RedisError
+    index_chunk_task, reconcile_task, update_synonyms_task)
+from kitsune.search.utils import chunked, to_class_path
 from kitsune.wiki.models import Document, DocumentMappingType
 
 
@@ -28,24 +27,42 @@ log = logging.getLogger('k.es')
 
 
 def handle_reset(request):
-    """Resets the redis scoreboard we use
+    """Resets records"""
+    for rec in Record.objects.outstanding():
+        rec.mark_fail('Cancelled.')
 
-    Why? The reason you'd want to reset it is if the system gets
-    itself into a hosed state where the redis scoreboard says there
-    are outstanding tasks, but there aren't. If you enter that state,
-    this lets you reset the scoreboard.
-    """
-    try:
-        client = redis_client('default')
-        client.set(OUTSTANDING_INDEX_CHUNKS, 0)
-    except RedisError:
-        log.warning('Redis not running. Can not check if there are '
-                    'outstanding tasks.')
     return HttpResponseRedirect(request.path)
 
 
 class DeleteError(Exception):
     pass
+
+
+def create_batch_id():
+    """Returns a batch_id"""
+    # TODO: This is silly, but it's a good enough way to distinguish
+    # between batches by looking at a Record. This is just over the
+    # number of seconds in a day.
+    return str(int(time.time()))[-6:]
+
+
+def handle_reconcile(request):
+    """Reconcile all the things"""
+    outstanding = Record.objects.outstanding().count()
+    if outstanding > 0:
+        raise ReindexError('There are %s outstanding chunks.' % outstanding)
+
+    batch_id = create_batch_id()
+
+    for cls, indexable in get_indexable():
+        index = cls.get_index()
+        doc_type = cls.get_mapping_type_name()
+        chunk_name = 'Reconciling: %s' % doc_type
+        rec = Record(batch_id=batch_id, name=chunk_name)
+        rec.save()
+        reconcile_task.delay(index, batch_id, rec.id, doc_type)
+
+    return HttpResponseRedirect(request.path)
 
 
 def handle_delete(request):
@@ -77,30 +94,15 @@ class ReindexError(Exception):
     pass
 
 
-def reindex_with_scoreboard(mapping_type_names):
-    """Reindex all instances of a given mapping type with celery tasks.
+def reindex(mapping_type_names):
+    """Reindex all instances of a given mapping type with celery tasks
 
-    This will use Redis to keep track of outstanding tasks so nothing
-    gets screwed up by two jobs running at once.
+    :arg mapping_type_names: list of mapping types to reindex
+
     """
-    # TODO: If this gets fux0rd, then it's possible this could be
-    # non-zero and we really want to just ignore it. Need the ability
-    # to ignore it.
-    try:
-        client = redis_client('default')
-        val = client.get(OUTSTANDING_INDEX_CHUNKS)
-        if val is not None and int(val) > 0:
-            raise ReindexError('There are %s outstanding chunks.' % val)
-
-        # We don't know how many chunks we're building, but we do want
-        # to make sure another reindex request doesn't slide in here
-        # and kick off a bunch of chunks.
-        #
-        # There is a race condition here.
-        client.set(OUTSTANDING_INDEX_CHUNKS, 1)
-    except RedisError:
-        log.warning('Redis not running. Can not check if there are '
-                    'outstanding tasks.')
+    outstanding = Record.objects.outstanding().count()
+    if outstanding > 0:
+        raise ReindexError('There are %s outstanding chunks.' % outstanding)
 
     batch_id = create_batch_id()
 
@@ -112,20 +114,20 @@ def reindex_with_scoreboard(mapping_type_names):
         chunks.extend(
             (cls, chunk) for chunk in chunked(indexable, CHUNK_SIZE))
 
-        reconcile_task.delay(cls.get_index(), batch_id,
-                             cls.get_mapping_type_name())
+        index = cls.get_index()
+        doc_type = cls.get_mapping_type_name()
+        chunk_name = 'Reconciling: %s' % doc_type
+        rec = Record(batch_id=batch_id, name=chunk_name)
+        rec.save()
+        reconcile_task.delay(index, batch_id, rec.id, doc_type)
 
-    chunks_count = len(chunks)
-
-    try:
-        client = redis_client('default')
-        client.set(OUTSTANDING_INDEX_CHUNKS, chunks_count)
-    except RedisError:
-        log.warning('Redis not running. Can\'t denote outstanding tasks.')
-
-    for chunk in chunks:
-        index = chunk[0].get_index()
-        index_chunk_task.delay(index, batch_id, chunk)
+    for cls, id_list in chunks:
+        index = cls.get_index()
+        chunk_name = 'Indexing: %s %d -> %d' % (
+            cls.get_mapping_type_name(), id_list[0], id_list[-1])
+        rec = Record(batch_id=batch_id, name=chunk_name)
+        rec.save()
+        index_chunk_task.delay(index, batch_id, rec.id, (to_class_path(cls), id_list))
 
 
 def handle_recreate_index(request):
@@ -140,7 +142,7 @@ def handle_recreate_index(request):
     mapping_types_names = [mt.get_mapping_type_name()
                            for mt in get_mapping_types()
                            if mt.get_index_group() in groups]
-    reindex_with_scoreboard(mapping_types_names)
+    reindex(mapping_types_names)
 
     return HttpResponseRedirect(request.path)
 
@@ -151,7 +153,7 @@ def handle_reindex(request):
                           for name in request.POST.keys()
                           if name.startswith('check_')]
 
-    reindex_with_scoreboard(mapping_type_names)
+    reindex(mapping_type_names)
 
     return HttpResponseRedirect(request.path)
 
@@ -167,6 +169,12 @@ def search(request):
     if 'reset' in request.POST:
         try:
             return handle_reset(request)
+        except ReindexError as e:
+            error_messages.append(u'Error: %s' % e.message)
+
+    if 'reconcile' in request.POST:
+        try:
+            return handle_reconcile(request)
         except ReindexError as e:
             error_messages.append(u'Error: %s' % e.message)
 
@@ -194,7 +202,6 @@ def search(request):
     write_stats = None
     es_deets = None
     indexes = []
-    outstanding_chunks = None
 
     try:
         # TODO: SUMO has a single ES_URL and that's the ZLB and does
@@ -224,16 +231,8 @@ def search(request):
     except ES_EXCEPTIONS as e:
         error_messages.append('Error: {0}'.format(repr(e)))
 
-    try:
-        client = redis_client('default')
-        outstanding_chunks = int(client.get(OUTSTANDING_INDEX_CHUNKS))
-    except (RedisError, TypeError):
-        pass
-
-    recent_records = Record.objects.order_by('-starttime')[:100]
-
-    outstanding_records = (Record.objects.filter(endtime__isnull=True)
-                                         .order_by('-starttime'))
+    recent_records = Record.objects.all()[:100]
+    outstanding_records = Record.objects.outstanding()
 
     index_groups = set(settings.ES_INDEXES.keys())
     index_groups |= set(settings.ES_WRITE_INDEXES.keys())
@@ -256,7 +255,6 @@ def search(request):
          'error_messages': error_messages,
          'recent_records': recent_records,
          'outstanding_records': outstanding_records,
-         'outstanding_chunks': outstanding_chunks,
          'now': datetime.now(),
          'read_index': read_index,
          'write_index': write_index,

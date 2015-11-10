@@ -37,22 +37,53 @@
 {% endblock %}
 
 {% block content %}
-  <p>
-    Page last rendered: {{ now }} {{ settings.TIME_ZONE }}
-    {% if outstanding_chunks %}
-      (Auto-refreshing every 30 seconds)
-      <script>setTimeout("window.location.reload(true);", 30000);</script>
-    {% endif %}
-  </p>
+  <section>
+    <p>
+      Page last rendered: {{ now }} {{ settings.TIME_ZONE }}
+    </p>
+  </section>
 
   {% if error_messages %}
     <section>
       <h1>Errors</h1>
       {% for msg in error_messages %}
-        <p>
-          {{ msg }}
-        </p>
+        <p>{{ msg }}</p>
       {% endfor %}
+    </section>
+  {% endif %}
+
+  {% if outstanding_records.count > 0 %}
+    <section>
+      <p>
+        Auto-refreshing every 30 seconds :: <a href="{{ request.path }}">Refresh page</a>
+      </p>
+      <script>setTimeout("window.location.reload(true);", 30000);</script>
+
+      <h2>{{ outstanding_records.count }} outstanding records</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>batch</th>
+            <th>name</th>
+            <th>created</th>
+            <th>start</th>
+            <th>end</th>
+            <th>message</th>
+            <th>delta</th>
+          </tr>
+        </thead>
+        {% for record in outstanding_records %}
+          <tr>
+            <td>{{ record.batch_id }}</td>
+            <td>{{ record.name }}</td>
+            <td>{{ record.creation_time }}</td>
+            <td>{{ record.start_time }}</td>
+            <td>{{ record.end_time }}</td>
+            <td>{{ record.message }}</td>
+            <td>{{ record.delta }}</td>
+          </tr>
+        {% endfor %}
+      </table>
     </section>
   {% endif %}
 
@@ -60,7 +91,6 @@
     <section>
       <h1>Indexing in progress! Outstanding tasks: {{ outstanding_chunks }}</h1>
       <p>
-        <a href="{{ request.path }}">Refresh page</a>
       </p>
       <table>
         <thead>
@@ -193,11 +223,31 @@
   </section>
 
   <section>
-    <h1>Reindex</h1>
+    <h1>Actions</h1>
     <table class="reindextable">
       <tr>
         <td colspan="2">
-          <h2>Reindex into existing index</h2>
+          <h2>RECONCILE records</h2>
+        </td>
+      </tr>
+      <tr>
+        <td class="explanation">
+          <p>
+            Reconcile records between database and index.
+          </p>
+        </td>
+        <td>
+          <form method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="reconcile" value="1">
+            <input type="submit" name="reconcile" value="Reconcile records">
+          </form>
+        </td>
+      </tr>
+
+      <tr>
+        <td colspan="2">
+          <h2>REINDEX into existing index</h2>
         </td>
       </tr>
       <tr>
@@ -297,26 +347,21 @@
 
       <tr>
         <td colspan="2">
-          <h2>RESET scoreboard</h2>
+          <h2>RESET records and mark as failed</h2>
         </td>
       </tr>
       <tr>
         <td class="explanation">
           <p>
-            This resets the redis key which we use as a scoreboard for keeping
-            track of how many outstanding indexing tasks there are.
-          </p>
-          <p>
-            If you believe that the scoreboard is wrong and that it doesn't
-            represent the number of outstanding tasks and that there are no
-            outstanding tasks, then you should reset the scoreboard.
+            This marks outstanding records as fail. This allows you to run a
+            new reindexing pass.
           </p>
         </td>
         <td>
           <form method="POST">
             {% csrf_token %}
-            <input type="hidden" name="reset_scoreboard" value="1">
-            <input type="submit" name="reset" value="Reset scoreboard">
+            <input type="hidden" name="reset" value="1">
+            <input type="submit" name="reset" value="Mark records as failed">
           </form>
         </td>
       </tr>
@@ -328,18 +373,26 @@
     <table>
       <thead>
         <tr>
+          <th>batch</th>
+          <th>name</th>
+          <th>created</th>
+          <th>start</th>
+          <th>end</th>
+          <th>status</th>
           <th>message</th>
-          <th>start time</th>
-          <th>end time</th>
           <th>delta</th>
         </tr>
       </thead>
       <tbody>
         {% for record in recent_records %}
           <tr>
-            <td>{{ record.text }}</td>
-            <td>{{ record.starttime }}</td>
-            <td>{{ record.endtime }}</td>
+            <td>{{ record.batch_id }}</td>
+            <td>{{ record.name }}</td>
+            <td>{{ record.creation_time }}</td>
+            <td>{{ record.start_time }}</td>
+            <td>{{ record.end_time }}</td>
+            <td>{{ record.status }}</td>
+            <td>{{ record.message }}</td>
             <td>{{ record.delta }}</td>
           </tr>
         {% endfor %}
