@@ -1,4 +1,4 @@
-<div class="search-header">{{ 'Search results'|gettext }}</div>
+<div class="search-header">{{ _('Search results') }}</div>
 <ul class="document-list">
   {% if num_results > 0 %}
     {% for doc in results %}
@@ -7,6 +7,6 @@
       </li>
     {% endfor %}
   {% else %}
-    <li><a href="#">{{ 'No results found.'|gettext }}</a></li>
+    <li><a href="#">{{ _('No results found.') }}</a></li>
   {% endif %}
 </ul>
