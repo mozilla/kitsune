@@ -2139,8 +2139,8 @@ class TranslateTests(TestCaseBase):
         doc = pq(r.content)
         translated_locales = doc(".translated_locale")
         eq_(translated_locales.length, 2)
-        eq_("English (en-US)", doc(".translated_locale").first().text())
-        eq_("Deutsch (de)", doc(".translated_locale:eq(1)").text())
+        eq_("en-US", doc(".translated_locale").first().text())
+        eq_("de", doc(".translated_locale:eq(1)").text())
 
     def test_keywords_dont_require_permission(self):
         """Test keywords don't require permission when translating."""

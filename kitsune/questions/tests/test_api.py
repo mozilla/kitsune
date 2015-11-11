@@ -44,34 +44,35 @@ class TestQuestionSerializerDeserialization(TestCase):
     def test_it_works(self):
         serializer = api.QuestionSerializer(
             context=self.context, data=self.data)
-        serializer.is_valid(raise_exception=True)
+        eq_(serializer.errors, {})
+        ok_(serializer.is_valid())
 
     def test_automatic_creator(self):
         del self.data['creator']
         serializer = api.QuestionSerializer(
             context=self.context, data=self.data)
-        serializer.is_valid(raise_exception=True)
-        obj = serializer.save()
-        eq_(obj.creator, self.profile.user)
+        eq_(serializer.errors, {})
+        ok_(serializer.is_valid())
+        eq_(serializer.object.creator, self.profile.user)
 
     def test_product_required(self):
         del self.data['product']
         serializer = api.QuestionSerializer(
             context=self.context, data=self.data)
-        ok_(not serializer.is_valid())
         eq_(serializer.errors, {
             'product': [u'This field is required.'],
             'topic': [u'A product must be specified to select a topic.'],
         })
+        ok_(not serializer.is_valid())
 
     def test_topic_required(self):
         del self.data['topic']
         serializer = api.QuestionSerializer(
             context=self.context, data=self.data)
-        ok_(not serializer.is_valid())
         eq_(serializer.errors, {
             'topic': [u'This field is required.'],
         })
+        ok_(not serializer.is_valid())
 
     def test_topic_disambiguation(self):
         # First make another product, and a colliding topic.
@@ -80,16 +81,15 @@ class TestQuestionSerializerDeserialization(TestCase):
         topic(product=new_product, slug=self.topic.slug, save=True)
         serializer = api.QuestionSerializer(
             context=self.context, data=self.data)
-        serializer.is_valid(raise_exception=True)
-        obj = serializer.save()
-        eq_(obj.topic, self.topic)
+        eq_(serializer.errors, {})
+        ok_(serializer.is_valid())
+        eq_(serializer.object.topic, self.topic)
 
     def test_solution_is_readonly(self):
         q = question(save=True)
         a = answer(question=q, save=True)
         self.data['solution'] = a.id
         serializer = api.QuestionSerializer(context=self.context, data=self.data, instance=q)
-        serializer.is_valid(raise_exception=True)
         serializer.save()
         eq_(q.solution, None)
 

@@ -4,13 +4,10 @@ from rest_framework.relations import SlugRelatedField
 from rest_framework.serializers import ModelSerializer
 
 from kitsune.dashboards.models import WikiMetric
-from kitsune.products.models import Product
 
 
 class WikiMetricSerializer(ModelSerializer):
-    product = SlugRelatedField(
-        slug_field='slug',
-        queryset=Product.objects.all())
+    product = SlugRelatedField(slug_field='slug')
 
     class Meta:
         model = WikiMetric
@@ -46,3 +43,5 @@ class WikiMetricList(generics.ListAPIView):
     queryset = WikiMetric.objects.all()
     serializer_class = WikiMetricSerializer
     filter_class = WikiMetricFilterSet
+    paginate_by = 10
+    paginate_by_param = 'page_size'

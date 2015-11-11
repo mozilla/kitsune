@@ -1,5 +1,4 @@
 from django.db.models import Q
-from django.contrib.auth.models import User
 
 from rest_framework import generics, serializers
 
@@ -19,7 +18,7 @@ class ImageShortSerializer(serializers.ModelSerializer):
 class ImageDetailSerializer(ImageShortSerializer):
     created = DateTimeUTCField(read_only=True)
     updated = DateTimeUTCField(read_only=True)
-    updated_by = serializers.SlugRelatedField(slug_field='username', queryset=User.objects.all())
+    updated_by = serializers.SlugRelatedField(slug_field='username')
 
     class Meta(ImageShortSerializer.Meta):
         fields = ImageShortSerializer.Meta.fields + (
@@ -31,6 +30,7 @@ class ImageList(LocaleNegotiationMixin, generics.ListAPIView):
     """List all image ids."""
     queryset = Image.objects.all()
     serializer_class = ImageShortSerializer
+    paginate_by = 100
     filter_fields = ['height', 'width']
     filter_backends = [InequalityFilterBackend]
 

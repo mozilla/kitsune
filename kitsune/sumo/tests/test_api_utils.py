@@ -6,7 +6,7 @@ from nose.tools import eq_
 from django.test.client import RequestFactory
 from django.test.utils import override_settings
 
-from rest_framework import fields, serializers
+from rest_framework import fields
 
 from kitsune.sumo import api_utils
 from kitsune.sumo.tests import TestCase
@@ -62,13 +62,28 @@ class TestDateTimeUTCField(TestCase):
     def test_translation_of_nonnaive(self):
         field = api_utils.DateTimeUTCField()
         as_pacific = datetime(2014, 11, 12, 13, 49, 59, tzinfo=pytz.timezone('US/Pacific'))
-        as_utc = field.to_representation(as_pacific)
-        eq_(as_utc, '2014-11-12T21:49:59Z')
+        as_utc = field.to_native(as_pacific)
+        eq_(as_utc.hour, 21)
+        eq_(as_utc.tzinfo, pytz.utc)
 
     # TODO: How can naive datetime conversion be tested?
 
 
 class TestPermissionMod(TestCase):
+
+    def test_write_only(self):
+        field = api_utils.PermissionMod(fields.WritableField, [])()
+
+        cases = [
+            (False, False, False),
+            (False, True, True),
+            (True, False, True),
+            (True, True, True)
+        ]
+
+        for case in cases:
+            field._write_only, field._stealth, expected = case
+            eq_(field.write_only, expected)
 
     def test_follows_permissions(self):
         allow = True
@@ -81,17 +96,16 @@ class TestPermissionMod(TestCase):
             def has_object_permission(self, *args):
                 return allow_obj
 
-        class MockSerializer(serializers.Serializer):
-            foo = api_utils.PermissionMod(fields.ReadOnlyField, [MockPermission])()
-
+        serializer = Mock()
         obj = Mock()
         obj.foo = 'bar'
+        field = api_utils.PermissionMod(fields.WritableField, [MockPermission])()
+        field.initialize(serializer, 'foo')
 
         # If either has_permission or has_object_permission returns False,
-        # then the field should act as a write_only field. Otherwise it should
+        # then the field should act as a write_only field. Otherwise it shld
         # act as a read/write field .
         cases = [
-            # allow, allow_obj, expected_val, expected_write_only
             (True, True, 'bar', False),
             (True, False, None, True),
             (False, True, None, True),
@@ -99,6 +113,6 @@ class TestPermissionMod(TestCase):
         ]
 
         for case in cases:
-            allow, allow_obj, expected_val, expected_write_only = case
-            serializer = MockSerializer(instance=obj)
-            eq_(serializer.data.get('foo'), expected_val)
+            allow, allow_obj, expected_val, expected_write = case
+            eq_(field.field_to_native(obj, 'foo'), expected_val)
+            eq_(field.write_only, expected_write)

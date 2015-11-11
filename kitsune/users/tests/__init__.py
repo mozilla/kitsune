@@ -20,7 +20,7 @@ class UserFactory(factory.DjangoModelFactory):
     class Meta:
         model = User
 
-    username = factory.fuzzy.FuzzyText()
+    username = factory.Sequence(lambda n: 'test-user-{}'.format(n))
     email = factory.LazyAttribute(lambda u: '{}@example.com'.format(u.username))
     password = factory.PostGenerationMethodCall('set_password', 'testpass')
 
