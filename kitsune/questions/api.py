@@ -379,7 +379,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
         question.auto_tag()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    @action(methods=['POST'])
+    @detail_route(methods=['POST'])
     def attach_images(self, request, pk=None):
         question = self.get_object()
 
