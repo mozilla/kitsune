@@ -5,20 +5,20 @@
     {% if result.type == 'question' %}
       <ul class="thread-meta cf">
         {% if result.is_solved %}
-          <li>{{ _('Solved') }}</li>
+          <li>{{ 'Solved' | gettext }}</li>
         {% endif %}
         <li>
           {% if result.num_answers > 0 %}
-            {{ ngettext('1 reply', '%(n)s replies', result.num_answers)|f({n: result.num_answers}, true) }}
+            {{ '1 reply' | ngettext('%(n)s replies', result.num_answers) | interpolate({n: result.num_answers}, true) }}
           {% else %}
-            {{ _('No replies') }}
+            {{ 'No replies' | gettext }}
           {% endif %}
         </li>
         <li>
-          {{ ngettext('1 person has this problem', '%(n)s people have this problem', result.num_votes)|f({n: result.num_votes}, true) }}
+          {{ '1 person has this problem' | ngettext('%(n)s people have this problem', result.num_votes) | interpolate({n: result.num_votes}, true) }}
         </li>
         <li>
-          {{ ngettext('1 new this week', '%(n)s new this week', result.num_votes_past_week)|f({n: result.num_votes_past_week}, true) }}
+          {{ '1 new this week' | ngettext('%(n)s new this week', result.num_votes_past_week) | interpolate({n: result.num_votes_past_week}, true) }}
         </li>
       </ul>
     {% endif %}
