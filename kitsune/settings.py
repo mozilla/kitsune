@@ -631,10 +631,11 @@ DOMAIN_METHODS = {
     ],
     'javascript': [
         # We can't say **.js because that would dive into any libraries.
-        ('kitsune/**/static/js/*-all.js', 'ignore'),
-        ('kitsune/**/static/js/*-min.js', 'ignore'),
+        ('kitsune/**/static/**/js/*-all.js', 'ignore'),
+        ('kitsune/**/static/**/js/*-min.js', 'ignore'),
 
-        ('kitsune/**/static/js/*.js', 'javascript'),
+        ('kitsune/**/static/**/js/*.js', 'javascript'),
+        ('kitsune/**/static/**/tpl/**.html', tower_tmpl),
     ],
 }
 

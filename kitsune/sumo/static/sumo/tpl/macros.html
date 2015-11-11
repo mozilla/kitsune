@@ -9,16 +9,16 @@
         {% endif %}
         <li>
           {% if result.num_answers > 0 %}
-            {{ ngettext('1 reply', '%(n)s replies', result.num_answers)|f({n: result.num_answers}, true) }}
+            {{ ngettext('1 reply', '%s replies', result.num_answers)|f([result.num_answers]) }}
           {% else %}
             {{ _('No replies') }}
           {% endif %}
         </li>
         <li>
-          {{ ngettext('1 person has this problem', '%(n)s people have this problem', result.num_votes)|f({n: result.num_votes}, true) }}
+          {{ ngettext('1 person has this problem', '%s people have this problem', result.num_votes)|f([result.num_votes]) }}
         </li>
         <li>
-          {{ ngettext('1 new this week', '%(n)s new this week', result.num_votes_past_week)|f({n: result.num_votes_past_week}, true) }}
+          {{ ngettext('1 new this week', '%s new this week', result.num_votes_past_week)|f([result.num_votes_past_week]) }}
         </li>
       </ul>
     {% endif %}
