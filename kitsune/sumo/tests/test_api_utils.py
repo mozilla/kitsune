@@ -41,14 +41,14 @@ class TestInequalityFilterBackend(TestCase):
         self.view.filter_fields = ['x']
         # `x` should be filtered, but `y` should not, since it is not in
         # `filter_fields`
-        self.request.QUERY_PARAMS = {'x__gt': 10, 'y': 5}
+        self.request.query_params = {'x__gt': 10, 'y': 5}
         self.backend.filter_queryset(self.request, self.queryset, self.view)
         self.queryset.filter.assert_called_with(x__gt=10)
 
     def test_lt_gte_multiple(self):
         """multiple fields, gte, and lt."""
         self.view.filter_fields = ['x', 'y']
-        self.request.QUERY_PARAMS = {'x__gte': 10, 'y__lt': 5}
+        self.request.query_params = {'x__gte': 10, 'y__lt': 5}
         self.backend.filter_queryset(self.request, self.queryset, self.view)
         calls = sorted(self.queryset.method_calls)
         # Since both variables are in `filter_fields`, they both get processed.

@@ -192,7 +192,7 @@ class InequalityFilterBackend(BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
         filter_fields = getattr(view, 'filter_fields', [])
 
-        for key, value in request.QUERY_PARAMS.items():
+        for key, value in request.query_params.items():
             splits = key.split('__')
             if len(splits) != 2:
                 continue

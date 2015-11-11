@@ -101,6 +101,6 @@ class TopicList(LocaleNegotiationMixin, generics.ListAPIView):
 
     def get_queryset(self):
         queryset = self.queryset.filter(product__slug=self.kwargs['product'])
-        visible = bool(self.request.QUERY_PARAMS.get('visible', True))
+        visible = bool(self.request.query_params.get('visible', True))
         queryset = queryset.filter(visible=visible)
         return queryset
