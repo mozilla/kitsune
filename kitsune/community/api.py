@@ -69,7 +69,7 @@ class TopContributorsBase(views.APIView):
     def filter_page(self, value):
         """Validate the page numbers, but don't return any filters."""
         try:
-            page = fields.IntegerField().to_internal_value(value)
+            page = fields.IntegerField().from_native(value)
         except fields.ValidationError:
             page = 1
 
@@ -83,7 +83,7 @@ class TopContributorsBase(views.APIView):
     def filter_page_size(self, value):
         """Validate the page sizes, but don't return any filters."""
         try:
-            page_size = fields.IntegerField().to_internal_value(value)
+            page_size = fields.IntegerField().from_native(value)
         except fields.ValidationError:
             page_size = 20
 
@@ -102,12 +102,12 @@ class TopContributorsBase(views.APIView):
         return F()
 
     def filter_startdate(self, value):
-        date = fields.DateField().to_internal_value(value)
+        date = fields.DateField().from_native(value)
         dt = datetime.combine(date, datetime.min.time())
         return F(created__gte=dt)
 
     def filter_enddate(self, value):
-        date = fields.DateField().to_internal_value(value)
+        date = fields.DateField().from_native(value)
         dt = datetime.combine(date, datetime.max.time())
         return F(created__lte=dt)
 
@@ -142,13 +142,13 @@ class TopContributorsBase(views.APIView):
         return self._filter_by_users(username_filter)
 
     def filter_last_contribution_date__gt(self, value):
-        date = fields.DateField().to_internal_value(value)
+        date = fields.DateField().from_native(value)
         dt = datetime.combine(date, datetime.max.time())
         return self._filter_by_users(F(last_contribution_date__gt=dt))
 
     def filter_last_contribution_date__lt(self, value):
         # This query usually covers a lot of users, so inverting it makes it a lot faster.
-        date = fields.DateField().to_internal_value(value)
+        date = fields.DateField().from_native(value)
         dt = datetime.combine(date, datetime.max.time())
         return self._filter_by_users(~F(last_contribution_date__lt=dt), invert=True)
 

@@ -40,8 +40,7 @@ class TestPushNotificationRegistrationSerializer(TestCase):
             context=self.context, data=self.data)
         ok_(serializer.is_valid())
         eq_(serializer.errors, {})
-        obj = serializer.save()
-        eq_(obj.creator, self.user)
+        eq_(serializer.object.creator, self.user)
 
     def test_cant_register_for_other_users(self):
         wrong_user = user(save=True)
@@ -81,9 +80,7 @@ class TestNotificationSerializer(TestCase):
         eq_(serializer.data['action_object']['type'], 'question')
         eq_(serializer.data['action_object']['id'], q.id)
         eq_(serializer.data['target'], None)
-        # Check that the serialized data is in the correct format. If it is
-        # not, this will throw an exception.
-        datetime.strptime(serializer.data['timestamp'], '%Y-%m-%dT%H:%M:%SZ')
+        eq_(type(serializer.data['timestamp']), datetime)
 
 
 class TestNotificationViewSet(TestCase):
@@ -157,7 +154,7 @@ class RealtimeViewSet(TestCase):
             creator=u, content_type=ct, object_id=q.id, endpoint='http://example.com/')
         # Some of the above may have created actions, which we don't care about.
         Action.objects.all().delete()
-        # This should create an action that will trigger the above.
+        # This shuld create an action that will trigger the above.
         a = answer(question=q, content='asdf', save=True)
 
         self.client.force_authenticate(user=u)
@@ -182,5 +179,4 @@ class RealtimeViewSet(TestCase):
             'endpoint': 'http://example.com',
         }
         res = self.client.post(url, data, HTTP_ORIGIN='http://example.com')
-        eq_(res.status_code, 201)
         eq_(res['Access-Control-Allow-Origin'], '*')

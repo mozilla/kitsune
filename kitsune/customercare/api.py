@@ -26,7 +26,6 @@ class BannedList(generics.ListAPIView):
     queryset = TwitterAccount.objects.filter(banned=True)
     serializer_class = TwitterAccountSerializer
     permission_classes = (TwitterAccountBanPermission,)
-    pagination_class = None
 
 
 class IgnoredList(generics.ListAPIView):
@@ -34,7 +33,6 @@ class IgnoredList(generics.ListAPIView):
     queryset = TwitterAccount.objects.filter(ignored=True)
     serializer_class = TwitterAccountSerializer
     permission_classes = (TwitterAccountIgnorePermission,)
-    pagination_class = None
 
 
 @decorators.api_view(['POST'])

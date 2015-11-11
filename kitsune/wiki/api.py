@@ -4,39 +4,35 @@ from django.shortcuts import get_object_or_404
 
 from rest_framework import generics, serializers, status
 
-from kitsune.products.models import Product, Topic
 from kitsune.sumo.api_utils import GenericAPIException, LocaleNegotiationMixin
 from kitsune.wiki.models import Document
 from kitsune.wiki.config import REDIRECT_HTML
 
 
 class DocumentShortSerializer(serializers.ModelSerializer):
+    products = serializers.SlugRelatedField(many=True, slug_field='slug')
+    topics = serializers.SlugRelatedField(many=True, slug_field='slug')
+
     class Meta:
         model = Document
         fields = ('title', 'slug')
 
 
 class DocumentDetailSerializer(DocumentShortSerializer):
-    summary = serializers.CharField(read_only=True)
+    summary = serializers.CharField(source='summary', read_only=True)
     url = serializers.CharField(source='get_absolute_url', read_only=True)
-    products = serializers.SlugRelatedField(
-        many=True,
-        slug_field='slug',
-        queryset=Product.objects.all())
-    topics = serializers.SlugRelatedField(
-        many=True,
-        slug_field='slug',
-        queryset=Topic.objects.all())
 
     class Meta:
         model = Document
-        fields = ('id', 'title', 'slug', 'url', 'locale', 'products', 'topics', 'summary', 'html')
+        fields = ('id', 'title', 'slug', 'url', 'locale', 'products', 'topics',
+                  'summary', 'html')
 
 
 class DocumentList(LocaleNegotiationMixin, generics.ListAPIView):
     """List all documents."""
     queryset = Document.objects.all()
     serializer_class = DocumentShortSerializer
+    paginate_by = 100
 
     def get_queryset(self):
         queryset = self.queryset
