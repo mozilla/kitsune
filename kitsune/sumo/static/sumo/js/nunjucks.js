@@ -5,7 +5,7 @@
   var env = nunjucks.configure({autoescape: true});
 
   env.addGlobal('_', gettext);
-  env.addGlobal('_plural', window.ngettext);
+  env.addGlobal('ngettext', window.ngettext);
 
   env.addFilter('f', function(fmt, obj, named) {
     var keys = Object.keys(obj);
