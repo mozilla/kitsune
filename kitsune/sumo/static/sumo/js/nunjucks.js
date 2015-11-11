@@ -5,12 +5,9 @@
   var env = nunjucks.configure({autoescape: true});
 
   env.addGlobal('_', gettext);
-  env.addGlobal('_plural', window.ngettext);
+  env.addGlobal('ngettext', window.ngettext);
 
-  // TODO: Get rid of these and replace filters with functions in templates
-  env.addFilter('gettext', gettext);
-  env.addFilter('ngettext', ngettext);
-  env.addFilter('interpolate', function(fmt, obj, named) {
+  env.addFilter('f', function(fmt, obj, named) {
     var keys = Object.keys(obj);
     var escape = env.getFilter('escape');
 
