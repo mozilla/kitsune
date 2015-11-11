@@ -22,7 +22,7 @@
     "modernizr": "modernizr#2.6.1",
     "moment": "moment#2.8.3",
     "normalize-css": "normalize-css#3.0.2",
-    "nunjucks": "nunjucks#2.1.0",
+    "nunjucks": "nunjucks#1.3.4",
     "nwmatcher": "nwmatcher#1.3.4",
     "pikaday": "~1.3.2",
     "react": "#0.13.3",
