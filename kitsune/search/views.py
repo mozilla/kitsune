@@ -258,6 +258,11 @@ def advanced_search(request, template=None):
     # TODO: This is so the 'a=1' stays in the URL for pagination.
     r['a'] = 1
 
+    language = locale_or_default(request.GET.get('language', request.LANGUAGE_CODE))
+    r['language'] = language
+    lang = language.lower()
+    lang_name = settings.LANGUAGES_DICT.get(lang) or ''
+
     # 2. Build form.
     search_form = AdvancedSearchForm(r, auto_id=False)
     search_form.set_allowed_forums(request.user)
@@ -285,11 +290,6 @@ def advanced_search(request, template=None):
     # On mobile, we default to just wiki results.
     if request.MOBILE and cleaned['w'] == constants.WHERE_BASIC:
         cleaned['w'] = constants.WHERE_WIKI
-
-    language = locale_or_default(request.GET.get('language', request.LANGUAGE_CODE))
-    r['language'] = language
-    lang = language.lower()
-    lang_name = settings.LANGUAGES_DICT.get(lang) or ''
 
     # We use a regular S here because we want to search across
     # multiple doctypes.
