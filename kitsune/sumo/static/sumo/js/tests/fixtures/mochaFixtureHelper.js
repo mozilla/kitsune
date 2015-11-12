@@ -1,3 +1,9 @@
+/**
+ * Install globals into the jsdom namespace.
+ * @param  {function} mapFunc This function will be called to get the list of
+ *   things to install into the namespace. Should return an object of keys
+ *   to values to install.
+ */
 export default function(mapFunc) {
   return function(options) {
     let map;
