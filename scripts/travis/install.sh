@@ -12,6 +12,14 @@ echo "Install Python dependencies"
 ./peep.sh install -r "requirements/default.txt"
 echo
 
+# Installing dependencies for selenium tests
+if [[ $TEST_SUITE == "selenium" ]]; then
+  virtualenv smoketests
+  source smoketests/bin/activate
+  pip install -r smoketests/requirements.txt
+  deactivate
+fi
+
 # Optimization: None of the rest is needed for lint tests.
 if [[ $TEST_SUITE == "lint" ]]; then
   exit 0
