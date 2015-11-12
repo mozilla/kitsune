@@ -114,5 +114,27 @@ describe('instant search', () => {
       const queryElem = document.querySelectorAll('#search-results-list h2 strong')[0];
       expect(queryElem.innerHTML).to.equal('&lt;');
     });
+
+    it('escape the query in the sidebar filters', () => {
+      const query = '<';
+      const requestExpectation = cxhrMock.expects('request');
+
+      const $searchInput = $('#search-q');
+      $searchInput.val(query);
+      $searchInput.keyup();
+
+      clock.tick(200);
+      // call the callback to actually render things
+      requestExpectation.firstCall.args[1].success({
+        num_results: 0,
+        q: query,
+      });
+
+      const sideBarLinks = Array.from(document.querySelectorAll('.search-filter [data-href]'));
+      for (let link of sideBarLinks) {
+        expect(link.attributes['data-href'].value).to.contain('q=%3C');
+        expect(link.attributes['data-href'].value).to.not.contain('<');
+      }
+    });
   });
 });
