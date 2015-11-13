@@ -156,7 +156,7 @@
         // IE/Opera
         selText = document.selection.createRange().text;
       } else if (this.textarea.selectionStart ||
-        this.textarea.selectionStart == '0') {
+        parseInt(this.textarea.selectionStart) === 0) {
         // Firefox/Safari/Chrome/etc.
         selText = this.textarea.value.substring(
           this.textarea.selectionStart, this.textarea.selectionEnd);
@@ -204,7 +204,7 @@
         }
 
         range.select();
-      } else if (textarea.selectionStart || textarea.selectionStart == '0') { // yes, this is really a string.
+      } else if (textarea.selectionStart || parseInt(textarea.selectionStart) === 0) {
         // Firefox/Safari/Chrome/etc.
         selStart = textarea.selectionStart;
         selEnd = textarea.selectionEnd;
