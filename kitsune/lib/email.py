@@ -1,66 +1,99 @@
 import logging
+import time
 
 from django.conf import settings
 from django.utils.module_loading import import_string
 
 
 log = logging.getLogger('k.lib.email')
-RealBackend = import_string(settings.EMAIL_LOGGING_REAL_BACKEND)
 
 
-class LoggingEmailBackend(RealBackend):
+class LoggingEmailBackend(object):
     """
     Wraps a email backend defined in Django's settings and logs everything it does.
     """
 
+    def __init__(self):
+        self._batch_id = None
+        # Set up the real backend
+        RealBackend = import_string(settings.EMAIL_LOGGING_REAL_BACKEND)
+        self.real_backend = RealBackend()
+
+    @property
+    def batch_id(self):
+        """Get a batch_id, or lazily make a new one."""
+        if self._batch_id is None:
+            # This is the number of milliseconds since the last midnight. It
+            # doesn't need to be globally unique, just unique enough to
+            # distinguish between email tasks that happen at a similar time.
+            self._batch_id = int(time.time() * 1000) % (1000 * 60 * 60 * 24)
+        return self._batch_id
+
+    def log(self, level, msg):
+        """Write a log message, prepending the current batch id."""
+        log.log(level, 'Batch %s - %s' % (self.batch_id, msg))
+
     def open(self):
         """Open a network connection."""
-        new_conn = super(LoggingEmailBackend, self).open()
+        new_conn = self.real_backend.open()
+
         # Checking for True or False directly instead of relying on trutheyness
         # to avoid catching non-booleans
         if new_conn is True:
-            log.debug('Succesfully opened new connection.')
+            self.log(logging.DEBUG, 'Succesfully opened new connection.')
         elif new_conn is False:
-            log.debug('Did not open a new connection. (Either cached or failed)')
+            self.log(logging.DEBUG, 'Did not open a new connection. (Either cached or failed)')
+        elif new_conn is None:
+            self.log(logging.DEBUG, 'Opened a new connection. (Unknown status)')
         else:
-            assert (
-                new_conn is None,
-                'Unexpected return from email backend open method: %r.' % (new_conn, )
-            )
-            log.debug('Opened a new connection. (Unknown status)')
+            # If new_conn is not True, False, or None, the backend is
+            # not behaving as expected. Blow up.
+            raise AssertionError(
+                'Unexpected return from email backend open method: %r.' % (new_conn, ))
+
         return new_conn
 
     def close(self):
         """Close a network connection."""
-        ret = super(LoggingEmailBackend, self).close()
-        log.debug('Closed connection.')
+        ret = self.real_backend.close()
+        self.log(logging.DEBUG, 'Closed connection.')
+        # Clear the batch ID, in case this backend object is re-used.
+        self._batch_id = None
         return ret
 
-    def send_messages(self, email_messages):
+    def send_messages(self, messages):
         """
         Sends one or more EmailMessage objects and returns the number of email messages sent.
         """
-        num_to_send = len(email_messages)
+        num_to_send = len(messages)
 
-        msg_lines = ['Attempting to send %(count)s emails:' % {'count': num_to_send}]
-        for message in email_messages:
-            msg_lines.append('\t%(subject)s - %(recipients)r' % {
+        # Build a big, multiline log "line" that lists all the emails we are trying to send.
+        first_line = 'Attempting to send %(count)s emails: ' % {'count': num_to_send}
+        msg_lines = [
+            '%(subject)s - %(recipients)r' % {
                 'subject': message.subject,
-                'recipients': message.recipients(),
-            })
-        log.debug('\n'.join(msg_lines))
+                'recipients': ', '.join(str(r) for r in message.recipients()),
+            }
+            for message in messages
+        ]
+        self.log(logging.DEBUG, first_line + '\n\t'.join(msg_lines))
 
-        num_sent = super(LoggingEmailBackend, self).send_messages(email_messages)
-        if num_sent is None:
-            num_sent = 0
-        assert num_sent <= num_to_send, 'Sent more emails than requested'
+        # Some backend sometimes return None when they don't attempt to send messsages.
+        num_sent = self.real_backend.send_messages(messages) or 0
 
         if num_sent == num_to_send:
-            log.debug('Succesfully sent %(sent)s messages' % {'sent': num_sent})
+            # Success
+            self.log(logging.DEBUG, 'Succesfully sent %(sent)s emails.' % {'sent': num_sent})
+        elif num_sent < num_to_send:
+            self.log(
+                logging.ERROR,
+                'Failed to send all emails. Sent %(sent)s out of %(to_send)s.' % {
+                    'sent': num_sent,
+                    'to_send': num_to_send,
+                })
         else:
-            log.error('Failed to send all emails. Sent %(sent)s out of %(to_send)s' % {
-                'sent': num_sent,
-                'to_send': num_to_send,
-            })
+            # Somehow the backend sent more emails than we asked for.
+            # Something is very wrong here.
+            raise AssertionError('Sent more emails than requested.')
 
         return num_sent
