@@ -10,7 +10,7 @@ case $SUITE in
     lint )
         pre-commit run --all-files
         ;;
-    selenium )
+    smoke )
         scripts/travis/selenium.sh
         ;;
     django )

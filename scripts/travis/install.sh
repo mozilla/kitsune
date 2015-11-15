@@ -12,10 +12,10 @@ echo "Install Python dependencies"
 ./peep.sh install -r "requirements/default.txt"
 echo
 
-# Installing dependencies for selenium tests
-if [[ $TEST_SUITE == "selenium" ]]; then
-  virtualenv smoketests
-  source smoketests/bin/activate
+# Installing dependencies for smoke tests
+if [[ $TEST_SUITE == "smoke" ]]; then
+  virtualenv selenium
+  source selenium/bin/activate
   pip install -r smoketests/requirements.txt
   deactivate
 fi
