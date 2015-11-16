@@ -58,8 +58,7 @@ def handle_reconcile(request):
         index = cls.get_index()
         doc_type = cls.get_mapping_type_name()
         chunk_name = 'Reconciling: %s' % doc_type
-        rec = Record(batch_id=batch_id, name=chunk_name)
-        rec.save()
+        rec = Record.objects.create(batch_id=batch_id, name=chunk_name)
         reconcile_task.delay(index, batch_id, rec.id, doc_type)
 
     return HttpResponseRedirect(request.path)
@@ -117,16 +116,14 @@ def reindex(mapping_type_names):
         index = cls.get_index()
         doc_type = cls.get_mapping_type_name()
         chunk_name = 'Reconciling: %s' % doc_type
-        rec = Record(batch_id=batch_id, name=chunk_name)
-        rec.save()
+        rec = Record.objects.create(batch_id=batch_id, name=chunk_name)
         reconcile_task.delay(index, batch_id, rec.id, doc_type)
 
     for cls, id_list in chunks:
         index = cls.get_index()
         chunk_name = 'Indexing: %s %d -> %d' % (
             cls.get_mapping_type_name(), id_list[0], id_list[-1])
-        rec = Record(batch_id=batch_id, name=chunk_name)
-        rec.save()
+        rec = Record.objects.create(batch_id=batch_id, name=chunk_name)
         index_chunk_task.delay(index, batch_id, rec.id, (to_class_path(cls), id_list))
 
 
