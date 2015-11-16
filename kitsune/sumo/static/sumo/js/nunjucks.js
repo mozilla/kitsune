@@ -58,5 +58,9 @@
     return JSON.stringify(obj);
   });
 
+  env.addFilter('encodeURI', function(uri) {
+    return encodeURI(uri);
+  });
+
   k.nunjucksEnv = env;
 })(jQuery);
