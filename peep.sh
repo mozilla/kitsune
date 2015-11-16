@@ -18,6 +18,13 @@ case $PIPVER in
         echo "peep.sh: Wheel-using pip detected, so passing --no-use-wheel."
         ARGS="--no-use-wheel"
         ;;
+    7.*)
+        # Pip 7.x is just not compatible with peep.
+        echo 'peep.sh: Pip 7.x and above are not compatible with peep.'
+        echo 'peep.sh: Please install an earlier version with the command'
+        echo "peep.sh: \"pip install -U 'pip<7'\""
+        exit 1
+        ;;
 esac
 
 # Add the version specific arguments to those passed on the command line.
