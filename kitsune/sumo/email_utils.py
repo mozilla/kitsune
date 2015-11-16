@@ -22,13 +22,11 @@ def send_messages(messages):
     if not messages:
         return
 
-    try:
-        conn = mail.get_connection()
-        conn.open()
-        for msg in messages:
-            conn.send_messages([msg])
-    finally:
-        conn.close()
+    conn = mail.get_connection(fail_silently=True)
+    conn.open()
+
+    for msg in messages:
+        conn.send_messages([msg])
 
 
 def safe_translation(f):

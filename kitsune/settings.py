@@ -764,7 +764,8 @@ TOPIC_IMAGE_PATH = 'uploads/topics/'
 PRODUCT_IMAGE_PATH = 'uploads/products/'
 
 # Email
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_BACKEND = 'kitsune.lib.email.LoggingEmailBackend'
+EMAIL_LOGGING_REAL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 
 # Read-only mode setup.
