@@ -131,7 +131,9 @@ def index_chunk_task(write_index, batch_id, rec_id, chunk):
             rec.mark_fail(u'Errored out %s %s' % (sys.exc_type, sys.exc_value))
 
         log.exception('Error while indexing a chunk')
-        raise
+        # Some exceptions aren't pickleable and we need this to throw
+        # things that are pickleable.
+        raise IndexingTaskError()
 
     finally:
         unpin_this_thread()
