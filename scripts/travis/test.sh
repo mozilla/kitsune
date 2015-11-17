@@ -2,8 +2,6 @@
 # pwd is the git repo.
 set -e
 
-# For XVFB Selenium tests.
-export DISPLAY=:99.0
 
 ./scripts/mocha.sh
 
