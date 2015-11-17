@@ -11,7 +11,7 @@ echo 'Starting a server'
 sleep 3
 
 echo 'Running Smoke tests'
-source selenium/bin/activate
+source venv_smoketests/bin/activate
 cd smoketests
 xvfb-run --server-args="-screen 0, 1280x1024x16" py.test --driver=firefox --baseurl=http://localhost:8000 tests
 echo 'Booyahkasha!'

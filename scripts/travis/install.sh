@@ -14,8 +14,8 @@ echo
 
 # Installing dependencies for smoke tests
 if [[ $TEST_SUITE == "smoke" ]]; then
-  virtualenv selenium
-  source selenium/bin/activate
+  virtualenv venv_smoketests
+  source venv_smoketests/bin/activate
   pip install -r smoketests/requirements.txt
   deactivate
 fi

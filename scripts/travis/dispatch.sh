@@ -11,7 +11,7 @@ case $SUITE in
         pre-commit run --all-files
         ;;
     smoke )
-        scripts/travis/selenium.sh
+        scripts/travis/smoketests.sh
         ;;
     django )
         scripts/travis/test.sh
