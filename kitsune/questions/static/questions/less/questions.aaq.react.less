@@ -85,6 +85,46 @@
     }
   }
 
+  &__AttachmentField {
+    &__Attachments {
+      list-style: none;
+      margin: 20px 0 0 0;
+      padding: 0;
+
+      > li {
+        background: #fff;
+        display: inline-block;
+        height: 120px;
+        margin-bottom: 20px;
+        margin-right: 20px;
+        position: relative;
+        vertical-align: middle;
+        width: 120px;
+
+        .delete {
+          background: #000;
+          border: 2px solid #fff;
+          border-radius: 50%;
+          color: #fff;
+          cursor: pointer;
+          font-size: 18px;
+          height: 24px;
+          left: -12px;
+          line-height: 22px;
+          position: absolute;
+          top: -12px;
+          width: 24px;
+          text-align: center;
+
+          &:before {
+            content: '\f00d'; // Close (cross) icon
+            font-family: FontAwesome;
+          }
+        }
+      }
+    }
+  }
+
   &__SuggestionList {
     > ul {
       list-style: none;

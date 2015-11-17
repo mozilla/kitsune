@@ -13,9 +13,16 @@ export function checkAuthState() {
   })
   .then(([status, data]) => {
     if (status === 200) {
-      Dispatcher.dispatch({
-        type: actionTypes.AUTH_LOG_IN_SUCCESS,
-        username: data.username,
+      let username = data.username;
+      return apiFetch(`/api/2/user/${username}/`, {
+        method: 'GET',
+      })
+      .then(user => {
+        Dispatcher.dispatch({
+          type: actionTypes.AUTH_LOG_IN_SUCCESS,
+          id: user.id,
+          username,
+        });
       });
     } else if (status === 401) {
       Dispatcher.dispatch({
@@ -55,9 +62,15 @@ export function login(username, password, {inactive=false}={}) {
     }
 
     if (newDoc.find('#login').length === 0) {
-      Dispatcher.dispatch({
-        type: actionTypes.AUTH_LOG_IN_SUCCESS,
-        username,
+      return apiFetch(`/api/2/user/${username}/`, {
+        method: 'GET',
+      })
+      .then(result => {
+        Dispatcher.dispatch({
+          type: actionTypes.AUTH_LOG_IN_SUCCESS,
+          id: result.id,
+          username,
+        });
       });
     } else {
       let $errorEls = newDoc.find('.errorlist > li');

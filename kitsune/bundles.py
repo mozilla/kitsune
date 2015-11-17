@@ -74,6 +74,7 @@ PIPELINE_CSS = {
     },
     'questions.aaq.react': {
         'source_filenames': (
+            'fontawesome/css/font-awesome.css',
             'questions/less/questions.aaq.react.less',
         ),
         'output_filename': 'build/questions.aaq.react-min.css'

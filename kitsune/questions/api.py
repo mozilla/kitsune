@@ -3,6 +3,7 @@ from datetime import datetime
 import actstream.actions
 import django_filters
 import json
+from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
 from rest_framework import serializers, viewsets, permissions, filters, status, pagination
 from rest_framework.decorators import detail_route
@@ -17,6 +18,7 @@ from kitsune.questions.models import (
 from kitsune.sumo.api_utils import (
     DateTimeUTCField, OnlyCreatorEdits, GenericAPIException, SplitSourceField)
 from kitsune.tags.utils import add_existing_tag
+from kitsune.upload.models import ImageAttachment
 from kitsune.users.api import ProfileFKSerializer
 from kitsune.users.models import Profile
 
@@ -375,6 +377,18 @@ class QuestionViewSet(viewsets.ModelViewSet):
     def auto_tag(self, request, pk=None):
         question = self.get_object()
         question.auto_tag()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @detail_route(methods=['POST'])
+    def attach_images(self, request, pk=None):
+        question = self.get_object()
+
+        user_ct = ContentType.objects.get_for_model(request.user)
+        qst_ct = ContentType.objects.get_for_model(question)
+
+        # Move over to the question all of the images I added to the reply form
+        up_images = ImageAttachment.objects.filter(creator=request.user, content_type=user_ct)
+        up_images.update(content_type=qst_ct, object_id=question.id)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 

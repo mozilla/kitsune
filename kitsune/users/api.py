@@ -140,6 +140,7 @@ class UserSettingSerializer(serializers.ModelSerializer):
 
 
 class ProfileSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(source='user.id', read_only=True)
     username = serializers.CharField(source='user.username')
     display_name = serializers.CharField(source='name', required=False)
     date_joined = DateTimeUTCField(source='user.date_joined', read_only=True)
@@ -170,6 +171,7 @@ class ProfileSerializer(serializers.ModelSerializer):
             'email',
             'facebook',
             'helpfulness',
+            'id',
             'irc_handle',
             'is_active',
             'last_answer_date',

@@ -10,5 +10,6 @@
   {{ csrf() }}{# CSRF token for AJAX actions. #}
   <script type="application/json" class="data" name="products">{{ products_json|safe }}</script>
   <script type="application/json" class="data" name="topics">{{ topics_json|safe }}</script>
+  <script type="application/json" class="data" name="images">{{ images_json|safe }}</script>
   <div class="apptarget"></div>
 {% endblock %}

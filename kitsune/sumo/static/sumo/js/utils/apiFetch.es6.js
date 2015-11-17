@@ -5,6 +5,8 @@ export default function apiFetch(url, options={}) {
   .then(res => {
     if (res.status >= 400) {
       throw new Error(res.statusText);
+    } else if (res.status === 204) {
+      return res;
     } else {
       return res.text()
       .then(text => {
