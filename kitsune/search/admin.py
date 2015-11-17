@@ -1,7 +1,6 @@
 import logging
 import time
 from datetime import datetime
-from difflib import SequenceMatcher
 
 import requests
 
@@ -19,7 +18,6 @@ from kitsune.search.es_utils import (
 from kitsune.search.models import Record, get_mapping_types, Synonym
 from kitsune.search.tasks import index_chunk_task, update_synonyms_task
 from kitsune.search.utils import chunked, to_class_path
-from kitsune.wiki.models import Document, DocumentMappingType
 
 
 log = logging.getLogger('k.es')
@@ -301,95 +299,6 @@ def index_view(request):
 
 admin.site.register_view(path='search-index', view=index_view,
                          name='Search - Index Browsing')
-
-
-class HashableWrapper(object):
-    def __init__(self, hashcode, obj):
-        self.hashcode = hashcode
-        self.obj = obj
-
-    def __hash__(self):
-        return hash(self.hashcode)
-
-    def __eq__(self, obj):
-        return self.hashcode == obj.hashcode
-
-    def __unicode__(self):
-        return repr(self.hashcode)
-
-    __str__ = __unicode__
-    __repr__ = __unicode__
-
-
-def diff_it_for_realz(seq_a, seq_b):
-    # In order to get a nice diff of the two lists that shows us what
-    # has been updated in the db and has not been indexed in an easy
-    # to parse way, we hash the items in each list on an (id, date)
-    # tuple. That's used to produce the diff.
-    #
-    # This gets us really close to something that looks good, though
-    # it'll probably have problems if it's changed in the db just
-    # before midnight and gets indexed just after midnight--the hashes
-    # won't match. It's close, though.
-    seq_a = [
-        HashableWrapper(
-            (doc['id'], datetime.date(doc['indexed_on'])), doc)
-        for doc in seq_a]
-    seq_b = [
-        HashableWrapper(
-            (doc.id, datetime.date(doc.current_revision.reviewed)), doc)
-        for doc in seq_b]
-
-    opcodes = SequenceMatcher(None, seq_a, seq_b).get_opcodes()
-    results = []
-
-    for tag, i1, i2, j1, j2 in opcodes:
-        if tag == 'equal':
-            for i, j in zip(seq_a[i1:i2], seq_b[j1:j2]):
-                results.append((i.obj, j.obj))
-        elif tag == 'delete':
-            # seq_a is missing things that seq_b has
-            for j in seq_b[j1:j2]:
-                results.append((None, j.obj))
-        elif tag == 'insert':
-            # seq_a has things seq_b is missing
-            for i in seq_a[i1:i2]:
-                results.append((i.obj, None))
-        elif tag == 'replace':
-            # Sort the items in this section by the datetime stamp.
-            section = []
-            for i in seq_a[i1:i2]:
-                section.append((i.obj['indexed_on'], i.obj, None))
-            for j in seq_b[j1:j2]:
-                section.append((j.obj.current_revision.reviewed, None, j.obj))
-
-            for ignore, i, j in sorted(section, reverse=1):
-                results.append((i, j))
-
-    return results
-
-
-def troubleshooting_view(request):
-    # Build a list of the most recently indexed 50 wiki documents.
-    last_50_indexed = list(_fix_results(DocumentMappingType.search()
-                                        .order_by('-indexed_on')[:50]))
-
-    last_50_reviewed = list(Document.objects
-                            .filter(current_revision__is_approved=True)
-                            .order_by('-current_revision__reviewed')[:50])
-
-    diff_list = diff_it_for_realz(last_50_indexed, last_50_reviewed)
-
-    return render(
-        request,
-        'admin/search_troubleshooting.html',
-        {'title': 'Index Troubleshooting',
-         'diffs': diff_list,
-         })
-
-
-admin.site.register_view(path='search-troubleshooting', view=troubleshooting_view,
-                         name='Search - Index Troubleshooting')
 
 
 class SynonymAdmin(admin.ModelAdmin):
