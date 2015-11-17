@@ -17,8 +17,7 @@ from kitsune.search.es_utils import (
     get_indexable, CHUNK_SIZE, recreate_indexes, write_index, read_index,
     all_read_indexes, all_write_indexes)
 from kitsune.search.models import Record, get_mapping_types, Synonym
-from kitsune.search.tasks import (
-    index_chunk_task, reconcile_task, update_synonyms_task)
+from kitsune.search.tasks import index_chunk_task, update_synonyms_task
 from kitsune.search.utils import chunked, to_class_path
 from kitsune.wiki.models import Document, DocumentMappingType
 
@@ -44,24 +43,6 @@ def create_batch_id():
     # between batches by looking at a Record. This is just over the
     # number of seconds in a day.
     return str(int(time.time()))[-6:]
-
-
-def handle_reconcile(request):
-    """Reconcile all the things"""
-    outstanding = Record.objects.outstanding().count()
-    if outstanding > 0:
-        raise ReindexError('There are %s outstanding chunks.' % outstanding)
-
-    batch_id = create_batch_id()
-
-    for cls, indexable in get_indexable():
-        index = cls.get_index()
-        doc_type = cls.get_mapping_type_name()
-        chunk_name = 'Reconciling: %s' % doc_type
-        rec = Record.objects.create(batch_id=batch_id, name=chunk_name)
-        reconcile_task.delay(index, batch_id, rec.id, doc_type)
-
-    return HttpResponseRedirect(request.path)
 
 
 def handle_delete(request):
@@ -106,18 +87,11 @@ def reindex(mapping_type_names):
     batch_id = create_batch_id()
 
     # Break up all the things we want to index into chunks. This
-    # chunkifies by class then by chunk size. Also generate
-    # reconcile_tasks.
+    # chunkifies by class then by chunk size.
     chunks = []
     for cls, indexable in get_indexable(mapping_types=mapping_type_names):
         chunks.extend(
             (cls, chunk) for chunk in chunked(indexable, CHUNK_SIZE))
-
-        index = cls.get_index()
-        doc_type = cls.get_mapping_type_name()
-        chunk_name = 'Reconciling: %s' % doc_type
-        rec = Record.objects.create(batch_id=batch_id, name=chunk_name)
-        reconcile_task.delay(index, batch_id, rec.id, doc_type)
 
     for cls, id_list in chunks:
         index = cls.get_index()
@@ -166,12 +140,6 @@ def search(request):
     if 'reset' in request.POST:
         try:
             return handle_reset(request)
-        except ReindexError as e:
-            error_messages.append(u'Error: %s' % e.message)
-
-    if 'reconcile' in request.POST:
-        try:
-            return handle_reconcile(request)
         except ReindexError as e:
             error_messages.append(u'Error: %s' % e.message)
 

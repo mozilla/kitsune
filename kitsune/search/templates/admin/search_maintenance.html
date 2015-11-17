@@ -227,26 +227,6 @@
     <table class="reindextable">
       <tr>
         <td colspan="2">
-          <h2>RECONCILE records</h2>
-        </td>
-      </tr>
-      <tr>
-        <td class="explanation">
-          <p>
-            Reconcile records between database and index.
-          </p>
-        </td>
-        <td>
-          <form method="POST">
-            {% csrf_token %}
-            <input type="hidden" name="reconcile" value="1">
-            <input type="submit" name="reconcile" value="Reconcile records">
-          </form>
-        </td>
-      </tr>
-
-      <tr>
-        <td colspan="2">
           <h2>REINDEX into existing index</h2>
         </td>
       </tr>
