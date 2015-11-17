@@ -1,3 +1,4 @@
+import datetime
 import logging
 from threading import local
 
@@ -288,22 +289,75 @@ def generate_tasks(**kwargs):
 signals.request_finished.connect(generate_tasks)
 
 
+class RecordManager(models.Manager):
+    def outstanding(self):
+        """Return outstanding records"""
+        return self.filter(status__in=Record.STATUS_OUTSTANDING)
+
+
 class Record(ModelBase):
-    """Record for the reindexing log"""
-    starttime = models.DateTimeField(null=True)
-    endtime = models.DateTimeField(null=True)
-    text = models.CharField(max_length=255)
+    """Indexing record."""
+    STATUS_NEW = 0
+    STATUS_IN_PROGRESS = 1
+    STATUS_FAIL = 2
+    STATUS_SUCCESS = 3
+
+    STATUS_CHOICES = (
+        (STATUS_NEW, 'new'),
+        (STATUS_IN_PROGRESS, 'in progress'),
+        (STATUS_FAIL, 'done - fail'),
+        (STATUS_SUCCESS, 'done - success'),
+    )
+
+    STATUS_OUTSTANDING = [STATUS_NEW, STATUS_IN_PROGRESS]
+
+    batch_id = models.CharField(max_length=10)
+    name = models.CharField(max_length=255)
+    creation_time = models.DateTimeField(auto_now_add=True)
+    start_time = models.DateTimeField(null=True)
+    end_time = models.DateTimeField(null=True)
+    status = models.IntegerField(choices=STATUS_CHOICES, default=STATUS_NEW)
+    message = models.CharField(max_length=255, blank=True)
+
+    objects = RecordManager()
 
     class Meta:
+        ordering = ['-start_time']
         permissions = (
             ('reindex', 'Can run a full reindexing'),
         )
 
     def delta(self):
-        """Returns the timedelta"""
-        if self.starttime and self.endtime:
-            return self.endtime - self.starttime
+        """Return the timedelta."""
+        if self.start_time and self.end_time:
+            return self.end_time - self.start_time
         return None
+
+    def _complete(self, status, msg='Done'):
+        self.end_time = datetime.datetime.now()
+        self.status = status
+        self.message = msg
+
+    def mark_fail(self, msg):
+        """Mark as failed.
+
+        :arg msg: the error message it failed with
+
+        """
+        self._complete(self.STATUS_FAIL, msg[:255])
+        self.save()
+
+    def mark_success(self, msg='Success'):
+        """Mark as succeeded.
+
+        :arg msg: success message if any
+
+        """
+        self._complete(self.STATUS_SUCCESS, msg[:255])
+        self.save()
+
+    def __unicode__(self):
+        return '%s:%s%s' % (self.batch_id, self.name, self.status)
 
 
 class Synonym(ModelBase):

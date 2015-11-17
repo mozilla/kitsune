@@ -10,8 +10,8 @@ from statsd import statsd
 from kitsune.search.es_utils import (
     get_indexable, index_chunk, reconcile_chunk, UnindexMeBro, write_index,
     get_analysis)
+from kitsune.search.utils import from_class_path
 from kitsune.sumo.decorators import timeit
-from kitsune.sumo.redis_utils import redis_client, RedisError
 
 from elasticutils.contrib.django import get_es
 
@@ -53,97 +53,90 @@ class IndexingTaskError(Exception):
 
 @task()
 @timeit
-def reconcile_task(write_index, batch_id, mapping_type_name):
+def reconcile_task(write_index, batch_id, rec_id, mapping_type_name):
     """Reconciles the data in the index with what's in the db
 
     This pulls the list of ids from the db and the list of ids from
     the index. Then it unindexes everything that shouldn't be in the
     index.
 
+    :arg write_index: the name of the index to index to
+    :arg batch_id: the name for the batch this chunk belongs to
+    :arg rec_id: the id for the record for this task
     :arg mapping_type_name: name of mapping type to reconcile
 
     """
     # Need to import Record here to prevent circular import
     from kitsune.search.models import Record
 
-    rec = Record.objects.create(
-        starttime=datetime.datetime.now(),
-        text=(u'Batch: {0} Task: {1}: Reconciling {2}'.format(
-            batch_id, mapping_type_name, write_index)))
-
-    # get_indexable returns a list of tuples, but since we're only
-    # passing one mapping type name, we only get one result back.
-    cls, db_id_list = get_indexable(mapping_types=[mapping_type_name])[0]
-
     try:
+        # Pin to master db to avoid replication lag issues and stale data.
+        pin_this_thread()
+
+        # Update record data.
+        rec = Record.objects.get(pk=rec_id)
+        rec.start_time = datetime.datetime.now()
+        rec.message = u'Reconciling %s' % mapping_type_name
+        rec.status = Record.STATUS_IN_PROGRESS
+        rec.save()
+
+        # get_indexable returns a list of tuples, but since we're only
+        # passing one mapping type name, we only get one result back.
+        cls, db_id_list = get_indexable(mapping_types=[mapping_type_name])[0]
         total = reconcile_chunk(cls, db_id_list, reraise=True)
-        rec.text = u'{0}: Total reconciled: {1}'.format(
-            rec.text, total)
+        rec.mark_success(msg='Total reconciled: %s' % total)
 
     except Exception:
-        rec.text = u'{0}: Errored out {1} {2}'.format(
-            rec.text, sys.exc_type, sys.exc_value)[:255]  # Truncate at 255 chars.
-
+        rec.mark_fail('Errored out %s %s' % (sys.exc_type, sys.exc_value))
         log.exception('Error while reconciling')
-
-        raise IndexingTaskError()
+        raise
 
     finally:
-        rec.endtime = datetime.datetime.now()
-        rec.save()
+        unpin_this_thread()
 
 
 @task()
 @timeit
-def index_chunk_task(write_index, batch_id, chunk):
+def index_chunk_task(write_index, batch_id, rec_id, chunk):
     """Index a chunk of things.
 
     :arg write_index: the name of the index to index to
     :arg batch_id: the name for the batch this chunk belongs to
+    :arg rec_id: the id for the record for this task
     :arg chunk: a (class, id_list) of things to index
     """
+    cls_path, id_list = chunk
+    cls = from_class_path(cls_path)
+    rec = None
+
     # Need to import Record here to prevent circular import
     from kitsune.search.models import Record
 
-    cls, id_list = chunk
-
-    task_name = '{0} {1} -> {2}'.format(
-        cls.get_mapping_type_name(), id_list[0], id_list[-1])
-
-    rec = Record.objects.create(
-        starttime=datetime.datetime.now(),
-        text=u'Batch: {0} Task: {1}: Reindexing into {2}'.format(
-            batch_id, task_name, write_index))
-
     try:
-        # Pin to master db to avoid replication lag issues and stale
-        # data.
+        # Pin to master db to avoid replication lag issues and stale data.
         pin_this_thread()
 
+        # Update record data.
+        rec = Record.objects.get(pk=rec_id)
+        rec.start_time = datetime.datetime.now()
+        rec.message = u'Reindexing into %s' % write_index
+        rec.status = Record.STATUS_IN_PROGRESS
+        rec.save()
+
         index_chunk(cls, id_list, reraise=True)
+        rec.mark_success()
 
     except Exception:
-        rec.text = u'{0}: Errored out {1} {2}'.format(
-            rec.text, sys.exc_type, sys.exc_value)[:255]  # Truncate at 255 chars.
+        if rec is not None:
+            rec.mark_fail(u'Errored out %s %s' % (sys.exc_type, sys.exc_value))
 
         log.exception('Error while indexing a chunk')
-
         # Some exceptions aren't pickleable and we need this to throw
         # things that are pickleable.
         raise IndexingTaskError()
 
     finally:
         unpin_this_thread()
-        rec.endtime = datetime.datetime.now()
-        rec.save()
-
-        try:
-            client = redis_client('default')
-            client.decr(OUTSTANDING_INDEX_CHUNKS, 1)
-        except RedisError:
-            # If Redis isn't running, then we just log that the task
-            # was completed.
-            log.info('Index task %s completed.', task_name)
 
 
 # Note: If you reduce the length of RETRY_TIMES, it affects all tasks
