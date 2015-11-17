@@ -13,10 +13,16 @@ export function checkAuthState() {
   })
   .then(([status, data]) => {
     if (status === 200) {
-      Dispatcher.dispatch({
-        type: actionTypes.AUTH_LOG_IN_SUCCESS,
-        id: data.id,
-        username: data.username,
+      let username = data.username;
+      return apiFetch(`/api/2/user/${username}/`, {
+        method: 'GET',
+      })
+      .then(user => {
+        Dispatcher.dispatch({
+          type: actionTypes.AUTH_LOG_IN_SUCCESS,
+          id: user.id,
+          username,
+        });
       });
     } else if (status === 401) {
       Dispatcher.dispatch({
