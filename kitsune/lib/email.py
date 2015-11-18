@@ -13,11 +13,11 @@ class LoggingEmailBackend(object):
     Wraps a email backend defined in Django's settings and logs everything it does.
     """
 
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         self._batch_id = None
         # Set up the real backend
         RealBackend = import_string(settings.EMAIL_LOGGING_REAL_BACKEND)
-        self.real_backend = RealBackend()
+        self.real_backend = RealBackend(*args, **kwargs)
 
     @property
     def batch_id(self):
