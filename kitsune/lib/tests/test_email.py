@@ -86,24 +86,6 @@ class FlakyMockEmailBackend(MockEmailBackend):
 class TestLoggingEmailBackend(TestCase):
     """
     Test that the logging email backend works as expected.
-
-    The below tests validate several things in 3 cases. The 3 cases are:
-
-    * The email backend always suceeds.
-    * The email backend always fails.
-    * The email backend sometimes fails and sometimes suceeds.
-
-    The things that are validated are:
-
-    * The requested backend is used.
-    * The correct messages are logged.
-    * When a method on the logging backend is called, the corresponding
-      method is called on the real backend.
-
-    The three test cases are both very large, and very similar. They
-    could likely be split up into smaller tests, and/or de-duplicated to
-    factor out the similar bits of code. This is left as an exercise for
-    the reader.
     """
 
     def setUp(self):
@@ -114,6 +96,31 @@ class TestLoggingEmailBackend(TestCase):
         self.expected_logs.append((logger, level, message))
         if check:
             self.log_capture.check(*self.expected_logs)
+
+    @override_settings(
+        EMAIL_LOGGING_REAL_BACKEND='django.core.mail.backends.base.BaseEmailBackend')
+    def test_fail_silently(self):
+        # Make sure fail_silently is passed through to the real backend.
+        logging_backend = LoggingEmailBackend(fail_silently=True)
+        eq_(logging_backend.real_backend.fail_silently, True)
+
+    # The below tests validate several things in 3 cases. The 3 cases are:
+    #
+    # * The email backend always suceeds.
+    # * The email backend always fails.
+    # * The email backend sometimes fails and sometimes suceeds.
+    #
+    # The things that are validated are:
+    #
+    # * The requested backend is used.
+    # * The correct messages are logged.
+    # * When a method on the logging backend is called, the corresponding
+    #   method is called on the real backend.
+    #
+    # The three test cases are both very large, and very similar. They
+    # could likely be split up into smaller tests, and/or de-duplicated to
+    # factor out the similar bits of code. This is left as an exercise for
+    # the reader.
 
     @override_settings(
         EMAIL_LOGGING_REAL_BACKEND='kitsune.lib.tests.test_email.SucceedingMockEmailBackend')
