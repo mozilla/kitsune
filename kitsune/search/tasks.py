@@ -7,9 +7,7 @@ from celery import task
 from multidb.pinning import pin_this_thread, unpin_this_thread
 from statsd import statsd
 
-from kitsune.search.es_utils import (
-    get_indexable, index_chunk, reconcile_chunk, UnindexMeBro, write_index,
-    get_analysis)
+from kitsune.search.es_utils import index_chunk, UnindexMeBro, write_index, get_analysis
 from kitsune.search.utils import from_class_path
 from kitsune.sumo.decorators import timeit
 
@@ -49,50 +47,6 @@ class IndexingTaskError(Exception):
     """
     def __init__(self):
         super(IndexingTaskError, self).__init__(traceback.format_exc())
-
-
-@task()
-@timeit
-def reconcile_task(write_index, batch_id, rec_id, mapping_type_name):
-    """Reconciles the data in the index with what's in the db
-
-    This pulls the list of ids from the db and the list of ids from
-    the index. Then it unindexes everything that shouldn't be in the
-    index.
-
-    :arg write_index: the name of the index to index to
-    :arg batch_id: the name for the batch this chunk belongs to
-    :arg rec_id: the id for the record for this task
-    :arg mapping_type_name: name of mapping type to reconcile
-
-    """
-    # Need to import Record here to prevent circular import
-    from kitsune.search.models import Record
-
-    try:
-        # Pin to master db to avoid replication lag issues and stale data.
-        pin_this_thread()
-
-        # Update record data.
-        rec = Record.objects.get(pk=rec_id)
-        rec.start_time = datetime.datetime.now()
-        rec.message = u'Reconciling %s' % mapping_type_name
-        rec.status = Record.STATUS_IN_PROGRESS
-        rec.save()
-
-        # get_indexable returns a list of tuples, but since we're only
-        # passing one mapping type name, we only get one result back.
-        cls, db_id_list = get_indexable(mapping_types=[mapping_type_name])[0]
-        total = reconcile_chunk(cls, db_id_list, reraise=True)
-        rec.mark_success(msg='Total reconciled: %s' % total)
-
-    except Exception:
-        rec.mark_fail('Errored out %s %s' % (sys.exc_type, sys.exc_value))
-        log.exception('Error while reconciling')
-        raise
-
-    finally:
-        unpin_this_thread()
 
 
 @task()

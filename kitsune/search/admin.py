@@ -1,7 +1,6 @@
 import logging
 import time
 from datetime import datetime
-from difflib import SequenceMatcher
 
 import requests
 
@@ -17,10 +16,8 @@ from kitsune.search.es_utils import (
     get_indexable, CHUNK_SIZE, recreate_indexes, write_index, read_index,
     all_read_indexes, all_write_indexes)
 from kitsune.search.models import Record, get_mapping_types, Synonym
-from kitsune.search.tasks import (
-    index_chunk_task, reconcile_task, update_synonyms_task)
+from kitsune.search.tasks import index_chunk_task, update_synonyms_task
 from kitsune.search.utils import chunked, to_class_path
-from kitsune.wiki.models import Document, DocumentMappingType
 
 
 log = logging.getLogger('k.es')
@@ -44,24 +41,6 @@ def create_batch_id():
     # between batches by looking at a Record. This is just over the
     # number of seconds in a day.
     return str(int(time.time()))[-6:]
-
-
-def handle_reconcile(request):
-    """Reconcile all the things"""
-    outstanding = Record.objects.outstanding().count()
-    if outstanding > 0:
-        raise ReindexError('There are %s outstanding chunks.' % outstanding)
-
-    batch_id = create_batch_id()
-
-    for cls, indexable in get_indexable():
-        index = cls.get_index()
-        doc_type = cls.get_mapping_type_name()
-        chunk_name = 'Reconciling: %s' % doc_type
-        rec = Record.objects.create(batch_id=batch_id, name=chunk_name)
-        reconcile_task.delay(index, batch_id, rec.id, doc_type)
-
-    return HttpResponseRedirect(request.path)
 
 
 def handle_delete(request):
@@ -106,18 +85,11 @@ def reindex(mapping_type_names):
     batch_id = create_batch_id()
 
     # Break up all the things we want to index into chunks. This
-    # chunkifies by class then by chunk size. Also generate
-    # reconcile_tasks.
+    # chunkifies by class then by chunk size.
     chunks = []
     for cls, indexable in get_indexable(mapping_types=mapping_type_names):
         chunks.extend(
             (cls, chunk) for chunk in chunked(indexable, CHUNK_SIZE))
-
-        index = cls.get_index()
-        doc_type = cls.get_mapping_type_name()
-        chunk_name = 'Reconciling: %s' % doc_type
-        rec = Record.objects.create(batch_id=batch_id, name=chunk_name)
-        reconcile_task.delay(index, batch_id, rec.id, doc_type)
 
     for cls, id_list in chunks:
         index = cls.get_index()
@@ -166,12 +138,6 @@ def search(request):
     if 'reset' in request.POST:
         try:
             return handle_reset(request)
-        except ReindexError as e:
-            error_messages.append(u'Error: %s' % e.message)
-
-    if 'reconcile' in request.POST:
-        try:
-            return handle_reconcile(request)
         except ReindexError as e:
             error_messages.append(u'Error: %s' % e.message)
 
@@ -333,95 +299,6 @@ def index_view(request):
 
 admin.site.register_view(path='search-index', view=index_view,
                          name='Search - Index Browsing')
-
-
-class HashableWrapper(object):
-    def __init__(self, hashcode, obj):
-        self.hashcode = hashcode
-        self.obj = obj
-
-    def __hash__(self):
-        return hash(self.hashcode)
-
-    def __eq__(self, obj):
-        return self.hashcode == obj.hashcode
-
-    def __unicode__(self):
-        return repr(self.hashcode)
-
-    __str__ = __unicode__
-    __repr__ = __unicode__
-
-
-def diff_it_for_realz(seq_a, seq_b):
-    # In order to get a nice diff of the two lists that shows us what
-    # has been updated in the db and has not been indexed in an easy
-    # to parse way, we hash the items in each list on an (id, date)
-    # tuple. That's used to produce the diff.
-    #
-    # This gets us really close to something that looks good, though
-    # it'll probably have problems if it's changed in the db just
-    # before midnight and gets indexed just after midnight--the hashes
-    # won't match. It's close, though.
-    seq_a = [
-        HashableWrapper(
-            (doc['id'], datetime.date(doc['indexed_on'])), doc)
-        for doc in seq_a]
-    seq_b = [
-        HashableWrapper(
-            (doc.id, datetime.date(doc.current_revision.reviewed)), doc)
-        for doc in seq_b]
-
-    opcodes = SequenceMatcher(None, seq_a, seq_b).get_opcodes()
-    results = []
-
-    for tag, i1, i2, j1, j2 in opcodes:
-        if tag == 'equal':
-            for i, j in zip(seq_a[i1:i2], seq_b[j1:j2]):
-                results.append((i.obj, j.obj))
-        elif tag == 'delete':
-            # seq_a is missing things that seq_b has
-            for j in seq_b[j1:j2]:
-                results.append((None, j.obj))
-        elif tag == 'insert':
-            # seq_a has things seq_b is missing
-            for i in seq_a[i1:i2]:
-                results.append((i.obj, None))
-        elif tag == 'replace':
-            # Sort the items in this section by the datetime stamp.
-            section = []
-            for i in seq_a[i1:i2]:
-                section.append((i.obj['indexed_on'], i.obj, None))
-            for j in seq_b[j1:j2]:
-                section.append((j.obj.current_revision.reviewed, None, j.obj))
-
-            for ignore, i, j in sorted(section, reverse=1):
-                results.append((i, j))
-
-    return results
-
-
-def troubleshooting_view(request):
-    # Build a list of the most recently indexed 50 wiki documents.
-    last_50_indexed = list(_fix_results(DocumentMappingType.search()
-                                        .order_by('-indexed_on')[:50]))
-
-    last_50_reviewed = list(Document.objects
-                            .filter(current_revision__is_approved=True)
-                            .order_by('-current_revision__reviewed')[:50])
-
-    diff_list = diff_it_for_realz(last_50_indexed, last_50_reviewed)
-
-    return render(
-        request,
-        'admin/search_troubleshooting.html',
-        {'title': 'Index Troubleshooting',
-         'diffs': diff_list,
-         })
-
-
-admin.site.register_view(path='search-troubleshooting', view=troubleshooting_view,
-                         name='Search - Index Troubleshooting')
 
 
 class SynonymAdmin(admin.ModelAdmin):
