@@ -1,15 +1,25 @@
 from django.conf import settings
 from django.core.files import File
 
+import factory
 from nose.tools import eq_, raises
 
-from kitsune.questions.tests import question
+from kitsune.questions.tests import question, QuestionFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.upload.models import ImageAttachment
 from kitsune.upload.storage import RenameFileStorage
 from kitsune.upload.utils import (
     create_imageattachment, check_file_size, FileTooLargeError)
-from kitsune.users.tests import user
+from kitsune.users.tests import user, UserFactory
+
+
+class ImageAttachmentFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = ImageAttachment
+
+    creator = factory.SubFactory(UserFactory)
+    content_object = factory.SubFactory(QuestionFactory)
+    file = factory.django.FileField()
 
 
 def check_file_info(file_info, name, width, height, delete_url, url,
