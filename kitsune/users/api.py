@@ -66,7 +66,7 @@ def usernames(request):
 
         return [{'username': u.username,
                  'display_name': display_name_or_none(u),
-                 'avatar':profile_avatar(u,24)}
+                 'avatar':profile_avatar(u, 24)}
                 for u in users[:10]]
 
 
