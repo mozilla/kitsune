@@ -2,8 +2,7 @@ import time
 
 from django import forms
 from django.conf import settings
-
-from tower import ugettext_lazy as _lazy
+from django.utils.translation import ugettext_lazy as _lazy
 
 from kitsune import search as constants
 from kitsune.forums.models import Forum as DiscussionForum

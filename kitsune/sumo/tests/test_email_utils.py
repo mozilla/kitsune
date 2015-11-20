@@ -35,8 +35,8 @@ mock_ugettext_lazy = lazy(mock_ugettext)
 
 
 def mock_gettext(f):
-    f = patch('tower.ugettext', mock_ugettext)(f)
-    f = patch('tower.ugettext_lazy', mock_ugettext_lazy)(f)
+    f = patch('django.utils.translation.ugettext', mock_ugettext)(f)
+    f = patch('django.utils.translation.ugettext_lazy', mock_ugettext_lazy)(f)
     return f
 
 
@@ -50,8 +50,8 @@ class SafeTranslationTests(TestCase):
     @mock_gettext
     def test_mocked_gettext(self):
         """I'm not entirely sure about the mocking, so test that."""
-        # Import tower now so it is affected by the mock.
-        from tower import ugettext as _
+        # Import translation now so it is affected by the mock.
+        from django.utils.translation import ugettext as _
 
         with uselocale('en-US'):
             eq_(_('Hello'), 'Hello')
@@ -63,8 +63,8 @@ class SafeTranslationTests(TestCase):
     @mock_gettext
     def test_safe_translation_noop(self):
         """Test that safe_translation doesn't mess with good translations."""
-        # Import tower now so it is affected by the mock.
-        from tower import ugettext as _
+        # Import translation now so it is affected by the mock.
+        from django.utils.translation import ugettext as _
 
         @safe_translation
         def simple(locale):
@@ -78,8 +78,8 @@ class SafeTranslationTests(TestCase):
     @mock_gettext
     def test_safe_translation_bad_trans(self):
         """Test that safe_translation insulates from bad translations."""
-        # Import tower now so it is affected by the mock.
-        from tower import ugettext as _
+        # Import translation now so it is affected by the mock.
+        from django.utils.translation import ugettext as _
 
         # `safe_translation` will call this with the given locale, and
         # if that fails, fall back to English.
@@ -97,8 +97,8 @@ class SafeTranslationTests(TestCase):
     @patch('kitsune.sumo.email_utils.log')
     def test_safe_translation_logging(self, mocked_log):
         """Logging translation errors is really important, so test it."""
-        # Import tower now so it is affected by the mock.
-        from tower import ugettext as _
+        # Import translation now so it is affected by the mock.
+        from django.utils.translation import ugettext as _
 
         # Assert that bad translations cause error logging.
         @safe_translation

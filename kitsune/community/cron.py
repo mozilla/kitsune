@@ -5,8 +5,7 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from django.db.models import F, Q
-
-from tower import ugettext as _
+from django.utils.translation import ugettext as _
 
 from kitsune.questions.models import Answer
 from kitsune.sumo.email_utils import make_mail, safe_translation, send_messages

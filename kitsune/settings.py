@@ -520,7 +520,7 @@ INSTALLED_APPS = (
     'corsheaders',
     'kitsune.users',
     'dennis.django_dennis',
-    'tower',
+    'puente',
     'pipeline',
     'authority',
     'timezones',
@@ -589,7 +589,7 @@ TEST_RUNNER = 'kitsune.sumo.tests.TestSuiteRunner'
 
 def JINJA_CONFIG():
     from django.conf import settings
-    config = {'extensions': ['tower.template.i18n',
+    config = {'extensions': ['puente.ext.i18n',
                              'jinja2.ext.autoescape',
                              'jinja2.ext.with_',
                              'jinja2.ext.do',
@@ -598,45 +598,40 @@ def JINJA_CONFIG():
 
     return config
 
-# Let Tower know about our additional keywords.
-# DO NOT import an ngettext variant as _lazy.
-TOWER_KEYWORDS = {
-    '_lazy': None,
-}
-
 # Tells the extract script what files to look for l10n in and what
-# function handles the extraction.  The Tower library expects this.
-tower_tmpl = 'tower.management.commands.extract.extract_tower_template'
-tower_python = 'tower.management.commands.extract.extract_tower_python'
-DOMAIN_METHODS = {
-    'messages': [
-        ('kitsune/forums/**.py', 'ignore'),
-        ('kitsune/forums/**.html', 'ignore'),
-        ('kitsune/**/tests/**.py', 'ignore'),
-        ('kitsune/**/management/**.py', 'ignore'),
+# function handles the extraction. Puente expects this.
+PUENTE = {
+    'BASE_DIR': ROOT,
+    'DOMAIN_METHODS': {
+        'messages': [
+            ('kitsune/forums/**.py', 'ignore'),
+            ('kitsune/forums/**.html', 'ignore'),
+            ('kitsune/**/tests/**.py', 'ignore'),
+            ('kitsune/**/management/**.py', 'ignore'),
 
-        ('kitsune/**.py', tower_python),
-        ('kitsune/**/templates/**.html', tower_tmpl),
-        ('vendor/src/django-tidings/**/templates/**.html', tower_tmpl),
-        ('vendor/src/django-badger/badger/*.py', tower_python),
-        ('vendor/src/django-badger/badger/templatetags/*.py', tower_python),
-    ],
-    'lhtml': [
-        ('kitsune/forums/**.lhtml', 'ignore'),
+            ('kitsune/**.py', 'python'),
+            ('kitsune/**/templates/**.html', 'jinja2'),
+            ('vendor/src/django-tidings/**/templates/**.html', 'jinja2'),
+            ('vendor/src/django-badger/badger/*.py', 'python'),
+            ('vendor/src/django-badger/badger/templatetags/*.py', 'python'),
+        ],
+        'lhtml': [
+            ('kitsune/forums/**.lhtml', 'ignore'),
 
-        ('**/templates/**.lhtml', tower_tmpl)
-    ],
-    'ltxt': [
-        ('**/templates/**.ltxt', tower_tmpl),
-    ],
-    'javascript': [
-        # We can't say **.js because that would dive into any libraries.
-        ('kitsune/**/static/**/js/*-all.js', 'ignore'),
-        ('kitsune/**/static/**/js/*-min.js', 'ignore'),
+            ('**/templates/**.lhtml', 'jinja2')
+        ],
+        'ltxt': [
+            ('**/templates/**.ltxt', 'jinja2'),
+        ],
+        'javascript': [
+            # We can't say **.js because that would dive into any libraries.
+            ('kitsune/**/static/**/js/*-all.js', 'ignore'),
+            ('kitsune/**/static/**/js/*-min.js', 'ignore'),
 
-        ('kitsune/**/static/**/js/*.js', 'javascript'),
-        ('kitsune/**/static/**/tpl/**.html', tower_tmpl),
-    ],
+            ('kitsune/**/static/**/js/*.js', 'javascript'),
+            ('kitsune/**/static/**/tpl/**.html', 'jinja2'),
+        ],
+    }
 }
 
 # These domains will not be merged into messages.pot and will use

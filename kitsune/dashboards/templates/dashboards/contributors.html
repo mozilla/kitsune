@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% from "dashboards/includes/macros.html" import print_readout, product_choice_list, print_subscription_menu, category_filter with context %}
 {% from "dashboards/includes/macros.html" import localization_sidebar_nav %}
-{% set title = _('[{product}] Knowledge Base Dashboard')|f(product=_(product.title, 'DB: products.Product.title') if product else _('All Products')) %}
+{% set title = _('[{product}] Knowledge Base Dashboard')|f(product=pgettext('DB: products.Product.title', product.title) if product else _('All Products')) %}
 {% set scripts = ('wiki', 'wiki.dashboard') %}
 {% set styles = ('kbdashboards', ) %}
 {% set crumbs = [(None, title)] %}

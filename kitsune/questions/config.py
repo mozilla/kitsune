@@ -1,6 +1,5 @@
 from django.utils.datastructures import SortedDict
-
-from tower import ugettext_lazy as _lazy
+from django.utils.translation import ugettext_lazy as _lazy
 
 # The number of answers per page.
 ANSWERS_PER_PAGE = 20

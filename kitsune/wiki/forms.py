@@ -3,8 +3,7 @@ import re
 from django import forms
 from django.conf import settings
 from django.template.defaultfilters import slugify
-
-from tower import ugettext_lazy as _lazy
+from django.utils.translation import ugettext_lazy as _lazy
 
 from kitsune.products.models import Product, Topic
 from kitsune.sumo.form_fields import MultiUsernameField, StrippedCharField

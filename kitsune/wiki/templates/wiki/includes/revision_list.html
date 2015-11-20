@@ -50,7 +50,7 @@
               {% if not reached_current and document.allows(user, 'review_revision') %}
                 <a href="{{ url('wiki.review_revision', document.slug, rev.id, locale=document.locale) }}">{{ _('Review') }}</a>
               {% else %}
-                <span class="unreviewed">{{ _('Unreviewed', 'revision') }}</span>
+                <span class="unreviewed">{{ pgettext('revision', 'Unreviewed') }}</span>
               {% endif %}
             {% else %}
               {% if document.current_revision == rev %}

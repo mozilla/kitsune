@@ -4,11 +4,11 @@
 {% set scripts = ('mobile-products',) %}
 {% set classes = 'documents' %}
 {% if subtopic %}
-  {% set headline = _(subtopic.title, 'DB: products.Topic.title') %}
+  {% set headline = pgettext('DB: products.Topic.title', subtopic.title) %}
 {% else %}
-  {% set headline = _(topic.title, 'DB: products.Topic.title') %}
+  {% set headline = pgettext('DB: products.Topic.title', topic.title) %}
 {% endif %}
-{% set title = headline + ' | ' + _('{product} Help')|f(product=_(product.title, 'DB: products.Product.title')) %}
+{% set title = headline + ' | ' + _('{product} Help')|f(product=pgettext('DB: products.Product.title', product.title)) %}
 {% if subtopic %}
   {% set return_url = url('products.documents', product_slug=product.slug, topic_slug=topic.slug) %}
 {% else %}
@@ -29,13 +29,13 @@
   {% if subtopic %}
     <div class="filter-bar">
       <a class="return-link" href="{{ return_url }}">
-        {{ _('Back to:') }} {{ _(topic.title, 'DB: products.Topic.title') }}
+        {{ _('Back to:') }} {{ pgettext('DB: products.Topic.title', topic.title) }}
       </a>
     </div>
   {% else %}
     <div class="filter-bar">
       <a class="return-link" href="{{ return_url }}">
-        {{ _('Back to:') }} {{ _(product.title, 'DB: products.Product.title') }}
+        {{ _('Back to:') }} {{ pgettext('DB: products.Product.title', product.title) }}
       </a>
     </div>
   {% endif %}
@@ -46,7 +46,7 @@
       {% for subtopic in subtopics %}
         <li>
           <a href="{{ url('products.subtopics', product_slug=product.slug, topic_slug=topic.slug, subtopic_slug=subtopic.slug) }}">
-            {{ _(subtopic.title, 'DB: products.Topic.title') }}
+            {{ pgettext('DB: products.Topic.title', subtopic.title) }}
           </a>
         </li>
       {% endfor %}

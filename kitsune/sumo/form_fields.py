@@ -4,10 +4,10 @@ from django.contrib.auth.models import User
 from django.core import validators
 from django.core.exceptions import ValidationError
 from django.utils import translation
+from django.utils.translation import ugettext as _, ugettext_lazy as _lazy
 
 from babel import Locale, localedata
 from babel.support import Format
-from tower import ugettext as _, ugettext_lazy as _lazy
 
 
 class TypedMultipleChoiceField(forms.MultipleChoiceField):

@@ -9,7 +9,7 @@ from django.db.models import F, Q, ObjectDoesNotExist
 
 from multidb.pinning import pin_this_thread, unpin_this_thread
 from statsd import statsd
-from tower import ugettext as _
+from django.utils.translation import ugettext as _, pgettext
 
 from kitsune.products.models import Product
 from kitsune.search.tasks import index_task
@@ -108,7 +108,7 @@ def send_weekly_ready_for_review_digest():
                                            Q(parent__products__in=[p]))
                 if product_docs:
                     docs_list.append(dict(
-                        product=_(p.title, 'DB: products.Product.title'),
+                        product=pgettext('DB: products.Product.title', p.title),
                         docs=product_docs))
 
             product_docs = docs.filter(Q(parent=None, products=None) |

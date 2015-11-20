@@ -8,7 +8,7 @@
 {% set scripts = ('wiki', ) %}
 {% set extra_body_attrs = {'data-track-url': STATIC_URL + 'img/pixel.gif', 'data-document-id': document.id, 'data-default-slug': document.parent.slug if document.parent else document.slug} %}
 
-{% block title %}{{ document.title }} | {% if not products or products|count > 1 %}{{ _('Mozilla Support', 'site_title') }}{% else %}{{ _('{product} Help')|f(product=_(product.title, 'DB: products.Product.title')) }}{% endif %}{% endblock %}
+{% block title %}{{ document.title }} | {% if not products or products|count > 1 %}{{ pgettext('site_title', 'Mozilla Support') }}{% else %}{{ _('{product} Help')|f(product=pgettext('DB: products.Product.title', product.title)) }}{% endif %}{% endblock %}
 
 {% if request.LANGUAGE_CODE != settings.WIKI_DEFAULT_LANGUAGE %}
   {# If we are on a non default locale, use default locale's slug for Google Analytics tracking. #}
@@ -46,7 +46,7 @@
   <h1 class="product-title cf">
     {% set prod_url = url('products.product', slug=product.slug) %}
     <img src="{{ STATIC_URL }}sumo/img/blank.png" alt="" class="logo-sprite" style="background-image: url('{{ product.image_url }}');" />
-    <a href="{{ prod_url }}">{{ _(product.title, 'DB: products.Product.title') }}</a>
+    <a href="{{ prod_url }}">{{ pgettext('DB: products.Product.title', product.title) }}</a>
   </h1>
 {% endblock %}
 

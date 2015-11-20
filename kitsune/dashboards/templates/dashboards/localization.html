@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% from "dashboards/includes/macros.html" import print_readout, overview_section, product_choice_list, print_subscription_menu with context %}
 {% from "dashboards/includes/macros.html" import localization_sidebar_nav %}
-{% set title = _('[{locale}][{product}] Localization Dashboard')|f(locale=current_locale, product=_(product.title, 'DB: products.Product.title') if product else _('All Products')) %}
+{% set title = _('[{locale}][{product}] Localization Dashboard')|f(locale=current_locale, product=pgettext('DB: products.Product.title', product.title) if product else _('All Products')) %}
 {% set scripts = ('wiki', 'jqueryui', 'wiki.dashboard') %}
 {% set styles = ('kbdashboards', 'jqueryui') %}
 {% set crumbs = [(None, title)] %}

@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 
-{% set crumbs = [(url('badger.badges_list'), _('Badges')), (None, _(badge.title, 'DB: badger.Badge.title'))] %}
+{% set crumbs = [(url('badger.badges_list'), _('Badges')), (None, pgettext('DB: badger.Badge.title', badge.title))] %}
 {% set styles=('badges',) %}
 
 {% block content %}
 <div class="grid_6">
   <h2>
-    {% trans badge_name=_(badge.title, 'DB: badger.Badge.title') %}
+    {% trans badge_name=pgettext('DB: badger.Badge.title', badge.title) %}
       Badge: {{ badge_name }}
     {% endtrans %}
   </h2>
@@ -19,7 +19,7 @@
 
     {% if badge.description %}
       <dt>{{ _('Description:') }}</dt>
-      <dd class="description">{{ _(badge.description, 'DB: badger.Badge.description') }}</dd>
+      <dd class="description">{{ pgettext('DB: badger.Badge.description', badge.description) }}</dd>
     {% endif %}
 
     {% if badge.creator %}

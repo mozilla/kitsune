@@ -1,4 +1,4 @@
-from tower import ugettext_lazy as _lazy
+from django.utils.translation import ugettext_lazy as _lazy
 
 
 ERROR_SEND_EMAIL = _lazy(

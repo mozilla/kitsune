@@ -4,9 +4,8 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import get_object_or_404, render
 from django.contrib import messages
 from django.contrib.contenttypes.models import ContentType
+from django.utils.translation import ugettext as _
 from django.views.decorators.http import require_POST
-
-from tower import ugettext as _
 
 from kitsune.access.decorators import permission_required, login_required
 from kitsune.flagit.models import FlaggedObject

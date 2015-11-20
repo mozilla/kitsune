@@ -2,9 +2,9 @@ from os.path import basename
 from urlparse import urlparse, parse_qs
 
 from django.conf import settings
+from django.utils.translation import ugettext_lazy as _lazy, ugettext as _
 
 import jingo
-from tower import ugettext_lazy as _lazy, ugettext as _
 from wikimarkup.parser import Parser, ALLOWED_TAGS
 
 from kitsune.gallery.models import Image, Video
@@ -305,7 +305,7 @@ class WikiParser(Parser):
         if isinstance(image, basestring):
             return image
 
-        template = jingo.env.get_template(self.image_template)
+        template = jingo.get_env().get_template(self.image_template)
         r_kwargs = {'image': image, 'params': params,
                     'STATIC_URL': settings.STATIC_URL}
         return template.render(r_kwargs)
@@ -350,7 +350,7 @@ class WikiParser(Parser):
         else:
             return _lazy(u'Button of type "%s" does not exist.') % btn_type
 
-        return jingo.env.get_template(template).render({'params': params})
+        return jingo.get_env().get_template(template).render({'params': params})
 
 
 def generate_video(v, params=[]):
@@ -364,7 +364,7 @@ def generate_video(v, params=[]):
     # Flash fallback
     if v.flv:
         data_fallback = _get_video_url(v.flv)
-    return jingo.env.get_template('wikiparser/hook_video.html').render(
+    return jingo.get_env().get_template('wikiparser/hook_video.html').render(
         {'fallback': data_fallback, 'sources': sources, 'params': params,
          'video': v,
          'height': settings.WIKI_VIDEO_HEIGHT,
@@ -373,7 +373,7 @@ def generate_video(v, params=[]):
 
 def generate_youtube_embed(video_id):
     """Takes a youtube video id and returns the embed markup."""
-    return jingo.env.get_template(
+    return jingo.get_env().get_template(
         'wikiparser/hook_youtube_embed.html').render({'video_id': video_id})
 
 

@@ -9,8 +9,8 @@
         {% endif %}
         <a class="cf" href="{{ prod_url }}">
           <img src="{{ STATIC_URL }}sumo/img/blank.png" class="logo-sprite" style="{% if product.image and product.image_offset %}background-image: url({{ product.sprite_url() }}); background-position: -100px -{{ 100 + (product.image_offset * 296) }}px;{% else %}background-image: url({{ product.image_url }}){% endif %}" alt="" />
-          <span class="title">{{ _(product.title, 'DB: products.Product.title') }}</span>
-          <span class="description">{{ _(product.description, 'DB: products.Product.description') }}</span>
+          <span class="title">{{ pgettext('DB: products.Product.title', product.title) }}</span>
+          <span class="description">{{ pgettext('DB: products.Product.description', product.description) }}</span>
         </a>
       </li>
     {% endfor %}

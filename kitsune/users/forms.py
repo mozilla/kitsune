@@ -11,8 +11,7 @@ from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.models import get_current_site
 from django.core.cache import cache
 from django.utils.http import int_to_base36
-
-from tower import ugettext as _, ugettext_lazy as _lazy
+from django.utils.translation import ugettext as _, ugettext_lazy as _lazy
 
 from kitsune.sumo import email_utils
 from kitsune.sumo.urlresolvers import reverse

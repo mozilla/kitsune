@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 {% from 'products/includes/topic_macros.html' import topic_sidebar %}
-{% set crumbs = [(url('products.product', slug=product.slug), _(product.title, 'DB: products.Product.title'))] %}
+{% set crumbs = [(url('products.product', slug=product.slug), pgettext('DB: products.Product.title', product.title))] %}
 {% if subtopic %}
-  {% set crumbs = crumbs + [(url('products.documents', product_slug=product.slug, topic_slug=topic.slug), _(topic.title, 'DB: products.Topic.title')), (None, _(subtopic.title, 'DB: products.Topic.title'))] %}
+  {% set crumbs = crumbs + [(url('products.documents', product_slug=product.slug, topic_slug=topic.slug), pgettext('DB: products.Topic.title', topic.title)), (None, pgettext('DB: products.Topic.title', subtopic.title))] %}
 {% else %}
-  {% set crumbs = crumbs + [(None, _(topic.title, 'DB: products.Topic.title'))] %}
+  {% set crumbs = crumbs + [(None, pgettext('DB: products.Topic.title', topic.title))] %}
 {% endif %}
 {% set styles = ('products',) %}
 {% set search_params = {'product': product.slug} %}
@@ -17,14 +17,14 @@
   {% endif %}
 {% endif %}
 
-{% block title %}{{ _(topic.title, 'DB: products.Topic.title') }} | {{ _('{product} Help')|f(product=_(product.title, 'DB: products.Product.title')) }}{% endblock %}
+{% block title %}{{ pgettext('DB: products.Topic.title', topic.title) }} | {{ _('{product} Help')|f(product=pgettext('DB: products.Product.title', product.title)) }}{% endblock %}
 
 {% block content %}
   <div class="grid_12">
     <h1 class="product-title cf">
       {% set prod_url = url('products.product', slug=product.slug) %}
       <img src="{{ STATIC_URL }}sumo/img/blank.png" alt="" class="logo-sprite" style="background-image: url('{{ product.image_url }}');" />
-      <a href="{{ prod_url }}">{{ _(product.title, 'DB: products.Product.title') }}</a>
+      <a href="{{ prod_url }}">{{ pgettext('DB: products.Product.title', product.title) }}</a>
     </h1>
   </div>
   <aside class="grid_3">
@@ -37,7 +37,7 @@
         {% if subtopic %}
           <a href="{{ url('products.documents', product_slug=product.slug, topic_slug=topic.slug) }}">
         {% endif %}
-        {{ _(topic.title, 'DB: products.Topic.title') }}
+        {{ pgettext('DB: products.Topic.title', topic.title) }}
         {% if subtopic %}
           </a>
         {% endif %}
@@ -45,7 +45,7 @@
 
       {% if subtopic %}
         <h1 class="topic-title {% if topic.image %}has-image{% endif %} cf">
-          {{ _(subtopic.title, 'DB: products.Topic.title') }}
+          {{ pgettext('DB: products.Topic.title', subtopic.title) }}
         </h1>
       {% endif %}
 
@@ -53,9 +53,9 @@
       {% if (subtopic and subtopic.title != subtopic.description) or (not subtopic and topic.title != topic.description) %}
         <h2 class="topic-description cf">
           {% if subtopic %}
-             {{ _(subtopic.description, 'DB: products.Topic.description') }}
+             {{ pgettext('DB: products.Topic.description', subtopic.description) }}
           {% else %}
-            {{ _(topic.description, 'DB: products.Topic.description') }}
+            {{ pgettext('DB: products.Topic.description', topic.description) }}
           {% endif %}
         </h2>
       {% endif %}
@@ -66,10 +66,10 @@
           {% for subtopic in subtopics %}
             <li class="subtopic">
               <a href="{{ url('products.subtopics', product_slug=product.slug, topic_slug=topic.slug, subtopic_slug=subtopic.slug) }}">
-                {{ _(subtopic.title, 'DB: products.Topic.title') }}
+                {{ pgettext('DB: products.Topic.title', subtopic.title) }}
               </a>
               {% if subtopic.title != subtopic.description %}
-                {{ _(subtopic.description, 'DB: products.Topic.description') }}
+                {{ pgettext('DB: products.Topic.description', subtopic.description) }}
               {% endif %}
             </li>
           {% endfor %}

@@ -161,7 +161,7 @@
   <div id="doc-watch">
     <button class="btn btn-submit popup-trigger" type="submit">
       <img src="{{ STATIC_URL }}sumo/img/blank.png" alt="" />
-      {{ _('Subscribe...', 'l10n dashboard') }}
+      {{ pgettext('l10n dashboard', 'Subscribe...') }}
     </button>
     <form class="popup-menu" action="" method="POST">
       {{ csrf() }}
@@ -198,7 +198,7 @@
       <option value="">{{ _('All Products') }}</option>
       {% for p in products %}
         <option value="{{ p.slug }}" {% if current == p %}selected="selected"{% endif %}>
-          {{ _(p.title, 'DB: products.Product.title') }}
+          {{ pgettext('DB: products.Product.title', p.title) }}
         </option>
       {% endfor %}
     </select>
@@ -214,7 +214,7 @@
         <span>{{ _('All Products') }}</span>
       {% else %}
         <img src="{{ STATIC_URL }}sumo/img/blank.png" class="logo-sprite small" style="{% if current.image %}background-image: url({{ current.sprite_url(retina=False) }}); background-position: -50px -{{ 50 + (current.image_offset * 148) }}px;{% else %}background-image: url({{ current.image_url }}){% endif %}" alt="" />
-        <span>{{ _(current.title, 'DB: products.Product.title') }}</span>
+        <span>{{ pgettext('DB: products.Product.title', current.title) }}</span>
       {% endif %}
     </div>
     <ul>
@@ -228,7 +228,7 @@
         <li {{ current|class_selected(p) }}>
           <a href="{{ url_|urlparams(product=p.slug, category=category) }}">
             <img src="{{ STATIC_URL }}sumo/img/blank.png" class="logo-sprite small" style="{% if p.image %}background-image: url({{ p.sprite_url(retina=False) }}); background-position: -50px -{{ 50 + (p.image_offset * 148) }}px;{% else %}background-image: url({{ p.image_url }}){% endif %}" alt="" />
-            <span>{{ _(p.title, 'DB: products.Product.title') }}</span>
+            <span>{{ pgettext('DB: products.Product.title', p.title) }}</span>
           </a>
         </li>
       {% endfor %}
@@ -242,7 +242,7 @@
       <option value="">{{ _('All Topics') }}</option>
       {% for t in topics %}
         <option value="{{ t.slug }}" {% if current == t %}selected="selected"{% endif %}>
-          {{ _(t.title, 'DB: products.Topic.title') }}
+          {{ pgettext('DB: products.Topic.title', t.title) }}
         </option>
       {% endfor %}
     </select>

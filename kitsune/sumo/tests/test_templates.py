@@ -107,7 +107,7 @@ class ErrorListTests(MockRequestTests):
         source = ("""{% from "layout/errorlist.html" import errorlist %}"""
                   """{{ errorlist(form) }}""")
         html = jingo.render_to_string(self.request,
-                                      jingo.env.from_string(source),
+                                      jingo.get_env().from_string(source),
                                       {'form': MockForm()})
         assert '<"evil&ness' not in html
         assert '&lt;&#34;evil&amp;ness-field&#34;&gt;' in html

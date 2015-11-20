@@ -12,11 +12,11 @@ from datetime import datetime
 from django.conf import settings
 from django.db import connections, router
 from django.utils.datastructures import SortedDict
+from django.utils.translation import ugettext as _, ugettext_lazy as _lazy
 
 import jingo
 from jinja2 import Markup
 from ordereddict import OrderedDict
-from tower import ugettext as _, ugettext_lazy as _lazy
 
 from kitsune.dashboards import LAST_30_DAYS, PERIODS
 from kitsune.questions.models import QuestionLocale

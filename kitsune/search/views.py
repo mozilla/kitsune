@@ -10,6 +10,7 @@ from django.http import (
 from django.shortcuts import render
 from django.utils.html import escape
 from django.utils.http import urlquote
+from django.utils.translation import ugettext as _, ugettext_lazy as _lazy, pgettext
 from django.views.decorators.cache import cache_page
 
 import bleach
@@ -18,7 +19,6 @@ from elasticutils.utils import format_explanation
 from elasticutils.contrib.django import ES_EXCEPTIONS
 from mobility.decorators import mobile_template
 from rest_framework.renderers import JSONRenderer
-from tower import ugettext as _, ugettext_lazy as _lazy
 
 from kitsune import search as constants
 from kitsune.forums.models import Forum, ThreadMappingType
@@ -190,7 +190,7 @@ def simple_search(request, template=None):
 
     product = Product.objects.filter(slug__in=cleaned['product'])
     if product:
-        product_titles = [_(p.title, 'DB: products.Product.title') for p in product]
+        product_titles = [pgettext('DB: products.Product.title', p.title) for p in product]
     else:
         product_titles = [_('All Products')]
 
@@ -535,7 +535,7 @@ def advanced_search(request, template=None):
 
     product = Product.objects.filter(slug__in=cleaned['product'])
     if product:
-        product_titles = [_(p.title, 'DB: products.Product.title') for p in product]
+        product_titles = [pgettext('DB: products.Product.title', p.title) for p in product]
     else:
         product_titles = [_('All Products')]
 

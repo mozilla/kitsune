@@ -13,7 +13,7 @@
 #     ./manage.py extract_db
 #
 #######################################################################
-from tower import ugettext as _
+from django.utils.translation import ugettext as _
 
 _("""Learn the Basics: get started""", "DB: products.Topic.title")
 _("""Learn all you need to know to get started with Firefox.""", "DB: products.Topic.description")

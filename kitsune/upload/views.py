@@ -4,10 +4,10 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import get_model
 from django.http import (HttpResponse, HttpResponseNotFound,
                          HttpResponseBadRequest, HttpResponseForbidden)
+from django.utils.translation import ugettext as _
 from django.views.decorators.clickjacking import xframe_options_sameorigin
 from django.views.decorators.http import require_POST
 
-from tower import ugettext as _
 
 from kitsune.access.decorators import login_required
 from kitsune.upload.models import ImageAttachment

@@ -3,8 +3,8 @@ import os
 
 from django.conf import settings
 from django.db import models
+from django.utils.translation import ugettext_lazy as _lazy
 from PIL import Image
-from tower import ugettext_lazy as _lazy
 from uuid import uuid4
 
 from kitsune.sumo.models import ModelBase

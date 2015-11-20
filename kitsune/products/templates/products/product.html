@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% from 'includes/common_macros.html' import for_contributors_sidebar %}
 {% from 'products/includes/topic_macros.html' import help_topics with context %}
-{% set crumbs = [(None, _(product.title, 'DB: products.Product.title'))] %}
+{% set crumbs = [(None, pgettext('DB: products.Product.title', product.title))] %}
 {% set styles = ('products',) %}
 {% set scripts = ('products',) %}
 {% set classes = 'product-landing' %}
@@ -17,14 +17,14 @@
 
 {% set extra_body_attrs = {'data-product-slug': product.slug} %}
 
-{% block title %}{{ _('{product} Help')|f(product=_(product.title, 'DB: products.Product.title')) }}{% endblock %}
+{% block title %}{{ _('{product} Help')|f(product=pgettext('DB: products.Product.title', product.title)) }}{% endblock %}
 
 {% block content %}
   <div class="grid_12">
     <h1 class="product-title cf">
       <img src="{{ STATIC_URL }}sumo/img/blank.png" alt="" class="logo-sprite"
         style="{% if product.image and product.image_offset %}background-image: url({{ product.sprite_url() }}); background-position: -100px -{{ 100 + (product.image_offset * 296) }}px;{% else %}background-image: url({{ product.image_url }}){% endif %}" />
-      {{ _(product.title, 'DB: products.Product.title') }}
+      {{ pgettext('DB: products.Product.title', product.title) }}
     </h1>
 
     {% if product.slug == 'firefox' %}

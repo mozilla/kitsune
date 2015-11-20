@@ -2,16 +2,15 @@ import json
 
 from django.contrib import messages as contrib_messages
 from django.contrib.auth.models import User
-from django.http import (HttpResponseRedirect, HttpResponse,
-                         HttpResponseBadRequest)
-from django.views.decorators.http import require_POST
+from django.http import HttpResponseRedirect, HttpResponse, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils.translation import ugettext as _, ungettext
+from django.views.decorators.http import require_POST
 
 from mobility.decorators import mobile_template
 from multidb.pinning import mark_as_write
 from kitsune.sumo.utils import is_ratelimited
 from statsd import statsd
-from tower import ugettext as _, ungettext
 
 from kitsune.access.decorators import login_required
 from kitsune.messages import MESSAGES_PER_PAGE

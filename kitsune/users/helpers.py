@@ -3,10 +3,10 @@ import urllib
 
 from django.conf import settings
 from django.utils.encoding import force_str
+from django.utils.translation import ugettext as _
 
 from jinja2 import escape, Markup
 from jingo import register
-from tower import ugettext as _
 
 from kitsune.sumo.helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse

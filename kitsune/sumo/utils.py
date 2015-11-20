@@ -10,7 +10,6 @@ from django.db.models.signals import pre_delete
 from django.utils import translation
 from django.utils.http import urlencode, is_safe_url
 
-import tower
 import ratelimit.helpers
 
 from kitsune.sumo import paginator
@@ -210,9 +209,9 @@ def uselocale(locale):
 
     """
     currlocale = translation.get_language()
-    tower.activate(locale)
+    translation.activate(locale)
     yield
-    tower.activate(currlocale)
+    translation.activate(currlocale)
 
 
 def rabbitmq_queue_size():

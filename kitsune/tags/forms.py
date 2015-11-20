@@ -6,9 +6,9 @@ from django.utils.datastructures import MultiValueDict, MergeDict
 from django.utils.encoding import force_unicode
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
+from django.utils.translation import ugettext as _
 
 from taggit.models import Tag
-from tower import ugettext as _
 
 
 # TODO: Factor out dependency on taggit so it can be a generic large-vocab

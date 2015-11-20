@@ -2,13 +2,13 @@ from django import forms
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import User
+from django.utils.translation import pgettext
 
 import pytz
 from rest_framework import fields, permissions, serializers
 from rest_framework.authentication import SessionAuthentication, CSRFCheck
 from rest_framework.exceptions import APIException, AuthenticationFailed
 from rest_framework.filters import BaseFilterBackend
-from tower import ugettext as _
 
 from kitsune.sumo.utils import uselocale
 from kitsune.sumo.urlresolvers import get_best_language
@@ -84,7 +84,7 @@ class LocalizedCharField(fields.CharField):
         if locale is None:
             return value
         with uselocale(locale):
-            return _(value, self.l10n_context)
+            return pgettext(self.l10n_context, value)
 
 
 class SplitSourceField(fields.Field):

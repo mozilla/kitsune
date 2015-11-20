@@ -8,7 +8,7 @@
 
 {% set classes = 'answers' %}
 
-{% set product_title = _(product.title, 'DB: products.Product.title') if product else _('All Products') %}
+{% set product_title = pgettext('DB: products.Product.title', product.title) if product else _('All Products') %}
 
 {# L10n: {q} is the title of the question. #}
 {% set title = _('{q} | {product} Support Forum')|f(q=question.title, product=product_title) %}
@@ -241,7 +241,7 @@
                 <div class="sidebox tight condensed">
                   <span class="title">{{ _('Product') }}</span>
                   {% if product %}
-                    <span class="detail">{{ _(product.title, 'DB: products.Product.title') }}</span>
+                    <span class="detail">{{ pgettext('DB: products.Product.title', product.title) }}</span>
                   {% endif %}
                   {% if user and user.has_perm('questions.change_question') %}
                     <select id="details-product" name="product">
@@ -258,7 +258,7 @@
                 <div class="sidebox tight condensed">
                   <span class="title">{{ _('Topic') }}</span>
                   {% if topic %}
-                    <span class="detail">{{ _(topic.title, 'DB: products.Topic.title') }}</span>
+                    <span class="detail">{{ pgettext('DB: products.Topic.title', topic.title) }}</span>
                   {% endif %}
                   {% if user and user.has_perm('questions.change_question') %}
                     <select id="details-topic" name="topic">

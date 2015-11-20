@@ -1,7 +1,8 @@
 from django.conf import settings
 from django.shortcuts import get_object_or_404
+from django.utils.translation import ugettext_lazy as _lazy
+
 from rest_framework import generics, serializers
-from tower import ugettext_lazy as _lazy
 
 from kitsune.products.models import Product, Topic, Platform
 from kitsune.sumo.api_utils import LocaleNegotiationMixin, LocalizedCharField, ImageUrlField

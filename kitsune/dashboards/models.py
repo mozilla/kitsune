@@ -4,8 +4,7 @@ from datetime import date, timedelta
 from django.conf import settings
 from django.db import connection, close_old_connections
 from django.db import models
-
-from tower import ugettext_lazy as _lazy
+from django.utils.translation import ugettext_lazy as _lazy
 
 from kitsune.dashboards import (LAST_7_DAYS, LAST_30_DAYS, LAST_90_DAYS,
                                 ALL_TIME, PERIODS)

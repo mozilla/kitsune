@@ -3,9 +3,9 @@ import logging
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.core.urlresolvers import reverse
+from django.utils.translation import ugettext as _
 
 from celery import task
-from tower import ugettext as _
 
 from kitsune.messages.models import InboxMessage
 from kitsune.sumo.decorators import timeit

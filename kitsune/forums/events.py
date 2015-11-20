@@ -1,7 +1,7 @@
 from django.contrib.sites.models import Site
+from django.utils.translation import ugettext_lazy as _lazy
 
 from tidings.events import InstanceEvent, EventUnion
-from tower import ugettext_lazy as _lazy
 
 from kitsune.forums.models import Thread, Forum
 from kitsune.sumo.email_utils import emails_with_users_and_watches

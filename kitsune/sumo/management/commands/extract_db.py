@@ -5,8 +5,6 @@ from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.db.models.loading import get_model
 
-from tower import strip_whitespace
-
 
 HEADER = """\
 #######################################################################
@@ -25,6 +23,8 @@ HEADER = """\
 #
 #######################################################################
 """
+
+L10N_STRING = u'pgettext("{context}", """{id}""")\n'
 
 
 class Command(BaseCommand):
@@ -79,7 +79,7 @@ class Command(BaseCommand):
                             # are super bad.
                             continue
                         msg = {
-                            'id': strip_whitespace(item[i]),
+                            'id': item[i],
                             'context': 'DB: %s.%s.%s' % (app, model, attrs[i]),
                             'comments': params.get('comments')}
                         strings.append(msg)
@@ -90,12 +90,11 @@ class Command(BaseCommand):
         print 'Outputting db strings to: {filename}'.format(filename=py_file)
         with open(py_file, 'w+') as f:
             f.write(HEADER)
-            f.write('from tower import ugettext as _\n\n')
+            f.write('from django.utils.translation import pgettext\n\n')
             for s in strings:
                 comments = s['comments']
                 if comments:
                     for c in comments:
                         f.write(u'# {comment}\n'.format(comment=c).encode('utf8'))
 
-                f.write(u'_("""{id}""", "{context}")\n'.format(id=s['id'], context=s['context'])
-                        .encode('utf8'))
+                f.write(L10N_STRING.format(id=s['id'], context=s['context']).encode('utf8'))

@@ -16,9 +16,9 @@ from django.db.models import Q
 from django.http import (HttpResponseRedirect, HttpResponse, Http404,
                          HttpResponseBadRequest, HttpResponseForbidden)
 from django.shortcuts import get_object_or_404, render, redirect
+from django.utils.translation import ugettext as _, ugettext_lazy as _lazy
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import (require_POST, require_GET,
-                                          require_http_methods)
+from django.views.decorators.http import require_POST, require_GET, require_http_methods
 
 import jingo
 import waffle
@@ -30,7 +30,6 @@ from statsd import statsd
 from taggit.models import Tag
 from tidings.events import ActivationRequestFailed
 from tidings.models import Watch
-from tower import ugettext as _, ugettext_lazy as _lazy
 
 from kitsune.access.decorators import permission_required, login_required
 from kitsune.community.utils import top_contributors_questions

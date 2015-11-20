@@ -15,6 +15,7 @@ from django.views.decorators.http import (require_http_methods, require_GET,
                                           require_POST)
 from django.shortcuts import get_object_or_404, render, redirect
 from django.utils.http import base36_to_int
+from django.utils.translation import ugettext as _
 
 # from axes.decorators import watch_login
 from mobility.decorators import mobile_template
@@ -22,7 +23,6 @@ from session_csrf import anonymous_csrf
 from statsd import statsd
 from tidings.models import Watch
 from tidings.tasks import claim_watches
-from tower import ugettext as _
 
 from kitsune import users as constants
 from kitsune.access.decorators import (

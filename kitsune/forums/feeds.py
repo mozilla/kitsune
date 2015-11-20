@@ -1,10 +1,8 @@
-from django.shortcuts import get_object_or_404
-from django.utils.html import strip_tags, escape
-
 from django.contrib.syndication.views import Feed
+from django.shortcuts import get_object_or_404
 from django.utils.feedgenerator import Atom1Feed
-
-from tower import ugettext as _
+from django.utils.html import strip_tags, escape
+from django.utils.translation import ugettext as _
 
 from kitsune import forums as constants
 from kitsune.forums.models import Forum, Thread
