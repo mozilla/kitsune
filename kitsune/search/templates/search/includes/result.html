@@ -21,8 +21,7 @@
                   result.num_votes)|f(n=result.num_votes) }}
         </li>
         <li>
-          {{ ngettext('1 new this week', '{n} new this week',
-                  result.num_votes_past_week)|f(n=result.num_votes_past_week) }}
+          Last updated {{ result.last_updated|timesince }}
         </li>
       </ul>{# .thread-meta #}
     {% endif %}

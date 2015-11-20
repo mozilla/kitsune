@@ -94,6 +94,7 @@ def build_results_list(pages, is_json):
             result = {
                 'title': doc['question_title'],
                 'type': 'question',
+                'last_updated': datetime.fromtimestamp(doc['updated']),
                 'is_solved': doc['question_is_solved'],
                 'num_answers': doc['question_num_answers'],
                 'num_votes': doc['question_num_votes'],
