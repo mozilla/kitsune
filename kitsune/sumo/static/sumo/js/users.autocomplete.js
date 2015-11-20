@@ -40,9 +40,9 @@
       resultsFormatter: function(item) {
         var term = $('#token-input-id_to').val();
         if (item.display_name) {
-          return k.safeInterpolate('<li><div class="name_search">%(display_name)s [%(username)s]</div></li>', item, true);
+          return k.safeInterpolate('<li><img src="%(avatar)s"/><div class="name_search">%(display_name)s [%(username)s]</div></li>', item, true);
         }
-        return k.safeInterpolate('<li><div class="name_search">%(username)s</div></li>', item, true);
+        return k.safeInterpolate('<li><img src="%(avatar)s"/><div class="name_search">%(username)s</div></li>', item, true);
       },
       onAdd: function (item) {
         $(this).closest('.single').closest('form').submit();
