@@ -11,9 +11,9 @@
   </form>
 {% endmacro %}
 
-{% macro aux_nav(user, hide_aaq_link=False) %}
+{% macro aux_nav(user, within_aaq_flow=False) %}
   {% if not settings.READ_ONLY %}
-    {% if not hide_aaq_link %}
+    {% if not within_aaq_flow %}
       {% if request.LANGUAGE_CODE in AAQ_LANGUAGES %}
         {% set ask_url = url('questions.aaq_step1') %}
       {% else %}
@@ -34,12 +34,14 @@
           <li><a href="{{ url('search')|urlparams(asked_by=user.username, a=1, w=2) }}">{{ _('My Questions') }}</a></li>
           <li><a href="{{ profile_url(user, edit=True) }}">{{ _('Edit Profile') }}</a></li>
           <li><a href="{{ url('users.edit_settings') }}">{{ _('Settings') }}</a></li>
+          {% if not within_aaq_flow %}
           <li>
             <form id="sign-out" action="{{ url('users.logout') }}" method="post">
               {{ csrf() }}
             </form>
             <a class="sign-out" data-type="submit" data-form="sign-out" href="#sign-out">{{ _('Sign Out') }}</a>
           </li>
+          {% endif %}
         </ul>
       </li>
       <li>
