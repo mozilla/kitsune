@@ -120,7 +120,7 @@
     _gaq.push(['_trackEvent', 'Instant Search', 'Search', $this.data('href')]);
     _gaq.push(['_trackPageview', $this.data('href')]);
 
-    cxhr.request($this.data('href'), {
+    cxhr.request(search.queryUrl(), {
       data: {format: 'json'},
       dataType: 'json',
       success: k.InstantSearchSettings.render
