@@ -135,7 +135,7 @@
       <div class="cf">
         <nav id="aux-nav" role="navigation">
           <ul>
-            {{ aux_nav(user, within_aaq_flow) }}
+            {{ aux_nav(user, hide_aaq_link, hide_signout_link) }}
             {% if not hide_locale_switcher %}
               <li><a href="{{ locale_picker_url }}" class="locale-picker">{{ settings.LANGUAGES_DICT[request.LANGUAGE_CODE.lower()] }}</a></li>
             {% endif %}

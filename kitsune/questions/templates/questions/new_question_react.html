@@ -6,6 +6,8 @@
 {% set title = _('Ask a Question') %}
 {% block breadcrumbs %}{% endblock %}
 
+{% set hide_signout_link = True %}
+
 {% block content %}
   {{ csrf() }}{# CSRF token for AJAX actions. #}
   <script type="application/json" class="data" name="products">{{ products_json|safe }}</script>
