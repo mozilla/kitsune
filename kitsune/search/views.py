@@ -266,6 +266,10 @@ def advanced_search(request, template=None):
     # 2. Build form.
     search_form = AdvancedSearchForm(r, auto_id=False)
     search_form.set_allowed_forums(request.user)
+    # get value for search input from last search term.
+    last_search = request.COOKIES.get(settings.LAST_SEARCH_COOKIE)
+    if last_search:
+    	r['q'] = urlquote(last_search)
 
     # 3. Validate request.
     # Note: a == 2 means "show the form"--that's all we use it for now.
