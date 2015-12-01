@@ -268,7 +268,7 @@ def advanced_search(request, template=None):
     search_form.set_allowed_forums(request.user)
     # get value for search input from last search term.
     last_search = request.COOKIES.get(settings.LAST_SEARCH_COOKIE)
-    if last_search:
+    if last_search and not 'q' in r:
     	r['q'] = urlquote(last_search)
 
     # 3. Validate request.
