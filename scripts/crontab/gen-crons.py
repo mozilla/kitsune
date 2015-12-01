@@ -14,7 +14,7 @@ def main():
                       help="Location of kitsune (required)")
     parser.add_option("-u", "--user",
                       help=("Prefix cron with this user. "
-                           "Only define for cron.d style crontabs"))
+                            "Only define for cron.d style crontabs"))
     parser.add_option("-p", "--python", default="python",
                       help="Python interpreter to use")
 
@@ -24,7 +24,7 @@ def main():
         parser.error("-k must be defined")
 
     ctx = {
-        'django': 'cd %s; source virtualenv/bin/activate; %s -W ignore::DeprecationWarning manage.py' % (
+        'django': 'cd %s; source virtualenv/bin/activate; %s manage.py' % (
             opts.kitsune, opts.python),
         'scripts': 'cd %s; source virtualenv/bin/activate; %s' % (
             opts.kitsune, opts.python),

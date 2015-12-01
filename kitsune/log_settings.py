@@ -84,3 +84,4 @@ else:
     )
 
 dictConfig(config)
+logging.captureWarnings(True)
