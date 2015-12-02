@@ -12,7 +12,7 @@ from datetime import datetime
 from django.conf import settings
 from django.db import connections, router
 from django.utils.datastructures import SortedDict
-from django.utils.translation import ugettext as _, ugettext_lazy as _lazy
+from django.utils.translation import ugettext as _, ugettext_lazy as _lazy, pgettext_lazy
 
 import jingo
 from jinja2 import Markup
@@ -851,7 +851,7 @@ class UnreviewedReadout(Readout):
     # docs in this locale that are not translations
     title = _lazy(u'Unreviewed Changes')
 
-    short_title = _lazy(u'Unreviewed', 'document')
+    short_title = pgettext_lazy('document', u'Unreviewed')
     details_link_text = _lazy(u'All articles requiring review...')
     slug = 'unreviewed'
     column4_label = _lazy(u'Changed')
@@ -913,7 +913,7 @@ class UnreviewedReadout(Readout):
 class UnhelpfulReadout(Readout):
     title = _lazy(u'Unhelpful Documents')
 
-    short_title = _lazy(u'Unhelpful', 'document')
+    short_title = pgettext_lazy('document', u'Unhelpful')
     details_link_text = _lazy(u'All unhelpful articles...')
     slug = 'unhelpful'
     column3_label = _lazy(u'Total Votes')

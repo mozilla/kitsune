@@ -10,7 +10,7 @@ from django.http import (
 from django.shortcuts import render
 from django.utils.html import escape
 from django.utils.http import urlquote
-from django.utils.translation import ugettext as _, ugettext_lazy as _lazy, pgettext
+from django.utils.translation import ugettext as _, pgettext, pgettext_lazy
 from django.views.decorators.cache import cache_page
 
 import bleach
@@ -40,7 +40,7 @@ from kitsune.wiki.models import DocumentMappingType
 log = logging.getLogger('k.search')
 
 
-EXCERPT_JOINER = _lazy(u'...', 'between search excerpts')
+EXCERPT_JOINER = pgettext_lazy('between search excerpts', u'...')
 
 
 def cache_control(resp, cache_period):

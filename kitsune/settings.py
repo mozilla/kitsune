@@ -594,7 +594,8 @@ def JINJA_CONFIG():
                              'jinja2.ext.with_',
                              'jinja2.ext.do',
                              'pipeline.jinja2.ext.PipelineExtension'],
-              'finalize': lambda x: x if x is not None else ''}
+              'finalize': lambda x: x if x is not None else '',
+              'autoescape': True,}
 
     return config
 
@@ -608,20 +609,15 @@ PUENTE = {
             ('kitsune/forums/**.html', 'ignore'),
             ('kitsune/**/tests/**.py', 'ignore'),
             ('kitsune/**/management/**.py', 'ignore'),
+            ('kitsune/forums/**.lhtml', 'ignore'),
 
+            ('**/templates/**.lhtml', 'jinja2'),
+            ('**/templates/**.ltxt', 'jinja2'),
             ('kitsune/**.py', 'python'),
             ('kitsune/**/templates/**.html', 'jinja2'),
             ('vendor/src/django-tidings/**/templates/**.html', 'jinja2'),
             ('vendor/src/django-badger/badger/*.py', 'python'),
             ('vendor/src/django-badger/badger/templatetags/*.py', 'python'),
-        ],
-        'lhtml': [
-            ('kitsune/forums/**.lhtml', 'ignore'),
-
-            ('**/templates/**.lhtml', 'jinja2')
-        ],
-        'ltxt': [
-            ('**/templates/**.ltxt', 'jinja2'),
         ],
         'javascript': [
             # We can't say **.js because that would dive into any libraries.
@@ -646,10 +642,6 @@ STANDALONE_DOMAINS = [
 
 STATICI18N_DOMAIN = 'javascript'
 STATICI18N_PACKAGES = ['kitsune.sumo']
-
-# If you have trouble extracting strings with Tower, try setting this
-# to True
-TOWER_ADD_HEADERS = True
 
 #
 # Django Pipline
