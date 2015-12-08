@@ -185,12 +185,12 @@ products = SortedDict([
         ])
     }),
 
-    ('signal', {
-        'name': _lazy(u'Signal'),
-        'subtitle': 'test',
+    ('focus', {
+        'name': _lazy(u'Focus by Firefox'),
+        'subtitle': 'Content blocker for Safari',
         'extra_fields': ['os'],
-        'tags': ['signal'],
-        'product': 'signal',
+        'tags': ['focus-firefox'],
+        'product': 'focus-firefox',
         'categories': SortedDict([
             ('get-started', {
                 'name': _lazy(u'Get started'),
