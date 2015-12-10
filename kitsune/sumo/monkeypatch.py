@@ -95,8 +95,4 @@ def patch():
     import session_csrf
     session_csrf.monkeypatch()
 
-    import jingo
-    from django.utils import translation
-    jingo.get_env().install_gettext_translations(translation, newstyle=True)
-
     _has_been_patched = True
