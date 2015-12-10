@@ -44,6 +44,7 @@ class TopUnhelpfulArticlesTests(TestCase):
 
     def test_old_articles(self):
         """Returns unhelpful votes within time range"""
+        # FIXME: this changed from 90 to 10. why?
         r = _make_backdated_revision(10)
 
         # Add 4 no votes 1.5 weeks ago

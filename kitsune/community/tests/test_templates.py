@@ -53,6 +53,7 @@ class LandingTests(ElasticTestCase):
 
     def test_top_contributors(self):
         """Verify the top contributors appear."""
+        # FIXME: Change this to batch creation
         RevisionFactory(document__locale='en-US')
         d = DocumentFactory(locale='es')
         RevisionFactory(document=d)

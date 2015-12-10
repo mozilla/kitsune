@@ -21,7 +21,7 @@ class TopContributorTests(ElasticTestCase):
         r1 = RevisionFactory(document=d)
         RevisionFactory(document=d, creator=r1.creator)
         RevisionFactory(document=d)
-        r4 = RevisionFactory(document=d, created=date.today()-timedelta(days=91))
+        r4 = RevisionFactory(document=d, created=date.today() - timedelta(days=91))
 
         self.refresh()
 
@@ -96,7 +96,7 @@ class TopContributorTests(ElasticTestCase):
         a1 = AnswerFactory(question__product=firefox)
         AnswerFactory(creator=a1.creator)
         AnswerFactory(question__product=fxos)
-        a4 = AnswerFactory(created=datetime.now()-timedelta(days=91))
+        a4 = AnswerFactory(created=datetime.now() - timedelta(days=91))
         AnswerFactory(creator=a1.creator, question__product=fxos)
         AnswerFactory(creator=a4.question.creator, question=a4.question)
 

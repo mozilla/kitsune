@@ -25,6 +25,7 @@ class TestAOABadges(TestCase):
             description=AOA_BADGE['description'].format(year=year))
 
         # Create 49 replies.
+        # FIXME: Do this as a batch
         for _ in range(49):
             ReplyFactory(user=u)
 

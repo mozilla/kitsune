@@ -91,7 +91,7 @@ class ForumModelTestCase(ForumTestCase):
         t = orig_post.thread
 
         # add a new post, then check that last_post is updated
-        new_post = PostFactory(thread=t, content="test")
+        new_post = PostFactory(thread=t, content='test')
         f = Forum.objects.get(id=t.forum_id)
         t = Thread.objects.get(id=t.id)
         eq_(f.last_post.id, new_post.id)
@@ -176,7 +176,7 @@ class ForumModelTestCase(ForumTestCase):
     def test_last_post_creator_deleted(self):
         """Delete the creator of the last post and verify forum survives."""
         # Create a post and verify it is the last one in the forum.
-        post = PostFactory(content="test")
+        post = PostFactory(content='test')
         forum = post.thread.forum
         eq_(forum.last_post.id, post.id)
 
@@ -195,8 +195,8 @@ class ThreadModelTestCase(ForumTestCase):
         last_post = f.last_post
 
         # add a new thread and post, verify last_post updated
-        t = ThreadFactory(title="test", forum=f, posts=[])
-        p = PostFactory(thread=t, content="test", author=t.creator)
+        t = ThreadFactory(title='test', forum=f, posts=[])
+        p = PostFactory(thread=t, content='test', author=t.creator)
         f = Forum.objects.get(id=f.id)
         eq_(f.last_post.id, p.id)
 

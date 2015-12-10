@@ -451,7 +451,6 @@ class TestWikiVideo(TestCase):
     def test_video_fallback_french(self):
         """English video is found in French."""
         p = WikiParser()
-        # self.test_video_english()
         v = VideoFactory()
         doc = pq(p.parse('[[V:%s]]' % v.title, locale='fr'))
         eq_('video', doc('div.video').attr('class'))

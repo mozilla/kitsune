@@ -79,6 +79,8 @@ class ProductViewsTestCase(ElasticTestCase):
         p = ProductFactory()
         t = TopicFactory(product=p)
         docs = []
+        # FIXME: Can't we do this with create_batch and build the document
+        # in the approvedrevisionfactory
         for i in range(3):
             doc = DocumentFactory(products=[p], topics=[t])
             ApprovedRevisionFactory(document=doc)

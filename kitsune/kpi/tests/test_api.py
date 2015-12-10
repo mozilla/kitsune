@@ -247,6 +247,7 @@ class KpiApiTests(TestCase):
             AnswerFactory(creator=u1)
         # A user with 9 answers
         u2 = UserFactory()
+        # FIXME: create_batch?
         for x in range(9):
             AnswerFactory(creator=u2)
         # A user with 1 answer

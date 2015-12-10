@@ -2697,7 +2697,7 @@ class RecentRevisionsTest(TestCaseBase):
         eq_(len(doc('#revisions-fragment ul li:not(.header)')), 1)
 
 
-# TODO: This should be a model maker subclass
+# TODO: This should be a factory subclass
 def _create_document(title='Test Document', parent=None, locale=settings.WIKI_DEFAULT_LANGUAGE,
                      doc_kwargs={}, rev_kwargs={}):
     d = DocumentFactory(

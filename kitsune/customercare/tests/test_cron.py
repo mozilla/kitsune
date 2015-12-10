@@ -131,6 +131,7 @@ class TwitterCronTestCase(TestCase):
 class GetOldestTweetTestCase(TestCase):
 
     def setUp(self):
+        # FIXME: Do this as a batch
         TweetFactory(tweet_id=1, locale='en', created=datetime(2010, 9, 23, 13, 50, 0))
         TweetFactory(tweet_id=2, locale='en', created=datetime(2010, 9, 23, 13, 53, 0))
         TweetFactory(tweet_id=3, locale='en', created=datetime(2010, 9, 23, 13, 57, 0))
