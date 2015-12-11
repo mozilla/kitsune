@@ -3,14 +3,13 @@ from datetime import date, timedelta
 import mock
 from nose.tools import eq_
 
-from kitsune.products.tests import product
+from kitsune.products.tests import ProductFactory
 from kitsune.sumo.tests import TestCase
-from kitsune.users.tests import user
-from kitsune.wiki.tests import revision, document
-from kitsune.wiki.utils import (BitlyUnauthorizedException,
-                                BitlyRateLimitException, BitlyException,
-                                active_contributors, num_active_contributors,
-                                generate_short_url)
+from kitsune.users.tests import UserFactory
+from kitsune.wiki.tests import RevisionFactory, DocumentFactory
+from kitsune.wiki.utils import (
+    BitlyUnauthorizedException, BitlyRateLimitException, BitlyException, active_contributors,
+    num_active_contributors, generate_short_url)
 
 from django.test.utils import override_settings
 
@@ -27,27 +26,26 @@ class ActiveContributorsTestCase(TestCase):
         # Create some revisions to test with.
 
         # 3 'en-US' contributors:
-        d = document(locale='en-US', save=True)
-        u = user(save=True)
+        d = DocumentFactory(locale='en-US')
+        u = UserFactory()
         self.user = u
-        revision(document=d, is_approved=True, reviewer=u, save=True)
-        revision(document=d, creator=u, save=True)
+        RevisionFactory(document=d, is_approved=True, reviewer=u)
+        RevisionFactory(document=d, creator=u)
 
-        self.product = product(save=True)
-        r = revision(created=start_date, save=True)
-        r.document.products.add(self.product)
+        self.product = ProductFactory()
+        RevisionFactory(created=start_date, document__products=[self.product])
 
         # Add one that shouldn't count:
-        self.en_us_old = revision(document=d, created=before_start, save=True)
+        self.en_us_old = RevisionFactory(document=d, created=before_start)
 
         # 4 'es' contributors:
-        d = document(locale='es', save=True)
-        revision(document=d, is_approved=True, reviewer=u, save=True)
-        revision(document=d, creator=u, reviewer=user(save=True), save=True)
-        revision(document=d, created=start_date, save=True)
-        revision(document=d, save=True)
+        d = DocumentFactory(locale='es')
+        RevisionFactory(document=d, is_approved=True, reviewer=u)
+        RevisionFactory(document=d, creator=u, reviewer=UserFactory())
+        RevisionFactory(document=d, created=start_date)
+        RevisionFactory(document=d)
         # Add one that shouldn't count:
-        self.es_old = revision(document=d, created=before_start, save=True)
+        self.es_old = RevisionFactory(document=d, created=before_start)
 
     def test_active_contributors(self):
         """Test the active_contributors util method."""
@@ -80,12 +78,9 @@ class ActiveContributorsTestCase(TestCase):
         eq_(3, num_active_contributors(from_date=start_date, locale='en-US'))
         eq_(4, num_active_contributors(from_date=start_date, locale='es'))
         eq_(6, num_active_contributors(from_date=start_date))
-        eq_(1, num_active_contributors(
-            from_date=start_date, product=self.product))
-        eq_(1, num_active_contributors(
-            from_date=start_date, locale='en-US', product=self.product))
-        eq_(0, num_active_contributors(
-            from_date=start_date, locale='es', product=self.product))
+        eq_(1, num_active_contributors(from_date=start_date, product=self.product))
+        eq_(1, num_active_contributors(from_date=start_date, locale='en-US', product=self.product))
+        eq_(0, num_active_contributors(from_date=start_date, locale='es', product=self.product))
 
 
 @override_settings(BITLY_LOGIN='test', BITLY_API_KEY='test-apikey')

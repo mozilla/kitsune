@@ -20,14 +20,14 @@ from kitsune.questions.models import (
     AlreadyTakenException)
 from kitsune.questions.tasks import update_answer_pages
 from kitsune.questions.tests import (
-    TestCaseBase, tags_eq, question, answer, questionvote)
+    TestCaseBase, tags_eq, QuestionFactory, AnswerFactory, QuestionVoteFactory)
 from kitsune.questions import config
 from kitsune.sumo import googleanalytics
 from kitsune.sumo.tests import TestCase
-from kitsune.tags.tests import tag
+from kitsune.tags.tests import TagFactory
 from kitsune.tags.utils import add_existing_tag
-from kitsune.users.tests import user
-from kitsune.wiki.tests import translated_revision
+from kitsune.users.tests import UserFactory
+from kitsune.wiki.tests import TranslatedRevisionFactory
 
 
 class TestAnswer(TestCaseBase):
@@ -36,14 +36,13 @@ class TestAnswer(TestCaseBase):
     def test_new_answer_updates_question(self):
         """Test saving a new answer updates the corresponding question.
         Specifically, last_post and num_replies should update."""
-        q = question(title='Test Question', content='Lorem Ipsum Dolor',
-                     save=True)
+        q = QuestionFactory(title='Test Question', content='Lorem Ipsum Dolor')
         updated = q.updated
 
         eq_(0, q.num_answers)
         eq_(None, q.last_answer)
 
-        a = answer(question=q, content='Test Answer', save=True)
+        a = AnswerFactory(question=q, content='Test Answer')
         a.save()
 
         q = Question.objects.get(pk=q.id)
@@ -53,10 +52,9 @@ class TestAnswer(TestCaseBase):
 
     def test_delete_question_removes_flag(self):
         """Deleting a question also removes the flags on that question."""
-        q = question(title='Test Question', content='Lorem Ipsum Dolor',
-                     save=True)
+        q = QuestionFactory(title='Test Question', content='Lorem Ipsum Dolor')
 
-        u = user(save=True)
+        u = UserFactory()
         FlaggedObject.objects.create(
             status=0, content_object=q, reason='language', creator_id=u.id)
         eq_(1, FlaggedObject.objects.count())
@@ -66,12 +64,11 @@ class TestAnswer(TestCaseBase):
 
     def test_delete_answer_removes_flag(self):
         """Deleting an answer also removes the flags on that answer."""
-        q = question(title='Test Question', content='Lorem Ipsum Dolor',
-                     save=True)
+        q = QuestionFactory(title='Test Question', content='Lorem Ipsum Dolor')
 
-        a = answer(question=q, content='Test Answer', save=True)
+        a = AnswerFactory(question=q, content='Test Answer')
 
-        u = user(save=True)
+        u = UserFactory()
         FlaggedObject.objects.create(
             status=0, content_object=a, reason='language', creator_id=u.id)
         eq_(1, FlaggedObject.objects.count())
@@ -83,11 +80,11 @@ class TestAnswer(TestCaseBase):
         """Deleting the last_answer of a Question should update the question.
         """
         yesterday = datetime.now() - timedelta(days=1)
-        q = answer(created=yesterday, save=True).question
+        q = AnswerFactory(created=yesterday).question
         last_answer = q.last_answer
 
         # add a new answer and verify last_answer updated
-        a = answer(question=q, content='Test Answer', save=True)
+        a = AnswerFactory(question=q, content='Test Answer')
         q = Question.objects.get(pk=q.id)
 
         eq_(q.last_answer.id, a.id)
@@ -102,7 +99,7 @@ class TestAnswer(TestCaseBase):
         """Deleting the solution of a Question should update the question.
         """
         # set a solution to the question
-        q = answer(save=True).question
+        q = AnswerFactory().question
         solution = q.last_answer
         q.solution = solution
         q.save()
@@ -113,7 +110,7 @@ class TestAnswer(TestCaseBase):
         eq_(q.solution, None)
 
     def test_update_page_task(self):
-        a = answer(save=True)
+        a = AnswerFactory()
         a.page = 4
         a.save()
         a = Answer.objects.get(pk=a.id)
@@ -123,9 +120,9 @@ class TestAnswer(TestCaseBase):
         assert a.page == 1
 
     def test_delete_updates_pages(self):
-        a1 = answer(save=True)
-        a2 = answer(question=a1.question, save=True)
-        answer(question=a1.question, save=True)
+        a1 = AnswerFactory()
+        a2 = AnswerFactory(question=a1.question)
+        AnswerFactory(question=a1.question)
         a1.page = 7
         a1.save()
         a2.delete()
@@ -133,15 +130,15 @@ class TestAnswer(TestCaseBase):
         assert a3.page == 1, "Page was %s" % a3.page
 
     def test_creator_num_answers(self):
-        a = answer(save=True)
+        a = AnswerFactory()
 
         eq_(a.creator_num_answers, 1)
 
-        answer(creator=a.creator, save=True)
+        AnswerFactory(creator=a.creator)
         eq_(a.creator_num_answers, 2)
 
     def test_creator_num_solutions(self):
-        a = answer(save=True)
+        a = AnswerFactory()
         q = a.question
 
         q.solution = a
@@ -151,18 +148,17 @@ class TestAnswer(TestCaseBase):
 
     def test_content_parsed_with_locale(self):
         """Make sure links to localized articles work."""
-        rev = translated_revision(locale='es', is_approved=True, save=True)
-        doc = rev.document
-        doc.title = u'Un mejor título'
-        doc.save()
+        rev = TranslatedRevisionFactory(
+            is_approved=True,
+            document__title=u'Un mejor títuolo',
+            document__locale='es')
 
-        q = question(locale='es', save=True)
-        a = answer(question=q, content='[[%s]]' % doc.title, save=True)
+        a = AnswerFactory(question__locale='es', content=u'[[%s]]' % rev.document.title)
 
-        assert 'es/kb/%s' % doc.slug in a.content_parsed
+        assert 'es/kb/%s' % rev.document.slug in a.content_parsed
 
     def test_creator_follows(self):
-        a = answer(save=True)
+        a = AnswerFactory()
         follows = Follow.objects.filter(user=a.creator)
 
         # It's a pain to filter this from the DB, since follow_object is a
@@ -182,8 +178,7 @@ class TestQuestionMetadata(TestCaseBase):
         super(TestQuestionMetadata, self).setUp()
 
         # add a new Question to test with
-        self.question = question(
-            title='Test Question', content='Lorem Ipsum Dolor', save=True)
+        self.question = QuestionFactory(title='Test Question', content='Lorem Ipsum Dolor')
 
     def test_add_metadata(self):
         """Test the saving of metadata."""
@@ -278,14 +273,14 @@ class QuestionTests(TestCaseBase):
 
     def test_save_updated(self):
         """Saving with the `update` option should update `updated`."""
-        q = question(save=True)
+        q = QuestionFactory()
         updated = q.updated
         q.save(update=True)
         self.assertNotEqual(updated, q.updated)
 
     def test_save_no_update(self):
         """Saving without the `update` option shouldn't update `updated`."""
-        q = question(save=True)
+        q = QuestionFactory()
         updated = q.updated
         q.save()
         eq_(updated, q.updated)
@@ -302,15 +297,15 @@ class QuestionTests(TestCaseBase):
     def test_notification_created(self):
         """Creating a new question auto-watches it for answers."""
 
-        u = user(save=True)
-        q = question(creator=u, title='foo', content='bar', save=True)
+        u = UserFactory()
+        q = QuestionFactory(creator=u, title='foo', content='bar')
 
         assert QuestionReplyEvent.is_notifying(u, q)
 
     def test_no_notification_on_update(self):
         """Saving an existing question does not watch it."""
 
-        q = question(save=True)
+        q = QuestionFactory()
         QuestionReplyEvent.stop_notifying(q.creator, q)
         assert not QuestionReplyEvent.is_notifying(q.creator, q)
 
@@ -318,7 +313,7 @@ class QuestionTests(TestCaseBase):
         assert not QuestionReplyEvent.is_notifying(q.creator, q)
 
     def test_is_solved_property(self):
-        a = answer(save=True)
+        a = AnswerFactory()
         q = a.question
         assert not q.is_solved
         q.solution = a
@@ -329,12 +324,12 @@ class QuestionTests(TestCaseBase):
         """Verify recent_asked_count and recent unanswered count."""
         # create a question for each of past 4 days
         now = datetime.now()
-        question(created=now, save=True)
-        question(created=now - timedelta(hours=12), save=True, is_locked=True)
-        q = question(created=now - timedelta(hours=23), save=True)
-        answer(question=q, save=True)
+        QuestionFactory(created=now)
+        QuestionFactory(created=now - timedelta(hours=12), is_locked=True)
+        q = QuestionFactory(created=now - timedelta(hours=23))
+        AnswerFactory(question=q)
         # 25 hours instead of 24 to avoid random test fails.
-        question(created=now - timedelta(hours=25), save=True)
+        QuestionFactory(created=now - timedelta(hours=25))
 
         # Only 3 are recent from last 72 hours, 1 has an answer.
         eq_(3, Question.recent_asked_count())
@@ -345,14 +340,14 @@ class QuestionTests(TestCaseBase):
         respect filters passed."""
 
         now = datetime.now()
-        question(created=now, locale='en-US', save=True)
-        q = question(created=now, locale='en-US', save=True)
-        answer(question=q, save=True)
+        QuestionFactory(created=now, locale='en-US')
+        q = QuestionFactory(created=now, locale='en-US')
+        AnswerFactory(question=q)
 
-        question(created=now, locale='pt-BR', save=True)
-        question(created=now, locale='pt-BR', save=True)
-        q = question(created=now, locale='pt-BR', save=True)
-        answer(question=q, save=True)
+        QuestionFactory(created=now, locale='pt-BR')
+        QuestionFactory(created=now, locale='pt-BR')
+        q = QuestionFactory(created=now, locale='pt-BR')
+        AnswerFactory(question=q)
 
         # 5 asked recently, 3 are unanswered
         eq_(5, Question.recent_asked_count())
@@ -370,7 +365,7 @@ class QuestionTests(TestCaseBase):
 
     def test_from_url(self):
         """Verify question returned from valid URL."""
-        q = question(save=True)
+        q = QuestionFactory()
 
         eq_(q, Question.from_url('/en-US/questions/%s' % q.id))
         eq_(q, Question.from_url('/es/questions/%s' % q.id))
@@ -385,7 +380,7 @@ class QuestionTests(TestCaseBase):
 
     def test_from_invalid_url(self):
         """Verify question returned from valid URL."""
-        q = question(save=True)
+        q = QuestionFactory()
 
         eq_(None, Question.from_url('/en-US/questions/%s/edit' % q.id))
         eq_(None, Question.from_url('/en-US/kb/%s' % q.id))
@@ -393,7 +388,7 @@ class QuestionTests(TestCaseBase):
         eq_(None, Question.from_url('/en-US/questions/dashboard/metrics'))
 
     def test_editable(self):
-        q = question(save=True)
+        q = QuestionFactory()
         assert q.editable  # unlocked/unarchived
         q.is_archived = True
         assert not q.editable  # unlocked/archived
@@ -409,8 +404,8 @@ class QuestionTests(TestCaseBase):
         ten_days_ago = now - timedelta(days=10)
         thirty_seconds_ago = now - timedelta(seconds=30)
 
-        q1 = question(created=ten_days_ago, save=True)
-        q2 = question(created=thirty_seconds_ago, save=True)
+        q1 = QuestionFactory(created=ten_days_ago)
+        q2 = QuestionFactory(created=thirty_seconds_ago)
 
         # This test relies on datetime.now() being called in the age
         # property, so this delta check makes it less likely to fail
@@ -420,8 +415,8 @@ class QuestionTests(TestCaseBase):
         assert abs(q2.age - 30) < 2, 'q2.age (%s) != 30 seconds' % q2.age
 
     def test_is_taken(self):
-        q = question(save=True)
-        u = user(save=True)
+        q = QuestionFactory()
+        u = UserFactory()
         eq_(q.is_taken, False)
 
         q.taken_by = u
@@ -435,50 +430,50 @@ class QuestionTests(TestCaseBase):
         eq_(q.is_taken, False)
 
     def test_take(self):
-        u = user(save=True)
-        q = question(save=True)
+        u = UserFactory()
+        q = QuestionFactory()
         q.take(u)
         eq_(q.taken_by, u)
         ok_(q.taken_until is not None)
 
     @raises(InvalidUserException)
     def test_take_creator(self):
-        q = question(save=True)
+        q = QuestionFactory()
         q.take(q.creator)
 
     @raises(AlreadyTakenException)
     def test_take_twice_fails(self):
-        u1 = user(save=True)
-        u2 = user(save=True)
-        q = question(save=True)
+        u1 = UserFactory()
+        u2 = UserFactory()
+        q = QuestionFactory()
         q.take(u1)
         q.take(u2)
 
     def test_take_twice_same_user_refreshes_time(self):
-        u = user(save=True)
+        u = UserFactory()
         first_taken_until = datetime.now() - timedelta(minutes=5)
-        q = question(taken_by=u, taken_until=first_taken_until, save=True)
+        q = QuestionFactory(taken_by=u, taken_until=first_taken_until)
         q.take(u)
         ok_(q.taken_until > first_taken_until)
 
     def test_take_twice_forced(self):
-        u1 = user(save=True)
-        u2 = user(save=True)
-        q = question(save=True)
+        u1 = UserFactory()
+        u2 = UserFactory()
+        q = QuestionFactory()
         q.take(u1)
         q.take(u2, force=True)
         eq_(q.taken_by, u2)
 
     def test_taken_until_is_set(self):
-        u = user(save=True)
-        q = question(save=True)
+        u = UserFactory()
+        q = QuestionFactory()
         q.take(u)
         assert q.taken_until > datetime.now()
 
     def test_is_taken_clears(self):
-        u = user(save=True)
+        u = UserFactory()
         taken_until = datetime.now() - timedelta(seconds=30)
-        q = question(taken_by=u, taken_until=taken_until, save=True)
+        q = QuestionFactory(taken_by=u, taken_until=taken_until)
         # Testin q.is_taken should clear out ``taken_by`` and ``taken_until``,
         # since taken_until is in the past.
         eq_(q.is_taken, False)
@@ -486,7 +481,7 @@ class QuestionTests(TestCaseBase):
         eq_(q.taken_until, None)
 
     def test_creator_follows(self):
-        q = question(save=True)
+        q = QuestionFactory()
         f = Follow.objects.get(user=q.creator)
         eq_(f.follow_object, q)
         eq_(f.actor_only, False)
@@ -497,7 +492,7 @@ class AddExistingTagTests(TestCaseBase):
 
     def setUp(self):
         super(AddExistingTagTests, self).setUp()
-        self.untagged_question = question(save=True)
+        self.untagged_question = QuestionFactory()
 
     def test_tags_manager(self):
         """Make sure the TaggableManager exists.
@@ -509,7 +504,7 @@ class AddExistingTagTests(TestCaseBase):
 
     def test_add_existing_case_insensitive(self):
         """Assert add_existing_tag works case-insensitively."""
-        tag(name='lemon', slug='lemon', save=True)
+        TagFactory(name='lemon', slug='lemon')
         add_existing_tag('LEMON', self.untagged_question.tags)
         tags_eq(self.untagged_question, [u'lemon'])
 
@@ -524,18 +519,16 @@ class OldQuestionsArchiveTest(ElasticTestCase):
         last_updated = datetime.now() - timedelta(days=100)
 
         # created just now
-        q1 = question(save=True)
+        q1 = QuestionFactory()
 
         # created 200 days ago
-        q2 = question(created=(datetime.now() - timedelta(days=200)),
-                      updated=last_updated,
-                      save=True)
+        q2 = QuestionFactory(created=datetime.now() - timedelta(days=200), updated=last_updated)
 
         # created 200 days ago, already archived
-        q3 = question(created=(datetime.now() - timedelta(days=200)),
-                      is_archived=True,
-                      updated=last_updated,
-                      save=True)
+        q3 = QuestionFactory(
+            created=datetime.now() - timedelta(days=200),
+            is_archived=True,
+            updated=last_updated)
 
         self.refresh()
 
@@ -565,9 +558,9 @@ class QuestionVisitsTests(TestCase):
     def test_visit_count_from_analytics(self, pageviews_by_question,
                                         close_old_connections):
         """Verify stored visit counts from mocked data."""
-        q1 = question(save=True)
-        q2 = question(save=True)
-        q3 = question(save=True)
+        q1 = QuestionFactory()
+        q2 = QuestionFactory()
+        q3 = QuestionFactory()
 
         pageviews_by_question.return_value = {
             q1.id: 42,
@@ -597,7 +590,7 @@ class QuestionVisitsTests(TestCase):
 
 class QuestionVoteTests(TestCase):
     def test_add_metadata_over_1000_chars(self):
-        qv = questionvote(save=True)
+        qv = QuestionVoteFactory()
         qv.add_metadata('test1', 'a'*1001)
         metadata = VoteMetadata.objects.all()[0]
         eq_('a'*1000, metadata.value)
@@ -607,7 +600,7 @@ class TestActions(TestCase):
 
     def test_question_create_action(self):
         """When a question is created, an Action is created too."""
-        q = question(save=True)
+        q = QuestionFactory()
         a = Action.objects.action_object(q).get()
         eq_(a.actor, q.creator)
         eq_(a.verb, 'asked')
@@ -615,8 +608,8 @@ class TestActions(TestCase):
 
     def test_answer_create_action(self):
         """When an answer is created, an Action is created too."""
-        q = question(save=True)
-        ans = answer(question=q, save=True)
+        q = QuestionFactory()
+        ans = AnswerFactory(question=q)
         act = Action.objects.action_object(ans).get()
         eq_(act.actor, ans.creator)
         eq_(act.verb, 'answered')
@@ -624,21 +617,21 @@ class TestActions(TestCase):
 
     def test_question_change_no_action(self):
         """When a question is changed, no Action should be created."""
-        q = question(save=True)
+        q = QuestionFactory()
         Action.objects.all().delete()
         q.save()  # trigger another post_save hook
         eq_(Action.objects.count(), 0)
 
     def test_answer_change_no_action(self):
         """When an answer is changed, no Action should be created."""
-        q = question(save=True)
+        q = QuestionFactory()
         Action.objects.all().delete()
         q.save()  # trigger another post_save hook
         eq_(Action.objects.count(), 0)
 
     def test_question_solved_makes_action(self):
         """When an answer is marked as the solution to a question, an Action should be created."""
-        ans = answer(save=True)
+        ans = AnswerFactory()
         Action.objects.all().delete()
         ans.question.set_solution(ans, ans.question.creator)
 

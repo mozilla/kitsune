@@ -11,7 +11,7 @@ from pyquery import PyQuery as pq
 
 from kitsune.questions.models import Question
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.users.tests import user
+from kitsune.users.tests import UserFactory
 
 
 class ReadOnlyModeTest(TestCase):
@@ -19,7 +19,7 @@ class ReadOnlyModeTest(TestCase):
 
     def setUp(self):
         # This has to be done before the db goes into read only mode.
-        self.user = user(save=True, password='testpass')
+        self.user = UserFactory(password='testpass')
 
         models.signals.pre_save.connect(self.db_error)
         models.signals.pre_delete.connect(self.db_error)

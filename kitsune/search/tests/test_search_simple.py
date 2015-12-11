@@ -7,13 +7,13 @@ import jingo
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 
-from kitsune.forums.tests import post, thread
-from kitsune.products.tests import product
-from kitsune.questions.tests import question, answer, answervote
+from kitsune.forums.tests import PostFactory, ThreadFactory
+from kitsune.products.tests import ProductFactory
+from kitsune.questions.tests import QuestionFactory, AnswerFactory, AnswerVoteFactory
 from kitsune.search.tests.test_es import ElasticTestCase
 from kitsune.sumo.tests import LocalizingClient
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.wiki.tests import document, revision
+from kitsune.wiki.tests import DocumentFactory, ApprovedRevisionFactory, RevisionFactory
 
 
 def render(s, context):
@@ -84,13 +84,12 @@ class SimpleSearchTests(ElasticTestCase):
 
     def test_page_invalid(self):
         """Ensure non-integer param doesn't throw exception."""
-        doc = document(
+        doc = DocumentFactory(
             title=u'How to fix your audio',
             locale=u'en-US',
             category=10,
-            save=True)
-        doc.tags.add(u'desktop')
-        revision(document=doc, is_approved=True, save=True)
+            tags=u'desktop')
+        ApprovedRevisionFactory(document=doc)
 
         self.refresh()
 
@@ -104,10 +103,9 @@ class SimpleSearchTests(ElasticTestCase):
 
     def test_clean_question_excerpt(self):
         """Ensure we clean html out of question excerpts."""
-        q = question(title='audio',
-                     content='<script>alert("hacked");</script>', save=True)
-        a = answer(question=q, save=True)
-        answervote(answer=a, helpful=True, save=True)
+        q = QuestionFactory(title='audio', content='<script>alert("hacked");</script>')
+        a = AnswerFactory(question=q)
+        AnswerVoteFactory(answer=a, helpful=True)
 
         self.refresh()
 
@@ -119,9 +117,9 @@ class SimpleSearchTests(ElasticTestCase):
 
     def test_ga_zero_results_event(self):
         """If there are no results, verify ga-push data attr on body."""
-        doc = document(title=u'audio', locale=u'en-US', category=10, save=True)
-        doc.products.add(product(title=u'firefox', slug=u'desktop', save=True))
-        revision(document=doc, is_approved=True, save=True)
+        doc = DocumentFactory(title=u'audio', locale=u'en-US', category=10)
+        doc.products.add(ProductFactory(title=u'firefox', slug=u'desktop'))
+        RevisionFactory(document=doc, is_approved=True)
 
         self.refresh()
 
@@ -139,15 +137,11 @@ class SimpleSearchTests(ElasticTestCase):
 
     def test_fallback_for_zero_results(self):
         """If there are no results, fallback to a list of top articles."""
-        firefox = product(title=u'firefox', slug=u'desktop', save=True)
-        doc = document(title=u'audio1', locale=u'en-US', category=10,
-                       save=True)
-        doc.products.add(firefox)
-        revision(document=doc, is_approved=True, save=True)
-        doc = document(title=u'audio2', locale=u'en-US', category=10,
-                       save=True)
-        doc.products.add(firefox)
-        revision(document=doc, is_approved=True, save=True)
+        firefox = ProductFactory(title=u'firefox', slug=u'desktop')
+        doc = DocumentFactory(title=u'audio1', locale=u'en-US', category=10, products=[firefox])
+        RevisionFactory(document=doc, is_approved=True)
+        doc = DocumentFactory(title=u'audio2', locale=u'en-US', category=10, products=[firefox])
+        RevisionFactory(document=doc, is_approved=True)
 
         self.refresh()
 
@@ -179,10 +173,10 @@ class SimpleSearchTests(ElasticTestCase):
 
     def test_empty_pages(self):
         """Tests requesting a page that has no results"""
-        ques = question(title=u'audio', save=True)
+        ques = QuestionFactory(title=u'audio')
         ques.tags.add(u'desktop')
-        ans = answer(question=ques, content=u'volume', save=True)
-        answervote(answer=ans, helpful=True, save=True)
+        ans = AnswerFactory(question=ques, content=u'volume')
+        AnswerVoteFactory(answer=ans, helpful=True)
 
         self.refresh()
 
@@ -200,10 +194,10 @@ class SimpleSearchTests(ElasticTestCase):
         # Create a question with an answer with an answervote that
         # marks the answer as helpful.  The question should have the
         # "desktop" tag.
-        p = product(title=u'firefox', slug=u'desktop', save=True)
-        ques = question(title=u'audio', product=p, save=True)
-        ans = answer(question=ques, content=u'volume', save=True)
-        answervote(answer=ans, helpful=True, save=True)
+        p = ProductFactory(title=u'firefox', slug=u'desktop')
+        ques = QuestionFactory(title=u'audio', product=p)
+        ans = AnswerFactory(question=ques, content=u'volume')
+        AnswerVoteFactory(answer=ans, helpful=True)
 
         self.refresh()
 
@@ -238,9 +232,9 @@ class SimpleSearchTests(ElasticTestCase):
         Bug #709202.
 
         """
-        doc = document(title=u'audio', locale=u'en-US', category=10, save=True)
-        doc.products.add(product(title=u'firefox', slug=u'desktop', save=True))
-        revision(document=doc, is_approved=True, save=True)
+        doc = DocumentFactory(title=u'audio', locale=u'en-US', category=10)
+        doc.products.add(ProductFactory(title=u'firefox', slug=u'desktop'))
+        RevisionFactory(document=doc, is_approved=True)
 
         self.refresh()
 
@@ -267,17 +261,17 @@ class SimpleSearchTests(ElasticTestCase):
         Bug #767394
 
         """
-        p = product(slug=u'desktop', save=True)
-        ques = question(title=u'audio', product=p, save=True)
-        ans = answer(question=ques, content=u'volume', save=True)
-        answervote(answer=ans, helpful=True, save=True)
+        p = ProductFactory(slug=u'desktop')
+        ques = QuestionFactory(title=u'audio', product=p)
+        ans = AnswerFactory(question=ques, content=u'volume')
+        AnswerVoteFactory(answer=ans, helpful=True)
 
-        doc = document(title=u'audio', locale=u'en-US', category=10, save=True)
+        doc = DocumentFactory(title=u'audio', locale=u'en-US', category=10)
         doc.products.add(p)
-        revision(document=doc, is_approved=True, save=True)
+        RevisionFactory(document=doc, is_approved=True)
 
-        thread1 = thread(title=u'audio', save=True)
-        post(thread=thread1, save=True)
+        thread1 = ThreadFactory(title=u'audio')
+        PostFactory(thread=thread1)
 
         self.refresh()
 
@@ -307,16 +301,16 @@ class SimpleSearchTests(ElasticTestCase):
         eq_(content['total'], 0)
 
     def test_filter_by_product(self):
-        desktop = product(slug=u'desktop', save=True)
-        mobile = product(slug=u'mobile', save=True)
-        ques = question(title=u'audio', product=desktop, save=True)
-        ans = answer(question=ques, content=u'volume', save=True)
-        answervote(answer=ans, helpful=True, save=True)
+        desktop = ProductFactory(slug=u'desktop')
+        mobile = ProductFactory(slug=u'mobile')
+        ques = QuestionFactory(title=u'audio', product=desktop)
+        ans = AnswerFactory(question=ques, content=u'volume')
+        AnswerVoteFactory(answer=ans, helpful=True)
 
-        doc = document(title=u'audio', locale=u'en-US', category=10, save=True)
+        doc = DocumentFactory(title=u'audio', locale=u'en-US', category=10)
         doc.products.add(desktop)
         doc.products.add(mobile)
-        revision(document=doc, is_approved=True, save=True)
+        RevisionFactory(document=doc, is_approved=True)
 
         self.refresh()
 
@@ -334,19 +328,16 @@ class SimpleSearchTests(ElasticTestCase):
         eq_(content['total'], 1)
 
     def test_filter_by_doctype(self):
-        desktop = product(slug=u'desktop', save=True)
-        ques = question(title=u'audio', product=desktop, save=True)
-        ans = answer(question=ques, content=u'volume', save=True)
-        answervote(answer=ans, helpful=True, save=True)
+        desktop = ProductFactory(slug=u'desktop')
+        ques = QuestionFactory(title=u'audio', product=desktop)
+        ans = AnswerFactory(question=ques, content=u'volume')
+        AnswerVoteFactory(answer=ans, helpful=True)
 
-        doc = document(title=u'audio', locale=u'en-US', category=10, save=True)
-        doc.products.add(desktop)
-        revision(document=doc, is_approved=True, save=True)
+        doc = DocumentFactory(title=u'audio', locale=u'en-US', category=10, products=[desktop])
+        RevisionFactory(document=doc, is_approved=True)
 
-        doc = document(
-            title=u'audio too', locale=u'en-US', category=10, save=True)
-        doc.products.add(desktop)
-        revision(document=doc, is_approved=True, save=True)
+        doc = DocumentFactory(title=u'audio too', locale=u'en-US', category=10, products=[desktop])
+        RevisionFactory(document=doc, is_approved=True)
 
         self.refresh()
 

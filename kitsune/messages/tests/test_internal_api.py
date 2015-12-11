@@ -3,15 +3,15 @@ from nose.tools import eq_
 from kitsune.messages.models import InboxMessage, OutboxMessage
 from kitsune.messages.utils import send_message
 from kitsune.sumo.tests import TestCase
-from kitsune.users.tests import user
+from kitsune.users.tests import UserFactory
 
 
 class SendTests(TestCase):
     """Tests for the internal send API."""
 
     def test_send_message(self):
-        to = [user(save=True), user(save=True)]
-        sender = user(save=True)
+        to = UserFactory.create_batch(2)
+        sender = UserFactory()
         msg_text = "hi there!"
         send_message(to=to, text=msg_text, sender=sender)
 

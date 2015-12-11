@@ -3,19 +3,19 @@ from django.core.files import File
 
 from nose.tools import eq_
 
-from kitsune.questions.tests import question
+from kitsune.questions.tests import QuestionFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.upload.models import ImageAttachment
 from kitsune.upload.tasks import generate_thumbnail
-from kitsune.users.tests import user
+from kitsune.users.tests import UserFactory
 
 
 class ImageAttachmentTestCase(TestCase):
 
     def setUp(self):
         super(ImageAttachmentTestCase, self).setUp()
-        self.user = user(save=True)
-        self.obj = question(save=True)
+        self.user = UserFactory()
+        self.obj = QuestionFactory()
         self.ct = ContentType.objects.get_for_model(self.obj)
 
     def tearDown(self):

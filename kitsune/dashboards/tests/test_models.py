@@ -6,7 +6,7 @@ from kitsune.dashboards import models
 from kitsune.dashboards.models import (
     WikiDocumentVisits, LAST_7_DAYS, googleanalytics)
 from kitsune.sumo.tests import TestCase
-from kitsune.wiki.tests import document, revision
+from kitsune.wiki.tests import ApprovedRevisionFactory
 
 
 class DocumentVisitsTests(TestCase):
@@ -25,10 +25,8 @@ class DocumentVisitsTests(TestCase):
         execute = _build_request.return_value.get.return_value.execute
         execute.return_value = PAGEVIEWS_BY_DOCUMENT_RESPONSE
 
-        d1 = revision(document=document(slug=u'hellỗ', save=True),
-                      is_approved=True, save=True).document
-        d2 = revision(document=document(slug=u'there', save=True),
-                      is_approved=True, save=True).document
+        d1 = ApprovedRevisionFactory(document__slug=u'hellỗ').document
+        d2 = ApprovedRevisionFactory(document__slug=u'there').document
 
         WikiDocumentVisits.reload_period_from_analytics(LAST_7_DAYS)
 

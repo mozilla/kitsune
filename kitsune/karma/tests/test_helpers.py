@@ -2,14 +2,14 @@ from nose.tools import eq_
 
 from kitsune.karma.helpers import karma_titles
 from kitsune.karma.models import Title
-from kitsune.users.tests import TestCase, user, group
+from kitsune.users.tests import TestCase, UserFactory, GroupFactory
 
 
 class KarmaTitleHelperTests(TestCase):
     def setUp(self):
         super(KarmaTitleHelperTests, self).setUp()
-        self.user = user(save=True)
-        self.group = group(name='group', save=True)
+        self.user = UserFactory()
+        self.group = GroupFactory(name='group')
         self.user.groups.add(self.group)
 
     def test_user_title(self):

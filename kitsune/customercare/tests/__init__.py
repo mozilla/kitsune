@@ -1,104 +1,72 @@
 import json
 from datetime import datetime
 
+import factory
+
 from kitsune.customercare.models import Tweet, TwitterAccount, Reply
-from kitsune.sumo.tests import with_save
+from kitsune.sumo.tests import FuzzyUnicode
+from kitsune.users.tests import UserFactory
 
 
-next_tweet_id = 1
-tweet_created = datetime.now().strftime('%a, %d %b %Y %H:%M:%S')
+class RawJsonFactory(factory.Factory):
+    class Meta:
+        @staticmethod
+        def model(**kwargs):
+            # Unpack keys like foo__bar=1 into {'foo': {'bar': 1}}
+            data = {}
+            for key_path, val in kwargs.items():
+                keys = key_path.split('__')
+                cursor = data
+                for key in keys[:-1]:
+                    cursor = cursor.setdefault(key, {})
+                cursor[keys[-1]] = val
+            return json.dumps(data)
+
+    created_at = factory.LazyAttribute(lambda r: datetime.now())
+    geo = None
+    id = factory.fuzzy.FuzzyInteger(10000000)
+    iso_language_code = 'en'
+    metadata__result_type = 'recent'
+    source = (
+        '&lt;a href=&quot;http://www.tweetdeck.com&quot; '
+        'rel=&quot;nofollow&quot;&gt;TweetDeck&lt;/a&gt;')
+    text = 'Hey #Firefox'
+    to_user_id = None
+    user__screen_name = FuzzyUnicode()
+    user__profile_image_url = 'http://example.com/profile_image.jpg'
+    user__profile_image_url_https = 'https://example.com/profile_image.jpg'
+
+    @factory.lazy_attribute
+    def created_at(data, **kwargs):
+        created_at = datetime.now()
+        return created_at.strftime('%a, %d %b %Y %H:%M:%S +0000')
 
 
-@with_save
-def tweet(**kwargs):
-    """Return a Tweet with valid default values or the ones passed in.
+class TweetFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = Tweet
 
-    :arg save: whether to save the Tweet before returning it
-    :arg text: the `text` attribute of the Tweet's raw_json
-    """
-    global next_tweet_id
-    # TODO: Escape quotes and such
-    defaults = {
-        'locale': 'en',
-        'raw_json': json.dumps({
-            'iso_language_code': 'en',
-            'text': kwargs.pop('text', 'Hey #Firefox'),
-            'created_at': tweet_created,
-            'source': '&lt;a href=&quot;http://www.tweetdeck.com&quot; '
-                      'rel=&quot;nofollow&quot;&gt;TweetDeck&lt;/a&gt;',
-            'user': {
-                'screen_name': '__jimcasey__',
-                'profile_image_url': 'http://a1.twimg.com/profile_images/'
-                                     '1117809237/cool_cat_normal.jpg',
-                'profile_image_url_https': 'http://si0.twimg.com/'
-                                           'profile_images/1117809237/'
-                                           'cool_cat_normal.jpg',
-            },
-            'to_user_id': None,
-            'geo': None,
-            'id': 25309168521,
-            'metadata': {
-                'results_type': 'recent',
-            }
-        })
-    }
-
-    defaults.update(kwargs)
-    if 'tweet_id' not in kwargs:
-        defaults['tweet_id'] = next_tweet_id
-        next_tweet_id += 1
-
-    return Tweet(**defaults)
+    locale = 'en'
+    raw_json = factory.SubFactory(RawJsonFactory)
+    tweet_id = factory.Sequence(lambda n: n)
 
 
-@with_save
-def twitter_account(**kwargs):
-    """Returns a TwitterAccount with default values or the ones passed in.
+class TwitterAccountFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = TwitterAccount
 
-    :arg save: Whether to save the TwitterAccount before returning it.
-    :arg username: Username for the TwitterAccount.
-    """
-    defaults = {
-        'username': kwargs.pop('username'),
-        'banned': False,
-        'ignored': False,
-    }
-
-    defaults.update(kwargs)
-    return TwitterAccount(**defaults)
+    username = factory.fuzzy.FuzzyText()
+    banned = factory.fuzzy.FuzzyChoice([True, False])
+    ignored = factory.fuzzy.FuzzyChoice([True, False])
 
 
-@with_save
-def reply(**kwargs):
-    """Return a Reply with valid default values or the ones passed in.
+class ReplyFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = Reply
 
-    :arg save: whether to save the Tweet before returning it
-    :arg text: the `text` attribute of the Tweet's raw_json
-    """
-    defaults = {
-        'locale': 'en',
-        'twitter_username': 'r1cky',
-        'tweet_id': 12345,
-        'reply_to_tweet_id': 123456,
-        'raw_json': json.dumps({
-            'iso_language_code': 'en',
-            'text': kwargs.pop('text', 'Hey #Firefox'),
-            'created_at': 'Thu, 23 Sep 2010 13:58:06 +0000',
-            'source': '&lt;a href=&quot;http://www.tweetdeck.com&quot; '
-                      'rel=&quot;nofollow&quot;&gt;TweetDeck&lt;/a&gt;',
-            'user': {
-                'screen_name': '__jimcasey__',
-                'profile_image_url': 'http://a1.twimg.com/profile_images/'
-                                     '1117809237/cool_cat_normal.jpg',
-                'profile_image_url_https': 'http://si0.twimg.com/'
-                                           'profile_images/1117809237/'
-                                           'cool_cat_normal.jpg',
-            },
-            'to_user_id': None,
-            'geo': None,
-            'id': 25309168521,
-            'metadata': {'result_type': 'recent'}
-        })
-    }
-    defaults.update(kwargs)
-    return Reply(**defaults)
+    locale = 'en'
+    raw_json = factory.SubFactory(RawJsonFactory)
+    reply_to_tweet_id = factory.fuzzy.FuzzyInteger(1000000)
+    tweet_id = factory.fuzzy.FuzzyInteger(1000000)
+    twitter_username = factory.fuzzy.FuzzyText()
+    user = factory.SubFactory(UserFactory)

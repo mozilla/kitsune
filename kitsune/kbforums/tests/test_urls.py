@@ -1,9 +1,9 @@
 from nose.tools import eq_
 
-from kitsune.kbforums.tests import KBForumTestCase, thread
+from kitsune.kbforums.tests import KBForumTestCase, ThreadFactory
 from kitsune.sumo.tests import get, post
-from kitsune.users.tests import user, add_permission
-from kitsune.wiki.tests import document
+from kitsune.users.tests import UserFactory, add_permission
+from kitsune.wiki.tests import DocumentFactory
 
 
 class KBBelongsTestCase(KBForumTestCase):
@@ -13,19 +13,15 @@ class KBBelongsTestCase(KBForumTestCase):
 
     def setUp(self):
         super(KBBelongsTestCase, self).setUp()
-        u = user(save=True)
-        self.doc = document(title='spam', save=True)
-        self.doc_2 = document(title='eggs', save=True)
-        self.thread = thread(creator=u, document=self.doc, is_locked=False,
-                             save=True)
-        self.thread_2 = thread(creator=u, document=self.doc_2, is_locked=False,
-                               save=True)
-        permissions = ('sticky_thread', 'lock_thread', 'delete_thread',
-                       'delete_post')
+        u = UserFactory()
+        self.doc = DocumentFactory(title='spam')
+        self.doc_2 = DocumentFactory(title='eggs')
+        self.thread = ThreadFactory(creator=u, document=self.doc, is_locked=False)
+        self.thread_2 = ThreadFactory(creator=u, document=self.doc_2, is_locked=False)
+        permissions = ('sticky_thread', 'lock_thread', 'delete_thread', 'delete_post')
         for permission in permissions:
             add_permission(u, self.thread, permission)
-        self.post = self.thread.new_post(creator=self.thread.creator,
-                                         content='foo')
+        self.post = self.thread.new_post(creator=self.thread.creator, content='foo')
         self.client.login(username=u.username, password='testpass')
 
     def test_posts_thread_belongs_to_document(self):

@@ -2,13 +2,13 @@ from datetime import timedelta, datetime
 
 from nose.tools import eq_
 
-from kitsune.announcements.tests import announcement
+from kitsune.announcements.tests import AnnouncementFactory
 from kitsune.dashboards.readouts import CONTRIBUTOR_READOUTS
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.users.tests import user
-from kitsune.wiki.models import HelpfulVote
-from kitsune.wiki.tests import locale, revision
+from kitsune.users.tests import UserFactory
+from kitsune.wiki.models import HelpfulVote, Document
+from kitsune.wiki.tests import LocaleFactory, ApprovedRevisionFactory
 
 
 class LocalizationDashTests(TestCase):
@@ -24,11 +24,11 @@ class LocalizationDashTests(TestCase):
 
 def LocalizationDashAnnouncementsTests(TestCase):
     def setUp(self):
-        self.locale1 = locale(save=True, locale='es')
+        self.locale1 = LocaleFactory(locale='es')
 
-        self.u1 = user(save=True)
-        self.u2 = user(save=True)
-        self.u3 = user(save=True)
+        self.u1 = UserFactory()
+        self.u2 = UserFactory()
+        self.u3 = UserFactory()
 
         self.u1.is_superuser = 1
         self.u1.save()
@@ -36,9 +36,11 @@ def LocalizationDashAnnouncementsTests(TestCase):
         self.locale1.leaders.add(self.u2)
         self.locale1.save()
 
-        self.announcement = announcement(
-            save=True, creator=self.u2, locale=self.locale1,
-            content="Look at me!", show_after=datetime(2012, 01, 01, 0, 0, 0))
+        self.announcement = AnnouncementFactory(
+            creator=self.u2,
+            locale=self.locale1,
+            content="Look at me!",
+            show_after=datetime(2012, 1, 1, 0, 0, 0))
 
     def test_show_create(self):
         self.client.login(username=self.u1.username, password='testpass')
@@ -78,16 +80,19 @@ class ContributorDashTests(TestCase):
         eq_(200, response.status_code)
 
     def test_needs_change_comment_is_shown(self):
-        rev = revision(is_approved=True, save=True)
-        doc = rev.document
-        doc.needs_change = True
-        doc.needs_change_comment = 'lorem OMG FIX ipsum dolor'
-        doc.save()
+        # If there are already 10 documents, this is probably going to
+        # fail anyways, so be quick and obvious about it.
+        assert Document.objects.count() < 10
 
-        response = self.client.get(reverse('dashboards.contributors',
-                                           locale='en-US'))
+        change_comment = 'lorem OMG FIX ipsum dolor'
+        ApprovedRevisionFactory(
+            document__needs_change=True,
+            document__needs_change_comment=change_comment,
+        )
+
+        response = self.client.get(reverse('dashboards.contributors', locale='en-US'))
         eq_(200, response.status_code)
-        assert doc.needs_change_comment in response.content
+        assert change_comment in response.content
 
 
 def _add_vote_in_past(rev, vote, days_back):

@@ -1,58 +1,25 @@
-from datetime import datetime
-
-from django.core.files import File
+import factory
 
 from kitsune.gallery.models import Image, Video
-from kitsune.users.tests import user
+from kitsune.sumo.tests import FuzzyUnicode
+from kitsune.users.tests import UserFactory
 
 
-def image(file_and_save=True, **kwargs):
-    """Return a saved image."""
-    u = None
-    if 'creator' not in kwargs:
-        u = user(save=True)
+class ImageFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = Image
 
-    defaults = {'title': 'Some title %s' % str(datetime.now()),
-                'description': 'Some description %s' % str(datetime.now()),
-                'creator': u}
-    defaults.update(kwargs)
-
-    img = Image(**defaults)
-    if not file_and_save:
-        return img
-
-    if 'file' not in kwargs:
-        with open('kitsune/upload/tests/media/test.jpg') as f:
-            up_file = File(f)
-            img.file.save(up_file.name, up_file, save=True)
-
-    return img
+    creator = factory.SubFactory(UserFactory)
+    description = FuzzyUnicode()
+    file = factory.django.ImageField()
+    title = FuzzyUnicode()
 
 
-def video(file_and_save=True, **kwargs):
-    """Return a saved video."""
-    u = None
-    if 'creator' not in kwargs:
-        u = user(save=True)
+class VideoFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = Video
 
-    defaults = {'title': 'Some title', 'description': 'Some description',
-                'creator': u}
-    defaults.update(kwargs)
-
-    vid = Video(**defaults)
-    if not file_and_save:
-        return vid
-
-    if 'file' not in kwargs:
-        with open('kitsune/gallery/tests/media/test.webm') as f:
-            up_file = File(f)
-            vid.webm.save(up_file.name, up_file, save=False)
-        with open('kitsune/gallery/tests/media/test.ogv') as f:
-            up_file = File(f)
-            vid.ogv.save(up_file.name, up_file, save=False)
-        with open('kitsune/gallery/tests/media/test.flv') as f:
-            up_file = File(f)
-            vid.flv.save(up_file.name, up_file, save=False)
-        vid.save()
-
-    return vid
+    creator = factory.SubFactory(UserFactory)
+    webm = factory.django.FileField(from_path='kitsune/gallery/tests/media/test.webm')
+    ogv = factory.django.FileField(from_path='kitsune/gallery/tests/media/test.ogv')
+    flv = factory.django.FileField(from_path='kitsune/gallery/tests/media/test.flv')

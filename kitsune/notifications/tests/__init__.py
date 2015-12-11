@@ -1,21 +1,21 @@
+import factory
 from actstream.models import Action
 
 from kitsune.notifications.models import Notification
-from kitsune.users.tests import profile
-from kitsune.sumo.tests import with_save
+from kitsune.users.tests import UserFactory
 
 
-@with_save
-def notification(**kwargs):
-    """Create and return a notification."""
-    defaults = {
-        'read_at': None,
-    }
-    defaults.update(kwargs)
+class ActionFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = Action
 
-    if 'owner' not in defaults:
-        defaults['owner'] = profile().user
-    if 'action' not in defaults:
-        defaults['action'] = Action.objects.create(actor=profile().user, verb='looked at')
+    actor = factory.SubFactory(UserFactory)
+    verb = 'looked at'
 
-    return Notification(**defaults)
+
+class NotificationFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = Notification
+
+    owner = factory.SubFactory(UserFactory)
+    action = factory.SubFactory(ActionFactory)

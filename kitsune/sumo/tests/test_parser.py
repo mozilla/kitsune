@@ -5,13 +5,13 @@ from django.conf import settings
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 
-from kitsune.gallery.tests import image
+from kitsune.gallery.tests import ImageFactory
 from kitsune.sumo.parser import (
     WikiParser, build_hook_params, _get_wiki_link, get_object_fallback,
     IMAGE_PARAMS, IMAGE_PARAM_VALUES)
 from kitsune.sumo.tests import TestCase
 from kitsune.wiki.models import Document
-from kitsune.wiki.tests import document, revision
+from kitsune.wiki.tests import DocumentFactory, ApprovedRevisionFactory
 
 
 def pq_link(p, text):
@@ -25,10 +25,8 @@ def pq_img(p, text, selector='img', locale=settings.WIKI_DEFAULT_LANGUAGE):
 
 def doc_rev_parser(content, title='Installing Firefox', parser_cls=WikiParser, **kwargs):
     p = parser_cls()
-    d = document(title=title, **kwargs)
-    d.save()
-    r = revision(document=d, content=content, is_approved=True)
-    r.save()
+    d = DocumentFactory(title=title, **kwargs)
+    r = ApprovedRevisionFactory(document=d, content=content)
     return (d, r, p)
 
 
@@ -47,15 +45,14 @@ class GetObjectFallbackTests(TestCase):
 
     def test_english(self):
         # Create the English document
-        d = document(title='A doc')
-        d.save()
+        d = DocumentFactory(title='A doc')
         # Now it exists
         obj = get_object_fallback(Document, 'A doc', 'en-US', '!')
         eq_(d, obj)
 
     def test_from_french(self):
         # Create the English document
-        d = document(title='A doc')
+        d = DocumentFactory(title='A doc')
         d.save()
         # Returns English document for French
         obj = get_object_fallback(Document, 'A doc', 'fr', '!')
@@ -63,62 +60,45 @@ class GetObjectFallbackTests(TestCase):
 
     def test_french(self):
         # Create English parent document
-        en_d = document()
-        en_d.save()
-        en_r = revision(document=en_d, is_approved=True)
-        en_r.save()
+        en_d = DocumentFactory()
+        ApprovedRevisionFactory(document=en_d)
 
         # Create the French document
-        fr_d = document(parent=en_d, title='A doc', locale='fr')
-        fr_d.save()
+        fr_d = DocumentFactory(parent=en_d, title='A doc', locale='fr')
         obj = get_object_fallback(Document, 'A doc', 'fr', '!')
         eq_(fr_d, obj)
 
         # Also works when English exists
-        d = document(title='A doc')
-        d.save()
+        DocumentFactory(title='A doc')
         obj = get_object_fallback(Document, 'A doc', 'fr', '!')
         eq_(fr_d, obj)
 
     def test_translated(self):
         """If a localization of the English fallback exists, use it."""
 
-        en_d = document(title='A doc')
-        en_d.save()
-        en_r = revision(document=en_d, is_approved=True)
-        en_r.save()
+        en_d = DocumentFactory(title='A doc')
+        ApprovedRevisionFactory(document=en_d)
 
-        fr_d = document(parent=en_d, title='Une doc', locale='fr')
-        fr_d.save()
+        fr_d = DocumentFactory(parent=en_d, title='Une doc', locale='fr')
 
         # Without an approved revision, the en-US doc should be returned.
         obj = get_object_fallback(Document, 'A doc', 'fr')
         eq_(en_d, obj)
 
         # Approve a revision, then fr doc should be returned.
-        fr_r = revision(document=fr_d, is_approved=True)
-        fr_r.save()
+        ApprovedRevisionFactory(document=fr_d)
         obj = get_object_fallback(Document, 'A doc', 'fr')
         eq_(fr_d, obj)
 
     def test_redirect(self):
         """Assert get_object_fallback follows wiki redirects."""
-        target_rev = revision(
-            document=document(title='target', save=True),
-            is_approved=True,
-            save=True)
-        translated_target_rev = revision(
-            document=document(parent=target_rev.document, locale='de',
-                              save=True),
-            is_approved=True,
-            save=True)
-        revision(
-            document=document(title='redirect', save=True),
-            content='REDIRECT [[target]]',
-            is_approved=True).save()
+        target_rev = ApprovedRevisionFactory(document__title='target')
+        translated_target_rev = ApprovedRevisionFactory(
+            document__parent=target_rev.document,
+            document__locale='de')
+        ApprovedRevisionFactory(document__title='redirect', content='REDIRECT [[target]]')
 
-        eq_(translated_target_rev.document,
-            get_object_fallback(Document, 'redirect', 'de'))
+        eq_(translated_target_rev.document, get_object_fallback(Document, 'redirect', 'de'))
 
     def test_redirect_translations_only(self):
         """Make sure get_object_fallback doesn't follow redirects when working
@@ -128,12 +108,10 @@ class GetObjectFallbackTests(TestCase):
         example).
 
         """
-        revision(document=document(title='target', save=True),
-                 content='O hai.', is_approved=True, save=True)
-        redirect_rev = revision(document=document(title='redirect', save=True),
-                                content='REDIRECT [[target]]',
-                                is_approved=True,
-                                save=True)
+        ApprovedRevisionFactory(document__title='target', content='O hai.')
+        redirect_rev = ApprovedRevisionFactory(
+            document__title='redirect',
+            content='REDIRECT [[target]]')
         eq_(redirect_rev.document,
             get_object_fallback(Document, 'redirect',
                                 redirect_rev.document.locale))
@@ -361,13 +339,10 @@ class TestWikiInternalLinks(TestCase):
 
     def test_link_with_localization(self):
         """A link to an English doc with a local translation."""
-        en_d = document(title='A doc')
-        en_d.save()
-        en_r = revision(document=en_d, is_approved=True)
-        en_r.save()
+        en_d = DocumentFactory(title='A doc')
+        ApprovedRevisionFactory(document=en_d)
 
-        fr_d = document(parent=en_d, title='Une doc', locale='fr')
-        fr_d.save()
+        fr_d = DocumentFactory(parent=en_d, title='Une doc', locale='fr')
 
         # Without an approved revision, link should go to en-US doc.
         # The site should stay in fr locale (/<locale>/<en-US slug>).
@@ -376,8 +351,7 @@ class TestWikiInternalLinks(TestCase):
         eq_('A doc', link.find('a').text())
 
         # Approve a revision. Now link should go to fr doc.
-        fr_r = revision(document=fr_d, is_approved=True)
-        fr_r.save()
+        ApprovedRevisionFactory(document=fr_d)
         link = pq(self.p.parse('[[A doc]]', locale='fr'))
         eq_('/fr/kb/une-doc', link.find('a').attr('href'))
         eq_('Une doc', link.find('a').text())
@@ -387,7 +361,7 @@ class TestWikiImageTags(TestCase):
     def setUp(self):
         self.d, self.r, self.p = doc_rev_parser(
             'Test content', 'Installing Firefox')
-        self.img = image(title='test.jpg')
+        self.img = ImageFactory(title='test.jpg')
 
     def tearDown(self):
         self.img.delete()
@@ -419,7 +393,7 @@ class TestWikiImageTags(TestCase):
         eq_(self.img.file.url, img.attr('src'))
 
         # then, create an English version
-        en_img = image(title='test.jpg')
+        en_img = ImageFactory(title='test.jpg', locale='en-US')
         # Ensure they're not equal
         self.assertNotEquals(en_img.file.url, self.img.file.url)
 

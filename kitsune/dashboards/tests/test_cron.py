@@ -11,25 +11,23 @@ from kitsune.dashboards.cron import (
     update_l10n_contributor_metrics)
 from kitsune.dashboards.models import (
     WikiMetric, L10N_TOP20_CODE, L10N_TOP100_CODE, L10N_ALL_CODE)
-from kitsune.products.tests import product
+from kitsune.products.tests import ProductFactory
 from kitsune.sumo.redis_utils import redis_client, RedisError
 from kitsune.sumo.tests import SkipTest, TestCase
-from kitsune.users.tests import user
-from kitsune.wiki.models import HelpfulVote, Revision
-from kitsune.wiki.tests import revision, document
+from kitsune.users.tests import UserFactory
+from kitsune.wiki.tests import (
+    RevisionFactory, ApprovedRevisionFactory, DocumentFactory, HelpfulVoteFactory)
 
 
 def _add_vote_in_past(rev, vote, days_back):
-    v = HelpfulVote(revision=rev, helpful=vote)
-    v.created = v.created - timedelta(days=days_back)
-    v.save()
+    HelpfulVoteFactory(
+        revision=rev,
+        helpful=vote,
+        created=date.today() - timedelta(days=days_back))
 
 
 def _make_backdated_revision(backdate):
-    r = revision(save=True)
-    r.created = r.created - timedelta(days=backdate)
-    r.save()
-    return r
+    return RevisionFactory(created=date.today() - timedelta(days=backdate))
 
 
 class TopUnhelpfulArticlesTests(TestCase):
@@ -46,13 +44,13 @@ class TopUnhelpfulArticlesTests(TestCase):
 
     def test_old_articles(self):
         """Returns unhelpful votes within time range"""
-        r = _make_backdated_revision(90)
+        r = _make_backdated_revision(10)
 
-        # Add 4 no votes 1.5 months ago
-        for x in range(0, 4):
+        # Add 4 no votes 1.5 weeks ago
+        for x in range(4):
             _add_vote_in_past(r, 0, 10)
 
-        # Add 1 yes vote 1.5 months ago
+        # Add 1 yes vote 1.5 weeks ago
         _add_vote_in_past(r, 1, 10)
 
         result = _get_old_unhelpful()
@@ -248,143 +246,109 @@ class L10nMetricsTests(TestCase):
 
     def test_update_l10n_coverage_metrics(self):
         """Test the cron job that updates l10n coverage metrics."""
-        p = product(save=True)
+        p = ProductFactory(visible=True)
 
         # Create en-US documents.
-        for i in range(20):
-            r = revision(
-                is_approved=True, is_ready_for_localization=True, save=True)
-            r.document.products.add(p)
+        revisions = RevisionFactory.create_batch(
+            20,
+            is_approved=True,
+            is_ready_for_localization=True,
+            document__products=[p],
+            document__locale='en-US')
 
-        r1 = Revision.objects.all()[0]
-        r2 = Revision.objects.all()[1]
+        r1 = revisions[0]
+        r2 = revisions[1]
 
         # Translate one to es.
-        d = document(parent=r1.document, locale='es', save=True)
-        revision(document=d, based_on=r1, is_approved=True, save=True)
+        d = DocumentFactory(parent=r1.document, locale='es')
+        ApprovedRevisionFactory(document=d, based_on=r1)
 
         # Translate two to de.
-        d = document(parent=r1.document, locale='de', save=True)
-        revision(document=d, based_on=r1, is_approved=True, save=True)
-        d = document(parent=r2.document, locale='de', save=True)
-        revision(document=d, based_on=r2, is_approved=True, save=True)
+        d = DocumentFactory(parent=r1.document, locale='de')
+        ApprovedRevisionFactory(document=d, based_on=r1)
+        d = DocumentFactory(parent=r2.document, locale='de')
+        ApprovedRevisionFactory(document=d, based_on=r2)
 
         # Translate all to ru.
-        for r in Revision.objects.filter(document__locale='en-US'):
-            d = document(parent=r.document, locale='ru', save=True)
-            revision(document=d, based_on=r, is_approved=True, save=True)
+        for r in revisions:
+            d = DocumentFactory(parent=r.document, locale='ru')
+            RevisionFactory(document=d, based_on=r, is_approved=True)
 
         # Call the cronjob
         update_l10n_coverage_metrics()
 
         # Verify es metrics.
         eq_(6, WikiMetric.objects.filter(locale='es').count())
-        eq_(5.0, WikiMetric.objects.get(
-            locale='es', product=p, code=L10N_TOP20_CODE).value)
-        eq_(5.0, WikiMetric.objects.get(
-            locale='es', product=None, code=L10N_TOP100_CODE).value)
-        eq_(5.0, WikiMetric.objects.get(
-            locale='es', product=p, code=L10N_ALL_CODE).value)
-        eq_(5.0, WikiMetric.objects.get(
-            locale='es', product=None, code=L10N_TOP20_CODE).value)
-        eq_(5.0, WikiMetric.objects.get(
-            locale='es', product=None, code=L10N_TOP100_CODE).value)
-        eq_(5.0, WikiMetric.objects.get(
-            locale='es', product=None, code=L10N_ALL_CODE).value)
+        eq_(5.0, WikiMetric.objects.get(locale='es', product=p, code=L10N_TOP20_CODE).value)
+        eq_(5.0, WikiMetric.objects.get(locale='es', product=p, code=L10N_TOP100_CODE).value)
+        eq_(5.0, WikiMetric.objects.get(locale='es', product=p, code=L10N_ALL_CODE).value)
+        eq_(5.0, WikiMetric.objects.get(locale='es', product=None, code=L10N_TOP20_CODE).value)
+        eq_(5.0, WikiMetric.objects.get(locale='es', product=None, code=L10N_TOP100_CODE).value)
+        eq_(5.0, WikiMetric.objects.get(locale='es', product=None, code=L10N_ALL_CODE).value)
 
         # Verify de metrics.
         eq_(6, WikiMetric.objects.filter(locale='de').count())
-        eq_(10.0, WikiMetric.objects.get(
-            locale='de', product=p, code=L10N_TOP20_CODE).value)
-        eq_(10.0, WikiMetric.objects.get(
-            locale='de', product=None, code=L10N_TOP100_CODE).value)
-        eq_(10.0, WikiMetric.objects.get(
-            locale='de', product=p, code=L10N_ALL_CODE).value)
-        eq_(10.0, WikiMetric.objects.get(
-            locale='de', product=None, code=L10N_TOP20_CODE).value)
-        eq_(10.0, WikiMetric.objects.get(
-            locale='de', product=None, code=L10N_TOP100_CODE).value)
-        eq_(10.0, WikiMetric.objects.get(
-            locale='de', product=None, code=L10N_ALL_CODE).value)
+        eq_(10.0, WikiMetric.objects.get(locale='de', product=p, code=L10N_TOP20_CODE).value)
+        eq_(10.0, WikiMetric.objects.get(locale='de', product=None, code=L10N_TOP100_CODE).value)
+        eq_(10.0, WikiMetric.objects.get(locale='de', product=p, code=L10N_ALL_CODE).value)
+        eq_(10.0, WikiMetric.objects.get(locale='de', product=None, code=L10N_TOP20_CODE).value)
+        eq_(10.0, WikiMetric.objects.get(locale='de', product=None, code=L10N_TOP100_CODE).value)
+        eq_(10.0, WikiMetric.objects.get(locale='de', product=None, code=L10N_ALL_CODE).value)
 
         # Verify ru metrics.
         eq_(6, WikiMetric.objects.filter(locale='ru').count())
-        eq_(100.0, WikiMetric.objects.get(
-            locale='ru', product=p, code=L10N_TOP20_CODE).value)
-        eq_(100.0, WikiMetric.objects.get(
-            locale='ru', product=None, code=L10N_TOP100_CODE).value)
-        eq_(100.0, WikiMetric.objects.get(
-            locale='ru', product=p, code=L10N_ALL_CODE).value)
-        eq_(100.0, WikiMetric.objects.get(
-            locale='ru', product=None, code=L10N_TOP20_CODE).value)
-        eq_(100.0, WikiMetric.objects.get(
-            locale='ru', product=None, code=L10N_TOP100_CODE).value)
-        eq_(100.0, WikiMetric.objects.get(
-            locale='ru', product=None, code=L10N_ALL_CODE).value)
+        eq_(100.0, WikiMetric.objects.get(locale='ru', product=p, code=L10N_TOP20_CODE).value)
+        eq_(100.0, WikiMetric.objects.get(locale='ru', product=None, code=L10N_TOP100_CODE).value)
+        eq_(100.0, WikiMetric.objects.get(locale='ru', product=p, code=L10N_ALL_CODE).value)
+        eq_(100.0, WikiMetric.objects.get(locale='ru', product=None, code=L10N_TOP20_CODE).value)
+        eq_(100.0, WikiMetric.objects.get(locale='ru', product=None, code=L10N_TOP100_CODE).value)
+        eq_(100.0, WikiMetric.objects.get(locale='ru', product=None, code=L10N_ALL_CODE).value)
 
         # Verify it metrics.
         eq_(6, WikiMetric.objects.filter(locale='it').count())
-        eq_(0.0, WikiMetric.objects.get(
-            locale='it', product=p, code=L10N_TOP20_CODE).value)
-        eq_(0.0, WikiMetric.objects.get(
-            locale='it', product=None, code=L10N_TOP100_CODE).value)
-        eq_(0.0, WikiMetric.objects.get(
-            locale='it', product=p, code=L10N_ALL_CODE).value)
-        eq_(0.0, WikiMetric.objects.get(
-            locale='it', product=None, code=L10N_TOP20_CODE).value)
-        eq_(0.0, WikiMetric.objects.get(
-            locale='it', product=None, code=L10N_TOP100_CODE).value)
-        eq_(0.0, WikiMetric.objects.get(
-            locale='it', product=None, code=L10N_ALL_CODE).value)
+        eq_(0.0, WikiMetric.objects.get(locale='it', product=p, code=L10N_TOP20_CODE).value)
+        eq_(0.0, WikiMetric.objects.get(locale='it', product=None, code=L10N_TOP100_CODE).value)
+        eq_(0.0, WikiMetric.objects.get(locale='it', product=p, code=L10N_ALL_CODE).value)
+        eq_(0.0, WikiMetric.objects.get(locale='it', product=None, code=L10N_TOP20_CODE).value)
+        eq_(0.0, WikiMetric.objects.get(locale='it', product=None, code=L10N_TOP100_CODE).value)
+        eq_(0.0, WikiMetric.objects.get(locale='it', product=None, code=L10N_ALL_CODE).value)
 
     def test_update_active_contributor_metrics(self):
         """Test the cron job that updates active contributor metrics."""
-        day = date(2013, 07, 31)
-        last_month = date(2013, 06, 15)
-        start_date = date(2013, 06, 1)
-        before_start = date(2013, 05, 31)
+        day = date(2013, 7, 31)
+        last_month = date(2013, 6, 15)
+        start_date = date(2013, 6, 1)
+        before_start = date(2013, 5, 31)
 
         # Create some revisions to test with:
 
         # 3 'en-US' contributors:
-        d = document(locale='en-US', save=True)
-        u = user(save=True)
-        revision(document=d, creator=user(save=True), created=last_month,
-                 is_approved=True, reviewer=u, save=True)
-        revision(document=d, creator=u, created=last_month, save=True)
+        d = DocumentFactory(locale='en-US')
+        u = UserFactory()
+        RevisionFactory(document=d, created=last_month, is_approved=True, reviewer=u)
+        RevisionFactory(document=d, creator=u, created=last_month)
 
-        p = product(save=True)
-        r = revision(creator=user(save=True), created=start_date, save=True)
-        r.document.products.add(p)
+        p = ProductFactory(visible=True)
+        RevisionFactory(created=start_date, document__products=[p])
 
         # Add two that shouldn't count:
-        revision(document=d, creator=user(save=True), created=before_start,
-                 save=True)
-        revision(document=d, creator=user(save=True), created=day, save=True)
+        RevisionFactory(document=d, created=before_start)
+        RevisionFactory(document=d, created=day)
 
         # 4 'es' contributors:
-        d = document(locale='es', save=True)
-        revision(document=d, creator=user(save=True), created=last_month,
-                 is_approved=True, reviewer=u, save=True)
-        revision(document=d, creator=u, created=last_month,
-                 reviewer=user(save=True), save=True)
-        revision(document=d, creator=user(save=True), created=start_date,
-                 save=True)
-        revision(document=d, creator=user(save=True), created=last_month,
-                 save=True)
+        d = DocumentFactory(locale='es')
+        RevisionFactory(document=d, created=last_month, is_approved=True, reviewer=u)
+        RevisionFactory(document=d, creator=u, created=last_month, reviewer=UserFactory())
+        RevisionFactory(document=d, created=start_date)
+        RevisionFactory(document=d, created=last_month)
         # Add two that shouldn't count:
-        revision(document=d, creator=user(save=True), created=before_start,
-                 save=True)
-        revision(document=d, creator=user(save=True), created=day, save=True)
+        RevisionFactory(document=d, created=before_start)
+        RevisionFactory(document=d, created=day)
 
         # Call the cron job.
         update_l10n_contributor_metrics(day)
 
-        eq_(3.0, WikiMetric.objects.get(
-            locale='en-US', product=None, date=start_date).value)
-        eq_(1.0, WikiMetric.objects.get(
-            locale='en-US', product=p, date=start_date).value)
-        eq_(4.0, WikiMetric.objects.get(
-            locale='es', product=None, date=start_date).value)
-        eq_(0.0, WikiMetric.objects.get(
-            locale='es', product=p, date=start_date).value)
+        eq_(3.0, WikiMetric.objects.get(locale='en-US', product=None, date=start_date).value)
+        eq_(1.0, WikiMetric.objects.get(locale='en-US', product=p, date=start_date).value)
+        eq_(4.0, WikiMetric.objects.get(locale='es', product=None, date=start_date).value)
+        eq_(0.0, WikiMetric.objects.get(locale='es', product=p, date=start_date).value)

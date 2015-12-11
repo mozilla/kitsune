@@ -10,7 +10,7 @@ from kitsune.sumo.email_utils import (safe_translation,
                                       emails_with_users_and_watches)
 from kitsune.sumo.utils import uselocale
 from kitsune.sumo.tests import TestCase
-from kitsune.users.tests import user
+from kitsune.users.tests import UserFactory
 
 
 mock_translations = {
@@ -144,9 +144,8 @@ class PremailerTests(TestCase):
                                    '</body>'
                                    '</html>')
 
-            u = user(save=True)
-            msg = emails_with_users_and_watches('test', 'a.ltxt',
-                                                'a.html', {}, [(u, [None])])
+            u = UserFactory()
+            msg = emails_with_users_and_watches('test', 'a.ltxt', 'a.html', {}, [(u, [None])])
 
             for m in msg:
                 tag = ('<a href="https://%s/test" style="color:#000">'

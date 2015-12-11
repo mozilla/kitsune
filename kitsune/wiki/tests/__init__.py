@@ -1,17 +1,20 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime
 
+from django.conf import settings
 from django.template.defaultfilters import slugify
 
 import factory
+from nose.tools import eq_
 
 from kitsune.products.models import Product
-from kitsune.products.tests import product, topic
-from kitsune.sumo.tests import LocalizingClient, TestCase, with_save
-from kitsune.users.tests import user, UserFactory
-from kitsune.wiki.models import Document, Revision, HelpfulVote, Locale
+from kitsune.products.tests import ProductFactory, TopicFactory
+from kitsune.sumo.tests import LocalizingClient, TestCase, FuzzyUnicode
+from kitsune.users.tests import UserFactory
+from kitsune.wiki.models import Document, Revision, Locale, HelpfulVote
 from kitsune.wiki.config import (
-    CATEGORIES, SIGNIFICANCES, TEMPLATES_CATEGORY, TEMPLATE_TITLE_PREFIX)
+    CATEGORIES, SIGNIFICANCES, TEMPLATES_CATEGORY, TEMPLATE_TITLE_PREFIX, REDIRECT_CONTENT,
+    REDIRECT_TITLE)
 
 
 class TestCaseBase(TestCase):
@@ -24,7 +27,7 @@ class DocumentFactory(factory.DjangoModelFactory):
         model = Document
 
     category = CATEGORIES[0][0]
-    title = factory.Sequence(lambda n: u'đoc-{}'.format(n))
+    title = FuzzyUnicode()
     slug = factory.LazyAttribute(lambda o: slugify(o.title))
 
     @factory.post_generation
@@ -37,10 +40,30 @@ class DocumentFactory(factory.DjangoModelFactory):
             for p in extracted:
                 doc.products.add(p)
 
+    @factory.post_generation
+    def topics(doc, create, extracted, **kwargs):
+        if not create:
+            # Simple build, do nothing
+            return
+
+        if extracted is not None:
+            for t in extracted:
+                doc.topics.add(t)
+
+    @factory.post_generation
+    def tags(doc, create, extracted, **kwargs):
+        if not create:
+            # Simple build, do nothing
+            return
+
+        if extracted is not None:
+            for t in extracted:
+                doc.tags.add(t)
+
 
 class TemplateDocumentFactory(DocumentFactory):
     category = TEMPLATES_CATEGORY
-    title = factory.Sequence(lambda n: u'{}:τmpl-{}'.format(TEMPLATE_TITLE_PREFIX, n))
+    title = FuzzyUnicode(prefix=TEMPLATE_TITLE_PREFIX + ':')
 
 
 class RevisionFactory(factory.DjangoModelFactory):
@@ -48,100 +71,76 @@ class RevisionFactory(factory.DjangoModelFactory):
         model = Revision
 
     document = factory.SubFactory(DocumentFactory)
-    summary = 'đSome summary.'
-    content = 'đSome summary.'
+    summary = FuzzyUnicode()
+    content = FuzzyUnicode()
     significance = SIGNIFICANCES[0][0]
-    comment = 'đSome comment',
+    comment = FuzzyUnicode()
     creator = factory.SubFactory(UserFactory)
     document = factory.SubFactory(DocumentFactory)
+    is_approved = False
+
+    @factory.post_generation
+    def set_current_revision(obj, create, extracted, **kwargs):
+        if obj.is_approved:
+            obj.document.current_revision = obj
+            obj.document.save()
 
 
 class ApprovedRevisionFactory(RevisionFactory):
     is_approved = True
+    reviewed = factory.LazyAttribute(lambda o: datetime.now())
 
 
-# Model makers. These make it clearer and more concise to create objects in
-# test cases. They allow the significant attribute values to stand out rather
-# than being hidden amongst the values needed merely to get the model to
-# validate.
+class TranslatedRevisionFactory(ApprovedRevisionFactory):
+    """Makes a revision that is a translation of an English revision."""
 
-@with_save
-def document(**kwargs):
-    """Return an empty document with enough stuff filled out that it can be
-    saved."""
-    defaults = {'category': CATEGORIES[0][0],
-                'title': u'đ' + str(datetime.now())}
-    defaults.update(kwargs)
-    if 'slug' not in kwargs:
-        defaults['slug'] = slugify(defaults['title'])
-    return Document(**defaults)
+    document = factory.SubFactory(
+        DocumentFactory,
+        locale=factory.fuzzy.FuzzyChoice(l for l in settings.SUMO_LANGUAGES if l != 'en-US'),
+        parent=factory.SubFactory(DocumentFactory, locale=settings.WIKI_DEFAULT_LANGUAGE))
+    based_on = factory.SubFactory(
+        ApprovedRevisionFactory,
+        is_ready_for_localization=True,
+        document=factory.SelfAttribute('..document.parent'))
 
 
-@with_save
-def revision(**kwargs):
-    """Return an empty revision with enough stuff filled out that it can be
-    saved.
-
-    Revision's is_approved=False unless you specify otherwise.
-
-    Requires a users fixture if no creator is provided.
-
-    """
-    d = kwargs.pop('document', None) or document(save=True)
-
-    defaults = {'summary': u'đSome summary', 'content': u'đSome content',
-                'significance': SIGNIFICANCES[0][0],
-                'comment': u'đSome comment',
-                'creator': kwargs.get('creator', user(save=True)),
-                'document': d}
-    defaults.update(kwargs)
-
-    return Revision(**defaults)
+def test_translated_revision_factory():
+    rev = TranslatedRevisionFactory()
+    assert rev.document.locale != 'en-US'
+    eq_(rev.based_on.document, rev.document.parent)
+    eq_(rev.document.parent.locale, 'en-US')
 
 
-@with_save
-def helpful_vote(**kwargs):
-    r = kwargs.pop('revision', None) or revision(save=True)
-    defaults = {'created': datetime.now(), 'helpful': False, 'revision': r}
-    defaults.update(kwargs)
-    return HelpfulVote(**defaults)
+class RedirectRevisionFactory(RevisionFactory):
+    class Meta:
+        exclude = ('target',)
+
+    target = factory.SubFactory(DocumentFactory)
+    document__title = factory.LazyAttribute(
+        lambda o: REDIRECT_TITLE % {'old': factory.SelfAttribute('..target.title'), 'number': 1})
+    content = factory.LazyAttribute(lambda o: REDIRECT_CONTENT % o.target.title)
+    is_approved = True
 
 
-@with_save
-def locale(**kwargs):
-    defaults = {'locale': 'en-US'}
-    defaults.update(kwargs)
-    return Locale(**defaults)
+class LocaleFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = Locale
+
+    locale = 'en-US'
 
 
-def translated_revision(locale='de', save=False, **kwargs):
-    """Return a revision that is the translation of a default-language one."""
-    parent_rev = revision(is_approved=True,
-                          is_ready_for_localization=True,
-                          save=True)
-    translation = document(parent=parent_rev.document, locale=locale,
-                           save=True)
-    new_kwargs = {'document': translation, 'based_on': parent_rev}
-    new_kwargs.update(kwargs)
-    return revision(save=save, **new_kwargs)
+class HelpfulVoteFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = HelpfulVote
+
+    revision = factory.SubFactory(RevisionFactory)
 
 
-# I don't like this thing. revision() is more flexible. All this adds is
-# is_approved=True, but it doesn't even mention approval in its name.
-# TODO: Remove.
-def doc_rev(content=''):
-    """Save a document and an approved revision with the given content."""
-    r = revision(content=content, is_approved=True)
-    r.save()
-    return r.document, r
-
-# End model makers.
-
-
+# Todo: This should probably be a non-Django factory class
 def new_document_data(topic_ids=None, product_ids=None):
-    product_ids = product_ids or [product(save=True).id]
+    product_ids = product_ids or [ProductFactory().id]
     p = Product.objects.get(id=product_ids[0])
-    topic_ids = topic_ids or [topic(product=p, save=True).id]
+    topic_ids = topic_ids or [TopicFactory(product=p).id]
     return {
         'title': 'A Test Article',
         'slug': 'a-test-article',

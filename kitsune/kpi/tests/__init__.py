@@ -1,20 +1,23 @@
 from datetime import date
 
+import factory
+
 from kitsune.kpi.models import MetricKind, Metric
-from kitsune.sumo.tests import with_save
+from kitsune.sumo.tests import FuzzyUnicode
 
 
-@with_save
-def metric_kind(**kwargs):
-    return MetricKind(code=kwargs.get('code', 'something'))
+class MetricKindFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = MetricKind
+
+    code = FuzzyUnicode()
 
 
-@with_save
-def metric(**kwargs):
-    defaults = {'start': date(1980, 02, 16),
-                'end': date(1980, 02, 23),
-                'value': 33}
-    if 'kind' not in kwargs:
-        defaults['kind'] = metric_kind(save=True)
-    defaults.update(kwargs)
-    return Metric(**defaults)
+class MetricFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = Metric
+
+    start = date(1980, 2, 16)
+    end = date(1980, 2, 23)
+    value = 33
+    kind = factory.SubFactory(MetricKindFactory)

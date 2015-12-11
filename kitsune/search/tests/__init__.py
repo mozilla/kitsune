@@ -2,11 +2,12 @@ from django.conf import settings
 from django.test.client import RequestFactory
 from django.test.utils import override_settings
 
+import factory
 from elasticutils.contrib.django import get_es
 
 from kitsune.search import es_utils
 from kitsune.search.models import generate_tasks, Synonym
-from kitsune.sumo.tests import SkipTest, TestCase, with_save
+from kitsune.sumo.tests import SkipTest, TestCase
 
 
 # Dummy request for passing to question_searcher() and brethren.
@@ -75,11 +76,9 @@ class ElasticTestCase(TestCase):
             es_utils.delete_index(index)
 
 
-@with_save
-def synonym(**kwargs):
-    defaults = {
-        "from_words": "foo, bar",
-        "to_words": "baz",
-    }
-    defaults.update(kwargs)
-    return Synonym(**defaults)
+class SynonymFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = Synonym
+
+    from_words = "foo, bar"
+    to_words = "baz"

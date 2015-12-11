@@ -16,9 +16,9 @@ from pyquery import PyQuery as pq
 from tidings.models import Watch
 
 from kitsune.flagit.models import FlaggedObject
-from kitsune.kbadge.tests import award, badge
+from kitsune.kbadge.tests import AwardFactory, BadgeFactory
 from kitsune.questions.events import QuestionReplyEvent
-from kitsune.questions.tests import question
+from kitsune.questions.tests import QuestionFactory
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.helpers import urlparams
 from kitsune.sumo.tests import post, get
@@ -27,8 +27,8 @@ from kitsune.users.forms import PasswordResetForm
 from kitsune.users.models import (
     Profile, RegistrationProfile, RegistrationManager)
 from kitsune.users.tests import (
-    TestCaseBase, user, add_permission, profile, group)
-from kitsune.wiki.tests import revision
+    TestCaseBase, UserFactory, add_permission, GroupFactory)
+from kitsune.wiki.tests import RevisionFactory
 
 
 class LoginTests(TestCaseBase):
@@ -38,7 +38,7 @@ class LoginTests(TestCaseBase):
         super(LoginTests, self).setUp()
         self.orig_debug = settings.DEBUG
         settings.DEBUG = True
-        self.u = user(save=True)
+        self.u = UserFactory()
 
     def tearDown(self):
         super(LoginTests, self).tearDown()
@@ -124,7 +124,7 @@ class LoginTests(TestCaseBase):
 
     def test_ga_custom_variable_on_registered_login(self):
         """After logging in, there should be a ga-push data attr on body."""
-        user_ = profile().user
+        user_ = UserFactory()
 
         # User should be "Registered":
         response = self.client.post(reverse('users.login'),
@@ -137,10 +137,10 @@ class LoginTests(TestCaseBase):
 
     def test_ga_custom_variable_on_contributor_login(self):
         """After logging in, there should be a ga-push data attr on body."""
-        user_ = profile().user
+        user_ = UserFactory()
 
         # Add user to Contributors and so should be "Contributor":
-        user_.groups.add(group(name='Contributors', save=True))
+        user_.groups.add(GroupFactory(name='Contributors'))
         response = self.client.post(reverse('users.login'),
                                     {'username': user_.username,
                                      'password': 'testpass'},
@@ -151,10 +151,10 @@ class LoginTests(TestCaseBase):
 
     def test_ga_custom_variable_on_admin_login(self):
         """After logging in, there should be a ga-push data attr on body."""
-        user_ = profile().user
+        user_ = UserFactory()
 
         # Add user to Administrators and so should be "Contributor - Admin":
-        user_.groups.add(group(name='Administrators', save=True))
+        user_.groups.add(GroupFactory(name='Administrators'))
         response = self.client.post(reverse('users.login'),
                                     {'username': user_.username,
                                      'password': 'testpass'},
@@ -168,7 +168,7 @@ class PasswordResetTests(TestCaseBase):
 
     def setUp(self):
         super(PasswordResetTests, self).setUp()
-        self.u = user(email="valid@email.com", save=True)
+        self.u = UserFactory(email="valid@email.com")
         self.uidb36 = int_to_base36(self.u.id)
         self.token = default_token_generator.make_token(self.u)
         self.orig_debug = settings.DEBUG
@@ -254,8 +254,8 @@ class PasswordResetTests(TestCaseBase):
 
 class EditProfileTests(TestCaseBase):
 
-    def test_edit_my_profile(self):
-        u = user(save=True)
+    def test_edit_my_ProfileFactory(self):
+        u = UserFactory()
         url = reverse('users.edit_my_profile')
         self.client.login(username=u.username, password='testpass')
         data = {'name': 'John Doe',
@@ -279,10 +279,10 @@ class EditProfileTests(TestCaseBase):
         eq_(data['timezone'], profile.timezone.zone)
 
     def test_user_cant_edit_others_profile_without_permission(self):
-        u1 = user(save=True)
+        u1 = UserFactory()
         url = reverse('users.edit_profile', args=[u1.username])
 
-        u2 = user(save=True)
+        u2 = UserFactory()
         self.client.login(username=u2.username, password='testpass')
 
         # Try GET
@@ -294,10 +294,10 @@ class EditProfileTests(TestCaseBase):
         eq_(403, r.status_code)
 
     def test_user_can_edit_others_profile_with_permission(self):
-        u1 = user(save=True)
+        u1 = UserFactory()
         url = reverse('users.edit_profile', args=[u1.username])
 
-        u2 = user(save=True)
+        u2 = UserFactory()
         add_permission(u2, Profile, 'change_profile')
         self.client.login(username=u2.username, password='testpass')
 
@@ -332,8 +332,7 @@ class EditAvatarTests(TestCaseBase):
     def setUp(self):
         super(EditAvatarTests, self).setUp()
         self.old_settings = copy(settings._wrapped.__dict__)
-        self.u = user(save=True)
-        profile(user=self.u)
+        self.u = UserFactory()
 
     def tearDown(self):
         settings._wrapped.__dict__ = self.old_settings
@@ -400,10 +399,10 @@ class EditAvatarTests(TestCaseBase):
 class ViewProfileTests(TestCaseBase):
 
     def setUp(self):
-        self.u = user(save=True)
-        self.profile = profile(name='', website='', user=self.u)
+        self.u = UserFactory(profile__name='', profile__website='')
+        self.profile = self.u.profile
 
-    def test_view_profile(self):
+    def test_view_ProfileFactory(self):
         r = self.client.get(reverse('users.profile', args=[self.u.username]))
         eq_(200, r.status_code)
         doc = pq(r.content)
@@ -434,9 +433,9 @@ class ViewProfileTests(TestCaseBase):
 
     def test_num_documents(self):
         """Verify the number of documents contributed by user."""
-        u = profile().user
-        revision(creator=u, save=True)
-        revision(creator=u, save=True)
+        u = UserFactory()
+        RevisionFactory(creator=u)
+        RevisionFactory(creator=u)
 
         r = self.client.get(reverse('users.profile', args=[u.username]))
         eq_(200, r.status_code)
@@ -444,18 +443,18 @@ class ViewProfileTests(TestCaseBase):
 
     def test_deactivate_button(self):
         """Check that the deactivate button is shown appropriately"""
-        p = profile()
-        r = self.client.get(reverse('users.profile', args=[p.user.username]))
+        u = UserFactory()
+        r = self.client.get(reverse('users.profile', args=[u.username]))
         assert 'Deactivate this user' not in r.content
 
         add_permission(self.u, Profile, 'deactivate_users')
         self.client.login(username=self.u.username, password='testpass')
-        r = self.client.get(reverse('users.profile', args=[p.user.username]))
+        r = self.client.get(reverse('users.profile', args=[u.username]))
         assert 'Deactivate this user' in r.content
 
-        p.user.is_active = False
-        p.user.save()
-        r = self.client.get(reverse('users.profile', args=[p.user.username]))
+        u.is_active = False
+        u.save()
+        r = self.client.get(reverse('users.profile', args=[u.username]))
         assert 'This user has been deactivated.' in r.content
 
         r = self.client.get(reverse('users.profile', args=[self.u.username]))
@@ -464,9 +463,9 @@ class ViewProfileTests(TestCaseBase):
     def test_badges_listed(self):
         """Verify that awarded badges appear on the profile page."""
         badge_title = 'awesomesauce badge'
-        b = badge(title=badge_title, save=True)
-        u = profile().user
-        award(user=u, badge=b, save=True)
+        b = BadgeFactory(title=badge_title)
+        u = UserFactory()
+        AwardFactory(user=u, badge=b)
         r = self.client.get(reverse('users.profile', args=[u.username]))
         assert badge_title in r.content
 
@@ -475,8 +474,7 @@ class PasswordChangeTests(TestCaseBase):
 
     def setUp(self):
         super(PasswordChangeTests, self).setUp()
-        self.u = user(save=True)
-        profile(user=self.u)
+        self.u = UserFactory()
         self.url = reverse('users.pw_change')
         self.new_pw = 'fjdka387fvstrongpassword!'
         self.client.login(username=self.u.username, password='testpass')
@@ -569,10 +567,10 @@ class ResendConfirmationTests(TestCaseBase):
 
 class FlagProfileTests(TestCaseBase):
 
-    def test_flagged_and_deleted_profile(self):
-        u = user(save=True)
-        p = profile(user=u)
-        flag_user = user(save=True)
+    def test_flagged_and_deleted_ProfileFactory(self):
+        u = UserFactory()
+        p = u.profile
+        flag_user = UserFactory()
         # Flag a profile and delete it
         f = FlaggedObject(content_object=p,
                           reason='spam', creator_id=flag_user.id)
@@ -580,7 +578,7 @@ class FlagProfileTests(TestCaseBase):
         p.delete()
 
         # Verify flagit queue
-        u = user(save=True)
+        u = UserFactory()
         add_permission(u, FlaggedObject, 'can_moderate')
         self.client.login(username=u.username, password='testpass')
         response = get(self.client, 'flagit.queue')
@@ -599,8 +597,7 @@ class ForgotUsernameTests(TestCaseBase):
     @mock.patch.object(Site.objects, 'get_current')
     def test_POST(self, get_current):
         get_current.return_value.domain = 'testserver.com'
-        u = user(save=True, email='a@b.com', is_active=True)
-        profile(user=u)  # save=True is forced.
+        u = UserFactory(email='a@b.com', is_active=True)
 
         r = self.client.post(reverse('users.forgot_username'),
                              {'email': u.email})
@@ -617,18 +614,16 @@ class EditWatchListTests(TestCaseBase):
     """Test manage watch list"""
 
     def setUp(self):
-        p = profile()
-        p.save()
-        self.user = p.user
+        self.user = UserFactory()
         self.client.login(username=self.user.username, password='testpass')
 
-        self.question = question(creator=self.user, save=True)
+        self.question = QuestionFactory(creator=self.user)
         QuestionReplyEvent.notify(self.user, self.question)
 
     def test_GET(self):
         r = self.client.get(reverse('users.edit_watch_list'))
         eq_(200, r.status_code)
-        assert 'question: ' + self.question.title in r.content
+        assert u'question: ' + self.question.title in r.content.decode('utf8')
 
     def test_POST(self):
         w = Watch.objects.get(object_id=self.question.id, user=self.user)

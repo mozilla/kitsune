@@ -4,13 +4,13 @@ from django.core.files import File
 import factory
 from nose.tools import eq_, raises
 
-from kitsune.questions.tests import question, QuestionFactory
+from kitsune.questions.tests import QuestionFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.upload.models import ImageAttachment
 from kitsune.upload.storage import RenameFileStorage
 from kitsune.upload.utils import (
     create_imageattachment, check_file_size, FileTooLargeError)
-from kitsune.users.tests import user, UserFactory
+from kitsune.users.tests import UserFactory
 
 
 class ImageAttachmentFactory(factory.DjangoModelFactory):
@@ -58,8 +58,8 @@ class CreateImageAttachmentTestCase(TestCase):
 
     def setUp(self):
         super(CreateImageAttachmentTestCase, self).setUp()
-        self.user = user(save=True)
-        self.obj = question(save=True)
+        self.user = UserFactory()
+        self.obj = QuestionFactory()
 
     def tearDown(self):
         ImageAttachment.objects.all().delete()

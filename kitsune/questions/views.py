@@ -1715,8 +1715,8 @@ def screen_share(request, question_id):
     if not question.allows_new_answer(request.user):
         raise PermissionDenied
 
-    content = _("I invited {user} to a screen sharing session, "
-                "and I'll give an update here once we are done.")
+    content = _(u"I invited {user} to a screen sharing session, "
+                u"and I'll give an update here once we are done.")
     answer = Answer(question=question, creator=request.user,
                     content=content.format(user=display_name(question.creator)))
     answer.save()

@@ -14,13 +14,13 @@ import waffle
 from nose.tools import eq_
 
 from kitsune.sumo.tests import TestCase
-from kitsune.users.tests import add_permission, user
+from kitsune.users.tests import add_permission, UserFactory
 from kitsune.wiki.config import TEMPLATES_CATEGORY, TEMPLATE_TITLE_PREFIX
 from kitsune.wiki.models import Revision, Document
 from kitsune.wiki.tasks import (
     send_reviewed_notification, rebuild_kb, schedule_rebuild_kb,
     _rebuild_kb_chunk, render_document_cascade)
-from kitsune.wiki.tests import TestCaseBase, revision
+from kitsune.wiki.tests import TestCaseBase, RevisionFactory
 from kitsune.wiki.tests.test_parser import doc_rev_parser
 
 
@@ -46,11 +46,11 @@ class RebuildTestCase(TestCase):
     def setUp(self):
         # create some random revisions.
 
-        revision(save=True)
-        revision(is_approved=True, save=True)
-        revision(is_approved=True, save=True)
-        revision(is_approved=True, save=True)
-        revision(is_approved=True, save=True)
+        RevisionFactory()
+        RevisionFactory(is_approved=True)
+        RevisionFactory(is_approved=True)
+        RevisionFactory(is_approved=True)
+        RevisionFactory(is_approved=True)
 
         # TODO: fix this crap
         self.old_settings = copy(settings._wrapped.__dict__)
@@ -110,7 +110,7 @@ class ReviewMailTestCase(TestCaseBase):
     """Test that the review mail gets sent."""
 
     def setUp(self):
-        self.user = user(save=True)
+        self.user = UserFactory()
         add_permission(self.user, Revision, 'review_revision')
 
     def _approve_and_send(self, revision, reviewer, message):
@@ -124,7 +124,7 @@ class ReviewMailTestCase(TestCaseBase):
     def test_reviewed_notification(self, get_current):
         get_current.return_value.domain = 'testserver'
 
-        rev = revision()
+        rev = RevisionFactory()
         doc = rev.document
         msg = 'great work!'
         self._approve_and_send(rev, self.user, msg)
@@ -135,13 +135,13 @@ class ReviewMailTestCase(TestCaseBase):
             mail.outbox[0].subject)
         eq_([rev.creator.email], mail.outbox[0].to)
         eq_(REVIEWED_EMAIL_CONTENT % (
-            self.user.username, doc.title, msg, doc.slug), mail.outbox[0].body)
+            self.user.profile.name, doc.title, msg, doc.slug), mail.outbox[0].body)
 
     @mock.patch.object(Site.objects, 'get_current')
     def test_reviewed_by_creator_no_notification(self, get_current):
         get_current.return_value.domain = 'testserver'
 
-        rev = revision()
+        rev = RevisionFactory()
         msg = "great work!"
         self._approve_and_send(rev, rev.creator, msg)
 
@@ -152,7 +152,7 @@ class ReviewMailTestCase(TestCaseBase):
     def test_unicode_notifications(self, get_current):
         get_current.return_value.domain = 'testserver'
 
-        rev = revision()
+        rev = RevisionFactory()
         doc = rev.document
         doc.title = u'Foo \xe8 incode'
         msg = 'foo'
@@ -167,7 +167,7 @@ class ReviewMailTestCase(TestCaseBase):
     def test_escaping(self, get_current):
         get_current.return_value.domain = 'testserver'
 
-        rev = revision()
+        rev = RevisionFactory()
         doc = rev.document
         doc.title = '"All about quotes"'
         msg = 'foo & "bar"'
@@ -198,7 +198,7 @@ class TestDocumentRenderCascades(TestCaseBase):
 
         eq_(self._clean(d3), u'one one two three')
 
-        revision(document=d1, content='ONE', is_approved=True, save=True)
+        RevisionFactory(document=d1, content='ONE', is_approved=True)
         render_document_cascade(d1)
 
         eq_(self._clean(d1), u'ONE')

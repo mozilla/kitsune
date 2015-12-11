@@ -5,11 +5,11 @@ from nose.tools import eq_
 from pyquery import PyQuery as pq
 
 from kitsune.products.models import HOT_TOPIC_SLUG
-from kitsune.products.tests import product, topic
+from kitsune.products.tests import ProductFactory, TopicFactory
 from kitsune.questions.models import QuestionLocale
 from kitsune.search.tests.test_es import ElasticTestCase
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.wiki.tests import revision, helpful_vote
+from kitsune.wiki.tests import DocumentFactory, ApprovedRevisionFactory, HelpfulVoteFactory
 
 
 class ProductViewsTestCase(ElasticTestCase):
@@ -18,7 +18,7 @@ class ProductViewsTestCase(ElasticTestCase):
         """Verify that /products page renders products."""
         # Create some products.
         for i in range(3):
-            p = product(save=True)
+            p = ProductFactory(visible=True)
             l = QuestionLocale.objects.get(locale=settings.LANGUAGE_CODE)
             p.questions_locales.add(l)
 
@@ -31,21 +31,17 @@ class ProductViewsTestCase(ElasticTestCase):
     def test_product_landing(self):
         """Verify that /products/<slug> page renders topics."""
         # Create a product.
-        p = product(save=True)
+        p = ProductFactory()
         l = QuestionLocale.objects.get(locale=settings.LANGUAGE_CODE)
         p.questions_locales.add(l)
 
         # Create some topics.
-        topic(slug=HOT_TOPIC_SLUG, product=p, save=True)
-        topics = []
-        for i in range(11):
-            topics.append(topic(product=p, save=True))
+        TopicFactory(slug=HOT_TOPIC_SLUG, product=p, visible=True)
+        topics = TopicFactory.create_batch(11, product=p, visible=True)
 
         # Create a document and assign the product and 10 topics.
-        doc = revision(is_approved=True, save=True).document
-        doc.products.add(p)
-        for i in range(10):
-            doc.topics.add(topics[i])
+        d = DocumentFactory(products=[p], topics=topics[:10])
+        ApprovedRevisionFactory(document=d)
 
         self.refresh()
 
@@ -60,16 +56,12 @@ class ProductViewsTestCase(ElasticTestCase):
     def test_document_listing(self):
         """Verify /products/<product slug>/<topic slug> renders articles."""
         # Create a topic and product.
-        p = product(save=True)
-        t1 = topic(product=p, save=True)
+        p = ProductFactory()
+        t1 = TopicFactory(product=p)
 
         # Create 3 documents with the topic and product and one without.
-        for i in range(3):
-            doc = revision(is_approved=True, save=True).document
-            doc.topics.add(t1)
-            doc.products.add(p)
-
-        doc = revision(is_approved=True, save=True).document
+        ApprovedRevisionFactory.create_batch(3, document__products=[p], document__topics=[t1])
+        ApprovedRevisionFactory()
 
         self.refresh()
 
@@ -84,13 +76,14 @@ class ProductViewsTestCase(ElasticTestCase):
     def test_document_listing_order(self):
         """Verify documents are sorted by display_order and number of helpful votes."""
         # Create topic, product and documents.
-        p = product(save=True)
-        t = topic(product=p, save=True)
+        p = ProductFactory()
+        t = TopicFactory(product=p)
         docs = []
+        # FIXME: Can't we do this with create_batch and build the document
+        # in the approvedrevisionfactory
         for i in range(3):
-            doc = revision(is_approved=True, save=True).document
-            doc.topics.add(t)
-            doc.products.add(p)
+            doc = DocumentFactory(products=[p], topics=[t])
+            ApprovedRevisionFactory(document=doc)
             docs.append(doc)
 
         # Add a lower display order to the second document. It should be first now.
@@ -106,7 +99,7 @@ class ProductViewsTestCase(ElasticTestCase):
 
         # Add a helpful vote to the third document. It should be second now.
         rev = docs[2].current_revision
-        helpful_vote(revision=rev, helpful=True, save=True)
+        HelpfulVoteFactory(revision=rev, helpful=True)
         docs[2].save()  # Votes don't trigger a reindex.
         self.refresh()
         cache.clear()  # documents_for() is cached
@@ -119,8 +112,8 @@ class ProductViewsTestCase(ElasticTestCase):
 
         # Add 2 helpful votes the first document. It should be second now.
         rev = docs[0].current_revision
-        helpful_vote(revision=rev, helpful=True, save=True)
-        helpful_vote(revision=rev, helpful=True, save=True)
+        HelpfulVoteFactory(revision=rev, helpful=True)
+        HelpfulVoteFactory(revision=rev, helpful=True)
         docs[0].save()  # Votes don't trigger a reindex.
         self.refresh()
         cache.clear()  # documents_for() is cached
@@ -133,13 +126,12 @@ class ProductViewsTestCase(ElasticTestCase):
     def test_subtopics(self):
         """Verifies subtopics appear on document listing page."""
         # Create a topic and product.
-        p = product(save=True)
-        t = topic(product=p, save=True)
+        p = ProductFactory()
+        t = TopicFactory(product=p, visible=True)
 
         # Create a documents with the topic and product
-        doc = revision(is_approved=True, save=True).document
-        doc.topics.add(t)
-        doc.products.add(p)
+        doc = DocumentFactory(products=[p], topics=[t])
+        ApprovedRevisionFactory(document=doc)
 
         self.refresh()
 
@@ -152,7 +144,7 @@ class ProductViewsTestCase(ElasticTestCase):
 
         # Create a subtopic, it still shouldn't show up because no
         # articles are assigned.
-        subtopic = topic(parent=t, product=p, save=True)
+        subtopic = TopicFactory(parent=t, product=p, visible=True)
         r = self.client.get(url, follow=True)
         eq_(200, r.status_code)
         pqdoc = pq(r.content)

@@ -5,7 +5,7 @@ from nose.tools import eq_
 
 from kitsune.sumo import googleanalytics
 from kitsune.sumo.tests import TestCase
-from kitsune.wiki.tests import document, revision
+from kitsune.wiki.tests import ApprovedRevisionFactory
 
 
 class GoogleAnalyticsTests(TestCase):
@@ -45,10 +45,7 @@ class GoogleAnalyticsTests(TestCase):
         # Add some documents that match the response data.
         documents = []
         for i in range(1, 6):
-            documents.append(revision(
-                document=document(slug='doc-%s' % i, save=True),
-                is_approved=True,
-                save=True).document)
+            documents.append(ApprovedRevisionFactory(document__slug='doc-%s' % i).document)
 
         pageviews = googleanalytics.pageviews_by_document(
             date(2013, 01, 16), date(2013, 01, 16))

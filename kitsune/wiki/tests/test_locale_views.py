@@ -4,9 +4,9 @@ from pyquery import PyQuery as pq
 
 from kitsune.sumo.tests import TestCase, LocalizingClient
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.users.tests import user, add_permission
+from kitsune.users.tests import UserFactory, add_permission
 from kitsune.wiki.models import Locale
-from kitsune.wiki.tests import locale
+from kitsune.wiki.tests import LocaleFactory
 
 
 class LocaleListTests(TestCase):
@@ -14,9 +14,9 @@ class LocaleListTests(TestCase):
 
     def test_locale_list(self):
         """Verify the locale list renders all locales."""
-        locale(locale='en-US', save=True)
-        locale(locale='es', save=True)
-        locale(locale='de', save=True)
+        LocaleFactory(locale='en-US')
+        LocaleFactory(locale='es')
+        LocaleFactory(locale='de')
 
         r = self.client.get(reverse('wiki.locales'))
         eq_(r.status_code, 200)
@@ -29,12 +29,12 @@ class LocaleDetailsTests(TestCase):
 
     def test_locale_list(self):
         """Verify the locale list renders all locales."""
-        l = locale(locale='es', save=True)
-        leader = user(save=True)
+        l = LocaleFactory(locale='es')
+        leader = UserFactory()
         l.leaders.add(leader)
-        reviewer = user(save=True)
+        reviewer = UserFactory()
         l.reviewers.add(reviewer)
-        editor = user(save=True)
+        editor = UserFactory()
         l.editors.add(editor)
 
         r = self.client.get(reverse('wiki.locale_details', args=[l.locale]))
@@ -42,13 +42,13 @@ class LocaleDetailsTests(TestCase):
         doc = pq(r.content)
         leaders = doc('ul.leaders > li')
         eq_(1, len(leaders))
-        assert leader.username in leaders.text()
+        assert leader.profile.name in leaders.text()
         reviewers = doc('ul.reviewers > li')
         eq_(1, len(reviewers))
-        assert reviewer.username in reviewers.text()
+        assert reviewer.profile.name in reviewers.text()
         editors = doc('ul.editors > li')
         eq_(1, len(editors))
-        assert editor.username in editors.text()
+        assert editor.profile.name in editors.text()
 
 
 class AddRemoveLeaderTests(TestCase):
@@ -56,10 +56,10 @@ class AddRemoveLeaderTests(TestCase):
 
     def setUp(self):
         super(AddRemoveLeaderTests, self).setUp()
-        self.locale = locale(locale='es', save=True)
-        self.user = user(save=True)
+        self.locale = LocaleFactory(locale='es')
+        self.user = UserFactory()
         add_permission(self.user, Locale, 'change_locale')
-        self.leader = user(save=True)
+        self.leader = UserFactory()
         self.client.login(username=self.user.username, password='testpass')
 
     def test_add_leader(self):
@@ -86,10 +86,10 @@ class AddRemoveReviewerTests(TestCase):
 
     def setUp(self):
         super(AddRemoveReviewerTests, self).setUp()
-        self.locale = locale(locale='es', save=True)
-        self.user = user(save=True)
+        self.locale = LocaleFactory(locale='es')
+        self.user = UserFactory()
         self.locale.leaders.add(self.user)
-        self.reviewer = user(save=True)
+        self.reviewer = UserFactory()
         self.client.login(username=self.user.username, password='testpass')
 
     def test_add_reviewer(self):
@@ -116,10 +116,10 @@ class AddRemoveEditorTests(TestCase):
 
     def setUp(self):
         super(AddRemoveEditorTests, self).setUp()
-        self.locale = locale(locale='es', save=True)
-        self.user = user(save=True)
+        self.locale = LocaleFactory(locale='es')
+        self.user = UserFactory()
         self.locale.leaders.add(self.user)
-        self.editor = user(save=True)
+        self.editor = UserFactory()
         self.client.login(username=self.user.username, password='testpass')
 
     def test_add_editor(self):

@@ -7,7 +7,7 @@ from nose.tools import eq_
 from kitsune.messages import context_processors
 from kitsune.messages.context_processors import unread_message_count
 from kitsune.sumo.tests import TestCase
-from kitsune.users.tests import user
+from kitsune.users.tests import UserFactory
 
 
 class UnreadCountTests(TestCase):
@@ -29,6 +29,6 @@ class UnreadCountTests(TestCase):
         unread_count_for.return_value = 3
         rf = RequestFactory()
         request = rf.get('/')
-        request.user = user(save=True)
+        request.user = UserFactory()
         eq_(3, unread_message_count(request)['unread_message_count'])
         assert unread_count_for.called

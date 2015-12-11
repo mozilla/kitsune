@@ -8,14 +8,15 @@ from django.conf import settings
 
 from kitsune.search.tests.test_es import ElasticTestCase
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.questions.tests import question, answer
-from kitsune.products.tests import product
-from kitsune.wiki.tests import document, revision
+from kitsune.questions.tests import QuestionFactory, AnswerFactory
+from kitsune.products.tests import ProductFactory
+from kitsune.wiki.tests import DocumentFactory, RevisionFactory
 
 
 class SuggestViewTests(ElasticTestCase):
     client_class = APIClient
 
+    # TODO: This should probably be a subclass of QuestionFactory
     def _make_question(self, solved=True, **kwargs):
         defaults = {
             'title': 'Login to website comments disabled ' + str(time.time()),
@@ -37,27 +38,26 @@ class SuggestViewTests(ElasticTestCase):
 
                 Why this inability to login to this website commentary?
                 """,
-            'save': True,
         }
         defaults.update(kwargs)
-        q = question(**defaults)
+        q = QuestionFactory(**defaults)
         if solved:
-            a = answer(question=q, save=True)
+            a = AnswerFactory(question=q)
             q.solution = a
         # Trigger a reindex for the question.
         q.save()
         return q
 
+    # TODO: This should probably be a subclass of DocumentFactory
     def _make_document(self, **kwargs):
         defaults = {
             'title': 'How to make a pie from scratch with email ' + str(time.time()),
             'category': 10,
-            'save': True
         }
 
         defaults.update(kwargs)
-        d = document(**defaults)
-        revision(document=d, is_approved=True, save=True)
+        d = DocumentFactory(**defaults)
+        RevisionFactory(document=d, is_approved=True)
         d.save()
         return d
 
@@ -214,8 +214,8 @@ class SuggestViewTests(ElasticTestCase):
         eq_(len(req.data['documents']), 3)
 
     def test_product_filter_works(self):
-        p1 = product(save=True)
-        p2 = product(save=True)
+        p1 = ProductFactory()
+        p2 = ProductFactory()
         q1 = self._make_question(product=p1)
         self._make_question(product=p2)
         self.refresh()

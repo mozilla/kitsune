@@ -21,59 +21,50 @@ from kitsune.wiki.models import Document
 log = logging.getLogger('k.wiki.events')
 
 
+def get_diff_for(doc, old_rev, new_rev):
+        fromfile = u'[%s] %s #%s' % (doc.locale, doc.title, old_rev.id)
+        tofile = u'[%s] %s #%s' % (doc.locale, doc.title, new_rev.id)
+        # difflib expects these to be bytes, not unicode
+        fromfile = fromfile.encode('utf8')
+        tofile = tofile.encode('utf8')
+
+        # Get diff
+        diff_parts = difflib.unified_diff(
+            old_rev.content.splitlines(1),
+            new_rev.content.splitlines(1),
+            fromfile=fromfile, tofile=tofile)
+
+        # Join diff parts
+        # XXX this is super goofy
+        acc = u''
+        for d in diff_parts:
+            if isinstance(d, unicode):
+                acc = acc + d
+            else:
+                acc = acc + d.decode('utf8')
+
+        # Clean output
+        return clean(acc, ALLOWED_TAGS, ALLOWED_ATTRIBUTES)
+
+
 def context_dict(revision, ready_for_l10n=False, revision_approved=False):
     """Return a dict that fills in the blanks in KB notification templates."""
-    document = revision.document
     diff = ''
     l10n = revision.document.revisions.filter(is_ready_for_localization=True)
     approved = revision.document.revisions.filter(is_approved=True)
+
     if ready_for_l10n and l10n.count() > 1:
-        fromfile = u'[%s] %s #%s' % (revision.document.locale,
-                                     revision.document.title,
-                                     l10n.order_by('-created')[1].id)
-        tofile = u'[%s] %s #%s' % (revision.document.locale,
-                                   revision.document.title,
-                                   revision.id)
-
-        diff = clean(
-            u''.join(
-                difflib.unified_diff(
-                    l10n.order_by('-created')[1].content.splitlines(1),
-                    revision.content.splitlines(1),
-                    fromfile=fromfile, tofile=tofile)),
-            ALLOWED_TAGS, ALLOWED_ATTRIBUTES)
+        old_rev = l10n.order_by('-created')[1]
+        diff = get_diff_for(revision.document, old_rev, revision)
     elif revision_approved and approved.count() > 1:
-        doc = revision.document
-        approved_rev = approved.order_by('-created')[1]
-
-        fromfile = u'[%s] %s #%s' % (doc.locale, doc.title, approved_rev.id)
-        tofile = u'[%s] %s #%s' % (doc.locale, doc.title, revision.id)
-
-        diff = clean(
-            u''.join(
-                difflib.unified_diff(
-                    approved_rev.content.splitlines(1),
-                    revision.content.splitlines(1),
-                    fromfile=fromfile, tofile=tofile)),
-            ALLOWED_TAGS, ALLOWED_ATTRIBUTES)
+        old_rev = approved.order_by('-created')[1]
+        diff = get_diff_for(revision.document, old_rev, revision)
     elif revision.document.current_revision is not None:
-        fromfile = u'[%s] %s #%s' % (revision.document.locale,
-                                     revision.document.title,
-                                     revision.document.current_revision.id)
-        tofile = u'[%s] %s #%s' % (revision.document.locale,
-                                   revision.document.title,
-                                   revision.id)
-
-        diff = clean(
-            u''.join(
-                difflib.unified_diff(
-                    revision.document.current_revision.content.splitlines(1),
-                    revision.content.splitlines(1),
-                    fromfile=fromfile, tofile=tofile)),
-            ALLOWED_TAGS, ALLOWED_ATTRIBUTES)
+        old_rev = revision.document.current_revision
+        diff = get_diff_for(revision.document, old_rev, revision)
 
     return {
-        'document_title': document.title,
+        'document_title': revision.document.title,
         'creator': revision.creator,
         'host': Site.objects.get_current().domain,
         'diff': diff,

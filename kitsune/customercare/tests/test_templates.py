@@ -9,7 +9,7 @@ from pyquery import PyQuery as pq
 from kitsune.customercare.replies import REPLIES_DOCUMENT_SLUG
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.wiki.tests import document, revision
+from kitsune.wiki.tests import DocumentFactory, RevisionFactory
 
 
 CANNED_RESPONSES_WIKI = """
@@ -56,13 +56,8 @@ class CannedResponsesTestCase(TestCase):
 
     def _create_doc(self, content):
         # Create the canned responses article.
-        doc = document(slug=REPLIES_DOCUMENT_SLUG, save=True)
-        rev = revision(
-            document=doc,
-            content=content,
-            is_approved=True,
-            save=True)
-
+        doc = DocumentFactory(slug=REPLIES_DOCUMENT_SLUG)
+        rev = RevisionFactory(document=doc, content=content, is_approved=True)
         doc.current_revision = rev
         doc.save()
 

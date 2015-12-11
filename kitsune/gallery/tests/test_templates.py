@@ -2,11 +2,11 @@ from nose.tools import eq_
 from pyquery import PyQuery as pq
 
 from kitsune.gallery.models import Image, Video
-from kitsune.gallery.tests import image, video
+from kitsune.gallery.tests import ImageFactory, VideoFactory
 from kitsune.sumo.helpers import urlparams
 from kitsune.sumo.tests import TestCase, get, LocalizingClient, post
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.users.tests import user
+from kitsune.users.tests import UserFactory
 
 
 class GalleryPageCase(TestCase):
@@ -20,7 +20,7 @@ class GalleryPageCase(TestCase):
         Also, Make sure they don't show up on videos page.
 
         """
-        img = image()
+        img = ImageFactory()
         response = get(self.client, 'gallery.gallery', args=['image'])
         eq_(200, response.status_code)
         doc = pq(response.content)
@@ -30,7 +30,7 @@ class GalleryPageCase(TestCase):
 
     def test_gallery_locale(self):
         """Test that images only show for their set locale."""
-        image(locale='es')
+        ImageFactory(locale='es')
         url = reverse('gallery.gallery', args=['image'])
         response = self.client.get(url, follow=True)
         eq_(200, response.status_code)
@@ -54,7 +54,7 @@ class GalleryAsyncCase(TestCase):
 
     def test_gallery_image_list(self):
         """Test for ajax endpoint without search parameter."""
-        img = image()
+        img = ImageFactory()
         url = urlparams(reverse('gallery.async'), type='image')
         response = self.client.get(url, follow=True)
         eq_(200, response.status_code)
@@ -65,7 +65,7 @@ class GalleryAsyncCase(TestCase):
 
     def test_gallery_image_search(self):
         """Test for ajax endpoint with search parameter."""
-        img = image()
+        img = ImageFactory()
         url = urlparams(reverse('gallery.async'), type='image', q='foobar')
         response = self.client.get(url, follow=True)
         eq_(200, response.status_code)
@@ -88,7 +88,7 @@ class GalleryUploadTestCase(TestCase):
     def setUp(self):
         super(GalleryUploadTestCase, self).setUp()
 
-        self.u = user(save=True)
+        self.u = UserFactory()
         self.client.login(username=self.u.username, password='testpass')
 
     def tearDown(self):
@@ -98,16 +98,16 @@ class GalleryUploadTestCase(TestCase):
 
     def test_image_draft_shows(self):
         """The image draft is loaded for this user."""
-        image(is_draft=True, creator=self.u)
+        img = ImageFactory(is_draft=True, creator=self.u)
         response = get(self.client, 'gallery.gallery', args=['image'])
         eq_(200, response.status_code)
         doc = pq(response.content)
-        assert doc('.file.preview img').attr('src').endswith('098f6b.jpg')
+        assert doc('.file.preview img').attr('src').endswith(img.file.name)
         eq_(1, doc('.file.preview img').length)
 
     def test_image_draft_post(self):
         """Posting to the page saves the field values for the image draft."""
-        image(is_draft=True, creator=self.u)
+        ImageFactory(is_draft=True, creator=self.u)
         response = post(self.client, 'gallery.gallery',
                         {'description': '??', 'title': 'test'}, args=['image'])
         eq_(200, response.status_code)
@@ -118,7 +118,7 @@ class GalleryUploadTestCase(TestCase):
 
     def test_video_draft_post(self):
         """Posting to the page saves the field values for the video draft."""
-        video(is_draft=True, creator=self.u)
+        VideoFactory(is_draft=True, creator=self.u)
         response = post(self.client, 'gallery.gallery',
                         {'title': 'zTestz'}, args=['image'])
         eq_(200, response.status_code)
@@ -142,7 +142,7 @@ class MediaPageCase(TestCase):
 
     def test_image_media_page(self):
         """Test the media page."""
-        img = image()
+        img = ImageFactory()
         response = self.client.get(img.get_absolute_url(), follow=True)
         eq_(200, response.status_code)
         doc = pq(response.content)

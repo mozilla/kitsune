@@ -12,7 +12,7 @@ from nose.tools import eq_
 from pyquery import PyQuery as pq
 from tidings.tests import watch
 
-from kitsune.questions.tests import question, answer
+from kitsune.questions.tests import QuestionFactory, AnswerFactory
 from kitsune.questions.models import Question, Answer
 from kitsune.sumo.tests import (TestCase, LocalizingClient,
                                 send_mail_raise_smtp)
@@ -21,7 +21,7 @@ from kitsune.users import ERROR_SEND_EMAIL
 from kitsune.users.models import (
     CONTRIBUTOR_GROUP, Profile, RegistrationProfile, EmailChange, Setting,
     email_utils, Deactivation)
-from kitsune.users.tests import profile, user, group, add_permission
+from kitsune.users.tests import UserFactory, GroupFactory, add_permission
 
 
 class RegisterTests(TestCase):
@@ -118,7 +118,7 @@ class RegisterTests(TestCase):
             'sumouser1234', 'testpass', 'sumouser@test.com')
         assert not user_.is_active
         then = datetime.now() - timedelta(days=1)
-        q = question(creator=user_, created=then, save=True)
+        q = QuestionFactory(creator=user_, created=then)
         assert q.created == then
         key = RegistrationProfile.objects.all()[0].activation_key
         url = reverse('users.activate', args=[user_.id, key])
@@ -168,7 +168,7 @@ class RegisterTests(TestCase):
         assert q.get_absolute_url() in response.content
 
     def test_duplicate_username(self):
-        u = user(save=True)
+        u = UserFactory()
         response = self.client.post(
             reverse('users.registercontributor', locale='en-US'),
             {'username': u.username,
@@ -178,7 +178,7 @@ class RegisterTests(TestCase):
         self.assertContains(response, 'already exists')
 
     def test_duplicate_email(self):
-        u = user(email='noob@example.com', save=True)
+        u = UserFactory(email='noob@example.com')
         User.objects.create(username='noob', email='noob@example.com').save()
         response = self.client.post(
             reverse('users.registercontributor', locale='en-US'),
@@ -223,7 +223,7 @@ class RegisterTests(TestCase):
         """Verify that interested contributors are added to group."""
         get_current.return_value.domain = 'su.mo.com'
         group_name = 'Registered as contributor'
-        group(name=group_name, save=True)
+        GroupFactory(name=group_name)
         data = {
             'username': 'newbie',
             'email': 'newbie@example.com',
@@ -250,9 +250,8 @@ class ChangeEmailTestCase(TestCase):
     client_class = LocalizingClient
 
     def setUp(self):
-        self.u = user(save=True)
-        profile(user=self.u)
-        self.client.login(username=self.u.username, password='testpass')
+        self.user = UserFactory()
+        self.client.login(username=self.user.username, password='testpass')
         super(ChangeEmailTestCase, self).setUp()
 
     def test_redirect(self):
@@ -284,22 +283,22 @@ class ChangeEmailTestCase(TestCase):
         response = self.client.get(reverse('users.confirm_email',
                                            args=[ec.activation_key]))
         eq_(200, response.status_code)
-        u = User.objects.get(username=self.u.username)
+        u = User.objects.get(username=self.user.username)
         eq_('paulc@trololololololo.com', u.email)
 
     def test_user_change_email_same(self):
         """Changing to same email shows validation error."""
-        self.u.email = 'valid@email.com'
-        self.u.save()
+        self.user.email = 'valid@email.com'
+        self.user.save()
         response = self.client.post(reverse('users.change_email'),
-                                    {'email': self.u.email})
+                                    {'email': self.user.email})
         eq_(200, response.status_code)
         doc = pq(response.content)
         eq_('This is your current email.', doc('ul.errorlist').text())
 
     def test_user_change_email_duplicate(self):
         """Changing to same email shows validation error."""
-        u = user(email='newvalid@email.com', save=True)
+        u = UserFactory(email='newvalid@email.com')
         response = self.client.post(reverse('users.change_email'),
                                     {'email': u.email})
         eq_(200, response.status_code)
@@ -312,7 +311,7 @@ class ChangeEmailTestCase(TestCase):
         """If we detect a duplicate email when confirming an email change,
         don't change it and notify the user."""
         get_current.return_value.domain = 'su.mo.com'
-        old_email = self.u.email
+        old_email = self.user.email
         new_email = 'newvalid@email.com'
         response = self.client.post(reverse('users.change_email'),
                                     {'email': new_email})
@@ -321,73 +320,73 @@ class ChangeEmailTestCase(TestCase):
         ec = EmailChange.objects.all()[0]
 
         # Before new email is confirmed, give the same email to a user
-        u = user(email=new_email, save=True)
+        u = UserFactory(email=new_email)
 
         # Visit confirmation link and verify email wasn't changed.
         response = self.client.get(reverse('users.confirm_email',
                                            args=[ec.activation_key]))
         eq_(200, response.status_code)
         doc = pq(response.content)
-        eq_('Unable to change email for user %s' % self.u.username,
+        eq_(u'Unable to change email for user %s' % self.user.username,
             doc('article h1').text())
-        u = User.objects.get(username=self.u.username)
+        u = User.objects.get(username=self.user.username)
         eq_(old_email, u.email)
 
 
 class MakeContributorTests(TestCase):
     def setUp(self):
-        self.u = user(save=True)
-        self.client.login(username=self.u.username, password='testpass')
-        group(name=CONTRIBUTOR_GROUP, save=True)
+        self.user = UserFactory()
+        self.client.login(username=self.user.username, password='testpass')
+        GroupFactory(name=CONTRIBUTOR_GROUP)
         super(MakeContributorTests, self).setUp()
 
     def test_make_contributor(self):
         """Test adding a user to the contributor group"""
-        eq_(0, self.u.groups.filter(name=CONTRIBUTOR_GROUP).count())
+        eq_(0, self.user.groups.filter(name=CONTRIBUTOR_GROUP).count())
 
         response = self.client.post(reverse('users.make_contributor',
                                             force_locale=True))
         eq_(302, response.status_code)
 
-        eq_(1, self.u.groups.filter(name=CONTRIBUTOR_GROUP).count())
+        eq_(1, self.user.groups.filter(name=CONTRIBUTOR_GROUP).count())
 
 
 class AvatarTests(TestCase):
     def setUp(self):
-        self.u = user(save=True)
-        self.p = profile(user=self.u)
-        self.client.login(username=self.u.username, password='testpass')
+        self.user = UserFactory()
+        self.profile = self.user.profile
+        self.client.login(username=self.user.username, password='testpass')
         super(AvatarTests, self).setUp()
 
     def tearDown(self):
-        p = Profile.objects.get(user=self.u)
+        p = Profile.objects.get(user=self.user)
         if os.path.exists(p.avatar.path):
             os.unlink(p.avatar.path)
         super(AvatarTests, self).tearDown()
 
     def test_upload_avatar(self):
-        assert not self.p.avatar, 'User has no avatar.'
+        assert not self.profile.avatar, 'User has no avatar.'
         with open('kitsune/upload/tests/media/test.jpg') as f:
             url = reverse('users.edit_avatar', locale='en-US')
             data = {'avatar': f}
             r = self.client.post(url, data)
         eq_(302, r.status_code)
-        p = Profile.objects.get(user=self.u)
+        p = Profile.objects.get(user=self.user)
         assert p.avatar, 'User has an avatar.'
         assert p.avatar.path.endswith('.png')
 
     def test_replace_missing_avatar(self):
         """If an avatar is missing, allow replacing it."""
-        assert not self.p.avatar, 'User has no avatar.'
-        self.p.avatar = 'path/does/not/exist.jpg'
-        self.p.save()
-        assert self.p.avatar, 'User has a bad avatar.'
+        assert not self.profile.avatar, 'User has no avatar.'
+        self.profile.avatar = 'path/does/not/exist.jpg'
+        self.profile.save()
+        assert self.profile.avatar, 'User has a bad avatar.'
         with open('kitsune/upload/tests/media/test.jpg') as f:
             url = reverse('users.edit_avatar', locale='en-US')
             data = {'avatar': f}
             r = self.client.post(url, data)
         eq_(302, r.status_code)
-        p = Profile.objects.get(user=self.u)
+        p = Profile.objects.get(user=self.user)
         assert p.avatar, 'User has an avatar.'
         assert not p.avatar.path.endswith('exist.jpg')
         assert p.avatar.path.endswith('.png')
@@ -397,14 +396,14 @@ class SessionTests(TestCase):
     client_class = LocalizingClient
 
     def setUp(self):
-        self.u = user(save=True)
+        self.user = UserFactory()
         self.client.logout()
         super(SessionTests, self).setUp()
 
     def test_login_sets_extra_cookie(self):
         """On login, set the SESSION_EXISTS_COOKIE."""
         url = reverse('users.login')
-        res = self.client.post(url, {'username': self.u.username,
+        res = self.client.post(url, {'username': self.user.username,
                                      'password': 'testpass'})
         assert settings.SESSION_EXISTS_COOKIE in res.cookies
         c = res.cookies[settings.SESSION_EXISTS_COOKIE]
@@ -422,7 +421,7 @@ class SessionTests(TestCase):
     def test_expire_at_browser_close(self):
         """If SESSION_EXPIRE_AT_BROWSER_CLOSE, do expire then."""
         url = reverse('users.login')
-        res = self.client.post(url, {'username': self.u.username,
+        res = self.client.post(url, {'username': self.user.username,
                                      'password': 'testpass'})
         c = res.cookies[settings.SESSION_EXISTS_COOKIE]
         eq_('', c['max-age'])
@@ -432,7 +431,7 @@ class SessionTests(TestCase):
     def test_expire_in_a_long_time(self):
         """If not SESSION_EXPIRE_AT_BROWSER_CLOSE, set an expiry date."""
         url = reverse('users.login')
-        res = self.client.post(url, {'username': self.u.username,
+        res = self.client.post(url, {'username': self.user.username,
                                      'password': 'testpass'})
         c = res.cookies[settings.SESSION_EXISTS_COOKIE]
         eq_(123, c['max-age'])
@@ -440,86 +439,83 @@ class SessionTests(TestCase):
 
 class UserSettingsTests(TestCase):
     def setUp(self):
-        self.u = user(save=True)
-        self.p = profile(user=self.u)
-        self.client.login(username=self.u.username, password='testpass')
+        self.user = UserFactory()
+        self.profile = self.user.profile
+        self.client.login(username=self.user.username, password='testpass')
         super(UserSettingsTests, self).setUp()
 
     def test_create_setting(self):
         url = reverse('users.edit_settings', locale='en-US')
-        eq_(Setting.objects.filter(user=self.u).count(), 0)  # No settings
+        eq_(Setting.objects.filter(user=self.user).count(), 0)  # No settings
         res = self.client.get(url, follow=True)
         eq_(200, res.status_code)
         res = self.client.post(url, {'forums_watch_new_thread': True},
                                follow=True)
         eq_(200, res.status_code)
-        assert Setting.get_for_user(self.u, 'forums_watch_new_thread')
+        assert Setting.get_for_user(self.user, 'forums_watch_new_thread')
 
 
 class UserProfileTests(TestCase):
     def setUp(self):
-        self.u = user(save=True)
-        self.profile = profile(user=self.u)
-        self.url = reverse('users.profile', args=[self.u.username],
-                           locale='en-US')
+        self.user = UserFactory()
+        self.profile = self.user.profile
+        self.userrl = reverse('users.profile', args=[self.user.username], locale='en-US')
         super(UserProfileTests, self).setUp()
 
-    def test_profile(self):
-        res = self.client.get(self.url)
-        self.assertContains(res, self.u.username)
+    def test_ProfileFactory(self):
+        res = self.client.get(self.userrl)
+        self.assertContains(res, self.user.username)
 
     def test_profile_redirect(self):
         """Ensure that old profile URL's get redirected."""
-        res = self.client.get(reverse('users.profile', args=[self.u.pk],
+        res = self.client.get(reverse('users.profile', args=[self.user.pk],
                                       locale='en-US'))
         eq_(302, res.status_code)
 
     def test_profile_inactive(self):
         """Inactive users don't have a public profile."""
-        self.u.is_active = False
-        self.u.save()
-        res = self.client.get(self.url)
+        self.user.is_active = False
+        self.user.save()
+        res = self.client.get(self.userrl)
         eq_(404, res.status_code)
 
     def test_profile_post(self):
-        res = self.client.post(self.url)
+        res = self.client.post(self.userrl)
         eq_(405, res.status_code)
 
     def test_profile_deactivate(self):
         """Test user deactivation"""
-        p = profile()
+        p = UserFactory().profile
 
-        self.client.login(username=self.u.username, password='testpass')
-        res = self.client.post(reverse('users.deactivate', locale='en-US'),
-                               {'user_id': p.user.id})
+        self.client.login(username=self.user.username, password='testpass')
+        res = self.client.post(reverse('users.deactivate', locale='en-US'), {'user_id': p.user.id})
 
         eq_(403, res.status_code)
 
-        add_permission(self.u, Profile, 'deactivate_users')
-        res = self.client.post(reverse('users.deactivate', locale='en-US'),
-                               {'user_id': p.user.id})
+        add_permission(self.user, Profile, 'deactivate_users')
+        res = self.client.post(reverse('users.deactivate', locale='en-US'), {'user_id': p.user.id})
 
         eq_(302, res.status_code)
 
         log = Deactivation.objects.get(user_id=p.user_id)
-        eq_(log.moderator_id, self.u.id)
+        eq_(log.moderator_id, self.user.id)
 
         p = Profile.objects.get(user_id=p.user_id)
         assert not p.user.is_active
 
     def test_deactivate_and_flag_spam(self):
-        self.client.login(username=self.u.username, password='testpass')
-        add_permission(self.u, Profile, 'deactivate_users')
+        self.client.login(username=self.user.username, password='testpass')
+        add_permission(self.user, Profile, 'deactivate_users')
 
         # Verify content is flagged as spam when requested.
-        p = profile()
-        answer(creator=p.user, save=True)
-        question(creator=p.user, save=True)
+        u = UserFactory()
+        AnswerFactory(creator=u)
+        QuestionFactory(creator=u)
         url = reverse('users.deactivate-spam', locale='en-US')
-        res = self.client.post(url, {'user_id': p.user.id})
+        res = self.client.post(url, {'user_id': u.id})
 
         eq_(302, res.status_code)
-        eq_(1, Question.objects.filter(creator=p.user, is_spam=True).count())
-        eq_(0, Question.objects.filter(creator=p.user, is_spam=False).count())
-        eq_(1, Answer.objects.filter(creator=p.user, is_spam=True).count())
-        eq_(0, Answer.objects.filter(creator=p.user, is_spam=False).count())
+        eq_(1, Question.objects.filter(creator=u, is_spam=True).count())
+        eq_(0, Question.objects.filter(creator=u, is_spam=False).count())
+        eq_(1, Answer.objects.filter(creator=u, is_spam=True).count())
+        eq_(0, Answer.objects.filter(creator=u, is_spam=False).count())

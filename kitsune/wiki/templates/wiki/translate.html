@@ -121,6 +121,7 @@
               <input type="hidden" name="form" value="rev" />
               <input type="hidden" name="slug" value="{{ document.slug }}" />
               <input type="hidden" name="locale" value="{{ document.locale }}" />
+            </form>
           {% endif %}
           {% if recent_approved_revs %}
             <h3>{{ _('Recently approved updates') }}:</h3>
@@ -136,6 +137,7 @@
           {% endif %}
 
           <h3>{{ _('Differences') }}:</h3>
+
           {% if document.current_revision and document.current_revision.based_on and parent.latest_localizable_revision %}
             {# Diff between the English version the current translation is based on and the most recent ready-to-localize English version. #}
             {{ revision_diff(document.current_revision.based_on, parent.latest_localizable_revision, show_picker=True) }}

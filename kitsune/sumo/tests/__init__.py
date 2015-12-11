@@ -121,23 +121,6 @@ class MobileTestCase(TestCase):
         self.client.cookies[settings.MOBILE_COOKIE] = 'on'
 
 
-def with_save(func):
-    """Decorate a model maker to add a `save` kwarg.
-
-    If save=True, the model maker will save the object before returning it.
-
-    """
-    @wraps(func)
-    def saving_func(*args, **kwargs):
-        save = kwargs.pop('save', False)
-        ret = func(*args, **kwargs)
-        if save:
-            ret.save()
-        return ret
-
-    return saving_func
-
-
 def eq_msg(a, b, msg=None):
     """Shorthand for 'assert a == b, "%s %r != %r" % (msg, a, b)'
     """
@@ -147,8 +130,9 @@ def eq_msg(a, b, msg=None):
 class FuzzyUnicode(factory.fuzzy.FuzzyText):
     """A FuzzyText factory that contains at least one non-ASCII character."""
 
-    def fuzz(self):
-        return u'đ{}'.format(super(FuzzyUnicode, self).fuzz())
+    def __init__(self, prefix=u'', **kwargs):
+        prefix = u'%sđ' % prefix
+        super(FuzzyUnicode, self).__init__(prefix=prefix, **kwargs)
 
 
 class set_waffle_flag(object):

@@ -4,22 +4,19 @@ from pyquery import PyQuery as pq
 from kitsune.flagit.models import FlaggedObject
 from kitsune.flagit.tests import TestCaseBase
 from kitsune.questions.models import Answer
-from kitsune.questions.tests import question, answer
+from kitsune.questions.tests import AnswerFactory
 from kitsune.sumo.tests import post, get
-from kitsune.users.tests import user, add_permission
+from kitsune.users.tests import UserFactory, add_permission
 
 
 class FlaggedQueueTestCase(TestCaseBase):
     """Test the flagit queue."""
     def setUp(self):
         super(FlaggedQueueTestCase, self).setUp()
-        q = question(creator=user(save=True), save=True)
-        self.answer = answer(question=q,
-                             creator=user(save=True),
-                             save=True)
+        self.answer = AnswerFactory()
+        self.flagger = UserFactory()
 
-        self.flagger = user(save=True)
-        u = user(save=True)
+        u = UserFactory()
         add_permission(u, FlaggedObject, 'can_moderate')
 
         self.client.login(username=u.username, password='testpass')

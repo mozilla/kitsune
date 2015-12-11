@@ -8,13 +8,13 @@ import mock
 from nose.tools import eq_
 
 from kitsune.questions.models import QuestionMappingType
-from kitsune.questions.tests import question, answer, answervote
+from kitsune.questions.tests import QuestionFactory, AnswerFactory, AnswerVoteFactory
 from kitsune.search import es_utils
 from kitsune.search.models import generate_tasks
 from kitsune.search.tests import ElasticTestCase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.wiki.models import DocumentMappingType
-from kitsune.wiki.tests import document, revision
+from kitsune.wiki.tests import DocumentFactory, ApprovedRevisionFactory
 
 
 class ElasticSearchSuggestionsTests(ElasticTestCase):
@@ -32,15 +32,13 @@ class ElasticSearchSuggestionsTests(ElasticTestCase):
         """Suggestions API is well-formatted."""
         get_current.return_value.domain = 'testserver'
 
-        doc = document(title=u'doc1 audio', locale=u'en-US',
-                       is_archived=False, save=True)
-        revision(document=doc, summary=u'audio', content=u'audio',
-                 is_approved=True, save=True)
+        doc = DocumentFactory(title=u'doc1 audio', locale=u'en-US', is_archived=False)
+        ApprovedRevisionFactory(document=doc, summary=u'audio', content=u'audio')
 
-        ques = question(title=u'q1 audio', save=True)
-        ques.tags.add(u'desktop')
-        ans = answer(question=ques, save=True)
-        answervote(answer=ans, helpful=True, save=True)
+        ques = QuestionFactory(title=u'q1 audio', tags=[u'desktop'])
+        # ques.tags.add(u'desktop')
+        ans = AnswerFactory(question=ques)
+        AnswerVoteFactory(answer=ans, helpful=True)
 
         self.refresh()
 
@@ -59,7 +57,7 @@ class ElasticSearchSuggestionsTests(ElasticTestCase):
 
 class TestUtils(ElasticTestCase):
     def test_get_documents(self):
-        q = question(save=True)
+        q = QuestionFactory()
         self.refresh()
 
         docs = es_utils.get_documents(QuestionMappingType, [q.id])
@@ -70,7 +68,7 @@ class TestTasks(ElasticTestCase):
     @mock.patch.object(QuestionMappingType, 'index')
     def test_tasks(self, index_fun):
         """Tests to make sure tasks are added and run"""
-        q = question()
+        q = QuestionFactory()
         # Don't call self.refresh here since that calls generate_tasks().
 
         eq_(index_fun.call_count, 0)
@@ -83,7 +81,7 @@ class TestTasks(ElasticTestCase):
     @mock.patch.object(QuestionMappingType, 'index')
     def test_tasks_squashed(self, index_fun):
         """Tests to make sure tasks are squashed"""
-        q = question()
+        q = QuestionFactory()
         # Don't call self.refresh here since that calls generate_tasks().
 
         eq_(index_fun.call_count, 0)
@@ -162,9 +160,8 @@ class TestAnalyzers(ElasticTestCase):
 
         self.docs = {}
         for locale, data in self.locale_data.items():
-            d = document(locale=locale, save=True)
-            revision(document=d, content=data['content'], is_approved=True,
-                     save=True)
+            d = DocumentFactory(locale=locale)
+            ApprovedRevisionFactory(document=d, content=data['content'])
             self.locale_data[locale]['doc'] = d
 
         self.refresh()

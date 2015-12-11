@@ -7,20 +7,20 @@ from pyquery import PyQuery as pq
 
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.helpers import urlparams
-from kitsune.products.tests import product, topic
+from kitsune.products.tests import ProductFactory, TopicFactory
 from kitsune.questions.feeds import QuestionsFeed, TaggedQuestionsFeed
 from kitsune.questions.models import Question
-from kitsune.questions.tests import TestCaseBase, question
-from kitsune.tags.tests import tag
-from kitsune.users.tests import user
+from kitsune.questions.tests import TestCaseBase, QuestionFactory
+from kitsune.tags.tests import TagFactory
+from kitsune.users.tests import UserFactory
 
 
 class ForumTestFeeds(TestCaseBase):
 
     def test_tagged_feed(self):
         """Test the tagged feed."""
-        t = tag(name='green', slug='green', save=True)
-        q = question(save=True)
+        t = TagFactory(name='green', slug='green')
+        q = QuestionFactory()
         q.tags.add('green')
         items = TaggedQuestionsFeed().items(t)
         eq_(1, len(items))
@@ -28,7 +28,7 @@ class ForumTestFeeds(TestCaseBase):
 
         cache.clear()
 
-        q = question(save=True)
+        q = QuestionFactory()
         q.tags.add('green')
         q.updated = datetime.now() + timedelta(days=1)
         q.save()
@@ -38,7 +38,7 @@ class ForumTestFeeds(TestCaseBase):
 
     def test_tagged_feed_link(self):
         """Make sure the tagged feed is discoverable on the questions page."""
-        tag(name='green', slug='green', save=True)
+        TagFactory(name='green', slug='green')
         url = urlparams(reverse('questions.list', args=['all']),
                         tagged='green')
         response = self.client.get(url)
@@ -55,7 +55,7 @@ class ForumTestFeeds(TestCaseBase):
 
     def test_no_inactive_users(self):
         """Ensure that inactive users' questions don't appear in the feed."""
-        u = user(is_active=False, save=True)
+        u = UserFactory(is_active=False)
 
         q = Question(title='Test Question', content='Lorem Ipsum Dolor',
                      creator_id=u.id)
@@ -64,7 +64,7 @@ class ForumTestFeeds(TestCaseBase):
 
     def test_question_feed_with_product(self):
         """Test that questions feeds with products work."""
-        p = product(save=True)
+        p = ProductFactory()
         url = reverse('questions.list', args=[p.slug])
         res = self.client.get(url)
         eq_(200, res.status_code)
@@ -79,8 +79,8 @@ class ForumTestFeeds(TestCaseBase):
 
     def test_question_feed_with_product_and_topic(self):
         """Test that questions feeds with products and topics work."""
-        p = product(save=True)
-        t = topic(product=p, save=True)
+        p = ProductFactory()
+        t = TopicFactory(product=p)
         url = urlparams(reverse('questions.list', args=[p.slug]), topic=t.slug)
         res = self.client.get(url)
         eq_(200, res.status_code)

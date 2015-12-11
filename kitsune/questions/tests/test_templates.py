@@ -17,24 +17,23 @@ from taggit.models import Tag
 from tidings.models import Watch
 
 import kitsune.questions.tasks
-from kitsune.products.tests import product
+from kitsune.products.tests import ProductFactory
 from kitsune.questions.events import QuestionReplyEvent, QuestionSolvedEvent
-from kitsune.questions.models import (
-    Question, Answer, VoteMetadata, QuestionLocale)
+from kitsune.questions.models import Question, Answer, VoteMetadata, QuestionLocale
 from kitsune.questions.tests import (
-    TestCaseBase, tags_eq, question, answer, answervote)
+    TestCaseBase, tags_eq, QuestionFactory, AnswerFactory, AnswerVoteFactory)
 from kitsune.questions.views import UNAPPROVED_TAG, NO_TAG
 from kitsune.search.tests import ElasticTestCase
 from kitsune.sumo.helpers import urlparams
 from kitsune.sumo.tests import (
     get, post, attrs_eq, emailmessage_raise_smtp, TestCase, LocalizingClient)
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.tags.tests import tag
-from kitsune.products.tests import topic
+from kitsune.tags.tests import TagFactory
+from kitsune.products.tests import TopicFactory
 from kitsune.upload.models import ImageAttachment
 from kitsune.users.models import RegistrationProfile
-from kitsune.users.tests import user, add_permission
-from kitsune.wiki.tests import document, revision
+from kitsune.users.tests import UserFactory, add_permission
+from kitsune.wiki.tests import DocumentFactory, ApprovedRevisionFactory
 
 
 class AnswersTemplateTestCase(TestCaseBase):
@@ -42,9 +41,9 @@ class AnswersTemplateTestCase(TestCaseBase):
     def setUp(self):
         super(AnswersTemplateTestCase, self).setUp()
 
-        self.user = user(save=True)
+        self.user = UserFactory()
         self.client.login(username=self.user.username, password='testpass')
-        self.question = answer(save=True).question
+        self.question = AnswerFactory().question
         self.answer = self.question.answers.all()[0]
 
     def test_answer(self):
@@ -150,7 +149,7 @@ class AnswersTemplateTestCase(TestCaseBase):
 
         # Try to solve again with different answer. It shouldn't blow up or
         # change the solution.
-        answer(question=q, save=True)
+        AnswerFactory(question=q)
         response = post(self.client, 'questions.solve',
                         args=[self.question.id, ans.id])
         eq_(200, response.status_code)
@@ -176,7 +175,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         self.client.logout()
 
         # Try as a nobody
-        u = user(save=True)
+        u = UserFactory()
         self.client.login(username=u.username, password='testpass')
         response = get(self.client, 'questions.details',
                        args=[self.question.id])
@@ -195,7 +194,7 @@ class AnswersTemplateTestCase(TestCaseBase):
 
     def test_solve_unsolve_with_perm(self):
         """Test marking solve/unsolve with 'change_solution' permission."""
-        u = user(save=True)
+        u = UserFactory()
         add_permission(u, Question, 'change_solution')
         self.client.login(username=u.username, password='testpass')
         ans = self.question.answers.all()[0]
@@ -307,7 +306,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         """Authenticated user answer vote."""
         # log in as new user (didn't ask or answer question)
         self.client.logout()
-        u = user(save=True)
+        u = UserFactory()
         self.client.login(username=u.username, password='testpass')
 
         # Common vote test
@@ -350,7 +349,7 @@ class AnswersTemplateTestCase(TestCaseBase):
 
     def test_delete_question_without_permissions(self):
         """Deleting a question without permissions is a 403."""
-        u = user(save=True)
+        u = UserFactory()
         self.client.login(username=u.username, password='testpass')
         response = get(self.client, 'questions.delete',
                        args=[self.question.id])
@@ -380,7 +379,7 @@ class AnswersTemplateTestCase(TestCaseBase):
 
     def test_delete_question_with_permissions(self):
         """Deleting a question with permissions."""
-        u = user(save=True)
+        u = UserFactory()
         add_permission(u, Question, 'delete_question')
         self.client.login(username=u.username, password='testpass')
         response = get(self.client, 'questions.delete',
@@ -393,7 +392,7 @@ class AnswersTemplateTestCase(TestCaseBase):
 
     def test_delete_answer_without_permissions(self):
         """Deleting an answer without permissions sends 403."""
-        u = user(save=True)
+        u = UserFactory()
         self.client.login(username=u.username, password='testpass')
         ans = self.question.last_answer
         response = get(self.client, 'questions.delete_answer',
@@ -428,7 +427,7 @@ class AnswersTemplateTestCase(TestCaseBase):
     def test_delete_answer_with_permissions(self):
         """Deleting an answer with permissions."""
         ans = self.question.last_answer
-        u = user(save=True)
+        u = UserFactory()
         add_permission(u, Answer, 'delete_answer')
         self.client.login(username=u.username, password='testpass')
         response = get(self.client, 'questions.delete_answer',
@@ -463,7 +462,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         """Editing an answer with permissions.
 
         The edit link should show up on the Answers page."""
-        u = user(save=True)
+        u = UserFactory()
         add_permission(u, Answer, 'change_answer')
         self.client.login(username=u.username, password='testpass')
 
@@ -485,7 +484,7 @@ class AnswersTemplateTestCase(TestCaseBase):
 
     def test_answer_creator_can_edit(self):
         """The creator of an answer can edit his/her answer."""
-        u = user(save=True)
+        u = UserFactory()
         self.client.login(username=u.username, password='testpass')
 
         # Initially there should be no edit links
@@ -521,7 +520,7 @@ class AnswersTemplateTestCase(TestCaseBase):
 
     def test_lock_question_without_permissions(self):
         """Trying to lock a question without permission is a 403."""
-        u = user(save=True)
+        u = UserFactory()
         self.client.login(username=u.username, password='testpass')
         q = self.question
         response = post(self.client, 'questions.lock', args=[q.id])
@@ -539,7 +538,7 @@ class AnswersTemplateTestCase(TestCaseBase):
 
     def test_lock_question_with_permissions_GET(self):
         """Trying to lock a question via HTTP GET."""
-        u = user(save=True)
+        u = UserFactory()
         add_permission(u, Question, 'lock_question')
         self.client.login(username=u.username, password='testpass')
         response = get(self.client, 'questions.lock', args=[self.question.id])
@@ -547,7 +546,7 @@ class AnswersTemplateTestCase(TestCaseBase):
 
     def test_lock_question_with_permissions_POST(self):
         """Locking questions with permissions via HTTP POST."""
-        u = user(save=True)
+        u = UserFactory()
         add_permission(u, Question, 'lock_question')
         self.client.login(username=u.username, password='testpass')
         q = self.question
@@ -563,7 +562,7 @@ class AnswersTemplateTestCase(TestCaseBase):
 
     def test_reply_to_locked_question(self):
         """Locked questions can't be answered."""
-        u = user(save=True)
+        u = UserFactory()
         self.client.login(username=u.username, password='testpass')
 
         # Without add_answer permission, we should 403.
@@ -600,7 +599,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         eq_(403, response.status_code)
 
         # A user with edit_answer permission can edit.
-        u = user(save=True)
+        u = UserFactory()
         self.client.login(username=u.username, password='testpass')
         add_permission(u, Answer, 'change_answer')
 
@@ -622,7 +621,7 @@ class AnswersTemplateTestCase(TestCaseBase):
 
     def test_vote_locked_question_403(self):
         """Locked questions can't be voted on."""
-        u = user(save=True)
+        u = UserFactory()
         self.client.login(username=u.username, password='testpass')
 
         q = self.question
@@ -633,7 +632,7 @@ class AnswersTemplateTestCase(TestCaseBase):
 
     def test_vote_answer_to_locked_question_403(self):
         """Answers to locked questions can't be voted on."""
-        u = user(save=True)
+        u = UserFactory()
         self.client.login(username=u.username, password='testpass')
 
         q = self.question
@@ -645,7 +644,7 @@ class AnswersTemplateTestCase(TestCaseBase):
 
     def test_watch_GET_405(self):
         """Watch replies with HTTP GET results in 405."""
-        u = user(save=True)
+        u = UserFactory()
         self.client.login(username=u.username, password='testpass')
         response = get(self.client, 'questions.watch',
                        args=[self.question.id])
@@ -653,7 +652,7 @@ class AnswersTemplateTestCase(TestCaseBase):
 
     def test_unwatch_GET_405(self):
         """Unwatch replies with HTTP GET results in 405."""
-        u = user(save=True)
+        u = UserFactory()
         self.client.login(username=u.username, password='testpass')
         response = get(self.client, 'questions.unwatch',
                        args=[self.question.id])
@@ -719,7 +718,7 @@ class AnswersTemplateTestCase(TestCaseBase):
 
     def test_watch_replies_logged_in(self):
         """Watch a question for replies (logged in)."""
-        u = user(save=True)
+        u = UserFactory()
         self.client.login(username=u.username, password='testpass')
         u = User.objects.get(username=u.username)
         post(self.client, 'questions.watch',
@@ -766,7 +765,7 @@ class AnswersTemplateTestCase(TestCaseBase):
 
     def test_watch_solution_and_replies(self):
         """User subscribes to solution and replies: page doesn't break"""
-        u = user(save=True)
+        u = UserFactory()
         self.client.login(username=u.username, password='testpass')
         QuestionReplyEvent.notify(u, self.question)
         QuestionSolvedEvent.notify(u, self.question)
@@ -788,7 +787,7 @@ class AnswersTemplateTestCase(TestCaseBase):
 
     def test_preview_answer_as_admin(self):
         """Preview an answer as admin and verify response is 200."""
-        u = user(is_staff=True, is_superuser=True, save=True)
+        u = UserFactory(is_staff=True, is_superuser=True)
         self.client.login(username=u.username, password='testpass')
         content = 'Awesome answer.'
         response = post(self.client, 'questions.reply',
@@ -812,7 +811,7 @@ class AnswersTemplateTestCase(TestCaseBase):
 
     def test_robots_noindex_unsolved(self):
         """Verify noindex on unsolved questions."""
-        q = question(save=True)
+        q = QuestionFactory()
 
         # A brand new questions should be noindexed...
         response = get(self.client, 'questions.details', args=[q.id])
@@ -821,7 +820,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         eq_(1, len(doc('meta[name=robots]')))
 
         # If it has one answer, it should still be noindexed...
-        a = answer(question=q, save=True)
+        a = AnswerFactory(question=q)
         response = get(self.client, 'questions.details', args=[q.id])
         eq_(200, response.status_code)
         doc = pq(response.content)
@@ -847,11 +846,11 @@ class TaggingViewTestsAsTagger(TestCaseBase):
     def setUp(self):
         super(TaggingViewTestsAsTagger, self).setUp()
 
-        u = user(save=True)
+        u = UserFactory()
         add_permission(u, Question, 'tag_question')
         self.client.login(username=u.username, password='testpass')
 
-        self.question = question(content=u'lorém ipsuñ', save=True)
+        self.question = QuestionFactory()
 
     # add_tag view:
 
@@ -872,7 +871,7 @@ class TaggingViewTestsAsTagger(TestCaseBase):
 
     def test_add_existent_tag(self):
         """Test adding a tag, case insensitivity, and space stripping."""
-        tag(name='PURplepurplepurple', slug='purplepurplepurple', save=True)
+        TagFactory(name='PURplepurplepurple', slug='purplepurplepurple')
         response = self.client.post(_add_tag_url(self.question.id),
                                     data={'tag-name': ' PURplepurplepurple '},
                                     follow=True)
@@ -895,7 +894,7 @@ class TaggingViewTestsAsTagger(TestCaseBase):
 
     def test_add_async_existent_tag(self):
         """Assert adding an unapplied tag."""
-        tag(name='purplepurplepurple', slug='purplepurplepurple', save=True)
+        TagFactory(name='purplepurplepurple', slug='purplepurplepurple')
         response = self.client.post(_add_async_tag_url(self.question.id),
                                     data={'tag-name': ' PURplepurplepurple '},
                                     HTTP_X_REQUESTED_WITH='XMLHttpRequest')
@@ -976,7 +975,7 @@ class TaggingViewTestsAsTagger(TestCaseBase):
         """Verify that tagging a question "escalate" submits to zendesk."""
         get_current.return_value.domain = 'testserver'
 
-        tag(name='escalate', slug='escalate', save=True)
+        TagFactory(name='escalate', slug='escalate')
         self.client.post(
             _add_tag_url(self.question.id),
             data={'tag-name': 'escalate'},
@@ -999,13 +998,13 @@ class TaggingViewTestsAsAdmin(TestCaseBase):
     def setUp(self):
         super(TaggingViewTestsAsAdmin, self).setUp()
 
-        u = user(save=True)
+        u = UserFactory()
         add_permission(u, Question, 'tag_question')
         add_permission(u, Tag, 'add_tag')
         self.client.login(username=u.username, password='testpass')
 
-        self.question = question(save=True)
-        tag(name='red', slug='red', save=True)
+        self.question = QuestionFactory()
+        TagFactory(name='red', slug='red')
 
     def test_add_new_tag(self):
         """Assert adding a nonexistent tag sychronously creates & adds it."""
@@ -1064,10 +1063,10 @@ def _remove_async_tag_url(question_id):
 
 class QuestionsTemplateTestCase(TestCaseBase):
     def test_tagged(self):
-        u = user(save=True)
+        u = UserFactory()
         add_permission(u, Question, 'tag_question')
         tagname = 'mobile'
-        tag(name=tagname, slug=tagname, save=True)
+        TagFactory(name=tagname, slug=tagname)
         self.client.login(username=u.username, password="testpass")
         tagged = urlparams(reverse(
             'questions.list', args=['all']), tagged=tagname, show='all')
@@ -1078,14 +1077,14 @@ class QuestionsTemplateTestCase(TestCaseBase):
         eq_(0, len(doc('article.questions > section')))
 
         # Tag a question 'mobile'
-        q = question(save=True)
+        q = QuestionFactory()
         response = post(self.client, 'questions.add_tag',
                         {'tag-name': tagname},
                         args=[q.id])
         eq_(200, response.status_code)
 
         # Add an answer
-        answer(question=q, save=True)
+        AnswerFactory(question=q)
 
         # Now there should be 1 question tagged 'mobile'
         response = self.client.get(tagged)
@@ -1103,14 +1102,14 @@ class QuestionsTemplateTestCase(TestCaseBase):
         eq_(200, response.status_code)
 
     def test_product_filter(self):
-        p1 = product(save=True)
-        p2 = product(save=True)
-        p3 = product(save=True)
+        p1 = ProductFactory()
+        p2 = ProductFactory()
+        p3 = ProductFactory()
 
-        q1 = question(save=True)
-        q2 = question(product=p1, save=True)
+        q1 = QuestionFactory()
+        q2 = QuestionFactory(product=p1)
         q2.save()
-        q3 = question(product=p2, save=True)
+        q3 = QuestionFactory(product=p2)
         q3.save()
 
         def check(product, expected):
@@ -1142,14 +1141,14 @@ class QuestionsTemplateTestCase(TestCaseBase):
         check('%s,%s' % (p2.slug, p3.slug), [q3])
 
     def test_topic_filter(self):
-        p = product(save=True)
-        t1 = topic(product=p, save=True)
-        t2 = topic(product=p, save=True)
-        t3 = topic(product=p, save=True)
+        p = ProductFactory()
+        t1 = TopicFactory(product=p)
+        t2 = TopicFactory(product=p)
+        t3 = TopicFactory(product=p)
 
-        q1 = question(save=True)
-        q2 = question(topic=t1, save=True)
-        q3 = question(topic=t2, save=True)
+        q1 = QuestionFactory()
+        q2 = QuestionFactory(topic=t1)
+        q3 = QuestionFactory(topic=t2)
 
         url = reverse('questions.list', args=['all'])
 
@@ -1183,10 +1182,9 @@ class QuestionsTemplateTestCase(TestCaseBase):
 
     def test_select_in_question(self):
         """Verify we properly escape <select/>."""
-        question(
+        QuestionFactory(
             title='test question lorem ipsum <select></select>',
-            content='test question content lorem ipsum <select></select>',
-            save=True)
+            content='test question content lorem ipsum <select></select>')
         response = self.client.get(reverse('questions.list', args=['all']))
         assert 'test question lorem ipsum' in response.content
         assert 'test question content lorem ipsum' in response.content
@@ -1196,9 +1194,7 @@ class QuestionsTemplateTestCase(TestCaseBase):
     def test_truncated_text_is_stripped(self):
         """Verify we strip html from truncated text."""
         long_str = ''.join(random.choice(letters) for x in xrange(170))
-        question(
-            content='<p>%s</p>' % long_str,
-            save=True)
+        QuestionFactory(content='<p>%s</p>' % long_str)
         response = self.client.get(reverse('questions.list', args=['all']))
 
         # Verify that the <p> was stripped
@@ -1207,28 +1203,26 @@ class QuestionsTemplateTestCase(TestCaseBase):
 
     def test_views(self):
         """Verify the view count is displayed correctly."""
-        q = question(save=True)
+        q = QuestionFactory()
         q.questionvisits_set.create(visits=1007)
         response = self.client.get(reverse('questions.list', args=['all']))
         doc = pq(response.content)
         eq_('1007 views', doc('div.views').text())
 
     def test_no_unarchive_on_old_questions(self):
-        ques = question(save=True,
-                        created=(datetime.now() - timedelta(days=200)),
-                        is_archived=True)
+        ques = QuestionFactory(created=(datetime.now() - timedelta(days=200)), is_archived=True)
         response = get(self.client, 'questions.details', args=[ques.id])
         assert 'Archive this post' not in response.content
 
     def test_show_is_empty_string_doesnt_500(self):
-        question(save=True)
+        QuestionFactory()
         response = self.client.get(urlparams(reverse('questions.list', args=['all']), show=''))
         eq_(200, response.status_code)
 
     def test_product_shows_without_tags(self):
-        p = product(save=True)
-        t = topic(product=p, save=True)
-        q = question(topic=t, save=True)
+        p = ProductFactory()
+        t = TopicFactory(product=p)
+        q = QuestionFactory(topic=t)
 
         response = self.client.get(urlparams(reverse('questions.list', args=['all']), show=''))
         doc = pq(response.content)
@@ -1242,9 +1236,9 @@ class QuestionsTemplateTestCaseNoFixtures(TestCase):
 
     def test_locked_questions_dont_appear(self):
         """Locked questions are not listed on the no-replies list."""
-        question(save=True)
-        question(save=True)
-        question(is_locked=True, save=True)
+        QuestionFactory()
+        QuestionFactory()
+        QuestionFactory(is_locked=True)
 
         url = reverse('questions.list', args=['all'])
         url = urlparams(url, filter='no-replies')
@@ -1259,13 +1253,13 @@ class QuestionEditingTests(TestCaseBase):
     def setUp(self):
         super(QuestionEditingTests, self).setUp()
 
-        self.user = user(save=True)
+        self.user = UserFactory()
         add_permission(self.user, Question, 'change_question')
         self.client.login(username=self.user.username, password='testpass')
 
     def test_extra_fields(self):
         """The edit-question form should show appropriate metadata fields."""
-        question_id = question(save=True).id
+        question_id = QuestionFactory().id
         response = get(self.client, 'questions.edit_question',
                        kwargs={'question_id': question_id})
         eq_(response.status_code, 200)
@@ -1282,7 +1276,7 @@ class QuestionEditingTests(TestCaseBase):
 
     def test_no_extra_fields(self):
         """The edit-question form shouldn't show inappropriate metadata."""
-        question_id = question(save=True).id
+        question_id = QuestionFactory().id
         response = get(self.client, 'questions.edit_question',
                        kwargs={'question_id': question_id})
         eq_(response.status_code, 200)
@@ -1293,8 +1287,8 @@ class QuestionEditingTests(TestCaseBase):
 
     def test_post(self):
         """Posting a valid edit form should save the question."""
-        p = product(slug='desktop', save=True)
-        q = question(product=p, save=True)
+        p = ProductFactory(slug='desktop')
+        q = QuestionFactory(product=p)
         response = post(self.client, 'questions.edit_question',
                         {'title': 'New title',
                          'content': 'New content',
@@ -1350,15 +1344,15 @@ class AAQTemplateTestCase(TestCaseBase):
     def setUp(self):
         super(AAQTemplateTestCase, self).setUp()
 
-        self.user = user(save=True)
+        self.user = UserFactory()
         self.client.login(username=self.user.username, password='testpass')
 
     def _post_new_question(self, locale=None):
         """Post a new question and return the response."""
-        p = product(title='Firefox', slug='firefox', save=True)
+        p = ProductFactory(title='Firefox', slug='firefox')
         for l in QuestionLocale.objects.all():
             p.questions_locales.add(l)
-        topic(slug='fix-problems', product=p, save=True)
+        TopicFactory(slug='fix-problems', product=p)
         extra = {}
         if locale is not None:
             extra['locale'] = locale
@@ -1432,10 +1426,10 @@ class AAQTemplateTestCase(TestCaseBase):
 
     def test_invalid_type(self):
         """Providing an invalid type returns 400."""
-        p = product(slug='firefox', save=True)
+        p = ProductFactory(slug='firefox')
         l = QuestionLocale.objects.get(locale=settings.LANGUAGE_CODE)
         p.questions_locales.add(l)
-        topic(slug='fix-problems', product=p, save=True)
+        TopicFactory(slug='fix-problems', product=p)
         self.client.logout()
 
         url = urlparams(
@@ -1454,10 +1448,10 @@ class AAQTemplateTestCase(TestCaseBase):
     def test_register_through_aaq(self, get_current):
         """Registering through AAQ form sends confirmation email."""
         get_current.return_value.domain = 'testserver'
-        p = product(slug='firefox', save=True)
+        p = ProductFactory(slug='firefox')
         l = QuestionLocale.objects.get(locale=settings.LANGUAGE_CODE)
         p.questions_locales.add(l)
-        topic(slug='fix-problems', product=p, save=True)
+        TopicFactory(slug='fix-problems', product=p)
         self.client.logout()
         title = 'A test question'
         url = urlparams(
@@ -1494,14 +1488,14 @@ class AAQTemplateTestCase(TestCaseBase):
         eq_(404, response.status_code)
 
     def test_invalid_category_302(self):
-        product(slug='firefox', save=True)
+        ProductFactory(slug='firefox')
         url = reverse('questions.aaq_step3', args=['desktop', 'lipsum'])
         response = self.client.get(url)
         eq_(302, response.status_code)
 
     def test_no_aaq_link_in_header(self):
         """Verify the ASK A QUESTION link isn't present in header."""
-        p = product(slug='firefox', save=True)
+        p = ProductFactory(slug='firefox')
         l = QuestionLocale.objects.get(locale=settings.LANGUAGE_CODE)
         p.questions_locales.add(l)
         url = reverse('questions.aaq_step2', args=['desktop'])
@@ -1512,13 +1506,10 @@ class AAQTemplateTestCase(TestCaseBase):
 
 class ProductForumTemplateTestCase(TestCaseBase):
     def test_product_forum_listing(self):
-        firefox = product(title='Firefox', slug='firefox', save=True)
-        android = product(title='Firefox for Android', slug='mobile',
-                          save=True)
-        fxos = product(title='Firefox OS', slug='firefox-os',
-                       save=True)
-        openbadges = product(title='Open Badges', slug='open-badges',
-                             save=True)
+        firefox = ProductFactory(title='Firefox', slug='firefox')
+        android = ProductFactory(title='Firefox for Android', slug='mobile')
+        fxos = ProductFactory(title='Firefox OS', slug='firefox-os')
+        openbadges = ProductFactory(title='Open Badges', slug='open-badges')
 
         l = QuestionLocale.objects.get(locale=settings.LANGUAGE_CODE)
         firefox.questions_locales.add(l)
@@ -1539,10 +1530,8 @@ class ProductForumTemplateTestCase(TestCaseBase):
 class RelatedThingsTestCase(ElasticTestCase):
     def setUp(self):
         super(RelatedThingsTestCase, self).setUp()
-        self.question = question(title='lorem ipsum',
-                                 content='lorem',
-                                 product=product(save=True),
-                                 save=True)
+        self.question = QuestionFactory(
+            title='lorem ipsum', content='lorem', product=ProductFactory())
 
     def test_related_questions(self):
         response = get(self.client, 'questions.details',
@@ -1550,27 +1539,27 @@ class RelatedThingsTestCase(ElasticTestCase):
         doc = pq(response.content)
         eq_(0, len(doc('#related-content .related-question')))
 
-        q1 = question(title='lorem ipsum dolor',
-                      content='lorem',
-                      product=self.question.product,
-                      save=True)
-        a1 = answer(question=q1, save=True)
-        answervote(answer=a1, helpful=True, save=True)
+        q1 = QuestionFactory(
+            title='lorem ipsum dolor',
+            content='lorem',
+            product=self.question.product)
+        a1 = AnswerFactory(question=q1)
+        AnswerVoteFactory(answer=a1, helpful=True)
 
         # Questions with no helpful answers should not be shown
-        q2 = question(title='lorem ipsum dolor',
-                      content='lorem',
-                      product=self.question.product,
-                      save=True)
-        answer(question=q2, save=True)
+        q2 = QuestionFactory(
+            title='lorem ipsum dolor',
+            content='lorem',
+            product=self.question.product)
+        AnswerFactory(question=q2)
 
         # Questions that belong to different products should not be shown
-        q3 = question(title='lorem ipsum dolor',
-                      content='lorem',
-                      product=product(save=True),
-                      save=True)
-        a3 = answer(question=q3, save=True)
-        answervote(answer=a3, helpful=True, save=True)
+        q3 = QuestionFactory(
+            title='lorem ipsum dolor',
+            content='lorem',
+            product=ProductFactory())
+        a3 = AnswerFactory(question=q3)
+        AnswerVoteFactory(answer=a3, helpful=True)
 
         cache.clear()
         self.refresh()
@@ -1586,11 +1575,9 @@ class RelatedThingsTestCase(ElasticTestCase):
         doc = pq(response.content)
         eq_(0, len(doc('#related-content .related-document')))
 
-        d1 = document(title='lorem ipsum', save=True)
+        d1 = DocumentFactory(title='lorem ipsum')
         d1.products.add(self.question.product)
-        r1 = revision(document=d1, summary='lorem',
-                      content='lorem ipsum dolor',
-                      is_approved=True, save=True)
+        r1 = ApprovedRevisionFactory(document=d1, summary='lorem', content='lorem ipsum dolor')
         d1.current_revision = r1
         d1.save()
 

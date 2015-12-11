@@ -9,18 +9,18 @@ from nose.tools import eq_
 from kitsune.notifications import tasks as notification_tasks
 from kitsune.notifications.models import (
     Notification, PushNotificationRegistration, RealtimeRegistration)
-from kitsune.notifications.tests import notification
-from kitsune.questions.tests import answer, question
+from kitsune.notifications.tests import NotificationFactory
+from kitsune.questions.tests import AnswerFactory, QuestionFactory
 from kitsune.sumo.tests import TestCase
-from kitsune.users.tests import profile
+from kitsune.users.tests import UserFactory
 
 
 class TestNotificationsSentFromActions(TestCase):
 
     def test_following_actor(self):
-        follower = profile().user
-        followed = profile().user
-        q = question(creator=followed, save=True)
+        follower = UserFactory()
+        followed = UserFactory()
+        q = QuestionFactory(creator=followed)
         # The above might make follows, which this test isn't about. Clear them out.
         Follow.objects.all().delete()
         follow(follower, followed)
@@ -34,9 +34,9 @@ class TestNotificationsSentFromActions(TestCase):
         eq_(notification.action, act)
 
     def test_following_target(self):
-        follower = profile().user
-        q = question(save=True)
-        ans = answer(question=q, save=True)
+        follower = UserFactory()
+        q = QuestionFactory()
+        ans = AnswerFactory(question=q)
         # The above might make follows, which this test isn't about. Clear them out.
         Follow.objects.all().delete()
         follow(follower, q, actor_only=False)
@@ -50,8 +50,8 @@ class TestNotificationsSentFromActions(TestCase):
         eq_(notification.action, act)
 
     def test_following_action_object(self):
-        follower = profile().user
-        q = question(save=True)
+        follower = UserFactory()
+        q = QuestionFactory()
         # The above might make follows, which this test isn't about. Clear them out.
         Follow.objects.all().delete()
         follow(follower, q, actor_only=False)
@@ -66,8 +66,8 @@ class TestNotificationsSentFromActions(TestCase):
 
     def test_no_action_for_self(self):
         """Test that a notification is not sent for actions the user took."""
-        follower = profile().user
-        q = question(creator=follower, save=True)
+        follower = UserFactory()
+        q = QuestionFactory(creator=follower)
         # The above might make follows, which this test isn't about. Clear them out.
         Follow.objects.all().delete()
         follow(follower, q, actor_only=False)
@@ -83,15 +83,15 @@ class TestSimplePushNotifier(TestCase):
 
     def test_simple_push_send(self, requests):
         """Verify that SimplePush registrations are called."""
-        u = profile().user
+        u = UserFactory()
         url = 'http://example.com/simple_push/asdf'
         PushNotificationRegistration.objects.create(creator=u, push_url=url)
-        n = notification(owner=u, save=True)
+        n = NotificationFactory(owner=u)
         requests.put.assert_called_once_with(url, 'version={}'.format(n.id))
 
     def test_simple_push_not_sent(self, requests):
         """Verify that no request is made when there is no SimplePush registration."""
-        notification(save=True)
+        NotificationFactory()
         requests.put.assert_not_called()
 
     def test_simple_push_retry(self, requests):
@@ -100,10 +100,10 @@ class TestSimplePushNotifier(TestCase):
         response.json.return_value = {'errno': 202}
         requests.put.return_value = response
 
-        u = profile().user
+        u = UserFactory()
         url = u'http://example.com/simple_push/asdf'
         PushNotificationRegistration.objects.create(creator=u, push_url=url)
-        n = notification(owner=u, save=True)
+        n = NotificationFactory(owner=u)
 
         # The push notification handler should try, and then retry 3 times before giving up.
         eq_(requests.put.call_args_list, [
@@ -116,15 +116,15 @@ class TestSimplePushNotifier(TestCase):
     def test_from_action_to_simple_push(self, requests):
         """Test that when an action is created, it results in a push notification being sent."""
         # Create a user.
-        u = profile().user
+        u = UserFactory()
         # Register them to receive push notifications.
         url = 'http://example.com/simple_push/asdf'
         PushNotificationRegistration.objects.create(creator=u, push_url=url)
         # Make them follow an object.
-        q = question(save=True)
+        q = QuestionFactory()
         follow(u, q, actor_only=False)
         # Create an action involving that object
-        action.send(profile().user, verb='looked at funny', action_object=q)
+        action.send(UserFactory(), verb='looked at funny', action_object=q)
         n = Notification.objects.get(owner=u)
         # Assert that they got notified.
         requests.put.assert_called_once_with(url, 'version={}'.format(n.id))
@@ -134,15 +134,15 @@ class TestSimplePushNotifier(TestCase):
         Test that when an action is created, it results in a realtime notification being sent.
         """
         # Create a user
-        u = profile().user
+        u = UserFactory()
         # Register realtime notifications for that user on a question
-        q = question(save=True)
+        q = QuestionFactory()
         url = 'http://example.com/simple_push/asdf'
         ct = ContentType.objects.get_for_model(q)
         RealtimeRegistration.objects.create(
             creator=u, endpoint=url, content_type=ct, object_id=q.id)
         # Create an action involving that question
-        action.send(profile().user, verb='looked at funny', action_object=q)
+        action.send(UserFactory(), verb='looked at funny', action_object=q)
         a = Action.objects.order_by('-id')[0]
         # Assert that they got notified.
         requests.put.assert_called_once_with(url, 'version={}'.format(a.id))

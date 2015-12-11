@@ -105,6 +105,6 @@ class WikiMetric(ModelBase):
         ordering = ['-date']
 
     def __unicode__(self):
-        return '[{date}][{locale}][{product}] {code}: {value}'.format(
+        return u'[{date}][{locale}][{product}] {code}: {value}'.format(
             date=self.date, code=self.code, locale=self.locale,
             value=self.value, product=self.product)

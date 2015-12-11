@@ -11,7 +11,7 @@ from kitsune.journal.models import Record
 from kitsune.sumo.utils import (
     chunked, get_next_url, is_ratelimited, smart_int, truncated_json_dumps, get_browser)
 from kitsune.sumo.tests import TestCase
-from kitsune.users.tests import profile
+from kitsune.users.tests import UserFactory
 
 
 class SmartIntTestCase(TestCase):
@@ -131,7 +131,7 @@ class ChunkedTests(TestCase):
 class IsRatelimitedTest(TestCase):
 
     def test_ratelimited(self):
-        u = profile().user
+        u = UserFactory()
         request = Mock()
         request.user = u
         request.limited = False
@@ -143,7 +143,7 @@ class IsRatelimitedTest(TestCase):
         eq_(is_ratelimited(request, 'test-ratelimited', '1/min'), True)
 
     def test_ratelimit_bypass(self):
-        u = profile().user
+        u = UserFactory()
         bypass = Permission.objects.get(codename='bypass_ratelimit')
         u.user_permissions.add(bypass)
         request = Mock()
@@ -157,7 +157,7 @@ class IsRatelimitedTest(TestCase):
         eq_(is_ratelimited(request, 'test-ratelimited', '1/min'), False)
 
     def test_ratelimit_logging(self):
-        u = profile().user
+        u = UserFactory()
         request = Mock()
         request.user = u
         request.limited = False

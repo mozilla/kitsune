@@ -6,9 +6,9 @@ import mock
 from kitsune.kbforums.tests import KBForumTestCase
 from kitsune.sumo.tests import post, attrs_eq, starts_with
 from kitsune.users.models import Setting
-from kitsune.users.tests import user
+from kitsune.users.tests import UserFactory
 
-PRIVATE_MESSAGE_EMAIL = '{sender} sent you the following'
+PRIVATE_MESSAGE_EMAIL = u'{sender} sent you the following'
 
 
 class NotificationsTests(KBForumTestCase):
@@ -17,8 +17,8 @@ class NotificationsTests(KBForumTestCase):
     def setUp(self):
         super(NotificationsTests, self).setUp()
 
-        self.sender = user(username=u'Alice', save=True)
-        self.to = user(username=u'Bob', save=True)
+        self.sender = UserFactory()
+        self.to = UserFactory()
 
     @mock.patch.object(Site.objects, 'get_current')
     def test_private_message_sends_email(self, get_current):
@@ -28,8 +28,7 @@ class NotificationsTests(KBForumTestCase):
         """
         get_current.return_value.domain = 'testserver'
 
-        s, c = Setting.objects.get_or_create(user=self.to,
-                                             name='email_private_messages')
+        s, c = Setting.objects.get_or_create(user=self.to, name='email_private_messages')
         s.value = True
         s.save()
         # User has setting, and should recieve notification email.
@@ -42,9 +41,9 @@ class NotificationsTests(KBForumTestCase):
         subject = u'[SUMO] You have a new private message from [{sender}]'
 
         attrs_eq(mail.outbox[0], to=[self.to.email],
-                 subject=subject.format(sender=self.sender.username))
+                 subject=subject.format(sender=self.sender.profile.name))
         starts_with(mail.outbox[0].body,
-                    PRIVATE_MESSAGE_EMAIL.format(sender=self.sender.username))
+                    PRIVATE_MESSAGE_EMAIL.format(sender=self.sender.profile.name))
 
     @mock.patch.object(Site.objects, 'get_current')
     def test_private_message_not_sends_email(self, get_current):

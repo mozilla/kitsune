@@ -3,7 +3,7 @@ from nose.tools import eq_
 from pyquery import PyQuery as pq
 
 from kitsune.forums.feeds import ThreadsFeed, PostsFeed
-from kitsune.forums.tests import ForumTestCase, forum, thread, post
+from kitsune.forums.tests import ForumTestCase, ForumFactory, ThreadFactory, PostFactory
 from kitsune.sumo.tests import get
 
 
@@ -18,29 +18,27 @@ class ForumTestFeedSorting(ForumTestCase):
     def test_threads_sort(self):
         """Ensure that threads are being sorted properly by date/time."""
         # Threads are sorted descending by last post date.
-        f = forum(save=True)
-        t1 = thread(forum=f, created=YESTERDAY, save=True)
-        post(thread=t1, created=YESTERDAY, save=True)
-        t2 = thread(forum=f, save=True)
-        post(thread=t2, save=True)
+        f = ForumFactory()
+        ThreadFactory(forum=f, created=YESTERDAY)
+        t2 = ThreadFactory(forum=f)
 
         eq_(t2.id, ThreadsFeed().items(f)[0].id)
 
     def test_posts_sort(self):
         """Ensure that posts are being sorted properly by date/time."""
-        t = thread(save=True)
-        post(thread=t, created=YESTERDAY, save=True)
-        post(thread=t, created=YESTERDAY, save=True)
-        p = post(thread=t, save=True)
+        now = datetime.now()
+        yesterday = now - timedelta(days=1)
+        t = ThreadFactory(posts__created=yesterday)
+        p = PostFactory(thread=t, created=now)
 
         # The newest post should be the first one listed.
         eq_(p.id, PostsFeed().items(t)[0].id)
 
     def test_multi_feed_titling(self):
         """Ensure that titles are being applied properly to feeds."""
-        t = thread(save=True)
+        t = ThreadFactory()
         forum = t.forum
-        post(thread=t, save=True)
+        PostFactory(thread=t)
 
         response = get(self.client, 'forums.threads', args=[forum.slug])
         doc = pq(response.content)

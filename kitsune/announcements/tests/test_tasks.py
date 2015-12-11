@@ -5,27 +5,21 @@ import mock
 from nose.tools import eq_
 
 from kitsune.announcements.tasks import send_group_email
-from kitsune.announcements.tests import announcement
+from kitsune.announcements.tests import AnnouncementFactory
 from kitsune.sumo.tests import TestCase
-from kitsune.users.tests import user, group, profile
+from kitsune.users.tests import UserFactory, GroupFactory
 
 
 class AnnouncementSaveTests(TestCase):
     """Test creating group announcements."""
 
     def _setup_announcement(self, visible_dates=True):
-        g = group(save=True)
-        u1 = user(save=True)
-        u2 = user(save=True)
-        u1.groups.add(g)
-        u2.groups.add(g)
-        # Create profiles for these users
-        profile(user=u1)
-        profile(user=u2)
+        g = GroupFactory()
+        u1 = UserFactory(groups=[g])
+        u2 = UserFactory(groups=[g])
         self.user = u2
 
-        return announcement(creator=u1, group=g, save=True,
-                            visible_dates=visible_dates)
+        return AnnouncementFactory(creator=u1, group=g, visible_dates=visible_dates)
 
     @mock.patch.object(Site.objects, 'get_current')
     def test_create_announcement(self, get_current):
@@ -36,8 +30,8 @@ class AnnouncementSaveTests(TestCase):
 
         # Signal fired, emails sent.
         eq_(2, len(mail.outbox))
-        assert 'stardate' in mail.outbox[0].body
-        assert 'stardate' in mail.outbox[1].body
+        assert a.content in mail.outbox[0].body
+        assert a.content in mail.outbox[1].body
 
         # No new emails sent when modifying.
         a.creator = self.user
