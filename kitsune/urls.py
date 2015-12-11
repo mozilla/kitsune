@@ -19,6 +19,7 @@ patch()
 import jingo
 from django.utils import translation
 jingo.get_env().install_gettext_translations(translation, newstyle=True)
+jingo.load_helpers()
 
 from django.contrib import admin
 admin.autodiscover()

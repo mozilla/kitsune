@@ -590,6 +590,7 @@ TEST_RUNNER = 'kitsune.sumo.tests.TestSuiteRunner'
 def JINJA_CONFIG():
     from django.conf import settings
     config = {'extensions': ['puente.ext.i18n',
+                             'waffle.jinja.WaffleExtension',
                              'jinja2.ext.autoescape',
                              'jinja2.ext.with_',
                              'jinja2.ext.do',

@@ -154,8 +154,8 @@ https://github.com/erikrose/django-tidings/archive/ea57792f82496a9d78fec3f9b0db7
 # sha256: oQq2W0PNuSKyEZW5OaqP3tEjDRnAVaqBUWNnUgLdT78
 https://github.com/brosner/django-timezones/archive/ce12f4538fb98612c61b380421e5f39d3f6b2019.tar.gz#egg=django-timezones
 
-# sha256: dEJWIK08Kh8FFR8MyFGrfiYYbaOfsDma_Aqo7uu9IBs
-django-waffle==0.10.1
+# sha256: nNnjqXaEmjzYFoMNeBG5NUPB3J2p88sczC-dqDG4sCU
+django-waffle==0.11
 
 # sha256: KYA_-FsfIQW89JvUx5DSsxkZa3jIjHBiTYrJMd12R68
 djangorestframework==3.3.0
