@@ -266,10 +266,6 @@ def advanced_search(request, template=None):
     # 2. Build form.
     search_form = AdvancedSearchForm(r, auto_id=False)
     search_form.set_allowed_forums(request.user)
-    # get value for search input from last search term.
-    last_search = request.COOKIES.get(settings.LAST_SEARCH_COOKIE)
-    if last_search and 'q' not in r:
-    	r['q'] = urlquote(last_search)
 
     # 3. Validate request.
     # Note: a == 2 means "show the form"--that's all we use it for now.
@@ -281,11 +277,18 @@ def advanced_search(request, template=None):
                 status=400)
 
         t = template if request.MOBILE else 'search/form.html'
-        return cache_control(
-            render(request, t, {
-                'advanced': True,
+        data = {'advanced': True,
                 'request': request,
-                'search_form': search_form}),
+                'search_form': search_form}
+        # get value for search input from last search term.
+        last_search = request.COOKIES.get(settings.LAST_SEARCH_COOKIE)
+        # If there is any cached input from last search, pass it to template
+        if last_search and 'q' not in r:
+            cached_field = urlquote(last_search)
+            data.update({'cached_field': cached_field})
+
+        return cache_control(
+            render(request, t, data),
             settings.SEARCH_CACHE_PERIOD)
 
     # 4. Generate search.
@@ -588,7 +591,6 @@ def advanced_search(request, template=None):
 def opensearch_suggestions(request):
     """A simple search view that returns OpenSearch suggestions."""
     content_type = 'application/x-suggestions+json'
-
     search_form = SimpleSearchForm(request.GET, auto_id=False)
     if not search_form.is_valid():
         return HttpResponseBadRequest(content_type=content_type)

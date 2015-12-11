@@ -24,7 +24,7 @@
             <form id="kb" method="get">
               <div class="container cf">
                 <label for="kb_q">{{ _('Article contains') }}</label>
-                <input name="q" class="auto-fill" id="kb_q" placeholder="{{ _('crashes on youtube') }}" value="{{ search_form.q.data or '' }}" type="text" />
+                <input name="q" class="auto-fill" id="kb_q" placeholder="{{ _('crashes on youtube') }}" value="{{ search_form.q.data or cached_field or '' }}" type="text" />
               </div>
 
               <div class="container cf">
