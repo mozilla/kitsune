@@ -1836,6 +1836,7 @@ def _search_suggestions(request, text, locale, product_slugs):
                     'title': q.title,
                     'type': 'question',
                     'object': q,
+                    'last_updated': q.updated,
                     'is_solved': q.is_solved,
                     'num_answers': q.num_answers,
                     'num_votes': q.num_votes,

@@ -17,6 +17,7 @@ import jinja2
 from elasticutils.utils import format_explanation
 from elasticutils.contrib.django import ES_EXCEPTIONS
 from mobility.decorators import mobile_template
+from rest_framework.renderers import JSONRenderer
 from tower import ugettext as _, ugettext_lazy as _lazy
 
 from kitsune import search as constants
@@ -94,6 +95,7 @@ def build_results_list(pages, is_json):
             result = {
                 'title': doc['question_title'],
                 'type': 'question',
+                'last_updated': datetime.fromtimestamp(doc['updated']),
                 'is_solved': doc['question_is_solved'],
                 'num_answers': doc['question_num_answers'],
                 'num_votes': doc['question_num_votes'],
@@ -134,6 +136,9 @@ def simple_search(request, template=None):
     * document type (`w=2`, for example, for Support Forum questions only)
 
     """
+
+    to_json = JSONRenderer().render
+
     # 1. Prep request.
     # Redirect to old Advanced Search URLs (?a={1,2}) to the new URL.
     if request.GET.get('a') in ['1', '2']:
@@ -226,7 +231,7 @@ def simple_search(request, template=None):
         if not results:
             data['message'] = _('No pages matched the search criteria')
 
-        json_data = json.dumps(data)
+        json_data = to_json(data)
         if request.JSON_CALLBACK:
             json_data = request.JSON_CALLBACK + '(' + json_data + ');'
         return HttpResponse(json_data, content_type=request.CONTENT_TYPE)
@@ -249,8 +254,9 @@ def simple_search(request, template=None):
 def advanced_search(request, template=None):
     """Elasticsearch-specific Advanced search view"""
 
-    # 1. Prep request.
+    to_json = JSONRenderer().render
 
+    # 1. Prep request.
     r = request.GET.copy()
     # TODO: Figure out how to get rid of 'a' and do it.
     # It basically is used to switch between showing the form or results.
@@ -571,7 +577,7 @@ def advanced_search(request, template=None):
         )
         if not results:
             data['message'] = _('No pages matched the search criteria')
-        json_data = json.dumps(data)
+        json_data = to_json(data)
         if request.JSON_CALLBACK:
             json_data = request.JSON_CALLBACK + '(' + json_data + ');'
         return HttpResponse(json_data, content_type=request.CONTENT_TYPE)

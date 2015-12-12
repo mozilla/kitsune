@@ -4,10 +4,13 @@
     <h3><a class="title" href="{{ url }}" {% if as == 'aaq' %}target="_blank"{% endif %}>{{ result.title }}</a></h3>
     <a tabindex="-1" href="{{ url }}" {% if as == 'aaq' %}target="_blank"{% endif %}>{{ result.search_summary }}</a>
     {% if result.type == 'question' %}
-      <ul class="thread-meta cf">
+      <p class="question-status cf">
         {% if result.is_solved %}
-          <li>{{ _('Solved') }}</li>
+          <span class="solved">{{ _('Solved') }}</span> &mdash;
         {% endif %}
+        Last updated {{ result.last_updated|timesince }}
+      </p>
+      <ul class="thread-meta cf">
         <li>
           {% if result.num_answers > 0 %}
             {{ ngettext('1 reply', '{n} replies',
