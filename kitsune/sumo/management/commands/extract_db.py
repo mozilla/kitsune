@@ -74,6 +74,10 @@ class Command(BaseCommand):
                 qs = model_class.objects.all().values_list(*attrs).distinct()
                 for item in qs:
                     for i in range(len(attrs)):
+                        if not item[i]:
+                            # Skip empty strings because empty string msgids
+                            # are super bad.
+                            continue
                         msg = {
                             'id': strip_whitespace(item[i]),
                             'context': 'DB: %s.%s.%s' % (app, model, attrs[i]),
