@@ -49,7 +49,7 @@ export default class AAQApp extends React.Component {
       questionState: QuestionEditStore.getState(),
       userAuth: UserAuthStore.getAll(),
       troubleshooting: TroubleshootingDataStore.getAll(),
-      step: UrlStore.get('step'),
+      step: UrlStore.get('queryParams').step,
     };
   }
 

@@ -20,7 +20,7 @@ var urlData = {
 
 class _UrlStore extends BaseStore {
   get(key) {
-    return getQueryParamsAsDict()[key] || urlData[key];
+    return urlData[key];
   }
 }
 
@@ -50,6 +50,7 @@ UrlStore.dispatchToken = Dispatcher.register((action) => {
 
     case actionTypes.UPDATE_QUERY_STRING:
       params = _.extend({}, getQueryParamsAsDict(), action.params);
+      urlData.queryParams = params;
       qs = queryParamStringFromDict(params);
       window.history.pushState(params, null, urlData.fullPath + qs);
       UrlStore.emitChange();
@@ -57,6 +58,7 @@ UrlStore.dispatchToken = Dispatcher.register((action) => {
 
     case actionTypes.UPDATE_QUERY_STRING_DEFAULTS:
       params = _.extend({}, action.params, getQueryParamsAsDict());
+      urlData.queryParams = params;
       qs = queryParamStringFromDict(params);
       window.history.replaceState(params, null, qs);
       UrlStore.emitChange();
