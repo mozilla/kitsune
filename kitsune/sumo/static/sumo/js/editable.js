@@ -11,7 +11,7 @@
     // Enable managing of member and leader lists.
     $('.editable a.edit').each(function() {
       var $this = $(this),
-      originalText = $this.text();
+        originalText = $this.text();
       $this.click(function(ev) {
         var $container = $this.closest('.editable');
         $container.toggleClass('edit-on');

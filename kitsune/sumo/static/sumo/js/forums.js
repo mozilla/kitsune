@@ -16,13 +16,13 @@
 
     $('span.post-action a.reply').click(function() {
       var post = $(this).data('post'),
-      $post = $('#post-' + post),
-      text = $post.find('div.content-raw').text(),
-      user = $post.find('a.author-name').text(),
-      reply = template("''{user} [[#post-{post}|said]]''\n<blockquote>\n{text}\n</blockquote>\n\n"),
-      reply_text,
-      $textarea = $('#id_content'),
-      oldtext = $textarea.val();
+        $post = $('#post-' + post),
+        text = $post.find('div.content-raw').text(),
+        user = $post.find('a.author-name').text(),
+        reply = template("''{user} [[#post-{post}|said]]''\n<blockquote>\n{text}\n</blockquote>\n\n"),
+        reply_text,
+        $textarea = $('#id_content'),
+        oldtext = $textarea.val();
 
       reply_text = reply({'user': user, 'post': post, 'text': text});
 
@@ -56,14 +56,14 @@
       $this.on('click', function(ev) {
         ev.preventDefault();
         var imgUrl = $this.attr('src'),
-        image = new Image(),
-        html = '<div><img class="loading" /></div>',
-        kbox = new KBox(html, {
-          modal: true,
-          title: gettext('Image Attachment'),
-          id: 'wiki-image-kbox',
-          destroy: true
-        });
+          image = new Image(),
+          html = '<div><img class="loading" /></div>',
+          kbox = new KBox(html, {
+            modal: true,
+            title: gettext('Image Attachment'),
+            id: 'wiki-image-kbox',
+            destroy: true
+          });
         kbox.open();
 
         function setWidth() {

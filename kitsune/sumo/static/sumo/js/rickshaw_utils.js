@@ -105,20 +105,20 @@
         //   new Date(2013, 0, -60) === new Date(2012, 10, 1)
         // This might be the only nice thing about JS's Date.
         switch (this.data.bucketSize) {
-        case 'day':
+          case 'day':
           // Get midnight of today (ie, the boundary between today and yesterday)
-          d.date = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-          break;
-        case 'week':
+            d.date = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+            break;
+          case 'week':
           // Get the most recent Sunday.
-          d.date = new Date(date.getFullYear(), date.getMonth(), date.getDate() - date.getDay());
-          break;
-        case 'month':
+            d.date = new Date(date.getFullYear(), date.getMonth(), date.getDate() - date.getDay());
+            break;
+          case 'month':
           // Get the first of this month.
-          d.date = new Date(date.getFullYear(), date.getMonth(), 1);
-          break;
-        default:
-          throw 'Unknown bucket size ' + this.data.bucketSize;
+            d.date = new Date(date.getFullYear(), date.getMonth(), 1);
+            break;
+          default:
+            throw 'Unknown bucket size ' + this.data.bucketSize;
         }
         d.date = d.date / 1000;
 

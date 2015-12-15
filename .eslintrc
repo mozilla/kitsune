@@ -1,3 +1,5 @@
+extends: eslint:recommended
+
 rules:
   # Turning on extra rules
   quotes: [2, "single", "avoid-escape"]
@@ -14,7 +16,7 @@ rules:
   spaced-comment: [2]
   no-this-before-super: [2]
   constructor-super: [2]
-  indent: [2, 2]
+  indent: [2, 2, {"SwitchCase": 1}]
 
   # Turning off default rules. Should some of these be warnings?
   no-console: [0]
@@ -27,6 +29,7 @@ rules:
   no-extra-strict: [0]
   no-inner-declarations: [0]
   no-loop-func: [0]
+  no-func-assign: [0]
 
 ecmaFeatures:
   arrowFunctions: true

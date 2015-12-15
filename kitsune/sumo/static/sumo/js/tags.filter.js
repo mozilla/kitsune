@@ -7,11 +7,10 @@
 
   function init($container) {
     var $form = $container ? $container.find('form') : $('#tag-filter form'),
-    $tags = $form.find('input[type="text"]'),
-    $btn = $form.find('input[type="submit"], button'),
-    $hidden = $('<input type="hidden"/>'),
-    vocab = $tags.data('vocabulary'),
-    lowerVocab = {};
+      $tags = $form.find('input[type="text"]'), $btn = $form.find('input[type="submit"], button'),
+      $hidden = $('<input type="hidden"/>'),
+      vocab = $tags.data('vocabulary'),
+      lowerVocab = {};
 
     if (!$form.length) {
       return;
@@ -50,15 +49,15 @@
     // When form is submitted, get the slugs to send over in request.
     $form.submit(function() {
       var tagNames = $tags.val(),
-      slugNames = [],
-      currentSlugs = $form.find('input.current-tagged').val(),
-      slugs,
-      invalid = false;
+        slugNames = [],
+        currentSlugs = $form.find('input.current-tagged').val(),
+        slugs,
+        invalid = false;
 
       // For each tag name, find the slug.
       _.each(tagNames.split(','), function(tag) {
         var trimmed = $.trim(tag),
-        slug = lowerVocab[trimmed.toLowerCase()];
+          slug = lowerVocab[trimmed.toLowerCase()];
         if (slug) {
           slugNames.push(slug);
         } else if (trimmed) {

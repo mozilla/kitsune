@@ -79,7 +79,7 @@
   '<div class="kbox-title"></div>' +
   '<div class="kbox-wrap"><div class="kbox-placeholder"/></div>' +
   '</div>',
-  OVERLAY =
+    OVERLAY =
   '<div id="kbox-overlay"></div>';
 
   // The KBox type
@@ -220,7 +220,7 @@
     },
     setPosition: function(position) {
       var self = this,
-      toX, toY, $parent, parentOffset, minX, minY, scrollL, scrollT;
+        toX, toY, $parent, parentOffset, minX, minY, scrollL, scrollT;
       if (!position) {
         position = self.options.position;
       }

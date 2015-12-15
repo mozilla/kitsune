@@ -13,7 +13,7 @@
   function initReadoutModes() {
     $('.readout-modes').each(function attachClickHandler() {
       var $modes = $(this),
-      slug = $modes.attr('data-slug');
+        slug = $modes.attr('data-slug');
       $modes.find('.mode').each(function() {
         var $button = $(this);
         $button.click(function switchMode() {
@@ -37,7 +37,7 @@
 
   function initWatchMenu() {
     var $watchDiv = $('#doc-watch'),
-    $menu = $watchDiv.find('.popup-menu');
+      $menu = $watchDiv.find('.popup-menu');
 
     // Initialize popup menu behavior:
     $watchDiv.find('.popup-trigger').click(function toggleMenu() {
@@ -48,9 +48,8 @@
     // Dim the checkbox, post the watch change, then undim.
     $watchDiv.find('input[type=checkbox]').click(function post() {
       var $box = $(this),
-      csrf = $box.closest('form')
-      .find('input[name=csrfmiddlewaretoken]').val(),
-      isChecked = $box.attr('checked');
+        csrf = $box.closest('form').find('input[name=csrfmiddlewaretoken]').val(),
+        isChecked = $box.attr('checked');
       $box.attr('disabled', 'disabled');
       $.ajax({
         type: 'POST',
@@ -112,7 +111,7 @@
             $form.removeClass('wait');
             try {
               data = JSON.parse(jxr.responseText);
-            } catch(e) {
+            } catch (e) {
               data = {};
             }
             for (field in data) {

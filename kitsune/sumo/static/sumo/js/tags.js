@@ -33,11 +33,11 @@
     // Return a function() that sets the enabledness of the Add button appropriately.
     function makeButtonTender($addForm) {
       var $adder = $addForm.find('input.adder'),
-      $input = $addForm.find('input.autocomplete-tags'),
-      $tagsDiv = $input.closest('div.tags'),
-      canCreateTags = $tagsDiv.data('can-create-tags') !== undefined,
-      vocab = $tagsDiv.data('tagVocab'),
-      $tagList = inputToTagList($input);
+        $input = $addForm.find('input.autocomplete-tags'),
+        $tagsDiv = $input.closest('div.tags'),
+        canCreateTags = $tagsDiv.data('can-create-tags') !== undefined,
+        vocab = $tagsDiv.data('tagVocab'),
+        $tagList = inputToTagList($input);
 
       // Enable Add button if the entered tag is in the vocabulary. Else,
       // disable it. If the user has the can_add_tag permission, let him
@@ -47,8 +47,8 @@
         // TODO: Optimization: use the calculation already done for the
         // autocomplete menu to limit the search space.
         var tagName = $.trim($input.val()),
-        inVocab = inArrayCaseInsensitive(tagName, vocab) !== -1,
-        isOnscreen = tagIsOnscreen(tagName, $tagList);
+          inVocab = inArrayCaseInsensitive(tagName, vocab) !== -1,
+          isOnscreen = tagIsOnscreen(tagName, $tagList);
         $adder.attr('disabled', !tagName.length || isOnscreen ||
         (!canCreateTags && !inVocab));
       }
@@ -62,11 +62,11 @@
     // $tags -- a .tags element containing a vocab in its tagVocab attr
     function makeVocabCallback($tags) {
       var vocab = $tags.data('tagVocab'),
-      $tagList = $tags.find('ul.tag-list');
+        $tagList = $tags.find('ul.tag-list');
 
       function vocabCallback(request, response) {
         var appliedTags = getAppliedTags($tagList),
-        vocabMinusApplied = $.grep(vocab,
+          vocabMinusApplied = $.grep(vocab,
           function(e, i) {
             return $.inArray(e, appliedTags) === -1;
           }
@@ -80,7 +80,7 @@
     $('input.autocomplete-tags').each(
       function() {
         var $input = $(this),
-        tender = makeButtonTender($input.closest('form'));
+          tender = makeButtonTender($input.closest('form'));
 
         $input.autocomplete({
           source: makeVocabCallback($input.closest('div.tags')),
@@ -103,7 +103,7 @@
     $('div.tags').each(
       function() {
         var $div = $(this),
-        async = !$div.hasClass('deferred');
+          async = !$div.hasClass('deferred');
         $div.find('.tag').each(
           function() {
             attachRemoverHandlerTo($(this), async);
@@ -122,9 +122,9 @@
     $container.find('.remover').click(
       function() {
         var $remover = $(this),
-        $tag = $remover.closest('.tag'),
-        tagName = $tag.find('.tag-name').text(),
-        csrf = $remover.closest('form')
+          $tag = $remover.closest('.tag'),
+          tagName = $tag.find('.tag-name').text(),
+          csrf = $remover.closest('form')
         .find('input[name=csrfmiddlewaretoken]').val();
 
         function makeTagDisappear() {
@@ -155,11 +155,11 @@
   // $container is either a form or a div.tags.
   function addTag($container, async) {
     var $input = $container.find('input.autocomplete-tags'),
-    tagName = $input.val(),
-    vocab = $input.closest('div.tags').data('tagVocab'),
-    tagIndex = inArrayCaseInsensitive(tagName, vocab),
-    csrf = $container.find('input[name=csrfmiddlewaretoken]').val(),
-    $tag;
+      tagName = $input.val(),
+      vocab = $input.closest('div.tags').data('tagVocab'),
+      tagIndex = inArrayCaseInsensitive(tagName, vocab),
+      csrf = $container.find('input[name=csrfmiddlewaretoken]').val(),
+      $tag;
 
     // Add a (ghostly, if async) tag to the onscreen
     // list and return the tag element. If the tag was
@@ -206,7 +206,7 @@
           // activate its remover button, and
           // add it to the local vocab.
           var url = data.tagUrl,
-          tagNameSpan = $tag.find('.tag-name');
+            tagNameSpan = $tag.find('.tag-name');
           tagNameSpan.replaceWith($("<a class='tag-name' />")
           .attr('href', url)
           .text(tagNameSpan.text()));
@@ -231,7 +231,7 @@
 
     $('.tag-adder').each(function() {
       var $this = $(this),
-      async = !$this.hasClass('deferred');
+        async = !$this.hasClass('deferred');
       function handler() {
         return addTag($this, async);
       }
