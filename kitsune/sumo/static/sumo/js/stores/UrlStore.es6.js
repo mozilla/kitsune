@@ -10,21 +10,17 @@
 import BaseStore from './BaseStore.es6.js';
 import Dispatcher from '../Dispatcher.es6.js';
 import {actionTypes} from '../constants/UrlConstants.es6.js';
-import {buildUrlPath, getQueryParamsAsDict, queryParamStringFromDict} from '../utils/urls.es6.js';
+import {buildUrlPath, createDictFromPath, getQueryParamsAsDict, queryParamStringFromDict} from '../utils/urls.es6.js';
 
 var urlData = {
   fullPath: '',
-  pathData: {},
-  queryParams: {}
+  pathProps: {},
+  queryParams: getQueryParamsAsDict()
 }
 
 class _UrlStore extends BaseStore {
   get(key) {
     return getQueryParamsAsDict()[key] || urlData[key];
-  }
-
-  set(key, value) {
-    this[key] = value;
   }
 }
 
@@ -32,8 +28,15 @@ class _UrlStore extends BaseStore {
 const UrlStore = new _UrlStore();
 
 UrlStore.dispatchToken = Dispatcher.register((action) => {
-  let params, qs, urlPath;
+  let params, pathProps, qs, urlPath;
   switch (action.type) {
+    case actionTypes.GET_PROPS_FROM_PATH:
+      pathProps = createDictFromPath(action.pathRegex, action.propNames);
+      urlData.pathProps = pathProps;
+
+      UrlStore.emitChange();
+      break;
+
     case actionTypes.UPDATE_URL_PATH:
       urlPath = buildUrlPath(action.paths);
       urlData.fullPath = urlPath;

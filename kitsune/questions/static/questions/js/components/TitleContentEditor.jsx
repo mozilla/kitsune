@@ -2,6 +2,7 @@
 import AAQStep from './AAQStep.jsx';
 import AAQActions from '../actions/AAQActions.es6.js';
 import aaqGa from '../utils/aaqGa.es6.js';
+import UrlActions from '../../../sumo/js/actions/UrlActions.es6.js';
 import UrlStore from '../../../sumo/js/stores/UrlStore.es6.js';
 
 export default class TitleContentEditor extends AAQStep {
@@ -17,13 +18,26 @@ export default class TitleContentEditor extends AAQStep {
     }
   }
 
+  setPropsFromUrl() {
+      UrlActions.getPropsFromPath("/questions/new/(.*)/(.*)", ['product', 'topic']);
+      let urlData = UrlStore.get('pathProps');
+      if (urlData.product) {
+        AAQActions.setProduct(urlData.product);
+      }
+      if (urlData.topic) {
+        AAQActions.setTopic(urlData.topic);
+      }
+  }
+
+  componentWillMount() {
+    if (!this.props.question.topic &&
+            !this.props.question.product) {
+      this.setPropsFromUrl();
+    }
+  }
+
   componentDidMount() {
     AAQActions.checkTroubleshootingAvailable();
-    if (this.shouldExpand() === false) {
-      let urlData = UrlStore.get('pathData');
-      AAQActions.setProduct(urlData.product);
-      AAQActions.setTopic(urlData.topic);
-    }
   }
 
   shouldExpand() {

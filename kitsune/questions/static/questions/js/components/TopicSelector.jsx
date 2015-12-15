@@ -3,10 +3,27 @@ import cx from 'classnames';
 import AAQStep from './AAQStep.jsx';
 import AAQActions from '../actions/AAQActions.es6.js';
 import aaqGa from '../utils/aaqGa.es6.js';
+import UrlActions from '../../../sumo/js/actions/UrlActions.es6.js';
+import UrlStore from '../../../sumo/js/stores/UrlStore.es6.js';
 
 const topics = JSON.parse(document.querySelector('.data[name=topics]').innerHTML);
 
 export default class TopicSelector extends AAQStep {
+
+  setPropsFromUrl() {
+    UrlActions.getPropsFromPath("/questions/new/(.*)", ['product']);
+    let urlData = UrlStore.get('pathProps');
+    if (urlData.product) {
+      AAQActions.setProduct(urlData.product);
+    }
+  }
+
+  componentWillMount() {
+    if (!this.props.question.product) {
+      this.setPropsFromUrl();
+    }
+  }
+
   shouldExpand() {
     return !!this.props.question.product;
   }

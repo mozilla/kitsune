@@ -3,6 +3,19 @@ import {actionTypes} from '../constants/UrlConstants.es6.js';
 
 /**
  * Update the url path string, notify any listeners, and call history.pushState.
+ * @param  string pathRegex Regular expression string to test against the current path.
+ * @param  [array] propNames The property names to associate with each match in the path.
+ */
+export function getPropsFromPath(pathRegex, propNames) {
+  Dispatcher.dispatch({
+    type: actionTypes.GET_PROPS_FROM_PATH,
+    pathRegex,
+    propNames,
+  });
+}
+
+/**
+ * Update the url path string, notify any listeners, and call history.pushState.
  * @param  [array] paths Variables to merge into the current url path.
  */
 export function updateUrlPath(paths) {
@@ -37,6 +50,7 @@ export function updateQueryStringDefaults(params) {
 }
 
 export default {
+  getPropsFromPath,
   updateQueryString,
   updateQueryStringDefaults,
   updateUrlPath,
