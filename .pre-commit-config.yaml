@@ -1,5 +1,5 @@
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    sha: cf550fcab3f12015f8676b8278b30e1a5bc10e70
+    sha: e306ff3b7d0d9a6fc7d128ef9ca2e0b6e6e76e8f
     hooks:
     -   id: check-added-large-files
     -   id: check-case-conflict
@@ -22,7 +22,7 @@
             (scripts/year_in_review.py)"
         args: [--max-line-length=99]
 -   repo: git://github.com/pre-commit/mirrors-eslint
-    sha: '4c6f4aba847a057b7aa1f36838743e460d3e4573'
+    sha: 6a5749410dee3a4686e51a0db72767a5b9b9f68d
     hooks:
     -   id: eslint
         exclude: "\
