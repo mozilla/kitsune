@@ -2,6 +2,7 @@
 import AAQStep from './AAQStep.jsx';
 import AAQActions from '../actions/AAQActions.es6.js';
 import aaqGa from '../utils/aaqGa.es6.js';
+import UrlStore from '../../../sumo/js/stores/UrlStore.es6.js';
 
 export default class TitleContentEditor extends AAQStep {
   handleChange(ev) {
@@ -18,6 +19,11 @@ export default class TitleContentEditor extends AAQStep {
 
   componentDidMount() {
     AAQActions.checkTroubleshootingAvailable();
+    if (this.shouldExpand() === false) {
+      let urlData = UrlStore.get('pathData');
+      AAQActions.setProduct(urlData.product);
+      AAQActions.setTopic(urlData.topic);
+    }
   }
 
   shouldExpand() {

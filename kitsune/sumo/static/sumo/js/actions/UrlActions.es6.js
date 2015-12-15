@@ -2,6 +2,17 @@ import Dispatcher from '../Dispatcher.es6.js';
 import {actionTypes} from '../constants/UrlConstants.es6.js';
 
 /**
+ * Update the url path string, notify any listeners, and call history.pushState.
+ * @param  [array] paths Variables to merge into the current url path.
+ */
+export function updateUrlPath(paths) {
+  Dispatcher.dispatch({
+    type: actionTypes.UPDATE_URL_PATH,
+    paths,
+  });
+}
+
+/**
  * Update the query string, notify any listeners, and call history.pushState.
  * @param  {object} params Variables to merge into the current query string state.
  */
@@ -28,4 +39,5 @@ export function updateQueryStringDefaults(params) {
 export default {
   updateQueryString,
   updateQueryStringDefaults,
+  updateUrlPath,
 };

@@ -54,6 +54,8 @@ export default class AAQApp extends React.Component {
   }
 
   setStep(step) {
+    var questionState = this.getStateFromStores().question;
+    UrlActions.updateUrlPath([questionState.product, questionState.topic]);
     UrlActions.updateQueryString({step});
   }
 
