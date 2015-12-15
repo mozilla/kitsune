@@ -228,8 +228,8 @@ polib==1.0.5
 # sha256: dtTQM5HdY_jQTr2fEJqDcswNKFyGuc3ekY6sgJWXYGM
 https://github.com/peterbe/premailer/archive/3981359de1ce974b24f69a8a99bb033e55ec3230.tar.gz#egg=premailer
 
-# sha256: VH7oV6x1nGI3dwHi5No4v9aTBlwgongRyBmCxBjq-fg
-puente==0.4
+# sha256: hPdpwOpgeCnHe9iz1tb7wWWJzXpdTlAj9xfNPV3lRHM
+puente==0.4.1
 
 # py-wikimarkup: master
 # sha256: YpQN6FOWpn2GomK8ZdjXbGNnxpxpA0ypjL1VEs_m8Dc

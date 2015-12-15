@@ -605,7 +605,7 @@ def JINJA_CONFIG():
 PUENTE = {
     'BASE_DIR': ROOT,
     'DOMAIN_METHODS': {
-        'messages': [
+        'django': [
             ('kitsune/forums/**.py', 'ignore'),
             ('kitsune/forums/**.html', 'ignore'),
             ('kitsune/**/tests/**.py', 'ignore'),
@@ -620,7 +620,7 @@ PUENTE = {
             ('vendor/src/django-badger/badger/*.py', 'python'),
             ('vendor/src/django-badger/badger/templatetags/*.py', 'python'),
         ],
-        'javascript': [
+        'djangojs': [
             # We can't say **.js because that would dive into any libraries.
             ('kitsune/**/static/**/js/*-all.js', 'ignore'),
             ('kitsune/**/static/**/js/*-min.js', 'ignore'),
@@ -637,11 +637,11 @@ PUENTE = {
 # http://github.com/jbalogh/zamboni/blob/d4c64239c24aa2f1e91276909823d1d1b290f0ee/settings.py#L254 # nopep8
 STANDALONE_DOMAINS = [
     TEXT_DOMAIN,
-    'javascript',
+    'djangojs',
     'yaocho',
 ]
 
-STATICI18N_DOMAIN = 'javascript'
+STATICI18N_DOMAIN = 'djangojs'
 STATICI18N_PACKAGES = ['kitsune.sumo']
 
 #
