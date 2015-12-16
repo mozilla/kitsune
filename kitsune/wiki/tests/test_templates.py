@@ -456,9 +456,9 @@ class RevisionTests(TestCaseBase):
         eq_(d.title, doc('h1.title').text())
         eq_(pq(r.content_parsed)('div').text(),
             doc('#doc-content div').text())
-        eq_('Created:\n              Jan 1, 2011 12:00:00 AM',
+        eq_('Created:\n              Jan 1, 2011, 12:00:00 AM',
             doc('.revision-info li')[1].text_content().strip())
-        eq_('Reviewed:\n                Jan 2, 2011 12:00:00 AM',
+        eq_('Reviewed:\n                Jan 2, 2011, 12:00:00 AM',
             doc('.revision-info li')[5].text_content().strip())
         # is reviewed?
         eq_('Yes', doc('.revision-info li').eq(4).find('span').text())
