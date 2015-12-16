@@ -7,7 +7,7 @@
 {% set scripts = ('mobile-products',) %}
 {% set return_url = url('products') %}
 
-{% block title %}{{ _('{product} Help')|f(product=pgettext('DB: products.Product.title', product.title)) }}{% endblock %}
+{% block title %}{{ _('{product} Help')|fe(product=pgettext('DB: products.Product.title', product.title)) }}{% endblock %}
 
 {% block after_header %}
   <div class="search-bar slide-on-exposed">
