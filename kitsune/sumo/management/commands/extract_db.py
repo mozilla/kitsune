@@ -66,6 +66,12 @@ class Command(BaseCommand):
         except AttributeError:
             raise CommandError('DB_LOCALIZE setting is not defined!')
 
+        areyousure = raw_input(
+            'Are you sure you have a recent production db? y/n: '
+        )
+        if areyousure.lower() != 'y':
+            raise CommandError('Not sure if it is a recent production db.')
+
         strings = []
         for app, models in apps.items():
             for model, params in models.items():
