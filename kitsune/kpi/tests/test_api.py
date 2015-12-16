@@ -164,13 +164,13 @@ class KpiApiTests(TestCase):
 
     def test_vote(self):
         """Test vote API call."""
-        r = RevisionFactory()
-        HelpfulVoteFactory(revision=r)
-        HelpfulVoteFactory(revision=r)
+        r = RevisionFactory(is_approved=True)
+        HelpfulVoteFactory(revision=r, helpful=False)
+        HelpfulVoteFactory(revision=r, helpful=False)
         HelpfulVoteFactory(revision=r, helpful=True)
 
         a = AnswerFactory()
-        AnswerVoteFactory(answer=a)
+        AnswerVoteFactory(answer=a, helpful=False)
         AnswerVoteFactory(answer=a, helpful=True)
         AnswerVoteFactory(answer=a, helpful=True)
 
