@@ -91,6 +91,9 @@ def patch():
     admin.site = AdminSitePlus()
     admin.site.login = login_required(admin.site.login)
 
+    from jingo.monkey import patch
+    patch()
+
     # Monkey patch django's csrf
     import session_csrf
     session_csrf.monkeypatch()
