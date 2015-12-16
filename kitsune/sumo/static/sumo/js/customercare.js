@@ -147,7 +147,7 @@
     // the data-count attr of a parent tweet.
     function update_reply_indicator($parent) {
       var reply_txt = $parent.find('.reply_count').first(),  // first() avoids nested tweets.
-      count = reply_txt.data('count') - 1;
+        count = reply_txt.data('count') - 1;
       reply_txt.addClass('you');
       if (count === 0) {
         reply_txt.text(gettext('You replied'));
@@ -162,8 +162,8 @@
     // Append a new tweet, given as the HTML of an <li>, to this thread.
     function appendReply(html, parentId) {
       var $parent = $('#tweet-' + parentId),
-      $count,
-      $replyList = $('#replies_' + parentId).children('ul');
+        $count,
+        $replyList = $('#replies_' + parentId).children('ul');
       $replyList.append($(html).hide());
 
       $count = $parent.find('.reply_count').first();
@@ -245,12 +245,12 @@
       var csrf = $('#reply input[name=csrfmiddlewaretoken]').val();
       this.$el.find('#submit').bind('click', {reply: this}, function(e) {
         var reply = e.data.reply,
-        reqData = {
-          'csrfmiddlewaretoken': csrf,
-          'content': reply.content,
-          'reply_to': reply.tweet.id
-        },
-        $btn = $(this);
+          reqData = {
+            'csrfmiddlewaretoken': csrf,
+            'content': reply.content,
+            'reply_to': reply.tweet.id
+          },
+          $btn = $(this);
         if (!$btn.is('.busy')) {
           $btn.addClass('busy');
           $.ajax({
@@ -407,7 +407,7 @@
     /* Show/hide replies */
     $('#tweets .reply-count').live('click', function(e) {
       var tweet_id = $(this).closest('.tweet').attr('data-tweet-id'),
-      replies = $('#replies_' + tweet_id);
+        replies = $('#replies_' + tweet_id);
 
       replies.toggle();
 
@@ -423,7 +423,7 @@
       $(this).addClass('clicked');
 
       var tweet = $(this).closest('.tweet'),
-      tweet_id = tweet.attr('data-tweet-id');
+        tweet_id = tweet.attr('data-tweet-id');
       $.ajax({
         url: $(this).attr('href'),
         type: 'POST',

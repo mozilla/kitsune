@@ -35,7 +35,7 @@
   $('#gallery-upload-modal .upload-media').each(function () {
     var $self = $(this);
     var type = $self.find('input').attr('name'),
-    details = $self.find('.details').html();
+      details = $self.find('.details').html();
     CONSTANTS.messages.initial[type] = details;
   });
 
@@ -128,7 +128,7 @@
       // Deleting uploaded files sends ajax request.
       jQuery.fn.makeCancelUpload = function(options) {
         var $input = this,
-        field_name = $input.data('name');
+          field_name = $input.data('name');
         if (!$input.is('input')) {
           return $input;
         }
@@ -185,7 +185,7 @@
     */
     validateForm: function($input) {
       var self = this,
-      $form = $input.closest('.upload-form');
+        $form = $input.closest('.upload-form');
       // An image must be uploaded
       if ($form[0] === self.forms.$image[0] &&
           $form.find('.on input[type="file"]').length) {
@@ -209,13 +209,13 @@
     */
     isValidFile: function ($input) {
       var file = $input[0].files[0],
-      type = $input.attr('name');
+        type = $input.attr('name');
       var file_ext = file.name.split(/\./).pop().toLowerCase();
       return (in_array(file_ext, CONSTANTS.extensions[type]));
     },
     isTooLarge: function ($input) {
       var file = $input[0].files[0],
-      type = $input.attr('name');
+        type = $input.attr('name');
       return (file.size >= CONSTANTS.max_size[type]);
     },
     /*
@@ -228,8 +228,8 @@
     */
     startUpload: function($input) {
       var $form = $input.closest('.upload-form'),
-      filename = $input.val().split(/[\/\\]/).pop(),
-      $progress = $('.progress', $form)
+        filename = $input.val().split(/[\/\\]/).pop(),
+        $progress = $('.progress', $form)
       .filter('.' + $input.attr('name'));
       // truncate filename
       if (filename.length > CONSTANTS.maxFilenameLength) {
@@ -254,7 +254,7 @@
       var iframeJSON, self = this;
       try {
         iframeJSON = $.parseJSON(iframeContent);
-      } catch(err) {
+      } catch (err) {
         self.uploadError($input, 'server');
       }
 
@@ -276,11 +276,11 @@
     */
     uploadSuccess: function($input, iframeJSON, filename) {
       var type = $input.attr('name'),
-      $form = $input.closest('.upload-form'),
-      $cancel_btn = $('.upload-action input[name="cancel"]', $form),
-      $content, attrs = {},
-      $preview_area,
-      upFile = iframeJSON.file;
+        $form = $input.closest('.upload-form'),
+        $cancel_btn = $('.upload-action input[name="cancel"]', $form),
+        $content, attrs = {},
+        $preview_area,
+        upFile = iframeJSON.file;
       var message = CONSTANTS.messages[type].del;
 
       // Upload is no longer in progress.
@@ -329,7 +329,7 @@
     */
     uploadError: function($input, reason) {
       var self = this,
-      type = $input.attr('name');
+        type = $input.attr('name');
       // Cancel existing upload.
       $('.progress.' + type).find('a.' + type).click();
       // Show an error message.
@@ -343,9 +343,9 @@
     */
     deleteUpload: function($input) {
       var self = this,
-      $cancelForm = $input.closest('form'),
-      $mediaForm = $input.closest('.upload-form'),
-      type = $input.data('name');
+        $cancelForm = $input.closest('form'),
+        $mediaForm = $input.closest('.upload-form'),
+        type = $input.data('name');
       // Clean up all the preview and progress information.
       $mediaForm.find('.preview.' + type).hideFade()
       .filter('.row-right').html('');
@@ -370,8 +370,8 @@
     */
     cancelUpload: function($a) {
       var self = this,
-      type = $a.attr('class'),
-      $form = $a.closest('form');
+        type = $a.attr('class'),
+        $form = $a.closest('form');
       var $input = $form.find('input[name="' + type + '"]');
       var form_target = $input.closest('form').attr('target');
       $('iframe[name="' + form_target + '"]')[0].src = null;
@@ -410,7 +410,7 @@
       $uploads.each(function () {
         var $self = $(this);
         var type = $self.attr('name'),
-        $form = $self.closest('.upload-form');
+          $form = $self.closest('.upload-form');
         if ($form.data(type)) {
           $form.find('.upload-media.' + type).hideFade();
         } else {
@@ -430,8 +430,8 @@
     */
     modalClose: function() {
       var self = this,
-      csrf = $('input[name="csrfmiddlewaretoken"]').first().val(),
-      $input = $('.upload-action input[name="cancel"]', self.$modal);
+        csrf = $('input[name="csrfmiddlewaretoken"]').first().val(),
+        $input = $('.upload-action input[name="cancel"]', self.$modal);
       if (self.$modal.find('.draft').length) {
         // If there's a draft to cancel.
         $.ajax({
@@ -450,7 +450,7 @@
     */
     modalReset: function() {
       var self = this,
-      $uploads = self.$modal.find('.upload-media');
+        $uploads = self.$modal.find('.upload-media');
       self.$modal.find('.draft').removeClass('draft');
       // Hide metadata
       self.$modal.find('.metadata').hide();
@@ -461,7 +461,7 @@
       // Show all the file inputs with default messages.
       $uploads.filter('.row-right').each(function () {
         var $input = $(this).find('input[type="file"]'),
-        type = $input.attr('name');
+          type = $input.attr('name');
         $input.closest('form')[0].reset();
         $(this).find('.details').html(CONSTANTS.messages.initial[type]);
       }).find('.error').removeClass('error');

@@ -46,8 +46,8 @@ nosenicedots==0.5
 # sha256: uLfjVjC1U54moZffxgBb6eHpoTVJazd3I6jrwBuby_8
 pep8==1.6.2
 
-# sha256: wapVuGj_cYauuuwMQDlL2MHHiGdXK3J-WpxzS56oL9I
-pre-commit==0.6.2
+# sha256: 8aToLPNAHbYoWqRAIzJ_7_ogvmMOr36o_lLrDWn0pT8
+pre-commit==0.7.0
 
 # sha256: 854zpMA77q2HdPAFvT7PDD8vJk-gIB3pZfzgr_HTQmM
 pyflakes==1.0.0

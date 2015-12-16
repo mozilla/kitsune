@@ -6,13 +6,13 @@
 
 (function () {
   var VIDEO_ID_PREFIX = 'video-flash-', id_counter = 0,
-  FLASH_VERSION = '9.0.0',
-  params = {allowfullscreen: 'true'},
-  flashvars = {
-    autoload: 1,
-    showtime: 1,
-    showvolume: 1
-  };
+    FLASH_VERSION = '9.0.0',
+    params = {allowfullscreen: 'true'},
+    flashvars = {
+      autoload: 1,
+      showtime: 1,
+      showvolume: 1
+    };
   /*
   * Initializes flash fallback for a video object.
   */
@@ -22,11 +22,11 @@
     }
 
     var formats = {ogg: false, webm: false}, i,
-    width = Number($video.data('width')),
-    height = Number($video.data('height')),
+      width = Number($video.data('width')),
+      height = Number($video.data('height')),
     // Build a unique ID for the object container
-    unique_id = VIDEO_ID_PREFIX + id_counter,
-    flash_file;
+      unique_id = VIDEO_ID_PREFIX + id_counter,
+      flash_file;
     id_counter++;
 
     $video.attr('id', unique_id);

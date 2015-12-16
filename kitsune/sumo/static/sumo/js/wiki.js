@@ -123,12 +123,12 @@
       $('details').each(function() {
         // Store a reference to the current `details` element in a variable
         var $details = $(this),
-        // Store a reference to the `summary` element of the current `details` element (if any) in a variable
-            $detailsSummary = $('summary', $details),
-        // Do the same for the info within the `details` element
-            $detailsNotSummary = $details.children(':not(summary)'),
-        // This will be used later to look for direct child text nodes
-            $detailsNotSummaryContents = $details.contents(':not(summary)');
+          // Store a reference to the `summary` element of the current `details` element (if any) in a variable
+          $detailsSummary = $('summary', $details),
+          // Do the same for the info within the `details` element
+          $detailsNotSummary = $details.children(':not(summary)'),
+          // This will be used later to look for direct child text nodes
+          $detailsNotSummaryContents = $details.contents(':not(summary)');
 
         // If there is no `summary` in the current `details` element...
         if (!$detailsSummary.length) {
@@ -169,15 +169,15 @@
           $detailsNotSummary.slideToggle();
           $details.toggleClass('open');
         }).keyup(function(event) {
-              if (event.keyCode === 13 || event.keyCode === 32) {
+          if (event.keyCode === 13 || event.keyCode === 32) {
                 // Enter or Space is pressed -- trigger the `click` event on the `summary` element
                 // Opera already seems to trigger the `click` event when Enter is pressed
-                if (!($.browser.opera && event.keyCode === 13)) {
-                  event.preventDefault();
-                  $detailsSummary.click();
-                }
-              }
-            });
+            if (!($.browser.opera && event.keyCode === 13)) {
+              event.preventDefault();
+              $detailsSummary.click();
+            }
+          }
+        });
       });
     }
   }
@@ -220,23 +220,23 @@
 
   function initSummaryCount() {
     var $summaryCount = $('#remaining-characters'),
-        $summaryBox = $('#id_summary'),
-    // 160 characters is the maximum summary
-    // length of a Google result
-        warningCount = 160,
-        maxCount = $summaryCount.text(),
-        updateCount = function() {
-          var currentCount = $summaryBox.val().length;
-          $summaryCount.text(warningCount - currentCount);
-          if (warningCount - currentCount >= 0) {
-            $summaryCount.css('color', 'black');
-          } else {
-            $summaryCount.css('color', 'red');
-            if (currentCount >= maxCount) {
-              $summaryBox.val($summaryBox.val().substr(0, maxCount));
-            }
+      $summaryBox = $('#id_summary'),
+      // 160 characters is the maximum summary
+      // length of a Google result
+      warningCount = 160,
+      maxCount = $summaryCount.text(),
+      updateCount = function() {
+        var currentCount = $summaryBox.val().length;
+        $summaryCount.text(warningCount - currentCount);
+        if (warningCount - currentCount >= 0) {
+          $summaryCount.css('color', 'black');
+        } else {
+          $summaryCount.css('color', 'red');
+          if (currentCount >= maxCount) {
+            $summaryBox.val($summaryBox.val().substr(0, maxCount));
           }
-        };
+        }
+      };
 
     updateCount();
     $summaryBox.bind('input', updateCount);
@@ -247,11 +247,11 @@
    */
   function initArticlePreview() {
     var $preview = $('#preview'),
-        $previewBottom = $('#preview-bottom'),
-        preview = new k.AjaxPreview($('.btn-preview'), {
-          contentElement: $('#id_content'),
-          previewElement: $preview
-        });
+      $previewBottom = $('#preview-bottom'),
+      preview = new k.AjaxPreview($('.btn-preview'), {
+        contentElement: $('#id_content'),
+        previewElement: $preview
+      });
     $(preview).bind('done', function(e, success) {
       if (success) {
         $previewBottom.show();
@@ -267,8 +267,8 @@
   // Diff Preview of edits
   function initPreviewDiff() {
     var $diff = $('#preview-diff'),
-        $previewBottom = $('#preview-bottom'),
-        $diffButton = $('.btn-diff');
+      $previewBottom = $('#preview-bottom'),
+      $diffButton = $('.btn-diff');
     $diff.addClass('diff-this');
     $diffButton.click(function() {
       $diff.find('.to').text($('#id_content').val());
@@ -281,9 +281,9 @@
   function initTitleAndSlugCheck() {
     $('#id_title').change(function() {
       var $this = $(this),
-          $form = $this.closest('form'),
-          title = $this.val(),
-          slug = $('#id_slug').val();
+        $form = $this.closest('form'),
+        title = $this.val(),
+        slug = $('#id_slug').val();
       verifyTitleUnique(title, $form);
       // Check slug too, since it auto-updates and doesn't seem to fire
       // off change event.
@@ -291,8 +291,8 @@
     });
     $('#id_slug').change(function() {
       var $this = $(this),
-          $form = $this.closest('form'),
-          slug = $('#id_slug').val();
+        $form = $this.closest('form'),
+        slug = $('#id_slug').val();
       verifySlugUnique(slug, $form);
     });
 
@@ -343,8 +343,8 @@
   // If the Customer Care banner is present, animate it and handle closing.
   function initAOABanner() {
     var $banner = $('#banner'),
-        cssFrom = { top: -100 },
-        cssTo = { top: -10 };
+      cssFrom = { top: -100 },
+      cssTo = { top: -10 };
     if ($banner.length > 0) {
       setTimeout(function() {
         $banner
@@ -365,7 +365,7 @@
   // submit modal.
   function initPreValidation() {
     var $modal = $('#submit-modal'),
-        kbox = $modal.data('kbox');
+      kbox = $modal.data('kbox');
     kbox.updateOptions({
       preOpen: function() {
         var form = $('.btn-submit').closest('form')[0];
@@ -442,7 +442,7 @@
 
   function initReadyForL10n() {
     var $watchDiv = $('#revision-list div.l10n'),
-        post_url, checkbox_id;
+      post_url, checkbox_id;
 
     $watchDiv.find('a.markasready').click(function() {
       var $check = $(this);
@@ -453,7 +453,7 @@
 
     $('#ready-for-l10n-modal input[type=submit], #ready-for-l10n-modal button[type=submit]').click(function() {
       var csrf = $('#ready-for-l10n-modal input[name=csrfmiddlewaretoken]').val(),
-          kbox = $('#ready-for-l10n-modal').data('kbox');
+        kbox = $('#ready-for-l10n-modal').data('kbox');
       if (post_url !== undefined && checkbox_id !== undefined) {
         $.ajax({
           type: 'POST',
@@ -475,8 +475,8 @@
   function addReferrerAndQueryToVoteForm() {
     // Add the source/referrer and query terms to the helpful vote form
     var urlParams = k.getQueryParamsAsDict(),
-        referrer = k.getReferrer(urlParams),
-        query = k.getSearchQuery(urlParams, referrer);
+      referrer = k.getReferrer(urlParams),
+      query = k.getSearchQuery(urlParams, referrer);
     $('.document-vote form')
         .append($('<input type="hidden" name="referrer"/>')
             .attr('value', referrer))
@@ -489,7 +489,7 @@
     // "Needs change" checkbox. Also, make the textarea required
     // when checked.
     var $checkbox = $('#id_needs_change'),
-        $comment = $('#document-form li.comment,#approve-modal div.comment');
+      $comment = $('#document-form li.comment,#approve-modal div.comment');
 
     if ($checkbox.length > 0) {
       updateComment();

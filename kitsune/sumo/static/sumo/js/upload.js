@@ -38,12 +38,12 @@ $(document).ready(function () {
       url: $(this).closest('.attachments-upload').data('post-url'),
       beforeSubmit: function($input) {
         var $divUpload = $input.closest('.attachments-upload'),
-        $options = {
-          progress: $divUpload.find('.upload-progress'),
-          add: $divUpload.find('.add-attachment'),
-          adding: $divUpload.find('.adding-attachment'),
-          loading: $divUpload.find('.uploaded')
-        };
+          $options = {
+            progress: $divUpload.find('.upload-progress'),
+            add: $divUpload.find('.add-attachment'),
+            adding: $divUpload.find('.adding-attachment'),
+            loading: $divUpload.find('.uploaded')
+          };
 
         // truncate filename
         $options.filename = $input.val().split(/[\/\\]/).pop();
@@ -73,7 +73,7 @@ $(document).ready(function () {
 
         try {
           iframeJSON = $.parseJSON(iframeContent);
-        } catch(err) {
+        } catch (err) {
           if (err.substr(0, 12) === 'Invalid JSON') {
             dialogSet(UPLOAD.error_login, UPLOAD.error_title_up);
           }
@@ -126,14 +126,14 @@ $(document).ready(function () {
     $('article').on('click', '.attachments-list a.image', function(ev) {
       ev.preventDefault();
       var imgUrl = $(this).attr('href'),
-      image = new Image(),
-      html = '<div><img class="loading" /></div>',
-      kbox = new KBox(html, {
-        modal: true,
-        title: gettext('Image Attachment'),
-        id: 'image-attachment-kbox',
-        destroy: true
-      });
+        image = new Image(),
+        html = '<div><img class="loading" /></div>',
+        kbox = new KBox(html, {
+          modal: true,
+          title: gettext('Image Attachment'),
+          id: 'image-attachment-kbox',
+          destroy: true
+        });
       kbox.open();
 
       function setWidth() {
