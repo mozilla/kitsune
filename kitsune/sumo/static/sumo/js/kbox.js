@@ -73,14 +73,14 @@
 
   'use strict'; // Giving this a shot!
 
-  var TEMPLATE =
-  '<div class="kbox-container">' +
-  '<a href="#close" class="kbox-close">&#x2716;</a>' +
-  '<div class="kbox-title"></div>' +
-  '<div class="kbox-wrap"><div class="kbox-placeholder"/></div>' +
-  '</div>',
-    OVERLAY =
-  '<div id="kbox-overlay"></div>';
+  var TEMPLATE = (
+      '<div class="kbox-container">' +
+      '<a href="#close" class="kbox-close">&#x2716;</a>' +
+      '<div class="kbox-title"></div>' +
+      '<div class="kbox-wrap"><div class="kbox-placeholder"/></div>' +
+      '</div>'
+    ),
+    OVERLAY = '<div id="kbox-overlay"></div>';
 
   // The KBox type
   function KBox(el, options) {
