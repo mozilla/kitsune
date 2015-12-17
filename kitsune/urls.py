@@ -14,13 +14,6 @@ from waffle.views import wafflejs
 from kitsune.sumo.monkeypatch import patch
 patch()
 
-# Install gettext translations
-# Note: we'll remove these things with django-jinja
-import jingo
-from django.utils import translation
-jingo.get_env().install_gettext_translations(translation, newstyle=True)
-jingo.load_helpers()
-
 from django.contrib import admin
 admin.autodiscover()
 
