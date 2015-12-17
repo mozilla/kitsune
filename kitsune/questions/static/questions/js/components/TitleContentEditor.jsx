@@ -30,8 +30,7 @@ export default class TitleContentEditor extends AAQStep {
   }
 
   componentWillMount() {
-    if (!this.props.question.topic &&
-            !this.props.question.product) {
+    if (!this.props.question.topic && !this.props.question.product) {
       this.setPropsFromUrl();
     }
   }

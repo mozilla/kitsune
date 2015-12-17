@@ -31,9 +31,7 @@ UrlStore.dispatchToken = Dispatcher.register((action) => {
   let params, pathProps, qs, urlPath;
   switch (action.type) {
     case actionTypes.GET_PROPS_FROM_PATH:
-      pathProps = createDictFromPath(action.pathRegex, action.propNames);
-      urlData.pathProps = pathProps;
-
+      urlData.pathProps = createDictFromPath(action.pathRegex, action.propNames);
       UrlStore.emitChange();
       break;
 
