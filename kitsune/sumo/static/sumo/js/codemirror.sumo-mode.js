@@ -68,18 +68,18 @@
         regex: /(<del>)(.*?)(<\/del>)/
       },
       {
-        token: ['variable.language', 'comment'],
-        regex: /(<nowiki>)(.*?)/,
+        token: 'variable.language',
+        regex: /<nowiki>/,
         next: 'nowiki'
       },
       {
-        token: ['variable.language', 'comment'],
-        regex: /(<code>)(.*?)/,
+        token: 'variable.language',
+        regex: /<code>/,
         next: 'code'
       },
       {
-        token: ['variable.language', 'comment'],
-        regex: /(<pre>)(.*?)/,
+        token: 'variable.language',
+        regex: /<pre>/,
         next: 'pre'
       },
       {
@@ -127,31 +127,35 @@
     ],
     nowiki: [
       {
-        token: ['variable.language'],
-        regex: /(<\/nowiki>)/,
+        token: 'variable.language',
+        regex: /<\/nowiki>/,
         next: 'start'
+      },
+      {
+        token: 'comment',
+        regex: /./
       }
     ],
     code: [
       {
-        token: ['variable.language'],
-        regex: /(<\/code>)/,
+        token: 'variable.language',
+        regex: /<\/code>/,
         next: 'start'
       },
       {
-        token: ['variable.language'],
-        regex: /(<\/?nowiki>)/
+        token: 'comment',
+        regex: /./
       }
     ],
     pre: [
       {
-        token: ['variable.language'],
-        regex: /(<\/pre>)/,
+        token: 'variable.language',
+        regex: /<\/pre>/,
         next: 'start'
       },
       {
-        token: ['variable.language'],
-        regex: /(<\/?nowiki>)/
+        token: 'comment',
+        regex: /./
       }
     ],
     space: [
