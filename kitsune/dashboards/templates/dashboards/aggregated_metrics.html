@@ -22,8 +22,8 @@
       </div>
 
       <div id="dashboard-readouts">
-        <section id="percent-localized-top100" data-url="{{ url('api.wikimetric_list')|urlparams(product=product_slug, page_size=1000,) }}">
-          <h2>{{ _('Top 100 Articles: % Localized') }}</h2>
+        <section id="percent-localized-top100" data-url="{{ url('api.wikimetric_list')|urlparams(product=product_slug, page_size=1000) }}">
+          <h2>{{ _('Top 100 Articles: %% Localized') }}</h2>
           <div class="rickshaw">
             <div class="inline-controls"></div>
             <div class="graph-container">
@@ -33,8 +33,8 @@
           </div>
         </section>
 
-        <section id="percent-localized-top20" data-url="{{ url('api.wikimetric_list')|urlparams(product=product_slug, page_size=1000,) }}">
-          <h2>{{ _('Top 20 Articles: % Localized') }}</h2>
+        <section id="percent-localized-top20" data-url="{{ url('api.wikimetric_list')|urlparams(product=product_slug, page_size=1000) }}">
+          <h2>{{ _('Top 20 Articles: %% Localized') }}</h2>
           <div class="rickshaw">
             <div class="inline-controls"></div>
             <div class="graph-container">
@@ -44,8 +44,8 @@
           </div>
         </section>
 
-        <section id="percent-localized-all" data-url="{{ url('api.wikimetric_list')|urlparams(product=product_slug, page_size=1000,) }}">
-          <h2>{{ _('All Articles: % Localized') }}</h2>
+        <section id="percent-localized-all" data-url="{{ url('api.wikimetric_list')|urlparams(product=product_slug, page_size=1000) }}">
+          <h2>{{ _('All Articles: %% Localized') }}</h2>
           <div class="rickshaw">
             <div class="inline-controls"></div>
             <div class="graph-container">
@@ -55,7 +55,7 @@
           </div>
         </section>
 
-        <section id="active-contributors" data-url="{{ url('api.wikimetric_list')|urlparams(product=product_slug, page_size=1000,) }}">
+        <section id="active-contributors" data-url="{{ url('api.wikimetric_list')|urlparams(product=product_slug, page_size=1000) }}">
           <h2>{{ _('Active Contributors') }}</h2>
           <div class="rickshaw">
             <div class="inline-controls"></div>
