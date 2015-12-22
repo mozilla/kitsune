@@ -91,16 +91,11 @@ def patch():
     admin.site = AdminSitePlus()
     admin.site.login = login_required(admin.site.login)
 
-    # Make |safe less necessary for form fields
-    import jingo.monkey
-    jingo.monkey.patch()
+    from jingo.monkey import patch
+    patch()
 
     # Monkey patch django's csrf
     import session_csrf
     session_csrf.monkeypatch()
-
-    # Load jingo helpers
-    from jingo import load_helpers
-    load_helpers()
 
     _has_been_patched = True

@@ -2,7 +2,7 @@ import json
 import re
 
 from django.http import HttpResponse
-from tower import ugettext as _
+from django.utils.translation import ugettext as _
 
 
 def jsonp_is_valid(funcname):

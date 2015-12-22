@@ -2,9 +2,9 @@ import logging
 
 from django.conf import settings
 from django.utils.datastructures import SortedDict
+from django.utils.translation import ugettext_lazy as _lazy
 
 from statsd import statsd
-from tower import ugettext_lazy as _lazy
 from zendesk import Zendesk, ZendeskError
 
 

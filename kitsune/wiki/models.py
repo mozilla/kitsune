@@ -18,7 +18,7 @@ from django.utils.encoding import smart_str
 import waffle
 from pyquery import PyQuery
 from tidings.models import NotificationsMixin
-from tower import ugettext_lazy as _lazy, ugettext as _
+from django.utils.translation import ugettext_lazy as _lazy, ugettext as _
 
 from kitsune.gallery.models import Image
 from kitsune.products.models import Product, Topic

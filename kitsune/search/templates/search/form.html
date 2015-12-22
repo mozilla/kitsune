@@ -71,7 +71,7 @@
               <input type="hidden" value="1" name="w" />
 
               <div class="submit-search">
-                <button class="btn btn-important big" data-type="submit">{{ _('Search Mozilla Support', 'button') }}</button>
+                <button class="btn btn-important big" data-type="submit">{{ pgettext('button', 'Search Mozilla Support') }}</button>
                 <a class="btn" href="{{ url('search')|urlparams(q=search_form.q.data) }}">{{ _('Use basic search') }}</a>
               </div>
             </form>{# kb #}
@@ -179,7 +179,7 @@
               <input type="hidden" value="2" name="w" />
 
               <div class="submit-search">
-                <button class="btn btn-important big" data-type="submit">{{ _('Search Mozilla Support', 'button') }}</button>
+                <button class="btn btn-important big" data-type="submit">{{ pgettext('button', 'Search Mozilla Support') }}</button>
                 <a class="btn" href="{{ url('search')|urlparams(q=search_form.q.data) }}">{{ _('Use basic search') }}</a>
               </div>
             </form>{# support #}
@@ -229,7 +229,7 @@
               <input type="hidden" value="4" name="w" />
 
               <div class="submit-search">
-                <button class="btn btn-important big" data-type="submit">{{ _('Search Mozilla Support', 'button') }}</button>
+                <button class="btn btn-important big" data-type="submit">{{ pgettext('button', 'Search Mozilla Support') }}</button>
                 <a class="btn" href="{{ url('search')|urlparams(q=search_form.q.data) }}">{{ _('Use basic search') }}</a>
               </div>
             </form>{# discussion #}

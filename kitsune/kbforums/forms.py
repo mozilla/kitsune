@@ -1,6 +1,5 @@
 from django import forms
-
-from tower import ugettext_lazy as _lazy
+from django.utils.translation import ugettext_lazy as _lazy
 
 from kitsune.kbforums.models import Thread, Post
 from kitsune.sumo.form_fields import StrippedCharField

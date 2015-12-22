@@ -23,12 +23,12 @@
 
   <p>
     {% if award.creator %}
-      {% trans awarder=display_name(award.creator), title=_(badge.title, 'DB: badger.Badge.title') %}
+      {% trans awarder=display_name(award.creator), title=pgettext('DB: badger.Badge.title', badge.title) %}
         <strong>{{ awarder }}</strong> has awarded you the
         <strong>{{ title }}</strong> badge!
       {% endtrans %}
     {% else %}
-      {% trans title=_(badge.title, 'DB: badger.Badge.title') %}
+      {% trans title=pgettext('DB: badger.Badge.title', badge.title) %}
         You have been awarded the <strong>{{ title }}</strong> badge!
       {% endtrans %}
     {% endif %}

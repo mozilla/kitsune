@@ -8,7 +8,7 @@
 {% elif multiple_products %}
   {% set product_title = _('Multiple Products') %}
 {% else %}
-  {% set product_title = _(products[0].title, 'DB: products.Product.title') %}
+  {% set product_title = pgettext('DB: products.Product.title', products[0].title) %}
 {% endif %}
 
 {% set title = _('{product} Support Forum')|f(product=product_title) %}
@@ -173,7 +173,7 @@
                     <li>
                       <a href="{{ url('questions.list', topic.product.slug)|urlparams(None, request.GET, topic=None) }}">
                         <img src="{{ STATIC_URL }}sumo/img/blank.png" class="logo-sprite-tiny logo-{{ topic.product.slug }}">
-                        {{ _(topic.product.title, 'DB: products.Product.title') }}
+                        {{ pgettext('DB: products.Product.title', topic.product.title) }}
                       </a>
                     </li>
                   {% endif %}

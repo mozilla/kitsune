@@ -9,8 +9,8 @@ amqp==1.4.2
 # sha256: FkPArbfb7MQzFDfuFO9faj1VtP_KFH2xzJV9yWYGI0A
 anyjson==0.3.1
 
-# sha256: SjoIXs8fzSc2VzU4_6EU8fQzGzu73Wk4Hm4XLEnJdQ8
-Babel==0.9.6
+# sha256: RJiN8ZESMGWvmFfspo6RUVJqkxwSZZyimQTk8R3n7Bs
+Babel==2.0
 
 # sha256: czbsWbjQoTKh7p8WagY9RKXn8tL-FfefvO3aWDu9YcE
 billiard==3.3.0.9
@@ -154,8 +154,8 @@ https://github.com/erikrose/django-tidings/archive/ea57792f82496a9d78fec3f9b0db7
 # sha256: oQq2W0PNuSKyEZW5OaqP3tEjDRnAVaqBUWNnUgLdT78
 https://github.com/brosner/django-timezones/archive/ce12f4538fb98612c61b380421e5f39d3f6b2019.tar.gz#egg=django-timezones
 
-# sha256: dEJWIK08Kh8FFR8MyFGrfiYYbaOfsDma_Aqo7uu9IBs
-django-waffle==0.10.1
+# sha256: nNnjqXaEmjzYFoMNeBG5NUPB3J2p88sczC-dqDG4sCU
+django-waffle==0.11
 
 # sha256: KYA_-FsfIQW89JvUx5DSsxkZa3jIjHBiTYrJMd12R68
 djangorestframework==3.3.0
@@ -188,9 +188,9 @@ https://github.com/html5lib/html5lib-python/archive/f5855f3d0ad6d4202e2b5d02626d
 # sha256: OeqMam2fWVwXehYTT8SamQrY04J1jL9GnIZZZi8vUas
 httplib2==0.9
 
-# jingo: master
-# sha256: 5Yt-sicAUr_gY1Y-SwW6W_mvvxyBuUe2gzPpoB-3VbQ
-https://github.com/jbalogh/jingo/archive/fce09043542e71d972cc97d2ae703740741f80d0.tar.gz#egg=jingo==0.6.1.1
+# jingo: tags/0.8.2
+# sha256: 83isoezVr1knq2ZudU4ZEuofA-Fjt5SR4DcRWYHVwvs
+https://github.com/rehandalal/jingo/archive/ebba98353748e35272ce976b457dedba9a7e5638.tar.gz#egg=jingo==0.8.2
 
 # sha256: GQQPAbOp2MY-TVeTb3hxCQgZm2k3CrRKD3QH3YkfAZs
 Jinja2==2.5.2
@@ -228,6 +228,9 @@ polib==1.0.5
 # premailer: master~49
 # sha256: dtTQM5HdY_jQTr2fEJqDcswNKFyGuc3ekY6sgJWXYGM
 https://github.com/peterbe/premailer/archive/3981359de1ce974b24f69a8a99bb033e55ec3230.tar.gz#egg=premailer
+
+# sha256: hPdpwOpgeCnHe9iz1tb7wWWJzXpdTlAj9xfNPV3lRHM
+puente==0.4.1
 
 # py-wikimarkup: master
 # sha256: YpQN6FOWpn2GomK8ZdjXbGNnxpxpA0ypjL1VEs_m8Dc
@@ -292,10 +295,6 @@ sqlparse==0.1.1
 
 # sha256: iwwUgZEicThAdjbIlWf8v2ruD33Bdms1HZcZzyF4CQ8
 statsd==2.0.1
-
-# tower: tags/v0.4.0~10
-# sha256: SUBIuWRLwj-FjRiYUuI3vgSTuyjtMQZaipayJ4SVcUI
-https://github.com/clouserw/tower/archive/af393cd07b1ee02107cb003ab47c6b0b4553b0b7.tar.gz#egg=tower
 
 # sha256: AoMvOxsHHvrLI1tFkP1Ux-0NiRHejXL0awh9DIayE1A
 translate-toolkit==1.6.0

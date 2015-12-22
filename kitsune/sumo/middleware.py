@@ -8,11 +8,11 @@ from django.db.utils import DatabaseError
 from django.http import HttpResponseRedirect, HttpResponsePermanentRedirect
 from django.http import HttpResponseForbidden
 from django.shortcuts import render
+from django.utils import translation
 from django.utils.cache import patch_vary_headers
 from django.utils.encoding import iri_to_uri, smart_str, smart_unicode
 
 import mobility
-import tower
 
 from kitsune.sumo.helpers import urlparams
 from kitsune.sumo.urlresolvers import Prefixer, set_url_prefixer, split_path
@@ -70,7 +70,7 @@ class LocaleURLMiddleware(object):
 
         request.path_info = '/' + prefixer.shortened_path
         request.LANGUAGE_CODE = prefixer.locale
-        tower.activate(prefixer.locale)
+        translation.activate(prefixer.locale)
 
     def process_response(self, request, response):
         """Unset the thread-local var we set during `process_request`."""

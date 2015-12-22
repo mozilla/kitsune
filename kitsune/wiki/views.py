@@ -15,6 +15,7 @@ from django.forms.util import ErrorList
 from django.http import (HttpResponse, HttpResponseRedirect,
                          Http404, HttpResponseBadRequest)
 from django.shortcuts import get_object_or_404, render
+from django.utils.translation import ugettext_lazy as _lazy, ugettext as _
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import (require_GET, require_POST,
                                           require_http_methods)
@@ -22,8 +23,6 @@ from django.views.decorators.http import (require_GET, require_POST,
 import jingo
 from mobility.decorators import mobile_template
 from statsd import statsd
-from tower import ugettext_lazy as _lazy
-from tower import ugettext as _
 
 from kitsune.access.decorators import login_required
 from kitsune.lib.sumo_locales import LOCALES

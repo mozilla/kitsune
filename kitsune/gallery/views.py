@@ -4,13 +4,11 @@ import logging
 
 from django.conf import settings
 from django.db.models import Q
-from django.http import (HttpResponse, HttpResponseRedirect,
-                         HttpResponseBadRequest, Http404)
+from django.http import HttpResponse, HttpResponseRedirect, HttpResponseBadRequest, Http404
 from django.shortcuts import get_object_or_404, render
+from django.utils.translation import ugettext as _
 from django.views.decorators.clickjacking import xframe_options_sameorigin
 from django.views.decorators.http import require_POST
-
-from tower import ugettext as _
 
 from kitsune.access.decorators import login_required
 from kitsune.gallery import ITEMS_PER_PAGE

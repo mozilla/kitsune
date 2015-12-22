@@ -1,10 +1,10 @@
 from django.conf import settings
 from django.contrib.sites.models import Site
+from django.utils.translation import ugettext as _
 
 from babel.dates import format_datetime
 from pytz import timezone
 from tidings.events import InstanceEvent
-from tower import ugettext as _
 
 from kitsune.users.auth import get_auth_str
 from kitsune.questions.models import Question

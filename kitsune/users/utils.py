@@ -5,9 +5,9 @@ from smtplib import SMTPException
 from django.conf import settings
 from django.contrib import auth
 from django.contrib.auth.models import User
+from django.utils.translation import ugettext as _
 
 from statsd import statsd
-from tower import ugettext as _
 
 from kitsune.sumo import email_utils
 from kitsune.users import ERROR_SEND_EMAIL

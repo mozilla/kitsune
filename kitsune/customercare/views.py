@@ -8,11 +8,11 @@ from django.http import (HttpResponse, HttpResponseBadRequest,
                          HttpResponseNotFound, HttpResponseServerError)
 from django.shortcuts import render
 from django.utils.datastructures import SortedDict
+from django.utils.translation import ugettext as _, ugettext_lazy as _lazy
 from django.views.decorators.http import require_POST, require_GET
 
 import bleach
 from statsd import statsd
-from tower import ugettext as _, ugettext_lazy as _lazy
 from twython import TwythonAuthError, TwythonError
 
 from kitsune import twitter

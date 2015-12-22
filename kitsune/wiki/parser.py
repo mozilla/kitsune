@@ -10,7 +10,7 @@ from html5lib.treebuilders import getTreeBuilder
 from html5lib.treewalkers import getTreeWalker
 from lxml.etree import Element
 from statsd import statsd
-from tower import ugettext as _, ugettext_lazy as _lazy
+from django.utils.translation import ugettext as _, ugettext_lazy as _lazy
 
 from kitsune.gallery.models import Image
 from kitsune.sumo import parser as sumo_parser

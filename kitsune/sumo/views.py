@@ -10,6 +10,7 @@ from django.contrib.sites.models import Site
 from django.http import (HttpResponsePermanentRedirect, HttpResponseRedirect,
                          HttpResponse, Http404)
 from django.shortcuts import render
+from django.utils.translation import ugettext as _
 from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_GET
 
@@ -17,7 +18,6 @@ from celery.messaging import establish_connection
 from mobility.decorators import mobile_template
 from PIL import Image
 from session_csrf import anonymous_csrf
-from tower import ugettext as _
 
 from kitsune.lib.sumo_locales import LOCALES
 from kitsune.search import es_utils

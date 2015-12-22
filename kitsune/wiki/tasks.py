@@ -14,7 +14,7 @@ import waffle
 from celery import task
 from multidb.pinning import pin_this_thread, unpin_this_thread
 from statsd import statsd
-from tower import ugettext as _
+from django.utils.translation import ugettext as _
 
 from kitsune.kbadge.utils import get_or_create_badge
 from kitsune.sumo import email_utils

@@ -2,8 +2,7 @@ import json
 from datetime import date, timedelta
 
 from django import forms
-
-from tower import ugettext_lazy as _lazy, ugettext as _
+from django.utils.translation import ugettext_lazy as _lazy, ugettext as _
 
 from kitsune.questions.marketplace import submit_ticket
 from kitsune.questions.models import Answer

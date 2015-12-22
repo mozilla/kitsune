@@ -1,8 +1,8 @@
 from django.conf import settings
 from django.contrib.sites.models import Site
+from django.utils.translation import ugettext as _, pgettext
 
 from celery import task
-from tower import ugettext as _
 
 from kitsune.sumo.decorators import timeit
 from kitsune.sumo import email_utils
@@ -19,7 +19,7 @@ def send_award_notification(award):
     @email_utils.safe_translation
     def _make_mail(locale, context, email):
         subject = _(u"You were awarded the '{title}' badge!").format(
-            title=_(award.badge.title, 'DB: badger.Badge.title'))
+            title=pgettext('DB: badger.Badge.title', award.badge.title))
 
         mail = email_utils.make_mail(
             subject=subject,

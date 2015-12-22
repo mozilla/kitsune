@@ -4,8 +4,7 @@ from django.contrib.auth.hashers import BasePasswordHasher, mask_hash
 from django.utils.crypto import constant_time_compare
 from django.utils.datastructures import SortedDict
 from django.utils.encoding import smart_str
-
-from tower import ugettext as _
+from django.utils.translation import ugettext as _
 
 
 class SHA256PasswordHasher(BasePasswordHasher):

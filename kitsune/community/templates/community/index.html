@@ -54,7 +54,7 @@
               {% if not product %}
                 {{ _('Filter by Product') }}
               {% else %}
-                {{ _(product.title, 'DB: products.Product.title') }}
+                {{ pgettext('DB: products.Product.title', product.title) }}
               {% endif %}
             </span>
         </span>
@@ -73,7 +73,7 @@
           {% for p in products %}
             <li>
               <a href="{{ base_url|urlparams(product=p.slug) }}"{% if p == product %} aria-checked="true" class="selected"{% endif %}>
-                 {{ _(p.title, 'DB: products.Product.title') }}
+                 {{ pgettext('DB: products.Product.title', p.title) }}
               </a>
             </li>
           {% endfor %}

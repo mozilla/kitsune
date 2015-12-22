@@ -15,14 +15,15 @@ from django.views.decorators.http import (require_http_methods, require_GET,
                                           require_POST)
 from django.shortcuts import get_object_or_404, render, redirect
 from django.utils.http import base36_to_int
+from django.utils.translation import ugettext as _
 
 # from axes.decorators import watch_login
+from badger.models import Award
 from mobility.decorators import mobile_template
 from session_csrf import anonymous_csrf
 from statsd import statsd
 from tidings.models import Watch
 from tidings.tasks import claim_watches
-from tower import ugettext as _
 
 from kitsune import users as constants
 from kitsune.access.decorators import (
@@ -329,6 +330,7 @@ def profile(request, template, username):
     groups = user_profile.user.groups.all()
     return render(request, template, {
         'profile': user_profile,
+        'awards': Award.objects.filter(user=user_profile.user),
         'groups': groups,
         'num_questions': num_questions(user_profile.user),
         'num_answers': num_answers(user_profile.user),

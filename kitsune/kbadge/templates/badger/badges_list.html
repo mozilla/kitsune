@@ -18,9 +18,9 @@
       <li class="grid_4">
         <a class="cf" href="{{ badge.get_absolute_url() }}">
           <span class="badge">
-            <img src="{{ badge_image }}" alt="" title="{{ _(badge.title, 'DB: badger.Badge.title') }}">
+            <img src="{{ badge_image }}" alt="" title="{{ pgettext('DB: badger.Badge.title', badge.title) }}">
           </span>
-          <h3>{{ _(badge.title, 'DB: badger.Badge.title') }}</h3>
+          <h3>{{ pgettext('DB: badger.Badge.title', badge.title) }}</h3>
         </a>
       </li>
     {% endfor %}

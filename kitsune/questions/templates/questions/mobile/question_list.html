@@ -10,7 +10,7 @@
 {% elif multiple_products %}
   {% set product_title = _('Multiple Products') %}
 {% else %}
-  {% set product_title = _(products[0].title, 'DB: products.Product.title') %}
+  {% set product_title = pgettext('DB: products.Product.title', products[0].title) %}
 {% endif %}
 
 {% set title = _('{product} Support Forum')|f(product=product_title) %}
@@ -40,7 +40,7 @@
             <li{% if selected %} class="selected"{% endif %}>
               <a href="{% if selected %}{{ questions_url(_product=None) }}{% else %}{{ questions_url(_product=p.slug) }}{% endif %}">
                 <span class="logo-sprite logo-{{ p.slug }}"></span>
-                {{ _(p.title, 'DB: products.Product.title') }}
+                {{ pgettext('DB: products.Product.title', p.title) }}
               </a>
             </li>
           {% endfor %}

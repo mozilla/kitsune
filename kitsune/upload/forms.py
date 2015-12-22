@@ -1,8 +1,7 @@
 from django import forms
 from django.conf import settings
 from django.core.exceptions import ValidationError
-
-from tower import ugettext_lazy as _lazy
+from django.utils.translation import ugettext_lazy as _lazy
 
 
 MSG_IMAGE_REQUIRED = _lazy(u'You have not selected an image to upload.')

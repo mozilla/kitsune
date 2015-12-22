@@ -8,6 +8,7 @@ from django.core.urlresolvers import reverse as django_reverse
 from django.http import QueryDict
 from django.utils.encoding import smart_str
 from django.utils.http import urlencode
+from django.utils.translation import ugettext_lazy as _lazy, ugettext as _, ungettext
 from django.utils.tzinfo import LocalTimezone
 
 import bleach
@@ -15,10 +16,9 @@ import jinja2
 from babel import localedata
 from babel.dates import format_date, format_time, format_datetime
 from babel.numbers import format_decimal
-from jingo import register, env
+from jingo import register, get_env
 from jinja2.utils import Markup
 from pytz import timezone
-from tower import ugettext_lazy as _lazy, ugettext as _, ungettext
 
 from kitsune.sumo import parser
 from kitsune.sumo.urlresolvers import reverse
@@ -39,19 +39,19 @@ def paginator(pager):
 
 @register.filter
 def simple_paginator(pager):
-    t = env.get_template('includes/simple_paginator.html')
+    t = get_env().get_template('includes/simple_paginator.html')
     return jinja2.Markup(t.render({'pager': pager}))
 
 
 @register.filter
 def quick_paginator(pager):
-    t = env.get_template('includes/quick_paginator.html')
+    t = get_env().get_template('includes/quick_paginator.html')
     return jinja2.Markup(t.render({'pager': pager}))
 
 
 @register.filter
 def mobile_paginator(pager):
-    t = env.get_template('includes/mobile/paginator.html')
+    t = get_env().get_template('includes/mobile/paginator.html')
     return jinja2.Markup(t.render({'pager': pager}))
 
 
@@ -157,7 +157,7 @@ class Paginator(object):
     def render(self):
         c = {'pager': self.pager, 'num_pages': self.num_pages,
              'count': self.count}
-        t = env.get_template('layout/paginator.html').render(c)
+        t = get_env().get_template('layout/paginator.html').render(c)
         return jinja2.Markup(t)
 
 
@@ -184,7 +184,7 @@ def breadcrumbs(context, items=list(), add_default=True, id=None):
 
     c = {'breadcrumbs': crumbs, 'id': id}
 
-    t = env.get_template('layout/breadcrumbs.html').render(c)
+    t = get_env().get_template('layout/breadcrumbs.html').render(c)
     return jinja2.Markup(t)
 
 

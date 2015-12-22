@@ -4,12 +4,11 @@ import logging
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.core.urlresolvers import reverse as django_reverse
+from django.utils.translation import ugettext as _, ugettext_lazy as _lazy
 
 from bleach import clean
 from tidings.events import InstanceEvent, Event, EventUnion
 from tidings.utils import hash_to_unsigned
-from tower import ugettext as _
-from tower import ugettext_lazy as _lazy
 from wikimarkup.parser import ALLOWED_TAGS, ALLOWED_ATTRIBUTES
 
 from kitsune.sumo import email_utils
