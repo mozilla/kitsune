@@ -121,7 +121,7 @@
               <input type="hidden" name="form" value="rev" />
               <input type="hidden" name="slug" value="{{ document.slug }}" />
               <input type="hidden" name="locale" value="{{ document.locale }}" />
-            </form>
+              {# Do not add a closing form tag here it is added below #}
           {% endif %}
           {% if recent_approved_revs %}
             <h3>{{ _('Recently approved updates') }}:</h3>
