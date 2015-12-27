@@ -21,10 +21,10 @@
               <div class="radio"></div>
               <div class="date">{{ _('Revision') }}</div>
               <div class="status">{{ _('Status') }}</div>
-              <div class="significance"><abbr title="{{ _('Significance - MT: Major Content Changes. M: Content Changes. Empty: Minor Changes.') }}"> {{ pgettext('S', "First letter of 'Significance'") }}</abbr></div>
+              <div class="significance"><abbr title="{{ _('Significance - MT: Major Content Changes. M: Content Changes. Empty: Minor Changes.') }}"> {{ pgettext("First letter of 'Significance'", 'S') }}</abbr></div>
               <div class="creator">{{ _('Editor') }}</div>
               {% if request.LANGUAGE_CODE == settings.WIKI_DEFAULT_LANGUAGE %}
-                <div class="l10n"><abbr title="{{ _('Ready for localization') }}">{{ pgettext('R', "First letter of 'Ready for localization'") }}</abbr></div>
+                <div class="l10n"><abbr title="{{ _('Ready for localization') }}">{{ pgettext("First letter of 'Ready for localization'", 'R') }}</abbr></div>
               {% endif %}
               <div class="comment">{{ _('Comment') }}</div>
               <div class="edit"></div>
