@@ -13,7 +13,6 @@ import {actionTypes, pathStructure} from '../constants/UrlConstants.es6.js';
 import {getPathAsDict, pathStringFromDict, getQueryParamsAsDict, queryParamStringFromDict} from '../utils/urls.es6.js';
 
 var urlData = {
-  fullPath: '',
   pathProps: getPathAsDict(pathStructure),
   queryParams: getQueryParamsAsDict(),
   step: 'product'
@@ -24,14 +23,11 @@ function updateStep() {
 
   if (pathProps.product && pathProps.topic) {
     return 'title';
-  }
-  else if (pathProps.product && !pathProps.topic) {
+  } else if (pathProps.product && !pathProps.topic) {
     return 'topic';
-  }
-  else if (!pathProps.product && !pathProps.topic) {
+  } else if (!pathProps.product && !pathProps.topic) {
     return 'product';
   }
-
 }
 
 class _UrlStore extends BaseStore {
