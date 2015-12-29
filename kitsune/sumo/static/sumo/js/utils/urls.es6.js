@@ -7,6 +7,8 @@ import '../main.js';
 const names = [
   'getQueryParamsAsDict',
   'queryParamStringFromDict',
+  'getPathAsDict',
+  'pathStringFromDict',
 ];
 
 for (let name of names) {
@@ -17,3 +19,6 @@ for (let name of names) {
 
 export const getQueryParamsAsDict = window.k.getQueryParamsAsDict;
 export const queryParamStringFromDict = window.k.queryParamStringFromDict;
+export const getPathAsDict = window.k.getPathAsDict;
+export const pathStringFromDict = window.k.pathStringFromDict;
+

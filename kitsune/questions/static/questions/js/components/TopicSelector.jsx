@@ -11,7 +11,6 @@ const topics = JSON.parse(document.querySelector('.data[name=topics]').innerHTML
 export default class TopicSelector extends AAQStep {
 
   setPropsFromUrl() {
-    UrlActions.getPropsFromPath("/questions/new/(.*)", ['product']);
     let urlData = UrlStore.get('pathProps');
     if (urlData.product) {
       AAQActions.setProduct(urlData.product);

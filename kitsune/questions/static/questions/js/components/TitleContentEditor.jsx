@@ -19,14 +19,13 @@ export default class TitleContentEditor extends AAQStep {
   }
 
   setPropsFromUrl() {
-      UrlActions.getPropsFromPath("/questions/new/(.*)/(.*)", ['product', 'topic']);
-      let urlData = UrlStore.get('pathProps');
-      if (urlData.product) {
-        AAQActions.setProduct(urlData.product);
-      }
-      if (urlData.topic) {
-        AAQActions.setTopic(urlData.topic);
-      }
+    let urlData = UrlStore.get('pathProps');
+    if (urlData.product) {
+      AAQActions.setProduct(urlData.product);
+    }
+    if (urlData.topic) {
+      AAQActions.setTopic(urlData.topic);
+    }
   }
 
   componentWillMount() {

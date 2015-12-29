@@ -2,56 +2,30 @@ import Dispatcher from '../Dispatcher.es6.js';
 import {actionTypes} from '../constants/UrlConstants.es6.js';
 
 /**
- * Update the url path string, notify any listeners, and call history.pushState.
- * @param  string pathRegex Regular expression string to test against the current path.
- * @param  [array] propNames The property names to associate with each match in the path.
+ * Update the url path, notify any listeners, and call history.pushState.
+ * @param  {object} params Variables to merge into the current path state.
  */
-export function getPropsFromPath(pathRegex, propNames) {
+export function updatePath(params) {
   Dispatcher.dispatch({
-    type: actionTypes.GET_PROPS_FROM_PATH,
-    pathRegex,
-    propNames,
-  });
-}
-
-/**
- * Update the url path string, notify any listeners, and call history.pushState.
- * @param  [array] paths Variables to merge into the current url path.
- */
-export function updateUrlPath(paths) {
-  Dispatcher.dispatch({
-    type: actionTypes.UPDATE_URL_PATH,
-    paths,
-  });
-}
-
-/**
- * Update the query string, notify any listeners, and call history.pushState.
- * @param  {object} params Variables to merge into the current query string state.
- */
-export function updateQueryString(params) {
-  Dispatcher.dispatch({
-    type: actionTypes.UPDATE_QUERY_STRING,
+    type: actionTypes.UPDATE_PATH,
     params,
   });
 }
 
 /**
- * Set the query string defaults and notify listeners. If the query
- * string does not have the given values, they will be set, otherwise
+ * Set the path defaults and notify listeners. If the path string
+ * does not have the given values, they will be set, otherwise
  * the existing value will be kept. This will call history.replaceState.
- * @param  {object} params Default values for querystrings.
+ * @param  {object} params Default values for path.
  */
-export function updateQueryStringDefaults(params) {
+export function updatePathDefaults(params) {
   Dispatcher.dispatch({
-    type: actionTypes.UPDATE_QUERY_STRING_DEFAULTS,
+    type: actionTypes.UPDATE_PATH_DEFAULTS,
     params,
   });
 }
 
 export default {
-  getPropsFromPath,
-  updateQueryString,
-  updateQueryStringDefaults,
-  updateUrlPath,
+  updatePath,
+  updatePathDefaults,
 };

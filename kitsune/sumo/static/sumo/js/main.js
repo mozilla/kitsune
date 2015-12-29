@@ -5,6 +5,28 @@ window.k = window.k || {};
 (function () {
   k.LAZY_DELAY = 500;  // delay to lazy loading scripts, in ms
   k.STATIC_URL = $('body').data('static-url');
+  k.getPathAsDict = function(propertyNames) {
+    let pathDict = {},
+      pathArray = window.location.pathname.split('/').filter(Boolean);
+
+    propertyNames.map((x, i) =>
+      pathDict[x] = pathArray[i]);
+
+    return pathDict;
+  };
+
+  k.pathStringFromDict = function(pathDict) {
+    let pathString = '';
+
+    _.forEach(pathDict, function(value, key) {
+      if (value) {
+        pathString += '/' + value;
+      }
+    });
+
+    return pathString;
+  };
+
   k.getQueryParamsAsDict = function (url) {
     // Parse the url's query parameters into a dict. Mostly stolen from:
     // http://stackoverflow.com/questions/901115/get-query-string-values-in-javascript/2880929#2880929
