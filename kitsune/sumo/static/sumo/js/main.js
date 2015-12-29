@@ -6,17 +6,18 @@ window.k = window.k || {};
   k.LAZY_DELAY = 500;  // delay to lazy loading scripts, in ms
   k.STATIC_URL = $('body').data('static-url');
   k.getPathAsDict = function(propertyNames) {
-    let pathDict = {},
+    var pathDict = {},
       pathArray = window.location.pathname.split('/').filter(Boolean);
 
-    propertyNames.map((x, i) =>
-      pathDict[x] = pathArray[i]);
+    propertyNames.map(function(value, index) {
+      pathDict[value] = pathArray[index];
+    });
 
     return pathDict;
   };
 
   k.pathStringFromDict = function(pathDict) {
-    let pathString = '';
+    var pathString = '';
 
     _.forEach(pathDict, function(value, key) {
       if (value) {
