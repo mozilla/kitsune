@@ -3,7 +3,6 @@ import AAQStep from './AAQStep.jsx';
 import AAQActions from '../actions/AAQActions.es6.js';
 import aaqGa from '../utils/aaqGa.es6.js';
 import UrlActions from '../../../sumo/js/actions/UrlActions.es6.js';
-import UrlStore from '../../../sumo/js/stores/UrlStore.es6.js';
 
 export default class TitleContentEditor extends AAQStep {
   handleChange(ev) {
@@ -15,16 +14,6 @@ export default class TitleContentEditor extends AAQStep {
       AAQActions.setContent(value);
     } else {
       throw new Error(`Unknown field name ${name} in TitleContentEditor.`);
-    }
-  }
-
-  setPropsFromUrl() {
-    let urlData = UrlStore.get('pathProps');
-    if (urlData.product) {
-      AAQActions.setProduct(urlData.product);
-    }
-    if (urlData.topic) {
-      AAQActions.setTopic(urlData.topic);
     }
   }
 

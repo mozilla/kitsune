@@ -1,5 +1,7 @@
 /* globals React:false */
+import AAQActions from '../actions/AAQActions.es6.js';
 import scrollTo from '../../../sumo/js/utils/scrollTo.es6.js';
+import UrlStore from '../../../sumo/js/stores/UrlStore.es6.js';
 
 export default class AAQStep extends React.Component {
   render() {
@@ -14,6 +16,16 @@ export default class AAQStep extends React.Component {
           : null}
       </div>
     );
+  }
+
+  setPropsFromUrl() {
+    let urlData = UrlStore.get('pathProps');
+    if (urlData.product) {
+      AAQActions.setProduct(urlData.product);
+    }
+    if (urlData.topic) {
+      AAQActions.setTopic(urlData.topic);
+    }
   }
 
   shouldExpand() {
