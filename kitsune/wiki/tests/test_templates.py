@@ -1695,6 +1695,10 @@ class ReviewRevisionTests(TestCaseBase):
         message = 'Unreviewed Revisions:'
         assert message in subject
 
+        # Check *Revision Comment* text is in <label> to to be bolded
+        text = doc('ul.revision-comment li label')[0].text_content()
+        eq_('Revision Comment:', text)
+
         # Check whether past revisions Comments are there
         # As the comments are reversed means that the latest ones comment will be at 1st
         # the 2nd latest ones comment will be at second and like that.
