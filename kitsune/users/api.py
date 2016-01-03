@@ -277,6 +277,8 @@ class ProfileViewSet(mixins.CreateModelMixin,
     serializer_class = ProfileSerializer
     # User usernames instead of ids in urls.
     lookup_field = 'user__username'
+    # Usernames sometimes contain periods so we want to change the regex from the default '[^/.]+'
+    lookup_value_regex = '[^/]+'
     permission_classes = [
         OnlySelfEdits,
     ]
