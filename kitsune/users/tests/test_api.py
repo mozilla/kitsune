@@ -192,6 +192,7 @@ class TestUserView(TestCase):
         url = reverse('user-detail', args=[p.user.username])
         res = self.client.get(url)
         eq_(res.status_code, 200)
+        eq_(res.data['username'], p.user.username)
 
     def test_only_self_edits(self):
         p1 = ProfileFactory()
