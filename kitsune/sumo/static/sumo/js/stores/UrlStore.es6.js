@@ -16,7 +16,7 @@ var urlData = {
   pathProps: getPathAsDict(pathStructure),
   queryParams: getQueryParamsAsDict(),
   step: 'product'
-}
+};
 
 function updateStep() {
   let pathProps = getPathAsDict(pathStructure);

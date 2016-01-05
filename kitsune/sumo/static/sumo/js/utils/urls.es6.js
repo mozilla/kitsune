@@ -22,21 +22,21 @@ export function getPathAsDict(propertyNames) {
   var pathDict = {},
     pathArray = window.location.pathname.split('/').filter(Boolean);
 
-  _.forEach(propertyNames, function(value, index) {
+  propertyNames.forEach(function(value, index) {
     pathDict[value] = pathArray[index];
   });
 
   return pathDict;
-};
+}
 
 export function pathStringFromDict(pathDict) {
   var pathString = '';
 
-  _.forEach(pathDict, function(value, key) {
-    if (value) {
-      pathString += '/' + value;
+  for (let key in pathDict) {
+    if (pathDict[key]) {
+      pathString += '/' + pathDict[key];
     }
-  });
+  }
 
   return pathString;
-};
+}
