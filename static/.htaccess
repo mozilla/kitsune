@@ -32,12 +32,7 @@ FileETag MTime
 </FilesMatch>
 
 # CORS only for mozilla domains
-SetEnvIf Origin "https?://(.*\.mozilla\.(com|org|net))" CORS=$0
-
-# block hotlinking by referer to .woff, .eof, .ttf files except mozilla domains
-RewriteCond "%{HTTP_REFERER}" "!https?://.*\.mozilla\.(com|org|net)/.*$"
-RewriteRule \.(woff|eot|ttf)$ - [F,NC,L,E=!CORS]
-
+SetEnvIf Origin "https?://(.*\.(mozilla|allizom)\.(com|org|net))" CORS=$0
 Header set Access-Control-Allow-Origin %{CORS}e env=CORS
 
 <FilesMatch "\.(ttf|woff|eot)$">
