@@ -9,7 +9,7 @@ window.k = window.k || {};
     var pathDict = {},
       pathArray = window.location.pathname.split('/').filter(Boolean);
 
-    propertyNames.map(function(value, index) {
+    _.forEach(propertyNames, function(value, index) {
       pathDict[value] = pathArray[index];
     });
 
