@@ -36,13 +36,7 @@ class LoginTests(TestCaseBase):
 
     def setUp(self):
         super(LoginTests, self).setUp()
-        self.orig_debug = settings.DEBUG
-        settings.DEBUG = True
         self.u = UserFactory()
-
-    def tearDown(self):
-        super(LoginTests, self).tearDown()
-        settings.DEBUG = self.orig_debug
 
     def test_login_bad_password(self):
         '''Test login with a good username and bad password.'''

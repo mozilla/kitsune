@@ -4,6 +4,7 @@ import sys
 from contextlib import contextmanager
 from datetime import datetime
 
+from django.conf import settings
 from django.contrib.sites.models import Site
 from django.db import models
 from django.db.models.signals import pre_delete
@@ -131,7 +132,7 @@ def get_next_url(request):
     else:
         url = request.META.get('HTTP_REFERER')
 
-    if not is_safe_url(url, Site.objects.get_current().domain):
+    if not settings.DEBUG and not is_safe_url(url, Site.objects.get_current().domain):
         return None
 
     return url

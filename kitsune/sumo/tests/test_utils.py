@@ -80,6 +80,12 @@ class GetNextUrlTests(TestCase):
         r = self.r.get('/', {'next': 'https://example.com'})
         eq_(None, get_next_url(r))
 
+    def test_bad_host_https_debug(self):
+        """If settings.DEBUG == True, bad hosts pass."""
+        r = self.r.get('/', {'next': 'https://example.com'})
+        with self.settings(DEBUG=True):
+            eq_('https://example.com', get_next_url(r))
+
     def test_bad_host_protocol_relative(self):
         """Protocol-relative URLs do not let bad hosts through."""
         r = self.r.get('/', {'next': '//example.com'})
