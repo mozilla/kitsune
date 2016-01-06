@@ -69,7 +69,6 @@ VENV=/home/vagrant/virtualenv
 sudo -H -u vagrant -s -- <<EOF
 virtualenv $VENV
 source $VENV/bin/activate
-pip install -U "pip<7"
 cd ~/kitsune
 ./peep.sh install -r requirements/default.txt
 ./peep.sh install -r requirements/dev.txt

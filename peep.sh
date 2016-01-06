@@ -16,13 +16,20 @@ case $PIPVER in
         # we intentionally don't use the wheel packages, since otherwise each
         # package in the requirements files would need multiple hashes.
         echo "peep.sh: Wheel-using pip detected, so passing --no-use-wheel."
-        ARGS="--no-use-wheel"
+        ARGS="$ARGS --no-use-wheel"
         ;;
     7.*)
-        # Pip 7.x is just not compatible with peep.
-        echo 'peep.sh: Pip 7.x and above are not compatible with peep.'
-        echo 'peep.sh: Please install an earlier version with the command'
-        echo "peep.sh: \"pip install -U 'pip<7'\""
+        echo "peep.sh: Binary-using pip detected, so passing --no-binary=:all:"
+        ARGS="$ARGS --no-binary=:all:"
+        ;;
+    1.*)
+        # A version of pip that won't automatically use wheels.
+        ;;
+    *)
+        echo "peep.sh: Unrecognized version of pip: $PIPVER".
+        echo "peep.sh: I don't know what to do about that."
+        echo "peep.sh: Maybe try to install pip 7?"
+        echo "peep.sh: \"pip install -U 'pip==7'\""
         exit 1
         ;;
 esac

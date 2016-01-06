@@ -9,7 +9,7 @@ ln -sf /usr/lib/`uname -i`-linux-gnu/libz.so ~/virtualenv/python2.6/lib/
 
 echo "Install Python dependencies"
 ./peep.sh install -r requirements/dev.txt
-./peep.sh install -r "requirements/default.txt"
+./peep.sh install -r requirements/default.txt
 echo
 
 # Installing dependencies for smoke tests
