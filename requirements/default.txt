@@ -3,11 +3,11 @@
 # sha256: jEqwxPIncwUZ3B4CD4dbPvl-ZDyPQ6mKT6DEb7rRJFA
 setuptools==18.3.2
 
-# sha256: HegYoUcr9iVxLF06QwEw03dJz4qUE8th6UEeLr4X2ok
-amqp==1.4.2
+# sha256: Ols1jvgfoSkn0eyE9RB8Wbb8O-aBwyXnzGkM_9WVaHk
+amqp==1.4.8
 
-# sha256: FkPArbfb7MQzFDfuFO9faj1VtP_KFH2xzJV9yWYGI0A
-anyjson==0.3.1
+# sha256: N4Ethjya0-NcBzTELgvwMgzow77YLNIK1UyzTRWBV7o
+anyjson==0.3.3
 
 # sha256: RJiN8ZESMGWvmFfspo6RUVJqkxwSZZyimQTk8R3n7Bs
 Babel==2.0
@@ -195,8 +195,8 @@ https://github.com/rehandalal/jingo/archive/ebba98353748e35272ce976b457dedba9a7e
 # sha256: GQQPAbOp2MY-TVeTb3hxCQgZm2k3CrRKD3QH3YkfAZs
 Jinja2==2.5.2
 
-# sha256: uf8EN2BxE66nAf1RIsKvpAwF3_bx2k9YsvHqGNnyv40
-kombu==3.0.24
+# sha256: 0-3aAgdq4E-mLRKAB3VvTEKY_keRGcoHCkeiKv6GdmA
+kombu==3.0.32
 
 # sha256: s9NiusRxFydHzaNRMjjxFcvWxfi45jGb9ql6eJJyQJk
 lxml==3.4.4
