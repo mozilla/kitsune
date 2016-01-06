@@ -30,3 +30,13 @@ FileETag MTime
 <FilesMatch "\.txt$">
     FileETag None
 </FilesMatch>
+
+# CORS only for mozilla domains
+SetEnvIf Origin "https?://(.*\.(mozilla|allizom)\.(com|org|net))" CORS=$0
+Header set Access-Control-Allow-Origin %{CORS}e env=CORS
+
+<FilesMatch "\.(ttf|woff|eot)$">
+    Header append vary "Origin"
+    ExpiresActive On
+    ExpiresDefault "access plus 1 year"
+</FilesMatch>
