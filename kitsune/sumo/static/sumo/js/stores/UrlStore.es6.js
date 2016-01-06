@@ -9,12 +9,30 @@
 
 import BaseStore from './BaseStore.es6.js';
 import Dispatcher from '../Dispatcher.es6.js';
-import {actionTypes} from '../constants/UrlConstants.es6.js';
-import {getQueryParamsAsDict, queryParamStringFromDict} from '../utils/urls.es6.js';
+import {actionTypes, pathStructure} from '../constants/UrlConstants.es6.js';
+import {getPathAsDict, pathStringFromDict, getQueryParamsAsDict, queryParamStringFromDict} from '../utils/urls.es6.js';
+
+var urlData = {
+  pathProps: getPathAsDict(pathStructure),
+  queryParams: getQueryParamsAsDict(),
+  step: 'product'
+};
+
+function updateStep() {
+  let pathProps = getPathAsDict(pathStructure);
+
+  if (pathProps.product && pathProps.topic) {
+    return 'title';
+  } else if (pathProps.product && !pathProps.topic) {
+    return 'topic';
+  } else if (!pathProps.product && !pathProps.topic) {
+    return 'product';
+  }
+}
 
 class _UrlStore extends BaseStore {
   get(key) {
-    return getQueryParamsAsDict()[key];
+    return urlData[key];
   }
 }
 
@@ -22,19 +40,21 @@ class _UrlStore extends BaseStore {
 const UrlStore = new _UrlStore();
 
 UrlStore.dispatchToken = Dispatcher.register((action) => {
-  let params, qs;
+  let params, pathString, qs;
   switch (action.type) {
-    case actionTypes.UPDATE_QUERY_STRING:
-      params = _.extend({}, getQueryParamsAsDict(), action.params);
-      qs = queryParamStringFromDict(params);
-      window.history.pushState(params, null, qs);
+    case actionTypes.UPDATE_PATH:
+      params = _.extend({}, urlData.pathProps, action.params);
+      pathString = pathStringFromDict(params);
+      window.history.pushState(params, null, pathString + window.location.search);
+      urlData.step = updateStep();
       UrlStore.emitChange();
       break;
 
-    case actionTypes.UPDATE_QUERY_STRING_DEFAULTS:
-      params = _.extend({}, action.params, getQueryParamsAsDict());
-      qs = queryParamStringFromDict(params);
-      window.history.replaceState(params, null, qs);
+    case actionTypes.UPDATE_PATH_DEFAULTS:
+      params = getPathAsDict(action.params);
+      pathString = pathStringFromDict(params);
+      window.history.replaceState(params, null, pathString + window.location.search);
+      urlData.step = updateStep();
       UrlStore.emitChange();
       break;
 
@@ -46,6 +66,7 @@ UrlStore.dispatchToken = Dispatcher.register((action) => {
 /* When the user clicks back/forward, the store will return different
  * values, so notify all listeners. */
 window.addEventListener('popstate', function() {
+  urlData.step = updateStep();
   UrlStore.emitChange();
 });
 

@@ -2,6 +2,7 @@
 import AAQStep from './AAQStep.jsx';
 import AAQActions from '../actions/AAQActions.es6.js';
 import aaqGa from '../utils/aaqGa.es6.js';
+import UrlActions from '../../../sumo/js/actions/UrlActions.es6.js';
 
 export default class TitleContentEditor extends AAQStep {
   handleChange(ev) {
@@ -13,6 +14,12 @@ export default class TitleContentEditor extends AAQStep {
       AAQActions.setContent(value);
     } else {
       throw new Error(`Unknown field name ${name} in TitleContentEditor.`);
+    }
+  }
+
+  componentWillMount() {
+    if (!this.props.question.topic && !this.props.question.product) {
+      this.setPropsFromUrl();
     }
   }
 

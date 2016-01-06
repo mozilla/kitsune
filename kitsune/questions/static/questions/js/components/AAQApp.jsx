@@ -10,6 +10,7 @@ import UserAuth from './UserAuth.jsx';
 import SubmitQuestion from './SubmitQuestion.jsx';
 import TroubleshootingDataStore from '../stores/TroubleshootingDataStore.es6.js';
 import UrlStore from '../../../sumo/js/stores/UrlStore.es6.js';
+import {pathStructure} from '../../../sumo/js/constants/UrlConstants.es6.js';
 import UrlActions from '../../../sumo/js/actions/UrlActions.es6.js';
 import aaqGa from '../utils/aaqGa.es6.js';
 
@@ -26,7 +27,7 @@ export default class AAQApp extends React.Component {
     TroubleshootingDataStore.addChangeListener(this.onChange);
     UrlStore.addChangeListener(this.onChange);
 
-    UrlActions.updateQueryStringDefaults({step: 'product'});
+    UrlActions.updatePathDefaults(pathStructure);
     aaqGa.trackEvent('AAQ SPA loaded');
   }
 
@@ -53,8 +54,9 @@ export default class AAQApp extends React.Component {
     };
   }
 
-  setStep(step) {
-    UrlActions.updateQueryString({step});
+  setStep() {
+    let questionState = this.getStateFromStores().question;
+    UrlActions.updatePath({product: questionState.product, topic: questionState.topic});
   }
 
   render() {
@@ -63,9 +65,9 @@ export default class AAQApp extends React.Component {
         {(() => {
           switch (this.state.step) {
             case 'product':
-              return <ProductSelector {...this.state} setStep={this.setStep.bind(this, 'topic')}/>;
+              return <ProductSelector {...this.state} setStep={this.setStep.bind(this)}/>;
             case 'topic':
-              return <TopicSelector {...this.state} setStep={this.setStep.bind(this, 'title')}/>;
+              return <TopicSelector {...this.state} setStep={this.setStep.bind(this)}/>;
             case 'title':
               return [
                 <TitleContentEditor {...this.state}/>,
