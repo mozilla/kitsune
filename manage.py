@@ -10,7 +10,7 @@ os.environ.setdefault('CELERY_CONFIG_MODULE', 'kitsune.settings_local')
 
 # MONKEYPATCH! WOO HOO!
 # Need this so we patch before running Django-specific commands which
-# import Jingo and then result in a circular import.
+# then result in a circular import.
 try:
     from kitsune.sumo.monkeypatch import patch  # noqa
     patch()

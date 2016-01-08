@@ -10,7 +10,7 @@ from kitsune.forums import POSTS_PER_PAGE
 from kitsune.forums.events import NewPostEvent, NewThreadEvent
 from kitsune.forums.models import Forum, Thread, Post
 from kitsune.forums.tests import ForumTestCase, ForumFactory, ThreadFactory, PostFactory
-from kitsune.sumo.helpers import urlparams
+from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import UserFactory
 

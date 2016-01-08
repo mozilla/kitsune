@@ -225,3 +225,37 @@ class SumoPyQuery(PyQuery):
     def first(self):
         """:first doesn't work, so this is a meh substitute"""
         return self.items().next()
+
+
+def template_used(response, template_name):
+    """Asserts a given template was used (with caveats)
+
+    First off, this is a gross simplification of what the Django
+    assertTemplateUsed() TestCase method does. This does not work as a
+    context manager and it doesn't handle a lot of the pseudo-response
+    cases.
+
+    However, it does work with Jinja2 templates provided that
+    monkeypatch_render() has patched ``django.shortcuts.render`` to
+    add the information required.
+
+    Also, it's not tied to TestCase.
+
+    Also, it uses fewer characters to invoke. For example::
+
+        self.assertTemplateUsed(resp, 'new_user.html')
+
+        assert template_used(resp, 'new_user.html')
+
+    :arg response: HttpResponse object
+    :arg template_name: the template in question
+
+    :returns: whether the template was used
+
+    """
+    templates = []
+    # templates is an array of TemplateObjects
+    templates += [t.name for t in getattr(response, 'templates', [])]
+    # jinja_templates is a list of strings
+    templates += getattr(response, 'jinja_templates', [])
+    return template_name in templates

@@ -16,7 +16,7 @@ from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.questions.tests import QuestionFactory, AnswerFactory
 from kitsune.users.tests import UserFactory
-from kitsune.users.helpers import profile_avatar
+from kitsune.users.templatetags.jinja_helpers import profile_avatar
 
 
 class TestPushNotificationRegistrationSerializer(TestCase):

@@ -1,0 +1,24 @@
+{% extends 'mobile/base.html' %}
+
+{% from 'users/mobile/includes/macros.html' import login_form %}
+
+{% set headline = _('Done!') %}
+{% set title = _('Successfully activated') %}
+
+{% set styles = ('mobile-users',) %}
+{% set classes = 'activate' %}
+
+{% block content %}
+  <section>{% trans %}
+    Your account is successfully verified, and your question is now posted
+    on the Mozilla community support forum.{% endtrans %}
+  </section>
+  <section class="form">
+    <h4>{{ _('While you wait') }}</h4>
+    <p>{% trans %}
+      Log in, so you can respond to your question when it is
+      answered:{% endtrans %}
+    </p>
+    {{ login_form(form) }}
+  </section>
+{% endblock %}

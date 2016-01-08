@@ -1,0 +1,25 @@
+{#- This is an email. Whitespace matters! -#}
+{%- from "includes/unsubscribe_text.ltxt" import unsubscribe_text with context -%}
+{%- autoescape false -%}
+{% trans creator=display_name(creator), document_title=document_title %}
+{{ creator }} created a new revision to the document {{ document_title }}.
+{% endtrans %}
+
+{{ comment }}
+
+{% trans %}
+To view this document's history, click the following link, or paste it
+into your browser's location bar:
+{% endtrans %}
+
+https://{{ host }}{{ revisions_url }}
+
+--
+{{ _('Summary:') }}{# L10n: This is in an email. #}
+{{ summary|safe }}
+
+--
+{{ _('Changes:') }}{# L10n: This is in an email. #}
+{{ diff|safe }}
+
+{{ unsubscribe_text(watch) }}{% endautoescape %}

@@ -1,0 +1,26 @@
+{% extends 'mobile/base.html' %}
+
+{% set headline = _('New Message') %}
+{% set title = headline %}
+
+{% set scripts = ('mobile-messages',) %}
+{% set styles = ('mobile-messages',) %}
+{% set classes = 'new-message' %}
+
+{% set cancel_url = url('messages.inbox') %}
+
+{% block header_buttons %}
+  <div data-submit="message-form" id="send-button" class="icon-sprite">{{ _('Send') }}</div>
+{% endblock %}
+
+{% block content %}
+  <form id="message-form" action="" method="post">
+    {% csrf_token %}
+    {{ form.hidden_fields()|join }}
+    <div class="meta-bar">
+      {{ _('To:') }}
+      {{ form['to'] }}
+    </div>
+    {{ form['message'] }}
+  </form>
+{% endblock %}

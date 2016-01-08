@@ -12,7 +12,8 @@ from kitsune.wiki.models import (
     Document, Revision, DraftRevision, MAX_REVISION_COMMENT_LENGTH)
 from kitsune.wiki.tasks import add_short_links
 from kitsune.wiki.widgets import (
-    RadioFieldRendererWithHelpText, ProductTopicsAndSubtopicsWidget,
+    RadioFieldRendererWithHelpText,
+    ProductTopicsAndSubtopicsWidget,
     RelatedDocumentsWidget)
 
 
@@ -302,7 +303,8 @@ class ReviewForm(forms.Form):
         label=_lazy(u'Significance:'),
         choices=SIGNIFICANCES,
         initial=SIGNIFICANCES[1][0],
-        required=False, widget=_widget,
+        required=False,
+        widget=_widget,
         coerce=int, empty_value=SIGNIFICANCES[1][0])
 
     is_ready_for_localization = forms.BooleanField(

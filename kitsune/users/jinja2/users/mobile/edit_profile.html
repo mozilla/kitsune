@@ -1,0 +1,68 @@
+{% extends 'mobile/base.html' %}
+
+{% set headline = _('Edit profile') %}
+{% set title = headline %}
+
+{% set styles = ('mobile-users',) %}
+{% set classes = 'edit-profile' %}
+
+{% set cancel_url = profile_url(user) %}
+
+{% block header_buttons %}
+  <div class="done-button" data-submit="edit-form">{{ _('Done') }}</div>
+{% endblock %}
+
+{% block content %}
+  <form id="edit-form" class="details" method="post" action="{{ request.path }}">
+    {% csrf_token %}
+
+    <div class="cf">
+      <img class="avatar" src="{{ profile_avatar(profile.user) }}">
+      {{ form['name'] }}
+    </div>
+
+    {% if request.user == profile.user %}
+      <div id="email-field">
+        <label>{{ _('Email') }}</label>
+        <div class="value">{{ profile.user.email }}</div>
+        <a class="field-button" href="{{ url('users.change_email') }}" data-next="{{ request.get_full_path() }}">{{ _('Change Email') }}</a>
+      </div>
+
+      <label>{{ _('Password') }}</label>
+      <a class="field-button" href="{{ url('users.pw_change') }}">{{ _('Change Password') }}</a>
+    {% endif %}
+
+    <div id="bio-field">
+      <label>{{ _('Bio') }}</label>
+      {{ form['bio'] }}
+    </div>
+
+    <label>{{ _('Website') }}</label>
+    {{ form['website'] }}
+
+    <label>{{ _('Twitter') }}</label>
+    {{ form['twitter'] }}
+
+    <label>{{ _('Facebook') }}</label>
+    {{ form['facebook'] }}
+
+    <label>{{ _('Mozillians') }}</label>
+    {{ form['mozillians'] }}
+
+    <label>{{ _('IRC') }}</label>
+    {{ form['irc_handle'] }}
+
+    <label>{{ _('Timezone') }}</label>
+    {{ form['timezone'] }}
+
+    <label>{{ _('Country') }}</label>
+    {{ form['country'] }}
+
+    <label>{{ _('City') }}</label>
+    {{ form['city'] }}
+
+    <label>{{ _('Email in') }}</label>
+    {{ form['locale'] }}
+  </form>
+
+{% endblock %}

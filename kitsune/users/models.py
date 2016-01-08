@@ -268,7 +268,7 @@ class UserMappingType(SearchMappingType):
         d['idisplay_name'] = obj.display_name.lower()
         d['itwitter_usernames'] = [u.lower() for u in obj.twitter_usernames]
 
-        from kitsune.users.helpers import profile_avatar
+        from kitsune.users.templatetags.jinja_helpers import profile_avatar
         d['avatar'] = profile_avatar(obj.user, size=120)
 
         d['suggest'] = {

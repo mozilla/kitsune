@@ -2,9 +2,9 @@ from os.path import basename
 from urlparse import urlparse, parse_qs
 
 from django.conf import settings
+from django.template.loader import render_to_string
 from django.utils.translation import ugettext_lazy as _lazy, ugettext as _
 
-import jingo
 from wikimarkup.parser import Parser, ALLOWED_TAGS
 
 from kitsune.gallery.models import Image, Video
@@ -124,7 +124,7 @@ def _get_wiki_link(title, locale):
         return {'found': True, 'url': url, 'text': d.title}
 
     # To avoid circular imports, wiki.models imports wiki_to_html
-    from kitsune.sumo.helpers import urlparams
+    from kitsune.sumo.templatetags.jinja_helpers import urlparams
     return {'found': False,
             'text': title,
             'url': urlparams(reverse('wiki.new_document', locale=locale),
@@ -305,10 +305,11 @@ class WikiParser(Parser):
         if isinstance(image, basestring):
             return image
 
-        template = jingo.get_env().get_template(self.image_template)
-        r_kwargs = {'image': image, 'params': params,
-                    'STATIC_URL': settings.STATIC_URL}
-        return template.render(r_kwargs)
+        return render_to_string(self.image_template, {
+            'image': image,
+            'params': params,
+            'STATIC_URL': settings.STATIC_URL,
+        })
 
     # Videos are objects that can have one or more files attached to them
     #
@@ -350,7 +351,7 @@ class WikiParser(Parser):
         else:
             return _lazy(u'Button of type "%s" does not exist.') % btn_type
 
-        return jingo.get_env().get_template(template).render({'params': params})
+        return render_to_string(template, {'params': params})
 
 
 def generate_video(v, params=[]):
@@ -364,17 +365,17 @@ def generate_video(v, params=[]):
     # Flash fallback
     if v.flv:
         data_fallback = _get_video_url(v.flv)
-    return jingo.get_env().get_template('wikiparser/hook_video.html').render(
-        {'fallback': data_fallback, 'sources': sources, 'params': params,
-         'video': v,
-         'height': settings.WIKI_VIDEO_HEIGHT,
-         'width': settings.WIKI_VIDEO_WIDTH})
+    return render_to_string('wikiparser/hook_video.html', {
+        'fallback': data_fallback, 'sources': sources, 'params': params,
+        'video': v,
+        'height': settings.WIKI_VIDEO_HEIGHT,
+        'width': settings.WIKI_VIDEO_WIDTH
+    })
 
 
 def generate_youtube_embed(video_id):
     """Takes a youtube video id and returns the embed markup."""
-    return jingo.get_env().get_template(
-        'wikiparser/hook_youtube_embed.html').render({'video_id': video_id})
+    return render_to_string('wikiparser/hook_youtube_embed.html', {'video_id': video_id})
 
 
 def _get_video_url(video_file):

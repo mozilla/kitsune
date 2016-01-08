@@ -2,7 +2,7 @@ from datetime import datetime
 
 from nose.tools import eq_
 
-from kitsune.customercare.helpers import isotime, round_percent, utctimesince
+from kitsune.customercare.templatetags.jinja_helpers import isotime, round_percent, utctimesince
 from kitsune.sumo.tests import TestCase
 
 

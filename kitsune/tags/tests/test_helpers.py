@@ -3,7 +3,7 @@ from nose.tools import eq_
 from taggit.models import Tag
 
 from kitsune.sumo.tests import TestCase
-from kitsune.tags.helpers import tags_to_text
+from kitsune.tags.templatetags.jinja_helpers import tags_to_text
 
 
 class TestTagsToText(TestCase):

@@ -3,7 +3,7 @@ from pyquery import PyQuery as pq
 
 from kitsune.gallery.models import Image, Video
 from kitsune.gallery.tests import ImageFactory, VideoFactory
-from kitsune.sumo.helpers import urlparams
+from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.tests import TestCase, get, LocalizingClient, post
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import UserFactory

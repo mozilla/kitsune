@@ -6,7 +6,7 @@ from django.views.decorators.cache import cache_page
 import waffle
 
 from kitsune.inproduct.models import Redirect
-from kitsune.sumo.helpers import urlparams
+from kitsune.sumo.templatetags.jinja_helpers import urlparams
 
 
 @cache_page(24 * 60 * 60)  # 24 hours.

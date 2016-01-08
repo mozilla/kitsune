@@ -1,0 +1,48 @@
+{% extends "wiki/base.html" %}
+{% from "wiki/includes/sidebar_modules.html" import document_tools with context %}
+{% if delete_confirmed %}
+  {% set title = _('Document Deleted | {document}')|f(document=document.title) %}
+{% else %}
+  {% set title = _('Delete Document | {document}')|f(document=document.title) %}
+  {% set crumbs = [(document.get_absolute_url(), document.title),
+                   (None, _('Delete Document'))] %}
+{% endif %}
+
+{% block content %}
+  <div class="grid_9">
+    <article id="delete-document">
+      {% if delete_confirmed %}
+        <h1 class="title">{{ _('The document has been deleted.') }}</h1>
+      {% else %}
+        <h1 class="title">{{ _('Are you sure you want to delete this document?') }}</h1>
+        {% if document.locale == settings.WIKI_DEFAULT_LANGUAGE %}
+          <h2>{{ _('All translations of this document will also be deleted.') }}</h2>
+        {% endif %}
+        <label>{{ _('Title') }}</label>
+        <div>{{ document.title }}</div>
+        <label>{{ _('Locale') }}</label>
+        <div>{{ document.locale }}</div>
+        {% if document.current_revision %}
+          <label>{{ _('Current Content') }}</label>
+          <pre>{{ document.current_revision.content }}</pre>
+        {% endif %}
+        <form action="" method="post">
+          {% csrf_token %}
+          <p>
+            {{ _('You are about to permanently delete this document. <strong>This cannot be undone!</strong> Are you sure you want to continue?')|safe }}
+          </p>
+          <div class="submit">
+            <input type="submit" value="{{ _('Delete') }}" />
+            <a href="{{ url('wiki.document_revisions', document.slug) }}">{{ _('Cancel and go back to document history') }}</a>
+          </div>
+        </form>
+      {% endif %}
+    </article>
+  </div>
+{% endblock %}
+
+{% block side_top %}
+  {% if not delete_confirmed %}
+    {{ document_tools(document, document.parent, user, '', settings) }}
+  {% endif %}
+{% endblock %}

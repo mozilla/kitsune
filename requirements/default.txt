@@ -48,11 +48,11 @@ cryptography==0.7.2
 # sha256: _eJnrrA6jUnjNB5_caIoxnSNzkO1wA9lWBeA2Ztwstk
 dennis==0.7
 
-# sha256: IDkUT86PG2A9A_paVkNXjfGtAHxO1BphfwKjlD9wWaE
-Django==1.7.11
+# sha256: _AEthQcgGmKOh3ICu3gAeZFSKF9pqg1Cp8UGqW-70uM
+Django==1.8.9
 
-# sha256: M7YuOXN4svxB-YixuXUuT1Y5rfNYJN5wxGqKDmv1pVs
-django-activity-stream==0.5.1
+# sha256: kjEbxXu6YpeZv9FrlKYlEQe79VE5TCBFg6cI0g-2gbY
+django-activity-stream==0.6.0
 
 # sha256: JL4TJtBHNh5HWbqZkqyoPtZd9Vg3UN_ovoEOscEx2HY
 django-adminplus==0.3
@@ -91,8 +91,11 @@ https://github.com/willkg/django-eadred/archive/f77ebbeea7e6802771b91a1748faec00
 # sha256: oEiCqdyUMgocSPT2W6xNnQj_MoJgNTkCQK1JnBPLfsc
 https://github.com/django-extensions/django-extensions/archive/47a531c996c92a369755a4a9e0857e51afd25cab.tar.gz#egg=django-extensions==1.3.3
 
-# sha256: GxivwUOH0u6YUuTcmoeqRuNGoJZ6c0qqufsiLtSBzqI
-django-filter==0.8
+# sha256: fRdUe2UhbMXG-8BK7lUIjM1ZF8B3UwTZb3AXwmx4nNc
+django-filter==0.11.0
+
+# sha256: _CtqZSAbJ3EegA6y4SYv9Coy8Ce9ImfjQSHxvSvWuTM
+django-jinja==2.1.2
 
 # sha256: Eq491FQ_jcXMX0vdf2_RaPTRYkQU11OkQVc8zBh6jkM
 django-jsonfield==0.9.13
@@ -109,15 +112,15 @@ https://github.com/mozilla/django-product-details/archive/50d83e16d801ef069738cf
 # sha256: H1ypqtnca2OqjPPqsBVW-PnuftghanQS1gAt7OM-RBk
 https://github.com/jbalogh/django-multidb-router/archive/fffe4323fc0006c6eec20c696a5577ee902a85d9.tar.gz#egg=django-multidb-router
 
-# sha256: Js7zxvYt8u7pVaJRld5veTiBMXwPX9GhxvniLzUakxM
-django-nose==1.4
+# sha256: Gbja9M1eZmA9xYAY8DhBFwl94YcUd1M4zbdqlNSNiWY
+django-nose==1.4.3
 
 # django-picklefield: master~5
 # sha256: jTddtwi8h_bfm7OulO3QG-0su2polKkneF3tmu3pg-8
 https://github.com/gintas/django-picklefield/archive/54b11bdb177fd6140c3ae7d6e9744eaa2deda261.tar.gz#egg=django-picklefield
 
-# sha256: Vibe-NP1i9L1ne67vn7-KckiAGpFFQblwH3VtKSQ_8M
-django-pipeline==1.4.7
+# sha256: ccvUbFUuSPP-NwLVQQkWStWAeAcN2dhixxF0dQbj5L4
+django-pipeline==1.6.4
 
 # django-ratelimit: tags/v0.4.0~8
 # sha256: 0aNL6oRLRBHhGYsH0mm3D7UQDaSnNbdsHJl_sPuUZGw
@@ -183,10 +186,6 @@ https://github.com/html5lib/html5lib-python/archive/f5855f3d0ad6d4202e2b5d02626d
 
 # sha256: OeqMam2fWVwXehYTT8SamQrY04J1jL9GnIZZZi8vUas
 httplib2==0.9
-
-# jingo: tags/0.8.2
-# sha256: 83isoezVr1knq2ZudU4ZEuofA-Fjt5SR4DcRWYHVwvs
-https://github.com/rehandalal/jingo/archive/ebba98353748e35272ce976b457dedba9a7e5638.tar.gz#egg=jingo==0.8.2
 
 # sha256: GQQPAbOp2MY-TVeTb3hxCQgZm2k3CrRKD3QH3YkfAZs
 Jinja2==2.5.2

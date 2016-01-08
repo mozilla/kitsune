@@ -1,0 +1,36 @@
+{% extends 'mobile/base.html' %}
+
+{% set headline = _('Change password') %}
+{% set title = headline %}
+
+{% set styles = ('mobile-users',) %}
+{% set classes = 'edit-profile edit-password' %}
+
+{% set return_url = url('users.edit_my_profile') %}
+
+{% block content %}
+  <form class="details" method="post" action="{{ request.path }}">
+    <p>
+      {% trans %}
+        You will need to confirm the newly set email address to complete the
+        change.
+      {% endtrans %}
+    </p>
+
+    {% csrf_token %}
+
+    <label class="big">{{ _('Old Password') }}</label>
+    {{ form['old_password'] }}
+
+    <label class="big">{{ _('New Password') }}</label>
+    {{ form['new_password1'] }}
+
+    <label class="big">{{ _('New Password Again') }}</label>
+    {{ form['new_password2'] }}
+
+    <div class="cf">
+      <a class="btn" href="{{ url('users.edit_my_profile') }}">{{ _('Cancel') }}</a>
+      <button class="btn btn-submit" type="submit">{{ _('Change') }}</button>
+    </div>
+  </form>
+{% endblock %}

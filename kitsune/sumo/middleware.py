@@ -14,7 +14,7 @@ from django.utils.encoding import iri_to_uri, smart_str, smart_unicode
 
 import mobility
 
-from kitsune.sumo.helpers import urlparams
+from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import Prefixer, set_url_prefixer, split_path
 from kitsune.sumo.views import handle403
 

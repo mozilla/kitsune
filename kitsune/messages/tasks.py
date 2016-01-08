@@ -27,7 +27,7 @@ def email_private_message(inbox_message_id):
     @safe_translation
     def _send_mail(locale):
         # Avoid circular import issues
-        from kitsune.users.helpers import display_name
+        from kitsune.users.templatetags.jinja_helpers import display_name
 
         subject = _(u'[SUMO] You have a new private message from [{sender}]')
         subject = subject.format(
@@ -36,7 +36,7 @@ def email_private_message(inbox_message_id):
         msg_url = reverse('messages.read', kwargs={'msgid': inbox_message.id})
         settings_url = reverse('users.edit_settings')
 
-        from kitsune.sumo.helpers import add_utm
+        from kitsune.sumo.templatetags.jinja_helpers import add_utm
         context = {
             'sender': inbox_message.sender,
             'message': inbox_message.message,

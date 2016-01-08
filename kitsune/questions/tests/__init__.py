@@ -60,6 +60,16 @@ class QuestionLocaleFactory(factory.DjangoModelFactory):
     class Meta:
         model = QuestionLocale
 
+    @factory.post_generation
+    def products(obj, create, extracted, **kwargs):
+        if not create:
+            # Simple build, do nothing
+            return
+
+        if extracted is not None:
+            for product in extracted:
+                obj.products.add(product)
+
 
 class AnswerFactory(factory.DjangoModelFactory):
     class Meta:

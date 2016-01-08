@@ -1,0 +1,33 @@
+{% extends "messages/base.html" %}
+{% from "messages/includes/macros.html" import message_form with context %}
+{% set title = _('New Message') %}
+{% set crumbs = [(url('messages.inbox'), _('Messages')), (None, title)] %}
+{% set active_tab = 'new' %}
+
+{% block content %}
+  <div class="grid_9">
+    <article class="main">
+      <h1>{{ title }}</h1>
+      <section id="new-message">
+        {% if request.limited %}
+          <div class="warning-box">
+            {{ _('You have exceeded the number of private messages that can be sent in a day.') }}
+          </div>
+        {% endif %}
+        <form action="" method="post">
+          {% csrf_token %}
+          {{ message_form(form) }}
+          <div class="submit">
+            <button type="submit" class="btn btn-important" name="send">{{ _('Send') }}</button>
+            <input type="submit" id="preview-btn" name="preview" value="{{ _('Preview') }}"
+                data-preview-url="{{ url('messages.preview_async') }}"
+                data-preview-container-id="preview"
+                data-preview-content-id="id_message" />
+            <a href="{{ url('messages.inbox') }}">{{ _('Cancel') }}</a>
+          </div>
+        </form>
+      </section>
+      <section id="preview" class="message-view"></section>
+    </article>
+    </div>
+{% endblock %}

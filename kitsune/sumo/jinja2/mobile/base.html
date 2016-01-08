@@ -1,0 +1,168 @@
+{% from "includes/common_macros.html" import list_view_item %}
+{% from "includes/common_macros.html" import favicon with context %}
+{% from "wiki/includes/document_macros.html" import show_for with context %}
+{% from "search/basic-form.html" import mobile_nav_form with context %}
+<!DOCTYPE html>
+<html lang="{{ request.LANGUAGE_CODE }}" {% if dir %}dir="{{ dir }}"{% endif %} class="no-js">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
+  <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no" media="(device-height: 568px)">
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+
+  <!-- Don't index mobile optimized pages -->
+  <meta name="robots" content="noindex" />
+
+  <title>{{ title }} | {{ pgettext('site_title', 'Mozilla Support') }}</title>
+
+  {{ favicon() }}
+
+  <link rel="search" type="application/opensearchdescription+xml" title="{{ _('Mozilla Support') }}" href="{{ url('search.plugin') }}"/>
+
+  {% stylesheet 'mobile-common' %}
+  {% for style in styles %}
+    {% stylesheet style %}
+  {% endfor %}
+  {% if meta %}
+    {% for tag in meta %}
+      <meta name="{{ tag[0] }}" content="{{ tag[1] }}"/>
+    {% endfor %}
+  {% endif %}
+  {% if canonical_url %}
+    <link rel="canonical" href="{{ canonical_url }}" />
+  {% endif %}
+
+  {% block head %}
+  {% endblock %}
+</head>
+<body class="{{ classes }}"
+      data-readonly="{{ settings.READ_ONLY|json }}"
+      data-static-url="{{ STATIC_URL }}"
+      data-orientation="{% if page_align %}{{ page_align }}{% else %}right{% endif %}"
+      data-ga-push="{{ ga_push_attribute() }}"
+      {% if ga_alternate_url %}
+        data-ga-alternate-url="{{ ga_alternate_url }}"
+      {% endif %}
+      data-usernames-api="{{ url('users.api.usernames') }}"
+{% if extra_body_attrs -%}
+  {% for attr, val in extra_body_attrs.items() %}{{ attr }}="{{ val }}" {% endfor %}
+{%- endif %}>
+
+<nav class="scrollable">
+  <div id="search-bar">
+    {{ mobile_nav_form(q, search_params) }}
+  </div>
+
+  <a href="{{ url('products') }}">{{ _('Home') }}</a>
+  {% if request.LANGUAGE_CODE == settings.WIKI_DEFAULT_LANGUAGE %}
+    {% set ask_url = url('questions.aaq_step1') %}
+  {% else %}
+    {% set ask_url = url('wiki.document', 'get-community-support') %}
+  {% endif %}
+  <a href="{{ ask_url }}">{{ _('Ask a question') }}</a>
+  <a href="{{ url('questions.home') }}">{{ _('Support Forum') }}</a>
+
+  <header>{{ _('Navigation') }}</header>
+  <a href="{{ url('landings.get_involved') }}">{{ _('Help other users') }}</a>
+  <a href="?{{ request.QUERY_STRING}}&amp;mobile=0">{{ _('Switch to desktop site') }}</a>
+
+  <header>{{ _('Profile') }}</header>
+  {% if user.is_authenticated() %}
+    <a href="{{ profile_url(user) }}">{{ user.username }}</a>
+    <a href="{{ url('messages.inbox') }}">
+      {{ _('Inbox') }}
+      {% if unread_message_count > 0 %}
+        ({{ unread_message_count }})
+      {% endif %}
+    </a>
+    <a href="{{ url('users.edit_settings') }}">{{ _('Settings') }}</a>
+    <form id="sign-out" action="{{ url('users.logout') }}" method="post">
+      {% csrf_token %}
+    </form>
+    <a class="sign-out" data-submit="sign-out" href="#sign-out">{{ _('Sign Out') }}</a>
+  {% else %}
+    <a href="{{ url('users.login') }}">{{ _('Sign in') }}</a>
+  {% endif %}
+
+  {% if not hide_locale_switcher %}
+    <header>{{ _('Languages') }}</header>
+    {% set locale_url = url('sumo.locales') %}
+    {% if localizable_url %}
+      {% set locale_url = locale_url|urlparams(next=localizable_url) %}
+    {% endif %}
+    <a href="{{ locale_url }}" class="locale-picker">{{ _('Switch language') }}</a>
+  {% endif %}
+</nav>
+
+<header class="slide-on-exposed">
+  <div id="menu-button" class="icon-sprite"></div>
+  <div id="search-button"></div>
+  <div id="header-components">
+    {% block header_buttons %}{% endblock %}
+    {% if cancel_url %}
+      <a href="{{ cancel_url }}" id="cancel-button" class="icon-sprite">Cancel</a>
+    {% endif %}
+    {% if return_url and False %}
+      <a href="{{ return_url }}" class="return-button icon-sprite">Back</a>
+    {% endif %}
+    {% block header %}
+      <h1>
+        {% if headline %}
+          {{ headline }}
+        {% else %}
+          {{ _('Mozilla Support') }}
+        {% endif %}
+      </h1>
+    {% endblock %}
+  </div>
+  <form id="instant-search-form" data-instant-search="form">
+    <input type="search" placeholder="{{ _('Start typing to search...') }}">
+  </form>
+</header>
+
+{% block after_header %}{% endblock %}
+
+<div id="main-content" class="wrapper slide-on-exposed">
+  <section id="content">
+    {% block content %}{% endblock %}
+
+    {% if include_showfor %}
+      <article>
+        <header>{{ _('Get support for another platform:') }}</header>
+        {{ show_for(products, '') }}
+      </article>
+    {% endif %}
+  </section>
+
+  <footer>
+    {% block footer %}{% endblock %}
+  </footer>
+
+  <ul id="notifications">
+    {% for message in messages %}
+      <li>{{ message }}</li>
+    {% endfor %}
+    {% for an in get_announcements() %}
+      <li class="announcement" id="announcement-{{ an.id }}">{{ an.content }}</li>
+    {% endfor %}
+  </ul>
+</div>
+
+{% block after_main %}{% endblock %}
+
+{# TODO: The JS url changes whenever our js code changes.
+   But this should get cached busted whenever a locale is updated.
+   It's complicatred to fix. But for now it isn't more broken than
+   before. #}
+{% if request.LANGUAGE_CODE %}
+ <script src="{{ static('jsi18n/{lang}/djangojs.js'|f(lang=request.LANGUAGE_CODE|lower)) }}"></script>
+{% endif %}
+
+{% javascript 'mobile-common' %}
+{% for script in scripts %}
+  {% javascript script %}
+{% endfor %}
+
+</body>
+</html>

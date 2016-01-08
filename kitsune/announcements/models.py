@@ -5,7 +5,7 @@ from django.db import models
 from django.db.models import Q
 from django.db.models.signals import post_save
 
-from kitsune.sumo.helpers import wiki_to_html
+from kitsune.sumo.templatetags.jinja_helpers import wiki_to_html
 from kitsune.sumo.models import ModelBase
 from kitsune.wiki.models import Locale
 

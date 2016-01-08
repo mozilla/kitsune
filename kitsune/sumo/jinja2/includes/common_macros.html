@@ -1,0 +1,146 @@
+{% macro search_box(settings, id=False, prefix=None, target=None,
+                    params=None) %}
+  <form data-instant-search="form" {% if id %}id="{{ id }}"{% endif %} action="{{ url('search') }}" method="get" {% if target %} target="{{ target }}"{% endif %} class="simple-search-form">
+    {% if params %}
+      {% for k, v in params.items() %}
+        <input type="hidden" name="{{ k }}" value="{{ v }}" />
+      {% endfor %}
+    {% endif %}
+    <input type="search" name="q" required="required" aria-required="true" placeholder="{{ _('Search Mozilla Support') }}" class="searchbox" id="search-q" />
+    <button type="submit" title="{{ _('Search') }}" class="submit-button">{{ _('Search') }}</button>
+  </form>
+{% endmacro %}
+
+{% macro aux_nav(user, hide_aaq_link=False) %}
+  {% if not settings.READ_ONLY %}
+    {% if not hide_aaq_link %}
+      {% if request.LANGUAGE_CODE in AAQ_LANGUAGES %}
+        {% set ask_url = url('questions.aaq_step1') %}
+      {% else %}
+        {% set ask_url = url('wiki.document', 'get-community-support') %}
+      {% endif %}
+      <li><a href="{{ ask_url }}" class="ask">{{ _('Ask a question') }}</a></li>
+    {% endif %}
+    {% if user.is_authenticated() %}
+      <li class="dropdown">
+        <a href="#">{{ _('Contributor Tools') }}</a>
+        <ul class="double">
+          {{ _for_contributor_links(user, settings.WIKI_DEFAULT_LANGUAGE) }}
+        </ul>
+      </li>
+        <li class="dropdown"><a href="{{ profile_url(user) }}" class="user">{{ user }}</a>
+          <ul>
+            <li><a href="{{ profile_url(user) }}">{{ _('View Profile') }}</a></li>
+            <li><a href="{{ url('search')|urlparams(asked_by=user.username, a=1, w=2) }}">{{ _('My Questions') }}</a></li>
+            <li><a href="{{ profile_url(user, edit=True) }}">{{ _('Edit Profile') }}</a></li>
+            <li><a href="{{ url('users.edit_settings') }}">{{ _('Settings') }}</a></li>
+            <li>
+              <form id="sign-out" action="{{ url('users.logout') }}" method="post">
+                {% csrf_token %}
+              </form>
+              <a class="sign-out" data-type="submit" data-form="sign-out" href="#sign-out">{{ _('Sign Out') }}</a>
+            </li>
+          </ul>
+        </li>
+      <li>
+        <a href="{{ url('messages.inbox') }}">
+          {{ _('Inbox') }}
+          {% if unread_message_count > 0 %}
+            <span class="unread-message-count">{{ unread_message_count }}</span>
+          {% endif %}
+        </a>
+      </li>
+    {% else %}
+      <li>
+        <a href="{{ url('users.auth') }}" class="sign-in register">
+          {{ _('Sign In') }}
+        </a>
+      </li>
+    {% endif %}
+  {% endif %}
+{% endmacro %}
+
+{% macro content_editor(field) %}
+  <div class="editor{% if field.errors %} invalid{% endif %}" data-media-search-url="{{ url('gallery.async') }}" data-media-gallery-url="{{ url('gallery.home') }}">
+    <div class="editor-tools"></div>
+    <div>{{ field|safe }}</div>
+  </div>
+  <div style="display: none;">
+    <select id="_languages-select-box">
+      {% for lang in settings.LANGUAGE_CHOICES %}
+        <option value="{{ lang[0] }}" {% if lang[0] == request.LANGUAGE_CODE %}selected="selected"{% endif %}>{{ lang[1] }} ({{ lang[0] }})</option>
+      {% endfor %}
+    </select>
+  </div>
+{% endmacro %}
+
+{% macro list_view_item(url, label, class=None, icon_url=None) %}
+<li>
+  <a href="{{ url }}"{% if class %} class="{{ class }}"{% endif %}>
+    {% if icon_url %}
+      <img class="icon" src="{{ icon_url }}" />
+    {% endif %}
+    {{ label }}
+  </a>
+</li>
+{% endmacro %}
+
+{% macro for_contributors_sidebar(user, default_language, li_only=False, active=None) -%}
+  {% if user.is_authenticated() %}
+    {% if not li_only %}
+      <ul class="sidebar-nav sidebar-folding">
+    {% endif %}
+      <li id="for-contributors-sidebar"{% if active %} class="selected"{% endif %}>
+        <a href="#">{{ _('For Contributors') }}</a>
+        <ul class="sidebar-nav">
+          {{ _for_contributor_links(user, default_language, active) }}
+        </ul>
+      </li>
+    {% if not li_only %}
+      </ul>
+    {% endif %}
+  {% endif %}
+{%- endmacro %}
+
+{% macro _for_contributor_links(user, default_language, active=None) -%}
+  <li><a href="{{ url('landings.get_involved') }}">{{ _('Quickstart Guide') }}</a></li>
+  <li><a href="{{ url('wiki.document', 'contributor-news-resources') }}">{{ _('News &amp; Resources') }}</a></li>
+  <li {{ active|class_selected('forums') }}><a href="{{ url('forums.forums') }}">{{ _('Contributor Forums') }}</a></li>
+  <li {{ active|class_selected('article-discussions') }}><a href="{{ url('wiki.locale_discussions') }}">{{ _('Article Discussions') }}</a></li>
+  <li {{ active|class_selected('kbdashboard') }}><a href="{{ url('dashboards.localization') }}">{{ _('Knowledge Base Dashboard') }}</a></li>
+  <li><a href="{{ url('dashboards.aggregated_metrics') }}">{{ _('Localization Metrics') }}</a></li>
+  <li><a href="{{ url('wiki.revisions') }}">{{ _('Recent Revisions') }}</a></li>
+  <li><a href="{{ url('customercare.landing') }}">{{ _('Help on Twitter') }}</a></li>
+  <li><a href="{{ url('questions.home') }}">{{ _('Support Forum Home') }}</a></li>
+  <li><a href="{{ url('questions.metrics') }}">{{ _('Support Forum Metrics') }}</a></li>
+  {% if user.has_perm('flagit.can_moderate') %}
+    <li><a href="{{ url('flagit.queue') }}">{{ _('Moderate Forum Content') }}</a></li>
+  {% endif %}
+  <li><a href="{{ url('gallery.home') }}">{{ _('Media Gallery') }}</a></li>
+  <li><a href="{{ url('search.advanced') }}">{{ _('Advanced Search') }}</a></li>
+  <li><a href="{{ url('kpi.dashboard') }}">{{ _('KPI Dashboard') }}</a></li>
+  <li><a href="{{ url('community.home') }}">{{ _('Community Hub') }}</a></li>
+{%- endmacro %}
+
+{# This is designed to be used like this:
+  {% call announcement_bar('foo', 'info') %}
+    This is the contents of the bar.
+  {% endcall %}
+#}
+{% macro announcement_bar(id, level) -%}
+  <div class="announce-bar {{ level }}" id="announce-{{ id }}">
+    <div class="container_12">
+      <div class="grid_12">
+        <div class="close-button" data-close-id="announce-{{ id }}"></div>
+        {{ caller() }}
+      </div>
+    </div>
+  </div>
+{% endmacro %}
+
+{% macro favicon() %}
+  {% set sizes = (512, 256, 128, 64, 32, 16,) %}
+  {% for s in sizes %}
+    <link rel="icon" type="image/png" sizes="{{ s }}x{{ s }}" href="{{ STATIC_URL }}sumo/img/firefox-{{ s }}.png?v=1">
+  {% endfor %}
+{% endmacro %}

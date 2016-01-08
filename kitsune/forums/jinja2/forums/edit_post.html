@@ -1,0 +1,45 @@
+{% extends "forums/base.html" %}
+{% from "layout/errorlist.html" import errorlist %}
+{% from "includes/common_macros.html" import content_editor with context %}
+{# L10n: {f} if the name of the forum, {t} if the name of the thread. #}
+{% set title = _('Edit a post | {t} | {f} | Forums')|f(t=thread.title,f=forum.name) %}
+{% set crumbs = [(url('forums.forums'), _('Forums')),
+(url('forums.threads', forum.slug), forum.name),
+(url('forums.posts', forum.slug, thread.id), thread.title),
+(None, _('Edit a post'))] %}
+{% set styles = ('forums', 'jqueryui') %}
+{% set scripts = ('forums', 'jqueryui') %}
+
+{% block content %}
+  <div id="edit-post" class="grid_12">
+    <h1>{{ _('Edit a post') }}</h1>
+
+    <form action="{{ url('forums.edit_post', forum.slug, thread.id, post.id) }}" method="post" class="edit-post">
+      {% csrf_token %}
+      {{ errorlist(form) }}
+
+      <div class="form-widget{% if form.content.errors %} invalid{% endif %}">
+        {{ form.content.label_tag()|safe }}
+        <div class="content-box">
+          {{ content_editor(form.content) }}
+        </div>
+      </div>
+
+      <div class="form-widget submit">
+        <button type="submit" class="btn btn-submit big">{{ _('Update post') }}</button>
+        <button type="submit" id="preview" name="preview" class="btn"
+               data-preview-url="{{ url('forums.post_preview_async') }}"
+               data-preview-container-id="post-preview"
+               data-preview-content-id="id_content">{{ _('Preview') }}
+        </button>
+        <a class="btn" href="{{ url('forums.posts', forum.slug, thread.id) }}">{{ _('Cancel') }}</a>
+      </div>
+    </form>
+
+    <div id="post-preview">
+      {% if post_preview %}
+        {% include "forums/includes/post_preview.html" %}
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

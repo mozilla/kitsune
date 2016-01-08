@@ -132,14 +132,13 @@ class RegisterTests(TestCase):
     @mock.patch.object(Site.objects, 'get_current')
     def test_new_user_claim_watches(self, get_current):
         """Claim user watches upon activation."""
-        watch(email='sumouser@test.com', save=True)
+        watch(email='sumouser@test.com', user=UserFactory(), save=True)
 
         get_current.return_value.domain = 'su.mo.com'
         user_ = RegistrationProfile.objects.create_inactive_user(
             'sumouser1234', 'testpass', 'sumouser@test.com')
         key = RegistrationProfile.objects.all()[0].activation_key
-        self.client.get(reverse('users.activate', args=[user_.id, key]),
-                        follow=True)
+        self.client.get(reverse('users.activate', args=[user_.id, key]), follow=True)
 
         # Watches are claimed.
         assert user_.watch_set.exists()
@@ -165,7 +164,7 @@ class RegisterTests(TestCase):
         q = Question.objects.get(creator=user_)
         # Question is listed on the confirmation page.
         assert 'test_question' in response.content
-        assert q.get_absolute_url() in response.content
+        assert q.get_absolute_url().encode('utf8') in response.content
 
     def test_duplicate_username(self):
         u = UserFactory()

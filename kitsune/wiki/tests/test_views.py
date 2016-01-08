@@ -12,7 +12,7 @@ from pyquery import PyQuery as pq
 
 from kitsune.products.tests import ProductFactory
 from kitsune.sumo.redis_utils import redis_client, RedisError
-from kitsune.sumo.tests import SkipTest, TestCase, LocalizingClient, MobileTestCase
+from kitsune.sumo.tests import SkipTest, TestCase, LocalizingClient, MobileTestCase, template_used
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import UserFactory, add_permission
 from kitsune.wiki.config import (
@@ -394,7 +394,7 @@ class DocumentEditingTests(TestCase):
         response = self.client.get(url)
         eq_(response.status_code, 200)
         # Check translate article template is being used
-        self.assertTemplateUsed(response, 'wiki/translate.html')
+        assert template_used(response, 'wiki/translate.html')
         content = pq(response.content)
         eq_(content('#id_title').val(), trans_doc.title)
         eq_(content('#id_slug').val(), trans_doc.slug)
@@ -410,7 +410,7 @@ class DocumentEditingTests(TestCase):
         response = self.client.get(url, follow=True)
         eq_(response.status_code, 200)
         # Check translate article template is being used
-        self.assertTemplateUsed(response, 'wiki/translate.html')
+        assert template_used(response, 'wiki/translate.html')
         content = pq(response.content)
         # While first translation, the slug and title field is always blank.
         # So the value field should be None
@@ -840,13 +840,13 @@ class MinimalViewTests(TestCase):
         url = reverse('wiki.document', args=[self.doc.slug], locale='en-US')
         url += '?minimal=1&mobile=1'
         res = self.client.get(url)
-        self.assertTemplateUsed(res, 'wiki/mobile/document-minimal.html')
+        assert template_used(res, 'wiki/mobile/document-minimal.html')
 
     def test_only_if_mobile(self):
         url = reverse('wiki.document', args=[self.doc.slug], locale='en-US')
         url += '?minimal=1'
         res = self.client.get(url)
-        self.assertTemplateUsed(res, 'wiki/document.html')
+        assert template_used(res, 'wiki/document.html')
 
     def test_xframe_options(self):
         url = reverse('wiki.document', args=[self.doc.slug], locale='en-US')
@@ -885,7 +885,7 @@ class MobileDocumentTests(MobileTestCase):
         url = reverse('wiki.document', args=[self.doc.slug], locale='en-US')
         res = self.client.get(url)
         eq_(res.status_code, 200)
-        self.assertTemplateUsed(res, 'wiki/mobile/document.html')
+        assert template_used(res, 'wiki/mobile/document.html')
 
 
 class FallbackSystem(TestCase):

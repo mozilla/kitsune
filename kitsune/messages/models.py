@@ -23,7 +23,7 @@ class InboxMessage(ModelBase):
 
     @property
     def content_parsed(self):
-        from kitsune.sumo.helpers import wiki_to_html
+        from kitsune.sumo.templatetags.jinja_helpers import wiki_to_html
         return wiki_to_html(self.message)
 
     class Meta:
@@ -42,7 +42,7 @@ class OutboxMessage(ModelBase):
 
     @property
     def content_parsed(self):
-        from kitsune.sumo.helpers import wiki_to_html
+        from kitsune.sumo.templatetags.jinja_helpers import wiki_to_html
         return wiki_to_html(self.message)
 
     class Meta:

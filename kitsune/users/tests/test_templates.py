@@ -20,7 +20,7 @@ from kitsune.kbadge.tests import AwardFactory, BadgeFactory
 from kitsune.questions.events import QuestionReplyEvent
 from kitsune.questions.tests import QuestionFactory
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.sumo.helpers import urlparams
+from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.tests import post, get
 from kitsune.users import ERROR_SEND_EMAIL
 from kitsune.users.forms import PasswordResetForm

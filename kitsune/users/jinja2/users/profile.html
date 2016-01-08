@@ -1,0 +1,173 @@
+{% extends "users/base.html" %}
+{% from "wiki/includes/flag_form.html" import flag_form with context %}
+{% from "kbadge/includes/macros.html" import awards_list with context %}
+
+{% set title = _('{user} | Profile')|f(user=display_name(profile.user)) %}
+{% set classes = 'profile' %}
+{% set canonical_url = unlocalized_url('users.profile', profile.user.username) %}
+{% set active = 'my-profile' %}
+{% set crumbs = [(None, profile.user.username)] %}
+
+{% block content %}
+  <div class="grid_9">
+    <article id="profile" class="cf">
+      <div class="avatar">
+        <img src="{{ profile_avatar(profile.user) }}" alt="">
+      </div>
+      {% if user.has_perm('users.change_profile') %}
+        <div id="admin-actions">
+          <a class="edit" href="{{ url('users.edit_profile', profile.user.username) }}">
+            {{ _('Edit user profile') }}
+          </a>
+        </div>
+      {% endif %}
+      {% if request.user.is_authenticated and request.user != profile.user %}
+        {{ flag_form(url('users.flag', object_id=profile.pk), False) }}
+      {% endif %}
+      <h1 class="user">{{ display_name(profile.user) }}
+        {% if profile.name %}
+          <span class="username">({{ profile.user.username }})</span>
+        {% endif %}
+      </h1>
+      <h2 class="location">
+        {% if profile.city and profile.country %}
+          {{ _('{city}, {country}')|f(city=profile.city,
+                                      country=profile.get_country_display() ) }}
+        {% elif profile.city %}
+          {{ profile.city }}
+        {% elif profile.country %}
+          {{ profile.get_country_display() }}
+        {% endif %}
+      </h2>
+      <div class="pm-or-signout">
+        {% if profile.user == user %}
+          <a href="{{ url('users.logout') }}">{{ _('Sign Out') }}</a>
+        {% else %}
+          {{ private_message(profile.user) }}
+        {% endif %}
+      </div>
+
+      {% if user.id != profile.user.id and user.has_perm('users.deactivate_users') %}
+        {% if profile.user.is_active %}
+          <form class="deactivate" method="post" action="{{ url('users.deactivate') }}">
+            {% csrf_token %}
+            <input type="hidden" name="user_id" value="{{ profile.user.id }}">
+            <input type="submit" value="{{ _('Deactivate this user') }}">
+          </form>
+          <form class="deactivate" method="post" action="{{ url('users.deactivate-spam') }}">
+            {% csrf_token %}
+            <input type="hidden" name="user_id" value="{{ profile.user.id }}">
+            <input type="submit" value="{{ _('Deactivate this user and mark all content as spam') }}">
+          </form>
+        {% else %}
+          <div id="deactivated-msg">{{ _('This user has been deactivated.') }}</div>
+        {% endif %}
+      {% endif %}
+
+      {% if num_answers or num_questions or num_solutions or num_documents or profile.involved_from %}
+        <section class="contributions">
+          <h2>Contributions</h2>
+          <ul>
+            {% if profile.involved_from %}
+              <li>
+                {{ _('Involved with Mozilla since {date}')|f(date=profile.involved_from.strftime('%b %Y')) }}
+              </li>
+            {% endif %}
+            {% if num_questions %}
+              <li>
+                <a href="{{ url('search')|urlparams(asked_by=profile.user.username, sortby=1, a=1, w=2) }}">
+                  {{ ngettext('{0} question', '{0} questions', num_questions)|f(num_questions) }}
+                </a>
+              </li>
+            {% endif %}
+            {% if num_answers %}
+              <li>
+                <a href="{{ url('search')|urlparams(answered_by=profile.user.username, sortby=1, a=1, w=2) }}">
+                  {{ ngettext('{0} answer', '{0} answers', num_answers)|f(num_answers) }}
+                </a>
+              </li>
+            {% endif %}
+            {% if num_solutions %}
+              <li>
+                {{ ngettext('{0} solution', '{0} solutions', num_solutions)|f(num_solutions) }}
+              </li>
+            {% endif %}
+            {% if num_documents %}
+              <li>
+                <a href="{{ url('users.documents', profile.user.username) }}">
+                  {{ ngettext('{0} documents', '{0} documents', num_documents)|f(num_documents) }}
+                </a>
+              </li>
+            {% endif %}
+          </ul>
+        </section>
+      {% endif %}
+      {% if profile.public_email or profile.website or profile.twitter or
+            profile.facebook or profile.mozillians or profile.irc_handle %}
+        <section class="contact">
+          <ul>
+            {% if profile.public_email and request.user.is_authenticated() %}
+              <li>
+                <label>{{ _('Email') }}</label>
+                {{ profile.user.email|public_email }}
+              </li>
+            {% endif %}
+            {% if profile.website %}
+              <li>
+                <label>{{ _('Website') }}</label>
+                <a rel="nofollow" href="{{ profile.website }}">{{ profile.website }}</a>
+              </li>
+            {% endif %}
+            {% if profile.twitter %}
+              <li>
+                <label>{{ _('Twitter') }}</label>
+                <a rel="nofollow" href="https://www.twitter.com/{{profile.twitter}}">{{ profile.twitter }}</a>
+              </li>
+            {% endif %}
+            {% if profile.facebook %}
+              <li>
+                <label>{{ _('Facebook') }}</label>
+                <a rel="nofollow" href="{{ profile.facebook }}">{{ profile.facebook }}</a>
+              </li>
+            {% endif %}
+            {% if profile.mozillians %}
+              <li>
+                <label>{{ _('Mozillians') }}</label>
+                <a rel="nofollow" href="https://mozillians.org/u/{{profile.mozillians}}/">{{ profile.mozillians }}</a>
+              </li>
+            {% endif %}
+            {% if profile.irc_handle %}
+              <li>
+                <label>{{ _('IRC') }}</label>
+                {{ profile.irc_handle }}
+              </li>
+            {% endif %}
+          </ul>
+        </section>
+      {% endif %}
+      {% if profile.bio %}
+        <section class="bio">
+          <h2>{{ _('About {user}')|f(user=display_name(profile.user)) }}</h2>
+          {{ profile.bio|wiki_to_html(nofollow=True) }}
+        </section>
+      {% endif %}
+      {% if groups %}
+        <section class="groups">
+          <h2>{{ _("{user}'s Groups")|f(user=display_name(profile.user)) }}</h2>
+          <ul>
+            {% for g in groups %}
+              <li>{{ group_link(g) }}</li>
+            {% endfor %}
+          </ul>
+        </section>
+      {% endif %}
+      {% if awards %}
+        <section class="badges cf">
+          <h2>{{ _('Badges') }}</h2>
+          {{ awards_list(awards) }}
+          <p><a href="{{ url('badger.badges_list') }}">{{ _('See all available SUMO badges') }}</a></p>
+        </section>
+      {% endif %}
+    </article>
+  </div>
+{% endblock %}

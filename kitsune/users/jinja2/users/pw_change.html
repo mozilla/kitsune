@@ -1,0 +1,26 @@
+{% extends "users/base.html" %}
+{% from "layout/errorlist.html" import errorlist %}
+{% set title = _('Change Password') %}
+{% set classes = 'password' %}
+{% set crumbs = [(profile_url(user), user.username),
+                 (None, title)] %}
+
+{% block content %}
+  <div class="grid_9">
+    <article id="pw-change">
+      <h1>{{ title }}</h1>
+      <form method="post" action="">
+        {% csrf_token %}
+        <fieldset>
+          <ul>
+            {{ form.as_ul()|safe }}
+          </ul>
+        </fieldset>
+        <div class="submit">
+          <input type="submit" value="{{ _('Change my password') }}" />
+          <a href="{{ url('users.edit_my_profile') }}">{{ _('Cancel') }}</a>
+        </div>
+      </form>
+    </article>
+  </div>
+{% endblock content %}

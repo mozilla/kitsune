@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% set title = _('Unsubscribe') %}
+{% set crumbs = [(None, title)] %}
+
+{% block content %}
+  <article class="main">
+    <h1 class="title">{{ _('Are you sure you want to unsubscribe?') }}</h1>
+    <p>
+      {% trans object=watch.content_object %}
+        You will be unsubscribed from:
+        <br><strong>{{ object }}</strong>
+      {% endtrans %}
+    </p>
+    <form action="" method="post">
+      {% csrf_token %}
+      <div class="submit-or-cancel">
+        <input type="submit" value="{{ _('Unsubscribe') }}" />
+        <a href="{{ url('home') }}">{{ _('Cancel') }}</a>
+      </div>
+    </form>
+  </article>
+{% endblock %}

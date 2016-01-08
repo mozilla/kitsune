@@ -34,12 +34,6 @@ class QuestionMetaDataSerializer(serializers.ModelSerializer):
         fields = ('name', 'value', 'question')
 
 
-class QuestionTagSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Tag
-        fields = ('name', 'slug')
-
-
 class QuestionSerializer(serializers.ModelSerializer):
     answers = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
     content = SplitSourceField(read_source='content_parsed', write_source='content')
@@ -54,7 +48,7 @@ class QuestionSerializer(serializers.ModelSerializer):
         required=True,
         slug_field='slug',
         queryset=Product.objects.all())
-    tags = QuestionTagSerializer(read_only=True, many=True)
+    tags = serializers.SerializerMethodField()
     solution = serializers.PrimaryKeyRelatedField(read_only=True)
     solved_by = serializers.SerializerMethodField()
     taken_by = serializers.SerializerMethodField()
@@ -119,6 +113,9 @@ class QuestionSerializer(serializers.ModelSerializer):
             return ProfileFKSerializer(obj.updated_by.profile).data
         else:
             return None
+
+    def get_tags(self, obj):
+        return [{'name': tag.name, 'slug': tag.slug} for tag in obj.tags.all()]
 
     def validate(self, data):
         user = getattr(self.context.get('request'), 'user')
@@ -355,8 +352,8 @@ class QuestionViewSet(viewsets.ModelViewSet):
                 else:
                     raise GenericAPIException(403, 'You are not authorized to create new tags.')
 
-        tags = question.tags.all()
-        return Response(QuestionTagSerializer(tags, many=True).data)
+        data = [{'name': tag.name, 'slug': tag.slug} for tag in question.tags.all()]
+        return Response(data)
 
     @detail_route(methods=['POST', 'DELETE'], permission_classes=[permissions.IsAuthenticated])
     def remove_tags(self, request, pk=None):

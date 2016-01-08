@@ -1,0 +1,1 @@
+{%- autoescape false %}{{ _('Password reset on {sitename}')|f(sitename=site_name) }}{% endautoescape %}

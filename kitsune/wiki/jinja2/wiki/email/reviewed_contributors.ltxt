@@ -1,0 +1,28 @@
+{# This is an email.  Whitespace matters! #}
+{%- autoescape false %}
+{% if approved %}
+{% trans reviewer=display_name(reviewer) %}
+A revision you contributed to has been approved.  {{ reviewer }} has
+approved a revision to the document {{ document_title }}.
+{% endtrans %}
+{% else %}
+{% trans reviewer=display_name(reviewer) %}
+A revision you contributed to has been reviewed.  {{ reviewer }} has
+reviewed a revision to the document {{ document_title }}.
+{% endtrans %}
+{% endif %}
+
+
+{{ _('Message from the reviewer:') }}
+
+{{ message }}
+
+
+{% trans %}
+To view the history of this document, click the following link, or
+paste it into your browser's location bar:
+{% endtrans %}
+
+
+https://{{ host }}{{ revisions_url }}
+{% endautoescape %}

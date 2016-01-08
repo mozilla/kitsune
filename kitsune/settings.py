@@ -7,11 +7,12 @@ import platform
 import re
 from datetime import date
 
+import djcelery
+
 from bundles import PIPELINE_CSS, PIPELINE_JS
 from kitsune.lib.sumo_locales import LOCALES
 
 DEBUG = True
-TEMPLATE_DEBUG = DEBUG
 STAGE = False
 
 LOG_LEVEL = logging.INFO
@@ -25,8 +26,10 @@ PROJECT_ROOT = os.path.dirname(__file__)
 
 PROJECT_MODULE = 'kitsune'
 
+
 # path bases things off of ROOT
-path = lambda *a: os.path.abspath(os.path.join(ROOT, *a))
+def path(*parts):
+    return os.path.abspath(os.path.join(ROOT, *parts))
 
 ADMINS = (
     # ('Your Name', 'your_email@domain.com'),
@@ -388,32 +391,12 @@ SUPPORTED_NONLOCALES = (
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = '#%tc(zja8j01!r#h_y)=hy!^k)9az74k+-ib&ij&+**s3-e^_z'
 
-# List of callables that know how to import templates from various
-# sources.
-TEMPLATE_LOADERS = (
-    'jingo.Loader',
-    'django.template.loaders.filesystem.Loader',
-    'django.template.loaders.app_directories.Loader',
-    # 'django.template.loaders.eggs.Loader',
-)
-
-# Because Jinja2 is the default template loader, add any non-Jinja templated
-# apps here:
-JINGO_EXCLUDE_APPS = [
-    'admin',
-    'adminplus',
-    'authority',
-    'kadmin',
-    'rest_framework',
-    'waffle',
-]
-
-TEMPLATE_CONTEXT_PROCESSORS = (
+_CONTEXT_PROCESSORS = [
     'django.contrib.auth.context_processors.auth',
-    'django.core.context_processors.debug',
-    'django.core.context_processors.media',
-    'django.core.context_processors.static',
-    'django.core.context_processors.request',
+    'django.template.context_processors.debug',
+    'django.template.context_processors.media',
+    'django.template.context_processors.static',
+    'django.template.context_processors.request',
     'session_csrf.context_processor',
 
     'django.contrib.messages.context_processors.messages',
@@ -423,7 +406,47 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'kitsune.sumo.context_processors.geoip_cache_detector',
     'kitsune.sumo.context_processors.aaq_languages',
     'kitsune.messages.context_processors.unread_message_count',
-)
+]
+
+TEMPLATES = [
+    {
+        'BACKEND': 'django_jinja.backend.Jinja2',
+        'DIRS': [],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            # Use jinja2/ for jinja templates
+            'app_dirname': 'jinja2',
+            # Don't figure out which template loader to use based on
+            # file extension
+            'match_extension': '',
+            'newstyle_gettext': True,
+            'context_processors': _CONTEXT_PROCESSORS,
+            'undefined': 'jinja2.Undefined',
+            'extensions': [
+                'puente.ext.i18n',
+                'waffle.jinja.WaffleExtension',
+                'jinja2.ext.autoescape',
+                'jinja2.ext.with_',
+                'jinja2.ext.do',
+                'pipeline.jinja2.PipelineExtension',
+
+                'django_jinja.builtins.extensions.CsrfExtension',
+                'django_jinja.builtins.extensions.StaticFilesExtension',
+                'django_jinja.builtins.extensions.DjangoFiltersExtension',
+            ],
+        }
+    },
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'debug': DEBUG,
+            'context_processors': _CONTEXT_PROCESSORS,
+        }
+    },
+]
+
 
 MIDDLEWARE_CLASSES = (
     'multidb.middleware.PinningRouterMiddleware',
@@ -495,16 +518,6 @@ PASSWORD_HASHERS = (
 USERNAME_BLACKLIST = path('kitsune', 'configs', 'username-blacklist.txt')
 
 ROOT_URLCONF = '%s.urls' % PROJECT_MODULE
-
-TEMPLATE_DIRS = (
-    # Put strings here, like "/home/html/django_templates"
-    # Always use forward slashes, even on Windows.
-    # Don't forget to use absolute paths, not relative paths.
-
-    # Check templates in the sumo apps first. There are overrides for the admin
-    # templates.
-    path('kitsune', 'sumo', 'templates'),
-)
 
 # TODO: Figure out why changing the order of apps (for example, moving
 # taggit higher in the list) breaks tests.
@@ -587,15 +600,13 @@ TEST_RUNNER = 'kitsune.sumo.tests.TestSuiteRunner'
 
 
 def JINJA_CONFIG():
-    from django.conf import settings
-    config = {'extensions': ['puente.ext.i18n',
-                             'waffle.jinja.WaffleExtension',
-                             'jinja2.ext.autoescape',
-                             'jinja2.ext.with_',
-                             'jinja2.ext.do',
-                             'pipeline.jinja2.ext.PipelineExtension'],
-              'finalize': lambda x: x if x is not None else '',
-              'autoescape': True,}
+    config = {
+        'extensions': [
+            'puente.ext.i18n',
+        ],
+        'finalize': lambda x: x if x is not None else '',
+        'autoescape': True,
+    }
 
     return config
 
@@ -648,27 +659,32 @@ STATICI18N_ROOT = path('jsi18n')
 
 #
 # Django Pipline
-PIPELINE_COMPILERS = (
-    'pipeline.compilers.less.LessCompiler',
-    'kitsune.lib.pipeline_compilers.BrowserifyCompiler',
-)
+PIPELINE = {
+    'COMPILERS': (
+        'pipeline.compilers.less.LessCompiler',
+        'kitsune.lib.pipeline_compilers.BrowserifyCompiler',
+    ),
+    'JAVASCRIPT': PIPELINE_JS,
+    'STYLESHEETS': PIPELINE_CSS,
 
-PIPELINE_DISABLE_WRAPPER = True
+    'DISABLE_WRAPPER': True,
 
-PIPELINE_JS_COMPRESSOR = 'pipeline.compressors.uglifyjs.UglifyJSCompressor'
-PIPELINE_UGLIFYJS_BINARY = path('node_modules/.bin/uglifyjs')
-PIPELINE_UGLIFYJS_ARGUMENTS = '-r "\$super"'
+    'JS_COMPRESSOR': 'pipeline.compressors.uglifyjs.UglifyJSCompressor',
+    'UGLIFYJS_BINARY': path('node_modules/.bin/uglifyjs'),
+    'UGLIFYJS_ARGUMENTS': '-r "\$super"',
 
-PIPELINE_CSS_COMPRESSOR = 'pipeline.compressors.cssmin.CSSMinCompressor'
-PIPELINE_CSSMIN_BINARY = path('node_modules/.bin/cssmin')
+    'CSS_COMPRESSOR': 'pipeline.compressors.cssmin.CSSMinCompressor',
+    'CSSMIN_BINARY': path('node_modules/.bin/cssmin'),
 
-PIPELINE_LESS_BINARY = path('node_modules/.bin/lessc')
-PIPELINE_LESS_ARGUMENTS = '--autoprefix="> 1%, last 2 versions, ff > 1"'
+    'LESS_BINARY': path('node_modules/.bin/lessc'),
+    'LESS_ARGUMENTS': '--autoprefix="> 1%, last 2 versions, ff > 1"',
 
-PIPELINE_BROWSERIFY_BINARY = path('node_modules/.bin/browserify')
-PIPELINE_BROWSERIFY_ARGUMENTS = '-t babelify -t debowerify'
+    'BROWSERIFY_BINARY': path('node_modules/.bin/browserify'),
+    'BROWSERIFY_ARGUMENTS': '-t babelify -t debowerify',
+}
+
 if DEBUG:
-    PIPELINE_BROWSERIFY_ARGUMENTS += ' -d'
+    PIPELINE['BROWSERIFY_ARGUMENTS'] += ' -d'
 
 NUNJUCKS_PRECOMPILE_BIN = 'nunjucks-precompile'
 
@@ -785,7 +801,6 @@ def read_only_mode(env):
 
 
 # Celery
-import djcelery
 djcelery.setup_loader()
 
 BROKER_HOST = 'localhost'
@@ -876,9 +891,9 @@ MOBILE_COOKIE = 'msumo'
 VERSION_CHECK_TOKEN = None
 
 REDIS_BACKENDS = {
-    #'default': 'redis://localhost:6379?socket_timeout=0.5&db=0',
-    #'karma': 'redis://localhost:6381?socket_timeout=0.5&db=0',
-    #'helpfulvotes': 'redis://localhost:6379?socket_timeout=0.5&db=1',
+    # 'default': 'redis://localhost:6379?socket_timeout=0.5&db=0',
+    # 'karma': 'redis://localhost:6381?socket_timeout=0.5&db=0',
+    # 'helpfulvotes': 'redis://localhost:6379?socket_timeout=0.5&db=1',
 }
 
 HELPFULVOTES_UNHELPFUL_KEY = 'helpfulvotes_topunhelpful'
@@ -901,7 +916,8 @@ X_FRAME_OPTIONS = 'DENY'
 
 # Where to find the about:support troubleshooting addon.
 # This is a link to the latest version, whatever that may be.
-TROUBLESHOOTER_ADDON_URL = 'https://addons.mozilla.org/firefox/downloads/latest/426841/addon-426841-latest.xpi'
+TROUBLESHOOTER_ADDON_URL = (
+    'https://addons.mozilla.org/firefox/downloads/latest/426841/addon-426841-latest.xpi')
 
 # SurveyGizmo API
 SURVEYGIZMO_USER = ''

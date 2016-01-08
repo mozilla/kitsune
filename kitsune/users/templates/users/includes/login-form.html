@@ -1,6 +1,0 @@
-{% from "users/includes/macros.html" import login_form as render_login %}
-
-<article id="login" class="main">
-  <h1>{{ _('Sign In') }}</h1>
-  {{ render_login(login_form, csrf=csrf(), next_url=next_url) }}
-</article>

@@ -7,7 +7,7 @@ from itertools import chain
 from django.conf import settings
 from django.http import (
     HttpResponse, HttpResponseBadRequest, HttpResponseRedirect)
-from django.shortcuts import render
+from django.shortcuts import render, render_to_response
 from django.utils.html import escape
 from django.utils.http import urlquote
 from django.utils.translation import ugettext as _, pgettext, pgettext_lazy
@@ -29,7 +29,7 @@ from kitsune.search.forms import SimpleSearchForm, AdvancedSearchForm
 from kitsune.search.es_utils import F, AnalyzerS, handle_es_errors
 from kitsune.search.search_utils import apply_boosts, generate_simple_search
 from kitsune.sumo.api_utils import JSONRenderer
-from kitsune.sumo.helpers import Paginator
+from kitsune.sumo.templatetags.jinja_helpers import Paginator
 from kitsune.sumo.json_utils import markup_json
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import paginate
@@ -638,8 +638,12 @@ def opensearch_plugin(request):
     """Render an OpenSearch Plugin."""
     host = u'%s://%s' % ('https' if request.is_secure() else 'http', request.get_host())
 
-    return render(
-        request, 'search/plugin.html', {
+    # Use `render_to_response` here instead of `render` because `render`
+    # includes the request in the context of the response. Requests
+    # often include the session, which can include pickable things.
+    # `render_to_respones` doesn't include the request in the context.
+    return render_to_response(
+        'search/plugin.html', {
             'host': host,
             'locale': request.LANGUAGE_CODE
         },

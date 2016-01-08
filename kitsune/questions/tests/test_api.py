@@ -17,7 +17,7 @@ from kitsune.questions.tests import (
 from kitsune.products.tests import ProductFactory, TopicFactory
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.tags.tests import TagFactory
-from kitsune.users.helpers import profile_avatar
+from kitsune.users.templatetags.jinja_helpers import profile_avatar
 from kitsune.users.models import Profile
 from kitsune.users.tests import UserFactory, add_permission
 
@@ -166,6 +166,15 @@ class TestQuestionSerializerSerialization(TestCase):
             'display_name': Profile.objects.get(user=self.question.creator).display_name,
             'avatar': profile_avatar(self.question.creator),
         })
+
+    def test_with_tags(self):
+        self.question.tags.add('tag1')
+        self.question.tags.add('tag2')
+        serializer = api.QuestionSerializer(instance=self.question)
+        eq_(serializer.data['tags'], [
+            {'name': 'tag1', 'slug': 'tag1'},
+            {'name': 'tag2', 'slug': 'tag2'},
+        ])
 
 
 class TestQuestionViewSet(TestCase):

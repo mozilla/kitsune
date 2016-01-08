@@ -1,0 +1,66 @@
+{% extends "kbforums/base.html" %}
+{% from "kbforums/includes/macros.html" import kbforums_warning with context %}
+{# L10n: {d} is the name of the document. #}
+{% set title = _('{d} Discussion | Knowledge Base')|f(d=document.title) %}
+{% set crumbs = [(document.get_absolute_url(), document.title),
+                 (None, _('Discuss'))] %}
+
+{% block content %}
+  <div class="grid_9">
+    {{ kbforums_warning(document, user) }}
+    <article id="threads" class="content-box">
+      <h1>{{ _('{d} Discussion')|f(d=document.title) }}</h1>
+      <div class="forum-actions">
+        <a id="new-thread" class="btn btn-submit" href="{{ url('wiki.discuss.new_thread', document_slug=document.slug) }}">{{ _('Post a new thread') }}</a>
+        {% if user.is_authenticated() %}
+          <form action="{{ url('wiki.discuss.watch_forum', document.slug) }}" method="post">
+            {% csrf_token %}
+            {% if is_watching_forum %}
+              {% set watch = _('Stop watching this forum') %}
+              <input type="hidden" name="watch" value="no" />
+            {% else %}
+              {% set watch = _('Watch this forum') %}
+              <input type="hidden" name="watch" value="yes" />
+            {% endif %}
+            <button type="submit" alt="{{ watch }}" title="{{ watch }}" class="btn" id="watch-forum-toggle"><img src="{{ STATIC_URL }}sumo/img/blank.png" alt="" /> {{ watch }}</button>
+          </form>
+        {% endif %}
+      </div>
+      <ol class="threads-columns cf {% if not desc_toggle %}desc{% endif %}">
+        <li class="type"><a href="{{ url('wiki.discuss.threads', document.slug) }}">{{ _('Type') }}</a></li>
+        <li class="title">{{ _('Title') }}</li>
+        <li class="author{% if sort == 3 %} sort{% endif %}"><a href="{{ request.path|urlparams(sort=3, desc=desc_toggle) }}">{{ _('Author') }}</a></li>
+        <li class="replies{% if sort == 4 %} sort{% endif %}"><a href="{{ request.path|urlparams(sort=4, desc=desc_toggle) }}">{{ _('Replies') }}</a></li>
+        <li class="last-post{% if sort == 5 %} sort{% endif %}"><a href="{{ request.path|urlparams(sort=5, desc=desc_toggle) }}">{{ _('Last Post') }}</a></li>
+      </ol>
+      {% if threads.object_list %}
+        <ol class="threads">
+        {% for thread in threads.object_list %}
+          <li class="cf">
+            <div class="type">
+              {% if thread.is_locked %}
+                <img src="{{ STATIC_URL }}sumo/img/blank.png" alt="{{ pgettext('thread_type', 'Locked') }}" title="{{ pgettext('thread_type', 'Locked') }}" class="icon-locked" />
+              {% endif %}
+              {% if thread.is_sticky %}
+                <img src="{{ STATIC_URL }}sumo/img/blank.png" alt="{{ pgettext('thread_type', 'Sticky') }}" title="{{ pgettext('thread_type', 'Sticky') }}" class="icon-sticky" />
+              {% endif %}
+            </div>
+            <div class="title"><a href="{{ url('wiki.discuss.posts', document.slug, thread.id) }}">{{ thread.title }}</a></div>
+            <div class="author"><a class="username" href="{{ profile_url(thread.creator) }}">{{ display_name(thread.creator) }}</a></div>
+            <div class="replies">{{ thread.replies }}</div>
+            <div class="last-post">
+              <a href="{{ thread.last_post.get_absolute_url() }}">
+                {{ datetimeformat(thread.last_post.created) }}
+              </a><br/>
+              {{ _('by <a class="username" href="{profile_url}">{username}</a>')|fe(profile_url=profile_url(thread.last_post.creator), username=display_name(thread.last_post.creator)) }}
+            </div>
+          </li>
+        {% endfor %}
+        </ol>
+        {{ threads|paginator }}
+      {% else %}
+        <p>{{ _('There are no threads. Maybe you should create some!') }}</p>
+      {% endif %}
+    </article>
+  </div>
+{% endblock %}

@@ -9,7 +9,7 @@ from django.core import mail
 from nose.tools import eq_
 from rest_framework.test import APIClient
 
-from kitsune.sumo.helpers import urlparams
+from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.questions.tests import QuestionFactory, AnswerFactory, AnswerVoteFactory

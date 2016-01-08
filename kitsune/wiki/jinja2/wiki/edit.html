@@ -1,0 +1,115 @@
+{% extends "wiki/base.html" %}
+{% from "layout/errorlist.html" import errorlist %}
+{% from "wiki/includes/sidebar_modules.html" import document_tools with context %}
+{% from "includes/common_macros.html" import content_editor with context %}
+{% from "wiki/includes/document_macros.html" import edit_messages, submit_revision %}
+{% from "wiki/includes/document_macros.html" import document_lock_warning with context %}
+{% set title = _('Edit Article | {document}')|f(document=document.title) %}
+{# TODO: Change KB url to landing page when we have one #}
+{% set crumbs = [(document.get_absolute_url(), document.title),
+                 (None, _('Edit Article'))] %}
+{% set classes = 'edit' %}
+{% set styles = ('wiki', 'wiki-editor', 'jqueryui') %}
+{% set scripts = ('wiki', 'wiki.diff', 'wiki.editor', 'jqueryui') %}
+
+{% block content %}
+  <div class="grid_9">
+
+    <ul class="user-messages">
+      {{ edit_messages(document, show_revision_warning) }}
+      {{ document_lock_warning() }}
+    </ul>
+
+    <article id="edit-document" {% if locked %}class="locked"{% endif %} data-slug="{{ document.slug }}">
+      <h1>{{ _('<em>Editing</em> {title}')|fe(title=document.title) }}</h1>
+      {% if document.needs_change %}
+        <p>
+          {% trans comment=document.needs_change_comment %}
+            <label>Needs Change:</label> {{comment}}
+          {% endtrans %}
+        </p>
+      {% endif %}
+
+      {% if document_form %}
+        <div id="document-form">
+          <details class="h2"{% if disclose_description %} open="open"{% endif %}>
+            <summary>{{ _('Edit Description') }}</summary>
+            {{ errorlist(document_form) }}
+            <form action="" method="post" data-json-url="{{ url('wiki.json') }}" data-document-id="{{ document.id }}">
+              {% csrf_token %}
+              <ul>
+                {% for field in document_form.visible_fields() if
+                   (field.name != 'is_localizable' or not document.translations.exists()) %}
+                  <li{% if field.name == 'needs_change_comment' %} class="comment"{% endif %}>
+                    {{ field|label_with_help }}{{ field }}
+                  </li>
+                {% endfor %}
+              </ul>
+              {% if document.translations.exists() %}
+                {{ document_form.is_localizable.as_hidden()|safe }}
+              {% endif %}
+              <input type="hidden" name="form" value="doc" />
+              <div class="submit">
+                <button class="btn btn-important" type="submit">{{ _('Save description') }}</button>
+              </div>
+            </form>
+          </details>
+        </div>
+      {% endif %}
+      {% if revision_form %}
+        <div id="revision-form">
+          <details class="h2" open="open">
+            <summary>{{ _('Edit Content') }}</summary>
+            <p>
+              {% trans url=url('wiki.document', 'support-document-guide') %}For help with writing articles, check out the
+                <a href="{{ url }}">Support Document Guide</a>.{% endtrans %}
+            </p>
+            {{ errorlist(revision_form) }}
+            <form action="" method="post">
+              {% csrf_token %}
+              <ul>
+                {% for field in revision_form.visible_fields() %}
+                  <li>
+                    {% if field.name not in ['comment', 'content'] %}
+                      {% if not field.name == 'keywords' or document.allows(user, 'edit_keywords') %}
+                        {{ field|label_with_help }}{{ field|safe }}
+                      {% endif %}
+                    {% elif field.name == 'content' %}
+                      {{ revision_form.content.label_tag()|safe }}
+                      {{ content_editor(revision_form.content) }}
+                    {% endif %}
+                    {% if field.name == 'summary' %}
+                      <p><span id="remaining-characters">{{ field.field.max_length }}</span> {{_('characters remaining.') }}</p>
+                    {% endif %}
+                  </li>
+                {% endfor %}
+              </ul>
+              {{ revision_form.hidden_fields()|join|safe }}
+              <input type="hidden" name="form" value="rev" />
+              <input type="hidden" name="slug" value="{{ document.slug }}" />
+              <input type="hidden" name="locale" value="{{ document.locale }}" />
+              {{ submit_revision(revision_form, include_diff=True) }}
+              <div id="preview"></div>
+              <div id="preview-diff">
+                <div class="from">{{ revision_form.content.value() }}</div>
+                <div class="to"></div>
+                <div class="output"></div>
+              </div>
+              <div class="submit" id="preview-bottom">
+                {{ submit_revision(revision_form, buttons_only=True, include_diff=True) }}
+              </div>
+            </form>
+          </details>
+        </div>
+      {% endif %}
+    </article>
+  </div>
+
+  <script type="application/json" class="showfor-data">
+    {{ showfor_data(document.get_products()) }}
+  </script>
+{% endblock %}
+
+{% block side_top %}
+  {{ document_tools(document, document.parent, user, 'edit', settings) }}
+{% endblock %}

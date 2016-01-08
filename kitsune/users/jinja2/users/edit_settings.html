@@ -1,0 +1,20 @@
+{% extends "users/base.html" %}
+{% set title = _('Edit Settings') %}
+{% set classes = 'settings' %}
+{% set active = 'edit-settings' %}
+{% set crumbs = [(None, title)] %}
+
+{% block content %}
+  <div class="grid_9">
+    <article id="edit-settings" class="main cf">
+      <h1>{{ title }}</h1>
+      <form method="post" action="">
+        {% csrf_token %}
+        {{ form.as_ul() }}
+        <div class="submit">
+          <input type="submit" value="{{ _('Update') }}" />
+        </div>
+      </form>
+    </article>
+  </div>
+{% endblock %}

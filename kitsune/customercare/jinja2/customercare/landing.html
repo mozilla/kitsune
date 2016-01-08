@@ -1,0 +1,108 @@
+{% extends "customercare/base.html" %}
+{% from 'customercare/includes/aoa_macros.html' import aoa_contributor %}
+{% set title = _('Army of Awesome') %}
+{% set hide_plugin_check = True %}
+{% set crumbs = [(None, title)] %}
+
+{% block content %}
+<article class="main aoa">
+
+  <div class="cf">
+    <div class="grid_6">
+      <h1>{{ _('Join our Army of Awesome') }}</h1>
+      <h2>
+        {% trans %}
+          Love Firefox and have a few moments to help?<br />
+          Help other Firefox users on Twitter.
+          Good things will come to those who tweet!
+        {% endtrans %}
+      </h2>
+    </div>
+
+    <div id="steps">
+      <ol>
+        <li class="grid_2">
+          {% if not authed %}
+            <a id="steps-signin-button" href="#" class="btn btn-submit">{{ _('Sign in and connect to Twitter') }}</a>
+          {% else %}
+            {{ _('Sign in and connect to Twitter') }}
+          {% endif %}
+        </li>
+        <li class="grid_2">{{ _('Choose a tweet below') }}</li>
+        <li class="grid_2">{{ _('Respond to the tweet!') }}</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="grid_12 cf">
+    {% if user.has_perm('customercare.ban_account') or user.has_perm('customercare.ignore_account') %}
+      <div id="tweet-mod-tools">
+        <a class='btn btn-warning' href="{{ url('customercare.moderate') }}">{{_('Moderate Twitter Accounts')}}</a>
+      </div>
+    {% endif %}
+    <div id="tweet-tools">
+      <img id="refresh-busy" src="{{ STATIC_URL }}sumo/img/customercare/spinner.gif" alt="{{ _('Loading') }}"/>
+      <select id="show">
+        {% for value, content in filters.iteritems() %}
+          <option value="{{ value }}" {% if value == filter %}selected="selected"{% endif %}>{{ content }}</option>
+        {% endfor %}
+      </select>
+      <a id="refresh-tweets" href="{{ url('customercare.more_tweets') }}" class="btn">{{ _('Refresh') }}</a>
+      {% if authed %}
+        <form id="twitter-logout" action="" method="post">
+          {% csrf_token %}
+          <input type="hidden" name="twitter_delete_auth" value="1">
+          <button type="submit" class="btn btn-submit">{{ _('Sign out') }}</button>
+        </form>
+      {% else %}
+        <a id="signin-button" href="#" class="btn btn-submit">{{ _('Sign in') }}</a>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="grid_7">
+    <div class="warning-box" id="aoa-tips">
+      <strong>{{ _('How to be effective:') }}</strong>
+      <ul>
+        <li>{{ _('Focus on people who need help or have questions') }}</li>
+        <li>{{ _('Customize canned replies - make each tweet unique') }}</li>
+        <li>{{ _("Remove tweets that aren't really about Firefox or don't need a reply") }}</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="grid_5">
+    <div class="feature-box" id="aoa-forum-box">
+      <strong>{{ _('Have a question about Army of Awesome?') }}</strong>
+      <a href="{{ url('forums.threads', 'social-media') }}">{{ _('Ask other contributors') }}</a>
+    </div>
+  </div>
+
+  <div id="tweetcontainer" class="grid_12">
+    <div id="tweets-wrap">
+      {% csrf_token %}{# CSRF token for AJAX actions. #}
+      {% if not tweets %}
+        <div class="warning-box">
+          {% trans language=settings.LOCALES[request.LANGUAGE_CODE].native %}
+            We couldn't find any matching tweets for {{ language }} at this time.
+            Please check again later, choose a different tweet type from the
+            menu above, or view tweets for other languages by using the
+            language selector at the bottom of the page.
+          {% endtrans %}
+        </div>
+      {% endif %}
+      <div id="tweets">
+        {% include 'customercare/tweets.html' %}
+      </div>
+    </div>
+
+    <div id="infinite-scroll">
+      <img id="scroll-busy" src="{{ STATIC_URL }}sumo/img/customercare/spinner.gif" alt="{{ _('Loading') }}" />
+    </div>
+  </div>
+
+  {% include 'customercare/reply_modal.html' %}
+
+  {% include 'customercare/twitter_modal.html' %}
+</article>
+{% endblock %}

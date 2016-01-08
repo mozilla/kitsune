@@ -1,0 +1,27 @@
+{% extends "users/base.html" %}
+{% from "layout/errorlist.html" import errorlist %}
+{% set title = _('Retrieve Username') %}
+{% set classes = 'username' %}
+
+{% block content %}
+  <article id="retrieve-username" class="main">
+    <h1>{{ title }}</h1>
+    <form method="post" action="">
+      {% csrf_token %}
+      <fieldset>
+        <p class="instruct">
+          {% trans %} Forgotten your username? Enter your email address below,
+          and we'll send it to you.
+          {% endtrans %}
+        </p>
+        {{ errorlist(form) }}
+        <ul>
+          {{ form.as_ul() }}
+        </ul>
+      </fieldset>
+      <div class="submit">
+        <input type="submit" value="{{ _('Send username') }}" />
+      </div>
+    </form>
+  </article>
+{% endblock content %}

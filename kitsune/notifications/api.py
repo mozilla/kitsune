@@ -150,7 +150,7 @@ class RealtimeRegistrationSerializer(serializers.ModelSerializer):
         required=False,
         queryset=User.objects.all())
     content_type = serializers.SlugRelatedField(
-        slug_field='name',
+        slug_field='model',
         queryset=ContentType.objects.all())
 
     class Meta:

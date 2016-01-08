@@ -1,0 +1,139 @@
+{#
+
+Base template for creating a new or editing an existing question. The cases for
+showing uneditable product and category names are handled here. Fancier
+behaviors like editing them can be provided by overriding blocks.
+
+If there's a `form`, we also expect `current_product` and `current_category` so
+we can compute the edit-title URL.
+
+#}
+{% extends "questions/base.html" %}
+{% from "layout/errorlist.html" import errorlist %}
+{% from "includes/common_macros.html" import content_editor with context %}
+{% from "questions/includes/aaq_macros.html" import selected_product, selected_category, aaq_progress %}
+{% from "questions/includes/aaq_macros.html" import troubleshooting_instructions with context %}
+{% from "upload/attachments.html" import attachments_form %}
+
+{% set hide_aaq_link = True %}
+
+{% block content %}
+  <div class="grid_12">
+    <article class="main">
+      <div id="ask-question">
+        {% if not no_headline %}
+          <h1>{% block headline %}Do Something to a Question{% endblock %}</h1>
+        {% endif %}
+        <div class="inner-wrap">
+
+          <div class="cf">
+            {% if current_step %}
+              {{ aaq_progress(step=current_step) }}
+            {% endif %}
+            {% block product %}
+            {% endblock %}
+            {% block category %}
+            {% endblock %}
+          </div>
+
+          {% block articles_and_search_results %}
+          {% endblock %}
+
+          {% if form %}
+            <div class="highlight-box">
+              <form id="question-form" method="post">
+                {% csrf_token %}
+                {% block major_detail_instructions %}
+                  <h2>Do some stuff.</h2>
+                {% endblock %}
+                <p>
+                  {% trans %}
+                    Be nice. Our volunteers are Mozilla users just like you,
+                    who take the time out of their day to help.
+                  {% endtrans %}
+                </p>
+                <div class="info">
+                  {% trans %}
+                    Be descriptive. Saying &quot;Playing video on YouTube is
+                    always choppy&quot; will help our volunteers identify
+                    your problem better than saying &quot;Something is
+                    wrong&quot; or &quot;Firefox is broken&quot;.
+                  {% endtrans %}
+                </div>
+                {{ errorlist(form) }}
+                {% for field in form.hidden_fields() %}
+                  {{ field|safe }}
+                {% endfor %}
+                <ul>
+                  {% set li_class='' %}
+                  {% for field in form.visible_fields() %}
+
+                    {% if field.name == 'ff_version' or field.name == 'device' %}
+                      <li class="system-details-info show">
+                        <p>
+                          {{ _("We've made some educated guesses about your current browser and operating system.") }}
+                          <a href="#show-details" class="show">{{ _('Show details &raquo;')|safe }}</a>
+                          <a href="#hide-details" class="hide">{{ _('Hide details &raquo;')|safe }}</a>
+                        </p>
+                      </li>
+                      {% set li_class='details' %}
+                    {% endif %}
+
+                    <li class="{{ li_class }} {% if field.errors %}invalid{% endif %} cf">
+                      {{ field.label_tag()|safe }}
+                      {% if field.name == 'content' %}
+                        {{ content_editor(field) }}
+                      {% elif field.name == 'troubleshooting' %}
+                        {{ troubleshooting_instructions(field) }}
+                      {% else %}
+                        {{ field|safe }}
+                      {% endif %}
+
+                      {% if field.help_text and field.name != 'troubleshooting' %}
+                        <p class="help-text">{{ field.help_text|safe }}</p>
+                      {% endif %}
+                    </li>
+
+                    {% if field.name == 'content' %}
+                      <li>
+                        {% block attachments_form %}
+                          {{ attachments_form('auth.User', user.pk, images, settings, user) }}
+                        {% endblock %}
+                      </li>
+                    {% endif %}
+                  {% endfor %}
+                </ul>
+
+                <div class="info">
+                  {% trans %}
+                    Follow through. Sometimes, our volunteers would ask you
+                    for more information or to test out certain scenarios.
+                    The sooner you can do this, the sooner they would know
+                    how to fix it.
+                  {% endtrans %}
+                </div>
+
+                <button type="submit" class="btn btn-submit big" {% block submit_button_attrs %}{% endblock %}>{% block submit_button_value %}Save Question{% endblock %}</button>
+                {% block more_submit_buttons %}{% endblock %}
+              </form>
+            </div>
+          {% endif %}
+
+          <div id="product-topic-changer" class="cf">
+            {% if current_product %}
+              {{ selected_product(current_product, can_edit_product) }}
+
+              {% if current_category %}
+                {{ selected_category(current_category, current_product, can_edit_category) }}
+              {% endif %}
+            {% endif %}
+          </div>
+
+        </div>
+      </div>
+    </article>
+  </div>
+{% endblock %}
+
+{% block side %}
+{% endblock %}

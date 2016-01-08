@@ -72,7 +72,8 @@ def auto_archive_old_questions():
 
         cursor = connection.cursor()
         cursor.execute(sql)
-        transaction.commit_unless_managed()
+        if not transaction.get_connection().in_atomic_block:
+            transaction.commit()
 
         if settings.ES_LIVE_INDEXING:
             try:

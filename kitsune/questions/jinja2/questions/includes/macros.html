@@ -1,0 +1,25 @@
+{% macro mark_spam_form(question_id=None, answer_id=None) %}
+  <form class="spam-form cf" method="post" action="{{ url('questions.mark_spam') }}">
+    {% csrf_token %}
+    {% if question_id %}
+      <input type="hidden" name="question_id" value="{{ question_id }}">
+    {% endif %}
+    {% if answer_id %}
+      <input type="hidden" name="answer_id" value="{{ answer_id }}">
+    {% endif %}
+    <a href="#" class="btn" data-type="submit">{{ _('Mark as spam') }}</a>
+  </form>
+{% endmacro %}
+
+{% macro unmark_spam_form(question_id=None, answer_id=None) %}
+  <form class="spam-form cf" method="post" action="{{ url('questions.unmark_spam') }}">
+    {% csrf_token %}
+    {% if question_id %}
+      <input type="hidden" name="question_id" value="{{ question_id }}">
+    {% endif %}
+    {% if answer_id %}
+      <input type="hidden" name="answer_id" value="{{ answer_id }}">
+    {% endif %}
+    <a href="#" class="btn" data-type="submit">{{ _('Unmark as spam') }}</a>
+  </form>
+{% endmacro %}

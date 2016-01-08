@@ -134,7 +134,7 @@ class PremailerTests(TestCase):
 
     def test_styles_inlining(self):
         """Test that styles tags are converted to inline styles"""
-        with patch('jingo.render_to_string') as mocked:
+        with patch('kitsune.sumo.email_utils.render_to_string') as mocked:
             mocked.return_value = ('<html>'
                                    '<head>'
                                    '<style>a { color: #000; }</style>'
@@ -148,7 +148,6 @@ class PremailerTests(TestCase):
             msg = emails_with_users_and_watches('test', 'a.ltxt', 'a.html', {}, [(u, [None])])
 
             for m in msg:
-                tag = ('<a href="https://%s/test" style="color:#000">'
-                       'Hyperlink</a>')
+                tag = ('<a href="https://%s/test" style="color:#000">Hyperlink</a>')
                 self.assertIn(tag % Site.objects.get_current().domain,
                               str(m.message()))

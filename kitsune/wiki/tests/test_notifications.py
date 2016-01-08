@@ -194,7 +194,9 @@ class ReviewTests(TestCaseBase):
         """Test that newlines in a review message are properly displayed."""
         _set_up_ready_watcher()
         self._review_revision(comment='foo\n\nbar\nbaz')
-        assert 'foo<br><br>bar<br>baz' in mail.outbox[1].alternatives[0][0]
+        msg = mail.outbox[1].alternatives[0][0]
+        assert 'foo</p>' in msg
+        assert 'bar<br>baz</p>' in msg
 
     def test_first_approved_revision_has_major_significance(self):
         """The 1st approved revision of a document has MAJOR_SIGNIFICANCE."""

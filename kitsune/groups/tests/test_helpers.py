@@ -4,7 +4,7 @@ from mock import Mock
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 
-from kitsune.groups.helpers import group_avatar, group_link
+from kitsune.groups.templatetags.jinja_helpers import group_avatar, group_link
 from kitsune.groups.models import GroupProfile
 from kitsune.groups.tests import GroupProfileFactory
 from kitsune.sumo.tests import TestCase

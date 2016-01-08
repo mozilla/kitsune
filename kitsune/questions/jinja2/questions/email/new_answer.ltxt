@@ -1,0 +1,35 @@
+{%- from "includes/unsubscribe_text.ltxt" import unsubscribe_text with context -%}
+{%- autoescape false -%}
+{#- L10n: This is an email. Whitespace matters! -#}
+{%- if display_name(to_user) -%}
+    {{ _('Hi {username},')|f(username=display_name(to_user)) }}
+
+{% endif -%}
+
+{# L10n: This is an email. Whitespace matters! -#}
+{{ _('{answerer} commented on a Firefox question on {host}:')|f(answerer=display_name(answerer), host=host) }}
+
+{{ question_title }}
+
+https://{{ host }}{{ answer_url }}
+
+{# L10n: This is in an email. -#}
+{{ _('{answerer} wrote:')|f(answerer=display_name(answerer)) }}
+"{{ answer }}"
+
+{# L10n: This is in an email. -#}
+{{ _('See the comment:') }}
+https://{{ host }}{{ answer_url }}
+
+{# L10n: This is in an email. -#}
+{{ _('If this comment is helpful, vote on it:') }}
+https://{{ host }}{{ helpful_url }}
+
+{# L10n: This is in an email. -#}
+{{ _('Help other Firefox users by browsing for unsolved questions on {host}:')|f(host=host) }}
+https://{{ host }}/questions?filter=unsolved
+
+{# L10n: This is in an email. -#}
+{{ _('You might just make someone\'s day!') }}
+
+{{ unsubscribe_text(watch) }}{% endautoescape %}

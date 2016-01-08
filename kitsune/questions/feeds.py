@@ -10,7 +10,7 @@ from kitsune.products.models import Product, Topic
 from kitsune.questions import config
 from kitsune.questions.models import Question
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.sumo.helpers import urlparams
+from kitsune.sumo.templatetags.jinja_helpers import urlparams
 
 
 class QuestionsFeed(Feed):

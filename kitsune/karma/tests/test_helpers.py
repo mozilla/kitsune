@@ -1,6 +1,6 @@
 from nose.tools import eq_
 
-from kitsune.karma.helpers import karma_titles
+from kitsune.karma.templatetags.jinja_helpers import karma_titles
 from kitsune.karma.models import Title
 from kitsune.users.tests import TestCase, UserFactory, GroupFactory
 
