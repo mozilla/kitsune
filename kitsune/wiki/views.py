@@ -1522,12 +1522,16 @@ def get_fallback_locale(doc, request):
 
     # For each locale specified in the user's ACCEPT_LANGUAGE header
     # check for, in order:
+    #   * no fallback for "en-US" in accept language header
     #   * translations in that locale
     #   * global overrides for the locale in settings.NON_SUPPORTED_LOCALES
     #   * wiki fallbacks for that locale
 
     for locale in all_accepted_locales:
-        if locale in translated_locales:
+        if locale == settings.WIKI_DEFAULT_LANGUAGE:
+            return None
+
+        elif locale in translated_locales:
             return locale
 
         elif settings.NON_SUPPORTED_LOCALES.get(locale) in translated_locales:

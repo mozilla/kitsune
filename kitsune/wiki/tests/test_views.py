@@ -885,6 +885,23 @@ class FallbackSystem(TestCase):
         assert en_content not in doc_content
         assert trans_content in doc_content
 
+    def test_en_in_accept_language_header(self):
+        """If the first fallback locale does not exist and the second fallback locale is en-US,
+        the second fallback locale should not be used"""
+        # Define a client with fr, en-US, de as locale choices in the ACCEPT_LANGUAGE header
+        header = 'fr,en-US;q=0.7,de;q=0.3,'
+        # Create a document localized into de
+        # Attempt to resolve to the es version of the document with the client defined before
+        doc_content = self.get_data_from_translated_document(header=header,
+                                                             create_doc_locale='de',
+                                                             req_doc_locale='es')
+        # Show the en-US version of the document based on existing client header,
+        # as it is not localized into fr and de is behind en-US in header
+        en_content = 'This article is in English'
+        trans_content = 'This article is translated into de'
+        assert en_content in doc_content
+        assert trans_content not in doc_content
+
     def test_custom_locale_mapping(self):
         """
         Test that the article is showing according to defined locale fallback options
