@@ -187,6 +187,13 @@ class TestUserView(TestCase):
     def setUp(self):
         self.client = APIClient()
 
+    def test_usernames_with_periods(self):
+        u = UserFactory(username='something.something')
+        url = reverse('user-detail', args=[u.username])
+        res = self.client.get(url)
+        eq_(res.status_code, 200)
+        eq_(res.data['username'], u.username)
+
     def test_only_self_edits(self):
         p1 = ProfileFactory()
         p2 = ProfileFactory()
