@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from kitsune.sumo.models import ModelBase
 from django.conf import settings
 
 from nose.tools import eq_
@@ -261,6 +262,34 @@ class L10NOverviewTests(TestCase):
         eq_(1, overview['top-20']['numerator'])
         eq_(1, overview['top-50']['numerator'])
         eq_(1, overview['top-100']['numerator'])
+
+    def test_miscounting_archived(self):
+        """
+        Verify that the l10n overview readout treats archived docs consistently.
+
+        Bug 1012384
+        """
+        locale = 'nl'
+        parent1 = DocumentFactory(category=CANNED_RESPONSES_CATEGORY, is_archived=False)
+        translation1 = DocumentFactory(parent=parent1, locale=locale)
+        parent2 = DocumentFactory(category=CANNED_RESPONSES_CATEGORY, is_archived=True)
+        translation2 = DocumentFactory(parent=parent2, locale=locale)
+
+        trans_rev1 = ApprovedRevisionFactory(document=parent1, is_ready_for_localization=True)
+        ApprovedRevisionFactory(document=translation1, based_on=trans_rev1)
+        trans_rev2 = ApprovedRevisionFactory(document=parent2, is_ready_for_localization=True)
+        ApprovedRevisionFactory(document=translation2, based_on=trans_rev2)
+
+        # Document.save() will enforce that parents and translations share is_archived.
+        # The point of this is to test what happens when that isn't true though,
+        # so by pass Document.save().
+        translation2.is_archived = False
+        ModelBase.save(translation2)
+        eq_(translation2.is_archived, False)
+
+        overview = l10n_overview_rows(locale)
+        eq_(1, overview['all']['denominator'])
+        eq_(1, overview['all']['numerator'])
 
 
 class UnreviewedChangesTests(ReadoutTestCase):
