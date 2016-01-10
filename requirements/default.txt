@@ -188,9 +188,8 @@ https://github.com/html5lib/html5lib-python/archive/f5855f3d0ad6d4202e2b5d02626d
 # sha256: OeqMam2fWVwXehYTT8SamQrY04J1jL9GnIZZZi8vUas
 httplib2==0.9
 
-# jingo: tags/0.8.2
-# sha256: 83isoezVr1knq2ZudU4ZEuofA-Fjt5SR4DcRWYHVwvs
-https://github.com/rehandalal/jingo/archive/ebba98353748e35272ce976b457dedba9a7e5638.tar.gz#egg=jingo==0.8.2
+# sha256: 8jrC2mPrGpLslFIgNPbDSulbOEbuHCB1iSESWoLi81g
+jingo==0.8.2
 
 # sha256: GQQPAbOp2MY-TVeTb3hxCQgZm2k3CrRKD3QH3YkfAZs
 Jinja2==2.5.2
