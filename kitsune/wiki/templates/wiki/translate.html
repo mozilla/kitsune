@@ -46,6 +46,20 @@
           </li>
         {% endif %}
 
+        {% if draft_revision %}
+          <li class="info">
+            <p><strong>{{ _('You have a draft revision for this article saved on {date_time}')|f(date_time=draft_revision.created) }}</strong></p>
+            <form action="" method="get">
+              <input class="btn" name="restore" value={{ _('Restore') }} type="submit">
+              <input class="btn" name="discard" value={{ _('Discard') }} type="submit">
+            </form>
+          </li>
+        {% endif %}
+        {% if more_updated_rev %}
+          <li class="warning">
+            <p><strong>{{ _('This version is outdated, but there is a new version <a href="{link}">{revision}</a> available.')|fe(link=url('wiki.revision', document.slug, more_updated_rev.id, locale=locale), revision=more_updated_rev.id) }}</strong></p>
+          </li>
+        {% endif %}
         {{ edit_messages(document, show_revision_warning) }}
         {{ document_lock_warning() }}
       </ul>
@@ -58,7 +72,7 @@
       </div>
       {% if not document %}
         {# If this is the first translation to this locale, we use 1 big form. #}
-        <form action="" method="post" data-json-url="{{ url('wiki.json') }}">
+        <form id="both_form" action="" method="post" data-json-url="{{ url('wiki.json') }}">
           {{ csrf() }}
           <input type="hidden" name="form" value="both" />
           <input type="hidden" name="slug" value="{{ parent.slug }}" />
@@ -70,7 +84,7 @@
           {{ errorlist(document_form) }}
           {% if document %}
             {# If there are existing translations in this locale, we use 2 separate forms. #}
-            <form action="" method="post" data-json-url="{{ url('wiki.json') }}" data-document-id="{{ document.id }}">
+            <form id="doc_form" action="" method="post" data-json-url="{{ url('wiki.json') }}" data-document-id="{{ document.id }}">
               {{ csrf() }}
               <input type="hidden" name="form" value="doc" />
               <input type="hidden" name="slug" value="{{ document.slug }}" />
@@ -116,7 +130,7 @@
           {{ errorlist(revision_form) }}
           {% if document %}
             {# If there are existing translations in this locale, we use 2 separate forms. #}
-            <form action="" method="post">
+            <form id="rev_form" action="" method="post">
               {{ csrf() }}
               <input type="hidden" name="form" value="rev" />
               <input type="hidden" name="slug" value="{{ document.slug }}" />
@@ -186,7 +200,7 @@
             {# If the document has been created and has a current revision,
                we allow the localizer to keep the translation out of date
                with this new revision. #}
-            {{ submit_revision(revision_form, show_no_update_checkbox=(document and document.current_revision), include_diff=True) }}
+            {{ submit_revision(revision_form, show_no_update_checkbox=(document and document.current_revision), include_diff=True, translate=True) }}
             <div id="preview" class="cf"></div>
             <div id="preview-diff">
                 <div class="from">{{ revision_form.content.value() }}</div>
@@ -195,6 +209,8 @@
               </div>
             <div class="submit" id="preview-bottom">
               {{ submit_revision(revision_form, buttons_only=True, include_diff=True) }}
+            </div>
+            <div id="draft-message" class="alert" hidden>
             </div>
           </div>
           {% if document %}

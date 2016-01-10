@@ -18,10 +18,11 @@ from kitsune.users.tests import UserFactory, add_permission
 from kitsune.wiki.config import (
     CATEGORIES, TEMPLATES_CATEGORY, TYPO_SIGNIFICANCE, MEDIUM_SIGNIFICANCE, MAJOR_SIGNIFICANCE,
     TEMPLATE_TITLE_PREFIX)
-from kitsune.wiki.models import Document, HelpfulVoteMetadata, HelpfulVote
+from kitsune.wiki.models import Document, HelpfulVoteMetadata, HelpfulVote, DraftRevision
 from kitsune.wiki.tests import (
     HelpfulVoteFactory, new_document_data, RevisionFactory, TranslatedRevisionFactory,
-    TemplateDocumentFactory, DocumentFactory, ApprovedRevisionFactory, RedirectRevisionFactory)
+    TemplateDocumentFactory, DocumentFactory, DraftRevisionFactory, ApprovedRevisionFactory,
+    RedirectRevisionFactory)
 from kitsune.wiki.views import (
     _document_lock_check, _document_lock_clear, _document_lock_steal)
 
@@ -469,6 +470,95 @@ class DocumentEditingTests(TestCase):
         doc = Document.objects.get(pk=doc.pk)
         assert not doc.needs_change
         eq_('', doc.needs_change_comment)
+
+    def test_draft_revision_view(self):
+        """Test Draft Revision saving is working propoerly"""
+        rev = ApprovedRevisionFactory()
+        url = reverse('wiki.draft_revision', locale='bn-BD')
+        data = {
+            'content': 'Test Content bla bla bla',
+            'keyword': 'something',
+            'summary': 'some summary',
+            'title': 'test title',
+            'slug': 'test-slug',
+            'based_on': rev.id
+        }
+        resp = self.client.post(url, data)
+        eq_(201, resp.status_code)
+        obj = DraftRevision.objects.get(creator=self.u, document=rev.document, locale='bn-BD')
+        eq_(obj.content, data['content'])
+        eq_(obj.based_on, rev)
+
+    def test_draft_revision_many_times(self):
+        """Test only one draft revision for a single translation and user"""
+        rev = ApprovedRevisionFactory()
+        url = reverse('wiki.draft_revision', locale='bn-BD')
+        data = {
+            'content': 'Test Content bla bla bla',
+            'keyword': 'something',
+            'summary': 'some summary',
+            'title': 'test title',
+            'slug': 'test-slug',
+            'based_on': rev.id
+        }
+        # post 10 post request for draft
+        for i in range(10):
+            resp = self.client.post(url, data)
+            eq_(201, resp.status_code)
+
+        obj = DraftRevision.objects.filter(creator=self.u, document=rev.document, locale='bn-BD')
+        # There should be only one draft revision
+        eq_(1, obj.count())
+
+    def test_draft_revision_restore_in_translation_page(self):
+        """Check Draft Revision is restored when a user click on the Restore Button"""
+        # Create a draft revision
+        draft = DraftRevisionFactory(creator=self.u)
+        doc = draft.document
+        # Now send a get request to the page for restoring the draft
+        trans_url = reverse('wiki.translate', locale=draft.locale, args=[doc.slug])
+        draft_request = {'restore': 'Restore'}
+        restore_draft_resp = self.client.get(trans_url, draft_request)
+        eq_(200, restore_draft_resp.status_code)
+        # Check if the title of the translate page contains the title of draft revision
+        trans_page = pq(restore_draft_resp.content)
+        eq_(draft.content, trans_page('#id_content').text())
+
+    def test_discard_draft_revision(self):
+        """Check Draft Revision is discarded
+
+        If a user clicks on Discard button in the translation page, the draft revision
+        should be deleted"""
+        draft = DraftRevisionFactory(creator=self.u)
+        doc = draft.document
+        # Send a request to translate article page to discard the draft
+        trans_url = reverse('wiki.translate', locale=draft.locale, args=[doc.slug])
+        draft_request = {'discard': 'Discard'}
+        restore_draft_resp = self.client.get(trans_url, draft_request)
+        eq_(200, restore_draft_resp.status_code)
+        # Check if the draft revision is in database
+        draft = DraftRevision.objects.filter(id=draft.id)
+        eq_(False, draft.exists())
+
+    def test_draft_revision_discarded_when_submitting_revision(self):
+        """Check draft revision is discarded when submitting a revision
+
+        A user can have only one Draft revision for each translated document. The draft revision
+        should be deleted automatically when the user submit any revision in the document."""
+        draft = DraftRevisionFactory(creator=self.u)
+        doc = draft.document
+        locale = draft.locale
+        trans_url = reverse('wiki.translate', locale=locale, args=[doc.slug])
+        data = {
+            'title': 'Un Test Articulo',
+            'slug': 'un-test-articulo',
+            'keywords': 'keyUno, keyDos, keyTres',
+            'summary': 'lipsumo',
+            'content': 'loremo ipsumo doloro sito ameto',
+            'form': 'both'}
+        self.client.post(trans_url, data)
+        draft_revision = DraftRevision.objects.filter(id=draft.id)
+        eq_(False, draft_revision.exists())
 
 
 class AddRemoveContributorTests(TestCase):

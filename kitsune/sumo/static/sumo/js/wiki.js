@@ -1,5 +1,5 @@
 /* globals k:false, jQuery:false, ShowFor:false, Marky:false, VERSIONS:false,
-           BrowserDetect:false, gettext:false, KBox:false, CodeMirror:false */
+           BrowserDetect:false, gettext:false, KBox:false, CodeMirror:false, interpolate:false */
 /*
  * wiki.js
  * Scripts for the wiki app.
@@ -73,6 +73,7 @@
 
     if ($body.is('.translate')) {  // Translate page
       initToggleDiff();
+      initTranslationDraft();
     }
 
     initEditingTools();
@@ -636,6 +637,33 @@
                     $contentOrDiff.toggleClass('content diff');
                   }));
     }
+  }
+
+  function initTranslationDraft() {
+    var $draftButton = $('.btn-draft'),
+      url = $('.btn-draft').data('draft-url'),
+      $draftMessage = $('#draft-message');
+
+    $draftButton.click( function() {
+      var message = gettext('<strong>Draft is saving...</strong>'),
+        image = '<img src="/static/sumo/img/customercare/spinner.gif">',
+        bothData = $('#both_form').serializeArray(),
+        docData = $('#doc_form').serializeArray(),
+        revData = $('#rev_form').serializeArray(),
+        totalData = $.extend(bothData, docData, revData);
+
+      $draftMessage.html(image + message).removeClass('success error').addClass('info').show()
+      $.post(url, totalData)
+        .done(function() {
+          var time = new Date(),
+            message = interpolate(gettext('<strong>Draft has been saved on:</strong> %s'), [time]);
+          $draftMessage.html(message).toggleClass('info success').show();
+        })
+        .fail(function() {
+          var message = gettext('<strong>Draft is saving...</strong>');
+          $draftMessage.html(message).toggleClass('info error').show();
+        });
+    });
   }
 
   function initRevisionList() {

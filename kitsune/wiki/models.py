@@ -828,18 +828,27 @@ register_for_indexing(
 MAX_REVISION_COMMENT_LENGTH = 255
 
 
-class Revision(ModelBase, SearchMixin):
-    """A revision of a localized knowledgebase document"""
-    document = models.ForeignKey(Document, related_name='revisions')
-    summary = models.TextField()  # wiki markup
-    content = models.TextField()  # wiki markup
-
+class AbstractRevision(models.Model):
+    # **%(class)s** is being used because it will allow  a unique reverse name for the field
+    # like created_revisions and created_draftrevisions
+    creator = models.ForeignKey(User, related_name='created_%(class)ss')
+    created = models.DateTimeField(default=datetime.now)
+    # The reverse name should be revisions and draftrevisions
+    document = models.ForeignKey(Document, related_name='%(class)ss')
     # Keywords are used mostly to affect search rankings. Moderators may not
     # have the language expertise to translate keywords, so we put them in the
     # Revision so the translators can handle them:
     keywords = models.CharField(max_length=255, blank=True)
 
-    created = models.DateTimeField(default=datetime.now)
+    class Meta:
+        abstract = True
+
+
+class Revision(ModelBase, SearchMixin, AbstractRevision):
+    """A revision of a localized knowledgebase document"""
+    summary = models.TextField()  # wiki markup
+    content = models.TextField()  # wiki markup
+
     reviewed = models.DateTimeField(null=True)
     expires = models.DateTimeField(null=True, blank=True)
 
@@ -849,7 +858,6 @@ class Revision(ModelBase, SearchMixin):
     comment = models.CharField(max_length=MAX_REVISION_COMMENT_LENGTH)
     reviewer = models.ForeignKey(User, related_name='reviewed_revisions',
                                  null=True)
-    creator = models.ForeignKey(User, related_name='created_revisions')
     is_approved = models.BooleanField(default=False, db_index=True)
 
     # The default locale's rev that was the latest ready-for-l10n one when the
@@ -1053,6 +1061,15 @@ class Revision(ModelBase, SearchMixin):
     @classmethod
     def get_mapping_type(cls):
         return RevisionMetricsMappingType
+
+
+class DraftRevision(ModelBase, SearchMixin, AbstractRevision):
+    based_on = models.ForeignKey(Revision)
+    content = models.TextField(blank=True)
+    locale = LocaleField(blank=False, db_index=True)
+    slug = models.CharField(max_length=255, blank=True)
+    summary = models.TextField(blank=True)
+    title = models.CharField(max_length=255, blank=True)
 
 
 @register_mapping_type

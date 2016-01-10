@@ -41,9 +41,9 @@ from kitsune.wiki.events import (
     ReadyRevisionEvent)
 from kitsune.wiki.forms import (
     AddContributorForm, DocumentForm, RevisionForm, RevisionFilterForm,
-    ReviewForm)
+    ReviewForm, DraftRevisionForm)
 from kitsune.wiki.models import (
-    Document, Revision, HelpfulVote, ImportantDate, doc_html_cache_key,
+    Document, Revision, DraftRevision, HelpfulVote, ImportantDate, doc_html_cache_key,
     TitleCollision, SlugCollision)
 from kitsune.wiki.parser import wiki_to_html
 from kitsune.wiki.tasks import (
@@ -537,6 +537,22 @@ def edit_document(request, document_slug, revision_id=None):
         'locked_by': locked_by})
 
 
+@csrf_exempt
+@login_required
+@require_POST
+def draft_revision(request):
+    """Create a Draft Revision.
+
+    User can have only one draft revision for a translated document. Store the draft with
+    parent document, user and locale. Get the parent document from the based on revision"""
+    draft_form = DraftRevisionForm(request.POST)
+    if draft_form.is_valid():
+        draft_form.save(request=request)
+        return HttpResponse(status=201)
+
+    return HttpResponseBadRequest()
+
+
 @login_required
 @require_POST
 def preview_revision(request):
@@ -813,23 +829,50 @@ def translate(request, document_slug, revision_id=None):
         # User has no perms, bye.
         raise PermissionDenied
 
+    # Check if the user has draft resision saved for the parent document with requeted locale
+    draft = DraftRevision.objects.filter(creator=user, document=parent_doc,
+                                         locale=request.LANGUAGE_CODE)
+
     doc_form = rev_form = None
     base_rev = None
+    restore_draft = None
+    # Check if the user has requested to restore or discard draft
+    draft_request = request.GET.get('restore') or request.GET.get('discard')
+    draft_revision = None
+    # If Draft is available and the user has requested with draft parameters
+    if draft_request and draft.exists():
+        restore_draft = request.GET.get('restore')
+        discard_draft = request.GET.get('discard')
+        # Discard draft if user requsted. And not requested to restore draft at the same time.
+        # Thuough from the UI its not possible, but maybe a hacky request with both parameters
+        if discard_draft and not restore_draft:
+            draft[0].delete()
+    elif draft.exists():
+        draft_revision = draft[0]
 
     if user_has_doc_perm:
-        doc_initial = _document_form_initial(doc) if doc else None
+        # Restore draft if draft is available and user requested to restore
+        if restore_draft:
+            doc_initial = _draft_initial_doc(draft_revision=draft[0])
+        else:
+            doc_initial = _document_form_initial(doc) if doc else None
         doc_form = DocumentForm(initial=doc_initial)
+
     if user_has_rev_perm:
-        initial = {'based_on': based_on_rev.id, 'comment': ''}
-        if revision_id:
-            base_rev = Revision.objects.get(pk=revision_id)
-            initial.update(content=base_rev.content,
-                           summary=base_rev.summary,
-                           keywords=base_rev.keywords)
-        elif not doc:
-            initial.update(content=based_on_rev.content,
-                           summary=based_on_rev.summary,
-                           keywords=based_on_rev.keywords)
+        if restore_draft:
+            initial = _draft_initial_rev(draft_revision=draft[0])
+            based_on_rev = draft[0].based_on
+        else:
+            initial = {'based_on': based_on_rev.id, 'comment': ''}
+            if revision_id:
+                base_rev = Revision.objects.get(pk=revision_id)
+                initial.update(content=base_rev.content,
+                               summary=base_rev.summary,
+                               keywords=base_rev.keywords)
+            elif not doc:
+                initial.update(content=based_on_rev.content,
+                               summary=based_on_rev.summary,
+                               keywords=based_on_rev.keywords)
 
         # Get a revision of the translation to plonk into the page as a
         # starting point. Since translations are never "ready for
@@ -889,7 +932,8 @@ def translate(request, document_slug, revision_id=None):
                 else:
                     # Keep what was in the form.
                     based_on_id = None
-
+                if draft_revision:
+                    draft_revision.delete()
                 _save_rev_and_notify(rev_form, request.user, doc, based_on_id,
                                      base_rev=base_rev)
 
@@ -913,8 +957,12 @@ def translate(request, document_slug, revision_id=None):
 
     if doc:
         locked, locked_by = _document_lock(doc.id, user.username)
+        # Most updated rev according to based on revision
+        more_updated_rev = doc.revisions.filter(
+            based_on__id__gt=based_on_rev.id).order_by('based_on__id').last()
     else:
         locked, locked_by = False, None
+        more_updated_rev = None
 
     product_slugs = [p.slug for p in (doc or parent_doc).products.all()]
     fxos_l10n_warning = ('firefox-os' in product_slugs and
@@ -932,7 +980,9 @@ def translate(request, document_slug, revision_id=None):
         'recent_approved_revs': recent_approved_revs,
         'locked': locked,
         'locked_by': locked_by,
-        'fxos_l10n_warning': fxos_l10n_warning})
+        'fxos_l10n_warning': fxos_l10n_warning,
+        'draft_revision': draft_revision,
+        'more_updated_rev': more_updated_rev})
 
 
 @require_POST
@@ -1415,6 +1465,20 @@ def _document_form_initial(document):
             'allow_discussion': document.allow_discussion,
             'needs_change': document.needs_change,
             'needs_change_comment': document.needs_change_comment}
+
+
+def _draft_initial_doc(draft_revision):
+    data = {'title': draft_revision.title,
+            'slug': draft_revision.slug}
+    return data
+
+
+def _draft_initial_rev(draft_revision):
+    data = {'content': draft_revision.content,
+            'summary': draft_revision.summary,
+            'keywords': draft_revision.keywords,
+            'based_on': draft_revision.based_on.id}
+    return data
 
 
 def _save_rev_and_notify(rev_form, creator, document, based_on_id=None,

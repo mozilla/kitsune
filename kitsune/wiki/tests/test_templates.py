@@ -25,7 +25,7 @@ from kitsune.wiki.config import (
     CATEGORIES, CANNED_RESPONSES_CATEGORY, TEMPLATES_CATEGORY, TEMPLATE_TITLE_PREFIX)
 from kitsune.wiki.tasks import send_reviewed_notification
 from kitsune.wiki.tests import (
-    TestCaseBase, DocumentFactory, RevisionFactory, ApprovedRevisionFactory,
+    TestCaseBase, DocumentFactory, DraftRevisionFactory, RevisionFactory, ApprovedRevisionFactory,
     RedirectRevisionFactory, TranslatedRevisionFactory, LocaleFactory, new_document_data)
 
 
@@ -1012,6 +1012,106 @@ class NewRevisionTests(TestCaseBase):
         # Keywords should be updated now
         new_rev = Revision.objects.filter(document=doc).order_by('-id')[0]
         eq_('keyword1 keyword2', new_rev.keywords)
+
+    def test_draft_button(self):
+        rev = ApprovedRevisionFactory(is_ready_for_localization=True,
+                                      document__is_localizable=True)
+        doc = rev.document
+        # Check the Translation page has Save Draft Button
+        trans_url = reverse('wiki.translate', locale='bn-BD', args=[doc.slug])
+        trans_resp = self.client.get(trans_url)
+        eq_(200, trans_resp.status_code)
+        trans_content = pq(trans_resp.content)
+        eq_(0, len(trans_content('.user-messages li')))
+        eq_(1, len(trans_content('.submit .btn-draft')))
+
+    def test_restore_draft_revision(self):
+        draft = DraftRevisionFactory(creator=self.user)
+        trans_url = reverse('wiki.translate', locale=draft.locale, args=[draft.document.slug])
+        trans_resp = self.client.get(trans_url)
+        trans_content = pq(trans_resp.content)
+        # Check user message is shown there
+        eq_(1, len(trans_content('.user-messages li')))
+        # Check there are two buttons for restore and discard
+        eq_(2, len(trans_content('.user-messages .info form .btn')))
+        # Restore with the draft data
+        draft_request = {'restore': 'Restore'}
+        trans_resp = self.client.get(trans_url, draft_request)
+        trans_content = pq(trans_resp.content)
+        # No user message is shown there
+        eq_(0, len(trans_content('.user-messages li')))
+        # Check title, slug, keywords, content etc are restored
+        eq_(draft.title, trans_content('#id_title').val())
+        eq_(draft.slug, trans_content('#id_slug').val())
+        eq_(draft.keywords, trans_content('#id_keywords').val())
+        eq_(draft.summary, trans_content('#id_summary').text())
+        eq_(draft.content, trans_content('#id_content').text())
+        eq_(draft.based_on.id, int(trans_content('#id_based_on').val()))
+
+    def test_restore_draft_revision_with_older_based_on(self):
+        """Test restoring a draft which is based on an old based on"""
+        draft = DraftRevisionFactory(creator=self.user)
+        rev1 = draft.based_on
+        doc = draft.document
+        # Create another revision in the parent doc
+        rev2 = ApprovedRevisionFactory(document=doc, is_ready_for_localization=True)
+        # Check this rev2 revision content is the translation page
+        trans_url = reverse('wiki.translate', locale=draft.locale, args=[doc.slug])
+        trans_resp = self.client.get(trans_url)
+        trans_content = pq(trans_resp.content)
+        eq_(rev2.content, trans_content('.content textarea').text())
+        # Now Restore the draft which is based on the past revision
+        draft_request = {'restore': 'Restore'}
+        cache.clear()
+        trans_resp = self.client.get(trans_url, draft_request)
+        trans_content = pq(trans_resp.content)
+        eq_(rev1.content, trans_content('.content textarea').text())
+        # As the old based on draft is restored, the latest revision content should not be there
+        assert rev2.content != trans_content('.content textarea').text()
+
+    def test_draft_restoring_works_while_updating_translation(self):
+        trans_rev = TranslatedRevisionFactory()
+        trans = trans_rev.document
+        doc = trans.parent
+        user = trans_rev.creator
+        doc.allows(user, 'create_revision')
+        self.client.login(username=user.username, password='testpass')
+        # Create a draft revision
+        # As the user will not see the title and slug, it should be blank
+        draft = DraftRevisionFactory(
+            document=doc, creator=user, locale=trans.locale,
+            based_on=trans_rev.based_on, title='', slug='')
+        # Now Restore the draft
+        draft_request = {'restore': 'Restore'}
+        trans_url = reverse('wiki.translate', locale=trans.locale, args=[doc.slug])
+        trans_resp = self.client.get(trans_url, draft_request)
+        trans_content = pq(trans_resp.content)
+        # Check the data is restored
+        eq_(draft.keywords, trans_content('#id_keywords').val())
+        eq_(draft.summary, trans_content('#id_summary').text())
+        eq_(draft.content, trans_content('#id_content').text())
+        eq_(draft.based_on.id, int(trans_content('#id_based_on').val()))
+
+    def test_warning_showing_while_new_revision(self):
+        """Check warning is being showed if another updated revision"""
+        # Create a translation
+        rev = TranslatedRevisionFactory()
+        trans = rev.document
+        doc = trans.parent
+        # Create a draft revision
+        draft = DraftRevisionFactory(
+            creator=self.user, locale=trans.locale, document=doc, based_on=rev.based_on)
+        # Create another revision in the english document
+        rev2 = ApprovedRevisionFactory(document=doc, is_ready_for_localization=True)
+        # Create a revision in translated article which is based on the later revision
+        RevisionFactory(based_on=rev2, document=trans)
+        # Now restore the draft
+        draft_request = {'restore': 'Restore'}
+        trans_url = reverse('wiki.translate', locale=draft.locale, args=[doc.slug])
+        trans_resp = self.client.get(trans_url, draft_request)
+        trans_content = pq(trans_resp.content)
+        # Check there is a warning message
+        eq_(1, len(trans_content('.user-messages li')))
 
 
 class HistoryTests(TestCaseBase):
