@@ -282,7 +282,7 @@ class L10NOverviewTests(TestCase):
 
         # Document.save() will enforce that parents and translations share is_archived.
         # The point of this is to test what happens when that isn't true though,
-        # so by pass Document.save().
+        # so bypass Document.save().
         translation2.is_archived = False
         ModelBase.save(translation2)
         eq_(translation2.is_archived, False)
