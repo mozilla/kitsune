@@ -163,11 +163,12 @@ body {
 
       &:after {
         color: @textGrey;
-        content: '\f002';
+        content: '\f002'; // Search icon
         font-family: 'FontAwesome';
         left: 24px;
+        line-height: 24px;
         position: absolute;
-        top: 17px;
+        top: 13px;
         z-index: 1;
       }
 
@@ -849,8 +850,10 @@ input[type="submit"]:visited {
   height: 50px;
   line-height: 50px;
   margin-right: 10px;
+  position: relative;
   text-align: center;
   width: 50px;
+  z-index: 5;
 
   &:before {
     content: '\f002'; // Search icon
