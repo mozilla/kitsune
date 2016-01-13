@@ -44,9 +44,9 @@ class ProductTopicsAndSubtopicsWidget(forms.widgets.SelectMultiple):
     def process_topic(self, value, topic):
         if isinstance(value, (int, long)) and topic.id == value:
             topic.checked = True
-        elif (not isinstance(value, basestring)
-              and isinstance(value, collections.Iterable)
-              and topic.id in value):
+        elif (not isinstance(value, basestring) and
+              isinstance(value, collections.Iterable) and
+              topic.id in value):
             topic.checked = True
         else:
             topic.checked = False

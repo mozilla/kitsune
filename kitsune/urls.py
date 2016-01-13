@@ -14,7 +14,7 @@ from waffle.views import wafflejs
 from kitsune.sumo.monkeypatch import patch
 patch()
 
-from django.contrib import admin
+from django.contrib import admin  # noqa
 admin.autodiscover()
 
 authority.autodiscover()

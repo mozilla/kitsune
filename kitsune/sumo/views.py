@@ -74,8 +74,8 @@ def handle403(request):
     no_cookies = False
     referer = request.META.get('HTTP_REFERER')
     if referer:
-        no_cookies = (referer.endswith(reverse('users.login'))
-                      or referer.endswith(reverse('users.register')))
+        no_cookies = (referer.endswith(reverse('users.login')) or
+                      referer.endswith(reverse('users.register')))
 
     return render(request, 'handlers/403.html', {
         'form': AuthenticationForm(),
