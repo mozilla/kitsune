@@ -328,8 +328,8 @@ def l10n_overview_rows(locale, product=None):
         'SELECT COUNT(*) FROM wiki_document transdoc '
         'INNER JOIN wiki_document engdoc ON transdoc.parent_id=engdoc.id '
         'INNER JOIN wiki_revision curtransrev '
-        '    ON transdoc.current_revision_id=curtransrev.id '
-        + extra_joins +
+        '    ON transdoc.current_revision_id=curtransrev.id ' +
+        extra_joins +
         'WHERE transdoc.locale=%s '
         '    AND engdoc.category NOT IN '
         '        (' + ','.join(ignore_categories) + ')'
@@ -591,8 +591,8 @@ class MostVisitedDefaultLanguageReadout(Readout):
             'LEFT JOIN wiki_revision engrev ON '
             '    engrev.document_id=engdoc.id '
             '    AND engrev.reviewed IS NULL '
-            '    AND engrev.id>engdoc.current_revision_id '
-            + extra_joins +
+            '    AND engrev.id>engdoc.current_revision_id ' +
+            extra_joins +
             'WHERE engdoc.locale=%s AND '
             'NOT engdoc.is_archived AND '
             'NOT engdoc.category IN (' + (
@@ -650,8 +650,8 @@ class CategoryReadout(Readout):
             'FROM wiki_document engdoc '
             'LEFT JOIN dashboards_wikidocumentvisits ON '
             '   engdoc.id=dashboards_wikidocumentvisits.document_id '
-            '   AND dashboards_wikidocumentvisits.period=%s '
-            + extra_joins +
+            '   AND dashboards_wikidocumentvisits.period=%s ' +
+            extra_joins +
             'WHERE engdoc.locale=%s AND '
             '   NOT engdoc.is_archived ' + (
                 self.where_clause) +
@@ -816,8 +816,8 @@ class TemplateTranslationsReadout(Readout):
             'FROM wiki_document engdoc '
             'LEFT JOIN wiki_document transdoc ON '
             '    transdoc.parent_id=engdoc.id '
-            '    AND transdoc.locale=%s '
-            + extra_joins +
+            '    AND transdoc.locale=%s ' +
+            extra_joins +
             'WHERE engdoc.locale=%s '
             '    AND engdoc.is_localizable '
             '    AND NOT engdoc.is_archived '
@@ -884,14 +884,14 @@ class UnreviewedReadout(Readout):
             'LEFT JOIN dashboards_wikidocumentvisits ON '
             '    wiki_document.' + english_id +
             '        =dashboards_wikidocumentvisits.document_id AND '
-            '    dashboards_wikidocumentvisits.period=%s '
-            + extra_joins +
+            '    dashboards_wikidocumentvisits.period=%s ' +
+            extra_joins +
             'WHERE wiki_revision.reviewed IS NULL '
             'AND (wiki_document.current_revision_id IS NULL OR '
             '     wiki_revision.id>wiki_document.current_revision_id) '
             'AND wiki_document.locale=%s AND NOT wiki_document.is_archived '
-            'GROUP BY wiki_document.id '
-            + self._order_clause() + self._limit_clause(max))
+            'GROUP BY wiki_document.id ' +
+            self._order_clause() + self._limit_clause(max))
 
         return query, params
 
@@ -1001,8 +1001,8 @@ class UnreadyForLocalizationReadout(Readout):
             '            engdoc.id=wiki_revision.document_id '
             'LEFT JOIN dashboards_wikidocumentvisits visits ON '
             '    engdoc.id=visits.document_id AND '
-            '    visits.period=%s '
-            + extra_joins +
+            '    visits.period=%s ' +
+            extra_joins +
             'WHERE engdoc.locale=%s '  # shouldn't be necessary
             'AND NOT engdoc.is_archived '
             'AND engdoc.is_localizable '
@@ -1019,8 +1019,8 @@ class UnreadyForLocalizationReadout(Readout):
             'AND (wiki_revision.id>'
             '     engdoc.latest_localizable_revision_id OR '
             '     engdoc.latest_localizable_revision_id IS NULL) '
-            'GROUP BY engdoc.id '
-            + self._order_clause() + self._limit_clause(max))
+            'GROUP BY engdoc.id ' +
+            self._order_clause() + self._limit_clause(max))
 
         return query, params
 
@@ -1068,13 +1068,13 @@ class NeedsChangesReadout(Readout):
             'FROM wiki_document engdoc '
             'LEFT JOIN dashboards_wikidocumentvisits visits ON '
             '    engdoc.id=visits.document_id AND '
-            '    visits.period=%s '
-            + extra_joins +
+            '    visits.period=%s ' +
+            extra_joins +
             'WHERE engdoc.locale=%s '  # shouldn't be necessary
             'AND engdoc.needs_change '
             'AND NOT engdoc.is_archived '
-            'GROUP BY engdoc.id '
-            + self._order_clause() + self._limit_clause(max))
+            'GROUP BY engdoc.id ' +
+            self._order_clause() + self._limit_clause(max))
 
         return query, params
 
@@ -1128,13 +1128,13 @@ class CannedResponsesReadout(Readout):
             '    AND transdoc.locale=%s '
             'LEFT JOIN dashboards_wikidocumentvisits engvisits ON '
             '    engdoc.id=engvisits.document_id '
-            '    AND engvisits.period=%s '
-            + extra_joins +
+            '    AND engvisits.period=%s ' +
+            extra_joins +
             'WHERE engdoc.category = %s '
             '    AND engdoc.locale = %s '
             '    AND NOT engdoc.is_archived '
-            'ORDER BY engvisits.visits DESC '
-            + self._limit_clause(max)
+            'ORDER BY engvisits.visits DESC ' +
+            self._limit_clause(max)
         )
 
         return query, params

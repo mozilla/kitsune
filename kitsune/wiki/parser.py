@@ -266,8 +266,7 @@ class ForParser(object):
                     # distance it from the preceding paragraph, take them into
                     # account before adding more.
                     prespace += paragraph_padding(
-                        preceding_whitespace(match.string, match.start(1))
-                        + prespace)
+                        preceding_whitespace(match.string, match.start(1)) + prespace)
 
                 # If tag (including trailing whitespace) wasn't at the bottom
                 # of the document, space it off from following block elements:

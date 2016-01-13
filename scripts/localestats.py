@@ -22,10 +22,10 @@ SCRIPTS_DIR = os.path.dirname(__file__)
 site.addsitedir(os.path.join(SCRIPTS_DIR, '..', 'vendor'))
 
 
-import sys
-from collections import defaultdict
+import sys  # noqa
+from collections import defaultdict  # noqa
 
-import polib
+import polib  # noqa
 
 
 USAGE = 'usage: localestats.py <locales-dir>'

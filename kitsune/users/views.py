@@ -323,8 +323,8 @@ def profile(request, template, username):
 
     user_profile = get_object_or_404(Profile, user__id=user.id)
 
-    if not (request.user.has_perm('users.deactivate_users')
-            or user_profile.user.is_active):
+    if not (request.user.has_perm('users.deactivate_users') or
+            user_profile.user.is_active):
         raise Http404('No Profile matches the given query.')
 
     groups = user_profile.user.groups.all()

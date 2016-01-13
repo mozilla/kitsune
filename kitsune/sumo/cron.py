@@ -24,10 +24,10 @@ def send_postatus_errors():
         return
 
     def new_section(line):
-        return (line.startswith('dennis ')
-                or line.startswith('Totals')
-                or line.startswith('BUSTED')
-                or line.startswith('COMPILED'))
+        return (line.startswith('dennis ') or
+                line.startswith('Totals') or
+                line.startswith('BUSTED') or
+                line.startswith('COMPILED'))
 
     # Download the postatus file
     postatus = requests.get('https://support.mozilla.org/media/postatus.txt')
