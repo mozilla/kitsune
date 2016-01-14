@@ -1,4 +1,4 @@
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 
 from mock import patch
 from nose.tools import eq_
@@ -6,17 +6,125 @@ from nose.tools import eq_
 import kitsune.kpi.cron
 from kitsune.kpi import surveygizmo_utils
 from kitsune.kpi.cron import (
-    update_visitors_metric, update_l10n_metric, googleanalytics,
+    cohort_analysis, update_visitors_metric, update_l10n_metric, googleanalytics,
     update_search_ctr_metric, _process_exit_survey_results)
 from kitsune.kpi.models import (
-    Metric, VISITORS_METRIC_CODE, L10N_METRIC_CODE, SEARCH_CLICKS_METRIC_CODE,
+    Metric, Cohort, VISITORS_METRIC_CODE, L10N_METRIC_CODE, SEARCH_CLICKS_METRIC_CODE,
     SEARCH_SEARCHES_METRIC_CODE, EXIT_SURVEY_YES_CODE, EXIT_SURVEY_NO_CODE,
-    EXIT_SURVEY_DONT_KNOW_CODE)
+    EXIT_SURVEY_DONT_KNOW_CODE, CONTRIBUTOR_COHORT_CODE, KB_CONTRIBUTOR_COHORT_CODE,
+    KB_L10N_CONTRIBUTOR_COHORT_CODE, SUPPORT_FORUM_HELPER_COHORT_CODE)
 from kitsune.kpi.tests import MetricKindFactory, MetricFactory
+from kitsune.questions.tests import AnswerFactory
 from kitsune.sumo.tests import TestCase
+from kitsune.users.tests import ProfileFactory
 from kitsune.wiki.config import (
     MAJOR_SIGNIFICANCE, MEDIUM_SIGNIFICANCE, TYPO_SIGNIFICANCE)
 from kitsune.wiki.tests import DocumentFactory, ApprovedRevisionFactory
+
+
+class CohortAnalysisTests(TestCase):
+    def setUp(self):
+        today = datetime.today()
+        self.start_of_first_week = today - timedelta(days=today.weekday(), weeks=12)
+
+        revisions = ApprovedRevisionFactory.create_batch(3, created=self.start_of_first_week)
+
+        reviewer = ProfileFactory()
+        ApprovedRevisionFactory(reviewer=reviewer.user, created=self.start_of_first_week)
+
+        ApprovedRevisionFactory(creator=revisions[1].creator, reviewer=reviewer.user,
+                                created=self.start_of_first_week + timedelta(weeks=1, days=2))
+        ApprovedRevisionFactory(created=self.start_of_first_week + timedelta(weeks=1, days=1))
+
+        for r in revisions:
+            lr = ApprovedRevisionFactory(created=self.start_of_first_week + timedelta(days=1),
+                                         document__locale='es')
+            ApprovedRevisionFactory(created=self.start_of_first_week + timedelta(weeks=2, days=1),
+                                    creator=lr.creator, document__locale='es')
+
+        answers = AnswerFactory.create_batch(
+            7, created=self.start_of_first_week + timedelta(weeks=1, days=2))
+
+        AnswerFactory(question=answers[2].question, creator=answers[2].question.creator,
+                      created=self.start_of_first_week + timedelta(weeks=1, days=2))
+
+        for a in answers[:2]:
+            AnswerFactory(creator=a.creator,
+                          created=self.start_of_first_week + timedelta(weeks=2, days=5))
+
+        cohort_analysis()
+
+    def test_contributor_cohort_analysis(self):
+        c1 = Cohort.objects.get(kind__code=CONTRIBUTOR_COHORT_CODE, start=self.start_of_first_week)
+        eq_(c1.size, 8)
+
+        c1r1 = c1.retention_metrics.get(start=self.start_of_first_week + timedelta(weeks=1))
+        eq_(c1r1.size, 2)
+
+        c1r2 = c1.retention_metrics.get(start=self.start_of_first_week + timedelta(weeks=2))
+        eq_(c1r2.size, 3)
+
+        c2 = Cohort.objects.get(kind__code=CONTRIBUTOR_COHORT_CODE,
+                                start=self.start_of_first_week + timedelta(weeks=1))
+        eq_(c2.size, 8)
+
+        c2r1 = c2.retention_metrics.get(start=self.start_of_first_week + timedelta(weeks=2))
+
+        eq_(c2r1.size, 2)
+
+    def test_kb_contributor_cohort_analysis(self):
+        c1 = Cohort.objects.get(kind__code=KB_CONTRIBUTOR_COHORT_CODE,
+                                start=self.start_of_first_week)
+        eq_(c1.size, 5)
+
+        c1r1 = c1.retention_metrics.get(start=self.start_of_first_week + timedelta(weeks=1))
+        eq_(c1r1.size, 2)
+
+        c1r2 = c1.retention_metrics.get(start=self.start_of_first_week + timedelta(weeks=2))
+        eq_(c1r2.size, 0)
+
+        c2 = Cohort.objects.get(kind__code=KB_CONTRIBUTOR_COHORT_CODE,
+                                start=self.start_of_first_week + timedelta(weeks=1))
+        eq_(c2.size, 1)
+
+        c2r1 = c2.retention_metrics.get(start=self.start_of_first_week + timedelta(weeks=2))
+
+        eq_(c2r1.size, 0)
+
+    def test_kb_l10n_contributor_cohort_analysis(self):
+        c1 = Cohort.objects.get(kind__code=KB_L10N_CONTRIBUTOR_COHORT_CODE,
+                                start=self.start_of_first_week)
+        eq_(c1.size, 3)
+
+        c1r1 = c1.retention_metrics.get(start=self.start_of_first_week + timedelta(weeks=1))
+        eq_(c1r1.size, 0)
+
+        c1r2 = c1.retention_metrics.get(start=self.start_of_first_week + timedelta(weeks=2))
+        eq_(c1r2.size, 3)
+
+        c2 = Cohort.objects.get(kind__code=KB_L10N_CONTRIBUTOR_COHORT_CODE,
+                                start=self.start_of_first_week + timedelta(weeks=1))
+        eq_(c2.size, 0)
+
+        c2r1 = c2.retention_metrics.get(start=self.start_of_first_week + timedelta(weeks=2))
+
+        eq_(c2r1.size, 0)
+
+    def test_support_forum_helper_cohort_analysis(self):
+        c1 = Cohort.objects.get(kind__code=SUPPORT_FORUM_HELPER_COHORT_CODE,
+                                start=self.start_of_first_week)
+        eq_(c1.size, 0)
+
+        c1r1 = c1.retention_metrics.get(start=self.start_of_first_week + timedelta(weeks=1))
+        eq_(c1r1.size, 0)
+
+        c2 = Cohort.objects.get(kind__code=SUPPORT_FORUM_HELPER_COHORT_CODE,
+                                start=self.start_of_first_week + timedelta(weeks=1))
+        eq_(c2.size, 7)
+
+        c2r1 = c2.retention_metrics.get(start=self.start_of_first_week + timedelta(weeks=2))
+
+        eq_(c2r1.size, 2)
 
 
 class CronJobTests(TestCase):
