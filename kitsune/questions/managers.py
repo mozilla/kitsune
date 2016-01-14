@@ -62,3 +62,9 @@ class QuestionManager(Manager):
 class QuestionLocaleManager(Manager):
     def locales_list(self):
         return self.values_list('locale', flat=True)
+
+
+class AnswerManager(Manager):
+    def not_by_asker(self):
+        """Answers by anyone except the user who asked the question"""
+        return self.exclude(creator=F('question__creator'))

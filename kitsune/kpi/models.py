@@ -16,6 +16,11 @@ EXIT_SURVEY_YES_CODE = 'exit-survey:yes'
 EXIT_SURVEY_NO_CODE = 'exit-survey:no'
 EXIT_SURVEY_DONT_KNOW_CODE = 'exit-survey:dont-know'
 
+CONTRIBUTOR_COHORT_CODE = 'contributor'
+KB_CONTRIBUTOR_COHORT_CODE = 'contributor:kb'
+KB_L10N_CONTRIBUTOR_COHORT_CODE = 'contributor:kb:l10n'
+SUPPORT_FORUM_HELPER_COHORT_CODE = 'contributor:support_forum:helper'
+
 
 class MetricKind(ModelBase):
     """A programmer-readable identifier of a metric, like 'clicks: search'"""
@@ -60,3 +65,36 @@ class Metric(ModelBase):
     def __unicode__(self):
         return '%s (%s thru %s): %s' % (
             self.kind, self.start, self.end, self.value)
+
+
+class CohortKind(ModelBase):
+    """A programmer-readable identifier of a cohort, like 'contributor'"""
+    code = CharField(max_length=255, unique=True)
+
+    def __unicode__(self):
+        return self.code
+
+
+class Cohort(ModelBase):
+    """A group of users who have shared a particular activity in a given time frame"""
+    kind = ForeignKey(CohortKind)
+    start = DateField()
+    end = DateField()
+    size = PositiveIntegerField(default=0)
+
+    class Meta(object):
+        unique_together = [('kind', 'start', 'end')]
+
+    def __unicode__(self):
+        return '%s (%s thru %s): %s' % (self.kind, self.start, self.end, self.size)
+
+
+class RetentionMetric(ModelBase):
+    """A measurement of the number of active users from a cohort during a given time period."""
+    cohort = ForeignKey(Cohort, related_name='retention_metrics')
+    start = DateField()
+    end = DateField()
+    size = PositiveIntegerField(default=0)
+
+    class Meta(object):
+        unique_together = [('cohort', 'start', 'end')]

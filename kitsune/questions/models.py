@@ -26,7 +26,7 @@ from taggit.models import Tag, TaggedItem
 from kitsune.flagit.models import FlaggedObject
 from kitsune.products.models import Product, Topic
 from kitsune.questions import config
-from kitsune.questions.managers import QuestionManager, QuestionLocaleManager
+from kitsune.questions.managers import AnswerManager, QuestionManager, QuestionLocaleManager
 from kitsune.questions.signals import tag_added
 from kitsune.questions.tasks import update_question_votes, update_answer_pages, escalate_question
 from kitsune.search.es_utils import UnindexMeBro, ES_EXCEPTIONS
@@ -925,6 +925,8 @@ class Answer(ModelBase, SearchMixin):
 
     html_cache_key = u'answer:html:%s'
     images_cache_key = u'answer:images:%s'
+
+    objects = AnswerManager()
 
     class Meta:
         ordering = ['created']

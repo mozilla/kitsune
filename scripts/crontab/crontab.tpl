@@ -52,6 +52,7 @@ HOME = /tmp
 21 03 * * 3 {{ django }} purge_hashes
 00 04 * * 5 {{ cron }} send_weekly_ready_for_review_digest
 00 00 * * 0 {{ cron }} fix_current_revisions
+30 00 * * 1 {{ cron }} cohort_analysis
 
 # Once per month.
 00 00 1 * * {{ cron }} update_l10n_contributor_metrics
