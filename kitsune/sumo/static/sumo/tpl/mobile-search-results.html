@@ -2,7 +2,7 @@
   <ol class="search-results">
     {% for doc in results %}
       <li class="{{ doc.type }}">
-        <a href="{{ doc.url|urlparams(s=q, as='s') }}">
+        <a href="{{ doc.url|urlparams(s=q, as='s')|encodeURI }}">
           <span class="title">{{ doc.title }}</span>
           {{ doc.search_summary|safe }}
         </a>
