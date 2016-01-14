@@ -335,6 +335,7 @@ def l10n_overview_rows(locale, product=None):
         '        (' + ','.join(ignore_categories) + ')'
         '    AND transdoc.is_template=%s '
         '    AND NOT transdoc.is_archived '
+        '    AND NOT engdoc.is_archived '
         '    AND engdoc.latest_localizable_revision_id IS NOT NULL '
         '    AND engdoc.is_localizable '
         '    AND engdoc.html NOT LIKE "<p>REDIRECT <a%%" '
