@@ -20,6 +20,7 @@ CONTRIBUTOR_COHORT_CODE = 'contributor'
 KB_CONTRIBUTOR_COHORT_CODE = 'contributor:kb'
 KB_L10N_CONTRIBUTOR_COHORT_CODE = 'contributor:kb:l10n'
 SUPPORT_FORUM_HELPER_COHORT_CODE = 'contributor:support_forum:helper'
+AOA_CONTRIBUTOR_COHORT_CODE = 'contributor:aoa'
 
 
 class MetricKind(ModelBase):

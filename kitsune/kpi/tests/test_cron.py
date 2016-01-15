@@ -4,6 +4,7 @@ from mock import patch
 from nose.tools import eq_
 
 import kitsune.kpi.cron
+from kitsune.customercare.tests import ReplyFactory
 from kitsune.kpi import surveygizmo_utils
 from kitsune.kpi.cron import (
     cohort_analysis, update_visitors_metric, update_l10n_metric, googleanalytics,
@@ -12,7 +13,7 @@ from kitsune.kpi.models import (
     Metric, Cohort, VISITORS_METRIC_CODE, L10N_METRIC_CODE, SEARCH_CLICKS_METRIC_CODE,
     SEARCH_SEARCHES_METRIC_CODE, EXIT_SURVEY_YES_CODE, EXIT_SURVEY_NO_CODE,
     EXIT_SURVEY_DONT_KNOW_CODE, CONTRIBUTOR_COHORT_CODE, KB_CONTRIBUTOR_COHORT_CODE,
-    KB_L10N_CONTRIBUTOR_COHORT_CODE, SUPPORT_FORUM_HELPER_COHORT_CODE)
+    KB_L10N_CONTRIBUTOR_COHORT_CODE, SUPPORT_FORUM_HELPER_COHORT_CODE, AOA_CONTRIBUTOR_COHORT_CODE)
 from kitsune.kpi.tests import MetricKindFactory, MetricFactory
 from kitsune.questions.tests import AnswerFactory
 from kitsune.sumo.tests import TestCase
@@ -52,17 +53,22 @@ class CohortAnalysisTests(TestCase):
             AnswerFactory(creator=a.creator,
                           created=self.start_of_first_week + timedelta(weeks=2, days=5))
 
+        replies = ReplyFactory.create_batch(2, created=self.start_of_first_week)
+
+        for r in replies:
+            ReplyFactory(user=r.user, created=self.start_of_first_week + timedelta(weeks=2))
+
         cohort_analysis()
 
     def test_contributor_cohort_analysis(self):
         c1 = Cohort.objects.get(kind__code=CONTRIBUTOR_COHORT_CODE, start=self.start_of_first_week)
-        eq_(c1.size, 8)
+        eq_(c1.size, 10)
 
         c1r1 = c1.retention_metrics.get(start=self.start_of_first_week + timedelta(weeks=1))
         eq_(c1r1.size, 2)
 
         c1r2 = c1.retention_metrics.get(start=self.start_of_first_week + timedelta(weeks=2))
-        eq_(c1r2.size, 3)
+        eq_(c1r2.size, 5)
 
         c2 = Cohort.objects.get(kind__code=CONTRIBUTOR_COHORT_CODE,
                                 start=self.start_of_first_week + timedelta(weeks=1))
@@ -125,6 +131,21 @@ class CohortAnalysisTests(TestCase):
         c2r1 = c2.retention_metrics.get(start=self.start_of_first_week + timedelta(weeks=2))
 
         eq_(c2r1.size, 2)
+
+    def test_aoa_contributor_cohort_analysis(self):
+        c1 = Cohort.objects.get(kind__code=AOA_CONTRIBUTOR_COHORT_CODE,
+                                start=self.start_of_first_week)
+        eq_(c1.size, 2)
+
+        c1r1 = c1.retention_metrics.get(start=self.start_of_first_week + timedelta(weeks=1))
+        eq_(c1r1.size, 0)
+
+        c1r2 = c1.retention_metrics.get(start=self.start_of_first_week + timedelta(weeks=2))
+        eq_(c1r2.size, 2)
+
+        c2 = Cohort.objects.get(kind__code=AOA_CONTRIBUTOR_COHORT_CODE,
+                                start=self.start_of_first_week + timedelta(weeks=1))
+        eq_(c2.size, 0)
 
 
 class CronJobTests(TestCase):

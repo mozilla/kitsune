@@ -15,7 +15,7 @@ from kitsune.kpi.models import (
     SUPPORT_FORUM_CONTRIBUTORS_METRIC_CODE, VISITORS_METRIC_CODE, SEARCH_SEARCHES_METRIC_CODE,
     SEARCH_CLICKS_METRIC_CODE, EXIT_SURVEY_YES_CODE, EXIT_SURVEY_NO_CODE,
     EXIT_SURVEY_DONT_KNOW_CODE, CONTRIBUTOR_COHORT_CODE, KB_CONTRIBUTOR_COHORT_CODE,
-    KB_L10N_CONTRIBUTOR_COHORT_CODE, SUPPORT_FORUM_HELPER_COHORT_CODE)
+    KB_L10N_CONTRIBUTOR_COHORT_CODE, SUPPORT_FORUM_HELPER_COHORT_CODE, AOA_CONTRIBUTOR_COHORT_CODE)
 from kitsune.kpi.surveygizmo_utils import (
     get_email_addresses, add_email_to_campaign, get_exit_survey_results,
     SURVEYS)
@@ -511,13 +511,16 @@ def cohort_analysis():
     reports = [
         (CONTRIBUTOR_COHORT_CODE, [
             (Revision.objects.all(), ('creator', 'reviewer',)),
-            (Answer.objects.not_by_asker(), ('creator',))]),
+            (Answer.objects.not_by_asker(), ('creator',)),
+            (Reply.objects.all(), ('user',))]),
         (KB_CONTRIBUTOR_COHORT_CODE, [
             (Revision.objects.filter(document__locale='en-US'), ('creator', 'reviewer',))]),
         (KB_L10N_CONTRIBUTOR_COHORT_CODE, [
             (Revision.objects.exclude(document__locale='en-US'), ('creator', 'reviewer',))]),
         (SUPPORT_FORUM_HELPER_COHORT_CODE, [
             (Answer.objects.not_by_asker(), ('creator',))]),
+        (AOA_CONTRIBUTOR_COHORT_CODE, [
+            (Reply.objects.all(), ('user',))])
     ]
 
     for kind, querysets in reports:
