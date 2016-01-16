@@ -542,9 +542,9 @@ def cohort_analysis():
             for retention_range in ranges[i:]:
                 retained_user_count = _count_contributors_in_range(querysets, cohort_users,
                                                                    retention_range)
-                retention_metric, _ = RetentionMetric.objects.update_or_create(
+                RetentionMetric.objects.update_or_create(
                     cohort=cohort, start=retention_range[0], end=retention_range[1],
-                    defaults=retained_user_count)
+                    defaults={'size': retained_user_count})
 
 
 def _count_contributors_in_range(querysets, users, date_range):
