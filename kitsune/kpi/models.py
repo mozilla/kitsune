@@ -17,9 +17,9 @@ EXIT_SURVEY_NO_CODE = 'exit-survey:no'
 EXIT_SURVEY_DONT_KNOW_CODE = 'exit-survey:dont-know'
 
 CONTRIBUTOR_COHORT_CODE = 'contributor'
-KB_CONTRIBUTOR_COHORT_CODE = 'contributor:kb'
+KB_ENUS_CONTRIBUTOR_COHORT_CODE = 'contributor:kb:en-US'
 KB_L10N_CONTRIBUTOR_COHORT_CODE = 'contributor:kb:l10n'
-SUPPORT_FORUM_HELPER_COHORT_CODE = 'contributor:support_forum:helper'
+SUPPORT_FORUM_HELPER_COHORT_CODE = 'contributor:supportforum:helper'
 AOA_CONTRIBUTOR_COHORT_CODE = 'contributor:aoa'
 
 

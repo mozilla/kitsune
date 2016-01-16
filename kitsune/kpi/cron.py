@@ -1,4 +1,6 @@
+import operator
 from datetime import datetime, date, timedelta
+from functools import reduce
 
 from django.conf import settings
 from django.db.models import Count, F, Q
@@ -14,7 +16,7 @@ from kitsune.kpi.models import (
     KB_ENUS_CONTRIBUTORS_METRIC_CODE, KB_L10N_CONTRIBUTORS_METRIC_CODE, L10N_METRIC_CODE,
     SUPPORT_FORUM_CONTRIBUTORS_METRIC_CODE, VISITORS_METRIC_CODE, SEARCH_SEARCHES_METRIC_CODE,
     SEARCH_CLICKS_METRIC_CODE, EXIT_SURVEY_YES_CODE, EXIT_SURVEY_NO_CODE,
-    EXIT_SURVEY_DONT_KNOW_CODE, CONTRIBUTOR_COHORT_CODE, KB_CONTRIBUTOR_COHORT_CODE,
+    EXIT_SURVEY_DONT_KNOW_CODE, CONTRIBUTOR_COHORT_CODE, KB_ENUS_CONTRIBUTOR_COHORT_CODE,
     KB_L10N_CONTRIBUTOR_COHORT_CODE, SUPPORT_FORUM_HELPER_COHORT_CODE, AOA_CONTRIBUTOR_COHORT_CODE)
 from kitsune.kpi.surveygizmo_utils import (
     get_email_addresses, add_email_to_campaign, get_exit_survey_results,
@@ -513,7 +515,7 @@ def cohort_analysis():
             (Revision.objects.all(), ('creator', 'reviewer',)),
             (Answer.objects.not_by_asker(), ('creator',)),
             (Reply.objects.all(), ('user',))]),
-        (KB_CONTRIBUTOR_COHORT_CODE, [
+        (KB_ENUS_CONTRIBUTOR_COHORT_CODE, [
             (Revision.objects.filter(document__locale='en-US'), ('creator', 'reviewer',))]),
         (KB_L10N_CONTRIBUTOR_COHORT_CODE, [
             (Revision.objects.exclude(document__locale='en-US'), ('creator', 'reviewer',))]),
@@ -524,7 +526,7 @@ def cohort_analysis():
     ]
 
     for kind, querysets in reports:
-        cohort_kind = CohortKind.objects.get_or_create(code=kind)[0]
+        cohort_kind, _ = CohortKind.objects.get_or_create(code=kind)
 
         for i, cohort_range in enumerate(ranges):
             cohort_users = _get_cohort(querysets, cohort_range)
@@ -533,18 +535,16 @@ def cohort_analysis():
             if None in cohort_users:
                 cohort_users.remove(None)
 
-            cohort = Cohort.objects.get_or_create(kind=cohort_kind, start=cohort_range[0],
-                                                  end=cohort_range[1])[0]
-            cohort.size = len(cohort_users)
-            cohort.save()
+            cohort, _ = Cohort.objects.update_or_create(
+                kind=cohort_kind, start=cohort_range[0], end=cohort_range[1],
+                defaults={'size': len(cohort_users)})
 
-            for retention_range in ranges[i + 1:]:
-                retained_user_count = _count_contributors_in_range(
-                    querysets, cohort_users, retention_range)
-                retention_metric = RetentionMetric.objects.get_or_create(
-                    cohort=cohort, start=retention_range[0], end=retention_range[1])[0]
-                retention_metric.size = retained_user_count
-                retention_metric.save()
+            for retention_range in ranges[i:]:
+                retained_user_count = _count_contributors_in_range(querysets, cohort_users,
+                                                                   retention_range)
+                retention_metric, _ = RetentionMetric.objects.update_or_create(
+                    cohort=cohort, start=retention_range[0], end=retention_range[1],
+                    defaults=retained_user_count)
 
 
 def _count_contributors_in_range(querysets, users, date_range):
@@ -555,33 +555,29 @@ def _count_contributors_in_range(querysets, users, date_range):
     for queryset, fields in querysets:
         for field in fields:
             filters = {'%s__in' % field: users, 'created__gte': start, 'created__lt': end}
-            retained_users = retained_users.union(
-                set(getattr(o, field) for o in queryset.filter(**filters)))
+            retained_users |= set(getattr(o, field) for o in queryset.filter(**filters))
 
     return len(retained_users)
 
 
 def _get_cohort(querysets, date_range):
     start, end = date_range
-    cohort = []
+    cohort = set()
 
     for queryset, fields in querysets:
         contributions_in_range = queryset.filter(created__gte=start, created__lt=end)
         potential_users = set()
 
         for field in fields:
-            potential_users = potential_users.union(
-                set(getattr(cont, field) for cont in contributions_in_range))
+            potential_users |= set(getattr(cont, field) for cont in contributions_in_range)
 
         def is_in_cohort(u):
             qs = [Q(**{field: u}) for field in fields]
-            filters = qs.pop()
-            for q in qs:
-                filters |= q
+            filters = reduce(operator.or_, qs)
 
             first_contrib = queryset.filter(filters).order_by('id')[0]
             return start <= first_contrib.created < end
 
-        cohort += filter(is_in_cohort, potential_users)
+        cohort |= set(filter(is_in_cohort, potential_users))
 
     return cohort

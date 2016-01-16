@@ -12,12 +12,12 @@ from kitsune.kpi.cron import (
 from kitsune.kpi.models import (
     Metric, Cohort, VISITORS_METRIC_CODE, L10N_METRIC_CODE, SEARCH_CLICKS_METRIC_CODE,
     SEARCH_SEARCHES_METRIC_CODE, EXIT_SURVEY_YES_CODE, EXIT_SURVEY_NO_CODE,
-    EXIT_SURVEY_DONT_KNOW_CODE, CONTRIBUTOR_COHORT_CODE, KB_CONTRIBUTOR_COHORT_CODE,
+    EXIT_SURVEY_DONT_KNOW_CODE, CONTRIBUTOR_COHORT_CODE, KB_ENUS_CONTRIBUTOR_COHORT_CODE,
     KB_L10N_CONTRIBUTOR_COHORT_CODE, SUPPORT_FORUM_HELPER_COHORT_CODE, AOA_CONTRIBUTOR_COHORT_CODE)
 from kitsune.kpi.tests import MetricKindFactory, MetricFactory
 from kitsune.questions.tests import AnswerFactory
 from kitsune.sumo.tests import TestCase
-from kitsune.users.tests import ProfileFactory
+from kitsune.users.tests import UserFactory
 from kitsune.wiki.config import (
     MAJOR_SIGNIFICANCE, MEDIUM_SIGNIFICANCE, TYPO_SIGNIFICANCE)
 from kitsune.wiki.tests import DocumentFactory, ApprovedRevisionFactory
@@ -30,10 +30,10 @@ class CohortAnalysisTests(TestCase):
 
         revisions = ApprovedRevisionFactory.create_batch(3, created=self.start_of_first_week)
 
-        reviewer = ProfileFactory()
-        ApprovedRevisionFactory(reviewer=reviewer.user, created=self.start_of_first_week)
+        reviewer = UserFactory()
+        ApprovedRevisionFactory(reviewer=reviewer, created=self.start_of_first_week)
 
-        ApprovedRevisionFactory(creator=revisions[1].creator, reviewer=reviewer.user,
+        ApprovedRevisionFactory(creator=revisions[1].creator, reviewer=reviewer,
                                 created=self.start_of_first_week + timedelta(weeks=1, days=2))
         ApprovedRevisionFactory(created=self.start_of_first_week + timedelta(weeks=1, days=1))
 
@@ -78,8 +78,8 @@ class CohortAnalysisTests(TestCase):
 
         eq_(c2r1.size, 2)
 
-    def test_kb_contributor_cohort_analysis(self):
-        c1 = Cohort.objects.get(kind__code=KB_CONTRIBUTOR_COHORT_CODE,
+    def test_kb_enus_contributor_cohort_analysis(self):
+        c1 = Cohort.objects.get(kind__code=KB_ENUS_CONTRIBUTOR_COHORT_CODE,
                                 start=self.start_of_first_week)
         eq_(c1.size, 5)
 
@@ -89,7 +89,7 @@ class CohortAnalysisTests(TestCase):
         c1r2 = c1.retention_metrics.get(start=self.start_of_first_week + timedelta(weeks=2))
         eq_(c1r2.size, 0)
 
-        c2 = Cohort.objects.get(kind__code=KB_CONTRIBUTOR_COHORT_CODE,
+        c2 = Cohort.objects.get(kind__code=KB_ENUS_CONTRIBUTOR_COHORT_CODE,
                                 start=self.start_of_first_week + timedelta(weeks=1))
         eq_(c2.size, 1)
 
