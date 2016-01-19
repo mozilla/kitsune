@@ -1,7 +1,9 @@
+import operator
 from datetime import datetime, date, timedelta
+from functools import reduce
 
 from django.conf import settings
-from django.db.models import Count, F
+from django.db.models import Count, F, Q
 
 import cronjobs
 from statsd import statsd
@@ -10,12 +12,12 @@ from kitsune.customercare.models import Reply
 from kitsune.dashboards import LAST_90_DAYS
 from kitsune.dashboards.models import WikiDocumentVisits
 from kitsune.kpi.models import (
-    Metric, MetricKind, AOA_CONTRIBUTORS_METRIC_CODE,
-    KB_ENUS_CONTRIBUTORS_METRIC_CODE, KB_L10N_CONTRIBUTORS_METRIC_CODE,
-    L10N_METRIC_CODE, SUPPORT_FORUM_CONTRIBUTORS_METRIC_CODE,
-    VISITORS_METRIC_CODE, SEARCH_SEARCHES_METRIC_CODE,
+    Metric, MetricKind, CohortKind, Cohort, RetentionMetric, AOA_CONTRIBUTORS_METRIC_CODE,
+    KB_ENUS_CONTRIBUTORS_METRIC_CODE, KB_L10N_CONTRIBUTORS_METRIC_CODE, L10N_METRIC_CODE,
+    SUPPORT_FORUM_CONTRIBUTORS_METRIC_CODE, VISITORS_METRIC_CODE, SEARCH_SEARCHES_METRIC_CODE,
     SEARCH_CLICKS_METRIC_CODE, EXIT_SURVEY_YES_CODE, EXIT_SURVEY_NO_CODE,
-    EXIT_SURVEY_DONT_KNOW_CODE)
+    EXIT_SURVEY_DONT_KNOW_CODE, CONTRIBUTOR_COHORT_CODE, KB_ENUS_CONTRIBUTOR_COHORT_CODE,
+    KB_L10N_CONTRIBUTOR_COHORT_CODE, SUPPORT_FORUM_HELPER_COHORT_CODE, AOA_CONTRIBUTOR_COHORT_CODE)
 from kitsune.kpi.surveygizmo_utils import (
     get_email_addresses, add_email_to_campaign, get_exit_survey_results,
     SURVEYS)
@@ -496,3 +498,86 @@ def survey_recent_askers():
             add_email_to_campaign('askers', email)
 
     statsd.gauge('survey.askers', len(emails))
+
+
+@cronjobs.register
+def cohort_analysis():
+    today = datetime.today().replace(hour=0, minute=0, second=0, microsecond=0)
+    boundaries = [today - timedelta(days=today.weekday())]
+    for _ in range(12):
+        previous_week = boundaries[-1] - timedelta(weeks=1)
+        boundaries.append(previous_week)
+    boundaries.reverse()
+    ranges = zip(boundaries[:-1], boundaries[1:])
+
+    reports = [
+        (CONTRIBUTOR_COHORT_CODE, [
+            (Revision.objects.all(), ('creator', 'reviewer',)),
+            (Answer.objects.not_by_asker(), ('creator',)),
+            (Reply.objects.all(), ('user',))]),
+        (KB_ENUS_CONTRIBUTOR_COHORT_CODE, [
+            (Revision.objects.filter(document__locale='en-US'), ('creator', 'reviewer',))]),
+        (KB_L10N_CONTRIBUTOR_COHORT_CODE, [
+            (Revision.objects.exclude(document__locale='en-US'), ('creator', 'reviewer',))]),
+        (SUPPORT_FORUM_HELPER_COHORT_CODE, [
+            (Answer.objects.not_by_asker(), ('creator',))]),
+        (AOA_CONTRIBUTOR_COHORT_CODE, [
+            (Reply.objects.all(), ('user',))])
+    ]
+
+    for kind, querysets in reports:
+        cohort_kind, _ = CohortKind.objects.get_or_create(code=kind)
+
+        for i, cohort_range in enumerate(ranges):
+            cohort_users = _get_cohort(querysets, cohort_range)
+
+            # Sometimes None will be added to the cohort_users list, so remove it
+            if None in cohort_users:
+                cohort_users.remove(None)
+
+            cohort, _ = Cohort.objects.update_or_create(
+                kind=cohort_kind, start=cohort_range[0], end=cohort_range[1],
+                defaults={'size': len(cohort_users)})
+
+            for retention_range in ranges[i:]:
+                retained_user_count = _count_contributors_in_range(querysets, cohort_users,
+                                                                   retention_range)
+                RetentionMetric.objects.update_or_create(
+                    cohort=cohort, start=retention_range[0], end=retention_range[1],
+                    defaults={'size': retained_user_count})
+
+
+def _count_contributors_in_range(querysets, users, date_range):
+    """Of the group ``users``, count how many made a contribution in ``date_range``."""
+    start, end = date_range
+    retained_users = set()
+
+    for queryset, fields in querysets:
+        for field in fields:
+            filters = {'%s__in' % field: users, 'created__gte': start, 'created__lt': end}
+            retained_users |= set(getattr(o, field) for o in queryset.filter(**filters))
+
+    return len(retained_users)
+
+
+def _get_cohort(querysets, date_range):
+    start, end = date_range
+    cohort = set()
+
+    for queryset, fields in querysets:
+        contributions_in_range = queryset.filter(created__gte=start, created__lt=end)
+        potential_users = set()
+
+        for field in fields:
+            potential_users |= set(getattr(cont, field) for cont in contributions_in_range)
+
+        def is_in_cohort(u):
+            qs = [Q(**{field: u}) for field in fields]
+            filters = reduce(operator.or_, qs)
+
+            first_contrib = queryset.filter(filters).order_by('id')[0]
+            return start <= first_contrib.created < end
+
+        cohort |= set(filter(is_in_cohort, potential_users))
+
+    return cohort
