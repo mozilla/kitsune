@@ -11,7 +11,7 @@
   </form>
 {% endmacro %}
 
-{% macro aux_nav(user, hide_aaq_link=False, within_aaq=False) %}
+{% macro aux_nav(user, hide_aaq_link=False) %}
   {% if not settings.READ_ONLY %}
     {% if not hide_aaq_link %}
       {% if request.LANGUAGE_CODE in AAQ_LANGUAGES %}
@@ -21,43 +21,41 @@
       {% endif %}
       <li><a href="{{ ask_url }}" class="ask">{{ _('Ask a question') }}</a></li>
     {% endif %}
-    {% if not within_aaq %}
-      {% if user.is_authenticated() %}
-        <li class="dropdown">
-          <a href="#">{{ _('Contributor Tools') }}</a>
-          <ul class="double">
-            {{ _for_contributor_links(user, settings.WIKI_DEFAULT_LANGUAGE) }}
+    {% if user.is_authenticated() %}
+      <li class="dropdown">
+        <a href="#">{{ _('Contributor Tools') }}</a>
+        <ul class="double">
+          {{ _for_contributor_links(user, settings.WIKI_DEFAULT_LANGUAGE) }}
+        </ul>
+      </li>
+        <li class="dropdown"><a href="{{ profile_url(user) }}" class="user">{{ user }}</a>
+          <ul>
+            <li><a href="{{ profile_url(user) }}">{{ _('View Profile') }}</a></li>
+            <li><a href="{{ url('search')|urlparams(asked_by=user.username, a=1, w=2) }}">{{ _('My Questions') }}</a></li>
+            <li><a href="{{ profile_url(user, edit=True) }}">{{ _('Edit Profile') }}</a></li>
+            <li><a href="{{ url('users.edit_settings') }}">{{ _('Settings') }}</a></li>
+            <li>
+              <form id="sign-out" action="{{ url('users.logout') }}" method="post">
+                {{ csrf() }}
+              </form>
+              <a class="sign-out" data-type="submit" data-form="sign-out" href="#sign-out">{{ _('Sign Out') }}</a>
+            </li>
           </ul>
         </li>
-          <li class="dropdown"><a href="{{ profile_url(user) }}" class="user">{{ user }}</a>
-            <ul>
-              <li><a href="{{ profile_url(user) }}">{{ _('View Profile') }}</a></li>
-              <li><a href="{{ url('search')|urlparams(asked_by=user.username, a=1, w=2) }}">{{ _('My Questions') }}</a></li>
-              <li><a href="{{ profile_url(user, edit=True) }}">{{ _('Edit Profile') }}</a></li>
-              <li><a href="{{ url('users.edit_settings') }}">{{ _('Settings') }}</a></li>
-              <li>
-                <form id="sign-out" action="{{ url('users.logout') }}" method="post">
-                  {{ csrf() }}
-                </form>
-                <a class="sign-out" data-type="submit" data-form="sign-out" href="#sign-out">{{ _('Sign Out') }}</a>
-              </li>
-            </ul>
-          </li>
-        <li>
-          <a href="{{ url('messages.inbox') }}">
-            {{ _('Inbox') }}
-            {% if unread_message_count > 0 %}
-              <span class="unread-message-count">{{ unread_message_count }}</span>
-            {% endif %}
-          </a>
-        </li>
-      {% else %}
-        <li>
-          <a href="{{ url('users.auth') }}" class="sign-in register">
-            {{ _('Sign In') }}
-          </a>
-        </li>
-      {% endif %}
+      <li>
+        <a href="{{ url('messages.inbox') }}">
+          {{ _('Inbox') }}
+          {% if unread_message_count > 0 %}
+            <span class="unread-message-count">{{ unread_message_count }}</span>
+          {% endif %}
+        </a>
+      </li>
+    {% else %}
+      <li>
+        <a href="{{ url('users.auth') }}" class="sign-in register">
+          {{ _('Sign In') }}
+        </a>
+      </li>
     {% endif %}
   {% endif %}
 {% endmacro %}
