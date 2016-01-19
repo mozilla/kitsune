@@ -350,4 +350,4 @@ class JSONRenderer(DRFJSONRenderer):
         # HTML spec: http://www.w3.org/TR/REC-html32-19970114#script
         # JSON spec: http://json.org/
 
-        return json.replace('</', r'<\/')
+        return json.replace('</', '<\\/')

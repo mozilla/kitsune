@@ -18,8 +18,8 @@ class TopContributorsNewTest(ElasticTestCase):
         eq_(res.status_code, 200)
 
     def test_no_xss(self):
-        bad_string = 'locale=en-US8fa4a<%2fscript><script>alert(1)<%2fscript>'
-        escaped_version = 'locale=en-US8fa4a<\/script><script>alert(1)<\/script>'
+        bad_string = 'locale=en-US8fa4a</script><script>alert(1)</script>'
+        good_string = 'locale=en-US8fa4a<\/script><script>alert(1)<\/script>'
 
         url = reverse('community.top_contributors_new', args=['l10n'])
         url = urlparams(url, locale=bad_string)
@@ -29,4 +29,4 @@ class TopContributorsNewTest(ElasticTestCase):
         doc = pq(res.content)
         target = doc('script[name="contributor-data"]')
         assert bad_string not in target.html()
-        assert escaped_version in target.html()
+        assert good_string in target.html()
