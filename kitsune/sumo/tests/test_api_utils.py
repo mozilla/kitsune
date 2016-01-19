@@ -102,3 +102,16 @@ class TestPermissionMod(TestCase):
             allow, allow_obj, expected_val, expected_write_only = case
             serializer = MockSerializer(instance=obj)
             eq_(serializer.data.get('foo'), expected_val)
+
+
+class TestJsonRenderer(TestCase):
+
+    def test_it_works(self):
+        expected = '{"foo":"bar"}'
+        actual = api_utils.JSONRenderer().render({'foo': 'bar'})
+        eq_(expected, actual)
+
+    def test_it_escapes_bracket_slash(self):
+        expected = r'{"xss":"<\/script>"}'
+        actual = api_utils.JSONRenderer().render({'xss': '</script>'})
+        eq_(expected, actual)

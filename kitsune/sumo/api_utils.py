@@ -9,6 +9,7 @@ from rest_framework import fields, permissions, serializers
 from rest_framework.authentication import SessionAuthentication, CSRFCheck
 from rest_framework.exceptions import APIException, AuthenticationFailed
 from rest_framework.filters import BaseFilterBackend
+from rest_framework.renderers import JSONRenderer as DRFJSONRenderer
 
 from kitsune.sumo.utils import uselocale
 from kitsune.sumo.urlresolvers import get_best_language
@@ -334,3 +335,19 @@ class ImageUrlField(fields.ImageField):
             return value.url
         except ValueError:
             return None
+
+
+class JSONRenderer(DRFJSONRenderer):
+
+    def render(self, data, accepted_media_type=None, renderer_context=None):
+        json = super(JSONRenderer, self).render(data, accepted_media_type, renderer_context)
+
+        # In HTML (such as in <script> tags), "</" is an illegal sequence in a
+        # <script> tag. In JSON, "\/" is a legal representation of the "/"
+        # character. Replacing "</" with "<\/" is compatible with both the
+        # HTML and JSON specs.
+        #
+        # HTML spec: http://www.w3.org/TR/REC-html32-19970114#script
+        # JSON spec: http://json.org/
+
+        return json.replace('</', r'<\/')

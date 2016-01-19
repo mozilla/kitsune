@@ -24,7 +24,6 @@ import jingo
 import waffle
 from ordereddict import OrderedDict
 from mobility.decorators import mobile_template
-from rest_framework.renderers import JSONRenderer
 from session_csrf import anonymous_csrf
 from statsd import statsd
 from taggit.models import Tag
@@ -52,6 +51,7 @@ from kitsune.questions.signals import tag_added
 from kitsune.search.es_utils import (ES_EXCEPTIONS, Sphilastic, F,
                                      es_query_with_analyzer)
 from kitsune.search.utils import locale_or_default, clean_excerpt
+from kitsune.sumo.api_utils import JSONRenderer
 from kitsune.sumo.decorators import ssl_required, ratelimit
 from kitsune.sumo.helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse, split_path

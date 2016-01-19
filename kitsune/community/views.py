@@ -5,7 +5,6 @@ from django.conf import settings
 from django.http import Http404
 from django.shortcuts import render, get_object_or_404
 
-from rest_framework.renderers import JSONRenderer
 from statsd import statsd
 
 from kitsune.community import api
@@ -17,6 +16,7 @@ from kitsune.products.models import Product
 from kitsune.products.api import ProductSerializer
 from kitsune.questions.models import QuestionLocale
 from kitsune.search.es_utils import ES_EXCEPTIONS
+from kitsune.sumo.api_utils import JSONRenderer
 from kitsune.sumo.parser import get_object_fallback
 from kitsune.users.models import UserMappingType
 from kitsune.wiki.models import Document
