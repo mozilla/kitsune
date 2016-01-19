@@ -18,7 +18,6 @@ import jinja2
 from elasticutils.utils import format_explanation
 from elasticutils.contrib.django import ES_EXCEPTIONS
 from mobility.decorators import mobile_template
-from rest_framework.renderers import JSONRenderer
 
 from kitsune import search as constants
 from kitsune.forums.models import Forum, ThreadMappingType
@@ -29,6 +28,7 @@ from kitsune.search import es_utils
 from kitsune.search.forms import SimpleSearchForm, AdvancedSearchForm
 from kitsune.search.es_utils import F, AnalyzerS, handle_es_errors
 from kitsune.search.search_utils import apply_boosts, generate_simple_search
+from kitsune.sumo.api_utils import JSONRenderer
 from kitsune.sumo.helpers import Paginator
 from kitsune.sumo.json_utils import markup_json
 from kitsune.sumo.urlresolvers import reverse
