@@ -215,8 +215,6 @@ SIMPLE_WIKI_LANGUAGES = [
     'et',
     'ga-IE',
     'gl',
-    'dsb',
-    'hsb',
     'kn',
     'ml',
     'tn',
