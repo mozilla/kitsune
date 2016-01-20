@@ -4,7 +4,7 @@ from rest_framework import routers
 from kitsune.kpi import api
 
 router = routers.SimpleRouter()
-router.register(r'cohort', api.CohortViewSet)
+router.register(r'api/2/cohort', api.CohortViewSet)
 urlpatterns = router.urls
 
 urlpatterns += patterns(
