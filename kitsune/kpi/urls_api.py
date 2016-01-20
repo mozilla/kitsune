@@ -1,8 +1,13 @@
 from django.conf.urls import patterns, url
+from rest_framework import routers
 
 from kitsune.kpi import api
 
-urlpatterns = patterns(
+router = routers.SimpleRouter()
+router.register(r'cohort', api.CohortViewSet)
+urlpatterns = router.urls
+
+urlpatterns += patterns(
     '',
     url(r'^api/v1/kpi/l10n-coverage/?$', api.L10nCoverageMetricList.as_view(),
         name='api.kpi.l10n-coverage'),
