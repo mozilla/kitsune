@@ -5,15 +5,16 @@ from django.core.cache import cache
 from django.db import connections, router
 from django.db.models import Count, F
 
+from rest_framework import filters, serializers, viewsets
+from rest_framework.filters import django_filters
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
 from kitsune.kpi.models import (
-    Metric, MetricKind, AOA_CONTRIBUTORS_METRIC_CODE,
-    KB_ENUS_CONTRIBUTORS_METRIC_CODE, KB_L10N_CONTRIBUTORS_METRIC_CODE,
-    L10N_METRIC_CODE, SUPPORT_FORUM_CONTRIBUTORS_METRIC_CODE,
-    VISITORS_METRIC_CODE, EXIT_SURVEY_YES_CODE, EXIT_SURVEY_NO_CODE,
-    EXIT_SURVEY_DONT_KNOW_CODE)
+    Cohort, Metric, MetricKind, RetentionMetric, AOA_CONTRIBUTORS_METRIC_CODE,
+    KB_ENUS_CONTRIBUTORS_METRIC_CODE, KB_L10N_CONTRIBUTORS_METRIC_CODE, L10N_METRIC_CODE,
+    SUPPORT_FORUM_CONTRIBUTORS_METRIC_CODE, VISITORS_METRIC_CODE, EXIT_SURVEY_YES_CODE,
+    EXIT_SURVEY_NO_CODE, EXIT_SURVEY_DONT_KNOW_CODE)
 from kitsune.questions.models import Question, Answer, AnswerVote
 from kitsune.wiki.models import HelpfulVote
 
@@ -387,3 +388,63 @@ def _parse_date(text):
 
     """
     return tuple(int(i) for i in text.split('-'))
+
+
+class RetentionMetricSerializer(serializers.ModelSerializer):
+    start = serializers.DateField()
+    end = serializers.DateField()
+    size = serializers.IntegerField()
+
+    class Meta:
+        model = RetentionMetric
+        fields = (
+            'start',
+            'end',
+            'size',
+        )
+
+
+class CohortSerializer(serializers.ModelSerializer):
+    kind = serializers.SlugRelatedField(slug_field='code', read_only=True)
+    start = serializers.DateField()
+    end = serializers.DateField()
+    size = serializers.IntegerField()
+    retention_metrics = RetentionMetricSerializer(many=True)
+
+    class Meta:
+        model = Cohort
+        fields = (
+            'kind',
+            'start',
+            'end',
+            'size',
+            'retention_metrics',
+        )
+
+
+class CohortFilter(django_filters.FilterSet):
+    kind = django_filters.CharFilter(name='kind__code')
+    start = django_filters.DateFilter(lookup_type='gte')
+    end = django_filters.DateFilter(lookup_type='lte')
+
+    class Meta:
+        model = Cohort
+        fields = (
+            'kind',
+            'start',
+            'end',
+        )
+
+
+class CohortViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Cohort.objects.all()
+    serializer_class = CohortSerializer
+    filter_class = CohortFilter
+    filter_backends = [
+        filters.DjangoFilterBackend,
+        filters.OrderingFilter,
+    ]
+    ordering_fields = [
+        'start',
+    ]
+    ordering = ('start',)

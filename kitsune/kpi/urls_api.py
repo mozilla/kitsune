@@ -1,6 +1,10 @@
-from django.conf.urls import patterns, url
+from django.conf.urls import patterns, url, include
+from rest_framework import routers
 
 from kitsune.kpi import api
+
+router = routers.SimpleRouter()
+router.register(r'cohort', api.CohortViewSet)
 
 urlpatterns = patterns(
     '',
@@ -21,4 +25,5 @@ urlpatterns = patterns(
     url(r'^api/v1/kpi/search-ctr/?$',
         api.SearchClickthroughMetricList.as_view(),
         name='api.kpi.search-ctr'),
+    url(r'^api/2/', include(router.urls)),
 )
