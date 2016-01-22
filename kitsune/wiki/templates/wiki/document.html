@@ -30,12 +30,10 @@
   {% set meta = meta + [('description', document.current_revision.summary)] %}
 {% endif %}
 
-{% if waffle.flag('surveygizmo') %}
-  {% if product.slug == 'mobile' %}
-    {% set SURVEY_GIZMOS = ['mobile'] %}
-  {% elif product.slug == 'firefox' %}
-    {% set SURVEY_GIZMOS = ['beacon'] %}
-  {% endif %}
+{% if product.slug == 'firefox' %}
+  {% set SURVEY_GIZMOS = ['beacon'] %}
+{% elif product.slug == 'mobile' and waffle.flag('surveygizmo') %}
+  {% set SURVEY_GIZMOS = ['mobile'] %}
 {% endif %}
 
 {% block breadcrumbs %}
