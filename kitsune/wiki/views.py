@@ -563,8 +563,21 @@ def preview_revision(request):
 def document_revisions(request, document_slug, contributor_form=None):
     """List all the revisions of a given document."""
     locale = request.GET.get('locale', request.LANGUAGE_CODE)
-    doc = get_object_or_404(
-        Document, locale=locale, slug=document_slug)
+    try:
+        doc = Document.objects.get(locale=locale, slug=document_slug)
+    except Document.DoesNotExist:
+        # Check if the document slug is available in default language.
+        parent_doc = get_object_or_404(Document, locale=settings.WIKI_DEFAULT_LANGUAGE,
+                                       slug=document_slug)
+        # If the document is available in default language, show the user the history page
+        # of the requested locale
+        translation = parent_doc.translated_to(locale)
+        if translation:
+            url = reverse('wiki.document_revisions', args=[translation.slug], locale=locale)
+            return HttpResponseRedirect(url)
+        else:
+            raise Http404
+
     revs = Revision.objects.filter(document=doc).order_by('-created', '-id')
 
     if request.is_ajax():
