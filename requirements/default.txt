@@ -32,8 +32,8 @@ celery==3.1.17
 # sha256: 95yMBNfrUAcbytZ_0j88EPq2xy1WhXrfhINngGhF1uU
 click==3.3
 
-# sha256: JTLZ46-ePG0PcQ_JiwKVtWPH85z9l90iQr02-_SQBhA
-cffi==0.8.6
+# sha256: OQlwtgJwjJHdxzlTu2kp5WKRwYpNgPNgr6APrYtvMzk
+cffi==1.1.2
 
 # commonware: master
 # sha256: k9gjEUXUPKAuHsPO41UzOvqOcq25z4FXZ-F1lXSXdNQ
@@ -42,8 +42,8 @@ https://github.com/jsocol/commonware/archive/b5544185b2d24adc1eb512735990752400c
 # sha256: BTWn4nAUh0snrjpNM-h0njRb36YnZhlSCLeZa_EQBoI
 cssselect==0.9.1
 
-# sha256: -rf83eNg7GYURC0DIdzQ7_XkNUTLMNl16ddakUpM33g
-cryptography==0.7.2
+# sha256: f1FFn4TWcERCdeYVg59FQsk1R6Euk4oKSQba_l994VM
+cryptography==1.1.2
 
 # sha256: _eJnrrA6jUnjNB5_caIoxnSNzkO1wA9lWBeA2Ztwstk
 dennis==0.7
@@ -188,6 +188,12 @@ https://github.com/html5lib/html5lib-python/archive/f5855f3d0ad6d4202e2b5d02626d
 # sha256: OeqMam2fWVwXehYTT8SamQrY04J1jL9GnIZZZi8vUas
 httplib2==0.9
 
+# sha256: FhmarZOLKQ9b4QV8Dh78ZUYik5HCPOphypQMEV99PTs
+idna==2.0
+
+# sha256: WjGCsyKnBlJcRigspvBk0noCz_vUSfn0dBbx3JaqcbA
+ipaddress==1.0.16
+
 # jingo: tags/0.8.2
 # sha256: 83isoezVr1knq2ZudU4ZEuofA-Fjt5SR4DcRWYHVwvs
 https://github.com/rehandalal/jingo/archive/ebba98353748e35272ce976b457dedba9a7e5638.tar.gz#egg=jingo==0.8.2
@@ -257,8 +263,8 @@ python-gflags==2.0
 # sha256: ZrvGLZUZ-dUxsfd-aH2fL15SHLkG8f1yMfQDmX4BEMQ
 python-memcached==1.48
 
-# sha256: 5PgdU8Uz9r2VJrBH8Ef3sQHCSrFzOcGnrY-YslwQHqs
-pyasn1==0.1.7
+# sha256: XTO-fKDsWZfXbSnqTDO2XADAIxQH__l1GZ1_QFMLg0c
+pyasn1==0.1.8
 
 # sha256: lX2YtmHAtktYCrb5SxJeCbZxQVTuUd5AvKFtPwB2uGw
 pycparser==2.10
