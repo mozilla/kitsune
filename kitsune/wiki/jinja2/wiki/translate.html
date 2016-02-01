@@ -64,6 +64,7 @@
         {{ document_lock_warning() }}
       </ul>
 
+      <div id="autosave-form" data-parent-doc="{{ parent.id }}" data-user-id="{{ request.user.id }}" data-locale="{{ locale }}" hidden></div>
       <h1>{{ _('Translating {title}')|f(title=parent.title) }}</h1>
       <div class="change-locale">
         <p>

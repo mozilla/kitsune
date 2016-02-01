@@ -74,6 +74,7 @@
     if ($body.is('.translate')) {  // Translate page
       initToggleDiff();
       initTranslationDraft();
+      initAutoSave();
     }
 
     initEditingTools();
@@ -663,6 +664,82 @@
           var message = gettext('<strong>Error saving draft</strong>');
           $draftMessage.html(message).toggleClass('info error').show();
         });
+    });
+  }
+
+  function initAutoSave() {
+    var autosave = document.querySelector('#autosave-form'),
+      docId = autosave.dataset.parentDoc,
+      userId = autosave.dataset.userId,
+      locale = autosave.dataset.locale,
+      key = docId + userId + locale,
+      contentField = document.querySelector('#id_content');
+
+    // Check if the syntex highlighting in enabled
+    function highlightingEnabled() {
+      var editor_wrapper = document.querySelector('#editor_wrapper'),
+        style = window.getComputedStyle(editor_wrapper);
+      return style.getPropertyValue('display') === 'block'
+    }
+
+    // Get the activated Code Mirror instance.
+    // TODO: Find a better way to get the activated codemirror instance
+    function getCodeMirrorEditor() {
+      var cm_editor = $('.CodeMirror')[0].CodeMirror
+      return cm_editor
+    }
+
+    function save(text) {
+      localStorage.setItem(key, text);
+    }
+
+    // As the normal editor does not depend on full page load,
+    // active auto saving without getting the full page loaded.
+    contentField.addEventListener('keyup', function() {
+      if (!highlightingEnabled()) {
+        save(contentField.value)
+      }
+    });
+
+    // Do everything after page is fully loaded as the codemirror editor is activate after full page load
+    window.addEventListener('load', function() {
+      var cm_editor = getCodeMirrorEditor();
+
+      cm_editor.on('change', function() {
+        if (highlightingEnabled()) {
+          var content = cm_editor.getValue();
+          save(content)
+        }
+      });
+
+      // Show message only if unsaved content is in loacalstorage
+      if (localStorage.getItem(key)) {
+        var value = localStorage.getItem(key),
+          message = '</strong>' + gettext('You have an unsaved content ') + '</strong>',
+          restore = '<div id=\'restore\' class=\'btn\'>' + gettext('restore') + '</div>',
+          discard = '<div id=\'discard\' class=\'btn\'>' + gettext('discard') + '</divs>',
+          html = '<div id="notice" class=\'info alert\'>' + message + restore + discard + '</div>';
+
+        $('#content-fields').prepend(html);
+
+        // Restore the content if restore button is clicked
+        $('#content-fields #notice #restore').click( function() {
+          if (!highlightingEnabled()) {
+            $('#id_content').val(value);
+          } else {
+            cm_editor = getCodeMirrorEditor()
+            cm_editor.setValue(value);
+          }
+
+          $('#content-fields #notice').hide();
+        });
+
+        // Discard the content if the discard button is clicked
+        $('#content-fields #notice #discard').click( function() {
+          localStorage.removeItem(key);
+          $('#content-fields #notice').hide();
+        });
+      }
     });
   }
 
