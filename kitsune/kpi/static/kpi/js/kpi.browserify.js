@@ -189,10 +189,17 @@ function getChartData(url, propertyKey) {
   return dataReady;
 }
 
+function handleDataError($container) {
+  let errorMsg = document.createElement('p');
+  $(errorMsg).text(gettext('Error loading graph')).addClass('error');
+  $container.empty().append(errorMsg);
+}
+
 function createRetentionChart($container) {
   let startDate = moment().day(1).day(-84).format('YYYY-MM-DD');
   let urlToFetch = $container.data('url') + '?start=' + startDate;
   let fetchDataset = getChartData(urlToFetch, 'results');
+  let $errorContainer = $container.children('div');
   let retentionChart = new Chart($container, {
     axes: {
       xAxis: {
@@ -223,13 +230,14 @@ function createRetentionChart($container) {
       retentionChart.populateData(cohortType);
     });
 
-  }).fail(function(error) {
-    console.log('There was an error retrieving the data: ', error);
+  }).fail(function(xhr, status, error) {
+    handleDataError($errorContainer);
   });
 }
 
 function makeKPIGraph($container, bucket, descriptors) {
   let fetchDataset = getChartData($container.data('url'), 'objects');
+  let $errorContainer = $container.children('div');
   fetchDataset.done(function(data) {
     new k.Graph($container, {
       data: {
@@ -246,7 +254,7 @@ function makeKPIGraph($container, bucket, descriptors) {
         height: 300
       },
     }).render();
-  }).fail(function(error) {
-    console.log('There was an error retrieving the data: ', error);
+  }).fail(function(xhr, status, error) {
+    handleDataError($errorContainer);
   });
 }
