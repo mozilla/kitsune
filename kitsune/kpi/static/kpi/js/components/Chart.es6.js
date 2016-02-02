@@ -49,7 +49,7 @@ export default class Chart {
       .attr('width', this.width + this.margin.left + this.margin.right)
       .attr('height', this.height + this.margin.top + this.margin.bottom)
       .append('g')
-        .attr('transform', 'translate(' + this.margin.left + ',' + this.margin.top + ')');
+        .attr('transform', `translate(${this.margin.left}, ${this.margin.top})`);
 
     this.dom.svg.append('g')
       .attr('class', 'data');
@@ -59,47 +59,43 @@ export default class Chart {
   }
 
   setupAxis(axis) {
-    let self = this;
-    let axisGroup = self.dom.svg.append('g')
+    let axisGroup = this.dom.svg.append('g')
       .attr('class', axis);
 
     axisGroup.selectAll()
-      .data(self.axes[axis].labels)
+      .data(this.axes[axis].labels)
         .enter().append('text')
-        .text(function(d,i) { return d; })
-        .attr('x', function(d, i) {
-          return self.axes.getPosition('x', axis, i) + self.axes[axis].labelOffsets.x;
+        .text((d,i) => d)
+        .attr('x', (d, i) => {
+          return this.axes.getPosition('x', axis, i) + this.axes[axis].labelOffsets.x;
         })
-        .attr('y', function(d, i) {
-          return self.axes.getPosition('y', axis, i) + self.axes[axis].labelOffsets.y;
+        .attr('y', (d, i) => {
+          return this.axes.getPosition('y', axis, i) + this.axes[axis].labelOffsets.y;
         })
   }
 
   setupLegend() {
-    let self = this;
-    let legendData = self.chartColors;
-    let legendYPosition = (self.grid.rows * self.gridSize/2) + self.gridSize;
-    let legendXPositions = i => {
-      return (self.legendElementWidth * i) - self.gridSize;
-    }
+    let legendData = this.chartColors;
+    let legendYPosition = (this.grid.rows * this.gridSize/2) + this.gridSize;
+    let legendXPositions = i => (this.legendElementWidth * i) - this.gridSize;
 
-    let legend = self.dom.svg.append('g')
+    let legend = this.dom.svg.append('g')
       .attr('class', 'legend');
 
     legend.selectAll('rect')
       .data(legendData, function(d) { return d; })
         .enter().append('rect')
-        .attr('x', function(d, i) { return legendXPositions(i); })
+        .attr('x', (d, i) => legendXPositions(i))
         .attr('y', legendYPosition)
-        .attr('width', self.legendElementWidth)
-        .attr('height', self.gridSize / 3.6)
-        .style('fill', function(d, i) { return self.chartColors[i]; });
+        .attr('width', this.legendElementWidth)
+        .attr('height', this.gridSize / 3.6)
+        .style('fill', (d, i) => this.chartColors[i]);
 
     legend.selectAll('text')
       .data(legendData, function(d) { return d; })
         .enter().append('text')
-        .text(function(d, i) { return '≥ ' + Math.round(i / self.buckets * 100) + '%'; })
-        .attr('x', function(d, i) { return legendXPositions(i) + 7; })
+        .text((d, i) => `≥${Math.round(i / this.buckets * 100)}%`)
+        .attr('x', (d, i) => legendXPositions(i) + 7)
         .attr('y', legendYPosition + 14);
   }
 
@@ -108,26 +104,21 @@ export default class Chart {
   }
 
   setupGrid(filteredData, filter) {
-    let self = this;
     let kindFilter = filter;
 
-    self.dom.cohorts = self.dom.svg.select('.data').selectAll('g')
+    this.dom.cohorts = this.dom.svg.select('.data').selectAll('g')
       .data(filteredData);
 
-    self.dom.cohorts.enter().append('g');
+    this.dom.cohorts.enter().append('g');
 
-    self.dom.cohorts
-      .attr('width', self.width)
-      .attr('height', self.gridSize/2)
+    this.dom.cohorts
+      .attr('width', this.width)
+      .attr('height', this.gridSize/2)
       .attr('x', 0)
-      .attr('y', function(d, i) {
-        return i * self.gridSize/2;
-      })
-      .attr('class', function(d, i) {
-        return 'cohort-group ' + kindFilter;
-      });
+      .attr('y', (d, i) => i * this.gridSize / 2)
+      .attr('class', `cohort-group ${kindFilter}`);
 
-    self.dom.cohorts.exit().remove();
+    this.dom.cohorts.exit().remove();
   }
 
   populateData(filter) {
@@ -151,8 +142,8 @@ export default class Chart {
         .attr('class', 'retention-week')
         .attr('height', self.gridSize/2)
         .attr('width', self.gridSize)
-        .attr('x', function(d, i) { return i * self.gridSize; })
-        .attr('y', function(d, i) { return cohortGroupNumber * self.gridSize/2; })
+        .attr('x', (d, i) => i * self.gridSize)
+        .attr('y', (d, i) => cohortGroupNumber * self.gridSize/2)
         .style('fill', function(d) {
           return self.colorScale(Math.floor((d.size / cohortOriginalSize) * 100) || 0);
         })
@@ -170,10 +161,10 @@ export default class Chart {
       sizeText
         .text(function(d, i) {
           let percentage = Math.floor((d.size / cohortOriginalSize) * 100) || 0;
-          return d.size + ' (' + percentage + '%)';
+          return `${d.size} (${percentage}%)`;
         })
-        .attr('x', function(d, i ) { return i * self.gridSize + 10; })
-        .attr('y', function(d, i) { return (cohortGroupNumber * self.gridSize/2) + 23; });
+        .attr('x', (d, i) => i * self.gridSize + 10)
+        .attr('y', (d, i) => (cohortGroupNumber * self.gridSize/2) + 23);
 
       sizeText.exit().remove();
 
