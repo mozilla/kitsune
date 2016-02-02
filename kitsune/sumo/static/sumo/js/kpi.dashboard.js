@@ -172,11 +172,32 @@
 
   }
 
+  function getChartData(url, propertyKey) {
+    let dataReady = $.Deferred();
+    let datumsToCollect = propertyKey;
+    let fetchData = function(url, existingData) {
+      $.getJSON(url, function(data) {
+        existingData = existingData.concat(data[datumsToCollect] || data);
+        if (data.next) {
+          return fetchData(data.next, existingData);
+        } else {
+          dataReady.resolve(existingData);
+        }
+      }).fail(function(error) {
+        dataReady.reject(error);
+      });
+    }
+
+    fetchData(url, []);
+    return dataReady;
+  }
+
   function makeKPIGraph($container, bucket, descriptors) {
-    $.getJSON($container.data('url'), function(data) {
+    let fetchDataset = getChartData($container.data('url'), 'objects');
+    fetchDataset.done(function(data) {
       new k.Graph($container, {
         data: {
-          datums: data.objects,
+          datums: data,
           seriesSpec: descriptors
         },
         options: {
@@ -189,8 +210,11 @@
           height: 300
         },
       }).render();
+    }).fail(function(error) {
+      console.log('There was an error retrieving the data: ', error);
     });
   }
+
 
   $(init);
 
