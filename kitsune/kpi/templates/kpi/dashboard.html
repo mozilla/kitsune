@@ -9,6 +9,25 @@
 {% block content %}
   <article id="kpi-dash-rickshaw">
 
+    <section id="kpi-cohort-analysis"
+      data-url="/api/2/cohort">
+
+      <h2>{{_('Retention') }}</h2>
+      <div id="retention-chart" class="graph">
+        <div class="inline-controls">
+          <div>
+            <select id="toggle-cohort-type">
+              <option value="contributor">Contributors</option>
+              <option value="contributor:kb:en-US">en-US</option>
+              <option value="contributor:kb:l10n">l10N</option>
+              <option value="contributor:supportforum:helper">Support Forum Help</option>
+              <option value="contributor:aoa">AoA</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <section id="kpi-questions"
      data-url="{{ url('api.kpi.questions') }}">
 
