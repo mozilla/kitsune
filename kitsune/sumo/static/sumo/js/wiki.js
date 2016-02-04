@@ -660,7 +660,7 @@
           $draftMessage.html(message).toggleClass('info success').show();
         })
         .fail(function() {
-          var message = gettext('<strong>Draft is saving...</strong>');
+          var message = gettext('<strong>Error saving draft</strong>');
           $draftMessage.html(message).toggleClass('info error').show();
         });
     });
