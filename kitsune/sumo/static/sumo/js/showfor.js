@@ -35,7 +35,15 @@
   /* Get the product/platform data from the DOM, and munge it into the
    * desired format. */
   ShowFor.prototype.loadData = function() {
-    this.data = JSON.parse(this.$container.find('.showfor-data').html());
+    try {
+      this.data = JSON.parse(this.$container.find('.showfor-data').html());
+    } catch (e) {
+      this.data = {
+        products: [],
+        platforms: [],
+        versions: [],
+      };
+    }
     this.productSlugs = this.data.products.map(function(prod) {
       return prod.slug;
     });
