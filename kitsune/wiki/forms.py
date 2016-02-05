@@ -9,7 +9,7 @@ from kitsune.products.models import Product, Topic
 from kitsune.sumo.form_fields import MultiUsernameField, StrippedCharField
 from kitsune.wiki.config import SIGNIFICANCES, CATEGORIES
 from kitsune.wiki.models import (
-    Document, Revision, MAX_REVISION_COMMENT_LENGTH)
+    Document, Revision, DraftRevision, MAX_REVISION_COMMENT_LENGTH)
 from kitsune.wiki.tasks import add_short_links
 from kitsune.wiki.widgets import (
     RadioFieldRendererWithHelpText, ProductTopicsAndSubtopicsWidget,
@@ -274,6 +274,22 @@ class RevisionForm(forms.ModelForm):
 
         new_rev.save()
         return new_rev
+
+
+class DraftRevisionForm(forms.ModelForm):
+    class Meta(object):
+        model = DraftRevision
+        fields = ('keywords', 'summary', 'content', 'slug', 'title', 'based_on')
+
+    def save(self, request):
+        """save the draft revision and return the draft revision"""
+        creator = request.user
+        doc_data = self.cleaned_data
+        parent_doc = doc_data['based_on'].document
+        locale = request.LANGUAGE_CODE
+        draft, created = DraftRevision.objects.update_or_create(
+            creator=creator, document=parent_doc, locale=locale, defaults=doc_data)
+        return draft
 
 
 class ReviewForm(forms.Form):

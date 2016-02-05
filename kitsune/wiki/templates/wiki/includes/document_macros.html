@@ -182,9 +182,12 @@
   {% endif %}
 {%- endmacro %}
 
-{% macro submit_revision(form, buttons_only=False, show_no_update_checkbox=False, include_diff=False) -%}
+{% macro submit_revision(form, buttons_only=False, show_no_update_checkbox=False, include_diff=False, translate=False) -%}
   <div class="submit">
     <button class="btn btn-important btn-submit" type="submit">{{ _('Submit for Review') }}</button>
+    {% if translate %}
+      <button class="btn btn-important btn-draft" data-draft-url="{{ url('wiki.draft_revision') }}" type="button">{{ _('Save as Draft') }}</button>
+    {% endif %}
     <button class="btn btn-preview" data-preview-url="{{ url('wiki.preview') }}" type="button">{{ _('Preview Content') }}</button>
     {% if include_diff %}
       <button class="btn btn-diff" type="button">{{ _('Preview Changes') }}</button>

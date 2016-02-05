@@ -11,7 +11,7 @@ from kitsune.products.models import Product
 from kitsune.products.tests import ProductFactory, TopicFactory
 from kitsune.sumo.tests import LocalizingClient, TestCase, FuzzyUnicode
 from kitsune.users.tests import UserFactory
-from kitsune.wiki.models import Document, Revision, Locale, HelpfulVote
+from kitsune.wiki.models import Document, DraftRevision, Revision, Locale, HelpfulVote
 from kitsune.wiki.config import (
     CATEGORIES, SIGNIFICANCES, TEMPLATES_CATEGORY, TEMPLATE_TITLE_PREFIX, REDIRECT_CONTENT,
     REDIRECT_TITLE)
@@ -120,6 +120,25 @@ class RedirectRevisionFactory(RevisionFactory):
         lambda o: REDIRECT_TITLE % {'old': factory.SelfAttribute('..target.title'), 'number': 1})
     content = factory.LazyAttribute(lambda o: REDIRECT_CONTENT % o.target.title)
     is_approved = True
+
+
+class DraftRevisionFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = DraftRevision
+
+    document = factory.SubFactory(DocumentFactory,
+                                  is_localizable=True, locale=settings.WIKI_DEFAULT_LANGUAGE)
+    based_on = factory.SubFactory(
+        ApprovedRevisionFactory,
+        is_ready_for_localization=True,
+        document=factory.SelfAttribute('..document'))
+    content = FuzzyUnicode()
+    creator = factory.SubFactory(UserFactory)
+    keywords = 'test, test1'
+    locale = factory.fuzzy.FuzzyChoice(l for l in settings.SUMO_LANGUAGES if l != 'en-US')
+    summary = FuzzyUnicode()
+    title = FuzzyUnicode()
+    slug = factory.LazyAttribute(lambda o: slugify(o.title))
 
 
 class LocaleFactory(factory.DjangoModelFactory):

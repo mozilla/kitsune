@@ -115,6 +115,7 @@ urlpatterns = patterns(
     url(r'^/new$', 'new_document', name='wiki.new_document'),
     url(r'^/all$', 'list_documents', name='wiki.all_documents'),
     url(r'^/preview-wiki-content$', 'preview_revision', name='wiki.preview'),
+    url(r'^/save_draft$', 'draft_revision', name='wiki.draft_revision'),
     url(r'^/category/(?P<category>\d+)$', 'list_documents',
         name='wiki.category'),
     (r'^/(?P<document_slug>[^/]+)', include(document_patterns)),
