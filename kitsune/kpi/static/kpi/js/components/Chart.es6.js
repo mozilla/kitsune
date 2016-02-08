@@ -116,7 +116,8 @@ export default class Chart {
       .attr('height', this.gridSize/2)
       .attr('x', 0)
       .attr('y', (d, i) => i * this.gridSize / 2)
-      .attr('class', `cohort-group ${kindFilter}`);
+      .attr('class', `cohort-group ${kindFilter}`)
+      .attr('id', (d, i) => `cohort-group-${i}`);
 
     this.dom.cohorts.exit().remove();
   }
@@ -124,37 +125,39 @@ export default class Chart {
   populateData(filter) {
     let self = this;
     let kindFilter = filter;
-    let filteredData = _.filter(self.data, function(datum, index) {
+    let filteredData = _.filter(this.data, function(datum, index) {
       return datum.kind === kindFilter;
     });
 
-    self.setupGrid(filteredData, kindFilter);
+    this.setupGrid(filteredData, kindFilter);
 
-    self.dom.cohorts.each(function(cohort, i) {
+    this.dom.cohorts.each((cohort, i) => {
       let cohortGroupNumber = i;
       let cohortOriginalSize = cohort.size;
-      let coloredBoxes = d3.select(this).selectAll('rect')
+      let gSelection = d3.select('#cohort-group-' + i);
+
+      let coloredBoxes = gSelection.selectAll('rect')
+        .data(cohort.retention_metrics);
+
+      let sizeText = gSelection.selectAll('text')
         .data(cohort.retention_metrics);
 
       coloredBoxes.enter().append('rect');
 
       coloredBoxes
         .attr('class', 'retention-week')
-        .attr('height', self.gridSize/2)
-        .attr('width', self.gridSize)
-        .attr('x', (d, i) => i * self.gridSize)
-        .attr('y', (d, i) => cohortGroupNumber * self.gridSize/2)
+        .attr('height', this.gridSize/2)
+        .attr('width', this.gridSize)
+        .attr('x', (d, i) => i * this.gridSize)
+        .attr('y', (d, i) => cohortGroupNumber * this.gridSize/2)
         .style('fill', (d) => {
-          return self.colorScale(Math.floor((d.size / cohortOriginalSize) * 100) || 0);
+          return this.colorScale(Math.floor((d.size / cohortOriginalSize) * 100) || 0);
         })
         .style('stroke', '#000')
         .style('stroke-opacity', 0.05)
         .style('stroke-width', 1);
 
       coloredBoxes.exit().remove();
-
-      let sizeText = d3.select(this).selectAll('text')
-        .data(cohort.retention_metrics)
 
       sizeText.enter().append('text');
 
@@ -163,8 +166,8 @@ export default class Chart {
           let percentage = Math.floor((d.size / cohortOriginalSize) * 100) || 0;
           return `${d.size} (${percentage}%)`;
         })
-        .attr('x', (d, i) => i * self.gridSize + 10)
-        .attr('y', (d, i) => (cohortGroupNumber * self.gridSize/2) + 23);
+        .attr('x', (d, i) => i * this.gridSize + 10)
+        .attr('y', (d, i) => (cohortGroupNumber * this.gridSize/2) + 23);
 
       sizeText.exit().remove();
 
