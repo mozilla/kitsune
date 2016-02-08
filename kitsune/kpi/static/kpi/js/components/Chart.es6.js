@@ -144,7 +144,7 @@ export default class Chart {
         .attr('width', self.gridSize)
         .attr('x', (d, i) => i * self.gridSize)
         .attr('y', (d, i) => cohortGroupNumber * self.gridSize/2)
-        .style('fill', function(d) {
+        .style('fill', (d) => {
           return self.colorScale(Math.floor((d.size / cohortOriginalSize) * 100) || 0);
         })
         .style('stroke', '#000')
