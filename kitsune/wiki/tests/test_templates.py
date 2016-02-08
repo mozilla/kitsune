@@ -1049,6 +1049,8 @@ class HistoryTests(TestCaseBase):
         response = self.client.get(url)
         # Check redirection happens
         eq_(302, response.status_code)
+        url = 'http://testserver/bn-BD/kb/bn_bd_trans_slug/history'
+        eq_(url, response['Location'])
 
     def test_translation_history_with_english_slug_while_no_trans(self):
         """Request in en-US slug but untranslated locale should raise 404"""
