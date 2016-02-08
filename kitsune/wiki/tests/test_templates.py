@@ -1139,6 +1139,27 @@ class HistoryTests(TestCaseBase):
         eq_(200, response.status_code)
         self.assertContains(response, category[1])
 
+    def test_translation_history_with_english_slug(self):
+        """Request in en-US slug but translated locale should redirect to translation history"""
+        doc = DocumentFactory(locale=settings.WIKI_DEFAULT_LANGUAGE)
+        trans = DocumentFactory(parent=doc, locale='bn-BD', slug='bn_bd_trans_slug')
+        ApprovedRevisionFactory(document=trans)
+        # Get the page with the en-US slug
+        url = reverse('wiki.document_revisions', args=[doc.slug], locale=trans.locale)
+        response = self.client.get(url)
+        # Check redirection happens
+        eq_(302, response.status_code)
+        url = 'http://testserver/bn-BD/kb/bn_bd_trans_slug/history'
+        eq_(url, response['Location'])
+
+    def test_translation_history_with_english_slug_while_no_trans(self):
+        """Request in en-US slug but untranslated locale should raise 404"""
+        doc = DocumentFactory(locale=settings.WIKI_DEFAULT_LANGUAGE)
+        url = reverse('wiki.document_revisions', args=[doc.slug], locale='bn-BD')
+        response = self.client.get(url)
+        # Check raises 404 error
+        eq_(404, response.status_code)
+
 
 class DocumentEditTests(TestCaseBase):
     """Test the editing of document level fields."""
