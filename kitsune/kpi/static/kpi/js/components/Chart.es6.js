@@ -24,7 +24,7 @@ export default class Chart {
           }
         }
       },
-      margin: { top: 40, right: 0, bottom: 100, left: 75 },
+      margin: { top: 40, right: 0, bottom: 20, left: 75 },
       width: 860,
       height: 430,
       grid: { rows: 12, columns: 12 },
@@ -76,7 +76,7 @@ export default class Chart {
 
   setupLegend() {
     let legendData = this.chartColors;
-    let legendYPosition = (this.grid.rows * this.gridSize/2) + this.gridSize;
+    let legendYPosition = (this.grid.rows * this.gridSize/2);
     let legendXPositions = i => (this.legendElementWidth * i) - this.gridSize;
 
     let legend = this.dom.svg.append('g')
