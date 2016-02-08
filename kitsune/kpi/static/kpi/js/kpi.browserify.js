@@ -1,7 +1,19 @@
 /* globals $:false, gettext: false, k: false, _: false, d3: false, moment: false */
 import Chart from './components/Chart.es6.js';
 
-createRetentionChart($('#kpi-cohort-analysis'));
+createRetentionChart($('#kpi-cohort-analysis'), {
+  axes: {
+    xAxis: {
+      labels() {
+        let labelsArray = [];
+        _.each(_.range(1, 13), function(val) {
+          labelsArray.push(gettext('Week') + ' ' + val);
+        });
+        return labelsArray;
+      }
+    }
+  }
+});
 
 makeKPIGraph($('#kpi-questions'), true, [
   {
@@ -136,7 +148,7 @@ makeKPIGraph($('#kpi-l10n'), true, [
     name: gettext('L10n Coverage'),
     slug: 'l10n',
     // the api returns 0 to 100, we want 0.0 to 1.0.
-    func: function(d) { return d.coverage / 100; },
+    func(d) { return d.coverage / 100; },
     type: 'percent'
   }
 ]);
@@ -172,7 +184,7 @@ makeKPIGraph($('#exit-survey'), true, [
 function getChartData(url, propertyKey) {
   let dataReady = $.Deferred();
   let datumsToCollect = propertyKey;
-  let fetchData = function(url, existingData) {
+  let fetchData = (url, existingData) => {
     $.getJSON(url, function(data) {
       existingData = existingData.concat(data[datumsToCollect] || data);
       if (data.next) {
@@ -195,34 +207,17 @@ function handleDataError($container) {
   $container.empty().append(errorMsg);
 }
 
-function createRetentionChart($container) {
+function createRetentionChart($container, options) {
   let startDate = moment().day(1).day(-84).format('YYYY-MM-DD');
-  let urlToFetch = $container.data('url') + '?start=' + startDate;
+  let urlToFetch = `${$container.data('url')}?start=${startDate}`;
   let fetchDataset = getChartData(urlToFetch, 'results');
+  let retentionChart = new Chart($container, options);
   let $errorContainer = $container.children('div');
-  let retentionChart = new Chart($container, {
-    axes: {
-      xAxis: {
-        labels() {
-          let labelsArray = [];
-          _.each(_.range(1, 13), function(val) {
-            labelsArray.push(gettext('Week') + ' ' + val);
-          });
-          return labelsArray;
-        }
-      }
-    }
-  });
 
-  fetchDataset.done(function(data) {
+  fetchDataset.done(data => {
     retentionChart.data = data;
     retentionChart.axes.yAxis.labels = _.uniq(_.pluck(data, 'start'));
     retentionChart.setupAxis('yAxis');
-    retentionChart.colorScale = d3.scale.quantile()
-      .domain([0, d3.max(data, function (d) {
-        return d.size;
-      })])
-      .range(retentionChart.chartColors);
     retentionChart.populateData('contributor');
 
     $('#toggle-cohort-type').change(function() {
@@ -230,7 +225,7 @@ function createRetentionChart($container) {
       retentionChart.populateData(cohortType);
     });
 
-  }).fail(function(xhr, status, error) {
+  }).fail((xhr, status, error) => {
     handleDataError($errorContainer);
   });
 }
@@ -238,7 +233,7 @@ function createRetentionChart($container) {
 function makeKPIGraph($container, bucket, descriptors) {
   let fetchDataset = getChartData($container.data('url'), 'objects');
   let $errorContainer = $container.children('div');
-  fetchDataset.done(function(data) {
+  fetchDataset.done(data => {
     new k.Graph($container, {
       data: {
         datums: data,
@@ -254,7 +249,7 @@ function makeKPIGraph($container, bucket, descriptors) {
         height: 300
       },
     }).render();
-  }).fail(function(xhr, status, error) {
+  }).fail((xhr, status, error) => {
     handleDataError($errorContainer);
   });
 }

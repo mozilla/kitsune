@@ -24,6 +24,11 @@ export default class Chart {
           }
         }
       },
+      colorScale() {
+        return d3.scale.quantize()
+          .domain([0, 100])
+          .range(this.chartColors)
+      },
       margin: { top: 40, right: 0, bottom: 20, left: 75 },
       width: 860,
       height: 430,
@@ -151,7 +156,7 @@ export default class Chart {
         .attr('x', (d, i) => i * this.gridSize)
         .attr('y', (d, i) => cohortGroupNumber * this.gridSize/2)
         .style('fill', (d) => {
-          return this.colorScale(Math.floor((d.size / cohortOriginalSize) * 100) || 0);
+          return this.colorScale()(Math.floor((d.size / cohortOriginalSize) * 100) || 0);
         })
         .style('stroke', '#000')
         .style('stroke-opacity', 0.05)
