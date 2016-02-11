@@ -167,33 +167,91 @@ Here are a few tips for writing tests:
 .. _Mocha: https://mochajs.org/
 
 
-Smoketests
-==========
+Functional UI Tests
+===================
 
-We can do more comprehensive front-end testing with the smoketests.
-They're located in the ``smoketests/`` directory. See the ``README.rst``
-file in that directory for how to set them up as well as other details.
+We can do more comprehensive front-end testing with the functional UI tests.
+They're located in the ``tests/functional`` directory.
 
+Installing dependencies
+-----------------------
 
-.. _tests-chapter-qa-test-suite:
+Followed the steps in :ref:`the installation docs <hacking-howto-chapter>`,
+including the test dependencies to make sure you have everything you need to
+run the tests. If you're running the tests against a deployed environment then
+there's no need to install anything other than the test dependencies.
 
-The QA test suite
-=================
+Create test users
+-----------------
 
-QA has their own test suite. The code is located on github at
-`<https://github.com/mozilla/sumo-tests/>`_.
+Some of the tests require logging in as a administrator, and others require
+logging in as a user. To run these tests you will need to create accounts in
+the target environment. If you're running against a local instance of the
+application you can create these users by running the following script::
 
-There are three test suites. They differ in what they do and where
-they run:
+  $ ./manage.py shell < ./scripts/create_user_and_superuser.py
 
-    ============  ===========================================================
-    name          description
-    ============  ===========================================================
-    sumo.fft      runs on -dev
-    sumo.stage    runs on -stage
-    sumo.prod     runs on -prod and is read-only (it doesn't change any data)
-    ============  ===========================================================
+If you want to run the tests that require administrator access against a
+deployed instance, then you will need to ask someone on IRC to upgrade one of
+your test accounts.
 
-There's a qatestbot in IRC. You can ask it to run the QA tests by::
+The credentials associated with the test users are stored in a JSON file, which
+we then pass to the tests via the command line. If you used the above mentioned
+script, then these users are stored in ``/scripts/travis/variables.json``. The
+variable file needs to be referenced on the command line when running the
+tests.
 
-    qatestbot build <test-suite>
+The following is an example JSON file with the values missing. You can use this
+as a template:
+
+.. code:: json
+
+   {
+     "users": {
+       "default": {
+         "username": "",
+         "password": "",
+         "email": ""},
+       "admin": {
+         "username": "",
+         "password": "",
+         "email": ""}
+     }
+   }
+
+For the purposes of the examples below, assume you named your copy of the file
+``my_variables.json``.
+
+Running the tests
+-----------------
+
+Tests are run using the command line. Below are a couple of examples of running
+the tests:
+
+To run all of the desktop tests against the default environment::
+
+  $ py.test --driver Firefox --variables my_variables.json tests/functional/desktop
+
+To run against a different environment, pass in a value for ``--base-url``,
+like so::
+
+  $ py.test --base-url https://support.allizom.org --driver Firefox --variables my_variables.json tests/functional/desktop
+
+To run the mobile tests you will need to target a mobile device or emulator
+using a tool like `Appium <http://appium.io/>`_::
+
+  $ py.test --driver Remote --port 4723 \
+  --capability platformName iOS \
+  --capability platformVersion 9.2 \
+  --capability deviceName "iPhone 6" \
+  --capability browserName Safari \
+  --variables my_variables.json \
+  tests/functional/mobile
+
+Alternatively, if you run the mobile tests in Firefox the user agent will be
+changed to masquerade as a mobile browser.
+
+The pytest plugin that we use for running tests has a number of advanced
+command line options available. To see the options available, run
+``py.test --help``. The full documentation for the plugin can be found
+`here <http://pytest-selenium.readthedocs.org/>`_.

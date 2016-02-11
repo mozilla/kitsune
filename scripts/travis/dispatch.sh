@@ -10,8 +10,8 @@ case $SUITE in
     lint )
         pre-commit run --all-files
         ;;
-    smoke )
-        scripts/travis/smoketests.sh
+    ui )
+        scripts/travis/uitests.sh
         ;;
     django )
         scripts/travis/test.sh
