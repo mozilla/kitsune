@@ -65,9 +65,9 @@ https://github.com/jezdez/django-appconf/archive/de23f5213913b3d6ea3e008bc01b487
 # sha256: MLphOg6GF1VYiBhd2VhAe27GJVu683GIA-Dodx21vUU
 https://github.com/django-security/django-axes/archive/778f208cc1d3cc42ecb756f732f8593e40ebb476.tar.gz#egg=django-axes==1.3.6
 
-# django-badger: master~1
-# sha256: gAyhfNW8sSP1nj9wpInx4hrEC8mYtA5HJI7pE_RQ1Mc
-https://github.com/mozilla/django-badger/archive/3e9fded1a5bd17a69a852d410eaa4b79686bdd32.tar.gz#egg=django-badger==0.0.0.1
+# django-badger: master
+# sha256: 32YsI-G-RBiyfRL1UkymlW4TOAA5ahiNP8bXQgln1ek
+https://github.com/mozilla/django-badger/archive/7e6c420c2f913baab7307ef2a5aaa0585a034af6.tar.gz#egg=django-badger==0.0.0.2
 
 # django-celery: master
 # sha256: dmqn4o32-wsXoiX4O6IFfsRPcLOZVrEhtByqvQs81Ms
