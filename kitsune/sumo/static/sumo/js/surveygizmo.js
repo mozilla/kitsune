@@ -24,11 +24,11 @@
 
   var surveys = {
     mobile: function() {
-      basicSurvey('http://qsurvey.mozilla.com/s3/63ac9fdb1ce1');
+      basicSurvey('https://qsurvey.mozilla.com/s3/63ac9fdb1ce1');
     },
 
     questions: function() {
-      basicSurvey('http://www.surveygizmo.com/s3/1717268/SUMO-Survey-candidate-collection-forum');
+      basicSurvey('https://www.surveygizmo.com/s3/1717268/SUMO-Survey-candidate-collection-forum');
     },
 
     firefox_refresh: function() {
