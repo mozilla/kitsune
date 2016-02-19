@@ -1,3 +1,4 @@
+import json
 import operator
 from datetime import datetime, date, timedelta
 from functools import reduce
@@ -6,6 +7,7 @@ from django.conf import settings
 from django.db.models import Count, F, Q
 
 import cronjobs
+import requests
 from statsd import statsd
 
 from kitsune.customercare.models import Reply
@@ -17,7 +19,10 @@ from kitsune.kpi.models import (
     SUPPORT_FORUM_CONTRIBUTORS_METRIC_CODE, VISITORS_METRIC_CODE, SEARCH_SEARCHES_METRIC_CODE,
     SEARCH_CLICKS_METRIC_CODE, EXIT_SURVEY_YES_CODE, EXIT_SURVEY_NO_CODE,
     EXIT_SURVEY_DONT_KNOW_CODE, CONTRIBUTOR_COHORT_CODE, KB_ENUS_CONTRIBUTOR_COHORT_CODE,
-    KB_L10N_CONTRIBUTOR_COHORT_CODE, SUPPORT_FORUM_HELPER_COHORT_CODE, AOA_CONTRIBUTOR_COHORT_CODE)
+    KB_L10N_CONTRIBUTOR_COHORT_CODE, SUPPORT_FORUM_HELPER_COHORT_CODE, AOA_CONTRIBUTOR_COHORT_CODE,
+    CONTRIBUTORS_CSAT_METRIC_CODE, AOA_CONTRIBUTORS_CSAT_METRIC_CODE,
+    KB_ENUS_CONTRIBUTORS_CSAT_METRIC_CODE, KB_L10N_CONTRIBUTORS_CSAT_METRIC_CODE,
+    SUPPORT_FORUM_CONTRIBUTORS_CSAT_METRIC_CODE)
 from kitsune.kpi.surveygizmo_utils import (
     get_email_addresses, add_email_to_campaign, get_exit_survey_results,
     SURVEYS)
@@ -581,3 +586,85 @@ def _get_cohort(querysets, date_range):
         cohort |= set(filter(is_in_cohort, potential_users))
 
     return cohort
+
+
+@cronjobs.register
+def calculate_csat_metrics():
+    user = settings.SURVEYGIZMO_USER
+    password = settings.SURVEYGIZMO_PASSWORD
+    startdate = date.today() - timedelta(days=2)
+    enddate = date.today() - timedelta(days=1)
+    page = 1
+    more_pages = True
+    survey_id = SURVEYS['general']['community_health']
+
+    csat = {
+        CONTRIBUTORS_CSAT_METRIC_CODE: 0,
+        SUPPORT_FORUM_CONTRIBUTORS_CSAT_METRIC_CODE: 0,
+        AOA_CONTRIBUTORS_CSAT_METRIC_CODE: 0,
+        KB_ENUS_CONTRIBUTORS_CSAT_METRIC_CODE: 0,
+        KB_L10N_CONTRIBUTORS_CSAT_METRIC_CODE: 0,
+    }
+
+    counts = {
+        CONTRIBUTORS_CSAT_METRIC_CODE: 0,
+        SUPPORT_FORUM_CONTRIBUTORS_CSAT_METRIC_CODE: 0,
+        AOA_CONTRIBUTORS_CSAT_METRIC_CODE: 0,
+        KB_ENUS_CONTRIBUTORS_CSAT_METRIC_CODE: 0,
+        KB_L10N_CONTRIBUTORS_CSAT_METRIC_CODE: 0,
+    }
+
+    while more_pages:
+        response = requests.get(
+            'https://restapi.surveygizmo.com/v2/survey/{survey}'
+            '/surveyresponse?'
+            'filter[field][0]=datesubmitted'
+            '&filter[operator][0]=>=&filter[value][0]={start}+0:0:0'
+            'filter[field][1]=datesubmitted'
+            '&filter[operator][1]=<&filter[value][1]={end}+0:0:0'
+            '&filter[field][2]=status&filter[operator][2]=='
+            '&filter[value][2]=Complete'
+            '&resultsperpage=500'
+            '&page={page}'
+            '&user:pass={user}:{password}'.format(
+                survey=survey_id, start=startdate,
+                end=enddate, page=page, user=user, password=password),
+            timeout=300)
+
+        results = json.loads(response.content)
+        total_pages = results['total_pages']
+        more_pages = page < total_pages
+
+        for r in results['data']:
+            try:
+                rating = int(r['[question(3)]'])
+            except ValueError:
+                # CSAT question was not answered
+                pass
+            else:
+                csat[CONTRIBUTORS_CSAT_METRIC_CODE] += rating
+                counts[CONTRIBUTORS_CSAT_METRIC_CODE] += 1
+
+                if len(r['[question(4), option(10010)]']):  # Army of Awesome
+                    csat[AOA_CONTRIBUTORS_CSAT_METRIC_CODE] += rating
+                    counts[AOA_CONTRIBUTORS_CSAT_METRIC_CODE] += 1
+
+                if len(r['[question(4), option(10011)]']):  # Support Forum
+                    csat[SUPPORT_FORUM_CONTRIBUTORS_CSAT_METRIC_CODE] += rating
+                    counts[SUPPORT_FORUM_CONTRIBUTORS_CSAT_METRIC_CODE] += 1
+
+                if len(r['[question(4), option(10012)]']):  # KB EN-US
+                    csat[KB_ENUS_CONTRIBUTORS_CSAT_METRIC_CODE] += rating
+                    counts[KB_ENUS_CONTRIBUTORS_CSAT_METRIC_CODE] += 1
+
+                if len(r['[question(4), option(10013)]']):  # KB L10N
+                    csat[KB_L10N_CONTRIBUTORS_CSAT_METRIC_CODE] += rating
+                    counts[KB_L10N_CONTRIBUTORS_CSAT_METRIC_CODE] += 1
+
+        page += 1
+
+    for code in csat:
+        metric_kind, _ = MetricKind.objects.get_or_create(code=code)
+        value = csat[code] / counts[code] if counts[code] else 50  # If no responses assume neutral
+        Metric.objects.update_or_create(kind=metric_kind, start=startdate, end=enddate,
+                                        defaults={'value': value})
