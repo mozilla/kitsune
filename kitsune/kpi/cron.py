@@ -668,3 +668,37 @@ def calculate_csat_metrics():
         value = csat[code] / counts[code] if counts[code] else 50  # If no responses assume neutral
         Metric.objects.update_or_create(kind=metric_kind, start=startdate, end=enddate,
                                         defaults={'value': value})
+
+
+@cronjobs.register
+def csat_survey_emails():
+    querysets = [(Revision.objects.all(), ('creator', 'reviewer',)),
+                 (Answer.objects.not_by_asker(), ('creator',)),
+                 (Reply.objects.all(), ('user',))]
+
+    end = datetime.today().replace(hour=0, minute=0, second=0, microsecond=0)
+    start = end - timedelta(days=30)
+
+    users = _get_cohort(querysets, (start, end))
+
+    for u in users:
+        p = u.profile
+        if p.csat_email_sent is None or p.csat_email_sent < start:
+            user = settings.SURVEYGIZMO_USER
+            password = settings.SURVEYGIZMO_PASSWORD
+
+            survey_id = SURVEYS['general']['community_health']
+            campaign_id = SURVEYS['general']['community_health_campaign_id']
+
+            try:
+                requests.put(
+                    'https://restapi.surveygizmo.com/v2/survey/{survey}/surveycampaign/'
+                    '{campaign}/contact?semailaddress={email}&user:pass={user}:{password}'.format(
+                        survey=survey_id, campaign=campaign_id,
+                        email=u.email, user=user, password=password),
+                    timeout=30)
+            except requests.exceptions.Timeout:
+                print 'Timed out adding: %s' % u.email
+            else:
+                p.csat_email_sent = datetime.now()
+                p.save()

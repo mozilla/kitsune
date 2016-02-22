@@ -12,6 +12,7 @@ SURVEYS = {
         'exit_survey_id': 991425,
         'exit_survey_campaign_id': 878533,
         'community_health': 2466367,
+        'community_health_campaign_id': 3369235,
     },
     'questions': {  # This is for users that are browsing questions.
         'email_collection_survey_id': 1717268,
