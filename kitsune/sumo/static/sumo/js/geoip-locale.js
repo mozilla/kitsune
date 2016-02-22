@@ -1,4 +1,7 @@
 /* globals $:false, interpolate:false, _gaq:false */
+/* Please do not directly use this code or SUMO key. */
+/* Contact MLS team for your own credentials. */
+/* https://location.services.mozilla.com/contact */
 
 (function() {
   var GeoIPUrl = 'https://location.services.mozilla.com/v1/country?key=fa6d7fc9-e091-4be1-b6c1-5ada5815ae9d';
