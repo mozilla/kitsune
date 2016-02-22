@@ -31,6 +31,7 @@ export function checkAuthState() {
     } else {
       throw new Error(`Unexpected response from test_auth: ${status}: ${JSON.stringify(data)}`);
     }
+  }).then(function() {
     return UserAuthStore.getState();
   });
 }
