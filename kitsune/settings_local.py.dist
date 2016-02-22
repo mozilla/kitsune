@@ -7,10 +7,8 @@ import sys
 
 INSTALLED_APPS = list(INSTALLED_APPS)
 MIDDLEWARE_CLASSES = list(MIDDLEWARE_CLASSES)
-JINGO_EXCLUDE_APPS = list(JINGO_EXCLUDE_APPS)
 
 DEBUG = True
-TEMPLATE_DEBUG = DEBUG
 SESSION_COOKIE_SECURE = False
 
 # Allows you to run Kitsune without running Celery---all tasks

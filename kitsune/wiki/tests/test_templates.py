@@ -1714,8 +1714,6 @@ class ReviewRevisionTests(TestCaseBase):
         response = get(self.client, 'wiki.review_revision',
                        args=[self.document.slug, self.revision.id])
         eq_(200, response.status_code)
-        with open('out.html', 'w') as f:
-            f.write(response.content)
         doc = pq(response.content)
         eq_(MEDIUM_SIGNIFICANCE,
             int(doc('input[name=significance][checked]')[0].attrib['value']))

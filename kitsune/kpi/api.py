@@ -1,5 +1,6 @@
-from operator import itemgetter
+from collections import defaultdict
 from datetime import date, timedelta
+from operator import itemgetter
 
 from django.core.cache import cache
 from django.db import connections, router
@@ -367,12 +368,12 @@ def _remap_date_counts(**kwargs):
         ...]
     """
     for label, qs in kwargs.iteritems():
-        res = {}
+        res = defaultdict(lambda: {label: 0})
         # For each date mentioned in qs, sum up the counts for that day
         # Note: days may be duplicated
         for x in qs:
             key = date(x['year'], x['month'], x.get('day', 1))
-            res.setdefault(key, {label: 0})[label] += x['count']
+            res[key][label] += x['count']
         yield res
 
 
