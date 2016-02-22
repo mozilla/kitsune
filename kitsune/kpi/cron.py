@@ -620,7 +620,7 @@ def calculate_csat_metrics():
             '/surveyresponse?'
             'filter[field][0]=datesubmitted'
             '&filter[operator][0]=>=&filter[value][0]={start}+0:0:0'
-            'filter[field][1]=datesubmitted'
+            '&filter[field][1]=datesubmitted'
             '&filter[operator][1]=<&filter[value][1]={end}+0:0:0'
             '&filter[field][2]=status&filter[operator][2]=='
             '&filter[value][2]=Complete'
