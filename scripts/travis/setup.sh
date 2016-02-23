@@ -76,4 +76,5 @@ echo "Running migrations"
 
 echo "Doing static dance."
 ./manage.py nunjucks_precompile
+./manage.py compilejsi18n
 ./manage.py collectstatic --noinput > /dev/null
