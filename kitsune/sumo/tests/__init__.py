@@ -5,10 +5,10 @@ import sys
 from functools import wraps
 from os import getenv
 from smtplib import SMTPRecipientsRefused
+import subprocess
 
 from django.conf import settings
 from django.core.cache import cache
-from django.core.management import call_command
 from django.test import TestCase as OriginalTestCase
 from django.test.client import Client
 from django.test.utils import override_settings
@@ -53,8 +53,13 @@ class TestSuiteRunner(django_nose.NoseTestSuiteRunner):
             pass
 
         if not getenv('REUSE_STATIC', 'false').lower() in ('true', '1', ''):
-            # Collect static files for pipeline to work correctly
-            call_command('collectstatic', interactive=False)
+            # Collect static files for pipeline to work correctly--do this with
+            # subprocess instead of directly calling the admin command,
+            # because collectstatic somehow retains emotional baggage
+            # which causes all the tests to take FOREVER to run.
+            cmdline = [sys.executable, 'manage.py', 'collectstatic', '--noinput']
+            print 'Running %r' % cmdline
+            subprocess.call(cmdline)
 
         super(TestSuiteRunner, self).setup_test_environment(**kwargs)
 
