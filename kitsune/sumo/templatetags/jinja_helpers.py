@@ -446,7 +446,7 @@ def to_unicode(str):
     return unicode(str)
 
 
-@library.function
+@library.global_function
 def static(path):
     """Generate a URL for the specified static file."""
     try:

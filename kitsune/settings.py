@@ -978,3 +978,8 @@ CC_IGNORE_USERS = []
 ACTSTREAM_SETTINGS = {
     'USE_JSONFIELD': True,
 }
+
+SILENCED_SYSTEM_CHECKS = [
+    'fields.W340',  # null has no effect on ManyToManyField.
+    'fields.W342',  # ForeignKey(unique=True) is usually better served by a OneToOneField
+]

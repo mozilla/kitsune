@@ -262,6 +262,9 @@ pycparser==2.10
 # sha256: eptgBDruYdbl_f_FcsZDFOptnKCa_w0vKpPOe6jTOxk
 https://github.com/bltravis/python-recaptcha/archive/d7db50afc711ef623aec8e472ff55627e66fcd87.tar.gz#egg=python-recaptcha
 
+# sha256: cyCRkITm2sj0VAY4pGRHo71zD8oXKvwX0sA-7SLPT1E
+Pygments==2.0.2
+
 # sha256: ZetJzAW3kX_dxh4f5tikUSwpXLU4kd1eyBa8zNzj8aU
 pytz==2013b
 
