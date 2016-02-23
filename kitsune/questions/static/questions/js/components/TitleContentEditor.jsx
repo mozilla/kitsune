@@ -107,7 +107,7 @@ class SuggestionItem extends React.Component {
       <li className={classString}>
         <a
           href={suggestion.url}
-          data-ga-click="Ask A Question Flow - SPA | suggested article selected"
+          data-ga-click="_trackEvent | Ask A Question Flow - SPA | suggested article selected"
         >
           {suggestion.title}
         </a>

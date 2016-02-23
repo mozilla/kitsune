@@ -3,6 +3,7 @@ import apiFetch, {apiFetchRaw} from '../../../sumo/js/utils/apiFetch.es6.js';
 import Dispatcher from '../../../sumo/js/Dispatcher.es6.js';
 import {actionTypes} from '../constants/UserAuthConstants.es6.js';
 import UserAuthStore from '../stores/UserAuthStore.es6.js';
+import userGa from '../utils/userGa.es6.js';
 
 export function checkAuthState() {
   return apiFetchRaw('/api/1/users/test_auth', {
@@ -31,6 +32,7 @@ export function checkAuthState() {
     } else {
       throw new Error(`Unexpected response from test_auth: ${status}: ${JSON.stringify(data)}`);
     }
+  }).then(function() {
     return UserAuthStore.getState();
   });
 }
@@ -89,6 +91,7 @@ export function login(username, password, {inactive=false}={}) {
     Dispatcher.dispatch({
       type: actionTypes.AUTH_LOG_IN_FAILURE,
     });
+    userGa.trackEvent('login failed');
   });
 }
 
@@ -114,6 +117,7 @@ export function register(username, email, password) {
       type: actionTypes.AUTH_REGISTER_FAILURE,
       error: errData,
     });
+    userGa.trackEvent('registration failed');
   });
 }
 
