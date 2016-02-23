@@ -4,6 +4,7 @@ import re
 import urlparse
 
 from django.conf import settings
+from django.contrib.staticfiles.templatetags.staticfiles import static
 from django.core.urlresolvers import reverse as django_reverse
 from django.http import QueryDict
 from django.utils.encoding import smart_str
@@ -443,3 +444,6 @@ def add_utm(url_, campaign, source='notification', medium='email'):
 @register.function
 def to_unicode(str):
     return unicode(str)
+
+
+register.function(static)

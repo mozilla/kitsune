@@ -47,7 +47,7 @@ urlpatterns = patterns(
 
     # Javascript translations.
     url(r'^jsi18n/.*$', cache_page(60 * 60 * 24 * 365)(javascript_catalog),
-        {'domain': 'javascript', 'packages': ['kitsune']}, name='jsi18n'),
+        {'domain': 'djangojs', 'packages': ['kitsune']}, name='jsi18n'),
     # App translations. These don't need cached because they are downloaded
     # in a build step, not on the client.
     url(r'^jsi18n-yaocho/.*$', javascript_catalog,
