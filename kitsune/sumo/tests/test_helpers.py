@@ -13,7 +13,8 @@ from pytz import timezone
 
 from kitsune.sumo.helpers import (
     datetimeformat, DateTimeFormatError, collapse_linebreaks, url, json,
-    timesince, label_with_help, urlparams, yesno, number, remove)
+    timesince, label_with_help, static, urlparams, yesno, number,
+    remove)
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
 
@@ -89,6 +90,10 @@ class TestHelpers(TestCase):
         tags = remove(tags, tag)
         # Nothing was removed and we didn't crash.
         eq_(2, len(tags))
+
+    def test_static_failure(self):
+        """Should not raise an error if the static file is missing."""
+        assert static('does/not/exist.js') == ''
 
 
 class TestDateTimeFormat(TestCase):
