@@ -63,7 +63,7 @@ def send_weekly_ready_for_review_digest():
 
     @email_utils.safe_translation
     def _send_mail(locale, user, context):
-        subject = _('[Reviews Pending: %s] SUMO needs your help!' % locale)
+        subject = _('[Reviews Pending: %s] SUMO needs your help!') % locale
 
         mail = email_utils.make_mail(
             subject=subject,
