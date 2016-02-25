@@ -44,7 +44,7 @@ Dev
 ===
 
 Dev is a small environment that is updated manually. We use it primarily to
-develop infrastructure changes, like uprading to Python 2.7.
+develop infrastructure changes, like upgrading to Python 2.7.
 
 
 Stage
