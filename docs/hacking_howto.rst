@@ -150,7 +150,7 @@ Setting up an Environment
 =========================
 
 It is strongly recommended to run Kitsune in a virtual environment, which is a
-tool to isolate Python environments from eachother and the system. It makes
+tool to isolate Python environments from each other and the system. It makes
 local development much easier, especially when working on multiple projects.
 
 To create a virtual environment::

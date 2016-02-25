@@ -69,7 +69,7 @@ You should only need to do that once. Here's the bit to do every time::
 
 Eventually you'll get an r+. If you have commit access, now you can go ahead
 and merge your branch. You may, if you want, rebase your branch to clean up
-any embarassing mistakes, but it isn't required. If you don't have commit
+any embarrassing mistakes, but it isn't required. If you don't have commit
 access the next part will be done by someone who does.
 
 There are two options. The first is to press the Big Green Button in GitHub PRs
@@ -131,7 +131,7 @@ The correct way to keep your local master up to date is::
     git reset --hard mozilla/master
 
 This will forcibly move your local master branch to whatever is on the Mozilla
-master branch, destroying anything you have commited that wasn't pushed.
+master branch, destroying anything you have committed that wasn't pushed.
 Remember to always work on a branch that is not master!
 
 

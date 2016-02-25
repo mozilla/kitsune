@@ -110,7 +110,7 @@ With an HTTP 200, you'll get back a set of results in JSON.
                "num_answers": ...         # total number of answers
                "locale": ...              # the locale for the question
                "metadata": ...            # metadata collected for the question
-               "tags": ...                # tags for the qeustion
+               "tags": ...                # tags for the question
                "num_votes_past_week": ... # the number of votes in the last week
                "num_votes": ...           # the total number of votes
                "product": ...             # the product
