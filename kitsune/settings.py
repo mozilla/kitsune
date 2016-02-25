@@ -362,6 +362,7 @@ STATIC_ROOT = path('static')
 STATIC_URL = '/static/'
 STATICFILES_DIRS = (
     path('bower_components'),
+    path('jsi18n'),  # Collect jsi18n so that it is cache-busted
 )
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
@@ -641,6 +642,9 @@ STANDALONE_DOMAINS = [
 
 STATICI18N_DOMAIN = 'djangojs'
 STATICI18N_PACKAGES = ['kitsune.sumo']
+# Save jsi18n files outside of static so that collectstatic will pick
+# them up and save it with hashed filenames in the static directory.
+STATICI18N_ROOT = path('jsi18n')
 
 #
 # Django Pipline

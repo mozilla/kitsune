@@ -1,10 +1,11 @@
 import datetime
 import json as jsonlib
+import logging
 import re
 import urlparse
 
 from django.conf import settings
-from django.contrib.staticfiles.templatetags.staticfiles import static
+from django.contrib.staticfiles.templatetags.staticfiles import static as django_static
 from django.core.urlresolvers import reverse as django_reverse
 from django.http import QueryDict
 from django.utils.encoding import smart_str
@@ -25,6 +26,9 @@ from kitsune.sumo import parser
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.models import Profile
 from kitsune.wiki.showfor import showfor_data as _showfor_data
+
+
+log = logging.getLogger('k.helpers')
 
 
 class DateTimeFormatError(Exception):
@@ -446,4 +450,11 @@ def to_unicode(str):
     return unicode(str)
 
 
-register.function(static)
+@register.function
+def static(path):
+    """Generate a URL for the specified static file."""
+    try:
+        return django_static(path)
+    except ValueError as err:
+        log.error('Static helper error: %s' % err)
+        return ''
