@@ -28,6 +28,7 @@ HOME = /tmp
 00 00 * * * {{ cron }} rebuild_kb
 42 00 * * * {{ cron }} update_top_contributors
 00 01 * * * {{ cron }} update_l10n_coverage_metrics
+00 01 * * * {{ cron }} calculate_csat_metrics
 11 01 * * * {{ cron }} report_employee_answers
 30 01 * * * {{ cron }} reindex_users_that_contributed_yesterday
 40 01 * * * {{ cron }} update_weekly_votes

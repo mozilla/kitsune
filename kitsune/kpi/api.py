@@ -302,6 +302,18 @@ class ExitSurveyMetricList(CachedAPIView):
             results_list, key=itemgetter('date'), reverse=True)]
 
 
+class CSATMetricList(CachedAPIView):
+    """The API list view for contributor CSAT metrics"""
+    code = None
+
+    def get_objects(self, request):
+        kind = MetricKind.objects.get(code=self.code)
+        since = date.today() - timedelta(days=30)
+        metrics = Metric.objects.filter(start__gte=since, kind=kind).order_by('-start')
+
+        return [{'date': m.start, 'csat': m.value} for m in metrics]
+
+
 def _daily_qs_for(model_cls):
     """Return the daily grouped queryset we need for model_cls."""
     # Limit to newer than 2011/1/1 and active creators.
