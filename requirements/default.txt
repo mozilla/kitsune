@@ -209,9 +209,6 @@ MySQL-python==1.2.3c1
 # sha256: sboSwcRTI_2Glb5oznIoRWuG5RI08WcCfrvEzNqFLGE
 nose==1.1.2
 
-# sha256: REZqm8tW0uVodQ-RUE0SeMdOq7JZowWwbpdbh7UWNdo
-nose-exclude==0.4.1
-
 # sha256: oFHwTujsMwUFWrNNh7NsmkSTdeB8fWoFvK-kgynKx8M
 oauthlib==0.7.2
 

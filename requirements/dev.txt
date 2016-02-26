@@ -40,6 +40,9 @@ ndg-httpsclient==0.3.3
 # sha256: _qr7BIbXdjYO-Tm9hbo0z_m2IwE7EygNHjdw04HuK38
 nodeenv==0.13.6
 
+# sha256: REZqm8tW0uVodQ-RUE0SeMdOq7JZowWwbpdbh7UWNdo
+nose-exclude==0.4.1
+
 # sha256: ku47hrXBkhwtnawhe--JkMX4Usi8TZAYyv4PPzuBzTo
 nosenicedots==0.5
 
