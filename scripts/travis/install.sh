@@ -32,6 +32,8 @@ echo
 
 
 echo "Installing ElasticSearch"
+# Default to ES version 1.2.4, but allow overrides from the environment
+ELASTICSEARCH_VERSION=${ELASTICSEARCH_VERSION:-1.2.4}
 es_tarball="vendor/tarballs/elasticsearch-${ELASTICSEARCH_VERSION}.tar.gz"
 if [[ ! -f $es_tarball ]]; then
   echo "Invalid version ElasticSearch. Can't find ${es_tarball}."
