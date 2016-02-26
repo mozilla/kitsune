@@ -54,6 +54,7 @@ echo "Updating product details"
 python manage.py update_product_details
 
 echo "Starting ElasticSearch"
+ELASTICSEARCH_VERSION=${ELASTICSEARCH_VERSION:-1.2.4}
 pushd elasticsearch-${ELASTICSEARCH_VERSION}
   # New version of ES are foreground by default, old ones are backgrounded by default
   if [[ $ELASTICSEARCH_VERSION == '1.2.4' ]]; then
