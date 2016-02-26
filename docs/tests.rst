@@ -176,7 +176,7 @@ They're located in the ``tests/functional`` directory.
 Installing dependencies
 -----------------------
 
-Followed the steps in :ref:`the installation docs <hacking-howto-chapter>`,
+Follow the steps in :ref:`the installation docs <hacking-howto-chapter>`,
 including the test dependencies to make sure you have everything you need to
 run the tests. If you're running the tests against a deployed environment then
 there's no need to install anything other than the test dependencies.
