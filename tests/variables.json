@@ -1,0 +1,12 @@
+{
+  "users": {
+    "default": {
+      "username": "",
+      "password": "",
+      "email": ""},
+    "admin": {
+      "username": "",
+      "password": "",
+      "email": ""}
+  }
+}

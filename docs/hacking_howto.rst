@@ -183,6 +183,11 @@ required, but are helpful::
 
     $ ./peep.sh install -r requirements/dev.txt
 
+If you intend to run the function UI tests, you will also need to install the
+appropriate dependencies::
+
+    $ ./peep.sh install -r requirements/test.txt
+
 If you have any issues installing via ``peep``, be sure you have the required
 header files from the packages listed in the requirements section above.
 

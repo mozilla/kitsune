@@ -1,0 +1,31 @@
+# sha256: 9m3Up1GXJaG34UrZrn09-OCbLaiAYjhuCOlByvwO8-Y
+# sha256: 0rkJx5RYMuHBnPrNlueNpova3GVkQM_H3-WbdmdE64w
+execnet==1.4.1
+
+# sha256: Sj5PMADBI4Naw5yrXMxRBkIVO8R7wfE-K7tTA5VArmk
+# sha256: plAZY8cl_CVU2r_s6K6aj7XhScCsCkL9KwLFwcV_wRQ
+py==1.4.31
+
+# sha256: f60wfCePxbGNJ9V6zO0x6euZ90zMyBccMJhi7eu7orc
+# sha256: 1anD2zUVq5WQK6CMCdHpQaIaRA3C1l8xusAmZ1CKnvw
+pytest==2.7.3
+
+# sha256: zzI98ijiZdZ1XsOaJvKXGsxZoxsN4M_QJtNBJJ2-72k
+# sha256: 3-epy0EWdBTKe56Fr71mlOjMg_2_V9DlRcIVwyzUDNY
+pytest-html==1.8.0
+
+# sha256: 6C8KJlsOI4rEKsJ115MT0KfgvvGkUGM66z1lScwU9Rc
+# sha256: vSEhAi_zJVzoL67A7zYCRi7GvOnKYntTRimGz8mzkek
+pytest-selenium==1.2.1
+
+# sha256: naX4m9sivV9wDs8QeH8jkZC3gyqzRFvzI0PNTlFBaCU
+pytest-variables==1.3
+
+# sha256: Sl4RmRIvop4wF9jRifWczF2C6EFHS6Kh7sDolgYVNiM
+pytest-xdist==1.14
+
+# sha256: xXeBXdAPE5QgP8ROuXlySwmPiCZKnviY7kW45enPWH8
+requests==2.9.1
+
+# sha256: ggVQp0DKH3RsOZoBAZhsDm-U-_48b5duP2lNtFLL4SQ
+selenium==2.52.0
