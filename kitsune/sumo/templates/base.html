@@ -239,10 +239,6 @@
 {% endif %}
 {# End Optimizely #}
 
-{% if include_geoip %}
-    <script src="//geo.mozilla.org/country.js" type="text/javascript"></script>
-{% endif %}
-
 {% javascript 'common' %}
 <!--[if (gte IE 6)&(lte IE 8)]>
   {% javascript 'ie6-8' %}

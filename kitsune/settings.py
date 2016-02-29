@@ -420,7 +420,6 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 
     'kitsune.sumo.context_processors.global_settings',
     'kitsune.sumo.context_processors.i18n',
-    'kitsune.sumo.context_processors.geoip_cache_detector',
     'kitsune.sumo.context_processors.aaq_languages',
     'kitsune.messages.context_processors.unread_message_count',
 )

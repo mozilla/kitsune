@@ -1,43 +1,37 @@
 /* globals $:false, interpolate:false, _gaq:false */
-/* geo.mozilla.org will inject a couple functions that look like this, though
- * with the correct country code/name for the current client.
- *
- *  function geoip_country_code() { return 'US'; }
- *  function geoip_country_name() { return 'United States'; }
- */
+/* Please do not directly use this code or SUMO key. */
+/* Contact MLS team for your own credentials. */
+/* https://location.services.mozilla.com/contact */
 
 (function() {
-  var cookieCountryName = $.cookie('geoip_country_name');
-  var cookieCountryCode = $.cookie('geoip_country_code');
+  var GeoIPUrl = 'https://location.services.mozilla.com/v1/country?key=fa6d7fc9-e091-4be1-b6c1-5ada5815ae9d';
+  var countryData = {
+    'country_name': $.cookie('geoip_country_name'),
+    'country_code': $.cookie('geoip_country_code')
+  };
 
-  if (cookieCountryName) {
-    window.geoip_country_name = function() {
-      return cookieCountryName;
-    };
-  } else if (window.geoip_country_name) {
-    // Cookie expires after 30 days.
-    $.cookie('geoip_country_name', window.geoip_country_name(), {expires: 30});
+  if (!countryData.country_name) {
+    $.ajax({
+      method: 'GET',
+      url: GeoIPUrl
+    })
+    .done(function(data) {
+      $.cookie('geoip_country_name', data.country_name);
+      $.cookie('geoip_country_code', data.country_code);
+      countryData = data;
+    })
+    .fail(function(error) {
+      throw new Error('Error retrieving geoip data');
+    })
+    .always(function() {
+      handleLocale(countryData.country_name);
+    });
   } else {
-    window.geoip_country_name = function() {
-      return 'Unknown';
-    };
-  }
-
-  if (cookieCountryCode) {
-    window.geoip_country_code = function() {
-      return cookieCountryCode;
-    };
-  } else if (window.geoip_country_code) {
-    // Cookie expires after 30 days.
-    $.cookie('geoip_country_code', window.geoip_country_code(), {expires: 30});
-  } else {
-    window.geoip_country_code = function() {
-      return '??';
-    };
+    handleLocale(countryData.country_name);
   }
 })();
 
-(function() {
+function handleLocale(countryName) {
   // Mapping of {currentLocale: {country_name: suggested_locale}}
   var languageSuggestions = {
     'en-US': {
@@ -47,8 +41,7 @@
   };
 
   var currentLocale = $('html').attr('lang');
-  var currentCountry = window.geoip_country_name();
-  var suggestedLocale = (languageSuggestions[currentLocale] || {})[window.geoip_country_name()];
+  var suggestedLocale = (languageSuggestions[currentLocale] || {})[countryName];
   var $announceBar = $('#announce-geoip-suggestion');
 
   if (suggestedLocale) {
@@ -133,5 +126,4 @@
     // If no locale should be suggested, the bar might still display, so remove it.
     $announceBar.remove();
   }
-
-})();
+}
