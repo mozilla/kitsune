@@ -4,10 +4,10 @@
 {% set title = _('KPI Dashboard') %}
 {% set crumbs = [(None, title)] %}
 {% set scripts = ('jqueryui', 'rickshaw', 'kpi.dashboard') %}
-{% set styles = ('rickshaw', 'kpi.dashboard') %}
+{% set styles = ('kpi.dashboard', 'rickshaw',) %}
 
 {% block content %}
-  <article id="kpi-dash-rickshaw">
+  <article id="kpi-dash">
 
     <section id="kpi-cohort-analysis"
       data-url="/api/2/cohort">
