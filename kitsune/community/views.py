@@ -132,6 +132,10 @@ def search(request):
     return render(request, 'community/search.html', data)
 
 
+def metrics(request):
+    return render(request, 'community/metrics.html')
+
+
 def top_contributors(request, area):
     """Top contributors list view."""
 
