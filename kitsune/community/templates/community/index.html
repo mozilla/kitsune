@@ -7,9 +7,10 @@
   <h1 class="main-heading">{{ _('Community Hub') }}</h1>
 
   <article class="contributors">
+    <h1>{{ _('Community Health Metrics') }}</h1>
+    <p><a href="{{ url('community.metrics') }}"><img class="health-metrics" src="{{ STATIC_URL }}sumo/img/community/chart-thumbnail.png" width="400" height="218" alt="{{ _('View Community Metrics') }}" />
+    {{ _('View Community Health Metrics') }}</a></p>
     <h1>{{ _('Top Contributors') }}</h1>
-    <p><a href="{{ url('community.metrics') }}">{{ _('View Community Health Metrics') }}</a></p>
-
     {# Locale Filter #}
     <div class="selector">
       <button type="button" class="ts-select-trigger">
