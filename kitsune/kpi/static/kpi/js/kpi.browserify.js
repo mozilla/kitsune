@@ -244,6 +244,7 @@ function handleDataError($container) {
 function makeRetentionChart(settings) {
   let $container = settings.container;
   let startDate = moment().day(1).day(-84).format('YYYY-MM-DD');
+  let defaultContributorType = $container.data('contributor-type') || 'contributor';
   let urlToFetch = `${$container.data('url')}?start=${startDate}`;
   let fetchDataset = getChartData(urlToFetch, 'results');
   let retentionChart = new Chart($container, settings.options);
@@ -253,7 +254,7 @@ function makeRetentionChart(settings) {
     retentionChart.data = data;
     retentionChart.axes.yAxis.labels = _.uniq(_.pluck(data, 'start'));
     retentionChart.setupAxis('yAxis');
-    retentionChart.populateData('contributor');
+    retentionChart.populateData(defaultContributorType);
 
     $('#toggle-cohort-type').change(function() {
       let cohortType = $(this).val();
