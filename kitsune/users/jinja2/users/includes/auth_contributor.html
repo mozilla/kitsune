@@ -1,4 +1,4 @@
-{% from "users/includes/macros.html" import register_form as render_register %}
+{% from "users/includes/macros.html" import register_form as render_register with context %}
 
 <div class="grid_12">
   <article id="register-form" class="main">
@@ -10,5 +10,5 @@
 </div>
 <div id="login-section" class="grid_12">
   <h3><a href="#" data-toggle="show-form" data-toggle-target="#login-section">{{ _('I already have an account') }}</a></h3>
-  {% include "users/includes/login-form.html" %}
+  {% include "users/includes/login-form.html" with context %}
 </div>
