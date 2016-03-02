@@ -246,7 +246,8 @@ def _rebuild_kb_chunk(data):
         subject = ('[%s] Exceptions raised in _rebuild_kb_chunk()' %
                    settings.PLATFORM_NAME)
         mail_admins(subject=subject, message='\n'.join(messages))
-    transaction.commit_unless_managed()
+    if not transaction.get_connection().in_atomic_block:
+        transaction.commit()
 
     unpin_this_thread()  # Not all tasks need to do use the master.
 

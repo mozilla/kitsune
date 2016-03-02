@@ -510,8 +510,13 @@ class Readout(object):
         # Render:
         return render_to_string(
             'dashboards/includes/kb_readout.html',
-            {'rows': rows, 'column3_label': self.column3_label,
-             'column4_label': self.column4_label})
+            {
+                'rows': rows,
+                'column3_label': self.column3_label,
+                'column4_label': self.column4_label,
+            },
+            request=self.request,
+        )
 
     @classmethod
     def should_show_to(cls, request):
