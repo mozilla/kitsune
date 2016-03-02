@@ -18,6 +18,18 @@ let chartSetups = {
       }
     }
   },
+  'csat': {
+    'container': $('#kpi-csat'),
+    'bucket': true,
+    'descriptors': [
+      {
+        name: gettext('Average Satisfaction'),
+        slug: 'csat',
+        func(d) { return d.csat / 100; },
+        type: 'percent'
+      }
+    ]
+  },
   'questions': {
     'container': $('#kpi-questions'),
     'bucket': true,

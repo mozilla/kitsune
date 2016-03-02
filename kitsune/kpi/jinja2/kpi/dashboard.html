@@ -16,6 +16,20 @@
       <div id="retention-chart" class="graph" data-chart-type="d3" data-slug="retention"></div>
     </section>
 
+    <section id="kpi-csat"
+     data-url="{{ url('api.kpi.csat-contributors') }}">
+
+      <h2>{{ _('Contributor Satisfaction') }}</h2>
+
+      <div class="rickshaw">
+        <div class="inline-controls"></div>
+        <div class="graph-container">
+          <div class="slider"></div>
+          <div class="graph" data-chart-type="rickshaw" data-slug="csat"></div>
+        </div>
+      </div>
+    </section>
+
     <section id="kpi-questions"
      data-url="{{ url('api.kpi.questions') }}">
 
