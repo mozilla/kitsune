@@ -4,28 +4,16 @@
 {% set title = _('KPI Dashboard') %}
 {% set crumbs = [(None, title)] %}
 {% set scripts = ('jqueryui', 'rickshaw', 'kpi.dashboard') %}
-{% set styles = ('rickshaw', 'kpi.dashboard') %}
+{% set styles = ('kpi.dashboard', 'rickshaw',) %}
 
 {% block content %}
-  <article id="kpi-dash-rickshaw">
+  <article id="kpi-dash">
 
     <section id="kpi-cohort-analysis"
       data-url="/api/2/cohort">
 
       <h2>{{ _('Retention') }}</h2>
-      <div id="retention-chart" class="graph">
-        <div class="inline-controls">
-          <div>
-            <select id="toggle-cohort-type">
-              <option value="contributor">{{ _('Contributors') }}</option>
-              <option value="contributor:kb:en-US">{{ _('en-US') }}</option>
-              <option value="contributor:kb:l10n">{{ _('L10N') }}</option>
-              <option value="contributor:supportforum:helper">{{ _('Support Forum Help') }}</option>
-              <option value="contributor:aoa">{{ _('Army of Awesome') }}</option>
-            </select>
-          </div>
-        </div>
-      </div>
+      <div id="retention-chart" class="graph" data-chart-type="d3" data-slug="retention"></div>
     </section>
 
     <section id="kpi-questions"
@@ -37,7 +25,7 @@
         <div class="inline-controls"></div>
         <div class="graph-container">
           <div class="slider"></div>
-          <div class="graph"></div>
+          <div class="graph" data-slug="questions"></div>
         </div>
       </div>
 
@@ -70,7 +58,7 @@
         <div class="inline-controls"></div>
         <div class="graph-container">
           <div class="slider"></div>
-          <div class="graph"></div>
+          <div class="graph" data-chart-type="rickshaw" data-slug="vote"></div>
         </div>
       </div>
 
@@ -96,7 +84,7 @@
         <div class="inline-controls"></div>
         <div class="graph-container">
           <div class="slider"></div>
-          <div class="graph"></div>
+          <div class="graph" data-chart-type="rickshaw" data-slug="activeContributors"></div>
         </div>
       </div>
 
@@ -163,7 +151,7 @@
         <div class="inline-controls"></div>
         <div class="graph-container">
           <div class="slider"></div>
-          <div class="graph"></div>
+          <div class="graph" data-chart-type="rickshaw" data-slug="ctr"></div>
         </div>
       </div>
 
@@ -189,7 +177,7 @@
         <div class="inline-controls"></div>
         <div class="graph-container">
           <div class="slider"></div>
-          <div class="graph"></div>
+          <div class="graph" data-chart-type="rickshaw" data-slug="visitors"></div>
         </div>
       </div>
     </section>
@@ -203,7 +191,7 @@
         <div class="inline-controls"></div>
         <div class="graph-container">
           <div class="slider"></div>
-          <div class="graph"></div>
+          <div class="graph" data-chart-type="rickshaw" data-slug="l10n"></div>
         </div>
       </div>
 
@@ -249,7 +237,7 @@
         <div class="inline-controls"></div>
         <div class="graph-container">
           <div class="slider"></div>
-          <div class="graph"></div>
+          <div class="graph" data-chart-type="rickshaw" data-slug="exitSurvey"></div>
         </div>
       </div>
     </section>

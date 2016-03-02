@@ -335,6 +335,12 @@ PIPELINE_JS = {
         ),
         'output_filename': 'build/community-l10n-min.js'
     },
+    'community.metrics': {
+        'source_filenames': (
+            'kpi/js/kpi.browserify.js',
+        ),
+        'output_filename': 'build/kpi.dashboard-min.js'
+    },
     'mobile-common': {
         'source_filenames': (
             'sumo/js/templates/mobile-search-results.js',
@@ -617,6 +623,7 @@ PIPELINE_JS = {
     },
     'kpi.dashboard': {
         'source_filenames': (
+            'd3/d3.js',
             'kpi/js/kpi.browserify.js',
         ),
         'output_filename': 'build/kpi.dashboard-min.js'
