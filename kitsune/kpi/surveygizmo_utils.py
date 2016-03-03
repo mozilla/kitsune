@@ -33,12 +33,16 @@ SURVEYS = {
 
 def get_email_addresses(survey, startdate, enddate):
     """Get the email addresses collected between startdate and enddate."""
-    user = settings.SURVEYGIZMO_USER
-    password = settings.SURVEYGIZMO_PASSWORD
+    token = settings.SURVEYGIZMO_API_TOKEN
+    secret = settings.SURVEYGIZMO_API_TOKEN_SECRET
     emails = []
     page = 1
     more_pages = True
     survey_id = SURVEYS[survey]['email_collection_survey_id']
+
+    # Can't do anything without credentials.
+    if token is None or secret is None:
+        return emails
 
     while more_pages:
         response = requests.get(
@@ -52,9 +56,10 @@ def get_email_addresses(survey, startdate, enddate):
             '&filter[value][2]=Complete'
             '&resultsperpage=500'
             '&page={page}'
-            '&user:pass={user}:{password}'.format(
+            '&api_token={token}'
+            '&api_token_secret={secret}'.format(
                 survey=survey_id, start=startdate,
-                end=enddate, page=page, user=user, password=password),
+                end=enddate, page=page, token=token, secret=secret),
             timeout=300)
 
         results = json.loads(response.content)
@@ -68,8 +73,10 @@ def get_email_addresses(survey, startdate, enddate):
 
 def add_email_to_campaign(survey, email):
     """Add email to the exit survey campaign."""
-    user = settings.SURVEYGIZMO_USER
-    password = settings.SURVEYGIZMO_PASSWORD
+    token = settings.SURVEYGIZMO_API_TOKEN
+    secret = settings.SURVEYGIZMO_API_TOKEN_SECRET
+    if token is None or secret is None:
+        return
 
     survey_id = SURVEYS[survey]['exit_survey_id']
     campaign_id = SURVEYS[survey]['exit_survey_campaign_id']
@@ -79,9 +86,10 @@ def add_email_to_campaign(survey, email):
             'https://restapi.surveygizmo.com/v2/survey/{survey}'
             '/surveycampaign/{campaign}/contact?'
             'semailaddress={email}'
-            '&user:pass={user}:{password}'.format(
+            '&api_token={token}'
+            '&api_token_secret={secret}'.format(
                 survey=survey_id, campaign=campaign_id,
-                email=email, user=user, password=password),
+                email=email, token=token, secret=secret),
             timeout=30)
     except requests.exceptions.Timeout:
         print 'Timedout adding: %s' % email
@@ -89,12 +97,23 @@ def add_email_to_campaign(survey, email):
 
 def get_exit_survey_results(survey, date):
     """Collect and aggregate the exit survey results for the date."""
-    user = settings.SURVEYGIZMO_USER
-    password = settings.SURVEYGIZMO_PASSWORD
+    token = settings.SURVEYGIZMO_API_TOKEN
+    secret = settings.SURVEYGIZMO_API_TOKEN_SECRET
     answers = []
     page = 1
     more_pages = True
     survey_id = SURVEYS[survey]['exit_survey_id']
+
+    # Aggregate results.
+    summary = {
+        'yes': 0,
+        'no': 0,
+        'dont-know': 0,
+    }
+
+    # Can't do anything without credentials.
+    if token is None or secret is None:
+        return summary
 
     while more_pages:
         response = requests.get(
@@ -108,13 +127,14 @@ def get_exit_survey_results(survey, date):
             '&filter[value][2]=Complete'
             '&resultsperpage=500'
             '&page={page}'
-            '&user:pass={user}:{password}'.format(
+            '&api_token={token}'
+            '&api_token_secret={secret}'.format(
                 survey=survey_id,
                 start=date,
                 end=date + timedelta(days=1),
                 page=page,
-                user=user,
-                password=password),
+                token=token,
+                secret=secret),
             timeout=300)
 
         results = json.loads(response.content)
@@ -122,13 +142,6 @@ def get_exit_survey_results(survey, date):
         more_pages = page < total_pages
         answers = answers + [r.get('[question(2)]') for r in results.get('data', [])]
         page += 1
-
-    # Aggregate results.
-    summary = {
-        'yes': 0,
-        'no': 0,
-        'dont-know': 0,
-    }
 
     for answer in answers:
         lower_stripped = answer.lower().strip()
