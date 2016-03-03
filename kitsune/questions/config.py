@@ -161,7 +161,7 @@ products = SortedDict([
 
     ('ios', {
         'name': _lazy(u'Firefox for iOS'),
-        'subtitle': 'Firefox for iPhone, iPad and iPod touch devices',
+        'subtitle': _lazy('Firefox for iPhone, iPad and iPod touch devices'),
         'extra_fields': ['ff_version', 'os', 'plugins'],
         'tags': ['ios'],
         'product': 'ios',
@@ -186,7 +186,7 @@ products = SortedDict([
 
     ('focus', {
         'name': _lazy(u'Focus by Firefox'),
-        'subtitle': 'Content blocker for Safari',
+        'subtitle': _lazy('Content blocker for Safari'),
         'extra_fields': [],
         'tags': ['focus-firefox'],
         'product': 'focus-firefox',
@@ -201,7 +201,7 @@ products = SortedDict([
 
     ('firefox-os', {
         'name': _lazy(u'Firefox OS'),
-        'subtitle': 'Mobile OS for smartphones',
+        'subtitle': _lazy('Mobile OS for smartphones'),
         'extra_fields': ['device', 'os'],
         'tags': [],
         'product': 'firefox-os',
