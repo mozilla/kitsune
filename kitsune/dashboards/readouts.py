@@ -11,16 +11,16 @@ from datetime import datetime
 
 from django.conf import settings
 from django.db import connections, router
+from django.template.loader import render_to_string
 from django.utils.datastructures import SortedDict
 from django.utils.translation import ugettext as _, ugettext_lazy as _lazy, pgettext_lazy
 
-import jingo
 from jinja2 import Markup
 from ordereddict import OrderedDict
 
 from kitsune.dashboards import LAST_30_DAYS, PERIODS
 from kitsune.questions.models import QuestionLocale
-from kitsune.sumo.helpers import urlparams
+from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.redis_utils import redis_client, RedisError
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.wiki.models import Document
@@ -508,11 +508,15 @@ class Readout(object):
                             else int(round(visits / float(max_visits) * 100)))
 
         # Render:
-        return jingo.render_to_string(
-            self.request,
+        return render_to_string(
             'dashboards/includes/kb_readout.html',
-            {'rows': rows, 'column3_label': self.column3_label,
-             'column4_label': self.column4_label})
+            {
+                'rows': rows,
+                'column3_label': self.column3_label,
+                'column4_label': self.column4_label,
+            },
+            request=self.request,
+        )
 
     @classmethod
     def should_show_to(cls, request):

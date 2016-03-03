@@ -1,0 +1,139 @@
+{% extends "forums/base.html" %}
+{% from "layout/errorlist.html" import errorlist %}
+{% from "includes/common_macros.html" import content_editor with context %}
+{% from "includes/common_macros.html" import for_contributors_sidebar %}
+{# L10n: {t} is the title of the thread. {f} is the name of the forum. #}
+{% set title = _('{t} | {f} | Forums')|f(t=thread.title, f=forum.name) %}
+{% set crumbs = [(url('forums.forums'), _('Contributor Forums')),
+(url('forums.threads', forum.slug), forum.name),
+(None, thread.title)] %}
+{% set canonical_url = unlocalized_url('forums.posts', forum.slug, thread.id) %}
+{% if posts.number > 1 %}
+  {% set canonical_url = canonical_url|urlparams(page=posts.number) %}
+{% endif %}
+{% set styles = ('forums', 'jqueryui') %}
+{% set scripts = ('forums', 'jqueryui') %}
+
+{% block above_main %}
+  <h1 id="forum-title">{{ forum.name }}</h1>
+{% endblock %}
+
+{% block content %}
+  <div class="grid_3">
+    <ul id="thread-actions" class="sidebar-nav">
+      {% if not thread.is_locked and
+        has_perm_or_owns('forums_forum.thread_edit_forum', thread, forum) %}
+        <li><a href="{{ url('forums.edit_thread', forum.slug, thread.id) }}">{{ _('Edit Thread Title') }}</a></li>
+      {% endif %}
+      {% if has_perm('forums_forum.thread_delete_forum', forum) %}
+        <li><a href="{{ url('forums.delete_thread', forum.slug, thread.id) }}">{{ _('Delete this thread') }}</a></li>
+      {% endif %}
+      {% if has_perm('forums_forum.thread_locked_forum', forum) %}
+        <li>
+          <form id="thread-lock-form" action="{{ url('forums.lock_thread', forum.slug, thread.id) }}" method="post">
+            {% csrf_token %}
+          </form>
+          <a data-type="submit" data-form="thread-lock-form">{% if thread.is_locked %}{{ _('Unlock this thread') }}{% else %}{{ _('Lock this thread') }}{% endif %}</a>
+        </li>
+      {% endif %}
+      {% if has_perm('forums_forum.thread_sticky_forum', forum) %}
+        <li>
+          <form id="thread-sticky-form" action="{{ url('forums.sticky_thread', forum.slug, thread.id) }}" method="post">
+            {% csrf_token %}
+          </form>
+          <a data-type="submit" data-form="thread-sticky-form">{% if thread.is_sticky %}{{ _('Unsticky this thread') }}{% else %}{{ _('Sticky this thread') }}{% endif %}</a>
+        </li>
+      {% endif %}
+    </ul>
+
+    {% if has_perm('forums_forum.thread_move_forum', forum) %}
+      <form id="move-thread-form" action="{{ url('forums.move_thread', forum.slug, thread.id) }}" method="post">
+        {% csrf_token %}
+        <select name="forum">
+          {% for f in forums %}
+            {% if has_perm('forums_forum.thread_move_forum', f) %}
+              <option value="{{ f.id }}" {% if f == forum %}selected="selected"{% endif %}>{{ f.name }}</option>
+            {% endif %}
+          {% endfor %}
+        </select>
+        <input type="submit" value="Move Thread" />
+      </form>
+    {% endif %}
+
+    {{ for_contributors_sidebar(user, settings.WIKI_DEFAULT_LANGUAGE, active='forums') }}
+    <br />
+  </div>
+
+  <article id="posts" class="grid_9">
+    <h1 class="nomargin">{{ thread.title }}</h1>
+    <ul class="cf" id="thread-meta">
+      {% if count %}<li>{{ ngettext('{0} Reply', '{0} Replies', (count - 1))|f(count - 1) }}</li>{% endif %}
+      {% if last_post %}<li>{{ _('Last reply by') }} {{ display_name(last_post.author) }}</li>{% endif %}
+      {% if thread.is_sticky %}<li>{{ _('Sticky') }}</li>{% endif %}
+      {% if thread.is_locked %}<li>{{ _('Locked') }}</li>{% endif %}
+    </ul>
+    {% if user.is_authenticated() %}
+      <form action="{{ url('forums.watch_thread', forum_slug=forum.slug, thread_id=thread.id) }}" method="post">
+        {% csrf_token %}
+        {% if is_watching_thread %}
+          {% set watch = _('Stop watching this thread') %}
+          <input type="hidden" name="watch" value="no" />
+        {% else %}
+          {% set watch = _('Watch this thread') %}
+          <input type="hidden" name="watch" value="yes" />
+        {% endif %}
+        <button type="submit" title="{{ watch }}" class="btn" id="watch-thread-toggle"><img src="{{ STATIC_URL }}sumo/img/blank.png" alt="" /> {{ watch }}</button>
+      </form>
+    {% endif %}
+
+    {% if posts %}
+      <ol class="posts">
+        {% for post in posts.object_list %}
+          <li class="cf" id="post-{{ post.id }}">
+            {% include "forums/includes/post.html" %}
+          </li>
+        {% endfor %}
+      </ol>
+
+      {{ posts|paginator }}
+
+    {% else %}
+      <p>{{ _('Oh, no! Looks like there are no posts!') }}</p>
+    {% endif %}
+
+    {% if user.is_authenticated() and not thread.is_locked and forum.allows_posting_by(user) %}
+      <form action="{{ url('forums.reply', forum.slug, thread.id)|urlparams(hash='post-reply') }}" method="post">
+        {% csrf_token %}
+        <h3 id="thread-reply-title">{{ _('Post a reply') }}</h3>
+        {{ errorlist(form) }}
+
+        {% if request.limited %}
+          <div class="warning-box">
+            {{ _('You have exceeded the number of threads and replies that can be posted in a given amount of time. Please try again shortly.') }}
+          </div>
+        {% endif %}
+
+        <div id="thread-reply">
+          {{ content_editor(form.content) }}
+        </div>
+        <div class="editor-actions">
+          <button type="submit" class="btn btn-submit big">{{ _('Post Reply') }}</button>
+          <button type="submit" class="btn" id="preview" name="preview"
+                 data-preview-url="{{ url('forums.post_preview_async') }}"
+                 data-preview-container-id="post-preview"
+                 data-preview-content-id="id_content">{{ _('Preview Reply') }}
+          </button>
+        </div>
+      </form>
+    {% elif user.is_authenticated() and thread.is_locked %}
+      <div id="thread-reply">
+        <p id="thread-locked">{{ _('This thread has been locked. It is no longer possible to post new replies.') }}</p>
+      </div>
+    {% endif %}
+    <div id="post-preview">
+      {% if post_preview %}
+        {% include "forums/includes/post_preview.html" %}
+      {% endif %}
+    </div>
+  </article>
+{% endblock %}

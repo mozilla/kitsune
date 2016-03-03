@@ -1,0 +1,39 @@
+{% extends "customercare/base.html" %}
+{% set title = _('Moderate Twitter Accounts') %}
+
+{% block content %}
+  <div id="csrf">
+    {% csrf_token %}{# CSRF token for AJAX actions. #}
+  </div>
+
+  {% if user.has_perm('customercare.ban_account') %}
+    <div class="grid_6">
+      <p>{{ _('Ban user will prevent a given twitter handle from using the Army of Awesome tool.') }}</p>
+      <h2>{{ _('Ban User') }}</h2>
+      <div id="ban-user">
+        <input id="ban-username" type="text" placeholder="@spammingisfun"/>
+        <button name="username-add" data-username-list="banned-users" type="submit" class="btn">{{ _('Ban') }}</button>
+      </div>
+      <div id="ban-message"></div>
+      <h2>{{ _('Banned Users') }}</h2>
+      <ul id="banned-users"></ul>
+      <button name="username-remove" data-username-list="banned-users" type="submit" class="btn">{{ _('Unban') }}</button>
+      <div id="unban-message"></div>
+    </div>
+  {% endif %}
+  {% if user.has_perm('customercare.ignore_account') %}
+    <div class="grid_6">
+      <p>{{ _('Flagging a user to ignore will prevent their tweets from showing up in Army of Awesome.') }}</p>
+      <h2>{{ _('Ignore User') }}</h2>
+      <div id="ignore-user">
+        <input id="ignore-username" type="text" placeholder="@ignoreme"/>
+        <button name="username-add" data-username-list="ignored-users" type="submit" class="btn">{{ _('Ignore') }}</button>
+      </div>
+      <div id="ignore-message"></div>
+      <h2>{{ _('Ignored Users') }}</h2>
+      <ul id="ignored-users"></ul>
+      <button name="username-remove" data-username-list="ignored-users" type="submit" class="btn">{{ _('Stop Ignoring') }}</button>
+      <div id="unignore-message"></div>
+    </div>
+  {% endif %}
+{% endblock %}

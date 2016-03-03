@@ -1,0 +1,86 @@
+{% extends "users/base.html" %}
+{% set title = _('Edit Profile') %}
+{% set classes = 'profile' %}
+{% set active = 'edit-profile' %}
+{% set crumbs = [(profile_url(profile.user), profile.user.username),
+                 (None, title)] %}
+
+{% block content %}
+  <div class="grid_9">
+    <article id="edit-profile" class="main">
+      <h1>{{ title }}</h1>
+      <form method="post" action="">
+        {% csrf_token %}
+        <ul>
+          <li>
+            <label>{{ _('Username:') }}</label>
+            {{ profile.user.username }}
+          </li>
+          {% if request.user == profile.user %}
+            <li id="edit-profile-avatar">
+              <label>{{ _('Avatar:') }}</label>
+              <img src="{{ profile_avatar(profile.user) }}">
+              <ul>
+                <li>
+                  <a class="change-avatar" href="https://gravatar.com/emails" target="_blank">
+                    {{ pgettext('avatar', 'Change') }}
+                    <span class="tip">
+                      {% trans %}
+                        <p>
+                          SUMO is now using Gravatars as avatars. You must change
+                          your Gravatar on gravatar.com.
+                        </p>
+                        <p>
+                          It can take a few minutes for the avatar change to take
+                          effect. You may need to wait a few minutes and reload
+                          the page to see your new Gravatar.
+                        </p>
+                      {% endtrans %}
+                    </span>
+                  </a>
+                </li>
+              </ul>
+            </li>
+            <li>
+              <label>{{ _('Password:') }}</label>
+              <a href="{{ url('users.pw_change') }}">{{ _('Change') }}</a>
+            </li>
+            <li>
+              <label>{{ _('Email:') }}</label>
+              {{ user.email }}
+              <a href="{{ url('users.change_email') }}">{{ _('Change') }}</a>
+            </li>
+          {% endif %}
+          {{ form.as_ul()|safe }}
+        </ul>
+        <div class="submit">
+          <input type="submit" value="{{ _('Update') }}" />
+        </div>
+      </form>
+    </article>
+    {% if request.user == profile.user %}
+    <p>
+      <a id="delete-profile" class="btn btn-warning">{{ _('Close account and delete all profile information') }}</a>
+    </p>
+
+    <div class="kbox" title="{{ _('Are you sure') }}" data-target="#delete-profile" data-modal="true">
+      <form method="post" action="{{ url('users.close_account') }}">
+        {% csrf_token %}
+        <p>
+          {{ _('Deleting your account will prevent you from answering or posting questions in Mozilla Support. This action will clear your profile and cannot be restored again.') }}
+        </p>
+        <p>
+          {{ _('Please type in your username to confirm') }}
+        </p>
+        <p>
+          <input id="delete-profile-username-input" name="entered_username" type="text">
+          <input id="delete-profile-username" name="account_username" type="hidden" value="{{ profile.user.username }}">
+        </p>
+        <p>
+          <button type="submit" id="delete-profile-button" class="btn btn-warning" disabled>{{ _('Delete My Account') }}</button>
+        </p>
+      </form>
+    </div>
+    {% endif %}
+  </div>
+{% endblock %}

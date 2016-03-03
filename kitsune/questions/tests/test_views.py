@@ -17,8 +17,9 @@ from kitsune.questions.tests import (
     AnswerFactory, QuestionFactory, TestCaseBase, QuestionLocaleFactory)
 from kitsune.questions.views import parse_troubleshooting
 from kitsune.search.tests.test_es import ElasticTestCase
-from kitsune.sumo.helpers import urlparams
-from kitsune.sumo.tests import get, MobileTestCase, LocalizingClient, eq_msg, set_waffle_flag
+from kitsune.sumo.templatetags.jinja_helpers import urlparams
+from kitsune.sumo.tests import (
+    get, MobileTestCase, LocalizingClient, eq_msg, set_waffle_flag, template_used)
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.products.tests import TopicFactory
 from kitsune.users.models import Profile
@@ -31,21 +32,27 @@ class AAQTests(ElasticTestCase):
 
     def test_bleaching(self):
         """Tests whether summaries are bleached"""
-        ProductFactory(slug=u'firefox')
-        q = QuestionFactory(
-            title=u'cupcakes',
-            content=u'<unbleached>Cupcakes are the best</unbleached')
-        q.tags.add(u'desktop')
-        q.save()
+        p = ProductFactory(slug=u'firefox')
+        l = QuestionLocale.objects.get(locale=settings.LANGUAGE_CODE)
+        p.questions_locales.add(l)
+        TopicFactory(title='Fix problems', slug='fix-problems', product=p)
+        QuestionFactory(
+            product=p,
+            title=u'CupcakesQuestion cupcakes',
+            content=u'cupcakes are best with <unbleached>flour</unbleached>')
+
         self.refresh()
 
         url = urlparams(
-            reverse('questions.aaq_step4', args=['desktop', 'd1']),
+            reverse('questions.aaq_step4', args=['desktop', 'fix-problems']),
             search='cupcakes')
 
         response = self.client.get(url, follow=True)
+        eq_(200, response.status_code)
 
+        assert 'CupcakesQuestion' in response.content
         assert '<unbleached>' not in response.content
+        assert 'cupcakes are best with' in response.content
 
     # TODO: test whether when _search_suggetions fails with a handled
     # error that the user can still ask a question.
@@ -229,8 +236,7 @@ class MobileAAQTests(MobileTestCase):
         """New question is posted through mobile."""
         response = self._new_question()
         eq_(200, response.status_code)
-        self.assertTemplateUsed(response,
-                                'questions/mobile/new_question_login.html')
+        assert template_used(response, 'questions/mobile/new_question_login.html')
 
     @mock.patch.object(Site.objects, 'get_current')
     def test_logged_in_get(self, get_current):
@@ -242,8 +248,7 @@ class MobileAAQTests(MobileTestCase):
 
         response = self._new_question()
         eq_(200, response.status_code)
-        self.assertTemplateUsed(response,
-                                'questions/mobile/new_question.html')
+        assert template_used(response, 'questions/mobile/new_question.html')
 
     @mock.patch.object(Site.objects, 'get_current')
     def test_logged_in_post(self, get_current):
@@ -278,8 +283,7 @@ class MobileAAQTests(MobileTestCase):
 
         response = self._new_question(post_it=True)
         eq_(200, response.status_code)
-        self.assertTemplateUsed(response,
-                                'questions/mobile/confirm_email.html')
+        assert template_used(response, 'questions/mobile/confirm_email.html')
 
     def test_aaq_login_form(self):
         """The AAQ authentication forms contain the identifying fields.
@@ -299,7 +303,7 @@ class ReactAAQTests(TestCaseBase):
     def test_waffle_flag(self):
         url = reverse('questions.aaq_step1')
         response = self.client.get(url, follow=True)
-        self.assertTemplateUsed(response, 'questions/new_question_react.html')
+        assert template_used(response, 'questions/new_question_react.html')
 
     def test_only_marked_topics(self):
         t1 = TopicFactory(in_aaq=True)

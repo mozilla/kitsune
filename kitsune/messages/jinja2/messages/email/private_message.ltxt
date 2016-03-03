@@ -1,0 +1,13 @@
+{%- autoescape false -%}
+{#- This is an email. Whitespace matters! -#}
+{{ _('{sender} sent you the following message:')|f(sender=display_name(sender)) }}
+
+{{ message }}
+
+{{ _('View this message on the web:') }}
+
+https://{{ host }}{{ message_url }}
+
+{{ _('Change your email preferences:') }}
+
+https://{{ host }}{{ unsubscribe_url }}{% endautoescape %}

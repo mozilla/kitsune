@@ -6,7 +6,7 @@ from nose.tools import eq_
 
 from kitsune.groups.models import GroupProfile
 from kitsune.groups.tests import GroupProfileFactory
-from kitsune.sumo.helpers import urlparams
+from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import UserFactory, GroupFactory, add_permission

@@ -1,0 +1,29 @@
+{% extends "forums/base.html" %}
+{% from "layout/errorlist.html" import errorlist %}
+{# L10n: {f} is the name of the forum, {t} is the name of the thread. #}
+{% set title = _('Edit thread "{t}" | {f} | Forums')|f(t=thread.title, f=forum.name) %}
+{% set crumbs = [(url('forums.forums'), _('Forums')),
+(url('forums.threads', forum.slug), forum.name),
+(url('forums.posts', forum.slug, thread.id), thread.title),
+(None, _('Edit thread'))] %}
+
+{% block content %}
+  <div id="edit-thread" class="grid_12">
+    <h1>{{ _('Edit thread "{t}"')|f(t=thread.title) }}</h1>
+
+    <form action="{{ url('forums.edit_thread', forum.slug, thread.id) }}" method="post" class="edit-thread">
+      {% csrf_token %}
+      {{ errorlist(form) }}
+
+      <div class="form-widget{% if form.title.errors %} invalid{% endif %}">
+        {{ form.title.label_tag()|safe }}
+        {{ form.title|safe }}
+      </div>
+
+      <div class="form-widget submit">
+        <button type="submit" class="btn btn-submit big">{{ _('Update thread') }}</button>
+        <a class="btn" href="{{ url('forums.posts', forum.slug, thread.id) }}">{{ _('Cancel') }}</a>
+      </div>
+    </form>
+  </div>
+{% endblock %}

@@ -1,0 +1,117 @@
+{% extends "kbforums/base.html" %}
+{% from "layout/errorlist.html" import errorlist %}
+{% from "includes/common_macros.html" import content_editor with context %}
+{% from "kbforums/includes/macros.html" import kbforums_warning with context %}
+{# L10n: {t} is the title of the thread. {d} is the name of the document. #}
+{% set title = _('{t} | {d} Discussion | Knowledge Base')|f(t=thread.title, d=document.title) %}
+{% set crumbs = [(document.get_absolute_url(), document.title),
+                 (url('wiki.discuss.threads', document.slug), _('Discuss')),
+                 (None, thread.title)] %}
+{% set styles = ('forums', 'jqueryui') %}
+{% set scripts = ('forums', 'jqueryui') %}
+
+{% block side_top_top %}
+  <ul id="thread-actions" class="sidebar-nav">
+    {% if perms.kbforums.change_thread or (thread.creator == request.user and not thread.is_locked) %}
+      <li><a href="{{ url('wiki.discuss.edit_thread', document.slug, thread.id) }}">{{ _('Edit this thread') }}</a></li>
+    {% endif %}
+    {% if perms.kbforums.delete_thread %}
+      <li><a href="{{ url('wiki.discuss.delete_thread', document.slug, thread.id) }}">{{ _('Delete this thread') }}</a></li>
+    {% endif %}
+    {% if perms.kbforums.lock_thread %}
+      <li>
+        <form  id="thread-lock-form" action="{{ url('wiki.discuss.lock_thread', document.slug, thread.id) }}" method="post">
+          {% csrf_token %}
+        </form>
+        <a data-type="submit" data-form="thread-lock-form">{% if thread.is_locked %}{{ _('Unlock this thread') }}{% else %}{{ _('Lock this thread') }}{% endif %}</a>
+      </li>
+    {% endif %}
+    {% if perms.kbforums.sticky_thread %}
+      <li>
+        <form id="thread-sticky-form" action="{{ url('wiki.discuss.sticky_thread', document.slug, thread.id) }}" method="post">
+          {% csrf_token %}
+        </form>
+        <a data-type="submit" data-form="thread-sticky-form">{% if thread.is_sticky %}{{ _('Unsticky this thread') }}{% else %}{{ _('Sticky this thread') }}{% endif %}</a>
+      </li>
+    {% endif %}
+  </ul>
+{% endblock %}
+
+{% block content %}
+  <div class="grid_9">
+    <article id="posts" class="main">
+      {{ kbforums_warning(document, user) }}
+      <h1>{{ thread.title }}</h1>
+      <ul class="cf" id="thread-meta">
+        {% if count %}<li>{{ count - 1 }} {{ _('Replies') }}</li>{% endif %}
+        {% if last_post %}<li>{{ _('Last reply by') }} {{ display_name(last_post.creator) }}</li>{% endif %}
+        {% if thread.is_sticky %}<li>{{ _('Sticky') }}</li>{% endif %}
+        {% if thread.is_locked %}<li>{{ _('Locked') }}</li>{% endif %}
+      </ul>
+      {% if user.is_authenticated() %}
+        <form action="{{ url('wiki.discuss.watch_thread', document.slug, thread.id) }}" method="post">
+          {% csrf_token %}
+          {% if is_watching_thread %}
+            {% set watch = _('Stop watching this thread') %}
+            <input type="hidden" name="watch" value="no" />
+          {% else %}
+            {% set watch = _('Watch this thread') %}
+            <input type="hidden" name="watch" value="yes" />
+          {% endif %}
+          <button type="submit" title="{{ watch }}" class="btn" id="watch-thread-toggle"><img src="{{ STATIC_URL }}sumo/img/blank.png" alt="" /> {{ watch }}</button>
+        </form>
+      {% endif %}
+
+      {% if posts %}
+        <ol class="posts">
+          {% for post in posts.object_list %}
+            <li class="cf" id="post-{{ post.id }}">
+              {% include "kbforums/includes/post.html" %}
+            </li>
+          {% endfor %}
+        </ol>
+
+        {{ posts|paginator }}
+
+      {% else %}
+        <p>{{ _('Oh, no! Looks like there are no posts!') }}</p>
+      {% endif %}
+
+      {% if user.is_authenticated() and not thread.is_locked %}
+        <form id="post-a-reply" action="{{ url('wiki.discuss.reply', document.slug, thread.id)|urlparams(hash='post-a-reply') }}" method="post">
+          {% csrf_token %}
+          <h3 id="thread-reply-title">{{ _('Post a reply') }}</h3>
+          {{ errorlist(form) }}
+
+          {% if request.limited %}
+            <div class="warning-box">
+              {{ _('You have exceeded the number of threads and replies that can be posted in a given amount of time. Please try again shortly.') }}
+            </div>
+          {% endif %}
+
+          <div id="thread-reply">
+            {{ content_editor(form.content) }}
+          </div>
+
+          <div class="editor-actions">
+            <button type="submit" class="btn btn-submit big">{{ _('Post Reply') }}</button>
+            <button type="submit" class="btn" id="preview" name="preview"
+                data-preview-url="{{ url('wiki.discuss.post_preview_async', document.slug) }}"
+                data-preview-container-id="post-preview"
+                data-preview-content-id="id_content">{{ _('Preview Reply') }}
+            </button>
+          </div>
+        </form>
+      {% elif user.is_authenticated() and thread.is_locked %}
+        <div id="thread-reply">
+          <p id="thread-locked">{{ _('This thread has been locked. It is no longer possible to post new replies.') }}</p>
+        </div>
+      {% endif %}
+      <div id="post-preview">
+        {% if post_preview %}
+          {% include "kbforums/includes/post_preview.html" %}
+        {% endif %}
+      </div>
+    </article>
+  </div>
+{% endblock %}

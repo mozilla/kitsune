@@ -2,7 +2,7 @@ from nose.tools import eq_
 from pyquery import PyQuery as pq
 
 from kitsune.messages.models import OutboxMessage
-from kitsune.sumo.helpers import urlparams
+from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import UserFactory

@@ -8,7 +8,7 @@ from nose.tools import eq_
 from pyquery import PyQuery as pq
 
 from kitsune.sumo.tests import TestCase
-from kitsune.users.helpers import (
+from kitsune.users.templatetags.jinja_helpers import (
     profile_url, profile_avatar, public_email, display_name, user_list)
 from kitsune.users.tests import UserFactory
 

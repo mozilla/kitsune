@@ -4,7 +4,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 from django.db import models
 
-from kitsune.sumo.helpers import reverse
+from kitsune.sumo.templatetags.jinja_helpers import reverse
 from kitsune.sumo.models import ModelBase
 from kitsune.sumo.utils import auto_delete_files
 

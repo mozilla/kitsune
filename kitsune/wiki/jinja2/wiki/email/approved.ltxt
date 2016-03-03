@@ -1,0 +1,25 @@
+{#- This is an email.  Whitespace matters! -#}
+{%- from "includes/unsubscribe_text.ltxt" import unsubscribe_text with context -%}
+{%- autoescape false -%}
+{%- trans reviewer=display_name(reviewer), document_title=document_title -%}
+{{ reviewer }} has approved the revision to the document
+{{ document_title }}.
+{% endtrans %}
+
+{% trans %}
+To view the updated document, click the following link, or paste it
+into your browser's location bar:
+{% endtrans %}
+
+https://{{ host }}{{ document_url }}
+
+--
+{{ _('Summary:') }}{# L10n: This is in an email. #}
+{{ summary|safe }}
+
+--
+{{ _('Changes:') }}{# L10n: This is in an email. #}
+{{ diff|safe }}
+
+{{ unsubscribe_text(watch) }}
+{%- endautoescape -%}

@@ -58,6 +58,8 @@ def update_assets(ctx):
 @task
 def db_migrations(ctx):
     with ctx.lcd(settings.SRC_DIR):
+        ctx.local('python2.7 manage.py migrate --noinput actstream --fake')
+        ctx.local('python2.7 manage.py migrate --noinput authority --fake')
         ctx.local('python2.7 manage.py migrate --noinput')
 
 

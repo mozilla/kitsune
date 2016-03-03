@@ -1,0 +1,6 @@
+{% from "users/includes/macros.html" import login_form as render_login with context %}
+
+<article id="login" class="main">
+  <h1>{{ _('Sign In') }}</h1>
+  {{ render_login(login_form, next_url=next_url) }}
+</article>

@@ -3,7 +3,6 @@ import json
 from django.conf import settings
 from django.utils.http import urlquote
 
-import jingo
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 
@@ -14,11 +13,6 @@ from kitsune.search.tests.test_es import ElasticTestCase
 from kitsune.sumo.tests import LocalizingClient
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.wiki.tests import DocumentFactory, ApprovedRevisionFactory, RevisionFactory
-
-
-def render(s, context):
-    t = jingo.get_env().from_string(s)
-    return t.render(context)
 
 
 class SimpleSearchTests(ElasticTestCase):

@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% from "wiki/includes/sidebar_modules.html" import document_tools with context %}
+{% from 'includes/common_macros.html' import for_contributors_sidebar %}
+{% if not styles %}
+  {% set styles = ('forums',) %}
+{% endif %}
+{% if not scripts %}
+  {% set scripts = ('forums',) %}
+{% endif %}
+{% set meta = (('robots', 'noindex'),) %}
+
+{% block side_top %}
+  {% block side_top_top %}{% endblock %}
+  {% if document %}
+    {{ document_tools(document, document.parent, user, 'discussion', settings) }}
+  {% else %}
+	{{ for_contributors_sidebar(user, settings.WIKI_DEFAULT_LANGUAGE, active='article-discussions') }}
+  {% endif %}
+  {% if user.is_authenticated() %}
+    <div id="doc-watch">
+      {% include "kbforums/includes/watch_locale.html" %}
+    </div>
+  {% endif %}
+{% endblock %}

@@ -6,7 +6,7 @@ from nose.tools import eq_
 from pyquery import PyQuery as pq
 
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.sumo.helpers import urlparams
+from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.products.tests import ProductFactory, TopicFactory
 from kitsune.questions.feeds import QuestionsFeed, TaggedQuestionsFeed
 from kitsune.questions.models import Question

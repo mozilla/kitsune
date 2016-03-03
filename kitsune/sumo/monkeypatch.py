@@ -1,3 +1,5 @@
+from functools import wraps
+
 from django.forms import fields
 from django.forms import widgets
 
@@ -91,11 +93,49 @@ def patch():
     admin.site = AdminSitePlus()
     admin.site.login = login_required(admin.site.login)
 
-    from jingo.monkey import patch
-    patch()
-
     # Monkey patch django's csrf
     import session_csrf
     session_csrf.monkeypatch()
 
+    # In testing contexts, patch django.shortcuts.render
+    if 'TESTING' == 'TESTING':
+        monkeypatch_render()
+
     _has_been_patched = True
+
+
+def monkeypatch_render():
+    """
+    Monkeypatches django.shortcuts.render for Jinja2 kung-fu action
+
+    .. Note::
+       Only call this in a testing context!
+    """
+    import django.shortcuts
+
+    def more_info(fun):
+        """Django's render shortcut, but captures information for testing
+        When using Django's render shortcut with Jinja2 templates, none of
+        the information is captured and thus you can't use it for testing.
+        This alleviates that somewhat by capturing some of the information
+        allowing you to test it.
+        Caveats:
+        * it does *not* capture all the Jinja2 templates used to render.
+        Only the topmost one requested by the render() function.
+        """
+        @wraps(fun)
+        def _more_info(request, template_name, *args, **kwargs):
+            resp = fun(request, template_name, *args, **kwargs)
+
+            resp.jinja_templates = [template_name]
+            if args:
+                resp.jinja_context = args[0]
+            elif 'context' in kwargs:
+                resp.jinja_context = kwargs['context']
+            else:
+                resp.jinja_context = {}
+
+            return resp
+        return _more_info
+
+    django.shortcuts.render = more_info(django.shortcuts.render)

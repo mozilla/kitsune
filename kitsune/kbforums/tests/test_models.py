@@ -5,7 +5,7 @@ from nose.tools import eq_
 from kitsune.kbforums.models import Thread
 from kitsune.kbforums.tests import KBForumTestCase, ThreadFactory, PostFactory
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.sumo.helpers import urlparams
+from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.users.tests import UserFactory
 from kitsune.wiki.tests import DocumentFactory
 

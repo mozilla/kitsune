@@ -1,0 +1,24 @@
+{% extends 'email/base.html' %}
+
+{% block content %}
+  <p>{{ _('Your revision has been reviewed.') }}</p>
+
+  <p>
+    {% if approved %}
+      {% trans reviewer=display_name(reviewer), document_title=document_title %}
+        {{ reviewer }} has approved your revision to the document
+        {{ document_title }}.
+      {% endtrans %}
+    {% else %}
+      {% trans reviewer=display_name(reviewer), document_title=document_title %}
+        {{ reviewer }} has reviewed your revision to the document
+        {{ document_title }}.
+      {% endtrans %}
+    {% endif %}
+  </p>
+
+  <p>{{ _('Message from the reviewer:') }}</p>
+  <div class="quote">{{ message|linebreaks }}</div>
+
+  <p><a href="https://{{ host }}{{ revisions_url }}">{{ _('View the history of this document') }}</a></p>
+{% endblock %}

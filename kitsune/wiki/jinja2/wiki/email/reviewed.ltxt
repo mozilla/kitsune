@@ -1,0 +1,25 @@
+{#- This is an email. Whitespace matters! -#}
+{%- autoescape false -%}
+{{ _('Your revision has been reviewed.') }}
+{% if approved %}
+{% trans reviewer=display_name(reviewer), document_title=document_title %}
+{{ reviewer }} has approved your revision to the document
+{{ document_title }}.
+{% endtrans %}
+{% else %}
+{% trans reviewer=display_name(reviewer), document_title=document_title %}
+{{ reviewer }} has reviewed your revision to the document
+{{ document_title }}.
+{% endtrans %}
+{% endif %}
+{{ _('Message from the reviewer:') }}
+
+{{ message }}
+
+{% trans %}
+To view the history of this document, click the following
+link, or paste it into your browser's location bar:
+{% endtrans %}
+
+https://{{ host }}{{ revisions_url }}
+{% endautoescape %}

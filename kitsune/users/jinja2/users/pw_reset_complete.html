@@ -1,0 +1,12 @@
+{% extends "users/base.html" %}
+{% from "users/includes/macros.html" import login_form with context %}
+{% set title = _('Password successfully reset.') %}
+{% set classes = 'password' %}
+
+{% block content %}
+  <article id="pw-reset" class="main">
+    <h1>{{ title }}</h1>
+    <p>{{ _('You can now log in.') }}</p>
+    {{ login_form(form) }}
+  </article>
+{% endblock content %}

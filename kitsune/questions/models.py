@@ -34,9 +34,9 @@ from kitsune.search.models import (
     SearchMappingType, SearchMixin, register_for_indexing,
     register_mapping_type)
 from kitsune.search.tasks import index_task
-from kitsune.sumo.helpers import urlparams
+from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.models import ModelBase, LocaleField
-from kitsune.sumo.helpers import wiki_to_html
+from kitsune.sumo.templatetags.jinja_helpers import wiki_to_html
 from kitsune.sumo.urlresolvers import reverse, split_path
 from kitsune.tags.models import BigVocabTaggableMixin
 from kitsune.tags.utils import add_existing_tag

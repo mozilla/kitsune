@@ -66,7 +66,8 @@ def update_question_vote_chunk(data):
         """ % ids
     cursor = connection.cursor()
     cursor.execute(sql)
-    transaction.commit_unless_managed()
+    if not transaction.get_connection().in_atomic_block:
+        transaction.commit()
 
     # Next we update our index with the changes we made directly in
     # the db.

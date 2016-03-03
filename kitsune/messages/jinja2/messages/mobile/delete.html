@@ -1,0 +1,47 @@
+{% extends 'mobile/base.html' %}
+
+{% set headline = _('Delete messages?') %}
+{% set title = headline %}
+
+{% set styles = ('mobile-messages',) %}
+{% set classes = 'mailbox' %}
+
+{% if msgtype == 'inbox' %}
+  {% set cancel_url = url('messages.inbox') %}
+{% else %}
+  {% set cancel_url = url('messages.outbox') %}
+{% endif %}
+
+{% block header_buttons %}
+  <div data-submit="confirm-form" data-name="delete" class="trash-button icon-sprite">{{ _('Trash') }}</div>
+{% endblock %}
+
+{% block content %}
+  <form id="confirm-form" action="{{ request.path }}" method="post">
+    {% csrf_token %}
+    <input type="hidden" name="confirmed" value="1">
+    <ul class="messages">
+      {% for message in msgs %}
+        <li>
+          <article>
+            <input type="hidden" name="id" value="{{ message.id }}">
+            <img class="avatar" src="{{ profile_avatar(message.sender) }}">
+            <span class="details">
+              <span class="meta">
+                <span class="name">
+                  {% if message.sender %}
+                    {{ display_name(message.sender) }}
+                  {% else %}
+                    {{ _('System') }}
+                  {% endif %}
+                </span>
+                {{ datetimeformat(message.created) }}
+              </span>
+              <span class="summary">{{ message.content_parsed|striptags|truncate(length=160) }}</span>
+            </span>
+          </article>
+        </li>
+      {% endfor %}
+    </ul>
+  </form>
+{% endblock %}

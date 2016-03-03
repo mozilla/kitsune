@@ -1,7 +1,0 @@
-{% autoescape false %}
-{# This is an email. Whitespace matters! #}
-{{ content }}
-
----
-
-{{ _('The {domain} team')|f(domain=domain) }}{% endautoescape %}

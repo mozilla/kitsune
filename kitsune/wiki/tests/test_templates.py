@@ -10,9 +10,9 @@ import mock
 from nose.tools import eq_
 
 from kitsune.products.tests import ProductFactory, TopicFactory
-from kitsune.sumo.helpers import urlparams
+from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.tests import post, get, attrs_eq, MobileTestCase
-from kitsune.sumo.tests import SumoPyQuery as pq
+from kitsune.sumo.tests import SumoPyQuery as pq, template_used
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import UserFactory, add_permission
 from kitsune.wiki.events import (
@@ -50,8 +50,7 @@ Changes:
 
 --
 Unsubscribe from these emails:
-https://testserver/en-US/unsubscribe/%(watcher)s?s=%(secret)s
-"""
+https://testserver/en-US/unsubscribe/%(watcher)s?s=%(secret)s"""
 
 
 DOCUMENT_EDITED_EMAIL_CONTENT = u"""\
@@ -75,8 +74,7 @@ Changes:
 
 --
 Unsubscribe from these emails:
-https://testserver/en-US/unsubscribe/%(watcher)s?s=%(secret)s
-"""
+https://testserver/en-US/unsubscribe/%(watcher)s?s=%(secret)s"""
 
 
 APPROVED_EMAIL_CONTENT = u"""\
@@ -98,8 +96,7 @@ Changes:
 
 --
 Unsubscribe from these emails:
-https://testserver/en-US/unsubscribe/%(watcher)s?s=%(secret)s
-"""
+https://testserver/en-US/unsubscribe/%(watcher)s?s=%(secret)s"""
 
 
 class DocumentTests(TestCaseBase):
@@ -429,7 +426,7 @@ class MobileArticleTemplate(MobileTestCase):
         r = ApprovedRevisionFactory(content='Some text.')
         response = self.client.get(r.document.get_absolute_url())
         eq_(200, response.status_code)
-        self.assertTemplateUsed(response, 'wiki/mobile/document.html')
+        assert template_used(response, 'wiki/mobile/document.html')
 
 
 class RevisionTests(TestCaseBase):

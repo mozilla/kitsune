@@ -15,12 +15,12 @@ from django.forms.util import ErrorList
 from django.http import (HttpResponse, HttpResponseRedirect,
                          Http404, HttpResponseBadRequest)
 from django.shortcuts import get_object_or_404, render
+from django.template.loader import render_to_string
 from django.utils.translation import ugettext_lazy as _lazy, ugettext as _
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import (require_GET, require_POST,
                                           require_http_methods)
 
-import jingo
 from mobility.decorators import mobile_template
 from statsd import statsd
 
@@ -28,7 +28,7 @@ from kitsune.access.decorators import login_required
 from kitsune.lib.sumo_locales import LOCALES
 from kitsune.products.models import Product, Topic
 from kitsune.sumo.decorators import ratelimit
-from kitsune.sumo.helpers import urlparams
+from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.redis_utils import redis_client, RedisError
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import paginate, smart_int, get_next_url, truncated_json_dumps, get_browser
@@ -1169,8 +1169,8 @@ def helpful_vote(request, document_slug):
 
             # Send a survey if flag is enabled and vote wasn't helpful.
             if 'helpful' not in request.POST:
-                survey = jingo.render_to_string(
-                    request, 'wiki/includes/unhelpful_survey.html',
+                survey = render_to_string(
+                    'wiki/includes/unhelpful_survey.html',
                     {'vote_id': vote.id})
 
             # Save vote metadata: referrer and search query (if available)

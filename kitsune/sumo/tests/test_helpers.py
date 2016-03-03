@@ -5,13 +5,12 @@ from datetime import datetime
 from django.forms.fields import CharField
 from django.test.client import RequestFactory
 
-import jingo
 from babel.dates import format_date, format_time, format_datetime
 from nose.tools import eq_, assert_raises
 from pyquery import PyQuery as pq
 from pytz import timezone
 
-from kitsune.sumo.helpers import (
+from kitsune.sumo.templatetags.jinja_helpers import (
     datetimeformat, DateTimeFormatError, collapse_linebreaks, url, json,
     timesince, label_with_help, static, urlparams, yesno, number,
     remove)
@@ -19,15 +18,7 @@ from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
 
 
-def render(s, context={}):
-    t = jingo.get_env().from_string(s)
-    return t.render(**context)
-
-
 class TestHelpers(TestCase):
-
-    def setUp(self):
-        jingo.load_helpers()
 
     def test_urlparams_unicode(self):
         context = {'q': u'Français'}

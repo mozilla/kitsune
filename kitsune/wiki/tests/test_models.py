@@ -616,7 +616,7 @@ class RevisionTests(TestCase):
     def test_correct_ready_for_localization_if_insignificant(self):
         """Revision.clean() must clear is_ready_for_l10n if the rev is of
         typo-level significance."""
-        r = ApprovedRevisionFactory.build(
+        r = ApprovedRevisionFactory(
             is_ready_for_localization=True,
             significance=TYPO_SIGNIFICANCE)
         r.clean()

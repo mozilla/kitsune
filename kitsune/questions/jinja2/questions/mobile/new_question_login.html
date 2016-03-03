@@ -1,0 +1,23 @@
+{% extends "mobile/base.html" %}
+{% set title = _('Ask A Question') %}
+{% set headline = title %}
+{% set classes = 'aaq login-register' %}
+{% set styles = ('mobile-aaq',) %}
+{% set hide_extra_content = True %}
+{% set loginform = login_form %}
+{% from "layout/errorlist.html" import errorlist %}
+{% from "questions/includes/aaq_macros.html" import mobile_register_forms %}
+{% from "users/includes/macros.html" import login_form with context %}
+
+{% block content %}
+  {{ mobile_register_forms(register_form) }}
+{% endblock %}
+
+{% block after_main %}
+  <div class="overlay" id="login-overlay" style="display: none;">
+    <header>{{ _('Sign in') }}</header>
+    <div id="login-form" class="wrapper scrollable">
+      {{ login_form(loginform, action='', only_pwreset=True) }}
+    </div>
+  </div>
+{% endblock %}

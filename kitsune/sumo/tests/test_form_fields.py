@@ -21,10 +21,8 @@ class TestFormatDecimal(TestCase):
         eq_(u'1\xa0234,567', num)
 
     def test_xx_YY_locale(self):
-        """Falls back to English for unknown Django locales"""
+        """Falls back to English-like formatting for unknown locales"""
         translation.activate('xx-YY')
-        # Note: this activation does not make Django attempt to use xx-YY
-        eq_('en-us', translation.get_language())
         num = _format_decimal(1234.567)
         eq_('1,234.567', num)
 

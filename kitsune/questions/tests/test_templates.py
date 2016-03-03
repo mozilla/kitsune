@@ -24,7 +24,7 @@ from kitsune.questions.tests import (
     TestCaseBase, tags_eq, QuestionFactory, AnswerFactory, AnswerVoteFactory)
 from kitsune.questions.views import UNAPPROVED_TAG, NO_TAG
 from kitsune.search.tests import ElasticTestCase
-from kitsune.sumo.helpers import urlparams
+from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.tests import (
     get, post, attrs_eq, emailmessage_raise_smtp, TestCase, LocalizingClient)
 from kitsune.sumo.urlresolvers import reverse

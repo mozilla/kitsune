@@ -14,7 +14,7 @@ from kitsune.kpi.models import (
     EXIT_SURVEY_YES_CODE, EXIT_SURVEY_NO_CODE, EXIT_SURVEY_DONT_KNOW_CODE)
 from kitsune.kpi.tests import MetricFactory, MetricKindFactory
 from kitsune.products.tests import ProductFactory
-from kitsune.sumo.helpers import urlparams
+from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.questions.tests import AnswerFactory, AnswerVoteFactory, QuestionFactory

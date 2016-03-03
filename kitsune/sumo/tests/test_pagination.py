@@ -3,7 +3,7 @@ from django.test.client import RequestFactory
 import pyquery
 from nose.tools import eq_, raises
 
-from kitsune.sumo.helpers import paginator
+from kitsune.sumo.templatetags.jinja_helpers import paginator
 from kitsune.sumo.paginator import EmptyPage, PageNotAnInteger
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse

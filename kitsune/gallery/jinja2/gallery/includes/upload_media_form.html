@@ -1,0 +1,93 @@
+{% from "layout/errorlist.html" import errorlist %}
+
+{# these macros are only used here so it's better to define them locally #}
+{% macro raw_row(html, classes, label) %}
+  <label class="row-left {{ classes }}">{{ label }}</label>
+  <div class="row-right {{ classes }}">{{ html|safe }}</div>
+{% endmacro %}
+
+{% macro row(field, classes, label=None) %}
+  {% if not label %}
+    {% set label = field.label %}
+  {% endif %}
+  {{ row_custom(field, field.name + ' ' + classes, label) }}
+{% endmacro %}
+
+{% macro form_row(form, field_name, classes='') %}
+  {% set html = form[field_name] %}
+  {% if form[field_name].help_text %}
+    {% set html = to_unicode('{old_html}<div class="details">{details}</div>')|f(
+                    old_html=html, details=form[field_name].help_text) %}
+  {% endif %}
+  {{ raw_row(html,
+             field_name + ' ' + classes,
+             form[field_name].label) }}
+{% endmacro %}
+
+{% macro submit_row(form, type) %}
+  <div class="upload-action">
+    <input type="submit" name="upload" value="{{ _('Upload file') }}">
+    <input type="submit" name="cancel" class="kbox-cancel link-btn{% if form.instance.pk %} draft{% endif %}" data-action="{{ url('gallery.cancel_draft', media_type=type) }}" value="{{ _('Cancel') }}">
+  </div>
+{% endmacro %}
+
+{% macro image_preview(form, type, name) %}
+  {% set classes = 'preview ' + name %}
+  {% if form.instance.pk and type == 'image' %}
+    {% set html =
+      '<div class="preview-{type} {name}">
+        <img src="{thumbnail_url}">
+      </div>
+      <input type="submit" name="cancel" class="draft link-btn"
+              data-name="{name}" data-action="{action}" value="{value}">'|fe(
+        type=type, name=name,
+        thumbnail_url=form.instance.thumbnail_url_if_set(),
+        action=url('gallery.cancel_draft', media_type=type),
+        value=_('Delete this image')) %}
+    {% set classes = classes + ' on' %}
+  {% else %}
+    {% set classes = classes + ' off' %}
+  {% endif %}
+  {{ raw_row(html, classes, _('Preview')) }}
+{% endmacro %}
+
+{% macro image_fields(form, type, name) %}
+    {{ form_row(form, name, classes='upload-media') }}
+    {{ raw_row('<span></span><a class="{name}" href="{url}">{text}</a>'|fe(
+                 name=name, text=_('Cancel'),
+                 url=url('gallery.gallery', media_type=media_type)),
+               'progress ' + name, _('Progress')) }}
+    {{ image_preview(form, type, name) }}
+{% endmacro %}
+
+
+{% if image_form.instance.pk %}
+  {% set has_draft = True %}
+{% endif %}
+{#
+
+What JS needs to do:
+* Hide/Show progress
+    * Show progress => Disable submit
+    * Hide progress => Enable submit
+
+TODO: better error messages ("invalid file" means too big, or extension, etc)
+
+#}
+<div id="gallery-upload-modal" title="{% if has_draft %}{{ _('Continue Uploading Media') }}{% else %}{{ _('Upload a New Media File') }}{% endif %}" data-modal="true" data-target="#btn-upload" data-id="upload-kbox" data-position="none"
+  data-max-image-size="{{ settings.IMAGE_MAX_FILESIZE }}">
+  <form id="gallery-upload-image" class="upload-form{{ ' draft' if image_form.instance.pk else '' }}"
+    data-post-url="{{ url('gallery.upload_async', media_type='image') }}"
+    method="post" enctype="multipart/form-data"
+    action="{{ url('gallery.upload', media_type='image') }}"
+    data-file="{{ 1 if image_form.instance.file else 0 }}">
+    {% csrf_token %}
+    {# TODO: test for errors only shown during post. #}
+    {{ errorlist(image_form) }}
+    {{ image_fields(image_form, 'image', 'file') }}
+    {{ form_row(image_form, 'locale', classes='metadata') }}
+    {{ form_row(image_form, 'title', classes='metadata') }}
+    {{ form_row(image_form, 'description', classes='metadata') }}
+    {{ submit_row(image_form, 'image') }}
+  </form>
+</div>

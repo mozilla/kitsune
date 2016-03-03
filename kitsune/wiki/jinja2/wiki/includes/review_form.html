@@ -1,0 +1,92 @@
+{% from "layout/errorlist.html" import errorlist %}
+{% from "wiki/includes/document_macros.html" import revision_contributors_label %}
+{% if revision.reviewed or current_revision_id > revision.id %}
+  <p><a href="{{ url('wiki.document_revisions', document.slug) }}">{{ _('Back to History') }}</a></p>
+{% else %}
+  <div id="actions">
+    <form action="" method="post">
+      {% csrf_token %}
+      <button id="btn-approve" class="btn btn-important" type="submit">{% if document.parent %}{{_('Approve Translation')  }}{% else %}{{ _('Approve Revision') }}{% endif %}</button>
+      <button class="btn" id="btn-reject" type="submit">{% if document.parent %}{{_('Defer Translation')  }}{% else %}{{ _('Defer Revision') }}{% endif %}</button>
+      <a href="{{ url('wiki.document_revisions', document.slug) }}">{{ _('Cancel Review') }}</a>
+    </form>
+
+    {% set self_approving = user == revision.creator %}
+
+    <form id="approve-modal" class="kbox" action="" method="post" data-title="{% if document.parent %}{{ _('Accept this Translation') }}{% else %}{{ _('Accept this Revision') }}{% endif %}" data-modal="true" data-target="#btn-approve">
+      {% csrf_token %}
+      {% if self_approving and document.locale == settings.WIKI_DEFAULT_LANGUAGE %}
+        {# Only show self approving warning to en-US reviewers. In other locales, it
+           is usual for the editor and the reviewer to be the same user. #}
+        <p class="warning">
+          {% trans url=url('groups.profile', 'reviewers') %}You are about to approve your own edit.
+          Please consider asking our <a href="{{ url }}">reviewers</a> instead.{% endtrans %}
+        </p>
+      {% endif %}
+      {% if should_ask_significance %}
+        <p>
+          {% trans %}Clicking Accept will make this version of the article live! Please take a moment to be sure all options are correct.{% endtrans %}
+        </p>
+        {{ form.significance }}
+      {% endif %}
+      {% if not should_ask_significance and not self_approving %}
+        <p>
+          {% trans %}Thanks for taking the time to review these changes.
+          Clicking Accept will make this version of the article live! Please take a moment to be sure all options are correct.{% endtrans %}
+        </p>
+      {% endif %}
+      {% if not self_approving or revision_contributors %}
+        {# Show message textbox if isn't a self-approval OR if there are recent contributors. #}
+        <div class="message">
+          <label for="id-approve-comment">
+            {{ revision_contributors_label(revision_contributors) }}
+            {{ form.comment.errors }}
+          </label>
+          <textarea id="id-approve-comment" required name="comment">{% if form.initial %}{{ form.initial.comment }}{% else %}{{ form.comment.data }}{% endif %}</textarea>
+        </div>
+      {% endif %}
+      {% if document.allows(user, 'mark_ready_for_l10n') %}
+        <div class="ready-for-l10n">
+          <label>
+            {{ form.is_ready_for_localization }}
+            {{ form.is_ready_for_localization.label }}
+          </label>
+        </div>
+      {% endif %}
+      {% if document.allows(user, 'edit_needs_change') %}
+        <div class="needs-change">
+          {{ form.needs_change }}
+          {{ form.needs_change|label_with_help }}
+          <div class="comment">
+            {{ form.needs_change_comment|label_with_help }}{{ form.needs_change_comment }}
+          </div>
+        </div>
+      {% endif %}
+      <input type="hidden" name="approve" value="1" />
+      <button class="btn btn-important" type="submit" data-type="submit">{{ _('Accept') }}</button>
+      <a class="kbox-cancel" href="{{ url('wiki.document_revisions', document.slug) }}">{{ _('Cancel') }}</a>
+    </form>
+
+    <form id="reject-modal" class="kbox" action="" method="post" data-title="{% if document.parent %}{{ _('Defer this Translation') }}{% else %}{{ _('Defer this Revision') }}{% endif %}" data-modal="true" data-target="#btn-reject">
+      {% csrf_token %}
+      {% if not self_approving or revision_contributors %}
+        {# Show message textbox if isn't a self-approval OR if there are recent contributors. #}
+        <p>
+          {% trans %}Thanks for taking the time to review these changes.
+          Please thank the editor and then give specific, constructive
+          feedback about what you feel needs to change in order for the
+          revision to be acceptable.{% endtrans %}
+        </p>
+        <div class="message">
+          <label for="id-reject-comment">
+            {{ revision_contributors_label(revision_contributors) }}
+          </label>
+          <textarea id="id-reject-comment" required name="comment">{% if form.initial %}{{ form.initial.comment }}{% else %}{{ form.comment.data }}{% endif %}</textarea>
+        </div>
+      {% endif %}
+      <input type="hidden" name="reject" value="1" />
+      <button class="btn" type="submit" data-type="submit">{{ _('Defer') }}</button>
+      <a class="kbox-cancel" href="{{ url('wiki.document_revisions', document.slug) }}">{{ _('Cancel') }}</a>
+    </form>
+  </div>
+{% endif %}

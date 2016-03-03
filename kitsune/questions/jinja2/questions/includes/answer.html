@@ -1,0 +1,134 @@
+{% from "upload/attachments.html" import attachment %}
+{% from "karma/includes/karma_macros.html" import titles %}
+{% from "wiki/includes/flag_form.html" import flag_form with context %}
+{% from "questions/includes/macros.html" import mark_spam_form, unmark_spam_form with context %}
+
+<div class="answer grid_9 {% if answer.is_spam %}marked-as-spam{% endif %}" {% if answer.id %}id="answer-{{ answer.id }}"{% endif %}>
+  <div class="user-meta">
+    <div class="avatar">
+      <a href="{{ profile_url(answer.creator) }}">
+        <img src="{{ profile_avatar(answer.creator) }}" height="48" width="48" alt="{{ answer.creator }}"/>
+      </a>
+    </div>
+    <div class="asked-by">
+      <a class="author-name" href="{{ profile_url(answer.creator) }}">{{ display_name(answer.creator) }}</a>
+      {{ titles(answer.creator) }}
+      {% if answer.id and question.creator != answer.creator %}
+        <span class="solutions">{{ _('{num} solutions')|f(num=answer.creator_num_solutions) }}</span>
+        <span class="answers">{{ _('{num} answers')|f(num=answer.creator_num_answers) }}</span>
+      {% endif %}
+    </div>
+    {% if answer.id %}
+      <div class="asked-on">
+        {{ _('Posted') }}<br>
+        <a href="{{answer.get_absolute_url()}}"> {{ datetimeformat(answer
+                .created) }} </a>
+      </div>
+    {% endif %}
+  </div>
+  <div class="main-content">
+    {% if answer.id and question.solution == answer %}
+      <h3 class="is-solution"{% if solver %} title="{{ _('Solution chosen by {user}')|f(user=solver.username) }}"{% endif %}>{{_('Chosen Solution')}}</h3>
+    {% elif answer.id and answer in helpful_replies %}
+      <h3 class="is-helpful">{{_('Helpful Reply')}}</h3>
+    {% elif answer.is_spam %}
+      <h3 class="is-spam">{{ _('Marked as spam') }}</h3>
+    {% elif answer.id and answer.creator == question.creator %}
+      <h3 class="is-owner">{{_('Question owner')}}</h3>
+    {% endif %}
+    <div class="content">
+      {% if is_preview %}
+        {# Don't use cached content_parsed #}
+        {{ answer.content|wiki_to_html(locale=request.LANGUAGE_CODE) }}
+      {% else %}
+        {{ answer.content_parsed|safe }}
+      {% endif %}
+    </div>
+
+    <div class="content-raw">{{ answer.content }}</div>
+
+    <div class="ans-attachments attachments-list">
+      {% for image in answer.get_images() %}
+        {{ attachment(image, user, False) }}
+      {% endfor %}
+    </div>
+    {% if answer.updated_by %}
+      <p class="edited">
+        {{ _('Modified {datetime} by {name}')|fe(name=display_name(answer.updated_by), datetime=datetimeformat(answer.updated, format='longdatetime')) }}
+      </p>
+    {% endif %}
+  </div>
+  {% if answer.id and question.editable %}
+    <div class="answer-tools cf">
+      {% if user != answer.creator and not answer.has_voted(request) %}
+        <form class="helpful" action="{{ url('questions.answer_vote', question_id=question.id, answer_id=answer.id) }}" method="post">
+          {{ _('Was this helpful to you?') }}
+          <input type="submit" class="btn" name="helpful" value="{{ _('Yes') }}" />
+          <input type="submit" class="btn" name="not-helpful" value="{{ _('No') }}" />
+          {% if answer.num_votes != 0 %}
+            <span class="helpful-count">
+              {{ answer.num_helpful_votes }}
+            </span>
+          {% endif %}
+        </form>
+      {% endif %}
+      {% if user.has_perm('flagit.can_moderate') %}
+        {% if answer.is_spam %}
+          {{ unmark_spam_form(answer_id=answer.id) }}
+        {% else %}
+          {{ mark_spam_form(answer_id=answer.id) }}
+        {% endif %}
+      {% endif %}
+      <a class="reply quoted-reply" href="#question-reply" data-content-id="answer-{{ answer.id }}">{{ _('Quote') }}</a>
+    </div>
+  {% endif %}
+</div>
+<div class="grid_3">
+  {% if answer.id %}{# answer.id is None when previewing #}
+    {% if question.editable %}
+      {% if not question.solution and question.allows_solve(user) %}
+        <div class="sidebox tight">
+          <form class="solution" action="{{ url('questions.solve', question_id=question.id, answer_id=answer.id) }}" method="post">
+            {% csrf_token %}
+            {% if user == question.creator %}
+              <span class="title">{{ _('Did this reply solve your problem?') }}</span>
+              <input type="submit" class="btn" name="solution" value="{{ _('Solved the problem') }}" />
+            {% else %}
+              <span class="title">{{ _('Does this reply solve the problem?') }}</span>
+              <input type="submit" class="btn" name="solution" value="{{ _('Solves the problem') }}" />
+            {% endif %}
+          </form>
+        </div>
+      {% endif %}
+
+      {% if answer.id and question.solution == answer %}
+        <div class="sidebox tight">
+          <span class="title">{{ _('Solution chosen') }}</span>
+          {% if question.allows_unsolve(user) %}
+            <form class="unsolve" action="{{ url('questions.unsolve', question_id=question.id, answer_id=answer.id) }}" method="post">
+              {% csrf_token %}
+              <input type="submit" name="unsolve" value="{{ _('Undo') }}" />
+            </form>
+          {% endif %}
+        </div>
+      {% endif %}
+    {% endif %}
+
+    <ul class="sidebar-nav tight">
+      {% if answer.id and answer.allows_edit(user, question) %}
+        <li class="edit">
+          <a href="{{ url('questions.edit_answer', question.id, answer.id) }}">{{ _('Edit this post') }}</a>
+        </li>
+      {% endif %}
+      {% if answer.id and answer.allows_delete(user) %}
+        <li class="delete">
+          <a href="{{ url('questions.delete_answer', question.id, answer.id) }}">{{ _('Delete this post') }}</a>
+        </li>
+      {% endif %}
+    </ul>
+
+    {% if answer.allows_flag(user, question)  %}
+      {{ flag_form(url('questions.answer_flag', question.id, answer.id)) }}
+    {% endif %}
+  {% endif %}
+</div>

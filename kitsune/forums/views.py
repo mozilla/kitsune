@@ -17,7 +17,7 @@ from kitsune.forums.feeds import ThreadsFeed, PostsFeed
 from kitsune.forums.forms import (ReplyForm, NewThreadForm, EditThreadForm,
                                   EditPostForm)
 from kitsune.forums.models import Forum, Thread, Post
-from kitsune.sumo.helpers import urlparams
+from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import paginate, is_ratelimited
 from kitsune.users.models import Setting

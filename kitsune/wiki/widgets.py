@@ -1,14 +1,11 @@
 import collections
 
 from django import forms
-from django.conf import settings
-from django.test.client import RequestFactory
-from django.utils.safestring import mark_safe
-
-import jingo
+from django.template.loader import render_to_string
+# from django.utils.safestring import mark_safe
 
 from kitsune.products.models import Topic
-from kitsune.wiki.config import SIGNIFICANCES_HELP
+# from kitsune.wiki.config import SIGNIFICANCES_HELP
 from kitsune.wiki.models import Document
 
 
@@ -28,13 +25,7 @@ class ProductTopicsAndSubtopicsWidget(forms.widgets.SelectMultiple):
             for subtopic in topic.my_subtopics:
                 self.process_topic(value, subtopic)
 
-        # Create a fake request to make jingo happy.
-        req = RequestFactory()
-        req.META = {}
-        req.locale = settings.WIKI_DEFAULT_LANGUAGE
-
-        return jingo.render_to_string(
-            req,
+        return render_to_string(
             'wiki/includes/product_topics_widget.html',
             {
                 'topics': topics,
@@ -63,13 +54,7 @@ class RelatedDocumentsWidget(forms.widgets.SelectMultiple):
         else:
             related_documents = Document.objects.none()
 
-        # Create a fake request to make jingo happy.
-        req = RequestFactory()
-        req.META = {}
-        req.locale = settings.WIKI_DEFAULT_LANGUAGE
-
-        return jingo.render_to_string(
-            req,
+        return render_to_string(
             'wiki/includes/related_docs_widget.html',
             {
                 'related_documents': related_documents,
@@ -77,25 +62,12 @@ class RelatedDocumentsWidget(forms.widgets.SelectMultiple):
             })
 
 
-class RadioInputWithHelpText(forms.widgets.RadioInput):
-    """Extend django's RadioInput with some <div class="help-text" />."""
-    # NOTE: I tried to have the help text be part of the choices tuple,
-    # but it caused all sorts of validation errors in django. For now,
-    # just using SIGNIFICANCES_HELP directly here.
-    def __init__(self, name, value, attrs, choice, index):
-        super(RadioInputWithHelpText, self).__init__(name, value, attrs,
-                                                     choice, index)
-        self.choice_help = SIGNIFICANCES_HELP[choice[0]]
-
-    def __unicode__(self):
-        label = super(RadioInputWithHelpText, self).__unicode__()
-        return mark_safe('%s<div class="help-text">%s</div>' %
-                         (label, self.choice_help))
+class RadioChoiceInputWithHelpText(forms.widgets.RadioChoiceInput):
+    pass
 
 
 class RadioFieldRendererWithHelpText(forms.widgets.RadioFieldRenderer):
     """Modifies django's RadioFieldRenderer to use RadioInputWithHelpText."""
     def __iter__(self):
         for i, choice in enumerate(self.choices):
-            yield RadioInputWithHelpText(self.name, self.value,
-                                         self.attrs.copy(), choice, i)
+            yield RadioChoiceInputWithHelpText(self.name, self.value, self.attrs.copy(), choice, i)

@@ -1,0 +1,13 @@
+<div>{# Dummy wrapper so modal doesn't get shown by details/summary code #}
+  <div id="ready-for-l10n-modal" class="kbox" title="{{ _('Mark as Ready for Localization') }}" data-target="#revision-list div.l10n > a.markasready" data-modal="true">
+    {% csrf_token %}
+    <div>
+      <p>
+        {% trans %}You are about to mark this revision <span class="revtime"></span> as Ready for Localization. Are you sure you wish to proceed?{% endtrans %}
+      </p>
+    </div>
+    <br />
+    <button class="btn btn-important" id="submit-l10n" type="submit">{{ _('Submit') }}</button>
+    <a class="kbox-cancel" href="#cancel">{{ _('Cancel') }}</a>
+  </div>
+</div>

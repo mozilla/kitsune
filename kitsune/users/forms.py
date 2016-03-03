@@ -342,8 +342,7 @@ class PasswordResetForm(DjangoPasswordResetForm):
              use_https=False, token_generator=default_token_generator,
              from_email=None, request=None):
         """
-        Based off of django's but uses jingo and handles html and plain-text
-        emails
+        Based off of django's but handles html and plain-text emails.
         """
         users = User.objects.filter(
             email__iexact=self.cleaned_data["email"], is_active=True)

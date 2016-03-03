@@ -1,0 +1,35 @@
+{% macro flag_form(post_target, bug_support=True) %}
+
+<section id="report-abuse">
+  <a class="link-btn">{{ _('Report Abuse') }}</a>
+  <div class="popup">
+    <a class="kbox-close" href="javascript:void(0)">&#x2716;</a>
+    <h2>{{ _('Report this') }}</h2>
+    <form action="{{ post_target }}" method="post">
+      {% csrf_token %}
+
+      <label><input type="radio" name="reason" value="spam" />
+        {{ _('Spam or other unrelated content') }}
+      </label>
+      <label><input type="radio" name="reason" value="language" />
+        {{ _('Inappropriate language/dialog') }}
+      </label>
+      {% if bug_support %}
+        <label><input type="radio" name="reason" value="bug_support" />
+          {{ _('Misplaced bug report or support request') }}
+        </label>
+      {% endif %}
+      <label><input type="radio" name="reason" value="other" />
+        {{ _('Other (please specify)') }}
+      </label>
+
+      <textarea name="other" placeholder="{{ _('Have more to say?') }}"></textarea>
+
+      <button class="btn btn-submit" type="submit">{{ _('Submit') }}</button>
+    </form>
+
+    <span class="message"></span>
+  </div>
+</section>
+
+{% endmacro %}

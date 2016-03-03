@@ -1,0 +1,14 @@
+{% from "users/includes/macros.html" import register_form as render_register with context %}
+
+<div class="grid_12">
+  <article id="register-form" class="main">
+    <h1>{{ _('Register to be a Contributor') }}</h1>
+    <span>{{ _('You don\'t need to register to <a href="{url}">ask a question</a>.')|fe(url=url('questions.aaq_step1')) }}</span>
+    {% set action = url('users.registercontributor') if contributor else url('users.register') %}
+    {{ render_register(register_form, action=action, contributor=contributor) }}
+  </article>
+</div>
+<div id="login-section" class="grid_12">
+  <h3><a href="#" data-toggle="show-form" data-toggle-target="#login-section">{{ _('I already have an account') }}</a></h3>
+  {% include "users/includes/login-form.html" with context %}
+</div>

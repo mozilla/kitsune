@@ -1,0 +1,39 @@
+{% extends 'users/base.html' %}
+
+{% set title = _('Manage watch list') %}
+{% set classes = 'edit-watches' %}
+{% set active = 'edit-watches' %}
+{% set crumbs = [(None, title)] %}
+
+{% block content %}
+  <div class="grid_9">
+    <article class="main cf">
+      <h1>{{ title }}</h1>
+      {% if watch_list %}
+        <p>
+          {% trans %}
+            Below is a list of items that you have watched. Checked items
+            are items you are currently watching and unchecked items are no
+            longer being watched.
+          {% endtrans %}
+        </p>
+        <form method="post" action="">
+          {% csrf_token %}
+          <ul>
+            {% for w in watch_list %}
+              <li>
+                <label>
+                  <input type="checkbox" name="watch_{{ w.id }}" {% if w.is_active %}checked="checked"{% endif %}>
+                  {{ w.content_type }}: {{ w.content_object }}
+                </label>
+              </li>
+            {% endfor %}
+          </ul>
+          <input type="submit" value="{{ _('Update') }}" />
+        </form>
+      {% else %}
+        {{ _('You are not currently watching anything.') }}
+      {% endif %}
+    </article>
+  </div>
+{% endblock %}

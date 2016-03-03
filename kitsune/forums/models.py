@@ -12,7 +12,7 @@ from tidings.models import NotificationsMixin
 from kitsune import forums
 from kitsune.access import has_perm, perm_is_defined_on
 from kitsune.flagit.models import FlaggedObject
-from kitsune.sumo.helpers import urlparams, wiki_to_html
+from kitsune.sumo.templatetags.jinja_helpers import urlparams, wiki_to_html
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.models import ModelBase
 from kitsune.search.models import (

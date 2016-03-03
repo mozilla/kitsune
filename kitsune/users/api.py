@@ -26,7 +26,7 @@ from kitsune.questions.utils import num_answers, num_solutions, num_questions
 from kitsune.sumo import email_utils
 from kitsune.sumo.api_utils import DateTimeUTCField, GenericAPIException, PermissionMod
 from kitsune.sumo.decorators import json_view
-from kitsune.users.helpers import profile_avatar
+from kitsune.users.templatetags.jinja_helpers import profile_avatar
 from kitsune.users.models import Profile, RegistrationProfile, Setting
 
 

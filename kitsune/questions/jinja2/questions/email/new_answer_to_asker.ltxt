@@ -1,0 +1,25 @@
+{%- from "includes/unsubscribe_text.ltxt" import unsubscribe_text with context -%}
+{%- autoescape false -%}
+{#- L10n: This is an email. Whitespace matters! -#}
+{{ _('Hi {username},')|f(username=display_name(to_user)) }}
+
+{{ _('{answerer} has posted an answer to your question on {host}:')|f(answerer=display_name(answerer), host=host) }}
+{{ question_title }}
+
+{{ _('{answerer} wrote:')|f(answerer=display_name(answerer)) }}
+"{{ answer }}"
+
+{{ _('If this doesn\'t solve your problem, let {answerer} know by replying on the website:')|f(answerer=display_name(answerer)) }}
+https://{{ host }}{{ answer_url }}
+
+{{ _('If this answer solves your problem, please mark it as "solved":') }}
+https://{{ host }}{{ solution_url }}
+
+{{ _('This will help other Firefox users find good answers to their questions!') }}
+
+{{ _('Help other Firefox users by browsing for unsolved questions on {host}:')|f(host=host) }}
+https://{{ host }}/questions?filter=unsolved
+
+{{ _('You might just make someone\'s day!') }}
+
+{{ unsubscribe_text(watch) }}{% endautoescape %}

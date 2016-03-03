@@ -1,18 +1,15 @@
 from django.conf import settings
+from django.template import engines as template_engines
+from django.template.loader import render_to_string
 from django.test.client import RequestFactory
 from django.utils import translation
 
-import jingo
 import mock
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 
 from kitsune.sumo.tests import LocalizingClient, TestCase
 from kitsune.sumo.urlresolvers import reverse
-
-
-def setup():
-    jingo.load_helpers()
 
 
 def test_breadcrumb():
@@ -45,14 +42,14 @@ class BaseTemplateTests(MockRequestTests):
 
     def test_dir_ltr(self):
         """Make sure dir attr is set to 'ltr' for LTR language."""
-        html = jingo.render_to_string(self.request, self.template)
+        html = render_to_string(self.template, request=self.request)
         eq_('ltr', pq(html)('html').attr['dir'])
 
     def test_dir_rtl(self):
         """Make sure dir attr is set to 'rtl' for RTL language."""
         translation.activate('he')
         self.request.LANGUAGE_CODE = 'he'
-        html = jingo.render_to_string(self.request, self.template)
+        html = render_to_string(self.template, request=self.request)
         eq_('rtl', pq(html)('html').attr['dir'])
         translation.deactivate()
 
@@ -62,29 +59,28 @@ class BaseTemplateTests(MockRequestTests):
         feed_urls = (('/feed_one', 'First Feed'),
                      ('/feed_two', 'Second Feed'),)
 
-        doc = pq(jingo.render_to_string(self.request, self.template, {
-            'feeds': feed_urls}))
+        doc = pq(render_to_string(self.template, {'feeds': feed_urls}, request=self.request))
         feeds = doc('link[type="application/atom+xml"]')
         eq_(2, len(feeds))
         eq_('First Feed', feeds[0].attrib['title'])
         eq_('Second Feed', feeds[1].attrib['title'])
 
     def test_readonly_attr(self):
-        html = jingo.render_to_string(self.request, self.template)
+        html = render_to_string(self.template, request=self.request)
         doc = pq(html)
         eq_('false', doc('body')[0].attrib['data-readonly'])
 
     @mock.patch.object(settings._wrapped, 'READ_ONLY', True)
     def test_readonly_login_link_disabled(self):
         """Ensure that login/register links are hidden in READ_ONLY."""
-        html = jingo.render_to_string(self.request, self.template)
+        html = render_to_string(self.template, request=self.request)
         doc = pq(html)
         eq_(0, len(doc('a.sign-out, a.sign-in')))
 
     @mock.patch.object(settings._wrapped, 'READ_ONLY', False)
     def test_not_readonly_login_link_enabled(self):
         """Ensure that login/register links are visible in not READ_ONLY."""
-        html = jingo.render_to_string(self.request, self.template)
+        html = render_to_string(self.template, request=self.request)
         doc = pq(html)
         assert len(doc('a.sign-out, a.sign-in')) > 0
 
@@ -106,9 +102,8 @@ class ErrorListTests(MockRequestTests):
 
         source = ("""{% from "layout/errorlist.html" import errorlist %}"""
                   """{{ errorlist(form) }}""")
-        html = jingo.render_to_string(self.request,
-                                      jingo.get_env().from_string(source),
-                                      {'form': MockForm()})
+        template = template_engines['backend'].from_string(source)
+        html = template.render({'form': MockForm()})
         assert '<"evil&ness' not in html
         assert '&lt;&#34;evil&amp;ness-field&#34;&gt;' in html
         assert '&lt;&#34;evil&amp;ness-non-field&#34;&gt;' in html

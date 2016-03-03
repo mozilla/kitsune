@@ -6,7 +6,7 @@ from nose.tools import eq_
 from kitsune.dashboards.models import METRIC_CODE_CHOICES
 from kitsune.dashboards.tests import WikiMetricFactory
 from kitsune.products.tests import ProductFactory
-from kitsune.sumo.helpers import urlparams
+from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
 

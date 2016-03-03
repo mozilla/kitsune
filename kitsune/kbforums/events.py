@@ -5,7 +5,7 @@ from tidings.events import InstanceEvent, EventUnion, Event
 
 from kitsune.kbforums.models import Thread
 from kitsune.sumo.email_utils import emails_with_users_and_watches
-from kitsune.sumo.helpers import add_utm
+from kitsune.sumo.templatetags.jinja_helpers import add_utm
 from kitsune.wiki.models import Document
 
 

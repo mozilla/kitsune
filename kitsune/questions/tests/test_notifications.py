@@ -11,7 +11,7 @@ from kitsune.questions.events import QuestionReplyEvent, QuestionSolvedEvent
 from kitsune.questions.models import Question
 from kitsune.questions.tests import TestCaseBase, QuestionFactory, AnswerFactory
 from kitsune.sumo.tests import post, attrs_eq, starts_with
-from kitsune.users.helpers import display_name
+from kitsune.users.templatetags.jinja_helpers import display_name
 from kitsune.users.models import Setting
 from kitsune.users.tests import UserFactory
 

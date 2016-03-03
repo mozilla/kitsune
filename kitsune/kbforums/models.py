@@ -6,7 +6,7 @@ from django.db import models
 from tidings.models import NotificationsMixin
 
 from kitsune import kbforums
-from kitsune.sumo.helpers import urlparams, wiki_to_html
+from kitsune.sumo.templatetags.jinja_helpers import urlparams, wiki_to_html
 from kitsune.sumo.models import ModelBase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.wiki.models import Document

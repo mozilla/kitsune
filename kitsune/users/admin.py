@@ -11,6 +11,7 @@ class ProfileAdminForm(forms.ModelForm):
 
     class Meta(object):
         model = Profile
+        exclude = ()
 
 
 class ProfileAdmin(admin.ModelAdmin):

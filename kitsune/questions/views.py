@@ -16,11 +16,11 @@ from django.db.models import Q
 from django.http import (HttpResponseRedirect, HttpResponse, Http404,
                          HttpResponseBadRequest, HttpResponseForbidden)
 from django.shortcuts import get_object_or_404, render, redirect
+from django.template.loader import render_to_string
 from django.utils.translation import ugettext as _, ugettext_lazy as _lazy
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST, require_GET, require_http_methods
 
-import jingo
 import waffle
 from ordereddict import OrderedDict
 from mobility.decorators import mobile_template
@@ -53,7 +53,7 @@ from kitsune.search.es_utils import (ES_EXCEPTIONS, Sphilastic, F,
 from kitsune.search.utils import locale_or_default, clean_excerpt
 from kitsune.sumo.api_utils import JSONRenderer
 from kitsune.sumo.decorators import ssl_required, ratelimit
-from kitsune.sumo.helpers import urlparams
+from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse, split_path
 from kitsune.sumo.utils import paginate, simple_paginate, build_paged_url, is_ratelimited
 from kitsune.tags.utils import add_existing_tag
@@ -61,7 +61,7 @@ from kitsune.upload.api import ImageAttachmentSerializer
 from kitsune.upload.models import ImageAttachment
 from kitsune.upload.views import upload_imageattachment
 from kitsune.users.forms import RegisterForm
-from kitsune.users.helpers import display_name
+from kitsune.users.templatetags.jinja_helpers import display_name
 from kitsune.users.models import Setting
 from kitsune.users.utils import handle_login, handle_register
 from kitsune.wiki.facets import documents_for, topics_for
@@ -494,7 +494,6 @@ def aaq_react(request):
 def aaq(request, product_key=None, category_key=None, showform=False,
         template=None, step=0):
     """Ask a new question."""
-
     # Use react version if waffle flag is set
     if waffle.flag_is_active(request, 'new_aaq'):
         return aaq_react(request)
@@ -1039,8 +1038,11 @@ def question_vote(request, question_id):
         if request.is_ajax():
             tmpl = 'questions/includes/question_vote_thanks.html'
             form = _init_watch_form(request)
-            html = jingo.render_to_string(request, tmpl, {'question': question,
-                                                          'watch_form': form})
+            html = render_to_string(tmpl, {
+                'question': question,
+                'user': request.user,
+                'watch_form': form,
+            })
 
             return HttpResponse(json.dumps({
                 'html': html,
@@ -1405,8 +1407,7 @@ def watch_question(request, question_id):
         else:
             tmpl = 'questions/includes/email_subscribe.html'
 
-        html = jingo.render_to_string(request, tmpl, {'question': question,
-                                                      'watch_form': form})
+        html = render_to_string(tmpl, {'question': question, 'watch_form': form})
         return HttpResponse(json.dumps({'html': html}))
 
     if msg:
@@ -1726,7 +1727,7 @@ def screen_share(request, question_id):
     if Setting.get_for_user(request.user, 'questions_watch_after_reply'):
         QuestionReplyEvent.notify(request.user, question)
 
-    message = jingo.render_to_string(request, 'questions/message/screen_share.ltxt', {
+    message = render_to_string('questions/message/screen_share.ltxt', {
         'asker': display_name(question.creator), 'contributor': display_name(request.user)})
 
     return HttpResponseRedirect('%s?to=%s&message=%s' % (reverse('messages.new'),

@@ -1,0 +1,90 @@
+{% extends "gallery/media.html" %}
+{% if media_type == 'image' %}
+  {% set delete_this = _('Delete image') %}
+  {% set delete_confirm = _('Are you sure you want to delete this image?') %}
+  {% set delete_warning = _('You are about to permanently delete this image. <strong>This cannot be undone!</strong> Are you sure you want to continue?') %}
+  {% set title = _('Delete image | {t} | Media Gallery')|f(t=media.title) %}
+{% else %}
+  {% set delete_this = _('Delete video') %}
+  {% set delete_confirm = _('Are you sure you want to delete this video?') %}
+  {% set delete_warning = _('You are about to permanently delete this video. <strong>This cannot be undone!</strong> Are you sure you want to continue?') %}
+  {% set title = _('Delete video | {t} | Media Gallery')|f(t=media.title) %}
+{% endif %}
+{% set crumbs = [(url('gallery.gallery', media_type), _('Media Gallery')),
+                 (url('gallery.media', media_type, media.id), media.title),
+                 (None, delete_this)] %}
+
+{% block content %}
+  <div id="media-object-delete" class="main grid_12">
+    <h2>{{ delete_confirm }}</h2>
+    <div class="content-box">
+      <div id="media-metainfo">
+        <ul id="media-info" class="cf">
+          {% if media_type =='image' %}
+            <li class="dimensions">
+              {{ media.file.width }} x {{ media.file.height }} px
+            </li>
+            <li class="size">
+              {{ media.file.size // 1024 }} KB
+            </li>
+            {% else %}{# video #}
+            {% if media.flv %}
+              <li class="format-flv">
+                FLV ({{ media.flv.size // 1024 }} KB)
+              </li>
+            {% endif %}
+            {% if media.ogv %}
+              <li class="format-ogv">
+                OGV ({{ media.ogv.size // 1024 }} KB)
+              </li>
+            {% endif %}
+            {% if media.webm %}
+              <li class="format-webm">
+                WEBM ({{ media.webm.size // 1024 }} KB)
+              </li>
+            {% endif %}
+          {% endif %}
+          {% if media_format %}
+            <li class="format">{{ media_format|upper }}</li>
+          {% endif %}
+        </ul>
+        <ul id="media-meta" class="cf">
+          <li class="creator">{{ _('by {user}')|f(user=media.creator) }}</li>
+          <li class="created">{{ _('Uploaded {date}')|fe(date=datetimeformat(media.created, format='datetime')) }}</li>
+          <li class="locale">{{ settings.LANGUAGES_DICT[media.locale.lower()] }}</li>
+        </ul>
+        {% if media_type == 'video' %}
+          <ul class="cf">
+            {% if media.flv %}
+              <li>FLV</li>
+            {% endif %}
+            {% if media.ogv %}
+              <li>OGV</li>
+            {% endif %}
+            {% if media.webm %}
+              <li>WEBM</li>
+            {% endif %}
+          </ul>
+        {% endif %}
+      </div>
+
+      <div id="media-view">
+        {% if media_type == 'video' %}
+          <div>{{ generate_video(media) }}</div>
+        {% else %}
+          <div><img src="{{ media.file.url }}" alt="{{ media.title }}" /></div>
+        {% endif %}
+      </div>
+    </div>
+    <div class="submit">
+      <form action="{{ url('gallery.delete_media', media_type, media.id) }}" method="post">
+        {% csrf_token %}
+        <p>{{ delete_warning|safe }}</p>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-submit big">{{ delete_this }}</button>
+          <a class="btn" href="{{ url('gallery.media', media_type, media.id) }}">{{ _('Cancel') }}</a>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}

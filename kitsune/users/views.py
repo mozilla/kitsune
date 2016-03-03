@@ -33,7 +33,7 @@ from kitsune.questions.utils import (
     num_questions, num_answers, num_solutions, mark_content_as_spam)
 from kitsune.sumo import email_utils
 from kitsune.sumo.decorators import ssl_required, json_view
-from kitsune.sumo.helpers import urlparams
+from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import get_next_url, simple_paginate
 from kitsune.upload.tasks import _create_image_thumbnail
@@ -41,7 +41,7 @@ from kitsune.users.forms import (
     ProfileForm, AvatarForm, EmailConfirmationForm, AuthenticationForm,
     EmailChangeForm, SetPasswordForm, PasswordChangeForm, SettingsForm,
     ForgotUsernameForm, RegisterForm, PasswordResetForm)
-from kitsune.users.helpers import profile_url
+from kitsune.users.templatetags.jinja_helpers import profile_url
 from kitsune.users.models import (
     CONTRIBUTOR_GROUP, Group, Profile, RegistrationProfile, EmailChange,
     Deactivation)
@@ -600,6 +600,9 @@ def password_reset(request, template):
         form = PasswordResetForm(request.POST)
         was_valid = form.is_valid()
         if was_valid:
+            # TODO: We aren't using Jingo anymore, but I'm not sure what
+            # to do with the below.
+            #
             # TODO: Since we're using Jingo in a way that doesn't
             # override the Django template loader, the pw_reset.ltxt
             # email template must be a Django template and not a Jinja

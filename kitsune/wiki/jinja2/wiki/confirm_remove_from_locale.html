@@ -1,0 +1,18 @@
+{% extends "wiki/base.html" %}
+{% set title = _('Remove {role}')|f(role=role) %}
+{% set crumbs = [(url('wiki.locales'), _('Locales')),
+                 (locale.get_absolute_url(), locale.locale),
+                 (None, title)] %}
+
+{% block content %}
+  <article id="remove-leader" class="main">
+    <h1>{{ _('Are you sure you want to remove {user}?')|f(user=display_name(leader)) }}</h1>
+    <form action="" method="post">
+      {% csrf_token %}
+      <div class="form-actions">
+        <input type="submit" class="btn" value="{{ _('Remove {role}')|f(role=role) }}" />
+        <a href="{{ locale.get_absolute_url() }}">{{ _('Cancel') }}</a>
+      </div>
+    </form>
+  </article>
+{% endblock %}

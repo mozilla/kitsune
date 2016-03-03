@@ -1,0 +1,111 @@
+﻿{% extends "groups/base.html" %}
+{% from "layout/errorlist.html" import errorlist %}
+{% set title = _('{group} | Groups')|f(group=profile.group.name) %}
+
+{% block content %}
+  <article id="group-profile" class="main">
+    <section id="avatar-area">
+      <img src="{{ group_avatar(profile) }}" alt="" />
+      {% if user_can_edit %}
+        <p><a href="{{ url('groups.edit_avatar', profile.slug) }}" title="{{ _('Change avatar') }}">{{ _('Change') }}</a></p>
+        {% if profile.avatar %}
+          <p><a href="{{ url('groups.delete_avatar', profile.slug) }}" title="{{ _('Delete avatar') }}">{{ _('Delete') }}</a></p>
+        {% endif %}
+      {% endif %}
+    </section>
+    <section id="main-area">
+      {% if user.is_staff and user.has_perm('groups.change_groupprofile') %}
+        <a class="edit" href="{{ url('admin:groups_groupprofile_change', profile.id) }}">{{ _('Edit in admin') }}</a>
+      {% endif %}
+      <h1>{{ profile.group.name }}</h1>
+
+      {% if user_can_edit %}
+        <a class="edit" href="{{ url('groups.edit', profile.slug) }}">{{ _('Edit group profile') }}</a>
+      {% endif %}
+      <div id="doc-content">
+        {{ profile.information_html|safe }}
+      </div>
+
+      <div id="group-leaders" class="editable">
+        {% if user_can_manage_leaders %}
+          <a class="edit" href="#group-leaders">{{ _('Edit group leaders') }}</a>
+        {% endif %}
+        <h2>{{ _('Group Leaders') }}</h2>
+        <ul class="users leaders">
+          {% for user in leaders %}
+            <li>
+              {{ user_row(user) }}
+              {% if user_can_manage_leaders %}
+                <div class="remove edit-mode">
+                  <a href="{{ url('groups.remove_leader', profile.slug, user.id) }}" title="{{ _('Remove user from leaders') }}">&#x2716;</a>
+                </div>
+              {% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+        {% if user_can_manage_leaders %}
+          <form id="add-member-form" class="edit-mode" action="{{ url('groups.add_leader', profile.slug) }}" method="POST">
+            {% csrf_token %}
+            {{ errorlist(leader_form) }}
+            {{ leader_form.users|safe }}
+            <input type="submit" value="{{ _('Add Leader') }}" />
+          </form>
+        {% endif %}
+      </div>
+
+      <div id="group-members" class="editable">
+        {% if user_can_edit %}
+          <a class="edit" href="#group-members">{{ _('Edit group members') }}</a>
+        {% endif %}
+        <h2>{{ _('Group Members') }}</h2>
+        {% if user_can_edit %}
+          <form id="add-member-form" class="edit-mode" action="{{ url('groups.add_member', profile.slug) }}" method="POST">
+            {% csrf_token %}
+            {{ errorlist(member_form) }}
+            {{ member_form.users|safe }}
+            <input type="submit" value="{{ _('Add Member') }}" />
+          </form>
+        {% endif %}
+        <ul class="users members container_12 cf">
+          {% for user in members %}
+            <li class="grid_4">
+              {{ user_row(user) }}
+              {% if user_can_edit %}
+                <div class="remove edit-mode">
+                  <a href="{{ url('groups.remove_member', profile.slug, user.id) }}" title="{{ _('Remove user from group') }}">&#x2716;</a>
+                </div>
+              {% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% if is_paginated %}
+      <div class="pagination">
+        <span class="step-links">
+        {% if members.has_previous() %}
+			<a href="?page={{ members.previous_page_number() }}">{{ _('previous') }}</a>
+        {% endif %}
+			<span class="current">
+			{{ _('Page {0} of {1}.')|fe(members.number, members.paginator.num_pages) }}
+			  </span>
+		{% if members.has_next() %}
+			<a href="?page={{ members.next_page_number() }}">{{ _('next') }}</a>
+        {% endif %}
+		    </span>
+	  </div>
+      {% endif %}
+    </section>
+  </article>
+{% endblock %}
+
+{% macro user_row(user) -%}
+  <div class="avatar">
+    <a href="{{ profile_url(user) }}">
+      <img src="{{ profile_avatar(user) }}" alt="" />
+    </a>
+  </div>
+  <div class="info">
+    <a href="{{ profile_url(user) }}">{{ display_name(user) }}</a>
+    {{ private_message(user) }}
+  </div>
+{%- endmacro %}

@@ -1,0 +1,101 @@
+{% from "wiki/includes/document_macros.html" import show_for, document_watch with context %}
+
+{% macro document_tools(document, parent, user, active, settings, include_showfor=False) -%}
+  {% if not parent %}
+    {% set parent = document %}
+  {% endif %}
+  <nav id="doc-tools">
+    <ul class="sidebar-nav sidebar-folding">
+      <li id="editing-tools-sidebar" {% if active != 'article' %} class="selected"{% endif %}>
+        <span>{{ _('Editing Tools') }}</span>
+        <ul class="sidebar-nav">
+          {% if document %}
+            <li {{ active|class_selected('article') }}>
+              <a href="{{ url('wiki.document', document.slug) }}">{{ _('Article') }}</a>
+            </li>
+          {% endif %}
+          {% if document and document.allow_discussion %}
+            <li {{ active|class_selected('discussion') }}>
+              <a href="{{ url('wiki.discuss.threads', document.slug) }}">{{ _('Discussion') }}</a>
+            </li>
+          {% endif %}
+          {% if document and not document.is_archived and (document.allows(user, 'create_revision') or document.allows(user, 'edit')) and fallback_reason != "fallback_locale" %}
+            <li {{ active|class_selected('edit') }}>
+              <a href="{{ url('wiki.edit_document', document.slug) }}">{{ _('Edit Article') }}</a>
+            </li>
+          {% endif %}
+          {% if document and not document.is_archived and document.is_localizable %}
+            <li {{ active|class_selected('localize') }}>
+              <a href="{{ url('wiki.select_locale', document.slug) }}">{{ _('Translate Article') }}</a>
+            </li>
+          {% endif %}
+          {% if not document and not document.is_archived and parent and parent.is_localizable %}
+            <li {{ active|class_selected('localize') }}>
+              <a href="{{ url('wiki.translate', parent.slug) }}">{{ _('Translate Article') }}</a>
+            </li>
+          {% endif %}
+          {% if parent.is_localizable and fallback_reason == "fallback_locale" %}
+            <li {{ active|class_selected('localize') }}>
+              <a href="{{ url('wiki.translate', parent.slug) }}">{{ _('Translate Article') }}</a>
+            </li>
+          {% endif %}
+          {% if document and parent and parent.is_localizable %}
+            <li {{ active|class_selected('show_translations') }}>
+              <a href="{{ url('wiki.show_translations', parent.slug) }}">{{ _('Show Translations') }}</a>
+            </li>
+          {% endif %}
+          {% if document %}
+            <li {{ active|class_selected('links_here') }}>
+              <a href="{{ url('wiki.what_links_here', document.slug) }}">{{ _('What Links Here') }}</a>
+            </li>
+            <li {{ active|class_selected('history') }}>
+              <a href="{{ url('wiki.document_revisions', document.slug) }}">{{ _('Show History') }}</a>
+            </li>
+          {% endif %}
+          {% if include_showfor %}
+            <li>
+              {{ show_for((document or parent).get_products(), header=False) }}
+            </li>
+          {% endif %}
+        </ul>
+      </li>
+    </ul>
+    <div class="email">{{ document_watch(document, user) }}</div>
+  </nav>
+{%- endmacro %}
+
+{% macro document_notifications(document, user) -%}
+  {% if user.is_authenticated() %}
+    <div id="doc-watch">
+      {% if document.is_watched_by(user) %}
+        <form action="{{ url('wiki.document_unwatch', document.slug) }}" method="post">
+          {% csrf_token %}
+          <input type="submit" class="submit" value="{{ _('Unsubscribe from edit notifications') }}" />
+        </form>
+      {% else %}
+        <form action="{{ url('wiki.document_watch', document.slug) }}" method="post">
+          {% csrf_token %}
+          <input type="submit" class="submit" value="{{ _('Subscribe to edit notifications') }}" />
+        </form>
+      {% endif %}
+    </div>
+  {% endif %}
+{%- endmacro %}
+
+{% macro related_products_sidebar(products) -%}
+  {% if products %}
+    <h4>{{ _('Related products') }}</h4>
+    <ul class="sidebar-nav related-products">
+      {% for product in products %}
+        <li>
+          <a href="{{ url('products.product', product.slug) }}">
+            <span>
+              <img src="{{ STATIC_URL }}sumo/img/blank.png" style="background-image: url('{% if product.image %}{{ product.image.url }}{% else %}{{ STATIC_URL }}products/img/product_placeholder.png{% endif %}');" >
+              {{ product.title }}
+            </span>
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+{%- endmacro %}

@@ -1,0 +1,127 @@
+{% extends "wiki/base.html" %}
+{% from "layout/errorlist.html" import errorlist %}
+{% from "dashboards/includes/macros.html" import localization_sidebar_nav %}
+{% if locale.locale==settings.WIKI_DEFAULT_LANGUAGE %}
+  {% set title = _('[{locale}] KB Team')|f(locale=locale.locale) %}
+{% else %}
+  {% set title = _('[{locale}] Localization Team')|f(locale=locale.locale) %}
+{% endif %}
+{% set crumbs = [(url('wiki.locales'), _('Locales')), (None, locale.locale)] %}
+{% set meta = [('robots', 'noindex, nofollow')] %}
+
+{% block content %}
+  <div class="grid_9">
+    <article id="locale-listing">
+      <h1>{{ title }}</h1>
+
+      <div id="locale-leaders" class="editable">
+        {% if user_can_edit %}
+          <a class="edit" href="#group-leaders">{{ _('Edit locale leaders') }}</a>
+        {% endif %}
+        <h2>{{ _('Locale Leaders') }}</h2>
+        {% if user_can_edit %}
+          <form id="add-leader-form" class="edit-mode" action="{{ url('wiki.add_locale_leader', locale.locale) }}" method="POST">
+            {% csrf_token %}
+            {{ errorlist(leader_form) }}
+            {{ leader_form.users|safe }}
+            <input type="submit" value="{{ _('Add Leader') }}" />
+          </form>
+        {% endif %}
+        <ul class="users leaders cf">
+          {% for user in leaders %}
+            <li class="grid_4">
+              {{ user_row(user) }}
+              {% if user_can_edit %}
+                <div class="remove edit-mode">
+                  <a href="{{ url('wiki.remove_locale_leader', locale.locale, user.id) }}" title="{{ _('Remove user from locale leaders') }}">&#x2716;</a>
+                </div>
+              {% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      <div id="locale-reviewers" class="editable">
+        {% if user_can_edit %}
+          <a class="edit" href="#group-members">{{ _('Edit locale reviewers') }}</a>
+        {% endif %}
+        <h2>{{ _('Locale Reviewers') }}</h2>
+        {% if user_can_edit %}
+          <form id="add-reviewer-form" class="edit-mode" action="{{ url('wiki.add_locale_reviewer', locale.locale) }}" method="POST">
+            {% csrf_token %}
+            {{ errorlist(reviewer_form) }}
+            {{ reviewer_form.users|safe }}
+            <input type="submit" value="{{ _('Add Reviewer') }}" />
+          </form>
+        {% endif %}
+        <ul class="users reviewers cf">
+          {% for user in reviewers %}
+            <li class="grid_4">
+              {{ user_row(user) }}
+              {% if user_can_edit %}
+                <div class="remove edit-mode">
+                  <a href="{{ url('wiki.remove_locale_reviewer', locale.locale, user.id) }}" title="{{ _('Remove user from locale reviewers') }}">&#x2716;</a>
+                </div>
+              {% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      <div id="locale-editors" class="editable">
+        {% if user_can_edit %}
+          <a class="edit" href="#group-members">{{ _('Edit locale editors') }}</a>
+        {% endif %}
+        <h2>{{ _('Locale Editors') }}</h2>
+        {% if user_can_edit %}
+          <form id="add-editor-form" class="edit-mode" action="{{ url('wiki.add_locale_editor', locale.locale) }}" method="POST">
+            {% csrf_token %}
+            {{ errorlist(editor_form) }}
+            {{ editor_form.users|safe }}
+            <input type="submit" value="{{ _('Add Editor') }}" />
+          </form>
+        {% endif %}
+        <ul class="users editors cf">
+          {% for user in editors %}
+            <li class="grid_4">
+              {{ user_row(user) }}
+              {% if user_can_edit %}
+                <div class="remove edit-mode">
+                  <a href="{{ url('wiki.remove_locale_editor', locale.locale, user.id) }}" title="{{ _('Remove user from locale editors') }}">&#x2716;</a>
+                </div>
+              {% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      <div id="active-contributors">
+        <h2>{{ _('{count} Active Contributors (last 90 days)')|f(count=active|count) }}</h2>
+        <ul class="users active cf">
+          {% for user in active %}
+            <li class="grid_4">
+              {{ user_row(user) }}
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+
+    </article>
+  </div>
+{% endblock %}
+
+{% block side_top %}
+  {{ localization_sidebar_nav(locale.locale, 'team', locale.locale==settings.WIKI_DEFAULT_LANGUAGE)}}
+{% endblock %}
+
+{% macro user_row(user) -%}
+  <div class="avatar">
+    <a href="{{ profile_url(user) }}">
+      <img src="{{ profile_avatar(user) }}" alt="" />
+    </a>
+  </div>
+  <div class="info">
+    <a href="{{ profile_url(user) }}">{{ display_name(user) }}</a>
+    {{ private_message(user) }}
+  </div>
+{%- endmacro %}

@@ -9,7 +9,7 @@ from tidings.events import InstanceEvent
 from kitsune.users.auth import get_auth_str
 from kitsune.questions.models import Question
 from kitsune.sumo import email_utils
-from kitsune.sumo.helpers import urlparams, add_utm
+from kitsune.sumo.templatetags.jinja_helpers import urlparams, add_utm
 from kitsune.sumo.urlresolvers import reverse
 
 
@@ -81,7 +81,7 @@ class QuestionReplyEvent(QuestionEvent):
         @email_utils.safe_translation
         def _make_mail(locale, user, context):
             # Avoid circular import issues
-            from kitsune.users.helpers import display_name
+            from kitsune.users.templatetags.jinja_helpers import display_name
 
             is_asker = asker_id == user.id
             if is_asker:

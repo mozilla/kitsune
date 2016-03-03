@@ -3,7 +3,6 @@ import sys
 
 INSTALLED_APPS = list(INSTALLED_APPS)
 MIDDLEWARE_CLASSES = list(MIDDLEWARE_CLASSES)
-JINGO_EXCLUDE_APPS = list(JINGO_EXCLUDE_APPS)
 
 TESTING = 'test' in sys.argv
 
@@ -64,7 +63,6 @@ AXES_BEHIND_REVERSE_PROXY = False
 #     # debug_toolbar breaks the tests.
 #     INSTALLED_APPS += ['debug_toolbar']
 #     MIDDLEWARE_CLASSES += ['debug_toolbar.middleware.DebugToolbarMiddleware']
-#     JINGO_EXCLUDE_APPS += ['debug_toolbar']
 
 #     class ContainsEverything(object):
 #         def __contains__(self, item):

@@ -1,0 +1,114 @@
+{% from "layout/errorlist.html" import errorlist %}
+{% macro login_form(form, next_url='', action=None, only_pwreset=False) -%}
+  {{ errorlist(form) }}
+  <form method="post" action="{{ action if action != None else url('users.login') }}">
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{{ next_url }}" />
+    <fieldset>
+      <ul>
+        <li class="cf">
+          <label for="id_username">{{ _('Username:') }}</label>
+          {{ form.username|safe }}
+        </li>
+        <li class="cf">
+          <label for="id_password">{{ _('Password:') }}</label>
+          {{ form.password|safe }}
+        </li>
+      </ul>
+      <div class="submit">
+        <input type="hidden" name="login" value="1">
+        <button type="submit" data-type="submit" data-name="login" class="btn btn-submit" data-progress="{{ _('Logging in...') }}" data-done="{{ _('Logged in!') }}" data-reset="{{ _('Log in') }}">{{ _('Log in') }}</button>
+      </div>
+    </fieldset>
+  </form>
+  <div id="login-help">
+    {% if only_pwreset %}
+      <a id="reset_password" target="_blank" href="{{ url('users.pw_reset') }}">{{ _("My password isn't working.") }}</a>
+    {% else %}
+      <h3>{{ _('Login Problems?') }}</h3>
+      <ul>
+        <li>
+          <a href="{{ url('users.pw_reset') }}">
+            {{ _("My password isn't working.") }}
+          </a>
+        </li>
+        <li>
+          <a href="{{ url('users.forgot_username') }}">
+            {{ _('I forgot my username.') }}
+          </a>
+        </li>
+        <li>
+          <a href="{{ url('users.resend_confirmation') }}">
+            {{ _("I didn't get a confirmation email.") }}
+          </a>
+        </li>
+      </ul>
+    {% endif %}
+  </div>
+{%- endmacro %}
+
+{% macro register_form(form, action=None, contributor=False, aaq=False) -%}
+  {{ errorlist(form) }}
+  <form method="post" action="{{ action if action != None else
+                                   url('users.register') }}">
+    {% csrf_token %}
+    {% if contributor %}
+      <input type="hidden" name="interested" id="id_for_interested" value="yes" />
+    {% endif %}
+    <ul>
+      {% for field in form if field.name != 'interested' %}
+        {% if field.name == 'username' %}
+          {% set valid_label = _('This username is available.') %}
+        {% elif field.name == 'email' %}
+          {% set valid_label = _('This email looks great!') %}
+        {% else %}
+          {% set valid_label = None %}
+        {% endif %}
+        <li class="cf" {% if valid_label %}data-validate-url="{{ url('users.validate_field') }}" data-valid-label="{{ valid_label }}" {% if field.name == 'email' %}data-validate-extras='["email"]'{% endif %}{% endif %}>
+          {{ field|label_with_help }}
+          {{ field }}
+          <div class="validation-label"></div>
+          {% if field.name == "password"  %}
+            <p id="password-rules">
+              {{ _("Password should be at least 8 characters long and contain at least 1 number.") }}
+            </p>
+          {% elif field.name == "username" %}
+            <p id="username-rules">
+              {{ _("Your username will be shown next to your question in our public support forums.") }}
+            </p>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+    <p>
+      <input id="show-password" type="checkbox" />
+      <label for="show-password">{{ _("Reveal password to check that it's right") }}</label>
+    </p>
+    <div class="submit">
+      <input type="hidden" name="register" value="1">
+      {% set ga_data = [] %}
+      {% if aaq %}{% do ga_data.append('_trackEvent | Ask A Question Flow | step 2 link') %}{% endif %}
+      {% if contributor %}{% do ga_data.append('_trackEvent | Register Click | Contributor') %}{% endif %}
+      <button type="submit" class="btn btn-submit" {% if contributor or aaq %}data-ga-click="{{ ', '.join(ga_data) }}"{% endif %}>
+        {{ _('Create my account') }}
+      </button>
+    </div>
+  </form>
+{%- endmacro %}
+
+{% macro personal_tabs(user, selected) -%}
+  <ul id="user-nav" class="sidebar-nav">
+    <li {{ selected|class_selected('my-profile') }}>
+      <a href="{{ profile_url(user) }}">{{ _('My profile') }}</a>
+    </li>
+    <li {{ selected|class_selected('edit-profile') }}>
+      <a href="{{ url('users.edit_my_profile') }}">{{ _('Edit my profile') }}</a>
+    </li>
+    <li {{ selected|class_selected('edit-settings') }}>
+      <a href="{{ url('users.edit_settings') }}">{{ _('Edit settings') }}</a>
+    </li>
+    <li {{ selected|class_selected('edit-watches') }}>
+      <a href="{{ url('users.edit_watch_list') }}">{{ _('Manage watch list') }}</a>
+    </li>
+  </ul>
+{%- endmacro %}

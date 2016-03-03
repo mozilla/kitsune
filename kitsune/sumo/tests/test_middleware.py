@@ -4,9 +4,8 @@ from django.test.client import RequestFactory
 import mobility
 from nose.tools import eq_
 
-from kitsune.sumo.middleware import (
-    PlusToSpaceMiddleware, DetectMobileMiddleware)
-from kitsune.sumo.tests import TestCase
+from kitsune.sumo.middleware import PlusToSpaceMiddleware, DetectMobileMiddleware
+from kitsune.sumo.tests import TestCase, PyQuery as pq
 
 
 class TrailingSlashMiddlewareTestCase(TestCase):
@@ -74,16 +73,20 @@ class MobileSwitchTestCase(TestCase):
     def test_mobile_0(self):
         response = self.client.get(u'/en-US/?mobile=0')
         eq_(response.status_code, 200)
-        # Make sure a mobile template was not used.
-        assert not any('mobile' in t.name for t in response.templates)
         eq_(self.client.cookies.get(mobility.middleware.COOKIE).value, 'off')
+        # Make sure a mobile template was not used.
+        doc = pq(response.content)
+        eq_(len(doc('#mobile-warning')), 1)
+        eq_(len(doc('header.slide-on-exposed')), 0)
 
     def test_mobile_1(self):
         response = self.client.get(u'/en-US/?mobile=1', follow=True)
         eq_(response.status_code, 200)
-        # Make sure a mobile template was used
-        assert any('mobile' in t.name for t in response.templates)
         eq_(self.client.cookies.get(mobility.middleware.COOKIE).value, 'on')
+        # Make sure a mobile template was used
+        doc = pq(response.content)
+        eq_(len(doc('#mobile-warning')), 0)
+        eq_(len(doc('header.slide-on-exposed')), 1)
 
 
 class MobileDetectTestCase(TestCase):

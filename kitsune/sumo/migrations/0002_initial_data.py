@@ -8,7 +8,7 @@ def create_ratelimit_bypass_perm(apps, schema_editor):
     # First we get or create the content type.
     ContentType = apps.get_model('contenttypes', 'ContentType')
     global_permission_ct, created = ContentType.objects.get_or_create(
-        name='global_permission', app_label='sumo')
+        model='global_permission', app_label='sumo')
 
     # Then we create a permission attached to that content type.
     Permission = apps.get_model('auth', 'Permission')

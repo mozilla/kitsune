@@ -1,0 +1,15 @@
+{% extends "groups/base.html" %}
+{% set title = _('Remove member')|f(group=profile.group.name) %}
+
+{% block content %}
+  <article id="remove-member" class="main">
+    <h1>{{ _('Are you sure you want to remove {user} from {group}?')|f(user=display_name(member), group=profile.group.name) }}</h1>
+    <form action="" method="post">
+      {% csrf_token %}
+      <div class="form-actions">
+        <input type="submit" class="btn" value="{{ _('Remove member') }}" />
+        <a href="{{ url('groups.profile', profile.slug) }}">{{ _('Cancel') }}</a>
+      </div>
+    </form>
+  </article>
+{% endblock %}

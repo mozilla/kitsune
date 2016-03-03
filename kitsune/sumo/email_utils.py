@@ -5,9 +5,9 @@ from django.conf import settings
 from django.contrib.sites.models import Site
 from django.core import mail
 from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
 from django.utils import translation
 
-import jingo
 from premailer import transform
 from django.test.client import RequestFactory
 
@@ -80,7 +80,7 @@ def render_email(template, context):
         req.META = {}
         req.locale = locale
 
-        return jingo.render_to_string(req, template, context)
+        return render_to_string(template, context)
 
     return _render(translation.get_language())
 
