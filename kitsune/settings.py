@@ -919,8 +919,8 @@ TROUBLESHOOTER_ADDON_URL = (
     'https://addons.mozilla.org/firefox/downloads/latest/426841/addon-426841-latest.xpi')
 
 # SurveyGizmo API
-SURVEYGIZMO_USER = ''
-SURVEYGIZMO_PASSWORD = ''
+SURVEYGIZMO_API_TOKEN = None
+SURVEYGIZMO_API_TOKEN_SECRET = None
 
 # Django Rest Framework
 REST_FRAMEWORK = {

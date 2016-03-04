@@ -283,7 +283,9 @@ class CronJobTests(TestCase):
         MetricFactory(kind=yes_kind, start=two_days_back)
 
         # Collect and process.
-        _process_exit_survey_results()
+        with self.settings(SURVEYGIZMO_API_TOKEN='test',
+                           SURVEYGIZMO_API_TOKEN_SECRET='test'):
+            _process_exit_survey_results()
 
         # Verify.
         eq_(4, Metric.objects.count())
