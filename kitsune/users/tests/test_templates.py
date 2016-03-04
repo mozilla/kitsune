@@ -157,6 +157,13 @@ class LoginTests(TestCaseBase):
         doc = pq(response.content)
         assert '"Contributor - Admin"' in doc('body').attr('data-ga-push')
 
+    def test_login_mobile_csrf(self):
+        """The mobile login view should have a CSRF token."""
+        response = self.client.get(reverse('users.login'), {'mobile': 1})
+        eq_(200, response.status_code)
+        doc = pq(response.content)
+        assert doc('#content form input[name="csrfmiddlewaretoken"]')
+
 
 class PasswordResetTests(TestCaseBase):
 
