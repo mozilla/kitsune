@@ -1,9 +1,9 @@
 {% from "layout/errorlist.html" import errorlist %}
 
-{% macro login_form(form, csrf, next_url='', action=None) -%}
+{% macro login_form(form, next_url='', action=None) -%}
   <form method="post" action="{{ action if action != None else url('users.login') }}">
     {{ errorlist(form) }}
-    {{ csrf|safe }}
+    {% csrf_token %}
     <input type="hidden" name="next" value="{{ next_url }}" />
     <fieldset>
       <div>
