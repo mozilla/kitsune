@@ -1482,6 +1482,22 @@ class AAQTemplateTestCase(TestCaseBase):
         # Note: there was already an email sent above
         eq_(1, len(mail.outbox))
 
+    def test_register_through_aaq_has_csrf(self):
+        """Registration form in the AAQ has a CSRF token"""
+        l = QuestionLocale.objects.get(locale=settings.LANGUAGE_CODE)
+        p = ProductFactory(slug='firefox')
+        p.questions_locales.add(l)
+        TopicFactory(slug='fix-problems', product=p)
+
+        self.client.logout()
+        url = reverse('questions.aaq_step5', args=['desktop', 'fix-problems'])
+        url = urlparams(url, search='test')
+
+        response = self.client.get(url, follow=True)
+        doc = pq(response.content)
+        csrf = doc('#register-form form input[name="csrfmiddlewaretoken"]')
+        eq_(len(csrf), 1)
+
     def test_invalid_product_404(self):
         url = reverse('questions.aaq_step2', args=['lipsum'])
         response = self.client.get(url)
