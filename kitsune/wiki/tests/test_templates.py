@@ -415,6 +415,16 @@ class DocumentTests(TestCaseBase):
         # Check that content is available in bn-BD
         eq_(pq(trans_doc.html)('div').text(), doc('#doc-content div').text())
 
+    def test_document_share_link_escape(self):
+        """Ensure that the share link isn't escaped."""
+        r = ApprovedRevisionFactory(
+            content='Test',
+            document__share_link='https://www.example.org',
+        )
+        response = self.client.get(r.document.get_absolute_url())
+        doc = pq(response.content)
+        eq_(doc('.wiki-doc .share-link a').attr('href'), 'https://www.example.org')
+
 
 class MobileArticleTemplate(MobileTestCase):
     def setUp(self):
