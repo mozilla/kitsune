@@ -17,9 +17,12 @@ matrix:
   fast_finish: true
   allow_failures:
    - env: TEST_SUITE=ui
+language: python
+cache: pip
 cache:
   directories:
-  - /home/travis/virtualenv
+  - ~/.cache/bower/
+  - $HOME/kitsune/node_modules
 install: scripts/travis/install.sh
 before_script: scripts/travis/setup.sh
 script: scripts/travis/dispatch.sh $TEST_SUITE

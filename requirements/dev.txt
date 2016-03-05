@@ -1,77 +1,53 @@
 # These requirements are used for the development and testing of
 # Kitsune, but they are not required for running it on servers.
 
-# sha256: YrCJpVvh2JSc0rx-DfC9254Cj678jDIDjMhIYq791uQ
-argparse==1.4.0
-
-# sha256: qRNwGDrqY8h9hIfns5ntLZmnwvFLEI0nwLyK2e9ZXZo
-aspy.yaml==0.2.1
-
-# sha256: 4wgagYLT1LcoPuredsOCvP1N_WRMqABZginC73mKu1M
-cached-property==1.2.0
-
-# sha256: yfS7goDAxl8gqd_IQRV_y0eUYeyuaXKoozNj52k6qRc
-chief-james==1.0.0
-
-# sha256: DLrodg9IUdSApwtyrOWwdfgZHs-Jm8l0J3FeUPsOkLk
-django-debug-toolbar==1.4.0
-
-# sha256: rWInLeCyFLq6vMM5d7CWQlS8BsPcHOaN0-6FNcOdICg
-django-sslserver==0.16
-
-# sha256: x9txeBCraWX2bIzwOYqYydjfmC2jm0zX8WKRHriVlvo
-docutils==0.12
-
-# sha256: ghbIxu4JKuk9UfibyRBFZIyIzZvnfWDPR998om7k-Iw
-flake8==2.5.0
-
-# sha256: 9iU9--BTitLjh72P39kpPJJdY1U_WBPE5Yd0VBZQHm0
-functools32==3.2.3-2
-
-# sha256: Nmc6w3j-7T2qWVYnaoKWmQVlI9eWECeRHwZLUiVerUE
-jsonschema==2.5.1
-
-# sha256: X36m-zqpr-FG0H_W1c7feIdH2LDCnkRzJFPCstsePRY
-mccabe==0.3.1
-
-# sha256: e5YBIl0vUwZjVn0DMm8o8ipKZCPlasGBLWH9IEEmM_I
-ndg-httpsclient==0.3.3
-
-# sha256: _qr7BIbXdjYO-Tm9hbo0z_m2IwE7EygNHjdw04HuK38
-nodeenv==0.13.6
-
-# sha256: REZqm8tW0uVodQ-RUE0SeMdOq7JZowWwbpdbh7UWNdo
-nose-exclude==0.4.1
-
-# sha256: ku47hrXBkhwtnawhe--JkMX4Usi8TZAYyv4PPzuBzTo
-nosenicedots==0.5
-
-# sha256: uLfjVjC1U54moZffxgBb6eHpoTVJazd3I6jrwBuby_8
-pep8==1.6.2
-
-# sha256: 8aToLPNAHbYoWqRAIzJ_7_ogvmMOr36o_lLrDWn0pT8
-pre-commit==0.7.0
-
-# sha256: 854zpMA77q2HdPAFvT7PDD8vJk-gIB3pZfzgr_HTQmM
-pyflakes==1.0.0
-
-# sha256: w2yTiocuX_SUk4szsUqqFWy0OexnVI_Ks1Nbt4sIRug
-PyYAML==3.11
-
-# sha256: 3g_PWkOXVJdd2AIsO_JjdLiC0P5CZaq4gT9Oh-BX7tU
-q==2.6
-
-# sha256: lJM7ZOL-CAfaBhLFdKAhwNrCjHvTxKI3I65aOeqPPQQ
-Sphinx==1.2.3
-
-# sha256: nbB7BHuHmTeK5TLWubFwgANdqNiJCCrX8STeBGn-7qQ
-sphinxcontrib-httpdomain==1.4.0
-
-# sha256: kHGqy9l6mpFQlsGq8NxoSsJnKQTNh221kECF1trJgQ4
-tabulate==0.7.5
-
-# sha256: lM7ehUx4i_w1KArTvkn85vNiWTgp_YuOPKwe0RL-yFc
-testfixtures==4.5.0
-
-# sha256: qryO8YzdvYoqnH-SvEPi_qVLEUczDWXbkg7zzpgS49w
-virtualenv==13.1.2
+argparse==1.4.0 \
+    --hash=sha256:62b089a55be1d8949cd2bc7e0df0bddb9e028faefc8c32038cc84862aefdd6e4
+aspy.yaml==0.2.1 \
+    --hash=sha256:a91370183aea63c87d8487e7b399ed2d99a7c2f14b108d27c0bc8ad9ef595d9a
+cached-property==1.2.0 \
+    --hash=sha256:e3081a8182d3d4b7283eeade76c382bcfd4dfd644ca800598229c2ef798abb53
+chief-james==1.0.0 \
+    --hash=sha256:c9f4bb8280c0c65f20a9dfc841157fcb479461ecae6972a8a33363e7693aa917
+django-debug-toolbar==1.4.0 \
+    --hash=sha256:0cbae8760f4851d480a70b72ace5b075f8191ecf899bc97427715e50fb0e90b9
+django-sslserver==0.16 \
+    --hash=sha256:ad62272de0b214bababcc33977b0964254bc06c3dc1ce68dd3ee8535c39d2028
+docutils==0.12 \
+    --hash=sha256:c7db717810ab6965f66c8cf0398a98c9d8df982da39b4cd7f162911eb89596fa
+flake8==2.5.0 \
+    --hash=sha256:8216c8c6ee092ae93d51f89bc91045648c88cd9be77d60cf47df7ca26ee4f88c
+functools32==3.2.3-2 \
+    --hash=sha256:f6253dfbe0538ad2e387bd8fdfd9293c925d63553f5813c4e587745416501e6d
+jsonschema==2.5.1 \
+    --hash=sha256:36673ac378feed3daa5956276a829699056523d7961027911f064b52255ead41
+mccabe==0.3.1 \
+    --hash=sha256:5f7ea6fb3aa9afe146d07fd6d5cedf788747d8b0c29e44732453c2b2db1e3d16
+ndg-httpsclient==0.3.3 \
+    --hash=sha256:7b9601225d2f530663567d03326f28f22a4a6423e56ac1812d61fd20412633f2
+nodeenv==0.13.6 \
+    --hash=sha256:feaafb0486d776360ef939bd85ba34cff9b623013b13280d1e3770d381ee2b7f
+nose-exclude==0.4.1 \
+    --hash=sha256:44466a9bcb56d2e568750f91504d1278c74eabb259a305b06e975b87b51635da
+nosenicedots==0.5 \
+    --hash=sha256:92ee3b86b5c1921c2d9dac217bef8990c5f852c8bc4d9018cafe0f3f3b81cd3a
+pep8==1.6.2 \
+    --hash=sha256:b8b7e35630b5539e26a197dfc6005be9e1e9a135496b377723a8ebc01b9bcbff
+pre-commit==0.7.0 \
+    --hash=sha256:f1a4e82cf3401db6285aa44023327feffa20be630eaf7ea8fe52eb0d69f4a53f
+pyflakes==1.0.0 \
+    --hash=sha256:f39e33a4c03beead8774f005bd3ecf0c3f2f264fa0201de965fce0aff1d34263
+PyYAML==3.11 \
+    --hash=sha256:c36c938a872e5ff494938b33b14aaa156cb439ec67548fcab3535bb78b0846e8
+q==2.6 \
+    --hash=sha256:de0fcf5a439754975dd8022c3bf26374b882d0fe4265aab8813f4e87e057eed5
+Sphinx==1.2.3 \
+    --hash=sha256:94933b64e2fe0807da0612c574a021c0dac28c7bd3c4a23723ae5a39ea8f3d04
+sphinxcontrib-httpdomain==1.4.0 \
+    --hash=sha256:9db07b047b8799378ae532d6b9b17080035da8d889082ad7f124de0469feeea4
+tabulate==0.7.5 \
+    --hash=sha256:9071aacbd97a9a915096c1aaf0dc684ac2672904cd876db5904085d6dac9810e
+testfixtures==4.5.0 \
+    --hash=sha256:94cede854c788bfc35280ad3be49fce6f362593829fd8b8e3cac1ed112fec857
+virtualenv==13.1.2 \
+    --hash=sha256:aabc8ef18cddbd8a2a9c7f92bc43e2fea54b1147330d65db920ef3ce9812e3dc

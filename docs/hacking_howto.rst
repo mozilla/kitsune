@@ -173,26 +173,24 @@ Python Packages
 ---------------
 
 All the pure-Python requirements are provided in the requirements
-directory. We use a tool called ``peep`` to install packages and make sure
+directory. We use ``pip 8.x`` to install packages and make sure
 versions are pinned. ::
 
-    $ ./peep.sh install -r requirements/default.txt
+    $ python scripts/pipstrap.py
+    $ pip install --require-hashes --no-binary=:all: --no-deps -r requirements/default.txt
 
 Additionally, you may install some useful development tools. These are not
 required, but are helpful::
 
-    $ ./peep.sh install -r requirements/dev.txt
+    $ .pip install --require-hashes --no-binary=:all: --no-deps -r requirements/dev.txt
 
 If you intend to run the function UI tests, you will also need to install the
 appropriate dependencies::
 
-    $ ./peep.sh install -r requirements/test.txt
+    $ pip install --require-hashes --no-binary=:all: --no-deps -r requirements/test.txt
 
-If you have any issues installing via ``peep``, be sure you have the required
+If you have any issues installing via ``pip``, be sure you have the required
 header files from the packages listed in the requirements section above.
-
-For more information on ``peep``, refer to the
-`README <https://github.com/erikrose/peep>`_ on the Github page for the project.
 
 Node.js Packages
 -------------------
