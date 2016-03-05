@@ -341,16 +341,20 @@ class ProfileViewSet(mixins.CreateModelMixin,
         Return the most helpful users in the past week.
         """
         start = datetime.now() - timedelta(days=7)
-        # Get a list of users and the number of solutions they have in the last week.
+        # Get a list of top 10 users and the number of solutions they have in the last week.
         # It looks like [{'creator__username': 'bob', 'creator__count': 12}, ...]
         # This uses ``username`` instead of ``id``, because ``username`` appears
         # in the output of ``ProfileFKSerializer``, whereas ``id`` does not.
+        # It also reverse order the dictionary according to amount of solution so that we can get
+        # get top contributors
         raw_counts = (
             Answer.objects
             .exclude(solution_for=None)
             .filter(created__gt=start)
             .values('creator__username')
             .annotate(Count('creator'))
+            .order_by('creator__count')
+            .reverse()[:10]
             )
 
         # Turn that list into a dictionary from username -> count.
@@ -364,9 +368,8 @@ class ProfileViewSet(mixins.CreateModelMixin,
         for u in result:
             u['weekly_solutions'] = username_to_count[u['username']]
 
-        # Return the top 10.
         result.sort(key=lambda u: u['weekly_solutions'], reverse=True)
-        return Response(result[:10])
+        return Response(result)
 
     @detail_route(methods=['POST'])
     def set_setting(self, request, user__username=None):

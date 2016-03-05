@@ -12,7 +12,8 @@ from rest_framework.test import APIClient
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.questions.tests import QuestionFactory, AnswerFactory, AnswerVoteFactory
+from kitsune.questions.tests import (QuestionFactory, AnswerFactory,
+                                     AnswerVoteFactory, SolutionAnswerFactory)
 from kitsune.users import api
 from kitsune.users.models import Profile, Setting
 from kitsune.users.tests import ProfileFactory, SettingFactory, UserFactory
@@ -229,21 +230,33 @@ class TestUserView(TestCase):
 
     def test_weekly_solutions(self):
         eight_days_ago = datetime.now() - timedelta(days=8)
-        # ``a1`` is a solution in the right range.
-        # ``a2`` is a solution, but it is too old.
-        # The third answer is not a solution.
-        a1 = AnswerFactory()
-        a1.question.solution = a1
-        a1.question.save()
-        a2 = AnswerFactory(created=eight_days_ago)
-        a2.question.solution = a2
-        a2.question.save()
+        # First one is a solution, but it is too old.
+        # second answer is not a solution.
+        SolutionAnswerFactory(created=eight_days_ago)
         AnswerFactory()
+        res = self.client.get(reverse('user-weekly-solutions'))
+        eq_(res.status_code, 200)
+        eq_(len(res.data), 0)
+
+        # Check that the data about the contributors is showing currectly
+        user_info_list = []  # Info list with username and their number of solutions
+        top_answer_number = 15
+        for i in range(12):
+            user = UserFactory()
+            [SolutionAnswerFactory(creator=user) for i in range(top_answer_number)]
+            user_info_list.append((user.username, top_answer_number))
+            top_answer_number = top_answer_number - 1
 
         res = self.client.get(reverse('user-weekly-solutions'))
         eq_(res.status_code, 200)
-        eq_(len(res.data), 1)
-        eq_(res.data[0]['username'], a1.creator.username)
+        # Check only 10 users information is present there
+        eq_(len(res.data), 10)
+        # Create a list of the data with only the ``username`` and ``weekly_solutions``
+        data_list = [(data['username'], data['weekly_solutions']) for data in res.data]
+
+        # Check only top 10 contributor information is in the API
+        top_ten = user_info_list[:10]
+        eq_(sorted(top_ten), sorted(data_list))
 
     def test_email_visible_when_signed_in(self):
         p = ProfileFactory()
