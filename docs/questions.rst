@@ -33,6 +33,9 @@ Next, Add a new item to the ``products`` dictionary using something like::
 
 ``'product-slug'`` should be the slug of the ``Product`` object for this product.
 
+You will also need to add a new 96x96 icon to the ``kitsune/static/img/logos.large.sprite.png`` and
+will need to update the ``.logo-sprite`` class in ``questions.less`` to account for the new logo.
+
 
 Question States
 ===============
