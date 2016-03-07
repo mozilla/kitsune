@@ -81,6 +81,13 @@ class AnswerFactory(factory.DjangoModelFactory):
     question = factory.SubFactory(QuestionFactory)
 
 
+class SolutionAnswerFactory(AnswerFactory):
+    @factory.post_generation
+    def set_question_solution(obj, create, extracted, **kwargs):
+        obj.question.solution = obj
+        obj.save()
+
+
 class AnswerVoteFactory(factory.DjangoModelFactory):
     class Meta:
         model = AnswerVote
