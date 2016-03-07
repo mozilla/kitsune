@@ -243,9 +243,9 @@ class TestUserView(TestCase):
         top_answer_number = 15
         for i in range(12):
             user = UserFactory()
-            [SolutionAnswerFactory(creator=user) for i in range(top_answer_number)]
+            SolutionAnswerFactory.create_batch(top_answer_number, creator=user)
             user_info_list.append((user.username, top_answer_number))
-            top_answer_number = top_answer_number - 1
+            top_answer_number -= 1
 
         res = self.client.get(reverse('user-weekly-solutions'))
         eq_(res.status_code, 200)
