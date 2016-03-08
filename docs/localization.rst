@@ -381,10 +381,10 @@ Run::
 
 It'll extract all the strings, create a ``.pot`` file, then create a
 Pirate translation of all strings. The Pirate strings are available in
-the xx locale. After running the ``test_locales.sh`` script, you can
-access the xx locale with:
+the xx_testing locale. After running the ``test_locales.sh`` script, you can
+access the xx_testing locale with:
 
-    http://localhost:8000/xx/
+    http://localhost:8000/xx_testing/
 
 Strings in the Pirate translation have the following properties:
 
@@ -398,7 +398,7 @@ Strings in the Pirate translation have the following properties:
 
 .. Note::
 
-   The xx locale is only available on your local machine. It is not
+   The xx_testing locale is only available on your local machine. It is not
    available on -dev, -stage, or -prod.
 
 

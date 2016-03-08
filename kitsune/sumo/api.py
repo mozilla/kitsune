@@ -13,7 +13,7 @@ def locales_api_view(request):
     locales = {}
     for lang in settings.SUMO_LANGUAGES:
         # FIXME: Need a better way to skip fake locales.
-        if lang == 'xx':
+        if lang == 'xx_testing':
             continue
 
         locale = {

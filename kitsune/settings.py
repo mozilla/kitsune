@@ -166,7 +166,7 @@ SUMO_LANGUAGES = (
     'vi',
     'wo',
     'xh',
-    'xx',  # This is a test locale
+    'xx_testing',
     'yo',
     'zh-CN',
     'zh-TW',
@@ -226,10 +226,10 @@ SIMPLE_WIKI_LANGUAGES = [
 # Languages that should show up in language switcher.
 LANGUAGE_CHOICES = tuple(
     [(lang, LOCALES[lang].native) for lang in SUMO_LANGUAGES
-     if lang != 'xx'])
+     if lang != 'xx_testing'])
 LANGUAGE_CHOICES_ENGLISH = tuple(
     [(lang, LOCALES[lang].english) for lang in SUMO_LANGUAGES
-     if lang != 'xx'])
+     if lang != 'xx_testing'])
 LANGUAGES_DICT = dict([(i.lower(), LOCALES[i].native) for i in SUMO_LANGUAGES])
 LANGUAGES = LANGUAGES_DICT.items()
 
