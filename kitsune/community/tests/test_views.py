@@ -8,7 +8,7 @@ from kitsune.sumo.urlresolvers import reverse
 from kitsune.search.tests import ElasticTestCase
 
 
-class TopContributorsNewTest(ElasticTestCase):
+class TopContributorsNewTests(ElasticTestCase):
     """Tests for the Community Hub user search page."""
     client_class = LocalizingClient
 
@@ -30,3 +30,13 @@ class TopContributorsNewTest(ElasticTestCase):
         target = doc('script[name="contributor-data"]')
         assert bad_string not in target.html()
         assert good_string in target.html()
+
+
+class ContributorsMetricsTests(ElasticTestCase):
+    """Tests for the Community Hub user search page."""
+    client_class = LocalizingClient
+
+    def test_it_works(self):
+        url = reverse('community.metrics')
+        res = self.client.get(url)
+        eq_(res.status_code, 200)
