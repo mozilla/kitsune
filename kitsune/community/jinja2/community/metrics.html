@@ -25,5 +25,61 @@
         </div>
       </div>
     </section>
+
+    <section id="kpi-csat-enus"
+     data-url="{{ url('api.kpi.csat-contributors-kb-enus') }}">
+
+      <h2>{{ _('Contributor Satisfaction: en-us') }}</h2>
+
+      <div class="rickshaw">
+        <div class="inline-controls"></div>
+        <div class="graph-container">
+          <div class="slider"></div>
+          <div class="graph" data-chart-type="rickshaw" data-slug="csat"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="kpi-csat-l10n"
+     data-url="{{ url('api.kpi.csat-contributors-kb-l10n') }}">
+
+      <h2>{{ _('Contributor Satisfaction: l10n') }}</h2>
+
+      <div class="rickshaw">
+        <div class="inline-controls"></div>
+        <div class="graph-container">
+          <div class="slider"></div>
+          <div class="graph" data-chart-type="rickshaw" data-slug="csat"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="kpi-csat-support"
+     data-url="{{ url('api.kpi.csat-contributors-support-forum') }}">
+
+      <h2>{{ _('Contributor Satisfaction: Support Forum') }}</h2>
+
+      <div class="rickshaw">
+        <div class="inline-controls"></div>
+        <div class="graph-container">
+          <div class="slider"></div>
+          <div class="graph" data-chart-type="rickshaw" data-slug="csat"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="kpi-csat-aoa"
+     data-url="{{ url('api.kpi.csat-contributors-aoa') }}">
+
+      <h2>{{ _('Contributor Satisfaction: Army of Awesome') }}</h2>
+
+      <div class="rickshaw">
+        <div class="inline-controls"></div>
+        <div class="graph-container">
+          <div class="slider"></div>
+          <div class="graph" data-chart-type="rickshaw" data-slug="csat"></div>
+        </div>
+      </div>
+    </section>
   </article>
 {% endblock %}
