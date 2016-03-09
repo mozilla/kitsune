@@ -9,6 +9,7 @@ ln -sf /usr/lib/`uname -i`-linux-gnu/libz.so ~/virtualenv/python2.6/lib/
 
 echo "Install Python dependencies"
 python scripts/pipstrap.py
+pip -V
 pip install --require-hashes --no-binary=:all: --no-deps -r requirements/default.txt
 pip install --require-hashes --no-binary=:all: --no-deps -r requirements/dev.txt
 echo
