@@ -123,9 +123,17 @@ def setup_dependencies(ctx):
         activate_env = os.path.join(settings.SRC_DIR, 'virtualenv', 'bin', 'activate_this.py')
         execfile(activate_env, dict(__file__=activate_env))
 
-        ctx.local('pip --version')
-        ctx.local('./peep.sh install -r requirements/default.txt')
-        ctx.local('./peep.sh install -r requirements/server.txt')
+        ctx.local('python scripts/pipstrap.py')
+        ctx.local('pip install'
+                  '--require-hashes'
+                  '--no-binary=:all:'
+                  '--no-deps'
+                  '-r requirements/default.txt')
+        ctx.local('pip install'
+                  '--require-hashes'
+                  '--no-binary=:all:'
+                  '--no-deps'
+                  '-r requirements/server.txt')
         # Make the virtualenv relocatable
         ctx.local('virtualenv-2.7 --relocatable virtualenv')
 

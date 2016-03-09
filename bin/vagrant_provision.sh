@@ -70,8 +70,9 @@ sudo -H -u vagrant -s -- <<EOF
 virtualenv $VENV
 source $VENV/bin/activate
 cd ~/kitsune
-./peep.sh install -r requirements/default.txt
-./peep.sh install -r requirements/dev.txt
+python scripts/pipstrap.py
+pip install --require-hashes --no-binary=:all: --no-deps -r requirements/default.txt
+pip install --require-hashes --no-binary=:all: --no-deps -r requirements/dev.txt
 EOF
 
 # Install npm and included packages (lessc is the one we need of these)

@@ -8,13 +8,15 @@ ln -sf /usr/lib/`uname -i`-linux-gnu/libjpeg.so ~/virtualenv/python2.6/lib/
 ln -sf /usr/lib/`uname -i`-linux-gnu/libz.so ~/virtualenv/python2.6/lib/
 
 echo "Install Python dependencies"
-./peep.sh install -r requirements/dev.txt
-./peep.sh install -r requirements/default.txt
+python scripts/pipstrap.py
+pip -V
+pip install --require-hashes --no-binary=:all: --no-deps -r requirements/default.txt
+pip install --require-hashes --no-binary=:all: --no-deps -r requirements/dev.txt
 echo
 
 # Installing dependencies for UI tests
 if [[ $TEST_SUITE == "ui" ]]; then
-  ./peep.sh install -r requirements/test.txt
+  pip install --require-hashes --no-binary=:all: --no-deps -r requirements/test.txt
 fi
 
 # Optimization: None of the rest is needed for lint tests.
