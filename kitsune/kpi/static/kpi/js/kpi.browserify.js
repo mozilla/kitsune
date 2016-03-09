@@ -3,7 +3,6 @@ import Chart from './components/Chart.es6.js';
 
 let chartSetups = {
   'retention': {
-    'container': $('#kpi-cohort-analysis'),
     'options': {
       axes: {
         xAxis: {
@@ -18,8 +17,18 @@ let chartSetups = {
       }
     }
   },
+  'csat': {
+    'bucket': true,
+    'descriptors': [
+      {
+        name: gettext('Average Satisfaction'),
+        slug: 'csat',
+        func(d) { return d.csat / 100; },
+        type: 'percent'
+      }
+    ]
+  },
   'questions': {
-    'container': $('#kpi-questions'),
     'bucket': true,
     'descriptors': [
       {
@@ -95,7 +104,6 @@ let chartSetups = {
     ]
   },
   'vote': {
-    'container': $('#kpi-vote'),
     'bucket': true,
     'descriptors': [
       {
@@ -113,7 +121,6 @@ let chartSetups = {
     ]
   },
   'activeContributors': {
-    'container': $('#kpi-active-contributors'),
     'bucket': false,
     'descriptors': [
       {
@@ -139,7 +146,6 @@ let chartSetups = {
     ]
   },
   'ctr': {
-    'container': $('#kpi-ctr'),
     'bucket': true,
     'descriptors': [
       {
@@ -151,7 +157,6 @@ let chartSetups = {
     ]
   },
   'visitors': {
-    'container': $('#kpi-visitors'),
     'bucket': true,
     'descriptors': [
       {
@@ -175,7 +180,6 @@ let chartSetups = {
     ]
   },
   'exitSurvey': {
-    'container': $('#exit-survey'),
     'bucket': true,
     'descriptors': [
       {
@@ -208,9 +212,11 @@ let chartSetups = {
 };
 
 $('.graph').each(function() {
-  let chartType = $(this).data('chart-type');
-  let chartSlug = $(this).data('slug');
+  let $graphElem = $(this);
+  let chartType = $graphElem.data('chart-type');
+  let chartSlug = $graphElem.data('slug');
   let chartSettings = chartSetups[chartSlug];
+  chartSettings.container = $graphElem.closest('section');
 
   (chartType === 'd3') ? makeRetentionChart(chartSettings) : makeKPIGraph(chartSettings);
 })
