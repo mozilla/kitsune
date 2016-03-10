@@ -468,7 +468,7 @@ def class_selected(a, b):
 
 
 @library.filter
-def f(string, *args, **kwargs):
+def f(format_string, *args, **kwargs):
     """
     Uses ``str.format`` for string interpolation.
 
@@ -476,11 +476,16 @@ def f(string, *args, **kwargs):
     "positional arguments and keyword arguments"
 
     """
-    return string.format(*args, **kwargs)
+    # Jinja will sometimes give us a str and other times give a unicode
+    # for the `format_string` parameter, and we can't control it, so coerce it here.
+    if isinstance(format_string, str):  # not unicode
+        format_string = unicode(format_string)
+
+    return format_string.format(*args, **kwargs)
 
 
 @library.filter
-def fe(string, *args, **kwargs):
+def fe(format_string, *args, **kwargs):
     """Format a safe string with potentially unsafe arguments. returns a safe string."""
 
     args = [jinja2.escape(smart_text(v)) for v in args]
@@ -488,4 +493,9 @@ def fe(string, *args, **kwargs):
     for k in kwargs:
         kwargs[k] = jinja2.escape(smart_text(kwargs[k]))
 
-    return jinja2.Markup(string.format(*args, **kwargs))
+    # Jinja will sometimes give us a str and other times give a unicode
+    # for the `format_string` parameter, and we can't control it, so coerce it here.
+    if isinstance(format_string, str):  # not unicode
+        format_string = unicode(format_string)
+
+    return jinja2.Markup(format_string.format(*args, **kwargs))
