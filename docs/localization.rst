@@ -419,28 +419,23 @@ You can see help text::
 Getting the Localizations
 =========================
 
-Localizations are not stored in this repository, but are in Mozilla's SVN:
+Localizations are not stored in this repository, but are in a separate Git repo:
 
-    https://svn.mozilla.org/projects/sumo/locales
+    https://github.com/mozilla-l10n/sumo-l10n
 
 You don't need the localization files for general development. However, if
 you need them for something, they're pretty easy to get::
 
     $ cd kitsune
-    $ svn checkout https://svn.mozilla.org/projects/sumo/locales locale
-
-(Alternatively, you can do yourself a favor and use::
-
-    $ git svn clone -r HEAD https://svn.mozilla.org/projects/sumo/locales locale
-
-if you're a git fan.)
+    $ git clone https://github.com/mozilla-l10n/sumo-l10n locale
 
 
 Updating the Localizations
 ==========================
 
 When strings are added or updated, we need to update the templates and PO files
-for localizers, which is pretty easy. Check out the localizations as above, then::
+for localizers. Updating strings is pretty easy. Check out the localizations as
+above, then::
 
     $ python manage.py extract
     $ python manage.py merge
@@ -480,7 +475,7 @@ files in the repository.
 
 We don't store MO files in the repository because they need to change every
 time the corresponding PO file changes, so it's silly and not worth it. They
-are ignored by ``svn:ignore``, but please make sure you don't forcibly add them
+are ignored by ``.gitignore``, but please make sure you don't forcibly add them
 to the repository.
 
 There is a shell script to compile the MO files for you::
