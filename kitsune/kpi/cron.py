@@ -632,7 +632,7 @@ def calculate_csat_metrics():
             timeout=300)
 
         results = json.loads(response.content)
-        total_pages = results['total_pages']
+        total_pages = results['total_pages'] if 'total_pages' in results else 1
         more_pages = page < total_pages
 
         for r in results['data']:
