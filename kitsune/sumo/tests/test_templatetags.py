@@ -13,7 +13,7 @@ from pytz import timezone
 from kitsune.sumo.templatetags.jinja_helpers import (
     datetimeformat, DateTimeFormatError, collapse_linebreaks, url, json,
     timesince, label_with_help, static, urlparams, yesno, number,
-    remove)
+    remove, f, fe)
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
 
@@ -213,3 +213,17 @@ class TimesinceTests(TestCase):
         """Test behavior when date is in the future and also when omitting the
         `now` kwarg."""
         eq_('', timesince(datetime(9999, 1, 2)))
+
+
+class TestFormat(TestCase):
+    """Test the |f and |fe filters"""
+
+    def test_f_handles_unicode_in_ascii_strings(self):
+        var = u'Pśetergnuś'
+        # Note that the format string is not a unicode string.
+        eq_(f('{0}', var), var)
+
+    def test_fe_handles_unicode_in_ascii_strings(self):
+        var = u'Pśetergnuś'
+        # Note that the format string is not a unicode string.
+        eq_(fe('{0}', var), var)
