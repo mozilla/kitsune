@@ -438,6 +438,16 @@ class MobileArticleTemplate(MobileTestCase):
         eq_(200, response.status_code)
         assert template_used(response, 'wiki/mobile/document.html')
 
+    def test_document_share_link_escape(self):
+        """Ensure that the share link isn't escaped."""
+        r = ApprovedRevisionFactory(
+            content='Test',
+            document__share_link='https://www.example.org',
+        )
+        response = self.client.get(r.document.get_absolute_url())
+        doc = pq(response.content)
+        eq_(doc('#wiki-doc .share-link a').attr('href'), 'https://www.example.org')
+
 
 class RevisionTests(TestCaseBase):
     """Tests for the Revision template"""
