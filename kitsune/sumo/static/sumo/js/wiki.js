@@ -657,7 +657,10 @@
       $.post(url, totalData)
         .done(function() {
           var time = new Date(),
-            message = interpolate(gettext('<strong>Draft has been saved on:</strong> %s'), [time]);
+            message = interpolate(gettext('<strong>Draft has been saved on:</strong> %s'), [time]),
+            autoSaveKey = getAutoSaveKey();
+          // Remove the Auto Saved Content
+          localStorage.removeItem(autoSaveKey);
           $draftMessage.html(message).toggleClass('info success').show();
         })
         .fail(function() {
@@ -667,12 +670,18 @@
     });
   }
 
-  function initAutoSave() {
+  function getAutoSaveKey() {
     var autosave = document.querySelector('#autosave-form'),
       docId = autosave.dataset.parentDoc,
       userId = autosave.dataset.userId,
       locale = autosave.dataset.locale,
-      key = docId + userId + locale,
+      key = docId + userId + locale;
+    return key
+  }
+
+  function initAutoSave() {
+    var key = getAutoSaveKey(),
+      autoSavedContent = localStorage.getItem(key),
       contentField = document.querySelector('#id_content');
 
     // Check if the syntex highlighting in enabled
@@ -713,33 +722,31 @@
       });
 
       // Show message only if unsaved content is in loacalstorage
-      if (localStorage.getItem(key)) {
-        var value = localStorage.getItem(key),
-          message = '</strong>' + gettext('You have an unsaved content ') + '</strong>',
-          restore = '<div id=\'restore\' class=\'btn\'>' + gettext('restore') + '</div>',
-          discard = '<div id=\'discard\' class=\'btn\'>' + gettext('discard') + '</divs>',
-          html = '<div id="notice" class=\'info alert\'>' + message + restore + discard + '</div>';
+      if (autoSavedContent) {
+        var message = '</strong>' + gettext('You have an unsaved content ') + '</strong>',
+          restore = '<div class="btn restore_content">' + gettext('restore') + '</div>',
+          discard = '<div class="btn discard_content">' + gettext('discard') + '</divs>',
+          html = '<div id="notice" class="info alert">' + message + restore + discard + '</div>';
 
         $('#content-fields').prepend(html);
 
         // Restore the content if restore button is clicked
-        $('#content-fields #notice #restore').click( function() {
+        $('.restore_content').click( function() {
           if (!highlightingEnabled()) {
-            $('#id_content').val(value);
+            $('#id_content').val(autoSavedContent);
           } else {
-            cm_editor = getCodeMirrorEditor()
-            cm_editor.setValue(value);
+            cm_editor.setValue(autoSavedContent);
           }
 
           $('#content-fields #notice').hide();
         });
-
-        // Discard the content if the discard button is clicked
-        $('#content-fields #notice #discard').click( function() {
-          localStorage.removeItem(key);
-          $('#content-fields #notice').hide();
-        });
       }
+
+      // Discard the content if the discard or submit for review is clicked
+      $('.discard_content').click( function() {
+        localStorage.removeItem(key);
+        $('#content-fields #notice').hide();
+      });
     });
   }
 
