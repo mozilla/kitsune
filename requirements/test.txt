@@ -6,7 +6,7 @@ execnet==1.4.1
 # sha256: plAZY8cl_CVU2r_s6K6aj7XhScCsCkL9KwLFwcV_wRQ
 py==1.4.31
 
-# sha256: hCm2gDypWtF5rS21MjPEKuwDIyeTR7tr3GUruk4r-0k
+# sha256: b61TzL8JA8aduT1nuD31IIGLBsdZftioQHvF_f_V5A4
 pytest==2.9.0
 
 # sha256: zzI98ijiZdZ1XsOaJvKXGsxZoxsN4M_QJtNBJJ2-72k
