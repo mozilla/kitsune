@@ -157,6 +157,11 @@ class TestDateTimeFormat(TestCase):
         self._get_datetime_result(self.locale, self.timezone,
                                   'medium', 'datetime')
 
+    def test_year(self):
+        """Expects year format."""
+        self._get_datetime_result(self.locale, self.timezone,
+                                  'yyyy', 'year')
+
     def test_unknown_format(self):
         """Unknown format raises DateTimeFormatError."""
         date_today = datetime.today()
