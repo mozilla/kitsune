@@ -126,6 +126,15 @@ class MobileTestCase(TestCase):
         self.client.cookies[settings.MOBILE_COOKIE] = 'on'
 
 
+class MinimalViewTestCase(TestCase):
+    def setUp(self):
+        super(MinimalViewTestCase, self).setUp()
+
+    def get_minimal_url(self, document):
+        minimalurl = '?minimal=1&mobile=1'
+        return document.get_absolute_url() + minimalurl
+
+
 def eq_msg(a, b, msg=None):
     """Shorthand for 'assert a == b, "%s %r != %r" % (msg, a, b)'
     """
