@@ -682,6 +682,7 @@
   function initAutoSave() {
     var key = getAutoSaveKey(),
       autoSavedContent = localStorage.getItem(key),
+      time = localStorage.getItem('time' + key),
       contentField = document.querySelector('#id_content');
 
     // Check if the syntex highlighting in enabled
@@ -699,7 +700,10 @@
     }
 
     function save(text) {
+      var time = new Date();
+
       localStorage.setItem(key, text);
+      localStorage.setItem('time' + key, time);
     }
 
     // As the normal editor does not depend on full page load,
@@ -723,12 +727,26 @@
 
       // Show message only if unsaved content is in loacalstorage
       if (autoSavedContent) {
-        var message = '</strong>' + gettext('You have an unsaved content ') + '</strong>',
+        var message = '<p></strong>' + interpolate(gettext('You have an unsaved content saved on %s'), [time]) + '</strong></p>',
           restore = '<div class="btn restore_content">' + gettext('restore') + '</div>',
           discard = '<div class="btn discard_content">' + gettext('discard') + '</divs>',
-          html = '<div id="notice" class="info alert">' + message + restore + discard + '</div>';
+          html = '<div id="notice" class="info alert">' + message + restore + discard + '</div>',
+          $draftNotice = $('#draft_notice');
 
         $('#content-fields').prepend(html);
+
+        // If there is notice about available draft revision, add another message about unsaved content
+        if ($draftNotice) {
+          var extraMessage = '<br> <a href="#content-fields" id="extra_message">' + interpolate(gettext('But you also have an unsaved content saved in your browser on %s'), [time]) + '</a>';
+          $draftNotice.append(extraMessage);
+
+          // If the message is clicked, scroll the contributor to the content field
+          $('#extra_message').click( function() {
+            $('html, body').animate({
+              scrollTop: $('#content-fields').offset().top}, 2000
+            );
+          });
+        }
 
         // Restore the content if restore button is clicked
         $('.restore_content').click( function() {
@@ -745,6 +763,7 @@
       // Discard the content if the discard or submit for review is clicked
       $('.discard_content').click( function() {
         localStorage.removeItem(key);
+        localStorage.removeItem('time' + key);
         $('#content-fields #notice').hide();
       });
     });
