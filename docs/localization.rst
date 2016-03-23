@@ -10,7 +10,7 @@ Kitsune is localized with `gettext <http://www.gnu.org/software/gettext/>`_.
 User-facing strings in the code or templates need to be marked for gettext
 localization.
 
-We use `Verbatim <http://localize.mozilla.org/>`_ to provide an easy interface
+We use `Pontoon <https://pontoon.mozilla.org/>`_ to provide an easy interface
 to localizing these files. Localizers are also free to download the PO files
 and use whatever tool they are comfortable with.
 
@@ -440,12 +440,7 @@ Updating the Localizations
 ==========================
 
 When strings are added or updated, we need to update the templates and PO files
-for localizers. This needs to be coordinated with someone who has rights to
-update the data on `Verbatim <http://localize.mozilla.org/>`_. If you commit
-new strings to SVN and they are not updated right away on Verbatim, there will
-be big merging headaches.
-
-Updating strings is pretty easy. Check out the localizations as above, then::
+for localizers, which is pretty easy. Check out the localizations as above, then::
 
     $ python manage.py extract
     $ python manage.py merge
@@ -538,6 +533,6 @@ Bug description template:
         strings for this locale to production.
 
         Mozilla Support strings can be fixed in the Support Mozilla project
-        in Verbatim <https://localize.mozilla.org/projects/sumo/>.
+        in Pontoon <https://pontoon.mozilla.org/projects/sumo/>.
 
         If you have any questions, let us know.

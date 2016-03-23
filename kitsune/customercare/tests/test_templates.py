@@ -94,7 +94,7 @@ class CannedResponsesTestCase(TestCase):
         eq_(200, r.status_code)
         doc = pq(r.content)
 
-        # Listing all responses, l10n-agnostic (English if not in Verbatim).
+        # Listing all responses, l10n-agnostic (English if not in Pontoon).
         eq_(3, len(doc('#accordion a.reply-topic')))
 
     def test_messed_up_canned_responses(self):
