@@ -226,16 +226,17 @@ def datetimeformat(context, value, format='shortdatetime'):
     else:
         new_value = value
 
-    if 'timezone' not in request.session:
-        if request.user.is_authenticated():
-            try:
-                convert_tzinfo = (Profile.objects.get(user=request.user).timezone or
-                                  default_tzinfo)
-            except (Profile.DoesNotExist, AttributeError):
-                pass
-        request.session['timezone'] = convert_tzinfo
-    else:
-        convert_tzinfo = request.session['timezone']
+    if hasattr(request, 'session'):
+        if 'timezone' not in request.session:
+            if hasattr(request, 'user') and request.user.is_authenticated():
+                try:
+                    convert_tzinfo = (Profile.objects.get(user=request.user).timezone or
+                                      default_tzinfo)
+                except (Profile.DoesNotExist, AttributeError):
+                    pass
+            request.session['timezone'] = convert_tzinfo
+        else:
+            convert_tzinfo = request.session['timezone']
 
     convert_value = new_value.astimezone(convert_tzinfo)
     locale = _babel_locale(_contextual_locale(context))
