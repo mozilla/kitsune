@@ -265,6 +265,9 @@ def datetimeformat(context, value, format='shortdatetime'):
     elif format == 'datetime':
         formatted = format_datetime(convert_value, tzinfo=convert_tzinfo,
                                     locale=locale)
+    elif format == 'year':
+        formatted = format_datetime(convert_value, format='yyyy',
+                                    tzinfo=convert_tzinfo, locale=locale)
     else:
         # Unknown format
         raise DateTimeFormatError
@@ -455,6 +458,11 @@ def static(path):
     except ValueError as err:
         log.error('Static helper error: %s' % err)
         return ''
+
+
+@library.global_function
+def now():
+    return datetime.datetime.now()
 
 
 @library.filter
