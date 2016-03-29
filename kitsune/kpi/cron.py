@@ -635,31 +635,32 @@ def calculate_csat_metrics():
         total_pages = results.get('total_pages', 1)
         more_pages = page < total_pages
 
-        for r in results['data']:
-            try:
-                rating = int(r['[question(3)]'])
-            except ValueError:
-                # CSAT question was not answered
-                pass
-            else:
-                csat[CONTRIBUTORS_CSAT_METRIC_CODE] += rating
-                counts[CONTRIBUTORS_CSAT_METRIC_CODE] += 1
+        if 'data' in results:
+            for r in results['data']:
+                try:
+                    rating = int(r['[question(3)]'])
+                except ValueError:
+                    # CSAT question was not answered
+                    pass
+                else:
+                    csat[CONTRIBUTORS_CSAT_METRIC_CODE] += rating
+                    counts[CONTRIBUTORS_CSAT_METRIC_CODE] += 1
 
-                if len(r['[question(4), option(10010)]']):  # Army of Awesome
-                    csat[AOA_CONTRIBUTORS_CSAT_METRIC_CODE] += rating
-                    counts[AOA_CONTRIBUTORS_CSAT_METRIC_CODE] += 1
+                    if len(r['[question(4), option(10010)]']):  # Army of Awesome
+                        csat[AOA_CONTRIBUTORS_CSAT_METRIC_CODE] += rating
+                        counts[AOA_CONTRIBUTORS_CSAT_METRIC_CODE] += 1
 
-                if len(r['[question(4), option(10011)]']):  # Support Forum
-                    csat[SUPPORT_FORUM_CONTRIBUTORS_CSAT_METRIC_CODE] += rating
-                    counts[SUPPORT_FORUM_CONTRIBUTORS_CSAT_METRIC_CODE] += 1
+                    if len(r['[question(4), option(10011)]']):  # Support Forum
+                        csat[SUPPORT_FORUM_CONTRIBUTORS_CSAT_METRIC_CODE] += rating
+                        counts[SUPPORT_FORUM_CONTRIBUTORS_CSAT_METRIC_CODE] += 1
 
-                if len(r['[question(4), option(10012)]']):  # KB EN-US
-                    csat[KB_ENUS_CONTRIBUTORS_CSAT_METRIC_CODE] += rating
-                    counts[KB_ENUS_CONTRIBUTORS_CSAT_METRIC_CODE] += 1
+                    if len(r['[question(4), option(10012)]']):  # KB EN-US
+                        csat[KB_ENUS_CONTRIBUTORS_CSAT_METRIC_CODE] += rating
+                        counts[KB_ENUS_CONTRIBUTORS_CSAT_METRIC_CODE] += 1
 
-                if len(r['[question(4), option(10013)]']):  # KB L10N
-                    csat[KB_L10N_CONTRIBUTORS_CSAT_METRIC_CODE] += rating
-                    counts[KB_L10N_CONTRIBUTORS_CSAT_METRIC_CODE] += 1
+                    if len(r['[question(4), option(10013)]']):  # KB L10N
+                        csat[KB_L10N_CONTRIBUTORS_CSAT_METRIC_CODE] += rating
+                        counts[KB_L10N_CONTRIBUTORS_CSAT_METRIC_CODE] += 1
 
         page += 1
 
