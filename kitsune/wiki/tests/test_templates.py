@@ -1056,7 +1056,7 @@ class NewRevisionTests(TestCaseBase):
         eq_(200, trans_resp.status_code)
         trans_content = pq(trans_resp.content)
         eq_(0, len(trans_content('.user-messages li')))
-        eq_(1, len(trans_content('.submit .btn-draft')))
+        eq_(2, len(trans_content('.submit .btn-draft')))
 
     def test_restore_draft_revision(self):
         draft = DraftRevisionFactory(creator=self.user)
