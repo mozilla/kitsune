@@ -31,7 +31,7 @@
      data-url="{{ url('api.kpi.csat-contributors-kb-enus') }}">
 
       {# The locale code is not localizable - the data are for English only. #}
-      <h2>{{ _('Contributor Satisfaction: %(locale)s', locale='en-US') }}</h2>
+      <h2>{{ _('Contributor Satisfaction: %(area)s', area='en-US') }}</h2>
 
       <div class="rickshaw">
         <div class="inline-controls"></div>
@@ -45,7 +45,7 @@
     <section id="kpi-csat-l10n"
      data-url="{{ url('api.kpi.csat-contributors-kb-l10n') }}">
 
-      <h2>{{ _('Contributor Satisfaction: l10n') }}</h2>
+      <h2>{{ _('Contributor Satisfaction: %(area)s', area=_('L10N')) }}</h2>
 
       <div class="rickshaw">
         <div class="inline-controls"></div>
@@ -59,7 +59,7 @@
     <section id="kpi-csat-support"
      data-url="{{ url('api.kpi.csat-contributors-support-forum') }}">
 
-      <h2>{{ _('Contributor Satisfaction: Support Forum') }}</h2>
+      <h2>{{ _('Contributor Satisfaction: %(area)s', area=_('Support Forum')) }}</h2>
 
       <div class="rickshaw">
         <div class="inline-controls"></div>
@@ -73,7 +73,7 @@
     <section id="kpi-csat-aoa"
      data-url="{{ url('api.kpi.csat-contributors-aoa') }}">
 
-      <h2>{{ _('Contributor Satisfaction: Army of Awesome') }}</h2>
+      <h2>{{ _('Contributor Satisfaction: %(area)s', area=_('Army of Awesome')) }}</h2>
 
       <div class="rickshaw">
         <div class="inline-controls"></div>
