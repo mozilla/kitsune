@@ -27,7 +27,7 @@
 
     {% if product.slug == 'firefox' %}
       <div class="download-firefox">
-        <a href="http://www.mozilla.org/firefox/new/#download-fx" class="download-button"
+        <a href="https://www.mozilla.org/firefox/new/#download-fx" class="download-button"
          data-ga-click="_trackEvent | Download Button | Panel Opening"
          data-latest-version="{{ latest_version }}">
           <span class="download-content">
@@ -37,9 +37,9 @@
           </span>
         </a>
         <ul class="info">
-          <li><a href="http://www.mozilla.org/firefox/all/">{{ _('Systems and Languages') }}</a></li>
-          <li><a href="http://www.mozilla.org/en-US/firefox/notes">{{ _("What's New") }}</a></li>
-          <li><a href="http://www.mozilla.org/legal/privacy/firefox">{{ _('Privacy') }}</a></li>
+          <li><a href="https://www.mozilla.org/firefox/all/">{{ _('Systems and Languages') }}</a></li>
+          <li><a href="https://www.mozilla.org/firefox/notes">{{ _("What's New") }}</a></li>
+          <li><a href="https://www.mozilla.org/legal/privacy/firefox">{{ _('Privacy') }}</a></li>
         </ul>
       </div>
       <div class="refresh-firefox">
@@ -50,7 +50,7 @@
         <a class="reset-link" href="{{ url('wiki.document', 'refresh-firefox-reset-add-ons-and-settings') }}">
           {{ _('How does it work?') }}
         </a>
-        <a href="http://www.mozilla.org/firefox/new/#download-fx"
+        <a href="https://www.mozilla.org/firefox/new/#download-fx"
          data-ga-click="_trackEvent | Download Button | Panel Opening"
          data-latest-version="{{ latest_version }}">
           {{ _('Download a fresh copy') }}
@@ -60,7 +60,7 @@
 
     {% if product.slug == 'thunderbird' %}
       <div class="download-thunderbird">
-        <a href="http://www.mozilla.org/thunderbird" class="download-button"
+        <a href="https://www.mozilla.org/thunderbird" class="download-button"
          data-ga-click="_trackEvent | Download Button | Download Thunderbird">
           <span class="download-content">
             <strong class="download-title">{{ _('Thunderbird') }}</strong>
@@ -69,9 +69,9 @@
           </span>
         </a>
         <ul class="info">
-          <li><a href="http://www.mozilla.org/thunderbird/all.html">{{ _('Systems and Languages') }}</a></li>
-          <li><a href="http://www.mozilla.org/thunderbird/releases">{{ _('Release Notes') }}</a></li>
-          <li><a href="http://www.mozilla.org/thunderbird/legal/privacy">{{ _('Privacy') }}</a></li>
+          <li><a href="https://www.mozilla.org/thunderbird/all.html">{{ _('Systems and Languages') }}</a></li>
+          <li><a href="https://www.mozilla.org/thunderbird/releases">{{ _('Release Notes') }}</a></li>
+          <li><a href="https://www.mozilla.org/thunderbird/legal/privacy">{{ _('Privacy') }}</a></li>
         </ul>
       </div>
     {% endif %}

@@ -43,7 +43,7 @@ The Contributor Quality Training may have these answered. It
 is possible to get started here:
 {% endtrans %}
 
-http://goo.gl/pKis5g
+https://goo.gl/pKis5g
 
 {#- L10n: This is an email.  Whitespace matters! -#}
 {% trans %}
