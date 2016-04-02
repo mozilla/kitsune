@@ -22,7 +22,7 @@ Bugzilla in the channel.
 ``travis-ci``
 =============
 
-``travis-ci`` is the IRC notifier from `Travis <http://travis-ci.org/>`_.
+``travis-ci`` is the IRC notifier from `Travis <https://travis-ci.org/>`_.
 He tells us about the status of our CI builds.
 
 

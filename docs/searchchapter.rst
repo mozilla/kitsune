@@ -4,7 +4,7 @@
 Search
 ======
 
-Kitsune uses `Elasticsearch <http://www.elasticsearch.org/>`_ to
+Kitsune uses `Elasticsearch <https://www.elastic.co/>`_ to
 power its on-site search facility.
 
 It gives us a number of advantages over MySQL's full-text search or
