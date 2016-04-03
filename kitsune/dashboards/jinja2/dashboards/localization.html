@@ -13,6 +13,14 @@
     <article id="localize" class="dashboards">
       <h1>{{ title }}</h1>
 
+      {% if user.is_anonymous() %}
+        <section id="get-involved-box">
+          <a class="btn btn-submit" href="{{ url('landings.get_involved_l10n') }}">
+            {{ _('Volunteer for Mozilla Support') }}
+          </a>
+        </section>
+      {% endif %}
+
       {% if announcements %}
         <ul class="announcements">
           {% for a in announcements %}
