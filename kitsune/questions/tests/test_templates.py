@@ -1101,6 +1101,21 @@ class QuestionsTemplateTestCase(TestCaseBase):
         response = self.client.get(url)
         eq_(200, response.status_code)
 
+    def test_owner_tab_selected_in_list(self):
+        # Test one tab is selected for no show arg specified
+        questions_list = urlparams(reverse('questions.list', args=['all']))
+        response = self.client.get(questions_list)
+        doc = pq(response.content)
+        eq_(1, len(doc('#owner-tabs > .selected')))
+
+        # Test one tab is selected for all show args
+        show_args = ['needs-attention', 'responded', 'done', 'all']
+        for show_arg in show_args:
+            questions_list = urlparams(reverse('questions.list', args=['all']), show=show_arg)
+            response = self.client.get(questions_list)
+            doc = pq(response.content)
+            eq_(1, len(doc('#owner-tabs > .selected')))
+
     def test_product_filter(self):
         p1 = ProductFactory()
         p2 = ProductFactory()
