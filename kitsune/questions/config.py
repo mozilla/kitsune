@@ -312,17 +312,17 @@ products = SortedDict([
     ('other', {
         'name': _lazy(u'Other Mozilla products'),
         'subtitle': '',
-        'html': 'This site is only provides support for some of our products. '
-                'For other support, please find your product below.'
-                '<ul class="product-support">'
-                '<li><a href="http://www.seamonkey-project.org/doc/">'
-                'SeaMonkey support</a></li>'
-                '<li><a href="http://caminobrowser.org/help/">'
-                'Camino support</a></li>'
-                '<li><a '
-                'href="http://www.mozilla.org/projects/calendar/faq.html">'
-                'Lightning and Sunbird support</a></li>'
-                '</ul>',
+        'html': _lazy(u'This site is only provides support for some of our products. '
+                      u'For other support, please find your product below.'
+                      u'<ul class="product-support">'
+                      u'<li><a href="http://www.seamonkey-project.org/doc/">'
+                      u'SeaMonkey support</a></li>'
+                      u'<li><a href="http://caminobrowser.org/help/">'
+                      u'Camino support</a></li>'
+                      u'<li><a '
+                      u'href="http://www.mozilla.org/projects/calendar/faq.html">'
+                      u'Lightning and Sunbird support</a></li>'
+                      u'</ul>'),
         'categories': SortedDict([]),
         'deadend': True,
     }),
