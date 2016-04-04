@@ -1144,7 +1144,7 @@ class NewRevisionTests(TestCaseBase):
         trans_resp = self.client.get(trans_url, draft_request)
         trans_content = pq(trans_resp.content)
         # Check there is a warning message
-        eq_(2, len(trans_content('.user-messages li')))
+        eq_(1, len(trans_content('.user-messages li.draft-warning')))
 
 
 class HistoryTests(TestCaseBase):

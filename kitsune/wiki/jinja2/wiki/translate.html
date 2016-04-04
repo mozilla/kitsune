@@ -56,7 +56,7 @@
           </li>
         {% endif %}
         {% if more_updated_rev %}
-          <li class="warning">
+          <li class="warning draft-warning">
             <p><strong>{{ _('This version is outdated, but there is a new version <a href="{link}">{revision}</a> available.')|fe(link=url('wiki.revision', document.slug, more_updated_rev.id, locale=locale), revision=more_updated_rev.id) }}</strong></p>
           </li>
         {% endif %}
