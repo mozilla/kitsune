@@ -158,3 +158,42 @@ class ProductViewsTestCase(ElasticTestCase):
         eq_(200, r.status_code)
         pqdoc = pq(r.content)
         eq_(1, len(pqdoc('li.subtopic')))
+
+    def test_community_support_shown_for_default_language(self):
+        """Verifies the get community support is shown in the topics for en-US."""
+        p = ProductFactory(visible=True)
+        l = QuestionLocale.objects.get(locale=settings.LANGUAGE_CODE)
+        p.questions_locales.add(l)
+        d = DocumentFactory(slug='get-community-support', locale=settings.LANGUAGE_CODE)
+        ApprovedRevisionFactory(document=d)
+
+        r = self.client.get(reverse('products'), follow=True)
+        eq_(200, r.status_code)
+        doc = pq(r.content)
+        eq_(1, len(doc('#help-topics .community-support')))
+
+    def test_community_support_not_shown_when_not_localized(self):
+        """Verifies the get community support is not shown when the article is not localized."""
+        p = ProductFactory(visible=True)
+        l = QuestionLocale.objects.get(locale='xx')
+        p.questions_locales.add(l)
+        d = DocumentFactory(slug='get-community-support', locale=settings.LANGUAGE_CODE)
+        ApprovedRevisionFactory(document=d)
+
+        r = self.client.get(reverse('products'), follow=True)
+        eq_(200, r.status_code)
+        doc = pq(r.content)
+        eq_(0, len(doc('#help-topics .community-support')))
+
+    def test_community_support_shown_when_localized(self):
+        """Verifies the get community support is shown when the article is localized."""
+        p = ProductFactory(visible=True)
+        l = QuestionLocale.objects.get(locale='xx')
+        p.questions_locales.add(l)
+        d = DocumentFactory(slug='get-community-support', locale=settings.LANGUAGE_CODE)
+        DocumentFactory(parent=d, locale='xx')
+
+        r = self.client.get(reverse('products'), follow=True)
+        eq_(200, r.status_code)
+        doc = pq(r.content)
+        eq_(1, len(doc('#help-topics .community-support')))
