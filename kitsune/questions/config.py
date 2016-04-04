@@ -161,7 +161,7 @@ products = SortedDict([
 
     ('ios', {
         'name': _lazy(u'Firefox for iOS'),
-        'subtitle': _lazy('Firefox for iPhone, iPad and iPod touch devices'),
+        'subtitle': _lazy(u'Firefox for iPhone, iPad and iPod touch devices'),
         'extra_fields': ['ff_version', 'os', 'plugins'],
         'tags': ['ios'],
         'product': 'ios',
@@ -186,7 +186,7 @@ products = SortedDict([
 
     ('focus', {
         'name': _lazy(u'Focus by Firefox'),
-        'subtitle': _lazy('Content blocker for Safari'),
+        'subtitle': _lazy(u'Content blocker for Safari'),
         'extra_fields': [],
         'tags': ['focus-firefox'],
         'product': 'focus-firefox',
@@ -201,7 +201,7 @@ products = SortedDict([
 
     ('firefox-os', {
         'name': _lazy(u'Firefox OS'),
-        'subtitle': _lazy('Mobile OS for smartphones'),
+        'subtitle': _lazy(u'Mobile OS for smartphones'),
         'extra_fields': ['device', 'os'],
         'tags': [],
         'product': 'firefox-os',
@@ -230,7 +230,7 @@ products = SortedDict([
 
     ('webmaker', {
         'name': _lazy(u'Webmaker'),
-        'subtitle': _lazy('Tools for creating and teaching the web'),
+        'subtitle': _lazy(u'Tools for creating and teaching the web'),
         'extra_fields': [],
         'tags': [],
         'product': 'webmaker',
@@ -267,7 +267,7 @@ products = SortedDict([
 
     ('thunderbird', {
         'name': _lazy(u'Thunderbird'),
-        'subtitle': 'Email software for Windows, Mac and Linux',
+        'subtitle': _lazy(u'Email software for Windows, Mac and Linux'),
         'extra_fields': [],
         'tags': [],
         'product': 'thunderbird',
@@ -297,7 +297,7 @@ products = SortedDict([
                 'tags': ['fix-problems'],
             }),
             ('calendar', {
-                'name': _lazy('Calendar'),
+                'name': _lazy(u'Calendar'),
                 'topic': 'calendar',
                 'tags': ['calendar'],
             }),
