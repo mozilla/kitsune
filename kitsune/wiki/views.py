@@ -1517,8 +1517,7 @@ def _get_next_url_fallback_localization(request):
 
 def _show_revision_warning(document, revision):
     if revision:
-        return document.revisions.filter(created__gt=revision.created,
-                                         reviewed=None).exists()
+        return document.revisions.filter(id__gt=revision.id, reviewed=None).exists()
     return False
 
 
