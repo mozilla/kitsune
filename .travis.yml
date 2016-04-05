@@ -20,8 +20,8 @@ matrix:
 cache:
   directories:
   - /home/travis/virtualenv
-install: scripts/travis/install.sh
-before_script: scripts/travis/setup.sh
+install: travis_retry scripts/travis/install.sh
+before_script: travis_retry scripts/travis/setup.sh
 script: scripts/travis/dispatch.sh $TEST_SUITE
 notifications:
   email: false
