@@ -3,6 +3,7 @@ from pyquery import PyQuery as pq
 
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
+from kitsune.users.tests import UserFactory
 from kitsune.wiki.tests import TranslatedRevisionFactory
 
 
@@ -35,3 +36,18 @@ class LocalizationDashTests(TestCase):
         eq_(200, response.status_code)
         doc = pq(response.content)
         self._assert_readout_contains(doc, 'unreviewed', unreviewed.document.title)
+
+    def test_show_volunteer_button_for_anon(self):
+        resp = self.client.get(reverse('dashboards.localization', locale='es'))
+        eq_(200, resp.status_code)
+        resp_content = pq(resp.content)
+        eq_(1, len(resp_content('#get-involved-box')))
+        eq_(1, len(resp_content('#get-involved-box .btn-submit')))
+
+    def test_hide_volunteer_button_for_authed(self):
+        u1 = UserFactory()
+        self.client.login(username=u1.username, password='testpass')
+        resp = self.client.get(reverse('dashboards.localization', locale='es'))
+        eq_(200, resp.status_code)
+        resp_content = pq(resp.content)
+        eq_(0, len(resp_content('#get-involved-box')))
