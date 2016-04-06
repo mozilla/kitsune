@@ -421,7 +421,7 @@ Getting the Localizations
 
 Localizations are not stored in this repository, but are in Mozilla's SVN:
 
-    http://svn.mozilla.org/projects/sumo/locales
+    https://svn.mozilla.org/projects/sumo/locales
 
 You don't need the localization files for general development. However, if
 you need them for something, they're pretty easy to get::

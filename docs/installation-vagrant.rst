@@ -8,18 +8,18 @@ should try these instructions.
 
 .. note:: **If you have problems getting vagrant up**, please :ref:`contact-us-chapter`.
 
-.. _vagrant: http://vagrantup.com/
-.. _uses NFS to share the current working directory: http://docs.vagrantup.com/v2/synced-folders/nfs.html
+.. _vagrant: https://www.vagrantup.com/
+.. _uses NFS to share the current working directory: https://www.vagrantup.com/docs/synced-folders/nfs.html
 
 Install and run everything
 --------------------------
 
-#. Install VirtualBox 4.x from http://www.virtualbox.org/
+#. Install VirtualBox 4.x from https://www.virtualbox.org/
 
    .. note:: (Windows) After installing VirtualBox you need to set
               PATH=C:\\Program Files\\Oracle\\VirtualBox\\VBoxManage.exe;
 
-#. Install vagrant >= 1.6 using the installer from `vagrantup.com <http://vagrantup.com/>`_
+#. Install vagrant >= 1.6 using the installer from `vagrantup.com <https://www.vagrantup.com/>`_
 
 #. Clone Kitsune::
 
@@ -31,7 +31,7 @@ Install and run everything
       vagrant up
 
    .. note:: VirtualBox creates VMs in your system drive.
-             If it won't fit on your system drive, you will need to `change that directory to another drive <http://emptysquare.net/blog/moving-virtualbox-and-vagrant-to-an-external-drive/>`_.
+             If it won't fit on your system drive, you will need to `change that directory to another drive <https://emptysqua.re/blog/moving-virtualbox-and-vagrant-to-an-external-drive/>`_.
 
    At the end, you should see::
 

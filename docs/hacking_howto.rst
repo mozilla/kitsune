@@ -82,7 +82,7 @@ These are required for the minimum installation:
 
 * git
 * Python 2.7
-* pip: `<http://www.pip-installer.org/en/latest/>`_
+* pip: `<https://pip.pypa.io/en/latest/>`_
 * virtualenv
 * MariaDB 5.5 server and client headers
 * Memcached Server
