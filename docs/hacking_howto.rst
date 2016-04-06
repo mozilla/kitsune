@@ -207,13 +207,6 @@ Now install the Node.js dependencies with::
 
 This should create a directory named ``node_modules`` in your git repo.
 
-.. Note::
-
-    If you see a "npm ERR! notarget No valid targets found." error while
-    installing the Node packages, this is due to npm-lockdown being unable to
-    find a package that matches the hash in ``lockdown.json``.
-
-
 Frontend Packages
 -----------------
 
