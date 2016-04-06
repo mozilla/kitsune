@@ -23,7 +23,7 @@ if [[ $TEST_SUITE == "lint" ]]; then
 fi
 
 echo "Installing Node.js dependencies"
-./scripts/lockdown.js
+npm install
 echo
 
 echo "Installing front end dependencies"
