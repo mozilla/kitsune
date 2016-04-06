@@ -471,7 +471,7 @@ def class_selected(a, b):
     Return 'class="selected"' if a == b, otherwise return ''.
     """
     if a == b:
-        return 'class="selected"'
+        return jinja2.Markup('class="selected"')
     else:
         return ''
 

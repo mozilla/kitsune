@@ -49,7 +49,7 @@
     {% endif %}
   {% endif %}
   {% for x in pagination.page_range %}
-    <li {{ x|class_selected(pagination.number)|safe }}>
+    <li {{ x|class_selected(pagination.number) }}>
       <a href="#" class="{% if x == pagination.number %}btn-page{% endif %}" data-instant-search="link" data-href="{{ pagination.url|urlparams({page: x}) }}">{{ x }}</a>
     </li>
   {% endfor %}

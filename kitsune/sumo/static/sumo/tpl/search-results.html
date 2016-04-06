@@ -5,17 +5,17 @@
       {% set base_doctype_url = base_doctype_url|urlparams(product=product.slug) %}
     {% endif %}
     <ul id="doctype-filter" class="search-filter sidebar-nav">
-      <li {{ w|class_selected(3)|safe }}>
+      <li {{ w|class_selected(3) }}>
         <a href="#" data-instant-search-set-params="w=3" data-instant-search="link" data-href="{{ base_doctype_url|encodeURI }}">
           {{ _('Show Everything') }}
         </a>
       </li>
-      <li {{ w|class_selected(1)|safe }}>
+      <li {{ w|class_selected(1) }}>
         <a href="#" data-instant-search-set-params="w=1" data-instant-search="link" data-href="{{ base_doctype_url|urlparams(w=1)|encodeURI }}">
           {{ _('Help Articles Only') }}
         </a>
       </li>
-      <li {{ w|class_selected(2)|safe }}>
+      <li {{ w|class_selected(2) }}>
         <a href="#" data-instant-search-set-params="w=2" data-instant-search="link" data-href="{{ base_doctype_url|urlparams(w=2)|encodeURI }}">
           {{ _('Community Discussion Only') }}
         </a>
@@ -27,13 +27,13 @@
       {% set base_product_url = base_product_url|urlparams(w=w) %}
     {% endif %}
     <ul id="product-filter" class="search-filter sidebar-nav">
-      <li {{ product|class_selected(null)|safe }}>
+      <li {{ product|class_selected(null) }}>
         <a href="#" data-instant-search-unset-params="product" data-instant-search-set-params="all_products=1" data-instant-search="link" data-href="{{ base_product_url|urlparams(all_products=1)|encodeURI }}">
           {{ _('All Products') }}
         </a>
       </li>
       {% for p in products %}
-        <li {{ product|class_selected(p.slug)|safe }}>
+        <li {{ product|class_selected(p.slug) }}>
           <a href="#" data-instant-search-set-params="product={{ p.slug }}" data-instant-search-unset-params="all_products" data-instant-search="link" data-href="{{ base_product_url|urlparams(product=p.slug)|encodeURI }}">
             {{ p.title }}
           </a>
