@@ -296,12 +296,12 @@
         $content = $('#' + contentId),
         text = $content.find('.content-raw').text(),
         user = $content.find('.author-name').text(),
-        reply = template("''{user} [[#{contentId}|said]]''\n<blockquote>\n{text}\n</blockquote>\n\n"),
+        reply = template("''{user} [[#{contentId}|{said}]]''\n<blockquote>\n{text}\n</blockquote>\n\n"),
         reply_text,
         $textarea = $('#id_content'),
         oldtext = $textarea.val();
 
-      reply_text = reply({'user': user, 'contentId': contentId, 'text': text});
+      reply_text = reply({'user': user, 'contentId': contentId, 'text': text, 'said': gettext('said')});
 
       $textarea.val(oldtext + reply_text);
 
