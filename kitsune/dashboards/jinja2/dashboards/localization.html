@@ -12,6 +12,7 @@
   <div class="grid_9">
     <article id="localize" class="dashboards">
       <h1>{{ title }}</h1>
+      <h2>{{ _('Locale:') }} {{ current_locale_name }}</h2>
 
       {% if user.is_anonymous() %}
         <section id="get-involved-box">
@@ -64,18 +65,6 @@
       {% endif %}
 
       {{ product_choice_list(products, product, url('dashboards.localization')) }}
-
-      <div class="choice-list">
-        <label>{{ _('Locale:') }}</label>
-        <ul>
-          <li>
-            <a href="{{ url('dashboards.contributors') }}">{{ default_locale_name }}</a>
-          </li>
-          <li>
-            {{ current_locale_name }}
-          </li>
-        </ul>
-      </div>
 
       {% if not user.is_anonymous() %}
         {{ print_subscription_menu(default_locale_name,
