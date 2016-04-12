@@ -67,7 +67,6 @@ if USE_DEBUG_TOOLBAR:
     # setup debug_toolbar
     INSTALLED_APPS += ['debug_toolbar']
     MIDDLEWARE_CLASSES += ['debug_toolbar.middleware.DebugToolbarMiddleware']
-    JINGO_EXCLUDE_APPS += ['debug_toolbar']
 
     class ContainsEverything(object):
         def __contains__(self, item):
