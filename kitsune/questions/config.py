@@ -312,7 +312,7 @@ products = SortedDict([
     ('other', {
         'name': _lazy(u'Other Mozilla products'),
         'subtitle': '',
-        'html': _lazy(u'This site is only provides support for some of our products. '
+        'html': _lazy(u'This site only provides support for some of our products. '
                       u'For other support, please find your product below.'
                       u'<ul class="product-support">'
                       u'<li><a href="http://www.seamonkey-project.org/doc/">'
