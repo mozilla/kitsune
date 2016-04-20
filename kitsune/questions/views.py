@@ -1407,7 +1407,9 @@ def watch_question(request, question_id):
         else:
             tmpl = 'questions/includes/email_subscribe.html'
 
-        html = render_to_string(tmpl, {'question': question, 'watch_form': form})
+        html = render_to_string(tmpl,
+                                context={'question': question, 'watch_form': form},
+                                request=request)
         return HttpResponse(json.dumps({'html': html}))
 
     if msg:
