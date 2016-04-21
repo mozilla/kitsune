@@ -323,7 +323,7 @@ to ensure that they render correctly. You have two options here:
 
 - Use gulp to watch for changes and pre-compile (use this if you are making changes to the templates)::
 
-      $ /path/to/gulp watch
+      $ ./node_modules/.bin/gulp watch
 
 
 .. _testing-it-out:
