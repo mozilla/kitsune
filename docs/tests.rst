@@ -254,4 +254,4 @@ changed to masquerade as a mobile browser.
 The pytest plugin that we use for running tests has a number of advanced
 command line options available. To see the options available, run
 ``py.test --help``. The full documentation for the plugin can be found
-`here <http://pytest-selenium.readthedocs.org/>`_.
+`here <https://pytest-selenium.readthedocs.io/>`_.

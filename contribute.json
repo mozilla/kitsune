@@ -7,8 +7,8 @@
         "tests": "https://travis-ci.org/mozilla/kitsune"
     },
     "participate": {
-        "home": "http://kitsune.readthedocs.org/en/latest/contributors.html",
-        "docs": "http://kitsune.readthedocs.org/en/latest/hacking_howto.html#hacking-howto-chapter",
+        "home": "https://kitsune.readthedocs.io/en/latest/contributors.html",
+        "docs": "https://kitsune.readthedocs.io/en/latest/hacking_howto.html#hacking-howto-chapter",
         "irc": "irc://irc.mozilla.org/#sumodev",
         "irc-contacts": ["mythmon", "r1cky", "willkg", "rdalal"]
     },

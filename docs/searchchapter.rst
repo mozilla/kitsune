@@ -110,7 +110,7 @@ These settings explained:
 There are a few other settings you can set in your
 ``kitsune/settings_local.py`` file that override ElasticUtils defaults.  See
 `the ElasticUtils docs
-<http://elasticutils.readthedocs.org/en/latest/installation.html#configure>`_
+<https://elasticutils.readthedocs.io/en/latest/installation.html#configure>`_
 for details.
 
 Other things you can change:
@@ -244,7 +244,7 @@ Implementation details
 
 Kitsune uses `elasticutils <https://github.com/mozilla/elasticutils>`_
 and `pyelasticsearch
-<http://pyelasticsearch.readthedocs.org/en/latest/>`_.
+<https://pyelasticsearch.readthedocs.io/en/latest/>`_.
 
 Most of our code is in the ``search`` app in ``kitsune/search/``.
 

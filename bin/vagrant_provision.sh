@@ -100,7 +100,7 @@ set.
 
 Consult the documentation on how to use and maintain this VM.
 
-https://kitsune.readthedocs.org/
+https://kitsune.readthedocs.io/
 
 Next steps:
 
