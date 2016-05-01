@@ -34,8 +34,7 @@ def update_code(ctx, tag):
 @task
 def update_locales(ctx):
     with ctx.lcd(os.path.join(settings.SRC_DIR, 'locale')):
-        ctx.local('git fetch')
-        ctx.local('git checkout -f master')
+        ctx.local('git pull origin master')
 
     # Run the script that lints the .po files and compiles to .mo the
     # the ones that don't have egregious errors in them. This prints
