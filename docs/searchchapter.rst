@@ -110,7 +110,7 @@ These settings explained:
 There are a few other settings you can set in your
 ``kitsune/settings_local.py`` file that override ElasticUtils defaults.  See
 `the ElasticUtils docs
-<https://elasticutils.readthedocs.io/en/latest/installation.html#configure>`_
+<https://elasticutils.readthedocs.io/en/latest/django.html#configuration>`_
 for details.
 
 Other things you can change:
