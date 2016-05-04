@@ -291,7 +291,7 @@ covers how a document is scored in regards to the search query and its
 contents. The weights modify that---they're query-level boosts.
 
 Additionally, `this blog post from 2006 <http://www.supermind.org/blog/378>`_
-is really helpful in terms of provind insight on the implications of
+is really helpful in terms of providing insight on the implications of
 the way things are scored.
 
 
