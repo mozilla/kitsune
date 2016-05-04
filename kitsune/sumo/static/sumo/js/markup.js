@@ -1044,8 +1044,8 @@
     var previousContent = $('#read-message').attr('data-message-content');
     var previousAuthor = $('.from a').text();
     var previousAuthorLink = $('.from a').attr('href');
-    var quote = '[' + previousAuthorLink + ' ' + previousAuthor + ']' +
-      gettext(' said') + '\r\n';
+    var quote = '[' + previousAuthorLink + ' ' + previousAuthor + '] ' +
+      gettext('said') + '\r\n';
     quote += '<blockquote>\r\n';
     quote += previousContent + '\r\n';
     quote += '</blockquote>\r\n';
