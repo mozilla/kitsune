@@ -11,7 +11,7 @@ Coding conventions
 
 We follow most of the practices as detailed in the `Mozilla webdev
 bootcamp guide
-<http://mozweb.readthedocs.org/en/latest/coding.html>`_.
+<https://mozweb.readthedocs.io/en/latest/guide/development_process.html>`_.
 
 It is recommended that you install the linter we provide as a pre-commit
 hook::
@@ -63,7 +63,7 @@ Git resources and tools
 -----------------------
 
 See `Webdev bootcamp guide
-<http://mozweb.readthedocs.org/en/latest/git.html#git-and-github>`_
+<https://mozweb.readthedocs.io/en/latest/reference/git_github.html>`_
 for:
 
 * helpful resources for learning git

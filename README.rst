@@ -10,7 +10,7 @@ It is a Django_ application. There is documentation_ online.
 
 .. _Mozilla Support: https://support.mozilla.org/
 .. _Django: http://www.djangoproject.com/
-.. _documentation: http://kitsune.readthedocs.org/en/latest/
+.. _documentation: https://kitsune.readthedocs.io/
 
 
 You can access the staging site at https://support.allizom.org/
