@@ -6,6 +6,7 @@ PIPELINE_CSS = {
             'normalize-css/normalize.css',
             'sumo/less/main.less',
             'sumo/less/search.less',
+            'mozilla-tabzilla/css/tabzilla.css'
         ),
         'output_filename': 'build/common-min.css'
     },
@@ -295,6 +296,7 @@ PIPELINE_JS = {
             'sumo/js/analytics.js',
             'sumo/js/surveygizmo.js',
             'sumo/js/instant_search.js',
+            'mozilla-tabzilla/index.js',
         ),
         'output_filename': 'build/common-min.js'
     },
