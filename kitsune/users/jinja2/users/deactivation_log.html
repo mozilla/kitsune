@@ -18,9 +18,9 @@
         <tr>
           <td>{{ deactivation.date }}</td>
           <td><a href="{{ profile_url(deactivation.user) }}">
-              {{ deactivation.user }}</a></td>
+              {{ display_name(deactivation.user) }}</a></td>
           <td><a href="{{ profile_url(deactivation.moderator) }}">
-              {{ deactivation.moderator }}</a></td>
+              {{ display_name(deactivation.moderator) }}</a></td>
         </tr>
       {% endfor %}
     </tbody>

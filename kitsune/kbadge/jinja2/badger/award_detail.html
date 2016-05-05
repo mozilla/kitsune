@@ -41,7 +41,7 @@
     <dt>{{ _('Awarded to:') }}</dt>
     <dd class="awarded_to">
       <a href="{{ profile_url(award.user) }}">
-        <img src="{{ profile_avatar(award.user) }}" alt="" title="{{ award.user }}">
+        <img src="{{ profile_avatar(award.user) }}" alt="" title="{{ display_name(award.user) }}">
         <br>{{ award.user }}
       </a>
     </dd>

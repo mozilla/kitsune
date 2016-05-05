@@ -143,7 +143,7 @@
               {% for rev in recent_approved_revs %}
                 <li>
                   <a href="{{ url('wiki.revision', parent.slug, rev.id, locale=parent.locale) }}" rel="nofollow, noindex">{{ datetimeformat(rev.created, format='date') }}</a>:
-                  [<a href="{{ profile_url(rev.creator) }}">{{ rev.creator }}</a>]
+                  [<a href="{{ profile_url(rev.creator) }}">{{ display_name(rev.creator) }}</a>]
                   {{ rev.comment }}
                 </li>
               {% endfor %}
