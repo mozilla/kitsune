@@ -1,5 +1,4 @@
-{% macro help_topics(topics) -%}
-  {% set show_community_support = is_localized('get-community-support', request.LANGUAGE_CODE) %}
+{% macro help_topics(topics, show_community_support=False) -%}
   {% for topic in topics %}
     {% if loop.first %}<ul class="card-grid cf">{% endif %}
     <li>
