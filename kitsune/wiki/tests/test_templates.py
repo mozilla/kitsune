@@ -6,6 +6,8 @@ from django.contrib.sites.models import Site
 from django.core import mail
 from django.core.cache import cache
 
+from gettext import translation
+
 import mock
 from nose.tools import eq_
 
@@ -408,7 +410,9 @@ class DocumentTests(TestCaseBase):
         # Display fallback message to the user.
         eq_(1, len(doc('#doc-pending-fallback')))
         # Check Translate article is showing in the side tools bar
-        assert 'Translate Article' in doc('#editing-tools-sidebar').text()
+        expected = translation('django', 'locale', ['bn-IN'], fallback=True) \
+            .gettext('Translate Article')
+        assert expected in doc('#editing-tools-sidebar').text()
         # Removing this as it shows up in text(), and we don't want to depend
         # on its localization.
         doc('#doc-pending-fallback').remove()

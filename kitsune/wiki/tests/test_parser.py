@@ -3,6 +3,8 @@ import re
 from django.conf import settings
 from django.test.utils import override_settings
 
+from gettext import translation
+
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 
@@ -205,8 +207,9 @@ class TestWikiTemplate(TestCase):
         """If template does not exist in set locale or English."""
         p = WikiParser()
         doc = pq(p.parse('[[T:test]]', locale='fr'))
-        eq_('The template "test" does not exist or has no approved revision.',
-            doc.text())
+        expected = translation('django', 'locale', ['fr'], fallback=True)\
+            .gettext('The template "%s" does not exist or has no approved revision.') % "test"
+        eq_(expected, doc.text())
 
     def test_template_locale_fallback(self):
         """If localized template does not exist, fall back to English."""
@@ -463,7 +466,9 @@ class TestWikiVideo(TestCase):
         """Video does not exist."""
         p = WikiParser()
         doc = pq(p.parse('[[V:404]]', locale='fr'))
-        eq_('The video "404" does not exist.', doc.text())
+        expected = translation('django', 'locale', ['fr'], fallback=True)\
+            .gettext('The video "%s" does not exist.') % "404"
+        eq_(expected, doc.text())
 
     def test_video_modal(self):
         """Video modal defaults for plcaeholder and text."""
