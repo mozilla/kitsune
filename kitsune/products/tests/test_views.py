@@ -14,20 +14,16 @@ class HelperTestCase(TestCase):
         """Non existing article cannot be even localized."""
         eq_(False, is_localized('community-hub-news', settings.LANGUAGE_CODE))
 
-    def test_is_localized_for_default_language(self):
-        """Articles should be assumed localized for default language."""
-        d = DocumentFactory(slug='community-hub-news', locale=settings.LANGUAGE_CODE)
+    def test_is_localized_for_language(self):
+        slug = 'community-hub-news'
+        locale = 'cs'
+
+        d = DocumentFactory(slug=slug, locale=settings.LANGUAGE_CODE)
         ApprovedRevisionFactory(document=d)
         d.save()
-        eq_(True, is_localized('community-hub-news', settings.LANGUAGE_CODE))
+        eq_(False, is_localized(slug, locale))
 
-    def test_is_localized_for_non_default_language(self):
-        d = DocumentFactory(slug='community-hub-news', locale=settings.LANGUAGE_CODE)
-        ApprovedRevisionFactory(document=d)
-        d.save()
-        eq_(False, is_localized('community-hub-news', 'cs'))
-
-        d_cs = DocumentFactory(parent=d, locale='cs')
-        ApprovedRevisionFactory(document=d_cs)
-        d_cs.save()
-        eq_(True, is_localized('community-hub-news', 'cs'))
+        d_locale = DocumentFactory(parent=d, locale=locale)
+        ApprovedRevisionFactory(document=d_locale)
+        d_locale.save()
+        eq_(True, is_localized(slug, locale))

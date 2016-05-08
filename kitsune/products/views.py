@@ -1,5 +1,6 @@
 import json
 
+from django.conf import settings
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render
 
@@ -20,17 +21,6 @@ def product_list(request, template):
     products = Product.objects.filter(visible=True)
     return render(request, template, {
         'products': products})
-
-
-def is_localized(slug, request_language_code):
-    """
-    Check the article is localized to the requested language.
-    For the default language assume yes.
-    """
-    return Document.objects.filter(locale=request_language_code, slug=slug).exclude(
-        current_revision=None).exists() or Document.objects.filter(locale=request_language_code,
-                                                                   parent__slug=slug).exclude(
-        current_revision=None).exists()
 
 
 @check_simple_wiki_locale
@@ -56,7 +46,8 @@ def product_landing(request, template, slug):
         else:
             latest_version = 0
 
-    show_community_support = is_localized('get-community-support', request.LANGUAGE_CODE)
+    show_community_support = request.LANGUAGE_CODE == settings.LANGUAGE_CODE or is_localized(
+        'get-community-support', request.LANGUAGE_CODE)
 
     return render(request, template, {
         'product': product,
@@ -103,3 +94,11 @@ def document_listing(request, template, product_slug, topic_slug,
         'fallback_documents': fallback_documents,
         'search_params': {'product': product_slug},
         'show_fx_download': show_fx_download})
+
+
+def is_localized(parent_slug, locale):
+    """
+    Check the article is localized to the requested language.
+    """
+    return Document.objects.filter(locale=locale, parent__slug=parent_slug).exclude(
+        current_revision=None).exists()

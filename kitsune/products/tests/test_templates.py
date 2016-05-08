@@ -50,8 +50,8 @@ class ProductViewsTestCase(ElasticTestCase):
         r = self.client.get(url, follow=True)
         eq_(200, r.status_code)
         doc = pq(r.content)
-        # The exact number of topics (get community support shown only when the article exists)
-        eq_(10, len(doc('#help-topics li')))
+        # +1 for get-community-support
+        eq_(11, len(doc('#help-topics li')))
         eq_(p.slug, doc('#support-search input[name=product]').attr['value'])
 
     def test_document_listing(self):
@@ -161,43 +161,44 @@ class ProductViewsTestCase(ElasticTestCase):
         eq_(1, len(pqdoc('li.subtopic')))
 
     def test_community_support_shown_for_default_language(self):
-        """Verifies the get community support is shown in the topics for en-US."""
-        p = ProductFactory(visible=True)
-        l = QuestionLocale.objects.get(locale=settings.LANGUAGE_CODE)
-        p.questions_locales.add(l)
-        d = DocumentFactory(slug='get-community-support', locale=settings.LANGUAGE_CODE)
-        ApprovedRevisionFactory(document=d)
-        d.save()
+        """Verify the get community support is shown in the topics for en-US."""
+        p = ProductFactory()
 
-        r = self.client.get(reverse('products'), follow=True)
+        url = reverse('products.product', args=[p.slug])
+        r = self.client.get(url, follow=True)
         eq_(200, r.status_code)
         doc = pq(r.content)
         eq_(1, len(doc('#help-topics .community-support')))
 
     def test_community_support_not_shown_when_not_localized(self):
-        """Verifies the get community support is not shown when the article is not localized."""
-        p = ProductFactory(visible=True)
-        l = QuestionLocale.objects.get(locale='cs')
-        p.questions_locales.add(l)
+        """Verify the get community support is not shown when the article is not localized."""
+        p = ProductFactory()
         d = DocumentFactory(slug='get-community-support', locale=settings.LANGUAGE_CODE)
-        ApprovedRevisionFactory(document=d)
+        rev = ApprovedRevisionFactory(document=d)
+        d.current_revision = rev
         d.save()
 
-        r = self.client.get(reverse('products'), follow=True)
+        self.refresh()
+
+        url = reverse('products.product', args=[p.slug], locale='cs')
+        r = self.client.get(url, follow=True)
         eq_(200, r.status_code)
         doc = pq(r.content)
         eq_(0, len(doc('#help-topics .community-support')))
 
     def test_community_support_shown_when_localized(self):
-        """Verifies the get community support is shown when the article is localized."""
-        p = ProductFactory(visible=True)
-        l = QuestionLocale.objects.get(locale='cs')
-        p.questions_locales.add(l)
+        """Verify the get community support is shown when the article is localized."""
+        p = ProductFactory()
         d = DocumentFactory(slug='get-community-support', locale=settings.LANGUAGE_CODE)
-        DocumentFactory(parent=d, locale='cs')
-        d.save()
+        d_cs = DocumentFactory(parent=d, locale='cs')
+        rev = ApprovedRevisionFactory(document=d_cs)
+        d_cs.current_revision = rev
+        d_cs.save()
 
-        r = self.client.get(reverse('products'), follow=True)
+        self.refresh()
+
+        url = reverse('products.product', args=[p.slug], locale='cs')
+        r = self.client.get(url, follow=True)
         eq_(200, r.status_code)
         doc = pq(r.content)
         eq_(1, len(doc('#help-topics .community-support')))
