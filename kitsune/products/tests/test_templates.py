@@ -162,7 +162,10 @@ class ProductViewsTestCase(ElasticTestCase):
 
     def test_community_support_shown_for_default_language(self):
         """Verify the get community support is shown in the topics for en-US."""
+        # Create a product with at least one topic (needed to loop in help_topics() at least once).
         p = ProductFactory()
+        t = TopicFactory(product=p, visible=True)
+        ApprovedRevisionFactory(document=DocumentFactory(products=[p], topics=[t]))
 
         url = reverse('products.product', args=[p.slug])
         r = self.client.get(url, follow=True)
@@ -172,13 +175,14 @@ class ProductViewsTestCase(ElasticTestCase):
 
     def test_community_support_not_shown_when_not_localized(self):
         """Verify the get community support is not shown when the article is not localized."""
+        # Create a product with at least one topic (needed to loop in help_topics() at least once).
         p = ProductFactory()
-        d = DocumentFactory(slug='get-community-support', locale=settings.LANGUAGE_CODE)
-        rev = ApprovedRevisionFactory(document=d)
-        d.current_revision = rev
-        d.save()
+        t = TopicFactory(product=p, visible=True)
+        ApprovedRevisionFactory(document=DocumentFactory(products=[p], topics=[t]))
 
-        self.refresh()
+        # Create the 'get-community-support' article
+        d = DocumentFactory(slug='get-community-support', locale=settings.LANGUAGE_CODE)
+        ApprovedRevisionFactory(document=d)
 
         url = reverse('products.product', args=[p.slug], locale='cs')
         r = self.client.get(url, follow=True)
@@ -188,14 +192,14 @@ class ProductViewsTestCase(ElasticTestCase):
 
     def test_community_support_shown_when_localized(self):
         """Verify the get community support is shown when the article is localized."""
+        # Create a product with at least one topic (needed to loop in help_topics() at least once).
         p = ProductFactory()
-        d = DocumentFactory(slug='get-community-support', locale=settings.LANGUAGE_CODE)
-        d_cs = DocumentFactory(parent=d, locale='cs')
-        rev = ApprovedRevisionFactory(document=d_cs)
-        d_cs.current_revision = rev
-        d_cs.save()
+        t = TopicFactory(product=p, visible=True)
+        ApprovedRevisionFactory(document=DocumentFactory(products=[p], topics=[t]))
 
-        self.refresh()
+        # Create localized 'get-community-support' article
+        d = DocumentFactory(slug='get-community-support', locale=settings.LANGUAGE_CODE)
+        ApprovedRevisionFactory(document=DocumentFactory(parent=d, locale='cs'))
 
         url = reverse('products.product', args=[p.slug], locale='cs')
         r = self.client.get(url, follow=True)
