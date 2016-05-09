@@ -37,9 +37,8 @@
       </a>
     </li>
     <li>
-      {% trans url='https://goo.gl/pKis5g' %}
-        As you get started answering questions that look easy you might run into a few questions. Like, what happens when an angry user does not want a work around or what happens next? The Contributor Quality Training may have these answered. It is possible to get started here:
-        <a href="{{ url }}">Contributor Quality Training</a>.
+      {% trans url=add_utm('http://goo.gl/pKis5g', 'essentials for new contributors here', source='new-training')%}
+        As you’re getting started, you might be worried about facing situations that can scare away any new contributor: “What if I encounter an angry user who doesn’t want to cooperate?”, “What if I don’t know the answer?”) Don’t worry, we’ve all been there! That’s why we've put together this guide to help you navigate tough situations and keep the forum a positive place for both you and the people you help. Learn the <a href="{{ url }}">essentials for new contributors here</a>.
       {% endtrans %}
     </li>
     <li>
