@@ -12,3 +12,6 @@ insert_final_newline = true
 [.travis.yml]
 # The travis CLI tool forces 2 spaces. No use fighting it.
 indent_size = 2
+
+[*.js]
+indent_size = 2
