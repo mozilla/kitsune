@@ -238,7 +238,7 @@ class ReadyRevisionEvent(_RevisionConstructor, _ProductFilter, Event):
 
         subject = _lazy(u'{title} has a revision ready for localization')
 
-        url = django_reverse('wiki.select_locale', args=[document.slug])
+        url = django_reverse('wiki.translate', args=[document.slug])
 
         context = context_dict(revision, ready_for_l10n=True)
         context['l10n_url'] = add_utm(url, 'wiki-ready-l10n')
@@ -300,8 +300,7 @@ class ApprovedOrReadyUnion(EventUnion):
                 # TODO: Expose all watches
                 c['watch'] = watches[0]
 
-                url = django_reverse(
-                    'wiki.select_locale', args=[document.slug])
+                url = reverse('wiki.translate', args=[document.slug], locale=locale)
                 c['l10n_url'] = add_utm(url, 'wiki-ready-l10n')
 
                 subject = _(u'{title} has a revision ready for '
