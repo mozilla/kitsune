@@ -1,30 +1,25 @@
-# sha256: 9m3Up1GXJaG34UrZrn09-OCbLaiAYjhuCOlByvwO8-Y
 # sha256: 0rkJx5RYMuHBnPrNlueNpova3GVkQM_H3-WbdmdE64w
+# sha256: 9m3Up1GXJaG34UrZrn09-OCbLaiAYjhuCOlByvwO8-Y
 execnet==1.4.1
-
 # sha256: Sj5PMADBI4Naw5yrXMxRBkIVO8R7wfE-K7tTA5VArmk
 # sha256: plAZY8cl_CVU2r_s6K6aj7XhScCsCkL9KwLFwcV_wRQ
 py==1.4.31
-
 # sha256: PmNXBvzgenNPeISgujLEblcgIl2GGz7RjKdsYGLehs0
 # sha256: DUjSehJ2RPvnyBWBV-CLNfglUEXUR232lLkes6gUfmU
 pytest==2.9.1
-
 # sha256: zzI98ijiZdZ1XsOaJvKXGsxZoxsN4M_QJtNBJJ2-72k
 # sha256: 3-epy0EWdBTKe56Fr71mlOjMg_2_V9DlRcIVwyzUDNY
 pytest-html==1.8.0
-
-# sha256: 6C8KJlsOI4rEKsJ115MT0KfgvvGkUGM66z1lScwU9Rc
-# sha256: vSEhAi_zJVzoL67A7zYCRi7GvOnKYntTRimGz8mzkek
-pytest-selenium==1.2.1
-
+# sha256: -oMzzzATSX5g2HumjK5l6tjn-iCL6Iq5xWFVYQP1QO8
+# sha256: RsusTvML_3oApe8eVDiveMXalzWxNRsS4zkgEBBeX-k
+selenium==2.53.2
 # sha256: KdywhO1dDDV-klyabLRU2-euYZL96i-dGSn1IbTlMuM
 # sha256: vS4VLmTI9nDnlpx2IZp4Qs-O3nlXAxJ5ge1xrzjP4Io
 pytest-variables==1.4
-
 # sha256: Sl4RmRIvop4wF9jRifWczF2C6EFHS6Kh7sDolgYVNiM
+# sha256: BS-V3qAcz8dS-fSCiQi8bhbUEw_8QgtuExAZVUqZV9s
 pytest-xdist==1.14
-
+# sha256: ET-7pVManjSUW302szoIToul0GZLcDyBp8Vy2RkZpbg
 # sha256: xXeBXdAPE5QgP8ROuXlySwmPiCZKnviY7kW45enPWH8
 requests==2.9.1
 
