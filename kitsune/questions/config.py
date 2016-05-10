@@ -317,8 +317,6 @@ products = SortedDict([
                       u'<ul class="product-support">'
                       u'<li><a href="http://www.seamonkey-project.org/doc/">'
                       u'SeaMonkey support</a></li>'
-                      u'<li><a href="http://caminobrowser.org/help/">'
-                      u'Camino support</a></li>'
                       u'<li><a '
                       u'href="http://www.mozilla.org/projects/calendar/faq.html">'
                       u'Lightning and Sunbird support</a></li>'
