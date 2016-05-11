@@ -14,3 +14,5 @@ It is a Django_ application. There is documentation_ online.
 
 
 You can access the staging site at https://support.allizom.org/
+
+See `what's deployed <https://whatsdeployed.io/s-PRg>`_
