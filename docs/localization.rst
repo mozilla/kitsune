@@ -480,7 +480,7 @@ to the repository.
 
 There is a shell script to compile the MO files for you::
 
-    $ ./locale/compile-mo.sh locale
+    $ ./scripts/compile-linted-mo.sh locale
 
 Done!
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# This creates a faux Pirate locale under xx and transforms all the
+# This creates a faux Pirate locale under xx_testing and transforms all the
 # strings such that every resulting string has four properties:
 #
 # 1. it's longer than the English equivalent (tests layout issues)
@@ -21,11 +21,14 @@ echo "extract and merge...."
 ./manage.py merge
 
 echo "creating dir...."
-mkdir -p locale/xx/LC_MESSAGES
+mkdir -p locale/xx_testing/LC_MESSAGES
 
-echo "copying messages.pot file...."
-cp locale/templates/LC_MESSAGES/messages.pot locale/xx/LC_MESSAGES/messages.po
+echo "copying *.pot files...."
+cp locale/templates/LC_MESSAGES/*.pot locale/xx_testing/LC_MESSAGES/
+for pot_file in locale/xx_testing/LC_MESSAGES/*.pot;
+    do mv $pot_file locale/xx_testing/LC_MESSAGES/`basename $pot_file .pot`.po;
+done
 
-echo "translate messages.po file...."
-./manage.py translate --pipeline=html,pirate locale/xx/LC_MESSAGES/messages.po
-locale/compile-mo.sh locale/xx/
+echo "translate *.po files...."
+./manage.py translate --pipeline=html,pirate locale/xx_testing/LC_MESSAGES/*.po
+./scripts/compile-mo.sh locale/xx_testing/
