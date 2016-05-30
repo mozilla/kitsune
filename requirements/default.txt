@@ -1,17 +1,14 @@
-# Note: This has to be listed first so it gets installed first and
-# thus affects the rest of the installs.
+# sha256: gY3ijbxNo4DKQ8XI1I0VWJGm4Quw56wQP-7msxvi3SU
 # sha256: jEqwxPIncwUZ3B4CD4dbPvl-ZDyPQ6mKT6DEb7rRJFA
+# sha256: uhIzmvdVwShku60DeygerPdU-WL87mZ9CIVft9ZV0vw
 setuptools==18.3.2
-
+# sha256: lNKmgifnmEvUD19xxoOXMGIq_4pGM_Ke3h_90NJAeV4
 # sha256: Ols1jvgfoSkn0eyE9RB8Wbb8O-aBwyXnzGkM_9WVaHk
 amqp==1.4.8
-
 # sha256: N4Ethjya0-NcBzTELgvwMgzow77YLNIK1UyzTRWBV7o
 anyjson==0.3.3
-
 # sha256: RJiN8ZESMGWvmFfspo6RUVJqkxwSZZyimQTk8R3n7Bs
 Babel==2.0
-
 # sha256: czbsWbjQoTKh7p8WagY9RKXn8tL-FfefvO3aWDu9YcE
 billiard==3.3.0.9
 
@@ -22,38 +19,52 @@ https://github.com/jsocol/bleach/archive/ab7c8b3f0a4c169b94da3248dfd60d6fc33b263
 # cache-panel: master~1
 # sha256: _Wlp-He7yoYfBlWLdCw41A6prXHFZf3MJ39ONzMdAxk
 https://github.com/jbalogh/django-debug-cache-panel/archive/a6b0f248b721bdd759ee5b5eb843fedc9c33da09.tar.gz#egg=cache-panel
-
 # sha256: y0Y3TzyIPFgNFCp50mCYg3E6hnzIbgUUFjrc54TOJGg
 carrot==0.10.7
-
+# sha256: F0Oqhom9KGfFqzrwCodCY161YJY7G5PhTNItZvt34TU
 # sha256: z-K2UyaL1Ybi0Ip16Ib3vjvlW6Ny9y4vV0eut2xHA2I
 celery==3.1.17
-
+# sha256: yZcvTSuAV1u5ESUAz-x1Dq9PBOB6vaSyxE5FPN5l7nc
 # sha256: 95yMBNfrUAcbytZ_0j88EPq2xy1WhXrfhINngGhF1uU
 click==3.3
-
+# sha256: jXICA_r8uwT2Y5PA_XCisFdDoAav_Ky0OrIkE5W28oY
+# sha256: VK-9M6GI1PBnOQDLxlT2uRKmetUWidUfwekJcAR8QM0
+# sha256: -UhqWmMJb6uU5G4NyYrE7Z5Rx__NrysiqjtsHA6KPWM
+# sha256: r1aHY5JgQerOLu3OF1CddQ9TdvVslqd_fq9J6QWLJaw
+# sha256: NU7QyGrQW9ymZybjLOwuNnuIg-MuXDwCzy4yqs023hU
+# sha256: 4_CSzEOM0GgSrbnKCbVlp9KSuzV0tYHB29I_4rmZoYA
+# sha256: htLKwnFYELmYI9pIgK-Fq54_a0dVJ8fFI8X1pQSHIPE
+# sha256: A5YjbJ_ykANPZ0YaN7UrPkT4eGIJU274Cch3WX77bm4
+# sha256: z6SXtZ2kga3TcJCmaY-r-7LGpVcRLXyhxGX9v-RwZfg
+# sha256: 0-_9pxL4ZQAM1KkayT0OvHTj13xYETthVGsTKFSTnaw
 # sha256: JTLZ46-ePG0PcQ_JiwKVtWPH85z9l90iQr02-_SQBhA
 cffi==0.8.6
 
 # commonware: master
 # sha256: k9gjEUXUPKAuHsPO41UzOvqOcq25z4FXZ-F1lXSXdNQ
 https://github.com/jsocol/commonware/archive/b5544185b2d24adc1eb512735990752400ce9cbd.tar.gz#egg=commonware
-
 # sha256: BTWn4nAUh0snrjpNM-h0njRb36YnZhlSCLeZa_EQBoI
 cssselect==0.9.1
-
+# sha256: mHJgtec_nYxbYp9B1wVQXSbmJlqLK3YCx3c9B9PJozs
+# sha256: PT_Zq2Rtp9gj3lPD2G-b9iFKOEZqzHl5rpvIpU35wYc
+# sha256: TBJ37pnayDYVw0XX3BRvIaROTE3ttbNacAkB04npDWQ
+# sha256: XaMgpDyAqefNFdHvoZEYQYfJQ-RiAtUBdWh226Bih1U
+# sha256: 5uA2w4REClu07QYtBqy0CdFuJrqMNO0OzmXkcH-FNhM
+# sha256: A3C6HXXF0WX48ca_U8LMpHLEPyK1pwmBF2c1N6AH49w
+# sha256: DnKr3dNfCdl0QZwUdIPIYb1UVKDHzAlWTrgKrVpkhjs
+# sha256: RODYRGmk6uTHHBHlvCdh6DGe76LTFUe62JeQBg3HNG4
+# sha256: WKgSQbNGH570yl5tQjlhm3X1mHicicYk8xeMxuyh2Jw
+# sha256: Y0MAkKPzN21U_jrZvcOTytn8sqfuQbdD1vOuvTPgrEY
 # sha256: -rf83eNg7GYURC0DIdzQ7_XkNUTLMNl16ddakUpM33g
 cryptography==0.7.2
-
+# sha256: 6eklwAl8b163cW5QylcVXtH2cPD6cqZhBTGYwYkKAvU
 # sha256: _eJnrrA6jUnjNB5_caIoxnSNzkO1wA9lWBeA2Ztwstk
 dennis==0.7
-
+# sha256: VL6dbqtswOLaVYwSrqbP99WgEkyKRw4f9hE0up7TfyA
 # sha256: 7BSL5zVI2gkN12wujFfJjosehPLLh1ALm-VCAYekNfs
 Django==1.8.11
-
 # sha256: kjEbxXu6YpeZv9FrlKYlEQe79VE5TCBFg6cI0g-2gbY
 django-activity-stream==0.6.0
-
 # sha256: JL4TJtBHNh5HWbqZkqyoPtZd9Vg3UN_ovoEOscEx2HY
 django-adminplus==0.3
 
@@ -72,10 +83,8 @@ https://github.com/mozilla/django-badger/archive/7e6c420c2f913baab7307ef2a5aaa05
 # django-celery: master
 # sha256: dmqn4o32-wsXoiX4O6IFfsRPcLOZVrEhtByqvQs81Ms
 https://github.com/celery/django-celery/archive/da0b98caf9dc96c4d9ec91c09e00c5e19dcb0da3.tar.gz#egg=django-celery==3.2.0a1
-
 # sha256: LM9zUZ6iBbiNtFP39hcPs9CiGo4yU_JXjvDNUp95pY8
 django-cors-headers==0.13
-
 # sha256: F3KVsUQkAMks22fo4Y-f9ZRvtEL4WBO50IN4I3IuoI0
 django-cronjobs==0.2.3
 
@@ -90,13 +99,11 @@ https://github.com/willkg/django-eadred/archive/f77ebbeea7e6802771b91a1748faec00
 # django-extensions: tags/1.3.3
 # sha256: oEiCqdyUMgocSPT2W6xNnQj_MoJgNTkCQK1JnBPLfsc
 https://github.com/django-extensions/django-extensions/archive/47a531c996c92a369755a4a9e0857e51afd25cab.tar.gz#egg=django-extensions==1.3.3
-
 # sha256: fRdUe2UhbMXG-8BK7lUIjM1ZF8B3UwTZb3AXwmx4nNc
+# sha256: AMxHk1r7vYMmD90oOwqnkOZY0qcZIgSfbkZ9yooSRTc
 django-filter==0.11.0
-
 # sha256: _CtqZSAbJ3EegA6y4SYv9Coy8Ce9ImfjQSHxvSvWuTM
 django-jinja==2.1.2
-
 # sha256: Eq491FQ_jcXMX0vdf2_RaPTRYkQU11OkQVc8zBh6jkM
 django-jsonfield==0.9.13
 
@@ -111,15 +118,14 @@ https://github.com/mozilla/django-product-details/archive/50d83e16d801ef069738cf
 # django-multidb-router: tags/v0.5~1
 # sha256: H1ypqtnca2OqjPPqsBVW-PnuftghanQS1gAt7OM-RBk
 https://github.com/jbalogh/django-multidb-router/archive/fffe4323fc0006c6eec20c696a5577ee902a85d9.tar.gz#egg=django-multidb-router
-
-# sha256: Gbja9M1eZmA9xYAY8DhBFwl94YcUd1M4zbdqlNSNiWY
-django-nose==1.4.3
+# sha256: sboSwcRTI_2Glb5oznIoRWuG5RI08WcCfrvEzNqFLGE
+nose==1.1.2
 
 # django-picklefield: master~5
 # sha256: jTddtwi8h_bfm7OulO3QG-0su2polKkneF3tmu3pg-8
 https://github.com/gintas/django-picklefield/archive/54b11bdb177fd6140c3ae7d6e9744eaa2deda261.tar.gz#egg=django-picklefield
-
 # sha256: qHdlkXjQIGzCbUPl35f4CZkbGPU5-VvsWnFkHaDXDkE
+# sha256: XvDjD-6AuQMgKNaNnoaw4zH-Q3HnvArAzjLklZpH6dQ
 django-pipeline==1.6.5
 
 # django-ratelimit: tags/v0.4.0~8
@@ -141,8 +147,8 @@ https://github.com/zyegfryed/django-statici18n/archive/6bcc799b800a7237a37e178dd
 # django-statsd: tags/0.3.8.5
 # sha256: LTn7BrZL1DKwIiETzYeOHlosfAnsk7K7V3zw4Kq_GNk
 https://github.com/andymckay/django-statsd/archive/bb601976056d0f922c5a613d2a9786b81d179b06.tar.gz#egg=django-statsd
-
 # sha256: M-mvjpWziqCTqCVTrDap53uqltuxwcYFhcK7oDSMcqo
+# sha256: T-tFzEAksv--PdFj_RtL86DadAr_CpMOI5Bpr_9sCEY
 django-taggit==0.17.1
 
 # django-tidings: master
@@ -152,65 +158,69 @@ https://github.com/erikrose/django-tidings/archive/ea57792f82496a9d78fec3f9b0db7
 # django-timezones: master~2
 # sha256: oQq2W0PNuSKyEZW5OaqP3tEjDRnAVaqBUWNnUgLdT78
 https://github.com/brosner/django-timezones/archive/ce12f4538fb98612c61b380421e5f39d3f6b2019.tar.gz#egg=django-timezones
-
 # sha256: nNnjqXaEmjzYFoMNeBG5NUPB3J2p88sczC-dqDG4sCU
+# sha256: kUtLh0-mJQoIl7wwtn4CA02SpyNatyqRv22km3F1HeQ
 django-waffle==0.11
-
+# sha256: PMmWC8-hm_3Ix4nThl6isQCpCResFvgDrZnkVCHsi0w
 # sha256: KYA_-FsfIQW89JvUx5DSsxkZa3jIjHBiTYrJMd12R68
 djangorestframework==3.3.0
-
+# sha256: VpA3_xHDwRY489BoVwM0JFJa1UYYv_sBK9Q8MsUPvjs
 # sha256: iPK5G4pJjgyQPk5wr7H7rnTSP2L5i76WjCIVQVfL6VU
 elasticutils==0.10.3
-
+# sha256: U6gisBsElN-WWMBOhyFhgOXsvoWxeGc92Eix-AnVwQA
 # sha256: u5PYXKflDWjkGXhSu226YJi7dyUA-C9dsv9KgHEVBck
 elasticsearch==1.2.0
-
 # sha256: 08GfJqajRinBjHdfWd_F3VlXZMcitXotpW6_tpuU5Ec
+# sha256: dYPYCsoqKyqKQR8UHE10TeBqa8Q6MiU_a4HRTUj2yQ4
 enum34==1.0.4
-
+# sha256: EWYQoXCRjfNC2yxLr7yPS5F4DEmHj5KdieNg8QrSnSo
 # sha256: deTJeG7SjRnsf7UA88ciGm64d0jLxvXi7qykw9aPMMs
 factory-boy==2.6.0
-
 # sha256: kPUHiRrRBz4Iz2kI61HV4d68PFpdVUQn6MP79zzfEu4
 fake-factory==0.5.3
-
 # sha256: A3VLx7JWOXwbZG5QSOIpFZD1CAFxrbiwD04tc4THbu4
 GitPython==0.1.7
-
 # sha256: g9Ivl1eRE18JknlxvQV9WoUaQGH9P4vDt_lDjueaXP0
+# sha256: uiHvIwHQ8NaBuX2iOSPNhE3zveAZgtPjLgROn9OCrCs
 google-api-python-client==1.0
 
 # html5lib-python: tags/0.95
 # sha256: D7CX8C1qplaG6PSGwL3BeGytm1N4-EwnI30pFTL0qX4
 https://github.com/html5lib/html5lib-python/archive/f5855f3d0ad6d4202e2b5d02626d85178ff6443a.tar.gz#egg=html5lib-python==0.95
-
 # sha256: OeqMam2fWVwXehYTT8SamQrY04J1jL9GnIZZZi8vUas
+# sha256: 4ifmf2dikwJfvtyggMcRRoXlWFfWB50V8ScE39oD3WI
 httplib2==0.9
-
 # sha256: GQQPAbOp2MY-TVeTb3hxCQgZm2k3CrRKD3QH3YkfAZs
 Jinja2==2.5.2
-
+# sha256: QGyfTK0dEawHskWuIV9tjuEn22PoMx4MhxCLuvF5HI4
 # sha256: 0-3aAgdq4E-mLRKAB3VvTEKY_keRGcoHCkeiKv6GdmA
 kombu==3.0.32
-
+# sha256: KxOemRiTa3vlcQJj7OPl7_iGgWy6VHZFgXRiKR29dFY
+# sha256: 47DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU
+# sha256: RBCLZIkND-4_Bavdhf5vO6AV_2K-jKuhx8TLMKfw6YI
+# sha256: AlNc15qdZheQgtyojvkjV7ySBlJ28QCUm8HVKDJ4niA
+# sha256: eHnjVa9ZLJ-n3AS5G0nONJesFZrJe6HVUstFbUOMZOc
 # sha256: s9NiusRxFydHzaNRMjjxFcvWxfi45jGb9ql6eJJyQJk
+# sha256: 8K8pXdAjX8rNgMbPewKWipTRIs44IddTjZ2sziM0XQA
+# sha256: -jT-SqLxHfdbSye_1Y6PF-C2bkxgnwyGG8nd2m8q7Dw
+# sha256: mYgp9yF0n40Z6sClQmWNdzt0xyzzLpaPrIt0v3LdyZw
+# sha256: vEm2rKcUNk_bYYT34n-kE2rmkcxrOGTfAXuxnJlEre8
+# sha256: j2ZRtNtB1QVo4PcabawoewCfDzEK5EVQ5ag_HETSpmM
 lxml==3.4.4
-
-# sha256: U0_2_u_hzQOYT0ROZBWqzHnAqF87ho7EGi_VADAEwx4
+# sha256: 47DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU
 mimeparse==0.1.3
-
-# sha256: Y68rk8H30semmCxFqQYI62rh72Sc4TxiPTa-lZRKG5E
+# sha256: 47DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU
+# sha256: iiB7Wbnom-fkeHhWLvrjX4aPTFQ-G3bAVLN8_cTldXo
 mock==0.7.0
-
 # sha256: H6pJd-mFBzHot_ih1YuGJzk6N0RUN4jsQ3-0XgbP5AE
+# sha256: dEkWl77Zj4ypFAGCfEmCLh6yugJzdZpNCzghcv02ejg
+# sha256: -ZiCO3pvAOX4Qh6wYjVcTVCsfkq4XWU4Kn5WiV9CBS0
 MySQL-python==1.2.3c1
 
 # sha256: sboSwcRTI_2Glb5oznIoRWuG5RI08WcCfrvEzNqFLGE
 nose==1.1.2
-
 # sha256: oFHwTujsMwUFWrNNh7NsmkSTdeB8fWoFvK-kgynKx8M
 oauthlib==0.7.2
-
 # sha256: HDW0rCBs7y0kgWyJ-Jzyid09OM98RJuz-re_bUPwGx8
 ordereddict==1.1
 # sha256: 9uicOwJKEwYN4Zcy6C0d_WV830axXWR8Dw9aqgempBk
@@ -256,56 +266,71 @@ ordereddict==1.1
 # sha256: NX5AMqsb5MBQRzwIrY7iTADxRORvITyaaDpIw458VAk
 # sha256: zETFS0MrJ8WePQvASKWnWBsTlEwUxWyUY0z-jV6rreU
 Pillow==3.2.0
-
 # sha256: xEI2gj62Insvq4vZ5WYypknmeoAhH4WkouPIXGXIrNk
 polib==1.0.5
 
 # premailer: master~49
 # sha256: dtTQM5HdY_jQTr2fEJqDcswNKFyGuc3ekY6sgJWXYGM
 https://github.com/peterbe/premailer/archive/3981359de1ce974b24f69a8a99bb033e55ec3230.tar.gz#egg=premailer
-
+# sha256: vF7oVSESdXfSNDCDLi-Cdobv23zpWyMvVPvrW5FmOXw
 # sha256: hPdpwOpgeCnHe9iz1tb7wWWJzXpdTlAj9xfNPV3lRHM
 puente==0.4.1
 
 # py-wikimarkup: master
 # sha256: YpQN6FOWpn2GomK8ZdjXbGNnxpxpA0ypjL1VEs_m8Dc
 https://github.com/pcraciunoiu/py-wikimarkup/archive/ce7d10dbd421533bb9b0c41dd9c9d09298a51a41.tar.gz#egg=py-wikimarkup
-
 # sha256: KR27SJO1C3yD8sjfYlFo-hcqZ_h-tE85oHIivjuNnJU
 pyes==0.16.0
-
 # sha256: qZ245ZwSATitinLuztzCS0UQ0u7TzkghO34y8izE7m4
 pyOpenSSL==0.14
-
 # sha256: 0XVN8IAYcdBalvHO9QpPMuXUDUnqJKocbKlSnL1WIAU
+# sha256: 1b6gbkdNpB6HYM6Ec7bG9Oii31mmwPZSsLwu2Z-7RFI
+# sha256: AZs4WmqXdfkB7XqQOkGgBP2nXmO-ZCXHTQdufPOuPNQ
+# sha256: zK9wYA5bBk7DEWkWlPelGgsPoSKnVxOQTexHtYHMykM
+# sha256: zBgBdSw16BfTk25IiJPwt2BdWV56EBz9_rVw-C65STU
+# sha256: B2wB94nFFEd-GDpN9BOG-ftnLzbo1L0Vvq8twIxOB4Q
+# sha256: mQW07s_uC1kfk4ly_scHmiQAHeoWfIlkqwN3kurDn3k
+# sha256: T0uvjWBRuE37y3QaIS3O9qMKRJyHCz0MuGBVnGePyqw
+# sha256: tFCgoK90I_-Tp54fTcNk9WKDyOeok9lX54wioxVflcA
 pyparsing==1.5.5
-
 # sha256: RsUeuHi3h-gU7o-XN7CmIREDSutNHAZFCsWo6lpw5gI
 pyquery==1.2.9
-
 # sha256: bxlzSLRvuM358_z8Kn1al9qV2z4uhmfPZXIWJ0_hsAk
 python-dateutil==1.5
-
-# sha256: Df9jYEI_PsCMvjv683szlGGlSiHRO-DdXZyZmc5TEHg
+# sha256: 47DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU
+# sha256: fwnmFiOTAquyMfk6vJl-nE4ODkGuoH7N_GpRgsUM0H4
 python-gflags==2.0
-
 # sha256: ZrvGLZUZ-dUxsfd-aH2fL15SHLkG8f1yMfQDmX4BEMQ
 python-memcached==1.48
-
+# sha256: ViwdlP3nclV_bH_MzYjE8bWXQRIJ9pQ3vMzfC1XhmNo
+# sha256: zyEZCBbe1eKqmYUsyLcvl2vo3X4GVHCvVS5N02IJoPk
+# sha256: CuAd0p4lO-IS1LAsueyWfPb0I6G43ow-ZVBZHKDVowk
+# sha256: bTs1EQn0GQzZdA12M4RpkIGl8uuNc9qn5IUAn7ZGGMA
+# sha256: 5LC7qaDGJqSTLdBeiSSJwki_7ptmZ4j1agX2VLd_gz0
+# sha256: _QhkM6e0Ktzuene985GEY1Du5ibmxoLG58nV-WTgTXk
+# sha256: Db2pD0HvGGBVVxS7xigQGXSOcCo759Oupp0Kclgn4x4
+# sha256: xMQmSMaK_U4YJIY2XII6nNjnVXDWz0kJ1_CUgzP7PCA
 # sha256: 5PgdU8Uz9r2VJrBH8Ef3sQHCSrFzOcGnrY-YslwQHqs
 pyasn1==0.1.7
-
 # sha256: lX2YtmHAtktYCrb5SxJeCbZxQVTuUd5AvKFtPwB2uGw
 pycparser==2.10
 
 # python-recaptcha: ssl-enabled
 # sha256: eptgBDruYdbl_f_FcsZDFOptnKCa_w0vKpPOe6jTOxk
 https://github.com/bltravis/python-recaptcha/archive/d7db50afc711ef623aec8e472ff55627e66fcd87.tar.gz#egg=python-recaptcha
-
+# sha256: CjoiZeHvsN76ci0fQpcw3J35da3DxgrH0rQyvfA8BB0
+# sha256: Xe0vqQlP19_rPakmNkCf1wKg0H1gYoNQTX7gRAHO5cs
 # sha256: cyCRkITm2sj0VAY4pGRHo71zD8oXKvwX0sA-7SLPT1E
 Pygments==2.0.2
-
+# sha256: joJs7qiJ0gc04hCBohauuHRM5CVcZNv8x9Gz3Vvtx5s
+# sha256: PF3sWoikkHUqEWCF2l7svWymWTWtmktIjXDQ7Jx2YG8
+# sha256: m-EU0xqVtAQPiSHWpdvsDiLhgsF7IGA-tycwT0ShgR8
+# sha256: cPtkUjF2wTwp2ugguVPii86DgK3Lvc_YKfpwzuo2J5A
+# sha256: KaVcz75a_fU-ZI7cU_g8JyeSkk1YmF7ZIAteIiOHdN4
+# sha256: poB6y_0lUDEFfjnGVH-O8JXZLi5qtXscRYBagfEsHLU
 # sha256: ZetJzAW3kX_dxh4f5tikUSwpXLU4kd1eyBa8zNzj8aU
+# sha256: B5cpPRLKL35d1bwIB_Uh851bYKLDR8SPg2L5_QF0rz8
+# sha256: bEL3Z4c8RNafbwUUxfH5c5SrXYF-HmEWrW0IerWhclM
 pytz==2013b
 
 # raven-python: tags/3.6.1
@@ -315,34 +340,27 @@ https://github.com/getsentry/raven-python/archive/ab53d276262a0fa2932588b34de4e6
 # redis-py: remotes/origin/2.4~24
 # sha256: pKrx7rUrWH9IbMYyT2MF62gW_bVPony2JPDx0TecNP0
 https://github.com/andymccurdy/redis-py/archive/43aa23146ad287959369161038a4e5cda985a259.tar.gz#egg=redis
-
+# sha256: IPl2zc4CpCtpzoDp4DiXpRgUs21EizcohUYIbrxHMUY
 # sha256: OYo9ttYYmdJf1KBsbKEgUbDOFx1wXezX7VURUXtLuT0
 requests==2.7.0
-
 # sha256: ngIjuJUY7axhqXtW_3jycQVs4IyKF8a2RK7yRPrIPyM
+# sha256: mtSFI-JzXivaPvY1QHN3jIf9cY5OVmGh0bcODKBbYZ4
 requests-oauthlib==0.4.2
-
 # sha256: Y9f3sUog8p90Mlpp5ttFkl6vbjoAPqtGwCNP0FCoyT8
 simplejson==3.7.3
-
+# sha256: QYqTw5en7asj5ViNvAZ6x0pyPts9VBvUk295R252Rdo
 # sha256: 4kBSQR_E-9H2cmNVN8P8IzDZSBsYwDF2lbRiWVEskdU
 six==1.9.0
-
 # sha256: YEk4WnAyYoyam8KsV4zhgm5BebCoqfM7U18CL6vY0-o
 sqlparse==0.1.1
-
 # sha256: iwwUgZEicThAdjbIlWf8v2ruD33Bdms1HZcZzyF4CQ8
 statsd==2.0.1
-
 # sha256: AoMvOxsHHvrLI1tFkP1Ux-0NiRHejXL0awh9DIayE1A
 translate-toolkit==1.6.0
-
 # sha256: qw3sUihmd-lE3cAOr2oOuJr0ixpmljJOopNRNC0cSD8
 twython==3.2.0
-
 # sha256: Gon6G0PSd8-t8ijMkLnHXyVIGOo6Gqt7_7AiPLt7sV0
 urllib3==1.8
-
 # sha256: _2OLROrKgcmhyMSSuVfBuNG0SyFH5QIWNV_5yZ2qhjc
 Werkzeug==0.5.1
 
