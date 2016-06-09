@@ -372,7 +372,8 @@ STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
     'pipeline.finders.PipelineFinder',
 )
-STATICFILES_STORAGE = 'pipeline.storage.PipelineCachedStorage'
+
+STATICFILES_STORAGE = 'kitsune.sumo.storage.SumoFilesStorage'
 
 # Paths that don't require a locale prefix.
 SUPPORTED_NONLOCALES = (
