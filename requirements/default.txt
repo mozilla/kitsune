@@ -119,9 +119,8 @@ django-nose==1.4.3
 # sha256: jTddtwi8h_bfm7OulO3QG-0su2polKkneF3tmu3pg-8
 https://github.com/gintas/django-picklefield/archive/54b11bdb177fd6140c3ae7d6e9744eaa2deda261.tar.gz#egg=django-picklefield
 
-# sha256: pqnOIAOuEOcpdotteaSz2zMNh2uGIl63dDtvVpa6-lk
-# sha256: t83C7-J-R43dOOh43XteWsEhwomP2FrM8xh-GRN_5rc
-django-pipeline==1.6.8
+# sha256: gTftCmQ1YK4jAOESeOBJB_ChIIAxoAaUdHccq2gA8yU
+https://github.com/glogiotatidis/django-pipeline/archive/103bb549cd5f93b5648e10f1be6c2c6c8c5e9610.tar.gz#egg=django-pipeline
 
 # django-ratelimit: tags/v0.4.0~8
 # sha256: 0aNL6oRLRBHhGYsH0mm3D7UQDaSnNbdsHJl_sPuUZGw
