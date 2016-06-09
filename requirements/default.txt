@@ -31,9 +31,33 @@ celery==3.1.17
 
 # sha256: 95yMBNfrUAcbytZ_0j88EPq2xy1WhXrfhINngGhF1uU
 click==3.3
-
-# sha256: JTLZ46-ePG0PcQ_JiwKVtWPH85z9l90iQr02-_SQBhA
-cffi==0.8.6
+# sha256: 9aOU5hb_g0btkRqSxHTPVINbwggd1y7wklkFfmgo7gY
+# sha256: -rup5T40ikQQ9vrXjOx-L8_3ZWYpZVQZqespHyMF8-A
+# sha256: uTrD43fcmQKMlhhq4AO4cNOaG-c3VrB96svGyMvpa4Q
+# sha256: cxEbDpmcmi99Vt3ZBCCDcccRIpDtLpWEOJxeBV6ezf8
+# sha256: e_NApJeBTZ7TNLIOVC6MTWCivfZv0cV75XQyPq0e50s
+# sha256: JI_RAtyO5mvMuC7MNPb6aApL6KnhAVqFdi2rMpVf84Y
+# sha256: i9pJNCA4G-ci72ip4QCYP15F0njQjKJE9FDnaGdZKXk
+# sha256: PkUCznSXhEOElLJmTVj7iIE93hSv6A0fYgnDf0ggD74
+# sha256: Hqhc2eUHAAmm-U2V80DM6cU6fQT3Q9ITkPGMMvLLecI
+# sha256: aoJp2ZNjJQuOfgzQ9zTwMJ-PdTYW46PoJ_ECoZCgeHo
+# sha256: l8iULREm8qZs9RMUGY6oYzfcZWK1BNvGWSo-8UCtOkY
+# sha256: f1c_BdIsF8r948C0qaHTvWTx1TJjXTzoTAp3qx1uhqY
+# sha256: 6HFIC7Ue8M8tTWDqdMSWxSSKgXznUVsv1NQDKqK9lvw
+# sha256: J_DvzW9DcHg6UWtyd_h4DdXIFj09mHwU1PCWH8yki4w
+# sha256: 87RR2tdeJFuXCivBidq2GFt8eAerltvgdTfPpxMWEv0
+# sha256: qhWcGb5yffFBezJPMGY_Tp6rAT1tlvsh3lYQVHJG7SE
+# sha256: zX8JjhSL6wkct3nRbzCR0XO1akOZ8dcotSNi8wPBJi4
+# sha256: Mbqh5ywqL2saDn7W2bAyKqKZJlkLXRGaX0mz8iv0WxQ
+# sha256: 4jexyXBNKnRk-XA9UXtngIHEWUWumn2_u23gsrEXtoM
+# sha256: og3hPGQJCq3lpQ4MA_d9Ujy6s9yOXNg8guaJqkAqNtA
+# sha256: Lts1SEUNrpHjHULAYnkGI-ftmM9DtpFPHzLtCavllIQ
+# sha256: P6uEgc000utsAAfqdEzC3ndxQBEkU6AVpl2sfyyUmFA
+# sha256: F5G_GFASFMn9Hiuezr8WO7q2dN4J24gftdZqtnTlVDw
+# sha256: aprwLYAFhtVq7O9YV1bHlCVLgdLk813C4zkMcrcvBBQ
+# sha256: mV0S7-4JPYyg-COUhazu-eUGA22PfNiS8qWHdIhP2wU
+# sha256: p_dcTvI2LAoOVGV63QpsUJ_sv6OzgHvAkl9cscn5J9s
+cffi==1.6.0
 
 # commonware: master
 # sha256: k9gjEUXUPKAuHsPO41UzOvqOcq25z4FXZ-F1lXSXdNQ
@@ -41,9 +65,29 @@ https://github.com/jsocol/commonware/archive/b5544185b2d24adc1eb512735990752400c
 
 # sha256: BTWn4nAUh0snrjpNM-h0njRb36YnZhlSCLeZa_EQBoI
 cssselect==0.9.1
-
-# sha256: -rf83eNg7GYURC0DIdzQ7_XkNUTLMNl16ddakUpM33g
-cryptography==0.7.2
+# sha256: f6YcwrR9BhKtzzP6Ny6Ib-fKupzZVk6ZAw618FYhiG8
+# sha256: GLZOLwOGfDXBkO7dYyJ_ZzVkoKKeodsdzxNqgSoPYvE
+# sha256: KhkzxO7eXs9Mt09PFyEIS026WrOQQHMNFD410ra1bwM
+# sha256: DrX38ai6z6PuZGWhJ9cJUOPIHrRJdsXGLPz6Vsd6Vhg
+# sha256: -al6w8mw-mnKtSReqPy00-YvqGaZ3WYIWxCWcRegBg4
+# sha256: ZoeJKYBy0Aa0XIOkOniEpgoGJJT-pqygamLBoRxxgcg
+# sha256: rMKoHzcs9plw7m-7oMEyHEyjw1-l1qiWdMKnQUhHxR0
+# sha256: 3lE4MVf5oC7enOmSDdniLp5Q0M5YNg-h0a1BpRyfgwo
+# sha256: ZVEUkPNaYCZIkBoqIfd8nqeh_g8hXdkFwt9pZAb6rWI
+# sha256: T1amO2H0MF3U_aW-IgQ8n_D3Le1riELRYDuyAfkLHQQ
+# sha256: 30OjwyZeQsQTzRDt5WLvq563EfDwilHOswl--4_83Ts
+# sha256: opJfLGWaj3FhZub4jr5lDolvghZRXbwOfpiwQzoN1So
+# sha256: Ca_x-URx0P-5co-WYWARmdTD5ObfZi-LMdIjABRnwCI
+# sha256: Kdkqca2Igv-fpUyXURLPEWqi5Zi9U90ji9chw-g2quA
+# sha256: VNOHaFdBZQnOtHkdk0fL32Gz_ZQPRr2ELP9A7VGE6QI
+# sha256: chp9gSb4ufTMJoviSAEC9zoCQM651tWcDCeT0KKE4CY
+# sha256: 2XkAjo_ptE0vyhEsxtNx5HeEAGSdVxDOaH0UaJ2qEII
+# sha256: hGQ4FZee5FqGdqoA5_dQEe3rM-VZvd0l5g6-p4uhLgo
+# sha256: I_7i45dhm8K8xIrf1rBF6Z7QxhiPqGCd01ajWgRgwZA
+# sha256: 0oL3ZesgmSbvEgjGUyYk-lCHpZjkCPincq6KZSXymHM
+# sha256: 9SRb08DUoxtK_Dl9FY7RsFG3A9lpBSdHLoyjcbINhzU
+# sha256: uxSVQO2QxLIXG_aU_mmR1jMbwUmuYjyP9BkyT0Ii0Sg
+cryptography==1.4
 
 # sha256: _eJnrrA6jUnjNB5_caIoxnSNzkO1wA9lWBeA2Ztwstk
 dennis==0.7
@@ -164,8 +208,8 @@ elasticutils==0.10.3
 
 # sha256: u5PYXKflDWjkGXhSu226YJi7dyUA-C9dsv9KgHEVBck
 elasticsearch==1.2.0
-
 # sha256: 08GfJqajRinBjHdfWd_F3VlXZMcitXotpW6_tpuU5Ec
+# sha256: dYPYCsoqKyqKQR8UHE10TeBqa8Q6MiU_a4HRTUj2yQ4
 enum34==1.0.4
 
 # sha256: deTJeG7SjRnsf7UA88ciGm64d0jLxvXi7qykw9aPMMs
@@ -185,6 +229,7 @@ google-api-python-client==1.0
 https://github.com/html5lib/html5lib-python/archive/f5855f3d0ad6d4202e2b5d02626d85178ff6443a.tar.gz#egg=html5lib-python==0.95
 
 # sha256: OeqMam2fWVwXehYTT8SamQrY04J1jL9GnIZZZi8vUas
+# sha256: 4ifmf2dikwJfvtyggMcRRoXlWFfWB50V8ScE39oD3WI
 httplib2==0.9
 
 # sha256: GQQPAbOp2MY-TVeTb3hxCQgZm2k3CrRKD3QH3YkfAZs
