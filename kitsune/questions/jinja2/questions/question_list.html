@@ -187,8 +187,7 @@
         </article>
         {{ questions|quick_paginator }}
       {% else %}
-        {# Not localized because it's not worth localizers time. #}
-        <p>There are no questions that match the current filter settings.</p>
+        <p>{{ _('There are no questions that match the current filter settings.') }}</p>
       {% endif %}
     </div>
 

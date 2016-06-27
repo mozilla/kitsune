@@ -110,9 +110,8 @@
         </li>
       {% endfor %}
     {% else %}
-      {# Not localized because it's not worth localizers time. #}
       <p class="no-questions">
-        There are no questions that match the current filter settings.
+        {{ _('There are no questions that match the current filter settings.') }}
       </p>
     {% endif %}
   </ul>
