@@ -1,4 +1,4 @@
-/* globals _gaq:false, k:false, _:false, Marky:false, AAQSystemInfo:false, KBox:false, gettext:false, template:false, jQuery:false */
+/* globals trackEvent:false, k:false, _:false, Marky:false, AAQSystemInfo:false, KBox:false, gettext:false, template:false, jQuery:false */
 /*
 * questions.js
 * Scripts for the questions app.
@@ -16,9 +16,9 @@
       initNewQuestion();
 
       if (window.location.search.indexOf('step=aaq-register') > -1) {
-        _gaq.push(['_trackEvent', 'Ask A Question Flow', 'step 1 page']);
+        trackEvent('Ask A Question Flow', 'step 1 page');
       } else if (window.location.search.indexOf('step=aaq-question') > -1) {
-        _gaq.push(['_trackEvent', 'Ask A Question Flow', 'step 2 page']);
+        trackEvent('Ask A Question Flow', 'step 2 page');
       }
     }
 
@@ -30,7 +30,7 @@
       });
 
       if (window.location.pathname.indexOf('questions/new/confirm') > -1) {
-        _gaq.push(['_trackEvent', 'Ask A Question Flow', 'step 3 confirm page']);
+        trackEvent('Ask A Question Flow', 'step 3 confirm page');
       }
     }
 

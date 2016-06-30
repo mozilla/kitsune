@@ -1,4 +1,4 @@
-/* globals k:false, _gaq:false, jQuery:false */
+/* globals k:false, jQuery:false, trackEvent:false, trackPageview:false */
 (function($) {
   var searchTimeout;
   var locale = $('html').attr('lang');
@@ -78,12 +78,12 @@
 
       searchTimeout = setTimeout(function () {
         if (search.hasLastQuery) {
-          _gaq.push(['_trackEvent', 'Instant Search', 'Exit Search', search.lastQueryUrl()]);
+          trackEvent('Instant Search', 'Exit Search', search.lastQueryUrl());
         }
         search.setParams(params);
         search.query($this.val(), k.InstantSearchSettings.render);
-        _gaq.push(['_trackEvent', 'Instant Search', 'Search', search.lastQueryUrl()]);
-        _gaq.push(['_trackPageview', search.lastQueryUrl()]);
+        trackEvent('Instant Search', 'Search', search.lastQueryUrl());
+        trackPageview(search.lastQueryUrl());
       }, 200);
 
       k.InstantSearchSettings.hideContent();
@@ -96,8 +96,7 @@
     var $this = $(this);
 
     if (search.hasLastQuery) {
-      _gaq.push(['_trackEvent', 'Instant Search', 'Exit Search',
-        search.queryUrl(search.lastQuery)]);
+      trackEvent('Instant Search', 'Exit Search', search.queryUrl(search.lastQuery));
     }
 
     var setParams = $this.data('instant-search-set-params');
@@ -117,8 +116,8 @@
       });
     }
 
-    _gaq.push(['_trackEvent', 'Instant Search', 'Search', $this.data('href')]);
-    _gaq.push(['_trackPageview', $this.data('href')]);
+    trackEvent('Instant Search', 'Search', $this.data('href'));
+    trackPageview($this.data('href'));
 
     cxhr.request($this.data('href'), {
       data: {format: 'json'},

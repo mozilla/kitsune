@@ -1,7 +1,9 @@
 /* globals _gaq:false */
 
 function trackEvent(category, action, value) {
-  _gaq.push(['_trackEvent', category, action, value]);
+  if (_gaq) {
+    _gaq.push(['_trackEvent', category, action, value]);
+  }
 }
 
 let eventsToNotRepeat = new Set();
