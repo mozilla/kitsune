@@ -1,4 +1,4 @@
-/* globals _gaq:false, jQuery:false */
+/* globals _gaq:false, trackEvent:false, jQuery:false */
 // Collect wiki metrics.
 
 (function ($) {
@@ -23,39 +23,32 @@
           return;
         }
 
-        _gaq.push(['_trackEvent',
-        'Article Vote',
-        data.source + ' - ' + value,
-        getEnglishSlug() + ' / ' + getLocale()]);
+        trackEvent('Article Vote',
+                   data.source + ' - ' + value,
+                   getEnglishSlug() + ' / ' + getLocale());
       }
     });
 
     // Track showfor changes in Google Analytics:
     $('#os').change(function() {
-      if (_gaq) {
-        _gaq.push(['_trackEvent',
-        'ShowFor Switch',
-        'OS - ' + $(this).val(),
-        getEnglishSlug() + ' / ' + getLocale()]);
-      }
+      trackEvent('ShowFor Switch',
+                 'OS - ' + $(this).val(),
+                 getEnglishSlug() + ' / ' + getLocale());
+
     });
 
     $('#browser').change(function() {
-      if (_gaq) {
-        _gaq.push(['_trackEvent',
+      trackEvent(
         'ShowFor Switch',
         'Version - ' + $(this).val(),
-        getEnglishSlug() + ' / ' + getLocale()]);
-      }
+        getEnglishSlug() + ' / ' + getLocale());
     });
 
     // Fire an event after 10 seconds to track "read".
     setTimeout(function() {
-      if (_gaq) {
-        _gaq.push(['_trackEvent',
+      trackEvent(
         'Article Read',
-        getEnglishSlug() + ' / ' + getLocale()]);
-      }
+        getEnglishSlug() + ' / ' + getLocale());
     }, 10000);
 
     function getLocale() {

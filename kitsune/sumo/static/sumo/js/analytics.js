@@ -1,5 +1,4 @@
-/* globals $:false */
-/* globals _dntEnabled:false */
+/* globals $:false, _dntEnabled:false */
 
 if (!_dntEnabled()) {
   var _gaq = _gaq || [];
@@ -103,5 +102,18 @@ if (!_dntEnabled()) {
                    $('body').data('product-slug')]);
       }
     }, 5000);
+  }
+}
+
+
+function trackEvent(category, action, value) {
+  if (_gaq) {
+    _gaq.push(['_trackEvent', category, action, value]);
+  }
+}
+
+function trackPageview(value) {
+  if (_gaq) {
+    _gaq.push(['_trackPageview', value]);
   }
 }
