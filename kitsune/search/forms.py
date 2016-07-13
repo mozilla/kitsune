@@ -12,13 +12,14 @@ from kitsune.sumo.form_fields import TypedMultipleChoiceField
 from kitsune.wiki.config import CATEGORIES
 
 
+MAX_QUERY_LENGTH = 200
 SEARCH_LANGUAGES = [(k, LOCALES[k].native) for
                     k in settings.SUMO_LANGUAGES]
 
 
 class SimpleSearchForm(forms.Form):
     """Django form to handle the simple search case."""
-    q = forms.CharField(required=True)
+    q = forms.CharField(required=True, max_length=MAX_QUERY_LENGTH)
 
     w = forms.TypedChoiceField(required=False, coerce=int,
                                widget=forms.HiddenInput,
@@ -71,7 +72,7 @@ class SimpleSearchForm(forms.Form):
 class AdvancedSearchForm(forms.Form):
     """Django form for handling display and validation"""
     # Common fields
-    q = forms.CharField(required=False)
+    q = forms.CharField(required=False, max_length=MAX_QUERY_LENGTH)
 
     w = forms.TypedChoiceField(required=False, coerce=int,
                                widget=forms.HiddenInput,
