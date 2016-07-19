@@ -92,8 +92,8 @@ cryptography==1.4
 # sha256: _eJnrrA6jUnjNB5_caIoxnSNzkO1wA9lWBeA2Ztwstk
 dennis==0.7
 
-# sha256: 7BSL5zVI2gkN12wujFfJjosehPLLh1ALm-VCAYekNfs
-Django==1.8.11
+# sha256: UoLEi5D7spUHKZ9ZIhU3joSaKAj0heQURibmZxXVRk0
+Django==1.8.14
 
 # sha256: kjEbxXu6YpeZv9FrlKYlEQe79VE5TCBFg6cI0g-2gbY
 django-activity-stream==0.6.0
