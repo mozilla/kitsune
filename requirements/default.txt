@@ -148,10 +148,6 @@ django-jsonfield==0.9.13
 # sha256: 11NE2ouDylJbghVgmHjrLx3kXHKyhbg5L-Kooyy5SzA
 https://github.com/jbalogh/django-mobility/archive/e9fc5f7587311350326f044378d5b51b5257afa3.tar.gz#egg=django-mobility
 
-# django-mozilla-product-details: master
-# sha256: 3w8dxWiq5fW-GDgKRIZrBIKQ3Wq6b_2RwU3RbE9yidw
-https://github.com/mozilla/django-product-details/archive/50d83e16d801ef069738cfb9f6feccc0abaeca01.tar.gz#egg=django-mozilla-product-details
-
 # django-multidb-router: tags/v0.5~1
 # sha256: H1ypqtnca2OqjPPqsBVW-PnuftghanQS1gAt7OM-RBk
 https://github.com/jbalogh/django-multidb-router/archive/fffe4323fc0006c6eec20c696a5577ee902a85d9.tar.gz#egg=django-multidb-router
@@ -394,3 +390,7 @@ Werkzeug==0.5.1
 # zendesk: master
 # sha256: qZay1j0xjnxeqf9KSApA23lDIepStzP_bG2lfvszujs
 https://github.com/eventbrite/zendesk/archive/1b256c3b827a8f3c6bbd3bd1fc09b7b0e2e82347.tar.gz#egg=zendesk
+
+# sha256: oxpREC6MLwR_iqYri9xVL3ox2cafLLFjkyJcPuDbcrU
+# sha256: JawRvUVE_vMjbzJDn2sd47z5MfizTHeGq0Dw7IVibus
+django-mozilla-product-details==0.12.1
