@@ -36,7 +36,7 @@ def product_landing(request, template, slug):
                             content_type='application/json')
 
     if slug == 'firefox':
-        latest_version = product_details.json_data['firefox_versions']['LATEST_FIREFOX_VERSION']
+        latest_version = product_details.firefox_versions['LATEST_FIREFOX_VERSION']
     else:
         versions = product.versions.filter(default=True)
         if versions:
