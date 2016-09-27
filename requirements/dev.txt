@@ -26,6 +26,7 @@ docutils==0.12
 flake8==2.5.0
 
 # sha256: 9iU9--BTitLjh72P39kpPJJdY1U_WBPE5Yd0VBZQHm0
+# sha256: idgkqmw1jEIaI01_nuC9dZM6Z8KViM5QqqOs301AP6A
 functools32==3.2.3-2
 
 # sha256: Nmc6w3j-7T2qWVYnaoKWmQVlI9eWECeRHwZLUiVerUE
@@ -56,6 +57,19 @@ pre-commit==0.7.0
 pyflakes==1.0.0
 
 # sha256: w2yTiocuX_SUk4szsUqqFWy0OexnVI_Ks1Nbt4sIRug
+# sha256: tUtHgtpgx9_l2FBSRBbdA_O5pRbtR2zh1aJxLN511oM
+# sha256: LbPUxU0-tHrXFpgG5oTVJD1KFHScuXQe9dGsMpHWeho
+# sha256: PowQSGG1g5o25rMML5ZNb79KLiuHrpwonaaZsh41yRs
+# sha256: egLSIgnkG6Vb2KZfpp7lk68wqFf24z_JyAWJ5rR3w2s
+# sha256: 2bcoFdPNxeHD8fREmKXohP5NzbP2Qo-ghuNa-BYNKAk
+# sha256: yBsMzPa2v8BDLBqWwHtkt2RyEY7HibxIkUR8xSmL0cc
+# sha256: 47wlKMOg85aQi1-HhHlfP3ti6LJXPC23Nq3cz7IkSeQ
+# sha256: yhKWYycRdPl4PhF3GV5CiJRaUE24n1w4idp14Ku9Cmc
+# sha256: 1Evm53gC6oRZEeAA4p14G6KQCg_js4_A9bdPX3fS5PA
+# sha256: Krvgsje0LgdeWln5B2bAoYzCmuo7qnoVLMFvYvpVbao
+# sha256: rVWonMJkt0vlnfn9zqHf_RT0NdlV6uKsgiooVjvi_kg
+# sha256: 4lwgdBietyBWd4yINE9H5ec3iv1S2mIBS7PobvzpR8E
+# sha256: Gbs6w1Dvh43ahKYtN8fVwXoTc4bd6cLOcknHoh1_ask
 PyYAML==3.11
 
 # sha256: 3g_PWkOXVJdd2AIsO_JjdLiC0P5CZaq4gT9Oh-BX7tU
