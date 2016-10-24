@@ -9,12 +9,6 @@
 {% set styles = ('products',) %}
 {% set search_params = {'product': product.slug} %}
 
-{% if product.slug == 'firefox' %}
-  {% set SURVEY_GIZMOS = ['beacon'] %}
-{% elif product.slug == 'mobile' and waffle.flag('surveygizmo') %}
-  {% set SURVEY_GIZMOS = ['mobile'] %}
-{% endif %}
-
 {% block title %}{{ pgettext('DB: products.Topic.title', topic.title) }} | {{ _('{product} Help')|f(product=pgettext('DB: products.Product.title', product.title)) }}{% endblock %}
 
 {% block content %}
