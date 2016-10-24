@@ -5,7 +5,3 @@
 {% if not scripts %}
   {% set scripts = ('questions', 'jqueryui') %}
 {% endif %}
-
-{% if waffle.flag('surveygizmo') %}
-  {% set SURVEY_GIZMOS = ['questions'] %}
-{% endif %}
