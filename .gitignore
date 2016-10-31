@@ -23,3 +23,5 @@ james.ini
 build.py
 .vagrant/
 venv/
+.cache
+.tox

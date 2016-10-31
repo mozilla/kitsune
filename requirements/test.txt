@@ -6,28 +6,29 @@ execnet==1.4.1
 # sha256: plAZY8cl_CVU2r_s6K6aj7XhScCsCkL9KwLFwcV_wRQ
 py==1.4.31
 
-# sha256: PmNXBvzgenNPeISgujLEblcgIl2GGz7RjKdsYGLehs0
-# sha256: DUjSehJ2RPvnyBWBV-CLNfglUEXUR232lLkes6gUfmU
-pytest==2.9.1
+# sha256: rqh8pCQLeYaMyr0UulahLs6xwegHa1hf4vpWAqWHTbc
+# sha256: 8hNQCjVoAKSD6KFG_5ca4UqN8_LArkFFGBqtlplqvuc
+pytest==3.0.3
 
-# sha256: zzI98ijiZdZ1XsOaJvKXGsxZoxsN4M_QJtNBJJ2-72k
-# sha256: 3-epy0EWdBTKe56Fr71mlOjMg_2_V9DlRcIVwyzUDNY
-pytest-html==1.8.0
+# sha256: 9vwczv6U-xe6KJ7jhb667M_UTPTwXu-RFlcsrmma9tY
+# sha256: gI3dXpNGYGMA7rOKfJ7pF8o98cUQddAkSenPWVaujvs
+pytest-html==1.10.1
 
-# sha256: 6C8KJlsOI4rEKsJ115MT0KfgvvGkUGM66z1lScwU9Rc
-# sha256: vSEhAi_zJVzoL67A7zYCRi7GvOnKYntTRimGz8mzkek
-pytest-selenium==1.2.1
+# sha256: 8UmqPYLgqjEvjq_tZyXMuw3RYgNyCiw5xrbfiyPPOHQ
+# sha256: bC8eYs30CPFnmNNeI1obgZv-h_5invc0yx1soQYOlQg
+pytest-selenium==1.5.0
 
 # sha256: KdywhO1dDDV-klyabLRU2-euYZL96i-dGSn1IbTlMuM
 # sha256: vS4VLmTI9nDnlpx2IZp4Qs-O3nlXAxJ5ge1xrzjP4Io
 pytest-variables==1.4
 
-# sha256: Sl4RmRIvop4wF9jRifWczF2C6EFHS6Kh7sDolgYVNiM
-pytest-xdist==1.14
+# sha256: Yjg5X4vQUPkoijsQ80Mw7ezoD0QkzytCBNbn1iLw8As
+pytest-xdist==1.15.0
 
-# sha256: xXeBXdAPE5QgP8ROuXlySwmPiCZKnviY7kW45enPWH8
-requests==2.9.1
+# sha256: VFxIVc2dfBJnFEQyYzcBN2b07qYGjD8DB_stwmltWA4
+# sha256: Ws-YA1goP6uguJfHOVnOz4uEEgW7SyrT71RfRurhoTM
+requests==2.11.1
 
-# sha256: -oMzzzATSX5g2HumjK5l6tjn-iCL6Iq5xWFVYQP1QO8
-# sha256: RsusTvML_3oApe8eVDiveMXalzWxNRsS4zkgEBBeX-k
-selenium==2.53.2
+# sha256: qeTxOYMC53GtpKCiaGUIFbQ7NUuvLeTn5QI_tflnXlA
+# sha256: BwWAM0mWTHoqFE8XlqXSmQX-KgmTGyu5Re4MtN6rddc
+selenium==3.0.1
