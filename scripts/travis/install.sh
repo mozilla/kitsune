@@ -14,7 +14,7 @@ echo
 
 # Installing dependencies for UI tests
 if [[ $TEST_SUITE == "ui" ]]; then
-  ./peep.sh install -r requirements/test.txt
+  pip install tox
 fi
 
 # Optimization: None of the rest is needed for lint tests.
