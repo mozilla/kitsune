@@ -48,6 +48,7 @@ def writeCapabilities(desiredCapabilities) {
  * @param environment test environment to run
 */
 def runTox(environment) {
+  def processes = env.PYTEST_PROCESSES ?: 'auto'
   try {
     wrap([$class: 'AnsiColorBuildWrapper']) {
       withCredentials([[
@@ -55,6 +56,7 @@ def runTox(environment) {
         credentialsId: 'SAUCELABS_API_KEY',
         variable: 'SAUCELABS_API_KEY']]) {
         withEnv(["PYTEST_ADDOPTS=${PYTEST_ADDOPTS} " +
+          "-n=${processes} " +
           "--base-url=${PYTEST_BASE_URL} " +
           "--driver=SauceLabs " +
           "--variables=capabilities.json " +
