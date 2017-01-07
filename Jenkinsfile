@@ -5,7 +5,7 @@ def environments = [
   desktop: [
     browserName: 'Firefox',
     version: '47.0',
-    platform: 'Windows 7'
+    platform: 'Windows 10'
   ],
   mobile: [
     browserName: 'Browser',
