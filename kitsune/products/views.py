@@ -44,6 +44,12 @@ def product_landing(request, template, slug):
         else:
             latest_version = 0
 
+    versions = product.versions.filter(default=True)
+    if versions:
+        latest_version = versions[0].max_version
+    else:
+        latest_version = 0
+
     return render(request, template, {
         'product': product,
         'products': Product.objects.filter(visible=True),
