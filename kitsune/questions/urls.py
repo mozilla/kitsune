@@ -90,6 +90,15 @@ urlpatterns = patterns(
     url(r'^/mark_spam$', 'mark_spam', name='questions.mark_spam'),
     url(r'^/unmark_spam$', 'unmark_spam', name='questions.unmark_spam'),
 
+    # Feeds
+    # Note: this needs to be above questions.list because "feed"
+    # matches the product slug regex.
+    url(r'^/feed$', QuestionsFeed(), name='questions.feed'),
+    url(r'^/(?P<question_id>\d+)/feed$', AnswersFeed(),
+        name='questions.answers.feed'),
+    url(r'^/tagged/(?P<tag_slug>[\w\-]+)/feed$', TaggedQuestionsFeed(),
+        name='questions.tagged_feed'),
+
     # Question lists
     url(r'^/(?P<product_slug>[\w+\-\,]+)$', 'question_list',
         name='questions.list'),
