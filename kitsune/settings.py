@@ -540,6 +540,7 @@ INSTALLED_APPS = (
     'kitsune.access',
     'kitsune.sumo',
     'kitsune.search',
+    'kitsune.coolsearch',
     'kitsune.forums',
     'djcelery',
     'badger',
