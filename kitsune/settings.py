@@ -272,6 +272,7 @@ NON_SUPPORTED_LOCALES = {
     'sah': None,
     'son': None,
     'sv-SE': 'sv',
+    'xh': None,
 }
 
 ES_LOCALE_ANALYZERS = {
