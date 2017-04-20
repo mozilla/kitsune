@@ -187,6 +187,5 @@ class LithiumRedirectionMiddleware():
                         cache.set(cache_key, url, None)
                         return HttpResponseRedirect(url)
 
-                    # everything failed, kittens die, it's a 404
-                    return handle404(request)
-        return response
+        # everything failed, kittens die, it's a 404
+        return handle404(request)
