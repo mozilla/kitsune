@@ -124,6 +124,7 @@ class LithiumRedirectionMiddleware():
                 url,
                 headers={'Host': 'support.mozilla.org'},
                 timeout=3,
+                verify=False,
             )
         except requests.exceptions.Timeout:
             sentry_client.captureException()
