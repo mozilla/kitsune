@@ -476,6 +476,7 @@ MIDDLEWARE_CLASSES = (
     'mobility.middleware.XMobileMiddleware',
     'kitsune.sumo.middleware.MobileSwitchMiddleware',
 
+    'kitsune.middleware.LithiumRedirectionMiddleware',
     'kitsune.sumo.middleware.Forbidden403Middleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
