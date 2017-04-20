@@ -189,3 +189,4 @@ class LithiumRedirectionMiddleware():
 
                     # everything failed, kittens die, it's a 404
                     return handle404(request)
+        return response
