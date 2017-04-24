@@ -90,6 +90,7 @@ class LithiumRedirectionMiddleware():
         '/t5/How-To/Cookies/ta-p/16348': '/kb/cookies-information-websites-store-on-your-computer',
         '/t5/Fix-slowness-crashing-error/What-does-quot-Your-connection-is-not-secure-quot-mean/ta-p/30354': '/kb/what-does-your-connection-is-not-secure-mean',
         '/t5/Firefox-for-Android/ct-p/Firefox-Android': '/products/mobile',
+        '/t5/Manage-preferences-and-add-ons/Disable-or-remove-Add-ons/ta-p/1000': '/kb/disable-or-remove-add-ons',
     }
 
     def process_response(self, request, response):
