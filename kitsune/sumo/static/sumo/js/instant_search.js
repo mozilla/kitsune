@@ -119,7 +119,7 @@
     trackEvent('Instant Search', 'Search', $this.data('href'));
     trackPageview($this.data('href'));
 
-    cxhr.request($this.data('href'), {
+    cxhr.request(search.queryUrl(), {
       data: {format: 'json'},
       dataType: 'json',
       success: k.InstantSearchSettings.render
