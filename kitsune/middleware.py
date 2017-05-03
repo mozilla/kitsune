@@ -123,7 +123,7 @@ class LithiumRedirectionMiddleware():
         try:
             response = requests.get(
                 url,
-                timeout=3,
+                timeout=6,
                 verify=False,
             )
         except requests.exceptions.Timeout:
