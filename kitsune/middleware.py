@@ -123,7 +123,6 @@ class LithiumRedirectionMiddleware():
         try:
             response = requests.get(
                 url,
-                headers={'Host': 'support.mozilla.org'},
                 timeout=3,
                 verify=False,
             )
