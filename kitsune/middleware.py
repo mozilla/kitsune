@@ -119,7 +119,7 @@ class LithiumRedirectionMiddleware():
             return HttpResponseRedirect(self.product_pages[urlparts[2]])
 
         path = request.path_info
-        url = 'https://secure02.lithium.com.edgekey.net' + path
+        url = 'https://hwsfp35778.lithium.com' + path
         try:
             response = requests.get(
                 url,
