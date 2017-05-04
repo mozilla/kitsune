@@ -235,8 +235,7 @@ class UserMappingType(SearchMappingType):
 
                 'suggest': {
                     'type': 'completion',
-                    'index_analyzer': 'whitespace',
-                    'search_analyzer': 'whitespace',
+                    'analyzer': 'whitespace',
                     'payloads': True,
                 }
             }
