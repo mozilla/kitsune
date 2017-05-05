@@ -47,11 +47,11 @@
         {% endif %}
 
         {% if draft_revision %}
-          <li class="info">
-            <p><strong>{{ _('You have a draft revision for this article saved on {date_time}')|f(date_time=draft_revision.created) }}</strong></p>
+          <li id="draft_notice" class="info">
+            <p><strong>{{ _('You have a draft revision for this article saved on {date_time}')|f(date_time=datetimeformat(draft_revision.created), format='longdatetime') }}</strong></p>
             <form action="" method="get">
               <input class="btn" name="restore" value={{ _('Restore') }} type="submit">
-              <input class="btn" name="discard" value={{ _('Discard') }} type="submit">
+              <input class="btn discard_content" name="discard" value={{ _('Discard') }} type="submit">
             </form>
           </li>
         {% endif %}
@@ -64,6 +64,7 @@
         {{ document_lock_warning() }}
       </ul>
 
+      <div id="autosave-form" data-parent-doc="{{ parent.id }}" data-user-id="{{ request.user.id }}" data-locale="{{ locale }}" hidden></div>
       <h1>{{ _('Translating {title}')|f(title=parent.title) }}</h1>
       <div class="change-locale">
         <p>

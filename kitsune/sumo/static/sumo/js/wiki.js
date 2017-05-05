@@ -74,6 +74,7 @@
     if ($body.is('.translate')) {  // Translate page
       initToggleDiff();
       initTranslationDraft();
+      initAutoSave();
     }
 
     initEditingTools();
@@ -656,13 +657,115 @@
       $.post(url, totalData)
         .done(function() {
           var time = new Date(),
-            message = interpolate(gettext('<strong>Draft has been saved on:</strong> %s'), [time]);
+            message = interpolate(gettext('<strong>Draft has been saved on:</strong> %s'), [time]),
+            autoSaveKey = getAutoSaveKey();
+          // Remove the Auto Saved Content
+          localStorage.removeItem(autoSaveKey);
           $draftMessage.html(message).toggleClass('info success').show();
         })
         .fail(function() {
           var message = gettext('<strong>Error saving draft</strong>');
           $draftMessage.html(message).toggleClass('info error').show();
         });
+    });
+  }
+
+  function getAutoSaveKey() {
+    var autosave = document.querySelector('#autosave-form'),
+      docId = autosave.dataset.parentDoc,
+      userId = autosave.dataset.userId,
+      locale = autosave.dataset.locale,
+      key = docId + userId + locale;
+    return key
+  }
+
+  function initAutoSave() {
+    var key = getAutoSaveKey(),
+      autoSavedContent = localStorage.getItem(key),
+      time = localStorage.getItem('time' + key),
+      contentField = document.querySelector('#id_content');
+
+    // Check if the syntex highlighting in enabled
+    function highlightingEnabled() {
+      var editor_wrapper = document.querySelector('#editor_wrapper'),
+        style = window.getComputedStyle(editor_wrapper);
+      return style.getPropertyValue('display') === 'block'
+    }
+
+    // Get the activated Code Mirror instance.
+    // TODO: Find a better way to get the activated codemirror instance
+    function getCodeMirrorEditor() {
+      var cm_editor = $('.CodeMirror')[0].CodeMirror
+      return cm_editor
+    }
+
+    function save(text) {
+      var time = new Date();
+
+      localStorage.setItem(key, text);
+      localStorage.setItem('time' + key, time);
+    }
+
+    // As the normal editor does not depend on full page load,
+    // active auto saving without getting the full page loaded.
+    contentField.addEventListener('keyup', function() {
+      if (!highlightingEnabled()) {
+        save(contentField.value)
+      }
+    });
+
+    // Do everything after page is fully loaded as the codemirror editor is activate after full page load
+    window.addEventListener('load', function() {
+      var cm_editor = getCodeMirrorEditor();
+
+      cm_editor.on('change', function() {
+        if (highlightingEnabled()) {
+          var content = cm_editor.getValue();
+          save(content)
+        }
+      });
+
+      // Show message only if unsaved content is in loacalstorage
+      if (autoSavedContent) {
+        var message = '<p></strong>' + interpolate(gettext('You have an unsaved content saved on %s'), [time]) + '</strong></p>',
+          restore = '<div class="btn restore_content">' + gettext('restore') + '</div>',
+          discard = '<div class="btn discard_content">' + gettext('discard') + '</divs>',
+          html = '<div id="notice" class="info alert">' + message + restore + discard + '</div>',
+          $draftNotice = $('#draft_notice');
+
+        $('#content-fields').prepend(html);
+
+        // If there is notice about available draft revision, add another message about unsaved content
+        if ($draftNotice) {
+          var extraMessage = '<br> <a href="#content-fields" id="extra_message">' + interpolate(gettext('But you also have an unsaved content saved in your browser on %s'), [time]) + '</a>';
+          $draftNotice.append(extraMessage);
+
+          // If the message is clicked, scroll the contributor to the content field
+          $('#extra_message').click( function() {
+            $('html, body').animate({
+              scrollTop: $('#content-fields').offset().top}, 2000
+            );
+          });
+        }
+
+        // Restore the content if restore button is clicked
+        $('.restore_content').click( function() {
+          if (!highlightingEnabled()) {
+            $('#id_content').val(autoSavedContent);
+          } else {
+            cm_editor.setValue(autoSavedContent);
+          }
+
+          $('#content-fields #notice').hide();
+        });
+      }
+
+      // Discard the content if the discard or submit for review is clicked
+      $('.discard_content').click( function() {
+        localStorage.removeItem(key);
+        localStorage.removeItem('time' + key);
+        $('#content-fields #notice').hide();
+      });
     });
   }
 

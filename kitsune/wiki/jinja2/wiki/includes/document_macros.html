@@ -218,7 +218,8 @@
             {{ _('Notify me of any future changes to this page') }}
           </label>
         </div>
-        <button class="btn btn-important" type="submit">{{ _('Submit') }}</button>
+        {# Added ``discard_content`` class so local saved content will be removed upon submit #}
+        <button class="btn btn-important discard_content" type="submit">{{ _('Submit') }}</button>
         <a class="kbox-cancel" href="#cancel">{{ _('Cancel') }}</a>
       </div>
     </div>
