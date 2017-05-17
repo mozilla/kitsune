@@ -191,7 +191,7 @@
     <div class="grid_2"><img src="{{ STATIC_URL }}sumo/img/mozilla-logo.png" alt="Mozilla" /></div>
     <div class="grid_4 suffix_1">
       <div class="fineprint">
-        {% trans year=datetimeformat(now(), 'year') %}
+        {% trans year=now().year %}
           Portions of this content are &copy;1998–{{ year }}
           <br>by individual mozilla.org contributors. Content
           <br>available under a
