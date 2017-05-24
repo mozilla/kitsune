@@ -117,7 +117,7 @@ def setup_dependencies(ctx):
         # Creating a virtualenv tries to open virtualenv/bin/python for
         # writing, but because virtualenv is using it, it fails.
         # So we delete it and let virtualenv create a new one.
-        ctx.local('rm -f virtualenv/bin/python virtualenv/bin/python2.7')
+        ctx.local('rm -rf virtualenv')
         ctx.local('virtualenv-2.7 --no-site-packages virtualenv')
 
         # Activate virtualenv to append to the correct path to $PATH.
