@@ -25,8 +25,6 @@
     {% stylesheet style %}
   {% endfor %}
 
-  <link href="//mozorg.cdn.mozilla.net/media/css/tabzilla-min.css" rel="stylesheet" />
-
   <!--[if lte IE 7]>
     {% stylesheet 'ie' %}
   <![endif]-->
@@ -127,7 +125,9 @@
 <header>
   <div class="container_12 cf">
     <div class="grid_12">
-      <a href="https://www.mozilla.org/" id="tabzilla" data-infobar="update">mozilla</a>
+      <div id="tabzilla">
+          <a href="https://www.mozilla.org/">Mozilla</a>
+      </div>
       <div class="cf">
         <nav id="aux-nav" role="navigation">
           <ul>
@@ -242,8 +242,6 @@
 {% for script in scripts %}
   {% javascript script %}
 {% endfor %}
-
-<script src="//mozorg.cdn.mozilla.net/{{ request.LANGUAGE_CODE }}/tabzilla/tabzilla.js" async></script>
 
 {# Temporary Pontoon testing - bug 812176 #}
 {% if settings.STAGE %}

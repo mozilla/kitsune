@@ -29,6 +29,7 @@
     "react-select": "#0.6.7",
     "underscore": "underscore#1.8.2",
     "fetch": "#0.9.0",
-    "es6-promise": "~2.2.0"
+    "es6-promise": "~2.2.0",
+    "mozilla-tabzilla": "~0.5.1"
   }
 }
