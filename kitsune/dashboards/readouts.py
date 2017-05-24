@@ -230,10 +230,16 @@ def kb_overview_rows(mode=None, max=None, locale=None, product=None, category=No
             'trans_url': reverse('wiki.show_translations', args=[d.slug],
                                  locale=settings.WIKI_DEFAULT_LANGUAGE),
             'title': d.title,
-            'num_visits': d.num_visits,
-            'ready_for_l10n': d.revisions.filter(is_approved=True,
-                                                 is_ready_for_localization=True).exists()
+            'num_visits': d.num_visits
         }
+
+        for r in list(reversed(d.revisions.filter(is_approved=True))):
+            if r.significance > TYPO_SIGNIFICANCE:
+                data['ready_for_l10n'] = r.is_ready_for_localization
+                break
+
+        if 'ready_for_l10n' not in data:
+            data['ready_for_l10n'] = False
 
         if d.current_revision:
             data['expiry_date'] = d.current_revision.expires

@@ -59,7 +59,25 @@ class KBOverviewTests(TestCase):
         eq_(1, len(data))
         eq_(False, data[0]['ready_for_l10n'])
 
-        ApprovedRevisionFactory(document=d, is_ready_for_localization=True)
+        # No significance means the same as typo
+        ApprovedRevisionFactory(document=d,
+                                is_ready_for_localization=True)
+
+        data = kb_overview_rows()
+        eq_(False, data[0]['ready_for_l10n'])
+
+        # Typo significance should not be taken into account
+        ApprovedRevisionFactory(document=d,
+                                is_ready_for_localization=True,
+                                significance=TYPO_SIGNIFICANCE)
+
+        data = kb_overview_rows()
+        eq_(False, data[0]['ready_for_l10n'])
+
+        # Only significance greater than typo should be taken into account
+        ApprovedRevisionFactory(document=d,
+                                is_ready_for_localization=True,
+                                significance=MEDIUM_SIGNIFICANCE)
 
         data = kb_overview_rows()
         eq_(True, data[0]['ready_for_l10n'])
