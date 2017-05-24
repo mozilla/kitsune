@@ -6,6 +6,8 @@ from django.conf import settings
 from django.contrib.sites.models import Site
 from django.test import Client
 
+from gettext import translation
+
 import mock
 from nose.tools import eq_
 from pyquery import PyQuery as pq
@@ -230,7 +232,9 @@ class WhatLinksWhereTests(TestCase):
         url = reverse('wiki.what_links_here', args=[d1.slug], locale='de')
         resp = self.client.get(url, follow=True)
         eq_(200, resp.status_code)
-        assert 'No other documents link to D1.' in resp.content
+        expected = translation('django', 'locale', ['de'], fallback=True) \
+            .gettext('No other documents link to {title}.').format(title=d1.title)
+        assert expected in resp.content
 
 
 class DocumentEditingTests(TestCase):
