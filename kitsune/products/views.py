@@ -1,5 +1,6 @@
 import json
 
+from django.conf import settings
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render
 
@@ -10,6 +11,7 @@ from kitsune.products.models import Product, Topic
 from kitsune.sumo.utils import get_browser
 from kitsune.wiki.decorators import check_simple_wiki_locale
 from kitsune.wiki.facets import topics_for, documents_for
+from kitsune.wiki.models import Document
 
 
 @check_simple_wiki_locale
@@ -44,12 +46,16 @@ def product_landing(request, template, slug):
         else:
             latest_version = 0
 
+    show_community_support = request.LANGUAGE_CODE == settings.LANGUAGE_CODE or is_localized(
+        'get-community-support', request.LANGUAGE_CODE)
+
     return render(request, template, {
         'product': product,
         'products': Product.objects.filter(visible=True),
         'topics': topics_for(product=product, parent=None),
         'search_params': {'product': slug},
-        'latest_version': latest_version
+        'latest_version': latest_version,
+        'show_community_support': show_community_support
     })
 
 
@@ -88,3 +94,11 @@ def document_listing(request, template, product_slug, topic_slug,
         'fallback_documents': fallback_documents,
         'search_params': {'product': product_slug},
         'show_fx_download': show_fx_download})
+
+
+def is_localized(parent_slug, locale):
+    """
+    Check the article is localized to the requested language.
+    """
+    return Document.objects.filter(locale=locale, parent__slug=parent_slug).exclude(
+        current_revision=None).exists()
