@@ -73,7 +73,7 @@
           </div>
           <div class="creator">
             <a href="{{ profile_url(rev.creator) }}">
-              {{ rev.creator }}
+              {{ display_name(rev.creator) }}
             </a>
           </div>
           {% if request.LANGUAGE_CODE == settings.WIKI_DEFAULT_LANGUAGE %}
