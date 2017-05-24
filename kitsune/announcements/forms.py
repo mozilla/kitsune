@@ -17,6 +17,8 @@ class AnnouncementForm(forms.Form):
                               widget=forms.Textarea)
     show_after = forms.DateField(label=_lazy(u'Show after'),
                                  initial=date.today,
-                                 input_formats=['%Y-%m-%d'])
+                                 input_formats=['%Y-%m-%d'],
+                                 widget=forms.TextInput(attrs={'placeholder': 'YYYY-MM-DD'}))
     show_until = forms.DateField(label=_lazy(u'Show until'), required=False,
-                                 input_formats=['%Y-%m-%d'])
+                                 input_formats=['%Y-%m-%d'],
+                                 widget=forms.TextInput(attrs={'placeholder': 'YYYY-MM-DD'}))
