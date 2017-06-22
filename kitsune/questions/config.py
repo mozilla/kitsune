@@ -185,16 +185,21 @@ products = SortedDict([
     }),
 
     ('focus', {
-        'name': _lazy(u'Focus by Firefox'),
-        'subtitle': _lazy(u'Content blocker for Safari'),
+        'name': _lazy(u'Firefox Focus'),
+        'subtitle': _lazy(u'Automatic privacy browser and content blocker.'),
         'extra_fields': [],
         'tags': ['focus-firefox'],
         'product': 'focus-firefox',
         'categories': SortedDict([
-            ('get-started', {
-                'name': _lazy(u'Get started'),
-                'topic': 'get-started',
-                'tags': []
+            ('Focus-ios', {
+                'name': _lazy(u'Firefox Focus for iOS'),
+                'topic': 'Focus-ios',
+                'tags': ['Focus-ios']
+            }),
+            ('firefox-focus-android', {
+                'name': _lazy(u'Firefox Focus for Android'),
+                'topic': 'firefox-focus-android',
+                'tags': ['firefox-focus-android']
             }),
         ])
     }),
