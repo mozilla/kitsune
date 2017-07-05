@@ -5,6 +5,7 @@ import shutil
 from django.conf import settings
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
+from django.core.files.uploadedfile import SimpleUploadedFile
 
 from nose.tools import eq_
 
@@ -82,7 +83,7 @@ class UploadImageTestCase(TestCase):
 
     def test_upload_unicode_image(self):
         """Uploading an unicode image works."""
-        with open(u'kitsune/upload/tests/media/123ascii\u6709\u52b9.jpg') as f:
+        with open(u'kitsune/upload/tests/media/123ascii\u6709\u52b9.jpg'.encode('utf-8')) as f:
             r = self._make_post_request(image=f)
 
         eq_(200, r.status_code)
@@ -176,30 +177,20 @@ class UploadImageTestCase(TestCase):
         # FIXME: Is that an ok assumption to make?
 
         thisdir = os.path.dirname(__file__)
-        srcfile = os.path.join(thisdir, 'media', 'test.jpg')
-        dstfile = os.path.join(thisdir, 'media', ('long_file_name' * 17) + '.jpg')
+        path = os.path.join(thisdir, 'media', 'test.jpg')
+        with open(path) as f:
+            long_file_name = ('long_file_name' * 17) + '.jpg'
+            image = SimpleUploadedFile(name=long_file_name, content=f.read(),
+                                       content_type='image/jpg')
+            r = self._make_post_request(image=image)
 
-        try:
-            shutil.copyfile(srcfile, dstfile)
-
-            # Re-root the absolute path dstfile at the relative
-            # kitsune repo root.
-            path = 'kitsune/upload/tests/' + dstfile[len(thisdir):]
-            with open(path) as f:
-                r = self._make_post_request(image=f)
-
-            eq_(400, r.status_code)
-            json_r = json.loads(r.content)
-            eq_('error', json_r['status'])
-            eq_('Invalid or no image received.', json_r['message'])
-            eq_(MSG_IMAGE_LONG % {'length': 242,
-                                  'max': settings.MAX_FILENAME_LENGTH},
-                json_r['errors']['image'][0])
-
-        finally:
-            # Delete the file after the test if it's deletable.
-            if os.path.exists(dstfile):
-                os.remove(dstfile)
+        eq_(400, r.status_code)
+        json_r = json.loads(r.content)
+        eq_('error', json_r['status'])
+        eq_('Invalid or no image received.', json_r['message'])
+        eq_(MSG_IMAGE_LONG % {'length': 242,
+                              'max': settings.MAX_FILENAME_LENGTH},
+            json_r['errors']['image'][0])
 
     def _make_post_request(self, **kwargs):
         if 'args' not in kwargs:
