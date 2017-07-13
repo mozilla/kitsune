@@ -8,8 +8,8 @@ ln -sf /usr/lib/`uname -i`-linux-gnu/libjpeg.so ~/virtualenv/python2.6/lib/
 ln -sf /usr/lib/`uname -i`-linux-gnu/libz.so ~/virtualenv/python2.6/lib/
 
 echo "Install Python dependencies"
-./peep.sh install -r requirements/dev.txt
-./peep.sh install -r requirements/default.txt
+pip install -r requirements/dev.txt
+pip install -r requirements/default.txt
 echo
 
 # Installing dependencies for UI tests

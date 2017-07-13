@@ -51,28 +51,6 @@ distributions. It's likely that you'll encounter some steps that are
 slightly different. If you run into problems, let us know.
 
 
-Vagrant
--------
-
-We also have an option of using a virtual machine with Vagrant for an
-all-in-one installation. This installs all required dependencies and
-sets up your environment in such a way that makes it easy to run.
-
-For full instruction about installing kitsune via vagrant, check this
-:ref:`installation-vagrant` article.
-
-Once Vagrant is installed, run ``vagrant up`` to start and configure your
-virtual machine and ``vagrant ssh`` to SSH into the box.
-
-Once inside the virtual machine, you can start the server by running the
-following commands::
-
-    source virtualenv/bin/activate
-    cd kitsune
-    ./manage.py runserver 0.0.0.0:8000
-
-Now, just navigate to `<http://localhost:8000>` to see the application!
-
 :ref:`Skip to Testing <testing-it-out>`
 
 Requirements
@@ -173,26 +151,19 @@ Python Packages
 ---------------
 
 All the pure-Python requirements are provided in the requirements
-directory. We use a tool called ``peep`` to install packages and make sure
-versions are pinned. ::
+directory::
 
-    $ ./peep.sh install -r requirements/default.txt
+    $ pip install -r requirements/default.txt
 
 Additionally, you may install some useful development tools. These are not
 required, but are helpful::
 
-    $ ./peep.sh install -r requirements/dev.txt
+    $ pip install -r requirements/dev.txt
 
 If you intend to run the function UI tests, you will also need to install the
 appropriate dependencies::
 
-    $ ./peep.sh install -r requirements/test.txt
-
-If you have any issues installing via ``peep``, be sure you have the required
-header files from the packages listed in the requirements section above.
-
-For more information on ``peep``, refer to the
-`README <https://github.com/erikrose/peep>`_ on the Github page for the project.
+    $ pip install -r requirements/test.txt
 
 Node.js Packages
 -------------------
