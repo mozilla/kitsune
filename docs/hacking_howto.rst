@@ -51,28 +51,6 @@ distributions. It's likely that you'll encounter some steps that are
 slightly different. If you run into problems, let us know.
 
 
-Vagrant
--------
-
-We also have an option of using a virtual machine with Vagrant for an
-all-in-one installation. This installs all required dependencies and
-sets up your environment in such a way that makes it easy to run.
-
-For full instruction about installing kitsune via vagrant, check this
-:ref:`installation-vagrant` article.
-
-Once Vagrant is installed, run ``vagrant up`` to start and configure your
-virtual machine and ``vagrant ssh`` to SSH into the box.
-
-Once inside the virtual machine, you can start the server by running the
-following commands::
-
-    source virtualenv/bin/activate
-    cd kitsune
-    ./manage.py runserver 0.0.0.0:8000
-
-Now, just navigate to `<http://localhost:8000>` to see the application!
-
 :ref:`Skip to Testing <testing-it-out>`
 
 Requirements
