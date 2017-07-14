@@ -6,7 +6,8 @@ aspy.yaml==0.2.1 \
 cached-property==1.2.0 \
     --hash=sha256:e3081a8182d3d4b7283eeade76c382bcfd4dfd644ca800598229c2ef798abb53 \
     --hash=sha256:c3a5e7f41fe99991ab1f8df294f3d8180a56b46fedec94ebd54def89d0ec09c4
-django-debug-toolbar==1.4.0 \
+django-debug-toolbar==1.4 \
+    --hash=sha256:0cbae8760f4851d480a70b72ace5b075f8191ecf899bc97427715e50fb0e90b9 \
     --hash=sha256:852a37b80df9597048591ebc87d0ce85a4edceaef015dc5360ad89cc5960c27b
 django-sslserver==0.16 \
     --hash=sha256:ad62272de0b214bababcc33977b0964254bc06c3dc1ce68dd3ee8535c39d2028
@@ -38,8 +39,9 @@ nosenicedots==0.5 \
 pep8==1.6.2 \
     --hash=sha256:4aa129df8d9007b192bf82013f415533994652d7caa930d002687eb42a6c2a41 \
     --hash=sha256:b8b7e35630b5539e26a197dfc6005be9e1e9a135496b377723a8ebc01b9bcbff
-pre-commit==0.7.0 \
-    --hash=sha256:ae5e746bcf953093b82dcc87a4594fa1fc2bd3f9805e176b06594a994d45fa17
+pre_commit==0.7.0 \
+    --hash=sha256:ae5e746bcf953093b82dcc87a4594fa1fc2bd3f9805e176b06594a994d45fa17 \
+    --hash=sha256:f1a4e82cf3401db6285aa44023327feffa20be630eaf7ea8fe52eb0d69f4a53f
 pyflakes==1.0.0 \
     --hash=sha256:071d121e9e7b33058aa1ba5de7bce9b97bfa3149cfe1acbb6587c21fc1c8eda1 \
     --hash=sha256:f39e33a4c03beead8774f005bd3ecf0c3f2f264fa0201de965fce0aff1d34263
@@ -76,9 +78,6 @@ testfixtures==4.5.0 \
 virtualenv==13.1.2 \
     --hash=sha256:f74a5943a9005c1e897bcf87f7e8af7e00c06fa9777b9ad691f69f9fa54a87d8 \
     --hash=sha256:aabc8ef18cddbd8a2a9c7f92bc43e2fea54b1147330d65db920ef3ce9812e3dc
-pre_commit==0.7.0 \
-    --hash=sha256:ae5e746bcf953093b82dcc87a4594fa1fc2bd3f9805e176b06594a994d45fa17 \
-    --hash=sha256:f1a4e82cf3401db6285aa44023327feffa20be630eaf7ea8fe52eb0d69f4a53f
 hashin==0.11.2 \
     --hash=sha256:a52b094dc7b1603a2f65617502f2de61123a268bab01c2079249c1c506480395 \
     --hash=sha256:aaf11abf155830b7c2b868bb6dbc5dfde49cd0b17a4c0dc1b8b67ca9f31ec490

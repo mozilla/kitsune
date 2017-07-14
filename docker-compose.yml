@@ -1,0 +1,79 @@
+version: '2.1'
+services:
+  web:
+    build: .
+    command: ./manage.py runserver 0.0.0.0:8000
+    user: kitsune
+    volumes:
+      - ./:/app
+      - node_modules:/app/node_modules
+      - bower_components:/app/bower_components
+    depends_on:
+      - memcached
+      - mariadb
+      - elasticsearch
+      - redis
+    environment:
+      # Django settings overrides:
+      - DJANGO_SETTINGS_MODULE=kitsune.settings
+      - CELERY_CONFIG_MODULE=kitsune.settings
+      - ACCOUNT_DEFAULT_HTTP_PROTOCOL=http
+      - ALLOWED_HOSTS=*
+      - BROKER_HOST=rabbitmq
+      - BROKER_PORT=5672
+      - BROKER_USER=kitsune
+      - BROKER_PASSWORD=kitsune
+      - BROKER_VHOST=kitsune
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_ALWAYS_EAGER=True
+      - CSRF_COOKIE_SECURE=False
+      - DATABASE_URL=mysql://root:kitsune@mariadb:3306/kitsune
+      - DATABASE_USER=root
+      - DATABASE_PASSWORD=kitsune
+      - DATABASE_HOST=mariadb
+      - DATABASE_PORT=3306
+      - DEBUG=${DEBUG:-True}
+      - DOMAIN=localhost
+      - ES_URLS=http://elasticsearch:9200
+      - MEMCACHE_SERVERS=memcached:11211
+      - PROTOCOL=http://
+      - SESSION_COOKIE_SECURE=False
+      - SITE_URL=http://localhost:8000
+      # Other environment overrides
+      - PYTHONDONTWRITEBYTECODE=1
+      - PYTHONUNBUFFERED=True
+
+  memcached:
+    image: memcached
+
+  mariadb:
+    image: mariadb:5.5
+    environment:
+      - MYSQL_ROOT_PASSWORD=kitsune
+      - MYSQL_USER=kitsune
+      - MYSQL_PASSWORD=kitsune
+      - MYSQL_DATABASE=kitsune
+    entrypoint:
+      - docker-entrypoint.sh
+      - --character-set-server=utf8
+      - --collation-server=utf8_unicode_ci
+    volumes:
+      - mysqlvolume:/var/lib/mysql
+
+  elasticsearch:
+    image: elasticsearch:1.7
+
+  redis:
+    image: redis
+
+  rabbitmq:
+    image: rabbitmq
+    environment:
+      - RABBITMQ_DEFAULT_USER=kitsune
+      - RABBITMQ_DEFAULT_PASS=kitsune
+      - RABBITMQ_DEFAULT_VHOST=kitsune
+
+volumes:
+    mysqlvolume:
+    node_modules:
+    bower_components:

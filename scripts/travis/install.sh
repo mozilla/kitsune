@@ -17,6 +17,10 @@ if [[ $TEST_SUITE == "ui" ]]; then
   pip install tox
 fi
 
+if [[ $TEST_SUITE == "docker" ]]; then
+  sudo pip install docker-compose
+fi
+
 # Optimization: None of the rest is needed for lint tests.
 if [[ $TEST_SUITE == "lint" ]]; then
   exit 0

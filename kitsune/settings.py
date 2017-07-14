@@ -5,7 +5,11 @@ import logging
 import os
 import platform
 import re
+
+import dj_database_url
+
 from datetime import date
+from decouple import config, Csv
 
 import djcelery
 
@@ -45,13 +49,13 @@ DATABASES = {
         # Or path to database file if sqlite3.
         'NAME': 'kitsune',
         # Not used with sqlite3.
-        'USER': '',
+        'USER': config('DATABASE_USER'),
         # Not used with sqlite3.
-        'PASSWORD': '',
+        'PASSWORD': config('DATABASE_PASSWORD'),
         # Set to empty string for localhost. Not used with sqlite3.
-        'HOST': '',
+        'HOST': config('DATABASE_HOST'),
         # Set to empty string for default. Not used with sqlite3.
-        'PORT': '',
+        'PORT': config('DATABASE_PORT'),
         'OPTIONS': {'init_command': 'SET storage_engine=InnoDB'},
     }
 }
@@ -62,13 +66,14 @@ DATABASE_ROUTERS = ('multidb.PinningMasterSlaveRouter',)
 SLAVE_DATABASES = []
 
 # Cache Settings
-# CACHES = {
-#     'default': {
-#         'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
-#         'LOCATION': ['localhost:11211'],
-#         'PREFIX': 'sumo:',
-#     },
-# }
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+        'LOCATION': [config('MEMCACHE_SERVERS',
+                           default='127.0.0.1:11211')],
+        'PREFIX': 'sumo:',
+    },
+}
 
 # Setting this to the Waffle version.
 WAFFLE_CACHE_PREFIX = 'w0.7.7a:'
@@ -708,13 +713,13 @@ SESSION_COOKIE_AGE = 4 * 7 * 24 * 60 * 60  # 4 weeks
 SESSION_COOKIE_SECURE = True
 SESSION_COOKIE_HTTPONLY = True
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
-SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+SESSION_ENGINE = 'django.contrib.sessions.backends.cached_db'
 SESSION_EXISTS_COOKIE = 'sumo_session'
 SESSION_SERIALIZER = 'django.contrib.sessions.serializers.PickleSerializer'
 
 #
 # Connection information for Elastic
-ES_URLS = ['http://127.0.0.1:9200']
+ES_URLS = [config('ES_URLS', default="localhost:9200")]
 # Indexes for reading
 ES_INDEXES = {
     'default': 'sumo-20130913',
@@ -817,11 +822,11 @@ def read_only_mode(env):
 # Celery
 djcelery.setup_loader()
 
-BROKER_HOST = 'localhost'
-BROKER_PORT = 5672
-BROKER_USER = 'kitsune'
-BROKER_PASSWORD = 'kitsune'
-BROKER_VHOST = 'kitsune'
+BROKER_HOST = config('BROKER_HOST', default='localhost')
+BROKER_PORT = config('BROKER_PORT', default='5672')
+BROKER_USER = config('BROKER_USER', default='kitsune')
+BROKER_PASSWORD = config('BROKER_PASSWORD', default='kitsune')
+BROKER_VHOST = config('BROKER_VHOST', default='kitsune')
 CELERY_RESULT_BACKEND = 'amqp'
 CELERY_IGNORE_RESULT = True
 CELERY_ALWAYS_EAGER = True  # For tests. Set to False for use.
@@ -904,10 +909,11 @@ MOBILE_COOKIE = 'msumo'
 # Key to access /services/version. Set to None to disallow.
 VERSION_CHECK_TOKEN = None
 
+REDIS_URL = config('REDIS_URL', default='localhost')
+
 REDIS_BACKENDS = {
-    # 'default': 'redis://localhost:6379?socket_timeout=0.5&db=0',
-    # 'karma': 'redis://localhost:6381?socket_timeout=0.5&db=0',
-    # 'helpfulvotes': 'redis://localhost:6379?socket_timeout=0.5&db=1',
+    'default': '{}?socket_timeout=0.5&db=0'.format(REDIS_URL),
+    'helpfulvotes': '{}?socket_timeout=0.5&db=1'.format(REDIS_URL),
 }
 
 HELPFULVOTES_UNHELPFUL_KEY = 'helpfulvotes_topunhelpful'
