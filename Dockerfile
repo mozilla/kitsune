@@ -12,7 +12,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends python2.7 libpy
 
 # Install mariadb-client 5.5
 RUN apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 0xcbcb082a1bb943db
-RUn add-apt-repository 'deb [arch=amd64,i386] http://sfo1.mirrors.digitalocean.com/mariadb/repo/5.5/debian wheezy main'
+RUN add-apt-repository 'deb [arch=amd64,i386] http://sfo1.mirrors.digitalocean.com/mariadb/repo/5.5/debian wheezy main'
 RUN apt-get update
 RUN apt-get install -y --no-install-recommends  mariadb-client-5.5 libmariadbclient-dev
 
@@ -42,3 +42,4 @@ RUN ./node_modules/.bin/bower install
 
 ENV WEB_CONCURRENCY=4
 CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--timeout=120", "kuma.wsgi:application"]
+ENV LANG=C.UTF-8
