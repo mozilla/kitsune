@@ -22,16 +22,12 @@ RUN apt-get install -y nodejs=0.10.48-1nodesource1~xenial1
 
 # https://github.com/pypa/setuptools/issues/544
 RUN pip install --upgrade setuptools
-# Copy the scripts folder because need to run peep from there
-COPY ./scripts /app/scripts
-COPY ./peep.sh /app/peep.sh
 COPY ./requirements /app/requirements
 COPY ./package.json /app/package.json
 COPY ./bower.json /app/bower.json
 
-RUN pip install pip==7.0
-RUN ./peep.sh install -r requirements/default.txt --no-binary :all:
-RUN ./peep.sh install -r requirements/dev.txt --no-binary :all:
+RUN pip install -r requirements/default.txt --no-binary :all: --require-hashes
+RUN pip install -r requirements/dev.txt --no-binary :all: --require-hashes
 
 # Add a non root user and use it further
 RUN groupadd --gid 1001 kitsune && useradd -g kitsune --uid 1001 --shell /usr/sbin/nologin kitsune
