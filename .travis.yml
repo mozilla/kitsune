@@ -12,6 +12,7 @@ env:
   - TEST_SUITE=lint
 #  - TEST_SUITE=ui MARK_EXPRESSION=smoke
   - TEST_SUITE=django
+  - TEST_SUITE=docker
 matrix:
   fast_finish: true
 cache:
