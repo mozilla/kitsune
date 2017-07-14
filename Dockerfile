@@ -3,7 +3,6 @@ WORKDIR /app
 
 ENV PIP_DISABLE_PIP_VERSION_CHECK=1
 
-RUN apt-get update
 RUN apt-get update && apt-get install -y --no-install-recommends python2.7 libpython2.7 python-dev \
     python-pip gettext build-essential \
     libxml2-dev libxslt1-dev zlib1g-dev git\
@@ -26,8 +25,8 @@ COPY ./requirements /app/requirements
 COPY ./package.json /app/package.json
 COPY ./bower.json /app/bower.json
 
-RUN pip install -r requirements/default.txt --no-binary :all: --require-hashes
-RUN pip install -r requirements/dev.txt --no-binary :all: --require-hashes
+RUN pip install -r requirements/default.txt --require-hashes
+RUN pip install -r requirements/dev.txt --require-hashes
 
 # Add a non root user and use it further
 RUN groupadd --gid 1001 kitsune && useradd -g kitsune --uid 1001 --shell /usr/sbin/nologin kitsune
