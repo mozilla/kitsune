@@ -1,6 +1,6 @@
 from datetime import datetime, date, timedelta
-from django.core.cache import cache
 from django.conf import settings
+from django.core.cache import cache
 from django.db.models import Count
 
 from kitsune.customercare.models import ReplyMetricsMappingType
@@ -12,11 +12,8 @@ from kitsune.users.templatetags.jinja_helpers import profile_avatar
 from kitsune.wiki.models import RevisionMetricsMappingType
 
 
-# This should be the higher than the max number of contributors for a
-# section.  There isn't a way to tell ES to just return everything.
-BIG_NUMBER = 3000
-
-# This should be higher than the max number of questions, revisions or tweets
+# This should be higher than the max number of questions, revisions or tweets.
+# There isn't a way to tell ES to just return everything.
 HUGE_NUMBER = 1500000
 
 
@@ -25,11 +22,12 @@ def top_contributors_questions(start=None, end=None, locale=None, product=None,
     """Get the top Support Forum contributors."""
     # Get the user ids and contribution count of the top contributors.
 
-    cache_key = 'top_contributors_questions_{}_{}_{}_{}_{}_{}'.format(start, end, locale,
-                                                                      product, count, page)
-    cached = cache.get(cache_key, None)
-    if use_cache and cached:
-        return cached
+    if use_cache:
+        cache_key = u'top_contributors_questions_{}_{}_{}_{}_{}_{}'.format(start, end, locale,
+                                                                           product, count, page)
+        cached = cache.get(cache_key, None)
+        if cached:
+            return cached
 
     query = AnswerMetricsMappingType.search()
 
@@ -59,11 +57,12 @@ def top_contributors_l10n(start=None, end=None, locale=None, product=None,
                           count=10, page=1, use_cache=True):
     """Get the top l10n contributors for the KB."""
 
-    cache_key = 'top_contributors_l10n_{}_{}_{}_{}_{}_{}'.format(start, end, locale,
-                                                                 product, count, page)
-    cached = cache.get(cache_key, None)
-    if use_cache and cached:
-        return cached
+    if use_cache:
+        cache_key = u'top_contributors_l10n_{}_{}_{}_{}_{}_{}'.format(start, end, locale,
+                                                                      product, count, page)
+        cached = cache.get(cache_key, None)
+        if cached:
+            return cached
 
     # Get the user ids and contribution count of the top contributors.
     query = RevisionMetricsMappingType.search()
@@ -89,10 +88,12 @@ def top_contributors_l10n(start=None, end=None, locale=None, product=None,
 def top_contributors_aoa(start=None, end=None, locale=None, count=10, page=1, use_cache=True):
     """Get the top Army of Awesome contributors."""
 
-    cache_key = 'top_contributors_l10n_{}_{}_{}_{}_{}'.format(start, end, locale, count, page)
-    cached = cache.get(cache_key, None)
-    if use_cache and cached:
-        return cached
+    if use_cache:
+        cache_key = u'top_contributors_l10n_{}_{}_{}_{}_{}'.format(start, end, locale, count, page)
+        cached = cache.get(cache_key, None)
+
+        if cached:
+            return cached
 
     # Get the user ids and contribution count of the top contributors.
     query = ReplyMetricsMappingType.search()
@@ -149,6 +150,7 @@ def _get_creator_counts(query, count, page):
             'count': user.query_count,
             'term': user.id,
             'user': {
+                'id': user.id,
                 'username': user.username,
                 'display_name': user.profile.display_name,
                 'avatar': profile_avatar(user, size=120),
