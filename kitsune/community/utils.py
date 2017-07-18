@@ -1,3 +1,5 @@
+import hashlib
+
 from datetime import datetime, date, timedelta
 from django.conf import settings
 from django.core.cache import cache
@@ -23,8 +25,9 @@ def top_contributors_questions(start=None, end=None, locale=None, product=None,
     # Get the user ids and contribution count of the top contributors.
 
     if use_cache:
-        cache_key = u'top_contributors_questions_{}_{}_{}_{}_{}_{}'.format(start, end, locale,
-                                                                           product, count, page)
+        cache_key = u'{}_{}_{}_{}_{}_{}'.format(start, end, locale, product, count, page)
+        cache_key = hashlib.sha1(cache_key.encode('utf-8')).hexdigest()
+        cache_key = 'top_contributors_questions_{}'.format(cache_key)
         cached = cache.get(cache_key, None)
         if cached:
             return cached
@@ -58,8 +61,9 @@ def top_contributors_l10n(start=None, end=None, locale=None, product=None,
     """Get the top l10n contributors for the KB."""
 
     if use_cache:
-        cache_key = u'top_contributors_l10n_{}_{}_{}_{}_{}_{}'.format(start, end, locale,
-                                                                      product, count, page)
+        cache_key = u'{}_{}_{}_{}_{}_{}'.format(start, end, locale, product, count, page)
+        cache_key = hashlib.sha1(cache_key.encode('utf-8')).hexdigest()
+        cache_key = u'top_contributors_l10n_{}'.format(cache_key)
         cached = cache.get(cache_key, None)
         if cached:
             return cached
@@ -89,7 +93,9 @@ def top_contributors_aoa(start=None, end=None, locale=None, count=10, page=1, us
     """Get the top Army of Awesome contributors."""
 
     if use_cache:
-        cache_key = u'top_contributors_l10n_{}_{}_{}_{}_{}'.format(start, end, locale, count, page)
+        cache_key = u'{}_{}_{}_{}_{}'.format(start, end, locale, count, page)
+        cache_key = hashlib.sha1(cache_key.encode('utf-8')).hexdigest()
+        cache_key = u'top_contributors_aoa_{}'.format(cache_key)
         cached = cache.get(cache_key, None)
 
         if cached:
