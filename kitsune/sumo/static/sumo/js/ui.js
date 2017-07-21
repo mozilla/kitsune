@@ -287,10 +287,6 @@
   function initAnnouncements() {
     var $announcements = $('#announcements');
 
-    $(document).on('click', '#tabzilla', function() {
-      $('body').prepend($announcements);
-    });
-
     if (Modernizr.localstorage) {
       // When an announcement is closed, remember it.
       $announcements.on('click', '.close-button', function() {
