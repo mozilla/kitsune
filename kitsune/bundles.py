@@ -6,6 +6,7 @@ PIPELINE_CSS = {
             'normalize-css/normalize.css',
             'sumo/less/main.less',
             'sumo/less/search.less',
+            'mozilla-tabzilla/css/tabzilla.css',
         ),
         'output_filename': 'build/common-min.css'
     },
