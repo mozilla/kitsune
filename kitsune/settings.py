@@ -248,6 +248,7 @@ NON_SUPPORTED_LOCALES = {
     'bn': 'bn-BD',
     'br': 'fr',
     'csb': 'pl',
+    'cy': 'en-US',
     'eo': None,
     'ff': None,
     'fur': 'it',
