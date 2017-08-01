@@ -2,11 +2,12 @@
 # pwd is the git repo.
 set -e
 
+echo 'Running Mocha tests'
+docker-compose exec --user root web ./scripts/mocha.sh
 
-./scripts/mocha.sh
-
-python manage.py test \
+echo 'Running django unit tests'
+docker-compose exec web sh -c "REUSE_STATIC=1 ./manage.py test \
   --noinput --logging-clear-handlers \
   --no-skip \
-  --with-nicedots
+  --with-nicedots"
 echo 'Booyahkasha!'

@@ -693,7 +693,7 @@ PIPELINE = {
 if DEBUG:
     PIPELINE['BROWSERIFY_ARGUMENTS'] += ' -d'
 
-NUNJUCKS_PRECOMPILE_BIN = 'nunjucks-precompile'
+NUNJUCKS_PRECOMPILE_BIN = path('node_modules/.bin/nunjucks-precompile')
 
 #
 # Sessions
@@ -986,6 +986,8 @@ CC_IGNORE_USERS = []
 ACTSTREAM_SETTINGS = {
     'USE_JSONFIELD': True,
 }
+
+PROD_DETAILS_DIR = path('product_details')
 
 SILENCED_SYSTEM_CHECKS = [
     'fields.W340',  # null has no effect on ManyToManyField.

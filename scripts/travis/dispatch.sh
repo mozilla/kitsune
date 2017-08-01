@@ -13,7 +13,7 @@ case $SUITE in
     ui )
         scripts/travis/uitests.sh
         ;;
-    django )
+    docker )
         scripts/travis/test.sh
         ;;
     * )

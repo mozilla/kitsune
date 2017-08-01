@@ -2,6 +2,8 @@
 # settings_local.py with settings appropriate for testing.
 import os
 
+from decouple import config
+
 ES_LIVE_INDEXING = False
 ES_INDEX_PREFIX = 'sumotest'
 ES_INDEXES = {
@@ -13,13 +15,14 @@ ES_WRITE_INDEXES = ES_INDEXES
 
 # Make sure Celery is EAGER.
 CELERY_ALWAYS_EAGER = True
+REDIS_URL = config('REDIS_URL', default='localhost')
 
-# Make sure we use port 6383 db 2 redis for tests.  That's db 2 of the
+# Make sure we use db 2 redis for tests.  That's db 2 of the
 # redis test config.  That shouldn't collide with anything else.
 REDIS_BACKENDS = {
-    'default': 'redis://localhost:6383?socket_timeout=0.5&db=2',
-    'karma': 'redis://localhost:6383?socket_timeout=0.5&db=2',
-    'helpfulvotes': 'redis://localhost:6383?socket_timeout=0.5&db=2',
+    'default': '{}?socket_timeout=0.5&db=2'.format(REDIS_URL),
+    'karma': '{}?socket_timeout=0.5&db=2'.format(REDIS_URL),
+    'helpfulvotes': '{}?socket_timeout=0.5&db=2'.format(REDIS_URL),
 }
 
 # Some cron jobs are skipped on stage.

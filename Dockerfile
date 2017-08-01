@@ -34,6 +34,11 @@ RUN groupadd --gid 1001 kitsune && useradd -g kitsune --uid 1001 --shell /usr/sb
 RUN chown -R kitsune /app
 # npm and bower tries to write in /home directory. So this permission is needed
 RUN chown -R kitsune /home
+
+# debowerify try to download bower dependency while running collectstatic.
+# So all the user need to have access to /.cache
+RUN mkdir /.cache && chmod -R 777 /.cache
+
 USER kitsune
 
 RUN npm install

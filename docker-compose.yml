@@ -3,7 +3,7 @@ services:
   web:
     build: .
     command: ./manage.py runserver 0.0.0.0:8000
-    user: kitsune
+    user: ${UID:-kitsune}
     volumes:
       - ./:/app
       - node_modules:/app/node_modules
@@ -57,6 +57,8 @@ services:
       - docker-entrypoint.sh
       - --character-set-server=utf8
       - --collation-server=utf8_unicode_ci
+      - --wait_timeout=36000
+      - --max_allowed_packet=134209536
     volumes:
       - mysqlvolume:/var/lib/mysql
 
