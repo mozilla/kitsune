@@ -3,6 +3,7 @@ from django.conf import settings
 from django.views.i18n import javascript_catalog
 from django.views.decorators.cache import cache_page
 from django.views.generic.base import RedirectView
+from django.views.static import serve as servestatic
 
 import authority
 import badger
@@ -84,6 +85,9 @@ urlpatterns = patterns(
 
     # These API urls include both v1 and v2 urls.
     (r'^api/', include('kitsune.users.urls_api')),
+
+    # contribute.json url
+    url(r'^(?P<path>contribute\.json)$', servestatic, kwargs={'document_root': settings.ROOT}),
 )
 
 # Handle 404 and 500 errors
