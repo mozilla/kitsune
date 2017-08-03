@@ -398,6 +398,7 @@ SUPPORTED_NONLOCALES = (
     'services',
     'wafflejs',
     'geoip-suggestion',
+    'contribute.json',
 )
 
 # Make this unique, and don't share it with anybody.
