@@ -22,12 +22,16 @@ User = get_user_model()
 class UserPermission(permissions.BasePermission):
     checks = ('browse',)
     label = 'user_permission'
+
+
 authority.register(User, UserPermission)
 
 
 class GroupPermission(permissions.BasePermission):
     checks = ('browse',)
     label = 'group_permission'
+
+
 authority.register(Group, GroupPermission)
 
 

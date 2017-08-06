@@ -27,6 +27,7 @@ def settings(request):
                                'title': 'Settings'},
                               RequestContext(request, {}))
 
+
 admin.site.register_view('settings', view=settings, name='Settings')
 
 
@@ -43,6 +44,7 @@ def celery_settings(request):
                                'title': 'Celery Settings'},
                               RequestContext(request, {}))
 
+
 admin.site.register_view('celery', view=celery_settings,
                          name='Celery Settings')
 
@@ -54,6 +56,7 @@ def env(request):
         'pythonver': sys.version,
         'djangover': VERSION,
     })
+
 
 admin.site.register_view('env', view=env, name='Environment')
 
@@ -67,6 +70,7 @@ def schema_version(request):
                               {'schema_version': version,
                                'title': 'Schema Version'},
                               RequestContext(request, {}))
+
 
 admin.site.register_view('schema', view=schema_version,
                          name='Database Schema Version')
@@ -93,5 +97,6 @@ def redis_info(request):
                               {'redis_info': redis_info,
                                'title': 'Redis Information'},
                               RequestContext(request, {}))
+
 
 admin.site.register_view('redis', view=redis_info, name='Redis Information')

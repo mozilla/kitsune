@@ -10,4 +10,5 @@ class ForumPermission(authority.permissions.BasePermission):
     # view_in: view the forum, its threads, and its posts
     # post_in: make new threads and posts in a forum
 
+
 authority.register(Forum, ForumPermission)

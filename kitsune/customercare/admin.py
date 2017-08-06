@@ -10,6 +10,7 @@ class TweetAdmin(admin.ModelAdmin):
     search_fields = ('raw_json',)
     raw_id_fields = ('reply_to',)
 
+
 admin.site.register(Tweet, TweetAdmin)
 
 
@@ -20,5 +21,6 @@ class ReplyAdmin(admin.ModelAdmin):
     list_filter = ('locale', 'twitter_username')
     search_fields = ('raw_json',)
     raw_id_fields = ('user',)
+
 
 admin.site.register(Reply, ReplyAdmin)

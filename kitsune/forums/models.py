@@ -386,5 +386,6 @@ def user_pre_save(sender, instance, **kw):
             for t in threads:
                 t.index_later()
 
+
 pre_save.connect(
     user_pre_save, sender=User, dispatch_uid='forums_user_pre_save')

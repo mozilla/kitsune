@@ -8,4 +8,5 @@ class SignatureAdmin(admin.ModelAdmin):
     list_editable = ['signature', 'document']
     raw_id_fields = ['document']
 
+
 admin.site.register(Signature, SignatureAdmin)

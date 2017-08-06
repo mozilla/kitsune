@@ -8,6 +8,8 @@ def _activate_users(admin, request, qs):
     num = qs.update(is_active=True)
     msg = '%s users activated.' % num if num != 1 else 'One user activated.'
     admin.message_user(request, msg)
+
+
 _activate_users.short_description = u'Activate selected users'
 
 
@@ -16,6 +18,8 @@ def _deactivate_users(admin, request, qs):
     msg = ('%s users deactivated.' % num if num != 1 else
            'One user deactivated.')
     admin.message_user(request, msg)
+
+
 _deactivate_users.short_description = u'Deactivate selected users'
 
 
@@ -28,6 +32,7 @@ def patch_user_admin():
 
 def patch_user_model():
     """Add a more accurate User.get_absolute_url."""
+
     def get_absolute_url(self):
         return reverse('users.profile', args=[self.pk])
     User.get_absolute_url = get_absolute_url

@@ -34,6 +34,8 @@ def test_jsonp_is_valid():
 
 def random_view_fun(request, *args, **kwargs):
     return HttpResponse('foo')
+
+
 jsonified_fun = markup_json(random_view_fun)
 
 

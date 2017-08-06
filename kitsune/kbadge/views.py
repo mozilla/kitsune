@@ -7,4 +7,5 @@ class KBadgesListView(BadgesListView):
         qs = Badge.objects.order_by('-created')
         return qs
 
+
 badges_list = KBadgesListView.as_view()

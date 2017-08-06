@@ -55,5 +55,6 @@ class ProfileAdmin(admin.ModelAdmin):
             obj.avatar.delete()
         obj.save()
 
+
 admin.site.register(Profile, ProfileAdmin)
 monkeypatch.patch_all()
