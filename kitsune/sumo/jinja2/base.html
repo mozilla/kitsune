@@ -138,9 +138,9 @@
             {% if not hide_locale_switcher %}
               <li><a href="{{ locale_picker_url }}" class="locale-picker">{{ settings.LANGUAGES_DICT[request.LANGUAGE_CODE.lower()] }}</a></li>
             {% endif %}
-            {% if show_fx_download and not user.is_authenticated() %}
-              <a href="https://www.mozilla.org/firefox/new/?scene=2&utm_source=support.mozilla.org&utm_medium=referral&utm_campaign=non-fx-button#download-fx"
-                class="firefox-download-button" data-ga-click="_trackEvent | Download Button | Firefox button on Thunderbird article">
+            {% if not (hide_fx_download or user.is_authenticated()) %}
+              <a href="https://www.mozilla.org/firefox/new/?utm_source=support.mozilla.org&utm_medium=referral&utm_campaign=non-fx-button"
+                class="firefox-download-button hidden" data-ga-click="_trackEvent | Download Button | Firefox for Desktop">
                 <strong class="download-title">{{ _('Download Firefox') }}</strong>
               </a>
             {% endif %}
@@ -243,6 +243,11 @@
 {% for script in scripts %}
   {% javascript script %}
 {% endfor %}
+
+{# Show firefox download button to unauthenticated users only #}
+{% if not user.is_authenticated() %}
+  {% javascript 'common.fx.download' %}
+{% endif %}
 
 {# Temporary Pontoon testing - bug 812176 #}
 {% if settings.STAGE %}

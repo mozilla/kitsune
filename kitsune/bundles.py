@@ -300,6 +300,12 @@ PIPELINE_JS = {
         ),
         'output_filename': 'build/common-min.js'
     },
+    'common.fx.download': {
+        'source_filenames': (
+            'sumo/js/show-fx-download.js',
+        ),
+        'output_filename': 'build/show-fx-download.js'
+    },
     'community': {
         'source_filenames': (
             'jquery/jquery.min.js',
@@ -631,5 +637,5 @@ PIPELINE_JS = {
             'kpi/js/kpi.browserify.js',
         ),
         'output_filename': 'build/kpi.dashboard-min.js'
-    }
+    },
 }
