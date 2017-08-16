@@ -245,7 +245,7 @@
 {% endfor %}
 
 {# Show firefox download button to unauthenticated users only #}
-{% if not user.is_authenticated() %}
+{% if not (hide_fx_download or user.is_authenticated()) %}
   {% javascript 'common.fx.download' %}
 {% endif %}
 
