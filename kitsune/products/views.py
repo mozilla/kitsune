@@ -44,12 +44,16 @@ def product_landing(request, template, slug):
         else:
             latest_version = 0
 
+    # Don't show firefox download button at header at firefox product page
+    hide_fx_download = product.slug == 'firefox'
+
     return render(request, template, {
         'product': product,
         'products': Product.objects.filter(visible=True),
         'topics': topics_for(product=product, parent=None),
         'search_params': {'product': slug},
-        'latest_version': latest_version
+        'latest_version': latest_version,
+        'hide_fx_download': hide_fx_download
     })
 
 
@@ -74,10 +78,6 @@ def document_listing(request, template, product_slug, topic_slug,
 
     documents, fallback_documents = documents_for(**doc_kw)
 
-    user_agent = request.META.get('HTTP_USER_AGENT', '')
-    browser = get_browser(user_agent)
-    show_fx_download = (product.slug == 'thunderbird' and browser != 'Firefox')
-
     return render(request, template, {
         'product': product,
         'topic': topic,
@@ -86,5 +86,5 @@ def document_listing(request, template, product_slug, topic_slug,
         'subtopics': topics_for(product=product, parent=topic),
         'documents': documents,
         'fallback_documents': fallback_documents,
-        'search_params': {'product': product_slug},
-        'show_fx_download': show_fx_download})
+        'search_params': {'product': product_slug}
+    })
