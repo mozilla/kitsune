@@ -1252,6 +1252,8 @@ h2 {
 
 #product-picker {
   > li {
+    min-height: 156px;
+
     > a,
     > a:visited,
     > a:hover {
@@ -1259,6 +1261,7 @@ h2 {
 
       > img {
         float: left;
+        margin: 8px 15px 8px 0;
       }
 
       > span {
@@ -1266,8 +1269,17 @@ h2 {
         margin-left: 130px;
 
         &.title {
+          display: block;
           font-family: @OpenSansLight;
-          font-size: 18px;
+          font-size: 22px;
+          letter-spacing: -1px;
+          line-height: 22px;
+          margin: 0 0 12px 99px;
+        }
+
+        &.description {
+          display: block;
+          margin: 0 0 0 99px;
         }
       }
     }
