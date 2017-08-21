@@ -21,7 +21,7 @@ your skills, we will try to find the right use for them :)
 {#- L10n: This is an email.  Whitespace matters! -#}
 {{ _('To help you find out where to help check this site:') }}
 
-{{ add_utm('https://support.mozilla.org/en-US/kb/contributor-news-resources', 'get-involved', source='new-contributor') }}
+{{ add_utm('https://support.mozilla.org/kb/contributor-news-resources', 'get-involved', source='new-contributor') }}
 
 {#- L10n: This is an email.  Whitespace matters! -#}
 {{ _('There are several ways in which you can get involved:') }}
@@ -32,7 +32,7 @@ Forum Contributor - Answer user support questions that are
 most-requested but have no replies:
 {% endtrans %}
 
-{{ add_utm('https://support.mozilla.org/en-US/questions?sort=requested&filter=no-replies', 'get-involved', source='new-contributor') }}
+{{ add_utm('https://support.mozilla.org/questions?sort=requested&filter=no-replies', 'get-involved', source='new-contributor') }}
 
 {#- L10n: This is an email.  Whitespace matters! -#}
 {% trans %}
@@ -69,7 +69,7 @@ L10N Contributor - Help to translate Firefox Help content
 to your language:
 {% endtrans %}
 
-{{ add_utm('https://support.mozilla.org/en-US/kb/localize-firefox-help', 'get-involved', source='new-contributor') }}
+{{ add_utm('https://support.mozilla.org/kb/localize-firefox-help', 'get-involved', source='new-contributor') }}
 
 {#- L10n: This is an email.  Whitespace matters! -#}
 {% trans %}
