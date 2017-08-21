@@ -190,7 +190,7 @@
 <footer>
   <div class="container_12 cf">
     <div class="grid_2"><img src="{{ STATIC_URL }}sumo/img/mozilla-logo.png" alt="Mozilla" /></div>
-    <div class="grid_4 suffix_1">
+    <div class="grid_4">
       <div class="fineprint">
         {% trans year=now().year %}
           Portions of this content are &copy;1998–{{ year }}
@@ -200,21 +200,27 @@
         {% endtrans %}
       </div>
     </div>
-    <div class="grid_2">
+    <div class="grid_3">
       <ul>
         <li><a href="https://www.mozilla.org/contact/spaces/">{{ _('Contact Us') }}</a></li>
         <li><a href="https://www.mozilla.org/privacy/websites/">{{ _('Privacy Policy') }}</a></li>
         <li><a href="https://www.mozilla.org/about/legal.html">{{ _('Legal Notices') }}</a></li>
         <li><a href="https://www.mozilla.org/legal/fraud-report/">{{ _('Report Trademark Abuse') }}</a></li>
         <li><a href="https://github.com/mozilla/kitsune/">{{ _('Source Code') }}</a></li>
+        <li><a href="https://www.twitter.com/mozilla">{{ _('Twitter') }}</a></li>
+        <li><a href="https://www.facebook.com/mozilla">{{ _('Facebook') }}</a></li>
+        <li><a href="?{{ request.QUERY_STRING }}&amp;mobile=1">{{ _('Switch to mobile site') }}</a></li>
       </ul>
     </div>
     <div class="grid_2 suffix_1">
       <ul>
-        <li><a href="https://www.twitter.com/mozilla">{{ _('Twitter') }}</a></li>
-        <li><a href="https://www.facebook.com/mozilla">{{ _('Facebook') }}</a></li>
-        <li><a href="https://friends.mozilla.org/">{{ _('Firefox Friends') }}</a></li>
-        <li><a href="?{{ request.QUERY_STRING }}&amp;mobile=1">{{ _('Switch to mobile site') }}</a></li>
+          <li><a href="https://www.mozilla.org/firefox/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('Firefox') }}</a></li>
+          <li><a href="https://www.mozilla.org/firefox/new/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('Download Firefox') }}</a></li>
+          <li><a href="https://www.mozilla.org/firefox/android/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('Android Browser') }}</a></li>
+          <li><a href="https://www.mozilla.org/firefox/ios/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('iOS Browser') }}</a></li>
+          <li><a href="https://www.mozilla.org/firefox/focus/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('Focus Browser') }}</a></li>
+          <li><a href="https://www.mozilla.org/firefox/desktop/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('Desktop Browser') }}</a></li>
+          <li><a href="https://www.mozilla.org/firefox/channel/desktop/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('Beta, Nightly, Developer Edition') }}</a></li>
       </ul>
     </div>
   </div>
