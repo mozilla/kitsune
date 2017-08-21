@@ -254,7 +254,7 @@ NON_SUPPORTED_LOCALES = {
     'ff': None,
     'fur': 'it',
     'gd': None,
-    'gn': None,
+    'gn': 'es',
     'hy-AM': None,
     'ilo': None,
     'is': None,
