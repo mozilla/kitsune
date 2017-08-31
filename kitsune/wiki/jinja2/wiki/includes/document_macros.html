@@ -60,9 +60,11 @@
     {% elif fallback_reason == 'translation_not_approved' %}
       <div id="doc-pending-fallback" class="warning-box">
         {# L10n: This is shown for existing, never-approved translations #}
-        {% trans %}
+        {% trans help_link=url('wiki.document', 'localize-firefox-help') %}
           Our volunteers are working on translating this article.
           Until it's ready, maybe the English version can be of some help.
+          If you want to help us translate articles like this one,
+          <a href="{{ help_link }}">please click here</a>.
         {% endtrans %}
       </div>
       {% if document.locale == settings.WIKI_DEFAULT_LANGUAGE %}
