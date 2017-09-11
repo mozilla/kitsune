@@ -13,3 +13,5 @@ CELERY_SERVICE = 'celery-support-dev'
 
 UPDATE_REF = "origin/master"
 SSH_KEY = None
+
+LOCALE_BRANCH = 'master'
