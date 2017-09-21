@@ -110,7 +110,7 @@ https://github.com/jezdez/django-appconf/archive/de23f5213913b3d6ea3e008bc01b487
 https://github.com/django-security/django-axes/archive/778f208cc1d3cc42ecb756f732f8593e40ebb476.tar.gz#egg=django-axes==1.3.6
 
 # django-badger: master
-# sha256: 32YsI-G-RBiyfRL1UkymlW4TOAA5ahiNP8bXQgln1ek
+# sha256: _4uQivAJ4ur6ZzGauq1lmVfU-E0y3hO7tj5T0xdZ7oY
 https://github.com/mozilla/django-badger/archive/7e6c420c2f913baab7307ef2a5aaa0585a034af6.tar.gz#egg=django-badger==0.0.0.2
 
 # django-celery: master
@@ -132,7 +132,7 @@ https://github.com/mozilla/django-csp/archive/5c5f5a6b55fb78e99db939c79f0f0d8003
 https://github.com/willkg/django-eadred/archive/f77ebbeea7e6802771b91a1748faec002ce83bd6.tar.gz#egg=django-eadred
 
 # django-extensions: tags/1.3.3
-# sha256: oEiCqdyUMgocSPT2W6xNnQj_MoJgNTkCQK1JnBPLfsc
+# sha256: 6Eay01tRbUcpOArG_IHB5_cn00w-fHtaMLfVpgSk_2c
 https://github.com/django-extensions/django-extensions/archive/47a531c996c92a369755a4a9e0857e51afd25cab.tar.gz#egg=django-extensions==1.3.3
 
 # sha256: fRdUe2UhbMXG-8BK7lUIjM1ZF8B3UwTZb3AXwmx4nNc
@@ -175,7 +175,7 @@ https://github.com/mozilla/django-recaptcha/archive/b3ce0daadfff7735d2a0865b8419
 https://github.com/mozilla/django-session-csrf/archive/15492526b23cdad56fe3df1342e2d82ec5d17c18.tar.gz#egg=django-session-csrf==0.5
 
 # django-statici18n: tags/v1.0.1
-# sha256: tHEjxI72nEiw3vc6JEmNFbxrXkTqdIVKh9b-Bd-px5Q
+# sha256: 9mLVJSmffHtd5eJXoVkcAE788-5J5LtbFev3f0dPA3g
 https://github.com/zyegfryed/django-statici18n/archive/6bcc799b800a7237a37e178ddffef90bcb60ac3b.tar.gz#egg=django-statici18n==1.0.1
 
 # django-statsd: tags/0.3.8.5
@@ -350,7 +350,7 @@ Pygments==2.0.2
 pytz==2013b
 
 # raven-python: tags/3.6.1
-# sha256: BEn5NWyfDXsRFpassWRh5I4QyX2gvgYZu53hJZ1mqhY
+# sha256: 0JxppP1GBPLCnR4gZtdet0KjOByCLHB1-lQ1SZZSdNU
 https://github.com/getsentry/raven-python/archive/ab53d276262a0fa2932588b34de4e68ffe22d930.tar.gz#egg=raven==3.6.1
 
 # redis-py: remotes/origin/2.4~24
