@@ -7,7 +7,7 @@
   <div class="user-meta">
     <div class="avatar">
       <a href="{{ profile_url(answer.creator) }}">
-        <img src="{{ profile_avatar(answer.creator) }}" height="48" width="48" alt="{{ answer.creator }}"/>
+        <img src="{{ profile_avatar(answer.creator) }}" height="48" width="48" alt="{{ display_name(answer.creator) }}"/>
       </a>
     </div>
     <div class="asked-by">
@@ -28,7 +28,7 @@
   </div>
   <div class="main-content">
     {% if answer.id and question.solution == answer %}
-      <h3 class="is-solution"{% if solver %} title="{{ _('Solution chosen by {user}')|f(user=solver.username) }}"{% endif %}>{{_('Chosen Solution')}}</h3>
+      <h3 class="is-solution"{% if solver %} title="{{ _('Solution chosen by {user}')|f(user=display_name(solver)) }}"{% endif %}>{{_('Chosen Solution')}}</h3>
     {% elif answer.id and answer in helpful_replies %}
       <h3 class="is-helpful">{{_('Helpful Reply')}}</h3>
     {% elif answer.is_spam %}

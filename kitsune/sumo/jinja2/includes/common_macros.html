@@ -28,7 +28,7 @@
           {{ _for_contributor_links(user, settings.WIKI_DEFAULT_LANGUAGE) }}
         </ul>
       </li>
-        <li class="dropdown"><a href="{{ profile_url(user) }}" class="user">{{ user }}</a>
+        <li class="dropdown"><a href="{{ profile_url(user) }}" class="user">{{ display_name(user) }}</a>
           <ul>
             <li><a href="{{ profile_url(user) }}">{{ _('View Profile') }}</a></li>
             <li><a href="{{ url('search')|urlparams(asked_by=user.username, a=1, w=2) }}">{{ _('My Questions') }}</a></li>

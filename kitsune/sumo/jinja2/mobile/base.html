@@ -69,7 +69,7 @@
 
   <header>{{ _('Profile') }}</header>
   {% if user.is_authenticated() %}
-    <a href="{{ profile_url(user) }}">{{ user.username }}</a>
+    <a href="{{ profile_url(user) }}">{{ display_name(user) }}</a>
     <a href="{{ url('messages.inbox') }}">
       {{ _('Inbox') }}
       {% if unread_message_count > 0 %}
