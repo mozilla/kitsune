@@ -710,11 +710,13 @@ class DocumentMappingType(SearchMappingType):
                 'topic': {'type': 'string', 'index': 'not_analyzed'},
 
                 # Document specific fields (locale aware)
-                'document_title': {'type': 'string'},
-                'document_keywords': {'type': 'string'},
+                'document_title': {'type': 'string', 'analyzer': 'snowball'},
+                'document_keywords': {'type': 'string', 'analyzer': 'snowball'},
                 'document_content': {'type': 'string', 'store': 'yes',
+                                     'analyzer': 'snowball',
                                      'term_vector': 'with_positions_offsets'},
                 'document_summary': {'type': 'string', 'store': 'yes',
+                                     'analyzer': 'snowball',
                                      'term_vector': 'with_positions_offsets'},
 
                 # Document specific fields (locale naive)
