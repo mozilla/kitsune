@@ -1,6 +1,8 @@
 #!/bin/bash
 # pwd is the git repo.
 set -e
+echo "Downgrading default pip"
+pip install -U "pip<8"
 
 echo "Install Python dependencies"
 ./peep.sh install -r requirements/dev.txt
