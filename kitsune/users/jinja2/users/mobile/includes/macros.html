@@ -27,11 +27,11 @@
   </form>
 {%- endmacro %}
 
-{% macro register_form(form, csrf, action=None, contributor=False) -%}
+{% macro register_form(form, action=None, contributor=False) -%}
   <form method="post" action="{{ action if action != None else
                                    url('users.register') }}">
     {{ errorlist(form) }}
-    {{ csrf|safe }}
+    {% csrf_token %}
     <input type="hidden" name="interested" id="id_for_interested" value="{{ 'yes' if contributor else 'no' }}">
     <fieldset>
       {% for field in form if field.name != 'interested' %}
