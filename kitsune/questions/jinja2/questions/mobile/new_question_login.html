@@ -6,7 +6,7 @@
 {% set hide_extra_content = True %}
 {% set loginform = login_form %}
 {% from "layout/errorlist.html" import errorlist %}
-{% from "questions/includes/aaq_macros.html" import mobile_register_forms %}
+{% from "questions/includes/aaq_macros.html" import mobile_register_forms with context %}
 {% from "users/includes/macros.html" import login_form with context %}
 
 {% block content %}

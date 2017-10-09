@@ -1534,6 +1534,21 @@ class AAQTemplateTestCase(TestCaseBase):
         eq_(200, response.status_code)
         assert '/questions/new' not in pq(response.content)('#aux-nav').html()
 
+    def test_register_through_aaq_in_mobile_has_csrf(self):
+        """Registration form in the AAQ Mobile has a CSRF token"""
+        l = QuestionLocale.objects.get(locale=settings.LANGUAGE_CODE)
+        p = ProductFactory(slug='firefox')
+        p.questions_locales.add(l)
+        TopicFactory(slug='fix-problems', product=p)
+
+        self.client.logout()
+        url = reverse('questions.aaq_step5', args=['desktop', 'fix-problems'])
+        url = urlparams(url, search='test')
+
+        response = self.client.get(url, {'mobile': 1}, follow=True)
+        doc = pq(response.content)
+        assert doc('#register-form form input[name="csrfmiddlewaretoken"]')
+
 
 class ProductForumTemplateTestCase(TestCaseBase):
     def test_product_forum_listing(self):
