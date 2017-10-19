@@ -343,8 +343,8 @@ products = SortedDict([
                       u'<li><a href="http://www.seamonkey-project.org/doc/">'
                       u'SeaMonkey support</a></li>'
                       u'<li><a '
-                      u'href="http://www.mozilla.org/projects/calendar/faq.html">'
-                      u'Lightning and Sunbird support</a></li>'
+                      u'href="/questions/new/thunderbird">'
+                      u'Lightning support</a></li>'
                       u'</ul>'),
         'categories': SortedDict([]),
         'deadend': True,
