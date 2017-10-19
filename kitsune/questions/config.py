@@ -184,46 +184,6 @@ products = SortedDict([
         ])
     }),
 
-    ('focus', {
-        'name': _lazy(u'Firefox Focus'),
-        'subtitle': _lazy(u'Automatic privacy browser and content blocker'),
-        'extra_fields': [],
-        'tags': ['focus-firefox'],
-        'product': 'focus-firefox',
-        'categories': SortedDict([
-            ('Focus-ios', {
-                'name': _lazy(u'Firefox Focus for iOS'),
-                'topic': 'Focus-ios',
-                'tags': ['Focus-ios']
-            }),
-            ('firefox-focus-android', {
-                'name': _lazy(u'Firefox Focus for Android'),
-                'topic': 'firefox-focus-android',
-                'tags': ['firefox-focus-android']
-            }),
-        ])
-    }),
-
-    ('firefox-rocket', {
-        'name': _lazy(u'Firefox Rocket'),
-        'subtitle': _lazy(u'Mobile browser for Indonesia'),
-        'extra_fields': [],
-        'tags': ['firefox-rocket'],
-        'product': 'firefox-rocket',
-        'categories': SortedDict([
-            ('get-started', {
-                'name': _lazy(u'Get started'),
-                'topic': 'get-started',
-                'tags': ['get-started']
-            }),
-            ('fix-problems', {
-                'name': _lazy(u'Fix problems'),
-                'topic': 'fix-problems',
-                'tags': ['fix-problems']
-            }),
-        ])
-    }),
-
     ('firefox-os', {
         'name': _lazy(u'Firefox OS'),
         'subtitle': _lazy(u'Mobile OS for smartphones'),
@@ -253,39 +213,22 @@ products = SortedDict([
         ])
     }),
 
-    ('webmaker', {
-        'name': _lazy(u'Webmaker'),
-        'subtitle': _lazy(u'Tools for creating and teaching the web'),
+    ('focus', {
+        'name': _lazy(u'Firefox Focus'),
+        'subtitle': _lazy(u'Automatic privacy browser and content blocker'),
         'extra_fields': [],
-        'tags': [],
-        'product': 'webmaker',
+        'tags': ['focus-firefox'],
+        'product': 'focus-firefox',
         'categories': SortedDict([
-            # TODO: Just use the IA topics for this.
-            # See bug 979397
-            ('popcorn-maker', {
-                'name': _lazy(u'Using Popcorn Maker'),
-                'topic': 'popcorn-maker',
-                'tags': ['popcorn-maker'],
+            ('Focus-ios', {
+                'name': _lazy(u'Firefox Focus for iOS'),
+                'topic': 'Focus-ios',
+                'tags': ['Focus-ios']
             }),
-            ('thimble', {
-                'name': _lazy(u'Using Thimble'),
-                'topic': 'thimble',
-                'tags': ['thimble'],
-            }),
-            ('x-ray-goggles', {
-                'name': _lazy(u'Using X-Ray Goggles'),
-                'topic': 'x-ray-goggles',
-                'tags': ['x-ray-goggles'],
-            }),
-            ('get-the-most-from-webmaker', {
-                'name': _lazy(u'Using a feature on webmaker.org'),
-                'topic': 'get-the-most-from-webmaker',
-                'tags': ['get-the-most-from-webmaker'],
-            }),
-            ('events-and-help-for-mentors', {
-                'name': _lazy(u'Contributing to Webmaker'),
-                'topic': 'events-and-help-for-mentors',
-                'tags': ['events-and-help-for-mentors'],
+            ('firefox-focus-android', {
+                'name': _lazy(u'Firefox Focus for Android'),
+                'topic': 'firefox-focus-android',
+                'tags': ['firefox-focus-android']
             }),
         ])
     }),
@@ -330,6 +273,63 @@ products = SortedDict([
                 'name': _lazy(u'Other'),
                 'topic': 'other',
                 'tags': ['other'],
+            }),
+        ])
+    }),
+
+    ('firefox-rocket', {
+        'name': _lazy(u'Firefox Rocket'),
+        'subtitle': _lazy(u'Mobile browser for Indonesia'),
+        'extra_fields': [],
+        'tags': ['firefox-rocket'],
+        'product': 'firefox-rocket',
+        'categories': SortedDict([
+            ('get-started', {
+                'name': _lazy(u'Get started'),
+                'topic': 'get-started',
+                'tags': ['get-started']
+            }),
+            ('fix-problems', {
+                'name': _lazy(u'Fix problems'),
+                'topic': 'fix-problems',
+                'tags': ['fix-problems']
+            }),
+        ])
+    }),
+
+    ('webmaker', {
+        'name': _lazy(u'Webmaker'),
+        'subtitle': _lazy(u'Tools for creating and teaching the web'),
+        'extra_fields': [],
+        'tags': [],
+        'product': 'webmaker',
+        'categories': SortedDict([
+            # TODO: Just use the IA topics for this.
+            # See bug 979397
+            ('popcorn-maker', {
+                'name': _lazy(u'Using Popcorn Maker'),
+                'topic': 'popcorn-maker',
+                'tags': ['popcorn-maker'],
+            }),
+            ('thimble', {
+                'name': _lazy(u'Using Thimble'),
+                'topic': 'thimble',
+                'tags': ['thimble'],
+            }),
+            ('x-ray-goggles', {
+                'name': _lazy(u'Using X-Ray Goggles'),
+                'topic': 'x-ray-goggles',
+                'tags': ['x-ray-goggles'],
+            }),
+            ('get-the-most-from-webmaker', {
+                'name': _lazy(u'Using a feature on webmaker.org'),
+                'topic': 'get-the-most-from-webmaker',
+                'tags': ['get-the-most-from-webmaker'],
+            }),
+            ('events-and-help-for-mentors', {
+                'name': _lazy(u'Contributing to Webmaker'),
+                'topic': 'events-and-help-for-mentors',
+                'tags': ['events-and-help-for-mentors'],
             }),
         ])
     }),
