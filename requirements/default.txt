@@ -324,8 +324,9 @@ pyparsing==1.5.5
 # sha256: RsUeuHi3h-gU7o-XN7CmIREDSutNHAZFCsWo6lpw5gI
 pyquery==1.2.9
 
-# sha256: bxlzSLRvuM358_z8Kn1al9qV2z4uhmfPZXIWJ0_hsAk
-python-dateutil==1.5
+# sha256: iRw4sqAvW7G-PkeThmyN9Jx9Gbqr-cG61iVH4LSGaso
+# sha256: lVEbrmNNabxzKbpV5kZJmoQrxOw0KtVKjNtlZFoKrTw
+python-dateutil==2.6.1
 
 # sha256: Df9jYEI_PsCMvjv683szlGGlSiHRO-DdXZyZmc5TEHg
 python-gflags==2.0
@@ -394,3 +395,28 @@ https://github.com/eventbrite/zendesk/archive/1b256c3b827a8f3c6bbd3bd1fc09b7b0e2
 # sha256: oxpREC6MLwR_iqYri9xVL3ox2cafLLFjkyJcPuDbcrU
 # sha256: JawRvUVE_vMjbzJDn2sd47z5MfizTHeGq0Dw7IVibus
 django-mozilla-product-details==0.12.1
+
+# sha256: vI5MH0g2CMXdEhIHL9QQQvPvLSooluxPsS28YsgplqA
+# sha256: q2vhU4zylRFAC86D0OXKdNLpNcrYIIYGO89eftrMFmE
+django-storages==1.6.5
+
+# sha256: OAV7BmmQFyzm678qXgRqVFUDeTWB_PFMqw44IcYRLrA
+# sha256: 95933KIoD3eA851ypQiPTPK2JsCSHnGF7WrBer_dfmw
+boto3==1.4.7
+
+# sha256: H20AGbah173V1EBv3-e2d290afX1WOLK1svsN_G4btQ
+# sha256: NTsM4TTa4b_9DEu-h3nid-PdW3Oq2vdnuX7T9D9uJtI
+botocore==1.7.41
+
+# sha256: 8RtEYfQldAodkI6aP3Nlw9LlafbKaKL_i8W82Wdu3WM
+# sha256: aoHUyapiyvBhy1F7TZrR3TADdM1HBpl6_5zWrt1h_GQ
+jmespath==0.9.3
+
+# sha256: x7FvTMpazSvVesliO_uj_s4Eckc5KJNQbQ0ubyViDrM
+# sha256: dvH1j0pH4sivoTXix2lYgGo6u8Qrch2H_Z0RQJx12Xk
+s3transfer==0.1.11
+
+# sha256: ekvUfq9lluEpXssRNhE5_r4psISoe_AFv4mfmkLtw8Y
+# sha256: Aq7EvZKrBn9v8no4o4pBFzvwG-2PiRV3aMFXP1PkdKY
+# sha256: UeZO8uv7Kcrh-qEzs3EBQ0luyiHFMPP3FCTXdod2QnQ
+docutils==0.14

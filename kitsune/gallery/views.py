@@ -244,7 +244,7 @@ def _get_media_info(media_id, media_type):
     if media_type == 'image':
         media = get_object_or_404(Image, pk=media_id)
         try:
-            media_format = imghdr.what(media.file.path)
+            media_format = imghdr.what(media.file.file)
         except UnicodeEncodeError:
             pass
     elif media_type == 'video':
