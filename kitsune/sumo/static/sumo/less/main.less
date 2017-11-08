@@ -73,13 +73,13 @@ body {
           margin-left: 302px;
           margin-right: 0;
         }
+
       }
     }
   }
 
   > header {
-    background: #dee7ee;
-    background: url('../img/grain.png'), linear-gradient(#cae1f4, #dee7ee 65%, #d4dce4);
+    background: #fff;
     border-bottom: 1px solid #b3b8bc;
     border-top: 2px solid #fff;
     margin-bottom: 20px;
@@ -87,12 +87,11 @@ body {
 
     .logo {
       float: left;
-      margin-top: 20px;
-
-      img{
-        display:block;
-        height: 46px;
-      }
+      height: 69px;
+      width: 160px;
+      display: block;
+      background: url('../img/mozilla-support.png') 0 0 no-repeat;
+      background-size: 160px 69px;
     }
   }
 
@@ -102,7 +101,7 @@ body {
     > header {
       background: #fff;
       box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
-      height: 50px;
+      height: 60px;
       padding: 0;
       position: fixed;
       top: 0;
@@ -111,13 +110,13 @@ body {
 
       .logo {
         left: 0;
-        margin: 13px 0;
+        margin: 0;
         position: absolute;
-        top: 0;
-
-        img {
-          height: 24px;
-        }
+        top: 8px;
+        height: 40px;
+        width: 188px;
+        background: url('../img/mozilla-support-scroll.png') 0 0 no-repeat;
+        background-size: 188px 40px;
       }
 
       #aux-nav {
@@ -128,6 +127,10 @@ body {
 
           .dropdown {
             display: none;
+          }
+
+          .firefox-download-button {
+              display: none;
           }
         }
       }
@@ -174,6 +177,10 @@ footer {
     li {
       margin-bottom: 8px;
     }
+  }
+
+  .footer-logo {
+      width: 100px;
   }
 
   .fineprint {
@@ -1420,7 +1427,7 @@ input[type=button],
 #support-search {
   display: block;
   float: right;
-  margin: 35px 0 0 0;
+  margin: 25px 0 0 0;
 
   .searchbox {
     width: 200px;
