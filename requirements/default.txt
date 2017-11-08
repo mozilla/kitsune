@@ -321,8 +321,9 @@ pyparsing==1.5.5 \
     --hash=sha256:b450a0a0af7423ff93a79e1f4dc364f56283c8e7a893d957e78c22a3155f95c0
 pyquery==1.2.9 \
     --hash=sha256:46c51eb878b787e814ee8f9737b0a62111034aeb4d1c06450ac5a8ea5a70e602
-python-dateutil==1.5 \
-    --hash=sha256:6f197348b46fb8cdf9f3fcfc2a7d5a97da95db3e2e8667cf657216274fe1b009
+python-dateutil==2.6.1 \
+    --hash=sha256:891c38b2a02f5bb1be3e4793866c8df49c7d19baabf9c1bad62547e0b4866aca \
+    --hash=sha256:95511bae634d69bc7329ba55e646499a842bc4ec342ad54a8cdb65645a0aad3c
 python-gflags==2.0 \
     --hash=sha256:0dff6360423f3ec08cbe3bfaf37b339461a54a21d13be0dd5d9c9999ce531078 \
     --hash=sha256:7f09e616239302abb231f93abc997e9c4e0e0e41aea07ecdfc6a5182c50cd07e
@@ -423,3 +424,22 @@ olefile==0.44 \
 whitenoise==3.3.0 \
     --hash=sha256:1d62a003a0ab747de96da45c831cbb512dcb7f69c1ef0bd20b1cd4ae45d8a0c4 \
     --hash=sha256:d098327276de6fd189398a7bcb95789d1bb2d41b3e011eeae4562f6b1a107dd4
+django-storages==1.6.5 \
+    --hash=sha256:bc8e4c1f483608c5dd1212072fd41042f3ef2d2a2896ec4fb12dbc62c82996a0 \
+    --hash=sha256:ab6be1538cf29511400bce83d0e5ca74d2e935cad82086063bcf5e7edacc1661
+boto3==1.4.7 \
+    --hash=sha256:38057b066990172ce6ebbf2a5e046a545503793581fcf14cab0e3821c6112eb0 \
+    --hash=sha256:f79f77dca2280f7780f39d72a5088f4cf2b626c0921e7185ed6ac17abfdd7e6c
+botocore==1.7.41 \
+    --hash=sha256:1f6d0019b6a1d7bdd5d4406fdfe7b6776f7469f5f558e2cad6cbec37f1b86ed4 \
+    --hash=sha256:353b0ce134dae1bffd0c4bbe8779e277e3dd5b73aadaf767b97ed3f43f6e26d2
+jmespath==0.9.3 \
+    --hash=sha256:f11b4461f425740a1d908e9a3f7365c3d2e569f6ca68a2ff8bc5bcd9676edd63 \
+    --hash=sha256:6a81d4c9aa62caf061cb517b4d9ad1dd300374cd4706997aff9cd6aedd61fc64
+s3transfer==0.1.11 \
+    --hash=sha256:c7b16f4cca5acd2bd57ac9623bfba3fece047247392893506d0d2e6f25620eb3 \
+    --hash=sha256:76f1f58f4a47e2c8afa135e2c76958806a3abbc42b721d87fd9d11409c75d979
+docutils==0.14 \
+    --hash=sha256:7a4bd47eaf6596e1295ecb11361139febe29b084a87bf005bf899f9a42edc3c6 \
+    --hash=sha256:02aec4bd92ab067f6ff27a38a38a41173bf01bed8f89157768c1573f53e474a6 \
+    --hash=sha256:51e64ef2ebfb29cae1faa133b3710143496eca21c530f3f71424d77687764274

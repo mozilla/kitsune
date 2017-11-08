@@ -2,9 +2,11 @@ import logging
 import os
 import StringIO
 import subprocess
+from tempfile import NamedTemporaryFile
 
 from django.conf import settings
 from django.core.files.base import ContentFile
+from django.core.files.storage import default_storage
 
 from celery import task
 from PIL import Image
@@ -28,7 +30,7 @@ def generate_thumbnail(for_obj, from_field, to_field,
     to_ = getattr(for_obj, to_field)
 
     # Bail silently if nothing to generate from, image was probably deleted.
-    if not (from_ and os.path.isfile(from_.path)):
+    if not (from_ and default_storage.exists(from_.name)):
         log_msg = 'No file to generate from: {model} {id}, {from_f} -> {to_f}'
         log.info(log_msg.format(model=for_obj.__class__.__name__,
                                 id=for_obj.id, from_f=from_field,
@@ -38,24 +40,23 @@ def generate_thumbnail(for_obj, from_field, to_field,
     log_msg = 'Generating thumbnail for {model} {id}: {from_f} -> {to_f}'
     log.info(log_msg.format(model=for_obj.__class__.__name__, id=for_obj.id,
                             from_f=from_field, to_f=to_field))
-    thumb_content = _create_image_thumbnail(from_.path, longest_side=max_size)
-    file_path = from_.path
+    thumb_content = _create_image_thumbnail(from_.file, longest_side=max_size)
     if to_:  # Clean up old file before creating new one.
         to_.delete(save=False)
     # Don't modify the object.
-    to_.save(file_path, thumb_content, save=False)
+    to_.save(from_.name, thumb_content, save=False)
     # Use update to avoid race conditions with updating different fields.
     # E.g. when generating two thumbnails for different fields of a single
     # object.
     for_obj.update(**{to_field: to_.name})
 
 
-def _create_image_thumbnail(file_path, longest_side=settings.THUMBNAIL_SIZE,
+def _create_image_thumbnail(fileobj, longest_side=settings.THUMBNAIL_SIZE,
                             pad=False):
     """
     Returns a thumbnail file with a set longest side.
     """
-    original_image = Image.open(file_path)
+    original_image = Image.open(fileobj)
     original_image = original_image.convert('RGBA')
     file_width, file_height = original_image.size
 
@@ -109,14 +110,14 @@ def compress_image(for_obj, for_field):
     for_ = getattr(for_obj, for_field)
 
     # Bail silently if nothing to compress, image was probably deleted.
-    if not (for_ and os.path.isfile(for_.path)):
+    if not (for_ and default_storage.exists(for_.name)):
         log_msg = 'No file to compress for: {model} {id}, {for_f}'
         log.info(log_msg.format(model=for_obj.__class__.__name__,
                                 id=for_obj.id, for_f=for_field))
         return
 
     # Bail silently if not a PNG.
-    if not (os.path.splitext(for_.path)[1].lower() == '.png'):
+    if not (os.path.splitext(for_.name)[1].lower() == '.png'):
         log_msg = 'File is not PNG for: {model} {id}, {for_f}'
         log.info(log_msg.format(model=for_obj.__class__.__name__,
                                 id=for_obj.id, for_f=for_field))
@@ -126,7 +127,14 @@ def compress_image(for_obj, for_field):
     log.info(log_msg.format(model=for_obj.__class__.__name__, id=for_obj.id,
                             for_f=for_field))
 
-    file_path = for_.path
-    if settings.OPTIPNG_PATH is not None:
-        subprocess.call([settings.OPTIPNG_PATH,
-                         '-quiet', '-preserve', file_path])
+    _optipng(for_.name)
+
+
+def _optipng(file_name):
+    with default_storage.open(file_name, 'rb') as file_obj:
+        with NamedTemporaryFile(suffix='.png') as tmpfile:
+            tmpfile.write(file_obj.read())
+            subprocess.call([settings.OPTIPNG_PATH,
+                            '-quiet', '-preserve', tmpfile.name])
+            file_content = ContentFile(tmpfile.read())
+            default_storage.save(file_name, file_content)

@@ -3,7 +3,13 @@ import itertools
 import os
 import time
 
-from django.core.files.storage import FileSystemStorage as DjangoStorage
+from django.conf import settings
+from django.core.files.storage import FileSystemStorage
+
+from storages.backends.s3boto3 import S3Boto3Storage
+
+
+DjangoStorage = S3Boto3Storage if settings.AWS_ACCESS_KEY_ID else FileSystemStorage
 
 
 class RenameFileStorage(DjangoStorage):
