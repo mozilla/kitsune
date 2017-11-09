@@ -29,14 +29,7 @@ echo
 
 
 echo "Installing ElasticSearch"
-# Default to ES version 1.2.4, but allow overrides from the environment
-ELASTICSEARCH_VERSION=${ELASTICSEARCH_VERSION:-1.2.4}
-es_tarball="vendor/tarballs/elasticsearch-${ELASTICSEARCH_VERSION}.tar.gz"
-if [[ ! -f $es_tarball ]]; then
-  echo "Invalid version ElasticSearch. Can't find ${es_tarball}."
-  exit 1
-fi
-tar xzvf $es_tarball > /dev/null
+curl -O https://download.elastic.co/elasticsearch/release/org/elasticsearch/distribution/deb/elasticsearch/2.3.0/elasticsearch-2.3.0.deb && sudo dpkg -i --force-confnew elasticsearch-2.3.0.deb && sudo service elasticsearch restart
 
 echo "Installing Redis"
 tar xzvf vendor/tarballs/redis-2.6.9.tar.gz > /dev/null
