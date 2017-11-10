@@ -40,27 +40,26 @@
 
   .filter-bar {
     background: @mobileSubheaderBackground;
-    color: #fff;
-    font-size: 15px;
+    color: #0A84FF;
+    font-size: 14px;
     height: 40px;
     line-height: 40px;
     padding: 10px 16px;
+    border-bottom: 1px solid #CFCFD0;
 
     .return-link {
-      color: #fff;
+      color: #0A84FF;
       display: block;
-      padding-left: 30px;
+      padding-left: 24px;
       position: relative;
 
       &:before {
-        background-position: -52px -1664px;
-        .icons-sprite();
-        content: '';
+        content: '\f053'; // chevron-left
+        font-family: FontAwesome;
+        font-size: 16px;
         height: 20px;
-        left: 0;
-        margin-top: -10px;
+        left: 4px;
         position: absolute;
-        top: 50%;
         width: 20px;
       }
     }
