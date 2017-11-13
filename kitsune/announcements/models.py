@@ -82,5 +82,6 @@ def connector(sender, instance, created, **kw):
         elif now < instance.show_after:
             send_group_email.delay(instance.pk, eta=instance.show_after)
 
+
 post_save.connect(connector, sender=Announcement,
                   dispatch_uid='email_announcement')

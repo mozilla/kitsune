@@ -124,6 +124,8 @@ def edit_permissions(modeladmin, request, queryset):
     ])
     return render_to_response(template_name, context,
                               context_instance=template.RequestContext(request))
+
+
 edit_permissions.short_description = _("Edit permissions for selected %(verbose_name_plural)s")
 
 
@@ -167,7 +169,9 @@ class PermissionAdmin(admin.ModelAdmin):
             "%(count)d permission successfully approved.",
             "%(count)d permissions successfully approved.", len(queryset))
         self.message_user(request, message % {'count': len(queryset)})
+
     approve_permissions.short_description = _("Approve selected permissions")
+
 
 admin.site.register(Permission, PermissionAdmin)
 

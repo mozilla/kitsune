@@ -31,6 +31,7 @@ def mock_ugettext(msg_id):
     locale = get_language()
     return mock_translations[msg_id][locale]
 
+
 mock_ugettext_lazy = lazy(mock_ugettext)
 
 
@@ -145,7 +146,8 @@ class PremailerTests(TestCase):
                                    '</html>')
 
             u = UserFactory()
-            msg = emails_with_users_and_watches('test', 'a.ltxt', 'a.html', {}, [(u, [None])])
+            msg = emails_with_users_and_watches(
+                'test', 'a.ltxt', 'a.html', {}, [(u, [None])])
 
             for m in msg:
                 tag = ('<a href="https://%s/test" style="color:#000">Hyperlink</a>')

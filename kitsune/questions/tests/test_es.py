@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 
+from django.core.cache import cache
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 
@@ -232,6 +233,9 @@ class SupportForumTopContributorsTests(ElasticTestCase):
         # Add an answer, we now have a top conributor.
         a = AnswerFactory()
         self.refresh()
+        # We cache the result of elasticsearch. See bug 1381436
+        # TODO: remove it once we stop using the cache
+        cache.clear()
         response = self.client.get(reverse('questions.list', args=['all']))
         eq_(200, response.status_code)
         doc = pq(response.content)
@@ -243,6 +247,9 @@ class SupportForumTopContributorsTests(ElasticTestCase):
         a.created = datetime.now() - timedelta(days=91)
         a.save()
         self.refresh()
+        # We cache the result of elasticsearch. See bug 1381436
+        # TODO: remove it once we stop using the cache
+        cache.clear()
         response = self.client.get(reverse('questions.list', args=['all']))
         eq_(200, response.status_code)
         doc = pq(response.content)

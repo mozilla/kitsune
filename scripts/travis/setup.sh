@@ -53,19 +53,6 @@ mysql -e 'create database kitsune'
 echo "Updating product details"
 python manage.py update_product_details
 
-echo "Starting ElasticSearch"
-ELASTICSEARCH_VERSION=${ELASTICSEARCH_VERSION:-1.2.4}
-pushd elasticsearch-${ELASTICSEARCH_VERSION}
-  # New version of ES are foreground by default, old ones are backgrounded by default
-  if [[ $ELASTICSEARCH_VERSION == '1.2.4' ]]; then
-    # -d to daemonize
-    ./bin/elasticsearch -d
-  else
-    # This will daemonize
-    ./bin/elasticsearch
-  fi
-popd
-
 echo "Starting Redis Servers"
 # This will daemonize
 mkdir -p redis-state/sumo-test/

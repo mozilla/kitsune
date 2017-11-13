@@ -239,7 +239,7 @@ class TestAnalyzers(ElasticTestCase):
             # twice, since duplicates will be ignored.
             expected.add(u'p')
         actual = set(t['term'] for t in facets['tokens'])
-        eq_(actual, expected)
+        eq_(sorted(actual), sorted(expected))
 
     # These 4 languages were chosen for tokenization testing because
     # they represent the 4 kinds of languages we have: English, Snowball

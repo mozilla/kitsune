@@ -11,4 +11,5 @@ class ForumAdmin(admin.ModelAdmin):
     exclude = ('last_post',)
     prepopulated_fields = {'slug': ('name',)}
 
+
 admin.site.register(Forum, ForumAdmin)

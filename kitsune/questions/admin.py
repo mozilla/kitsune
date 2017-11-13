@@ -8,4 +8,5 @@ class QuestionLocaleAdmin(admin.ModelAdmin):
     ordering = ('locale',)
     filter_horizontal = ('products',)
 
+
 admin.site.register(QuestionLocale, QuestionLocaleAdmin)

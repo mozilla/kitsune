@@ -28,7 +28,6 @@ from django.utils import translation
 from kitsune.products.models import Product, Topic
 from kitsune.sumo.views import handle404
 
-
 # build a list of topics translated for reverse lookup
 TOPICS = {}
 for topic in set(Topic.objects.values_list('title', flat=True)):
@@ -46,7 +45,6 @@ for product in set(Product.objects.values_list('title', flat=True)):
 
 
 class LithiumRedirectionMiddleware():
-
     meta_regex = re.compile('<meta content="(.*?)" property="(.*?)"/>')
     product_pages = {
         u'Mozilla-Hilfe-Deutsch': '/de/?cache=no',

@@ -161,7 +161,8 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
 
             # actstream
             # Authors should automatically follow their own questions.
-            actstream.actions.follow(self.creator, self, send_action=False, actor_only=False)
+            actstream.actions.follow(
+                self.creator, self, send_action=False, actor_only=False)
 
     def add_metadata(self, **kwargs):
         """Add (save to db) the passed in metadata.
@@ -244,7 +245,8 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         You don't need to call save on the question after this.
 
         """
-        to_add = self.product_config.get('tags', []) + self.category_config.get('tags', [])
+        to_add = self.product_config.get(
+            'tags', []) + self.category_config.get('tags', [])
         version = self.metadata.get('ff_version', '')
 
         # Remove the beta (b*), aurora (a2) or nightly (a1) suffix.
@@ -389,7 +391,8 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         elif serializer_type == 'fk':
             return api.QuestionFKSerializer
         else:
-            raise ValueError('Unknown serializer type "{}".'.format(serializer_type))
+            raise ValueError(
+                'Unknown serializer type "{}".'.format(serializer_type))
 
     @classmethod
     def recent_asked_count(cls, extra_filter=None):
@@ -831,6 +834,8 @@ def _tag_added(sender, question_id, tag_name, **kwargs):
     """Signal handler for new tag on question."""
     if tag_name == config.ESCALATE_TAG_NAME:
         escalate_question.delay(question_id)
+
+
 tag_added.connect(_tag_added, sender=Question, dispatch_uid='tagged_1337')
 
 
@@ -987,7 +992,8 @@ class Answer(ModelBase, SearchMixin):
                 QuestionReplyEvent(self).fire(exclude=self.creator)
 
                 # actstream
-                actstream.actions.follow(self.creator, self, send_action=False, actor_only=False)
+                actstream.actions.follow(
+                    self.creator, self, send_action=False, actor_only=False)
                 actstream.actions.follow(
                     self.creator, self.question, send_action=False, actor_only=False)
 
@@ -1135,7 +1141,8 @@ class Answer(ModelBase, SearchMixin):
         elif serializer_type == 'fk':
             return api.AnswerFKSerializer
         else:
-            raise ValueError('Unknown serializer type "{}".'.format(serializer_type))
+            raise ValueError(
+                'Unknown serializer type "{}".'.format(serializer_type))
 
     def mark_as_spam(self, by_user):
         """Mark the answer as spam by the specified user."""
@@ -1256,6 +1263,7 @@ def reindex_questions_answers(sender, instance, **kw):
         answer_ids = instance.answers.all().values_list('id', flat=True)
         index_task.delay(AnswerMetricsMappingType, list(answer_ids))
 
+
 post_save.connect(
     reindex_questions_answers, sender=Question,
     dispatch_uid='questions_reindex_answers')
@@ -1277,6 +1285,7 @@ def user_pre_save(sender, instance, **kw):
 
             for q in questions:
                 q.index_later()
+
 
 pre_save.connect(
     user_pre_save, sender=User, dispatch_uid='questions_user_pre_save')
@@ -1335,6 +1344,7 @@ def send_vote_update_task(**kwargs):
     if kwargs.get('created'):
         q = kwargs.get('instance').question
         update_question_votes.delay(q.id)
+
 
 post_save.connect(send_vote_update_task, sender=QuestionVote)
 

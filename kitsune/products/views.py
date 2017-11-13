@@ -7,7 +7,6 @@ from mobility.decorators import mobile_template
 from product_details import product_details
 
 from kitsune.products.models import Product, Topic
-from kitsune.sumo.utils import get_browser
 from kitsune.wiki.decorators import check_simple_wiki_locale
 from kitsune.wiki.facets import topics_for, documents_for
 

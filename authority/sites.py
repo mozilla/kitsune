@@ -88,7 +88,8 @@ class PermissionSite(object):
             model_or_iterable = [model_or_iterable]
         for model in model_or_iterable:
             if model not in self._registry:
-                raise NotRegistered('The model %s is not registered' % model.__name__)
+                raise NotRegistered(
+                    'The model %s is not registered' % model.__name__)
             del self._registry[model]
 
     def setup(self, model, permission):
@@ -134,13 +135,15 @@ class PermissionDescriptor(object):
         if obj:
             return ContentType.objects.get_for_model(obj)
         else:
-            raise Exception("Invalid arguments given to PermissionDescriptor.get_content_type")
+            raise Exception(
+                "Invalid arguments given to PermissionDescriptor.get_content_type")
 
     def __get__(self, instance, owner):
         if instance is None:
             return self
         ct = self.get_content_type(instance)
         return ct.row_permissions.all()
+
 
 site = PermissionSite()
 get_check = site.get_check
