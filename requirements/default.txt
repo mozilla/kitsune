@@ -324,8 +324,9 @@ pyparsing==1.5.5
 # sha256: RsUeuHi3h-gU7o-XN7CmIREDSutNHAZFCsWo6lpw5gI
 pyquery==1.2.9
 
-# sha256: bxlzSLRvuM358_z8Kn1al9qV2z4uhmfPZXIWJ0_hsAk
-python-dateutil==1.5
+# sha256: iRw4sqAvW7G-PkeThmyN9Jx9Gbqr-cG61iVH4LSGaso
+# sha256: lVEbrmNNabxzKbpV5kZJmoQrxOw0KtVKjNtlZFoKrTw
+python-dateutil==2.6.1
 
 # sha256: Df9jYEI_PsCMvjv683szlGGlSiHRO-DdXZyZmc5TEHg
 python-gflags==2.0

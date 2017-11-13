@@ -550,6 +550,7 @@ INSTALLED_APPS = (
     'authority',
     'timezones',
     'waffle',
+    'storages',
     'kitsune.access',
     'kitsune.sumo',
     'kitsune.search',
@@ -756,6 +757,16 @@ MAX_FILENAME_LENGTH = 200
 MAX_FILEPATH_LENGTH = 250
 # Default storage engine - ours does not preserve filenames
 DEFAULT_FILE_STORAGE = 'kitsune.upload.storage.RenameFileStorage'
+
+# AWS S3 Storage Settings
+# local_settings must include the following to use s3 storage
+# AWS_ACCESS_KEY_ID
+# AWS_SECRET_ACCESS_KEY
+# AWS_STORAGE_BUCKET_NAME
+AWS_S3_OBJECT_PARAMETERS = {
+    'CacheControl': 'max-age=86400',
+}
+AWS_S3_CUSTOM_DOMAIN = 'support.cdn.mozilla.net'
 
 # Auth and permissions related constants
 LOGIN_URL = '/users/login'

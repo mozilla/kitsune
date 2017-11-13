@@ -3,7 +3,10 @@ import itertools
 import os
 import time
 
-from django.core.files.storage import FileSystemStorage as DjangoStorage
+try:
+    from storages.backends.s3boto3 import S3Boto3Storage as DjangoStorage
+except ImportError:
+    from django.core.files.storage import FileSystemStorage as DjangoStorage
 
 
 class RenameFileStorage(DjangoStorage):
