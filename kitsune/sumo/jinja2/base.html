@@ -126,9 +126,6 @@
 <header>
   <div class="container_12 cf">
     <div class="grid_12">
-      <div id="tabzilla">
-        <a href="https://www.mozilla.org/">Mozilla</a>
-      </div>
       <div class="cf">
         <nav id="aux-nav" role="navigation">
           <ul>
@@ -151,7 +148,7 @@
         {% if not hide_header_search %}
           {{ search_box(settings, id='support-search', params=search_params) }}
         {% endif %}
-        <a href="{{ url('home') }}" class="logo"><img alt="mozilla support" src="{{ STATIC_URL }}sumo/img/mozilla-support.png" /></a>
+        <a href="{{ url('home') }}" class="logo"></a>
       </div>
     </div>
   </div>
@@ -189,7 +186,7 @@
 
 <footer>
   <div class="container_12 cf">
-    <div class="grid_2"><img src="{{ STATIC_URL }}sumo/img/mozilla-logo.png" alt="Mozilla" /></div>
+    <div class="grid_2"><img class="footer-logo" src="{{ STATIC_URL }}sumo/img/mozilla-logo.svg" alt="Mozilla" /></div>
     <div class="grid_4">
       <div class="fineprint">
         {% trans year=now().year %}
