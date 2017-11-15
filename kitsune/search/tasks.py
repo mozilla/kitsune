@@ -5,7 +5,7 @@ import traceback
 
 from celery import task
 from multidb.pinning import pin_this_thread, unpin_this_thread
-from statsd import statsd
+from django_statsd.clients import statsd
 
 from kitsune.search.es_utils import index_chunk, UnindexMeBro, write_index, get_analysis
 from kitsune.search.utils import from_class_path

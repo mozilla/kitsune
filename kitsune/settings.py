@@ -7,6 +7,8 @@ import platform
 import re
 
 import dj_database_url
+import django_cache_url
+
 
 from datetime import date
 from decouple import config, Csv
@@ -16,10 +18,13 @@ import djcelery
 from bundles import PIPELINE_CSS, PIPELINE_JS
 from kitsune.lib.sumo_locales import LOCALES
 
-DEBUG = True
-STAGE = False
+DEBUG = config('DEBUG', default=False, cast=bool)
+STAGE = config('STAGE', default=False, cast=bool)
 
-LOG_LEVEL = logging.INFO
+# TODO
+# LOG_LEVEL = config('LOG_LEVEL', default='INFO', cast=labmda x: getattr(logging, x))
+LOG_LEVEL = config('LOG_LEVEL', default=logging.INFO)
+
 SYSLOG_TAG = 'http_sumo_app'
 
 # Repository directory.
@@ -42,23 +47,10 @@ ADMINS = (
 MANAGERS = ADMINS
 
 DATABASES = {
-    'default': {
-        # Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3'
-        # or 'oracle'.
-        'ENGINE': 'django.db.backends.mysql',
-        # Or path to database file if sqlite3.
-        'NAME': 'kitsune',
-        # Not used with sqlite3.
-        'USER': config('DATABASE_USER'),
-        # Not used with sqlite3.
-        'PASSWORD': config('DATABASE_PASSWORD'),
-        # Set to empty string for localhost. Not used with sqlite3.
-        'HOST': config('DATABASE_HOST'),
-        # Set to empty string for default. Not used with sqlite3.
-        'PORT': config('DATABASE_PORT'),
-        'OPTIONS': {'init_command': 'SET storage_engine=InnoDB'},
-    }
+    'default': config('DATABASE_URL', cast=dj_database_url.parse),
 }
+DATABASES['default']['OPTIONS'] = {'init_command': 'SET storage_engine=InnoDB'}
+
 
 DATABASE_ROUTERS = ('multidb.PinningMasterSlaveRouter',)
 
@@ -67,22 +59,16 @@ SLAVE_DATABASES = []
 
 # Cache Settings
 CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
-        'LOCATION': [config('MEMCACHE_SERVERS',
-                           default='127.0.0.1:11211')],
-        'PREFIX': 'sumo:',
-    },
+    'default': config('CACHE_URL', default='locmem://', cast=django_cache_url.parse),
 }
 
 # Setting this to the Waffle version.
 WAFFLE_CACHE_PREFIX = 'w0.7.7a:'
 
 # Addresses email comes from
-DEFAULT_FROM_EMAIL = 'notifications@support.mozilla.org'
-DEFAULT_REPLY_TO_EMAIL = 'no-reply@mozilla.org'
-SERVER_EMAIL = 'server-error@support.mozilla.org'
-EMAIL_SUBJECT_PREFIX = '[support] '
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='notifications@support.mozilla.org')
+DEFAULT_REPLY_TO_EMAIL = config('DEFAULT_REPLY_TO_EMAIL', default='no-reply@mozilla.org')
+SERVER_EMAIL = config('SERVER_EMAIL', default='server-error@support.mozilla.org')
 
 PLATFORM_NAME = platform.node()
 
@@ -91,7 +77,7 @@ PLATFORM_NAME = platform.node()
 # although not all choices may be available on all operating systems.
 # If running in a Windows environment this must be set to the same as your
 # system time zone.
-TIME_ZONE = 'US/Pacific'
+TIME_ZONE = config('TIME_ZONE', default='US/Pacific')
 
 # Language code for this installation. All choices can be found here:
 # http://www.i18nguy.com/unicode/language-identifiers.html
@@ -326,7 +312,7 @@ ES_PLUGIN_ANALYZERS = [
     'polish'
 ]
 
-ES_USE_PLUGINS = False
+ES_USE_PLUGINS = config('ES_USE_PLUGINS', default=True, cast=bool)
 
 TEXT_DOMAIN = 'messages'
 
@@ -366,19 +352,15 @@ LOCALE_PATHS = (
 )
 
 # Use the real robots.txt?
-ENGAGE_ROBOTS = False
+ENGAGE_ROBOTS = config('ENGAGE_ROBOTS', default=not DEBUG, cast=bool)
 
 # Absolute path to the directory that holds media.
 # Example: "/home/media/media.lawrence.com/"
 MEDIA_ROOT = path('media')
-
-# URL that handles the media served from MEDIA_ROOT. Make sure to use a
-# trailing slash if there is a path component (optional in other cases).
-# Examples: "http://media.lawrence.com", "http://example.com/media/"
-MEDIA_URL = '/media/'
+MEDIA_URL = config('MEDIA_URL', default='/media/')
 
 STATIC_ROOT = path('static')
-STATIC_URL = '/static/'
+STATIC_URL = config('STATIC_URL', default='/static/')
 STATICFILES_DIRS = (
     path('bower_components'),
     path('jsi18n'),  # Collect jsi18n so that it is cache-busted
@@ -407,7 +389,7 @@ SUPPORTED_NONLOCALES = (
 )
 
 # Make this unique, and don't share it with anybody.
-SECRET_KEY = '#%tc(zja8j01!r#h_y)=hy!^k)9az74k+-ib&ij&+**s3-e^_z'
+SECRET_KEY = config('SECRET_KEY')
 
 _CONTEXT_PROCESSORS = [
     'django.contrib.auth.context_processors.auth',
@@ -475,14 +457,8 @@ MIDDLEWARE_CLASSES = (
     'commonware.middleware.NoVarySessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
 
-    # This should come before TokenLoginMiddleware, because
-    # TokenLoginMiddleware uses this to tell users they have been
-    # automatically logged. It also has to come after
-    # NoVarySessionMiddleware.
+    # This has to come after NoVarySessionMiddleware.
     'django.contrib.messages.middleware.MessageMiddleware',
-
-    # This middleware should come after AuthenticationMiddleware.
-    'kitsune.users.middleware.TokenLoginMiddleware',
 
     # LocaleURLMiddleware must be before any middleware that uses
     # sumo.urlresolvers.reverse() to add locale prefixes to URLs:
@@ -517,7 +493,6 @@ MIDDLEWARE_CLASSES = (
 # Auth
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
-    'kitsune.users.auth.TokenLoginBackend',
 )
 AUTH_PROFILE_MODULE = 'users.Profile'
 USER_AVATAR_PATH = 'uploads/avatars/'
@@ -695,7 +670,8 @@ PIPELINE = {
     'CSSMIN_BINARY': path('node_modules/.bin/cssmin'),
 
     'LESS_BINARY': path('node_modules/.bin/lessc'),
-    'LESS_ARGUMENTS': '--autoprefix="> 1%, last 2 versions, ff > 1"',
+    # TODO: Cannot make less work with autoprefix plugin
+    # 'LESS_ARGUMENTS': '--autoprefix="> 1%, last 2 versions, ff > 1"',
 
     'BROWSERIFY_BINARY': path('node_modules/.bin/browserify'),
     'BROWSERIFY_ARGUMENTS': '-t babelify -t debowerify',
@@ -705,16 +681,17 @@ if DEBUG:
     PIPELINE['BROWSERIFY_ARGUMENTS'] += ' -d'
 
 NUNJUCKS_PRECOMPILE_BIN = 'nunjucks-precompile'
+NUNJUCKS_PRECOMPILE_BIN = path('node_modules/.bin/nunjucks-precompile')
 
 #
 # Sessions
-SESSION_COOKIE_AGE = 4 * 7 * 24 * 60 * 60  # 4 weeks
-SESSION_COOKIE_SECURE = True
+SESSION_COOKIE_AGE = config('SESSION_COOKIE_AGE', default=4 * 7 * 24 * 60 * 60, cast=int)  # 4 weeks
+SESSION_COOKIE_SECURE = config('SESSION_COOKIE_SECURE', default=not DEBUG, cast=bool)
 SESSION_COOKIE_HTTPONLY = True
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
-SESSION_ENGINE = 'django.contrib.sessions.backends.cached_db'
+SESSION_ENGINE = config('SESSION_ENGINE', default='django.contrib.sessions.backends.cache')
 SESSION_EXISTS_COOKIE = 'sumo_session'
-SESSION_SERIALIZER = 'django.contrib.sessions.serializers.PickleSerializer'
+SESSION_SERIALIZER = config('SESSION_SERIALIZER', default='django.contrib.sessions.serializers.PickleSerializer')
 
 #
 # Connection information for Elastic
@@ -734,7 +711,7 @@ ES_WRITE_INDEXES = ES_INDEXES
 # them bump into one another.
 ES_INDEX_PREFIX = 'sumo'
 # Keep indexes up to date as objects are made/deleted.
-ES_LIVE_INDEXING = False
+ES_LIVE_INDEXING = config('ES_LIVE_INDEXING', default=True, cast=bool)
 # Timeout for querying requests
 ES_TIMEOUT = 5
 
@@ -750,7 +727,7 @@ IA_DEFAULT_CATEGORIES = (10, 20,)
 
 # The length for which we would like the user to cache search forms
 # and results, in minutes.
-SEARCH_CACHE_PERIOD = 15
+SEARCH_CACHE_PERIOD = config('SEARCH_CACHE_PERIOD', default=15, cast=int)
 
 # Maximum length of the filename. Forms should use this and raise
 # ValidationError if the length is exceeded.
@@ -788,12 +765,19 @@ TOPIC_IMAGE_PATH = 'uploads/topics/'
 PRODUCT_IMAGE_PATH = 'uploads/products/'
 
 # Email
-EMAIL_BACKEND = 'kitsune.lib.email.LoggingEmailBackend'
-EMAIL_LOGGING_REAL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_BACKEND = config('EMAIL_BACKEND', default='kitsune.lib.email.LoggingEmailBackend')
+EMAIL_LOGGING_REAL_BACKEND = config('EMAIL_LOGGING_REAL_BACKEND', default='django.core.mail.backends.console.EmailBackend')
+EMAIL_SUBJECT_PREFIX = config('EMAIL_SUBJECT_PREFIX', default='[support] ')
+if EMAIL_BACKEND == 'django.core.mail.backends.smtp.EmailBackend':
+    EMAIL_HOST = config('EMAIL_HOST')
+    EMAIL_HOST_USER = config('EMAIL_HOST_USER')
+    EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
+    EMAIL_PORT = config('EMAIL_PORT', default=25, cast=int)
+    EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=False)
 
 
 # Read-only mode setup.
-READ_ONLY = False
+READ_ONLY = config('READ_ONLY', default=False, cast=bool)
 
 
 # Turn on read-only mode in settings_local.py by putting this line
@@ -821,26 +805,31 @@ def read_only_mode(env):
 # Celery
 djcelery.setup_loader()
 
-BROKER_HOST = config('BROKER_HOST', default='localhost')
-BROKER_PORT = config('BROKER_PORT', default='5672')
-BROKER_USER = config('BROKER_USER', default='kitsune')
-BROKER_PASSWORD = config('BROKER_PASSWORD', default='kitsune')
-BROKER_VHOST = config('BROKER_VHOST', default='kitsune')
-CELERY_RESULT_BACKEND = 'amqp'
-CELERY_IGNORE_RESULT = True
-CELERY_ALWAYS_EAGER = True  # For tests. Set to False for use.
-CELERY_SEND_TASK_ERROR_EMAILS = True
-CELERYD_LOG_LEVEL = logging.INFO
-CELERYD_CONCURRENCY = 4
-CELERY_EAGER_PROPAGATES_EXCEPTIONS = True  # Explode loudly during tests.
-CELERYD_HIJACK_ROOT_LOGGER = False
+if not DEBUG:
+    # E.g. redis://localhost:6479/0
+    BROKER_URL = config('BROKER_URL')
+
+CELERY_IGNORE_RESULT = config('CELERY_IGNORE_RESULT', default=True, cast=bool)
+if not CELERY_IGNORE_RESULT:
+    # E.g. redis://localhost:6479/1
+    CELERY_RESULT_BACKEND = config('CELERY_RESULT_BACKEND')
+
+CELERY_ALWAYS_EAGER = config('CELERY_ALWAYS_EAGER', default=DEBUG, cast=bool)  # For tests. Set to False for use.
+CELERY_SEND_TASK_ERROR_EMAILS = config('CELERY_SEND_TASK_ERROR_EMAILS', default=True, cast=bool)
+# TODO
+# CELERYD_LOG_LEVEL = config('CELERY_SEND_TASK_ERROR_EMAILS', default='INFO', cast=labmda x: getattr(logging, x))
+CELERYD_LOG_LEVEL = config('CELERY_SEND_TASK_ERROR_EMAILS', default=logging.INFO)
+
+CELERYD_CONCURRENCY = config('CELERYD_CONCURRENCY', default=4, cast=int)
+CELERY_EAGER_PROPAGATES_EXCEPTIONS = config('CELERY_EAGER_PROPAGATES_EXCEPTIONS', default=True, cast=bool)  # Explode loudly during tests.
+CELERYD_HIJACK_ROOT_LOGGER = config('CELERYD_HIJACK_ROOT_LOGGER', default=False, cast=bool)
 
 # Wiki rebuild settings
 WIKI_REBUILD_TOKEN = 'sumo:wiki:full-rebuild'
 
 # Anonymous user cookie
-ANONYMOUS_COOKIE_NAME = 'SUMO_ANONID'
-ANONYMOUS_COOKIE_MAX_AGE = 30 * 86400  # Seconds
+ANONYMOUS_COOKIE_NAME = config('ANONYMOUS_COOKIE_NAME', default='SUMO_ANONID')
+ANONYMOUS_COOKIE_MAX_AGE = config('ANONYMOUS_COOKIE_MAX_AGE', default=30 * 86400, cast=int) # One month
 
 # Do not change this without also deleting all wiki documents:
 WIKI_DEFAULT_LANGUAGE = LANGUAGE_CODE
@@ -850,7 +839,7 @@ GALLERY_DEFAULT_LANGUAGE = WIKI_DEFAULT_LANGUAGE
 GALLERY_IMAGE_PATH = 'uploads/gallery/images/'
 GALLERY_IMAGE_THUMBNAIL_PATH = 'uploads/gallery/images/thumbnails/'
 GALLERY_VIDEO_PATH = 'uploads/gallery/videos/'
-GALLERY_VIDEO_URL = None
+GALLERY_VIDEO_URL = MEDIA_URL + 'uploads/gallery/videos/'
 GALLERY_VIDEO_THUMBNAIL_PATH = 'uploads/gallery/videos/thumbnails/'
 GALLERY_VIDEO_THUMBNAIL_PROGRESS_URL = MEDIA_URL + 'img/video-thumb.png'
 THUMBNAIL_PROGRESS_WIDTH = 32  # width of the above image
@@ -880,52 +869,51 @@ CC_WORD_BLACKLIST = [
     'slut',
 ]
 
-BITLY_API_URL = 'http://api.bitly.com/v3/shorten?callback=?'
-BITLY_LOGIN = None
-BITLY_API_KEY = None
+BITLY_API_URL = config('BITLY_API_URL', default='http://api.bitly.com/v3/shorten?callback=?')
+BITLY_LOGIN = config('BITLY_LOGIN', default=None)
+BITLY_API_KEY = config('BITLY_API_KEY', default=None)
 
-TWITTER_COOKIE_SECURE = True
-TWITTER_CONSUMER_KEY = ''
-TWITTER_CONSUMER_SECRET = ''
-TWITTER_ACCESS_TOKEN = ''
-TWITTER_ACCESS_TOKEN_SECRET = ''
+TWITTER_COOKIE_SECURE = config('TWITTER_COOKIE_SECURE', default=True, cast=bool)
+TWITTER_CONSUMER_KEY = config('TWITTER_CONSUMER_KEY', default='')
+TWITTER_CONSUMER_SECRET = config('TWITTER_CONSUMER_SECRET', default='')
+TWITTER_ACCESS_TOKEN = config('TWITTER_ACCESS_TOKEN', default='')
+TWITTER_ACCESS_TOKEN_SECRET = config('TWITTER_ACCESS_TOKEN_SECRET', default='')
 
-TIDINGS_FROM_ADDRESS = 'notifications@support.mozilla.org'
+TIDINGS_FROM_ADDRESS = config('TIDINGS_FROM_ADDRESS', default='notifications@support.mozilla.org')
 # Anonymous watches must be confirmed.
-TIDINGS_CONFIRM_ANONYMOUS_WATCHES = True
+TIDINGS_CONFIRM_ANONYMOUS_WATCHES = config('TIDINGS_CONFIRM_ANONYMOUS_WATCHES', default=True, cast=bool)
 TIDINGS_MODEL_BASE = 'kitsune.sumo.models.ModelBase'
 TIDINGS_REVERSE = 'kitsune.sumo.urlresolvers.reverse'
 
 
 # Google Analytics settings.
-GA_KEY = 'longkey'  # Google API client key
-GA_ACCOUNT = 'something@developer.gserviceaccount.com'  # Google API Service Account email address
-GA_PROFILE_ID = '12345678'  # Google Analytics profile id for SUMO prod
+GA_KEY = config('GA_KEY', default='longkey')  # Google API client key
+GA_ACCOUNT = config('GA_ACCOUNT', 'something@developer.gserviceaccount.com')  # Google API Service Account email address
+GA_PROFILE_ID = config('GA_PROFILE_ID', default='12345678')  # Google Analytics profile id for SUMO prod
 GA_START_DATE = date(2012, 11, 10)
 
-MOBILE_COOKIE = 'msumo'
+MOBILE_COOKIE = config('MOBILE_COOKIE', default='msumo')
 
 # Key to access /services/version. Set to None to disallow.
-VERSION_CHECK_TOKEN = None
-
-REDIS_URL = config('REDIS_URL', default='localhost')
+VERSION_CHECK_TOKEN = config('VERSION_CHECK_TOKEN', default=None)
 
 REDIS_BACKENDS = {
-    'default': '{}?socket_timeout=0.5&db=0'.format(REDIS_URL),
-    'helpfulvotes': '{}?socket_timeout=0.5&db=1'.format(REDIS_URL),
+    # TODO: Make sure that db number is respected
+    'default': config('REDIS_DEFAULT_URL'),
+    'helpfulvotes': config('REDIS_HELPFULVOTES_URL'),
 }
 
 HELPFULVOTES_UNHELPFUL_KEY = 'helpfulvotes_topunhelpful'
 
 LAST_SEARCH_COOKIE = 'last_search'
 
-OPTIPNG_PATH = None
+OPTIPNG_PATH = config('OPTIPNG_PATH', default='/usr/bin/optipng')
 
 # Zendesk info. Fill in the prefix, email and password in settings_local.py.
-ZENDESK_URL = 'https://appsmarket.zendesk.com'
-ZENDESK_SUBJECT_PREFIX = '[TEST] '  # Set to '' in prod
-ZENDESK_USER_EMAIL = ''
-ZENDESK_USER_PASSWORD = ''
+ZENDESK_URL = config('ZENDESK_URL', default='https://appsmarket.zendesk.com')
+ZENDESK_SUBJECT_PREFIX = config('ZENDESK_SUBJECT_PREFIX', default='')
+ZENDESK_USER_EMAIL = config('ZENDESK_USER_EMAIL', default='')
+ZENDESK_USER_PASSWORD = config('ZENDESK_USER_PASSWORD', default='')
 
 # Tasty Pie
 API_LIMIT_PER_PAGE = 0
@@ -935,12 +923,15 @@ X_FRAME_OPTIONS = 'DENY'
 
 # Where to find the about:support troubleshooting addon.
 # This is a link to the latest version, whatever that may be.
-TROUBLESHOOTER_ADDON_URL = (
-    'https://addons.mozilla.org/firefox/downloads/latest/426841/addon-426841-latest.xpi')
+TROUBLESHOOTER_ADDON_URL = config(
+    'TROUBLESHOOTER_ADDON_URL',
+    default='https://addons.mozilla.org/firefox/downloads/latest/426841/addon-426841-latest.xpi')
 
 # SurveyGizmo API
-SURVEYGIZMO_API_TOKEN = None
-SURVEYGIZMO_API_TOKEN_SECRET = None
+SURVEYGIZMO_USER = config('SURVEYGIZMO_USER', default=None)
+SURVEYGIZMO_PASSWORD = config('SURVEYGIZMO_PASSWORD', default=None)
+SURVEYGIZMO_API_TOKEN = config('SURVEYGIZMO_API_TOKEN', default=None)
+SURVEYGIZMO_API_TOKEN_SECRET = config('SURVEYGIZMO_API_TOKEN_SECRET', default=None)
 
 # Django Rest Framework
 REST_FRAMEWORK = {
@@ -961,15 +952,17 @@ REST_FRAMEWORK = {
 }
 
 # Django-axes settings.
-AXES_LOGIN_FAILURE_LIMIT = 10
-AXES_LOCK_OUT_AT_FAILURE = True
-AXES_USE_USER_AGENT = False
-AXES_COOLOFF_TIME = 1  # hour
-AXES_BEHIND_REVERSE_PROXY = True
-AXES_REVERSE_PROXY_HEADER = 'HTTP_X_CLUSTER_CLIENT_IP'
+AXES_LOGIN_FAILURE_LIMIT = config('AXES_LOGIN_FAILURE_LIMIT', default=10, cast=int)
+AXES_LOCK_OUT_AT_FAILURE = config('AXES_LOCK_OUT_AT_FAILURE', default=True, cast=bool)
+AXES_USE_USER_AGENT = config('AXES_USE_USER_AGENT', default=False, cast=bool)
+AXES_COOLOFF_TIME = config('AXES_COOLOFF_TIME', default=1, cast=int)  # hour
+AXES_BEHIND_REVERSE_PROXY = config('AXES_BEHIND_REVERSE_PROXY', default=not DEBUG, cast=bool)
+AXES_REVERSE_PROXY_HEADER = config('AXES_REVERSE_PROXY_HEADER', default='HTTP_X_CLUSTER_CLIENT_IP')
+
+USE_DEBUG_TOOLBAR = config('USE_DEBUG_TOOLBAR', default=False, cast=bool)
 
 # Set this to True to wrap each HTTP request in a transaction on this database.
-ATOMIC_REQUESTS = True
+ATOMIC_REQUESTS = config('ATOMIC_REQUESTS', default=True, cast=bool)
 
 # CORS Setup
 CORS_ORIGIN_ALLOW_ALL = True
@@ -1002,3 +995,23 @@ SILENCED_SYSTEM_CHECKS = [
     'fields.W340',  # null has no effect on ManyToManyField.
     'fields.W342',  # ForeignKey(unique=True) is usually better served by a OneToOneField
 ]
+
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='', cast=Csv)
+
+# Allows you to specify waffle settings in the querystring.
+WAFFLE_OVERRIDE = config('WAFFLE_OVERRIDE', default=DEBUG, cast=bool)
+
+STATSD_CLIENT = config('STATSD_CLIENT', 'django_statsd.clients.null')
+STATSD_HOST = config('STATSD_HOST', default='localhost')
+STATSD_PORT = config('STATSD_PORT', 8125, cast=int)
+STATSD_PREFIX = config('STATSD_PREFIX', default='')
+
+
+RAVEN_CONFIG = {
+    'dsn': config('SENTRY_DSN', default=None),
+    'release': config('GIT_SHA', default=None),
+    'tags': {
+        'server_full_name': PLATFORM_NAME,
+        'environment': config('SENTRY_ENVIRONMENT', default=''),
+    }
+}

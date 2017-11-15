@@ -8,7 +8,7 @@ from django.contrib.sites.models import Site
 from django.db.models import F, Q, ObjectDoesNotExist
 
 from multidb.pinning import pin_this_thread, unpin_this_thread
-from statsd import statsd
+from django_statsd.clients import statsd
 from django.utils.translation import ugettext as _, pgettext
 
 from kitsune.products.models import Product

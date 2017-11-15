@@ -5,7 +5,7 @@ from django import http
 from django.conf import settings
 from django.core.exceptions import PermissionDenied
 
-from statsd import statsd
+from django_statsd.clients import statsd
 
 from kitsune.sumo.utils import is_ratelimited
 

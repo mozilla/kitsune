@@ -7,7 +7,7 @@ from django.contrib import auth
 from django.contrib.auth.models import User
 from django.utils.translation import ugettext as _
 
-from statsd import statsd
+from django_statsd.clients import statsd
 
 from kitsune.sumo import email_utils
 from kitsune.users import ERROR_SEND_EMAIL

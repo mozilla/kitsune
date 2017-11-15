@@ -13,7 +13,7 @@ from django.db import transaction
 import waffle
 from celery import task
 from multidb.pinning import pin_this_thread, unpin_this_thread
-from statsd import statsd
+from django_statsd.clients import statsd
 from django.utils.translation import ugettext as _
 
 from kitsune.kbadge.utils import get_or_create_badge

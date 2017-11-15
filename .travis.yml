@@ -1,26 +1,17 @@
-sudo: false
+sudo: required
 language: python
 python: 2.7
-addons:
-  firefox: "latest"
-node: '0.10'
 env:
-  globals:
-  - DJANGO_LIVE_TEST_SERVER_ADDRESS="localhost:9900-9999"
-  - PIP_DOWNLOAD_CACHE="pip_cache"
-  matrix:
-  - TEST_SUITE=lint
-#  - TEST_SUITE=ui MARK_EXPRESSION=smoke
-  - TEST_SUITE=django
-  - TEST_SUITE=docker
-matrix:
-  fast_finish: true
-cache:
-  directories:
-  - /home/travis/virtualenv
-install: travis_retry scripts/travis/install.sh
-before_script: travis_retry scripts/travis/setup.sh
-script: scripts/travis/dispatch.sh $TEST_SUITE
+  global:
+    - DEBUG=False
+services:
+  - docker
+install:
+  - pip install -U docker-compose
+  - docker-compose build
+script:
+  - docker-compose run web flake8 kitsune
+  - docker-compose run web ./manage.py test
 notifications:
   email: false
   irc:
