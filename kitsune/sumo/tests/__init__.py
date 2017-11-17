@@ -43,15 +43,6 @@ def post(client, url, data={}, **kwargs):
 class TestSuiteRunner(django_nose.NoseTestSuiteRunner):
     """This is a test runner that pulls in settings_test.py."""
     def setup_test_environment(self, **kwargs):
-        # If we have a settings_test.py let's roll it into our settings.
-        try:
-            from kitsune import settings_test
-            # Use setattr to update Django's proxies:
-            for k in dir(settings_test):
-                setattr(settings, k, getattr(settings_test, k))
-        except ImportError:
-            pass
-
         if not getenv('REUSE_STATIC', 'false').lower() in ('true', '1', ''):
             # Collect static files for pipeline to work correctly--do this with
             # subprocess instead of directly calling the admin command,

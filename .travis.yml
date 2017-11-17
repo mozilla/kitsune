@@ -4,14 +4,38 @@ python: 2.7
 env:
   global:
     - DEBUG=False
+    - STAGE=False
+    - SESSION_COOKIE_SECURE=False
+    - CELERY_ALWAYS_EAGER=True
+    - AXES_BEHIND_REVERSE_PROXY=False
+    - PIPELINE_ENABLED=True
+    - ES_LIVE_INDEXING=False
+    - ALLOWED_HOSTS=*
+    - BROKER_URL=redis://redis:643
+    - REDIS_DEFAULT_URL=redis://redis:6379/1
+    - REDIS_HELPFULVOTES_URL=redis://redis:6379/2
+    - CACHE_URL=redis://redis:6379/3
+    - CSRF_COOKIE_SECURE=False
+    - DATABASE_URL=mysql://root:kitsune@mariadb:3306/kitsune
+    - DOMAIN=localhost
+    - ES_URLS=elasticsearch:9200
+    - SITE_URL=http://localhost:8000
+    - SECRET_KEY=secret
 services:
   - docker
 install:
   - pip install -U docker-compose
+  - env > .env
+  - docker-compose up  -d mariadb
+  - docker-compose up -d elasticsearch
+  - docker-compose up -d redis
   - docker-compose build
+  - docker-compose run web ./manage.py nunjucks_precompile
+  - docker-compose run web ./manage.py compilejsi18n
+  - docker-compose run web ./manage.py collectatic --noinput
 script:
   - docker-compose run web flake8 kitsune
-  - docker-compose run web ./manage.py test
+  - docker-compose run -e REUSE_STATIC=1 web ./manage.py test --noinput --logging-clear-handlers --with-nicedots
 notifications:
   email: false
   irc:

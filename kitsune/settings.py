@@ -698,9 +698,9 @@ SESSION_SERIALIZER = config('SESSION_SERIALIZER', default='django.contrib.sessio
 ES_URLS = [config('ES_URLS', default="localhost:9200")]
 # Indexes for reading
 ES_INDEXES = {
-    'default': 'sumo-20130913',
-    'non-critical': 'sumo-non-critical',
-    'metrics': 'sumo-metrics',
+    'default': config('ES_INDEXES_DEFAULT', default='default'),
+    'non-critical': config('ES_INDEXES_NON_CRITICAL', default='non-critical'),
+    'metrics': config('ES_INDEXES_METRICS', 'metrics'),
 }
 # Indexes for indexing--set this to ES_INDEXES if you want to read to
 # and write to the same index.
@@ -709,7 +709,7 @@ ES_WRITE_INDEXES = ES_INDEXES
 # names used by kitsune. This is so that you can have multiple
 # environments pointed at the same ElasticSearch cluster and not have
 # them bump into one another.
-ES_INDEX_PREFIX = 'sumo'
+ES_INDEX_PREFIX = config('ES_INDEX_PREFIX', default='sumo')
 # Keep indexes up to date as objects are made/deleted.
 ES_LIVE_INDEXING = config('ES_LIVE_INDEXING', default=True, cast=bool)
 # Timeout for querying requests
