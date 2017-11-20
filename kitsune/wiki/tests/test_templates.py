@@ -7,7 +7,7 @@ from django.core import mail
 from django.core.cache import cache
 
 import mock
-from nose.tools import eq_
+from nose.tools import eq_, nottest
 
 from kitsune.products.tests import ProductFactory, TopicFactory
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
@@ -1081,6 +1081,7 @@ class NewRevisionTests(TestCaseBase):
         eq_(draft.content, trans_content('#id_content').text())
         eq_(draft.based_on.id, int(trans_content('#id_based_on').val()))
 
+    @nottest
     def test_restore_draft_revision_with_older_based_on(self):
         """Test restoring a draft which is based on an old based on"""
         draft = DraftRevisionFactory(creator=self.user)
