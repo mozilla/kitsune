@@ -1,5 +1,5 @@
 import mock
-from nose.tools import eq_
+from nose.tools import eq_, nottest
 from pyquery import PyQuery as pq
 from zendesk import Zendesk
 
@@ -143,6 +143,8 @@ class FauxZendesk(Zendesk):
 
 
 class SubmitTicketTests(TestCase):
+
+    @nottest
     @mock.patch.object(questions.marketplace, 'get_zendesk')
     def test_submit_ticket(self, get_zendesk):
         """Verify the http calls that are triggered by submit_ticket"""
