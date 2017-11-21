@@ -3,6 +3,8 @@ language: python
 python: 2.7
 services:
   - docker
+before_install:
+  - echo "ENV GIT_SHA ${TRAVIS_COMMIT}" >> Dockerfile
 install:
   - pip install -U docker-compose
   - cp .env-travis .env
