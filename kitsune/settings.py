@@ -457,8 +457,14 @@ MIDDLEWARE_CLASSES = (
     'commonware.middleware.NoVarySessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
 
-    # This has to come after NoVarySessionMiddleware.
+    # This should come before TokenLoginMiddleware, because
+    # TokenLoginMiddleware uses this to tell users they have been
+    # automatically logged. It also has to come after
+    # NoVarySessionMiddleware.
     'django.contrib.messages.middleware.MessageMiddleware',
+
+    # This middleware should come after AuthenticationMiddleware.
+    'kitsune.users.middleware.TokenLoginMiddleware',
 
     # LocaleURLMiddleware must be before any middleware that uses
     # sumo.urlresolvers.reverse() to add locale prefixes to URLs:
@@ -493,6 +499,7 @@ MIDDLEWARE_CLASSES = (
 # Auth
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
+    'kitsune.users.auth.TokenLoginBackend',
 )
 AUTH_PROFILE_MODULE = 'users.Profile'
 USER_AVATAR_PATH = 'uploads/avatars/'
@@ -680,7 +687,6 @@ PIPELINE = {
 if DEBUG:
     PIPELINE['BROWSERIFY_ARGUMENTS'] += ' -d'
 
-NUNJUCKS_PRECOMPILE_BIN = 'nunjucks-precompile'
 NUNJUCKS_PRECOMPILE_BIN = path('node_modules/.bin/nunjucks-precompile')
 
 #

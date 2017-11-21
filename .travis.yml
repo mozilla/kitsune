@@ -25,7 +25,7 @@ services:
   - docker
 install:
   - pip install -U docker-compose
-  - env > .env
+  - cp .env-travis .env
   - docker-compose up -d mariadb
   - docker-compose up -d elasticsearch
   - docker-compose up -d redis
