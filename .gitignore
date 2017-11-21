@@ -25,3 +25,4 @@ build.py
 venv/
 .cache
 .tox
+.env
