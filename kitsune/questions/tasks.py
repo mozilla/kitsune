@@ -10,7 +10,7 @@ from django.db import connection, transaction
 import tidings.events  # noqa
 from celery import task
 from multidb.pinning import pin_this_thread, unpin_this_thread
-from statsd import statsd
+from django_statsd.clients import statsd
 from zendesk import ZendeskError
 
 from kitsune.kbadge.utils import get_or_create_badge

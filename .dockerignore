@@ -1,0 +1,6 @@
+venv
+.git
+*.pyc
+*.poc
+/static
+.env

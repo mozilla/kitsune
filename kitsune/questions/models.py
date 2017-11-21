@@ -20,7 +20,7 @@ from django.http import Http404
 import actstream
 import actstream.actions
 from product_details import product_details
-from statsd import statsd
+from django_statsd.clients import statsd
 from taggit.models import Tag, TaggedItem
 
 from kitsune.flagit.models import FlaggedObject

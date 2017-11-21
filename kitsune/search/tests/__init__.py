@@ -18,6 +18,7 @@ dummy_request = RequestFactory().get('/')
 class ElasticTestCase(TestCase):
     """Base class for Elastic Search tests, providing some conveniences"""
     skipme = False
+    search_tests = True
 
     @classmethod
     def setUpClass(cls):

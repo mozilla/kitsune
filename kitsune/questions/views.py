@@ -25,7 +25,7 @@ import waffle
 from ordereddict import OrderedDict
 from mobility.decorators import mobile_template
 from session_csrf import anonymous_csrf
-from statsd import statsd
+from django_statsd.clients import statsd
 from taggit.models import Tag
 from tidings.events import ActivationRequestFailed
 from tidings.models import Watch

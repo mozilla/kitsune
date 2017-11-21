@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from celery import task
-from statsd import statsd
+from django_statsd.clients import statsd
 
 from kitsune.sumo.decorators import timeit
 

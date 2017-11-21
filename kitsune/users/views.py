@@ -21,7 +21,7 @@ from django.utils.translation import ugettext as _
 from badger.models import Award
 from mobility.decorators import mobile_template
 from session_csrf import anonymous_csrf
-from statsd import statsd
+from django_statsd.clients import statsd
 from tidings.models import Watch
 from tidings.tasks import claim_watches
 

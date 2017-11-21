@@ -22,7 +22,7 @@ from django.views.decorators.http import (require_GET, require_POST,
                                           require_http_methods)
 
 from mobility.decorators import mobile_template
-from statsd import statsd
+from django_statsd.clients import statsd
 
 from kitsune.access.decorators import login_required
 from kitsune.lib.sumo_locales import LOCALES

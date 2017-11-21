@@ -1,26 +1,22 @@
-sudo: false
+sudo: required
 language: python
 python: 2.7
-addons:
-  firefox: "latest"
-node: '0.10'
-env:
-  globals:
-  - DJANGO_LIVE_TEST_SERVER_ADDRESS="localhost:9900-9999"
-  - PIP_DOWNLOAD_CACHE="pip_cache"
-  matrix:
-  - TEST_SUITE=lint
-#  - TEST_SUITE=ui MARK_EXPRESSION=smoke
-  - TEST_SUITE=django
-  - TEST_SUITE=docker
-matrix:
-  fast_finish: true
-cache:
-  directories:
-  - /home/travis/virtualenv
-install: travis_retry scripts/travis/install.sh
-before_script: travis_retry scripts/travis/setup.sh
-script: scripts/travis/dispatch.sh $TEST_SUITE
+services:
+  - docker
+install:
+  - pip install -U docker-compose
+  - cp .env-travis .env
+  - docker-compose up -d mariadb
+  - docker-compose up -d elasticsearch
+  - docker-compose up -d redis
+  - docker-compose build
+  - docker-compose run --user root web ./manage.py nunjucks_precompile
+  - docker-compose run --user root web ./manage.py compilejsi18n
+  - docker-compose run --user root web ./manage.py collectstatic --noinput
+script:
+  - docker-compose run --user root web flake8 kitsune
+  - docker-compose run --user root web ./node_modules/.bin/mocha --compilers js:babel/register --recursive kitsune/*/static/*/js/tests/* $@
+  - docker-compose run --user root -e REUSE_STATIC=1 web ./manage.py test --noinput --nologcapture -a '!search_tests' --with-nicedots
 notifications:
   email: false
   irc:

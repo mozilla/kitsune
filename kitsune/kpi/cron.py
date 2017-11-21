@@ -8,7 +8,7 @@ from django.db.models import Count, F, Q
 
 import cronjobs
 import requests
-from statsd import statsd
+from django_statsd.clients import statsd
 
 from kitsune.customercare.models import Reply
 from kitsune.dashboards import LAST_90_DAYS

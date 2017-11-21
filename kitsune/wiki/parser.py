@@ -9,7 +9,7 @@ from html5lib.serializer.htmlserializer import HTMLSerializer
 from html5lib.treebuilders import getTreeBuilder
 from html5lib.treewalkers import getTreeWalker
 from lxml.etree import Element
-from statsd import statsd
+from django_statsd.clients import statsd
 from django.utils.translation import ugettext as _, ugettext_lazy as _lazy
 
 from kitsune.gallery.models import Image

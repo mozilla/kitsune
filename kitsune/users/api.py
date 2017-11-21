@@ -12,7 +12,7 @@ from django.utils.http import int_to_base36
 from django.views.decorators.http import require_GET
 
 import waffle
-from statsd import statsd
+from django_statsd.clients import statsd
 
 from rest_framework import viewsets, serializers, mixins, filters, permissions, status
 from rest_framework.permissions import IsAuthenticated
