@@ -18,7 +18,8 @@ install:
   # command will prevent docker cache invalidation due to different file
   # metadata. Once Travis updates to the latest docker version we should
   # probably use --chown flag for COPY. See https://github.com/moby/moby/pull/34263
-  - sudo chown 0:0 -R requirements package.json bower.json
+  - sudo chown -c 0:0 -R requirements package.json bower.json
+  - sudo chmod -c a+rw -R requirements package.json bower.json
 
   # For some strange reason `docker-compose build` -even with the above chown
   # trick- still invalidates the cache at the COPY command. Directly building
