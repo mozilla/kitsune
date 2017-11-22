@@ -4,3 +4,4 @@ venv
 *.poc
 /static
 .env
+/media
