@@ -1,6 +1,6 @@
 project:
   name: kitsune
-  docker_name: mozorg/kitsune
+  docker_name: mozmeao/kitsune
 notifications:
   irc:
     server: irc.mozilla.org:6697
