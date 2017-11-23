@@ -369,9 +369,9 @@ Werkzeug==0.5.1 \
     --hash=sha256:ff638b44eaca81c9a1c8c492b957c1b8d1b44b2147e50216355ff9c99daa8637
 https://github.com/eventbrite/zendesk/archive/1b256c3b827a8f3c6bbd3bd1fc09b7b0e2e82347.tar.gz#egg=zendesk \
     --hash=sha256:a996b2d63d318e7c5ea9ff4a480a40db794321ea52b733ff6c6da57efb33ba3b
-django-mozilla-product-details==0.12.1 \
-    --hash=sha256:a31a51102e8c2f047f8aa62b8bdc552f7a31d9c69f2cb16393225c3ee0db72b5 \
-    --hash=sha256:25ac11bd4544fef3236f32439f6b1de3bcf931f8b34c7786ab40f0ec85626eeb
+django-mozilla-product-details==0.13 \
+    --hash=sha256:4ffa5a104f53645460a50c9342a41e3ea02d432851becf56e820d42faa94839f \
+    --hash=sha256:ce97fc2533aa06560d9b438ebba2522dc0b2ada86d6e0537cfb5ac06db1a6aa2
 gunicorn==19.4.5 \
     --hash=sha256:c57f1b005a4b90933303c8deed9bedeb509331aa6a0a990023a5796e52bd8988 \
     --hash=sha256:53b58044764ad79d732af18c580b1a54b724adf4d290ec19c4ca78ab22a1ee0d
