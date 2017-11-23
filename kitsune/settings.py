@@ -1021,3 +1021,5 @@ RAVEN_CONFIG = {
         'environment': config('SENTRY_ENVIRONMENT', default=''),
     }
 }
+
+PIPELINE_ENABLED = config('PIPELINE_ENABLED', default=False, cast=bool)
