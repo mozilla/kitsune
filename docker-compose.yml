@@ -4,7 +4,7 @@ services:
     build:
         context: .
         cache_from:
-            - mozorg/kitsune:latest
+            - mozmeao/kitsune:latest
     image: kitsune:latest
     command: ./manage.py runserver 0.0.0.0:8000
     user: ${UID:-kitsune}

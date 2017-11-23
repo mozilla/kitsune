@@ -1,0 +1,10 @@
+project:
+  name: kitsune
+  docker_name: mozmeao/kitsune
+notifications:
+  irc:
+    server: irc.mozilla.org:6697
+    channel: "#sumodev"
+    nickname: mozmeao-jenkins-kitsune
+    on_success: always
+    on_failure: always
