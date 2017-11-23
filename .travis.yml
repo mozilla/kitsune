@@ -3,13 +3,28 @@ language: python
 python: 2.7
 services:
   - docker
+before_install:
+  - echo "ENV GIT_SHA ${TRAVIS_COMMIT}" >> Dockerfile
+  - export GIT_SHA=${TRAVIS_COMMIT}
+  - docker pull mozorg/kitsune:latest
 install:
   - pip install -U docker-compose
   - cp .env-travis .env
   - docker-compose up -d mariadb
   - docker-compose up -d elasticsearch
   - docker-compose up -d redis
-  - docker-compose build
+
+  # Docker always copies data as root. Chowning files to root before the build
+  # command will prevent docker cache invalidation due to different file
+  # metadata. Once Travis updates to the latest docker version we should
+  # probably use --chown flag for COPY. See https://github.com/moby/moby/pull/34263
+  - sudo chown 0:0 -R requirements package.json bower.json
+
+  # For some strange reason `docker-compose build` -even with the above chown
+  # trick- still invalidates the cache at the COPY command. Directly building
+  # with `docker build` works.
+  - docker build -t kitsune:latest --cache-from mozorg/kitsune .
+
   - docker-compose run --user root web ./manage.py nunjucks_precompile
   - docker-compose run --user root web ./manage.py compilejsi18n
   - docker-compose run --user root web ./manage.py collectstatic --noinput
