@@ -73,6 +73,11 @@
                 {{ _('Involved with Mozilla since {date}')|f(date=profile.involved_from.strftime('%b %Y')) }}
               </li>
             {% endif %}
+            {% if days_since_last_activity != None %}
+              <li>
+                {{ ngettext('{0} day since last activity', '{0} days since last activity', days_since_last_activity)|f(days_since_last_activity) }}
+              </li>
+            {% endif %}
             {% if num_questions %}
               <li>
                 <a href="{{ url('search')|urlparams(asked_by=profile.user.username, sortby=1, a=1, w=2) }}">

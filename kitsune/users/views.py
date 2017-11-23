@@ -30,7 +30,7 @@ from kitsune.access.decorators import (
     logout_required, login_required, permission_required)
 from kitsune.questions.models import Question
 from kitsune.questions.utils import (
-    num_questions, num_answers, num_solutions, mark_content_as_spam)
+    days_since, num_questions, num_answers, num_solutions, mark_content_as_spam)
 from kitsune.sumo import email_utils
 from kitsune.sumo.decorators import ssl_required, json_view
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
@@ -332,6 +332,7 @@ def profile(request, template, username):
         'profile': user_profile,
         'awards': Award.objects.filter(user=user_profile.user),
         'groups': groups,
+        'days_since_last_activity': days_since(user_profile.last_contribution_date),
         'num_questions': num_questions(user_profile.user),
         'num_answers': num_answers(user_profile.user),
         'num_solutions': num_solutions(user_profile.user),

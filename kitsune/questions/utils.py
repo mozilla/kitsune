@@ -1,9 +1,18 @@
 import logging
 
+from datetime import datetime
 from kitsune.questions.models import Question, Answer
 
 
 log = logging.getLogger('k.questions')
+
+
+def days_since(date):
+    """Returns the number of days since the give date."""
+    days_since_date = None
+    if date:
+        days_since_date = (datetime.now() - date).days
+    return days_since_date
 
 
 def num_questions(user):

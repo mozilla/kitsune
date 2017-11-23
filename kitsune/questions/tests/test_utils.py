@@ -1,14 +1,32 @@
 from nose.tools import eq_
 
+from datetime import datetime, timedelta
 from kitsune.questions.models import Question, Answer
 from kitsune.questions.tests import QuestionFactory, AnswerFactory
 from kitsune.questions.utils import (
-    num_questions, num_answers, num_solutions, mark_content_as_spam)
+    days_since, num_questions, num_answers, num_solutions, mark_content_as_spam)
 from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import UserFactory
 
 
 class ContributionCountTestCase(TestCase):
+    def test_days_since(self):
+        """Days since date are counted correctly."""
+        d1 = datetime.today()
+        eq_(days_since(d1), 0)
+
+        d2 = datetime.now()
+        eq_(days_since(d2), 0)
+
+        d3 = datetime.today() - timedelta(days=1)
+        eq_(days_since(d3), 1)
+
+        d4 = datetime.today() - timedelta(days=99)
+        eq_(days_since(d4), 99)
+
+        d5 = datetime.today() - timedelta(days=370)
+        eq_(days_since(d5), 370)
+
     def test_num_questions(self):
         """Answers are counted correctly on a user."""
         u = UserFactory()
