@@ -60,6 +60,15 @@ SLAVE_DATABASES = []
 # Cache Settings
 CACHES = {
     'default': config('CACHE_URL', default='locmem://', cast=django_cache_url.parse),
+    'product-details': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'product-details',
+        'OPTIONS': {
+            'MAX_ENTRIES': 200,  # currently 104 json files
+            'CULL_FREQUENCY':  4,  # 1/4 entries deleted if max reached
+        }
+
+    },
 }
 
 # Setting this to the Waffle version.
@@ -1061,3 +1070,7 @@ DMS_SEND_WEEKLY_READY_FOR_REVIEW_DIGEST = config('DMS_SEND_WEEKLY_READY_FOR_REVI
 DMS_FIX_CURRENT_REVISIONS = config('DMS_FIX_CURRENT_REVISIONS', default=None)
 DMS_COHORT_ANALYSIS = config('DMS_COHORT_ANALYSIS', default=None)
 DMS_UPDATE_L10N_CONTRIBUTOR_METRICS = config('DMS_UPDATE_L10N_CONTRIBUTOR_METRICS', default=None)
+
+PROD_DETAILS_CACHE_NAME = 'product-details'
+PROD_DETAILS_STORAGE = config('PROD_DETAILS_STORAGE',
+                              default='product_details.storage.PDDatabaseStorage')
