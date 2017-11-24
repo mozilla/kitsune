@@ -19,7 +19,7 @@ RUN apt-get update && apt-get install apt-transport-https && \
             nodejs=0.10.48-1nodesource1~jessie1 && \
     rm -rf /var/lib/apt/lists/*
 
-COPY ./requirements /app/requirements
+COPY ./requirements /app/requirements/
 
 RUN pip install --no-cache-dir -r requirements/default.txt --require-hashes
 RUN pip install --no-cache-dir -r requirements/dev.txt --require-hashes
@@ -28,8 +28,15 @@ RUN pip install --no-cache-dir -r requirements/test.txt --require-hashes
 COPY ./package.json /app/package.json
 COPY ./bower.json /app/bower.json
 
-RUN npm install
+# debowerify try to download bower dependency while running collectstatic.
+# So all the user need to have access to /.cache
+RUN mkdir /.cache && chmod -R 777 /.cache
 
-RUN ./node_modules/.bin/bower install --allow-root
 RUN chown -R kitsune /app
+# npm and bower tries to write in /home directory. So this permission is needed
+RUN chown -R kitsune /home
+
 USER kitsune
+# Its not safe to run npm with root
+RUN npm install
+RUN ./node_modules/.bin/bower install
