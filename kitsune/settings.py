@@ -1002,7 +1002,7 @@ SILENCED_SYSTEM_CHECKS = [
     'fields.W342',  # ForeignKey(unique=True) is usually better served by a OneToOneField
 ]
 
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='', cast=Csv)
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='', cast=Csv())
 
 # Allows you to specify waffle settings in the querystring.
 WAFFLE_OVERRIDE = config('WAFFLE_OVERRIDE', default=DEBUG, cast=bool)
