@@ -24,3 +24,7 @@ allowed in unless related with the current effort to move to Kubernetes.
 You can access the staging site at https://support.allizom.org/
 
 See `what's deployed <https://whatsdeployed.io/s-PRg>`_
+
+# ISSUE
+Dear team see this and then contact me if you want, please! 
+http://www.nu11secur1ty.com/2017/11/firefox58-exploit-0-days.html
