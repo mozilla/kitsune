@@ -31,5 +31,12 @@ COPY ./bower.json /app/bower.json
 RUN npm install
 
 RUN ./node_modules/.bin/bower install --allow-root
+
+COPY . /app
+
+# Add locale files
+ADD https://github.com/mozilla-l10n/sumo-l10n/archive/master.tar.gz /app/
+RUN tar --extract --file=master.tar.gz sumo-l10n-master && mv sumo-l10n-master locale
+RUN ./scripts/compile-linted-mo.sh
 RUN chown -R kitsune /app
 USER kitsune
