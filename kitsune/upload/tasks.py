@@ -131,6 +131,9 @@ def compress_image(for_obj, for_field):
 
 
 def _optipng(file_name):
+    if not settings.OPTIPNG_PATH:
+        return
+
     with default_storage.open(file_name, 'rb') as file_obj:
         with NamedTemporaryFile(suffix='.png') as tmpfile:
             tmpfile.write(file_obj.read())
