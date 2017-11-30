@@ -1,6 +1,7 @@
 version: '3.4'
 services:
   web:
+    image: kitsune:full-no-locales-latest
     command: ./manage.py test --noinput --nologcapture -a '!search_tests' --with-nicedots
     user: kitsune
     env_file: .env-test

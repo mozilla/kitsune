@@ -1,0 +1,33 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/python:2
+    steps:
+      - checkout
+      - setup_remote_docker:
+          version: 17.10.0-ce
+      - run:
+          name: Download docker images for cache
+          command: ./docker/bin/pull-docker-images.sh
+      - run:
+          name: Build docker images
+          command: GIT_SHA=${CIRCLE_SHA1:0:7} ./docker/bin/build-docker-images.sh
+      - run:
+          name: Run flake8
+          command: docker run kitsune:full-no-locales-latest flake8 kitsune
+      - run:
+          name: Run mocha tests
+          command: docker run kitsune:staticfiles-latest ./node_modules/.bin/mocha --compilers js:babel/register --recursive kitsune/*/static/*/js/tests/* $@
+      - run:
+          name: Run unit tests
+          command: |
+            docker-compose up -d mariadb
+            docker-compose up -d elasticsearch
+            docker-compose up -d redis
+            # Replace with urlwait or takis
+            sleep 10s;
+            docker-compose -f docker-compose.yml -f docker/composefiles/docker-compose.test.yml up web
+      - run:
+          name: Push images
+          command: GIT_BRANCH=${CIRCLE_BRANCH} GIT_SHA=${CIRCLE_SHA1:0:7} ./docker/bin/push-docker-images.sh
