@@ -418,8 +418,8 @@ greenlet==0.4.12 \
     --hash=sha256:9c407aa6adfd4eea1232e81aa9f3cb3d9b955a9891c4819bf9b498c77efba14b \
     --hash=sha256:b56ac981f07b77e72ad5154278b93396d706572ea52c2fce79fee2abfcc8bfa6 \
     --hash=sha256:e4c99c6010a5d153d481fdaf63b8a0782825c0721506d880403a3b9b82ae347e
-whitenoise==4.0b4 \
-    --hash=sha256:9a8ef48d2a2b4a101d84a0e5edbb20759affbc832cd74f3194e803cca7f28f6a \
-    --hash=sha256:c42d640b8db482924b36ddadcc7087cf49f796fa1faa1583b3d07118f55a4265
 olefile==0.44 \
     --hash=sha256:61f2ca0cd0aa77279eb943c07f607438edf374096b66332fae1ee64a6f0f73ad
+whitenoise==3.3.0 \
+    --hash=sha256:1d62a003a0ab747de96da45c831cbb512dcb7f69c1ef0bd20b1cd4ae45d8a0c4 \
+    --hash=sha256:d098327276de6fd189398a7bcb95789d1bb2d41b3e011eeae4562f6b1a107dd4
