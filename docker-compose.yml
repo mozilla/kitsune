@@ -5,7 +5,7 @@ services:
         context: .
         cache_from:
             - mozmeao/kitsune:latest
-    image: kitsune:latest
+    image: mozmeao/kitsune:latest
     command: ./manage.py runserver 0.0.0.0:8000
     user: ${UID:-kitsune}
     volumes:

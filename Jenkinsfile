@@ -26,17 +26,6 @@ conduit {
     stage("Build") {
       if (!dockerImageExists(docker_image)) {
             sh "echo 'ENV GIT_SHA ${GIT_COMMIT}' >> Dockerfile"
-
-            // Docker always copies data as root. Chowning files to root before
-            // the build command will prevent docker cache invalidation due to
-            // different file metadata. When we upgrade to a newer docker
-            // version we should probably use --chown flag for COPY. See
-            // https://github.com/moby/moby/pull/34263
-            dockerRun('debian', [
-                    "docker_args": "-v `pwd`:/app",
-                    "cmd": "cd /app && chown -c root.root -R requirements bower.json package.json && chmod -c a+rw -R requirements bower.json package.json",
-                    "bash_wrap": true
-                ])
             dockerImagePull( "${config.project.docker_name}:latest")
             dockerImageBuild(docker_image, [
                     "pull": true,

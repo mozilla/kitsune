@@ -10,29 +10,20 @@ before_install:
 install:
   - pip install -U docker-compose
   - cp .env-travis .env
+  - export UID
+  - docker build -t mozmeao/kitsune:latest --cache-from mozmeao/kitsune .
   - docker-compose up -d mariadb
   - docker-compose up -d elasticsearch
   - docker-compose up -d redis
+  - docker-compose up -d
 
-  # Docker always copies data as root. Chowning files to root before the build
-  # command will prevent docker cache invalidation due to different file
-  # metadata. Once Travis updates to the latest docker version we should
-  # probably use --chown flag for COPY. See https://github.com/moby/moby/pull/34263
-  - sudo chown -c 0:0 -R requirements package.json bower.json
-  - sudo chmod -c a+rw -R requirements package.json bower.json
-
-  # For some strange reason `docker-compose build` -even with the above chown
-  # trick- still invalidates the cache at the COPY command. Directly building
-  # with `docker build` works.
-  - docker build -t kitsune:latest --cache-from mozmeao/kitsune .
-
-  - docker-compose run --user root web ./manage.py nunjucks_precompile
-  - docker-compose run --user root web ./manage.py compilejsi18n
-  - docker-compose run --user root web ./manage.py collectstatic --noinput
+  - docker-compose exec web ./manage.py nunjucks_precompile
+  - docker-compose exec web ./manage.py compilejsi18n
+  - docker-compose exec web ./manage.py collectstatic --noinput
 script:
-  - docker-compose run --user root web flake8 kitsune
-  - docker-compose run --user root web ./node_modules/.bin/mocha --compilers js:babel/register --recursive kitsune/*/static/*/js/tests/* $@
-  - docker-compose run --user root -e REUSE_STATIC=1 web ./manage.py test --noinput --nologcapture -a '!search_tests' --with-nicedots
+  - docker-compose exec web flake8 kitsune
+  - docker-compose exec web sh -c "BABEL_DISABLE_CACHE=1 ./node_modules/.bin/mocha --compilers js:babel/register --recursive kitsune/*/static/*/js/tests/* $@"
+  - docker-compose exec web sh -c "REUSE_STATIC=1 ./manage.py test --noinput --nologcapture -a '!search_tests' --with-nicedots"
 notifications:
   email: false
   irc:
