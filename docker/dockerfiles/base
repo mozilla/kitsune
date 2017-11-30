@@ -9,7 +9,7 @@ ENV PYTHONUNBUFFERED=1
 RUN groupadd --gid 1000 kitsune && useradd -g kitsune --uid 1000 --shell /usr/sbin/nologin kitsune
 
 # Node is used in the staticfiles dockerfile but since this base image
-# is used for development get it installed here.
+# is used for development get it installed here too.
 RUN apt-get update && apt-get install apt-transport-https && \
     echo "deb https://deb.nodesource.com/node_0.10 jessie main" >> /etc/apt/sources.list && \
     curl -s https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add - && \

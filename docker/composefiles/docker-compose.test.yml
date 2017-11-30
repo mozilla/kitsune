@@ -1,0 +1,6 @@
+version: '3.4'
+services:
+  web:
+    command: ./manage.py test --noinput --nologcapture -a '!search_tests' --with-nicedots
+    user: kitsune
+    env_file: .env-test

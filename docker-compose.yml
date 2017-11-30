@@ -4,14 +4,12 @@ services:
     build:
         context: .
         cache_from:
-            - mozmeao/kitsune:latest
-    image: kitsune:latest
+            - mozmeao/kitsune:base-latest
+            - kitsune:latest
+        dockerfile: docker/dockerfiles/base
+    image: kitsune:base-latest
     command: ./manage.py runserver 0.0.0.0:8000
     user: ${UID:-kitsune}
-    volumes:
-      - ./:/app
-      - node_modules:/app/node_modules
-      - bower_components:/app/bower_components
     depends_on:
       - mariadb
       - elasticsearch
@@ -40,5 +38,3 @@ services:
 
 volumes:
     mysqlvolume:
-    node_modules:
-    bower_components:
