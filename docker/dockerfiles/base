@@ -1,6 +1,11 @@
 FROM python:2-stretch
 
 WORKDIR /app
+EXPOSE 8000
+
+COPY docker/bin/entrypoint.sh /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
 
 ENV LANG=C.UTF-8
 ENV PYTHONDONTWRITEBYTECODE=1

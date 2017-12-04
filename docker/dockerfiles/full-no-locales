@@ -4,6 +4,7 @@ WORKDIR /app
 
 EXPOSE 8000
 
+COPY docker/bin/entrypoint.sh /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
 
 ENV LANG=C.UTF-8
@@ -17,8 +18,6 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 RUN groupadd --gid 1000 kitsune && useradd -g kitsune --uid 1000 --shell /usr/sbin/nologin kitsune
-
-COPY docker/bin/entrypoint.sh /entrypoint.sh
 
 COPY --from=kitsune:base-latest /venv /venv
 COPY --from=kitsune:staticfiles-latest /app/static /app/static
