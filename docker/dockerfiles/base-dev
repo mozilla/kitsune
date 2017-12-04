@@ -1,0 +1,9 @@
+FROM kitsune:base-latest
+
+RUN apt-get update && apt-get install apt-transport-https && \
+    echo "deb https://deb.nodesource.com/node_0.10 jessie main" >> /etc/apt/sources.list && \
+    curl -s https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add - && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends \
+            nodejs=0.10.48-1nodesource1~jessie1 && \
+    rm -rf /var/lib/apt/lists/*

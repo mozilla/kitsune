@@ -13,12 +13,7 @@ ENV PYTHONUNBUFFERED=1
 
 RUN useradd  -d /app -M --uid 1000 --shell /usr/sbin/nologin kitsune
 
-# Node is used in the staticfiles dockerfile but since this base image
-# is used for development get it installed here too.
-RUN apt-get update && apt-get install apt-transport-https && \
-    echo "deb https://deb.nodesource.com/node_0.10 jessie main" >> /etc/apt/sources.list && \
-    curl -s https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add - && \
-    apt-get update && \
+RUN apt-get update && \
     apt-get install -y --no-install-recommends \
             gettext build-essential \
             libxml2-dev libxslt1-dev zlib1g-dev git \
@@ -32,8 +27,8 @@ RUN bash -c '\
     virtualenv /venv && \
     source /venv/bin/activate && \
     pip install --no-cache-dir --require-hashes  -r requirements/default.txt && \
-    pip install --no-cache-dir --require-hashes -r requirements/test.txt && \
-    pip install --no-cache-dir --require-hashes -r requirements/dev.txt'
+    pip install --no-cache-dir --require-hashes  -r requirements/dev.txt && \
+    pip install --no-cache-dir --require-hashes  -r requirements/test.txt'
 
 ARG GIT_SHA=head
 ENV GIT_SHA ${GIT_SHA}

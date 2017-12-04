@@ -10,7 +10,7 @@ then
    GIT_SHA=${GIT_SHA_FULL:0:7};
 fi
 
-for image in base staticfiles locales full-no-locales full;
+for image in base base-dev staticfiles locales full-no-locales full;
 do
 	docker build -t kitsune:${image}-latest \
                  -t ${DOCKER_REPO}:${image}-${GIT_SHA} \

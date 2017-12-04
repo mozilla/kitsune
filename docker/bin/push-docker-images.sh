@@ -15,7 +15,7 @@ then
     docker login -u "${DOCKER_USERNAME}" -p "${DOCKER_PASSWORD}"
 fi
 
-for image in base staticfiles locales full-no-locales full;
+for image in base base-dev staticfiles locales full-no-locales full;
 do
 	docker push ${DOCKER_REPO}:${image}-${GIT_SHA}
 
