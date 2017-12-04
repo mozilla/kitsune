@@ -1,13 +1,7 @@
 version: '3.4'
 services:
   web:
-    build:
-        context: .
-        cache_from:
-            - mozmeao/kitsune:base-latest
-            - kitsune:latest
-        dockerfile: docker/dockerfiles/base
-    image: kitsune:base-latest
+    image: mozmeao/kitsune:base-dev-latest
     command: ./manage.py runserver 0.0.0.0:8000
     user: ${UID:-kitsune}
     depends_on:

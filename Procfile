@@ -1,2 +1,1 @@
-# Deis ignores Dockerfile entrypoint.
-web: /entrypoint.sh ./bin/run-prod.sh
+web: ./bin/run-prod.sh
