@@ -21,7 +21,7 @@ RUN apt-get update && apt-get install apt-transport-https && \
             libmariadbclient-dev mariadb-client && \
     rm -rf /var/lib/apt/lists/*
 
-COPY ./requirements/ /app/requirements/
+COPY ./requirements/*.txt /app/requirements/
 
 RUN bash -c '\
     virtualenv /venv && \
