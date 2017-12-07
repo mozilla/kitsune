@@ -4,7 +4,7 @@ services:
     command: ./manage.py runserver 0.0.0.0:8000
     env_file: .env-dist
     volumes:
-      - ./:/app
+      - ./:/app:cached
 
   mariadb:
     volumes:
