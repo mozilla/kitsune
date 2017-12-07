@@ -4,9 +4,7 @@ WORKDIR /app
 
 EXPOSE 8000
 
-COPY docker/bin/entrypoint.sh /entrypoint.sh
-ENTRYPOINT ["/entrypoint.sh"]
-
+ENV PATH="/venv/bin:$PATH"
 ENV LANG=C.UTF-8
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1

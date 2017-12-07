@@ -5,6 +5,8 @@ WORKDIR /app
 RUN apt-get update && \
     apt-get install -y --no-install-recommends  gettext
 
+ENV PATH="/venv/bin:$PATH"
+
 COPY --from=kitsune:base-latest /venv /venv
 
 COPY . .
@@ -15,10 +17,8 @@ RUN bash -c '\
     curl -s -L https://github.com/mozilla-l10n/sumo-l10n/archive/${LOCALE_ENV}.tar.gz  | \
     tar xz --strip-components=1 -C locale'
 
-RUN bash -c '\
-    source /venv/bin/activate && \
-    ./scripts/compile-linted-mo.sh && \
-    find ./locale ! -name '*.mo' -type f -delete'
+RUN ./scripts/compile-linted-mo.sh && \
+    find ./locale ! -name '*.mo' -type f -delete
 
 ARG GIT_SHA=head
 ENV GIT_SHA ${GIT_SHA}

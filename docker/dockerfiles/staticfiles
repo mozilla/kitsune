@@ -10,6 +10,8 @@ RUN apt-get update && apt-get install apt-transport-https && \
             nodejs=0.10.48-1nodesource1~jessie1 && \
     rm -rf /var/lib/apt/lists/*
 
+ENV PATH="/venv/bin:$PATH"
+
 COPY ./package.json /app/package.json
 COPY ./bower.json /app/bower.json
 
@@ -21,12 +23,10 @@ COPY --from=kitsune:base-latest /venv /venv
 
 COPY . .
 
-RUN bash -c '\
-    source /venv/bin/activate && \
-    cp .env-build .env && \
+RUN cp .env-build .env && \
     ./manage.py nunjucks_precompile && \
     ./manage.py compilejsi18n && \
-    ./manage.py collectstatic --noinput'
+    ./manage.py collectstatic --noinput
 
 ARG GIT_SHA=head
 ENV GIT_SHA ${GIT_SHA}
