@@ -233,6 +233,26 @@ products = SortedDict([
         ])
     }),
 
+    ('firefox-fire-tv', {
+        'name': _lazy(u'Firefox Fire TV'),
+        'subtitle': _lazy(u'Firefox for Amazon Fire TV'),
+        'extra_fields': [],
+        'tags': ['firefox-fire-tv'],
+        'product': 'firefox-fire-tv',
+        'categories': SortedDict([
+            ('get-started', {
+                'name': _lazy(u'Get started'),
+                'topic': 'get-started',
+                'tags': ['get-started']
+            }),
+            ('fix-problems', {
+                'name': _lazy(u'Fix problems'),
+                'topic': 'fix-problems',
+                'tags': ['fix-problems']
+            }),
+        ])
+    }),
+
     ('thunderbird', {
         'name': _lazy(u'Thunderbird'),
         'subtitle': _lazy(u'Email software for Windows, Mac and Linux'),
