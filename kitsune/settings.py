@@ -758,11 +758,6 @@ MAX_FILEPATH_LENGTH = 250
 # Default storage engine - ours does not preserve filenames
 DEFAULT_FILE_STORAGE = 'kitsune.upload.storage.RenameFileStorage'
 
-# AWS S3 Storage Settings
-AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID', default='')
-AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY', default='')
-AWS_STORAGE_BUCKET_NAME = config('AWS_STORAGE_BUCKET_NAME', default='')
-AWS_S3_CUSTOM_DOMAIN = config('AWS_S3_CUSTOM_DOMAIN', default='prod-cdn.sumo.mozilla.net')
 AWS_S3_OBJECT_PARAMETERS = {
     'CacheControl': 'max-age=2592000',
 }
