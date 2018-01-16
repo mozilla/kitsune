@@ -1,5 +1,3 @@
-import os
-
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.models import User, Group
@@ -80,23 +78,14 @@ def edit_avatar(request, group_slug):
     form = GroupAvatarForm(request.POST or None, request.FILES or None,
                            instance=prof)
 
-    old_avatar_path = None
-    if prof.avatar and os.path.isfile(prof.avatar.path):
-        # Need to store the path, or else django's
-        # form.is_valid() messes with it.
-        old_avatar_path = prof.avatar.path
     if request.method == 'POST' and form.is_valid():
         # Upload new avatar and replace old one.
-        if old_avatar_path:
-            os.unlink(old_avatar_path)
+        if prof.avatar:
+            prof.avatar.delete(save=False)
 
-        prof = form.save()
-        content = _create_image_thumbnail(prof.avatar.path,
-                                          settings.AVATAR_SIZE, pad=True)
+        content = _create_image_thumbnail(form.avatar, settings.AVATAR_SIZE, pad=True)
         # We want everything as .png
-        name = prof.avatar.name + ".png"
-        # Delete uploaded avatar and replace with thumbnail.
-        prof.avatar.delete()
+        name = form.avatar.name + ".png"
         prof.avatar.save(name, content, save=True)
         return HttpResponseRedirect(prof.get_absolute_url())
 
