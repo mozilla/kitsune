@@ -155,8 +155,9 @@ django-jsonfield==0.9.13 \
     --hash=sha256:12ae3dd4543f8dc5cc5f4bdd7f6fd168f4d1624414d753a441573ccc187a8e43
 https://github.com/jbalogh/django-mobility/archive/e9fc5f7587311350326f044378d5b51b5257afa3.tar.gz#egg=django-mobility \
     --hash=sha256:d75344da8b83ca525b8215609878eb2f1de45c72b285b8392fe2a8a32cb94b30
-https://github.com/jbalogh/django-multidb-router/archive/fffe4323fc0006c6eec20c696a5577ee902a85d9.tar.gz#egg=django-multidb-router \
-    --hash=sha256:1f5ca9aad9dc6b63aa8cf3eab01556f8f9ee7ed8216a7412d6002dece33e4419
+django-multidb-router==0.7 \
+    --hash=sha256:682d2be38ca1e2a12bc33528b3d4ccddf9775c926a5667b53f840df620094a86 \
+    --hash=sha256:8e802c09ed69a1f4ce5716524a1dc1668a8a2e25d9112369dc92c2b963e70332
 django-nose==1.4.3 \
     --hash=sha256:19b8daf4cd5e66603dc58018f0384117097de18714775338cdb76a94d48d8966 \
     --hash=sha256:92f7433367011746cc3cbd3d5e67dcc11066c8b8567b9a514948eeea11fa5843
