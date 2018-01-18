@@ -40,6 +40,10 @@ PROJECT_MODULE = 'kitsune'
 def path(*parts):
     return os.path.abspath(os.path.join(ROOT, *parts))
 
+
+# Read-only mode setup.
+READ_ONLY = config('READ_ONLY', default=False, cast=bool)
+
 ADMINS = (
     # ('Your Name', 'your_email@domain.com'),
 )
@@ -47,15 +51,25 @@ ADMINS = (
 MANAGERS = ADMINS
 
 DATABASES = {
-    'default': config('DATABASE_URL', cast=dj_database_url.parse),
+    'default': config('DATABASE_URL' if not READ_ONLY else 'DATABASE_READ_ONLY_URL',
+                      cast=dj_database_url.parse),
+    # The read only database can be the default database with a user with read
+    # permissions only.
+    'read_only': config('DATABASE_READ_ONLY_URL', cast=dj_database_url.parse),
 }
 DATABASES['default']['OPTIONS'] = {'init_command': 'SET storage_engine=InnoDB'}
-
+DATABASES['read_only']['OPTIONS'] = {'init_command': 'SET storage_engine=InnoDB'}
 
 DATABASE_ROUTERS = ('multidb.PinningMasterSlaveRouter',)
 
-# Put the aliases for your slave databases in this list
-SLAVE_DATABASES = []
+# Add read-only databases here. The database can be the same as the `default`
+# database but with a user with read permissions only.
+SLAVE_DATABASES = [
+    'read_only',
+]
+
+MULTIDB_PINNING_SECONDS = config('MULTIDB_PINNING_SECONDS', default=5, cast=int)
+
 
 # Cache Settings
 CACHES = {
@@ -492,6 +506,7 @@ MIDDLEWARE_CLASSES = (
     'kitsune.sumo.middleware.NoCacheHttpsMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'kitsune.sumo.anonymous.AnonymousIdentityMiddleware',
+    'kitsune.sumo.middleware.ReadOnlyMiddleware',
     'session_csrf.CsrfMiddleware',
     'kitsune.twitter.middleware.SessionMiddleware',
     'kitsune.sumo.middleware.PlusToSpaceMiddleware',
@@ -510,6 +525,10 @@ AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
     'kitsune.users.auth.TokenLoginBackend',
 )
+if READ_ONLY:
+    AUTHENTICATION_BACKENDS = ('kitsune.sumo.readonlyauth.ReadOnlyBackend',)
+
+
 AUTH_PROFILE_MODULE = 'users.Profile'
 USER_AVATAR_PATH = 'uploads/avatars/'
 DEFAULT_AVATAR = 'sumo/img/avatar.png'
@@ -799,32 +818,6 @@ if EMAIL_BACKEND == 'django.core.mail.backends.smtp.EmailBackend':
     EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
     EMAIL_PORT = config('EMAIL_PORT', default=25, cast=int)
     EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=False)
-
-
-# Read-only mode setup.
-READ_ONLY = config('READ_ONLY', default=False, cast=bool)
-
-
-# Turn on read-only mode in settings_local.py by putting this line
-# at the VERY BOTTOM: read_only_mode(globals())
-def read_only_mode(env):
-    env['READ_ONLY'] = True
-
-    # Replace the default (master) db with a slave connection.
-    if not env.get('SLAVE_DATABASES'):
-        raise Exception("We need at least one slave database.")
-    slave = env['SLAVE_DATABASES'][0]
-    env['DATABASES']['default'] = env['DATABASES'][slave]
-
-    # No sessions without the database, so disable auth.
-    env['AUTHENTICATION_BACKENDS'] = ('kitsune.sumo.readonlyauth.ReadOnlyBackend',)
-
-    # Add in the read-only middleware before csrf middleware.
-    extra = 'kitsune.sumo.middleware.ReadOnlyMiddleware'
-    before = 'session_csrf.CsrfMiddleware'
-    m = list(env['MIDDLEWARE_CLASSES'])
-    m.insert(m.index(before), extra)
-    env['MIDDLEWARE_CLASSES'] = tuple(m)
 
 
 # Celery
