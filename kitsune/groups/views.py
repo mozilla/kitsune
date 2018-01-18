@@ -1,5 +1,3 @@
-import os
-
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.models import User, Group
@@ -93,7 +91,8 @@ def edit_avatar(request, group_slug):
         if old_avatar_path:
             default_storage.delete(old_avatar_path)
 
-        content = _create_image_thumbnail(form.instance.avatar.file, settings.AVATAR_SIZE, pad=True)
+        content = _create_image_thumbnail(form.instance.avatar.file,
+                                          settings.AVATAR_SIZE, pad=True)
         # We want everything as .png
         name = form.instance.avatar.name + ".png"
         prof.avatar.save(name, content, save=True)
