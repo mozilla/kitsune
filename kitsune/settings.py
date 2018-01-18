@@ -11,7 +11,7 @@ import django_cache_url
 
 
 from datetime import date
-from decouple import config, Csv
+from decouple import Csv, config
 
 import djcelery
 
@@ -730,6 +730,8 @@ ES_INDEX_PREFIX = config('ES_INDEX_PREFIX', default='sumo')
 ES_LIVE_INDEXING = config('ES_LIVE_INDEXING', default=True, cast=bool)
 # Timeout for querying requests
 ES_TIMEOUT = 5
+ES_USE_SSL = config('ES_USE_SSL', default=False, cast=bool)
+ES_HTTP_AUTH = config('ES_HTTP_AUTH', default='', cast=Csv())
 
 SEARCH_MAX_RESULTS = 1000
 SEARCH_RESULTS_PER_PAGE = 10
