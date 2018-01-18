@@ -31,7 +31,6 @@ urlpatterns = patterns(
     (r'^upload', include('kitsune.upload.urls')),
     (r'^kb', include('kitsune.wiki.urls')),
     (r'^gallery', include('kitsune.gallery.urls')),
-    (r'^army-of-awesome', include('kitsune.customercare.urls')),
     (r'^chat', RedirectView.as_view(url='questions/new')),
     (r'^messages', include('kitsune.messages.urls')),
     (r'^1', include('kitsune.inproduct.urls')),

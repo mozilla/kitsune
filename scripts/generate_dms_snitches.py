@@ -11,10 +11,6 @@ ENVIRONMENT = os.getenv('DMS_ENVIRONMENT')
 
 # Dead Man Snitches
 SNITCHES = {
-    'SUMO Collect Tweets': {
-        'interval': '15_minute',
-        'tags': [],
-    },
     'SUMO Enqueue Lag Monitor Task': {
         'interval': '15_minute',
         'tags': [],
@@ -32,10 +28,6 @@ SNITCHES = {
         'tags': [],
     },
     'SUMO Generate Missing Share Links': {
-        'interval': 'daily',
-        'tags': [],
-    },
-    'SUMO Purge Tweets': {
         'interval': 'daily',
         'tags': [],
     },
@@ -116,10 +108,6 @@ SNITCHES = {
         'tags': [],
     },
     'SUMO Cache Most Unhelpful Kb Articles': {
-        'interval': 'daily',
-        'tags': [],
-    },
-    'SUMO Get Customercare Stats': {
         'interval': 'daily',
         'tags': [],
     },
