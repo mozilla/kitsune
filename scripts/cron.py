@@ -51,10 +51,6 @@ class scheduled_job(object):
 
 # Every minute.
 @scheduled_job('cron', month='*', day='*', hour='*', minute='*', max_instances=1, coalesce=True)
-@babis.decorator(ping_after=settings.DMS_COLLECT_TWEETS)
-def job_collect_tweets():
-    call_command('collect_tweets')
-
 
 # Every 10 minutes.
 @scheduled_job('cron', month='*', day='*', hour='*', minute='*/10', max_instances=1, coalesce=True)
@@ -87,12 +83,6 @@ def job_update_product_details():
 @babis.decorator(ping_after=settings.DMS_GENERATE_MISSING_SHARE_LINKS)
 def job_generate_missing_share_links():
     call_command('generate_missing_share_links')
-
-
-@scheduled_job('cron', month='*', day='*', hour='*/6', minute='40', max_instances=1, coalesce=True)
-@babis.decorator(ping_after=settings.DMS_PURGE_TWEETS)
-def job_purge_tweets():
-    call_command('purge_tweets')
 
 
 # Once per day.
@@ -214,12 +204,6 @@ def job_reload_wiki_traffic_stats():
 @babis.decorator(ping_after=settings.DMS_CACHE_MOST_UNHELPFUL_KB_ARTICLES)
 def job_cache_most_unhelpful_kb_articles():
     call_command('cache_most_unhelpful_kb_articles')
-
-
-@scheduled_job('cron', month='*', day='*', hour='22', minute='00', max_instances=1, coalesce=True)
-@babis.decorator(ping_after=settings.DMS_GET_CUSTOMERCARE_STATS)
-def job_get_customercare_stats():
-    call_command('get_customercare_stats')
 
 
 @scheduled_job('cron', month='*', day='*', hour='22', minute='42', max_instances=1, coalesce=True)
