@@ -72,7 +72,10 @@ def suggest(request):
 
     searcher = (
         es_utils.AnalyzerS()
-        .es(urls=settings.ES_URLS)
+        .es(urls=settings.ES_URLS,
+            timeout=settings.ES_TIMEOUT,
+            use_ssl=settings.ES_USE_SSL,
+            http_auth=settings.ES_HTTP_AUTH)
         .indexes(es_utils.read_index('default')))
 
     data = serializer.validated_data

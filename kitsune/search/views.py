@@ -306,8 +306,11 @@ def advanced_search(request, template=None):
 
     # We use a regular S here because we want to search across
     # multiple doctypes.
-    searcher = (AnalyzerS().es(urls=settings.ES_URLS)
-                .indexes(es_utils.read_index('default')))
+    searcher = (AnalyzerS().es(urls=settings.ES_URLS,
+                               timeout=settings.ES_TIMEOUT,
+                               use_ssl=settings.ES_USE_SSL,
+                               http_auth=settings.ES_HTTP_AUTH)
+                           .indexes(es_utils.read_index('default')))
 
     doctypes = []
     final_filter = F()

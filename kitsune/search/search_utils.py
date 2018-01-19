@@ -39,7 +39,12 @@ def generate_simple_search(search_form, language, with_highlights=False):
     # We use a regular S here because we want to search across
     # multiple doctypes.
     searcher = (
-        es_utils.AnalyzerS().es(urls=settings.ES_URLS)
+        es_utils.AnalyzerS().es(
+            urls=settings.ES_URLS,
+            timeout=settings.ES_TIMEOUT,
+            use_ssl=settings.ES_USE_SSL,
+            http_auth=settings.ES_HTTP_AUTH,
+        )
         .indexes(es_utils.read_index('default'))
     )
 

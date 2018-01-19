@@ -3,6 +3,10 @@ from functools import wraps
 from django.forms import fields
 from django.forms import widgets
 
+from elasticutils import get_es as base_get_es
+from elasticutils.contrib import django
+
+
 _has_been_patched = False
 
 
@@ -100,6 +104,23 @@ def patch():
     # In testing contexts, patch django.shortcuts.render
     if 'TESTING' == 'TESTING':
         monkeypatch_render()
+
+    # Monkey patch ES
+    def get_es(**overrides):
+        """Monkey patch elasticutils get_es to add use_ssl and http_auth settings."""
+        from django.conf import settings
+
+        defaults = {
+            'urls': settings.ES_URLS,
+            'timeout': getattr(settings, 'ES_TIMEOUT', 5),
+            'use_ssl': getattr(settings, 'ES_USE_SSL', False),
+            'http_auth': getattr(settings, 'ES_HTTP_AUTH', None),
+            'verify_certs': getattr(settings, 'ES_VERIFY_CERTS', True),
+        }
+
+        defaults.update(overrides)
+        return base_get_es(**defaults)
+    django.get_es = get_es
 
     _has_been_patched = True
 
