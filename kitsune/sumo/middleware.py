@@ -3,6 +3,7 @@ import re
 import urllib
 
 from django.conf import settings
+from django.core.exceptions import MiddlewareNotUsed
 from django.core.urlresolvers import is_valid_path
 from django.db.utils import DatabaseError
 from django.http import HttpResponseRedirect, HttpResponsePermanentRedirect
@@ -125,6 +126,9 @@ class PlusToSpaceMiddleware(object):
 
 
 class ReadOnlyMiddleware(object):
+    def __init__(self):
+        if not settings.READ_ONLY:
+            raise MiddlewareNotUsed
 
     def process_request(self, request):
         if request.method == 'POST':
