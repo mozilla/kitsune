@@ -42,9 +42,6 @@ urlpatterns = patterns(
     (r'^community', include('kitsune.community.urls')),
     (r'^badges/', include('kitsune.kbadge.urls')),
 
-    # Kitsune admin (not Django admin).
-    (r'^admin/', include(admin.site.urls)),
-
     # Javascript translations.
     url(r'^jsi18n/.*$', cache_page(60 * 60 * 24 * 365)(javascript_catalog),
         {'domain': 'djangojs', 'packages': ['kitsune']}, name='jsi18n'),
@@ -100,3 +97,17 @@ if settings.DEBUG:
         (r'^%s/(?P<path>.*)$' % media_url, 'kitsune.sumo.views.serve_cors',
          {'document_root': settings.MEDIA_ROOT}),
     )
+
+
+if settings.ENABLE_ADMIN:
+    urlpatterns += [
+        url(r'^admin/', include(admin.site.urls)),
+    ]
+elif settings.ADMIN_REDIRECT_URL:
+    urlpatterns.append(
+         url(r'^admin/', RedirectView.as_view(url=settings.ADMIN_REDIRECT_URL))
+     )
+
+
+if settings.OIDC_ENABLE:
+    urlpatterns.append(url(r'^oidc/', include('mozilla_django_oidc.urls')))
