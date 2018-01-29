@@ -90,12 +90,12 @@ def patch():
 
     # Monkey-patch admin site.
     from django.contrib import admin
-    from django.contrib.auth.decorators import login_required
     from adminplus.sites import AdminSitePlus
 
     # Patch the admin
     admin.site = AdminSitePlus()
-    admin.site.login = login_required(admin.site.login)
+    admin.site.site_header = 'Kitsune Administration'
+    admin.site.site_title = 'Mozilla Support'
 
     # Monkey patch django's csrf
     import session_csrf

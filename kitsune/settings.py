@@ -409,6 +409,7 @@ SUPPORTED_NONLOCALES = (
     'wafflejs',
     'geoip-suggestion',
     'contribute.json',
+    'oidc',
 )
 
 # Make this unique, and don't share it with anybody.
@@ -527,7 +528,23 @@ AUTHENTICATION_BACKENDS = (
 )
 if READ_ONLY:
     AUTHENTICATION_BACKENDS = ('kitsune.sumo.readonlyauth.ReadOnlyBackend',)
+    OIDC_ENABLE = False
+    ENABLE_ADMIN = False
+else:
+    OIDC_ENABLE = config('OIDC_ENABLE', default=False, cast=bool)
+    ENABLE_ADMIN = config('ENABLE_ADMIN', default=OIDC_ENABLE, cast=bool)
+    if OIDC_ENABLE:
+        MIDDLEWARE_CLASSES += ('mozilla_django_oidc.middleware.RefreshIDToken',)
+        AUTHENTICATION_BACKENDS = ('mozilla_django_oidc.auth.OIDCAuthenticationBackend',)
 
+        OIDC_OP_AUTHORIZATION_ENDPOINT = config('OIDC_OP_AUTHORIZATION_ENDPOINT')
+        OIDC_OP_TOKEN_ENDPOINT = config('OIDC_OP_TOKEN_ENDPOINT')
+        OIDC_OP_USER_ENDPOINT = config('OIDC_OP_USER_ENDPOINT')
+        OIDC_RP_CLIENT_ID = config('OIDC_RP_CLIENT_ID')
+        OIDC_RP_CLIENT_SECRET = config('OIDC_RP_CLIENT_SECRET')
+        OIDC_CREATE_USER = config('OIDC_CREATE_USER', default=False, cast=bool)
+
+ADMIN_REDIRECT_URL = config('ADMIN_REDIRECT_URL', default=None)
 
 AUTH_PROFILE_MODULE = 'users.Profile'
 USER_AVATAR_PATH = 'uploads/avatars/'
@@ -555,7 +572,7 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django.contrib.admin',
+    'mozilla_django_oidc',
     'corsheaders',
     'kitsune.users',
     'dennis.django_dennis',
@@ -622,6 +639,9 @@ INSTALLED_APPS = (
     # In Django <= 1.6, this "must be placed somewhere after all the apps that
     # are going to be generating activities". Putting it at the end is the safest.
     'actstream',
+
+    # Last so we can override admin templates.
+    'django.contrib.admin',
 )
 
 TEST_RUNNER = 'kitsune.sumo.tests.TestSuiteRunner'
