@@ -475,6 +475,7 @@ MIDDLEWARE_CLASSES = (
     'multidb.middleware.PinningRouterMiddleware',
     'django_statsd.middleware.GraphiteMiddleware',
     'commonware.request.middleware.SetRemoteAddrFromForwardedFor',
+    'enforce_host.EnforceHostMiddleware',
 
     # LocaleURLMiddleware requires access to request.user. These two must be
     # loaded before the LocaleURLMiddleware
@@ -1037,6 +1038,12 @@ SILENCED_SYSTEM_CHECKS = [
 ]
 
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='', cast=Csv())
+# in production set this to 'support.mozilla.org' and all other domains will redirect.
+# can be a comma separated list of allowed domains.
+# the first in the list will be the target of redirects.
+# needs to be None if not set so that the middleware will
+# be turned off. can't set default to None because of the Csv() cast.
+ENFORCE_HOST = config('ENFORCE_HOST', default='', cast=Csv()) or None
 
 # Allows you to specify waffle settings in the querystring.
 WAFFLE_OVERRIDE = config('WAFFLE_OVERRIDE', default=DEBUG, cast=bool)
