@@ -7,12 +7,13 @@ import StringIO
 import django
 from django.conf import settings
 from django.contrib.sites.models import Site
+from django.db import DatabaseError
 from django.http import (HttpResponsePermanentRedirect, HttpResponseRedirect,
                          HttpResponse, Http404)
 from django.shortcuts import render
 from django.utils.translation import ugettext as _
-from django.views.decorators.cache import never_cache
-from django.views.decorators.http import require_GET
+from django.views.decorators.cache import never_cache, cache_page
+from django.views.decorators.http import require_GET, require_safe
 
 from celery.messaging import establish_connection
 from mobility.decorators import mobile_template
@@ -26,9 +27,52 @@ from kitsune.sumo.redis_utils import redis_client, RedisError
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import get_next_url, uselocale
 from kitsune.users.forms import AuthenticationForm
+from kitsune.wiki.models import Document
 
 
 log = logging.getLogger('k.services')
+
+
+# copied from
+# https://github.com/mozilla/kuma/blob/master/kuma/health/views.py
+@require_safe
+def liveness(request):
+    """
+    A successful response from this endpoint simply proves
+    that Django is up and running. It doesn't mean that its
+    supporting services (like MySQL, Redis, Celery) can
+    be successfully used from within this service.
+    """
+    return HttpResponse(status=204)
+
+
+# copied from
+# https://github.com/mozilla/kuma/blob/master/kuma/health/views.py
+@require_safe
+@cache_page(10)
+def readiness(request):
+    """
+    A successful response from this endpoint goes a step further
+    and means not only that Django is up and running, but also that
+    the database can be successfully used from within this service.
+    Some other supporting services (like ElasticSearch) are not checked,
+    but we may find that we want/need to add them later.
+
+    Wrapped with `cache_page` to test redis cache.
+    """
+    try:
+        # Confirm that we can use the database by making a fast query
+        # against the Document table. It's not important that the document
+        # with the requested primary key exists or not, just that the query
+        # completes without error.
+        Document.objects.filter(pk=1).exists()
+    except DatabaseError as e:
+        reason_tmpl = 'service unavailable due to database issue ({!s})'
+        status, reason = 503, reason_tmpl.format(e)
+    else:
+        status, reason = 204, None
+
+    return HttpResponse(status=status, reason=reason)
 
 
 @never_cache
