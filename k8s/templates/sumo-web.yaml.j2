@@ -1,0 +1,154 @@
+apiVersion: extensions/v1beta2
+kind: Deployment
+metadata:
+  labels:
+    app: {{ SUMO_APP_NAME }}
+    type: web
+  name: {{ SUMO_WEB_DEPLOYMENT_NAME }}
+  namespace: {{ K8S_NAMESPACE }}
+spec:
+  replicas: {{ SUMO_WEB_REPLICAS }}
+  selector:
+    matchLabels:
+      app: {{ SUMO_APP_NAME }}
+      type: web
+  strategy:
+    rollingUpdate:
+      maxSurge: 3
+      maxUnavailable: 0
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: {{ SUMO_APP_NAME }}
+        type: web
+      name: {{ SUMO_WEB_DEPLOYMENT_NAME }}
+      namespace: {{ K8S_NAMESPACE }}
+    spec:
+      containers:
+      - args:
+        - ./bin/run-prod.sh
+        command:
+        - /bin/bash
+        - -c
+        env:
+        - name: ALLOWED_HOSTS
+          value: {{ SUMO_ENV_ALLOWED_HOSTS }}
+        - name: AXES_BEHIND_REVERSE_PROXY
+          value: {{ SUMO_ENV_AXES_BEHIND_REVERSE_PROXY }}
+        - name: CELERY_ALWAYS_EAGER
+          value: {{ SUMO_ENV_CELERY_ALWAYS_EAGER }}
+        - name: CSRF_COOKIE_SECURE
+          value: {{ SUMO_ENV_CSRF_COOKIE_SECURE }}
+        - name: DEBUG
+          value: {{ SUMO_ENV_DEBUG }} 
+        - name: DOMAIN
+          value: {{ SUMO_ENV_DOMAIN }}
+        - name: ENABLE_WHITENOISE
+          value: {{ SUMO_ENV_ENABLE_WHITENOISE }}
+        - name: ENGAGE_ROBOTS
+          value: {{ SUMO_ENV_ENGAGE_ROBOTS }}
+        - name: ES_LIVE_INDEXING
+          value: {{ SUMO_ENV_ES_LIVE_INDEXING }}
+        - name: ES_USE_SSL
+          value: {{ SUMO_ENV_ES_USE_SSL }}
+        - name: HTTPS
+          value: {{ SUMO_ENV_HTTPS }} 
+        - name: MEDIA_URL
+          value: {{ SUMO_ENV_MEDIA_URL }}
+        - name: PIPELINE_ENABLED
+          value: {{ SUMO_ENV_PIPELINE_ENABLED }}
+        - name: PORT
+          value: {{ SUMO_ENV_PORT }} 
+        - name: READ_ONLY
+          value: {{ SUMO_ENV_READ_ONLY }}
+        - name: SESSION_COOKIE_SECURE
+          value: {{ SUMO_ENV_SESSION_COOKIE_SECURE }}
+        - name: SITE_URL
+          value: {{ SUMO_ENV_SITE_URL }}
+        - name: STAGE
+          value: {{ SUMO_ENV_STAGE }} 
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              key: aws-access-key-id
+              name: {{ SUMO_SECRETS_NAME }}
+        - name: AWS_S3_CUSTOM_DOMAIN
+          valueFrom:
+            secretKeyRef:
+              key: aws-s3-custom-domain
+              name: {{ SUMO_SECRETS_NAME }}
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              key: aws-secret-access-key
+              name: {{ SUMO_SECRETS_NAME }}
+        - name: AWS_STORAGE_BUCKET_NAME
+          valueFrom:
+            secretKeyRef:
+              key: aws-storage-bucket-name
+              name: {{ SUMO_SECRETS_NAME }}
+        - name: BROKER_URL
+          valueFrom:
+            secretKeyRef:
+              key: broker_url
+              name: {{ SUMO_SECRETS_NAME }}
+        - name: CACHE_URL
+          valueFrom:
+            secretKeyRef:
+              key: cache_url
+              name: {{ SUMO_SECRETS_NAME }}
+        - name: DATABASE_READ_ONLY_URL
+          valueFrom:
+            secretKeyRef:
+              key: database-read-only-url
+              name: {{ SUMO_SECRETS_NAME }}
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              key: database-url
+              name: {{ SUMO_SECRETS_NAME }}
+        - name: ES_HTTP_AUTH
+          valueFrom:
+            secretKeyRef:
+              key: es-http-auth
+              name: {{ SUMO_SECRETS_NAME }}
+        - name: ES_URLS
+          valueFrom:
+            secretKeyRef:
+              key: es-urls
+              name: {{ SUMO_SECRETS_NAME }}
+        - name: REDIS_DEFAULT_URL
+          valueFrom:
+            secretKeyRef:
+              key: redis-default-url
+              name: {{ SUMO_SECRETS_NAME }}
+        - name: REDIS_HELPFULVOTES_URL
+          valueFrom:
+            secretKeyRef:
+              key: redis-helpfulvotes-url
+              name: {{ SUMO_SECRETS_NAME }}
+        - name: SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              key: secret-key
+              name: {{ SUMO_SECRETS_NAME }}
+        image: {{ SUMO_IMAGE }}:{{ SUMO_IMAGE_TAG }}
+        imagePullPolicy: {{ SUMO_IMAGE_PULL_POLICY }}
+        name: sumo-{{ TARGET_ENVIRONMENT }}-web
+        readinessProbe:
+          failureThreshold: {{ SUMO_READINESS_FAILURE_THRESHOLD }}
+          initialDelaySeconds: {{ SUMO_READINESS_INITIAL_DELAY_SECONDS }}
+          periodSeconds: {{ SUMO_READINESS_PERIOD_SECONDS }}
+          successThreshold: {{ SUMO_READINESS_SUCCESS_THRESHOLD }}
+          tcpSocket:
+            port: {{ SUMO_READINESS_TCP_SOCKET_PORT }}
+          timeoutSeconds: {{ SUMO_READINESS_TIMEOUT_SECONDS }}
+        resources:
+          requests:
+            cpu: {{ SUMO_CPU_REQUEST }}
+            memory: {{ SUMO_MEMORY_REQUEST }}
+          limits:
+            cpu: {{ SUMO_CPU_LIMIT }}
+            memory: {{ SUMO_MEMORY_LIMIT }}
+      restartPolicy: Always
