@@ -4,7 +4,7 @@
   {% set meta = [('robots', 'noindex')] %}
 {% endif %}
 <!DOCTYPE html>
-<html class="no-js" lang="{{ request.LANGUAGE_CODE }}" {% if DIR %}dir="{{ DIR }}"{% endif %}>
+<html class="no-js" lang="{{ request.LANGUAGE_CODE }}"{% if DIR %} dir="{{ DIR }}"{% endif %}{% if settings.GTM_CONTAINER_ID %} data-gtm-container-id="{{ settings.GTM_CONTAINER_ID }}"{% endif %}>
 <head>
   {% block head_top %}{% endblock %}
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
@@ -54,9 +54,11 @@
   {% endif %}
 
   <!--[if lt IE 9]>
-{# html5-shiv.js must be inside <head/> to work. #}
-<script src="{{ STATIC_URL }}sumo/js/libs/html5-shiv.js"></script>
-<![endif]-->
+  {# html5-shiv.js must be inside <head/> to work. #}
+  <script src="{{ STATIC_URL }}sumo/js/libs/html5-shiv.js"></script>
+  <![endif]-->
+
+  {% include "includes/google-analytics.html" %}
 </head>
 <body class="html-{{ DIR }} logged-{% if user.is_authenticated() %}in{% else %}out{% endif %} {{ classes }} {{ request.LANGUAGE_CODE }}"
       data-readonly="{{ settings.READ_ONLY|json }}"

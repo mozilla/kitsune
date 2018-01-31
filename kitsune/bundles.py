@@ -293,8 +293,6 @@ PIPELINE_JS = {
             'sumo/js/geoip-locale.js',
             'mailcheck/src/mailcheck.js',
             'sumo/js/ui.js',
-            'sumo/js/dnt-helper.js',
-            'sumo/js/analytics.js',
             'sumo/js/surveygizmo.js',
             'sumo/js/instant_search.js',
         ),
@@ -351,7 +349,6 @@ PIPELINE_JS = {
     },
     'mobile-common': {
         'source_filenames': (
-            'sumo/js/dnt-helper.js',
             'sumo/js/templates/mobile-search-results.js',
             'moment/moment.js',
             'sumo/js/i18n.js',
@@ -366,7 +363,6 @@ PIPELINE_JS = {
             'sumo/js/search_utils.js',
             'sumo/js/aaq.js',
             'sumo/js/mobile/ui.js',
-            'sumo/js/analytics.js',
             'sumo/js/instant_search.js',
             'sumo/js/mobile/instant_search.js',
         ),
@@ -546,8 +542,6 @@ PIPELINE_JS = {
             'modernizr/modernizr.js',
             'sumo/js/browserdetect.js',
             'sumo/js/mobile/ui.js',
-            'sumo/js/dnt-helper.js',
-            'sumo/js/analytics.js',
             'sumo/js/libs/jquery.cookie.js',
             'sumo/js/libs/jquery.lazyload.js',
             'sumo/js/showfor.js',
@@ -637,5 +631,12 @@ PIPELINE_JS = {
             'kpi/js/kpi.browserify.js',
         ),
         'output_filename': 'build/kpi.dashboard-min.js'
+    },
+    'gtm-snippet': {
+        'source_filenames': (
+            'sumo/js/dnt-helper.js',
+            'sumo/js/gtm-snippet.js',
+        ),
+        'output_filename': 'build/gtm-snippet-min.js'
     },
 }
