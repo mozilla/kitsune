@@ -111,10 +111,6 @@ SNITCHES = {
         'interval': 'daily',
         'tags': [],
     },
-    'SUMO Clearsessions': {
-        'interval': 'daily',
-        'tags': [],
-    },
     'SUMO Reload Question Traffic Stats': {
         'interval': 'daily',
         'tags': [],

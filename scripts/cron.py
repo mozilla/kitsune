@@ -206,11 +206,6 @@ def job_cache_most_unhelpful_kb_articles():
     call_command('cache_most_unhelpful_kb_articles')
 
 
-@scheduled_job('cron', month='*', day='*', hour='22', minute='42', max_instances=1, coalesce=True)
-@babis.decorator(ping_after=settings.DMS_CLEARSESSIONS)
-def job_clearsessions():
-    call_command('clearsessions')
-
 
 @scheduled_job('cron', month='*', day='*', hour='23', minute='00', max_instances=1, coalesce=True)
 @babis.decorator(ping_after=settings.DMS_RELOAD_QUESTION_TRAFFIC_STATS)
