@@ -928,7 +928,11 @@ TIDINGS_REVERSE = 'kitsune.sumo.urlresolvers.reverse'
 
 
 # Google Analytics settings.
-GA_KEY = config('GA_KEY', default='longkey')  # Google API client key
+# GA_KEY is expected b64 encoded.
+GA_KEY = config('GA_KEY', default=None)  # Google API client key
+if GA_KEY:
+    import base64
+    GA_KEY = base64.b64decode(GA_KEY)
 GA_ACCOUNT = config('GA_ACCOUNT', 'something@developer.gserviceaccount.com')  # Google API Service Account email address
 GA_PROFILE_ID = config('GA_PROFILE_ID', default='12345678')  # Google Analytics profile id for SUMO prod
 GA_START_DATE = date(2012, 11, 10)
