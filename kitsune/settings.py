@@ -846,16 +846,15 @@ if EMAIL_LOGGING_REAL_BACKEND == 'django.core.mail.backends.smtp.EmailBackend':
 # Celery
 djcelery.setup_loader()
 
-if not DEBUG:
-    # E.g. redis://localhost:6479/0
-    BROKER_URL = config('BROKER_URL')
-
 CELERY_IGNORE_RESULT = config('CELERY_IGNORE_RESULT', default=True, cast=bool)
 if not CELERY_IGNORE_RESULT:
     # E.g. redis://localhost:6479/1
     CELERY_RESULT_BACKEND = config('CELERY_RESULT_BACKEND')
 
 CELERY_ALWAYS_EAGER = config('CELERY_ALWAYS_EAGER', default=DEBUG, cast=bool)  # For tests. Set to False for use.
+if not CELERY_ALWAYS_EAGER:
+    BROKER_URL = config('BROKER_URL')
+
 CELERY_SEND_TASK_ERROR_EMAILS = config('CELERY_SEND_TASK_ERROR_EMAILS', default=True, cast=bool)
 # TODO
 # CELERYD_LOG_LEVEL = config('CELERY_SEND_TASK_ERROR_EMAILS', default='INFO', cast=labmda x: getattr(logging, x))
