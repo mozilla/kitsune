@@ -856,10 +856,7 @@ if not CELERY_ALWAYS_EAGER:
     BROKER_URL = config('BROKER_URL')
 
 CELERY_SEND_TASK_ERROR_EMAILS = config('CELERY_SEND_TASK_ERROR_EMAILS', default=True, cast=bool)
-# TODO
-# CELERYD_LOG_LEVEL = config('CELERY_SEND_TASK_ERROR_EMAILS', default='INFO', cast=labmda x: getattr(logging, x))
-CELERYD_LOG_LEVEL = config('CELERY_SEND_TASK_ERROR_EMAILS', default=logging.INFO)
-
+CELERYD_LOG_LEVEL = config('CELERYD_LOG_LEVEL', default='INFO', cast=lambda x: getattr(logging, x))
 CELERYD_CONCURRENCY = config('CELERYD_CONCURRENCY', default=4, cast=int)
 CELERY_EAGER_PROPAGATES_EXCEPTIONS = config('CELERY_EAGER_PROPAGATES_EXCEPTIONS', default=True, cast=bool)  # Explode loudly during tests.
 CELERYD_HIJACK_ROOT_LOGGER = config('CELERYD_HIJACK_ROOT_LOGGER', default=False, cast=bool)
