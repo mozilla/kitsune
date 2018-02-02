@@ -179,10 +179,10 @@ def job_clear_expired_auth_tokens():
     call_command('cron clear_expired_auth_tokens')
 
 
-@scheduled_job('cron', month='*', day='*', hour='09', minute='00', max_instances=1, coalesce=True)
-@babis.decorator(ping_after=settings.DMS_UPDATE_VISITORS_METRIC)
-def job_update_visitors_metric():
-    call_command('cron update_visitors_metric')
+# @scheduled_job('cron', month='*', day='*', hour='09', minute='00', max_instances=1, coalesce=True)
+# @babis.decorator(ping_after=settings.DMS_UPDATE_VISITORS_METRIC)
+# def job_update_visitors_metric():
+#     call_command('cron update_visitors_metric')
 
 
 @scheduled_job('cron', month='*', day='*', hour='10', minute='00', max_instances=1, coalesce=True)
