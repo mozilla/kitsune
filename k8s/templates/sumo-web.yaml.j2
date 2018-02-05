@@ -1,4 +1,4 @@
-apiVersion: extensions/v1beta2
+apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   labels:
@@ -33,41 +33,41 @@ spec:
         - -c
         env:
         - name: ALLOWED_HOSTS
-          value: {{ SUMO_ENV_ALLOWED_HOSTS }}
+          value: "{{ SUMO_ENV_ALLOWED_HOSTS }}"
         - name: AXES_BEHIND_REVERSE_PROXY
-          value: {{ SUMO_ENV_AXES_BEHIND_REVERSE_PROXY }}
+          value: "{{ SUMO_ENV_AXES_BEHIND_REVERSE_PROXY }}"
         - name: CELERY_ALWAYS_EAGER
-          value: {{ SUMO_ENV_CELERY_ALWAYS_EAGER }}
+          value: "{{ SUMO_ENV_CELERY_ALWAYS_EAGER }}"
         - name: CSRF_COOKIE_SECURE
-          value: {{ SUMO_ENV_CSRF_COOKIE_SECURE }}
+          value: "{{ SUMO_ENV_CSRF_COOKIE_SECURE }}"
         - name: DEBUG
-          value: {{ SUMO_ENV_DEBUG }} 
+          value: "{{ SUMO_ENV_DEBUG }}"
         - name: DOMAIN
-          value: {{ SUMO_ENV_DOMAIN }}
+          value: "{{ SUMO_ENV_DOMAIN }}"
         - name: ENABLE_WHITENOISE
-          value: {{ SUMO_ENV_ENABLE_WHITENOISE }}
+          value: "{{ SUMO_ENV_ENABLE_WHITENOISE }}"
         - name: ENGAGE_ROBOTS
-          value: {{ SUMO_ENV_ENGAGE_ROBOTS }}
+          value: "{{ SUMO_ENV_ENGAGE_ROBOTS }}"
         - name: ES_LIVE_INDEXING
-          value: {{ SUMO_ENV_ES_LIVE_INDEXING }}
+          value: "{{ SUMO_ENV_ES_LIVE_INDEXING }}"
         - name: ES_USE_SSL
-          value: {{ SUMO_ENV_ES_USE_SSL }}
+          value: "{{ SUMO_ENV_ES_USE_SSL }}"
         - name: HTTPS
-          value: {{ SUMO_ENV_HTTPS }} 
+          value: "{{ SUMO_ENV_HTTPS }}"
         - name: MEDIA_URL
-          value: {{ SUMO_ENV_MEDIA_URL }}
+          value: "{{ SUMO_ENV_MEDIA_URL }}"
         - name: PIPELINE_ENABLED
-          value: {{ SUMO_ENV_PIPELINE_ENABLED }}
+          value: "{{ SUMO_ENV_PIPELINE_ENABLED }}"
         - name: PORT
-          value: {{ SUMO_ENV_PORT }} 
+          value: "{{ SUMO_ENV_PORT }}"
         - name: READ_ONLY
-          value: {{ SUMO_ENV_READ_ONLY }}
+          value: "{{ SUMO_ENV_READ_ONLY }}"
         - name: SESSION_COOKIE_SECURE
-          value: {{ SUMO_ENV_SESSION_COOKIE_SECURE }}
+          value: "{{ SUMO_ENV_SESSION_COOKIE_SECURE }}"
         - name: SITE_URL
-          value: {{ SUMO_ENV_SITE_URL }}
+          value: "{{ SUMO_ENV_SITE_URL }}"
         - name: STAGE
-          value: {{ SUMO_ENV_STAGE }} 
+          value: "{{ SUMO_ENV_STAGE }}"
         - name: AWS_ACCESS_KEY_ID
           valueFrom:
             secretKeyRef:
@@ -91,12 +91,12 @@ spec:
         - name: BROKER_URL
           valueFrom:
             secretKeyRef:
-              key: broker_url
+              key: broker-url
               name: {{ SUMO_SECRETS_NAME }}
         - name: CACHE_URL
           valueFrom:
             secretKeyRef:
-              key: cache_url
+              key: cache-url
               name: {{ SUMO_SECRETS_NAME }}
         - name: DATABASE_READ_ONLY_URL
           valueFrom:

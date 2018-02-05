@@ -12,7 +12,7 @@
 - Move to the SUMO `k8s` directory
 
   ```sh
-  cd infra/apps/sumo/k8s
+  cd k8s
   ```
 
 ```sh
