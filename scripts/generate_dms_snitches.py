@@ -59,10 +59,10 @@ SNITCHES = {
         'interval': 'daily',
         'tags': [],
     },
-    'SUMO Update Search Ctr Metric': {
-        'interval': 'daily',
-        'tags': [],
-    },
+    # 'SUMO Update Search Ctr Metric': {
+    #     'interval': 'daily',
+    #     'tags': [],
+    # },
     'SUMO Remove Expired Registration Profiles': {
         'interval': 'daily',
         'tags': [],

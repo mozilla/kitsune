@@ -125,10 +125,10 @@ def job_update_weekly_votes():
     call_command('cron update_weekly_votes')
 
 
-@scheduled_job('cron', month='*', day='*', hour='02', minute='00', max_instances=1, coalesce=True)
-@babis.decorator(ping_after=settings.DMS_UPDATE_SEARCH_CTR_METRIC)
-def job_update_search_ctr_metric():
-    call_command('update_search_ctr_metric')
+# @scheduled_job('cron', month='*', day='*', hour='02', minute='00', max_instances=1, coalesce=True)
+# @babis.decorator(ping_after=settings.DMS_UPDATE_SEARCH_CTR_METRIC)
+# def job_update_search_ctr_metric():
+#     call_command('cron update_search_ctr_metric')
 
 
 @scheduled_job('cron', month='*', day='*', hour='02', minute='47', max_instances=1, coalesce=True)
