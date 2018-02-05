@@ -1,6 +1,7 @@
 from invoke import task
 from invoke.exceptions import Exit
 from env import *
+from deploy_utils import get_kubectl
 
 
 @task
@@ -21,8 +22,8 @@ def status_web(ctx):
     """
     namespace = ctx.config['K8S_NAMESPACE']
     web_deployment_name = ctx.config['SUMO_WEB_DEPLOYMENT_NAME']
-    ctx.run('kubectl -n {}} rollout status deploy {}'.format(namespace,
-                                                             web_deployment_name))
+    ctx.run('{} -n {}} rollout status deploy {}'.format(get_kubectl(),
+                                                        namespace, web_deployment_name))
 
 
 @task(check_environment)
@@ -32,5 +33,5 @@ def rollback_web(ctx):
     """
     namespace = ctx.config['K8S_NAMESPACE']
     web_deployment_name = ctx.config['SUMO_WEB_DEPLOYMENT_NAME']
-    ctx.run(
-        'kubectl -n {}} rollout undo deploy {}'.format(namespace, web_deployment_name))
+    ctx.run('{}} -n {}} rollout undo deploy {}'.format(get_kubectl(),
+                                                       namespace, web_deployment_name))
