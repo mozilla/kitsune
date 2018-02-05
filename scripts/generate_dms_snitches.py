@@ -95,10 +95,10 @@ SNITCHES = {
         'interval': 'daily',
         'tags': [],
     },
-    'SUMO Update Visitors Metric': {
-        'interval': 'daily',
-        'tags': [],
-    },
+    # 'SUMO Update Visitors Metric': {
+    #     'interval': 'daily',
+    #     'tags': [],
+    # },
     'SUMO Update L10n Metric': {
         'interval': 'daily',
         'tags': [],
@@ -108,10 +108,6 @@ SNITCHES = {
         'tags': [],
     },
     'SUMO Cache Most Unhelpful Kb Articles': {
-        'interval': 'daily',
-        'tags': [],
-    },
-    'SUMO Clearsessions': {
         'interval': 'daily',
         'tags': [],
     },

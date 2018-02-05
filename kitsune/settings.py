@@ -846,21 +846,17 @@ if EMAIL_LOGGING_REAL_BACKEND == 'django.core.mail.backends.smtp.EmailBackend':
 # Celery
 djcelery.setup_loader()
 
-if not DEBUG:
-    # E.g. redis://localhost:6479/0
-    BROKER_URL = config('BROKER_URL')
-
 CELERY_IGNORE_RESULT = config('CELERY_IGNORE_RESULT', default=True, cast=bool)
 if not CELERY_IGNORE_RESULT:
     # E.g. redis://localhost:6479/1
     CELERY_RESULT_BACKEND = config('CELERY_RESULT_BACKEND')
 
 CELERY_ALWAYS_EAGER = config('CELERY_ALWAYS_EAGER', default=DEBUG, cast=bool)  # For tests. Set to False for use.
-CELERY_SEND_TASK_ERROR_EMAILS = config('CELERY_SEND_TASK_ERROR_EMAILS', default=True, cast=bool)
-# TODO
-# CELERYD_LOG_LEVEL = config('CELERY_SEND_TASK_ERROR_EMAILS', default='INFO', cast=labmda x: getattr(logging, x))
-CELERYD_LOG_LEVEL = config('CELERY_SEND_TASK_ERROR_EMAILS', default=logging.INFO)
+if not CELERY_ALWAYS_EAGER:
+    BROKER_URL = config('BROKER_URL')
 
+CELERY_SEND_TASK_ERROR_EMAILS = config('CELERY_SEND_TASK_ERROR_EMAILS', default=True, cast=bool)
+CELERYD_LOG_LEVEL = config('CELERYD_LOG_LEVEL', default='INFO', cast=lambda x: getattr(logging, x))
 CELERYD_CONCURRENCY = config('CELERYD_CONCURRENCY', default=4, cast=int)
 CELERY_EAGER_PROPAGATES_EXCEPTIONS = config('CELERY_EAGER_PROPAGATES_EXCEPTIONS', default=True, cast=bool)  # Explode loudly during tests.
 CELERYD_HIJACK_ROOT_LOGGER = config('CELERYD_HIJACK_ROOT_LOGGER', default=False, cast=bool)
@@ -928,7 +924,11 @@ TIDINGS_REVERSE = 'kitsune.sumo.urlresolvers.reverse'
 
 
 # Google Analytics settings.
-GA_KEY = config('GA_KEY', default='longkey')  # Google API client key
+# GA_KEY is expected b64 encoded.
+GA_KEY = config('GA_KEY', default=None)  # Google API client key
+if GA_KEY:
+    import base64
+    GA_KEY = base64.b64decode(GA_KEY)
 GA_ACCOUNT = config('GA_ACCOUNT', 'something@developer.gserviceaccount.com')  # Google API Service Account email address
 GA_PROFILE_ID = config('GA_PROFILE_ID', default='12345678')  # Google Analytics profile id for SUMO prod
 GA_START_DATE = date(2012, 11, 10)
@@ -1088,11 +1088,10 @@ DMS_REINDEX_KB = config('DMS_REINDEX_KB', default=None)
 DMS_PROCESS_EXIT_SURVEYS = config('DMS_PROCESS_EXIT_SURVEYS', default=None)
 DMS_SURVEY_RECENT_ASKERS = config('DMS_SURVEY_RECENT_ASKERS', default=None)
 DMS_CLEAR_EXPIRED_AUTH_TOKENS = config('DMS_CLEAR_EXPIRED_AUTH_TOKENS', default=None)
-DMS_UPDATE_VISITORS_METRIC = config('DMS_UPDATE_VISITORS_METRIC', default=None)
+# DMS_UPDATE_VISITORS_METRIC = config('DMS_UPDATE_VISITORS_METRIC', default=None)
 DMS_UPDATE_L10N_METRIC = config('DMS_UPDATE_L10N_METRIC', default=None)
 DMS_RELOAD_WIKI_TRAFFIC_STATS = config('DMS_RELOAD_WIKI_TRAFFIC_STATS', default=None)
 DMS_CACHE_MOST_UNHELPFUL_KB_ARTICLES = config('DMS_CACHE_MOST_UNHELPFUL_KB_ARTICLES', default=None)
-DMS_CLEARSESSIONS = config('DMS_CLEARSESSIONS', default=None)
 DMS_RELOAD_QUESTION_TRAFFIC_STATS = config('DMS_RELOAD_QUESTION_TRAFFIC_STATS', default=None)
 DMS_PURGE_HASHES = config('DMS_PURGE_HASHES', default=None)
 DMS_SEND_WEEKLY_READY_FOR_REVIEW_DIGEST = config('DMS_SEND_WEEKLY_READY_FOR_REVIEW_DIGEST', default=None)
