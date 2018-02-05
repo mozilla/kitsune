@@ -65,3 +65,41 @@ invoke -f ./regions/oregon-b/dev.yaml rollouts.status-web
 invoke -f ./regions/oregon-b/dev.yaml rollouts.rollback-web:
 ```
 
+----
+
+##### kubectl client version note
+
+When connecting to an older K8s cluster, such as Frankfurt, you may need to download an older version of Kubectl that matches the version of the server.
+
+Newer clients connecting to older K8s servers may display error messages such as:
+
+    Error from server (NotFound): the server could not find the requested resource
+
+
+To determine the K8s server version:
+
+```sh
+$ kubectl version
+Client Version: version.Info{Major:"1", Minor:"9", GitVersion:"v1.9.1", GitCommit:"3a1c9449a956b6026f075fa3134ff92f7d55f812", GitTreeState:"clean", BuildDate:"2018-01-04T11:52:23Z", GoVersion:"go1.9.2", Compiler:"gc", Platform:"linux/amd64"}
+Server Version: version.Info{Major:"1", Minor:"6", GitVersion:"v1.6.4", GitCommit:"d6f433224538d4f9ca2f7ae19b252e6fcb66a3ae", GitTreeState:"clean", BuildDate:"2017-05-19T18:33:17Z", GoVersion:"go1.7.5", Compiler:"gc", Platform:"linux/amd64"}
+```
+
+Check the values that are part of `Server Version`. The output above shows `1.6` (or `v.1.6.4`).
+
+Next, download a binary following the instructions located [here](https://kubernetes.io/docs/tasks/tools/install-kubectl/). 
+
+```sh
+curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.6.4/bin/linux/amd64/kubectl
+chmod +x ./kubectl
+# it may be useful to rename the binary to include K8s version number:
+mv ./kubectl ./kubectl1.6.4
+```
+
+Next, set the `KUBECTL_BIN` environment variable to override the name of the kubectl binary:
+
+```sh
+# next, set the KUBECTL_BIN environment variable to override the name of the kubectl binary:
+KUBECTL_BIN=/home/metadave/kubectl1.6.4 invoke -f ./regions/oregon-b/dev.yaml deployments.create-web --apply
+```
+
+> the default KUBECTL_BIN value is `kubectl`.
