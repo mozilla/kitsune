@@ -3,31 +3,31 @@ kind: Deployment
 metadata:
   labels:
     app: {{ SUMO_APP_NAME }}
-    type: web
-  name: {{ SUMO_WEB_DEPLOYMENT_NAME }}
+    type: celery
+  name: {{ SUMO_CELERY_DEPLOYMENT_NAME }}
   namespace: {{ K8S_NAMESPACE }}
 spec:
   replicas: {{ SUMO_WEB_REPLICAS }}
   selector:
     matchLabels:
       app: {{ SUMO_APP_NAME }}
-      type: web
+      type: celery
   strategy:
     rollingUpdate:
-      maxSurge: {{ SUMO_WEB_MAX_SURGE }}
-      maxUnavailable: {{ SUMO_WEB_MAX_UNAVAILABLE }}
+      maxSurge: {{ SUMO_CELERY_MAX_SURGE }}
+      maxUnavailable: {{ SUMO_CELERY_MAX_UNAVAILABLE }}
     type: RollingUpdate
   template:
     metadata:
       labels:
         app: {{ SUMO_APP_NAME }}
-        type: web
-      name: {{ SUMO_WEB_DEPLOYMENT_NAME }}
+        type: celery
+      name: {{ SUMO_CELERY_DEPLOYMENT_NAME }}
       namespace: {{ K8S_NAMESPACE }}
     spec:
       containers:
       - args:
-        - ./bin/run-prod.sh
+        - ./bin/run-celery-worker.sh
         command:
         - /bin/bash
         - -c
