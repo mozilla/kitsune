@@ -28,12 +28,20 @@ $ invoke -l
 Available tasks:
 
   deployments.check-environment   Ensure that a .yaml file has been specified
+  deployments.create-celery       Create or update a SUMO celery deployment
+  deployments.create-cron         Create or update a SUMO cron deployment
   deployments.create-nodeport     Create or update a SUMO nodeport
   deployments.create-web          Create or update a SUMO web deployment
+  deployments.delete-celery       Delete an existing SUMO celery deployment
+  deployments.delete-cron         Delete an existing SUMO cron deployment
   deployments.delete-nodeport     Delete an existing SUMO nodeport
   deployments.delete-web          Delete an existing SUMO web deployment
   rollouts.check-environment      Ensure that a .yaml file has been specified
-  rollouts.rollback-web           Undo a deployment
+  rollouts.rollback-celery        Undo a celery deployment
+  rollouts.rollback-cron          Undo a cron deployment
+  rollouts.rollback-web           Undo a web deployment
+  rollouts.status-celery          Check rollout status of a SUMO web deployment
+  rollouts.status-cron            Check rollout status of a SUMO web deployment
   rollouts.status-web             Check rollout status of a SUMO web deployment
 ```
 
@@ -44,25 +52,35 @@ Available tasks:
 - If desired, perform a dry-run to see rendered K8s settings:
 
 ```sh
+invoke -f ./regions/oregon-b/dev.yaml deployments.create-celery
+invoke -f ./regions/oregon-b/dev.yaml deployments.create-cron
 invoke -f ./regions/oregon-b/dev.yaml deployments.create-web
 ```
+
+> dry-run mode is enabled if you do not specify `--apply`.
 
 - Apply changes to K8s:
 
 ```
+invoke -f ./regions/oregon-b/dev.yaml deployments.create-celery --apply
+invoke -f ./regions/oregon-b/dev.yaml deployments.create-cron --apply
 invoke -f ./regions/oregon-b/dev.yaml deployments.create-web --apply
 ```
 
 - Monitor the status of the rollout until it completes:
 
 ```sh
+invoke -f ./regions/oregon-b/dev.yaml rollouts.status-celery
+invoke -f ./regions/oregon-b/dev.yaml rollouts.status-cron
 invoke -f ./regions/oregon-b/dev.yaml rollouts.status-web
 ```
 
 - In an emergency, if the rollout is causing failures, you can roll-back to the previous state.
 
 ```sh
-invoke -f ./regions/oregon-b/dev.yaml rollouts.rollback-web:
+invoke -f ./regions/oregon-b/dev.yaml rollouts.rollback-celery
+invoke -f ./regions/oregon-b/dev.yaml rollouts.rollback-cron
+invoke -f ./regions/oregon-b/dev.yaml rollouts.rollback-web
 ```
 
 ----
