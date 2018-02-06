@@ -35,7 +35,7 @@ def k8s_apply(ctx, template_text, apply):
 
 def k8s_delete_resource(ctx, resource_name, apply):
     namespace = ctx.config['K8S_NAMESPACE']
-    cmd = '{}} delete -n {} --ignore-not-found {}'.format(
+    cmd = '{} delete -n {} --ignore-not-found {}'.format(
         get_kubectl(), namespace, resource_name)
     print("Command:", cmd)
     if apply:

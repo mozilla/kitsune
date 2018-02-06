@@ -118,6 +118,21 @@ spec:
             secretKeyRef:
               key: es-urls
               name: {{ SUMO_SECRETS_NAME }}
+        - name: GA_ACCOUNT
+          valueFrom:
+            secretKeyRef:
+              key: ga-account
+              name: {{ SUMO_SECRETS_NAME }}
+        - name: GA_KEY
+          valueFrom:
+            secretKeyRef:
+              key: ga-key
+              name: {{ SUMO_SECRETS_NAME }}
+        - name: GA_PROFILE_ID
+          valueFrom:
+            secretKeyRef:
+              key: ga-profile-id
+              name: {{ SUMO_SECRETS_NAME }}
         - name: REDIS_DEFAULT_URL
           valueFrom:
             secretKeyRef:
