@@ -4,6 +4,18 @@ from env import *
 from deploy_utils import get_kubectl
 
 
+def rollout_status(ctx, deployment_name):
+    namespace = ctx.config['K8S_NAMESPACE']
+    ctx.run('{} -n {}} rollout status deploy {}'.format(get_kubectl(),
+                                                        namespace, deployment_name))
+
+
+def rollback(ctx, deployment_name):
+    namespace = ctx.config['K8S_NAMESPACE']
+    ctx.run('{}} -n {}} rollout undo deploy {}'.format(get_kubectl(),
+                                                       namespace, deployment_name))
+
+
 @task
 def check_environment(ctx):
     """
@@ -21,17 +33,44 @@ def status_web(ctx):
     Check rollout status of a SUMO web deployment
     """
     namespace = ctx.config['K8S_NAMESPACE']
-    web_deployment_name = ctx.config['SUMO_WEB_DEPLOYMENT_NAME']
-    ctx.run('{} -n {}} rollout status deploy {}'.format(get_kubectl(),
-                                                        namespace, web_deployment_name))
+    rollout_status(ctx, ctx.config['SUMO_WEB_DEPLOYMENT_NAME'])
+
+
+@task(check_environment)
+def status_celery(ctx):
+    """
+    Check rollout status of a SUMO web deployment
+    """
+    rollout_status(ctx, ctx.config['SUMO_CELERY_DEPLOYMENT_NAME'])
+
+
+@task(check_environment)
+def status_cron(ctx):
+    """
+    Check rollout status of a SUMO web deployment
+    """
+    rollout_status(ctx, ctx.config['SUMO_CRON_DEPLOYMENT_NAME'])
 
 
 @task(check_environment)
 def rollback_web(ctx):
     """
-    Undo a deployment
+    Undo a web deployment
     """
-    namespace = ctx.config['K8S_NAMESPACE']
-    web_deployment_name = ctx.config['SUMO_WEB_DEPLOYMENT_NAME']
-    ctx.run('{}} -n {}} rollout undo deploy {}'.format(get_kubectl(),
-                                                       namespace, web_deployment_name))
+    rollback(ctx, ctx.config['SUMO_WEB_DEPLOYMENT_NAME'])
+
+
+@task(check_environment)
+def rollback_celery(ctx):
+    """
+    Undo a celery deployment
+    """
+    rollback(ctx, ctx.config['SUMO_CELERY_DEPLOYMENT_NAME'])
+
+
+@task(check_environment)
+def rollback_cron(ctx):
+    """
+    Undo a cron deployment
+    """
+    rollback(ctx, ctx.config['SUMO_CRON_DEPLOYMENT_NAME'])

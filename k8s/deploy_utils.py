@@ -5,8 +5,10 @@ import os
 import tempfile
 import yaml
 
+
 def get_kubectl():
     return os.environ.get('KUBECTL_BIN', 'kubectl')
+
 
 def render_template(config, template_name):
     loader = jinja2.FileSystemLoader(searchpath=TEMPLATE_DIR)

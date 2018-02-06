@@ -33,6 +33,7 @@ def delete_web(ctx, apply=False, infra_apply=False):
     deployment = 'deploy/{}'.format(ctx.config['SUMO_WEB_DEPLOYMENT_NAME'])
     k8s_delete_resource(ctx, deployment, apply)
 
+
 @task(check_environment)
 def create_celery(ctx, apply=False):
     """
@@ -52,6 +53,7 @@ def delete_celery(ctx, apply=False, infra_apply=False):
     deployment = 'deploy/{}'.format(ctx.config['SUMO_CELERY_DEPLOYMENT_NAME'])
     k8s_delete_resource(ctx, deployment, apply)
 
+
 @task(check_environment)
 def create_cron(ctx, apply=False):
     """
@@ -70,6 +72,7 @@ def delete_cron(ctx, apply=False, infra_apply=False):
 
     deployment = 'deploy/{}'.format(ctx.config['SUMO_CRON_DEPLOYMENT_NAME'])
     k8s_delete_resource(ctx, deployment, apply)
+
 
 @task(check_environment)
 def create_nodeport(ctx, apply=False, infra_apply=False):
