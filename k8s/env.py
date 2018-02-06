@@ -12,3 +12,5 @@ TEMPLATE_DIR = os.path.join(
 # template names
 SUMO_WEB_TEMPLATE = 'sumo-web.yaml.j2'
 SUMO_NODEPORT_TEMPLATE = 'sumo-nodeport.yaml.j2'
+SUMO_CELERY_TEMPLATE = 'sumo-celery.yaml.j2'
+SUMO_CRON_TEMPLATE = 'sumo-cron.yaml.j2'

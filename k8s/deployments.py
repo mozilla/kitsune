@@ -31,11 +31,45 @@ def delete_web(ctx, apply=False, infra_apply=False):
     """
 
     deployment = 'deploy/{}'.format(ctx.config['SUMO_WEB_DEPLOYMENT_NAME'])
-    if infra_apply:
-        k8s_delete_resource(ctx, deployment, apply)
-    else:
-        print("Infra tasks require an additional --infra-apply confirmation")
+    k8s_delete_resource(ctx, deployment, apply)
 
+@task(check_environment)
+def create_celery(ctx, apply=False):
+    """
+    Create or update a SUMO celery deployment
+    """
+    t = render_template(config=ctx.config,
+                        template_name=SUMO_CELERY_TEMPLATE)
+    k8s_apply(ctx, t, apply)
+
+
+@task(check_environment)
+def delete_celery(ctx, apply=False, infra_apply=False):
+    """
+    Delete an existing SUMO celery deployment
+    """
+
+    deployment = 'deploy/{}'.format(ctx.config['SUMO_CELERY_DEPLOYMENT_NAME'])
+    k8s_delete_resource(ctx, deployment, apply)
+
+@task(check_environment)
+def create_cron(ctx, apply=False):
+    """
+    Create or update a SUMO cron deployment
+    """
+    t = render_template(config=ctx.config,
+                        template_name=SUMO_CRON_TEMPLATE)
+    k8s_apply(ctx, t, apply)
+
+
+@task(check_environment)
+def delete_cron(ctx, apply=False, infra_apply=False):
+    """
+    Delete an existing SUMO cron deployment
+    """
+
+    deployment = 'deploy/{}'.format(ctx.config['SUMO_CRON_DEPLOYMENT_NAME'])
+    k8s_delete_resource(ctx, deployment, apply)
 
 @task(check_environment)
 def create_nodeport(ctx, apply=False, infra_apply=False):
