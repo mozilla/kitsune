@@ -410,6 +410,8 @@ SUPPORTED_NONLOCALES = (
     'geoip-suggestion',
     'contribute.json',
     'oidc',
+    'healthz',
+    'readiness',
 )
 
 # Make this unique, and don't share it with anybody.
