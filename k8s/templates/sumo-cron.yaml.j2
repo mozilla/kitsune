@@ -7,7 +7,7 @@ metadata:
   name: {{ SUMO_CRON_DEPLOYMENT_NAME }}
   namespace: {{ K8S_NAMESPACE }}
 spec:
-  replicas: {{ SUMO_WEB_REPLICAS }}
+  replicas: {{ SUMO_CRON_REPLICAS }}
   selector:
     matchLabels:
       app: {{ SUMO_APP_NAME }}
