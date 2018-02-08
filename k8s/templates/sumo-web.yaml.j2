@@ -56,6 +56,8 @@ spec:
           value: "{{ SUMO_ENV_HTTPS }}"
         - name: MEDIA_URL
           value: "{{ SUMO_ENV_MEDIA_URL }}"
+        - name: NEW_RELIC_APP_NAME
+          value: "{{ SUMO_ENV_NEW_RELIC_APP_NAME }}"
         - name: PIPELINE_ENABLED
           value: "{{ SUMO_ENV_PIPELINE_ENABLED }}"
         - name: PORT
@@ -132,6 +134,11 @@ spec:
           valueFrom:
             secretKeyRef:
               key: ga-profile-id
+              name: {{ SUMO_SECRETS_NAME }}
+        - name: NEW_RELIC_LICENSE_KEY
+          valueFrom:
+            secretKeyRef:
+              key: new-relic-license-key
               name: {{ SUMO_SECRETS_NAME }}
         - name: REDIS_DEFAULT_URL
           valueFrom:
