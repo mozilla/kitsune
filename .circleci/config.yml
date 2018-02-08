@@ -27,7 +27,7 @@ jobs:
             docker-compose up -d redis
             # Replace with urlwait or takis
             sleep 10s;
-            docker-compose -f docker-compose.yml -f docker/composefiles/test.yml up web
+            docker-compose -f docker-compose.yml -f docker/composefiles/test.yml run web ./bin/run-unit-tests.sh
       - run:
           name: Push images
           command: GIT_BRANCH=${CIRCLE_BRANCH} GIT_SHA=${CIRCLE_SHA1:0:7} ./docker/bin/push-docker-images.sh
