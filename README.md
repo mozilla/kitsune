@@ -35,6 +35,10 @@ To setup a local Kitsune development environment:
     docker-compose -f docker-compose.yml -f docker/composefiles/build.yml build base
     docker-compose -f docker-compose.yml -f docker/composefiles/build.yml build dev
 
+ #. Copy .env-dist to .env
+
+    cp .env-dist .env
+
  #. Create your database
 
     docker-compose -f docker-compose.yml -f docker/composefiles/dev.yml run web ./manage.py migrate
