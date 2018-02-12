@@ -370,9 +370,10 @@ DB_LOCALIZE = {
 
 # locale is in the kitsune git repo project directory, so that's
 # up one directory from the PROJECT_ROOT
-LOCALE_PATHS = (
-    path('locale'),
-)
+if config('SET_LOCALE_PATHS', default=True, cast=bool):
+    LOCALE_PATHS = (
+        path('locale'),
+    )
 
 # Use the real robots.txt?
 ENGAGE_ROBOTS = config('ENGAGE_ROBOTS', default=not DEBUG, cast=bool)
