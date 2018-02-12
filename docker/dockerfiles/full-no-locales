@@ -19,6 +19,7 @@ RUN groupadd --gid 1000 kitsune && useradd -g kitsune --uid 1000 --shell /usr/sb
 
 COPY --from=kitsune:base-latest /venv /venv
 COPY --from=kitsune:staticfiles-latest /app/static /app/static
+COPY --from=kitsune:staticfiles-latest /app/jsi18n /app/jsi18n
 
 COPY . .
 
