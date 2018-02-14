@@ -23,6 +23,7 @@ def k8s_apply(ctx, template_text, apply):
     f = tempfile.NamedTemporaryFile(prefix='k8s', suffix='yaml', delete=False)
     f.write(template_text.encode('utf-8'))
     f.write("\n".encode('utf-8'))
+    f.flush()
 
     print("Rendering template to:", f.name)
     cmd = '{} apply -n {} -f {}'.format(get_kubectl(), namespace, f.name)
