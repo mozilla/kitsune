@@ -55,7 +55,7 @@ class TestSuiteRunner(django_nose.NoseTestSuiteRunner):
         super(TestSuiteRunner, self).setup_test_environment(**kwargs)
 
 
-@override_settings(ES_LIVE_INDEX=False)
+@override_settings(ES_LIVE_INDEXING=False)
 class TestCase(OriginalTestCase):
     """TestCase that skips live indexing."""
     def _pre_setup(self):
