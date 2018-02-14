@@ -475,6 +475,7 @@ TEMPLATES = [
 
 
 MIDDLEWARE_CLASSES = (
+    'django.middleware.security.SecurityMiddleware',
     'multidb.middleware.PinningRouterMiddleware',
     'django_statsd.middleware.GraphiteMiddleware',
     'commonware.request.middleware.SetRemoteAddrFromForwardedFor',
@@ -518,12 +519,22 @@ MIDDLEWARE_CLASSES = (
     'commonware.middleware.ScrubRequestOnException',
     'django_statsd.middleware.GraphiteRequestTimingMiddleware',
     'waffle.middleware.WaffleMiddleware',
-    'commonware.middleware.ContentTypeOptionsHeader',
-    'commonware.middleware.StrictTransportMiddleware',
-    'commonware.middleware.XSSProtectionHeader',
     'commonware.middleware.RobotsTagHeader',
     # 'axes.middleware.FailedLoginMiddleware'
 )
+
+# SecurityMiddleware settings
+SECURE_HSTS_SECONDS = config('SECURE_HSTS_SECONDS', default='0', cast=int)
+SECURE_HSTS_INCLUDE_SUBDOMAINS = False
+SECURE_BROWSER_XSS_FILTER = config('SECURE_BROWSER_XSS_FILTER', default=True, cast=bool)
+SECURE_CONTENT_TYPE_NOSNIFF = config('SECURE_CONTENT_TYPE_NOSNIFF', default=True, cast=bool)
+SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', default=not DEBUG, cast=bool)
+SECURE_REDIRECT_EXEMPT = [
+    r'^healthz/$',
+    r'^readiness/$',
+]
+if config('USE_SECURE_PROXY_HEADER', default=SECURE_SSL_REDIRECT, cast=bool):
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Auth
 AUTHENTICATION_BACKENDS = (
