@@ -43,7 +43,7 @@ def liveness(request):
     supporting services (like MySQL, Redis, Celery) can
     be successfully used from within this service.
     """
-    return HttpResponse(status=204)
+    return HttpResponse(status=200)
 
 
 # copied from
