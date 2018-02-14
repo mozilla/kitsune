@@ -64,6 +64,14 @@ spec:
           value: "{{ SUMO_ENV_PORT }}"
         - name: READ_ONLY
           value: "{{ SUMO_ENV_READ_ONLY }}"
+        - name: SECURE_HSTS_SECONDS
+          value: "{{ SUMO_ENV_SECURE_HSTS_SECONDS }}"
+        - name: SECURE_BROWSER_XSS_FILTER
+          value: "{{ SUMO_ENV_SECURE_BROWSER_XSS_FILTER }}"
+        - name: SECURE_CONTENT_TYPE_NOSNIFF
+          value: "{{ SUMO_ENV_SECURE_CONTENT_TYPE_NOSNIFF }}"
+        - name: SECURE_SSL_REDIRECT
+          value: "{{ SUMO_ENV_SECURE_SSL_REDIRECT }}"
         - name: SESSION_COOKIE_SECURE
           value: "{{ SUMO_ENV_SESSION_COOKIE_SECURE }}"
         - name: SITE_URL
