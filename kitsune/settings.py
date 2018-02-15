@@ -5,15 +5,13 @@ import logging
 import os
 import platform
 import re
+from datetime import date
 
 import dj_database_url
 import django_cache_url
-
-
-from datetime import date
-from decouple import Csv, config
-
 import djcelery
+import requests
+from decouple import Csv, config
 
 from bundles import PIPELINE_CSS, PIPELINE_JS
 from kitsune.lib.sumo_locales import LOCALES
@@ -1042,6 +1040,15 @@ SILENCED_SYSTEM_CHECKS = [
 ]
 
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='', cast=Csv())
+
+# Add AWS internal IP to allowed hosts for ELB health check to work.
+try:
+    EC2_PRIVATE_IP = requests.get('http://169.254.169.254/latest/meta-data/local-ipv4',
+                                  timeout=0.2).text
+    ALLOWED_HOSTS.append(EC2_PRIVATE_IP)
+except requests.exceptions.RequestException:
+    pass
+
 # in production set this to 'support.mozilla.org' and all other domains will redirect.
 # can be a comma separated list of allowed domains.
 # the first in the list will be the target of redirects.
