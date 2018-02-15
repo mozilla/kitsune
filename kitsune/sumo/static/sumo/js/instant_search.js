@@ -1,4 +1,4 @@
-/* globals k:false, jQuery:false, trackEvent:false, trackPageview:false */
+/* globals k:false, jQuery:false, trackEvent:false */
 (function($) {
   var searchTimeout;
   var locale = $('html').attr('lang');
@@ -83,7 +83,6 @@
         search.setParams(params);
         search.query($this.val(), k.InstantSearchSettings.render);
         trackEvent('Instant Search', 'Search', search.lastQueryUrl());
-        trackPageview(search.lastQueryUrl());
       }, 200);
 
       k.InstantSearchSettings.hideContent();
@@ -117,7 +116,6 @@
     }
 
     trackEvent('Instant Search', 'Search', $this.data('href'));
-    trackPageview($this.data('href'));
 
     cxhr.request($this.data('href'), {
       data: {format: 'json'},

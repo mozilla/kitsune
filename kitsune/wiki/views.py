@@ -183,18 +183,6 @@ def document(request, document_slug, template=None, document=None):
 
     product_topics = Topic.objects.filter(product=product, visible=True, parent=None)
 
-    ga_push = []
-    if fallback_reason is not None:
-        if fallback_reason == 'fallback_locale':
-            ga_push.append(['_trackEvent', 'Incomplete L10n', 'Fallback Locale',
-                            '%s/%s/%s' % (doc.parent.slug, request.LANGUAGE_CODE, doc.locale)])
-        else:
-            ga_push.append(['_trackEvent', 'Incomplete L10n', 'Not Localized',
-                            '%s/%s' % (doc.slug, request.LANGUAGE_CODE)])
-    elif doc.is_outdated():
-        ga_push.append(['_trackEvent', 'Incomplete L10n', 'Not Updated',
-                        '%s/%s' % (doc.parent.slug, request.LANGUAGE_CODE)])
-
     if document_slug in COLLAPSIBLE_DOCUMENTS.get(request.LANGUAGE_CODE, []):
         document_css_class = 'collapsible'
     else:
@@ -244,7 +232,6 @@ def document(request, document_slug, template=None, document=None):
         'product': product,
         'products': products,
         'related_products': doc.related_products.exclude(pk=product.pk),
-        'ga_push': ga_push,
         'breadcrumb_items': breadcrumbs,
         'document_css_class': document_css_class,
         'any_localizable_revision': any_localizable_revision,
