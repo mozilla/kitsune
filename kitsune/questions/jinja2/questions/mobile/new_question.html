@@ -25,7 +25,8 @@
         <ul>
           {% for key, product in products.iteritems() %}
             <li class="{% if product == current_product %}selected{% endif %}">
-              <a href="{{ url('questions.aaq_step2', product_key=key) }}">
+              <a href="{{ url('questions.aaq_step2', product_key=key) }}" data-event-category="link click"
+              data-event-action="product" data-event-label="{{ product.name }}">
                 <span class="logo-sprite logo-{{ key }}"></span>
                 {{ product.name }}
               </a>
