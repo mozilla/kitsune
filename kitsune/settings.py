@@ -465,6 +465,7 @@ TEMPLATES = [
 
 
 MIDDLEWARE_CLASSES = (
+    'allow_cidr.middleware.AllowCIDRMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'multidb.middleware.PinningRouterMiddleware',
     'django_statsd.middleware.GraphiteMiddleware',
@@ -1042,6 +1043,7 @@ SILENCED_SYSTEM_CHECKS = [
 ]
 
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='', cast=Csv())
+ALLOWED_CIDR_NETS = config('ALLOWED_CIDR_NETS', default='', cast=Csv())
 # in production set this to 'support.mozilla.org' and all other domains will redirect.
 # can be a comma separated list of allowed domains.
 # the first in the list will be the target of redirects.
