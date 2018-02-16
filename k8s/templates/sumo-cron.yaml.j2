@@ -303,14 +303,6 @@ spec:
         image: {{ SUMO_IMAGE }}:{{ SUMO_IMAGE_TAG }}
         imagePullPolicy: {{ SUMO_IMAGE_PULL_POLICY }}
         name: sumo-{{ TARGET_ENVIRONMENT }}-web
-        readinessProbe:
-          failureThreshold: {{ SUMO_READINESS_FAILURE_THRESHOLD }}
-          initialDelaySeconds: {{ SUMO_READINESS_INITIAL_DELAY_SECONDS }}
-          periodSeconds: {{ SUMO_READINESS_PERIOD_SECONDS }}
-          successThreshold: {{ SUMO_READINESS_SUCCESS_THRESHOLD }}
-          tcpSocket:
-            port: {{ SUMO_READINESS_TCP_SOCKET_PORT }}
-          timeoutSeconds: {{ SUMO_READINESS_TIMEOUT_SECONDS }}
         resources:
           requests:
             cpu: {{ SUMO_CPU_REQUEST }}
