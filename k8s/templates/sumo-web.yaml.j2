@@ -81,7 +81,7 @@ spec:
         - name: ALLOWED_CIDR_NETS
           valueFrom:
             secretKeyRef:
-              key: allow-cidr-nets
+              key: allowed-cidr-nets
               name: {{ SUMO_SECRETS_NAME }}
         - name: AWS_ACCESS_KEY_ID
           valueFrom:
