@@ -76,11 +76,6 @@ spec:
           value: "{{ SUMO_ENV_SITE_URL }}"
         - name: STAGE
           value: "{{ SUMO_ENV_STAGE }}"
-        - name: ALLOWED_CIDR_NETS
-          valueFrom:
-            secretKeyRef:
-              key: allowed-cidr-nets
-              name: {{ SUMO_SECRETS_NAME }}
         - name: AWS_ACCESS_KEY_ID
           valueFrom:
             secretKeyRef:
