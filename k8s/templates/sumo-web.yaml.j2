@@ -76,6 +76,8 @@ spec:
           value: "{{ SUMO_ENV_SITE_URL }}"
         - name: STAGE
           value: "{{ SUMO_ENV_STAGE }}"
+        - name: STATIC_URL
+          value: "{{ SUMO_ENV_STATIC_URL }}"
         - name: AWS_ACCESS_KEY_ID
           valueFrom:
             secretKeyRef:
