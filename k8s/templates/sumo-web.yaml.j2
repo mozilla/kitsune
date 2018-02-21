@@ -166,6 +166,11 @@ spec:
             secretKeyRef:
               key: secret-key
               name: {{ SUMO_SECRETS_NAME }}
+        - name: SENTRY_DSN
+          valueFrom:
+            secretKeyRef:
+              key: sentry-dsn
+              name: {{ SUMO_SECRETS_NAME }}
         - name: STATSD_CLIENT
           valueFrom:
             secretKeyRef:
