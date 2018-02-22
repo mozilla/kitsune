@@ -25,12 +25,14 @@ See [what's deployed](https://whatsdeployed.io/s-PRg)
 
 To setup a local Kitsune development environment:
 
+ #. Fork this repository & clone it to your local machine.
+
  #. Download base Kitsune docker images:
 
     docker pull mozmeao/kitsune:base-latest
     docker pull mozmeao/kitsune:base-dev-latest
 
- #. Build Kitsune docker images. (Optional. Needed when updating python packages)
+ #. Build Kitsune docker images. (Only needed on initial build or when packages change)
 
     docker-compose -f docker-compose.yml -f docker/composefiles/build.yml build base
     docker-compose -f docker-compose.yml -f docker/composefiles/build.yml build dev
@@ -48,7 +50,24 @@ To setup a local Kitsune development environment:
     docker-compose -f docker-compose.yml -f docker/composefiles/dev.yml run web npm install
     docker-compose -f docker-compose.yml -f docker/composefiles/dev.yml run web ./node_modules/.bin/bower install --allow-root
 
+#. (Optional) Enable the admin control panel
 
-To run Kitsune:
+    echo "ENABLE_ADMIN=True" >> .env
 
- #. docker-compose -f docker-compose.yml -f docker/composefiles/dev.yml up web
+#. Run Kitsune
+
+    docker-compose -f docker-compose.yml -f docker/composefiles/dev.yml up web
+
+The running instance will be located at http://0.0.0.0:8000/ unless you specified otherwise, and the administrative control panel will be at http://0.0.0.0:8000/admin.
+
+#. (Optional) Create a superuser
+
+    docker-compose -f docker-compose.yml -f docker/composefiles/dev.yml exec web ./manage.py createsuperuser
+
+#. (Optional) Create some data
+
+    docker-compose -f docker-compose.yml -f docker/composefiles/dev.yml exec web ./manage.py generatedata
+
+#. (Optional) Update product details
+
+    docker-compose -f docker-compose.yml -f docker/composefiles/dev.yml exec web ./manage.py update_product_details
