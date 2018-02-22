@@ -21,6 +21,7 @@ services:
       - docker-entrypoint.sh
       - --character-set-server=utf8
       - --collation-server=utf8_unicode_ci
+      - --max_allowed_packet=1073741824
     volumes:
       - mysqlvolume:/var/lib/mysql
 
