@@ -14,6 +14,9 @@ jobs:
           name: Build docker images
           command: GIT_SHA=${CIRCLE_SHA1:0:7} ./docker/bin/build-docker-images.sh
       - run:
+          name: Push docker images
+          command: GIT_BRANCH=${CIRCLE_BRANCH} GIT_SHA=${CIRCLE_SHA1:0:7} ./docker/bin/push-docker-images.sh
+      - run:
           name: Run flake8
           command: docker run kitsune:full-no-locales-latest flake8 kitsune
       - run:
@@ -28,6 +31,7 @@ jobs:
             # Replace with urlwait or takis
             sleep 10s;
             docker-compose -f docker-compose.yml -f docker/composefiles/test.yml run web ./bin/run-unit-tests.sh
+      # Re-run push images to push the '-latest' tags if available.
       - run:
           name: Push images
           command: GIT_BRANCH=${CIRCLE_BRANCH} GIT_SHA=${CIRCLE_SHA1:0:7} ./docker/bin/push-docker-images.sh
