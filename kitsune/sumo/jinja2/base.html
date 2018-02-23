@@ -12,6 +12,12 @@
 
   {{ favicon() }}
 
+  {# Optimizely script for A/B testing - Bug 850816 #}
+  {% if waffle.flag('optimizely') %}
+    <script src="//cdn.optimizely.com/js/245885873.js"></script>
+  {% endif %}
+  {# End Optimizely #}
+
   <link rel="search" type="application/opensearchdescription+xml" title="{{ _('Mozilla Support') }}" href="{{ url('search.plugin') }}"/>
   {% if feeds %}
     {% for feed in feeds %}
@@ -233,12 +239,6 @@
 {% if request.LANGUAGE_CODE %}
   <script src="{{ static('jsi18n/{lang}/djangojs.js'|f(lang=request.LANGUAGE_CODE|lower)) }}"></script>
 {% endif %}
-
-{# Optimizely script for A/B testing - Bug 850816 #}
-{% if waffle.flag('optimizely') %}
-  <script src="//cdn.optimizely.com/js/245885873.js"></script>
-{% endif %}
-{# End Optimizely #}
 
 {% javascript 'common' %}
 <!--[if (gte IE 6)&(lte IE 8)]>
