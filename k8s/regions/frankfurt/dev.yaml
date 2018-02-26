@@ -39,12 +39,18 @@ kubernetes:
                 max_surge: 3
                 max_unavailable: 0
             readiness:
-                failure_threshold: 1
-                initial_delay_seconds: 5
+                failure_threshold: 2
+                initial_delay_seconds: 20
                 period_seconds: 5
                 success_threshold: 1
-                tcp_socket_port: 8000
                 timeout_seconds: 5
+            liveness:
+                failure_threshold: 2
+                initial_delay_seconds: 20
+                period_seconds: 5
+                success_threshold: 1
+                timeout_seconds: 5
+
 
 app:
     allowed_cidr_nets: SECRET
