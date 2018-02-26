@@ -49,13 +49,31 @@ spec:
         name: sumo-{{ kubernetes.target_environment }}-web
         {%- if kubernetes.readiness %}
         readinessProbe:
+          httpGet:
+              port: {{ app.port }}
+              path: /readiness/
+              httpHeaders:
+                  - name: Host
+                    value: {{ app.allowed_hosts.split(',')[0] }}
           failureThreshold: {{ kubernetes.readiness.failure_threshold }}
           initialDelaySeconds: {{ kubernetes.readiness.initial_delay_seconds }}
           periodSeconds: {{ kubernetes.readiness.period_seconds }}
           successThreshold: {{ kubernetes.readiness.success_threshold }}
-          tcpSocket:
-            port: {{ kubernetes.readiness.tcp_socket_port }}
           timeoutSeconds: {{ kubernetes.readiness.timeout_seconds }}
+        {%- endif %}
+        {%- if kubernetes.liveness %}
+        livenessProbe:
+          httpGet:
+              port: {{ app.port }}
+              path: /healthz/
+              httpHeaders:
+                  - name: Host
+                    value: {{ app.allowed_hosts.split(',')[0] }}
+          failureThreshold: {{ kubernetes.liveness.failure_threshold }}
+          initialDelaySeconds: {{ kubernetes.liveness.initial_delay_seconds }}
+          periodSeconds: {{ kubernetes.liveness.period_seconds }}
+          successThreshold: {{ kubernetes.liveness.success_threshold }}
+          timeoutSeconds: {{ kubernetes.liveness.timeout_seconds }}
         {%- endif %}
         resources:
           requests:
