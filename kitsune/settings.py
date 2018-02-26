@@ -84,6 +84,7 @@ DEFAULT_REPLY_TO_EMAIL = config('DEFAULT_REPLY_TO_EMAIL', default='no-reply@mozi
 SERVER_EMAIL = config('SERVER_EMAIL', default='server-error@support.mozilla.org')
 
 PLATFORM_NAME = platform.node()
+K8S_DOMAIN = config('K8S_DOMAIN', default='')
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
@@ -465,6 +466,7 @@ TEMPLATES = [
 
 
 MIDDLEWARE_CLASSES = (
+    'kitsune.sumo.middleware.HostnameMiddleware',
     'allow_cidr.middleware.AllowCIDRMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'multidb.middleware.PinningRouterMiddleware',
@@ -1109,3 +1111,5 @@ DMS_UPDATE_L10N_CONTRIBUTOR_METRICS = config('DMS_UPDATE_L10N_CONTRIBUTOR_METRIC
 PROD_DETAILS_CACHE_NAME = 'product-details'
 PROD_DETAILS_STORAGE = config('PROD_DETAILS_STORAGE',
                               default='product_details.storage.PDDatabaseStorage')
+
+DISABLE_HOSTNAME_MIDDLEWARE = config('DISABLE_HOSTNAME_MIDDLEWARE', default=False, cast=bool)

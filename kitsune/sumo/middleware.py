@@ -20,6 +20,12 @@ from kitsune.sumo.urlresolvers import Prefixer, set_url_prefixer, split_path
 from kitsune.sumo.views import handle403
 
 
+try:
+    from django.utils.deprecation import MiddlewareMixin
+except ImportError:
+    MiddlewareMixin = object
+
+
 class LocaleURLMiddleware(object):
     """
     Based on zamboni.amo.middleware.
@@ -221,4 +227,17 @@ class MobileSwitchMiddleware(object):
         elif mobile == '1':
             response.set_cookie(mobility.middleware.COOKIE, 'on')
 
+        return response
+
+
+class HostnameMiddleware(MiddlewareMixin):
+    def __init__(self):
+        if getattr(settings, 'DISABLE_HOSTNAME_MIDDLEWARE', False):
+            raise MiddlewareNotUsed()
+
+        values = [getattr(settings, x) for x in ['PLATFORM_NAME', 'K8S_DOMAIN']]
+        self.backend_server = '.'.join(x for x in values if x)
+
+    def process_response(self, request, response):
+        response['X-Backend-Server'] = self.backend_server
         return response

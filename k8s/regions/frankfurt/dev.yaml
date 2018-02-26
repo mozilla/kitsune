@@ -66,6 +66,7 @@ app:
     database_url: SECRET
     debug: False
     domain: "localhost"
+    k8s_domain: "frankfurt.moz.works"
     enable_admin: True
     enable_whitenoise: True
     engage_robots: False
