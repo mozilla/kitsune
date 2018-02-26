@@ -1,0 +1,67 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app: {{ kubernetes.app_name }}
+    type: web
+  name: {{ kubernetes.deployment_name }}
+  namespace: {{ kubernetes.namespace }}
+spec:
+  replicas: {{ kubernetes.replicas }}
+  selector:
+    matchLabels:
+      app: {{ kubernetes.app_name }}
+      type: web
+  strategy:
+    rollingUpdate:
+      maxSurge: {{ kubernetes.rollouts.max_surge }}
+      maxUnavailable: {{ kubernetes.rollouts.max_unavailable }}
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: {{ kubernetes.app_name }}
+        type: web
+      name: {{ kubernetes.deployment_name }}
+      namespace: {{ kubernetes.namespace }}
+    spec:
+      containers:
+      - args:
+        - {{ kubernetes.command }}
+        command:
+        - /bin/bash
+        - -c
+        env:
+            {%- for name in app|sort -%}
+              {% set value = app[name] %}
+            - name: {{ name|upper }}
+              {% if value == 'SECRET' -%}
+              valueFrom:
+                secretKeyRef:
+                  key: {{ name|replace('_', '-') }}
+                  name: "{{ kubernetes.secrets_name }}"
+              {%- else -%}
+                value: "{{ value }}"
+              {%- endif -%}
+            {%- endfor %}
+        image: {{ kubernetes.image.repo }}:{{ kubernetes.image.tag }}
+        imagePullPolicy: {{ kubernetes.image.pull_policy }}
+        name: sumo-{{ kubernetes.target_environment }}-web
+        {%- if kubernetes.readiness %}
+        readinessProbe:
+          failureThreshold: {{ kubernetes.readiness.failure_threshold }}
+          initialDelaySeconds: {{ kubernetes.readiness.initial_delay_seconds }}
+          periodSeconds: {{ kubernetes.readiness.period_seconds }}
+          successThreshold: {{ kubernetes.readiness.success_threshold }}
+          tcpSocket:
+            port: {{ kubernetes.readiness.tcp_socket_port }}
+          timeoutSeconds: {{ kubernetes.readiness.timeout_seconds }}
+        {%- endif %}
+        resources:
+          requests:
+            cpu: {{ kubernetes.limits.cpu_request }}
+            memory: {{ kubernetes.limits.memory_request }}
+          limits:
+            cpu: {{ kubernetes.limits.cpu_limit }}
+            memory: {{ kubernetes.limits.memory_limit }}
+      restartPolicy: Always
