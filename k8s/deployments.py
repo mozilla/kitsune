@@ -1,6 +1,6 @@
 from invoke import task
 from invoke.exceptions import Exit
-from env import SUMO_APP_TEMPLATE
+from env import SUMO_APP_TEMPLATE, SUMO_NODEPORT_TEMPLATE
 from deploy_utils import render_template, k8s_apply, k8s_delete_resource
 
 
