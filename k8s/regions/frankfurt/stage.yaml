@@ -1,0 +1,100 @@
+kubernetes:
+    aws_region: "eu-central-1"
+    aws_resource_stack: "prod"
+
+    app_name: "sumo-stage"
+    namespace: "sumo-stage"
+    target_environment: "stage"
+    nodeport_name: "sumo-nodeport"
+    secrets_name: "sumo-secrets-stage"
+    image:
+        repo: "mozmeao/kitsune"
+        tag: "full-latest"
+        pull_policy: "Always"
+    # default values
+    limits:
+        memory_limit: 1Gi
+        memory_request: 256Mi
+        cpu_limit: 500m
+        cpu_request: 100m
+    replicas: 1
+    rollouts:
+        max_surge: 1
+        max_unavailable: 0
+    readiness: False
+    # app specific values
+    apps:
+        cron:
+            command: "./bin/run-cron.sh"
+            deployment_name: "sumo-stage-cron"
+        celery:
+            command: "./bin/run-celery-worker.sh"
+            deployment_name: "sumo-stage-celery"
+            replicas: 3
+        web:
+            command: "./bin/run-prod.sh"
+            deployment_name: "sumo-stage-web"
+            replicas: 3
+            rollouts:
+                max_surge: 3
+                max_unavailable: 0
+            readiness:
+                failure_threshold: 2
+                initial_delay_seconds: 20
+                period_seconds: 5
+                success_threshold: 1
+                timeout_seconds: 5
+            liveness:
+                failure_threshold: 2
+                initial_delay_seconds: 20
+                period_seconds: 5
+                success_threshold: 1
+                timeout_seconds: 5
+
+
+app:
+    allowed_cidr_nets: SECRET
+    allowed_hosts: "stage.sumo.moz.works"
+    aws_access_key_id: SECRET
+    aws_s3_custom_domain: SECRET
+    aws_secret_access_key: SECRET
+    aws_storage_bucket_name: SECRET
+    broker_url: SECRET
+    cache_url: SECRET
+    celery_already_eager: False
+    csrf_cookie_secure: True
+    database_url: SECRET
+    debug: False
+    domain: "localhost"
+    k8s_domain: "frankfurt.moz.works"
+    enable_admin: True
+    enable_whitenoise: True
+    engage_robots: False
+    es_http_auth: SECRET
+    es_live_indexing: True
+    es_use_ssl: True
+    es_urls: SECRET
+    ga_account: SECRET
+    ga_key: SECRET
+    ga_profile_id: SECRET
+    media_url: "https://stage-cdn.sumo.mozilla.net/"
+    new_relic_app_name: "sumo-stage-frankfurt"
+    new_relic_license_key: SECRET
+    pipeline_enabled: True
+    port: 8000
+    read_only: False
+    redis_default_url: SECRET
+    redis_helpfulvotes_url: SECRET
+    secret_key: SECRET
+    sentry_dsn: SECRET
+    session_cookie_secure: True
+    site_url: "http://stage.sumo.moz.works"
+    stage: False
+    static_url: "https://static-media-stage-cdn.sumo.mozilla.net/static/"
+    statsd_client: SECRET
+    statsd_host: SECRET
+    statsd_prefix: SECRET
+    secure_hsts_seconds: 0
+    secure_browser_xss_filter: True
+    secure_content_type_nosniff: True
+    secure_ssl_redirect: True
