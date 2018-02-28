@@ -197,6 +197,8 @@ class Thread(NotificationsMixin, ModelBase, SearchMixin):
 
 @register_mapping_type
 class ThreadMappingType(SearchMappingType):
+    seconds_ago_filter = 'last_post__created__gte'
+
     @classmethod
     def search(cls):
         return super(ThreadMappingType, cls).search().order_by('created')

@@ -669,6 +669,7 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
 
 @register_mapping_type
 class QuestionMappingType(SearchMappingType):
+    seconds_ago_filter = 'updated__gte'
     list_keys = [
         'topic',
         'product',
@@ -1147,6 +1148,7 @@ class Answer(ModelBase, SearchMixin):
 
 @register_mapping_type
 class AnswerMetricsMappingType(SearchMappingType):
+    seconds_ago_filter = 'updated__gte'
     list_keys = [
         'product'
     ]

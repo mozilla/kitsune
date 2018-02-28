@@ -670,6 +670,7 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
 
 @register_mapping_type
 class DocumentMappingType(SearchMappingType):
+    seconds_ago_filter = 'current_revision__created__gte'
     list_keys = [
         'topic',
         'product'
@@ -794,12 +795,12 @@ class DocumentMappingType(SearchMappingType):
         return d
 
     @classmethod
-    def get_indexable(cls):
+    def get_indexable(cls, seconds_ago=0):
         # This function returns all the indexable things, but we
         # really need to handle the case where something was indexable
         # and isn't anymore. Given that, this returns everything that
         # has a revision.
-        indexable = super(cls, cls).get_indexable()
+        indexable = super(cls, cls).get_indexable(seconds_ago=seconds_ago)
         indexable = indexable.filter(current_revision__isnull=False)
         return indexable
 
@@ -1076,6 +1077,8 @@ class DraftRevision(ModelBase, SearchMixin, AbstractRevision):
 
 @register_mapping_type
 class RevisionMetricsMappingType(SearchMappingType):
+    seconds_ago_filter = 'created__gte'
+
     @classmethod
     def get_model(cls):
         return Revision

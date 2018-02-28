@@ -14,6 +14,12 @@ class Command(BaseCommand):
                     help='Reindex a percentage of things'),
         make_option('--delete', action='store_true', dest='delete',
                     help='Wipes index before reindexing'),
+        make_option('--hours-ago', type='int', dest='hours_ago', default=0,
+                    help='Reindex things updated N hours ago'),
+        make_option('--minutes-ago', type='int', dest='minutes_ago', default=0,
+                    help='Reindex things updated N minutes ago'),
+        make_option('--seconds-ago', type='int', dest='seconds_ago', default=0,
+                    help='Reindex things updated N seconds ago'),
         make_option('--mapping_types', type='string', dest='mapping_types',
                     default=None,
                     help='Comma-separated list of mapping types to index'),
@@ -29,10 +35,17 @@ class Command(BaseCommand):
         delete = options['delete']
         mapping_types = options['mapping_types']
         criticalmass = options['criticalmass']
+        seconds_ago = options['seconds_ago']
+        seconds_ago += options['minutes_ago'] * 60
+        seconds_ago += options['hours_ago'] * 3600
         if mapping_types:
             mapping_types = mapping_types.split(',')
         if not 1 <= percent <= 100:
             raise CommandError('percent should be between 1 and 100')
+        if percent < 100 and seconds_ago:
+            raise CommandError('you can\'t specify a time ago and percent')
+        if criticalmass and seconds_ago:
+            raise CommandError('you can\'t specify a time ago and criticalmass')
         if percent < 100 and criticalmass:
             raise CommandError('you can\'t specify criticalmass and percent')
         if mapping_types and criticalmass:
@@ -44,4 +57,5 @@ class Command(BaseCommand):
             delete=delete,
             mapping_types=mapping_types,
             criticalmass=criticalmass,
+            seconds_ago=seconds_ago,
             log=FakeLogger(self.stdout))
