@@ -1,9 +1,9 @@
 kubernetes:
-    app_name: "sumo-stage"
-    namespace: "sumo-stage"
-    target_environment: "stage"
+    app_name: "sumo-prod"
+    namespace: "sumo-prod"
+    target_environment: "prod"
     nodeport_name: "sumo-nodeport"
-    secrets_name: "sumo-secrets-stage"
+    secrets_name: "sumo-secrets-prod"
     image:
         repo: "mozmeao/kitsune"
         tag: "full-latest"
@@ -24,15 +24,15 @@ kubernetes:
     apps:
         cron:
             command: "./bin/run-cron.sh"
-            deployment_name: "sumo-stage-cron"
+            deployment_name: "sumo-prod-cron"
             replicas: 0
         celery:
             command: "./bin/run-celery-worker.sh"
-            deployment_name: "sumo-stage-celery"
+            deployment_name: "sumo-prod-celery"
             replicas: 0
         web:
             command: "./bin/run-prod.sh"
-            deployment_name: "sumo-stage-web"
+            deployment_name: "sumo-prod-web"
             replicas: 3
             rollouts:
                 max_surge: 3
@@ -52,7 +52,7 @@ kubernetes:
 
 app:
     allowed_cidr_nets: SECRET
-    allowed_hosts: "stage.sumo.moz.works,support.allizom.org"
+    allowed_hosts: "prod.sumo.moz.works,support.mozilla.com,support.mozilla.org"
     aws_access_key_id: SECRET
     aws_s3_custom_domain: SECRET
     aws_secret_access_key: SECRET
@@ -63,7 +63,7 @@ app:
     csrf_cookie_secure: True
     database_url: SECRET
     debug: False
-    k8s_domain: "frankfurt.moz.works"
+    k8s_domain: "oregon-a.moz.works"
     email_host: SECRET
     email_host_user: SECRET
     email_host_password: SECRET
@@ -72,7 +72,7 @@ app:
     enable_admin: False
     enable_whitenoise: True
     engage_robots: False
-    es_index_prefix: "sumo_stage"
+    es_index_prefix: "sumo_prod"
     es_http_auth: SECRET
     es_live_indexing: True
     es_use_ssl: True
@@ -80,8 +80,8 @@ app:
     ga_account: SECRET
     ga_key: SECRET
     ga_profile_id: SECRET
-    media_url: "https://stage-cdn.sumo.mozilla.net/"
-    new_relic_app_name: "sumo-stage-frankfurt"
+    media_url: "https://prod-cdn.sumo.mozilla.net/"
+    new_relic_app_name: "sumo-prod-oregon-a"
     new_relic_license_key: SECRET
     pipeline_enabled: True
     port: 8000
@@ -92,10 +92,10 @@ app:
     sentry_dsn: SECRET
     session_cookie_secure: True
     stage: False
-    static_url: "https://static-media-stage-cdn.sumo.mozilla.net/static/"
+    static_url: "https://static-media-prod-cdn.sumo.mozilla.net/static/"
     statsd_client: SECRET
     statsd_host: SECRET
-    statsd_prefix: "sumo-stage.frankfurt"
+    statsd_prefix: "sumo-prod.oregon-a"
     secure_hsts_seconds: 0
     secure_browser_xss_filter: True
     secure_content_type_nosniff: True
