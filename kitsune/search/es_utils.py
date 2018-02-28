@@ -395,7 +395,7 @@ def get_index_settings(index):
             .get(index, {}).get('settings', {}))
 
 
-def get_indexable(percent=100, mapping_types=None):
+def get_indexable(percent=100, seconds_ago=0, mapping_types=None):
     """Returns a list of (class, iterable) for all the things to index
 
     :arg percent: Defaults to 100.  Allows you to specify how much of
@@ -412,7 +412,7 @@ def get_indexable(percent=100, mapping_types=None):
     to_index = []
     percent = float(percent) / 100
     for cls in mapping_types:
-        indexable = cls.get_indexable()
+        indexable = cls.get_indexable(seconds_ago=seconds_ago)
         if percent < 1:
             indexable = indexable[:int(indexable.count() * percent)]
         to_index.append((cls, indexable))
@@ -463,7 +463,7 @@ def index_chunk(cls, id_list, reraise=False):
 
 
 def es_reindex_cmd(percent=100, delete=False, mapping_types=None,
-                   criticalmass=False, log=log):
+                   criticalmass=False, seconds_ago=0, log=log):
     """Rebuild ElasticSearch indexes
 
     :arg percent: 1 to 100--the percentage of the db to index
@@ -471,6 +471,8 @@ def es_reindex_cmd(percent=100, delete=False, mapping_types=None,
     :arg mapping_types: list of mapping types to index
     :arg criticalmass: whether or not to index just a critical mass of
         things
+    :arg seconds_ago: things updated less than this number of seconds
+        ago should be reindexed
     :arg log: the logger to use
 
     """
@@ -516,10 +518,10 @@ def es_reindex_cmd(percent=100, delete=False, mapping_types=None,
                             list(reversed(all_indexable[0][1]))[:15000])
 
     elif mapping_types:
-        all_indexable = get_indexable(percent, mapping_types)
+        all_indexable = get_indexable(percent, seconds_ago, mapping_types)
 
     else:
-        all_indexable = get_indexable(percent)
+        all_indexable = get_indexable(percent, seconds_ago)
 
     try:
         old_refreshes = {}
