@@ -1,7 +1,4 @@
 kubernetes:
-    aws_region: "eu-central-1"
-    aws_resource_stack: "prod"
-
     app_name: "sumo-prod"
     namespace: "sumo-prod"
     target_environment: "prod"
@@ -22,15 +19,17 @@ kubernetes:
         max_surge: 1
         max_unavailable: 0
     readiness: False
+    liveness: False
     # app specific values
     apps:
         cron:
             command: "./bin/run-cron.sh"
             deployment_name: "sumo-prod-cron"
+            replicas: 0
         celery:
             command: "./bin/run-celery-worker.sh"
             deployment_name: "sumo-prod-celery"
-            replicas: 3
+            replicas: 0
         web:
             command: "./bin/run-prod.sh"
             deployment_name: "sumo-prod-web"
@@ -51,10 +50,9 @@ kubernetes:
                 success_threshold: 1
                 timeout_seconds: 5
 
-
 app:
     allowed_cidr_nets: SECRET
-    allowed_hosts: "prod.sumo.moz.works"
+    allowed_hosts: "prod.sumo.moz.works,support.mozilla.com,support.mozilla.org"
     aws_access_key_id: SECRET
     aws_s3_custom_domain: SECRET
     aws_secret_access_key: SECRET
@@ -65,11 +63,16 @@ app:
     csrf_cookie_secure: True
     database_url: SECRET
     debug: False
-    domain: "localhost"
     k8s_domain: "frankfurt.moz.works"
-    enable_admin: True
+    email_host: SECRET
+    email_host_user: SECRET
+    email_host_password: SECRET
+    email_port: 25
+    email_use_tls: True
+    enable_admin: False
     enable_whitenoise: True
     engage_robots: False
+    es_index_prefix: "sumo_prod"
     es_http_auth: SECRET
     es_live_indexing: True
     es_use_ssl: True
@@ -82,18 +85,17 @@ app:
     new_relic_license_key: SECRET
     pipeline_enabled: True
     port: 8000
-    read_only: False
+    read_only: True
     redis_default_url: SECRET
     redis_helpfulvotes_url: SECRET
     secret_key: SECRET
     sentry_dsn: SECRET
     session_cookie_secure: True
-    site_url: "http://prod.sumo.moz.works"
     stage: False
     static_url: "https://static-media-prod-cdn.sumo.mozilla.net/static/"
     statsd_client: SECRET
     statsd_host: SECRET
-    statsd_prefix: SECRET
+    statsd_prefix: "sumo-prod.frankfurt"
     secure_hsts_seconds: 0
     secure_browser_xss_filter: True
     secure_content_type_nosniff: True

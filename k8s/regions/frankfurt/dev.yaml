@@ -1,7 +1,4 @@
 kubernetes:
-    aws_region: "eu-central-1"
-    aws_resource_stack: "prod"
-
     app_name: "sumo-dev"
     namespace: "sumo-dev"
     target_environment: "dev"
@@ -22,6 +19,7 @@ kubernetes:
         max_surge: 1
         max_unavailable: 0
     readiness: False
+    liveness: False
     # app specific values
     apps:
         cron:
@@ -50,8 +48,6 @@ kubernetes:
                 period_seconds: 5
                 success_threshold: 1
                 timeout_seconds: 5
-
-
 app:
     allowed_cidr_nets: SECRET
     allowed_hosts: "dev.sumo.moz.works"
@@ -65,11 +61,16 @@ app:
     csrf_cookie_secure: True
     database_url: SECRET
     debug: False
-    domain: "localhost"
     k8s_domain: "frankfurt.moz.works"
+    email_host: SECRET
+    email_host_user: SECRET
+    email_host_password: SECRET
+    email_port: 25
+    email_use_tls: True
     enable_admin: True
     enable_whitenoise: True
     engage_robots: False
+    es_index_prefix: "sumo_dev"
     es_http_auth: SECRET
     es_live_indexing: True
     es_use_ssl: True
@@ -88,12 +89,11 @@ app:
     secret_key: SECRET
     sentry_dsn: SECRET
     session_cookie_secure: True
-    site_url: "http://dev.sumo.moz.works"
     stage: False
     static_url: "https://static-media-dev-cdn.sumo.mozilla.net/static/"
     statsd_client: SECRET
     statsd_host: SECRET
-    statsd_prefix: SECRET
+    statsd_prefix: "sumo-dev.frankfurt"
     secure_hsts_seconds: 0
     secure_browser_xss_filter: True
     secure_content_type_nosniff: True

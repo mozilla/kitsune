@@ -31,7 +31,7 @@ kubernetes:
             deployment_name: "sumo-stage-celery"
             replicas: 0
         web:
-            command: "./bin/run-prod.sh"
+            command: "./bin/run-stage.sh"
             deployment_name: "sumo-stage-web"
             replicas: 3
             rollouts:
@@ -63,7 +63,7 @@ app:
     csrf_cookie_secure: True
     database_url: SECRET
     debug: False
-    k8s_domain: "frankfurt.moz.works"
+    k8s_domain: "oregon-b.moz.works"
     email_host: SECRET
     email_host_user: SECRET
     email_host_password: SECRET
@@ -81,7 +81,7 @@ app:
     ga_key: SECRET
     ga_profile_id: SECRET
     media_url: "https://stage-cdn.sumo.mozilla.net/"
-    new_relic_app_name: "sumo-stage-frankfurt"
+    new_relic_app_name: "sumo-stage-oregon-b"
     new_relic_license_key: SECRET
     pipeline_enabled: True
     port: 8000
@@ -95,7 +95,7 @@ app:
     static_url: "https://static-media-stage-cdn.sumo.mozilla.net/static/"
     statsd_client: SECRET
     statsd_host: SECRET
-    statsd_prefix: "sumo-stage.frankfurt"
+    statsd_prefix: "sumo-stage.oregon-b"
     secure_hsts_seconds: 0
     secure_browser_xss_filter: True
     secure_content_type_nosniff: True
