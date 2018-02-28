@@ -189,9 +189,22 @@ This indexes 50% of your data ordered by id::
 
 I use this when I'm fiddling with mappings and the indexing code.
 
-You can also specify which models to index::
+Another way of specifying a smaller number of things to index is by
+indicating how recently updated things should be to be included::
 
-    $ ./manage.py esreindex --models questions_question,wiki_document
+    $ ./manage.py esreindex --hours-ago 2
+    $ ./manage.py esreindex --minutes-ago 20
+    $ ./manage.py esreindex --seconds-ago 90
+
+Those options can be combined as well if you wish. Different indexes have
+different ways of determining how long ago something was updated, but as
+a whole this should reindex everything in every index (or those specified
+in the --mapping_types option) that was updated less than or equal to how
+long ago you say.
+
+You can also specify which mapping_types to index::
+
+    $ ./manage.py esreindex --mapping_types questions_question,wiki_document
 
 See ``--help`` for more details::
 
