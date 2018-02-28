@@ -33,6 +33,7 @@ class ESCommandTests(ElasticTestCase):
 
         call_command('esreindex')
         call_command('esreindex', '--percent=50')
+        call_command('esreindex', '--seconds-ago=60')
         call_command('esreindex', '--criticalmass')
         call_command('esreindex', '--mapping_types=wiki_documents')
         call_command('esreindex', '--delete')
