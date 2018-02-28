@@ -18,6 +18,22 @@
   {% endif %}
   {# End Optimizely #}
 
+  {# TrafficCop experiment_fxa_cta_topbar #}
+  {% set run_experiments = False %}
+  {% if waffle.flag('experiment_fxa_cta_topbar') %}
+    {% if request.path in ['/en-US/kb/install-firefox-android-device-using-google-play',
+                           '/en-US/kb/will-firefox-work-my-mobile-device',
+                           '/en-US/kb/get-started-firefox-overview-main-features',
+                           '/en-US/kb/update-firefox-latest-version',
+                           '/en-US/kb/install-firefox-your-ipad-iphone-or-ipod'] %}
+      {% set run_experiments = True %}
+    {% endif %}
+  {% endif %}
+  {% if run_experiments %}
+    {% javascript 'experiment_fxa_cta_topbar' %}
+  {% endif %}
+  {# end TrafficCop #}
+
   <link rel="search" type="application/opensearchdescription+xml" title="{{ _('Mozilla Support') }}" href="{{ url('search.plugin') }}"/>
   {% if feeds %}
     {% for feed in feeds %}
@@ -118,6 +134,19 @@
     </a>
   </div>
 {% endif %}
+
+{# TrafficCop experiment_fxa_cta_topbar #}
+{% if run_experiments %}
+  <div id="promotions" class="hidden">
+    <span data-variation="a" class="hidden">Sync Firefox with your phone.</span>
+    <span data-variation="b" class="hidden">Sync your Firefox bookmarks, tabs and more to your phone.</span>
+    <span data-variation="c" class="hidden">Browsing is better with a Firefox Account.</span>
+    <span data-variation="d" class="hidden">Connect Firefox on your computer and phone.</span>
+    <a href="https://www.mozilla.org/firefox/features/sync/?utm_source=support.mozilla.org&utm_medium=referral&utm_campaign=sumo_promotions">Learn more</a>
+    <a href="https://accounts.firefox.com/?utm_source=support.mozilla.org&utm_medium=referral&utm_campaign=sumo_promotions">Get started</a>
+  </div>
+{% endif %}
+{# end TrafficCop #}
 
 <div id="announcements">
   {% call announcement_bar('geoip-suggestion', 'warning') %}{% endcall %}

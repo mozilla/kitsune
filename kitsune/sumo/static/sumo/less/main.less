@@ -2036,3 +2036,29 @@ input[type=button],
     }
   }
 }
+/* bug1441583 experiment-fxa-cta-topbar */
+#promotions {
+  background: #003eaa;
+  background: linear-gradient(148deg,#c7216a 7%,#fda41e 100%);
+  height: 28px;
+  color: #fff;
+  text-align: center;
+  font-size: 1.25em;
+  padding: 3px 0;
+  a {
+    color: #fff;
+    margin-left: 10px;
+  }
+  a:hover {
+    text-decoration: underline;
+  }
+  a:before {
+    content: "»\a0";
+    font-family: 'Open Sans Light',X-LocaleSpecific-Light,'Open Sans',X-LocaleSpecific,sans-serif;
+    font-weight: 400;
+  }
+}
+.hidden {
+  display: none;
+}
+/* end bug1441583 */
