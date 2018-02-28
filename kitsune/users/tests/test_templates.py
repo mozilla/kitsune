@@ -446,6 +446,14 @@ class ViewProfileTests(TestCaseBase):
         doc = pq(r.content)
         eq_(2, len(doc('.bio a[rel="nofollow"]')))
 
+    def test_bio_links_no_img(self):
+        # bug 1427813
+        self.profile.bio = '<p>my dude image <img src="https://www.example.com/the-dude.jpg"></p>'
+        self.profile.save()
+        r = self.client.get(reverse('users.profile', args=[self.u.username]))
+        eq_(200, r.status_code)
+        assert '<p>my dude image </p>' in r.content
+
     def test_num_documents(self):
         """Verify the number of documents contributed by user."""
         u = UserFactory()

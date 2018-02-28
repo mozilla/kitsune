@@ -29,6 +29,10 @@ from kitsune.users.models import Profile
 from kitsune.wiki.showfor import showfor_data as _showfor_data
 
 
+ALLOWED_BIO_TAGS = bleach.ALLOWED_TAGS + ['p']
+ALLOWED_BIO_ATTRIBUTES = bleach.ALLOWED_ATTRIBUTES.copy()
+# allow rel="nofollow"
+ALLOWED_BIO_ATTRIBUTES['a'].append('rel')
 log = logging.getLogger('k.helpers')
 
 
@@ -111,6 +115,17 @@ def wiki_to_html(wiki_markup, locale=settings.WIKI_DEFAULT_LANGUAGE,
     """Wiki Markup -> HTML jinja2.Markup object"""
     return jinja2.Markup(parser.wiki_to_html(wiki_markup, locale=locale,
                                              nofollow=nofollow))
+
+
+@library.filter
+def wiki_to_safe_html(wiki_markup, locale=settings.WIKI_DEFAULT_LANGUAGE,
+                      nofollow=True):
+    """Wiki Markup -> HTML jinja2.Markup object with limited tags"""
+    html = parser.wiki_to_html(wiki_markup, locale=locale, nofollow=nofollow)
+    return jinja2.Markup(bleach.clean(html,
+                                      tags=ALLOWED_BIO_TAGS,
+                                      attributes=ALLOWED_BIO_ATTRIBUTES,
+                                      strip=True))
 
 
 @library.filter

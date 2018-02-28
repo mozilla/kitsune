@@ -148,7 +148,7 @@
       {% if profile.bio %}
         <section class="bio">
           <h2>{{ _('About {user}')|f(user=display_name(profile.user)) }}</h2>
-          {{ profile.bio|wiki_to_html(nofollow=True) }}
+          {{ profile.bio|wiki_to_safe_html(nofollow=True) }}
         </section>
       {% endif %}
       {% if groups %}
