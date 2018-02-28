@@ -25,3 +25,7 @@ build.py
 venv/
 .cache
 .tox
+.env
+.npm
+.config
+.node-gyp

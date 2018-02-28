@@ -638,4 +638,13 @@ PIPELINE_JS = {
         ),
         'output_filename': 'build/kpi.dashboard-min.js'
     },
+    'experiment_fxa_cta_topbar': {
+        'source_filenames': (
+            'sumo/js/libs/mozilla-dnt-helper.js',
+            'sumo/js/libs/mozilla-cookie-helper.js',
+            'sumo/js/libs/mozilla-traffic-cop.js',
+            'sumo/js/experiment-fxa-cta-topbar.js',
+        ),
+        'output_filename': 'build/experiment-fxa-cta-topbar-min.js'
+    },
 }
