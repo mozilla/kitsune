@@ -126,7 +126,7 @@ class SearchMappingType(MappingType, Indexable):
         qs = cls.get_model().objects.order_by('pk').values_list('pk', flat=True)
         if seconds_ago:
             if cls.seconds_ago_filter:
-                dt = datetime.datetime.utcnow() - datetime.timedelta(seconds=seconds_ago)
+                dt = datetime.datetime.now() - datetime.timedelta(seconds=seconds_ago)
                 qs = qs.filter(**{cls.seconds_ago_filter: dt})
             else:
                 # if seconds_ago is specified but seconds_ago_filter is falsy don't index anything
