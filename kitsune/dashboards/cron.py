@@ -17,9 +17,6 @@ from kitsune.wiki.utils import num_active_contributors
 
 @cronjobs.register
 def reload_wiki_traffic_stats():
-    if settings.STAGE:
-        return
-
     for period, _ in PERIODS:
         WikiDocumentVisits.reload_period_from_analytics(
             period, verbose=settings.DEBUG)

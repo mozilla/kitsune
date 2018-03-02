@@ -3,8 +3,6 @@ from datetime import datetime, timedelta
 
 from rest_framework.authtoken.models import Token
 
-from django.conf import settings
-
 from kitsune.questions.models import Answer
 from kitsune.search.models import generate_tasks
 from kitsune.search.tasks import index_task
@@ -25,9 +23,6 @@ def reindex_users_that_contributed_yesterday():
 
     The idea is to update the last_contribution_date field.
     """
-    if settings.STAGE:
-        return
-
     today = datetime.now()
     yesterday = today - timedelta(days=1)
 
