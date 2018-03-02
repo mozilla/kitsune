@@ -81,7 +81,6 @@ app:
     dms_reload_wiki_traffic_stats: SECRET
     dms_remove_expired_registration_profiles: SECRET
     dms_report_employee_answers: SECRET
-    dms_send_postatus_errors: SECRET
     dms_send_weekly_ready_for_review_digest: SECRET
     dms_send_welcome_emails: SECRET
     dms_survey_recent_askers: SECRET
