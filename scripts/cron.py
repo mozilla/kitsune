@@ -45,7 +45,7 @@ class scheduled_job(object):
     def log(self, message):
         msg = '[{}] Clock job {}@{}: {}'.format(
             datetime.datetime.utcnow(), self.name,
-            os.getenv('DEIS_APP', 'default_app'), message)
+            settings.PLATFORM_NAME, message)
         print(msg, file=sys.stderr)
 
 
