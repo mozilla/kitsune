@@ -71,10 +71,6 @@ SNITCHES = {
         'interval': 'daily',
         'tags': [],
     },
-    'SUMO Send Postatus Errors': {
-        'interval': 'daily',
-        'tags': [],
-    },
     'SUMO Auto Archive Old Questions': {
         'interval': 'daily',
         'tags': [],

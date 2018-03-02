@@ -143,12 +143,6 @@ def job_update_contributor_metrics():
     call_command('cron update_contributor_metrics')
 
 
-@scheduled_job('cron', month='*', day='*', hour='03', minute='30', max_instances=1, coalesce=True)
-@babis.decorator(ping_after=settings.DMS_SEND_POSTATUS_ERRORS)
-def job_send_postatus_errors():
-    call_command('cron send_postatus_errors')
-
-
 @scheduled_job('cron', month='*', day='*', hour='04', minute='00', max_instances=1, coalesce=True)
 @babis.decorator(ping_after=settings.DMS_AUTO_ARCHIVE_OLD_QUESTIONS)
 def job_auto_archive_old_questions():
