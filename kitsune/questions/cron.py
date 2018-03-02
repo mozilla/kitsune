@@ -213,3 +213,11 @@ def report_employee_answers():
 
     send_mail(email_subject, email_body, settings.TIDINGS_FROM_ADDRESS, email_addresses,
               fail_silently=False)
+
+
+@cronjobs.register
+def reindex_questions(seconds_ago=0):
+    """Reindex questions_question."""
+    seconds_ago = int(seconds_ago)
+    index_task.delay(QuestionMappingType,
+                     QuestionMappingType.get_indexable(seconds_ago=seconds_ago))
