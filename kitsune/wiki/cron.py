@@ -48,9 +48,11 @@ def rebuild_kb():
 
 
 @cronjobs.register
-def reindex_kb():
+def reindex_kb(seconds_ago):
     """Reindex wiki_document."""
-    index_task.delay(DocumentMappingType, DocumentMappingType.get_indexable())
+    seconds_ago = int(seconds_ago)
+    index_task.delay(DocumentMappingType,
+                     DocumentMappingType.get_indexable(seconds_ago=seconds_ago))
 
 
 @cronjobs.register

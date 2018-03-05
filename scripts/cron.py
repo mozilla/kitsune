@@ -75,6 +75,20 @@ def job_escalate_questions():
     call_command('cron escalate_questions')
 
 
+@scheduled_job('cron', month='*', day='*', hour='*', minute='15', max_instances=1, coalesce=True)
+@babis.decorator(ping_after=settings.DMS_REINDEX_KB)
+def job_reindex_questions():
+    # Re-index questions updated the last 2 hours
+    call_command('cron reindex_questions 7200')
+
+
+@scheduled_job('cron', month='*', day='*', hour='*', minute='25', max_instances=1, coalesce=True)
+@babis.decorator(ping_after=settings.DMS_REINDEX_KB)
+def job_reindex_threads():
+    # Re-index forum threds updated the last 2 hours
+    call_command('cron reindex_threads 7200')
+
+
 # Every 6 hours.
 @scheduled_job('cron', month='*', day='*', hour='*/6', minute='00',
                max_instances=1, coalesce=True, skip=settings.READ_ONLY)
