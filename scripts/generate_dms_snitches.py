@@ -75,7 +75,7 @@ SNITCHES = {
         'interval': 'daily',
         'tags': [],
     },
-    'SUMO Reindex Kb': {
+    'SUMO Reindex': {
         'interval': 'daily',
         'tags': [],
     },
