@@ -52,7 +52,7 @@ kubernetes:
 
 app:
     allowed_cidr_nets: SECRET
-    allowed_hosts: "prod.sumo.moz.works,prod-oregon-b.sumo.moz.works,support.mozilla.com,support.mozilla.org"
+    allowed_hosts: ".sumo.moz.works,support.mozilla.com,support.mozilla.org"
     aws_access_key_id: SECRET
     aws_s3_custom_domain: SECRET
     aws_secret_access_key: SECRET
