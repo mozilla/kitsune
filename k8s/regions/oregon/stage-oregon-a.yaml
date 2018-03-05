@@ -31,7 +31,7 @@ kubernetes:
             deployment_name: "sumo-stage-celery"
             replicas: 0
         web:
-            command: "./bin/run-stage.sh"
+            command: "./bin/run-prod.sh"
             deployment_name: "sumo-stage-web"
             replicas: 3
             rollouts:
