@@ -68,6 +68,14 @@ def job_send_welcome_emails():
     call_command('cron send_welcome_emails')
 
 
+@scheduled_job('cron', month='*', day='*', hour='*', minute='45', max_instances=1, coalesce=True)
+@babis.decorator(ping_after=settings.DMS_REINDEX)
+def job_reindex():
+    # Look back 90 minutes for new items to avoid racing conditions between
+    # cron execution and db updates.
+    call_command('esreindex --minutes-ago 90')
+
+
 @scheduled_job('cron', month='*', day='*', hour='*', minute='59',
                max_instances=1, coalesce=True, skip=(settings.READ_ONLY or settings.STAGE))
 @babis.decorator(ping_after=settings.DMS_ESCALATE_QUESTIONS)
@@ -166,12 +174,6 @@ def job_update_contributor_metrics():
 @babis.decorator(ping_after=settings.DMS_AUTO_ARCHIVE_OLD_QUESTIONS)
 def job_auto_archive_old_questions():
     call_command('cron auto_archive_old_questions')
-
-
-@scheduled_job('cron', month='*', day='*', hour='05', minute='00', max_instances=1, coalesce=True)
-@babis.decorator(ping_after=settings.DMS_REINDEX_KB)
-def job_reindex_kb():
-    call_command('cron reindex_kb')
 
 
 @scheduled_job('cron', month='*', day='*', hour='06', minute='00',
