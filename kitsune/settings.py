@@ -50,9 +50,24 @@ ADMINS = (
 
 MANAGERS = ADMINS
 
+
+# DB_CONN_MAX_AGE: 'persistent' to keep open connection, or max requests before
+# releasing. Default is 0 for a new connection per request.
+def parse_conn_max_age(value):
+    try:
+        return int(value)
+    except ValueError:
+        assert value.lower() == 'persistent', 'Must be int or "persistent"'
+        return None
+
+
+DB_CONN_MAX_AGE = config('DB_CONN_MAX_AGE', default=60, cast=parse_conn_max_age)
+
 DATABASES = {
     'default': config('DATABASE_URL', cast=dj_database_url.parse),
 }
+
+DATABASES['default']['CONN_MAX_AGE'] = DB_CONN_MAX_AGE
 DATABASES['default']['OPTIONS'] = {'init_command': 'SET storage_engine=InnoDB'}
 DATABASE_ROUTERS = ('multidb.PinningMasterSlaveRouter',)
 
