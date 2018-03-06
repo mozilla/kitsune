@@ -90,6 +90,10 @@ CACHES = {
     },
 }
 
+CACHE_MIDDLEWARE_SECONDS = config('CACHE_MIDDLEWARE_SECONDS',
+                                  default=(2 * 60 * 60) if READ_ONLY else 0,
+                                  cast=int)
+
 # Setting this to the Waffle version.
 WAFFLE_CACHE_PREFIX = 'w0.7.7a:'
 
@@ -347,8 +351,7 @@ TEXT_DOMAIN = 'messages'
 
 SITE_ID = 1
 
-# If you set this to False, Django will make some optimizations so as
-# not to load the internationalization machinery.
+USE_ETAGS = config('USE_ETAGS', default=False, cast=bool)
 USE_I18N = True
 USE_L10N = True
 
@@ -517,7 +520,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
     'kitsune.sumo.middleware.RemoveSlashMiddleware',
     'kitsune.inproduct.middleware.EuBuildMiddleware',
-    'kitsune.sumo.middleware.NoCacheHttpsMiddleware',
+    'kitsune.sumo.middleware.CacheHeadersMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'kitsune.sumo.anonymous.AnonymousIdentityMiddleware',
     'kitsune.sumo.middleware.ReadOnlyMiddleware',

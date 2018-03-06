@@ -10,7 +10,7 @@ from django.http import HttpResponseRedirect, HttpResponsePermanentRedirect
 from django.http import HttpResponseForbidden
 from django.shortcuts import render
 from django.utils import translation
-from django.utils.cache import patch_vary_headers
+from django.utils.cache import add_never_cache_headers, patch_response_headers, patch_vary_headers
 from django.utils.encoding import iri_to_uri, smart_str, smart_unicode
 
 import mobility
@@ -104,16 +104,21 @@ class Forbidden403Middleware(object):
         return response
 
 
-class NoCacheHttpsMiddleware(object):
+class CacheHeadersMiddleware(MiddlewareMixin):
     """
-    Sets no-cache headers when HTTPS META variable is set
-    and not equal to 'off'.
+    Sets no-cache headers normally, and cache for some time in READ_ONLY mode.
     """
     def process_response(self, request, response):
-        if request.is_secure():
-            response['Expires'] = 'Thu, 19 Nov 1981 08:52:00 GMT'
-            response['Cache-Control'] = 'no-cache, must-revalidate'
-            response['Pragma'] = 'no-cache'
+        if 'cache-control' in response or response.status_code >= 400:
+            return response
+
+        if (request.method in ('GET', 'HEAD') and
+                settings.CACHE_MIDDLEWARE_SECONDS):
+            # uses CACHE_MIDDLEWARE_SECONDS by default
+            patch_response_headers(response)
+        else:
+            add_never_cache_headers(response)
+
         return response
 
 
