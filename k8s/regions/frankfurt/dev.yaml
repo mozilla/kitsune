@@ -117,7 +117,7 @@ app:
     secret_key: SECRET
     sentry_dsn: SECRET
     session_cookie_secure: True
-    stage: False
+    stage: True
     static_url: "https://static-media-dev-cdn.sumo.mozilla.net/static/"
     statsd_client: SECRET
     statsd_host: SECRET
