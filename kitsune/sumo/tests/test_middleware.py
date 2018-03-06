@@ -1,11 +1,58 @@
-from django.http import HttpResponsePermanentRedirect
+from django.http import HttpResponsePermanentRedirect, HttpResponse
+from django.test import override_settings
 from django.test.client import RequestFactory
 
 import mobility
 from nose.tools import eq_
 
-from kitsune.sumo.middleware import PlusToSpaceMiddleware, DetectMobileMiddleware
+from kitsune.sumo.middleware import (
+    PlusToSpaceMiddleware,
+    DetectMobileMiddleware,
+    CacheHeadersMiddleware,
+)
 from kitsune.sumo.tests import TestCase, PyQuery as pq
+
+
+class CacheHeadersMiddlewareTestCase(TestCase):
+    def setUp(self):
+        self.rf = RequestFactory()
+        self.mw = CacheHeadersMiddleware()
+
+    @override_settings(CACHE_MIDDLEWARE_SECONDS=60)
+    def test_add_cache_control(self):
+        req = self.rf.get('/')
+        resp = HttpResponse('OK')
+        resp = self.mw.process_response(req, resp)
+        assert resp['cache-control'] == 'max-age=60'
+
+    @override_settings(CACHE_MIDDLEWARE_SECONDS=60)
+    def test_already_has_cache_control(self):
+        req = self.rf.get('/')
+        resp = HttpResponse('OK')
+        resp['cache-control'] = 'no-cache'
+        resp = self.mw.process_response(req, resp)
+        assert resp['cache-control'] == 'no-cache'
+
+    @override_settings(CACHE_MIDDLEWARE_SECONDS=60)
+    def test_non_200_response(self):
+        req = self.rf.get('/')
+        resp = HttpResponse('WHA?', status=404)
+        resp = self.mw.process_response(req, resp)
+        assert 'cache-control' not in resp
+
+    @override_settings(CACHE_MIDDLEWARE_SECONDS=0)
+    def test_middleware_seconds_0(self):
+        req = self.rf.get('/')
+        resp = HttpResponse('OK')
+        resp = self.mw.process_response(req, resp)
+        assert resp['cache-control'] == 'no-cache, no-store, must-revalidate, max-age=0'
+
+    @override_settings(CACHE_MIDDLEWARE_SECONDS=60)
+    def test_post_request(self):
+        req = self.rf.post('/')
+        resp = HttpResponse('OK')
+        resp = self.mw.process_response(req, resp)
+        assert resp['cache-control'] == 'no-cache, no-store, must-revalidate, max-age=0'
 
 
 class TrailingSlashMiddlewareTestCase(TestCase):
