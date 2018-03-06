@@ -76,13 +76,6 @@ def job_reindex():
     call_command('esreindex --minutes-ago 90')
 
 
-@scheduled_job('cron', month='*', day='*', hour='*', minute='59',
-               max_instances=1, coalesce=True, skip=(settings.READ_ONLY or settings.STAGE))
-@babis.decorator(ping_after=settings.DMS_ESCALATE_QUESTIONS)
-def job_escalate_questions():
-    call_command('cron escalate_questions')
-
-
 # Every 6 hours.
 @scheduled_job('cron', month='*', day='*', hour='*/6', minute='00',
                max_instances=1, coalesce=True, skip=settings.READ_ONLY)

@@ -19,10 +19,6 @@ SNITCHES = {
         'interval': 'hourly',
         'tags': [],
     },
-    'SUMO Escalate Questions': {
-        'interval': 'hourly',
-        'tags': [],
-    },
     'SUMO Update Product Details': {
         'interval': 'daily',
         'tags': [],

@@ -70,7 +70,6 @@ app:
     dms_clear_expired_auth_tokens: SECRET
     dms_cohort_analysis: SECRET
     dms_enqueue_lag_monitor_task: SECRET
-    dms_escalate_questions: SECRET
     dms_fix_current_revisions: SECRET
     dms_generate_missing_share_links: SECRET
     dms_process_exit_surveys: SECRET
