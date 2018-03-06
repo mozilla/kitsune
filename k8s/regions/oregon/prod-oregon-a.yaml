@@ -33,7 +33,7 @@ kubernetes:
         web:
             command: "./bin/run-prod.sh"
             deployment_name: "sumo-prod-web"
-            replicas: 3
+            replicas: 5
             rollouts:
                 max_surge: 3
                 max_unavailable: 0

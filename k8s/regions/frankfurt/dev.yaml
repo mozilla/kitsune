@@ -28,11 +28,11 @@ kubernetes:
         celery:
             command: "./bin/run-celery-worker.sh"
             deployment_name: "sumo-dev-celery"
-            replicas: 3
+            replicas: 1
         web:
             command: "./bin/run-prod.sh"
             deployment_name: "sumo-dev-web"
-            replicas: 3
+            replicas: 1
             rollouts:
                 max_surge: 3
                 max_unavailable: 0
