@@ -547,6 +547,13 @@ SECURE_REDIRECT_EXEMPT = [
 if config('USE_SECURE_PROXY_HEADER', default=SECURE_SSL_REDIRECT, cast=bool):
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
+# watchman
+WATCHMAN_DISABLE_APM = True
+WATCHMAN_CHECKS = (
+    'watchman.checks.caches',
+    'watchman.checks.databases',
+)
+
 # Auth
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
@@ -648,6 +655,7 @@ INSTALLED_APPS = (
     'kitsune.motidings',
     'rest_framework',
     'statici18n',
+    'watchman',
     # 'axes',
 
     # App for Sentry:

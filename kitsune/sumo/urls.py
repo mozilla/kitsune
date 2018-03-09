@@ -1,6 +1,8 @@
 from django.conf.urls import patterns, url, include
 from django.views.generic.base import RedirectView
 
+from watchman import views as watchman_views
+
 from kitsune.sumo import views
 
 
@@ -20,8 +22,8 @@ urlpatterns = patterns(
     url('^locales$', views.locales, name='sumo.locales'),
     url('^geoip-suggestion$', views.geoip_suggestion,
         name='sumo.geoip_suggestion'),
-    url('^healthz/$', views.liveness, name='sumo.liveness'),
-    url('^readiness/$', views.readiness, name='sumo.readiness'),
+    url(r'^healthz/$', watchman_views.ping, name="sumo.liveness"),
+    url(r'^readiness/$', watchman_views.status, name="sumo.readiness"),
 
     # Shortcuts:
     url('^contribute/?$', RedirectView.as_view(url='/get-involved',
