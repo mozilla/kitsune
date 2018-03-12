@@ -25,11 +25,11 @@ kubernetes:
         cron:
             command: "./bin/run-cron.sh"
             deployment_name: "sumo-prod-cron"
-            replicas: 0
+            replicas: 1
         celery:
             command: "./bin/run-celery-worker.sh"
             deployment_name: "sumo-prod-celery"
-            replicas: 0
+            replicas: 3
         web:
             command: "./bin/run-prod.sh"
             deployment_name: "sumo-prod-web"
