@@ -106,7 +106,6 @@ def job_update_top_contributors():
     call_command('cron update_top_contributors')
 
 
-#@skip_read_only()
 @scheduled_job('cron', month='*', day='*', hour='01', minute='00',
                max_instances=1, coalesce=True, skip=settings.READ_ONLY)
 @babis.decorator(ping_after=settings.DMS_UPDATE_L10N_COVERAGE_METRICS)
@@ -115,7 +114,7 @@ def job_update_l10n_coverage_metrics():
 
 
 @scheduled_job('cron', month='*', day='*', hour='01', minute='00',
-               max_instances=1, coalesce=True, skip=settings.READ_ONLY)
+               max_instances=1, coalesce=True, skip=(settings.READ_ONLY or settings.STAGE))
 @babis.decorator(ping_after=settings.DMS_CALCULATE_CSAT_METRICS)
 def job_calculate_csat_metrics():
     call_command('cron calculate_csat_metrics')
