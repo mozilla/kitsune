@@ -125,7 +125,7 @@ app:
     sentry_dsn: SECRET
     session_cookie_secure: True
     stage: False
-    static_url: "https://static-media-prod-cdn.sumo.mozilla.net/static/"
+    static_url: "/static/"
     statsd_client: SECRET
     statsd_host: SECRET
     statsd_prefix: "sumo-prod.frankfurt"
@@ -137,3 +137,4 @@ app:
     surveygizmo_password: SECRET
     surveygizmo_api_token: SECRET
     surveygizmo_api_token_secret: SECRET
+    use_x_forwarded_host: True
