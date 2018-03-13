@@ -60,6 +60,7 @@ app:
     celery_already_eager: False
     csrf_cookie_secure: True
     database_url: SECRET
+    default_from_email: "notifications-dev@support.mozilla.org"
     db_conn_max_age: 60
     debug: False
     dms_auto_archive_old_questions: SECRET
@@ -93,7 +94,9 @@ app:
     email_host: SECRET
     email_host_user: SECRET
     email_host_password: SECRET
+    email_logging_real_backend: "django.core.mail.backends.smtp.EmailBackend"
     email_port: 25
+    email_subject_prefix: "[support-dev] "
     email_use_tls: True
     enable_admin: True
     enable_whitenoise: True
