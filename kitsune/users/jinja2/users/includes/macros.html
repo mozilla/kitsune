@@ -17,7 +17,7 @@
       </ul>
       <div class="submit">
         <input type="hidden" name="login" value="1">
-        <button type="submit" data-type="submit" data-name="login" class="btn btn-submit" data-progress="{{ _('Logging in...') }}" data-done="{{ _('Logged in!') }}" data-reset="{{ _('Log in') }}">{{ _('Log in') }}</button>
+        <button type="submit"  data-event-category="account" data-event-action="login" data-type="submit" data-name="login" class="btn btn-submit" data-progress="{{ _('Logging in...') }}" data-done="{{ _('Logged in!') }}" data-reset="{{ _('Log in') }}">{{ _('Log in') }}</button>
       </div>
     </fieldset>
   </form>
@@ -86,10 +86,7 @@
     </p>
     <div class="submit">
       <input type="hidden" name="register" value="1">
-      {% set ga_data = [] %}
-      {% if aaq %}{% do ga_data.append('_trackEvent | Ask A Question Flow | step 2 link') %}{% endif %}
-      {% if contributor %}{% do ga_data.append('_trackEvent | Register Click | Contributor') %}{% endif %}
-      <button type="submit" class="btn btn-submit" {% if contributor or aaq %}data-ga-click="{{ ', '.join(ga_data) }}"{% endif %}>
+      <button type="submit" class="btn btn-submit" data-event-category="account" data-event-action="create account">
         {{ _('Create my account') }}
       </button>
     </div>

@@ -22,7 +22,10 @@
   <ul id="product-picker" class="card-grid cf">
     {% for key, product in products.iteritems() %}
       <li>
-        <a class="cf" href="{{ url('questions.aaq_step2', product_key=key) }}">
+        <a class="cf" href="{{ url('questions.aaq_step2', product_key=key) }}"
+        data-event-category="link click"
+        data-event-action="product"
+        data-event-label="{{ product.name }}">
           <img src="{{ STATIC_URL }}sumo/img/blank.png" alt="" class="logo-sprite logo-{{ key }}">
           <span class="title">{{ product.name }}</span>
           <span class="description">{{ product.subtitle }}</span>
@@ -48,7 +51,10 @@
     <ul class="select-one">
       {% for key, category in product.categories.iteritems() %}
         <li>
-          <a href="{{ url('questions.aaq_step3', product_key=product.key, category_key=key) }}">{{ category.name }}</a>
+          <a href="{{ url('questions.aaq_step3', product_key=product.key, category_key=key) }}"
+          data-event-category="link click"
+          data-event-action="category"
+          data-event-label="{{ category.name }}">{{ category.name }}</a>
         </li>
       {% endfor %}
     </ul>
