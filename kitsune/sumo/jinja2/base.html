@@ -12,12 +12,6 @@
 
   {{ favicon() }}
 
-  {# Optimizely script for A/B testing - Bug 850816 #}
-  {% if waffle.flag('optimizely') %}
-    <script src="//cdn.optimizely.com/js/245885873.js"></script>
-  {% endif %}
-  {# End Optimizely #}
-
   {# TrafficCop experiment_fxa_cta_topbar #}
   {% set run_experiments = False %}
   {% if waffle.flag('experiment_fxa_cta_topbar') %}
