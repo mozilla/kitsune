@@ -903,7 +903,7 @@ GA_KEY = 'longkey'  # Google API client key
 GA_ACCOUNT = 'something@developer.gserviceaccount.com'  # Google API Service Account email address
 GA_PROFILE_ID = '12345678'  # Google Analytics profile id for SUMO prod
 GA_START_DATE = date(2012, 11, 10)
-GTM_CONTAINER_ID = config('GTM_CONTAINER_ID', default='') # Google container ID
+GTM_CONTAINER_ID = ''
 
 MOBILE_COOKIE = 'msumo'
 
