@@ -15,37 +15,52 @@
   cd k8s
   ```
 
-```sh
-pip install -r ./requirements.txt
-```
+- Install needed packages
 
-- Decide which settings file you'll be using from `./regions/region_name/<env>.yaml`
+  ```sh
+  virtualenv venv
+  pip install -r ./requirements.txt
+  ```
 
-#### Listing available tasks
+- Create symbolic links to `kubectl` and `kubeconfig` to use in each region
 
-```sh
-$ invoke -l
-Available tasks:
+  e.g. `ln -s ~/bin/kubectl1.6.4 ./regions/frankfurt/kubectl`
 
-  deployments.check-environment   Ensure that a .yaml file has been specified
-  deployments.create-celery       Create or update a SUMO celery deployment
-  deployments.create-cron         Create or update a SUMO cron deployment
-  deployments.create-nodeport     Create or update a SUMO nodeport
-  deployments.create-web          Create or update a SUMO web deployment
-  deployments.delete-celery       Delete an existing SUMO celery deployment
-  deployments.delete-cron         Delete an existing SUMO cron deployment
-  deployments.delete-nodeport     Delete an existing SUMO nodeport
-  deployments.delete-web          Delete an existing SUMO web deployment
-  rollouts.check-environment      Ensure that a .yaml file has been specified
-  rollouts.rollback-celery        Undo a celery deployment
-  rollouts.rollback-cron          Undo a cron deployment
-  rollouts.rollback-web           Undo a web deployment
-  rollouts.status-celery          Check rollout status of a SUMO web deployment
-  rollouts.status-cron            Check rollout status of a SUMO web deployment
-  rollouts.status-web             Check rollout status of a SUMO web deployment
-```
+  Files to be created:
+    - ./regions/frankfurt/kubectl
+    - ./regions/frankfurt/kubeconfig
+    - ./regions/oregon-a/kubectl
+    - ./regions/oregon-a/kubeconfig
+    - ./regions/oregon-b/kubectl
+    - ./regions/oregon-b/kubeconfig
 
-#### Deploying SUMO
+- Create symbolic links to secrets for each namespace and region.
+
+  e.g. `ln -s ~/sumo-encrypted/k8s/secrets/frankfurt/sumo-dev-secrets.yaml ./regions/frankfurt/dev-secrets.yaml`
+
+  Files to be created:
+    - ./regions/frankfurt/dev-secrets.yaml
+    - ./regions/frankfurt/stage-secrets.yaml
+    - ./regions/frankfurt/prod-secrets.yaml
+    - ./regions/oregon-a/stage-secrets.yaml
+    - ./regions/oregon-a/prod-secrets.yaml
+    - ./regions/oregon-b/stage-secrets.yaml
+    - ./regions/oregon-b/prod-secrets.yaml
+
+
+#### Deploy SUMO with commander (recommended)
+
+- Update the settings file with new image tags and settings.
+
+- Deploy with commander
+
+  `./commander.sh deploy <region> <environment> <git sha>`
+
+  E.g. `./commander.sh deploy frankfurt dev d7be392`
+
+
+
+#### Deploying SUMO (low level)
 
 - Update the settings file with new image tags and settings.
 
@@ -83,6 +98,39 @@ invoke -f ./regions/oregon-b/dev.yaml rollouts.rollback-cron
 invoke -f ./regions/oregon-b/dev.yaml rollouts.rollback-web
 ```
 
+#### Acceptance Tests
+
+Run basic acceptance tests with
+
+  `./acceptance-tests.sh <URL>`
+
+  E.g. `./acceptance-tests.sh https://dev.sumo.moz.works`
+
+
+#### List of invoke available tasks
+
+```sh
+$ invoke -l
+Available tasks:
+
+  deployments.check-environment   Ensure that a .yaml file has been specified
+  deployments.create-celery       Create or update a SUMO celery deployment
+  deployments.create-cron         Create or update a SUMO cron deployment
+  deployments.create-nodeport     Create or update a SUMO nodeport
+  deployments.create-web          Create or update a SUMO web deployment
+  deployments.delete-celery       Delete an existing SUMO celery deployment
+  deployments.delete-cron         Delete an existing SUMO cron deployment
+  deployments.delete-nodeport     Delete an existing SUMO nodeport
+  deployments.delete-web          Delete an existing SUMO web deployment
+  rollouts.check-environment      Ensure that a .yaml file has been specified
+  rollouts.rollback-celery        Undo a celery deployment
+  rollouts.rollback-cron          Undo a cron deployment
+  rollouts.rollback-web           Undo a web deployment
+  rollouts.status-celery          Check rollout status of a SUMO web deployment
+  rollouts.status-cron            Check rollout status of a SUMO web deployment
+  rollouts.status-web             Check rollout status of a SUMO web deployment
+```
+
 ----
 
 ##### kubectl client version note
@@ -104,7 +152,7 @@ Server Version: version.Info{Major:"1", Minor:"6", GitVersion:"v1.6.4", GitCommi
 
 Check the values that are part of `Server Version`. The output above shows `1.6` (or `v.1.6.4`).
 
-Next, download a binary following the instructions located [here](https://kubernetes.io/docs/tasks/tools/install-kubectl/). 
+Next, download a binary following the instructions located [here](https://kubernetes.io/docs/tasks/tools/install-kubectl/).
 
 ```sh
 curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.6.4/bin/linux/amd64/kubectl
