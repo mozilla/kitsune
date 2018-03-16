@@ -63,12 +63,8 @@ spec:
         {%- endif %}
         {%- if kubernetes.liveness %}
         livenessProbe:
-          httpGet:
-              port: {{ app.port }}
-              path: /healthz/
-              httpHeaders:
-                  - name: Host
-                    value: {{ app.allowed_hosts.split(',')[0] }}
+          tcpSocket:
+            port: {{ app.port }}
           failureThreshold: {{ kubernetes.liveness.failure_threshold }}
           initialDelaySeconds: {{ kubernetes.liveness.initial_delay_seconds }}
           periodSeconds: {{ kubernetes.liveness.period_seconds }}

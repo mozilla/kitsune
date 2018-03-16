@@ -45,7 +45,7 @@ kubernetes:
                 timeout_seconds: 5
             liveness:
                 failure_threshold: 2
-                initial_delay_seconds: 20
+                initial_delay_seconds: 5
                 period_seconds: 5
                 success_threshold: 1
                 timeout_seconds: 5
@@ -138,3 +138,4 @@ app:
     surveygizmo_password: SECRET
     surveygizmo_api_token: SECRET
     surveygizmo_api_token_secret: SECRET
+    wsgi_keep_alive: 60

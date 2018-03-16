@@ -45,7 +45,7 @@ kubernetes:
                 timeout_seconds: 5
             liveness:
                 failure_threshold: 2
-                initial_delay_seconds: 20
+                initial_delay_seconds: 5
                 period_seconds: 5
                 success_threshold: 1
                 timeout_seconds: 5
@@ -133,3 +133,4 @@ app:
     secure_browser_xss_filter: True
     secure_content_type_nosniff: True
     secure_ssl_redirect: True
+    wsgi_keep_alive: 60
