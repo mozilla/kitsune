@@ -54,6 +54,14 @@ Twitter Contributor - Respond to tweets about Firefox:
 
 {# L10n: This is an email.  Whitespace matters! #}
 {% trans %}
+Social Support Contributor - Respond to tweets about Support Questions as the Firefox brand account:
+{% endtrans %}
+
+{{ add_utm('https://support.mozilla.org/social-support-guidelines', 'get-involved', source='new-contributor') }}
+
+
+{# L10n: This is an email.  Whitespace matters! #}
+{% trans %}
 KB Editor - Help to update knowledge base articles that
 need changes or write new articles:
 {% endtrans %}
@@ -77,8 +85,7 @@ and we’ll help you get started. It’s great to have you onboard!
 
 {# L10n: This is an email.  Whitespace matters! #}
 {% trans %}
-You can also apply to our Buddy Program and get guidance from our more
-experienced contributors. Just introduce yourself in the forum for New
+Just introduce yourself in the forum for New
 Contributors by starting a new thread. Put your name on the thread title and
 tell us a bit about yourself:
 {% endtrans %}
@@ -88,6 +95,5 @@ http://mzl.la/1CGbET4
 {# L10n: This is at the end of an email. #}
 {{ _('Welcome to SUMO!') }}
 
-Madalina
-mana@mozilla.com
+Michał and Rachel 
 SUMO Community Manager{% endautoescape %}
