@@ -22,9 +22,8 @@
     {% if product.slug == 'firefox' %}
       <div class="download-firefox">
         <a href="https://www.mozilla.org/firefox/new/#download-fx" class="download-button"
-         data-event-category="Download Button"
-         data-event-action="Panel Opening"
-         data-event-label="{{ latest_version }}">
+         data-ga-click="_trackEvent | Download Button | Panel Opening"
+         data-latest-version="{{ latest_version }}">
           <span class="download-content">
             <strong class="download-title">{{ _('Firefox') }}</strong>
             <span class="download-subtitle">{{ _('Free Download') }}</span>
@@ -46,10 +45,9 @@
           {{ _('How does it work?') }}
         </a>
         <a href="https://www.mozilla.org/firefox/new/#download-fx"
-            data-event-category="Download Button"
-            data-event-action="Panel Opening"
-            data-event-label="{{ latest_version }}">
-            {{ _('Download a fresh copy') }}
+         data-ga-click="_trackEvent | Download Button | Panel Opening"
+         data-latest-version="{{ latest_version }}">
+          {{ _('Download a fresh copy') }}
         </a>
       </div>
     {% endif %}
@@ -57,8 +55,7 @@
     {% if product.slug == 'thunderbird' %}
       <div class="download-thunderbird">
         <a href="https://www.mozilla.org/thunderbird" class="download-button"
-        data-event-category="Download Button"
-        data-event-action="Download Thunderbird">
+         data-ga-click="_trackEvent | Download Button | Download Thunderbird">
           <span class="download-content">
             <strong class="download-title">{{ _('Thunderbird') }}</strong>
             <span class="download-subtitle">{{ _('Free Download') }}</span>

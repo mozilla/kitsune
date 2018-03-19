@@ -4,6 +4,10 @@
 {% from "search/includes/macros.html" import basic_search_form with context %}
 {% set meta = (('WT.oss', q), ('WT.oss_r', num_results), ('robots', 'noindex')) %}
 
+{% if num_results == 0 %}
+  {% set ga_push = [['_trackEvent', 'Zero Search Results', q]] %}
+{% endif %}
+
 {% if advanced %}
   {% set title = _('Advanced Search Results') %}
   {% set crumbs = [(url('search.advanced'), _('Advanced Search')), (None, _('Results'))] %}

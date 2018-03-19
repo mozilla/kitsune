@@ -27,7 +27,7 @@ from kitsune.users.forms import PasswordResetForm
 from kitsune.users.models import (
     Profile, RegistrationProfile, RegistrationManager)
 from kitsune.users.tests import (
-    TestCaseBase, UserFactory, add_permission)
+    TestCaseBase, UserFactory, add_permission, GroupFactory)
 from kitsune.wiki.tests import RevisionFactory
 
 
@@ -115,6 +115,47 @@ class LoginTests(TestCaseBase):
                                      'next': invalid_next})
         eq_(302, response.status_code)
         eq_('http://testserver' + valid_next + '?fpa=1', response['location'])
+
+    def test_ga_custom_variable_on_registered_login(self):
+        """After logging in, there should be a ga-push data attr on body."""
+        user_ = UserFactory()
+
+        # User should be "Registered":
+        response = self.client.post(reverse('users.login'),
+                                    {'username': user_.username,
+                                     'password': 'testpass'},
+                                    follow=True)
+        eq_(200, response.status_code)
+        doc = pq(response.content)
+        assert '"Registered"' in doc('body').attr('data-ga-push')
+
+    def test_ga_custom_variable_on_contributor_login(self):
+        """After logging in, there should be a ga-push data attr on body."""
+        user_ = UserFactory()
+
+        # Add user to Contributors and so should be "Contributor":
+        user_.groups.add(GroupFactory(name='Contributors'))
+        response = self.client.post(reverse('users.login'),
+                                    {'username': user_.username,
+                                     'password': 'testpass'},
+                                    follow=True)
+        eq_(200, response.status_code)
+        doc = pq(response.content)
+        assert '"Contributor"' in doc('body').attr('data-ga-push')
+
+    def test_ga_custom_variable_on_admin_login(self):
+        """After logging in, there should be a ga-push data attr on body."""
+        user_ = UserFactory()
+
+        # Add user to Administrators and so should be "Contributor - Admin":
+        user_.groups.add(GroupFactory(name='Administrators'))
+        response = self.client.post(reverse('users.login'),
+                                    {'username': user_.username,
+                                     'password': 'testpass'},
+                                    follow=True)
+        eq_(200, response.status_code)
+        doc = pq(response.content)
+        assert '"Contributor - Admin"' in doc('body').attr('data-ga-push')
 
     def test_login_mobile_csrf(self):
         """The mobile login view should have a CSRF token."""

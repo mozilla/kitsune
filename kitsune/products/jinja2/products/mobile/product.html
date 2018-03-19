@@ -16,16 +16,14 @@
   <ul id="topics">
     {% for topic in topics %}
       <li>
-        <a href="{{ url('products.documents', product_slug=product.slug, topic_slug=topic.slug) }}" class="cf"
-        data-event-category="link click" data-event-action="topic" data-event-label="{{ topic.title }}">
+        <a href="{{ url('products.documents', product_slug=product.slug, topic_slug=topic.slug) }}" class="cf">
           <img src="{{ STATIC_URL }}sumo/img/blank.png" class="topic-sprite topic-{{ topic.slug }}" alt="">
           {{ pgettext('DB: products.Topic.title', topic.title) }}
         </a>
       </li>
       {% if loop.last %}
           <li>
-            <a href="{{ url('wiki.document', 'get-community-support') }}" class="cf"
-            data-event-category="link click" data-event-action="topic" data-event-label="Get community support">
+            <a href="{{ url('wiki.document', 'get-community-support') }}" class="cf">
               <img src="{{ STATIC_URL }}sumo/img/blank.png" class="topic-sprite topic-get-community-support" alt="">
               {{ _('Get community support') }}
             </a>
