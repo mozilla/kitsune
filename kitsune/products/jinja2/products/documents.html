@@ -57,8 +57,7 @@
           {# only show subtopics on the parent topic page #}
           {% for subtopic in subtopics %}
             <li class="subtopic">
-              <a href="{{ url('products.subtopics', product_slug=product.slug, topic_slug=topic.slug, subtopic_slug=subtopic.slug) }}"
-              data-event-category="link click" data-event-action="subtopic" data-event-label="{{ subtopic.title }}">
+              <a href="{{ url('products.subtopics', product_slug=product.slug, topic_slug=topic.slug, subtopic_slug=subtopic.slug) }}">
                 {{ pgettext('DB: products.Topic.title', subtopic.title) }}
               </a>
               {% if subtopic.title != subtopic.description %}
@@ -69,8 +68,7 @@
         {% endif %}
         {% for document in documents %}
           <li>
-            <a href="{{ document['url'] }}" data-event-category="link click" data-event-action="document"
-            data-event-label="{{ document['document_title'] }}">{{ document['document_title'] }}</a>
+            <a href="{{ document['url'] }}">{{ document['document_title'] }}</a>
             {{ document['document_summary'] }}
           </li>
         {% endfor %}

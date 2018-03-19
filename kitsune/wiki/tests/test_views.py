@@ -15,11 +15,13 @@ from kitsune.sumo.redis_utils import redis_client, RedisError
 from kitsune.sumo.tests import SkipTest, TestCase, LocalizingClient, MobileTestCase, template_used
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import UserFactory, add_permission
-from kitsune.wiki.config import (CATEGORIES, TEMPLATES_CATEGORY, TEMPLATE_TITLE_PREFIX)
+from kitsune.wiki.config import (
+    CATEGORIES, TEMPLATES_CATEGORY, TYPO_SIGNIFICANCE, MEDIUM_SIGNIFICANCE, MAJOR_SIGNIFICANCE,
+    TEMPLATE_TITLE_PREFIX)
 from kitsune.wiki.models import Document, HelpfulVoteMetadata, HelpfulVote, DraftRevision
 from kitsune.wiki.tests import (
-    HelpfulVoteFactory, new_document_data, RevisionFactory, TemplateDocumentFactory,
-    DocumentFactory, DraftRevisionFactory, ApprovedRevisionFactory,
+    HelpfulVoteFactory, new_document_data, RevisionFactory, TranslatedRevisionFactory,
+    TemplateDocumentFactory, DocumentFactory, DraftRevisionFactory, ApprovedRevisionFactory,
     RedirectRevisionFactory)
 from kitsune.wiki.views import (
     _document_lock_check, _document_lock_clear, _document_lock_steal)
@@ -72,6 +74,109 @@ class LocaleRedirectTests(TestCase):
         de_doc = DocumentFactory(locale='de', parent=en_doc)
         RevisionFactory(document=de_doc, is_approved=True)
         return en_doc, de_doc
+
+
+class LocalizationAnalyticsTests(TestCase):
+
+    def setUp(self):
+        super(LocalizationAnalyticsTests, self).setUp()
+        ProductFactory()
+
+    def test_not_fired(self):
+        """Test that the Not Localized and Not Updated events don't fire
+        when they are not appropriate."""
+        trans = TranslatedRevisionFactory(is_approved=True)
+        trans_doc = trans.document
+
+        # Add a parent revision of TYPO significance. This shouldn't do
+        # anything, since it isn't significant enough.
+        ApprovedRevisionFactory(
+            document=trans.document.parent,
+            is_ready_for_localization=True,
+            significance=TYPO_SIGNIFICANCE)
+
+        url = reverse('wiki.document', args=[trans_doc.slug],
+                      locale=trans_doc.locale)
+        response = self.client.get(url, follow=True)
+        eq_(200, response.status_code)
+
+        doc = pq(response.content)
+        assert '"Not Localized"' not in doc('body').attr('data-ga-push')
+        assert '"Not Updated"' not in doc('body').attr('data-ga-push')
+
+    def test_custom_event_majorly_out_of_date(self):
+        """If a document's parent has major edits and the document has
+        not been updated, it should fire a "Not Updated" GA event."""
+
+        # Make a document, and a translation of it.
+        trans = TranslatedRevisionFactory(is_approved=True)
+
+        # Add a parent revision of MAJOR significance:
+        ApprovedRevisionFactory(
+            document=trans.document.parent,
+            is_ready_for_localization=True,
+            significance=MAJOR_SIGNIFICANCE)
+
+        url = reverse('wiki.document', args=[trans.document.slug], locale=trans.document.locale)
+        response = self.client.get(url, follow=True)
+        eq_(200, response.status_code)
+
+        doc = pq(response.content)
+        assert '"Not Localized"' not in doc('body').attr('data-ga-push')
+        assert '"Not Updated"' in doc('body').attr('data-ga-push')
+
+    def test_custom_event_medium_out_of_date(self):
+        """If a document's parent has medium edits and the document has
+        not been updated, it should fire a "Not Updated" GA event."""
+
+        # Make a document, and a translation of it.
+        trans = TranslatedRevisionFactory(is_approved=True)
+
+        # Add a parent revision of MEDIUM significance:
+        ApprovedRevisionFactory(
+            document=trans.document.parent,
+            is_ready_for_localization=True,
+            significance=MEDIUM_SIGNIFICANCE)
+
+        url = reverse('wiki.document', args=[trans.document.slug], locale=trans.document.locale)
+        response = self.client.get(url, follow=True)
+        eq_(200, response.status_code)
+
+        doc = pq(response.content)
+        assert '"Not Localized"' not in doc('body').attr('data-ga-push')
+        assert '"Not Updated"' in doc('body').attr('data-ga-push')
+
+    def test_custom_event_not_translated(self):
+        """If a document is requested in a locale it is not translated
+        to, it should fire a "Not Localized" GA event."""
+        # This will make a document and revision suitable for translation.
+        r = RevisionFactory(is_approved=True, is_ready_for_localization=True)
+        url = reverse('wiki.document', args=[r.document.slug], locale='fr')
+        response = self.client.get(url)
+        eq_(200, response.status_code)
+
+        doc = pq(response.content)
+        assert '"Not Localized"' in doc('body').attr('data-ga-push')
+        assert '"Not Updated"' not in doc('body').attr('data-ga-push')
+
+    def test_custom_event_while_fallback_locale(self):
+        """If a document is shown in fallback locale because the document is not
+        available in requested locale, it should fire a "Fallback Locale" GA event"""
+        # A Approved revision ready for localization
+        r = ApprovedRevisionFactory(is_ready_for_localization=True)
+        # A document and revision in bn-BD locale
+        trans = DocumentFactory(parent=r.document, locale='bn-BD')
+        ApprovedRevisionFactory(document=trans, based_on=r)
+        # Get the bn-IN locale version of the document
+        url = reverse('wiki.document', args=[r.document.slug], locale='bn-IN')
+        response = self.client.get(url)
+        eq_(200, response.status_code)
+
+        doc = pq(response.content)
+        ga_data = r.document.slug + "/bn-IN" + "/bn-BD"
+        assert ga_data in doc('body').attr('data-ga-push')
+        assert '"Fallback Locale"' in doc('body').attr('data-ga-push')
+        assert '"Not Localized"' not in doc('body').attr('data-ga-push')
 
 
 class JsonViewTests(TestCase):

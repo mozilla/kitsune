@@ -109,6 +109,26 @@ class SimpleSearchTests(ElasticTestCase):
         doc = pq(response.content)
         assert 'script' not in doc('div.result').text()
 
+    def test_ga_zero_results_event(self):
+        """If there are no results, verify ga-push data attr on body."""
+        doc = DocumentFactory(title=u'audio', locale=u'en-US', category=10)
+        doc.products.add(ProductFactory(title=u'firefox', slug=u'desktop'))
+        RevisionFactory(document=doc, is_approved=True)
+
+        self.refresh()
+
+        # If there are results, data-ga-push should be an empty list.
+        response = self.client.get(reverse('search'), {'q': 'audio'})
+        eq_(200, response.status_code)
+        doc = pq(response.content)
+        eq_('[]', doc('body').attr('data-ga-push'))
+
+        # If there are no results, then Zero Search Results event is there.
+        response = self.client.get(reverse('search'), {'q': 'piranha'})
+        eq_(200, response.status_code)
+        doc = pq(response.content)
+        assert '"Zero Search Results"' in doc('body').attr('data-ga-push')
+
     def test_fallback_for_zero_results(self):
         """If there are no results, fallback to a list of top articles."""
         firefox = ProductFactory(title=u'firefox', slug=u'desktop')
