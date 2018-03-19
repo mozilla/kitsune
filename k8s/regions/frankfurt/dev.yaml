@@ -109,6 +109,7 @@ app:
     ga_account: SECRET
     ga_key: SECRET
     ga_profile_id: SECRET
+    gtm_container_id: "UA-36116321-2"
     media_url: "https://dev-cdn.sumo.mozilla.net/"
     new_relic_app_name: "sumo-dev-frankfurt"
     new_relic_license_key: SECRET
