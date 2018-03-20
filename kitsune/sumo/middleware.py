@@ -104,6 +104,26 @@ class Forbidden403Middleware(object):
         return response
 
 
+class VaryNoCacheMiddleware(MiddlewareMixin):
+    """
+    If enabled this will set headers to prevent the CDN (or other caches) from
+    caching the response if the response was set to vary on accept-langauge.
+    This should be near the top of the list of middlewares so it will be able
+    to inspect the near-final response since response middleware is processed
+    in reverse.
+    """
+    def __init__(self):
+        if not settings.ENABLE_VARY_NOCACHE_MIDDLEWARE:
+            raise MiddlewareNotUsed
+
+    @staticmethod
+    def process_response(request, response):
+        if 'vary' in response and 'accept-language' in response['vary'].lower():
+            add_never_cache_headers(response)
+
+        return response
+
+
 class CacheHeadersMiddleware(MiddlewareMixin):
     """
     Sets no-cache headers normally, and cache for some time in READ_ONLY mode.
@@ -199,8 +219,12 @@ TABLET_UAS = re.compile('tablet|ipad')
 # This is a modified version of 'mobility.middleware.DetectMobileMiddleware'.
 # We want to exclude tablets from being detected as MOBILE and there is
 # no way to do that by just overriding the detection regex.
-class DetectMobileMiddleware(object):
+class DetectMobileMiddleware(MiddlewareMixin):
     """Looks at user agent and decides whether the device is mobile."""
+    def __init__(self, *args, **kwargs):
+        if settings.SKIP_MOBILE_DETECTION:
+            raise MiddlewareNotUsed()
+
     def process_request(self, request):
         ua = request.META.get('HTTP_USER_AGENT', '').lower()
         mc = request.COOKIES.get(settings.MOBILE_COOKIE)

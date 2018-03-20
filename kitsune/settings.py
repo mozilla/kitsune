@@ -43,6 +43,8 @@ def path(*parts):
 
 # Read-only mode setup.
 READ_ONLY = config('READ_ONLY', default=False, cast=bool)
+SKIP_MOBILE_DETECTION = config('SKIP_MOBILE_DETECTION', default=READ_ONLY, cast=bool)
+ENABLE_VARY_NOCACHE_MIDDLEWARE = config('ENABLE_VARY_NOCACHE_MIDDLEWARE', default=READ_ONLY, cast=bool)
 
 ADMINS = (
     # ('Your Name', 'your_email@domain.com'),
@@ -491,6 +493,10 @@ MIDDLEWARE_CLASSES = (
     'django_statsd.middleware.GraphiteMiddleware',
     'commonware.request.middleware.SetRemoteAddrFromForwardedFor',
     'enforce_host.EnforceHostMiddleware',
+
+    # VaryNoCacheMiddleware must be above LocaleURLMiddleware
+    # so that it can see the response has a vary on accept-language
+    'kitsune.sumo.middleware.VaryNoCacheMiddleware',
 
     # LocaleURLMiddleware requires access to request.user. These two must be
     # loaded before the LocaleURLMiddleware
