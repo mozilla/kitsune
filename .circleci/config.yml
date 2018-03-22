@@ -12,7 +12,7 @@ jobs:
           command: ./docker/bin/pull-docker-images.sh
       - run:
           name: Build docker images
-          command: GIT_SHA=${CIRCLE_SHA1:0:7} ./docker/bin/build-docker-images.sh
+          command: GIT_SHA=${CIRCLE_SHA1:0:7} LOCALE_ENV=production ./docker/bin/build-docker-images.sh
       - run:
           name: Push docker images
           command: GIT_BRANCH=${CIRCLE_BRANCH} GIT_SHA=${CIRCLE_SHA1:0:7} ./docker/bin/push-docker-images.sh
