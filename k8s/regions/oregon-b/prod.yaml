@@ -96,11 +96,12 @@ app:
     email_host: SECRET
     email_host_user: SECRET
     email_host_password: SECRET
+    email_logging_real_backend: "django.core.mail.backends.smtp.EmailBackend"
     email_port: 25
     email_use_tls: True
-    enable_admin: False
+    enable_admin: True
     enable_whitenoise: True
-    engage_robots: False
+    engage_robots: True
     es_index_prefix: "sumo_prod"
     es_http_auth: SECRET
     es_live_indexing: True
@@ -113,7 +114,7 @@ app:
     media_url: "https://prod-cdn.sumo.mozilla.net/"
     new_relic_app_name: "sumo-prod-oregon-b"
     new_relic_license_key: SECRET
-    oidc_enable: True
+    oidc_enable: False
     oidc_op_authorization_endpoint: SECRET
     oidc_op_token_endpoint: SECRET
     oidc_op_user_endpoint: SECRET
