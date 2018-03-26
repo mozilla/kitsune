@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   labels:
     app: {{ kubernetes.app_name }}
-    type: web
+    type: {{ kubernetes.labels.type }}
   name: {{ kubernetes.deployment_name }}
   namespace: {{ kubernetes.namespace }}
 spec:
@@ -11,7 +11,7 @@ spec:
   selector:
     matchLabels:
       app: {{ kubernetes.app_name }}
-      type: web
+      type: {{ kubernetes.labels.type }}
   strategy:
     rollingUpdate:
       maxSurge: {{ kubernetes.rollouts.max_surge }}
@@ -21,7 +21,7 @@ spec:
     metadata:
       labels:
         app: {{ kubernetes.app_name }}
-        type: web
+        type: {{ kubernetes.labels.type }}
       name: {{ kubernetes.deployment_name }}
       namespace: {{ kubernetes.namespace }}
     spec:
@@ -46,7 +46,7 @@ spec:
             {%- endfor %}
         image: {{ kubernetes.image.repo }}:{{ kubernetes.image.tag }}
         imagePullPolicy: {{ kubernetes.image.pull_policy }}
-        name: sumo-{{ kubernetes.target_environment }}-web
+        name: sumo-{{ kubernetes.target_environment }}-{{ kubernetes.labels.type }}
         {%- if kubernetes.readiness %}
         readinessProbe:
           httpGet:
