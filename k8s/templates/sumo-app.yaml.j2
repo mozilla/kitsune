@@ -13,9 +13,6 @@ spec:
       app: {{ kubernetes.app_name }}
       type: {{ kubernetes.labels.type }}
   strategy:
-    rollingUpdate:
-      maxSurge: {{ kubernetes.rollouts.max_surge }}
-      maxUnavailable: {{ kubernetes.rollouts.max_unavailable }}
     type: RollingUpdate
   template:
     metadata:
