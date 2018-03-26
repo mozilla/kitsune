@@ -575,7 +575,7 @@ else:
     ENABLE_ADMIN = config('ENABLE_ADMIN', default=OIDC_ENABLE, cast=bool)
     if OIDC_ENABLE:
         MIDDLEWARE_CLASSES += ('mozilla_django_oidc.middleware.RefreshIDToken',)
-        AUTHENTICATION_BACKENDS = ('mozilla_django_oidc.auth.OIDCAuthenticationBackend',)
+        AUTHENTICATION_BACKENDS += ('mozilla_django_oidc.auth.OIDCAuthenticationBackend',)
 
         OIDC_OP_AUTHORIZATION_ENDPOINT = config('OIDC_OP_AUTHORIZATION_ENDPOINT')
         OIDC_OP_TOKEN_ENDPOINT = config('OIDC_OP_TOKEN_ENDPOINT')
