@@ -26,14 +26,20 @@ kubernetes:
             command: "./bin/run-cron.sh"
             deployment_name: "sumo-prod-cron"
             replicas: 1
+            labels:
+                type: "cron"
         celery:
             command: "./bin/run-celery-worker.sh"
             deployment_name: "sumo-prod-celery"
             replicas: 3
+            labels:
+                type: "celery"
         web:
             command: "./bin/run-prod.sh"
             deployment_name: "sumo-prod-web"
             replicas: 3
+            labels:
+                type: "web"
             rollouts:
                 max_surge: 3
                 max_unavailable: 0
