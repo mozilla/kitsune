@@ -502,6 +502,7 @@ MIDDLEWARE_CLASSES = (
     # loaded before the LocaleURLMiddleware
     'commonware.middleware.NoVarySessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'kitsune.sumo.middleware.SUMORefreshIDTokenAdminMiddleware',
 
     # This should come before TokenLoginMiddleware, because
     # TokenLoginMiddleware uses this to tell users they have been
@@ -574,9 +575,7 @@ else:
     OIDC_ENABLE = config('OIDC_ENABLE', default=False, cast=bool)
     ENABLE_ADMIN = config('ENABLE_ADMIN', default=OIDC_ENABLE, cast=bool)
     if OIDC_ENABLE:
-        MIDDLEWARE_CLASSES += ('mozilla_django_oidc.middleware.RefreshIDToken',)
         AUTHENTICATION_BACKENDS += ('mozilla_django_oidc.auth.OIDCAuthenticationBackend',)
-
         OIDC_OP_AUTHORIZATION_ENDPOINT = config('OIDC_OP_AUTHORIZATION_ENDPOINT')
         OIDC_OP_TOKEN_ENDPOINT = config('OIDC_OP_TOKEN_ENDPOINT')
         OIDC_OP_USER_ENDPOINT = config('OIDC_OP_USER_ENDPOINT')
