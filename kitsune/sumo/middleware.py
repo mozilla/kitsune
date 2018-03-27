@@ -3,6 +3,8 @@ import re
 import urllib
 
 from django.conf import settings
+from django.contrib.auth import logout
+from django.contrib import messages
 from django.core.exceptions import MiddlewareNotUsed
 from django.core.urlresolvers import is_valid_path
 from django.db.utils import DatabaseError
@@ -14,6 +16,7 @@ from django.utils.cache import add_never_cache_headers, patch_response_headers, 
 from django.utils.encoding import iri_to_uri, smart_str, smart_unicode
 
 import mobility
+from mozilla_django_oidc.middleware import RefreshIDToken
 
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import Prefixer, set_url_prefixer, split_path
@@ -24,6 +27,24 @@ try:
     from django.utils.deprecation import MiddlewareMixin
 except ImportError:
     MiddlewareMixin = object
+
+
+class SUMORefreshIDTokenAdminMiddleware(RefreshIDToken):
+    def __init__(self, *args, **kwargs):
+        if not settings.OIDC_ENABLE:
+            raise MiddlewareNotUsed
+
+    def process_request(self, request):
+        """Only allow refresh and enforce OIDC auth on admin URLs"""
+        if request.path.startswith('/admin/') and request.path != '/admin/login/':
+            if 'oidc_id_token_expiration' not in request.session:
+                logout(request)
+                messages.info(request, 'OIDC login required for admin access')
+                return HttpResponseRedirect('/admin/login/')
+
+            return
+
+        return super(SUMORefreshIDTokenAdminMiddleware, self).process_request(request)
 
 
 class LocaleURLMiddleware(object):
