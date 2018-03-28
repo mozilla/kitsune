@@ -502,13 +502,15 @@ MIDDLEWARE_CLASSES = (
     # loaded before the LocaleURLMiddleware
     'commonware.middleware.NoVarySessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'kitsune.sumo.middleware.SUMORefreshIDTokenAdminMiddleware',
 
     # This should come before TokenLoginMiddleware, because
     # TokenLoginMiddleware uses this to tell users they have been
     # automatically logged. It also has to come after
     # NoVarySessionMiddleware.
     'django.contrib.messages.middleware.MessageMiddleware',
+
+    # This should come after MessageMiddleware
+    'kitsune.sumo.middleware.SUMORefreshIDTokenAdminMiddleware',
 
     # This middleware should come after AuthenticationMiddleware.
     'kitsune.users.middleware.TokenLoginMiddleware',

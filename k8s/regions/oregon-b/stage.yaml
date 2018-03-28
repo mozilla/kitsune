@@ -103,7 +103,7 @@ app:
     email_host_password: SECRET
     email_port: 25
     email_use_tls: True
-    enable_admin: False
+    enable_admin: True
     enable_whitenoise: True
     engage_robots: False
     es_index_prefix: "sumo_stage"
@@ -118,6 +118,7 @@ app:
     media_url: "https://stage-cdn.sumo.mozilla.net/"
     new_relic_app_name: "sumo-stage-oregon-b"
     new_relic_license_key: SECRET
+    oidc_enable: True
     oidc_op_authorization_endpoint: SECRET
     oidc_op_token_endpoint: SECRET
     oidc_op_user_endpoint: SECRET
