@@ -84,7 +84,10 @@ class QuestionReplyEvent(QuestionEvent):
             from kitsune.users.templatetags.jinja_helpers import display_name
 
             is_asker = asker_id == user.id
+            extra_params = {}
             if is_asker:
+                auth_str = get_auth_str(user)
+                extra_params['auth'] = auth_str
                 subject = _(u'%s posted an answer to your question "%s"' %
                             (display_name(self.answer.creator),
                              self.instance.title))
@@ -94,6 +97,9 @@ class QuestionReplyEvent(QuestionEvent):
                 subject = _(u'Re: %s' % self.instance.title)
                 text_template = 'questions/email/new_answer.ltxt'
                 html_template = 'questions/email/new_answer.html'
+
+            for k in ['answer_url', 'helpful_url', 'solution_url']:
+                context[k] = add_utm(urlparams(context[k], **extra_params), 'questions-reply')
 
             mail = email_utils.make_mail(
                 subject=subject,
@@ -107,15 +113,9 @@ class QuestionReplyEvent(QuestionEvent):
             return mail
 
         for u, w in users_and_watches:
-            auth_str = get_auth_str(self.answer.question.creator)
-
             c['answer_url'] = self.answer.get_absolute_url()
             c['helpful_url'] = self.answer.get_helpful_answer_url()
             c['solution_url'] = self.answer.get_solution_url(watch=w[0])
-
-            for k in ['answer_url', 'helpful_url', 'solution_url']:
-                c[k] = add_utm(
-                    urlparams(c[k], auth=auth_str), 'questions-reply')
 
             c['to_user'] = u
             c['watch'] = w[0]  # TODO: Expose all watches.
