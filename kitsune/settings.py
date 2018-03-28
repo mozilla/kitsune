@@ -513,7 +513,8 @@ MIDDLEWARE_CLASSES = (
     'kitsune.sumo.middleware.SUMORefreshIDTokenAdminMiddleware',
 
     # This middleware should come after AuthenticationMiddleware.
-    'kitsune.users.middleware.TokenLoginMiddleware',
+    # Disabled for bug 1449599
+    # 'kitsune.users.middleware.TokenLoginMiddleware',
 
     # LocaleURLMiddleware must be before any middleware that uses
     # sumo.urlresolvers.reverse() to add locale prefixes to URLs:
