@@ -31,7 +31,7 @@
     <div id="content-main">
         {% if settings.OIDC_ENABLE %}
             <p style="text-align:center; font-weight: bold; font-size: 150%">
-                <a href="{% url 'oidc_authentication_init' %}">Mozilla SSO</a>
+                <a href="{% url 'oidc_authentication_init' %}?next=/admin">Mozilla SSO</a>
             </p>
         {% else %}
             <form action="{{ app_path }}" method="post" id="login-form">{% csrf_token %}

@@ -114,7 +114,7 @@ app:
     media_url: "https://prod-cdn.sumo.mozilla.net/"
     new_relic_app_name: "sumo-prod-oregon-b"
     new_relic_license_key: SECRET
-    oidc_enable: False
+    oidc_enable: True
     oidc_op_authorization_endpoint: SECRET
     oidc_op_token_endpoint: SECRET
     oidc_op_user_endpoint: SECRET

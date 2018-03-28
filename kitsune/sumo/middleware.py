@@ -39,12 +39,10 @@ class SUMORefreshIDTokenAdminMiddleware(RefreshIDToken):
         if request.path.startswith('/admin/') and request.path != '/admin/login/':
             if 'oidc_id_token_expiration' not in request.session:
                 logout(request)
-                messages.info(request, 'OIDC login required for admin access')
+                messages.error(request, 'OIDC login required for admin access')
                 return HttpResponseRedirect('/admin/login/')
 
-            return
-
-        return super(SUMORefreshIDTokenAdminMiddleware, self).process_request(request)
+            return super(SUMORefreshIDTokenAdminMiddleware, self).process_request(request)
 
 
 class LocaleURLMiddleware(object):
