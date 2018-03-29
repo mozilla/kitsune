@@ -78,6 +78,8 @@ class PlusToSpaceTestCase(TestCase):
     def test_plus_to_space(self):
         """Pluses should be converted to %20."""
         request = self.rf.get('/url+with+plus')
+        # should work without a QUERY_STRING key in META
+        del request.META['QUERY_STRING']
         response = self.ptsm.process_request(request)
         assert isinstance(response, HttpResponsePermanentRedirect)
         eq_('/url%20with%20plus', response['location'])
