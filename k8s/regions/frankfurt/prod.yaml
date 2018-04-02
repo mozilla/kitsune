@@ -15,9 +15,6 @@ kubernetes:
         cpu_request: 250m
         cpu_limit: 1000m
     replicas: 1
-    rollouts:
-        max_surge: 1
-        max_unavailable: 0
     readiness: False
     liveness: False
     # app specific values
@@ -40,9 +37,6 @@ kubernetes:
             replicas: 3
             labels:
                 type: "web"
-            rollouts:
-                max_surge: 3
-                max_unavailable: 0
             readiness:
                 failure_threshold: 2
                 initial_delay_seconds: 20
