@@ -3,6 +3,8 @@ Kitsune
 =======
 
 
+**This branch is locked and does not accept any commits. The code here powered support.mozilla.org while on SCL3 datacenter. Since March 2018 SUMO has been moved to kubernetes/AWS and development happens in `master` branch.**
+
 Kitsune is the platform that powers `SuMo (support.mozilla.org)
 <https://support.mozilla.org>`_
 
