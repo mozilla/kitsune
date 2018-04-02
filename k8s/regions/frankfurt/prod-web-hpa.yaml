@@ -8,6 +8,6 @@ spec:
     apiVersion: extensions/v1beta1
     kind: Deployment
     name: sumo-prod-web
-  minReplicas: 60
-  maxReplicas: 80
+  minReplicas: 5
+  maxReplicas: 15
   targetCPUUtilizationPercentage: 80
