@@ -15,6 +15,9 @@ kubernetes:
         cpu_request: 250m
         cpu_limit: 1000m
     replicas: 1
+    rollouts:
+        max_surge: 25%
+        max_unavailable: 25%
     readiness: False
     liveness: False
     # app specific values
