@@ -37,7 +37,7 @@ kubernetes:
         web:
             command: "./bin/run-prod.sh"
             deployment_name: "sumo-prod-web"
-            replicas: 60
+            replicas: 50
             labels:
                 type: "web"
             readiness:
