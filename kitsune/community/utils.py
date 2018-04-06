@@ -7,8 +7,7 @@ from django.db.models import Count, F
 
 from kitsune.products.models import Product
 from kitsune.questions.models import Answer
-from kitsune.users.models import User
-from kitsune.users.templatetags.jinja_helpers import profile_avatar
+from kitsune.users.models import User, UserMappingType
 from kitsune.wiki.models import Revision
 
 
@@ -110,27 +109,36 @@ def top_contributors_aoa(start=None, end=None, locale=None, count=10, page=1, us
 
 def _get_creator_counts(query, count, page):
     total = query.count()
+
+    start = (page - 1) * count
+    end = page * count
+    query_data = query.values('id', 'query_count')[start:end]
+
+    query_data = {obj['id']: obj['query_count'] for obj in query_data}
+
+    users_data = (UserMappingType.search().filter(id__in=query_data.keys())
+                                 .values_dict('id', 'username', 'display_name',
+                                              'avatar', 'twitter_usernames',
+                                              'last_contribution_date')[:count])
+
+    users_data = UserMappingType.reshape(users_data)
+
     results = []
     now = datetime.now()
-    for user in query[((page - 1) * count):(page * count)]:
-        last_contribution_date = user.profile.last_contribution_date
-        days_since_last_activity = None
-        if last_contribution_date:
-            days_since_last_activity = now - last_contribution_date
+
+    for u_data in users_data:
+        user_id = u_data.get('id')
+        last_contribution_date = u_data.get('last_contribution_date', None)
+
+        u_data['days_since_last_activity'] = ((now - last_contribution_date).days
+                                              if last_contribution_date else None)
 
         data = {
-            'count': user.query_count,
-            'term': user.id,
-            'user': {
-                'id': user.id,
-                'username': user.username,
-                'display_name': user.profile.display_name,
-                'avatar': profile_avatar(user, size=120),
-                'twitter_usernames': user.profile.twitter_usernames,
-                'last_contribution_date': last_contribution_date,
-                'days_since_last_activity': days_since_last_activity,
-            }
+            'count': query_data.get(user_id),
+            'term': user_id,
+            'user': u_data
         }
+
         results.append(data)
 
-    return (results, total)
+    return results, total
