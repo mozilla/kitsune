@@ -36,29 +36,10 @@ most-requested but have no replies:
 
 {# L10n: This is an email.  Whitespace matters! #}
 {% trans %}
-As you get started answering questions that look easy you
-might run into a few questions. Like, what happens when an
-angry user does not want a work around or what happens next?
-The Contributor Quality Training may have these answered. It
-is possible to get started here:
+Social Support Helper - Respond to tweets about Firefoxand as the Firefox brand account:
 {% endtrans %}
 
-http://goo.gl/pKis5g
-
-{# L10n: This is an email.  Whitespace matters! #}
-{% trans %}
-Twitter Contributor - Respond to tweets about Firefox:
-{% endtrans %}
-
-{{ add_utm('https://support.mozilla.org/army-of-awesome', 'get-involved', source='new-contributor') }}
-
-{# L10n: This is an email.  Whitespace matters! #}
-{% trans %}
-Social Support Contributor - Respond to tweets about Support Questions as the Firefox brand account:
-{% endtrans %}
-
-{{ add_utm('https://support.mozilla.org/social-support-guidelines', 'get-involved', source='new-contributor') }}
-
+{{ add_utm('https://support.mozilla.org/en-US/kb/social-support-guidelines', 'get-involved', source='new-contributor') }}
 
 {# L10n: This is an email.  Whitespace matters! #}
 {% trans %}
@@ -91,6 +72,14 @@ tell us a bit about yourself:
 {% endtrans %}
 
 http://mzl.la/1CGbET4
+
+{# L10n: This is an email.  Whitespace matters! #}
+{% trans %}
+Lastly, find others in the community just like you on the #sumo IRC channel. That is right Mozilla has a live chat channel for contributors.
+irc.mozilla.org #sumo - web-based IRC: 
+{% endtrans %}
+
+{{ add_utm('https://kiwiirc.com/client/irc.mozilla.org/sumo', 'get-involved', source='new-contributor') }}
 
 {# L10n: This is at the end of an email. #}
 {{ _('Welcome to SUMO!') }}
