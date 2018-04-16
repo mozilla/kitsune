@@ -33,13 +33,6 @@ Next, Add a new item to the ``products`` dictionary using something like::
 
 ``'product-slug'`` should be the slug of the ``Product`` object for this product.
 
-You will also need to add a new 96x96 icon to the ``img/logos.large.sprite.png`` and
-will need to update the ``.logo-sprite`` class in ``questions.less`` to account for the new logo.
-
-The same changes will need to be made to ``img/mobile/logos-sprite-2x.png`` and a
-non-retina (half size) version ``img/mobile/logos-sprite.png``. Finally update the
-``.logo-sprite`` class in ``mobile/main.less``.
-
 
 Question States
 ===============

@@ -1,6 +1,7 @@
 import datetime
 import json as jsonlib
 import logging
+import os
 import re
 import urlparse
 
@@ -26,6 +27,7 @@ from pytz import timezone
 from kitsune.sumo import parser
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.models import Profile
+from kitsune.products.models import Product
 from kitsune.wiki.showfor import showfor_data as _showfor_data
 
 
@@ -492,3 +494,16 @@ def fe(format_string, *args, **kwargs):
         format_string = unicode(format_string)
 
     return jinja2.Markup(format_string.format(*args, **kwargs))
+
+
+@library.global_function
+def image_for_product(product_slug):
+    """
+    Return image for product slug
+    """
+
+    try:
+        obj = Product.objects.get(slug=product_slug)
+    except Product.DoesNotExist:
+        return os.path.join(settings.STATIC_URL, 'products', 'img', 'product_placeholder.png')
+    return obj.image_url
