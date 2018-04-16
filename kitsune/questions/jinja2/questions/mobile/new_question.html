@@ -27,7 +27,9 @@
             <li class="{% if product == current_product %}selected{% endif %}">
               <a href="{{ url('questions.aaq_step2', product_key=key) }}" data-event-category="link click"
               data-event-action="product" data-event-label="{{ product.name }}">
-                <span class="logo-sprite logo-{{ key }}"></span>
+                  <span class="logo"
+                      style="background-image: url({{ image_for_product(product.product) }}">
+                  </span>
                 {{ product.name }}
               </a>
             </li>

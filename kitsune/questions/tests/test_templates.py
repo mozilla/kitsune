@@ -1243,7 +1243,7 @@ class QuestionsTemplateTestCase(TestCaseBase):
         doc = pq(response.content)
         tag = doc('#question-{id} .tag-list li img'.format(id=q.id))
         # Even though there are no tags, the product should be displayed.
-        assert 'logo-{}'.format(p.slug) in tag.attr('class')
+        assert 'logo-sprite-tiny' in tag.attr('class')
 
 
 class QuestionsTemplateTestCaseNoFixtures(TestCase):
