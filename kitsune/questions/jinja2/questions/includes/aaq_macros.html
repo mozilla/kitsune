@@ -26,9 +26,15 @@
               data-event-category="link click"
               data-event-action="product"
               data-event-label="{{ product.name }}">
+              {% if key == 'other' %}
+                  <img src="{{ static('sumo/img/dino-logo.png') }}"
+                      alt="{{ _(product.name) }}"
+                      class="logo-sprite">
+              {% else %}
               <img src="{{ image_for_product(product.product) }}"
                   alt="{{ pgettext('DB: products.Product.title', product.title) }}"
                   class="logo-sprite">
+              {% endif %}
           <span class="title">{{ product.name }}</span>
           <span class="description">{{ product.subtitle }}</span>
         </a>
