@@ -354,6 +354,26 @@ products = SortedDict([
         ])
     }),
 
+    ('firefox-enterprise', {
+        'name': _lazy(u'Firefox for Enterprise'),
+        'subtitle': _lazy(u'Enterprise version of Firefox'),
+        'extra_fields': [],
+        'tags': [],
+        'product': 'firefox-enterprise',
+        'categories': SortedDict([
+            ('deployment-firefox-enterprise-environment', {
+                'name': _lazy(u'Deployment of Firefox in an enterprise environment'),
+                'topic': 'deployment-firefox-enterprise-environment',
+                'tags': ['deployment'],
+            }),
+            ('customization-firefox-enterprise-environment', {
+                'name': _lazy(u'Customization of Firefox in an enterprise environment'),
+                'topic': 'customization-firefox-enterprise-environment',
+                'tags': ['customization'],
+            }),
+        ])
+    }),
+
     ('other', {
         'name': _lazy(u'Other Mozilla products'),
         'subtitle': '',
