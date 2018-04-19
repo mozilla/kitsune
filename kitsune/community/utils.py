@@ -1,6 +1,8 @@
 import hashlib
 
 from datetime import datetime, date, timedelta
+from operator import itemgetter
+
 from django.conf import settings
 from django.core.cache import cache
 from django.db.models import Count, F
@@ -140,5 +142,9 @@ def _get_creator_counts(query, count, page):
         }
 
         results.append(data)
+
+    # Descending Order the list according to count.
+    # As the top number of contributor should be at first
+    results = sorted(results, key=itemgetter('count'), reverse=True)
 
     return results, total
