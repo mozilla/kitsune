@@ -24,7 +24,7 @@
 
 - Create symbolic links to `kubectl` and `kubeconfig` to use in each region
 
-  e.g. `ln -s ~/bin/kubectl1.6.4 ./regions/frankfurt/kubectl`
+  e.g. `ln -s ~/bin/kubectl ./regions/frankfurt/kubectl`
 
   Files to be created:
     - ./regions/frankfurt/kubectl
@@ -135,7 +135,9 @@ Available tasks:
 
 ##### kubectl client version note
 
-When connecting to an older K8s cluster, such as Frankfurt, you may need to download an older version of Kubectl that matches the version of the server.
+>All Kubernetes clusters that serve SUMO are currently v1.8.xx
+
+When connecting to an older K8s cluster, you may need to download an older version of Kubectl that matches the version of the server.
 
 Newer clients connecting to older K8s servers may display error messages such as:
 
