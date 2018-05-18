@@ -73,6 +73,7 @@ log = logging.getLogger('k.questions')
 
 UNAPPROVED_TAG = _lazy(u'That tag does not exist.')
 NO_TAG = _lazy(u'Please provide a tag.')
+IMG_LIMIT = settings.IMAGE_ATTACHMENT_USER_LIMIT
 
 FILTER_GROUPS = {
     'all': OrderedDict([
@@ -424,7 +425,7 @@ def question_details(request, template, question_id, form=None,
     if request.user.is_authenticated():
         ct = ContentType.objects.get_for_model(request.user)
         ans_['images'] = ImageAttachment.objects.filter(creator=request.user,
-                                                        content_type=ct)
+                                                        content_type=ct)[:IMG_LIMIT]
 
     extra_kwargs.update(ans_)
 
@@ -489,7 +490,8 @@ def aaq_react(request):
     if request.user.is_authenticated():
         user_ct = ContentType.objects.get_for_model(request.user)
         images = ImageAttachmentSerializer(
-            ImageAttachment.objects.filter(creator=request.user, content_type=user_ct), many=True)
+            ImageAttachment.objects.filter(creator=request.user,
+                                           content_type=user_ct)[:IMG_LIMIT], many=True)
         ctx['images_json'] = to_json(images.data)
     else:
         ctx['images_json'] = to_json([])
@@ -728,7 +730,8 @@ def aaq(request, product_key=None, category_key=None, showform=False,
 
         qst_ct = ContentType.objects.get_for_model(question)
         # Move over to the question all of the images I added to the reply form
-        up_images = ImageAttachment.objects.filter(creator=request.user, content_type=user_ct)
+        up_images = ImageAttachment.objects.filter(creator=request.user,
+                                                   content_type=user_ct)
         up_images.update(content_type=qst_ct, object_id=question.id)
 
         # User successfully submitted a new question
@@ -768,7 +771,7 @@ def aaq(request, product_key=None, category_key=None, showform=False,
         raise PermissionDenied
 
     images = ImageAttachment.objects.filter(creator=request.user,
-                                            content_type=user_ct)
+                                            content_type=user_ct)[:IMG_LIMIT]
 
     statsd.incr('questions.aaq.details-form-error')
     return render(request, template, {
@@ -835,7 +838,8 @@ def edit_question(request, question_id):
         raise PermissionDenied
 
     ct = ContentType.objects.get_for_model(question)
-    images = ImageAttachment.objects.filter(content_type=ct, object_id=question.pk)
+    images = ImageAttachment.objects.filter(content_type=ct,
+                                            object_id=question.pk)[:IMG_LIMIT]
 
     if request.method == 'GET':
         initial = question.metadata.copy()
