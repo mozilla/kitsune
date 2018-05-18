@@ -1147,3 +1147,6 @@ PROD_DETAILS_STORAGE = config('PROD_DETAILS_STORAGE',
                               default='product_details.storage.PDDatabaseStorage')
 
 DISABLE_HOSTNAME_MIDDLEWARE = config('DISABLE_HOSTNAME_MIDDLEWARE', default=False, cast=bool)
+
+DISABLE_QUESTIONS_LIST_GLOBAL = config('DISABLE_QUESTIONS_LIST_GLOBAL', default=False, cast=bool)
+DISABLE_QUESTIONS_LIST_ALL = config('DISABLE_QUESTIONS_LIST_ALL', default=False, cast=bool)
