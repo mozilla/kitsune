@@ -111,6 +111,10 @@ def product_list(request, template):
 @mobile_template('questions/{mobile/}question_list.html')
 def question_list(request, template, product_slug):
     """View the list of questions."""
+    if settings.DISABLE_QUESTIONS_LIST_GLOBAL:
+        messages.add_message(request, messages.WARNING,
+                             'You cannot list questions at this time.')
+        return HttpResponseRedirect('/')
 
     filter_ = request.GET.get('filter')
     owner = request.GET.get(
@@ -138,6 +142,11 @@ def question_list(request, template, product_slug):
         multiple = len(products) > 1
     else:
         # We want all products (no product filtering at all).
+        if settings.DISABLE_QUESTIONS_LIST_ALL:
+            messages.add_message(request, messages.WARNING,
+                                 'You cannot list all questions at this time.')
+            return HttpResponseRedirect('/')
+
         products = None
         multiple = True
 
