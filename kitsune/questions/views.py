@@ -424,8 +424,10 @@ def question_details(request, template, question_id, form=None,
 
     if request.user.is_authenticated():
         ct = ContentType.objects.get_for_model(request.user)
-        ans_['images'] = ImageAttachment.objects.filter(creator=request.user,
-                                                        content_type=ct)[:IMG_LIMIT]
+        ans_['images'] = ImageAttachment.objects.filter(
+            creator=request.user,
+            content_type=ct,
+        ).order_by('-id')[:IMG_LIMIT]
 
     extra_kwargs.update(ans_)
 
@@ -490,8 +492,10 @@ def aaq_react(request):
     if request.user.is_authenticated():
         user_ct = ContentType.objects.get_for_model(request.user)
         images = ImageAttachmentSerializer(
-            ImageAttachment.objects.filter(creator=request.user,
-                                           content_type=user_ct)[:IMG_LIMIT], many=True)
+            ImageAttachment.objects.filter(
+                creator=request.user,
+                content_type=user_ct,
+            ).order_by('-id')[:IMG_LIMIT], many=True)
         ctx['images_json'] = to_json(images.data)
     else:
         ctx['images_json'] = to_json([])
@@ -770,8 +774,10 @@ def aaq(request, product_key=None, category_key=None, showform=False,
     if getattr(request, 'limited', False):
         raise PermissionDenied
 
-    images = ImageAttachment.objects.filter(creator=request.user,
-                                            content_type=user_ct)[:IMG_LIMIT]
+    images = ImageAttachment.objects.filter(
+        creator=request.user,
+        content_type=user_ct,
+    ).order_by('-id')[:IMG_LIMIT]
 
     statsd.incr('questions.aaq.details-form-error')
     return render(request, template, {
@@ -839,7 +845,7 @@ def edit_question(request, question_id):
 
     ct = ContentType.objects.get_for_model(question)
     images = ImageAttachment.objects.filter(content_type=ct,
-                                            object_id=question.pk)[:IMG_LIMIT]
+                                            object_id=question.pk)
 
     if request.method == 'GET':
         initial = question.metadata.copy()
