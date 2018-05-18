@@ -22,6 +22,9 @@ class ImageAttachment(ModelBase):
 
     content_object = generic.GenericForeignKey()
 
+    class Meta:
+        ordering = ('-id',)
+
     def __unicode__(self):
         return self.file.name
 
