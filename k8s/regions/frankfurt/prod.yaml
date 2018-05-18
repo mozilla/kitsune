@@ -140,3 +140,5 @@ app:
     surveygizmo_api_token_secret: SECRET
     use_x_forwarded_host: True
     wsgi_keep_alive: 60
+    disable_questions_list_global: False
+    disable_questions_list_all: True
