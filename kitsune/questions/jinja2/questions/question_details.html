@@ -127,12 +127,13 @@
         {# Note: this is not vulnerable to injection because Jinja autoescapes the strings. #}
         <div class="content-raw">{{ question.content }}</div>
 
-        {% if question.images.count() %}
+        {% set question_images = question.images.all() %}
+        {% if question_images %}
           <div class="attachments-title">
             {{ _('Attached screenshots') }}
           </div>
           <div class="question-attachments attachments-list">
-          {% for image in question.images.all() %}
+          {% for image in question_images %}
             {{ attachment(image, user, False) }}
           {% endfor %}
           </div>
