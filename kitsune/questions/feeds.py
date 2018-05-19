@@ -112,7 +112,8 @@ class AnswersFeed(Feed):
         return self.title(question)
 
     def items(self, question):
-        return question.answers.filter(is_spam=False).order_by('-created')
+        return question.answers.filter(
+            is_spam=False).order_by('-created')[:config.ANSWERS_PER_PAGE]
 
     def item_title(self, item):
         return strip_tags(item.content_parsed)[:100]
