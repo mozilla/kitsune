@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.conf.urls import patterns, url
 from django.contrib.contenttypes.models import ContentType
 
@@ -76,16 +77,23 @@ urlpatterns = patterns(
         name='questions.remove_tag_async'),
     url(r'^/(?P<question_id>\d+)/screen-share/$', 'screen_share',
         name='questions.screen_share'),
+)
 
-    # Feeds
-    # Note: this needs to be above questions.list because "feed"
-    # matches the product slug regex.
-    url(r'^/feed$', QuestionsFeed(), name='questions.feed'),
-    url(r'^/(?P<question_id>\d+)/feed$', AnswersFeed(),
-        name='questions.answers.feed'),
-    url(r'^/tagged/(?P<tag_slug>[\w\-]+)/feed$', TaggedQuestionsFeed(),
-        name='questions.tagged_feed'),
+if not settings.DISABLE_FEEDS:
+    urlpatterns += patterns(
+        '',
+        # Feeds
+        # Note: this needs to be above questions.list because "feed"
+        # matches the product slug regex.
+        url(r'^/feed$', QuestionsFeed(), name='questions.feed'),
+        url(r'^/(?P<question_id>\d+)/feed$', AnswersFeed(),
+            name='questions.answers.feed'),
+        url(r'^/tagged/(?P<tag_slug>[\w\-]+)/feed$', TaggedQuestionsFeed(),
+            name='questions.tagged_feed'),
+    )
 
+urlpatterns += patterns(
+    'kitsune.questions.views',
     # Mark as spam
     url(r'^/mark_spam$', 'mark_spam', name='questions.mark_spam'),
     url(r'^/unmark_spam$', 'unmark_spam', name='questions.unmark_spam'),
