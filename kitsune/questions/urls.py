@@ -6,12 +6,13 @@ from kitsune.questions.feeds import (
     QuestionsFeed, AnswersFeed, TaggedQuestionsFeed)
 from kitsune.questions.models import Question, Answer
 from kitsune.flagit import views as flagit_views
+from kitsune.sumo.views import handle404
 
 
 if settings.DISABLE_FEEDS:
-    questions_feed_view = 'kitsune.sumo.views.handle404'
-    answers_feed_view = 'kitsune.sumo.views.handle404'
-    tagged_feed_view = 'kitsune.sumo.views.handle404'
+    questions_feed_view = handle404
+    answers_feed_view = handle404
+    tagged_feed_view = handle404
 else:
     questions_feed_view = QuestionsFeed()
     answers_feed_view = AnswersFeed()
