@@ -62,7 +62,7 @@ class QuestionsFeed(Feed):
         if 'locale' in query:
             qs = qs.filter(locale=query['locale'])
 
-        return qs.order_by('-updated')[:config.QUESTIONS_PER_PAGE]
+        return qs.select_related('creator').order_by('-updated')[:config.QUESTIONS_PER_PAGE]
 
     def item_title(self, item):
         return item.title
@@ -113,7 +113,8 @@ class AnswersFeed(Feed):
 
     def items(self, question):
         return question.answers.filter(
-            is_spam=False).order_by('-created')[:config.ANSWERS_PER_PAGE]
+            is_spam=False,
+        ).select_related('creator').order_by('-created')[:config.ANSWERS_PER_PAGE]
 
     def item_title(self, item):
         return strip_tags(item.content_parsed)[:100]
