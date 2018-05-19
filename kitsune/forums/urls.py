@@ -5,11 +5,12 @@ from django.contrib.contenttypes.models import ContentType
 from kitsune.forums.feeds import ThreadsFeed, PostsFeed
 from kitsune.forums.models import Post
 from kitsune.flagit import views as flagit_views
+from kitsune.sumo.views import handle404
 
 
 if settings.DISABLE_FEEDS:
-    threads_feed_view = 'kitsune.sumo.views.handle404'
-    posts_feed_view = 'kitsune.sumo.views.handle404'
+    threads_feed_view = handle404
+    posts_feed_view = handle404
 else:
     threads_feed_view = ThreadsFeed()
     posts_feed_view = PostsFeed()
