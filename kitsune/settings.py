@@ -558,7 +558,7 @@ if config('USE_SECURE_PROXY_HEADER', default=SECURE_SSL_REDIRECT, cast=bool):
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # watchman
-WATCHMAN_DISABLE_APM = True
+WATCHMAN_DISABLE_APM = config('WATCHMAN_DISABLE_APM', default=False, cast=bool)
 WATCHMAN_CHECKS = (
     'watchman.checks.caches',
     'watchman.checks.databases',
