@@ -7,6 +7,13 @@ from kitsune.forums.models import Post
 from kitsune.flagit import views as flagit_views
 
 
+if settings.DISABLE_FEEDS:
+    threads_feed_view = 'kitsune.sumo.views.handle404'
+    posts_feed_view = 'kitsune.sumo.views.handle404'
+else:
+    threads_feed_view = ThreadsFeed()
+    posts_feed_view = PostsFeed()
+
 # These patterns inherit (?P<forum_slug>\d+).
 forum_patterns = patterns(
     'kitsune.forums.views',
@@ -14,6 +21,8 @@ forum_patterns = patterns(
     url(r'^/new$', 'new_thread', name='forums.new_thread'),
     url(r'^/(?P<thread_id>\d+)$', 'posts', name='forums.posts'),
     url(r'^/(?P<thread_id>\d+)/reply$', 'reply', name='forums.reply'),
+    url(r'^/feed$', threads_feed_view, name="forums.threads.feed"),
+    url(r'^/(?P<thread_id>\d+)/feed$', posts_feed_view, name="forums.posts.feed"),
     url(r'^/(?P<thread_id>\d+)/lock$', 'lock_thread',
         name='forums.lock_thread'),
     url(r'^/(?P<thread_id>\d+)/sticky$', 'sticky_thread',
@@ -37,13 +46,6 @@ forum_patterns = patterns(
         {'content_type': ContentType.objects.get_for_model(Post).id},
         name='forums.flag_post'),
 )
-
-if not settings.DISABLE_FEEDS:
-    forum_patterns += patterns(
-        '',
-        url(r'^/feed$', ThreadsFeed(), name="forums.threads.feed"),
-        url(r'^/(?P<thread_id>\d+)/feed$', PostsFeed(), name="forums.posts.feed"),
-    )
 
 urlpatterns = patterns(
     'kitsune.forums.views',
