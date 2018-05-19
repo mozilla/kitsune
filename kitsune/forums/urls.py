@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.conf.urls import patterns, url, include
 from django.contrib.contenttypes.models import ContentType
 
@@ -13,8 +14,6 @@ forum_patterns = patterns(
     url(r'^/new$', 'new_thread', name='forums.new_thread'),
     url(r'^/(?P<thread_id>\d+)$', 'posts', name='forums.posts'),
     url(r'^/(?P<thread_id>\d+)/reply$', 'reply', name='forums.reply'),
-    url(r'^/feed$', ThreadsFeed(), name="forums.threads.feed"),
-    url(r'^/(?P<thread_id>\d+)/feed$', PostsFeed(), name="forums.posts.feed"),
     url(r'^/(?P<thread_id>\d+)/lock$', 'lock_thread',
         name='forums.lock_thread'),
     url(r'^/(?P<thread_id>\d+)/sticky$', 'sticky_thread',
@@ -38,6 +37,13 @@ forum_patterns = patterns(
         {'content_type': ContentType.objects.get_for_model(Post).id},
         name='forums.flag_post'),
 )
+
+if not settings.DISABLE_FEEDS:
+    forum_patterns += patterns(
+        '',
+        url(r'^/feed$', ThreadsFeed(), name="forums.threads.feed"),
+        url(r'^/(?P<thread_id>\d+)/feed$', PostsFeed(), name="forums.posts.feed"),
+    )
 
 urlpatterns = patterns(
     'kitsune.forums.views',
