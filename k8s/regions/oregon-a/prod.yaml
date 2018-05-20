@@ -43,7 +43,7 @@ kubernetes:
             readiness:
                 failure_threshold: 2
                 initial_delay_seconds: 20
-                period_seconds: 5
+                period_seconds: 15
                 success_threshold: 1
                 timeout_seconds: 5
             liveness:
