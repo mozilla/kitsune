@@ -31,7 +31,7 @@ kubernetes:
         celery:
             command: "./bin/run-celery-worker.sh"
             deployment_name: "sumo-prod-celery"
-            replicas: 6
+            replicas: 3
             labels:
                 type: "celery"
         web:
