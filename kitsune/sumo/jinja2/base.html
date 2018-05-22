@@ -223,12 +223,16 @@
     </div>
     <div class="grid_4">
       <ul>
-        <li class="mozilla-links-header"><a href="https://www.mozilla.org">{{ _('Mozilla') }}</a></li>
+        <li>
+          <h5>
+            <a href="https://www.mozilla.org">{{ _('Mozilla') }}</a>
+          </h5>
+        </li>
         <li><a href="https://www.mozilla.org/about/">{{ _('About') }}</a></li>
         <li><a href="https://blog.mozilla.org/">{{ _('Blog') }}</a></li>
-        <li><a href="https://www.mozilla.org/contact/spaces/">{{ _('Contact Us') }}</a></li>
+        <li><a href="https://www.mozilla.org/contact/">{{ _('Contact Us') }}</a></li>
         <li><a href="https://donate.mozilla.org/en-US/?presets=50,30,20,10&amount=30&utm_source=mozilla.org&utm_medium=referral&utm_content=footer&currency=usd">{{ _('Donate') }}</a></li>
-        <li><a href="https://wiki.mozilla.org/Webdev/GetInvolved/support.mozilla.org/">{{ _('Contribute to this site') }}</a></li>
+        <li><a href="https://wiki.mozilla.org/Webdev/GetInvolved/mozilla.org">{{ _('Contribute to this site') }}</a></li>
         <li><a href="https://github.com/mozilla/kitsune/">{{ _('Source code for this site') }}</a></li>
         <li>
           <ul class="social-links">
@@ -240,7 +244,11 @@
     </div>
     <div class="grid_4">
       <ul>
-        <li class="firefox-links-header"><a href="https://www.mozilla.org/firefox/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('Firefox') }}</a></li>
+        <li>
+          <h5>
+            <a href="https://www.mozilla.org/firefox/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('Firefox') }}</a>
+          </h5>
+        </li>
         <li><a href="https://www.mozilla.org/firefox/new/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('Download Firefox') }}</a></li>
         <li><a href="https://www.mozilla.org/firefox/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('Desktop') }}</a></li>
         <li><a href="https://www.mozilla.org/firefox/mobile/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('Mobile') }}</a></li>
@@ -272,6 +280,11 @@
         </p>
       </div>
     </div>
+    {% if not hide_locale_switcher %}
+    <div class="grid_2 prefix_2 language-picker">
+      Language <a href="{{ locale_picker_url }}"  data-event-category="navigation" data-event-action="main navigation" data-event-label="Locale Picker">{{ settings.LANGUAGES_DICT[request.LANGUAGE_CODE.lower()] }}</a>
+    </div>
+    {% endif %}
   </div>
 </footer>{# /#footer #}
 
