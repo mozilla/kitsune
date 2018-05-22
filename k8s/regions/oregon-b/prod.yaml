@@ -147,5 +147,5 @@ app:
     wsgi_keep_alive: 60
     wsgi_num_workers: 4
     disable_questions_list_global: False
-    disable_questions_list_all: True
+    disable_questions_list_all: False
     disable_feeds: True
