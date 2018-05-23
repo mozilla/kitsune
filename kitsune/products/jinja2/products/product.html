@@ -12,6 +12,9 @@
 {% block title %}{{ _('{product} Help')|f(product=pgettext('DB: products.Product.title', product.title)) }}{% endblock %}
 
 {% block content %}
+  <div class="grid_12 search-form-large">
+    {{ search_box(settings, id='support-search-product', params=search_params) }}
+  </div>
   <div class="grid_12">
       <h1 class="product-title cf">
           <img src="{{ product.image_url }}" alt="" class="logo-sprite" />

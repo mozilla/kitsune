@@ -35,6 +35,9 @@
 {% endblock %}
 
 {% block above_main %}
+  <div class="grid_12 search-form-large">
+    {{ search_box(settings, id='support-search-wiki', params=search_params) }}
+  </div>
   <h1 class="product-title cf">
     {% set prod_url = url('products.product', slug=product.slug) %}
     <img src="{{ STATIC_URL }}sumo/img/blank.png" alt="" class="logo-sprite" style="background-image: url('{{ product.image_url }}');" />

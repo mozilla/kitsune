@@ -2,6 +2,7 @@
 AddType image/svg+xml .svg
 AddType application/octet-stream .exe
 AddType application/font-woff .woff
+AddType application/font-woff2 .woff2
 AddType application/vnd.ms-fontobject .eot
 AddType application/octet-stream .ttf
 

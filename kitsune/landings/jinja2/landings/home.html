@@ -3,6 +3,10 @@
 {% set styles = ('home',) %}
 
 {% block content %}
+  <div class="grid_12 search-form-large">
+    <h1>{{ _('Search Mozilla Support') }}</h1>
+    {{ search_box(settings, id='support-search-home', params=search_params) }}
+  </div>
   <div class="grid_12">
     <section id="products-and-services">
       {{ product_cards(products) }}
