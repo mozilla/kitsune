@@ -147,10 +147,15 @@
   {% call announcement_bar('geoip-suggestion', 'warning') %}{% endcall %}
 
   {% for announ in get_announcements() %}
-    {% call announcement_bar(announ.id, 'warn') %}
-      {{ announ.content }}
-    {% endcall %}
+      {% call announcement_bar(announ.id, 'warn') %}
+          {{ announ.content }}
+      {% endcall %}
   {% endfor %}
+  {% if settings.READ_ONLY %}
+      {% call announcement_bar('read-only', 'warn') %}
+          {% include "includes/readonly_annoucement.html" %}
+      {% endcall %}
+  {% endif %}
 </div>
 
 <header>
