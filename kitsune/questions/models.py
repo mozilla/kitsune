@@ -668,10 +668,7 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         self.save()
 
     def get_images(self):
-        """A cached version of self.images.all().
-
-        Because django-cache-machine doesn't cache empty lists.
-        """
+        """A cached version of self.images.all()."""
         cache_key = self.images_cache_key % self.id
         images = cache.get(cache_key)
         if images is None:
