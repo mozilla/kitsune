@@ -18,7 +18,7 @@ class ImageAttachment(ModelBase):
                                   null=True)
     creator = models.ForeignKey(User, related_name='image_attachments')
     content_type = models.ForeignKey(ContentType)
-    object_id = models.PositiveIntegerField()
+    object_id = models.PositiveIntegerField(db_index=True)
 
     content_object = generic.GenericForeignKey()
 

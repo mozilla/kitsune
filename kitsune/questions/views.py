@@ -424,10 +424,9 @@ def question_details(request, template, question_id, form=None,
 
     if request.user.is_authenticated():
         ct = ContentType.objects.get_for_model(request.user)
-        ans_['images'] = ImageAttachment.objects.filter(
-            creator=request.user,
-            content_type=ct,
-        ).order_by('-id')[:IMG_LIMIT]
+        ans_['images'] = list(ImageAttachment.objects.filter(creator=request.user, content_type=ct)
+                                             .only('id', 'creator_id', 'file', 'thumbnail')
+                                             .order_by('-id')[:IMG_LIMIT])
 
     extra_kwargs.update(ans_)
 
@@ -436,11 +435,13 @@ def question_details(request, template, question_id, form=None,
 
     related_documents = question.related_documents
     related_questions = question.related_questions
+    question_images = question.get_images()
 
     extra_kwargs.update({'all_products': products, 'all_topics': topics,
                          'product': question.product, 'topic': question.topic,
                          'related_documents': related_documents,
-                         'related_questions': related_questions})
+                         'related_questions': related_questions,
+                         'question_images': question_images})
 
     if not request.MOBILE:
         # Add noindex to questions without a solution.
