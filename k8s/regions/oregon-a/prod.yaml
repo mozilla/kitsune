@@ -115,7 +115,7 @@ app:
     ga_profile_id: SECRET
     gtm_container_id: "UA-36116321-2"
     media_url: "https://prod-cdn.sumo.mozilla.net/"
-    new_relic_app_name: "sumo-prod-oregon-a"
+    new_relic_app_name: "sumo-prod-oregon-a;sumo-prod-oregon"
     new_relic_license_key: SECRET
     oidc_enable: True
     oidc_op_authorization_endpoint: SECRET
