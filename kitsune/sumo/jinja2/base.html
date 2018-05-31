@@ -228,40 +228,75 @@
 
 <footer>
   <div class="container_12 cf">
-    <div class="grid_2"><img class="footer-logo" src="{{ STATIC_URL }}sumo/img/mozilla-logo.svg" alt="Mozilla" /></div>
     <div class="grid_4">
+      <a href="https://www.mozilla.org">
+        <img class="footer-logo" src="{{ STATIC_URL }}sumo/img/moz-wordmark-light-reverse.svg" alt="Mozilla" />
+      </a>
+    </div>
+    <div class="grid_4">
+      <ul>
+        <li>
+          <h5>
+            <a href="https://www.mozilla.org">{{ _('Mozilla') }}</a>
+          </h5>
+        </li>
+        <li><a href="https://www.mozilla.org/about/">{{ _('About') }}</a></li>
+        <li><a href="https://blog.mozilla.org/">{{ _('Blog') }}</a></li>
+        <li><a href="https://www.mozilla.org/contact/">{{ _('Contact Us') }}</a></li>
+        <li><a href="https://donate.mozilla.org/en-US/?presets=50,30,20,10&amount=30&utm_source=support.mozilla.org&utm_medium=referral&utm_content=footer&currency=usd">{{ _('Donate') }}</a></li>
+        <li><a href="https://kitsune.readthedocs.io/en/latest/">{{ _('Contribute to this site') }}</a></li>
+        <li><a href="https://github.com/mozilla/kitsune/">{{ _('Source code for this site') }}</a></li>
+        <li>
+          <ul class="social-links">
+            <li><a class="twitter" href="https://twitter.com/mozilla">{{ _('Twitter') }}<span> (@mozilla)</span></a></li>
+            <li><a class="instagram" href="https://www.instagram.com/mozilla/">{{ _('Instagram') }}<span> (@mozilla)</span></a></li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+    <div class="grid_4">
+      <ul>
+        <li>
+          <h5>
+            <a href="https://www.mozilla.org/firefox/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('Firefox') }}</a>
+          </h5>
+        </li>
+        <li><a href="https://www.mozilla.org/firefox/new/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('Download Firefox') }}</a></li>
+        <li><a href="https://www.mozilla.org/firefox/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('Desktop') }}</a></li>
+        <li><a href="https://www.mozilla.org/firefox/mobile/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('Mobile') }}</a></li>
+        <li><a href="https://www.mozilla.org/firefox/features/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('Features') }}</a></li>
+        <li><a href="https://www.mozilla.org/firefox/channel/desktop/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('Beta, Nightly, Developer Edition') }}</a></li>
+        <li>
+          <ul class="social-links">
+            <li><a class="twitter" href="https://twitter.com/firefox">{{ _('Twitter') }}<span> (@firefox)</span></a></li>
+            <li><a class="youtube" href="https://www.youtube.com/firefoxchannel">{{ _('YouTube') }}<span> (firefoxchannel)</span></a></li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+    <div class="clear"></div>
+    <div class="grid_4 small-links">
+      <ul>
+        <li><a rel="nofollow" href="https://www.mozilla.org/privacy/websites/">{{ _('Website Privacy Notice') }}</a></li>
+        <li><a rel="nofollow" href="https://www.mozilla.org/privacy/websites/#cookies">{{ _('Cookies') }}</a></li>
+        <li><a rel="nofollow" href="https://www.mozilla.org/about/legal/terms/mozilla/">{{ _('Legal') }}</a></li>
+      </ul>
+    </div>
+    <div class="clear"></div>
+    <div class="grid_8">
       <div class="fineprint">
+        <p>
         {% trans year=now().year %}
-          Portions of this content are &copy;1998–{{ year }}
-          <br>by individual mozilla.org contributors. Content
-          <br>available under a
-          <a href="//www.mozilla.org/foundation/licensing/website-content.html">Creative Commons license</a>.
+          Portions of this content are &copy;1998–{{ year }} by individual mozilla.org contributors. Content available under a <a href="//www.mozilla.org/foundation/licensing/website-content.html">Creative Commons license</a>.
         {% endtrans %}
+        </p>
       </div>
     </div>
-    <div class="grid_3">
-      <ul>
-        <li><a href="https://www.mozilla.org/contact/spaces/">{{ _('Contact Us') }}</a></li>
-        <li><a href="https://www.mozilla.org/about/legal/terms/mozilla/">{{ _('Legal') }}</a></li>
-        <li><a href="https://www.mozilla.org/privacy/websites/">{{ _('Privacy Policy') }}</a></li>
-        <li><a href="https://www.mozilla.org/privacy/websites/#cookies">{{ _('Cookies') }}</a></li>
-        <li><a href="https://www.mozilla.org/legal/fraud-report/">{{ _('Report Trademark Abuse') }}</a></li>
-        <li><a href="https://github.com/mozilla/kitsune/">{{ _('Source Code') }}</a></li>
-        <li><a href="https://www.twitter.com/mozilla">{{ _('Twitter') }}</a></li>
-        <li><a href="?{{ request.QUERY_STRING }}&amp;mobile=1">{{ _('Switch to mobile site') }}</a></li>
-      </ul>
+    {% if not hide_locale_switcher %}
+    <div class="grid_2 prefix_2 language-picker">
+      Language <a href="{{ locale_picker_url }}"  data-event-category="navigation" data-event-action="main navigation" data-event-label="Locale Picker">{{ settings.LANGUAGES_DICT[request.LANGUAGE_CODE.lower()] }}</a>
     </div>
-    <div class="grid_2 suffix_1">
-      <ul>
-          <li><a href="https://www.mozilla.org/firefox/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('Firefox') }}</a></li>
-          <li><a href="https://www.mozilla.org/firefox/new/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('Download Firefox') }}</a></li>
-          <li><a href="https://www.mozilla.org/firefox/android/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('Android Browser') }}</a></li>
-          <li><a href="https://www.mozilla.org/firefox/ios/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('iOS Browser') }}</a></li>
-          <li><a href="https://www.mozilla.org/firefox/focus/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('Focus Browser') }}</a></li>
-          <li><a href="https://www.mozilla.org/firefox/desktop/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('Desktop Browser') }}</a></li>
-          <li><a href="https://www.mozilla.org/firefox/channel/desktop/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('Beta, Nightly, Developer Edition') }}</a></li>
-      </ul>
-    </div>
+    {% endif %}
   </div>
 </footer>{# /#footer #}
 
