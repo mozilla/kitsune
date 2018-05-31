@@ -163,19 +163,44 @@ html {
 }
 
 footer {
-  background: #fff;
+  background: #000;
+  font-size: 16px;
+  line-height: 1.3;
   margin: 100px 0 0 0;
   padding: 45px 0 10px 0;
   text-align: left;
 
+  a:link,
+  a:visited {
+    color: #fff;
+    font-weight: normal;
+    text-decoration: none;
+  }
+
+  a:hover,
+  a:focus,
+  a:active {
+    color: #fff;
+    text-decoration: underline;
+  }
+
   ul {
-    font-size: 13px;
     list-style: none;
     margin: 0;
     padding: 0;
 
     li {
-      margin-bottom: 8px;
+      margin: 0 0 .8em;
+    }
+
+    h5 {
+      font-family: @OpenSans;
+      font-weight: bold;
+      margin: 0 0 .9em 0;
+
+      @media screen and (min-width: 1000px) {
+        font-size: 18px;
+      }
     }
   }
 
@@ -184,9 +209,79 @@ footer {
   }
 
   .fineprint {
-    color: #bbb;
+    color: #fff;
     font-size: 12px;
     line-height: 160%;
+
+    a:link,
+    a:visited {
+      color: #9b9b9b;
+    }
+  }
+
+  .language-picker {
+    color: #fff;
+    font-size: 12px;
+    padding-top: 20px;
+
+    a:link,
+    a:visited {
+      color: #9b9b9b;
+      padding-left: 8px;
+    }
+  }
+
+  .small-links {
+    padding-top: 20px;
+    font-size: 12px;
+
+    li {
+      display: inline;
+      padding-right: 20px;
+
+      &:last-child {
+        padding-right: 0;
+      }
+    }
+  }
+
+  .social-links {
+    margin: 2em 0 0;
+
+    li {
+      display: inline-block;
+      margin-right: 20px;
+
+      a {
+        display: block;
+        .image-replaced;
+        background-image: url('/static/sumo/img/social-icon-sprite.svg');
+
+        &.twitter {
+          background-position: 0 0;
+          width: 18px;
+          height: 15px;
+        }
+
+        &.instagram {
+          background-position: 0 -25px;
+          width: 19px;
+          height: 19px;
+        }
+
+        &.youtube {
+          background-position: 0 -54px;
+          width: 19px;
+          height: 13px;
+        }
+
+        &.facebook {
+          background-position: 0 -77px;
+          width: 10px;
+          height: 19px;
+        }
+      }
+    }
   }
 }
 
