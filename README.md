@@ -18,7 +18,7 @@ move to Kubernetes.
 
 You can access the staging site at <https://support.allizom.org/>
 
-See [what's deployed](https://whatsdeployed.io/s-PRg)
+See [what's deployed](https://whatsdeployed.io/s-J18)
 
 
 ## Development
