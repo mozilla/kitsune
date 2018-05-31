@@ -668,8 +668,7 @@ input[type=button],
   padding: 0;
 
   > li {
-    background: #ccc;
-    background: linear-gradient(to bottom, #ddd, #bbb);
+    background: #fff;
     border-radius: 6px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     display: inline-block;
@@ -897,6 +896,11 @@ input[type=button],
     &.sumo {
       background-image: url('../img/sumo-icon-small.png');
     }
+  }
+
+  &.large {
+    background-size: 189px 96px;
+    width: 189px;
   }
 }
 
@@ -1563,19 +1567,41 @@ input[type=button],
 }
 
 #product-cards {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  width: 816px;
+
   a,
+  a:link,
   a:visited {
     color: @textGrey;
     display: block;
+    height: auto;
+    padding: 0;
+    text-decoration: none;
+    width: 100%;
+
+    &:hover {
+      .title {
+        text-decoration: underline !important;
+      }
+    }
   }
 
-  > li {
-    min-height: 156px;
-  }
+  &.card-grid > li {
+    border: 1px solid #E7E7E7;
+    border-radius: 2px;
+    box-shadow: inset 0 -2px 0 0 #E7E7E7;
+    min-height: 240px;
+    margin: 0 12px 28px;
+    overflow: hidden;
+    padding: 0;
+    width: 242px;
 
-  .logo-sprite {
-    float: left;
-    margin: 8px 15px 8px 0;
+    &::before {
+      content: none;
+    }
   }
 
   .thunderbird {
@@ -1584,19 +1610,35 @@ input[type=button],
     }
   }
 
-  .title {
+  .icon {
+    background-color: #f3f3f3;
     display: block;
-    font-family: @OpenSans;
-    font-size: 22px;
-    letter-spacing: -1px;
+    height: 122px;
+    position: relative;
+    width: 100%;
+
+    img {
+      height: 122px;
+      left: 50%;
+      margin: 0 -50% 0 0;
+      position: absolute;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 100%;
+    }
+  }
+
+  .title {
+    font-size: 18px;
     line-height: 22px;
-    margin: 0 0 12px 99px;
+    padding-left: 20px;
+    padding-top: 20px;
   }
 
   .description {
-    display: block;
-    font-size: 16px;
-    margin: 0 0 0 99px;
+    color: #676767;
+    font-size: 13px;
+    padding: 10px 15px 10px 20px;
   }
 }
 
