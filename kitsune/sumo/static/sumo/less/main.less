@@ -168,7 +168,7 @@ body {
           }
 
           .firefox-download-button {
-              display: none;
+            display: none;
           }
 
           .volunteer-button {
@@ -392,7 +392,6 @@ textarea {
   border: 1px solid #b2b2b2;
   border-radius: 5px;
   box-shadow: 0 0 0 1px #efefef;
-  font-family: @ZillaSlab;
   transition: all linear .1s;
 
   &:focus {
@@ -1267,7 +1266,6 @@ input[type=button],
 }
 
 #aux-nav-left {
-  font-family: @OpenSans;
   float: left;
   font-size: 16px;
   font-weight: 700;
@@ -1418,7 +1416,6 @@ input[type=button],
 }
 
 #aux-nav-right {
-  font-family: @OpenSans;
   float: right;
   font-size: 16px;
   font-weight: 700;
@@ -1499,7 +1496,8 @@ input[type=button],
     top: -2px;
   }
 
-  .firefox-download-button {
+  .firefox-download-button:link,
+  .firefox-download-button:visited {
     background-color: @buttonGreen;
     border-radius: 100px;
     border: 2px solid @buttonGreen;
@@ -1514,12 +1512,17 @@ input[type=button],
     text-decoration: none;
     transition: color .1s ease-in-out, background-color .1s ease-in-out;
 
-    &:hover {
-      background-color: @buttonGreen;
+    &:hover,
+    &:focus,
+    &:active {
+      background-color: saturate(darken(@buttonGreen, 5%), 10%);
+      border-color: saturate(darken(@buttonGreen, 5%), 10%);
+      transition: color .1s ease-in-out, background-color .1s ease-in-out;
     }
   }
 
-  .volunteer-button {
+  .volunteer-button:link,
+  .volunteer-button:visited {
     background-color: #000;
     border: 2px solid @borderLightGrey;
     border-radius: 100px;
@@ -1534,12 +1537,19 @@ input[type=button],
     text-decoration: none;
     transition: color .1s ease-in-out, background-color .1s ease-in-out;
     width: 120px;
+
+    &:hover,
+    &:focus,
+    &:active {
+      background-color: saturate(darken(@borderLightGrey, 5%), 10%);
+      border-color: saturate(darken(@borderLightGrey, 5%), 10%);
+      transition: color .1s ease-in-out, background-color .1s ease-in-out;
+    }
   }
 
   .hidden {
     display: none;
   }
-
 }
 
 .html-rtl {
@@ -2371,7 +2381,6 @@ input[type=button],
       border: 2px solid #cbcbcb;
       border-radius: 8px;
       color: #000;
-      font-family: @ZillaSlab;
       font-size: 16px;
       height: 60px;
       padding: 0 0 0 20px;
