@@ -1320,7 +1320,7 @@ input[type=button],
       > a:hover {
         background-color: #000;
         color: #fff;
-        text-decoration: none;
+        text-decoration: underline;
       }
 
       > svg {
@@ -1391,6 +1391,10 @@ input[type=button],
         > ul {
           display: block;
         }
+
+        a {
+          text-decoration: underline;
+        }
       }
     }
   }
@@ -1456,7 +1460,12 @@ input[type=button],
       > a:hover {
         background-color: #000;
         color: #fff;
-        text-decoration: none;
+        text-decoration: underline;
+
+        &.firefox-download-button,
+        &.volunteer-button {
+          text-decoration: none;
+        }
       }
 
       > svg {
