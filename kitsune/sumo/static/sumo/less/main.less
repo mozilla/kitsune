@@ -192,6 +192,7 @@ body {
       #aux-nav-left {
         padding-bottom: 0;
         padding-top: 0;
+        width: 60%;
       }
 
       #aux-nav-right {
@@ -1404,12 +1405,12 @@ input[type=button],
     }
   }
 
-  .logged-in {
-    width: 60%;
+  &.logged-in {
+    width: 70%;
   }
 
-  .logged-out {
-    width: 40%;
+  &.logged-out {
+    width: 43%;
   }
 
   .unread-message-count {
@@ -1428,10 +1429,6 @@ input[type=button],
 
   .hidden {
     display: none;
-  }
-
-  @media screen and (max-width: 1053px) {
-    width: 30%;
   }
 }
 
@@ -1471,9 +1468,10 @@ input[type=button],
     background-color: @buttonGreen;
     border-radius: 100px;
     border: 2px solid @buttonGreen;
+    font-size: 14px;
     height: 32px;
     line-height: 30px;
-    margin-left: 20px;
+    margin-left: 0px;
     margin-top: 2px;
     padding: 0 30px;
     position: relative;
@@ -1495,16 +1493,17 @@ input[type=button],
     background-color: #000;
     border: 2px solid #fff;
     border-radius: 100px;
+    font-size: 14px;
     height: 32px;
     line-height: 30px;
-    margin-left: 20px;
+    margin-left: 10px;
     margin-top: 2px;
     padding: 0 30px;
     position: relative;
     text-align: center;
     text-decoration: none;
     transition: color .1s ease-in-out, background-color .1s ease-in-out;
-    width: 120px;
+    min-width: 100px;
 
     &:hover,
     &:focus,
