@@ -162,11 +162,7 @@
     <nav id="aux-nav-left" role="navigation">
       <ul>
         {{ aux_nav(user, hide_aaq_link) }}
-      </ul>
-    </nav>
-    {% endif %}
-    <nav id="aux-nav-right" role="navigation">
-      <ul>
+
         {% if not hide_locale_switcher %}
           <li>
             <svg>
@@ -175,6 +171,11 @@
             <a href="{{ locale_picker_url }}" class="locale-picker"  data-event-category="navigation" data-event-action="main navigation" data-event-label="Locale Picker">{{ settings.LANGUAGES_DICT[request.LANGUAGE_CODE.lower()] }}</a>
           </li>
         {% endif %}
+      </ul>
+    </nav>
+    {% endif %}
+    <nav id="aux-nav-right" role="navigation">
+      <ul>
         {% if not (hide_fx_download or user.is_authenticated()) %}
           <li>
             <a href="https://www.mozilla.org/firefox/new/#download-fx" class="firefox-download-button hidden" data-event-category="Download Button" data-event-action="Firefox for Desktop">{{ _('Download Firefox') }}</a>

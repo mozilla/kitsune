@@ -101,16 +101,18 @@ body {
 
   > header {
     background: #000;
-    height: 100px;
+    min-height: 100px;
     margin: 0;
     padding: 0;
+    position: relative;
+    width: 100%;
 
     #aux-nav-left {
       padding: 29px 0 29px 20px;
     }
 
     #aux-nav-right {
-      padding: 29px 30px 29px 0;
+      padding: 29px 20px 29px 0;
     }
 
     #support-search {
@@ -120,10 +122,10 @@ body {
     .logo {
       background: url('../img/mozilla-support-white.svg') top left no-repeat;
       background-size: 112px 48px;
-      display: block;
       float: left;
       margin-left: 30px;
-
+      position: relative
+      ;
       a {
         display: block;
         height: 48px;
@@ -138,7 +140,8 @@ body {
     > header {
       background: #000;
       box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
-      height: 50px;
+      min-height: 50px;
+      max-height: 50px;
       position: fixed;
       top: 0;
       width: 100%;
@@ -1270,20 +1273,21 @@ input[type=button],
   font-size: 16px;
   font-weight: 700;
   position: relative;
+  width: 40%;
   z-index: 10;
 
   > ul {
-    float: left;
     list-style: none;
     margin: 0;
     padding: 0;
 
     > li {
       color: #000;
-      float: left;
+      display: inline-block;
       line-height: 1.2;
       margin: 0 8px 0 0;
       position: relative;
+      text-align: left;
 
       &.dropdown {
         > a:after,
@@ -1306,12 +1310,16 @@ input[type=button],
       > a:visited,
       > span {
         color: #fff;
-        display: block;
         font-weight: normal;
         height: 42px;
         line-height: 40px;
         padding: 0 12px;
         text-decoration: none;
+
+        &.locale-picker {
+          color: #fff;
+          padding-left: 44px;
+        }
       }
 
       > a:hover {
@@ -1323,6 +1331,7 @@ input[type=button],
       > svg {
         fill: #fff;
         height: 32px;
+        padding-left: 12px;
         padding-top: 8px;
         position: absolute;
         width: 32px;
@@ -1413,87 +1422,41 @@ input[type=button],
   .hidden {
     display: none;
   }
+
+  @media screen and (max-width: 1053px) {
+    width: 30%;
+  }
 }
 
 #aux-nav-right {
   float: right;
   font-size: 16px;
   font-weight: 700;
-  height: 42px;
-  position: relative;
   z-index: 10;
 
   > ul {
-    float: right;
     list-style: none;
     margin: 0 0 0 10px;
     padding: 0;
 
     > li {
       color: #000;
-      float: left;
+      display: inline-block;
       line-height: 1.2;
       margin: 0 8px 0 0;
-      position: relative;
 
       > a,
       > a:visited,
       > span {
         color: #fff;
-        display: block;
+        display: inline-block;
         font-weight: normal;
         height: 42px;
         line-height: 40px;
         padding: 0 12px;
         text-decoration: none;
-
-        &.locale-picker {
-          color: #fff;
-          padding-left: 34px;
-        }
-      }
-
-      > a:hover {
-        background-color: #000;
-        color: #fff;
-        text-decoration: underline;
-
-        &.firefox-download-button,
-        &.volunteer-button {
-          text-decoration: none;
-        }
-      }
-
-      > svg {
-        fill: #fff;
-        height: 32px;
-        padding-top: 8px;
-        position: absolute;
-        width: 32px;
-      }
-
-      &:hover {
-        background: #000;
-
-        > ul {
-          display: block;
-        }
       }
     }
-  }
-
-  .unread-message-count {
-    background: @textGrey;
-    border-radius: 2px;
-    color: #FFFFFF;
-    font-size: 78%;
-    font-weight: bold;
-    background: #0095dd;
-    background: linear-gradient(to bottom, #0095dd, #00539f);
-    left: 3px;
-    padding: 2px 4px;
-    position: relative;
-    top: -2px;
   }
 
   .firefox-download-button:link,
@@ -1501,7 +1464,6 @@ input[type=button],
     background-color: @buttonGreen;
     border-radius: 100px;
     border: 2px solid @buttonGreen;
-    display: block;
     height: 32px;
     line-height: 30px;
     margin-left: 20px;
@@ -1524,9 +1486,8 @@ input[type=button],
   .volunteer-button:link,
   .volunteer-button:visited {
     background-color: #000;
-    border: 2px solid @borderLightGrey;
+    border: 2px solid #fff;
     border-radius: 100px;
-    display: block;
     height: 32px;
     line-height: 30px;
     margin-left: 20px;
@@ -1541,8 +1502,9 @@ input[type=button],
     &:hover,
     &:focus,
     &:active {
-      background-color: saturate(darken(@borderLightGrey, 5%), 10%);
-      border-color: saturate(darken(@borderLightGrey, 5%), 10%);
+      background-color: saturate(darken(#fff, 5%), 10%);
+      border-color: saturate(darken(#fff, 5%), 10%);
+      color: #000;
       transition: color .1s ease-in-out, background-color .1s ease-in-out;
     }
   }
