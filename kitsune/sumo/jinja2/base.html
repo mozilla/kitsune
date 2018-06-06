@@ -159,7 +159,7 @@
       <a href="{{ url('home') }}"  data-event-category="navigation" data-event-action="main navigation" data-event-label="Home"></a>
     </h2>
     {% if not hide_aux_nav %}
-    <nav id="aux-nav-left" class="logged-{% if user.is_authenticated() %}in{% else %}out{% endif %}" role="navigation">
+    <nav id="aux-nav" class="logged-{% if user.is_authenticated() %}in{% else %}out{% endif %}" role="navigation">
       <ul>
         {{ aux_nav(user, hide_aaq_link) }}
 
