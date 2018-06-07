@@ -15,7 +15,6 @@ for image in base base-dev staticfiles locales full-no-locales full;
 do
 	docker build -t kitsune:${image}-latest \
                  -t ${DOCKER_REPO}:${image}-${GIT_SHA} \
-                 -t ${DOCKER_REPO}:${image}-latest \
                  --cache-from ${DOCKER_REPO}:${image}-latest \
                  --cache-from kitsune:${image}-latest \
                  -f docker/dockerfiles/${image} \
