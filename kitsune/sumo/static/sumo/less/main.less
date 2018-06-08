@@ -143,7 +143,9 @@ body {
       min-height: 50px;
       max-height: 50px;
       position: fixed;
-      top: 0;
+      top: -100px;
+      transform: translateY(100px);
+      transition: transform .3s;
       width: 100%;
       z-index: 97;
 
@@ -193,6 +195,14 @@ body {
         padding-bottom: 0;
         padding-top: 0;
         width: 60%;
+
+        svg {
+          width: 24px;
+        }
+
+        .locale-picker {
+          padding-left: 44px;
+        }
       }
 
       #aux-nav-right {
@@ -432,7 +442,6 @@ input[type="submit"]{
   border-style: solid;
   border-width: 1px;
   font-weight: 600;
-  // margin: -20px 0 20px 0;
   padding: 4px 4px 5px 4px;
   position: relative;
   z-index: 1;
@@ -1318,7 +1327,7 @@ input[type=button],
 
         &.locale-picker {
           color: #fff;
-          padding-left: 44px;
+          padding-left: 54px;
         }
       }
 
@@ -1330,11 +1339,11 @@ input[type=button],
 
       > svg {
         fill: #fff;
-        height: 32px;
+        height: 28px;
         padding-left: 12px;
-        padding-top: 8px;
+        padding-top: 6px;
         position: absolute;
-        width: 32px;
+        width: 28px;
       }
 
       > ul {
@@ -1471,7 +1480,7 @@ input[type=button],
     font-size: 14px;
     height: 32px;
     line-height: 30px;
-    margin-left: 0px;
+    margin-left: 0;
     margin-top: 2px;
     padding: 0 30px;
     position: relative;
