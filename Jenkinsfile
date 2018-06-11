@@ -26,7 +26,7 @@ conduit {
 
         stage("Build") {
             if (!dockerImageExists(docker_image)) {
-                sh "GIT_SHA=${GIT_COMMIT} LOCALE_ENV=production ./docker/bin/build-docker-images.sh"
+                sh "GIT_SHA=${GIT_COMMIT} GIT_SHA_SHORT=${GIT_COMMIT_SHORT} LOCALE_ENV=production ./docker/bin/build-docker-images.sh"
             }
             else {
                 echo "Image ${docker_image} already exists."
