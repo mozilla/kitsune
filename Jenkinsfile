@@ -1,4 +1,4 @@
-@Library('github.com/mozmeao/jenkins-pipeline@20170315.1')
+@Library('github.com/mozmeao/jenkins-pipeline@20171123.1')
 def config
 def docker_image
 def dc_name
@@ -26,7 +26,7 @@ conduit {
 
         stage("Build") {
             if (!dockerImageExists(docker_image)) {
-                sh "GIT_SHA=${GIT_COMMIT_SHORT} LOCALE_ENV=production ./docker/bin/build-docker-images.sh"
+                sh "GIT_SHA=${GIT_COMMIT} LOCALE_ENV=production ./docker/bin/build-docker-images.sh"
             }
             else {
                 echo "Image ${docker_image} already exists."
