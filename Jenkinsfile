@@ -71,16 +71,16 @@ conduit {
                 dockerImageTag("${config.project.docker_name}:full-no-locales-${GIT_COMMIT_SHORT}", "${config.project.docker_name}:full-no-locales-latest")
                 dockerImagePush("${config.project.docker_name}:full-no-locales-latest", "mozjenkins-docker-hub")
 
-                dockerImagePush("${config.project.docker_name}:locales-${GIT_COMMIT_SHORT}", "${config.project.docker_name}:locales-latest")
+                dockerImageTag("${config.project.docker_name}:locales-${GIT_COMMIT_SHORT}", "${config.project.docker_name}:locales-latest")
                 dockerImagePush("${config.project.docker_name}:locales-latest", "mozjenkins-docker-hub")
 
-                dockerImagePush("${config.project.docker_name}:staticfiles-${GIT_COMMIT_SHORT}", "${config.project.docker_name}:staticfiles-latest")
+                dockerImageTag("${config.project.docker_name}:staticfiles-${GIT_COMMIT_SHORT}", "${config.project.docker_name}:staticfiles-latest")
                 dockerImagePush("${config.project.docker_name}:staticfiles-latest", "mozjenkins-docker-hub")
 
-                dockerImagePush("${config.project.docker_name}:base-dev-${GIT_COMMIT_SHORT}", "${config.project.docker_name}:base-dev-latest")
+                dockerImageTag("${config.project.docker_name}:base-dev-${GIT_COMMIT_SHORT}", "${config.project.docker_name}:base-dev-latest")
                 dockerImagePush("${config.project.docker_name}:base-dev-latest", "mozjenkins-docker-hub")
 
-                dockerImagePush("${config.project.docker_name}:base-${GIT_COMMIT_SHORT}", "${config.project.docker_name}:base-latest")
+                dockerImageTag("${config.project.docker_name}:base-${GIT_COMMIT_SHORT}", "${config.project.docker_name}:base-latest")
                 dockerImagePush("${config.project.docker_name}:base-latest", "mozjenkins-docker-hub")
             }
         }
