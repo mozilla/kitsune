@@ -26,7 +26,7 @@
   <ul class="sidebar-nav topics">
     {% for topic in topics %}
       {% set topic_url = url('products.documents', product_slug=product.slug, topic_slug=topic.slug) %}
-      <li {% if selected_topic == topic %}class="selected {% if selected_subtopic != None %}subtopic-selected{% endif %}"{% endif %}>
+      <li {% if selected_topic == topic %}class="selected {% if subtopics %}has-subtopics{% endif %} {% if selected_subtopic != None %}subtopic-selected{% endif %}"{% endif %}>
         <a href="{{ topic_url }}" data-event-category="link click" data-event-action="topic sidebar" data-event-label="{{topic.title}}">
           {{ pgettext('DB: products.Topic.title', topic.title) }}
         </a>
