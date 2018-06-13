@@ -7,7 +7,7 @@
 {% set scripts = ('wiki', 'wiki.diff') %}
 
 {% block content %}
-  <div class="grid_9">
+  <div>
     <article id="review-revision">
       <h1>{{ _('Review Translation of {title}')|f(title=document.parent.title) }}</h1>
       <p>{{ _('Reviewing Translation {id} in {language} by {user}')|f(id=revision.id, user=revision.creator, language=settings.LANGUAGES_DICT[document.locale.lower()]) }}.
@@ -51,13 +51,13 @@
         {# If there is a parent revision to diff, and this translation is not already based on it. #}
         {% if parent_revision and document.current_revision.based_on and
               document.current_revision.based_on != parent_revision %}
-          <details class="h2" open="open">
+          <details class="h2 half-width" open="open">
             <summary>{{ _('Recent English Changes') }}</summary>
             {# Default locale diff #}
             {{ revision_diff(document.current_revision.based_on, parent_revision, show_picker=True) }}
           </details>
         {% endif %}
-        <details class="h2" open="open">
+        <details class="h2 half-width" open="open">
           <summary>{{ _('Submitted Translation Changes') }}</summary>
           {# Current locale diff #}
           {{ revision_diff(document.current_revision, revision, _('Current public translation:'), _('Submitted translation:')) }}

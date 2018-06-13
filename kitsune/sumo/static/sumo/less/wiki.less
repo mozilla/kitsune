@@ -695,6 +695,11 @@ textarea[name="content"] {
       }
     }
   }
+
+  .half-width {
+    display: inline-block;
+    width: 49%;
+  }
 }
 
 .html-rtl {
@@ -893,6 +898,12 @@ body.translate {
 
 
 body.review {
+  /* Override the review page to have fluid width */
+  .container_12 {
+    margin: 0 25px;
+    width: auto;
+  }
+
   #actions {
     margin: 20px 0;
   }
@@ -902,6 +913,10 @@ body.review {
       height: 250px;
       margin: 5px 0 0;
     }
+  }
+
+  #main-container > aside {
+    float: none;
   }
 }
 
