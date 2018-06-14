@@ -10,13 +10,22 @@
     $('#main-content').hide();
     $('#main-content').siblings('aside').hide();
     $('#main-breadcrumbs').hide();
+
+    if ($('#support-search-wiki:visible').length === 0) {
+      $('.support-search-main').show();
+      $('.support-search-main').find('input[name=q]').focus();
+    }
   }
 
   function showContent() {
+    $('.support-search-main').hide();
     $('#main-content').show();
     $('#main-content').siblings('aside').show();
     $('#main-breadcrumbs').show();
     $('#instant-search-content').remove();
+    $('.search-form-large:visible').find('input[name=q]').focus();
+    $('.search-form-large:visible').find('input[name=q]').val('');
+    $('#support-search').find('input[name=q]').val('');
   }
 
   function render(data) {
@@ -48,6 +57,8 @@
 
   $(document).on('keyup', '[data-instant-search="form"] input[type="search"]', function(ev) {
     var $this = $(this);
+    var $form = $this.closest('form');
+    var formId = $form.attr('id');
     var params = {
       format: 'json'
     };
@@ -63,7 +74,7 @@
         window.clearTimeout(searchTimeout);
       }
 
-      $this.closest('form').find('input').each(function () {
+      $form.find('input').each(function () {
         if ($(this).attr('type') === 'submit') {
           return true;
         }
@@ -71,6 +82,17 @@
           return true;
         }
         if ($(this).attr('name') === 'q') {
+          var value = $(this).val();
+
+          if (formId === 'support-search-results') {
+            $('#support-search').find('input[name=q]').val(value);
+          } else if (formId === 'support-search') {
+            $('.search-form-large').find('input[name=q]').val(value);
+          } else {
+            $('#support-search').find('input[name=q]').val(value);
+            $('#support-search-results').find('input[name=q]').val(value);
+          }
+
           return true;
         }
         params[$(this).attr('name')] = $(this).val();
