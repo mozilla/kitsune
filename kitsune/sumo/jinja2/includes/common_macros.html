@@ -6,7 +6,7 @@
         <input type="hidden" name="{{ k }}" value="{{ v }}" />
       {% endfor %}
     {% endif %}
-    <input type="search" name="q" required="required" aria-required="true" placeholder="{{ _('Search Mozilla Support') }}" class="searchbox" id="search-q" />
+    <input type="search" name="q" required="required" aria-required="true" placeholder="{{ _('Find help...')|truncate(12) }}" class="searchbox" id="search-q" />
     <button type="submit" title="{{ _('Search') }}" class="submit-button">{{ _('Search') }}</button>
   </form>
 {% endmacro %}
@@ -19,7 +19,7 @@
       {% else %}
         {% set ask_url = url('wiki.document', 'get-community-support') %}
       {% endif %}
-      <li><a href="{{ ask_url }}" class="ask" data-event-category="navigation" data-event-action="main navigation" data-event-label="Ask a question">{{ _('Ask a question') }}</a></li>
+      <li><a href="{{ ask_url }}" class="ask" data-event-category="navigation" data-event-action="main navigation" data-event-label="Get Community Support">{{ _('Get Community Support') }}</a></li>
     {% endif %}
     {% if user.is_authenticated() %}
       <li class="dropdown">
