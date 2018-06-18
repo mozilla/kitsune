@@ -159,33 +159,43 @@
 </div>
 
 <header>
-  <div class="container_12 cf">
-    <div class="grid_12">
-      <div class="cf">
-        <nav id="aux-nav" role="navigation">
-          <ul>
-            {% if not hide_aux_nav %}
-              {{ aux_nav(user, hide_aaq_link) }}
-            {% endif %}
-            {% if not hide_locale_switcher %}
-              <li><a href="{{ locale_picker_url }}" class="locale-picker"  data-event-category="navigation" data-event-action="main navigation" data-event-label="Locale Picker">{{ settings.LANGUAGES_DICT[request.LANGUAGE_CODE.lower()] }}</a></li>
-            {% endif %}
-            {% if not (hide_fx_download or user.is_authenticated()) %}
-              <a href="https://www.mozilla.org/firefox/new/?utm_source=support.mozilla.org&utm_medium=referral&utm_campaign=non-fx-button"
-                class="firefox-download-button hidden" data-event-category="Download Button" data-event-action="Firefox for Desktop">
-                <strong class="download-title">{{ _('Download Firefox') }}</strong>
-              </a>
-            {% endif %}
-          </ul>
-        </nav>
-      </div>
-      <div class="cf">
-        {% if not hide_header_search %}
-          {{ search_box(settings, id='support-search', params=search_params) }}
+  <div class="cf">
+    <h2 class="logo">
+      <a href="{{ url('home') }}"  data-event-category="navigation" data-event-action="main navigation" data-event-label="Home"></a>
+    </h2>
+    {% if not hide_aux_nav %}
+    <nav id="aux-nav" class="logged-{% if user.is_authenticated() %}in{% else %}out{% endif %}" role="navigation">
+      <ul>
+        {{ aux_nav(user, hide_aaq_link) }}
+
+        {% if not hide_locale_switcher %}
+          <li>
+            {% include "includes/icons/globe-icon.svg" %}
+            <a href="{{ locale_picker_url }}" class="locale-picker"  data-event-category="navigation" data-event-action="main navigation" data-event-label="Locale Picker">{{ settings.LANGUAGES_DICT[request.LANGUAGE_CODE.lower()] }}</a>
+          </li>
         {% endif %}
-        <a href="{{ url('home') }}" class="logo"  data-event-category="navigation" data-event-action="main navigation" data-event-label="Home"></a>
-      </div>
-    </div>
+      </ul>
+    </nav>
+    {% endif %}
+    <nav id="aux-nav-right" role="navigation">
+      <ul>
+        {% if not (hide_fx_download or user.is_authenticated()) %}
+          <li>
+            <a href="https://www.mozilla.org/firefox/download/thanks/" class="firefox-download-button hidden" data-event-category="Download Button" data-event-action="Firefox for Desktop">{{ _('Download Firefox') }}</a>
+          </li>
+        {% endif %}
+        {% if not (user.is_authenticated()) %}
+          <li>
+            <a href="{{ url('landings.get_involved') }}" class="volunteer-button" data-event-category="Volunteer Button" data-event-action="Volunteer for Mozilla Support">{{ _('Volunteer') }}</a>
+          </li>  
+        {% endif %}
+      </ul>
+    </nav>
+  </div>
+  <div class="cf">
+    {% if not hide_header_search %}
+      {{ search_box(settings, id='support-search', params=search_params) }}
+    {% endif %}
   </div>
 </header>
 
@@ -213,6 +223,12 @@
       {% block side_bottom %}{% endblock %}
     </aside>
   {% endblock %}
+
+  <div class="support-search-main">
+    <div class="grid_12 search-form-large">
+      {{ search_box(settings, id='support-search-results', params=search_params) }}
+    </div>
+  </div>
 
   <main id="main-content" role="main">
     {% block content %}{% endblock %}

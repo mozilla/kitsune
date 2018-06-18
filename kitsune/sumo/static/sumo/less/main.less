@@ -44,7 +44,8 @@ article {
 body {
   color: @textGrey;
   font-family: @OpenSans;
-  font-size: 14px;
+  font-size: 18px;
+  line-height: 1.5;
   min-width: 1000px;
   text-align: left;
 
@@ -55,73 +56,115 @@ body {
 
     > header .logo {
       float: right;
+      padding-right: 30px;
     }
 
     &.scroll-header {
       > header {
         .logo {
-          left: auto;
-          right: 0;
+          padding-right: 10px;
         }
 
         #support-search {
           left: 0;
+          padding-left: 10px;
           right: auto;
+
+          .searchbox {
+            padding-left: 36px;
+          }
+
+          .submit-button {
+            left: 18px;
+          }
         }
 
         #aux-nav {
-          margin-left: 302px;
-          margin-right: 0;
+          margin-left: 220px;
         }
 
+        #aux-nav-right {
+          margin-left: 240px;
+        }
+      }
+    }
+
+    .search-form-large {
+      .searchbox {
+        padding-left: 60px;
+      }
+      .submit-button {
+        left: 140px;
       }
     }
   }
 
   > header {
-    background: #fff;
-    border-bottom: 1px solid #b3b8bc;
-    border-top: 2px solid #fff;
-    margin-bottom: 20px;
-    padding-bottom: 20px;
+    background: #000;
+    min-height: 100px;
+    margin: 0;
+    padding: 0;
+    position: relative;
+    width: 100%;
+
+    #aux-nav {
+      padding: 29px 0 29px 20px;
+    }
+
+    #aux-nav-right {
+      padding: 29px 20px 29px 0;
+    }
+
+    #support-search {
+      display: none;
+    }
 
     .logo {
+      background: url('../img/mozilla-support-white.svg') top left no-repeat;
+      background-size: 112px 48px;
       float: left;
-      height: 69px;
-      width: 160px;
-      display: block;
-      background: url('../img/mozilla-support.png') 0 0 no-repeat;
-      background-size: 160px 69px;
+      margin-left: 30px;
+      position: relative;
+      
+      a {
+        display: block;
+        height: 48px;
+        width: 112px;
+      }
     }
   }
 
   &.scroll-header {
-    padding-top: 151px;
+    padding-top: 100px;
 
     > header {
-      background: #fff;
+      background: #000;
       box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
-      height: 60px;
-      padding: 0;
+      min-height: 50px;
+      max-height: 50px;
       position: fixed;
-      top: 0;
+      top: -100px;
+      transform: translateY(100px);
+      transition: transform .3s;
       width: 100%;
       z-index: 97;
 
       .logo {
-        left: 0;
-        margin: 0;
-        position: absolute;
-        top: 8px;
-        height: 40px;
-        width: 188px;
-        background: url('../img/mozilla-support-scroll.png') 0 0 no-repeat;
-        background-size: 188px 40px;
+        background-size: 90px 36px;
+        height: 36px;
+        margin-left: 10px;
+        margin-top: 6px;
+        width: 90px;
+
+        a {
+          display: block;
+          height: 36px;
+          width: 90px;
+        }
       }
 
-      #aux-nav {
-        margin-right: 290px;
-
+      #aux-nav,
+      #aux-nav-right {
         > ul {
           margin-top: 4px;
 
@@ -130,16 +173,61 @@ body {
           }
 
           .firefox-download-button {
-              display: none;
+            display: none;
+          }
+
+          .volunteer-button {
+            display: none;
+          }
+
+          > li {
+            display: inline-block;
+
+            > a:link,
+            a:visited, {
+              color: #fff;
+            }
           }
         }
       }
 
+      #aux-nav {
+        padding-bottom: 0;
+        padding-top: 0;
+        width: 60%;
+
+        svg {
+          width: 24px;
+        }
+
+        .locale-picker {
+          padding-left: 44px;
+        }
+      }
+
+      #aux-nav-right {
+        margin-right: 240px;
+        padding-bottom: 0;
+        padding-top: 0;
+      }
+
       #support-search {
-        right: 0;
-        margin-top: 9px;
+        display: block;
+        margin-right: 10px;
+        margin-top: 10px;
         position: absolute;
+        right: 0;
         top: 0;
+        z-index: 99;
+
+        .searchbox {
+          border: 0;
+          box-shadow: inset 1px 1px 1px rgba(0, 0, 0, 0.5);
+        }
+
+        .submit-button {
+          top: 6px;
+        }
       }
 
       #tabzilla {
@@ -159,7 +247,7 @@ body {
 
 body,
 html {
-  background: @background url('../img/grain.png') 0 0 repeat;
+  background: @background;
 }
 
 footer {
@@ -173,7 +261,6 @@ footer {
   a:link,
   a:visited {
     color: #fff;
-    font-weight: normal;
     text-decoration: none;
   }
 
@@ -292,7 +379,7 @@ footer {
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: @OpenSansLight;
+  font-family: @ZillaSlab;
   font-weight: normal;
 }
 
@@ -319,7 +406,6 @@ textarea {
   border: 1px solid #b2b2b2;
   border-radius: 5px;
   box-shadow: 0 0 0 1px #efefef;
-  font-family: @OpenSans;
   transition: all linear .1s;
 
   &:focus {
@@ -356,7 +442,6 @@ input[type="submit"]{
   border-style: solid;
   border-width: 1px;
   font-weight: 600;
-  margin: -20px 0 20px 0;
   padding: 4px 4px 5px 4px;
   position: relative;
   z-index: 1;
@@ -737,7 +822,7 @@ input[type=button],
 }
 
 .folding-section {
-  background: #fff;
+  background: #000;
 
   > header {
     padding: 16px 20px;
@@ -1194,29 +1279,29 @@ input[type=button],
 }
 
 #aux-nav {
-  float: right;
-  font-size: 12px;
-  font-weight: 600;
+  float: left;
+  font-size: 16px;
+  font-weight: 700;
   position: relative;
-  text-transform: uppercase;
   z-index: 10;
 
   > ul {
-    float: right;
     list-style: none;
     margin: 0;
     padding: 0;
 
     > li {
-      color: @textGrey;
-      float: left;
+      color: #000;
+      display: inline-block;
+      line-height: 1.2;
       margin: 0 8px 0 0;
       position: relative;
+      text-align: left;
 
       &.dropdown {
         > a:after,
         > span:after {
-          border-color: #666666 transparent transparent;
+          border-color: #fff transparent transparent;
           border-style: solid;
           border-width: 4px;
           content: " ";
@@ -1233,8 +1318,7 @@ input[type=button],
       > a,
       > a:visited,
       > span {
-        color: @textDarkGrey;
-        display: block;
+        color: #fff;
         font-weight: normal;
         height: 42px;
         line-height: 40px;
@@ -1242,16 +1326,24 @@ input[type=button],
         text-decoration: none;
 
         &.locale-picker {
-          background-image: @iconsSprite;
-          background-position: -38px -153px;
-          background-repeat: no-repeat;
-          padding-left: 34px;
+          color: #fff;
+          padding-left: 54px;
         }
       }
 
       > a:hover {
-        background-color: #fff;
-        text-decoration: none;
+        background-color: #000;
+        color: #fff;
+        text-decoration: underline;
+      }
+
+      > svg {
+        fill: #fff;
+        height: 28px;
+        padding-left: 12px;
+        padding-top: 6px;
+        position: absolute;
+        width: 28px;
       }
 
       > ul {
@@ -1263,7 +1355,7 @@ input[type=button],
         margin: 0;
         padding: 0;
         position: absolute;
-        top: 42px;
+        top: 40px;
         width: 160px;
 
         &.double {
@@ -1309,13 +1401,25 @@ input[type=button],
       }
 
       &:hover {
-        background: #fff;
+        background: #000;
 
         > ul {
           display: block;
         }
+
+        a {
+          text-decoration: underline;
+        }
       }
     }
+  }
+
+  &.logged-in {
+    width: 70%;
+  }
+
+  &.logged-out {
+    width: 43%;
   }
 
   .unread-message-count {
@@ -1332,37 +1436,116 @@ input[type=button],
     top: -2px;
   }
 
-  .firefox-download-button {
-    background: #81BC2E;
-    background: linear-gradient(to bottom, #81BC2E, #659324);
-    border-radius: 5px;
-    box-shadow: 0 1px 0 0 rgba(0, 0, 0, 0.2), 0 -1px 0 0 rgba(0, 0, 0, 0.3) inset;
-    display: inline-block;
-    line-height: 25px;
-    margin: 6px 15px 0px 15px;
-    position: relative;
-    text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
-    transition: all 0.5s;
-    width: 130px;
+  .hidden {
+    display: none;
+  }
+}
 
-    .download-title {
-      color: #FFFFFF;
+#aux-nav-right {
+  float: right;
+  font-size: 16px;
+  font-weight: 700;
+  z-index: 10;
+
+  > ul {
+    list-style: none;
+    margin: 0 0 0 10px;
+    padding: 0;
+
+    > li {
+      color: #000;
       display: inline-block;
-      font-family: "Open Sans",Arial,Helvetica,sans-serif;
-      padding: 1px 6px 1px 12px;
-      text-align: center;
-      text-transform: capitalize;
+      line-height: 1.2;
+      margin: 0 8px 0 0;
+
+      > a,
+      > a:visited,
+      > span {
+        color: #fff;
+        display: inline-block;
+        font-weight: normal;
+        height: 42px;
+        line-height: 40px;
+        padding: 0 12px;
+        text-decoration: none;
+      }
+    }
+  }
+
+  .firefox-download-button:link,
+  .firefox-download-button:visited {
+    background-color: @buttonGreen;
+    border-radius: 100px;
+    border: 2px solid @buttonGreen;
+    font-size: 14px;
+    height: 32px;
+    line-height: 30px;
+    margin-left: 0;
+    margin-top: 2px;
+    padding: 0 30px;
+    position: relative;
+    text-align: center;
+    text-decoration: none;
+    transition: color .1s ease-in-out, background-color .1s ease-in-out;
+
+    &:hover,
+    &:focus,
+    &:active {
+      background-color: saturate(darken(@buttonGreen, 5%), 10%);
+      border-color: saturate(darken(@buttonGreen, 5%), 10%);
+      transition: color .1s ease-in-out, background-color .1s ease-in-out;
+    }
+  }
+
+  .volunteer-button:link,
+  .volunteer-button:visited {
+    background-color: #000;
+    border: 2px solid #fff;
+    border-radius: 100px;
+    font-size: 14px;
+    height: 32px;
+    line-height: 30px;
+    margin-left: 10px;
+    margin-top: 2px;
+    padding: 0 30px;
+    position: relative;
+    text-align: center;
+    text-decoration: none;
+    transition: color .1s ease-in-out, background-color .1s ease-in-out;
+    min-width: 100px;
+
+    &:hover,
+    &:focus,
+    &:active {
+      background-color: saturate(darken(#fff, 5%), 10%);
+      border-color: saturate(darken(#fff, 5%), 10%);
+      color: #000;
+      transition: color .1s ease-in-out, background-color .1s ease-in-out;
     }
   }
 
   .hidden {
     display: none;
   }
-
 }
 
 .html-rtl {
   #aux-nav {
+    float: right;
+
+    > ul {
+      > li {
+        float: left;
+        padding: 0 20px 0 12px;
+      }
+    }
+
+    .unread-message-count {
+      right: auto;
+      left: -3px;
+    }
+  }
+  #aux-nav-right {
     float: left;
 
     > ul {
@@ -1403,7 +1586,7 @@ input[type=button],
 
   .title {
     display: block;
-    font-family: @OpenSansLight;
+    font-family: @OpenSans;
     font-size: 22px;
     letter-spacing: -1px;
     line-height: 22px;
@@ -1412,6 +1595,7 @@ input[type=button],
 
   .description {
     display: block;
+    font-size: 16px;
     margin: 0 0 0 99px;
   }
 }
@@ -1466,23 +1650,22 @@ input[type=button],
   position: relative;
 
   .submit-button {
-    background: @iconsSprite -50px -50px no-repeat;
+    background: url('../img/search-icon.png') 0 0 no-repeat;
+    background-size: 17px 17px;
     border: 0;
     height: 17px;
     position: absolute;
     right: 12px;
     text-indent: -9999px;
-    top: 6px;
+    top: 8px;
     width: 17px;
   }
 
   .searchbox {
-    background: #8d969e;
-    background: url('../img/grain.png'), linear-gradient(to bottom, #8d969e, #a8b0b7);
-    border: 0;
+    background: #fff;
+    border: 2px solid #cbcbcb;
     border-radius: 30px;
-    box-shadow: inset 1px 1px 1px rgba(0, 0, 0, 0.5);
-    color: #fff;
+    color: #000;
     font-size: 14px;
     height: 18px;
     padding: 6px 42px 6px 20px;
@@ -1491,12 +1674,12 @@ input[type=button],
       outline: none;
 
       &::placeholder {
-        color: #fff;
+        color: #000;
       }
     }
 
     &::placeholder {
-      color: #fff;
+      color: #000;
       opacity: 1;
     }
   }
@@ -2119,7 +2302,8 @@ input[type=button],
   }
 }
 .html-rtl {
-  #aux-nav {
+  #aux-nav,
+  #aux-nav-right {
     > ul {
       > li {
         padding: 0px;
@@ -2153,3 +2337,40 @@ input[type=button],
   display: none;
 }
 /* end bug1441583 */
+
+.search-form-large {
+  .simple-search-form {
+    display: block;
+    float: none;
+    margin: 30px 0 30px 0;
+    text-align: center;
+
+    .searchbox {
+      &::placeholder {
+        color: #000;
+      }
+
+      background: #fff;
+      border: 2px solid #cbcbcb;
+      border-radius: 8px;
+      color: #000;
+      font-size: 16px;
+      height: 60px;
+      padding: 0 0 0 20px;
+      width: 97%;
+    }
+
+    .submit-button {
+      background-size: 24px 24px;
+      height: 24px;
+      right: 20px;
+      width: 24px;
+      top: 20px;
+    }
+  }
+}
+
+.support-search-main {
+  display: none;
+  margin-top: 10px;
+}
