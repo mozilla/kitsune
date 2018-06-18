@@ -23,8 +23,7 @@
     $('#main-content').siblings('aside').show();
     $('#main-breadcrumbs').show();
     $('#instant-search-content').remove();
-    $('.search-form-large:visible').find('input[name=q]').focus();
-    $('.search-form-large:visible').find('input[name=q]').val('');
+    $('.search-form-large:visible').find('input[name=q]').focus().val('');
     $('#support-search').find('input[name=q]').val('');
   }
 
