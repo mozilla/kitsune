@@ -8,15 +8,27 @@ function whatsdeployed {
 }
 
 function deploy {
-    export KUBECTL_BIN="./regions/${2}/kubectl"
-    export KUBECONFIG="./regions/${2}/kubeconfig"
-    ${KUBECTL_BIN} -n sumo-${3} apply -f "regions/${2}/${3}-secrets.yaml"
-    invoke  -f "regions/${2}/${3}.yaml" deployments.create-celery --apply --tag full-${4}
-    invoke  -f "regions/${2}/${3}.yaml" rollouts.status-celery
-    invoke  -f "regions/${2}/${3}.yaml" deployments.create-cron --apply --tag full-${4}
-    invoke  -f "regions/${2}/${3}.yaml" rollouts.status-cron
-    invoke  -f "regions/${2}/${3}.yaml" deployments.create-web --apply --tag full-${4}
-    invoke  -f "regions/${2}/${3}.yaml" rollouts.status-web
+    REGION=${2}
+    REGION_ENV=${3}
+    COMMIT_HASH=${4}
+    DEPLOY_SECRETS=${5:-NO}
+
+    export KUBECTL_BIN="./regions/${REGION}/kubectl"
+    export KUBECONFIG="./regions/${REGION}/kubeconfig"
+
+    if [[ "${DEPLOY_SECRETS}" == "secrets" ]]; then
+        echo "Applying secrets";  
+        ${KUBECTL_BIN} -n sumo-${REGION_ENV} apply -f "regions/${REGION}/${REGION_ENV}-secrets.yaml"
+    else 
+        echo "Secrets will *NOT* be applied";
+    fi   
+
+    invoke  -f "regions/${REGION}/${REGION_ENV}.yaml" deployments.create-celery --apply --tag full-${COMMIT_HASH}
+    invoke  -f "regions/${REGION}/${REGION_ENV}.yaml" rollouts.status-celery
+    invoke  -f "regions/${REGION}/${REGION_ENV}.yaml" deployments.create-cron --apply --tag full-${COMMIT_HASH}
+    invoke  -f "regions/${REGION}/${REGION_ENV}.yaml" rollouts.status-cron
+    invoke  -f "regions/${REGION}/${REGION_ENV}.yaml" deployments.create-web --apply --tag full-${COMMIT_HASH}
+    invoke  -f "regions/${REGION}/${REGION_ENV}.yaml" rollouts.status-web
     printf "${GREEN}OK${NC}\n"
 }
 
