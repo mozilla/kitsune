@@ -71,3 +71,11 @@ The running instance will be located at http://0.0.0.0:8000/ unless you specifie
 #. (Optional) Update product details
 
     docker-compose -f docker-compose.yml -f docker/composefiles/dev.yml exec web ./manage.py update_product_details
+
+#. (Optional) Get search working
+
+    First, make sure you have run the "Create some data" step above.
+
+    1. Enter the web container: `docker exec -it kitsune_web_1 /bin/bash`
+    2. Build the indicies: `./manage.py esreindex` (You may need to pass the `--delete` flag)
+    3. Precompile the nunjucks templates: `./manage.py nunjucks_precompile`
