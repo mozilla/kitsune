@@ -40,12 +40,12 @@
     margin-top: 20px;
 
     > li {
-      background: none;
+      background: #f3f3f3;
       border: 1px solid #E7E7E7;
       border-radius: 2px;
       box-shadow: inset 0 -2px 0 0 #E7E7E7;
       margin: 0 13px 30px;
-      min-height: 100px;
+      min-height: 60px;
       padding: 0;
       width: 242px;
 
@@ -56,55 +56,43 @@
       > a,
       > a:visited {
         color: #000;
-        display: block;
-        height: auto;
-        padding: 0;
+        min-height: 60px;
+        padding: 16px 0;
+        text-decoration: none;
         width: 100%;
 
-        .documents {
-          background: #fff;
+        &:before {
+          content: '';
+          display: inline-block;
+          height: 100%;
+          min-height: 60px;
+          vertical-align: middle;
+        }
 
-          > p {
-            font-size: 14px;
-            margin: 0;
-            padding: 20px 0 20px 60px;
-            
-            &:after {
-              background: url('../img/icon-chevron-right.svg') no-repeat;
-              content: '';
-              display: inline-block;
-              margin-left: 6px;
-              height: 10px;
-              width: 6px;
-            }
+        &:hover {
+          .title {
+            text-decoration: underline;
           }
         }
 
-        .title-container {
-          background-color: #f3f3f3;
-          min-height: 54px;
-          padding-bottom: 16px;
-          padding-top: 16px;
+        .topic-icon {
+          background-position: 50% 50%;
+          background-repeat: no-repeat;
+          background-size: auto 100%;
+          display: inline-block;
+          height: 24px;
+          padding-left: 25px;
+          vertical-align: middle;
+          width: auto;
+        }
 
-          .topic-icon {
-            background-position: 50% 50%;
-            background-repeat: no-repeat;
-            background-size: auto 100%;
-            display: inline-block;
-            height: 24px;
-            margin-left: 20px;
-            margin-top: 2px;
-            vertical-align: top;
-            width: auto;
-          }
-
-          .title {
-            display: inline-block;
-            font-family: @ZillaSlab;
-            margin-left: 14px;
-            max-width: 165px;
-            vertical-align: top;
-          }
+        .title {
+          display: inline-block;;
+          font-family: @ZillaSlab;
+          font-size: 16px;
+          max-width: 165px;
+          padding-left: 4px;
+          vertical-align: middle;
         }
       }
     }

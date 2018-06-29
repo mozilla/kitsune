@@ -4,13 +4,8 @@
     <li>
       {% set topic_url = url('products.documents', product_slug=product.slug, topic_slug=topic.slug) %}
       <a href="{{ topic_url }}" class="cf" data-event-category="link click" data-event-action="topic" data-event-label="{{topic.title}}">
-        <div class="title-container">
-          <img src="{{ STATIC_URL }}sumo/img/blank.png" class="topic-icon" style="background-image: url('{{ topic.image_url }}')" alt="" />
-          <span class="title">{{ pgettext('DB: products.Topic.title', topic.title) }}</span>
-        </div>
-        <div class="documents">
-          <p>See all</p>
-        </div>
+        <img src="{{ STATIC_URL }}sumo/img/blank.png" class="topic-icon" style="background-image: url('{{ topic.image_url }}')" alt="" />
+        <span class="title">{{ pgettext('DB: products.Topic.title', topic.title) }}</span>
       </a>
     </li>
     {% if loop.last %}
