@@ -8,9 +8,11 @@
           {% set prod_url = url('products.product', slug=product.slug) %}
         {% endif %}
         <a class="cf" href="{{ prod_url }}" data-event-category="link click" data-event-action="product" data-event-label="{{ product.title }}">
-            <img src="{{ product.image_url }}" class="logo-sprite" alt="{{ pgettext('DB: products.Product.title', product.title) }}" />
-          <span class="title">{{ pgettext('DB: products.Product.title', product.title) }}</span>
-          <span class="description">{{ pgettext('DB: products.Product.description', product.description) }}</span>
+          <div class="icon">
+            <img src="{{ product.image_url }}" alt="{{ pgettext('DB: products.Product.title', product.title) }}" />
+          </div>
+          <div class="title">{{ pgettext('DB: products.Product.title', product.title) }}</div>
+          <div class="description">{{ pgettext('DB: products.Product.description', product.description) }}</div>
         </a>
       </li>
     {% endfor %}
