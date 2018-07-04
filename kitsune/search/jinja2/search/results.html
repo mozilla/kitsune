@@ -33,23 +33,6 @@
         {% if product %}
           {% set base_doctype_url = base_doctype_url|urlparams(product=product.slug) %}
         {% endif %}
-        <ul id="doctype-filter" class="search-filter sidebar-nav">
-          <li {{ w|class_selected(3) }}>
-            <a href="{{ base_doctype_url }}">
-              {{ _('Show Everything') }}
-            </a>
-          </li>
-          <li {{ w|class_selected(1) }}>
-            <a href="{{ base_doctype_url|urlparams(w=1) }}">
-              {{ _('Help Articles Only') }}
-            </a>
-          </li>
-          <li {{ w|class_selected(2) }}>
-            <a href="{{ base_doctype_url|urlparams(w=2) }}">
-              {{ _('Community Discussion Only') }}
-            </a>
-          </li>
-        </ul>
 
         {% set base_product_url = base_url %}
         {% if w != 3 %}
