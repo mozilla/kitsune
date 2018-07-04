@@ -10,17 +10,24 @@ anyjson==0.3.3 \
     --hash=sha256:37812d863c9ad3e35c0734c42e0bf0320ce8c3bed82cd20ad54cb34d158157ba
 Babel==2.0 \
     --hash=sha256:44988df191123065af9857eca68e9151526a931c12659ca29904e4f11de7ec1b
-billiard==3.3.0.9 \
-    --hash=sha256:7336ec59b8d0a132a1ee9f166a063d44a5e7f2d2fe15f79fbcedda583bbd61c1
+billiard==3.3.0.23 \
+    --hash=sha256:204e75d390ef8f839c30a93b696bd842c3941916e15921745d05edc2a83868ab \
+    --hash=sha256:23cb71472712e96bff3e0d45763b7b8a99e5040385fffb96816028352c255682 \
+    --hash=sha256:692a2a5a55ee39a42bcb7557930e2541da85df9ea81c6e24827f63b80cd39d0b \
+    --hash=sha256:82041dbaa62f7fde1464d7ab449978618a38b241b40c0d31dafabb36446635dc \
+    --hash=sha256:958fc9f8fd5cc9b936b2cb9d96f02aa5ec3613ba13ee7f089c77ff0bcc368fac \
+    --hash=sha256:c0cbe8d45ba8d8213ad68ef9a1881002a151569c9424d551634195a18c3a4160 \
+    --hash=sha256:ccfe0419eb5e49f27ad35cf06e75360af903df6d576c66cb8073246d4e023e5c \
+    --hash=sha256:d4d2fed1a251ea58eed47b48db3778ebb92f5ff4407dc91869c6f41c3a9249d0
 https://github.com/jsocol/bleach/archive/ab7c8b3f0a4c169b94da3248dfd60d6fc33b263c.tar.gz#egg=bleach==1.2.1 \
     --hash=sha256:4d9e0850c02c6e8ddf850c6220ad6ed416b8f945ef2b49992af8d205bc50c4d0
 https://github.com/jbalogh/django-debug-cache-panel/archive/a6b0f248b721bdd759ee5b5eb843fedc9c33da09.tar.gz#egg=cache-panel \
     --hash=sha256:fd6969f877bbca861f06558b742c38d40ea9ad71c565fdcc277f4e37331d0319
 carrot==0.10.7 \
     --hash=sha256:cb46374f3c883c580d142a79d2609883713a867cc86e0514163adce784ce2468
-celery==3.1.17 \
-    --hash=sha256:1743aa8689bd2867c5ab3af00a8742635eb560963b1b93e14cd22d66fb77e135 \
-    --hash=sha256:cfe2b653268bd586e2d08a75e886f7be3be55ba372f72e2f5747aeb76c470362
+celery==3.1.25 \
+    --hash=sha256:1954a224805f3835e5b6f5998ec9fe51db3413cc49e59fc720d314c7913427cf \
+    --hash=sha256:6ced63033bc663e60c992564954dbb5c84c43899f7f1a04b739957350f6b55f3
 click==3.3 \
     --hash=sha256:c9972f4d2b80575bb9112500cfec750eaf4f04e07abda4b2c44e453cde65ee77 \
     --hash=sha256:f79c8c04d7eb50071bcad67fd23f3c10fab6c72d56857adf848367806845d6e5
@@ -132,9 +139,10 @@ https://github.com/jezdez/django-appconf/archive/de23f5213913b3d6ea3e008bc01b487
 https://github.com/django-security/django-axes/archive/778f208cc1d3cc42ecb756f732f8593e40ebb476.tar.gz#egg=django-axes==1.3.6 \
     --hash=sha256:30ba613a0e8617555888185dd958407b6ec6255bbaf3718803e0e8771db5bd45
 https://github.com/mozilla/django-badger/archive/7e6c420c2f913baab7307ef2a5aaa0585a034af6.tar.gz#egg=django-badger==0.0.0.2 \
---hash=sha256:ff8b908af009e2eafa67319abaad659957d4f84d32de13bbb63e53d31759ee86
-https://github.com/celery/django-celery/archive/da0b98caf9dc96c4d9ec91c09e00c5e19dcb0da3.tar.gz#egg=django-celery==3.2.0a1 \
-    --hash=sha256:766aa7e28df6fb0b17a225f83ba2057ec44f70b39956b121b41caabd0b3cd4cb
+    --hash=sha256:ff8b908af009e2eafa67319abaad659957d4f84d32de13bbb63e53d31759ee86
+django-celery==3.2.2 \
+    --hash=sha256:1450264db5ec58e45f3f20d8d361e696920352f62481bf56047288cdb38bcc0b \
+    --hash=sha256:aaba492bf7777f231ec6b02c80aa3ea68758c39f4723864dd4164589b99ad703
 django-cors-headers==0.13 \
     --hash=sha256:2ccf73519ea205b88db453f7f6170fb3d0a21a8e3253f2578ef0cd529f79a58f
 django-cronjobs==0.2.3 \
@@ -212,9 +220,9 @@ httplib2==0.9 \
     --hash=sha256:e227e67f676293025fbedca080c7114685e55857d6079d15f12704dfda03dd62
 Jinja2==2.5.2 \
     --hash=sha256:19040f01b3a9d8c63e4d57936f78710908199b69370ab44a0f7407dd891f019b
-kombu==3.0.32 \
-    --hash=sha256:406c9f4cad1d11ac07b245ae215f6d8ee127db63e8331e0c87108bbaf1791c8e \
-    --hash=sha256:d3edda02076ae04fa62d128007756f4c4298fe479119ca070a47a22afe867660
+kombu==3.0.37 \
+    --hash=sha256:7ceab743e3e974f3e5736082e8cc514c009e254e646d6167342e0e192aee81a6 \
+    --hash=sha256:e064a00c66b4d1058cd2b0523fb8d98c82c18450244177b6c0f7913016642650
 lxml==3.4.4 \
     --hash=sha256:2b139e9918936b7be5710263ece3e5eff886816cba547645817462291dbd7456 \
     --hash=sha256:a43ed8960677272dd278b10548bf3fc4954b002f3886fdf29d21d01b811b5616 \
