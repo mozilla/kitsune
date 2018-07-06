@@ -11,8 +11,6 @@ exec uwsgi --http "0.0.0.0:${PORT:-8000}" \
            --processes "${WSGI_NUM_WORKERS:-2}" \
            --harakiri 20 \
            --max-requests 5000 \
-           --async 10 \
-           --ugreen \
            --master \
            --vacuum \
            --wsgi-file /app/wsgi/app.py \
