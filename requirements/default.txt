@@ -402,9 +402,7 @@ redis==2.10.6 \
     --hash=sha256:a22ca993cea2962dbb588f9f30d0015ac4afcc45bee27d3978c0dbe9e97c6c0f
 newrelic==2.96.0.80 \
     --hash=sha256:fc7125f3caed2b678c884468c1416ab87e7150ede0d46c738fca08d88c8bd008
-meinheld==0.6.1 \
-    --hash=sha256:40d9dbce0165b2d9142f364d26fd6d59d3682f89d0dfe2117717a8ddad1f4133 \
-    --hash=sha256:293eff4983b7fcbd9134b47706b22189883fe354993bd10163c65869d141e565
+https://github.com/mopemope/meinheld/archive/544a81f909927e7a21f1fb8752733235485eb7e1.tar.gz#egg=meinheld==0.6.2pre-544a81f9
 greenlet==0.4.12 \
     --hash=sha256:96888e47898a471073b394ea641b7d675c1d054c580dd4a04a382bd34e67d89e \
     --hash=sha256:bc339de0e0969de5118d0b62a080a7611e2ba729a90f4a3ad78559c51bc5576d \
