@@ -19,21 +19,7 @@
     <div class="grid_3">
       {% if not advanced %}
         {# Don't show filtering to advanced search users #}
-
         {% set base_url = url('search')|urlparams(q=q) %}
-
-        {% if product %}
-          {# In basic search, you can only filter one product at a time. #}
-          {% set product = product[0] %}
-        {% else %}
-          {% set product = None %}
-        {% endif %}
-
-        {% set base_doctype_url = base_url %}
-        {% if product %}
-          {% set base_doctype_url = base_doctype_url|urlparams(product=product.slug) %}
-        {% endif %}
-
         {% set base_product_url = base_url %}
         {% if w != 3 %}
           {% set base_product_url = base_product_url|urlparams(w=w) %}
