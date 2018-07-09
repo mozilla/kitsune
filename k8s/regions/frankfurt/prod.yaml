@@ -142,4 +142,4 @@ app:
     wsgi_keep_alive: 60
     disable_questions_list_global: False
     disable_questions_list_all: False
-    disable_feeds: True
+    disable_feeds: False
