@@ -220,7 +220,7 @@ def document(request, document_slug, template=None, document=None):
 
     user_agent = request.META.get('HTTP_USER_AGENT', '')
     browser = get_browser(user_agent)
-    show_fx_download = (product.slug == 'thunderbird' and browser != 'Firefox')
+    show_fx_download = (product.slug == 'firefox' and browser != 'Firefox')
 
     data = {
         'document': doc,
