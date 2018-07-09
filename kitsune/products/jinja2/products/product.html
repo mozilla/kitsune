@@ -15,6 +15,63 @@
   <div class="grid_12 search-form-large">
     {{ search_box(settings, id='support-search-product', params=search_params) }}
   </div>
+
+  {% if show_fx_download %}
+    <div class="grid_12 download-buttons">
+      <div class="download-firefox">
+        <a href="https://www.mozilla.org/firefox/download/thanks/" class="download-button"
+          data-event-category="Download Button"
+          data-event-action="Panel Opening"
+          data-event-label="{{ latest_version }}">
+          <span class="download-content">
+            <strong class="download-title">{{ _('Download Firefox') }}</strong>
+          </span>
+        </a>
+        <ul class="info">
+          <li><a href="https://www.mozilla.org/firefox/all/">{{ _('Systems and Languages') }}</a></li>
+          <li><a href="https://www.mozilla.org/firefox/notes">{{ _("What's New") }}</a></li>
+          <li><a href="https://www.mozilla.org/legal/privacy/firefox">{{ _('Privacy') }}</a></li>
+        </ul>
+      </div>
+      <div class="refresh-firefox">
+        <div class="help-text">{{ _('Give Firefox a tune up') }}</div>
+        <a data-mozilla-ui-reset="reset" class="btn btn-submit">
+          {{ _('Refresh Firefox') }}
+        </a>
+        <a class="reset-link" href="{{ url('wiki.document', 'refresh-firefox-reset-add-ons-and-settings') }}">
+          {{ _('How does it work?') }}
+        </a>
+        <a href="https://www.mozilla.org/firefox/new/#download-fx"
+            data-event-category="Download Button"
+            data-event-action="Panel Opening"
+            data-event-label="{{ latest_version }}">
+            {{ _('Download a fresh copy') }}
+        </a>
+      </div>
+    </div>
+  {% endif %}
+
+  {% if product.slug == 'thunderbird' %}
+    <div class="grid_12 download-buttons">
+      <div class="download-thunderbird">
+        <a href="https://www.mozilla.org/thunderbird" class="download-button"
+        data-event-category="Download Button"
+        data-event-action="Download Thunderbird">
+          <span class="download-content">
+            <strong class="download-title">{{ _('Thunderbird') }}</strong>
+            <span class="download-subtitle">{{ _('Free Download') }}</span>
+            <span class="download-lang">{{ settings.LANGUAGES_DICT[request.LANGUAGE_CODE.lower()] }}</span>
+          </span>
+        </a>
+        <ul class="info">
+          <li><a href="https://www.mozilla.org/thunderbird/all.html">{{ _('Systems and Languages') }}</a></li>
+          <li><a href="https://www.mozilla.org/thunderbird/releases">{{ _('Release Notes') }}</a></li>
+          <li><a href="https://www.mozilla.org/thunderbird/legal/privacy">{{ _('Privacy') }}</a></li>
+        </ul>
+      </div>
+    </div>
+  {% endif %}
+
   <div class="grid_12">
     <section id="help-topics">
       <div class="product-title cf">
