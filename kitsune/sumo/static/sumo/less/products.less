@@ -3,88 +3,11 @@
 @import 'includes/help-topics.less';
 @import 'includes/product-title.less';
 @import 'includes/topic-list.less';
+@import 'includes/download-firefox.less';
 
-.download-firefox {
-  font-family: 'Open Sans','Droid Arabic Naskh','Mplus Fulah',sans-serif;
-  position: absolute;
-  right: 0;
-  top: 0;
-
-  .download-button {
-    background: #81BC2E;
-    background: linear-gradient(to bottom, #81BC2E, #659324);
-    border-radius: 5px;
-    box-shadow: 0 1px 0 0 rgba(0, 0, 0, 0.2), 0 -1px 0 0 rgba(0, 0, 0, 0.3) inset;
-    display: block;
-    line-height: 20px;
-    position: relative;
-    text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
-    transition: top 0s;
-    transition: all 0.5s;
-    width: 230px;
-
-     .download-content {
-       background: url('../img/firefox-small.png') no-repeat;
-       color: #B5E786;
-       display: block;
-       min-height: 40px;
-       margin-left: -34px;
-       padding: 10px 20px 8px 73px;
-
-       .download-title {
-         color: #fff;
-         display: block;
-         font-size: 22px;
-         font-weight: normal;
-         letter-spacing: -0.02em;
-         padding-right: 25px;
-        }
-
-       .download-subtitle{
-         font-size: 12px;
-        }
-
-       .download-lang{
-         color: #346012;
-         font-size: 11px;
-         position: absolute;
-         right: -25px;
-         top: 20px;
-         text-shadow: 0px 1px rgba(255, 255, 255, 0.2);
-         width: 100px;
-      }
-    }
-
-    &:hover {
-      box-shadow: 0 2px 0 0 rgba(0, 0, 0, 0.1), 0 -2px 0 0 rgba(0, 0, 0, 0.2) inset, 0 12px 24px 2px #83C822 inset;
-      text-decoration: none;
-    }
-
-    &:active {
-      box-shadow: 0 2px 0 0 rgba(0, 0, 0, 0.1), 0 -1px 0 0 rgba(0, 0, 0, 0.3) inset, 0 12px 24px 2px #83C822 inset;
-    }
-  }
-
-  ul.info {
-    font-size: 0.7em;
-    margin: 4px 0 0 0;
-    padding: 0;
-
-    li {
-      list-style: none;
-      display: inline;
-
-      a {
-        color: #999;
-      }
-
-      &:not(:first-child):before {
-        content: "|";
-        color: #999;
-        padding-right: 3px;
-      }
-    }
-  }
+.logo-sprite {
+  float: left;
+  margin: 0 8px 0 0;
 }
 
 .refresh-firefox {
@@ -523,5 +446,26 @@ ul.info {
     padding-top: 6px;
     text-decoration: none;
     width: 110px;
+  }
+}
+
+.download-buttons {
+  display: block;
+  height: 80px;
+
+  > .download-firefox,
+  > .download-thunderbird,
+  > .refresh-firefox {
+    padding-right: 75px;
+  }
+
+  &.documents-download-buttons {
+    margin-top: 20px;
+
+    > .download-firefox,
+    > .download-thunderbird,
+    > .refresh-firefox {
+      padding-right: 10px;
+    }
   }
 }

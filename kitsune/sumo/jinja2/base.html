@@ -186,12 +186,12 @@
     {% endif %}
     <nav id="aux-nav-right" role="navigation">
       <ul>
-        {% if not (hide_fx_download or user.is_authenticated()) %}
+        {% if show_fx_download and not user.is_authenticated() %}
           <li>
             <a href="https://www.mozilla.org/firefox/download/thanks/" class="firefox-download-button hidden" data-event-category="Download Button" data-event-action="Firefox for Desktop">{{ _('Download Firefox') }}</a>
           </li>
         {% endif %}
-        {% if not (user.is_authenticated()) %}
+        {% if not user.is_authenticated() %}
           <li>
             <a href="{{ url('landings.get_involved') }}" class="volunteer-button" data-event-category="Volunteer Button" data-event-action="Volunteer for Mozilla Support">{{ _('Volunteer') }}</a>
           </li>  
@@ -335,7 +335,7 @@
 {% endfor %}
 
 {# Show firefox download button to unauthenticated users only #}
-{% if not (hide_fx_download or user.is_authenticated()) %}
+{% if show_fx_download and not user.is_authenticated() %}
   {% javascript 'common.fx.download' %}
 {% endif %}
 

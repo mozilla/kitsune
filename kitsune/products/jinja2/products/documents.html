@@ -15,6 +15,7 @@
   <div class="grid_12 search-form-large">
     {{ search_box(settings, id='support-search-documents', params=search_params) }}
   </div>
+
   <div class="grid_12">
     <div class="documents-product-title cf">
       {% set prod_url = url('products.product', slug=product.slug) %}
@@ -26,6 +27,26 @@
     {{ topic_sidebar(topics[:10], subtopics, product, topic, subtopic) }}
   </aside>
   <div class="grid_9">
+    {% if show_fx_download %}
+      <div class="documents-download-buttons download-buttons">
+        <div class="download-firefox">
+          <a href="https://www.mozilla.org/firefox/download/thanks/" class="download-button"
+            data-event-category="Download Button"
+            data-event-action="Panel Opening"
+            data-event-label="{{ latest_version }}">
+            <span class="download-content">
+              <strong class="download-title">{{ _('Download Firefox') }}</strong>
+            </span>
+          </a>
+          <ul class="info">
+            <li><a href="https://www.mozilla.org/firefox/all/">{{ _('Systems and Languages') }}</a></li>
+            <li><a href="https://www.mozilla.org/firefox/notes">{{ _("What's New") }}</a></li>
+            <li><a href="https://www.mozilla.org/legal/privacy/firefox">{{ _('Privacy') }}</a></li>
+          </ul>
+        </div>
+      </div>
+    {% endif %}
+
     <article id="document-list">
       <h1 class="topic-title {% if not subtopic %}cf{% endif %}">
         {% if subtopic %}
