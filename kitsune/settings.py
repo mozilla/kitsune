@@ -712,11 +712,11 @@ PUENTE = {
             ('kitsune/**/management/**.py', 'ignore'),
             ('kitsune/forums/**.lhtml', 'ignore'),
 
-            ('**/templates/**.lhtml', 'jinja2'),
-            ('**/templates/**.ltxt', 'jinja2'),
             ('kitsune/**.py', 'python'),
             ('kitsune/**/templates/**.html', 'jinja2'),
             ('kitsune/**/jinja2/**.html', 'jinja2'),
+            ('kitsune/**/jinja2/**.lhtml', 'jinja2'),
+            ('kitsune/**/jinja2/**.ltxt', 'jinja2'),
             ('vendor/src/django-tidings/**/templates/**.html', 'jinja2'),
             ('vendor/src/django-badger/badger/*.py', 'python'),
             ('vendor/src/django-badger/badger/templatetags/*.py', 'python'),
