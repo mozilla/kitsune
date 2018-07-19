@@ -82,6 +82,8 @@ conduit {
 
                 dockerImageTag("${config.project.docker_name}:base-${GIT_COMMIT_SHORT}", "${config.project.docker_name}:base-latest")
                 dockerImagePush("${config.project.docker_name}:base-latest", "mozjenkins-docker-hub")
+
+                sh "docker/bin/upload-staticfiles.sh"
             }
         }
 
