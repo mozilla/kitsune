@@ -1,8 +1,9 @@
 import hashlib
 
+from collections import OrderedDict
+
 from django.contrib.auth.hashers import BasePasswordHasher, mask_hash
 from django.utils.crypto import constant_time_compare
-from django.utils.datastructures import SortedDict
 from django.utils.encoding import smart_str
 from django.utils.translation import ugettext as _
 
@@ -27,7 +28,7 @@ class SHA256PasswordHasher(BasePasswordHasher):
     def safe_summary(self, encoded):
         algorithm, salt, hash = encoded.split('$', 2)
         assert algorithm == self.algorithm
-        return SortedDict([
+        return OrderedDict([
             (_('algorithm'), algorithm),
             (_('salt'), mask_hash(salt, show=2)),
             (_('hash'), mask_hash(hash)),

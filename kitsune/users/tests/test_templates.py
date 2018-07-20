@@ -71,8 +71,7 @@ class LoginTests(TestCaseBase):
                                     {'username': self.u.username,
                                      'password': 'testpass'})
         eq_(302, response.status_code)
-        eq_('http://testserver' +
-            reverse('home', locale=settings.LANGUAGE_CODE) + '?fpa=1',
+        eq_(reverse('home', locale=settings.LANGUAGE_CODE) + '?fpa=1',
             response['location'])
 
     def test_login_next_parameter(self):
@@ -92,12 +91,10 @@ class LoginTests(TestCaseBase):
                                      'password': 'testpass',
                                      'next': next})
         eq_(302, response.status_code)
-        eq_('http://testserver' + next + '?fpa=1', response['location'])
+        eq_(next + '?fpa=1', response['location'])
 
-    @mock.patch.object(Site.objects, 'get_current')
-    def test_login_invalid_next_parameter(self, get_current):
+    def test_login_invalid_next_parameter(self):
         '''Test with an invalid ?next=http://example.com parameter.'''
-        get_current.return_value.domain = 'testserver.com'
         invalid_next = 'http://foobar.com/evil/'
         valid_next = reverse('home', locale=settings.LANGUAGE_CODE)
 
@@ -114,7 +111,7 @@ class LoginTests(TestCaseBase):
                                      'password': 'testpass',
                                      'next': invalid_next})
         eq_(302, response.status_code)
-        eq_('http://testserver' + valid_next + '?fpa=1', response['location'])
+        eq_(valid_next + '?fpa=1', response['location'])
 
     def test_login_mobile_csrf(self):
         """The mobile login view should have a CSRF token."""
@@ -156,16 +153,14 @@ class PasswordResetTests(TestCaseBase):
         r = self.client.post(reverse('users.pw_reset'),
                              {'email': 'foo@bar.com'})
         eq_(302, r.status_code)
-        eq_('http://testserver/en-US/users/pwresetsent', r['location'])
+        eq_('/en-US/users/pwresetsent', r['location'])
         eq_(0, len(mail.outbox))
 
-    @mock.patch.object(Site.objects, 'get_current')
-    def test_success(self, get_current):
-        get_current.return_value.domain = 'testserver.com'
+    def test_success(self):
         r = self.client.post(reverse('users.pw_reset'),
                              {'email': self.u.email})
         eq_(302, r.status_code)
-        eq_('http://testserver/en-US/users/pwresetsent', r['location'])
+        eq_('/en-US/users/pwresetsent', r['location'])
         eq_(1, len(mail.outbox))
         assert mail.outbox[0].subject.find('Password reset') == 0
         assert mail.outbox[0].body.find('pwreset/%s' % self.uidb36) > 0
@@ -215,7 +210,7 @@ class PasswordResetTests(TestCaseBase):
         r = self.client.post(url, {'new_password1': new_pw,
                                    'new_password2': new_pw})
         eq_(302, r.status_code)
-        eq_('http://testserver/en-US/users/pwresetcomplete', r['location'])
+        eq_('/en-US/users/pwresetcomplete', r['location'])
         self.u = User.objects.get(username=self.u.username)
         assert self.u.check_password(new_pw)
 
@@ -351,8 +346,7 @@ class EditAvatarTests(TestCaseBase):
             r = self.client.post(url, {'avatar': f})
 
         eq_(302, r.status_code)
-        eq_('http://testserver/en-US' + reverse('users.edit_my_profile'),
-            r['location'])
+        eq_('/en-US' + reverse('users.edit_my_profile'), r['location'])
         assert not os.path.exists(old_path), 'Old avatar was not removed.'
 
     def test_delete_avatar(self):
@@ -365,8 +359,7 @@ class EditAvatarTests(TestCaseBase):
 
         user_profile = Profile.objects.get(user__username=self.u.username)
         eq_(302, r.status_code)
-        eq_('http://testserver/en-US' + reverse('users.edit_my_profile'),
-            r['location'])
+        eq_('/en-US' + reverse('users.edit_my_profile'), r['location'])
         eq_('', user_profile.avatar.name)
 
 
@@ -468,7 +461,7 @@ class PasswordChangeTests(TestCaseBase):
                                         'new_password1': self.new_pw,
                                         'new_password2': self.new_pw})
         eq_(302, r.status_code)
-        eq_('http://testserver/en-US/users/pwchangecomplete', r['location'])
+        eq_('/en-US/users/pwchangecomplete', r['location'])
         self.u = User.objects.get(username=self.u.username)
         assert self.u.check_password(self.new_pw)
 
@@ -487,8 +480,8 @@ class PasswordChangeTests(TestCaseBase):
                                         'new_password2': self.new_pw + '1'})
         eq_(200, r.status_code)
         doc = pq(r.content)
-        eq_("The two password fields didn't match. Your old password was "
-            "entered incorrectly. Please enter it again.",
+        eq_("Your old password was entered incorrectly. Please enter it again. "
+            "The two password fields didn't match.",
             doc('ul.errorlist').text())
 
 
@@ -584,7 +577,7 @@ class ForgotUsernameTests(TestCaseBase):
         r = self.client.post(reverse('users.forgot_username'),
                              {'email': u.email})
         eq_(302, r.status_code)
-        eq_('http://testserver/en-US/users/login', r['location'])
+        eq_('/en-US/users/login', r['location'])
 
         # Verify email
         eq_(1, len(mail.outbox))

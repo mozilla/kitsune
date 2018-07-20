@@ -171,7 +171,7 @@ class DocumentTests(TestCaseBase):
         RevisionFactory(document=d2, is_approved=False)
         url = reverse('wiki.document', args=[r.document.slug], locale='fr')
         response = self.client.get(url, follow=True)
-        eq_('http://testserver/fr/kb/french', response.redirect_chain[0][0])
+        eq_('/fr/kb/french', response.redirect_chain[0][0])
         doc = pq(response.content)
         # Fallback message is shown.
         eq_(1, len(doc('#doc-pending-fallback')))
@@ -638,17 +638,14 @@ class NewDocumentTests(TestCaseBase):
         eq_(None, doc('input#id_allow_discussion').attr('required'))
 
     @mock.patch.object(ReviewableRevisionInLocaleEvent, 'fire')
-    @mock.patch.object(Site.objects, 'get_current')
-    def test_new_document_POST(self, get_current, ready_fire):
+    def test_new_document_POST(self, ready_fire):
         """HTTP POST to new document URL creates the document."""
-        get_current.return_value.domain = 'testserver'
-
         self.client.login(username='admin', password='testpass')
         data = new_document_data()
         response = self.client.post(reverse('wiki.new_document'), data,
                                     follow=True)
         d = Document.objects.get(title=data['title'])
-        eq_([('http://testserver/en-US/kb/%s/history' % d.slug, 302)],
+        eq_([('/en-US/kb/%s/history' % d.slug, 302)],
             response.redirect_chain)
         eq_(settings.WIKI_DEFAULT_LANGUAGE, d.locale)
         eq_(data['category'], d.category)
@@ -1183,7 +1180,7 @@ class HistoryTests(TestCaseBase):
         response = self.client.get(url)
         # Check redirection happens
         eq_(302, response.status_code)
-        url = 'http://testserver/bn-BD/kb/bn_bd_trans_slug/history'
+        url = '/bn-BD/kb/bn_bd_trans_slug/history'
         eq_(url, response['Location'])
 
     def test_translation_history_with_english_slug_while_no_trans(self):
@@ -1621,7 +1618,7 @@ class ReviewRevisionTests(TestCaseBase):
                         args=[self.document.slug, self.revision.id])
         redirect = response.redirect_chain[0]
         eq_(302, redirect[1])
-        eq_('http://testserver/{0}{1}?next=/en-US/kb/test-document/review/{2}'
+        eq_('/{0}{1}?next=/en-US/kb/test-document/review/{2}'
             .format(settings.LANGUAGE_CODE, settings.LOGIN_URL,
                     str(self.revision.id)),
             redirect[0])
@@ -2035,12 +2032,9 @@ class TranslateTests(TestCaseBase):
 
     @mock.patch.object(ReviewableRevisionInLocaleEvent, 'fire')
     @mock.patch.object(EditDocumentEvent, 'fire')
-    @mock.patch.object(Site.objects, 'get_current')
-    def test_another_translation_to_locale(self, get_current, edited_fire,
+    def test_another_translation_to_locale(self, edited_fire,
                                            ready_fire):
         """Create the second translation of a doc."""
-        get_current.return_value.domain = 'testserver'
-
         rev_es = self._create_and_approve_first_translation()
 
         # Create and approve a new en-US revision
@@ -2067,7 +2061,7 @@ class TranslateTests(TestCaseBase):
         data['content'] = 'loremo ipsumo doloro sito ameto nuevo'
         response = self.client.post(url, data)
         eq_(302, response.status_code)
-        eq_('http://testserver/es/kb/un-test-articulo/history',
+        eq_('/es/kb/un-test-articulo/history',
             response['location'])
         doc = Document.objects.get(slug=data['slug'])
         rev = doc.revisions.filter(content=data['content'])[0]
@@ -2100,18 +2094,16 @@ class TranslateTests(TestCaseBase):
         data['form'] = 'doc'
         response = self.client.post(url, data)
         eq_(302, response.status_code)
-        eq_('http://testserver/es/kb/un-test-articulo/edit?opendescription=1',
+        eq_('/es/kb/un-test-articulo/edit?opendescription=1',
             response['location'])
         revisions = rev_es.document.revisions.all()
         eq_(1, revisions.count())  # No new revisions
         d = Document.objects.get(id=rev_es.document.id)
         eq_(new_title, d.title)  # Title is updated
 
-    @mock.patch.object(Site.objects, 'get_current')
-    def test_translate_update_rev_only(self, get_current):
+    def test_translate_update_rev_only(self):
         """Submitting the revision form should create a new revision.
         No document fields should be updated."""
-        get_current.return_value.domain = 'testserver'
         rev_es = self._create_and_approve_first_translation()
         orig_title = rev_es.document.title
         url = reverse('wiki.translate', locale='es', args=[self.d.slug])
@@ -2121,8 +2113,7 @@ class TranslateTests(TestCaseBase):
         data['form'] = 'rev'
         response = self.client.post(url, data)
         eq_(302, response.status_code)
-        eq_('http://testserver/es/kb/un-test-articulo/history',
-            response['location'])
+        eq_('/es/kb/un-test-articulo/history', response['location'])
         revisions = rev_es.document.revisions.all()
         eq_(2, revisions.count())  # New revision is created
         d = Document.objects.get(id=rev_es.document.id)
@@ -2591,14 +2582,14 @@ class RevisionDeleteTestCase(TestCaseBase):
         response = get(self.client, 'wiki.delete_revision', args=[doc.slug, rev.id])
         redirect = response.redirect_chain[0]
         eq_(302, redirect[1])
-        eq_('http://testserver/%s%s?next=/en-US/kb/%s/revision/%s/delete' %
+        eq_('/%s%s?next=/en-US/kb/%s/revision/%s/delete' %
             (settings.LANGUAGE_CODE, settings.LOGIN_URL, doc.slug, rev.id),
             redirect[0])
 
         response = post(self.client, 'wiki.delete_revision', args=[doc.slug, rev.id])
         redirect = response.redirect_chain[0]
         eq_(302, redirect[1])
-        eq_('http://testserver/%s%s?next=/en-US/kb/%s/revision/%s/delete' %
+        eq_('/%s%s?next=/en-US/kb/%s/revision/%s/delete' %
             (settings.LANGUAGE_CODE, settings.LOGIN_URL, doc.slug, rev.id),
             redirect[0])
 
@@ -2737,7 +2728,7 @@ class DocumentDeleteTestCase(TestCaseBase):
                        args=[self.document.slug])
         redirect = response.redirect_chain[0]
         eq_(302, redirect[1])
-        eq_('http://testserver/%s%s?next=/en-US/kb/%s/delete' %
+        eq_('/%s%s?next=/en-US/kb/%s/delete' %
             (settings.LANGUAGE_CODE, settings.LOGIN_URL,
              self.document.slug),
             redirect[0])
@@ -2746,7 +2737,7 @@ class DocumentDeleteTestCase(TestCaseBase):
                         args=[self.document.slug])
         redirect = response.redirect_chain[0]
         eq_(302, redirect[1])
-        eq_('http://testserver/%s%s?next=/en-US/kb/%s/delete' %
+        eq_('/%s%s?next=/en-US/kb/%s/delete' %
             (settings.LANGUAGE_CODE, settings.LOGIN_URL,
              self.document.slug),
             redirect[0])

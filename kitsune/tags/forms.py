@@ -1,8 +1,8 @@
 import json
 
 from django.forms import Widget, MultipleChoiceField
-from django.forms.util import flatatt
-from django.utils.datastructures import MultiValueDict, MergeDict
+from django.forms.utils import flatatt
+from django.utils.datastructures import MultiValueDict
 from django.utils.encoding import force_unicode
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
@@ -125,7 +125,10 @@ class TagWidget(Widget):
         return mark_safe(output)
 
     def value_from_datadict(self, data, files, name):
-        if isinstance(data, (MultiValueDict, MergeDict)):
+        # TODO: removed 'MergeDict' from classinfo check below
+        # could find not explicit use of MergeDict elsewhere in the codebase, so
+        # i think we're okay here?
+        if isinstance(data, MultiValueDict):
             return data.getlist(name)
         return data.get(name, None)
 

@@ -1025,12 +1025,12 @@ def question_vote(request, question_id):
         if not request.limited:
             vote.save()
 
-            if 'referrer' in request.REQUEST:
-                referrer = request.REQUEST.get('referrer')
+            if 'referrer' in request.GET:
+                referrer = request.GET.get('referrer')
                 vote.add_metadata('referrer', referrer)
 
-                if referrer == 'search' and 'query' in request.REQUEST:
-                    vote.add_metadata('query', request.REQUEST.get('query'))
+                if referrer == 'search' and 'query' in request.GET:
+                    vote.add_metadata('query', request.GET.get('query'))
 
             ua = request.META.get('HTTP_USER_AGENT')
             if ua:
@@ -1073,7 +1073,7 @@ def answer_vote(request, question_id, answer_id):
     if not answer.has_voted(request):
         vote = AnswerVote(answer=answer)
 
-        if 'helpful' in request.REQUEST:
+        if 'helpful' in request.POST:
             vote.helpful = True
             message = _('Glad to hear it!')
         else:
@@ -1086,12 +1086,12 @@ def answer_vote(request, question_id, answer_id):
 
         vote.save()
 
-        if 'referrer' in request.REQUEST:
-            referrer = request.REQUEST.get('referrer')
+        if 'referrer' in request.GET:
+            referrer = request.GET.get('referrer')
             vote.add_metadata('referrer', referrer)
 
-            if referrer == 'search' and 'query' in request.REQUEST:
-                vote.add_metadata('query', request.REQUEST.get('query'))
+            if referrer == 'search' and 'query' in request.GET:
+                vote.add_metadata('query', request.GET.get('query'))
 
         ua = request.META.get('HTTP_USER_AGENT')
         if ua:

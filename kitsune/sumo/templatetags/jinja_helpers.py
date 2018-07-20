@@ -13,7 +13,7 @@ from django.template.loader import render_to_string
 from django.utils.encoding import smart_str, smart_text
 from django.utils.http import urlencode
 from django.utils.translation import ugettext_lazy as _lazy, ugettext as _, ungettext
-from django.utils.tzinfo import LocalTimezone
+from django.utils.timezone import get_default_timezone
 
 import bleach
 import jinja2
@@ -367,7 +367,10 @@ def timesince(d, now=None):
                                 '%(number)d seconds ago', n))]
     if not now:
         if d.tzinfo:
-            now = datetime.datetime.now(LocalTimezone(d))
+            # TODO: is this correct?
+            # https://docs.djangoproject.com/en/1.8/_modules/django/utils/tzinfo/#LocalTimezone
+            # https://docs.djangoproject.com/en/1.9/_modules/django/utils/timezone/#get_default_timezone
+            now = datetime.datetime.now(get_default_timezone())
         else:
             now = datetime.datetime.now()
 

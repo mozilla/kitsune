@@ -1,7 +1,8 @@
 import logging
 
+from collections import OrderedDict
+
 from django.conf import settings
-from django.utils.datastructures import SortedDict
 from django.utils.translation import ugettext_lazy as _lazy
 
 from django_statsd.clients import statsd
@@ -11,7 +12,7 @@ from zendesk import Zendesk, ZendeskError
 log = logging.getLogger('k.questions.marketplace')
 
 
-MARKETPLACE_CATEGORIES = SortedDict([
+MARKETPLACE_CATEGORIES = OrderedDict([
     ('payments', _lazy('Payments')),
     ('applications', _lazy('Applications')),
     ('account', _lazy('Account')),

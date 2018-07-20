@@ -1,7 +1,7 @@
 import json
 
+from django.apps import apps
 from django.core.exceptions import ObjectDoesNotExist
-from django.db.models import get_model
 from django.http import (HttpResponse, HttpResponseNotFound,
                          HttpResponseBadRequest, HttpResponseForbidden)
 from django.utils.translation import ugettext as _
@@ -30,7 +30,7 @@ def up_image_async(request, model_name, object_pk):
             json.dumps({'status': 'error', 'message': message}))
 
     # Get the model
-    m = get_model(*model_name.split('.'))
+    m = apps.get_model(*model_name.split('.'))
 
     # Then look up the object by pk
     try:

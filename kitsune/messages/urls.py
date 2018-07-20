@@ -1,10 +1,9 @@
-from django.conf.urls import patterns, url
+from django.conf.urls import url
 
 from kitsune.messages import views
 
 
-urlpatterns = patterns(
-    '',
+urlpatterns = [
     url(r'^$', views.inbox, name='messages.inbox'),
     url(r'^/bulk_action$', views.bulk_action, name='messages.bulk_action'),
     url(r'^/read/(?P<msgid>\d+)$', views.read, name='messages.read'),
@@ -20,4 +19,4 @@ urlpatterns = patterns(
     url(r'^/new$', views.new_message, name='messages.new'),
     url(r'^/preview-async$', views.preview_async,
         name='messages.preview_async'),
-)
+]

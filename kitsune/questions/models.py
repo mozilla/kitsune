@@ -5,7 +5,7 @@ from datetime import datetime, timedelta, date
 from urlparse import urlparse
 
 from django.contrib.auth.models import User
-from django.contrib.contenttypes import generic
+from django.contrib.contenttypes.fields import GenericRelation, GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.core.cache import cache
 from django.core.urlresolvers import resolve
@@ -83,8 +83,8 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
     marked_as_spam_by = models.ForeignKey(
         User, null=True, related_name='questions_marked_as_spam')
 
-    images = generic.GenericRelation(ImageAttachment)
-    flags = generic.GenericRelation(FlaggedObject)
+    images = GenericRelation(ImageAttachment)
+    flags = GenericRelation(FlaggedObject)
 
     product = models.ForeignKey(
         Product, null=True, default=None, related_name='questions')
@@ -931,8 +931,8 @@ class Answer(ModelBase, SearchMixin):
     marked_as_spam_by = models.ForeignKey(
         User, null=True, related_name='answers_marked_as_spam')
 
-    images = generic.GenericRelation(ImageAttachment)
-    flags = generic.GenericRelation(FlaggedObject)
+    images = GenericRelation(ImageAttachment)
+    flags = GenericRelation(FlaggedObject)
 
     html_cache_key = u'answer:html:%s'
     images_cache_key = u'answer:images:%s'
@@ -1338,7 +1338,7 @@ class VoteMetadata(ModelBase):
     """Metadata for question and answer votes."""
     content_type = models.ForeignKey(ContentType, null=True, blank=True)
     object_id = models.PositiveIntegerField(null=True, blank=True)
-    vote = generic.GenericForeignKey()
+    vote = GenericForeignKey()
     key = models.CharField(max_length=40, db_index=True)
     value = models.CharField(max_length=VOTE_METADATA_MAX_LENGTH)
 
