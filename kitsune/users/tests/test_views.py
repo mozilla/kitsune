@@ -10,7 +10,7 @@ from django.test.utils import override_settings
 import mock
 from nose.tools import eq_
 from pyquery import PyQuery as pq
-from tidings.tests import watch
+from kitsune.users.tests import tidings_watch as watch
 
 from kitsune.questions.tests import QuestionFactory, AnswerFactory
 from kitsune.questions.models import Question, Answer
@@ -56,7 +56,7 @@ class RegisterTests(TestCase):
                                     {'username': 'newbie',
                                      'password': 'foobar22'}, follow=True)
         eq_(200, response.status_code)
-        eq_('http://testserver/en-US/?fpa=1', response.redirect_chain[0][0])
+        eq_('/en-US/?fpa=1', response.redirect_chain[0][0])
 
     @mock.patch.object(email_utils, 'send_messages')
     @mock.patch.object(Site.objects, 'get_current')
@@ -93,7 +93,7 @@ class RegisterTests(TestCase):
                                     {'username': 'cjkuser',
                                      'password': u_str}, follow=True)
         eq_(200, response.status_code)
-        eq_('http://testserver/ja/?fpa=1', response.redirect_chain[0][0])
+        eq_('/ja/?fpa=1', response.redirect_chain[0][0])
 
     @mock.patch.object(Site.objects, 'get_current')
     def test_new_user_activation(self, get_current):
@@ -258,7 +258,7 @@ class ChangeEmailTestCase(TestCase):
         response = self.client.get(reverse('users.old_change_email',
                                            locale='en-US'), follow=False)
         eq_(301, response.status_code)
-        eq_('http://testserver/en-US/users/change_email', response['location'])
+        eq_('/en-US/users/change_email', response['location'])
 
     @mock.patch.object(Site.objects, 'get_current')
     def test_user_change_email(self, get_current):

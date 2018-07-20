@@ -1,6 +1,8 @@
 from django.contrib.auth.models import User, Permission, Group
 from django.contrib.contenttypes.models import ContentType
 
+from tidings.models import Watch
+
 import factory
 
 from kitsune.sumo.tests import FuzzyUnicode, LocalizingClient, TestCase
@@ -73,3 +75,16 @@ class SettingFactory(factory.DjangoModelFactory):
 
     name = factory.fuzzy.FuzzyText()
     value = factory.fuzzy.FuzzyText()
+
+
+# pulled from https://github.com/mozilla/django-tidings/blob/master/tests/base.py#L23
+def tidings_watch(save=False, **kwargs):
+    # TODO: better defaults, when there are events available.
+    defaults = {'user': kwargs.get('user'),
+                'is_active': True,
+                'secret': 'abcdefghjk'}
+    defaults.update(kwargs)
+    w = Watch.objects.create(**defaults)
+    if save:
+        w.save()
+    return w

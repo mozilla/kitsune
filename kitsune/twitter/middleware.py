@@ -32,7 +32,7 @@ class SessionMiddleware(object):
         ssl_url = url(request, {'scheme': 'https' if is_secure else 'http'})
 
         try:
-            if request.REQUEST.get('twitter_delete_auth'):
+            if request.GET.get('twitter_delete_auth'):
                 request.twitter = Session()
                 return http.HttpResponseRedirect(url(request))
         except IOError:
@@ -80,7 +80,7 @@ class SessionMiddleware(object):
                 # request tokens didn't validate
                 log.warning("Twitter Oauth request tokens didn't validate")
 
-        elif request.REQUEST.get('twitter_auth_request'):
+        elif request.GET.get('twitter_auth_request'):
             # We are requesting Twitter auth
             t = get_twitter_api(None, None)
             try:
@@ -104,7 +104,7 @@ class SessionMiddleware(object):
 
     def process_response(self, request, response):
         if getattr(request, 'twitter', False):
-            if request.REQUEST.get('twitter_delete_auth'):
+            if request.GET.get('twitter_delete_auth'):
                 request.twitter.delete(request, response)
 
             if request.twitter.authed and REQUEST_KEY_NAME in request.COOKIES:

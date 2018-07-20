@@ -5,7 +5,7 @@ from string import letters
 
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
-from django.contrib.sites.models import get_current_site
+from django.contrib.sites.shortcuts import get_current_site
 from django.core.exceptions import ValidationError
 from django.db.models import Q, Count
 from django.utils.http import int_to_base36
@@ -192,7 +192,7 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     def get_avatar_url(self, profile):
         request = self.context.get('request')
-        size = request.REQUEST.get('avatar_size', 48) if request else 48
+        size = request.GET.get('avatar_size', 48) if request else 48
         return profile_avatar(profile.user, size=size)
 
     def get_question_count(self, profile):

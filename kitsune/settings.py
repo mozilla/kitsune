@@ -676,9 +676,6 @@ INSTALLED_APPS = (
     # Extra app for python migrations.
     'django_extensions',
 
-    # App for sample data
-    'eadred',
-
     # In Django <= 1.6, this "must be placed somewhere after all the apps that
     # are going to be generating activities". Putting it at the end is the safest.
     'actstream',

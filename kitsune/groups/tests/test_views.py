@@ -80,7 +80,7 @@ class EditAvatarTests(TestCase):
 
         eq_(302, r.status_code)
         url = reverse('groups.profile', args=[self.group_profile.slug])
-        eq_('http://testserver/en-US' + url, r['location'])
+        eq_('/en-US' + url, r['location'])
         assert not os.path.exists(old_path), 'Old avatar was not removed.'
 
     def test_delete_avatar(self):
@@ -94,7 +94,7 @@ class EditAvatarTests(TestCase):
         r = self.client.post(url)
         eq_(302, r.status_code)
         url = reverse('groups.profile', args=[self.group_profile.slug])
-        eq_('http://testserver/en-US' + url, r['location'])
+        eq_('/en-US' + url, r['location'])
         gp = GroupProfile.objects.get(slug=self.group_profile.slug)
         eq_('', gp.avatar.name)
 
@@ -172,5 +172,5 @@ class JoinContributorsTests(TestCase):
         eq_(405, r.status_code)
         r = self.client.post(url)
         eq_(302, r.status_code)
-        eq_('http://testserver%s' % next, r['location'])
+        eq_(next, r['location'])
         assert self.user.groups.filter(name='Contributors').exists()

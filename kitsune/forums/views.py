@@ -11,7 +11,7 @@ from django_statsd.clients import statsd
 
 from kitsune import forums as constants
 from kitsune.access.decorators import has_perm_or_owns_or_403, login_required
-from kitsune.access import has_perm
+from kitsune.access.utils import has_perm
 from kitsune.forums.events import NewPostEvent, NewThreadEvent
 from kitsune.forums.feeds import ThreadsFeed, PostsFeed
 from kitsune.forums.forms import (ReplyForm, NewThreadForm, EditThreadForm,

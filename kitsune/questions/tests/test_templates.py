@@ -6,7 +6,6 @@ from string import letters
 
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.contrib.sites.models import Site
 from django.core import mail
 from django.core.cache import cache
 
@@ -365,7 +364,7 @@ class AnswersTemplateTestCase(TestCaseBase):
                        args=[self.question.id])
         redirect = response.redirect_chain[0]
         eq_(302, redirect[1])
-        eq_('http://testserver/%s%s?next=/en-US/questions/%s/delete' %
+        eq_('/%s%s?next=/en-US/questions/%s/delete' %
             (settings.LANGUAGE_CODE, settings.LOGIN_URL, self.question.id),
             redirect[0])
 
@@ -373,7 +372,7 @@ class AnswersTemplateTestCase(TestCaseBase):
                         args=[self.question.id])
         redirect = response.redirect_chain[0]
         eq_(302, redirect[1])
-        eq_('http://testserver/%s%s?next=/en-US/questions/%s/delete' %
+        eq_('/%s%s?next=/en-US/questions/%s/delete' %
             (settings.LANGUAGE_CODE, settings.LOGIN_URL, self.question.id),
             redirect[0])
 
@@ -412,7 +411,7 @@ class AnswersTemplateTestCase(TestCaseBase):
                        args=[self.question.id, ans.id])
         redirect = response.redirect_chain[0]
         eq_(302, redirect[1])
-        eq_('http://testserver/%s%s?next=/en-US/questions/%s/delete/%s' %
+        eq_('/%s%s?next=/en-US/questions/%s/delete/%s' %
             (settings.LANGUAGE_CODE, settings.LOGIN_URL, q.id, ans.id),
             redirect[0])
 
@@ -420,7 +419,7 @@ class AnswersTemplateTestCase(TestCaseBase):
                         args=[self.question.id, ans.id])
         redirect = response.redirect_chain[0]
         eq_(302, redirect[1])
-        eq_('http://testserver/%s%s?next=/en-US/questions/%s/delete/%s' %
+        eq_('/%s%s?next=/en-US/questions/%s/delete/%s' %
             (settings.LANGUAGE_CODE, settings.LOGIN_URL, q.id, ans.id),
             redirect[0])
 
@@ -533,7 +532,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         response = post(self.client, 'questions.lock', args=[q.id])
         redirect = response.redirect_chain[0]
         eq_(302, redirect[1])
-        eq_('http://testserver/%s%s?next=/en-US/questions/%s/lock' %
+        eq_('/%s%s?next=/en-US/questions/%s/lock' %
             (settings.LANGUAGE_CODE, settings.LOGIN_URL, q.id), redirect[0])
 
     def test_lock_question_with_permissions_GET(self):
@@ -658,10 +657,8 @@ class AnswersTemplateTestCase(TestCaseBase):
                        args=[self.question.id])
         eq_(405, response.status_code)
 
-    @mock.patch.object(Site.objects, 'get_current')
-    def test_watch_replies(self, get_current):
+    def test_watch_replies(self):
         """Watch a question for replies."""
-        get_current.return_value.domain = 'testserver'
         self.client.logout()
 
         # Delete existing watches
@@ -696,11 +693,9 @@ class AnswersTemplateTestCase(TestCaseBase):
             'some@bo.dy', self.question), 'Watch was created'
         self.assertContains(r, 'Could not send a message to that email')
 
-    @mock.patch.object(Site.objects, 'get_current')
-    def test_watch_replies_wrong_secret(self, get_current):
+    def test_watch_replies_wrong_secret(self):
         """Watch a question for replies."""
         # This also covers test_watch_solution_wrong_secret.
-        get_current.return_value.domain = 'testserver'
         self.client.logout()
 
         # Delete existing watches
@@ -728,11 +723,9 @@ class AnswersTemplateTestCase(TestCaseBase):
             'Watch was not created')
         return u
 
-    @mock.patch.object(Site.objects, 'get_current')
-    def test_watch_solution(self, get_current):
+    def test_watch_solution(self):
         """Watch a question for solution."""
         self.client.logout()
-        get_current.return_value.domain = 'testserver'
 
         # Delete existing watches
         Watch.objects.all().delete()
@@ -857,7 +850,7 @@ class TaggingViewTestsAsTagger(TestCaseBase):
     def test_add_tag_get_method(self):
         """Assert GETting the add_tag view redirects to the answers page."""
         response = self.client.get(_add_tag_url(self.question.id))
-        url = 'http://testserver%s' % reverse(
+        url = '%s' % reverse(
             'questions.details',
             kwargs={'question_id': self.question.id},
             force_locale=True)
@@ -937,7 +930,7 @@ class TaggingViewTestsAsTagger(TestCaseBase):
         self._assert_redirects_to_question(response, self.question.id)
 
     def _assert_redirects_to_question(self, response, question_id):
-        url = 'http://testserver%s' % reverse(
+        url = '%s' % reverse(
             'questions.details', kwargs={'question_id': question_id},
             force_locale=True)
         self.assertRedirects(response, url)
@@ -970,18 +963,15 @@ class TaggingViewTestsAsTagger(TestCaseBase):
         self.assertContains(response, NO_TAG, status_code=400)
 
     @mock.patch.object(kitsune.questions.tasks, 'submit_ticket')
-    @mock.patch.object(Site.objects, 'get_current')
-    def test_escalate_tag(self, get_current, submit_ticket):
+    def test_escalate_tag(self, submit_ticket):
         """Verify that tagging a question "escalate" submits to zendesk."""
-        get_current.return_value.domain = 'testserver'
-
         TagFactory(name='escalate', slug='escalate')
         self.client.post(
             _add_tag_url(self.question.id),
             data={'tag-name': 'escalate'},
             follow=True)
 
-        question_url = u'https://testserver/en-US{url}'.format(
+        question_url = u'https://example.com/en-US{url}'.format(
             url=self.question.get_absolute_url())
         submit_ticket.assert_called_with(
             email='support@mozilla.com',
@@ -1311,9 +1301,9 @@ class QuestionEditingTests(TestCaseBase):
                         kwargs={'question_id': q.id})
 
         # Make sure the form redirects and thus appears to succeed:
-        url = 'http://testserver%s' % reverse('questions.details',
-                                              kwargs={'question_id': q.id},
-                                              force_locale=True)
+        url = '%s' % reverse('questions.details',
+                             kwargs={'question_id': q.id},
+                             force_locale=True)
         self.assertRedirects(response, url)
 
         # Make sure the static fields, the metadata, and the updated_by field
@@ -1459,10 +1449,8 @@ class AAQTemplateTestCase(TestCaseBase):
         eq_(400, response.status_code)
         assert 'Request type not recognized' in response.content
 
-    @mock.patch.object(Site.objects, 'get_current')
-    def test_register_through_aaq(self, get_current):
+    def test_register_through_aaq(self):
         """Registering through AAQ form sends confirmation email."""
-        get_current.return_value.domain = 'testserver'
         p = ProductFactory(slug='firefox')
         l = QuestionLocale.objects.get(locale=settings.LANGUAGE_CODE)
         p.questions_locales.add(l)

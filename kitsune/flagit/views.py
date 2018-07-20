@@ -14,11 +14,16 @@ from kitsune.sumo.urlresolvers import reverse
 
 @require_POST
 @login_required
-def flag(request, content_type=None, object_id=None, **kwargs):
+def flag(request, content_type=None, model=None, object_id=None, **kwargs):
     if not content_type:
-        content_type = request.POST.get('content_type')
+        if model:
+            content_type = ContentType.objects.get_for_model(model).id
+        else:
+            content_type = request.POST.get('content_type')
+
     if not object_id:
         object_id = int(request.POST.get('object_id'))
+
     reason = request.POST.get('reason')
     notes = request.POST.get('other', '')
     next = request.POST.get('next')

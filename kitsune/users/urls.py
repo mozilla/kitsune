@@ -1,31 +1,26 @@
-from django.conf.urls import patterns, url, include
-from django.contrib.contenttypes.models import ContentType
+from django.conf.urls import url, include
 
 import kitsune.flagit.views
 from kitsune.sumo.views import redirect_to
-from kitsune.users import api
-from kitsune.users import views
+from kitsune.users import api, views
 from kitsune.users.models import Profile
 
 
 # API patterns. All start with /users/api.
-api_patterns = patterns(
-    '',
+api_patterns = [
     url(r'^usernames', api.usernames, name='users.api.usernames'),
-)
+]
 
 # These will all start with /user/<user_id>/
-detail_patterns = patterns(
-    '',
+detail_patterns = [
     url(r'^$', views.profile, name='users.profile'),
     url(r'^/documents$', views.documents_contributed, name='users.documents'),
     url(r'^/edit$', views.edit_profile, name='users.edit_profile'),
     # TODO:
     # url('^abuse', views.report_abuse, name='users.abuse'),
-)
+]
 
-users_patterns = patterns(
-    '',
+users_patterns = [
     url(r'^/auth$', views.user_auth, name='users.auth'),
     url(r'^/authcontributor$', views.user_auth, {'contributor': True},
         name='users.auth_contributor'),
@@ -86,15 +81,13 @@ users_patterns = patterns(
     url(r'^/change_email$', views.change_email, name='users.change_email'),
     url(r'^/confirm_email/(?P<activation_key>\w+)$',
         views.confirm_change_email, name='users.confirm_email'),
-    (r'^/api/', include(api_patterns)),
-)
+    url(r'^/api/', include(api_patterns)),
+]
 
-urlpatterns = patterns(
-    '',
+urlpatterns = [
     # URLs for a single user.
-    (r'^user/(?P<username>[\w@\.\s+-]+)', include(detail_patterns)),
+    url(r'^user/(?P<username>[\w@\.\s+-]+)', include(detail_patterns)),
     url(r'^user/(?P<object_id>\w+)/flag$', kitsune.flagit.views.flag,
-        {'content_type': ContentType.objects.get_for_model(Profile).id},
-        name='users.flag'),
-    (r'^users', include(users_patterns)),
-)
+        {'model': Profile}, name='users.flag'),
+    url(r'^users', include(users_patterns)),
+]

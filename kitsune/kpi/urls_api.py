@@ -1,4 +1,4 @@
-from django.conf.urls import patterns, url, include
+from django.conf.urls import url, include
 from rest_framework import routers
 
 from kitsune.kpi import api
@@ -10,8 +10,7 @@ from kitsune.kpi.models import (CONTRIBUTORS_CSAT_METRIC_CODE, AOA_CONTRIBUTORS_
 router = routers.SimpleRouter()
 router.register(r'cohort', api.CohortViewSet)
 
-urlpatterns = patterns(
-    '',
+urlpatterns = [
     url(r'^api/v1/kpi/csat-contributors/?$',
         api.CSATMetricList.as_view(code=CONTRIBUTORS_CSAT_METRIC_CODE),
         name='api.kpi.csat-contributors'),
@@ -45,4 +44,4 @@ urlpatterns = patterns(
         api.SearchClickthroughMetricList.as_view(),
         name='api.kpi.search-ctr'),
     url(r'^api/2/', include(router.urls)),
-)
+]

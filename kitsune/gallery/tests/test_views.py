@@ -169,4 +169,4 @@ class GalleryTests(TestCase):
         response = self.client.get(reverse('gallery.home', locale='en-US'),
                                    follow=False)
         eq_(301, response.status_code)
-        eq_('http://testserver/en-US/gallery/images', response['location'])
+        eq_('/en-US/gallery/images', response['location'])

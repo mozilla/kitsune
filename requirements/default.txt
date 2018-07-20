@@ -70,9 +70,6 @@ cssselect==0.9.1 \
 enum34==1.0.4 \
     --hash=sha256:d3c19f26a6a34629c18c775f59dfc5dd595764c722b57a2da56ebfb69b94e447 \
     --hash=sha256:7583d80aca2a2b2a8a411f141c4d744de06a6bc43a32253f6b81d14d48f6c90e
-futures==3.1.1 \
-    --hash=sha256:c4884a65654a7c45435063e14ae85280eb1f111d94e542396717ba9828c4337f \
-    --hash=sha256:51ecb45f0add83c806c68e4b06106f90db260585b25ef2abfcda0bd95c0132fd
 factory_boy==2.6.0 \
     --hash=sha256:116610a170918df342db2c4bafbc8f4b91780c49878f929d89e360f10ad29d2a \
     --hash=sha256:75e4c9786ed28d19ec7fb500f3c7221a6eb87748cbc6f5e2eeaca4c3d68f30cb
@@ -123,37 +120,33 @@ cryptography==2.3 \
 dennis==0.7 \
     --hash=sha256:e9e925c0097c6f5eb7716e50ca57155ed1f670f0fa72a661053198c1890a02f5 \
     --hash=sha256:fde267aeb03a8d49e3341e7f71a228c6748dce43b5c00f65581780d99b70b2d9
-Django==1.8.15 \
-    --hash=sha256:e2e41aeb4fb757575021621dc28fceb9ad137879ae0b854067f1726d9a772807 \
-    --hash=sha256:863e543ac985d5cfbce09213fa30bc7c802cbdf60d6db8b5f9dab41e1341eacd
-django-activity-stream==0.6.0 \
-    --hash=sha256:92311bc57bba629799bfd16b94a6251107bbf551394c204583a708d20fb681b6
-django-adminplus==0.3 \
-    --hash=sha256:24be1326d047361e4759ba9992aca83ed65df5583750dfe8be810eb1c131d876
-https://github.com/jezdez/django-appconf/archive/de23f5213913b3d6ea3e008bc01b48770dc70554.tar.gz#egg=django-appconf \
-    --hash=sha256:999ca03df9e0b9ff71e98f9d71b4e3f73f166f18740a732507c0d759887d9b5d
+Django==1.9.13 \
+    --hash=sha256:c007dba5086061f7d0f4d88a3bc4016d881a7eede86d6c1c4fdbbaadddd53f1d \
+    --hash=sha256:c213590aa8599b17a9a914ab017f7dc6fc16c9c69603ecf071100346b8d9d777
+django-activity-stream==0.6.5 \
+    --hash=sha256:069db37890a7df702c15d036b93aea5d07a90014f655e936493c0dcb68621c6b
+django-adminplus==0.5 \
+    --hash=sha256:40a31a797ee26c8fc11fea6c8e2f02d29483a22a0a5ecde4fa10b39f3b2f1942 \
+    --hash=sha256:e9497b409b28466e0f24119e3bc62d668a0eeec9229660ea3ae7d14dbc3c6353
 https://github.com/django-security/django-axes/archive/778f208cc1d3cc42ecb756f732f8593e40ebb476.tar.gz#egg=django-axes==1.3.6 \
     --hash=sha256:30ba613a0e8617555888185dd958407b6ec6255bbaf3718803e0e8771db5bd45
 django-celery==3.2.2 \
     --hash=sha256:1450264db5ec58e45f3f20d8d361e696920352f62481bf56047288cdb38bcc0b \
     --hash=sha256:aaba492bf7777f231ec6b02c80aa3ea68758c39f4723864dd4164589b99ad703
-django-cors-headers==0.13 \
-    --hash=sha256:2ccf73519ea205b88db453f7f6170fb3d0a21a8e3253f2578ef0cd529f79a58f
+django-cors-headers==2.4.0 \
+    --hash=sha256:5545009c9b233ea7e70da7dbab7cb1c12afa01279895086f98ec243d7eab46fa \
+    --hash=sha256:c4c2ee97139d18541a1be7d96fe337d1694623816d83f53cb7c00da9b94acae1
 django-cronjobs==0.2.3 \
     --hash=sha256:177295b1442400c92cdb67e8e18f9ff5946fb442f85813b9d0837823722ea08d
 https://github.com/mozilla/django-csp/archive/5c5f5a6b55fb78e99db939c79f0f0d8003a62c98.tar.gz#egg=django-csp \
     --hash=sha256:d6ed80738b07d60d2e985ccc284448e7dbd7c41682dc4cf65734d0da576f700e
-https://github.com/willkg/django-eadred/archive/f77ebbeea7e6802771b91a1748faec002ce83bd6.tar.gz#egg=django-eadred \
-    --hash=sha256:e9f838893ec47c83ec0ae390b6c3f69ea8cbce15fabf79d1fb7f8921b59bb2c2
-https://github.com/django-extensions/django-extensions/archive/47a531c996c92a369755a4a9e0857e51afd25cab.tar.gz#egg=django-extensions==1.3.3 \
---hash=sha256:e846b2d35b516d4729380ac6fc81c1e7f727d34c3e7c7b5a30b7d5a604a4ff67
 django-filter==0.11.0 \
     --hash=sha256:7d17547b65216cc5c6fbc04aee55088ccd5917c0775304d96f7017c26c789cd7 \
     --hash=sha256:00cc47935afbbd83260fdd283b0aa790e658d2a71922049f6e467dca8a124537
 django-jinja==2.1.2 \
     --hash=sha256:fc2b6a65201b27711e800eb2e1262ff42a32f027bd2267e34121f1bd2bd6b933
-django-jsonfield==0.9.13 \
-    --hash=sha256:12ae3dd4543f8dc5cc5f4bdd7f6fd168f4d1624414d753a441573ccc187a8e43
+django-jsonfield==1.0.1 \
+    --hash=sha256:6c0afd5554739365b55d86e285cf966cc3a45682fff963463364ea1f6511ca3e
 https://github.com/jbalogh/django-mobility/archive/e9fc5f7587311350326f044378d5b51b5257afa3.tar.gz#egg=django-mobility \
     --hash=sha256:d75344da8b83ca525b8215609878eb2f1de45c72b285b8392fe2a8a32cb94b30
 django-multidb-router==0.7 \
@@ -166,24 +159,18 @@ https://github.com/gintas/django-picklefield/archive/54b11bdb177fd6140c3ae7d6e97
     --hash=sha256:8d375db708bc87f6df9bb3ae94edd01bed2cbb6a6894a927785ded9aede983ef
 https://github.com/glogiotatidis/django-pipeline/archive/103bb549cd5f93b5648e10f1be6c2c6c8c5e9610.tar.gz#egg=django-pipeline \
     --hash=sha256:8137ed0a643560ae2300e11278e04907f0a1208031a0069474771cab6800f325
-https://github.com/jsocol/django-ratelimit/archive/462c8c3ee31c5f1e3803ecd65c4223929a81390c.tar.gz#egg=django-ratelimit \
-    --hash=sha256:d1a34bea844b4411e1198b07d269b70fb5100da4a735b76c1c997fb0fb94646c
 https://github.com/mozilla/django-recaptcha/archive/b3ce0daadfff7735d2a0865b8419711748c9190a.tar.gz#egg=django-recaptcha \
     --hash=sha256:9f6cf9632838c9a2e78b29ca74f8213d2201125fe4b4d3b168af25b495a4081d
 https://github.com/mozilla/django-session-csrf/archive/15492526b23cdad56fe3df1342e2d82ec5d17c18.tar.gz#egg=django-session-csrf==0.5 \
     --hash=sha256:01d33f4b5eb49ee535a5d7eb16f910f4487b3fd4e800f0f62daba10cb5b1fd79
-https://github.com/zyegfryed/django-statici18n/archive/6bcc799b800a7237a37e178ddffef90bcb60ac3b.tar.gz#egg=django-statici18n==1.0.1 \
---hash=sha256:f662d525299f7c7b5de5e257a1591c004efcf3ee49e4bb5b15ebf77f474f0378
 django-statsd-mozilla==0.3.16 \
      --hash=sha256:925f0f13e5a1e7863e5ed1179fd0f6f1a519e5a0293714ba76745286aad7ed02
 statsd==3.1 \
      --hash=sha256:788ffa29dfb754900e08b90881f7ea16c3c25ca2949548eea7b43d2ca739e33f \
      --hash=sha256:fbae5feb33ae9394c275bc834ab94684b94de03acc8f36387bd0bf0c51ef28ee
-django-taggit==0.17.1 \
-    --hash=sha256:33e9af8e95b38aa093a82553ac36a9e77baa96dbb1c1c60585c2bba0348c72aa \
-    --hash=sha256:4feb45cc4024b2ffbe3dd163fd1b4bf3a0da740aff0a930e239069afff6c0846
-https://github.com/erikrose/django-tidings/archive/ea57792f82496a9d78fec3f9b0db74964494b42b.tar.gz#egg=django-tidings==1.0.0.1 \
-    --hash=sha256:c5686b96230d00acc0fde858b375008631eba25db3d8df81d456f1a35438a2f8
+django-taggit==0.22.2 \
+    --hash=sha256:58aa3e59e0643446e102523f22d137300298e2a537b1c5b0c310d99143f2c2b8 \
+    --hash=sha256:fd13e304ba37ff09e601c4797d893fb7d3e699a789b5afb0b09d686f94470441
 https://github.com/brosner/django-timezones/archive/ce12f4538fb98612c61b380421e5f39d3f6b2019.tar.gz#egg=django-timezones \
     --hash=sha256:a10ab65b43cdb922b21195b939aa8fded1230d19c055aa815163675202dd4fbf
 django-waffle==0.11 \
@@ -486,3 +473,28 @@ sentry-sdk==0.7.6 \
 django-authority==0.13.2 \
     --hash=sha256:3baf6cc05d8a73ae1ac46edb7e179fcf1b305f1324f0535284ce003afc20fe1e \
     --hash=sha256:81754c8c7dac391ad068524efebff5f6450210bae3daaac6cdefd5480594ff8f
+futures==3.2.0 \
+    --hash=sha256:9ec02aa7d674acb8618afb127e27fde7fc68994c0437ad759fa094a574adb265 \
+    --hash=sha256:ec0a6cb848cc212002b9828c3e34c675e0c9ff6741dc445cab6fdd4e1085d1f1
+django-ratelimit==1.1.0 \
+    --hash=sha256:3c954ca36ad66675a3bb079f526b4234a3d0092954f8e84820132b77e87c00e0 \
+    --hash=sha256:6e1c88b22055c49dc5abf721340fdc39a35de5f310f81acc3752c689ece71a15
+django-tidings==2.0.1 \
+    --hash=sha256:0900f28c332f30fd7b2d4f92578c8504601584762524876786dd0a266cf06cd6 \
+    --hash=sha256:a144628acdd9ddafdc921cdb70fb8ee297886b1dc38b00fab8fffbbf46163012
+django-jsonfield-compat==0.4.4 \
+    --hash=sha256:0182d2e9db886abc2bf30958e4953f72b6f0e20336524755641bc3968899cd5b \
+    --hash=sha256:e2b1cd7dfef7633c8befb9c85fa764d344377512c8fdaf65ded4827392410a1d
+django-extensions==2.1.3 \
+    --hash=sha256:30cb6a8c7d6f75a55edf0c0c4491bd98f8264ae1616ce105f9cecac4387edd07 \
+    --hash=sha256:4ad86a7a5e84f1c77db030761ae87a600647250c652030a2b71a16e87f3a3d62
+typing==3.6.6 \
+    --hash=sha256:4027c5f6127a6267a435201981ba156de91ad0d1d98e9ddc2aa173453453492d \
+    --hash=sha256:57dcf675a99b74d64dacf6fba08fb17cf7e3d5fdff53d4a30ea2a5e7e52543d4 \
+    --hash=sha256:a4c8473ce11a65999c8f59cb093e70686b6c84c98df58c1dae9b3b196089858a
+django-statici18n==1.8.2 \
+    --hash=sha256:7b7df99e9496bbe15bdd2765bc4ac00d8b6cad3ceb4e84e8426c54eee054810d \
+    --hash=sha256:ba9eeb3c4517027922645999359f8335fbb9fea04c457123cfbd6b4a36cbeda4
+django-appconf==1.0.2 \
+    --hash=sha256:6a4d9aea683b4c224d97ab8ee11ad2d29a37072c0c6c509896dd9857466fb261 \
+    --hash=sha256:ddab987d14b26731352c01ee69c090a4ebfc9141ed223bef039d79587f22acd9

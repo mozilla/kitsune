@@ -1,9 +1,10 @@
 import logging
 
+from collections import OrderedDict
+
 from django.conf import settings
 from django.core.cache import cache
 from django.shortcuts import render
-from django.utils.datastructures import SortedDict
 
 from apiclient.errors import Error as GoogleAPIError
 from oauth2client.client import Error as Oauth2Error
@@ -47,10 +48,10 @@ def render_readouts(request, readouts, template, locale=None, extra_data=None, p
         ready_kwargs['product'] = product.slug
 
     data = {
-        'readouts': SortedDict((slug, class_(request, locale=locale,
-                                             product=product))
-                               for slug, class_ in readouts.iteritems()
-                               if class_.should_show_to(request)),
+        'readouts': OrderedDict((slug, class_(request, locale=locale,
+                                              product=product))
+                                for slug, class_ in readouts.iteritems()
+                                if class_.should_show_to(request)),
         'default_locale': settings.WIKI_DEFAULT_LANGUAGE,
         'default_locale_name': LOCALES[settings.WIKI_DEFAULT_LANGUAGE].native,
         'current_locale': current_locale,

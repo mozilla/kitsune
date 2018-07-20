@@ -1,6 +1,6 @@
 from django.contrib.contenttypes.models import ContentType
 
-from authority import get_check
+from authority.sites import get_check
 from authority.models import Permission
 
 
