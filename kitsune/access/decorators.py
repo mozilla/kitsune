@@ -8,7 +8,7 @@ from django.shortcuts import get_object_or_404
 from django.utils.decorators import available_attrs
 from django.utils.http import urlquote
 
-from kitsune import access
+from kitsune.access import utils as access
 from kitsune.sumo.urlresolvers import reverse
 
 

@@ -70,8 +70,8 @@ def patch():
     fields.EmailField.widget = EmailWidget
 
     # Workaround until https://code.djangoproject.com/ticket/16920 gets fixed.
-    from django.contrib.admin import util
-    from django.contrib.admin.util import NestedObjects
+    from django.contrib.admin import utils
+    from django.contrib.admin.utils import NestedObjects
     from django.db import models
 
     def _collect(self, objs, source_attr=None, **kwargs):
@@ -88,7 +88,7 @@ def patch():
         except models.ProtectedError as e:
             self.protected.update(e.protected_objects)
 
-    util.NestedObjects.collect = _collect
+    utils.NestedObjects.collect = _collect
 
     # Monkey-patch admin site.
     from django.contrib import admin

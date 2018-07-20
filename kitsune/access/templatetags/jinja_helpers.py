@@ -1,7 +1,7 @@
 import jinja2
 from django_jinja import library
 
-from kitsune import access
+from kitsune.access import utils as access
 
 
 @jinja2.contextfunction
