@@ -476,3 +476,6 @@ django-watchman==0.15.0 \
 django-jsonview==1.1.0 \
     --hash=sha256:b78cc4e3d75e119966d1ad2ae832c38f94ede967e847abee48df51059ddda040 \
     --hash=sha256:9907d4958097db243419063477fa504ff63c7483687f852175452a1ff0d5582a
+django-authority==0.13.2 \
+    --hash=sha256:3baf6cc05d8a73ae1ac46edb7e179fcf1b305f1324f0535284ce003afc20fe1e \
+    --hash=sha256:81754c8c7dac391ad068524efebff5f6450210bae3daaac6cdefd5480594ff8f
