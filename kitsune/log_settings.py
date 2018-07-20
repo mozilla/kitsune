@@ -1,7 +1,7 @@
 import logging
+import logging.config
 
 from django.conf import settings
-from django.utils.log import dictConfig
 
 
 config = {
@@ -49,5 +49,5 @@ config = {
     },
 }
 
-dictConfig(config)
+logging.config.dictConfig(config)
 logging.captureWarnings(True)

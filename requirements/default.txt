@@ -482,3 +482,6 @@ certifi==2017.4.17 \
     --hash=sha256:f7527ebf7461582ce95f7a9e03dd141ce810d40590834f4ec20cddd54234c10a
 sentry-sdk==0.5.1 \
     --hash=sha256:c18552010648e6303b557310dc6e4babda3c942c6e4145995699547c64d3982f
+django-authority==0.13.2 \
+    --hash=sha256:3baf6cc05d8a73ae1ac46edb7e179fcf1b305f1324f0535284ce003afc20fe1e \
+    --hash=sha256:81754c8c7dac391ad068524efebff5f6450210bae3daaac6cdefd5480594ff8f

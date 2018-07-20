@@ -5,7 +5,7 @@ import factory
 from authority.models import Permission
 from nose.tools import eq_
 
-from kitsune import access
+from kitsune.access import utils as access
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.tests import UserFactory
