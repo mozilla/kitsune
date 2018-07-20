@@ -26,7 +26,7 @@ from kitsune.search.es_utils import UnindexMeBro, es_analyzer_for_locale
 from kitsune.search.models import (
     SearchMappingType, SearchMixin, register_for_indexing,
     register_mapping_type)
-from kitsune.sumo import ProgrammingError
+from kitsune.sumo.apps import ProgrammingError
 from kitsune.sumo.models import ModelBase, LocaleField
 from kitsune.sumo.urlresolvers import reverse, split_path
 from kitsune.tags.models import BigVocabTaggableMixin

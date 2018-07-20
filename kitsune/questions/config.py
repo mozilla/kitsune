@@ -1,4 +1,5 @@
-from django.utils.datastructures import SortedDict
+from collections import OrderedDict
+
 from django.utils.translation import ugettext_lazy as _lazy
 
 # The number of answers per page.
@@ -22,14 +23,14 @@ ESCALATE_EXCLUDE_PRODUCTS = ['thunderbird', 'webmaker', 'open-badges']
 TAKE_TIMEOUT = 600
 
 # AAQ config:
-products = SortedDict([
+products = OrderedDict([
     ('desktop', {
         'name': _lazy(u'Firefox'),
         'subtitle': _lazy(u'Web browser for Windows, Mac and Linux'),
         'extra_fields': ['troubleshooting', 'ff_version', 'os', 'plugins'],
         'tags': ['desktop'],
         'product': 'firefox',
-        'categories': SortedDict([
+        'categories': OrderedDict([
             # TODO: Just use the IA topics for this.
             # See bug 979397
             ('download-and-install', {
@@ -97,7 +98,7 @@ products = SortedDict([
         'extra_fields': ['ff_version', 'os', 'plugins'],
         'tags': ['mobile'],
         'product': 'mobile',
-        'categories': SortedDict([
+        'categories': OrderedDict([
             # TODO: Just use the IA topics for this.
             # See bug 979397
             ('download-and-install', {
@@ -165,7 +166,7 @@ products = SortedDict([
         'extra_fields': ['ff_version', 'os', 'plugins'],
         'tags': ['ios'],
         'product': 'ios',
-        'categories': SortedDict([
+        'categories': OrderedDict([
             ('install-and-update-firefox-ios', {
                 'name': _lazy(u'Install and Update'),
                 'topic': 'install-and-update-firefox-ios',
@@ -190,7 +191,7 @@ products = SortedDict([
         'extra_fields': [],
         'tags': ['focus-firefox'],
         'product': 'focus-firefox',
-        'categories': SortedDict([
+        'categories': OrderedDict([
             ('Focus-ios', {
                 'name': _lazy(u'Firefox Focus for iOS'),
                 'topic': 'Focus-ios',
@@ -210,7 +211,7 @@ products = SortedDict([
         'extra_fields': [],
         'tags': ['firefox-amazon'],
         'product': 'firefox-amazon-devices',
-        'categories': SortedDict([
+        'categories': OrderedDict([
             ('firefox-fire-tv', {
                 'name': _lazy(u'Firefox for Fire TV'),
                 'topic': 'firefox-fire-tv',
@@ -230,7 +231,7 @@ products = SortedDict([
         'extra_fields': [],
         'tags': [],
         'product': 'thunderbird',
-        'categories': SortedDict([
+        'categories': OrderedDict([
             # TODO: Just use the IA topics for this.
             # See bug 979397
             ('download-and-install', {
@@ -274,7 +275,7 @@ products = SortedDict([
         'extra_fields': [],
         'tags': ['firefox-lite'],
         'product': 'firefox-lite',
-        'categories': SortedDict([
+        'categories': OrderedDict([
             ('get-started', {
                 'name': _lazy(u'Get started'),
                 'topic': 'get-started',
@@ -294,7 +295,7 @@ products = SortedDict([
         'extra_fields': [],
         'tags': [],
         'product': 'webmaker',
-        'categories': SortedDict([
+        'categories': OrderedDict([
             # TODO: Just use the IA topics for this.
             # See bug 979397
             ('popcorn-maker', {
@@ -331,7 +332,7 @@ products = SortedDict([
         'extra_fields': [],
         'tags': [],
         'product': 'firefox-enterprise',
-        'categories': SortedDict([
+        'categories': OrderedDict([
             ('deployment-firefox-enterprise-environment', {
                 'name': _lazy(u'Deployment of Firefox in an enterprise environment'),
                 'topic': 'deployment-firefox-enterprise-environment',
@@ -351,7 +352,7 @@ products = SortedDict([
         'extra_fields': [],
         'tags': [],
         'product': 'firefox-reality',
-        'categories': SortedDict([
+        'categories': OrderedDict([
             ('get-started', {
                 'name': _lazy(u'Get started with Firefox Reality'),
                 'topic': 'get-started',
@@ -378,7 +379,7 @@ products = SortedDict([
                       u'href="/questions/new/thunderbird">'
                       u'Lightning support</a></li>'
                       u'</ul>'),
-        'categories': SortedDict([]),
+        'categories': OrderedDict([]),
         'deadend': True,
     }),
 ])

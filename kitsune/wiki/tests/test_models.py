@@ -9,7 +9,7 @@ from taggit.models import TaggedItem
 from django.core.exceptions import ValidationError
 
 from kitsune.products.tests import ProductFactory, TopicFactory
-from kitsune.sumo import ProgrammingError
+from kitsune.sumo.apps import ProgrammingError
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.wiki.config import (

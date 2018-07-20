@@ -7,16 +7,15 @@ is_ready_for_localization=False do not exist.
 """
 import logging
 
+from collections import OrderedDict
 from datetime import datetime
 
 from django.conf import settings
 from django.db import connections, router
 from django.template.loader import render_to_string
-from django.utils.datastructures import SortedDict
 from django.utils.translation import ugettext as _, ugettext_lazy as _lazy, pgettext_lazy
 
 from jinja2 import Markup
-from ordereddict import OrderedDict
 
 from kitsune.dashboards import LAST_30_DAYS, PERIODS
 from kitsune.questions.models import QuestionLocale
@@ -1149,13 +1148,13 @@ class CannedResponsesReadout(Readout):
 
 
 # L10n Dashboard tables that have their own whole-page views:
-L10N_READOUTS = SortedDict(
+L10N_READOUTS = OrderedDict(
     (t.slug, t) for t in
     [MostVisitedTranslationsReadout, TemplateTranslationsReadout,
      UnreviewedReadout])
 
 # Contributors ones:
-CONTRIBUTOR_READOUTS = SortedDict(
+CONTRIBUTOR_READOUTS = OrderedDict(
     (t.slug, t) for t in
     [MostVisitedDefaultLanguageReadout, TemplateReadout,
      HowToContributeReadout, AdministrationReadout, UnreviewedReadout,
@@ -1165,7 +1164,7 @@ CONTRIBUTOR_READOUTS = SortedDict(
 READOUTS = L10N_READOUTS.copy()
 READOUTS.update(CONTRIBUTOR_READOUTS)
 
-GROUP_L10N_READOUTS = SortedDict(
+GROUP_L10N_READOUTS = OrderedDict(
     (t.slug, t) for t in
     [MostVisitedTranslationsReadout, UnreviewedReadout])
 # English group locale is the same as l10n dashboard.

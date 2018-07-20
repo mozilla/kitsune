@@ -3,7 +3,7 @@ from datetime import datetime
 from django.db import models
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
-from django.contrib.contenttypes import generic
+from django.contrib.contenttypes.fields import GenericForeignKey
 from django.utils.translation import ugettext_lazy as _lazy
 
 from kitsune.sumo.models import ModelBase
@@ -34,7 +34,7 @@ class FlaggedObject(ModelBase):
 
     content_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField()
-    content_object = generic.GenericForeignKey('content_type', 'object_id')
+    content_object = GenericForeignKey('content_type', 'object_id')
 
     status = models.IntegerField(default=0, db_index=True, choices=STATUSES)
     reason = models.CharField(max_length=64, choices=REASONS)

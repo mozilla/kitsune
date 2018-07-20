@@ -8,7 +8,7 @@ from django.contrib.auth.forms import (PasswordResetForm as
                                        DjangoPasswordResetForm)
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
-from django.contrib.sites.models import get_current_site
+from django.contrib.sites.shortcuts import get_current_site
 from django.core.cache import cache
 from django.utils.http import int_to_base36
 from django.utils.translation import ugettext as _, ugettext_lazy as _lazy

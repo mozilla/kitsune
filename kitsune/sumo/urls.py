@@ -1,4 +1,4 @@
-from django.conf.urls import patterns, url, include
+from django.conf.urls import url, include
 from django.views.generic.base import RedirectView
 
 from watchman import views as watchman_views
@@ -6,18 +6,16 @@ from watchman import views as watchman_views
 from kitsune.sumo import views
 
 
-services_patterns = patterns(
-    '',
+services_patterns = [
     url('^/monitor$', views.monitor, name='sumo.monitor'),
     url('^/version$', views.version_check, name='sumo.version'),
     url('^/error$', views.error, name='sumo.error'),
-)
+]
 
 
-urlpatterns = patterns(
-    '',
+urlpatterns = [
     url(r'^robots.txt$', views.robots, name='robots.txt'),
-    ('^services', include(services_patterns)),
+    url(r'^services/', include(services_patterns)),
 
     url('^locales$', views.locales, name='sumo.locales'),
     url('^geoip-suggestion$', views.geoip_suggestion,
@@ -30,4 +28,4 @@ urlpatterns = patterns(
                                                permanent=False)),
     url(r'^windows7-support(?:\\/)?$',
         RedirectView.as_view(url='/home/?as=u', permanent=False)),
-)
+]

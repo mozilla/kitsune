@@ -1,8 +1,9 @@
 from functools import wraps
 import inspect
 
+from django.apps import apps
 from django.contrib.auth import REDIRECT_FIELD_NAME
-from django.db.models import Model, get_model
+from django.db.models import Model
 from django.http import HttpResponseForbidden, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import available_attrs
@@ -144,7 +145,7 @@ def _resolve_lookup((model, lookup, arg_name), view_kwargs):
     if value is None:
         raise ValueError("Expected kwarg '%s' not found." % arg_name)
     if isinstance(model, basestring):
-        model_class = get_model(*model.split('.'))
+        model_class = apps.get_model(*model.split('.'))
     else:
         model_class = model
     if model_class is None:

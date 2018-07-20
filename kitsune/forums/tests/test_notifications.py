@@ -339,6 +339,7 @@ class NotificationsTests(ForumTestCase):
         self.client.login(username=admin_user.username, password='testpass')
         self._toggle_watch_thread_as(t, watcher, turn_on=True)
         url = reverse('admin:auth_user_delete', args=[u.id])
+        # url = reverse('admin:users_profile_delete', args=[u.id])
         request = RequestFactory().get(url)
         request.user = admin_user
         request.session = self.client.session
