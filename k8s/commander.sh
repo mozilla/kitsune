@@ -1,6 +1,7 @@
 set -e
 GREEN='\033[1;32m'
 NC='\033[0m' # No Color
+SLACK_CHANNEL=sumodev
 
 
 function whatsdeployed {
@@ -17,11 +18,11 @@ function deploy {
     export KUBECONFIG="./regions/${REGION}/kubeconfig"
 
     if [[ "${DEPLOY_SECRETS}" == "secrets" ]]; then
-        echo "Applying secrets";  
+        echo "Applying secrets";
         ${KUBECTL_BIN} -n sumo-${REGION_ENV} apply -f "regions/${REGION}/${REGION_ENV}-secrets.yaml"
-    else 
+    else
         echo "Secrets will *NOT* be applied";
-    fi   
+    fi
 
     invoke  -f "regions/${REGION}/${REGION_ENV}.yaml" deployments.create-celery --apply --tag full-${COMMIT_HASH}
     invoke  -f "regions/${REGION}/${REGION_ENV}.yaml" rollouts.status-celery
@@ -30,6 +31,9 @@ function deploy {
     invoke  -f "regions/${REGION}/${REGION_ENV}.yaml" deployments.create-web --apply --tag full-${COMMIT_HASH}
     invoke  -f "regions/${REGION}/${REGION_ENV}.yaml" rollouts.status-web
     printf "${GREEN}OK${NC}\n"
+    if command -v slack-cli > /dev/null; then
+        slack-cli -d "${SLACK_CHANNEL}" ":tada: Successfully deployed <https://${REGION_ENV}-${REGION}.sumo.moz.works/|SUMO-${REGION_ENV} in ${REGION}>"
+    fi
 }
 
 source venv/bin/activate
