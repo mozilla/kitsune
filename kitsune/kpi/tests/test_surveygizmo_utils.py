@@ -36,7 +36,9 @@ class GetEmailAddressesTests(TestCase):
 
         with self.settings(SURVEYGIZMO_API_TOKEN='mytoken',
                            SURVEYGIZMO_API_TOKEN_SECRET='mysecret'):
-            get_email_addresses('general', datetime(2016, 1, 1), datetime(2016, 1, 2))
+            get_email_addresses('general',
+                                datetime(2016, 1, 1, 12, 0),
+                                datetime(2016, 1, 2, 13, 0))
 
             url = mock_requests.get.call_args[0][0]
             ok_('api_token=mytoken' in url)

@@ -68,6 +68,14 @@ def job_send_welcome_emails():
     call_command('cron send_welcome_emails')
 
 
+# Every hour.
+@scheduled_job('cron', month='*', day='*', hour='*', minute='00',
+               max_instances=1, coalesce=True, skip=(settings.READ_ONLY or settings.STAGE))
+@babis.decorator(ping_after=settings.DMS_PROCESS_EXIT_SURVEYS)
+def job_process_exit_surveys():
+    call_command('cron process_exit_surveys')
+
+
 @scheduled_job('cron', month='*', day='*', hour='*', minute='45', max_instances=1, coalesce=True)
 @babis.decorator(ping_after=settings.DMS_REINDEX)
 def job_reindex():
@@ -166,13 +174,6 @@ def job_update_contributor_metrics():
 @babis.decorator(ping_after=settings.DMS_AUTO_ARCHIVE_OLD_QUESTIONS)
 def job_auto_archive_old_questions():
     call_command('cron auto_archive_old_questions')
-
-
-@scheduled_job('cron', month='*', day='*', hour='06', minute='00',
-               max_instances=1, coalesce=True, skip=(settings.READ_ONLY or settings.STAGE))
-@babis.decorator(ping_after=settings.DMS_PROCESS_EXIT_SURVEYS)
-def job_process_exit_surveys():
-    call_command('cron process_exit_surveys')
 
 
 @scheduled_job('cron', month='*', day='*', hour='07', minute='00',
