@@ -18,6 +18,12 @@
       your skills, we will try to find the right use for them :)
     {% endtrans %}
   </p>
+  
+ <p>
+    {% trans %}
+     Please also take a look at the Forum Rules and Guidelines while you have a chance:)
+    {% endtrans %}
+  </p>
 
   <p>
     <a href="{{ add_utm('https://support.mozilla.org/en-US/kb/contributor-news-resources', 'get-involved', source='new-contributor') }}">
@@ -39,16 +45,10 @@
     <li>
       {% trans url='http://goo.gl/pKis5g' %}
         As you get started answering questions that look easy you might run into a few questions. Like, what happens when an angry user does not want a work around or what happens next? The Contributor Quality Training may have these answered. It is possible to get started here:
-        <a href="{{ url }}">Contributor Quality Training</a>.
+        <a href="{{ url }}">Contributor Quality Training (English only)</a>.
       {% endtrans %}
     </li>
-    <li>
-      {% trans url=add_utm('https://support.mozilla.org/army-of-awesome', 'get-involved', source='new-contributor') %}
-        <a href="{{ url }}">Twitter Contributor</a>
-        - Respond to tweets about Firefox.
-      {% endtrans %}
-    </li>
-    {% trans url=add_utm('https://support.mozilla.org/social-support-guidelines', 'get-involved', source='new-contributor') %}
+    {% trans url=add_utm('https://support.mozilla.org/kb/social-support-guidelines', 'get-involved', source='new-contributor') %}
         <a href="{{ url }}">Social Support Contributor</a>
         - Respond to tweets about Firefox as the Firefox Brand account.
       {% endtrans %}
@@ -70,9 +70,10 @@
   </ul>
 
   <p>
-    {% trans %}
-      Let us know which of the above you would be interested in
-      and we’ll help you get started. It’s great to have you onboard!
+    {% trans url=add_utm('https://support.mozilla.org/en-US/forums/buddies/new'), 'get-involved', source='new-contributor-forumpost') %}
+        <a href="{{ url }}"  %}
+      Your next step: Let us know which of the above you would be interested in
+      and we’ll help you get started in the new contributor's forum, make a <a href="{{ url }}">new post here</a>. It’s great to have you onboard!
     {% endtrans %}
   </p>
 
