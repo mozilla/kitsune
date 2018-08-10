@@ -2,7 +2,7 @@
 // Use a global k to share data accross JS files
 window.k = window.k || {};
 
-(function () {
+(function (window, $) {
   k.LAZY_DELAY = 500;  // delay to lazy loading scripts, in ms
   k.STATIC_URL = $('body').data('static-url');
   k.getQueryParamsAsDict = function (url) {
@@ -315,4 +315,4 @@ window.k = window.k || {};
       history.replaceState(this.state, {}, qs);
     }
   }
-})();
+})(window, window.jQuery);

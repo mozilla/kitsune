@@ -19,7 +19,7 @@
     "gulp": "3.8.6",
     "gulp-nunjucks": "0.2.2",
     "gulp-watch": "0.6.8",
-    "jquery": "2.1.4",
+    "jquery": "3.3.1",
     "jsdom": "3.1.2",
     "less": "1.7.0",
     "less-plugin-autoprefix": "1.4.2",
