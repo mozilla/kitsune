@@ -262,22 +262,23 @@
       > a:visited {
         color: #000;
         margin-bottom: 6px;
+        font-family: @ZillaSlab;
+        font-weight: bold;
       }
 
-      &:hover {
-        > a,
-        > a:visited {
-          text-decoration: underline;
-
-          &:before {
-            background: url('../img/icon-chevron-right.png') no-repeat;
-            background-size: 10px 18px;
-            content: '';
-            display: inline-block;
-            height: 18px;
-            padding-right: 8px;
-            width: 10px;
-          }
+      a:hover {
+        position: relative;
+        text-decoration: underline;
+        &:before {
+          background: url('../img/icon-chevron-right.png') no-repeat;
+          background-size: 10px 18px;
+          content: '';
+          display: block;
+          height: 18px;
+          left: -18px;
+          padding-right: 8px;
+          position: absolute;
+          width: 10px;
         }
       }
     }
