@@ -11,12 +11,21 @@ from django.shortcuts import render
 from django.utils.translation import ugettext as _
 
 import requests
-from elasticutils import S as UntypedS
-from elasticutils.contrib.django import S, F, get_es, ES_EXCEPTIONS  # noqa
+# from elasticutils import S as UntypedS
+# from elasticutils.contrib.django import S, F, get_es, ES_EXCEPTIONS  # noqa
 
 from kitsune.search import config
 from kitsune.search.utils import chunked
 
+ES_EXCEPTIONS = []
+
+
+class S(object):
+    pass
+
+
+class UntypedS(object):
+    pass
 
 # These used to be constants, but that was problematic. Things like
 # tests want to be able to dynamically change settings at run time,

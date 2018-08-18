@@ -176,6 +176,8 @@ def simple_search(request, template=None):
 
     searcher = generate_simple_search(search_form, language, with_highlights=True)
     searcher = searcher[:settings.SEARCH_MAX_RESULTS]
+    import json
+    print(json.dumps(searcher.build_search()))
 
     # 5. Generate output.
     pages = paginate(request, searcher, settings.SEARCH_RESULTS_PER_PAGE)
@@ -520,6 +522,7 @@ def advanced_search(request, template=None):
         searcher = searcher.query(should=True, **query)
 
     searcher = searcher[:settings.SEARCH_MAX_RESULTS]
+    print(dir(searcher))
 
     # 5. Generate output
     pages = paginate(request, searcher, settings.SEARCH_RESULTS_PER_PAGE)
