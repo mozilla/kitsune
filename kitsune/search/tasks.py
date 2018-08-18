@@ -11,7 +11,7 @@ from kitsune.search.es_utils import index_chunk, UnindexMeBro, write_index, get_
 from kitsune.search.utils import from_class_path
 from kitsune.sumo.decorators import timeit
 
-from elasticutils.contrib.django import get_es
+# from elasticutils.contrib.django import get_es
 
 
 # This is present in memcached when reindexing is in progress and
