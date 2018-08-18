@@ -8,12 +8,18 @@ from django.db import models
 from django.db.models.signals import pre_delete, post_save, m2m_changed
 from django.dispatch import receiver
 
-from elasticutils.contrib.django import MappingType, Indexable, MLT
-from elasticsearch.exceptions import NotFoundError
 
 from kitsune.search import es_utils
 from kitsune.search.tasks import index_task, unindex_task
 from kitsune.sumo.models import ModelBase
+
+
+class MappingType(object):
+    pass
+
+
+class Indexable(object):
+    pass
 
 log = logging.getLogger('k.search.es')
 
@@ -275,7 +281,7 @@ def register_for_indexing(app,
 
 def register_mapping_type(cls):
     """Class decorator for registering MappingTypes for search"""
-    _search_mapping_types[cls.get_mapping_type_name()] = cls
+    # _search_mapping_types[cls.get_mapping_type_name()] = cls
     return cls
 
 
