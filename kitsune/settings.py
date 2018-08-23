@@ -350,7 +350,6 @@ ES_PLUGIN_ANALYZERS = [
 ]
 
 ES_USE_PLUGINS = config('ES_USE_PLUGINS', default=True, cast=bool)
-
 TEXT_DOMAIN = 'messages'
 
 SITE_ID = 1
@@ -667,6 +666,7 @@ INSTALLED_APPS = (
     'rest_framework',
     'statici18n',
     'watchman',
+    'django_elasticsearch_dsl',
     # 'axes',
 
     # App for Sentry:
@@ -803,6 +803,17 @@ ES_INDEXES = {
     'non-critical': config('ES_INDEXES_NON_CRITICAL', default='non-critical'),
     'metrics': config('ES_INDEXES_METRICS', 'metrics'),
 }
+
+ES_HTTP_AUTH = config('ES_HTTP_AUTH', default='', cast=Csv())
+
+ELASTICSEARCH_DSL = {
+        'default': {
+            'hosts': ES_URLS,
+            'http_auth': ES_HTTP_AUTH,
+        },
+}
+ES_TASK_CHUNK_SIZE = 100
+
 # Indexes for indexing--set this to ES_INDEXES if you want to read to
 # and write to the same index.
 ES_WRITE_INDEXES = ES_INDEXES
@@ -816,7 +827,6 @@ ES_LIVE_INDEXING = config('ES_LIVE_INDEXING', default=True, cast=bool)
 # Timeout for querying requests
 ES_TIMEOUT = 5
 ES_USE_SSL = config('ES_USE_SSL', default=False, cast=bool)
-ES_HTTP_AUTH = config('ES_HTTP_AUTH', default='', cast=Csv())
 
 SEARCH_MAX_RESULTS = 1000
 SEARCH_RESULTS_PER_PAGE = 10
