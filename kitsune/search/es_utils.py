@@ -27,6 +27,10 @@ class S(object):
 class UntypedS(object):
     pass
 
+
+def F(*args, **kwargs):
+    pass
+
 # These used to be constants, but that was problematic. Things like
 # tests want to be able to dynamically change settings at run time,
 # which isn't possible if these are constants.

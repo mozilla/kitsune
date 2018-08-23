@@ -15,8 +15,8 @@ from django.views.decorators.cache import cache_page
 
 import bleach
 import jinja2
-from elasticutils.utils import format_explanation
-from elasticutils.contrib.django import ES_EXCEPTIONS
+# from elasticutils.utils import format_explanation
+# from elasticutils.contrib.django import ES_EXCEPTIONS
 from mobility.decorators import mobile_template
 
 from kitsune import search as constants

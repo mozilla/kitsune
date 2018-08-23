@@ -102,3 +102,12 @@ def from_class_path(cls_path):
     module_path, cls_name = cls_path.split(':')
     module = __import__(module_path, fromlist=[cls_name])
     return getattr(module, cls_name)
+
+
+def chunk_queryset(queryset, chunk_size):
+    """Yield successive `chunk_size` chunks of queryset."""
+    # Based on https://stackoverflow.com/a/312464
+    # licensed under cc by-sa 3.0
+    total = queryset.count()
+    for i in range(0, total, chunk_size):
+        yield queryset[i:i + chunk_size]
