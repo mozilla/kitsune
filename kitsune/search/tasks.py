@@ -4,12 +4,16 @@ import sys
 import traceback
 
 from celery import task
-from multidb.pinning import pin_this_thread, unpin_this_thread
+from django.apps import apps
+from django_elasticsearch_dsl.registries import registry
 from django_statsd.clients import statsd
+from multidb.pinning import pin_this_thread, unpin_this_thread
 
 from kitsune.search.es_utils import index_chunk, UnindexMeBro, write_index, get_analysis
 from kitsune.search.utils import from_class_path
 from kitsune.sumo.decorators import timeit
+
+log = logging.getLogger(__name__)
 
 # from elasticutils.contrib.django import get_es
 
@@ -190,3 +194,114 @@ def update_synonyms_task():
         })
     finally:
         es.indices.open(index)
+
+
+def _get_index(model, index_name):
+    """
+    Get Index from all the indices
+    :param indices: DED indices list
+    :param index_name: Name of the index
+    :return: DED Index
+    """
+    indices = registry.get_indices(models=[model])
+    for index in indices:
+        if str(index) == index_name:
+            return index
+
+
+def _get_document(model, document_class):
+    """
+    Get DED document class object from the model and name of document class
+    :param model: The model class to find the document
+    :param document_class: the name of the document class.
+    :return: DED DocType object
+    """
+    documents = registry.get_documents(models=[model])
+
+    for document in documents:
+        if str(document) == document_class:
+            return document
+
+
+@task()
+def create_new_es_index(app_label, model_name, document_class, new_index_name, locale):
+    model = apps.get_model(app_label, model_name)
+    es_document = _get_document(model=model, document_class=document_class)
+    base_index = es_document._doc_type.index
+    base_index_obj = _get_index(model, base_index)
+    new_index = base_index_obj.clone(name=new_index_name)
+    new_index.create()
+    log.info("Successfully created new index {}".format(new_index_name))
+
+
+@task()
+def switch_es_index(app_label, model_name, document_class, index_alias, new_index_name):
+    """
+    Add alias to newly created index and remove the old indexes
+     This is done in atomic, so the search dont get any downtime
+    :param app_label: App label of the model
+    :param model_name: Model class name
+    :param document_class: DED DocType class in string
+    :param index_alias: The alias used for finding the old indexes.
+                        Its also added to newly created index.
+    :param new_index_name: The newly created index name
+    :return:
+    """
+    model = apps.get_model(app_label, model_name)
+    es_document = _get_document(model=model, document_class=document_class)
+
+    base_index = es_document._doc_type.index
+    base_index_obj = _get_index(model, base_index)
+    # Alias can not be used to delete an index.
+    # https://www.elastic.co/guide/en/elasticsearch/reference/6.0/indices-delete-index.html
+    # So get the old indexes to delete it
+    old_indexes = base_index_obj.connection.indices.get(index=index_alias, ignore_unavailable=True)
+    all_aliases = [index_alias, base_index]
+
+    alias_actions = [dict(add=dict(index=new_index_name, alias=alias))
+                     for alias in all_aliases]
+
+    if old_indexes:
+        remove_alias_actions = dict(remove_index=dict(indices=old_indexes.keys()))
+        alias_actions.append(remove_alias_actions)
+
+    base_index_obj.connection.indices.update_aliases(dict(actions=alias_actions))
+
+    message = ("Successfully deleted {old_index_num} indexes and add {aliases} aliases "
+               "to {new_index} index")
+
+    log.info(message.format(old_index_num=len(old_indexes),
+                            new_index=new_index_name, aliases=all_aliases))
+
+
+@task()
+def index_objects_to_es(app_label, model_name, document_class, index_name, objects_id):
+    model = apps.get_model(app_label, model_name)
+    document = _get_document(model=model, document_class=document_class)
+
+    # Use queryset from model as the ids are specific
+    queryset = model.objects.all().filter(id__in=objects_id).iterator()
+    log.info("Indexing model: {}, id:'{}' index {}".format(model.__name__, objects_id, index_name))
+    document().update(queryset, index_name=index_name)
+
+
+@task()
+def index_missing_objects(app_label, model_name, document_class, index_generation_time, locale):
+    """
+    Task to insure that none of the object is missed from indexing.
+    The index generation time is passed.
+    While the task is running, new objects can be created/deleted in database
+    and they will not be in the tasks for indexing into ES.
+    This task will index all the objects that got into DB after the `index_generation_time`
+    timestamp to ensure that everything is in ES index.
+    """
+    model = apps.get_model(app_label, model_name)
+    document = _get_document(model=model, document_class=document_class)
+    queryset = document().get_queryset().exclude(current_revision__created__lte=index_generation_time)
+    if locale:
+        queryset = queryset.filter(locale=locale)
+
+    document().update(queryset.iterator())
+
+    log.info("Indexed {} missing objects from model: {}'".format(queryset.count(), model.__name__))
+    # TODO: Figure out how to remove the objects from ES index that has been deleted

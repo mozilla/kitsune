@@ -197,9 +197,9 @@ djangorestframework==3.3.0 \
 elasticutils==0.10.3 \
     --hash=sha256:569037ff11c3c11638f3d06857033424525ad54618bffb012bd43c32c50fbe3b \
     --hash=sha256:88f2b91b8a498e0c903e4e70afb1fbae74d23f62f98bbe968c22154157cbe955
-elasticsearch==1.2.0 \
-    --hash=sha256:53a822b01b0494df9658c04e87216180e5ecbe85b178673dd848b1f809d5c100 \
-    --hash=sha256:bb93d85ca7e50d68e4197852bb6dba6098bb772500f82f5db2ff4a80711505c9
+elasticsearch==6.3.1 \
+    --hash=sha256:7546cc08e3899716e12fe67d12d7cfe9a64647014d1134b014c3c392b63cad42 \
+    --hash=sha256:aada5cfdc4a543c47098eb3aca6663848ef5d04b4324935ced441debc11ec98b
 fake-factory==0.5.3 \
     --hash=sha256:90f507891ad1073e08cf6908eb51d5e1debc3c5a5d554427e8c3fbf73cdf12ee
 GitPython==0.1.7 \
@@ -478,3 +478,8 @@ django-watchman==0.15.0 \
 django-jsonview==1.1.0 \
     --hash=sha256:b78cc4e3d75e119966d1ad2ae832c38f94ede967e847abee48df51059ddda040 \
     --hash=sha256:9907d4958097db243419063477fa504ff63c7483687f852175452a1ff0d5582a
+elasticsearch-dsl==6.1.0 \
+    --hash=sha256:5114a38a88e93a4663782eae07a1e8084ba333c49887335c83de8b8043bc72b2 \
+    --hash=sha256:d6d974cd2289543a3350690494a43fe9996485b8dc6f1d8758cb56bee01244bd
+django-elasticsearch-dsl==0.5.0 \
+    --hash=sha256:dffde3cc83b22d458aafdadb9df37288d37204c5c6b1a1d5ace87808615622fc
