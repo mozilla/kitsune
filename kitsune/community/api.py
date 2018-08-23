@@ -1,7 +1,6 @@
 from collections import defaultdict
 from datetime import datetime, timedelta
 
-from elasticutils import F
 from rest_framework import views, fields, exceptions
 from rest_framework.response import Response
 
@@ -14,6 +13,9 @@ from kitsune.wiki.models import RevisionMetricsMappingType
 # section.  There isn't a way to tell ES to just return everything.
 BIG_NUMBER = 10000
 
+
+def F(*args, **kwargs):
+    pass
 
 class InvalidFilterNameException(exceptions.APIException):
     """A filter was requested which does not exist."""
