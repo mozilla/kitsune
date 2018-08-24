@@ -13,6 +13,7 @@ from django.utils.translation import ugettext as _
 import requests
 # from elasticutils import S as UntypedS
 # from elasticutils.contrib.django import S, F, get_es, ES_EXCEPTIONS  # noqa
+from elasticsearch_dsl import token_filter, analyzer
 
 from kitsune.search import config
 from kitsune.search.utils import chunked
@@ -808,29 +809,68 @@ def es_verify_cmd(log=log):
     log.info('')
 
 
-def es_analyzer_for_locale(locale, synonyms=False, fallback='standard'):
+def _get_locale_specific_analyzer(locale):
+    """Get analyzer for locales specified in config otherwise return None
+
+    This function will return an analyzer if
+    the locale is configured to use specific analyzer.
+    Otherwise, it will return None
+    """
+    locale_analyzer = config.ES_LOCALE_ANALYZERS.get(locale)
+    if locale_analyzer:
+        if not settings.ES_USE_PLUGINS and locale_analyzer in settings.ES_PLUGIN_ANALYZERS:
+            return None
+
+        # To use the analyzer by default, the name should be `default`
+        # https://www.elastic.co/guide/en/elasticsearch/reference/6.3/analyzer.html#analyzer
+        return analyzer('default', type=locale_analyzer)
+
+    snowball_language = config.ES_SNOWBALL_LOCALES.get(locale)
+    if snowball_language:
+        # The locale is configured to use snowball filter
+        token_name = 'snowball_{}'.format(locale.lower())
+        snowball_filter = token_filter(token_name, type='snowball', language=snowball_language)
+
+        # Use language specific snowball filter with standard analyzer.
+        # The standard analyzer is basically a analyzer with standard tokenizer
+        # and standard, lowercase and stop filter
+        # To use the analyzer by default, the name should be `default`
+        # https://www.elastic.co/guide/en/elasticsearch/reference/6.3/analyzer.html#analyzer
+        locale_analyzer = analyzer('default', tokenizer='standard',
+                                   filter=["standard", "lowercase", "stop", snowball_filter])
+        return locale_analyzer
+
+
+def es_analyzer_for_locale(locale):
     """Pick an appropriate analyzer for a given locale.
 
-    If no analyzer is defined for `locale`, return fallback instead,
-    which defaults to ES analyzer named "standard".
-
-    If `synonyms` is True, this will return a synonym-using analyzer,
-    if that makes sense. In particular, it doesn't make sense to use
-    synonyms with the fallback analyzer.
+    If no analyzer is defined for `locale` or the locale analyzer uses a plugin
+    but using plugin is turned off from settings, return ES analyzer named "standard".
     """
 
-    if locale in settings.ES_LOCALE_ANALYZERS:
-        analyzer = settings.ES_LOCALE_ANALYZERS[locale]
-        if synonyms and locale in config.ES_SYNONYM_LOCALES:
-            analyzer += '-synonyms'
+    local_specific_analyzer = _get_locale_specific_analyzer(locale=locale)
+    if local_specific_analyzer:
+        return local_specific_analyzer
     else:
-        analyzer = fallback
+        # No specific analyzer found for the locale
+        # So use the standard analyzer as default
+        return analyzer('default', type='standard')
 
-    if (not settings.ES_USE_PLUGINS and
-            analyzer in settings.ES_PLUGIN_ANALYZERS):
-        analyzer = fallback
 
-    return analyzer
+def get_locale_index_alias(index_alias, locale=None):
+    """Get Elasticsearch Index name with proper locale suffix
+
+    Each locale can have different index as per using analyzer.
+    This function will return the proper suffixed index alias.
+    """
+    if locale and locale in config.SEPARATE_INDEX_LOCALES:
+        suffix = locale
+    else:
+        suffix = config.NON_ANALYZER_LOCALE_SUFFIX
+
+    alias = config.INDEX_ALIAS_FORMAT.format(index_alias=index_alias, suffix=suffix)
+    # Alias should be lower always
+    return alias.lower()
 
 
 def es_query_with_analyzer(query, locale):
