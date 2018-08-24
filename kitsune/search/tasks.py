@@ -9,7 +9,8 @@ from django_elasticsearch_dsl.registries import registry
 from django_statsd.clients import statsd
 from multidb.pinning import pin_this_thread, unpin_this_thread
 
-from kitsune.search.es_utils import index_chunk, UnindexMeBro, write_index, get_analysis
+from kitsune.search.es_utils import index_chunk, UnindexMeBro, write_index, get_analysis, \
+    es_analyzer_for_locale
 from kitsune.search.utils import from_class_path
 from kitsune.sumo.decorators import timeit
 
@@ -230,6 +231,9 @@ def create_new_es_index(app_label, model_name, document_class, new_index_name, l
     base_index = es_document._doc_type.index
     base_index_obj = _get_index(model, base_index)
     new_index = base_index_obj.clone(name=new_index_name)
+    # Get analyzer for the locale and add it to index
+    analyzer = es_analyzer_for_locale(locale)
+    new_index.analyzer(analyzer)
     new_index.create()
     log.info("Successfully created new index {}".format(new_index_name))
 
