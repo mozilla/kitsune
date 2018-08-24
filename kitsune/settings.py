@@ -488,6 +488,7 @@ TEMPLATES = [
 MIDDLEWARE_CLASSES = (
     'kitsune.sumo.middleware.HostnameMiddleware',
     'allow_cidr.middleware.AllowCIDRMiddleware',
+    'kitsune.sumo.middleware.FilterByUserAgentMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'multidb.middleware.PinningRouterMiddleware',
     'django_statsd.middleware.GraphiteMiddleware',
@@ -1152,3 +1153,5 @@ DISABLE_FEEDS = config('DISABLE_FEEDS', default=False, cast=bool)
 DISABLE_QUESTIONS_LIST_GLOBAL = config('DISABLE_QUESTIONS_LIST_GLOBAL', default=False, cast=bool)
 DISABLE_QUESTIONS_LIST_ALL = config('DISABLE_QUESTIONS_LIST_ALL', default=False, cast=bool)
 IMAGE_ATTACHMENT_USER_LIMIT = config('IMAGE_ATTACHMENT_USER_LIMIT', default=50, cast=int)
+# list of strings to match against user agent to block
+USER_AGENT_FILTERS = config('USER_AGENT_FILTERS', default='', cast=Csv())
