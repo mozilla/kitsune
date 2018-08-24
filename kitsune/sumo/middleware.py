@@ -8,8 +8,8 @@ from django.contrib import messages
 from django.core.exceptions import MiddlewareNotUsed
 from django.core.urlresolvers import is_valid_path
 from django.db.utils import DatabaseError
-from django.http import HttpResponseRedirect, HttpResponsePermanentRedirect
-from django.http import HttpResponseForbidden
+from django.http import (HttpResponse, HttpResponseRedirect,
+                         HttpResponsePermanentRedirect, HttpResponseForbidden)
 from django.shortcuts import render
 from django.utils import translation
 from django.utils.cache import add_never_cache_headers, patch_response_headers, patch_vary_headers
@@ -27,6 +27,10 @@ try:
     from django.utils.deprecation import MiddlewareMixin
 except ImportError:
     MiddlewareMixin = object
+
+
+class HttpResponseRateLimited(HttpResponse):
+    status_code = 429
 
 
 class SUMORefreshIDTokenAdminMiddleware(RefreshIDToken):
@@ -300,6 +304,6 @@ class FilterByUserAgentMiddleware(MiddlewareMixin):
     def process_request(self, request):
         ua = request.META.get('HTTP_USER_AGENT', '').lower()
         if any(x in ua for x in settings.USER_AGENT_FILTERS):
-            response = HttpResponseForbidden()
+            response = HttpResponseRateLimited()
             patch_vary_headers(response, ['User-Agent'])
             return response
