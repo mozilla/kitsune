@@ -1,6 +1,8 @@
 from django.db import models
 from django.core.paginator import Paginator
 
+from kitsune.search.es_utils import get_locale_index_alias
+
 
 class KitsuneDocTypeMixin(object):
 
@@ -15,6 +17,11 @@ class KitsuneDocTypeMixin(object):
 
     def _prepare_action(self, object_instance, action, index_name=None):
         """Overwrite to take `index_name` from parameters for setting index dynamically"""
+        if self.supported_locales and not index_name:
+            # Locale suffix need to be added to the index name
+            index_name = get_locale_index_alias(index_alias=str(self._doc_type.index),
+                                                locale=object_instance.locale)
+
         return {
             '_op_type': action,
             '_index': index_name or str(self._doc_type.index),
