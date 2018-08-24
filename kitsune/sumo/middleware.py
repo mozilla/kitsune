@@ -300,4 +300,4 @@ class FilterByUserAgentMiddleware(MiddlewareMixin):
     def process_request(self, request):
         ua = request.META.get('HTTP_USER_AGENT', '').lower()
         if any(x in ua for x in settings.USER_AGENT_FILTERS):
-            return HttpResponseForbidden()
+            raise HttpResponseForbidden()
