@@ -311,38 +311,6 @@ NON_SUPPORTED_LOCALES = {
     'uz': None,
 }
 
-ES_LOCALE_ANALYZERS = {
-    'ar': 'arabic',
-    'bg': 'bulgarian',
-    'ca': 'snowball-catalan',
-    'cs': 'czech',
-    'da': 'snowball-danish',
-    'de': 'snowball-german',
-    'en-US': 'snowball-english',
-    'es': 'snowball-spanish',
-    'eu': 'snowball-basque',
-    'fa': 'persian',
-    'fi': 'snowball-finnish',
-    'fr': 'snowball-french',
-    'hi-IN': 'hindi',
-    'hu': 'snowball-hungarian',
-    'id': 'indonesian',
-    'it': 'snowball-italian',
-    'ja': 'cjk',
-    'nl': 'snowball-dutch',
-    'no': 'snowball-norwegian',
-    'pl': 'polish',
-    'pt-BR': 'snowball-portuguese',
-    'pt-PT': 'snowball-portuguese',
-    'ro': 'snowball-romanian',
-    'ru': 'snowball-russian',
-    'sv': 'snowball-swedish',
-    'th': 'thai',
-    'tr': 'snowball-turkish',
-    'zh-CN': 'chinese',
-    'zh-TW': 'chinese',
-}
-
 ES_PLUGIN_ANALYZERS = [
     'polish'
 ]

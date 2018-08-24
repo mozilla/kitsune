@@ -33,8 +33,8 @@ class WikiDocumentType(KitsuneDocTypeMixin, DocType):
     document_recent_helpful_votes = fields.IntegerField()
     document_display_order = fields.IntegerField(attr='original.display_order')
 
-    # Custom configuration for kitsune
-    separate_index_locales = settings.SUMO_LANGUAGES
+    # Custom configuration for kitsune to have separate analyzer for supported locales
+    supported_locales = settings.SUMO_LANGUAGES
 
     class Meta:
         model = Document
