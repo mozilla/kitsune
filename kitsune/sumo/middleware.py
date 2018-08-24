@@ -289,3 +289,15 @@ class HostnameMiddleware(MiddlewareMixin):
     def process_response(self, request, response):
         response['X-Backend-Server'] = self.backend_server
         return response
+
+
+class FilterByUserAgentMiddleware(MiddlewareMixin):
+    """Looks at user agent and decides whether the device is allowed on the site."""
+    def __init__(self, *args, **kwargs):
+        if not settings.USER_AGENT_FILTERS:
+            raise MiddlewareNotUsed()
+
+    def process_request(self, request):
+        ua = request.META.get('HTTP_USER_AGENT', '').lower()
+        if any(x in ua for x in settings.USER_AGENT_FILTERS):
+            return HttpResponseForbidden()
