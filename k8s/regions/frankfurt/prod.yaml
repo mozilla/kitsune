@@ -139,7 +139,7 @@ app:
     surveygizmo_api_token: SECRET
     surveygizmo_api_token_secret: SECRET
     use_x_forwarded_host: True
-    user_agent_filters: "360spider"
+    user_agent_filters: "360spider,semrushBot"
     wsgi_keep_alive: 60
     disable_questions_list_global: False
     disable_questions_list_all: False

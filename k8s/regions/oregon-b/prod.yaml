@@ -144,7 +144,7 @@ app:
     surveygizmo_password: SECRET
     surveygizmo_api_token: SECRET
     surveygizmo_api_token_secret: SECRET
-    user_agent_filters: "360spider"
+    user_agent_filters: "360spider,semrushBot"
     wsgi_keep_alive: 60
     wsgi_num_workers: 4
     disable_questions_list_global: False
