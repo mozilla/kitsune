@@ -134,8 +134,6 @@ https://github.com/jezdez/django-appconf/archive/de23f5213913b3d6ea3e008bc01b487
     --hash=sha256:999ca03df9e0b9ff71e98f9d71b4e3f73f166f18740a732507c0d759887d9b5d
 https://github.com/django-security/django-axes/archive/778f208cc1d3cc42ecb756f732f8593e40ebb476.tar.gz#egg=django-axes==1.3.6 \
     --hash=sha256:30ba613a0e8617555888185dd958407b6ec6255bbaf3718803e0e8771db5bd45
-https://github.com/mozilla/django-badger/archive/7e6c420c2f913baab7307ef2a5aaa0585a034af6.tar.gz#egg=django-badger==0.0.0.2 \
-    --hash=sha256:ff8b908af009e2eafa67319abaad659957d4f84d32de13bbb63e53d31759ee86
 django-celery==3.2.2 \
     --hash=sha256:1450264db5ec58e45f3f20d8d361e696920352f62481bf56047288cdb38bcc0b \
     --hash=sha256:aaba492bf7777f231ec6b02c80aa3ea68758c39f4723864dd4164589b99ad703

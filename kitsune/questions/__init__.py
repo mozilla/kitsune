@@ -1,5 +1,7 @@
 from django.apps import AppConfig
 
+from kitsune.questions.badges import register_signals
+
 import actstream.registry
 
 
@@ -14,3 +16,6 @@ class QuestionsConfig(AppConfig):
         actstream.registry.register(Question)
         Answer = self.get_model('Answer')
         actstream.registry.register(Answer)
+
+        # register signals for badges
+        register_signals()

@@ -631,7 +631,6 @@ INSTALLED_APPS = (
     'kitsune.search',
     'kitsune.forums',
     'djcelery',
-    'badger',
     'cronjobs',
     'tidings',
     'rest_framework.authtoken',
@@ -721,8 +720,6 @@ PUENTE = {
             ('kitsune/**/jinja2/**.lhtml', 'jinja2'),
             ('kitsune/**/jinja2/**.ltxt', 'jinja2'),
             ('vendor/src/django-tidings/**/templates/**.html', 'jinja2'),
-            ('vendor/src/django-badger/badger/*.py', 'python'),
-            ('vendor/src/django-badger/badger/templatetags/*.py', 'python'),
         ],
         'djangojs': [
             # We can't say **.js because that would dive into any libraries.
@@ -1155,5 +1152,12 @@ DISABLE_FEEDS = config('DISABLE_FEEDS', default=False, cast=bool)
 DISABLE_QUESTIONS_LIST_GLOBAL = config('DISABLE_QUESTIONS_LIST_GLOBAL', default=False, cast=bool)
 DISABLE_QUESTIONS_LIST_ALL = config('DISABLE_QUESTIONS_LIST_ALL', default=False, cast=bool)
 IMAGE_ATTACHMENT_USER_LIMIT = config('IMAGE_ATTACHMENT_USER_LIMIT', default=50, cast=int)
+
 # list of strings to match against user agent to block
 USER_AGENT_FILTERS = config('USER_AGENT_FILTERS', default='', cast=Csv())
+
+BADGE_LIMIT_ARMY_OF_AWESOME = config('BADGE_LIMIT_ARMY_OF_AWESOME', default=50, cast=int)
+BADGE_LIMIT_L10N_KB = config('BADGE_LIMIT_L10N_KB', default=10, cast=int)
+BADGE_LIMIT_SUPPORT_FORUM = config('BADGE_LIMIT_SUPPORT_FORUM', default=30, cast=int)
+BADGE_MAX_RECENT = config('BADGE_MAX_RECENT', default=15, cast=int)
+BADGE_PAGE_SIZE = config('BADGE_PAGE_SIZE', default=50, cast=int)

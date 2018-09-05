@@ -5,14 +5,11 @@ from django.conf import settings
 from kitsune.kbadge.tests import BadgeFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import UserFactory
-from kitsune.wiki.badges import register_signals, WIKI_BADGES
+from kitsune.wiki.badges import WIKI_BADGES
 from kitsune.wiki.tests import ApprovedRevisionFactory, RevisionFactory, DocumentFactory
 
 
 class TestWikiBadges(TestCase):
-
-    def setUp(self):
-        register_signals()
 
     def test_kb_badge(self):
         """Verify the KB Badge is awarded properly."""
@@ -26,7 +23,8 @@ class TestWikiBadges(TestCase):
 
         # Create 9 approved en-US revisions.
         d = DocumentFactory(locale=settings.WIKI_DEFAULT_LANGUAGE)
-        ApprovedRevisionFactory.create_batch(9, creator=u, document=d)
+        ApprovedRevisionFactory.create_batch(settings.BADGE_LIMIT_L10N_KB - 1,
+                                             creator=u, document=d)
 
         # User should NOT have the badge yet
         assert not b.is_awarded_to(u)
@@ -49,7 +47,8 @@ class TestWikiBadges(TestCase):
 
         # Create 9 approved es revisions.
         d = DocumentFactory(locale='es')
-        ApprovedRevisionFactory.create_batch(9, creator=u, document=d)
+        ApprovedRevisionFactory.create_batch(settings.BADGE_LIMIT_L10N_KB - 1,
+                                             creator=u, document=d)
 
         # User should NOT have the badge yet
         assert not b.is_awarded_to(u)
