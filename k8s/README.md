@@ -50,6 +50,19 @@
 
 #### Deploy SUMO with commander (recommended)
 
+Choose a region and env:
+
+| Region  | Env  |
+|---|---|
+| frankfurt  | dev  |
+| frankfurt  | stage |
+| frankfurt  | prod |
+| oregon-a  | stage |
+| oregon-a  | prod |
+| oregon-b  | stage |
+| oregon-b  | prod |
+
+
 - Update the settings file with new image tags and settings.
 
 - Deploy with commander *without secrets*
