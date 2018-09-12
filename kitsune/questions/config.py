@@ -374,6 +374,26 @@ products = SortedDict([
         ])
     }),
 
+    ('firefox-reality', {
+        'name': _lazy(u'Firefox Reality'),
+        'subtitle': _lazy(u'Firefox for Virtual Reality'),
+        'extra_fields': [],
+        'tags': [],
+        'product': 'firefox-reality',
+        'categories': SortedDict([
+            ('get-started', {
+                'name': _lazy(u'Get started with Firefox Reality'),
+                'topic': 'get-started',
+                'tags': ['get-started'],
+            }),
+            ('troubleshooting-reality', {
+                'name': _lazy(u'Troubleshooting Firefox Reality'),
+                'topic': 'troubleshooting-reality',
+                'tags': ['troubleshooting'],
+            }),
+        ])
+    }),
+
     ('other', {
         'name': _lazy(u'Other Mozilla products'),
         'subtitle': '',
