@@ -3,19 +3,19 @@ FROM python:2-stretch
 WORKDIR /app
 
 RUN apt-get update && apt-get install apt-transport-https && \
-    echo "deb https://deb.nodesource.com/node_4.x stretch main" >> /etc/apt/sources.list && \
-    curl -s https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add - && \
+    echo "deb https://deb.nodesource.com/node_6.x stretch main" >> /etc/apt/sources.list && \
+    curl -sS https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add - && \
+    echo "deb https://dl.yarnpkg.com/debian/ stable main" >> /etc/apt/sources.list && \
+    curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - && \
     apt-get update && \
-    apt-get install -y --no-install-recommends nodejs && \
+    apt-get install -y --no-install-recommends nodejs yarn && \
     rm -rf /var/lib/apt/lists/*
 
 ENV PATH="/venv/bin:$PATH"
 
-COPY ./package.json /app/package.json
-COPY ./bower.json /app/bower.json
+COPY package.json bower.json yarn.lock /app/
 
-RUN npm install
-
+RUN yarn install --frozen-lockfile && yarn cache clean
 RUN ./node_modules/.bin/bower install --allow-root
 
 COPY --from=kitsune:base-latest /venv /venv
