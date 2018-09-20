@@ -5,6 +5,17 @@
 @import 'includes/topic-list.less';
 @import 'includes/download-firefox.less';
 
+// interim fix until full design is implemented
+#help-topics .product-title {
+  & > h1 {
+    padding-left: 20px;
+  }
+
+  & > p {
+    padding-left: 164px;
+  }
+}
+
 .logo-sprite {
   float: left;
   margin: 0 8px 0 0;
@@ -93,7 +104,7 @@
           border-left: 4px solid #000;
           color: #000;
           font-weight: bold;
-  
+
           &:before {
             content: none;
           }
@@ -109,7 +120,7 @@
           }
         }
       }
-  
+
       > a,
       > a:visited, {
         color: #000;
@@ -117,7 +128,7 @@
         border: none;
         border-left: 4px solid #e7e7e7;
         text-transform: none;
-  
+
         &:before {
           content: none;
         }
