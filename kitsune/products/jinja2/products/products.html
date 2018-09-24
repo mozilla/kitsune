@@ -5,6 +5,9 @@
 {% set styles = ('products',) %}
 
 {% block content %}
+  <div class="grid_12 search-form-large">
+    {{ search_box(settings, id='support-search-products', params=search_params) }}
+  </div>
   <section id="products-and-services" class="grid_12">
     <h1>{{ title }}</h1>
     {{ product_cards(products) }}

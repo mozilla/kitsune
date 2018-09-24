@@ -12,22 +12,19 @@
 {% block title %}{{ _('{product} Help')|f(product=pgettext('DB: products.Product.title', product.title)) }}{% endblock %}
 
 {% block content %}
-  <div class="grid_12">
-      <h1 class="product-title cf">
-          <img src="{{ product.image_url }}" alt="" class="logo-sprite" />
-          {{ pgettext('DB: products.Product.title', product.title) }}
-      </h1>
+  <div class="grid_12 search-form-large">
+    {{ search_box(settings, id='support-search-product', params=search_params) }}
+  </div>
 
-    {% if product.slug == 'firefox' %}
+  {% if show_fx_download %}
+    <div class="grid_12 download-buttons">
       <div class="download-firefox">
-        <a href="https://www.mozilla.org/firefox/new/#download-fx" class="download-button"
-         data-event-category="Download Button"
-         data-event-action="Panel Opening"
-         data-event-label="{{ latest_version }}">
+        <a href="https://www.mozilla.org/firefox/download/thanks/" class="download-button"
+          data-event-category="Download Button"
+          data-event-action="Panel Opening"
+          data-event-label="{{ latest_version }}">
           <span class="download-content">
-            <strong class="download-title">{{ _('Firefox') }}</strong>
-            <span class="download-subtitle">{{ _('Free Download') }}</span>
-            <span class="download-lang">{{ settings.LANGUAGES_DICT[request.LANGUAGE_CODE.lower()] }}</span>
+            <strong class="download-title">{{ _('Download Firefox') }}</strong>
           </span>
         </a>
         <ul class="info">
@@ -51,9 +48,11 @@
             {{ _('Download a fresh copy') }}
         </a>
       </div>
-    {% endif %}
+    </div>
+  {% endif %}
 
-    {% if product.slug == 'thunderbird' %}
+  {% if product.slug == 'thunderbird' %}
+    <div class="grid_12 download-buttons">
       <div class="download-thunderbird">
         <a href="https://www.mozilla.org/thunderbird" class="download-button"
         data-event-category="Download Button"
@@ -70,13 +69,17 @@
           <li><a href="https://www.mozilla.org/thunderbird/legal/privacy">{{ _('Privacy') }}</a></li>
         </ul>
       </div>
-    {% endif %}
-
-  </div>
+    </div>
+  {% endif %}
 
   <div class="grid_12">
     <section id="help-topics">
-      <h1>{{ _('Help Topics') }}</h1>
+      <div class="product-title cf">
+        {% include "includes/icons/icon-help-circle.svg" %}
+        <span>{{ pgettext('DB: products.Product.title', product.title) }}</span>
+        <h1>{{ _('Help Topics') }}</h1>
+        <p>{{ _('Search and navigate easily with these essential features') }}</p>
+      </div>
       {{ help_topics(topics, show_community_support=product.questions_enabled(request.LANGUAGE_CODE)) }}
     </section>
     <section id="get-involved-button">

@@ -4,24 +4,6 @@
     {% if product %}
       {% set base_doctype_url = base_doctype_url|urlparams(product=product.slug) %}
     {% endif %}
-    <ul id="doctype-filter" class="search-filter sidebar-nav">
-      <li {{ w|class_selected(3) }}>
-        <a href="#" data-instant-search-set-params="w=3" data-instant-search="link" data-href="{{ base_doctype_url|encodeURI }}">
-          {{ _('Show Everything') }}
-        </a>
-      </li>
-      <li {{ w|class_selected(1) }}>
-        <a href="#" data-instant-search-set-params="w=1" data-instant-search="link" data-href="{{ base_doctype_url|urlparams(w=1)|encodeURI }}">
-          {{ _('Help Articles Only') }}
-        </a>
-      </li>
-      <li {{ w|class_selected(2) }}>
-        <a href="#" data-instant-search-set-params="w=2" data-instant-search="link" data-href="{{ base_doctype_url|urlparams(w=2)|encodeURI }}">
-          {{ _('Community Discussion Only') }}
-        </a>
-      </li>
-    </ul>
-
     {% set base_product_url = base_url %}
     {% if w != 3 %}
       {% set base_product_url = base_product_url|urlparams(w=w) %}

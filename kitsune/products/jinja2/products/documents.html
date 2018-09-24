@@ -12,20 +12,43 @@
 {% block title %}{{ pgettext('DB: products.Topic.title', topic.title) }} | {{ _('{product} Help')|f(product=pgettext('DB: products.Product.title', product.title)) }}{% endblock %}
 
 {% block content %}
+  <div class="grid_12 search-form-large">
+    {{ search_box(settings, id='support-search-documents', params=search_params) }}
+  </div>
+
   <div class="grid_12">
-    <h1 class="product-title cf">
+    <div class="documents-product-title cf">
       {% set prod_url = url('products.product', slug=product.slug) %}
-      <img src="{{ STATIC_URL }}sumo/img/blank.png" alt="" class="logo-sprite" style="background-image: url('{{ product.image_url }}');" />
+      {% include "includes/icons/icon-help-circle.svg" %}
       <a href="{{ prod_url }}">{{ pgettext('DB: products.Product.title', product.title) }}</a>
-    </h1>
+    </div>
   </div>
   <aside class="grid_3">
     {{ topic_sidebar(topics[:10], subtopics, product, topic, subtopic) }}
   </aside>
   <div class="grid_9">
+    {% if show_fx_download %}
+      <div class="documents-download-buttons download-buttons">
+        <div class="download-firefox">
+          <a href="https://www.mozilla.org/firefox/download/thanks/" class="download-button"
+            data-event-category="Download Button"
+            data-event-action="Panel Opening"
+            data-event-label="{{ latest_version }}">
+            <span class="download-content">
+              <strong class="download-title">{{ _('Download Firefox') }}</strong>
+            </span>
+          </a>
+          <ul class="info">
+            <li><a href="https://www.mozilla.org/firefox/all/">{{ _('Systems and Languages') }}</a></li>
+            <li><a href="https://www.mozilla.org/firefox/notes">{{ _("What's New") }}</a></li>
+            <li><a href="https://www.mozilla.org/legal/privacy/firefox">{{ _('Privacy') }}</a></li>
+          </ul>
+        </div>
+      </div>
+    {% endif %}
+
     <article id="document-list">
-      {% if topic.image %}<img src="{{ STATIC_URL }}sumo/img/blank.png" alt="" class="logo-sprite" style="background-image: url('{{ topic.image_url }}');" />{% endif %}
-      <h1 class="topic-title {% if topic.image %}has-image{% endif %} {% if not subtopic %}cf{% endif %}">
+      <h1 class="topic-title {% if not subtopic %}cf{% endif %}">
         {% if subtopic %}
           <a href="{{ url('products.documents', product_slug=product.slug, topic_slug=topic.slug) }}">
         {% endif %}
@@ -36,21 +59,23 @@
       </h1>
 
       {% if subtopic %}
-        <h1 class="topic-title {% if topic.image %}has-image{% endif %} cf">
+        <h1 class="topic-title is-subtopic cf">
           {{ pgettext('DB: products.Topic.title', subtopic.title) }}
         </h1>
       {% endif %}
 
       {# Show the description if it is different than the title. Otherwise, don't bother. #}
       {% if (subtopic and subtopic.title != subtopic.description) or (not subtopic and topic.title != topic.description) %}
-        <h2 class="topic-description cf">
+        <p class="topic-description cf">
           {% if subtopic %}
              {{ pgettext('DB: products.Topic.description', subtopic.description) }}
           {% else %}
             {{ pgettext('DB: products.Topic.description', topic.description) }}
           {% endif %}
-        </h2>
+        </p>
       {% endif %}
+      
+      <div class="separator"></div>
 
       <ul class="topic-list">
         {% if not subtopic and subtopics %}
@@ -58,9 +83,7 @@
           {% for subtopic in subtopics %}
             <li class="subtopic">
               <a href="{{ url('products.subtopics', product_slug=product.slug, topic_slug=topic.slug, subtopic_slug=subtopic.slug) }}"
-              data-event-category="link click" data-event-action="subtopic" data-event-label="{{ subtopic.title }}">
-                {{ pgettext('DB: products.Topic.title', subtopic.title) }}
-              </a>
+              data-event-category="link click" data-event-action="subtopic" data-event-label="{{ subtopic.title }}">{{ pgettext('DB: products.Topic.title', subtopic.title) }}</a>
               {% if subtopic.title != subtopic.description %}
                 {{ pgettext('DB: products.Topic.description', subtopic.description) }}
               {% endif %}
@@ -87,6 +110,11 @@
         {% endfor %}
       {% endif %}
     </article>
+  </div>
+  <div class="grid_12 cf">
+    <section id="get-involved-button" class="document-get-involved">
+      <a class="btn btn-submit" href="{{ url('landings.get_involved') }}">{{ _('Volunteer for Mozilla Support') }}</a>
+    </section>
   </div>
 {% endblock %}
 
