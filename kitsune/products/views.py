@@ -7,7 +7,6 @@ from mobility.decorators import mobile_template
 from product_details import product_details
 
 from kitsune.products.models import Product, Topic
-from kitsune.sumo.utils import get_browser
 from kitsune.wiki.decorators import check_simple_wiki_locale
 from kitsune.wiki.facets import topics_for, documents_for
 
@@ -44,19 +43,12 @@ def product_landing(request, template, slug):
         else:
             latest_version = 0
 
-    user_agent = request.META.get('HTTP_USER_AGENT', '')
-    browser = get_browser(user_agent)
-
-    # Only show firefox download button when product is firefox and browser is not Firefox
-    show_fx_download = (product.slug == 'firefox' and browser != 'Firefox')
-
     return render(request, template, {
         'product': product,
         'products': Product.objects.filter(visible=True),
         'topics': topics_for(product=product, parent=None),
         'search_params': {'product': slug},
         'latest_version': latest_version,
-        'show_fx_download': show_fx_download
     })
 
 
@@ -81,12 +73,6 @@ def document_listing(request, template, product_slug, topic_slug,
 
     documents, fallback_documents = documents_for(**doc_kw)
 
-    user_agent = request.META.get('HTTP_USER_AGENT', '')
-    browser = get_browser(user_agent)
-
-    # Only show firefox download button when product is firefox and browser is not Firefox
-    show_fx_download = (product.slug == 'firefox' and browser != 'Firefox')
-
     return render(request, template, {
         'product': product,
         'topic': topic,
@@ -96,5 +82,4 @@ def document_listing(request, template, product_slug, topic_slug,
         'documents': documents,
         'fallback_documents': fallback_documents,
         'search_params': {'product': product_slug},
-        'show_fx_download': show_fx_download
     })

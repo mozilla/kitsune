@@ -186,16 +186,17 @@
     {% endif %}
     <nav id="aux-nav-right" role="navigation">
       <ul>
-        {% if show_fx_download and not user.is_authenticated() %}
-          <li>
-            <a href="https://www.mozilla.org/firefox/download/thanks/" class="firefox-download-button hidden" data-event-category="Download Button" data-event-action="Firefox for Desktop">{{ _('Download Firefox') }}</a>
-          </li>
-        {% endif %}
-        {% if not user.is_authenticated() %}
-          <li>
-            <a href="{{ url('landings.get_involved') }}" class="volunteer-button" data-event-category="Volunteer Button" data-event-action="Volunteer for Mozilla Support">{{ _('Volunteer') }}</a>
-          </li>  
-        {% endif %}
+      {% if show_header_fx_download() %}
+        {# show-fx-download.js will remove the 'hidden' class below if the visitor is *NOT* using Firefox #}
+        <li>
+          <a href="https://www.mozilla.org/firefox/download/thanks/" class="firefox-download-button hidden" data-event-category="Download Button" data-event-action="Firefox for Desktop">{{ _('Download Firefox') }}</a>
+        </li>
+      {% endif %}
+      {% if not user.is_authenticated() %}
+        <li>
+          <a href="{{ url('landings.get_involved') }}" class="volunteer-button" data-event-category="Volunteer Button" data-event-action="Volunteer for Mozilla Support">{{ _('Volunteer') }}</a>
+        </li>
+      {% endif %}
       </ul>
     </nav>
   </div>
@@ -334,10 +335,7 @@
   {% javascript script %}
 {% endfor %}
 
-{# Show firefox download button to unauthenticated users only #}
-{% if show_fx_download and not user.is_authenticated() %}
-  {% javascript 'common.fx.download' %}
-{% endif %}
+{% javascript 'common.fx.download' %}
 
 {# Temporary Pontoon testing - bug 812176 #}
 {% if settings.STAGE %}

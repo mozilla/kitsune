@@ -16,37 +16,45 @@
     {{ search_box(settings, id='support-search-product', params=search_params) }}
   </div>
 
-  {% if show_fx_download %}
-    <div class="grid_12 download-buttons">
-      <div class="download-firefox">
-        <a href="https://www.mozilla.org/firefox/download/thanks/" class="download-button"
-          data-event-category="Download Button"
-          data-event-action="Panel Opening"
-          data-event-label="{{ latest_version }}">
-          <span class="download-content">
-            <strong class="download-title">{{ _('Download Firefox') }}</strong>
-          </span>
-        </a>
-        <ul class="info">
-          <li><a href="https://www.mozilla.org/firefox/all/">{{ _('Systems and Languages') }}</a></li>
-          <li><a href="https://www.mozilla.org/firefox/notes">{{ _("What's New") }}</a></li>
-          <li><a href="https://www.mozilla.org/legal/privacy/firefox">{{ _('Privacy') }}</a></li>
-        </ul>
-      </div>
-      <div class="refresh-firefox">
-        <div class="help-text">{{ _('Give Firefox a tune up') }}</div>
-        <a data-mozilla-ui-reset="reset" class="btn btn-submit">
-          {{ _('Refresh Firefox') }}
-        </a>
-        <a class="reset-link" href="{{ url('wiki.document', 'refresh-firefox-reset-add-ons-and-settings') }}">
-          {{ _('How does it work?') }}
-        </a>
-        <a href="https://www.mozilla.org/firefox/new/#download-fx"
+  {% if product.slug == 'firefox' %}
+    {# show-fx-download.js will remove the 'hidden' class below if the visitor is *NOT* using Firefox #}
+    <div class="firefox-download-button hidden">
+      <div class="grid_12 download-buttons">
+        <div class="download-firefox">
+          <a href="https://www.mozilla.org/firefox/download/thanks/" class="download-button"
+            data-event-category="Download Button"
+            data-event-action="Panel Opening"
+            data-event-label="{{ latest_version }}">
+            <span class="download-content">
+              <strong class="download-title">{{ _('Download Firefox') }}</strong>
+            </span>
+          </a>
+          <ul class="info">
+            <li><a href="https://www.mozilla.org/firefox/all/">{{ _('Systems and Languages') }}</a></li>
+            <li><a href="https://www.mozilla.org/firefox/notes">{{ _("What's New") }}</a></li>
+            <li><a href="https://www.mozilla.org/legal/privacy/firefox">{{ _('Privacy') }}</a></li>
+          </ul>
+        </div>
+        {#
+          afaict, this button is never shown. products.js is looking for a
+          data-latest-version attribute on the .download-button element above,
+          but it's not present. this should be fixed?
+        #}
+        <div class="refresh-firefox">
+          <div class="help-text">{{ _('Give Firefox a tune up') }}</div>
+          <a data-mozilla-ui-reset="reset" class="btn btn-submit">
+            {{ _('Refresh Firefox') }}
+          </a>
+          <a class="reset-link" href="{{ url('wiki.document', 'refresh-firefox-reset-add-ons-and-settings') }}">
+            {{ _('How does it work?') }}
+          </a>
+          <a href="https://www.mozilla.org/firefox/new/#download-fx"
             data-event-category="Download Button"
             data-event-action="Panel Opening"
             data-event-label="{{ latest_version }}">
             {{ _('Download a fresh copy') }}
-        </a>
+          </a>
+        </div>
       </div>
     </div>
   {% endif %}

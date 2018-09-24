@@ -27,7 +27,9 @@
     {{ topic_sidebar(topics[:10], subtopics, product, topic, subtopic) }}
   </aside>
   <div class="grid_9">
-    {% if show_fx_download %}
+  {% if product.slug == 'firefox' %}
+    {# show-fx-download.js will remove the 'hidden' class below if the visitor is *NOT* using Firefox #}
+    <div class="firefox-download-button hidden">
       <div class="documents-download-buttons download-buttons">
         <div class="download-firefox">
           <a href="https://www.mozilla.org/firefox/download/thanks/" class="download-button"
@@ -45,7 +47,8 @@
           </ul>
         </div>
       </div>
-    {% endif %}
+    </div>
+  {% endif %}
 
     <article id="document-list">
       <h1 class="topic-title {% if not subtopic %}cf{% endif %}">
@@ -74,7 +77,7 @@
           {% endif %}
         </p>
       {% endif %}
-      
+
       <div class="separator"></div>
 
       <ul class="topic-list">

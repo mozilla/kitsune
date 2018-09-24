@@ -48,7 +48,9 @@
 
 {% block content %}
   <div class="grid_9">
-    {% if show_fx_download %}
+  {% if product.slug == 'firefox' %}
+    {# show-fx-download.js will remove the 'hidden' class below if the visitor is *NOT* using Firefox #}
+    <div class="firefox-download-button hidden">
       <div class="download-buttons">
         <div class="download-firefox">
           <a href="https://www.mozilla.org/firefox/download/thanks/" class="download-button"
@@ -66,8 +68,9 @@
           </ul>
         </div>
       </div>
-    {% endif %}
-    
+    </div>
+  {% endif %}
+
     <article class="wiki-doc">
       {{ document_title(document) }}
       {{ document_messages(document, redirected_from) }}
@@ -82,7 +85,7 @@
         {{ _('Share this article: {link}')|f(link=link|safe) }}
       </p>
     {% endif %}
-      
+
       <div class="separator"></div>
 
       {{ contributor_list(contributors) }}
