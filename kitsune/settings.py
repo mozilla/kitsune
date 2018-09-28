@@ -495,7 +495,7 @@ MIDDLEWARE_CLASSES = (
     'multidb.middleware.PinningRouterMiddleware',
     'django_statsd.middleware.GraphiteMiddleware',
     'commonware.request.middleware.SetRemoteAddrFromForwardedFor',
-    'enforce_host.EnforceHostMiddleware',
+    'kitsune.sumo.middleware.EnforceHostIPMiddleware',
 
     # VaryNoCacheMiddleware must be above LocaleURLMiddleware
     # so that it can see the response has a vary on accept-language
