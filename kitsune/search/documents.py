@@ -1,6 +1,7 @@
 from django.utils import timezone
 from django_elasticsearch_dsl import DocType, Index, fields
 
+from kitsune.questions.models import Question
 from kitsune.search import config
 from django.conf import settings
 
@@ -67,3 +68,59 @@ class WikiDocumentType(KitsuneDocTypeMixin, DocType):
             return instance.recent_helpful_votes
         else:
             return 0
+
+
+class QuestionDocumentType(KitsuneDocTypeMixin, DocType):
+    url = fields.KeywordField(attr='get_absolute_url')
+    indexed_on = fields.DateField()
+    created = fields.DateField()
+    updated = fields.DateField()
+
+    product = fields.KeywordField(attr='topic.slug')
+    topic = fields.KeywordField(attr='product.slug')
+
+    # Document specific fields (locale aware)
+    question_title = fields.TextField(attr='title')
+    question_content = fields.TextField(attr='content', store=True,
+                                        term_vector='with_positions_offsets')
+    question_answer_content = fields.TextField()
+    question_num_answers = fields.IntegerField(attr='num_answers')
+    question_is_solved = fields.BooleanField(attr='is_solved')
+    question_is_locked = fields.BooleanField(attr='is_locked')
+    question_is_archived = fields.BooleanField(attr='is_archived')
+    question_has_answers = fields.BooleanField()
+    question_has_helpful = fields.BooleanField()
+    question_creator = fields.KeywordField(attr='creator.username')
+    question_answer_creator = fields.KeywordField()
+    question_num_votes = fields.IntegerField(attr='num_votes')
+    question_num_votes_past_week = fields.IntegerField(attr='num_votes_past_week')
+    question_tag = fields.KeywordField()
+    question_locale = fields.KeywordField(attr='locale')
+
+    # Custom configuration for kitsune to have separate analyzer for supported locales
+    supported_locales = settings.SUMO_LANGUAGES
+
+    class Meta:
+        model = Question
+        index = config.QUESTION_INDEX_NAME
+
+    def prepare_indexed_on(self, instance):
+        return timezone.now()
+
+    def prepare_question_answer_content(self, instance):
+        return [a['content'] for a in instance.answer_values]
+
+    def prepare_question_has_answers(self, instance):
+        return bool(instance.num_answers)
+
+    def prepare_question_has_helpful(self, instance):
+        if instance.answer_values:
+            return instance.answer_values.filter(votes__helpful=True).exists()
+
+        return False
+
+    def prepare_question_answer_creator(self, instance):
+        return [a['creator__username'] for a in instance.answer_values]
+
+    def prepare_question_tag(self, instance):
+        return [tag.name for tag in instance.my_tags]
