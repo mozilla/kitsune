@@ -16,7 +16,6 @@ from django.utils.translation import trans_real
 
 import django_nose
 import factory.fuzzy
-from elasticutils.contrib.django import get_es
 from nose.tools import eq_
 from pyquery import PyQuery
 from waffle.models import Flag

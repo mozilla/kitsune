@@ -15,6 +15,7 @@ from django.db import models, connection, close_old_connections
 from django.db.models import Q
 from django.db.models.signals import post_save, pre_save
 from django.db.utils import IntegrityError
+from django.utils.functional import cached_property
 from django.http import Http404
 
 import actstream
@@ -573,6 +574,10 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
 
         return questions
 
+    @cached_property
+    def answer_values(self):
+        return self.answers.filter(is_spam=False).values('content', 'creator__username')
+
     # Permissions
 
     def allows_edit(self, user):
@@ -675,6 +680,7 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
             images = list(self.images.all())
             cache.add(cache_key, images, CACHE_TIMEOUT)
         return images
+
 
 
 @register_mapping_type
