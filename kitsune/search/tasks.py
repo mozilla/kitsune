@@ -301,7 +301,12 @@ def index_missing_objects(app_label, model_name, document_class, index_generatio
     """
     model = apps.get_model(app_label, model_name)
     document = _get_document(model=model, document_class=document_class)
-    queryset = document().get_queryset().exclude(current_revision__created__lte=index_generation_time)
+    # TODO: Make it more generic
+    if model_name == 'Document':
+        queryset = document().get_queryset().exclude(current_revision__created__lte=index_generation_time)
+    else:
+        queryset = document().get_queryset().exclude(created__lte=index_generation_time)
+
     if locale:
         queryset = queryset.filter(locale=locale)
 
