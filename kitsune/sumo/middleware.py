@@ -7,9 +7,11 @@ from django.contrib.auth import logout
 from django.contrib import messages
 from django.core.exceptions import MiddlewareNotUsed
 from django.core.urlresolvers import is_valid_path
+from django.core.validators import validate_ipv4_address, ValidationError
 from django.db.utils import DatabaseError
 from django.http import (HttpResponse, HttpResponseRedirect,
                          HttpResponsePermanentRedirect, HttpResponseForbidden)
+from django.http.request import split_domain_port
 from django.shortcuts import render
 from django.utils import translation
 from django.utils.cache import add_never_cache_headers, patch_response_headers, patch_vary_headers
@@ -17,6 +19,7 @@ from django.utils.encoding import iri_to_uri, smart_str, smart_unicode
 
 import mobility
 from mozilla_django_oidc.middleware import RefreshIDToken
+from enforce_host import EnforceHostMiddleware
 
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import Prefixer, set_url_prefixer, split_path
@@ -27,6 +30,21 @@ try:
     from django.utils.deprecation import MiddlewareMixin
 except ImportError:
     MiddlewareMixin = object
+
+
+class EnforceHostIPMiddleware(EnforceHostMiddleware):
+    """Modify the `EnforceHostMiddleware` to allow IP addresses"""
+    def process_request(self, request):
+        host = request.get_host()
+        domain, port = split_domain_port(host)
+        try:
+            validate_ipv4_address(domain)
+        except ValidationError:
+            # not an IP address. Call the superclass
+            return super(EnforceHostIPMiddleware, self).process_request(request)
+
+        # it is an IP address
+        return
 
 
 class HttpResponseRateLimited(HttpResponse):
