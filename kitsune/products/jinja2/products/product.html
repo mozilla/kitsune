@@ -83,7 +83,7 @@
   <div class="grid_12">
     <section id="help-topics">
       <div class="product-title cf">
-        {% include "includes/icons/icon-help-circle.svg" %}
+        <img src="{{ product.image_alternate_url }}" height="48" width="48" alt="" />
         <span>{{ pgettext('DB: products.Product.title', product.title) }}</span>
         <h1>{{ _('Help Topics') }}</h1>
         <p>{{ _('Search and navigate easily with these essential features') }}</p>

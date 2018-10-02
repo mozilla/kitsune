@@ -19,7 +19,7 @@
   <div class="grid_12">
     <div class="documents-product-title cf">
       {% set prod_url = url('products.product', slug=product.slug) %}
-      {% include "includes/icons/icon-help-circle.svg" %}
+      <img src="{{ product.image_alternate_url }}" height="48" width="48" alt="" />
       <a href="{{ prod_url }}">{{ pgettext('DB: products.Product.title', product.title) }}</a>
     </div>
   </div>

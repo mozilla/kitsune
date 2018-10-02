@@ -19,7 +19,11 @@ class Product(ModelBase):
                               blank=True,
                               max_length=settings.MAX_FILEPATH_LENGTH,
                               # no l10n in admin
-                              help_text=u'The image must be 96x96.')
+                              help_text=u'The image must be 484x244.')
+    image_alternate = models.ImageField(upload_to=settings.PRODUCT_IMAGE_PATH, null=True,
+                                        blank=True,
+                                        max_length=settings.MAX_FILEPATH_LENGTH,
+                                        help_text=u'The image must be 96x96.')
     image_offset = models.IntegerField(default=None, null=True, editable=False)
     image_cachebuster = models.CharField(max_length=32, default=None,
                                          null=True, editable=False)
@@ -47,6 +51,13 @@ class Product(ModelBase):
         if self.image:
             return self.image.url
         return os.path.join(settings.STATIC_URL, 'products', 'img', 'product_placeholder.png')
+
+    @property
+    def image_alternate_url(self):
+        if self.image_alternate:
+            return self.image_alternate.url
+        return os.path.join(settings.STATIC_URL, 'products', 'img',
+                            'product_placeholder_alternate.png')
 
     def questions_enabled(self, locale):
         return self.questions_locales.filter(locale=locale).exists()
