@@ -34,6 +34,5 @@ k8s/regions/*/kubectl
 k8s/regions/*/*-secrets.yaml
 *.db
 *.sqlite3
-static
 .vscode/
 .bash_history

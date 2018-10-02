@@ -19,11 +19,12 @@ class Product(ModelBase):
                               blank=True,
                               max_length=settings.MAX_FILEPATH_LENGTH,
                               # no l10n in admin
-                              help_text=u'The image must be 484x244.')
+                              help_text=u'Used on the the home page. Must be 484x244.')
     image_alternate = models.ImageField(upload_to=settings.PRODUCT_IMAGE_PATH, null=True,
                                         blank=True,
                                         max_length=settings.MAX_FILEPATH_LENGTH,
-                                        help_text=u'The image must be 96x96.')
+                                        help_text=(u'Used everywhere except the home '
+                                                   'page. Must be 96x96.'))
     image_offset = models.IntegerField(default=None, null=True, editable=False)
     image_cachebuster = models.CharField(max_length=32, default=None,
                                          null=True, editable=False)
