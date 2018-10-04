@@ -499,14 +499,15 @@ def fe(format_string, *args, **kwargs):
 @library.global_function
 def image_for_product(product_slug):
     """
-    Return image for product slug
+    Return square/alternate image for product slug
     """
 
     try:
         obj = Product.objects.get(slug=product_slug)
     except Product.DoesNotExist:
-        return os.path.join(settings.STATIC_URL, 'products', 'img', 'product_placeholder.png')
-    return obj.image_url
+        return os.path.join(settings.STATIC_URL, 'products', 'img',
+                            'product_placeholder_alternate.png')
+    return obj.image_alternate_url
 
 
 @jinja2.contextfunction
