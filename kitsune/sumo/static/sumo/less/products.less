@@ -14,6 +14,18 @@
   & > p {
     padding-left: 188px;
   }
+
+  .html-rtl & {
+    & > h1 {
+      padding-left: 0;
+      padding-right: 20px;
+    }
+
+    & > p {
+      padding-left: 0;
+      padding-right: 188px;
+    }
+  }
 }
 
 .logo-sprite {
@@ -181,6 +193,21 @@
         }
       }
     }
+
+    .html-rtl & > li {
+      > a,
+      > a:visited {
+        border-left: none;
+        border-right: 4px solid #e7e7e7;
+      }
+
+      &.selected {
+        > a,
+        > a:visited {
+          border-right-color: #000;
+        }
+      }
+    }
   }
 }
 
@@ -303,6 +330,25 @@
 
   .topic-description {
     margin-top: 20px;
+  }
+
+  .html-rtl & {
+    margin-left: 0;
+    margin-right: 100px;
+
+    > ul.topic-list {
+      padding-left: 30px;
+      padding-right: 0;
+    }
+
+    > ul > li a:hover:before {
+      background-image: url('../img/icon-chevron-left.png');
+      background-position: top right;
+      left: auto;
+      right: -18px;
+      padding-left: 8px;
+      padding-right: 0;
+    }
   }
 }
 
@@ -459,6 +505,22 @@ ul.info {
     text-decoration: none;
     width: 110px;
   }
+
+  .html-rtl & {
+    margin-left: 0;
+    margin-right: 24px;
+
+    > img {
+      float: right;
+    }
+
+    > a:link,
+      a:visited {
+        float: right;
+        padding-left: 0;
+        padding-right: 20px;
+      }
+  }
 }
 
 .download-buttons {
@@ -478,6 +540,24 @@ ul.info {
     > .download-thunderbird,
     > .refresh-firefox {
       padding-right: 10px;
+    }
+  }
+
+  .html-rtl & {
+    > .download-firefox,
+    > .download-thunderbird,
+    > .refresh-firefox {
+      padding-left: 54px;
+      padding-right: 0;
+    }
+
+    &.documents-download-buttons {
+      > .download-firefox,
+      > .download-thunderbird,
+      > .refresh-firefox {
+        padding-left: 10px;
+        padding-right: 0;
+      }
     }
   }
 }
