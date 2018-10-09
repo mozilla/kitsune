@@ -128,6 +128,14 @@
     margin-bottom: 20px;
     padding-left: 78px;
   }
+
+  .html-rtl & {
+    h2,
+    .content-box {
+      padding-left: 0;
+      padding-right: 75px;
+    }
+  }
 }
 
 .search-filter.sidebar-nav {
@@ -158,7 +166,7 @@
     }
 
     > a,
-    > a:visited, {
+    > a:visited {
       color: #000;
       background: #fff;
       border: none;
@@ -205,6 +213,36 @@
               color: #000;
             }
           }
+        }
+      }
+    }
+  }
+
+  .html-rtl & > li {
+    &.selected {
+      > a,
+      > a:visited {
+        border-left: none;
+        border-right: 4px solid #000;
+      }
+    }
+
+    > a,
+    > a:visited {
+      border-left: none;
+      border-right: 4px solid #e7e7e7;
+    }
+
+    > ul > li {
+      > a,
+      > a:visited {
+        border-right: none;
+      }
+
+      &.selected {
+        > a,
+        > a:visited {
+          border-right: 4px solid #000;
         }
       }
     }

@@ -89,7 +89,8 @@ body {
 
     .search-form-large {
       .searchbox {
-        padding-left: 60px;
+        padding-left: 0;
+        padding-right: 20px;
       }
       .submit-button {
         left: 140px;
@@ -123,7 +124,7 @@ body {
       float: left;
       margin-left: 30px;
       position: relative;
-      
+
       a {
         display: block;
         height: 48px;
@@ -239,6 +240,11 @@ body {
       .logo {
         float: right;
       }
+    }
+
+    #aux-nav .locale-picker {
+      padding-left: 0;
+      padding-right: 44px;
     }
   }
 }
@@ -1441,6 +1447,22 @@ input[type=button],
   .hidden {
     display: none;
   }
+
+  .html-rtl & > ul > li {
+    > svg {
+      padding-left: 0;
+      padding-right: 12px;
+    }
+
+    > a,
+    > a:visited,
+    > span {
+      &.locale-picker {
+        padding-left: 0;
+        padding-right: 54px;
+      }
+    }
+  }
 }
 
 #aux-nav-right {
@@ -1537,8 +1559,25 @@ input[type=button],
 
     > ul {
       > li {
-        float: left;
+        float: right;
         padding: 0 20px 0 12px;
+
+        &.dropdown {
+          & > a:after,
+          & > span:after {
+            margin: 0 4px 0 0;
+          }
+        }
+
+        & > ul {
+          left: auto;
+          right: 0;
+          text-align: right;
+
+          &.double > li {
+            float: right;
+          }
+        }
       }
     }
 
@@ -2248,7 +2287,7 @@ input[type=button],
 #sg-popup {
   background: #ffffff;
   border: 1px solid #000000;
-  fontSize: 16px;
+  font-size: 16px;
   left: 400px;
   padding: 20px;
   position: absolute;
@@ -2296,9 +2335,6 @@ input[type=button],
          .card-grid {
            & > li {
              & > a {
-               .topic-icon {
-                 float: right;
-               }
                .title {
                  text-align: left;
                  margin-left: 0px;
@@ -2336,9 +2372,6 @@ input[type=button],
     }
     .hero-bar.secondary {
       background-position: 0px;
-    }
-    .btn.btn-submit {
-      float: left;
     }
   }
 }
@@ -2418,6 +2451,16 @@ input[type=button],
     .submit-button {
       right: 90px;
     }
+
+    .html-rtl & .submit-button {
+      left: 90px;
+      right: auto;
+    }
+  }
+
+  .html-rtl & .simple-search-form .submit-button {
+    left: 20px;
+    right: auto;
   }
 }
 

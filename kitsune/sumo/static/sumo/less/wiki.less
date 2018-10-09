@@ -60,6 +60,16 @@ article {
       }
     }
   }
+
+  .html-rtl & .showfor {
+    padding-left: 0;
+    padding-right: 30px;
+
+    > div {
+      padding-left: 0;
+      padding-right: 10px;
+    }
+  }
 }
 
 .sidebar-nav {
@@ -154,6 +164,30 @@ article {
               }
             }
           }
+        }
+      }
+    }
+
+    .html-rtl &.topics > li {
+      &.selected {
+        > a,
+        > a:visited {
+          border-left: none;
+          border-right: 4px solid #000;
+        }
+      }
+
+      > a,
+      > a:visited, {
+        border-left: none;
+        border-right: 4px solid #e7e7e7;
+      }
+
+      &.subtopic-selected {
+        > a,
+        > a:visited {
+          border-left: none;
+          border-right: 4px solid #000;
         }
       }
     }
@@ -1323,6 +1357,11 @@ div.video .kbox-container {
       padding-right: 30px;
     }
   }
+
+  .html-rtl & .document-vote .header {
+    padding-left: 30px;
+    padding-right: 10px;
+  }
 }
 
 .document-vote {
@@ -1645,6 +1684,22 @@ article {
     padding-top: 6px;
     text-decoration: none;
     width: 110px;
+  }
+
+  .html-rtl & {
+    margin-left: 0;
+    margin-right: 24px;
+
+    > img {
+      float: right;
+    }
+
+    > a:link,
+      a:visited {
+        float: right;
+        padding-left: 0;
+        padding-right: 20px;
+      }
   }
 }
 
