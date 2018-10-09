@@ -1,4 +1,5 @@
-set -e
+#!/bin/bash
+set -exo pipefail
 GREEN='\033[1;32m'
 NC='\033[0m' # No Color
 SLACK_CHANNEL=sumodev
@@ -33,15 +34,26 @@ function deploy {
     invoke  -f "regions/${REGION}/${REGION_ENV}.yaml" deployments.create-web --apply --tag full-${COMMIT_HASH}
     invoke  -f "regions/${REGION}/${REGION_ENV}.yaml" rollouts.status-web
 
+    post-deploy $@
+
+    if command -v slack-cli > /dev/null; then
+        slack-cli -d "${SLACK_CHANNEL}" ":tada: Successfully deployed <${DOCKER_HUB}|full-${COMMIT_HASH}> to <https://${REGION_ENV}-${REGION}.sumo.moz.works/|SUMO-${REGION_ENV} in ${REGION}>"
+    fi
+    printf "${GREEN}OK${NC}\n"
+}
+
+function post-deploy {
+    REGION=${2}
+    REGION_ENV=${3}
+    K8S_NAMESPACE="sumo-${REGION_ENV}"
+
+    export KUBECTL_BIN="./regions/${REGION}/kubectl"
+    export KUBECONFIG="./regions/${REGION}/kubeconfig"
+
     # run post-deployment tasks
     echo "Running post-deployment tasks"
     SUMO_POD=$(${KUBECTL_BIN} -n "${K8S_NAMESPACE}" get pods -o=jsonpath='{.items[0].metadata.name}')
     ${KUBECTL_BIN} -n "${K8S_NAMESPACE}" exec "${SUMO_POD}" bin/run-post-deploy.sh
-
-    printf "${GREEN}OK${NC}\n"
-    if command -v slack-cli > /dev/null; then
-        slack-cli -d "${SLACK_CHANNEL}" ":tada: Successfully deployed <${DOCKER_HUB}|full-${COMMIT_HASH}> to <https://${REGION_ENV}-${REGION}.sumo.moz.works/|SUMO-${REGION_ENV} in ${REGION}>"
-    fi
 }
 
 source venv/bin/activate
