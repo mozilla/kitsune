@@ -254,6 +254,10 @@ html {
   background: @background;
 }
 
+#main-content {
+  margin-top: 30px;
+}
+
 footer {
   background: #000;
   font-size: 16px;
@@ -473,7 +477,7 @@ input[type="submit"]{
   }
 
   #breadcrumbs {
-    color: @textDarkGrey;
+    color: #000;
     font-size: 12px;
     list-style: none;
     padding: 0;
@@ -481,11 +485,12 @@ input[type="submit"]{
 
     > li {
       float: left;
-      margin: 0 6px 0 0;
+      margin: 0 16px 0 0;
 
       &:before {
+        color: #7f7f7f;
         content: ' \003E ';
-        margin: 0 6px 0 0;
+        margin: 0 16px 0 0;
       }
 
       &:first-of-type {
@@ -494,6 +499,16 @@ input[type="submit"]{
           margin: 0;
         }
       }
+    }
+
+    a,
+    a:visited {
+      color: #7f7f7f;
+    }
+
+    a:hover {
+      color: #000;
+      text-decoration: none;
     }
   }
 }
@@ -731,36 +746,13 @@ input[type=button],
 }
 
 .feature-box {
-  background: #e0e5e8 url('../img/grain.png');
-  border-color: #dbe0e3 #dbe0e3 #f9f9f9 #dbe0e3;
-  border-style: solid;
-  border-width: 1px;
+  background: #000;
+  border: 1px solid #000;
+  color: #fff;
   margin: 0 0 20px 0;
-  padding: 20px 30px 21px 30px;
+  padding: 10px 30px;
   position: relative;
   z-index: 1;
-
-  &:after {
-    background: #dbe0e3;
-    bottom: 0;
-    content: '';
-    height: 1px;
-    left: 0;
-    position: absolute;
-    right: 0;
-    z-index: -1;
-  }
-
-  &:before {
-    border: 2px solid rgba(0, 0, 0, 0.01);
-    bottom: 1px;
-    content: '';
-    left: 0;
-    position: absolute;
-    right: 0;
-    top: 0;
-    z-index: -1;
-  }
 
   h1 {
     font-size: 22px;
@@ -775,18 +767,6 @@ input[type=button],
 
   p {
     margin: 10px 0;
-  }
-}
-
-.rgba {
-  .feature-box {
-    @dark: rgba(0, 0, 0, 0.03);
-    @light: rgba(255, 255, 255, 0.7);
-    border-color: @dark @dark @light @dark;
-
-    &:after {
-      background: @dark;
-    }
   }
 }
 
@@ -935,21 +915,16 @@ input[type=button],
 }
 
 .progress-bar {
-  background: #e5eaed url('../img/grain.png');
-  border: 1px solid #dbe0e3;
-  border-radius: 12px;
+  background: #f3f3f3;
   color: #fff;
   font-size: 20px;
   font-weight: bold;
-  height: 24px;
-  line-height: 24px;
+  height: 10px;
   position: relative;
   text-align: right;
   z-index: 1;
 
   &:after {
-    border-bottom: 1px solid #f9f9f9;
-    border-radius: 13px;
     bottom: -2px;
     content: '';
     left: 0;
@@ -960,8 +935,6 @@ input[type=button],
   }
 
   &:before {
-    border: 2px solid rgba(0, 0, 0, 0.01);
-    border-radius: 12px;
     bottom: 0;
     content: '';
     left: 0;
@@ -972,17 +945,17 @@ input[type=button],
   }
 
   > div {
-    background: #ff9500;
-    background: linear-gradient(to bottom, #ff9500, #ed7000);
-    border-radius: 12px;
-    height: 24px;
+    background: #000;
+    height: 10px;
     position: relative;
     z-index: 5;
-
-    > span {
-      margin-right: 10px;
-    }
   }
+}
+
+.progress-bar-percent {
+  font-family: @ZillaSlab;
+  font-size: 20px;
+  text-align: right;
 }
 
 .rgba {
@@ -993,12 +966,10 @@ input[type=button],
 }
 
 .sidebar-header {
-  background: #fff;
   color: #000;
   font-weight: bold;
   margin: 30px 0 2px 0;
-  padding: 16px 20px;
-  text-transform: uppercase;
+  padding: 16px 20px 0 0;
 
   &:first-child {
     margin-top: 0;
@@ -1009,9 +980,7 @@ input[type=button],
   font-family: @OpenSans;
   font-size: 13px;
   list-style: none;
-  margin: 0;
   padding: 0;
-  text-transform: uppercase;
 
   > li {
     position: relative;
@@ -1019,8 +988,8 @@ input[type=button],
     > span,
     > a,
     > a:visited {
-      background: @sidebarBackground url('../img/grain.png');
-      color: @textDarkGrey;
+      border-left: 4px solid #e7e7e7;
+      color: #000;
       cursor: pointer;
       display: block;
       padding: 16px 20px;
@@ -1058,40 +1027,20 @@ input[type=button],
 
     > span:hover,
     > a:hover {
-      background-color: @sidebarBackgroundHover;
       color: @textDarkBlue;
-      text-decoration: none;
     }
 
     &.selected {
-      border-bottom: 1px solid #fff;
-
       > span,
       > a,
       > a:visited,
       > a:hover {
-        background: @sidebarBackgroundSelected;
-        border-color: #e7e7e7;
-        border-style: solid;
-        border-width: 1px 0;
-        color: @textDarkGrey;
+        background: #f3f3f3;
+        border-color: #000;
+        color: #000;
         font-family: @OpenSans;
         font-weight: bold;
         position: relative;
-      }
-
-      > span,
-      > a {
-        &:before {
-          background: url('../img/sidebar-arrow.gif') 0 3px no-repeat;
-          content: '';
-          height: 30px;
-          left: 0;
-          margin-top: -15px;
-          position: absolute;
-          top: 50%;
-          width: 15px;
-        }
       }
     }
   }
@@ -1840,7 +1789,6 @@ input[type=button],
     }
   }
 }
-
 
 .warning-box {
   background: url('../img/warning-stripes.png') top left repeat-x #ffe;
