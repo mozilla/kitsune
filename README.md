@@ -25,57 +25,67 @@ See [what's deployed](https://whatsdeployed.io/s-J18)
 
 To setup a local Kitsune development environment:
 
- #. Fork this repository & clone it to your local machine.
+1. Fork this repository & clone it to your local machine.
 
- #. Download base Kitsune docker images:
+1. Download base Kitsune docker images:
+   ```
+   docker pull mozmeao/kitsune:base-latest
+   docker pull mozmeao/kitsune:base-dev-latest
+   ```
 
-    docker pull mozmeao/kitsune:base-latest
-    docker pull mozmeao/kitsune:base-dev-latest
+1. Build Kitsune docker images. (Only needed on initial build or when packages change)
+   ```
+   docker-compose -f docker-compose.yml -f docker/composefiles/build.yml build base
+   docker-compose -f docker-compose.yml -f docker/composefiles/build.yml build dev
+   ```
 
- #. Build Kitsune docker images. (Only needed on initial build or when packages change)
+1. Copy .env-dist to .env
+   ```
+   cp .env-dist .env
+   ```
 
-    docker-compose -f docker-compose.yml -f docker/composefiles/build.yml build base
-    docker-compose -f docker-compose.yml -f docker/composefiles/build.yml build dev
+1. Create your database
+   ```
+   docker-compose -f docker-compose.yml -f docker/composefiles/dev.yml run web ./manage.py migrate
+   ```
 
- #. Copy .env-dist to .env
+1. Install node and bower packages
+   ```
+   docker-compose -f docker-compose.yml -f docker/composefiles/dev.yml run web npm install
+   docker-compose -f docker-compose.yml -f docker/composefiles/dev.yml run web ./node_modules/.bin/bower install --allow-root
+   ```
 
-    cp .env-dist .env
+1. (Optional) Enable the admin control panel
+   ```
+   echo "ENABLE_ADMIN=True" >> .env
+   ```
 
- #. Create your database
+1. Run Kitsune
+   ```
+   docker-compose -f docker-compose.yml -f docker/composefiles/dev.yml up web
+   ```
 
-    docker-compose -f docker-compose.yml -f docker/composefiles/dev.yml run web ./manage.py migrate
+   The running instance will be located at http://0.0.0.0:8000/ unless you specified otherwise, and the administrative control panel will be at http://0.0.0.0:8000/admin.
 
- #. Install node and bower packages
+1. (Optional) Create a superuser
+   ```
+   docker-compose -f docker-compose.yml -f docker/composefiles/dev.yml exec web ./manage.py createsuperuser
+   ```
 
-    docker-compose -f docker-compose.yml -f docker/composefiles/dev.yml run web npm install
-    docker-compose -f docker-compose.yml -f docker/composefiles/dev.yml run web ./node_modules/.bin/bower install --allow-root
+1. (Optional) Create some data
+   ```
+   docker-compose -f docker-compose.yml -f docker/composefiles/dev.yml exec web ./manage.py generatedata
+   ```
 
-#. (Optional) Enable the admin control panel
+1. (Optional) Update product details
+   ```
+   docker-compose -f docker-compose.yml -f docker/composefiles/dev.yml exec web ./manage.py update_product_details
+   ```
 
-    echo "ENABLE_ADMIN=True" >> .env
+1. (Optional) Get search working
 
-#. Run Kitsune
+   First, make sure you have run the "Create some data" step above.
 
-    docker-compose -f docker-compose.yml -f docker/composefiles/dev.yml up web
-
-The running instance will be located at http://0.0.0.0:8000/ unless you specified otherwise, and the administrative control panel will be at http://0.0.0.0:8000/admin.
-
-#. (Optional) Create a superuser
-
-    docker-compose -f docker-compose.yml -f docker/composefiles/dev.yml exec web ./manage.py createsuperuser
-
-#. (Optional) Create some data
-
-    docker-compose -f docker-compose.yml -f docker/composefiles/dev.yml exec web ./manage.py generatedata
-
-#. (Optional) Update product details
-
-    docker-compose -f docker-compose.yml -f docker/composefiles/dev.yml exec web ./manage.py update_product_details
-
-#. (Optional) Get search working
-
-    First, make sure you have run the "Create some data" step above.
-
-    1. Enter the web container: `docker exec -it kitsune_web_1 /bin/bash`
-    2. Build the indicies: `./manage.py esreindex` (You may need to pass the `--delete` flag)
-    3. Precompile the nunjucks templates: `./manage.py nunjucks_precompile`
+   1. Enter the web container: `docker exec -it kitsune_web_1 /bin/bash`
+   2. Build the indicies: `./manage.py esreindex` (You may need to pass the `--delete` flag)
+   3. Precompile the nunjucks templates: `./manage.py nunjucks_precompile`
