@@ -1,6 +1,7 @@
+from celery import task
 from datetime import date
 
-from celery import task
+from django.conf import settings
 
 from kitsune.customercare.models import Reply
 from kitsune.kbadge.utils import get_or_create_badge
@@ -24,6 +25,6 @@ def maybe_award_badge(badge_template, year, user):
         created__lt=date(year + 1, 1, 1))
 
     # If the count is 50 or higher, award the badge.
-    if qs.count() >= 50:
+    if qs.count() >= settings.BADGE_LIMIT_ARMY_OF_AWESOME:
         badge.award_to(user)
         return True

@@ -1,4 +1,4 @@
-from badger.models import Badge
+from kitsune.kbadge.models import Badge
 
 
 def get_or_create_badge(badge_template, year=None):

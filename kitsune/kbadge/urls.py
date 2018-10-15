@@ -1,17 +1,14 @@
 from django.conf.urls import patterns, url
 
-import badger
-badger.autodiscover()
-
 from kitsune.kbadge import views  # noqa
 
 
 urlpatterns = patterns(
-    'badger.views',
-    url(r'^$', views.badges_list, name='badger.badges_list'),
-    url(r'^awards/?$', 'awards_list', name='badger.awards_list'),
-    url(r'^badge/(?P<slug>[^/]+)/awards/(?P<id>\d+)/?$', 'award_detail',
-        name='badger.award_detail'),
-    url(r'^badge/(?P<slug>[^/]+)/?$', 'detail',
-        name='badger.detail'),
+    '',
+    url(r'^$', views.BadgesListView.as_view(), name='kbadge.badges_list'),
+    url(r'^awards/?$', views.AwardsListView.as_view(), name='kbadge.awards_list'),
+    url(r'^badge/(?P<slug>[^/]+)/awards/(?P<id>\d+)/?$', views.award_detail,
+        name='kbadge.award_detail'),
+    url(r'^badge/(?P<slug>[^/]+)/?$', views.detail,
+        name='kbadge.badge_detail'),
 )
