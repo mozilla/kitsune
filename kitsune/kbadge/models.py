@@ -2,42 +2,22 @@
 # https://github.com/mozilla/django-badger/blob/master/badger/models.py
 
 import hashlib
-import json
-import os.path
 import random
 import re
 
-from cStringIO import StringIO
-from PIL import Image
 from time import time
-from urlparse import urljoin
 
 from django.conf import settings
-from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models
 from django.db.models import Q
 from django.contrib.auth.models import User
-from django.core.exceptions import ValidationError
-from django.core.files.storage import FileSystemStorage
-from django.core.files.base import ContentFile
 from django.core.urlresolvers import reverse
 from django.utils.deconstruct import deconstructible
-from django.utils.encoding import smart_unicode
-from django.utils.translation import ugettext_lazy as _
 
 from kitsune.kbadge.signals import badge_will_be_awarded, badge_was_awarded
 
 
 IMG_MAX_SIZE = getattr(settings, "BADGER_IMG_MAX_SIZE", (256, 256))
-
-# Set up a file system for badge uploads that can be kept separate from the
-# rest of /media if necessary. Lots of hackery to ensure sensible defaults.
-UPLOADS_ROOT = getattr(settings, 'BADGER_MEDIA_ROOT',
-                       os.path.join(getattr(settings, 'MEDIA_ROOT', 'media/'), 'uploads'))
-UPLOADS_URL = getattr(settings, 'BADGER_MEDIA_URL',
-                      urljoin(getattr(settings, 'MEDIA_URL', '/media/'), 'uploads/'))
-BADGE_UPLOADS_FS = FileSystemStorage(location=UPLOADS_ROOT,
-                                     base_url=UPLOADS_URL)
 
 MK_UPLOAD_TMPL = '%(base)s/%(h1)s/%(h2)s/%(hash)s_%(field_fn)s_%(now)s_%(rand)04d.%(ext)s'
 
@@ -57,45 +37,6 @@ def _document_django_model(cls):
 
     cls.__doc__ = doc
     return cls
-
-
-def scale_image(img_upload, img_max_size):
-    """Crop and scale an image file."""
-    try:
-        img = Image.open(img_upload)
-    except IOError:
-        return None
-
-    src_width, src_height = img.size
-    src_ratio = float(src_width) / float(src_height)
-    dst_width, dst_height = img_max_size
-    dst_ratio = float(dst_width) / float(dst_height)
-
-    if dst_ratio < src_ratio:
-        crop_height = src_height
-        crop_width = crop_height * dst_ratio
-        x_offset = int(float(src_width - crop_width) / 2)
-        y_offset = 0
-    else:
-        crop_width = src_width
-        crop_height = crop_width / dst_ratio
-        x_offset = 0
-        y_offset = int(float(src_height - crop_height) / 2)
-
-    img = img.crop((x_offset, y_offset,
-                    x_offset + int(crop_width), y_offset + int(crop_height)))
-    img = img.resize((dst_width, dst_height), Image.ANTIALIAS)
-
-    # If the mode isn't RGB or RGBA we convert it. If it's not one
-    # of those modes, then we don't know what the alpha channel should
-    # be so we convert it to "RGB".
-    if img.mode not in ("RGB", "RGBA"):
-        img = img.convert("RGB")
-    new_img = StringIO()
-    img.save(new_img, "PNG")
-    img_data = new_img.getvalue()
-
-    return ContentFile(img_data)
 
 
 # Taken from http://stackoverflow.com/a/4019144
@@ -124,20 +65,7 @@ def slugify(txt):
     return txt
 
 
-def get_permissions_for(self, user):
-    """Mixin method to collect permissions for a model instance"""
-    pre = 'allows_'
-    pre_len = len(pre)
-    methods = (m for m in dir(self) if m.startswith(pre))
-    perms = dict(
-        (m[pre_len:], getattr(self, m)(user))
-        for m in methods
-    )
-    return perms
-
-
-# We need to do this in django 1.7 because migrations serialize the fields.
-# See https://code.djangoproject.com/ticket/22999
+# This is only retained to ensure migrations don't fail
 @deconstructible
 class UploadTo(object):
     """upload_to builder for file upload fields"""
@@ -157,36 +85,16 @@ class UploadTo(object):
                                 ext=self.ext)
 
 
-class JSONField(models.TextField):
-    """JSONField is a generic textfield that neatly serializes/unserializes
-    JSON objects seamlessly
-    see: http://djangosnippets.org/snippets/1478/
-    """
-
-    # Used so to_python() is called
-    __metaclass__ = models.SubfieldBase
-
-    def to_python(self, value):
-        """Convert our string value to JSON after we load it from the DB"""
-        if not value:
-            return dict()
-        try:
-            if (isinstance(value, basestring) or
-                    type(value) is unicode):
-                return json.loads(value)
-        except ValueError:
-            return dict()
-        return value
-
-    def get_db_prep_save(self, value, connection):
-        """Convert our JSON object to a string before we save"""
-        if not value:
-            return '{}'
-        if isinstance(value, dict):
-            value = json.dumps(value, cls=DjangoJSONEncoder)
-        if isinstance(value, basestring) or value is None:
-            return value
-        return smart_unicode(value)
+def get_permissions_for(self, user):
+    """Mixin method to collect permissions for a model instance"""
+    pre = 'allows_'
+    pre_len = len(pre)
+    methods = (m for m in dir(self) if m.startswith(pre))
+    perms = dict(
+        (m[pre_len:], getattr(self, m)(user))
+        for m in methods
+    )
+    return perms
 
 
 class SearchManagerMixin(object):
@@ -298,14 +206,15 @@ class Badge(models.Model):
     objects = BadgeManager()
 
     title = models.CharField(max_length=255, blank=False, unique=True,
-                             help_text='Short, descriptive title')
+                             help_text=u'Short, descriptive title')
     slug = models.SlugField(blank=False, unique=True,
-                            help_text='Very short name, for use in URLs and links')
+                            help_text=u'Very short name, for use in URLs and links')
     description = models.TextField(blank=True,
-                                   help_text='Longer description of the badge and its criteria')
-    image = models.ImageField(blank=True, null=True,
-                              storage=BADGE_UPLOADS_FS, upload_to=UploadTo('image', 'png'),
-                              help_text='Upload an image to represent the badge')
+                                   help_text=u'Longer description of the badge and its criteria')
+    image = models.ImageField(blank=True,
+                              null=True,
+                              upload_to=settings.BADGE_IMAGE_PATH,
+                              help_text=u'Must be square. Recommended 256x256.')
     # TODO: Rename? Eventually we'll want a globally-unique badge. That is, one
     # unique award for one person for the whole site.
     unique = models.BooleanField(default=True,
@@ -331,13 +240,6 @@ class Badge(models.Model):
 
     def get_upload_meta(self):
         return ("badge", self.slug)
-
-    def clean(self):
-        if self.image:
-            scaled_file = scale_image(self.image.file, IMG_MAX_SIZE)
-            if not scaled_file:
-                raise ValidationError(_(u'Cannot process image'))
-            self.image.file = scaled_file
 
     def save(self, **kwargs):
         """Save the submission, updating slug and screenshot thumbnails"""
@@ -435,9 +337,9 @@ class Award(models.Model):
     description = models.TextField(blank=True,
                                    help_text='Explanation and evidence for the badge award')
     badge = models.ForeignKey(Badge)
-    image = models.ImageField(blank=True, null=True,
-                              storage=BADGE_UPLOADS_FS,
-                              upload_to=UploadTo('image', 'png'))
+    image = models.ImageField(blank=True,
+                              null=True,
+                              upload_to=settings.BADGE_IMAGE_PATH)
     user = models.ForeignKey(User, related_name="award_user")
     creator = models.ForeignKey(User, related_name="award_creator",
                                 blank=True, null=True)
