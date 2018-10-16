@@ -874,6 +874,9 @@ TOPIC_IMAGE_PATH = 'uploads/topics/'
 # Products
 PRODUCT_IMAGE_PATH = 'uploads/products/'
 
+# Badges (kbadge)
+BADGE_IMAGE_PATH = 'uploads/badges/'
+
 # Email
 EMAIL_BACKEND = config('EMAIL_BACKEND', default='kitsune.lib.email.LoggingEmailBackend')
 EMAIL_LOGGING_REAL_BACKEND = config('EMAIL_LOGGING_REAL_BACKEND', default='django.core.mail.backends.console.EmailBackend')

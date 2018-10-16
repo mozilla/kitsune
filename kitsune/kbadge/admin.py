@@ -1,8 +1,6 @@
 # Pruned copy of django-badger/badger/admin.py
 # https://github.com/mozilla/django-badger/blob/master/badger/admin.py
 
-from urlparse import urljoin
-
 from django import forms
 from django.conf import settings
 from django.contrib import admin
@@ -10,10 +8,6 @@ from django.core.urlresolvers import reverse
 from django.db import models
 
 from kitsune.kbadge.models import Badge, Award
-
-
-UPLOADS_URL = getattr(settings, 'BADGER_MEDIA_URL',
-                      urljoin(getattr(settings, 'MEDIA_URL', '/media/'), 'uploads/'))
 
 
 def show_unicode(obj):
@@ -25,7 +19,7 @@ show_unicode.short_description = "Display"
 def show_image(obj):
     if not obj.image:
         return 'None'
-    img_url = "%s%s" % (UPLOADS_URL, obj.image)
+    img_url = "%s%s" % (settings.MEDIA_URL, obj.image)
     return ('<a href="%s" target="_new"><img src="%s" width="48" height="48" /></a>' %
             (img_url, img_url))
 
