@@ -96,25 +96,13 @@
         </a>
       </div>
     </div>
+
     <div class="grid_3">
       <section id="top-contributors">
-        <div class="feature-box">
+        {% set query_product = '?product={}'.format(products[0].slug) if products and products|length == 1 else '' %}
+        <a class="feature-box" href="{{ url('community.top_contributors', area='questions') }}{{ query_product }}">
           {{ _('Top Contributors') }}
-          <div class="inner-wrap">
-            {% if top_contributors %}
-              <ol>
-                {% for result in top_contributors[:5] %}
-                  <li>{{ result['user']['display_name'] }}</li>
-                {% endfor %}
-              </ol>
-              <ol start="6">
-                {% for result in top_contributors[5:] %}
-                  <li>{{ result['user']['display_name'] }}</li>
-                {% endfor %}
-              </ol>
-            {% endif %}
-          </div>
-        </div>
+        </a>
       </section>
     </div>
   </div>
