@@ -2,7 +2,6 @@
 # https://github.com/mozilla/django-badger/blob/master/badger/admin.py
 
 from django import forms
-from django.conf import settings
 from django.contrib import admin
 from django.core.urlresolvers import reverse
 from django.db import models
@@ -19,7 +18,7 @@ show_unicode.short_description = "Display"
 def show_image(obj):
     if not obj.image:
         return 'None'
-    img_url = "%s%s" % (settings.MEDIA_URL, obj.image)
+    img_url = obj.image.url
     return ('<a href="%s" target="_new"><img src="%s" width="48" height="48" /></a>' %
             (img_url, img_url))
 
