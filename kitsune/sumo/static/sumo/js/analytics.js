@@ -24,11 +24,18 @@
 
   // Track clicks to links with data-event-category attr.
   $('body').on('click', 'a[data-event-category]', function(ev) {
-    ev.preventDefault();
-
+    var newTab = ev.metaKey || ev.ctrlKey; // is a new tab/window being opened?
     var $this = $(this);
-    var href = $this.attr('href');
 
+    // unless user is ctrl-click'ing, prevent default action (navigation) while
+    // we wait for the event to be tracked
+    // (if a new tab/window is being opened, no need to delay/prevent anything)
+    if (!newTab) {
+      ev.preventDefault();
+    }
+
+    // track event before setting the navigation timeout below so the event
+    // actually has time to be tracked
     trackEvent(
       $this.attr('data-event-category'),
       $this.attr('data-event-action'),
@@ -36,12 +43,16 @@
       $this.attr('data-event-value')
     );
 
-    // Delay the click navigation by 250ms to ensure the event is tracked.
-    setTimeout(function() {
-      document.location.href = href;
-    }, 250);
+    if (!newTab) {
+      var href = $this.attr('href');
 
-    return false;
+      // Delay the click navigation by 250ms to ensure the event is tracked.
+      setTimeout(function () {
+        document.location.href = href;
+      }, 250);
+
+      return false;
+    }
   });
 })(jQuery);
 
