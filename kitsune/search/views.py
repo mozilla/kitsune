@@ -15,8 +15,6 @@ from django.views.decorators.cache import cache_page
 
 import bleach
 import jinja2
-# from elasticutils.utils import format_explanation
-# from elasticutils.contrib.django import ES_EXCEPTIONS
 from mobility.decorators import mobile_template
 
 from kitsune import search as constants
@@ -176,8 +174,6 @@ def simple_search(request, template=None):
 
     searcher = generate_simple_search(search_form, language, with_highlights=True)
     searcher = searcher[:settings.SEARCH_MAX_RESULTS]
-    import json
-    print(json.dumps(searcher.build_search()))
 
     # 5. Generate output.
     pages = paginate(request, searcher, settings.SEARCH_RESULTS_PER_PAGE)
