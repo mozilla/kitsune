@@ -159,7 +159,8 @@ class NotificationsTests(TestCaseBase):
         return q
 
     @mock.patch.object(Site.objects, 'get_current')
-    @override_settings(TIDINGS_CONFIRM_ANONYMOUS_WATCHES=False)
+    @override_settings(TIDINGS_CONFIRM_ANONYMOUS_WATCHES=False,
+                       STATIC_URL='https://example.com/')
     def test_solution_notification(self, get_current):
         """Assert that hitting the watch toggle toggles and that proper mails
         are sent to anonymous and registered watchers."""
@@ -199,6 +200,10 @@ class NotificationsTests(TestCaseBase):
             question_id=q.id,
             answer_id=a.id,
             locale='en-US/'))
+
+        # make sure email has the proper static url
+        self.assertIn('https://example.com/sumo/email/img/mozilla-support.png',
+                      mail.outbox[1].alternatives[0][0])
 
     @mock.patch.object(Site.objects, 'get_current')
     def test_autowatch_reply(self, get_current):
