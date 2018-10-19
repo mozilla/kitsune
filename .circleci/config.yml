@@ -22,9 +22,4 @@ jobs:
       - run:
           name: Run unit tests
           command: |
-            docker-compose up -d mariadb
-            docker-compose up -d elasticsearch
-            docker-compose up -d redis
-            # Replace with urlwait or takis
-            sleep 10s;
             docker-compose -f docker-compose.yml -f docker/composefiles/test.yml run web ./bin/run-unit-tests.sh
