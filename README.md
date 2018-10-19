@@ -1,25 +1,13 @@
 # Kitsune
 
-
-Kitsune is the platform that powers [SuMo
-(support.mozilla.org)](https://support.mozilla.org)
+Kitsune is the platform that powers [SuMo (support.mozilla.org)](https://support.mozilla.org)
 
 It is a [Django](http://www.djangoproject.com/) application. There is
 [documentation](https://kitsune.readthedocs.io/) online.
 
-The *legacy* branch contains the codebase and deployment scripts for use
-in the SCL3 datacenter. Only security fixes and changes to support
-product launches are allowed to go in.
-
-The *master* branch is where the active development of Kitsune happens
-to modernize, containerize and bring to Kubernetes. Feature Pull
-Requests are not allowed in unless related with the current effort to
-move to Kubernetes.
-
 You can access the staging site at <https://support.allizom.org/>
 
 See [what's deployed](https://whatsdeployed.io/s-J18)
-
 
 ## Development
 
