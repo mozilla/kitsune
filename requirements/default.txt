@@ -308,9 +308,9 @@ https://github.com/pcraciunoiu/py-wikimarkup/archive/ce7d10dbd421533bb9b0c41dd9c
     --hash=sha256:62940de85396a67d86a262bc65d8d76c6367c69c69034ca98cbd5512cfe6f037
 pyes==0.16.0 \
     --hash=sha256:291dbb4893b50b7c83f2c8df625168fa172a67f87eb44f39a07222be3b8d9c95
-pyOpenSSL==17.3.0 \
-    --hash=sha256:aade9985b93eaec51b0c0a2a60d14bb8dcff1ff8e36fe542e3c22812ec07315e \
-    --hash=sha256:29630b9064a82e04d8242ea01d7c93d70ec320f5e3ed48e95fcabc6b1d0f6c76
+pyOpenSSL==18.0.0 \
+    --hash=sha256:26ff56a6b5ecaf3a2a59f132681e2a80afcc76b4f902f612f518f92c2a1bf854 \
+    --hash=sha256:6488f1423b00f73b7ad5167885312bb0ce410d3312eb212393795b53c8caa580
 pyparsing==1.5.5 \
     --hash=sha256:d1754df0801871d05a96f1cef50a4f32e5d40d49ea24aa1c6ca9529cbd562005 \
     --hash=sha256:d5bea06e474da41e8760ce8473b6c6f4e8a2df59a6c0f652b0bc2ed99fbb4452 \
