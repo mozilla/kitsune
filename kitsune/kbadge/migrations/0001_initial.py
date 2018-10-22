@@ -36,6 +36,7 @@ class Migration(migrations.Migration):
                 ('title', models.CharField(help_text=b'Short, descriptive title', unique=True, max_length=255)),
                 ('slug', models.SlugField(help_text=b'Very short name, for use in URLs and links', unique=True)),
                 ('description', models.TextField(help_text=b'Longer description of the badge and its criteria', blank=True)),
+                # TODO: delete reference to UploadTo class below (so we can delete the class from ../models.py)
                 ('image', models.ImageField(help_text=b'Upload an image to represent the badge', storage=django.core.files.storage.FileSystemStorage(base_url=b'/media/uploads/', location=b'/app/media/uploads'), null=True, upload_to=kitsune.kbadge.models.UploadTo(b'image', b'png'), blank=True)),
                 ('unique', models.BooleanField(default=True, help_text=b'Should awards of this badge be limited to one-per-person?')),
                 ('created', models.DateTimeField(auto_now_add=True)),

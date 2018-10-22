@@ -66,6 +66,7 @@ def slugify(txt):
 
 
 # This is only retained to ensure migrations don't fail
+# TODO: delete this class when removed from migrations/0001_initial.py
 @deconstructible
 class UploadTo(object):
     """upload_to builder for file upload fields"""
