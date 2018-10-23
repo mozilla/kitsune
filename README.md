@@ -39,7 +39,7 @@ To setup a local Kitsune development environment:
 
 1. Install node and bower packages
    ```
-   docker-compose -f docker-compose.yml -f docker/composefiles/dev.yml run web npm install
+   docker-compose -f docker-compose.yml -f docker/composefiles/dev.yml run web yarn
    docker-compose -f docker-compose.yml -f docker/composefiles/dev.yml run web ./node_modules/.bin/bower install --allow-root
    ```
 

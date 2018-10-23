@@ -36,3 +36,4 @@ k8s/regions/*/*-secrets.yaml
 *.sqlite3
 .vscode/
 .bash_history
+.yarnrc
