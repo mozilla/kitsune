@@ -1,18 +1,13 @@
 # Pruned and mnodified version of django-badger/badger/models.py
 # https://github.com/mozilla/django-badger/blob/master/badger/models.py
 
-import hashlib
-import random
 import re
-
-from time import time
 
 from django.conf import settings
 from django.db import models
 from django.db.models import Q
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
-from django.utils.deconstruct import deconstructible
 
 from kitsune.kbadge.signals import badge_will_be_awarded, badge_was_awarded
 
@@ -63,27 +58,6 @@ def slugify(txt):
     # remove some characters altogether
     txt = re.sub(r'[?,:!@#~`+=$%^&\\*()\[\]{}<>]', '', txt, re.UNICODE)
     return txt
-
-
-# This is only retained to ensure migrations don't fail
-# TODO: delete this class when removed from migrations/0001_initial.py
-@deconstructible
-class UploadTo(object):
-    """upload_to builder for file upload fields"""
-    def __init__(self, field_fn, ext, tmpl=MK_UPLOAD_TMPL):
-        self.field_fn = field_fn
-        self.ext = ext
-        self.tmpl = tmpl
-
-    def __call__(self, instance, filename):
-        base, slug = instance.get_upload_meta()
-        slug_hash = (hashlib.md5(slug.encode('utf-8', 'ignore'))
-                            .hexdigest())
-        return self.tmpl % dict(now=int(time()), rand=random.randint(0, 1000),
-                                slug=slug[:50], base=base, field_fn=self.field_fn,
-                                pk=instance.pk,
-                                hash=slug_hash, h1=slug_hash[0], h2=slug_hash[1],
-                                ext=self.ext)
 
 
 def get_permissions_for(self, user):
