@@ -2,9 +2,7 @@
 from __future__ import unicode_literals
 
 from django.db import migrations, models
-import kitsune.kbadge.models
 from django.conf import settings
-import django.core.files.storage
 
 
 class Migration(migrations.Migration):
@@ -19,7 +17,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('description', models.TextField(help_text=b'Explanation and evidence for the badge award', blank=True)),
-                ('image', models.ImageField(storage=django.core.files.storage.FileSystemStorage(base_url=b'/media/uploads/', location=b'/app/media/uploads'), null=True, upload_to=kitsune.kbadge.models.UploadTo(b'image', b'png'), blank=True)),
+                ('image', models.ImageField(null=True, upload_to=b'uploads/badges/', blank=True)),
                 ('hidden', models.BooleanField(default=False)),
                 ('created', models.DateTimeField(auto_now_add=True)),
                 ('modified', models.DateTimeField(auto_now=True)),
@@ -33,11 +31,10 @@ class Migration(migrations.Migration):
             name='Badge',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('title', models.CharField(help_text=b'Short, descriptive title', unique=True, max_length=255)),
-                ('slug', models.SlugField(help_text=b'Very short name, for use in URLs and links', unique=True)),
-                ('description', models.TextField(help_text=b'Longer description of the badge and its criteria', blank=True)),
-                # TODO: delete reference to UploadTo class below (so we can delete the class from ../models.py)
-                ('image', models.ImageField(help_text=b'Upload an image to represent the badge', storage=django.core.files.storage.FileSystemStorage(base_url=b'/media/uploads/', location=b'/app/media/uploads'), null=True, upload_to=kitsune.kbadge.models.UploadTo(b'image', b'png'), blank=True)),
+                ('title', models.CharField(help_text='Short, descriptive title', unique=True, max_length=255)),
+                ('slug', models.SlugField(help_text='Very short name, for use in URLs and links', unique=True)),
+                ('description', models.TextField(help_text='Longer description of the badge and its criteria', blank=True)),
+                ('image', models.ImageField(help_text='Must be square. Recommended 256x256.', null=True, upload_to=b'uploads/badges/', blank=True)),
                 ('unique', models.BooleanField(default=True, help_text=b'Should awards of this badge be limited to one-per-person?')),
                 ('created', models.DateTimeField(auto_now_add=True)),
                 ('modified', models.DateTimeField(auto_now=True)),
