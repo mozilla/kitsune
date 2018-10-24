@@ -130,7 +130,12 @@
                 </div>
                 {% if question.num_visits %}
                   <div class="views">
-                    {{ _('{num_views} views')|f(num_views=question.num_visits) }}
+                    <h4>{{ question.num_visits }}</h4>
+                    {% trans count=question.num_visits %}
+                      view
+                      {% pluralize %}
+                      views
+                    {% endtrans %}
                   </div>
                 {% endif %}
               </div>
