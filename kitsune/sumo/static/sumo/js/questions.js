@@ -164,14 +164,23 @@
   }
 
   /*
-  * Ajaxify the "I have this problem too" form
+  * Ajaxify any "I have this problem too" forms (may be multiple per page)
   */
   function initHaveThisProblemTooAjax() {
     var $container = $('#question div.me-too, .question-tools div.me-too');
-    initAjaxForm($container, 'form', '#vote-thanks');
+
+    // ajaxify each form individually so the resulting kbox attaches to
+    // the correct DOM element
+    $container.each(function() {
+      initAjaxForm($(this), 'form', '#vote-thanks');
+    });
+
     $container.find('input').click(function() {
       $(this).attr('disabled', 'disabled');
     });
+
+    // closing or cancelling the kbox on any of the forms should remove
+    // all of them
     $container.delegate('.kbox-close, .kbox-cancel', 'click', function(ev) {
       ev.preventDefault();
       $container.unbind().remove();
