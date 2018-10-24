@@ -12,6 +12,6 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.RunSQL(
-            "UPDATE badger_badge SET image = CONCAT('uploads/', image)"
+            "UPDATE badger_badge SET image = CONCAT('uploads/', image) WHERE image NOT LIKE 'uploads/%'"
         )
     ]
