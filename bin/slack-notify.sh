@@ -68,4 +68,4 @@ else
     exit 1
 fi
 
-slack-cli -d "${CHANNEL}" "${MESSAGE}"
+slack-cli -d "${CHANNEL}" "${MESSAGE}" || true
