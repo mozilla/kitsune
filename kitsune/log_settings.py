@@ -7,10 +7,6 @@ from django.utils.log import dictConfig
 config = {
     'version': 1,
     'disable_existing_loggers': True,
-    'root': {
-        'level': logging.ERROR,
-        'handlers': ['sentry'],
-    },
     'formatters': {
         'default': {
             'format': '{0}: %(asctime)s %(name)s:%(levelname)s %(message)s: '
@@ -26,10 +22,6 @@ config = {
         },
         'mail_admins': {
             'class': 'django.utils.log.AdminEmailHandler',
-            'level': logging.ERROR,
-        },
-        'sentry': {
-            'class': 'raven.contrib.django.handlers.SentryHandler',
             'level': logging.ERROR,
         },
         'console': {
@@ -53,16 +45,6 @@ config = {
             'handlers': ['console'],
             'propogate': True,
             'level': settings.LOG_LEVEL,
-        },
-        'raven': {
-            'level': logging.ERROR,
-            'handlers': ['console', 'mail_admins'],
-            'propagate': False,
-        },
-        'sentry.errors': {
-            'level': logging.ERROR,
-            'handlers': ['console', 'mail_admins'],
-            'propagate': False,
         },
     },
 }
