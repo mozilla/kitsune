@@ -668,9 +668,6 @@ INSTALLED_APPS = (
     'watchman',
     # 'axes',
 
-    # App for Sentry:
-    'raven.contrib.django',
-
     # Extra apps for testing.
     'django_nose',
 
@@ -1102,14 +1099,17 @@ STATSD_PORT = config('STATSD_PORT', 8125, cast=int)
 STATSD_PREFIX = config('STATSD_PREFIX', default='')
 
 
-RAVEN_CONFIG = {
-    'dsn': config('SENTRY_DSN', default=None),
-    'release': config('GIT_SHA', default=None),
-    'tags': {
-        'server_full_name': PLATFORM_NAME,
-        'environment': config('SENTRY_ENVIRONMENT', default=''),
-    }
-}
+if config('SENTRY_DSN', None):
+    import sentry_sdk
+    from sentry_sdk.integrations.django import DjangoIntegration
+
+    sentry_sdk.init(
+        dsn=config('SENTRY_DSN'),
+        integrations=[DjangoIntegration()],
+        release=config('GIT_SHA', default=None),
+        server_name=PLATFORM_NAME,
+        environment=config('SENTRY_ENVIRONMENT', default=''),
+    )
 
 
 PIPELINE_ENABLED = config('PIPELINE_ENABLED', default=False, cast=bool)
