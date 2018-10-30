@@ -336,7 +336,7 @@ def get_browser(user_agent):
 
     match = re.search(r'(?i)(firefox|msie|chrome|safari|trident)', user_agent, re.IGNORECASE)
     if match:
-        browser = match.group(1)
+        browser = match.group(1).lower()
     else:
         browser = None
     return browser
