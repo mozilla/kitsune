@@ -184,35 +184,6 @@ products = SortedDict([
         ])
     }),
 
-    ('firefox-os', {
-        'name': _lazy(u'Firefox OS'),
-        'subtitle': _lazy(u'Mobile OS for smartphones'),
-        'extra_fields': ['device', 'os'],
-        'tags': [],
-        'product': 'firefox-os',
-        'categories': SortedDict([
-            # TODO: Just use the IA topics for this.
-            # See bug 979397
-            ('download-and-install', {
-                'name': _lazy(u'Download and install apps'),
-                'topic': 'marketplace',
-                'tags': ['marketplace'],
-            }),
-            ('customize', {
-                'name': _lazy(u'Customize controls, options, settings and '
-                              u'preferences'),
-                'topic': 'settings',
-                'tags': ['settings'],
-            }),
-            ('fix-problems', {
-                'name': _lazy(u'Fix slowness, crashing, error messages and '
-                              u'other problems'),
-                'topic': 'fix-problems',
-                'tags': ['fix-problems'],
-            }),
-        ])
-    }),
-
     ('focus', {
         'name': _lazy(u'Firefox Focus'),
         'subtitle': _lazy(u'Automatic privacy browser and content blocker'),
@@ -297,12 +268,12 @@ products = SortedDict([
         ])
     }),
 
-    ('firefox-rocket', {
-        'name': _lazy(u'Firefox Rocket'),
+    ('firefox-lite', {
+        'name': _lazy(u'Firefox Lite'),
         'subtitle': _lazy(u'Mobile browser for Indonesia'),
         'extra_fields': [],
-        'tags': ['firefox-rocket'],
-        'product': 'firefox-rocket',
+        'tags': ['firefox-lite'],
+        'product': 'firefox-lite',
         'categories': SortedDict([
             ('get-started', {
                 'name': _lazy(u'Get started'),
