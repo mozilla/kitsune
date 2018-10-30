@@ -228,12 +228,12 @@ class QuestionFilter(django_filters.FilterSet):
 
         return queryset
 
-    def filter_created_between(self, queryset, range):
-        questions_created_between = Question.objects.filter(created__range=range)
+    def filter_created_between(self, queryset, date_range):
+        questions_created_between = Question.objects.filter(created__range=date_range)
         return queryset.filter(id__in=questions_created_between)
 
-    def filter_updated_between(self, queryset, range):
-        questions_updated_between = Question.objects.filter(updated__range=range)
+    def filter_updated_between(self, queryset, date_range):
+        questions_updated_between = Question.objects.filter(updated__range=date_range)
         return queryset.filter(id__in=questions_updated_between)
 
 
