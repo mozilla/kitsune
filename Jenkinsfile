@@ -28,7 +28,7 @@ conduit {
         stage("Build Docker Images") {
             if (!dockerImageExists(docker_image)) {
                 try {
-                    sh "GIT_SHA=${GIT_COMMIT} GIT_SHA_SHORT=${GIT_COMMIT_SHORT} LOCALE_ENV=production ./docker/bin/build-docker-images.sh"
+                    sh "make build-ci"
                 } catch(err) {
                     sh "bin/slack-notify.sh --status failure --stage 'Docker Build'"
                     throw err
@@ -55,21 +55,16 @@ conduit {
 
         stage("Run Tests") {
             try {
+                env.COMPOSE_PROJECT_NAME = "${config.project.name}-${BUILD_NUMBER}-${GIT_COMMIT_SHORT}"
                 // flake8
-                sh "docker run ${config.project.docker_name}:full-no-locales-${GIT_COMMIT_SHORT} flake8 kitsune"
+                sh "make lint-ci"
                 // mocha
-                sh "docker run kitsune:staticfiles-latest ./node_modules/.bin/mocha --compilers js:babel/register --recursive kitsune/*/static/*/js/tests/* \$@"
+                sh "make test-js-ci"
                 // unittests
                 try {
-                    dc_name = "${config.project.name}-${BUILD_NUMBER}-${GIT_COMMIT_SHORT}"
-                    sh "docker-compose --project-name ${dc_name} up -d mariadb"
-                    sh "docker-compose --project-name ${dc_name} up -d elasticsearch"
-                    sh "docker-compose --project-name ${dc_name} up -d redis"
-                    // Replace with urlwait or takis
-                    sh "sleep 10s;"
-                    sh "docker-compose --project-name ${dc_name} -f docker-compose.yml -f docker/composefiles/test.yml run web ./bin/run-unit-tests.sh"
+                    sh "make test-ci"
                 } finally {
-                    sh "docker-compose --project-name ${dc_name} -f docker-compose.yml -f docker/composefiles/test.yml kill"
+                    sh "docker-compose kill"
                 }
             } catch(err) {
                 sh "bin/slack-notify.sh --status failure --stage 'Run Tests'"

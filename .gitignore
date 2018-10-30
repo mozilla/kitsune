@@ -37,3 +37,4 @@ k8s/regions/*/*-secrets.yaml
 .vscode/
 .bash_history
 .yarnrc
+.docker-build*

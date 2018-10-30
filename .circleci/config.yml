@@ -9,17 +9,16 @@ jobs:
           version: 17.10.0-ce
       - run:
           name: Download docker images for cache
-          command: ./docker/bin/pull-docker-images.sh
+          command: make pull
       - run:
           name: Build docker images
-          command: GIT_SHA=${CIRCLE_SHA1:0:7} LOCALE_ENV=production ./docker/bin/build-docker-images.sh
+          command: make build-ci
       - run:
           name: Run flake8
-          command: docker run kitsune:full-no-locales-latest flake8 kitsune
+          command: make lint-ci
       - run:
           name: Run mocha tests
-          command: docker run kitsune:staticfiles-latest ./node_modules/.bin/mocha --compilers js:babel/register --recursive kitsune/*/static/*/js/tests/* $@
+          command: make test-js-ci
       - run:
           name: Run unit tests
-          command: |
-            docker-compose -f docker-compose.yml -f docker/composefiles/test.yml run web ./bin/run-unit-tests.sh
+          command: make test-ci
