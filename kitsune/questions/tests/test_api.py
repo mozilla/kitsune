@@ -671,6 +671,26 @@ class TestQuestionFilter(TestCase):
         qs = self.filter_instance.filter_solved_by(self.queryset, a3.creator.username)
         eq_(list(qs), [q3])
 
+    def test_filter_created_between(self):
+        q1 = QuestionFactory(created=datetime(1990, 1, 1))
+        q2 = QuestionFactory(created=datetime(2010, 1, 1))
+
+        qs = self.filter_instance.filter_created_between(self.queryset, [datetime(2000, 1, 1), datetime.now()])
+        eq_(list(qs), [q2])
+
+        qs = self.filter_instance.filter_created_between(self.queryset, [datetime(1900, 1, 1), datetime.now()])
+        eq_(sorted(qs, key=lambda q: q.created), [q1, q2])
+
+    def test_filter_updated_between(self):
+        q1 = QuestionFactory(updated=datetime(1990, 1, 1))
+        q2 = QuestionFactory(updated=datetime(2010, 1, 1))
+
+        qs = self.filter_instance.filter_updated_between(self.queryset, [datetime(2000, 1, 1), datetime.now()])
+        eq_(list(qs), [q2])
+
+        qs = self.filter_instance.filter_updated_between(self.queryset, [datetime(1900, 1, 1), datetime.now()])
+        eq_(sorted(qs, key=lambda q: q.updated), [q1, q2])
+
     @raises(APIException)
     def test_metadata_not_json(self):
         self.filter_instance.filter_metadata(self.queryset, 'not json')

@@ -144,6 +144,8 @@ class QuestionFilter(django_filters.FilterSet):
     metadata = django_filters.MethodFilter(action='filter_metadata')
     solved_by = django_filters.MethodFilter(action='filter_solved_by')
     taken_by = django_filters.CharFilter(name='taken_by__username')
+    created_between = django_filters.MethodFilter(action='filter_created_between')
+    updated_between = django_filters.MethodFilter(action='filter_updated_between')
 
     class Meta(object):
         model = Question
@@ -165,6 +167,8 @@ class QuestionFilter(django_filters.FilterSet):
             'topic',
             'updated',
             'updated_by',
+            'created_between',
+            'updated_between',
         ]
 
     def filter_involved(self, queryset, username):
@@ -223,6 +227,14 @@ class QuestionFilter(django_filters.FilterSet):
             queryset = queryset.filter(query)
 
         return queryset
+
+    def filter_created_between(self, queryset, range):
+        questions_created_between = Question.objects.filter(created__range=range)
+        return queryset.filter(id__in=questions_created_between)
+
+    def filter_updated_between(self, queryset, range):
+        questions_updated_between = Question.objects.filter(updated__range=range)
+        return queryset.filter(id__in=questions_updated_between)
 
 
 class QuestionViewSet(viewsets.ModelViewSet):
