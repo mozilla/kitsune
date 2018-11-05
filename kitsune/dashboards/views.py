@@ -1,10 +1,10 @@
 import json
 import logging
-from datetime import date, timedelta
 
 from django.conf import settings
 from django.http import Http404, HttpResponseRedirect, HttpResponse
 from django.shortcuts import get_object_or_404, render
+from django.utils import timezone
 from django.utils.translation import ugettext as _
 from django.views.decorators.http import require_GET
 
@@ -196,8 +196,8 @@ def locale_metrics(request, locale_code):
 @require_GET
 def aggregated_metrics(request):
     """The aggregated (all locales) kb metrics dashboard."""
-    today = date.today()
-    locales = get_locales_by_visit(today - timedelta(days=30), today)
+    today = timezone.now().date()
+    locales = get_locales_by_visit(today - timezone.timedelta(days=30), today)
     product = _get_product(request)
 
     return render(

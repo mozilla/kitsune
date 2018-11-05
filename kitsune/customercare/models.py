@@ -1,9 +1,9 @@
 import json
 import time
-from datetime import datetime
 
 from django.contrib.auth.models import User
 from django.db import models
+from django.utils import timezone
 
 from kitsune.search.models import (
     SearchMappingType, SearchMixin, register_for_indexing,
@@ -30,7 +30,7 @@ class Tweet(ModelBase):
     raw_json = models.TextField()
     # This is different from our usual locale, so not using LocaleField.
     locale = models.CharField(max_length=20, db_index=True)
-    created = models.DateTimeField(default=datetime.now, db_index=True)
+    created = models.DateTimeField(default=timezone.now, db_index=True)
     reply_to = models.ForeignKey('self', null=True, related_name='replies')
     hidden = models.BooleanField(default=False, db_index=True)
 
@@ -66,7 +66,7 @@ class Reply(ModelBase, SearchMixin):
     tweet_id = models.BigIntegerField()
     raw_json = models.TextField()
     locale = models.CharField(max_length=20)
-    created = models.DateTimeField(default=datetime.now, db_index=True)
+    created = models.DateTimeField(default=timezone.now, db_index=True)
     reply_to_tweet_id = models.BigIntegerField()
 
     def __unicode__(self):

@@ -1,9 +1,8 @@
-from datetime import datetime
-
 from django.contrib.auth.models import User, Group
 from django.db import models
 from django.db.models import Q
 from django.db.models.signals import post_save
+from django.utils import timezone
 
 from kitsune.sumo.templatetags.jinja_helpers import wiki_to_html
 from kitsune.sumo.models import ModelBase
@@ -11,10 +10,10 @@ from kitsune.wiki.models import Locale
 
 
 class Announcement(ModelBase):
-    created = models.DateTimeField(default=datetime.now)
+    created = models.DateTimeField(default=timezone.now)
     creator = models.ForeignKey(User)
     show_after = models.DateTimeField(
-        default=datetime.now, db_index=True,
+        default=timezone.now, db_index=True,
         verbose_name='Start displaying',
         help_text=('When this announcement will start appearing. '
                    '(US/Pacific)'))
@@ -38,7 +37,7 @@ class Announcement(ModelBase):
         return u'{excerpt}'.format(excerpt=excerpt)
 
     def is_visible(self):
-        now = datetime.now()
+        now = timezone.now()
         if now > self.show_after and (not self.show_until or
                                       now < self.show_until):
             return True
@@ -67,8 +66,8 @@ class Announcement(ModelBase):
         """Return visible announcements given a group query."""
         return Announcement.objects.filter(
             # Show if interval is specified and current or show_until is None
-            Q(show_after__lt=datetime.now()) &
-            (Q(show_until__gt=datetime.now()) | Q(show_until__isnull=True)),
+            Q(show_after__lt=timezone.now()) &
+            (Q(show_until__gt=timezone.now()) | Q(show_until__isnull=True)),
             **query_kwargs)
 
 
@@ -76,7 +75,7 @@ def connector(sender, instance, created, **kw):
     # Only email new announcements in a group. We don't want to email everyone.
     if created and instance.group:
         from kitsune.announcements.tasks import send_group_email
-        now = datetime.now()
+        now = timezone.now()
         if instance.is_visible():
             send_group_email.delay(instance.pk)
         elif now < instance.show_after:

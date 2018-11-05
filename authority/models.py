@@ -1,8 +1,8 @@
-from datetime import datetime
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 from django.contrib.auth.models import Group
+from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
 from authority.compat import user_model_label
@@ -32,7 +32,7 @@ class Permission(models.Model):
         help_text=_("Designates whether the permission has been approved and treated as active. "
                     "Unselect this instead of deleting permissions."))
 
-    date_requested = models.DateTimeField(_('date requested'), default=datetime.now)
+    date_requested = models.DateTimeField(_('date requested'), default=timezone.now)
     date_approved = models.DateTimeField(_('date approved'), blank=True, null=True)
 
     objects = PermissionManager()
@@ -53,7 +53,7 @@ class Permission(models.Model):
     def save(self, *args, **kwargs):
         # Make sure the approval date is always set
         if self.approved and not self.date_approved:
-            self.date_approved = datetime.now()
+            self.date_approved = timezone.now()
         super(Permission, self).save(*args, **kwargs)
 
     def approve(self, creator):
