@@ -374,7 +374,7 @@ DB_LOCALIZE = {
             'attrs': ['title', 'description'],
         },
     },
-    'badger': {
+    'kbadge': {
         'Badge': {
             'attrs': ['title', 'description'],
         },
