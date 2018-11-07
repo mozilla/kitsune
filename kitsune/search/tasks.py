@@ -308,7 +308,9 @@ def index_missing_objects(app_label, model_name, document_class, index_generatio
         queryset = document().get_queryset().exclude(created__lte=index_generation_time)
 
     if locale:
-        queryset = queryset.filter(locale=locale)
+        locale_field = getattr(document, 'locale_field', 'locale')
+        locale_filter = {locale_field: locale}
+        queryset = queryset.filter(**locale_filter)
 
     document().update(queryset.iterator())
 

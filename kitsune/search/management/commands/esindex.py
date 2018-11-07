@@ -1,4 +1,3 @@
-import datetime
 import logging
 
 from celery import chord, chain, group
@@ -110,7 +109,9 @@ class Command(BaseCommand):
                         # Filter the queryset for that locale so only that
                         # locale object will be inside the index
                         # Also add a suffix that will be added
-                        filtered_queryset = queryset.filter(locale=locale)
+                        locale_field = getattr(doc, 'locale_field', 'locale')
+                        locale_filter = {locale_field: locale}
+                        filtered_queryset = queryset.filter(**locale_filter)
                         self._run_reindex_tasks(es_document=doc,
                                                 queryset=filtered_queryset,
                                                 index_time=index_time,
@@ -119,7 +120,9 @@ class Command(BaseCommand):
 
                 # Create another index for other locales that does not have separate index
                 # So exclude them in queryset
-                excluded_queryset = queryset.exclude(locale__in=config.SEPARATE_INDEX_LOCALES)
+                locale_field = getattr(doc, 'locale_field', 'locale')
+                locale_filter = {"{}__in".format(locale_field): config.SEPARATE_INDEX_LOCALES}
+                excluded_queryset = queryset.exclude(**locale_filter)
 
                 locale_index_alias = get_locale_index_alias(index_alias=index_alias)
                 self._run_reindex_tasks(es_document=doc, queryset=excluded_queryset,
