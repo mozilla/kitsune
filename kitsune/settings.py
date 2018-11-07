@@ -1103,12 +1103,23 @@ if config('SENTRY_DSN', None):
     import sentry_sdk
     from sentry_sdk.integrations.django import DjangoIntegration
 
+    # see https://docs.sentry.io/learn/filtering/?platform=python
+    def filter_exceptions(event, hint):
+        from django.security import DisallowedHost
+        if 'exc_info' in hint:
+            exc_type, exc_value, tb = hint['exc_info']
+            if isinstance(exc_value, DisallowedHost):
+                return None
+
+        return event
+
     sentry_sdk.init(
         dsn=config('SENTRY_DSN'),
         integrations=[DjangoIntegration()],
         release=config('GIT_SHA', default=None),
         server_name=PLATFORM_NAME,
         environment=config('SENTRY_ENVIRONMENT', default=''),
+        before_send=filter_exceptions,
     )
 
 
