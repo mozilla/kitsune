@@ -15,6 +15,156 @@
 #######################################################################
 from django.utils.translation import pgettext
 
+pgettext("DB: kbadge.Badge.title", """2021 KB Badge""")
+pgettext("DB: kbadge.Badge.description", """This badge is awarded to contributors with 10 approved English edits during 2021.""")
+pgettext("DB: kbadge.Badge.title", """2020 KB Badge""")
+pgettext("DB: kbadge.Badge.description", """This badge is awarded to contributors with 10 approved English edits during 2020.""")
+pgettext("DB: kbadge.Badge.title", """2019 KB Badge""")
+pgettext("DB: kbadge.Badge.description", """This badge is awarded to contributors with 10 approved English edits during 2019.""")
+pgettext("DB: kbadge.Badge.title", """2020 Support Forum Badge""")
+pgettext("DB: kbadge.Badge.description", """This badge is awarded to contributors with 20 support forum replies during 2020.""")
+pgettext("DB: kbadge.Badge.title", """2019 Support Forum Badge""")
+pgettext("DB: kbadge.Badge.description", """This badge is awarded to contributors with 20 support forum replies during 2019.""")
+pgettext("DB: kbadge.Badge.title", """2020 Army of Awesome Badge""")
+pgettext("DB: kbadge.Badge.description", """This badge is awarded to contributors with 50 Army of Awesome tweets during 2020.""")
+pgettext("DB: kbadge.Badge.title", """2019 Army of Awesome Badge""")
+pgettext("DB: kbadge.Badge.description", """This badge is awarded to contributors with 50 Army of Awesome tweets during 2019.""")
+pgettext("DB: kbadge.Badge.title", """2020 L10n Badge""")
+pgettext("DB: kbadge.Badge.description", """This badge is awarded to contributors with 10 approved translations edits during 2020.""")
+pgettext("DB: kbadge.Badge.title", """2019 L10n Badge""")
+pgettext("DB: kbadge.Badge.description", """This badge is awarded to contributors with 10 approved translations edits during 2019.""")
+pgettext("DB: kbadge.Badge.title", """2018 L10n Badge""")
+pgettext("DB: kbadge.Badge.description", """This badge is awarded to contributors with 10 approved translations edits during 2018.""")
+pgettext("DB: kbadge.Badge.title", """2018 KB Badge""")
+pgettext("DB: kbadge.Badge.description", """This badge is awarded to contributors with 10 approved English edits during 2018.""")
+pgettext("DB: kbadge.Badge.title", """2018 Army of Awesome Badge""")
+pgettext("DB: kbadge.Badge.description", """This badge is awarded to contributors with 50 Army of Awesome tweets during 2018.""")
+pgettext("DB: kbadge.Badge.title", """2018 Support Forum Badge""")
+pgettext("DB: kbadge.Badge.description", """This badge is awarded to contributors with 20 support forum replies during 2018.""")
+pgettext("DB: kbadge.Badge.title", """2017 L10n Badge""")
+pgettext("DB: kbadge.Badge.description", """This badge is awarded to contributors with 10 approved translations edits during 2017.""")
+pgettext("DB: kbadge.Badge.title", """2017 KB Badge""")
+pgettext("DB: kbadge.Badge.description", """This badge is awarded to contributors with 10 approved English edits during 2017.""")
+pgettext("DB: kbadge.Badge.title", """2017 Army of Awesome Badge""")
+pgettext("DB: kbadge.Badge.description", """This badge is awarded to contributors with 50 Army of Awesome tweets during 2017.""")
+pgettext("DB: kbadge.Badge.title", """2017 Support Forum Badge""")
+pgettext("DB: kbadge.Badge.description", """This badge is awarded to contributors with 20 support forum replies during 2017.""")
+pgettext("DB: kbadge.Badge.title", """2016 L10n Badge""")
+pgettext("DB: kbadge.Badge.description", """This badge is awarded to contributors with 10 approved translations edits during 2016.""")
+pgettext("DB: kbadge.Badge.title", """2016 Support Forum Badge""")
+pgettext("DB: kbadge.Badge.description", """This badge is awarded to contributors with 30 support forum replies during 2016.""")
+pgettext("DB: kbadge.Badge.title", """2016 KB Badge""")
+pgettext("DB: kbadge.Badge.description", """This badge is awarded to contributors with 10 approved English edits during 2016.""")
+pgettext("DB: kbadge.Badge.title", """2016 Army of Awesome Badge""")
+pgettext("DB: kbadge.Badge.description", """This badge is awarded to contributors with 50 Army of Awesome tweets during 2016.""")
+pgettext("DB: kbadge.Badge.title", """2015 Support Forum Badge""")
+pgettext("DB: kbadge.Badge.description", """This badge is awarded to contributors with 30 support forum replies during 2015.""")
+pgettext("DB: kbadge.Badge.title", """2015 Army of Awesome Badge""")
+pgettext("DB: kbadge.Badge.description", """This badge is awarded to contributors with 50 Army of Awesome tweets during 2015.""")
+pgettext("DB: kbadge.Badge.title", """2015 KB Badge""")
+pgettext("DB: kbadge.Badge.description", """This badge is awarded to contributors with 10 approved English edits during 2015.""")
+pgettext("DB: kbadge.Badge.title", """2015 L10n Badge""")
+pgettext("DB: kbadge.Badge.description", """This badge is awarded to contributors with 10 approved translations edits during 2015.""")
+pgettext("DB: kbadge.Badge.title", """2014 Army of Awesome Badge""")
+pgettext("DB: kbadge.Badge.description", """The SUMO Army of Awesome 2014 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2014; in this case: 50 Army of Awesome tweets.
+
+Congrats to all SUMO Army of Awesome 2014 badge earners for advancing the Mozilla Mission!""")
+pgettext("DB: kbadge.Badge.title", """2014 L10n Badge""")
+pgettext("DB: kbadge.Badge.description", """The SUMO L10n 2014 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2014; in this case: 10 approved translation edits of the SUMO Knowledge Base.
+
+Congrats to all SUMO L10n 2014 badge earners for advancing the Mozilla Mission!""")
+pgettext("DB: kbadge.Badge.title", """2014 KB Badge""")
+pgettext("DB: kbadge.Badge.description", """The SUMO KB 2014 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2014; in this case: 10 approved edits of the English SUMO Knowledge Base.
+
+Congrats to all SUMO KB 2014 badge earners for advancing the Mozilla Mission""")
+pgettext("DB: kbadge.Badge.title", """2014 Support Forum Badge""")
+pgettext("DB: kbadge.Badge.description", """The SUMO Forum 2014 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2014 in this case: 30 replies in the English SUMO Forum.
+
+Congrats to all SUMO Forum 2014 badge earners for advancing the Mozilla Mission!""")
+pgettext("DB: kbadge.Badge.title", """Firefox 29 Launch Team""")
+pgettext("DB: kbadge.Badge.description", """Awarded to support contributors who contributed (KB article documentation, answering Forum Questions, localizing KB article documentation, tweets, etc) to the launch of Firefox 29, thanks! 
+
+Firefox 29 features:
+
+1. Firefox Desktop: Australis new look and feel
+AND Firefox Accounts based sync
+
+2. Firefox for Android: Firefox Accounts based sync
+
+MOAR:
+
+https://sumo.etherpad.mozilla.org/sumo-australis-badges""")
+pgettext("DB: kbadge.Badge.title", """2008 L10n Badge""")
+pgettext("DB: kbadge.Badge.description", """This badge is awarded to contributors with 10 approved translations edits during 2008.""")
+pgettext("DB: kbadge.Badge.title", """2009 L10n Badge""")
+pgettext("DB: kbadge.Badge.description", """This badge is awarded to contributors with 10 approved translations edits during 2009.""")
+pgettext("DB: kbadge.Badge.title", """2012 Army of Awesome Badge""")
+pgettext("DB: kbadge.Badge.description", """The SUMO Army of Awesome 2012 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2012; in this case: 50 Army of Awesome tweets.
+
+Congrats to all SUMO Army of Awesome 2012 badge earners for advancing the Mozilla Mission!""")
+pgettext("DB: kbadge.Badge.title", """2013 Army of Awesome Badge""")
+pgettext("DB: kbadge.Badge.description", """The SUMO Army of Awesome 2013 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2013; in this case: 50 Army of Awesome tweets.
+
+Congrats to all SUMO Army of Awesome 2013 badge earners for advancing the Mozilla Mission!""")
+pgettext("DB: kbadge.Badge.title", """2010 Army of Awesome Badge""")
+pgettext("DB: kbadge.Badge.description", """The SUMO Army of Awesome 2010 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2010; in this case: 50 Army of Awesome tweets.
+
+Congrats to all SUMO Army of Awesome 2010 badge earners for advancing the Mozilla Mission!""")
+pgettext("DB: kbadge.Badge.title", """2011 Army of Awesome Badge""")
+pgettext("DB: kbadge.Badge.description", """The SUMO Army of Awesome 2011 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2011; in this case: 50 Army of Awesome tweets.
+
+Congrats to all SUMO Army of Awesome 2011 badge earners for advancing the Mozilla Mission!""")
+pgettext("DB: kbadge.Badge.title", """2012 Support Forum Badge""")
+pgettext("DB: kbadge.Badge.description", """The SUMO Forum 2012 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2012 in this case: 30 replies in the English SUMO Forum.
+
+Congrats to all SUMO Forum 2012 badge earners for advancing the Mozilla Mission!""")
+pgettext("DB: kbadge.Badge.title", """2010 KB Badge""")
+pgettext("DB: kbadge.Badge.description", """The SUMO KB 2010 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2010; in this case: 10 approved edits of the English SUMO Knowledge Base.
+
+Congrats to all SUMO KB 2010 badge earners for advancing the Mozilla Mission""")
+pgettext("DB: kbadge.Badge.title", """2010 L10n Badge""")
+pgettext("DB: kbadge.Badge.description", """The SUMO L10n 2010 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2010; in this case: 10 approved translation edits of the SUMO Knowledge Base.
+
+Congrats to all SUMO L10n 2010 badge earners for advancing the Mozilla Mission!""")
+pgettext("DB: kbadge.Badge.title", """2010 Support Forum Badge""")
+pgettext("DB: kbadge.Badge.description", """The SUMO Forum 2010 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2010 in this case: 30 replies in the English SUMO Forum.
+
+Congrats to all SUMO Forum 2010 badge earners for advancing the Mozilla Mission!""")
+pgettext("DB: kbadge.Badge.title", """2011 KB Badge""")
+pgettext("DB: kbadge.Badge.description", """The SUMO KB 2011 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2011; in this case: 10 approved edits of the English SUMO Knowledge Base.
+
+Congrats to all SUMO KB 2011 badge earners for advancing the Mozilla Mission!""")
+pgettext("DB: kbadge.Badge.title", """2011 L10n Badge""")
+pgettext("DB: kbadge.Badge.description", """The SUMO L10n 2011 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2011; in this case: 10 approved translation edits of the SUMO Knowledge Base.
+
+Congrats to all SUMO L10n 2011 badge earners for advancing the Mozilla Mission!""")
+pgettext("DB: kbadge.Badge.title", """2011 Support Forum Badge""")
+pgettext("DB: kbadge.Badge.description", """The SUMO Forum 2011 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2011 in this case: 30 replies in the English SUMO Forum.
+
+Congrats to all SUMO Forum 2011 badge earners for advancing the Mozilla Mission!
+""")
+pgettext("DB: kbadge.Badge.title", """2012 KB Badge""")
+pgettext("DB: kbadge.Badge.description", """The SUMO KB 2012 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2012; in this case: 10 approved edits of the English SUMO Knowledge Base.
+
+Congrats to all SUMO KB 2012 badge earners for advancing the Mozilla Mission!""")
+pgettext("DB: kbadge.Badge.title", """2013 KB Badge""")
+pgettext("DB: kbadge.Badge.description", """The SUMO KB 2013 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2013 in this case: 10 approved edits of the English SUMO Knowledge Base.
+
+Congrats to all SUMO KB 2013 badge earners for advancing the Mozilla Mission!""")
+pgettext("DB: kbadge.Badge.title", """2013 L10n Badge""")
+pgettext("DB: kbadge.Badge.description", """The SUMO L10n 2013 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2013 in this case: 10 approved translation edits of the SUMO Knowledge Base.
+
+Congrats to all SUMO L10n 2013 badge earners for advancing the Mozilla Mission!""")
+pgettext("DB: kbadge.Badge.title", """2013 Support Forum Badge""")
+pgettext("DB: kbadge.Badge.description", """The SUMO Forum 2013 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2013 in this case: 30 replies in the English SUMO Forum.
+
+Congrats to all SUMO Forum 2013 badge earners for advancing the Mozilla Mission""")
+pgettext("DB: kbadge.Badge.title", """2012 L10n Badge""")
+pgettext("DB: kbadge.Badge.description", """The SUMO L10n 2012 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2012; in this case: 10 approved translation edits of the SUMO Knowledge Base.
+
+Congrats to all SUMO L10n 2012 badge earners for advancing the Mozilla Mission!""")
+pgettext("DB: kbadge.Badge.title", """Kitsune Contributor""")
+pgettext("DB: kbadge.Badge.description", """Badge awarded to those who have contributed to the Kitsune code base.""")
 pgettext("DB: products.Topic.title", """Learn the Basics: get started""")
 pgettext("DB: products.Topic.description", """Learn all you need to know to get started with Firefox.""")
 pgettext("DB: products.Topic.title", """Bookmarks and tabs""")
@@ -276,11 +426,11 @@ pgettext("DB: products.Topic.description", """Using Pocket on the Web.""")
 pgettext("DB: products.Topic.title", """Advanced""")
 pgettext("DB: products.Topic.description", """Information for Developers and Beta users.""")
 pgettext("DB: products.Topic.title", """Get started""")
-pgettext("DB: products.Topic.description", """Everything you need to know to use Firefox Rocket""")
+pgettext("DB: products.Topic.description", """Everything you need to know to use Firefox Lite.""")
 pgettext("DB: products.Topic.title", """Get started""")
 pgettext("DB: products.Topic.description", """How to use Firefox Reality""")
 pgettext("DB: products.Topic.title", """Fix problems""")
-pgettext("DB: products.Topic.description", """Troubleshoot problems with Firefox Rocket""")
+pgettext("DB: products.Topic.description", """Troubleshoot problems with Firefox Lite.""")
 pgettext("DB: products.Topic.title", """Troubleshooting""")
 pgettext("DB: products.Topic.description", """Fix problems with Firefox Reality""")
 pgettext("DB: products.Topic.title", """Popcorn Maker""")
@@ -419,10 +569,10 @@ pgettext("DB: products.Product.title", """Firefox for Fire TV""")
 pgettext("DB: products.Product.description", """Browser for Amazon Fire TV""")
 pgettext("DB: products.Product.title", """Pocket""")
 pgettext("DB: products.Product.description", """Discover and save stories for later""")
+pgettext("DB: products.Product.title", """Firefox Lite""")
+pgettext("DB: products.Product.description", """Mobile browser for Indonesia, India, The Philippines, and Thailand""")
 pgettext("DB: products.Product.title", """Firefox Reality""")
 pgettext("DB: products.Product.description", """Web browser for virtual reality headsets""")
-pgettext("DB: products.Product.title", """Firefox Rocket""")
-pgettext("DB: products.Product.description", """Mobile browser for Indonesia""")
 pgettext("DB: products.Product.title", """Firefox ScreenshotGo""")
 pgettext("DB: products.Product.description", """Screenshot app for mobile""")
 pgettext("DB: products.Product.title", """Open Badges""")
@@ -451,151 +601,3 @@ pgettext("DB: karma.Title.name", """SUMO Warrior""")
 pgettext("DB: karma.Title.name", """Top 10 Contributor""")
 # This is a karma title.
 pgettext("DB: karma.Title.name", """Top 25 Contributor""")
-pgettext("DB: badger.Badge.title", """2020 KB Badge""")
-pgettext("DB: badger.Badge.description", """This badge is awarded to contributors with 10 approved English edits during 2020.""")
-pgettext("DB: badger.Badge.title", """2019 KB Badge""")
-pgettext("DB: badger.Badge.description", """This badge is awarded to contributors with 10 approved English edits during 2019.""")
-pgettext("DB: badger.Badge.title", """2020 Support Forum Badge""")
-pgettext("DB: badger.Badge.description", """This badge is awarded to contributors with 20 support forum replies during 2020.""")
-pgettext("DB: badger.Badge.title", """2019 Support Forum Badge""")
-pgettext("DB: badger.Badge.description", """This badge is awarded to contributors with 20 support forum replies during 2019.""")
-pgettext("DB: badger.Badge.title", """2020 Army of Awesome Badge""")
-pgettext("DB: badger.Badge.description", """This badge is awarded to contributors with 50 Army of Awesome tweets during 2020.""")
-pgettext("DB: badger.Badge.title", """2019 Army of Awesome Badge""")
-pgettext("DB: badger.Badge.description", """This badge is awarded to contributors with 50 Army of Awesome tweets during 2019.""")
-pgettext("DB: badger.Badge.title", """2020 L10n Badge""")
-pgettext("DB: badger.Badge.description", """This badge is awarded to contributors with 10 approved translations edits during 2020.""")
-pgettext("DB: badger.Badge.title", """2019 L10n Badge""")
-pgettext("DB: badger.Badge.description", """This badge is awarded to contributors with 10 approved translations edits during 2019.""")
-pgettext("DB: badger.Badge.title", """2018 L10n Badge""")
-pgettext("DB: badger.Badge.description", """This badge is awarded to contributors with 10 approved translations edits during 2018.""")
-pgettext("DB: badger.Badge.title", """2018 KB Badge""")
-pgettext("DB: badger.Badge.description", """This badge is awarded to contributors with 10 approved English edits during 2018.""")
-pgettext("DB: badger.Badge.title", """2018 Army of Awesome Badge""")
-pgettext("DB: badger.Badge.description", """This badge is awarded to contributors with 50 Army of Awesome tweets during 2018.""")
-pgettext("DB: badger.Badge.title", """2018 Support Forum Badge""")
-pgettext("DB: badger.Badge.description", """This badge is awarded to contributors with 20 support forum replies during 2018.""")
-pgettext("DB: badger.Badge.title", """2017 L10n Badge""")
-pgettext("DB: badger.Badge.description", """This badge is awarded to contributors with 10 approved translations edits during 2017.""")
-pgettext("DB: badger.Badge.title", """2017 KB Badge""")
-pgettext("DB: badger.Badge.description", """This badge is awarded to contributors with 10 approved English edits during 2017.""")
-pgettext("DB: badger.Badge.title", """2017 Army of Awesome Badge""")
-pgettext("DB: badger.Badge.description", """This badge is awarded to contributors with 50 Army of Awesome tweets during 2017.""")
-pgettext("DB: badger.Badge.title", """2017 Support Forum Badge""")
-pgettext("DB: badger.Badge.description", """This badge is awarded to contributors with 20 support forum replies during 2017.""")
-pgettext("DB: badger.Badge.title", """2016 L10n Badge""")
-pgettext("DB: badger.Badge.description", """This badge is awarded to contributors with 10 approved translations edits during 2016.""")
-pgettext("DB: badger.Badge.title", """2016 Support Forum Badge""")
-pgettext("DB: badger.Badge.description", """This badge is awarded to contributors with 30 support forum replies during 2016.""")
-pgettext("DB: badger.Badge.title", """2016 KB Badge""")
-pgettext("DB: badger.Badge.description", """This badge is awarded to contributors with 10 approved English edits during 2016.""")
-pgettext("DB: badger.Badge.title", """2016 Army of Awesome Badge""")
-pgettext("DB: badger.Badge.description", """This badge is awarded to contributors with 50 Army of Awesome tweets during 2016.""")
-pgettext("DB: badger.Badge.title", """2015 Support Forum Badge""")
-pgettext("DB: badger.Badge.description", """This badge is awarded to contributors with 30 support forum replies during 2015.""")
-pgettext("DB: badger.Badge.title", """2015 Army of Awesome Badge""")
-pgettext("DB: badger.Badge.description", """This badge is awarded to contributors with 50 Army of Awesome tweets during 2015.""")
-pgettext("DB: badger.Badge.title", """2015 KB Badge""")
-pgettext("DB: badger.Badge.description", """This badge is awarded to contributors with 10 approved English edits during 2015.""")
-pgettext("DB: badger.Badge.title", """2015 L10n Badge""")
-pgettext("DB: badger.Badge.description", """This badge is awarded to contributors with 10 approved translations edits during 2015.""")
-pgettext("DB: badger.Badge.title", """2014 Army of Awesome Badge""")
-pgettext("DB: badger.Badge.description", """The SUMO Army of Awesome 2014 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2014; in this case: 50 Army of Awesome tweets.
-
-Congrats to all SUMO Army of Awesome 2014 badge earners for advancing the Mozilla Mission!""")
-pgettext("DB: badger.Badge.title", """2014 L10n Badge""")
-pgettext("DB: badger.Badge.description", """The SUMO L10n 2014 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2014; in this case: 10 approved translation edits of the SUMO Knowledge Base.
-
-Congrats to all SUMO L10n 2014 badge earners for advancing the Mozilla Mission!""")
-pgettext("DB: badger.Badge.title", """2014 KB Badge""")
-pgettext("DB: badger.Badge.description", """The SUMO KB 2014 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2014; in this case: 10 approved edits of the English SUMO Knowledge Base.
-
-Congrats to all SUMO KB 2014 badge earners for advancing the Mozilla Mission""")
-pgettext("DB: badger.Badge.title", """2014 Support Forum Badge""")
-pgettext("DB: badger.Badge.description", """The SUMO Forum 2014 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2014 in this case: 30 replies in the English SUMO Forum.
-
-Congrats to all SUMO Forum 2014 badge earners for advancing the Mozilla Mission!""")
-pgettext("DB: badger.Badge.title", """Firefox 29 Launch Team""")
-pgettext("DB: badger.Badge.description", """Awarded to support contributors who contributed (KB article documentation, answering Forum Questions, localizing KB article documentation, tweets, etc) to the launch of Firefox 29, thanks! 
-
-Firefox 29 features:
-
-1. Firefox Desktop: Australis new look and feel
-AND Firefox Accounts based sync
-
-2. Firefox for Android: Firefox Accounts based sync
-
-MOAR:
-
-https://sumo.etherpad.mozilla.org/sumo-australis-badges""")
-pgettext("DB: badger.Badge.title", """2008 L10n Badge""")
-pgettext("DB: badger.Badge.description", """This badge is awarded to contributors with 10 approved translations edits during 2008.""")
-pgettext("DB: badger.Badge.title", """2009 L10n Badge""")
-pgettext("DB: badger.Badge.description", """This badge is awarded to contributors with 10 approved translations edits during 2009.""")
-pgettext("DB: badger.Badge.title", """2012 Army of Awesome Badge""")
-pgettext("DB: badger.Badge.description", """The SUMO Army of Awesome 2012 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2012; in this case: 50 Army of Awesome tweets.
-
-Congrats to all SUMO Army of Awesome 2012 badge earners for advancing the Mozilla Mission!""")
-pgettext("DB: badger.Badge.title", """2013 Army of Awesome Badge""")
-pgettext("DB: badger.Badge.description", """The SUMO Army of Awesome 2013 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2013; in this case: 50 Army of Awesome tweets.
-
-Congrats to all SUMO Army of Awesome 2013 badge earners for advancing the Mozilla Mission!""")
-pgettext("DB: badger.Badge.title", """2010 Army of Awesome Badge""")
-pgettext("DB: badger.Badge.description", """The SUMO Army of Awesome 2010 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2010; in this case: 50 Army of Awesome tweets.
-
-Congrats to all SUMO Army of Awesome 2010 badge earners for advancing the Mozilla Mission!""")
-pgettext("DB: badger.Badge.title", """2011 Army of Awesome Badge""")
-pgettext("DB: badger.Badge.description", """The SUMO Army of Awesome 2011 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2011; in this case: 50 Army of Awesome tweets.
-
-Congrats to all SUMO Army of Awesome 2011 badge earners for advancing the Mozilla Mission!""")
-pgettext("DB: badger.Badge.title", """2012 Support Forum Badge""")
-pgettext("DB: badger.Badge.description", """The SUMO Forum 2012 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2012 in this case: 30 replies in the English SUMO Forum.
-
-Congrats to all SUMO Forum 2012 badge earners for advancing the Mozilla Mission!""")
-pgettext("DB: badger.Badge.title", """2010 KB Badge""")
-pgettext("DB: badger.Badge.description", """The SUMO KB 2010 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2010; in this case: 10 approved edits of the English SUMO Knowledge Base.
-
-Congrats to all SUMO KB 2010 badge earners for advancing the Mozilla Mission""")
-pgettext("DB: badger.Badge.title", """2010 L10n Badge""")
-pgettext("DB: badger.Badge.description", """The SUMO L10n 2010 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2010; in this case: 10 approved translation edits of the SUMO Knowledge Base.
-
-Congrats to all SUMO L10n 2010 badge earners for advancing the Mozilla Mission!""")
-pgettext("DB: badger.Badge.title", """2010 Support Forum Badge""")
-pgettext("DB: badger.Badge.description", """The SUMO Forum 2010 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2010 in this case: 30 replies in the English SUMO Forum.
-
-Congrats to all SUMO Forum 2010 badge earners for advancing the Mozilla Mission!""")
-pgettext("DB: badger.Badge.title", """2011 KB Badge""")
-pgettext("DB: badger.Badge.description", """The SUMO KB 2011 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2011; in this case: 10 approved edits of the English SUMO Knowledge Base.
-
-Congrats to all SUMO KB 2011 badge earners for advancing the Mozilla Mission!""")
-pgettext("DB: badger.Badge.title", """2011 L10n Badge""")
-pgettext("DB: badger.Badge.description", """The SUMO L10n 2011 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2011; in this case: 10 approved translation edits of the SUMO Knowledge Base.
-
-Congrats to all SUMO L10n 2011 badge earners for advancing the Mozilla Mission!""")
-pgettext("DB: badger.Badge.title", """2011 Support Forum Badge""")
-pgettext("DB: badger.Badge.description", """The SUMO Forum 2011 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2011 in this case: 30 replies in the English SUMO Forum.
-
-Congrats to all SUMO Forum 2011 badge earners for advancing the Mozilla Mission!
-""")
-pgettext("DB: badger.Badge.title", """2012 KB Badge""")
-pgettext("DB: badger.Badge.description", """The SUMO KB 2012 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2012; in this case: 10 approved edits of the English SUMO Knowledge Base.
-
-Congrats to all SUMO KB 2012 badge earners for advancing the Mozilla Mission!""")
-pgettext("DB: badger.Badge.title", """2013 KB Badge""")
-pgettext("DB: badger.Badge.description", """The SUMO KB 2013 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2013 in this case: 10 approved edits of the English SUMO Knowledge Base.
-
-Congrats to all SUMO KB 2013 badge earners for advancing the Mozilla Mission!""")
-pgettext("DB: badger.Badge.title", """2013 L10n Badge""")
-pgettext("DB: badger.Badge.description", """The SUMO L10n 2013 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2013 in this case: 10 approved translation edits of the SUMO Knowledge Base.
-
-Congrats to all SUMO L10n 2013 badge earners for advancing the Mozilla Mission!""")
-pgettext("DB: badger.Badge.title", """2013 Support Forum Badge""")
-pgettext("DB: badger.Badge.description", """The SUMO Forum 2013 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2013 in this case: 30 replies in the English SUMO Forum.
-
-Congrats to all SUMO Forum 2013 badge earners for advancing the Mozilla Mission""")
-pgettext("DB: badger.Badge.title", """2012 L10n Badge""")
-pgettext("DB: badger.Badge.description", """The SUMO L10n 2012 mini-badge is part of the SUMO series. It represents contribution to SUMO in 2012; in this case: 10 approved translation edits of the SUMO Knowledge Base.
-
-Congrats to all SUMO L10n 2012 badge earners for advancing the Mozilla Mission!""")
-pgettext("DB: badger.Badge.title", """Kitsune Contributor""")
-pgettext("DB: badger.Badge.description", """Badge awarded to those who have contributed to the Kitsune code base.""")
