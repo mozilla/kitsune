@@ -6,8 +6,13 @@
         <input type="hidden" name="{{ k }}" value="{{ v }}" />
       {% endfor %}
     {% endif %}
-    <input type="search" name="q" required="required" aria-required="true" placeholder="{{ _('Find help...')|truncate(12) }}" class="searchbox" id="{{id+'shivani'}}" />
-    <button type="submit" title="{{ _('Search') }}" class="submit-button">{{ _('Search') }}</button>
+    {% if id!=False}
+      <input type="search" name="q" required="required" aria-required="true" placeholder="{{ _('Find help...')|truncate(12) }}" class="searchbox" id="{{'search-'+id}}" />
+      <button type="submit" title="{{ _('Search') }}" class="submit-button">{{ _('Search') }}</button>
+    {% else %}
+      <input type="search" name="q" required="required" aria-required="true" placeholder="{{ _('Find help...')|truncate(12) }}" class="searchbox" id="{{'search-'+(Math.random()*Math.random())}}" />
+      <button type="submit" title="{{ _('Search') }}" class="submit-button">{{ _('Search') }}</button>
+    {% endif %}
   </form>
 {% endmacro %}
 
