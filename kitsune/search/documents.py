@@ -1,6 +1,5 @@
-from django.db.models import F
 from django.utils import timezone
-from django_elasticsearch_dsl import DocType, Index, fields
+from django_elasticsearch_dsl import DocType, fields
 
 from kitsune.questions.models import Question, Answer
 from kitsune.search import config
