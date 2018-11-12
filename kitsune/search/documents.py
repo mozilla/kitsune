@@ -1,7 +1,7 @@
 from django.utils import timezone
-from django_elasticsearch_dsl import DocType, Index, fields
+from django_elasticsearch_dsl import DocType, fields
 
-from kitsune.questions.models import Question
+from kitsune.questions.models import Question, Answer
 from kitsune.search import config
 from django.conf import settings
 
@@ -76,8 +76,8 @@ class QuestionDocumentType(KitsuneDocTypeMixin, DocType):
     created = fields.DateField()
     updated = fields.DateField()
 
-    product = fields.KeywordField(attr='topic.slug')
-    topic = fields.KeywordField(attr='product.slug')
+    product = fields.KeywordField(attr='product.slug')
+    topic = fields.KeywordField(attr='topic.slug')
 
     # Document specific fields (locale aware)
     question_title = fields.TextField(attr='title')
@@ -124,3 +124,37 @@ class QuestionDocumentType(KitsuneDocTypeMixin, DocType):
 
     def prepare_question_tag(self, instance):
         return [tag.name for tag in instance.my_tags]
+
+
+class AnswerDocumentType(KitsuneDocTypeMixin, DocType):
+
+    url = fields.KeywordField(attr='get_absolute_url')
+    indexed_on = fields.DateField()
+    created = fields.DateField()
+
+    locale = fields.KeywordField(attr='question.locale')
+    is_solution = fields.BooleanField()
+    creator_id = fields.IntegerField(attr='creator.id')
+    by_asker = fields.BooleanField()
+    helpful_count = fields.IntegerField(attr='num_helpful_votes')
+    unhelpful_count = fields.IntegerField(attr='num_unhelpful_votes')
+
+    product = fields.KeywordField(attr='question.product.slug')
+    topic = fields.KeywordField(attr='product.slug')
+
+    # Custom configuration for kitsune to have separate analyzer for supported locales
+    supported_locales = settings.SUMO_LANGUAGES
+    locale_field = 'question__locale'
+
+    def prepare_indexed_on(self, instance):
+        return timezone.now()
+
+    def prepare_is_solution(self, instance):
+        return instance.id == instance.question.solution_id
+
+    def prepare_by_asker(self, instance):
+        return instance.creator_id == instance.question.creator_id
+
+    class Meta:
+        model = Answer
+        index = 'sumo_answer'
