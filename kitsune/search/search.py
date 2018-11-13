@@ -18,25 +18,17 @@ class SimpleSearch(object):
         category_filter = Terms(document_category=settings.SEARCH_DEFAULT_CATEGORIES)
         locale_filter = Term(document_locale=self.locale)
         archived_filter = Term(document_is_archived=False)
-        index_filter = Term(_index=WIKI_DOCUMENT_INDEX_NAME)
+        index_filter = Term(index_name=WIKI_DOCUMENT_INDEX_NAME)
 
         return category_filter, locale_filter, archived_filter, index_filter
 
     def get_question_filters(self):
         archived_filter = Term(question_is_archived=False)
         helpful_filter = Term(question_has_helpful=True)
-        index_filter = Term(_index=QUESTION_INDEX_NAME)
-        return archived_filter, helpful_filter, index_filter
+        locale_filter = Term(question_locale=self.locale)
+        index_filter = Term(index_name=QUESTION_INDEX_NAME)
 
-    def get_filters(self):
-        filters = []
-        if self.doc_type & constants.WHERE_WIKI:
-            filters.append(self.get_wiki_filters())
-
-        if self.doc_type & constants.WHERE_SUPPORT:
-            filters.append(self.get_question_filters())
-
-        return filters
+        return archived_filter, helpful_filter, index_filter, locale_filter
 
     def get_wiki_query(self):
         common_fields = ['document_summary^2.0', 'document_keywords^8.0']
@@ -52,7 +44,9 @@ class SimpleSearch(object):
                                         type="phrase")
 
         filters = self.get_wiki_filters()
-        bool_query = Bool(should=[match_query, match_phrase_query], filter=filters)
+        bool_query = Bool(should=[match_query, match_phrase_query], filter=filters,
+                          minimum_should_match=1)
+
         return bool_query
 
     def get_question_query(self):
@@ -67,7 +61,9 @@ class SimpleSearch(object):
                                         type="phrase")
 
         filters = self.get_question_filters()
-        bool_query = Bool(should=[match_query, match_phrase_query], filter=filters)
+        bool_query = Bool(should=[match_query, match_phrase_query], filter=filters,
+                          minimum_should_match=1)
+
         return bool_query
 
     def get_queries(self):
@@ -88,7 +84,5 @@ class SimpleSearch(object):
             yield QUESTION_INDEX_NAME
 
     def get_search(self):
-        locale_filter = Term(locale=self.locale)
-
-        search = Search(index=list(self.get_indexes())).filter(locale_filter).query(self.get_queries())
+        search = Search(index=list(self.get_indexes())).query(self.get_queries())
         return search
