@@ -4,77 +4,28 @@ from elasticsearch_dsl.query import Term, Terms, Bool, MultiMatch
 
 from kitsune import search as constants
 from kitsune.search.config import WIKI_DOCUMENT_INDEX_NAME, QUESTION_INDEX_NAME
+from kitsune.search.documents import WikiDocumentType, QuestionDocumentType
 
 
 class SimpleSearch(object):
 
-    def __init__(self, query, doc_type, locale, with_highlights=True):
+    def __init__(self, query, doc_type, locale, product=None, with_highlights=True):
         self.query = query
         self.doc_type = doc_type
         self.locale = locale
         self.with_highlights = with_highlights
-
-    def get_wiki_filters(self):
-        category_filter = Terms(document_category=settings.SEARCH_DEFAULT_CATEGORIES)
-        locale_filter = Term(document_locale=self.locale)
-        archived_filter = Term(document_is_archived=False)
-        index_filter = Term(index_name=WIKI_DOCUMENT_INDEX_NAME)
-
-        return category_filter, locale_filter, archived_filter, index_filter
-
-    def get_question_filters(self):
-        archived_filter = Term(question_is_archived=False)
-        helpful_filter = Term(question_has_helpful=True)
-        locale_filter = Term(question_locale=self.locale)
-        index_filter = Term(index_name=QUESTION_INDEX_NAME)
-
-        return archived_filter, helpful_filter, index_filter, locale_filter
-
-    def get_wiki_query(self):
-        common_fields = ['document_summary^2.0', 'document_keywords^8.0']
-        match_fields = common_fields + ['document_title^6.0', 'document_content^1.0']
-        match_phrase_fields = common_fields + ['document_title^10.0', 'document_content^8.0']
-
-        match_query = MultiMatch(query=self.query, fields=match_fields)
-        # Its also a multi match query, but its phrase type.
-        # Which actually run phrase query among the fields.
-        # https://bit.ly/2DB1qgH
-        match_phrase_query = MultiMatch(query=self.query,
-                                        fields=match_phrase_fields,
-                                        type="phrase")
-
-        filters = self.get_wiki_filters()
-        bool_query = Bool(should=[match_query, match_phrase_query], filter=filters,
-                          minimum_should_match=1)
-
-        return bool_query
-
-    def get_question_query(self):
-        all_fields = ['question_title^4.0', 'question_content^3.0', 'question_answer_content^3.0']
-
-        match_query = MultiMatch(query=self.query, fields=all_fields)
-        # Its also a multi match query, but its phrase type.
-        # Which actually run phrase query among the fields.
-        # https://bit.ly/2DB1qgH
-        match_phrase_query = MultiMatch(query=self.query,
-                                        fields=all_fields,
-                                        type="phrase")
-
-        filters = self.get_question_filters()
-        bool_query = Bool(should=[match_query, match_phrase_query], filter=filters,
-                          minimum_should_match=1)
-
-        return bool_query
+        self.product = product
 
     def get_queries(self):
-        queries = []
         if self.doc_type & constants.WHERE_WIKI:
-            queries.append(self.get_wiki_query())
+            query = WikiDocumentType.get_query(query=self.query, locale=self.locale,
+                                               products=self.product)
+            yield query
 
         if self.doc_type & constants.WHERE_SUPPORT:
-            queries.append(self.get_question_query())
-
-        return Bool(should=queries)
+            query = QuestionDocumentType.get_query(query=self.query, locale=self.locale,
+                                                   products=self.product)
+            yield query
 
     def get_indexes(self):
         if self.doc_type & constants.WHERE_WIKI:
@@ -84,5 +35,9 @@ class SimpleSearch(object):
             yield QUESTION_INDEX_NAME
 
     def get_search(self):
-        search = Search(index=list(self.get_indexes())).query(self.get_queries())
+        highlighted_fields = ['question_content', 'document_summary']
+        query = Bool(should=list(self.get_queries()))
+        indexes = list(self.get_indexes())
+
+        search = Search(index=indexes).query(query).highlight(*highlighted_fields)
         return search

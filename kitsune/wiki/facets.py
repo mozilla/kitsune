@@ -6,8 +6,11 @@ from django.db.models import Count
 
 from elasticsearch.exceptions import TransportError
 from django_statsd.clients import statsd
+from elasticsearch_dsl import Q
+from elasticsearch_dsl.query import Bool
 
 from kitsune.products.models import Topic
+from kitsune.search.documents import WikiDocumentType
 from kitsune.wiki.models import Document, DocumentMappingType
 
 
@@ -106,20 +109,18 @@ def _documents_for(locale, topics=None, products=None):
 
 def _es_documents_for(locale, topics=None, products=None):
     """ES implementation of documents_for."""
-    s = (DocumentMappingType.search()
-         .values_dict('id', 'document_title', 'url', 'document_parent_id',
-                      'document_summary')
-         .filter(document_locale=locale, document_is_archived=False,
-                 document_category__in=settings.IA_DEFAULT_CATEGORIES))
+    fields = ['id', 'document_title', 'url', 'document_parent_id', 'document_summary']
+    filters = WikiDocumentType.get_filters(locale=locale, products=products, topics=topics,
+                                           categories=settings.IA_DEFAULT_CATEGORIES)
+    query = Bool(filter=list(filters))
 
-    for topic in topics or []:
-        s = s.filter(topic=topic.slug)
-    for product in products or []:
-        s = s.filter(product=product.slug)
+    search = WikiDocumentType.search().query(query).source(fields)
 
-    results = s.order_by('document_display_order', '-document_recent_helpful_votes')[:100]
-    results = DocumentMappingType.reshape(results)
-    return results
+    search = search.sort('document_display_order', '-document_recent_helpful_votes')
+    search = search[:100]
+    results = search.execute()
+
+    return [doc.to_dict() for doc in results]
 
 
 def _db_documents_for(locale, topics=None, products=None):

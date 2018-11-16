@@ -301,8 +301,6 @@ def generate_tasks(**kwargs):
     tasks.clear()
 
 
-signals.request_finished.connect(generate_tasks)
-
 
 class RecordManager(models.Manager):
     def outstanding(self):

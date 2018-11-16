@@ -1,5 +1,8 @@
+import operator
+
 from django.db import models
 from django.core.paginator import Paginator
+from elasticsearch_dsl.query import Terms
 
 from kitsune.search.es_utils import get_locale_index_alias
 
@@ -17,10 +20,17 @@ class KitsuneDocTypeMixin(object):
 
     def _prepare_action(self, object_instance, action, index_name=None):
         """Overwrite to take `index_name` from parameters for setting index dynamically"""
+
+        # Get the locale field from the document, if not provided, use the default one
+        locale_field = getattr(self, 'locale_field', 'locale')
+        # The locale field can be provided by double underscore separation.
+        # So change it to dot separation
+        locale_field = locale_field.replace("__", ".")
+        locale = operator.attrgetter(locale_field)(object_instance)
         if self.supported_locales and not index_name:
             # Locale suffix need to be added to the index name
             index_name = get_locale_index_alias(index_alias=str(self._doc_type.index),
-                                                locale=object_instance.locale)
+                                                locale=locale)
 
         return {
             '_op_type': action,
@@ -70,5 +80,9 @@ class KitsuneDocTypeMixin(object):
             object_list = thing
 
         return self.bulk(
-            self._get_actions(object_list, action, index_name=index_name), **kwargs
-)
+            self._get_actions(object_list, action, index_name=index_name), **kwargs)
+
+    @classmethod
+    def get_product_filters(cls, products):
+        if products:
+            return Terms(product=products)

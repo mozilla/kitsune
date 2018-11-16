@@ -8,6 +8,7 @@ from django.conf import settings
 from django.http import (
     HttpResponse, HttpResponseBadRequest, HttpResponseRedirect)
 from django.shortcuts import render, render_to_response
+from django.utils.dateparse import parse_datetime
 from django.utils.html import escape
 from django.utils.http import urlquote
 from django.utils.translation import ugettext as _, pgettext, pgettext_lazy
@@ -21,8 +22,9 @@ from kitsune import search as constants
 from kitsune.forums.models import Forum, ThreadMappingType
 from kitsune.products.models import Product
 from kitsune.questions.models import QuestionMappingType
+from kitsune.search.search import SimpleSearch
 from kitsune.search.utils import locale_or_default, clean_excerpt
-from kitsune.search import es_utils
+from kitsune.search import es_utils, config
 from kitsune.search.forms import SimpleSearchForm, AdvancedSearchForm
 from kitsune.search.es_utils import F, AnalyzerS, handle_es_errors
 from kitsune.search.search_utils import apply_boosts, generate_simple_search
@@ -73,15 +75,16 @@ def build_results_list(pages, is_json):
     """
     results = []
     for rank, doc in enumerate(pages, pages.start_index()):
-        if doc['model'] == 'wiki_document':
+        if doc['index_name'] == config.WIKI_DOCUMENT_INDEX_NAME:
             summary = _build_es_excerpt(doc)
             if not summary:
                 summary = doc['document_summary']
+                print(summary)
             result = {
                 'title': doc['document_title'],
                 'type': 'document'}
 
-        elif doc['model'] == 'questions_question':
+        elif doc['index_name'] == config.QUESTION_INDEX_NAME:
             summary = _build_es_excerpt(doc)
             if not summary:
                 # We're excerpting only question_content, so if the query matched
@@ -93,17 +96,17 @@ def build_results_list(pages, is_json):
             result = {
                 'title': doc['question_title'],
                 'type': 'question',
-                'last_updated': datetime.fromtimestamp(doc['updated']),
+                'last_updated': parse_datetime(doc['updated']),
                 'is_solved': doc['question_is_solved'],
                 'num_answers': doc['question_num_answers'],
                 'num_votes': doc['question_num_votes'],
                 'num_votes_past_week': doc['question_num_votes_past_week']}
 
-        elif doc['model'] == 'forums_thread':
-            summary = _build_es_excerpt(doc, first_only=True)
-            result = {
-                'title': doc['post_title'],
-                'type': 'thread'}
+        # elif doc['model'] == 'forums_thread':
+        #     summary = _build_es_excerpt(doc, first_only=True)
+        #     result = {
+        #         'title': doc['post_title'],
+        #         'type': 'thread'}
 
         else:
             raise UnknownDocType('%s is an unknown doctype' % doc['model'])
@@ -113,9 +116,9 @@ def build_results_list(pages, is_json):
             result['object'] = doc
         result['search_summary'] = summary
         result['rank'] = rank
-        result['score'] = doc.es_meta.score
-        result['explanation'] = escape(format_explanation(doc.es_meta.explanation))
-        result['id'] = doc['id']
+        result['score'] = doc.meta.score
+        result['explanation'] = ''
+        result['id'] = doc.meta.id
         results.append(result)
 
     return results
@@ -172,11 +175,13 @@ def simple_search(request, template=None):
     language = locale_or_default(cleaned['language'] or request.LANGUAGE_CODE)
     lang_name = settings.LANGUAGES_DICT.get(language.lower()) or ''
 
-    searcher = generate_simple_search(search_form, language, with_highlights=True)
-    searcher = searcher[:settings.SEARCH_MAX_RESULTS]
+    searcher = SimpleSearch(query=cleaned['q'], doc_type=cleaned['w'],
+                            locale=language, product=cleaned['product'])
+    search = searcher.get_search()
+    search = search[:settings.SEARCH_MAX_RESULTS]
 
     # 5. Generate output.
-    pages = paginate(request, searcher, settings.SEARCH_RESULTS_PER_PAGE)
+    pages = paginate(request, search, settings.SEARCH_RESULTS_PER_PAGE)
 
     if pages.paginator.count == 0:
         fallback_results = _fallback_results(language, cleaned['product'])
@@ -518,7 +523,6 @@ def advanced_search(request, template=None):
         searcher = searcher.query(should=True, **query)
 
     searcher = searcher[:settings.SEARCH_MAX_RESULTS]
-    print(dir(searcher))
 
     # 5. Generate output
     pages = paginate(request, searcher, settings.SEARCH_RESULTS_PER_PAGE)
@@ -670,14 +674,14 @@ def _build_es_excerpt(result, first_only=False):
         if we should show all bits
 
     """
-    bits = [m.strip() for m in chain(*result.es_meta.highlight.values())]
+    if hasattr(result.meta, 'highlight'):
+        bits = [m.strip() for m in chain(*result.meta.highlight.values())]
+        if first_only:
+            excerpt = bits[0]
+        else:
+            excerpt = EXCERPT_JOINER.join(bits)
 
-    if first_only and bits:
-        excerpt = bits[0]
-    else:
-        excerpt = EXCERPT_JOINER.join(bits)
-
-    return jinja2.Markup(clean_excerpt(excerpt))
+        return jinja2.Markup(clean_excerpt(excerpt))
 
 
 def _fallback_results(locale, product_slugs):

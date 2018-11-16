@@ -1,13 +1,14 @@
 from django.utils import timezone
 from django_elasticsearch_dsl import DocType, fields
+from elasticsearch_dsl.query import Terms, Term, MultiMatch, Bool
 
-from kitsune.questions.models import Question, Answer
+from kitsune.questions.models import Question, Answer, AnswerVote
 from kitsune.search import config
 from django.conf import settings
 
 from kitsune.search.mixins import KitsuneDocTypeMixin
 from kitsune.wiki.config import REDIRECT_HTML
-from kitsune.wiki.models import Document
+from kitsune.wiki.models import Document, Revision
 
 
 class WikiDocumentType(KitsuneDocTypeMixin, DocType):
@@ -44,6 +45,7 @@ class WikiDocumentType(KitsuneDocTypeMixin, DocType):
     class Meta:
         model = Document
         index = config.WIKI_DOCUMENT_INDEX_NAME
+        related_models = [Revision]
 
     def prepare_indexed_on(self, instance):
         return timezone.now()
@@ -75,6 +77,43 @@ class WikiDocumentType(KitsuneDocTypeMixin, DocType):
 
     def prepare_index_name(self, instance):
         return config.WIKI_DOCUMENT_INDEX_NAME
+
+    # methods for kitsune usages
+    @classmethod
+    def get_filters(cls, locale, products=None, categories=None, topics=None):
+        categories = categories or settings.SEARCH_DEFAULT_CATEGORIES
+        yield Terms(document_category=categories)
+        yield Term(document_locale=locale)
+        yield Term(document_is_archived=False)
+        yield Term(index_name=config.WIKI_DOCUMENT_INDEX_NAME)
+
+        if products:
+            yield cls.get_product_filters(products=products)
+        if topics:
+            yield Terms(topic=topics)
+
+    @classmethod
+    def get_query(cls, query, locale, products=None, categories=None):
+        common_fields = ['document_summary^2.0', 'document_keywords^8.0']
+        match_fields = common_fields + ['document_title^6.0', 'document_content^1.0']
+        match_phrase_fields = common_fields + ['document_title^10.0', 'document_content^8.0']
+
+        match_query = MultiMatch(query=query, fields=match_fields)
+        # Its also a multi match query, but its phrase type.
+        # Which actually run phrase query among the fields.
+        # https://bit.ly/2DB1qgH
+        match_phrase_query = MultiMatch(query=query,
+                                        fields=match_phrase_fields,
+                                        type="phrase")
+
+        filters = list(cls.get_filters(locale=locale, products=products, categories=categories))
+        bool_query = Bool(should=[match_query, match_phrase_query], filter=filters,
+                          minimum_should_match=1)
+
+        return bool_query
+
+    def get_instances_from_related(self, related_instance):
+        return related_instance.document
 
 
 class QuestionDocumentType(KitsuneDocTypeMixin, DocType):
@@ -114,6 +153,7 @@ class QuestionDocumentType(KitsuneDocTypeMixin, DocType):
     class Meta:
         model = Question
         index = config.QUESTION_INDEX_NAME
+        related_models = [Answer, AnswerVote]
 
     def prepare_indexed_on(self, instance):
         return timezone.now()
@@ -125,8 +165,8 @@ class QuestionDocumentType(KitsuneDocTypeMixin, DocType):
         return bool(instance.num_answers)
 
     def prepare_question_has_helpful(self, instance):
-        if instance.answer_values:
-            return instance.answer_values.filter(votes__helpful=True).exists()
+        if instance.answers:
+            return instance.answers.all().filter(votes__helpful=True).exists()
 
         return False
 
@@ -138,6 +178,41 @@ class QuestionDocumentType(KitsuneDocTypeMixin, DocType):
 
     def prepare_index_name(self, instance):
         return config.QUESTION_INDEX_NAME
+
+    def get_instances_from_related(self, related_instance):
+        if isinstance(related_instance, Answer):
+            return related_instance.question
+        elif isinstance(related_instance, AnswerVote):
+            return related_instance.answer.question
+
+    # methods for kitsune usages
+    @classmethod
+    def get_filters(cls, locale, products=None):
+        yield Term(question_is_archived=False)
+        yield Term(question_has_helpful=True)
+        yield Term(question_locale=locale)
+        yield Term(index_name=config.QUESTION_INDEX_NAME)
+
+        if products:
+            yield cls.get_product_filters(products=products)
+
+    @classmethod
+    def get_query(cls, query, locale, products):
+        all_fields = ['question_title^4.0', 'question_content^3.0', 'question_answer_content^3.0']
+
+        match_query = MultiMatch(query=query, fields=all_fields)
+        # Its also a multi match query, but its phrase type.
+        # Which actually run phrase query among the fields.
+        # https://bit.ly/2DB1qgH
+        match_phrase_query = MultiMatch(query=query,
+                                        fields=all_fields,
+                                        type="phrase")
+
+        filters = list(cls.get_filters(locale=locale, products=products))
+        bool_query = Bool(should=[match_query, match_phrase_query], filter=filters,
+                          minimum_should_match=1)
+
+        return bool_query
 
 
 class AnswerDocumentType(KitsuneDocTypeMixin, DocType):
@@ -154,7 +229,7 @@ class AnswerDocumentType(KitsuneDocTypeMixin, DocType):
     unhelpful_count = fields.IntegerField(attr='num_unhelpful_votes')
 
     product = fields.KeywordField(attr='question.product.slug')
-    topic = fields.KeywordField(attr='product.slug')
+    topic = fields.KeywordField(attr='question.product.slug')
 
     # Custom configuration for kitsune to have separate analyzer for supported locales
     supported_locales = settings.SUMO_LANGUAGES

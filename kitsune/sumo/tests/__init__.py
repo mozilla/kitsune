@@ -3,6 +3,8 @@ import inspect
 import os
 import sys
 from functools import wraps
+
+from django_elasticsearch_dsl.registries import registry
 from os import getenv
 from smtplib import SMTPRecipientsRefused
 import subprocess
@@ -62,68 +64,10 @@ class TestCase(OriginalTestCase):
     """TestCase that skips live indexing."""
     skipme = False
 
-    def _pre_setup(self):
-        cache.clear()
-        trans_real.deactivate()
-        trans_real._translations = {}  # Django fails to clear this cache.
-        trans_real.activate(settings.LANGUAGE_CODE)
-        super(TestCase, self)._pre_setup()
-
-    def reindex_and_refresh(self):
-        """Reindexes anything in the db"""
-        from kitsune.search.es_utils import es_reindex_cmd
-        es_reindex_cmd()
-        self.refresh(run_tasks=False)
-
-    def setup_indexes(self, empty=False, wait=True):
-        """(Re-)create write index"""
-        from kitsune.search.es_utils import recreate_indexes
-        recreate_indexes()
-        get_es().cluster.health(wait_for_status='yellow')
-
-    def teardown_indexes(self):
-        """Tear down write index"""
-        for index in es_utils.all_write_indexes():
-            es_utils.delete_index(index)
-
-    @classmethod
-    def setUpClass(cls):
-        super(TestCase, cls).setUpClass()
-
-        if not getattr(settings, 'ES_URLS'):
-            cls.skipme = True
-            return
-
-        # try to connect to ES and if it fails, skip ElasticTestCases.
-        if not get_es().ping():
-            cls.skipme = True
-            return
-
-    def setUp(self):
-        if self.skipme:
-            raise SkipTest
-
-        super(TestCase, self).setUp()
-        self.setup_indexes()
-
-    def tearDown(self):
-        super(TestCase, self).tearDown()
-        self.teardown_indexes()
-
     def refresh(self, run_tasks=True):
-        es = get_es()
 
-        if run_tasks:
-            # Any time we're doing a refresh, we're making sure that
-            # the index is ready to be queried. Given that, it's
-            # almost always the case that we want to run all the
-            # generated tasks, then refresh.
-            generate_tasks()
-
-        for index in es_utils.all_write_indexes():
-            es.indices.refresh(index=index)
-
-        es.cluster.health(wait_for_status='yellow')
+        for index in registry.get_indices():
+            index.refresh()
 
 
 def attrs_eq(received, **expected):
