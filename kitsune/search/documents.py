@@ -34,6 +34,10 @@ class WikiDocumentType(KitsuneDocTypeMixin, DocType):
     document_recent_helpful_votes = fields.IntegerField()
     document_display_order = fields.IntegerField(attr='original.display_order')
 
+    # Store the index name to the index until elastic/elasticsearch#23306 get fixed
+    # https://github.com/elastic/elasticsearch/issues/23306
+    index_name = fields.KeywordField()
+
     # Custom configuration for kitsune to have separate analyzer for supported locales
     supported_locales = settings.SUMO_LANGUAGES
 
@@ -69,6 +73,9 @@ class WikiDocumentType(KitsuneDocTypeMixin, DocType):
         else:
             return 0
 
+    def prepare_index_name(self, instance):
+        return config.WIKI_DOCUMENT_INDEX_NAME
+
 
 class QuestionDocumentType(KitsuneDocTypeMixin, DocType):
     url = fields.KeywordField(attr='get_absolute_url')
@@ -97,6 +104,10 @@ class QuestionDocumentType(KitsuneDocTypeMixin, DocType):
     question_tag = fields.KeywordField()
     question_locale = fields.KeywordField(attr='locale')
 
+    # Store the index name to the index until elastic/elasticsearch#23306 get fixed
+    # https://github.com/elastic/elasticsearch/issues/23306
+    index_name = fields.KeywordField()
+
     # Custom configuration for kitsune to have separate analyzer for supported locales
     supported_locales = settings.SUMO_LANGUAGES
 
@@ -124,6 +135,9 @@ class QuestionDocumentType(KitsuneDocTypeMixin, DocType):
 
     def prepare_question_tag(self, instance):
         return [tag.name for tag in instance.my_tags]
+
+    def prepare_index_name(self, instance):
+        return config.QUESTION_INDEX_NAME
 
 
 class AnswerDocumentType(KitsuneDocTypeMixin, DocType):
