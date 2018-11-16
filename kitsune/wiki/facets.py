@@ -110,7 +110,9 @@ def _documents_for(locale, topics=None, products=None):
 def _es_documents_for(locale, topics=None, products=None):
     """ES implementation of documents_for."""
     fields = ['id', 'document_title', 'url', 'document_parent_id', 'document_summary']
-    filters = WikiDocumentType.get_filters(locale=locale, products=products, topics=topics,
+    products_slug = [product.slug for product in products or []]
+    topic_slug = [topic.slug for topic in topics or []]
+    filters = WikiDocumentType.get_filters(locale=locale, products=products_slug, topics=topics,
                                            categories=settings.IA_DEFAULT_CATEGORIES)
     query = Bool(filter=list(filters))
 
