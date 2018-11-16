@@ -574,7 +574,7 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
 
         return questions
 
-    @cached_property
+    @property
     def answer_values(self):
         return self.answers.filter(is_spam=False).values('content', 'creator__username')
 
@@ -1273,11 +1273,6 @@ def reindex_questions_answers(sender, instance, **kw):
     if instance.id:
         answer_ids = instance.answers.all().values_list('id', flat=True)
         index_task.delay(AnswerMetricsMappingType, list(answer_ids))
-
-post_save.connect(
-    reindex_questions_answers, sender=Question,
-    dispatch_uid='questions_reindex_answers')
-
 
 def user_pre_save(sender, instance, **kw):
     """When a user's username is changed, we must reindex the questions

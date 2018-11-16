@@ -9,13 +9,13 @@ from pyquery import PyQuery as pq
 from kitsune.forums.tests import PostFactory, ThreadFactory
 from kitsune.products.tests import ProductFactory
 from kitsune.questions.tests import QuestionFactory, AnswerFactory, AnswerVoteFactory
-from kitsune.search.tests.test_es import ElasticTestCase
+from kitsune.search.tests.test_es import ElasticDSLTestCase
 from kitsune.sumo.tests import LocalizingClient
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.wiki.tests import DocumentFactory, ApprovedRevisionFactory, RevisionFactory
 
 
-class SimpleSearchTests(ElasticTestCase):
+class SimpleSearchTests(ElasticDSLTestCase):
     client_class = LocalizingClient
 
     def test_content(self):
@@ -85,7 +85,6 @@ class SimpleSearchTests(ElasticTestCase):
             tags=u'desktop')
         ApprovedRevisionFactory(document=doc)
 
-        self.refresh()
 
         response = self.client.get(reverse('search'), {
             'q': 'audio',
@@ -101,7 +100,6 @@ class SimpleSearchTests(ElasticTestCase):
         a = AnswerFactory(question=q)
         AnswerVoteFactory(answer=a, helpful=True)
 
-        self.refresh()
 
         response = self.client.get(reverse('search'), {'q': 'audio'})
         eq_(200, response.status_code)
@@ -116,8 +114,6 @@ class SimpleSearchTests(ElasticTestCase):
         RevisionFactory(document=doc, is_approved=True)
         doc = DocumentFactory(title=u'audio2', locale=u'en-US', category=10, products=[firefox])
         RevisionFactory(document=doc, is_approved=True)
-
-        self.refresh()
 
         # Verify there are no real results but 2 fallback results are rendered
         response = self.client.get(reverse('search'), {'q': 'piranha'})
@@ -152,8 +148,6 @@ class SimpleSearchTests(ElasticTestCase):
         ans = AnswerFactory(question=ques, content=u'volume')
         AnswerVoteFactory(answer=ans, helpful=True)
 
-        self.refresh()
-
         qs = {'q': 'audio', 'page': 81}
         response = self.client.get(reverse('search'), qs)
         eq_(200, response.status_code)
@@ -172,8 +166,6 @@ class SimpleSearchTests(ElasticTestCase):
         ques = QuestionFactory(title=u'audio', product=p)
         ans = AnswerFactory(question=ques, content=u'volume')
         AnswerVoteFactory(answer=ans, helpful=True)
-
-        self.refresh()
 
         # This is the search that you get when you start on the sumo
         # homepage and do a search from the box with two differences:
@@ -210,8 +202,6 @@ class SimpleSearchTests(ElasticTestCase):
         doc.products.add(ProductFactory(title=u'firefox', slug=u'desktop'))
         RevisionFactory(document=doc, is_approved=True)
 
-        self.refresh()
-
         # This is the search that you get when you start on the sumo
         # homepage and do a search from the box with two differences:
         # first, we do it in json since it's easier to deal with
@@ -247,8 +237,6 @@ class SimpleSearchTests(ElasticTestCase):
         thread1 = ThreadFactory(title=u'audio')
         PostFactory(thread=thread1)
 
-        self.refresh()
-
         response = self.client.get(reverse('search'), {
             'q': 'audio', 'format': 'json'})
 
@@ -263,8 +251,6 @@ class SimpleSearchTests(ElasticTestCase):
         ques.save()
         doc.is_archived = True
         doc.save()
-
-        self.refresh()
 
         response = self.client.get(reverse('search'), {
             'q': 'audio', 'format': 'json'})
@@ -286,7 +272,6 @@ class SimpleSearchTests(ElasticTestCase):
         doc.products.add(mobile)
         RevisionFactory(document=doc, is_approved=True)
 
-        self.refresh()
 
         # There should be 2 results for desktop and 1 for mobile.
         response = self.client.get(reverse('search'), {
@@ -312,8 +297,6 @@ class SimpleSearchTests(ElasticTestCase):
 
         doc = DocumentFactory(title=u'audio too', locale=u'en-US', category=10, products=[desktop])
         RevisionFactory(document=doc, is_approved=True)
-
-        self.refresh()
 
         # There should be 2 results for kb (w=1) and 1 for questions (w=2).
         response = self.client.get(reverse('search'), {

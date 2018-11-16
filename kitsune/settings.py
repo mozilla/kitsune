@@ -772,6 +772,8 @@ ELASTICSEARCH_DSL = {
         },
 }
 ES_TASK_CHUNK_SIZE = 100
+ELASTICSEARCH_DSL_INDEX_SETTINGS = {"number_of_replicas": 0,
+                                    "number_of_shards": 1}
 
 # Indexes for indexing--set this to ES_INDEXES if you want to read to
 # and write to the same index.

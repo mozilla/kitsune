@@ -9,8 +9,8 @@ from django_elasticsearch_dsl.registries import registry
 from django_statsd.clients import statsd
 from multidb.pinning import pin_this_thread, unpin_this_thread
 
-from kitsune.search.es_utils import index_chunk, UnindexMeBro, write_index, get_analysis, \
-    es_analyzer_for_locale
+from kitsune.search.es_utils import (index_chunk, UnindexMeBro, write_index,
+                                     get_analysis, es_analyzer_for_locale)
 from kitsune.search.utils import from_class_path
 from kitsune.sumo.decorators import timeit
 
