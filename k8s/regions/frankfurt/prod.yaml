@@ -37,12 +37,6 @@ kubernetes:
             replicas: 5
             labels:
                 type: "web"
-            readiness:
-                failure_threshold: 2
-                initial_delay_seconds: 20
-                period_seconds: 5
-                success_threshold: 1
-                timeout_seconds: 5
             liveness:
                 failure_threshold: 2
                 initial_delay_seconds: 5
