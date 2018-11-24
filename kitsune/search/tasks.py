@@ -178,7 +178,7 @@ def unindex_task(cls, id_list, **kw):
 @task()
 @timeit
 def update_synonyms_task():
-    es = get_es()
+    es = get_es()  # noqa
 
     # Close the index, update the settings, then re-open it.
     # This will cause search to be unavailable for a few seconds.
@@ -303,7 +303,8 @@ def index_missing_objects(app_label, model_name, document_class, index_generatio
     document = _get_document(model=model, document_class=document_class)
     # TODO: Make it more generic
     if model_name == 'Document':
-        queryset = document().get_queryset().exclude(current_revision__created__lte=index_generation_time)
+        queryset = (document().get_queryset()
+                              .exclude(current_revision__created__lte=index_generation_time))
     else:
         queryset = document().get_queryset().exclude(created__lte=index_generation_time)
 

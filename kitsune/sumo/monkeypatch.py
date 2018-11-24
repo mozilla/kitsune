@@ -5,7 +5,6 @@ from django.forms import fields
 from django.forms import widgets
 
 
-
 _has_been_patched = False
 TESTING = (len(sys.argv) > 1 and sys.argv[1] == 'test') or sys.argv[0].endswith('py.test')
 
@@ -104,7 +103,6 @@ def patch():
     # In testing contexts, patch django.shortcuts.render
     if TESTING:
         monkeypatch_render()
-
 
 
 def monkeypatch_render():

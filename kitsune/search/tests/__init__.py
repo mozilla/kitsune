@@ -1,16 +1,11 @@
-import re
+import factory
+from django.core.management import call_command
 from django.test.client import RequestFactory
 from django.test.utils import override_settings
-
-import factory
-from django_elasticsearch_dsl.registries import registry
-from elasticsearch_dsl import IndexTemplate
 from elasticsearch_dsl.connections import get_connection
-from elasticsearch_dsl.query import MatchAll
 
 from kitsune.search.models import Synonym
 from kitsune.sumo.tests import TestCase
-from django.core.management import call_command
 
 # Dummy request for passing to question_searcher() and brethren.
 dummy_request = RequestFactory().get('/')

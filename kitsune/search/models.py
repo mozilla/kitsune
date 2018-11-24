@@ -3,7 +3,6 @@ import logging
 from threading import local
 
 from django.conf import settings
-from django.core import signals
 from django.db import models
 from django.db.models.signals import pre_delete, post_save, m2m_changed
 from django.dispatch import receiver
@@ -20,6 +19,11 @@ class MappingType(object):
 
 class Indexable(object):
     pass
+
+
+class NotFoundError(Exception):
+    pass
+
 
 log = logging.getLogger('k.search.es')
 
@@ -180,7 +184,7 @@ class SearchMappingType(MappingType, Indexable):
     @classmethod
     def morelikethis(cls, id_, s, fields):
         """MoreLikeThis API"""
-        return list(MLT(id_, s, fields, min_term_freq=1, min_doc_freq=1))
+        return list(MLT(id_, s, fields, min_term_freq=1, min_doc_freq=1))  # noqa
 
 
 def _identity(s):
@@ -299,7 +303,6 @@ def generate_tasks(**kwargs):
         fun(*args)
 
     tasks.clear()
-
 
 
 class RecordManager(models.Manager):

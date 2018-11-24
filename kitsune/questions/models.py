@@ -15,7 +15,6 @@ from django.db import models, connection, close_old_connections
 from django.db.models import Q
 from django.db.models.signals import post_save, pre_save
 from django.db.utils import IntegrityError
-from django.utils.functional import cached_property
 from django.http import Http404
 
 import actstream
@@ -682,7 +681,6 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         return images
 
 
-
 @register_mapping_type
 class QuestionMappingType(SearchMappingType):
     seconds_ago_filter = 'updated__gte'
@@ -1273,6 +1271,7 @@ def reindex_questions_answers(sender, instance, **kw):
     if instance.id:
         answer_ids = instance.answers.all().values_list('id', flat=True)
         index_task.delay(AnswerMetricsMappingType, list(answer_ids))
+
 
 def user_pre_save(sender, instance, **kw):
     """When a user's username is changed, we must reindex the questions

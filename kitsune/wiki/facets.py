@@ -3,15 +3,13 @@ import hashlib
 from django.conf import settings
 from django.core.cache import cache
 from django.db.models import Count
-
-from elasticsearch.exceptions import TransportError
 from django_statsd.clients import statsd
-from elasticsearch_dsl import Q
+from elasticsearch.exceptions import TransportError
 from elasticsearch_dsl.query import Bool
 
 from kitsune.products.models import Topic
 from kitsune.search.documents import WikiDocumentType
-from kitsune.wiki.models import Document, DocumentMappingType
+from kitsune.wiki.models import Document
 
 
 def topics_for(product, parent=False):
@@ -112,7 +110,8 @@ def _es_documents_for(locale, topics=None, products=None):
     fields = ['id', 'document_title', 'url', 'document_parent_id', 'document_summary']
     products_slug = [product.slug for product in products or []]
     topic_slug = [topic.slug for topic in topics or []]
-    filters = WikiDocumentType.get_filters(locale=locale, products=products_slug, topics=topics,
+    filters = WikiDocumentType.get_filters(locale=locale, products=products_slug,
+                                           topics=topic_slug,
                                            categories=settings.IA_DEFAULT_CATEGORIES)
     query = Bool(filter=list(filters))
 

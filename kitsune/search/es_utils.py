@@ -32,9 +32,14 @@ class UntypedS(object):
 def F(*args, **kwargs):
     pass
 
+
+def get_es():
+    pass
+
 # These used to be constants, but that was problematic. Things like
 # tests want to be able to dynamically change settings at run time,
 # which isn't possible if these are constants.
+
 
 def read_index(group):
     """Gets the name of the read index for a group."""
