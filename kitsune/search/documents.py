@@ -165,8 +165,8 @@ class QuestionDocumentType(KitsuneDocTypeMixin, DocType):
         return bool(instance.num_answers)
 
     def prepare_question_has_helpful(self, instance):
-        if instance.answers:
-            return instance.answers.all().filter(votes__helpful=True).exists()
+        if instance.answer_values:
+            return instance.answer_values.all().filter(votes__helpful=True).exists()
 
         return False
 

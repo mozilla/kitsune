@@ -78,7 +78,6 @@ def build_results_list(pages, is_json):
             summary = _build_es_excerpt(doc)
             if not summary:
                 summary = doc['document_summary']
-                print(summary)
             result = {
                 'title': doc['document_title'],
                 'type': 'document'}
