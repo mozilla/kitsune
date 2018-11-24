@@ -1,6 +1,5 @@
-from django.conf import settings
 from elasticsearch_dsl import Search
-from elasticsearch_dsl.query import Term, Terms, Bool, MultiMatch
+from elasticsearch_dsl.query import Bool
 
 from kitsune import search as constants
 from kitsune.search.config import WIKI_DOCUMENT_INDEX_NAME, QUESTION_INDEX_NAME

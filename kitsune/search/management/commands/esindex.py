@@ -1,6 +1,6 @@
 import logging
 
-from celery import chord, chain, group
+from celery import chain, group
 from django.apps import apps
 from django.conf import settings
 from django.core.management import BaseCommand

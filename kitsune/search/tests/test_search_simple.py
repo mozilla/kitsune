@@ -85,7 +85,6 @@ class SimpleSearchTests(ElasticDSLTestCase):
             tags=u'desktop')
         ApprovedRevisionFactory(document=doc)
 
-
         response = self.client.get(reverse('search'), {
             'q': 'audio',
             'format': 'json',
@@ -99,7 +98,6 @@ class SimpleSearchTests(ElasticDSLTestCase):
         q = QuestionFactory(title='audio', content='<script>alert("hacked");</script>')
         a = AnswerFactory(question=q)
         AnswerVoteFactory(answer=a, helpful=True)
-
 
         response = self.client.get(reverse('search'), {'q': 'audio'})
         eq_(200, response.status_code)
@@ -271,7 +269,6 @@ class SimpleSearchTests(ElasticDSLTestCase):
         doc.products.add(desktop)
         doc.products.add(mobile)
         RevisionFactory(document=doc, is_approved=True)
-
 
         # There should be 2 results for desktop and 1 for mobile.
         response = self.client.get(reverse('search'), {

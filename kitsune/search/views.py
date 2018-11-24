@@ -9,7 +9,6 @@ from django.http import (
     HttpResponse, HttpResponseBadRequest, HttpResponseRedirect)
 from django.shortcuts import render, render_to_response
 from django.utils.dateparse import parse_datetime
-from django.utils.html import escape
 from django.utils.http import urlquote
 from django.utils.translation import ugettext as _, pgettext, pgettext_lazy
 from django.views.decorators.cache import cache_page
@@ -632,7 +631,7 @@ def opensearch_suggestions(request):
             [],
             [urlize(r) for r in results]
         ]
-    except ES_EXCEPTIONS:
+    except ES_EXCEPTIONS:  # noqa
         # If we have Elasticsearch problems, we just send back an empty set of results.
         data = []
 
