@@ -51,7 +51,7 @@ def top_contributors_questions(start=None, end=None, locale=None, product=None,
     counts = _get_creator_counts(users, count, page)
 
     if use_cache:
-        cache.set(cache_key, counts, 60*15)  # 15 minutes
+        cache.set(cache_key, counts, 60*180)  # 3 hours
     return counts
 
 
@@ -99,7 +99,7 @@ def top_contributors_l10n(start=None, end=None, locale=None, product=None,
     counts = _get_creator_counts(users, count, page)
 
     if use_cache:
-        cache.set(cache_key, counts, 60*15)  # 15 minutes
+        cache.set(cache_key, counts, 60*180)  # 3 hours
     return counts
 
 

@@ -285,6 +285,7 @@ NON_SUPPORTED_LOCALES = {
     'hy-AM': None,
     'ilo': None,
     'is': None,
+    'jv': None,
     'kab': None,
     'kk': None,
     'lg': None,
@@ -306,6 +307,7 @@ NON_SUPPORTED_LOCALES = {
     'rw': None,
     'sah': None,
     'son': None,
+    'su': None,
     'sv-SE': 'sv',
     'tl': None,
     'uz': None,
@@ -372,7 +374,7 @@ DB_LOCALIZE = {
             'attrs': ['title', 'description'],
         },
     },
-    'badger': {
+    'kbadge': {
         'Badge': {
             'attrs': ['title', 'description'],
         },
@@ -488,11 +490,12 @@ TEMPLATES = [
 MIDDLEWARE_CLASSES = (
     'kitsune.sumo.middleware.HostnameMiddleware',
     'allow_cidr.middleware.AllowCIDRMiddleware',
+    'kitsune.sumo.middleware.FilterByUserAgentMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'multidb.middleware.PinningRouterMiddleware',
     'django_statsd.middleware.GraphiteMiddleware',
     'commonware.request.middleware.SetRemoteAddrFromForwardedFor',
-    'enforce_host.EnforceHostMiddleware',
+    'kitsune.sumo.middleware.EnforceHostIPMiddleware',
 
     # VaryNoCacheMiddleware must be above LocaleURLMiddleware
     # so that it can see the response has a vary on accept-language
@@ -628,7 +631,6 @@ INSTALLED_APPS = (
     'kitsune.search',
     'kitsune.forums',
     'djcelery',
-    'badger',
     'cronjobs',
     'tidings',
     'rest_framework.authtoken',
@@ -665,9 +667,6 @@ INSTALLED_APPS = (
     'statici18n',
     'watchman',
     # 'axes',
-
-    # App for Sentry:
-    'raven.contrib.django',
 
     # Extra apps for testing.
     'django_nose',
@@ -712,14 +711,12 @@ PUENTE = {
             ('kitsune/**/management/**.py', 'ignore'),
             ('kitsune/forums/**.lhtml', 'ignore'),
 
-            ('**/templates/**.lhtml', 'jinja2'),
-            ('**/templates/**.ltxt', 'jinja2'),
             ('kitsune/**.py', 'python'),
             ('kitsune/**/templates/**.html', 'jinja2'),
             ('kitsune/**/jinja2/**.html', 'jinja2'),
+            ('kitsune/**/jinja2/**.lhtml', 'jinja2'),
+            ('kitsune/**/jinja2/**.ltxt', 'jinja2'),
             ('vendor/src/django-tidings/**/templates/**.html', 'jinja2'),
-            ('vendor/src/django-badger/badger/*.py', 'python'),
-            ('vendor/src/django-badger/badger/templatetags/*.py', 'python'),
         ],
         'djangojs': [
             # We can't say **.js because that would dive into any libraries.
@@ -873,6 +870,9 @@ TOPIC_IMAGE_PATH = 'uploads/topics/'
 
 # Products
 PRODUCT_IMAGE_PATH = 'uploads/products/'
+
+# Badges (kbadge)
+BADGE_IMAGE_PATH = 'uploads/badges/'
 
 # Email
 EMAIL_BACKEND = config('EMAIL_BACKEND', default='kitsune.lib.email.LoggingEmailBackend')
@@ -1099,14 +1099,28 @@ STATSD_PORT = config('STATSD_PORT', 8125, cast=int)
 STATSD_PREFIX = config('STATSD_PREFIX', default='')
 
 
-RAVEN_CONFIG = {
-    'dsn': config('SENTRY_DSN', default=None),
-    'release': config('GIT_SHA', default=None),
-    'tags': {
-        'server_full_name': PLATFORM_NAME,
-        'environment': config('SENTRY_ENVIRONMENT', default=''),
-    }
-}
+if config('SENTRY_DSN', None):
+    import sentry_sdk
+    from sentry_sdk.integrations.django import DjangoIntegration
+
+    # see https://docs.sentry.io/learn/filtering/?platform=python
+    def filter_exceptions(event, hint):
+        from django.security import DisallowedHost
+        if 'exc_info' in hint:
+            exc_type, exc_value, tb = hint['exc_info']
+            if isinstance(exc_value, DisallowedHost):
+                return None
+
+        return event
+
+    sentry_sdk.init(
+        dsn=config('SENTRY_DSN'),
+        integrations=[DjangoIntegration()],
+        release=config('GIT_SHA', default=None),
+        server_name=PLATFORM_NAME,
+        environment=config('SENTRY_ENVIRONMENT', default=''),
+        before_send=filter_exceptions,
+    )
 
 
 PIPELINE_ENABLED = config('PIPELINE_ENABLED', default=False, cast=bool)
@@ -1152,3 +1166,12 @@ DISABLE_FEEDS = config('DISABLE_FEEDS', default=False, cast=bool)
 DISABLE_QUESTIONS_LIST_GLOBAL = config('DISABLE_QUESTIONS_LIST_GLOBAL', default=False, cast=bool)
 DISABLE_QUESTIONS_LIST_ALL = config('DISABLE_QUESTIONS_LIST_ALL', default=False, cast=bool)
 IMAGE_ATTACHMENT_USER_LIMIT = config('IMAGE_ATTACHMENT_USER_LIMIT', default=50, cast=int)
+
+# list of strings to match against user agent to block
+USER_AGENT_FILTERS = config('USER_AGENT_FILTERS', default='', cast=Csv())
+
+BADGE_LIMIT_ARMY_OF_AWESOME = config('BADGE_LIMIT_ARMY_OF_AWESOME', default=50, cast=int)
+BADGE_LIMIT_L10N_KB = config('BADGE_LIMIT_L10N_KB', default=10, cast=int)
+BADGE_LIMIT_SUPPORT_FORUM = config('BADGE_LIMIT_SUPPORT_FORUM', default=30, cast=int)
+BADGE_MAX_RECENT = config('BADGE_MAX_RECENT', default=15, cast=int)
+BADGE_PAGE_SIZE = config('BADGE_PAGE_SIZE', default=50, cast=int)

@@ -50,14 +50,32 @@
 
 #### Deploy SUMO with commander (recommended)
 
+Choose a region and env:
+
+| Region  | Env  |
+|---|---|
+| frankfurt  | dev  |
+| frankfurt  | stage |
+| frankfurt  | prod |
+| oregon-a  | stage |
+| oregon-a  | prod |
+| oregon-b  | stage |
+| oregon-b  | prod |
+
+
 - Update the settings file with new image tags and settings.
 
-- Deploy with commander
+- Deploy with commander *without secrets*
 
   `./commander.sh deploy <region> <environment> <git sha>`
 
   E.g. `./commander.sh deploy frankfurt dev d7be392`
 
+- Deploy with commander *with secrets*
+
+  `./commander.sh deploy <region> <environment> <git sha> secrets`
+
+  E.g. `./commander.sh deploy frankfurt dev d7be392 secrets`
 
 
 #### Deploying SUMO (low level)

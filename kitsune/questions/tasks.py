@@ -138,8 +138,8 @@ def maybe_award_badge(badge_template, year, user):
         created__gte=date(year, 1, 1),
         created__lt=date(year + 1, 1, 1))
 
-    # If the count is 30 or higher, award the badge.
-    if qs.count() >= 30:
+    # If the count is at or above the limit, award the badge.
+    if qs.count() >= settings.BADGE_LIMIT_SUPPORT_FORUM:
         badge.award_to(user)
         return True
 

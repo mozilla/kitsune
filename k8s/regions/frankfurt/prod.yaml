@@ -34,15 +34,9 @@ kubernetes:
         web:
             command: "./bin/run-prod.sh"
             deployment_name: "sumo-prod-web"
-            replicas: 5
+            replicas: 25
             labels:
                 type: "web"
-            readiness:
-                failure_threshold: 2
-                initial_delay_seconds: 20
-                period_seconds: 5
-                success_threshold: 1
-                timeout_seconds: 5
             liveness:
                 failure_threshold: 2
                 initial_delay_seconds: 5
@@ -99,6 +93,7 @@ app:
     email_use_tls: True
     enable_admin: False
     enable_whitenoise: True
+    enforce_host: support.mozilla.org,prod-frankfurt.sumo.moz.works
     engage_robots: False
     es_index_prefix: "sumo_prod"
     es_http_auth: SECRET
@@ -139,7 +134,8 @@ app:
     surveygizmo_api_token: SECRET
     surveygizmo_api_token_secret: SECRET
     use_x_forwarded_host: True
+    user_agent_filters: "360spider,semrushBot"
     wsgi_keep_alive: 60
     disable_questions_list_global: False
     disable_questions_list_all: False
-    disable_feeds: True
+    disable_feeds: False

@@ -46,6 +46,13 @@ h4 {
     float: right;
     font-size: 24px;
   }
+
+  .html-rtl & {
+    .btn,
+    .btn:hover {
+      float: left;
+    }
+  }
 }
 
 .content-box {
@@ -73,6 +80,24 @@ h4 {
 
   &.questions {
     background-position: 0 -268px;
+  }
+
+  .html-rtl & {
+    &.aoa {
+      background-position: 80px -50px;
+    }
+
+    &.kb {
+      background-position: 80px -486px;
+    }
+
+    &.localize {
+      background-position: 80px -704px;
+    }
+
+    &.questions {
+      background-position: 80px -268px;
+    }
   }
 }
 
@@ -135,6 +160,17 @@ h4 {
 
     .column {
       width: 450px;
+    }
+  }
+
+  .html-rtl & {
+    .column {
+      margin: 0 0 30px 30px;
+    }
+
+    .hero-butler {
+      left: -30px;
+      right: auto;
     }
   }
 }

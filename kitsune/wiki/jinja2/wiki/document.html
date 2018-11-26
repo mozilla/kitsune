@@ -35,18 +35,46 @@
 {% endblock %}
 
 {% block above_main %}
-  <h1 class="product-title cf">
+  <div class="grid_12 search-form-large">
+    {{ search_box(settings, id='support-search-wiki', params=search_params) }}
+  </div>
+
+  <h1 class="wiki-product-title cf">
     {% set prod_url = url('products.product', slug=product.slug) %}
-    <img src="{{ STATIC_URL }}sumo/img/blank.png" alt="" class="logo-sprite" style="background-image: url('{{ product.image_url }}');" />
+    <img src="{{ product.image_alternate_url }}" height="48" width="48" alt="" />
     <a href="{{ prod_url }}">{{ pgettext('DB: products.Product.title', product.title) }}</a>
   </h1>
 {% endblock %}
 
 {% block content %}
   <div class="grid_9">
+  {% if product.slug == 'firefox' %}
+    {# show-fx-download.js will remove the 'hidden' class below if the visitor is *NOT* using Firefox #}
+    <div class="firefox-download-button hidden">
+      <div class="download-buttons">
+        <div class="download-firefox">
+          <a href="https://www.mozilla.org/firefox/download/thanks/?utm_source=support.mozilla.org&amp;utm_medium=referral&amp;utm_campaign=non-fx-button&amp;utm_content=body-download-button" class="download-button"
+            data-event-category="Download Button"
+            data-event-action="Panel Opening"
+            data-event-label="{{ latest_version }}">
+            <span class="download-content">
+              <strong class="download-title">{{ _('Download Firefox') }}</strong>
+            </span>
+          </a>
+          <ul class="info">
+            <li><a href="https://www.mozilla.org/firefox/all/">{{ _('Systems and Languages') }}</a></li>
+            <li><a href="https://www.mozilla.org/firefox/notes">{{ _("What's New") }}</a></li>
+            <li><a href="https://www.mozilla.org/legal/privacy/firefox">{{ _('Privacy') }}</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
     <article class="wiki-doc">
       {{ document_title(document) }}
       {{ document_messages(document, redirected_from) }}
+      <div class="separator"></div>
       {{ document_content(document, fallback_reason, request, settings, document_css_class, any_localizable_revision, full_locale_name) }}
 
     {% set share_link = document.share_link or (document.parent and document.parent.share_link) %}
@@ -58,16 +86,18 @@
       </p>
     {% endif %}
 
+      <div class="separator"></div>
+
+      {{ contributor_list(contributors) }}
+
       <div class="vote-wrap">
         {# this extra div is to make the js compatible with old theme. TODO: Remove and fix js. #}
         {{ vote_form(document, 'footer') }}
       </div>
-
-      {{ contributor_list(contributors) }}
     </article>
 
     {% if document.related_documents.count() %}
-      <div id="related-documents">
+      <div id="related-documents" class="wiki-related-documents">
         <h4>{{ _('See also:') }}</h4>
         <ul>
           {% for related in document.related_documents.all() %}
@@ -77,6 +107,11 @@
       </div>
     {% endif %}
   </div>
+  <section id="get-involved-box" class="grid_12">
+    <a class="btn btn-submit" href="{{ url('landings.get_involved') }}">
+      {{ _('Volunteer for Mozilla Support') }}
+    </a>
+  </section>
 {% endblock %}
 
 {% block side_top %}
@@ -91,6 +126,4 @@
   {{ document_tools(doc, parent, user, 'article', settings, include_showfor=True) }}
   <h4>{{ _('Explore more topics') }}</h4>
   {{ topic_sidebar(product_topics[:10], [], product) }}
-  {{ related_products_sidebar(related_products) }}
-  {{ vote_form(document, 'sidebar') }}
 {% endblock %}

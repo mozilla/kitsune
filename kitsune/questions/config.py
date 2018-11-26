@@ -184,35 +184,6 @@ products = SortedDict([
         ])
     }),
 
-    ('firefox-os', {
-        'name': _lazy(u'Firefox OS'),
-        'subtitle': _lazy(u'Mobile OS for smartphones'),
-        'extra_fields': ['device', 'os'],
-        'tags': [],
-        'product': 'firefox-os',
-        'categories': SortedDict([
-            # TODO: Just use the IA topics for this.
-            # See bug 979397
-            ('download-and-install', {
-                'name': _lazy(u'Download and install apps'),
-                'topic': 'marketplace',
-                'tags': ['marketplace'],
-            }),
-            ('customize', {
-                'name': _lazy(u'Customize controls, options, settings and '
-                              u'preferences'),
-                'topic': 'settings',
-                'tags': ['settings'],
-            }),
-            ('fix-problems', {
-                'name': _lazy(u'Fix slowness, crashing, error messages and '
-                              u'other problems'),
-                'topic': 'fix-problems',
-                'tags': ['fix-problems'],
-            }),
-        ])
-    }),
-
     ('focus', {
         'name': _lazy(u'Firefox Focus'),
         'subtitle': _lazy(u'Automatic privacy browser and content blocker'),
@@ -233,22 +204,22 @@ products = SortedDict([
         ])
     }),
 
-    ('firefox-fire-tv', {
-        'name': _lazy(u'Firefox Fire TV'),
-        'subtitle': _lazy(u'Firefox for Amazon Fire TV'),
+    ('firefox-amazon-devices', {
+        'name': _lazy(u'Firefox for Amazon Devices'),
+        'subtitle': _lazy(u'Browser for Amazon devices'),
         'extra_fields': [],
-        'tags': ['firefox-fire-tv'],
-        'product': 'firefox-fire-tv',
+        'tags': ['firefox-amazon'],
+        'product': 'firefox-amazon-devices',
         'categories': SortedDict([
-            ('get-started', {
-                'name': _lazy(u'Get started'),
-                'topic': 'get-started',
-                'tags': ['get-started']
+            ('firefox-fire-tv', {
+                'name': _lazy(u'Firefox for Fire TV'),
+                'topic': 'firefox-fire-tv',
+                'tags': ['firefox-fire-tv']
             }),
-            ('fix-problems', {
-                'name': _lazy(u'Fix problems'),
-                'topic': 'fix-problems',
-                'tags': ['fix-problems']
+            ('firefox-echo-show', {
+                'name': _lazy(u'Firefox for Echo Show'),
+                'topic': 'firefox-echo-show',
+                'tags': ['firefox-echo-show']
             }),
         ])
     }),
@@ -297,12 +268,12 @@ products = SortedDict([
         ])
     }),
 
-    ('firefox-rocket', {
-        'name': _lazy(u'Firefox Rocket'),
+    ('firefox-lite', {
+        'name': _lazy(u'Firefox Lite'),
         'subtitle': _lazy(u'Mobile browser for Indonesia'),
         'extra_fields': [],
-        'tags': ['firefox-rocket'],
-        'product': 'firefox-rocket',
+        'tags': ['firefox-lite'],
+        'product': 'firefox-lite',
         'categories': SortedDict([
             ('get-started', {
                 'name': _lazy(u'Get started'),
@@ -370,6 +341,26 @@ products = SortedDict([
                 'name': _lazy(u'Customization of Firefox in an enterprise environment'),
                 'topic': 'customization-firefox-enterprise-environment',
                 'tags': ['customization'],
+            }),
+        ])
+    }),
+
+    ('firefox-reality', {
+        'name': _lazy(u'Firefox Reality'),
+        'subtitle': _lazy(u'Firefox for Virtual Reality'),
+        'extra_fields': [],
+        'tags': [],
+        'product': 'firefox-reality',
+        'categories': SortedDict([
+            ('get-started', {
+                'name': _lazy(u'Get started with Firefox Reality'),
+                'topic': 'get-started',
+                'tags': ['get-started'],
+            }),
+            ('troubleshooting-reality', {
+                'name': _lazy(u'Troubleshooting Firefox Reality'),
+                'topic': 'troubleshooting-reality',
+                'tags': ['troubleshooting'],
             }),
         ])
     }),

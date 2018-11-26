@@ -1,4 +1,3 @@
-from django.contrib.syndication.views import Feed
 from django.shortcuts import get_object_or_404
 from django.utils.feedgenerator import Atom1Feed
 from django.utils.html import strip_tags, escape
@@ -9,6 +8,7 @@ from taggit.models import Tag
 from kitsune.products.models import Product, Topic
 from kitsune.questions import config
 from kitsune.questions.models import Question
+from kitsune.sumo.feeds import Feed
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 

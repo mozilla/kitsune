@@ -10,6 +10,27 @@
        | safe }}
   </h2>
 
+  <ul id="doctype-filter" class="search-filter cf">
+    <li {{ w|class_selected(3) }}>
+      <a href="#" data-instant-search-set-params="w=3" data-instant-search="link" data-href="{{ base_doctype_url|encodeURI }}">
+        <img alt="copy" class="show-everything" src="/static/sumo/img/icon-copy.png"/>
+        {{ _('Show Everything') }}
+      </a>
+    </li>
+    <li {{ w|class_selected(1) }}>
+      <a href="#" data-instant-search-set-params="w=1" data-instant-search="link" data-href="{{ base_doctype_url|urlparams(w=1)|encodeURI }}">
+        <img alt="file" class="help-articles" src="/static/sumo/img/icon-file.png"/>
+        {{ _('Help Articles Only') }}
+      </a>
+    </li>
+    <li {{ w|class_selected(2) }}>
+      <a href="#" data-instant-search-set-params="w=2" data-instant-search="link" data-href="{{ base_doctype_url|urlparams(w=2)|encodeURI }}">
+        <img alt="discuss" class="community-discussion" src="/static/sumo/img/icon-discuss.png"/>
+        {{ _('Community Discussion Only') }}
+      </a>
+    </li>
+  </ul>
+
   <div class="content-box">
     {% for doc in results %}
       {{ search_result(doc) }}

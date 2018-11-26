@@ -32,3 +32,9 @@ venv/
 k8s/regions/*/kubeconfig
 k8s/regions/*/kubectl
 k8s/regions/*/*-secrets.yaml
+*.db
+*.sqlite3
+.vscode/
+.bash_history
+.yarnrc
+.docker-build*

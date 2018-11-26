@@ -1,6 +1,0 @@
-FROM kitsune:full-no-locales-latest
-
-USER root
-COPY --from=kitsune:locales-latest /app/locale /app/locale
-RUN chown kitsune.kitsune -R /app/locale /venv
-USER kitsune

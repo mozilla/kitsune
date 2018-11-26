@@ -1,8 +1,11 @@
 version: '3.4'
 services:
   web:
-    image: mozmeao/kitsune:base-dev-latest
-    command: ./manage.py runserver 0.0.0.0:8000
+    image: mozmeao/kitsune:base-dev-${GIT_COMMIT_SHORT:-latest}
+    command: ./bin/run-dev.sh
+    env_file: .env
+    volumes:
+      - ./:/app:delegated
     user: ${UID:-kitsune}
     depends_on:
       - mariadb
@@ -10,6 +13,79 @@ services:
       - redis
     ports:
       - "8000:8000"
+
+  test:
+    image: mozmeao/kitsune:base-dev-${GIT_COMMIT_SHORT:-latest}
+    command: ./bin/run-unit-tests.sh
+    env_file: .env-test
+    volumes:
+      - ./:/app:delegated
+    user: ${UID:-kitsune}
+    depends_on:
+      - mariadb
+      - elasticsearch
+      - redis
+
+  test-js:
+    image: mozmeao/kitsune:staticfiles-${GIT_COMMIT_SHORT:-latest}
+    command: ./bin/run-mocha-tests.sh
+    env_file: .env-test
+    volumes:
+      - ./:/app:delegated
+    user: ${UID:-kitsune}
+
+  test-image:
+    image: mozmeao/kitsune:full-no-locales-${GIT_COMMIT_SHORT:-latest}
+    command: ./bin/run-unit-tests.sh
+    env_file: .env-test
+    depends_on:
+      - mariadb
+      - elasticsearch
+      - redis
+
+  test-image-js:
+    image: mozmeao/kitsune:staticfiles-${GIT_COMMIT_SHORT:-latest}
+    command: ./bin/run-mocha-tests.sh
+    env_file: .env-test
+
+  # images
+  base:
+    build:
+      context: .
+      target: base
+    image: mozmeao/kitsune:base-${GIT_COMMIT_SHORT:-latest}
+
+  base-dev:
+    build:
+      context: .
+      target: base-dev
+    image: mozmeao/kitsune:base-dev-${GIT_COMMIT_SHORT:-latest}
+
+  staticfiles:
+    build:
+      context: .
+      target: staticfiles
+    image: mozmeao/kitsune:staticfiles-${GIT_COMMIT_SHORT:-latest}
+
+  locales:
+    build:
+      context: .
+      target: locales
+    image: mozmeao/kitsune:locales-${GIT_COMMIT_SHORT:-latest}
+
+  full-no-locales:
+    build:
+      context: .
+      target: full-no-locales
+    image: mozmeao/kitsune:full-no-locales-${GIT_COMMIT_SHORT:-latest}
+
+  full:
+    build:
+      context: .
+      target: full
+    image: mozmeao/kitsune:full-${GIT_COMMIT_SHORT:-latest}
+
+  # EXTERNAL SERVICES
   mariadb:
     image: mariadb:10.0
     environment:

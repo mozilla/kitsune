@@ -6,9 +6,7 @@ from django.views.generic.base import RedirectView
 from django.views.static import serve as servestatic
 
 import authority
-import badger
 from waffle.views import wafflejs
-
 
 # Note: This must come before importing admin because it patches the
 # admin.
@@ -19,8 +17,6 @@ from django.contrib import admin  # noqa
 admin.autodiscover()
 
 authority.autodiscover()
-badger.autodiscover()
-
 
 urlpatterns = patterns(
     '',

@@ -1,3 +1,4 @@
+import sys
 from functools import wraps
 
 from django.forms import fields
@@ -8,6 +9,7 @@ from elasticutils.contrib import django as elasticutils_django
 
 
 _has_been_patched = False
+TESTING = (len(sys.argv) > 1 and sys.argv[1] == 'test') or sys.argv[0].endswith('py.test')
 
 
 class DateWidget(fields.DateField.widget):
@@ -102,7 +104,7 @@ def patch():
     session_csrf.monkeypatch()
 
     # In testing contexts, patch django.shortcuts.render
-    if 'TESTING' == 'TESTING':
+    if TESTING:
         monkeypatch_render()
 
     # Monkey patch ES

@@ -11,7 +11,7 @@ QUESTIONS_BADGES = {
     'answer-badge': {
         'slug': '{year}-support-forum-badge',
         'title': '{year} Support Forum Badge',
-        'description': 'This badge is awarded to contributors with 20 '
+        'description': 'This badge is awarded to contributors with 30 '
                        'support forum replies during {year}.',
     },
 }

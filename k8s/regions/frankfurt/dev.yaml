@@ -39,12 +39,6 @@ kubernetes:
             replicas: 2
             labels:
                 type: "web"
-            readiness:
-                failure_threshold: 2
-                initial_delay_seconds: 20
-                period_seconds: 5
-                success_threshold: 1
-                timeout_seconds: 5
             liveness:
                 failure_threshold: 2
                 initial_delay_seconds: 5
@@ -53,7 +47,7 @@ kubernetes:
                 timeout_seconds: 5
 app:
     allowed_cidr_nets: SECRET
-    allowed_hosts: "dev.sumo.moz.works"
+    allowed_hosts: ".sumo.moz.works"
     aws_access_key_id: SECRET
     aws_s3_custom_domain: SECRET
     aws_secret_access_key: SECRET
@@ -103,6 +97,7 @@ app:
     email_use_tls: True
     enable_admin: True
     enable_whitenoise: True
+    enforce_host: dev.sumo.moz.works
     engage_robots: False
     es_index_prefix: "sumo_dev"
     es_http_auth: SECRET

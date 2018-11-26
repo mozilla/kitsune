@@ -94,7 +94,7 @@
           <article>
             {{ answer.content_parsed|safe }}
 
-            {% for image in answer.images.all() %}
+            {% for image in answer.get_images() %}
               <a class="attachment" href="{{ image.file.url }}">
                 <img src="{{ image.file.url }}" alt="">
               </a>

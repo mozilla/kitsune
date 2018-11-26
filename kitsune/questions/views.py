@@ -31,7 +31,6 @@ from tidings.events import ActivationRequestFailed
 from tidings.models import Watch
 
 from kitsune.access.decorators import permission_required, login_required
-from kitsune.community.utils import top_contributors_questions
 from kitsune.products.api import ProductSerializer, TopicSerializer
 from kitsune.products.models import Product, Topic
 from kitsune.questions import config
@@ -245,10 +244,8 @@ def question_list(request, template, product_slug):
 
     # Filter by locale for AAQ locales, and by locale + default for others.
     if request.LANGUAGE_CODE in QuestionLocale.objects.locales_list():
-        forum_locale = request.LANGUAGE_CODE
         locale_query = Q(locale=request.LANGUAGE_CODE)
     else:
-        forum_locale = settings.WIKI_DEFAULT_LANGUAGE
         locale_query = Q(locale=request.LANGUAGE_CODE)
         locale_query |= Q(locale=settings.WIKI_DEFAULT_LANGUAGE)
 
@@ -300,20 +297,6 @@ def question_list(request, template, product_slug):
     if request.user.is_authenticated():
         request.session['questions_owner'] = owner
 
-    # Get the top contributors for the locale and product.
-    # If we are in a product forum, limit the top contributors to that product.
-    if products and len(products) == 1:
-        product = products[0]
-    else:
-        product = None
-    try:
-        top_contributors, _ = top_contributors_questions(
-            locale=forum_locale, product=product)
-    except ES_EXCEPTIONS:
-        top_contributors = []
-        statsd.incr('questions.topcontributors.eserror')
-        log.exception('Support Forum Top contributors query failed.')
-
     data = {'questions': questions_page,
             'feeds': feed_urls,
             'filter': filter_,
@@ -334,7 +317,6 @@ def question_list(request, template, product_slug):
             'product_slug': product_slug,
             'multiple_products': multiple,
             'all_products': product_slug == 'all',
-            'top_contributors': top_contributors,
             'topic_list': topic_list,
             'topic': topic}
 

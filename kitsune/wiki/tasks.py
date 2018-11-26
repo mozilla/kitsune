@@ -277,7 +277,7 @@ def maybe_award_badge(badge_template, year, user):
         qs = qs.exclude(document__locale=settings.WIKI_DEFAULT_LANGUAGE)
 
     # If the count is 10 or higher, award the badge.
-    if qs.count() >= 10:
+    if qs.count() >= settings.BADGE_LIMIT_L10N_KB:
         badge.award_to(user)
         return True
 

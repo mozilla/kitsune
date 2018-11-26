@@ -14,14 +14,18 @@
 }
 
 #help-topics {
+  margin-left: auto;
+  margin-right: auto;
+  width: 800px;
+
   > ul:not(.card-grid) {
     list-style: none;
     margin: 0 0 20px 0;
     padding: 0;
 
     > li {
-      color: @textBlue;
-      font-family: @OpenSansLight;
+      color: #000;
+      font-family: @OpenSans;
       font-size: 18px;
       margin: 0 0 8px 0;
 
@@ -33,35 +37,119 @@
   }
 
   .card-grid {
-    position: relative;
+    margin-top: 20px;
 
     > li {
+      background: #f3f3f3;
+      border: 1px solid #E7E7E7;
+      border-radius: 2px;
+      box-shadow: inset 0 -2px 0 0 #E7E7E7;
+      margin: 0 13px 30px;
+      min-height: 60px;
+      padding: 0;
+      width: 242px;
+
+      &:before {
+        content: none;
+      }
+
       > a,
       > a:visited {
-        color: @textGrey;
-        display: block;
-        position: relative;
+        color: #000;
+        min-height: 60px;
+        padding: 16px 0;
+        text-decoration: none;
+        width: 100%;
 
-        .title {
-          display: block;
-          font-family: @OpenSansLight;
-          font-size: 16px;
-          margin-left: 86px;
+        &:before {
+          content: '';
+          display: inline-block;
+          height: 100%;
+          min-height: 60px;
+          vertical-align: middle;
+        }
 
-          &:after {
-            background: @iconsSprite -50px -514px no-repeat;
-            bottom: 8px;
-            content: '';
-            height: 16px;
-            position: absolute;
-            right: 8px;
-            width: 16px;
+        &:hover {
+          .title {
+            text-decoration: underline;
           }
         }
 
         .topic-icon {
-          float: left;
+          background-position: 50% 50%;
+          background-repeat: no-repeat;
+          background-size: auto 100%;
+          display: inline-block;
+          height: 24px;
+          padding-left: 25px;
+          vertical-align: middle;
+          width: auto;
         }
+
+        .title {
+          display: inline-block;;
+          font-family: @ZillaSlab;
+          font-size: 16px;
+          max-width: 165px;
+          padding-left: 4px;
+          vertical-align: middle;
+        }
+      }
+    }
+  }
+
+  .product-title {
+    color: #000;
+    font-size: 16px;
+    padding-left: 4px;
+    position: relative;
+
+    > img {
+      float: left;
+      padding-top: 2px;
+    }
+
+    > span {
+      float: left;
+      padding-left: 10px;
+      padding-top: 6px;
+      width: 110px;
+    }
+
+    > h1 {
+      float: left;
+      margin: 0;
+    }
+
+    > p {
+      clear: left;
+      float: left;
+      margin-top: 0;
+      padding-left: 144px;
+    }
+  }
+
+  .html-rtl & {
+    .product-title {
+      > img {
+        float: right;
+      }
+
+      > span {
+        float: right;
+        padding-left: 0;
+        padding-right: 10px;
+      }
+
+      > h1 {
+        float: right;
+      }
+
+      > p {
+        clear: right;
+        float: right;
+        padding-left: 0;
+        padding-right: 144px;
       }
     }
   }
