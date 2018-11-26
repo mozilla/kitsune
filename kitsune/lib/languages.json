@@ -599,6 +599,16 @@
         "english": "Guarani",
         "native": "Avañe'ẽ"
     },
+    "su": {
+        "iso639_1": "su",
+        "english": "Sudanese",
+        "native": "Basa Sunda"
+    },
+    "jv": {
+        "iso639_1": "jv",
+        "english": "Javanese",
+        "native": "Basa Jawa"
+    },
     "xx": {
         "iso639_1": "xx",
         "english": "Pirate",
