@@ -43,7 +43,7 @@ SURVEYS = {
     'general-q4-2018': {  # General survey for en-US users enabled in Q4 of 2018
         'email_collection_survey_id': 4494159,
         'exit_survey_id': 4669267,
-        'exit_survey_campaign_id': 7259518,
+        'exit_survey_campaign_id': 7722383,
         'active': True,
     },
 }
