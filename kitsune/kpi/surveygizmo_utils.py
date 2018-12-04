@@ -32,10 +32,18 @@ SURVEYS = {
         'exit_survey_campaign_id': 2208951,
         'active': False,  # allows cron job to skip this survey
     },
+    # bug 1416244
     'general-q3-2018': {  # General survey for en-US users enabled in Q3 of 2018
         'email_collection_survey_id': 4494159,
         'exit_survey_id': 4456859,
         'exit_survey_campaign_id': 7259518,
+        'active': False,
+    },
+    # bug 1510201
+    'general-q4-2018': {  # General survey for en-US users enabled in Q4 of 2018
+        'email_collection_survey_id': 4494159,
+        'exit_survey_id': 4669267,
+        'exit_survey_campaign_id': 7722383,
         'active': True,
     },
 }
