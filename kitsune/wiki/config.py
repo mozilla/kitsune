@@ -36,6 +36,8 @@ FALLBACK_LOCALES = {
     'gl': ['es'],  # Bug 800880
     'wo': ['fr'],  # Bug 800880
     'fy-NL': ['nl'],  # Bug 800880
+    'su': ['id'], # Bug 800880
+    'jv': ['id'], # Bug 800880
 }
 
 # Wiki configuration.
