@@ -83,11 +83,7 @@ COPY . .
 
 ARG LOCALE_ENV=master
 ENV LOCALE_ENV=${LOCALE_ENV}
-RUN bash -c '\
-    mkdir locale && \
-    curl -s -L https://github.com/mozilla-l10n/sumo-l10n/archive/${LOCALE_ENV}.tar.gz  | \
-    tar xz --strip-components=1 -C locale'
-
+RUN ./docker/bin/fetch-l10n-files.sh
 RUN ./scripts/compile-linted-mo.sh && \
     find ./locale ! -name '*.mo' -type f -delete
 

@@ -494,7 +494,7 @@ string that aren't in the original and that sort of thing.
 
 When we do a deployment to production, we dump all the Dennis output into:
 
-https://support.mozilla.org/media/postatus.txt
+https://support.mozilla.org/static/postatus.txt
 
 We need to check that periodically and report the errors.
 

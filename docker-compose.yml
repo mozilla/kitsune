@@ -48,6 +48,12 @@ services:
     command: ./bin/run-mocha-tests.sh
     env_file: .env-test
 
+  lint-l10n:
+    image: mozmeao/kitsune:base-${GIT_COMMIT_SHORT:-latest}
+    command: dennis-cmd lint --errorsonly locale
+    volumes:
+      - ./locale:/app/locale:delegated
+
   # images
   base:
     build:

@@ -6,10 +6,10 @@ pip-log.txt
 .coverage
 coverage.xml
 kitsune/build.py
-**-all.css
-**-min.css
-**-all.js
-**-min.js
+**/*-all.css
+**/*-min.css
+**/*-all.js
+**/*-min.js
 media/uploads
 node_modules
 bower_components
@@ -38,3 +38,4 @@ k8s/regions/*/*-secrets.yaml
 .bash_history
 .yarnrc
 .docker-build*
+postatus.txt
