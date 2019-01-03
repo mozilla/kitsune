@@ -4,18 +4,19 @@
 
 set -x
 
+POSTATUS_FILE=kitsune/sumo/static/postatus.txt
+
 if [[ -d locale ]]; then
-    cd locale
-    git pull
-    cd ..
+    git -C locale pull
 else
     git clone https://github.com/mozilla-l10n/sumo-l10n.git locale
 fi
 
-docker-compose run lint-l10n > kitsune/sumo/static/postatus.txt
+GIT_COMMIT=$(git -C locale rev-parse HEAD)
+
+echo -e "l10n git hash: ${GIT_COMMIT}\n" > $POSTATUS_FILE
+make lint-l10n >> $POSTATUS_FILE
 
 if [[ "$?" -eq 0 && "$1" == "--push" ]]; then
-    cd locale
-    git push git@github.com:mozmeao/sumo-l10n-prod.git
-    cd ..
+    git -C locale push git@github.com:mozmeao/sumo-l10n-prod.git
 fi
