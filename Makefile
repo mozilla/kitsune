@@ -103,8 +103,9 @@ test-image: .docker-build-full
 lint-image: .docker-build-full
 	${DC} run test-image flake8 kitsune
 
-lint-l10n: .docker-build-pull
-	@${DC} run lint-l10n
+lint-l10n: .env
+	@GIT_COMMIT_SHORT= ${DC} pull base > /dev/null 2>&1
+	@GIT_COMMIT_SHORT= ${DC} run lint-l10n
 
 docs: .docker-build-pull
 	${DC} run web $(MAKE) -C docs/ clean
