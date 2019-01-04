@@ -18,5 +18,5 @@ echo -e "l10n git hash: ${GIT_COMMIT}\n" > $POSTATUS_FILE
 make lint-l10n >> $POSTATUS_FILE
 
 if [[ "$?" -eq 0 && "$1" == "--push" ]]; then
-    git -C locale push git@github.com:mozmeao/sumo-l10n-prod.git
+    git -C locale push sumo-l10n-prod:mozmeao/sumo-l10n-prod.git
 fi
