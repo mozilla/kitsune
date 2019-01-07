@@ -1,7 +1,7 @@
 {% macro contributor_list(contributors) -%}
   <section id="doc-contributors" class="clearfix">
     {% trans contributors=user_list(contributors), link=url('landings.get_involved') %}
-      <span class="help-title-prefix">//</span>
+      <span class="help-title-prefix">☺</span>
       <span class="help-title">These fine people helped write this article:</span><span class="contributors">{{ contributors }}.</span>
       <span class="help-link cf">You can help too - <a href="{{ link }}">find out how</a>.</span>
     {% endtrans %}
