@@ -11,7 +11,9 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import sys, os
+import os
+import sys
+from datetime import date
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -41,7 +43,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Kitsune'
-copyright = u'2011, 2012, 2013, Mozilla Foundation'
+copyright = u'2011 - %s Mozilla Foundation' % date.today().year
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -91,7 +93,9 @@ pygments_style = 'sphinx'
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = 'default'
+import sphinx_rtd_theme
+html_theme = "sphinx_rtd_theme"
+html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -218,3 +222,14 @@ man_pages = [
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {'http://docs.python.org/': None}
+
+# Markdown support
+
+from recommonmark.parser import CommonMarkParser
+
+# The suffix of source filenames.
+source_suffix = ['.rst', '.md']
+
+source_parsers = {
+    '.md': CommonMarkParser,
+}
