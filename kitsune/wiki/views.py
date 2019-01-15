@@ -23,6 +23,7 @@ from django.views.decorators.http import (require_GET, require_POST,
 
 from mobility.decorators import mobile_template
 from django_statsd.clients import statsd
+from waffle import flag_is_active
 
 from kitsune.access.decorators import login_required
 from kitsune.lib.sumo_locales import LOCALES
@@ -132,8 +133,9 @@ def document(request, document_slug, template=None, document=None):
             fallback_reason = 'no_translation'
 
     # Render the static pages if the slug matches the experiment
-    if doc.slug in SUMO_UX_EXPERIMENTS_SLUGS and request.LANGUAGE_CODE == 'en-US':
-        return render(request, 'kb-ux-experiment/{0}.html'.format(doc.slug))
+    if flag_is_active(request, 'ux_experiment_1'):
+        if doc.slug in SUMO_UX_EXPERIMENTS_SLUGS and request.LANGUAGE_CODE == 'en-US':
+            return render(request, 'kb-ux-experiment/{0}.html'.format(doc.slug))
 
     # Find and show the defined fallback locale rather than the English version of the document
     # The fallback locale is defined based on the ACCEPT_LANGUAGE header,
