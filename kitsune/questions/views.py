@@ -519,14 +519,19 @@ def aaq(request, product_key=None, category_key=None, showform=False,
     if product_key is None:
         product_key = request.GET.get('product')
         if request.MOBILE and product_key is None:
+            ua = request.META.get('HTTP_USER_AGENT', '').lower()
+
             # Firefox OS is weird. The best way we can detect it is to
             # look for a mobile Firefox that is not Android.
-            ua = request.META.get('HTTP_USER_AGENT', '').lower()
             if 'firefox' in ua and 'android' not in ua:
                 product_key = 'firefox-os'
+            # 'Rocket' is currently in the UA, but may be replaced with 'Lite' later on
+            elif any(s in ua for s in ['rocket', 'lite']):
+                product_key = 'firefox-lite'
             elif 'fxios' in ua:
                 product_key = 'ios'
             else:
+                # android
                 product_key = 'mobile'
 
     product_config = config.products.get(product_key)
