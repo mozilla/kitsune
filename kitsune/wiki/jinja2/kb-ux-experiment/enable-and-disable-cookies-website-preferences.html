@@ -6,10 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Enable and disable cookies that websites use to track your preferences | Firefox Help</title>
+
+    {% include "includes/google-analytics.html" %}
+
     <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,400i,600,700|Zilla+Slab:400,400i,500,600,700" rel="stylesheet">
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Swiper/4.4.6/css/swiper.min.css">
-    <link rel="stylesheet" href="static/sumo/kb-ux-experiment/src.98e5fcb4.css">
+    {% stylesheet 'kb-sumo-ux-experiment' %}
   </head>
 
   <body>
@@ -225,8 +227,8 @@
 
             <h1 id="w_how-do-i-change-cookie-settings">How do I change cookie settings?</h1>
 
-            <video controls="" poster="static/sumo/kb-ux-experiment/enable-and-disable-cookies.2c58ae49.png">
-              <source src="static/sumo/kb-ux-experiment/enable-and-disable-cookies.11196927.mp4">
+            <video controls="" poster="{{ STATIC_URL }}sumo/kb-ux-experiment/enable-and-disable-cookies.2c58ae49.png">
+              <source src="{{ STATIC_URL }}sumo/kb-ux-experiment/enable-and-disable-cookies.11196927.mp4">
             </video>
 
             <div class="note">
@@ -519,8 +521,6 @@
 
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Swiper/4.4.6/js/swiper.min.js"></script>
-
-    <script src="static/sumo/kb-ux-experiment/src.dcaf9944.js"></script>
+    {% javascript 'kb-sumo-ux-experiment' %}
   </body>
 </html>
