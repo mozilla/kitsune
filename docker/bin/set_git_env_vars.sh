@@ -1,8 +1,11 @@
 # intended to be sourced into other scripts to set the git environment varaibles
-# GIT_COMMIT, GIT_COMMIT_SHORT, GIT_TAG, GIT_TAG_DATE_BASED, GIT_BRANCH, and BRANCH_NAME.
+# GIT_COMMIT, GIT_SHA, GIT_COMMIT_SHORT, GIT_TAG, GIT_TAG_DATE_BASED, GIT_BRANCH, and BRANCH_NAME.
 
 if [[ -z "$GIT_COMMIT" ]]; then
     export GIT_COMMIT=$(git rev-parse HEAD)
+fi
+if [[ -z "$GIT_SHA" ]]; then
+    export GIT_SHA="${GIT_COMMIT}"
 fi
 export GIT_COMMIT_SHORT="${GIT_COMMIT:0:6}"
 if [[ -z "$GIT_TAG" ]]; then

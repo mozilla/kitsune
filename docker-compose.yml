@@ -48,41 +48,63 @@ services:
     command: ./bin/run-mocha-tests.sh
     env_file: .env-test
 
+  lint-l10n:
+    image: mozmeao/kitsune:base-${GIT_COMMIT_SHORT:-latest}
+    command: dennis-cmd lint --errorsonly locale
+    env_file: .env-test
+    volumes:
+      - ./locale:/app/locale:delegated
+
   # images
   base:
     build:
       context: .
       target: base
+      args:
+        - GIT_SHA
     image: mozmeao/kitsune:base-${GIT_COMMIT_SHORT:-latest}
 
   base-dev:
     build:
       context: .
       target: base-dev
+      args:
+        - GIT_SHA
     image: mozmeao/kitsune:base-dev-${GIT_COMMIT_SHORT:-latest}
 
   staticfiles:
     build:
       context: .
       target: staticfiles
+      args:
+        - GIT_SHA
     image: mozmeao/kitsune:staticfiles-${GIT_COMMIT_SHORT:-latest}
 
   locales:
     build:
       context: .
       target: locales
+      args:
+        - GIT_SHA
+        - LOCALE_ENV
     image: mozmeao/kitsune:locales-${GIT_COMMIT_SHORT:-latest}
 
   full-no-locales:
     build:
       context: .
       target: full-no-locales
+      args:
+        - GIT_SHA
+        - LOCALE_ENV
     image: mozmeao/kitsune:full-no-locales-${GIT_COMMIT_SHORT:-latest}
 
   full:
     build:
       context: .
       target: full
+      args:
+        - GIT_SHA
+        - LOCALE_ENV
     image: mozmeao/kitsune:full-${GIT_COMMIT_SHORT:-latest}
 
   # EXTERNAL SERVICES

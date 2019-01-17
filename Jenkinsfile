@@ -28,6 +28,10 @@ conduit {
         stage("Build Docker Images") {
             if (!dockerImageExists(docker_image)) {
                 try {
+                    if (env.GIT_BRANCH == "master") {
+                        // lint and push l10n files to prod repo if clean
+                        sh "scripts/lint-l10n-repo.sh --push"
+                    }
                     sh "make build-ci"
                 } catch(err) {
                     sh "bin/slack-notify.sh --status failure --stage 'Docker Build'"
