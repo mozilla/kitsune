@@ -29,13 +29,19 @@ COLLAPSIBLE_DOCUMENTS = {
     ]
 }
 FALLBACK_LOCALES = {
+    'an': ['es'], # Bug 1521551
+    'ast': ['es'], # Bug 1521551
+    'be': ['ru'], # Bug 1521551
     'bn-IN': ['bn-BD'],  # Bug 800880
     'bn-BD': ['bn-IN'],  # Bug 800880
+    'br': ['fr'], # Bug 1521551
     'ca': ['es'],  # Bug 800880
+    'cak': ['es'], # Bug 1521551
     'eu': ['es'],  # Bug 800880
-    'gl': ['es'],  # Bug 800880
-    'wo': ['fr'],  # Bug 800880
     'fy-NL': ['nl'],  # Bug 800880
+    'gl': ['es'],  # Bug 800880
+    'oc': ['fr'], # Bug 1521551
+    'wo': ['fr'],  # Bug 800880
 }
 
 # Wiki configuration.

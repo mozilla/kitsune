@@ -174,7 +174,7 @@
         "english": "Asturian",
         "native": "Asturianu"
     },
-    "br-FR": {
+    "br": {
         "iso639_1": "br",
         "english": "Breton",
         "native": "Brezhoneg"
@@ -608,6 +608,41 @@
         "iso639_1": "jv",
         "english": "Javanese",
         "native": "Basa Jawa"
+    },
+    "an": {
+        "iso639_1": "an",
+        "english": "Aragonese",
+        "native": "aragonés"
+    },
+    "cak": {
+        "iso639_1": "cak",
+        "english": "Kaqchikel",
+        "native": "Kaqchikel Ch'ab'äl"
+    },
+    "co": {
+        "iso639_1": "co",
+        "english": "Corsican",
+        "native": "corsu"
+    },
+    "ia": {
+        "iso639_1": "ia",
+        "english": "Interlingua",
+        "native": "Interlingua"
+    },
+    "kab": {
+        "iso639_1": "kab",
+        "english": "Kabyle",
+        "native": "Taqbaylit"
+    },
+    "lij": {
+        "iso639_1": "lij",
+        "english": "Ligurian",
+        "native": "ligure",
+    },
+    "uz": {
+        "iso639_1": "uz",
+        "english": "Uzbek",
+        "native": "oʻzbek tili",
     },
     "xx": {
         "iso639_1": "xx",
