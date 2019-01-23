@@ -135,7 +135,13 @@ def document(request, document_slug, template=None, document=None):
     # Render the static pages if the slug matches the experiment
     if flag_is_active(request, 'ux_experiment_1'):
         if doc.slug in SUMO_UX_EXPERIMENTS_SLUGS and request.LANGUAGE_CODE == 'en-US':
-            return render(request, 'kb-ux-experiment/{0}.html'.format(doc.slug))
+            ctx = {
+                'enable_cookies_gform_mchoice_entry': 'entry.437614058',
+                'enable_cookies_gform_textarea_entry': 'entry.134164855',
+                'insecure_warning_gform_mchoice_entry': 'entry.1877592314',
+                'insecure_warning_gform_textarea_entry': 'entry.489053800'
+            }
+            return render(request, 'kb-ux-experiment/{0}.html'.format(doc.slug), ctx)
 
     # Find and show the defined fallback locale rather than the English version of the document
     # The fallback locale is defined based on the ACCEPT_LANGUAGE header,

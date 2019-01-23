@@ -308,28 +308,27 @@
 
               <div id="not-helpful-container">
                 <h4 class="title">Sorry to hear that. Tell more to help us improve the article</h4>
-
                 <form>
                   <label for="nh1">
-                    <input type="radio" id="nh1" name="not-helpful-radio">
+                    <input type="radio" id="nh1" name="{{ enable_cookies_gform_mchoice_entry }}" value="It's too difficult">
                     <span>It’s too difficult</span>
                   </label>
                   <label for="nh2">
-                    <input type="radio" id="nh2" name="not-helpful-radio">
+                    <input type="radio" id="nh2" name="{{ enable_cookies_gform_mchoice_entry }}" value="It didn't help">
                     <span>It didn't help</span>
                   </label>
                   <label for="nh3">
-                    <input type="radio" id="nh3" name="not-helpful-radio">
+                    <input type="radio" id="nh3" name="{{ enable_cookies_gform_mchoice_entry }}" value="It's not what I'm looking for">
                     <span>It’s not what I’m looking for</span>
                   </label>
                   <label for="nh4">
-                    <input type="radio" id="nh4" name="not-helpful-radio">
+                    <input type="radio" id="nh4" name="{{ enable_cookies_gform_mchoice_entry }}" value="Other">
                     <span>Other</span>
                   </label>
 
-                  <textarea name="" id="" cols="30" rows="10" placeholder="How can we make it better?"></textarea>
+                  <textarea name="{{ enable_cookies_gform_textarea_entry }}" id="enable-cookies-feedback-text" cols="30" rows="10" placeholder="How can we make it better?"></textarea>
 
-                  <input type="submit" class="btn-l">
+                  <input id="enable-cookies-submit-feedback" type="submit" class="btn-l">
                 </form>
               </div>
 

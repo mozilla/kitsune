@@ -662,7 +662,8 @@ PIPELINE_JS = {
         'source_filenames': (
             'sumo/kb-ux-experiment/swiper.min.js',
             'sumo/kb-ux-experiment/src.dcaf9944.js',
-            'sumo/kb-ux-experiment/analytics.js'
+            'sumo/kb-ux-experiment/analytics.js',
+            'sumo/kb-ux-experiment/submit-gform.js'
         ),
         'output_filename': 'build/kb-ux-experiment-min.js'
     }
