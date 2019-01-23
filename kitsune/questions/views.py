@@ -525,8 +525,9 @@ def aaq(request, product_key=None, category_key=None, showform=False,
             # look for a mobile Firefox that is not Android.
             if 'firefox' in ua and 'android' not in ua:
                 product_key = 'firefox-os'
-            # 'Rocket' is currently in the UA, but may be replaced with 'Lite' later on
-            elif any(s in ua for s in ['rocket', 'lite']):
+            # 'Rocket' is currently in the UA and is expected to remain
+            # https://github.com/mozilla-tw/FirefoxLite/issues/3004#issuecomment-455245375
+            elif 'rocket' in ua:
                 product_key = 'firefox-lite'
             elif 'fxios' in ua:
                 product_key = 'ios'
