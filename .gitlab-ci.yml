@@ -1,0 +1,52 @@
+stages:
+  - build
+  - test
+  - push
+
+variables:
+  COMPOSE_PROJECT_NAME: "kitsune-${CI_JOB_ID}-${CI_COMMIT_SHORT_SHA}"
+
+.base:
+  tags:
+    - shell
+    - docker
+  only:
+    - master
+    - stage
+    - prod
+    - gitlab-ci
+
+before_script:
+  - docker info
+
+build docker images:
+  extends: .base
+  stage: build
+  script:
+    - make build-ci
+
+unittest docker images:
+  extends: .base
+  stage: test
+  script:
+    - make test-ci
+
+jstest docker images:
+  extends: .base
+  stage: test
+  script:
+    - make test-js-ci
+
+lint docker images:
+  extends: .base
+  stage: test
+  script:
+    - make lint-ci
+
+push docker images:
+  extends: .base
+  stage: push
+  script:
+    # make sure all test containers are killed
+    - docker-compose kill
+    - echo "will do the push here"
