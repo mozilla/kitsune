@@ -1,5 +1,7 @@
 # Kitsune
 
+[![pipeline status](https://gitlab.com/mozmeao/kitsune/badges/master/pipeline.svg)](https://gitlab.com/mozmeao/kitsune/commits/master)
+
 Kitsune is the platform that powers [SuMo (support.mozilla.org)](https://support.mozilla.org)
 
 It is a [Django](http://www.djangoproject.com/) application. There is
@@ -11,8 +13,8 @@ See [what's deployed](https://whatsdeployed.io/s-J18)
 
 ## Development
 
-To get Kitsune running locally all you really need is to have [Docker](https://www.docker.com/products/docker-desktop) and [[Docker Compose](https://docs.docker.com/compose/install/) installed,
-and follow the following steps.
+To get Kitsune running locally all you really need is to have [Docker](https://www.docker.com/products/docker-desktop) 
+and [Docker Compose](https://docs.docker.com/compose/install/) installed, and follow the following steps.
 
 1. Fork this repository & clone it to your local machine.
    ```

@@ -31,5 +31,8 @@ indent_size = 2
 [docker-compose.yml]
 indent_size = 2
 
+[.gitlab-ci.yml]
+indent_size = 2
+
 [Makefile]
 indent_style = tab

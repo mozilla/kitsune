@@ -2,9 +2,8 @@
 
 set -exo pipefail
 
+source docker/bin/set_git_env_vars.sh
 DOCKER_REPO=${DOCKER_REPO:-mozmeao/kitsune}
-GIT_COMMIT=${GIT_COMMIT:-latest}
-GIT_COMMIT_SHORT=${GIT_COMMIT_SHORT:-$GIT_COMMIT}
 CONTAINER_NAME="kitsune-static-${GIT_COMMIT}"
 IMAGE_NAME="${DOCKER_REPO}:full-${GIT_COMMIT_SHORT}"
 TMP_DIR="s3-static"

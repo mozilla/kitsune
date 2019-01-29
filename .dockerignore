@@ -11,4 +11,5 @@ venv
 /bower_components
 Dockerfile
 /jsi18n
-docker/dockerfiles/
+Makefile
+.gitlab-ci.yml

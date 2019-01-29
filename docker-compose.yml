@@ -43,6 +43,11 @@ services:
       - elasticsearch
       - redis
 
+  lint-image:
+    image: mozmeao/kitsune:full-no-locales-${GIT_COMMIT_SHORT:-latest}
+    command: flake8 kitsune
+    env_file: .env-test
+
   test-image-js:
     image: mozmeao/kitsune:staticfiles-${GIT_COMMIT_SHORT:-latest}
     command: ./bin/run-mocha-tests.sh

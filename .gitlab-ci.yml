@@ -1,0 +1,81 @@
+stages:
+  - prep
+  - build
+  - test
+  - push
+
+variables:
+  GIT_STRATEGY: fetch
+  COMPOSE_PROJECT_NAME: "kitsune-${CI_JOB_ID}-${CI_COMMIT_SHORT_SHA}"
+
+lint l10n:
+  only:
+    - master
+  tags:
+    - meao
+  stage: prep
+  script:
+    - scripts/lint-l10n-repo.sh --push
+
+docker build:
+  tags:
+    - meao
+  stage: build
+  script:
+    - make build-ci
+
+docker push:
+  tags:
+    - meao
+  stage: test
+  retry: 2
+  script:
+    - make push-ci
+
+test py:
+  tags:
+    - meao
+  stage: test
+  retry: 2
+  script:
+    - make test-ci
+  after_script:
+    - docker-compose kill
+
+test js:
+  tags:
+    - meao
+  stage: test
+  script:
+    - make test-js-ci
+
+lint py:
+  tags:
+    - meao
+  stage: test
+  script:
+    - make lint-ci
+
+docker push latest:
+  only:
+    - master
+  tags:
+    - meao
+    - aws
+  stage: push
+  allow_failure: true
+  retry: 2
+  script:
+    - docker/bin/push-latest-docker-images.sh
+
+deploy:
+  only:
+    - master
+  tags:
+    - meao
+    - aws
+  stage: push
+  retry: 2
+  script:
+    - docker/bin/upload-staticfiles.sh
+    - echo "will do the branch-appropriate deployment here"
