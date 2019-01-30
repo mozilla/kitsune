@@ -46,3 +46,4 @@ push:
   stage: push
   script:
     - echo "will do the push here"
+    - true
