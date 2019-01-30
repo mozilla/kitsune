@@ -123,13 +123,13 @@ build-ci: .docker-build-pull
 	${DC_CI} build base base-dev staticfiles locales full-no-locales
 	touch .docker-build-ci
 
-test-ci:
+test-ci: .env
 	${DC_CI} run test-image
 
-test-js-ci:
+test-js-ci: .env
 	${DC_CI} run test-image-js
 
-lint-ci:
+lint-ci: .env
 	${DC_CI} run test-image flake8 kitsune
 
 .PHONY: default clean build build-full pull docs init lint run djshell dbshell runshell shell test test-image lint-image lint-l10n rebuild build-ci test-ci test-js-ci lint-ci
