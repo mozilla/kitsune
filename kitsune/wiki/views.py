@@ -57,6 +57,7 @@ SUMO_UX_EXPERIMENTS_SLUGS = [
     'enable-and-disable-cookies-website-preferences',
     'insecure-password-warning-firefox'
 ]
+EXCLUDED_BROWSERS = ['MSIE', 'Trident/7.0']
 
 
 def doc_page_cache(view):
@@ -133,8 +134,11 @@ def document(request, document_slug, template=None, document=None):
             fallback_reason = 'no_translation'
 
     # Render the static pages if the slug matches the experiment
-    if flag_is_active(request, 'ux_experiment_1'):
-        if doc.slug in SUMO_UX_EXPERIMENTS_SLUGS and request.LANGUAGE_CODE == 'en-US':
+    if (flag_is_active(request, 'ux_experiment_1') and
+        all([x not in request.META['HTTP_USER_AGENT'] for x in EXCLUDED_BROWSERS]) and
+        doc.slug in SUMO_UX_EXPERIMENTS_SLUGS and
+            request.LANGUAGE_CODE == 'en-US'):
+
             ctx = {
                 'enable_cookies_gform_mchoice_entry': 'entry.437614058',
                 'enable_cookies_gform_textarea_entry': 'entry.134164855',
