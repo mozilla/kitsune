@@ -17,31 +17,31 @@ before_script:
 after_script:
   - docker-compose kill
 
-build docker images:
+build:
   extends: .base
   stage: build
   script:
     - make build-ci
 
-unittest docker images:
+unittest:
   extends: .base
   stage: test
   script:
     - make test-ci
 
-jstest docker images:
+test js:
   extends: .base
   stage: test
   script:
     - make test-js-ci
 
-lint docker images:
+lint:
   extends: .base
   stage: test
   script:
     - make lint-ci
 
-push docker images:
+push:
   extends: .base
   stage: push
   script:
