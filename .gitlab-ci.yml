@@ -4,7 +4,7 @@ stages:
   - push
 
 variables:
-  COMPOSE_PROJECT_NAME: "kitsune-${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}"
+  COMPOSE_PROJECT_NAME: "kitsune-${CI_JOB_ID}-${CI_COMMIT_SHORT_SHA}"
 
 .base:
   tags:
@@ -13,6 +13,9 @@ variables:
 
 before_script:
   - docker info
+
+after_script:
+  - docker-compose kill
 
 build docker images:
   extends: .base
@@ -42,6 +45,4 @@ push docker images:
   extends: .base
   stage: push
   script:
-    # make sure all test containers are killed
-    - docker-compose kill
     - echo "will do the push here"
