@@ -4,17 +4,12 @@ stages:
   - push
 
 variables:
-  COMPOSE_PROJECT_NAME: "kitsune-${CI_JOB_ID}-${CI_COMMIT_SHORT_SHA}"
+  COMPOSE_PROJECT_NAME: "kitsune-${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}"
 
 .base:
   tags:
     - shell
     - docker
-  only:
-    - master
-    - stage
-    - prod
-    - gitlab-ci
 
 before_script:
   - docker info

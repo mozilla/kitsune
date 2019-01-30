@@ -51,7 +51,7 @@ build-full: .docker-build-pull
 	touch .docker-build-full
 
 pull: .env
-	-GIT_COMMIT_SHORT= ${DC} pull base base-dev staticfiles locales full-no-locales full mariadb elasticsearch redis
+	-CI_COMMIT_SHORT_SHA= ${DC} pull base base-dev staticfiles locales full-no-locales full mariadb elasticsearch redis
 	touch .docker-build-pull
 
 rebuild: clean build
@@ -104,8 +104,8 @@ lint-image: .docker-build-full
 	${DC} run test-image flake8 kitsune
 
 lint-l10n: .env
-	@GIT_COMMIT_SHORT= ${DC} pull base > /dev/null 2>&1
-	@GIT_COMMIT_SHORT= ${DC} run lint-l10n
+	@CI_COMMIT_SHORT_SHA= ${DC} pull base > /dev/null 2>&1
+	@CI_COMMIT_SHORT_SHA= ${DC} run lint-l10n
 
 docs: .docker-build-pull
 	${DC} run web $(MAKE) -C docs/ clean
@@ -123,13 +123,13 @@ build-ci: .docker-build-pull
 	${DC_CI} build base base-dev staticfiles locales full-no-locales
 	touch .docker-build-ci
 
-test-ci: .docker-build-ci
+test-ci:
 	${DC_CI} run test-image
 
-test-js-ci: .docker-build-ci
+test-js-ci:
 	${DC_CI} run test-image-js
 
-lint-ci: .docker-build-ci
+lint-ci:
 	${DC_CI} run test-image flake8 kitsune
 
 .PHONY: default clean build build-full pull docs init lint run djshell dbshell runshell shell test test-image lint-image lint-l10n rebuild build-ci test-ci test-js-ci lint-ci
