@@ -45,5 +45,4 @@ push:
   extends: .base
   stage: push
   script:
-    - echo "will do the push here"
-    - true
+    - echo "will do the docker hub push here"
