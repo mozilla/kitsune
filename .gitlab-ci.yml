@@ -1,3 +1,5 @@
+image: docker:stable
+
 stages:
   - build
   - test
@@ -6,11 +8,6 @@ stages:
 variables:
   COMPOSE_PROJECT_NAME: "kitsune-${CI_JOB_ID}-${CI_COMMIT_SHORT_SHA}"
 
-.base:
-  tags:
-    - shell
-    - docker
-
 before_script:
   - docker info
 
@@ -18,31 +15,41 @@ after_script:
   - docker-compose kill
 
 build:
-  extends: .base
+  tags:
+    - docker
   stage: build
   script:
+    - env
     - make build-ci
 
 unittest:
-  extends: .base
+  tags:
+    - docker
   stage: test
   script:
     - make test-ci
 
 test js:
-  extends: .base
+  tags:
+    - docker
   stage: test
   script:
     - make test-js-ci
 
 lint:
-  extends: .base
+  tags:
+    - docker
   stage: test
   script:
     - make lint-ci
 
 push:
-  extends: .base
+  only:
+    refs:
+      - master
+      - prod
+  tags:
+    - meao
   stage: push
   script:
     - echo "will do the docker hub push here"
