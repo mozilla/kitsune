@@ -11,7 +11,7 @@ See [what's deployed](https://whatsdeployed.io/s-J18)
 
 ## Development
 
-To get Kitsune running locally all you really need is to have [Docker installed](https://www.docker.com/products/docker-desktop),
+To get Kitsune running locally all you really need is to have [Docker](https://www.docker.com/products/docker-desktop) and [[Docker Compose](https://docs.docker.com/compose/install/) installed,
 and follow the following steps.
 
 1. Fork this repository & clone it to your local machine.
