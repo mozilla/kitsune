@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en" {% if settings.GTM_CONTAINER_ID %} data-gtm-container-id="{{ settings.GTM_CONTAINER_ID }}"{% endif %}>
+
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Enable and disable cookies that websites use to track your preferences | Firefox Help</title>
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ STATIC_URL }}sumo/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ STATIC_URL }}sumo/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ STATIC_URL }}sumo/img/favicon-16x16.png">
+    <link rel="manifest" href="{{ STATIC_URL }}sumo/manifest.json">
+    <link rel="shortcut icon" href="{{ STATIC_URL }}sumo/img/favicon.ico">
+    <meta name="msapplication-config" content="{{ STATIC_URL }}sumo/browserconfig.xml">
+    <meta name="theme-color" content="#ffffff">
+
+    {% include "includes/google-analytics.html" %}
+
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,400i,600,700|Zilla+Slab:400,400i,500,600,700" rel="stylesheet">
+
+    {% stylesheet 'kb-sumo-ux-experiment' %}
+  </head>
+
+  <body>
+    <div id="wrapper">
+      <header>
+        <div class="top-nav">
+          <h2 class="logo">
+            <a href="/en-US/" data-event-category="navigation" data-event-action="main navigation" data-event-label="Home"></a>
+          </h2>
+          <div class="nav-menu">
+            <nav id="aux-nav" role="navigation">
+              <ul>
+                <li>
+                  <a href="/en-US/questions/new" class="ask" data-event-category="navigation" data-event-action="main navigation" data-event-label="Get Community Support">Get Community Support</a>
+                </li>
+
+                <li>
+                  <a href="/en-US/users/auth" class="sign-in register" data-event-category="navigation" data-event-action="main navigation" data-event-label="Sign In">Sign In</a>
+                </li>
+
+                <li>
+                  <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24">
+                    <path id="icon-globe" d="M12,1A11,11,0,1,0,23,12,11,11,0,0,0,12,1Zm-.67,20.17a9.68,9.68,0,0,1-5.67-2.72A9.37,9.37,0,0,1,5.14,5.58a9.22,9.22,0,0,1,.11,1.29C5.16,8.14,5,8.93,5.79,10a5.15,5.15,0,0,1,.51,1.49c.14.48.7.72,1.08,1,.78.59,1.53,1.27,2.35,1.79.55.34.89.51.73,1.16A4.28,4.28,0,0,1,10,16.77,2.5,2.5,0,0,0,10.47,18a16.63,16.63,0,0,0,1.25,1.12C12.41,19.64,11.65,20.37,11.33,21.17Zm7.42-2.56A9.26,9.26,0,0,1,14,21.17a3.74,3.74,0,0,1,1.13-1.53,3.92,3.92,0,0,0,1-1.27,8.19,8.19,0,0,1,.7-1.22c.37-.56-.9-1.42-1.31-1.6A13.48,13.48,0,0,1,13.06,14c-.59-.42-1.77.21-2.43-.08a12.61,12.61,0,0,1-2.44-1.68c-.81-.62-.77-1.34-.77-2.24.63,0,1.54-.18,2,.33.13.17.59.89.9.63S10.09,9.93,10,9.73c-.26-.61.59-.85,1-1.26s1.79-1.39,1.69-1.78S11.5,5.21,10.84,5.38c-.1,0-1,.94-1.13,1.08,0-.3,0-.6,0-.89s-.35-.39-.33-.51c0-.31.89-.87,1.1-1.11-.15-.1-.65-.54-.81-.47-.37.15-.79.26-1.16.42a2.22,2.22,0,0,0,0-.37,8.74,8.74,0,0,1,2.34-.69l.73.29.52.62.51.53.45.15.71-.68-.18-.48V2.83a9.13,9.13,0,0,1,3.91,1.56l-.7.08a3.84,3.84,0,0,0-.36-.14c.34.74.69,1.46,1,2.18s1.23,1.6,1.38,2.42,0,1.83.15,3a5,5,0,0,0,1.22,2.32,2.39,2.39,0,0,0,1,.12A9.36,9.36,0,0,1,18.75,18.61Z"></path>
+                  </svg>
+
+                  <a href="/en-US/locales" class="locale-picker" data-event-category="navigation" data-event-action="main navigation" data-event-label="Locale Picker">English</a>
+                </li>
+              </ul>
+            </nav>
+
+            <nav id="aux-nav-right" role="navigation">
+              <ul>
+                <li>
+                  <a href="/en-US/get-involved" class="volunteer-button" data-event-category="Volunteer Button" data-event-action="Volunteer for Mozilla Support">Volunteer</a>
+                </li>
+              </ul>
+            </nav>
+          </div>
+        </div>
+      </header>
+
+      <div class="search-form-large option-b">
+        <div class="search-inner">
+          <div class="categories">
+
+            <div class="title js-toggle">
+              <div class="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+              <span>Categories</span>
+              <div class="overlay"></div>
+            </div>
+
+            <div class="categories-wrap">
+              <div class="home">
+                <img src="https://prod-cdn.sumo.mozilla.net/uploads/products/2018-10-03-20-09-07-d6a5c9.png" height="48" width="48" alt="">
+                <span>Firefox</span>
+              </div>
+
+              <div class="list">
+                <div class="acc">
+                  <input id="acc-1" type="radio" name="acc-toggle" class="sr-only">
+                  <label for="acc-1" class="title">Basic Browsing</label>
+
+                  <ul class="articles">
+                    <li>
+                      <a href="https://support.mozilla.org/en-US/products/firefox/basic-browsing-firefox/bookmarks">
+                        Bookmarks and tabs
+                      </a>
+                    </li>
+                    <li>
+                      <a href="https://support.mozilla.org/en-US/products/firefox/basic-browsing-firefox/tips">
+                        Tips and tricks
+                      </a>
+                    </li>
+                    <li>
+                      <a href="https://support.mozilla.org/en-US/kb/make-firefox-your-default-browser">
+                        Make Firefox your default browser
+                      </a>
+                    </li>
+                    <li>
+                      <a href="https://support.mozilla.org/en-US/kb/get-started-firefox-overview-main-features">
+                        Get started with Firefox - An overview of the main features
+                      </a>
+                    </li>
+                    <li>
+                      <a href="https://support.mozilla.org/en-US/kb/push-notifications-firefox">
+                        Web Push notifications in Firefox
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+                <div class="acc">
+                  <input id="acc-2" type="radio" name="acc-toggle" class="sr-only">
+                  <label for="acc-2" class="title">Install and update</label>
+
+                  <ul class="articles">
+                    <li>
+                      <a href="https://support.mozilla.org/en-US/kb/update-firefox-latest-version">
+                        Update Firefox to the latest version
+                      </a>
+                   </li>
+                    <li>
+                      <a href="https://support.mozilla.org/en-US/kb/end-support-windows-xp-and-vista">
+                        Important - Firefox has ended support for Windows XP and Vista
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+                <div class="acc">
+                  <input id="acc-3" type="radio" name="acc-toggle" class="sr-only">
+                  <label for="acc-3" class="title active">Protect your privacy</label>
+
+                  <ul class="articles">
+                    <li class="active">
+                      <a href="https://support.mozilla.org/en-US/products/firefox/protect-your-privacy/cookies">
+                        Cookies and Cache
+                      </a>
+                    </li>
+                    <li>
+                      <a href="https://support.mozilla.org/en-US/kb/insecure-password-warning-firefox">
+                        Insecure password
+                      </a>
+                    </li>
+                    <li>
+                      <a href="https://support.mozilla.org/en-US/kb/how-do-i-turn-do-not-track-feature">
+                        How do I turn on the Do Not Track feature?
+                      </a>
+                    </li>
+                    <li>
+                      <a href="https://support.mozilla.org/en-US/kb/secure-firefox-account-two-step-authentication">
+                        Secure your Firefox Account with two-step authentication
+                      </a>
+                    </li>
+                    <li>
+                      <a href="https://support.mozilla.org/en-US/kb/private-browsing-use-firefox-without-history">
+                        Private Browsing - Use Firefox without saving history
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <form data-instant-search="form" id="support-search-wiki" action="/en-US/search" method="get" class="simple-search-form">
+
+            <input type="hidden" name="product" value="firefox">
+            <input type="search" name="q" required="required" aria-required="true" placeholder="Find help..." class="searchbox" id="search-q2">
+            <button type="submit" title="Send" class="submit-button"></button>
+
+            <div class="search-results">
+              <div class="title">Related articles:</div>
+              <ul>
+                <li>
+                  <a href="https://support.mozilla.org/en-US/kb/private-browsing-use-firefox-without-history">
+                    Private Browsing - Use Firefox without saving history
+                  </a>
+                </li>
+                <li>
+                  <a href="https://support.mozilla.org/en-US/kb/how-do-i-tell-if-my-connection-is-secure">
+                    How do I tell if my connection to a website is secure?
+                  </a>
+                </li>
+                <li>
+                  <a href="https://support.mozilla.org/en-US/kb/does-firefox-share-my-location-websites">
+                    Does Firefox share my location with websites?
+                  </a>
+                </li>
+                <li>
+                  <a href="https://support.mozilla.org/en-US/kb/disable-third-party-cookies">
+                    Disable third-party cookies in Firefox to stop some types of tracking by
+                    advertisers
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div id="main-content">
+        <article class="section">
+          <h1>Enable and disable cookies that websites use to track your preferences</h1>
+
+          <section id="doc-content">
+            <p><a href="https://support.mozilla.org/en-US/kb/cookies-information-websites-store-on-your-computer">Cookies</a>
+              are stored on your computer by websites you visit and contain information
+              such as site preferences or login status. This article describes how to enable and disable cookies
+              in Firefox.</p>
+
+            <div id="toc">
+              <h2>In this article</h2>
+
+              <ul>
+                <li class="toclevel-1">
+                  <a href="#w_how-do-i-change-cookie-settings">
+                    <span class="tocnumber">1</span>
+                    <span class="toctext">How do I change cookie settings?</span>
+                  </a>
+                </li>
+                <li class="toclevel-1">
+                  <a href="#w_websites-report-cookie-errors">
+                    <span class="tocnumber">2</span>
+                    <span class="toctext">Websites report cookie errors</span>
+                  </a>
+                </li>
+              </ul>
+            </div>
+
+            <h1 id="w_how-do-i-change-cookie-settings">How do I change cookie settings?</h1>
+
+            <video controls="" poster="{{ STATIC_URL }}sumo/kb-ux-experiment/enable-and-disable-cookies.2c58ae49.png">
+              <source src="{{ STATIC_URL }}sumo/kb-ux-experiment/enable-and-disable-cookies.11196927.mp4">
+            </video>
+
+            <div class="note">
+              <p><strong>Note:</strong></p>
+              <p>Cookies are enabled by default in Firefox.</p>
+            </div>
+
+            <ol>
+              <li>Click the menu button <span class="for" data-for="not fx57" style="display: none;">
+                <img alt="New Fx Menu" class="wiki-image" data-original-src="https://prod-cdn.sumo.mozilla.net/uploads/gallery/images/2014-01-10-13-08-08-f52b8c.png" src="https://static-media-prod-cdn.sumo.mozilla.net/static/sumo/img/placeholder.gif" title="">
+              </span><span class="for" data-for="fx57">
+                <img alt="Fx57Menu" class="wiki-image" data-original-src="https://prod-cdn.sumo.mozilla.net/uploads/gallery/images/2017-10-22-15-37-15-18c775.png" src="https://prod-cdn.sumo.mozilla.net/uploads/gallery/images/2017-10-22-15-37-15-18c775.png" title="">
+              </span> and choose <span class="for" data-for="win" style="display: none;">
+                <span class="button">Options</span>.</span><span class="for" data-for="mac,linux">
+                  <span class="button highlighter">Preferences</span>.
+                </span>
+              </li>
+              <li>Select the <span class="menu highlighter">Privacy &amp; Security</span> panel and go to the
+                <span class="highlighter">Cookies
+                  and Site Data</span> section.
+                <dl>
+                  <dt>
+                    <img alt="Fx63settings-AcceptCookies" class="wiki-image frameless" data-original-src="https://prod-cdn.sumo.mozilla.net/uploads/gallery/images/2018-09-09-04-16-52-97d510.png" src="https://prod-cdn.sumo.mozilla.net/uploads/gallery/images/2018-09-09-04-16-52-97d510.png" title="">
+                  </dt>
+                </dl>
+              </li>
+
+              <li> Select <span class="highlighter">Accept cookies and site data</span> to enable cookies. To
+                disable cookies,
+                select <span class="highlighter">Block cookies and site data</span> and use the drop-down
+                menu next to
+                <span class="highlighter">Type blocked</span> to choose the type of cookies to block.
+                <ul>
+                  <li>For more information, see <a href="/en-US/kb/disable-third-party-cookies">Disable
+                    third-party cookies in Firefox to stop some types of tracking by advertisers</a>.
+                  </li>
+                </ul>
+              </li>
+
+              <li> Choose how long cookies are allowed to be stored:
+                <ul>
+                  <li> Keep until:<br><span class="highlighter">They expire</span>: Each cookie will be
+                    removed when it
+                    reaches its expiration date, which is set by the site that sent the
+                    cookie.<br><span class="highlighter">Firefox is closed</span>: The cookies that are
+                    stored on your
+                    computer will be removed when Firefox is closed.
+                  </li>
+                </ul>
+              </li>
+
+              <li>Close the <span class="highlighter">about:preferences</span> page. Any changes you've made
+                will automatically be saved.<p></p></li>
+
+            </ol>
+
+            <h1 id="w_websites-report-cookie-errors">Websites report errors</h1>
+
+            <p>If a website gives you an error message saying that you cannot accept
+              cookies,see <a href="/en-US/kb/websites-say-cookies-are-blocked-unblock-them" target="_blank" class="blue-text"> Websites say cookies are blocked -
+              Unblock them.</a></p>
+
+            <div class="vote-wrap">
+              <div class="document-vote">
+                <form class="helpful" action="/en-US/kb/enable-and-disable-cookies-website-preferences/vote" method="post">
+                  <div class="header">Was this article helpful?</div>
+                  <div class="votes">
+                    <input type="hidden" name="revision_id" value="169359">
+                    <input type="hidden" name="source" value="footer">
+                    <input type="submit" class="btn" name="helpful" value="👍"><input type="submit" class="btn" name="not-helpful" value="👎">
+                    <img class="wait" src="https://static-media-prod-cdn.sumo.mozilla.net/static/sumo/img/customercare/spinner.gif" alt="Please wait...">
+                  </div>
+
+                  <input type="hidden" name="referrer" value=""><input type="hidden" name="query" value="">
+                </form>
+              </div>
+
+              <div id="not-helpful-container">
+                <h4 class="title">Sorry to hear that. Tell more to help us improve the article</h4>
+                <form>
+                  <label for="nh1">
+                    <input type="radio" id="nh1" name="{{ enable_cookies_gform_mchoice_entry }}" value="It's too difficult">
+                    <span>It’s too difficult</span>
+                  </label>
+                  <label for="nh2">
+                    <input type="radio" id="nh2" name="{{ enable_cookies_gform_mchoice_entry }}" value="It didn't help">
+                    <span>It didn't help</span>
+                  </label>
+                  <label for="nh3">
+                    <input type="radio" id="nh3" name="{{ enable_cookies_gform_mchoice_entry }}" value="It's not what I'm looking for">
+                    <span>It’s not what I’m looking for</span>
+                  </label>
+                  <label for="nh4">
+                    <input type="radio" id="nh4" name="{{ enable_cookies_gform_mchoice_entry }}" value="Other">
+                    <span>Other</span>
+                  </label>
+
+                  <textarea name="{{ enable_cookies_gform_textarea_entry }}" id="enable-cookies-feedback-text" cols="30" rows="10" placeholder="How can we make it better?"></textarea>
+
+                  <input id="enable-cookies-submit-feedback" type="submit" class="btn-l">
+                </form>
+              </div>
+
+              <div id="helpful-container">
+                <p>
+                  <svg width="16" height="12" viewbox="0 0 16 12" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M1 6l6 5 8-10" stroke="#12BC00" stroke-width="1.5" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round"></path>
+                  </svg>
+                  Thank you for your feedback!
+                </p>
+              </div>
+            </div>
+
+            <section id="doc-contributors">
+              <h1 class="help-title">These fine people helped write this article:</h1>
+              <div class="contributors">
+                <a class="user" href="/en-US/user/AliceWyman">AliceWyman</a>,
+                <a class="user" href="/en-US/user/Chris_Ilias">Chris Ilias</a>,
+                <a class="user" href="/en-US/user/philipp">philipp</a>,
+                <a class="user" href="/en-US/user/Cww">Cheng Wang</a>,
+                <a class="user" href="/en-US/user/novica">novica</a>,
+                <a class="user" href="/en-US/user/Tonnes">Tonnes</a>,
+                <a class="user" href="/en-US/user/Verdi">Michael Verdi</a>,
+                <a class="user" href="/en-US/user/scoobidiver">scoobidiver</a>,
+                <a class="user" href="/en-US/user/Swarnava">Swarnava Sengupta</a>,
+                <a class="user" href="/en-US/user/soucet">soucet</a>,
+                <a class="user" href="/en-US/user/Miranda5">Miranda</a>,
+                <a class="user" href="/en-US/user/upwinxp">Lan</a>,
+                <a class="user" href="/en-US/user/scootergrisen">scootergrisen</a>,
+                <a class="user" href="/en-US/user/jsavage">Joni</a>,
+                <a class="user" href="/en-US/user/Artist">Artist</a>.
+              </div>
+
+              <div class="help-link">
+                <a href="/en-US/get-involved" class="btn btn-l">You can help too</a>
+              </div>
+            </section>
+
+          </section>
+        </article>
+
+        <div class="divider"></div>
+
+        <section id="related-documents" class="wiki-related-documents">
+          <h1 class="section">Related Articles:</h1>
+
+          <div class="slider-wrapper">
+            <div class="swiper-container">
+              <div class="swiper-wrapper">
+                <div class="swiper-slide">
+                  <a href="/en-US/kb/disable-third-party-cookies">
+                    <h3 class="title">Disable third-party cookies in Firefox to stop some types of tracking
+                      by advertisers</h3>
+                    <p>Firefox Private Browsing is great for viewing websites without saving things like
+                      cookies, temp files, and a history of the pages you visit.</p>
+                  </a>
+                </div>
+                <div class="swiper-slide">
+                  <a href="/en-US/kb/delete-cookies-remove-info-websites-stored">
+                    <h3 class="title">Delete cookies to remove the information websites have stored on your
+                      computer</h3>
+                    <p>Firefox Private Browsing is great for viewing websites without saving things like
+                      cookies, temp files, and a history of the pages you visit.</p>
+                  </a>
+                </div>
+                <div class="swiper-slide">
+                  <a href="/en-US/kb/websites-say-cookies-are-blocked-unblock-them">
+                    <h3 class="title">Websites say cookies are blocked - Unblock them</h3>
+                    <p>Firefox Private Browsing is great for viewing websites without saving things like
+                      cookies, temp files, and a history of the pages you visit.</p>
+                  </a>
+                </div>
+              </div>
+
+              <div class="prev">
+                <svg width="12" height="10" viewbox="0 0 12 10" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M1 5h9.307M7 1l4 4-4 4" fill-rule="nonzero" stroke="#FFF" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"></path>
+                </svg>
+              </div>
+              <div class="next">
+                <svg width="12" height="10" viewbox="0 0 12 10" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M1 5h9.307M7 1l4 4-4 4" fill-rule="nonzero" stroke="#FFF" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"></path>
+                </svg>
+
+              </div>
+            </div>
+          </div>
+
+        </section>
+      </div>
+
+      <footer id="footer">
+        <div class="inner">
+          <div class="row main-nav">
+            <div class="footer-logo">
+              <a href="https://www.mozilla.org">
+                <img src="https://static-media-prod-cdn.sumo.mozilla.net/static/sumo/img/moz-wordmark-light-reverse.svg" alt="Mozilla">
+              </a>
+            </div>
+            <ul class="footer-accordion">
+              <li>
+                <input type="radio" id="radio-1" name="rb_1">
+                <label for="radio-1">
+                  <h5>
+                    Mozilla
+                  </h5>
+                </label>
+
+                <ul class="toggle-bar">
+                  <li><a href="https://www.mozilla.org/about/">About</a></li>
+                  <li><a href="https://blog.mozilla.org/">Blog</a></li>
+                  <li><a href="https://www.mozilla.org/contact/">Contact Us</a></li>
+                  <li>
+                    <a href="https://donate.mozilla.org/en-US/?presets=50,30,20,10&amp;amount=30&amp;utm_source=support.mozilla.org&amp;utm_medium=referral&amp;utm_content=footer&amp;currency=usd">Donate</a>
+                  </li>
+                  <li><a href="https://kitsune.readthedocs.io/en/latest/">Contribute to this site</a></li>
+                  <li><a href="https://github.com/mozilla/kitsune/">Source code for this site</a></li>
+
+                  <li>
+                    <ul class="social-links">
+                      <li>
+                        <a class="twitter" target="_blank" rel="noopener" href="https://twitter.com/mozilla">&nbsp;</a>
+                      </li>
+                      <li>
+                        <a class="instagram" target="_blank" rel="noopener" href="https://www.instagram.com/mozilla/">&nbsp;</a>
+                      </li>
+                    </ul>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <input type="radio" id="radio-2" name="rb_1">
+                <label for="radio-2">
+                  <h5>
+                    Firefox
+                  </h5>
+                </label>
+
+                <ul class="toggle-bar">
+                  <li>
+                    <a href="https://www.mozilla.org/firefox/new/?utm_source=support.mozilla.org&amp;utm_campaign=footer&amp;utm_medium=referral">Download
+                      Firefox</a></li>
+                  <li>
+                    <a href="https://www.mozilla.org/firefox/?utm_source=support.mozilla.org&amp;utm_campaign=footer&amp;utm_medium=referral">Desktop</a>
+                  </li>
+                  <li>
+                    <a href="https://www.mozilla.org/firefox/mobile/?utm_source=support.mozilla.org&amp;utm_campaign=footer&amp;utm_medium=referral">Mobile</a>
+                  </li>
+                  <li>
+                    <a href="https://www.mozilla.org/firefox/features/?utm_source=support.mozilla.org&amp;utm_campaign=footer&amp;utm_medium=referral">Features</a>
+                  </li>
+                  <li>
+                    <a href="https://www.mozilla.org/firefox/channel/desktop/?utm_source=support.mozilla.org&amp;utm_campaign=footer&amp;utm_medium=referral">Beta,
+                      Nightly, Developer Edition</a></li>
+                  <li>
+                    <ul class="social-links">
+                      <li>
+                        <a class="twitter" target="_blank" rel="noopener" href="https://twitter.com/firefox">&nbsp;</a>
+                      </li>
+                      <li>
+                        <a class="youtube" target="_blank" rel="noopener" href="https://www.youtube.com/firefoxchannel">&nbsp;</a>
+                      </li>
+                    </ul>
+                  </li>
+
+                </ul>
+              </li>
+            </ul>
+          </div>
+
+          <div class="lower-menu">
+            <a href="https://www.mozilla.org/en-US/privacy/websites/" rel="nofollow">Website Privacy Notice</a>
+            <a href="https://www.mozilla.org/en-US/privacy/websites/#cookies" rel="nofollow">Cookies</a>
+            <a href="https://www.mozilla.org/en-US/about/legal/" rel="nofollow">Legal</a>
+          </div>
+
+          <div class="row license">
+            <p>
+              Portions of this content are ©1998–2018 by individual mozilla.org contributors. Content available
+              under a <a href="//www.mozilla.org/foundation/licensing/website-content.html">Creative Commons
+              license</a>.
+            </p>
+            <div class="language-picker">
+              Language <a href="/en-US/locales" data-event-category="navigation" data-event-action="main navigation" data-event-label="Locale Picker">English</a>
+            </div>
+          </div>
+        </div>
+      </footer>
+
+    </div>
+
+    {% javascript 'kb-sumo-ux-experiment' %}
+  </body>
+</html>

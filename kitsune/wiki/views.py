@@ -23,6 +23,7 @@ from django.views.decorators.http import (require_GET, require_POST,
 
 from mobility.decorators import mobile_template
 from django_statsd.clients import statsd
+from waffle import flag_is_active
 
 from kitsune.access.decorators import login_required
 from kitsune.lib.sumo_locales import LOCALES
@@ -52,6 +53,11 @@ from kitsune.wiki.tasks import (
 
 
 log = logging.getLogger('k.wiki')
+SUMO_UX_EXPERIMENTS_SLUGS = [
+    'enable-and-disable-cookies-website-preferences',
+    'insecure-password-warning-firefox'
+]
+EXCLUDED_BROWSERS = ['MSIE', 'Trident/7.0']
 
 
 def doc_page_cache(view):
@@ -126,6 +132,20 @@ def document(request, document_slug, template=None, document=None):
             # There is no translation
             # and OK to fall back to parent (parent is approved).
             fallback_reason = 'no_translation'
+
+    # Render the static pages if the slug matches the experiment
+    if (flag_is_active(request, 'ux_experiment_1') and
+        all([x not in request.META['HTTP_USER_AGENT'] for x in EXCLUDED_BROWSERS]) and
+        doc.slug in SUMO_UX_EXPERIMENTS_SLUGS and
+            request.LANGUAGE_CODE == 'en-US'):
+
+            ctx = {
+                'enable_cookies_gform_mchoice_entry': 'entry.437614058',
+                'enable_cookies_gform_textarea_entry': 'entry.134164855',
+                'insecure_warning_gform_mchoice_entry': 'entry.1877592314',
+                'insecure_warning_gform_textarea_entry': 'entry.489053800'
+            }
+            return render(request, 'kb-ux-experiment/{0}.html'.format(doc.slug), ctx)
 
     # Find and show the defined fallback locale rather than the English version of the document
     # The fallback locale is defined based on the ACCEPT_LANGUAGE header,
