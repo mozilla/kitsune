@@ -1,5 +1,5 @@
 /* global gettext:false, Modernizr:false, _:false, jQuery:false, Mailcheck:false,
-          interpolate:false, Mozilla:false, _gaq:false */
+          interpolate:false, Mozilla:false, trackEvent:false */
 (function($) {
   'use strict';
 
@@ -287,10 +287,6 @@
   function initAnnouncements() {
     var $announcements = $('#announcements');
 
-    $(document).on('click', '#tabzilla', function() {
-      $('body').prepend($announcements);
-    });
-
     if (Modernizr.localstorage) {
       // When an announcement is closed, remember it.
       $announcements.on('click', '.close-button', function() {
@@ -378,9 +374,8 @@
     ev.preventDefault();
     if (Mozilla && Mozilla.UITour) {
       // Send event to GA for metrics/reporting purposes.
-      if (_gaq) {
-        _gaq.push(['_trackEvent', 'Refresh Firefox', 'click refresh button']);
-      }
+      trackEvent('Refresh Firefox', 'click refresh button');
+
       if (JSON.parse($('body').data('waffle-refresh-survey'))) {
         $.cookie('showFirefoxResetSurvey', '1', {expires: 365});
       }

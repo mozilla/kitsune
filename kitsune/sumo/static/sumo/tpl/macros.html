@@ -1,7 +1,6 @@
 {% macro search_result(result) %}
   <div class="result {{ result.type }}">
-    <h3><a class="title" href="{{ result.url }}" data-ga-click="_trackEvent | Instant Search | Result Clicked">{{ result.title }}</a></h3>
-    <a tabindex="-1" href="{{ result.url }}" data-ga-click="_trackEvent | Instant Search | Result Clicked">{{ result.search_summary | safe }}</a>
+    <h3><a class="title" href="{{ result.url }}" data-event-category="Instant Search" data-event-action="Result Clicked">{{ result.title }}</a></h3>
     {% if result.type == 'question' %}
       <ul class="thread-meta cf">
         {% if result.is_solved %}
@@ -22,5 +21,6 @@
         </li>
       </ul>
     {% endif %}
+    <a tabindex="-1" href="{{ result.url }}" data-event-category="Instant Search" data-event-action="Result Clicked">{{ result.search_summary | safe }}</a>
   </div>
 {% endmacro %}

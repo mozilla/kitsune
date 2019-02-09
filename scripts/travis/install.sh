@@ -8,13 +8,17 @@ ln -sf /usr/lib/`uname -i`-linux-gnu/libjpeg.so ~/virtualenv/python2.6/lib/
 ln -sf /usr/lib/`uname -i`-linux-gnu/libz.so ~/virtualenv/python2.6/lib/
 
 echo "Install Python dependencies"
-./peep.sh install -r requirements/dev.txt
-./peep.sh install -r requirements/default.txt
+pip install -r requirements/dev.txt
+pip install -r requirements/default.txt
 echo
 
 # Installing dependencies for UI tests
 if [[ $TEST_SUITE == "ui" ]]; then
-  ./peep.sh install -r requirements/test.txt
+  pip install tox
+fi
+
+if [[ $TEST_SUITE == "docker" ]]; then
+  sudo pip install docker-compose
 fi
 
 # Optimization: None of the rest is needed for lint tests.
@@ -23,7 +27,7 @@ if [[ $TEST_SUITE == "lint" ]]; then
 fi
 
 echo "Installing Node.js dependencies"
-./scripts/lockdown.js
+npm install
 echo
 
 echo "Installing front end dependencies"

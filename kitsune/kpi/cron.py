@@ -8,7 +8,7 @@ from django.db.models import Count, F, Q
 
 import cronjobs
 import requests
-from statsd import statsd
+from django_statsd.clients import statsd
 
 from kitsune.customercare.models import Reply
 from kitsune.dashboards import LAST_90_DAYS
@@ -90,10 +90,6 @@ def update_l10n_metric():
     * There are only new revisions with TYPO_SIGNIFICANCE not translated
     * There is only one revision of MEDIUM_SIGNIFICANCE not translated
     """
-    if settings.STAGE:
-        # Let's be nice to GA and skip on stage.
-        return
-
     # Get the top 60 visited articles. We will only use the top 50
     # but a handful aren't localizable so we get some extras.
     top_60_docs = _get_top_docs(60)
@@ -133,10 +129,6 @@ def update_l10n_metric():
 @cronjobs.register
 def update_contributor_metrics(day=None):
     """Calculate and save contributor metrics."""
-    if settings.STAGE:
-        # Let's be nice to the admin node and skip on stage.
-        return
-
     update_support_forum_contributors_metric(day)
     update_kb_contributors_metric(day)
     update_aoa_contributors_metric(day)
@@ -416,23 +408,25 @@ def process_exit_surveys():
 
     _process_exit_survey_results()
 
-    # Get the email addresses from two days ago and add them to the survey
+    # Get the email addresses from 4-5 hours ago and add them to the survey
     # campaign (skip this on stage).
-    if settings.STAGE:
-        # Only run this on prod, it doesn't need to be running multiple times
-        # from different places.
-        return
 
-    startdate = date.today() - timedelta(days=2)
-    enddate = date.today() - timedelta(days=1)
+    # The cron associated with this process is set to run every hour,
+    # with the intent of providing a 4-5 hour wait period between when a
+    # visitor enters their email address and is then sent a follow-up
+    # survey.
+    # The range here is set between 4 and 8 hours to be sure no emails are
+    # missed should a particular cron run be skipped (e.g. during a deployment)
+    startdatetime = datetime.now() - timedelta(hours=8)
+    enddatetime = datetime.now() - timedelta(hours=4)
 
     for survey in SURVEYS.keys():
-        if 'email_collection_survey_id' not in SURVEYS[survey]:
+        if not SURVEYS[survey]['active'] or 'email_collection_survey_id' not in SURVEYS[survey]:
             # Some surveys don't have email collection on the site
             # (the askers survey, for example).
             continue
 
-        emails = get_email_addresses(survey, startdate, enddate)
+        emails = get_email_addresses(survey, startdatetime, enddatetime)
         for email in emails:
             add_email_to_campaign(survey, email)
 
@@ -484,11 +478,6 @@ def _process_exit_survey_results():
 @cronjobs.register
 def survey_recent_askers():
     """Add question askers to a surveygizmo campaign to get surveyed."""
-    if settings.STAGE:
-        # Only run this on prod, it doesn't need to be running multiple times
-        # from different places.
-        return
-
     # We get the email addresses of all users that asked a question 2 days
     # ago. Then, all we have to do is send the email address to surveygizmo
     # and it does the rest.
@@ -499,8 +488,9 @@ def survey_recent_askers():
         Question.objects
         .filter(created__gte=two_days_ago, created__lt=yesterday)
         .values_list('creator__email', flat=True))
+
     for email in emails:
-            add_email_to_campaign('askers', email)
+        add_email_to_campaign('askers', email)
 
     statsd.gauge('survey.askers', len(emails))
 

@@ -22,7 +22,8 @@ from django.views.decorators.http import (require_GET, require_POST,
                                           require_http_methods)
 
 from mobility.decorators import mobile_template
-from statsd import statsd
+from django_statsd.clients import statsd
+from waffle import flag_is_active
 
 from kitsune.access.decorators import login_required
 from kitsune.lib.sumo_locales import LOCALES
@@ -31,7 +32,7 @@ from kitsune.sumo.decorators import ratelimit
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.redis_utils import redis_client, RedisError
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.sumo.utils import paginate, smart_int, get_next_url, truncated_json_dumps, get_browser
+from kitsune.sumo.utils import paginate, smart_int, get_next_url, truncated_json_dumps
 from kitsune.wiki.config import (
     CATEGORIES, MAJOR_SIGNIFICANCE, TEMPLATES_CATEGORY, DOCUMENTS_PER_PAGE,
     COLLAPSIBLE_DOCUMENTS, FALLBACK_LOCALES)
@@ -52,6 +53,11 @@ from kitsune.wiki.tasks import (
 
 
 log = logging.getLogger('k.wiki')
+SUMO_UX_EXPERIMENTS_SLUGS = [
+    'enable-and-disable-cookies-website-preferences',
+    'insecure-password-warning-firefox'
+]
+EXCLUDED_BROWSERS = ['MSIE', 'Trident/7.0']
 
 
 def doc_page_cache(view):
@@ -127,6 +133,19 @@ def document(request, document_slug, template=None, document=None):
             # and OK to fall back to parent (parent is approved).
             fallback_reason = 'no_translation'
 
+    # Render the static pages if the slug matches the experiment
+    if (flag_is_active(request, 'ux_experiment_1') and
+        all([x not in request.META['HTTP_USER_AGENT'] for x in EXCLUDED_BROWSERS]) and
+            doc.slug in SUMO_UX_EXPERIMENTS_SLUGS and request.LANGUAGE_CODE == 'en-US'):
+
+        ctx = {
+            'enable_cookies_gform_mchoice_entry': 'entry.437614058',
+            'enable_cookies_gform_textarea_entry': 'entry.134164855',
+            'insecure_warning_gform_mchoice_entry': 'entry.1877592314',
+            'insecure_warning_gform_textarea_entry': 'entry.489053800'
+        }
+        return render(request, 'kb-ux-experiment/{0}.html'.format(doc.slug), ctx)
+
     # Find and show the defined fallback locale rather than the English version of the document
     # The fallback locale is defined based on the ACCEPT_LANGUAGE header,
     # site-wide locale mapping and custom fallback locale
@@ -183,18 +202,6 @@ def document(request, document_slug, template=None, document=None):
 
     product_topics = Topic.objects.filter(product=product, visible=True, parent=None)
 
-    ga_push = []
-    if fallback_reason is not None:
-        if fallback_reason == 'fallback_locale':
-            ga_push.append(['_trackEvent', 'Incomplete L10n', 'Fallback Locale',
-                            '%s/%s/%s' % (doc.parent.slug, request.LANGUAGE_CODE, doc.locale)])
-        else:
-            ga_push.append(['_trackEvent', 'Incomplete L10n', 'Not Localized',
-                            '%s/%s' % (doc.slug, request.LANGUAGE_CODE)])
-    elif doc.is_outdated():
-        ga_push.append(['_trackEvent', 'Incomplete L10n', 'Not Updated',
-                        '%s/%s' % (doc.parent.slug, request.LANGUAGE_CODE)])
-
     if document_slug in COLLAPSIBLE_DOCUMENTS.get(request.LANGUAGE_CODE, []):
         document_css_class = 'collapsible'
     else:
@@ -230,10 +237,6 @@ def document(request, document_slug, template=None, document=None):
     # The list above was built backwards, so flip this.
     breadcrumbs.reverse()
 
-    user_agent = request.META.get('HTTP_USER_AGENT', '')
-    browser = get_browser(user_agent)
-    show_fx_download = (product.slug == 'thunderbird' and browser != 'Firefox')
-
     data = {
         'document': doc,
         'redirected_from': redirected_from,
@@ -244,11 +247,9 @@ def document(request, document_slug, template=None, document=None):
         'product': product,
         'products': products,
         'related_products': doc.related_products.exclude(pk=product.pk),
-        'ga_push': ga_push,
         'breadcrumb_items': breadcrumbs,
         'document_css_class': document_css_class,
         'any_localizable_revision': any_localizable_revision,
-        'show_fx_download': show_fx_download,
         'full_locale_name': full_locale_name
     }
 
@@ -1517,8 +1518,7 @@ def _get_next_url_fallback_localization(request):
 
 def _show_revision_warning(document, revision):
     if revision:
-        return document.revisions.filter(created__gt=revision.created,
-                                         reviewed=None).exists()
+        return document.revisions.filter(id__gt=revision.id, reviewed=None).exists()
     return False
 
 

@@ -58,7 +58,7 @@
     {% if profile.bio %}
       <section>
         <header>{{ _('Bio') }}</header>
-        <article>{{ profile.bio|wiki_to_html(nofollow=True) }}</article>
+        <article>{{ profile.bio|wiki_to_safe_html(nofollow=True) }}</article>
       </section>
     {% endif %}
     {% if profile.public_email or profile.website or profile.twitter or

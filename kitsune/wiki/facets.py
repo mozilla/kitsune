@@ -5,7 +5,7 @@ from django.core.cache import cache
 from django.db.models import Count
 
 from elasticsearch.exceptions import TransportError
-from statsd import statsd
+from django_statsd.clients import statsd
 
 from kitsune.products.models import Topic
 from kitsune.wiki.models import Document, DocumentMappingType

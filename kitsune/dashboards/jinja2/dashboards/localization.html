@@ -12,6 +12,15 @@
   <div class="grid_9">
     <article id="localize" class="dashboards">
       <h1>{{ title }}</h1>
+      <h2>{{ _('Locale:') }} {{ current_locale_name }}</h2>
+
+      {% if user.is_anonymous() %}
+        <section id="get-involved-box">
+          <a class="btn btn-submit" href="{{ url('landings.get_involved_l10n') }}">
+            {{ _('Volunteer for Mozilla Support') }}
+          </a>
+        </section>
+      {% endif %}
 
       {% if announcements %}
         <ul class="announcements">
@@ -57,18 +66,6 @@
 
       {{ product_choice_list(products, product, url('dashboards.localization')) }}
 
-      <div class="choice-list">
-        <label>{{ _('Locale:') }}</label>
-        <ul>
-          <li>
-            <a href="{{ url('dashboards.contributors') }}">{{ default_locale_name }}</a>
-          </li>
-          <li>
-            {{ current_locale_name }}
-          </li>
-        </ul>
-      </div>
-
       {% if not user.is_anonymous() %}
         {{ print_subscription_menu(default_locale_name,
                                    current_locale_name,
@@ -84,7 +81,7 @@
       {{ overview_section(readouts, ((overview_rows['top-100'], True),
                                      (overview_rows['top-50'], True),
                                      (overview_rows['top-20'], True),
-                                     (overview_rows['all'], False),
+                                     (overview_rows['all'], True),
                                      (overview_rows['templates'], True))) }}
 
       <div id="stats-tabs" data-ui-type="tabbed-view">

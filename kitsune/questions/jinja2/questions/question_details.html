@@ -126,13 +126,12 @@
         <div itemprop="text">{{ question.content_parsed|safe }}</div>
         {# Note: this is not vulnerable to injection because Jinja autoescapes the strings. #}
         <div class="content-raw">{{ question.content }}</div>
-
-        {% if question.images.count() %}
+        {% if question_images %}
           <div class="attachments-title">
             {{ _('Attached screenshots') }}
           </div>
           <div class="question-attachments attachments-list">
-          {% for image in question.images.all() %}
+          {% for image in question_images %}
             {{ attachment(image, user, False) }}
           {% endfor %}
           </div>
@@ -147,7 +146,7 @@
         {% if question.solution %}
           {% set solver = question.solver %}
           <div class="solution">
-            <h3{% if solver %} title="{{ _('Solution chosen by {user}')|f(user=solver.username) }}"{% endif %}>{{ _('Chosen solution') }}</h3>
+            <h3{% if solver %} title="{{ _('Solution chosen by {user}')|f(user=display_name(solver)) }}"{% endif %}>{{ _('Chosen solution') }}</h3>
             <div class="reply">
               {{ question.solution.content_parsed|safe }}
               <a class="read-more" href="{{ question.solution.get_absolute_url() }}">{{ _('Read this answer in context') }}</a>

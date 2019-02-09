@@ -6,7 +6,7 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.views.decorators.http import require_POST
 
-from statsd import statsd
+from django_statsd.clients import statsd
 
 from kitsune import kbforums
 from kitsune.access.decorators import permission_required, login_required

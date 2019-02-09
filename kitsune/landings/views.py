@@ -26,12 +26,6 @@ def get_involved(request, template):
 
 
 @ssl_required
-@mobile_template('landings/{mobile/}get-involved-aoa.html')
-def get_involved_aoa(request, template):
-    return render(request, template)
-
-
-@ssl_required
 @mobile_template('landings/{mobile/}get-involved-questions.html')
 def get_involved_questions(request, template):
     return render(request, template)

@@ -1,22 +1,31 @@
+from django.conf import settings
 from django.conf.urls import patterns, url
 from django.contrib.contenttypes.models import ContentType
 
 from kitsune.kbforums.feeds import ThreadsFeed, PostsFeed
 from kitsune.kbforums.models import Post
 from kitsune.flagit import views as flagit_views
+from kitsune.sumo.views import handle404
 
+
+if settings.DISABLE_FEEDS:
+    threads_feed_view = handle404
+    posts_feed_view = handle404
+else:
+    threads_feed_view = ThreadsFeed()
+    posts_feed_view = PostsFeed()
 
 # These patterns inherit from /document/discuss
 urlpatterns = patterns(
     'kitsune.kbforums.views',
     url(r'^$', 'threads', name='wiki.discuss.threads'),
-    url(r'^/feed', ThreadsFeed(), name='wiki.discuss.threads.feed'),
+    url(r'^/feed', threads_feed_view, name='wiki.discuss.threads.feed'),
     url(r'^/new', 'new_thread', name='wiki.discuss.new_thread'),
     url(r'^/watch', 'watch_forum', name='wiki.discuss.watch_forum'),
     url(r'^/post-preview-async$', 'post_preview_async',
         name='wiki.discuss.post_preview_async'),
     url(r'^/(?P<thread_id>\d+)$', 'posts', name='wiki.discuss.posts'),
-    url(r'^/(?P<thread_id>\d+)/feed$', PostsFeed(),
+    url(r'^/(?P<thread_id>\d+)/feed$', posts_feed_view,
         name='wiki.discuss.posts.feed'),
     url(r'^/(?P<thread_id>\d+)/watch$', 'watch_thread',
         name='wiki.discuss.watch_thread'),

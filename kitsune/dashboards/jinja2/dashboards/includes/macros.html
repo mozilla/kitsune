@@ -213,7 +213,7 @@
         <img src="{{ STATIC_URL }}sumo/img/blank.png" class="logo-sprite small sumo">
         <span>{{ _('All Products') }}</span>
       {% else %}
-        <img src="{{ STATIC_URL }}sumo/img/blank.png" class="logo-sprite small" style="{% if current.image %}background-image: url({{ current.sprite_url(retina=False) }}); background-position: -50px -{{ 50 + (current.image_offset * 148) }}px;{% else %}background-image: url({{ current.image_url }}){% endif %}" alt="" />
+        <img src="{{ current.image_url }}" class="logo-sprite small" alt="" />
         <span>{{ pgettext('DB: products.Product.title', current.title) }}</span>
       {% endif %}
     </div>
@@ -227,7 +227,7 @@
       {% for p in products %}
         <li {{ current|class_selected(p) }}>
           <a href="{{ url_|urlparams(product=p.slug, category=category) }}">
-            <img src="{{ STATIC_URL }}sumo/img/blank.png" class="logo-sprite small" style="{% if p.image %}background-image: url({{ p.sprite_url(retina=False) }}); background-position: -50px -{{ 50 + (p.image_offset * 148) }}px;{% else %}background-image: url({{ p.image_url }}){% endif %}" alt="" />
+                <img src="{{ p.image_url }}" class="logo-sprite small" alt="" />
             <span>{{ pgettext('DB: products.Product.title', p.title) }}</span>
           </a>
         </li>

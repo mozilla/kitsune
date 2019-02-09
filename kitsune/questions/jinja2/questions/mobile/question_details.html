@@ -10,7 +10,7 @@
 {% block content %}
   <section class="collapsable {% if not answers %}expanded{% endif %}" id="question">
     <article class="user-bar">
-      {{ _('posted by') }} <a href="{{ profile_url(question.creator) }}">{{ question.creator }}</a>
+      {{ _('posted by') }} <a href="{{ profile_url(question.creator) }}">{{ display_name(question.creator) }}</a>
       {{ question.created|timesince }}
     </article>
     <header>
@@ -88,13 +88,13 @@
       {% for answer in answers %}
         <li id="answer-{{ answer.id }}" class="{% if loop.first %}active{% endif %}">
           <header>
-            <a href="{{ profile_url(answer.creator) }}">{{ answer.creator }}</a>
+            <a href="{{ profile_url(answer.creator) }}">{{ display_name(answer.creator) }}</a>
             {{ answer.created|timesince }}
           </header>
           <article>
             {{ answer.content_parsed|safe }}
 
-            {% for image in answer.images.all() %}
+            {% for image in answer.get_images() %}
               <a class="attachment" href="{{ image.file.url }}">
                 <img src="{{ image.file.url }}" alt="">
               </a>

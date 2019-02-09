@@ -1,4 +1,4 @@
-/* globals k:false, _gaq:false, jQuery:false */
+/* globals k:false, jQuery:false, trackEvent:false */
 (function($) {
   var searchTimeout;
   var locale = $('html').attr('lang');
@@ -10,13 +10,21 @@
     $('#main-content').hide();
     $('#main-content').siblings('aside').hide();
     $('#main-breadcrumbs').hide();
+
+    if ($('#support-search-wiki:visible').length === 0) {
+      $('.support-search-main').show();
+      $('.support-search-main').find('input[name=q]').focus();
+    }
   }
 
   function showContent() {
+    $('.support-search-main').hide();
     $('#main-content').show();
     $('#main-content').siblings('aside').show();
     $('#main-breadcrumbs').show();
     $('#instant-search-content').remove();
+    $('.search-form-large:visible').find('input[name=q]').focus().val('');
+    $('#support-search').find('input[name=q]').val('');
   }
 
   function render(data) {
@@ -48,6 +56,8 @@
 
   $(document).on('keyup', '[data-instant-search="form"] input[type="search"]', function(ev) {
     var $this = $(this);
+    var $form = $this.closest('form');
+    var formId = $form.attr('id');
     var params = {
       format: 'json'
     };
@@ -63,7 +73,7 @@
         window.clearTimeout(searchTimeout);
       }
 
-      $this.closest('form').find('input').each(function () {
+      $form.find('input').each(function () {
         if ($(this).attr('type') === 'submit') {
           return true;
         }
@@ -71,6 +81,17 @@
           return true;
         }
         if ($(this).attr('name') === 'q') {
+          var value = $(this).val();
+
+          if (formId === 'support-search-results') {
+            $('#support-search').find('input[name=q]').val(value);
+          } else if (formId === 'support-search') {
+            $('.search-form-large').find('input[name=q]').val(value);
+          } else {
+            $('#support-search').find('input[name=q]').val(value);
+            $('#support-search-results').find('input[name=q]').val(value);
+          }
+
           return true;
         }
         params[$(this).attr('name')] = $(this).val();
@@ -78,12 +99,11 @@
 
       searchTimeout = setTimeout(function () {
         if (search.hasLastQuery) {
-          _gaq.push(['_trackEvent', 'Instant Search', 'Exit Search', search.lastQueryUrl()]);
+          trackEvent('Instant Search', 'Exit Search', search.lastQueryUrl());
         }
         search.setParams(params);
         search.query($this.val(), k.InstantSearchSettings.render);
-        _gaq.push(['_trackEvent', 'Instant Search', 'Search', search.lastQueryUrl()]);
-        _gaq.push(['_trackPageview', search.lastQueryUrl()]);
+        trackEvent('Instant Search', 'Search', search.lastQueryUrl());
       }, 200);
 
       k.InstantSearchSettings.hideContent();
@@ -96,8 +116,7 @@
     var $this = $(this);
 
     if (search.hasLastQuery) {
-      _gaq.push(['_trackEvent', 'Instant Search', 'Exit Search',
-        search.queryUrl(search.lastQuery)]);
+      trackEvent('Instant Search', 'Exit Search', search.queryUrl(search.lastQuery));
     }
 
     var setParams = $this.data('instant-search-set-params');
@@ -117,8 +136,7 @@
       });
     }
 
-    _gaq.push(['_trackEvent', 'Instant Search', 'Search', $this.data('href')]);
-    _gaq.push(['_trackPageview', $this.data('href')]);
+    trackEvent('Instant Search', 'Search', $this.data('href'));
 
     cxhr.request($this.data('href'), {
       data: {format: 'json'},

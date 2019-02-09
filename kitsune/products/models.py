@@ -1,11 +1,8 @@
-import io
 import os
 
 from django.conf import settings
 from django.db import models
 from django.utils.translation import ugettext_lazy as _lazy
-from PIL import Image
-from uuid import uuid4
 
 from kitsune.sumo.models import ModelBase
 from kitsune.sumo.urlresolvers import reverse
@@ -22,7 +19,12 @@ class Product(ModelBase):
                               blank=True,
                               max_length=settings.MAX_FILEPATH_LENGTH,
                               # no l10n in admin
-                              help_text=u'The image must be 96x96.')
+                              help_text=u'Used on the the home page. Must be 484x244.')
+    image_alternate = models.ImageField(upload_to=settings.PRODUCT_IMAGE_PATH, null=True,
+                                        blank=True,
+                                        max_length=settings.MAX_FILEPATH_LENGTH,
+                                        help_text=(u'Used everywhere except the home '
+                                                   'page. Must be 96x96.'))
     image_offset = models.IntegerField(default=None, null=True, editable=False)
     image_cachebuster = models.CharField(max_length=32, default=None,
                                          null=True, editable=False)
@@ -51,63 +53,15 @@ class Product(ModelBase):
             return self.image.url
         return os.path.join(settings.STATIC_URL, 'products', 'img', 'product_placeholder.png')
 
-    def sprite_url(self, retina=True):
-        fn = 'logo-sprite-2x.png' if retina else 'logo-sprite.png'
-        url = os.path.join(settings.MEDIA_URL, settings.PRODUCT_IMAGE_PATH, fn)
-        return '%s?%s' % (url, self.image_cachebuster)
+    @property
+    def image_alternate_url(self):
+        if self.image_alternate:
+            return self.image_alternate.url
+        return os.path.join(settings.STATIC_URL, 'products', 'img',
+                            'product_placeholder_alternate.png')
 
     def questions_enabled(self, locale):
         return self.questions_locales.filter(locale=locale).exists()
-
-    def save(self, force_insert=False, force_update=False, using=None,
-             update_fields=None, regenerate_sprite=True):
-        super(Product, self).save(force_insert=force_insert,
-                                  force_update=force_update, using=using,
-                                  update_fields=update_fields)
-
-        if regenerate_sprite:
-            cachebust = uuid4().hex
-            logos = []
-            offset = 0
-            products = Product.objects.order_by('id').all()
-
-            for product in products:
-                if product.image:
-                    product.image_offset = offset
-                    offset += 1
-                    logo_file = io.BytesIO(product.image.file.read())
-                    logos.append(Image.open(logo_file))
-                else:
-                    product.image_offset = None
-
-                product.image_cachebuster = cachebust
-
-            for product in products:
-                product.sprite_height = 148 * len(logos)
-                product.save(regenerate_sprite=False)
-
-            if len(logos):
-                large_sprite = Image.new(mode='RGBA',
-                                         size=(296, 296 * len(logos)),
-                                         color=(0, 0, 0, 0))
-
-                small_sprite = Image.new(mode='RGBA',
-                                         size=(148, 148 * len(logos)),
-                                         color=(0, 0, 0, 0))
-
-                for offset, logo in enumerate(logos):
-                    large_sprite.paste(logo, (100, 100 + (296 * offset)))
-
-                    small_logo = logo.resize((48, 48), Image.ANTIALIAS)
-                    small_sprite.paste(small_logo, (50, 50 + (148 * offset)))
-
-                large_sprite.save(os.path.join(
-                    settings.MEDIA_ROOT, settings.PRODUCT_IMAGE_PATH,
-                    'logo-sprite-2x.png'))
-
-                small_sprite.save(os.path.join(
-                    settings.MEDIA_ROOT, settings.PRODUCT_IMAGE_PATH,
-                    'logo-sprite.png'))
 
     def get_absolute_url(self):
         return reverse('products.product', kwargs={'slug': self.slug})

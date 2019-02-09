@@ -1,4 +1,4 @@
-/* global jQuery:false, gettext:false, _gaq:false, KBox:false */
+/* global jQuery:false, gettext:false, trackEvent:false, KBox:false */
 /*
   Marky, the markup toolbar builder
 
@@ -838,11 +838,7 @@
         var $responseTextbox = $('#id_content');
         var targetContent = $responseTextbox.val();
 
-        if (_gaq) {
-          _gaq.push(['_trackEvent',
-            'Canned response usage',
-            slug]);
-        }
+        trackEvent('Canned response usage', slug);
 
         $responseTextbox.val(targetContent + sourceContent);
       }
@@ -1044,8 +1040,8 @@
     var previousContent = $('#read-message').attr('data-message-content');
     var previousAuthor = $('.from a').text();
     var previousAuthorLink = $('.from a').attr('href');
-    var quote = '[' + previousAuthorLink + ' ' + previousAuthor + ']' +
-      gettext(' said') + '\r\n';
+    var quote = '[' + previousAuthorLink + ' ' + previousAuthor + '] ' +
+      gettext('said') + '\r\n';
     quote += '<blockquote>\r\n';
     quote += previousContent + '\r\n';
     quote += '</blockquote>\r\n';

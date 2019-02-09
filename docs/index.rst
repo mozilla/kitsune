@@ -48,6 +48,7 @@ Part 3: SUMO
    deployments
    sop
    sla
+   architectural-decisions
 
 Part 4: Administration
 ======================

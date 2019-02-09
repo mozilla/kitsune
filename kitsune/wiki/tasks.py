@@ -13,7 +13,7 @@ from django.db import transaction
 import waffle
 from celery import task
 from multidb.pinning import pin_this_thread, unpin_this_thread
-from statsd import statsd
+from django_statsd.clients import statsd
 from django.utils.translation import ugettext as _
 
 from kitsune.kbadge.utils import get_or_create_badge
@@ -277,7 +277,7 @@ def maybe_award_badge(badge_template, year, user):
         qs = qs.exclude(document__locale=settings.WIKI_DEFAULT_LANGUAGE)
 
     # If the count is 10 or higher, award the badge.
-    if qs.count() >= 10:
+    if qs.count() >= settings.BADGE_LIMIT_L10N_KB:
         badge.award_to(user)
         return True
 

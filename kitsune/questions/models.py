@@ -20,7 +20,7 @@ from django.http import Http404
 import actstream
 import actstream.actions
 from product_details import product_details
-from statsd import statsd
+from django_statsd.clients import statsd
 from taggit.models import Tag, TaggedItem
 
 from kitsune.flagit.models import FlaggedObject
@@ -98,6 +98,7 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
 
     html_cache_key = u'question:html:%s'
     tags_cache_key = u'question:tags:%s'
+    images_cache_key = u'question:images:%s'
     contributors_cache_key = u'question:contributors:%s'
 
     objects = QuestionManager()
@@ -666,9 +667,19 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
         self.taken_until = datetime.now() + timedelta(seconds=config.TAKE_TIMEOUT)
         self.save()
 
+    def get_images(self):
+        """A cached version of self.images.all()."""
+        cache_key = self.images_cache_key % self.id
+        images = cache.get(cache_key)
+        if images is None:
+            images = list(self.images.all())
+            cache.add(cache_key, images, CACHE_TIMEOUT)
+        return images
+
 
 @register_mapping_type
 class QuestionMappingType(SearchMappingType):
+    seconds_ago_filter = 'updated__gte'
     list_keys = [
         'topic',
         'product',
@@ -1147,6 +1158,7 @@ class Answer(ModelBase, SearchMixin):
 
 @register_mapping_type
 class AnswerMetricsMappingType(SearchMappingType):
+    seconds_ago_filter = 'updated__gte'
     list_keys = [
         'product'
     ]

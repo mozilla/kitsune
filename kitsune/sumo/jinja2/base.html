@@ -1,14 +1,17 @@
 {% from 'includes/common_macros.html' import announcement_bar, search_box, aux_nav, favicon with context %}
-{% if request.LANGUAGE_CODE == settings.WIKI_DEFAULT_LANGUAGE %}
-  {% set SURVEY_GIZMOS = (SURVEY_GIZMOS or []) + ['firefox_refresh'] %}
+
+{% if request.LANGUAGE_CODE == settings.WIKI_DEFAULT_LANGUAGE and waffle.flag('surveygizmo') %}
+  {# allow any artibtrary survey to be loaded via the SurveyGizmo admin #}
+  {% set SURVEY_GIZMOS = ['beacon'] %}
 {% else %}
   {% set SURVEY_GIZMOS = [] %}
 {% endif %}
+
 {% if request.LANGUAGE_CODE == 'xx' %}
   {% set meta = [('robots', 'noindex')] %}
 {% endif %}
 <!DOCTYPE html>
-<html class="no-js" lang="{{ request.LANGUAGE_CODE }}" {% if DIR %}dir="{{ DIR }}"{% endif %}>
+<html class="no-js" lang="{{ request.LANGUAGE_CODE }}"{% if DIR %} dir="{{ DIR }}"{% endif %}{% if settings.GTM_CONTAINER_ID %} data-gtm-container-id="{{ settings.GTM_CONTAINER_ID }}"{% endif %}>
 <head>
   {% block head_top %}{% endblock %}
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
@@ -29,8 +32,6 @@
     {% stylesheet style %}
   {% endfor %}
 
-  <link href="//mozorg.cdn.mozilla.net/media/css/tabzilla-min.css" rel="stylesheet" />
-
   <!--[if lte IE 7]>
     {% stylesheet 'ie' %}
   <![endif]-->
@@ -46,7 +47,8 @@
 
   {# This is to verify "we" own the site for some feature on youtube. See bug 992412. #}
   <meta name="google-site-verification" content="2URA-2Y9BeYYUf8B2BSsBSVetJJS3TZwlXBOaMx2VfY" />
-  <meta name="google-site-verification" content="U9a6gH32vLIykvntaDToj-ytYhlZ1AfAgVEKstixQIE" />
+  {# Bug 1385387 #}
+  <meta name="google-site-verification" content="ueNbCgS4e1JIAgLGwufm-jHaIcLXFLtFMmR_65S1Ag0" />
   {# This is to verify "we" own the site for purposes of Bing/Yahoo search engine features. Bug 1149611 #}
   <meta name="msvalidate.01" content="1659173DC94819093068B0ED7C51C527" />
 
@@ -59,9 +61,28 @@
   {% endif %}
 
   <!--[if lt IE 9]>
-{# html5-shiv.js must be inside <head/> to work. #}
-<script src="{{ STATIC_URL }}sumo/js/libs/html5-shiv.js"></script>
-<![endif]-->
+  {# html5-shiv.js must be inside <head/> to work. #}
+  <script src="{{ STATIC_URL }}sumo/js/libs/html5-shiv.js"></script>
+  <![endif]-->
+
+  {% include "includes/google-analytics.html" %}
+
+  {# TrafficCop experiment_fxa_cta_topbar #}
+  {% set run_experiments = False %}
+  {% if waffle.flag('experiment_fxa_cta_topbar') %}
+    {% if request.path in ['/en-US/kb/install-firefox-android-device-using-google-play',
+                           '/en-US/kb/will-firefox-work-my-mobile-device',
+                           '/en-US/kb/get-started-firefox-overview-main-features',
+                           '/en-US/kb/update-firefox-latest-version',
+                           '/en-US/kb/install-firefox-your-ipad-iphone-or-ipod'] %}
+      {% set run_experiments = True %}
+    {% endif %}
+  {% endif %}
+  {% if run_experiments %}
+    {% javascript 'experiment_fxa_cta_topbar' %}
+  {% endif %}
+  {# end TrafficCop #}
+
 </head>
 <body class="html-{{ DIR }} logged-{% if user.is_authenticated() %}in{% else %}out{% endif %} {{ classes }} {{ request.LANGUAGE_CODE }}"
       data-readonly="{{ settings.READ_ONLY|json }}"
@@ -73,7 +94,6 @@
       {% else %}
         data-survey-gizmos="[]"
       {% endif %}
-      data-ga-push="{{ ga_push_attribute() }}"
       {% if ga_alternate_url %}
         data-ga-alternate-url="{{ ga_alternate_url }}"
       {% endif %}
@@ -95,7 +115,7 @@
 {% if settings.STAGE %}
   <div id="stage-banner">
     <div class="close-button">X</div>
-    {{ _('This is a staging site, the content gets overwritten on the 1st of every month.<br>The production site is <a href="http://support.mozilla.org">here</a>.') }}
+    {{ _('This is a staging site, the content gets overwritten on the 1st of every month.<br>The production site is <a href="https://support.mozilla.org">here</a>.') }}
   </div>
 {% endif %}
 
@@ -118,45 +138,72 @@
   </div>
 {% endif %}
 
+{# TrafficCop experiment_fxa_cta_topbar #}
+{% if run_experiments %}
+  <div id="promotions" class="hidden">
+    Sync your Firefox bookmarks, tabs and more to your phone.
+    <a href="https://www.mozilla.org/firefox/features/sync/?utm_source=support.mozilla.org&utm_medium=referral&utm_campaign=sumo_promotions">Learn more</a>
+    <a class="hidden" data-variation="a" href="https://accounts.firefox.com/?entrypoint=support.mozilla.org&utm_source=support.mozilla.org&utm_medium=referral&utm_campaign=sumo_promotions">Get started</a>
+    <a class="hidden" data-variation="b" href="https://accounts.firefox.com/signup?service=sync&context=fx_desktop_v3&entrypoint=support.mozilla.org&utm_source=support.mozilla.org&utm_campaign=sumo_promotions">Get started</a>
+    <a class="hidden" data-variation="c" href="https://www.mozilla.org/firefox/accounts/features/?entrypoint=support.mozilla.org&utm_source=support.mozilla.org&utm_medium=referral&utm_campaign=sumo_promotions">Get started</a>
+  </div>
+{% endif %}
+{# end TrafficCop #}
+
 <div id="announcements">
   {% call announcement_bar('geoip-suggestion', 'warning') %}{% endcall %}
 
   {% for announ in get_announcements() %}
-    {% call announcement_bar(announ.id, 'warn') %}
-      {{ announ.content }}
-    {% endcall %}
+      {% call announcement_bar(announ.id, 'warn') %}
+          {{ announ.content }}
+      {% endcall %}
   {% endfor %}
+  {% if settings.READ_ONLY %}
+      {% call announcement_bar('read-only', 'warn') %}
+          {% include "includes/readonly_annoucement.html" %}
+      {% endcall %}
+  {% endif %}
 </div>
 
 <header>
-  <div class="container_12 cf">
-    <div class="grid_12">
-      <a href="http://www.mozilla.org/" id="tabzilla" data-infobar="update">mozilla</a>
-      <div class="cf">
-        <nav id="aux-nav" role="navigation">
-          <ul>
-            {% if not hide_aux_nav %}
-              {{ aux_nav(user, hide_aaq_link) }}
-            {% endif %}
-            {% if not hide_locale_switcher %}
-              <li><a href="{{ locale_picker_url }}" class="locale-picker">{{ settings.LANGUAGES_DICT[request.LANGUAGE_CODE.lower()] }}</a></li>
-            {% endif %}
-            {% if show_fx_download and not user.is_authenticated() %}
-              <a href="https://www.mozilla.org/en-US/firefox/new/?scene=2&utm_source=support.mozilla.org&utm_medium=referral&utm_campaign=non-fx-button#download-fx"
-                class="firefox-download-button" data-ga-click="_trackEvent | Download Button | Firefox button on Thunderbird article">
-                <strong class="download-title">{{ _('Download Firefox') }}</strong>
-              </a>
-            {% endif %}
-          </ul>
-        </nav>
-      </div>
-      <div class="cf">
-        {% if not hide_header_search %}
-          {{ search_box(settings, id='support-search', params=search_params) }}
+  <div class="cf">
+    <h2 class="logo">
+      <a href="{{ url('home') }}"  data-event-category="navigation" data-event-action="main navigation" data-event-label="Home"></a>
+    </h2>
+    {% if not hide_aux_nav %}
+    <nav id="aux-nav" class="logged-{% if user.is_authenticated() %}in{% else %}out{% endif %}" role="navigation">
+      <ul>
+        {{ aux_nav(user, hide_aaq_link) }}
+
+        {% if not hide_locale_switcher %}
+          <li>
+            {% include "includes/icons/globe-icon.svg" %}
+            <a href="{{ locale_picker_url }}" class="locale-picker"  data-event-category="navigation" data-event-action="main navigation" data-event-label="Locale Picker">{{ settings.LANGUAGES_DICT[request.LANGUAGE_CODE.lower()] }}</a>
+          </li>
         {% endif %}
-        <a href="{{ url('home') }}" class="logo"><img alt="mozilla support" src="{{ STATIC_URL }}sumo/img/mozilla-support.png" /></a>
-      </div>
-    </div>
+      </ul>
+    </nav>
+    {% endif %}
+    <nav id="aux-nav-right" role="navigation">
+      <ul>
+      {% if show_header_fx_download() %}
+        {# show-fx-download.js will remove the 'hidden' class below if the visitor is *NOT* using Firefox #}
+        <li>
+          <a href="https://www.mozilla.org/firefox/new/?utm_source=support.mozilla.org&amp;utm_medium=referral&amp;utm_campaign=non-fx-button&amp;utm_content=header-download-button" class="firefox-download-button hidden" data-event-category="Download Button" data-event-action="Firefox for Desktop">{{ _('Download Firefox') }}</a>
+        </li>
+      {% endif %}
+      {% if not user.is_authenticated() %}
+        <li>
+          <a href="{{ url('landings.get_involved') }}" class="volunteer-button" data-event-category="Volunteer Button" data-event-action="Volunteer for Mozilla Support">{{ _('Volunteer') }}</a>
+        </li>
+      {% endif %}
+      </ul>
+    </nav>
+  </div>
+  <div class="cf">
+    {% if not hide_header_search %}
+      {{ search_box(settings, id='support-search', params=search_params) }}
+    {% endif %}
   </div>
 </header>
 
@@ -185,6 +232,12 @@
     </aside>
   {% endblock %}
 
+  <div class="support-search-main">
+    <div class="grid_12 search-form-large">
+      {{ search_box(settings, id='support-search-results', params=search_params) }}
+    </div>
+  </div>
+
   <main id="main-content" role="main">
     {% block content %}{% endblock %}
   </main>
@@ -192,34 +245,75 @@
 
 <footer>
   <div class="container_12 cf">
-    <div class="grid_2"><img src="{{ STATIC_URL }}sumo/img/mozilla-logo.png" alt="Mozilla" /></div>
-    <div class="grid_4 suffix_1">
+    <div class="grid_4">
+      <a href="https://www.mozilla.org">
+        <img class="footer-logo" src="{{ STATIC_URL }}sumo/img/moz-wordmark-light-reverse.svg" alt="Mozilla" />
+      </a>
+    </div>
+    <div class="grid_4">
+      <ul>
+        <li>
+          <h5>
+            <a href="https://www.mozilla.org">{{ _('Mozilla') }}</a>
+          </h5>
+        </li>
+        <li><a href="https://www.mozilla.org/about/">{{ _('About') }}</a></li>
+        <li><a href="https://blog.mozilla.org/">{{ _('Blog') }}</a></li>
+        <li><a href="https://www.mozilla.org/contact/">{{ _('Contact Us') }}</a></li>
+        <li><a href="https://donate.mozilla.org/en-US/?presets=50,30,20,10&amount=30&utm_source=support.mozilla.org&utm_medium=referral&utm_content=footer&currency=usd">{{ _('Donate') }}</a></li>
+        <li><a href="https://kitsune.readthedocs.io/en/latest/">{{ _('Contribute to this site') }}</a></li>
+        <li><a href="https://github.com/mozilla/kitsune/">{{ _('Source code for this site') }}</a></li>
+        <li>
+          <ul class="social-links">
+            <li><a class="twitter" href="https://twitter.com/mozilla">{{ _('Twitter') }}<span> (@mozilla)</span></a></li>
+            <li><a class="instagram" href="https://www.instagram.com/mozilla/">{{ _('Instagram') }}<span> (@mozilla)</span></a></li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+    <div class="grid_4">
+      <ul>
+        <li>
+          <h5>
+            <a href="https://www.mozilla.org/firefox/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('Firefox') }}</a>
+          </h5>
+        </li>
+        <li><a href="https://www.mozilla.org/firefox/new/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('Download Firefox') }}</a></li>
+        <li><a href="https://www.mozilla.org/firefox/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('Desktop') }}</a></li>
+        <li><a href="https://www.mozilla.org/firefox/mobile/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('Mobile') }}</a></li>
+        <li><a href="https://www.mozilla.org/firefox/features/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('Features') }}</a></li>
+        <li><a href="https://www.mozilla.org/firefox/channel/desktop/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('Beta, Nightly, Developer Edition') }}</a></li>
+        <li>
+          <ul class="social-links">
+            <li><a class="twitter" href="https://twitter.com/firefox">{{ _('Twitter') }}<span> (@firefox)</span></a></li>
+            <li><a class="youtube" href="https://www.youtube.com/firefoxchannel">{{ _('YouTube') }}<span> (firefoxchannel)</span></a></li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+    <div class="clear"></div>
+    <div class="grid_4 small-links">
+      <ul>
+        <li><a rel="nofollow" href="https://www.mozilla.org/privacy/websites/">{{ _('Website Privacy Notice') }}</a></li>
+        <li><a rel="nofollow" href="https://www.mozilla.org/privacy/websites/#cookies">{{ _('Cookies') }}</a></li>
+        <li><a rel="nofollow" href="https://www.mozilla.org/about/legal/terms/mozilla/">{{ _('Legal') }}</a></li>
+      </ul>
+    </div>
+    <div class="clear"></div>
+    <div class="grid_8">
       <div class="fineprint">
-        {% trans year=datetimeformat(now(), 'year') %}
-          Portions of this content are &copy;1998–{{ year }}
-          <br>by individual mozilla.org contributors. Content
-          <br>available under a
-          <a href="//www.mozilla.org/foundation/licensing/website-content.html">Creative Commons license</a>.
+        <p>
+        {% trans year=now().year %}
+          Portions of this content are &copy;1998–{{ year }} by individual mozilla.org contributors. Content available under a <a href="//www.mozilla.org/foundation/licensing/website-content.html">Creative Commons license</a>.
         {% endtrans %}
+        </p>
       </div>
     </div>
-    <div class="grid_2">
-      <ul>
-        <li><a href="http://www.mozilla.org/en-US/contact/spaces/">{{ _('Contact Us') }}</a></li>
-        <li><a href="http://www.mozilla.org/privacy/websites/">{{ _('Privacy Policy') }}</a></li>
-        <li><a href="http://www.mozilla.org/about/legal.html">{{ _('Legal Notices') }}</a></li>
-        <li><a href="http://www.mozilla.org/legal/fraud-report/">{{ _('Report Trademark Abuse') }}</a></li>
-        <li><a href="https://github.com/mozilla/kitsune/">{{ _('Source Code') }}</a></li>
-      </ul>
+    {% if not hide_locale_switcher %}
+    <div class="grid_2 prefix_2 language-picker">
+      Language <a href="{{ locale_picker_url }}"  data-event-category="navigation" data-event-action="main navigation" data-event-label="Locale Picker">{{ settings.LANGUAGES_DICT[request.LANGUAGE_CODE.lower()] }}</a>
     </div>
-    <div class="grid_2 suffix_1">
-      <ul>
-        <li><a href="http://www.twitter.com/mozilla">{{ _('Twitter') }}</a></li>
-        <li><a href="http://www.facebook.com/mozilla">{{ _('Facebook') }}</a></li>
-        <li><a href="http://friends.mozilla.org/">{{ _('Firefox Friends') }}</a></li>
-        <li><a href="?{{ request.QUERY_STRING }}&amp;mobile=1">{{ _('Switch to mobile site') }}</a></li>
-      </ul>
-    </div>
+    {% endif %}
   </div>
 </footer>{# /#footer #}
 
@@ -233,12 +327,6 @@
   <script src="{{ static('jsi18n/{lang}/djangojs.js'|f(lang=request.LANGUAGE_CODE|lower)) }}"></script>
 {% endif %}
 
-{# Optimizely script for A/B testing - Bug 850816 #}
-{% if waffle.flag('optimizely') %}
-  <script src="//cdn.optimizely.com/js/245885873.js"></script>
-{% endif %}
-{# End Optimizely #}
-
 {% javascript 'common' %}
 <!--[if (gte IE 6)&(lte IE 8)]>
   {% javascript 'ie6-8' %}
@@ -247,7 +335,7 @@
   {% javascript script %}
 {% endfor %}
 
-<script src="//mozorg.cdn.mozilla.net/{{ request.LANGUAGE_CODE }}/tabzilla/tabzilla.js" async></script>
+{% javascript 'common.fx.download' %}
 
 {# Temporary Pontoon testing - bug 812176 #}
 {% if settings.STAGE %}

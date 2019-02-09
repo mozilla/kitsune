@@ -1,6 +1,6 @@
 {% macro attachment(image, user=None, has_form=True) -%}
   <div class="attachment">
-    {% if user and (user == image.creator or
+    {% if user and (user.id == image.creator_id or
                     user.has_perm('upload.delete_imageattachment')) %}
       {% if has_form %}
         <form class="delete" method="post"

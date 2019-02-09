@@ -6,6 +6,7 @@ PIPELINE_CSS = {
             'normalize-css/normalize.css',
             'sumo/less/main.less',
             'sumo/less/search.less',
+            'mozilla-tabzilla/css/tabzilla.css',
         ),
         'output_filename': 'build/common-min.css'
     },
@@ -263,6 +264,13 @@ PIPELINE_CSS = {
             'sumo/less/badges.less',
         ),
         'output_filename': 'build/badges-min.css'
+    },
+    'kb-sumo-ux-experiment': {
+        'source_filenames': (
+            'sumo/kb-ux-experiment/swiper.min.css',
+            'sumo/kb-ux-experiment/src.98e5fcb4.css'
+        ),
+        'output_filename': 'build/kb-ux-experiment-min.css'
     }
 }
 
@@ -297,6 +305,12 @@ PIPELINE_JS = {
             'sumo/js/instant_search.js',
         ),
         'output_filename': 'build/common-min.js'
+    },
+    'common.fx.download': {
+        'source_filenames': (
+            'sumo/js/show-fx-download.js',
+        ),
+        'output_filename': 'build/show-fx-download.js'
     },
     'community': {
         'source_filenames': (
@@ -627,5 +641,30 @@ PIPELINE_JS = {
             'kpi/js/kpi.browserify.js',
         ),
         'output_filename': 'build/kpi.dashboard-min.js'
+    },
+    'experiment_fxa_cta_topbar': {
+        'source_filenames': (
+            'sumo/js/libs/mozilla-dnt-helper.js',
+            'sumo/js/libs/mozilla-cookie-helper.js',
+            'sumo/js/libs/mozilla-traffic-cop.js',
+            'sumo/js/experiment-fxa-cta-topbar.js',
+        ),
+        'output_filename': 'build/experiment-fxa-cta-topbar-min.js'
+    },
+    'gtm-snippet': {
+        'source_filenames': (
+            'sumo/js/dnt-helper.js',
+            'sumo/js/gtm-snippet.js',
+        ),
+        'output_filename': 'build/gtm-snippet-min.js'
+    },
+    'kb-sumo-ux-experiment': {
+        'source_filenames': (
+            'sumo/kb-ux-experiment/swiper.min.js',
+            'sumo/kb-ux-experiment/src.dcaf9944.js',
+            'sumo/kb-ux-experiment/analytics.js',
+            'sumo/kb-ux-experiment/submit-gform.js'
+        ),
+        'output_filename': 'build/kb-ux-experiment-min.js'
     }
 }

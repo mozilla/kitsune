@@ -8,7 +8,6 @@ from mobility.decorators import mobile_template
 from product_details import product_details
 
 from kitsune.products.models import Product, Topic
-from kitsune.sumo.utils import get_browser
 from kitsune.wiki.decorators import check_simple_wiki_locale
 from kitsune.wiki.facets import topics_for, documents_for
 from kitsune.wiki.models import Document
@@ -38,7 +37,7 @@ def product_landing(request, template, slug):
                             content_type='application/json')
 
     if slug == 'firefox':
-        latest_version = product_details.json_data['firefox_versions']['LATEST_FIREFOX_VERSION']
+        latest_version = product_details.firefox_versions['LATEST_FIREFOX_VERSION']
     else:
         versions = product.versions.filter(default=True)
         if versions:
@@ -55,7 +54,7 @@ def product_landing(request, template, slug):
         'topics': topics_for(product=product, parent=None),
         'search_params': {'product': slug},
         'latest_version': latest_version,
-        'show_community_support': show_community_support
+        'show_community_support': show_community_support,
     })
 
 
@@ -80,10 +79,6 @@ def document_listing(request, template, product_slug, topic_slug,
 
     documents, fallback_documents = documents_for(**doc_kw)
 
-    user_agent = request.META.get('HTTP_USER_AGENT', '')
-    browser = get_browser(user_agent)
-    show_fx_download = (product.slug == 'thunderbird' and browser != 'Firefox')
-
     return render(request, template, {
         'product': product,
         'topic': topic,
@@ -93,7 +88,7 @@ def document_listing(request, template, product_slug, topic_slug,
         'documents': documents,
         'fallback_documents': fallback_documents,
         'search_params': {'product': product_slug},
-        'show_fx_download': show_fx_download})
+    })
 
 
 def is_localized(parent_slug, locale):

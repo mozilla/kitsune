@@ -5,17 +5,26 @@ import logging
 import os
 import platform
 import re
+
+import dj_database_url
+import django_cache_url
+
+
 from datetime import date
+from decouple import Csv, config
 
 import djcelery
 
 from bundles import PIPELINE_CSS, PIPELINE_JS
 from kitsune.lib.sumo_locales import LOCALES
 
-DEBUG = True
-STAGE = False
+DEBUG = config('DEBUG', default=False, cast=bool)
+STAGE = config('STAGE', default=False, cast=bool)
 
-LOG_LEVEL = logging.INFO
+# TODO
+# LOG_LEVEL = config('LOG_LEVEL', default='INFO', cast=labmda x: getattr(logging, x))
+LOG_LEVEL = config('LOG_LEVEL', default=logging.INFO)
+
 SYSLOG_TAG = 'http_sumo_app'
 
 # Repository directory.
@@ -31,62 +40,79 @@ PROJECT_MODULE = 'kitsune'
 def path(*parts):
     return os.path.abspath(os.path.join(ROOT, *parts))
 
+
+# Read-only mode setup.
+READ_ONLY = config('READ_ONLY', default=False, cast=bool)
+SKIP_MOBILE_DETECTION = config('SKIP_MOBILE_DETECTION', default=READ_ONLY, cast=bool)
+ENABLE_VARY_NOCACHE_MIDDLEWARE = config('ENABLE_VARY_NOCACHE_MIDDLEWARE', default=READ_ONLY, cast=bool)
+
 ADMINS = (
     # ('Your Name', 'your_email@domain.com'),
 )
 
 MANAGERS = ADMINS
 
+
+# DB_CONN_MAX_AGE: 'persistent' to keep open connection, or max requests before
+# releasing. Default is 0 for a new connection per request.
+def parse_conn_max_age(value):
+    try:
+        return int(value)
+    except ValueError:
+        assert value.lower() == 'persistent', 'Must be int or "persistent"'
+        return None
+
+
+DB_CONN_MAX_AGE = config('DB_CONN_MAX_AGE', default=60, cast=parse_conn_max_age)
+
 DATABASES = {
-    'default': {
-        # Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3'
-        # or 'oracle'.
-        'ENGINE': 'django.db.backends.mysql',
-        # Or path to database file if sqlite3.
-        'NAME': 'kitsune',
-        # Not used with sqlite3.
-        'USER': '',
-        # Not used with sqlite3.
-        'PASSWORD': '',
-        # Set to empty string for localhost. Not used with sqlite3.
-        'HOST': '',
-        # Set to empty string for default. Not used with sqlite3.
-        'PORT': '',
-        'OPTIONS': {'init_command': 'SET storage_engine=InnoDB'},
-    }
+    'default': config('DATABASE_URL', cast=dj_database_url.parse),
 }
 
+DATABASES['default']['CONN_MAX_AGE'] = DB_CONN_MAX_AGE
+DATABASES['default']['OPTIONS'] = {'init_command': 'SET storage_engine=InnoDB'}
 DATABASE_ROUTERS = ('multidb.PinningMasterSlaveRouter',)
 
-# Put the aliases for your slave databases in this list
-SLAVE_DATABASES = []
+# Add read-only databases here. The database can be the same as the `default`
+# database but with a user with read permissions only.
+SLAVE_DATABASES = [
+]
 
 # Cache Settings
-# CACHES = {
-#     'default': {
-#         'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
-#         'LOCATION': ['localhost:11211'],
-#         'PREFIX': 'sumo:',
-#     },
-# }
+CACHES = {
+    'default': config('CACHE_URL', default='locmem://', cast=django_cache_url.parse),
+    'product-details': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'product-details',
+        'OPTIONS': {
+            'MAX_ENTRIES': 200,  # currently 104 json files
+            'CULL_FREQUENCY':  4,  # 1/4 entries deleted if max reached
+        }
+
+    },
+}
+
+CACHE_MIDDLEWARE_SECONDS = config('CACHE_MIDDLEWARE_SECONDS',
+                                  default=(2 * 60 * 60) if READ_ONLY else 0,
+                                  cast=int)
 
 # Setting this to the Waffle version.
 WAFFLE_CACHE_PREFIX = 'w0.7.7a:'
 
 # Addresses email comes from
-DEFAULT_FROM_EMAIL = 'notifications@support.mozilla.org'
-DEFAULT_REPLY_TO_EMAIL = 'no-reply@mozilla.org'
-SERVER_EMAIL = 'server-error@support.mozilla.org'
-EMAIL_SUBJECT_PREFIX = '[support] '
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='notifications@support.mozilla.org')
+DEFAULT_REPLY_TO_EMAIL = config('DEFAULT_REPLY_TO_EMAIL', default='no-reply@mozilla.org')
+SERVER_EMAIL = config('SERVER_EMAIL', default='server-error@support.mozilla.org')
 
 PLATFORM_NAME = platform.node()
+K8S_DOMAIN = config('K8S_DOMAIN', default='')
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
 # although not all choices may be available on all operating systems.
 # If running in a Windows environment this must be set to the same as your
 # system time zone.
-TIME_ZONE = 'US/Pacific'
+TIME_ZONE = config('TIME_ZONE', default='US/Pacific')
 
 # Language code for this installation. All choices can be found here:
 # http://www.i18nguy.com/unicode/language-identifiers.html
@@ -120,6 +146,7 @@ SUMO_LANGUAGES = (
     'fy-NL',
     'ga-IE',
     'gl',
+    'gn',
     'gu-IN',
     'ha',
     'he',
@@ -132,6 +159,7 @@ SUMO_LANGUAGES = (
     'ig',
     'it',
     'ja',
+    'ka',
     'km',
     'kn',
     'ko',
@@ -140,6 +168,7 @@ SUMO_LANGUAGES = (
     'mg',
     'mk',
     'ml',
+    'ms',
     'ne-NP',
     'nl',
     'no',
@@ -193,6 +222,7 @@ FXOS_LANGUAGES = [
     'hu',
     'ig',
     'it',
+    'jv',
     'ln',
     'mg',
     'nl',
@@ -204,6 +234,7 @@ FXOS_LANGUAGES = [
     'sr',
     'ta',
     'sr',
+    'su',
     'sw',
     'tr',
     'wo',
@@ -246,7 +277,9 @@ NON_SUPPORTED_LOCALES = {
     'be': 'ru',
     'bn': 'bn-BD',
     'br': 'fr',
+    'cak': None,
     'csb': 'pl',
+    'cy': None,
     'eo': None,
     'ff': None,
     'fur': 'it',
@@ -254,24 +287,30 @@ NON_SUPPORTED_LOCALES = {
     'hy-AM': None,
     'ilo': None,
     'is': None,
+    'kab': None,
     'kk': None,
     'lg': None,
     'lij': 'it',
+    'lo': None,
+    'ltg': None,
+    'lv': None,
     'mai': None,
     'mn': None,
     'mr': None,
-    'ms': None,
     'my': None,
     'nb-NO': 'no',
     'nn-NO': 'no',
     'nso': None,
     'oc': 'fr',
+    'or': None,
     'pa-IN': None,
     'rm': None,
     'rw': None,
     'sah': None,
     'son': None,
     'sv-SE': 'sv',
+    'tl': None,
+    'uz': None,
 }
 
 ES_LOCALE_ANALYZERS = {
@@ -310,14 +349,13 @@ ES_PLUGIN_ANALYZERS = [
     'polish'
 ]
 
-ES_USE_PLUGINS = False
+ES_USE_PLUGINS = config('ES_USE_PLUGINS', default=True, cast=bool)
 
 TEXT_DOMAIN = 'messages'
 
 SITE_ID = 1
 
-# If you set this to False, Django will make some optimizations so as
-# not to load the internationalization machinery.
+USE_ETAGS = config('USE_ETAGS', default=False, cast=bool)
 USE_I18N = True
 USE_L10N = True
 
@@ -336,7 +374,7 @@ DB_LOCALIZE = {
             'attrs': ['title', 'description'],
         },
     },
-    'badger': {
+    'kbadge': {
         'Badge': {
             'attrs': ['title', 'description'],
         },
@@ -345,24 +383,21 @@ DB_LOCALIZE = {
 
 # locale is in the kitsune git repo project directory, so that's
 # up one directory from the PROJECT_ROOT
-LOCALE_PATHS = (
-    path('locale'),
-)
+if config('SET_LOCALE_PATHS', default=True, cast=bool):
+    LOCALE_PATHS = (
+        path('locale'),
+    )
 
 # Use the real robots.txt?
-ENGAGE_ROBOTS = False
+ENGAGE_ROBOTS = config('ENGAGE_ROBOTS', default=not DEBUG, cast=bool)
 
 # Absolute path to the directory that holds media.
 # Example: "/home/media/media.lawrence.com/"
 MEDIA_ROOT = path('media')
-
-# URL that handles the media served from MEDIA_ROOT. Make sure to use a
-# trailing slash if there is a path component (optional in other cases).
-# Examples: "http://media.lawrence.com", "http://example.com/media/"
-MEDIA_URL = '/media/'
+MEDIA_URL = config('MEDIA_URL', default='/media/')
 
 STATIC_ROOT = path('static')
-STATIC_URL = '/static/'
+STATIC_URL = config('STATIC_URL', default='/static/')
 STATICFILES_DIRS = (
     path('bower_components'),
     path('jsi18n'),  # Collect jsi18n so that it is cache-busted
@@ -372,7 +407,8 @@ STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
     'pipeline.finders.PipelineFinder',
 )
-STATICFILES_STORAGE = 'pipeline.storage.PipelineCachedStorage'
+
+STATICFILES_STORAGE = 'kitsune.sumo.storage.SumoFilesStorage'
 
 # Paths that don't require a locale prefix.
 SUPPORTED_NONLOCALES = (
@@ -386,10 +422,14 @@ SUPPORTED_NONLOCALES = (
     'services',
     'wafflejs',
     'geoip-suggestion',
+    'contribute.json',
+    'oidc',
+    'healthz',
+    'readiness',
 )
 
 # Make this unique, and don't share it with anybody.
-SECRET_KEY = '#%tc(zja8j01!r#h_y)=hy!^k)9az74k+-ib&ij&+**s3-e^_z'
+SECRET_KEY = config('SECRET_KEY')
 
 _CONTEXT_PROCESSORS = [
     'django.contrib.auth.context_processors.auth',
@@ -448,9 +488,18 @@ TEMPLATES = [
 
 
 MIDDLEWARE_CLASSES = (
+    'kitsune.sumo.middleware.HostnameMiddleware',
+    'allow_cidr.middleware.AllowCIDRMiddleware',
+    'kitsune.sumo.middleware.FilterByUserAgentMiddleware',
+    'django.middleware.security.SecurityMiddleware',
     'multidb.middleware.PinningRouterMiddleware',
     'django_statsd.middleware.GraphiteMiddleware',
     'commonware.request.middleware.SetRemoteAddrFromForwardedFor',
+    'kitsune.sumo.middleware.EnforceHostIPMiddleware',
+
+    # VaryNoCacheMiddleware must be above LocaleURLMiddleware
+    # so that it can see the response has a vary on accept-language
+    'kitsune.sumo.middleware.VaryNoCacheMiddleware',
 
     # LocaleURLMiddleware requires access to request.user. These two must be
     # loaded before the LocaleURLMiddleware
@@ -462,6 +511,9 @@ MIDDLEWARE_CLASSES = (
     # automatically logged. It also has to come after
     # NoVarySessionMiddleware.
     'django.contrib.messages.middleware.MessageMiddleware',
+
+    # This should come after MessageMiddleware
+    'kitsune.sumo.middleware.SUMORefreshIDTokenAdminMiddleware',
 
     # This middleware should come after AuthenticationMiddleware.
     'kitsune.users.middleware.TokenLoginMiddleware',
@@ -480,20 +532,39 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
     'kitsune.sumo.middleware.RemoveSlashMiddleware',
     'kitsune.inproduct.middleware.EuBuildMiddleware',
-    'kitsune.sumo.middleware.NoCacheHttpsMiddleware',
+    'kitsune.sumo.middleware.CacheHeadersMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'kitsune.sumo.anonymous.AnonymousIdentityMiddleware',
+    'kitsune.sumo.middleware.ReadOnlyMiddleware',
     'session_csrf.CsrfMiddleware',
     'kitsune.twitter.middleware.SessionMiddleware',
     'kitsune.sumo.middleware.PlusToSpaceMiddleware',
     'commonware.middleware.ScrubRequestOnException',
     'django_statsd.middleware.GraphiteRequestTimingMiddleware',
     'waffle.middleware.WaffleMiddleware',
-    'commonware.middleware.ContentTypeOptionsHeader',
-    'commonware.middleware.StrictTransportMiddleware',
-    'commonware.middleware.XSSProtectionHeader',
     'commonware.middleware.RobotsTagHeader',
     # 'axes.middleware.FailedLoginMiddleware'
+)
+
+# SecurityMiddleware settings
+SECURE_HSTS_SECONDS = config('SECURE_HSTS_SECONDS', default='0', cast=int)
+SECURE_HSTS_INCLUDE_SUBDOMAINS = False
+SECURE_BROWSER_XSS_FILTER = config('SECURE_BROWSER_XSS_FILTER', default=True, cast=bool)
+SECURE_CONTENT_TYPE_NOSNIFF = config('SECURE_CONTENT_TYPE_NOSNIFF', default=True, cast=bool)
+SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', default=not DEBUG, cast=bool)
+SECURE_REDIRECT_EXEMPT = [
+    r'^healthz/$',
+    r'^readiness/$',
+]
+USE_X_FORWARDED_HOST = config('USE_X_FORWARDED_HOST', default=False, cast=bool)
+if config('USE_SECURE_PROXY_HEADER', default=SECURE_SSL_REDIRECT, cast=bool):
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# watchman
+WATCHMAN_DISABLE_APM = config('WATCHMAN_DISABLE_APM', default=False, cast=bool)
+WATCHMAN_CHECKS = (
+    'watchman.checks.caches',
+    'watchman.checks.databases',
 )
 
 # Auth
@@ -501,6 +572,24 @@ AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
     'kitsune.users.auth.TokenLoginBackend',
 )
+if READ_ONLY:
+    AUTHENTICATION_BACKENDS = ('kitsune.sumo.readonlyauth.ReadOnlyBackend',)
+    OIDC_ENABLE = False
+    ENABLE_ADMIN = False
+else:
+    OIDC_ENABLE = config('OIDC_ENABLE', default=False, cast=bool)
+    ENABLE_ADMIN = config('ENABLE_ADMIN', default=OIDC_ENABLE, cast=bool)
+    if OIDC_ENABLE:
+        AUTHENTICATION_BACKENDS += ('mozilla_django_oidc.auth.OIDCAuthenticationBackend',)
+        OIDC_OP_AUTHORIZATION_ENDPOINT = config('OIDC_OP_AUTHORIZATION_ENDPOINT')
+        OIDC_OP_TOKEN_ENDPOINT = config('OIDC_OP_TOKEN_ENDPOINT')
+        OIDC_OP_USER_ENDPOINT = config('OIDC_OP_USER_ENDPOINT')
+        OIDC_RP_CLIENT_ID = config('OIDC_RP_CLIENT_ID')
+        OIDC_RP_CLIENT_SECRET = config('OIDC_RP_CLIENT_SECRET')
+        OIDC_CREATE_USER = config('OIDC_CREATE_USER', default=False, cast=bool)
+
+ADMIN_REDIRECT_URL = config('ADMIN_REDIRECT_URL', default=None)
+
 AUTH_PROFILE_MODULE = 'users.Profile'
 USER_AVATAR_PATH = 'uploads/avatars/'
 DEFAULT_AVATAR = 'sumo/img/avatar.png'
@@ -527,7 +616,7 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django.contrib.admin',
+    'mozilla_django_oidc',
     'corsheaders',
     'kitsune.users',
     'dennis.django_dennis',
@@ -536,12 +625,12 @@ INSTALLED_APPS = (
     'authority',
     'timezones',
     'waffle',
+    'storages',
     'kitsune.access',
     'kitsune.sumo',
     'kitsune.search',
     'kitsune.forums',
     'djcelery',
-    'badger',
     'cronjobs',
     'tidings',
     'rest_framework.authtoken',
@@ -576,10 +665,8 @@ INSTALLED_APPS = (
     'kitsune.motidings',
     'rest_framework',
     'statici18n',
+    'watchman',
     # 'axes',
-
-    # App for Sentry:
-    'raven.contrib.django',
 
     # Extra apps for testing.
     'django_nose',
@@ -593,6 +680,9 @@ INSTALLED_APPS = (
     # In Django <= 1.6, this "must be placed somewhere after all the apps that
     # are going to be generating activities". Putting it at the end is the safest.
     'actstream',
+
+    # Last so we can override admin templates.
+    'django.contrib.admin',
 )
 
 TEST_RUNNER = 'kitsune.sumo.tests.TestSuiteRunner'
@@ -621,14 +711,12 @@ PUENTE = {
             ('kitsune/**/management/**.py', 'ignore'),
             ('kitsune/forums/**.lhtml', 'ignore'),
 
-            ('**/templates/**.lhtml', 'jinja2'),
-            ('**/templates/**.ltxt', 'jinja2'),
             ('kitsune/**.py', 'python'),
             ('kitsune/**/templates/**.html', 'jinja2'),
             ('kitsune/**/jinja2/**.html', 'jinja2'),
+            ('kitsune/**/jinja2/**.lhtml', 'jinja2'),
+            ('kitsune/**/jinja2/**.ltxt', 'jinja2'),
             ('vendor/src/django-tidings/**/templates/**.html', 'jinja2'),
-            ('vendor/src/django-badger/badger/*.py', 'python'),
-            ('vendor/src/django-badger/badger/templatetags/*.py', 'python'),
         ],
         'djangojs': [
             # We can't say **.js because that would dive into any libraries.
@@ -677,7 +765,8 @@ PIPELINE = {
     'CSSMIN_BINARY': path('node_modules/.bin/cssmin'),
 
     'LESS_BINARY': path('node_modules/.bin/lessc'),
-    'LESS_ARGUMENTS': '--autoprefix="> 1%, last 2 versions, ff > 1"',
+    # TODO: Cannot make less work with autoprefix plugin
+    # 'LESS_ARGUMENTS': '--autoprefix="> 1%, last 2 versions, ff > 1"',
 
     'BROWSERIFY_BINARY': path('node_modules/.bin/browserify'),
     'BROWSERIFY_ARGUMENTS': '-t babelify -t debowerify',
@@ -686,26 +775,27 @@ PIPELINE = {
 if DEBUG:
     PIPELINE['BROWSERIFY_ARGUMENTS'] += ' -d'
 
-NUNJUCKS_PRECOMPILE_BIN = 'nunjucks-precompile'
+NUNJUCKS_PRECOMPILE_BIN = path('node_modules/.bin/nunjucks-precompile')
 
 #
 # Sessions
-SESSION_COOKIE_AGE = 4 * 7 * 24 * 60 * 60  # 4 weeks
-SESSION_COOKIE_SECURE = True
+SESSION_COOKIE_AGE = config('SESSION_COOKIE_AGE', default=4 * 7 * 24 * 60 * 60, cast=int)  # 4 weeks
+SESSION_COOKIE_SECURE = config('SESSION_COOKIE_SECURE', default=not DEBUG, cast=bool)
 SESSION_COOKIE_HTTPONLY = True
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
-SESSION_ENGINE = 'django.contrib.sessions.backends.cached_db'
+SESSION_COOKIE_NAME = 'session_id'
+SESSION_ENGINE = config('SESSION_ENGINE', default='django.contrib.sessions.backends.cache')
 SESSION_EXISTS_COOKIE = 'sumo_session'
-SESSION_SERIALIZER = 'django.contrib.sessions.serializers.PickleSerializer'
+SESSION_SERIALIZER = config('SESSION_SERIALIZER', default='django.contrib.sessions.serializers.PickleSerializer')
 
 #
 # Connection information for Elastic
-ES_URLS = ['http://127.0.0.1:9200']
+ES_URLS = [config('ES_URLS', default="localhost:9200")]
 # Indexes for reading
 ES_INDEXES = {
-    'default': 'sumo-20130913',
-    'non-critical': 'sumo-non-critical',
-    'metrics': 'sumo-metrics',
+    'default': config('ES_INDEXES_DEFAULT', default='default'),
+    'non-critical': config('ES_INDEXES_NON_CRITICAL', default='non-critical'),
+    'metrics': config('ES_INDEXES_METRICS', 'metrics'),
 }
 # Indexes for indexing--set this to ES_INDEXES if you want to read to
 # and write to the same index.
@@ -714,11 +804,13 @@ ES_WRITE_INDEXES = ES_INDEXES
 # names used by kitsune. This is so that you can have multiple
 # environments pointed at the same ElasticSearch cluster and not have
 # them bump into one another.
-ES_INDEX_PREFIX = 'sumo'
+ES_INDEX_PREFIX = config('ES_INDEX_PREFIX', default='sumo')
 # Keep indexes up to date as objects are made/deleted.
-ES_LIVE_INDEXING = False
+ES_LIVE_INDEXING = config('ES_LIVE_INDEXING', default=True, cast=bool)
 # Timeout for querying requests
 ES_TIMEOUT = 5
+ES_USE_SSL = config('ES_USE_SSL', default=False, cast=bool)
+ES_HTTP_AUTH = config('ES_HTTP_AUTH', default='', cast=Csv())
 
 SEARCH_MAX_RESULTS = 1000
 SEARCH_RESULTS_PER_PAGE = 10
@@ -732,7 +824,7 @@ IA_DEFAULT_CATEGORIES = (10, 20,)
 
 # The length for which we would like the user to cache search forms
 # and results, in minutes.
-SEARCH_CACHE_PERIOD = 15
+SEARCH_CACHE_PERIOD = config('SEARCH_CACHE_PERIOD', default=15, cast=int)
 
 # Maximum length of the filename. Forms should use this and raise
 # ValidationError if the length is exceeded.
@@ -742,6 +834,16 @@ MAX_FILENAME_LENGTH = 200
 MAX_FILEPATH_LENGTH = 250
 # Default storage engine - ours does not preserve filenames
 DEFAULT_FILE_STORAGE = 'kitsune.upload.storage.RenameFileStorage'
+
+# AWS S3 Storage Settings
+AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID', default='')
+AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY', default='')
+AWS_STORAGE_BUCKET_NAME = config('AWS_STORAGE_BUCKET_NAME', default='')
+AWS_S3_CUSTOM_DOMAIN = config('AWS_S3_CUSTOM_DOMAIN', default='prod-cdn.sumo.mozilla.net')
+AWS_S3_HOST = config('AWS_S3_HOST', default='s3-us-west-2.amazonaws.com')
+AWS_S3_OBJECT_PARAMETERS = {
+    'CacheControl': 'max-age=2592000',
+}
 
 # Auth and permissions related constants
 LOGIN_URL = '/users/login'
@@ -769,60 +871,45 @@ TOPIC_IMAGE_PATH = 'uploads/topics/'
 # Products
 PRODUCT_IMAGE_PATH = 'uploads/products/'
 
+# Badges (kbadge)
+BADGE_IMAGE_PATH = 'uploads/badges/'
+
 # Email
-EMAIL_BACKEND = 'kitsune.lib.email.LoggingEmailBackend'
-EMAIL_LOGGING_REAL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-
-
-# Read-only mode setup.
-READ_ONLY = False
-
-
-# Turn on read-only mode in settings_local.py by putting this line
-# at the VERY BOTTOM: read_only_mode(globals())
-def read_only_mode(env):
-    env['READ_ONLY'] = True
-
-    # Replace the default (master) db with a slave connection.
-    if not env.get('SLAVE_DATABASES'):
-        raise Exception("We need at least one slave database.")
-    slave = env['SLAVE_DATABASES'][0]
-    env['DATABASES']['default'] = env['DATABASES'][slave]
-
-    # No sessions without the database, so disable auth.
-    env['AUTHENTICATION_BACKENDS'] = ('kitsune.sumo.readonlyauth.ReadOnlyBackend',)
-
-    # Add in the read-only middleware before csrf middleware.
-    extra = 'kitsune.sumo.middleware.ReadOnlyMiddleware'
-    before = 'session_csrf.CsrfMiddleware'
-    m = list(env['MIDDLEWARE_CLASSES'])
-    m.insert(m.index(before), extra)
-    env['MIDDLEWARE_CLASSES'] = tuple(m)
+EMAIL_BACKEND = config('EMAIL_BACKEND', default='kitsune.lib.email.LoggingEmailBackend')
+EMAIL_LOGGING_REAL_BACKEND = config('EMAIL_LOGGING_REAL_BACKEND', default='django.core.mail.backends.console.EmailBackend')
+EMAIL_SUBJECT_PREFIX = config('EMAIL_SUBJECT_PREFIX', default='[support] ')
+if EMAIL_LOGGING_REAL_BACKEND == 'django.core.mail.backends.smtp.EmailBackend':
+    EMAIL_HOST = config('EMAIL_HOST')
+    EMAIL_HOST_USER = config('EMAIL_HOST_USER')
+    EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
+    EMAIL_PORT = config('EMAIL_PORT', default=25, cast=int)
+    EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=False, cast=bool)
 
 
 # Celery
 djcelery.setup_loader()
 
-BROKER_HOST = 'localhost'
-BROKER_PORT = 5672
-BROKER_USER = 'kitsune'
-BROKER_PASSWORD = 'kitsune'
-BROKER_VHOST = 'kitsune'
-CELERY_RESULT_BACKEND = 'amqp'
-CELERY_IGNORE_RESULT = True
-CELERY_ALWAYS_EAGER = True  # For tests. Set to False for use.
-CELERY_SEND_TASK_ERROR_EMAILS = True
-CELERYD_LOG_LEVEL = logging.INFO
-CELERYD_CONCURRENCY = 4
-CELERY_EAGER_PROPAGATES_EXCEPTIONS = True  # Explode loudly during tests.
-CELERYD_HIJACK_ROOT_LOGGER = False
+CELERY_IGNORE_RESULT = config('CELERY_IGNORE_RESULT', default=True, cast=bool)
+if not CELERY_IGNORE_RESULT:
+    # E.g. redis://localhost:6479/1
+    CELERY_RESULT_BACKEND = config('CELERY_RESULT_BACKEND')
+
+CELERY_ALWAYS_EAGER = config('CELERY_ALWAYS_EAGER', default=DEBUG, cast=bool)  # For tests. Set to False for use.
+if not CELERY_ALWAYS_EAGER:
+    BROKER_URL = config('BROKER_URL')
+
+CELERY_SEND_TASK_ERROR_EMAILS = config('CELERY_SEND_TASK_ERROR_EMAILS', default=True, cast=bool)
+CELERYD_LOG_LEVEL = config('CELERYD_LOG_LEVEL', default='INFO', cast=lambda x: getattr(logging, x))
+CELERYD_CONCURRENCY = config('CELERYD_CONCURRENCY', default=4, cast=int)
+CELERY_EAGER_PROPAGATES_EXCEPTIONS = config('CELERY_EAGER_PROPAGATES_EXCEPTIONS', default=True, cast=bool)  # Explode loudly during tests.
+CELERYD_HIJACK_ROOT_LOGGER = config('CELERYD_HIJACK_ROOT_LOGGER', default=False, cast=bool)
 
 # Wiki rebuild settings
 WIKI_REBUILD_TOKEN = 'sumo:wiki:full-rebuild'
 
 # Anonymous user cookie
-ANONYMOUS_COOKIE_NAME = 'SUMO_ANONID'
-ANONYMOUS_COOKIE_MAX_AGE = 30 * 86400  # Seconds
+ANONYMOUS_COOKIE_NAME = config('ANONYMOUS_COOKIE_NAME', default='SUMO_ANONID')
+ANONYMOUS_COOKIE_MAX_AGE = config('ANONYMOUS_COOKIE_MAX_AGE', default=30 * 86400, cast=int) # One month
 
 # Do not change this without also deleting all wiki documents:
 WIKI_DEFAULT_LANGUAGE = LANGUAGE_CODE
@@ -832,7 +919,7 @@ GALLERY_DEFAULT_LANGUAGE = WIKI_DEFAULT_LANGUAGE
 GALLERY_IMAGE_PATH = 'uploads/gallery/images/'
 GALLERY_IMAGE_THUMBNAIL_PATH = 'uploads/gallery/images/thumbnails/'
 GALLERY_VIDEO_PATH = 'uploads/gallery/videos/'
-GALLERY_VIDEO_URL = None
+GALLERY_VIDEO_URL = MEDIA_URL + 'uploads/gallery/videos/'
 GALLERY_VIDEO_THUMBNAIL_PATH = 'uploads/gallery/videos/thumbnails/'
 GALLERY_VIDEO_THUMBNAIL_PROGRESS_URL = MEDIA_URL + 'img/video-thumb.png'
 THUMBNAIL_PROGRESS_WIDTH = 32  # width of the above image
@@ -862,51 +949,56 @@ CC_WORD_BLACKLIST = [
     'slut',
 ]
 
-BITLY_API_URL = 'http://api.bitly.com/v3/shorten?callback=?'
-BITLY_LOGIN = None
-BITLY_API_KEY = None
+BITLY_API_URL = config('BITLY_API_URL', default='http://api.bitly.com/v3/shorten?callback=?')
+BITLY_LOGIN = config('BITLY_LOGIN', default=None)
+BITLY_API_KEY = config('BITLY_API_KEY', default=None)
 
-TWITTER_COOKIE_SECURE = True
-TWITTER_CONSUMER_KEY = ''
-TWITTER_CONSUMER_SECRET = ''
-TWITTER_ACCESS_TOKEN = ''
-TWITTER_ACCESS_TOKEN_SECRET = ''
+TWITTER_COOKIE_SECURE = config('TWITTER_COOKIE_SECURE', default=True, cast=bool)
+TWITTER_CONSUMER_KEY = config('TWITTER_CONSUMER_KEY', default='')
+TWITTER_CONSUMER_SECRET = config('TWITTER_CONSUMER_SECRET', default='')
+TWITTER_ACCESS_TOKEN = config('TWITTER_ACCESS_TOKEN', default='')
+TWITTER_ACCESS_TOKEN_SECRET = config('TWITTER_ACCESS_TOKEN_SECRET', default='')
 
-TIDINGS_FROM_ADDRESS = 'notifications@support.mozilla.org'
+TIDINGS_FROM_ADDRESS = config('TIDINGS_FROM_ADDRESS', default='notifications@support.mozilla.org')
 # Anonymous watches must be confirmed.
-TIDINGS_CONFIRM_ANONYMOUS_WATCHES = True
+TIDINGS_CONFIRM_ANONYMOUS_WATCHES = config('TIDINGS_CONFIRM_ANONYMOUS_WATCHES', default=True, cast=bool)
 TIDINGS_MODEL_BASE = 'kitsune.sumo.models.ModelBase'
 TIDINGS_REVERSE = 'kitsune.sumo.urlresolvers.reverse'
 
 
 # Google Analytics settings.
-GA_KEY = 'longkey'  # Google API client key
-GA_ACCOUNT = 'something@developer.gserviceaccount.com'  # Google API Service Account email address
-GA_PROFILE_ID = '12345678'  # Google Analytics profile id for SUMO prod
+# GA_KEY is expected b64 encoded.
+GA_KEY = config('GA_KEY', default=None)  # Google API client key
+if GA_KEY:
+    import base64
+    GA_KEY = base64.b64decode(GA_KEY)
+GA_ACCOUNT = config('GA_ACCOUNT', 'something@developer.gserviceaccount.com')  # Google API Service Account email address
+GA_PROFILE_ID = config('GA_PROFILE_ID', default='12345678')  # Google Analytics profile id for SUMO prod
 GA_START_DATE = date(2012, 11, 10)
+GTM_CONTAINER_ID = config('GTM_CONTAINER_ID', default='')  # Google container ID
 
-MOBILE_COOKIE = 'msumo'
+MOBILE_COOKIE = config('MOBILE_COOKIE', default='msumo')
 
 # Key to access /services/version. Set to None to disallow.
-VERSION_CHECK_TOKEN = None
+VERSION_CHECK_TOKEN = config('VERSION_CHECK_TOKEN', default=None)
 
 REDIS_BACKENDS = {
-    # 'default': 'redis://localhost:6379?socket_timeout=0.5&db=0',
-    # 'karma': 'redis://localhost:6381?socket_timeout=0.5&db=0',
-    # 'helpfulvotes': 'redis://localhost:6379?socket_timeout=0.5&db=1',
+    # TODO: Make sure that db number is respected
+    'default': config('REDIS_DEFAULT_URL'),
+    'helpfulvotes': config('REDIS_HELPFULVOTES_URL'),
 }
 
 HELPFULVOTES_UNHELPFUL_KEY = 'helpfulvotes_topunhelpful'
 
 LAST_SEARCH_COOKIE = 'last_search'
 
-OPTIPNG_PATH = None
+OPTIPNG_PATH = config('OPTIPNG_PATH', default='/usr/bin/optipng')
 
 # Zendesk info. Fill in the prefix, email and password in settings_local.py.
-ZENDESK_URL = 'https://appsmarket.zendesk.com'
-ZENDESK_SUBJECT_PREFIX = '[TEST] '  # Set to '' in prod
-ZENDESK_USER_EMAIL = ''
-ZENDESK_USER_PASSWORD = ''
+ZENDESK_URL = config('ZENDESK_URL', default='https://appsmarket.zendesk.com')
+ZENDESK_SUBJECT_PREFIX = config('ZENDESK_SUBJECT_PREFIX', default='')
+ZENDESK_USER_EMAIL = config('ZENDESK_USER_EMAIL', default='')
+ZENDESK_USER_PASSWORD = config('ZENDESK_USER_PASSWORD', default='')
 
 # Tasty Pie
 API_LIMIT_PER_PAGE = 0
@@ -916,12 +1008,15 @@ X_FRAME_OPTIONS = 'DENY'
 
 # Where to find the about:support troubleshooting addon.
 # This is a link to the latest version, whatever that may be.
-TROUBLESHOOTER_ADDON_URL = (
-    'https://addons.mozilla.org/firefox/downloads/latest/426841/addon-426841-latest.xpi')
+TROUBLESHOOTER_ADDON_URL = config(
+    'TROUBLESHOOTER_ADDON_URL',
+    default='https://addons.mozilla.org/firefox/downloads/latest/426841/addon-426841-latest.xpi')
 
 # SurveyGizmo API
-SURVEYGIZMO_API_TOKEN = None
-SURVEYGIZMO_API_TOKEN_SECRET = None
+SURVEYGIZMO_USER = config('SURVEYGIZMO_USER', default=None)
+SURVEYGIZMO_PASSWORD = config('SURVEYGIZMO_PASSWORD', default=None)
+SURVEYGIZMO_API_TOKEN = config('SURVEYGIZMO_API_TOKEN', default=None)
+SURVEYGIZMO_API_TOKEN_SECRET = config('SURVEYGIZMO_API_TOKEN_SECRET', default=None)
 
 # Django Rest Framework
 REST_FRAMEWORK = {
@@ -942,15 +1037,17 @@ REST_FRAMEWORK = {
 }
 
 # Django-axes settings.
-AXES_LOGIN_FAILURE_LIMIT = 10
-AXES_LOCK_OUT_AT_FAILURE = True
-AXES_USE_USER_AGENT = False
-AXES_COOLOFF_TIME = 1  # hour
-AXES_BEHIND_REVERSE_PROXY = True
-AXES_REVERSE_PROXY_HEADER = 'HTTP_X_CLUSTER_CLIENT_IP'
+AXES_LOGIN_FAILURE_LIMIT = config('AXES_LOGIN_FAILURE_LIMIT', default=10, cast=int)
+AXES_LOCK_OUT_AT_FAILURE = config('AXES_LOCK_OUT_AT_FAILURE', default=True, cast=bool)
+AXES_USE_USER_AGENT = config('AXES_USE_USER_AGENT', default=False, cast=bool)
+AXES_COOLOFF_TIME = config('AXES_COOLOFF_TIME', default=1, cast=int)  # hour
+AXES_BEHIND_REVERSE_PROXY = config('AXES_BEHIND_REVERSE_PROXY', default=not DEBUG, cast=bool)
+AXES_REVERSE_PROXY_HEADER = config('AXES_REVERSE_PROXY_HEADER', default='HTTP_X_CLUSTER_CLIENT_IP')
+
+USE_DEBUG_TOOLBAR = config('USE_DEBUG_TOOLBAR', default=False, cast=bool)
 
 # Set this to True to wrap each HTTP request in a transaction on this database.
-ATOMIC_REQUESTS = True
+ATOMIC_REQUESTS = config('ATOMIC_REQUESTS', default=True, cast=bool)
 
 # CORS Setup
 CORS_ORIGIN_ALLOW_ALL = True
@@ -983,3 +1080,98 @@ SILENCED_SYSTEM_CHECKS = [
     'fields.W340',  # null has no effect on ManyToManyField.
     'fields.W342',  # ForeignKey(unique=True) is usually better served by a OneToOneField
 ]
+
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='', cast=Csv())
+ALLOWED_CIDR_NETS = config('ALLOWED_CIDR_NETS', default='', cast=Csv())
+# in production set this to 'support.mozilla.org' and all other domains will redirect.
+# can be a comma separated list of allowed domains.
+# the first in the list will be the target of redirects.
+# needs to be None if not set so that the middleware will
+# be turned off. can't set default to None because of the Csv() cast.
+ENFORCE_HOST = config('ENFORCE_HOST', default='', cast=Csv()) or None
+
+# Allows you to specify waffle settings in the querystring.
+WAFFLE_OVERRIDE = config('WAFFLE_OVERRIDE', default=DEBUG, cast=bool)
+
+STATSD_CLIENT = config('STATSD_CLIENT', 'django_statsd.clients.null')
+STATSD_HOST = config('STATSD_HOST', default='localhost')
+STATSD_PORT = config('STATSD_PORT', 8125, cast=int)
+STATSD_PREFIX = config('STATSD_PREFIX', default='')
+
+
+if config('SENTRY_DSN', None):
+    import sentry_sdk
+    from sentry_sdk.integrations.django import DjangoIntegration
+
+    # see https://docs.sentry.io/learn/filtering/?platform=python
+    def filter_exceptions(event, hint):
+        from django.security import DisallowedHost
+        if 'exc_info' in hint:
+            exc_type, exc_value, tb = hint['exc_info']
+            if isinstance(exc_value, DisallowedHost):
+                return None
+
+        return event
+
+    sentry_sdk.init(
+        dsn=config('SENTRY_DSN'),
+        integrations=[DjangoIntegration()],
+        release=config('GIT_SHA', default=None),
+        server_name=PLATFORM_NAME,
+        environment=config('SENTRY_ENVIRONMENT', default=''),
+        before_send=filter_exceptions,
+    )
+
+
+PIPELINE_ENABLED = config('PIPELINE_ENABLED', default=False, cast=bool)
+
+# Dead Man Snitches
+DMS_ENQUEUE_LAG_MONITOR_TASK = config('DMS_ENQUEUE_LAG_MONITOR_TASK', default=None)
+DMS_SEND_WELCOME_EMAILS = config('DMS_SEND_WELCOME_EMAILS', default=None)
+DMS_UPDATE_PRODUCT_DETAILS = config('DMS_UPDATE_PRODUCT_DETAILS', default=None)
+DMS_GENERATE_MISSING_SHARE_LINKS = config('DMS_GENERATE_MISSING_SHARE_LINKS', default=None)
+DMS_REBUILD_KB = config('DMS_REBUILD_KB', default=None)
+DMS_UPDATE_TOP_CONTRIBUTORS = config('DMS_UPDATE_TOP_CONTRIBUTORS', default=None)
+DMS_UPDATE_L10N_COVERAGE_METRICS = config('DMS_UPDATE_L10N_COVERAGE_METRICS', default=None)
+DMS_CALCULATE_CSAT_METRICS = config('DMS_CALCULATE_CSAT_METRICS', default=None)
+DMS_REPORT_EMPLOYEE_ANSWERS = config('DMS_REPORT_EMPLOYEE_ANSWERS', default=None)
+DMS_REINDEX_USERS_THAT_CONTRIBUTED_YESTERDAY = config('DMS_REINDEX_USERS_THAT_CONTRIBUTED_YESTERDAY', default=None)
+DMS_UPDATE_WEEKLY_VOTES = config('DMS_UPDATE_WEEKLY_VOTES', default=None)
+DMS_UPDATE_SEARCH_CTR_METRIC = config('DMS_UPDATE_SEARCH_CTR_METRIC', default=None)
+DMS_REMOVE_EXPIRED_REGISTRATION_PROFILES = config('DMS_REMOVE_EXPIRED_REGISTRATION_PROFILES', default=None)
+DMS_UPDATE_CONTRIBUTOR_METRICS = config('DMS_UPDATE_CONTRIBUTOR_METRICS', default=None)
+DMS_AUTO_ARCHIVE_OLD_QUESTIONS = config('DMS_AUTO_ARCHIVE_OLD_QUESTIONS', default=None)
+DMS_REINDEX = config('DMS_REINDEX', default=None)
+DMS_PROCESS_EXIT_SURVEYS = config('DMS_PROCESS_EXIT_SURVEYS', default=None)
+DMS_SURVEY_RECENT_ASKERS = config('DMS_SURVEY_RECENT_ASKERS', default=None)
+DMS_CLEAR_EXPIRED_AUTH_TOKENS = config('DMS_CLEAR_EXPIRED_AUTH_TOKENS', default=None)
+# DMS_UPDATE_VISITORS_METRIC = config('DMS_UPDATE_VISITORS_METRIC', default=None)
+DMS_UPDATE_L10N_METRIC = config('DMS_UPDATE_L10N_METRIC', default=None)
+DMS_RELOAD_WIKI_TRAFFIC_STATS = config('DMS_RELOAD_WIKI_TRAFFIC_STATS', default=None)
+DMS_CACHE_MOST_UNHELPFUL_KB_ARTICLES = config('DMS_CACHE_MOST_UNHELPFUL_KB_ARTICLES', default=None)
+DMS_RELOAD_QUESTION_TRAFFIC_STATS = config('DMS_RELOAD_QUESTION_TRAFFIC_STATS', default=None)
+DMS_PURGE_HASHES = config('DMS_PURGE_HASHES', default=None)
+DMS_SEND_WEEKLY_READY_FOR_REVIEW_DIGEST = config('DMS_SEND_WEEKLY_READY_FOR_REVIEW_DIGEST', default=None)
+DMS_FIX_CURRENT_REVISIONS = config('DMS_FIX_CURRENT_REVISIONS', default=None)
+DMS_COHORT_ANALYSIS = config('DMS_COHORT_ANALYSIS', default=None)
+DMS_UPDATE_L10N_CONTRIBUTOR_METRICS = config('DMS_UPDATE_L10N_CONTRIBUTOR_METRICS', default=None)
+
+PROD_DETAILS_CACHE_NAME = 'product-details'
+PROD_DETAILS_STORAGE = config('PROD_DETAILS_STORAGE',
+                              default='product_details.storage.PDDatabaseStorage')
+
+DISABLE_HOSTNAME_MIDDLEWARE = config('DISABLE_HOSTNAME_MIDDLEWARE', default=False, cast=bool)
+
+DISABLE_FEEDS = config('DISABLE_FEEDS', default=False, cast=bool)
+DISABLE_QUESTIONS_LIST_GLOBAL = config('DISABLE_QUESTIONS_LIST_GLOBAL', default=False, cast=bool)
+DISABLE_QUESTIONS_LIST_ALL = config('DISABLE_QUESTIONS_LIST_ALL', default=False, cast=bool)
+IMAGE_ATTACHMENT_USER_LIMIT = config('IMAGE_ATTACHMENT_USER_LIMIT', default=50, cast=int)
+
+# list of strings to match against user agent to block
+USER_AGENT_FILTERS = config('USER_AGENT_FILTERS', default='', cast=Csv())
+
+BADGE_LIMIT_ARMY_OF_AWESOME = config('BADGE_LIMIT_ARMY_OF_AWESOME', default=50, cast=int)
+BADGE_LIMIT_L10N_KB = config('BADGE_LIMIT_L10N_KB', default=10, cast=int)
+BADGE_LIMIT_SUPPORT_FORUM = config('BADGE_LIMIT_SUPPORT_FORUM', default=30, cast=int)
+BADGE_MAX_RECENT = config('BADGE_MAX_RECENT', default=15, cast=int)
+BADGE_PAGE_SIZE = config('BADGE_PAGE_SIZE', default=50, cast=int)

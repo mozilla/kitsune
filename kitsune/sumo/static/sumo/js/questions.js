@@ -1,4 +1,4 @@
-/* globals _gaq:false, k:false, _:false, Marky:false, AAQSystemInfo:false, KBox:false, gettext:false, template:false, jQuery:false */
+/* globals trackEvent:false, k:false, _:false, Marky:false, AAQSystemInfo:false, KBox:false, gettext:false, template:false, jQuery:false */
 /*
 * questions.js
 * Scripts for the questions app.
@@ -16,9 +16,9 @@
       initNewQuestion();
 
       if (window.location.search.indexOf('step=aaq-register') > -1) {
-        _gaq.push(['_trackEvent', 'Ask A Question Flow', 'step 1 page']);
+        trackEvent('Ask A Question Flow', 'step 1 page');
       } else if (window.location.search.indexOf('step=aaq-question') > -1) {
-        _gaq.push(['_trackEvent', 'Ask A Question Flow', 'step 2 page']);
+        trackEvent('Ask A Question Flow', 'step 2 page');
       }
     }
 
@@ -30,7 +30,7 @@
       });
 
       if (window.location.pathname.indexOf('questions/new/confirm') > -1) {
-        _gaq.push(['_trackEvent', 'Ask A Question Flow', 'step 3 confirm page']);
+        trackEvent('Ask A Question Flow', 'step 3 confirm page');
       }
     }
 
@@ -164,14 +164,23 @@
   }
 
   /*
-  * Ajaxify the "I have this problem too" form
+  * Ajaxify any "I have this problem too" forms (may be multiple per page)
   */
   function initHaveThisProblemTooAjax() {
     var $container = $('#question div.me-too, .question-tools div.me-too');
-    initAjaxForm($container, 'form', '#vote-thanks');
+
+    // ajaxify each form individually so the resulting kbox attaches to
+    // the correct DOM element
+    $container.each(function() {
+      initAjaxForm($(this), 'form', '#vote-thanks');
+    });
+
     $container.find('input').click(function() {
       $(this).attr('disabled', 'disabled');
     });
+
+    // closing or cancelling the kbox on any of the forms should remove
+    // all of them
     $container.delegate('.kbox-close, .kbox-cancel', 'click', function(ev) {
       ev.preventDefault();
       $container.unbind().remove();
@@ -296,12 +305,12 @@
         $content = $('#' + contentId),
         text = $content.find('.content-raw').text(),
         user = $content.find('.author-name').text(),
-        reply = template("''{user} [[#{contentId}|said]]''\n<blockquote>\n{text}\n</blockquote>\n\n"),
+        reply = template("''{user} [[#{contentId}|{said}]]''\n<blockquote>\n{text}\n</blockquote>\n\n"),
         reply_text,
         $textarea = $('#id_content'),
         oldtext = $textarea.val();
 
-      reply_text = reply({'user': user, 'contentId': contentId, 'text': text});
+      reply_text = reply({'user': user, 'contentId': contentId, 'text': text, 'said': gettext('said')});
 
       $textarea.val(oldtext + reply_text);
 

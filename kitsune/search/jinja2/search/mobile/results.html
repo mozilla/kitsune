@@ -5,10 +5,6 @@
 {% set classes = 'results' %}
 {% set styles = ('mobile-search',) %}
 
-{% if num_results == 0 %}
-  {% set ga_push = [['_trackEvent', 'Zero Search Results', q]] %}
-{% endif %}
-
 {% block after_header %}
   <div class="search-bar slide-on-exposed">
     {{ mobile_results_form(q, search_params) }}

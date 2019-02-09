@@ -83,7 +83,7 @@ def handle403(request):
         status=403)
 
 
-def handle404(request):
+def handle404(request, *args, **kwargs):
     """A handler for 404s"""
     return render(request, 'handlers/404.html', status=404)
 

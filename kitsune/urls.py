@@ -3,11 +3,10 @@ from django.conf import settings
 from django.views.i18n import javascript_catalog
 from django.views.decorators.cache import cache_page
 from django.views.generic.base import RedirectView
+from django.views.static import serve as servestatic
 
 import authority
-import badger
 from waffle.views import wafflejs
-
 
 # Note: This must come before importing admin because it patches the
 # admin.
@@ -18,8 +17,6 @@ from django.contrib import admin  # noqa
 admin.autodiscover()
 
 authority.autodiscover()
-badger.autodiscover()
-
 
 urlpatterns = patterns(
     '',
@@ -30,7 +27,6 @@ urlpatterns = patterns(
     (r'^upload', include('kitsune.upload.urls')),
     (r'^kb', include('kitsune.wiki.urls')),
     (r'^gallery', include('kitsune.gallery.urls')),
-    (r'^army-of-awesome', include('kitsune.customercare.urls')),
     (r'^chat', RedirectView.as_view(url='questions/new')),
     (r'^messages', include('kitsune.messages.urls')),
     (r'^1', include('kitsune.inproduct.urls')),
@@ -41,9 +37,6 @@ urlpatterns = patterns(
     (r'^announcements', include('kitsune.announcements.urls')),
     (r'^community', include('kitsune.community.urls')),
     (r'^badges/', include('kitsune.kbadge.urls')),
-
-    # Kitsune admin (not Django admin).
-    (r'^admin/', include(admin.site.urls)),
 
     # Javascript translations.
     url(r'^jsi18n/.*$', cache_page(60 * 60 * 24 * 365)(javascript_catalog),
@@ -84,6 +77,9 @@ urlpatterns = patterns(
 
     # These API urls include both v1 and v2 urls.
     (r'^api/', include('kitsune.users.urls_api')),
+
+    # contribute.json url
+    url(r'^(?P<path>contribute\.json)$', servestatic, kwargs={'document_root': settings.ROOT}),
 )
 
 # Handle 404 and 500 errors
@@ -97,3 +93,17 @@ if settings.DEBUG:
         (r'^%s/(?P<path>.*)$' % media_url, 'kitsune.sumo.views.serve_cors',
          {'document_root': settings.MEDIA_ROOT}),
     )
+
+
+if settings.ENABLE_ADMIN:
+    urlpatterns += [
+        url(r'^admin/', include(admin.site.urls)),
+    ]
+elif settings.ADMIN_REDIRECT_URL:
+    urlpatterns.append(
+         url(r'^admin/', RedirectView.as_view(url=settings.ADMIN_REDIRECT_URL))
+     )
+
+
+if settings.OIDC_ENABLE:
+    urlpatterns.append(url(r'^oidc/', include('mozilla_django_oidc.urls')))

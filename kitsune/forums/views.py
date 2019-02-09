@@ -7,7 +7,7 @@ from django.shortcuts import get_object_or_404, render
 from django.views.decorators.http import require_POST
 
 from authority.decorators import permission_required_or_403
-from statsd import statsd
+from django_statsd.clients import statsd
 
 from kitsune import forums as constants
 from kitsune.access.decorators import has_perm_or_owns_or_403, login_required

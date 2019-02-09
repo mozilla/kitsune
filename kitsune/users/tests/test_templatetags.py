@@ -74,4 +74,4 @@ class HelperTestCase(TestCase):
         eq_(len(users), len(fragment('a')))
         a = fragment('a')[1]
         assert a.attrib['href'].endswith(str(users[1].username))
-        eq_(users[1].username, a.text)
+        eq_(display_name(users[1]), a.text)

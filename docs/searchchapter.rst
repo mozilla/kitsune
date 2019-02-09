@@ -4,7 +4,7 @@
 Search
 ======
 
-Kitsune uses `Elasticsearch <http://www.elasticsearch.org/>`_ to
+Kitsune uses `Elasticsearch <https://www.elastic.co/>`_ to
 power its on-site search facility.
 
 It gives us a number of advantages over MySQL's full-text search or
@@ -110,7 +110,7 @@ These settings explained:
 There are a few other settings you can set in your
 ``kitsune/settings_local.py`` file that override ElasticUtils defaults.  See
 `the ElasticUtils docs
-<http://elasticutils.readthedocs.org/en/latest/installation.html#configure>`_
+<https://elasticutils.readthedocs.io/en/latest/django.html#configuration>`_
 for details.
 
 Other things you can change:
@@ -189,9 +189,22 @@ This indexes 50% of your data ordered by id::
 
 I use this when I'm fiddling with mappings and the indexing code.
 
-You can also specify which models to index::
+Another way of specifying a smaller number of things to index is by
+indicating how recently updated things should be to be included::
 
-    $ ./manage.py esreindex --models questions_question,wiki_document
+    $ ./manage.py esreindex --hours-ago 2
+    $ ./manage.py esreindex --minutes-ago 20
+    $ ./manage.py esreindex --seconds-ago 90
+
+Those options can be combined as well if you wish. Different indexes have
+different ways of determining how long ago something was updated, but as
+a whole this should reindex everything in every index (or those specified
+in the --mapping_types option) that was updated less than or equal to how
+long ago you say.
+
+You can also specify which mapping_types to index::
+
+    $ ./manage.py esreindex --mapping_types questions_question,wiki_document
 
 See ``--help`` for more details::
 
@@ -244,7 +257,7 @@ Implementation details
 
 Kitsune uses `elasticutils <https://github.com/mozilla/elasticutils>`_
 and `pyelasticsearch
-<http://pyelasticsearch.readthedocs.org/en/latest/>`_.
+<https://pyelasticsearch.readthedocs.io/en/latest/>`_.
 
 Most of our code is in the ``search`` app in ``kitsune/search/``.
 
@@ -291,7 +304,7 @@ covers how a document is scored in regards to the search query and its
 contents. The weights modify that---they're query-level boosts.
 
 Additionally, `this blog post from 2006 <http://www.supermind.org/blog/378>`_
-is really helpful in terms of provind insight on the implications of
+is really helpful in terms of providing insight on the implications of
 the way things are scored.
 
 

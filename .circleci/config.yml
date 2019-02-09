@@ -1,0 +1,24 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/python:2-stretch
+    steps:
+      - checkout
+      - setup_remote_docker:
+          version: 17.10.0-ce
+      - run:
+          name: Download docker images for cache
+          command: make pull
+      - run:
+          name: Build docker images
+          command: make build-ci
+      - run:
+          name: Run flake8
+          command: make lint-ci
+      - run:
+          name: Run mocha tests
+          command: make test-js-ci
+      - run:
+          name: Run unit tests
+          command: make test-ci

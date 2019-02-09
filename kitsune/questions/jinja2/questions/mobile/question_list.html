@@ -21,6 +21,11 @@
   <div class="pulldown-menu slide-on-exposed">
     <div class="pulldown-handle"></div>
     <div class="pulldown-panel">
+      {#
+      2018-10-17
+      Temporarily remove widget due to expesive query required to get top_contributors
+      https://github.com/mozilla/kitsune/issues/3373
+
       {% if karma_top or top_contributors %}
         <section id="top-contributors">
           <strong>{{ _('Top contributors') }}</strong>
@@ -33,6 +38,7 @@
           </ol>
         </section>
       {% endif %}
+      #}
       <section id="product-switcher" class="swipeable">
         <ul>
           {% for p in product_list %}
@@ -110,9 +116,8 @@
         </li>
       {% endfor %}
     {% else %}
-      {# Not localized because it's not worth localizers time. #}
       <p class="no-questions">
-        There are no questions that match the current filter settings.
+        {{ _('There are no questions that match the current filter settings.') }}
       </p>
     {% endif %}
   </ul>

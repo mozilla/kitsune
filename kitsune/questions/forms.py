@@ -16,7 +16,7 @@ CRASH_ID_HELP = _lazy(u"If you submit information to Mozilla when you crash, "
                       u"your crash and lets us look at details that may help "
                       u"identify the cause. To find your recently submitted "
                       u"crash IDs, go to <strong>about:crashes</strong> in "
-                      u"your location bar. <a href='http://support.mozilla."
+                      u"your location bar. <a href='https://support.mozilla."
                       u"com/en-US/kb/Firefox+crashes#Getting_the_most_"
                       u"accurate_help_with_your_Firefox_crash' "
                       u"target='_blank'>Click for detailed instructions</a>.")

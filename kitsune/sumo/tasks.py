@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from celery import task
-from statsd import statsd
+from django_statsd.clients import statsd
 
 from kitsune.sumo.decorators import timeit
 
@@ -15,4 +15,4 @@ def measure_queue_lag(queued_time):
     """
     lag = datetime.now() - queued_time
     lag = (lag.days * 3600 * 24) + lag.seconds
-    statsd.gauge('rabbitmq.lag', max(lag, 0))
+    statsd.gauge('celery.lag', max(lag, 0))

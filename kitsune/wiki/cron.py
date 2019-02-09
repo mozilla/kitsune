@@ -8,7 +8,7 @@ from django.contrib.sites.models import Site
 from django.db.models import F, Q, ObjectDoesNotExist
 
 from multidb.pinning import pin_this_thread, unpin_this_thread
-from statsd import statsd
+from django_statsd.clients import statsd
 from django.utils.translation import ugettext as _, pgettext
 
 from kitsune.products.models import Product
@@ -56,10 +56,6 @@ def reindex_kb():
 @cronjobs.register
 def send_weekly_ready_for_review_digest():
     """Sends out the weekly "Ready for review" digest email."""
-
-    # If this is stage, do nothing.
-    if settings.STAGE:
-        return
 
     @email_utils.safe_translation
     def _send_mail(locale, user, context):

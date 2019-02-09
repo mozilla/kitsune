@@ -42,10 +42,13 @@
       }
     },
 
-    /* This sets up a couple of globals that SurveyGizmo can use to  hook
+    /* This sets up a couple of globals that SurveyGizmo can use to hook
     * into the UI and provide surveys to users.
     *
     * This code was derived from the minified version of code posted in bug 1175880
+    *
+    * This isn't actually a survey. It injects some JS that allows folks to enable
+    * any survey they'd like through the SurveyGizmo admin.
     */
     beacon: function() {
       // set up temp SG reciever, until the main script loads

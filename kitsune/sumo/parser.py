@@ -43,10 +43,10 @@ YOUTUBE_PLACEHOLDER = 'YOUTUBE_EMBED_PLACEHOLDER_%s'
 
 
 def wiki_to_html(wiki_markup, locale=settings.WIKI_DEFAULT_LANGUAGE,
-                 nofollow=True):
+                 nofollow=True, tags=None):
     """Wiki Markup -> HTML"""
     return WikiParser().parse(wiki_markup, show_toc=False, locale=locale,
-                              nofollow=nofollow)
+                              nofollow=nofollow, tags=tags)
 
 
 def get_object_fallback(cls, title, locale, default=None, **kwargs):
@@ -228,9 +228,6 @@ class WikiParser(Parser):
             of parsing.
         """
         self.locale = locale
-
-        if tags:
-            kwargs['tags'] = tags
 
         @email_utils.safe_translation
         def _parse(locale):

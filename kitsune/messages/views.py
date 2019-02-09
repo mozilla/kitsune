@@ -10,7 +10,7 @@ from django.views.decorators.http import require_POST
 from mobility.decorators import mobile_template
 from multidb.pinning import mark_as_write
 from kitsune.sumo.utils import is_ratelimited
-from statsd import statsd
+from django_statsd.clients import statsd
 
 from kitsune.access.decorators import login_required
 from kitsune.messages import MESSAGES_PER_PAGE

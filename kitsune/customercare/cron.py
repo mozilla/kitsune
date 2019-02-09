@@ -10,7 +10,7 @@ from django.db.utils import IntegrityError
 
 import cronjobs
 from multidb.pinning import pin_this_thread
-from statsd import statsd
+from django_statsd.clients import statsd
 
 from kitsune.customercare.models import Tweet, TwitterAccount, Reply
 from kitsune.sumo.redis_utils import redis_client, RedisError

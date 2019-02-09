@@ -27,7 +27,7 @@ from kitsune.users.forms import PasswordResetForm
 from kitsune.users.models import (
     Profile, RegistrationProfile, RegistrationManager)
 from kitsune.users.tests import (
-    TestCaseBase, UserFactory, add_permission, GroupFactory)
+    TestCaseBase, UserFactory, add_permission)
 from kitsune.wiki.tests import RevisionFactory
 
 
@@ -116,50 +116,23 @@ class LoginTests(TestCaseBase):
         eq_(302, response.status_code)
         eq_('http://testserver' + valid_next + '?fpa=1', response['location'])
 
-    def test_ga_custom_variable_on_registered_login(self):
-        """After logging in, there should be a ga-push data attr on body."""
-        user_ = UserFactory()
-
-        # User should be "Registered":
-        response = self.client.post(reverse('users.login'),
-                                    {'username': user_.username,
-                                     'password': 'testpass'},
-                                    follow=True)
-        eq_(200, response.status_code)
-        doc = pq(response.content)
-        assert '"Registered"' in doc('body').attr('data-ga-push')
-
-    def test_ga_custom_variable_on_contributor_login(self):
-        """After logging in, there should be a ga-push data attr on body."""
-        user_ = UserFactory()
-
-        # Add user to Contributors and so should be "Contributor":
-        user_.groups.add(GroupFactory(name='Contributors'))
-        response = self.client.post(reverse('users.login'),
-                                    {'username': user_.username,
-                                     'password': 'testpass'},
-                                    follow=True)
-        eq_(200, response.status_code)
-        doc = pq(response.content)
-        assert '"Contributor"' in doc('body').attr('data-ga-push')
-
-    def test_ga_custom_variable_on_admin_login(self):
-        """After logging in, there should be a ga-push data attr on body."""
-        user_ = UserFactory()
-
-        # Add user to Administrators and so should be "Contributor - Admin":
-        user_.groups.add(GroupFactory(name='Administrators'))
-        response = self.client.post(reverse('users.login'),
-                                    {'username': user_.username,
-                                     'password': 'testpass'},
-                                    follow=True)
-        eq_(200, response.status_code)
-        doc = pq(response.content)
-        assert '"Contributor - Admin"' in doc('body').attr('data-ga-push')
-
     def test_login_mobile_csrf(self):
         """The mobile login view should have a CSRF token."""
         response = self.client.get(reverse('users.login'), {'mobile': 1})
+        eq_(200, response.status_code)
+        doc = pq(response.content)
+        assert doc('#content form input[name="csrfmiddlewaretoken"]')
+
+
+class RegisterTests(TestCaseBase):
+
+    def setUp(self):
+        self.client.logout()
+        super(RegisterTests, self).setUp()
+
+    def test_login_mobile_csrf(self):
+        """The mobile registration view should have a CSRF token."""
+        response = self.client.get(reverse('users.register'), {'mobile': 1})
         eq_(200, response.status_code)
         doc = pq(response.content)
         assert doc('#content form input[name="csrfmiddlewaretoken"]')
@@ -431,6 +404,14 @@ class ViewProfileTests(TestCaseBase):
         eq_(200, r.status_code)
         doc = pq(r.content)
         eq_(2, len(doc('.bio a[rel="nofollow"]')))
+
+    def test_bio_links_no_img(self):
+        # bug 1427813
+        self.profile.bio = '<p>my dude image <img src="https://www.example.com/the-dude.jpg"></p>'
+        self.profile.save()
+        r = self.client.get(reverse('users.profile', args=[self.u.username]))
+        eq_(200, r.status_code)
+        assert '<p>my dude image </p>' in r.content
 
     def test_num_documents(self):
         """Verify the number of documents contributed by user."""

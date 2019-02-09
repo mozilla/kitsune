@@ -94,6 +94,7 @@ class SearchMappingType(MappingType, Indexable):
 
     """
     list_keys = []
+    seconds_ago_filter = None
 
     @classmethod
     def search(cls):
@@ -117,13 +118,21 @@ class SearchMappingType(MappingType, Indexable):
         return []
 
     @classmethod
-    def get_indexable(cls):
+    def get_indexable(cls, seconds_ago=0):
         # Some models have a gazillion instances. So we want to go
         # through them one at a time in a way that doesn't pull all
         # the data into memory all at once. So we iterate through ids
         # and pull objects one at a time.
-        return cls.get_model().objects.order_by('pk').values_list(
-            'pk', flat=True)
+        qs = cls.get_model().objects.order_by('pk').values_list('pk', flat=True)
+        if seconds_ago:
+            if cls.seconds_ago_filter:
+                dt = datetime.datetime.now() - datetime.timedelta(seconds=seconds_ago)
+                qs = qs.filter(**{cls.seconds_ago_filter: dt})
+            else:
+                # if seconds_ago is specified but seconds_ago_filter is falsy don't index anything
+                return qs.none()
+
+        return qs
 
     @classmethod
     def reshape(cls, results):

@@ -7,80 +7,85 @@
 {% set classes = 'product-landing' %}
 {% set search_params = {'product': product.slug} %}
 
-{% if product.slug == 'firefox' %}
-  {% set SURVEY_GIZMOS = ['beacon'] %}
-{% elif product.slug == 'mobile' and waffle.flag('surveygizmo') %}
-  {% set SURVEY_GIZMOS = ['mobile'] %}
-{% endif %}
-
 {% set extra_body_attrs = {'data-product-slug': product.slug} %}
 
 {% block title %}{{ _('{product} Help')|f(product=pgettext('DB: products.Product.title', product.title)) }}{% endblock %}
 
 {% block content %}
-  <div class="grid_12">
-    <h1 class="product-title cf">
-      <img src="{{ STATIC_URL }}sumo/img/blank.png" alt="" class="logo-sprite"
-        style="{% if product.image and product.image_offset %}background-image: url({{ product.sprite_url() }}); background-position: -100px -{{ 100 + (product.image_offset * 296) }}px;{% else %}background-image: url({{ product.image_url }}){% endif %}" />
-      {{ pgettext('DB: products.Product.title', product.title) }}
-    </h1>
-
-    {% if product.slug == 'firefox' %}
-      <div class="download-firefox">
-        <a href="http://www.mozilla.org/firefox/new/#download-fx" class="download-button"
-         data-ga-click="_trackEvent | Download Button | Panel Opening"
-         data-latest-version="{{ latest_version }}">
-          <span class="download-content">
-            <strong class="download-title">{{ _('Firefox') }}</strong>
-            <span class="download-subtitle">{{ _('Free Download') }}</span>
-            <span class="download-lang">{{ settings.LANGUAGES_DICT[request.LANGUAGE_CODE.lower()] }}</span>
-          </span>
-        </a>
-        <ul class="info">
-          <li><a href="http://www.mozilla.org/firefox/all/">{{ _('Systems and Languages') }}</a></li>
-          <li><a href="http://www.mozilla.org/en-US/firefox/notes">{{ _("What's New") }}</a></li>
-          <li><a href="http://www.mozilla.org/legal/privacy/firefox">{{ _('Privacy') }}</a></li>
-        </ul>
-      </div>
-      <div class="refresh-firefox">
-        <div class="help-text">{{ _('Give Firefox a tune up') }}</div>
-        <a data-mozilla-ui-reset="reset" class="btn btn-submit">
-          {{ _('Refresh Firefox') }}
-        </a>
-        <a class="reset-link" href="{{ url('wiki.document', 'refresh-firefox-reset-add-ons-and-settings') }}">
-          {{ _('How does it work?') }}
-        </a>
-        <a href="http://www.mozilla.org/firefox/new/#download-fx"
-         data-ga-click="_trackEvent | Download Button | Panel Opening"
-         data-latest-version="{{ latest_version }}">
-          {{ _('Download a fresh copy') }}
-        </a>
-      </div>
-    {% endif %}
-
-    {% if product.slug == 'thunderbird' %}
-      <div class="download-thunderbird">
-        <a href="http://www.mozilla.org/thunderbird" class="download-button"
-         data-ga-click="_trackEvent | Download Button | Download Thunderbird">
-          <span class="download-content">
-            <strong class="download-title">{{ _('Thunderbird') }}</strong>
-            <span class="download-subtitle">{{ _('Free Download') }}</span>
-            <span class="download-lang">{{ settings.LANGUAGES_DICT[request.LANGUAGE_CODE.lower()] }}</span>
-          </span>
-        </a>
-        <ul class="info">
-          <li><a href="http://www.mozilla.org/thunderbird/all.html">{{ _('Systems and Languages') }}</a></li>
-          <li><a href="http://www.mozilla.org/thunderbird/releases">{{ _('Release Notes') }}</a></li>
-          <li><a href="http://www.mozilla.org/thunderbird/legal/privacy">{{ _('Privacy') }}</a></li>
-        </ul>
-      </div>
-    {% endif %}
-
+  <div class="grid_12 search-form-large">
+    {{ search_box(settings, id='support-search-product', params=search_params) }}
   </div>
+
+  {% if product.slug == 'firefox' %}
+    {# show-fx-download.js will remove the 'hidden' class below if the visitor is *NOT* using Firefox #}
+    <div class="firefox-download-button hidden">
+      <div class="grid_12 download-buttons">
+        <div class="download-firefox">
+          <a href="https://www.mozilla.org/firefox/new/?utm_source=support.mozilla.org&amp;utm_medium=referral&amp;utm_campaign=non-fx-button&amp;utm_content=body-download-button" class="download-button"
+            data-event-category="Download Button"
+            data-event-action="Panel Opening"
+            data-event-label="{{ latest_version }}">
+            <span class="download-content">
+              <strong class="download-title">{{ _('Download Firefox') }}</strong>
+            </span>
+          </a>
+          <ul class="info">
+            <li><a href="https://www.mozilla.org/firefox/all/">{{ _('Systems and Languages') }}</a></li>
+            <li><a href="https://www.mozilla.org/firefox/notes">{{ _("What's New") }}</a></li>
+            <li><a href="https://www.mozilla.org/legal/privacy/firefox">{{ _('Privacy') }}</a></li>
+          </ul>
+        </div>
+        {#
+          afaict, this button is never shown. products.js is looking for a
+          data-latest-version attribute on the .download-button element above,
+          but it's not present. this should be fixed?
+        #}
+        <div class="refresh-firefox">
+          <div class="help-text">{{ _('Give Firefox a tune up') }}</div>
+          <a data-mozilla-ui-reset="reset" class="btn btn-submit">
+            {{ _('Refresh Firefox') }}
+          </a>
+          <a class="reset-link" href="{{ url('wiki.document', 'refresh-firefox-reset-add-ons-and-settings') }}">
+            {{ _('How does it work?') }}
+          </a>
+          <a href="https://www.mozilla.org/firefox/new/#download-fx"
+            data-event-category="Download Button"
+            data-event-action="Panel Opening"
+            data-event-label="{{ latest_version }}">
+            {{ _('Download a fresh copy') }}
+          </a>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  {% if product.slug == 'thunderbird' %}
+    <div class="grid_12 download-buttons">
+      <div class="download-thunderbird">
+        <a href="https://www.thunderbird.net/" class="download-button"
+        data-event-category="Download Button"
+        data-event-action="Download Thunderbird">
+          <span class="download-content">
+            <strong class="download-title">{{ _('Download Thunderbird') }}</strong>
+          </span>
+        </a>
+        <ul class="info">
+          <li><a href="https://www.thunderbird.net/thunderbird/all/">{{ _('Systems and Languages') }}</a></li>
+          <li><a href="https://www.thunderbird.net/thunderbird/releases/">{{ _('Release Notes') }}</a></li>
+          <li><a href="https://www.mozilla.org/privacy/thunderbird/">{{ _('Privacy') }}</a></li>
+        </ul>
+      </div>
+    </div>
+  {% endif %}
 
   <div class="grid_12">
     <section id="help-topics">
-      <h1>{{ _('Help Topics') }}</h1>
+      <div class="product-title cf">
+        <img src="{{ product.image_alternate_url }}" height="48" width="48" alt="" />
+        <span>{{ pgettext('DB: products.Product.title', product.title) }}</span>
+        <h1>{{ _('Help Topics') }}</h1>
+        <p>{{ _('Search and navigate easily with these essential features') }}</p>
+      </div>
       {{ help_topics(topics, show_community_support) }}
     </section>
     <section id="get-involved-button">
@@ -95,23 +100,4 @@
 {% endblock %}
 
 {% block footer_script %}
-{# Ethnio tracking - see bug 985270 #}
-{% if product.slug == 'firefox' and request.LANGUAGE_CODE == 'en-US' and waffle.flag('ethnio-all') %}
-  <!-- Ethnio Activation Code -->
-  <script type="text/javascript" language="javascript" src="//ethn.io/remotes/35931" async="true" charset="utf-8"> </script>
-{% endif %}
-{# End Ethnio #}
-
-{# Treejack snippets #}
-{% if request.LANGUAGE_CODE == 'en-US' and waffle.switch('treejack') %}
-  {% if product.slug == 'mobile' %}{# Android #}
-    <!-- BEGIN Optimal Workshop Intercept Snippet --><div id='owInviteSnippet' style='position:fixed;right:20px;bottom:20px;width:280px;padding:20px;margin:0;border-radius:6px;background:#333333;color:#EEEEEE;text-align:left;z-index:2200000000;opacity:0;transition:opacity 500ms;-webkit-transition:opacity 500ms;display:none;'><div id='owInviteMessage' style='padding:0;margin:0 0 20px 0;font-size:16px;'>Got a spare 5 minutes to help us improve our website?</div><a id='owInviteOk' href='https://d7771tp6.optimalworkshop.com/treejack/3dgs3a2z-1?tag=intercept&utm_medium=intercept' target='_blank' style='color:#7DB6EE;font-size:16px;font-weight:bold;text-decoration:underline;'>I'll do it</a><a id='owInviteCancel' href='javascript:void(0)' onclick='this.parentNode.style.display="none";' style='color:#EEEEEE;font-size:14px;text-decoration:underline;float:right;'>No thanks</a></div><script>var owOldOnload=window.onload;window.onload=function(){if(owOldOnload){owOldOnload();}if (document.cookie.indexOf('owInvite') == -1){document.cookie='owInvite=Done';var e = document.getElementById('owInviteSnippet');setTimeout(function(){e.style.display = 'block';e.style.opacity = 1;},2000);}};</script><!-- END Optimal Workshop snippet -->
-  {% elif product.slug == 'firefox' %}
-    <!-- BEGIN Optimal Workshop Intercept Snippet --><div id='owInviteSnippet' style='position:fixed;right:20px;bottom:20px;width:280px;padding:20px;margin:0;border-radius:6px;background:#333333;color:#EEEEEE;text-align:left;z-index:2200000000;opacity:0;transition:opacity 500ms;-webkit-transition:opacity 500ms;display:none;'><div id='owInviteMessage' style='padding:0;margin:0 0 20px 0;font-size:16px;'>Got a spare 5 minutes to help us improve our website?</div><a id='owInviteOk' href='https://d7771tp6.optimalworkshop.com/treejack/3dgs3a2z-0-0?tag=intercept&utm_medium=intercept' target='_blank' style='color:#7DB6EE;font-size:16px;font-weight:bold;text-decoration:underline;'>I'll do it</a><a id='owInviteCancel' href='javascript:void(0)' onclick='this.parentNode.style.display="none";' style='color:#EEEEEE;font-size:14px;text-decoration:underline;float:right;'>No thanks</a></div><script>var owOldOnload=window.onload;window.onload=function(){if(owOldOnload){owOldOnload();}if (document.cookie.indexOf('owInvite') == -1){document.cookie='owInvite=Done';var e = document.getElementById('owInviteSnippet');setTimeout(function(){e.style.display = 'block';e.style.opacity = 1;},2000);}};</script><!-- END Optimal Workshop snippet -->
-  {% elif product.slug == 'thunderbird' %}
-    <!-- BEGIN Optimal Workshop Intercept Snippet --><div id='owInviteSnippet' style='position:fixed;right:20px;bottom:20px;width:280px;padding:20px;margin:0;border-radius:6px;background:#333333;color:#EEEEEE;text-align:left;z-index:2200000000;opacity:0;transition:opacity 500ms;-webkit-transition:opacity 500ms;display:none;'><div id='owInviteMessage' style='padding:0;margin:0 0 20px 0;font-size:16px;'>Got a spare 5 minutes to help us improve our website?</div><a id='owInviteOk' href='https://d7771tp6.optimalworkshop.com/treejack/223270c6-0?tag=intercept&utm_medium=intercept' target='_blank' style='color:#7DB6EE;font-size:16px;font-weight:bold;text-decoration:underline;'>I'll do it</a><a id='owInviteCancel' href='javascript:void(0)' onclick='this.parentNode.style.display="none";' style='color:#EEEEEE;font-size:14px;text-decoration:underline;float:right;'>No thanks</a></div><script>var owOldOnload=window.onload;window.onload=function(){if(owOldOnload){owOldOnload();}if (document.cookie.indexOf('owInvite') == -1){document.cookie='owInvite=Done';var e = document.getElementById('owInviteSnippet');setTimeout(function(){e.style.display = 'block';e.style.opacity = 1;},2000);}};</script><!-- END Optimal Workshop snippet -->
-  {% endif %}
-{% endif %}
-{# End Treejack #}
-
 {% endblock %}

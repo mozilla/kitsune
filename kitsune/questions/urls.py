@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.conf.urls import patterns, url
 from django.contrib.contenttypes.models import ContentType
 
@@ -5,7 +6,17 @@ from kitsune.questions.feeds import (
     QuestionsFeed, AnswersFeed, TaggedQuestionsFeed)
 from kitsune.questions.models import Question, Answer
 from kitsune.flagit import views as flagit_views
+from kitsune.sumo.views import handle404
 
+
+if settings.DISABLE_FEEDS:
+    questions_feed_view = handle404
+    answers_feed_view = handle404
+    tagged_feed_view = handle404
+else:
+    questions_feed_view = QuestionsFeed()
+    answers_feed_view = AnswersFeed()
+    tagged_feed_view = TaggedQuestionsFeed()
 
 urlpatterns = patterns(
     'kitsune.questions.views',
@@ -80,10 +91,10 @@ urlpatterns = patterns(
     # Feeds
     # Note: this needs to be above questions.list because "feed"
     # matches the product slug regex.
-    url(r'^/feed$', QuestionsFeed(), name='questions.feed'),
-    url(r'^/(?P<question_id>\d+)/feed$', AnswersFeed(),
+    url(r'^/feed$', questions_feed_view, name='questions.feed'),
+    url(r'^/(?P<question_id>\d+)/feed$', answers_feed_view,
         name='questions.answers.feed'),
-    url(r'^/tagged/(?P<tag_slug>[\w\-]+)/feed$', TaggedQuestionsFeed(),
+    url(r'^/tagged/(?P<tag_slug>[\w\-]+)/feed$', tagged_feed_view,
         name='questions.tagged_feed'),
 
     # Mark as spam

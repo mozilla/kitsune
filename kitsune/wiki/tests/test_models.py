@@ -396,7 +396,7 @@ class FromUrlTests(TestCase):
     def test_check_host(self):
         from_url = Document.from_url
         d_en = DocumentFactory(locale='en-US', title=u'How to delete Google Chrome?')
-        sumo_host = 'http://support.mozilla.org'
+        sumo_host = 'https://support.mozilla.org'
         invalid_url = urlparse.urljoin(sumo_host, d_en.get_absolute_url())
         self.assertIsNone(from_url(invalid_url))
         self.assertEqual(d_en, from_url(invalid_url, check_host=False))

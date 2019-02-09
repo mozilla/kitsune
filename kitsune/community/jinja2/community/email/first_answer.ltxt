@@ -50,8 +50,8 @@ Finally, if you want to follow all news related to SUMO, don’t forget about ou
 {% endtrans %}
 
 * {{ _('Community forums') }} - https://{{ host }}/forums/contributors
-* {{ _('Official blog') }} - http://blog.mozilla.org/sumo/
-* {{ _('Twitter account') }} - http://twitter.com/sumo_mozilla
+* {{ _('Official blog') }} - https://blog.mozilla.org/sumo/
+* {{ _('Twitter account') }} - https://twitter.com/sumo_mozilla
 * {{ _('Weekly meetings') }} - https://wiki.mozilla.org/Support/Weekly_Meetings
 
 {% trans %}

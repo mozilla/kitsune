@@ -1,30 +1,32 @@
-# sha256: 9m3Up1GXJaG34UrZrn09-OCbLaiAYjhuCOlByvwO8-Y
-# sha256: 0rkJx5RYMuHBnPrNlueNpova3GVkQM_H3-WbdmdE64w
-execnet==1.4.1
-
-# sha256: Sj5PMADBI4Naw5yrXMxRBkIVO8R7wfE-K7tTA5VArmk
-# sha256: plAZY8cl_CVU2r_s6K6aj7XhScCsCkL9KwLFwcV_wRQ
-py==1.4.31
-
-# sha256: b61TzL8JA8aduT1nuD31IIGLBsdZftioQHvF_f_V5A4
-pytest==2.9.0
-
-# sha256: zzI98ijiZdZ1XsOaJvKXGsxZoxsN4M_QJtNBJJ2-72k
-# sha256: 3-epy0EWdBTKe56Fr71mlOjMg_2_V9DlRcIVwyzUDNY
-pytest-html==1.8.0
-
-# sha256: 6C8KJlsOI4rEKsJ115MT0KfgvvGkUGM66z1lScwU9Rc
-# sha256: vSEhAi_zJVzoL67A7zYCRi7GvOnKYntTRimGz8mzkek
-pytest-selenium==1.2.1
-
-# sha256: naX4m9sivV9wDs8QeH8jkZC3gyqzRFvzI0PNTlFBaCU
-pytest-variables==1.3
-
-# sha256: Sl4RmRIvop4wF9jRifWczF2C6EFHS6Kh7sDolgYVNiM
-pytest-xdist==1.14
-
-# sha256: xXeBXdAPE5QgP8ROuXlySwmPiCZKnviY7kW45enPWH8
-requests==2.9.1
-
-# sha256: ggVQp0DKH3RsOZoBAZhsDm-U-_48b5duP2lNtFLL4SQ
-selenium==2.52.0
+execnet==1.4.1 \
+    --hash=sha256:d2b909c7945832e1c19cfacd96e78da68bdadc656440cfc7dfe59b766744eb8c \
+    --hash=sha256:f66dd4a7519725a1b7e14ad9ae7d3df8e09b2da88062386e08e941cafc0ef3e6
+py==1.4.31 \
+    --hash=sha256:4a3e4f3000c123835ac39cab5ccc510642153bc47bc1f13e2bbb53039540ae69 \
+    --hash=sha256:a6501963c725fc2554dabfece8ae9a8fb5e149c0ac0a42fd2b02c5c1c57fc114
+pytest==3.0.3 \
+    --hash=sha256:aea87ca4240b79868ccabd14ba56a12eceb1c1e8076b585fe2fa5602a5874db7 \
+    --hash=sha256:f213500a356800a483e8a146ff971ae14a8df3f2c0ae4145181aad96996abee7
+pytest-html==1.10.1 \
+    --hash=sha256:f6fc1ccefe94fb17ba289ee385bebaeccfd44cf4f05eef9116572cae699af6d6 \
+    --hash=sha256:808ddd5e9346606300eeb38a7c9ee917ca3df1c51075d02449e9cf5956ae8efb
+pytest-selenium==1.5.0 \
+    --hash=sha256:f149aa3d82e0aa312f8eafed6725ccbb0dd16203720a2c39c6b6df8b23cf3874 \
+    --hash=sha256:6c2f1e62cdf408f16798d35e235a1b819bfe87fe629ef734cb1d6ca1060e9508
+pytest-variables==1.4 \
+    --hash=sha256:29dcb084ed5d0c357e925c9a6cb454dbe7ae6192fdea2f9d1929f521b4e532e3 \
+    --hash=sha256:bd2e152e64c8f670e7969c76219a7842cf8ede795703127981ed71af38cfe08a
+pytest-xdist==1.15.0 \
+    --hash=sha256:6238395f8bd050f9288a3b10f34330edece80f4424cf2b4204d6e7d622f0f00b
+requests==2.20.0 \
+    --hash=sha256:99dcfdaaeb17caf6e526f32b6a7b780461512ab3f1d992187801694cba42770c \
+    --hash=sha256:a84b8c9ab6239b578f22d1c21d51b696dcfe004032bb80ea832398d6909d7279
+selenium==3.0.1 \
+    --hash=sha256:a9e4f1398302e771ada4a0a268650815b43b354baf2de4e7e5023fb5f9675e50 \
+    --hash=sha256:0705803349964c7a2a144f1796a5d29905fe2a09931b2bb945ee0cb4deab75d7
+apipkg==1.4 \
+    --hash=sha256:65d2aa68b28e7d31233bb2ba8eb31cda40e4671f8ac2d6b241e358c9652a74b9 \
+    --hash=sha256:2e38399dbe842891fe85392601aab8f40a8f4cc5a9053c326de35a1cc0297ac6
+pytest-base-url==1.4.1 \
+    --hash=sha256:7425e8163345494ac7f544e99c6f3e5a08f4228bee5e26013b98c462a4d31f6e \
+    --hash=sha256:31e42366a5fc22f450b398837dc819bb7569f5e6bd5d74e494b2b9ec239876d1

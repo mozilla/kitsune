@@ -1,4 +1,3 @@
-from django.contrib.syndication.views import Feed
 from django.shortcuts import get_object_or_404
 from django.utils.feedgenerator import Atom1Feed
 from django.utils.html import strip_tags, escape
@@ -7,6 +6,7 @@ from django.utils.translation import ugettext as _
 from kitsune import forums as constants
 from kitsune.kbforums.models import Thread
 from kitsune.wiki.models import Document
+from kitsune.sumo.feeds import Feed
 
 
 class ThreadsFeed(Feed):

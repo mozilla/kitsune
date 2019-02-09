@@ -185,82 +185,41 @@ products = SortedDict([
     }),
 
     ('focus', {
-        'name': _lazy(u'Focus by Firefox'),
-        'subtitle': _lazy(u'Content blocker for Safari'),
+        'name': _lazy(u'Firefox Focus'),
+        'subtitle': _lazy(u'Automatic privacy browser and content blocker'),
         'extra_fields': [],
         'tags': ['focus-firefox'],
         'product': 'focus-firefox',
         'categories': SortedDict([
-            ('get-started', {
-                'name': _lazy(u'Get started'),
-                'topic': 'get-started',
-                'tags': []
+            ('Focus-ios', {
+                'name': _lazy(u'Firefox Focus for iOS'),
+                'topic': 'Focus-ios',
+                'tags': ['Focus-ios']
+            }),
+            ('firefox-focus-android', {
+                'name': _lazy(u'Firefox Focus for Android'),
+                'topic': 'firefox-focus-android',
+                'tags': ['firefox-focus-android']
             }),
         ])
     }),
 
-    ('firefox-os', {
-        'name': _lazy(u'Firefox OS'),
-        'subtitle': _lazy(u'Mobile OS for smartphones'),
-        'extra_fields': ['device', 'os'],
-        'tags': [],
-        'product': 'firefox-os',
-        'categories': SortedDict([
-            # TODO: Just use the IA topics for this.
-            # See bug 979397
-            ('download-and-install', {
-                'name': _lazy(u'Download and install apps'),
-                'topic': 'marketplace',
-                'tags': ['marketplace'],
-            }),
-            ('customize', {
-                'name': _lazy(u'Customize controls, options, settings and '
-                              u'preferences'),
-                'topic': 'settings',
-                'tags': ['settings'],
-            }),
-            ('fix-problems', {
-                'name': _lazy(u'Fix slowness, crashing, error messages and '
-                              u'other problems'),
-                'topic': 'fix-problems',
-                'tags': ['fix-problems'],
-            }),
-        ])
-    }),
-
-    ('webmaker', {
-        'name': _lazy(u'Webmaker'),
-        'subtitle': _lazy(u'Tools for creating and teaching the web'),
+    ('firefox-amazon-devices', {
+        'name': _lazy(u'Firefox for Amazon Devices'),
+        'subtitle': _lazy(u'Browser for Amazon devices'),
         'extra_fields': [],
-        'tags': [],
-        'product': 'webmaker',
+        'tags': ['firefox-amazon'],
+        'product': 'firefox-amazon-devices',
         'categories': SortedDict([
-            # TODO: Just use the IA topics for this.
-            # See bug 979397
-            ('popcorn-maker', {
-                'name': _lazy(u'Using Popcorn Maker'),
-                'topic': 'popcorn-maker',
-                'tags': ['popcorn-maker'],
+            ('firefox-fire-tv', {
+                'name': _lazy(u'Firefox for Fire TV'),
+                'topic': 'firefox-fire-tv',
+                'tags': ['firefox-fire-tv']
             }),
-            ('thimble', {
-                'name': _lazy(u'Using Thimble'),
-                'topic': 'thimble',
-                'tags': ['thimble'],
-            }),
-            ('x-ray-goggles', {
-                'name': _lazy(u'Using X-Ray Goggles'),
-                'topic': 'x-ray-goggles',
-                'tags': ['x-ray-goggles'],
-            }),
-            ('get-the-most-from-webmaker', {
-                'name': _lazy(u'Using a feature on webmaker.org'),
-                'topic': 'get-the-most-from-webmaker',
-                'tags': ['get-the-most-from-webmaker'],
-            }),
-            ('events-and-help-for-mentors', {
-                'name': _lazy(u'Contributing to Webmaker'),
-                'topic': 'events-and-help-for-mentors',
-                'tags': ['events-and-help-for-mentors'],
+            ('firefox-echo-show', {
+                'name': _lazy(u'Firefox for Echo Show'),
+                'topic': 'firefox-echo-show',
+                'tags': ['firefox-echo-show']
             }),
         ])
     }),
@@ -309,19 +268,115 @@ products = SortedDict([
         ])
     }),
 
+    ('firefox-lite', {
+        'name': _lazy(u'Firefox Lite'),
+        'subtitle': _lazy(u'Mobile browser for Indonesia'),
+        'extra_fields': [],
+        'tags': ['firefox-lite'],
+        'product': 'firefox-lite',
+        'categories': SortedDict([
+            ('get-started', {
+                'name': _lazy(u'Get started'),
+                'topic': 'get-started',
+                'tags': ['get-started']
+            }),
+            ('fix-problems', {
+                'name': _lazy(u'Fix problems'),
+                'topic': 'fix-problems',
+                'tags': ['fix-problems']
+            }),
+        ])
+    }),
+
+    ('webmaker', {
+        'name': _lazy(u'Webmaker'),
+        'subtitle': _lazy(u'Tools for creating and teaching the web'),
+        'extra_fields': [],
+        'tags': [],
+        'product': 'webmaker',
+        'categories': SortedDict([
+            # TODO: Just use the IA topics for this.
+            # See bug 979397
+            ('popcorn-maker', {
+                'name': _lazy(u'Using Popcorn Maker'),
+                'topic': 'popcorn-maker',
+                'tags': ['popcorn-maker'],
+            }),
+            ('thimble', {
+                'name': _lazy(u'Using Thimble'),
+                'topic': 'thimble',
+                'tags': ['thimble'],
+            }),
+            ('x-ray-goggles', {
+                'name': _lazy(u'Using X-Ray Goggles'),
+                'topic': 'x-ray-goggles',
+                'tags': ['x-ray-goggles'],
+            }),
+            ('get-the-most-from-webmaker', {
+                'name': _lazy(u'Using a feature on webmaker.org'),
+                'topic': 'get-the-most-from-webmaker',
+                'tags': ['get-the-most-from-webmaker'],
+            }),
+            ('events-and-help-for-mentors', {
+                'name': _lazy(u'Contributing to Webmaker'),
+                'topic': 'events-and-help-for-mentors',
+                'tags': ['events-and-help-for-mentors'],
+            }),
+        ])
+    }),
+
+    ('firefox-enterprise', {
+        'name': _lazy(u'Firefox for Enterprise'),
+        'subtitle': _lazy(u'Enterprise version of Firefox'),
+        'extra_fields': [],
+        'tags': [],
+        'product': 'firefox-enterprise',
+        'categories': SortedDict([
+            ('deployment-firefox-enterprise-environment', {
+                'name': _lazy(u'Deployment of Firefox in an enterprise environment'),
+                'topic': 'deployment-firefox-enterprise-environment',
+                'tags': ['deployment'],
+            }),
+            ('customization-firefox-enterprise-environment', {
+                'name': _lazy(u'Customization of Firefox in an enterprise environment'),
+                'topic': 'customization-firefox-enterprise-environment',
+                'tags': ['customization'],
+            }),
+        ])
+    }),
+
+    ('firefox-reality', {
+        'name': _lazy(u'Firefox Reality'),
+        'subtitle': _lazy(u'Firefox for Virtual Reality'),
+        'extra_fields': [],
+        'tags': [],
+        'product': 'firefox-reality',
+        'categories': SortedDict([
+            ('get-started', {
+                'name': _lazy(u'Get started with Firefox Reality'),
+                'topic': 'get-started',
+                'tags': ['get-started'],
+            }),
+            ('troubleshooting-reality', {
+                'name': _lazy(u'Troubleshooting Firefox Reality'),
+                'topic': 'troubleshooting-reality',
+                'tags': ['troubleshooting'],
+            }),
+        ])
+    }),
+
     ('other', {
         'name': _lazy(u'Other Mozilla products'),
         'subtitle': '',
-        'html': _lazy(u'This site is only provides support for some of our products. '
+        'product': '',
+        'html': _lazy(u'This site only provides support for some of our products. '
                       u'For other support, please find your product below.'
                       u'<ul class="product-support">'
                       u'<li><a href="http://www.seamonkey-project.org/doc/">'
                       u'SeaMonkey support</a></li>'
-                      u'<li><a href="http://caminobrowser.org/help/">'
-                      u'Camino support</a></li>'
                       u'<li><a '
-                      u'href="http://www.mozilla.org/projects/calendar/faq.html">'
-                      u'Lightning and Sunbird support</a></li>'
+                      u'href="/questions/new/thunderbird">'
+                      u'Lightning support</a></li>'
                       u'</ul>'),
         'categories': SortedDict([]),
         'deadend': True,

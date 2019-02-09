@@ -6,7 +6,7 @@
         <input type="hidden" name="{{ k }}" value="{{ v }}" />
       {% endfor %}
     {% endif %}
-    <input type="search" name="q" required="required" aria-required="true" placeholder="{{ _('Search Mozilla Support') }}" class="searchbox" id="search-q" />
+    <input type="search" name="q" required="required" aria-required="true" placeholder="{{ _('Find help...')|truncate(12) }}" class="searchbox" id="search-q" />
     <button type="submit" title="{{ _('Search') }}" class="submit-button">{{ _('Search') }}</button>
   </form>
 {% endmacro %}
@@ -19,31 +19,31 @@
       {% else %}
         {% set ask_url = url('wiki.document', 'get-community-support') %}
       {% endif %}
-      <li><a href="{{ ask_url }}" class="ask">{{ _('Ask a question') }}</a></li>
+      <li><a href="{{ ask_url }}" class="ask" data-event-category="navigation" data-event-action="main navigation" data-event-label="Get Community Support">{{ _('Get Community Support') }}</a></li>
     {% endif %}
     {% if user.is_authenticated() %}
       <li class="dropdown">
-        <a href="#">{{ _('Contributor Tools') }}</a>
+        <a href="#" data-event-category="navigation" data-event-action="main navigation" data-event-label="Contributor Tools">{{ _('Contributor Tools') }}</a>
         <ul class="double">
           {{ _for_contributor_links(user, settings.WIKI_DEFAULT_LANGUAGE) }}
         </ul>
       </li>
-        <li class="dropdown"><a href="{{ profile_url(user) }}" class="user">{{ user }}</a>
+        <li class="dropdown"><a href="{{ profile_url(user) }}" class="user"  data-event-category="navigation" data-event-action="main navigation" data-event-label="User">{{ display_name(user) }}</a>
           <ul>
-            <li><a href="{{ profile_url(user) }}">{{ _('View Profile') }}</a></li>
-            <li><a href="{{ url('search')|urlparams(asked_by=user.username, a=1, w=2) }}">{{ _('My Questions') }}</a></li>
-            <li><a href="{{ profile_url(user, edit=True) }}">{{ _('Edit Profile') }}</a></li>
-            <li><a href="{{ url('users.edit_settings') }}">{{ _('Settings') }}</a></li>
+            <li><a href="{{ profile_url(user) }}"  data-event-category="navigation" data-event-action="main navigation" data-event-label="View Profile">{{ _('View Profile') }}</a></li>
+            <li><a href="{{ url('search')|urlparams(asked_by=user.username, a=1, w=2) }}"  data-event-category="navigation" data-event-action="main navigation" data-event-label="My Questions">{{ _('My Questions') }}</a></li>
+            <li><a href="{{ profile_url(user, edit=True) }}"  data-event-category="navigation" data-event-action="main navigation" data-event-label="Edit Profile">{{ _('Edit Profile') }}</a></li>
+            <li><a href="{{ url('users.edit_settings') }}"  data-event-category="navigation" data-event-action="main navigation" data-event-label="Settings">{{ _('Settings') }}</a></li>
             <li>
               <form id="sign-out" action="{{ url('users.logout') }}" method="post">
                 {% csrf_token %}
               </form>
-              <a class="sign-out" data-type="submit" data-form="sign-out" href="#sign-out">{{ _('Sign Out') }}</a>
+              <a class="sign-out" data-type="submit" data-form="sign-out" href="#sign-out"  data-event-category="navigation" data-event-action="main navigation" data-event-label="Sign Out">{{ _('Sign Out') }}</a>
             </li>
           </ul>
         </li>
       <li>
-        <a href="{{ url('messages.inbox') }}">
+        <a href="{{ url('messages.inbox') }}"  data-event-category="navigation" data-event-action="main navigation" data-event-label="Inbox">
           {{ _('Inbox') }}
           {% if unread_message_count > 0 %}
             <span class="unread-message-count">{{ unread_message_count }}</span>
@@ -52,7 +52,7 @@
       </li>
     {% else %}
       <li>
-        <a href="{{ url('users.auth') }}" class="sign-in register">
+        <a href="{{ url('users.auth') }}" class="sign-in register"  data-event-category="navigation" data-event-action="main navigation" data-event-label="Sign In">
           {{ _('Sign In') }}
         </a>
       </li>
@@ -103,23 +103,22 @@
 {%- endmacro %}
 
 {% macro _for_contributor_links(user, default_language, active=None) -%}
-  <li><a href="{{ url('landings.get_involved') }}">{{ _('Quickstart Guide') }}</a></li>
-  <li><a href="{{ url('wiki.document', 'contributor-news-resources') }}">{{ _('News &amp; Resources') }}</a></li>
-  <li {{ active|class_selected('forums') }}><a href="{{ url('forums.forums') }}">{{ _('Contributor Forums') }}</a></li>
-  <li {{ active|class_selected('article-discussions') }}><a href="{{ url('wiki.locale_discussions') }}">{{ _('Article Discussions') }}</a></li>
-  <li {{ active|class_selected('kbdashboard') }}><a href="{{ url('dashboards.localization') }}">{{ _('Knowledge Base Dashboard') }}</a></li>
-  <li><a href="{{ url('dashboards.aggregated_metrics') }}">{{ _('Localization Metrics') }}</a></li>
-  <li><a href="{{ url('wiki.revisions') }}">{{ _('Recent Revisions') }}</a></li>
-  <li><a href="{{ url('customercare.landing') }}">{{ _('Help on Twitter') }}</a></li>
-  <li><a href="{{ url('questions.home') }}">{{ _('Support Forum Home') }}</a></li>
-  <li><a href="{{ url('questions.metrics') }}">{{ _('Support Forum Metrics') }}</a></li>
+  <li><a href="{{ url('landings.get_involved') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Quickstart Guide">{{ _('Quickstart Guide') }}</a></li>
+  <li><a href="{{ url('wiki.document', 'contributor-news-resources') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="News &amp; Resources">{{ _('News &amp; Resources') }}</a></li>
+  <li {{ active|class_selected('forums') }}><a href="{{ url('forums.forums') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Contributor Forums">{{ _('Contributor Forums') }}</a></li>
+  <li {{ active|class_selected('article-discussions') }}><a href="{{ url('wiki.locale_discussions') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Article Discussions">{{ _('Article Discussions') }}</a></li>
+  <li {{ active|class_selected('kbdashboard') }}><a href="{{ url('dashboards.localization') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Knowledge Base Dashboard">{{ _('Knowledge Base Dashboard') }}</a></li>
+  <li><a href="{{ url('dashboards.aggregated_metrics') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Localization Metrics">{{ _('Localization Metrics') }}</a></li>
+  <li><a href="{{ url('wiki.revisions') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Recent Revisions">{{ _('Recent Revisions') }}</a></li>
+  <li><a href="{{ url('questions.home') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Support Forum Home">{{ _('Support Forum Home') }}</a></li>
+  <li><a href="{{ url('questions.metrics') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Support Forum Metrics">{{ _('Support Forum Metrics') }}</a></li>
   {% if user.has_perm('flagit.can_moderate') %}
-    <li><a href="{{ url('flagit.queue') }}">{{ _('Moderate Forum Content') }}</a></li>
+    <li><a href="{{ url('flagit.queue') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Moderate Forum Content">{{ _('Moderate Forum Content') }}</a></li>
   {% endif %}
-  <li><a href="{{ url('gallery.home') }}">{{ _('Media Gallery') }}</a></li>
-  <li><a href="{{ url('search.advanced') }}">{{ _('Advanced Search') }}</a></li>
-  <li><a href="{{ url('kpi.dashboard') }}">{{ _('KPI Dashboard') }}</a></li>
-  <li><a href="{{ url('community.home') }}">{{ _('Community Hub') }}</a></li>
+  <li><a href="{{ url('gallery.home') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Media Gallery">{{ _('Media Gallery') }}</a></li>
+  <li><a href="{{ url('search.advanced') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Advanced Search">{{ _('Advanced Search') }}</a></li>
+  <li><a href="{{ url('kpi.dashboard') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="KPI Dashboard">{{ _('KPI Dashboard') }}</a></li>
+  <li><a href="{{ url('community.home') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Community Hub">{{ _('Community Hub') }}</a></li>
 {%- endmacro %}
 
 {# This is designed to be used like this:
@@ -139,8 +138,11 @@
 {% endmacro %}
 
 {% macro favicon() %}
-  {% set sizes = (512, 256, 128, 64, 32, 16,) %}
-  {% for s in sizes %}
-    <link rel="icon" type="image/png" sizes="{{ s }}x{{ s }}" href="{{ STATIC_URL }}sumo/img/firefox-{{ s }}.png?v=1">
-  {% endfor %}
+  <link rel="apple-touch-icon" sizes="180x180" href="{{ STATIC_URL }}sumo/img/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="{{ STATIC_URL }}sumo/img/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="{{ STATIC_URL }}sumo/img/favicon-16x16.png">
+  <link rel="manifest" href="{{ STATIC_URL }}sumo/manifest.json">
+  <link rel="shortcut icon" href="{{ STATIC_URL }}sumo/img/favicon.ico">
+  <meta name="msapplication-config" content="{{ STATIC_URL }}sumo/browserconfig.xml">
+  <meta name="theme-color" content="#ffffff">
 {% endmacro %}

@@ -25,8 +25,17 @@
         <ul>
           {% for key, product in products.iteritems() %}
             <li class="{% if product == current_product %}selected{% endif %}">
-              <a href="{{ url('questions.aaq_step2', product_key=key) }}">
-                <span class="logo-sprite logo-{{ key }}"></span>
+              <a href="{{ url('questions.aaq_step2', product_key=key) }}" data-event-category="link click"
+              data-event-action="product" data-event-label="{{ product.name }}">
+                  {% if key == 'other' %}
+                      <span class="logo"
+                          style="background-image: url({{ static('sumo/img/dino-logo.png') }})">
+                    </span>
+                  {% else %}
+                  <span class="logo"
+                      style="background-image: url({{ image_for_product(product.product) }})">
+                  </span>
+                  {% endif %}
                 {{ product.name }}
               </a>
             </li>

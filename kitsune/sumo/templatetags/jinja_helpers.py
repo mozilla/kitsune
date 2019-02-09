@@ -1,6 +1,7 @@
 import datetime
 import json as jsonlib
 import logging
+import os
 import re
 import urlparse
 
@@ -26,9 +27,14 @@ from pytz import timezone
 from kitsune.sumo import parser
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.models import Profile
+from kitsune.products.models import Product
 from kitsune.wiki.showfor import showfor_data as _showfor_data
 
 
+ALLOWED_BIO_TAGS = bleach.ALLOWED_TAGS + ['p']
+ALLOWED_BIO_ATTRIBUTES = bleach.ALLOWED_ATTRIBUTES.copy()
+# allow rel="nofollow"
+ALLOWED_BIO_ATTRIBUTES['a'].append('rel')
 log = logging.getLogger('k.helpers')
 
 
@@ -111,6 +117,17 @@ def wiki_to_html(wiki_markup, locale=settings.WIKI_DEFAULT_LANGUAGE,
     """Wiki Markup -> HTML jinja2.Markup object"""
     return jinja2.Markup(parser.wiki_to_html(wiki_markup, locale=locale,
                                              nofollow=nofollow))
+
+
+@library.filter
+def wiki_to_safe_html(wiki_markup, locale=settings.WIKI_DEFAULT_LANGUAGE,
+                      nofollow=True):
+    """Wiki Markup -> HTML jinja2.Markup object with limited tags"""
+    html = parser.wiki_to_html(wiki_markup, locale=locale, nofollow=nofollow)
+    return jinja2.Markup(bleach.clean(html,
+                                      tags=ALLOWED_BIO_TAGS,
+                                      attributes=ALLOWED_BIO_ATTRIBUTES,
+                                      strip=True))
 
 
 @library.filter
@@ -388,37 +405,6 @@ def remove(list_, item):
 
 @jinja2.contextfunction
 @library.global_function
-def ga_push_attribute(context):
-    """Return the json for the data-ga-push attribute.
-
-    This is used to defined custom variables and other special tracking with
-    Google Analytics.
-    """
-    request = context.get('request')
-    ga_push = context.get('ga_push', [])
-
-    # If the user is on the first page after logging in,
-    # we add a "User Type" custom variable.
-    if request.GET.get('fpa') == '1' and request.user.is_authenticated():
-        user = request.user
-        group_names = user.groups.values_list('name', flat=True)
-
-        # If they belong to the Administrator group:
-        if 'Administrators' in group_names:
-            ga_push.append(
-                ['_setCustomVar', 1, 'User Type', 'Contributor - Admin', 1])
-        # If they belong to the Contributors group:
-        elif 'Contributors' in group_names:
-            ga_push.append(['_setCustomVar', 1, 'User Type', 'Contributor', 1])
-        # If they don't belong to any of these groups:
-        else:
-            ga_push.append(['_setCustomVar', 1, 'User Type', 'Registered', 1])
-
-    return jsonlib.dumps(ga_push)
-
-
-@jinja2.contextfunction
-@library.global_function
 def is_secure(context):
     request = context.get('request')
     if request and hasattr(request, 'is_secure'):
@@ -471,7 +457,7 @@ def class_selected(a, b):
     Return 'class="selected"' if a == b, otherwise return ''.
     """
     if a == b:
-        return 'class="selected"'
+        return jinja2.Markup('class="selected"')
     else:
         return ''
 
@@ -508,3 +494,43 @@ def fe(format_string, *args, **kwargs):
         format_string = unicode(format_string)
 
     return jinja2.Markup(format_string.format(*args, **kwargs))
+
+
+@library.global_function
+def image_for_product(product_slug):
+    """
+    Return square/alternate image for product slug
+    """
+
+    try:
+        obj = Product.objects.get(slug=product_slug)
+    except Product.DoesNotExist:
+        return os.path.join(settings.STATIC_URL, 'products', 'img',
+                            'product_placeholder_alternate.png')
+    return obj.image_alternate_url
+
+
+@jinja2.contextfunction
+@library.global_function
+def show_header_fx_download(context):
+    """
+    Decides whether or not to render the Firefox download button in the header based on the
+    current product being displayed.
+
+    If a visitor is on a Firefox product page of any sort - help topics, KB article, etc -
+    the header download button should be hidden, because these Firefox product pages all
+    display a big download button in page. (We don't want to put multiple download buttons
+    on the page.)
+
+    This function is used in conjunction with show-fx-download.js. This function simply adds
+    markup to the template wrapped in a 'hidden' class. The JS removes the 'hidden' class if
+    the visitor is *NOT* already using Firefox.
+    """
+    product = context.get('product', None)
+
+    # product is *usually* an instance of Product, but sometimes (during AAQ process) product
+    # is a dict (see questions/config.py).
+    if product and hasattr(product, 'slug'):
+        return product.slug != 'firefox'
+    else:
+        return True

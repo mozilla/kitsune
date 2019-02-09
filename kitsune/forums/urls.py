@@ -1,10 +1,19 @@
+from django.conf import settings
 from django.conf.urls import patterns, url, include
 from django.contrib.contenttypes.models import ContentType
 
 from kitsune.forums.feeds import ThreadsFeed, PostsFeed
 from kitsune.forums.models import Post
 from kitsune.flagit import views as flagit_views
+from kitsune.sumo.views import handle404
 
+
+if settings.DISABLE_FEEDS:
+    threads_feed_view = handle404
+    posts_feed_view = handle404
+else:
+    threads_feed_view = ThreadsFeed()
+    posts_feed_view = PostsFeed()
 
 # These patterns inherit (?P<forum_slug>\d+).
 forum_patterns = patterns(
@@ -13,8 +22,8 @@ forum_patterns = patterns(
     url(r'^/new$', 'new_thread', name='forums.new_thread'),
     url(r'^/(?P<thread_id>\d+)$', 'posts', name='forums.posts'),
     url(r'^/(?P<thread_id>\d+)/reply$', 'reply', name='forums.reply'),
-    url(r'^/feed$', ThreadsFeed(), name="forums.threads.feed"),
-    url(r'^/(?P<thread_id>\d+)/feed$', PostsFeed(), name="forums.posts.feed"),
+    url(r'^/feed$', threads_feed_view, name="forums.threads.feed"),
+    url(r'^/(?P<thread_id>\d+)/feed$', posts_feed_view, name="forums.posts.feed"),
     url(r'^/(?P<thread_id>\d+)/lock$', 'lock_thread',
         name='forums.lock_thread'),
     url(r'^/(?P<thread_id>\d+)/sticky$', 'sticky_thread',

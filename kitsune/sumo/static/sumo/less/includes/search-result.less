@@ -1,16 +1,33 @@
 .result {
   margin: 40px 0;
-  padding-left: 80px;
+  padding-left: 35px;
   position: relative;
 
-  &:before {
-    background: url('../img/search-icons-sprite.png') 0 0 no-repeat;
-    content: '';
-    height: 56px;
-    left: 0;
-    position: absolute;
-    top: 0;
-    width: 56px;
+  &.document {
+    &:before {
+      background: url('../img/icon-file.png') no-repeat;
+      background-size: 20px 24px;
+      content: '';
+      height: 24px;
+      left: 0;
+      position: absolute;
+      top: 0;
+      width: 20px;
+    }
+  }
+
+  &.thread,
+  &.question {
+    &:before {
+      background: url('../img/icon-discuss.png') no-repeat;
+      background-size: 24px 24px;
+      content: '';
+      height: 24px;
+      left: 0;
+      position: absolute;
+      top: 0;
+      width: 24px;
+    }
   }
 
   &:first-of-type {
@@ -23,27 +40,16 @@
 
   a,
   a:hover {
-    color: @textGrey;
+    color: #000;
   }
 
   a:visited {
-    color: @textPurple;
+    color: #000;
   }
 
   h3 {
     margin: 0 0 4px 0;
-  }
-
-  &.document {
-    &:before {
-      background-position: -46px -46px;
-    }
-  }
-
-  &.question {
-    &:before {
-      background-position: -46px -194px;
-    }
+    font-weight: bold;
   }
 
   .question-status {
@@ -77,6 +83,18 @@
         margin: 0;
         padding: 0;
       }
+    }
+  }
+}
+
+.html-rtl {
+  .result {
+    padding-left: 0;
+    padding-right: 35px;
+
+    &.document:before {
+      left: auto;
+      right: 0;
     }
   }
 }

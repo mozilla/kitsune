@@ -13,7 +13,7 @@ from kitsune.sumo import email_utils
 def send_award_notification(award):
     """Sends the award notification email
 
-    :arg award: the django-badger Award instance
+    :arg award: the Award instance
 
     """
     @email_utils.safe_translation

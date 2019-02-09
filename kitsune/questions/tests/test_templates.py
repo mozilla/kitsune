@@ -1101,6 +1101,21 @@ class QuestionsTemplateTestCase(TestCaseBase):
         response = self.client.get(url)
         eq_(200, response.status_code)
 
+    def test_owner_tab_selected_in_list(self):
+        # Test one tab is selected for no show arg specified
+        questions_list = urlparams(reverse('questions.list', args=['all']))
+        response = self.client.get(questions_list)
+        doc = pq(response.content)
+        eq_(1, len(doc('#owner-tabs > .selected')))
+
+        # Test one tab is selected for all show args
+        show_args = ['needs-attention', 'responded', 'done', 'all']
+        for show_arg in show_args:
+            questions_list = urlparams(reverse('questions.list', args=['all']), show=show_arg)
+            response = self.client.get(questions_list)
+            doc = pq(response.content)
+            eq_(1, len(doc('#owner-tabs > .selected')))
+
     def test_product_filter(self):
         p1 = ProductFactory()
         p2 = ProductFactory()
@@ -1228,7 +1243,7 @@ class QuestionsTemplateTestCase(TestCaseBase):
         doc = pq(response.content)
         tag = doc('#question-{id} .tag-list li img'.format(id=q.id))
         # Even though there are no tags, the product should be displayed.
-        assert 'logo-{}'.format(p.slug) in tag.attr('class')
+        assert 'logo-sprite-tiny' in tag.attr('class')
 
 
 class QuestionsTemplateTestCaseNoFixtures(TestCase):
@@ -1518,6 +1533,21 @@ class AAQTemplateTestCase(TestCaseBase):
         response = self.client.get(url)
         eq_(200, response.status_code)
         assert '/questions/new' not in pq(response.content)('#aux-nav').html()
+
+    def test_register_through_aaq_in_mobile_has_csrf(self):
+        """Registration form in the AAQ Mobile has a CSRF token"""
+        l = QuestionLocale.objects.get(locale=settings.LANGUAGE_CODE)
+        p = ProductFactory(slug='firefox')
+        p.questions_locales.add(l)
+        TopicFactory(slug='fix-problems', product=p)
+
+        self.client.logout()
+        url = reverse('questions.aaq_step5', args=['desktop', 'fix-problems'])
+        url = urlparams(url, search='test')
+
+        response = self.client.get(url, {'mobile': 1}, follow=True)
+        doc = pq(response.content)
+        assert doc('#register-form form input[name="csrfmiddlewaretoken"]')
 
 
 class ProductForumTemplateTestCase(TestCaseBase):

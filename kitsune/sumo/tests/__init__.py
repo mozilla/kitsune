@@ -16,10 +16,13 @@ from django.utils.translation import trans_real
 
 import django_nose
 import factory.fuzzy
+from elasticutils.contrib.django import get_es
 from nose.tools import eq_
 from pyquery import PyQuery
 from waffle.models import Flag
 
+from kitsune.search import es_utils
+from kitsune.search.models import generate_tasks
 from kitsune.sumo.urlresolvers import reverse, split_path
 
 
@@ -43,15 +46,6 @@ def post(client, url, data={}, **kwargs):
 class TestSuiteRunner(django_nose.NoseTestSuiteRunner):
     """This is a test runner that pulls in settings_test.py."""
     def setup_test_environment(self, **kwargs):
-        # If we have a settings_test.py let's roll it into our settings.
-        try:
-            from kitsune import settings_test
-            # Use setattr to update Django's proxies:
-            for k in dir(settings_test):
-                setattr(settings, k, getattr(settings_test, k))
-        except ImportError:
-            pass
-
         if not getenv('REUSE_STATIC', 'false').lower() in ('true', '1', ''):
             # Collect static files for pipeline to work correctly--do this with
             # subprocess instead of directly calling the admin command,
@@ -64,15 +58,73 @@ class TestSuiteRunner(django_nose.NoseTestSuiteRunner):
         super(TestSuiteRunner, self).setup_test_environment(**kwargs)
 
 
-@override_settings(ES_LIVE_INDEX=False)
+@override_settings(ES_LIVE_INDEXING=False)
 class TestCase(OriginalTestCase):
     """TestCase that skips live indexing."""
+    skipme = False
+
     def _pre_setup(self):
         cache.clear()
         trans_real.deactivate()
         trans_real._translations = {}  # Django fails to clear this cache.
         trans_real.activate(settings.LANGUAGE_CODE)
         super(TestCase, self)._pre_setup()
+
+    def reindex_and_refresh(self):
+        """Reindexes anything in the db"""
+        from kitsune.search.es_utils import es_reindex_cmd
+        es_reindex_cmd()
+        self.refresh(run_tasks=False)
+
+    def setup_indexes(self, empty=False, wait=True):
+        """(Re-)create write index"""
+        from kitsune.search.es_utils import recreate_indexes
+        recreate_indexes()
+        get_es().cluster.health(wait_for_status='yellow')
+
+    def teardown_indexes(self):
+        """Tear down write index"""
+        for index in es_utils.all_write_indexes():
+            es_utils.delete_index(index)
+
+    @classmethod
+    def setUpClass(cls):
+        super(TestCase, cls).setUpClass()
+
+        if not getattr(settings, 'ES_URLS'):
+            cls.skipme = True
+            return
+
+        # try to connect to ES and if it fails, skip ElasticTestCases.
+        if not get_es().ping():
+            cls.skipme = True
+            return
+
+    def setUp(self):
+        if self.skipme:
+            raise SkipTest
+
+        super(TestCase, self).setUp()
+        self.setup_indexes()
+
+    def tearDown(self):
+        super(TestCase, self).tearDown()
+        self.teardown_indexes()
+
+    def refresh(self, run_tasks=True):
+        es = get_es()
+
+        if run_tasks:
+            # Any time we're doing a refresh, we're making sure that
+            # the index is ready to be queried. Given that, it's
+            # almost always the case that we want to run all the
+            # generated tasks, then refresh.
+            generate_tasks()
+
+        for index in es_utils.all_write_indexes():
+            es.indices.refresh(index=index)
+
+        es.cluster.health(wait_for_status='yellow')
 
 
 def attrs_eq(received, **expected):

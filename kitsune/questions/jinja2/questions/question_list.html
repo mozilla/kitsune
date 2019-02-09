@@ -57,10 +57,9 @@
             {% endif %}
           </h3>
         </div>
+        <div class="progress-bar-percent">{{ _('Progress:') }} <strong>{{ recent_answered_percent }}%</strong></div>
         <div class="progress-bar {% if recent_answered_percent == 100 %} complete{% endif %}">
-          <div style="width: {{ recent_answered_percent }}%;">
-            <span>{{ recent_answered_percent }}%</span>
-          </div>
+          <div style="width: {{ recent_answered_percent }}%;"></div>
         </div>
       </div>
       {% if tags %}
@@ -79,31 +78,31 @@
 
     <div class="grid_9">
       <div id="owner-tabs" class="cf">
-        <a href="{{ questions_url(show='needs-attention', filter=None, page=None) }}" {{ show|class_selected('needs-attention') }}>{{ _('Attention needed') }}</a>
-        <a href="{{ questions_url(show='responded', filter=None, page=None) }}" {{ show|class_selected('responded') }}>{{ _('Responded') }}</a>
-        <a href="{{ questions_url(show='done', filter=None, page=None) }}" {{ show|class_selected('done') }}>{{ _('Done') }}</a>
-        <a href="{{ questions_url(show='all', filter=None, page=None) }}" {{ show|class_selected('all') }}>{{ _('All questions') }}</a>
+        <a href="{{ questions_url(show='needs-attention', filter=None, page=None) }}" {{ show|class_selected('needs-attention') }}>
+          {% include "includes/icons/alert-icon.svg" %}
+          {{ _('Attention needed') }}
+        </a>
+        <a href="{{ questions_url(show='responded', filter=None, page=None) }}" {{ show|class_selected('responded') }}>
+          {% include "includes/icons/message-icon.svg" %}
+          {{ _('Responded') }}
+        </a>
+        <a href="{{ questions_url(show='done', filter=None, page=None) }}" {{ show|class_selected('done') }}>
+          {% include "includes/icons/check-icon.svg" %}
+          {{ _('Done') }}
+        </a>
+        <a href="{{ questions_url(show='all', filter=None, page=None) }}" {{ show|class_selected('all') }}>
+          {% include "includes/icons/list-icon.svg" %}
+          {{ _('All questions') }}
+        </a>
       </div>
     </div>
+
     <div class="grid_3">
       <section id="top-contributors">
-        <div class="feature-box">
+        {% set query_product = '?product={}'.format(products[0].slug) if products and products|length == 1 else '' %}
+        <a class="feature-box" href="{{ url('community.top_contributors', area='questions') }}{{ query_product }}">
           {{ _('Top Contributors') }}
-          <div class="inner-wrap">
-            {% if top_contributors %}
-              <ol>
-                {% for result in top_contributors[:5] %}
-                  <li>{{ result['user']['display_name'] }}</li>
-                {% endfor %}
-              </ol>
-              <ol start="6">
-                {% for result in top_contributors[5:] %}
-                  <li>{{ result['user']['display_name'] }}</li>
-                {% endfor %}
-              </ol>
-            {% endif %}
-          </div>
-        </div>
+        </a>
       </section>
     </div>
   </div>
@@ -117,10 +116,6 @@
           {% for question in questions.object_list %}
             <section id="question-{{ question.id }}" class="cf">
               <div class="question-meta {% if not question.num_answers %}urgent{% endif %}">
-                <div class="have-problem-this-week">
-                  <h4>{{ question.num_votes_past_week }}</h4>
-                  {{ _('votes this week') }}
-                </div>
                 <div class="replies">
                   <h4>{{ question.num_answers }}</h4>
                   {% trans count=question.num_answers %}
@@ -129,9 +124,18 @@
                     replies
                   {% endtrans %}
                 </div>
+                <div class="have-problem-this-week">
+                  <h4>{{ question.num_votes_past_week }}</h4>
+                  {{ _('votes this week') }}
+                </div>
                 {% if question.num_visits %}
                   <div class="views">
-                    {{ _('{num_views} views')|f(num_views=question.num_visits) }}
+                    <h4>{{ question.num_visits }}</h4>
+                    {% trans count=question.num_visits %}
+                      view
+                      {% pluralize %}
+                      views
+                    {% endtrans %}
                   </div>
                 {% endif %}
               </div>
@@ -155,31 +159,37 @@
                 <h2><a href="{{ question.get_absolute_url() }}">{{ question.title }}</a></h2>
                 {{ question.content_parsed|truncate_question(170, question.content_parsed)|safe }}
 
-                <div class="user-meta">
-                  {{ _('asked by <a href="{user_url}">{username}</a> {when}')|fe(user_url=profile_url(question.creator), username=display_name(question.creator), when=question.created|timesince) }}
+                <div class="user-meta cf">
+                  <div class="user-meta-asked-by">
+                    {{ _('asked by <a href="{user_url}">{username}</a> {when}')|fe(user_url=profile_url(question.creator), username=display_name(question.creator), when=question.created|timesince) }}
+                  </div>
                   {% if question.solution %}
-                    <br>{{ _('answered by <a href="{user_url}">{username}</a> {when}')|fe(user_url=profile_url(question.solution.creator), username=display_name(question.solution.creator), when=question.solution.created|timesince) }}
+                    <div class="user-meta-answered-by">
+                      {{ _('answered by <a href="{user_url}">{username}</a> {when}')|fe(user_url=profile_url(question.solution.creator), username=display_name(question.solution.creator), when=question.solution.created|timesince) }}
+                    </div>
                   {% else %}
                     {% if question.last_answer %}
-                      <br>{{ _('<a href="{reply_url}">last reply</a> by <a href="{user_url}">{username}</a> {when}')|fe(reply_url=question.last_answer.get_absolute_url(), user_url=profile_url(question.last_answer.creator), username=display_name(question.last_answer.creator), when=question.last_answer.created|timesince) }}
+                      <div class="user-meta-answered-by">
+                        {{ _('<a href="{reply_url}">last reply</a> by <a href="{user_url}">{username}</a> {when}')|fe(reply_url=question.last_answer.get_absolute_url(), user_url=profile_url(question.last_answer.creator), username=display_name(question.last_answer.creator), when=question.last_answer.created|timesince) }}
+                      </div>
                     {% endif %}
                   {% endif %}
                 </div>
 
                 {% set tags = question.my_tags %}
                 <ul class="tag-list">
-                  {% if question.topic %}
-                    {% set topic = question.topic %}
-                    <li>
-                      <a href="{{ url('questions.list', topic.product.slug)|urlparams(None, request.GET, topic=None) }}">
-                        <img src="{{ STATIC_URL }}sumo/img/blank.png" class="logo-sprite-tiny logo-{{ topic.product.slug }}">
-                        {{ pgettext('DB: products.Product.title', topic.product.title) }}
-                      </a>
-                    </li>
-                  {% endif %}
-                  {% for tag in tags %}
-                    <li><a class="tag-name" href="{{ questions_url(tagged=tag.slug) }}">{{ tag }}</a></li>
-                  {% endfor %}
+                {% if question.topic %}
+                  {% set topic = question.topic %}
+                  <li>
+                    <a href="{{ url('questions.list', topic.product.slug)|urlparams(None, request.GET, topic=None) }}">
+                      <img src="{{ topic.product.image_alternate_url }}" class="logo-sprite-tiny">
+                      {{ pgettext('DB: products.Product.title', topic.product.title) }}
+                    </a>
+                  </li>
+                {% endif %}
+                {% for tag in tags %}
+                  <li><a class="tag-name" href="{{ questions_url(tagged=tag.slug) }}">{{ tag }}</a></li>
+                {% endfor %}
                 </ul>
               </div>
             </section>
@@ -187,8 +197,7 @@
         </article>
         {{ questions|quick_paginator }}
       {% else %}
-        {# Not localized because it's not worth localizers time. #}
-        <p>There are no questions that match the current filter settings.</p>
+        <p>{{ _('There are no questions that match the current filter settings.') }}</p>
       {% endif %}
     </div>
 

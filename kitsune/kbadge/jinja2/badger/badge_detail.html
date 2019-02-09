@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% set crumbs = [(url('badger.badges_list'), _('Badges')), (None, pgettext('DB: badger.Badge.title', badge.title))] %}
+{% set crumbs = [(url('kbadge.badges_list'), _('Badges')), (None, pgettext('DB: badger.Badge.title', badge.title))] %}
 {% set styles=('badges',) %}
 
 {% block content %}
@@ -24,7 +24,7 @@
 
     {% if badge.creator %}
       <dt>{{ _('Creator:') }}</dt>
-      <dd><a href="{{ profile_url(badge.creator) }}">{{ badge.creator }}</a></dd>
+      <dd><a href="{{ profile_url(badge.creator) }}">{{ display_name(badge.creator) }}</a></dd>
     {% endif %}
 
     <dt>{{ _('Created:') }}</dt>

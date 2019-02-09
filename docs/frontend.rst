@@ -4,7 +4,7 @@ Frontend Infrastructure
 
 Frontends assets for Kitsune are managed through `Django Pipeline`_.
 
-.. _Django Pipeline: https://django-pipeline.readthedocs.org/en/latest/
+.. _Django Pipeline: https://django-pipeline.readthedocs.io/
 
 
 Bundles

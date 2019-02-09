@@ -1,11 +1,82 @@
-from django.http import HttpResponsePermanentRedirect
+from django.http import HttpResponsePermanentRedirect, HttpResponse
+from django.test import override_settings
 from django.test.client import RequestFactory
 
 import mobility
 from nose.tools import eq_
 
-from kitsune.sumo.middleware import PlusToSpaceMiddleware, DetectMobileMiddleware
+from kitsune.sumo.middleware import (
+    PlusToSpaceMiddleware,
+    DetectMobileMiddleware,
+    CacheHeadersMiddleware,
+    EnforceHostIPMiddleware,
+)
 from kitsune.sumo.tests import TestCase, PyQuery as pq
+
+
+@override_settings(ENFORCE_HOST=['support.mozilla.org', 'all-your-base.are-belong-to.us'])
+class EnforceHostIPMiddlewareTestCase(TestCase):
+    def _get_response(self, hostname):
+        mw = EnforceHostIPMiddleware()
+        rf = RequestFactory()
+        return mw.process_request(rf.get('/', HTTP_HOST=hostname))
+
+    def test_valid_domain(self):
+        resp = self._get_response('support.mozilla.org')
+        self.assertIsNone(resp)
+
+    def test_valid_ip_address(self):
+        resp = self._get_response('192.168.200.200')
+        self.assertIsNone(resp)
+        # with port
+        resp = self._get_response('192.168.200.200:443')
+        self.assertIsNone(resp)
+
+    def test_invalid_domain(self):
+        resp = self._get_response('none-of-ur-base.are-belong-to.us')
+        assert isinstance(resp, HttpResponsePermanentRedirect)
+
+
+class CacheHeadersMiddlewareTestCase(TestCase):
+    def setUp(self):
+        self.rf = RequestFactory()
+        self.mw = CacheHeadersMiddleware()
+
+    @override_settings(CACHE_MIDDLEWARE_SECONDS=60)
+    def test_add_cache_control(self):
+        req = self.rf.get('/')
+        resp = HttpResponse('OK')
+        resp = self.mw.process_response(req, resp)
+        assert resp['cache-control'] == 'max-age=60'
+
+    @override_settings(CACHE_MIDDLEWARE_SECONDS=60)
+    def test_already_has_cache_control(self):
+        req = self.rf.get('/')
+        resp = HttpResponse('OK')
+        resp['cache-control'] = 'no-cache'
+        resp = self.mw.process_response(req, resp)
+        assert resp['cache-control'] == 'no-cache'
+
+    @override_settings(CACHE_MIDDLEWARE_SECONDS=60)
+    def test_non_200_response(self):
+        req = self.rf.get('/')
+        resp = HttpResponse('WHA?', status=404)
+        resp = self.mw.process_response(req, resp)
+        assert 'cache-control' not in resp
+
+    @override_settings(CACHE_MIDDLEWARE_SECONDS=0)
+    def test_middleware_seconds_0(self):
+        req = self.rf.get('/')
+        resp = HttpResponse('OK')
+        resp = self.mw.process_response(req, resp)
+        assert resp['cache-control'] == 'no-cache, no-store, must-revalidate, max-age=0'
+
+    @override_settings(CACHE_MIDDLEWARE_SECONDS=60)
+    def test_post_request(self):
+        req = self.rf.post('/')
+        resp = HttpResponse('OK')
+        resp = self.mw.process_response(req, resp)
+        assert resp['cache-control'] == 'no-cache, no-store, must-revalidate, max-age=0'
 
 
 class TrailingSlashMiddlewareTestCase(TestCase):
@@ -31,6 +102,8 @@ class PlusToSpaceTestCase(TestCase):
     def test_plus_to_space(self):
         """Pluses should be converted to %20."""
         request = self.rf.get('/url+with+plus')
+        # should work without a QUERY_STRING key in META
+        del request.META['QUERY_STRING']
         response = self.ptsm.process_request(request)
         assert isinstance(response, HttpResponsePermanentRedirect)
         eq_('/url%20with%20plus', response['location'])

@@ -25,13 +25,12 @@ import waffle
 from ordereddict import OrderedDict
 from mobility.decorators import mobile_template
 from session_csrf import anonymous_csrf
-from statsd import statsd
+from django_statsd.clients import statsd
 from taggit.models import Tag
 from tidings.events import ActivationRequestFailed
 from tidings.models import Watch
 
 from kitsune.access.decorators import permission_required, login_required
-from kitsune.community.utils import top_contributors_questions
 from kitsune.products.api import ProductSerializer, TopicSerializer
 from kitsune.products.models import Product, Topic
 from kitsune.questions import config
@@ -73,6 +72,7 @@ log = logging.getLogger('k.questions')
 
 UNAPPROVED_TAG = _lazy(u'That tag does not exist.')
 NO_TAG = _lazy(u'Please provide a tag.')
+IMG_LIMIT = settings.IMAGE_ATTACHMENT_USER_LIMIT
 
 FILTER_GROUPS = {
     'all': OrderedDict([
@@ -111,6 +111,10 @@ def product_list(request, template):
 @mobile_template('questions/{mobile/}question_list.html')
 def question_list(request, template, product_slug):
     """View the list of questions."""
+    if settings.DISABLE_QUESTIONS_LIST_GLOBAL:
+        messages.add_message(request, messages.WARNING,
+                             'You cannot list questions at this time.')
+        return HttpResponseRedirect('/')
 
     filter_ = request.GET.get('filter')
     owner = request.GET.get(
@@ -138,6 +142,11 @@ def question_list(request, template, product_slug):
         multiple = len(products) > 1
     else:
         # We want all products (no product filtering at all).
+        if settings.DISABLE_QUESTIONS_LIST_ALL:
+            messages.add_message(request, messages.WARNING,
+                                 'You cannot list all questions at this time.')
+            return HttpResponseRedirect('/')
+
         products = None
         multiple = True
 
@@ -235,10 +244,8 @@ def question_list(request, template, product_slug):
 
     # Filter by locale for AAQ locales, and by locale + default for others.
     if request.LANGUAGE_CODE in QuestionLocale.objects.locales_list():
-        forum_locale = request.LANGUAGE_CODE
         locale_query = Q(locale=request.LANGUAGE_CODE)
     else:
-        forum_locale = settings.WIKI_DEFAULT_LANGUAGE
         locale_query = Q(locale=request.LANGUAGE_CODE)
         locale_query |= Q(locale=settings.WIKI_DEFAULT_LANGUAGE)
 
@@ -290,20 +297,6 @@ def question_list(request, template, product_slug):
     if request.user.is_authenticated():
         request.session['questions_owner'] = owner
 
-    # Get the top contributors for the locale and product.
-    # If we are in a product forum, limit the top contributors to that product.
-    if products and len(products) == 1:
-        product = products[0]
-    else:
-        product = None
-    try:
-        top_contributors, _ = top_contributors_questions(
-            locale=forum_locale, product=product)
-    except ES_EXCEPTIONS:
-        top_contributors = []
-        statsd.incr('questions.topcontributors.eserror')
-        log.exception('Support Forum Top contributors query failed.')
-
     data = {'questions': questions_page,
             'feeds': feed_urls,
             'filter': filter_,
@@ -324,7 +317,6 @@ def question_list(request, template, product_slug):
             'product_slug': product_slug,
             'multiple_products': multiple,
             'all_products': product_slug == 'all',
-            'top_contributors': top_contributors,
             'topic_list': topic_list,
             'topic': topic}
 
@@ -414,8 +406,9 @@ def question_details(request, template, question_id, form=None,
 
     if request.user.is_authenticated():
         ct = ContentType.objects.get_for_model(request.user)
-        ans_['images'] = ImageAttachment.objects.filter(creator=request.user,
-                                                        content_type=ct)
+        ans_['images'] = list(ImageAttachment.objects.filter(creator=request.user, content_type=ct)
+                                             .only('id', 'creator_id', 'file', 'thumbnail')
+                                             .order_by('-id')[:IMG_LIMIT])
 
     extra_kwargs.update(ans_)
 
@@ -424,11 +417,13 @@ def question_details(request, template, question_id, form=None,
 
     related_documents = question.related_documents
     related_questions = question.related_questions
+    question_images = question.get_images()
 
     extra_kwargs.update({'all_products': products, 'all_topics': topics,
                          'product': question.product, 'topic': question.topic,
                          'related_documents': related_documents,
-                         'related_questions': related_questions})
+                         'related_questions': related_questions,
+                         'question_images': question_images})
 
     if not request.MOBILE:
         # Add noindex to questions without a solution.
@@ -480,7 +475,10 @@ def aaq_react(request):
     if request.user.is_authenticated():
         user_ct = ContentType.objects.get_for_model(request.user)
         images = ImageAttachmentSerializer(
-            ImageAttachment.objects.filter(creator=request.user, content_type=user_ct), many=True)
+            ImageAttachment.objects.filter(
+                creator=request.user,
+                content_type=user_ct,
+            ).order_by('-id')[:IMG_LIMIT], many=True)
         ctx['images_json'] = to_json(images.data)
     else:
         ctx['images_json'] = to_json([])
@@ -521,14 +519,20 @@ def aaq(request, product_key=None, category_key=None, showform=False,
     if product_key is None:
         product_key = request.GET.get('product')
         if request.MOBILE and product_key is None:
+            ua = request.META.get('HTTP_USER_AGENT', '').lower()
+
             # Firefox OS is weird. The best way we can detect it is to
             # look for a mobile Firefox that is not Android.
-            ua = request.META.get('HTTP_USER_AGENT', '').lower()
             if 'firefox' in ua and 'android' not in ua:
                 product_key = 'firefox-os'
+            # 'Rocket' is currently in the UA and is expected to remain
+            # https://github.com/mozilla-tw/FirefoxLite/issues/3004#issuecomment-455245375
+            elif 'rocket' in ua:
+                product_key = 'firefox-lite'
             elif 'fxios' in ua:
                 product_key = 'ios'
             else:
+                # android
                 product_key = 'mobile'
 
     product_config = config.products.get(product_key)
@@ -719,7 +723,8 @@ def aaq(request, product_key=None, category_key=None, showform=False,
 
         qst_ct = ContentType.objects.get_for_model(question)
         # Move over to the question all of the images I added to the reply form
-        up_images = ImageAttachment.objects.filter(creator=request.user, content_type=user_ct)
+        up_images = ImageAttachment.objects.filter(creator=request.user,
+                                                   content_type=user_ct)
         up_images.update(content_type=qst_ct, object_id=question.id)
 
         # User successfully submitted a new question
@@ -758,8 +763,10 @@ def aaq(request, product_key=None, category_key=None, showform=False,
     if getattr(request, 'limited', False):
         raise PermissionDenied
 
-    images = ImageAttachment.objects.filter(creator=request.user,
-                                            content_type=user_ct)
+    images = ImageAttachment.objects.filter(
+        creator=request.user,
+        content_type=user_ct,
+    ).order_by('-id')[:IMG_LIMIT]
 
     statsd.incr('questions.aaq.details-form-error')
     return render(request, template, {
@@ -826,7 +833,8 @@ def edit_question(request, question_id):
         raise PermissionDenied
 
     ct = ContentType.objects.get_for_model(question)
-    images = ImageAttachment.objects.filter(content_type=ct, object_id=question.pk)
+    images = ImageAttachment.objects.filter(content_type=ct,
+                                            object_id=question.pk)
 
     if request.method == 'GET':
         initial = question.metadata.copy()
@@ -1407,7 +1415,9 @@ def watch_question(request, question_id):
         else:
             tmpl = 'questions/includes/email_subscribe.html'
 
-        html = render_to_string(tmpl, {'question': question, 'watch_form': form})
+        html = render_to_string(tmpl,
+                                context={'question': question, 'watch_form': form},
+                                request=request)
         return HttpResponse(json.dumps({'html': html}))
 
     if msg:

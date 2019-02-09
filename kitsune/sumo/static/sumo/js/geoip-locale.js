@@ -1,4 +1,4 @@
-/* globals $:false, interpolate:false, _gaq:false */
+/* globals $:false, interpolate:false, trackEvent:false */
 /* Please do not directly use this code or SUMO key. */
 /* Contact MLS team for your own credentials. */
 /* https://location.services.mozilla.com/contact */
@@ -91,7 +91,7 @@ function handleLocale(countryName) {
         $message.append($('<button class="btn cancel" />').text(data[suggestedLocale].cancel));
       }
 
-      _gaq.push(['_trackEvent', 'Geo IP Targeting', 'show banner']);
+      trackEvent('Geo IP Targeting', 'show banner');
     })
     .error(function(err) {
       console.error('GeoIP suggestion error', err);
@@ -106,7 +106,7 @@ function handleLocale(countryName) {
       var $this = $(this);
       $announceBar.find('.close-button').click();
       if ($this.hasClass('confirm')) {
-        _gaq.push(['_trackEvent', 'Geo IP Targeting', 'click yes']);
+        trackEvent('Geo IP Targeting', 'click yes');
         // Delay the click navigation by 250ms to ensure the event is tracked.
         setTimeout(function() {
           var newQsVar = 'lang=' + suggestedLocale;
@@ -118,7 +118,7 @@ function handleLocale(countryName) {
           window.location.search += newQsVar;
         }, 250);
       } else {
-        _gaq.push(['_trackEvent', 'Geo IP Targeting', 'click no']);
+        trackEvent('Geo IP Targeting', 'click no');
       }
     });
 

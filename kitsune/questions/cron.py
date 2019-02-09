@@ -113,9 +113,6 @@ def auto_archive_old_questions():
 @cronjobs.register
 def reload_question_traffic_stats():
     """Reload question views from the analytics."""
-    if settings.STAGE:
-        return
-
     QuestionVisits.reload_from_analytics(verbose=settings.DEBUG)
 
 
@@ -127,8 +124,6 @@ def escalate_questions():
     still have no replies after 24 hours, but not that are older
     than 25 hours (this runs every hour).
     """
-    if settings.STAGE:
-        return
     # Get all the questions that need attention and haven't been escalated.
     qs = Question.objects.needs_attention().exclude(
         tags__slug__in=[config.ESCALATE_TAG_NAME])

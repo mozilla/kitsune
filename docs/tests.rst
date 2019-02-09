@@ -179,7 +179,8 @@ Installing dependencies
 Follow the steps in :ref:`the installation docs <hacking-howto-chapter>`,
 including the test dependencies to make sure you have everything you need to
 run the tests. If you're running the tests against a deployed environment then
-there's no need to install anything other than the test dependencies.
+there's no need to install anything other than
+`Tox <http://tox.readthedocs.io/en/latest/install.html>`_.
 
 Create test users
 -----------------
@@ -198,7 +199,7 @@ your test accounts.
 The credentials associated with the test users are stored in a JSON file, which
 we then pass to the tests via the command line. If you used the above mentioned
 script, then these users are stored in ``/scripts/travis/variables.json``. The
-variable file needs to be referenced on the command line when running the
+variables file needs to be referenced on the command line when running the
 tests.
 
 The following is an example JSON file with the values missing. You can use this
@@ -230,28 +231,43 @@ the tests:
 
 To run all of the desktop tests against the default environment::
 
-  $ py.test --driver Firefox --variables my_variables.json tests/functional/desktop
+  $ PYTEST_ADDOPTS=--variables=my_variables.json
+  $ tox -e desktop
 
 To run against a different environment, pass in a value for ``--base-url``,
 like so::
 
-  $ py.test --base-url https://support.allizom.org --driver Firefox --variables my_variables.json tests/functional/desktop
+  $ PYTEST_ADDOPTS=--base-url=https://support.allizom.org
+  $ PYTEST_ADDOPTS="${PYTEST_ADDOPTS} --variables=my_variables.json"
+  $ tox -e desktop
 
 To run the mobile tests you will need to target a mobile device or emulator
-using a tool like `Appium <http://appium.io/>`_::
+using a tool like `Appium <http://appium.io/>`_. You can create a suitable
+variables file with the necessary capabilities like so:
 
-  $ py.test --driver Remote --port 4723 \
-  --capability platformName iOS \
-  --capability platformVersion 9.2 \
-  --capability deviceName "iPhone 6" \
-  --capability browserName Safari \
-  --variables my_variables.json \
-  tests/functional/mobile
+.. code:: json
+
+     {
+       "capabilities": {
+         "platformName": "iOS",
+         "platformVersion": "9.2",
+         "deviceName": "iPhone 6",
+         "browserName": "Safari",
+       }
+     }
+
+Then you can run this like so::
+
+  $ PYTEST_ADDOPTS=--driver=Remote
+  $ PYTEST_ADDOPTS="${PYTEST_ADDOPTS} --port=4723"
+  $ PYTEST_ADDOPTS="${PYTEST_ADDOPTS} --variables=capabilities.json"
+  $ PYTEST_ADDOPTS="${PYTEST_ADDOPTS} --variables=my_variables.json"
+  $ tox -e mobile
 
 Alternatively, if you run the mobile tests in Firefox the user agent will be
 changed to masquerade as a mobile browser.
 
 The pytest plugin that we use for running tests has a number of advanced
 command line options available. To see the options available, run
-``py.test --help``. The full documentation for the plugin can be found
-`here <http://pytest-selenium.readthedocs.org/>`_.
+``pytest --help``. The full documentation for the plugin can be found
+`here <https://pytest-selenium.readthedocs.io/>`_.

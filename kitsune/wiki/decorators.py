@@ -3,7 +3,7 @@ from functools import wraps
 from django import http
 from django.conf import settings
 
-from statsd import statsd
+from django_statsd.clients import statsd
 
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.wiki.config import SIMPLE_WIKI_LANDING_PAGE_SLUG

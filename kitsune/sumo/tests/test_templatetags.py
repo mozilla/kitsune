@@ -5,6 +5,7 @@ from datetime import datetime
 from django.forms.fields import CharField
 from django.test.client import RequestFactory
 
+import jinja2
 from babel.dates import format_date, format_time, format_datetime
 from nose.tools import eq_, assert_raises
 from pyquery import PyQuery as pq
@@ -13,7 +14,7 @@ from pytz import timezone
 from kitsune.sumo.templatetags.jinja_helpers import (
     datetimeformat, DateTimeFormatError, collapse_linebreaks, url, json,
     timesince, label_with_help, static, urlparams, yesno, number,
-    remove, f, fe)
+    remove, f, fe, class_selected)
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
 
@@ -232,3 +233,22 @@ class TestFormat(TestCase):
         var = u'Pśetergnuś'
         # Note that the format string is not a unicode string.
         eq_(fe('{0}', var), var)
+
+
+class TestClassSelected(TestCase):
+    """Test class_selected"""
+
+    def test_is_escaped(self):
+        value_returned = class_selected(1, 1)
+        type_expected = jinja2.Markup
+        eq_(type(value_returned), type_expected)
+
+    def test_is_selected(self):
+        value_returned = class_selected(1, 1)
+        value_expected = 'class="selected"'
+        eq_(value_returned, value_expected)
+
+    def test_is_not_selected(self):
+        value_returned = class_selected(0, 1)
+        value_expected = ''
+        eq_(value_returned, value_expected)

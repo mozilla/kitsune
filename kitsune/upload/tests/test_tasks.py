@@ -162,7 +162,7 @@ class CompressImageTestCase(TestCase):
             image.file.save(up_file.name, up_file, save=True)
         return image
 
-    @mock.patch.object(settings._wrapped, 'OPTIPNG_PATH', '')
+    @mock.patch.object(settings._wrapped, 'OPTIPNG_PATH', '/dude')
     @mock.patch.object(kitsune.upload.tasks.subprocess, 'call')
     def test_compressed_image_default(self, call):
         """uploaded image is compressed."""
@@ -170,7 +170,7 @@ class CompressImageTestCase(TestCase):
         compress_image(image, 'file')
         assert call.called
 
-    @mock.patch.object(settings._wrapped, 'OPTIPNG_PATH', '')
+    @mock.patch.object(settings._wrapped, 'OPTIPNG_PATH', '/dude')
     @mock.patch.object(kitsune.upload.tasks.subprocess, 'call')
     def test_compress_no_file(self, call):
         """compress_image does not fail when no file is provided."""
@@ -178,7 +178,7 @@ class CompressImageTestCase(TestCase):
         compress_image(image, 'file')
         assert not call.called
 
-    @mock.patch.object(settings._wrapped, 'OPTIPNG_PATH', None)
+    @mock.patch.object(settings._wrapped, 'OPTIPNG_PATH', '')
     @mock.patch.object(kitsune.upload.tasks.subprocess, 'call')
     def test_compress_no_compression_software(self, call):
         """compress_image does not fail when no compression software."""
@@ -186,7 +186,7 @@ class CompressImageTestCase(TestCase):
         compress_image(image, 'file')
         assert not call.called
 
-    @mock.patch.object(settings._wrapped, 'OPTIPNG_PATH', '')
+    @mock.patch.object(settings._wrapped, 'OPTIPNG_PATH', '/dude')
     @mock.patch.object(kitsune.upload.tasks.subprocess, 'call')
     def test_compressed_image_animated(self, call):
         """uploaded animated gif image is not compressed."""

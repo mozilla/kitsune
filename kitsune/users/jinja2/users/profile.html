@@ -148,7 +148,7 @@
       {% if profile.bio %}
         <section class="bio">
           <h2>{{ _('About {user}')|f(user=display_name(profile.user)) }}</h2>
-          {{ profile.bio|wiki_to_html(nofollow=True) }}
+          {{ profile.bio|wiki_to_safe_html(nofollow=True) }}
         </section>
       {% endif %}
       {% if groups %}
@@ -165,7 +165,7 @@
         <section class="badges cf">
           <h2>{{ _('Badges') }}</h2>
           {{ awards_list(awards) }}
-          <p><a href="{{ url('badger.badges_list') }}">{{ _('See all available SUMO badges') }}</a></p>
+          <p><a href="{{ url('kbadge.badges_list') }}">{{ _('See all available SUMO badges') }}</a></p>
         </section>
       {% endif %}
     </article>

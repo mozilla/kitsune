@@ -1,6 +1,6 @@
 {% from "includes/common_macros.html" import favicon with context %}
 <!DOCTYPE html>
-<html lang="{{ request.LANGUAGE_CODE }}" {% if dir %}dir="{{ dir }}"{% endif %} class="no-js">
+<html lang="{{ request.LANGUAGE_CODE }}"{% if dir %} dir="{{ dir }}"{% endif %}{% if settings.GTM_CONTAINER_ID %} data-gtm-container-id="{{ settings.GTM_CONTAINER_ID }}"{% endif %} class="no-js">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
@@ -31,12 +31,13 @@
 
   {% block head %}
   {% endblock %}
+
+  {% include "includes/google-analytics.html" %}
 </head>
 <body class="{{ classes }} minimal"
       data-readonly="{{ settings.READ_ONLY|json }}"
       data-static-url="{{ STATIC_URL }}"
       data-orientation="{% if page_align %}{{ page_align }}{% else %}right{% endif %}"
-      data-ga-push="{{ ga_push_attribute() }}"
       {% if ga_alternate_url %}
         data-ga-alternate-url="{{ ga_alternate_url }}"
       {% endif %}
