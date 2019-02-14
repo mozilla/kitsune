@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   var sCookiesFeedback = document.querySelector('#enable-cookies-submit-feedback');
   var sInsecureWarningFeedback = document.querySelector('#insecure-warning-submit-feedback');
+  var sInsecureWarningVideoFeedback = document.querySelector('#insecure-warning-submit-video-feedback');
 
   function postData(url, payload) {
     var xhr = new XMLHttpRequest();
@@ -37,24 +38,35 @@ document.addEventListener('DOMContentLoaded', function() {
 
   if (sCookiesFeedback !== null) {
     sCookiesFeedback.addEventListener('click', function(e) {
-      e.preventDefault();
+    e.preventDefault();
 
-      var formAction = 'https://docs.google.com/forms/u/1/d/e/1FAIpQLSeI-9VEpU2jRghTxvT2XXr2TVGopieqAIG04z6goSQ4-a4s1Q/formResponse'
-      var radioButton = document.querySelector('input[name="entry.437614058"]:checked');
-      var feedbackText = document.querySelector('#enable-cookies-feedback-text');
+    var formAction = 'https://docs.google.com/forms/u/1/d/e/1FAIpQLSeI-9VEpU2jRghTxvT2XXr2TVGopieqAIG04z6goSQ4-a4s1Q/formResponse';
+    var radioButton = document.querySelector('input[name="entry.437614058"]:checked');
+    var feedbackText = document.querySelector('#enable-cookies-feedback-text');
 
-      submitForm(formAction, radioButton, feedbackText);
+    submitForm(formAction, radioButton, feedbackText);
     });
   }
 
   if (sInsecureWarningFeedback !== null) {
     sInsecureWarningFeedback.addEventListener('click', function(e) {
-      e.preventDefault();
+    e.preventDefault();
 
-      var formAction = 'https://docs.google.com/forms/u/1/d/e/1FAIpQLSeQ6zNL1SNfTXJz_rZt5jtz76FUOFfPkAphLwrJf1SZdlItXQ/formResponse'
-      var radioButton = document.querySelector('input[name="entry.1877592314"]:checked');
-      var feedbackText = document.querySelector('#insecure-warning-feedback-text');
-      submitForm(formAction, radioButton, feedbackText);
+    var formAction = 'https://docs.google.com/forms/u/1/d/e/1FAIpQLSeQ6zNL1SNfTXJz_rZt5jtz76FUOFfPkAphLwrJf1SZdlItXQ/formResponse';
+    var radioButton = document.querySelector('input[name="entry.1877592314"]:checked');
+    var feedbackText = document.querySelector('#insecure-warning-feedback-text');
+    submitForm(formAction, radioButton, feedbackText);
+    });
+  }
+
+  if (sInsecureWarningVideoFeedback !== null) {
+    sInsecureWarningVideoFeedback.addEventListener('click', function(e) {
+    e.preventDefault();
+
+    var formAction = 'https://docs.google.com/forms/d/e/1FAIpQLSfql3Latc6U9EE7fgBrtFXfJSU7n5w_19H86wB7z8CYDgChiQ/formResponse';
+    var radioButton = document.querySelector('input[name="entry.575379247"]:checked');
+    var feedbackText = document.querySelector('#insecure-warning-video-feedback-text');
+    submitForm(formAction, radioButton, feedbackText);
     });
   }
 

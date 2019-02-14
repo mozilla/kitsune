@@ -265,7 +265,9 @@ def ux_experiment_view(request, document_slug):
         'enable_cookies_gform_mchoice_entry': 'entry.437614058',
         'enable_cookies_gform_textarea_entry': 'entry.134164855',
         'insecure_warning_gform_mchoice_entry': 'entry.1877592314',
-        'insecure_warning_gform_textarea_entry': 'entry.489053800'
+        'insecure_warning_gform_textarea_entry': 'entry.489053800',
+        'insecure_warning_gform_mchoice_video_entry': 'entry.575379247',
+        'insecure_warning_gform_textarea_video_entry': 'entry.530985177'
     }
     return render(request, 'kb-ux-experiment/{0}.html'.format(document_slug), ctx)
 

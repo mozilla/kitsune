@@ -35,9 +35,11 @@
                   <a href="/en-US/questions/new" class="ask" data-event-category="navigation" data-event-action="main navigation" data-event-label="Get Community Support">Get Community Support</a>
                 </li>
 
-                <li>
-                  <a href="/en-US/users/auth" class="sign-in register" data-event-category="navigation" data-event-action="main navigation" data-event-label="Sign In">Sign In</a>
-                </li>
+                {% if not user.is_authenticated() %}
+                  <li>
+                    <a href="/en-US/users/auth" class="sign-in register" data-event-category="navigation" data-event-action="main navigation" data-event-label="Sign In">Sign In</a>
+                  </li>
+                {% endif %}
 
                 <li>
                   <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24">
