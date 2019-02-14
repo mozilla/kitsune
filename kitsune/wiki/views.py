@@ -138,13 +138,7 @@ def document(request, document_slug, template=None, document=None):
         all([x not in request.META['HTTP_USER_AGENT'] for x in EXCLUDED_BROWSERS]) and
             doc.slug in SUMO_UX_EXPERIMENTS_SLUGS and request.LANGUAGE_CODE == 'en-US'):
 
-        ctx = {
-            'enable_cookies_gform_mchoice_entry': 'entry.437614058',
-            'enable_cookies_gform_textarea_entry': 'entry.134164855',
-            'insecure_warning_gform_mchoice_entry': 'entry.1877592314',
-            'insecure_warning_gform_textarea_entry': 'entry.489053800'
-        }
-        return render(request, 'kb-ux-experiment/{0}.html'.format(doc.slug), ctx)
+        return HttpResponseRedirect(reverse('wiki.ux_experiment_view', args=[doc.slug]))
 
     # Find and show the defined fallback locale rather than the English version of the document
     # The fallback locale is defined based on the ACCEPT_LANGUAGE header,
@@ -257,6 +251,23 @@ def document(request, document_slug, template=None, document=None):
     if minimal:
         response['X-Frame-Options'] = 'ALLOW'
     return response
+
+
+# Temporary view to hosts the OI UX experiments for 2 articles in the KB
+def ux_experiment_view(request, document_slug):
+    # If there is a direct request to this view
+    # and the flag is not active, redirect to the document view.
+    if (not flag_is_active(request, 'ux_experiment_1') or
+            document_slug not in SUMO_UX_EXPERIMENTS_SLUGS):
+        return HttpResponseRedirect(reverse('wiki.document', args=[document_slug]))
+
+    ctx = {
+        'enable_cookies_gform_mchoice_entry': 'entry.437614058',
+        'enable_cookies_gform_textarea_entry': 'entry.134164855',
+        'insecure_warning_gform_mchoice_entry': 'entry.1877592314',
+        'insecure_warning_gform_textarea_entry': 'entry.489053800'
+    }
+    return render(request, 'kb-ux-experiment/{0}.html'.format(document_slug), ctx)
 
 
 def revision(request, document_slug, revision_id):

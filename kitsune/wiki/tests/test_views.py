@@ -963,3 +963,104 @@ class FallbackSystem(TestCase):
         trans_content = 'This article is translated into bn-BD'
         assert en_content not in doc_content
         assert trans_content in doc_content
+
+
+class TestUXExperiments(TestCase):
+    """Test OI UX experiments.
+
+    The experiment page is rendered when:
+    * Locale is set to en-US
+    * User Agent is different than IE
+    * slug equals to 'enable-disable-cookies-website-preferences
+      or to 'insecure-password-warning-firefox'
+    * only when the waffle flag is active even if the url is visited directly
+    """
+
+    @mock.patch('kitsune.wiki.views.flag_is_active')
+    def test_rendered_template_en_US_locale(self, mocked_experiments_flag):
+        """Test that the static page is rendered for the en-US locale."""
+
+        mocked_experiments_flag.return_value = True
+        doc = DocumentFactory(slug='insecure-password-warning-firefox')
+        url = reverse('wiki.document', args=[doc.slug], locale='en-US')
+        client = Client(HTTP_USER_AGENT='Mozilla/5.0')
+        response = client.get(url)
+        # Check redirect is happening
+        eq_(response.status_code, 302)
+        # get the redirected url
+        response = client.get(url, follow=True)
+        eq_(response.status_code, 200)
+        assert template_used(response, 'kb-ux-experiment/insecure-password-warning-firefox.html')
+
+    @mock.patch('kitsune.wiki.views.flag_is_active')
+    def test_template_rendered_non_en_US_locale(self, mocked_experiments_flag):
+        """Test that the default template is used for a non en-US locale."""
+
+        mocked_experiments_flag.return_value = True
+        ProductFactory()
+        doc = DocumentFactory(slug='insecure-password-warning-firefox')
+        url = reverse('wiki.document', args=[doc.slug], locale='es')
+        client = Client(HTTP_USER_AGENT='Mozilla/5.0')
+        response = client.get(url, follow=True)
+        eq_(response.status_code, 200)
+        assert template_used(response, 'wiki/document.html')
+
+    @mock.patch('kitsune.wiki.views.flag_is_active')
+    def test_template_rendered_experiment_slug(self, mocked_experiments_flag):
+        """Test that both experiments slugs render the static templates."""
+        # Experiment enable-and-disable-cookies
+        mocked_experiments_flag.return_value = True
+        doc = DocumentFactory(slug='enable-and-disable-cookies-website-preferences')
+        url = reverse('wiki.document', args=[doc.slug], locale='en-US')
+        client = Client(HTTP_USER_AGENT='Mozilla/5.0')
+        response = client.get(url)
+        # Check redirect is happening
+        eq_(response.status_code, 302)
+        # get the redirected url
+        response = client.get(url, follow=True)
+        eq_(response.status_code, 200)
+        assert template_used(
+            response,
+            'kb-ux-experiment/enable-and-disable-cookies-website-preferences.html'
+        )
+        # Experiment insecure-password-warning
+        doc = DocumentFactory(slug='insecure-password-warning-firefox')
+        url = reverse('wiki.document', args=[doc.slug], locale='en-US')
+        client = Client(HTTP_USER_AGENT='Mozilla/5.0')
+        response = client.get(url)
+        # Check redirect is happening
+        eq_(response.status_code, 302)
+        # get the redirected url
+        response = client.get(url, follow=True)
+        eq_(response.status_code, 200)
+        assert template_used(response, 'kb-ux-experiment/insecure-password-warning-firefox.html')
+
+    @mock.patch('kitsune.wiki.views.flag_is_active')
+    def test_template_rendered_non_experiment_slug(self, mocked_experiments_flag):
+        """
+        Test that a slug that does not belong in the experiments renders the default template.
+        """
+        mocked_experiments_flag.return_value = True
+        ProductFactory()
+        doc = DocumentFactory(slug='a-slug')
+        url = reverse('wiki.document', args=[doc.slug], locale='en-US')
+        client = Client(HTTP_USER_AGENT='Mozilla/5.0')
+        response = client.get(url, follow=True)
+        eq_(response.status_code, 200)
+        assert template_used(response, 'wiki/document.html')
+
+    @mock.patch('kitsune.wiki.views.flag_is_active')
+    def test_redirect_from_experiment_view(self, mocked_experiments_flag):
+        """
+        Test redirect to the document view.
+
+        When the waffle flag is inactive and the experiment url is directly visited,
+        the user needs to be redirected to the document view.
+        """
+        mocked_experiments_flag.return_value = False
+        ProductFactory()
+        doc = DocumentFactory(slug='enable-and-disable-cookies-website-preferences')
+        url = reverse('wiki.document', args=[doc.slug], locale='en-US')
+        client = Client(HTTP_USER_AGENT='Mozilla/5.0')
+        response = client.get(url, follow=True)
+        assert template_used(response, 'wiki/document.html')
