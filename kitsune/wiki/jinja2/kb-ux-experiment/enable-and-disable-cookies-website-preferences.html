@@ -76,14 +76,18 @@
 
             <div class="categories-wrap">
               <div class="home">
-                <img src="https://prod-cdn.sumo.mozilla.net/uploads/products/2018-10-03-20-09-07-d6a5c9.png" height="48" width="48" alt="">
+                <img src="{{ STATIC_URL }}sumo/kb-ux-experiment/firefox-logo.9d8abef4.png" height="20" width="20" alt="">
                 <span>Firefox</span>
               </div>
 
               <div class="list">
                 <div class="acc">
                   <input id="acc-1" type="radio" name="acc-toggle" class="sr-only">
-                  <label for="acc-1" class="title">Basic Browsing</label>
+                  <label for="acc-1" class="title">
+                    <a href="https://support.mozilla.org/en-US/products/firefox/basic-browsing-firefox">
+                      Basic Browsing
+                    </a>
+                  </label>
 
                   <ul class="articles">
                     <li>
@@ -113,9 +117,14 @@
                     </li>
                   </ul>
                 </div>
+
                 <div class="acc">
                   <input id="acc-2" type="radio" name="acc-toggle" class="sr-only">
-                  <label for="acc-2" class="title">Install and update</label>
+                  <label for="acc-2" class="title">
+                    <a href="https://support.mozilla.org/en-US/products/firefox/install-and-update-firefox">
+                      Install and update
+                    </a>
+                  </label>
 
                   <ul class="articles">
                     <li>
@@ -130,16 +139,43 @@
                     </li>
                   </ul>
                 </div>
+
                 <div class="acc">
                   <input id="acc-3" type="radio" name="acc-toggle" class="sr-only">
-                  <label for="acc-3" class="title active">Protect your privacy</label>
+                  <label for="acc-3" class="title active">
+                    <a href="https://support.mozilla.org/en-US/products/firefox/protect-your-privacy">
+                      Protect your privacy
+                    </a>
+                  </label>
 
                   <ul class="articles">
-                    <li class="active">
-                      <a href="https://support.mozilla.org/en-US/products/firefox/protect-your-privacy/cookies">
-                        Cookies and Cache
-                      </a>
+                    <li>
+                      <input type="radio" id="acc-3-1" name="acc-toggle-1" class="sr-only" checked>
+                      <label class="title" for="acc-3-1">
+                        <a href="https://support.mozilla.org/en-US/products/firefox/protect-your-privacy/cookies">
+                          Cookies and Cache
+                        </a>
+                      </label>
+
+                      <ul class="articles">
+                        <li class="active">
+                          <a href="https://support.mozilla.org/en-US/kb/enable-and-disable-cookies-website-preferences">
+                            Enable and disable cookies that websites use to track your preferences
+                          </a>
+                        </li>
+                        <li>
+                          <a href="https://support.mozilla.org/en-US/kb/cookies-information-websites-store-on-your-computer">
+                            Cookies - Information that websites store on your computer
+                          </a>
+                        </li>
+                        <li>
+                          <a href="https://support.mozilla.org/en-US/kb/clear-cookies-and-site-data-firefox">
+                            Clear cookies and site data in Firefox
+                          </a>
+                        </li>
+                      </ul>
                     </li>
+
                     <li>
                       <a href="https://support.mozilla.org/en-US/kb/insecure-password-warning-firefox">
                         Insecure password
@@ -234,9 +270,11 @@
 
             <h1 id="w_how-do-i-change-cookie-settings">How do I change cookie settings?</h1>
 
-            <video controls="" poster="{{ STATIC_URL }}sumo/kb-ux-experiment/enable-and-disable-cookies.2c58ae49.png">
-              <source src="{{ STATIC_URL }}sumo/kb-ux-experiment/enable-and-disable-cookies.11196927.mp4">
-            </video>
+            <div class="video-container vote-js">
+              <video controls="" poster="{{ STATIC_URL }}sumo/kb-ux-experiment/enable-and-disable-cookies.2c58ae49.png">
+                <source src="{{ STATIC_URL }}sumo/kb-ux-experiment/enable-and-disable-cookies.11196927.mp4">
+              </video>
+            </div>
 
             <div class="note">
               <p><strong>Note:</strong></p>
@@ -245,29 +283,42 @@
 
             <ol>
               <li>Click the menu button <span class="for" data-for="not fx57" style="display: none;">
-                <img alt="New Fx Menu" class="wiki-image" data-original-src="https://prod-cdn.sumo.mozilla.net/uploads/gallery/images/2014-01-10-13-08-08-f52b8c.png" src="https://static-media-prod-cdn.sumo.mozilla.net/static/sumo/img/placeholder.gif" title="">
+                <img
+                  alt="New Fx Menu"
+                  class="wiki-image"
+                  data-original-src="https://prod-cdn.sumo.mozilla.net/uploads/gallery/images/2014-01-10-13-08-08-f52b8c.png"
+                  src="https://static-media-prod-cdn.sumo.mozilla.net/static/sumo/img/placeholder.gif"
+                  title=""
+                />
               </span><span class="for" data-for="fx57">
-                <img alt="Fx57Menu" class="wiki-image" data-original-src="https://prod-cdn.sumo.mozilla.net/uploads/gallery/images/2017-10-22-15-37-15-18c775.png" src="https://prod-cdn.sumo.mozilla.net/uploads/gallery/images/2017-10-22-15-37-15-18c775.png" title="">
+                <img
+                  alt="Fx57Menu"
+                  class="wiki-image"
+                  data-original-src="https://prod-cdn.sumo.mozilla.net/uploads/gallery/images/2017-10-22-15-37-15-18c775.png"
+                  src="https://prod-cdn.sumo.mozilla.net/uploads/gallery/images/2017-10-22-15-37-15-18c775.png"
+                  title=""
+                />
               </span> and choose <span class="for" data-for="win" style="display: none;">
                 <span class="button">Options</span>.</span><span class="for" data-for="mac,linux">
                   <span class="button highlighter">Preferences</span>.
                 </span>
               </li>
               <li>Select the <span class="menu highlighter">Privacy &amp; Security</span> panel and go to the
-                <span class="highlighter">Cookies
-                  and Site Data</span> section.
+                Cookies and Site Data section.
                 <dl>
                   <dt>
-                    <img alt="Fx63settings-AcceptCookies" class="wiki-image frameless" data-original-src="https://prod-cdn.sumo.mozilla.net/uploads/gallery/images/2018-09-09-04-16-52-97d510.png" src="https://prod-cdn.sumo.mozilla.net/uploads/gallery/images/2018-09-09-04-16-52-97d510.png" title="">
+                    <img alt="Fx63settings-AcceptCookies" class="wiki-image frameless"
+                      data-original-src="https://prod-cdn.sumo.mozilla.net/uploads/gallery/images/2018-09-09-04-16-52-97d510.png"
+                      src="https://prod-cdn.sumo.mozilla.net/uploads/gallery/images/2018-09-09-04-16-52-97d510.png"
+                      title="">
                   </dt>
                 </dl>
               </li>
 
-              <li> Select <span class="highlighter">Accept cookies and site data</span> to enable cookies. To
+              <li> Select Accept cookies and site data to enable cookies. To
                 disable cookies,
-                select <span class="highlighter">Block cookies and site data</span> and use the drop-down
-                menu next to
-                <span class="highlighter">Type blocked</span> to choose the type of cookies to block.
+                select Block cookies and site data and use the drop-down
+                menu next to Type blocked to choose the type of cookies to block.
                 <ul>
                   <li>For more information, see <a href="/en-US/kb/disable-third-party-cookies">Disable
                     third-party cookies in Firefox to stop some types of tracking by advertisers</a>.
@@ -277,43 +328,49 @@
 
               <li> Choose how long cookies are allowed to be stored:
                 <ul>
-                  <li> Keep until:<br><span class="highlighter">They expire</span>: Each cookie will be
+                  <li> Keep until:<br>They expire: Each cookie will be
                     removed when it
                     reaches its expiration date, which is set by the site that sent the
-                    cookie.<br><span class="highlighter">Firefox is closed</span>: The cookies that are
+                    cookie.<br>Firefox is closed: The cookies that are
                     stored on your
                     computer will be removed when Firefox is closed.
                   </li>
                 </ul>
               </li>
 
-              <li>Close the <span class="highlighter">about:preferences</span> page. Any changes you've made
-                will automatically be saved.<p></p></li>
+              <li>Close the about:preferences page. Any changes you've made
+                will automatically be saved.</li>
 
             </ol>
 
             <h1 id="w_websites-report-cookie-errors">Websites report errors</h1>
 
-            <p>If a website gives you an error message saying that you cannot accept
-              cookies,see <a href="/en-US/kb/websites-say-cookies-are-blocked-unblock-them" target="_blank" class="blue-text"> Websites say cookies are blocked -
-              Unblock them.</a></p>
+            <p>
+              If a website gives you an error message saying that you cannot accept
+              cookies,see
+              <a href="/en-US/kb/websites-say-cookies-are-blocked-unblock-them" target="_blank" class="blue-text">
+                Websites say cookies are blocked - Unblock them.
+              </a>
+            </p>
 
-            <div class="vote-wrap">
+            <div class="vote-wrap vote-js">
               <div class="document-vote">
                 <form class="helpful" action="/en-US/kb/enable-and-disable-cookies-website-preferences/vote" method="post">
                   <div class="header">Was this article helpful?</div>
                   <div class="votes">
                     <input type="hidden" name="revision_id" value="169359">
                     <input type="hidden" name="source" value="footer">
-                    <input type="submit" class="btn" name="helpful" value="👍"><input type="submit" class="btn" name="not-helpful" value="👎">
+                    <input type="submit" class="btn" name="helpful" value="👍">
+                    <input type="submit" class="btn" name="not-helpful" value="👎">
                     <img class="wait" src="https://static-media-prod-cdn.sumo.mozilla.net/static/sumo/img/customercare/spinner.gif" alt="Please wait...">
                   </div>
 
-                  <input type="hidden" name="referrer" value=""><input type="hidden" name="query" value="">
+                  <input type="hidden" name="referrer" value="">
+                  <input type="hidden" name="query" value="">
                 </form>
               </div>
 
-              <div id="not-helpful-container">
+              <div id="not-helpful-container" class="not-helpful-container">
                 <h4 class="title">Sorry to hear that. Tell more to help us improve the article</h4>
                 <form>
                   <label for="nh1">
@@ -339,7 +396,7 @@
                 </form>
               </div>
 
-              <div id="helpful-container">
+              <div id="helpful-container" class="helpful-container">
                 <p>
                   <svg width="16" height="12" viewbox="0 0 16 12" xmlns="http://www.w3.org/2000/svg">
                     <path d="M1 6l6 5 8-10" stroke="#12BC00" stroke-width="1.5" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round"></path>
@@ -411,14 +468,18 @@
               </div>
 
               <div class="prev">
-                <svg width="12" height="10" viewbox="0 0 12 10" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M1 5h9.307M7 1l4 4-4 4" fill-rule="nonzero" stroke="#FFF" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"></path>
-                </svg>
+                <div class="icon">
+                  <svg width="12" height="10">
+                    <path d="M8.5857864 4L6.2928932 1.7071068c-.3905243-.3905243-.3905243-1.0236893 0-1.4142136.3905243-.3905243 1.0236893-.3905243 1.4142136 0l4 4c.3905243.3905243.3905243 1.0236893 0 1.4142136l-4 4c-.3905243.3905243-1.0236893.3905243-1.4142136 0-.3905243-.3905243-.3905243-1.0236893 0-1.4142136L8.5857864 6H1c-.5522847 0-1-.4477153-1-1s.4477153-1 1-1h7.5857864z" fill="#FFF" fill-rule="nonzero"/>
+                  </svg>
+                </div>
               </div>
               <div class="next">
-                <svg width="12" height="10" viewbox="0 0 12 10" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M1 5h9.307M7 1l4 4-4 4" fill-rule="nonzero" stroke="#FFF" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"></path>
-                </svg>
+                <div class="icon">
+                  <svg width="12" height="10">
+                    <path d="M8.5857864 4L6.2928932 1.7071068c-.3905243-.3905243-.3905243-1.0236893 0-1.4142136.3905243-.3905243 1.0236893-.3905243 1.4142136 0l4 4c.3905243.3905243.3905243 1.0236893 0 1.4142136l-4 4c-.3905243.3905243-1.0236893.3905243-1.4142136 0-.3905243-.3905243-.3905243-1.0236893 0-1.4142136L8.5857864 6H1c-.5522847 0-1-.4477153-1-1s.4477153-1 1-1h7.5857864z" fill="#FFF" fill-rule="nonzero"/>
+                  </svg>
+                </div>
 
               </div>
             </div>
