@@ -23,7 +23,7 @@ from django.views.decorators.http import (require_GET, require_POST,
 
 from mobility.decorators import mobile_template
 from django_statsd.clients import statsd
-from waffle import flag_is_active
+from waffle import flag_is_active, switch_is_active
 
 from kitsune.access.decorators import login_required
 from kitsune.lib.sumo_locales import LOCALES
@@ -134,7 +134,8 @@ def document(request, document_slug, template=None, document=None):
             fallback_reason = 'no_translation'
 
     # Render the static pages if the slug matches the experiment
-    if (flag_is_active(request, 'ux_experiment_1') and
+    if (switch_is_active('ux_experiment_1') and
+        flag_is_active(request, 'ux_experiment_1') and
         all([x not in request.META['HTTP_USER_AGENT'] for x in EXCLUDED_BROWSERS]) and
             doc.slug in SUMO_UX_EXPERIMENTS_SLUGS and request.LANGUAGE_CODE == 'en-US'):
 
@@ -257,7 +258,7 @@ def document(request, document_slug, template=None, document=None):
 def ux_experiment_view(request, document_slug):
     # If there is a direct request to this view
     # and the flag is not active, redirect to the document view.
-    if (not flag_is_active(request, 'ux_experiment_1') or
+    if (not switch_is_active('ux_experiment_1') or
             document_slug not in SUMO_UX_EXPERIMENTS_SLUGS):
         return HttpResponseRedirect(reverse('wiki.document', args=[document_slug]))
 

@@ -976,10 +976,12 @@ class TestUXExperiments(TestCase):
     * only when the waffle flag is active even if the url is visited directly
     """
 
+    @mock.patch('kitsune.wiki.views.switch_is_active')
     @mock.patch('kitsune.wiki.views.flag_is_active')
-    def test_rendered_template_en_US_locale(self, mocked_experiments_flag):
+    def test_rendered_template_en_US_locale(self, mocked_experiments_flag, mocked_switch):
         """Test that the static page is rendered for the en-US locale."""
 
+        mocked_switch.return_value = True
         mocked_experiments_flag.return_value = True
         doc = DocumentFactory(slug='insecure-password-warning-firefox')
         url = reverse('wiki.document', args=[doc.slug], locale='en-US')
@@ -992,10 +994,12 @@ class TestUXExperiments(TestCase):
         eq_(response.status_code, 200)
         assert template_used(response, 'kb-ux-experiment/insecure-password-warning-firefox.html')
 
+    @mock.patch('kitsune.wiki.views.switch_is_active')
     @mock.patch('kitsune.wiki.views.flag_is_active')
-    def test_template_rendered_non_en_US_locale(self, mocked_experiments_flag):
+    def test_template_rendered_non_en_US_locale(self, mocked_experiments_flag, mocked_switch):
         """Test that the default template is used for a non en-US locale."""
 
+        mocked_switch.return_value = True
         mocked_experiments_flag.return_value = True
         ProductFactory()
         doc = DocumentFactory(slug='insecure-password-warning-firefox')
@@ -1005,10 +1009,12 @@ class TestUXExperiments(TestCase):
         eq_(response.status_code, 200)
         assert template_used(response, 'wiki/document.html')
 
+    @mock.patch('kitsune.wiki.views.switch_is_active')
     @mock.patch('kitsune.wiki.views.flag_is_active')
-    def test_template_rendered_experiment_slug(self, mocked_experiments_flag):
+    def test_template_rendered_experiment_slug(self, mocked_experiments_flag, mocked_switch):
         """Test that both experiments slugs render the static templates."""
         # Experiment enable-and-disable-cookies
+        mocked_switch.return_value = True
         mocked_experiments_flag.return_value = True
         doc = DocumentFactory(slug='enable-and-disable-cookies-website-preferences')
         url = reverse('wiki.document', args=[doc.slug], locale='en-US')
@@ -1035,11 +1041,13 @@ class TestUXExperiments(TestCase):
         eq_(response.status_code, 200)
         assert template_used(response, 'kb-ux-experiment/insecure-password-warning-firefox.html')
 
+    @mock.patch('kitsune.wiki.views.switch_is_active')
     @mock.patch('kitsune.wiki.views.flag_is_active')
-    def test_template_rendered_non_experiment_slug(self, mocked_experiments_flag):
+    def test_template_rendered_non_experiment_slug(self, mocked_experiments_flag, mocked_switch):
         """
         Test that a slug that does not belong in the experiments renders the default template.
         """
+        mocked_switch.return_value = True
         mocked_experiments_flag.return_value = True
         ProductFactory()
         doc = DocumentFactory(slug='a-slug')
@@ -1049,15 +1057,17 @@ class TestUXExperiments(TestCase):
         eq_(response.status_code, 200)
         assert template_used(response, 'wiki/document.html')
 
+    @mock.patch('kitsune.wiki.views.switch_is_active')
     @mock.patch('kitsune.wiki.views.flag_is_active')
-    def test_redirect_from_experiment_view(self, mocked_experiments_flag):
+    def test_redirect_from_experiment_view(self, mocked_experiments_flag, mocked_switch):
         """
         Test redirect to the document view.
 
-        When the waffle flag is inactive and the experiment url is directly visited,
+        When the waffle switch is inactive and the experiment url is directly visited,
         the user needs to be redirected to the document view.
         """
-        mocked_experiments_flag.return_value = False
+        mocked_switch.return_value = False
+        mocked_experiments_flag.return_value = True
         ProductFactory()
         doc = DocumentFactory(slug='enable-and-disable-cookies-website-preferences')
         url = reverse('wiki.document', args=[doc.slug], locale='en-US')
