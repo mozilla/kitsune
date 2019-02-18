@@ -138,6 +138,7 @@ def document(request, document_slug, template=None, document=None):
         flag_is_active(request, 'ux_experiment_1') and
         all([x not in request.META['HTTP_USER_AGENT'] for x in EXCLUDED_BROWSERS]) and
             doc.slug in SUMO_UX_EXPERIMENTS_SLUGS and request.LANGUAGE_CODE == 'en-US'):
+        request.session['ux_experiment_1_session_key'] = True
 
         return HttpResponseRedirect(reverse('wiki.ux_experiment_view', args=[doc.slug]))
 
@@ -259,9 +260,11 @@ def ux_experiment_view(request, document_slug):
     # If there is a direct request to this view
     # and the flag is not active, redirect to the document view.
     if (not switch_is_active('ux_experiment_1') or
-            document_slug not in SUMO_UX_EXPERIMENTS_SLUGS):
+        document_slug not in SUMO_UX_EXPERIMENTS_SLUGS or
+            'ux_experiment_1_session_key' not in request.session):
         return HttpResponseRedirect(reverse('wiki.document', args=[document_slug]))
 
+    del request.session['ux_experiment_1_session_key']
     ctx = {
         'enable_cookies_gform_mchoice_entry': 'entry.437614058',
         'enable_cookies_gform_textarea_entry': 'entry.134164855',
