@@ -1,4 +1,17 @@
 function fn() {
+    // no-scroll for iOs
+    (function() {
+        var iOS = !!navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform);
+
+        if(iOS) {
+            document.addEventListener('touchmove', function(e) {
+                if(document.body.classList.contains('no-scroll')) {
+                    e.preventDefault()
+                }
+            })
+        }
+    })();
+
     // breadcrumbs shadow
     (function() {
         var bc = document.getElementById('breadcrumbs');
@@ -84,6 +97,22 @@ function fn() {
             var notHelpfulContainer = container.querySelector('.not-helpful-container');
             var helpfulContainer = container.querySelector('.helpful-container');
             var submit = null;
+            var textarea = [];
+            var radio = [];
+
+            if(notHelpfulContainer !== null) {
+                textarea = notHelpfulContainer.getElementsByTagName('textarea');
+                radio = notHelpfulContainer.querySelectorAll('input[type="radio"]');
+            }
+
+            function validate(ta, r) {
+                var validTextarea = ta.length && ta[0].value.length;
+                var radioChecked = Array.prototype.slice.call(r).filter(function (item) {
+                    return item.checked;
+                }).length;
+
+                return validTextarea && radioChecked
+            }
 
             function clear(arr) {
                 arr
@@ -94,7 +123,6 @@ function fn() {
             }
 
             function listener(e, container) {
-                e.preventDefault();
                 clear([notHelpfulContainer, helpfulContainer]);
                 container.classList.add('visible');
             }
@@ -104,19 +132,27 @@ function fn() {
 
                 if(submit !== null) {
                     submit.addEventListener('click', function(e) {
-                        listener(e, helpfulContainer)
+                        e.preventDefault();
+
+                        if(validate(textarea, radio)) {
+                            listener(e, helpfulContainer)
+                        }
                     })
                 }
             }
 
             if(notHelpful !== null && notHelpfulContainer !== null) {
                 notHelpful.addEventListener('click', function(e) {
+                    e.preventDefault();
+
                     listener(e, notHelpfulContainer)
                 }, false)
             }
 
             if(helpful !== null && helpfulContainer !== null) {
                 helpful.addEventListener('click', function(e) {
+                    e.preventDefault();
+
                     listener(e, helpfulContainer)
                 }, false)
             }
@@ -168,6 +204,7 @@ function fn() {
         function hideAll(wrappers) {
             for(var i = 0; i < wrappers.length; i++) {
                 document.body.setAttribute('style', '');
+                document.body.classList.remove('no-scroll');
                 wrappers[i].classList.remove('visible')
             }
         }
@@ -182,8 +219,16 @@ function fn() {
 
                 setTimeout(function() {
                     breadcrumbs.classList.add('active');
-                    document.body.setAttribute('style', 'overflow: hidden;');
-                    target.parentNode.classList.add('visible')
+                    document.body.classList.add('no-scroll');
+                    target.parentNode.classList.add('visible');
+
+                    var top = target.getBoundingClientRect().top;
+                    var dropMenu = target.parentNode.querySelector('.drop-menu');
+
+                    if(dropMenu !== null) {
+                        dropMenu.style.maxHeight = 'calc(95vh - ' + top + 'px)'
+                    }
+
                 }, 100)
             } else {
                 breadcrumbs.classList.remove('active');

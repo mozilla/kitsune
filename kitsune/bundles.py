@@ -268,7 +268,7 @@ PIPELINE_CSS = {
     'kb-sumo-ux-experiment': {
         'source_filenames': (
             'sumo/kb-ux-experiment/swiper.min.css',
-            'sumo/kb-ux-experiment/src.1737d0f9.css'
+            'sumo/kb-ux-experiment/src.dc9d819b.css'
         ),
         'output_filename': 'build/kb-ux-experiment-min.css'
     }
