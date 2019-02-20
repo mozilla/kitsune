@@ -236,6 +236,9 @@ a {
   article li,
   article p {
     margin-bottom: 2.7rem; } }
+
+.no-scroll {
+  overflow: hidden; }
 button,
 textarea {
   border: none;
@@ -646,8 +649,8 @@ input[type="submit"] {
     right: auto;
     background: #FFF;
     z-index: 99;
-    max-height: 80vh;
-    overflow-y: scroll; }
+    max-height: calc(80vh - 260px);
+    overflow-y: auto; }
     .breadcrumbs .drop-menu + .step:after {
       content: '';
       display: inline-block;
@@ -904,7 +907,7 @@ article .video-container {
 .not-helpful-container {
   display: none;
   background-color: #F7FAFE;
-  padding: 10px 20px 40px; }
+  padding: 10px 40px 40px; }
   .not-helpful-container.visible {
     display: block; }
   .not-helpful-container .title {
@@ -1182,12 +1185,14 @@ article .video-container {
   .js-toggle .overlay {
     display: none; }
 
-.search-form-large .search-inner {
-  margin-left: auto;
-  margin-right: auto;
-  width: 100%;
-  padding: 0 20px;
-  max-width: 960px; }
+.search-form-large {
+  z-index: 100; }
+  .search-form-large .search-inner {
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+    padding: 0 20px;
+    max-width: 960px; }
 
 .option-b.search-form-large {
   position: relative;
