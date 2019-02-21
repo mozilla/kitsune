@@ -4,6 +4,8 @@ services:
     image: mozmeao/kitsune:base-dev-${GIT_COMMIT_SHORT:-latest}
     command: ./bin/run-dev.sh
     env_file: .env
+    stdin_open: true
+    tty: true
     volumes:
       - ./:/app:delegated
     user: ${UID:-kitsune}
