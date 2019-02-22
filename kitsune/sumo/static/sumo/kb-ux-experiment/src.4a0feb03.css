@@ -182,8 +182,6 @@ article {
   article a {
     font-weight: 600; }
   @media (max-width: 768px) {
-    article h1 {
-      margin-top: 4rem; }
     article h2 {
       margin-top: 8rem;
       margin-bottom: 2rem; } }
@@ -520,7 +518,7 @@ input[type="submit"] {
     background: transparent url("icon_search.c041d4bf.svg") center no-repeat;
     width: 48px;
     height: 48px;
-    right: 10px;
+    right: 20px;
     top: 50%;
     -webkit-transform: translateY(-50%);
             transform: translateY(-50%); }
@@ -807,13 +805,13 @@ article .video-container {
 
 @media (max-width: 768px) {
   article ol {
-    margin: 7rem 0 6rem; }
+    margin: 7rem 0; }
     article ol > li {
       margin-bottom: 6rem; }
   article .note {
     margin: 3rem 0; }
   article .video-container {
-    margin: 2rem 0; } }
+    margin: 2rem 0 3rem; } }
 
 #toc {
   margin: 8rem 0 10rem; }
@@ -841,7 +839,7 @@ article .video-container {
         display: none; }
   @media (max-width: 768px) {
     #toc {
-      margin: 6rem 0; } }
+      margin: 8rem 0; } }
 
 /**
 * vote-wrap
@@ -901,7 +899,7 @@ article .video-container {
       border-radius: 30px; }
       .votes > .btn {
         width: 75px;
-        height: 55px;
+        height: 60px;
         font-size: 2.4rem; } }
 
 .not-helpful-container {
@@ -928,19 +926,22 @@ article .video-container {
   .not-helpful-container [type="submit"] {
     margin-top: 20px; }
   @media (max-width: 768px) {
-    .not-helpful-container .title,
-    .not-helpful-container label span,
-    .not-helpful-container textarea {
-      font-size: 1.5rem;
-      line-height: 2.7rem;
-      margin-bottom: 2.7rem; }
-    .not-helpful-container .title {
-      margin-bottom: 15px; }
-    .not-helpful-container textarea {
-      margin-top: 15px;
-      margin-bottom: 0; }
-    .not-helpful-container input[type="submit"] {
-      margin-top: 20px; } }
+    .not-helpful-container {
+      padding: 10px 20px 40px; }
+      .not-helpful-container .title,
+      .not-helpful-container label span,
+      .not-helpful-container textarea {
+        font-size: 1.5rem;
+        line-height: 2.7rem;
+        margin-bottom: 2.7rem; }
+      .not-helpful-container .title {
+        margin-top: 0;
+        margin-bottom: 15px; }
+      .not-helpful-container textarea {
+        margin-top: 15px;
+        margin-bottom: 0; }
+      .not-helpful-container input[type="submit"] {
+        margin-top: 20px; } }
 
 .helpful-container {
   padding: 40px 40px 10px;
@@ -1046,7 +1047,7 @@ article .video-container {
   height: 100%;
   position: initial;
   padding-top: 20px;
-  padding-bottom: 20px; }
+  padding-bottom: 70px; }
   .swiper-container .swiper-slide {
     display: flex;
     flex-direction: column;
