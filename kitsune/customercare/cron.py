@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 import json
 import logging
 import re
-import rfc822
+from email import utils
 
 from django.conf import settings
 from django.db.utils import IntegrityError
@@ -92,7 +92,7 @@ def collect_tweets():
                 continue
 
             created_date = datetime.utcfromtimestamp(calendar.timegm(
-                rfc822.parsedate(item['created_at'])))
+                utils.parsedate(item['created_at'])))
 
             item_lang = item['metadata'].get('iso_language_code', 'en')
 
