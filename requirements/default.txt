@@ -152,9 +152,9 @@ https://github.com/jbalogh/django-mobility/archive/e9fc5f7587311350326f044378d5b
 django-multidb-router==0.7 \
     --hash=sha256:682d2be38ca1e2a12bc33528b3d4ccddf9775c926a5667b53f840df620094a86 \
     --hash=sha256:8e802c09ed69a1f4ce5716524a1dc1668a8a2e25d9112369dc92c2b963e70332
-django-nose==1.4.3 \
-    --hash=sha256:19b8daf4cd5e66603dc58018f0384117097de18714775338cdb76a94d48d8966 \
-    --hash=sha256:92f7433367011746cc3cbd3d5e67dcc11066c8b8567b9a514948eeea11fa5843
+django-nose==1.4.6 \
+    --hash=sha256:f515d903cfaeda52c7a9198e0c8ed51563e82802b62a4e5fbd056fd830095318 \
+    --hash=sha256:58934a06a6932696e54c9e8af3fab49bf67ca9e9c840ad668cb7f51219808a07
 https://github.com/gintas/django-picklefield/archive/54b11bdb177fd6140c3ae7d6e9744eaa2deda261.tar.gz#egg=django-picklefield \
     --hash=sha256:8d375db708bc87f6df9bb3ae94edd01bed2cbb6a6894a927785ded9aede983ef
 https://github.com/glogiotatidis/django-pipeline/archive/103bb549cd5f93b5648e10f1be6c2c6c8c5e9610.tar.gz#egg=django-pipeline \
@@ -230,8 +230,10 @@ MySQL-python==1.2.3c1 \
     --hash=sha256:1faa4977e9850731e8b7f8a1d58b8627393a3744543788ec437fb45e06cfe401 \
     --hash=sha256:74491697bed98f8ca91401827c49822e1eb2ba0273759a4d0b382172fd367a38 \
     --hash=sha256:f998823b7a6f00e5f8421eb062355c4d50ac7e4ab85d65382a7e56895f42052d
-nose==1.1.2 \
-    --hash=sha256:b1ba12c1c45323fd8695be68ce7228456b86e51234f167027ebbc4ccda852c61
+nose==1.3.7 \
+    --hash=sha256:dadcddc0aefbf99eea214e0f1232b94f2fa9bd98fa8353711dacb112bfcbbb2a \
+    --hash=sha256:9ff7c6cc443f8c51994b34a667bbcf45afd6d945be7477b52e97516fd17c53ac \
+    --hash=sha256:f1bffef9cbc82628f6e7d7b40d7e255aefaa1adb6a1b1d26c69a8b79e6208a98
 oauthlib==0.7.2 \
     --hash=sha256:a051f04ee8ec3305055ab34d87b36c9a449375e07c7d6a05bcafa48329cac7c3
 ordereddict==1.1 \
