@@ -1,5 +1,3 @@
-from optparse import make_option
-
 from django.core.management.base import BaseCommand, CommandError
 from django.test.utils import override_settings
 
@@ -9,23 +7,30 @@ from kitsune.search.utils import FakeLogger
 
 class Command(BaseCommand):
     help = 'Reindex the database for Elastic.'
-    option_list = BaseCommand.option_list + (
-        make_option('--percent', type='int', dest='percent', default=100,
-                    help='Reindex a percentage of things'),
-        make_option('--delete', action='store_true', dest='delete',
-                    help='Wipes index before reindexing'),
-        make_option('--hours-ago', type='int', dest='hours_ago', default=0,
-                    help='Reindex things updated N hours ago'),
-        make_option('--minutes-ago', type='int', dest='minutes_ago', default=0,
-                    help='Reindex things updated N minutes ago'),
-        make_option('--seconds-ago', type='int', dest='seconds_ago', default=0,
-                    help='Reindex things updated N seconds ago'),
-        make_option('--mapping_types', type='string', dest='mapping_types',
-                    default=None,
-                    help='Comma-separated list of mapping types to index'),
-        make_option('--criticalmass', action='store_true', dest='criticalmass',
-                    help='Indexes a critical mass of things'),
-        )
+
+    def add_arguments(self, parser):
+        parser.add_argument(
+            '--percent', type='int', dest='percent', default=100,
+            help='Reindex a percentage of things')
+        parser.add_argument(
+            '--delete', action='store_true', dest='delete',
+            help='Wipes index before reindexing')
+        parser.add_argument(
+            '--hours-ago', type='int', dest='hours_ago', default=0,
+            help='Reindex things updated N hours ago')
+        parser.add_argument(
+            '--minutes-ago', type='int', dest='minutes_ago', default=0,
+            help='Reindex things updated N minutes ago')
+        parser.add_argument(
+            '--seconds-ago', type='int', dest='seconds_ago', default=0,
+            help='Reindex things updated N seconds ago')
+        parser.add_argument(
+            '--mapping_types', type='string', dest='mapping_types',
+            default=None,
+            help='Comma-separated list of mapping types to index')
+        parser.add_argument(
+            '--criticalmass', action='store_true', dest='criticalmass',
+            help='Indexes a critical mass of things')
 
     # We (ab)use override_settings to force ES_LIVE_INDEXING for the
     # duration of this command so that it actually indexes stuff.

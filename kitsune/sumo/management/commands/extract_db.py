@@ -1,5 +1,4 @@
 import os
-from optparse import make_option
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
@@ -51,13 +50,16 @@ class Command(BaseCommand):
     Database columns are expected to be CharFields or TextFields.
     """
     help = ('Pulls strings from the database and writes them to python file.')
-    option_list = BaseCommand.option_list + (
-        make_option('--output-file', '-o',
-                    default=os.path.join(settings.ROOT, 'kitsune', 'sumo',
-                                         'db_strings.py'),
-                    dest='outputfile',
-                    help='The file where extracted strings are written to.'
-                         '(Default: %default)'),
+
+    def add_arguments(self, parser):
+        parser.add_argument(
+            '--output-file', '-o',
+            default=os.path.join(
+                settings.ROOT, 'kitsune', 'sumo', 'db_strings.py'),
+            dest='outputfile',
+            help=(
+                'The file where extracted strings are written to. '
+                '(Default: %default)'),
         )
 
     def handle(self, *args, **options):
