@@ -12,7 +12,6 @@ from kitsune.wiki.models import (
     Document, Revision, DraftRevision, MAX_REVISION_COMMENT_LENGTH)
 from kitsune.wiki.tasks import add_short_links
 from kitsune.wiki.widgets import (
-    RadioFieldRendererWithHelpText,
     ProductTopicsAndSubtopicsWidget,
     RelatedDocumentsWidget)
 
@@ -298,7 +297,7 @@ class ReviewForm(forms.Form):
                                 required=False, label=_lazy(u'Comment:'),
                                 error_messages={'max_length': COMMENT_LONG})
 
-    _widget = forms.RadioSelect(renderer=RadioFieldRendererWithHelpText)
+    _widget = forms.RadioSelect()
     significance = forms.TypedChoiceField(
         label=_lazy(u'Significance:'),
         choices=SIGNIFICANCES,
