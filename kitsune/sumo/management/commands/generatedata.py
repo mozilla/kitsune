@@ -6,17 +6,17 @@ from django.conf import settings
 from django.core.management.base import BaseCommand
 
 from importlib import import_module
-from optparse import make_option
 
 
 class Command(BaseCommand):
     help = 'Generates sample data.'
-    option_list = BaseCommand.option_list + (
-        make_option('--with',
-                    action='append',
-                    dest='param',
-                    help='Pass key=val style param to generate_sampledata'),
-    )
+
+    def add_arguments(self, parser):
+        parser.add_argument(
+            '--with',
+            action='append',
+            dest='param',
+            help='Pass key=val style param to generate_sampledata')
 
     def handle(self, *args, **options):
         if options.get('param'):
