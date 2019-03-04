@@ -2,10 +2,8 @@ import collections
 
 from django import forms
 from django.template.loader import render_to_string
-# from django.utils.safestring import mark_safe
 
 from kitsune.products.models import Topic
-# from kitsune.wiki.config import SIGNIFICANCES_HELP
 from kitsune.wiki.models import Document
 
 
@@ -60,14 +58,3 @@ class RelatedDocumentsWidget(forms.widgets.SelectMultiple):
                 'related_documents': related_documents,
                 'name': name
             })
-
-
-class RadioChoiceInputWithHelpText(forms.widgets.RadioChoiceInput):
-    pass
-
-
-class RadioFieldRendererWithHelpText(forms.widgets.RadioFieldRenderer):
-    """Modifies django's RadioFieldRenderer to use RadioInputWithHelpText."""
-    def __iter__(self):
-        for i, choice in enumerate(self.choices):
-            yield RadioChoiceInputWithHelpText(self.name, self.value, self.attrs.copy(), choice, i)
