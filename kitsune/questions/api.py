@@ -138,11 +138,11 @@ class QuestionFKSerializer(QuestionSerializer):
 class QuestionFilter(django_filters.FilterSet):
     product = django_filters.CharFilter(name='product__slug')
     creator = django_filters.CharFilter(name='creator__username')
-    involved = django_filters.MethodFilter(action='filter_involved')
-    is_solved = django_filters.MethodFilter(action='filter_is_solved')
-    is_taken = django_filters.MethodFilter(action='filter_is_taken')
-    metadata = django_filters.MethodFilter(action='filter_metadata')
-    solved_by = django_filters.MethodFilter(action='filter_solved_by')
+    involved = django_filters.CharFilter(method='filter_involved')
+    is_solved = django_filters.BooleanFilter(method='filter_is_solved')
+    is_taken = django_filters.BooleanFilter(method='filter_is_taken')
+    metadata = django_filters.CharFilter(method='filter_metadata')
+    solved_by = django_filters.CharFilter(method='filter_solved_by')
     taken_by = django_filters.CharFilter(name='taken_by__username')
     updated = django_filters.DateTimeFilter()
     created = django_filters.DateTimeFilter()
@@ -169,59 +169,52 @@ class QuestionFilter(django_filters.FilterSet):
             'updated_by': ['exact'],
         }
 
-    def filter_involved(self, queryset, username):
+    def filter_involved(self, queryset, name, value):
         # This will remain unevaluated, and become a subquery of the final query.
         # Using a subquery instead of a JOIN like Django would normally do
         # should be faster in this case.
         questions_user_answered = (
-            Answer.objects.filter(creator__username=username).values('question_id'))
+            Answer.objects.filter(creator__username=value).values('question_id'))
 
         answered_filter = Q(id__in=questions_user_answered)
-        creator_filter = Q(creator__username=username)
+        creator_filter = Q(creator__username=value)
         return queryset.filter(creator_filter | answered_filter)
 
-    def filter_is_taken(self, queryset, value):
-        field = serializers.BooleanField()
-        value = field.to_internal_value(value)
-        # is_taken doesn't exist. Instead, we decide if a question is taken
-        # based on ``taken_by`` and ``taken_until``.
+    def filter_is_taken(self, queryset, name, value):
         now = datetime.now()
         if value:
             # only taken questions
             return queryset.filter(~Q(taken_by=None), taken_until__gt=now)
-        else:
-            # only not taken questions
-            return queryset.filter(Q(taken_by=None) | Q(taken_until__lt=now))
+        # only not taken questions
+        return queryset.filter(Q(taken_by=None) | Q(taken_until__lt=now))
 
-    def filter_is_solved(self, queryset, value):
-        field = serializers.BooleanField()
-        value = field.to_internal_value(value)
+    def filter_is_solved(self, queryset, name, value):
         solved_filter = Q(solution=None)
         if value:
             solved_filter = ~solved_filter
         return queryset.filter(solved_filter)
 
-    def filter_solved_by(self, queryset, username):
+    def filter_solved_by(self, queryset, name, value):
         question_user_solved = (
-            Question.objects.filter(solution__creator__username=username).values('id'))
+            Question.objects.filter(solution__creator__username=value).values('id'))
 
         return queryset.filter(id__in=question_user_solved)
 
-    def filter_metadata(self, queryset, value):
+    def filter_metadata(self, queryset, name, value):
         try:
             value = json.loads(value)
         except ValueError:
             raise GenericAPIException(400, 'metadata must be valid JSON.')
 
-        for name, values in value.items():
+        for key, values in value.items():
             if not isinstance(values, list):
                 values = [values]
             query = Q()
             for v in values:
                 if v is None:
-                    query = query | ~Q(metadata_set__name=name)
+                    query = query | ~Q(metadata_set__name=key)
                 else:
-                    query = query | Q(metadata_set__name=name, metadata_set__value=v)
+                    query = query | Q(metadata_set__name=key, metadata_set__value=v)
             queryset = queryset.filter(query)
 
         return queryset

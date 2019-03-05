@@ -140,9 +140,9 @@ django-cronjobs==0.2.3 \
     --hash=sha256:177295b1442400c92cdb67e8e18f9ff5946fb442f85813b9d0837823722ea08d
 https://github.com/mozilla/django-csp/archive/5c5f5a6b55fb78e99db939c79f0f0d8003a62c98.tar.gz#egg=django-csp \
     --hash=sha256:d6ed80738b07d60d2e985ccc284448e7dbd7c41682dc4cf65734d0da576f700e
-django-filter==0.11.0 \
-    --hash=sha256:7d17547b65216cc5c6fbc04aee55088ccd5917c0775304d96f7017c26c789cd7 \
-    --hash=sha256:00cc47935afbbd83260fdd283b0aa790e658d2a71922049f6e467dca8a124537
+django-filter==1.1.0 \
+    --hash=sha256:ea204242ea83790e1512c9d0d8255002a652a6f4986e93cee664f28955ba0c22 \
+    --hash=sha256:ec0ef1ba23ef95b1620f5d481334413700fb33f45cd76d56a63f4b0b1d76976a
 django-jinja==2.1.2 \
     --hash=sha256:fc2b6a65201b27711e800eb2e1262ff42a32f027bd2267e34121f1bd2bd6b933
 django-jsonfield==1.0.1 \

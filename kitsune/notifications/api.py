@@ -50,7 +50,7 @@ class NotificationSerializer(serializers.ModelSerializer):
 
 
 class NotificationFilter(django_filters.FilterSet):
-    is_read = django_filters.MethodFilter(action='filter_is_read')
+    is_read = django_filters.BooleanFilter(method='filter_is_read')
 
     class Meta(object):
         model = Notification
@@ -58,15 +58,10 @@ class NotificationFilter(django_filters.FilterSet):
             'is_read',
         ]
 
-    # This has to be a method filter because ``is_read`` is not a database field
-    # of ``Notification``, so BooleanFilter (and friends) don't work on it.
-    def filter_is_read(self, queryset, value):
-        if value in ['1', 'true', 'True', 1, True]:
+    def filter_is_read(self, queryset, name, value):
+        if value:
             return queryset.exclude(read_at=None)
-        elif value in ['0', 'false', 'False', 0, False]:
-            return queryset.filter(read_at=None)
-        else:
-            return queryset
+        return queryset.filter(read_at=None)
 
 
 class NotificationViewSet(mixins.ListModelMixin,
