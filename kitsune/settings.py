@@ -438,7 +438,6 @@ _CONTEXT_PROCESSORS = [
     'django.template.context_processors.media',
     'django.template.context_processors.static',
     'django.template.context_processors.request',
-    'session_csrf.context_processor',
 
     'django.contrib.messages.context_processors.messages',
 
@@ -493,6 +492,7 @@ MIDDLEWARE_CLASSES = (
     'allow_cidr.middleware.AllowCIDRMiddleware',
     'kitsune.sumo.middleware.FilterByUserAgentMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
     'multidb.middleware.PinningRouterMiddleware',
     'django_statsd.middleware.GraphiteMiddleware',
     'commonware.request.middleware.SetRemoteAddrFromForwardedFor',
@@ -538,7 +538,6 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'kitsune.sumo.anonymous.AnonymousIdentityMiddleware',
     'kitsune.sumo.middleware.ReadOnlyMiddleware',
-    'session_csrf.CsrfMiddleware',
     'kitsune.twitter.middleware.SessionMiddleware',
     'kitsune.sumo.middleware.PlusToSpaceMiddleware',
     'commonware.middleware.ScrubRequestOnException',
