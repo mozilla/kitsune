@@ -16,7 +16,7 @@ class RenameFileStorage(DjangoStorage):
     """Subclass Django's file system storage to add our file naming
     conventions."""
 
-    def get_available_name(self, name):
+    def get_available_name(self, name, max_length=None):
         dir_name, file_name = os.path.split(name)
         file_root, file_ext = os.path.splitext(file_name)
 
