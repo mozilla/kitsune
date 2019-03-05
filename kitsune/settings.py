@@ -1019,7 +1019,7 @@ SURVEYGIZMO_API_TOKEN_SECRET = config('SURVEYGIZMO_API_TOKEN_SECRET', default=No
 # Django Rest Framework
 REST_FRAMEWORK = {
     'DEFAULT_FILTER_BACKENDS': (
-        'rest_framework.filters.DjangoFilterBackend',
+        'django_filters.rest_framework.DjangoFilterBackend',
     ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.TokenAuthentication',

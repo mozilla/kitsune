@@ -19,6 +19,7 @@ class TwitterAccountSerializer(serializers.ModelSerializer):
     """Serializer for the TwitterAccount model."""
     class Meta:
         model = TwitterAccount
+        fields = '__all__'
 
 
 class BannedList(generics.ListAPIView):

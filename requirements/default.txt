@@ -178,9 +178,9 @@ django-timezone-field==3.0 \
 django-waffle==0.11 \
     --hash=sha256:9cd9e3a976849a3cd816830d7811b93543c1dc9da9f3cb1ccc2f9da831b8b025 \
     --hash=sha256:914b4b874fa6250a0897bc30b67e02034d92a7235ab72a91bf6da49b71751de4
-djangorestframework==3.3.0 \
-    --hash=sha256:3cc9960bcfa19bfdc8c789d3865ea2b100a90917ac16f803ad99e45421ec8b4c \
-    --hash=sha256:29803ff85b1f2105bcf49bd4c790d2b319196b78c88c70624d8ac931dd7647af
+djangorestframework==3.9.2 \
+    --hash=sha256:8a435df9007c8b7d8e69a21ef06650e3c0cbe0d4b09e55dd1bd74c89a75a9fcd \
+    --hash=sha256:f7a266260d656e1cf4ca54d7a7349609dc8af4fe2590edd0ecd7d7643ea94a17
 elasticutils==0.10.3 \
     --hash=sha256:569037ff11c3c11638f3d06857033424525ad54618bffb012bd43c32c50fbe3b \
     --hash=sha256:88f2b91b8a498e0c903e4e70afb1fbae74d23f62f98bbe968c22154157cbe955

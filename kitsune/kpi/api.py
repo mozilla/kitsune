@@ -6,8 +6,9 @@ from django.core.cache import cache
 from django.db import connections, router
 from django.db.models import Count, F
 
+import django_filters
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, serializers, viewsets
-from rest_framework.filters import django_filters
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
@@ -447,8 +448,8 @@ class CohortSerializer(serializers.ModelSerializer):
 
 class CohortFilter(django_filters.FilterSet):
     kind = django_filters.CharFilter(name='kind__code')
-    start = django_filters.DateFilter(lookup_type='gte')
-    end = django_filters.DateFilter(lookup_type='lte')
+    start = django_filters.DateFilter(lookup_expr='gte')
+    end = django_filters.DateFilter(lookup_expr='lte')
 
     class Meta:
         model = Cohort
@@ -464,7 +465,7 @@ class CohortViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = CohortSerializer
     filter_class = CohortFilter
     filter_backends = [
-        filters.DjangoFilterBackend,
+        DjangoFilterBackend,
         filters.OrderingFilter,
     ]
     ordering_fields = [

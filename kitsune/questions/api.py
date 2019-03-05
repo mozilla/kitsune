@@ -3,10 +3,11 @@ from datetime import datetime
 import actstream.actions
 import django_filters
 import json
+from django_filters.rest_framework import DjangoFilterBackend
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
 from rest_framework import serializers, viewsets, permissions, filters, status, pagination
-from rest_framework.decorators import detail_route
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from taggit.models import Tag
 
@@ -228,7 +229,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
     ]
     filter_class = QuestionFilter
     filter_backends = [
-        filters.DjangoFilterBackend,
+        DjangoFilterBackend,
         filters.OrderingFilter,
     ]
     ordering_fields = [
@@ -242,7 +243,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
     # Default, if not overwritten
     ordering = ('-id',)
 
-    @detail_route(methods=['POST'])
+    @action(detail=True, methods=['post'])
     def solve(self, request, pk=None):
         """Accept an answer as the solution to the question."""
         question = self.get_object()
@@ -257,7 +258,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
         question.set_solution(answer, request.user)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    @detail_route(methods=['POST'], permission_classes=[permissions.IsAuthenticated])
+    @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated])
     def helpful(self, request, pk=None):
         question = self.get_object()
 
@@ -270,19 +271,19 @@ class QuestionViewSet(viewsets.ModelViewSet):
         num_votes = QuestionVote.objects.filter(question=question).count()
         return Response({'num_votes': num_votes})
 
-    @detail_route(methods=['POST'], permission_classes=[permissions.IsAuthenticated])
+    @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated])
     def follow(self, request, pk=None):
         question = self.get_object()
         actstream.actions.follow(request.user, question, actor_only=False, send_action=False)
         return Response('', status=204)
 
-    @detail_route(methods=['POST'], permission_classes=[permissions.IsAuthenticated])
+    @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated])
     def unfollow(self, request, pk=None):
         question = self.get_object()
         actstream.actions.unfollow(request.user, question, send_action=False)
         return Response('', status=204)
 
-    @detail_route(methods=['POST'])
+    @action(detail=True, methods=['post'])
     def set_metadata(self, request, pk=None):
         data = {}
         data.update(request.data)
@@ -295,7 +296,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    @detail_route(methods=['POST', 'DELETE'])
+    @action(detail=True, methods=['post', 'delete'])
     def delete_metadata(self, request, pk=None):
         question = self.get_object()
 
@@ -311,7 +312,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
         except QuestionMetaData.DoesNotExist:
             raise GenericAPIException(404, 'No matching metadata object found.')
 
-    @detail_route(methods=['POST'], permission_classes=[permissions.IsAuthenticatedOrReadOnly])
+    @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticatedOrReadOnly])
     def take(self, request, pk=None):
         question = self.get_object()
         field = serializers.BooleanField()
@@ -326,7 +327,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
 
         return Response(status=204)
 
-    @detail_route(methods=['POST'], permission_classes=[permissions.IsAuthenticated])
+    @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated])
     def add_tags(self, request, pk=None):
         question = self.get_object()
 
@@ -348,7 +349,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
         data = [{'name': tag.name, 'slug': tag.slug} for tag in question.tags.all()]
         return Response(data)
 
-    @detail_route(methods=['POST', 'DELETE'], permission_classes=[permissions.IsAuthenticated])
+    @action(detail=True, methods=['post', 'delete'], permission_classes=[permissions.IsAuthenticated])
     def remove_tags(self, request, pk=None):
         question = self.get_object()
 
@@ -363,13 +364,13 @@ class QuestionViewSet(viewsets.ModelViewSet):
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    @detail_route(methods=['POST'], permission_classes=[permissions.IsAuthenticated])
+    @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated])
     def auto_tag(self, request, pk=None):
         question = self.get_object()
         question.auto_tag()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    @detail_route(methods=['POST'])
+    @action(detail=True, methods=['post'])
     def attach_images(self, request, pk=None):
         question = self.get_object()
 
@@ -456,7 +457,7 @@ class AnswerViewSet(viewsets.ModelViewSet):
     ]
     filter_class = AnswerFilter
     filter_backends = [
-        filters.DjangoFilterBackend,
+        DjangoFilterBackend,
         filters.OrderingFilter,
     ]
     filter_fields = [
@@ -485,7 +486,7 @@ class AnswerViewSet(viewsets.ModelViewSet):
         context = self.get_serializer_context()
         return SerializerClass(instance=page, context=context)
 
-    @detail_route(methods=['POST'], permission_classes=[permissions.IsAuthenticated])
+    @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated])
     def helpful(self, request, pk=None):
         answer = self.get_object()
 
@@ -502,13 +503,13 @@ class AnswerViewSet(viewsets.ModelViewSet):
             'num_unhelpful_votes': num_unhelpful_votes,
         })
 
-    @detail_route(methods=['POST'], permission_classes=[permissions.IsAuthenticated])
+    @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated])
     def follow(self, request, pk=None):
         answer = self.get_object()
         actstream.actions.follow(request.user, answer, actor_only=False)
         return Response('', status=204)
 
-    @detail_route(methods=['POST'], permission_classes=[permissions.IsAuthenticated])
+    @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated])
     def unfollow(self, request, pk=None):
         answer = self.get_object()
         actstream.actions.unfollow(request.user, answer)
