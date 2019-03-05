@@ -1,6 +1,7 @@
 import datetime
 import time
 
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.db.models import Q
 from django.db.models.signals import pre_save
@@ -126,15 +127,11 @@ class Thread(NotificationsMixin, ModelBase, SearchMixin):
         prevents us from using lookups like Thread.objects.filter(forum=f).
 
         """
-        # When http://code.djangoproject.com/ticket/3148 adds nice getter and
-        # setter hooks, use those instead.
         if attr == 'forum' and not hasattr(self, '_old_forum'):
             try:
-                old = self.forum
-            except AttributeError:  # When making a new Thread(forum=3), the
-                pass                # forum attr doesn't exist yet.
-            else:
-                self._old_forum = old
+                self._old_forum = self.forum
+            except ObjectDoesNotExist:
+                pass
         super(Thread, self).__setattr__(attr, val)
 
     @property
