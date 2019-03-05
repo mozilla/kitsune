@@ -1,3 +1,4 @@
+from django import forms
 from django.db.models import Q
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
@@ -50,7 +51,7 @@ class NotificationSerializer(serializers.ModelSerializer):
 
 
 class NotificationFilter(django_filters.FilterSet):
-    is_read = django_filters.BooleanFilter(method='filter_is_read')
+    is_read = django_filters.BooleanFilter(method='filter_is_read', widget=forms.TextInput)
 
     class Meta(object):
         model = Notification
@@ -74,7 +75,6 @@ class NotificationViewSet(mixins.ListModelMixin,
         OnlyOwner,
     ]
     filter_class = NotificationFilter
-    filter_fields = ['is_read']
     pagination_class = None
 
     def get_queryset(self, *args, **kwargs):
