@@ -337,6 +337,10 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
             if name in ('slug', 'title'):
                 old_name = 'old_' + name
                 if not hasattr(self, old_name):
+                    # Avoid recursive call to __setattr__ when
+                    # ``getattr(self, name)`` needs to refresh the
+                    # database.
+                    setattr(self, old_name, None)
                     # Normal articles are compared case-insensitively
                     if getattr(self, name).lower() != value.lower():
                         setattr(self, old_name, getattr(self, name))
