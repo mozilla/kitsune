@@ -88,23 +88,14 @@ def smart_int(string, fallback=0):
         return fallback
 
 
-def delete_files_for_obj(sender, **kwargs):
+def delete_files_for_obj(sender, instance, **kwargs):
     """Signal receiver of a model class and instance. Deletes its files."""
-    obj = kwargs.pop('instance')
-    for field_name in sender._meta.get_all_field_names():
-        # Skip related models' attrs.
-        if not hasattr(obj, field_name):
-            continue
-        # Get the class and value of the field.
-        try:
-            field_class = sender._meta.get_field(field_name)
-        except models.FieldDoesNotExist:
-            # This works around a weird issue in Django 1.7.
-            continue
-        field_value = getattr(obj, field_name)
+    for field in sender._meta.get_fields():
         # Check if it's a FileField instance and the field is set.
-        if isinstance(field_class, models.FileField) and field_value:
-            field_value.delete()
+        if isinstance(field, models.FileField):
+            field_file = getattr(instance, field.name)
+            if field_file:
+                field_file.delete()
 
 
 def auto_delete_files(cls):
