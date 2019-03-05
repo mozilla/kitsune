@@ -13,7 +13,7 @@ from django.utils.translation import ugettext as _, ugettext_lazy as _lazy
 
 from celery.task import task
 from django_statsd.clients import statsd
-from timezones.fields import TimeZoneField
+from timezone_field import TimeZoneField
 
 from kitsune.lib.countries import COUNTRIES
 from kitsune.search.es_utils import UnindexMeBro
@@ -59,7 +59,7 @@ class Profile(ModelBase, SearchMixin):
                                   verbose_name=_lazy(u'Mozillians Username'))
     irc_handle = models.CharField(max_length=255, null=True, blank=True,
                                   verbose_name=_lazy(u'IRC nickname'))
-    timezone = TimeZoneField(null=True, blank=True,
+    timezone = TimeZoneField(null=True, blank=True, default='US/Pacific',
                              verbose_name=_lazy(u'Timezone'))
     country = models.CharField(max_length=2, choices=COUNTRIES, null=True,
                                blank=True, verbose_name=_lazy(u'Country'))
