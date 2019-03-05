@@ -171,8 +171,9 @@ statsd==3.1 \
 django-taggit==0.22.2 \
     --hash=sha256:58aa3e59e0643446e102523f22d137300298e2a537b1c5b0c310d99143f2c2b8 \
     --hash=sha256:fd13e304ba37ff09e601c4797d893fb7d3e699a789b5afb0b09d686f94470441
-https://github.com/brosner/django-timezones/archive/ce12f4538fb98612c61b380421e5f39d3f6b2019.tar.gz#egg=django-timezones \
-    --hash=sha256:a10ab65b43cdb922b21195b939aa8fded1230d19c055aa815163675202dd4fbf
+django-timezone-field==3.0 \
+    --hash=sha256:d9fdab77c443b78c362ffaeb50fe7d7b54692c89aaae8ca1cae67848139b82ac \
+    --hash=sha256:7d7a37cfeacec5b1e81cd2f0aa334d46ebaa369cd516028579ed343cbc676c38
 django-waffle==0.11 \
     --hash=sha256:9cd9e3a976849a3cd816830d7811b93543c1dc9da9f3cb1ccc2f9da831b8b025 \
     --hash=sha256:914b4b874fa6250a0897bc30b67e02034d92a7235ab72a91bf6da49b71751de4

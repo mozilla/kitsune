@@ -625,7 +625,6 @@ INSTALLED_APPS = (
     'puente',
     'pipeline',
     'authority',
-    'timezones',
     'waffle',
     'storages',
     'kitsune.access',
