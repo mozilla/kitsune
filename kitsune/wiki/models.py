@@ -332,9 +332,9 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         """Trap setting slug and title, recording initial value."""
         # Public API: delete the old_title or old_slug attrs after changing
         # title or slug (respectively) to suppress redirect generation.
-        if getattr(self, 'id', None):
+        if name != '_state' and not self._state.adding:
             # I have been saved and so am worthy of a redirect.
-            if name in ('slug', 'title') and hasattr(self, name):
+            if name in ('slug', 'title'):
                 old_name = 'old_' + name
                 if not hasattr(self, old_name):
                     # Normal articles are compared case-insensitively
