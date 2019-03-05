@@ -5,7 +5,7 @@ from django.contrib.contenttypes.models import ContentType
 import django_filters
 from actstream.models import Action
 from rest_framework import serializers, viewsets, permissions, mixins, status
-from rest_framework.decorators import detail_route
+from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from kitsune.notifications.models import (
@@ -81,7 +81,7 @@ class NotificationViewSet(mixins.ListModelMixin,
         qs = super(NotificationViewSet, self).get_queryset(*args, **kwargs)
         return qs.filter(owner=self.request.user)
 
-    @detail_route(methods=['POST'])
+    @action(detail=True, methods=['post'])
     def mark_read(self, request, pk=None):
         """Mark the notification as read."""
         notification = self.get_object()
@@ -89,7 +89,7 @@ class NotificationViewSet(mixins.ListModelMixin,
         notification.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    @detail_route(methods=['POST'])
+    @action(detail=True, methods=['post'])
     def mark_unread(self, request, pk=None):
         """Mark the notification as unread."""
         notification = self.get_object()
@@ -202,7 +202,7 @@ class RealtimeRegistrationViewSet(mixins.CreateModelMixin,
         OnlyCreatorEdits,
     ]
 
-    @detail_route(methods=['GET'])
+    @action(detail=True, methods=['get'])
     def updates(self, request, pk=None):
         """Get all the actions that correspond to this registration."""
         reg = self.get_object()

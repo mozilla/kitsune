@@ -6,7 +6,7 @@ from kitsune.users import api
 
 
 router = routers.SimpleRouter()
-router.register(r'user', api.ProfileViewSet, base_name='user')
+router.register(r'user', api.ProfileViewSet, basename='user')
 
 # API urls
 urlpatterns = [

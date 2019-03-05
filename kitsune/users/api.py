@@ -14,10 +14,11 @@ from django.views.decorators.http import require_GET
 import waffle
 from django_statsd.clients import statsd
 
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, serializers, mixins, filters, permissions, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.decorators import api_view, permission_classes, detail_route
+from rest_framework.decorators import api_view, permission_classes, action
 from rest_framework.authtoken.models import Token
 
 from kitsune.access.decorators import login_required
@@ -283,7 +284,7 @@ class ProfileViewSet(mixins.CreateModelMixin,
         OnlySelfEdits,
     ]
     filter_backends = [
-        filters.DjangoFilterBackend,
+        DjangoFilterBackend,
         filters.OrderingFilter,
     ]
     filter_fields = []
@@ -371,7 +372,7 @@ class ProfileViewSet(mixins.CreateModelMixin,
         result.sort(key=lambda u: u['weekly_solutions'], reverse=True)
         return Response(result)
 
-    @detail_route(methods=['POST'])
+    @action(detail=True, methods=['post'])
     def set_setting(self, request, user__username=None):
         user = self.get_object().user
         request.data['user'] = user.pk
@@ -388,7 +389,7 @@ class ProfileViewSet(mixins.CreateModelMixin,
         else:
             raise GenericAPIException(400, serializer.errors)
 
-    @detail_route(methods=['POST', 'DELETE'])
+    @action(detail=True, methods=['post', 'delete'])
     def delete_setting(self, request, user__username=None):
         profile = self.get_object()
 
@@ -403,7 +404,7 @@ class ProfileViewSet(mixins.CreateModelMixin,
         except Setting.DoesNotExist:
             raise GenericAPIException(404, {'detail': 'No matching user setting found.'})
 
-    @detail_route(methods=['GET'])
+    @action(detail=True, methods=['get'])
     def request_password_reset(self, request, user__username=None):
         profile = self.get_object()
 
