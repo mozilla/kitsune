@@ -17,7 +17,6 @@ from django.views.decorators.http import require_GET
 from celery.messaging import establish_connection
 from mobility.decorators import mobile_template
 from PIL import Image
-from session_csrf import anonymous_csrf
 
 from kitsune.lib.sumo_locales import LOCALES
 from kitsune.search import es_utils
@@ -68,7 +67,6 @@ def geoip_suggestion(request):
     return HttpResponse(json.dumps(response), content_type='application/json')
 
 
-@anonymous_csrf
 def handle403(request):
     """A 403 message that looks nicer than the normal Apache forbidden page"""
     no_cookies = False

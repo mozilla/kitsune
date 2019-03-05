@@ -162,8 +162,6 @@ https://github.com/glogiotatidis/django-pipeline/archive/103bb549cd5f93b5648e10f
     --hash=sha256:8137ed0a643560ae2300e11278e04907f0a1208031a0069474771cab6800f325
 https://github.com/mozilla/django-recaptcha/archive/b3ce0daadfff7735d2a0865b8419711748c9190a.tar.gz#egg=django-recaptcha \
     --hash=sha256:9f6cf9632838c9a2e78b29ca74f8213d2201125fe4b4d3b168af25b495a4081d
-https://github.com/mozilla/django-session-csrf/archive/15492526b23cdad56fe3df1342e2d82ec5d17c18.tar.gz#egg=django-session-csrf==0.5 \
-    --hash=sha256:01d33f4b5eb49ee535a5d7eb16f910f4487b3fd4e800f0f62daba10cb5b1fd79
 django-statsd-mozilla==0.3.16 \
      --hash=sha256:925f0f13e5a1e7863e5ed1179fd0f6f1a519e5a0293714ba76745286aad7ed02
 statsd==3.1 \

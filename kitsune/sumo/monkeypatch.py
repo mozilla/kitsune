@@ -101,10 +101,6 @@ def patch():
     admin.site.site_header = 'Kitsune Administration'
     admin.site.site_title = 'Mozilla Support'
 
-    # Monkey patch django's csrf
-    import session_csrf
-    session_csrf.monkeypatch()
-
     # In testing contexts, patch django.shortcuts.render
     if TESTING:
         monkeypatch_render()

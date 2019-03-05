@@ -24,7 +24,6 @@ from django.views.decorators.http import require_POST, require_GET, require_http
 import waffle
 from ordereddict import OrderedDict
 from mobility.decorators import mobile_template
-from session_csrf import anonymous_csrf
 from django_statsd.clients import statsd
 from taggit.models import Tag
 from tidings.events import ActivationRequestFailed
@@ -388,7 +387,6 @@ def parse_troubleshooting(troubleshooting_json):
 
 
 @mobile_template('questions/{mobile/}question_details.html')
-@anonymous_csrf  # Need this so the anon csrf gets set for watch forms.
 def question_details(request, template, question_id, form=None,
                      watch_form=None, answer_preview=None, **extra_kwargs):
     """View the answers to a question."""
@@ -458,7 +456,6 @@ def edit_details(request, question_id):
 
 
 @ssl_required
-@anonymous_csrf
 def aaq_react(request):
     request.session['in-aaq'] = True
     to_json = JSONRenderer().render
@@ -488,7 +485,6 @@ def aaq_react(request):
 
 @ssl_required
 @mobile_template('questions/{mobile/}new_question.html')
-@anonymous_csrf  # This view renders a login form
 def aaq(request, product_key=None, category_key=None, showform=False,
         template=None, step=0):
     """Ask a new question."""
@@ -1380,7 +1376,6 @@ def edit_answer(request, question_id, answer_id):
 
 
 @require_POST
-@anonymous_csrf
 def watch_question(request, question_id):
     """Start watching a question for replies or solution."""
 
@@ -1492,7 +1487,6 @@ ZENDESK_ERROR_MESSAGE = _lazy(
     u'Please try again later.')
 
 
-@anonymous_csrf
 @mobile_template('questions/{mobile/}marketplace_category.html')
 def marketplace_category(request, category_slug, template=None):
     """AAQ category page. Handles form post that submits ticket."""
@@ -1526,7 +1520,6 @@ def marketplace_category(request, category_slug, template=None):
         'error_message': error_message})
 
 
-@anonymous_csrf
 @mobile_template('questions/{mobile/}marketplace_refund.html')
 def marketplace_refund(request, template):
     """Form page that handles refund requests for Marketplace."""
@@ -1552,7 +1545,6 @@ def marketplace_refund(request, template):
         'error_message': error_message})
 
 
-@anonymous_csrf
 @mobile_template('questions/{mobile/}marketplace_developer_request.html')
 def marketplace_developer_request(request, template):
     """Form page that handles developer requests for Marketplace."""

@@ -20,7 +20,6 @@ from django.utils.translation import ugettext as _
 # from axes.decorators import watch_login
 from kitsune.kbadge.models import Award
 from mobility.decorators import mobile_template
-from session_csrf import anonymous_csrf
 from django_statsd.clients import statsd
 from tidings.models import Watch
 from tidings.tasks import claim_watches
@@ -52,7 +51,6 @@ from kitsune.wiki.models import (
 
 
 @ssl_required
-@anonymous_csrf
 @logout_required
 @require_http_methods(['GET', 'POST'])
 def user_auth(request, contributor=False, register_form=None, login_form=None):
@@ -76,7 +74,6 @@ def user_auth(request, contributor=False, register_form=None, login_form=None):
 
 
 @ssl_required
-@anonymous_csrf
 # @watch_login
 @mobile_template('users/{mobile/}login.html')
 def login(request, template):
@@ -125,7 +122,6 @@ def logout(request):
 @ssl_required
 @logout_required
 @require_http_methods(['GET', 'POST'])
-@anonymous_csrf
 @mobile_template('users/{mobile/}')
 def register(request, template, contributor=False):
     """Register a new user.
@@ -153,7 +149,6 @@ def register_contributor(request):
     return register(request, contributor=True)
 
 
-@anonymous_csrf  # This view renders a login form
 @mobile_template('users/{mobile/}activate.html')
 def activate(request, template, activation_key, user_id=None):
     """Activate a User account."""
@@ -191,7 +186,6 @@ def activate(request, template, activation_key, user_id=None):
         'form': form})
 
 
-@anonymous_csrf
 @mobile_template('users/{mobile/}')
 def resend_confirmation(request, template):
     """Resend confirmation email."""
@@ -588,7 +582,6 @@ def delete_avatar(request):
         'profile': user_profile})
 
 
-@anonymous_csrf
 @mobile_template('users/{mobile/}pw_reset_form.html')
 def password_reset(request, template):
     """Password reset form.
@@ -644,7 +637,6 @@ def password_reset_sent(request, template):
 
 
 @ssl_required
-@anonymous_csrf
 @mobile_template('users/{mobile/}pw_reset_confirm.html')
 def password_reset_confirm(request, template, uidb36=None, token=None):
     """View that checks the hash in a password reset link and presents a
@@ -709,7 +701,6 @@ def password_change_complete(request, template):
     return render(request, template)
 
 
-@anonymous_csrf
 @mobile_template('users/{mobile/}forgot_username.html')
 def forgot_username(request, template):
     """Forgot username form page.
