@@ -625,17 +625,20 @@ class TestQuestionFilter(TestCase):
         self.queryset = Question.objects.all()
 
     def filter(self, filter_data):
-        return self.filter_instance.filter_metadata(self.queryset, json.dumps(filter_data))
+        return self.filter_instance.filter_metadata(
+            self.queryset, 'metadata', json.dumps(filter_data))
 
     def test_filter_involved(self):
         q1 = QuestionFactory()
         a1 = AnswerFactory(question=q1)
         q2 = QuestionFactory(creator=a1.creator)
 
-        qs = self.filter_instance.filter_involved(self.queryset, q1.creator.username)
+        qs = self.filter_instance.filter_involved(
+            self.queryset, 'filter_involved', q1.creator.username)
         eq_(list(qs), [q1])
 
-        qs = self.filter_instance.filter_involved(self.queryset, q2.creator.username)
+        qs = self.filter_instance.filter_involved(
+            self.queryset, 'filter_involved', q2.creator.username)
         # The filter does not have a strong order.
         qs = sorted(qs, key=lambda q: q.id)
         eq_(qs, [q1, q2])
@@ -647,10 +650,10 @@ class TestQuestionFilter(TestCase):
         q1.save()
         q2 = QuestionFactory()
 
-        qs = self.filter_instance.filter_is_solved(self.queryset, True)
+        qs = self.filter_instance.filter_is_solved(self.queryset, 'is_solved', True)
         eq_(list(qs), [q1])
 
-        qs = self.filter_instance.filter_is_solved(self.queryset, False)
+        qs = self.filter_instance.filter_is_solved(self.queryset, 'is_solved', False)
         eq_(list(qs), [q2])
 
     def test_filter_solved_by(self):
@@ -665,19 +668,19 @@ class TestQuestionFilter(TestCase):
         q3.solution = a3
         q3.save()
 
-        qs = self.filter_instance.filter_solved_by(self.queryset, a1.creator.username)
+        qs = self.filter_instance.filter_solved_by(self.queryset, 'solved_by', a1.creator.username)
         eq_(list(qs), [q1])
 
-        qs = self.filter_instance.filter_solved_by(self.queryset, a3.creator.username)
+        qs = self.filter_instance.filter_solved_by(self.queryset, 'solved_by', a3.creator.username)
         eq_(list(qs), [q3])
 
     @raises(APIException)
     def test_metadata_not_json(self):
-        self.filter_instance.filter_metadata(self.queryset, 'not json')
+        self.filter_instance.filter_metadata(self.queryset, 'metadata', 'not json')
 
     @raises(APIException)
     def test_metadata_bad_json(self):
-        self.filter_instance.filter_metadata(self.queryset, 'not json')
+        self.filter_instance.filter_metadata(self.queryset, 'metadata', 'not json')
 
     def test_single_filter_match(self):
         q1 = QuestionFactory(metadata={'os': 'Linux'})
@@ -722,7 +725,7 @@ class TestQuestionFilter(TestCase):
         taken_until = datetime.now() + timedelta(seconds=30)
         q = QuestionFactory(taken_by=u, taken_until=taken_until)
         QuestionFactory()
-        res = self.filter_instance.filter_is_taken(self.queryset, True)
+        res = self.filter_instance.filter_is_taken(self.queryset, 'is_taken', True)
         eq_(list(res), [q])
 
     def test_is_not_taken(self):
@@ -730,21 +733,21 @@ class TestQuestionFilter(TestCase):
         taken_until = datetime.now() + timedelta(seconds=30)
         QuestionFactory(taken_by=u, taken_until=taken_until)
         q = QuestionFactory()
-        res = self.filter_instance.filter_is_taken(self.queryset, False)
+        res = self.filter_instance.filter_is_taken(self.queryset, 'is_taken', False)
         eq_(list(res), [q])
 
     def test_is_taken_expired(self):
         u = UserFactory()
         taken_until = datetime.now() - timedelta(seconds=30)
         QuestionFactory(taken_by=u, taken_until=taken_until)
-        res = self.filter_instance.filter_is_taken(self.queryset, True)
+        res = self.filter_instance.filter_is_taken(self.queryset, 'is_taken', True)
         eq_(list(res), [])
 
     def test_is_not_taken_expired(self):
         u = UserFactory()
         taken_until = datetime.now() - timedelta(seconds=30)
         q = QuestionFactory(taken_by=u, taken_until=taken_until)
-        res = self.filter_instance.filter_is_taken(self.queryset, False)
+        res = self.filter_instance.filter_is_taken(self.queryset, 'is_taken', False)
         eq_(list(res), [q])
 
     def test_it_works_with_users_who_have_gotten_first_contrib_emails(self):
