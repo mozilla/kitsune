@@ -51,7 +51,7 @@ class MonthYearWidget(Widget):
         if not (self.required and value):
             month_choices.append(self.none_value)
         month_choices.sort()
-        local_attrs = self.build_attrs(id=self.month_field % id_)
+        local_attrs = self.build_attrs(dict(id=self.month_field % id_))
         s = Select(choices=month_choices)
         select_html = s.render(self.month_field % name, month_val, local_attrs)
         output.append(select_html)
