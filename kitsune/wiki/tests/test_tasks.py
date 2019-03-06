@@ -1,11 +1,11 @@
 import re
-from copy import copy
 from datetime import datetime
 
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.core import mail
 from django.core.cache import cache
+from django.test import override_settings
 from django.test.client import RequestFactory
 
 import bleach
@@ -39,6 +39,7 @@ https://testserver/en-US/kb/%s/history
 """
 
 
+@override_settings(CELERY_ALWAYS_EAGER=True)
 class RebuildTestCase(TestCase):
     rf = RequestFactory()
     ALWAYS_EAGER = settings.CELERY_ALWAYS_EAGER
@@ -52,14 +53,8 @@ class RebuildTestCase(TestCase):
         RevisionFactory(is_approved=True)
         RevisionFactory(is_approved=True)
 
-        # TODO: fix this crap
-        self.old_settings = copy(settings._wrapped.__dict__)
-        settings.CELERY_ALWAYS_EAGER = True
-
     def tearDown(self):
         cache.delete(settings.WIKI_REBUILD_TOKEN)
-        settings._wrapped.__dict__ = self.old_settings
-        settings.CELERY_ALWAYS_EAGER = self.ALWAYS_EAGER
 
     @mock.patch.object(rebuild_kb, 'delay')
     @mock.patch.object(waffle, 'switch_is_active')
@@ -71,9 +66,9 @@ class RebuildTestCase(TestCase):
 
     @mock.patch.object(rebuild_kb, 'delay')
     @mock.patch.object(waffle, 'switch_is_active')
+    @override_settings(CELERY_ALWAYS_EAGER=False)
     def test_task_queue(self, switch_is_active, delay):
         switch_is_active.return_value = True
-        settings.CELERY_ALWAYS_EAGER = False
         schedule_rebuild_kb()
         assert cache.get(settings.WIKI_REBUILD_TOKEN)
         assert delay.called
