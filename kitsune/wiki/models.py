@@ -344,6 +344,8 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
                     # Normal articles are compared case-insensitively
                     if getattr(self, name).lower() != value.lower():
                         setattr(self, old_name, getattr(self, name))
+                    else:
+                        delattr(self, old_name)
 
                     # Articles that have a changed title are checked
                     # case-sensitively for the title prefix changing.
