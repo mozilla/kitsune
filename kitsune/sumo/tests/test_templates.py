@@ -30,6 +30,7 @@ class MockRequestTests(TestCase):
         request = RequestFactory()
         request.GET = {}
         request.LANGUAGE_CODE = 'en-US'
+        request.META = {'csrf_token': 'NOTPROVIDED'}
         self.request = request
 
 
