@@ -144,28 +144,30 @@ class QuestionFilter(django_filters.FilterSet):
     metadata = django_filters.MethodFilter(action='filter_metadata')
     solved_by = django_filters.MethodFilter(action='filter_solved_by')
     taken_by = django_filters.CharFilter(name='taken_by__username')
+    updated = django_filters.DateTimeFilter()
+    created = django_filters.DateTimeFilter()
 
     class Meta(object):
         model = Question
-        fields = [
-            'creator',
-            'created',
-            'involved',
-            'is_archived',
-            'is_locked',
-            'is_solved',
-            'is_spam',
-            'is_taken',
-            'locale',
-            'num_answers',
-            'product',
-            'solved_by',
-            'taken_by',
-            'title',
-            'topic',
-            'updated',
-            'updated_by',
-        ]
+        fields = {
+            'creator': ['exact'],
+            'created': ['gt', 'lt', 'exact'],
+            'involved': ['exact'],
+            'is_archived': ['exact'],
+            'is_locked': ['exact'],
+            'is_solved': ['exact'],
+            'is_spam': ['exact'],
+            'is_taken': ['exact'],
+            'locale': ['exact'],
+            'num_answers': ['exact'],
+            'product': ['exact'],
+            'solved_by': ['exact'],
+            'taken_by': ['exact'],
+            'title': ['exact'],
+            'topic': ['exact'],
+            'updated': ['gt', 'lt', 'exact'],
+            'updated_by': ['exact'],
+        }
 
     def filter_involved(self, queryset, username):
         # This will remain unevaluated, and become a subquery of the final query.
@@ -441,17 +443,19 @@ class AnswerFKSerializer(AnswerSerializer):
 class AnswerFilter(django_filters.FilterSet):
     creator = django_filters.CharFilter(name='creator__username')
     question = django_filters.Filter(name='question__id')
+    updated = django_filters.IsoDateTimeFilter()
+    created = django_filters.IsoDateTimeFilter()
 
     class Meta(object):
         model = Answer
-        fields = [
-            'question',
-            'creator',
-            'created',
-            'updated',
-            'updated_by',
-            'is_spam',
-        ]
+        fields = {
+            'question': ['exact'],
+            'creator': ['exact'],
+            'created': ['gt', 'lt', 'exact'],
+            'updated': ['gt', 'lt', 'exact'],
+            'updated_by': ['exact'],
+            'is_spam': ['exact'],
+        }
 
 
 class AnswerViewSet(viewsets.ModelViewSet):
