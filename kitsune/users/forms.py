@@ -187,9 +187,16 @@ class ProfileForm(forms.ModelForm):
         fields = ('name', 'public_email', 'bio', 'website', 'twitter',
                   'facebook', 'mozillians', 'irc_handle', 'timezone', 'country', 'city',
                   'locale', 'involved_from')
+
         widgets = {
             'facebook': FacebookURLWidget,
         }
+
+    def __init__(self, *args, **kwargs):
+        super(ProfileForm, self).__init__(*args, **kwargs)
+        for field in self.fields.values():
+            if isinstance(field, forms.CharField):
+                field.empty_value = ''
 
     def clean_facebook(self):
         facebook = self.cleaned_data['facebook']
