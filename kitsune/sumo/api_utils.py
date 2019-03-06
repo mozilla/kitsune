@@ -144,15 +144,11 @@ class SplitSourceField(fields.Field):
 
 class DateTimeUTCField(fields.DateTimeField):
     """
-    This is like DateTimeField, except it always outputs in UTC.
+    This is like DateTimeField, except it outputs in UTC by default.
     """
 
-    def to_representation(self, value):
-        if value.tzinfo is None:
-            default_tzinfo = pytz.timezone(settings.TIME_ZONE)
-            value = default_tzinfo.localize(value)
-        value = value.astimezone(pytz.utc)
-        return super(DateTimeUTCField, self).to_representation(value)
+    def default_timezone(self):
+        return pytz.utc
 
 
 class _IDSerializer(serializers.Serializer):
