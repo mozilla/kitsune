@@ -1,9 +1,9 @@
 import json
 
 import django
-from django.conf import settings
 from django.contrib.sites.models import Site
 from django.http import HttpResponseRedirect, HttpResponsePermanentRedirect
+from django.test import override_settings
 from django.test.client import RequestFactory
 
 import mock
@@ -54,19 +54,15 @@ class RedirectTests(TestCase):
 
 class RobotsTestCase(TestCase):
     # Use the hard-coded URL because it's well-known.
-    old_setting = settings.ENGAGE_ROBOTS
 
-    def tearDown(self):
-        settings.ENGAGE_ROBOTS = self.old_setting
-
+    @override_settings(ENGAGE_ROBOTS=False)
     def test_disengaged(self):
-        settings.ENGAGE_ROBOTS = False
         response = self.client.get('/robots.txt')
         eq_('User-Agent: *\nDisallow: /', response.content)
         eq_('text/plain', response['content-type'])
 
+    @override_settings(ENGAGE_ROBOTS=True)
     def test_engaged(self):
-        settings.ENGAGE_ROBOTS = True
         response = self.client.get('/robots.txt')
         eq_('text/plain', response['content-type'])
         assert len(response.content) > len('User-agent: *\nDisallow: /')
@@ -80,16 +76,16 @@ class VersionCheckTests(TestCase):
         eq_(403, res.status_code)
         eq_('', res.content)
 
-    @mock.patch.object(settings._wrapped, 'VERSION_CHECK_TOKEN', None)
+    @override_settings(VERSION_CHECK_TOKEN=None)
     def token_is_none(self):
         self._is_forbidden(self.url)
         self._is_forbidden(urlparams(self.url, token='foo'))
 
-    @mock.patch.object(settings._wrapped, 'VERSION_CHECK_TOKEN', 'foo')
+    @override_settings(VERSION_CHECK_TOKEN='foo')
     def token_is_wrong(self):
         self._is_forbidden(urlparams(self.url, token='bar'))
 
-    @mock.patch.object(settings._wrapped, 'VERSION_CHECK_TOKEN', 'foo')
+    @override_settings(VERSION_CHECK_TOKEN='foo')
     def token_is_right(self):
         res = self.client.get(urlparams(self.url, token='foo'))
         eq_(200, res.status_code)
@@ -100,7 +96,7 @@ class VersionCheckTests(TestCase):
 class ForceErrorTests(TestCase):
     url = reverse('sumo.error')
 
-    @mock.patch.object(settings._wrapped, 'STAGE', True)
+    @override_settings(STAGE=True)
     def test_error(self):
         """On STAGE servers, be able to force an error."""
         try:
@@ -109,7 +105,7 @@ class ForceErrorTests(TestCase):
         except NameError:
             pass
 
-    @mock.patch.object(settings._wrapped, 'STAGE', False)
+    @override_settings(STAGE=False)
     def test_hidden(self):
         """On a non-STAGE server, no forcing errors."""
         res = self.client.get(self.url)

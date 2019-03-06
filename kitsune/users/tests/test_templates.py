@@ -8,6 +8,7 @@ from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.models import Site
 from django.core import mail
 from django.core.files import File
+from django.test import override_settings
 from django.utils.http import int_to_base36
 
 import mock
@@ -135,6 +136,7 @@ class RegisterTests(TestCaseBase):
         assert doc('#content form input[name="csrfmiddlewaretoken"]')
 
 
+@override_settings(DEBUG=True)
 class PasswordResetTests(TestCaseBase):
 
     def setUp(self):
@@ -142,12 +144,6 @@ class PasswordResetTests(TestCaseBase):
         self.u = UserFactory(email="valid@email.com")
         self.uidb36 = int_to_base36(self.u.id)
         self.token = default_token_generator.make_token(self.u)
-        self.orig_debug = settings.DEBUG
-        settings.DEBUG = True
-
-    def tearDown(self):
-        super(PasswordResetTests, self).tearDown()
-        settings.DEBUG = self.orig_debug
 
     def test_bad_email(self):
         r = self.client.post(reverse('users.pw_reset'),
@@ -310,8 +306,8 @@ class EditAvatarTests(TestCaseBase):
             user_profile.avatar.delete()
         super(EditAvatarTests, self).tearDown()
 
+    @override_settings(MAX_AVATAR_FILE_SIZE=1024)
     def test_large_avatar(self):
-        settings.MAX_AVATAR_FILE_SIZE = 1024
         url = reverse('users.edit_avatar')
         self.client.login(username=self.u.username, password='testpass')
         with open('kitsune/upload/tests/media/test.jpg') as f:

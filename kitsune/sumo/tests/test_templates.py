@@ -1,10 +1,9 @@
-from django.conf import settings
 from django.template import engines as template_engines
 from django.template.loader import render_to_string
 from django.test.client import RequestFactory
+from django.test import override_settings
 from django.utils import translation
 
-import mock
 from nose.tools import eq_
 from pyquery import PyQuery as pq
 
@@ -71,14 +70,14 @@ class BaseTemplateTests(MockRequestTests):
         doc = pq(html)
         eq_('false', doc('body')[0].attrib['data-readonly'])
 
-    @mock.patch.object(settings._wrapped, 'READ_ONLY', True)
+    @override_settings(READ_ONLY=True)
     def test_readonly_login_link_disabled(self):
         """Ensure that login/register links are hidden in READ_ONLY."""
         html = render_to_string(self.template, request=self.request)
         doc = pq(html)
         eq_(0, len(doc('a.sign-out, a.sign-in')))
 
-    @mock.patch.object(settings._wrapped, 'READ_ONLY', False)
+    @override_settings(READ_ONLY=False)
     def test_not_readonly_login_link_enabled(self):
         """Ensure that login/register links are visible in not READ_ONLY."""
         html = render_to_string(self.template, request=self.request)
