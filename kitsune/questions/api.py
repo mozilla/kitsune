@@ -141,8 +141,10 @@ class QuestionFilter(django_filters.FilterSet):
     product = django_filters.CharFilter(name='product__slug')
     creator = django_filters.CharFilter(name='creator__username')
     involved = django_filters.CharFilter(method='filter_involved')
-    is_solved = django_filters.BooleanFilter(method='filter_is_solved', widget=forms.TextInput)
-    is_taken = django_filters.BooleanFilter(method='filter_is_taken', widget=forms.TextInput)
+    is_solved = django_filters.BooleanFilter(
+        method='filter_is_solved', widget=forms.TextInput)
+    is_taken = django_filters.BooleanFilter(
+        method='filter_is_taken', widget=forms.TextInput)
     metadata = django_filters.CharFilter(method='filter_metadata')
     solved_by = django_filters.CharFilter(method='filter_solved_by')
     taken_by = django_filters.CharFilter(name='taken_by__username')
