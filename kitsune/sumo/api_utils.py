@@ -223,7 +223,7 @@ class GenericDjangoPermission(permissions.BasePermission):
 
     @property
     def permissions(self):
-        raise NotImplemented
+        raise NotImplementedError
 
     def has_permission(self, request, view):
         u = request.user
