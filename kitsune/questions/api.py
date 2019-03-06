@@ -315,7 +315,8 @@ class QuestionViewSet(viewsets.ModelViewSet):
         except QuestionMetaData.DoesNotExist:
             raise GenericAPIException(404, 'No matching metadata object found.')
 
-    @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticatedOrReadOnly])
+    @action(
+        detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticatedOrReadOnly])
     def take(self, request, pk=None):
         question = self.get_object()
         field = serializers.BooleanField()
@@ -352,7 +353,8 @@ class QuestionViewSet(viewsets.ModelViewSet):
         data = [{'name': tag.name, 'slug': tag.slug} for tag in question.tags.all()]
         return Response(data)
 
-    @action(detail=True, methods=['post', 'delete'], permission_classes=[permissions.IsAuthenticated])
+    @action(
+        detail=True, methods=['post', 'delete'], permission_classes=[permissions.IsAuthenticated])
     def remove_tags(self, request, pk=None):
         question = self.get_object()
 
