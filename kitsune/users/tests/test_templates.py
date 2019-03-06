@@ -240,7 +240,9 @@ class EditProfileTests(TestCaseBase):
         profile = Profile.objects.get(user=u)
         for key in data:
             if key != 'timezone':
-                eq_(data[key], getattr(profile, key))
+                assert data[key] == getattr(profile, key), (
+                    "%r != %r (for key '%s')" % (data[key], getattr(profile, key), key))
+
         eq_(data['timezone'], profile.timezone.zone)
 
     def test_user_cant_edit_others_profile_without_permission(self):
@@ -288,7 +290,9 @@ class EditProfileTests(TestCaseBase):
         profile = Profile.objects.get(user=u1)
         for key in data:
             if key != 'timezone':
-                eq_(data[key], getattr(profile, key))
+                assert data[key] == getattr(profile, key), (
+                    "%r != %r (for key '%s')" % (data[key], getattr(profile, key), key))
+
         eq_(data['timezone'], profile.timezone.zone)
 
 
