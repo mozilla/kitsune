@@ -324,8 +324,8 @@ class EditAvatarTests(TestCaseBase):
             r = self.client.post(url, {'avatar': f})
         eq_(200, r.status_code)
         doc = pq(r.content)
-        eq_('Please upload an image with one of the following extensions: '
-            'jpg, jpeg, png, gif.', doc('.errorlist').text())
+        assert doc('.errorlist').text().startswith(
+            "File extension 'ext' is not allowed. Allowed extensions are:")
 
     def test_upload_avatar(self):
         """Upload a valid avatar."""
