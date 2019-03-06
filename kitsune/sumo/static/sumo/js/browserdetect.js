@@ -157,7 +157,7 @@ var BrowserDetect = window.BrowserDetect = {
     },
     {
       string: navigator.platform,
-      subStrings: ['Linux'],
+      subStrings: [/Linux|FreeBSD/],
       identity: 'linux'
     },
     {
