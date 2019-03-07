@@ -1105,11 +1105,9 @@ if config('SENTRY_DSN', None):
 
     # see https://docs.sentry.io/learn/filtering/?platform=python
     def filter_exceptions(event, hint):
-        from django.security import DisallowedHost
-        if 'exc_info' in hint:
-            exc_type, exc_value, tb = hint['exc_info']
-            if isinstance(exc_value, DisallowedHost):
-                return None
+        # Ignore errors from specific loggers.
+        if event.get('logger', '') == 'django.security.DisallowedHost':
+            return None
 
         return event
 
