@@ -39,3 +39,4 @@ k8s/regions/*/*-secrets.yaml
 .yarnrc
 .docker-build*
 postatus.txt
+.ipython
