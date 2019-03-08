@@ -332,14 +332,24 @@ products = SortedDict([
         'tags': [],
         'product': 'firefox-enterprise',
         'categories': SortedDict([
-            ('deployment-firefox-enterprise-environment', {
-                'name': _lazy(u'Deployment of Firefox in an enterprise environment'),
-                'topic': 'deployment-firefox-enterprise-environment',
+            ('deploy-firefox-for-enterprise', {
+                'name': _lazy(u'Deploy'),
+                'topic': 'deploy-firefox-for-enterprise',
                 'tags': ['deployment'],
             }),
-            ('customization-firefox-enterprise-environment', {
-                'name': _lazy(u'Customization of Firefox in an enterprise environment'),
-                'topic': 'customization-firefox-enterprise-environment',
+            ('policies-customization-enterprise', {
+                'name': _lazy(u'Manage updates, policies & customization'),
+                'topic': 'policies-customization-enterprise',
+                'tags': ['customization'],
+            }),
+            ('manage-add-ons-enterprise', {
+                'name': _lazy(u'Manage add-ons'),
+                'topic': 'manage-add-ons-enterprise',
+                'tags': ['customization'],
+            }),
+            ('manage-certificates-firefox-enterprise', {
+                'name': _lazy(u'Manage certificates'),
+                'topic': 'manage-certificates-firefox-enterprise',
                 'tags': ['customization'],
             }),
         ])
