@@ -71,6 +71,15 @@ def doc_page_cache(view):
             statsd.incr('wiki.document_view.cache.skip')
             return view(request, document_slug, *args, **kwargs)
 
+        # If the slug is part of the UX experiments, redirect to the experiment view.
+        # The check is here because the KB articles are heavily cached and we need to load
+        # balance based on the waffle flag for every request.
+        if (all([x not in request.META['HTTP_USER_AGENT'] for x in EXCLUDED_BROWSERS]) and
+            document_slug in SUMO_UX_EXPERIMENTS_SLUGS and request.LANGUAGE_CODE == 'en-US' and
+            switch_is_active('ux_experiment_1') and
+                flag_is_active(request, 'ux_experiment_1')):
+            return HttpResponseRedirect(reverse('wiki.ux_experiment_view', args=[document_slug]))
+
         cache_key = doc_html_cache_key(
             mobile=request.MOBILE,
             locale=request.LANGUAGE_CODE,
@@ -132,14 +141,6 @@ def document(request, document_slug, template=None, document=None):
             # There is no translation
             # and OK to fall back to parent (parent is approved).
             fallback_reason = 'no_translation'
-
-    # Render the static pages if the slug matches the experiment
-    if (switch_is_active('ux_experiment_1') and
-        flag_is_active(request, 'ux_experiment_1') and
-        all([x not in request.META['HTTP_USER_AGENT'] for x in EXCLUDED_BROWSERS]) and
-            doc.slug in SUMO_UX_EXPERIMENTS_SLUGS and request.LANGUAGE_CODE == 'en-US'):
-
-        return HttpResponseRedirect(reverse('wiki.ux_experiment_view', args=[doc.slug]))
 
     # Find and show the defined fallback locale rather than the English version of the document
     # The fallback locale is defined based on the ACCEPT_LANGUAGE header,
