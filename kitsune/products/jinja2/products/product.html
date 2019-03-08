@@ -84,7 +84,7 @@
         <img src="{{ product.image_alternate_url }}" height="48" width="48" alt="" />
         <span>{{ pgettext('DB: products.Product.title', product.title) }}</span>
         <h1>{{ _('Help Topics') }}</h1>
-        <p>{{ _('Search and navigate easily with these essential features') }}</p>
+        <p>{{ _('Explore the knowledge base.') }}</p>
       </div>
       {{ help_topics(topics, show_community_support=product.questions_enabled(request.LANGUAGE_CODE)) }}
     </section>
