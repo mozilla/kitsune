@@ -8,12 +8,14 @@ from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.exceptions import ValidationError
 from django.db.models import Q, Count
+from django.utils.encoding import force_text
 from django.utils.http import int_to_base36
 from django.views.decorators.http import require_GET
 
 import waffle
 from django_statsd.clients import statsd
 
+import pytz
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, serializers, mixins, filters, permissions, status
 from rest_framework.permissions import IsAuthenticated
@@ -36,6 +38,17 @@ def display_name_or_none(user):
         return user.profile.name
     except (Profile.DoesNotExist, AttributeError):
         return None
+
+
+class TimezoneField(serializers.Field):
+    def to_representation(self, obj):
+        return force_text(obj)
+
+    def to_internal_value(self, data):
+        try:
+            return pytz.timezone(str(data))
+        except pytz.exceptions.UnknownTimeZoneError:
+            raise ValidationError('Unknown timezone')
 
 
 @login_required
@@ -159,6 +172,7 @@ class ProfileSerializer(serializers.ModelSerializer):
     is_active = serializers.BooleanField(source='user.is_active', read_only=True)
     # This is a write only field. It is very important it stays that way!
     password = serializers.CharField(source='user.password', write_only=True)
+    timezone = TimezoneField(required=False)
 
     class Meta:
         model = Profile
