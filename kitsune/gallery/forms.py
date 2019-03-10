@@ -4,7 +4,6 @@ from django.utils.translation import ugettext_lazy as _lazy, ugettext as _
 
 from kitsune.gallery.models import Image
 from kitsune.lib.sumo_locales import LOCALES
-from kitsune.sumo.form_fields import StrippedCharField
 from kitsune.upload.forms import clean_image_extension
 
 
@@ -38,7 +37,7 @@ class MediaForm(forms.ModelForm):
         choices=[(k, LOCALES[k].native) for
                  k in settings.SUMO_LANGUAGES],
         initial=settings.WIKI_DEFAULT_LANGUAGE)
-    title = StrippedCharField(
+    title = forms.CharField(
         required=False,
         label=_lazy(u'Title'),
         help_text=TITLE_HELP_TEXT,
@@ -46,7 +45,7 @@ class MediaForm(forms.ModelForm):
         error_messages={'required': MSG_TITLE_REQUIRED,
                         'min_length': MSG_TITLE_SHORT,
                         'max_length': MSG_TITLE_LONG})
-    description = StrippedCharField(
+    description = forms.CharField(
         required=False,
         label=_lazy(u'Description'),
         help_text=DESCRIPTION_HELP_TEXT,
