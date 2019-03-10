@@ -22,7 +22,7 @@ class TimeWidget(fields.TimeField.widget):
 
 
 def patch():
-    global _has_been_patched, URLWidget
+    global _has_been_patched
 
     if _has_been_patched:
         return

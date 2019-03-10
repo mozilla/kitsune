@@ -1,10 +1,9 @@
 import re
 from datetime import datetime
 
-from django.forms.widgets import Widget, Select
+from django.forms.widgets import Widget, Select, URLInput
 from django.utils.dates import MONTHS
 from django.utils.safestring import mark_safe
-from kitsune.sumo.monkeypatch import URLWidget
 
 RE_DATE = re.compile(r'(\d{4})-(\d\d?)-(\d\d?)$')
 
@@ -83,7 +82,7 @@ class MonthYearWidget(Widget):
             return '%s-%s-%s' % (y, m, 1)
 
 
-class PatternURLWidget(URLWidget):
+class PatternURLWidget(URLInput):
     """A URLWidget with a pattern attribute, set by self.pattern."""
 
     def render(self, *args, **kwargs):
