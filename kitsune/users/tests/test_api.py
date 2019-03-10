@@ -71,11 +71,12 @@ class TestUserSerializer(TestCase):
     def test_user_created(self):
         # There is at least one user in existence due to migrations
         number_users = User.objects.count()
+        number_profiles = Profile.objects.count()
         serializer = api.ProfileSerializer(data=self.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         eq_(User.objects.count(), number_users + 1)
-        eq_(Profile.objects.count(), 1)
+        eq_(Profile.objects.count(), number_profiles + 1)
 
     def test_password(self):
         serializer = api.ProfileSerializer(data=self.data)
