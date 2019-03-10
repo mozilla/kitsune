@@ -6,7 +6,6 @@ from django.utils.translation import ugettext_lazy as _lazy, ugettext as _
 
 from kitsune.questions.marketplace import submit_ticket
 from kitsune.questions.models import Answer
-from kitsune.sumo.form_fields import StrippedCharField
 
 # labels and help text
 SITE_AFFECTED_LABEL = _lazy(u'URL of affected site')
@@ -126,33 +125,37 @@ class EditQuestionForm(forms.Form):
         error_messages = {'required': MSG_TITLE_REQUIRED,
                           'min_length': MSG_TITLE_SHORT,
                           'max_length': MSG_TITLE_LONG}
-        field = StrippedCharField(label=TITLE_LABEL, min_length=5,
-                                  max_length=160, widget=forms.TextInput(),
-                                  error_messages=error_messages)
+        field = forms.CharField(
+            label=TITLE_LABEL, min_length=5, max_length=160, widget=forms.TextInput(),
+            error_messages=error_messages)
         self.fields['title'] = field
 
         error_messages = {'required': MSG_CONTENT_REQUIRED,
                           'min_length': MSG_CONTENT_SHORT,
                           'max_length': MSG_CONTENT_LONG}
-        field = StrippedCharField(label=CONTENT_LABEL, min_length=5,
-                                  max_length=10000, widget=forms.Textarea(),
-                                  error_messages=error_messages)
+        field = forms.CharField(
+            label=CONTENT_LABEL, min_length=5, max_length=10000, widget=forms.Textarea(),
+            error_messages=error_messages)
         self.fields['content'] = field
 
         if 'sites_affected' in extra_fields:
-            field = StrippedCharField(label=SITE_AFFECTED_LABEL,
-                                      initial='http://',
-                                      required=False,
-                                      max_length=255,
-                                      widget=forms.TextInput())
+            field = forms.CharField(
+                label=SITE_AFFECTED_LABEL,
+                initial='http://',
+                required=False,
+                max_length=255,
+                widget=forms.TextInput(),
+            )
             self.fields['sites_affected'] = field
 
         if 'crash_id' in extra_fields:
-            field = StrippedCharField(label=CRASH_ID_LABEL,
-                                      help_text=CRASH_ID_HELP,
-                                      required=False,
-                                      max_length=255,
-                                      widget=forms.TextInput())
+            field = forms.CharField(
+                label=CRASH_ID_LABEL,
+                help_text=CRASH_ID_HELP,
+                required=False,
+                max_length=255,
+                widget=forms.TextInput(),
+            )
             self.fields['crash_id'] = field
 
         if 'frequency' in extra_fields:
@@ -162,45 +165,59 @@ class EditQuestionForm(forms.Form):
             self.fields['frequency'] = field
 
         if 'started' in extra_fields:
-            field = StrippedCharField(label=STARTED_LABEL,
-                                      required=False,
-                                      max_length=255,
-                                      widget=forms.TextInput())
+            field = forms.CharField(
+                label=STARTED_LABEL,
+                required=False,
+                max_length=255,
+                widget=forms.TextInput(),
+            )
             self.fields['started'] = field
 
         if 'addon' in extra_fields:
-            field = StrippedCharField(label=ADDON_LABEL,
-                                      required=False,
-                                      max_length=255,
-                                      widget=forms.TextInput())
+            field = forms.CharField(
+                label=ADDON_LABEL,
+                required=False,
+                max_length=255,
+                widget=forms.TextInput(),
+            )
             self.fields['addon'] = field
 
         if 'troubleshooting' in extra_fields:
             widget = forms.Textarea(attrs={'class': 'troubleshooting'})
-            field = StrippedCharField(label=TROUBLESHOOTING_LABEL,
-                                      help_text=TROUBLESHOOTING_HELP,
-                                      required=False,
-                                      max_length=655360,
-                                      widget=widget)
+            field = forms.CharField(
+                label=TROUBLESHOOTING_LABEL,
+                help_text=TROUBLESHOOTING_HELP,
+                required=False,
+                max_length=655360,
+                widget=widget,
+            )
             self.fields['troubleshooting'] = field
 
         if 'ff_version' in extra_fields:
-            self.fields['ff_version'] = StrippedCharField(
-                label=FF_VERSION_LABEL, required=False)
+            self.fields['ff_version'] = forms.CharField(
+                label=FF_VERSION_LABEL,
+                required=False,
+            )
 
         if 'device' in extra_fields:
-            self.fields['device'] = StrippedCharField(label=DEVICE_LABEL,
-                                                      required=False)
+            self.fields['device'] = forms.CharField(
+                label=DEVICE_LABEL,
+                required=False,
+            )
 
         if 'os' in extra_fields:
-            self.fields['os'] = StrippedCharField(label=OS_LABEL,
-                                                  required=False)
+            self.fields['os'] = forms.CharField(
+                label=OS_LABEL,
+                required=False,
+            )
 
         if 'plugins' in extra_fields:
             widget = forms.Textarea(attrs={'class': 'plugins'})
-            self.fields['plugins'] = StrippedCharField(label=PLUGINS_LABEL,
-                                                       required=False,
-                                                       widget=widget)
+            self.fields['plugins'] = forms.CharField(
+                label=PLUGINS_LABEL,
+                required=False,
+                widget=widget,
+            )
 
     @property
     def metadata_field_keys(self):
@@ -266,7 +283,7 @@ class NewQuestionForm(EditQuestionForm):
 
 class AnswerForm(forms.Form):
     """Form for replying to a question."""
-    content = StrippedCharField(
+    content = forms.CharField(
         label=_lazy('Content:'),
         min_length=5,
         max_length=10000,
@@ -324,7 +341,7 @@ class BaseZendeskForm(forms.Form):
                 }))
             self.fields['email'] = email
 
-    subject = StrippedCharField(
+    subject = forms.CharField(
         label=_lazy(u'Subject:'),
         min_length=4,
         max_length=255,
@@ -333,7 +350,7 @@ class BaseZendeskForm(forms.Form):
                         'min_length': SUBJECT_CONTENT_SHORT,
                         'max_length': SUBJECT_CONTENT_LONG})
 
-    body = StrippedCharField(
+    body = forms.CharField(
         label=_lazy(u'Body:'),
         min_length=5,
         max_length=10000,
@@ -370,7 +387,7 @@ class MarketplaceAaqForm(BaseZendeskForm):
 
 
 class MarketplaceRefundForm(BaseZendeskForm):
-    transaction_id = StrippedCharField(
+    transaction_id = forms.CharField(
         label=_lazy(u'Transaction ID:'),
         widget=forms.TextInput(attrs={
             'placeholder': TRANSACTION_ID_PLACEHOLDER

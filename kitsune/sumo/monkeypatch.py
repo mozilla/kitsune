@@ -2,7 +2,6 @@ import sys
 from functools import wraps
 
 from django.forms import fields
-from django.forms import widgets
 
 # TODO: re-enable elastic search prior to production push
 from elasticutils import get_es as base_get_es
