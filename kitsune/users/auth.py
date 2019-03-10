@@ -1,7 +1,25 @@
 import base64
 
+from django.contrib.auth.backends import ModelBackend
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.models import User
+
+
+class ModelBackendAllowInactive(ModelBackend):
+    """
+    Standard model authentication that also allows inactive users.
+
+    This is necessary as new registered users are marked inactive
+    but still logged in automatically. Some control around logging
+    in as an active user is still retained via the ``only_active``
+    argument of ``kitsune.users.forms.AuthenticationForm``.
+    """
+
+    def user_can_authenticate(self, user):
+        """
+        Allow users with is_active=False.
+        """
+        return True
 
 
 class TokenLoginBackend(object):

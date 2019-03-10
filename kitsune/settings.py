@@ -570,7 +570,8 @@ WATCHMAN_CHECKS = (
 
 # Auth
 AUTHENTICATION_BACKENDS = (
-    'django.contrib.auth.backends.ModelBackend',
+    # ``ModelBackendAllowInactive`` replaces ``django.contrib.auth.backends.ModelBackend``.
+    'kitsune.users.auth.ModelBackendAllowInactive',
     'kitsune.users.auth.TokenLoginBackend',
 )
 if READ_ONLY:
