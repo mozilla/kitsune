@@ -6,7 +6,7 @@ from django.template.defaultfilters import slugify
 from django.utils.translation import ugettext_lazy as _lazy
 
 from kitsune.products.models import Product, Topic
-from kitsune.sumo.form_fields import MultiUsernameField, StrippedCharField
+from kitsune.sumo.form_fields import MultiUsernameField
 from kitsune.wiki.config import SIGNIFICANCES, CATEGORIES
 from kitsune.wiki.models import (
     Document, Revision, DraftRevision, MAX_REVISION_COMMENT_LENGTH)
@@ -84,7 +84,7 @@ class DocumentForm(forms.ModelForm):
             del self.fields['needs_change']
             del self.fields['needs_change_comment']
 
-    title = StrippedCharField(
+    title = forms.CharField(
         min_length=5, max_length=255,
         widget=forms.TextInput(),
         label=_lazy(u'Title:'),
@@ -96,7 +96,7 @@ class DocumentForm(forms.ModelForm):
     # We don't use forms.SlugField because it is too strict in
     # what it allows (English/Roman alpha-numeric characters and dashes).
     # Instead, we do custom validation in `clean_slug` below.
-    slug = StrippedCharField(
+    slug = forms.CharField(
         min_length=3, max_length=255,
         widget=forms.TextInput(),
         label=_lazy(u'Slug:'),
@@ -213,11 +213,13 @@ class DocumentForm(forms.ModelForm):
 
 class RevisionForm(forms.ModelForm):
     """Form to create new revisions."""
-    keywords = StrippedCharField(required=False,
-                                 label=_lazy(u'Keywords:'),
-                                 help_text=_lazy(u'Affects search results'))
+    keywords = forms.CharField(
+        required=False,
+        label=_lazy(u'Keywords:'),
+        help_text=_lazy(u'Affects search results'),
+    )
 
-    summary = StrippedCharField(
+    summary = forms.CharField(
         min_length=5, max_length=1000, widget=forms.Textarea(),
         label=_lazy(u'Search result summary:'),
         help_text=_lazy(u'Only displayed on search results page'),
@@ -225,7 +227,7 @@ class RevisionForm(forms.ModelForm):
                         'min_length': SUMMARY_SHORT,
                         'max_length': SUMMARY_LONG})
 
-    content = StrippedCharField(
+    content = forms.CharField(
         min_length=5, max_length=100000,
         label=_lazy(u'Content:'),
         widget=forms.Textarea(),
@@ -237,7 +239,7 @@ class RevisionForm(forms.ModelForm):
         label=_lazy(u'Expiry date:'),
         required=False)
 
-    comment = StrippedCharField(required=False, label=_lazy(u'Comment:'))
+    comment = forms.CharField(required=False, label=_lazy(u'Comment:'))
 
     class Meta(object):
         model = Revision
@@ -293,9 +295,9 @@ class DraftRevisionForm(forms.ModelForm):
 
 
 class ReviewForm(forms.Form):
-    comment = StrippedCharField(max_length=2000, widget=forms.Textarea(),
-                                required=False, label=_lazy(u'Comment:'),
-                                error_messages={'max_length': COMMENT_LONG})
+    comment = forms.CharField(
+        max_length=2000, widget=forms.Textarea(), required=False, label=_lazy(u'Comment:'),
+        error_messages={'max_length': COMMENT_LONG})
 
     _widget = forms.RadioSelect()
     significance = forms.TypedChoiceField(
