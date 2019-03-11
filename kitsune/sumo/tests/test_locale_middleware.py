@@ -130,18 +130,18 @@ class PreferredLanguageTests(TestCase):
 class NonSupportedTests(TestCase):
     @override_settings(NON_SUPPORTED_LOCALES={'nn-NO': 'no', 'xx': None})
     def test_get_non_supported(self):
-            eq_('no', get_non_supported('nn-NO'))
-            eq_('no', get_non_supported('nn-no'))
-            eq_(settings.LANGUAGE_CODE, get_non_supported('xx'))
-            eq_(None, get_non_supported('yy'))
+        eq_('no', get_non_supported('nn-NO'))
+        eq_('no', get_non_supported('nn-no'))
+        eq_(settings.LANGUAGE_CODE, get_non_supported('xx'))
+        eq_(None, get_non_supported('yy'))
 
     @override_settings(NON_SUPPORTED_LOCALES={'nn-NO': 'no', 'xy': None})
     def test_middleware(self):
-            response = self.client.get('/nn-NO/', follow=True)
-            self.assertRedirects(response, '/no/', status_code=302)
+        response = self.client.get('/nn-NO/', follow=True)
+        self.assertRedirects(response, '/no/', status_code=302)
 
-            response = self.client.get('/nn-no/', follow=True)
-            self.assertRedirects(response, '/no/', status_code=302)
+        response = self.client.get('/nn-no/', follow=True)
+        self.assertRedirects(response, '/no/', status_code=302)
 
-            response = self.client.get('/xy/', follow=True)
-            self.assertRedirects(response, '/en-US/', status_code=302)
+        response = self.client.get('/xy/', follow=True)
+        self.assertRedirects(response, '/en-US/', status_code=302)
