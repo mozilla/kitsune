@@ -164,8 +164,8 @@ class UploadImageTestCase(TestCase):
         json_r = json.loads(r.content)
         eq_('error', json_r['status'])
         eq_('Invalid or no image received.', json_r['message'])
-        eq_('Please upload an image with one of the following extensions: '
-            'jpg, jpeg, png, gif.', json_r['errors']['__all__'][0])
+        assert json_r['errors']['image'][0].startswith(
+            "File extension 'ext' is not allowed. Allowed extensions are: ")
 
     def test_upload_long_filename(self):
         """Uploading an image with a filename that's too long fails."""

@@ -4,7 +4,6 @@ from django.utils.translation import ugettext_lazy as _lazy, ugettext as _
 
 from kitsune.gallery.models import Image
 from kitsune.lib.sumo_locales import LOCALES
-from kitsune.upload.forms import clean_image_extension
 
 
 # Error messages
@@ -78,11 +77,6 @@ class ImageForm(MediaForm):
                 '<a target="_blank" href="{learn_more}">Learn more...</a>')
         url = 'http://infohost.nmt.edu/tcc/help/pubs/pil/formats.html'
         self.fields['file'].help_text = msg.format(learn_more=url)
-
-    def clean(self):
-        c = super(ImageForm, self).clean()
-        clean_image_extension(c.get('file'))
-        return c
 
     class Meta:
         model = Image
