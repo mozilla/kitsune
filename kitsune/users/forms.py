@@ -16,7 +16,6 @@ from django.utils.translation import ugettext as _, ugettext_lazy as _lazy
 from kitsune.sumo import email_utils
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.widgets import ImageWidget
-from kitsune.upload.forms import clean_image_extension
 from kitsune.upload.utils import check_file_size, FileTooLargeError
 from kitsune.users.models import Profile
 from kitsune.users.widgets import FacebookURLWidget
@@ -227,7 +226,6 @@ class AvatarForm(forms.ModelForm):
                             settings.MAX_AVATAR_FILE_SIZE)
         except FileTooLargeError as e:
             raise forms.ValidationError(e.args[0])
-        clean_image_extension(self.cleaned_data.get('avatar'))
         return self.cleaned_data['avatar']
 
 
