@@ -33,11 +33,7 @@ class ProfileAdmin(admin.ModelAdmin):
     form = ProfileAdminForm
     list_display = ['full_user']
     list_select_related = True
-    readonly_fields = ['user']
     search_fields = ['user__username', 'user__email', 'name']
-
-    def has_add_permission(self, request):
-        return False
 
     def has_delete_permission(self, request, obj=None):
         return False
@@ -54,6 +50,7 @@ class ProfileAdmin(admin.ModelAdmin):
         if delete_avatar and obj.avatar:
             obj.avatar.delete()
         obj.save()
+
 
 admin.site.register(Profile, ProfileAdmin)
 monkeypatch.patch_all()
