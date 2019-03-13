@@ -74,7 +74,7 @@ def doc_page_cache(view):
         # If the slug is part of the UX experiments, redirect to the experiment view.
         # The check is here because the KB articles are heavily cached and we need to load
         # balance based on the waffle flag for every request.
-        if (all([x not in request.META['HTTP_USER_AGENT'] for x in EXCLUDED_BROWSERS]) and
+        if (all([x not in request.META.get('HTTP_USER_AGENT', '') for x in EXCLUDED_BROWSERS]) and
             document_slug in SUMO_UX_EXPERIMENTS_SLUGS and request.LANGUAGE_CODE == 'en-US' and
             switch_is_active('ux_experiment_1') and
                 flag_is_active(request, 'ux_experiment_1')):
