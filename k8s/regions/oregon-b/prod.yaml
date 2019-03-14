@@ -124,7 +124,6 @@ app:
     redis_default_url: SECRET
     redis_helpfulvotes_url: SECRET
     secret_key: SECRET
-    sentry_dsn: SECRET
     session_cookie_secure: True
     stage: False
     static_url: "https://static-media-prod-cdn.sumo.mozilla.net/static/"
