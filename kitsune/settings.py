@@ -1098,27 +1098,27 @@ STATSD_HOST = config('STATSD_HOST', default='localhost')
 STATSD_PORT = config('STATSD_PORT', 8125, cast=int)
 STATSD_PREFIX = config('STATSD_PREFIX', default='')
 
+# Temporarily disable sentry logging
+# if config('SENTRY_DSN', None):
+#     import sentry_sdk
+#     from sentry_sdk.integrations.django import DjangoIntegration
 
-if config('SENTRY_DSN', None):
-    import sentry_sdk
-    from sentry_sdk.integrations.django import DjangoIntegration
+#     # see https://docs.sentry.io/learn/filtering/?platform=python
+#     def filter_exceptions(event, hint):
+#         # Ignore errors from specific loggers.
+#         if event.get('logger', '') == 'django.security.DisallowedHost':
+#             return None
 
-    # see https://docs.sentry.io/learn/filtering/?platform=python
-    def filter_exceptions(event, hint):
-        # Ignore errors from specific loggers.
-        if event.get('logger', '') == 'django.security.DisallowedHost':
-            return None
+#         return event
 
-        return event
-
-    sentry_sdk.init(
-        dsn=config('SENTRY_DSN'),
-        integrations=[DjangoIntegration()],
-        release=config('GIT_SHA', default=None),
-        server_name=PLATFORM_NAME,
-        environment=config('SENTRY_ENVIRONMENT', default=''),
-        before_send=filter_exceptions,
-    )
+#     sentry_sdk.init(
+#         dsn=config('SENTRY_DSN'),
+#         integrations=[DjangoIntegration()],
+#         release=config('GIT_SHA', default=None),
+#         server_name=PLATFORM_NAME,
+#         environment=config('SENTRY_ENVIRONMENT', default=''),
+#         before_send=filter_exceptions,
+#     )
 
 
 PIPELINE_ENABLED = config('PIPELINE_ENABLED', default=False, cast=bool)
