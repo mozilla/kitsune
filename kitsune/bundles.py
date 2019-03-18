@@ -271,6 +271,12 @@ PIPELINE_CSS = {
             'sumo/kb-ux-experiment/src.4a0feb03.css'
         ),
         'output_filename': 'build/kb-ux-experiment-min.css'
+    },
+    'fxa-banner-test': {
+        'source_filenames': (
+            'sumo/less/fxa-banner.less',
+        ),
+        'output_filename': 'build/fxa-banner-test.css'
     }
 }
 
@@ -666,5 +672,11 @@ PIPELINE_JS = {
             'sumo/kb-ux-experiment/submit-gform.js'
         ),
         'output_filename': 'build/kb-ux-experiment-min.js'
+    },
+    'fxa-banner-test': {
+        'source_filenames': (
+            'sumo/js/fxa-banner.js',
+        ),
+        'output_filename': 'build/fxa-banner-test.js'
     }
 }
