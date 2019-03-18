@@ -32,6 +32,10 @@
     {% stylesheet style %}
   {% endfor %}
 
+  {% if waffle.switch('fxa-banner-test') and request.LANGUAGE_CODE in settings.FXA_BANNER_LANGUAGES %}
+    {% stylesheet 'fxa-banner-test' %}
+  {% endif %}
+
   <!--[if lte IE 7]>
     {% stylesheet 'ie' %}
   <![endif]-->
@@ -211,6 +215,26 @@
   {{ breadcrumbs(crumbs, id='main-breadcrumbs') }}
 {% endblock %}
 
+{% if waffle.switch('fxa-banner-test') and request.LANGUAGE_CODE in settings.FXA_BANNER_LANGUAGES %}
+<div id="fxa-banner">
+  <p class="copy" id="fxa-banner-send">
+  {% trans url='https://send.firefox.com/?utm_source=support.mozilla.org&utm_medium=referral&utm_campaign=sumo_try_send' %}
+    Safely share files online with encrypted links that “self-destruct.” <a href="{{ url }}">Try Firefox Send.</a>
+  {% endtrans %}
+  </p>
+  <p class="copy" id="fxa-banner-monitor">
+  {% trans url='https://monitor.firefox.com/?utm_source=support.mozilla.org&utm_medium=referral&utm_campaign=sumo_try_monitor' %}
+    Give hackers a swift kick in the cookies. See if your data has been affected by a breach with Firefox Monitor. <a href="{{ url }}">Try it now.</a>
+  {% endtrans %}
+  </p>
+  <p class="copy" id="fxa-banner-sync">
+  {% trans url='https://accounts.firefox.com/signup?context=fx_desktop_v3&entrypoint=fxa%3Asignup&service=sync&utm_source=support.mozilla.org&utm_medium=referral&utm_campaign=sumo_try_sync' %}
+    Access your history, passwords and open tabs wherever you are with Sync. <a href="{{ url }}">Connect a second device.</a>
+  {% endtrans %}
+  </p>
+</div>
+{% endif %}
+
 <div class="container_12 cf" id="main-container">
   <div class="grid_12">
     {% if messages %}
@@ -336,6 +360,10 @@
 {% endfor %}
 
 {% javascript 'common.fx.download' %}
+
+{% if waffle.switch('fxa-banner-test') and request.LANGUAGE_CODE in settings.FXA_BANNER_LANGUAGES %}
+  {% javascript 'fxa-banner-test' %}
+{% endif %}
 
 {# Temporary Pontoon testing - bug 812176 #}
 {% if settings.STAGE %}
