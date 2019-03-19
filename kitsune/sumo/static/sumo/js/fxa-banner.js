@@ -5,7 +5,7 @@
 
   if (isFirefox) {
     var banners = ['send', 'monitor', 'sync'];
-    var choice = Math.floor(Math.random() * 3);
+    var choice = Math.floor(Math.random() * banners.length);
     var copy = document.getElementById('fxa-banner-' + banners[choice]);
 
     copy.classList.add('chosen');
