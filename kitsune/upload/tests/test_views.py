@@ -156,7 +156,9 @@ class UploadImageTestCase(TestCase):
         eq_('The submitted file is empty.', json_r['errors']['image'][0])
 
     def test_invalid_image_extensions(self):
-        """Make sure invalid extensions are not accepted as images."""
+        """
+        Make sure invalid extensions aren't accepted as images.
+        """
         with open('kitsune/upload/tests/media/test_invalid.ext', 'rb') as f:
             r = self._make_post_request(image=f)
 
@@ -164,8 +166,24 @@ class UploadImageTestCase(TestCase):
         json_r = json.loads(r.content)
         eq_('error', json_r['status'])
         eq_('Invalid or no image received.', json_r['message'])
-        assert json_r['errors']['image'][0].startswith(
-            "File extension 'ext' is not allowed. Allowed extensions are: ")
+        assert (
+            json_r['errors']['image'][0] ==
+            "File extension 'ext' is not allowed. Allowed extensions are: 'jpg, jpeg, png, gif'.")
+
+    def test_unsupported_image_extensions(self):
+        """
+        Make sure valid image types that are not whitelisted aren't accepted as images.
+        """
+        with open('kitsune/upload/tests/media/test.tiff', 'rb') as f:
+            r = self._make_post_request(image=f)
+
+        eq_(400, r.status_code)
+        json_r = json.loads(r.content)
+        eq_('error', json_r['status'])
+        eq_('Invalid or no image received.', json_r['message'])
+        assert (
+            json_r['errors']['image'][0] ==
+            "File extension 'tiff' is not allowed. Allowed extensions are: 'jpg, jpeg, png, gif'.")
 
     def test_upload_long_filename(self):
         """Uploading an image with a filename that's too long fails."""

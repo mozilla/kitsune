@@ -4,7 +4,7 @@ from django.utils.translation import ugettext_lazy as _lazy, ugettext as _
 
 from kitsune.gallery.models import Image
 from kitsune.lib.sumo_locales import LOCALES
-
+from kitsune.upload.forms import LimitedImageField
 
 # Error messages
 MSG_TITLE_REQUIRED = _lazy(u'Please provide a title.')
@@ -66,10 +66,11 @@ class MediaForm(forms.ModelForm):
 
 class ImageForm(MediaForm):
     """Image form."""
-    file = forms.ImageField(error_messages={'required': MSG_IMAGE_REQUIRED,
-                                            'max_length': MSG_IMAGE_LONG},
-                            label=_lazy('Image'),
-                            max_length=settings.MAX_FILENAME_LENGTH)
+    file = LimitedImageField(
+        error_messages={'required': MSG_IMAGE_REQUIRED, 'max_length': MSG_IMAGE_LONG},
+        label=_lazy('Image'),
+        max_length=settings.MAX_FILENAME_LENGTH,
+    )
 
     def __init__(self, *args, **kwargs):
         super(ImageForm, self).__init__(*args, **kwargs)
