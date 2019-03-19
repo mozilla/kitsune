@@ -16,6 +16,7 @@ from django.utils.translation import ugettext as _, ugettext_lazy as _lazy
 from kitsune.sumo import email_utils
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.widgets import ImageWidget
+from kitsune.upload.forms import LimitedImageField
 from kitsune.upload.utils import check_file_size, FileTooLargeError
 from kitsune.users.models import Profile
 from kitsune.users.widgets import FacebookURLWidget
@@ -206,7 +207,7 @@ class ProfileForm(forms.ModelForm):
 
 class AvatarForm(forms.ModelForm):
     """The form for editing the user's avatar."""
-    avatar = forms.ImageField(required=True, widget=ImageWidget)
+    avatar = LimitedImageField(required=True, widget=ImageWidget)
 
     def __init__(self, *args, **kwargs):
         super(AvatarForm, self).__init__(*args, **kwargs)
