@@ -1,5 +1,8 @@
 {% from 'includes/common_macros.html' import announcement_bar, search_box, aux_nav, favicon with context %}
 
+{# check once to see if fxa banner should be shown #}
+{% set fxa_banner_test = request.LANGUAGE_CODE in settings.FXA_BANNER_LANGUAGES and waffle.switch('fxa-banner-test') %}
+
 {% if request.LANGUAGE_CODE == settings.WIKI_DEFAULT_LANGUAGE and waffle.flag('surveygizmo') %}
   {# allow any artibtrary survey to be loaded via the SurveyGizmo admin #}
   {% set SURVEY_GIZMOS = ['beacon'] %}
@@ -32,7 +35,7 @@
     {% stylesheet style %}
   {% endfor %}
 
-  {% if request.LANGUAGE_CODE in settings.FXA_BANNER_LANGUAGES and waffle.switch('fxa-banner-test') %}
+  {% if fxa_banner_test %}
     {% stylesheet 'fxa-banner-test' %}
   {% endif %}
 
@@ -215,7 +218,7 @@
   {{ breadcrumbs(crumbs, id='main-breadcrumbs') }}
 {% endblock %}
 
-{% if request.LANGUAGE_CODE in settings.FXA_BANNER_LANGUAGES and waffle.switch('fxa-banner-test') %}
+{% if fxa_banner_test %}
 <div id="fxa-banner">
   <p class="copy" id="fxa-banner-send">
     {{ _('Safely share files online with encrypted links that “self-destruct.”') }}
@@ -358,7 +361,7 @@
 
 {% javascript 'common.fx.download' %}
 
-{% if request.LANGUAGE_CODE in settings.FXA_BANNER_LANGUAGES and waffle.switch('fxa-banner-test') %}
+{% if fxa_banner_test %}
   {% javascript 'fxa-banner-test' %}
 {% endif %}
 
