@@ -43,7 +43,7 @@ RUN apt-get update && apt-get install apt-transport-https && \
     echo "deb https://dl.yarnpkg.com/debian/ stable main" >> /etc/apt/sources.list && \
     curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - && \
     apt-get update && \
-    apt-get install -y --no-install-recommends nodejs yarn && \
+    apt-get install -y --no-install-recommends nodejs yarn optipng && \
     rm -rf /var/lib/apt/lists/*
 
 
