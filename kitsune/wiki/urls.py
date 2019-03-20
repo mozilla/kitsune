@@ -118,8 +118,6 @@ urlpatterns = patterns(
     url(r'^/save_draft$', 'draft_revision', name='wiki.draft_revision'),
     url(r'^/category/(?P<category>\d+)$', 'list_documents',
         name='wiki.category'),
-    url(r'^/exp/(?P<document_slug>[^/]+)', 'ux_experiment_view',
-        name='wiki.ux_experiment_view'),
     (r'^/(?P<document_slug>[^/]+)', include(document_patterns)),
 )
 

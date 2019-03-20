@@ -265,13 +265,6 @@ PIPELINE_CSS = {
         ),
         'output_filename': 'build/badges-min.css'
     },
-    'kb-sumo-ux-experiment': {
-        'source_filenames': (
-            'sumo/kb-ux-experiment/swiper.min.css',
-            'sumo/kb-ux-experiment/src.4a0feb03.css'
-        ),
-        'output_filename': 'build/kb-ux-experiment-min.css'
-    },
     'fxa-banner-test': {
         'source_filenames': (
             'sumo/less/fxa-banner.less',
@@ -663,15 +656,6 @@ PIPELINE_JS = {
             'sumo/js/gtm-snippet.js',
         ),
         'output_filename': 'build/gtm-snippet-min.js'
-    },
-    'kb-sumo-ux-experiment': {
-        'source_filenames': (
-            'sumo/kb-ux-experiment/swiper.min.js',
-            'sumo/kb-ux-experiment/script.js',
-            'sumo/kb-ux-experiment/analytics.js',
-            'sumo/kb-ux-experiment/submit-gform.js'
-        ),
-        'output_filename': 'build/kb-ux-experiment-min.js'
     },
     'fxa-banner-test': {
         'source_filenames': (
