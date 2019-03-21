@@ -1,7 +1,7 @@
 #!/bin/bash
 
-READ_ONLY=$(echo "${READ_ONLY:-false}" | tr '[:upper:]' '[:lower:]')
+RUN_MIGRATE=$(echo "${RUN_MIGRATE:-false}" | tr '[:upper:]' '[:lower:]')
 
-if [[ "$READ_ONLY" == "false" ]]; then
+if [[ "$RUN_MIGRATE" == "true" ]]; then
     python manage.py migrate --noinput
 fi

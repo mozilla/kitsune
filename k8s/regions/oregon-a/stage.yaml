@@ -120,6 +120,7 @@ app:
     read_only: False
     redis_default_url: SECRET
     redis_helpfulvotes_url: SECRET
+    run_migrate: "true"
     secret_key: SECRET
     sentry_dsn: SECRET
     session_cookie_secure: True

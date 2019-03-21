@@ -123,6 +123,7 @@ app:
     read_only: False
     redis_default_url: SECRET
     redis_helpfulvotes_url: SECRET
+    run_migrate: "true"
     secret_key: SECRET
     session_cookie_secure: True
     stage: False
