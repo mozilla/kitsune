@@ -5,8 +5,8 @@ from django.forms import fields
 from django.forms import widgets
 
 # TODO: re-enable elastic search prior to production push
-# from elasticutils import get_es as base_get_es
-# from elasticutils.contrib import django as elasticutils_django
+from elasticutils import get_es as base_get_es
+from elasticutils.contrib import django as elasticutils_django
 
 
 _has_been_patched = False
@@ -123,10 +123,9 @@ def patch():
         }
 
         defaults.update(overrides)
-        return None
-        # TODO: re-enable elastic search prior to production push
-        # return base_get_es(**defaults)
-    # elasticutils_django.get_es = get_es
+        return base_get_es(**defaults)
+
+    elasticutils_django.get_es = get_es
 
     def S_get_es(self, default_builder=get_es):
         """Returns the elasticsearch Elasticsearch object to use.
@@ -135,10 +134,9 @@ def patch():
         into account settings in ``settings.py``.
 
         """
-        # TODO: re-enable elastic search prior to production push
-        # return super(elasticutils_django.S, self).get_es(default_builder=default_builder)
-        return None
-    # elasticutils_django.S.get_es = S_get_es
+        return super(elasticutils_django.S, self).get_es(default_builder=default_builder)
+
+    elasticutils_django.S.get_es = S_get_es
 
     _has_been_patched = True
 
