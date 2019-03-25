@@ -3,7 +3,6 @@ from functools import wraps
 
 from django.forms import fields
 
-# TODO: re-enable elastic search prior to production push
 from elasticutils import get_es as base_get_es
 from elasticutils.contrib import django as elasticutils_django
 
@@ -79,7 +78,6 @@ def patch():
 
         defaults.update(overrides)
         return base_get_es(**defaults)
-
     elasticutils_django.get_es = get_es
 
     def S_get_es(self, default_builder=get_es):
@@ -90,7 +88,6 @@ def patch():
 
         """
         return super(elasticutils_django.S, self).get_es(default_builder=default_builder)
-
     elasticutils_django.S.get_es = S_get_es
 
     _has_been_patched = True
