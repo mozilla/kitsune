@@ -113,14 +113,15 @@ RUN apt-get update && \
 
 RUN groupadd --gid 1000 kitsune && useradd -g kitsune --uid 1000 --shell /usr/sbin/nologin kitsune
 
-COPY --from=base /venv /venv
-COPY --from=staticfiles /app/static /app/static
-COPY --from=staticfiles /app/jsi18n /app/jsi18n
-COPY --from=staticfiles /app/bower_components /app/bower_components
+COPY --from=base --chown=kitsune:kitsune /venv /venv
+COPY --from=staticfiles --chown=kitsune:kitsune /app/static /app/static
+COPY --from=staticfiles --chown=kitsune:kitsune /app/jsi18n /app/jsi18n
+COPY --from=staticfiles --chown=kitsune:kitsune /app/bower_components /app/bower_components
 
-COPY . .
+COPY --chown=kitsune:kitsune . .
 
-RUN chown kitsune.kitsune -R /app
+RUN mkdir /app/media && chown kitsune:kitsune /app/media
+
 USER kitsune
 
 ARG GIT_SHA=head
@@ -133,6 +134,5 @@ ENV GIT_SHA ${GIT_SHA}
 FROM full-no-locales AS full
 
 USER root
-COPY --from=locales /app/locale /app/locale
-RUN chown kitsune.kitsune -R /app/locale /venv
+COPY --from=locales --chown=kitsune:kitsune /app/locale /app/locale
 USER kitsune
