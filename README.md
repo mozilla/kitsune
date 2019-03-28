@@ -9,6 +9,9 @@ You can access the staging site at <https://support.allizom.org/>
 
 See [what's deployed](https://whatsdeployed.io/s-J18)
 
+## Code of Conduct
+By participating in this project, you're agreeing to uphold the [Mozilla Community Participation Guidelines](https://www.mozilla.org/en-US/about/governance/policies/participation/). If you need to report a problem, please see our [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md) guide.
+
 ## Development
 
 To get Kitsune running locally all you really need is to have [Docker](https://www.docker.com/products/docker-desktop) and [[Docker Compose](https://docs.docker.com/compose/install/) installed,
