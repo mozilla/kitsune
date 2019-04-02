@@ -23,7 +23,6 @@ from django.views.decorators.http import (require_GET, require_POST,
 
 from mobility.decorators import mobile_template
 from django_statsd.clients import statsd
-from waffle import flag_is_active, switch_is_active
 
 from kitsune.access.decorators import login_required
 from kitsune.lib.sumo_locales import LOCALES
@@ -53,11 +52,6 @@ from kitsune.wiki.tasks import (
 
 
 log = logging.getLogger('k.wiki')
-SUMO_UX_EXPERIMENTS_SLUGS = [
-    'enable-and-disable-cookies-website-preferences',
-    'insecure-password-warning-firefox'
-]
-EXCLUDED_BROWSERS = ['MSIE', 'Trident/7.0']
 
 
 def doc_page_cache(view):
@@ -70,15 +64,6 @@ def doc_page_cache(view):
                 request.GET.get('redirect') == 'no'):
             statsd.incr('wiki.document_view.cache.skip')
             return view(request, document_slug, *args, **kwargs)
-
-        # If the slug is part of the UX experiments, redirect to the experiment view.
-        # The check is here because the KB articles are heavily cached and we need to load
-        # balance based on the waffle flag for every request.
-        if (all([x not in request.META.get('HTTP_USER_AGENT', '') for x in EXCLUDED_BROWSERS]) and
-            document_slug in SUMO_UX_EXPERIMENTS_SLUGS and request.LANGUAGE_CODE == 'en-US' and
-            switch_is_active('ux_experiment_1') and
-                flag_is_active(request, 'ux_experiment_1')):
-            return HttpResponseRedirect(reverse('wiki.ux_experiment_view', args=[document_slug]))
 
         cache_key = doc_html_cache_key(
             mobile=request.MOBILE,
@@ -253,25 +238,6 @@ def document(request, document_slug, template=None, document=None):
     if minimal:
         response['X-Frame-Options'] = 'ALLOW'
     return response
-
-
-# Temporary view to hosts the OI UX experiments for 2 articles in the KB
-def ux_experiment_view(request, document_slug):
-    # If there is a direct request to this view
-    # and the flag is not active, redirect to the document view.
-    if (not switch_is_active('ux_experiment_1') or
-            document_slug not in SUMO_UX_EXPERIMENTS_SLUGS):
-        return HttpResponseRedirect(reverse('wiki.document', args=[document_slug]))
-
-    ctx = {
-        'enable_cookies_gform_mchoice_entry': 'entry.437614058',
-        'enable_cookies_gform_textarea_entry': 'entry.134164855',
-        'insecure_warning_gform_mchoice_entry': 'entry.1877592314',
-        'insecure_warning_gform_textarea_entry': 'entry.489053800',
-        'insecure_warning_gform_mchoice_video_entry': 'entry.575379247',
-        'insecure_warning_gform_textarea_video_entry': 'entry.530985177'
-    }
-    return render(request, 'kb-ux-experiment/{0}.html'.format(document_slug), ctx)
 
 
 def revision(request, document_slug, revision_id):
