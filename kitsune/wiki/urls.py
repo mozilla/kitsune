@@ -116,8 +116,6 @@ urlpatterns = [
     url(r'^/save_draft$', views.draft_revision, name='wiki.draft_revision'),
     url(r'^/category/(?P<category>\d+)$', views.list_documents,
         name='wiki.category'),
-    url(r'^/exp/(?P<document_slug>[^/]+)', views.ux_experiment_view,
-        name='wiki.ux_experiment_view'),
     url(r'^/(?P<document_slug>[^/]+)', include(document_patterns)),
 ]
 
