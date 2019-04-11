@@ -42,7 +42,7 @@
   {% endif %}
 {%- endmacro %}
 
-{% macro document_content(document, fallback_reason, request, settings, css_class='', any_localizable_revision, full_locale_name) -%}
+{% macro document_content(document, fallback_reason, request, settings, css_class='', any_localizable_revision=False, full_locale_name=None) -%}
   <section id="doc-content" class="{{ css_class }}">
     {% if not fallback_reason %}
       {{ document.html|safe }}
