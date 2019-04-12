@@ -31,7 +31,7 @@ class OnlyOwner(permissions.BasePermission):
 
 class NotificationSerializer(serializers.ModelSerializer):
     is_read = serializers.ReadOnlyField()
-    timestamp = DateTimeUTCField(source='action.timestamp')
+    timestamp = DateTimeUTCField('%Y-%m-%dT%H:%M:%SZ', source='action.timestamp')
     actor = GenericRelatedField(source='action.actor')
     verb = serializers.CharField(source='action.verb')
     action_object = GenericRelatedField(source='action.action_object')
