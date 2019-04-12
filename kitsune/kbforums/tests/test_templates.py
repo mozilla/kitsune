@@ -80,7 +80,7 @@ class PostsTemplateTests(KBForumTestCase):
         response = get(self.client, 'wiki.discuss.posts', args=[d.slug, t.id])
         doc = pq(response.content)
         crumb = doc('#breadcrumbs li:last-child')
-        eq_(crumb.text(), 'A thread with a very very very very ...')
+        eq_(crumb.text(), 'A thread with a very very very very...')
 
     def test_edit_post_moderator(self):
         """Editing post as a moderator works."""

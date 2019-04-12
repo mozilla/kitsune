@@ -84,7 +84,7 @@ class PostsTemplateTests(ForumTestCase):
         response = get(self.client, 'forums.posts', args=[t.forum.slug, t.id])
         doc = pq(response.content)
         crumb = doc('#breadcrumbs li:last-child')
-        eq_(crumb.text(), 'A thread with a very very very very ...')
+        eq_(crumb.text(), 'A thread with a very very very very...')
 
     def test_edit_post_moderator(self):
         """Editing post as a moderator works."""
