@@ -134,3 +134,22 @@ def deactivate_user(user, moderator):
     user.save()
     deactivation = Deactivation(user=user, moderator=moderator)
     deactivation.save()
+
+
+def get_oidc_fxa_setting(attr):
+    """Helper method to return the appropriate setting for Firefox Accounts authentication."""
+    FXA_CONFIGURATION = {
+        'OIDC_OP_TOKEN_ENDPOINT': settings.FXA_OP_TOKEN_ENDPOINT,
+        'OIDC_OP_AUTHORIZATION_ENDPOINT': settings.FXA_OP_AUTHORIZATION_ENDPOINT,
+        'OIDC_OP_USER_ENDPOINT': settings.FXA_OP_USER_ENDPOINT,
+        'OIDC_OP_JWKS_ENDPOINT': settings.FXA_OP_JWKS_ENDPOINT,
+        'OIDC_RP_CLIENT_ID': settings.FXA_RP_CLIENT_ID,
+        'OIDC_RP_CLIENT_SECRET': settings.FXA_RP_CLIENT_SECRET,
+        'OIDC_AUTHENTICATION_CALLBACK_URL': 'users.fxa_authentication_callback',
+        'OIDC_CREATE_USER': settings.FXA_CREATE_USER,
+        'OIDC_RP_SIGN_ALGO': settings.FXA_RP_SIGN_ALGO,
+        'OIDC_USE_NONCE': settings.FXA_USE_NONCE,
+        'OIDC_RP_SCOPES': settings.FXA_RP_SCOPES,
+        'LOGOUT_REDIRECT_URL': settings.FXA_LOGOUT_REDIRECT_URL
+    }
+    return FXA_CONFIGURATION.get(attr, None)
