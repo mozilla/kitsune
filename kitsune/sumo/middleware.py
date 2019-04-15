@@ -18,7 +18,7 @@ from django.utils.cache import add_never_cache_headers, patch_response_headers, 
 from django.utils.encoding import iri_to_uri, smart_str, smart_unicode
 
 import mobility
-from mozilla_django_oidc.middleware import RefreshIDToken
+from mozilla_django_oidc.middleware import SessionRefresh
 from enforce_host import EnforceHostMiddleware
 
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
@@ -51,7 +51,7 @@ class HttpResponseRateLimited(HttpResponse):
     status_code = 429
 
 
-class SUMORefreshIDTokenAdminMiddleware(RefreshIDToken):
+class SUMORefreshIDTokenAdminMiddleware(SessionRefresh):
     def __init__(self, *args, **kwargs):
         if not settings.OIDC_ENABLE:
             raise MiddlewareNotUsed
