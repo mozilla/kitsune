@@ -4,6 +4,10 @@ from django.contrib.auth.backends import ModelBackend
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.models import User
 
+from mozilla_django_oidc.auth import OIDCAuthenticationBackend
+
+from kitsune.users.utils import get_oidc_fxa_setting
+
 
 class ModelBackendAllowInactive(ModelBackend):
     """
@@ -73,3 +77,14 @@ def get_auth_str(user):
     token = default_token_generator.make_token(user)
     auth = '{0}:{1}'.format(user.username, token)
     return base64.b64encode(auth)
+
+
+class FXAAuthBackend(OIDCAuthenticationBackend):
+
+    @staticmethod
+    def get_settings(attr, *args):
+        """Override settings for Firefox Accounts Provider."""
+        val = get_oidc_fxa_setting(attr)
+        if val is not None:
+            return val
+        return super(FXAAuthBackend, FXAAuthBackend).get_settings(attr, *args)
