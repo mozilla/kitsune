@@ -1,25 +1,24 @@
-from datetime import date, datetime, timedelta
 import json
+from datetime import date, datetime, timedelta
 
 from django.core.cache import cache
-
+from django.core.management import call_command
 from nose.tools import eq_
 
 from kitsune.customercare.tests import ReplyFactory
-from kitsune.kpi.cron import update_contributor_metrics
-from kitsune.kpi.models import (
-    Metric, AOA_CONTRIBUTORS_METRIC_CODE, KB_ENUS_CONTRIBUTORS_METRIC_CODE,
-    KB_L10N_CONTRIBUTORS_METRIC_CODE, L10N_METRIC_CODE,
-    SUPPORT_FORUM_CONTRIBUTORS_METRIC_CODE, VISITORS_METRIC_CODE,
-    EXIT_SURVEY_YES_CODE, EXIT_SURVEY_NO_CODE, EXIT_SURVEY_DONT_KNOW_CODE)
+from kitsune.kpi.models import (AOA_CONTRIBUTORS_METRIC_CODE, EXIT_SURVEY_DONT_KNOW_CODE,
+                                EXIT_SURVEY_NO_CODE, EXIT_SURVEY_YES_CODE,
+                                KB_ENUS_CONTRIBUTORS_METRIC_CODE, KB_L10N_CONTRIBUTORS_METRIC_CODE,
+                                L10N_METRIC_CODE, SUPPORT_FORUM_CONTRIBUTORS_METRIC_CODE,
+                                VISITORS_METRIC_CODE, Metric)
 from kitsune.kpi.tests import MetricFactory, MetricKindFactory
 from kitsune.products.tests import ProductFactory
+from kitsune.questions.tests import AnswerFactory, AnswerVoteFactory, QuestionFactory
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.tests import TestCase
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.questions.tests import AnswerFactory, AnswerVoteFactory, QuestionFactory
 from kitsune.users.tests import UserFactory
-from kitsune.wiki.tests import DocumentFactory, RevisionFactory, HelpfulVoteFactory
+from kitsune.wiki.tests import DocumentFactory, HelpfulVoteFactory, RevisionFactory
 
 
 class KpiApiTests(TestCase):
@@ -260,7 +259,8 @@ class KpiApiTests(TestCase):
         # Create metric kinds and update metrics for tomorrow (today's
         # activity shows up tomorrow).
         self._make_contributor_metric_kinds()
-        update_contributor_metrics(day=date.today() + timedelta(days=1))
+        call_command('update_contributor_metrics {day}'.format(
+            day=date.today() + timedelta(days=1)))
 
         r = self._get_api_result('api.kpi.contributors')
 
@@ -283,7 +283,8 @@ class KpiApiTests(TestCase):
         # Create metric kinds and update metrics for tomorrow (today's
         # activity shows up tomorrow).
         self._make_contributor_metric_kinds()
-        update_contributor_metrics(day=date.today() + timedelta(days=1))
+        call_command('update_contributor_metrics {day}'.format(
+            day=date.today() + timedelta(days=1)))
 
         r = self._get_api_result('api.kpi.contributors')
         eq_(r['objects'][0]['support_forum'], 0)
@@ -294,7 +295,8 @@ class KpiApiTests(TestCase):
         cache.clear()  # We need to clear the cache for new results.
 
         Metric.objects.all().delete()
-        update_contributor_metrics(day=date.today() + timedelta(days=1))
+        call_command('update_contributor_metrics {day}'.format(
+            day=date.today() + timedelta(days=1)))
 
         r = self._get_api_result('api.kpi.contributors')
         eq_(r['objects'][0]['support_forum'], 1)

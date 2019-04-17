@@ -1,27 +1,24 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime, timedelta
 
-from django.db.models import Q
-
 import mock
 from actstream.models import Action, Follow
+from django.core.management import call_command
+from django.db.models import Q
 from nose.tools import eq_, ok_, raises
 from taggit.models import Tag
 
 import kitsune.sumo.models
 from kitsune.flagit.models import FlaggedObject
-from kitsune.search.tests.test_es import ElasticTestCase
-from kitsune.questions.cron import auto_archive_old_questions
+from kitsune.questions import config, models
 from kitsune.questions.events import QuestionReplyEvent
-from kitsune.questions import models
-from kitsune.questions.models import (
-    Answer, Question, QuestionMetaData, QuestionVisits,
-    _tenths_version, _has_beta, VoteMetadata, InvalidUserException,
-    AlreadyTakenException)
+from kitsune.questions.models import (AlreadyTakenException, Answer, InvalidUserException,
+                                      Question, QuestionMetaData, QuestionVisits, VoteMetadata,
+                                      _has_beta, _tenths_version)
 from kitsune.questions.tasks import update_answer_pages
-from kitsune.questions.tests import (
-    TestCaseBase, tags_eq, QuestionFactory, AnswerFactory, QuestionVoteFactory)
-from kitsune.questions import config
+from kitsune.questions.tests import (AnswerFactory, QuestionFactory, QuestionVoteFactory,
+                                     TestCaseBase, tags_eq)
+from kitsune.search.tests.test_es import ElasticTestCase
 from kitsune.sumo import googleanalytics
 from kitsune.sumo.tests import TestCase
 from kitsune.tags.tests import TagFactory
@@ -532,7 +529,7 @@ class OldQuestionsArchiveTest(ElasticTestCase):
 
         self.refresh()
 
-        auto_archive_old_questions()
+        call_command('auto_archive_old_questions')
 
         # There are three questions.
         eq_(len(list(Question.objects.all())), 3)

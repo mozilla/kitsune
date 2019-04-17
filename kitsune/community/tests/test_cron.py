@@ -1,16 +1,15 @@
 from datetime import datetime, timedelta
 
-from django.core import mail
+import mock
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
+from django.core import mail
+from django.core.management import call_command
 from django.test.utils import override_settings
-
-import mock
 from nose.tools import eq_
 
-from kitsune.community import cron
 from kitsune.questions.tests import AnswerFactory, QuestionFactory
-from kitsune.sumo.tests import attrs_eq, TestCase
+from kitsune.sumo.tests import TestCase, attrs_eq
 from kitsune.users.tests import UserFactory
 from kitsune.wiki.tests import DocumentFactory, RevisionFactory
 
@@ -35,7 +34,7 @@ class WelcomeEmailsTests(TestCase):
         # Clear out the notifications that were sent
         mail.outbox = []
         # Send email(s) for welcome messages
-        cron.send_welcome_emails()
+        call_command('send_welcome_emails')
 
         # There should be an email for u3 only.
         # u1 was the asker, and so did not make a contribution.
@@ -76,7 +75,7 @@ class WelcomeEmailsTests(TestCase):
         # Clear out the notifications that were sent
         mail.outbox = []
         # Send email(s) for welcome messages
-        cron.send_welcome_emails()
+        call_command('send_welcome_emails')
 
         # There should be an email for u1 only.
         # u2 has already recieved the email

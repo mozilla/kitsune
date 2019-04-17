@@ -1,26 +1,30 @@
 from datetime import date, datetime, timedelta
 
+from django.core.management import call_command
 from mock import patch
 from nose.tools import eq_
 
-import kitsune.kpi.cron
+import kitsune.kpi.management.utils
 from kitsune.customercare.tests import ReplyFactory
 from kitsune.kpi import surveygizmo_utils
-from kitsune.kpi.cron import (
-    cohort_analysis, update_visitors_metric, update_l10n_metric, googleanalytics,
-    update_search_ctr_metric, _process_exit_survey_results)
-from kitsune.kpi.models import (
-    Metric, Cohort, VISITORS_METRIC_CODE, L10N_METRIC_CODE, SEARCH_CLICKS_METRIC_CODE,
-    SEARCH_SEARCHES_METRIC_CODE, EXIT_SURVEY_YES_CODE, EXIT_SURVEY_NO_CODE,
-    EXIT_SURVEY_DONT_KNOW_CODE, CONTRIBUTOR_COHORT_CODE, KB_ENUS_CONTRIBUTOR_COHORT_CODE,
-    KB_L10N_CONTRIBUTOR_COHORT_CODE, SUPPORT_FORUM_HELPER_COHORT_CODE, AOA_CONTRIBUTOR_COHORT_CODE)
-from kitsune.kpi.tests import MetricKindFactory, MetricFactory
+from kitsune.kpi.models import (AOA_CONTRIBUTOR_COHORT_CODE,
+                                CONTRIBUTOR_COHORT_CODE,
+                                EXIT_SURVEY_DONT_KNOW_CODE,
+                                EXIT_SURVEY_NO_CODE, EXIT_SURVEY_YES_CODE,
+                                KB_ENUS_CONTRIBUTOR_COHORT_CODE,
+                                KB_L10N_CONTRIBUTOR_COHORT_CODE,
+                                L10N_METRIC_CODE, SEARCH_CLICKS_METRIC_CODE,
+                                SEARCH_SEARCHES_METRIC_CODE,
+                                SUPPORT_FORUM_HELPER_COHORT_CODE,
+                                VISITORS_METRIC_CODE, Cohort, Metric)
+from kitsune.kpi.tests import MetricFactory, MetricKindFactory
 from kitsune.questions.tests import AnswerFactory
+from kitsune.sumo import googleanalytics
 from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import UserFactory
-from kitsune.wiki.config import (
-    MAJOR_SIGNIFICANCE, MEDIUM_SIGNIFICANCE, TYPO_SIGNIFICANCE)
-from kitsune.wiki.tests import DocumentFactory, ApprovedRevisionFactory
+from kitsune.wiki.config import (MAJOR_SIGNIFICANCE, MEDIUM_SIGNIFICANCE,
+                                 TYPO_SIGNIFICANCE)
+from kitsune.wiki.tests import ApprovedRevisionFactory, DocumentFactory
 
 
 class CohortAnalysisTests(TestCase):
@@ -58,7 +62,7 @@ class CohortAnalysisTests(TestCase):
         for r in replies:
             ReplyFactory(user=r.user, created=self.start_of_first_week + timedelta(weeks=2))
 
-        cohort_analysis()
+        call_command('cohort_analysis')
 
     def test_contributor_cohort_analysis(self):
         c1 = Cohort.objects.get(kind__code=CONTRIBUTOR_COHORT_CODE, start=self.start_of_first_week)
@@ -157,7 +161,7 @@ class CronJobTests(TestCase):
                                  '2012-01-14': 193,
                                  '2012-01-15': 33}
 
-        update_visitors_metric()
+        call_command('update_visitors_metric')
 
         metrics = Metric.objects.filter(kind=visitor_kind).order_by('start')
         eq_(3, len(metrics))
@@ -165,7 +169,7 @@ class CronJobTests(TestCase):
         eq_(193, metrics[1].value)
         eq_(date(2012, 1, 15), metrics[2].start)
 
-    @patch.object(kitsune.kpi.cron, '_get_top_docs')
+    @patch.object(kitsune.kpi.management.utils, '_get_top_docs')
     @patch.object(googleanalytics, 'visitors_by_locale')
     def test_update_l10n_metric_cron(self, visitors_by_locale, _get_top_docs):
         """Verify the cron job creates the correct metric."""
@@ -196,7 +200,7 @@ class CronJobTests(TestCase):
 
         # Run it and verify results.
         # Value should be 75% (1/1 * 25/100 + 1/1 * 50/100)
-        update_l10n_metric()
+        call_command('update_l10n_metric')
         metrics = Metric.objects.filter(kind=l10n_kind)
         eq_(1, len(metrics))
         eq_(75, metrics[0].value)
@@ -208,7 +212,7 @@ class CronJobTests(TestCase):
             significance=TYPO_SIGNIFICANCE,
             is_ready_for_localization=True)
         Metric.objects.all().delete()
-        update_l10n_metric()
+        call_command('update_l10n_metric')
         metrics = Metric.objects.filter(kind=l10n_kind)
         eq_(1, len(metrics))
         eq_(75, metrics[0].value)
@@ -220,7 +224,7 @@ class CronJobTests(TestCase):
             significance=MEDIUM_SIGNIFICANCE,
             is_ready_for_localization=True)
         Metric.objects.all().delete()
-        update_l10n_metric()
+        call_command('update_l10n_metric')
         metrics = Metric.objects.filter(kind=l10n_kind)
         eq_(1, len(metrics))
         eq_(62, metrics[0].value)
@@ -232,7 +236,7 @@ class CronJobTests(TestCase):
             significance=MEDIUM_SIGNIFICANCE,
             is_ready_for_localization=True)
         Metric.objects.all().delete()
-        update_l10n_metric()
+        call_command('update_l10n_metric')
         metrics = Metric.objects.filter(kind=l10n_kind)
         eq_(1, len(metrics))
         eq_(50, metrics[0].value)
@@ -246,7 +250,7 @@ class CronJobTests(TestCase):
             significance=MAJOR_SIGNIFICANCE,
             is_ready_for_localization=True)
         Metric.objects.all().delete()
-        update_l10n_metric()
+        call_command('update_l10n_metric')
         metrics = Metric.objects.filter(kind=l10n_kind)
         eq_(1, len(metrics))
         eq_(50, metrics[0].value)
@@ -260,7 +264,7 @@ class CronJobTests(TestCase):
                                    '2013-06-07': 13.7654321,
                                    '2013-06-08': 99.55555}
 
-        update_search_ctr_metric()
+        call_command('update_search_ctr_metric')
 
         metrics = Metric.objects.filter(kind=clicks_kind).order_by('start')
         eq_(3, len(metrics))
@@ -285,7 +289,7 @@ class CronJobTests(TestCase):
         # Collect and process.
         with self.settings(SURVEYGIZMO_API_TOKEN='test',
                            SURVEYGIZMO_API_TOKEN_SECRET='test'):
-            _process_exit_survey_results()
+            kitsune.kpi.management.utils._process_exit_survey_results()
 
         # Verify.
         eq_(4, Metric.objects.count())

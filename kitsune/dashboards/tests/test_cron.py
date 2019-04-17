@@ -2,21 +2,19 @@
 from datetime import date, timedelta
 
 from django.conf import settings
-
+from django.core.management import call_command
 from nose.tools import eq_
 
-from kitsune.dashboards.cron import (
-    cache_most_unhelpful_kb_articles, _get_old_unhelpful,
-    _get_current_unhelpful, update_l10n_coverage_metrics,
-    update_l10n_contributor_metrics)
-from kitsune.dashboards.models import (
-    WikiMetric, L10N_TOP20_CODE, L10N_TOP100_CODE, L10N_ALL_CODE)
+from kitsune.dashboards.management.commands.cache_most_unhelpful_kb_articles import (
+    _get_current_unhelpful, _get_old_unhelpful)
+from kitsune.dashboards.models import (L10N_ALL_CODE, L10N_TOP20_CODE,
+                                       L10N_TOP100_CODE, WikiMetric)
 from kitsune.products.tests import ProductFactory
-from kitsune.sumo.redis_utils import redis_client, RedisError
+from kitsune.sumo.redis_utils import RedisError, redis_client
 from kitsune.sumo.tests import SkipTest, TestCase
 from kitsune.users.tests import UserFactory
-from kitsune.wiki.tests import (
-    RevisionFactory, ApprovedRevisionFactory, DocumentFactory, HelpfulVoteFactory)
+from kitsune.wiki.tests import (ApprovedRevisionFactory, DocumentFactory,
+                                HelpfulVoteFactory, RevisionFactory)
 
 
 def _add_vote_in_past(rev, vote, days_back):
@@ -124,9 +122,9 @@ class TopUnhelpfulArticlesTests(TestCase):
         eq_(5, result[r.document.id]['total'])
 
 
-class TopUnhelpfulArticlesCronTests(TestCase):
+class TopUnhelpfulArticlesCommandTests(TestCase):
     def setUp(self):
-        super(TopUnhelpfulArticlesCronTests, self).setUp()
+        super(TopUnhelpfulArticlesCommandTests, self).setUp()
         self.REDIS_KEY = settings.HELPFULVOTES_UNHELPFUL_KEY
         try:
             self.redis = redis_client('helpfulvotes')
@@ -139,15 +137,15 @@ class TopUnhelpfulArticlesCronTests(TestCase):
             self.redis.flushdb()
         except (KeyError, AttributeError):
             raise SkipTest
-        super(TopUnhelpfulArticlesCronTests, self).tearDown()
+        super(TopUnhelpfulArticlesCommandTests, self).tearDown()
 
     def test_no_articles(self):
-        """Full cron with no articles returns no unhelpful articles."""
-        cache_most_unhelpful_kb_articles()
+        """No articles returns no unhelpful articles."""
+        call_command('cache_most_unhelpful_kb_articles')
         eq_(0, self.redis.llen(self.REDIS_KEY))
 
     def test_caching_unhelpful(self):
-        """Cron should get the unhelpful articles."""
+        """Command should get the unhelpful articles."""
         r = _make_backdated_revision(90)
 
         for x in range(0, 3):
@@ -156,7 +154,7 @@ class TopUnhelpfulArticlesCronTests(TestCase):
         for x in range(0, 2):
             _add_vote_in_past(r, 1, 3)
 
-        cache_most_unhelpful_kb_articles()
+        call_command('cache_most_unhelpful_kb_articles')
 
         eq_(1, self.redis.llen(self.REDIS_KEY))
         result = self.redis.lrange(self.REDIS_KEY, 0, 1)
@@ -166,7 +164,7 @@ class TopUnhelpfulArticlesCronTests(TestCase):
             result[0].decode('utf-8'))
 
     def test_caching_helpful(self):
-        """Cron should ignore the helpful articles."""
+        """Command should ignore the helpful articles."""
         r = _make_backdated_revision(90)
 
         for x in range(0, 3):
@@ -175,7 +173,7 @@ class TopUnhelpfulArticlesCronTests(TestCase):
         for x in range(0, 2):
             _add_vote_in_past(r, 0, 3)
 
-        cache_most_unhelpful_kb_articles()
+        call_command('cache_most_unhelpful_kb_articles')
 
         eq_(0, self.redis.llen(self.REDIS_KEY))
 
@@ -195,7 +193,7 @@ class TopUnhelpfulArticlesCronTests(TestCase):
         for x in range(0, 2):
             _add_vote_in_past(r, 1, 3)
 
-        cache_most_unhelpful_kb_articles()
+        call_command('cache_most_unhelpful_kb_articles')
 
         eq_(1, self.redis.llen(self.REDIS_KEY))
         result = self.redis.lrange(self.REDIS_KEY, 0, 1)
@@ -233,7 +231,7 @@ class TopUnhelpfulArticlesCronTests(TestCase):
         for x in range(0, 91):
             _add_vote_in_past(r3, 0, 3)
 
-        cache_most_unhelpful_kb_articles()
+        call_command('cache_most_unhelpful_kb_articles')
 
         eq_(3, self.redis.llen(self.REDIS_KEY))
         result = self.redis.lrange(self.REDIS_KEY, 0, 3)
@@ -245,7 +243,7 @@ class TopUnhelpfulArticlesCronTests(TestCase):
 class L10nMetricsTests(TestCase):
 
     def test_update_l10n_coverage_metrics(self):
-        """Test the cron job that updates l10n coverage metrics."""
+        """Test the command that updates l10n coverage metrics."""
         p = ProductFactory(visible=True)
 
         # Create en-US documents.
@@ -274,8 +272,8 @@ class L10nMetricsTests(TestCase):
             d = DocumentFactory(parent=r.document, locale='ru')
             RevisionFactory(document=d, based_on=r, is_approved=True)
 
-        # Call the cronjob
-        update_l10n_coverage_metrics()
+        # Call the management command
+        call_command('update_l10n_coverage_metrics')
 
         # Verify es metrics.
         eq_(6, WikiMetric.objects.filter(locale='es').count())
@@ -314,7 +312,7 @@ class L10nMetricsTests(TestCase):
         eq_(0.0, WikiMetric.objects.get(locale='it', product=None, code=L10N_ALL_CODE).value)
 
     def test_update_active_contributor_metrics(self):
-        """Test the cron job that updates active contributor metrics."""
+        """Test the command that updates active contributor metrics."""
         day = date(2013, 7, 31)
         last_month = date(2013, 6, 15)
         start_date = date(2013, 6, 1)
@@ -345,8 +343,8 @@ class L10nMetricsTests(TestCase):
         RevisionFactory(document=d, created=before_start)
         RevisionFactory(document=d, created=day)
 
-        # Call the cron job.
-        update_l10n_contributor_metrics(day)
+        # Call the command.
+        call_command('update_l10n_contributor_metrics {}'.format(day))
 
         eq_(3.0, WikiMetric.objects.get(locale='en-US', product=None, date=start_date).value)
         eq_(1.0, WikiMetric.objects.get(locale='en-US', product=p, date=start_date).value)
