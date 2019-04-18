@@ -259,8 +259,7 @@ class KpiApiTests(TestCase):
         # Create metric kinds and update metrics for tomorrow (today's
         # activity shows up tomorrow).
         self._make_contributor_metric_kinds()
-        call_command('update_contributor_metrics {day}'.format(
-            day=date.today() + timedelta(days=1)))
+        call_command('update_contributor_metrics', str(day=date.today() + timedelta(days=1)))
 
         r = self._get_api_result('api.kpi.contributors')
 
@@ -283,8 +282,7 @@ class KpiApiTests(TestCase):
         # Create metric kinds and update metrics for tomorrow (today's
         # activity shows up tomorrow).
         self._make_contributor_metric_kinds()
-        call_command('update_contributor_metrics {day}'.format(
-            day=date.today() + timedelta(days=1)))
+        call_command('update_contributor_metrics', str(day=date.today() + timedelta(days=1)))
 
         r = self._get_api_result('api.kpi.contributors')
         eq_(r['objects'][0]['support_forum'], 0)
@@ -295,8 +293,7 @@ class KpiApiTests(TestCase):
         cache.clear()  # We need to clear the cache for new results.
 
         Metric.objects.all().delete()
-        call_command('update_contributor_metrics {day}'.format(
-            day=date.today() + timedelta(days=1)))
+        call_command('update_contributor_metrics', str(day=date.today() + timedelta(days=1)))
 
         r = self._get_api_result('api.kpi.contributors')
         eq_(r['objects'][0]['support_forum'], 1)

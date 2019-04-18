@@ -344,7 +344,7 @@ class L10nMetricsTests(TestCase):
         RevisionFactory(document=d, created=day)
 
         # Call the command.
-        call_command('update_l10n_contributor_metrics {}'.format(day))
+        call_command('update_l10n_contributor_metrics', str(day))
 
         eq_(3.0, WikiMetric.objects.get(locale='en-US', product=None, date=start_date).value)
         eq_(1.0, WikiMetric.objects.get(locale='en-US', product=p, date=start_date).value)

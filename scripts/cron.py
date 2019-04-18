@@ -81,7 +81,7 @@ def job_process_exit_surveys():
 def job_reindex():
     # Look back 90 minutes for new items to avoid racing conditions between
     # cron execution and db updates.
-    call_command('esreindex --minutes-ago 90')
+    call_command('esreindex', '--minutes-ago 90')
 
 
 # Every 6 hours.
