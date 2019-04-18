@@ -119,14 +119,14 @@ def update_kb_contributors_metric(day=None):
 
         en_us_count = len(
             set(
-                list(editors.filter(document__locale="en-US"))
-                + list(reviewers.filter(document__locale="en-US"))
+                list(editors.filter(document__locale="en-US")) +
+                list(reviewers.filter(document__locale="en-US"))
             )
         )
         l10n_count = len(
             set(
-                list(editors.exclude(document__locale="en-US"))
-                + list(reviewers.exclude(document__locale="en-US"))
+                list(editors.exclude(document__locale="en-US")) +
+                list(reviewers.exclude(document__locale="en-US"))
             )
         )
 
