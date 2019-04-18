@@ -1,5 +1,5 @@
 import argparse
-from datetime import date, strptime
+from datetime import date, datetime
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
@@ -11,7 +11,7 @@ from kitsune.wiki.utils import num_active_contributors
 
 def valid_date(s):
     try:
-        return strptime(s, "%Y-%m-%d")
+        return datetime.strptime(s, "%Y-%m-%d")
     except ValueError:
         msg = "Not a valid date: '{0}'.".format(s)
         raise argparse.ArgumentTypeError(msg)

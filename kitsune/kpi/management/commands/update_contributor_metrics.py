@@ -1,5 +1,5 @@
 import argparse
-from datetime import date, timedelta, strptime
+from datetime import date, datetime, timedelta
 
 from django.core.management.base import BaseCommand
 from django.db.models import Count, F
@@ -20,7 +20,7 @@ from kitsune.wiki.models import Revision
 
 def valid_date(s):
     try:
-        return strptime(s, "%Y-%m-%d")
+        return datetime.strptime(s, "%Y-%m-%d")
     except ValueError:
         msg = "Not a valid date: '{0}'.".format(s)
         raise argparse.ArgumentTypeError(msg)
