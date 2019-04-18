@@ -30,7 +30,7 @@ class Command(BaseCommand):
     help = "Calculate and save contributor metrics."
 
     def add_arguments(self, parser):
-        parser.add_argument('day', nargs='+', type=valid_date)
+        parser.add_argument('day', type=valid_date)
 
     def handle(self, day=None, **options):
         update_support_forum_contributors_metric(day)
