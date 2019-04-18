@@ -67,7 +67,7 @@ class TestEscalateCron(TestCase):
         q = QuestionFactory(created=datetime.now() - timedelta(hours=24, minutes=10), product=tb)
 
         # Run the cron job and verify only 3 questions were escalated.
-        eq_(len(questions_to_escalate), call_command('escalate_questions'))
+        eq_(str(len(questions_to_escalate)), call_command('escalate_questions'))
 
 
 class TestEmployeeReportCron(TestCase):

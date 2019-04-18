@@ -42,4 +42,4 @@ class Command(BaseCommand):
         for question in qs_no_replies_yet:
             escalate_question.delay(question.id)
 
-        return len(qs_no_replies_yet)
+        return str(len(qs_no_replies_yet))
