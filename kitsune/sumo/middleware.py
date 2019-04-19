@@ -53,7 +53,7 @@ class HttpResponseRateLimited(HttpResponse):
 
 class SUMORefreshIDTokenAdminMiddleware(SessionRefresh):
     def __init__(self, *args, **kwargs):
-        if not settings.OIDC_ENABLE:
+        if not settings.OIDC_ENABLE or settings.DEV:
             raise MiddlewareNotUsed
 
     def process_request(self, request):
