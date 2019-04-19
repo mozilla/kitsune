@@ -77,6 +77,8 @@ class Profile(ModelBase, SearchMixin):
     csat_email_sent = models.DateField(null=True, blank=True,
                                        verbose_name=_lazy(u'When the user was sent a community '
                                                           u'health survey'))
+    is_fxa_migrated = models.BooleanField(default=False)
+    fxa_uid = models.CharField(blank=True, null=True, unique=True, max_length=128)
 
     class Meta(object):
         permissions = (('view_karma_points', 'Can view karma points'),
