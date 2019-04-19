@@ -6,6 +6,7 @@ from django.contrib.auth.models import User
 
 from mozilla_django_oidc.auth import OIDCAuthenticationBackend
 
+from kitsune.users.models import Profile
 from kitsune.users.utils import get_oidc_fxa_setting
 
 
@@ -88,3 +89,16 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
         if val is not None:
             return val
         return super(FXAAuthBackend, FXAAuthBackend).get_settings(attr, *args)
+
+    def create_user(self, claims):
+        """Override create user method to mark the profile as migrated."""
+
+        user = super(FXAAuthBackend, self).create_user(claims)
+        # Create a user profile for the user and populate it with data from
+        # Firefox Accounts
+        Profile.objects.get_or_create(user=user,
+                                      is_fxa_migrated=True,
+                                      fxa_uid=claims.get('uid'),
+                                      avatar=claims.get('avatar', ''),
+                                      locale=claims.get('locale', ''))
+        return user
