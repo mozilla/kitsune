@@ -19,6 +19,7 @@ from bundles import PIPELINE_CSS, PIPELINE_JS
 from kitsune.lib.sumo_locales import LOCALES
 
 DEBUG = config('DEBUG', default=False, cast=bool)
+DEV = config('DEV', default=False, cast=bool)
 STAGE = config('STAGE', default=False, cast=bool)
 
 # TODO
