@@ -36,7 +36,7 @@ Fetch tweets
 
 To fetch tweets, run::
 
-    $ ./manage.py cron collect_tweets
+    $ ./manage.py collect_tweets
 
 
 You should now see tweets at /army-of-awesome.

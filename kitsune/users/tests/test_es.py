@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime, timedelta
 
+from django.core.management import call_command
 from nose.tools import eq_
 
 from kitsune.customercare.tests import ReplyFactory
 from kitsune.questions.tests import AnswerFactory
 from kitsune.search.tests.test_es import ElasticTestCase
-from kitsune.users.cron import reindex_users_that_contributed_yesterday
 from kitsune.users.models import UserMappingType
 from kitsune.users.tests import ProfileFactory, UserFactory
 from kitsune.wiki.tests import RevisionFactory
@@ -177,7 +177,7 @@ class UserSearchTests(ElasticTestCase):
         u = UserFactory(username='answerer')
         AnswerFactory(creator=u, created=yesterday)
 
-        reindex_users_that_contributed_yesterday()
+        call_command('reindex_users_that_contributed_yesterday')
         self.refresh()
 
         data = UserMappingType.search().query(username__match='answerer')[0]
@@ -187,7 +187,7 @@ class UserSearchTests(ElasticTestCase):
         u = UserFactory(username='editor')
         RevisionFactory(creator=u, created=yesterday)
 
-        reindex_users_that_contributed_yesterday()
+        call_command('reindex_users_that_contributed_yesterday')
         self.refresh()
 
         data = UserMappingType.search().query(username__match='editor')[0]
@@ -197,7 +197,7 @@ class UserSearchTests(ElasticTestCase):
         u = UserFactory(username='reviewer')
         RevisionFactory(reviewer=u, reviewed=yesterday)
 
-        reindex_users_that_contributed_yesterday()
+        call_command('reindex_users_that_contributed_yesterday')
         self.refresh()
 
         data = UserMappingType.search().query(username__match='reviewer')[0]

@@ -40,7 +40,7 @@ The Army of Awesome Badge is awarded when a user has tweeted 50 Army of Awesome 
 
 Logic for awarding this badge can be found in ``kitsune.customercare.badges``.
 
-Logic for tweet collection (via the Twitter API) can be found in ``kitsune.customercare.cron``.
+Logic for tweet collection (via the Twitter API) can be found in ``kitsune.customercare`` management commands.
 
 The number of replies needed is configurable in ``settings.BADGE_LIMIT_ARMY_OF_AWESOME``.
 
