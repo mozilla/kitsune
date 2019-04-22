@@ -1598,14 +1598,19 @@ input[type=button],
 
   .icon {
     background-color: #f3f3f3;
+    display: block;
     height: 122px;
-    padding: 4px 0;
+    position: relative;
+    width: 100%;
 
     img {
-      margin: 0 auto;
-      display: block;
-      width: auto;
-      max-height: 122px;
+      height: 122px;
+      left: 50%;
+      margin: 0 -50% 0 0;
+      position: absolute;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 100%;
     }
   }
 
