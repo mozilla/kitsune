@@ -11,15 +11,34 @@
 
 {% block title %}{{ _('{product} Help')|f(product=pgettext('DB: products.Product.title', product.title)) }}{% endblock %}
 
+{% block base_container_classes %}container_wide{% endblock %}
+
 {% block content %}
-  <div class="grid_12 search-form-large">
+<header class="help-topics-header">
+      <h1 class="product-title">
+        <img class="product-logo" src="{{ product.image_alternate_url }}" alt="" />
+        <span class="product-title-text">{{ pgettext('DB: products.Product.title', product.title) }} {{ _('Support') }}</span>
+      </h1>
+
+</header>
+
+  <div class="container_12 search-form-large">
     {{ search_box(settings, id='support-search-product', params=search_params) }}
   </div>
+
+  <section class="help-topics">
+    <div class="help-topics-subhead">
+      <h2 class="help-topics-title">{{ _('Frequent Topics') }}</h2>
+      <p>{{ _('Search and navigate easily with these essential features') }}</p>
+    </div>
+    {{ help_topics(topics, show_community_support=product.questions_enabled(request.LANGUAGE_CODE)) }}
+  </section>
+
 
   {% if product.slug == 'firefox' %}
     {# show-fx-download.js will remove the 'hidden' class below if the visitor is *NOT* using Firefox #}
     <div class="firefox-download-button hidden">
-      <div class="grid_12 download-buttons">
+      <div class="download-buttons">
         <div class="download-firefox">
           <a href="https://www.mozilla.org/firefox/new/?utm_source=support.mozilla.org&amp;utm_medium=referral&amp;utm_campaign=non-fx-button&amp;utm_content=body-download-button" class="download-button"
             data-event-category="Download Button"
@@ -77,21 +96,6 @@
       </div>
     </div>
   {% endif %}
-
-  <div class="grid_12">
-    <section id="help-topics">
-      <div class="product-title cf">
-        <img src="{{ product.image_alternate_url }}" height="48" width="48" alt="" />
-        <span>{{ pgettext('DB: products.Product.title', product.title) }}</span>
-        <h1>{{ _('Help Topics') }}</h1>
-        <p>{{ _('Explore the knowledge base.') }}</p>
-      </div>
-      {{ help_topics(topics, show_community_support=product.questions_enabled(request.LANGUAGE_CODE)) }}
-    </section>
-    <section id="get-involved-button">
-      <a class="btn btn-submit" href="{{ url('landings.get_involved') }}">{{ _('Volunteer for Mozilla Support') }}</a>
-    </section>
-  </div>
 {% endblock %}
 
 {% block for_contributors %}{% endblock %}
