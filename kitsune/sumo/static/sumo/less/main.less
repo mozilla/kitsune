@@ -175,7 +175,7 @@ body {
             display: none;
           }
 
-          .volunteer-button {
+          .signin-signup-button {
             display: none;
           }
 
@@ -194,6 +194,12 @@ body {
         padding-bottom: 0;
         padding-top: 0;
         width: 60%;
+      }
+
+      #aux-nav-right {
+        margin-right: 240px;
+        padding-bottom: 0;
+        padding-top: 0;
 
         svg {
           width: 24px;
@@ -202,12 +208,6 @@ body {
         .locale-picker {
           padding-left: 44px;
         }
-      }
-
-      #aux-nav-right {
-        margin-right: 240px;
-        padding-bottom: 0;
-        padding-top: 0;
       }
 
       #support-search {
@@ -242,7 +242,7 @@ body {
       }
     }
 
-    #aux-nav .locale-picker {
+    #aux-nav-right .locale-picker {
       padding-left: 0;
       padding-right: 44px;
     }
@@ -1281,26 +1281,12 @@ input[type=button],
         line-height: 40px;
         padding: 0 12px;
         text-decoration: none;
-
-        &.locale-picker {
-          color: #fff;
-          padding-left: 54px;
-        }
       }
 
       > a:hover {
         background-color: #000;
         color: #fff;
         text-decoration: underline;
-      }
-
-      > svg {
-        fill: #fff;
-        height: 28px;
-        padding-left: 12px;
-        padding-top: 6px;
-        position: absolute;
-        width: 28px;
       }
 
       > ul {
@@ -1441,7 +1427,22 @@ input[type=button],
         line-height: 40px;
         padding: 0 12px;
         text-decoration: none;
+
+        &.locale-picker {
+          color: #fff;
+          padding-left: 54px;
+        }
       }
+
+      > svg {
+        fill: #fff;
+        height: 28px;
+        padding-left: 12px;
+        padding-top: 6px;
+        position: absolute;
+        width: 28px;
+      }
+
     }
   }
 
@@ -1470,8 +1471,8 @@ input[type=button],
     }
   }
 
-  .volunteer-button:link,
-  .volunteer-button:visited {
+  .signin-signup-button:link,
+  .signin-signup-button:visited {
     background-color: #000;
     border: 2px solid #fff;
     border-radius: 100px;

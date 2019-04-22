@@ -19,9 +19,9 @@
       {% else %}
         {% set ask_url = url('wiki.document', 'get-community-support') %}
       {% endif %}
-      <li><a href="{{ ask_url }}" class="ask" data-event-category="navigation" data-event-action="main navigation" data-event-label="Get Community Support">{{ _('Get Community Support') }}</a></li>
     {% endif %}
     {% if user.is_authenticated() %}
+      <li><a href="{{ ask_url }}" class="ask" data-event-category="navigation" data-event-action="main navigation" data-event-label="Get Community Support">{{ _('Get Community Support') }}</a></li>
       <li class="dropdown">
         <a href="#" data-event-category="navigation" data-event-action="main navigation" data-event-label="Contributor Tools">{{ _('Contributor Tools') }}</a>
         <ul class="double">
@@ -34,12 +34,6 @@
             <li><a href="{{ url('search')|urlparams(asked_by=user.username, a=1, w=2) }}"  data-event-category="navigation" data-event-action="main navigation" data-event-label="My Questions">{{ _('My Questions') }}</a></li>
             <li><a href="{{ profile_url(user, edit=True) }}"  data-event-category="navigation" data-event-action="main navigation" data-event-label="Edit Profile">{{ _('Edit Profile') }}</a></li>
             <li><a href="{{ url('users.edit_settings') }}"  data-event-category="navigation" data-event-action="main navigation" data-event-label="Settings">{{ _('Settings') }}</a></li>
-            <li>
-              <form id="sign-out" action="{{ url('users.logout') }}" method="post">
-                {% csrf_token %}
-              </form>
-              <a class="sign-out" data-type="submit" data-form="sign-out" href="#sign-out"  data-event-category="navigation" data-event-action="main navigation" data-event-label="Sign Out">{{ _('Sign Out') }}</a>
-            </li>
           </ul>
         </li>
       <li>
@@ -52,9 +46,7 @@
       </li>
     {% else %}
       <li>
-        <a href="{{ url('users.auth') }}" class="sign-in register"  data-event-category="navigation" data-event-action="main navigation" data-event-label="Sign In">
-          {{ _('Sign In') }}
-        </a>
+        <a href="{{ url('landings.get_involved') }}" class="volunteer-button" data-event-category="Volunteer Button" data-event-action="Volunteer for Mozilla Support">{{ _('Volunteer') }}</a>
       </li>
     {% endif %}
   {% endif %}
