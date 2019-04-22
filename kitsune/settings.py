@@ -585,6 +585,13 @@ if READ_ONLY:
 else:
     OIDC_ENABLE = config('OIDC_ENABLE', default=True, cast=bool)
     ENABLE_ADMIN = config('ENABLE_ADMIN', default=OIDC_ENABLE, cast=bool)
+
+    # Username algo for the oidc lib
+    def _username_algo(email):
+        """Provide a default username for the user."""
+        from kitsune.users.utils import suggest_username
+        return suggest_username(email)
+
     if OIDC_ENABLE:
         OIDC_OP_AUTHORIZATION_ENDPOINT = config('OIDC_OP_AUTHORIZATION_ENDPOINT', default='')
         OIDC_OP_TOKEN_ENDPOINT = config('OIDC_OP_TOKEN_ENDPOINT', default='')
@@ -604,6 +611,7 @@ else:
         FXA_RP_SIGN_ALGO = config('FXA_RP_SIGN_ALGO', default='RS256')
         FXA_USE_NONCE = config('FXA_USE_NONCE', False)
         FXA_LOGOUT_REDIRECT_URL = config('FXA_LOGOUT_REDIRECT_URL', '/')
+        FXA_USERNAME_ALGO = config('FXA_USERNAME_ALGO', default=_username_algo)
 
 ADMIN_REDIRECT_URL = config('ADMIN_REDIRECT_URL', default=None)
 
