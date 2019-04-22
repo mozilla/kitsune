@@ -655,7 +655,6 @@ INSTALLED_APPS = (
     'kitsune.search',
     'kitsune.forums',
     'djcelery',
-    'cronjobs',
     'tidings',
     'rest_framework.authtoken',
     'kitsune.questions',

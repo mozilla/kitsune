@@ -1,14 +1,13 @@
 from datetime import datetime, timedelta
 
-from django.core import mail
-
 import mock
+from django.core import mail
+from django.core.management import call_command
 from nose.tools import eq_
 
 import kitsune.questions.tasks
 from kitsune.products.tests import ProductFactory
 from kitsune.questions import config
-from kitsune.questions.cron import escalate_questions, report_employee_answers
 from kitsune.questions.tests import AnswerFactory, QuestionFactory
 from kitsune.sumo.tests import TestCase
 from kitsune.users.models import Group
@@ -68,7 +67,7 @@ class TestEscalateCron(TestCase):
         q = QuestionFactory(created=datetime.now() - timedelta(hours=24, minutes=10), product=tb)
 
         # Run the cron job and verify only 3 questions were escalated.
-        eq_(len(questions_to_escalate), escalate_questions())
+        eq_(str(len(questions_to_escalate)), call_command('escalate_questions'))
 
 
 class TestEmployeeReportCron(TestCase):
@@ -104,7 +103,7 @@ class TestEmployeeReportCron(TestCase):
         AnswerFactory(question=q)
         QuestionFactory()
 
-        report_employee_answers()
+        call_command('report_employee_answers')
 
         # Get the last email and verify contents
         email = mail.outbox[len(mail.outbox) - 1]
