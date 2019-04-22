@@ -3,7 +3,11 @@
 
 {% set title = _('Log In / Register') %}
 {% set styles = ('users',) %}
-{% set classes = 'login register contributor' if contributor else 'login register' %}
+{% set classes = 'login register contributor light-grey-bg' if contributor else 'login register light-grey-bg' %}
+
+{% block breadcrumbs %}
+{% endblock %}
+
 
 {% block content %}
   {% if contributor %}

@@ -1,6 +1,19 @@
 {% from "users/includes/macros.html" import login_form as render_login with context %}
 
-<article id="login" class="main">
-  <h1>{{ _('Sign In') }}</h1>
+<article id="login" class="main login-form">
+  <h1 class="mb-0">{{ _('Sign In') }}</h1>
+  <p class="mt-0 mb-0">or <a href="#TODO">continue with Firefox Account</a></p>
   {{ render_login(login_form, next_url=next_url) }}
+
+  <h1 class="mb-0">{{ _('Log in / Sign up with Firefox Accounts') }}</h1>
+  <p class="mt-0">{{ _('We are upgrading our log-in system to replace Mozilla Support accounts with Firefox Accounts. Firefox Accounts offers one log-in for convenient and secure access to Mozilla services.') }} <a href="#TODO">{{ _('See our FAQ') }}</a> {{ _('for more information') }}.</p>
+
+  <div>
+  <a href="#TODO" class="button">{{ _('Continue with Firefox Accounts') }}</a>
+  </div>
+  <p><a href="/users/auth">{{ _('continue w/ SUMO account') }}</a></p>
+
+  <p class="help-text">{{ _('Continuing with Firefox Accounts means you have agreed with the <a href="#TODO">Term and Conditions</a> and <a href="#TODO">Privacy Policy</a>' | safe )}}.</p>
+
+
 </article>
