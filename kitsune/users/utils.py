@@ -150,6 +150,8 @@ def get_oidc_fxa_setting(attr):
         'OIDC_RP_SIGN_ALGO': settings.FXA_RP_SIGN_ALGO,
         'OIDC_USE_NONCE': settings.FXA_USE_NONCE,
         'OIDC_RP_SCOPES': settings.FXA_RP_SCOPES,
-        'LOGOUT_REDIRECT_URL': settings.FXA_LOGOUT_REDIRECT_URL
+        'LOGOUT_REDIRECT_URL': settings.FXA_LOGOUT_REDIRECT_URL,
+        'OIDC_USERNAME_ALGO': settings.FXA_USERNAME_ALGO
     }
+
     return FXA_CONFIGURATION.get(attr, None)

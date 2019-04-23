@@ -1,12 +1,18 @@
 import base64
+import logging
 
+from django.contrib.auth import get_user_model
 from django.contrib.auth.backends import ModelBackend
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.models import User
 
 from mozilla_django_oidc.auth import OIDCAuthenticationBackend
 
+from kitsune.users.models import Profile
 from kitsune.users.utils import get_oidc_fxa_setting
+
+
+log = logging.getLogger('k.users')
 
 
 class ModelBackendAllowInactive(ModelBackend):
@@ -88,3 +94,51 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
         if val is not None:
             return val
         return super(FXAAuthBackend, FXAAuthBackend).get_settings(attr, *args)
+
+    def create_user(self, claims):
+        """Override create user method to mark the profile as migrated."""
+
+        user = super(FXAAuthBackend, self).create_user(claims)
+        # Create a user profile for the user and populate it with data from
+        # Firefox Accounts
+        Profile.objects.get_or_create(user=user,
+                                      is_fxa_migrated=True,
+                                      fxa_uid=claims.get('uid'),
+                                      avatar=claims.get('avatar', ''),
+                                      locale=claims.get('locale', ''))
+        return user
+
+    def filter_users_by_claims(self, claims):
+        """Match users by FxA uid or email."""
+        fxa_uid = claims.get('uid')
+        user_model = get_user_model()
+        users = user_model.objects.none()
+
+        # something went terribly wrong. Return None
+        if not fxa_uid:
+            log.warning(u'Failed to get Firefox Account UID.')
+            return users
+
+        users = user_model.objects.filter(profile__fxa_uid=fxa_uid)
+
+        if not users:
+            # We did not match any users so far. Let's call the super method
+            # which will try to match users based on email
+            users = super(FXAAuthBackend, self).filter_users_by_claims(claims)
+        return users
+
+    def update_user(self, user, claims):
+        """Update existing user with new claims, if necessary save, and return user"""
+        profile = user.profile
+        fxa_uid = claims.get('uid')
+        if not profile.is_fxa_migrated:
+            # If it's not migrated, we can assume that there isn't an FxA id too
+            profile.is_fxa_migrated = True
+            profile.fxa_uid = fxa_uid
+
+        if not profile.avatar:
+            # Best effort to get an avatar from FxA
+            profile.avatar = claims.get('avatar', '')
+
+        profile.save()
+        return user
