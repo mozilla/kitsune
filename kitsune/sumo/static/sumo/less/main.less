@@ -1255,23 +1255,6 @@ input[type=button],
       position: relative;
       text-align: left;
 
-      &.dropdown {
-        > a:after,
-        > span:after {
-          border-color: #fff transparent transparent;
-          border-style: solid;
-          border-width: 4px;
-          content: " ";
-          display: inline-block;
-          height: 0;
-          left: 4px;
-          margin: 0 0 0 4px;
-          top: 12px;
-          vertical-align: middle;
-          width: 0;
-        }
-      }
-
       > a,
       > a:visited,
       > span {
@@ -1287,72 +1270,6 @@ input[type=button],
         background-color: #000;
         color: #fff;
         text-decoration: underline;
-      }
-
-      > ul {
-        background: #fff;
-        box-shadow: 0 3px 3px rgba(0, 0, 0, 0.1);
-        display: none;
-        left: 0;
-        list-style: none;
-        margin: 0;
-        padding: 0;
-        position: absolute;
-        top: 40px;
-        width: 160px;
-
-        &.double {
-          width: 420px;
-
-          > li {
-            float: left;
-            width: 186px;
-
-            &:nth-child(odd) {
-              clear: left;
-            }
-          }
-        }
-
-        > li {
-          font-size: 12px;
-          padding: 0 12px;
-
-          &:hover {
-            background: #f0f0f0;
-          }
-
-          > a,
-          > a:visited {
-            color: @textGrey;
-            display: block;
-            padding: 10px 0;
-            text-decoration: none;
-          }
-
-          > a:hover {
-            color: @textBlue;
-            text-decoration: underline;
-          }
-
-          &:last-of-type {
-            > a {
-              border: 0;
-            }
-          }
-        }
-      }
-
-      &:hover {
-        background: #000;
-
-        > ul {
-          display: block;
-        }
-
-        a {
-          text-decoration: underline;
-        }
       }
     }
   }
@@ -1442,7 +1359,6 @@ input[type=button],
         position: absolute;
         width: 28px;
       }
-
     }
   }
 
@@ -1500,6 +1416,92 @@ input[type=button],
 
   .hidden {
     display: none;
+  }
+}
+
+#aux-nav > ul > li, #aux-nav-right > ul > li {
+  &.dropdown {
+    position: relative;
+    > a:after,
+    > span:after {
+      border-color: #fff transparent transparent;
+      border-style: solid;
+      border-width: 4px;
+      content: " ";
+      display: inline-block;
+      height: 0;
+      left: 4px;
+      margin: 0 0 0 4px;
+      top: 12px;
+      vertical-align: middle;
+      width: 0;
+    }
+  }
+
+  > ul {
+    background: #fff;
+    box-shadow: 0 3px 3px rgba(0, 0, 0, 0.1);
+    display: none;
+    left: 0;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    position: absolute;
+    top: 40px;
+    width: 160px;
+
+    &.double {
+      width: 420px;
+
+      > li {
+        float: left;
+        width: 186px;
+
+        &:nth-child(odd) {
+          clear: left;
+        }
+      }
+    }
+
+    > li {
+      font-size: 12px;
+      padding: 0 12px;
+
+      &:hover {
+        background: #f0f0f0;
+      }
+
+      > a,
+      > a:visited {
+        color: @textGrey;
+        display: block;
+        padding: 10px 0;
+        text-decoration: none;
+      }
+
+      > a:hover {
+        color: @textBlue;
+        text-decoration: underline;
+      }
+
+      &:last-of-type {
+        > a {
+          border: 0;
+        }
+      }
+    }
+  }
+
+  &:hover {
+    background: #000;
+
+    > ul {
+      display: block;
+    }
+
+    a {
+      text-decoration: underline;
+    }
   }
 }
 
