@@ -5,6 +5,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.backends import ModelBackend
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.models import User
+from django.core.urlresolvers import reverse as django_reverse
 
 from mozilla_django_oidc.auth import OIDCAuthenticationBackend
 
@@ -119,6 +120,11 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
             log.warning(u'Failed to get Firefox Account UID.')
             return users
 
+        # A existing user is attempting to connect a Firefox Account to the SUMO profile
+        # NOTE: this section will be dropped when the migration is complete
+        if self.request and self.request.user and self.request.user.is_authenticated():
+            return [self.request.user]
+
         users = user_model.objects.filter(profile__fxa_uid=fxa_uid)
 
         if not users:
@@ -149,3 +155,14 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
 
         profile.save()
         return user
+
+    def authenticate(self, request, **kwargs):
+        """Authenticate a user based on the OIDC/oauth2 code flow."""
+
+        # If the request has the /oidc/callback/ path then probably there is a login
+        # attempt in the admin interface. In this case just return None and let
+        # the OIDC backend handle this request.
+        if request and request.path == django_reverse('oidc_authentication_init'):
+            return None
+
+        return super(FXAAuthBackend, self).authenticate(request, **kwargs)
