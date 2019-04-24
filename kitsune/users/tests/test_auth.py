@@ -94,3 +94,20 @@ class FXAAuthBackendTests(TestCase):
         self.backend.request = request_mock
         self.backend.filter_users_by_claims(claims)
         eq_(User.objects.all()[0].id, user.id)
+
+    def test_email_changed_in_FxA_match_by_uid(self):
+        """Test that the user email is updated successfully if it
+        is changed in Firefox Accounts and we match users by uid.
+        """
+        user = UserFactory.create(profile__fxa_uid='my_unique_fxa_id',
+                                  email='foo@example.com')
+        claims = {
+            'uid': 'my_unique_fxa_id',
+            'email': 'bar@example.com'
+        }
+        request_mock = Mock(spec=HttpRequest)
+        self.backend.claims = claims
+        self.backend.request = request_mock
+        self.backend.update_user(user, claims)
+        user = User.objects.get(id=user.id)
+        eq_(user.email, 'bar@example.com')
