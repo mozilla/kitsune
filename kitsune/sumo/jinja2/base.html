@@ -206,7 +206,10 @@
           </a>
         </li>
       {% else %}
-      <li class="dropdown"><a href="{{ profile_url(user) }}" class="user"  data-event-category="navigation" data-event-action="main navigation" data-event-label="User">{{ display_name(user) }}</a>
+      <li class="dropdown"><a href="{{ profile_url(user) }}" class="user"  data-event-category="navigation" data-event-action="main navigation" data-event-label="User">
+        {{ display_name(user) }}
+        <img class="avatar" src="{{ profile_avatar(user) }}">
+      </a>
         <ul>
           <li><a href="{{ profile_url(user) }}"  data-event-category="navigation" data-event-action="main navigation" data-event-label="View Profile">{{ _('View Profile') }}</a></li>
           <li><a href="{{ url('search')|urlparams(asked_by=user.username, a=1, w=2) }}"  data-event-category="navigation" data-event-action="main navigation" data-event-label="My Questions">{{ _('My Questions') }}</a></li>
@@ -222,7 +225,8 @@
               href="#sign-out"
               data-event-category="navigation"
               data-event-action="main navigation"
-              data-event-label="Sign Out">{{ _('Sign Out') }}
+              data-event-label="Sign Out">
+              {{ _('Sign Out') }}
             </a>
           </li>
         </ul>
