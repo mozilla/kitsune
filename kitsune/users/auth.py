@@ -131,10 +131,17 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
         """Update existing user with new claims, if necessary save, and return user"""
         profile = user.profile
         fxa_uid = claims.get('uid')
+        email = claims.get('email')
+
         if not profile.is_fxa_migrated:
             # If it's not migrated, we can assume that there isn't an FxA id too
             profile.is_fxa_migrated = True
             profile.fxa_uid = fxa_uid
+
+        # There is a change in the email in Firefox Accounts. Let's update user's email
+        if user.email != email:
+            user.email = email
+            user.save()
 
         if not profile.avatar:
             # Best effort to get an avatar from FxA
