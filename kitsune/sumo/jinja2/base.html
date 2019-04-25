@@ -187,16 +187,16 @@
     {% endif %}
     <nav class="push-right" id="aux-nav-right" role="navigation">
       <ul>
-      {% if not hide_locale_switcher %}
-        <li>
-          {% include "includes/icons/globe-icon.svg" %}
-          <a href="{{ locale_picker_url }}" class="locale-picker"  data-event-category="navigation" data-event-action="main navigation" data-event-label="Locale Picker">{% if request.LANGUAGE_CODE == "en-US"%}EN{% else %}{{ request.LANGUAGE_CODE }}{% endif %} </a>
-        </li>
-      {% endif %}
       {% if show_header_fx_download() %}
         {# show-fx-download.js will remove the 'hidden' class below if the visitor is *NOT* using Firefox #}
         <li>
           <a href="https://www.mozilla.org/firefox/new/?utm_source=support.mozilla.org&amp;utm_medium=referral&amp;utm_campaign=non-fx-button&amp;utm_content=header-download-button" class="firefox-download-button hidden" data-event-category="Download Button" data-event-action="Firefox for Desktop">{{ _('Download Firefox') }}</a>
+        </li>
+      {% endif %}
+      {% if not hide_locale_switcher %}
+        <li>
+          {% include "includes/icons/globe-icon.svg" %}
+          <a href="{{ locale_picker_url }}" class="locale-picker"  data-event-category="navigation" data-event-action="main navigation" data-event-label="Locale Picker">{% if request.LANGUAGE_CODE == "en-US"%}EN{% else %}{{ request.LANGUAGE_CODE }}{% endif %} </a>
         </li>
       {% endif %}
       {% if not user.is_authenticated() %}
