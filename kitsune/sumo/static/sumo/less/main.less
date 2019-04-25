@@ -76,14 +76,6 @@ body {
             left: 18px;
           }
         }
-
-        #aux-nav {
-          margin-left: 220px;
-        }
-
-        #aux-nav-right {
-          margin-left: 240px;
-        }
       }
     }
 
@@ -186,6 +178,14 @@ body {
             a:visited, {
               color: #fff;
             }
+
+            > a:hover {
+              color: #dfdfdf;
+            }
+
+            > a:active {
+              color: #b7b7b7;
+            }
           }
         }
       }
@@ -193,11 +193,9 @@ body {
       #aux-nav {
         padding-bottom: 0;
         padding-top: 0;
-        width: 60%;
       }
 
       #aux-nav-right {
-        margin-right: 240px;
         padding-bottom: 0;
         padding-top: 0;
 
@@ -207,6 +205,15 @@ body {
 
         .locale-picker {
           padding-left: 44px;
+          font-weight: bold;
+
+          &:hover {
+            text-decoration: none;
+            color: #dfdfdf;
+          }
+          &:active {
+            color: #b7b7b7;
+          }
         }
       }
 
@@ -256,6 +263,14 @@ html {
 
 #main-content {
   margin-top: 30px;
+}
+
+.nav-flex {
+  display: flex;
+
+  .push-right {
+    margin-left: auto;
+  }
 }
 
 footer {
@@ -1236,7 +1251,6 @@ input[type=button],
 }
 
 #aux-nav {
-  float: left;
   font-size: 16px;
   font-weight: 700;
   position: relative;
@@ -1259,7 +1273,7 @@ input[type=button],
       > a:visited,
       > span {
         color: #fff;
-        font-weight: normal;
+        font-weight: bold;
         height: 42px;
         line-height: 40px;
         padding: 0 12px;
@@ -1272,14 +1286,6 @@ input[type=button],
         text-decoration: underline;
       }
     }
-  }
-
-  &.logged-in {
-    width: auto;
-  }
-
-  &.logged-out {
-    width: 43%;
   }
 
   .unread-message-count {
@@ -1318,7 +1324,6 @@ input[type=button],
 }
 
 #aux-nav-right {
-  float: right;
   font-size: 16px;
   font-weight: 700;
   z-index: 10;
@@ -1338,8 +1343,7 @@ input[type=button],
       > a:visited,
       > span {
         color: #fff;
-        display: inline-block;
-        font-weight: normal;
+        font-weight: bold;
         height: 42px;
         line-height: 40px;
         padding: 0 12px;
@@ -1348,6 +1352,9 @@ input[type=button],
         &.locale-picker {
           color: #fff;
           padding-left: 54px;
+          font-size: 18px;
+          font-weight: bold;
+          text-transform: uppercase;
         }
       }
 
@@ -1366,38 +1373,42 @@ input[type=button],
   .firefox-download-button:visited {
     background-color: @buttonGreen;
     border-radius: 100px;
-    border: 2px solid @buttonGreen;
-    font-size: 14px;
+    border: none;
+    font-size: 16px;
+    font-weight: bold;
     height: 32px;
     line-height: 30px;
     margin-left: 0;
     margin-top: 2px;
-    padding: 0 30px;
+    padding: 5px 30px;
     position: relative;
     text-align: center;
     text-decoration: none;
     transition: color .1s ease-in-out, background-color .1s ease-in-out;
 
     &:hover,
-    &:focus,
-    &:active {
+    &:focus {
       background-color: saturate(darken(@buttonGreen, 5%), 10%);
-      border-color: saturate(darken(@buttonGreen, 5%), 10%);
-      transition: color .1s ease-in-out, background-color .1s ease-in-out;
+    }
+
+    &:active {
+      background-color: saturate(darken(@buttonGreen, 20%), 10%);
     }
   }
 
   .signin-signup-button:link,
   .signin-signup-button:visited {
-    background-color: #000;
-    border: 2px solid #fff;
+    background-color: #fff;
+    color: #000;
+    border: none;
     border-radius: 100px;
-    font-size: 14px;
+    font-size: 16px;
+    font-weight: bold;
     height: 32px;
     line-height: 30px;
     margin-left: 10px;
     margin-top: 2px;
-    padding: 0 30px;
+    padding: 5px 30px;
     position: relative;
     text-align: center;
     text-decoration: none;
@@ -1407,10 +1418,12 @@ input[type=button],
     &:hover,
     &:focus,
     &:active {
-      background-color: saturate(darken(#fff, 5%), 10%);
-      border-color: saturate(darken(#fff, 5%), 10%);
+      background-color: darken(#fff, 10%);
       color: #000;
-      transition: color .1s ease-in-out, background-color .1s ease-in-out;
+    }
+
+    &:active {
+      background-color: darken(#fff, 30%);
     }
   }
 
@@ -1422,20 +1435,21 @@ input[type=button],
 #aux-nav > ul > li, #aux-nav-right > ul > li {
   &.dropdown {
     position: relative;
-    > a:after,
-    > span:after {
-      border-color: #fff transparent transparent;
-      border-style: solid;
-      border-width: 4px;
-      content: " ";
-      display: inline-block;
-      height: 0;
-      left: 4px;
-      margin: 0 0 0 4px;
-      top: 12px;
-      vertical-align: middle;
-      width: 0;
-    }
+
+    // > a:after,
+    // > span:after {
+    //   border-color: #fff transparent transparent;
+    //   border-style: solid;
+    //   border-width: 4px;
+    //   content: " ";
+    //   display: inline-block;
+    //   height: 0;
+    //   left: 4px;
+    //   margin: 0 0 0 4px;
+    //   top: 12px;
+    //   vertical-align: middle;
+    //   width: 0;
+    // }
   }
 
   > ul {
@@ -1451,11 +1465,11 @@ input[type=button],
     width: 160px;
 
     &.double {
-      width: 420px;
+      width: 400px;
 
       > li {
         float: left;
-        width: 186px;
+        width: 200px;
 
         &:nth-child(odd) {
           clear: left;
@@ -1464,24 +1478,27 @@ input[type=button],
     }
 
     > li {
-      font-size: 12px;
-      padding: 0 12px;
-
-      &:hover {
-        background: #f0f0f0;
-      }
+      font-size: 14px;
+      padding: 0;
 
       > a,
       > a:visited {
-        color: @textGrey;
+        color: #000;
         display: block;
-        padding: 10px 0;
         text-decoration: none;
+        padding: 10px 12px;
       }
 
       > a:hover {
         color: @textBlue;
-        text-decoration: underline;
+        text-decoration: none;
+        background: #f0f0f0;
+      }
+
+      > a:active {
+        color: darken(@textBlue, 20%);
+        text-decoration: none;
+        background: transparent;
       }
 
       &:last-of-type {
@@ -1507,7 +1524,6 @@ input[type=button],
 
 .html-rtl {
   #aux-nav {
-    float: right;
 
     > ul {
       > li {
@@ -1539,7 +1555,6 @@ input[type=button],
     }
   }
   #aux-nav-right {
-    float: left;
 
     > ul {
       > li {
@@ -1601,19 +1616,13 @@ input[type=button],
 
   .icon {
     background-color: #f3f3f3;
-    display: block;
-    height: 122px;
-    position: relative;
-    width: 100%;
+    padding: 4px 0;
 
     img {
+      display: block;
       height: 122px;
-      left: 50%;
-      margin: 0 -50% 0 0;
-      position: absolute;
-      top: 50%;
-      transform: translate(-50%, -50%);
-      width: 100%;
+      margin: 0 auto;
+      width: auto;
     }
   }
 
@@ -2418,4 +2427,17 @@ input[type=button],
 .support-search-main {
   display: none;
   margin-top: 10px;
+}
+
+.dropdown .user {
+  display: inline-flex;
+  align-items: center;
+  font-weight: bold;
+  font-size: 16px;
+
+  .avatar {
+    border-radius: 50%;
+    margin: 0 4px 0 10px;
+    max-width: 36px;
+  }
 }
