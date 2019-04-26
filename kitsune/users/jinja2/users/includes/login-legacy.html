@@ -1,0 +1,7 @@
+{% from "users/includes/macros.html" import login_form as render_login with context %}
+
+<article id="login" class="main login-form">
+  <h1 class="mb-0">{{ _('Log In') }}</h1>
+  <p class="mt-0 mb-0">or <a href="{{ url('users.fxa_authentication_init') }}">continue with Firefox Account</a></p>
+  {{ render_login(login_form, next_url=next_url) }}
+</article>

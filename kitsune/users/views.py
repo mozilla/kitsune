@@ -60,8 +60,16 @@ from kitsune.wiki.models import (
 
 @ssl_required
 @logout_required
+@require_http_methods(['GET'])
+def user_auth(request):
+    return render(request, 'users/auth.html', {
+    })
+
+
+@ssl_required
+@logout_required
 @require_http_methods(['GET', 'POST'])
-def user_auth(request, contributor=False, register_form=None, login_form=None):
+def user_auth_legacy(request, contributor=False, register_form=None, login_form=None):
     """Try to log the user in, or register a user.
 
     POSTs from these forms do not come back to this view, but instead go to the
@@ -74,7 +82,7 @@ def user_auth(request, contributor=False, register_form=None, login_form=None):
     if register_form is None:
         register_form = RegisterForm()
 
-    return render(request, 'users/auth.html', {
+    return render(request, 'users/auth_legacy.html', {
         'login_form': login_form,
         'register_form': register_form,
         'contributor': contributor,

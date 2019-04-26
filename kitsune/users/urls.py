@@ -23,6 +23,7 @@ detail_patterns = [
 
 users_patterns = [
     url(r'^/auth$', views.user_auth, name='users.auth'),
+    url(r'^/auth/legacy$', views.user_auth_legacy, name='users.auth_legacy'),
     url(r'^/authcontributor$', views.user_auth, {'contributor': True},
         name='users.auth_contributor'),
 
