@@ -14,13 +14,12 @@
 {% block base_container_classes %}container_wide{% endblock %}
 
 {% block content %}
-<header class="help-topics-header">
-      <h1 class="product-title">
-        <img class="product-logo" src="{{ product.image_alternate_url }}" alt="Photo of {{ product.title }}" />
-        <span class="product-title-text">{{ pgettext('DB: products.Product.title', product.title) }} {{ _('Support') }}</span>
-      </h1>
-
-</header>
+  <header class="help-topics-header">
+    <h1 class="product-title">
+      <img class="product-logo" src="{{ product.image_alternate_url }}" alt="Photo of {{ product.title }}" />
+      <span class="product-title-text">{{ pgettext('DB: products.Product.title', product.title) }} {{ _('Support') }}</span>
+    </h1>
+  </header>
 
   <div class="container_12 search-form-large">
     {{ search_box(settings, id='support-search-product', params=search_params) }}
