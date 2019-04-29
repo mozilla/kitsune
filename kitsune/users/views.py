@@ -123,7 +123,7 @@ def login(request, template):
             'form': form,
             'next_url': next_url})
 
-    return user_auth(request, login_form=form)
+    return user_auth_legacy(request, login_form=form)
 
 
 @ssl_required
@@ -160,7 +160,7 @@ def register(request, template, contributor=False):
         return render(request, template + 'register.html', {
             'form': form})
 
-    return user_auth(request, register_form=form, contributor=contributor)
+    return user_auth_legacy(request, register_form=form, contributor=contributor)
 
 
 def register_contributor(request):
