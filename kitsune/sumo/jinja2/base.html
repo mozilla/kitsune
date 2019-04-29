@@ -263,7 +263,7 @@
 </div>
 {% endif %}
 
-<div class="container_12 cf" id="main-container">
+<div class="container_12 cf {% block base_container_classes %}{% endblock %}" id="main-container">
   <div class="grid_12">
     {% if messages %}
       <ul class="user-messages">
