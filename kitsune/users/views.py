@@ -60,9 +60,10 @@ from kitsune.wiki.models import (
 
 @ssl_required
 @logout_required
-@require_http_methods(['GET'])
-def user_auth(request):
+def user_auth(request, contributor=False):
     return render(request, 'users/auth.html', {
+        'contributor': contributor,
+        'legacy': False,
     })
 
 
@@ -82,11 +83,13 @@ def user_auth_legacy(request, contributor=False, register_form=None, login_form=
     if register_form is None:
         register_form = RegisterForm()
 
-    return render(request, 'users/auth_legacy.html', {
+    return render(request, 'users/auth.html', {
         'login_form': login_form,
         'register_form': register_form,
         'contributor': contributor,
-        'next_url': next_url})
+        'next_url': next_url,
+        'legacy': True,
+    })
 
 
 @ssl_required
@@ -95,7 +98,7 @@ def user_auth_legacy(request, contributor=False, register_form=None, login_form=
 def login(request, template):
     """Try to log the user in."""
     if request.method == 'GET' and not request.MOBILE:
-        url = reverse('users.auth') + '?' + request.GET.urlencode()
+        url = reverse('users.auth_legacy') + '?' + request.GET.urlencode()
         return HttpResponsePermanentRedirect(url)
 
     next_url = get_next_url(request) or reverse('home')
@@ -146,7 +149,7 @@ def register(request, template, contributor=False):
 
     """
     if request.method == 'GET' and not request.MOBILE:
-        url = reverse('users.auth') + '?' + request.GET.urlencode()
+        url = reverse('users.auth_legacy') + '?' + request.GET.urlencode()
         return HttpResponsePermanentRedirect(url)
 
     form = handle_register(request)

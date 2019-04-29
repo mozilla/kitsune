@@ -18,7 +18,11 @@
       {% include "includes/icons/firefox-logo.svg" %}
     </figure>
     <div class="grid_6">
-      {% include "users/includes/login-ffx.html" %}
+      {% if legacy %}
+        {% include "users/includes/login-legacy.html" %}
+      {% else %}
+        {% include "users/includes/login-ffx.html" %}
+      {% endif %}
     </div>
   </div>
 
