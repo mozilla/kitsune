@@ -82,7 +82,7 @@ class BaseTemplateTests(MockRequestTests):
         """Ensure that login/register links are visible in not READ_ONLY."""
         html = render_to_string(self.template, request=self.request)
         doc = pq(html)
-        assert len(doc('a.sign-out, a.sign-in')) > 0
+        assert len(doc('a.sign-out, a.register')) > 0
 
 
 class ErrorListTests(MockRequestTests):
