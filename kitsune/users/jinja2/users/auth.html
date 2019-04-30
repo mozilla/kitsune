@@ -1,5 +1,6 @@
 {% extends "users/base.html" %}
 {% from "layout/errorlist.html" import errorlist %}
+{% from "users/includes/notification_macros.html" import notification_already_migrated %}
 
 {% set title = _('Log In / Register') %}
 {% set styles = ('users',) %}
@@ -14,37 +15,9 @@
     {% include "users/includes/auth_contributor.html" %}
   {% else %}
 
-  <div class="notification success">
-    <img class="ff-logo" src="{{ STATIC_URL }}sumo/img/firefox-logo.svg" alt="{{ _('Firefox logo') }}"/>
-    <div class="notification-content">
-      <h3 class="notification-title">{{ _('Good news!') }}</h3>
-      <p>{{ _('You can now log in to Mozilla Support using Firefox Accounts.') }}</p>
-    </div>
-    <a href="javascript:;" class="close-button"><span class="show-for-sr-only">{{ _('Close') }}</span></a>
-  </div>
-
-  <div class="notification alert">
-    <img class="ff-logo" src="{{ STATIC_URL }}sumo/img/firefox-logo.svg" alt="{{ _('Firefox logo') }}"/>
-    <div class="notification-content">
-      <h3 class="notification-title">{{ _('Welcome!') }}</h3>
-      <p>{{ _('You are now logged in using Firefox Accounts. Already have a different Mozilla Support Account?') }}</p>
-    </div>
-    <div class="notification-actions">
-      <a href="https://support.mozilla.org/en-US/kb/firefox-accounts-mozilla-support-faq" class="button dark">{{ _('Read More') }}</a>
-    </div>
-    <a href="javascript:;" class="close-button"><span class="show-for-sr-only">{{ _('Close') }}</span></a>
-  </div>
-
-  <div class="notification alert">
-    <img class="ff-logo" src="{{ STATIC_URL }}sumo/img/firefox-logo.svg" alt="{{ _('Firefox logo') }}"/>
-    <div class="notification-content">
-      <h3 class="notification-title">{{ _('Heads up!') }}</h3>
-      <p>{{ _('Soon, Firefox Accounts will replace Mozilla Support logins. You can upgrade your existing Mozilla account to Firefox Accounts today.') }} <a href="https://support.mozilla.org/en-US/kb/firefox-accounts-mozilla-support-faq">{{ _('Read more') }}</a>.</p>
-    </div>
-    <div class="notification-actions">
-      <a href="{{ url('users.fxa_authentication_init') }}" class="button">{{ _('Continue with Firefox Accounts') }}</a>
-    </div>
-  </div>
+  {% if notification == 'already_migrated' %}
+    {{ notification_already_migrated(STATIC_URL) }}
+  {% endif %}
 
   <div class="content cf">
     <figure class="grid_6 large-logo-wrap">
