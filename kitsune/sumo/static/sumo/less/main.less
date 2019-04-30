@@ -53,7 +53,6 @@ body {
     text-align: right;
 
     > header .logo {
-      float: right;
       padding-right: 30px;
     }
 
@@ -270,6 +269,28 @@ html {
 
   .push-right {
     margin-left: auto;
+  }
+}
+
+.html-rtl {
+  .nav-flex .push-right {
+    margin-left: 0;
+    margin-right: auto;
+  }
+
+  #aux-nav-right > ul > li {
+    > a.locale-picker {
+      padding-left: 0;
+      padding-right: 0;
+      margin: 0 0 0 20px;
+    }
+
+    > svg {
+      position: relative;
+      margin: 0 20px -7px 10px;
+      padding: 0;
+      display: inline-block;
+    }
   }
 }
 
@@ -1369,7 +1390,6 @@ input[type="submit"]{
 
     > ul {
       > li {
-        float: right;
         padding: 0 20px 0 12px;
 
         &.dropdown {
@@ -1400,7 +1420,6 @@ input[type="submit"]{
 
     > ul {
       > li {
-        float: right;
         padding: 0 12px 0 20px;
       }
     }
