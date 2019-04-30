@@ -1,4 +1,4 @@
-<svg class="ff-logo" data-name="Firefox - Large" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1024 1024">
+<svg data-name="Firefox - Large" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1024 1024">
   <defs>
     <radialGradient id="radial-gradient" cx="-14480.522" cy="-8329.079" fx="-14509.281265145226" r="450.875" gradientTransform="matrix(0.762, 0.034, -0.05, 1.12, 11560.893, 10069.103)" gradientUnits="userSpaceOnUse">
       <stop offset="0.045" stop-color="#ffea00"/>
