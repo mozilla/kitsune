@@ -3,7 +3,7 @@
   const loginLegacy = document.getElementById('login-legacy');
   const loginFFX = document.getElementById('login-ffx');
 
-  legacyLoginToggle.onclick = (e) => {
+  legacyLoginToggle.onclick = function(e) {
     e.preventDefault();
     loginLegacy.classList.toggle('hidden');
     loginFFX.classList.toggle('hidden');
