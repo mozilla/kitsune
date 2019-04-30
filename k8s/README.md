@@ -165,7 +165,7 @@ Available tasks:
 
 ##### kubectl client version note
 
->All Kubernetes clusters that serve SUMO are currently v1.8.xx
+>All Kubernetes clusters that serve SUMO are currently v1.10.xx
 
 When connecting to an older K8s cluster, you may need to download an older version of Kubectl that matches the version of the server.
 
