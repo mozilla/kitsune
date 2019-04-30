@@ -71,7 +71,7 @@ def _disable_sumo_auth_for_fxa(request):
 @ssl_required
 @logout_required
 @require_http_methods(['GET', 'POST'])
-def user_auth(request, contributor=False, register_form=None, login_form=None):
+def user_auth(request, contributor=False, register_form=None, login_form=None, notification=None):
     """Try to log the user in, or register a user.
 
     POSTs from these forms do not come back to this view, but instead go to the
@@ -88,14 +88,19 @@ def user_auth(request, contributor=False, register_form=None, login_form=None):
         'login_form': login_form,
         'register_form': register_form,
         'contributor': contributor,
-        'next_url': next_url})
+        'next_url': next_url,
+        'notification': notification
+    })
 
 
 @ssl_required
 # @watch_login
 @mobile_template('users/{mobile/}login.html')
 def login(request, template):
-    """Try to log the user in."""
+    """
+    Legacy view for logging in SUMO users. This is being deprecated
+    in favor of FFX login.
+    """
     if request.method == 'GET' and not request.MOBILE:
         url = reverse('users.auth') + '?' + request.GET.urlencode()
         return HttpResponsePermanentRedirect(url)
@@ -105,6 +110,13 @@ def login(request, template):
     form = handle_login(request, only_active=only_active)
 
     if request.user.is_authenticated():
+        if request.user.profile.is_fxa_migrated:
+            auth.logout(request)
+            statsd.incr('user.logout')
+            res = user_auth(request, notification='already_migrated')
+            res.delete_cookie(settings.SESSION_EXISTS_COOKIE)
+            return res
+
         # Add a parameter so we know the user just logged in.
         # fpa =  "first page authed" or something.
         next_url = urlparams(next_url, fpa=1)
