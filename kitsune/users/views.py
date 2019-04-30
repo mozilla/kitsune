@@ -78,8 +78,7 @@ def user_auth(request, contributor=False, register_form=None, login_form=None):
         'login_form': login_form,
         'register_form': register_form,
         'contributor': contributor,
-        'next_url': next_url,
-    })
+        'next_url': next_url})
 
 
 @ssl_required
