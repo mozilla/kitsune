@@ -60,17 +60,8 @@ from kitsune.wiki.models import (
 
 @ssl_required
 @logout_required
-def user_auth(request, contributor=False):
-    return render(request, 'users/auth.html', {
-        'contributor': contributor,
-        'legacy': False,
-    })
-
-
-@ssl_required
-@logout_required
 @require_http_methods(['GET', 'POST'])
-def user_auth_legacy(request, contributor=False, register_form=None, login_form=None):
+def user_auth(request, contributor=False, register_form=None, login_form=None):
     """Try to log the user in, or register a user.
 
     POSTs from these forms do not come back to this view, but instead go to the
@@ -88,7 +79,6 @@ def user_auth_legacy(request, contributor=False, register_form=None, login_form=
         'register_form': register_form,
         'contributor': contributor,
         'next_url': next_url,
-        'legacy': True,
     })
 
 
@@ -98,7 +88,7 @@ def user_auth_legacy(request, contributor=False, register_form=None, login_form=
 def login(request, template):
     """Try to log the user in."""
     if request.method == 'GET' and not request.MOBILE:
-        url = reverse('users.auth_legacy') + '?' + request.GET.urlencode()
+        url = reverse('users.auth') + '?' + request.GET.urlencode()
         return HttpResponsePermanentRedirect(url)
 
     next_url = get_next_url(request) or reverse('home')
@@ -123,7 +113,7 @@ def login(request, template):
             'form': form,
             'next_url': next_url})
 
-    return user_auth_legacy(request, login_form=form)
+    return user_auth(request, login_form=form)
 
 
 @ssl_required
@@ -149,7 +139,7 @@ def register(request, template, contributor=False):
 
     """
     if request.method == 'GET' and not request.MOBILE:
-        url = reverse('users.auth_legacy') + '?' + request.GET.urlencode()
+        url = reverse('users.auth') + '?' + request.GET.urlencode()
         return HttpResponsePermanentRedirect(url)
 
     form = handle_register(request)
@@ -160,7 +150,7 @@ def register(request, template, contributor=False):
         return render(request, template + 'register.html', {
             'form': form})
 
-    return user_auth_legacy(request, register_form=form, contributor=contributor)
+    return user_auth(request, register_form=form, contributor=contributor)
 
 
 def register_contributor(request):
