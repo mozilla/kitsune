@@ -55,6 +55,8 @@ instead of `make shell` as the latter does not bind port 8000 which you need to 
 
 Run `make help` to see other helpful commands.
 
+You may wish to add `PIPELINE_COLLECTOR_ENABLED=False` to your `.env` file. This will prevent `collectstatic` from being run on each page refresh.
+
 ### The Admin
 
 After the above you can do some optional steps if you want to use the admin:
