@@ -790,6 +790,11 @@ PIPELINE = {
 
     'BROWSERIFY_BINARY': path('node_modules/.bin/browserify'),
     'BROWSERIFY_ARGUMENTS': '-t babelify -t debowerify',
+    'PIPELINE_COLLECTOR_ENABLED': config(
+        'PIPELINE_COLLECTOR_ENABLED',
+        default=not DEBUG,
+        cast=bool,
+    ),
 }
 
 if DEBUG:
