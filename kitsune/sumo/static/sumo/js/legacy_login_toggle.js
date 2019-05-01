@@ -1,10 +1,10 @@
 (function() {
-  const legacyLoginToggles = document.querySelectorAll('.legacy-login-toggle');
-  const loginLegacy = document.getElementById('login-legacy');
-  const loginFFX = document.getElementById('login-ffx');
+  var legacyLoginToggles = document.querySelectorAll('.legacy-login-toggle');
+  var loginLegacy = document.getElementById('login-legacy');
+  var loginFFX = document.getElementById('login-ffx');
 
-  for (let legacyLoginToggle of legacyLoginToggles) {
-    legacyLoginToggle.onclick = function(e) {
+  for (var i = 0; i < legacyLoginToggles.length; i++) {
+    legacyLoginToggles[i].onclick = function(e) {
       e.preventDefault();
       loginLegacy.classList.toggle('hidden');
       loginFFX.classList.toggle('hidden');
