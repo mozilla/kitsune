@@ -30,7 +30,6 @@ from kitsune.sumo.urlresolvers import reverse
 from kitsune.tags.tests import TagFactory
 from kitsune.products.tests import TopicFactory
 from kitsune.upload.models import ImageAttachment
-from kitsune.users.models import RegistrationProfile
 from kitsune.users.tests import UserFactory, add_permission
 from kitsune.wiki.tests import DocumentFactory, ApprovedRevisionFactory
 
@@ -1402,6 +1401,16 @@ class AAQTemplateTestCase(TestCaseBase):
         version = question.metadata['ff_version']
         eq_('18.0.2', version)
 
+    def test_full_workflow_inactive(self):
+        """
+        Test that an inactive user cannot create a new question
+        """
+        u = self.user
+        u.is_active = False
+        u.save()
+        self._post_new_question()
+        eq_(0, Question.objects.count())
+
     def test_localized_creation(self):
         response = self._post_new_question(locale='pt-BR')
         eq_(200, response.status_code)
@@ -1410,96 +1419,6 @@ class AAQTemplateTestCase(TestCaseBase):
         # Verify question is in db now
         question = Question.objects.filter(title='A test question')[0]
         eq_(question.locale, 'pt-BR')
-
-    def test_full_workflow_inactive(self):
-        u = self.user
-        u.is_active = False
-        u.save()
-        RegistrationProfile.objects.create_profile(u)
-        response = self._post_new_question()
-        eq_(200, response.status_code)
-
-        # Verify question is in db now
-        question = Question.objects.filter(title='A test question')[0]
-
-        # Make sure question is not in questions list
-        response = self.client.get(reverse('questions.list', args=['all']))
-        doc = pq(response.content)
-        eq_(0, len(doc('li#question-%s' % question.id)))
-        # And no confirmation email was sent (already sent on registration)
-        eq_(0, len(mail.outbox))
-
-    def test_invalid_type(self):
-        """Providing an invalid type returns 400."""
-        p = ProductFactory(slug='firefox')
-        l = QuestionLocale.objects.get(locale=settings.LANGUAGE_CODE)
-        p.questions_locales.add(l)
-        TopicFactory(slug='fix-problems', product=p)
-        self.client.logout()
-
-        url = urlparams(
-            reverse('questions.aaq_step5', args=['desktop', 'fix-problems']),
-            search='A test question')
-        # Register before asking question
-        data = {'username': 'testaaq',
-                'password': 'testpass', 'password2': 'testpass',
-                'email': 'testaaq@example.com'}
-        data.update(**self.data)
-        response = self.client.post(url, data, follow=True)
-        eq_(400, response.status_code)
-        assert 'Request type not recognized' in response.content
-
-    def test_register_through_aaq(self):
-        """Registering through AAQ form sends confirmation email."""
-        p = ProductFactory(slug='firefox')
-        l = QuestionLocale.objects.get(locale=settings.LANGUAGE_CODE)
-        p.questions_locales.add(l)
-        TopicFactory(slug='fix-problems', product=p)
-        self.client.logout()
-        title = 'A test question'
-        url = urlparams(
-            reverse('questions.aaq_step5', args=['desktop', 'fix-problems']),
-            search=title)
-        # Register before asking question
-        data = {'register': 'Register', 'username': 'testaaq',
-                'password': 'testpass1', 'password2': 'testpass1',
-                'email': 'testaaq@example.com'}
-        data.update(**self.data)
-        self.client.post(url, data, follow=True)
-
-        # Confirmation email is sent
-        eq_(1, len(mail.outbox))
-        eq_(mail.outbox[0].subject,
-            'Please confirm your Firefox Help question')
-        assert mail.outbox[0].body.find('?reg=aaq') > 0
-
-        # Finally post question
-        self.client.post(url, self.data, follow=True)
-
-        # Verify question is in db now
-        question = Question.objects.filter(title=title)
-        eq_(1, question.count())
-        eq_('testaaq', question[0].creator.username)
-
-        # And no confirmation email was sent (already sent on registration)
-        # Note: there was already an email sent above
-        eq_(1, len(mail.outbox))
-
-    def test_register_through_aaq_has_csrf(self):
-        """Registration form in the AAQ has a CSRF token"""
-        l = QuestionLocale.objects.get(locale=settings.LANGUAGE_CODE)
-        p = ProductFactory(slug='firefox')
-        p.questions_locales.add(l)
-        TopicFactory(slug='fix-problems', product=p)
-
-        self.client.logout()
-        url = reverse('questions.aaq_step5', args=['desktop', 'fix-problems'])
-        url = urlparams(url, search='test')
-
-        response = self.client.get(url, follow=True)
-        doc = pq(response.content)
-        csrf = doc('#register-form form input[name="csrfmiddlewaretoken"]')
-        eq_(len(csrf), 1)
 
     def test_invalid_product_404(self):
         url = reverse('questions.aaq_step2', args=['lipsum'])
@@ -1521,21 +1440,6 @@ class AAQTemplateTestCase(TestCaseBase):
         response = self.client.get(url)
         eq_(200, response.status_code)
         assert '/questions/new' not in pq(response.content)('#aux-nav').html()
-
-    def test_register_through_aaq_in_mobile_has_csrf(self):
-        """Registration form in the AAQ Mobile has a CSRF token"""
-        l = QuestionLocale.objects.get(locale=settings.LANGUAGE_CODE)
-        p = ProductFactory(slug='firefox')
-        p.questions_locales.add(l)
-        TopicFactory(slug='fix-problems', product=p)
-
-        self.client.logout()
-        url = reverse('questions.aaq_step5', args=['desktop', 'fix-problems'])
-        url = urlparams(url, search='test')
-
-        response = self.client.get(url, {'mobile': 1}, follow=True)
-        doc = pq(response.content)
-        assert doc('#register-form form input[name="csrfmiddlewaretoken"]')
 
 
 class ProductForumTemplateTestCase(TestCaseBase):

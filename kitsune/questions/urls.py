@@ -29,7 +29,6 @@ urlpatterns = [
 
     # AAQ
     url(r'^/new$', views.aaq, name='questions.aaq_step1'),
-    url(r'^/new/confirm$', views.aaq_confirm, name='questions.aaq_confirm'),
     url(r'^/new/(?P<product_key>[\w\-]+)$',
         views.aaq_step2, name='questions.aaq_step2'),
     url(r'^/new/(?P<product_key>[\w\-]+)/(?P<category_key>[\w\-]+)$',
