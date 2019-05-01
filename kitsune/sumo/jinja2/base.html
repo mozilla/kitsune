@@ -201,7 +201,7 @@
       {% endif %}
       {% if not user.is_authenticated() %}
         <li>
-          <a href="{{ url('users.fxa_authentication_init') }}" class="signin-signup-button register"  data-event-category="navigation" data-event-action="main navigation" data-event-label="Sign In">
+          <a href="{{ url('users.auth') }}" class="signin-signup-button register"  data-event-category="navigation" data-event-action="main navigation" data-event-label="Sign In">
             {{ _('Log in / Sign up') }}
           </a>
         </li>
