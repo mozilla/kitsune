@@ -2,6 +2,8 @@
 
 <article id="login" class="main login-form">
   <h1 class="mb-0">{{ _('Log In') }}</h1>
-  <p class="mt-0 mb-0">or <a href="{{ url('users.fxa_authentication_init') }}">{{ _('continue with Firefox Account') }}</a></p>
+  <p class="mt-0 mb-0">
+    or <a class="legacy-login-toggle" href="#">{{ _('continue with Firefox Account') }}</a>
+  </p>
   {{ render_login(login_form, next_url=next_url) }}
 </article>
