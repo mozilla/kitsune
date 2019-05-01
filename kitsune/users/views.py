@@ -84,12 +84,16 @@ def user_auth(request, contributor=False, register_form=None, login_form=None, n
     if register_form is None:
         register_form = RegisterForm()
 
+    # on load, decide whether legacy or FXA form is visible
+    legacy_form_visible = bool(login_form.errors or register_form.errors)
+
     return render(request, 'users/auth.html', {
         'login_form': login_form,
         'register_form': register_form,
         'contributor': contributor,
         'next_url': next_url,
-        'notification': notification
+        'notification': notification,
+        'legacy_form_visible': legacy_form_visible,
     })
 
 
