@@ -56,7 +56,7 @@ class RegisterTests(TestCase):
                                     {'username': 'newbie',
                                      'password': 'foobar22'}, follow=True)
         eq_(200, response.status_code)
-        eq_('/en-US/?fpa=1', response.redirect_chain[0][0])
+        eq_('/en-US/user/newbie?fpa=1', response.redirect_chain[0][0])
 
     @mock.patch.object(email_utils, 'send_messages')
     @mock.patch.object(Site.objects, 'get_current')
@@ -93,7 +93,7 @@ class RegisterTests(TestCase):
                                     {'username': 'cjkuser',
                                      'password': u_str}, follow=True)
         eq_(200, response.status_code)
-        eq_('/ja/?fpa=1', response.redirect_chain[0][0])
+        eq_('/ja/user/cjkuser?fpa=1', response.redirect_chain[0][0])
 
     @mock.patch.object(Site.objects, 'get_current')
     def test_new_user_activation(self, get_current):
@@ -263,7 +263,7 @@ class RegisterTests(TestCase):
         )
 
         assert not response.wsgi_request.user.is_authenticated()
-        assert pq(response.content).find('#fxa-login-error')
+        assert pq(response.content).find('#fxa-notification-already-migrated')
 
 
 class ChangeEmailTestCase(TestCase):
@@ -460,7 +460,7 @@ class SessionTests(TestCase):
         """
         If an FXA successfully authenticates using their SUMO credentials,
         we immediately log them out and clear their cookies, as they
-        should only be authenticating via FFX
+        should only be authenticating via FXA
         """
         url = reverse('users.login')
         self.user.profile.is_fxa_migrated = True
