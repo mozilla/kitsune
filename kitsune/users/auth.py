@@ -121,6 +121,8 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
                                       fxa_uid=claims.get('uid'),
                                       avatar=claims.get('avatar', ''),
                                       locale=claims.get('locale', ''))
+
+        self.request.session['fxa_notification'] = 'created'
         return user
 
     def filter_users_by_claims(self, claims):
@@ -157,6 +159,7 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
             # If it's not migrated, we can assume that there isn't an FxA id too
             profile.is_fxa_migrated = True
             profile.fxa_uid = fxa_uid
+            self.request.session['fxa_notification'] = 'updated'
 
         # There is a change in the email in Firefox Accounts. Let's update user's email
         if user.email != email:

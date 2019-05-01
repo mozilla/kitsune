@@ -14,8 +14,16 @@ def home(request):
     if request.MOBILE:
         return redirect_to(request, 'products', permanent=False)
 
+    fxa_notification = request.session.get('fxa_notification', None)
+
+    # If there is a FXA notification, show it once in the template.
+    # Afterwards, delete it from session
+    if fxa_notification:
+        request.session['fxa_notification'] = None
+
     return render(request, 'landings/home.html', {
-        'products': Product.objects.filter(visible=True)
+        'products': Product.objects.filter(visible=True),
+        'fxa_notification': fxa_notification,
     })
 
 

@@ -30,6 +30,7 @@ class FXAAuthBackendTests(TestCase):
         }
 
         request_mock = Mock(spec=HttpRequest)
+        request_mock.session = {}
         self.backend.claims = claims
         self.backend.request = request_mock
         users = User.objects.all()
@@ -52,11 +53,13 @@ class FXAAuthBackendTests(TestCase):
         }
 
         request_mock = Mock(spec=HttpRequest)
+        request_mock.session = {}
         self.backend.claims = claims
         self.backend.request = request_mock
         self.backend.create_user(claims)
         user = User.objects.get(profile__fxa_uid='my_unique_fxa_id')
         eq_(user.username, 'bar1')
+        eq_(self.backend.request.session['fxa_notification'], 'created')
 
     def test_login_fxa_uid_missing(self):
         """Test user filtering without FxA uid."""
@@ -108,11 +111,13 @@ class FXAAuthBackendTests(TestCase):
             'email': 'bar@example.com'
         }
         request_mock = Mock(spec=HttpRequest)
+        request_mock.session = {}
         self.backend.claims = claims
         self.backend.request = request_mock
         self.backend.update_user(user, claims)
         user = User.objects.get(id=user.id)
         eq_(user.email, 'bar@example.com')
+        eq_(self.backend.request.session['fxa_notification'], 'updated')
 
     @patch('mozilla_django_oidc.auth.requests')
     @patch('mozilla_django_oidc.auth.OIDCAuthenticationBackend.verify_token')

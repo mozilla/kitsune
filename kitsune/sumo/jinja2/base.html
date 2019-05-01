@@ -1,4 +1,5 @@
 {% from 'includes/common_macros.html' import announcement_bar, search_box, aux_nav, favicon with context %}
+{% from "users/includes/notification_macros.html" import notification_fxa_updated, notification_fxa_created %}
 
 {# check once to see if fxa banner should be shown #}
 {% set fxa_banner_test = request.LANGUAGE_CODE in settings.FXA_BANNER_LANGUAGES and waffle.switch('fxa-banner-test') %}
@@ -275,6 +276,17 @@
 
     {% block above_main %}{% endblock %}
   </div>
+
+  {% if fxa_notification and user.is_authenticated() %}
+  <div class="grid_12">
+    {% if fxa_notification == 'updated' %}
+      {{ notification_fxa_updated(STATIC_URL) }}
+    {% endif %}
+    {% if fxa_notification == 'created' %}
+      {{ notification_fxa_created(STATIC_URL) }}
+    {% endif %}
+  </div>
+  {% endif %}
 
   {% block outer_side %}
     <aside class="grid_3 no-min">
