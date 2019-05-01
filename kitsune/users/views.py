@@ -109,7 +109,6 @@ def login(request, template):
         url = reverse('users.auth') + '?' + request.GET.urlencode()
         return HttpResponsePermanentRedirect(url)
 
-    next_url = get_next_url(request) or reverse('home')
     only_active = request.POST.get('inactive', '0') != '1'
     form = handle_login(request, only_active=only_active)
 
@@ -117,10 +116,13 @@ def login(request, template):
         if request.user.profile.is_fxa_migrated:
             return logout(request, already_migrated=True)
 
-        # Add a parameter so we know the user just logged in.
-        # fpa =  "first page authed" or something.
-        next_url = urlparams(next_url, fpa=1)
-        res = HttpResponseRedirect(next_url)
+        # We re-direct to the profile screen which will show a deprecation
+        # warning for SUMO login
+        profile_url = urlparams(
+            reverse('users.profile', args=[request.user.username]),
+            fpa=1,
+        )
+        res = HttpResponseRedirect(profile_url)
         max_age = (None if settings.SESSION_EXPIRE_AT_BROWSER_CLOSE
                    else settings.SESSION_COOKIE_AGE)
         res.set_cookie(settings.SESSION_EXISTS_COOKIE,
@@ -132,7 +134,8 @@ def login(request, template):
     if request.MOBILE:
         return render(request, template, {
             'form': form,
-            'next_url': next_url})
+            'next_url': get_next_url(request) or reverse('home'),
+        })
 
     return user_auth(request, login_form=form)
 
@@ -489,7 +492,6 @@ def edit_watch_list(request):
 @mobile_template('users/{mobile/}edit_profile.html')
 def edit_profile(request, username=None, template=None):
     """Edit user profile."""
-
     # If a username is specified, we are editing somebody else's profile.
     if username is not None and username != request.user.username:
         try:
@@ -525,9 +527,13 @@ def edit_profile(request, username=None, template=None):
 
     # TODO: detect timezone automatically from client side, see
     # http://rocketscience.itteco.org/2010/03/13/automatic-users-timezone-determination-with-javascript-and-django-timezones/  # noqa
+    msgs = messages.get_messages(request)
+    fxa_messages = [
+        m.message for m in msgs if m.message.startswith('fxa_notification')
+    ]
 
     return render(request, template, {
-        'form': form, 'profile': user_profile})
+        'form': form, 'profile': user_profile, 'fxa_messages': fxa_messages})
 
 
 @login_required

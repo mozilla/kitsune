@@ -19,6 +19,11 @@ class FXAAuthBackendTests(TestCase):
     def setUp(self):
         """Setup class."""
         self.backend = FXAAuthBackend()
+        self.info_patch = patch('django.contrib.messages.info')
+        self.info_mock = self.info_patch.start()
+
+    def tearDown(self):
+        self.info_patch.stop()
 
     def test_create_new_profile(self):
         """Test that a new profile is created through Firefox Accounts."""
@@ -59,6 +64,10 @@ class FXAAuthBackendTests(TestCase):
         self.backend.create_user(claims)
         user = User.objects.get(profile__fxa_uid='my_unique_fxa_id')
         eq_(user.username, 'bar1')
+        self.info_mock.assert_called_with(
+            request_mock,
+            'fxa_notification_created'
+        )
 
     def test_login_fxa_uid_missing(self):
         """Test user filtering without FxA uid."""
@@ -117,6 +126,10 @@ class FXAAuthBackendTests(TestCase):
         self.backend.update_user(user, claims)
         user = User.objects.get(id=user.id)
         eq_(user.email, 'bar@example.com')
+        self.info_mock.assert_called_with(
+            request_mock,
+            'fxa_notification_updated'
+        )
 
     @patch('mozilla_django_oidc.auth.requests')
     @patch('mozilla_django_oidc.auth.OIDCAuthenticationBackend.verify_token')

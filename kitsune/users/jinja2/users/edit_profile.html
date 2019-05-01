@@ -1,4 +1,6 @@
 {% extends "users/base.html" %}
+{% from "users/includes/notification_macros.html" import notification_fxa_updated, notification_fxa_created %}
+
 {% set title = _('Edit Profile') %}
 {% set classes = 'profile' %}
 {% set active = 'edit-profile' %}
@@ -7,6 +9,16 @@
 
 {% block content %}
   <div class="grid_9">
+    {% if fxa_messages %}
+      {% for message in fxa_messages %}
+        {% if message == 'fxa_notification_updated' %}
+          {{ notification_fxa_updated(STATIC_URL) }}
+        {% endif %}
+        {% if message == 'fxa_notification_created' %}
+          {{ notification_fxa_created(STATIC_URL) }}
+        {% endif %}
+      {% endfor %}
+    {% endif %}
     <article id="edit-profile" class="main">
       <h1>{{ title }}</h1>
       <form method="post" action="">
