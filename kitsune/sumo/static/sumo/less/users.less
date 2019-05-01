@@ -206,8 +206,6 @@ article {
   }
 
   form {
-    margin: 25px 0;
-
     ul {
       margin: 0;
       padding: 0;
@@ -215,12 +213,9 @@ article {
 
     li {
       list-style: none;
-      padding: 8px 0;
+      padding: 0;
 
       input {
-        margin-top: -8px;
-        width: 200px;
-
         &[type="checkbox"] {
           width: auto;
         }
@@ -253,11 +248,11 @@ article {
     }
 
     label {
-      display: inline-block;
-      padding: 0 5px 0 0;
-      text-align: right;
+      display: block;
+      font-weight: bold;
+      margin: 1.25em 0 0.25em;
+      text-align: left;
       vertical-align: top;
-      width: 160px;
     }
 
     div.val-wrap {
@@ -267,11 +262,6 @@ article {
       input {
         display: block;
       }
-    }
-
-    div.submit {
-      clear: both;
-      padding: 10px 0 0 165px;
     }
 
     textarea {
