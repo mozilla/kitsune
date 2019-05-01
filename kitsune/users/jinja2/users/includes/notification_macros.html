@@ -1,5 +1,5 @@
-{% macro notification_success(static_url) -%}
-<div class="notification success">
+{% macro notification_fxa_updated(static_url) -%}
+<div id="fxa-notification-updated" class="notification success">
   <img class="ff-logo" src="{{ static_url }}sumo/img/firefox-logo.svg" alt="{{ _('Firefox logo') }}"/>
   <div class="notification-content">
     <h3 class="notification-title">{{ _('Good news!') }}</h3>
@@ -9,8 +9,8 @@
 </div>
 {%- endmacro %}
 
-{% macro notification_welcome(static_url) -%}
-<div class="notification alert">
+{% macro notification_fxa_created(static_url) -%}
+<div id="fxa-notification-created" class="notification alert">
   <img class="ff-logo" src="{{ static_url }}sumo/img/firefox-logo.svg" alt="{{ _('Firefox logo') }}"/>
   <div class="notification-content">
     <h3 class="notification-title">{{ _('Welcome!') }}</h3>
@@ -23,8 +23,8 @@
 </div>
 {%- endmacro %}
 
-{% macro notification_warning(static_url) -%}
-<div class="notification alert">
+{% macro notification_sumo_deprecation(static_url) -%}
+<div id="fxa-notification-deprecated" class="notification alert">
   <img class="ff-logo" src="{{ static_url }}sumo/img/firefox-logo.svg" alt="{{ _('Firefox logo') }}"/>
   <div class="notification-content">
     <h3 class="notification-title">{{ _('Heads up!') }}</h3>
@@ -37,7 +37,7 @@
 {%- endmacro %}
 
 {% macro notification_already_migrated(static_url) -%}
-<div id="fxa-login-error" class="notification alert">
+<div id="fxa-notification-already-migrated" class="notification alert">
   <img class="ff-logo" src="{{ static_url }}sumo/img/firefox-logo.svg" alt="{{ _('Firefox logo') }}"/>
   <div class="notification-content">
     <h3 class="notification-title">{{ _('Sorry!') }}</h3>

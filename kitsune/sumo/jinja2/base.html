@@ -268,7 +268,9 @@
     {% if messages %}
       <ul class="user-messages">
         {% for message in messages %}
+          {% if not message.message.startswith('fxa_notification') %}
           <li {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+          {% endif %}
         {% endfor %}
       </ul>
     {% endif %}

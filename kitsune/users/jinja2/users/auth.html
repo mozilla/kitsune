@@ -24,8 +24,8 @@
       <img class="ff-logo" src="{{ STATIC_URL }}sumo/img/firefox-logo.svg" alt="{{ _('Firefox logo') }}"/>
     </figure>
     <div class="grid_6">
-      <div id="login-ffx" class="{% if legacy_form_visible %}hidden{% endif %}">
-        {% include "users/includes/login-ffx.html" %}
+      <div id="login-fxa" class="{% if legacy_form_visible %}hidden{% endif %}">
+        {% include "users/includes/login-fxa.html" %}
       </div>
       <div id="login-legacy" class="{% if not legacy_form_visible %}hidden{% endif %}">
         {% include "users/includes/login-form.html" %}

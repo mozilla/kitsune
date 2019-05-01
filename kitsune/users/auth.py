@@ -1,6 +1,7 @@
 import base64
 import logging
 
+from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.backends import ModelBackend
 from django.contrib.auth.tokens import default_token_generator
@@ -125,6 +126,7 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
 
         # This is a new sumo profile, redirect to the edit profile page
         self.request.session['oidc_login_next'] = reverse('users.edit_my_profile')
+        messages.info(self.request, 'fxa_notification_created')
         return user
 
     def filter_users_by_claims(self, claims):
@@ -164,6 +166,7 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
             # This is the first time an existing user is using FxA. Redirect to profile edit
             # in case the user wants to update any settings.
             self.request.session['oidc_login_next'] = reverse('users.edit_my_profile')
+            messages.info(self.request, 'fxa_notification_updated')
 
         # There is a change in the email in Firefox Accounts. Let's update user's email
         if user.email != email:
