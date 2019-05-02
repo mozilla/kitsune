@@ -290,7 +290,7 @@ select {
 .btn:visited,
 input[type="submit"],
 input[type="submit"]:visited {
-  display: inline-block;
+  display: block;
   border-radius: @button-radius;
   color: @button-color;
   font-weight: bold;
@@ -298,6 +298,10 @@ input[type="submit"]:visited {
   background: @button-primary-bg;
   border: 0 none;
   padding: 10px 30px;
+  box-sizing: border-box;
+  margin-bottom: 10px;
+  text-align: center;
+  width: 100%;
 
   &:hover {
     background: darken(@button-primary-bg, 10%);
