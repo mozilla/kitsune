@@ -25,7 +25,7 @@ class Command(BaseCommand):
             '--seconds-ago', type=int, dest='seconds_ago', default=0,
             help='Reindex things updated N seconds ago')
         parser.add_argument(
-            '--mapping_types', type=str, dest='mapping_types',
+            '--mapping_types', dest='mapping_types',
             default=None,
             help='Comma-separated list of mapping types to index')
         parser.add_argument(
