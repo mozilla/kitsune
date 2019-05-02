@@ -99,7 +99,7 @@ CACHE_MIDDLEWARE_SECONDS = config('CACHE_MIDDLEWARE_SECONDS',
                                   cast=int)
 
 # Setting this to the Waffle version.
-WAFFLE_CACHE_PREFIX = 'w0.7.7a:'
+WAFFLE_CACHE_PREFIX = 'w0.11:'
 
 # Addresses email comes from
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='notifications@support.mozilla.org')
