@@ -115,11 +115,7 @@ def login(request, template):
 
     if request.user.is_authenticated():
         if request.user.profile.is_fxa_migrated:
-            auth.logout(request)
-            statsd.incr('user.logout')
-            res = user_auth(request, notification='already_migrated')
-            res.delete_cookie(settings.SESSION_EXISTS_COOKIE)
-            return res
+            return logout(request, already_migrated=True)
 
         # Add a parameter so we know the user just logged in.
         # fpa =  "first page authed" or something.
@@ -143,12 +139,16 @@ def login(request, template):
 
 @ssl_required
 @require_POST
-def logout(request):
+def logout(request, already_migrated=False):
     """Log the user out."""
     auth.logout(request)
     statsd.incr('user.logout')
 
-    res = HttpResponseRedirect(get_next_url(request) or reverse('home'))
+    if already_migrated:
+        res = user_auth(request, notification='already_migrated')
+    else:
+        res = HttpResponseRedirect(get_next_url(request) or reverse('home'))
+
     res.delete_cookie(settings.SESSION_EXISTS_COOKIE)
     return res
 
