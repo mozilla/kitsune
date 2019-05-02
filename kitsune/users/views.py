@@ -18,15 +18,19 @@ from django.utils.http import base36_to_int
 from django.utils.translation import ugettext as _
 
 # from axes.decorators import watch_login
-from kitsune.kbadge.models import Award
-from mobility.decorators import mobile_template
 from django_statsd.clients import statsd
+from mozilla_django_oidc.views import OIDCAuthenticationRequestView, OIDCLogoutView
+from mobility.decorators import mobile_template
 from tidings.models import Watch
 from tidings.tasks import claim_watches
 
 from kitsune import users as constants
 from kitsune.access.decorators import (
-    logout_required, login_required, permission_required)
+    logout_required,
+    login_required,
+    permission_required
+)
+from kitsune.kbadge.models import Award
 from kitsune.questions.models import Question
 from kitsune.questions.utils import (
     num_questions, num_answers, num_solutions, mark_content_as_spam)
@@ -45,7 +49,11 @@ from kitsune.users.models import (
     CONTRIBUTOR_GROUP, Group, Profile, RegistrationProfile, EmailChange,
     Deactivation)
 from kitsune.users.utils import (
-    handle_login, handle_register, try_send_email_with_form, deactivate_user)
+    deactivate_user,
+    handle_login, handle_register,
+    try_send_email_with_form,
+    get_oidc_fxa_setting
+)
 from kitsune.wiki.models import (
     user_num_documents, user_documents, user_redirects)
 
@@ -746,7 +754,7 @@ def validate_field(request):
 
     try:
         form.fields[request.GET.get('field')].clean(request.GET.get('value'))
-    except ValidationError, e:
+    except ValidationError as e:
         data = {
             'valid': False,
             'error': e.messages[0]
@@ -772,3 +780,32 @@ def validate_field(request):
                 }
 
     return data
+
+
+class FXAAuthenticateView(OIDCAuthenticationRequestView):
+
+    @staticmethod
+    def get_settings(attr, *args):
+        """Override settings for Firefox Accounts.
+
+        The default values for the OIDC lib are used for the SSO login in the admin
+        interface. For Firefox Accounts we need to pass different values, pointing to the
+        correct endpoints and RP specific attributes.
+        """
+
+        val = get_oidc_fxa_setting(attr)
+        if val is not None:
+            return val
+        return super(FXAAuthenticateView, FXAAuthenticateView).get_settings(attr, *args)
+
+
+class FXALogoutView(OIDCLogoutView):
+
+    @staticmethod
+    def get_settings(attr, *args):
+        """Override the logout url for Firefox Accounts."""
+
+        val = get_oidc_fxa_setting(attr)
+        if val is not None:
+            return val
+        return super(FXALogoutView, FXALogoutView).get_settings(attr, *args)
