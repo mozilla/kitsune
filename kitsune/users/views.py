@@ -58,6 +58,16 @@ from kitsune.wiki.models import (
     user_num_documents, user_documents, user_redirects)
 
 
+# NOTE: this will be removed after the Firefox Accounts migration
+def _disable_sumo_auth_for_fxa(request):
+    """Helper to block access to Firefox Account users to the SUMO auth system."""
+    user = request.user
+    if user and user.is_authenticated():
+        if user.profile and user.profile.is_fxa_migrated:
+            raise Http404
+    return
+
+
 @ssl_required
 @logout_required
 @require_http_methods(['GET', 'POST'])
@@ -141,13 +151,13 @@ def register(request, template, contributor=False):
         url = reverse('users.auth') + '?' + request.GET.urlencode()
         return HttpResponsePermanentRedirect(url)
 
+    _disable_sumo_auth_for_fxa(request)
     form = handle_register(request)
     if form.is_valid():
         return render(request, template + 'register_done.html')
 
     if request.MOBILE:
-        return render(request, template + 'register.html', {
-            'form': form})
+        return render(request, template + 'register.html', {'form': form})
 
     return user_auth(request, register_form=form, contributor=contributor)
 
@@ -162,6 +172,7 @@ def activate(request, template, activation_key, user_id=None):
     """Activate a User account."""
     activation_key = activation_key.lower()
 
+    _disable_sumo_auth_for_fxa(request)
     if user_id:
         user = get_object_or_404(User, id=user_id)
     else:
@@ -197,6 +208,8 @@ def activate(request, template, activation_key, user_id=None):
 @mobile_template('users/{mobile/}')
 def resend_confirmation(request, template):
     """Resend confirmation email."""
+
+    _disable_sumo_auth_for_fxa(request)
     if request.method == 'POST':
         form = EmailConfirmationForm(request.POST)
         if form.is_valid():
@@ -261,6 +274,7 @@ def resend_confirmation(request, template):
 @mobile_template('users/{mobile/}')
 def change_email(request, template):
     """Change user's email. Send confirmation first."""
+    _disable_sumo_auth_for_fxa(request)
     if request.method == 'POST':
         form = EmailChangeForm(request.user, request.POST)
         u = request.user
@@ -284,6 +298,7 @@ def change_email(request, template):
 @require_GET
 def confirm_change_email(request, activation_key):
     """Confirm the new email for the user."""
+    _disable_sumo_auth_for_fxa(request)
     activation_key = activation_key.lower()
     email_change = get_object_or_404(EmailChange,
                                      activation_key=activation_key)
