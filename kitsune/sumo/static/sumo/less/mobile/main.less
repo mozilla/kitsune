@@ -290,31 +290,33 @@ select {
 .btn:visited,
 input[type="submit"],
 input[type="submit"]:visited {
-  background: #e3e3e3;
-  background: linear-gradient(to bottom, #fafafa, #cdcdcd);
-  border: 1px solid #ababab;
-  border-radius: 2px;
-  box-sizing: border-box;
-  color: @textDarkGrey;
-  cursor: pointer;
-  display: block;
-  font-family: @Moz;
-  font-size: 16px;
+  display: inline-block;
+  border-radius: @button-radius;
+  color: @button-color;
   font-weight: bold;
-  outline: none;
-  margin: 0 0 6px 0;
-  padding: 4px 0;
-  text-align: center;
-  text-decoration: none;
-  text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.3);
-  width: 100%;
+  font-size: 18px;
+  background: @button-primary-bg;
+  border: 0 none;
+  padding: 10px 30px;
+
+  &:hover {
+    background: darken(@button-primary-bg, 10%);
+    text-decoration: none;
+  }
+
+  &:active {
+    background: darken(@button-primary-bg, 20%);
+    color: @button-color;
+  }
 
   &.btn-submit {
-    background: #00caf2;
-    background: linear-gradient(to bottom, #00caf2, #00aacd);
-    border: 0;
-    font-size: 17px;
-    padding: 8px 0;
+    background: @button-dark-bg;
+
+    &:hover,
+    &:active {
+      background: @button-dark-bg;
+      color: @button-color;
+    }
   }
 }
 
