@@ -103,7 +103,7 @@ def user_auth(request, contributor=False, register_form=None, login_form=None, n
 def login(request, template):
     """
     Legacy view for logging in SUMO users. This is being deprecated
-    in favor of FFX login.
+    in favor of FXA login.
     """
     if request.method == 'GET' and not request.MOBILE:
         url = reverse('users.auth') + '?' + request.GET.urlencode()
