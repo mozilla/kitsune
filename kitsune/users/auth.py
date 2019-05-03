@@ -86,6 +86,20 @@ def get_auth_str(user):
     return base64.b64encode(auth)
 
 
+class SumoOIDCAuthBackend(OIDCAuthenticationBackend):
+
+    def authenticate(self, request, **kwargs):
+        """Authenticate a user based on the OIDC code flow."""
+
+        # If the request has the /fxa/callback/ path then probably there is a login
+        # with Firefox Accounts. In this case just return None and let
+        # the FxA backend handle this request.
+        if request and not request.path == django_reverse('oidc_authentication_callback'):
+            return None
+
+        return super(SumoOIDCAuthBackend, self).authenticate(request, **kwargs)
+
+
 class FXAAuthBackend(OIDCAuthenticationBackend):
 
     @staticmethod
@@ -162,7 +176,7 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
         # If the request has the /oidc/callback/ path then probably there is a login
         # attempt in the admin interface. In this case just return None and let
         # the OIDC backend handle this request.
-        if request and request.path == django_reverse('oidc_authentication_init'):
+        if request and request.path == django_reverse('oidc_authentication_callback'):
             return None
 
         return super(FXAAuthBackend, self).authenticate(request, **kwargs)
