@@ -71,7 +71,7 @@ def _disable_sumo_auth_for_fxa(request):
 @ssl_required
 @logout_required
 @require_http_methods(['GET', 'POST'])
-def user_auth(request, contributor=False, register_form=None, login_form=None):
+def user_auth(request, contributor=False, register_form=None, login_form=None, notification=None):
     """Try to log the user in, or register a user.
 
     POSTs from these forms do not come back to this view, but instead go to the
@@ -84,18 +84,27 @@ def user_auth(request, contributor=False, register_form=None, login_form=None):
     if register_form is None:
         register_form = RegisterForm()
 
+    # on load, decide whether legacy or FXA form is visible
+    legacy_form_visible = bool(login_form.errors or register_form.errors)
+
     return render(request, 'users/auth.html', {
         'login_form': login_form,
         'register_form': register_form,
         'contributor': contributor,
-        'next_url': next_url})
+        'next_url': next_url,
+        'notification': notification,
+        'legacy_form_visible': legacy_form_visible,
+    })
 
 
 @ssl_required
 # @watch_login
 @mobile_template('users/{mobile/}login.html')
 def login(request, template):
-    """Try to log the user in."""
+    """
+    Legacy view for logging in SUMO users. This is being deprecated
+    in favor of FXA login.
+    """
     if request.method == 'GET' and not request.MOBILE:
         url = reverse('users.auth') + '?' + request.GET.urlencode()
         return HttpResponsePermanentRedirect(url)
@@ -105,6 +114,9 @@ def login(request, template):
     form = handle_login(request, only_active=only_active)
 
     if request.user.is_authenticated():
+        if request.user.profile.is_fxa_migrated:
+            return logout(request, already_migrated=True)
+
         # Add a parameter so we know the user just logged in.
         # fpa =  "first page authed" or something.
         next_url = urlparams(next_url, fpa=1)
@@ -127,12 +139,16 @@ def login(request, template):
 
 @ssl_required
 @require_POST
-def logout(request):
+def logout(request, already_migrated=False):
     """Log the user out."""
     auth.logout(request)
     statsd.incr('user.logout')
 
-    res = HttpResponseRedirect(get_next_url(request) or reverse('home'))
+    if already_migrated:
+        res = user_auth(request, notification='already_migrated')
+    else:
+        res = HttpResponseRedirect(get_next_url(request) or reverse('home'))
+
     res.delete_cookie(settings.SESSION_EXISTS_COOKIE)
     return res
 

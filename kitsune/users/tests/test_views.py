@@ -244,6 +244,27 @@ class RegisterTests(TestCase):
         assert mail.outbox[1].subject.find('Welcome to') == 0
         assert u.username in mail.outbox[1].body
 
+    @mock.patch.object(Site.objects, 'get_current')
+    def test_fxa_migrated_user_cannot_login_with_sumo(self, get_current):
+        """
+        If a user's profile is_fxa_migrated, then they cannot log in using
+        the SUMO form. They should not be authenticated and they should
+        see a notification error
+        """
+        user = UserFactory(password='1234')
+        user.profile.is_fxa_migrated = True
+        user.profile.save()
+        response = self.client.post(
+            reverse('users.login', locale='en-US'), {
+                'username': user.username,
+                'password': '1234',
+            },
+            follow=True
+        )
+
+        assert not response.wsgi_request.user.is_authenticated()
+        assert pq(response.content).find('#fxa-login-error')
+
 
 class ChangeEmailTestCase(TestCase):
     client_class = LocalizingClient
@@ -434,6 +455,22 @@ class SessionTests(TestCase):
                                      'password': 'testpass'})
         c = res.cookies[settings.SESSION_EXISTS_COOKIE]
         eq_(123, c['max-age'])
+
+    def test_fxa_login_deletes_cookie(self):
+        """
+        If an FXA successfully authenticates using their SUMO credentials,
+        we immediately log them out and clear their cookies, as they
+        should only be authenticating via FFX
+        """
+        url = reverse('users.login')
+        self.user.profile.is_fxa_migrated = True
+        self.user.profile.save()
+        res = self.client.post(url, {
+            'username': self.user.username,
+            'password': 'testpass'
+        })
+        session_cookie = res.cookies[settings.SESSION_EXISTS_COOKIE]
+        assert '1970' in session_cookie['expires']
 
 
 class UserSettingsTests(TestCase):

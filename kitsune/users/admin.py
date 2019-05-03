@@ -19,7 +19,8 @@ class ProfileAdmin(admin.ModelAdmin):
     fieldsets = (
         (None, {
             'fields': ['user', 'name', 'public_email',
-                       ('avatar', 'delete_avatar'), 'bio'],
+                       ('avatar', 'delete_avatar'), 'bio', 'is_fxa_migrated',
+                       'fxa_uid'],
         }),
         ('Contact Info', {
             'fields': ['website', 'twitter', 'facebook', 'mozillians', 'irc_handle'],
