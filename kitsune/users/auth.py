@@ -9,6 +9,7 @@ from django.core.urlresolvers import reverse as django_reverse
 
 from mozilla_django_oidc.auth import OIDCAuthenticationBackend
 
+from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.models import Profile
 from kitsune.users.utils import get_oidc_fxa_setting
 
@@ -121,6 +122,9 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
                                       fxa_uid=claims.get('uid'),
                                       avatar=claims.get('avatar', ''),
                                       locale=claims.get('locale', ''))
+
+        # This is a new sumo profile, redirect to the edit profile page
+        self.request.session['oidc_login_next'] = reverse('users.edit_my_profile')
         return user
 
     def filter_users_by_claims(self, claims):
@@ -157,6 +161,9 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
             # If it's not migrated, we can assume that there isn't an FxA id too
             profile.is_fxa_migrated = True
             profile.fxa_uid = fxa_uid
+            # This is the first time an existing user is using FxA. Redirect to profile edit
+            # in case the user wants to update any settings.
+            self.request.session['oidc_login_next'] = reverse('users.edit_my_profile')
 
         # There is a change in the email in Firefox Accounts. Let's update user's email
         if user.email != email:
