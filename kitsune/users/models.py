@@ -48,7 +48,8 @@ class Profile(ModelBase, SearchMixin):
                                blank=True, verbose_name=_lazy(u'Avatar'),
                                max_length=settings.MAX_FILEPATH_LENGTH)
     bio = models.TextField(null=True, blank=True,
-                           verbose_name=_lazy(u'Biography'))
+                           verbose_name=_lazy(u'Biography'),
+                           help_text=_lazy(u'Some HTML supported: &#x3C;abbr title&#x3E; &#x3C;acronym title&#x3E; &#x3C;b&#x3E; &#x3C;blockquote&#x3E; &#x3C;code&#x3E; &#x3C;em&#x3E; &#x3C;i&#x3E; &#x3C;li&#x3E; &#x3C;ol&#x3E; &#x3C;strong&#x3E; &#x3C;ul&#x3E;. Links are forbidden.'))
     website = models.URLField(max_length=255, null=True, blank=True,
                               verbose_name=_lazy(u'Website'))
     twitter = models.CharField(max_length=15, null=True, blank=True, validators=[TwitterValidator],
