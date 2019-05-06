@@ -30,6 +30,7 @@ class FXAAuthBackendTests(TestCase):
         }
 
         request_mock = Mock(spec=HttpRequest)
+        request_mock.session = {}
         self.backend.claims = claims
         self.backend.request = request_mock
         users = User.objects.all()
@@ -52,6 +53,7 @@ class FXAAuthBackendTests(TestCase):
         }
 
         request_mock = Mock(spec=HttpRequest)
+        request_mock.session = {}
         self.backend.claims = claims
         self.backend.request = request_mock
         self.backend.create_user(claims)
@@ -77,6 +79,7 @@ class FXAAuthBackendTests(TestCase):
         }
 
         request_mock = Mock(spec=HttpRequest)
+        request_mock.session = {}
         self.backend.claims = claims
         self.backend.request = request_mock
         self.backend.request.user = user
@@ -108,6 +111,7 @@ class FXAAuthBackendTests(TestCase):
             'email': 'bar@example.com'
         }
         request_mock = Mock(spec=HttpRequest)
+        request_mock.session = {}
         self.backend.claims = claims
         self.backend.request = request_mock
         self.backend.update_user(user, claims)
