@@ -1,0 +1,184 @@
+// This file is an attempt at making the current codebase responsive for select
+// pages in the Firefox accounts auth flow.
+
+.menu-toggle,
+.close-menu {
+  display: none; // this is displayed below, but hidden by default.
+}
+
+
+.lock-body {
+  overflow: hidden;
+}
+
+
+.responsive {
+  min-width: 0;
+
+  #mobile-warning {
+    display: none;
+  }
+
+  #main-content > .grid_12 {
+    margin: 0;
+  }
+
+  .container_12 [class*="grid_"],
+  .container_12 {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .container_12 [class*="grid_"][class*="prefix_"] {
+    width: auto;
+  }
+
+  .container_12,
+  &.html-ltr .container_12 .grid_12 {
+    max-width: 960px;
+  }
+
+  &.html-ltr .container_12 .grid_8 {
+    max-width: 620px;
+  }
+
+  &.html-ltr .container_12 .language-picker {
+    width: 130px;
+    padding: 0;
+    margin-left: 10px;
+  }
+
+  #product-cards {
+    width: 100%;
+  }
+
+  .menu-toggle {
+    display: block;
+    width: 36px;
+    height: 36px;
+    margin-left: auto;
+    padding-right: 10px;
+    display: flex;
+    justify-content: center;
+    align-self: center;
+    color: #fff;
+  }
+
+  .menu-icon {
+    max-width: 6px;
+  }
+
+  @media screen and (min-width: 960px) {
+    &.html-ltr .container_12 .grid_4 {
+      max-width: 285px;
+    }
+
+    &.html-ltr .container_12 .language-picker {
+      margin-left: 130px;
+    }
+
+    .menu-toggle {
+      display: none;
+    }
+  }
+
+
+  // make nav responsive
+  .nav-flex {
+    display: flex;
+
+    .responsive-nav-wrap {
+      display: none;
+      transform: translateX(100%);
+      background: #000;
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      right: 0;
+      width: 80vw;
+      z-index: 100;
+      transition: transform 0.2s ease-in-out;
+
+      &.is-open {
+        transform: translateX(0);
+        box-shadow: 0 0 30px 16px rgba(0, 0, 0, 0.8);
+
+        #aux-nav {
+          padding-top: 50px;
+
+          > ul > li {
+            display: block;
+
+            > a {
+              font-weight: normal;
+              display: block;
+              padding: 10px 12px;
+            }
+
+            &.dropdown.is-open {
+              display: block;
+              background: transparent;
+
+            }
+          }
+        }
+
+        #aux-nav > ul > li:hover > ul,
+        #aux-nav-right > ul > li:hover > ul {
+          display: none;
+        }
+
+        #aux-nav-right > ul {
+          display: flex;
+          flex-direction: column;
+
+           > li {
+             padding-top: 10px;
+             padding-bottom: 10px;
+           }
+        }
+
+        .push-right {
+          margin-left: 0;
+        }
+
+        .close-menu {
+          display: flex;
+          justify-content: flex-end;
+          position: absolute;
+          z-index: 100;
+          top: 0;
+          right: 0;
+          left: 0;
+          height: 36px;
+          padding: 10px 20px;
+          color: #fff;
+
+          &:after{
+            position: absolute;
+            width: 20vw;
+            height: 99vh;
+            left: -20vw;
+            top: 0;
+            content: "";
+
+          }
+
+        }
+
+        .close-icon {
+          max-width: 16px;
+        }
+      }
+    }
+
+    @media screen and (min-width: 960px) {
+      .responsive-nav-wrap {
+        display: flex;
+        width: 100%;
+      }
+    }
+  }
+}

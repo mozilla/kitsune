@@ -91,11 +91,7 @@ body {
 
   > header {
     background: #000;
-    min-height: 100px;
-    margin: 0;
-    padding: 0;
     position: relative;
-    width: 100%;
 
     #aux-nav {
       padding: 29px 0 29px 20px;
@@ -319,19 +315,20 @@ footer {
     list-style: none;
     margin: 0;
     padding: 0;
+  }
 
-    li {
-      margin: 0 0 .8em;
-    }
+  li {
+    margin: 0 0 .8em;
+  }
 
-    h5 {
-      font-family: @OpenSans;
-      font-weight: bold;
-      margin: 0 0 .9em 0;
+  h5 {
+    font-size: 18px;
+    font-family: @OpenSans;
+    font-weight: bold;
+    margin: 1em 0 .9em 0;
 
-      @media screen and (min-width: 1000px) {
-        font-size: 18px;
-      }
+    @media screen and (min-width: 1000px) {
+        margin-top: 0;
     }
   }
 
@@ -1454,6 +1451,11 @@ input[type="submit"]{
     }
   }
 
+  &.card-grid {
+    margin-left: -12px;
+    margin-right: -12px;
+  }
+
   &.card-grid > li {
     border: 1px solid #E7E7E7;
     border-radius: 2px;
@@ -1462,7 +1464,7 @@ input[type="submit"]{
     margin: 0 12px 28px;
     overflow: hidden;
     padding: 0;
-    width: 242px;
+    width: 288px;
 
     &::before {
       content: none;
@@ -2351,3 +2353,4 @@ input[type="submit"]{
 
 
 @import 'buttons.less';
+@import 'responsive-patch.less';
