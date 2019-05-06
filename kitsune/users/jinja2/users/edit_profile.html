@@ -7,21 +7,25 @@
 {% set crumbs = [(profile_url(profile.user), profile.user.username),
                  (None, title)] %}
 
+{% block above_main %}
+  {% if fxa_messages %}
+    {% for message in fxa_messages %}
+      {% if message == 'fxa_notification_updated' %}
+        {{ notification_fxa_updated(STATIC_URL) }}
+      {% endif %}
+      {% if message == 'fxa_notification_created' %}
+        {{ notification_fxa_created(STATIC_URL) }}
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+{% endblock %}
+
 {% block content %}
   <div class="grid_9">
-    {% if fxa_messages %}
-      {% for message in fxa_messages %}
-        {% if message == 'fxa_notification_updated' %}
-          {{ notification_fxa_updated(STATIC_URL) }}
-        {% endif %}
-        {% if message == 'fxa_notification_created' %}
-          {{ notification_fxa_created(STATIC_URL) }}
-        {% endif %}
-      {% endfor %}
-    {% endif %}
     <article id="edit-profile" class="main">
+      {% if profile and profile.is_fxa_migrated %}
       <h1>{{ _('Account') }}</h1>
-      <p class="mb-0"><strong>example@firefox.com (#TODO)</strong></p>
+      <p class="mb-0"><strong>{{ user.email }}</strong></p>
       <p class="helptext">
         {{ _('You can change your email address on Firefox Accounts.') }}
         <a href="#TODO">{{ _('Need help?') }}</a>
@@ -32,6 +36,7 @@
       </div>
 
       <hr class="section-break"/>
+      {% endif %}
 
       <h1>{{ title }}</h1>
       <p>
@@ -64,7 +69,9 @@
                     {% endtrans %}
                   </span>
                 </a>
-                <a href="#TODO" class="remove-avatar">{{ _('Delete') }}</a>
+                {% if profile.avatar %}
+                  <a  class="remove-avatar" href="{{ url('users.delete_avatar') }}">{{ _('Delete') }}</a>
+                {% endif %}
                 </div>
             </li>
             <li>

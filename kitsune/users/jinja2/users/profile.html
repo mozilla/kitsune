@@ -8,31 +8,18 @@
 {% set active = 'my-profile' %}
 {% set crumbs = [(None, profile.user.username)] %}
 
-
-{% block above_main %}
-<div class="notification success">
-    <img class="ff-logo" src="/static/sumo/img/firefox-logo.svg" alt="Firefox logo">
-    <div class="notification-content">
-      <h3 class="notification-title">Good news!</h3>
-      <p>You can now log in to Mozilla Support using Firefox Accounts.</p>
-    </div>
-    <a href="javascript:;" class="close-button"><span class="show-for-sr-only">Close</span></a>
-  </div>
-{% endblock %}
-
-
 {% block content %}
   <div class="grid_9">
     <article id="profile" class="cf">
-
+      {% if profile and profile.is_fxa_migrated %}
       <h1>{{ _('Account') }}</h1>
-      <p class="mb-0"><strong>example@firefox.com (#TODO)</strong></p>
+      <p class="mb-0"><strong>{{ user.email }}</strong></p>
       <p class="helptext">
         {{ _('You can change your email address on Firefox Accounts.') }}
         <a href="#TODO">{{ _('Need help?') }}</a>
       </p>
       <hr class="section-break"/>
-
+      {% endif %}
       {% if request.user.is_authenticated and request.user != profile.user %}
         {{ flag_form(url('users.flag', object_id=profile.pk), False) }}
       {% endif %}
