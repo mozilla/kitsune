@@ -2,10 +2,15 @@ import os
 from datetime import datetime, timedelta
 
 from django.conf import settings
+from django.contrib import messages
 from django.contrib.auth.models import User
+from django.contrib.sessions.middleware import SessionMiddleware
+from django.contrib.messages.middleware import MessageMiddleware
 from django.contrib.sites.models import Site
 from django.core import mail
+from django.test.client import RequestFactory
 from django.test.utils import override_settings
+
 
 import mock
 from nose.tools import eq_
@@ -22,6 +27,7 @@ from kitsune.users.models import (
     CONTRIBUTOR_GROUP, Profile, RegistrationProfile, EmailChange, Setting,
     email_utils, Deactivation)
 from kitsune.users.tests import UserFactory, GroupFactory, add_permission
+from kitsune.users.views import edit_profile
 
 
 class RegisterTests(TestCase):
@@ -555,3 +561,53 @@ class UserProfileTests(TestCase):
         eq_(0, Question.objects.filter(creator=u, is_spam=False).count())
         eq_(1, Answer.objects.filter(creator=u, is_spam=True).count())
         eq_(0, Answer.objects.filter(creator=u, is_spam=False).count())
+
+
+class ProfileNotificationTests(TestCase):
+    """
+    These tests confirm that FXA and non-FXA messages render properly.
+    We use RequestFactory because the request object from self.client.request
+    cannot be passed into messages.info()
+    """
+    def _get_request(self):
+        user = UserFactory()
+        request = RequestFactory().get(reverse('users.edit_profile', args=[user.username]))
+        request.user = user
+        request.MOBILE = False
+        request.LANGUAGE_CODE = 'en'
+
+        middleware = SessionMiddleware()
+        middleware.process_request(request)
+        request.session.save()
+
+        middleware = MessageMiddleware()
+        middleware.process_request(request)
+        request.session.save()
+        return request
+
+    def test_fxa_notification_updated(self):
+        request = self._get_request()
+        messages.info(request, 'fxa_notification_updated')
+        response = edit_profile(request)
+        doc = pq(response.content)
+        eq_(1, len(doc('#fxa-notification-updated')))
+        eq_(0, len(doc('#fxa-notification-created')))
+
+    def test_fxa_notification_created(self):
+        request = self._get_request()
+        messages.info(request, 'fxa_notification_created')
+        response = edit_profile(request)
+        doc = pq(response.content)
+        eq_(0, len(doc('#fxa-notification-updated')))
+        eq_(1, len(doc('#fxa-notification-created')))
+
+    def test_non_fxa_notification_created(self):
+        request = self._get_request()
+        text = 'This is a helpful piece of information'
+        messages.info(request, text)
+        response = edit_profile(request)
+        doc = pq(response.content)
+        eq_(0, len(doc('#fxa-notification-updated')))
+        eq_(0, len(doc('#fxa-notification-created')))
+        eq_(1, len(doc('.user-messages li')))
+        eq_(doc('.user-messages li').text(), text)
