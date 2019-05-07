@@ -2,10 +2,15 @@ import os
 from datetime import datetime, timedelta
 
 from django.conf import settings
+from django.contrib import messages
 from django.contrib.auth.models import User
+from django.contrib.sessions.middleware import SessionMiddleware
+from django.contrib.messages.middleware import MessageMiddleware
 from django.contrib.sites.models import Site
 from django.core import mail
+from django.test.client import RequestFactory
 from django.test.utils import override_settings
+
 
 import mock
 from nose.tools import eq_
@@ -22,6 +27,7 @@ from kitsune.users.models import (
     CONTRIBUTOR_GROUP, Profile, RegistrationProfile, EmailChange, Setting,
     email_utils, Deactivation)
 from kitsune.users.tests import UserFactory, GroupFactory, add_permission
+from kitsune.users.views import edit_profile
 
 
 class RegisterTests(TestCase):
@@ -56,7 +62,7 @@ class RegisterTests(TestCase):
                                     {'username': 'newbie',
                                      'password': 'foobar22'}, follow=True)
         eq_(200, response.status_code)
-        eq_('/en-US/?fpa=1', response.redirect_chain[0][0])
+        eq_('/en-US/user/newbie?fpa=1', response.redirect_chain[0][0])
 
     @mock.patch.object(email_utils, 'send_messages')
     @mock.patch.object(Site.objects, 'get_current')
@@ -93,7 +99,7 @@ class RegisterTests(TestCase):
                                     {'username': 'cjkuser',
                                      'password': u_str}, follow=True)
         eq_(200, response.status_code)
-        eq_('/ja/?fpa=1', response.redirect_chain[0][0])
+        eq_('/ja/user/cjkuser?fpa=1', response.redirect_chain[0][0])
 
     @mock.patch.object(Site.objects, 'get_current')
     def test_new_user_activation(self, get_current):
@@ -263,7 +269,7 @@ class RegisterTests(TestCase):
         )
 
         assert not response.wsgi_request.user.is_authenticated()
-        assert pq(response.content).find('#fxa-login-error')
+        assert pq(response.content).find('#fxa-notification-already-migrated')
 
 
 class ChangeEmailTestCase(TestCase):
@@ -460,7 +466,7 @@ class SessionTests(TestCase):
         """
         If an FXA successfully authenticates using their SUMO credentials,
         we immediately log them out and clear their cookies, as they
-        should only be authenticating via FFX
+        should only be authenticating via FXA
         """
         url = reverse('users.login')
         self.user.profile.is_fxa_migrated = True
@@ -555,3 +561,53 @@ class UserProfileTests(TestCase):
         eq_(0, Question.objects.filter(creator=u, is_spam=False).count())
         eq_(1, Answer.objects.filter(creator=u, is_spam=True).count())
         eq_(0, Answer.objects.filter(creator=u, is_spam=False).count())
+
+
+class ProfileNotificationTests(TestCase):
+    """
+    These tests confirm that FXA and non-FXA messages render properly.
+    We use RequestFactory because the request object from self.client.request
+    cannot be passed into messages.info()
+    """
+    def _get_request(self):
+        user = UserFactory()
+        request = RequestFactory().get(reverse('users.edit_profile', args=[user.username]))
+        request.user = user
+        request.MOBILE = False
+        request.LANGUAGE_CODE = 'en'
+
+        middleware = SessionMiddleware()
+        middleware.process_request(request)
+        request.session.save()
+
+        middleware = MessageMiddleware()
+        middleware.process_request(request)
+        request.session.save()
+        return request
+
+    def test_fxa_notification_updated(self):
+        request = self._get_request()
+        messages.info(request, 'fxa_notification_updated')
+        response = edit_profile(request)
+        doc = pq(response.content)
+        eq_(1, len(doc('#fxa-notification-updated')))
+        eq_(0, len(doc('#fxa-notification-created')))
+
+    def test_fxa_notification_created(self):
+        request = self._get_request()
+        messages.info(request, 'fxa_notification_created')
+        response = edit_profile(request)
+        doc = pq(response.content)
+        eq_(0, len(doc('#fxa-notification-updated')))
+        eq_(1, len(doc('#fxa-notification-created')))
+
+    def test_non_fxa_notification_created(self):
+        request = self._get_request()
+        text = 'This is a helpful piece of information'
+        messages.info(request, text)
+        response = edit_profile(request)
+        doc = pq(response.content)
+        eq_(0, len(doc('#fxa-notification-updated')))
+        eq_(0, len(doc('#fxa-notification-created')))
+        eq_(1, len(doc('.user-messages li')))
+        eq_(doc('.user-messages li').text(), text)
