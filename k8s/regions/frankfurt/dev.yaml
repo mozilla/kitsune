@@ -130,9 +130,9 @@ app:
     secure_content_type_nosniff: True
     secure_ssl_redirect: True
     wsgi_keep_alive: 60
-    fxa-op-token-endpoint: SECRET
-    fxa-op-authorization-endpoint: SECRET
-    fxa-op-user-endpoint: SECRET
-    fxa-op-jwks-endpoint: SECRET
-    fxa-rp-client-id: SECRET
-    fxa-rp-client-secret: SECRET
+    fxa_op_token_endpoint: SECRET
+    fxa_op_authorization_endpoint: SECRET
+    fxa_op_user_endpoint: SECRET
+    fxa_op_jwks_endpoint: SECRET
+    fxa_rp_client_id: SECRET
+    fxa_rp_client_secret: SECRET
