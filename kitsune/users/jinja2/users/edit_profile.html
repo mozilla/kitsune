@@ -60,7 +60,9 @@
             <li>
               <label>{{ _('Email:') }}</label>
               {{ user.email }}
-              <a href="{{ url('users.change_email') }}">{{ _('Change') }}</a>
+              {% if not profile.is_fxa_migrated %}
+                <a href="{{ url('users.change_email') }}">{{ _('Change') }}</a>
+              {% endif %}
             </li>
           {% endif %}
           {{ form.as_ul()|safe }}
