@@ -136,3 +136,4 @@ app:
     fxa_op_jwks_endpoint: SECRET
     fxa_rp_client_id: SECRET
     fxa_rp_client_secret: SECRET
+    dev: True
