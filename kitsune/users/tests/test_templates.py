@@ -385,7 +385,7 @@ class ViewProfileTests(TestCaseBase):
         # No name set => no optional fields.
         eq_(0, doc('.contact').length)
         # Check canonical url
-        eq_('/user/%s' % self.u.username,
+        eq_('%s/en-US/user/%s' % (settings.CANONICAL_URL, self.u.username),
             doc('link[rel="canonical"]')[0].attrib['href'])
 
     def test_view_profile_mine(self):

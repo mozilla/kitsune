@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% from 'products/includes/product_macros.html' import product_cards with context %}
 {% set styles = ('home',) %}
+{% set canonical_url = settings.CANONICAL_URL %}
 
 {% block content %}
   <div class="grid_12 search-form-large">

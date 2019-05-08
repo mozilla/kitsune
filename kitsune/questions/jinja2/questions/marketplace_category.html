@@ -2,6 +2,7 @@
 {% from "questions/includes/aaq_macros.html" import marketplace_category with context %}
 {% set title = _('Ask a Question about Marketplace') %}
 {% set classes = 'new-question marketplace' %}
+{% set canonical_url = canonicalize(viewname='questions.marketplace_aaq_category', category_slug=category_slug) %}
 
 {% block content %}
   <article class="main">
