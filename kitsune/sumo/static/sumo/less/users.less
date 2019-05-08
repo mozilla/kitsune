@@ -21,6 +21,7 @@ article {
 }
 
 #user-nav {
+  margin-top: 64px;
   margin-bottom: 20px;
 }
 
@@ -45,52 +46,31 @@ article {
 }
 
 #profile {
-  .avatar {
-    float: left;
-    padding: 7px 10px 0 0;
-    text-align: center;
-    width: 48px;
+  h1, h2 {
+    margin: 0;
   }
 
-  h1.user {
-    line-height: 1em;
-    margin: 2px 0 0 60px;
-
-    .username {
-      color: @textLightGrey;
-      font-style: normal;
-    }
+  .username {
+    color: @textLightGrey;
+    font-weight: normal;
   }
 
   h2 {
-    margin: 20px 0 0;
+    margin-top: 30px;
+  }
 
-    &.location {
-      margin: 0 0 0 60px;
-    }
+  .location {
+    margin: 0;
+    color: @textLightGrey;
+    font-weight: normal;
   }
 
   li {
     margin: 2px 0 5px;
   }
 
-  .pm-or-signout {
-    margin: 0 0 0 60px;
-  }
-
-  .bio {
-    width: 54%;
-  }
-
-  .contributions {
-    width: 40%;
-  }
-
   .bio,
   .contributions {
-    clear: left;
-    float: left;
-
     ul {
       list-style: none;
       margin: 0;
@@ -103,14 +83,11 @@ article {
   }
 
   .contact {
-    padding: 15px 0 0;
-    width: 60%;
-
     label {
       display: inline-block;
       font-weight: bold;
       padding: 0 10px 0 0;
-      text-align: right;
+      text-align: left;
       width: 90px;
     }
   }
@@ -121,12 +98,9 @@ article {
 
   .groups,
   .contact {
-    clear: right;
-    float: right;
-
     ul {
       list-style: none;
-      margin: 10px 0 0;
+      margin: 0;
       padding: 0;
     }
   }
@@ -173,18 +147,6 @@ article {
     h2.location {
       margin: 0 60px 0 0;
     }
-
-    .pm-or-signout {
-      margin: 0 60px 0 0;
-    }
-
-    .contributions {
-      float: left;
-    }
-
-    .contact {
-      float: right;
-    }
   }
 
   #admin-actions {
@@ -194,6 +156,10 @@ article {
       padding: 0 18px 0 0;
     }
   }
+}
+
+.pm-or-signout {
+  padding: 30px 0;
 }
 
 article {
@@ -264,11 +230,6 @@ article {
       }
     }
 
-    textarea {
-      margin-top: -8px;
-      width: 325px;
-    }
-
     fieldset {
       border: none;
     }
@@ -291,16 +252,6 @@ article {
         padding: 0 0 0 5px;
         text-align: left;
       }
-
-      li {
-        ul.errorlist {
-          padding: 0 140px 0 0;
-        }
-      }
-    }
-
-    div.submit {
-      padding: 10px 198px 0 0;
     }
   }
 }
