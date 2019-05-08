@@ -7,11 +7,12 @@
 {% set canonical_url = canonicalize(viewname='users.profile', username=profile.user.username) %}
 {% set active = 'my-profile' %}
 {% set crumbs = [(None, profile.user.username)] %}
+{% set is_owner = profile and request.user == profile.user %}
 
 {% block content %}
   <div class="grid_9">
     <article id="profile" class="cf">
-      {% if profile and profile.is_fxa_migrated %}
+      {% if is_owner and profile.is_fxa_migrated %}
       <h1>{{ _('Account') }}</h1>
       <p class="mb-0"><strong>{{ user.email }}</strong></p>
       <p class="helptext">
