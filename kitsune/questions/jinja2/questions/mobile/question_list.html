@@ -17,6 +17,13 @@
 {% set headline = title %}
 {% set return_url = url('questions.home') %}
 
+{% set canonical_url = canonicalize(viewname='questions.list', product_slug=product_slug)|urlparams(None, request.GET) %}
+{% if questions.number > 1 %}
+  {% set canonical_url = canonical_url|urlparams(page=questions.number) %}
+{% endif %}
+
+{% set meta = (('robots', 'noindex'),) %}
+
 {% block after_header %}
   <div class="pulldown-menu slide-on-exposed">
     <div class="pulldown-handle"></div>

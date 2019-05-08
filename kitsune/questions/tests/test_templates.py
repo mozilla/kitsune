@@ -60,7 +60,7 @@ class AnswersTemplateTestCase(TestCaseBase):
         eq_(content, new_answer.content)
         # Check canonical url
         doc = pq(response.content)
-        eq_('/questions/%s' % self.question.id,
+        eq_('%s/en-US/questions/%s' % (settings.CANONICAL_URL, self.question.id),
             doc('link[rel="canonical"]')[0].attrib['href'])
 
     def test_answer_upload(self):
@@ -1080,7 +1080,7 @@ class QuestionsTemplateTestCase(TestCaseBase):
         response = self.client.get(tagged)
         doc = pq(response.content)
         eq_(1, len(doc('article.questions > section')))
-        eq_('/questions/all?tagged=mobile&show=all',
+        eq_('%s/en-US/questions/all?tagged=mobile&show=all' % settings.CANONICAL_URL,
             doc('link[rel="canonical"]')[0].attrib['href'])
 
         # Test a tag that doesn't exist. It shouldnt blow up.

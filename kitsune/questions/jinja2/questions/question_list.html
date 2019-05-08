@@ -15,7 +15,7 @@
 
 {% set crumbs = [(url('questions.home'), _('Support Forum')), (None, product_title)] %}
 
-{% set canonical_url = unlocalized_url('questions.list', product_slug)|urlparams(None, request.GET) %}
+{% set canonical_url = canonicalize(viewname='questions.list', product_slug=product_slug)|urlparams(None, request.GET) %}
 {% if questions.number > 1 %}
   {% set canonical_url = canonical_url|urlparams(page=questions.number) %}
 {% endif %}

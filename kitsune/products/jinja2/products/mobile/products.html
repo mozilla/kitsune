@@ -4,6 +4,8 @@
 {% set headline = title %}
 {% set styles = ('mobile-products',) %}
 
+{% set canonical_url = canonicalize(viewname='products') %}
+
 {% block content %}
   <ul id="products">
     {% for product in products %}
