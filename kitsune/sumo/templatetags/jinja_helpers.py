@@ -7,7 +7,6 @@ import urlparse
 
 from django.conf import settings
 from django.contrib.staticfiles.templatetags.staticfiles import static as django_static
-from django.core.urlresolvers import reverse as django_reverse
 from django.http import QueryDict
 from django.template.loader import render_to_string
 from django.utils.encoding import smart_str, smart_text
@@ -74,11 +73,9 @@ def url(viewname, *args, **kwargs):
 
 
 @library.global_function
-def unlocalized_url(viewname, *args, **kwargs):
-    """Helper for Django's ``reverse`` in templates.
-
-    Uses django's default reverse."""
-    return django_reverse(viewname, args=args, kwargs=kwargs)
+def canonicalize(viewname=None, model_url=None, *args, **kwargs):
+    suffix = model_url if model_url else reverse(viewname, args=args, kwargs=kwargs)
+    return '{}{}'.format(settings.CANONICAL_URL, suffix)
 
 
 @library.filter

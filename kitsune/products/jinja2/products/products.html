@@ -4,6 +4,8 @@
 {% set crumbs = [(None, title)] %}
 {% set styles = ('products',) %}
 
+{% set canonical_url = canonicalize(viewname='products') %}
+
 {% block content %}
   <div class="grid_12 search-form-large">
     {{ search_box(settings, id='support-search-products', params=search_params) }}

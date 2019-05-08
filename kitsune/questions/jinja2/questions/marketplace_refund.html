@@ -2,6 +2,7 @@
 {% from "questions/includes/aaq_macros.html" import marketplace_category with context %}
 {% set title = _('Marketplace: Request a Refund') %}
 {% set classes = 'new-question marketplace' %}
+{% set canonical_url = canonicalize(viewname='questions.marketplace_refund') %}
 
 {% block content %}
   <article class="main">

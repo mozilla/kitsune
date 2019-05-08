@@ -425,10 +425,9 @@ def question_details(request, template, question_id, form=None,
                          'related_questions': related_questions,
                          'question_images': question_images})
 
-    if not request.MOBILE:
-        # Add noindex to questions without a solution.
-        if not question.solution_id:
-            extra_kwargs.update(robots_noindex=True)
+    # Add noindex to questions without a solution.
+    if not question.solution_id:
+        extra_kwargs.update(robots_noindex=True)
 
     return render(request, template, extra_kwargs)
 
