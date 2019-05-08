@@ -45,14 +45,13 @@ from kitsune.users.forms import (
     EmailChangeForm, SetPasswordForm, PasswordChangeForm, SettingsForm,
     ForgotUsernameForm, RegisterForm, PasswordResetForm)
 from kitsune.users.templatetags.jinja_helpers import profile_url
-from kitsune.users.models import (
-    CONTRIBUTOR_GROUP, Group, Profile, RegistrationProfile, EmailChange,
-    Deactivation)
+from kitsune.users.models import Profile, RegistrationProfile, EmailChange, Deactivation
 from kitsune.users.utils import (
     deactivate_user,
     handle_login, handle_register,
     try_send_email_with_form,
-    get_oidc_fxa_setting
+    get_oidc_fxa_setting,
+    add_to_contributors
 )
 from kitsune.wiki.models import (
     user_num_documents, user_documents, user_redirects)
@@ -540,24 +539,7 @@ def edit_profile(request, username=None, template=None):
 @require_http_methods(['POST'])
 def make_contributor(request):
     """Adds the logged in user to the contributor group"""
-    group = Group.objects.get(name=CONTRIBUTOR_GROUP)
-    request.user.groups.add(group)
-
-    @email_utils.safe_translation
-    def _make_mail(locale):
-        mail = email_utils.make_mail(
-            # L10n: Thank you so much for your translation work! You're
-            # L10n: the best!
-            subject=_('Welcome to SUMO!'),
-            text_template='users/email/contributor.ltxt',
-            html_template='users/email/contributor.html',
-            context_vars={'contributor': request.user},
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            to_email=request.user.email)
-
-        return mail
-
-    email_utils.send_messages([_make_mail(request.LANGUAGE_CODE)])
+    add_to_contributors(request.user, request.LANGUAGE_CODE)
 
     if 'return_to' in request.POST:
         return HttpResponseRedirect(request.POST['return_to'])
@@ -834,6 +816,11 @@ class FXAAuthenticateView(OIDCAuthenticationRequestView):
         if val is not None:
             return val
         return super(FXAAuthenticateView, FXAAuthenticateView).get_settings(attr, *args)
+
+    def get(self, request):
+        is_contributor = request.GET.get('is_contributor') == 'True'
+        request.session['is_contributor'] = is_contributor
+        return super(FXAAuthenticateView, self).get(request)
 
 
 class FXALogoutView(OIDCLogoutView):

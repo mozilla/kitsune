@@ -12,7 +12,7 @@ from mozilla_django_oidc.auth import OIDCAuthenticationBackend
 
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.models import Profile
-from kitsune.users.utils import get_oidc_fxa_setting
+from kitsune.users.utils import get_oidc_fxa_setting, add_to_contributors
 
 
 log = logging.getLogger('k.users')
@@ -127,6 +127,11 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
         # This is a new sumo profile, redirect to the edit profile page
         self.request.session['oidc_login_next'] = reverse('users.edit_my_profile')
         messages.info(self.request, 'fxa_notification_created')
+
+        if self.request.session.get('is_contributor', False):
+            add_to_contributors(user, self.request.LANGUAGE_CODE)
+            del self.request.session['is_contributor']
+
         return user
 
     def filter_users_by_claims(self, claims):

@@ -7,7 +7,8 @@ from nose.tools import eq_, ok_
 
 from kitsune.sumo.tests import TestCase
 from kitsune.users.auth import FXAAuthBackend
-from kitsune.users.tests import UserFactory
+from kitsune.users.tests import UserFactory, GroupFactory
+from kitsune.users.models import CONTRIBUTOR_GROUP
 
 
 class FXAAuthBackendTests(TestCase):
@@ -48,6 +49,34 @@ class FXAAuthBackendTests(TestCase):
         eq_(users[0].profile.fxa_uid, 'my_unique_fxa_id')
         eq_(users[0].profile.avatar, 'http://example.com/avatar')
         eq_(users[0].profile.locale, 'en-US')
+        eq_(0, users[0].groups.count())
+
+    def test_create_new_contributor(self):
+        """
+        Test that a new contributor can be created through Firefox Accounts
+        if is_contributor is True in session
+        """
+        GroupFactory(name=CONTRIBUTOR_GROUP)
+        claims = {
+            'email': 'crazy_joe_davola@example.com',
+            'uid': 'abc123',
+            'avatar': 'http://example.com/avatar',
+            'locale': 'en-US'
+        }
+
+        request_mock = Mock(spec=HttpRequest)
+        request_mock.LANGUAGE_CODE = 'en'
+        request_mock.session = {
+            'is_contributor': True
+        }
+        self.backend.claims = claims
+        self.backend.request = request_mock
+        users = User.objects.all()
+        eq_(users.count(), 0)
+        self.backend.create_user(claims)
+        users = User.objects.all()
+        eq_(CONTRIBUTOR_GROUP, users[0].groups.all()[0].name)
+        ok_('is_contributor' not in request_mock.session)
 
     def test_username_already_exists(self):
         """Test account creation when username already exists."""

@@ -611,3 +611,16 @@ class ProfileNotificationTests(TestCase):
         eq_(0, len(doc('#fxa-notification-created')))
         eq_(1, len(doc('.user-messages li')))
         eq_(doc('.user-messages li').text(), text)
+
+
+class FXAAuthenticationTests(TestCase):
+    client_class = LocalizingClient
+
+    def test_authenticate_does_not_update_session(self):
+        self.client.get(reverse('users.fxa_authentication_init'))
+        assert not self.client.session.get('is_contributor')
+
+    def test_authenticate_does_update_session(self):
+        url = reverse('users.fxa_authentication_init') + '?is_contributor=True'
+        self.client.get(url)
+        assert self.client.session.get('is_contributor')
