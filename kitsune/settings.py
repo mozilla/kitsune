@@ -1200,3 +1200,6 @@ BADGE_PAGE_SIZE = config('BADGE_PAGE_SIZE', default=50, cast=int)
 
 # fxa banner test
 FXA_BANNER_LANGUAGES = config('FXA_BANNER_LANGUAGES', default='en-US', cast=Csv())
+
+# The canonical, production URL without a trailing slash
+CANONICAL_URL = 'https://support.mozilla.org'

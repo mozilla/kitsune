@@ -3,8 +3,10 @@
 {% set crumbs = [(url('products.product', slug=product.slug), pgettext('DB: products.Product.title', product.title))] %}
 {% if subtopic %}
   {% set crumbs = crumbs + [(url('products.documents', product_slug=product.slug, topic_slug=topic.slug), pgettext('DB: products.Topic.title', topic.title)), (None, pgettext('DB: products.Topic.title', subtopic.title))] %}
+  {% set canonical_url = canonicalize(model_url=subtopic.get_absolute_url()) %}
 {% else %}
   {% set crumbs = crumbs + [(None, pgettext('DB: products.Topic.title', topic.title))] %}
+  {% set canonical_url = canonicalize(model_url=topic.get_absolute_url()) %}
 {% endif %}
 {% set styles = ('products',) %}
 {% set search_params = {'product': product.slug} %}

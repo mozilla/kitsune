@@ -7,7 +7,7 @@
 {% set styles = ('mobile-wiki-minimal',) %}
 {% set classes = 'document' %}
 {% set scripts = ('mobile-wiki-minimal',) %}
-{% set canonical_url = document.get_absolute_url() %}
+{% set canonical_url = canonicalize(model_url=document.get_absolute_url()) %}
 {% if document.is_template or document.is_archived %}
   {% set meta = (('robots', 'noindex'),) %}
 {% endif %}
