@@ -6,7 +6,6 @@ from datetime import date, datetime, timedelta
 
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
 from django.core.exceptions import PermissionDenied
@@ -57,7 +56,6 @@ from kitsune.tags.utils import add_existing_tag
 from kitsune.upload.api import ImageAttachmentSerializer
 from kitsune.upload.models import ImageAttachment
 from kitsune.upload.views import upload_imageattachment
-from kitsune.users.forms import RegisterForm
 from kitsune.users.templatetags.jinja_helpers import display_name
 from kitsune.users.models import Setting
 from kitsune.wiki.facets import documents_for, topics_for
@@ -584,11 +582,6 @@ def aaq(request, product_key=None, category_key=None, showform=False,
             # User is on the select product step
             statsd.incr('questions.aaq.select-product')
 
-    if request.MOBILE:
-        login_t = 'questions/mobile/new_question_login.html'
-    else:
-        login_t = 'questions/new_question_login.html'
-
     if request.method == 'GET':
         search = request.GET.get('search', '')
         if search:
@@ -606,18 +599,6 @@ def aaq(request, product_key=None, category_key=None, showform=False,
                 statsd.incr('questions.aaq.search-form')
 
         if showform or request.GET.get('showform'):
-            # Before we show the form, make sure the user is auth'd:
-            if not request.user.is_authenticated():
-                # User is on the login or register Step
-                statsd.incr('questions.aaq.login-or-register')
-                login_form = AuthenticationForm()
-                register_form = RegisterForm()
-                return render(request, login_t, {
-                    'product': product_config,
-                    'category': category_config,
-                    'title': search,
-                    'register_form': register_form,
-                    'login_form': login_form})
             form = NewQuestionForm(
                 product=product_config,
                 category=category_config,
