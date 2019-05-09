@@ -22,7 +22,7 @@ and follow the following steps.
    git clone https://github.com/mozilla/kitsune.git
    ```
 
-2. Pull base Kitsune Docker images, create your database, and install node and bower packages.
+2. Pull base Kitsune Docker images, run `collectstatic`, create your database, and install node and bower packages.
    ```
    make init
    ```
@@ -54,6 +54,14 @@ and act much more like developing without Docker as you may be used to. You shou
 instead of `make shell` as the latter does not bind port 8000 which you need to be able to load the site.
 
 Run `make help` to see other helpful commands.
+
+### Compiling LESS files
+
+By default, the `.less` files do not compile in local development because it impacts load times on OSX. If you are working on `.less` files, you can enable compilation with the following environment variable:
+
+  ```
+  echo "PIPELINE_COLLECTOR_ENABLED=True" >> .env
+  ```
 
 ### The Admin
 
