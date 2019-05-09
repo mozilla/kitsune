@@ -136,20 +136,6 @@ class LoginTests(TestCaseBase):
         eq_(1, len(doc('#fxa-notification-deprecated')))
 
 
-class RegisterTests(TestCaseBase):
-
-    def setUp(self):
-        self.client.logout()
-        super(RegisterTests, self).setUp()
-
-    def test_login_mobile_csrf(self):
-        """The mobile registration view should have a CSRF token."""
-        response = self.client.get(reverse('users.register'), {'mobile': 1})
-        eq_(200, response.status_code)
-        doc = pq(response.content)
-        assert doc('#content form input[name="csrfmiddlewaretoken"]')
-
-
 @override_settings(DEBUG=True)
 class PasswordResetTests(TestCaseBase):
 
