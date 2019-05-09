@@ -7,10 +7,8 @@ from django.contrib import auth, messages
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.models import Site
-from django.core.exceptions import ValidationError
 from django.http import (HttpResponsePermanentRedirect, HttpResponseRedirect,
                          Http404, HttpResponseForbidden)
-from django.views.decorators.cache import never_cache
 from django.views.decorators.http import (require_http_methods, require_GET,
                                           require_POST)
 from django.shortcuts import get_object_or_404, render, redirect
@@ -35,7 +33,7 @@ from kitsune.questions.models import Question
 from kitsune.questions.utils import (
     num_questions, num_answers, num_solutions, mark_content_as_spam)
 from kitsune.sumo import email_utils
-from kitsune.sumo.decorators import ssl_required, json_view
+from kitsune.sumo.decorators import ssl_required
 from kitsune.sumo.templatetags.jinja_helpers import urlparams
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.sumo.utils import get_next_url, simple_paginate
@@ -43,12 +41,12 @@ from kitsune.upload.tasks import _create_image_thumbnail
 from kitsune.users.forms import (
     ProfileForm, AvatarForm, EmailConfirmationForm, AuthenticationForm,
     EmailChangeForm, SetPasswordForm, PasswordChangeForm, SettingsForm,
-    ForgotUsernameForm, RegisterForm, PasswordResetForm)
+    ForgotUsernameForm, PasswordResetForm)
 from kitsune.users.templatetags.jinja_helpers import profile_url
 from kitsune.users.models import Profile, RegistrationProfile, EmailChange, Deactivation
 from kitsune.users.utils import (
     deactivate_user,
-    handle_login, handle_register,
+    handle_login,
     try_send_email_with_form,
     get_oidc_fxa_setting,
     add_to_contributors
@@ -70,26 +68,21 @@ def _disable_sumo_auth_for_fxa(request):
 @ssl_required
 @logout_required
 @require_http_methods(['GET', 'POST'])
-def user_auth(request, contributor=False, register_form=None, login_form=None, notification=None):
-    """Try to log the user in, or register a user.
-
-    POSTs from these forms do not come back to this view, but instead go to the
-    login and register views, which may redirect back to this in case of error.
+def user_auth(request, login_form=None, notification=None):
+    """
+    Show user authorization page which includes a link for
+    FXA sign-up/login and the legacy login form
     """
     next_url = get_next_url(request) or reverse('home')
 
     if login_form is None:
         login_form = AuthenticationForm()
-    if register_form is None:
-        register_form = RegisterForm()
 
     # on load, decide whether legacy or FXA form is visible
-    legacy_form_visible = bool(login_form.errors or register_form.errors)
+    legacy_form_visible = bool(login_form.errors)
 
     return render(request, 'users/auth.html', {
         'login_form': login_form,
-        'register_form': register_form,
-        'contributor': contributor,
         'next_url': next_url,
         'notification': notification,
         'legacy_form_visible': legacy_form_visible,
@@ -145,36 +138,6 @@ def logout(request, already_migrated=False):
 
     res.delete_cookie(settings.SESSION_EXISTS_COOKIE)
     return res
-
-
-@ssl_required
-@logout_required
-@require_http_methods(['GET', 'POST'])
-@mobile_template('users/{mobile/}')
-def register(request, template, contributor=False):
-    """Register a new user.
-
-    :param contributor: If True, this is for registering a new contributor.
-
-    """
-    if request.method == 'GET' and not request.MOBILE:
-        url = reverse('users.auth') + '?' + request.GET.urlencode()
-        return HttpResponsePermanentRedirect(url)
-
-    _disable_sumo_auth_for_fxa(request)
-    form = handle_register(request)
-    if form.is_valid():
-        return render(request, template + 'register_done.html')
-
-    if request.MOBILE:
-        return render(request, template + 'register.html', {'form': form})
-
-    return user_auth(request, register_form=form, contributor=contributor)
-
-
-def register_contributor(request):
-    """Register a new user from the superheroes page."""
-    return register(request, contributor=True)
 
 
 @mobile_template('users/{mobile/}activate.html')
@@ -749,46 +712,6 @@ def forgot_username(request, template):
         form = ForgotUsernameForm()
 
     return render(request, template, {'form': form})
-
-
-@require_GET
-@never_cache
-@json_view
-def validate_field(request):
-    data = {'valid': True}
-
-    field = request.GET.get('field')
-    value = request.GET.get('value')
-    form = RegisterForm()
-
-    try:
-        form.fields[request.GET.get('field')].clean(request.GET.get('value'))
-    except ValidationError as e:
-        data = {
-            'valid': False,
-            'error': e.messages[0]
-        }
-    except KeyError:
-        data = {
-            'valid': False,
-            'error': _('Invalid field')
-        }
-
-    if data['valid']:
-        if field == 'username':
-            if User.objects.filter(username=value).exists():
-                data = {
-                    'valid': False,
-                    'error': _('This username is already taken!')
-                }
-        elif field == 'email':
-            if User.objects.filter(email=request.GET.get('value')).exists():
-                data = {
-                    'valid': False,
-                    'error': _('This email is already in use!')
-                }
-
-    return data
 
 
 class FXAAuthenticateView(OIDCAuthenticationRequestView):
