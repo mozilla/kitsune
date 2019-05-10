@@ -7,6 +7,7 @@ from django.contrib.auth.backends import ModelBackend
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse as django_reverse
+from django.utils.translation import ugettext as _
 
 from mozilla_django_oidc.auth import OIDCAuthenticationBackend
 
@@ -165,6 +166,12 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
         email = claims.get('email')
 
         if not profile.is_fxa_migrated:
+            # Check if there is already a Firefox Account with this ID
+            if Profile.objects.filter(fxa_uid=fxa_uid).exclude(id=profile.id).exists():
+                msg = _('This Firefox Account is already used in another profile.')
+                messages.error(self.request, msg)
+                return None
+
             # If it's not migrated, we can assume that there isn't an FxA id too
             profile.is_fxa_migrated = True
             profile.fxa_uid = fxa_uid
