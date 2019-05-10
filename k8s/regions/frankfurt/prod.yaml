@@ -5,7 +5,7 @@ kubernetes:
     nodeport_name: "sumo-nodeport"
     secrets_name: "sumo-secrets-prod"
     image:
-        repo: "mozmeao/kitsune"
+        repo: "itsre/sumo-kitsune"
         tag: "full-latest"
         pull_policy: "Always"
     # default values
