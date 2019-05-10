@@ -7,7 +7,7 @@ set -eo pipefail
 # defaults and constants
 CHANNEL="sumodev"
 PROJECT_NAME="kitsune"
-BLUE_BUILD_URL="https://ci.vpn1.moz.works/blue/organizations/jenkins/Kitsune"
+BLUE_BUILD_URL="https://ci.sumo.mozit.cloud"
 BLUE_BUILD_URL="${BLUE_BUILD_URL}/detail/${BRANCH_NAME/\//%2f}/${BUILD_NUMBER}/pipeline"
 
 # parse cli args

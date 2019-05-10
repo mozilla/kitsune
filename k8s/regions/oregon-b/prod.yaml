@@ -49,7 +49,7 @@ kubernetes:
 
 app:
     allowed_cidr_nets: SECRET
-    allowed_hosts: ".sumo.moz.works,support.mozilla.com,support.mozilla.org"
+    allowed_hosts: ".sumo.mozit.cloud,support.mozilla.com,support.mozilla.org"
     aws_access_key_id: SECRET
     aws_s3_custom_domain: SECRET
     aws_secret_access_key: SECRET
@@ -89,7 +89,7 @@ app:
     dms_update_product_details: SECRET
     dms_update_top_contributors: SECRET
     dms_update_weekly_votes: SECRET
-    k8s_domain: "oregon-b.moz.works"
+    k8s_domain: "oregon-b.mozit.cloud"
     email_host: SECRET
     email_host_user: SECRET
     email_host_password: SECRET
@@ -98,7 +98,7 @@ app:
     email_use_tls: True
     enable_admin: True
     enable_whitenoise: True
-    enforce_host: support.mozilla.org,prod-oregon-b.sumo.moz.works
+    enforce_host: support.mozilla.org,prod-oregon-b.sumo.mozit.cloud
     engage_robots: True
     es_index_prefix: "sumo_prod"
     es_http_auth: SECRET

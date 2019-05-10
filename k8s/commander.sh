@@ -37,7 +37,7 @@ function deploy {
     post-deploy $@
 
     if command -v slack-cli > /dev/null; then
-        slack-cli -d "${SLACK_CHANNEL}" ":tada: Successfully deployed <${DOCKER_HUB}|full-${COMMIT_HASH}> to <https://${REGION_ENV}-${REGION}.sumo.moz.works/|SUMO-${REGION_ENV} in ${REGION}>"
+        slack-cli -d "${SLACK_CHANNEL}" ":tada: Successfully deployed <${DOCKER_HUB}|full-${COMMIT_HASH}> to <https://${REGION_ENV}-${REGION}.sumo.mozit.cloud/|SUMO-${REGION_ENV} in ${REGION}>"
     fi
     printf "${GREEN}OK${NC}\n"
 }

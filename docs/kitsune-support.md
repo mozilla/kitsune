@@ -235,7 +235,7 @@ sumo-prod-web      50        50        50           50          331d
 2. ensure you are in the `Oregon` region
 3. search for and select the `EC2` service in the AWS console
 4. select `Auto Scaling Groups` from the navigation on the left side of the page
-5. click on the `nodes.oregon-a.moz.works` or `nodes.oregon-b.moz.works` row to select it
+5. click on the `nodes.oregon-a.mozit.cloud` or `nodes.oregon-b.mozit.cloud` row to select it
 6. from the `Actions` menu (close to the top of the page), click `Edit`
 7. the `Details` tab for the ASG should appear, set the appropriate `Min`, `Desired` and `Max` values.
     1. it's probably good to set `Min` and `Desired` to the same value in case the cluster autoscaler decides to scale down the cluster smaller than the `Min`.
@@ -301,4 +301,4 @@ There are limits that apply to using VPC ACLs documented [here](http://docs.aws.
         kubectl -n sumo-prod scale --replicas=0 deployment/sumo-prod-cron
         ```
 - **DNS**
-    - point the `prod-tp.sumo.moz.works` traffic policy at the Frankfurt ELB
+    - point the `prod-tp.sumo.mozit.cloud` traffic policy at the Frankfurt ELB
