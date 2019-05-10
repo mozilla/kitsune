@@ -167,7 +167,7 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
 
         if not profile.is_fxa_migrated:
             # Check if there is already a Firefox Account with this ID
-            if Profile.objects.filter(fxa_uid=fxa_uid).exclude(id=profile.id).exists():
+            if Profile.objects.filter(fxa_uid=fxa_uid).exists():
                 msg = _('This Firefox Account is already used in another profile.')
                 messages.error(self.request, msg)
                 return None
@@ -182,6 +182,11 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
 
         # There is a change in the email in Firefox Accounts. Let's update user's email
         if user.email != email:
+            if User.objects.exclude(id=user.id).filter(email=email).exists():
+                msg = _(u'The email used with this Firefox Account is already '
+                        'linked in another profile.')
+                messages.error(self.request, msg)
+                return None
             user.email = email
             user.save()
 

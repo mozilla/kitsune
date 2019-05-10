@@ -48,7 +48,8 @@ class FXAAuthBackendTests(TestCase):
         eq_(0, users[0].groups.count())
         message_mock.info.assert_called_with(request_mock, 'fxa_notification_created')
 
-    def test_create_new_contributor(self):
+    @patch('kitsune.users.auth.messages')
+    def test_create_new_contributor(self, message_mock):
         """
         Test that a new contributor can be created through Firefox Accounts
         if is_contributor is True in session
@@ -74,6 +75,10 @@ class FXAAuthBackendTests(TestCase):
         users = User.objects.all()
         eq_(CONTRIBUTOR_GROUP, users[0].groups.all()[0].name)
         ok_('is_contributor' not in request_mock.session)
+        message_mock.info.assert_called_with(
+            request_mock,
+            'fxa_notification_created'
+        )
 
     @patch('kitsune.users.auth.messages')
     def test_username_already_exists(self, message_mock):
@@ -217,3 +222,23 @@ class FXAAuthBackendTests(TestCase):
             auth_request,
             'fxa_notification_updated'
         )
+
+    @patch('kitsune.users.auth.messages')
+    def test_update_email_already_exists(self, message_mock):
+        """Test updating to an email that is already used."""
+        UserFactory.create(email='foo@example.com')
+        user = UserFactory.create(email='bar@example.com')
+        claims = {
+            'uid': 'my_unique_fxa_id',
+            'email': 'foo@example.com'
+        }
+        request_mock = Mock(spec=HttpRequest)
+        request_mock.session = {}
+        self.backend.claims = claims
+        self.backend.request = request_mock
+        self.backend.update_user(user, claims)
+        message_mock.error.assert_called_with(
+            request_mock,
+            u'The email used with this Firefox Account is already linked in another profile.'
+        )
+        eq_(User.objects.get(id=user.id).email, 'bar@example.com')
