@@ -134,7 +134,7 @@ Run basic acceptance tests with
 
   `./acceptance-tests.sh <URL>`
 
-  E.g. `./acceptance-tests.sh https://dev.sumo.moz.works`
+  E.g. `./acceptance-tests.sh https://dev.sumo.mozit.cloud`
 
 
 #### List of invoke available tasks
