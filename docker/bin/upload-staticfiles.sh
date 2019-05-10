@@ -2,7 +2,7 @@
 
 set -exo pipefail
 
-DOCKER_REPO=${DOCKER_REPO:-mozmeao/kitsune}
+DOCKER_REPO=${DOCKER_REPO:-itsre/sumo-kitsune}
 GIT_COMMIT=${GIT_COMMIT:-latest}
 GIT_COMMIT_SHORT=${GIT_COMMIT_SHORT:-$GIT_COMMIT}
 CONTAINER_NAME="kitsune-static-${GIT_COMMIT}"
