@@ -2,10 +2,15 @@ import os
 from datetime import datetime, timedelta
 
 from django.conf import settings
+from django.contrib import messages
 from django.contrib.auth.models import User
+from django.contrib.sessions.middleware import SessionMiddleware
+from django.contrib.messages.middleware import MessageMiddleware
 from django.contrib.sites.models import Site
 from django.core import mail
+from django.test.client import RequestFactory
 from django.test.utils import override_settings
+
 
 import mock
 from nose.tools import eq_
@@ -22,6 +27,7 @@ from kitsune.users.models import (
     CONTRIBUTOR_GROUP, Profile, RegistrationProfile, EmailChange, Setting,
     email_utils, Deactivation)
 from kitsune.users.tests import UserFactory, GroupFactory, add_permission
+from kitsune.users.views import edit_profile
 
 
 class RegisterTests(TestCase):
@@ -56,7 +62,7 @@ class RegisterTests(TestCase):
                                     {'username': 'newbie',
                                      'password': 'foobar22'}, follow=True)
         eq_(200, response.status_code)
-        eq_('/en-US/?fpa=1', response.redirect_chain[0][0])
+        eq_('/en-US/user/newbie?fpa=1', response.redirect_chain[0][0])
 
     @mock.patch.object(email_utils, 'send_messages')
     @mock.patch.object(Site.objects, 'get_current')
@@ -93,7 +99,7 @@ class RegisterTests(TestCase):
                                     {'username': 'cjkuser',
                                      'password': u_str}, follow=True)
         eq_(200, response.status_code)
-        eq_('/ja/?fpa=1', response.redirect_chain[0][0])
+        eq_('/ja/user/cjkuser?fpa=1', response.redirect_chain[0][0])
 
     @mock.patch.object(Site.objects, 'get_current')
     def test_new_user_activation(self, get_current):
@@ -243,6 +249,27 @@ class RegisterTests(TestCase):
         eq_(2, len(mail.outbox))
         assert mail.outbox[1].subject.find('Welcome to') == 0
         assert u.username in mail.outbox[1].body
+
+    @mock.patch.object(Site.objects, 'get_current')
+    def test_fxa_migrated_user_cannot_login_with_sumo(self, get_current):
+        """
+        If a user's profile is_fxa_migrated, then they cannot log in using
+        the SUMO form. They should not be authenticated and they should
+        see a notification error
+        """
+        user = UserFactory(password='1234')
+        user.profile.is_fxa_migrated = True
+        user.profile.save()
+        response = self.client.post(
+            reverse('users.login', locale='en-US'), {
+                'username': user.username,
+                'password': '1234',
+            },
+            follow=True
+        )
+
+        assert not response.wsgi_request.user.is_authenticated()
+        assert pq(response.content).find('#fxa-notification-already-migrated')
 
 
 class ChangeEmailTestCase(TestCase):
@@ -435,6 +462,22 @@ class SessionTests(TestCase):
         c = res.cookies[settings.SESSION_EXISTS_COOKIE]
         eq_(123, c['max-age'])
 
+    def test_fxa_login_deletes_cookie(self):
+        """
+        If an FXA successfully authenticates using their SUMO credentials,
+        we immediately log them out and clear their cookies, as they
+        should only be authenticating via FXA
+        """
+        url = reverse('users.login')
+        self.user.profile.is_fxa_migrated = True
+        self.user.profile.save()
+        res = self.client.post(url, {
+            'username': self.user.username,
+            'password': 'testpass'
+        })
+        session_cookie = res.cookies[settings.SESSION_EXISTS_COOKIE]
+        assert '1970' in session_cookie['expires']
+
 
 class UserSettingsTests(TestCase):
     def setUp(self):
@@ -518,3 +561,66 @@ class UserProfileTests(TestCase):
         eq_(0, Question.objects.filter(creator=u, is_spam=False).count())
         eq_(1, Answer.objects.filter(creator=u, is_spam=True).count())
         eq_(0, Answer.objects.filter(creator=u, is_spam=False).count())
+
+
+class ProfileNotificationTests(TestCase):
+    """
+    These tests confirm that FXA and non-FXA messages render properly.
+    We use RequestFactory because the request object from self.client.request
+    cannot be passed into messages.info()
+    """
+    def _get_request(self):
+        user = UserFactory()
+        request = RequestFactory().get(reverse('users.edit_profile', args=[user.username]))
+        request.user = user
+        request.MOBILE = False
+        request.LANGUAGE_CODE = 'en'
+
+        middleware = SessionMiddleware()
+        middleware.process_request(request)
+        request.session.save()
+
+        middleware = MessageMiddleware()
+        middleware.process_request(request)
+        request.session.save()
+        return request
+
+    def test_fxa_notification_updated(self):
+        request = self._get_request()
+        messages.info(request, 'fxa_notification_updated')
+        response = edit_profile(request)
+        doc = pq(response.content)
+        eq_(1, len(doc('#fxa-notification-updated')))
+        eq_(0, len(doc('#fxa-notification-created')))
+
+    def test_fxa_notification_created(self):
+        request = self._get_request()
+        messages.info(request, 'fxa_notification_created')
+        response = edit_profile(request)
+        doc = pq(response.content)
+        eq_(0, len(doc('#fxa-notification-updated')))
+        eq_(1, len(doc('#fxa-notification-created')))
+
+    def test_non_fxa_notification_created(self):
+        request = self._get_request()
+        text = 'This is a helpful piece of information'
+        messages.info(request, text)
+        response = edit_profile(request)
+        doc = pq(response.content)
+        eq_(0, len(doc('#fxa-notification-updated')))
+        eq_(0, len(doc('#fxa-notification-created')))
+        eq_(1, len(doc('.user-messages li')))
+        eq_(doc('.user-messages li').text(), text)
+
+
+class FXAAuthenticationTests(TestCase):
+    client_class = LocalizingClient
+
+    def test_authenticate_does_not_update_session(self):
+        self.client.get(reverse('users.fxa_authentication_init'))
+        assert not self.client.session.get('is_contributor')
+
+    def test_authenticate_does_update_session(self):
+        url = reverse('users.fxa_authentication_init') + '?is_contributor=True'
+        self.client.get(url)
+        assert self.client.session.get('is_contributor')

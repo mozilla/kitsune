@@ -80,7 +80,7 @@ def try_send_email_with_form(func, form, field_name, *args, **kwargs):
     return form
 
 
-def add_to_contributors(request, user):
+def add_to_contributors(user, language_code):
     group = Group.objects.get(name=CONTRIBUTOR_GROUP)
     user.groups.add(group)
     user.save()
@@ -97,7 +97,7 @@ def add_to_contributors(request, user):
 
         return mail
 
-    email_utils.send_messages([_make_mail(request.LANGUAGE_CODE)])
+    email_utils.send_messages([_make_mail(language_code)])
 
 
 def suggest_username(email):

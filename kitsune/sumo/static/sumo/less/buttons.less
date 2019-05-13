@@ -1,4 +1,3 @@
-
 .button,
 .button:link,
 .button:visited {
@@ -29,6 +28,26 @@
     &:active {
       background: @button-dark-bg;
       color: @button-color;
+    }
+  }
+
+  &.warning {
+    background-color: @warning;
+
+    &:hover {
+      background-color: darken(@warning, 20%);
+    }
+  }
+
+  &.transparent {
+    background: transparent;
+    color: @button-dark-bg;
+    font-weight: normal;
+    font-size: 0.9em;
+
+    &:hover {
+      background: transparent;
+      color: @button-dark-bg;
     }
   }
 }

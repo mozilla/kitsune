@@ -1,16 +1,19 @@
 import base64
 import logging
 
+from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.backends import ModelBackend
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse as django_reverse
+from django.utils.translation import ugettext as _
 
 from mozilla_django_oidc.auth import OIDCAuthenticationBackend
 
+from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.models import Profile
-from kitsune.users.utils import get_oidc_fxa_setting
+from kitsune.users.utils import get_oidc_fxa_setting, add_to_contributors
 
 
 log = logging.getLogger('k.users')
@@ -86,6 +89,20 @@ def get_auth_str(user):
     return base64.b64encode(auth)
 
 
+class SumoOIDCAuthBackend(OIDCAuthenticationBackend):
+
+    def authenticate(self, request, **kwargs):
+        """Authenticate a user based on the OIDC code flow."""
+
+        # If the request has the /fxa/callback/ path then probably there is a login
+        # with Firefox Accounts. In this case just return None and let
+        # the FxA backend handle this request.
+        if request and not request.path == django_reverse('oidc_authentication_callback'):
+            return None
+
+        return super(SumoOIDCAuthBackend, self).authenticate(request, **kwargs)
+
+
 class FXAAuthBackend(OIDCAuthenticationBackend):
 
     @staticmethod
@@ -107,6 +124,15 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
                                       fxa_uid=claims.get('uid'),
                                       avatar=claims.get('avatar', ''),
                                       locale=claims.get('locale', ''))
+
+        # This is a new sumo profile, redirect to the edit profile page
+        self.request.session['oidc_login_next'] = reverse('users.edit_my_profile')
+        messages.info(self.request, 'fxa_notification_created')
+
+        if self.request.session.get('is_contributor', False):
+            add_to_contributors(user, self.request.LANGUAGE_CODE)
+            del self.request.session['is_contributor']
+
         return user
 
     def filter_users_by_claims(self, claims):
@@ -140,12 +166,27 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
         email = claims.get('email')
 
         if not profile.is_fxa_migrated:
+            # Check if there is already a Firefox Account with this ID
+            if Profile.objects.filter(fxa_uid=fxa_uid).exists():
+                msg = _('This Firefox Account is already used in another profile.')
+                messages.error(self.request, msg)
+                return None
+
             # If it's not migrated, we can assume that there isn't an FxA id too
             profile.is_fxa_migrated = True
             profile.fxa_uid = fxa_uid
+            # This is the first time an existing user is using FxA. Redirect to profile edit
+            # in case the user wants to update any settings.
+            self.request.session['oidc_login_next'] = reverse('users.edit_my_profile')
+            messages.info(self.request, 'fxa_notification_updated')
 
         # There is a change in the email in Firefox Accounts. Let's update user's email
         if user.email != email:
+            if User.objects.exclude(id=user.id).filter(email=email).exists():
+                msg = _(u'The email used with this Firefox Account is already '
+                        'linked in another profile.')
+                messages.error(self.request, msg)
+                return None
             user.email = email
             user.save()
 
@@ -162,7 +203,7 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
         # If the request has the /oidc/callback/ path then probably there is a login
         # attempt in the admin interface. In this case just return None and let
         # the OIDC backend handle this request.
-        if request and request.path == django_reverse('oidc_authentication_init'):
+        if request and request.path == django_reverse('oidc_authentication_callback'):
             return None
 
         return super(FXAAuthBackend, self).authenticate(request, **kwargs)

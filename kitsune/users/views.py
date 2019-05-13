@@ -45,23 +45,32 @@ from kitsune.users.forms import (
     EmailChangeForm, SetPasswordForm, PasswordChangeForm, SettingsForm,
     ForgotUsernameForm, RegisterForm, PasswordResetForm)
 from kitsune.users.templatetags.jinja_helpers import profile_url
-from kitsune.users.models import (
-    CONTRIBUTOR_GROUP, Group, Profile, RegistrationProfile, EmailChange,
-    Deactivation)
+from kitsune.users.models import Profile, RegistrationProfile, EmailChange, Deactivation
 from kitsune.users.utils import (
     deactivate_user,
     handle_login, handle_register,
     try_send_email_with_form,
-    get_oidc_fxa_setting
+    get_oidc_fxa_setting,
+    add_to_contributors
 )
 from kitsune.wiki.models import (
     user_num_documents, user_documents, user_redirects)
 
 
+# NOTE: this will be removed after the Firefox Accounts migration
+def _disable_sumo_auth_for_fxa(request):
+    """Helper to block access to Firefox Account users to the SUMO auth system."""
+    user = request.user
+    if user and user.is_authenticated():
+        if user.profile and user.profile.is_fxa_migrated:
+            raise Http404
+    return
+
+
 @ssl_required
 @logout_required
 @require_http_methods(['GET', 'POST'])
-def user_auth(request, contributor=False, register_form=None, login_form=None):
+def user_auth(request, contributor=False, register_form=None, login_form=None, notification=None):
     """Try to log the user in, or register a user.
 
     POSTs from these forms do not come back to this view, but instead go to the
@@ -74,31 +83,45 @@ def user_auth(request, contributor=False, register_form=None, login_form=None):
     if register_form is None:
         register_form = RegisterForm()
 
+    # on load, decide whether legacy or FXA form is visible
+    legacy_form_visible = bool(login_form.errors or register_form.errors)
+
     return render(request, 'users/auth.html', {
         'login_form': login_form,
         'register_form': register_form,
         'contributor': contributor,
-        'next_url': next_url})
+        'next_url': next_url,
+        'notification': notification,
+        'legacy_form_visible': legacy_form_visible,
+    })
 
 
 @ssl_required
 # @watch_login
 @mobile_template('users/{mobile/}login.html')
 def login(request, template):
-    """Try to log the user in."""
+    """
+    Legacy view for logging in SUMO users. This is being deprecated
+    in favor of FXA login.
+    """
     if request.method == 'GET' and not request.MOBILE:
         url = reverse('users.auth') + '?' + request.GET.urlencode()
         return HttpResponsePermanentRedirect(url)
 
-    next_url = get_next_url(request) or reverse('home')
     only_active = request.POST.get('inactive', '0') != '1'
     form = handle_login(request, only_active=only_active)
 
     if request.user.is_authenticated():
-        # Add a parameter so we know the user just logged in.
-        # fpa =  "first page authed" or something.
-        next_url = urlparams(next_url, fpa=1)
-        res = HttpResponseRedirect(next_url)
+        if request.user.profile.is_fxa_migrated:
+            return logout(request, already_migrated=True)
+
+        # We re-direct to the profile screen which will show a deprecation
+        # warning for SUMO login
+        profile_url = urlparams(
+            reverse('users.profile', args=[request.user.username]),
+            fpa=1,
+        )
+        res = HttpResponseRedirect(profile_url)
         max_age = (None if settings.SESSION_EXPIRE_AT_BROWSER_CLOSE
                    else settings.SESSION_COOKIE_AGE)
         res.set_cookie(settings.SESSION_EXISTS_COOKIE,
@@ -110,19 +133,24 @@ def login(request, template):
     if request.MOBILE:
         return render(request, template, {
             'form': form,
-            'next_url': next_url})
+            'next_url': get_next_url(request) or reverse('home'),
+        })
 
     return user_auth(request, login_form=form)
 
 
 @ssl_required
 @require_POST
-def logout(request):
+def logout(request, already_migrated=False):
     """Log the user out."""
     auth.logout(request)
     statsd.incr('user.logout')
 
-    res = HttpResponseRedirect(get_next_url(request) or reverse('home'))
+    if already_migrated:
+        res = user_auth(request, notification='already_migrated')
+    else:
+        res = HttpResponseRedirect(get_next_url(request) or reverse('home'))
+
     res.delete_cookie(settings.SESSION_EXISTS_COOKIE)
     return res
 
@@ -141,13 +169,13 @@ def register(request, template, contributor=False):
         url = reverse('users.auth') + '?' + request.GET.urlencode()
         return HttpResponsePermanentRedirect(url)
 
+    _disable_sumo_auth_for_fxa(request)
     form = handle_register(request)
     if form.is_valid():
         return render(request, template + 'register_done.html')
 
     if request.MOBILE:
-        return render(request, template + 'register.html', {
-            'form': form})
+        return render(request, template + 'register.html', {'form': form})
 
     return user_auth(request, register_form=form, contributor=contributor)
 
@@ -162,6 +190,7 @@ def activate(request, template, activation_key, user_id=None):
     """Activate a User account."""
     activation_key = activation_key.lower()
 
+    _disable_sumo_auth_for_fxa(request)
     if user_id:
         user = get_object_or_404(User, id=user_id)
     else:
@@ -197,6 +226,8 @@ def activate(request, template, activation_key, user_id=None):
 @mobile_template('users/{mobile/}')
 def resend_confirmation(request, template):
     """Resend confirmation email."""
+
+    _disable_sumo_auth_for_fxa(request)
     if request.method == 'POST':
         form = EmailConfirmationForm(request.POST)
         if form.is_valid():
@@ -261,6 +292,7 @@ def resend_confirmation(request, template):
 @mobile_template('users/{mobile/}')
 def change_email(request, template):
     """Change user's email. Send confirmation first."""
+    _disable_sumo_auth_for_fxa(request)
     if request.method == 'POST':
         form = EmailChangeForm(request.user, request.POST)
         u = request.user
@@ -284,6 +316,7 @@ def change_email(request, template):
 @require_GET
 def confirm_change_email(request, activation_key):
     """Confirm the new email for the user."""
+    _disable_sumo_auth_for_fxa(request)
     activation_key = activation_key.lower()
     email_change = get_object_or_404(EmailChange,
                                      activation_key=activation_key)
@@ -458,7 +491,6 @@ def edit_watch_list(request):
 @mobile_template('users/{mobile/}edit_profile.html')
 def edit_profile(request, username=None, template=None):
     """Edit user profile."""
-
     # If a username is specified, we are editing somebody else's profile.
     if username is not None and username != request.user.username:
         try:
@@ -494,33 +526,20 @@ def edit_profile(request, username=None, template=None):
 
     # TODO: detect timezone automatically from client side, see
     # http://rocketscience.itteco.org/2010/03/13/automatic-users-timezone-determination-with-javascript-and-django-timezones/  # noqa
+    msgs = messages.get_messages(request)
+    fxa_messages = [
+        m.message for m in msgs if m.message.startswith('fxa_notification')
+    ]
 
     return render(request, template, {
-        'form': form, 'profile': user_profile})
+        'form': form, 'profile': user_profile, 'fxa_messages': fxa_messages})
 
 
 @login_required
 @require_http_methods(['POST'])
 def make_contributor(request):
     """Adds the logged in user to the contributor group"""
-    group = Group.objects.get(name=CONTRIBUTOR_GROUP)
-    request.user.groups.add(group)
-
-    @email_utils.safe_translation
-    def _make_mail(locale):
-        mail = email_utils.make_mail(
-            # L10n: Thank you so much for your translation work! You're
-            # L10n: the best!
-            subject=_('Welcome to SUMO!'),
-            text_template='users/email/contributor.ltxt',
-            html_template='users/email/contributor.html',
-            context_vars={'contributor': request.user},
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            to_email=request.user.email)
-
-        return mail
-
-    email_utils.send_messages([_make_mail(request.LANGUAGE_CODE)])
+    add_to_contributors(request.user, request.LANGUAGE_CODE)
 
     if 'return_to' in request.POST:
         return HttpResponseRedirect(request.POST['return_to'])
@@ -797,6 +816,11 @@ class FXAAuthenticateView(OIDCAuthenticationRequestView):
         if val is not None:
             return val
         return super(FXAAuthenticateView, FXAAuthenticateView).get_settings(attr, *args)
+
+    def get(self, request):
+        is_contributor = request.GET.get('is_contributor') == 'True'
+        request.session['is_contributor'] = is_contributor
+        return super(FXAAuthenticateView, self).get(request)
 
 
 class FXALogoutView(OIDCLogoutView):

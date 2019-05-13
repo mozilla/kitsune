@@ -1,0 +1,89 @@
+@default-note-color: #aacae2;
+@default-note-bg: #f3faff;
+@success-note-color: #b4e7aa;
+@success-note-bg: #f3ffef;
+@alert-note-color: #e7d5aa;
+@alert-note-bg: #fffaef;
+
+.notification {
+  display: flex;
+  align-items: center;
+  padding: 20px;
+  border-radius: 4px;
+  background: @default-note-bg;
+  border: 1px solid @default-note-color;
+  margin: 20px 0;
+
+  .ff-logo {
+    flex: 0 0 auto;
+    max-width: 60px;
+    margin-right: 20px;
+  }
+
+  &-content {
+    flex: 1 1 auto;
+  }
+
+  &-actions {
+    margin-left: 30px;
+  }
+
+  &-title {
+    margin: 0 0 0.25em;
+    font-size: 18px;
+    font-family: @OpenSans;
+
+    & + p {
+      margin-top: 0;
+    }
+  }
+
+  p,
+  .button,
+  .button:link,
+  .button:visited {
+    font-size: 14px;
+  }
+
+  .button {
+    white-space: nowrap;
+    font-weight: normal;
+  }
+
+  .close-button {
+    opacity: 0.7;
+    font-size: 24px;
+    color: @textGrey;
+    margin-left: 20px;
+
+    &:after {
+      display: block;
+      padding: 10px;
+      content: "\00d7";
+    }
+
+    &:hover {
+      text-decoration: none;
+      opacity: 1;
+    }
+  }
+
+  &.alert {
+    background: @alert-note-bg;
+    border: 1px solid @alert-note-color;
+  }
+
+  &.success {
+    background: @success-note-bg;
+    border: 1px solid @success-note-color;
+  }
+}
+
+.show-for-sr-only {
+  position: absolute;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  text-indent: -1000px;
+  overflow: hidden;
+}

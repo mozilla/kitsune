@@ -5,6 +5,7 @@
 @import 'ui.less';
 @import 'includes/mixins.less';
 @import 'includes/kbox.less';
+@import 'includes/notifications.less';
 
 .fonts();
 
@@ -41,11 +42,18 @@ article {
   }
 }
 
+html, body {
+  height: 100%;
+}
+
 body {
-  color: @textGrey;
+  color: @darkestGrey;
   font-family: @OpenSans;
   min-width: 1000px;
   text-align: left;
+
+  display: flex;
+  flex-direction: column; // for sticky footer
 
   &.html-rtl {
     margin: 0;
@@ -445,14 +453,14 @@ h3 {
 }
 
 ul.errorlist {
-  color: #da1456;
-  background: rgba(218, 20, 86, 0.2);
-  border: 1px solid #da1456;
+  color: @warning;
+  background: lighten(@warning, 30%);
+  border: 1px solid darken(@warning, 20%);
   border-radius: 2px;
   padding: 10px 10px 10px 30px;
 
   a, a:hover, a:active, a:visited {
-    color: #da1456;
+    color: @warning;
   }
 }
 
@@ -461,20 +469,130 @@ input[type="password"],
 input[type="email"],
 input[type="url"],
 input[type="date"],
-textarea {
+textarea,
+select {
   display: block;
   background: #fff;
   border: 1px solid #b1b1b3;
   border-radius: 2px;
   box-shadow: none;
   transition: all linear .1s;
-  padding: 10px;
-  font-size: 20px;
+  padding: 12px 10px;
+  font-size: 14px;
   width: 100%;
   box-sizing: border-box;
+  -moz-appearance: none;
+  -webkit-appearance: none;
+  appearance: none;
 
   &:focus {
     border-color: #222;
+  }
+}
+
+textarea {
+  height: 110px;
+}
+
+select {
+  position: relative;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 86.3 43.1'%3E%3Cpolygon points='86.3,0 43.1,43.1 0,0 '/%3E%3C/svg%3E%0A");
+  background-color: transparent;
+  background-position: top 20px right 14px;
+  background-repeat: no-repeat;
+  background-size: 12px 12px;
+
+  &#id_involved_from_month {
+    display: inline-block;
+    width: 385px;
+    margin-right: 10px;
+  }
+
+  &#id_involved_from_year {
+    display: inline-block;
+    width: 240px;
+  }
+}
+
+.html-rtl select {
+  background-position: top 20px left 14px;
+}
+
+.warning-link {
+  &,
+  &:link,
+  &:visited {
+    color: @warning;
+  }
+
+  &:hover {
+    color: darken(@warning, 20%);
+  }
+}
+
+.helptext {
+  margin-top: 10px;
+  display: block;
+  font-size: 0.8em;
+  line-height: 1.4;
+  color: @textLightGrey;
+}
+
+form .submit {
+  padding: 40px 0;
+}
+
+.section-break {
+  border: none;
+  border-top: 2px solid #000;
+  margin: 60px 0;
+}
+
+.manage-account {
+  margin: 2em 0;
+}
+
+.edit-profile-avatar {
+  display: flex;
+  align-items: center;
+
+  .avatar-photo {
+    width: 120px;
+  }
+
+  .avatar-photo,
+  > a {
+    font-weight: bold;
+    margin-right: 30px;
+  }
+}
+
+.avatar-wrap {
+  display: flex;
+  align-items: center;
+  padding: 30px 0 20px;
+}
+
+// .user-details {}
+.avatar-preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 20px 0 0;
+  padding: 0;
+  background: #f3f4f9;
+  width: 170px;
+  height: 170px;
+
+  .avatar {
+    display: block;
+    width: 100%;
+  }
+
+  .avatar-fallback {
+    width: 85px;
+    filter: grayscale(100%);
+    opacity: 0.2;
   }
 }
 
@@ -877,8 +995,8 @@ input[type="submit"]{
 }
 
 .sidebar-nav {
-  font-family: @OpenSans;
-  font-size: 13px;
+  font-family: @ZillaSlab;
+  font-size: 16px;
   list-style: none;
   padding: 0;
 
@@ -927,8 +1045,15 @@ input[type="submit"]{
 
     > span:hover,
     > a:hover {
-      color: @textDarkBlue;
+      color: #000;
+      text-decoration: underline;
     }
+
+    > a:active {
+      text-decoration: none;
+    }
+
+
 
     &.selected {
       > span,
@@ -937,9 +1062,6 @@ input[type="submit"]{
       > a:hover {
         background: #f3f3f3;
         border-color: #000;
-        color: #000;
-        font-family: @OpenSans;
-        font-weight: bold;
         position: relative;
       }
     }
@@ -1325,15 +1447,39 @@ input[type="submit"]{
 
   > ul {
     background: #fff;
-    box-shadow: 0 3px 3px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 3px 0 rgba(0,0,0,.04), 0 2px 10px 0 rgba(0,0,0,.08);
     display: none;
-    left: 0;
+    right: 16px;
     list-style: none;
     margin: 0;
-    padding: 0;
+    padding: 12px;
     position: absolute;
-    top: 40px;
+    top: 50px;
     width: 160px;
+    border-radius: 4px;
+
+    &:before { // hover helper
+      position: absolute;
+      top: -16px;
+      right: -10px;
+      left: -10px;
+      height: 30px;
+      // background: rgba(255,0,0,0.4); // uncomment to debug
+      content: "";
+    }
+    &:after {
+      position: absolute;
+      top: -10px;
+      right: 11px;
+      left: auto;
+      z-index: 2;
+      width: 12px;
+      height: 16px;
+      background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 15.6 11.2'%3E%3Cpath d='M1 8.6l5.9-7.2c.2-.2.5-.4.8-.4s.6.2.8.4l5.9 7.2s-1 2.6-6.8 2.6S1 8.6 1 8.6z' fill='%23FFF'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-size: 100% 100%;
+      content: "";
+    }
 
     &.double {
       width: 400px;
@@ -1357,7 +1503,8 @@ input[type="submit"]{
         color: #000;
         display: block;
         text-decoration: none;
-        padding: 10px 12px;
+        padding: 10px 22px;
+        margin: 0 -12px;
       }
 
       > a:hover {
