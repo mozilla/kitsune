@@ -9,19 +9,16 @@ function toggleMobileNav(e){
 
 if (navToggle) {
   navToggle.forEach(function(e) {
-    this.addEventListener("click", toggleMobileNav);
+    e.addEventListener("click", toggleMobileNav);
   });
 }
 
-
-// dropdown toggle, only active when open.
 var parentToggle = document.querySelectorAll('.dropdown > a');
 
 function toggleMobileSubNav(e) {
   this.closest('.dropdown').classList.toggle('is-open');
   nav.classList.toggle('is-second-level');
   e.preventDefault();
-  console.log('is there anything here', this.closest('.dropdown'));
 };
 
 if (parentToggle) {

@@ -193,63 +193,65 @@
           <line x1="17.92" y1="1.06" x2="1.06" y2="17.92" fill="none" stroke="currentColor" stroke-width="3"/>
         </svg>
       </a>
-      {% if not hide_aux_nav %}
-      <nav id="aux-nav" class="logged-{% if user.is_authenticated() %}in{% else %}out{% endif %}" role="navigation">
-        <ul>
-          {{ aux_nav(user, hide_aaq_link) }}
-
-        </ul>
-      </nav>
-      {% endif %}
-      <nav class="push-right" id="aux-nav-right" role="navigation">
-        <ul>
-        {% if show_header_fx_download() %}
-          {# show-fx-download.js will remove the 'hidden' class below if the visitor is *NOT* using Firefox #}
-          <li>
-            <a href="https://www.mozilla.org/firefox/new/?utm_source=support.mozilla.org&amp;utm_medium=referral&amp;utm_campaign=non-fx-button&amp;utm_content=header-download-button" class="firefox-download-button hidden" data-event-category="Download Button" data-event-action="Firefox for Desktop">{{ _('Download Firefox') }}</a>
-          </li>
-        {% endif %}
-        {% if not hide_locale_switcher %}
-          <li>
-            {% include "includes/icons/globe-icon.svg" %}
-            <a href="{{ locale_picker_url }}" class="locale-picker"  data-event-category="navigation" data-event-action="main navigation" data-event-label="Locale Picker">{% if request.LANGUAGE_CODE == "en-US"%}EN{% else %}{{ request.LANGUAGE_CODE }}{% endif %} </a>
-          </li>
-        {% endif %}
-        {% if not user.is_authenticated() %}
-          <li>
-            <a href="{{ url('users.auth') }}" class="signin-signup-button register"  data-event-category="navigation" data-event-action="main navigation" data-event-label="Sign In">
-              {{ _('Log in / Sign up') }}
-            </a>
-          </li>
-        {% else %}
-        <li class="dropdown"><a href="javascript:;" class="user"  data-event-category="navigation" data-event-action="main navigation" data-event-label="User">
-          {{ display_name(user) }}
-          <img class="avatar" src="{{ profile_avatar(user) }}">
-        </a>
+      <div class="nav-wrap-scroll">
+        {% if not hide_aux_nav %}
+        <nav id="aux-nav" class="logged-{% if user.is_authenticated() %}in{% else %}out{% endif %}" role="navigation">
           <ul>
-            <li><a href="{{ profile_url(user) }}"  data-event-category="navigation" data-event-action="main navigation" data-event-label="View Profile">{{ _('View Profile') }}</a></li>
-            <li><a href="{{ url('search')|urlparams(asked_by=user.username, a=1, w=2) }}"  data-event-category="navigation" data-event-action="main navigation" data-event-label="My Questions">{{ _('My Questions') }}</a></li>
-            <li><a href="{{ profile_url(user, edit=True) }}"  data-event-category="navigation" data-event-action="main navigation" data-event-label="Edit Profile">{{ _('Edit Profile') }}</a></li>
-            <li><a href="{{ url('users.edit_settings') }}"  data-event-category="navigation" data-event-action="main navigation" data-event-label="Settings">{{ _('Settings') }}</a></li>
+            {{ aux_nav(user, hide_aaq_link) }}
+
+          </ul>
+        </nav>
+        {% endif %}
+        <nav class="push-right" id="aux-nav-right" role="navigation">
+          <ul>
+          {% if show_header_fx_download() %}
+            {# show-fx-download.js will remove the 'hidden' class below if the visitor is *NOT* using Firefox #}
             <li>
-              <form id="sign-out" action="{{ url('users.logout') }}" method="post">
-                {% csrf_token %}
-              </form>
-              <a
-                data-type="submit"
-                data-form="sign-out"
-                href="#sign-out"
-                data-event-category="navigation"
-                data-event-action="main navigation"
-                data-event-label="Sign Out">
-                {{ _('Sign Out') }}
+              <a href="https://www.mozilla.org/firefox/new/?utm_source=support.mozilla.org&amp;utm_medium=referral&amp;utm_campaign=non-fx-button&amp;utm_content=header-download-button" class="firefox-download-button hidden" data-event-category="Download Button" data-event-action="Firefox for Desktop">{{ _('Download Firefox') }}</a>
+            </li>
+          {% endif %}
+          {% if not hide_locale_switcher %}
+            <li>
+              {% include "includes/icons/globe-icon.svg" %}
+              <a href="{{ locale_picker_url }}" class="locale-picker"  data-event-category="navigation" data-event-action="main navigation" data-event-label="Locale Picker">{% if request.LANGUAGE_CODE == "en-US"%}EN{% else %}{{ request.LANGUAGE_CODE }}{% endif %} </a>
+            </li>
+          {% endif %}
+          {% if not user.is_authenticated() %}
+            <li>
+              <a href="{{ url('users.auth') }}" class="signin-signup-button register"  data-event-category="navigation" data-event-action="main navigation" data-event-label="Sign In">
+                {{ _('Log in / Sign up') }}
               </a>
             </li>
+          {% else %}
+          <li class="dropdown"><a href="javascript:;" class="user"  data-event-category="navigation" data-event-action="main navigation" data-event-label="User">
+            {{ display_name(user) }}
+            <img class="avatar" src="{{ profile_avatar(user) }}">
+          </a>
+            <ul>
+              <li><a href="{{ profile_url(user) }}"  data-event-category="navigation" data-event-action="main navigation" data-event-label="View Profile">{{ _('View Profile') }}</a></li>
+              <li><a href="{{ url('search')|urlparams(asked_by=user.username, a=1, w=2) }}"  data-event-category="navigation" data-event-action="main navigation" data-event-label="My Questions">{{ _('My Questions') }}</a></li>
+              <li><a href="{{ profile_url(user, edit=True) }}"  data-event-category="navigation" data-event-action="main navigation" data-event-label="Edit Profile">{{ _('Edit Profile') }}</a></li>
+              <li><a href="{{ url('users.edit_settings') }}"  data-event-category="navigation" data-event-action="main navigation" data-event-label="Settings">{{ _('Settings') }}</a></li>
+              <li>
+                <form id="sign-out" action="{{ url('users.logout') }}" method="post">
+                  {% csrf_token %}
+                </form>
+                <a
+                  data-type="submit"
+                  data-form="sign-out"
+                  href="#sign-out"
+                  data-event-category="navigation"
+                  data-event-action="main navigation"
+                  data-event-label="Sign Out">
+                  {{ _('Sign Out') }}
+                </a>
+              </li>
+            </ul>
+          </li>
+          {% endif %}
           </ul>
-        </li>
-        {% endif %}
-        </ul>
-      </nav>
+        </nav>
+      </div>
     </div>
   </div>
   <div class="cf">
