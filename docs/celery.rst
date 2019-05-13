@@ -1,17 +1,14 @@
 .. _celery-chapter:
 
 =================
-Celery and Rabbit
+Celery and Redis
 =================
 
 Kitsune uses `Celery <http://celeryproject.org/>`_ to enable offline
 task processing for long-running jobs like sending email notifications
 and re-rendering the Knowledge Base.
 
-Though Celery supports multiple message backends, we use, and
-recommend that you use, `RabbitMQ
-<http://www.rabbitmq.com/>`_. RabbitMQ is an AMQP message broker
-written in Erlang.
+Though Celery supports multiple message backends, we use `Redis <https://redis.io/>`_.
 
 
 When is Celery Appropriate
@@ -26,34 +23,6 @@ Ask yourself the question: "Is the user going to need this data on the
 page I'm about to send them?" If not, using a Celery task may be a
 good choice.
 
-
-RabbitMQ
-========
-
-Installing
-----------
-
-RabbitMQ should be installed via your favorite package manager. It can be
-installed from source but has a number of Erlang dependencies.
-
-
-Configuring
------------
-
-RabbitMQ takes very little configuration.
-
-::
-
-    # Start the server.
-    sudo rabbitmq-server -detached
-
-    # Set up the permissions.
-    rabbitmqctl add_user kitsune kitsune
-    rabbitmqctl add_vhost kitsune
-    rabbitmqctl set_permissions -p kitsune kitsune ".*" ".*" ".*"
-
-That should do it. You may need to use ``sudo`` for ``rabbitmqctl``. It depends
-on the OS and how Rabbit was installed.
 
 
 Celery
@@ -80,7 +49,7 @@ Celery::
     CELERY_ALWAYS_EAGER = False
 
 This defaults to ``True``, which causes all task processing to be done online.
-This lets you run Kitsune even if you don't have Rabbit or want to deal with
+This lets you run Kitsune even if you don't have Redis or want to deal with
 running workers all the time.
 
 You can also configure the log level or concurrency. Here are the defaults::
