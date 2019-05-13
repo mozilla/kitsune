@@ -504,13 +504,13 @@ select {
 
   &#id_involved_from_month {
     display: inline-block;
-    width: 385px;
+    width: ~"calc(60% - 15px)";
     margin-right: 10px;
   }
 
   &#id_involved_from_year {
     display: inline-block;
-    width: 240px;
+    width: 40%;
   }
 }
 
@@ -540,7 +540,21 @@ select {
 
 form .submit {
   padding: 40px 0;
+  text-align: center;
+
+  .button + .button {
+    margin-top: 20px;
+  }
+
+  @media screen and (min-width: 960px) {
+    text-align: left;
+
+    .button + .button {
+      margin-top: 0;
+    }
+  }
 }
+
 
 .section-break {
   border: none;
@@ -554,16 +568,31 @@ form .submit {
 
 .edit-profile-avatar {
   display: flex;
-  align-items: center;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  font-weight: bold;
 
   .avatar-photo {
-    width: 120px;
+    width: 100%;
+    margin-bottom: 10px;
   }
 
-  .avatar-photo,
-  > a {
-    font-weight: bold;
-    margin-right: 30px;
+  .remove-avatar {
+    margin-left: auto;
+  }
+
+  @media screen and (min-width: 960px) {
+    align-items: center;
+
+    .avatar-photo {
+      width: 120px;
+      margin-right: 30px;
+      margin-bottom: 0;
+    }
+
+    > a {
+      margin-right: 30px;
+    }
   }
 }
 

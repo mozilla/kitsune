@@ -2,7 +2,7 @@
 {% from "users/includes/notification_macros.html" import notification_fxa_updated, notification_fxa_created %}
 
 {% set title = _('Edit Profile') %}
-{% set classes = 'profile' %}
+{% set classes = 'profile responsive' %}
 {% set active = 'edit-profile' %}
 {% set crumbs = [(profile_url(profile.user), profile.user.username),
                  (None, title)] %}
@@ -18,6 +18,9 @@
       {% endif %}
     {% endfor %}
   {% endif %}
+{% endblock %}
+
+{% block breadcrumbs %}
 {% endblock %}
 
 {% block content %}
@@ -70,7 +73,7 @@
                   </span>
                 </a>
                 {% if profile.avatar %}
-                  <a  class="remove-avatar" href="{{ url('users.delete_avatar') }}">{{ _('Delete') }}</a>
+                  <a class="remove-avatar" href="{{ url('users.delete_avatar') }}">{{ _('Delete') }}</a>
                 {% endif %}
                 </div>
             </li>
@@ -94,7 +97,7 @@
         </div>
       </form>
       {% if request.user == profile.user %}
-      <p>
+      <p class="center-on-mobile border-top-on-mobile">
         <a id="delete-profile" href="javascript:;" class="warning-link mt-0">{{ _('Close account and delete all profile information') }}</a>
       </p>
       {% endif %}
