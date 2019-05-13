@@ -3,7 +3,7 @@
 
 {% set title = _('Log In / Register') %}
 {% set styles = ('users',) %}
-{% set classes = 'login register contributor light-grey-bg' if contributor else 'login register light-grey-bg' %}
+{% set classes = 'login register contributor light-grey-bg responsive' if contributor else 'login register light-grey-bg responsive' %}
 
 {% block breadcrumbs %}
 {% endblock %}
@@ -14,7 +14,7 @@
     {% include "users/includes/auth_contributor.html" %}
   {% else %}
   <div class="content cf">
-    <figure class="grid_6 large-logo-wrap">
+    <figure class="grid_6 large-logo-wrap hide-mobile">
       {% include "includes/icons/firefox-logo.svg" %}
     </figure>
     <div class="grid_6">
