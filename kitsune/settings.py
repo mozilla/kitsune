@@ -874,7 +874,6 @@ AWS_S3_OBJECT_PARAMETERS = {
 LOGIN_URL = '/users/login'
 LOGOUT_URL = '/users/logout'
 LOGIN_REDIRECT_URL = "/"
-LOGOUT_REDIRECT_URL = "/"
 REGISTER_URL = '/users/register'
 
 # Video settings, hard coded here for now.
