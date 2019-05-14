@@ -2,7 +2,7 @@
 set -exo pipefail
 GREEN='\033[1;32m'
 NC='\033[0m' # No Color
-SLACK_CHANNEL=sumodev
+SLACK_CHANNEL=itsre-sumo
 DOCKER_HUB="https://hub.docker.com/r/itsre/sumo-kitsune/tags/"
 
 
