@@ -346,13 +346,17 @@ footer {
     font-weight: bold;
     margin: 1em 0 .9em 0;
 
-    @media screen and (min-width: 1000px) {
+    @media screen and (min-width: 960px) {
         margin-top: 0;
     }
   }
 
   .footer-logo {
       width: 100px;
+
+      @media screen and (max-width: 959px) {
+        margin-left: -10px;
+      }
   }
 
   .fineprint {
@@ -625,8 +629,13 @@ form .submit {
 
 .avatar-wrap {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   padding: 30px 0 20px;
+
+  @media screen and (min-width: 960px) {
+    flex-direction: row;
+    align-items: center;
+  }
 }
 
 // .user-details {}
@@ -634,11 +643,11 @@ form .submit {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 20px 0 0;
+  margin: 0 0 20px;
   padding: 0;
   background: #f3f4f9;
-  width: 170px;
-  height: 170px;
+  width: 100%;
+  height: auto;
 
   .avatar {
     display: block;
@@ -649,6 +658,12 @@ form .submit {
     width: 85px;
     filter: grayscale(100%);
     opacity: 0.2;
+  }
+
+  @media screen and (min-width: 960px) {
+    width: 170px;
+    height: 170px;
+    margin: 0 20px 0 0;
   }
 }
 
@@ -1499,13 +1514,31 @@ input[type="submit"]{
 #aux-nav > ul > li, #aux-nav-right > ul > li {
   &.dropdown {
     position: relative;
+
+    @media screen and (min-width: 960px) {
+      &:not(.user-dropdown):after {
+        display: inline-block;
+        margin: 0 0 -3px -7px;
+        width: 10px;
+        height: 13px;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10.8 17.23'%3E%3Cpolyline points='1.19 16.17 8.68 8.68 1.06 1.06' fill='none' stroke='%23fff' stroke-width='3'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-size: auto 100%;
+        transform: rotate(90deg);
+        content: "";
+      }
+    }
+  }
+
+  &.user-dropdown > ul {
+    right: 16px;
   }
 
   > ul {
     background: #fff;
     box-shadow: 0 2px 3px 0 rgba(0,0,0,.04), 0 2px 10px 0 rgba(0,0,0,.08);
     display: none;
-    right: 16px;
+    right: -13px;
     list-style: none;
     margin: 0;
     padding: 12px;
@@ -1523,6 +1556,7 @@ input[type="submit"]{
       // background: rgba(255,0,0,0.4); // uncomment to debug
       content: "";
     }
+
     &:after {
       position: absolute;
       top: -10px;
