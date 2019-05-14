@@ -359,10 +359,20 @@ footer {
     color: #fff;
     font-size: 12px;
     line-height: 160%;
+    font-weight: bold;
 
     a:link,
     a:visited {
-      color: #9b9b9b;
+      color: @textBlue;
+    }
+
+    @media screen and (min-width: 960px) {
+      font-weight: normal;
+
+      a:link,
+      a:visited {
+        color: #9b9b9b;
+      }
     }
   }
 
@@ -370,16 +380,22 @@ footer {
     color: #fff;
     font-size: 12px;
     padding-top: 20px;
+    margin-bottom: 20px;
 
     a:link,
     a:visited {
-      color: #9b9b9b;
       padding-left: 8px;
+      color: @textBlue;
+
+      @media screen and (min-width: 960px) {
+        color: #9b9b9b;
+      }
     }
   }
 
   .small-links {
-    padding-top: 20px;
+    margin-top: 10px;
+    margin-bottom: 20px;
     font-size: 12px;
 
     li {
@@ -388,6 +404,17 @@ footer {
 
       &:last-child {
         padding-right: 0;
+      }
+    }
+
+    a:link,
+    a:visited {
+      font-weight: bold;
+      color: @textBlue;
+
+      @media screen and (min-width: 960px) {
+        color: #9b9b9b;
+        font-weight: normal;
       }
     }
   }
@@ -2345,11 +2372,11 @@ input[type="submit"]{
            float: right;
          }
          .title {
-           text-align: left;
+           text-align: right;
            margin: 0px 0px 50px 0px;
          }
          .description {
-           text-align: left;
+           text-align: right;
            margin: -37px 0px 0px 0px;
          }
        }

@@ -330,13 +330,15 @@
             <a href="https://www.mozilla.org">{{ _('Mozilla') }}</a>
           </h5>
         </li>
-        <li><a href="https://www.mozilla.org/about/">{{ _('About') }}</a></li>
-        <li><a href="https://blog.mozilla.org/">{{ _('Blog') }}</a></li>
-        <li><a href="https://www.mozilla.org/contact/">{{ _('Contact Us') }}</a></li>
-        <li><a href="https://donate.mozilla.org/en-US/?presets=50,30,20,10&amount=30&utm_source=support.mozilla.org&utm_medium=referral&utm_content=footer&currency=usd">{{ _('Donate') }}</a></li>
-        <li><a href="https://kitsune.readthedocs.io/en/latest/">{{ _('Contribute to this site') }}</a></li>
-        <li><a href="https://github.com/mozilla/kitsune/">{{ _('Source code for this site') }}</a></li>
-        <li>
+        <li class="hide-mobile"><a href="https://www.mozilla.org/about/">{{ _('About') }}</a></li>
+        <li class="hide-mobile"><a href="https://blog.mozilla.org/">{{ _('Blog') }}</a></li>
+        <li class="hide-mobile"><a href="https://www.mozilla.org/contact/">{{ _('Contact Us') }}</a></li>
+        <li class="hide-mobile"><a href="https://donate.mozilla.org/en-US/?presets=50,30,20,10&amount=30&utm_source=support.mozilla.org&utm_medium=referral&utm_content=footer&currency=usd">{{ _('Donate') }}</a></li>
+        <li class="hide-mobile"><a href="https://kitsune.readthedocs.io/en/latest/">{{ _('Contribute to this site') }}</a></li>
+        <li><a href="https://www.mozilla.org/en-US/about/legal/fraud-report/">{{ _('Report Trademark Abuse') }}</a></li>
+        <li><a href="https://github.com/mozilla/kitsune/">{{ _('Source code') }}</a></li>
+        <li><a class="show-mobile" href="https://twitter.com/firefox">{{ _('Twitter') }}</a></li>
+        <li class="hide-mobile">
           <ul class="social-links">
             <li><a class="twitter" href="https://twitter.com/mozilla">{{ _('Twitter') }}<span> (@mozilla)</span></a></li>
             <li><a class="instagram" href="https://www.instagram.com/mozilla/">{{ _('Instagram') }}<span> (@mozilla)</span></a></li>
@@ -344,13 +346,14 @@
         </li>
       </ul>
     </div>
-    <div class="grid_4">
+    <div class="grid_4 hide-mobile">
       <ul>
         <li>
           <h5>
             <a href="https://www.mozilla.org/firefox/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('Firefox') }}</a>
           </h5>
         </li>
+
         <li><a href="https://www.mozilla.org/firefox/new/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('Download Firefox') }}</a></li>
         <li><a href="https://www.mozilla.org/firefox/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('Desktop') }}</a></li>
         <li><a href="https://www.mozilla.org/firefox/mobile/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('Mobile') }}</a></li>
@@ -365,14 +368,6 @@
       </ul>
     </div>
     <div class="clear"></div>
-    <div class="grid_4 small-links">
-      <ul>
-        <li><a rel="nofollow" href="https://www.mozilla.org/privacy/websites/">{{ _('Website Privacy Notice') }}</a></li>
-        <li><a rel="nofollow" href="https://www.mozilla.org/privacy/websites/#cookies">{{ _('Cookies') }}</a></li>
-        <li><a rel="nofollow" href="https://www.mozilla.org/about/legal/terms/mozilla/">{{ _('Legal') }}</a></li>
-      </ul>
-    </div>
-    <div class="clear"></div>
     <div class="grid_8">
       <div class="fineprint">
         <p>
@@ -381,6 +376,13 @@
         {% endtrans %}
         </p>
       </div>
+    </div>
+    <div class="grid_4 small-links">
+      <ul>
+        <li><a rel="nofollow" href="https://www.mozilla.org/privacy/websites/">{{ _('Website Privacy Notice') }}</a></li>
+        <li><a rel="nofollow" href="https://www.mozilla.org/privacy/websites/#cookies">{{ _('Cookies') }}</a></li>
+        <li><a rel="nofollow" href="https://www.mozilla.org/about/legal/terms/mozilla/">{{ _('Legal') }}</a></li>
+      </ul>
     </div>
     {% if not hide_locale_switcher %}
     <div class="grid_2 prefix_2 language-picker">
