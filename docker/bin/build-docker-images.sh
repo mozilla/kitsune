@@ -18,7 +18,7 @@ do
                  -t ${DOCKER_REPO}:${image}-${GIT_SHA_SHORT} \
                  --cache-from ${DOCKER_REPO}:${image}-latest \
                  --cache-from kitsune:${image}-latest \
-                 -f docker/dockerfiles/${image} \
+                 -f Dockerfile \
                  --build-arg GIT_SHA=${GIT_SHA} \
                  --build-arg LOCALE_ENV=${LOCALE_ENV} .
 done
