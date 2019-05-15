@@ -3,7 +3,7 @@
 #switch-locales {
   ul {
     list-style: none;
-    margin: 0 -22px;
+    margin: 0;
     padding: 0;
   }
 
@@ -12,19 +12,30 @@
     float: left;
     font-family: @OpenSansLight;
     font-size: 18px;
-    height: 40px;
     line-height: 40px;
-    margin: 12px 22px 0 22px;
-    padding: 12px 0 0 0;
-    width: 284px;
-
-    &:nth-of-type(-n+3) {
-      border: 0;
-      padding: 0;
-    }
+    margin: 0;
+    padding: 12px 0;
+    width: 100%;
 
     > a {
       display: block;
+    }
+  }
+
+  @media screen and (min-width: 960px) {
+    ul {
+      margin: 0 -22px;
+    }
+
+    li {
+      width: 27%;
+      margin: 12px 22px 0 22px;
+      padding: 12px 0 0 0;
+
+      &:nth-of-type(-n+3) {
+        border: 0;
+        padding: 0;
+      }
     }
   }
 }
