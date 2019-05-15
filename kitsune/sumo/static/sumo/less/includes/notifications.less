@@ -7,6 +7,7 @@
 
 .notification {
   display: flex;
+  flex-direction: column;
   align-items: center;
   padding: 20px;
   border-radius: 4px;
@@ -24,14 +25,12 @@
     flex: 1 1 auto;
   }
 
-  &-actions {
-    margin-left: 30px;
-  }
-
   &-title {
     margin: 0 0 0.25em;
     font-size: 18px;
     font-family: @OpenSans;
+    display: flex;
+    align-items: center;
 
     & + p {
       margin-top: 0;
@@ -76,6 +75,14 @@
   &.success {
     background: @success-note-bg;
     border: 1px solid @success-note-color;
+  }
+
+  @media screen and (min-width: 960px) {
+      flex-direction: row;
+
+      &-actions {
+        margin-left: 30px;
+      }
   }
 }
 

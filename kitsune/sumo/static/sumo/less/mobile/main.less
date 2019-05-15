@@ -39,7 +39,7 @@ body {
   }
 
   > nav {
-    background: @mobileNavBackground url('../../img/grain.png') 0 0 repeat;
+    background: #000;
     color: #fff;
     display: none;
     height: 100%;
@@ -49,11 +49,6 @@ body {
     top: 0;
     width: 270px;
     z-index: 0;
-
-    > a,
-    > header {
-      border-bottom: 1px solid #929e9e;
-    }
 
     > a,
     > a:visited,
@@ -66,24 +61,24 @@ body {
     }
 
     > header {
-      background: #1a2122;
-      background: url('../../img/grain.png'), linear-gradient(to bottom, #1a2122, #1b2324);
+      margin-top: 30px;
       font-size: 14px;
-      font-weight: bold;
-      height: 29px;
-      line-height: 29px;
-      padding: 0 16px;
+      font-weight: normal;
+      padding: 0 16px 4px 0;
+      margin-left: 16px;
+      opacity: 0.8;
+      border-bottom: 1px solid rgba(255,255,255,0.4);
     }
 
     #search-bar {
-      background: #253132;
-      background: url('../../img/grain.png'), linear-gradient(to bottom, #2c393b, #253132);
+      background: #000;
       box-shadow: 0 0 3px 0 rgba(0, 0, 0, 0.75);
-      padding: 10px 16px;
+      padding: 8px;
 
       form {
         display: block;
         position: relative;
+        padding: 0;
 
         button[type='submit'] {
           background-color: transparent;
@@ -96,21 +91,20 @@ body {
           position: absolute;
           right: 6px;
           text-indent: -9999px;
-          top: 6px;
+          top: 9px;
           width: 18px;
         }
 
         input[type='search'] {
-          background: #283235;
-          border: 1px solid rgba(0, 0, 0, 0.25);
+          background: rgba(255, 255, 255, 0.1);
+          border: 1px solid rgba(255, 255, 255, 0.2);
           border-radius: 3px;
-          box-shadow: 2px 2px 3px 0 rgba(0, 0, 0, 0.25) inset;
           box-sizing: border-box;
-          color: #849b9f;
+          color: #fff;
           font-family: @Moz;
           font-size: 14px;
           outline: none;
-          padding: 5px 30px 4px 4px;
+          padding: 10px 30px 10px 10px;
           width: 100%;
         }
       }
@@ -134,7 +128,7 @@ body {
   }
 
   > header {
-    background: #38383D;
+    background: #000;
     color: #fff;
     height: 50px;
     overflow: hidden;
@@ -144,7 +138,7 @@ body {
     z-index: 10;
 
     h1 {
-      font-size: 22px;
+      font-size: 18px;
       font-weight: normal;
       height: 50px;
       line-height: 50px;
@@ -159,7 +153,7 @@ body {
       position: relative;
 
       &:after {
-        color: #38383D;
+        color: #000;
         content: '\f002'; // Search icon
         font-family: 'FontAwesome';
         left: 24px;
@@ -297,31 +291,37 @@ select {
 .btn:visited,
 input[type="submit"],
 input[type="submit"]:visited {
-  background: #e3e3e3;
-  background: linear-gradient(to bottom, #fafafa, #cdcdcd);
-  border: 1px solid #ababab;
-  border-radius: 2px;
-  box-sizing: border-box;
-  color: @textDarkGrey;
-  cursor: pointer;
   display: block;
-  font-family: @Moz;
-  font-size: 16px;
+  border-radius: @button-radius;
+  color: @button-color;
   font-weight: bold;
-  outline: none;
-  margin: 0 0 6px 0;
-  padding: 4px 0;
+  font-size: 18px;
+  background: @button-primary-bg;
+  border: 0 none;
+  padding: 10px 30px;
+  box-sizing: border-box;
+  margin-bottom: 10px;
   text-align: center;
-  text-decoration: none;
-  text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.3);
   width: 100%;
 
+  &:hover {
+    background: darken(@button-primary-bg, 10%);
+    text-decoration: none;
+  }
+
+  &:active {
+    background: darken(@button-primary-bg, 20%);
+    color: @button-color;
+  }
+
   &.btn-submit {
-    background: #00caf2;
-    background: linear-gradient(to bottom, #00caf2, #00aacd);
-    border: 0;
-    font-size: 17px;
-    padding: 8px 0;
+    background: @button-dark-bg;
+
+    &:hover,
+    &:active {
+      background: @button-dark-bg;
+      color: @button-color;
+    }
   }
 }
 
@@ -409,7 +409,7 @@ input[type="submit"]:visited {
 }
 
 .header-overlay {
-  background: rgba(40, 40, 40, 0.98) url('../../img/grain.png') 0 0 repeat;
+  background: #000;
   border-bottom: 1px solid #000;
   height: 50px;
   position: fixed;
@@ -436,7 +436,7 @@ input[type="submit"]:visited {
 }
 
 .footer-overlay {
-  background: rgba(40, 40, 40, 0.98) url('../../img/grain.png') 0 0 repeat;
+  background: #000;
   bottom: 0;
   height: 50px;
   position: fixed;
@@ -445,7 +445,7 @@ input[type="submit"]:visited {
 }
 
 .overlay {
-  background: rgba(40, 40, 40, 0.98) url('../../img/grain.png') 0 0 repeat;
+  background: rgba(40, 40, 40, 0.98);
   bottom: 0;
   left: 0;
   position: fixed;

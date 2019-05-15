@@ -3,12 +3,13 @@
 {% from "kbadge/includes/macros.html" import awards_list with context %}
 
 {% set title = _('{user} | Profile')|f(user=display_name(profile.user)) %}
-{% set classes = 'profile' %}
+{% set classes = 'profile responsive' %}
 {% set canonical_url = canonicalize(viewname='users.profile', username=profile.user.username) %}
 {% set active = 'my-profile' %}
 {% set crumbs = [(None, profile.user.username)] %}
 {% set is_owner = profile and request.user == profile.user %}
 
+{% block breadcrumbs %}{% endblock %}
 {% block content %}
   <div class="grid_9">
     <article id="profile" class="cf">
