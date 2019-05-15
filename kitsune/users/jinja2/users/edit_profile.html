@@ -55,7 +55,13 @@
             <li>
               <label>{{ _('Avatar:') }}</label>
               <div class="edit-profile-avatar">
-                <img class="avatar-photo" src="{{ profile_avatar(profile.user) }}">
+                <figure class="avatar-preview">
+                  {% if profile_avatar(profile.user) %}
+                  <img class="avatar" src="{{ profile_avatar(profile.user) }}" alt="">
+                  {% else %}
+                  <img class="avatar-fallback" src="/static/sumo/img/firefox-logo.svg" alt="Firefox logo">
+                  {% endif %}
+                </figure>
                 <a class="change-avatar" href="https://gravatar.com/emails" target="_blank">
                   {{ pgettext('avatar', 'Choose Photo') }}
                   <span class="tip">
