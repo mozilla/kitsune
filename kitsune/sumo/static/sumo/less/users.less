@@ -46,6 +46,8 @@ article {
 }
 
 #profile {
+  padding: 0;
+
   h1, h2 {
     margin: 0;
   }
@@ -67,6 +69,7 @@ article {
 
   li {
     margin: 2px 0 5px;
+    display: flex;
   }
 
   .bio,
@@ -123,6 +126,10 @@ article {
         }
       }
     }
+  }
+
+  @media screen and (min-width: 960px) {
+    padding: 30px;
   }
 }
 

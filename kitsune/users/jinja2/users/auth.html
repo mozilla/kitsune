@@ -4,7 +4,7 @@
 
 {% set title = _('Log In / Register') %}
 {% set styles = ('users',) %}
-{% set classes = 'login register contributor light-grey-bg' if contributor else 'login register light-grey-bg' %}
+{% set classes = 'login register contributor light-grey-bg responsive' if contributor else 'login register light-grey-bg responsive' %}
 
 {% block breadcrumbs %}
 {% endblock %}
@@ -20,7 +20,7 @@
   {% endif %}
 
   <div class="content cf">
-    <figure class="grid_6 large-logo-wrap">
+    <figure class="grid_6 large-logo-wrap hide-mobile">
       <img class="ff-logo" src="{{ STATIC_URL }}sumo/img/firefox-logo.svg" alt="{{ _('Firefox logo') }}"/>
     </figure>
     <div class="grid_6">
