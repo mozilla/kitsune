@@ -63,6 +63,8 @@
     <meta http-equiv="refresh" content="{{ refresh[1] }};url={{ refresh[0] }}"/>
   {% endif %}
 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+
   {% if canonical_url %}
     <link rel="canonical" href="{{ canonical_url|safe }}" />
   {% endif %}
@@ -232,6 +234,14 @@
               <li><a href="{{ url('search')|urlparams(asked_by=user.username, a=1, w=2) }}"  data-event-category="navigation" data-event-action="main navigation" data-event-label="My Questions">{{ _('My Questions') }}</a></li>
               <li><a href="{{ profile_url(user, edit=True) }}"  data-event-category="navigation" data-event-action="main navigation" data-event-label="Edit Profile">{{ _('Edit Profile') }}</a></li>
               <li><a href="{{ url('users.edit_settings') }}"  data-event-category="navigation" data-event-action="main navigation" data-event-label="Settings">{{ _('Settings') }}</a></li>
+              <li>
+                <a href="{{ url('messages.inbox') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Inbox">
+                  {{ _('Inbox') }}
+                  {% if unread_message_count > 0 %}
+                    <span class="unread-message-count">{{ unread_message_count }}</span>
+                  {% endif %}
+                </a>
+              </li>
               <li>
                 <form id="sign-out" action="{{ url('users.logout') }}" method="post">
                   {% csrf_token %}
