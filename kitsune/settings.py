@@ -1080,6 +1080,7 @@ ACTSTREAM_SETTINGS = {
 SILENCED_SYSTEM_CHECKS = [
     'fields.W340',  # null has no effect on ManyToManyField.
     'fields.W342',  # ForeignKey(unique=True) is usually better served by a OneToOneField
+    'urls.W002',  # Disable warning about slashes before URLs
 ]
 
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='', cast=Csv())
