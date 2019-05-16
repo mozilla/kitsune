@@ -47,7 +47,7 @@ kubernetes:
                 timeout_seconds: 5
 app:
     allowed_cidr_nets: SECRET
-    allowed_hosts: ".sumo.mozit.cloud"
+    allowed_hosts: ".sumo.mozit.cloud,sumo-dev.allizom.org"
     aws_access_key_id: SECRET
     aws_s3_custom_domain: SECRET
     aws_secret_access_key: SECRET
