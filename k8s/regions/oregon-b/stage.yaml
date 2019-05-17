@@ -106,7 +106,7 @@ app:
     ga_key: SECRET
     ga_profile_id: SECRET
     gtm_container_id: "UA-36116321-2"
-    media_url: "https://stage-media-cdn.sumo.mozit.cloud/"
+    media_url: "https://user-media-stage-cdn-mozit.itsre-sumo.mozilla.net/"
     new_relic_app_name: "sumo-stage-oregon-b;sumo-stage-oregon"
     new_relic_license_key: SECRET
     oidc_enable: True
@@ -124,7 +124,7 @@ app:
     sentry_dsn: SECRET
     session_cookie_secure: True
     stage: True
-    static_url: "https://static-media-stage-cdn.sumo.mozit.cloud/static/"
+    static_url: "https://static-media-stage-cdn-mozit.itsre-sumo.mozilla.net/static/"
     statsd_client: SECRET
     statsd_host: SECRET
     statsd_prefix: "sumo-stage.oregon-b"

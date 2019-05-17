@@ -106,7 +106,7 @@ app:
     ga_key: SECRET
     ga_profile_id: SECRET
     gtm_container_id: "UA-36116321-2"
-    media_url: "https://stage-cdn.sumo.mozilla.net/"
+    media_url: "https://user-media-stage-cdn.itsre-sumo.mozilla.net/"
     new_relic_app_name: "sumo-stage-frankfurt"
     new_relic_license_key: SECRET
     oidc_op_authorization_endpoint: SECRET
@@ -123,7 +123,7 @@ app:
     sentry_dsn: SECRET
     session_cookie_secure: True
     stage: True
-    static_url: "https://static-media-stage-cdn.sumo.mozilla.net/static/"
+    static_url: "https://static-media-stage-cdn.itsre-sumo.mozilla.net/static/"
     statsd_client: SECRET
     statsd_host: SECRET
     statsd_prefix: "sumo-stage.frankfurt"
