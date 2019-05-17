@@ -123,7 +123,7 @@ class LoginTests(TestCaseBase):
         response = self.client.get(reverse('users.login'), {'mobile': 1})
         eq_(200, response.status_code)
         doc = pq(response.content)
-        assert doc('#content form input[name="csrfmiddlewaretoken"]')
+        assert doc('form input[name="csrfmiddlewaretoken"]')
 
     def test_fxa_deprecation_warning(self):
         """

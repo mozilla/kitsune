@@ -97,9 +97,7 @@ def user_auth(request, contributor=False, register_form=None, login_form=None, n
 
 
 @ssl_required
-# @watch_login
-@mobile_template('users/{mobile/}login.html')
-def login(request, template):
+def login(request):
     """
     Legacy view for logging in SUMO users. This is being deprecated
     in favor of FXA login.
@@ -129,12 +127,6 @@ def login(request, template):
                        secure=False,
                        max_age=max_age)
         return res
-
-    if request.MOBILE:
-        return render(request, template, {
-            'form': form,
-            'next_url': get_next_url(request) or reverse('home'),
-        })
 
     return user_auth(request, login_form=form)
 
@@ -340,8 +332,7 @@ def confirm_change_email(request, activation_key):
 
 
 @require_GET
-@mobile_template('users/{mobile/}profile.html')
-def profile(request, template, username):
+def profile(request, username):
     # The browser replaces '+' in URL's with ' ' but since we never have ' ' in
     # URL's we can assume everytime we see ' ' it was a '+' that was replaced.
     # We do this to deal with legacy usernames that have a '+' in them.
@@ -363,7 +354,7 @@ def profile(request, template, username):
         raise Http404('No Profile matches the given query.')
 
     groups = user_profile.user.groups.all()
-    return render(request, template, {
+    return render(request, 'users/profile.html', {
         'profile': user_profile,
         'awards': Award.objects.filter(user=user_profile.user),
         'groups': groups,
@@ -488,8 +479,7 @@ def edit_watch_list(request):
 
 @login_required
 @require_http_methods(['GET', 'POST'])
-@mobile_template('users/{mobile/}edit_profile.html')
-def edit_profile(request, username=None, template=None):
+def edit_profile(request, username=None):
     """Edit user profile."""
     # If a username is specified, we are editing somebody else's profile.
     if username is not None and username != request.user.username:
@@ -531,7 +521,7 @@ def edit_profile(request, username=None, template=None):
         m.message for m in msgs if m.message.startswith('fxa_notification')
     ]
 
-    return render(request, template, {
+    return render(request, 'users/edit_profile.html', {
         'form': form, 'profile': user_profile, 'fxa_messages': fxa_messages})
 
 

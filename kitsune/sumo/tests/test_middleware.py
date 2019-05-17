@@ -149,17 +149,12 @@ class MobileSwitchTestCase(TestCase):
         eq_(self.client.cookies.get(mobility.middleware.COOKIE).value, 'off')
         # Make sure a mobile template was not used.
         doc = pq(response.content)
-        eq_(len(doc('#mobile-warning')), 1)
         eq_(len(doc('header.slide-on-exposed')), 0)
 
     def test_mobile_1(self):
         response = self.client.get(u'/en-US/?mobile=1', follow=True)
         eq_(response.status_code, 200)
         eq_(self.client.cookies.get(mobility.middleware.COOKIE).value, 'on')
-        # Make sure a mobile template was used
-        doc = pq(response.content)
-        eq_(len(doc('#mobile-warning')), 0)
-        eq_(len(doc('header.slide-on-exposed')), 1)
 
 
 class MobileDetectTestCase(TestCase):

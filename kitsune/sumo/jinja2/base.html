@@ -63,6 +63,8 @@
     <meta http-equiv="refresh" content="{{ refresh[1] }};url={{ refresh[0] }}"/>
   {% endif %}
 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+
   {% if canonical_url %}
     <link rel="canonical" href="{{ canonical_url|safe }}" />
   {% endif %}
@@ -177,63 +179,90 @@
     <h2 class="logo">
       <a href="{{ url('home') }}"  data-event-category="navigation" data-event-action="main navigation" data-event-label="Home"></a>
     </h2>
-    {% if not hide_aux_nav %}
-    <nav id="aux-nav" class="logged-{% if user.is_authenticated() %}in{% else %}out{% endif %}" role="navigation">
-      <ul>
-        {{ aux_nav(user, hide_aaq_link) }}
-
-      </ul>
-    </nav>
-    {% endif %}
-    <nav class="push-right" id="aux-nav-right" role="navigation">
-      <ul>
-      {% if show_header_fx_download() %}
-        {# show-fx-download.js will remove the 'hidden' class below if the visitor is *NOT* using Firefox #}
-        <li>
-          <a href="https://www.mozilla.org/firefox/new/?utm_source=support.mozilla.org&amp;utm_medium=referral&amp;utm_campaign=non-fx-button&amp;utm_content=header-download-button" class="firefox-download-button hidden" data-event-category="Download Button" data-event-action="Firefox for Desktop">{{ _('Download Firefox') }}</a>
-        </li>
-      {% endif %}
-      {% if not hide_locale_switcher %}
-        <li>
-          {% include "includes/icons/globe-icon.svg" %}
-          <a href="{{ locale_picker_url }}" class="locale-picker"  data-event-category="navigation" data-event-action="main navigation" data-event-label="Locale Picker">{% if request.LANGUAGE_CODE == "en-US"%}EN{% else %}{{ request.LANGUAGE_CODE }}{% endif %} </a>
-        </li>
-      {% endif %}
-      {% if not user.is_authenticated() %}
-        <li>
-          <a href="{{ url('users.auth') }}" class="signin-signup-button register"  data-event-category="navigation" data-event-action="main navigation" data-event-label="Sign In">
-            {{ _('Log in / Sign up') }}
-          </a>
-        </li>
-      {% else %}
-      <li class="dropdown"><a href="{{ profile_url(user) }}" class="user"  data-event-category="navigation" data-event-action="main navigation" data-event-label="User">
-        {{ display_name(user) }}
-        <img class="avatar" src="{{ profile_avatar(user) }}">
+    <a href="javascript:;" class="menu-toggle" data-toggle-nav>
+      <svg class="menu-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 8.17 36.47">
+        <title>kebab</title>
+        <circle cx="4.09" cy="4.09" r="4.09" fill="currentColor" />
+        <circle cx="4.09" cy="32.39" r="4.09" fill="currentColor" />
+        <circle cx="4.09" cy="18.24" r="4.09" fill="currentColor" />
+      </svg>
+    </a>
+    <div class="responsive-nav-wrap">
+      <a href="javascript:;" class="close-menu" data-toggle-nav>
+        <svg class="close-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18.98 18.98">
+          <title>close</title>
+          <line x1="1.06" y1="1.06" x2="17.92" y2="17.92" fill="none" stroke="currentColor" stroke-width="3"/>
+          <line x1="17.92" y1="1.06" x2="1.06" y2="17.92" fill="none" stroke="currentColor" stroke-width="3"/>
+        </svg>
       </a>
-        <ul>
-          <li><a href="{{ profile_url(user) }}"  data-event-category="navigation" data-event-action="main navigation" data-event-label="View Profile">{{ _('View Profile') }}</a></li>
-          <li><a href="{{ url('search')|urlparams(asked_by=user.username, a=1, w=2) }}"  data-event-category="navigation" data-event-action="main navigation" data-event-label="My Questions">{{ _('My Questions') }}</a></li>
-          <li><a href="{{ profile_url(user, edit=True) }}"  data-event-category="navigation" data-event-action="main navigation" data-event-label="Edit Profile">{{ _('Edit Profile') }}</a></li>
-          <li><a href="{{ url('users.edit_settings') }}"  data-event-category="navigation" data-event-action="main navigation" data-event-label="Settings">{{ _('Settings') }}</a></li>
-          <li>
-            <form id="sign-out" action="{{ url('users.logout') }}" method="post">
-              {% csrf_token %}
-            </form>
-            <a
-              data-type="submit"
-              data-form="sign-out"
-              href="#sign-out"
-              data-event-category="navigation"
-              data-event-action="main navigation"
-              data-event-label="Sign Out">
-              {{ _('Sign Out') }}
-            </a>
+      <div class="nav-wrap-scroll">
+        {% if not hide_aux_nav %}
+        <nav id="aux-nav" class="logged-{% if user.is_authenticated() %}in{% else %}out{% endif %}" role="navigation">
+          <ul>
+            {{ aux_nav(user, hide_aaq_link) }}
+
+          </ul>
+        </nav>
+        {% endif %}
+        <nav class="push-right" id="aux-nav-right" role="navigation">
+          <ul>
+          {% if show_header_fx_download() %}
+            {# show-fx-download.js will remove the 'hidden' class below if the visitor is *NOT* using Firefox #}
+            <li>
+              <a href="https://www.mozilla.org/firefox/new/?utm_source=support.mozilla.org&amp;utm_medium=referral&amp;utm_campaign=non-fx-button&amp;utm_content=header-download-button" class="firefox-download-button hidden" data-event-category="Download Button" data-event-action="Firefox for Desktop">{{ _('Download Firefox') }}</a>
+            </li>
+          {% endif %}
+          {% if not hide_locale_switcher %}
+            <li>
+              {% include "includes/icons/globe-icon.svg" %}
+              <a href="{{ locale_picker_url }}" class="locale-picker"  data-event-category="navigation" data-event-action="main navigation" data-event-label="Locale Picker">{% if request.LANGUAGE_CODE == "en-US"%}EN{% else %}{{ request.LANGUAGE_CODE }}{% endif %} </a>
+            </li>
+          {% endif %}
+          {% if not user.is_authenticated() %}
+            <li>
+              <a href="{{ url('users.auth') }}" class="signin-signup-button register"  data-event-category="navigation" data-event-action="main navigation" data-event-label="Sign In">
+                {{ _('Log in / Sign up') }}
+              </a>
+            </li>
+          {% else %}
+          <li class="dropdown user-dropdown"><a href="javascript:;" class="user"  data-event-category="navigation" data-event-action="main navigation" data-event-label="User">
+            {{ display_name(user) }}
+            <img class="avatar" src="{{ profile_avatar(user) }}">
+          </a>
+            <ul>
+              <li><a href="{{ profile_url(user) }}"  data-event-category="navigation" data-event-action="main navigation" data-event-label="View Profile">{{ _('View Profile') }}</a></li>
+              <li><a href="{{ url('search')|urlparams(asked_by=user.username, a=1, w=2) }}"  data-event-category="navigation" data-event-action="main navigation" data-event-label="My Questions">{{ _('My Questions') }}</a></li>
+              <li><a href="{{ profile_url(user, edit=True) }}"  data-event-category="navigation" data-event-action="main navigation" data-event-label="Edit Profile">{{ _('Edit Profile') }}</a></li>
+              <li><a href="{{ url('users.edit_settings') }}"  data-event-category="navigation" data-event-action="main navigation" data-event-label="Settings">{{ _('Settings') }}</a></li>
+              <li>
+                <a href="{{ url('messages.inbox') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Inbox">
+                  {{ _('Inbox') }}
+                  {% if unread_message_count > 0 %}
+                    <span class="unread-message-count">{{ unread_message_count }}</span>
+                  {% endif %}
+                </a>
+              </li>
+              <li>
+                <form id="sign-out" action="{{ url('users.logout') }}" method="post">
+                  {% csrf_token %}
+                </form>
+                <a
+                  data-type="submit"
+                  data-form="sign-out"
+                  href="#sign-out"
+                  data-event-category="navigation"
+                  data-event-action="main navigation"
+                  data-event-label="Sign Out">
+                  {{ _('Sign Out') }}
+                </a>
+              </li>
+            </ul>
           </li>
-        </ul>
-      </li>
-      {% endif %}
-      </ul>
-    </nav>
+          {% endif %}
+          </ul>
+        </nav>
+      </div>
+    </div>
   </div>
   <div class="cf">
     {% if not hide_header_search %}
@@ -279,7 +308,7 @@
   </div>
 
   {% block outer_side %}
-    <aside class="grid_3 no-min">
+    <aside class="grid_3 no-min hide-mobile">
       {% block side_top %}{% endblock %}
       {% block side %}{% endblock %}
       {% block side_bottom %}{% endblock %}
@@ -311,13 +340,15 @@
             <a href="https://www.mozilla.org">{{ _('Mozilla') }}</a>
           </h5>
         </li>
-        <li><a href="https://www.mozilla.org/about/">{{ _('About') }}</a></li>
-        <li><a href="https://blog.mozilla.org/">{{ _('Blog') }}</a></li>
-        <li><a href="https://www.mozilla.org/contact/">{{ _('Contact Us') }}</a></li>
-        <li><a href="https://donate.mozilla.org/en-US/?presets=50,30,20,10&amount=30&utm_source=support.mozilla.org&utm_medium=referral&utm_content=footer&currency=usd">{{ _('Donate') }}</a></li>
-        <li><a href="https://kitsune.readthedocs.io/en/latest/">{{ _('Contribute to this site') }}</a></li>
-        <li><a href="https://github.com/mozilla/kitsune/">{{ _('Source code for this site') }}</a></li>
-        <li>
+        <li class="hide-mobile"><a href="https://www.mozilla.org/about/">{{ _('About') }}</a></li>
+        <li class="hide-mobile"><a href="https://blog.mozilla.org/">{{ _('Blog') }}</a></li>
+        <li class="hide-mobile"><a href="https://www.mozilla.org/contact/">{{ _('Contact Us') }}</a></li>
+        <li class="hide-mobile"><a href="https://donate.mozilla.org/en-US/?presets=50,30,20,10&amount=30&utm_source=support.mozilla.org&utm_medium=referral&utm_content=footer&currency=usd">{{ _('Donate') }}</a></li>
+        <li class="hide-mobile"><a href="https://kitsune.readthedocs.io/en/latest/">{{ _('Contribute to this site') }}</a></li>
+        <li><a href="https://www.mozilla.org/en-US/about/legal/fraud-report/">{{ _('Report Trademark Abuse') }}</a></li>
+        <li><a href="https://github.com/mozilla/kitsune/">{{ _('Source code') }}</a></li>
+        <li><a class="show-mobile" href="https://twitter.com/firefox">{{ _('Twitter') }}</a></li>
+        <li class="hide-mobile">
           <ul class="social-links">
             <li><a class="twitter" href="https://twitter.com/mozilla">{{ _('Twitter') }}<span> (@mozilla)</span></a></li>
             <li><a class="instagram" href="https://www.instagram.com/mozilla/">{{ _('Instagram') }}<span> (@mozilla)</span></a></li>
@@ -325,13 +356,14 @@
         </li>
       </ul>
     </div>
-    <div class="grid_4">
+    <div class="grid_4 hide-mobile">
       <ul>
         <li>
           <h5>
             <a href="https://www.mozilla.org/firefox/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('Firefox') }}</a>
           </h5>
         </li>
+
         <li><a href="https://www.mozilla.org/firefox/new/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('Download Firefox') }}</a></li>
         <li><a href="https://www.mozilla.org/firefox/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('Desktop') }}</a></li>
         <li><a href="https://www.mozilla.org/firefox/mobile/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('Mobile') }}</a></li>
@@ -346,14 +378,6 @@
       </ul>
     </div>
     <div class="clear"></div>
-    <div class="grid_4 small-links">
-      <ul>
-        <li><a rel="nofollow" href="https://www.mozilla.org/privacy/websites/">{{ _('Website Privacy Notice') }}</a></li>
-        <li><a rel="nofollow" href="https://www.mozilla.org/privacy/websites/#cookies">{{ _('Cookies') }}</a></li>
-        <li><a rel="nofollow" href="https://www.mozilla.org/about/legal/terms/mozilla/">{{ _('Legal') }}</a></li>
-      </ul>
-    </div>
-    <div class="clear"></div>
     <div class="grid_8">
       <div class="fineprint">
         <p>
@@ -362,6 +386,13 @@
         {% endtrans %}
         </p>
       </div>
+    </div>
+    <div class="grid_4 small-links">
+      <ul>
+        <li><a rel="nofollow" href="https://www.mozilla.org/privacy/websites/">{{ _('Website Privacy Notice') }}</a></li>
+        <li><a rel="nofollow" href="https://www.mozilla.org/privacy/websites/#cookies">{{ _('Cookies') }}</a></li>
+        <li><a rel="nofollow" href="https://www.mozilla.org/about/legal/terms/mozilla/">{{ _('Legal') }}</a></li>
+      </ul>
     </div>
     {% if not hide_locale_switcher %}
     <div class="grid_2 prefix_2 language-picker">

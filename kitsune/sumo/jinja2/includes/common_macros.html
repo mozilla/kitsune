@@ -28,18 +28,6 @@
           {{ _for_contributor_links(user, settings.WIKI_DEFAULT_LANGUAGE) }}
         </ul>
       </li>
-      <li>
-        <a href="{{ url('messages.inbox') }}"  data-event-category="navigation" data-event-action="main navigation" data-event-label="Inbox">
-          {{ _('Inbox') }}
-          {% if unread_message_count > 0 %}
-            <span class="unread-message-count">{{ unread_message_count }}</span>
-          {% endif %}
-        </a>
-      </li>
-    {% else %}
-      <li>
-        <a href="{{ url('landings.get_involved') }}" class="volunteer-button" data-event-category="Volunteer Button" data-event-action="Volunteer for Mozilla Support">{{ _('Volunteer') }}</a>
-      </li>
     {% endif %}
   {% endif %}
 {% endmacro %}

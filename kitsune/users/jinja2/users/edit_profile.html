@@ -2,7 +2,7 @@
 {% from "users/includes/notification_macros.html" import notification_fxa_updated, notification_fxa_created %}
 
 {% set title = _('Edit Profile') %}
-{% set classes = 'profile' %}
+{% set classes = 'profile responsive' %}
 {% set active = 'edit-profile' %}
 {% set crumbs = [(profile_url(profile.user), profile.user.username),
                  (None, title)] %}
@@ -20,6 +20,9 @@
   {% endif %}
 {% endblock %}
 
+{% block breadcrumbs %}
+{% endblock %}
+
 {% block content %}
   <div class="grid_9">
     <article id="edit-profile" class="main">
@@ -28,11 +31,11 @@
       <p class="mb-0"><strong>{{ user.email }}</strong></p>
       <p class="helptext">
         {{ _('You can change your email address on Firefox Accounts.') }}
-        <a href="#TODO">{{ _('Need help?') }}</a>
+        <a href="https://support.mozilla.org/en-US/kb/change-primary-email-address-firefox-accounts">{{ _('Need help?') }}</a>
       </p>
 
       <div class="manage-account">
-        <a href="#TODO" class="button">{{ _('Manage Firefox Account') }}</a>
+        <a href="https://accounts.firefox.com/settings" class="button">{{ _('Manage Firefox Account') }}</a>
       </div>
 
       <hr class="section-break"/>
@@ -52,7 +55,13 @@
             <li>
               <label>{{ _('Avatar:') }}</label>
               <div class="edit-profile-avatar">
-                <img class="avatar-photo" src="{{ profile_avatar(profile.user) }}">
+                <figure class="avatar-preview">
+                  {% if profile_avatar(profile.user) %}
+                  <img class="avatar" src="{{ profile_avatar(profile.user) }}" alt="">
+                  {% else %}
+                  <img class="avatar-fallback" src="/static/sumo/img/firefox-logo.svg" alt="Firefox logo">
+                  {% endif %}
+                </figure>
                 <a class="change-avatar" href="https://gravatar.com/emails" target="_blank">
                   {{ pgettext('avatar', 'Choose Photo') }}
                   <span class="tip">
@@ -70,7 +79,7 @@
                   </span>
                 </a>
                 {% if profile.avatar %}
-                  <a  class="remove-avatar" href="{{ url('users.delete_avatar') }}">{{ _('Delete') }}</a>
+                  <a class="remove-avatar" href="{{ url('users.delete_avatar') }}">{{ _('Delete') }}</a>
                 {% endif %}
                 </div>
             </li>
@@ -94,7 +103,7 @@
         </div>
       </form>
       {% if request.user == profile.user %}
-      <p>
+      <p class="center-on-mobile border-top-on-mobile">
         <a id="delete-profile" href="javascript:;" class="warning-link mt-0">{{ _('Close account and delete all profile information') }}</a>
       </p>
       {% endif %}
