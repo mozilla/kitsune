@@ -20,22 +20,22 @@ admin.autodiscover()
 authority.autodiscover()
 
 urlpatterns = [
-    url(r'^search', include('kitsune.search.urls')),
+    url(r'^search/', include('kitsune.search.urls')),
     url(r'^forums', include('kitsune.forums.urls')),
     url(r'^questions', include('kitsune.questions.urls')),
-    url(r'^flagged', include('kitsune.flagit.urls')),
-    url(r'^upload', include('kitsune.upload.urls')),
+    url(r'^flagged/', include('kitsune.flagit.urls')),
+    url(r'^upload/', include('kitsune.upload.urls')),
     url(r'^kb', include('kitsune.wiki.urls')),
     url(r'^gallery', include('kitsune.gallery.urls')),
     url(r'^chat', RedirectView.as_view(url='questions/new')),
-    url(r'^messages', include('kitsune.messages.urls')),
-    url(r'^1', include('kitsune.inproduct.urls')),
-    url(r'^postcrash', include('kitsune.postcrash.urls')),
-    url(r'^groups', include('kitsune.groups.urls')),
+    url(r'^messages/', include('kitsune.messages.urls')),
+    url(r'^1/', include('kitsune.inproduct.urls')),
+    url(r'^postcrash/', include('kitsune.postcrash.urls')),
+    url(r'^groups/', include('kitsune.groups.urls')),
     url(r'^kpi/', include('kitsune.kpi.urls')),
-    url(r'^products', include('kitsune.products.urls')),
-    url(r'^announcements', include('kitsune.announcements.urls')),
-    url(r'^community', include('kitsune.community.urls')),
+    url(r'^products/', include('kitsune.products.urls')),
+    url(r'^announcements/', include('kitsune.announcements.urls')),
+    url(r'^community/', include('kitsune.community.urls')),
     url(r'^badges/', include('kitsune.kbadge.urls')),
 
     # Javascript translations.
