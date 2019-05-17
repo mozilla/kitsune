@@ -3,21 +3,32 @@
 
 .help-topics-header {
   text-align: center;
-  padding: 2em 0;
+  padding: 0;
 
   .product-title {
     display: flex;
     justify-content: center;
     align-items: center;
     font-family: @ZillaSlab;
-    font-size: 52px;
+    font-size: 32px;
     font-weight: bold;
     color: #000;
   }
 
   .product-logo {
-    width: 100px;
+    width: 52px;
     margin-right: 20px;
+  }
+  @media screen and (min-width: 960px) {
+    padding: 2em 0;
+
+    .product-title {
+      font-size: 52px;
+    }
+
+    .product-logo {
+      width: 100px;
+    }
   }
 
   .product-title-text {
@@ -37,13 +48,36 @@
   }
 }
 
+.html-rtl {
+  .help-topics-header .product-title-text:before {
+    margin-right: 14px;
+    margin-left: 20px;
+  }
+}
+
 .help-topics-subhead {
-  margin: 80px 0 40px;
+  margin: 20px 0;
   position: relative;
+
+  .download-buttons > .download-firefox {
+    position: static;
+    padding-right: 0;
+  }
 
   .firefox-download-button,
   .download-buttons {
-    float: right;
+    float: none;
+    margin-bottom: 20px;
+  }
+
+  @media screen and (min-width: 768px) {
+    margin: 80px 0 40px;
+
+    .firefox-download-button {
+      float: right;
+      padding-right: 63px;
+      margin-bottom: 0;
+    }
   }
 }
 
@@ -89,20 +123,26 @@
     display: flex;
     flex-wrap: wrap;
     justify-content: flex-start;
-    margin: 20px 0;
+    margin: 20px -10px;
 
     > li {
       background: #f3f3f3;
       border: 1px solid #E7E7E7;
       border-radius: 2px;
       box-shadow: inset 0 -2px 0 0 #E7E7E7;
-      margin: 0 20px 30px 0;
+      margin: 0 10px 20px;
       min-height: 80px;
       padding: 0;
-      width: 31.98%;
+      width: 100%;
 
-      &:nth-child(3n+3) {
-        margin-right: 0;
+      @media screen and (min-width: 767px) {
+        width: 45%;
+        width: ~"calc(50% - 22px)";
+      }
+
+      @media screen and (min-width: 960px) {
+        width: 31%;
+        width: ~"calc(33% - 21px)";
       }
 
       &:before {
@@ -235,23 +275,31 @@
 
 .support-callouts {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   margin-bottom: 1em;
 
 }
 .support-callout {
   display: flex;
-  width: 50%;
+  width: 100%;
   border: 1px solid #e7e7e7;
   border-radius: 2px;
   box-shadow: inset 0 -2px 0 0 #e7e7e7;
-  margin-right: 10px;
+  margin-bottom: 20px;
   padding: 30px 40px 30px 20px;
 
-  & + & {
-    margin-right: 0;
-    margin-left: 10px;
+  @media screen and (min-width: 767px) {
+    width: ~"calc(50% - 72px)";
+    margin-right: 10px;
+
+    & + & {
+      margin-right: 0;
+      margin-left: 10px;
+    }
   }
+
+
 
   &-title {
     font-size: 26px;
