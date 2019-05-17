@@ -104,7 +104,7 @@ app:
     ga_key: SECRET
     ga_profile_id: SECRET
     gtm_container_id: "UA-36116321-2"
-    media_url: "https://user-media-prod-cdn-mozit.sumo.mozit.cloud/"
+    media_url: "https://user-media-prod-cdn.itsre-sumo.mozilla.net/"
     new_relic_app_name: "sumo-prod-frankfurt"
     new_relic_license_key: SECRET
     oidc_op_authorization_endpoint: SECRET
