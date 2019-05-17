@@ -28,7 +28,8 @@ class FXAAuthBackendTests(TestCase):
             'email': 'bar@example.com',
             'uid': 'my_unique_fxa_id',
             'avatar': 'http://example.com/avatar',
-            'locale': 'en-US'
+            'locale': 'en-US',
+            'displayName': 'Crazy Joe Davola',
         }
 
         request_mock = Mock(spec=HttpRequest)
@@ -45,6 +46,7 @@ class FXAAuthBackendTests(TestCase):
         eq_(users[0].profile.fxa_uid, 'my_unique_fxa_id')
         eq_(users[0].profile.avatar, 'http://example.com/avatar')
         eq_(users[0].profile.locale, 'en-US')
+        eq_(users[0].profile.name, 'Crazy Joe Davola')
         eq_(0, users[0].groups.count())
         message_mock.info.assert_called_with(request_mock, 'fxa_notification_created')
 
@@ -191,7 +193,8 @@ class FXAAuthBackendTests(TestCase):
         verify_token_mock.return_value = True
 
         user = UserFactory.create(email='sumo@example.com',
-                                  profile__avatar='sumo_avatar')
+                                  profile__avatar='sumo_avatar',
+                                  profile__name='Kenny Bania')
         auth_request = RequestFactory().get('/foo', {'code': 'foo',
                                                      'state': 'bar'})
         auth_request.session = {}
@@ -202,7 +205,8 @@ class FXAAuthBackendTests(TestCase):
             'email': 'fxa@example.com',
             'uid': 'my_unique_fxa_id',
             'avatar': 'http://example.com/avatar',
-            'locale': 'en-US'
+            'locale': 'en-US',
+            'displayName': 'FXA Display name',
         }
         requests_mock.get.return_value = get_json_mock
 
@@ -218,6 +222,7 @@ class FXAAuthBackendTests(TestCase):
         eq_(user.profile.fxa_uid, 'my_unique_fxa_id')
         eq_(user.email, 'fxa@example.com')
         eq_(user.profile.avatar, 'sumo_avatar')
+        eq_(user.profile.name, 'Kenny Bania')
         message_mock.info.assert_called_with(
             auth_request,
             'fxa_notification_updated'

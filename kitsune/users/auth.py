@@ -123,6 +123,7 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
                                       is_fxa_migrated=True,
                                       fxa_uid=claims.get('uid'),
                                       avatar=claims.get('avatar', ''),
+                                      name=claims.get('displayName', ''),
                                       locale=claims.get('locale', ''))
 
         # This is a new sumo profile, redirect to the edit profile page
@@ -193,6 +194,9 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
         if not profile.avatar:
             # Best effort to get an avatar from FxA
             profile.avatar = claims.get('avatar', '')
+
+        if not profile.name:
+            profile.name = claims.get('displayName', '')
 
         profile.save()
         return user
