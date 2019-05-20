@@ -28,6 +28,10 @@
           {{ _for_contributor_links(user, settings.WIKI_DEFAULT_LANGUAGE) }}
         </ul>
       </li>
+    {% else %}
+      <li>
+        <a href="{{ url('landings.get_involved') }}" class="volunteer-button" data-event-category="Volunteer Button" data-event-action="Volunteer for Mozilla Support">{{ _('Volunteer') }}</a>
+      </li>
     {% endif %}
   {% endif %}
 {% endmacro %}
