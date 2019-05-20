@@ -1658,7 +1658,6 @@ input[type="submit"]{
 
 .html-rtl {
   #aux-nav {
-
     > ul {
       > li {
         padding: 0 20px 0 12px;
@@ -1671,12 +1670,13 @@ input[type="submit"]{
         }
 
         & > ul {
-          left: auto;
-          right: 0;
+          left: -20px;
+          right: auto;
           text-align: right;
 
-          &.double > li {
-            float: right;
+          &:after {
+            right: auto;
+            left: 11px;
           }
         }
       }
@@ -1688,10 +1688,19 @@ input[type="submit"]{
     }
   }
   #aux-nav-right {
-
     > ul {
       > li {
         padding: 0 12px 0 20px;
+
+        &.user-dropdown > ul {
+          left: 24px;
+          right: auto;
+
+          &:after {
+            left: 9px;
+            right: auto;
+          }
+        }
       }
     }
 
@@ -1894,6 +1903,7 @@ input[type="submit"]{
 
     .searchbox {
       padding: 6px 20px 6px 42px;
+      margin: 0 0 0 10px;
     }
   }
 }
