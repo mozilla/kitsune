@@ -571,10 +571,10 @@ WATCHMAN_CHECKS = (
 
 # Auth
 AUTHENTICATION_BACKENDS = (
+    'kitsune.users.auth.SumoOIDCAuthBackend',
     # ``ModelBackendAllowInactive`` replaces ``django.contrib.auth.backends.ModelBackend``.
     'kitsune.users.auth.FXAAuthBackend',
     # This backend is used for the /admin interface
-    'mozilla_django_oidc.auth.OIDCAuthenticationBackend',
     'kitsune.users.auth.ModelBackendAllowInactive',
     'kitsune.users.auth.TokenLoginBackend',
 )

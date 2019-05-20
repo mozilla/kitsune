@@ -1,248 +1,51 @@
 import os
-from datetime import datetime, timedelta
 
 from django.conf import settings
+from django.contrib import messages
 from django.contrib.auth.models import User
+from django.contrib.sessions.middleware import SessionMiddleware
+from django.contrib.messages.middleware import MessageMiddleware
 from django.contrib.sites.models import Site
 from django.core import mail
+from django.test.client import RequestFactory
 from django.test.utils import override_settings
+
 
 import mock
 from nose.tools import eq_
 from pyquery import PyQuery as pq
-from kitsune.users.tests import tidings_watch as watch
 
 from kitsune.questions.tests import QuestionFactory, AnswerFactory
 from kitsune.questions.models import Question, Answer
-from kitsune.sumo.tests import (TestCase, LocalizingClient,
-                                send_mail_raise_smtp)
+from kitsune.sumo.tests import TestCase, LocalizingClient
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.users import ERROR_SEND_EMAIL
 from kitsune.users.models import (
-    CONTRIBUTOR_GROUP, Profile, RegistrationProfile, EmailChange, Setting,
-    email_utils, Deactivation)
+    CONTRIBUTOR_GROUP, Profile, EmailChange, Setting, Deactivation)
 from kitsune.users.tests import UserFactory, GroupFactory, add_permission
+from kitsune.users.views import edit_profile
 
 
-class RegisterTests(TestCase):
-    def setUp(self):
-        self.client.logout()
-        super(RegisterTests, self).setUp()
-
+class LoginTests(TestCase):
     @mock.patch.object(Site.objects, 'get_current')
-    def test_new_user(self, get_current):
-        get_current.return_value.domain = 'su.mo.com'
-        response = self.client.post(reverse('users.register', locale='en-US'),
-                                    {'username': 'newbie',
-                                     'email': 'newbie@example.com',
-                                     'password': 'foobar22',
-                                     'password2': 'foobar22'}, follow=True)
-        eq_(200, response.status_code)
-        u = User.objects.get(username='newbie')
-        assert u.password.startswith('sha256')
-        assert not u.is_active
-        eq_(1, len(mail.outbox))
-        assert mail.outbox[0].subject.find('Please confirm your') == 0
-        key = RegistrationProfile.objects.all()[0].activation_key
-        assert mail.outbox[0].body.find('activate/%s/%s' % (u.id, key)) > 0
-
-        # By default, users aren't added to any groups
-        eq_(0, len(u.groups.all()))
-
-        # Now try to log in
-        u.is_active = True
-        u.save()
-        response = self.client.post(reverse('users.login', locale='en-US'),
-                                    {'username': 'newbie',
-                                     'password': 'foobar22'}, follow=True)
-        eq_(200, response.status_code)
-        eq_('/en-US/?fpa=1', response.redirect_chain[0][0])
-
-    @mock.patch.object(email_utils, 'send_messages')
-    @mock.patch.object(Site.objects, 'get_current')
-    def test_new_user_smtp_error(self, get_current, send_messages):
-        get_current.return_value.domain = 'su.mo.com'
-
-        send_messages.side_effect = send_mail_raise_smtp
+    def test_fxa_migrated_user_cannot_login_with_sumo(self, get_current):
+        """
+        If a user's profile is_fxa_migrated, then they cannot log in using
+        the SUMO form. They should not be authenticated and they should
+        see a notification error
+        """
+        user = UserFactory(password='1234')
+        user.profile.is_fxa_migrated = True
+        user.profile.save()
         response = self.client.post(
-            reverse('users.registercontributor', locale='en-US'),
-            {'username': 'newbie',
-             'email': 'newbie@example.com',
-             'password': 'foobar22',
-             'password2': 'foobar22'}, follow=True)
-        self.assertContains(response, unicode(ERROR_SEND_EMAIL))
-        assert not User.objects.filter(username='newbie').exists()
+            reverse('users.login', locale='en-US'), {
+                'username': user.username,
+                'password': '1234',
+            },
+            follow=True
+        )
 
-    @mock.patch.object(Site.objects, 'get_current')
-    def test_unicode_password(self, get_current):
-        u_str = u'a1\xe5\xe5\xee\xe9\xf8\xe7\u6709\u52b9'
-        get_current.return_value.domain = 'su.mo.com'
-        response = self.client.post(reverse('users.register', locale='ja'),
-                                    {'username': 'cjkuser',
-                                     'email': 'cjkuser@example.com',
-                                     'password': u_str,
-                                     'password2': u_str}, follow=True)
-        eq_(200, response.status_code)
-        u = User.objects.get(username='cjkuser')
-        u.is_active = True
-        u.save()
-        assert u.password.startswith('sha256')
-
-        # make sure you can login now
-        response = self.client.post(reverse('users.login', locale='ja'),
-                                    {'username': 'cjkuser',
-                                     'password': u_str}, follow=True)
-        eq_(200, response.status_code)
-        eq_('/ja/?fpa=1', response.redirect_chain[0][0])
-
-    @mock.patch.object(Site.objects, 'get_current')
-    def test_new_user_activation(self, get_current):
-        get_current.return_value.domain = 'su.mo.com'
-        user_ = RegistrationProfile.objects.create_inactive_user(
-            'sumouser1234', 'testpass', 'sumouser@test.com')
-        assert not user_.is_active
-        key = RegistrationProfile.objects.all()[0].activation_key
-        url = reverse('users.activate', args=[user_.id, key])
-        response = self.client.get(url, follow=True)
-        eq_(200, response.status_code)
-        user_ = User.objects.get(pk=user_.pk)
-        assert user_.is_active
-
-        # Verify that the RegistrationProfile was nuked.
-        eq_(0, RegistrationProfile.objects.filter(activation_key=key).count())
-
-    @mock.patch.object(Site.objects, 'get_current')
-    def test_question_created_time_on_user_activation(self, get_current):
-        get_current.return_value.domain = 'su.mo.com'
-        user_ = RegistrationProfile.objects.create_inactive_user(
-            'sumouser1234', 'testpass', 'sumouser@test.com')
-        assert not user_.is_active
-        then = datetime.now() - timedelta(days=1)
-        q = QuestionFactory(creator=user_, created=then)
-        assert q.created == then
-        key = RegistrationProfile.objects.all()[0].activation_key
-        url = reverse('users.activate', args=[user_.id, key])
-        response = self.client.get(url, follow=True)
-        eq_(200, response.status_code)
-        user_ = User.objects.get(pk=user_.pk)
-        assert user_.is_active
-        q = Question.objects.get(pk=q.pk)
-        assert q.created > then
-
-    @mock.patch.object(Site.objects, 'get_current')
-    def test_new_user_claim_watches(self, get_current):
-        """Claim user watches upon activation."""
-        watch(email='sumouser@test.com', user=UserFactory(), save=True)
-
-        get_current.return_value.domain = 'su.mo.com'
-        user_ = RegistrationProfile.objects.create_inactive_user(
-            'sumouser1234', 'testpass', 'sumouser@test.com')
-        key = RegistrationProfile.objects.all()[0].activation_key
-        self.client.get(reverse('users.activate', args=[user_.id, key]), follow=True)
-
-        # Watches are claimed.
-        assert user_.watch_set.exists()
-
-    @mock.patch.object(Site.objects, 'get_current')
-    def test_new_user_with_questions(self, get_current):
-        """The user's questions are mentioned on the confirmation page."""
-        get_current.return_value.domain = 'su.mo.com'
-        # TODO: remove this test once we drop unconfirmed questions.
-        user_ = RegistrationProfile.objects.create_inactive_user(
-            'sumouser1234', 'testpass', 'sumouser@test.com')
-
-        # Before we activate, let's create a question.
-        q = Question.objects.create(title='test_question', creator=user_,
-                                    content='test')
-
-        # Activate account.
-        key = RegistrationProfile.objects.all()[0].activation_key
-        url = reverse('users.activate', args=[user_.id, key])
-        response = self.client.get(url, follow=True)
-        eq_(200, response.status_code)
-
-        q = Question.objects.get(creator=user_)
-        # Question is listed on the confirmation page.
-        assert 'test_question' in response.content
-        assert q.get_absolute_url().encode('utf8') in response.content
-
-    def test_duplicate_username(self):
-        u = UserFactory()
-        response = self.client.post(
-            reverse('users.registercontributor', locale='en-US'),
-            {'username': u.username,
-             'email': 'newbie@example.com',
-             'password': 'foo',
-             'password2': 'foo'}, follow=True)
-        self.assertContains(response, 'already exists')
-
-    def test_duplicate_email(self):
-        u = UserFactory(email='noob@example.com')
-        User.objects.create(username='noob', email='noob@example.com').save()
-        response = self.client.post(
-            reverse('users.registercontributor', locale='en-US'),
-            {'username': 'newbie',
-             'email': u.email,
-             'password': 'foo',
-             'password2': 'foo'}, follow=True)
-        self.assertContains(response, 'already exists')
-
-    @mock.patch.object(Site.objects, 'get_current')
-    def test_active_user_activation(self, get_current):
-        """If an already active user tries to activate with a valid key,
-        we take them to login page and show message."""
-        get_current.return_value.domain = 'su.mo.com'
-        user = RegistrationProfile.objects.create_inactive_user(
-            'sumouser1234', 'testpass', 'sumouser@test.com')
-        user.is_active = True
-        user.save()
-        key = RegistrationProfile.objects.all()[0].activation_key
-        url = reverse('users.activate', args=[user.id, key])
-        response = self.client.get(url, follow=True)
-        eq_(200, response.status_code)
-        doc = pq(response.content)
-        eq_('Your account is already activated, log in below.',
-            doc('ul.user-messages').text())
-
-    @mock.patch.object(Site.objects, 'get_current')
-    def test_old_activation_url(self, get_current):
-        get_current.return_value.domain = 'su.mo.com'
-        user = RegistrationProfile.objects.create_inactive_user(
-            'sumouser1234', 'testpass', 'sumouser@test.com')
-        assert not user.is_active
-        key = RegistrationProfile.objects.all()[0].activation_key
-        url = reverse('users.old_activate', args=[key])
-        response = self.client.get(url, follow=True)
-        eq_(200, response.status_code)
-        user = User.objects.get(pk=user.pk)
-        assert user.is_active
-
-    @mock.patch.object(Site.objects, 'get_current')
-    def test_new_contributor(self, get_current):
-        """Verify that interested contributors are added to group."""
-        get_current.return_value.domain = 'su.mo.com'
-        group_name = 'Registered as contributor'
-        GroupFactory(name=group_name)
-        data = {
-            'username': 'newbie',
-            'email': 'newbie@example.com',
-            'password': 'foobar22',
-            'password2': 'foobar22',
-            'interested': 'yes'}
-        response = self.client.post(reverse('users.register', locale='en-US'),
-                                    data, follow=True)
-        eq_(200, response.status_code)
-        u = User.objects.get(username='newbie')
-        eq_(group_name, u.groups.all()[0].name)
-
-        # Activate user and verify email is sent.
-        key = RegistrationProfile.objects.all()[0].activation_key
-        url = reverse('users.activate', args=[u.id, key])
-        response = self.client.get(url, follow=True)
-        eq_(200, response.status_code)
-        eq_(2, len(mail.outbox))
-        assert mail.outbox[1].subject.find('Welcome to') == 0
-        assert u.username in mail.outbox[1].body
+        assert not response.wsgi_request.user.is_authenticated()
+        assert pq(response.content).find('#fxa-notification-already-migrated')
 
 
 class ChangeEmailTestCase(TestCase):
@@ -435,6 +238,22 @@ class SessionTests(TestCase):
         c = res.cookies[settings.SESSION_EXISTS_COOKIE]
         eq_(123, c['max-age'])
 
+    def test_fxa_login_deletes_cookie(self):
+        """
+        If an FXA successfully authenticates using their SUMO credentials,
+        we immediately log them out and clear their cookies, as they
+        should only be authenticating via FXA
+        """
+        url = reverse('users.login')
+        self.user.profile.is_fxa_migrated = True
+        self.user.profile.save()
+        res = self.client.post(url, {
+            'username': self.user.username,
+            'password': 'testpass'
+        })
+        session_cookie = res.cookies[settings.SESSION_EXISTS_COOKIE]
+        assert '1970' in session_cookie['expires']
+
 
 class UserSettingsTests(TestCase):
     def setUp(self):
@@ -518,3 +337,66 @@ class UserProfileTests(TestCase):
         eq_(0, Question.objects.filter(creator=u, is_spam=False).count())
         eq_(1, Answer.objects.filter(creator=u, is_spam=True).count())
         eq_(0, Answer.objects.filter(creator=u, is_spam=False).count())
+
+
+class ProfileNotificationTests(TestCase):
+    """
+    These tests confirm that FXA and non-FXA messages render properly.
+    We use RequestFactory because the request object from self.client.request
+    cannot be passed into messages.info()
+    """
+    def _get_request(self):
+        user = UserFactory()
+        request = RequestFactory().get(reverse('users.edit_profile', args=[user.username]))
+        request.user = user
+        request.MOBILE = False
+        request.LANGUAGE_CODE = 'en'
+
+        middleware = SessionMiddleware()
+        middleware.process_request(request)
+        request.session.save()
+
+        middleware = MessageMiddleware()
+        middleware.process_request(request)
+        request.session.save()
+        return request
+
+    def test_fxa_notification_updated(self):
+        request = self._get_request()
+        messages.info(request, 'fxa_notification_updated')
+        response = edit_profile(request)
+        doc = pq(response.content)
+        eq_(1, len(doc('#fxa-notification-updated')))
+        eq_(0, len(doc('#fxa-notification-created')))
+
+    def test_fxa_notification_created(self):
+        request = self._get_request()
+        messages.info(request, 'fxa_notification_created')
+        response = edit_profile(request)
+        doc = pq(response.content)
+        eq_(0, len(doc('#fxa-notification-updated')))
+        eq_(1, len(doc('#fxa-notification-created')))
+
+    def test_non_fxa_notification_created(self):
+        request = self._get_request()
+        text = 'This is a helpful piece of information'
+        messages.info(request, text)
+        response = edit_profile(request)
+        doc = pq(response.content)
+        eq_(0, len(doc('#fxa-notification-updated')))
+        eq_(0, len(doc('#fxa-notification-created')))
+        eq_(1, len(doc('.user-messages li')))
+        eq_(doc('.user-messages li').text(), text)
+
+
+class FXAAuthenticationTests(TestCase):
+    client_class = LocalizingClient
+
+    def test_authenticate_does_not_update_session(self):
+        self.client.get(reverse('users.fxa_authentication_init'))
+        assert not self.client.session.get('is_contributor')
+
+    def test_authenticate_does_update_session(self):
+        url = reverse('users.fxa_authentication_init') + '?is_contributor=True'
+        self.client.get(url)
+        assert self.client.session.get('is_contributor')

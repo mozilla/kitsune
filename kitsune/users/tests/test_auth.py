@@ -7,7 +7,8 @@ from nose.tools import eq_, ok_
 
 from kitsune.sumo.tests import TestCase
 from kitsune.users.auth import FXAAuthBackend
-from kitsune.users.tests import UserFactory
+from kitsune.users.tests import UserFactory, GroupFactory
+from kitsune.users.models import CONTRIBUTOR_GROUP
 
 
 class FXAAuthBackendTests(TestCase):
@@ -20,16 +21,19 @@ class FXAAuthBackendTests(TestCase):
         """Setup class."""
         self.backend = FXAAuthBackend()
 
-    def test_create_new_profile(self):
+    @patch('kitsune.users.auth.messages')
+    def test_create_new_profile(self, message_mock):
         """Test that a new profile is created through Firefox Accounts."""
         claims = {
             'email': 'bar@example.com',
             'uid': 'my_unique_fxa_id',
             'avatar': 'http://example.com/avatar',
-            'locale': 'en-US'
+            'locale': 'en-US',
+            'displayName': 'Crazy Joe Davola',
         }
 
         request_mock = Mock(spec=HttpRequest)
+        request_mock.session = {}
         self.backend.claims = claims
         self.backend.request = request_mock
         users = User.objects.all()
@@ -42,8 +46,44 @@ class FXAAuthBackendTests(TestCase):
         eq_(users[0].profile.fxa_uid, 'my_unique_fxa_id')
         eq_(users[0].profile.avatar, 'http://example.com/avatar')
         eq_(users[0].profile.locale, 'en-US')
+        eq_(users[0].profile.name, 'Crazy Joe Davola')
+        eq_(0, users[0].groups.count())
+        message_mock.info.assert_called_with(request_mock, 'fxa_notification_created')
 
-    def test_username_already_exists(self):
+    @patch('kitsune.users.auth.messages')
+    def test_create_new_contributor(self, message_mock):
+        """
+        Test that a new contributor can be created through Firefox Accounts
+        if is_contributor is True in session
+        """
+        GroupFactory(name=CONTRIBUTOR_GROUP)
+        claims = {
+            'email': 'crazy_joe_davola@example.com',
+            'uid': 'abc123',
+            'avatar': 'http://example.com/avatar',
+            'locale': 'en-US'
+        }
+
+        request_mock = Mock(spec=HttpRequest)
+        request_mock.LANGUAGE_CODE = 'en'
+        request_mock.session = {
+            'is_contributor': True
+        }
+        self.backend.claims = claims
+        self.backend.request = request_mock
+        users = User.objects.all()
+        eq_(users.count(), 0)
+        self.backend.create_user(claims)
+        users = User.objects.all()
+        eq_(CONTRIBUTOR_GROUP, users[0].groups.all()[0].name)
+        ok_('is_contributor' not in request_mock.session)
+        message_mock.info.assert_called_with(
+            request_mock,
+            'fxa_notification_created'
+        )
+
+    @patch('kitsune.users.auth.messages')
+    def test_username_already_exists(self, message_mock):
         """Test account creation when username already exists."""
         UserFactory.create(username='bar')
         claims = {
@@ -52,11 +92,16 @@ class FXAAuthBackendTests(TestCase):
         }
 
         request_mock = Mock(spec=HttpRequest)
+        request_mock.session = {}
         self.backend.claims = claims
         self.backend.request = request_mock
         self.backend.create_user(claims)
         user = User.objects.get(profile__fxa_uid='my_unique_fxa_id')
         eq_(user.username, 'bar1')
+        message_mock.info.assert_called_with(
+            request_mock,
+            'fxa_notification_created'
+        )
 
     def test_login_fxa_uid_missing(self):
         """Test user filtering without FxA uid."""
@@ -77,11 +122,32 @@ class FXAAuthBackendTests(TestCase):
         }
 
         request_mock = Mock(spec=HttpRequest)
+        request_mock.session = {}
         self.backend.claims = claims
         self.backend.request = request_mock
         self.backend.request.user = user
         self.backend.filter_users_by_claims(claims)
         eq_(User.objects.all()[0].id, user.id)
+
+    @patch('kitsune.users.auth.messages')
+    def test_connecting_using_existing_fxa_account(self, message_mock):
+        """Test connecting a SUMO account with an existing FxA in SUMO."""
+        UserFactory.create(profile__fxa_uid='my_unique_fxa_id')
+        user = UserFactory.create()
+        claims = {
+            'uid': 'my_unique_fxa_id',
+        }
+        request_mock = Mock(spec=HttpRequest)
+        request_mock.session = {}
+        self.backend.claims = claims
+        self.backend.request = request_mock
+        self.backend.update_user(user, claims)
+        message_mock.error.assert_called_with(
+            request_mock,
+            u'This Firefox Account is already used in another profile.'
+        )
+        ok_(not User.objects.get(id=user.id).profile.is_fxa_migrated)
+        ok_(not User.objects.get(id=user.id).profile.fxa_uid)
 
     def test_login_existing_user_by_email(self):
         """Test user filtering by email."""
@@ -97,33 +163,38 @@ class FXAAuthBackendTests(TestCase):
         self.backend.filter_users_by_claims(claims)
         eq_(User.objects.all()[0].id, user.id)
 
-    def test_email_changed_in_FxA_match_by_uid(self):
+    @patch('kitsune.users.auth.messages')
+    def test_email_changed_in_FxA_match_by_uid(self, message_mock):
         """Test that the user email is updated successfully if it
         is changed in Firefox Accounts and we match users by uid.
         """
         user = UserFactory.create(profile__fxa_uid='my_unique_fxa_id',
-                                  email='foo@example.com')
+                                  email='foo@example.com',
+                                  profile__is_fxa_migrated=True)
         claims = {
             'uid': 'my_unique_fxa_id',
             'email': 'bar@example.com'
         }
         request_mock = Mock(spec=HttpRequest)
+        request_mock.session = {}
         self.backend.claims = claims
         self.backend.request = request_mock
         self.backend.update_user(user, claims)
         user = User.objects.get(id=user.id)
         eq_(user.email, 'bar@example.com')
+        ok_(not message_mock.info.called)
 
+    @patch('kitsune.users.auth.messages')
     @patch('mozilla_django_oidc.auth.requests')
     @patch('mozilla_django_oidc.auth.OIDCAuthenticationBackend.verify_token')
-    def test_link_sumo_account_fxa(self, verify_token_mock, requests_mock):
-        """Test that an existing SUMO account is succesfully linke to Firefox Account."""
+    def test_link_sumo_account_fxa(self, verify_token_mock, requests_mock, message_mock):
+        """Test that an existing SUMO account is succesfully linked to Firefox Account."""
 
         verify_token_mock.return_value = True
 
         user = UserFactory.create(email='sumo@example.com',
-                                  profile__avatar='sumo_avatar')
-        ok_(not user.profile.is_fxa_migrated)
+                                  profile__avatar='sumo_avatar',
+                                  profile__name='Kenny Bania')
         auth_request = RequestFactory().get('/foo', {'code': 'foo',
                                                      'state': 'bar'})
         auth_request.session = {}
@@ -134,7 +205,8 @@ class FXAAuthBackendTests(TestCase):
             'email': 'fxa@example.com',
             'uid': 'my_unique_fxa_id',
             'avatar': 'http://example.com/avatar',
-            'locale': 'en-US'
+            'locale': 'en-US',
+            'displayName': 'FXA Display name',
         }
         requests_mock.get.return_value = get_json_mock
 
@@ -150,3 +222,28 @@ class FXAAuthBackendTests(TestCase):
         eq_(user.profile.fxa_uid, 'my_unique_fxa_id')
         eq_(user.email, 'fxa@example.com')
         eq_(user.profile.avatar, 'sumo_avatar')
+        eq_(user.profile.name, 'Kenny Bania')
+        message_mock.info.assert_called_with(
+            auth_request,
+            'fxa_notification_updated'
+        )
+
+    @patch('kitsune.users.auth.messages')
+    def test_update_email_already_exists(self, message_mock):
+        """Test updating to an email that is already used."""
+        UserFactory.create(email='foo@example.com')
+        user = UserFactory.create(email='bar@example.com')
+        claims = {
+            'uid': 'my_unique_fxa_id',
+            'email': 'foo@example.com'
+        }
+        request_mock = Mock(spec=HttpRequest)
+        request_mock.session = {}
+        self.backend.claims = claims
+        self.backend.request = request_mock
+        self.backend.update_user(user, claims)
+        message_mock.error.assert_called_with(
+            request_mock,
+            u'The email used with this Firefox Account is already linked in another profile.'
+        )
+        eq_(User.objects.get(id=user.id).email, 'bar@example.com')

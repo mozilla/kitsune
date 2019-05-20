@@ -1,8 +1,3 @@
-@button-radius: 40px;
-@button-primary-bg: #0037f8;
-@button-dark-bg: #000;
-@button-color: #fff;
-
 .button,
 .button:link,
 .button:visited {
@@ -14,6 +9,7 @@
   background: @button-primary-bg;
   border: 0 none;
   padding: 10px 30px;
+  text-align: center;
 
   &:hover {
     background: darken(@button-primary-bg, 10%);
@@ -32,6 +28,26 @@
     &:active {
       background: @button-dark-bg;
       color: @button-color;
+    }
+  }
+
+  &.warning {
+    background-color: @warning;
+
+    &:hover {
+      background-color: darken(@warning, 20%);
+    }
+  }
+
+  &.transparent {
+    background: transparent;
+    color: @button-dark-bg;
+    font-weight: normal;
+    font-size: 0.9em;
+
+    &:hover {
+      background: transparent;
+      color: @button-dark-bg;
     }
   }
 }
