@@ -11,9 +11,8 @@ from django_statsd.clients import statsd
 
 from kitsune.sumo import email_utils
 from kitsune.users import ERROR_SEND_EMAIL
-from kitsune.users.forms import RegisterForm, AuthenticationForm
-from kitsune.users.models import (RegistrationProfile, Group,
-                                  CONTRIBUTOR_GROUP, Deactivation)
+from kitsune.users.forms import AuthenticationForm
+from kitsune.users.models import Group, CONTRIBUTOR_GROUP, Deactivation
 
 
 log = logging.getLogger('k.users')
@@ -35,36 +34,6 @@ def handle_login(request, only_active=True):
 
     request.session.set_test_cookie()
     return AuthenticationForm()
-
-
-def handle_register(request, text_template=None, html_template=None,
-                    subject=None, email_data=None, *args, **kwargs):
-    """Handle to help registration."""
-    if request.method == 'POST':
-        form = RegisterForm(request.POST)
-        if form.is_valid():
-            form = try_send_email_with_form(
-                RegistrationProfile.objects.create_inactive_user,
-                form, 'email',
-                form.cleaned_data['username'],
-                form.cleaned_data['password'],
-                form.cleaned_data['email'],
-                locale=request.LANGUAGE_CODE,
-                text_template=text_template,
-                html_template=html_template,
-                subject=subject,
-                email_data=email_data,
-                volunteer_interest=form.cleaned_data['interested'],
-                *args, **kwargs)
-            if not form.is_valid():
-                # Delete user if form is not valid, i.e. email was not sent.
-                # This is in a POST request and so always pinned to master,
-                # so there is no race condition.
-                User.objects.filter(email=form.instance.email).delete()
-            else:
-                statsd.incr('user.register')
-        return form
-    return RegisterForm()
 
 
 def try_send_email_with_form(func, form, field_name, *args, **kwargs):

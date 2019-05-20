@@ -11,10 +11,6 @@
 
 
 {% block content %}
-  {% if contributor %}
-    {% include "users/includes/auth_contributor.html" %}
-  {% else %}
-
   {% if notification == 'already_migrated' %}
     {{ notification_already_migrated(STATIC_URL) }}
   {% endif %}
@@ -32,6 +28,4 @@
       </div>
     </div>
   </div>
-
-  {% endif %}
 {% endblock %}

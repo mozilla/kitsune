@@ -235,18 +235,6 @@ class MobileAAQTests(MobileTestCase):
         return self.client.get(url, follow=True)
 
     @mock.patch.object(Site.objects, 'get_current')
-    def test_logged_in_get(self, get_current):
-        """New question is posted through mobile."""
-        get_current.return_value.domain = 'testserver'
-
-        u = UserFactory()
-        self.client.login(username=u.username, password='testpass')
-
-        response = self._new_question()
-        eq_(200, response.status_code)
-        assert template_used(response, 'questions/mobile/new_question.html')
-
-    @mock.patch.object(Site.objects, 'get_current')
     def test_logged_in_post(self, get_current):
         """New question is posted through mobile."""
         get_current.return_value.domain = 'testserver'
