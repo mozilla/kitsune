@@ -115,7 +115,7 @@ class DocumentTests(TestCaseBase):
         eq_(r.document.title, doc('article h1.title').text())
         eq_(pq(r.document.html)('div').text(), doc('#doc-content div').text())
         # There's a canonical URL in the <head>.
-        eq_(r.document.get_absolute_url(),
+        eq_(settings.CANONICAL_URL + r.document.get_absolute_url(),
             doc('link[rel=canonical]').attr('href'))
         # The summary is in <meta name="description"...
         eq_('search summary', doc('meta[name=description]').attr('content'))
@@ -234,7 +234,7 @@ class DocumentTests(TestCaseBase):
         self.assertContains(response, redirect_url + '?redirect=no')
         # There's a canonical URL in the <head>.
         doc = pq(response.content)
-        eq_(target_url, doc('link[rel=canonical]').attr('href'))
+        eq_(settings.CANONICAL_URL + target_url, doc('link[rel=canonical]').attr('href'))
 
     def test_redirect_no_vote(self):
         """Make sure documents with REDIRECT directives have no vote form.

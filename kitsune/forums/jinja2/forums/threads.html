@@ -4,7 +4,7 @@
 {# L10n: {f} is the name of the forum. #}
 {% set title = _('{f} | Forums')|f(f=forum.name) %}
 {% set crumbs = [(url('forums.forums'), _('Contributor Forums')), (None, forum.name)] %}
-{% set canonical_url = unlocalized_url('forums.threads', forum.slug) %}
+{% set canonical_url = canonicalize(viewname='forums.threads', forum_slug=forum.slug) %}
 {% if threads.number > 1 %}
   {% set canonical_url = canonical_url|urlparams(page=threads.number) %}
 {% endif %}

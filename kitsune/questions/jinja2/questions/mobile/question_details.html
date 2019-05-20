@@ -7,6 +7,12 @@
 {% set headline = title %}
 {% set return_url = url('questions.list', question.product_slug) %}
 
+{% set canonical_url = canonicalize(model_url=question.get_absolute_url()) %}
+
+{% if robots_noindex %}
+  {% set meta = (('robots', 'noindex'),) %}
+{% endif %}
+
 {% block content %}
   <section class="collapsable {% if not answers %}expanded{% endif %}" id="question">
     <article class="user-bar">

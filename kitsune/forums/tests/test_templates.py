@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 
 from nose.tools import eq_
@@ -73,7 +74,7 @@ class PostsTemplateTests(ForumTestCase):
         response = get(self.client, 'forums.posts', args=[t.forum.slug, t.id],
                        locale='fr')
         eq_(200, response.status_code)
-        eq_('/forums/{f}/{t}'.format(f=t.forum.slug, t=t.id),
+        eq_('{c}/fr/forums/{f}/{t}'.format(c=settings.CANONICAL_URL, f=t.forum.slug, t=t.id),
             pq(response.content)('link[rel="canonical"]')[0].attrib['href'])
 
     def test_long_title_truncated_in_crumbs(self):
@@ -297,7 +298,7 @@ class ThreadsTemplateTests(ForumTestCase):
         f = ForumFactory()
 
         response = get(self.client, 'forums.threads', args=[f.slug])
-        eq_('/forums/%s' % f.slug,
+        eq_('%s/en-US/forums/%s' % (settings.CANONICAL_URL, f.slug),
             pq(response.content)('link[rel="canonical"]')[0].attrib['href'])
 
     def test_show_new_thread(self):
@@ -350,7 +351,7 @@ class ForumsTemplateTests(ForumTestCase):
 
     def test_canonical_url(self):
         response = get(self.client, 'forums.forums')
-        eq_('/forums',
+        eq_('{}/en-US/forums'.format(settings.CANONICAL_URL),
             pq(response.content)('link[rel="canonical"]')[0].attrib['href'])
 
     def test_display_order(self):

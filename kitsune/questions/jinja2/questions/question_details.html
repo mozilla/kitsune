@@ -17,7 +17,7 @@
                  (url('questions.list', question.product_slug), product_title),
                  (None, question.title)] %}
 
-{% set canonical_url = unlocalized_url('questions.details', question.id) %}
+{% set canonical_url = canonicalize(model_url=question.get_absolute_url()) %}
 
 {% if answers.number > 1 %}
   {% set canonical_url = canonical_url|urlparams(page=answers.number) %}

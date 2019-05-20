@@ -7,6 +7,8 @@
 {% set scripts = ('mobile-products',) %}
 {% set return_url = url('products') %}
 
+{% set canonical_url = canonicalize(model_url=product.get_absolute_url()) %}
+
 {% block title %}{{ _('{product} Help')|fe(product=pgettext('DB: products.Product.title', product.title)) }}{% endblock %}
 
 {% block after_header %}
