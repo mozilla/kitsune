@@ -53,6 +53,23 @@
     margin-right: 14px;
     margin-left: 20px;
   }
+
+  .help-topics .card-grid > li > a {
+    padding: 0 20px 0 80px;
+
+    &:hover:after {
+      right:auto;
+      left: 14px;
+      justify-content: flex-end;
+    }
+  }
+
+  @media screen and (min-width: 960px) {
+    .help-topics-subhead .firefox-download-button {
+      float: left;
+      padding-right: 10px;
+    }
+  }
 }
 
 .help-topics-subhead {
@@ -134,6 +151,7 @@
       min-height: 80px;
       padding: 0;
       width: 100%;
+      box-sizing: border-box;
 
       @media screen and (min-width: 767px) {
         width: 45%;
@@ -166,13 +184,16 @@
           &:after {
             position: absolute;
             display: inline-flex;
+            justify-content: flex-end;
             align-items: center;
             top: 0;
             right: 14px;
+            width: 80px;
             font-size: 12px;
             bottom: 0;
             content: attr(data-on-hover) " ›";
             color: #000;
+
           }
         }
 
@@ -276,7 +297,7 @@
 .support-callouts {
   display: flex;
   flex-wrap: wrap;
-  justify-content: space-between;
+  justify-content: center;
   margin-bottom: 1em;
 
 }
@@ -291,11 +312,10 @@
 
   @media screen and (min-width: 767px) {
     width: ~"calc(50% - 72px)";
-    margin-right: 10px;
+    margin-left: 0;
 
     & + & {
-      margin-right: 0;
-      margin-left: 10px;
+      margin-left: 20px;
     }
   }
 
