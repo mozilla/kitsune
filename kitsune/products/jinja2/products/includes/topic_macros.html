@@ -14,30 +14,37 @@
   {% endfor %}
 
   <section class="support-callouts">
+    {% set listed_product=product.slug|capitalize %}
 
     {% if show_community_support %}
-    <div class="support-callout community-support pos-rel">
-      <figure class="feature-icon-box">
-        <img src="{{ STATIC_URL }}sumo/img/icon.get-community-support.png" class="topic-icon" alt="Ask the Community icon" />
-      </figure>
-      <div class="support-callout-details">
-        <h3 class="support-callout-title"><span class="highlight">{{ _('Ask the Community') }}</span></h3>
-        <p class="support-callout-desc">{{ _('Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec mi urna, vulputate.') }}</p>
-        <a class="support-callout-button expand-this-link" href="{{ url('wiki.document', 'get-community-support') }}" data-event-category="link click" data-event-action="topic" data-event-label="Get community support">{{ _('Ask a Question') }}</a>
+      <div class="support-callout community-support pos-rel">
+        <figure class="feature-icon-box">
+          <img src="{{ STATIC_URL }}sumo/img/icon.get-community-support.png" class="topic-icon" alt="Ask the Community icon" />
+        </figure>
+        <div class="support-callout-details">
+          <h3 class="support-callout-title"><span class="highlight">{{ _('Ask the Community') }}</span></h3>
+          <p class="support-callout-desc">{{ _('Our support forums are a great place to ask a question, learn and discover new ways to use {}.'.format(listed_product)) }}</p>
+          <a class="support-callout-button expand-this-link"
+            href="{{ url('wiki.document', 'get-community-support') }}"
+            data-event-category="link click"
+            data-event-action="topic"
+            data-event-label="Get community support">{{ _('Ask a Question') }}
+          </a>
+        </div>
       </div>
-    </div>
+    {% endif %}
 
-    {# TODO: Please check if this needs a different conditional. #}
-    <div class="support-callout community-support pos-rel">
-      <figure class="feature-icon-box">
-        {% include "includes/icons/icon-airplane.svg" %}
-      </figure>
-      <div class="support-callout-details">
-        <h3 class="support-callout-title"><span class="highlight">{{ _('Contact Us') }}</span></h3>
-        <p class="support-callout-desc">{{ _('Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec mi urna, vulputate.') }}</p>
-        <a class="support-callout-button expand-this-link" href="#TODO" data-event-category="link click" data-event-action="topic" data-event-label="Get community support">{{ _('Ask a Question') }}</a>
+    {% if show_contact_form %}
+      <div class="support-callout community-support pos-rel">
+        <figure class="feature-icon-box">
+          {% include "includes/icons/icon-airplane.svg" %}
+        </figure>
+        <div class="support-callout-details">
+          <h3 class="support-callout-title"><span class="highlight">{{ _('Contact Us') }}</span></h3>
+          <p class="support-callout-desc">{{ _('Contact the Support Team for help.') }}</p>
+          <a class="support-callout-button expand-this-link" href="#TODO" data-event-category="link click" data-event-action="topic" data-event-label="Contact Support">{{ _('Ask a Question') }}</a>
+        </div>
       </div>
-    </div>
     {% endif %}
   </section>
 {%- endmacro %}
