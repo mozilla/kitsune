@@ -7,6 +7,7 @@ from django.contrib.auth.backends import ModelBackend
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse as django_reverse
+from django.db import transaction
 from django.utils.translation import ugettext as _
 
 from mozilla_django_oidc.auth import OIDCAuthenticationBackend
@@ -166,6 +167,9 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
         fxa_uid = claims.get('uid')
         email = claims.get('email')
 
+        user_attr_changed = False
+        profile_attr_changed = False
+
         if not profile.is_fxa_migrated:
             # Check if there is already a Firefox Account with this ID
             if Profile.objects.filter(fxa_uid=fxa_uid).exists():
@@ -176,6 +180,7 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
             # If it's not migrated, we can assume that there isn't an FxA id too
             profile.is_fxa_migrated = True
             profile.fxa_uid = fxa_uid
+            profile_attr_changed = True
             # This is the first time an existing user is using FxA. Redirect to profile edit
             # in case the user wants to update any settings.
             self.request.session['oidc_login_next'] = reverse('users.edit_my_profile')
@@ -189,16 +194,22 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
                 messages.error(self.request, msg)
                 return None
             user.email = email
-            user.save()
+            user_attr_changed = True
 
         if not profile.avatar:
             # Best effort to get an avatar from FxA
             profile.avatar = claims.get('avatar', '')
+            profile_attr_changed = True
 
         if not profile.name:
             profile.name = claims.get('displayName', '')
+            profile_attr_changed = True
 
-        profile.save()
+        with transaction.atomic():
+            if user_attr_changed:
+                user.save()
+            if profile_attr_changed:
+                profile.save()
         return user
 
     def authenticate(self, request, **kwargs):
