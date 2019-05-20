@@ -1837,6 +1837,8 @@ input[type="submit"]{
 
 .simple-search-form {
   position: relative;
+  display: flex;
+  margin-bottom: 10px;
 
   .submit-button {
     background: url('../img/search-icon.png') 0 0 no-repeat;
@@ -1850,14 +1852,18 @@ input[type="submit"]{
     width: 17px;
   }
 
+  .btn {
+    white-space: nowrap;
+  }
+
   .searchbox {
     background: #fff;
     border: 2px solid #cbcbcb;
     border-radius: 30px;
     color: #000;
     font-size: 14px;
-    height: 18px;
     padding: 6px 42px 6px 20px;
+    margin-right: 10px;
 
     &:focus {
       outline: none;
