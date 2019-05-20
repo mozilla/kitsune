@@ -18,7 +18,7 @@
       <p class="mb-0"><strong>{{ user.email }}</strong></p>
       <p class="helptext">
         {{ _('You can change your email address on Firefox Accounts.') }}
-        <a href="#TODO">{{ _('Need help?') }}</a>
+        <a href="https://support.mozilla.org/en-US/kb/change-primary-email-address-firefox-accounts">{{ _('Need help?') }}</a>
       </p>
       <hr class="section-break"/>
       {% endif %}
@@ -182,7 +182,17 @@
 
       <div class="pm-or-signout">
         {% if profile.user == user %}
-          <a class="button dark" href="{{ url('users.logout') }}">{{ _('Sign Out') }}</a>
+          <form id="sign-out" action="{{ url('users.logout') }}" method="post">
+            {% csrf_token %}
+          </form>
+          <a
+            class="button dark"
+            data-type="submit"
+            data-form="sign-out"
+            href="#sign-out"
+            data-event-label="Sign Out">
+            {{ _('Sign Out') }}
+          </a>
         {% else %}
           {{ private_message(profile.user) }}
         {% endif %}

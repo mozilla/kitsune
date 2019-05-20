@@ -49,6 +49,7 @@ def product_landing(request, template, slug):
         'topics': topics_for(product=product, parent=None),
         'search_params': {'product': slug},
         'latest_version': latest_version,
+        'show_contact_form': False
     })
 
 

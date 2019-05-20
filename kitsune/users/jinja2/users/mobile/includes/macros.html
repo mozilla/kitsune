@@ -17,7 +17,7 @@
     </fieldset>
     <div class="submit">
       <button type="submit" data-type="submit" data-name="login" class="btn btn-submit" data-progress="{{ _('Signing in...') }}" data-done="{{ _('Signed in!') }}" data-reset="{{ _('Sign in') }}">{{ _('Sign in') }}</button>
-      <a class="btn" href="{{ url('users.register') }}">{{ _("Don't have an account? Register") }} </a>
+      <a class="btn" href="{{ url('users.fxa_authentication_init') }}">{{ _("Don't have an account? Register") }} </a>
     </div>
     <ul class="login-help">
       <li><a href="{{ url('users.pw_reset') }}">{{ _("My password isn't working.") }}</a></li>
@@ -27,20 +27,3 @@
   </form>
 {%- endmacro %}
 
-{% macro register_form(form, action=None, contributor=False) -%}
-  <form method="post" action="{{ action if action != None else
-                                   url('users.register') }}">
-    {{ errorlist(form) }}
-    {% csrf_token %}
-    <input type="hidden" name="interested" id="id_for_interested" value="{{ 'yes' if contributor else 'no' }}">
-    <fieldset>
-      {% for field in form if field.name != 'interested' %}
-        <div>{{ field|label_with_help }}{{ field }}</div>
-      {% endfor %}
-    </fieldset>
-    <div class="submit">
-      <button type="submit" data-type="submit" data-name="register" class="btn btn-submit">{{ _('Create a new support account') }}</button>
-      <a class="btn" href="{{ url('users.login') }}">{{ _('Already have an account? Sign in') }}</a>
-    </div>
-  </form>
-{%- endmacro %}
