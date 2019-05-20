@@ -220,10 +220,9 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
     def authenticate(self, request, **kwargs):
         """Authenticate a user based on the OIDC/oauth2 code flow."""
 
-        # If the request has the /oidc/callback/ path then probably there is a login
-        # attempt in the admin interface. In this case just return None and let
-        # the OIDC backend handle this request.
-        if request and request.path == django_reverse('oidc_authentication_callback'):
+        # If the request is not targeting the FxA backend then return None
+        # and let the rest of the Django auth backends handle the request
+        if request and not request.path == django_reverse('users.fxa_authentication_callback'):
             return None
 
         return super(FXAAuthBackend, self).authenticate(request, **kwargs)
