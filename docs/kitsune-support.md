@@ -5,7 +5,7 @@
 High level:
 
 - [SUMO Infra home](https://github.com/mozilla-it/sumo-infra)
-- [Deploying SUMO](https://github.com/mozilla-it/kitsune/tree/master/k8s#deploying-sumo)
+- [Deploying SUMO](https://github.com/mozilla/kitsune/tree/master/k8s#deploying-sumo)
 - [MozMEAO escalation path](https://mana.mozilla.org/wiki/pages/viewpage.action?pageId=50267455)
 
 - [Architecture diagram](https://raw.githubusercontent.com/mozilla/kitsune/master/docs/SUMO%20architecture%202018.png)
@@ -15,7 +15,7 @@ High level:
 Tech details:
 
 - [SUMO K8s deployments/services/secrets templates](https://github.com/mozilla/kitsune/tree/master/k8s/)
-- [SUMO AWS resource definitions](https://github.com/mozilla-it/sumo-infra/tree/master/k8s/tf)
+- [SUMO AWS resource definitions](https://github.com/mozilla/sumo-infra/tree/master/k8s/tf)
 
 
 
