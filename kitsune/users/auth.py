@@ -120,12 +120,12 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
         user = super(FXAAuthBackend, self).create_user(claims)
         # Create a user profile for the user and populate it with data from
         # Firefox Accounts
-        profile = Profile.objects.get_or_create(user=user)
+        profile, _ = Profile.objects.get_or_create(user=user)
         profile.is_fxa_migrated = True
         profile.fxa_uid = claims.get('uid')
-        profile.avatar = claims.get('avatar')
-        profile.name = claims.get('displayName')
-        profile.locale = claims.get('locale')
+        profile.avatar = claims.get('avatar', '')
+        profile.name = claims.get('displayName', '')
+        profile.locale = claims.get('locale', '')
         profile.save()
 
         # This is a new sumo profile, redirect to the edit profile page
