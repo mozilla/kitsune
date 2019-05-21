@@ -1647,6 +1647,7 @@ input[type="submit"]{
 
     > ul {
       display: block;
+      z-index: 100;
     }
 
     a {
@@ -1657,7 +1658,6 @@ input[type="submit"]{
 
 .html-rtl {
   #aux-nav {
-
     > ul {
       > li {
         padding: 0 20px 0 12px;
@@ -1670,12 +1670,13 @@ input[type="submit"]{
         }
 
         & > ul {
-          left: auto;
-          right: 0;
+          left: -20px;
+          right: auto;
           text-align: right;
 
-          &.double > li {
-            float: right;
+          &:after {
+            right: auto;
+            left: 11px;
           }
         }
       }
@@ -1687,10 +1688,19 @@ input[type="submit"]{
     }
   }
   #aux-nav-right {
-
     > ul {
       > li {
         padding: 0 12px 0 20px;
+
+        &.user-dropdown > ul {
+          left: 24px;
+          right: auto;
+
+          &:after {
+            left: 9px;
+            right: auto;
+          }
+        }
       }
     }
 
@@ -1751,7 +1761,7 @@ input[type="submit"]{
       > li {
         margin: 0 12px 28px;
         width: 30%;
-        width: ~"calc(33% - 24px)";
+        width: ~"calc(33% - 26px)";
       }
     }
   }
@@ -1837,6 +1847,8 @@ input[type="submit"]{
 
 .simple-search-form {
   position: relative;
+  display: flex;
+  margin-bottom: 10px;
 
   .submit-button {
     background: url('../img/search-icon.png') 0 0 no-repeat;
@@ -1850,14 +1862,18 @@ input[type="submit"]{
     width: 17px;
   }
 
+  .btn {
+    white-space: nowrap;
+  }
+
   .searchbox {
     background: #fff;
     border: 2px solid #cbcbcb;
     border-radius: 30px;
     color: #000;
     font-size: 14px;
-    height: 18px;
     padding: 6px 42px 6px 20px;
+    margin-right: 10px;
 
     &:focus {
       outline: none;
@@ -1887,6 +1903,7 @@ input[type="submit"]{
 
     .searchbox {
       padding: 6px 20px 6px 42px;
+      margin: 0 0 0 10px;
     }
   }
 }
@@ -2521,6 +2538,9 @@ input[type="submit"]{
 /* end bug1441583 */
 
 .search-form-large {
+  margin: 0 auto;
+  max-width: 800px;
+
   .simple-search-form {
     display: block;
     float: none;
@@ -2528,10 +2548,6 @@ input[type="submit"]{
     text-align: center;
 
     .searchbox {
-      &::placeholder {
-        color: #000;
-      }
-
       background: #fff;
       border: 2px solid #cbcbcb;
       border-radius: 8px;
@@ -2539,7 +2555,12 @@ input[type="submit"]{
       font-size: 16px;
       height: 60px;
       padding: 0 0 0 20px;
-      width: 97%;
+      width: 100%;
+      box-sizing: border-box;
+
+      &::placeholder {
+        color: #000;
+      }
     }
 
     .submit-button {
@@ -2552,16 +2573,8 @@ input[type="submit"]{
   }
 
   #support-search-product {
-    .searchbox {
-      width: 82%;
-    }
-
-    .submit-button {
-      right: 90px;
-    }
-
     .html-rtl & .submit-button {
-      left: 90px;
+      left: 20px;
       right: auto;
     }
   }
