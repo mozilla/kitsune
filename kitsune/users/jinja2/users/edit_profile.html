@@ -83,17 +83,17 @@
                 {% endif %}
                 </div>
             </li>
-            <li>
-              <label>{{ _('Password:') }}</label>
-              <a href="{{ url('users.pw_change') }}">{{ _('Change') }}</a>
-            </li>
-            <li>
+            {% if not profile.is_fxa_migrated %}
+              <li>
+                <label>{{ _('Password:') }}</label>
+                <a href="{{ url('users.pw_change') }}">{{ _('Change') }}</a>
+              </li>
+              <li>
               <label>{{ _('Email:') }}</label>
               {{ user.email }}
-              {% if not profile.is_fxa_migrated %}
                 <a href="{{ url('users.change_email') }}">{{ _('Change') }}</a>
-              {% endif %}
-            </li>
+              </li>
+            {% endif %}
           {% endif %}
           {{ form.as_ul()|safe }}
         </ul>
