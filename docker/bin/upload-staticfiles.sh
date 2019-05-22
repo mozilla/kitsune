@@ -2,7 +2,7 @@
 
 set -exo pipefail
 
-DOCKER_REPO=${DOCKER_REPO:-mozmeao/kitsune}
+DOCKER_REPO=${DOCKER_REPO:-itsre/sumo-kitsune}
 GIT_COMMIT=${GIT_COMMIT:-latest}
 GIT_COMMIT_SHORT=${GIT_COMMIT_SHORT:-$GIT_COMMIT}
 CONTAINER_NAME="kitsune-static-${GIT_COMMIT}"
@@ -26,14 +26,12 @@ for BUCKET in stage prod; do
     aws s3 sync \
         --acl public-read \
         --cache-control "max-age=315360000, public, immutable" \
-        --profile sumo-media \
-        "./${TMP_DIR_HASHED}" "s3://sumo-${BUCKET}-media/static/"
+        "./${TMP_DIR_HASHED}" "s3://mozit-sumo-${BUCKET}-media/static/"
     # non-hashed-filenames
     aws s3 sync \
         --acl public-read \
         --cache-control "max-age=21600, public" \
-        --profile sumo-media \
-        "./${TMP_DIR}" "s3://sumo-${BUCKET}-media/static/"
+        "./${TMP_DIR}" "s3://mozit-sumo-${BUCKET}-media/static/"
 done
 
 rm -rf "${TMP_DIR}"

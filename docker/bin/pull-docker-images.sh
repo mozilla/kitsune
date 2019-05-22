@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-DOCKER_REPO=${DOCKER_REPO:-mozmeao/kitsune}
+DOCKER_REPO=${DOCKER_REPO:-itsre/sumo-kitsune}
 
 for image in base base-dev staticfiles locales full-no-locales full;
 do

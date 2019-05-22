@@ -1,7 +1,7 @@
 version: '3.4'
 services:
   web:
-    image: mozmeao/kitsune:base-dev-${GIT_COMMIT_SHORT:-latest}
+    image: itsre/sumo-kitsune:base-dev-${GIT_COMMIT_SHORT:-latest}
     command: ./bin/run-dev.sh
     env_file: .env
     volumes:
@@ -15,7 +15,7 @@ services:
       - "8000:8000"
 
   test:
-    image: mozmeao/kitsune:base-dev-${GIT_COMMIT_SHORT:-latest}
+    image: itsre/sumo-kitsune:base-dev-${GIT_COMMIT_SHORT:-latest}
     command: ./bin/run-unit-tests.sh
     env_file: .env-test
     volumes:
@@ -27,7 +27,7 @@ services:
       - redis
 
   test-js:
-    image: mozmeao/kitsune:staticfiles-${GIT_COMMIT_SHORT:-latest}
+    image: itsre/sumo-kitsune:staticfiles-${GIT_COMMIT_SHORT:-latest}
     command: ./bin/run-mocha-tests.sh
     env_file: .env-test
     volumes:
@@ -35,7 +35,7 @@ services:
     user: ${UID:-kitsune}
 
   test-image:
-    image: mozmeao/kitsune:full-no-locales-${GIT_COMMIT_SHORT:-latest}
+    image: itsre/sumo-kitsune:full-no-locales-${GIT_COMMIT_SHORT:-latest}
     command: ./bin/run-unit-tests.sh
     env_file: .env-test
     depends_on:
@@ -44,12 +44,12 @@ services:
       - redis
 
   test-image-js:
-    image: mozmeao/kitsune:staticfiles-${GIT_COMMIT_SHORT:-latest}
+    image: itsre/sumo-kitsune:staticfiles-${GIT_COMMIT_SHORT:-latest}
     command: ./bin/run-mocha-tests.sh
     env_file: .env-test
 
   lint-l10n:
-    image: mozmeao/kitsune:base-${GIT_COMMIT_SHORT:-latest}
+    image: itsre/sumo-kitsune:base-${GIT_COMMIT_SHORT:-latest}
     command: dennis-cmd lint --errorsonly locale
     env_file: .env-test
     volumes:
@@ -62,7 +62,7 @@ services:
       target: base
       args:
         - GIT_SHA
-    image: mozmeao/kitsune:base-${GIT_COMMIT_SHORT:-latest}
+    image: itsre/sumo-kitsune:base-${GIT_COMMIT_SHORT:-latest}
 
   base-dev:
     build:
@@ -70,7 +70,7 @@ services:
       target: base-dev
       args:
         - GIT_SHA
-    image: mozmeao/kitsune:base-dev-${GIT_COMMIT_SHORT:-latest}
+    image: itsre/sumo-kitsune:base-dev-${GIT_COMMIT_SHORT:-latest}
 
   staticfiles:
     build:
@@ -78,7 +78,7 @@ services:
       target: staticfiles
       args:
         - GIT_SHA
-    image: mozmeao/kitsune:staticfiles-${GIT_COMMIT_SHORT:-latest}
+    image: itsre/sumo-kitsune:staticfiles-${GIT_COMMIT_SHORT:-latest}
 
   locales:
     build:
@@ -87,7 +87,7 @@ services:
       args:
         - GIT_SHA
         - LOCALE_ENV
-    image: mozmeao/kitsune:locales-${GIT_COMMIT_SHORT:-latest}
+    image: itsre/sumo-kitsune:locales-${GIT_COMMIT_SHORT:-latest}
 
   full-no-locales:
     build:
@@ -96,7 +96,7 @@ services:
       args:
         - GIT_SHA
         - LOCALE_ENV
-    image: mozmeao/kitsune:full-no-locales-${GIT_COMMIT_SHORT:-latest}
+    image: itsre/sumo-kitsune:full-no-locales-${GIT_COMMIT_SHORT:-latest}
 
   full:
     build:
@@ -105,7 +105,7 @@ services:
       args:
         - GIT_SHA
         - LOCALE_ENV
-    image: mozmeao/kitsune:full-${GIT_COMMIT_SHORT:-latest}
+    image: itsre/sumo-kitsune:full-${GIT_COMMIT_SHORT:-latest}
 
   # EXTERNAL SERVICES
   mariadb:
