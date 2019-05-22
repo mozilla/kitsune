@@ -332,6 +332,9 @@ def profile(request, username):
 def close_account(request):
     # Clear the profile
     profile = get_object_or_404(Profile, user__id=request.user.id)
+    # reset FxA related data
+    profile.is_fxa_migrated = False
+    profile.fxa_uid = ''
     profile.clear()
     profile.save()
 
@@ -664,6 +667,8 @@ def password_reset_complete(request, template):
 @mobile_template('users/{mobile/}pw_change.html')
 def password_change(request, template):
     """Change password form page."""
+    if request.user.profile.is_fxa_migrated:
+        raise Http404
     if request.method == 'POST':
         form = PasswordChangeForm(user=request.user, data=request.POST)
         if form.is_valid():
