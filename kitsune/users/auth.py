@@ -169,7 +169,6 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
         email = claims.get('email')
 
         user_attr_changed = False
-        profile_attr_changed = False
 
         if not profile.is_fxa_migrated:
             # Check if there is already a Firefox Account with this ID
@@ -181,7 +180,6 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
             # If it's not migrated, we can assume that there isn't an FxA id too
             profile.is_fxa_migrated = True
             profile.fxa_uid = fxa_uid
-            profile_attr_changed = True
             # This is the first time an existing user is using FxA. Redirect to profile edit
             # in case the user wants to update any settings.
             self.request.session['oidc_login_next'] = reverse('users.edit_my_profile')
@@ -197,20 +195,18 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
             user.email = email
             user_attr_changed = True
 
-        if not profile.avatar:
-            # Best effort to get an avatar from FxA
-            profile.avatar = claims.get('avatar', '')
-            profile_attr_changed = True
+        # Follow avatars and locales from FxA profiles
+        profile.fxa_avatar = claims.get('avatar', '')
+        profile.locale = claims.get('locale', '')
 
+        # Users can select their own display name.
         if not profile.name:
             profile.name = claims.get('displayName', '')
-            profile_attr_changed = True
 
         with transaction.atomic():
             if user_attr_changed:
                 user.save()
-            if profile_attr_changed:
-                profile.save()
+            profile.save()
         return user
 
     def authenticate(self, request, **kwargs):

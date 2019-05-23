@@ -332,9 +332,6 @@ def profile(request, username):
 def close_account(request):
     # Clear the profile
     profile = get_object_or_404(Profile, user__id=request.user.id)
-    # reset FxA related data
-    profile.is_fxa_migrated = False
-    profile.fxa_uid = ''
     profile.clear()
     profile.save()
 
@@ -514,6 +511,9 @@ def edit_avatar(request):
         # a profile. We can remove this fallback.
         user_profile = Profile.objects.create(user=request.user)
 
+    if user_profile.is_fxa_migrated:
+        raise Http404
+
     if request.method == 'POST':
         # Upload new avatar and replace old one.
         old_avatar_path = None
@@ -553,6 +553,9 @@ def delete_avatar(request):
         # TODO: Once we do user profile migrations, all users should have a
         # a profile. We can remove this fallback.
         user_profile = Profile.objects.create(user=request.user)
+
+    if user_profile.is_fxa_migrated:
+        raise Http404
 
     if request.method == 'POST':
         # Delete avatar here
