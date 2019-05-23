@@ -148,6 +148,7 @@ class ProfileForm(forms.ModelForm):
         return facebook
 
 
+# This is used in groups/forms.py
 class AvatarForm(forms.ModelForm):
     """The form for editing the user's avatar."""
     avatar = LimitedImageField(required=True, widget=ImageWidget)
