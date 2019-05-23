@@ -37,8 +37,12 @@ def profile_avatar(user, size=48):
     except (Profile.DoesNotExist, AttributeError):
         avatar = settings.STATIC_URL + settings.DEFAULT_AVATAR
     else:
-        avatar = (profile.avatar.url if profile and profile.avatar else
-                  settings.STATIC_URL + settings.DEFAULT_AVATAR)
+        if profile.is_fxa_migrated:
+            avatar = profile.fxa_avatar
+        elif profile.avatar:
+            avatar = profile.avatar.url
+        else:
+            avatar = settings.STATIC_URL + settings.DEFAULT_AVATAR
 
     if avatar.startswith('//'):
         avatar = 'https:%s' % avatar
@@ -52,7 +56,9 @@ def profile_avatar(user, size=48):
 
     # If the url doesn't start with http (local dev), don't pass it to
     # to gravatar because it can't use it.
-    if avatar.startswith('http'):
+    if avatar.startswith('https') and profile.is_fxa_migrated:
+        url = avatar
+    elif avatar.startswith('http'):
         url = url + '&d=%s' % urllib.quote(avatar)
 
     return url
