@@ -85,6 +85,7 @@ class Profile(ModelBase, SearchMixin):
                                                           u'health survey'))
     is_fxa_migrated = models.BooleanField(default=False)
     fxa_uid = models.CharField(blank=True, null=True, unique=True, max_length=128)
+    fxa_avatar = models.URLField(max_length=512, blank=True, default='')
 
     class Meta(object):
         permissions = (('view_karma_points', 'Can view karma points'),
@@ -112,6 +113,8 @@ class Profile(ModelBase, SearchMixin):
         self.mozillians = ''
         self.irc_handle = ''
         self.city = ''
+        self.is_fxa_migrated = False
+        self.fxa_uid = ''
 
     @property
     def display_name(self):
