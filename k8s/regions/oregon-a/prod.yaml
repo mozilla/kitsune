@@ -98,7 +98,7 @@ app:
     email_use_tls: True
     enable_admin: True
     enable_whitenoise: True
-    enforce_host: support.mozilla.org,prod-oregon-a.sumo.mozit.cloud
+    enforce_host: "prod-tp.sumo.mozit.cloud,prod-oregon-a.sumo.mozit.cloud,support.mozilla.org"
     engage_robots: True
     es_index_prefix: "sumo_prod"
     es_http_auth: SECRET
