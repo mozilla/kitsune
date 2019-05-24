@@ -99,7 +99,7 @@ CACHE_MIDDLEWARE_SECONDS = config('CACHE_MIDDLEWARE_SECONDS',
                                   cast=int)
 
 # Setting this to the Waffle version.
-WAFFLE_CACHE_PREFIX = 'w0.7.7a:'
+WAFFLE_CACHE_PREFIX = 'w0.11:'
 
 # Addresses email comes from
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='notifications@support.mozilla.org')
@@ -655,7 +655,6 @@ INSTALLED_APPS = (
     'kitsune.search',
     'kitsune.forums',
     'djcelery',
-    'cronjobs',
     'tidings',
     'rest_framework.authtoken',
     'kitsune.questions',
@@ -791,6 +790,11 @@ PIPELINE = {
 
     'BROWSERIFY_BINARY': path('node_modules/.bin/browserify'),
     'BROWSERIFY_ARGUMENTS': '-t babelify -t debowerify',
+    'PIPELINE_COLLECTOR_ENABLED': config(
+        'PIPELINE_COLLECTOR_ENABLED',
+        default=not DEBUG,
+        cast=bool,
+    ),
 }
 
 if DEBUG:
@@ -870,7 +874,6 @@ AWS_S3_OBJECT_PARAMETERS = {
 LOGIN_URL = '/users/login'
 LOGOUT_URL = '/users/logout'
 LOGIN_REDIRECT_URL = "/"
-LOGOUT_REDIRECT_URL = "/"
 REGISTER_URL = '/users/register'
 
 # Video settings, hard coded here for now.
@@ -1197,3 +1200,6 @@ BADGE_PAGE_SIZE = config('BADGE_PAGE_SIZE', default=50, cast=int)
 
 # fxa banner test
 FXA_BANNER_LANGUAGES = config('FXA_BANNER_LANGUAGES', default='en-US', cast=Csv())
+
+# The canonical, production URL without a trailing slash
+CANONICAL_URL = 'https://support.mozilla.org'

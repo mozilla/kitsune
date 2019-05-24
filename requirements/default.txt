@@ -137,8 +137,6 @@ django-celery==3.2.2 \
 django-cors-headers==2.4.0 \
     --hash=sha256:5545009c9b233ea7e70da7dbab7cb1c12afa01279895086f98ec243d7eab46fa \
     --hash=sha256:c4c2ee97139d18541a1be7d96fe337d1694623816d83f53cb7c00da9b94acae1
-django-cronjobs==0.2.3 \
-    --hash=sha256:177295b1442400c92cdb67e8e18f9ff5946fb442f85813b9d0837823722ea08d
 https://github.com/mozilla/django-csp/archive/5c5f5a6b55fb78e99db939c79f0f0d8003a62c98.tar.gz#egg=django-csp \
     --hash=sha256:d6ed80738b07d60d2e985ccc284448e7dbd7c41682dc4cf65734d0da576f700e
 django-filter==1.1.0 \
@@ -356,14 +354,14 @@ django-cache-url==2.0.0 \
 asn1crypto==0.23.0 \
     --hash=sha256:654b7db3b120e23474e9a1e5e38d268c77e58a9e17d2cb595456c37309846494 \
     --hash=sha256:0874981329cfebb366d6584c3d16e913f2a0eb026c9463efcc4aaf42a9d94d70
-django-redis==4.8.0 \
-    --hash=sha256:5229da5b07ccb8d3e3e9ee098c0b7c03e20eba48634bc456697dd73d62c68b19 \
-    --hash=sha256:9660332cf9de5689a7ebbe0c623c4a0de79e0916a6ae867b5d0b94759bba46c9
+django-redis==4.10.0 \
+    --hash=sha256:af0b393864e91228dd30d8c85b5c44d670b5524cb161b7f9e41acc98b6e5ace7 \
+    --hash=sha256:f46115577063d00a890867c6964ba096057f07cb756e78e0503b89cd18e4e083
 redis==2.10.6 \
     --hash=sha256:8a1900a9f2a0a44ecf6e8b5eb3e967a9909dfed219ad66df094f27f7d6f330fb \
     --hash=sha256:a22ca993cea2962dbb588f9f30d0015ac4afcc45bee27d3978c0dbe9e97c6c0f
-newrelic==4.4.1.104 \
-    --hash=sha256:eb60752a2c2a9904ea1eaf6b25dfbe8181e02fca9c11f895c13469057971b343
+newrelic==4.18.0.118 \
+    --hash=sha256:3cd496022c6906ee3cdbf27c67ec3e03922830bfebbca4549ef6f2e58cf719e2
 meinheld==0.6.1 \
     --hash=sha256:40d9dbce0165b2d9142f364d26fd6d59d3682f89d0dfe2117717a8ddad1f4133 \
     --hash=sha256:293eff4983b7fcbd9134b47706b22189883fe354993bd10163c65869d141e565

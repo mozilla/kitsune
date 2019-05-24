@@ -8,6 +8,8 @@
 
 {% set meta = (('robots', 'noindex'),) %}
 
+{% set canonical_url = canonicalize(viewname='questions.home') %}
+
 {% block content %}
   <div class="grid_12">
     <h1>{{ title }}</h1>

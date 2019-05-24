@@ -10,22 +10,22 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument(
-            '--percent', type='int', dest='percent', default=100,
+            '--percent', type=int, dest='percent', default=100,
             help='Reindex a percentage of things')
         parser.add_argument(
             '--delete', action='store_true', dest='delete',
             help='Wipes index before reindexing')
         parser.add_argument(
-            '--hours-ago', type='int', dest='hours_ago', default=0,
+            '--hours-ago', type=int, dest='hours_ago', default=0,
             help='Reindex things updated N hours ago')
         parser.add_argument(
-            '--minutes-ago', type='int', dest='minutes_ago', default=0,
+            '--minutes-ago', type=int, dest='minutes_ago', default=0,
             help='Reindex things updated N minutes ago')
         parser.add_argument(
-            '--seconds-ago', type='int', dest='seconds_ago', default=0,
+            '--seconds-ago', type=int, dest='seconds_ago', default=0,
             help='Reindex things updated N seconds ago')
         parser.add_argument(
-            '--mapping_types', type='string', dest='mapping_types',
+            '--mapping_types', dest='mapping_types',
             default=None,
             help='Comma-separated list of mapping types to index')
         parser.add_argument(

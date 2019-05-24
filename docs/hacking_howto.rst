@@ -374,7 +374,6 @@ some additional bits.
 See the following chapters for installing those additional bits:
 
 * Redis: :ref:`redis-chapter`
-* RabbitMQ: :ref:`celery-chapter`
 * Elastic Search: :ref:`search-chapter`
 * Email: :ref:`email-chapter`
 

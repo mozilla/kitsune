@@ -11,8 +11,10 @@
 {% set title = headline + ' | ' + _('{product} Help')|f(product=pgettext('DB: products.Product.title', product.title)) %}
 {% if subtopic %}
   {% set return_url = url('products.documents', product_slug=product.slug, topic_slug=topic.slug) %}
+  {% set canonical_url = canonicalize(model_url=subtopic.get_absolute_url()) %}
 {% else %}
   {% set return_url = url('products.product', slug=product.slug) %}
+  {% set canonical_url = canonicalize(model_url=topic.get_absolute_url()) %}
 {% endif %}
 
 {% block after_header %}

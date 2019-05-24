@@ -5,6 +5,18 @@
 - Python 3
 - Connectivity to SUMO Kubernetes cluster(s)
 
+## Release convention
+
+* Releases to the development environment can happen either from the master or from a feature branch.
+* Releases to the stage environment happen from the master branch.
+* Releases to the production environment happen from the master branch after successful QA testing in the stage environment.
+
+```
+Because there might be need to deploy while testing merged changes in master,
+deployments to production and stage may happen from the production branch.
+The production branch maintains an image that can be released in production without further validation.
+```
+
 ## Deploying SUMO
 
 #### Setup
@@ -153,7 +165,7 @@ Available tasks:
 
 ##### kubectl client version note
 
->All Kubernetes clusters that serve SUMO are currently v1.8.xx
+>All Kubernetes clusters that serve SUMO are currently v1.10.xx
 
 When connecting to an older K8s cluster, you may need to download an older version of Kubectl that matches the version of the server.
 

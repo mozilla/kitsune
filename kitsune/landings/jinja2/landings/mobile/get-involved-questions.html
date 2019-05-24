@@ -5,6 +5,8 @@
 
 {% set styles = ('mobile-landings-get-involved',) %}
 
+{% set canonical_url = canonicalize(viewname='landings.get_involved_questions') %}
+
 {% block content %}
   <div class="padded">
     <h3>{{ _('Answer questions in the forum') }}</h3>

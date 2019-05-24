@@ -1,6 +1,7 @@
 {% extends "questions/base.html" %}
 {% set title = _('Ask a Question about Marketplace') %}
 {% set classes = 'new-question marketplace' %}
+{% set canonical_url = canonicalize(viewname='questions.marketplace_aaq') %}
 
 {% block content %}
   <article class="main">

@@ -9,7 +9,7 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument(
-            '--pages', type='int', dest='pages', default=1,
+            '--pages', type=int, dest='pages', default=1,
             help='Number of pages of results you want to see')
 
     def handle(self, *args, **options):

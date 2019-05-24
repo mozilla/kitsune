@@ -1,8 +1,8 @@
+from django.core.management import call_command
 from nose.tools import eq_
 
 from kitsune.questions.models import Question, QuestionMappingType
-from kitsune.questions.tests import TestCaseBase, QuestionFactory, QuestionVoteFactory
-from kitsune.questions.cron import update_weekly_votes
+from kitsune.questions.tests import QuestionFactory, QuestionVoteFactory, TestCaseBase
 from kitsune.search.tests.test_es import ElasticTestCase
 
 
@@ -27,7 +27,7 @@ class TestVotes(TestCaseBase):
         q.num_votes_past_week = 0
         q.save()
 
-        update_weekly_votes()
+        call_command('update_weekly_votes')
 
         q = Question.objects.get(pk=q.pk)
         eq_(1, q.num_votes_past_week)
@@ -51,7 +51,7 @@ class TestVotesWithElasticSearch(ElasticTestCase):
         q.num_votes_past_week = 0
         q.save()
 
-        update_weekly_votes()
+        call_command('update_weekly_votes')
         self.refresh()
 
         q = Question.objects.get(pk=q.pk)
