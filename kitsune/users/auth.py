@@ -123,7 +123,7 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
         profile, _ = Profile.objects.get_or_create(user=user)
         profile.is_fxa_migrated = True
         profile.fxa_uid = claims.get('uid')
-        profile.avatar = claims.get('avatar', '')
+        profile.fxa_avatar = claims.get('avatar', '')
         profile.name = claims.get('displayName', '')
         profile.locale = claims.get('locale', '')
         profile.save()
