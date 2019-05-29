@@ -19,6 +19,7 @@ from bundles import PIPELINE_CSS, PIPELINE_JS
 from kitsune.lib.sumo_locales import LOCALES
 
 DEBUG = config('DEBUG', default=False, cast=bool)
+DEV = config('DEV', default=False, cast=bool)
 STAGE = config('STAGE', default=False, cast=bool)
 
 # TODO
@@ -570,7 +571,10 @@ WATCHMAN_CHECKS = (
 
 # Auth
 AUTHENTICATION_BACKENDS = (
+    'kitsune.users.auth.SumoOIDCAuthBackend',
     # ``ModelBackendAllowInactive`` replaces ``django.contrib.auth.backends.ModelBackend``.
+    'kitsune.users.auth.FXAAuthBackend',
+    # This backend is used for the /admin interface
     'kitsune.users.auth.ModelBackendAllowInactive',
     'kitsune.users.auth.TokenLoginBackend',
 )
@@ -579,16 +583,35 @@ if READ_ONLY:
     OIDC_ENABLE = False
     ENABLE_ADMIN = False
 else:
-    OIDC_ENABLE = config('OIDC_ENABLE', default=False, cast=bool)
+    OIDC_ENABLE = config('OIDC_ENABLE', default=True, cast=bool)
     ENABLE_ADMIN = config('ENABLE_ADMIN', default=OIDC_ENABLE, cast=bool)
+
+    # Username algo for the oidc lib
+    def _username_algo(email):
+        """Provide a default username for the user."""
+        from kitsune.users.utils import suggest_username
+        return suggest_username(email)
+
     if OIDC_ENABLE:
-        AUTHENTICATION_BACKENDS += ('mozilla_django_oidc.auth.OIDCAuthenticationBackend',)
-        OIDC_OP_AUTHORIZATION_ENDPOINT = config('OIDC_OP_AUTHORIZATION_ENDPOINT')
-        OIDC_OP_TOKEN_ENDPOINT = config('OIDC_OP_TOKEN_ENDPOINT')
-        OIDC_OP_USER_ENDPOINT = config('OIDC_OP_USER_ENDPOINT')
-        OIDC_RP_CLIENT_ID = config('OIDC_RP_CLIENT_ID')
-        OIDC_RP_CLIENT_SECRET = config('OIDC_RP_CLIENT_SECRET')
+        OIDC_OP_AUTHORIZATION_ENDPOINT = config('OIDC_OP_AUTHORIZATION_ENDPOINT', default='')
+        OIDC_OP_TOKEN_ENDPOINT = config('OIDC_OP_TOKEN_ENDPOINT', default='')
+        OIDC_OP_USER_ENDPOINT = config('OIDC_OP_USER_ENDPOINT', default='')
+        OIDC_RP_CLIENT_ID = config('OIDC_RP_CLIENT_ID', default='')
+        OIDC_RP_CLIENT_SECRET = config('OIDC_RP_CLIENT_SECRET', default='')
         OIDC_CREATE_USER = config('OIDC_CREATE_USER', default=False, cast=bool)
+        # Firefox Accounts configuration
+        FXA_OP_TOKEN_ENDPOINT = config('FXA_OP_TOKEN_ENDPOINT', default='')
+        FXA_OP_AUTHORIZATION_ENDPOINT = config('FXA_OP_AUTHORIZATION_ENDPOINT', default='')
+        FXA_OP_USER_ENDPOINT = config('FXA_OP_USER_ENDPOINT', default='')
+        FXA_OP_JWKS_ENDPOINT = config('FXA_OP_JWKS_ENDPOINT', default='')
+        FXA_RP_CLIENT_ID = config('FXA_RP_CLIENT_ID', default='')
+        FXA_RP_CLIENT_SECRET = config('FXA_RP_CLIENT_SECRET', default='')
+        FXA_CREATE_USER = config('FXA_CREATE_USER', default=True, cast=bool)
+        FXA_RP_SCOPES = config('FXA_RP_SCOPES', default='openid email profile')
+        FXA_RP_SIGN_ALGO = config('FXA_RP_SIGN_ALGO', default='RS256')
+        FXA_USE_NONCE = config('FXA_USE_NONCE', False)
+        FXA_LOGOUT_REDIRECT_URL = config('FXA_LOGOUT_REDIRECT_URL', '/')
+        FXA_USERNAME_ALGO = config('FXA_USERNAME_ALGO', default=_username_algo)
 
 ADMIN_REDIRECT_URL = config('ADMIN_REDIRECT_URL', default=None)
 

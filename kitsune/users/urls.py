@@ -1,5 +1,6 @@
-from django.conf.urls import url, include
-
+from django.conf import settings
+from django.conf.urls import include, url
+from mozilla_django_oidc.views import OIDCAuthenticationCallbackView
 import kitsune.flagit.views
 from kitsune.sumo.views import redirect_to
 from kitsune.users import api, views
@@ -22,14 +23,9 @@ detail_patterns = [
 
 users_patterns = [
     url(r'^/auth$', views.user_auth, name='users.auth'),
-    url(r'^/authcontributor$', views.user_auth, {'contributor': True},
-        name='users.auth_contributor'),
 
     url(r'^/login$', views.login, name='users.login'),
     url(r'^/logout$', views.logout, name='users.logout'),
-    url(r'^/register$', views.register, name='users.register'),
-    url(r'^/registercontributor$', views.register, {'contributor': True},
-        name='users.registercontributor'),
     url(r'^/close_account$', views.close_account, name='users.close_account'),
 
     url(r'^/activate/(?P<activation_key>\w+)$', views.activate,
@@ -48,8 +44,6 @@ users_patterns = [
         name='users.deactivation_log'),
     url(r'^/make_contributor$', views.make_contributor,
         name='users.make_contributor'),
-    url(r'^/validate-field$', views.validate_field,
-        name='users.validate_field'),
 
     # Password reset
     url(r'^/pwreset$', views.password_reset, name='users.pw_reset'),
@@ -91,3 +85,14 @@ urlpatterns = [
         {'model': Profile}, name='users.flag'),
     url(r'^users', include(users_patterns)),
 ]
+
+
+if settings.OIDC_ENABLE:
+    urlpatterns += [
+        url(r'^fxa/callback/$', OIDCAuthenticationCallbackView.as_view(),
+            name='users.fxa_authentication_callback'),
+        url(r'^fxa/authenticate/$', views.FXAAuthenticateView.as_view(),
+            name='users.fxa_authentication_init'),
+        url(r'^fxa/logout/$', views.FXALogoutView.as_view(), name='users.fxa_logout_url'),
+        url(r'^oidc/', include('mozilla_django_oidc.urls')),
+    ]

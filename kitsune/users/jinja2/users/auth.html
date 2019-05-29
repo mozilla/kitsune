@@ -1,14 +1,31 @@
 {% extends "users/base.html" %}
 {% from "layout/errorlist.html" import errorlist %}
+{% from "users/includes/notification_macros.html" import notification_already_migrated %}
 
-{% set title = _('Log In / Register') %}
+{% set title = _('Log In / Sign up') %}
 {% set styles = ('users',) %}
-{% set classes = 'login register contributor' if contributor else 'login register' %}
+{% set classes = 'login register contributor light-grey-bg responsive' if contributor else 'login register light-grey-bg responsive' %}
+
+{% block breadcrumbs %}
+{% endblock %}
+
 
 {% block content %}
-  {% if contributor %}
-    {% include "users/includes/auth_contributor.html" %}
-  {% else %}
-    {% include "users/includes/auth.html" %}
+  {% if notification == 'already_migrated' %}
+    {{ notification_already_migrated(STATIC_URL) }}
   {% endif %}
+
+  <div class="content cf">
+    <figure class="grid_6 large-logo-wrap hide-mobile">
+      <img class="ff-logo" src="{{ STATIC_URL }}sumo/img/firefox-logo.svg" alt="{{ _('Firefox logo') }}"/>
+    </figure>
+    <div class="grid_6">
+      <div id="login-fxa" class="{% if legacy_form_visible %}hidden{% endif %}">
+        {% include "users/includes/login-fxa.html" %}
+      </div>
+      <div id="login-legacy" class="{% if not legacy_form_visible %}hidden{% endif %}">
+        {% include "users/includes/login-form.html" %}
+      </div>
+    </div>
+  </div>
 {% endblock %}

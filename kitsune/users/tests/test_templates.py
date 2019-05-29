@@ -38,6 +38,11 @@ class LoginTests(TestCaseBase):
     def setUp(self):
         super(LoginTests, self).setUp()
         self.u = UserFactory()
+        self.profile_url = reverse(
+            'users.profile',
+            args=[self.u.username],
+            locale=settings.LANGUAGE_CODE
+        ) + '?fpa=1'
 
     def test_login_bad_password(self):
         '''Test login with a good username and bad password.'''
@@ -72,12 +77,11 @@ class LoginTests(TestCaseBase):
                                     {'username': self.u.username,
                                      'password': 'testpass'})
         eq_(302, response.status_code)
-        eq_(reverse('home', locale=settings.LANGUAGE_CODE) + '?fpa=1',
-            response['location'])
+        eq_(self.profile_url, response['location'])
 
     def test_login_next_parameter(self):
         '''Test with a valid ?next=url parameter.'''
-        next = '/kb/new'
+        next = self.profile_url
 
         # Verify that next parameter is set in form hidden field.
         response = self.client.get(
@@ -92,7 +96,7 @@ class LoginTests(TestCaseBase):
                                      'password': 'testpass',
                                      'next': next})
         eq_(302, response.status_code)
-        eq_(next + '?fpa=1', response['location'])
+        eq_(next, response['location'])
 
     def test_login_invalid_next_parameter(self):
         '''Test with an invalid ?next=http://example.com parameter.'''
@@ -112,28 +116,24 @@ class LoginTests(TestCaseBase):
                                      'password': 'testpass',
                                      'next': invalid_next})
         eq_(302, response.status_code)
-        eq_(valid_next + '?fpa=1', response['location'])
+        eq_(self.profile_url, response['location'])
 
     def test_login_mobile_csrf(self):
         """The mobile login view should have a CSRF token."""
         response = self.client.get(reverse('users.login'), {'mobile': 1})
         eq_(200, response.status_code)
         doc = pq(response.content)
-        assert doc('#content form input[name="csrfmiddlewaretoken"]')
+        assert doc('form input[name="csrfmiddlewaretoken"]')
 
-
-class RegisterTests(TestCaseBase):
-
-    def setUp(self):
-        self.client.logout()
-        super(RegisterTests, self).setUp()
-
-    def test_login_mobile_csrf(self):
-        """The mobile registration view should have a CSRF token."""
-        response = self.client.get(reverse('users.register'), {'mobile': 1})
-        eq_(200, response.status_code)
+    def test_fxa_deprecation_warning(self):
+        """
+        Test that a SUMO login shows FXA deprecation warning
+        """
+        response = self.client.post(reverse('users.login'),
+                                    {'username': self.u.username,
+                                     'password': 'testpass'}, follow=True)
         doc = pq(response.content)
-        assert doc('#content form input[name="csrfmiddlewaretoken"]')
+        eq_(1, len(doc('#fxa-notification-deprecated')))
 
 
 @override_settings(DEBUG=True)

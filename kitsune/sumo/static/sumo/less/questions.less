@@ -1010,25 +1010,30 @@ h2 {
   margin: 0 78px;
 
   .legend {
+    display: flex;
     color: @textGrey;
     font-size: 12px;
     font-weight: normal;
     line-height: 16px;
     list-style: none;
-    margin: 5px -78px;
+    margin: 5px 0;
     padding: 0;
     position: relative;
     z-index: 0;
 
     li {
-      float: left;
-      margin: 0 10px;
+      width: 33.3%;
+      margin: 0;
       position: relative;
-      text-align: center;
-      width: 136px;
+      text-align: left;
 
       &.current {
         font-weight: bold;
+      }
+
+      span {
+        display: block;
+        max-width: 140px;
       }
 
       &:before {
@@ -1036,8 +1041,7 @@ h2 {
         border-right: 1px solid rgba(255, 255, 255, 0.5);
         content: '';
         height: 24px;
-        left: 50%;
-        margin-left: -1px;
+        left: 0;
         position: absolute;
         top: -34px;
         width: 0;
@@ -1058,7 +1062,6 @@ h2 {
     > div {
       height: 8px;
       min-width: 12px;
-      padding-right: 12px;
     }
 
     .legend {
