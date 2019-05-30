@@ -96,6 +96,7 @@ app:
     email_use_tls: True
     enable_admin: False
     enable_whitenoise: True
+    enforce_host: "stage-tp.sumo.mozit.cloud,stage-frankfurt.sumo.mozit.cloud,support.allizom.org"
     engage_robots: False
     es_index_prefix: "sumo_stage"
     es_http_auth: SECRET
