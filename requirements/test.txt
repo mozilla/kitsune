@@ -1,12 +1,33 @@
-execnet==1.4.1
-py==1.8.0
-pytest==4.4.1
-pytest-html==1.20.0
-pytest-selenium==1.16.0
-pytest-variables==1.7.1
-pytest-xdist==1.28.0
-requests==2.21.0
-selenium==3.14.0
-apipkg==1.4
-pytest-base-url==1.4.1
-urlparse==20.16
+execnet==1.6.0 \
+    --hash=sha256:027ee5d961afa01e97b90d6ccc34b4ed976702bc58e7f092b3c513ea288cb6d2 \
+    --hash=sha256:752a3786f17416d491f833a29217dda3ea4a471fc5269c492eebcee8cc4772d3
+py==1.8.0 \
+    --hash=sha256:64f65755aee5b381cea27766a3a147c3f15b9b6b9ac88676de66ba2ae36793fa \
+    --hash=sha256:dc639b046a6e2cff5bbe40194ad65936d6ba360b52b3c3fe1d08a82dd50b5e53
+pytest==4.5.0 \
+    --hash=sha256:1a8aa4fa958f8f451ac5441f3ac130d9fc86ea38780dd2715e6d5c5882700b24 \
+    --hash=sha256:b8bf138592384bd4e87338cb0f256bf5f615398a649d4bd83915f0e4047a5ca6
+pytest-html==1.20.0 \
+    --hash=sha256:648b7ba1d6035cc021d607e9d44f4dc06e916bdb04e09572dd04fb82eecab9ed \
+    --hash=sha256:a7c65cdd9d5e4d09cef2f500ca801f80c1110204f24e5b84d019c6f919b15e9e
+pytest-selenium==1.16.0 \
+    --hash=sha256:18c5db66512efcf6db9e32cfe8dcd0b69ef11ac1e8b9a4ce8a1b4813e6c73c9a \
+    --hash=sha256:c4d5a73d501f9fb3afb70e781f6fc2106a7b5f64387ed449b15eb1df61fa7915
+pytest-variables==1.7.1 \
+    --hash=sha256:59c00b95779657532ac5f8209b28b5d447c8b4bc4210c1d6bdf9a42aa201f9b0 \
+    --hash=sha256:7808b77b643b9f8a24f1ee1c32132648b1c62ab93956f20fe101dde66db6d09a
+pytest-xdist==1.28.0 \
+    --hash=sha256:b0bb4b0293ee8657b9eb3ff334a3b6aac4db74fd4a86b81e1982c879237a47eb \
+    --hash=sha256:f83a485293e81fd57c8a5a85a3f12473a532c5ca7dec518857cbb72766bb526c
+requests==2.22.0 \
+    --hash=sha256:11e007a8a2aa0323f5a921e9e6a2d7e4e67d9877e85773fba9ba6419025cbeb4 \
+    --hash=sha256:9cf5292fcd0f598c671cfc1e0d7d1a7f13bb8085e9a590f48c010551dc6c4b31
+selenium==3.141.0 \
+    --hash=sha256:2d7131d7bc5a5b99a2d9b04aaf2612c411b03b8ca1b1ee8d3de5845a9be2cb3c \
+    --hash=sha256:deaf32b60ad91a4611b98d8002757f29e6f2c2d5fcaf202e1c9ad06d6772300d
+apipkg==1.5 \
+    --hash=sha256:37228cda29411948b422fae072f57e31d3396d2ee1c9783775980ee9c9990af6 \
+    --hash=sha256:58587dd4dc3daefad0487f6d9ae32b4542b185e1c36db6993290e7c41ca2b47c
+pytest-base-url==1.4.1 \
+    --hash=sha256:31e42366a5fc22f450b398837dc819bb7569f5e6bd5d74e494b2b9ec239876d1 \
+    --hash=sha256:7425e8163345494ac7f544e99c6f3e5a08f4228bee5e26013b98c462a4d31f6e
