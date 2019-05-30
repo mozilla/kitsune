@@ -4,8 +4,8 @@
 
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
-from pages.page import Page
-from pages.desktop.base import Base
+from tests.pages.page import Page
+from tests.pages.desktop.base import Base
 
 
 class QuestionsPage(Base):
@@ -125,9 +125,9 @@ class AskNewQuestionsPage(Base):
 
     _page_title = 'Ask a Question | Mozilla Support'
     _firefox_product_first_link_locator = (
-        By.CSS_SELECTOR, '#product-picker li:nth-child(1) > a.cf > span.title')
-    _category_prob_first_link_locator = (By.CSS_SELECTOR, 'ul.select-one > li > a')
-    _type_question_box_locator = (By.NAME, 'search')
+        By.CSS_SELECTOR, '#product-cards a[data-event-label="Firefox"]')
+    _category_prob_first_link_locator = (By.CSS_SELECTOR, '#help-topics ul a')
+    _type_question_box_locator = (By.CSS_SELECTOR, '#support-search-documents #search-q')
     _ask_this_button_locator = (By.CSS_SELECTOR, '#ask-search-form .btn.btn-important')
     _none_of_these_button_locator = (By.CSS_SELECTOR, 'form .btn.btn-submit')
     _q_content_box_locator = (By.ID, 'id_content')

@@ -3,12 +3,15 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 from selenium.webdriver.common.by import By
-from pages.desktop.base import Base
-from pages.page import Page
 from selenium.webdriver.support.ui import WebDriverWait
+
+from tests.pages.desktop.base import Base
+from tests.pages.page import Page
 
 
 class KnowledgeBase(Base):
+
+    _page_title = 'Log In | Mozilla Support'
 
     @property
     def navigation(self):
@@ -18,7 +21,7 @@ class KnowledgeBase(Base):
     def is_the_current_page(self):
         if self._page_title:
             page_title = self.page_title
-            assert self._page_title in page_title
+            return self._page_title in page_title
 
     class Navigation(Page):
 
@@ -61,7 +64,7 @@ class KnowledgeBaseArticle(KnowledgeBase):
 
     @property
     def article_title(self):
-        self.selenium.find_element(*self._title_locator).click()
+        return self.selenium.find_element(*self._title_locator).text
 
 
 class KnowledgeBaseEditArticle(KnowledgeBase):

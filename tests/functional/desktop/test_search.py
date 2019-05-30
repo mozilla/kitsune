@@ -4,9 +4,9 @@
 
 import pytest
 
-from pages.desktop.refine_search_page import RefineSearchPage
-from pages.desktop.search_page import SearchPage
-from pages.desktop.support_home_page import SupportHomePage
+from tests.pages.desktop.refine_search_page import RefineSearchPage
+from tests.pages.desktop.search_page import SearchPage
+from tests.pages.desktop.support_home_page import SupportHomePage
 
 
 class TestSearch:

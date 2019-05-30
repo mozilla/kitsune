@@ -4,7 +4,7 @@
 
 import pytest
 
-from pages.mobile.home import Home
+from tests.pages.mobile.home import Home
 
 
 class TestMobileLoginLogout:

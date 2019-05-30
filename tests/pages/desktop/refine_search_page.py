@@ -3,7 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 from selenium.webdriver.common.by import By
-from pages.desktop.base import Base
+from tests.pages.desktop.base import Base
 
 
 class RefineSearchPage(Base):

@@ -18,6 +18,7 @@ class Page(object):
     URL_TEMPLATE = None
 
     def __init__(self, base_url, selenium, timeout=10, **url_kwargs):
+        self._page_title = None
         self.base_url = base_url
         self.selenium = selenium
         self.timeout = timeout
@@ -43,7 +44,7 @@ class Page(object):
     @property
     def is_the_current_page(self):
         if self._page_title:
-            assert self._page_title == self.page_title
+            return self._page_title in self.page_title
 
     @property
     def url_current_page(self):

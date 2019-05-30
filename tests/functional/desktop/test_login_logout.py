@@ -4,13 +4,13 @@
 
 import pytest
 
-from pages.desktop.knowledge_base_new_article import KnowledgeBaseNewArticle
-from pages.desktop.questions_page import AskNewQuestionsPage
-from pages.desktop.questions_page import QuestionsPage
-from pages.desktop.refine_search_page import RefineSearchPage
-from pages.desktop.search_page import SearchPage
-from pages.desktop.support_home_page import SupportHomePage
-from mocks.mock_article import MockArticle
+from tests.pages.desktop.knowledge_base_new_article import KnowledgeBaseNewArticle
+from tests.pages.desktop.questions_page import AskNewQuestionsPage
+from tests.pages.desktop.questions_page import QuestionsPage
+from tests.pages.desktop.refine_search_page import RefineSearchPage
+from tests.pages.desktop.search_page import SearchPage
+from tests.pages.desktop.support_home_page import SupportHomePage
+from tests.mocks.mock_article import MockArticle
 
 
 class TestLoginLogout:
@@ -22,8 +22,13 @@ class TestLoginLogout:
         page.sign_in(user['username'], user['password'])
         assert page.header.is_user_logged_in, 'User not shown to be logged in'
 
-    # logging out of the following pages keeps user on the same pages
+    def test_login_with_firefox_accounts(self, base_url, selenium, variables):
+        user = variables['users']['firefox_account']
+        page = SupportHomePage(base_url, selenium).open()
+        page.sign_in_with_firefox_accounts(user['email'], user['password'])
+        assert page.header.is_user_logged_in, 'User not shown to be logged in'
 
+    # logging out of the following pages keeps user on the same pages
     @pytest.mark.native
     @pytest.mark.nondestructive
     @pytest.mark.parametrize('page_object', [

@@ -7,11 +7,12 @@ from random import randrange
 
 import pytest
 
-from pages.desktop.questions_page import AskNewQuestionsPage, QuestionsPage
+from tests.pages.desktop.questions_page import AskNewQuestionsPage, QuestionsPage
 
 
 class TestQuestions:
 
+    @pytest.mark.nondestructive
     @pytest.mark.native
     def test_that_posting_question_works(self, base_url, selenium, variables):
         """Posts a question to /questions"""

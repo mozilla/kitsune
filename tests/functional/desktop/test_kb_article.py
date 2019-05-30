@@ -2,8 +2,8 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-from mocks.mock_article import MockArticle
-from pages.desktop.knowledge_base_new_article import KnowledgeBaseNewArticle
+from tests.mocks.mock_article import MockArticle
+from tests.pages.desktop.knowledge_base_new_article import KnowledgeBaseNewArticle
 
 
 class TestKnowledgeBaseArticle:

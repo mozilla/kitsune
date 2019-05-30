@@ -4,8 +4,8 @@
 
 import pytest
 
-from pages.desktop.support_home_page import SupportHomePage as DesktopHome
-from pages.mobile.home import Home as MobileHome
+from tests.pages.desktop.support_home_page import SupportHomePage as DesktopHome
+from tests.pages.mobile.home import Home as MobileHome
 
 
 class TestMobileSite:

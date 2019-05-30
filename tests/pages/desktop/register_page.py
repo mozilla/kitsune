@@ -1,7 +1,7 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
-from pages.desktop.base import Base
+from tests.pages.desktop.base import Base
 import string
 import random
 from selenium.webdriver.common.by import By
@@ -39,5 +39,5 @@ class RegisterPage(Base):
     def get_random_word(self, length):
         random_word = ''
         for _ in range(length):
-            random_word += random.choice(string.letters)
+            random_word += random.choice(string.ascii_letters)
         return random_word

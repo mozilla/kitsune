@@ -4,7 +4,7 @@
 
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
-from pages.page import Page
+from tests.pages.page import Page
 
 
 class Base(Page):
@@ -14,9 +14,12 @@ class Base(Page):
     def __init__(self, base_url, selenium, locale='en-US', **url_kwargs):
         url_kwargs['locale'] = locale
         super(Base, self).__init__(base_url, selenium, **url_kwargs)
+        self.header.dismiss_take_survey_alert_if_present()
+        self.header.dismiss_staging_site_warning_if_present()
 
     def wait_for_page_to_load(self):
         super(Base, self).wait_for_page_to_load()
+        self.header.dismiss_take_survey_alert_if_present()
         self.header.dismiss_staging_site_warning_if_present()
         return self
 
@@ -38,9 +41,13 @@ class Base(Page):
         login = self.header.click_login()
         login.log_in(username, password)
 
+    def sign_in_with_firefox_accounts(self, username, password):
+        login = self.header.click_login()
+        login.log_in_with_fxa(username, password)
+
     def sign_out(self):
         self.header.click_logout()
-        from pages.desktop.login_page import LoginPage
+        from tests.pages.desktop.login_page import LoginPage
         return LoginPage(self.base_url, self.selenium)
 
     def switch_to_mobile_view(self):
@@ -74,21 +81,25 @@ class Base(Page):
     class HeaderRegion(Page):
 
         # Not LoggedIn
-        _login_locator = (By.CSS_SELECTOR, 'a.sign-in')
+        _login_locator = (By.CSS_SELECTOR, '.signin-signup-button.register')
         _register_locator = (By.CSS_SELECTOR, 'a.register')
 
         # LoggedIn
         _account_controller_locator = (By.CSS_SELECTOR, '.user')
         _account_dropdown_locator = (By.CSS_SELECTOR, 'li.dropdown a.user')
-        _logout_locator = (By.CSS_SELECTOR, 'li.dropdown > ul > li > a.sign-out')
+        _logout_locator = (By.CSS_SELECTOR, 'a[data-form="sign-out"]')
 
         # Staging site warning
         _staging_site_warning_close_button_locator = (
             By.CSS_SELECTOR, '#stage-banner > div.close-button')
 
+        # Take survey alert dialog
+        _take_survey_alert_dialog_locator = (By.CSS_SELECTOR, 'div[role="alertdialog"]')
+        _close_survey_button_locator = (By.CSS_SELECTOR, 'button[aria-label="close"]')
+
         def click_login(self):
             self.selenium.find_element(*self._login_locator).click()
-            from pages.desktop.login_page import LoginPage
+            from tests.pages.desktop.login_page import LoginPage
             return LoginPage(self.base_url, self.selenium)
 
         def click_logout(self):
@@ -104,6 +115,11 @@ class Base(Page):
                 if self.is_element_visible(*self._staging_site_warning_close_button_locator):
                     self.selenium.find_element(
                         *self._staging_site_warning_close_button_locator).click()
+
+        def dismiss_take_survey_alert_if_present(self):
+            if self.is_element_present(*self._take_survey_alert_dialog_locator):
+                if self.is_element_visible(*self._close_survey_button_locator):
+                    self.selenium.find_element(*self._close_survey_button_locator).click()
 
         @property
         def is_user_logged_in(self):

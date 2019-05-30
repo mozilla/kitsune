@@ -4,6 +4,9 @@
       "username": "",
       "password": "",
       "email": ""},
+    "firefox_account": {
+      "email": "",
+      "password": ""},
     "admin": {
       "username": "",
       "password": "",

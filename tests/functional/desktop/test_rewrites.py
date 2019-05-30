@@ -2,9 +2,10 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+
 import pytest
 import requests
-import urllib
+import urllib.parse
 
 
 @pytest.mark.nondestructive
@@ -47,7 +48,7 @@ class TestRedirects:
     def test_browser_redirect_to_sumo(self, base_url, input, expected):
         expected_url = base_url + expected
         r = self._check_redirect(base_url, input)
-        assert expected_url == urllib.unquote(r.url)
+        assert expected_url == urllib.parse.unquote(r.url)
         assert requests.codes.ok == r.status_code
 
     @pytest.mark.parametrize(('input'), [
@@ -72,7 +73,7 @@ class TestRedirects:
     def test_old_mobile_redirects(self, base_url, input, expected):
         expected_url = base_url + expected
         r = self._check_redirect(base_url, input)
-        assert expected_url == urllib.unquote(r.url)
+        assert expected_url == urllib.parse.unquote(r.url)
         assert requests.codes.ok == r.status_code
 
     @pytest.mark.parametrize(('input'), [

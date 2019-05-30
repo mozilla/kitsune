@@ -5,8 +5,8 @@
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.select import Select
 from selenium.webdriver.support.ui import WebDriverWait
-from pages.desktop.knowledge_base_article import KnowledgeBaseShowHistory
-from pages.desktop.base import Base
+from tests.pages.desktop.knowledge_base_article import KnowledgeBaseShowHistory
+from tests.pages.desktop.base import Base
 
 
 class KnowledgeBaseNewArticle(Base):
@@ -43,7 +43,7 @@ class KnowledgeBaseNewArticle(Base):
 
     def open(self, username, password):
         self.selenium.get(self.canonical_url)
-        from pages.desktop.login_page import LoginPage
+        from tests.pages.desktop.login_page import LoginPage
         page = LoginPage(self.base_url, self.selenium).wait_for_page_to_load()
         page.log_in(username, password)
         self.wait_for_page_to_load()

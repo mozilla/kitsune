@@ -3,7 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 from selenium.webdriver.common.by import By
-from pages.desktop.base import Base
+from tests.pages.desktop.base import Base
 
 
 class SupportHomePage(Base):
@@ -26,7 +26,7 @@ class SupportHomePage(Base):
         search_box.clear()
         search_box.type_keys(search_query)
         self.selenium.find_element(*self._search_button).click()
-        from search_page import SearchPage
+        from tests.pages.desktop.search_page import SearchPage
         return SearchPage(self.base_url, self.selenium)
 
     def click_top_common_content_link(self):

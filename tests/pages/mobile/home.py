@@ -4,7 +4,7 @@
 
 from selenium.webdriver.common.by import By
 
-from pages.mobile.base import Base
+from tests.pages.mobile.base import Base
 
 
 class Home(Base):
@@ -24,5 +24,5 @@ class Home(Base):
         search_box.send_keys(search_term)
         search_box.submit()
 
-        from pages.mobile.search import Search
+        from tests.pages.mobile.search import Search
         return Search(self.base_url, self.selenium)
