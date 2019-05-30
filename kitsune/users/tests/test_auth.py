@@ -44,7 +44,7 @@ class FXAAuthBackendTests(TestCase):
         eq_(users[0].email, 'bar@example.com')
         eq_(users[0].username, 'bar')
         eq_(users[0].profile.fxa_uid, 'my_unique_fxa_id')
-        eq_(users[0].profile.avatar, 'http://example.com/avatar')
+        eq_(users[0].profile.fxa_avatar, 'http://example.com/avatar')
         eq_(users[0].profile.locale, 'en-US')
         eq_(users[0].profile.name, 'Crazy Joe Davola')
         eq_(0, users[0].groups.count())
