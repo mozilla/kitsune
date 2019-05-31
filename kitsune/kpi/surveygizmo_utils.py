@@ -2,6 +2,8 @@ import json
 from datetime import timedelta
 
 from django.conf import settings
+from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
 
 import requests
 
@@ -87,7 +89,16 @@ def get_email_addresses(survey, startdatetime, enddatetime):
         emails = emails + [r['[question(13)]'] for r in results['data']]
         page += 1
 
-    return emails
+    valid_emails = []
+    for email in emails:
+        try:
+            validate_email(email)
+        except ValidationError:
+            pass
+        else:
+            valid_emails.append(email)
+
+    return valid_emails
 
 
 def add_email_to_campaign(survey, email):
@@ -111,7 +122,7 @@ def add_email_to_campaign(survey, email):
                 email=email, token=token, secret=secret),
             timeout=30)
     except requests.exceptions.Timeout:
-        print 'Timedout adding: %s' % email
+        print('Timedout adding: %s' % email)
 
 
 def get_exit_survey_results(survey, date):
