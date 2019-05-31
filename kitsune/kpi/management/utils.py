@@ -84,10 +84,9 @@ def _get_up_to_date_count(top_60_docs, locale):
 def _process_exit_survey_results():
     """Collect and save new exit survey results."""
     # Gather and process up until yesterday's exit survey results.
-    yes_kind, _ = MetricKind.objects.get_or_create(code=EXIT_SURVEY_YES_CODE)
-    no_kind, _ = MetricKind.objects.get_or_create(code=EXIT_SURVEY_NO_CODE)
-    dunno_kind, _ = MetricKind.objects.get_or_create(
-        code=EXIT_SURVEY_DONT_KNOW_CODE)
+    yes_kind = MetricKind.objects.get_or_create(code=EXIT_SURVEY_YES_CODE)[0]
+    no_kind = MetricKind.objects.get_or_create(code=EXIT_SURVEY_NO_CODE)[0]
+    dunno_kind = MetricKind.objects.get_or_create(code=EXIT_SURVEY_DONT_KNOW_CODE)[0]
 
     latest_metric = _get_latest_metric(EXIT_SURVEY_YES_CODE)
     if latest_metric is not None:
