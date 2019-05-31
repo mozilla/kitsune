@@ -59,7 +59,7 @@ class Command(BaseCommand):
                 )
 
         # Save the value to Metric table.
-        metric_kind = MetricKind.objects.get(code=L10N_METRIC_CODE)
+        metric_kind = MetricKind.objects.get_or_create(code=L10N_METRIC_CODE)[0]
         day = date.today()
         Metric.objects.create(
             kind=metric_kind,

@@ -21,7 +21,7 @@ class Command(BaseCommand):
     help = "Update the number of active contributors for each locale/product."
 
     def add_arguments(self, parser):
-        parser.add_argument('day', type=valid_date)
+        parser.add_argument('day', nargs='?', type=valid_date)
 
     def handle(self, day=None, **options):
         """
