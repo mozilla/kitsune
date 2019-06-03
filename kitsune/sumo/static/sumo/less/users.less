@@ -66,9 +66,17 @@ article {
         font-size: 11px;
         line-height: 17px;
       }
+
+      li {
+        label {
+          margin-top: 0.7rem;
+        }
+
+        &:first-of-type label {
+          margin-top: 1.25rem;
+        }
+      }
     }
-
-
   }
 
   h1 {
@@ -253,10 +261,6 @@ article {
       list-style: none;
       padding: 0;
 
-      &:first-of-type label {
-        margin-top: 1.25rem;
-      }
-
       input {
         &[type="checkbox"] {
           width: auto;
@@ -292,7 +296,8 @@ article {
     label {
       display: block;
       font-weight: bold;
-      margin: .7rem 0 0.25rem;
+      font-size: 14px;
+      margin: 1.25rem 0 0.25rem;
       text-align: left;
       vertical-align: top;
     }
