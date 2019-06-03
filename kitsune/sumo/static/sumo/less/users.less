@@ -22,13 +22,33 @@ article {
       margin: 1.1rem 0;
     }
 
+    @media screen and (max-width: 969px) { // single-use mobile revisions.
+      p, ul {
+        line-height: 22px;
+      }
+
+      p {
+        margin: .7rem 0;
+      }
+
+      .help-text {
+        margin-top: 1rem;
+      }
+    }
+
     .login-button-wrap {
-      margin: 1.5rem 0 -0.3rem;
+      margin: 3rem 0 1rem;
 
       .button {
-        height: 60px;
+        height: 44px;
+        line-height: 1.1;
+      }
 
-        @media screen and (min-width: 960px) {
+      @media screen and (min-width: 970px) {
+        margin: 1.5rem 0 -0.3rem;
+
+        .button {
+          height: 60px;
           width: 350px;
         }
       }
@@ -173,7 +193,7 @@ article {
     }
   }
 
-  @media screen and (min-width: 960px) {
+  @media screen and (min-width: 970px) {
     padding: 30px;
   }
 }
