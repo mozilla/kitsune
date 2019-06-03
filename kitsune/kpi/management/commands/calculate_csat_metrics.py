@@ -99,7 +99,7 @@ class Command(BaseCommand):
             page += 1
 
         for code in csat:
-            metric_kind, _ = MetricKind.objects.get_or_create(code=code)
+            metric_kind = MetricKind.objects.get_or_create(code=code)[0]
             value = (
                 csat[code] / counts[code] if counts[code] else 50
             )  # If no responses assume neutral

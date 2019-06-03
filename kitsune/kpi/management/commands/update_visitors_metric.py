@@ -31,7 +31,7 @@ class Command(BaseCommand):
         visitors = googleanalytics.visitors(start, end)
 
         # Create the metrics.
-        metric_kind = MetricKind.objects.get(code=VISITORS_METRIC_CODE)
+        metric_kind = MetricKind.objects.get_or_create(code=VISITORS_METRIC_CODE)[0]
         for date_str, visits in visitors.items():
             day = datetime.strptime(date_str, "%Y-%m-%d").date()
             Metric.objects.create(

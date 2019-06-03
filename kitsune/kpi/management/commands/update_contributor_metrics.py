@@ -30,7 +30,7 @@ class Command(BaseCommand):
     help = "Calculate and save contributor metrics."
 
     def add_arguments(self, parser):
-        parser.add_argument('day', type=valid_date)
+        parser.add_argument('day', nargs='?', type=valid_date)
 
     def handle(self, day=None, **options):
         update_support_forum_contributors_metric(day)
@@ -72,9 +72,9 @@ def update_support_forum_contributors_metric(day=None):
         count = contributors.count()
 
         # Save the value to Metric table.
-        metric_kind = MetricKind.objects.get(
+        metric_kind = MetricKind.objects.get_or_create(
             code=SUPPORT_FORUM_CONTRIBUTORS_METRIC_CODE
-        )
+        )[0]
         Metric.objects.create(
             kind=metric_kind, start=thirty_days_back, end=day, value=count
         )
@@ -131,12 +131,12 @@ def update_kb_contributors_metric(day=None):
         )
 
         # Save the values to Metric table.
-        metric_kind = MetricKind.objects.get(code=KB_ENUS_CONTRIBUTORS_METRIC_CODE)
+        metric_kind = MetricKind.objects.get_or_create(code=KB_ENUS_CONTRIBUTORS_METRIC_CODE)[0]
         Metric.objects.create(
             kind=metric_kind, start=thirty_days_back, end=day, value=en_us_count
         )
 
-        metric_kind = MetricKind.objects.get(code=KB_L10N_CONTRIBUTORS_METRIC_CODE)
+        metric_kind = MetricKind.objects.get_or_create(code=KB_L10N_CONTRIBUTORS_METRIC_CODE)[0]
         Metric.objects.create(
             kind=metric_kind, start=thirty_days_back, end=day, value=l10n_count
         )
@@ -181,7 +181,7 @@ def update_aoa_contributors_metric(day=None):
         count = contributors.count()
 
         # Save the value to Metric table.
-        metric_kind = MetricKind.objects.get(code=AOA_CONTRIBUTORS_METRIC_CODE)
+        metric_kind = MetricKind.objects.get_or_create(code=AOA_CONTRIBUTORS_METRIC_CODE)[0]
         Metric.objects.create(
             kind=metric_kind, start=thirty_days_back, end=day, value=count
         )
