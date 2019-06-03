@@ -213,7 +213,7 @@
             </li>
           {% endif %}
           {% if not hide_locale_switcher %}
-            <li>
+            <li class="lang-switcher-nav-item">
               {% include "includes/icons/globe-icon.svg" %}
               <a href="{{ locale_picker_url }}" class="locale-picker"  data-event-category="navigation" data-event-action="main navigation" data-event-label="Locale Picker">{% if request.LANGUAGE_CODE == "en-US"%}EN{% else %}{{ request.LANGUAGE_CODE }}{% endif %} </a>
             </li>
