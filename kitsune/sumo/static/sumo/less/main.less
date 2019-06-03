@@ -38,7 +38,7 @@ small small {
 
 article {
   a:visited {
-    color: @textPurple;
+    color: @textVisited;
   }
 }
 
@@ -487,7 +487,7 @@ h1 {
 }
 
 h3 {
-  font-size: 20px;
+  font-size: 16px;
 }
 
 ul.errorlist {
@@ -1371,7 +1371,7 @@ input[type="submit"]{
       color: #000;
       display: inline-block;
       line-height: 1.2;
-      margin: 0 8px 0 0;
+      margin: 0 15px 0 0;
       position: relative;
       text-align: left;
 
@@ -1458,7 +1458,7 @@ input[type="submit"]{
 
         &.locale-picker {
           color: #fff;
-          padding-left: 10px;
+          padding-left: 9px;
           padding-right: 0;
           font-size: 18px;
           font-weight: bold;
@@ -1470,7 +1470,7 @@ input[type="submit"]{
         fill: #fff;
         height: 22px;
         width: 22px;
-        padding-left: 5px;
+        padding-left: 0;
       }
 
       &.lang-switcher-nav-item {
@@ -1525,9 +1525,6 @@ input[type="submit"]{
     font-size: 16px;
     font-weight: bold;
     height: 32px;
-    line-height: 30px;
-    margin-left: 7px;
-    margin-top: 2px;
     padding: 5px 16px;
     position: relative;
     text-align: center;
@@ -2649,9 +2646,9 @@ input[type="submit"]{
 
 .login-submit {
   border-bottom:  2px solid #000;
-  padding: 1em 0 2em;
+  padding: 0;
   text-align: center;
-  margin-bottom: 3em;
+  margin-bottom: 1.1rem;
 
   .button-wrap .button {
     width: 100%;
@@ -2660,12 +2657,10 @@ input[type="submit"]{
   @media screen and (min-width: 960px) {
     display: flex;
     align-items: center;
-    padding: 0.5em 0 1em 0;
     text-align: left;
 
-
     .button-wrap {
-      margin-right: 40px;
+      margin-right: 44px;
 
       .button {
         white-space: nowrap;
@@ -2679,8 +2674,8 @@ input[type="submit"]{
   font-size: 14px;
 }
 
-.mt-0 { margin-top: 0;}
-.mb-0 { margin-bottom: 0;}
+.mt-0 { margin-top: 0 !important;}
+.mb-0 { margin-bottom: 0 !important;}
 
 
 @import 'buttons.less';
