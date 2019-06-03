@@ -34,6 +34,7 @@ class ProfileAdmin(admin.ModelAdmin):
     list_display = ['full_user']
     list_select_related = True
     search_fields = ['user__username', 'user__email', 'name']
+    readonly_fields = ['user']
 
     def has_delete_permission(self, request, obj=None):
         return False
