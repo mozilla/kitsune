@@ -298,16 +298,24 @@ body {
 
   #aux-nav-right > ul > li {
     > a.locale-picker {
-      padding-left: 0;
+      padding-left: 5px;
       padding-right: 0;
       margin: 0 0 0 20px;
+
+      @media screen and (min-width: 970px) {
+        padding-left: 0;
+      }
     }
 
     > svg {
       position: relative;
-      margin: 0 20px -7px 10px;
+      margin: -4px 0 0 8px;
       padding: 0;
       display: inline-block;
+
+      @media screen and (min-width: 970px) {
+        margin: 0 20px -7px 10px;
+      }
     }
   }
 }
@@ -353,7 +361,7 @@ footer {
     font-weight: bold;
     margin: 1em 0 .9em 0;
 
-    @media screen and (min-width: 960px) {
+    @media screen and (min-width: 970px) {
         margin-top: 0;
     }
   }
@@ -371,14 +379,18 @@ footer {
     font-size: 12px;
     line-height: 160%;
     font-weight: bold;
+    padding-top: 20px;
+    border-top: 2px solid white;
 
     a:link,
     a:visited {
       color: @textBlue;
     }
 
-    @media screen and (min-width: 960px) {
+    @media screen and (min-width: 970px) {
       font-weight: normal;
+      padding-top: 0;
+      border-top: 0 none;
 
       a:link,
       a:visited {
@@ -398,7 +410,7 @@ footer {
       padding-left: 8px;
       color: @textBlue;
 
-      @media screen and (min-width: 960px) {
+      @media screen and (min-width: 970px) {
         color: #9b9b9b;
       }
     }
@@ -423,7 +435,7 @@ footer {
       font-weight: bold;
       color: @textBlue;
 
-      @media screen and (min-width: 960px) {
+      @media screen and (min-width: 970px) {
         color: #9b9b9b;
         font-weight: normal;
       }
@@ -584,7 +596,7 @@ form .submit {
     margin-top: 20px;
   }
 
-  @media screen and (min-width: 960px) {
+  @media screen and (min-width: 970px) {
     text-align: left;
 
     .button + .button {
@@ -619,7 +631,7 @@ form .submit {
     margin-left: auto;
   }
 
-  @media screen and (min-width: 960px) {
+  @media screen and (min-width: 970px) {
     align-items: center;
 
     .avatar-preview {
@@ -640,7 +652,7 @@ form .submit {
   flex-direction: column;
   padding: 30px 0 20px;
 
-  @media screen and (min-width: 960px) {
+  @media screen and (min-width: 970px) {
     flex-direction: row;
     align-items: center;
   }
@@ -676,7 +688,7 @@ form .submit {
     opacity: 0.2;
   }
 
-  @media screen and (min-width: 960px) {
+  @media screen and (min-width: 970px) {
     width: 170px;
     height: 170px;
     margin: 0 20px 0 0;
@@ -1382,7 +1394,7 @@ input[type="submit"]{
         font-weight: bold;
         height: 42px;
         line-height: 40px;
-        padding: 0 12px;
+        padding: 0;
         text-decoration: none;
       }
 
@@ -1390,6 +1402,14 @@ input[type="submit"]{
         background-color: #000;
         color: #fff;
         text-decoration: underline;
+      }
+
+      &.dropdown {
+        > a,
+        > a:visited,
+        > span {
+          padding-right: 12px;
+        }
       }
     }
   }
@@ -1444,7 +1464,7 @@ input[type="submit"]{
       display: inline-block;
       vertical-align: middle;
       line-height: 1.2;
-      margin: 0 8px 0 0;
+      margin: 0 15px 0 0;
 
       > a,
       > a:visited,
@@ -1463,6 +1483,10 @@ input[type="submit"]{
           font-size: 18px;
           font-weight: bold;
           text-transform: uppercase;
+        }
+
+        &.user {
+          padding: 0;
         }
       }
 
@@ -1553,7 +1577,7 @@ input[type="submit"]{
   &.dropdown {
     position: relative;
 
-    @media screen and (min-width: 960px) {
+    @media screen and (min-width: 970px) {
       &:not(.user-dropdown):after {
         display: inline-block;
         margin: 0 0 -3px -7px;
@@ -1569,7 +1593,7 @@ input[type="submit"]{
   }
 
   &.user-dropdown > ul {
-    right: 16px;
+    right: 6px;
   }
 
   > ul {
@@ -1770,7 +1794,7 @@ input[type="submit"]{
     }
   }
 
-  @media screen and (min-width: 960px) {
+  @media screen and (min-width: 970px) {
     &.card-grid {
       margin-left: -12px;
       margin-right: -12px;
@@ -2646,7 +2670,7 @@ input[type="submit"]{
 
 .login-submit {
   border-bottom:  2px solid #000;
-  padding: 0;
+  padding: 1.1rem 0 0 0;
   text-align: center;
   margin-bottom: 1.1rem;
 
@@ -2654,10 +2678,11 @@ input[type="submit"]{
     width: 100%;
   }
 
-  @media screen and (min-width: 960px) {
+  @media screen and (min-width: 970px) {
     display: flex;
     align-items: center;
     text-align: left;
+    padding: 0;
 
     .button-wrap {
       margin-right: 44px;
