@@ -155,6 +155,7 @@ body {
         height: 36px;
         margin-left: 10px;
         margin-top: 6px;
+        margin-right: 30px;
         width: 90px;
 
         a {
@@ -203,6 +204,7 @@ body {
       #aux-nav {
         padding-bottom: 0;
         padding-top: 0;
+        height: 44px;
       }
 
       #aux-nav-right {
@@ -242,7 +244,8 @@ body {
         }
 
         .submit-button {
-          top: 6px;
+          top: 7px;
+          right: 17px;
         }
       }
 
@@ -548,7 +551,7 @@ select {
   position: relative;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 86.3 43.1'%3E%3Cpolygon points='86.3,0 43.1,43.1 0,0 '/%3E%3C/svg%3E%0A");
   background-color: transparent;
-  background-position: top 20px right 14px;
+  background-position: top 16px right 14px;
   background-repeat: no-repeat;
   background-size: 12px 12px;
 
@@ -573,10 +576,12 @@ select {
   &:link,
   &:visited {
     color: @warning;
+    text-decoration: underline;
   }
 
   &:hover {
     color: darken(@warning, 20%);
+    text-decoration: none;
   }
 }
 
@@ -591,13 +596,20 @@ select {
 form .submit {
   padding: 40px 0;
   text-align: center;
+  display: flex;
+  flex-direction: column;
 
+  .button {
+    margin-right: auto;
+    margin-left: auto;
+  }
   .button + .button {
     margin-top: 20px;
   }
 
   @media screen and (min-width: 970px) {
     text-align: left;
+    flex-direction: row;
 
     .button + .button {
       margin-top: 0;
@@ -1954,7 +1966,7 @@ input[type="submit"]{
   margin: 25px 0 0 0;
 
   .searchbox {
-    width: 200px;
+    max-width: 200px;
   }
 }
 
