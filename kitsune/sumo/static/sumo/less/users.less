@@ -14,28 +14,36 @@ article {
     padding-top: 80px;
     padding-bottom: 80px;
 
+    p, ul {
+      font-size: 14px;
+    }
+
     p {
       margin: 1.1rem 0;
-      font-size: 14px;
     }
 
     .login-button-wrap {
       margin: 1.5rem 0 -0.3rem;
 
       .button {
-        font-size: 16px;
         width: 350px;
         height: 60px;
-        box-sizing: border-box;
-        display: flex;
-        align-items: center;
-        justify-content: center;
       }
     }
 
     .help-text {
       font-size: 12px;
       line-height: 18px;
+    }
+
+    &.smaller-v-pad {
+      padding-top: 20px;
+      padding-bottom: 20px;
+
+      .help-text {
+        font-size: 11px;
+        line-height: 17px;
+      }
     }
 
 
@@ -222,6 +230,10 @@ article {
       list-style: none;
       padding: 0;
 
+      &:first-of-type label {
+        margin-top: 1.25rem;
+      }
+
       input {
         &[type="checkbox"] {
           width: auto;
@@ -257,7 +269,7 @@ article {
     label {
       display: block;
       font-weight: bold;
-      margin: 1.25em 0 0.25em;
+      margin: .7rem 0 0.25rem;
       text-align: left;
       vertical-align: top;
     }
