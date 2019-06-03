@@ -101,12 +101,18 @@ body {
     background: #000;
     position: relative;
 
+    #aux-nav,
+    #aux-nav-right {
+      display: flex;
+      align-items: center;
+    }
+
     #aux-nav {
-      padding: 29px 0 29px 20px;
+      padding: 16px 0 16px 20px;
     }
 
     #aux-nav-right {
-      padding: 29px 20px 29px 0;
+      padding: 16px 20px 16px 0;
     }
 
     #support-search {
@@ -116,8 +122,9 @@ body {
     .logo {
       background: url('../img/mozilla-support-white.svg') top left no-repeat;
       background-size: 112px 48px;
+      background-position: center;
       float: left;
-      margin-left: 30px;
+      margin: 16px 0 16px 30px;
       position: relative;
 
       a {
@@ -1435,6 +1442,7 @@ input[type="submit"]{
     > li {
       color: #000;
       display: inline-block;
+      vertical-align: middle;
       line-height: 1.2;
       margin: 0 8px 0 0;
 
@@ -1450,7 +1458,7 @@ input[type="submit"]{
 
         &.locale-picker {
           color: #fff;
-          padding-left: 54px;
+          padding-left: 10px;
           padding-right: 0;
           font-size: 18px;
           font-weight: bold;
@@ -1460,27 +1468,35 @@ input[type="submit"]{
 
       > svg {
         fill: #fff;
-        height: 28px;
-        padding-left: 12px;
-        padding-top: 6px;
-        position: absolute;
-        width: 28px;
+        height: 22px;
+        width: 22px;
+        padding-left: 5px;
+      }
+
+      &.lang-switcher-nav-item {
+        display: inline-flex;
+        align-items: center;
       }
     }
   }
 
   .firefox-download-button:link,
   .firefox-download-button:visited {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     background-color: @buttonGreen;
     border-radius: 100px;
     border: none;
+    box-sizing: border-box;
     font-size: 16px;
     font-weight: bold;
     height: 32px;
+    min-width: 170px;
     line-height: 30px;
     margin-left: 0;
     margin-top: 2px;
-    padding: 5px 30px;
+    padding: 5px 14px;
     position: relative;
     text-align: center;
     text-decoration: none;
@@ -1498,6 +1514,10 @@ input[type="submit"]{
 
   .signin-signup-button:link,
   .signin-signup-button:visited {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
     background-color: #fff;
     color: #000;
     border: none;
@@ -1506,14 +1526,14 @@ input[type="submit"]{
     font-weight: bold;
     height: 32px;
     line-height: 30px;
-    margin-left: 10px;
+    margin-left: 7px;
     margin-top: 2px;
-    padding: 5px 30px;
+    padding: 5px 16px;
     position: relative;
     text-align: center;
     text-decoration: none;
     transition: color .1s ease-in-out, background-color .1s ease-in-out;
-    min-width: 100px;
+    min-width: 170px;
 
     &:hover,
     &:focus,
