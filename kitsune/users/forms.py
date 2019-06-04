@@ -127,9 +127,9 @@ class ProfileForm(forms.ModelForm):
 
     class Meta(object):
         model = Profile
-        fields = ('name', 'public_email', 'bio', 'website', 'twitter',
-                  'facebook', 'mozillians', 'irc_handle', 'timezone', 'country', 'city',
-                  'locale', 'involved_from')
+        fields = ('name', 'bio', 'website', 'twitter',
+                  'facebook', 'mozillians', 'irc_handle', 'country', 'city',
+                  'timezone', 'locale', 'involved_from')
 
         widgets = {
             'facebook': FacebookURLWidget,
