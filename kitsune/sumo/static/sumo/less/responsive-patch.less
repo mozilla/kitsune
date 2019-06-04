@@ -8,6 +8,8 @@
 
 .lock-body {
   overflow: hidden;
+  position: fixed;
+  height: 100vh;
 }
 
 #get-involved-box {
@@ -94,7 +96,7 @@
     margin-left: 10px;
   }
 
-  &.scroll-header .menu-toggle {
+  &.scroll-header:not(.lock-body) .menu-toggle {
     display: none;
   }
 
@@ -159,6 +161,7 @@
           top: 0;
           bottom: 0;
           overflow: auto;
+          -webkit-overflow-scrolling: touch;
         }
 
         &.is-open { // off-canvas nav is open
