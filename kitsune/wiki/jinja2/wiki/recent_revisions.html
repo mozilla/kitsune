@@ -7,7 +7,7 @@
 {% block content %}
 
   <article id="revision-list">
-    <form class="filter" action="{{ url('wiki.revisions') }}">
+    <form class="filter inline-label is-condensed" action="{{ url('wiki.revisions') }}">
       {% for field in form %}
         {{ field.label }}
         {{ field }}
