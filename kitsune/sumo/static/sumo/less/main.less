@@ -549,11 +549,14 @@ textarea {
 
 select {
   position: relative;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 86.3 43.1'%3E%3Cpolygon points='86.3,0 43.1,43.1 0,0 '/%3E%3C/svg%3E%0A");
-  background-color: transparent;
-  background-position: top 16px right 14px;
-  background-repeat: no-repeat;
-  background-size: 12px 12px;
+
+  &:not([multiple]) {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 86.3 43.1'%3E%3Cpolygon points='86.3,0 43.1,43.1 0,0 '/%3E%3C/svg%3E%0A");
+    background-color: transparent;
+    background-position: top 16px right 14px;
+    background-repeat: no-repeat;
+    background-size: 12px 12px;
+  }
 
   &#id_involved_from_month {
     display: inline-block;
@@ -591,6 +594,14 @@ select {
   font-size: 0.8em;
   line-height: 1.4;
   color: @textLightGrey;
+
+  &.below-inline-label {
+    margin-top: -10px;
+
+    @media screen and (min-width: 970px) {
+      padding-left: 150px;
+    }
+  }
 }
 
 form .submit {
@@ -603,6 +614,7 @@ form .submit {
     margin-right: auto;
     margin-left: auto;
   }
+
   .button + .button {
     margin-top: 20px;
   }
@@ -610,6 +622,11 @@ form .submit {
   @media screen and (min-width: 970px) {
     text-align: left;
     flex-direction: row;
+
+    .button {
+      margin-right: 0;
+      margin-left: 0;
+    }
 
     .button + .button {
       margin-top: 0;
@@ -1287,7 +1304,7 @@ input[type="submit"]{
       > span,
       > a,
       > a:visited {
-        font-size: 12px;
+        font-size: 14px;
         padding: 10px 20px 10px 30px;
       }
 
@@ -1338,6 +1355,7 @@ input[type="submit"]{
   list-style: none;
   margin: 0;
   padding: 4px 2px;
+  font-size: 14px;
 
   > li {
     float: left;
@@ -1537,6 +1555,10 @@ input[type="submit"]{
     text-align: center;
     text-decoration: none;
     transition: color .1s ease-in-out, background-color .1s ease-in-out;
+
+    &.hidden {
+      display: none;
+    }
 
     &:hover,
     &:focus {
@@ -2591,7 +2613,7 @@ input[type="submit"]{
 
 .search-form-large {
   margin: 0 auto;
-  max-width: 800px;
+  max-width: 960px;
 
   .simple-search-form {
     display: block;
@@ -2712,6 +2734,8 @@ input[type="submit"]{
 
 .mt-0 { margin-top: 0 !important;}
 .mb-0 { margin-bottom: 0 !important;}
+
+
 
 
 @import 'buttons.less';

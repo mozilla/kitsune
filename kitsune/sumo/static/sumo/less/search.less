@@ -1,6 +1,84 @@
 @import 'variables.less';
 @import 'includes/search-result.less';
 
+.inline-label {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+
+  label {
+    margin-right: 20px;
+    margin-bottom: 0.25em;
+    min-width: 130px;
+  }
+
+  select + input,
+  input + input {
+    margin-top: 0.5em;
+  }
+
+  @media screen and (min-width: 610px) { // custom breakpoint for form sizing
+    flex-wrap: nowrap;
+
+    label {
+      margin-bottom: 0;
+    }
+
+    select + input,
+    input + input {
+      margin-left: 10px;
+      margin-top: 0;
+    }
+
+    &.is-condensed {
+      select,
+      input {
+        width: 200px;
+      }
+      #id_end {
+        margin-right: 0;
+      }
+    }
+  }
+}
+
+.ui-datepicker {
+    background: #fff;
+    box-shadow: 0 0 31px -12px rgba(0, 0, 0, 0.25);
+
+    &-header {
+      margin: 20px 20px 0;
+    }
+    &-calendar {
+      margin: 0 20px 20px;
+    }
+    &-prev,
+    &-next {
+      font-size: 0.8em;
+      cursor: pointer;
+    }
+
+    &-next {
+      float: right;
+    }
+
+    &-title {
+      font-size: 1.2em;
+    }
+
+    th {
+      font-weight: normal;
+      opacity: 0.4;
+      font-size: 0.7em;
+    }
+
+    td, th {
+      padding: 4px 12px 4px 0;
+      text-align: left;
+    }
+}
+
+
 #advanced-search {
   #advanced-search-tabs {
     margin: 25px 0;
@@ -11,16 +89,15 @@
   }
 
   #tab-wrapper {
+    &, label {
+      font-size: 14px;
+    }
+
     > form {
       > .container {
         margin-bottom: 20px;
 
         > label {
-          float: left;
-          margin-right: 20px;
-          text-align: right;
-          width: 110px;
-
           + div,
           + input,
           + select {
@@ -29,10 +106,6 @@
 
           + div {
             width: 510px;
-          }
-
-          + input {
-            width: 500px;
           }
         }
 
@@ -95,14 +168,6 @@
     width: 510px;
   }
 
-  .showhide-input {
-    select {
-      + input {
-        margin-left: 10px;
-      }
-    }
-  }
-
   .submit-search {
     float: right;
 
@@ -134,117 +199,6 @@
     .content-box {
       padding-left: 0;
       padding-right: 75px;
-    }
-  }
-}
-
-.search-filter.sidebar-nav {
-  background-color: #fff;
-  font-size: 14px;
-  margin: 0 0 10px;
-
-  > li {
-    background-color: #fff;
-
-    &.selected {
-      > a,
-      > a:visited {
-        background: #f3f3f3;
-        border: none;
-        border-left: 4px solid #000;
-        color: #000;
-        font-weight: bold;
-
-        &:before {
-          content: none;
-        }
-
-        &:hover {
-          color: #000;
-        }
-      }
-    }
-
-    > a,
-    > a:visited {
-      color: #000;
-      background: #fff;
-      border: none;
-      border-left: 4px solid #e7e7e7;
-      text-transform: none;
-
-      &:before {
-        content: none;
-      }
-
-      &:hover {
-        color: @textDarkBlue;
-      }
-    }
-
-    > ul {
-      list-style: none;
-      margin: 0;
-      padding: 0;
-      text-transform: none;
-
-      > li {
-        > a,
-        > a:visited {
-          background: #f3f3f3;
-          border-left: none;
-          color: #000;
-          display: block;
-          padding: 12px 20px;
-          text-decoration: none;
-
-          &:hover {
-            color: @textDarkBlue;
-          }
-        }
-
-        &.selected {
-          > a,
-          > a:visited {
-            border-left: 4px solid #000;
-            font-weight: bold;
-
-            &:hover {
-              color: #000;
-            }
-          }
-        }
-      }
-    }
-  }
-
-  .html-rtl & > li {
-    &.selected {
-      > a,
-      > a:visited {
-        border-left: none;
-        border-right: 4px solid #000;
-      }
-    }
-
-    > a,
-    > a:visited {
-      border-left: none;
-      border-right: 4px solid #e7e7e7;
-    }
-
-    > ul > li {
-      > a,
-      > a:visited {
-        border-right: none;
-      }
-
-      &.selected {
-        > a,
-        > a:visited {
-          border-right: 4px solid #000;
-        }
-      }
     }
   }
 }
