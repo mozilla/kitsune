@@ -4,6 +4,10 @@ var navToggle = document.querySelectorAll('[data-toggle-nav]');
 function toggleMobileNav(e){
   nav.classList.toggle('is-open');
   document.body.classList.toggle('lock-body');
+
+  var root = document.getElementsByTagName( 'html' )[0];
+  root.classList.toggle('lock-body');
+
   e.preventDefault();
 };
 
