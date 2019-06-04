@@ -64,7 +64,7 @@ body {
       padding-right: 30px;
     }
 
-    &.scroll-header {
+    &.scroll-header:not(.lock-body) {
       > header {
         .logo {
           padding-right: 10px;
@@ -135,7 +135,7 @@ body {
     }
   }
 
-  &.scroll-header {
+  &.scroll-header:not(.lock-body) {
     padding-top: 100px;
 
     > header {
@@ -1948,6 +1948,8 @@ input[type="submit"]{
     font-size: 14px;
     padding: 6px 42px 6px 20px;
     margin-right: 10px;
+    appearance: none;
+    -webkit-appearance: none;
 
     &:focus {
       outline: none;
