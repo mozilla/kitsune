@@ -93,7 +93,7 @@
   {# end TrafficCop #}
 
 </head>
-<body class="html-{{ DIR }} logged-{% if user.is_authenticated() %}in{% else %}out{% endif %} {{ classes }} {{ request.LANGUAGE_CODE }}"
+<body class="html-{{ DIR }} logged-{% if user.is_authenticated() %}in{% else %}out{% endif %} responsive {{ classes }} {{ request.LANGUAGE_CODE }}"
       data-readonly="{{ settings.READ_ONLY|json }}"
       data-usernames-api="{{ url('users.api.usernames') }}"
       data-static-url="{{ STATIC_URL }}"
