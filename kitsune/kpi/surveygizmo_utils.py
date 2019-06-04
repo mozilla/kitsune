@@ -84,7 +84,7 @@ def get_email_addresses(survey, startdatetime, enddatetime):
             timeout=300)
 
         results = json.loads(response.content)
-        total_pages = results['total_pages']
+        total_pages = results.get('total_pages', 1)
         more_pages = page < total_pages
         emails = emails + [r['[question(13)]'] for r in results['data']]
         page += 1
