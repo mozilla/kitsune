@@ -7,6 +7,7 @@ from django.contrib.auth.backends import ModelBackend
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse as django_reverse
+from django.db import transaction
 from django.utils.translation import ugettext as _
 
 from mozilla_django_oidc.auth import OIDCAuthenticationBackend
@@ -119,12 +120,13 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
         user = super(FXAAuthBackend, self).create_user(claims)
         # Create a user profile for the user and populate it with data from
         # Firefox Accounts
-        Profile.objects.get_or_create(user=user,
-                                      is_fxa_migrated=True,
-                                      fxa_uid=claims.get('uid'),
-                                      avatar=claims.get('avatar', ''),
-                                      name=claims.get('displayName', ''),
-                                      locale=claims.get('locale', ''))
+        profile, _ = Profile.objects.get_or_create(user=user)
+        profile.is_fxa_migrated = True
+        profile.fxa_uid = claims.get('uid')
+        profile.fxa_avatar = claims.get('avatar', '')
+        profile.name = claims.get('displayName', '')
+        profile.locale = claims.get('locale', '')
+        profile.save()
 
         # This is a new sumo profile, redirect to the edit profile page
         self.request.session['oidc_login_next'] = reverse('users.edit_my_profile')
@@ -166,6 +168,8 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
         fxa_uid = claims.get('uid')
         email = claims.get('email')
 
+        user_attr_changed = False
+
         if not profile.is_fxa_migrated:
             # Check if there is already a Firefox Account with this ID
             if Profile.objects.filter(fxa_uid=fxa_uid).exists():
@@ -189,16 +193,20 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
                 messages.error(self.request, msg)
                 return None
             user.email = email
-            user.save()
+            user_attr_changed = True
 
-        if not profile.avatar:
-            # Best effort to get an avatar from FxA
-            profile.avatar = claims.get('avatar', '')
+        # Follow avatars and locales from FxA profiles
+        profile.fxa_avatar = claims.get('avatar', '')
+        profile.locale = claims.get('locale', '')
 
+        # Users can select their own display name.
         if not profile.name:
             profile.name = claims.get('displayName', '')
 
-        profile.save()
+        with transaction.atomic():
+            if user_attr_changed:
+                user.save()
+            profile.save()
         return user
 
     def authenticate(self, request, **kwargs):

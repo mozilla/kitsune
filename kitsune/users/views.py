@@ -511,6 +511,9 @@ def edit_avatar(request):
         # a profile. We can remove this fallback.
         user_profile = Profile.objects.create(user=request.user)
 
+    if user_profile.is_fxa_migrated:
+        raise Http404
+
     if request.method == 'POST':
         # Upload new avatar and replace old one.
         old_avatar_path = None
@@ -550,6 +553,9 @@ def delete_avatar(request):
         # TODO: Once we do user profile migrations, all users should have a
         # a profile. We can remove this fallback.
         user_profile = Profile.objects.create(user=request.user)
+
+    if user_profile.is_fxa_migrated:
+        raise Http404
 
     if request.method == 'POST':
         # Delete avatar here
@@ -664,6 +670,8 @@ def password_reset_complete(request, template):
 @mobile_template('users/{mobile/}pw_change.html')
 def password_change(request, template):
     """Change password form page."""
+    if request.user.profile.is_fxa_migrated:
+        raise Http404
     if request.method == 'POST':
         form = PasswordChangeForm(user=request.user, data=request.POST)
         if form.is_valid():

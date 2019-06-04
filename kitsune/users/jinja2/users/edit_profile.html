@@ -57,43 +57,45 @@
               <div class="edit-profile-avatar">
                 <figure class="avatar-preview">
                   {% if profile_avatar(profile.user) %}
-                  <img class="avatar" src="{{ profile_avatar(profile.user) }}" alt="">
+                    <img class="avatar" src="{{ profile_avatar(profile.user) }}" alt="">
                   {% else %}
-                  <img class="avatar-fallback" src="/static/sumo/img/firefox-logo.svg" alt="Firefox logo">
+                    <img class="avatar-fallback" src="/static/sumo/img/firefox-logo.svg" alt="Firefox logo">
                   {% endif %}
                 </figure>
-                <a class="change-avatar" href="https://gravatar.com/emails" target="_blank">
-                  {{ pgettext('avatar', 'Choose Photo') }}
-                  <span class="tip">
-                    {% trans %}
-                      <p>
-                        SUMO is now using Gravatars as avatars. You must change
-                        your Gravatar on gravatar.com.
-                      </p>
-                      <p>
-                        It can take a few minutes for the avatar change to take
-                        effect. You may need to wait a few minutes and reload
-                        the page to see your new Gravatar.
-                      </p>
-                    {% endtrans %}
-                  </span>
-                </a>
-                {% if profile.avatar %}
-                  <a class="remove-avatar" href="{{ url('users.delete_avatar') }}">{{ _('Delete') }}</a>
+                {% if not profile.is_fxa_migrated %}
+                  <a class="change-avatar" href="https://gravatar.com/emails" target="_blank">
+                    {{ pgettext('avatar', 'Choose Photo') }}
+                    <span class="tip">
+                      {% trans %}
+                        <p>
+                          SUMO is now using Gravatars as avatars. You must change
+                          your Gravatar on gravatar.com.
+                        </p>
+                        <p>
+                          It can take a few minutes for the avatar change to take
+                          effect. You may need to wait a few minutes and reload
+                          the page to see your new Gravatar.
+                        </p>
+                      {% endtrans %}
+                    </span>
+                  </a>
+                  {% if profile.avatar %}
+                    <a class="remove-avatar" href="{{ url('users.delete_avatar') }}">{{ _('Delete') }}</a>
+                  {% endif %}
                 {% endif %}
-                </div>
+              </div>
             </li>
-            <li>
-              <label>{{ _('Password:') }}</label>
-              <a href="{{ url('users.pw_change') }}">{{ _('Change') }}</a>
-            </li>
-            <li>
+            {% if not profile.is_fxa_migrated %}
+              <li>
+                <label>{{ _('Password:') }}</label>
+                <a href="{{ url('users.pw_change') }}">{{ _('Change') }}</a>
+              </li>
+              <li>
               <label>{{ _('Email:') }}</label>
               {{ user.email }}
-              {% if not profile.is_fxa_migrated %}
                 <a href="{{ url('users.change_email') }}">{{ _('Change') }}</a>
-              {% endif %}
-            </li>
+              </li>
+            {% endif %}
           {% endif %}
           {{ form.as_ul()|safe }}
         </ul>
