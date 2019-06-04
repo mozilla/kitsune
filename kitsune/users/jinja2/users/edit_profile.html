@@ -2,7 +2,7 @@
 {% from "users/includes/notification_macros.html" import notification_fxa_updated, notification_fxa_created %}
 
 {% set title = _('Edit Profile') %}
-{% set classes = 'profile responsive' %}
+{% set classes = 'profile' %}
 {% set active = 'edit-profile' %}
 {% set crumbs = [(profile_url(profile.user), profile.user.username),
                  (None, title)] %}
