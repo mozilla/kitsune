@@ -289,43 +289,6 @@ products = OrderedDict([
         ])
     }),
 
-    ('webmaker', {
-        'name': _lazy(u'Webmaker'),
-        'subtitle': _lazy(u'Tools for creating and teaching the web'),
-        'extra_fields': [],
-        'tags': [],
-        'product': 'webmaker',
-        'categories': OrderedDict([
-            # TODO: Just use the IA topics for this.
-            # See bug 979397
-            ('popcorn-maker', {
-                'name': _lazy(u'Using Popcorn Maker'),
-                'topic': 'popcorn-maker',
-                'tags': ['popcorn-maker'],
-            }),
-            ('thimble', {
-                'name': _lazy(u'Using Thimble'),
-                'topic': 'thimble',
-                'tags': ['thimble'],
-            }),
-            ('x-ray-goggles', {
-                'name': _lazy(u'Using X-Ray Goggles'),
-                'topic': 'x-ray-goggles',
-                'tags': ['x-ray-goggles'],
-            }),
-            ('get-the-most-from-webmaker', {
-                'name': _lazy(u'Using a feature on webmaker.org'),
-                'topic': 'get-the-most-from-webmaker',
-                'tags': ['get-the-most-from-webmaker'],
-            }),
-            ('events-and-help-for-mentors', {
-                'name': _lazy(u'Contributing to Webmaker'),
-                'topic': 'events-and-help-for-mentors',
-                'tags': ['events-and-help-for-mentors'],
-            }),
-        ])
-    }),
-
     ('firefox-enterprise', {
         'name': _lazy(u'Firefox for Enterprise'),
         'subtitle': _lazy(u'Enterprise version of Firefox'),
