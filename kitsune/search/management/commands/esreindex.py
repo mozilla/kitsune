@@ -63,4 +63,4 @@ class Command(BaseCommand):
             mapping_types=mapping_types,
             criticalmass=criticalmass,
             seconds_ago=seconds_ago,
-log=FakeLogger(self.stdout))
+            log=FakeLogger(self.stdout))
