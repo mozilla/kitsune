@@ -44,7 +44,7 @@ def path(*parts):
 
 # Read-only mode setup.
 READ_ONLY = config('READ_ONLY', default=False, cast=bool)
-SKIP_MOBILE_DETECTION = config('SKIP_MOBILE_DETECTION', default=READ_ONLY, cast=bool)
+SKIP_MOBILE_DETECTION = config('SKIP_MOBILE_DETECTION', default=False, cast=bool)
 ENABLE_VARY_NOCACHE_MIDDLEWARE = config('ENABLE_VARY_NOCACHE_MIDDLEWARE', default=READ_ONLY, cast=bool)
 
 ADMINS = (
