@@ -30,7 +30,7 @@
               </div>
 
               <div class="container inline-label">
-                <label>{{ search_form.language.label_tag() }}</label>
+                <label for="{{ search_form.language.name }}">{{ search_form.language.label_tag() }}</label>
                 {{ search_form.language }}
               </div>
 
@@ -63,7 +63,7 @@
               </div>
 
               <div class="container inline-label">
-                <label>{{ search_form.sortby_documents.label_tag() }}</label>
+                <label for="{{ search_form.sortby_documents.name }}">{{ search_form.sortby_documents.label_tag() }}</label>
                 {{ search_form.sortby_documents }}
               </div>
 
@@ -119,7 +119,7 @@
               </div>
 
               <div class="container cf showhide-input inline-label">
-                <label>{{ search_form.num_voted.label_tag() }}</label>
+                <label for="{{ search_form.num_voted.name }}">{{ search_form.num_voted.label_tag() }}</label>
                 {{ search_form.num_voted }}
                 <input name="num_votes" type="text" pattern="\d*"
                        value="{{ search_form.num_votes.data or '' }}"
@@ -127,17 +127,17 @@
               </div>
 
               <div class="container inline-label">
-                <label>{{ search_form.asked_by.label_tag() }}</label>
+                <label for="{{ search_form.asked_by.name }}">{{ search_form.asked_by.label_tag() }}</label>
                 {{ search_form.asked_by }}
               </div>
 
               <div class="container inline-label">
-                <label>{{ search_form.answered_by.label_tag() }}</label>
+                <label for="{{ search_form.answered_by.name }}">{{ search_form.answered_by.label_tag() }}</label>
                 {{ search_form.answered_by }}
               </div>
 
               <div class="container inline-label">
-                <label>{{ search_form.q_tags.label_tag() }}</label>
+                <label for="{{ search_form.q_tags.name }}">{{ search_form.q_tags.label_tag() }}</label>
                 {{ search_form.q_tags }}
               </div>
               <p class="helptext below-inline-label">
@@ -159,19 +159,19 @@
               </div>
 
               <div class="container showhide-input inline-label">
-                <label>{{ search_form.created.label_tag() }}</label>
+                <label for="{{ search_form.created.name }}">{{ search_form.created.label_tag() }}</label>
                 {{ search_form.created }}
                 <input name="created_date" type="text" value="{{ search_form.created_date.data or '' }}" class="datepicker" title="{{ _('Created date. Format: mm/dd/yy') }}" />
               </div>
 
               <div class="container showhide-input inline-label">
-                <label>{{ search_form.updated.label_tag() }}</label>
+                <label for="{{ search_form.updated.name }}">{{ search_form.updated.label_tag() }}</label>
                 {{ search_form.updated }}
                 <input name="updated_date" type="text" value="{{ search_form.updated_date.data or '' }}" class="datepicker" title="{{ _('Updated date. Format: mm/dd/yy') }}" />
               </div>
 
               <div class="container inline-label">
-                <label>{{ search_form.sortby.label_tag() }}</label>
+                <label for="{{ search_form.sortby.name }}">{{ search_form.sortby.label_tag() }}</label>
                 {{ search_form.sortby }}
               </div>
 
@@ -199,29 +199,29 @@
               </div>
 
               <div class="container inline-label">
-                <label for="author">{{ search_form.author.label_tag() }}</label>
+                <label for="{{ search_form.author.name }}">{{ search_form.author.label_tag() }}</label>
                 {{ search_form.author }}
               </div>
 
               <div class="container showhide-input inline-label">
-                <label for="created">{{ search_form.created.label_tag() }}</label>
+                <label for="{{ search_form.created.name }}">{{ search_form.created.label_tag() }}</label>
                 {{ search_form.created }}
                 <input name="created_date" type="text" value="{{ search_form.created_date.data or '' }}" class="datepicker" title="{{ _('Created date. Format: mm/dd/yy') }}" />
               </div>
 
               <div class="container showhide-input inline-label">
-                <label for="updated">{{ search_form.updated.label_tag() }}</label>
+                <label for="{{ search_form.updated.name }}">{{ search_form.updated.label_tag() }}</label>
                 {{ search_form.updated }}
                 <input name="updated_date" type="text" value="{{ search_form.updated_date.data or '' }}" class="datepicker" title="{{ _('Updated date. Format: mm/dd/yy') }}" />
               </div>
 
               <div class="container inline-label">
-                <label for="sortby">{{ search_form.sortby.label_tag() }}</label>
+                <label for="{{ search_form.sortby.name }}">{{ search_form.sortby.label_tag() }}</label>
                 {{ search_form.sortby }}
               </div>
 
               <div class="container inline-label">
-                <label for="forum">{{ search_form.forum.label_tag() }}</label>
+                <label for="{{ search_form.forum.name }}">{{ search_form.forum.label_tag() }}</label>
                 {{ search_form.forum }}
               </div>
 
