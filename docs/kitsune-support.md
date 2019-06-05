@@ -15,7 +15,7 @@ High level:
 Tech details:
 
 - [SUMO K8s deployments/services/secrets templates](https://github.com/mozilla/kitsune/tree/master/k8s/)
-- [SUMO AWS resource definitions](https://github.com/mozilla/sumo-infra/tree/master/k8s/tf)
+- [SUMO AWS resource definitions](https://github.com/mozilla-it/sumo-infra/tree/master/k8s/tf)
 
 
 
