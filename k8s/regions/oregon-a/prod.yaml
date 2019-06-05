@@ -120,7 +120,7 @@ app:
     oidc_rp_client_secret: SECRET
     pipeline_enabled: True
     port: 8000
-    read_only: False
+    read_only: True
     redis_default_url: SECRET
     redis_helpfulvotes_url: SECRET
     run_migrate: "true"
