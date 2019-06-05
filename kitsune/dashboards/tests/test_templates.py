@@ -42,7 +42,7 @@ class LocalizationDashTests(TestCase):
         eq_(200, resp.status_code)
         resp_content = pq(resp.content)
         eq_(1, len(resp_content('#get-involved-box')))
-        eq_(1, len(resp_content('#get-involved-box .btn-submit')))
+        eq_(1, len(resp_content('#get-involved-box .button')))
 
     def test_hide_volunteer_button_for_authed(self):
         u1 = UserFactory()
