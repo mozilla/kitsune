@@ -5,7 +5,7 @@ kubernetes:
     nodeport_name: "sumo-nodeport"
     secrets_name: "sumo-secrets-prod"
     image:
-        repo: "mozmeao/kitsune"
+        repo: "itsre/sumo-kitsune"
         tag: "full-latest"
         pull_policy: "Always"
     # default values
@@ -49,7 +49,7 @@ kubernetes:
 
 app:
     allowed_cidr_nets: SECRET
-    allowed_hosts: ".sumo.moz.works,support.mozilla.com,support.mozilla.org"
+    allowed_hosts: ".sumo.mozit.cloud,support.mozilla.com,support.mozilla.org"
     aws_access_key_id: SECRET
     aws_s3_custom_domain: SECRET
     aws_secret_access_key: SECRET
@@ -89,7 +89,7 @@ app:
     dms_update_product_details: SECRET
     dms_update_top_contributors: SECRET
     dms_update_weekly_votes: SECRET
-    k8s_domain: "oregon-b.moz.works"
+    k8s_domain: "oregon-b.mozit.cloud"
     email_host: SECRET
     email_host_user: SECRET
     email_host_password: SECRET
@@ -98,7 +98,7 @@ app:
     email_use_tls: True
     enable_admin: True
     enable_whitenoise: True
-    enforce_host: support.mozilla.org,prod-oregon-b.sumo.moz.works
+    enforce_host: "support.mozilla.org,prod-oregon-b.sumo.mozit.cloud,prod-tp.sumo.mozit.cloud"
     engage_robots: True
     es_index_prefix: "sumo_prod"
     es_http_auth: SECRET
@@ -109,7 +109,7 @@ app:
     ga_key: SECRET
     ga_profile_id: SECRET
     gtm_container_id: "UA-36116321-2"
-    media_url: "https://prod-cdn.sumo.mozilla.net/"
+    media_url: "https://user-media-prod-cdn.itsre-sumo.mozilla.net/"
     new_relic_app_name: "sumo-prod-oregon-b;sumo-prod-oregon"
     new_relic_license_key: SECRET
     oidc_enable: True
@@ -126,7 +126,7 @@ app:
     secret_key: SECRET
     session_cookie_secure: True
     stage: False
-    static_url: "https://static-media-prod-cdn.sumo.mozilla.net/static/"
+    static_url: "https://static-media-prod-cdn.itsre-sumo.mozilla.net/static/"
     statsd_client: SECRET
     statsd_host: SECRET
     statsd_prefix: "sumo-prod.oregon-b"
@@ -144,3 +144,4 @@ app:
     disable_questions_list_global: False
     disable_questions_list_all: False
     disable_feeds: False
+    sentry_dsn: SECRET

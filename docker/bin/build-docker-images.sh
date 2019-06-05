@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-DOCKER_REPO=${DOCKER_REPO:-mozmeao/kitsune}
+DOCKER_REPO=${DOCKER_REPO:-itsre/sumo-kitsune}
 GIT_SHA=${GIT_SHA:-auto}
 GIT_SHA_SHORT=${GIT_SHA_SHORT:-$GIT_SHA}
 LOCALE_ENV=${LOCALE_ENV:-master}
@@ -18,7 +18,7 @@ do
                  -t ${DOCKER_REPO}:${image}-${GIT_SHA_SHORT} \
                  --cache-from ${DOCKER_REPO}:${image}-latest \
                  --cache-from kitsune:${image}-latest \
-                 -f docker/dockerfiles/${image} \
+                 -f Dockerfile \
                  --build-arg GIT_SHA=${GIT_SHA} \
                  --build-arg LOCALE_ENV=${LOCALE_ENV} .
 done

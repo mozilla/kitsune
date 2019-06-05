@@ -3,7 +3,7 @@ set -exo pipefail
 GREEN='\033[1;32m'
 NC='\033[0m' # No Color
 SLACK_CHANNEL=sumodev
-DOCKER_HUB="https://hub.docker.com/r/mozmeao/kitsune/tags/"
+DOCKER_HUB="https://hub.docker.com/r/itsre/sumo-kitsune/tags/"
 
 
 function whatsdeployed {
@@ -37,7 +37,7 @@ function deploy {
     post-deploy $@
 
     if command -v slack-cli > /dev/null; then
-        slack-cli -d "${SLACK_CHANNEL}" ":tada: Successfully deployed <${DOCKER_HUB}|full-${COMMIT_HASH}> to <https://${REGION_ENV}-${REGION}.sumo.moz.works/|SUMO-${REGION_ENV} in ${REGION}>"
+        slack-cli -d "${SLACK_CHANNEL}" ":tada: Successfully deployed <${DOCKER_HUB}|full-${COMMIT_HASH}> to <https://${REGION_ENV}-${REGION}.sumo.mozit.cloud/|SUMO-${REGION_ENV} in ${REGION}>"
     fi
     printf "${GREEN}OK${NC}\n"
 }

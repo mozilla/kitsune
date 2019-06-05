@@ -1,4 +1,4 @@
-@Library('github.com/mozmeao/jenkins-pipeline@20171123.1')
+@Library('github.com/mozilla-it/jenkins-pipeline@20171123.1')
 def config
 def docker_image
 def dc_name
@@ -112,3 +112,4 @@ conduit {
         sh "bin/slack-notify.sh --status success --stage 'Docker image ready to deploy: ${docker_image}'"
     }
 }
+
