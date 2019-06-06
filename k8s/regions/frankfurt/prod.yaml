@@ -94,7 +94,7 @@ app:
     enable_admin: False
     enable_whitenoise: True
     enforce_host: "support.mozilla.org,prod-frankfurt.sumo.mozit.cloud,prod-tp.sumo.mozit.cloud"
-    engage_robots: False
+    engage_robots: True
     es_index_prefix: "sumo_prod"
     es_http_auth: SECRET
     es_live_indexing: True
