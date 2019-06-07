@@ -127,7 +127,7 @@ class ProfileForm(forms.ModelForm):
 
     class Meta(object):
         model = Profile
-        fields = ('name', 'bio', 'website', 'twitter',
+        fields = ('name', 'bio', 'public_email', 'website', 'twitter',
                   'facebook', 'mozillians', 'irc_handle', 'country', 'city',
                   'timezone', 'locale', 'involved_from')
 
@@ -137,6 +137,11 @@ class ProfileForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(ProfileForm, self).__init__(*args, **kwargs)
+
+        # # Add the public_email toggle if the user has not migrated to FxA yet
+        if self.instance and self.instance.is_fxa_migrated:
+            self.fields.pop('public_email')
+
         for field in self.fields.values():
             if isinstance(field, forms.CharField):
                 field.empty_value = ''
