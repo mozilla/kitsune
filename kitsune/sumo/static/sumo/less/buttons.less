@@ -1,15 +1,21 @@
 .button,
 .button:link,
 .button:visited {
+  box-sizing: border-box;
   display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   border-radius: @button-radius;
   color: @button-color;
   font-weight: bold;
-  font-size: 18px;
+  font-size: 16px;
   background: @button-primary-bg;
   border: 0 none;
-  padding: 10px 30px;
+  padding: 9px 24px;
   text-align: center;
+  min-height: 40px;
+  min-width: 120px;
 
   &:hover {
     background: darken(@button-primary-bg, 10%);
@@ -26,8 +32,12 @@
 
     &:hover,
     &:active {
-      background: @button-dark-bg;
+      background: @button-dark-hover;
       color: @button-color;
+    }
+
+    &:active {
+      background: @button-dark-active;
     }
   }
 
@@ -42,12 +52,13 @@
   &.transparent {
     background: transparent;
     color: @button-dark-bg;
-    font-weight: normal;
-    font-size: 0.9em;
+    font-size: 14px;
+    opacity: 0.5;
 
     &:hover {
       background: transparent;
       color: @button-dark-bg;
+      opacity: 1;
     }
   }
 }

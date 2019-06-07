@@ -38,7 +38,7 @@ small small {
 
 article {
   a:visited {
-    color: @textPurple;
+    color: @textVisited;
   }
 }
 
@@ -64,7 +64,7 @@ body {
       padding-right: 30px;
     }
 
-    &.scroll-header {
+    &.scroll-header:not(.lock-body) {
       > header {
         .logo {
           padding-right: 10px;
@@ -101,12 +101,18 @@ body {
     background: #000;
     position: relative;
 
+    #aux-nav,
+    #aux-nav-right {
+      display: flex;
+      align-items: center;
+    }
+
     #aux-nav {
-      padding: 29px 0 29px 20px;
+      padding: 16px 0 16px 20px;
     }
 
     #aux-nav-right {
-      padding: 29px 20px 29px 0;
+      padding: 16px 20px 16px 0;
     }
 
     #support-search {
@@ -116,8 +122,9 @@ body {
     .logo {
       background: url('../img/mozilla-support-white.svg') top left no-repeat;
       background-size: 112px 48px;
+      background-position: center;
       float: left;
-      margin-left: 30px;
+      margin: 16px 0 16px 30px;
       position: relative;
 
       a {
@@ -128,7 +135,7 @@ body {
     }
   }
 
-  &.scroll-header {
+  &.scroll-header:not(.lock-body) {
     padding-top: 100px;
 
     > header {
@@ -148,6 +155,7 @@ body {
         height: 36px;
         margin-left: 10px;
         margin-top: 6px;
+        margin-right: 30px;
         width: 90px;
 
         a {
@@ -196,6 +204,7 @@ body {
       #aux-nav {
         padding-bottom: 0;
         padding-top: 0;
+        height: 44px;
       }
 
       #aux-nav-right {
@@ -235,7 +244,8 @@ body {
         }
 
         .submit-button {
-          top: 6px;
+          top: 7px;
+          right: 17px;
         }
       }
 
@@ -291,16 +301,24 @@ body {
 
   #aux-nav-right > ul > li {
     > a.locale-picker {
-      padding-left: 0;
+      padding-left: 5px;
       padding-right: 0;
       margin: 0 0 0 20px;
+
+      @media screen and (min-width: 970px) {
+        padding-left: 0;
+      }
     }
 
     > svg {
       position: relative;
-      margin: 0 20px -7px 10px;
+      margin: -4px 0 0 8px;
       padding: 0;
       display: inline-block;
+
+      @media screen and (min-width: 970px) {
+        margin: 0 20px -7px 10px;
+      }
     }
   }
 }
@@ -346,7 +364,7 @@ footer {
     font-weight: bold;
     margin: 1em 0 .9em 0;
 
-    @media screen and (min-width: 960px) {
+    @media screen and (min-width: 970px) {
         margin-top: 0;
     }
   }
@@ -364,14 +382,18 @@ footer {
     font-size: 12px;
     line-height: 160%;
     font-weight: bold;
+    padding-top: 20px;
+    border-top: 2px solid white;
 
     a:link,
     a:visited {
       color: @textBlue;
     }
 
-    @media screen and (min-width: 960px) {
+    @media screen and (min-width: 970px) {
       font-weight: normal;
+      padding-top: 0;
+      border-top: 0 none;
 
       a:link,
       a:visited {
@@ -391,7 +413,7 @@ footer {
       padding-left: 8px;
       color: @textBlue;
 
-      @media screen and (min-width: 960px) {
+      @media screen and (min-width: 970px) {
         color: #9b9b9b;
       }
     }
@@ -416,7 +438,7 @@ footer {
       font-weight: bold;
       color: @textBlue;
 
-      @media screen and (min-width: 960px) {
+      @media screen and (min-width: 970px) {
         color: #9b9b9b;
         font-weight: normal;
       }
@@ -480,7 +502,7 @@ h1 {
 }
 
 h3 {
-  font-size: 20px;
+  font-size: 16px;
 }
 
 ul.errorlist {
@@ -527,11 +549,14 @@ textarea {
 
 select {
   position: relative;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 86.3 43.1'%3E%3Cpolygon points='86.3,0 43.1,43.1 0,0 '/%3E%3C/svg%3E%0A");
-  background-color: transparent;
-  background-position: top 20px right 14px;
-  background-repeat: no-repeat;
-  background-size: 12px 12px;
+
+  &:not([multiple]) {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 86.3 43.1'%3E%3Cpolygon points='86.3,0 43.1,43.1 0,0 '/%3E%3C/svg%3E%0A");
+    background-color: transparent;
+    background-position: top 16px right 14px;
+    background-repeat: no-repeat;
+    background-size: 12px 12px;
+  }
 
   &#id_involved_from_month {
     display: inline-block;
@@ -554,10 +579,12 @@ select {
   &:link,
   &:visited {
     color: @warning;
+    text-decoration: underline;
   }
 
   &:hover {
     color: darken(@warning, 20%);
+    text-decoration: none;
   }
 }
 
@@ -567,18 +594,39 @@ select {
   font-size: 0.8em;
   line-height: 1.4;
   color: @textLightGrey;
+
+  &.below-inline-label {
+    margin-top: -10px;
+
+    @media screen and (min-width: 970px) {
+      padding-left: 150px;
+    }
+  }
 }
 
 form .submit {
   padding: 40px 0;
   text-align: center;
+  display: flex;
+  flex-direction: column;
+
+  .button {
+    margin-right: auto;
+    margin-left: auto;
+  }
 
   .button + .button {
     margin-top: 20px;
   }
 
-  @media screen and (min-width: 960px) {
+  @media screen and (min-width: 970px) {
     text-align: left;
+    flex-direction: row;
+
+    .button {
+      margin-right: 0;
+      margin-left: 0;
+    }
 
     .button + .button {
       margin-top: 0;
@@ -612,7 +660,7 @@ form .submit {
     margin-left: auto;
   }
 
-  @media screen and (min-width: 960px) {
+  @media screen and (min-width: 970px) {
     align-items: center;
 
     .avatar-preview {
@@ -633,9 +681,9 @@ form .submit {
   flex-direction: column;
   padding: 30px 0 20px;
 
-  @media screen and (min-width: 960px) {
+  @media screen and (min-width: 970px) {
     flex-direction: row;
-    align-items: center;
+    align-items: flex-start;
   }
 }
 
@@ -669,7 +717,7 @@ form .submit {
     opacity: 0.2;
   }
 
-  @media screen and (min-width: 960px) {
+  @media screen and (min-width: 970px) {
     width: 170px;
     height: 170px;
     margin: 0 20px 0 0;
@@ -1256,7 +1304,7 @@ input[type="submit"]{
       > span,
       > a,
       > a:visited {
-        font-size: 12px;
+        font-size: 14px;
         padding: 10px 20px 10px 30px;
       }
 
@@ -1307,6 +1355,7 @@ input[type="submit"]{
   list-style: none;
   margin: 0;
   padding: 4px 2px;
+  font-size: 14px;
 
   > li {
     float: left;
@@ -1364,7 +1413,7 @@ input[type="submit"]{
       color: #000;
       display: inline-block;
       line-height: 1.2;
-      margin: 0 8px 0 0;
+      margin: 0 15px 0 0;
       position: relative;
       text-align: left;
 
@@ -1375,7 +1424,7 @@ input[type="submit"]{
         font-weight: bold;
         height: 42px;
         line-height: 40px;
-        padding: 0 12px;
+        padding: 0;
         text-decoration: none;
       }
 
@@ -1383,6 +1432,14 @@ input[type="submit"]{
         background-color: #000;
         color: #fff;
         text-decoration: underline;
+      }
+
+      &.dropdown {
+        > a,
+        > a:visited,
+        > span {
+          padding-right: 12px;
+        }
       }
     }
   }
@@ -1435,8 +1492,9 @@ input[type="submit"]{
     > li {
       color: #000;
       display: inline-block;
+      vertical-align: middle;
       line-height: 1.2;
-      margin: 0 8px 0 0;
+      margin: 0 15px 0 0;
 
       > a,
       > a:visited,
@@ -1450,41 +1508,57 @@ input[type="submit"]{
 
         &.locale-picker {
           color: #fff;
-          padding-left: 54px;
+          padding-left: 9px;
           padding-right: 0;
           font-size: 18px;
           font-weight: bold;
           text-transform: uppercase;
         }
+
+        &.user {
+          padding: 0;
+        }
       }
 
       > svg {
         fill: #fff;
-        height: 28px;
-        padding-left: 12px;
-        padding-top: 6px;
-        position: absolute;
-        width: 28px;
+        height: 22px;
+        width: 22px;
+        padding-left: 0;
+      }
+
+      &.lang-switcher-nav-item {
+        display: inline-flex;
+        align-items: center;
       }
     }
   }
 
   .firefox-download-button:link,
   .firefox-download-button:visited {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     background-color: @buttonGreen;
     border-radius: 100px;
     border: none;
+    box-sizing: border-box;
     font-size: 16px;
     font-weight: bold;
     height: 32px;
+    min-width: 170px;
     line-height: 30px;
     margin-left: 0;
     margin-top: 2px;
-    padding: 5px 30px;
+    padding: 5px 14px;
     position: relative;
     text-align: center;
     text-decoration: none;
     transition: color .1s ease-in-out, background-color .1s ease-in-out;
+
+    &.hidden {
+      display: none;
+    }
 
     &:hover,
     &:focus {
@@ -1498,6 +1572,10 @@ input[type="submit"]{
 
   .signin-signup-button:link,
   .signin-signup-button:visited {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
     background-color: #fff;
     color: #000;
     border: none;
@@ -1505,15 +1583,12 @@ input[type="submit"]{
     font-size: 16px;
     font-weight: bold;
     height: 32px;
-    line-height: 30px;
-    margin-left: 10px;
-    margin-top: 2px;
-    padding: 5px 30px;
+    padding: 5px 16px;
     position: relative;
     text-align: center;
     text-decoration: none;
     transition: color .1s ease-in-out, background-color .1s ease-in-out;
-    min-width: 100px;
+    min-width: 170px;
 
     &:hover,
     &:focus,
@@ -1536,30 +1611,29 @@ input[type="submit"]{
   &.dropdown {
     position: relative;
 
-    @media screen and (min-width: 960px) {
+    @media screen and (min-width: 970px) {
       &:not(.user-dropdown):after {
         display: inline-block;
-        margin: 0 0 -3px -7px;
+        margin: 0 0 2px -7px;
         width: 10px;
-        height: 13px;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10.8 17.23'%3E%3Cpolyline points='1.19 16.17 8.68 8.68 1.06 1.06' fill='none' stroke='%23fff' stroke-width='3'/%3E%3C/svg%3E");
+        height: 5px;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10.71 6.06'%3E%3Cpolyline points='0.35 0.35 5.35 5.35 10.35 0.35' fill='none' stroke='%23fff' stroke-width='2' /%3E%3C/svg%3E");
         background-repeat: no-repeat;
         background-size: auto 100%;
-        transform: rotate(90deg);
         content: "";
       }
     }
   }
 
   &.user-dropdown > ul {
-    right: 16px;
+    right: 4px;
   }
 
   > ul {
     background: #fff;
-    box-shadow: 0 2px 3px 0 rgba(0,0,0,.04), 0 2px 10px 0 rgba(0,0,0,.08);
+    box-shadow: 0 0 31px -12px rgba(0,0,0,0.25);
     display: none;
-    right: -13px;
+    right: -11px;
     list-style: none;
     margin: 0;
     padding: 12px;
@@ -1753,7 +1827,7 @@ input[type="submit"]{
     }
   }
 
-  @media screen and (min-width: 960px) {
+  @media screen and (min-width: 970px) {
     &.card-grid {
       margin-left: -12px;
       margin-right: -12px;
@@ -1874,6 +1948,8 @@ input[type="submit"]{
     font-size: 14px;
     padding: 6px 42px 6px 20px;
     margin-right: 10px;
+    appearance: none;
+    -webkit-appearance: none;
 
     &:focus {
       outline: none;
@@ -1914,7 +1990,7 @@ input[type="submit"]{
   margin: 25px 0 0 0;
 
   .searchbox {
-    width: 200px;
+    max-width: 200px;
   }
 }
 
@@ -2539,7 +2615,7 @@ input[type="submit"]{
 
 .search-form-large {
   margin: 0 auto;
-  max-width: 800px;
+  max-width: 960px;
 
   .simple-search-form {
     display: block;
@@ -2554,7 +2630,7 @@ input[type="submit"]{
       color: #000;
       font-size: 16px;
       height: 60px;
-      padding: 0 0 0 20px;
+      padding: 0 54px 0 20px;
       width: 100%;
       box-sizing: border-box;
 
@@ -2629,23 +2705,22 @@ input[type="submit"]{
 
 .login-submit {
   border-bottom:  2px solid #000;
-  padding: 1em 0 2em;
+  padding: 1.1rem 0 0 0;
   text-align: center;
-  margin-bottom: 3em;
+  margin-bottom: 1.1rem;
 
   .button-wrap .button {
     width: 100%;
   }
 
-  @media screen and (min-width: 960px) {
+  @media screen and (min-width: 970px) {
     display: flex;
     align-items: center;
-    padding: 0.5em 0 1em 0;
     text-align: left;
-
+    padding: 0;
 
     .button-wrap {
-      margin-right: 40px;
+      margin-right: 44px;
 
       .button {
         white-space: nowrap;
@@ -2659,8 +2734,10 @@ input[type="submit"]{
   font-size: 14px;
 }
 
-.mt-0 { margin-top: 0;}
-.mb-0 { margin-bottom: 0;}
+.mt-0 { margin-top: 0 !important;}
+.mb-0 { margin-bottom: 0 !important;}
+
+
 
 
 @import 'buttons.less';

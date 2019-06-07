@@ -2,8 +2,6 @@
 {% from 'products/includes/product_macros.html' import product_cards with context %}
 {% set styles = ('home',) %}
 
-{% set classes = 'responsive' %}
-
 {% block content %}
   <div class="grid_12 search-form-large">
     <h1>{{ _('Search Mozilla Support') }}</h1>
@@ -16,7 +14,7 @@
     </section>
   </div>
   <section id="get-involved-box" class="grid_12">
-    <a class="btn btn-submit" href="{{ url('landings.get_involved') }}">
+    <a class="button" href="{{ url('landings.get_involved') }}">
       {{ _('Volunteer for Mozilla Support') }}
     </a>
   </section>

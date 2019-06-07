@@ -93,7 +93,7 @@
   {# end TrafficCop #}
 
 </head>
-<body class="html-{{ DIR }} logged-{% if user.is_authenticated() %}in{% else %}out{% endif %} {{ classes }} {{ request.LANGUAGE_CODE }}"
+<body class="html-{{ DIR }} logged-{% if user.is_authenticated() %}in{% else %}out{% endif %} responsive {{ classes }} {{ request.LANGUAGE_CODE }}"
       data-readonly="{{ settings.READ_ONLY|json }}"
       data-usernames-api="{{ url('users.api.usernames') }}"
       data-static-url="{{ STATIC_URL }}"
@@ -213,7 +213,7 @@
             </li>
           {% endif %}
           {% if not hide_locale_switcher %}
-            <li>
+            <li class="lang-switcher-nav-item">
               {% include "includes/icons/globe-icon.svg" %}
               <a href="{{ locale_picker_url }}" class="locale-picker"  data-event-category="navigation" data-event-action="main navigation" data-event-label="Locale Picker">{% if request.LANGUAGE_CODE == "en-US"%}EN{% else %}{{ request.LANGUAGE_CODE }}{% endif %} </a>
             </li>
@@ -230,7 +230,7 @@
               <img class="avatar" src="{{ profile_avatar(user) }}">
             </a>
               <ul>
-                <li><a href="{{ profile_url(user) }}"  data-event-category="navigation" data-event-action="main navigation" data-event-label="View Profile">{{ _('View Profile') }}</a></li>
+                <li><a href="{{ profile_url(user) }}"  data-event-category="navigation" data-event-action="main navigation" data-event-label="My Profile">{{ _('My Profile') }}</a></li>
                 <li><a href="{{ url('search')|urlparams(asked_by=user.username, a=1, w=2) }}"  data-event-category="navigation" data-event-action="main navigation" data-event-label="My Questions">{{ _('My Questions') }}</a></li>
                 <li><a href="{{ profile_url(user, edit=True) }}"  data-event-category="navigation" data-event-action="main navigation" data-event-label="Edit Profile">{{ _('Edit Profile') }}</a></li>
                 <li><a href="{{ url('users.edit_settings') }}"  data-event-category="navigation" data-event-action="main navigation" data-event-label="Settings">{{ _('Settings') }}</a></li>
@@ -377,8 +377,7 @@
         </li>
       </ul>
     </div>
-    <div class="clear"></div>
-    <div class="grid_8">
+    <div class="grid_8 cf">
       <div class="fineprint">
         <p>
         {% trans year=now().year %}
