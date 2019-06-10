@@ -5,7 +5,7 @@ set -eo pipefail
 # BRANCH_NAME, BUILD_NUMBER
 
 # defaults and constants
-CHANNEL="itsre-sumo"
+CHANNEL="sumodev"
 PROJECT_NAME="kitsune"
 BLUE_BUILD_URL="https://ci.sumo.mozit.cloud"
 BLUE_BUILD_URL="${BLUE_BUILD_URL}/detail/${BRANCH_NAME/\//%2f}/${BUILD_NUMBER}/pipeline"
