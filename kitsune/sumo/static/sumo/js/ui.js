@@ -132,7 +132,7 @@
       $tabs.first().trigger('click');
     });
 
-    $('.btn, a').each(function() {
+    $('.btn, .button, a').each(function() {
       var $this = $(this);
       var $form = $this.closest('form');
       var type = $this.attr('data-type');

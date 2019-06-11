@@ -753,7 +753,7 @@
     });
 
     // Disable standard form submission
-    $form.find('.btn').remove();
+    $form.find('.btn, .button').remove();
     $form.on('keydown', function(e) {
       // 13 is enter.
       if (e.which === 13) {
