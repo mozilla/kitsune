@@ -15,7 +15,7 @@
         <input type="hidden" name="{{ k }}" value="{{ v }}" />
       {% endfor %}
     {% endif %}
-    <input name="q" placeholder="{{ _('Search') }}" required="required" type="search" value="{{ q }}">
+    <input name="q" placeholder="{{ _('Search') }}" required="required" type="search" autocomplete="off" value="{{ q }}">
     <button type="submit" value="">
       <svg width="22" height="23"><polygon fill="#ffffff" points="22,12 11,23 8,20 14,14 0,14 0,10 14,10 8,4 11,1"/></svg>
     </button>
@@ -29,7 +29,7 @@
         <input type="hidden" name="{{ k }}" value="{{ v }}" />
       {% endfor %}
     {% endif %}
-    <input name="q" placeholder="{{ _('Search Mozilla Support') }}" required="required" type="search" value="{{ q }}">
+    <input name="q" placeholder="{{ _('Search Mozilla Support') }}" required="required" type="search" autocomplete="off" value="{{ q }}">
     <button class="icon-sprite" type="submit">{{ _('Search') }}</button>
   </form>
 {% endmacro %}
@@ -41,7 +41,7 @@
         <input type="hidden" name="{{ k }}" value="{{ v }}" />
       {% endfor %}
     {% endif %}
-    <input name="q" placeholder="{{ _('Search Mozilla Support') }}" required="required" type="search" value="{{ q }}">
+    <input name="q" placeholder="{{ _('Search Mozilla Support') }}" required="required" type="search" autocomplete="off" value="{{ q }}">
     <button type="submit">{{ _('Search') }}</button>
   </form>
 {% endmacro %}

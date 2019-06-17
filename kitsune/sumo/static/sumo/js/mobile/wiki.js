@@ -7,7 +7,7 @@
   if ($body.is('.document')) {
     var focusOn = window.location.hash;
     var $voteForm = $('.vote-bar form');
-    var $voteButtons = $voteForm.find('input[type="submit"], .btn[data-type="submit"]');
+    var $voteButtons = $voteForm.find('input[type="submit"], [data-type="submit"]');
 
     window.k.AjaxForm($voteForm, {
       removeForm: true,

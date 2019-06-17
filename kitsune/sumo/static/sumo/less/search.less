@@ -186,19 +186,35 @@
   h2 {
     font-weight: bold;
     margin-top: 0;
-    padding-left: 75px;
   }
 
   .content-box {
     margin-bottom: 20px;
-    padding-left: 78px;
   }
 
-  .html-rtl & {
-    h2,
+  .search-filter {
+    display: none;
+  }
+
+  @media screen and (min-width: 960px) {
+    h2 {
+      padding-left: 75px;
+    }
+
     .content-box {
-      padding-left: 0;
-      padding-right: 75px;
+      padding-left: 78px;
+    }
+
+    .search-filter {
+      display: block;
+    }
+
+    .html-rtl & {
+      h2,
+      .content-box {
+        padding-left: 0;
+        padding-right: 75px;
+      }
     }
   }
 }

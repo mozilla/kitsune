@@ -12,11 +12,11 @@
       $(this).siblings('.popup').fadeToggle(300);
     });
 
-    $('#report-abuse .btn[type="cancel"], #report-abuse .kbox-close').on('click', function(ev) {
+    $('#report-abuse [type="cancel"], #report-abuse .kbox-close').on('click', function(ev) {
       $(this).closest('.popup').fadeToggle(300);
     });
 
-    $('#report-abuse .btn[type="submit"]').on('click', function(ev) {
+    $('#report-abuse [type="submit"]').on('click', function(ev) {
       ev.preventDefault();
       var $this = $(this);
       var $form = $this.parent();

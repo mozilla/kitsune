@@ -22,7 +22,7 @@
     init: function(form, options) {
       var self = this,
         $ajaxForm = $(form),
-        $btns = $ajaxForm.find('input[type="submit"], .btn[data-type="submit"]');
+        $btns = $ajaxForm.find('input[type="submit"], [data-type="submit"]');
 
       options = $.extend({
         positionMessage: false,
@@ -130,7 +130,7 @@
       var $commentBox = $survey.find('textarea');
       var maxCount = parseInt($commentCount.text(), 10);
       var $radios = $survey.find('input[type=radio][name=unhelpful-reason]');
-      var $submit = $survey.find('input[type=submit], .btn[data-type=submit]');
+      var $submit = $survey.find('input[type=submit], [data-type=submit]');
       var $reason = $survey.find('.disabled-reason');
       var $textbox = $survey.find('textarea');
 

@@ -143,7 +143,7 @@ window.k = window.k || {};
     });
 
     // Click target proxying.
-    $('.btn, a').each(function() {
+    $('.btn, .button, a').each(function() {
       var $this = $(this);
       var trigger = $this.attr('data-trigger');
 
