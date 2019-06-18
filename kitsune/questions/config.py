@@ -339,6 +339,61 @@ products = OrderedDict([
         ])
     }),
 
+    ('firefox-preview', {
+        'name': _lazy(u'Firefox Preview'),
+        'subtitle': _lazy(u'Firefox for Android'),
+        'extra_fields': [],
+        'tags': [],
+        'product': 'firefox-preview',
+        'categories': OrderedDict([
+            ('install-and-update-firefox-preview', {
+                'name': _lazy(u'Install and Update'),
+                'topic': 'install-and-update',
+                'tags': ['deployement'],
+            }),
+            ('how-to-use-firefox-preview', {
+                'name': _lazy(u'How do I use Firefox Preview'),
+                'topic': 'how-do-i-use-firefox-preview',
+                'tags': ['get-started'],
+            }),
+            ('browsing-firefox-preview', {
+                'name': _lazy(u'Browsing'),
+                'topic': 'browsing-preview',
+                'tags': ['get-started'],
+            }),
+            ('library-firefox-preview', {
+                'name': _lazy(u'Library'),
+                'topic': 'library',
+                'tags': ['library'],
+            }),
+            ('sync-firefox-preview', {
+                'name': _lazy(u'Sync'),
+                'topic': 'sync-preview',
+                'tags': ['sync'],
+            }),
+            ('privacy-and-security-firefox-preview', {
+                'name': _lazy(u'Privacy and Security'),
+                'topic': 'privacy-and-security',
+                'tags': ['privacy-and-security'],
+            }),
+            ('fix-problems-with-firefox-preview', {
+                'name': _lazy(u'Fix problems with Firefox Preview'),
+                'topic': 'fix-problems-firefox-preview',
+                'tags': ['fix-problems'],
+            }),
+            ('settings-and-preferences-firefox-preview', {
+                'name': _lazy(u'Settings and Preferences'),
+                'topic': 'settings-prefs-preview',
+                'tags': ['customization'],
+            }),
+            ('advanced-settings-firefox-preview', {
+                'name': _lazy(u'Advanced Settings'),
+                'topic': 'advanced-settings-preview',
+                'tags': ['customization'],
+            }),
+        ])
+    }),
+
     ('other', {
         'name': _lazy(u'Other Mozilla products'),
         'subtitle': '',
