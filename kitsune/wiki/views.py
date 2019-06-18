@@ -1453,8 +1453,8 @@ def _document_form_initial(document):
             'is_archived': document.is_archived,
             'topics': Topic.objects.filter(
                 document=document).values_list('id', flat=True),
-            'products': Product.objects.filter(
-                document=document).values_list('id', flat=True),
+            'products': list(Product.objects.filter(
+                document=document).values_list('id', flat=True)),
             'related_documents': Document.objects.filter(
                 related_documents=document).values_list('id', flat=True),
             'allow_discussion': document.allow_discussion,
