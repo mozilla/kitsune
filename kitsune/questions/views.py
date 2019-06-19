@@ -1,6 +1,7 @@
 import json
 import logging
 import random
+import re
 import time
 from datetime import date, datetime, timedelta
 
@@ -526,9 +527,17 @@ def aaq(request, product_key=None, category_key=None, showform=False,
                 product_key = 'firefox-lite'
             elif 'fxios' in ua:
                 product_key = 'ios'
-            else:
-                # android
+
+            # android
+            try:
+                mobile_client = re.search(r'Firefox/(?P<version>\d+)\.\d+', ua).groupdict()
+            except AttributeError:
                 product_key = 'mobile'
+            else:
+                if int(mobile_client['version']) >= 69:
+                    product_key = 'firefox-preview'
+                else:
+                    product_key = 'mobile'
 
     product_config = config.products.get(product_key)
     if product_key and not product_config:
