@@ -97,7 +97,7 @@ app:
     email_use_tls: True
     enable_admin: True
     enable_whitenoise: True
-    enforce_host: support-dev.allizom.org,dev.sumo.mozit.cloud
+    enforce_host: "dev.sumo.mozit.cloud,support-dev.allizom.org"
     engage_robots: False
     es_index_prefix: "sumo_dev"
     es_http_auth: SECRET
