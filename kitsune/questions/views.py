@@ -530,7 +530,8 @@ def aaq(request, product_key=None, category_key=None, showform=False,
 
             # android
             try:
-                mobile_client = re.search(r'Firefox/(?P<version>\d+)\.\d+', ua).groupdict()
+                # We are using firefox instead of Firefox as lower() has been applied to the UA
+                mobile_client = re.search(r'firefox/(?P<version>\d+)\.\d+', ua).groupdict()
             except AttributeError:
                 product_key = 'mobile'
             else:
