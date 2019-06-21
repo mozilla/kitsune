@@ -349,7 +349,7 @@ products = OrderedDict([
             ('install-and-update-firefox-preview', {
                 'name': _lazy(u'Install and Update'),
                 'topic': 'install-and-update',
-                'tags': ['deployement'],
+                'tags': ['deployment'],
             }),
             ('how-to-use-firefox-preview', {
                 'name': _lazy(u'How do I use Firefox Preview'),
