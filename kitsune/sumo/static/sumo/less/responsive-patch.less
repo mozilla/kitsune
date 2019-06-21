@@ -205,9 +205,7 @@
                      font-weight: bold;
                      color: #fff;
                      justify-content: flex-start;
-                     padding: 10px 12px;
-                     margin: 10px 20px;
-                     width: calc(~"100% - 40px");
+                     border-radius: 0;
                    }
 
                    &.firefox-download-button {
@@ -276,7 +274,7 @@
               }
             }
 
-            a:not(.signin-signup-button):not(.firefox-download-button) {
+            a:not(.firefox-download-button) {
               color: #fff;
               text-decoration: none;
               font-size: 16px;
@@ -290,6 +288,7 @@
 
               &.locale-picker {
                 padding-left: 10px;
+                border-top: 0 none;
               }
             }
 
