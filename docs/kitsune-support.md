@@ -9,6 +9,7 @@ High level:
 - [MozMEAO escalation path](https://mana.mozilla.org/wiki/pages/viewpage.action?pageId=50267455)
 
 - [Architecture diagram](https://raw.githubusercontent.com/mozilla/kitsune/master/docs/SUMO%20architecture%202019.svg)
+    - [Source](https://www.lucidchart.com/documents/view/3687b2eb-57c7-4488-a8b5-4ddcf54e47b3)
 - [SLA](https://docs.google.com/document/d/1SYtkEioKl6uvdZZA06YtVigWYJY0Nb9hGfvE0UwEPXA/edit)
 - [Incident Reports](https://mana.mozilla.org/wiki/pages/viewpage.action?pageId=52265112)
 
