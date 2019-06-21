@@ -349,17 +349,17 @@ products = OrderedDict([
             ('install-and-update-firefox-preview', {
                 'name': _lazy(u'Install and Update'),
                 'topic': 'install-and-update',
-                'tags': ['deployment'],
+                'tags': ['download-and-install'],
             }),
             ('how-to-use-firefox-preview', {
                 'name': _lazy(u'How do I use Firefox Preview'),
                 'topic': 'how-do-i-use-firefox-preview',
-                'tags': ['get-started'],
+                'tags': ['tips'],
             }),
             ('browsing-firefox-preview', {
                 'name': _lazy(u'Browsing'),
                 'topic': 'browsing-preview',
-                'tags': ['get-started'],
+                'tags': ['tips'],
             }),
             ('library-firefox-preview', {
                 'name': _lazy(u'Library'),
@@ -384,12 +384,12 @@ products = OrderedDict([
             ('settings-and-preferences-firefox-preview', {
                 'name': _lazy(u'Settings and Preferences'),
                 'topic': 'settings-prefs-preview',
-                'tags': ['customization'],
+                'tags': ['customize'],
             }),
             ('advanced-settings-firefox-preview', {
                 'name': _lazy(u'Advanced Settings'),
                 'topic': 'advanced-settings-preview',
-                'tags': ['customization'],
+                'tags': ['customize'],
             }),
         ])
     }),
