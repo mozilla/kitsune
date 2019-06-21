@@ -690,31 +690,13 @@ form .submit {
 // .user-details {}
 .avatar-preview {
   position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   margin: 0 0 20px;
-  padding: 0 0 100% 0; // to position fallback correctly
-  background: #f3f4f9;
   width: 100%;
   height: auto;
-
-  .avatar,
-  .avatar-fallback {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-  }
 
   .avatar {
     display: block;
     width: 100%;
-  }
-
-  .avatar-fallback {
-    width: 50%;
-    filter: grayscale(100%);
-    opacity: 0.2;
   }
 
   @media screen and (min-width: 970px) {
@@ -722,17 +704,6 @@ form .submit {
     height: 170px;
     margin: 0 20px 0 0;
     padding-bottom: 0;
-
-    .avatar,
-    .avatar-fallback {
-      position: static;
-      top: auto;
-      transform: none;
-    }
-
-    .avatar-fallback {
-      width: 60%;
-    }
   }
 }
 
