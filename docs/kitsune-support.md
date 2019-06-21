@@ -8,7 +8,7 @@ High level:
 - [Deploying SUMO](https://github.com/mozilla/kitsune/tree/master/k8s#deploying-sumo)
 - [MozMEAO escalation path](https://mana.mozilla.org/wiki/pages/viewpage.action?pageId=50267455)
 
-- [Architecture diagram](https://raw.githubusercontent.com/mozilla/kitsune/master/docs/SUMO%20architecture%202018.png)
+- [Architecture diagram](https://raw.githubusercontent.com/mozilla/kitsune/master/docs/SUMO%20architecture%202019.svg)
 - [SLA](https://docs.google.com/document/d/1SYtkEioKl6uvdZZA06YtVigWYJY0Nb9hGfvE0UwEPXA/edit)
 - [Incident Reports](https://mana.mozilla.org/wiki/pages/viewpage.action?pageId=52265112)
 
