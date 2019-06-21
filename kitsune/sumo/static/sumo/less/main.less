@@ -2746,8 +2746,17 @@ input[type="submit"]{
 .mt-0 { margin-top: 0 !important;}
 .mb-0 { margin-bottom: 0 !important;}
 
+@media screen and (max-width: 969px) {
+  .hide-on-mobile {
+    display: none;
+  }
+}
 
-
+@media screen and (min-width: 970px) {
+  .mobile-only {
+    display: none;
+  }
+}
 
 @import 'buttons.less';
 @import 'responsive-patch.less';
