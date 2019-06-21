@@ -1,6 +1,7 @@
 import base64
 import logging
 
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.backends import ModelBackend
@@ -125,7 +126,13 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
         profile.fxa_uid = claims.get('uid')
         profile.fxa_avatar = claims.get('avatar', '')
         profile.name = claims.get('displayName', '')
-        profile.locale = claims.get('locale', '')
+        # Let's get the first element even if it's an empty string
+        fxa_locale = claims.get('locale', '').split(',')[0]
+        if fxa_locale in settings.SUMO_LANGUAGES:
+            profile.locale = fxa_locale
+        else:
+            profile.locale = settings.LANGUAGE_CODE
+
         profile.save()
 
         # This is a new sumo profile, redirect to the edit profile page
@@ -195,9 +202,8 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
             user.email = email
             user_attr_changed = True
 
-        # Follow avatars and locales from FxA profiles
+        # Follow avatars from FxA profiles
         profile.fxa_avatar = claims.get('avatar', '')
-        profile.locale = claims.get('locale', '')
 
         # Users can select their own display name.
         if not profile.name:
