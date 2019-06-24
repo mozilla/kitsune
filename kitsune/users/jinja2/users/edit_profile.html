@@ -56,11 +56,7 @@
               <label>{{ _('Avatar:') }}</label>
               <div class="edit-profile-avatar">
                 <figure class="avatar-preview">
-                  {% if profile_avatar(profile.user) %}
                     <img class="avatar" src="{{ profile_avatar(profile.user) }}" alt="">
-                  {% else %}
-                    <img class="avatar-fallback" src="/static/sumo/img/firefox-logo.svg" alt="Firefox logo">
-                  {% endif %}
                 </figure>
                 {% if not profile.is_fxa_migrated %}
                   <a class="change-avatar" href="https://gravatar.com/emails" target="_blank">

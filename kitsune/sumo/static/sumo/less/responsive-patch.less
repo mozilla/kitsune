@@ -170,12 +170,12 @@
 
           #aux-nav,
           #aux-nav-right {
-            padding: 50px 20px 0;
+            padding: 60px 0 0;
 
             > ul {
               display: flex;
               flex-direction: column;
-              margin-left: 0;
+              margin: 0;
               width: 100%;
 
                > li {
@@ -183,20 +183,14 @@
                  padding: 0;
                  margin: 0;
 
-                 &:hover a {
-                   text-decoration: none;
-                 }
-
                  &.lang-switcher-nav-item {
                    display: inline-flex;
-                   padding-left: 8px;
+                   padding-left: 16px;
                  }
 
-                 > a:not(.locale-picker) {
-                   font-weight: normal;
+                 > a {
                    display: inline-flex;
                    align-items: center;
-                   padding: 10px 0 10px 12px;
                    width: 100%;
                    height: auto;
                    line-height: 1.4em;
@@ -211,16 +205,16 @@
                      font-weight: bold;
                      color: #fff;
                      justify-content: flex-start;
-                     padding: 10px 12px;
+                     border-radius: 0;
                    }
 
                    &.firefox-download-button {
                      font-weight: bold;
                      text-align: center;
                      justify-content: center;
-                     width: 100%;
-                     margin-top: 16px;
-                     margin-bottom: 16px;
+                     width: calc(~"100% - 40px");
+                     padding: 10px 12px;
+                     margin: 10px 20px;
                    }
                  }
 
@@ -253,17 +247,9 @@
                   li {
                     float: none;
                     width: auto;
-                  }
 
-                  a {
-                    color: #fff;
-                    text-decoration: none;
-                    font-size: 16px;
-                    font-weight: normal;
-                    padding: 16px 12px;
-
-                    &:hover {
-                      text-decoration: underline;
+                    &:hover,
+                    a:hover {
                       background: transparent;
                     }
                   }
@@ -286,6 +272,32 @@
                   }
                 }
               }
+            }
+
+            a:not(.firefox-download-button) {
+              color: #fff;
+              text-decoration: none;
+              font-size: 16px;
+              font-weight: normal;
+              padding: 15px 20px;
+              border-top: 1px solid #161616;
+
+              &:hover {
+                text-decoration: none;
+              }
+
+              &.locale-picker {
+                padding-left: 10px;
+                border-top: 0 none;
+              }
+            }
+
+            li:last-child > a {
+              border-bottom: 1px solid #161616;
+            }
+
+            li.ff-btn-wrap {
+              border-top: 1px solid #161616;
             }
           }
 
