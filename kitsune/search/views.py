@@ -135,7 +135,7 @@ def simple_search(request):
     """
 
     to_json = JSONRenderer().render
-    template = 'search/form.html'
+    template = 'search/results.html'
 
     # 1. Prep request.
     # Redirect to old Advanced Search URLs (?a={1,2}) to the new URL.
@@ -154,8 +154,9 @@ def simple_search(request):
                 content_type=request.CONTENT_TYPE,
                 status=400)
 
+        t = 'search/form.html'
         return cache_control(
-            render(request, template, {
+            render(request, t, {
                 'advanced': False,
                 'request': request,
                 'search_form': search_form}),
@@ -251,7 +252,7 @@ def advanced_search(request):
     """Elasticsearch-specific Advanced search view"""
 
     to_json = JSONRenderer().render
-    template = 'search/form.html'
+    template = 'search/results.html'
 
     # 1. Prep request.
     r = request.GET.copy()
@@ -279,6 +280,7 @@ def advanced_search(request):
                 content_type=request.CONTENT_TYPE,
                 status=400)
 
+        t = 'search/form.html'
         data = {'advanced': True,
                 'request': request,
                 'search_form': search_form}
@@ -290,7 +292,7 @@ def advanced_search(request):
             data.update({'cached_field': cached_field})
 
         return cache_control(
-            render(request, template, data),
+            render(request, t, data),
             settings.SEARCH_CACHE_PERIOD)
 
     # 4. Generate search.
