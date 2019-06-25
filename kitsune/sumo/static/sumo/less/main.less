@@ -1673,7 +1673,11 @@ input[type="submit"]{
         display: block;
         text-decoration: none;
         padding: 10px 22px;
-        margin: 0 -12px;
+        margin: 0;
+
+        @media screen and (min-width: 970px) {
+          margin: 0 -12px;
+        }
       }
 
       > a:hover {

@@ -160,7 +160,8 @@
           position: relative;
           top: 0;
           bottom: 0;
-          overflow: auto;
+          overflow-y: auto;
+          overflow-x: hidden;
           -webkit-overflow-scrolling: touch;
         }
 
@@ -388,6 +389,7 @@
 
     &.html-rtl .nav-flex .responsive-nav-wrap.is-open #aux-nav > ul > li.dropdown.is-open > a::before {
       margin: 0 0 -3px 6px;
+      transform: rotate(180deg);
     }
   }
 
