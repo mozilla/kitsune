@@ -483,6 +483,8 @@ def edit_profile(request, username=None):
     fxa_messages = [
         m.message for m in msgs if m.message.startswith('fxa_notification')
     ]
+    if not fxa_messages and not user_profile.is_fxa_migrated:
+        fxa_messages.append('fxa_notification_deprecation_warning')
 
     return render(request, 'users/edit_profile.html', {
         'form': form, 'profile': user_profile, 'fxa_messages': fxa_messages})
