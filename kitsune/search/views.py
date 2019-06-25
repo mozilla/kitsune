@@ -17,8 +17,6 @@ import bleach
 import jinja2
 from elasticutils.utils import format_explanation
 from elasticutils.contrib.django import ES_EXCEPTIONS
-from mobility.decorators import mobile_template
-
 from kitsune import search as constants
 from kitsune.forums.models import Forum, ThreadMappingType
 from kitsune.products.models import Product
@@ -125,8 +123,7 @@ def build_results_list(pages, is_json):
 
 @markup_json
 @handle_es_errors(_es_down_template)
-@mobile_template('search/{mobile/}results.html')
-def simple_search(request, template=None):
+def simple_search(request):
     """Elasticsearch-specific simple search view.
 
     This view is for end user searching of the Knowledge Base and
@@ -138,6 +135,7 @@ def simple_search(request, template=None):
     """
 
     to_json = JSONRenderer().render
+    template = 'search/form.html'
 
     # 1. Prep request.
     # Redirect to old Advanced Search URLs (?a={1,2}) to the new URL.
@@ -156,9 +154,8 @@ def simple_search(request, template=None):
                 content_type=request.CONTENT_TYPE,
                 status=400)
 
-        t = template if request.MOBILE else 'search/form.html'
         return cache_control(
-            render(request, t, {
+            render(request, template, {
                 'advanced': False,
                 'request': request,
                 'search_form': search_form}),
@@ -250,11 +247,11 @@ def simple_search(request, template=None):
 
 @markup_json
 @handle_es_errors(_es_down_template)
-@mobile_template('search/{mobile/}results.html')
-def advanced_search(request, template=None):
+def advanced_search(request):
     """Elasticsearch-specific Advanced search view"""
 
     to_json = JSONRenderer().render
+    template = 'search/form.html'
 
     # 1. Prep request.
     r = request.GET.copy()
@@ -282,7 +279,6 @@ def advanced_search(request, template=None):
                 content_type=request.CONTENT_TYPE,
                 status=400)
 
-        t = template if request.MOBILE else 'search/form.html'
         data = {'advanced': True,
                 'request': request,
                 'search_form': search_form}
@@ -294,7 +290,7 @@ def advanced_search(request, template=None):
             data.update({'cached_field': cached_field})
 
         return cache_control(
-            render(request, t, data),
+            render(request, template, data),
             settings.SEARCH_CACHE_PERIOD)
 
     # 4. Generate search.
