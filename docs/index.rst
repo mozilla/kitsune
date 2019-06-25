@@ -30,7 +30,6 @@ Part 2: Developer's Guide
    localization
    searchchapter
    frontend
-   armyofawesome
    karma
    wikidocs
    notes
