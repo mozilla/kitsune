@@ -312,7 +312,7 @@ body {
 
     > svg {
       position: relative;
-      margin: -4px 0 0 8px;
+      margin: 1px 20px 0 -11px;
       padding: 0;
       display: inline-block;
 
@@ -1673,7 +1673,11 @@ input[type="submit"]{
         display: block;
         text-decoration: none;
         padding: 10px 22px;
-        margin: 0 -12px;
+        margin: 0;
+
+        @media screen and (min-width: 970px) {
+          margin: 0 -12px;
+        }
       }
 
       > a:hover {
@@ -2731,6 +2735,10 @@ input[type="submit"]{
 
 .mt-0 { margin-top: 0 !important;}
 .mb-0 { margin-bottom: 0 !important;}
+
+.clear-floats {
+  clear: both;
+}
 
 @media screen and (max-width: 969px) {
   .hide-on-mobile {
