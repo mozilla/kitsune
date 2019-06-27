@@ -304,6 +304,7 @@ PIPELINE_JS = {
             'sumo/js/instant_search.js',
             'sumo/js/legacy_login_toggle.js',
             'sumo/js/responsive-nav-toggle.js',
+            'sumo/js/profile-avatars.js'
         ),
         'output_filename': 'build/common-min.js'
     },
