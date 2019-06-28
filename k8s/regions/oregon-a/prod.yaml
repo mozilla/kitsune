@@ -147,3 +147,9 @@ app:
     disable_questions_list_all: False
     disable_feeds: False
     sentry_dsn: SECRET
+    fxa_op_token_endpoint: SECRET
+    fxa_op_authorization_endpoint: SECRET
+    fxa_op_user_endpoint: SECRET
+    fxa_op_jwks_endpoint: SECRET
+    fxa_rp_client_id: SECRET
+    fxa_rp_client_secret: SECRET
