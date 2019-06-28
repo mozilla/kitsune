@@ -6,9 +6,7 @@ import time
 from datetime import date, datetime, timedelta
 
 from django.conf import settings
-from django.contrib import auth
 from django.contrib import messages
-from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
 from django.core.exceptions import PermissionDenied
@@ -59,10 +57,8 @@ from kitsune.tags.utils import add_existing_tag
 from kitsune.upload.api import ImageAttachmentSerializer
 from kitsune.upload.models import ImageAttachment
 from kitsune.upload.views import upload_imageattachment
-from kitsune.users.forms import RegisterForm
 from kitsune.users.templatetags.jinja_helpers import display_name
 from kitsune.users.models import Setting
-from kitsune.users.utils import handle_login, handle_register
 from kitsune.wiki.facets import documents_for, topics_for
 from kitsune.wiki.models import Document, DocumentMappingType
 
@@ -484,6 +480,7 @@ def aaq_react(request):
 
 
 @ssl_required
+@login_required
 @mobile_template('questions/{mobile/}new_question.html')
 def aaq(request, product_key=None, category_key=None, showform=False,
         template=None, step=0):
@@ -595,11 +592,6 @@ def aaq(request, product_key=None, category_key=None, showform=False,
             # User is on the select product step
             statsd.incr('questions.aaq.select-product')
 
-    if request.MOBILE:
-        login_t = 'questions/mobile/new_question_login.html'
-    else:
-        login_t = 'questions/new_question_login.html'
-
     if request.method == 'GET':
         search = request.GET.get('search', '')
         if search:
@@ -617,18 +609,6 @@ def aaq(request, product_key=None, category_key=None, showform=False,
                 statsd.incr('questions.aaq.search-form')
 
         if showform or request.GET.get('showform'):
-            # Before we show the form, make sure the user is auth'd:
-            if not request.user.is_authenticated():
-                # User is on the login or register Step
-                statsd.incr('questions.aaq.login-or-register')
-                login_form = AuthenticationForm()
-                register_form = RegisterForm()
-                return render(request, login_t, {
-                    'product': product_config,
-                    'category': category_config,
-                    'title': search,
-                    'register_form': register_form,
-                    'login_form': login_form})
             form = NewQuestionForm(
                 product=product_config,
                 category=category_config,
@@ -653,53 +633,6 @@ def aaq(request, product_key=None, category_key=None, showform=False,
             'current_step': step,
             'deadend': deadend,
             'host': Site.objects.get_current().domain})
-
-    # Handle the form post.
-    if not request.user.is_authenticated():
-        if request.POST.get('login'):
-            login_form = handle_login(request, only_active=False)
-            statsd.incr('questions.user.login')
-            register_form = RegisterForm()
-
-            if login_form.is_valid():
-                statsd.incr('questions.user.login.success')
-            else:
-                statsd.incr('questions.user.login.fail')
-
-        elif request.POST.get('register'):
-            login_form = AuthenticationForm()
-            register_form = handle_register(
-                request=request,
-                text_template='users/email/activate.ltxt',
-                html_template='users/email/activate.html',
-                subject=_('Please confirm your Firefox Help question'),
-                email_data=request.GET.get('search'),
-                reg='aaq')
-
-            if register_form.is_valid():  # Now try to log in.
-                user = auth.authenticate(
-                    username=request.POST.get('username'),
-                    password=request.POST.get('password'))
-                auth.login(request, user)
-                statsd.incr('questions.user.register')
-        else:
-            # L10n: This shouldn't happen unless people tamper with POST data.
-            message = _lazy('Request type not recognized.')
-            return render(request, 'handlers/400.html', {'message': message}, status=400)
-
-        if request.user.is_authenticated():
-            # Redirect to GET the current URL replacing the step parameter.
-            # This is also required for the csrf middleware to set the auth'd
-            # tokens appropriately.
-            url = urlparams(request.get_full_path(), step='aaq-question')
-            return HttpResponseRedirect(url)
-        else:
-            return render(request, login_t, {
-                'product': product_config,
-                'category': category_config,
-                'title': request.POST.get('title'),
-                'register_form': register_form,
-                'login_form': login_form})
 
     form = NewQuestionForm(product=product_config, category=category_config, data=request.POST)
 
@@ -752,18 +685,15 @@ def aaq(request, product_key=None, category_key=None, showform=False,
         # Submitting the question counts as a vote
         question_vote(request, question.id)
 
-        if request.user.is_active:
-            messages.add_message(
-                request, messages.SUCCESS,
-                _('Done! Your question is now posted on the Mozilla community support forum.'))
+        messages.add_message(
+            request, messages.SUCCESS,
+            _('Done! Your question is now posted on the Mozilla community support forum.'))
 
-            # Done with AAQ.
-            request.session['in-aaq'] = False
+        # Done with AAQ.
+        request.session['in-aaq'] = False
 
-            url = reverse('questions.details', kwargs={'question_id': question.id})
-            return HttpResponseRedirect(url)
-
-        return HttpResponseRedirect(reverse('questions.aaq_confirm'))
+        url = reverse('questions.details', kwargs={'question_id': question.id})
+        return HttpResponseRedirect(url)
 
     if getattr(request, 'limited', False):
         raise PermissionDenied
@@ -807,24 +737,7 @@ def aaq_step4(request, product_key, category_key):
 def aaq_step5(request, product_key, category_key):
     """Step 5: Show full question form."""
     return aaq(request, product_key=product_key, category_key=category_key,
-               showform=True, step=3)
-
-
-def aaq_confirm(request):
-    """AAQ confirm email step for new users."""
-    if request.user.is_authenticated():
-        email = request.user.email
-        auth.logout(request)
-        statsd.incr('questions.user.logout')
-    else:
-        email = None
-
-    # Done with AAQ.
-    request.session['in-aaq'] = False
-
-    confirm_t = ('questions/mobile/confirm_email.html' if request.MOBILE
-                 else 'questions/confirm_email.html')
-    return render(request, confirm_t, {'email': email})
+               showform=True, step=2)
 
 
 @require_http_methods(['GET', 'POST'])

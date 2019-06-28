@@ -5,7 +5,7 @@ from nose.tools import eq_
 from pyquery import PyQuery as pq
 
 from kitsune.users.forms import (
-    AuthenticationForm, ProfileForm, RegisterForm, SetPasswordForm,
+    AuthenticationForm, ProfileForm, SetPasswordForm,
     ForgotUsernameForm, username_allowed)
 from kitsune.sumo.tests import TestCase
 from kitsune.users.tests import TestCaseBase, UserFactory
@@ -107,56 +107,6 @@ class TwitterValidatorTestCase(TestCase):
     def test_has_at_sign(self):
         # Dont Accept Twitter Username with "@"
         self.assertRaises(ValidationError, lambda: TwitterValidator('@x'))
-
-
-class RegisterFormTests(TestCaseBase):
-    """RegisterForm tests."""
-
-    def test_common_password(self):
-        form = RegisterForm({'username': 'newuser',
-                             'password': 'password',
-                             'password2': 'password',
-                             'email': 'newuser@example.com'})
-        assert not form.is_valid()
-
-    def test_strong_password(self):
-        form = RegisterForm({'username': 'newuser',
-                             'password': 'fksjvaj1',
-                             'password2': 'fksjvaj1',
-                             'email': 'newuser@example.com'})
-        assert form.is_valid()
-
-    def test_bad_username(self):
-        #  Simple match.
-        form = RegisterForm({'username': 'ass',
-                             'password': 'adssadfsadf1',
-                             'password2': 'adssadfsadf1',
-                             'email': 'newuser@example.com'})
-        assert not form.is_valid()
-        # Simple obfuscation.
-        form = RegisterForm({'username': 'a.s.s',
-                             'password': 'adssadfsadf1',
-                             'password2': 'adssadfsadf1',
-                             'email': 'newuser@example.com'})
-        assert not form.is_valid()
-        # Partial match.
-        form = RegisterForm({'username': 'ass.assassin',
-                             'password': 'adssadfsadf1',
-                             'password2': 'adssadfsadf1',
-                             'email': 'newuser@example.com'})
-        assert not form.is_valid()
-        # Plus sign
-        form = RegisterForm({'username': 'ass+assin',
-                             'password': 'adssadfsadf1',
-                             'password2': 'adssadfsadf1',
-                             'email': 'newuser@example.com'})
-        assert not form.is_valid()
-        # No match.
-        form = RegisterForm({'username': 'assassin',
-                             'password': 'adssadfsadf1',
-                             'password2': 'adssadfsadf1',
-                             'email': 'newuser@example.com'})
-        assert form.is_valid()
 
 
 class SetPasswordFormTests(TestCaseBase):

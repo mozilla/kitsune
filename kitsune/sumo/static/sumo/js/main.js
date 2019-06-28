@@ -237,7 +237,7 @@ window.k = window.k || {};
         }
       }
     });
-    $('.user-messages').on('click', '.dismissible .btn.dismiss', function(e) {
+    $('.user-messages').on('click', '.dismissible .dismiss', function(e) {
       if (Modernizr.localstorage) {
         var $msg = $(this).parent();
         localStorage.setItem(key($msg), true);

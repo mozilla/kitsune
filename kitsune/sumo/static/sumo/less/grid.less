@@ -169,3 +169,14 @@ body {
     }
   }
 }
+
+// One-off wide container class, as to not interfere with the full grid above.
+// .container_12 still needs to be applied  because it's used above for inheritance.
+.html-ltr .container_12.container_wide,
+.html-rtl .container_12.container_wide {
+  margin-left: auto;
+  margin-right: auto;
+  padding: 0 20px;
+  max-width: 1200px;
+  width: 100%;
+}

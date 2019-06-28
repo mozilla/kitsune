@@ -75,63 +75,6 @@ class SettingsForm(forms.Form):
                 user.settings.create(name=field, value=value)
 
 
-class RegisterForm(forms.ModelForm):
-    """A user registration form that requires unique email addresses.
-
-    The default Django user creation form does not require an email address,
-    let alone that it be unique. This form does, and sets a minimum length
-    for usernames.
-
-    """
-    username = forms.RegexField(
-        label=_lazy(u'Username:'), max_length=30, min_length=4,
-        regex=r'^[\w.-]+$',
-        help_text=_lazy(u'Required. 30 characters or fewer. Letters, digits '
-                        u'and ./- only.'),
-        error_messages={'invalid': USERNAME_INVALID,
-                        'required': USERNAME_REQUIRED,
-                        'min_length': USERNAME_SHORT,
-                        'max_length': USERNAME_LONG})
-    email = forms.EmailField(
-        label=_lazy(u'Email address:'),
-        error_messages={'required': EMAIL_REQUIRED,
-                        'min_length': EMAIL_SHORT,
-                        'max_length': EMAIL_LONG})
-    password = forms.CharField(
-        label=_lazy(u'Password:'),
-        min_length=PASSWD_MIN_LENGTH,
-        widget=forms.PasswordInput(render_value=False),
-        error_messages={'required': PASSWD_REQUIRED,
-                        'min_length': PASSWD_MIN_LENGTH_MSG})
-
-    interested = forms.BooleanField(required=False)
-
-    class Meta(object):
-        model = User
-        fields = ('email', 'username', 'password',)
-
-    def clean(self):
-        super(RegisterForm, self).clean()
-        username = self.cleaned_data.get('username')
-        password = self.cleaned_data.get('password')
-
-        _check_password(password)
-        _check_username(username)
-
-        return self.cleaned_data
-
-    def clean_email(self):
-        email = self.cleaned_data['email']
-        if User.objects.filter(email=email).exists():
-            raise forms.ValidationError(_('A user with that email address '
-                                          'already exists.'))
-        return email
-
-    def __init__(self, request=None, *args, **kwargs):
-        super(RegisterForm, self).__init__(request, auto_id='id_for_%s',
-                                           *args, **kwargs)
-
-
 class AuthenticationForm(auth_forms.AuthenticationForm):
     """Overrides the default django form.
 
@@ -184,9 +127,9 @@ class ProfileForm(forms.ModelForm):
 
     class Meta(object):
         model = Profile
-        fields = ('name', 'public_email', 'bio', 'website', 'twitter',
-                  'facebook', 'mozillians', 'irc_handle', 'timezone', 'country', 'city',
-                  'locale', 'involved_from')
+        fields = ('name', 'bio', 'public_email', 'website', 'twitter',
+                  'facebook', 'mozillians', 'irc_handle', 'country', 'city',
+                  'timezone', 'locale', 'involved_from')
 
         widgets = {
             'facebook': FacebookURLWidget,
@@ -194,6 +137,11 @@ class ProfileForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(ProfileForm, self).__init__(*args, **kwargs)
+
+        # # Add the public_email toggle if the user has not migrated to FxA yet
+        if self.instance and self.instance.is_fxa_migrated:
+            self.fields.pop('public_email')
+
         for field in self.fields.values():
             if isinstance(field, forms.CharField):
                 field.empty_value = ''
@@ -205,6 +153,7 @@ class ProfileForm(forms.ModelForm):
         return facebook
 
 
+# This is used in groups/forms.py
 class AvatarForm(forms.ModelForm):
     """The form for editing the user's avatar."""
     avatar = LimitedImageField(required=True, widget=ImageWidget)

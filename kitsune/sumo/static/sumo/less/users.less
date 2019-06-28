@@ -9,10 +9,82 @@ article {
     margin-top: 0;
   }
 
+  &.login-form {
+    padding-top: 80px;
+    padding-bottom: 80px;
+
+    p, ul {
+      font-size: 14px;
+    }
+
+    p {
+      margin: 1.1rem 0;
+    }
+
+    @media screen and (max-width: 969px) { // single-use mobile revisions.
+      p, ul {
+        line-height: 22px;
+      }
+
+      p {
+        margin: .7rem 0;
+      }
+
+      .help-text {
+        margin-top: 1rem;
+      }
+    }
+
+    .login-button-wrap {
+      margin: 3rem 0 1rem;
+
+      .button {
+        height: 44px;
+        line-height: 1.1;
+      }
+
+      @media screen and (min-width: 970px) {
+        margin: 1.5rem 0 -0.3rem;
+
+        .button {
+          height: 60px;
+          width: 350px;
+        }
+      }
+    }
+
+    .help-text {
+      font-size: 12px;
+      line-height: 18px;
+    }
+
+    &.smaller-v-pad {
+      padding-top: 20px;
+      padding-bottom: 20px;
+
+      .help-text {
+        font-size: 11px;
+        line-height: 17px;
+      }
+
+      li {
+        label {
+          margin-top: 0.7rem;
+        }
+
+        &:first-of-type label {
+          margin-top: 1.25rem;
+        }
+      }
+    }
+  }
+
   h1 {
     margin-top: 0;
     padding-top: 0;
   }
+
+
 }
 
 #deactivated-msg {
@@ -21,6 +93,7 @@ article {
 }
 
 #user-nav {
+  margin-top: 64px;
   margin-bottom: 20px;
 }
 
@@ -45,52 +118,34 @@ article {
 }
 
 #profile {
-  .avatar {
-    float: left;
-    padding: 7px 10px 0 0;
-    text-align: center;
-    width: 48px;
+  padding: 0;
+
+  h1, h2 {
+    margin: 0;
   }
 
-  h1.user {
-    line-height: 1em;
-    margin: 2px 0 0 60px;
-
-    .username {
-      color: @textLightGrey;
-      font-style: normal;
-    }
+  .username {
+    color: @textLightGrey;
+    font-weight: normal;
   }
 
   h2 {
-    margin: 20px 0 0;
+    margin-top: 30px;
+  }
 
-    &.location {
-      margin: 0 0 0 60px;
-    }
+  .location {
+    margin: 0;
+    color: @textLightGrey;
+    font-weight: normal;
   }
 
   li {
     margin: 2px 0 5px;
-  }
-
-  .pm-or-signout {
-    margin: 0 0 0 60px;
-  }
-
-  .bio {
-    width: 54%;
-  }
-
-  .contributions {
-    width: 40%;
+    display: flex;
   }
 
   .bio,
   .contributions {
-    clear: left;
-    float: left;
-
     ul {
       list-style: none;
       margin: 0;
@@ -103,14 +158,12 @@ article {
   }
 
   .contact {
-    padding: 15px 0 0;
-    width: 60%;
-
     label {
       display: inline-block;
       font-weight: bold;
+      font-size: 14px;
       padding: 0 10px 0 0;
-      text-align: right;
+      text-align: left;
       width: 90px;
     }
   }
@@ -121,12 +174,9 @@ article {
 
   .groups,
   .contact {
-    clear: right;
-    float: right;
-
     ul {
       list-style: none;
-      margin: 10px 0 0;
+      margin: 0;
       padding: 0;
     }
   }
@@ -149,6 +199,10 @@ article {
         }
       }
     }
+  }
+
+  @media screen and (min-width: 970px) {
+    padding: 30px;
   }
 }
 
@@ -173,18 +227,6 @@ article {
     h2.location {
       margin: 0 60px 0 0;
     }
-
-    .pm-or-signout {
-      margin: 0 60px 0 0;
-    }
-
-    .contributions {
-      float: left;
-    }
-
-    .contact {
-      float: right;
-    }
   }
 
   #admin-actions {
@@ -194,6 +236,10 @@ article {
       padding: 0 18px 0 0;
     }
   }
+}
+
+.pm-or-signout {
+  padding: 30px 0;
 }
 
 article {
@@ -206,8 +252,6 @@ article {
   }
 
   form {
-    margin: 25px 0;
-
     ul {
       margin: 0;
       padding: 0;
@@ -215,12 +259,9 @@ article {
 
     li {
       list-style: none;
-      padding: 8px 0;
+      padding: 0;
 
       input {
-        margin-top: -8px;
-        width: 200px;
-
         &[type="checkbox"] {
           width: auto;
         }
@@ -253,11 +294,12 @@ article {
     }
 
     label {
-      display: inline-block;
-      padding: 0 5px 0 0;
-      text-align: right;
+      display: block;
+      font-weight: bold;
+      font-size: 14px;
+      margin: 1.25rem 0 0.25rem;
+      text-align: left;
       vertical-align: top;
-      width: 160px;
     }
 
     div.val-wrap {
@@ -267,16 +309,6 @@ article {
       input {
         display: block;
       }
-    }
-
-    div.submit {
-      clear: both;
-      padding: 10px 0 0 165px;
-    }
-
-    textarea {
-      margin-top: -8px;
-      width: 325px;
     }
 
     fieldset {
@@ -301,16 +333,6 @@ article {
         padding: 0 0 0 5px;
         text-align: left;
       }
-
-      li {
-        ul.errorlist {
-          padding: 0 140px 0 0;
-        }
-      }
-    }
-
-    div.submit {
-      padding: 10px 198px 0 0;
     }
   }
 }

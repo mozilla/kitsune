@@ -27,7 +27,9 @@ from kitsune.users.tests import UserFactory, add_permission
 from kitsune.wiki.tests import DocumentFactory, RevisionFactory
 
 
-class AAQTests(ElasticTestCase):
+# Note:
+# Tests using the ElasticTestCase are not being run bc of this line: `-a '!search_tests'`
+class AAQSearchTests(ElasticTestCase):
     client_class = LocalizingClient
 
     def test_bleaching(self):
@@ -232,24 +234,6 @@ class MobileAAQTests(MobileTestCase):
             return self.client.post(url, self.data, follow=True)
         return self.client.get(url, follow=True)
 
-    def test_logged_out(self):
-        """New question is posted through mobile."""
-        response = self._new_question()
-        eq_(200, response.status_code)
-        assert template_used(response, 'questions/mobile/new_question_login.html')
-
-    @mock.patch.object(Site.objects, 'get_current')
-    def test_logged_in_get(self, get_current):
-        """New question is posted through mobile."""
-        get_current.return_value.domain = 'testserver'
-
-        u = UserFactory()
-        self.client.login(username=u.username, password='testpass')
-
-        response = self._new_question()
-        eq_(200, response.status_code)
-        assert template_used(response, 'questions/mobile/new_question.html')
-
     @mock.patch.object(Site.objects, 'get_current')
     def test_logged_in_post(self, get_current):
         """New question is posted through mobile."""
@@ -262,43 +246,48 @@ class MobileAAQTests(MobileTestCase):
         eq_(200, response.status_code)
         assert Question.objects.filter(title='A test question')
 
-    @mock.patch.object(Site.objects, 'get_current')
-    def test_aaq_new_question_inactive(self, get_current):
-        """New question is posted through mobile."""
-        get_current.return_value.domain = 'testserver'
 
-        # Log in first.
-        u = UserFactory()
-        self.client.login(username=u.username, password='testpass')
-
-        # Then become inactive.
-        u.is_active = False
-        u.save()
-
-        # Set 'in-aaq' for the session. It isn't already set because this
-        # test doesn't do a GET of the form first.
-        s = self.client.session
-        s['in-aaq'] = True
-        s.save()
-
-        response = self._new_question(post_it=True)
-        eq_(200, response.status_code)
-        assert template_used(response, 'questions/mobile/confirm_email.html')
-
-    def test_aaq_login_form(self):
-        """The AAQ authentication forms contain the identifying fields.
-
-        Added this test because it is hard to debug what happened when this
-        fields somehow go missing.
+class AAQTests(TestCaseBase):
+    def test_non_authenticated_user(self):
         """
-        res = self._new_question()
-        doc = pq(res.content)
-        eq_(1, len(doc('#login-form input[name=login]')))
-        eq_(1, len(doc('#register-form input[name=register]')))
+        A non-authenticated user cannot access the AAQ flow and will be redirected to auth screen
+        """
+        url = reverse('questions.aaq_step1')
+        response = self.client.get(url, follow=True)
+        assert template_used(response, 'users/auth.html')
+
+    def test_inactive_user(self):
+        """
+        An inactive user cannot access the AAQ flow
+        """
+        user = UserFactory(is_superuser=False)
+        self.client.login(username=user.username, password='testpass')
+
+        # After log in, set user to inactive
+        user.is_active = False
+        user.save()
+
+        url = reverse('questions.aaq_step1')
+        response = self.client.get(url, follow=True)
+        assert not template_used(response, 'questions/new_question.html')
+
+    def test_authenticated_user(self):
+        """
+        An active, authenticated user can access the AAQ flow
+        """
+        user = UserFactory(is_superuser=False)
+        self.client.login(username=user.username, password='testpass')
+        url = reverse('questions.aaq_step1')
+        response = self.client.get(url, follow=True)
+        assert not template_used(response, 'users/auth.html')
+        assert template_used(response, 'questions/new_question.html')
 
 
 @set_waffle_flag('new_aaq')
 class ReactAAQTests(TestCaseBase):
+    def setUp(self):
+        u = UserFactory(is_superuser=False)
+        self.client.login(username=u.username, password='testpass')
 
     def test_waffle_flag(self):
         url = reverse('questions.aaq_step1')

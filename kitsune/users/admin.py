@@ -19,7 +19,8 @@ class ProfileAdmin(admin.ModelAdmin):
     fieldsets = (
         (None, {
             'fields': ['user', 'name', 'public_email',
-                       ('avatar', 'delete_avatar'), 'bio'],
+                       ('avatar', 'delete_avatar'), 'bio', 'is_fxa_migrated',
+                       'fxa_uid'],
         }),
         ('Contact Info', {
             'fields': ['website', 'twitter', 'facebook', 'mozillians', 'irc_handle'],
@@ -34,6 +35,8 @@ class ProfileAdmin(admin.ModelAdmin):
     list_display = ['full_user']
     list_select_related = True
     search_fields = ['user__username', 'user__email', 'name']
+
+    # This reduces the load to the db.
     readonly_fields = ['user']
 
     def has_delete_permission(self, request, obj=None):

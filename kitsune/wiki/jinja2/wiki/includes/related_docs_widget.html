@@ -1,4 +1,4 @@
-<input type="search" id="search-related" placeholder="{{ _('Search for documents...') }}">
+<input type="search" autocomplete="off" id="search-related" placeholder="{{ _('Search for documents...') }}">
 <ul id="related-docs-list">
   {% if related_documents.count() %}
     {% for doc in related_documents.all() %}

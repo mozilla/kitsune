@@ -48,7 +48,13 @@ class Profile(ModelBase, SearchMixin):
                                blank=True, verbose_name=_lazy(u'Avatar'),
                                max_length=settings.MAX_FILEPATH_LENGTH)
     bio = models.TextField(null=True, blank=True,
-                           verbose_name=_lazy(u'Biography'))
+                           verbose_name=_lazy(u'Biography'),
+                           help_text=_lazy(u'Some HTML supported: &#x3C;abbr title&#x3E; ' +
+                                           '&#x3C;acronym title&#x3E; &#x3C;b&#x3E; ' +
+                                           '&#x3C;blockquote&#x3E; &#x3C;code&#x3E; ' +
+                                           '&#x3C;em&#x3E; &#x3C;i&#x3E; &#x3C;li&#x3E; ' +
+                                           '&#x3C;ol&#x3E; &#x3C;strong&#x3E; &#x3C;ul&#x3E;. ' +
+                                           'Links are forbidden.'))
     website = models.URLField(max_length=255, null=True, blank=True,
                               verbose_name=_lazy(u'Website'))
     twitter = models.CharField(max_length=15, null=True, blank=True, validators=[TwitterValidator],
@@ -77,6 +83,9 @@ class Profile(ModelBase, SearchMixin):
     csat_email_sent = models.DateField(null=True, blank=True,
                                        verbose_name=_lazy(u'When the user was sent a community '
                                                           u'health survey'))
+    is_fxa_migrated = models.BooleanField(default=False)
+    fxa_uid = models.CharField(blank=True, null=True, unique=True, max_length=128)
+    fxa_avatar = models.URLField(max_length=512, blank=True, default='')
 
     class Meta(object):
         permissions = (('view_karma_points', 'Can view karma points'),
@@ -104,6 +113,8 @@ class Profile(ModelBase, SearchMixin):
         self.mozillians = ''
         self.irc_handle = ''
         self.city = ''
+        self.is_fxa_migrated = False
+        self.fxa_uid = ''
 
     @property
     def display_name(self):
