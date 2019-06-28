@@ -193,7 +193,8 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
             messages.info(self.request, 'fxa_notification_updated')
 
         # There is a change in the email in Firefox Accounts. Let's update user's email
-        if user.email != email:
+        # unless we have a superuser
+        if user.email != email and not user.is_superuser:
             if User.objects.exclude(id=user.id).filter(email=email).exists():
                 msg = _(u'The email used with this Firefox Account is already '
                         'linked in another profile.')
