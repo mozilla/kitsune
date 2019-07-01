@@ -1825,16 +1825,24 @@ input[type="submit"]{
     }
   }
 
-  @media screen and (min-width: 970px) {
+  @media screen and (min-width: 600px) {
     &.card-grid {
       margin-left: -12px;
       margin-right: -12px;
 
       > li {
         margin: 0 12px 28px;
-        width: 30%;
-        width: ~"calc(33% - 26px)";
+        width: 40%;
+        width: ~"calc(50% - 30px)";
       }
+    }
+  }
+
+
+  @media screen and (min-width: 970px) {
+    &.card-grid > li {
+      width: 30%;
+      width: ~"calc(33% - 26px)";
     }
   }
 

@@ -56,8 +56,11 @@ h4 {
 }
 
 .content-box {
-  padding-bottom: 20px;
-  padding-top: 20px;
+  padding: 30px 20px 0 0;
+
+  h3 {
+    font-size: 26px;
+  }
 }
 
 .get-involved-icon {
@@ -113,22 +116,41 @@ h4 {
   }
 }
 
+@media screen and (max-width: 969px) {
+  .moz-heroes {
+    margin: 10px 0 0 -10px;
+    max-width: 100%;
+  }
+}
+
 .hero-bar {
   background: none no-repeat right center #fff;
-  padding: 30px;
+  padding: 0;
   margin: 0 0 30px 0;
   position: relative;
 
   .column {
-    float: left;
-    margin: 0 30px 30px 0;
-    width: 210px;
+    margin-bottom: 20px;
   }
 
-  .hero-butler {
-    bottom: -20px;
-    position: absolute;
-    right: -30px;
+  @media screen and (min-width: 970px) {
+    padding: 60px 0 30px;
+
+    .column {
+      float: left;
+      margin: 0 30px 30px 0;
+      width: 210px;
+    }
+  }
+
+
+
+  @media screen and (min-width: 960px) {
+    .hero-butler {
+      bottom: -20px;
+      position: absolute;
+      right: -30px;
+    }
   }
 
   &.secondary {
