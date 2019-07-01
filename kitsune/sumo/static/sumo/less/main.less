@@ -2676,8 +2676,11 @@ input[type="submit"]{
 .dropdown .user span {
   display: inline-flex;
   align-items: center;
-  font-weight: bold;
   font-size: 16px;
+
+  &.hide-on-mobile {
+    font-weight: bold;
+  }
 
   .avatar {
     border-radius: 50%;
