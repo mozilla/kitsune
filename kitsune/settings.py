@@ -599,6 +599,12 @@ else:
         OIDC_RP_CLIENT_ID = config('OIDC_RP_CLIENT_ID', default='')
         OIDC_RP_CLIENT_SECRET = config('OIDC_RP_CLIENT_SECRET', default='')
         OIDC_CREATE_USER = config('OIDC_CREATE_USER', default=False, cast=bool)
+        # Exempt Firefox Accounts urls
+        OIDC_EXEMPT_URLS = [
+            'users.fxa_authentication_init',
+            'users.fxa_authentication_callback',
+            'users.fxa_logout_url',
+        ]
         # Firefox Accounts configuration
         FXA_OP_TOKEN_ENDPOINT = config('FXA_OP_TOKEN_ENDPOINT', default='')
         FXA_OP_AUTHORIZATION_ENDPOINT = config('FXA_OP_AUTHORIZATION_ENDPOINT', default='')
