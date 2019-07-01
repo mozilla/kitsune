@@ -2,11 +2,11 @@ var imgs = document.querySelectorAll('img.avatar');
 
 if (imgs) {
   imgs.forEach(function(e) {
-    e.addEventListener('error', defaultAvatar(e));
+    e.addEventListener('error', defaultAvatar);
   });
 }
 
-function defaultAvatar(e) {
-  e.onerror = null;
-  e.src = k.STATIC_URL + 'sumo/img/avatar.png';
+function defaultAvatar() {
+  this.onerror = null;
+  this.src = k.STATIC_URL + 'sumo/img/avatar.png';
 }
