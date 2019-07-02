@@ -3,8 +3,8 @@ import re
 import urllib
 
 from django.conf import settings
-from django.contrib.auth import logout
 from django.contrib import messages
+from django.contrib.auth import BACKEND_SESSION_KEY, logout
 from django.core.exceptions import MiddlewareNotUsed
 from django.core.urlresolvers import is_valid_path
 from django.core.validators import validate_ipv4_address, ValidationError
@@ -58,8 +58,10 @@ class SUMORefreshIDTokenAdminMiddleware(SessionRefresh):
 
     def process_request(self, request):
         """Only allow refresh and enforce OIDC auth on admin URLs"""
+        # If the admin is targeted let's check the backend used, if any
         if request.path.startswith('/admin/') and request.path != '/admin/login/':
-            if 'oidc_id_token_expiration' not in request.session:
+            backend = request.session.get(BACKEND_SESSION_KEY)
+            if backend and backend.split('.')[-1] != 'SumoOIDCAuthBackend':
                 logout(request)
                 messages.error(request, 'OIDC login required for admin access')
                 return HttpResponseRedirect('/admin/login/')
