@@ -77,11 +77,11 @@ def suggest_username(email):
 
     if users.count() > 0:
         ids = []
-        for u in users:
+        for user in users:
             # get the number at the end
-            i = u.username[len(username):]
+            i = user.username[len(username):]
 
-            # incase there's no number in the case where just the base is taken
+            # in case there's no number in the case where just the base is taken
             if i:
                 i = int(i)
                 bisect.insort(ids, i)
@@ -90,7 +90,11 @@ def suggest_username(email):
 
         for index, i in enumerate(ids):
             if index + 1 < len(ids):
-                if i + 1 != ids[index + 1]:
+                suggested_number = i + 1
+                # let's check if the number exists. Username can have leading zeroes
+                # which translates to an array [0, 1, 1, 2]. Without the membership
+                # check this snippet will return 2 which is wrong
+                if suggested_number != ids[index + 1] and suggested_number not in ids:
                     break
 
         username = '{0}{1}'.format(username, i + 1)
