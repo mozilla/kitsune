@@ -656,30 +656,24 @@ form .submit {
     display: block;
     max-width: 400px;
     margin: 0 auto 10px;
-
-    @media screen and (min-width: 440px) {
-      max-width: 120px;
-      margin: 0 0 10px;
-    }
   }
 
-  .remove-avatar {
-    margin-left: auto;
-  }
-
-  @media screen and (min-width: 970px) {
+  @media screen and (min-width: 440px) {
     align-items: center;
 
     .avatar-preview {
       width: 120px;
       height: 120px;
-      margin-right: 30px;
-      margin-bottom: 0;
+      margin: 0 30px 0 0;
     }
 
     > a {
       margin-right: 30px;
     }
+  }
+
+  .remove-avatar {
+    margin-left: auto;
   }
 }
 
@@ -688,7 +682,7 @@ form .submit {
   flex-direction: column;
   padding: 30px 0 20px;
 
-  @media screen and (min-width: 970px) {
+  @media screen and (min-width: 480px) {
     flex-direction: row;
     align-items: flex-start;
   }
@@ -706,7 +700,7 @@ form .submit {
     width: 100%;
   }
 
-  @media screen and (min-width: 970px) {
+  @media screen and (min-width: 480px) {
     width: 170px;
     height: 170px;
     margin: 0 20px 0 0;

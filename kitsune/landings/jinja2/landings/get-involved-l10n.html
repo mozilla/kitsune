@@ -7,6 +7,7 @@
 
 {% block content %}
   <div class="grid_12">
+    <img class="hero-img" src="{{ STATIC_URL }}sumo/img/gi-hero-l10n.png" alt="">
     <div class="hero-bar secondary l10n cf">
       <div class="column">
         <h1>{{ _('Translate help articles!') }}</h1>
@@ -31,25 +32,22 @@
       <h3>{{ _('How it works') }}</h3>
     </div>
     <div class="grid_6">
-      <span class="bullet">1</span>
-      <div>
-        {% set message =  _('Sign up as a volunteer') %}
-        {% if not user_is_contributor %}
-          <a href="#" data-trigger="click" data-trigger-target="#sign-up-contributor">{{ message }}</a>
-        {% else %}
-          {{ message }}
-        {% endif %}
-      </div>
-
-      <span class="bullet">2</span>
-      <div>
-        <a href="{{ url('wiki.document', 'localize-firefox-help') }}">
-          {{ _('Check our documentation') }}
-        </a>
-      </div>
-
-      <span class="bullet">3</span>
-      <div>{{ _('Just edit articles in your language!') }}</div>
+      <ol class="callouts">
+        <li>
+          {% set message =  _('Sign up as a volunteer') %}
+            {% if not user_is_contributor %}
+              <a href="#" data-trigger="click" data-trigger-target="#sign-up-contributor">{{ message }}</a>
+            {% else %}
+              {{ message }}
+            {% endif %}
+          </li>
+        <li>
+          <a href="{{ url('wiki.document', 'localize-firefox-help') }}">
+            {{ _('Check our documentation') }}
+          </a>
+        </li>
+        <li>{{ _('Just edit articles in your language!') }}</li>
+      </ol>
     </div>
     <div class="grid_6 gi-visual">
       <div><img src="{{ STATIC_URL }}sumo/img/gi-visual-l10n.png?v=1" alt=""></div>
