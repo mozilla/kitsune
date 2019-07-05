@@ -52,7 +52,7 @@ def cache_control(resp, cache_period):
 
 def _es_down_template(request, *args, **kwargs):
     """Returns the appropriate "Elasticsearch is down!" template"""
-    return 'search/mobile/down.html' if request.MOBILE else 'search/down.html'
+    return 'search/down.html'
 
 
 class UnknownDocType(Exception):
