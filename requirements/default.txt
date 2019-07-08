@@ -331,9 +331,8 @@ translate-toolkit==1.6.0 \
     --hash=sha256:02832f3b1b071efacb235b4590fd54c7ed0d8911de8d72f46b087d0c86b21350
 twython==3.2.0 \
     --hash=sha256:ab0dec52286677e944ddc00eaf6a0eb89af48b1a6696324ea29351342d1c483f
-urllib3==1.25.3 \
-    --hash=sha256:b246607a25ac80bedac05c6f282e3cdaf3afb65420fd024ac94435cabe6e18d1 \
-    --hash=sha256:dbe59173209418ae49d485b87d1681aefa36252ee85884c31346debd19463232
+urllib3==1.24 \
+    --hash=sha256:8819bba37a02d143296a4d032373c4dd4aca11f6d4c9973335ca75f9c8475f59
 Werkzeug==0.5.1 \
     --hash=sha256:ff638b44eaca81c9a1c8c492b957c1b8d1b44b2147e50216355ff9c99daa8637
 https://github.com/eventbrite/zendesk/archive/1b256c3b827a8f3c6bbd3bd1fc09b7b0e2e82347.tar.gz#egg=zendesk \
