@@ -141,3 +141,4 @@ app:
     secure_ssl_redirect: True
     wsgi_keep_alive: 60
     disable_feeds: False
+    user_agent_filters: "360spider,semrushbot,coccobot,dotbot"
