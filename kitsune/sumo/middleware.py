@@ -322,7 +322,8 @@ class FilterByUserAgentMiddleware(MiddlewareMixin):
             raise MiddlewareNotUsed()
 
     def process_request(self, request):
-        ua = request.META.get('HTTP_USER_AGENT', '').lower()
+        ua = unicode(request.META.get('HTTP_USER_AGENT', '').lower(), 'utf-8')
+
         if any(x in ua for x in settings.USER_AGENT_FILTERS):
             response = HttpResponseRateLimited()
             patch_vary_headers(response, ['User-Agent'])
