@@ -322,7 +322,9 @@ class FilterByUserAgentMiddleware(MiddlewareMixin):
             raise MiddlewareNotUsed()
 
     def process_request(self, request):
-        ua = unicode(request.META.get('HTTP_USER_AGENT', '').lower(), 'utf-8')
+        client_ua = request.META.get('HTTP_USER_AGENT', '').lower()
+        # get only ascii chars
+        ua = ''.join(i for i in client_ua if ord(i) < 128)
 
         if any(x in ua for x in settings.USER_AGENT_FILTERS):
             response = HttpResponseRateLimited()
