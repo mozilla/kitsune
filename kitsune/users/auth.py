@@ -127,7 +127,8 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
         profile.fxa_avatar = claims.get('avatar', '')
         profile.name = claims.get('displayName', '')
         # Let's get the first element even if it's an empty string
-        fxa_locale = claims.get('locale', '').split(',')[0]
+        # A few assertions return a locale of None so we need to default to empty string
+        fxa_locale = (claims.get('locale', '') or '').split(',')[0]
         if fxa_locale in settings.SUMO_LANGUAGES:
             profile.locale = fxa_locale
         else:
