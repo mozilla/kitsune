@@ -6,7 +6,7 @@ services:
 before_install:
   - echo "ENV GIT_SHA ${TRAVIS_COMMIT}" >> Dockerfile
   - export GIT_SHA=${TRAVIS_COMMIT}
-  - docker pull itsre/sumo-kitsune:latest
+  - docker pull itsre/sumo-kitsune:full-latest
 install:
   - pip install -U docker-compose
   - cp .env-travis .env
