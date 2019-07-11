@@ -6,7 +6,7 @@ services:
 before_install:
   - echo "ENV GIT_SHA ${TRAVIS_COMMIT}" >> Dockerfile
   - export GIT_SHA=${TRAVIS_COMMIT}
-  - docker pull mozmeao/kitsune:latest
+  - docker pull itsre/sumo-kitsune:latest
 install:
   - pip install -U docker-compose
   - cp .env-travis .env
@@ -24,7 +24,7 @@ install:
   # For some strange reason `docker-compose build` -even with the above chown
   # trick- still invalidates the cache at the COPY command. Directly building
   # with `docker build` works.
-  - docker build -t kitsune:latest --cache-from mozmeao/kitsune .
+  - docker build -t kitsune:latest --cache-from itsre/sumo-kitsune .
 
   - docker-compose run --user root web ./manage.py nunjucks_precompile
   - docker-compose run --user root web ./manage.py compilejsi18n
