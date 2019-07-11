@@ -1,6 +1,7 @@
 sudo: required
 language: python
-python: 2.7
+python:
+  - "2.7"
 services:
   - docker
 before_install:
@@ -10,6 +11,7 @@ before_install:
   - make pull
 install:
   - make build-ci
+script:
   - make lint-ci
   - make test-js-ci
   - make test-ci
