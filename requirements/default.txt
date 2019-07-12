@@ -317,9 +317,9 @@ pytz==2018.9 \
     --hash=sha256:d5f05e487007e29e03409f9398d074e158d920d36eb82eaf66fb1136b0c5374c
 recaptcha-client==1.0.6 \
     --hash=sha256:28c6853c1d13d365b7dc71a6b05e5ffb56471f70a850de318af50d3d7c0dea2f
-requests==2.20.0 \
-    --hash=sha256:99dcfdaaeb17caf6e526f32b6a7b780461512ab3f1d992187801694cba42770c \
-    --hash=sha256:a84b8c9ab6239b578f22d1c21d51b696dcfe004032bb80ea832398d6909d7279
+requests==2.22.0 \
+    --hash=sha256:11e007a8a2aa0323f5a921e9e6a2d7e4e67d9877e85773fba9ba6419025cbeb4 \
+    --hash=sha256:9cf5292fcd0f598c671cfc1e0d7d1a7f13bb8085e9a590f48c010551dc6c4b31
 requests-oauthlib==0.4.2 \
     --hash=sha256:9e0223b89518edac61a97b56ff78f271056ce08c8a17c6b644aef244fac83f23 \
     --hash=sha256:9ad48523e2735e2bda3ef6354073778c87fd718e4e5661a1d1b70e0ca05b619e
@@ -331,8 +331,9 @@ translate-toolkit==1.6.0 \
     --hash=sha256:02832f3b1b071efacb235b4590fd54c7ed0d8911de8d72f46b087d0c86b21350
 twython==3.2.0 \
     --hash=sha256:ab0dec52286677e944ddc00eaf6a0eb89af48b1a6696324ea29351342d1c483f
-urllib3==1.24 \
-    --hash=sha256:8819bba37a02d143296a4d032373c4dd4aca11f6d4c9973335ca75f9c8475f59
+urllib3==1.25.3 \
+    --hash=sha256:b246607a25ac80bedac05c6f282e3cdaf3afb65420fd024ac94435cabe6e18d1 \
+    --hash=sha256:dbe59173209418ae49d485b87d1681aefa36252ee85884c31346debd19463232
 Werkzeug==0.5.1 \
     --hash=sha256:ff638b44eaca81c9a1c8c492b957c1b8d1b44b2147e50216355ff9c99daa8637
 https://github.com/eventbrite/zendesk/archive/1b256c3b827a8f3c6bbd3bd1fc09b7b0e2e82347.tar.gz#egg=zendesk \
