@@ -56,7 +56,7 @@ def profile_avatar(user, size=48):
 
     # If the url doesn't start with http (local dev), don't pass it to
     # to gravatar because it can't use it.
-    if avatar.startswith('https') and profile.is_fxa_migrated:
+    if avatar.startswith('https') and profile and profile.is_fxa_migrated:
         url = avatar
     elif avatar.startswith('http'):
         url = url + '&d=%s' % urllib.quote(avatar)
