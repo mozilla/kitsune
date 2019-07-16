@@ -610,7 +610,11 @@ def es_status_cmd(checkindex=False, log=log):
         # TODO: SUMO has a single ES_URL and that's the ZLB and does
         # the balancing. If that ever changes and we have multiple
         # ES_URLs, then this should get fixed.
-        es_deets = requests.get(settings.ES_URLS[0]).json()
+        es_url = settings.ES_URLS[0]
+        if not es_url.startswith('http'):
+            es_url = 'https://' + es_url
+
+        es_deets = requests.get(es_url).json()
     except requests.exceptions.RequestException:
         pass
 
