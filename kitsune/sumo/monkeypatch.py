@@ -68,12 +68,15 @@ def patch():
         """Monkey patch elasticutils get_es to add use_ssl and http_auth settings."""
         from django.conf import settings
 
+        from elasticsearch import RequestsHttpConnection
+
         defaults = {
             'urls': settings.ES_URLS,
             'timeout': getattr(settings, 'ES_TIMEOUT', 5),
             'use_ssl': getattr(settings, 'ES_USE_SSL', False),
             'http_auth': getattr(settings, 'ES_HTTP_AUTH', None),
             'verify_certs': getattr(settings, 'ES_VERIFY_CERTS', True),
+            'connection_class': RequestsHttpConnection
         }
 
         defaults.update(overrides)
