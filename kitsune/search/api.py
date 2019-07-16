@@ -1,5 +1,6 @@
 from django.conf import settings
 
+from elasticsearch import RequestsHttpConnection
 from rest_framework import serializers
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -75,7 +76,8 @@ def suggest(request):
         .es(urls=settings.ES_URLS,
             timeout=settings.ES_TIMEOUT,
             use_ssl=settings.ES_USE_SSL,
-            http_auth=settings.ES_HTTP_AUTH)
+            http_auth=settings.ES_HTTP_AUTH,
+            connection_class=RequestsHttpConnection)
         .indexes(es_utils.read_index('default')))
 
     data = serializer.validated_data
