@@ -17,6 +17,7 @@ import bleach
 import jinja2
 from elasticutils.utils import format_explanation
 from elasticutils.contrib.django import ES_EXCEPTIONS
+from elasticsearch import RequestsHttpConnection
 from kitsune import search as constants
 from kitsune.forums.models import Forum, ThreadMappingType
 from kitsune.products.models import Product
@@ -307,7 +308,8 @@ def advanced_search(request):
     searcher = (AnalyzerS().es(urls=settings.ES_URLS,
                                timeout=settings.ES_TIMEOUT,
                                use_ssl=settings.ES_USE_SSL,
-                               http_auth=settings.ES_HTTP_AUTH)
+                               http_auth=settings.ES_HTTP_AUTH,
+                               connection_class=RequestsHttpConnection)
                            .indexes(es_utils.read_index('default')))
 
     doctypes = []

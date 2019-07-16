@@ -2,6 +2,8 @@ from itertools import chain
 
 from django.conf import settings
 
+from elasticsearch import RequestsHttpConnection
+
 from kitsune import search as constants
 from kitsune.questions.models import QuestionMappingType
 from kitsune.search import es_utils
@@ -44,6 +46,7 @@ def generate_simple_search(search_form, language, with_highlights=False):
             timeout=settings.ES_TIMEOUT,
             use_ssl=settings.ES_USE_SSL,
             http_auth=settings.ES_HTTP_AUTH,
+            connection_class=RequestsHttpConnection
         )
         .indexes(es_utils.read_index('default'))
     )
