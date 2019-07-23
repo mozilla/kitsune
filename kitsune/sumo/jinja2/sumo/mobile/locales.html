@@ -6,8 +6,13 @@
 {% block content %}
   <ul id="locales">
     {% for locale in settings.LANGUAGE_CHOICES %}
+      {% set locale_link_elem %}
+        <a lang="{{ locale[0] }}" hreflang="{{ locale[0] }}"
+          href="{{ next_url|urlparams(lang=locale[0]) }}">{{ locale[1] }}
+        </a>
+      {% endset %}
       <li>
-        <a lang="{{ locale[0] }}" hreflang="{{ locale[0] }}" href="{{ next_url|urlparams(lang=locale[0]) }}">{{ locale[1] }}</a>
+        {{ locale_link_elem|linkify|safe }}
       </li>
     {% endfor %}
   </ul>
