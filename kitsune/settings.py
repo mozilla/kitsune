@@ -618,6 +618,7 @@ else:
         FXA_USE_NONCE = config('FXA_USE_NONCE', False)
         FXA_LOGOUT_REDIRECT_URL = config('FXA_LOGOUT_REDIRECT_URL', '/')
         FXA_USERNAME_ALGO = config('FXA_USERNAME_ALGO', default=_username_algo)
+        FXA_STORE_ACCESS_TOKEN = config('FXA_STORE_ACCESS_TOKEN', default=False)
 
 ADMIN_REDIRECT_URL = config('ADMIN_REDIRECT_URL', default=None)
 
