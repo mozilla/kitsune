@@ -394,6 +394,31 @@ products = OrderedDict([
         ])
     }),
 
+    ('firefox-lockwise', {
+        'name': _lazy(u'Firefox Lockwise'),
+        'subtitle': _lazy(u'Firefox Lockwise'),
+        'extra_fields': [],
+        'tags': [],
+        'product': 'firefox-lockwise',
+        'categories': OrderedDict([
+            ('install-and-set-up', {
+                'name': _lazy(u'Install and set up'),
+                'topic': 'install-lockwise',
+                'tags': ['install-and-set-up'],
+            }),
+            ('manage-settings-and-logins', {
+                'name': _lazy(u'Manage settings and logins'),
+                'topic': 'lockwise-settings',
+                'tags': ['settings-and-logins'],
+            }),
+            ('fix-problems-with-firefox-lockwise', {
+                'name': _lazy(u'Fix problems with Firefox Lockwise'),
+                'topic': 'fix-problems-lockwise',
+                'tags': ['fix-problems'],
+            }),
+        ])
+    }),
+
     ('other', {
         'name': _lazy(u'Other Mozilla products'),
         'subtitle': '',
