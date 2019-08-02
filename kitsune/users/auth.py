@@ -175,8 +175,10 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
         profile = user.profile
         fxa_uid = claims.get('uid')
         email = claims.get('email')
-
         user_attr_changed = False
+        # Check if the user has active subscriptions
+        subscriptions = claims.get('subscriptions')
+        isSubscriber = bool(subscriptions and 'isSubscriber' in subscriptions)
 
         if not profile.is_fxa_migrated:
             # Check if there is already a Firefox Account with this ID
@@ -206,6 +208,8 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
 
         # Follow avatars from FxA profiles
         profile.fxa_avatar = claims.get('avatar', '')
+        # Update subscriptions status
+        profile.has_subscriptions = isSubscriber
 
         # Users can select their own display name.
         if not profile.name:
