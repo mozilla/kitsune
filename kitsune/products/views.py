@@ -25,6 +25,7 @@ def product_list(request, template):
 def product_landing(request, template, slug):
     """The product landing page."""
     product = get_object_or_404(Product, slug=slug)
+    user = request.user
 
     if request.is_ajax():
         # Return a list of topics/subtopics for the product
@@ -49,7 +50,7 @@ def product_landing(request, template, slug):
         'topics': topics_for(product=product, parent=None),
         'search_params': {'product': slug},
         'latest_version': latest_version,
-        'show_contact_form': False
+        'show_contact_form': user.profile.has_subscriptions if user.is_authenticated() else False
     })
 
 

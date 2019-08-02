@@ -34,7 +34,7 @@
       </div>
     {% endif %}
 
-    {% if show_contact_form %}
+    {% if show_contact_form and settings.OIDC_ENABLE %}
       <div class="support-callout community-support pos-rel">
         <figure class="feature-icon-box">
           {% include "includes/icons/icon-airplane.svg" %}
@@ -42,7 +42,7 @@
         <div class="support-callout-details">
           <h3 class="support-callout-title"><span class="highlight">{{ _('Contact Us') }}</span></h3>
           <p class="support-callout-desc">{{ _('Contact the Support Team for help.') }}</p>
-          <a class="support-callout-button expand-this-link" href="#TODO" data-event-category="link click" data-event-action="topic" data-event-label="Contact Support">{{ _('Ask a Question') }}</a>
+          <a class="support-callout-button expand-this-link" href="{{ settings.FXA_SUPPORT_FORM }}" data-event-category="link click" data-event-action="topic" data-event-label="Contact Support">{{ _('Ask a Question') }}</a>
         </div>
       </div>
     {% endif %}
