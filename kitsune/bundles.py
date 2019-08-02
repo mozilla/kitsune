@@ -264,12 +264,6 @@ PIPELINE_CSS = {
             'sumo/less/badges.less',
         ),
         'output_filename': 'build/badges-min.css'
-    },
-    'fxa-banner-test': {
-        'source_filenames': (
-            'sumo/less/fxa-banner.less',
-        ),
-        'output_filename': 'build/fxa-banner-test.css'
     }
 }
 
@@ -659,11 +653,5 @@ PIPELINE_JS = {
             'sumo/js/gtm-snippet.js',
         ),
         'output_filename': 'build/gtm-snippet-min.js'
-    },
-    'fxa-banner-test': {
-        'source_filenames': (
-            'sumo/js/fxa-banner.js',
-        ),
-        'output_filename': 'build/fxa-banner-test.js'
     }
 }

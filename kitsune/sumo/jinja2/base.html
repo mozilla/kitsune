@@ -1,8 +1,5 @@
 {% from 'includes/common_macros.html' import announcement_bar, search_box, aux_nav, favicon with context %}
 
-{# check once to see if fxa banner should be shown #}
-{% set fxa_banner_test = request.LANGUAGE_CODE in settings.FXA_BANNER_LANGUAGES and waffle.switch('fxa-banner-test') %}
-
 {% if request.LANGUAGE_CODE == settings.WIKI_DEFAULT_LANGUAGE and waffle.flag('surveygizmo') %}
   {# allow any artibtrary survey to be loaded via the SurveyGizmo admin #}
   {% set SURVEY_GIZMOS = ['beacon'] %}
@@ -34,10 +31,6 @@
   {% for style in styles %}
     {% stylesheet style %}
   {% endfor %}
-
-  {% if fxa_banner_test %}
-    {% stylesheet 'fxa-banner-test' %}
-  {% endif %}
 
   <!--[if lte IE 7]>
     {% stylesheet 'ie' %}
@@ -277,23 +270,6 @@
   {{ breadcrumbs(crumbs, id='main-breadcrumbs') }}
 {% endblock %}
 
-{% if fxa_banner_test %}
-<div id="fxa-banner">
-  <p class="copy" id="fxa-banner-send">
-    {{ _('Safely share files online with encrypted links that “self-destruct.”') }}
-    <a href="https://send.firefox.com/?utm_source=support.mozilla.org&utm_medium=referral&utm_campaign=sumo-try-send">{{ _('Try Firefox Send.') }}</a>
-  </p>
-  <p class="copy" id="fxa-banner-monitor">
-    {{ _('Give hackers a swift kick in the cookies. See if your data has been affected by a breach with Firefox Monitor.') }}
-    <a href="https://monitor.firefox.com/?utm_source=support.mozilla.org&utm_medium=referral&utm_campaign=sumo-try-monitor">{{ _('Try it now.') }}</a>
-  </p>
-  <p class="copy" id="fxa-banner-sync">
-    {{ _('Access your history, passwords and open tabs wherever you are with Sync.') }}
-    <a href="https://accounts.firefox.com/signup?context=fx_desktop_v3&entrypoint=fxa:signup&service=sync&utm_source=support.mozilla.org&utm_medium=referral&utm_campaign=sumo-try-sync">{{ _('Connect a second device.') }}</a>
-  </p>
-</div>
-{% endif %}
-
 <div class="container_12 cf {% block base_container_classes %}{% endblock %}" id="main-container">
   <div class="grid_12">
     {% if messages %}
@@ -422,10 +398,6 @@
 {% endfor %}
 
 {% javascript 'common.fx.download' %}
-
-{% if fxa_banner_test %}
-  {% javascript 'fxa-banner-test' %}
-{% endif %}
 
 {# Temporary Pontoon testing - bug 812176 #}
 {% if settings.STAGE %}
