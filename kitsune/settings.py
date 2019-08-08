@@ -619,6 +619,7 @@ else:
         FXA_LOGOUT_REDIRECT_URL = config('FXA_LOGOUT_REDIRECT_URL', '/')
         FXA_USERNAME_ALGO = config('FXA_USERNAME_ALGO', default=_username_algo)
         FXA_STORE_ACCESS_TOKEN = config('FXA_STORE_ACCESS_TOKEN', default=False, cast=bool)
+        FXA_SUPPORT_FORM = config('FXA_SUPPORT_FORM', default='https://accounts.firefox.com/support')
         FXA_SUPPORT_FORM = 'https://accounts.firefox.com/support'
 
 ADMIN_REDIRECT_URL = config('ADMIN_REDIRECT_URL', default=None)
