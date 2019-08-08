@@ -20,7 +20,7 @@ class ProfileAdmin(admin.ModelAdmin):
         (None, {
             'fields': ['user', 'name', 'public_email',
                        ('avatar', 'delete_avatar'), 'bio', 'is_fxa_migrated',
-                       'fxa_uid'],
+                       'fxa_uid', 'has_subscriptions'],
         }),
         ('Contact Info', {
             'fields': ['website', 'twitter', 'facebook', 'mozillians', 'irc_handle'],
