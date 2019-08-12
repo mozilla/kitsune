@@ -56,7 +56,7 @@ pull: .env
 
 pull: .env
 	-GIT_COMMIT_SHORT= ${DC} pull base base-dev staticfiles locales full-no-locales full mariadb elasticsearch redis
-	${DC} push itsre/sumo-kitsune:${GIT_COMMIT_SHORT}
+	${DC} push itsre/sumo-kitsune-travis:${GIT_COMMIT_SHORT}
 
 rebuild: clean build
 
