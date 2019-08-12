@@ -12,6 +12,9 @@ script:
   - if [[ "$TRAVIS_BRANCH" == "master" ]]; then
       echo would execute sh "scripts/lint-l10n-repo.sh --push" ;
     fi
+  - if [[ "$TRAVIS_BRANCH" == "travis" ]]; then
+      echo "Welcome to the Travis branch";
+    fi
   - make build-ci
   - make lint-ci
   - make test-js-ci
