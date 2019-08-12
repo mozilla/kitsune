@@ -1,33 +1,26 @@
 sudo: required
 language: python
 python:
-  - "2.7"
+- '2.7'
 services:
-  - docker
+- docker
 before_install:
-  - echo "ENV GIT_SHA ${TRAVIS_COMMIT}" >> Dockerfile
-  - export GIT_SHA=${TRAVIS_COMMIT}
-  - make pull
+- echo "ENV GIT_SHA ${TRAVIS_COMMIT}" >> Dockerfile
+- export GIT_SHA=${TRAVIS_COMMIT}
+- make pull
+- printenv | grep -i docker
 script:
-  - if [[ "$TRAVIS_BRANCH" == "master" ]]; then
-      echo would execute sh "scripts/lint-l10n-repo.sh --push" ;
-    fi
-  - if [[ "$TRAVIS_BRANCH" == "travis" ]]; then
-      echo "Welcome to the Travis branch";
-    fi
-  - make build-ci
-  - make lint-ci
-  - make test-js-ci
-  - make test-ci
+- if [[ "$TRAVIS_BRANCH" == "master" ]]; then echo would execute sh "scripts/lint-l10n-repo.sh
+  --push" ; fi
+- if [[ "$TRAVIS_BRANCH" == "travis" ]]; then echo "Welcome to the Travis branch";
+  fi
+- make build-ci
+- make lint-ci
+- make test-js-ci
+- make test-ci
 after_success:
-  - if [[ "$TRAVIS_BRANCH" == "master" ]]; then
-      docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD ;
-      make push-image ;
-    fi
-    #notifications:
-    #  email: false
-    #  irc:
-    #    channels:
-    #    - irc.mozilla.org#sumodev
-    #    on_success: always
-    #    on_failure: always
+- if [[ "$TRAVIS_BRANCH" == "master" ]]; then docker login -u $DOCKER_USERNAME -p
+  $DOCKER_PASSWORD ; make push-image ; fi
+env:
+  global:
+    secure: RZf6m2vh08cpzWpIVBlXeeq3N6VInItziSZhG5eH6Y13ZFhU7lzhqo/jHS+5+v1qxIU3nVUGI4Uw2ISTHk8b0xdEoPdMCZ0I/JpXKl5BW/hptyTUOQFEwsrY9rNQ56xb/Dj4vsByQU6uQabSOZ4j6qF7yyTnQspc7iQqEZmhvsA=
