@@ -4,10 +4,6 @@ python:
 - '2.7'
 services:
 - docker
-cache:
-- pip
-- npm
-- yarn
 before_install:
 - echo "Can I echo things in before_install?"
 - echo Test secret is $DOCKER_USERNAME
@@ -31,7 +27,10 @@ after_success:
 # Add secrets with `travis encrypt` with the form of `export MY_ENV_VAR=MySuperSecret`
 env:
   global:
-  - secure: TCeF41hX0NAt0fUKYdUb4R65zllxkpuYq5iwKT1AXeCLn6l9qf14g8LmK6Nvxd7hAwXzvRxmKdQQa15XYFvhuEU4rPSbLgEO3lX8BFqpxA7l6+waXhyy8qb92QvyeiY6PvEcFyk1oqwPaANhtU4I9/oNhbYKBYqKRU4MoBVN/hU=
+  # Dockerhub
+  - secure: "j3j4ARHbQwvNMx2W/JHGkLHMyDMnaLT8D8E9brSu2k1+0BZiEfZU1wmPhmPZ/GuorjZJvwB7K7n29wi89rR+VQmZlro/Eq+Cyi/2k6kVItsSFiDiMad0CxwD9nkrYMQcKwA1FzinlizoJkmAsz27Y7AkPFLyR+VofFEkJ/hWKhg="
+  # Dockerhub
+  - secure: "Pc3xhQvrSG0XeBxZm4U3EChlHlhwPoMKQMlAuJuhjNV3EFtbhFqbp7K0m4zXmauX4qe4pWUGiC2Y5zg2NgemXkIaxQqrs7uPDYZF1FHq2bshN4//fBgLZ72nh9zpb0fdCR5Ij1EOTtTOt2iEFYPFeCxoV/NBlHEvv0Rg3BioIbA="
 notifications:
   slack:
     secure: Mq/2mpiKRd5ap2Re7PyGM4K7vWvN2bo1kSHd9XyeZ+LiLrLkm14QUYAbUe3WcQUDUeRtSR8zVHKRGxmBXc+TNB/Q/MCm3vgxspdqO6ScLqX3FAqwc6MVq494gn22o7fp5z/EwzdsWUlTOFUENpRzQmsF0sf3LAuijsLWvPxk4pM=
