@@ -24,9 +24,9 @@ RUN apt-get update && \
 
 COPY ./requirements/*.txt /app/requirements/
 
-RUN pip install --no-cache-dir --require-hashes -r requirements/default.txt && \
-    pip install --no-cache-dir --require-hashes -r requirements/dev.txt && \
-    pip install --no-cache-dir --require-hashes -r requirements/test.txt
+RUN pip install --require-hashes -r requirements/default.txt && \
+    pip install --require-hashes -r requirements/dev.txt && \
+    pip install --require-hashes -r requirements/test.txt
 
 ARG GIT_SHA=head
 ENV GIT_SHA=${GIT_SHA}
