@@ -5,6 +5,7 @@ python:
 services:
 - docker
 before_install:
+- echo "Can I echo things in before_install?"
 - echo Test secret is $DOCKER_USERNAME
 - echo "ENV GIT_SHA ${TRAVIS_COMMIT}" >> Dockerfile
 - export GIT_SHA=${TRAVIS_COMMIT}
