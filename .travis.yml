@@ -28,7 +28,7 @@ after_success:
     docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD;
     make push-image;
   fi
-# Add secrets with `travis encrypt --add` with the form of MY_ENV_VAR=MySuperSecret
+# Add secrets with `travis encrypt` with the form of `export MY_ENV_VAR=MySuperSecret`
 env:
   global:
   - secure: TCeF41hX0NAt0fUKYdUb4R65zllxkpuYq5iwKT1AXeCLn6l9qf14g8LmK6Nvxd7hAwXzvRxmKdQQa15XYFvhuEU4rPSbLgEO3lX8BFqpxA7l6+waXhyy8qb92QvyeiY6PvEcFyk1oqwPaANhtU4I9/oNhbYKBYqKRU4MoBVN/hU=
