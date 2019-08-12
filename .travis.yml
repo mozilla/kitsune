@@ -24,6 +24,10 @@ after_success:
     docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD;
     make push-image;
   fi
+- if [[ "$TRAVIS_BRANCH" == "travis" ]]; then
+    docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD;
+    make push-image;
+  fi
 # Add secrets with `travis encrypt` with the form of `export MY_ENV_VAR=MySuperSecret`
 env:
   global:
