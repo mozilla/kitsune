@@ -7,43 +7,24 @@ services:
 before_install:
   - echo "ENV GIT_SHA ${TRAVIS_COMMIT}" >> Dockerfile
   - export GIT_SHA=${TRAVIS_COMMIT}
-    #  - docker pull itsre/sumo-kitsune:full-latest
   - make pull
-install:
-  - make build-ci
 script:
+  - if [[ "$TRAVIS_BRANCH" == "master" ]]; then
+      echo would execute sh "scripts/lint-l10n-repo.sh --push" ;
+    fi
+  - make build-ci
   - make lint-ci
   - make test-js-ci
   - make test-ci
-    #  - pip install -U docker-compose
-    #  - cp .env-test .env
-    #  - docker-compose up -d mariadb
-    #  - docker-compose up -d elasticsearch
-    #  - docker-compose up -d redis
-
-  # Docker always copies data as root. Chowning files to root before the build
-  # command will prevent docker cache invalidation due to different file
-  # metadata. Once Travis updates to the latest docker version we should
-  # probably use --chown flag for COPY. See https://github.com/moby/moby/pull/34263
-  #  - sudo chown -c 0:0 -R requirements package.json bower.json
-  #  - sudo chmod -c a+rw -R requirements package.json bower.json
-
-  # For some strange reason `docker-compose build` -even with the above chown
-  # trick- still invalidates the cache at the COPY command. Directly building
-  # with `docker build` works.
-  #  - docker build -t kitsune:latest --cache-from itsre/sumo-kitsune .
-
-    #  - docker-compose run --user root web ./manage.py nunjucks_precompile
-    #  - docker-compose run --user root web ./manage.py compilejsi18n
-    #  - docker-compose run --user root web ./manage.py collectstatic --noinput
-    #script:
-    #  - docker-compose run --user root web flake8 kitsune
-    #  - docker-compose run --user root web ./node_modules/.bin/mocha --compilers js:babel/register --recursive kitsune/*/static/*/js/tests/* $@
-    #    #  - docker-compose run --user root -e REUSE_STATIC=1 web ./manage.py test --noinput --nologcapture -a '!search_tests' --with-nicedots
-notifications:
-  email: false
-  irc:
-    channels:
-    - irc.mozilla.org#sumodev
-    on_success: always
-    on_failure: always
+after_success:
+  - if [[ "$TRAVIS_BRANCH" == "master" ]]; then
+      docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD ;
+      make push-image ;
+    fi
+    #notifications:
+    #  email: false
+    #  irc:
+    #    channels:
+    #    - irc.mozilla.org#sumodev
+    #    on_success: always
+    #    on_failure: always
