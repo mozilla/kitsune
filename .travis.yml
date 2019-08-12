@@ -15,7 +15,7 @@ script:
     echo would execute sh "scripts/lint-l10n-repo.sh --push";
   fi
 - echo Test secret is hopefully still $DOCKER_USERNAME
-#- make build-ci
+- make build-ci
 #- make lint-ci
 #- make test-js-ci
 #- make test-ci
