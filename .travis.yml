@@ -8,12 +8,10 @@ before_install:
 - echo "ENV GIT_SHA ${TRAVIS_COMMIT}" >> Dockerfile
 - export GIT_SHA=${TRAVIS_COMMIT}
 - make pull
-- printenv | grep -i docker
+- echo Test secret is $DOCKER_USERNAME
 script:
 - if [[ "$TRAVIS_BRANCH" == "master" ]]; then echo would execute sh "scripts/lint-l10n-repo.sh
   --push" ; fi
-- if [[ "$TRAVIS_BRANCH" == "travis" ]]; then echo "Welcome to the Travis branch";
-  fi
 - make build-ci
 - make lint-ci
 - make test-js-ci
@@ -23,4 +21,4 @@ after_success:
   $DOCKER_PASSWORD ; make push-image ; fi
 env:
   global:
-    secure: RZf6m2vh08cpzWpIVBlXeeq3N6VInItziSZhG5eH6Y13ZFhU7lzhqo/jHS+5+v1qxIU3nVUGI4Uw2ISTHk8b0xdEoPdMCZ0I/JpXKl5BW/hptyTUOQFEwsrY9rNQ56xb/Dj4vsByQU6uQabSOZ4j6qF7yyTnQspc7iQqEZmhvsA=
+  - secure: TCeF41hX0NAt0fUKYdUb4R65zllxkpuYq5iwKT1AXeCLn6l9qf14g8LmK6Nvxd7hAwXzvRxmKdQQa15XYFvhuEU4rPSbLgEO3lX8BFqpxA7l6+waXhyy8qb92QvyeiY6PvEcFyk1oqwPaANhtU4I9/oNhbYKBYqKRU4MoBVN/hU=
