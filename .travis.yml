@@ -25,8 +25,7 @@ after_success:
     make push-image;
   fi
 - if [[ "$TRAVIS_BRANCH" == "travis" ]]; then
-    docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD;
-    make push-image;
+    ./bin/docker/bin/push-docker-images.sh;
   fi
 # Add secrets with `travis encrypt` with the form of `export MY_ENV_VAR=MySuperSecret`
 env:
@@ -35,6 +34,7 @@ env:
   - secure: "j3j4ARHbQwvNMx2W/JHGkLHMyDMnaLT8D8E9brSu2k1+0BZiEfZU1wmPhmPZ/GuorjZJvwB7K7n29wi89rR+VQmZlro/Eq+Cyi/2k6kVItsSFiDiMad0CxwD9nkrYMQcKwA1FzinlizoJkmAsz27Y7AkPFLyR+VofFEkJ/hWKhg="
   # Dockerhub pwd
   - secure: "Pc3xhQvrSG0XeBxZm4U3EChlHlhwPoMKQMlAuJuhjNV3EFtbhFqbp7K0m4zXmauX4qe4pWUGiC2Y5zg2NgemXkIaxQqrs7uPDYZF1FHq2bshN4//fBgLZ72nh9zpb0fdCR5Ij1EOTtTOt2iEFYPFeCxoV/NBlHEvv0Rg3BioIbA="
+  - DOCKER_REPO=itsre/sumo-kitsune-travis
 notifications:
   slack:
     secure: Mq/2mpiKRd5ap2Re7PyGM4K7vWvN2bo1kSHd9XyeZ+LiLrLkm14QUYAbUe3WcQUDUeRtSR8zVHKRGxmBXc+TNB/Q/MCm3vgxspdqO6ScLqX3FAqwc6MVq494gn22o7fp5z/EwzdsWUlTOFUENpRzQmsF0sf3LAuijsLWvPxk4pM=
