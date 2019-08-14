@@ -32,9 +32,9 @@ class ProfileAdmin(admin.ModelAdmin):
         }),
     )
     form = ProfileAdminForm
-    list_display = ['full_user']
+    list_display = ['full_user', 'name']
     list_select_related = True
-    list_filter = ['is_fxa_migrated']
+    list_filter = ['is_fxa_migrated', 'country']
     search_fields = ['user__username', 'user__email', 'name']
 
     # This reduces the load to the db.
