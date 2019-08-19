@@ -1,6 +1,9 @@
 from django.conf import settings
 from django.conf.urls import include, url
+from django.views.decorators.cache import never_cache
+
 from mozilla_django_oidc.views import OIDCAuthenticationCallbackView
+
 import kitsune.flagit.views
 from kitsune.sumo.views import redirect_to
 from kitsune.users import api, views
@@ -89,10 +92,11 @@ urlpatterns = [
 
 if settings.OIDC_ENABLE:
     urlpatterns += [
-        url(r'^fxa/callback/$', OIDCAuthenticationCallbackView.as_view(),
+        url(r'^fxa/callback/$', never_cache(OIDCAuthenticationCallbackView.as_view()),
             name='users.fxa_authentication_callback'),
-        url(r'^fxa/authenticate/$', views.FXAAuthenticateView.as_view(),
+        url(r'^fxa/authenticate/$', never_cache(views.FXAAuthenticateView.as_view()),
             name='users.fxa_authentication_init'),
-        url(r'^fxa/logout/$', views.FXALogoutView.as_view(), name='users.fxa_logout_url'),
+        url(r'^fxa/logout/$', never_cache(views.FXALogoutView.as_view()),
+            name='users.fxa_logout_url'),
         url(r'^oidc/', include('mozilla_django_oidc.urls')),
     ]
