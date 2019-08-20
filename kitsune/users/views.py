@@ -1,4 +1,5 @@
 import os
+from uuid import uuid4
 from ast import literal_eval
 from datetime import datetime
 
@@ -331,13 +332,15 @@ def profile(request, username):
 @require_POST
 def close_account(request):
     # Clear the profile
-    profile = get_object_or_404(Profile, user__id=request.user.id)
+    user_id = request.user.id
+    profile = get_object_or_404(Profile, user__id=user_id)
     profile.clear()
+    profile.fxa_uid = '{user_id}-{uid}'.format(user_id=user_id, uid=str(uuid4()))
     profile.save()
 
     # Deactivate the user and change key information
-    request.user.username = 'user%s' % request.user.id
-    request.user.email = '%s@example.com' % request.user.id
+    request.user.username = 'user%s' % user_id
+    request.user.email = '%s@example.com' % user_id
     request.user.is_active = False
 
     # Remove from all groups
