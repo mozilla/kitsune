@@ -52,7 +52,7 @@ function post-deploy {
 
     # run post-deployment tasks
     echo "Running post-deployment tasks"
-    SUMO_POD=$(${KUBECTL_BIN} -n "${K8S_NAMESPACE}" get pods -o=jsonpath='{.items[0].metadata.name}')
+    SUMO_POD=$(${KUBECTL_BIN} -n "${K8S_NAMESPACE}" get pods -o=jsonpath='{.items[*].metadata.name}' | tr ' ' '\n' | egrep 'sumo-.*-web' | head -1)
     ${KUBECTL_BIN} -n "${K8S_NAMESPACE}" exec "${SUMO_POD}" bin/run-post-deploy.sh
 }
 
