@@ -54,11 +54,6 @@
         "english": "Tamil",
         "native": "\u0ba4\u0bae\u0bbf\u0bb4\u0bcd"
     },
-    "bn-IN": {
-        "iso639_1": "bn",
-        "english": "Bengali (India)",
-        "native": "\u09ac\u09be\u0982\u09b2\u09be (\u09ad\u09be\u09b0\u09a4)"
-    },
     "de": {
         "iso639_1": "de",
         "english": "German",
@@ -409,10 +404,10 @@
         "english": "Serbian",
         "native": "Srpski"
     },
-    "bn-BD": {
+    "bn": {
         "iso639_1": "bn",
-        "english": "Bengali (Bangladesh)",
-        "native": "\u09ac\u09be\u0982\u09b2\u09be (\u09ac\u09be\u0982\u09b2\u09be\u09a6\u09c7\u09b6)"
+        "english": "Bengali",
+        "native": "\u09ac\u09be\u0982\u09b2\u09be"
     },
     "sv": {
         "iso639_1": "sv",
