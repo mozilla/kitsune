@@ -389,18 +389,18 @@ class DocumentTests(TestCaseBase):
         """The document template falls back to fallback locale if there is
         custom wiki fallback mapping for the locale and the locale have no translation
         exists."""
-        # Create an English document and a bn-BD translated document
+        # Create an English document and a es translated document
         en_rev = ApprovedRevisionFactory(is_ready_for_localization=True)
-        trans_doc = DocumentFactory(parent=en_rev.document, locale='bn-BD')
+        trans_doc = DocumentFactory(parent=en_rev.document, locale='es')
         trans_rev = ApprovedRevisionFactory(document=trans_doc)
         # Mark the created revision as the current revision for the document
         trans_doc.current_revision = trans_rev
         trans_doc.save()
 
-        # Get the bn-IN version of the document.
-        # Resolve to the bn-BD version
-        # because bn-IN has bn-BD set in FALLBACK_LOCALES in wiki/config.py
-        url = reverse('wiki.document', args=[en_rev.document.slug], locale='bn-IN')
+        # Get the ca version of the document.
+        # Resolve to the ca version
+        # because ca has es set in FALLBACK_LOCALES in wiki/config.py
+        url = reverse('wiki.document', args=[en_rev.document.slug], locale='ca')
         response = self.client.get(url)
         doc = pq(response.content)
         eq_(trans_doc.title, doc('article h1.title').text())
@@ -412,7 +412,7 @@ class DocumentTests(TestCaseBase):
         # Removing this as it shows up in text(), and we don't want to depend
         # on its localization.
         doc('#doc-pending-fallback').remove()
-        # Check that content is available in bn-BD
+        # Check that content is available in es
         eq_(pq(trans_doc.html)('div').text(), doc('#doc-content div').text())
 
     def test_document_share_link_escape(self):
@@ -1048,7 +1048,7 @@ class NewRevisionTests(TestCaseBase):
                                       document__is_localizable=True)
         doc = rev.document
         # Check the Translation page has Save Draft Button
-        trans_url = reverse('wiki.translate', locale='bn-BD', args=[doc.slug])
+        trans_url = reverse('wiki.translate', locale='bn', args=[doc.slug])
         trans_resp = self.client.get(trans_url)
         eq_(200, trans_resp.status_code)
         trans_content = pq(trans_resp.content)
@@ -1173,20 +1173,20 @@ class HistoryTests(TestCaseBase):
     def test_translation_history_with_english_slug(self):
         """Request in en-US slug but translated locale should redirect to translation history"""
         doc = DocumentFactory(locale=settings.WIKI_DEFAULT_LANGUAGE)
-        trans = DocumentFactory(parent=doc, locale='bn-BD', slug='bn_bd_trans_slug')
+        trans = DocumentFactory(parent=doc, locale='bn', slug='bn_trans_slug')
         ApprovedRevisionFactory(document=trans)
         # Get the page with the en-US slug
         url = reverse('wiki.document_revisions', args=[doc.slug], locale=trans.locale)
         response = self.client.get(url)
         # Check redirection happens
         eq_(302, response.status_code)
-        url = '/bn-BD/kb/bn_bd_trans_slug/history'
+        url = '/bn/kb/bn_trans_slug/history'
         eq_(url, response['Location'])
 
     def test_translation_history_with_english_slug_while_no_trans(self):
         """Request in en-US slug but untranslated locale should raise 404"""
         doc = DocumentFactory(locale=settings.WIKI_DEFAULT_LANGUAGE)
-        url = reverse('wiki.document_revisions', args=[doc.slug], locale='bn-BD')
+        url = reverse('wiki.document_revisions', args=[doc.slug], locale='bn')
         response = self.client.get(url)
         # Check raises 404 error
         eq_(404, response.status_code)

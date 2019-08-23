@@ -283,7 +283,7 @@ class DocumentEditingTests(TestCase):
     def test_translate_with_parent_slug_while_trans_article_available(self):
         doc = DocumentFactory(locale=settings.WIKI_DEFAULT_LANGUAGE)
         r = RevisionFactory(document=doc)
-        trans_doc = DocumentFactory(parent=doc, locale='bn-BD', slug='bn-BD_slug')
+        trans_doc = DocumentFactory(parent=doc, locale='bn', slug='bn_slug')
         RevisionFactory(document=trans_doc, based_on=r)
         url = reverse('wiki.edit_document', args=[doc.slug], locale=trans_doc.locale)
         response = self.client.get(url)
@@ -297,7 +297,7 @@ class DocumentEditingTests(TestCase):
     def test_translate_with_parent_slug_while_trans_article_not_available(self):
         doc = DocumentFactory(locale=settings.WIKI_DEFAULT_LANGUAGE)
         RevisionFactory(document=doc)
-        url = reverse('wiki.edit_document', args=[doc.slug], locale='bn-BD')
+        url = reverse('wiki.edit_document', args=[doc.slug], locale='bn')
         response = self.client.get(url)
         # Check redirect is happening
         eq_(response.status_code, 302)
@@ -315,7 +315,7 @@ class DocumentEditingTests(TestCase):
     def test_while_there_is_no_parent_slug(self):
         doc = DocumentFactory(locale=settings.WIKI_DEFAULT_LANGUAGE)
         invalid_slug = doc.slug + 'invalid_slug'
-        url = reverse('wiki.edit_document', args=[invalid_slug], locale='bn-BD')
+        url = reverse('wiki.edit_document', args=[invalid_slug], locale='bn')
         response = self.client.get(url)
         eq_(response.status_code, 404)
 
@@ -369,7 +369,7 @@ class DocumentEditingTests(TestCase):
     def test_draft_revision_view(self):
         """Test Draft Revision saving is working propoerly"""
         rev = ApprovedRevisionFactory()
-        url = reverse('wiki.draft_revision', locale='bn-BD')
+        url = reverse('wiki.draft_revision', locale='bn')
         data = {
             'content': 'Test Content bla bla bla',
             'keyword': 'something',
@@ -380,14 +380,14 @@ class DocumentEditingTests(TestCase):
         }
         resp = self.client.post(url, data)
         eq_(201, resp.status_code)
-        obj = DraftRevision.objects.get(creator=self.u, document=rev.document, locale='bn-BD')
+        obj = DraftRevision.objects.get(creator=self.u, document=rev.document, locale='bn')
         eq_(obj.content, data['content'])
         eq_(obj.based_on, rev)
 
     def test_draft_revision_many_times(self):
         """Test only one draft revision for a single translation and user"""
         rev = ApprovedRevisionFactory()
-        url = reverse('wiki.draft_revision', locale='bn-BD')
+        url = reverse('wiki.draft_revision', locale='bn')
         data = {
             'content': 'Test Content bla bla bla',
             'keyword': 'something',
@@ -401,7 +401,7 @@ class DocumentEditingTests(TestCase):
             resp = self.client.post(url, data)
             eq_(201, resp.status_code)
 
-        obj = DraftRevision.objects.filter(creator=self.u, document=rev.document, locale='bn-BD')
+        obj = DraftRevision.objects.filter(creator=self.u, document=rev.document, locale='bn')
         # There should be only one draft revision
         eq_(1, obj.count())
 
@@ -902,17 +902,17 @@ class FallbackSystem(TestCase):
         Test that the article is shown in the defined fallback locale
         """
 
-        # Create a document localized into bn-BD. Attempt to resolve to the bn-IN version
+        # Create a document localized into es. Attempt to resolve to the ca version
         # of the document without defining locale options for the client
 
         # of the document. While we the client have no language choices.
         doc_content = self.get_data_from_translated_document(
-            header=None, create_doc_locale='bn-BD', req_doc_locale='bn-IN')
-        # Show the bn-BD version of the document based on the fallback locale,
-        # as it is not localized into bn-IN and there is no available locale
+            header=None, create_doc_locale='es', req_doc_locale='ca')
+        # Show the es locale version of the document based on the fallback locale,
+        # as it is not localized into ca locale and there is no available locale
         # from the ACCEPT_LANGUAGE header
         en_content = 'This article is in English'
-        trans_content = 'This article is translated into bn-BD'
+        trans_content = 'This article is translated into es'
         assert en_content not in doc_content
         assert trans_content in doc_content
 
@@ -936,30 +936,30 @@ class FallbackSystem(TestCase):
         # The user-requested locale has a defined custom wiki fallback locale,
         # but the article is not localized into that fallback locale
 
-        # Define a client with ca, pt-PT, ja as locale choices in the ACCEPT_LANGUAGE header
-        header = 'ca,bn-IN;q=0.7,ja;q=0.3,'
-        # Create a document localized into pt-BR
+        # Define a client with ca, wo, ja as locale choices in the ACCEPT_LANGUAGE header
+        header = 'ca,wo;q=0.7,ja;q=0.3,'
+        # Create a document localized into fr
         # Attempt to resolve to the ca version of the document with the client defined before
         doc_content = self.get_data_from_translated_document(
-            header=header, create_doc_locale='bn-BD', req_doc_locale='ca')
+            header=header, create_doc_locale='fr', req_doc_locale='ca')
         # Show the pt-BR version of the document based on existing custom wiki locale mapping
         # for pt-PT, as it is not localized into ca
         en_content = 'This article is in English'
-        trans_content = 'This article is translated into bn-BD'
+        trans_content = 'This article is translated into fr'
         assert en_content not in doc_content
         assert trans_content in doc_content
 
         # If the user-requested locale does not have a custom wiki fallback locale
-        # Define a client with ca, bn-IN, ja as locale choices in the ACCEPT_LANGUAGE header
-        header = 'ar,bn-IN;q=0.7,ja;q=0.3,'
-        # Create a document localized into bn-BD
+        # Define a client with ca, wo, ja as locale choices in the ACCEPT_LANGUAGE header
+        header = 'ar,wo;q=0.7,ja;q=0.3,'
+        # Create a document localized into fr
         # Attempt to resolve to the ar version of the document with the client defined before
         doc_content = self.get_data_from_translated_document(
-            header=header, create_doc_locale='bn-BD', req_doc_locale='ar')
-        # Show the article in bn-BD based on the custom wiki fallback locale mapping for bn-IN,
+            header=header, create_doc_locale='fr', req_doc_locale='ar')
+        # Show the article in wo based on the custom wiki fallback locale mapping for wo,
         # as it is localized neither into any of the locales listed in the
         # ACCEPT_LANGUAGE header, nor into ar
         en_content = 'This article is in English'
-        trans_content = 'This article is translated into bn-BD'
+        trans_content = 'This article is translated into fr'
         assert en_content not in doc_content
         assert trans_content in doc_content

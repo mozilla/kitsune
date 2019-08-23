@@ -29,8 +29,6 @@ COLLAPSIBLE_DOCUMENTS = {
     ]
 }
 FALLBACK_LOCALES = {
-    'bn-IN': ['bn-BD'],  # Bug 800880
-    'bn-BD': ['bn-IN'],  # Bug 800880
     'ca': ['es'],  # Bug 800880
     'eu': ['es'],  # Bug 800880
     'gl': ['es'],  # Bug 800880
