@@ -25,7 +25,8 @@ after_success:
     make push-image;
   fi
 - if [[ "$TRAVIS_BRANCH" == "travis" ]]; then
-    bash docker/bin/push-docker-images.sh;
+    make push-image;
+    #    bash docker/bin/push-docker-images.sh;
   fi
 # Add secrets with `travis encrypt` with the form of `export MY_ENV_VAR=MySuperSecret`
 env:
