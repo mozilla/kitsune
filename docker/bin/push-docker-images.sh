@@ -15,9 +15,12 @@ then
     docker login -u "${DOCKER_USERNAME}" -p "${DOCKER_PASSWORD}"
 fi
 
+echo "git shas available"
+printenv | grep -i git
+
 for image in base base-dev staticfiles locales full-no-locales full;
 do
-	docker push ${DOCKER_REPO}:${image}-${GIT_SHA}
+	docker push ${image} ${DOCKER_REPO}:${image}-${GIT_SHA}
 
     if [ $GIT_BRANCH == "master" ];
     then
