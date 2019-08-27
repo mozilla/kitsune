@@ -57,7 +57,9 @@ pull: .env
 push-image: .env
 	GIT_COMMIT_SHORT= ${DC} pull base base-dev staticfiles locales full-no-locales full mariadb elasticsearch redis
 	# docker-compose automatically tags images it builds
+	${DC} images
 	${DC} push itsre/sumo-kitsune-travis:${GIT_COMMIT_SHORT}
+	${DC} push itsre/sumo-kitsune-travis:latest
 
 rebuild: clean build
 
