@@ -24,7 +24,7 @@ printenv | grep -i git
 
 for image in base base-dev staticfiles locales full-no-locales full;
 do
-	docker push ${image} ${DOCKER_REPO}:${image}-${GIT_SHA_SHORT}
+	docker push ${DOCKER_REPO}:${image}-${GIT_SHA_SHORT}
 
     if [ $GIT_BRANCH == "master" ];
     then
