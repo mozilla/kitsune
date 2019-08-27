@@ -2,7 +2,11 @@
 set -e
 
 DOCKER_REPO=${DOCKER_REPO:-itsre/sumo-kitsune}
-GIT_SHA=${GIT_SHA:-latest}
+if [ -n "$GIT_SHA" ]; then
+    GIT_SHA_SHORT=${GIT_SHA::7}
+else
+    GIT_SHA_SHORT="-latest"
+fi
 
 if ! ([ "$DOCKER_USERNAME" ] || [ -f ~/.docker/config.json ]);
 then
@@ -20,7 +24,7 @@ printenv | grep -i git
 
 for image in base base-dev staticfiles locales full-no-locales full;
 do
-	docker push ${image} ${DOCKER_REPO}:${image}-${GIT_SHA}
+	docker push ${image} ${DOCKER_REPO}:${image}-${GIT_SHA_SHORT}
 
     if [ $GIT_BRANCH == "master" ];
     then
