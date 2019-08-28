@@ -21,7 +21,7 @@ for image in base base-dev staticfiles locales full-no-locales full; do
 #    docker tag ${image}-${GIT_SHA_SHORT} $DOCKER_REPO/${image}-${GIT_SHA_SHORT}
 	docker push ${DOCKER_REPO}:${image}-${GIT_SHA_SHORT}
 
-    if [ "$(git branch --show-current)" == "master" ];
+    if [ "$(git rev-parse --abbrev-ref HEAD)" == "master" ];
     then
 	    docker push ${DOCKER_REPO}:${image}-latest
     fi
