@@ -20,12 +20,12 @@ script:
 #- make test-js-ci
 #- make test-ci
 after_success:
+docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD;
 - if [[ "$TRAVIS_BRANCH" == "master" ]]; then
-    docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD;
-    make push-image;
+    ./docker/bin/push-docker-images.sh;
   fi
 - if [[ "$TRAVIS_BRANCH" == "travis" ]]; then
-    make push-image;
+    ./docker/bin/push-docker-images.sh;
   fi
 # Add secrets with `travis encrypt` with the form of `export MY_ENV_VAR=MySuperSecret`
 env:

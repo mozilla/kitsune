@@ -1,12 +1,10 @@
 #!/bin/bash
+# Push all generated docker images to dockerhub
 set -e
 
-DOCKER_REPO=${DOCKER_REPO:-itsre/sumo-kitsune}
-if [ -n "$GIT_SHA" ]; then
-    GIT_SHA_SHORT=${GIT_SHA::7}
-else
-    GIT_SHA_SHORT="-latest"
-fi
+DOCKER_REPO=${DOCKER_REPO:-itsre/sumo-kitsune-travis}
+GIT_SHA=$(git rev-parse HEAD)
+GIT_SHA_SHORT=${GIT_SHA::6}
 
 if ! ([ "$DOCKER_USERNAME" ] || [ -f ~/.docker/config.json ]);
 then
@@ -19,11 +17,8 @@ then
     docker login -u "${DOCKER_USERNAME}" -p "${DOCKER_PASSWORD}"
 fi
 
-echo "git shas available"
-printenv | grep -i git
-
-for image in base base-dev staticfiles locales full-no-locales full;
-do
+for image in base base-dev staticfiles locales full-no-locales full; do
+#    docker tag ${image}-${GIT_SHA_SHORT} $DOCKER_REPO/${image}-${GIT_SHA_SHORT}
 	docker push ${DOCKER_REPO}:${image}-${GIT_SHA_SHORT}
 
     if [ $GIT_BRANCH == "master" ];
