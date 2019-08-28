@@ -16,9 +16,9 @@ script:
   fi
 - echo Test secret is hopefully still $DOCKER_USERNAME
 - make build-ci
-#- make lint-ci
-#- make test-js-ci
-#- make test-ci
+- make lint-ci
+- make test-js-ci
+- make test-ci
 after_success:
 - if [[ "$TRAVIS_BRANCH" == "master" ]]; then
     ./docker/bin/push-docker-images.sh;
