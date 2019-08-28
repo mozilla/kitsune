@@ -20,7 +20,6 @@ script:
 #- make test-js-ci
 #- make test-ci
 after_success:
-docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD;
 - if [[ "$TRAVIS_BRANCH" == "master" ]]; then
     ./docker/bin/push-docker-images.sh;
   fi
