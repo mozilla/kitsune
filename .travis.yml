@@ -5,16 +5,14 @@ python:
 services:
 - docker
 before_install:
-- echo "Can I echo things in before_install?"
-- echo Test secret is $DOCKER_USERNAME
-- echo "ENV GIT_SHA ${TRAVIS_COMMIT}" >> Dockerfile
 - export GIT_SHA=${TRAVIS_COMMIT}
 - make pull
+# Decrypt our ssh key for pushing to github
+- openssl aes-256-cbc -K $encrypted_0a6446eb3ae3_key -iv $encrypted_0a6446eb3ae3_iv -in ci/test-l10nfork-key.enc -out ci/test-l10nfork-key -d
 script:
 - if [[ "$TRAVIS_BRANCH" == "master" ]]; then
     echo would execute sh "scripts/lint-l10n-repo.sh --push";
   fi
-- echo Test secret is hopefully still $DOCKER_USERNAME
 - make build-ci
 - make lint-ci
 - make test-js-ci
