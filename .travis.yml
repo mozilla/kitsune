@@ -10,16 +10,19 @@ before_install:
 - make pull
 script:
 - sh "scripts/lint-l10n-repo.sh --push";
-- if [[ "$TRAVIS_BRANCH" == "master" ]]; then sh "scripts/lint-l10n-repo.sh --push";
+- if [[ "$TRAVIS_BRANCH" == "master" ]]; then 
+    sh "scripts/lint-l10n-repo.sh --push";
   fi
 - make build-ci
 - make lint-ci
 - make test-js-ci
 - make test-ci
 after_success:
-- if [[ "$TRAVIS_BRANCH" == "master" ]]; then ./docker/bin/push-docker-images.sh;
+- if [[ "$TRAVIS_BRANCH" == "master" ]]; then 
+    ./docker/bin/push-docker-images.sh;
   fi
-- if [[ "$TRAVIS_BRANCH" == "travis" ]]; then ./docker/bin/push-docker-images.sh;
+- if [[ "$TRAVIS_BRANCH" == "travis" ]]; then 
+    ./docker/bin/push-docker-images.sh;
   fi
 env:
   global:
