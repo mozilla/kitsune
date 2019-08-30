@@ -5,34 +5,27 @@ python:
 services:
 - docker
 before_install:
+- openssl aes-256-cbc -K $encrypted_4edc030f35c1_key -iv $encrypted_4edc030f35c1_iv
+  -in test-l10nfork-key.enc -out ~\/test-l10nfork-key -d
 - export GIT_SHA=${TRAVIS_COMMIT}
 - make pull
-# Decrypt our ssh key for pushing to github
-- openssl aes-256-cbc -K $encrypted_b7a4ac589437_key -iv $encrypted_b7a4ac589437_iv -in test-l10nfork-key.enc -out ci\/test-l10nfork-key -d
 script:
-# For testing only
 - sh "scripts/lint-l10n-repo.sh --push";
-- if [[ "$TRAVIS_BRANCH" == "master" ]]; then
-    sh "scripts/lint-l10n-repo.sh --push";
+- if [[ "$TRAVIS_BRANCH" == "master" ]]; then sh "scripts/lint-l10n-repo.sh --push";
   fi
 - make build-ci
 - make lint-ci
 - make test-js-ci
 - make test-ci
 after_success:
-- if [[ "$TRAVIS_BRANCH" == "master" ]]; then
-    ./docker/bin/push-docker-images.sh;
+- if [[ "$TRAVIS_BRANCH" == "master" ]]; then ./docker/bin/push-docker-images.sh;
   fi
-- if [[ "$TRAVIS_BRANCH" == "travis" ]]; then
-    ./docker/bin/push-docker-images.sh;
+- if [[ "$TRAVIS_BRANCH" == "travis" ]]; then ./docker/bin/push-docker-images.sh;
   fi
-# Add secrets with `travis encrypt` with the form of `export MY_ENV_VAR=MySuperSecret`
 env:
   global:
-  # Dockerhub user
-  - secure: "j3j4ARHbQwvNMx2W/JHGkLHMyDMnaLT8D8E9brSu2k1+0BZiEfZU1wmPhmPZ/GuorjZJvwB7K7n29wi89rR+VQmZlro/Eq+Cyi/2k6kVItsSFiDiMad0CxwD9nkrYMQcKwA1FzinlizoJkmAsz27Y7AkPFLyR+VofFEkJ/hWKhg="
-  # Dockerhub pwd
-  - secure: "Pc3xhQvrSG0XeBxZm4U3EChlHlhwPoMKQMlAuJuhjNV3EFtbhFqbp7K0m4zXmauX4qe4pWUGiC2Y5zg2NgemXkIaxQqrs7uPDYZF1FHq2bshN4//fBgLZ72nh9zpb0fdCR5Ij1EOTtTOt2iEFYPFeCxoV/NBlHEvv0Rg3BioIbA="
+  - secure: j3j4ARHbQwvNMx2W/JHGkLHMyDMnaLT8D8E9brSu2k1+0BZiEfZU1wmPhmPZ/GuorjZJvwB7K7n29wi89rR+VQmZlro/Eq+Cyi/2k6kVItsSFiDiMad0CxwD9nkrYMQcKwA1FzinlizoJkmAsz27Y7AkPFLyR+VofFEkJ/hWKhg=
+  - secure: Pc3xhQvrSG0XeBxZm4U3EChlHlhwPoMKQMlAuJuhjNV3EFtbhFqbp7K0m4zXmauX4qe4pWUGiC2Y5zg2NgemXkIaxQqrs7uPDYZF1FHq2bshN4//fBgLZ72nh9zpb0fdCR5Ij1EOTtTOt2iEFYPFeCxoV/NBlHEvv0Rg3BioIbA=
   - DOCKER_REPO=itsre/sumo-kitsune-travis
 notifications:
   slack:
