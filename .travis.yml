@@ -9,9 +9,9 @@ before_install:
 - export GIT_SHA=${TRAVIS_COMMIT}
 - make pull
 script:
-- sh "scripts/lint-l10n-repo.sh --push";
+- sh scripts/lint-l10n-repo.sh --push;
 - if [[ "$TRAVIS_BRANCH" == "master" ]]; then 
-    sh "scripts/lint-l10n-repo.sh --push";
+    sh scripts/lint-l10n-repo.sh --push;
   fi
 - make build-ci
 - make lint-ci
