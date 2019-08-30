@@ -5,8 +5,7 @@ python:
 services:
 - docker
 before_install:
-- openssl aes-256-cbc -K $encrypted_4edc030f35c1_key -iv $encrypted_4edc030f35c1_iv
-  -in test-l10nfork-key.enc -out ~\/test-l10nfork-key -d
+- openssl aes-256-cbc -K $encrypted_4edc030f35c1_key -iv $encrypted_4edc030f35c1_iv -in ~\/ci\/test-l10nfork-key.enc -out ~\/ci\/test-l10nfork-key -d
 - export GIT_SHA=${TRAVIS_COMMIT}
 - make pull
 script:
