@@ -545,6 +545,8 @@ MIDDLEWARE_CLASSES = (
     'waffle.middleware.WaffleMiddleware',
     'commonware.middleware.RobotsTagHeader',
     # 'axes.middleware.FailedLoginMiddleware'
+    # Django-csp
+    'csp.middleware.CSPMiddleware',
 )
 
 # SecurityMiddleware settings
@@ -1208,3 +1210,48 @@ BADGE_PAGE_SIZE = config('BADGE_PAGE_SIZE', default=50, cast=int)
 
 # The canonical, production URL without a trailing slash
 CANONICAL_URL = 'https://support.mozilla.org'
+
+# Django-CSP configuration
+
+CSP_DEFAULT_SRC = (
+    "'self'",
+    'https://mozorg.cdn.mozilla.net',
+    'https://location.services.mozilla.com',
+)
+
+CSP_FONT_SRC = (
+    "'self'",
+    'https://*.mozilla.net',
+    'https://*.mozilla.org',
+)
+
+CSP_IMG_SRC = (
+    "'self'",
+    'data:',
+    'https://*.mozilla.net',
+    'https://*.mozilla.org',
+    '*.google-analytics.com',
+    'https://stable.dev.lcip.org',
+    'https://user-media-prod-cdn.itsre-sumo.mozilla.net',
+    'https://user-media-dev-cdn.itsre-sumo.mozilla.net',
+    'https://user-media-stage-cdn.itsre-sumo.mozilla.net',
+)
+
+CSP_SCRIPT_SRC = (
+    "'self'",
+    "'unsafe-inline'",
+    'https://www.mozilla.org',
+    'https://*.mozilla.net',
+    'https://*.google-analytics.com',
+    'https://www.googletagmanager.com',
+)
+
+CSP_STYLE_SRC = (
+    "'self'",
+    "'unsafe-inline'",
+    'https://*.mozilla.net',
+)
+
+CSP_FRAME_SRC = (
+    "'self'",
+)
