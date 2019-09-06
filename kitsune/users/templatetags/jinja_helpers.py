@@ -36,6 +36,7 @@ def profile_avatar(user, size=48):
         profile = Profile.objects.get(user_id=user.id)
     except (Profile.DoesNotExist, AttributeError):
         avatar = settings.STATIC_URL + settings.DEFAULT_AVATAR
+        profile = None
     else:
         if profile.is_fxa_migrated:
             avatar = profile.fxa_avatar
