@@ -419,6 +419,30 @@ products = OrderedDict([
         ])
     }),
 
+    ('firefox-private-network', {
+        'name': _lazy(u'Firefox Private Network'),
+        'subtitle': _lazy(u'Firefox Private Network'),
+        'extra_fields': [],
+        'tags': [],
+        'product': 'firefox-private-network',
+        'categories': OrderedDict([
+            ('get-started', {
+                'name': _lazy(u'Get started'),
+                'topic': 'get-started',
+                'tags': ['get-started', 'fpntestpilot'],
+            }),
+            ('manage-account-and-settings', {
+                'name': _lazy(u'Manage accounts and settings'),
+                'topic': 'manage-account-and-settings',
+                'tags': ['customization', 'fpntestpilot'],
+            }),
+            ('fix-problems', {
+                'name': _lazy(u'Fix problems with Firefox Private Network'),
+                'topic': 'fix-problems',
+                'tags': ['fix-problems', 'fpntestpilot'],
+            }),
+        ])
+    }),
     ('other', {
         'name': _lazy(u'Other Mozilla products'),
         'subtitle': '',
