@@ -134,6 +134,7 @@ app:
     fxa_op_authorization_endpoint: SECRET
     fxa_op_user_endpoint: SECRET
     fxa_op_jwks_endpoint: SECRET
+    fxa_op_subscription_endpoint: SECRET
     fxa_rp_client_id: SECRET
     fxa_rp_client_secret: SECRET
     fxa_store_access_token: True

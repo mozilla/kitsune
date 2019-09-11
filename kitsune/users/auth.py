@@ -1,5 +1,6 @@
 import base64
 import logging
+import requests
 
 from django.conf import settings
 from django.contrib import messages
@@ -169,6 +170,32 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
             # which will try to match users based on email
             users = super(FXAAuthBackend, self).filter_users_by_claims(claims)
         return users
+
+    def get_userinfo(self, access_token, id_token, payload):
+        """Return user details and subscription information dictionary."""
+
+        user_info = super(FXAAuthBackend, self).get_userinfo(access_token, id_token, payload)
+
+        if not settings.FXA_OP_SUBSCRIPTION_ENDPOINT:
+            return user_info
+
+        # Fetch subscription information
+        try:
+            sub_response = requests.get(
+                settings.FXA_OP_SUBSCRIPTION_ENDPOINT,
+                headers={
+                    'Authorization': 'Bearer {0}'.format(access_token)
+                },
+                verify=self.get_settings('OIDC_VERIFY_SSL', True))
+            sub_response.raise_for_status()
+        except requests.exceptions.RequestException:
+            log.error('Failed to fetch subscription status', exc_info=True)
+            # if something went wrong, just return whatever the profile endpoint holds
+            return user_info
+        # This will override whatever the profile endpoint returns
+        # until https://github.com/mozilla/fxa/issues/2463 is fixed
+        user_info['subscriptions'] = sub_response.json().get('subscriptions', [])
+        return user_info
 
     def update_user(self, user, claims):
         """Update existing user with new claims, if necessary save, and return user"""
