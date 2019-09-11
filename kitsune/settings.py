@@ -608,6 +608,7 @@ else:
         FXA_OP_TOKEN_ENDPOINT = config('FXA_OP_TOKEN_ENDPOINT', default='')
         FXA_OP_AUTHORIZATION_ENDPOINT = config('FXA_OP_AUTHORIZATION_ENDPOINT', default='')
         FXA_OP_USER_ENDPOINT = config('FXA_OP_USER_ENDPOINT', default='')
+        FXA_OP_SUBSCRIPTION_ENDPOINT = config('FXA_OP_SUBSCRIPTION_ENDPOINT', default='')
         FXA_OP_JWKS_ENDPOINT = config('FXA_OP_JWKS_ENDPOINT', default='')
         FXA_RP_CLIENT_ID = config('FXA_RP_CLIENT_ID', default='')
         FXA_RP_CLIENT_SECRET = config('FXA_RP_CLIENT_SECRET', default='')
