@@ -13,6 +13,7 @@ HOT_TOPIC_SLUG = 'hot'
 
 class Product(ModelBase):
     title = models.CharField(max_length=255, db_index=True)
+    codename = models.CharField(max_length=255, blank=True, default='')
     slug = models.SlugField()
     description = models.TextField()
     image = models.ImageField(upload_to=settings.PRODUCT_IMAGE_PATH, null=True,

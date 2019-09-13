@@ -16,10 +16,14 @@ from django_statsd.clients import statsd
 from timezone_field import TimeZoneField
 
 from kitsune.lib.countries import COUNTRIES
+from kitsune.products.models import Product
 from kitsune.search.es_utils import UnindexMeBro
 from kitsune.search.models import (
-    SearchMappingType, SearchMixin, register_for_indexing,
-    register_mapping_type)
+    SearchMappingType,
+    SearchMixin,
+    register_for_indexing,
+    register_mapping_type
+)
 from kitsune.sumo import email_utils
 from kitsune.sumo.models import ModelBase, LocaleField
 from kitsune.sumo.urlresolvers import reverse
@@ -86,7 +90,7 @@ class Profile(ModelBase, SearchMixin):
     is_fxa_migrated = models.BooleanField(default=False)
     fxa_uid = models.CharField(blank=True, null=True, unique=True, max_length=128)
     fxa_avatar = models.URLField(max_length=512, blank=True, default='')
-    has_subscriptions = models.BooleanField(default=False)
+    products = models.ManyToManyField(Product, related_name='subscribed_users')
 
     class Meta(object):
         permissions = (('view_karma_points', 'Can view karma points'),

@@ -19,8 +19,7 @@ class ProfileAdmin(admin.ModelAdmin):
     fieldsets = (
         (None, {
             'fields': ['user', 'name', 'public_email',
-                       ('avatar', 'delete_avatar'), 'bio', 'is_fxa_migrated',
-                       'fxa_uid', 'has_subscriptions'],
+                       ('avatar', 'delete_avatar'), 'bio', 'is_fxa_migrated', 'fxa_uid'],
         }),
         ('Contact Info', {
             'fields': ['website', 'twitter', 'facebook', 'mozillians', 'irc_handle'],
@@ -32,13 +31,17 @@ class ProfileAdmin(admin.ModelAdmin):
         }),
     )
     form = ProfileAdminForm
-    list_display = ['full_user', 'name']
+    list_display = ['full_user', 'name', 'get_products']
     list_select_related = True
     list_filter = ['is_fxa_migrated', 'country']
     search_fields = ['user__username', 'user__email', 'name']
 
     # This reduces the load to the db.
     readonly_fields = ['user']
+
+    def get_products(self, obj):
+        """Get a list of products that a user is subscribed to."""
+        return ','.join([product.title for product in obj.products.all()])
 
     def has_delete_permission(self, request, obj=None):
         return False

@@ -4,7 +4,7 @@ from kitsune.products.models import Platform, Product, Topic, Version
 
 
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ('title', 'slug', 'display_order', 'visible')
+    list_display = ('title', 'slug', 'display_order', 'visible', 'codename')
     list_display_links = ('title', 'slug')
     list_editable = ('display_order', 'visible')
     readonly_fields = ('id',)

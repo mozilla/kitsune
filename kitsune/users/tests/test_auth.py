@@ -173,7 +173,8 @@ class FXAAuthBackendTests(TestCase):
                                   profile__is_fxa_migrated=True)
         claims = {
             'uid': 'my_unique_fxa_id',
-            'email': 'bar@example.com'
+            'email': 'bar@example.com',
+            'subscriptions': '[]'
         }
         request_mock = Mock(spec=HttpRequest)
         request_mock.session = {}
@@ -207,6 +208,7 @@ class FXAAuthBackendTests(TestCase):
             'avatar': 'http://example.com/avatar',
             'locale': 'en-US',
             'displayName': 'FXA Display name',
+            'subscriptions': '[]'
         }
         requests_mock.get.return_value = get_json_mock
 
