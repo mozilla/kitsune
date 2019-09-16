@@ -24,6 +24,6 @@ make lint-l10n >> $POSTATUS_FILE
 
 # Push the linted l10n data to our deploy repo
 if [[ "$?" -eq 0 && "$1" == "--push" ]]; then
-    export GIT_SSH_COMMAND='ssh -i ci/test-l10nfork-key'
+    export GIT_SSH_COMMAND='ssh -i ~/ci/test-l10nfork-key'
     git -C locale push ziegeer/sumo-l10n-prod.git
 fi
