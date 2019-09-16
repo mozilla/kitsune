@@ -1,0 +1,6 @@
+elasticsearch==7.0.4 \
+    --hash=sha256:1ec2ed8ff9994a0b0961081f053c90819696c0d03da204b61b79d416606dd055 \
+    --hash=sha256:d9eda8d9696f55d7d394ade625a262985d7af762c0b9305b73d421dace41c4e7
+elasticsearch-dsl==7.0.0 \
+    --hash=sha256:2aedc2a4dbba9870249a57d1798ec29e44404619bded66ac920f5d6a1cbb6f22 \
+    --hash=sha256:763fb28add254f2c3a1d071cd114466d8a27f640e02a874afba7b8a04147c094
