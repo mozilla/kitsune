@@ -9,7 +9,7 @@ before_install:
 - export GIT_SHA=${TRAVIS_COMMIT}
 - make pull
 script:
-- sh scripts/lint-l10n-repo.sh --push;
+- ./scripts/lint-l10n-repo.sh --push; # For testing on travis branchonly
 - if [[ "$TRAVIS_BRANCH" == "master" ]]; then 
     ./scripts/lint-l10n-repo.sh --push;
   fi
