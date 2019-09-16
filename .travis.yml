@@ -11,7 +11,7 @@ before_install:
 script:
 - sh scripts/lint-l10n-repo.sh --push;
 - if [[ "$TRAVIS_BRANCH" == "master" ]]; then 
-    sh scripts/lint-l10n-repo.sh --push;
+    ./scripts/lint-l10n-repo.sh --push;
   fi
 - make build-ci
 - make lint-ci
