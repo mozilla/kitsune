@@ -20,9 +20,10 @@ echo -e "l10n git hash: ${GIT_COMMIT}\n" > $POSTATUS_FILE
 make lint-l10n >> $POSTATUS_FILE
 
 # Setup git to use our private key
-git config core.sshCommand "ssh -i ~/ci/test-l10nfork-key"
+#git config core.sshCommand "ssh -i ~/ci/test-l10nfork-key"
 
 # Push the linted l10n data to our deploy repo
 if [[ "$?" -eq 0 && "$1" == "--push" ]]; then
+    export GIT_SSH_COMMAND='ssh -i ci/test-l10nfork-key'
     git -C locale push ziegeer/sumo-l10n-prod.git
 fi
