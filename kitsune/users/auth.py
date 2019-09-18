@@ -14,6 +14,7 @@ from django.utils.translation import ugettext as _
 
 from mozilla_django_oidc.auth import OIDCAuthenticationBackend
 
+from kitsune.products.models import Product
 from kitsune.sumo.urlresolvers import reverse
 from kitsune.users.models import Profile
 from kitsune.users.utils import get_oidc_fxa_setting, add_to_contributors
@@ -234,8 +235,10 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
 
         # Follow avatars from FxA profiles
         profile.fxa_avatar = claims.get('avatar', '')
-        # Update subscriptions status
-        profile.has_subscriptions = bool(subscriptions)
+        # User subscription information
+        products = Product.objects.filter(codename__in=subscriptions)
+        profile.products.clear()
+        profile.products.add(*products)
 
         # Users can select their own display name.
         if not profile.name:

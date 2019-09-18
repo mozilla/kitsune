@@ -50,7 +50,8 @@ def product_landing(request, template, slug):
         'topics': topics_for(product=product, parent=None),
         'search_params': {'product': slug},
         'latest_version': latest_version,
-        'show_contact_form': user.profile.has_subscriptions if user.is_authenticated() else False
+        'subscribed_products_ids': (user.profile.products.all().values_list('id', flat=True)
+                                    if user.is_authenticated() else [])
     })
 
 

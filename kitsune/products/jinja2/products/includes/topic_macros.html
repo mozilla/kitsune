@@ -34,7 +34,7 @@
       </div>
     {% endif %}
 
-    {% if show_contact_form and settings.OIDC_ENABLE %}
+    {% if settings.OIDC_ENABLE and product.id in subscribed_products_ids %}
       <div class="support-callout community-support pos-rel">
         <figure class="feature-icon-box">
           {% include "includes/icons/icon-airplane.svg" %}
