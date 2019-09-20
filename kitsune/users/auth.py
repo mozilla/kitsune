@@ -205,7 +205,7 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
         email = claims.get('email')
         user_attr_changed = False
         # Check if the user has active subscriptions
-        subscriptions = claims.get('subscriptions')
+        subscriptions = claims.get('subscriptions', [])
 
         if not profile.is_fxa_migrated:
             # Check if there is already a Firefox Account with this ID
