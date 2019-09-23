@@ -1,14 +1,41 @@
+from django import forms
 from django.contrib import admin
 
 from kitsune.products.models import Platform, Product, Topic, Version
 
 
+class ProductAdminForm(forms.ModelForm):
+
+    class Meta:
+        model = Product
+        fields = '__all__'
+
+    def clean(self, *args, **kwargs):
+        """Do not allow products with the same name or slug."""
+        products = Product.objects.all()
+        cdata = super(ProductAdminForm, self).clean(*args, **kwargs)
+        slug = cdata.get('slug', '')
+        title = cdata.get('title', '')
+        if ((slug and products.filter(slug=slug).exists()) or
+                (title and products.filter(title=title).exists())):
+            raise forms.ValidationError('Slug and title must be unique within products.')
+        return cdata
+
+
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ('title', 'slug', 'display_order', 'visible', 'codename')
+    form = ProductAdminForm
+    list_display = ('title', 'slug', 'display_order', 'visible', 'codename', 'parent',)
     list_display_links = ('title', 'slug')
     list_editable = ('display_order', 'visible')
     readonly_fields = ('id',)
     prepopulated_fields = {'slug': ('title',)}
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+
+        # remove products that already have a parent in the dropdown menu
+        if db_field.name == 'parent':
+            kwargs['queryset'] = Product.objects.filter(parent__isnull=True)
+        return super(ProductAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
 
 
 class TopicAdmin(admin.ModelAdmin):

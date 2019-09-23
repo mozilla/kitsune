@@ -15,7 +15,7 @@ from kitsune.wiki.facets import topics_for, documents_for
 @mobile_template('products/{mobile/}products.html')
 def product_list(request, template):
     """The product picker page."""
-    products = Product.objects.filter(visible=True)
+    products = Product.objects.filter(visible=True, parent__isnull=True)
     return render(request, template, {
         'products': products})
 
