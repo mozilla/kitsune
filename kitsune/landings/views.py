@@ -11,7 +11,7 @@ from kitsune.wiki.decorators import check_simple_wiki_locale
 def home(request):
     """The home page."""
     return render(request, 'landings/home.html', {
-        'products': Product.objects.filter(visible=True)
+        'products': Product.objects.filter(visible=True, parent__isnull=True)
     })
 
 

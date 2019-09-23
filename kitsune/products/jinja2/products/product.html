@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% from 'includes/common_macros.html' import for_contributors_sidebar %}
 {% from 'products/includes/topic_macros.html' import help_topics with context %}
+{% from 'products/includes/product_macros.html' import product_cards with context %}
 {% set crumbs = [(None, pgettext('DB: products.Product.title', product.title))] %}
 {% set styles = ('products',) %}
 {% set scripts = ('products',) %}
@@ -16,88 +17,98 @@
 {% block base_container_classes %}container_wide{% endblock %}
 
 {% block content %}
-  <header class="help-topics-header">
-    <h1 class="product-title">
-      <img class="product-logo" src="{{ product.image_alternate_url }}" alt="Photo of {{ product.title }}" />
-      <span class="product-title-text">{{ pgettext('DB: products.Product.title', product.title) }} {{ _('Support') }}</span>
-    </h1>
-  </header>
+  {% if product.subproducts.exists() %}
+    <div class="grid_12 search-form-large">
+      {{ search_box(settings, id='support-search-products', params=search_params) }}
+    </div>
+    <section id="products-and-services" class="grid_12">
+      <h1>{{ title }}</h1>
+      {{ product_cards(product.subproducts.filter(visible=True)) }}
+    </section>
+  {% else %}
+    <header class="help-topics-header">
+      <h1 class="product-title">
+        <img class="product-logo" src="{{ product.image_alternate_url }}" alt="Photo of {{ product.title }}" />
+        <span class="product-title-text">{{ pgettext('DB: products.Product.title', product.title) }} {{ _('Support') }}</span>
+      </h1>
+    </header>
 
-  <div class="container_12 search-form-large">
-    {{ search_box(settings, id='support-search-product', params=search_params) }}
-  </div>
+    <div class="container_12 search-form-large">
+      {{ search_box(settings, id='support-search-product', params=search_params) }}
+    </div>
 
-  <section class="help-topics">
-    <div class="help-topics-subhead">
+    <section class="help-topics">
+      <div class="help-topics-subhead">
 
-      {% if product.slug == 'firefox' %}
-        {# show-fx-download.js will remove the 'hidden' class below if the visitor is *NOT* using Firefox #}
-        <div class="firefox-download-button hidden">
+        {% if product.slug == 'firefox' %}
+          {# show-fx-download.js will remove the 'hidden' class below if the visitor is *NOT* using Firefox #}
+          <div class="firefox-download-button hidden">
+            <div class="download-buttons">
+              <div class="download-firefox">
+                <a href="https://www.mozilla.org/firefox/new/?utm_source=support.mozilla.org&amp;utm_medium=referral&amp;utm_campaign=non-fx-button&amp;utm_content=body-download-button" class="download-button"
+                  data-event-category="Download Button"
+                  data-event-action="Panel Opening"
+                  data-event-label="{{ latest_version }}">
+                  <span class="download-content">
+                    <strong class="download-title">{{ _('Download Firefox') }}</strong>
+                  </span>
+                </a>
+                <ul class="info">
+                  <li><a href="https://www.mozilla.org/firefox/all/">{{ _('Systems and Languages') }}</a></li>
+                  <li><a href="https://www.mozilla.org/firefox/notes">{{ _("What's New") }}</a></li>
+                  <li><a href="https://www.mozilla.org/legal/privacy/firefox">{{ _('Privacy') }}</a></li>
+                </ul>
+              </div>
+              {#
+                afaict, this button is never shown. products.js is looking for a
+                data-latest-version attribute on the .download-button element above,
+                but it's not present. this should be fixed?
+              #}
+              <div class="refresh-firefox">
+                <div class="help-text">{{ _('Give Firefox a tune up') }}</div>
+                <a data-mozilla-ui-reset="reset" class="btn btn-submit">
+                  {{ _('Refresh Firefox') }}
+                </a>
+                <a class="reset-link" href="{{ url('wiki.document', 'refresh-firefox-reset-add-ons-and-settings') }}">
+                  {{ _('How does it work?') }}
+                </a>
+                <a href="https://www.mozilla.org/firefox/new/#download-fx"
+                  data-event-category="Download Button"
+                  data-event-action="Panel Opening"
+                  data-event-label="{{ latest_version }}">
+                  {{ _('Download a fresh copy') }}
+                </a>
+              </div>
+            </div>
+          </div>
+        {% endif %}
+
+        {% if product.slug == 'thunderbird' %}
           <div class="download-buttons">
-            <div class="download-firefox">
-              <a href="https://www.mozilla.org/firefox/new/?utm_source=support.mozilla.org&amp;utm_medium=referral&amp;utm_campaign=non-fx-button&amp;utm_content=body-download-button" class="download-button"
-                data-event-category="Download Button"
-                data-event-action="Panel Opening"
-                data-event-label="{{ latest_version }}">
+            <div class="download-thunderbird">
+              <a href="https://www.thunderbird.net/" class="download-button"
+              data-event-category="Download Button"
+              data-event-action="Download Thunderbird">
                 <span class="download-content">
-                  <strong class="download-title">{{ _('Download Firefox') }}</strong>
+                  <strong class="download-title">{{ _('Download Thunderbird') }}</strong>
                 </span>
               </a>
               <ul class="info">
-                <li><a href="https://www.mozilla.org/firefox/all/">{{ _('Systems and Languages') }}</a></li>
-                <li><a href="https://www.mozilla.org/firefox/notes">{{ _("What's New") }}</a></li>
-                <li><a href="https://www.mozilla.org/legal/privacy/firefox">{{ _('Privacy') }}</a></li>
+                <li><a href="https://www.thunderbird.net/thunderbird/all/">{{ _('Systems and Languages') }}</a></li>
+                <li><a href="https://www.thunderbird.net/thunderbird/releases/">{{ _('Release Notes') }}</a></li>
+                <li><a href="https://www.mozilla.org/privacy/thunderbird/">{{ _('Privacy') }}</a></li>
               </ul>
             </div>
-            {#
-              afaict, this button is never shown. products.js is looking for a
-              data-latest-version attribute on the .download-button element above,
-              but it's not present. this should be fixed?
-            #}
-            <div class="refresh-firefox">
-              <div class="help-text">{{ _('Give Firefox a tune up') }}</div>
-              <a data-mozilla-ui-reset="reset" class="btn btn-submit">
-                {{ _('Refresh Firefox') }}
-              </a>
-              <a class="reset-link" href="{{ url('wiki.document', 'refresh-firefox-reset-add-ons-and-settings') }}">
-                {{ _('How does it work?') }}
-              </a>
-              <a href="https://www.mozilla.org/firefox/new/#download-fx"
-                data-event-category="Download Button"
-                data-event-action="Panel Opening"
-                data-event-label="{{ latest_version }}">
-                {{ _('Download a fresh copy') }}
-              </a>
-            </div>
           </div>
-        </div>
-      {% endif %}
-
-      {% if product.slug == 'thunderbird' %}
-        <div class="download-buttons">
-          <div class="download-thunderbird">
-            <a href="https://www.thunderbird.net/" class="download-button"
-            data-event-category="Download Button"
-            data-event-action="Download Thunderbird">
-              <span class="download-content">
-                <strong class="download-title">{{ _('Download Thunderbird') }}</strong>
-              </span>
-            </a>
-            <ul class="info">
-              <li><a href="https://www.thunderbird.net/thunderbird/all/">{{ _('Systems and Languages') }}</a></li>
-              <li><a href="https://www.thunderbird.net/thunderbird/releases/">{{ _('Release Notes') }}</a></li>
-              <li><a href="https://www.mozilla.org/privacy/thunderbird/">{{ _('Privacy') }}</a></li>
-            </ul>
-          </div>
-        </div>
-      {% endif %}
+        {% endif %}
 
 
-      <h2 class="help-topics-title">{{ _('Frequent Topics') }}</h2>
-      <p>{{ _('Explore the knowledge base.') }}</p>
-    </div>
-    {{ help_topics(topics, show_community_support=product.questions_enabled(request.LANGUAGE_CODE)) }}
-  </section>
+        <h2 class="help-topics-title">{{ _('Frequent Topics') }}</h2>
+        <p>{{ _('Explore the knowledge base.') }}</p>
+      </div>
+      {{ help_topics(topics, show_community_support=product.questions_enabled(request.LANGUAGE_CODE)) }}
+    </section>
+  {% endif %}
 {% endblock %}
 
 {% block for_contributors %}{% endblock %}
