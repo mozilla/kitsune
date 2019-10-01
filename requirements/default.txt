@@ -286,9 +286,9 @@ polib==1.0.5 \
     --hash=sha256:c44236823eb6227b2fab8bd9e56632a649e67a80211f85a4a2e3c85c65c8acd9
 https://github.com/peterbe/premailer/archive/3981359de1ce974b24f69a8a99bb033e55ec3230.tar.gz#egg=premailer \
     --hash=sha256:76d4d03391dd63f8d04ebd9f109a8372cc0d285c86b9cdde918eac8095976063
-puente==0.4.1 \
-    --hash=sha256:bc5ee85521127577d23430832e2f827686efdb7ce95b232f54fbeb5b9166397c \
-    --hash=sha256:84f769c0ea607829c77bd8b3d6d6fbc16589cd7a5d4e5023f717cd3d5de54473
+puente==0.5.0 \
+    --hash=sha256:4a17958f7d6a83cb9ff92593c40f34911abafaec6ad959916b754aaa3869f11f \
+    --hash=sha256:7ba1d07f9cee9657adf874bd94879b343fea81a783fdfa8e53885520477bf1ea
 https://github.com/pcraciunoiu/py-wikimarkup/archive/ce7d10dbd421533bb9b0c41dd9c9d09298a51a41.tar.gz#egg=py-wikimarkup \
     --hash=sha256:62940de85396a67d86a262bc65d8d76c6367c69c69034ca98cbd5512cfe6f037
 pyes==0.16.0 \
