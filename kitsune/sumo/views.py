@@ -54,7 +54,7 @@ def geoip_suggestion(request):
     response = {'locales': {}}
     for locale in locales:
         # English and native names for the language
-        response['locales'][locale] = LOCALES[locale]
+        response['locales'][locale] = LOCALES.get(locale, '')
         with uselocale(locale):
             # This is using our JS-style string formatting.
             response[locale] = {
