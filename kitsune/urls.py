@@ -45,8 +45,6 @@ urlpatterns = [
     # in a build step, not on the client.
     url(r'^jsi18n-yaocho/.*$', javascript_catalog,
         {'domain': 'yaocho', 'packages': ['kitsune']}, name='jsi18n-yaocho'),
-    url(r'^jsi18n-buddyup/.*$', javascript_catalog,
-        {'domain': 'buddyup', 'packages': ['kitsune']}, name='jsi18n-buddyup'),
     # JavaScript Waffle.
     url(r'^wafflejs$', wafflejs, name='wafflejs'),
 
