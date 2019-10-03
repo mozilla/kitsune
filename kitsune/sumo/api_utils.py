@@ -2,6 +2,7 @@ from django import forms
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import User
+from django.utils.timezone import localtime
 from django.utils.translation import pgettext
 
 import pytz
@@ -149,6 +150,11 @@ class DateTimeUTCField(fields.DateTimeField):
 
     def default_timezone(self):
         return pytz.utc
+
+    def to_representation(self, value):
+        tz = pytz.timezone(settings.TIME_ZONE)
+        val = localtime(tz.localize(value), pytz.UTC)
+        return super(DateTimeUTCField, self).to_representation(val)
 
 
 class _IDSerializer(serializers.Serializer):
