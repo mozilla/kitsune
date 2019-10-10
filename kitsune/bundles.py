@@ -513,6 +513,7 @@ PIPELINE_JS = {
             'sumo/js/templates/wiki-related-doc.js',
             'sumo/js/templates/wiki-search-results.js',
             'sumo/js/wiki_search.js',
+            'sumo/js/wiki_close_window_warning.js',
         ),
         'output_filename': 'build/wiki-min.js'
     },
