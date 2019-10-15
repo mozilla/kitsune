@@ -336,8 +336,6 @@ urllib3==1.25.3 \
     --hash=sha256:dbe59173209418ae49d485b87d1681aefa36252ee85884c31346debd19463232
 Werkzeug==0.5.1 \
     --hash=sha256:ff638b44eaca81c9a1c8c492b957c1b8d1b44b2147e50216355ff9c99daa8637
-https://github.com/eventbrite/zendesk/archive/1b256c3b827a8f3c6bbd3bd1fc09b7b0e2e82347.tar.gz#egg=zendesk \
-    --hash=sha256:a996b2d63d318e7c5ea9ff4a480a40db794321ea52b733ff6c6da57efb33ba3b
 django-mozilla-product-details==0.14 \
     --hash=sha256:4706994d63c228b150fafdb05e8f25a5447dbc9492b465501badcb4614fbe0d9 \
     --hash=sha256:a115f030127d559b698bf8e641fc7ae18beb054d2461b84367821b197be90690

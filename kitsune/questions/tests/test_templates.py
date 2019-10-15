@@ -15,7 +15,6 @@ from pyquery import PyQuery as pq
 from taggit.models import Tag
 from tidings.models import Watch
 
-import kitsune.questions.tasks
 from kitsune.products.tests import ProductFactory
 from kitsune.questions.events import QuestionReplyEvent, QuestionSolvedEvent
 from kitsune.questions.models import Question, Answer, VoteMetadata, QuestionLocale
@@ -960,25 +959,6 @@ class TaggingViewTestsAsTagger(TestCaseBase):
                                     data={},
                                     HTTP_X_REQUESTED_WITH='XMLHttpRequest')
         self.assertContains(response, NO_TAG, status_code=400)
-
-    @mock.patch.object(kitsune.questions.tasks, 'submit_ticket')
-    def test_escalate_tag(self, submit_ticket):
-        """Verify that tagging a question "escalate" submits to zendesk."""
-        TagFactory(name='escalate', slug='escalate')
-        self.client.post(
-            _add_tag_url(self.question.id),
-            data={'tag-name': 'escalate'},
-            follow=True)
-
-        question_url = u'https://example.com/en-US{url}'.format(
-            url=self.question.get_absolute_url())
-        submit_ticket.assert_called_with(
-            email='support@mozilla.com',
-            category='Escalated',
-            subject=u'[Escalated] {title}'.format(title=self.question.title),
-            body=u'{url}\n\n{content}'.format(
-                url=question_url, content=self.question.content),
-            tags=['escalate'])
 
 
 class TaggingViewTestsAsAdmin(TestCaseBase):

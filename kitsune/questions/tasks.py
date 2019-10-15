@@ -1,9 +1,7 @@
 import logging
-import traceback
 from datetime import date
 
 from django.conf import settings
-from django.contrib.sites.models import Site
 from django.db import connection, transaction
 
 # NOTE: This import is just so _fire_task gets registered with celery.
@@ -11,11 +9,9 @@ import tidings.events  # noqa
 from celery import task
 from multidb.pinning import pin_this_thread, unpin_this_thread
 from django_statsd.clients import statsd
-from zendesk import ZendeskError
 
 from kitsune.kbadge.utils import get_or_create_badge
 from kitsune.questions.config import ANSWERS_PER_PAGE
-from kitsune.questions.marketplace import submit_ticket
 from kitsune.search.es_utils import ES_EXCEPTIONS
 from kitsune.search.tasks import index_task
 from kitsune.sumo.decorators import timeit
@@ -142,38 +138,3 @@ def maybe_award_badge(badge_template, year, user):
     if qs.count() >= settings.BADGE_LIMIT_SUPPORT_FORUM:
         badge.award_to(user)
         return True
-
-
-class PickleableZendeskError(Exception):
-    """Zendesk error that captures information and can be pickled
-
-    This is like kitsune/search/tasks.py:IndexingTaskError and is
-    totally goofy.
-
-    """
-    def __init__(self):
-        super(PickleableZendeskError, self).__init__(traceback.format_exc())
-
-
-@task()
-@timeit
-def escalate_question(question_id):
-    """Escalate a question to zendesk by submitting a ticket."""
-    from kitsune.questions.models import Question
-    question = Question.objects.get(id=question_id)
-
-    url = 'https://{domain}{url}'.format(
-        domain=Site.objects.get_current().domain,
-        url=question.get_absolute_url())
-
-    try:
-        submit_ticket(
-            email='support@mozilla.com',
-            category='Escalated',
-            subject=u'[Escalated] {title}'.format(title=question.title),
-            body=u'{url}\n\n{content}'.format(url=url,
-                                              content=question.content),
-            tags=[t.slug for t in question.tags.all()])
-    except ZendeskError:
-        # This is unpickleable, so we need to unwrap it a bit
-        raise PickleableZendeskError()

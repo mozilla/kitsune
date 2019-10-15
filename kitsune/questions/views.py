@@ -37,10 +37,8 @@ from kitsune.questions.feeds import (
     QuestionsFeed, AnswersFeed, TaggedQuestionsFeed)
 from kitsune.questions.forms import (
     NewQuestionForm, EditQuestionForm, AnswerForm, WatchQuestionForm,
-    FREQUENCY_CHOICES, MarketplaceAaqForm, MarketplaceRefundForm,
-    MarketplaceDeveloperRequestForm, StatsForm)
-from kitsune.questions.marketplace import (
-    MARKETPLACE_CATEGORIES, ZendeskError)
+    FREQUENCY_CHOICES, StatsForm
+)
 from kitsune.questions.models import (
     Question, Answer, QuestionVote, AnswerVote, QuestionMappingType,
     QuestionLocale)
@@ -119,7 +117,6 @@ def question_list(request, template, product_slug):
     # Show defaults to NEEDS ATTENTION
     if show not in FILTER_GROUPS:
         show = 'needs-attention'
-    escalated = request.GET.get('escalated')
     tagged = request.GET.get('tagged')
     tags = None
     topic_slug = request.GET.get('topic')
@@ -161,9 +158,6 @@ def question_list(request, template, product_slug):
     if filter_ not in FILTER_GROUPS[show]:
         filter_ = None
 
-    if escalated:
-        filter_ = None
-
     if filter_ == 'new':
         question_qs = question_qs.new()
     elif filter_ == 'unhelpful-answers':
@@ -185,10 +179,6 @@ def question_list(request, template, product_slug):
             question_qs = question_qs.responded()
         if show == 'done':
             question_qs = question_qs.done()
-
-    if escalated:
-        question_qs = question_qs.filter(
-            tags__name__in=[config.ESCALATE_TAG_NAME])
 
     question_qs = question_qs.select_related(
         'creator', 'last_answer', 'last_answer__creator')
@@ -302,7 +292,6 @@ def question_list(request, template, product_slug):
             'order': order,
             'orders': ORDER_BY,
             'sort': sort,
-            'escalated': escalated,
             'tags': tags,
             'tagged': tagged,
             'recent_asked_count': recent_asked_count,
@@ -1395,107 +1384,6 @@ def answer_preview_async(request):
     template = 'questions/includes/answer_preview.html'
 
     return render(request, template, {'answer_preview': answer})
-
-
-@mobile_template('questions/{mobile/}marketplace.html')
-def marketplace(request, template=None):
-    """AAQ landing page for Marketplace."""
-    return render(request, template, {
-        'categories': MARKETPLACE_CATEGORIES})
-
-
-ZENDESK_ERROR_MESSAGE = _lazy(
-    u'There was an error submitting the ticket. '
-    u'Please try again later.')
-
-
-@mobile_template('questions/{mobile/}marketplace_category.html')
-def marketplace_category(request, category_slug, template=None):
-    """AAQ category page. Handles form post that submits ticket."""
-    try:
-        category_name = MARKETPLACE_CATEGORIES[category_slug]
-    except KeyError:
-        raise Http404
-
-    error_message = None
-
-    if request.method == 'GET':
-        form = MarketplaceAaqForm(request.user)
-    else:
-        form = MarketplaceAaqForm(request.user, request.POST)
-        if form.is_valid():
-            # Submit ticket
-            try:
-                form.submit_ticket()
-
-                return HttpResponseRedirect(
-                    reverse('questions.marketplace_aaq_success'))
-
-            except ZendeskError:
-                error_message = ZENDESK_ERROR_MESSAGE
-
-    return render(request, template, {
-        'category': category_name,
-        'category_slug': category_slug,
-        'categories': MARKETPLACE_CATEGORIES,
-        'form': form,
-        'error_message': error_message})
-
-
-@mobile_template('questions/{mobile/}marketplace_refund.html')
-def marketplace_refund(request, template):
-    """Form page that handles refund requests for Marketplace."""
-    error_message = None
-
-    if request.method == 'GET':
-        form = MarketplaceRefundForm(request.user)
-    else:
-        form = MarketplaceRefundForm(request.user, request.POST)
-        if form.is_valid():
-            # Submit ticket
-            try:
-                form.submit_ticket()
-
-                return HttpResponseRedirect(
-                    reverse('questions.marketplace_aaq_success'))
-
-            except ZendeskError:
-                error_message = ZENDESK_ERROR_MESSAGE
-
-    return render(request, template, {
-        'form': form,
-        'error_message': error_message})
-
-
-@mobile_template('questions/{mobile/}marketplace_developer_request.html')
-def marketplace_developer_request(request, template):
-    """Form page that handles developer requests for Marketplace."""
-    error_message = None
-
-    if request.method == 'GET':
-        form = MarketplaceDeveloperRequestForm(request.user)
-    else:
-        form = MarketplaceDeveloperRequestForm(request.user, request.POST)
-        if form.is_valid():
-            # Submit ticket
-            try:
-                form.submit_ticket()
-
-                return HttpResponseRedirect(
-                    reverse('questions.marketplace_aaq_success'))
-
-            except ZendeskError:
-                error_message = ZENDESK_ERROR_MESSAGE
-
-    return render(request, template, {
-        'form': form,
-        'error_message': error_message})
-
-
-@mobile_template('questions/{mobile/}marketplace_success.html')
-def marketplace_success(request, template=None):
-    """Confirmation of ticket submitted successfully."""
-    return render(request, template)
 
 
 def stats_topic_data(bucket_days, start, end, locale=None, product=None):

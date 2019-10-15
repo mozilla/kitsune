@@ -204,11 +204,10 @@
     <div class="grid_3 questions-sidebar">
       <div class="sidebar-header">{{ _('Filter by') }}</div>
       <ul class="sidebar-nav">
-        <li {% if filter == None and escalated == None %}class="selected"{% endif %}><a href="{{ questions_url(filter=None, escalated=None, page=None) }}">{{ _('All') }}</a></li>
+        <li {% if filter == None %}class="selected"{% endif %}><a href="{{ questions_url(filter=None, page=None) }}">{{ _('All') }}</a></li>
         {% for f, desc in filters.iteritems() %}
-          <li {{ filter|class_selected(f) }}><a href="{{ questions_url(filter=f, escalated=None, page=None) }}">{{ desc }}</a></li>
+          <li {{ filter|class_selected(f) }}><a href="{{ questions_url(filter=f, page=None) }}">{{ desc }}</a></li>
         {% endfor %}
-        <li {% if filter == None and escalated %}class="selected"{% endif %}><a href="{{ questions_url(escalated=1, filter=None, page=None) }}">{{ _('Escalated') }}</a></li>
       </ul>
 
       <div class="sidebar-header">{{ _('Sort options') }}</div>

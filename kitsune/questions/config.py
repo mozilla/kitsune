@@ -12,12 +12,8 @@ QUESTIONS_PER_PAGE = 20
 HIGHEST_RANKING = 100
 
 # Special tag names:
-ESCALATE_TAG_NAME = 'escalate'
 NEEDS_INFO_TAG_NAME = 'needsinfo'
 OFFTOPIC_TAG_NAME = 'offtopic'
-
-# Escalation config
-ESCALATE_EXCLUDE_PRODUCTS = ['thunderbird', 'webmaker', 'open-badges']
 
 # How long until a question is automatically taken away from a user
 TAKE_TIMEOUT = 600

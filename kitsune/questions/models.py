@@ -27,8 +27,7 @@ from kitsune.flagit.models import FlaggedObject
 from kitsune.products.models import Product, Topic
 from kitsune.questions import config
 from kitsune.questions.managers import AnswerManager, QuestionManager, QuestionLocaleManager
-from kitsune.questions.signals import tag_added
-from kitsune.questions.tasks import update_question_votes, update_answer_pages, escalate_question
+from kitsune.questions.tasks import update_question_votes, update_answer_pages
 from kitsune.search.es_utils import UnindexMeBro, ES_EXCEPTIONS
 from kitsune.search.models import (
     SearchMappingType, SearchMixin, register_for_indexing,
@@ -358,10 +357,6 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
     @property
     def is_solved(self):
         return self.solution_id is not None
-
-    @property
-    def is_escalated(self):
-        return config.ESCALATE_TAG_NAME in [t.name for t in self.my_tags]
 
     @property
     def is_offtopic(self):
@@ -838,13 +833,6 @@ register_for_indexing(
                    else None)))
 
 
-def _tag_added(sender, question_id, tag_name, **kwargs):
-    """Signal handler for new tag on question."""
-    if tag_name == config.ESCALATE_TAG_NAME:
-        escalate_question.delay(question_id)
-tag_added.connect(_tag_added, sender=Question, dispatch_uid='tagged_1337')
-
-
 class QuestionMetaData(ModelBase):
     """Metadata associated with a support question."""
     question = models.ForeignKey('Question', related_name='metadata_set')
@@ -1268,6 +1256,7 @@ def reindex_questions_answers(sender, instance, **kw):
         answer_ids = instance.answers.all().values_list('id', flat=True)
         index_task.delay(AnswerMetricsMappingType, list(answer_ids))
 
+
 post_save.connect(
     reindex_questions_answers, sender=Question,
     dispatch_uid='questions_reindex_answers')
@@ -1289,6 +1278,7 @@ def user_pre_save(sender, instance, **kw):
 
             for q in questions:
                 q.index_later()
+
 
 pre_save.connect(
     user_pre_save, sender=User, dispatch_uid='questions_user_pre_save')
@@ -1347,6 +1337,7 @@ def send_vote_update_task(**kwargs):
     if kwargs.get('created'):
         q = kwargs.get('instance').question
         update_question_votes.delay(q.id)
+
 
 post_save.connect(send_vote_update_task, sender=QuestionVote)
 
