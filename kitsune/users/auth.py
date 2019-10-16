@@ -128,6 +128,7 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
         profile.fxa_uid = claims.get('uid')
         profile.fxa_avatar = claims.get('avatar', '')
         profile.name = claims.get('displayName', '')
+        subscriptions = claims.get('subscriptions', [])
         # Let's get the first element even if it's an empty string
         # A few assertions return a locale of None so we need to default to empty string
         fxa_locale = (claims.get('locale', '') or '').split(',')[0]
@@ -137,6 +138,10 @@ class FXAAuthBackend(OIDCAuthenticationBackend):
             profile.locale = settings.LANGUAGE_CODE
 
         profile.save()
+        # User subscription information
+        products = Product.objects.filter(codename__in=subscriptions)
+        profile.products.clear()
+        profile.products.add(*products)
 
         # This is a new sumo profile, redirect to the edit profile page
         self.request.session['oidc_login_next'] = reverse('users.edit_my_profile')
