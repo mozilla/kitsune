@@ -14,7 +14,7 @@ By participating in this project, you're agreeing to uphold the [Mozilla Communi
 
 ## Development
 
-To get Kitsune running locally all you really need is to have [Docker](https://www.docker.com/products/docker-desktop) and [[Docker Compose](https://docs.docker.com/compose/install/) installed,
+To get Kitsune running locally all you really need is to have [Docker](https://www.docker.com/products/docker-desktop) and [Docker Compose](https://docs.docker.com/compose/install/) installed,
 and follow the following steps.
 
 1. Fork this repository & clone it to your local machine.
