@@ -2,7 +2,7 @@ import os
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
-from django.db.models.loading import get_model
+from django.apps import apps
 
 
 HEADER = """\
@@ -64,14 +64,14 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         try:
-            apps = settings.DB_LOCALIZE
+            django_apps = settings.DB_LOCALIZE
         except AttributeError:
             raise CommandError('DB_LOCALIZE setting is not defined!')
 
         strings = []
-        for app, models in apps.items():
+        for app, models in django_apps.items():
             for model, params in models.items():
-                model_class = get_model(app, model)
+                model_class = apps.get_model(app, model)
                 attrs = params['attrs']
                 qs = model_class.objects.all().values_list(*attrs).distinct()
                 for item in qs:
@@ -89,7 +89,7 @@ class Command(BaseCommand):
         py_file = os.path.expanduser(options.get('outputfile'))
         py_file = os.path.abspath(py_file)
 
-        print 'Outputting db strings to: {filename}'.format(filename=py_file)
+        print('Outputting db strings to: {filename}'.format(filename=py_file))
         with open(py_file, 'w+') as f:
             f.write(HEADER)
             f.write('from django.utils.translation import pgettext\n\n')
