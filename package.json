@@ -9,7 +9,7 @@
   "dependencies": {
     "babel": "5.8.23",
     "babelify": "5.0.4",
-    "bower": "1.8.4",
+    "bower": "1.8.8",
     "browserify": "9.0.3",
     "chai": "3.2.0",
     "chai-lint": "0.1.1",
