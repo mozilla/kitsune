@@ -2,8 +2,8 @@ import calendar
 import json
 import logging
 import re
-import rfc822
 from datetime import datetime
+from email import utils as email_utils
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
@@ -87,7 +87,7 @@ class Command(BaseCommand):
                     continue
 
                 created_date = datetime.utcfromtimestamp(calendar.timegm(
-                    rfc822.parsedate(item['created_at'])))
+                    email_utils.parsedate(item['created_at'])))
 
                 item_lang = item['metadata'].get('iso_language_code', 'en')
 
