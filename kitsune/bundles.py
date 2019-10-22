@@ -6,6 +6,7 @@ PIPELINE_CSS = {
             'normalize-css/normalize.css',
             'sumo/less/main.less',
             'sumo/less/search.less',
+            'mozilla-tabzilla/css/tabzilla.css',
         ),
         'output_filename': 'build/common-min.css'
     },
@@ -153,6 +154,7 @@ PIPELINE_CSS = {
     'ie': {
         'source_filenames': (
             'sumo/css/ie.css',
+            'sumo/css/ie8.css',
         ),
         'output_filename': 'build/ie-min.css'
     },
@@ -370,6 +372,13 @@ PIPELINE_JS = {
             'sumo/js/mobile/instant_search.js',
         ),
         'output_filename': 'build/mobile-common-min.js'
+    },
+    'ie6-8': {
+        'source_filenames': (
+            'nwmatcher/src/nwmatcher.js',
+            'sumo/js/libs/selectivizr-1.0.2.js',
+        ),
+        'output_filename': 'build/ie6-8-min.js'
     },
     'jqueryui': {
         'source_filenames': (
