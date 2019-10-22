@@ -390,6 +390,9 @@
 {% endif %}
 
 {% javascript 'common' %}
+<!--[if (gte IE 6)&(lte IE 8)]>
+  {% javascript 'ie6-8' %}
+<![endif]-->
 {% for script in scripts %}
   {% javascript script %}
 {% endfor %}

@@ -23,11 +23,13 @@
     "moment": "moment#2.8.3",
     "normalize-css": "normalize-css#3.0.2",
     "nunjucks": "nunjucks#1.3.4",
+    "nwmatcher": "nwmatcher#1.3.4",
     "pikaday": "~1.3.2",
     "react": "#0.13.3",
     "react-select": "#0.6.7",
     "underscore": "underscore#1.8.2",
     "fetch": "#0.9.0",
-    "es6-promise": "~2.2.0"
+    "es6-promise": "~2.2.0",
+    "mozilla-tabzilla": "0.5.1"
   }
 }

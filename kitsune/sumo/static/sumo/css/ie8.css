@@ -1,0 +1,12 @@
+a.btn,
+input[type=submit].btn-important {
+    border: none;
+    color: #fff;
+    font-family: "Trebuchet MS",Helvetica,sans-serif;
+    font-weight: bold;
+}
+
+/* Customer Care hidden tweets */
+#tweets li.hidden-reply {
+    -ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=40)";
+}
