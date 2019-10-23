@@ -1,23 +1,23 @@
 # Kitsune
 
-Kitsune is the platform that powers [SuMo (support.mozilla.org)](https://support.mozilla.org)
+Kitsune is the platform that powers [SuMo (support.mozilla.org)](https://support.mozilla.org),
 
 It is a [Django](http://www.djangoproject.com/) application. There is
 [documentation](https://kitsune.readthedocs.io/) online.
 
-You can access the staging site at <https://support.allizom.org/>
+You can access the staging site at <https://support.allizom.org/>,
 
 See [what's deployed](https://whatsdeployed.io/s-J18)
 
 ## Code of Conduct
 By participating in this project, you're agreeing to uphold the [Mozilla Community Participation Guidelines](https://www.mozilla.org/en-US/about/governance/policies/participation/). If you need to report a problem, please see our [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md) guide.
 
-## Development
+## Development,
 
 To get Kitsune running locally all you really need is to have [Docker](https://www.docker.com/products/docker-desktop) and [Docker Compose](https://docs.docker.com/compose/install/) installed,
 and follow the following steps.
 
-1. Fork this repository & clone it to your local machine.
+1. Fork this repository & clone it to your local machine,
    ```
    git clone https://github.com/mozilla/kitsune.git
    ```
@@ -63,7 +63,7 @@ By default, the `.less` files do not compile in local development because it imp
   echo "PIPELINE_COLLECTOR_ENABLED=True" >> .env
   ```
 
-### The Admin
+### The Admin,
 
 After the above you can do some optional steps if you want to use the admin:
 
