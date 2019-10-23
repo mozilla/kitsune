@@ -148,8 +148,8 @@ class QuestionFilter(django_filters.FilterSet):
     metadata = django_filters.CharFilter(method='filter_metadata')
     solved_by = django_filters.CharFilter(method='filter_solved_by')
     taken_by = django_filters.CharFilter(name='taken_by__username')
-    updated = django_filters.DateTimeFilter()
-    created = django_filters.DateTimeFilter()
+    updated = django_filters.IsoDateTimeFilter()
+    created = django_filters.IsoDateTimeFilter()
 
     class Meta(object):
         model = Question
