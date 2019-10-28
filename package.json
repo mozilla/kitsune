@@ -5,6 +5,10 @@
     "type": "git",
     "url": "git://github.com/mozilla/kitsune.git"
   },
+  "scripts": {
+    "build:css": "sass kitsune/sumo/static/sumo/scss/screen.scss static/build/screen.css --source-map",
+    "start": "build:css -- --watch"
+  },
   "license": "MPL-2.0",
   "dependencies": {
     "babel": "5.8.23",
@@ -27,6 +31,7 @@
     "mocha-jsdom": "1.0.0",
     "nunjucks": "^1.3.4",
     "react": "0.13.3",
+    "sass": "1.23.1",
     "sinon": "1.16.1",
     "sinon-chai": "2.8.0",
     "uglify-js": "2.6.0",
