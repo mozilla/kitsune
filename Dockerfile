@@ -38,7 +38,7 @@ ENV GIT_SHA=${GIT_SHA}
 FROM base AS base-dev
 
 RUN apt-get update && apt-get install apt-transport-https && \
-    echo "deb https://deb.nodesource.com/node_6.x stretch main" >> /etc/apt/sources.list && \
+    echo "deb https://deb.nodesource.com/node_8.x stretch main" >> /etc/apt/sources.list && \
     curl -sS https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add - && \
     echo "deb https://dl.yarnpkg.com/debian/ stable main" >> /etc/apt/sources.list && \
     curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - && \
@@ -52,9 +52,9 @@ RUN apt-get update && apt-get install apt-transport-https && \
 #
 FROM base-dev AS staticfiles
 
-COPY package.json bower.json yarn.lock /app/
+COPY package.json bower.json /app/
 
-RUN yarn install --frozen-lockfile && yarn cache clean
+RUN yarn install && yarn cache clean
 RUN ./node_modules/.bin/bower install --allow-root
 
 COPY . .
