@@ -6,14 +6,23 @@
     "url": "git://github.com/mozilla/kitsune.git"
   },
   "scripts": {
+    "stylelint": "stylelint kitsune/sumo/static/sumo/scss/**/* --fix && stylelint kss-template/kss-assets/scss/**/*",
     "build:css": "sass kitsune/sumo/static/sumo/scss/screen.scss static/build/screen.css --source-map",
-    "start": "build:css -- --watch"
+    "build:docstyles": "sass kss-template/kss-assets/scss/kss.scss static/build/styleguide/css/kss.css",
+    "build:docs": "npm-run-all 'build:docstyles' 'kss --config kss-config.json --custom full'",
+    "build": "npm-run-all --parallel 'build:scripts' 'build:styles' 'build:docs'",
+    "stylelint:watch": "onchange 'kitsune/sumo/static/sumo/scss/**/*' -- npm run stylelint",
+    "watch:docs": "onchange 'kitsune/sumo/static/sumo/scss/**/*.njk' 'kss-template/**/*' -- npm-run-all 'build:docs' 'browser-sync reload'",
+    "watch": "npm-run-all --parallel 'build:css -- --watch' 'build:docs' 'watch:docs' 'stylelint:watch'",
+    "run:docs": "browser-sync start --server 'static/build/styleguide' --files 'static/build/styleguide'",
+    "start": "npm-run-all --parallel 'run:docs' 'watch'"
   },
   "license": "MPL-2.0",
   "dependencies": {
     "babel": "5.8.23",
     "babelify": "5.0.4",
     "bower": "^1.8.8",
+    "browser-sync": "^2.26.7",
     "browserify": "9.0.3",
     "chai": "3.2.0",
     "chai-lint": "0.1.1",
@@ -25,15 +34,19 @@
     "gulp-watch": "0.6.8",
     "jquery": "2.1.4",
     "jsdom": "11.11.0",
+    "kss": "^3.0.0-beta.25",
     "less": "3.10.3",
     "less-plugin-autoprefix": "2.0.0",
     "mocha": "2.3.2",
     "mocha-jsdom": "1.2.0",
+    "npm-run-all": "^4.1.5",
     "nunjucks": "^1.3.4",
+    "onchange": "^6.1.0",
     "react": "0.13.3",
     "sass": "1.23.1",
     "sinon": "1.16.1",
     "sinon-chai": "2.8.0",
+    "stylelint": "^11.1.1",
     "uglify-js": "2.6.0",
     "underscore": "1.8.2"
   }
