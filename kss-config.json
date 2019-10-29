@@ -10,6 +10,6 @@
   "js": [
     "js/bundle.js"
   ],
-  "homepage": "kitsune/sumo/static/styleguide-examples/styleguide-index.md",
+  "homepage": "../../styleguide-examples/styleguide-index.md",
   "builder": "kss-template"
 }
