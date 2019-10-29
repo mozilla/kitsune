@@ -16,6 +16,15 @@ services:
     ports:
       - "8000:8000"
 
+  browsersync:
+    image: itsre/sumo-kitsune:node-${GIT_COMMIT_SHORT:-latest}
+    command: npm start
+    volumes:
+      - ./:/app:delegated
+    ports:
+      - "3000:3000"
+      - "3001:3001"
+
   test:
     image: itsre/sumo-kitsune:base-dev-${GIT_COMMIT_SHORT:-latest}
     command: ./bin/run-unit-tests.sh
@@ -81,6 +90,14 @@ services:
       args:
         - GIT_SHA
     image: itsre/sumo-kitsune:staticfiles-${GIT_COMMIT_SHORT:-latest}
+
+  node:
+    build:
+      context: .
+      target: node-builder
+      args:
+        - GIT_SHA
+    image: itsre/sumo-kitsune:node-${GIT_COMMIT_SHORT:-latest}
 
   locales:
     build:

@@ -11,9 +11,8 @@
     "build:docs:styles": "sass kss-template/kss-assets/scss/kss.scss static/build/styleguide/css/kss.css",
     "build:docs:kss": "kss --config kss-config.json --custom full",
     "build": "npm-run-all --parallel 'build:css' 'build:docs:*'",
-
     "stylelint:watch": "onchange 'kitsune/sumo/static/sumo/scss/**/*' -- npm run stylelint",
-    "watch:docs": "onchange 'kitsune/sumo/static/sumo/scss/**/*.njk' 'kss-template/**/*' -- npm-run-all 'build:docs' 'browser-sync reload'",
+    "watch:docs": "onchange 'kitsune/sumo/static/sumo/scss/**/*.njk' 'kss-template/**/*' -- npm-run-all 'build:docs:*' 'browser-sync reload'",
     "watch": "npm-run-all --parallel 'build:css -- --watch' 'build:docs:*' 'watch:docs' 'stylelint:watch'",
     "run:docs": "browser-sync start --server 'static/build/styleguide' --files 'static/build/styleguide'",
     "start": "npm-run-all --parallel 'run:docs' 'watch'"

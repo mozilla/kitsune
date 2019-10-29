@@ -1,4 +1,16 @@
 ################################
+# Node builder
+#
+FROM node:12 as node-builder
+WORKDIR /app
+COPY ./package.json ./package-lock.json ./
+RUN npm i
+COPY ./kitsune/sumo/static/sumo ./kitsune/sumo/static/sumo/
+COPY ./kss-template ./kss-template/
+COPY ./kss-config.json .
+RUN npm run build
+
+################################
 # Python dependencies builder
 #
 FROM python:2-stretch AS base
@@ -37,13 +49,7 @@ ENV GIT_SHA=${GIT_SHA}
 #
 FROM base AS base-dev
 
-RUN apt-get update && apt-get install apt-transport-https && \
-    echo "deb https://deb.nodesource.com/node_8.x stretch main" >> /etc/apt/sources.list && \
-    curl -sS https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add - && \
-    echo "deb https://dl.yarnpkg.com/debian/ stable main" >> /etc/apt/sources.list && \
-    curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - && \
-    apt-get update && \
-    apt-get install -y --no-install-recommends nodejs yarn optipng && \
+RUN apt-get update && apt-get install apt-transport-https optipng && \
     rm -rf /var/lib/apt/lists/*
 
 
@@ -114,7 +120,7 @@ RUN apt-get update && \
 RUN groupadd --gid 1000 kitsune && useradd -g kitsune --uid 1000 --shell /usr/sbin/nologin kitsune
 
 COPY --from=base --chown=kitsune:kitsune /venv /venv
-COPY --from=staticfiles --chown=kitsune:kitsune /app/static /app/static
+COPY --from=node-builder --chown=kitsune:kitsune /app/static /app/static
 COPY --from=staticfiles --chown=kitsune:kitsune /app/jsi18n /app/jsi18n
 COPY --from=staticfiles --chown=kitsune:kitsune /app/bower_components /app/bower_components
 
