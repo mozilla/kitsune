@@ -1,0 +1,31 @@
+// Think in pixels, but use rems. Takes a whole number.
+@function rem-calc($size, $multiplier:1) {
+  $remSize: $size / 16 * $multiplier;
+  @return #{$remSize}rem;
+}
+
+// Sets dimensions for a square (equal width x height) object.
+@mixin square($size) {
+  width: $size;
+  height: $size;
+}
+
+/// Removes trailing space at the bottom of elements.
+@mixin bottomless {
+  & > *:last-child {
+    margin-bottom: 0;
+  }
+}
+
+@mixin disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+@mixin sr-only {
+  position: absolute;
+  left: -1000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}

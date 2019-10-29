@@ -1,0 +1,25 @@
+// Expanded link utility
+//
+// The `.expand-this-link` utility class can be added to a link, in combination
+// with `.uk-position-relative` to make an inline link appear to be a block-level
+// link. This is useful when you want to expand the click target, but for SEO
+// and accessibility reasons, an anchor with complicated nested content is not
+// preferred.
+//
+// Markup: ../../../styleguide-examples/expanded-link-utility.njk
+//
+// Weight: 4
+//
+// Style guide: Utilities.link-expand
+
+.expand-this-link {
+  &:after {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 2;
+    content: "";
+  }
+}

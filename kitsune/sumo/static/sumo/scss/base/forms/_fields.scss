@@ -1,5 +1,31 @@
 @use '../../config' as c;
 
-input {
-  color: c.$input-color;
+// Forms
+//
+// These are the base styles for form fields and components.
+//
+// Markup: ../../../styleguide-examples/form.njk
+//
+// Weight: 3
+//
+// Style guide: forms
+
+.field {
+  display: block;
+  margin-bottom: 1em;
+  max-width: 480px;
+}
+
+input,
+select,
+textarea {
+  padding: 10px;
+  width: 100%;
+  border: var(--field-border);
+  font-family: var(--font-family);
+  font-size: var(--field-font-size);
+
+  &:focus {
+    border: var(--field-border-focus);
+  }
 }

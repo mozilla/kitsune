@@ -1,0 +1,47 @@
+// Typography
+//
+// All global typography styles and utility classes should live in the
+// typography.scss file. Whenever possible, use good semantics and these utility
+// classes to change type sizes and fonts, and leave typography details out
+// of the component-level files.
+//
+// Markup: ../../../styleguide-examples/typography.njk
+//
+// Weight: 1
+//
+// Style guide: typography
+
+html {
+  font-family: var(--font-family);
+  font-size: var(--base-font-size);
+  line-height: 1.6;
+  color: var(--text-color);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  margin: 2rem 0 1rem;
+  line-height: 1.2;
+  color: var(--headline-color);
+
+  &:first-child {
+    margin-top: 0;
+  }
+}
+
+h1 {font-size: 2em;}
+h2 {font-size: 1.6em;}
+h3 {font-size: 1.5em;}
+h4 {font-size: 1.4em;}
+h5 {font-size: 1.2em;}
+h6 {font-size: 1em;}
+
+a {
+  text-decoration: none;
+  color: var(--link-color);
+
+  &:hover {
+    text-decoration: underline;
+    text-decoration-color: var(--link-underline-color);
+    text-decoration-skip: skip;
+  }
+}
