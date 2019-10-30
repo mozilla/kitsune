@@ -1,0 +1,39 @@
+// Navigation
+//
+// Basic site navigation
+//
+// Markup: ../../../styleguide-examples/nav.njk
+//
+// Weight: 20
+//
+// Style guide: nav
+
+
+.site-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+  background: var(--brand-color);
+
+
+  &--list {
+    display: flex;
+    list-style: none;
+  }
+
+  // &--item {}
+
+  &--link,
+  &--logo {
+    display: block;
+    padding: 10px 20px;
+    border-radius: var(--global-radius);
+    color: var(--knockout-color);
+
+    &:hover {
+      background: rgba(255,255, 255, 0.05);
+      text-decoration: none;
+    }
+  }
+}

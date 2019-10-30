@@ -1,0 +1,8 @@
+{% extends "sumo/static/styleguide-examples/base.njk" %}
+
+{% block content %}
+
+{% import 'sumo/static/styleguide-examples/masthead.njk' as masthead %}
+
+{{ masthead.masthead(modifier_class='knockout', img="https://placem.at/people?w=1800&h=600&txt=0") }}
+{% endblock %}
