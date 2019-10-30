@@ -1,8 +1,10 @@
 import hashlib
+import json
 import logging
 import random
 import re
 import time
+from collections import OrderedDict
 from datetime import datetime, timedelta
 
 from django.conf import settings
@@ -657,3 +659,57 @@ class Deactivation(models.Model):
     def __unicode__(self):
         return u'%s was deactivated by %s on %s' % (self.user, self.moderator,
                                                     self.date)
+
+
+class AccountEvent(models.Model):
+    """Stores the events received from Firefox Accounts.
+
+    These events are processed by celery and the correct status is assigned in each entry.
+    """
+
+    # Status of an event entry.
+    UNPROCESSED = 1
+    PROCESSED = 2
+    ERRORED = 3
+    EVENT_STATUS = (
+        (UNPROCESSED, 'Unprocessed'),
+        (PROCESSED, 'processed'),
+        (ERRORED, 'errored'),
+    )
+
+    PROFILE_DELETION = 1
+    EMAIL_CHANGE = 2
+    CAPABILITY_CHANGE = 3
+    EVENT_TYPE = (
+        (PROFILE_DELETION, 'profile deletion'),
+        (EMAIL_CHANGE, 'email changed'),
+        (CAPABILITY_CHANGE, 'capabilities changed'),
+    )
+
+    status = models.PositiveSmallIntegerField(choices=EVENT_STATUS,
+                                              default=UNPROCESSED,
+                                              blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    processed_at = models.DateTimeField(auto_now=True)
+    event = models.TextField(max_length=4096, blank=False)
+    event_type = models.PositiveSmallIntegerField(choices=EVENT_TYPE,
+                                                  default=None,
+                                                  null=True,
+                                                  blank=False)
+    fxa_uid = models.CharField(blank=True, null=True, unique=True, max_length=128)
+    jwt_id = models.CharField(max_length=256)
+    issued_at = models.CharField(max_length=32)
+    profile = models.ForeignKey(Profile, related_name='account_events', null=True)
+
+    def save(self, *args, **kwargs):
+        """Override save method to validate the JSON paylod before saving the object."""
+
+        try:
+            # Try to load the payload
+            json.loads(self.event, object_pairs_hook=OrderedDict)
+        except json.JsonDecoderError:
+            # TODO add logging here
+            pass
+        else:
+            return super(AccountEvent, self).save(*args, **kwargs)
+        return None
