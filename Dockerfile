@@ -49,7 +49,11 @@ ENV GIT_SHA=${GIT_SHA}
 #
 FROM base AS base-dev
 
-RUN apt-get update && apt-get install apt-transport-https optipng && \
+RUN apt-get update && apt-get install apt-transport-https && \
+    echo "deb https://deb.nodesource.com/node_8.x stretch main" >> /etc/apt/sources.list && \
+    curl -sS https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add - && \
+    apt-get update -qq && \
+    apt-get install -y --no-install-recommends nodejs optipng && \
     rm -rf /var/lib/apt/lists/*
 
 
