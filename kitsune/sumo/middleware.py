@@ -17,6 +17,8 @@ from django.utils import translation
 from django.utils.cache import (add_never_cache_headers,
                                 patch_response_headers, patch_vary_headers)
 from django.utils.encoding import iri_to_uri, smart_str, smart_unicode
+from django.urls import resolve, Resolver404
+
 from enforce_host import EnforceHostMiddleware
 from mozilla_django_oidc.middleware import SessionRefresh
 
@@ -78,6 +80,13 @@ class LocaleURLMiddleware(object):
     """
 
     def process_request(self, request):
+        try:
+            if resolve(request.path_info).url_name in settings.OIDC_EXEMPT_URLS:
+                translation.activate(settings.LANGUAGE_CODE)
+                return
+        except Resolver404:
+            pass
+
         prefixer = Prefixer(request)
         set_url_prefixer(prefixer)
         full_path = prefixer.fix(prefixer.shortened_path)

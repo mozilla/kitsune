@@ -1,19 +1,26 @@
+import json
+from textwrap import dedent
 
+import mock
 from django.contrib import messages
 from django.contrib.messages.middleware import MessageMiddleware
 from django.contrib.sessions.middleware import SessionMiddleware
 from django.test.client import RequestFactory
-from nose.tools import eq_
-from pyquery import PyQuery as pq
-
+from django.test.utils import override_settings
+from josepy import jwa, jwk, jws
 from kitsune.questions.models import Answer, Question
 from kitsune.questions.tests import AnswerFactory, QuestionFactory
 from kitsune.sumo.tests import LocalizingClient, TestCase
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.users.models import (CONTRIBUTOR_GROUP, Deactivation, Profile,
-                                  Setting)
-from kitsune.users.tests import GroupFactory, UserFactory, add_permission
+from kitsune.users.models import (CONTRIBUTOR_GROUP, AccountEvent,
+                                  Deactivation, Profile, Setting)
+from kitsune.users.tests import (GroupFactory,
+                                 UserFactory, add_permission)
 from kitsune.users.views import edit_profile
+from nose.tools import eq_
+from pyquery import PyQuery as pq
+from kitsune.users.tests import ProfileFactory
+from functools import wraps
 
 
 class MakeContributorTests(TestCase):
@@ -170,3 +177,202 @@ class FXAAuthenticationTests(TestCase):
         url = reverse('users.fxa_authentication_init') + '?is_contributor=True'
         self.client.get(url)
         assert self.client.session.get('is_contributor')
+
+
+def setup_key(test):
+    @wraps(test)
+    def wrapper(self, *args, **kwargs):
+        with mock.patch('kitsune.users.views.requests') as mock_requests:
+            pem = dedent("""
+            -----BEGIN RSA PRIVATE KEY-----
+            MIIBOgIBAAJBAKx1c7RR7R/drnBSQ/zfx1vQLHUbFLh1AQQQ5R8DZUXd36efNK79
+            vukFhN9HFoHZiUvOjm0c+pVE6K+EdE/twuUCAwEAAQJAMbrEnJCrQe8YqAbw1/Bn
+            elAzIamndfE3U8bTavf9sgFpS4HL83rhd6PDbvx81ucaJAT/5x048fM/nFl4fzAc
+            mQIhAOF/a9o3EIsDKEmUl+Z1OaOiUxDF3kqWSmALEsmvDhwXAiEAw8ljV5RO/rUp
+            Zu2YMDFq3MKpyyMgBIJ8CxmGRc6gCmMCIGRQzkcmhfqBrhOFwkmozrqIBRIKJIjj
+            8TRm2LXWZZ2DAiAqVO7PztdNpynugUy4jtbGKKjBrTSNBRGA7OHlUgm0dQIhALQq
+            6oGU29Vxlvt3k0vmiRKU4AVfLyNXIGtcWcNG46h/
+            -----END RSA PRIVATE KEY-----
+            """)
+            key = jwk.JWKRSA.load(pem)
+            pubkey = {
+                "kty": "RSA",
+                "alg": "RS256",
+                "kid": "123"
+            }
+            pubkey.update(key.public_key().fields_to_partial_json())
+
+            mock_json = mock.Mock()
+            mock_json.json.return_value = {
+                "keys": [
+                    pubkey
+                ]
+            }
+            mock_requests.get.return_value = mock_json
+            test(self, key, *args, **kwargs)
+    return wrapper
+
+
+@override_settings(FXA_RP_CLIENT_ID="12345")
+@override_settings(FXA_SET_ISSUER="http://example.com")
+class WebhookViewTests(TestCase):
+
+    def _call_webhook(self, events, key=None):
+        payload = json.dumps({
+            "iss": "http://example.com",
+            "sub": "54321",
+            "aud": "12345",
+            "iat": 1565720808,
+            "jti": "e19ed6c5-4816-4171-aa43-56ffe80dbda1",
+            "events": events
+        })
+        jwt = jws.JWS.sign(
+            payload=payload,
+            key=key,
+            alg=jwa.RS256,
+            kid='123',
+            protect=frozenset(['alg', 'kid'])
+        ).to_compact()
+        return self.client.post(
+            reverse('users.fxa_webhook'),
+            content_type="",
+            HTTP_AUTHORIZATION="Bearer " + jwt
+        )
+
+    @mock.patch('kitsune.users.views.process_event_password_change')
+    @setup_key
+    def test_adds_event_to_db(self, key, process_mock):
+        profile = ProfileFactory(fxa_uid="54321")
+        events = {
+            "https://schemas.accounts.firefox.com/event/password-change": {
+                "changeTime": 1565721242227
+            }
+        }
+
+        eq_(0, AccountEvent.objects.count())
+
+        response = self._call_webhook(events, key)
+
+        eq_(202, response.status_code)
+        eq_(1, AccountEvent.objects.count())
+        eq_(1, process_mock.delay.call_count)
+
+        account_event = AccountEvent.objects.last()
+        eq_(account_event.status, AccountEvent.UNPROCESSED)
+        self.assertEqual(json.loads(account_event.body), events.values()[0])
+        eq_(account_event.event_type, AccountEvent.PASSWORD_CHANGE)
+        eq_(account_event.fxa_uid, "54321")
+        eq_(account_event.jwt_id, "e19ed6c5-4816-4171-aa43-56ffe80dbda1")
+        eq_(account_event.issued_at, "1565720808")
+        eq_(account_event.profile, profile)
+
+    @mock.patch('kitsune.users.views.process_event_subscription_state_change')
+    @setup_key
+    def test_adds_multiple_events_to_db(self, key, process_mock):
+        profile = ProfileFactory(fxa_uid="54321")
+        events = {
+            "https://schemas.accounts.firefox.com/event/profile-change": {},
+            "https://schemas.accounts.firefox.com/event/subscription-state-change": {
+                "capabilities": ["capability_1", "capability_2"],
+                "isActive": True,
+                "changeTime": 1565721242227
+            }
+        }
+
+        eq_(0, AccountEvent.objects.count())
+
+        response = self._call_webhook(events, key)
+
+        eq_(202, response.status_code)
+        eq_(2, AccountEvent.objects.count())
+        eq_(1, process_mock.delay.call_count)
+
+        account_event_1 = AccountEvent.objects.get(
+            event_type=AccountEvent.PROFILE_CHANGE
+        )
+        account_event_2 = AccountEvent.objects.get(
+            event_type=AccountEvent.SUBSCRIPTION_STATE_CHANGE
+        )
+
+        self.assertEqual(json.loads(account_event_1.body), {})
+        self.assertEqual(json.loads(account_event_2.body), events.values()[1])
+
+        eq_(account_event_1.status, AccountEvent.NOT_IMPLEMENTED)
+        eq_(account_event_2.status, AccountEvent.UNPROCESSED)
+        eq_(account_event_1.fxa_uid, "54321")
+        eq_(account_event_2.fxa_uid, "54321")
+        eq_(account_event_1.jwt_id, "e19ed6c5-4816-4171-aa43-56ffe80dbda1")
+        eq_(account_event_2.jwt_id, "e19ed6c5-4816-4171-aa43-56ffe80dbda1")
+        eq_(account_event_1.issued_at, "1565720808")
+        eq_(account_event_2.issued_at, "1565720808")
+        eq_(account_event_1.profile, profile)
+        eq_(account_event_2.profile, profile)
+
+    @mock.patch('kitsune.users.views.process_event_delete_user')
+    @setup_key
+    def test_handles_unknown_events(self, key, process_mock):
+        profile = ProfileFactory(fxa_uid="54321")
+        events = {
+            "https://schemas.accounts.firefox.com/event/delete-user": {},
+            "https://schemas.accounts.firefox.com/event/foobar": {},
+            "barfoo": {}
+        }
+
+        eq_(0, AccountEvent.objects.count())
+
+        response = self._call_webhook(events, key)
+
+        eq_(202, response.status_code)
+        eq_(3, AccountEvent.objects.count())
+        eq_(1, process_mock.delay.call_count)
+
+        account_event_1 = AccountEvent.objects.get(
+            event_type=AccountEvent.DELETE_USER
+        )
+        account_event_2 = AccountEvent.objects.get(
+            event_type="foobar"
+        )
+        account_event_3 = AccountEvent.objects.get(
+            event_type="barfoo"
+        )
+
+        self.assertEqual(json.loads(account_event_1.body), {})
+        self.assertEqual(json.loads(account_event_2.body), {})
+        self.assertEqual(json.loads(account_event_3.body), {})
+        eq_(account_event_1.status, AccountEvent.UNPROCESSED)
+        eq_(account_event_2.status, AccountEvent.NOT_IMPLEMENTED)
+        eq_(account_event_3.status, AccountEvent.NOT_IMPLEMENTED)
+        eq_(account_event_1.fxa_uid, "54321")
+        eq_(account_event_2.fxa_uid, "54321")
+        eq_(account_event_3.fxa_uid, "54321")
+        eq_(account_event_1.jwt_id, "e19ed6c5-4816-4171-aa43-56ffe80dbda1")
+        eq_(account_event_2.jwt_id, "e19ed6c5-4816-4171-aa43-56ffe80dbda1")
+        eq_(account_event_3.jwt_id, "e19ed6c5-4816-4171-aa43-56ffe80dbda1")
+        eq_(account_event_1.issued_at, "1565720808")
+        eq_(account_event_2.issued_at, "1565720808")
+        eq_(account_event_3.issued_at, "1565720808")
+        eq_(account_event_1.profile, profile)
+        eq_(account_event_2.profile, profile)
+        eq_(account_event_3.profile, profile)
+
+    @mock.patch('kitsune.users.views.process_event_delete_user')
+    @setup_key
+    def test_handles_no_user(self, key, process_mock):
+        events = {"https://schemas.accounts.firefox.com/event/delete-user": {}}
+
+        eq_(0, AccountEvent.objects.count())
+
+        response = self._call_webhook(events, key)
+
+        eq_(202, response.status_code)
+        eq_(1, AccountEvent.objects.count())
+        eq_(0, process_mock.delay.call_count)
+
+        account_event = AccountEvent.objects.last()
+        eq_(account_event.status, AccountEvent.IGNORED)
+        self.assertEqual(json.loads(account_event.body), {})
+        eq_(account_event.event_type, AccountEvent.DELETE_USER)
+        eq_(account_event.fxa_uid, "54321")
+        eq_(account_event.jwt_id, "e19ed6c5-4816-4171-aa43-56ffe80dbda1")
+        eq_(account_event.issued_at, "1565720808")
+        eq_(account_event.profile, None)

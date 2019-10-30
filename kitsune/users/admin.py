@@ -2,7 +2,7 @@ from django import forms
 from django.contrib import admin
 
 from kitsune.users import monkeypatch
-from kitsune.users.models import Profile
+from kitsune.users.models import AccountEvent, Profile
 
 
 class ProfileAdminForm(forms.ModelForm):
@@ -60,5 +60,15 @@ class ProfileAdmin(admin.ModelAdmin):
         obj.save()
 
 
+class AccountEventAdmin(admin.ModelAdmin):
+    """Admin entry for SET tokens."""
+    list_display = ['status', 'event_type', 'fxa_uid']
+    search_fields = ['fxa_uid', 'profile__user__username', 'profile__user__email', 'profile__name']
+
+    class Meta:
+        model = AccountEvent
+
+
 admin.site.register(Profile, ProfileAdmin)
+admin.site.register(AccountEvent, AccountEventAdmin)
 monkeypatch.patch_all()
