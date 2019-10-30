@@ -1,19 +1,23 @@
+import json
+from textwrap import dedent
 
+import mock
 from django.contrib import messages
 from django.contrib.messages.middleware import MessageMiddleware
 from django.contrib.sessions.middleware import SessionMiddleware
 from django.test.client import RequestFactory
-from nose.tools import eq_
-from pyquery import PyQuery as pq
-
+from django.test.utils import override_settings
+from josepy import jwa, jwk, jws
 from kitsune.questions.models import Answer, Question
 from kitsune.questions.tests import AnswerFactory, QuestionFactory
 from kitsune.sumo.tests import LocalizingClient, TestCase
 from kitsune.sumo.urlresolvers import reverse
-from kitsune.users.models import (CONTRIBUTOR_GROUP, Deactivation, Profile,
-                                  Setting)
+from kitsune.users.models import (CONTRIBUTOR_GROUP, AccountEvent,
+                                  Deactivation, Profile, Setting)
 from kitsune.users.tests import GroupFactory, UserFactory, add_permission
 from kitsune.users.views import edit_profile
+from nose.tools import eq_
+from pyquery import PyQuery as pq
 
 
 class MakeContributorTests(TestCase):
@@ -178,3 +182,86 @@ class FXAAuthenticationTests(TestCase):
         url = reverse('users.fxa_authentication_init') + '?is_contributor=True'
         self.client.get(url)
         assert self.client.session.get('is_contributor')
+
+
+class WebhookViewTests(TestCase):
+
+    def _setup_key(test):
+        @mock.patch('kitsune.users.views.requests')
+        def wrapper(self, mock_requests):
+            pem = dedent("""
+            -----BEGIN RSA PRIVATE KEY-----
+            MIIBOgIBAAJBAKx1c7RR7R/drnBSQ/zfx1vQLHUbFLh1AQQQ5R8DZUXd36efNK79
+            vukFhN9HFoHZiUvOjm0c+pVE6K+EdE/twuUCAwEAAQJAMbrEnJCrQe8YqAbw1/Bn
+            elAzIamndfE3U8bTavf9sgFpS4HL83rhd6PDbvx81ucaJAT/5x048fM/nFl4fzAc
+            mQIhAOF/a9o3EIsDKEmUl+Z1OaOiUxDF3kqWSmALEsmvDhwXAiEAw8ljV5RO/rUp
+            Zu2YMDFq3MKpyyMgBIJ8CxmGRc6gCmMCIGRQzkcmhfqBrhOFwkmozrqIBRIKJIjj
+            8TRm2LXWZZ2DAiAqVO7PztdNpynugUy4jtbGKKjBrTSNBRGA7OHlUgm0dQIhALQq
+            6oGU29Vxlvt3k0vmiRKU4AVfLyNXIGtcWcNG46h/
+            -----END RSA PRIVATE KEY-----
+            """)
+            key = jwk.JWKRSA.load(pem)
+            pubkey = {
+                "kty": "RSA",
+                "alg": "RS256"
+            }
+            pubkey.update(key.public_key().fields_to_partial_json())
+
+            mock_json = mock.Mock()
+            mock_json.json.return_value = {
+                "keys": [
+                    pubkey
+                ]
+            }
+            mock_requests.get.return_value = mock_json
+            test(self, key)
+
+        wrapper.__name__ = test.__name__
+        return wrapper
+
+    @_setup_key
+    @override_settings(FXA_RP_CLIENT_ID="12345")
+    @override_settings(FXA_SET_ISSUER="http://example.com")
+    def test_adds_event_to_db(self, key):
+        events = {
+            "https://schemas.accounts.firefox.com/event/subscription-state-change": {
+                "capabilities": ["capability_1", "capability_2"],
+                "isActive": True,
+                "changeTime": 1565721242227
+            }
+        }
+        payload = json.dumps({
+            "iss": "http://example.com",
+            "sub": "54321",
+            "aud": "12345",
+            "iat": 1565720808,
+            "jti": "e19ed6c5-4816-4171-aa43-56ffe80dbda1",
+            "events": events
+        })
+        signature = jws.JWS.sign(
+            payload=payload,
+            key=key,
+            alg=jwa.RS256,
+            protect=frozenset(['alg'])
+        )
+        jwt = signature.to_compact()
+
+        eq_(0, AccountEvent.objects.count())
+
+        response = self.client.post(
+            reverse('users.fxa_webhook'),
+            content_type='application/secevent+jwt',
+            HTTP_AUTHORIZATION="Bearer " + jwt
+        )
+
+        eq_(202, response.status_code)
+        eq_(1, AccountEvent.objects.count())
+
+        account_event = AccountEvent.objects.last()
+        eq_(account_event.status, AccountEvent.UNPROCESSED)
+        eq_(account_event.events, json.dumps(events, sort_keys=True))
+        eq_(account_event.event_type, None)
+        eq_(account_event.fxa_uid, "54321")
+        eq_(account_event.jwt_id, "e19ed6c5-4816-4171-aa43-56ffe80dbda1")
+        eq_(account_event.issued_at, "1565720808")
+        eq_(account_event.profile, None)
