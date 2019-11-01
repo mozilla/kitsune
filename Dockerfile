@@ -64,7 +64,7 @@ FROM base-dev AS staticfiles
 
 COPY package.json bower.json /app/
 
-RUN yarn install && yarn cache clean
+RUN npm i
 RUN ./node_modules/.bin/bower install --allow-root
 
 COPY . .

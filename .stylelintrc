@@ -3,9 +3,11 @@
   "plugins": [
     "stylelint-order"
   ],
+  "defaultSeverity": "warning",
   "rules": {
     "indentation": 2,
     "no-descending-specificity": null,
+    "no-empty-source": null,
     "font-family-no-duplicate-names": null,
     "font-family-no-missing-generic-family-keyword": null,
     "order/order": [

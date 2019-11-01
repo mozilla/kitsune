@@ -1,11 +1,11 @@
 {
-  "title": "Lincoln Loop Rodeo",
+  "title": "Mozilla SUMO Styleguide",
   "//": "The source and destination paths are relative to this file.",
   "source": "kitsune/sumo/static/sumo/scss",
   "destination": "static/build/styleguide",
   "//": "The css and js paths are URLs relative to the style guide destination.",
   "css": [
-    "css/styles.css"
+    "css/screen.css"
   ],
   "js": [
     "js/bundle.js"

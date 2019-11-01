@@ -1,0 +1,55 @@
+@use '../config';
+
+.footer {
+  display: flex;
+  background: var(--contrast-bg);
+
+  &, a, a:hover, a:visited, a:active, a:focus {
+    color: var(--knockout-color);
+  }
+
+  &--list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .fine-print,
+  .small-links {
+    margin: 0;
+    padding: 0;
+    font-size: var(--font-size-small);
+  }
+
+  .small-links {
+    display: flex;
+    justify-content: flex-end;
+    list-style: none;
+
+    a {
+      padding: 0 0 0 20px;
+    }
+  }
+
+  @include config.media(">=large") {
+    .container {
+      display: grid;
+      grid-gap: 10px;
+      grid-template-columns: repeat(12, [col] 1fr);
+    }
+
+    .col {
+      grid-column: span 4;
+    }
+
+    .fine-print {
+      grid-column: span 8;
+    }
+    .small-links {
+      grid-column: span 4;
+    }
+    .language-picker {
+      grid-column: span 12;
+    }
+  }
+}

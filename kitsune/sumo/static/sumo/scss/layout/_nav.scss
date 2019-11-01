@@ -8,27 +8,27 @@
 //
 // Style guide: nav
 
+@use '../config';
 
 .site-nav {
+  position: relative;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 20px;
-  background: var(--brand-color);
-
+  background: var(--contrast-bg);
 
   &--list {
     display: flex;
+    align-items: center;
     list-style: none;
+    margin: 0;
+    padding: 0;
   }
-
-  // &--item {}
 
   &--link,
   &--logo {
     display: block;
     padding: 10px 20px;
     border-radius: var(--global-radius);
+    font-weight: bold;
     color: var(--knockout-color);
 
     &:hover {
@@ -36,4 +36,74 @@
       text-decoration: none;
     }
   }
+
+  &--item {
+    &.lang {
+      .site-nav--link {
+        display: flex;
+        align-items: center;
+      }
+
+      svg {
+        margin-right: 10px;
+        width: 24px;
+        fill: var(--knockout-color);
+      }
+    }
+  }
+
+  &--right {
+    display: flex;
+    align-items: center;
+    margin-left: auto;
+  }
+
+  &--primary-button {
+    padding: 5px 14px;
+    border: none;
+    border-radius: 100px;
+    background-color: var(--action-color);
+    font-weight: bold;
+    color: var(--knockout-color);
+    transition: color .1s ease-in-out, background-color .1s ease-in-out;
+
+    &.hidden {
+      display: none;
+    }
+
+    &:hover,
+    &:focus {
+      background-color: var(--action-color-hover);
+    }
+
+    &:active {
+      background-color: var(--action-color-active);
+    }
+  }
+
+  .close-menu {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    z-index: 100;
+    display: none;
+    justify-content: flex-end;
+    padding: 10px 20px;
+    height: 36px;
+    color: var(--knockout-color);
+
+    &:after{
+      position: absolute;
+      top: 0;
+      left: -20vw;
+      width: 20vw;
+      height: 99vh;
+      content: "";
+    }
+  }
 }
+//
+// @include config.media(">=large") {
+//
+// }

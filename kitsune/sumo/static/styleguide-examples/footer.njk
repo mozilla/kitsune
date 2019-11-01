@@ -1,12 +1,12 @@
-<footer>
-  <div class="container_12 cf">
-    <div class="grid_4">
+<footer class="footer">
+  <div class="container">
+    <div class="col">
       <a href="https://www.mozilla.org">
         <img class="footer-logo" src="https://static-media-prod-cdn.itsre-sumo.mozilla.net/static/sumo/img/moz-wordmark-light-reverse.svg" alt="Mozilla" />
       </a>
     </div>
-    <div class="grid_4">
-      <ul>
+    <div class="col">
+      <ul class="footer--list">
         <li>
           <h5>
             <a href="https://www.mozilla.org">Mozilla</a>
@@ -28,8 +28,8 @@
         </li>
       </ul>
     </div>
-    <div class="grid_4 hide-mobile">
-      <ul>
+    <div class="col hide-mobile">
+      <ul class="footer--list">
         <li>
           <h5>
             <a href="https://www.mozilla.org/firefox/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">Firefox</a>
@@ -49,25 +49,19 @@
         </li>
       </ul>
     </div>
-    <div class="grid_8 cf">
-      <div class="fineprint">
-        <p>
-          Portions of this content are &copy;1998–2020 by individual mozilla.org contributors. Content available under a <a href="//www.mozilla.org/foundation/licensing/website-content.html">Creative Commons license</a>.
 
-        </p>
-      </div>
-    </div>
-    <div class="grid_4 small-links">
-      <ul>
-        <li><a rel="nofollow" href="https://www.mozilla.org/privacy/websites/">Website Privacy Notice</a></li>
-        <li><a rel="nofollow" href="https://www.mozilla.org/privacy/websites/#cookies">Cookies</a></li>
-        <li><a rel="nofollow" href="https://www.mozilla.org/about/legal/terms/mozilla/">Legal</a></li>
-      </ul>
-    </div>
+    <p class="fine-print">
+      Portions of this content are &copy;1998–2020 by individual mozilla.org contributors. Content available under a <a href="//www.mozilla.org/foundation/licensing/website-content.html">Creative Commons license</a>.
+    </p>
+    <ul class="small-links">
+      <li><a rel="nofollow" href="https://www.mozilla.org/privacy/websites/">Website Privacy Notice</a></li>
+      <li><a rel="nofollow" href="https://www.mozilla.org/privacy/websites/#cookies">Cookies</a></li>
+      <li><a rel="nofollow" href="https://www.mozilla.org/about/legal/terms/mozilla/">Legal</a></li>
+    </ul>
 
-    <div class="grid_2 prefix_2 language-picker">
-      Language <a href="{{ locale_picker_url }}"  data-event-category="navigation" data-event-action="main navigation" data-event-label="Locale Picker">{{ settings.LANGUAGES_DICT[request.LANGUAGE_CODE.lower()] }}</a>
-    </div>
+    <p class="language-picker">
+      Language <a href="/en/"  data-event-category="navigation" data-event-action="main navigation" data-event-label="Locale Picker">EN</a>
+    </p>
 
   </div>
 </footer>

@@ -7,9 +7,9 @@
   --kss-navbar-height: 50px;
 
   // Cosmetics
-  --kss-font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  --kss-font-body: 'Open Sans', Arial, Helvetica, sans-serif;
   --kss-font-code: Menlo, 'Ubuntu Mono', 'Lucida Console', 'Courier New', Courier, monospace;
-  --kss-font-headings: var(--kss-font-body);
+  --kss-font-headings: 'Zilla Slab', 'Open Sans', X-LocaleSpecific, sans-serif;
 
   --kss-font-size: 16px;
   --kss-vertical-rhythm: 1.5em;
@@ -30,7 +30,7 @@
   --kss-card-border-color: rgba(0,0,0,0.1);
 
   --kss-sidebar-bg: rgba(0,0,0,0.02);
-  --kss-navbar-bg: var(--kss-heading-color);
+  --kss-navbar-bg: #000;
 }
 
 @import "layout/kss-layout";

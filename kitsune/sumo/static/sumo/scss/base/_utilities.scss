@@ -12,6 +12,8 @@
 //
 // Style guide: Utilities.link-expand
 
+@use '../config';
+
 .expand-this-link {
   &:after {
     position: absolute;
@@ -21,5 +23,11 @@
     left: 0;
     z-index: 2;
     content: "";
+  }
+}
+
+@include config.media("<medium") {
+  .hide-mobile {
+    display: none;
   }
 }

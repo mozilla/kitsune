@@ -1,10 +1,15 @@
-$breakpoints: (
-  small: 570px,
-  medium: 768px,
-  large: 980px,
-  xlarge: 1200px,
-  xxlarge: 1280px
+@use "../../../../../../node_modules/include-media/dist/include-media" with (
+  $breakpoints: (
+    small: 570px,
+    medium: 768px,
+    large: 980px,
+    xlarge: 1200px,
+    xxlarge: 1280px
+  )
 );
 
+
+@forward "../../../../../../node_modules/include-media/dist/include-media";
+
 // example:
-// @include media(">phone", "<=tablet") {
+// @include media(">small", "<=medium") {
