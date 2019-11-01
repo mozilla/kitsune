@@ -1,16 +1,15 @@
+@use './mixins' as *;
+
 :root {
   $tint: #FFF;
   $shade: #000;
-
   $action-color: #16da00;
+  $brand-color: #002cc5;
   --tint: #{$tint};
   --shade: #{$shade};
-  --brand-color:        hsl(237, 63%, 39%); // Brand color
+  --brand-color: #{$brand-color}; // Brand color
   --brand-color-dark-1: hsl(237, 63%, 29%); // Brand color dark
   --brand-color-dark-2: hsl(237, 63%, 19%); // Brand color darker
-  --secondary-color:        hsl(204, 100%, 55%); // Secondary color, used for buttons
-  --secondary-color-dark-1: hsl(204, 100%, 35%); // Secondary color dark
-  --secondary-color-dark-2: hsl(204, 100%, 20%); // Secondary color darker
   --page-bg: hsl(0, 0%, 98%);
   --card-bg: hsl(0, 0%, 100%);
   --contrast-bg: #000;
@@ -19,15 +18,16 @@
   --action-color-active: #{mix($shade, $action-color, 25%)};
 
   --base-font-family: 'Open Sans', Arial, Helvetica, sans-serif;
-  --base-font-size: calc(112.5% + 0.25vw);
-  --font-size-small: 0.8em;
+  --base-font-size: 1rem; // keep this at 1rem for rem-calc to work correctly.
+  --font-size-small: #{rem-calc(12)};
   --heading-font-family: 'Zilla Slab', 'Open Sans', X-LocaleSpecific, sans-serif;
 
   --text-color: var(--shade);
   --knockout-color: var(--tint);
+  --knockout-subtle-color: #9b9b9b;
   --headline-color: var(--brand-color);
   --accent-color: white;
-  --link-color: var(--brand-color);
+  --link-color: #0095dd;
   --link-underline-color: var(--secondary-color);
 
   --field-border: 1px solid var(--shade-30);

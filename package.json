@@ -8,6 +8,8 @@
   "scripts": {
     "stylelint": "stylelint kitsune/sumo/static/sumo/scss/**/* --fix && stylelint kss-template/kss-assets/scss/**/*",
     "build:css": "sass kitsune/sumo/static/sumo/scss/screen.scss static/build/screen.css --source-map",
+    "build:docs:copyfonts": "cp -r kitsune/sumo/static/sumo/fonts static/build/styleguide",
+    "build:docs:copyimgs": "mkdir -p static/build/styleguide/static/sumo && cp -r kitsune/sumo/static/sumo/img static/build/styleguide/static/sumo",
     "build:docs:copy": "cp static/build/screen.css static/build/styleguide/css/screen.css && cp static/build/screen.css.map static/build/styleguide/css/screen.css.map",
     "build:docs:styles": "sass kss-template/kss-assets/scss/kss.scss static/build/styleguide/css/kss.css",
     "build:docs:kss": "kss --config kss-config.json --custom full",

@@ -11,6 +11,8 @@
 //
 // Style guide: typography
 
+@use '../config' as *;
+
 html {
   font-family: var(--base-font-family);
   font-size: var(--base-font-size);
@@ -41,7 +43,10 @@ a {
 
   &:hover {
     text-decoration: underline;
-    text-decoration-color: var(--link-underline-color);
     text-decoration-skip: skip;
   }
+}
+
+.small-text {
+  font-size: var(--font-size-small);
 }

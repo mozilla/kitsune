@@ -29,3 +29,9 @@
   height: 1px;
   overflow: hidden;
 }
+
+@mixin image-replaced {
+  white-space: nowrap;
+  overflow: hidden;
+  text-indent: 120%; // extra 20% to account for fancy fonts that may overhang
+}

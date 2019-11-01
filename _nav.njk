@@ -1,0 +1,13 @@
+<ul class="nav" id="menu-main-nav">
+    {% for item in metadata.nav %}
+      <li class="site-nav-item {% if item.children %} has-dropdown{% endif %}"><a class="site-nav-link" href="{{ item.url }}">{{ item.name }}</a>
+        {%- if item.children -%}
+        <ul>
+          {% for subitem in item.children %}
+          <li><a class="site-nav-sub-link"  href="{{ subitem.url }}">{{ subitem.name }}</a></li>
+          {% endfor %}
+        </ul>
+        {%- endif -%}
+      </li>
+    {% endfor %}
+  </ul>
