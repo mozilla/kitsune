@@ -16,8 +16,8 @@ class ProductAdminForm(forms.ModelForm):
         cdata = super(ProductAdminForm, self).clean(*args, **kwargs)
         slug = cdata.get('slug', '')
         title = cdata.get('title', '')
-        if ((slug and products.filter(slug=slug).exists()) or
-                (title and products.filter(title=title).exists())):
+        if (not self.instance.id and
+                (products.filter(slug=slug).exists()) or products.filter(title=title).exists()):
             raise forms.ValidationError('Slug and title must be unique within products.')
         return cdata
 
