@@ -13,20 +13,21 @@
 .site-nav {
   position: relative;
   display: flex;
+  padding: 0 40px;
   background: var(--contrast-bg);
 
   &--list {
     display: flex;
     align-items: center;
-    list-style: none;
     margin: 0;
     padding: 0;
+    list-style: none;
   }
 
   &--link,
   &--logo {
     display: block;
-    padding: 10px 20px;
+    padding: 10px 20px 10px 0;
     border-radius: var(--global-radius);
     font-weight: bold;
     color: var(--knockout-color);
@@ -42,6 +43,7 @@
       .site-nav--link {
         display: flex;
         align-items: center;
+        padding: 10px 20px;
       }
 
       svg {
@@ -58,13 +60,13 @@
     margin-left: auto;
   }
 
-  &--primary-button {
+  &--button {
     padding: 5px 14px;
     border: none;
     border-radius: 100px;
-    background-color: var(--action-color);
+    background-color: var(--knockout-color);
     font-weight: bold;
-    color: var(--knockout-color);
+    color: var(--contrast-color);
     transition: color .1s ease-in-out, background-color .1s ease-in-out;
 
     &.hidden {
@@ -73,11 +75,27 @@
 
     &:hover,
     &:focus {
-      background-color: var(--action-color-hover);
+      background-color: var(--knockout-color-hover);
+      text-decoration: none;
     }
 
     &:active {
-      background-color: var(--action-color-active);
+      background-color: var(--knockout-color-active);
+    }
+
+    &.primary {
+      background-color: var(--action-color);
+      color: var(--knockout-color);
+
+      &:hover,
+      &:focus {
+        background-color: var(--action-color-hover);
+      }
+
+      &:active {
+        background-color: var(--action-color-active);
+      }
+
     }
   }
 

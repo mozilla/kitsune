@@ -8,14 +8,14 @@
   --tint: #{$tint};
   --shade: #{$shade};
   --brand-color: #{$brand-color}; // Brand color
-  --brand-color-dark-1: hsl(237, 63%, 29%); // Brand color dark
-  --brand-color-dark-2: hsl(237, 63%, 19%); // Brand color darker
+  --brand-color-hover: #{mix($shade, $brand-color, 5%)}; // Brand color dark
+  --brand-color-active: #{mix($shade, $brand-color, 25%)}; // Brand color darker
   --page-bg: hsl(0, 0%, 98%);
   --card-bg: hsl(0, 0%, 100%);
   --contrast-bg: #000;
   --action-color: #{$action-color};
-  --action-color-hover: #{mix($shade, $action-color, 5%)};
-  --action-color-active: #{mix($shade, $action-color, 25%)};
+  --action-color-hover: #{mix($shade, $action-color, 10%)};
+  --action-color-active: #{mix($shade, $action-color, 30%)};
 
   --base-font-family: 'Open Sans', Arial, Helvetica, sans-serif;
   --base-font-size: 1rem; // keep this at 1rem for rem-calc to work correctly.
@@ -24,6 +24,8 @@
 
   --text-color: var(--shade);
   --knockout-color: var(--tint);
+  --knockout-color-hover: #{mix($shade, $tint, 10%)};
+  --knockout-color-active: #{mix($shade, $tint, 30%)};
   --knockout-subtle-color: #9b9b9b;
   --headline-color: var(--brand-color);
   --accent-color: white;

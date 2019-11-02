@@ -43,6 +43,7 @@
   .small-links {
     display: flex;
     justify-content: flex-start;
+    flex-wrap: wrap;
     list-style: none;
     margin-top: rem-calc(20);
 
@@ -57,7 +58,7 @@
     border-top: 2px solid var(--knockout-color);
   }
 
-  @include media(">=large") {
+  @include media(">=medium") {
     .container {
       display: grid;
       grid-gap: 10px;
@@ -75,6 +76,8 @@
     .fine-print,
     .small-links,
     .language-picker {
+      font-weight: normal;
+
       a {
         color: var(--knockout-subtle-color);
       }
