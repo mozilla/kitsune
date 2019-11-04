@@ -1,5 +1,6 @@
 {% block nav %}
-  {% include "kitsune/sumo/static/styleguide-examples/nav.njk" %}
+{% import 'kitsune/sumo/static/styleguide-examples/nav.njk' as nav %}
+{{ nav.nav(is_logged_in=true) }}
 {% endblock %}
 
 
