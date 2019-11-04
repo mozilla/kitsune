@@ -31,3 +31,9 @@
     display: none;
   }
 }
+
+.lock-body {
+  position: fixed;
+  height: 100vh;
+  overflow: hidden;
+}

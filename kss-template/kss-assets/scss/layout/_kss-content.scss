@@ -252,8 +252,8 @@ a:hover {
 .kss-modifier__example {
   position: relative; // Contain the example's absolute positioning.
   z-index: 0; // Establishes a local stacking context.
-  margin: -2px -2px (var(--kss-vertical-rhythm) - 2px);
-  border: 2px dashed transparent;
+  margin: 0;
+  border: 0 none;
   clear: left;
 
   &:last-child {
