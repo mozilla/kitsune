@@ -27,10 +27,17 @@
 }
 
 @include config.media("<medium") {
-  .hide-mobile {
+  .hide-on-mobile {
     display: none;
   }
 }
+
+@include config.media(">=medium") {
+  .mobile-only {
+    display: none;
+  }
+}
+
 
 .lock-body {
   position: fixed;

@@ -7,8 +7,8 @@
   "css": [
     "css/screen.css"
   ],
-  "js": [
-    "js/bundle.js"
+  "//": [
+    "Change the key to js and remove this note when JS is compiled with the frontend. old: js/bundle.js"
   ],
   "homepage": "../../styleguide-examples/styleguide-index.md",
   "builder": "kss-template"
