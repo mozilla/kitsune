@@ -7,6 +7,7 @@
   align-items: center;
   height: var(--kss-navbar-height);
   background: var(--kss-navbar-bg);
+  z-index: 1000;
 }
 
 .kss-toggle-nav {

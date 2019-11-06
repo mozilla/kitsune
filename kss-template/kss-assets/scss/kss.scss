@@ -40,13 +40,13 @@
 // comment this out to use your own project defaults for base typography styles.
 // For more control, copy the CSS variables above into your own project and
 // map them to your own variables. Then you won't have to recompile this CSS.
-@import "base/kss-style";
+// @import "base/kss-style";
 
 .kss-bodyclass {
   background: var(--kss-page-bg);
-  font-family: var(--kss-font-body);
-  font-size: var(--kss-font-size);
-  line-height: var(--kss-vertical-rhythm);
+  // font-family: var(--kss-font-body);
+  // font-size: var(--kss-font-size);
+  // line-height: var(--kss-vertical-rhythm);
 
   @import "layout/kss-content";
   @import 'module/prettifyjs';

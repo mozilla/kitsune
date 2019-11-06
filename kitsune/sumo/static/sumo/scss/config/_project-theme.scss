@@ -9,37 +9,32 @@
   $brand-color: #002cc5;
   --tint: #{$tint};
   --shade: #{$shade};
-  --brand-color: #{$brand-color}; // Brand color
-  --brand-color-hover: #{mix($shade, $brand-color, 5%)}; // Brand color dark
-  --brand-color-active: #{mix($shade, $brand-color, 25%)}; // Brand color darker
-  --page-bg: hsl(0, 0%, 98%);
-  --card-bg: hsl(0, 0%, 100%);
+  --page-bg: white;
+  --card-bg: var(--page-bg);
   --contrast-bg: #000;
-  --action-color: #{$action-color};
-  --action-color-hover: #{mix($shade, $action-color, 10%)};
-  --action-color-active: #{mix($shade, $action-color, 30%)};
 
-  --base-font-family: 'Open Sans', Arial, Helvetica, sans-serif;
+  --base-font-family: Inter, X-LocaleSpecific, sans-serif;
   --base-font-size: 1rem; // keep this at 1rem for rem-calc to work correctly.
-  --font-size-small: #{rem-calc(12)};
-  --heading-font-family: 'Zilla Slab', 'Open Sans', X-LocaleSpecific, sans-serif;
+  --heading-font-family: Metropolis, Inter, X-LocaleSpecific, sans-serif;
+  --heading-alt-font-family: "Zilla Slab", Inter, X-LocaleSpecific, sans-serif;
+  --heading-color: var(--grey-95);
 
-  --text-color: var(--shade);
+  --text-color: var(--grey-80);
   --knockout-color: var(--tint);
   --knockout-color-hover: #{mix($shade, $tint, 10%)};
   --knockout-color-active: #{mix($shade, $tint, 30%)};
   --knockout-subtle-color: #9b9b9b;
-  --headline-color: var(--brand-color);
+
   --accent-color: white;
-  --link-color: #0095dd;
-  --link-underline-color: var(--secondary-color);
+  --link-color: var(--blue-04);
+  --link-underline-color: var(--blue-02);
 
   --field-border: 1px solid var(--shade-30);
   --field-border-focus: 1px solid var(--blue);
   --field-font-size: 1em;
 
   --global-margin: 1rem;
-  --global-radius: .25rem;
+  --global-radius: #{rem-calc(4)};
 
   --button-bg: var(--secondary-color);
   --button-border: var(--global-radius);

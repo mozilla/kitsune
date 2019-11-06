@@ -5,6 +5,11 @@
 // classes to change type sizes and fonts, and leave typography details out
 // of the component-level files.
 //
+// .knockout - This class provides white text over a darker background
+// .alt-heading-font - Apply this to a heading directly, or any parent element
+// to apply to all headings within that context.
+// .alt-heading-font.knockout - Both classes can be used together.
+//
 // Markup: ../../../styleguide-examples/typography.njk
 //
 // Weight: 1
@@ -22,20 +27,69 @@ html {
 
 h1, h2, h3, h4, h5, h6 {
   margin: 2rem 0 1rem;
+  font-family: var(--heading-font-family);
   line-height: 1.2;
-  color: var(--headline-color);
+  color: var(--heading-color);
 
   &:first-child {
     margin-top: 0;
   }
 }
 
-h1 {font-size: 2em;}
-h2 {font-size: 1.6em;}
-h3 {font-size: 1.5em;}
-h4 {font-size: 1.4em;}
-h5 {font-size: 1.2em;}
-h6 {font-size: 1em;}
+p {
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+
+.alt-heading-font {
+  --heading-font-family: var(--heading-alt-font-family);
+}
+
+.knockout {
+  --heading-color: var(--knockout-color);
+  background-color: var(--contrast-bg);
+  color: var(--knockout-color);
+}
+
+h1, .display-xxl {
+  font-size: rem-calc(64);
+  line-height: rem-calc(72);
+}
+
+h2, .display-xl {
+  font-size: rem-calc(56);
+  line-height: rem-calc(64);
+}
+
+h3, .display-lg {
+  font-size: rem-calc(48);
+  line-height: rem-calc(56);
+}
+
+h4, .display-md {
+  font-size: rem-calc(40);
+  line-height: rem-calc(44);
+}
+
+h5, .display-sm {
+  font-size: rem-calc(32);
+  line-height: rem-calc(36);
+}
+
+h6, .display-xs {
+  font-size: rem-calc(24);
+  line-height: rem-calc(28);
+}
+
+.display-xxs {
+  font-size: rem-calc(20);
+  line-height: rem-calc(24);
+}
+
+.display-xxxs {
+  font-size: rem-calc(16);
+  line-height: rem-calc(20);
+}
 
 a {
   text-decoration: none;
@@ -43,10 +97,27 @@ a {
 
   &:hover {
     text-decoration: underline;
+    text-decoration-color: var(--link-underline-color);
     text-decoration-skip: skip;
   }
 }
 
-.small-text {
-  font-size: var(--font-size-small);
+.body-lg {
+  font-size: rem-calc(18);
+  line-height: rem-calc(28);
+}
+
+.body-md {
+  font-size: rem-calc(16);
+  line-height: rem-calc(24);
+}
+
+.body-sm {
+  font-size: rem-calc(14);
+  line-height: rem-calc(22);
+}
+
+.body-xs {
+  font-size: rem-calc(12);
+  line-height: rem-calc(18);
 }
