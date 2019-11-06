@@ -1,0 +1,242 @@
+// Colors
+//
+// There is a scss file included called `_project-theme.scss`. This file contains
+// semantic naming of variables that map to 'paint swatch' naming.
+// Components should all use the semantically-named variables to better indicate the
+// designer's intent and promote site-wide consistency. For example, `--text-color`
+// shows intent, where `--ink-01` doesn't carry any semantic meaning.
+//
+// Colors are stored in a nested SCSS map and then converted to root-level CSS
+// variables with a SCSS mixin. The first option in the swatches below shows the
+// CSS variable. Use these whenever possible to allow for access to the theme
+// overrides. Sometimes using SCSS variables directly is required, such as when
+// adding colors to css-inline SVGs, or mixing RGBA values. In those cases, use
+// the color() function, which will print the hex value in the compiled CSS.
+//
+// Colors:
+// --text-color: #1D1133 - var(--ink-10)
+// --link-color: #1D4591 - var(--blue-08)
+//
+// Weight: 2
+//
+// Style guide: colors
+
+
+// Ink
+//
+// Colors:
+// --ink-01: #383574 - color('ink', '01')
+// --ink-02: #33306C - color('ink', '02')
+// --ink-03: #302A65 - color('ink', '03')
+// --ink-04: #2D255D - color('ink', '04')
+// --ink-05: #2A2155 - color('ink', '05')
+// --ink-06: #281D4F - color('ink', '06')
+// --ink-07: #271847 - color('ink', '07')
+// --ink-08: #241441 - color('ink', '08')
+// --ink-09: #201139 - color('ink', '09')
+// --ink-10: #1D1133 - color('ink', '10')
+//
+// Weight: 3
+//
+// Style guide: colors.ink
+
+// Marketing Grey
+//
+// Colors:
+// --grey-mkt-01: #F8F9FB - color('grey-mkt', '01')
+// --grey-mkt-02: #EDEDEF - color('grey-mkt', '02')
+// --grey-mkt-03: #CDCDD4 - color('grey-mkt', '03')
+// --grey-mkt-04: #B1B1BC - color('grey-mkt', '04')
+// --grey-mkt-05: #9595A3 - color('grey-mkt', '05')
+// --grey-mkt-06: #7A7A8B - color('grey-mkt', '06')
+// --grey-mkt-07: #5E5E72 - color('grey-mkt', '07')
+// --grey-mkt-08: #43425A - color('grey-mkt', '08')
+// --grey-mkt-09: #1F2033 - color('grey-mkt', '09')
+// --grey-mkt-10: #151523 - color('grey-mkt', '10')
+//
+// Weight: 4
+//
+// Style guide: colors.marketing-grey
+
+
+// Dark Grey
+//
+// Colors:
+// --grey-dk-01: #5C5C67 - color('grey-dk', '01')
+// --grey-dk-02: #53525E - color('grey-dk', '02')
+// --grey-dk-03: #4A4A55 - color('grey-dk', '03')
+// --grey-dk-04: #42414D - color('grey-dk', '04')
+// --grey-dk-05: #3A3A44 - color('grey-dk', '05')
+// --grey-dk-06: #32313C - color('grey-dk', '06')
+// --grey-dk-07: #2B2A33 - color('grey-dk', '07')
+// --grey-dk-08: #22222B - color('grey-dk', '08')
+// --grey-dk-09: #1B1B22 - color('grey-dk', '09')
+// --grey-dk-10: #16151B - color('grey-dk', '10')
+//
+// Weight: 5
+//
+// Style guide: colors.dark-grey
+
+
+// Light Grey
+//
+// Colors:
+// --grey-lt-01: #FBFBFD - color('grey-lt', '01')
+// --grey-lt-02: #F8F9FC - color('grey-lt', '02')
+// --grey-lt-03: #F1F0F3 - color('grey-lt', '03')
+// --grey-lt-04: #E0E0E6 - color('grey-lt', '04')
+// --grey-lt-05: #CFCFD8 - color('grey-lt', '05')
+// --grey-lt-06: #BFBFC9 - color('grey-lt', '06')
+// --grey-lt-07: #AFAFBB - color('grey-lt', '07')
+// --grey-lt-08: #9F9FAD - color('grey-lt', '08')
+// --grey-lt-09: #8F8F9D - color('grey-lt', '09')
+// --grey-lt-10: #80808E - color('grey-lt', '10')
+//
+// Weight: 6
+//
+// Style guide: colors.light-grey
+
+
+// Green
+//
+// Colors:
+// --green-01: #E6F4ED - color('green', '01')
+// --green-02: #D5EDE5 - color('green', '02')
+// --green-03: #BEE3D5 - color('green', '03')
+// --green-04: #9ED6BE - color('green', '04')
+// --green-05: #82CBA8 - color('green', '05')
+// --green-06: #66C4A4 - color('green', '06')
+// --green-07: #3DBC9F - color('green', '07')
+// --green-08: #008787 - color('green', '08')
+// --green-09: #015F5F - color('green', '09')
+// --green-10: #09403F - color('green', '10')
+//
+// Weight: 7
+//
+// Style guide: colors.green
+
+
+// Blue
+//
+// Colors:
+// --blue-01: #B3E2F2 - color('blue', '01')
+// --blue-02: #93D8EE - color('blue', '02')
+// --blue-03: #52C8EB - color('blue', '03')
+// --blue-04: #2FB0E5 - color('blue', '04')
+// --blue-05: #3B8AC9 - color('blue', '05')
+// --blue-06: #3964AF - color('blue', '06')
+// --blue-07: #2756A7 - color('blue', '07')
+// --blue-08: #1D4591 - color('blue', '08')
+// --blue-09: #23366F - color('blue', '09')
+// --blue-10: #17224C - color('blue', '10')
+//
+// Weight: 8
+//
+// Style guide: colors.blue
+
+// Violet
+//
+// Colors:
+// --violet-01: #E7DEEE - color('violet', '01')
+// --violet-02: #D1BEDD - color('violet', '02')
+// --violet-03: #BA9FCC - color('violet', '03')
+// --violet-04: #AB8BC0 - color('violet', '04')
+// --violet-05: #8F75B4 - color('violet', '05')
+// --violet-06: #7661AA - color('violet', '06')
+// --violet-07: #6A57A5 - color('violet', '07')
+// --violet-08: #5A4A9E - color('violet', '08')
+// --violet-09: #462F8A - color('violet', '09')
+// --violet-10: #322564 - color('violet', '10')
+//
+// Weight: 9
+//
+// Style guide: colors.violet
+
+
+
+$colors: (
+  'ink': (
+    '01': #383574,
+    '02': #33306C,
+    '03': #302A65,
+    '04': #2D255D,
+    '05': #2A2155,
+    '06': #281D4F,
+    '07': #271847,
+    '08': #241441,
+    '09': #201139,
+    '10': #1D1133,
+  ),
+  'grey-mkt': (
+    '01': #F8F9FB,
+    '02': #EDEDEF,
+    '03': #CDCDD4,
+    '04': #B1B1BC,
+    '05': #9595A3,
+    '06': #7A7A8B,
+    '07': #5E5E72,
+    '08': #43425A,
+    '09': #1F2033,
+    '10': #151523,
+  ),
+  'grey-dk': (
+    '01': #5C5C67,
+    '02': #53525E,
+    '03': #4A4A55,
+    '04': #42414D,
+    '05': #3A3A44,
+    '06': #32313C,
+    '07': #2B2A33,
+    '08': #22222B,
+    '09': #1B1B22,
+    '10': #16151B,
+  ),
+  'grey-lt': (
+    '01': #FBFBFD,
+    '02': #F8F9FC,
+    '03': #F1F0F3,
+    '04': #E0E0E6,
+    '05': #CFCFD8,
+    '06': #BFBFC9,
+    '07': #AFAFBB,
+    '08': #9F9FAD,
+    '09': #8F8F9D,
+    '10': #80808E,
+  ),
+  'green': (
+    '01': #E6F4ED,
+    '02': #D5EDE5,
+    '03': #BEE3D5,
+    '04': #9ED6BE,
+    '05': #82CBA8,
+    '06': #66C4A4,
+    '07': #3DBC9F,
+    '08': #008787,
+    '09': #015F5F,
+    '10': #09403F,
+  ),
+  'blue': (
+    '01': #B3E2F2,
+    '02': #93D8EE,
+    '03': #52C8EB,
+    '04': #2FB0E5,
+    '05': #3B8AC9,
+    '06': #3964AF,
+    '07': #2756A7,
+    '08': #1D4591,
+    '09': #23366F,
+    '10': #17224C,
+  ),
+  'violet': (
+    '01': #E7DEEE,
+    '02': #D1BEDD,
+    '03': #BA9FCC,
+    '04': #AB8BC0,
+    '05': #8F75B4,
+    '06': #7661AA,
+    '07': #6A57A5,
+    '08': #5A4A9E,
+    '09': #462F8A,
+    '10': #322564,
+  ),
+);

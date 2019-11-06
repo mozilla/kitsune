@@ -13,7 +13,7 @@
 </head>
 <body class="kss-bodyclass {% if template.isItem %}kss-fullscreen-mode{% endif %}">
   {% if not template.isItem %}
-  <nav class="kss-navbar">
+  <header class="kss-navbar">
     <button class="kss-toggle-nav" data-toggle-sidebar>
       <svg class="hamburger" viewBox="0 0 613 478.29" fill="currentColor" id="hamburger" xmlns="http://www.w3.org/2000/svg">
         <path d="M1 0h612v70.64H1V0zM1 407.65h612v70.64H1v-70.64zM0 203h612v70.64H0V203z"/>
@@ -24,7 +24,7 @@
       </svg>
     </button>
     <span class="kss-navbar-title">{{ options.title }}</span>
-  </nav>
+  </header>
   <!-- This is the off-canvas -->
 
   <nav class="kss-off-canvas-sidebar" data-off-canvas-wrap>
@@ -125,11 +125,11 @@
                     <div class="kss-color-figure" style="background-color:{{ color.color }}"></div>
                     <figcaption class="kss-color-caption">
                       {% if color.name %}
-                        <strong class="kss-color-name">{{ color.name }}</strong>
+                        <div class="kss-color-name" data-copy-this>var({{ color.name }})</div>
                       {% endif %}
-                      <code class="kss-color-code">{{ color.color }}</code>
+                      <div class="kss-color-code" data-copy-this>{{ color.color }}</div>
                       {% if color.description %}
-                        <p class="kss-color-desc">{{ color.description }}</p>
+                        <div class="kss-color-desc" data-copy-this>{{ color.description }}</div>
                       {% endif %}
                     </figcaption>
                   </figure>
@@ -232,8 +232,6 @@
 <script src="kss-assets/kss.js"></script>
 <script src="kss-assets/prettify.js"></script>
 
-{{ scripts|safe }}
-
 <script>
 prettyPrint();
 // Inject subheads in styleguide nav.
@@ -268,19 +266,58 @@ var nav = document.querySelector('[data-off-canvas-wrap]');
 var navToggle = document.querySelector('[data-toggle-sidebar]');
 
 function mobileNav(e){
-  navToggle.classList.toggle('nav-open');
+  e.target.classList.toggle('nav-open');
   document.body.classList.toggle('nav-is-open');
 };
 
 if (navToggle) {
   navToggle.addEventListener("click", mobileNav);
 }
+
+
+
+// copy colors to clipboard
+// https://alligator.io/js/copying-to-clipboard/
+const aioColors = document.querySelectorAll('[data-copy-this]');
+
+aioColors.forEach(color => {
+  color.addEventListener('click', () => {
+    const selection = window.getSelection();
+    const range = document.createRange();
+    range.selectNodeContents(color);
+    selection.removeAllRanges();
+    selection.addRange(range);
+
+    try {
+      document.execCommand('copy');
+      selection.removeAllRanges();
+
+      const original = color.textContent;
+      color.textContent = 'Copied!';
+      color.classList.add('success');
+
+      setTimeout(() => {
+        color.textContent = original;
+        color.classList.remove('success');
+      }, 1200);
+    } catch(e) {
+      const errorMsg = document.querySelector('.error-msg');
+      errorMsg.classList.add('show');
+
+      setTimeout(() => {
+        errorMsg.classList.remove('show');
+      }, 1200);
+    }
+  });
+});
 </script>
 
 <!-- dumped in from the compiled app -->
 <script type="text/javascript" src="https://static-media-prod-cdn.itsre-sumo.mozilla.net/static/build/common-min.5594359fa3da.js" charset="utf-8"></script>
 <script type="text/javascript" src="https://static-media-prod-cdn.itsre-sumo.mozilla.net/static/build/show-fx-download.4fef4fded9ba.js" charset="utf-8"></script>
 
+
+{{ scripts|safe }}
 
 
 <!-- Automatically built using <a href="https://github.com/kss-node/kss-node">kss-node</a>. -->

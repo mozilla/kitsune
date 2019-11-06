@@ -1,6 +1,8 @@
 @use './mixins' as *;
+@use './color-swatches';
 
 :root {
+  @include cssvars(color-swatches.$colors);
   $tint: #FFF;
   $shade: #000;
   $action-color: #16da00;
@@ -46,28 +48,3 @@
   --button-font-size: 1em;
   --button-font-family: var(--base-font-family);
 }
-
-
-// Colors
-//
-// There is a scss file included called `_project-theme.scss`. This file contains
-// css variables that can be easily overriden on a per-page or per-site basis
-// without re-compiling the base CSS file from the source. This file is intended
-// to inject customized brand decisions into different areas of the app without
-// changing the complete core color palette for the project. Changing core UI
-// colors, such as the 'success' and 'danger' colors used in alerts, edits to
-// `variables.scss` are still required because of the SCSS filters used there.
-//
-// Colors:
-// --brand-color:        hsl(237, 63%, 39%) - Brand color
-// --brand-color-dark-1: hsl(237, 63%, 29%) - Brand color dark
-// --brand-color-dark-2: hsl(237, 63%, 19%) - Brand color darker
-// --secondary-color:        hsl(204, 100%, 55%) - Secondary color, used for buttons
-// --secondary-color-dark-1: hsl(204, 100%, 35%) - Secondary color dark
-// --secondary-color-dark-2: hsl(204, 100%, 20%) - Secondary color darker
-// --page-bg: hsl(0, 0%, 98%) - Page background
-// --card-bg: hsl(0, 0%, 100%) - Card background
-//
-// Weight: 2
-//
-// Style guide: colors

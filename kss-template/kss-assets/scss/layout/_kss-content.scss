@@ -358,7 +358,7 @@ a:hover {
     flex: 0 0 auto;
     margin-bottom: 1em;
     padding: 0 .5em;
-    width: 16em;
+    width: 220px;
   }
 
   .kss-color {
@@ -373,26 +373,29 @@ a:hover {
   background: var(--kss-card-bg);
 
   &-figure {
-    height: 3em;
+    height: 120px;
   }
 
   &-caption {
     padding: .5em;
   }
 
-  &-name {
-    display: block;
-    font-weight: bold;
-    color: var(--kss-text-color);
-  }
-
-  &-code {
-    display: block;
-    color: var(--kss-subtle-text);
-  }
-
+  &-name,
+  &-code,
   &-desc {
-    font-size: .875em;
+    display: block;
+    color: var(--kss-text-color);
+    font-weight: normal;
+    font-size: 12px;
+    border: 1px solid #eee;
+    border-radius: 2px;
+    text-align: center;
+    margin-bottom: 4px;
+    cursor: copy;
+
+    &:hover {
+      background: #eee;
+    }
   }
 }
 
