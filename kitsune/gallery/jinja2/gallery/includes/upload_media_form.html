@@ -74,7 +74,7 @@ What JS needs to do:
 TODO: better error messages ("invalid file" means too big, or extension, etc)
 
 #}
-<div id="gallery-upload-modal" title="{% if has_draft %}{{ _('Continue Uploading Media') }}{% else %}{{ _('Upload a New Media File') }}{% endif %}" data-modal="true" data-target="#btn-upload" data-id="upload-kbox" data-position="none"
+<div id="gallery-upload-modal" title="{% if has_draft %}{{ _('Continue Uploading Media') }}{% else %}{{ _('Upload a New Image') }}{% endif %}" data-modal="true" data-target="#btn-upload" data-id="upload-kbox" data-position="none"
   data-max-image-size="{{ settings.IMAGE_MAX_FILESIZE }}">
   <form id="gallery-upload-image" class="upload-form{{ ' draft' if image_form.instance.pk else '' }}"
     data-post-url="{{ url('gallery.upload_async', media_type='image') }}"
