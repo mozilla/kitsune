@@ -1,0 +1,53 @@
+From 92b746900a73e981a10dcddfa6f4d15ebd7d053b Mon Sep 17 00:00:00 2001
+From: "Sang Bin (Kevin) Lee" <kevinlt@hotmail.com>
+Date: Wed, 6 Nov 2019 23:50:33 -0500
+Subject: [PATCH] Rename upload button on Media Gallery
+
+---
+ kitsune/gallery/jinja2/gallery/gallery.html                    | 2 +-
+ kitsune/gallery/jinja2/gallery/includes/upload_media_form.html | 2 +-
+ kitsune/gallery/jinja2/gallery/media.html                      | 2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/kitsune/gallery/jinja2/gallery/gallery.html b/kitsune/gallery/jinja2/gallery/gallery.html
+index 8b0c3cfd1..cd72505bf 100644
+--- a/kitsune/gallery/jinja2/gallery/gallery.html
++++ b/kitsune/gallery/jinja2/gallery/gallery.html
+@@ -9,7 +9,7 @@
+ 
+ {% block above_main %}
+   {% if user.is_authenticated() %}
+-    <a id="btn-upload" class="btn btn-submit" href="#">{{ _('Upload a New Media File') }}</a>
++    <a id="btn-upload" class="btn btn-submit" href="#">{{ _('Upload a New Image') }}</a>
+   {% endif %}
+   <h1>{{ _('Media Gallery') }}</h1>
+ {% endblock %}
+diff --git a/kitsune/gallery/jinja2/gallery/includes/upload_media_form.html b/kitsune/gallery/jinja2/gallery/includes/upload_media_form.html
+index f1ad06a30..4408d95a4 100644
+--- a/kitsune/gallery/jinja2/gallery/includes/upload_media_form.html
++++ b/kitsune/gallery/jinja2/gallery/includes/upload_media_form.html
+@@ -74,7 +74,7 @@ What JS needs to do:
+ TODO: better error messages ("invalid file" means too big, or extension, etc)
+ 
+ #}
+-<div id="gallery-upload-modal" title="{% if has_draft %}{{ _('Continue Uploading Media') }}{% else %}{{ _('Upload a New Media File') }}{% endif %}" data-modal="true" data-target="#btn-upload" data-id="upload-kbox" data-position="none"
++<div id="gallery-upload-modal" title="{% if has_draft %}{{ _('Continue Uploading Media') }}{% else %}{{ _('Upload a New Image') }}{% endif %}" data-modal="true" data-target="#btn-upload" data-id="upload-kbox" data-position="none"
+   data-max-image-size="{{ settings.IMAGE_MAX_FILESIZE }}">
+   <form id="gallery-upload-image" class="upload-form{{ ' draft' if image_form.instance.pk else '' }}"
+     data-post-url="{{ url('gallery.upload_async', media_type='image') }}"
+diff --git a/kitsune/gallery/jinja2/gallery/media.html b/kitsune/gallery/jinja2/gallery/media.html
+index c32f135fb..962c0b657 100644
+--- a/kitsune/gallery/jinja2/gallery/media.html
++++ b/kitsune/gallery/jinja2/gallery/media.html
+@@ -15,7 +15,7 @@
+ 
+ {% block above_main %}
+   {% if user.is_authenticated() %}
+-    <a id="btn-upload" class="btn btn-submit" href="{{ url('gallery.gallery', media_type)|urlparams(hash='upload') }}">{{ _('Upload a New Media File') }}</a>
++    <a id="btn-upload" class="btn btn-submit" href="{{ url('gallery.gallery', media_type)|urlparams(hash='upload') }}">{{ _('Upload a New Image') }}</a>
+   {% endif %}
+   <h1>{{ media.title|truncate(length=55, killwords=True) }}</h1>
+ {% endblock %}
+-- 
+2.21.0 (Apple Git-122.2)
+
