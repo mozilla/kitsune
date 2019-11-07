@@ -2,7 +2,10 @@
 {% from 'includes/common_macros.html' import for_contributors_sidebar %}
 {% from 'products/includes/topic_macros.html' import help_topics with context %}
 {% from 'products/includes/product_macros.html' import product_cards with context %}
-{% set crumbs = [(None, pgettext('DB: products.Product.title', product.title))] %}
+{% if product.parent %}
+  {% set crumbs = [(url('products.product', slug=product.parent.slug), pgettext('DB: products.Product.title', product.parent.title))] %}
+{% endif %}
+{% set crumbs = (crumbs or []) + [(None, pgettext('DB: products.Product.title', product.title))] %}
 {% set styles = ('products',) %}
 {% set scripts = ('products',) %}
 {% set classes = 'product-landing' %}
