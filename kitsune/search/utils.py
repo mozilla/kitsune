@@ -4,8 +4,10 @@ from itertools import islice
 from django.conf import settings
 
 import bleach
+from . import config
 
 from kitsune.lib.sumo_locales import LOCALES
+from elasticsearch_dsl import token_filter, analyzer
 
 
 class FakeLogger(object):
