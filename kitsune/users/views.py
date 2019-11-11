@@ -1,24 +1,32 @@
+import json
 import os
-from uuid import uuid4
 from ast import literal_eval
 from datetime import datetime
+from uuid import uuid4
 
 from django.conf import settings
 from django.contrib import auth, messages
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.models import Site
-from django.http import (HttpResponsePermanentRedirect, HttpResponseRedirect,
-                         Http404, HttpResponseForbidden)
+from django.core.exceptions import SuspiciousOperation
+from django.http import (HttpResponse, HttpResponsePermanentRedirect, HttpResponseRedirect,
+                         Http404, HttpResponseForbidden, JsonResponse)
 from django.views.decorators.http import (require_http_methods, require_GET,
                                           require_POST)
 from django.shortcuts import get_object_or_404, render, redirect
+from django.utils import six
+from django.utils.encoding import force_bytes, smart_bytes
 from django.utils.http import base36_to_int
 from django.utils.translation import ugettext as _
+from django.views.generic import View
 
 # from axes.decorators import watch_login
 from django_statsd.clients import statsd
+from josepy.jwk import JWK
+from josepy.jws import JWS
 from mozilla_django_oidc.views import OIDCAuthenticationRequestView, OIDCLogoutView
+from mozilla_django_oidc.utils import import_from_settings
 from mobility.decorators import mobile_template
 from tidings.models import Watch
 from tidings.tasks import claim_watches
@@ -44,7 +52,13 @@ from kitsune.users.forms import (
     EmailChangeForm, SetPasswordForm, PasswordChangeForm, SettingsForm,
     ForgotUsernameForm, PasswordResetForm)
 from kitsune.users.templatetags.jinja_helpers import profile_url
-from kitsune.users.models import Profile, RegistrationProfile, EmailChange, Deactivation
+from kitsune.users.models import (
+    AccountEvent,
+    Deactivation,
+    EmailChange,
+    Profile,
+    RegistrationProfile
+)
 from kitsune.users.utils import (
     deactivate_user,
     handle_login,
@@ -759,3 +773,98 @@ class FXALogoutView(OIDCLogoutView):
         if val is not None:
             return val
         return super(FXALogoutView, FXALogoutView).get_settings(attr, *args)
+
+
+class WebhookView(View):
+    """The flow here is based in the mozilla-django-oidc lib.
+
+    If/When the said lib supports SET tokens this will be replaced by the lib.
+    """
+    @staticmethod
+    def get_settings(attr, *args):
+        """Override the logout url for Firefox Accounts."""
+
+        val = get_oidc_fxa_setting(attr)
+        if val is not None:
+            return val
+        return import_from_settings(attr, *args)
+
+    def verify_token(self, token, **kwargs):
+        """Validate the token signature."""
+
+        token = force_bytes(token)
+        key = self.OIDC_RP_CLIENT_SECRET
+
+        jws = JWS.from_compact(token)
+
+        try:
+            alg = jws.signature.combined.alg.name
+        except KeyError:
+            msg = 'No alg value found in header'
+            raise SuspiciousOperation(msg)
+
+        if alg != self.OIDC_RP_SIGN_ALGO:
+            msg = "The provider algorithm {!r} does not match the client's " \
+                  "OIDC_RP_SIGN_ALGO.".format(alg)
+            raise SuspiciousOperation(msg)
+
+        if isinstance(key, six.string_types):
+            # Use smart_bytes here since the key string comes from settings.
+            jwk = JWK.load(smart_bytes(key))
+        else:
+            # The key is a json returned from the IDP JWKS endpoint.
+            jwk = JWK.from_json(key)
+
+        if not jws.verify(jwk):
+            msg = 'JWS token verification failed.'
+            raise SuspiciousOperation(msg)
+
+        # The 'token' will always be a byte string since it's
+        # the result of base64.urlsafe_b64decode().
+        # The payload is always the result of base64.urlsafe_b64decode().
+        # In Python 3 and 2, that's always a byte string.
+        # In Python3.6, the json.loads() function can accept a byte string
+        # as it will automagically decode it to a unicode string before
+        # deserializing https://bugs.python.org/issue17909
+        return json.loads(jws.payload.decode('utf-8'))
+
+    def post(self, request, *args, **kwargs):
+        # TODO add docstrings
+        # TODO add error handling
+
+        id_token = kwargs.get('id_token')
+        # SET event must be of type `application/secevent+jwt`
+        if request.META.get('CONTENT_TYPE', '') != 'application/secevent+jwt':
+            raise Http404
+
+        payload = self.verify_token(id_token)
+
+        if payload:
+            issuer = payload['iss']
+            event = payload.get('events', '')
+            fxa_uid = payload.get('sub', '')
+            exp = payload.get('exp')
+            # If the issuer is not Firefox Accounts raise a 404 error
+            if settings.FXA_SET_ISSUER != issuer:
+                raise Http404
+
+            # If exp is in the token then it's an id_token that should not be here
+            if any([not event,
+                    not fxa_uid,
+                    exp]):
+                return JsonResponse({
+                    'error': 'error',
+                    'description': 'description'
+                }, status=400)
+
+            profile_q = Profile.objects.filter(fxa_uid=fxa_uid)
+            AccountEvent.objects.create(
+                issued_at=payload['iat'],
+                jwt_id=payload['jti'],
+                fxa_uid=fxa_uid,
+                status=AccountEvent.UNPROCESSED,
+                event=event,
+                profile=profile_q[0] if profile_q.exists() else None
+            )
+
+            return HttpResponse(status=202)
