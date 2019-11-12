@@ -84,5 +84,5 @@ irc.mozilla.org #sumo - web-based IRC:
 {# L10n: This is at the end of an email. #}
 {{ _('Welcome to SUMO!') }}
 
-Michał and Rachel
+Giulia and Kiki
 SUMO Community Manager{% endautoescape %}
