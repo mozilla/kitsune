@@ -3,7 +3,7 @@ from django.utils import timezone
 from elasticsearch_dsl import field, Document as DSLDocument
 
 from kitsune.search import config
-from kitsune.search.fields import WikiLocaleText
+from kitsune.search.v2.fields import WikiLocaleText
 from kitsune.wiki.config import REDIRECT_HTML
 
 
@@ -28,7 +28,7 @@ class WikiDocument(DSLDocument):
     slug = field.Keyword()
     is_archived = field.Boolean()
     recent_helpful_votes = field.Integer()
-    document_display_order = field.Integer()
+    display_order = field.Integer()
 
     class Index:
         name = config.WIKI_DOCUMENT_INDEX_NAME
@@ -83,14 +83,21 @@ class WikiDocument(DSLDocument):
         return instance.original.display_order
 
     def prepare(self, instance):
-        """Prepare an ES WikiDocument object given a model instance"""
-        kwargs = []
-        fields = self.__dict__.keys()
+        """Prepare an object given a model instance"""
+
+        fields = [
+            'url', 'indexed_on', 'updated', 'product', 'topic', 'title',
+            'keywords', 'content', 'summary', 'locale', 'current_id', 'parent_id',
+            'category', 'slug', 'is_archived', 'recent_helpful_votes', 'display_order'
+        ]
 
         for f in fields:
             try:
-                prepare_method = getattr(self, 'prepare_{}'.format(field))
-                kwargs[field] = prepare_method(instance)
+                prepare_method = getattr(self, 'prepare_{}'.format(f))
+                value = prepare_method(instance)
+                setattr(self, f, value)
             except AttributeError:
-                kwargs[field] = getattr(instance, field)
-        return kwargs
+                value = getattr(instance, f)
+                setattr(self, f, value)
+
+        self.meta.id = instance.id

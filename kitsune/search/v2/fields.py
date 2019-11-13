@@ -3,7 +3,7 @@ from functools import partial
 from django.conf import settings
 from elasticsearch_dsl.field import Text, Keyword
 
-from kitsune.search.es7_utils import es_analyzer_for_locale
+from kitsune.search.v2.es7_utils import es_analyzer_for_locale
 
 
 def _get_fields(field, locales, **params):

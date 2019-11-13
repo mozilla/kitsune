@@ -25,7 +25,7 @@ def _get_locale_specific_analyzer(locale):
         # The standard analyzer is basically a analyzer with standard tokenizer
         # and standard, lowercase and stop filter
         locale_analyzer = analyzer(locale, tokenizer='standard',
-                                   filter=['standard', 'lowercase', 'stop', snowball_filter])
+                                   filter=['lowercase', 'stop', snowball_filter])
         return locale_analyzer
 
 
@@ -42,4 +42,4 @@ def es_analyzer_for_locale(locale):
 
     # No specific analyzer found for the locale
     # So use the standard analyzer as default
-    return analyzer('default', type='standard')
+    return analyzer('default_sumo', tokenizer='standard', filter=['lowercase'])
