@@ -82,7 +82,8 @@ class WikiDocument(DSLDocument):
     def prepare_display_order(self, instance):
         return instance.original.display_order
 
-    def prepare(self, instance):
+    @classmethod
+    def prepare(cls, instance):
         """Prepare an object given a model instance"""
 
         fields = [
@@ -91,13 +92,19 @@ class WikiDocument(DSLDocument):
             'category', 'slug', 'is_archived', 'recent_helpful_votes', 'display_order'
         ]
 
+        obj = cls()
+
+        # Iterate over fields and either set the value directly from the instance
+        # or prepare based on `prepare_<field>` method
         for f in fields:
             try:
-                prepare_method = getattr(self, 'prepare_{}'.format(f))
+                prepare_method = getattr(obj, 'prepare_{}'.format(f))
                 value = prepare_method(instance)
-                setattr(self, f, value)
             except AttributeError:
                 value = getattr(instance, f)
-                setattr(self, f, value)
 
-        self.meta.id = instance.id
+            setattr(obj, f, value)
+
+        obj.meta.id = instance.id
+
+        return obj
