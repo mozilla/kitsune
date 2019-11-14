@@ -13,6 +13,7 @@
 // Style guide: Utilities.link-expand
 
 @use '../config';
+@use 'protocol';
 
 .expand-this-link {
   &:after {
@@ -26,14 +27,17 @@
   }
 }
 
-@include config.media("<medium") {
+
+@media #{protocol.$mq-md} {
   .hide-on-mobile {
     display: none;
   }
 }
 
-@include config.media(">=medium") {
-  .mobile-only {
+.mobile-only {
+  display: block;
+
+  @media #{protocol.$mq-md} {
     display: none;
   }
 }

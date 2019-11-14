@@ -7,8 +7,8 @@
   },
   "scripts": {
     "stylelint": "stylelint kitsune/sumo/static/sumo/scss/**/* --fix && stylelint kss-template/kss-assets/scss/**/*",
-    "build:css": "sass kitsune/sumo/static/sumo/scss/screen.scss static/build/screen.css --source-map",
-    "build:docs:copyfonts": "cp -r kitsune/sumo/static/sumo/fonts static/build/styleguide",
+    "build:css": "sass kitsune/sumo/static/sumo/scss/screen.scss static/build/screen.css --source-map --load-path 'node_modules/@mozilla-protocol/core/protocol/css'",
+    "build:docs:copyfonts": "cp -r node_modules/@mozilla-protocol/core/protocol/fonts static/build/styleguide",
     "build:docs:copyimgs": "mkdir -p static/build/styleguide/static/sumo && cp -r kitsune/sumo/static/sumo/img static/build/styleguide/static/sumo",
     "build:docs:copyjs": "cp -r kitsune/sumo/static/sumo/js static/build/styleguide/static/sumo",
     "build:docs:copystyles": "cp static/build/screen.css static/build/styleguide/css/screen.css && cp static/build/screen.css.map static/build/styleguide/css/screen.css.map",
@@ -26,7 +26,7 @@
   },
   "license": "MPL-2.0",
   "dependencies": {
-    "@mozilla-protocol/core": "github:lincolnloop/protocol",
+    "@mozilla-protocol/core": "10.0.1",
     "babel": "5.8.23",
     "babelify": "5.0.4",
     "bower": "^1.8.8",
@@ -40,7 +40,6 @@
     "gulp": "3.8.6",
     "gulp-nunjucks": "0.2.2",
     "gulp-watch": "0.6.8",
-    "include-media": "^1.4.9",
     "jquery": "2.1.4",
     "jsdom": "11.11.0",
     "kss": "^3.0.0-beta.25",

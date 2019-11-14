@@ -1,4 +1,5 @@
 @use '../config' as *;
+@use 'protocol';
 
 .footer {
   padding: 45px 0 10px 0;
@@ -58,7 +59,7 @@
     border-top: 2px solid var(--knockout-color);
   }
 
-  @include media(">=medium") {
+  @media #{protocol.$mq-md} {
     .container {
       display: grid;
       grid-gap: 10px;

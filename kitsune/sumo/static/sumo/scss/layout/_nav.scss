@@ -14,6 +14,7 @@
 // Style guide: nav
 
 @use '../config' as *;
+@use 'protocol';
 
 .site-nav {
   position: relative;
@@ -167,7 +168,7 @@
     display: none;
   }
 
-  @include media(">=large") {
+  @media #{protocol.$mq-lg} {
     &--toggle,
     .close-menu {
       display: none;
@@ -268,7 +269,7 @@
     }
   }
 
-  @include media(">=large") {
+  @media #{protocol.$mq-lg} {
     &, &.is-open {
       position: static;
       display: flex;
@@ -290,7 +291,7 @@
 
 
 // desktop dropdown menu items
-@include media(">=large") {
+@media #{protocol.$mq-md} {
   .site-nav {
     &--item.dropdown {
       position: relative;

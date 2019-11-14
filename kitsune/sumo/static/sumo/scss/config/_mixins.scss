@@ -1,4 +1,5 @@
 @use './color-swatches';
+@use 'protocol';
 @use 'sass:map';
 
 // Think in pixels, but use rems. Takes a whole number.
@@ -39,6 +40,19 @@
   text-indent: 120%; // extra 20% to account for fancy fonts that may overhang
 }
 
+@mixin line-height($size) {
+  // When unit is pixels, pass it through and convert to rem
+  @if (unit($size) == 'px') {
+    line-height: $size;
+    line-height: protocol.remify($size);
+  }
+
+  // When unit is not pixels, show an error
+  @else {
+    @error 'This mixin only accepts sizes in pixels. You declared `line-height(#{$size})`.';
+  }
+}
+
 // function to retrieve color from $colors map ie. `color(base, primary)`
 @function color($name, $variant: '01') {
   $color: null;
@@ -61,10 +75,10 @@
     // maps require a second loop
     @if type-of($val1) == "map" {
       @each $key2, $val2 in $val1 {
-        --#{$key1}-#{$key2}: #{$val2};
+        --color-#{$key1}-#{$key2}: #{$val2};
       }
     } @else { // top-level colors
-      --#{$key1}: #{$val1};
+      --color-#{$key1}: #{$val1};
     }
   }
 }

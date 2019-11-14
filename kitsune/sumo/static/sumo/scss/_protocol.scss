@@ -1,0 +1,49 @@
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+// These are general styles for elements/components that occur on every page.
+// Individual pages may include additional component styles as needed.
+
+// Default media paths can be overwritten globally.
+$font-path: '../fonts' !default;
+$image-path: '../img' !default;
+
+// Fonts
+@import 'includes/fonts/inter';
+@import 'includes/fonts/metropolis';
+@import 'includes/fonts/zilla-slab';
+
+
+// Base elements - general HTML elements
+@import 'base/elements';
+
+// Base includes - animations
+@import 'base/includes';
+
+// Global components
+@import 'components/card';
+@import 'components/footer';
+@import 'components/language-switcher';
+@import 'components/menu';
+@import 'components/menu-item';
+@import 'components/navigation';
+
+// all components from protocol-extra.scss
+@import 'components/article';
+@import 'components/billboard';
+@import 'components/button';
+@import 'components/call-out';
+@import 'components/emphasis-box';
+@import 'components/feature-card';
+@import 'components/hero';
+@import 'components/inline-list';
+@import 'components/modal';
+@import 'components/menu-list';
+@import 'components/newsletter-form';
+@import 'components/notification-bar';
+@import 'components/picto-card';
+@import 'components/sidebar-menu';
+@import 'components/zap';
+@import 'templates/card-layout';
+@import 'templates/main-with-sidebar';

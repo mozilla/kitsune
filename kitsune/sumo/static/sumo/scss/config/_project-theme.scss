@@ -3,31 +3,31 @@
 
 :root {
   @include cssvars(color-swatches.$colors);
-  $tint: #FFF;
-  $shade: #000;
-  $action-color: #16da00;
-  $brand-color: #002cc5;
-  --tint: #{$tint};
-  --shade: #{$shade};
   --page-bg: white;
   --card-bg: var(--page-bg);
-  --contrast-bg: #000;
+
+
+  --color-heading: #20123A;
+  --color-text: #42425A;
+  --color-link: #0060DF;
+  --color-link-visited: #B833E1;
+  --color-link-active-bg: #EDEDF0;
+  --color-link-inverse-visited: #F6B8FF;
+  --color-link-inverse-active-bg: rgba(237,237,240,0.2);
 
   --base-font-family: Inter, X-LocaleSpecific, sans-serif;
   --base-font-size: 1rem; // keep this at 1rem for rem-calc to work correctly.
   --heading-font-family: Metropolis, Inter, X-LocaleSpecific, sans-serif;
-  --heading-alt-font-family: "Zilla Slab", Inter, X-LocaleSpecific, sans-serif;
-  --heading-color: var(--grey-95);
+  --heading-alt-font-family: 'Zilla Slab', 'Open Sans', X-LocaleSpecific, serif;
 
-  --text-color: var(--grey-80);
-  --knockout-color: var(--tint);
-  --knockout-color-hover: #{mix($shade, $tint, 10%)};
-  --knockout-color-active: #{mix($shade, $tint, 30%)};
-  --knockout-subtle-color: #9b9b9b;
+
+  --text-color: var(--color-text);
+
+  --color-inverse-bg: var(--color-heading);
+  --color-inverse: var(--color-white);
 
   --accent-color: white;
-  --link-color: var(--blue-04);
-  --link-underline-color: var(--blue-02);
+  --link-color: red;
 
   --field-border: 1px solid var(--shade-30);
   --field-border-focus: 1px solid var(--blue);
@@ -39,7 +39,7 @@
   --button-bg: var(--secondary-color);
   --button-border: var(--global-radius);
   --button-radius: var(--global-radius);
-  --button-color: var(--knockout-color);
+  --button-color: var(--color-inverse);
   --button-font-size: 1em;
   --button-font-family: var(--base-font-family);
 }
