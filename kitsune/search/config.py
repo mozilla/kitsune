@@ -50,3 +50,5 @@ ES_SNOWBALL_LOCALES = {
     'sv': 'Swedish',
     'tr': 'Turkish',
 }
+
+DEFAULT_ES7_CONNECTION = 'es7_default'
