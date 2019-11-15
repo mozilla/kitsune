@@ -1,113 +1,92 @@
-@use '../config' as *;
-@use 'protocol';
+@use '../config' as c;
+@use 'protocol' as p;
 
-.footer {
-  padding: 45px 0 10px 0;
-  background: var(--contrast-bg);
+.mzp-c-footer {
+  background: var(--color-inverse-bg);
 
-
-  &, a, a:hover, a:visited, a:active, a:focus {
-    color: var(--knockout-color);
+  a:link,
+  a:visited,
+  a:hover,
+  a:focus,
+  a:active {
+    text-decoration: none;
   }
 
-  &-logo {
-    width: 100px;
-  }
-
-  &--list {
-    margin: 0;
-    padding: 0;
-    list-style: none;
+  &-links-social {
+    position: relative;
+    display: flex;
+    max-width: 100%;
 
     li {
-      margin: 0 0 0.8em;
-    }
-  }
-
-  h5 {
-    margin: 1em 0 0.9em 0;
-    font-size: rem-calc(18);
-  }
-
-  .fine-print,
-  .small-links,
-  .language-picker {
-    margin: 0;
-    padding: 0;
-    font-weight: bold;
-
-    a {
-      color: var(--link-color);
-    }
-  }
-
-  .small-links {
-    display: flex;
-    justify-content: flex-start;
-    flex-wrap: wrap;
-    list-style: none;
-    margin-top: rem-calc(20);
-
-    a {
-      padding: 0 20px 0 0;
-    }
-  }
-
-  .fine-print {
-    margin-top: rem-calc(20);
-    padding-top: rem-calc(20);
-    border-top: 2px solid var(--knockout-color);
-  }
-
-  @media #{protocol.$mq-md} {
-    .container {
-      display: grid;
-      grid-gap: 10px;
-      grid-template-columns: repeat(12, [col] 1fr);
-    }
-
-    .col {
-      grid-column: span 4;
-    }
-
-    h5 {
-      margin-top: 0;
-    }
-
-    .fine-print,
-    .small-links,
-    .language-picker {
-      font-weight: normal;
+      @include p.bidi(((padding, p.$spacing-md p.$spacing-lg 0 0, p.$spacing-md 0 p.$spacing-lg 0),));
 
       a {
-        color: var(--knockout-subtle-color);
+        width: p.$spacing-lg;
+        height: p.$spacing-lg;
+        background-size: 100% auto;
+      }
+    }
+  }
+
+  &-primary-logo {
+    margin-bottom: p.$spacing-lg;
+  }
+
+  &-cols,
+  &-secondary {
+    @include c.grid-row();
+  }
+
+  &-col,
+  &-link-col,
+  &-legal-col {
+    @include c.col;
+  }
+
+  @media #{p.$mq-sm} {
+    &-col {
+      width: c.col-width(2, 6);
+    }
+
+    &-link-col{
+      width: c.col-width(4, 6);
+    }
+
+    &-legal-col {
+      width: c.col-width(2, 6);
+    }
+  }
+
+  @media #{p.$mq-lg} {
+    &-col {
+      width: c.col-width(2, 10);
+    }
+
+    &-link-col {
+      width: c.col-width(5, 10);
+    }
+    &-legal-col {
+      margin-left: auto;
+      width: c.col-width(4, 10);
+    }
+  }
+
+  @media #{p.$mq-xl} {
+    &-col {
+      width: c.col-width(2, 10);
+
+      &.lang-col {
+        margin-left: auto;
+        width: c.col-width(1.5, 10);
       }
     }
 
-    .fine-print {
-      margin-top: 0;
-      padding-top: 0;
-      border: none;
-      grid-column: span 8;
-
-      a {
-        color: var(--knockout-color);
-      }
+    &-link-col {
+      width: c.col-width(5, 10);
     }
-
-    .small-links {
-      justify-content: flex-end;
-      margin-top: 0;
-      grid-column: span 4;
-
-      a {
-        padding: 0 0 0 20px;
-      }
-    }
-
-    .language-picker {
-      grid-column: span 12;
-      text-align: right;
+    &-legal-col {
+      margin-left: auto;
+      width: c.col-width(4, 10);
     }
   }
 }

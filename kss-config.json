@@ -5,7 +5,7 @@
   "destination": "static/build/styleguide",
   "//": "The css and js paths are URLs relative to the style guide destination.",
   "css": [
-    "css/screen.css"
+    "static/css/screen.css"
   ],
   "//": [
     "Change the key to js and remove this note when JS is compiled with the frontend. old: js/bundle.js"

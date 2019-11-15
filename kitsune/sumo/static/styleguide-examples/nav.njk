@@ -1,4 +1,140 @@
 {% macro nav(modifier_class='', is_logged_in=false) %}
+<nav class="mzp-c-menu mzp-is-basic">
+  <ul class="mzp-c-menu-category-list">
+    <li class="mzp-c-menu-category">
+      <a class="mzp-c-menu-title" href="https://www.mozilla.org/">Sample Link</a>
+    </li>
+    <li class="mzp-c-menu-category mzp-has-drop-down mzp-js-expandable">
+      <a class="mzp-c-menu-title" href="#" aria-haspopup="true" aria-controls="mzp-c-menu-panel-example">Firefox</a>
+      <div class="mzp-c-menu-panel mzp-has-card" id="mzp-c-menu-panel-example">
+        <div class="mzp-c-menu-panel-container">
+          <button class="mzp-c-menu-button-close" type="button" aria-controls="mzp-c-menu-panel-example">Close Firefox menu</button>
+          <div class="mzp-c-menu-panel-content">
+            <ul>
+              <li>
+
+                <section class="mzp-c-menu-item  ">
+                  <div class="mzp-c-menu-item-head">
+                    <h4 class="mzp-c-menu-item-title">A headline with 30 characters</h4>
+                    <p class="mzp-c-menu-item-desc">
+                      This is a short description with only a single sentence and no
+                      more.
+                    </p>
+                  </div>
+                  <ul class="mzp-c-menu-item-list">
+                    <li><a href="#">Secondary link</a></li>
+                    <li><a href="#">Secondary link</a></li>
+                    <li><a href="#">Secondary link</a></li>
+                    <li><a href="#">Secondary link</a></li>
+                    <li><a href="#">Secondary link</a></li>
+                    <li><a href="#">Secondary link</a></li>
+                  </ul>
+                </section>
+
+              </li>
+              <li>
+
+                <section class="mzp-c-menu-item  ">
+                  <div class="mzp-c-menu-item-head">
+                    <h4 class="mzp-c-menu-item-title">A headline with 30 characters</h4>
+                    <p class="mzp-c-menu-item-desc">
+                      This is a short description with only a single sentence and no
+                      more.
+                    </p>
+                  </div>
+                  <ul class="mzp-c-menu-item-list">
+                    <li><a href="#">Secondary link</a></li>
+                    <li><a href="#">Secondary link</a></li>
+                    <li><a href="#">Secondary link</a></li>
+                    <li><a href="#">Secondary link</a></li>
+                    <li><a href="#">Secondary link</a></li>
+                    <li><a href="#">Secondary link</a></li>
+                  </ul>
+                </section>
+
+              </li>
+            </ul>
+            <ul>
+              <li>
+
+                <section class="mzp-c-menu-item  ">
+                  <div class="mzp-c-menu-item-head">
+                    <h4 class="mzp-c-menu-item-title">A headline with 30 characters</h4>
+                    <p class="mzp-c-menu-item-desc">
+                      This is a short description with only a single sentence and no
+                      more.
+                    </p>
+                  </div>
+                </section>
+              </li>
+              <li>
+
+                <section class="mzp-c-menu-item  ">
+                  <div class="mzp-c-menu-item-head">
+                    <h4 class="mzp-c-menu-item-title">A headline with 30 characters</h4>
+                    <p class="mzp-c-menu-item-desc">
+                      This is a short description with only a single sentence and no
+                      more.
+                    </p>
+                  </div>
+                </section>
+              </li>
+              <li>
+
+                <section class="mzp-c-menu-item  ">
+                  <div class="mzp-c-menu-item-head">
+                    <h4 class="mzp-c-menu-item-title">A headline with 30 characters</h4>
+                    <p class="mzp-c-menu-item-desc">
+                      This is a short description with only a single sentence and no
+                      more.
+                    </p>
+                  </div>
+                </section>
+              </li>
+            </ul>
+          </div>
+          <div class="mzp-c-menu-panel-card">
+
+            <section class="mzp-c-card mzp-c-card-extra-small has-aspect-3-2">
+              <a class="mzp-c-card-block-link" href="#">
+    <div class="mzp-c-card-media-wrapper">
+      <img class="mzp-c-card-image" src="../../../static/img/card/card-image.png" alt="">
+    </div>
+    <div class="mzp-c-card-content">
+    <div class="mzp-c-card-tag">Card tag</div>
+    <h2 class="mzp-c-card-title">Headline that goes onto a second or third line</h2>
+    <p class="mzp-c-card-meta">6 hours ago</p>
+    </div>
+  </a>
+            </section>
+
+          </div>
+        </div>
+      </div>
+    </li>
+  </ul>
+</nav>
+
+<script src="../../../assets/protocol/protocol/js/protocol-menu.js"></script>
+
+<script>
+  Mzp.Menu.init({
+    onMenuOpen: function() {
+      console.log('Menu opened');
+    },
+    onMenuClose: function() {
+      console.log('Menu closed');
+    },
+    onMenuButtonClose: function() {
+      console.log('Menu close button clicked');
+    }
+  });
+</script>
+
+
+{#
+
+
   <header class="site-nav {{modifier_class}}">
     <a class="site-nav--logo" href="/en-US/" data-event-category="navigation" data-event-action="main navigation" data-event-label="Home">
       <img width="112" height="48" src="https://static-media-prod-cdn.itsre-sumo.mozilla.net/static/sumo/img/mozilla-support-white.35b1f3cc6003.svg" />
@@ -95,5 +231,5 @@
       </div>
     </div>
   </nav>
-</header>
+</header> #}
 {% endmacro %}

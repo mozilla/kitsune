@@ -6,8 +6,10 @@
   --page-bg: white;
   --card-bg: var(--page-bg);
 
+  --color-inverse-bg: #20123A;
+  --color-inverse: var(--color-white);
 
-  --color-heading: #20123A;
+  --color-heading: var(--color-inverse-bg);
   --color-text: #42425A;
   --color-link: #0060DF;
   --color-link-visited: #B833E1;
@@ -19,15 +21,6 @@
   --base-font-size: 1rem; // keep this at 1rem for rem-calc to work correctly.
   --heading-font-family: Metropolis, Inter, X-LocaleSpecific, sans-serif;
   --heading-alt-font-family: 'Zilla Slab', 'Open Sans', X-LocaleSpecific, serif;
-
-
-  --text-color: var(--color-text);
-
-  --color-inverse-bg: var(--color-heading);
-  --color-inverse: var(--color-white);
-
-  --accent-color: white;
-  --link-color: red;
 
   --field-border: 1px solid var(--shade-30);
   --field-border-focus: 1px solid var(--blue);
