@@ -16,7 +16,16 @@ $image-path: '../img' !default;
 
 
 // Base elements - general HTML elements
-@import 'base/elements';
+@import 'base/elements/reset';
+@import 'base/elements/details';
+@import 'base/elements/document';
+// @import 'base/elements/forms';
+@import 'base/elements/links';
+@import 'base/elements/lists';
+@import 'base/elements/quotes';
+@import 'base/elements/sections';
+@import 'base/elements/tables';
+@import 'base/elements/typography';
 
 // Base includes - animations
 @import 'base/includes';
@@ -32,7 +41,7 @@ $image-path: '../img' !default;
 // all components from protocol-extra.scss
 @import 'components/article';
 @import 'components/billboard';
-@import 'components/button';
+// @import 'components/button';
 @import 'components/call-out';
 @import 'components/emphasis-box';
 @import 'components/feature-card';

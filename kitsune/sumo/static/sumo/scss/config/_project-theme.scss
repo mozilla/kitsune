@@ -6,33 +6,35 @@
   --page-bg: white;
   --card-bg: var(--page-bg);
 
-  --color-inverse-bg: #20123A;
+  --color-inverse-bg: var(--color-ink-08);
   --color-inverse: var(--color-white);
 
   --color-heading: var(--color-inverse-bg);
-  --color-text: #42425A;
-  --color-link: #0060DF;
-  --color-link-visited: #B833E1;
-  --color-link-active-bg: #EDEDF0;
-  --color-link-inverse-visited: #F6B8FF;
-  --color-link-inverse-active-bg: rgba(237,237,240,0.2);
+  --color-text: var(--color-marketing-gray-08);
+  --color-link: var(--color-blue-06);
+  --color-link-visited: var(--color-purple-06);
+  --color-link-active-bg: var(--color-marketing-gray-02);
+  --color-link-inverse-visited: var(--color-purple-02);
+  --color-link-inverse-active-bg: #{rgba(color('marketing-gray', '02'), 0.2)};
 
   --base-font-family: Inter, X-LocaleSpecific, sans-serif;
   --base-font-size: 1rem; // keep this at 1rem for rem-calc to work correctly.
   --heading-font-family: Metropolis, Inter, X-LocaleSpecific, sans-serif;
   --heading-alt-font-family: 'Zilla Slab', 'Open Sans', X-LocaleSpecific, serif;
 
-  --field-border: 1px solid var(--shade-30);
-  --field-border-focus: 1px solid var(--blue);
-  --field-font-size: 1em;
+
 
   --global-margin: 1rem;
-  --global-radius: #{rem-calc(4)};
+  --global-radius: 4px;
 
+  // buttons
   --button-bg: var(--secondary-color);
   --button-border: var(--global-radius);
   --button-radius: var(--global-radius);
   --button-color: var(--color-inverse);
   --button-font-size: 1em;
   --button-font-family: var(--base-font-family);
+
+  // form fields
+  --focus-shadow: 0 0 0 4px rgba(0, 96, 223, 0.3), 0 0 0 2px rgb(0, 138, 234);
 }

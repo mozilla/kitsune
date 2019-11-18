@@ -1,9 +1,18 @@
+// Footer
+//
+// The site footer is a combination of this styleguide's [customized grid](section-grid.html)
+// and [Protocol's footer component.](https://protocol.mozilla.org/patterns/organisms/footer.html)
+//
+// Markup: ../../../styleguide-examples/footer.njk
+//
+// Weight: 21
+//
+// Style guide: footer
+
 @use '../config' as c;
 @use 'protocol' as p;
 
 .mzp-c-footer {
-  background: var(--color-inverse-bg);
-
   a:link,
   a:visited,
   a:hover,
@@ -32,9 +41,17 @@
     margin-bottom: p.$spacing-lg;
   }
 
+  &-primary {
+    border-bottom: 1px solid var(--color-inverse);
+  }
+
   &-cols,
   &-secondary {
     @include c.grid-row();
+  }
+
+  .mzp-c-footer-legal a {
+    text-decoration: underline;
   }
 
   &-col,

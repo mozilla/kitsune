@@ -1,3 +1,6 @@
+@use '../config' as c;
+@use 'protocol' as p;
+
 // Typography
 //
 // All global typography styles and utility classes should live in the
@@ -16,9 +19,6 @@
 //
 // Style guide: typography
 
-@use '../config' as *;
-@use 'protocol';
-
 // The following mixins were taken and edited from
 // protocol/css/includes/mixins/_typography.scss.
 // Once protocol is caught up, these can be removed
@@ -33,103 +33,102 @@
 //  .subtitle { @include text-display-lg; }
 //  .intro { @include text-body-lg; }
 
-$text-body-line-height: 1.5;
-$text-display-line-height: 1.1;
+$text-body-line-height: 1.5 !default;
+$text-display-line-height: 1.1 !default;
 
 // display copy: headings, blockquotes, other fancy stuff
 @mixin text-display-xxl { // Use this one sparingly.
-  @include protocol.font-size(48px);
+  @include p.font-size(48px);
   line-height: $text-display-line-height;
 
-  @media #{protocol.$mq-md} {
-    @include protocol.font-size(64px);
-    @include line-height(72px);
+  @media #{p.$mq-md} {
+    @include p.font-size(64px);
+    @include c.line-height(72px);
   }
 }
 
 @mixin text-display-xl {
-  @include protocol.font-size(40px);
+  @include p.font-size(40px);
   line-height: $text-display-line-height;
 
-  @media #{protocol.$mq-md} {
-    @include protocol.font-size(56px);
-    @include line-height(64px);
+  @media #{p.$mq-md} {
+    @include p.font-size(56px);
+    @include c.line-height(64px);
   }
 }
 
 @mixin text-display-lg {
-  @include protocol.font-size(32px);
+  @include p.font-size(32px);
   line-height: $text-display-line-height;
 
-  @media #{protocol.$mq-md} {
-    @include protocol.font-size(48px);
-    @include line-height(56px);
+  @media #{p.$mq-md} {
+    @include p.font-size(48px);
+    @include c.line-height(56px);
   }
 }
 
 @mixin text-display-md {
-  @include protocol.font-size(24px);
+  @include p.font-size(24px);
   line-height: $text-display-line-height;
 
-  @media #{protocol.$mq-md} {
-    @include protocol.font-size(40px);
-    @include line-height(44px);
+  @media #{p.$mq-md} {
+    @include p.font-size(40px);
+    @include c.line-height(44px);
   }
 }
 
 @mixin text-display-sm {
-  @include protocol.font-size(21px);
+  @include p.font-size(21px);
 
-
-  @media #{protocol.$mq-md} {
-    @include protocol.font-size(32px);
-    @include line-height(36px);
+  @media #{p.$mq-md} {
+    @include p.font-size(32px);
+    @include c.line-height(36px);
   }
 }
 
 @mixin text-display-xs {
-  @include protocol.font-size(18px);
+  @include p.font-size(18px);
   line-height: $text-display-line-height;
 
-  @media #{protocol.$mq-md} {
-    @include protocol.font-size(24px);
-    @include line-height(28px);
+  @media #{p.$mq-md} {
+    @include p.font-size(24px);
+    @include c.line-height(28px);
   }
 }
 
 @mixin text-display-xxs {
-  @include protocol.font-size(20px);
-  @include line-height(24px);
+  @include p.font-size(20px);
+  @include c.line-height(24px);
 }
 
 @mixin text-display-xxxs {
-  @include protocol.font-size(16px);
-  @include line-height(20px);
+  @include p.font-size(16px);
+  @include c.line-height(20px);
 }
 
 // body copy
 @mixin text-body-lg {
-  @include protocol.font-size(18px);
+  @include p.font-size(18px);
   line-height: $text-body-line-height;
 }
 
 @mixin text-body-md {
-  @include protocol.font-size(16px);
+  @include p.font-size(16px);
   line-height: $text-body-line-height;
 }
 
 @mixin text-body-sm {
-  @include protocol.font-size(14px);
+  @include p.font-size(14px);
   line-height: $text-body-line-height;
 }
 
 @mixin text-body-xs {
-  @include protocol.font-size(12px);
+  @include p.font-size(12px);
   line-height: $text-body-line-height;
 }
 
 @mixin text-body-cta {
-  @include protocol.font-size(16px);
+  @include p.font-size(16px);
   line-height: $text-body-line-height;
 }
 
@@ -160,6 +159,7 @@ h4 {
 }
 
 h5, h6 {
+  font-family: var(--base-font-family);
   @include text-display-sm;
 }
 
@@ -191,26 +191,26 @@ h5, h6 {
 }
 
 .body-lg {
-  @include protocol.font-size(18px);
-  @include line-height(28px);
+  @include p.font-size(18px);
+  @include c.line-height(28px);
 }
 
 .body-md {
-  @include protocol.font-size(16px);
-  @include line-height(28px);
+  @include p.font-size(16px);
+  @include c.line-height(28px);
 }
 
 .body-sm {
-  @include protocol.font-size(14px);
-  @include line-height(22px);
+  @include p.font-size(14px);
+  @include c.line-height(22px);
 }
 
 .body-xs {
-  @include protocol.font-size(12px);
-  @include line-height(18px);
+  @include p.font-size(12px);
+  @include c.line-height(18px);
 }
 
-:link {
+a, :link {
   text-decoration: underline;
   color: var(--color-link);
 
