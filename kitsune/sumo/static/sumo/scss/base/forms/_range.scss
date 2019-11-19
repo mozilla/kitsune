@@ -1,0 +1,152 @@
+@use '../../config' as c;
+@use 'protocol' as p;
+
+// Range inputs
+//
+// This component requires a good bit of non-standard vendor-specific selectors for this to work cross-browser.
+// [See this blog post at CSS tricks for more details](https://css-tricks.com/styling-cross-browser-compatible-range-inputs-css/).
+//
+// .has-disabled - Indicates a disabled field. `disabled` should also be applied as an attribute to the field itself.
+//
+// Markup: ../../../styleguide-examples/field_range.njk
+//
+// Weight: 7
+//
+// Style guide: forms.range
+
+:root {
+  --range-slider-pip-color: var(--color-blue-06);
+  --range-slider-bg: #{rgba(c.color('blue', '06'), 0.3)};
+  --range-slider-pip-color-hover: var(--color-blue-07);
+  --range-slider-pip-color-disabled: var(--color-marketing-gray-04);
+  --range-slider-bg-disabled: var(--color-marketing-gray-02);
+  --range-slider-height: 6px;
+  --range-pip-size: 22px;
+}
+
+[type=range] {
+  appearance: none;
+  margin: p.$spacing-md 0;
+  width: 100%;
+
+  &:focus {
+    outline: none;
+    // box-shadow: var(--focus-shadow);
+  }
+
+  &:disabled {
+    background: transparent;
+  }
+
+  &::-webkit-slider-runnable-track {
+    width: 100%;
+    height: var(--range-slider-height);
+    border: 0px solid #000101;
+    border-radius: 25px;
+    background: var(--range-slider-bg);
+    cursor: pointer;
+    animate: 0.2s;
+  }
+
+  &:disabled::-webkit-slider-runnable-track {
+    background: var(--range-slider-bg-disabled);
+  }
+
+  &::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    margin-top: -3.6px;
+    width: var(--range-pip-size);
+    height: var(--range-pip-size);
+    border: 0px solid #000000;
+    border-radius: 50%;
+    background: var(--range-slider-pip-color);
+    cursor: pointer;
+  }
+
+  &:disabled::-webkit-slider-thumb {
+    background: var(--range-slider-pip-color-disabled);
+  }
+
+  &:focus::-webkit-slider-runnable-track {
+    background: var(--range-slider-bg);
+  }
+
+  &::-moz-range-track {
+    width: 100%;
+    height: var(--range-slider-height);
+    border: 0px solid #000101;
+    border-radius: 25px;
+    background: var(--range-slider-bg);
+    cursor: pointer;
+    animate: 0.2s;
+  }
+
+  &:disabled::-moz-range-track {
+    background: var(--range-slider-bg-disabled);
+  }
+
+  &::-moz-range-thumb {
+    width: var(--range-pip-size);
+    height: var(--range-pip-size);
+    border: 0px solid #000000;
+    border-radius: 50%;
+    background: var(--range-slider-pip-color);
+    cursor: pointer;
+  }
+
+  &:disabled::-moz-range-thumb {
+    background: var(--range-slider-pip-color-disabled);
+  }
+
+  &::-ms-track {
+    width: 100%;
+    height: var(--range-slider-height);
+    border-color: transparent;
+    border-width: var(--range-pip-size) 0;
+    background: transparent;
+    color: transparent;
+    cursor: pointer;
+    animate: 0.2s;
+  }
+
+  &::-ms-fill-lower {
+    border: 0px solid #000101;
+    border-radius: 50px;
+    background: var(--range-slider-bg);
+  }
+
+  &:disabled::-ms-fill-lower {
+    background: var(--range-slider-bg-disabled);
+  }
+
+  &::-ms-fill-upper {
+    border: 0px solid #000101;
+    border-radius: 50px;
+    background: var(--range-slider-bg);
+  }
+
+  &:disabled::-ms-fill-upper {
+    background: var(--range-slider-bg-disabled);
+  }
+
+  &::-ms-thumb {
+    width: var(--range-pip-size);
+    height: var(--range-pip-size);
+    border: 0px solid #000000;
+    border-radius: 50%;
+    background: var(--range-slider-pip-color);
+    cursor: pointer;
+  }
+
+  &:disabled::-ms-thumb {
+    background: var(--range-slider-bg-disabled);
+  }
+
+  &:focus::-ms-fill-lower {
+    background: var(--range-slider-bg);
+  }
+
+  &:focus::-ms-fill-upper {
+    background: var(--range-slider-bg);
+  }
+}

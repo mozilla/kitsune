@@ -1,0 +1,10 @@
+<div class="field {{modifier_class}}">
+  <label for="example_1">Range input</label>
+  <div class="field-wrap">
+    <input
+      type="range"
+      id="example_1"
+      {% if modifier_class === "has-disabled" %}disabled{% endif %}
+    />
+  </div>
+</div>
