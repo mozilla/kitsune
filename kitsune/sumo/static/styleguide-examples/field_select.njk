@@ -1,0 +1,13 @@
+<div class="field {{modifier_class}}">
+  <label for="example_1">State</label>
+  <select id="example_2" aria-describedby="id_help_example_2"
+    {% if modifier_class === "has-disabled" %}disabled{% endif %}>
+    <option value="AL">Alabama</option>
+	  <option value="AK">Alaska</option>
+	  <option value="AZ">Arizona</option>
+  	<option value="AR">Arkansas</option>
+  	<option value="CA">California</option>
+  	<option value="CO">Colorado</option>
+  </select>
+  <p class="help-text" id="id_help_example_2">This is help text</p>
+</div>

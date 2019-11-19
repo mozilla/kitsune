@@ -1,0 +1,18 @@
+<div class="field checkbox {{modifier_class}}">
+  <input
+    type="checkbox"
+    id="id_example_checkbox_1_{{modifier_class}}"
+    {% if modifier_class === "has-disabled" %}disabled{% endif %}
+  />
+  <label for="id_example_checkbox_1_{{modifier_class}}">I agree to the terms of service</label>
+</div>
+
+<div class="field checkbox {{modifier_class}}">
+  <input
+    type="checkbox"
+    id="id_example_checkbox_2_{{modifier_class}}"
+    checked
+    {% if modifier_class === "has-disabled" %}disabled{% endif %}
+  />
+  <label for="id_example_checkbox_2_{{modifier_class}}">This is a checked example</label>
+</div>

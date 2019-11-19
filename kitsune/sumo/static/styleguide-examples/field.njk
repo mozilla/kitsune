@@ -1,12 +1,15 @@
 <div class="field {{modifier_class}}">
   <label for="example_1">Your Name</label>
-  <input
-    type="text"
-    id="example_1"
-    placeholder="Red Panda"
-    aria-describedby="id_help_example_1"
-    value=""
-  >
+  <div class="field-wrap">
+    <input
+      type="text"
+      id="example_1"
+      placeholder="Red Panda"
+      aria-describedby="id_help_example_1"
+      value=""
+      {% if modifier_class === "has-disabled" %}disabled{% endif %}
+    />
+  </div>
   <p class="error-text">This is the error text</p>
-  <p class="help-text">This is help text</p>
+  <p class="help-text" id="id_help_example_1">This is help text</p>
 </div>

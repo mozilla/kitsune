@@ -1,6 +1,14 @@
 @use '../../config' as c;
 @use 'protocol' as p;
 
+:root {
+  --field-border-color-default: var(--color-marketing-gray-05);
+  --field-border-color-hover: var(--color-blue-07);
+  --checkbox-checked-color: var(--color-blue-06);
+  --field-border-color-disabled: var(--color-marketing-gray-03);
+  --field-background-color-disabled: var(--color-marketing-gray-01);
+  --field-color-disabled: var(--color-marketing-gray-03);
+}
 // Forms
 //
 // Forms are used throughout the system and can be arranged in several ways. The
@@ -36,8 +44,6 @@ legend {
 // .has-error     - Indiciates a field error.
 // .has-warning     - Indiciates a field error.
 // .has-success     - Indiciates a field error.
-// .required - Indicates required state
-// .inline-label - Make labels and fields appear side-by-side.
 //
 // Markup: ../../../styleguide-examples/field.njk
 //
@@ -49,7 +55,6 @@ label {
   margin-bottom: p.$spacing-sm;
   @include p.font-size(14px);
   color: var(--color-marketing-gray-07);
-
 }
 
 .field {
@@ -60,15 +65,39 @@ label {
     display: none;
   }
 
-  &.has-error .error-text {
-    display: block;
-    margin: p.$spacing-sm 0 0 0;
-    color: var(--color-red-08);
-    @include p.font-size(12px);
+  &.has-error {
+    .error-text {
+      display: block;
+      margin: p.$spacing-sm 0 0 0;
+      color: var(--color-red-08);
+      @include p.font-size(12px);
+    }
+  }
+
+  &.has-error,
+  &.has-success {
+    .field-wrap {
+      position: relative;
+
+      &:after {
+        position: absolute;
+        top: 9px;
+        right: 9px;
+        width: 21px;
+        height: 21px;
+        background-image: c.svg-url('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 22"><circle cx="11" cy="11" r="10" fill="none" stroke="#C50043" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/><path stroke-width="2" stroke="#C50043" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M11 7v5"/><circle cx="11" cy="15" r="1" fill="#C50043"/></svg>');
+        background-repeat: no-repeat;
+        content: "";
+      }
+    }
+  }
+
+  &.has-success .field-wrap:after {
+    top: 12px;
+    background-image: c.svg-url('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 13"><path fill="none" stroke="#2ac3a2" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 1L6 12 1 7"/></svg>');
   }
 }
 
-textarea,
 input[type='email'],
 input[type='url'],
 input[type='tel'],
@@ -77,13 +106,15 @@ input[type='search'],
 input[type='text'],
 input[type='number'],
 input[type='date'],
-input[type='time'] {
+input[type='time'],
+select,
+textarea {
   appearance: none;
   position: relative;
   padding: 0 p.$spacing-sm;
   width: 100%;
   height: 40px;
-  border: 2px solid var(--color-marketing-gray-05);
+  border: 2px solid var(--field-border-color-default);
   border-radius: var(--global-radius);
   background-color: var(--color-white);
   color:#0c0c0d;
@@ -93,7 +124,7 @@ input[type='time'] {
   @include p.font-size(16px);
 
   &:hover {
-    border-color: var(--color-blue-07);
+    border-color: var(--field-border-color-hover);
   }
 
   &:focus,
@@ -126,44 +157,53 @@ input[type='time'] {
   &:disabled,
   &:disabled:hover,
   &:disabled:active {
-    border-color: var(--color-marketing-gray-03);
-    background-color: var(--color-marketing-gray-01);
-    color: var(--color-marketing-gray-03);
+    border-color: var(--field-border-color-disabled);
+    background-color: var(--field-background-color-disabled);
+    color: var(--field-color-disabled);
     cursor: default;
   }
 }
 
 // Select
 //
-// .error     - Indiciates a field error.
-// .required - Indicates required state
-// .disabled  - Indicates a disabled field. `disabled` should also be applied as an attribute to the field itself.
-// .has-focus - Indicates a :focus state.
+// .has-disabled  - Indicates a disabled field. `disabled` should also be applied as an attribute to the field itself.
+// .has-error     - Indiciates a field error.
+// .has-warning     - Indiciates a field error.
+// .has-success     - Indiciates a field error.
 //
-// Markup: ../styleguide-components/field_select.hbs
+// Markup: ../../../styleguide-examples/field_select.njk
 //
 // Weight: 2
 //
 // Style guide: forms.select
 select {
   position: relative;
-  padding-right: rem-calc(40);
-  border-color: var(--select-border-color);
-  background-image: c.svg-url('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 10"><path fill="none" vector-effect="non-scaling-stroke" stroke="'+ #f00 +'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" d="M1 1l8 8 8-8"/></svg>');
+  padding-right: 40px;
+  background-image: c.svg-url('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 10"><path fill="none" vector-effect="non-scaling-stroke" stroke="#42435A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" d="M1 1l8 8 8-8"/></svg>');
   background-color: transparent;
   background-position: top 14px right 14px;
   background-repeat: no-repeat;
   background-size: 12px 12px;
+
+  :not([class*="has-"]) > &:hover,
+  :not([class*="has-"]) > &:focus {
+    background-image: c.svg-url('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 10"><path fill="none" vector-effect="non-scaling-stroke" stroke="#0250BB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" d="M1 1l8 8 8-8"/></svg>');
+  }
+
+  &:disabled,
+  .has-disabled & {
+    background-image: c.svg-url('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 10"><path fill="none" vector-effect="non-scaling-stroke" stroke="#CDCDD4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" d="M1 1l8 8 8-8"/></svg>');
+  }
 }
 
 // Textarea
 //
-// .error     - Indiciates a field error.
-// .required - Indicates required state
-// .disabled  - Indicates a disabled field. `disabled` should also be applied as an attribute to the field itself.
-// .has-focus - Indicates a :focus state.
+// .has-disabled  - Indicates a disabled field. `disabled` should also be applied as an attribute to the field itself.
+// .has-error     - Indiciates a field error.
+// .has-warning     - Indiciates a field error.
+// .has-success     - Indiciates a field error.
 //
-// Markup: ../styleguide-components/field_textarea.hbs
+// Markup: ../../../styleguide-examples/field_textarea.njk
 //
 // Weight: 3
 //
@@ -171,17 +211,15 @@ select {
 
 textarea {
   display: block;
-  min-height: rem-calc(90);
+  padding: p.$spacing-sm;
+  min-height: 80px;
 }
 
 // Checkboxes
 //
-// .error     - Indiciates a field error.
-// .required - Indicates required state
-// .disabled  - Indicates a disabled field. `disabled` should also be applied as an attribute to the field itself.
-// .has-focus - Indicates a :focus state.
+// .has-disabled  - Indicates a disabled field. `disabled` should also be applied as an attribute to the field itself.
 //
-// Markup: ../styleguide-components/field_checkbox.hbs
+// Markup: ../../../styleguide-examples/field_checkbox.njk
 //
 // Weight: 4
 //
@@ -193,54 +231,70 @@ textarea {
     left: -9999px;
   }
 
-  label:before {
-    display: inline-block;
-    margin-right: 6px;
-    margin-bottom: -3px;
-    width: 14px;
-    height: 14px;
-    border: 1px solid var(--brand-color);
-    vertical-align: baseline;
-    content: "";
-  }
+  label {
+    font-weight: 400;
 
-  [type=checkbox]:checked + label:before,
-  label.is-checked:before { // background, checked state
-    z-index: 1;
-    width: 16px;
-    height: 16px;
-    border: none;
-    background-color: var(--brand-color);
-    mask-image: url('#TODO#checkbox_selected');
-    mask-position: center center;
-    mask-repeat: no-repeat;
-    mask-size: 18px 18px;
-  }
-
-  &.checkbox-only {
-    label {
-      display: block;
-      margin: 0;
-      width: 16px;
-      height: 16px;
+    &:before {
+      display: inline-block;
+      margin-right: p.$spacing-md;
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--field-border-color-default);
+      border-radius: 2px;
+      background-color: var(--color-white);
+      vertical-align: middle;
+      content: "";
     }
+
+    &:hover:before {
+      border-color: var(--field-border-color-hover);
+    }
+  }
+
+  [type=checkbox]:checked + label {
+    &:before { // background, checked state
+      z-index: 1;
+      border-color: var(--checkbox-checked-color);
+      background-image: c.svg-url('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 13.03 9.2"><path fill="none" stroke="#FFF" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12.03 1L4.84 8.2 1 4.36"/></svg>');
+      background-color: var(--checkbox-checked-color);
+      background-position: center center;
+      background-repeat: no-repeat;
+      background-size: 13px 13px;
+    }
+
+    &:hover:before {
+      border-color: var(--field-border-color-hover);
+    }
+  }
+
+  [type=checkbox]:disabled + label:before {
+    border-color: var(--field-border-color-disabled);
+    background-color: var(--field-background-color-disabled);
+  }
+
+  [type=checkbox]:checked:disabled + label:before,
+  [type=checkbox]:checked:disabled:hover + label:before {
+    border-color: var(--field-border-color-disabled);
+    background-image: c.svg-url('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 13.03 9.2"><path fill="none" stroke="#CDCDD4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12.03 1L4.84 8.2 1 4.36"/></svg>');
+    background-color: var(--field-background-color-disabled);
   }
 }
 
 .radio-group,
 .checkbox-group {
   .field:not(:last-child) {
-    margin-bottom: rem-calc(10);
+    margin-bottom: p.$spacing-sm;
   }
 }
 
 // Radio Buttons
 //
-// .error     - Indiciates a field error.
-// .disabled  - Indicates a disabled field. `disabled` should also be applied as an attribute to the field itself.
-// .has-focus - Indicates a :focus state.
+// .has-disabled  - Indicates a disabled field. `disabled` should also be applied as an attribute to the field itself.
+// .has-error     - Indiciates a field error.
+// .has-warning     - Indiciates a field error.
+// .has-success     - Indiciates a field error.
 //
-// Markup: ../styleguide-components/field_radio.hbs
+// Markup: ../../../styleguide-examples/field_radio.njk
 //
 // Weight: 5
 //
