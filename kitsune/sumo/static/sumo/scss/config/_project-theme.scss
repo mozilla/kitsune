@@ -1,21 +1,27 @@
-@use './mixins' as *;
-@use './color-swatches';
+@use './mixins' as c;
+@use './color-swatches' as swatches;
 
 :root {
-  @include cssvars(color-swatches.$colors);
+  @include c.cssvars(swatches.$colors);
   --page-bg: white;
   --card-bg: var(--page-bg);
+
+  --color-click: var(--color-blue-06);
+  --color-success: var(--color-green-06);
+  --color-warning: var(--color-yellow-03);
+  --color-error: var(--color-red-05);
+
 
   --color-inverse-bg: var(--color-ink-08);
   --color-inverse: var(--color-white);
 
   --color-heading: var(--color-inverse-bg);
   --color-text: var(--color-marketing-gray-08);
-  --color-link: var(--color-blue-06);
+  --color-link: var(--color-click);
   --color-link-visited: var(--color-purple-06);
   --color-link-active-bg: var(--color-marketing-gray-02);
   --color-link-inverse-visited: var(--color-purple-02);
-  --color-link-inverse-active-bg: #{rgba(color('marketing-gray', '02'), 0.2)};
+  --color-link-inverse-active-bg: #{rgba(c.color('marketing-gray', '02'), 0.2)};
 
   --base-font-family: Inter, X-LocaleSpecific, sans-serif;
   --base-font-size: 1rem; // keep this at 1rem for rem-calc to work correctly.
