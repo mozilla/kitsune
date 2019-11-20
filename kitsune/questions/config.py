@@ -393,7 +393,6 @@ products = OrderedDict([
             }),
         ])
     }),
-
     ('firefox-lockwise', {
         'name': _lazy(u'Firefox Lockwise'),
         'subtitle': _lazy(u'Firefox Lockwise'),
@@ -418,10 +417,9 @@ products = OrderedDict([
             }),
         ])
     }),
-
     ('firefox-private-network', {
-        'name': _lazy(u'Firefox Private Network'),
-        'subtitle': _lazy(u'Firefox Private Network'),
+        'name': _lazy(u'Firefox Private Network Browser-level Protection'),
+        'subtitle': _lazy(u'Firefox Private Network Browser-level Protection'),
         'extra_fields': [],
         'tags': [],
         'product': 'firefox-private-network',
@@ -429,17 +427,17 @@ products = OrderedDict([
             ('get-started', {
                 'name': _lazy(u'Get started'),
                 'topic': 'get-started',
-                'tags': ['get-started', 'fpntestpilot'],
+                'tags': ['get-started'],
             }),
             ('manage-account-and-settings', {
                 'name': _lazy(u'Manage accounts and settings'),
                 'topic': 'manage-account-and-settings',
-                'tags': ['customization', 'fpntestpilot'],
+                'tags': ['customization'],
             }),
             ('fix-problems', {
                 'name': _lazy(u'Fix problems with Firefox Private Network'),
                 'topic': 'fix-problems',
-                'tags': ['fix-problems', 'fpntestpilot'],
+                'tags': ['fix-problems'],
             }),
         ])
     }),
