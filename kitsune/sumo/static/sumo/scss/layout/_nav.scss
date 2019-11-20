@@ -13,5 +13,5 @@
 //
 // Style guide: nav
 
-@use '../config' as *;
-@use 'protocol';
+@use '../config' as c;
+@use 'protocol' as p;
