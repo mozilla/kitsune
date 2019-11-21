@@ -11,7 +11,7 @@ help:
 	@echo "run           - docker-compose up the entire system for dev"
 	@echo ""
 	@echo "pull          - pull the latest production images from Docker Hub"
-	@echo "init          - initialize the database and install Node and Bower packages"
+	@echo "init          - initialize the database and install Node packages"
 	@echo "djshell       - start a Django Python shell (ipython)"
 	@echo "dbshell       - start a MySQL shell"
 	@echo "shell         - start a bash shell"
@@ -41,7 +41,7 @@ help:
 	${MAKE} build-full
 
 build: .docker-build-pull
-	${DC} build base-dev
+	${DC} build node-dev base-dev
 	touch .docker-build
 
 build-full: .docker-build-pull
@@ -86,7 +86,7 @@ clean:
 #	state files
 	-rm -f .docker-build*
 #	node stuff
-	-rm -rf node_modules bower_components
+	-rm -rf node_modules
 
 lint: .docker-build-pull
 	${DC} run test flake8 kitsune
