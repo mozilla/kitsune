@@ -13,7 +13,7 @@ import mochaGettext from './fixtures/mochaGettext.js';
 chai.use(chaiLint);
 
 describe('instant search', () => {
-  mochaJsdom({useEach: true});
+  mochaJsdom({useEach: true, url: 'http://localhost'});
   mochaJquery();
   mochaK();
   mochaGoogleAnalytics();

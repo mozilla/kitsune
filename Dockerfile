@@ -1,4 +1,13 @@
 ################################
+# Frontend dependencies builder
+#
+FROM node:12 AS frontend-base
+
+WORKDIR /static
+COPY ./package.json .
+RUN npm install
+
+################################
 # Python dependencies builder
 #
 FROM python:2-stretch AS base
@@ -52,7 +61,7 @@ RUN apt-get update && apt-get install apt-transport-https && \
 #
 FROM base-dev AS staticfiles
 
-COPY package.json bower.json yarn.lock /app/
+COPY package.json bower.json /app/
 
 RUN yarn install --frozen-lockfile && yarn cache clean
 RUN ./node_modules/.bin/bower install --allow-root
