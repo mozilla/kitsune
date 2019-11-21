@@ -11,7 +11,7 @@ import mochaMarky from './fixtures/mochaMarky.js';
 chai.use(chaiLint);
 
 describe('kbox', () => {
-  mochaJsdom({useEach: true});
+  mochaJsdom({useEach: true, url: 'http://localhost'});
   mochaJquery();
   mochaK();
   mochaGettext();
