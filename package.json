@@ -1,20 +1,26 @@
 {
-  "name": "Kitsune",
+  "name": "kitsune",
   "description": "Platform for Mozilla Support",
   "repository": {
     "type": "git",
     "url": "git://github.com/mozilla/kitsune.git"
   },
   "scripts": {
-    "stylelint": "stylelint kitsune/sumo/static/sumo/scss/**/* --fix",
-    "build:scss": "sass kitsune/sumo/static/sumo/scss/screen.scss static/build/screen-noprefixes.css --source-map --load-path 'node_modules/@mozilla-protocol/core/protocol/css'",
-    "build:postcss": "npx postcss static/build/screen-noprefixes.css --use autoprefixer -o static/build/screen.css",
-    "watch:stylelint": "onchange 'kitsune/sumo/static/sumo/scss/**/*' -- npm run stylelint",
-    "watch:styles": "onchange 'kitsune/sumo/static/sumo/scss/**/*' -- npm run build:css",
     "install-dev": "npm install",
     "postinstall": "node prepare_django_assets.js",
     "development": "npm run install-dev",
-    "production": "npm run postinstall"
+    "production": "npm run postinstall",
+    "stylelint": "stylelint kitsune/sumo/static/sumo/scss/**/* --fix && stylelint kss-template/kss-assets/scss/**/*",
+    "build:scss": "sass kitsune/sumo/static/sumo/scss/screen.scss static/build/screen-noprefixes.css --source-map --load-path 'node_modules/@mozilla-protocol/core/protocol/css'",
+    "build:postcss": "npx postcss static/build/screen-noprefixes.css --map --use autoprefixer -o static/build/screen.css",
+    "build:docs:copyfonts": "cp -r node_modules/@mozilla-protocol/core/protocol/fonts static/build/styleguide/static",
+    "build:docs:copyprotocol": "cp -r node_modules/@mozilla-protocol/core/protocol static/build/styleguide/static",
+    "build:docs:copyprotocolimgs": "cp -r node_modules/@mozilla-protocol/core/protocol/img static/build/styleguide/static",
+    "build:docs:copysumoimgs": "mkdir -p static/build/styleguide/static/sumo && cp -r kitsune/sumo/static/sumo/img static/build/styleguide/static/sumo",
+    "build:docs:copyjs": "cp -r kitsune/sumo/static/sumo/js static/build/styleguide/static/sumo",
+    "build:docs:copystyles": "mkdir -p static/build/styleguide/static/css && cp static/build/screen.css static/build/styleguide/static/css/screen.css && cp static/build/screen.css.map static/build/styleguide/static/css/screen.css.map",
+    "build:docs:styles": "sass kss-template/kss-assets/scss/kss.scss static/build/styleguide/css/kss.css",
+    "build:docs:kss": "kss --config kss-config.json --custom full"
   },
   "license": "MPL-2.0",
   "dependencies": {
@@ -52,6 +58,7 @@
     "gulp-watch": "0.6.8",
     "jsdom": "7.0.2",
     "less": "~3.10.3",
+    "kss": "^3.0.0-beta.25",
     "less-plugin-autoprefix": "1.4.2",
     "mocha": "2.3.2",
     "mocha-jsdom": "1.1.0",
