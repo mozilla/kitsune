@@ -1,0 +1,64 @@
+// Sidebar navigation
+//
+// Markup: ../../../styleguide-examples/sidebar-nav.njk
+//
+// Weight: 3
+//
+// Style guide: nav.sidebar
+
+@use '../config' as c;
+@use 'protocol' as p;
+
+.sidebar-nav {
+
+  &--list,
+  &--sublist {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  &--item {
+    @include p.font-size(18px);
+  }
+
+  &--link,
+  &--sublink {
+    display: block;
+    padding: 4px;
+    border-radius: var(--global-radius);
+    text-decoration: none;
+
+    &:link,
+    &:visited {
+      color: var(--color-link);
+    }
+
+    &:hover {
+      background-color: var(--color-link-active-bg);
+      text-decoration: none;
+      color: var(--color-link);
+    }
+
+    &.is-active {
+      background-color: var(--color-link-active-bg);
+      font-weight: bold;
+    }
+  }
+
+  &--link {
+    font-weight: bold;
+  }
+
+  &--sublist {
+    margin-bottom: p.$spacing-md;
+  }
+
+  &--subitem {
+    @include p.font-size(16px);
+  }
+
+  &--sublink {
+    padding-left: p.$spacing-md;
+  }
+}

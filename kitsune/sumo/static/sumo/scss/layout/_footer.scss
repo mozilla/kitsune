@@ -1,0 +1,109 @@
+// Footer
+//
+// The site footer is a combination of this styleguide's [customized grid](section-grid.html)
+// and [Protocol's footer component.](https://protocol.mozilla.org/patterns/organisms/footer.html)
+//
+// Markup: ../../../styleguide-examples/footer.njk
+//
+// Weight: 21
+//
+// Style guide: footer
+
+@use '../config' as c;
+@use 'protocol' as p;
+
+.mzp-c-footer {
+  a:link,
+  a:visited,
+  a:hover,
+  a:focus,
+  a:active {
+    text-decoration: none;
+  }
+
+  &-links-social {
+    position: relative;
+    display: flex;
+    max-width: 100%;
+
+    li {
+      @include p.bidi(((padding, p.$spacing-md p.$spacing-lg 0 0, p.$spacing-md 0 p.$spacing-lg 0),));
+
+      a {
+        width: p.$spacing-lg;
+        height: p.$spacing-lg;
+        background-size: 100% auto;
+      }
+    }
+  }
+
+  &-primary-logo {
+    margin-bottom: p.$spacing-lg;
+  }
+
+  &-primary {
+    border-bottom: 1px solid var(--color-inverse);
+  }
+
+  &-cols,
+  &-secondary {
+    @include c.grid-row();
+  }
+
+  .mzp-c-footer-legal a {
+    text-decoration: underline;
+  }
+
+  &-col,
+  &-link-col,
+  &-legal-col {
+    @include c.col;
+  }
+
+  @media #{p.$mq-sm} {
+    &-col {
+      width: c.col-width(2, 6);
+    }
+
+    &-link-col{
+      width: c.col-width(4, 6);
+    }
+
+    &-legal-col {
+      width: c.col-width(2, 6);
+    }
+  }
+
+  @media #{p.$mq-lg} {
+    &-col {
+      width: c.col-width(2, 10);
+    }
+
+    &-link-col {
+      width: c.col-width(5, 10);
+    }
+    &-legal-col {
+      margin-left: auto;
+      width: c.col-width(4, 10);
+    }
+  }
+
+  @media #{p.$mq-xl} {
+    &-col {
+      width: c.col-width(2, 10);
+
+      &.lang-col {
+        margin-left: auto;
+        width: c.col-width(1.5, 10);
+      }
+    }
+
+    &-link-col {
+      width: c.col-width(5, 10);
+    }
+    &-legal-col {
+      margin-left: auto;
+      width: c.col-width(4, 10);
+    }
+  }
+}

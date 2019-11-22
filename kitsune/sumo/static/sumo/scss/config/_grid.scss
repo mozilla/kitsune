@@ -1,0 +1,169 @@
+// Grid
+//
+// This set of mixins should be used when building layouts. No grid classes are
+// included, as mixins are preferred.
+//
+// This grid is designed to use four columns on the small breakpoint, six on
+// medium, eight on large and 10 on extra large. In order to make it clear what
+// the math is doing, the mixins and functions provided require the author to
+// explicitly define the maximum number of columns each time they are used.
+// The following example shows what one column cell would look like in each of
+// the breakpoints. This is the CSS for the first example below.
+//
+// The `col()` mixin defined first applies proper margins for the grid items, as
+// well as the correct width. Then when media queries are applied, the `col-width`
+// function provides the math to be used for the width value.
+//
+// ```
+//.grid-1-example {
+//   @include col(1, 4);
+//
+//   @media #{$mq-sm} {
+//     width: col-width(1, 6);
+//   }
+//
+//   @media #{$mq-lg} {
+//     width: col-width(1, 8);
+//   }
+//
+//   @media #{$mq-xl} {
+//     width: col-width(1, 10);
+//   }
+//}
+//```
+//
+// Markup: ../../../styleguide-examples/grid.njk
+//
+// Weight: 2
+//
+// Style guide: grid
+
+// Grid columns
+
+@use 'protocol' as *;
+
+$gutter-width: 32px !default;
+$max-container-width: 1312px !default;
+
+@mixin container() {
+  margin-right: auto;
+  margin-left: auto;
+  padding-right: $gutter-width / 2;
+  padding-left: $gutter-width / 2;
+  width: 100%;
+  max-width: $max-container-width;
+
+  @media #{$mq-lg} {
+    padding-right: $gutter-width;
+    padding-left: $gutter-width;
+  }
+}
+
+@mixin grid-row() {
+  display: flex;
+  flex-wrap: wrap;
+  margin-right: $gutter-width / -2;
+  margin-left: $gutter-width / -2;
+}
+
+@function col-width($column: 4, $of-columns: 4) {
+  $result: 10px;
+  @if $column == $of-columns {
+    $result: 100%;
+  } @else if $column == 1 {
+    $result: calc(#{100% / $of-columns} - #{$gutter-width});
+  } @else {
+    $result: calc(((#{100% / $of-columns} - #{$gutter-width}) * #{$column}) + #{$gutter-width * ($column - 1)});
+  }
+
+  @return $result;
+}
+
+@mixin col($column: 4, $of-columns: 4) {
+  @if ($column) {
+    width: col-width($column, $of-columns);
+  } @else {
+    width: 100%;
+  }
+
+  margin-right: $gutter-width / 2;
+  margin-left: $gutter-width / 2;
+}
+
+// overrides protocol/css/base/elements/_sections.scss
+.mzp-l-content {
+  @include container;
+}
+
+// These classes are only used in the styleguide.
+.grid-container-example {
+  @include container;
+  margin-bottom: 16px;
+  padding-top: 8px;
+  outline: 1px solid #ddd;
+}
+
+.grid-row-example {
+  @include grid-row;
+}
+
+.grid-1-example,
+.grid-sidebar-example,
+.grid-main-example {
+  position: relative;
+  margin-bottom: 8px;
+  padding: 10px;
+  font-size: 12px;
+
+  &:after {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    border: 1px solid #ddd;
+    background: rgba(0,0,0,0.05);
+    content: "";
+  }
+}
+
+.grid-1-example {
+  @include col(1, 4);
+  @media #{$mq-sm} {
+    width: col-width(1, 6);
+  }
+
+  @media #{$mq-lg} {
+    width: col-width(1, 8);
+  }
+
+  @media #{$mq-xl} {
+    width: col-width(1, 10);
+  }
+}
+
+.grid-row-layout-example {
+  @include grid-row;
+  @include bidi(((flex-direction, row, row-reverse),));
+}
+
+.grid-sidebar-example,
+.grid-main-example {
+  // leaving values out applies the correct margins and width: 100%
+  @include col;
+}
+
+@media #{$mq-sm} { // small grid must add up to 6
+  .grid-sidebar-example { width: col-width(2, 6);}
+  .grid-main-example { width: col-width(4, 6);}
+}
+
+@media #{$mq-lg} {
+  .grid-sidebar-example { width: col-width(2, 8);}
+  .grid-main-example {width: col-width(6, 8);}
+}
+
+@media #{$mq-xl} {
+  .grid-sidebar-example { width: col-width(3, 10);}
+  .grid-main-example { width: col-width(7, 10);}
+}

@@ -1,0 +1,17 @@
+// Navigation
+//
+// Basic site navigation
+//
+// Markup:
+// {% import 'kitsune/sumo/static/styleguide-examples/nav.njk' as nav %}
+// {{ nav.nav() }}
+// <div class="kss-modifier__default-name kss-style"><br>Logged-in view</div>
+// {{ nav.nav(is_logged_in=true) }}
+//
+//
+// Weight: 20
+//
+// Style guide: nav
+
+@use '../config' as c;
+@use 'protocol' as p;
