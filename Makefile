@@ -133,3 +133,13 @@ lint-ci: .docker-build-ci
 	${DC_CI} run test-image flake8 kitsune
 
 .PHONY: default clean build build-full pull docs init lint run djshell dbshell runshell shell test test-image lint-image lint-l10n rebuild build-ci test-ci test-js-ci lint-ci
+
+#####################
+# For use in frontend
+#####################
+build-frontend:
+	npm run build:scss
+	npm run build:postcss
+
+watch-frontend:
+	npm run watch:stylelint & npm run watch:styles
