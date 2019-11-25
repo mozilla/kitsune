@@ -176,11 +176,12 @@ textarea {
 // Weight: 2
 //
 // Style guide: forms.select
-select {
+select,
+.mzp-c-language-switcher select {
   position: relative;
   padding-right: 40px;
   background-image: c.svg-url('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 10"><path fill="none" vector-effect="non-scaling-stroke" stroke="#42435A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" d="M1 1l8 8 8-8"/></svg>');
-  background-color: transparent;
+  background-color: var(--color-white);
   background-position: top 14px right 14px;
   background-repeat: no-repeat;
   background-size: 12px 12px;

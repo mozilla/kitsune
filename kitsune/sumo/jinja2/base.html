@@ -306,83 +306,115 @@
   </main>
 </div>
 
-<footer>
-  <div class="container_12 cf">
-    <div class="grid_4">
-      <a href="https://www.mozilla.org">
-        <img class="footer-logo" src="{{ STATIC_URL }}sumo/img/moz-wordmark-light-reverse.svg" alt="Mozilla" />
-      </a>
-    </div>
-    <div class="grid_4">
-      <ul>
-        <li>
-          <h5>
-            <a href="https://www.mozilla.org">{{ _('Mozilla') }}</a>
-          </h5>
-        </li>
-        <li class="hide-mobile"><a href="https://www.mozilla.org/about/">{{ _('About') }}</a></li>
-        <li class="hide-mobile"><a href="https://blog.mozilla.org/">{{ _('Blog') }}</a></li>
-        <li class="hide-mobile"><a href="https://www.mozilla.org/contact/">{{ _('Contact Us') }}</a></li>
-        <li class="hide-mobile"><a href="https://donate.mozilla.org/en-US/?presets=50,30,20,10&amount=30&utm_source=support.mozilla.org&utm_medium=referral&utm_content=footer&currency=usd">{{ _('Donate') }}</a></li>
-        <li class="hide-mobile"><a href="https://kitsune.readthedocs.io/en/latest/">{{ _('Contribute to this site') }}</a></li>
-        <li><a href="https://www.mozilla.org/en-US/about/legal/fraud-report/">{{ _('Report Trademark Abuse') }}</a></li>
-        <li><a href="https://github.com/mozilla/kitsune/">{{ _('Source code') }}</a></li>
-        <li><a class="show-mobile" href="https://twitter.com/firefox">{{ _('Twitter') }}</a></li>
-        <li class="hide-mobile">
-          <ul class="social-links">
-            <li><a class="twitter" href="https://twitter.com/mozilla">{{ _('Twitter') }}<span> (@mozilla)</span></a></li>
-            <li><a class="instagram" href="https://www.instagram.com/mozilla/">{{ _('Instagram') }}<span> (@mozilla)</span></a></li>
-          </ul>
-        </li>
-      </ul>
-    </div>
-    <div class="grid_4 hide-mobile">
-      <ul>
-        <li>
-          <h5>
-            <a href="https://www.mozilla.org/firefox/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('Firefox') }}</a>
-          </h5>
-        </li>
 
-        <li><a href="https://www.mozilla.org/firefox/new/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('Download Firefox') }}</a></li>
-        <li><a href="https://www.mozilla.org/firefox/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('Desktop') }}</a></li>
-        <li><a href="https://www.mozilla.org/firefox/mobile/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('Mobile') }}</a></li>
-        <li><a href="https://www.mozilla.org/firefox/features/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('Features') }}</a></li>
-        <li><a href="https://www.mozilla.org/firefox/channel/desktop/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('Beta, Nightly, Developer Edition') }}</a></li>
-        <li>
-          <ul class="social-links">
-            <li><a class="twitter" href="https://twitter.com/firefox">{{ _('Twitter') }}<span> (@firefox)</span></a></li>
-            <li><a class="youtube" href="https://www.youtube.com/firefoxchannel">{{ _('YouTube') }}<span> (firefoxchannel)</span></a></li>
+<footer class="mzp-c-footer">
+  <div class="mzp-l-content">
+    <nav class="mzp-c-footer-primary">
+      <div class="mzp-c-footer-cols">
+        <section class="mzp-c-footer-col">
+          <h5 class="mzp-c-footer-heading">{{ _('Mozilla') }}</h5>
+          <ul class="mzp-c-footer-list">
+            <li><a href="https://www.mozilla.org/en-US/about/legal/fraud-report/">{{ _('Report Trademark Abuse') }}</a></li>
+            <li><a href="https://github.com/mozilla/kitsune/">{{ _('Source code') }}</a></li>
+            <li><a href="https://twitter.com/firefox">{{ _('Twitter') }}</a></li>
+            <li><a href="#TODO">{{ _('Join the Community') }}</a></li>
+            <li><a href="#TODO">{{ _('Explore Help Articles')}}</a></li>
           </ul>
-        </li>
-      </ul>
-    </div>
-    <div class="grid_8 cf">
-      <div class="fineprint">
+        </section>
+
+        <section class="mzp-c-footer-col">
+          <h5 class="mzp-c-footer-heading">{{ _('Firefox') }}</h5>
+          <ul class="mzp-c-footer-list">
+            <li><a href="https://www.mozilla.org/firefox/new/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('Download') }}</a></li>
+            <li><a href="https://www.mozilla.org/firefox/mobile/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('Android Browser') }}</a></li>
+            <li><a href="https://www.mozilla.org/firefox/mobile/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('iOS Browser') }}</a></li>
+            <li><a href="https://www.mozilla.org/firefox/mobile/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('Focus Browser') }}</a></li>
+          </ul>
+        </section>
+
+        <section class="mzp-c-footer-col">
+          <h5 class="mzp-c-footer-heading">{{ _('Firefox for Developers') }}</h5>
+          <ul class="mzp-c-footer-list">
+            <li><a href="https://www.mozilla.org/en-US/firefox/developer/?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('Developer Edition') }}</a></li>
+            <li><a href="https://www.mozilla.org/en-US/firefox/channel/desktop/#beta?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('Beta') }}</a></li>
+            <li><a href="https://www.mozilla.org/en-US/firefox/channel/android/#beta?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('Beta for Android') }}</a></li>
+            <li><a href="https://www.mozilla.org/en-US/firefox/channel/desktop/#nightly?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('Nightly') }}</a></li>
+            <li><a href="https://www.mozilla.org/en-US/firefox/channel/android/#nightly?utm_source=support.mozilla.org&utm_campaign=footer&utm_medium=referral">{{ _('Nightly for Android') }}</a></li>
+          </ul>
+        </section>
+
+        <section class="mzp-c-footer-col">
+          <h5 class="mzp-c-footer-heading">{{ _('Firefox Accounts') }}</h5>
+          <ul class="mzp-c-footer-list">
+            <li><a href="https://support.mozilla.org/en-US/fxa/authenticate/">{{ _('Sign Up') }} (TODO)</a></li>
+            <li><a href="https://support.mozilla.org/en-US/fxa/authenticate/">{{ _('Sign In') }}</a></li>
+            <li><a href="https://www.mozilla.org/en-US/firefox/accounts/">{{ _('Benefits') }}</a></li>
+          </ul>
+        </section>
+
+        <section class="mzp-c-footer-col lang-col">
+          <form class="mzp-c-language-switcher" method="get" action="#">
+            <a class="mzp-c-language-switcher-link" href="https://www.mozilla.org/locales/">{{ _('Language') }}</a>
+            <label for="mzp-c-language-switcher-select">{{ _('Language') }}</label>
+            <select id="mzp-c-language-switcher-select" class="mzp-js-language-switcher-select"
+             name="lang">
+              <option value="en-US">English (US)</option>
+              <option value="de">Deutsch</option>
+              <option value="fr">Français</option>
+              <option value="es-ES">Español</option>
+              <option value="ja">日本語</option>
+            </select>
+            <!-- form submit button is shown when JavaScript is not enabled -->
+            <button type="submit">{{ _('Go') }}</button>
+          </form>
+          <script src="../../../assets/protocol/protocol/js/protocol-lang-switcher.js"></script>
+
+          <script>
+            (function() {
+              'use strict';
+              // a custom callback can be passed to the lang switcher for analytics purposes.
+              Mzp.LangSwitcher.init(function(
+                previousLanguage, newLanguage) {
+                console.log('Previous language: ',
+                  previousLanguage);
+                console.log('New language: ',
+                  newLanguage);
+              })
+            })();
+          </script>
+          <ul class="mzp-c-footer-links-social">
+            <li><a class="twitter" href="https://twitter.com/firefox">Twitter<span>(@firefox)</span></a></li>
+            <li><a class="youtube" href="https://www.youtube.com/firefoxchannel">YouTube<span> (firefoxchannel)</span></a></li>
+            <li><a class="instagram" href="https://www.instagram.com/firefox">Instagram<span> (firefox)</span></a></li>
+          </ul>
+        </section>
+
+      </div>
+    </nav>
+
+    <nav class="mzp-c-footer-secondary">
+      <div class="mzp-c-footer-link-col">
+        <div class="mzp-c-footer-primary-logo"><a href="https://www.mozilla.org/">{{ _('Mozilla') }}</a></div>
+        <div class="mzp-c-footer-legal">
+          <ul>
+            <li><a href="https://www.mozilla.org/">{{ _('mozilla.org') }}</a></li>
+            <li><a href="https://www.mozilla.org/about/legal/terms/mozilla/">{{ _('Terms of Service') }}</a></li>
+            <li><a href="https://www.mozilla.org/privacy/websites/">{{ _('Privacy') }}</a></li>
+            <li><a href="https://www.mozilla.org/privacy/websites/#cookies">{{ _('Cookies') }}</a></li>
+            <li><a href="https://www.mozilla.org/en-US/contact/">{{ _('Contact') }}</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="mzp-c-footer-legal-col">
         <p>
-        {% trans year=now().year %}
-          Portions of this content are &copy;1998–{{ year }} by individual mozilla.org contributors. Content available under a <a href="//www.mozilla.org/foundation/licensing/website-content.html">Creative Commons license</a>.
-        {% endtrans %}
+          {{ _('Mozilla Corporation’s not-for-profit parent, the Mozilla Foundation.') }}
+        </p>
+        <p>{{ _('Portions of this content are c.1998–2019 by individual mozilla.org contributors. Content availbe under a Creative Common license.') }}
         </p>
       </div>
-    </div>
-    <div class="grid_4 small-links">
-      <ul>
-        <li><a rel="nofollow" href="https://www.mozilla.org/privacy/websites/">{{ _('Website Privacy Notice') }}</a></li>
-        <li><a rel="nofollow" href="https://www.mozilla.org/privacy/websites/#cookies">{{ _('Cookies') }}</a></li>
-        <li><a rel="nofollow" href="https://www.mozilla.org/about/legal/terms/mozilla/">{{ _('Legal') }}</a></li>
-      </ul>
-    </div>
-    {% if not hide_locale_switcher %}
-    <div class="grid_2 prefix_2 language-picker">
-      Language <a href="{{ locale_picker_url }}"  data-event-category="navigation" data-event-action="main navigation" data-event-label="Locale Picker">{{ settings.LANGUAGES_DICT[request.LANGUAGE_CODE.lower()] }}</a>
-    </div>
-    {% endif %}
+    </nav>
   </div>
-</footer>{# /#footer #}
-
-{% csrf_token %}
-
+</footer>
 {# TODO: The JS url changes whenever our js code changes.
    But this should get cached busted whenever a locale is updated.
    It's complicatred to fix. But for now it isn't more broken than
