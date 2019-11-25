@@ -1,113 +1,193 @@
 {% macro nav(modifier_class='', is_logged_in=false) %}
 <nav class="mzp-c-menu mzp-is-basic">
-  <ul class="mzp-c-menu-category-list">
-    <li class="mzp-c-menu-category">
-      <a class="mzp-c-menu-title" href="https://www.mozilla.org/">Sample Link</a>
+  <ul class="mzp-c-menu-category-list sumo-nav--list">
+    <li class="sumo-nav--logo">
+      <a href="/"><img src="/static/sumo/img/mozilla-support.svg" alt="Mozilla Support Logo"/></a>
     </li>
     <li class="mzp-c-menu-category mzp-has-drop-down mzp-js-expandable">
-      <a class="mzp-c-menu-title" href="#" aria-haspopup="true" aria-controls="mzp-c-menu-panel-example">Firefox</a>
-      <div class="mzp-c-menu-panel mzp-has-card" id="mzp-c-menu-panel-example">
-        <div class="mzp-c-menu-panel-container">
-          <button class="mzp-c-menu-button-close" type="button" aria-controls="mzp-c-menu-panel-example">Close Firefox menu</button>
-          <div class="mzp-c-menu-panel-content">
-            <ul>
-              <li>
-
-                <section class="mzp-c-menu-item  ">
-                  <div class="mzp-c-menu-item-head">
-                    <h4 class="mzp-c-menu-item-title">A headline with 30 characters</h4>
-                    <p class="mzp-c-menu-item-desc">
-                      This is a short description with only a single sentence and no
-                      more.
-                    </p>
+      <a class="mzp-c-menu-title sumo-nav--link" href="#" aria-haspopup="true" aria-controls="mzp-c-menu-panel-help">Get Help</a>
+      <div class="mzp-c-menu-panel mzp-has-card" id="mzp-c-menu-panel-help">
+        <div class="sumo-nav--dropdown-container">
+          <div class="sumo-nav--dropdown-grid">
+            <button class="mzp-c-menu-button-close" type="button" aria-controls="mzp-c-menu-panel-example">Close Firefox menu</button>
+            <div class="sumo-nav--dropdown-col">
+              <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
+                <a class="mzp-c-menu-item-link" href="https://voice.mozilla.org/">
+                  <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round"><path d="M11 3H4a2 2 0 00-2 2v12a2 2 0 002 2h9l2 4 2-4h2a2 2 0 002-2v-6"/><path d="M17.5 2.5a2.121 2.121 0 013 3L13 13l-4 1 1-4 7.5-7.5z"/></g></svg>
+                  <h4 class="mzp-c-menu-item-title">Ask the Community</h4>
+                  <p class="mzp-c-menu-item-desc">
+                    Create a thread and find answers in any of our product support forums.
+                  </p>
+                </a>
+                <ul class="mzp-c-menu-item-list sumo-nav--sublist">
+                  <li><a href="#">Firefox Browser</a></li>
+                  <li><a href="#">Firefox Private Network</a></li>
+                  <li><a href="#">Firefox for iOS</a></li>
+                  <li><a href="#">Firefox Lockwise</a></li>
+                  <li><a href="#">Firefox for Android</a></li>
+                  <li><a href="#">See All Products</a></li>
+                </ul>
+              </section>
+             </div>
+             <div class="sumo-nav--dropdown-col">
+               <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
+                 <a class="mzp-c-menu-item-link" href="https://voice.mozilla.org/">
+                   <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g transform="translate(3 3)" stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round"><rect stroke-linejoin="round" width="18" height="18" rx="2"/><path d="M4 5h10M4 9h10M4 13h4"/></g></svg>
+                   <h4 class="mzp-c-menu-item-title">Explore Our Help Articles</h4>
+                   <p class="mzp-c-menu-item-desc">
+                     Dig into the knowledge base, tips and tricks, troubleshooting, and so much more
+                   </p>
+                 </a>
+                 <ul class="mzp-c-menu-item-list sumo-nav--sublist">
+                   <li><a href="#">Firefox Browser</a></li>
+                   <li><a href="#">Firefox Private Network</a></li>
+                   <li><a href="#">Firefox for iOS</a></li>
+                   <li><a href="#">Firefox Lockwise</a></li>
+                   <li><a href="#">Firefox for Android</a></li>
+                   <li><a href="#">See All Products</a></li>
+                 </ul>
+               </section>
+              </div>
+              {#
+              <div class="sumo-nav--dropdown-feature">
+                <section class="mzp-c-card mzp-c-card-extra-small has-aspect-3-2">
+                <a class="mzp-c-card-block-link" href="#">
+                  <div class="mzp-c-card-media-wrapper">
+                    <img class="mzp-c-card-image" src="https://via.placeholder.com/480x480" alt="">
                   </div>
-                  <ul class="mzp-c-menu-item-list">
-                    <li><a href="#">Secondary link</a></li>
-                    <li><a href="#">Secondary link</a></li>
-                    <li><a href="#">Secondary link</a></li>
-                    <li><a href="#">Secondary link</a></li>
-                    <li><a href="#">Secondary link</a></li>
-                    <li><a href="#">Secondary link</a></li>
-                  </ul>
-                </section>
 
-              </li>
-              <li>
-
-                <section class="mzp-c-menu-item  ">
-                  <div class="mzp-c-menu-item-head">
-                    <h4 class="mzp-c-menu-item-title">A headline with 30 characters</h4>
-                    <p class="mzp-c-menu-item-desc">
-                      This is a short description with only a single sentence and no
-                      more.
-                    </p>
+                  <div class="mzp-c-card-content">
+                  <div class="mzp-c-card-tag">Card tag</div>
+                  <h2 class="mzp-c-card-title">Headline that goes onto a second or third line</h2>
+                  <p class="mzp-c-card-meta">6 hours ago</p>
                   </div>
-                  <ul class="mzp-c-menu-item-list">
-                    <li><a href="#">Secondary link</a></li>
-                    <li><a href="#">Secondary link</a></li>
-                    <li><a href="#">Secondary link</a></li>
-                    <li><a href="#">Secondary link</a></li>
-                    <li><a href="#">Secondary link</a></li>
-                    <li><a href="#">Secondary link</a></li>
-                  </ul>
-                </section>
-
-              </li>
-            </ul>
-            <ul>
-              <li>
-
-                <section class="mzp-c-menu-item  ">
-                  <div class="mzp-c-menu-item-head">
-                    <h4 class="mzp-c-menu-item-title">A headline with 30 characters</h4>
-                    <p class="mzp-c-menu-item-desc">
-                      This is a short description with only a single sentence and no
-                      more.
-                    </p>
-                  </div>
-                </section>
-              </li>
-              <li>
-
-                <section class="mzp-c-menu-item  ">
-                  <div class="mzp-c-menu-item-head">
-                    <h4 class="mzp-c-menu-item-title">A headline with 30 characters</h4>
-                    <p class="mzp-c-menu-item-desc">
-                      This is a short description with only a single sentence and no
-                      more.
-                    </p>
-                  </div>
-                </section>
-              </li>
-              <li>
-
-                <section class="mzp-c-menu-item  ">
-                  <div class="mzp-c-menu-item-head">
-                    <h4 class="mzp-c-menu-item-title">A headline with 30 characters</h4>
-                    <p class="mzp-c-menu-item-desc">
-                      This is a short description with only a single sentence and no
-                      more.
-                    </p>
-                  </div>
-                </section>
-              </li>
-            </ul>
+                </a>
+              </section>
+            </div> #}
           </div>
-          <div class="mzp-c-menu-panel-card">
+        </div>
+      </div>
+    </li>
+    <li class="mzp-c-menu-category mzp-has-drop-down mzp-js-expandable">
+      <a class="mzp-c-menu-title sumo-nav--link" href="#" aria-haspopup="true" aria-controls="mzp-c-menu-panel-tools">Contributor Tools</a>
+      <div class="mzp-c-menu-panel mzp-has-card" id="mzp-c-menu-panel-tools">
+        <div class="sumo-nav--dropdown-container">
+          <div class="sumo-nav--dropdown-grid">
+            <button class="mzp-c-menu-button-close" type="button" aria-controls="mzp-c-menu-panel-example">Close Firefox menu</button>
+            <div class="sumo-nav--dropdown-col">
+              <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
+                <a class="mzp-c-menu-item-link" href="https://voice.mozilla.org/">
+                  <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round"><path d="M17 17l-1.051 3.154a1 1 0 01-1.898 0L13 17H5a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2h-2zM7 8h10M7 12h10"/></g></svg>
+                  <h4 class="mzp-c-menu-item-title">Discussions</h4>
+                  <p class="mzp-c-menu-item-desc">
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod.
+                  </p>
+                </a>
+                <ul class="mzp-c-menu-item-list sumo-nav--sublist">
+                  <li><a href="#">Community Discussions</a></li>
+                  <li><a href="#">L10N Discussions</a></li>
+                  <li><a href="#">Article Discussions</a></li>
+                  <li><a href="#">Support Forum</a></li>
+                  <li><a href="#">Social Support Forum</a></li>
+                  <li><a href="#">New Contributors</a></li>
+                </ul>
+              </section>
+             </div>
+             <div class="sumo-nav--dropdown-col">
+               <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
+                 <a class="mzp-c-menu-item-link" href="https://voice.mozilla.org/">
+                   <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10.5 9.5L3 17c-1 1.667-1 3 0 4s2.333.833 4-.5l7.5-7.5c2.333 1.054 4.333.734 6-.96 1.667-1.693 1.833-3.707.5-6.04l-3 3-2.5-.5L15 6l3-3c-2.333-1.333-4.333-1.167-6 .5-1.667 1.667-2.167 3.667-1.5 6z" stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                   <h4 class="mzp-c-menu-item-title">Tools</h4>
+                   <p class="mzp-c-menu-item-desc">
+                     Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod.
+                   </p>
+                 </a>
+                 <ul class="mzp-c-menu-item-list sumo-nav--sublist">
+                   <li><a href="#">Advanced Search</a></li>
+                   <li><a href="#">Templates</a></li>
+                   <li><a href="#">Dashboards</a></li>
+                   <li><a href="#">Recent Revisions</a></li>
+                   <li><a href="#">Media Gallery</a></li>
+                   <li><a href="#">Tag Admin</a></li>
+                 </ul>
+               </section>
+              </div>
+              {#
+              <div class="sumo-nav--dropdown-feature">
+                <section class="mzp-c-card mzp-c-card-extra-small has-aspect-3-2">
+                <a class="mzp-c-card-block-link" href="#">
+                  <div class="mzp-c-card-media-wrapper">
+                    <img class="mzp-c-card-image" src="https://via.placeholder.com/480x480" alt="">
+                  </div>
 
-            <section class="mzp-c-card mzp-c-card-extra-small has-aspect-3-2">
-              <a class="mzp-c-card-block-link" href="#">
-    <div class="mzp-c-card-media-wrapper">
-      <img class="mzp-c-card-image" src="../../../static/img/card/card-image.png" alt="">
-    </div>
-    <div class="mzp-c-card-content">
-    <div class="mzp-c-card-tag">Card tag</div>
-    <h2 class="mzp-c-card-title">Headline that goes onto a second or third line</h2>
-    <p class="mzp-c-card-meta">6 hours ago</p>
-    </div>
-  </a>
-            </section>
+                  <div class="mzp-c-card-content">
+                  <div class="mzp-c-card-tag">Card tag</div>
+                  <h2 class="mzp-c-card-title">Headline that goes onto a second or third line</h2>
+                  <p class="mzp-c-card-meta">6 hours ago</p>
+                  </div>
+                </a>
+              </section>
+            </div> #}
+          </div>
+        </div>
+      </div>
+    </li>
+    <li class="mzp-c-menu-category">
+      <a class="mzp-c-menu-title sumo-nav--link" href="https://www.mozilla.org/">Volunteer</a>
+    </li>
 
+    <li class="mzp-c-menu-category sumo-nav--item-right">
+      <a class="mzp-c-menu-title sumo-nav--link" href="https://www.mozilla.org/">EN</a>
+    </li>
+    <li class="mzp-c-menu-category mzp-has-drop-down mzp-js-expandable">
+      <a class="mzp-c-menu-title sumo-nav--link has-avatar" href="#">
+        Username
+        <img class="avatar" src="https://firefoxusercontent.com/00000000000000000000000000000000" alt="Avatar for Username">
+      </a>
+      <div class="mzp-c-menu-panel mzp-has-card" id="mzp-c-menu-panel-profile">
+        <div class="sumo-nav--dropdown-container">
+          <div class="sumo-nav--dropdown-grid">
+            <button class="mzp-c-menu-button-close" type="button" aria-controls="mzp-c-menu-panel-profile">Close Firefox menu</button>
+            <div class="sumo-nav--dropdown-thirds">
+              <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
+                <a class="mzp-c-menu-item-link" href="#TODO">
+                  <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round"><path d="M17 17l-1.051 3.154a1 1 0 01-1.898 0L13 17H5a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2h-2zM7 8h10M7 12h10"/></g></svg>
+                  <h4 class="mzp-c-menu-item-title">Profile</h4>
+                  <p class="mzp-c-menu-item-desc">
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod.
+                  </p>
+                </a>
+                <ul class="mzp-c-menu-item-list sumo-nav--sublist">
+                  <li><a href="#">Edit Profile</a></li>
+                  <li><a href="#">My Questions</a></li>
+                </ul>
+              </section>
+             </div>
+             <div class="sumo-nav--dropdown-thirds">
+               <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
+                 <a class="mzp-c-menu-item-link" href="https://voice.mozilla.org/">
+                   <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10.5 9.5L3 17c-1 1.667-1 3 0 4s2.333.833 4-.5l7.5-7.5c2.333 1.054 4.333.734 6-.96 1.667-1.693 1.833-3.707.5-6.04l-3 3-2.5-.5L15 6l3-3c-2.333-1.333-4.333-1.167-6 .5-1.667 1.667-2.167 3.667-1.5 6z" stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                   <h4 class="mzp-c-menu-item-title">Settings</h4>
+                   <p class="mzp-c-menu-item-desc">
+                     Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod.
+                   </p>
+                 </a>
+               </section>
+              </div>
+              <div class="sumo-nav--dropdown-thirds">
+                <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
+                  <a class="mzp-c-menu-item-link" href="https://voice.mozilla.org/">
+                    <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10.5 9.5L3 17c-1 1.667-1 3 0 4s2.333.833 4-.5l7.5-7.5c2.333 1.054 4.333.734 6-.96 1.667-1.693 1.833-3.707.5-6.04l-3 3-2.5-.5L15 6l3-3c-2.333-1.333-4.333-1.167-6 .5-1.667 1.667-2.167 3.667-1.5 6z" stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    <h4 class="mzp-c-menu-item-title">Inbox</h4>
+                    <p class="mzp-c-menu-item-desc">
+                      Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod.
+                    </p>
+                  </a>
+                </section>
+               </div>
+               <div class="sumo-nav--button-row">
+                 <a href="#" class="mzp-c-sumo-button secondary-button button-lg">Sign Out</a>
+               </div>
           </div>
         </div>
       </div>
@@ -115,20 +195,34 @@
   </ul>
 </nav>
 
-<script src="../../../assets/protocol/protocol/js/protocol-menu.js"></script>
+<script src="static/protocol/js/protocol-menu.js"></script>
+<script src="static/protocol/js/protocol-navigation.js"></script>
 
 <script>
-  Mzp.Menu.init({
-    onMenuOpen: function() {
-      console.log('Menu opened');
-    },
-    onMenuClose: function() {
-      console.log('Menu closed');
-    },
-    onMenuButtonClose: function() {
-      console.log('Menu close button clicked');
-    }
-  });
+(function() {
+    'use strict';
+
+    Mzp.Navigation.init({
+        onNavOpen: function() {
+            console.log('Navigation opened');
+        },
+        onNavClose: function() {
+            console.log('Navigation closed');
+        }
+    });
+
+    Mzp.Menu.init({
+        onMenuOpen: function() {
+            console.log('Menu opened');
+        },
+        onMenuClose: function() {
+            console.log('Menu closed');
+        },
+        onMenuButtonClose: function() {
+            console.log('Menu close button clicked');
+        }
+    });
+})();
 </script>
 
 

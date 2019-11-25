@@ -15,19 +15,20 @@
 //
 // Style guide: card
 
-@use '../config' as *;
+@use '../config' as c;
+@use 'protocol' as p;
 
 .card {
-  @include bottomless;
-  padding: rem-calc(20);
+  @include c.bottomless;
+  padding: p.remify(20px);
   border-radius: var(--global-radius);
 
   &.feature-padding {
-    padding: rem-calc(40);
+    padding: p.remify(40px);
   }
 }
 
-.elevation-00 { @include elevation-00;}
-.elevation-01 { @include elevation-01;}
-.elevation-02 { @include elevation-02;}
-.elevation-03 { @include elevation-03;}
+.elevation-00 { @include c.elevation-00;}
+.elevation-01 { @include c.elevation-01;}
+.elevation-02 { @include c.elevation-02;}
+.elevation-03 { @include c.elevation-03;}

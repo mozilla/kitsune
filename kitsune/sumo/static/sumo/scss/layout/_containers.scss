@@ -10,14 +10,14 @@
 //
 // Style guide: containers
 
-@use '../config' as *;
+@use 'protocol' as p;
 
 .container {
   margin: 0 auto;
   padding: 0 20px;
-  max-width: rem-calc(1440);
+  max-width: p.remify(1440px);
 
   &.narrow {
-    max-width: rem-calc(1000);
+    max-width: p.remify(1000px);
   }
 }

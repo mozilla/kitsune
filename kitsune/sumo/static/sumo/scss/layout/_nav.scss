@@ -15,3 +15,118 @@
 
 @use '../config' as c;
 @use 'protocol' as p;
+
+.sumo-nav {
+  &--logo {
+    margin-right: c.$gutter-width;
+    width: 96px;
+    height: auto;
+  }
+
+  &--list {
+    @include c.container;
+    display: flex;
+    padding-top: 18px;
+  }
+
+  &--item-right {
+    margin-left: auto;
+  }
+
+  &--link {
+    &.has-avatar {
+      padding-right: 0;
+
+      .avatar {
+        margin-top: -6px;
+        margin-bottom: -6px;
+        margin-left: 20px;
+        width: 36px;
+      }
+    }
+  }
+
+  &--dropdown {
+    &-grid {
+      @media #{p.$mq-sm} {
+        @include c.grid-row;
+      }
+    }
+
+    &-container {
+      @include c.container;
+    }
+
+    &-col {
+      @media #{p.$mq-sm} {
+        @include c.col(3, 6);
+      }
+
+      @media #{p.$mq-lg} {
+        width: c.col-width(3, 8);
+      }
+
+      @media #{p.$mq-xl} {
+        width: c.col-width(4, 10);
+      }
+    }
+
+    &-feature {
+      display: none;
+
+      @media #{p.$mq-lg} {
+        display: block;
+        @include c.col(2, 8);
+      }
+
+      @media #{p.$mq-xl} {
+        width: c.col-width(2, 10);
+      }
+    }
+
+    &-thirds { // This is non-standard.
+      @include c.col;
+      @media #{p.$mq-sm} {
+        width: c.col-width(2, 6);
+      }
+
+      // @media #{p.$mq-lg} {
+      //   width: c.col-width(3, 8);
+      // }
+      //
+      // @media #{p.$mq-xl} {
+      //   width: c.col-width(4, 10);
+      // }
+    }
+
+    &-item {
+      margin-left: -8px;
+    }
+  }
+
+  &--button-row {
+    @include c.col; // adds correct margins
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 12px;
+  }
+
+  &--sublist {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+}
+
+
+// protocol overrides
+.mzp-c-menu-category {
+  .mzp-c-menu-title {
+    padding-top: 8px;
+    padding-bottom: 24px;
+  }
+}
+
+.mzp-c-menu-item .mzp-c-menu-item-list::after {
+  content: none; // removing clearfix that screws up flexbox
+}
