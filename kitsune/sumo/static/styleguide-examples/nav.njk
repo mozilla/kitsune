@@ -1,199 +1,226 @@
 {% macro nav(modifier_class='', is_logged_in=false) %}
-<nav class="mzp-c-menu mzp-is-basic">
-  <ul class="mzp-c-menu-category-list sumo-nav--list">
-    <li class="sumo-nav--logo">
-      <a href="/"><img src="/static/sumo/img/mozilla-support.svg" alt="Mozilla Support Logo"/></a>
-    </li>
-    <li class="mzp-c-menu-category mzp-has-drop-down mzp-js-expandable">
-      <a class="mzp-c-menu-title sumo-nav--link" href="#" aria-haspopup="true" aria-controls="mzp-c-menu-panel-help">Get Help</a>
-      <div class="mzp-c-menu-panel mzp-has-card" id="mzp-c-menu-panel-help">
-        <div class="sumo-nav--dropdown-container">
-          <div class="sumo-nav--dropdown-grid">
-            <button class="mzp-c-menu-button-close" type="button" aria-controls="mzp-c-menu-panel-example">Close Firefox menu</button>
-            <div class="sumo-nav--dropdown-col">
-              <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
-                <a class="mzp-c-menu-item-link" href="https://voice.mozilla.org/">
-                  <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round"><path d="M11 3H4a2 2 0 00-2 2v12a2 2 0 002 2h9l2 4 2-4h2a2 2 0 002-2v-6"/><path d="M17.5 2.5a2.121 2.121 0 013 3L13 13l-4 1 1-4 7.5-7.5z"/></g></svg>
-                  <h4 class="mzp-c-menu-item-title">Ask the Community</h4>
-                  <p class="mzp-c-menu-item-desc">
-                    Create a thread and find answers in any of our product support forums.
-                  </p>
-                </a>
-                <ul class="mzp-c-menu-item-list sumo-nav--sublist">
-                  <li><a href="#">Firefox Browser</a></li>
-                  <li><a href="#">Firefox Private Network</a></li>
-                  <li><a href="#">Firefox for iOS</a></li>
-                  <li><a href="#">Firefox Lockwise</a></li>
-                  <li><a href="#">Firefox for Android</a></li>
-                  <li><a href="#">See All Products</a></li>
-                </ul>
-              </section>
-             </div>
-             <div class="sumo-nav--dropdown-col">
-               <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
-                 <a class="mzp-c-menu-item-link" href="https://voice.mozilla.org/">
-                   <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g transform="translate(3 3)" stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round"><rect stroke-linejoin="round" width="18" height="18" rx="2"/><path d="M4 5h10M4 9h10M4 13h4"/></g></svg>
-                   <h4 class="mzp-c-menu-item-title">Explore Our Help Articles</h4>
-                   <p class="mzp-c-menu-item-desc">
-                     Dig into the knowledge base, tips and tricks, troubleshooting, and so much more
-                   </p>
-                 </a>
-                 <ul class="mzp-c-menu-item-list sumo-nav--sublist">
-                   <li><a href="#">Firefox Browser</a></li>
-                   <li><a href="#">Firefox Private Network</a></li>
-                   <li><a href="#">Firefox for iOS</a></li>
-                   <li><a href="#">Firefox Lockwise</a></li>
-                   <li><a href="#">Firefox for Android</a></li>
-                   <li><a href="#">See All Products</a></li>
-                 </ul>
-               </section>
-              </div>
-              {#
-              <div class="sumo-nav--dropdown-feature">
-                <section class="mzp-c-card mzp-c-card-extra-small has-aspect-3-2">
-                <a class="mzp-c-card-block-link" href="#">
-                  <div class="mzp-c-card-media-wrapper">
-                    <img class="mzp-c-card-image" src="https://via.placeholder.com/480x480" alt="">
-                  </div>
-
-                  <div class="mzp-c-card-content">
-                  <div class="mzp-c-card-tag">Card tag</div>
-                  <h2 class="mzp-c-card-title">Headline that goes onto a second or third line</h2>
-                  <p class="mzp-c-card-meta">6 hours ago</p>
-                  </div>
-                </a>
-              </section>
-            </div> #}
-          </div>
-        </div>
+<div class="mzp-c-navigation sumo-nav {{modifier_class}}">
+  <div class="mzp-c-navigation-l-content">
+    <div class="sumo-nav--container">
+      <div class="sumo-nav--logo">
+        <a href="/"><img src="/static/sumo/img/mozilla-support.svg" alt="Mozilla Support Logo"/></a>
       </div>
-    </li>
-    <li class="mzp-c-menu-category mzp-has-drop-down mzp-js-expandable">
-      <a class="mzp-c-menu-title sumo-nav--link" href="#" aria-haspopup="true" aria-controls="mzp-c-menu-panel-tools">Contributor Tools</a>
-      <div class="mzp-c-menu-panel mzp-has-card" id="mzp-c-menu-panel-tools">
-        <div class="sumo-nav--dropdown-container">
-          <div class="sumo-nav--dropdown-grid">
-            <button class="mzp-c-menu-button-close" type="button" aria-controls="mzp-c-menu-panel-example">Close Firefox menu</button>
-            <div class="sumo-nav--dropdown-col">
-              <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
-                <a class="mzp-c-menu-item-link" href="https://voice.mozilla.org/">
-                  <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round"><path d="M17 17l-1.051 3.154a1 1 0 01-1.898 0L13 17H5a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2h-2zM7 8h10M7 12h10"/></g></svg>
-                  <h4 class="mzp-c-menu-item-title">Discussions</h4>
-                  <p class="mzp-c-menu-item-desc">
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod.
-                  </p>
-                </a>
-                <ul class="mzp-c-menu-item-list sumo-nav--sublist">
-                  <li><a href="#">Community Discussions</a></li>
-                  <li><a href="#">L10N Discussions</a></li>
-                  <li><a href="#">Article Discussions</a></li>
-                  <li><a href="#">Support Forum</a></li>
-                  <li><a href="#">Social Support Forum</a></li>
-                  <li><a href="#">New Contributors</a></li>
-                </ul>
-              </section>
-             </div>
-             <div class="sumo-nav--dropdown-col">
-               <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
-                 <a class="mzp-c-menu-item-link" href="https://voice.mozilla.org/">
-                   <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10.5 9.5L3 17c-1 1.667-1 3 0 4s2.333.833 4-.5l7.5-7.5c2.333 1.054 4.333.734 6-.96 1.667-1.693 1.833-3.707.5-6.04l-3 3-2.5-.5L15 6l3-3c-2.333-1.333-4.333-1.167-6 .5-1.667 1.667-2.167 3.667-1.5 6z" stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                   <h4 class="mzp-c-menu-item-title">Tools</h4>
-                   <p class="mzp-c-menu-item-desc">
-                     Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod.
-                   </p>
-                 </a>
-                 <ul class="mzp-c-menu-item-list sumo-nav--sublist">
-                   <li><a href="#">Advanced Search</a></li>
-                   <li><a href="#">Templates</a></li>
-                   <li><a href="#">Dashboards</a></li>
-                   <li><a href="#">Recent Revisions</a></li>
-                   <li><a href="#">Media Gallery</a></li>
-                   <li><a href="#">Tag Admin</a></li>
-                 </ul>
-               </section>
-              </div>
-              {#
-              <div class="sumo-nav--dropdown-feature">
-                <section class="mzp-c-card mzp-c-card-extra-small has-aspect-3-2">
-                <a class="mzp-c-card-block-link" href="#">
-                  <div class="mzp-c-card-media-wrapper">
-                    <img class="mzp-c-card-image" src="https://via.placeholder.com/480x480" alt="">
-                  </div>
+      <button class="mzp-c-navigation-menu-button" type="button" aria-controls="main-navigation">Menu</button>
 
-                  <div class="mzp-c-card-content">
-                  <div class="mzp-c-card-tag">Card tag</div>
-                  <h2 class="mzp-c-card-title">Headline that goes onto a second or third line</h2>
-                  <p class="mzp-c-card-meta">6 hours ago</p>
-                  </div>
-                </a>
-              </section>
-            </div> #}
+
+      <div class="mzp-c-navigation-items sumo-nav--list-wrap" id="main-navigation">
+        <!--<div class="mzp-c-navigation-download">
+          <div class="mzp-c-button-download-container">
+            <a href="#" class="mzp-c-button mzp-t-product mzp-t-product mzp-t-secondary mzp-t-small">
+              Download Firefox
+            </a>
+            <small class="mzp-c-button-download-privacy-link">
+              <a href="https://www.mozilla.org/privacy/firefox/">Firefox Privacy Notice</a>
+            </small>
           </div>
-        </div>
-      </div>
-    </li>
-    <li class="mzp-c-menu-category">
-      <a class="mzp-c-menu-title sumo-nav--link" href="https://www.mozilla.org/">Volunteer</a>
-    </li>
+        </div>-->
+        <div class="mzp-c-navigation-menu">
+          <nav class="mzp-c-menu mzp-is-basic">
+              <ul class="mzp-c-menu-category-list sumo-nav--list">
+                <li class="mzp-c-menu-category mzp-has-drop-down mzp-js-expandable">
+                  <a class="mzp-c-menu-title sumo-nav--link" href="#" aria-haspopup="true" aria-controls="mzp-c-menu-panel-help">Get Help</a>
+                  <div class="mzp-c-menu-panel mzp-has-card" id="mzp-c-menu-panel-help">
+                    <div class="sumo-nav--dropdown-container">
+                      <div class="sumo-nav--dropdown-grid">
+                        <button class="mzp-c-menu-button-close" type="button" aria-controls="mzp-c-menu-panel-example">Close Firefox menu</button>
+                        <div class="sumo-nav--dropdown-col">
+                          <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
+                            <a class="mzp-c-menu-item-link" href="https://voice.mozilla.org/">
+                              <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round"><path d="M11 3H4a2 2 0 00-2 2v12a2 2 0 002 2h9l2 4 2-4h2a2 2 0 002-2v-6"/><path d="M17.5 2.5a2.121 2.121 0 013 3L13 13l-4 1 1-4 7.5-7.5z"/></g></svg>
+                              <h4 class="mzp-c-menu-item-title">Ask the Community</h4>
+                              <p class="mzp-c-menu-item-desc">
+                                Create a thread and find answers in any of our product support forums.
+                              </p>
+                            </a>
+                            <ul class="mzp-c-menu-item-list sumo-nav--sublist">
+                              <li><a href="#">Firefox Browser</a></li>
+                              <li><a href="#">Firefox Private Network</a></li>
+                              <li><a href="#">Firefox for iOS</a></li>
+                              <li><a href="#">Firefox Lockwise</a></li>
+                              <li><a href="#">Firefox for Android</a></li>
+                              <li><a href="#">See All Products</a></li>
+                            </ul>
+                          </section>
+                         </div>
+                         <div class="sumo-nav--dropdown-col">
+                           <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
+                             <a class="mzp-c-menu-item-link" href="https://voice.mozilla.org/">
+                               <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g transform="translate(3 3)" stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round"><rect stroke-linejoin="round" width="18" height="18" rx="2"/><path d="M4 5h10M4 9h10M4 13h4"/></g></svg>
+                               <h4 class="mzp-c-menu-item-title">Explore Our Help Articles</h4>
+                               <p class="mzp-c-menu-item-desc">
+                                 Dig into the knowledge base, tips and tricks, troubleshooting, and so much more
+                               </p>
+                             </a>
+                             <ul class="mzp-c-menu-item-list sumo-nav--sublist">
+                               <li><a href="#">Firefox Browser</a></li>
+                               <li><a href="#">Firefox Private Network</a></li>
+                               <li><a href="#">Firefox for iOS</a></li>
+                               <li><a href="#">Firefox Lockwise</a></li>
+                               <li><a href="#">Firefox for Android</a></li>
+                               <li><a href="#">See All Products</a></li>
+                             </ul>
+                           </section>
+                          </div>
+                          {#
+                          <div class="sumo-nav--dropdown-feature">
+                            <section class="mzp-c-card mzp-c-card-extra-small has-aspect-3-2">
+                            <a class="mzp-c-card-block-link" href="#">
+                              <div class="mzp-c-card-media-wrapper">
+                                <img class="mzp-c-card-image" src="https://via.placeholder.com/480x480" alt="">
+                              </div>
 
-    <li class="mzp-c-menu-category sumo-nav--item-right">
-      <a class="mzp-c-menu-title sumo-nav--link" href="https://www.mozilla.org/">EN</a>
-    </li>
-    <li class="mzp-c-menu-category mzp-has-drop-down mzp-js-expandable">
-      <a class="mzp-c-menu-title sumo-nav--link has-avatar" href="#">
-        Username
-        <img class="avatar" src="https://firefoxusercontent.com/00000000000000000000000000000000" alt="Avatar for Username">
-      </a>
-      <div class="mzp-c-menu-panel mzp-has-card" id="mzp-c-menu-panel-profile">
-        <div class="sumo-nav--dropdown-container">
-          <div class="sumo-nav--dropdown-grid">
-            <button class="mzp-c-menu-button-close" type="button" aria-controls="mzp-c-menu-panel-profile">Close Firefox menu</button>
-            <div class="sumo-nav--dropdown-thirds">
-              <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
-                <a class="mzp-c-menu-item-link" href="#TODO">
-                  <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round"><path d="M17 17l-1.051 3.154a1 1 0 01-1.898 0L13 17H5a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2h-2zM7 8h10M7 12h10"/></g></svg>
-                  <h4 class="mzp-c-menu-item-title">Profile</h4>
-                  <p class="mzp-c-menu-item-desc">
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod.
-                  </p>
-                </a>
-                <ul class="mzp-c-menu-item-list sumo-nav--sublist">
-                  <li><a href="#">Edit Profile</a></li>
-                  <li><a href="#">My Questions</a></li>
-                </ul>
-              </section>
-             </div>
-             <div class="sumo-nav--dropdown-thirds">
-               <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
-                 <a class="mzp-c-menu-item-link" href="https://voice.mozilla.org/">
-                   <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10.5 9.5L3 17c-1 1.667-1 3 0 4s2.333.833 4-.5l7.5-7.5c2.333 1.054 4.333.734 6-.96 1.667-1.693 1.833-3.707.5-6.04l-3 3-2.5-.5L15 6l3-3c-2.333-1.333-4.333-1.167-6 .5-1.667 1.667-2.167 3.667-1.5 6z" stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                   <h4 class="mzp-c-menu-item-title">Settings</h4>
-                   <p class="mzp-c-menu-item-desc">
-                     Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod.
-                   </p>
-                 </a>
-               </section>
-              </div>
-              <div class="sumo-nav--dropdown-thirds">
-                <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
-                  <a class="mzp-c-menu-item-link" href="https://voice.mozilla.org/">
-                    <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10.5 9.5L3 17c-1 1.667-1 3 0 4s2.333.833 4-.5l7.5-7.5c2.333 1.054 4.333.734 6-.96 1.667-1.693 1.833-3.707.5-6.04l-3 3-2.5-.5L15 6l3-3c-2.333-1.333-4.333-1.167-6 .5-1.667 1.667-2.167 3.667-1.5 6z" stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                    <h4 class="mzp-c-menu-item-title">Inbox</h4>
-                    <p class="mzp-c-menu-item-desc">
-                      Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod.
-                    </p>
+                              <div class="mzp-c-card-content">
+                              <div class="mzp-c-card-tag">Card tag</div>
+                              <h2 class="mzp-c-card-title">Headline that goes onto a second or third line</h2>
+                              <p class="mzp-c-card-meta">6 hours ago</p>
+                              </div>
+                            </a>
+                          </section>
+                        </div> #}
+                      </div>
+                    </div>
+                  </div>
+                </li>
+                <li class="mzp-c-menu-category mzp-has-drop-down mzp-js-expandable">
+                  <a class="mzp-c-menu-title sumo-nav--link" href="#" aria-haspopup="true" aria-controls="mzp-c-menu-panel-tools">Contributor Tools</a>
+                  <div class="mzp-c-menu-panel mzp-has-card" id="mzp-c-menu-panel-tools">
+                    <div class="sumo-nav--dropdown-container">
+                      <div class="sumo-nav--dropdown-grid">
+                        <button class="mzp-c-menu-button-close" type="button" aria-controls="mzp-c-menu-panel-example">Close Firefox menu</button>
+                        <div class="sumo-nav--dropdown-col">
+                          <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
+                            <a class="mzp-c-menu-item-link" href="https://voice.mozilla.org/">
+                              <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round"><path d="M17 17l-1.051 3.154a1 1 0 01-1.898 0L13 17H5a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2h-2zM7 8h10M7 12h10"/></g></svg>
+                              <h4 class="mzp-c-menu-item-title">Discussions</h4>
+                              <p class="mzp-c-menu-item-desc">
+                                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod.
+                              </p>
+                            </a>
+                            <ul class="mzp-c-menu-item-list sumo-nav--sublist">
+                              <li><a href="#">Community Discussions</a></li>
+                              <li><a href="#">L10N Discussions</a></li>
+                              <li><a href="#">Article Discussions</a></li>
+                              <li><a href="#">Support Forum</a></li>
+                              <li><a href="#">Social Support Forum</a></li>
+                              <li><a href="#">New Contributors</a></li>
+                            </ul>
+                          </section>
+                         </div>
+                         <div class="sumo-nav--dropdown-col">
+                           <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
+                             <a class="mzp-c-menu-item-link" href="https://voice.mozilla.org/">
+                               <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10.5 9.5L3 17c-1 1.667-1 3 0 4s2.333.833 4-.5l7.5-7.5c2.333 1.054 4.333.734 6-.96 1.667-1.693 1.833-3.707.5-6.04l-3 3-2.5-.5L15 6l3-3c-2.333-1.333-4.333-1.167-6 .5-1.667 1.667-2.167 3.667-1.5 6z" stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                               <h4 class="mzp-c-menu-item-title">Tools</h4>
+                               <p class="mzp-c-menu-item-desc">
+                                 Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod.
+                               </p>
+                             </a>
+                             <ul class="mzp-c-menu-item-list sumo-nav--sublist">
+                               <li><a href="#">Advanced Search</a></li>
+                               <li><a href="#">Templates</a></li>
+                               <li><a href="#">Dashboards</a></li>
+                               <li><a href="#">Recent Revisions</a></li>
+                               <li><a href="#">Media Gallery</a></li>
+                               <li><a href="#">Tag Admin</a></li>
+                             </ul>
+                           </section>
+                          </div>
+                          {#
+                          <div class="sumo-nav--dropdown-feature">
+                            <section class="mzp-c-card mzp-c-card-extra-small has-aspect-3-2">
+                            <a class="mzp-c-card-block-link" href="#">
+                              <div class="mzp-c-card-media-wrapper">
+                                <img class="mzp-c-card-image" src="https://via.placeholder.com/480x480" alt="">
+                              </div>
+
+                              <div class="mzp-c-card-content">
+                              <div class="mzp-c-card-tag">Card tag</div>
+                              <h2 class="mzp-c-card-title">Headline that goes onto a second or third line</h2>
+                              <p class="mzp-c-card-meta">6 hours ago</p>
+                              </div>
+                            </a>
+                          </section>
+                        </div> #}
+                      </div>
+                    </div>
+                  </div>
+                </li>
+                <li class="mzp-c-menu-category">
+                  <a class="mzp-c-menu-title sumo-nav--link" href="https://www.mozilla.org/">Volunteer</a>
+                </li>
+
+                <li class="mzp-c-menu-category mzp-has-drop-down mzp-js-expandable sumo-nav--item-right">
+                  <a class="mzp-c-menu-title sumo-nav--link sumo-nav--lang-link" href="https://www.mozilla.org/">EN</a>
+                </li>
+                <li class="mzp-c-menu-category mzp-has-drop-down mzp-js-expandable">
+                  {% if is_logged_in %}
+                  <a class="mzp-c-menu-title sumo-nav--link has-avatar" href="#">
+                    Username
+                    <img class="avatar" src="https://firefoxusercontent.com/00000000000000000000000000000000" alt="Avatar for Username">
                   </a>
-                </section>
-               </div>
-               <div class="sumo-nav--button-row">
-                 <a href="#" class="mzp-c-sumo-button secondary-button button-lg">Sign Out</a>
-               </div>
-          </div>
+                  {% else %}
+                    <a href="/en-US/get-involved" class="sumo-button secondary-button button-lg" data-event-category="Volunteer Button" data-event-action="Volunteer for Mozilla Support">Log in / Sign up</a>
+                  {% endif %}
+                  <div class="mzp-c-menu-panel mzp-has-card" id="mzp-c-menu-panel-profile">
+                    <div class="sumo-nav--dropdown-container">
+                      <div class="sumo-nav--dropdown-grid">
+                        <button class="mzp-c-menu-button-close" type="button" aria-controls="mzp-c-menu-panel-profile">Close Firefox menu</button>
+                        <div class="sumo-nav--dropdown-thirds">
+                          <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
+                            <a class="mzp-c-menu-item-link" href="#TODO">
+                              <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round"><path d="M17 17l-1.051 3.154a1 1 0 01-1.898 0L13 17H5a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2h-2zM7 8h10M7 12h10"/></g></svg>
+                              <h4 class="mzp-c-menu-item-title">Profile</h4>
+                              <p class="mzp-c-menu-item-desc">
+                                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod.
+                              </p>
+                            </a>
+                            <ul class="mzp-c-menu-item-list sumo-nav--sublist">
+                              <li><a href="#">Edit Profile</a></li>
+                              <li><a href="#">My Questions</a></li>
+                            </ul>
+                          </section>
+                         </div>
+                         <div class="sumo-nav--dropdown-thirds">
+                           <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
+                             <a class="mzp-c-menu-item-link" href="https://voice.mozilla.org/">
+                               <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10.5 9.5L3 17c-1 1.667-1 3 0 4s2.333.833 4-.5l7.5-7.5c2.333 1.054 4.333.734 6-.96 1.667-1.693 1.833-3.707.5-6.04l-3 3-2.5-.5L15 6l3-3c-2.333-1.333-4.333-1.167-6 .5-1.667 1.667-2.167 3.667-1.5 6z" stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                               <h4 class="mzp-c-menu-item-title">Settings</h4>
+                               <p class="mzp-c-menu-item-desc">
+                                 Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod.
+                               </p>
+                             </a>
+                           </section>
+                          </div>
+                          <div class="sumo-nav--dropdown-thirds">
+                            <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
+                              <a class="mzp-c-menu-item-link" href="https://voice.mozilla.org/">
+                                <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10.5 9.5L3 17c-1 1.667-1 3 0 4s2.333.833 4-.5l7.5-7.5c2.333 1.054 4.333.734 6-.96 1.667-1.693 1.833-3.707.5-6.04l-3 3-2.5-.5L15 6l3-3c-2.333-1.333-4.333-1.167-6 .5-1.667 1.667-2.167 3.667-1.5 6z" stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                <h4 class="mzp-c-menu-item-title">Inbox</h4>
+                                <p class="mzp-c-menu-item-desc">
+                                  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod.
+                                </p>
+                              </a>
+                            </section>
+                           </div>
+                           <div class="sumo-nav--button-row">
+                             <a href="#" class="mzp-c-sumo-button secondary-button button-lg">Sign Out</a>
+                           </div>
+                      </div>
+                    </div>
+                  </div>
+                </li>
+              </ul>
+          </nav>
         </div>
       </div>
-    </li>
-  </ul>
-</nav>
+    </div>
+  </div>
+</div><!--/.mzp-c-navigation -->
 
 <script src="static/protocol/js/protocol-menu.js"></script>
 <script src="static/protocol/js/protocol-navigation.js"></script>
@@ -201,129 +228,8 @@
 <script>
 (function() {
     'use strict';
-
-    Mzp.Navigation.init({
-        onNavOpen: function() {
-            console.log('Navigation opened');
-        },
-        onNavClose: function() {
-            console.log('Navigation closed');
-        }
-    });
-
-    Mzp.Menu.init({
-        onMenuOpen: function() {
-            console.log('Menu opened');
-        },
-        onMenuClose: function() {
-            console.log('Menu closed');
-        },
-        onMenuButtonClose: function() {
-            console.log('Menu close button clicked');
-        }
-    });
+    Mzp.Navigation.init();
+    Mzp.Menu.init();
 })();
 </script>
-
-
-{#
-
-
-  <header class="site-nav {{modifier_class}}">
-    <a class="site-nav--logo" href="/en-US/" data-event-category="navigation" data-event-action="main navigation" data-event-label="Home">
-      <img width="112" height="48" src="https://static-media-prod-cdn.itsre-sumo.mozilla.net/static/sumo/img/mozilla-support-white.35b1f3cc6003.svg" />
-    </a>
-    <a href="javascript:;" class="site-nav--toggle" data-toggle-nav="">
-      <svg class="site-nav--toggle-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 8.17 36.47">
-        <title>kebab</title>
-        <circle cx="4.09" cy="4.09" r="4.09" fill="currentColor"></circle>
-        <circle cx="4.09" cy="32.39" r="4.09" fill="currentColor"></circle>
-        <circle cx="4.09" cy="18.24" r="4.09" fill="currentColor"></circle>
-      </svg>
-    </a>
-
-    <nav class="responsive-nav-wrap">
-    <a href="javascript:;" class="close-menu" data-toggle-nav="">
-      <svg class="close-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18.98 18.98">
-        <title>close</title>
-        <line x1="1.06" y1="1.06" x2="17.92" y2="17.92" fill="none" stroke="currentColor" stroke-width="3"></line>
-        <line x1="17.92" y1="1.06" x2="1.06" y2="17.92" fill="none" stroke="currentColor" stroke-width="3"></line>
-      </svg>
-    </a>
-    <div class="nav-wrap-scroll">
-      <ul class="site-nav--list">
-        {% if is_logged_in %}
-        <li class="site-nav--item"><a href="/en-US/questions/new" class="site-nav--link ask" data-event-category="navigation" data-event-action="main navigation" data-event-label="Get Community Support">Get Community Support</a></li>
-        <li class="site-nav--item dropdown">
-          <a class="site-nav--link" href="#" data-event-category="navigation" data-event-action="main navigation" data-event-label="Contributor Tools">Contributor Tools</a>
-          <ul class="site-nav--sub-list double">
-            <li class="site-nav--sub-item"><a class="site-nav--sub-link" href="/en-US/get-involved" data-event-category="navigation" data-event-action="main navigation" data-event-label="Quickstart Guide">Quickstart Guide</a></li>
-            <li class="site-nav--sub-item"><a class="site-nav--sub-link" href="/en-US/kb/contributor-news-resources" data-event-category="navigation" data-event-action="main navigation" data-event-label="News &amp; Resources">News &amp; Resources</a></li>
-            <li class="site-nav--sub-item"><a class="site-nav--sub-link" href="/en-US/forums" data-event-category="navigation" data-event-action="main navigation" data-event-label="Contributor Forums">Contributor Forums</a></li>
-            <li class="site-nav--sub-item"><a class="site-nav--sub-link" href="/en-US/kb/all/discussions" data-event-category="navigation" data-event-action="main navigation" data-event-label="Article Discussions">Article Discussions</a></li>
-            <li class="site-nav--sub-item"><a class="site-nav--sub-link" href="/en-US/localization" data-event-category="navigation" data-event-action="main navigation" data-event-label="Knowledge Base Dashboard">Knowledge Base Dashboard</a></li>
-            <li class="site-nav--sub-item"><a class="site-nav--sub-link" href="/en-US/kb/dashboard/metrics/aggregated" data-event-category="navigation" data-event-action="main navigation" data-event-label="Localization Metrics">Localization Metrics</a></li>
-            <li class="site-nav--sub-item"><a class="site-nav--sub-link" href="/en-US/kb/revisions" data-event-category="navigation" data-event-action="main navigation" data-event-label="Recent Revisions">Recent Revisions</a></li>
-            <li class="site-nav--sub-item"><a class="site-nav--sub-link" href="/en-US/questions" data-event-category="navigation" data-event-action="main navigation" data-event-label="Support Forum Home">Support Forum Home</a></li>
-            <li class="site-nav--sub-item"><a class="site-nav--sub-link" href="/en-US/questions/dashboard/metrics" data-event-category="navigation" data-event-action="main navigation" data-event-label="Support Forum Metrics">Support Forum Metrics</a></li>
-            <li class="site-nav--sub-item"><a class="site-nav--sub-link" href="/en-US/gallery" data-event-category="navigation" data-event-action="main navigation" data-event-label="Media Gallery">Media Gallery</a></li>
-            <li class="site-nav--sub-item"><a class="site-nav--sub-link" href="/en-US/search/advanced" data-event-category="navigation" data-event-action="main navigation" data-event-label="Advanced Search">Advanced Search</a></li>
-            <li class="site-nav--sub-item"><a class="site-nav--sub-link" href="/en-US/kpi/dashboard" data-event-category="navigation" data-event-action="main navigation" data-event-label="KPI Dashboard">KPI Dashboard</a></li>
-            <li class="site-nav--sub-item"><a class="site-nav--sub-link" href="/en-US/community" data-event-category="navigation" data-event-action="main navigation" data-event-label="Community Hub">Community Hub</a></li>
-          </ul>
-        </li>
-        {% else %}
-        <li class="site-nav--item">
-          <a class="site-nav--link" href="/en-US/get-involved" class="volunteer-button" data-event-category="Volunteer Button" data-event-action="Volunteer for Mozilla Support">Volunteer</a>
-        </li>
-        {% endif %}
-      </ul>
-      <div class="site-nav--right">
-        <ul class="site-nav--list">
-          <li class="site-nav--item">
-            <a class="site-nav--link is-green-button firefox-download-button" href="https://www.mozilla.org/firefox/new/?utm_source=support.mozilla.org&amp;utm_medium=referral&amp;utm_campaign=non-fx-button&amp;utm_content=header-download-button" data-event-category="Download Button" data-event-action="Firefox for Desktop">Download Firefox</a>
-          </li>
-          <li class="site-nav--item">
-            <a class="site-nav--link" href="/en-US/locales" data-event-category="navigation" data-event-action="main navigation" data-event-label="Locale Picker">
-              <svg class="site-nav--lang-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                <path id="icon-globe" d="M12,1A11,11,0,1,0,23,12,11,11,0,0,0,12,1Zm-.67,20.17a9.68,9.68,0,0,1-5.67-2.72A9.37,9.37,0,0,1,5.14,5.58a9.22,9.22,0,0,1,.11,1.29C5.16,8.14,5,8.93,5.79,10a5.15,5.15,0,0,1,.51,1.49c.14.48.7.72,1.08,1,.78.59,1.53,1.27,2.35,1.79.55.34.89.51.73,1.16A4.28,4.28,0,0,1,10,16.77,2.5,2.5,0,0,0,10.47,18a16.63,16.63,0,0,0,1.25,1.12C12.41,19.64,11.65,20.37,11.33,21.17Zm7.42-2.56A9.26,9.26,0,0,1,14,21.17a3.74,3.74,0,0,1,1.13-1.53,3.92,3.92,0,0,0,1-1.27,8.19,8.19,0,0,1,.7-1.22c.37-.56-.9-1.42-1.31-1.6A13.48,13.48,0,0,1,13.06,14c-.59-.42-1.77.21-2.43-.08a12.61,12.61,0,0,1-2.44-1.68c-.81-.62-.77-1.34-.77-2.24.63,0,1.54-.18,2,.33.13.17.59.89.9.63S10.09,9.93,10,9.73c-.26-.61.59-.85,1-1.26s1.79-1.39,1.69-1.78S11.5,5.21,10.84,5.38c-.1,0-1,.94-1.13,1.08,0-.3,0-.6,0-.89s-.35-.39-.33-.51c0-.31.89-.87,1.1-1.11-.15-.1-.65-.54-.81-.47-.37.15-.79.26-1.16.42a2.22,2.22,0,0,0,0-.37,8.74,8.74,0,0,1,2.34-.69l.73.29.52.62.51.53.45.15.71-.68-.18-.48V2.83a9.13,9.13,0,0,1,3.91,1.56l-.7.08a3.84,3.84,0,0,0-.36-.14c.34.74.69,1.46,1,2.18s1.23,1.6,1.38,2.42,0,1.83.15,3a5,5,0,0,0,1.22,2.32,2.39,2.39,0,0,0,1,.12A9.36,9.36,0,0,1,18.75,18.61Z"></path>
-              </svg>
-              EN </a>
-          </li>
-          {% if is_logged_in %}
-          <li class="site-nav--item dropdown user-dropdown">
-            <a href="javascript:;" class="site-nav--link user" data-event-category="navigation" data-event-action="main navigation" data-event-label="User">
-              <span class="hide-on-mobile">user.name</span>
-              <img class="site-nav--avatar hide-on-mobile" src="https://firefoxusercontent.com/00000000000000000000000000000000">
-              <span class="mobile-only">My Profile</span>
-            </a>
-              <ul class="site-nav--sub-list">
-                <li class="site-nav--sub-item"><a class="site-nav--sub-link" href="#" data-event-category="navigation" data-event-action="main navigation" data-event-label="My Profile">View Profile</a></li>
-                <li class="site-nav--sub-item"><a class="site-nav--sub-link" href="/en-US/search?a=1&amp;asked_by=kasey.kelly&amp;w=2" data-event-category="navigation" data-event-action="main navigation" data-event-label="My Questions">My Questions</a></li>
-                <li class="site-nav--sub-item"><a class="site-nav--sub-link" href="#" data-event-category="navigation" data-event-action="main navigation" data-event-label="Edit Profile">Edit Profile</a></li>
-                <li class="site-nav--sub-item"><a class="site-nav--sub-link"  href="#" data-event-category="navigation" data-event-action="main navigation" data-event-label="Settings">Settings</a></li>
-                <li class="site-nav--sub-item"><a class="site-nav--sub-link" href="/en-US/messages" data-event-category="navigation" data-event-action="main navigation" data-event-label="Inbox">Inbox</a></li>
-                <li class="site-nav--sub-item">
-                  <form id="sign-out" action="/en-US/users/logout" method="post">
-                    <input type="hidden" name="csrfmiddlewaretoken" value="gH5pIzvuVpiV6itWMiV3SbqUu3KVzsu2H9r7rdTZwYZMFifcdtNeOGK7cZDQQD3G">
-                  </form>
-                  <a class="site-nav--sub-link" data-type="submit" data-form="sign-out" href="#sign-out" data-event-category="navigation" data-event-action="main navigation" data-event-label="Sign Out">
-                    Sign Out
-                  </a>
-                </li>
-              </ul>
-            </li>
-
-          {% else %}
-          <li class="site-nav--item login">
-            <a class="site-nav--link is-white-button-on-large" href="/en-US/users/auth" data-event-category="navigation" data-event-action="main navigation" data-event-label="Sign In">
-              Log in / Sign up
-            </a>
-          </li>
-          {% endif %}
-        </ul>
-      </div>
-    </div>
-  </nav>
-</header> #}
 {% endmacro %}

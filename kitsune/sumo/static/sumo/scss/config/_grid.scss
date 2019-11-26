@@ -40,7 +40,7 @@
 
 // Grid columns
 
-@use 'protocol' as p;
+@use '../protocol' as p;
 
 $gutter-width: 32px !default;
 $max-container-width: 1312px !default;

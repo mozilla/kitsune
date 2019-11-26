@@ -12,8 +12,8 @@
 //
 // Style guide: Utilities.link-expand
 
-@use '../config';
-@use 'protocol';
+@use '../config' as c;
+@use '../protocol' as p;
 
 .expand-this-link {
   &:after {
@@ -27,8 +27,7 @@
   }
 }
 
-
-@media #{protocol.$mq-md} {
+@media #{p.$mq-md} {
   .hide-on-mobile {
     display: none;
   }
@@ -37,9 +36,13 @@
 .mobile-only {
   display: block;
 
-  @media #{protocol.$mq-md} {
+  @media #{p.$mq-md} {
     display: none;
   }
+}
+
+.hidden {
+  display: none !important;
 }
 
 .m-0 {

@@ -28,9 +28,9 @@
 // Style guide: buttons.button-wrap
 
 @use '../../config' as c;
-@use 'protocol' as p;
+@use '../../protocol' as p;
 
-.mzp-c-button-wrap {
+.sumo-button-wrap {
   display: flex;
   justify-content: flex-start;
   align-items: center;
@@ -51,18 +51,18 @@
     justify-content: center;
   }
 
-  .mzp-c-sumo-button {
+  .sumo-button {
     margin: 0 p.$spacing-sm p.$spacing-sm 0;
   }
 
   &.full-width-on-mobile {
-    .mzp-c-sumo-button {
+    .sumo-button {
       margin-right: 0;
       width: 100%;
     }
 
     @media #{p.$mq-md} {
-      .mzp-c-sumo-button {
+      .sumo-button {
         margin-right: p.$spacing-sm;
         width: auto;
       }

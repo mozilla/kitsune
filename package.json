@@ -7,7 +7,7 @@
   },
   "scripts": {
     "stylelint": "stylelint kitsune/sumo/static/sumo/scss/**/* --fix && stylelint kss-template/kss-assets/scss/**/*",
-    "build:scss": "sass kitsune/sumo/static/sumo/scss/screen.scss static/build/screen-noprefixes.css --source-map --load-path 'node_modules/@mozilla-protocol/core/protocol/css'",
+    "build:scss": "sass kitsune/sumo/static/sumo/scss/screen.scss static/build/screen-noprefixes.css --source-map --load-path 'node_modules/@mozilla-protocol/core' --load-path 'kitsune/sumo/static/sumo/scss'",
     "build:postcss": "npx postcss static/build/screen-noprefixes.css --use autoprefixer -o static/build/screen.css",
     "build:css": "npm-run-all --sequential 'build:scss' 'build:postcss'",
     "build:docs:copyprotocol": "cp -r node_modules/@mozilla-protocol/core/protocol static/build/styleguide/static",

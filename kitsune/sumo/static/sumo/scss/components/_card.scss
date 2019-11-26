@@ -16,7 +16,7 @@
 // Style guide: card
 
 @use '../config' as c;
-@use 'protocol' as p;
+@use '../protocol' as p;
 
 .card {
   @include c.bottomless;

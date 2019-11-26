@@ -1,5 +1,5 @@
 @use './color-swatches';
-@use 'protocol';
+@use '../protocol' as p;
 @use 'sass:map';
 
 // Think in pixels, but use rems. Takes a whole number.
@@ -44,7 +44,7 @@
   // When unit is pixels, pass it through and convert to rem
   @if (unit($size) == 'px') {
     line-height: $size;
-    line-height: protocol.remify($size);
+    line-height: p.remify($size);
   }
 
   // When unit is not pixels, show an error

@@ -14,19 +14,46 @@
 // Style guide: nav
 
 @use '../config' as c;
-@use 'protocol' as p;
+@use '../protocol' as p;
 
 .sumo-nav {
+
+  &--container {
+    @include c.container;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+
+    @media #{p.$mq-md} {
+      flex-wrap: nowrap;
+    }
+  }
+
   &--logo {
     margin-right: c.$gutter-width;
+    padding-top: 12px;
+    padding-bottom: 12px;
     width: 96px;
     height: auto;
+
+    a, img {
+      display: block;
+    }
   }
 
   &--list {
-    @include c.container;
-    display: flex;
-    padding-top: 18px;
+    display: block;
+
+    @media #{p.$mq-md} {
+      display: flex;
+      padding-top: 18px;
+    }
+
+  }
+
+  &--list-wrap {
+    flex: 1 1 100%;
   }
 
   &--item-right {
@@ -38,27 +65,38 @@
       padding-right: 0;
 
       .avatar {
-        margin-top: -6px;
-        margin-bottom: -6px;
-        margin-left: 20px;
-        width: 36px;
+        display: none;
+
+        @media #{p.$mq-md} {
+          display: block;
+          margin-top: -6px;
+          margin-bottom: -6px;
+          margin-left: 20px;
+          width: 36px;
+        }
       }
     }
   }
 
   &--dropdown {
     &-grid {
-      @media #{p.$mq-sm} {
+      position: relative;
+
+      @media #{p.$mq-md} {
         @include c.grid-row;
+        padding-top: 16px;
+        padding-bottom: 16px;
       }
     }
 
     &-container {
-      @include c.container;
+      @media #{p.$mq-md} {
+        @include c.container;
+      }
     }
 
     &-col {
-      @media #{p.$mq-sm} {
+      @media #{p.$mq-md} {
         @include c.col(3, 6);
       }
 
@@ -86,17 +124,9 @@
 
     &-thirds { // This is non-standard.
       @include c.col;
-      @media #{p.$mq-sm} {
+      @media #{p.$mq-md} {
         width: c.col-width(2, 6);
       }
-
-      // @media #{p.$mq-lg} {
-      //   width: c.col-width(3, 8);
-      // }
-      //
-      // @media #{p.$mq-xl} {
-      //   width: c.col-width(4, 10);
-      // }
     }
 
     &-item {
@@ -109,24 +139,71 @@
     display: flex;
     justify-content: flex-end;
     padding-top: 12px;
+    width: auto;
   }
 
   &--sublist {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
+    @media #{p.$mq-sm} {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+    }
   }
-}
 
+  &--lang-link {
+    display: none;
 
-// protocol overrides
-.mzp-c-menu-category {
-  .mzp-c-menu-title {
-    padding-top: 8px;
-    padding-bottom: 24px;
+    @at-root .mzp-c-menu-category &.mzp-c-menu-title {
+      display: none;
+    }
+
+    @media #{p.$mq-lg} {
+      display: block;
+
+      @at-root .mzp-c-menu-category &.mzp-c-menu-title {
+        display: block;
+      }
+    }
   }
-}
 
-.mzp-c-menu-item .mzp-c-menu-item-list::after {
-  content: none; // removing clearfix that screws up flexbox
+
+  // protocol overrides
+  .mzp-c-menu-panel .mzp-c-menu-button-close {
+    right: 16px;
+  }
+
+  .mzp-c-navigation-menu {
+    margin-left: 0;
+  }
+
+  .mzp-c-menu-category .mzp-c-menu-title {
+    padding-top: 12px;
+    padding-bottom: 12px;
+
+    @media #{p.$mq-md} {
+      padding-top: 8px;
+      padding-bottom: 24px;
+    }
+  }
+  .mzp-c-navigation-l-content {
+    padding: 0;
+  }
+
+  .mzp-c-menu-item .mzp-c-menu-item-list::after {
+    content: none; // removing clearfix that screws up flexbox
+  }
+
+  .mzp-c-menu-category {
+    @media #{p.$mq-md} {
+      display: flex;
+    }
+  }
+
+  .mzp-c-navigation-menu {
+    width: 100%;
+  }
+
+  .mzp-c-menu-panel {
+    top: 74px;
+  }
 }
