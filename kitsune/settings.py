@@ -400,7 +400,7 @@ MEDIA_URL = config('MEDIA_URL', default='/media/')
 STATIC_ROOT = path('static')
 STATIC_URL = config('STATIC_URL', default='/static/')
 STATICFILES_DIRS = (
-    path('bower_components'),
+    path('js_assets'),
     path('jsi18n'),  # Collect jsi18n so that it is cache-busted
 )
 STATICFILES_FINDERS = (
@@ -798,7 +798,7 @@ PIPELINE = {
     # 'LESS_ARGUMENTS': '--autoprefix="> 1%, last 2 versions, ff > 1"',
 
     'BROWSERIFY_BINARY': path('node_modules/.bin/browserify'),
-    'BROWSERIFY_ARGUMENTS': '-t babelify -t debowerify',
+    'BROWSERIFY_ARGUMENTS': '-t babelify',
     'PIPELINE_COLLECTOR_ENABLED': config(
         'PIPELINE_COLLECTOR_ENABLED',
         default=not DEBUG,

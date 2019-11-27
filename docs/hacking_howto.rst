@@ -165,7 +165,7 @@ appropriate dependencies::
 
     $ pip install -r requirements/test.txt
 
-Node.js Packages
+Node.js and frontend Packages
 -------------------
 
 Kitsune relies on some Node.js packages. To get those, you will need to
@@ -177,17 +177,6 @@ Now install the Node.js dependencies with::
     $ npm install
 
 This should create a directory named ``node_modules`` in your git repo.
-
-Frontend Packages
------------------
-
-Kitsune gets libraries and dependencies for client side code from Bower. Bower
-is installed as a part of the NPM packages in the last step. To install these
-front-end dependencies run::
-
-   $ ./node_modules/.bin/bower install
-
-This will download dependencies into ``bower_components``.
 
 
 Configuration and Setup

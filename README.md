@@ -22,7 +22,7 @@ and follow the following steps.
    git clone https://github.com/mozilla/kitsune.git
    ```
 
-2. Pull base Kitsune Docker images, run `collectstatic`, create your database, and install node and bower packages.
+2. Pull base Kitsune Docker images, run `collectstatic`, create your database, and install node packages.
    ```
    make init
    ```

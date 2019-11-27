@@ -3,9 +3,9 @@
 #
 FROM node:12 AS frontend-base
 
-WORKDIR /static
-COPY ./package.json .
-RUN npm install
+WORKDIR /app
+COPY ["./package.json", "./package-lock.json", "prepare_django_assets.js", "/app/"]
+RUN npm run development && npm run production
 
 ################################
 # Python dependencies builder
@@ -45,15 +45,11 @@ ENV GIT_SHA=${GIT_SHA}
 # Developer image
 #
 FROM base AS base-dev
-
 RUN apt-get update && apt-get install apt-transport-https && \
-    echo "deb https://deb.nodesource.com/node_6.x stretch main" >> /etc/apt/sources.list && \
-    curl -sS https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add - && \
-    echo "deb https://dl.yarnpkg.com/debian/ stable main" >> /etc/apt/sources.list && \
-    curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - && \
-    apt-get update && \
-    apt-get install -y --no-install-recommends nodejs yarn optipng && \
+    curl -sL https://deb.nodesource.com/setup_12.x | bash -
+RUN apt-get update && apt-get install -y --no-install-recommends optipng nodejs && \
     rm -rf /var/lib/apt/lists/*
+
 
 
 ################################
@@ -61,10 +57,8 @@ RUN apt-get update && apt-get install apt-transport-https && \
 #
 FROM base-dev AS staticfiles
 
-COPY package.json bower.json /app/
-
-RUN yarn install --frozen-lockfile && yarn cache clean
-RUN ./node_modules/.bin/bower install --allow-root
+COPY --from=frontend-base --chown=kitsune:kitsune /app/js_assets /app/js_assets
+COPY --from=frontend-base --chown=kitsune:kitsune /app/node_modules /app/node_modules
 
 COPY . .
 
@@ -125,7 +119,6 @@ RUN groupadd --gid 1000 kitsune && useradd -g kitsune --uid 1000 --shell /usr/sb
 COPY --from=base --chown=kitsune:kitsune /venv /venv
 COPY --from=staticfiles --chown=kitsune:kitsune /app/static /app/static
 COPY --from=staticfiles --chown=kitsune:kitsune /app/jsi18n /app/jsi18n
-COPY --from=staticfiles --chown=kitsune:kitsune /app/bower_components /app/bower_components
 
 COPY --chown=kitsune:kitsune . .
 

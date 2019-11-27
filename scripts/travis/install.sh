@@ -30,11 +30,6 @@ echo "Installing Node.js dependencies"
 npm install
 echo
 
-echo "Installing front end dependencies"
-./node_modules/.bin/bower install
-echo
-
-
 echo "Installing ElasticSearch"
 # Default to ES version 1.2.4, but allow overrides from the environment
 ELASTICSEARCH_VERSION=${ELASTICSEARCH_VERSION:-1.2.4}
