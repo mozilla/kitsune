@@ -1,0 +1,234 @@
+@use '../../config' as c;
+@use 'protocol' as p;
+
+:root {
+  --field-border-color-default: var(--color-marketing-gray-05);
+  --field-border-color-hover: var(--color-blue-07);
+  --checkbox-checked-color: var(--color-blue-06);
+  --field-border-color-disabled: var(--color-marketing-gray-03);
+  --field-background-color-disabled: var(--color-marketing-gray-01);
+  --field-color-disabled: var(--color-marketing-gray-03);
+}
+// Forms
+//
+// Forms are used throughout the system and can be arranged in several ways. The
+// following is an example of how various components are combined.
+//
+// Markup: ../../../styleguide-examples/form.njk
+//
+// Weight: 3
+//
+// Style guide: forms
+fieldset {
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+legend {
+  margin: 0;
+  padding: 1em 0 0.5em; // margin was collapsing strangely here.
+  font-size: rem-calc(24);
+  font-weight: var(--global-weight-semibold);
+  color: var(--primary-heading-color);
+}
+
+// Input fields
+//
+// Help text can be added under the field with `<p class="help-text">` Help text
+// should be be tied to the form field using the aria-describedby attribute and
+// an ID. This will ensure that screen readers—will announce the help text when
+// the user focuses the field.
+//
+// .has-disabled  - Indicates a disabled field. `disabled` should also be applied as an attribute to the field itself.
+// .has-error     - Indiciates a field error.
+// .has-warning     - Indiciates a field error.
+// .has-success     - Indiciates a field error.
+//
+// Markup: ../../../styleguide-examples/field.njk
+//
+// Weight: 1
+//
+// Style guide: forms.field
+label {
+  display: block;
+  margin-bottom: p.$spacing-sm;
+  @include p.font-size(14px);
+  color: var(--color-marketing-gray-07);
+}
+
+.field {
+  position: relative;
+  margin-bottom: p.$spacing-md;
+
+  .error-text {
+    display: none;
+  }
+
+  &.has-error {
+    .error-text {
+      display: block;
+      margin: p.$spacing-sm 0 0 0;
+      color: var(--color-red-08);
+      @include p.font-size(12px);
+    }
+  }
+
+  &.has-error,
+  &.has-success {
+    .field-wrap {
+      position: relative;
+
+      &:after {
+        position: absolute;
+        top: 9px;
+        right: 9px;
+        width: 21px;
+        height: 21px;
+        background-image: c.svg-url('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 22"><circle cx="11" cy="11" r="10" fill="none" stroke="#C50043" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/><path stroke-width="2" stroke="#C50043" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M11 7v5"/><circle cx="11" cy="15" r="1" fill="#C50043"/></svg>');
+        background-repeat: no-repeat;
+        content: "";
+      }
+    }
+  }
+
+  &.has-success .field-wrap:after {
+    top: 12px;
+    background-image: c.svg-url('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 13"><path fill="none" stroke="#2ac3a2" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 1L6 12 1 7"/></svg>');
+  }
+}
+
+input[type='email'],
+input[type='url'],
+input[type='tel'],
+input[type='password'],
+input[type='search'],
+input[type='text'],
+input[type='number'],
+input[type='date'],
+input[type='time'],
+select,
+textarea {
+  appearance: none;
+  position: relative;
+  padding: 0 p.$spacing-sm;
+  width: 100%;
+  height: 40px;
+  border: 2px solid var(--field-border-color-default);
+  border-radius: var(--global-radius);
+  background-color: var(--color-white);
+  color:#0c0c0d;
+  outline:0;
+  transition-duration:150ms;
+  transition-property:border-color;
+  @include p.font-size(16px);
+
+  &:hover {
+    border-color: var(--field-border-color-hover);
+  }
+
+  &:focus,
+  .has-warning &,
+  .has-error &,
+  .has-success & {
+    border-color: transparent;
+  }
+
+  &:focus {
+    box-shadow: var(--focus-shadow);
+  }
+
+  .has-warning & {
+    box-shadow: 0 0 0 4px rgba(c.color('yellow', '04'), 0.3), 0 0 0 2px c.color('yellow', '04'); // compliant colors
+    // box-shadow: 0 0 0 4px rgba(215, 182, 0, 0.3), 0 0 0 2px rgb(215, 182, 0); // noncompliant colors
+  }
+
+  .has-success & {
+    box-shadow: 0 0 0 4px rgba(c.color('green', '07'), 0.3), 0 0 0 2px c.color('green', '07'); // compliant colors
+    // box-shadow: 0 0 0 4px rgba(63, 225, 176, 0.3), 0 0 0 2px var(--green-60); // noncompliant colors
+  }
+
+  .has-error & {
+    box-shadow: 0 0 0 4px rgba(c.color('red', '08'), 0.4), 0 0 0 2px var(--color-red-08);
+    // box-shadow: 0 0 0 4px rgba(255, 79, 94, 0.4), 0 0 0 2px var(--red-60);
+  }
+
+  .has-disabled &,
+  &:disabled,
+  &:disabled:hover,
+  &:disabled:active {
+    border-color: var(--field-border-color-disabled);
+    background-color: var(--field-background-color-disabled);
+    color: var(--field-color-disabled);
+    cursor: default;
+  }
+}
+
+// Select
+//
+// .has-disabled  - Indicates a disabled field. `disabled` should also be applied as an attribute to the field itself.
+// .has-error     - Indiciates a field error.
+// .has-warning     - Indiciates a field error.
+// .has-success     - Indiciates a field error.
+//
+// Markup: ../../../styleguide-examples/field_select.njk
+//
+// Weight: 2
+//
+// Style guide: forms.select
+select {
+  position: relative;
+  padding-right: 40px;
+  background-image: c.svg-url('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 10"><path fill="none" vector-effect="non-scaling-stroke" stroke="#42435A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" d="M1 1l8 8 8-8"/></svg>');
+  background-color: transparent;
+  background-position: top 14px right 14px;
+  background-repeat: no-repeat;
+  background-size: 12px 12px;
+
+  :not([class*="has-"]) > &:hover,
+  :not([class*="has-"]) > &:focus {
+    background-image: c.svg-url('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 10"><path fill="none" vector-effect="non-scaling-stroke" stroke="#0250BB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" d="M1 1l8 8 8-8"/></svg>');
+  }
+
+  &:disabled,
+  .has-disabled & {
+    background-image: c.svg-url('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 10"><path fill="none" vector-effect="non-scaling-stroke" stroke="#CDCDD4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" d="M1 1l8 8 8-8"/></svg>');
+  }
+}
+
+// Textarea
+//
+// .has-disabled  - Indicates a disabled field. `disabled` should also be applied as an attribute to the field itself.
+// .has-error     - Indiciates a field error.
+// .has-warning     - Indiciates a field error.
+// .has-success     - Indiciates a field error.
+//
+// Markup: ../../../styleguide-examples/field_textarea.njk
+//
+// Weight: 3
+//
+// Style guide: forms.textarea
+textarea {
+  display: block;
+  padding: p.$spacing-sm;
+  min-height: 80px;
+}
+
+// Help Text
+//
+// Help text can be added under the field with `<p class="help-text">` Help text
+// should be be tied to the form field using the aria-describedby attribute and
+// an ID. This will ensure that screen readers—will announce the help text when
+// the user focuses the field.
+//
+//
+// Markup: ../../../styleguide-examples/field_help_text.njk
+//
+// Weight: 22
+//
+// Style guide: forms.help-text
+.help-text {
+  display: block;
+  margin: p.$spacing-sm 0 0 0;
+  @include p.font-size(12px);
+}

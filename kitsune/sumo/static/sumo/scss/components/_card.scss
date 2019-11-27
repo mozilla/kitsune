@@ -1,0 +1,33 @@
+// Cards
+//
+// This component is used throughout the system to group elements. Combine
+// elevation and padding classes to achieve different hierarchies of content.
+//
+// .elevation-00 - Small border, no shadow
+// .elevation-01 - small shadow
+// .elevation-02 - medium shadow
+// .elevation-03 - large shadow
+// .feature-padding.elevation-01 - Increase the amount of padding, for use with larger cards
+//
+// Markup: ../../../styleguide-examples/card.njk
+//
+// Weight: 5
+//
+// Style guide: card
+
+@use '../config' as *;
+
+.card {
+  @include bottomless;
+  padding: rem-calc(20);
+  border-radius: var(--global-radius);
+
+  &.feature-padding {
+    padding: rem-calc(40);
+  }
+}
+
+.elevation-00 { @include elevation-00;}
+.elevation-01 { @include elevation-01;}
+.elevation-02 { @include elevation-02;}
+.elevation-03 { @include elevation-03;}

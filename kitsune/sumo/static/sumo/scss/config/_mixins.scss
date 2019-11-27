@@ -1,0 +1,122 @@
+@use './color-swatches';
+@use 'protocol';
+@use 'sass:map';
+
+// Think in pixels, but use rems. Takes a whole number.
+@function rem-calc($size, $multiplier:1) {
+  $remSize: $size / 16 * $multiplier;
+  @return #{$remSize}rem;
+}
+
+// Sets dimensions for a square (equal width x height) object.
+@mixin square($size) {
+  width: $size;
+  height: $size;
+}
+
+/// Removes trailing space at the bottom of elements.
+@mixin bottomless {
+  & > *:last-child {
+    margin-bottom: 0;
+  }
+}
+
+@mixin disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+@mixin sr-only {
+  position: absolute;
+  left: -1000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+@mixin image-replaced {
+  white-space: nowrap;
+  overflow: hidden;
+  text-indent: 120%; // extra 20% to account for fancy fonts that may overhang
+}
+
+@mixin line-height($size) {
+  // When unit is pixels, pass it through and convert to rem
+  @if (unit($size) == 'px') {
+    line-height: $size;
+    line-height: protocol.remify($size);
+  }
+
+  // When unit is not pixels, show an error
+  @else {
+    @error 'This mixin only accepts sizes in pixels. You declared `line-height(#{$size})`.';
+  }
+}
+
+// function to retrieve color from $colors map ie. `color(base, primary)`
+@function color($name, $variant: '01') {
+  $color: null;
+
+  // Get the variants on the map
+  $color-variants: map.get(color-swatches.$colors, $name);
+
+  // if there are variants, use them:
+  @if $color-variants {
+    $color: map.get($color-variants, $variant);
+  }
+
+  @return $color;
+}
+
+// build CSS variables from SCSS Sourcemaps
+@mixin cssvars($map-name: $colors) {
+  // each item in size map
+  @each $key1, $val1 in $map-name {
+    // maps require a second loop
+    @if type-of($val1) == "map" {
+      @each $key2, $val2 in $val1 {
+        --color-#{$key1}-#{$key2}: #{$val2};
+      }
+    } @else { // top-level colors
+      --color-#{$key1}: #{$val1};
+    }
+  }
+}
+
+// Function to create an optimized svg url
+// Source: http://codepen.io/jakob-e/pen/doMoML
+// Explained: https://codepen.io/tigt/post/optimizing-svgs-in-data-uris
+@function svg-url($svg) {
+  //  Chunk up string in order to avoid
+  //  "stack level too deep" error
+  $encoded: '';
+  $slice: 2000;
+  $index: 0;
+  $loops: ceil(str-length($svg)/$slice);
+
+  @for $i from 1 through $loops {
+    $chunk: str-slice($svg, $index, $index + $slice - 1);
+    // Encode (may need a few extra replacements)
+    $chunk: str-replace($chunk,'"','\'');
+    $chunk: str-replace($chunk,'<','%3C');
+    $chunk: str-replace($chunk,'>','%3E');
+    $chunk: str-replace($chunk,'&','%26');
+    $chunk: str-replace($chunk,'#','%23');
+    $encoded: #{$encoded}#{$chunk};
+    $index: $index + $slice;
+  }
+
+  @return url("data:image/svg+xml;charset=utf8,#{$encoded}");
+}
+
+//  Helper function to replace characters in a string
+@function str-replace($string, $search, $replace: '') {
+  $index: str-index($string, $search);
+
+  @if $index {
+    @return str-slice($string, 1, $index - 1) + $replace +
+      str-replace(str-slice($string, $index +
+      str-length($search)), $search, $replace);
+  }
+  @return $string;
+}

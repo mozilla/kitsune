@@ -1,0 +1,131 @@
+// Buttons
+//
+// These button classes can be added to buttons, inputs, or links. Size classes
+// and theme classes can be combined.
+//
+// :hover     - Highlight the button when hovered with a cursor.
+// :disabled  - Make the button change appearance to reflect it being disabled.
+// :active    - The button is pressed down.
+// :focus    - The button is focused with keyboard navigaiton.
+// .button-sm - small modifier
+// .button-lg - large modifier
+// .button-xl - extra large modifier
+// .primary-button    - This is the primary variation.
+// .secondary-button - this is the warning button.
+//
+// Markup: ../../../styleguide-examples/button.njk
+//
+// Weight: 4
+//
+// Style guide: buttons
+
+@use '../../config' as c;
+@use 'protocol' as p;
+
+.mzp-c-sumo-button {
+  display:inline-flex;
+  justify-content:center;
+  align-items:center;
+  padding: 0 p.$spacing-lg;
+  height: p.$spacing-xl;
+  border: 2px solid var(--color-marketing-gray-03);
+  border-radius: var(--global-radius);
+  background-color: var(--color-inverse);
+
+  font-family: var(--heading-font-family);
+  @include p.font-size(14px);
+  font-weight:700;
+  text-decoration: none;
+  color: var(--color-marketing-gray-07);
+
+  cursor: pointer;
+  transition-duration: 150ms;
+  transition-property: background-color, border-color;
+
+  &:visited {
+    color: var(--color-marketing-gray-07);
+  }
+
+  &:hover:not(:disabled) {
+    border-color: var(--color-marketing-gray-04);
+    background-color: var(--color-marketing-gray-02);
+    color: var(--color-marketing-gray-07);
+  }
+
+  &:active:not(:disabled) {
+    border-color: var(--color-marketing-gray-05);
+    color: var(--color-marketing-gray-07);
+  }
+
+  &:focus {
+    box-shadow: var(--focus-shadow);
+    color: var(--color-marketing-gray-07);
+  }
+
+  &:disabled,
+  &.is-disabled {
+    cursor: auto;
+    opacity: .4;
+  }
+
+  &::-moz-focus-inner {
+    padding: 0;
+    border: 0;
+  }
+
+  &.button-sm {
+    padding: 0 p.$spacing-md;
+    height: p.$spacing-lg;
+    border-radius: 2px;
+
+  }
+
+  &.button-lg {
+    height: 40px;
+
+  }
+
+  &.button-xl {
+    height: p.$spacing-2xl;
+  }
+
+  &.primary-button {
+    border-width: 0;
+    background: var(--color-link);
+    color: var(--color-inverse);
+
+    &:hover:not(:disabled) {
+      background: var(--color-blue-07);
+      color: var(--color-inverse);
+    }
+
+    &:active:not(:disabled) {
+      background: var(--color-blue-09);
+    }
+  }
+
+  &.secondary-button {
+    border-color: var(--color-link);
+    background: var(--color-inverse);
+    color: var(--color-link);
+
+    &:hover:not(:disabled) {
+      border-color: var(--color-blue-07);
+      background-color: var(--color-blue-07);
+      color: var(--color-inverse);
+    }
+
+    &:active:not(:disabled) {
+      border-color: var(--color-blue-09);
+      background: var(--color-blue-09);
+      color: var(--color-inverse);
+    }
+  }
+}
+
+.mzp-c-sumo-button.sumo:focus,
+button:focus,
+input[type=submit]:focus {
+  box-shadow: var(--focus-shadow);
+  outline: none;
+}

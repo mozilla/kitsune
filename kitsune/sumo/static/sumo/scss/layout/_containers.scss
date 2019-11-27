@@ -1,0 +1,23 @@
+// Containers
+//
+// This container provides default horizontal margins for the page and a max-width of 1400px.
+//
+// .narrow - 1000px max max-width
+//
+// Markup: ../../../styleguide-examples/containers.njk
+//
+// Weight: 20
+//
+// Style guide: containers
+
+@use '../config' as *;
+
+.container {
+  margin: 0 auto;
+  padding: 0 20px;
+  max-width: rem-calc(1440);
+
+  &.narrow {
+    max-width: rem-calc(1000);
+  }
+}
