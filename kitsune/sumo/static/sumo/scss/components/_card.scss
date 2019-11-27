@@ -1,3 +1,5 @@
+@use '../config' as *;
+
 // Cards
 //
 // This component is used throughout the system to group elements. Combine
@@ -9,13 +11,11 @@
 // .elevation-03 - large shadow
 // .feature-padding.elevation-01 - Increase the amount of padding, for use with larger cards
 //
-// Markup: ../../../styleguide-examples/card.njk
+/* Markup: #{$styleguide-path}/card.njk */
 //
 // Weight: 5
 //
 // Style guide: card
-
-@use '../config' as *;
 
 .card {
   @include bottomless;

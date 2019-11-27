@@ -1,3 +1,6 @@
+@use '../../config' as c;
+@use 'protocol' as p;
+
 // Buttons
 //
 // These button classes can be added to buttons, inputs, or links. Size classes
@@ -13,14 +16,11 @@
 // .primary-button    - This is the primary variation.
 // .secondary-button - this is the warning button.
 //
-// Markup: ../../../styleguide-examples/button.njk
+/* Markup: #{c.$styleguide-path}/button.njk */
 //
 // Weight: 4
 //
 // Style guide: buttons
-
-@use '../../config' as c;
-@use 'protocol' as p;
 
 .mzp-c-sumo-button {
   display:inline-flex;

@@ -1,0 +1,49 @@
+// ------------------------------------------------------------------------------
+// Layout and page background
+// ------------------------------------------------------------------------------
+
+.nav-is-open {
+  .kss-container {
+    padding-left: calc(var(--kss-sidebar-width) + 20px);
+  }
+
+  .kss-off-canvas-sidebar {
+    transform: translateX(0);
+  }
+
+  .kss-toggle-nav {
+    .hamburger {
+      display: none;
+    }
+
+    .close {
+      display: block;
+    }
+  }
+}
+
+.kss-container {
+  padding-top: var(--kss-navbar-height);
+  will-change: padding-left;
+  transition: padding-left .2s ease-in-out;
+}
+
+.kss-section {
+  margin: 2em auto;
+  padding-right: 20px;
+  padding-left: 20px;
+  max-width: 1200px;
+}
+
+.kss-off-canvas-sidebar {
+  position: fixed;
+  top: var(--kss-navbar-height);
+  padding: 10px;
+  width: var(--kss-sidebar-width);
+  height: calc(100% - var(--kss-navbar-height));
+  background-color: var(--kss-sidebar-bg);
+  overflow: auto;
+  transform: translateX(-100%);
+  will-change: transform;
+  transition: transform .2s ease-in-out;
+}

@@ -1,3 +1,6 @@
+@use 'protocol' as *;
+@use '_variables' as *;
+
 // Grid
 //
 // This set of mixins should be used when building layouts. No grid classes are
@@ -32,15 +35,13 @@
 //}
 //```
 //
-// Markup: ../../../styleguide-examples/grid.njk
+/* Markup: #{$styleguide-path}/grid.njk */
 //
 // Weight: 2
 //
 // Style guide: grid
 
 // Grid columns
-
-@use 'protocol' as *;
 
 $gutter-width: 32px !default;
 $max-container-width: 1312px !default;

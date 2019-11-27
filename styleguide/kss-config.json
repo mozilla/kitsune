@@ -1,0 +1,15 @@
+{
+  "title": "Mozilla SUMO Styleguide",
+  "//": "The source and destination paths are relative to this file.",
+  "source": "../kitsune/sumo/static/sumo/scss",
+  "destination": "build",
+  "//": "The css and js paths are URLs relative to the style guide destination.",
+  "css": [
+    "static/css/screen.css"
+  ],
+  "//": [
+    "Change the key to js and remove this note when JS is compiled with the frontend. old: js/bundle.js"
+  ],
+  "homepage": "../../../../../styleguide/styleguide-examples/styleguide-index.md",
+  "builder": "kss-template"
+}
