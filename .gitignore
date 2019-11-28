@@ -40,3 +40,4 @@ k8s/regions/*/*-secrets.yaml
 .docker-build*
 postatus.txt
 .ipython
+js_assets/

@@ -3,10 +3,10 @@
 set -ex
 
 # install Node dependencies
-npm install
+npm run development && npm run postinstall
 # ensure the DB server is ready
 urlwait
 # run collectstatic
-#python manage.py collectstatic
+python manage.py collectstatic --noinput
 # run DB migrations
 python manage.py migrate
