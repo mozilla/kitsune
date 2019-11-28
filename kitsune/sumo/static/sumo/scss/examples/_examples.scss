@@ -1,9 +1,11 @@
+@use '../config' as c;
+
 // Homepage
 //
 // This is an example homepage design, complied to display several components
 // working together.
 //
-// Markup: ../../../styleguide-examples/example-home.njk
+/* Markup: #{c.$styleguide-path}/example-home.njk */
 //
 // Weight: 50
 //

@@ -1,0 +1,10 @@
+{% macro masthead(modifier_class='', img='') %}
+<section class="masthead {{modifier_class}}">
+  {% if img %}<img class="masthead--img" src="{{img}}" />{% endif %}
+  <div class="masthead--content">
+    <h1 class="masthead--heading">This is a masthead heading</h1>
+    <p>Here is a brief paragraph to support the heading.</p>
+    <a href="javascript:;" class="button">Call to action</a>
+  </div>
+</section>
+{% endmacro %}

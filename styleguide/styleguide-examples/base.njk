@@ -1,0 +1,14 @@
+{% block nav %}
+{% import 'kitsune/sumo/static/styleguide-examples/nav.njk' as nav %}
+{{ nav.nav(is_logged_in=true) }}
+{% endblock %}
+
+
+<main>
+  {% block content %}{% endblock %}
+</main>
+
+
+{% block footer %}
+  {% include "kitsune/sumo/static/styleguide-examples/footer.njk" %}
+{% endblock %}

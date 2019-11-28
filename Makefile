@@ -141,5 +141,12 @@ build-frontend:
 	npm run build:scss
 	npm run build:postcss
 
-watch-frontend:
-	npm run watch:stylelint & npm run watch:styles
+build-docs: build-frontend
+	npm run build:docs:copystyles
+	npm run build:docs:copyfonts
+	npm run build:docs:copyjs
+	npm run build:docs:copyprotocol
+	npm run build:docs:copyprotocolimgs
+	npm run build:docs:copysumoimgs
+	npm run build:docs:styles
+	npm run build:docs:kss

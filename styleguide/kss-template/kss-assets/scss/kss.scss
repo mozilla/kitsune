@@ -1,0 +1,53 @@
+// map the following custom properties to the values in your project's styles.
+
+:root {
+
+  // Layout
+  --kss-sidebar-width: 220px;
+  --kss-navbar-height: 50px;
+
+  // Cosmetics
+  --kss-font-body: 'Open Sans', Arial, Helvetica, sans-serif;
+  --kss-font-code: Menlo, 'Ubuntu Mono', 'Lucida Console', 'Courier New', Courier, monospace;
+  --kss-font-headings: 'Zilla Slab', 'Open Sans', X-LocaleSpecific, sans-serif;
+
+  --kss-font-size: 16px;
+  --kss-vertical-rhythm: 1.5em;
+
+  --kss-text-color: hsla(93, 0%, 27%, 1);
+  --kss-heading-color: hsla(93, 0%, 13%, 1);
+  --kss-heading-weight: normal;
+  --kss-subtle-text: hsla(93, 0%, 40%, 1);
+  --kss-link-color: hsla(218, 93%, 35%, 1);
+  --kss-link-color-visited: var(--kss-link-color);
+  --kss-link-color-hover: hsla(218, 93%, 55%, 1);
+  --kss-link-color-active: hsla(218, 93%, 25%, 1);
+  --kss-highlight-color: hsla(56, 90%, 95%, 1);
+
+  --kss-page-bg: #FFF;
+  --kss-page-shade: hsla(0, 0%, 95%, 1);
+  --kss-card-bg: hsla(93, 100%, 100%, 1);
+  --kss-card-border-color: rgba(0,0,0,0.1);
+
+  --kss-sidebar-bg: rgba(0,0,0,0.02);
+  --kss-navbar-bg: #000;
+}
+
+@import "layout/kss-layout";
+@import "layout/kss-navbar";
+@import "layout/kss-sidebar";
+
+// comment this out to use your own project defaults for base typography styles.
+// For more control, copy the CSS variables above into your own project and
+// map them to your own variables. Then you won't have to recompile this CSS.
+// @import "base/kss-style";
+
+.kss-bodyclass {
+  background: var(--kss-page-bg);
+  // font-family: var(--kss-font-body);
+  // font-size: var(--kss-font-size);
+  // line-height: var(--kss-vertical-rhythm);
+
+  @import "layout/kss-content";
+  @import 'module/prettifyjs';
+}

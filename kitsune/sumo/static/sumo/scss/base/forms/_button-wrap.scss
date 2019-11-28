@@ -1,3 +1,6 @@
+@use '../../config' as c;
+@use 'protocol' as p;
+
 // Button Wrap element
 //
 // The `.mzp-c-button-wrap` class can be applied to a wrapper around a group of
@@ -21,14 +24,11 @@
 // .reverse-on-desktop.align-full - This is useful when a primary action is first on mobile, and on the right on desktop.
 // .full-width-on-mobile - make buttons stretch to fill the container on mobile
 //
-// Markup: ../../../styleguide-examples/button-wrap.njk
+/* Markup: #{c.$styleguide-path}/button-wrap.njk */
 //
 // Weight: 2
 //
 // Style guide: buttons.button-wrap
-
-@use '../../config' as c;
-@use 'protocol' as p;
 
 .mzp-c-button-wrap {
   display: flex;
