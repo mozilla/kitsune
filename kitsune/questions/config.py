@@ -441,6 +441,35 @@ products = OrderedDict([
             }),
         ])
     }),
+    ('firefox-private-network-vpn', {
+        'name': _lazy(u'Firefox Private Network Device-level Protection'),
+        'subtitle': _lazy(u'Firefox Private Network Device-level Protection'),
+        'extra_fields': [],
+        'tags': [],
+        'product': 'firefox-private-network-vpn',
+        'categories': OrderedDict([
+            ('technical', {
+                'name': _lazy(u'Technical'),
+                'topic': 'technical',
+                'tags': ['technical'],
+            }),
+            ('accounts', {
+                'name': _lazy(u'Accounts'),
+                'topic': 'accounts',
+                'tags': ['accounts'],
+            }),
+            ('Payments', {
+                'name': _lazy(u'Payments'),
+                'topic': 'payments',
+                'tags': ['payments'],
+            }),
+            ('Troubleshooting', {
+                'name': _lazy(u'Troubleshooting'),
+                'topic': 'troubleshooting',
+                'tags': ['troubleshooting'],
+            }),
+        ])
+    }),
     ('other', {
         'name': _lazy(u'Other Mozilla products'),
         'subtitle': '',
