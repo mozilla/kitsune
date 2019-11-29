@@ -281,10 +281,6 @@ to ensure that they render correctly. You have two options here:
 
       $ ./manage.py nunjucks_precompile
 
-- Use gulp to watch for changes and pre-compile (use this if you are making changes to the templates)::
-
-      $ ./node_modules/.bin/gulp watch
-
 
 .. _testing-it-out:
 
