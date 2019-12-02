@@ -1,23 +1,23 @@
-@use '../config' as *;
-
 // Containers
 //
 // This container provides default horizontal margins for the page and a max-width of 1400px.
 //
 // .narrow - 1000px max max-width
 //
-/* Markup: #{$styleguide-path}/containers.njk */
+// Markup: #{$styleguide-path}/containers.njk
 //
 // Weight: 20
 //
 // Style guide: containers
 
+@use '../protocol' as p;
+
 .container {
   margin: 0 auto;
   padding: 0 20px;
-  max-width: rem-calc(1440);
+  max-width: p.remify(1440px);
 
   &.narrow {
-    max-width: rem-calc(1000);
+    max-width: p.remify(1000px);
   }
 }

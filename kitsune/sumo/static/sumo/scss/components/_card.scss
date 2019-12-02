@@ -1,4 +1,5 @@
-@use '../config' as *;
+@use '../config' as c;
+@use '../protocol' as p;
 
 // Cards
 //
@@ -18,12 +19,12 @@
 // Style guide: card
 
 .card {
-  @include bottomless;
-  padding: rem-calc(20);
+  @include c.bottomless;
+  padding: p.remify(20px);
   border-radius: var(--global-radius);
 
   &.feature-padding {
-    padding: rem-calc(40);
+    padding: p.remify(40px);
   }
 }
 

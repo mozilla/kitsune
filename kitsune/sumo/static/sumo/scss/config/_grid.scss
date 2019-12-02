@@ -1,6 +1,3 @@
-@use 'protocol' as *;
-@use '_variables' as *;
-
 // Grid
 //
 // This set of mixins should be used when building layouts. No grid classes are
@@ -43,6 +40,8 @@
 
 // Grid columns
 
+@use '../protocol' as p;
+
 $gutter-width: 32px !default;
 $max-container-width: 1312px !default;
 
@@ -54,7 +53,7 @@ $max-container-width: 1312px !default;
   width: 100%;
   max-width: $max-container-width;
 
-  @media #{$mq-lg} {
+  @media #{p.$mq-lg} {
     padding-right: $gutter-width;
     padding-left: $gutter-width;
   }
@@ -130,22 +129,22 @@ $max-container-width: 1312px !default;
 
 .grid-1-example {
   @include col(1, 4);
-  @media #{$mq-sm} {
+  @media #{p.$mq-sm} {
     width: col-width(1, 6);
   }
 
-  @media #{$mq-lg} {
+  @media #{p.$mq-lg} {
     width: col-width(1, 8);
   }
 
-  @media #{$mq-xl} {
+  @media #{p.$mq-xl} {
     width: col-width(1, 10);
   }
 }
 
 .grid-row-layout-example {
   @include grid-row;
-  @include bidi(((flex-direction, row, row-reverse),));
+  @include p.bidi(((flex-direction, row, row-reverse),));
 }
 
 .grid-sidebar-example,
@@ -154,17 +153,17 @@ $max-container-width: 1312px !default;
   @include col;
 }
 
-@media #{$mq-sm} { // small grid must add up to 6
+@media #{p.$mq-sm} { // small grid must add up to 6
   .grid-sidebar-example { width: col-width(2, 6);}
   .grid-main-example { width: col-width(4, 6);}
 }
 
-@media #{$mq-lg} {
+@media #{p.$mq-lg} {
   .grid-sidebar-example { width: col-width(2, 8);}
   .grid-main-example {width: col-width(6, 8);}
 }
 
-@media #{$mq-xl} {
+@media #{p.$mq-xl} {
   .grid-sidebar-example { width: col-width(3, 10);}
   .grid-main-example { width: col-width(7, 10);}
 }

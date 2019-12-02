@@ -1,6 +1,3 @@
-@use '../config' as c;
-@use 'protocol';
-
 // Expanded link utility
 //
 // The `.expand-this-link` utility class can be added to a link, in combination
@@ -15,6 +12,9 @@
 //
 // Style guide: Utilities.link-expand
 
+@use '../config' as c;
+@use '../protocol' as p;
+
 .expand-this-link {
   &:after {
     position: absolute;
@@ -28,7 +28,7 @@
 }
 
 
-@media #{protocol.$mq-md} {
+@media #{p.$mq-md} {
   .hide-on-mobile {
     display: none;
   }
@@ -37,9 +37,13 @@
 .mobile-only {
   display: block;
 
-  @media #{protocol.$mq-md} {
+  @media #{p.$mq-md} {
     display: none;
   }
+}
+
+.hidden {
+    display: none !important;
 }
 
 .m-0 {

@@ -1,5 +1,5 @@
 @use '../../config' as c;
-@use 'protocol' as p;
+@use '../../protocol' as p;
 
 :root {
   --field-border-color-default: var(--color-marketing-gray-05);
@@ -14,7 +14,7 @@
 // Forms are used throughout the system and can be arranged in several ways. The
 // following is an example of how various components are combined.
 //
-/* Markup: #{c.$styleguide-path}/form.njk */
+// Markup: #{c.$styleguide-path}/form.njk
 //
 // Weight: 3
 //
@@ -45,7 +45,7 @@ legend {
 // .has-warning     - Indiciates a field error.
 // .has-success     - Indiciates a field error.
 //
-/* Markup: #{c.$styleguide-path}/field.njk */
+// Markup: ../../../styleguide-examples/field.njk
 //
 // Weight: 1
 //
@@ -171,16 +171,17 @@ textarea {
 // .has-warning     - Indiciates a field error.
 // .has-success     - Indiciates a field error.
 //
-/* Markup: #{c.$styleguide-path}/field_select.njk */
+// Markup: ../../../styleguide-examples/field_select.njk
 //
 // Weight: 2
 //
 // Style guide: forms.select
-select {
+select,
+.mzp-c-language-switcher select {
   position: relative;
   padding-right: 40px;
   background-image: c.svg-url('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 10"><path fill="none" vector-effect="non-scaling-stroke" stroke="#42435A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" d="M1 1l8 8 8-8"/></svg>');
-  background-color: transparent;
+  background-color: var(--color-white);
   background-position: top 14px right 14px;
   background-repeat: no-repeat;
   background-size: 12px 12px;
@@ -203,7 +204,7 @@ select {
 // .has-warning     - Indiciates a field error.
 // .has-success     - Indiciates a field error.
 //
-/* Markup: #{c.$styleguide-path}/field_textarea.njk */
+// Markup: ../../../styleguide-examples/field_textarea.njk
 //
 // Weight: 3
 //
@@ -222,7 +223,7 @@ textarea {
 // the user focuses the field.
 //
 //
-/* Markup: #{c.$styleguide-path}/field_help_text.njk */
+// Markup: ../../../styleguide-examples/field_help_text.njk
 //
 // Weight: 22
 //

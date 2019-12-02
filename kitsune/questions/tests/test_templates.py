@@ -1439,7 +1439,7 @@ class AAQTemplateTestCase(TestCaseBase):
         url = reverse('questions.aaq_step2', args=['desktop'])
         response = self.client.get(url)
         eq_(200, response.status_code)
-        assert '/questions/new' not in pq(response.content)('#aux-nav').html()
+        assert '/questions/new' not in pq(response.content)('.sumo-nav').html()
 
 
 class ProductForumTemplateTestCase(TestCaseBase):
