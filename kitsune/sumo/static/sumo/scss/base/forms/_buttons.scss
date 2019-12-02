@@ -1,3 +1,6 @@
+@use '../../config' as c;
+@use '../../protocol' as p;
+
 // Buttons
 //
 // These button classes can be added to buttons, inputs, or links. Size classes
@@ -18,9 +21,6 @@
 // Weight: 4
 //
 // Style guide: buttons
-
-@use '../../config' as c;
-@use '../../protocol' as p;
 
 .sumo-button {
   display:inline-flex;

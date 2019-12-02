@@ -11,7 +11,7 @@
     "development": "npm run install-dev",
     "production": "npm run postinstall",
     "stylelint": "stylelint kitsune/sumo/static/sumo/scss/**/* --fix && stylelint styleguide/kss-template/kss-assets/scss/**/*",
-    "build:scss": "sass kitsune/sumo/static/sumo/scss/screen.scss static/build/screen-noprefixes.css --source-map --load-path 'node_modules/@mozilla-protocol/core/protocol/css' --load-path 'kitsune/sumo/static/sumo/scss'",
+    "build:scss": "sass kitsune/sumo/static/sumo/scss/screen.scss static/build/screen-noprefixes.css --source-map --load-path 'node_modules/@mozilla-protocol/core' --load-path 'kitsune/sumo/static/sumo/scss'",
     "build:postcss": "npx postcss static/build/screen-noprefixes.css --map --use autoprefixer -o static/build/screen.css",
     "build:docs:copyfonts": "cp -r node_modules/@mozilla-protocol/core/protocol/fonts styleguide/build/static",
     "build:docs:copyprotocol": "cp -r node_modules/@mozilla-protocol/core/protocol styleguide/build/static",
