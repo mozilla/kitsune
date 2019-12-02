@@ -1,3 +1,6 @@
+@use '../../config' as c;
+@use '../../protocol' as p;
+
 // Button Wrap element
 //
 // The `.mzp-c-button-wrap` class can be applied to a wrapper around a group of
@@ -26,9 +29,6 @@
 // Weight: 2
 //
 // Style guide: buttons.button-wrap
-
-@use '../../config' as c;
-@use '../../protocol' as p;
 
 .sumo-button-wrap {
   display: flex;

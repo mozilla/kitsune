@@ -24,6 +24,8 @@ help:
 	@echo "docs          - generate Sphinx HTML documentation"
 	@echo "build-ci      - build docker images for use in our CI pipeline"
 	@echo "test-ci       - run tests against files in docker image built by CI"
+	@echo "frontend      - build docker images for front-end dependencies and tooling"
+	@echo "styleguide    - build the SUMO's styleguide"
 
 .env:
 	@if [ ! -f .env ]; then \
@@ -132,16 +134,14 @@ test-js-ci: .docker-build-ci
 lint-ci: .docker-build-ci
 	${DC_CI} run test-image flake8 kitsune
 
-.PHONY: default clean build build-full pull docs init lint run djshell dbshell runshell shell test test-image lint-image lint-l10n rebuild build-ci test-ci test-js-ci lint-ci
-
 #####################
 # For use in frontend
 #####################
-build-frontend:
+frontend:
 	npm run build:scss
 	npm run build:postcss
 
-build-docs: build-frontend
+styleguide: frontend
 	npm run build:docs:copystyles
 	npm run build:docs:copyfonts
 	npm run build:docs:copyjs
@@ -150,3 +150,5 @@ build-docs: build-frontend
 	npm run build:docs:copysumoimgs
 	npm run build:docs:styles
 	npm run build:docs:kss
+
+.PHONY: default clean build build-full pull docs init lint run djshell dbshell runshell shell test test-image lint-image lint-l10n rebuild build-ci test-ci test-js-ci lint-ci frontend styleguide
