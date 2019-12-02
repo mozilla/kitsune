@@ -41,3 +41,6 @@ k8s/regions/*/*-secrets.yaml
 postatus.txt
 .ipython
 js_assets/
+.sass-cache/
+styleguide/build/
+
