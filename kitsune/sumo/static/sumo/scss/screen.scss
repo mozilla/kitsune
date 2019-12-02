@@ -1,7 +1,4 @@
-@use 'protocol' with (
-  $font-path: '../fonts',
-  $image-path: '../img'
-);
+@use './protocol';
 
 @use 'config';
 @use 'base';

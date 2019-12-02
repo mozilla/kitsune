@@ -1,6 +1,3 @@
-@use '../../config' as c;
-@use 'protocol' as p;
-
 // Buttons
 //
 // These button classes can be added to buttons, inputs, or links. Size classes
@@ -14,7 +11,7 @@
 // .button-lg - large modifier
 // .button-xl - extra large modifier
 // .primary-button    - This is the primary variation.
-// .secondary-button - this is the warning button.
+// .secondary-button - this is the secondary button.
 //
 /* Markup: #{c.$styleguide-path}/button.njk */
 //
@@ -22,7 +19,10 @@
 //
 // Style guide: buttons
 
-.mzp-c-sumo-button {
+@use '../../config' as c;
+@use '../../protocol' as p;
+
+.sumo-button {
   display:inline-flex;
   justify-content:center;
   align-items:center;
@@ -123,7 +123,7 @@
   }
 }
 
-.mzp-c-sumo-button.sumo:focus,
+.sumo-button:focus,
 button:focus,
 input[type=submit]:focus {
   box-shadow: var(--focus-shadow);
