@@ -62,9 +62,6 @@ tabulate==0.7.5 \
 testfixtures==4.5.0 \
     --hash=sha256:f9eac8b06fdeeb476baf2efe051187c2e8695eb748afdc936f499edff71b9c49 \
     --hash=sha256:94cede854c788bfc35280ad3be49fce6f362593829fd8b8e3cac1ed112fec857
-virtualenv==13.1.2 \
-    --hash=sha256:f74a5943a9005c1e897bcf87f7e8af7e00c06fa9777b9ad691f69f9fa54a87d8 \
-    --hash=sha256:aabc8ef18cddbd8a2a9c7f92bc43e2fea54b1147330d65db920ef3ce9812e3dc
 hashin==0.13.4 \
     --hash=sha256:4e7731953dda1bbc1bbd11c80eef9bdcb2c0995be3a55807aa14991d197af6f9 \
     --hash=sha256:a038ac6ff4bb881fe99b0c646c0624f803cd62486d461d82ed4fb6b2cce04e0f

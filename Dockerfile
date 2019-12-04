@@ -10,7 +10,7 @@ RUN npm run development && npm run production
 ################################
 # Python dependencies builder
 #
-FROM python:2-stretch AS base
+FROM python:3.7-stretch AS base
 
 WORKDIR /app
 EXPOSE 8000
@@ -20,7 +20,7 @@ ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 ENV PATH="/venv/bin:$PATH"
 
-RUN virtualenv /venv
+RUN python -m venv /venv
 RUN useradd -d /app -M --uid 1000 --shell /usr/sbin/nologin kitsune
 
 RUN apt-get update && \
@@ -71,7 +71,7 @@ RUN cp .env-build .env && \
 ################################
 # Fetch locales
 #
-FROM python:2-stretch AS locales
+FROM python:3.7-stretch AS locales
 
 WORKDIR /app
 
@@ -97,7 +97,7 @@ ENV GIT_SHA ${GIT_SHA}
 ################################
 # Full prod image sans locales
 #
-FROM python:2-slim-stretch AS full-no-locales
+FROM python:3.7-slim-stretch AS full-no-locales
 
 WORKDIR /app
 

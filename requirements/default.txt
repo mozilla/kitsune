@@ -68,9 +68,6 @@ https://github.com/jsocol/commonware/archive/b5544185b2d24adc1eb512735990752400c
     --hash=sha256:93d8231145d43ca02e1ec3cee355333afa8e72adb9cf815767e17595749774d4
 cssselect==0.9.1 \
     --hash=sha256:0535a7e27014874b27ae3a4d33e8749e345bdfa62766195208b7996bf1100682
-enum34==1.0.4 \
-    --hash=sha256:d3c19f26a6a34629c18c775f59dfc5dd595764c722b57a2da56ebfb69b94e447 \
-    --hash=sha256:7583d80aca2a2b2a8a411f141c4d744de06a6bc43a32253f6b81d14d48f6c90e
 factory_boy==2.6.0 \
     --hash=sha256:116610a170918df342db2c4bafbc8f4b91780c49878f929d89e360f10ad29d2a \
     --hash=sha256:75e4c9786ed28d19ec7fb500f3c7221a6eb87748cbc6f5e2eeaca4c3d68f30cb
@@ -291,8 +288,8 @@ puente==0.5.0 \
     --hash=sha256:7ba1d07f9cee9657adf874bd94879b343fea81a783fdfa8e53885520477bf1ea
 https://github.com/pcraciunoiu/py-wikimarkup/archive/ce7d10dbd421533bb9b0c41dd9c9d09298a51a41.tar.gz#egg=py-wikimarkup \
     --hash=sha256:62940de85396a67d86a262bc65d8d76c6367c69c69034ca98cbd5512cfe6f037
-pyes==0.16.0 \
-    --hash=sha256:291dbb4893b50b7c83f2c8df625168fa172a67f87eb44f39a07222be3b8d9c95
+pyes==0.99.6 \
+    --hash=sha256:5e77717ee4c44c91723c590c95e1f773e9ce3f644b2220debf5bf5829eb332fc
 pyOpenSSL==18.0.0 \
     --hash=sha256:26ff56a6b5ecaf3a2a59f132681e2a80afcc76b4f902f612f518f92c2a1bf854 \
     --hash=sha256:6488f1423b00f73b7ad5167885312bb0ce410d3312eb212393795b53c8caa580
@@ -304,8 +301,9 @@ python-dateutil==2.6.1 \
 python-gflags==2.0 \
     --hash=sha256:0dff6360423f3ec08cbe3bfaf37b339461a54a21d13be0dd5d9c9999ce531078 \
     --hash=sha256:7f09e616239302abb231f93abc997e9c4e0e0e41aea07ecdfc6a5182c50cd07e
-python-memcached==1.48 \
-    --hash=sha256:66bbc62d9519f9d531b1f77e687d9f2f5e521cb906f1fd7231f403997e0110c4
+python-memcached==1.59 \
+    --hash=sha256:4dac64916871bd3550263323fc2ce18e1e439080a2d5670c594cf3118d99b594 \
+    --hash=sha256:a2e28637be13ee0bf1a8b6843e7490f9456fd3f2a4cb60471733c7b5d5557e4f
 https://github.com/bltravis/python-recaptcha/archive/d7db50afc711ef623aec8e472ff55627e66fcd87.tar.gz#egg=python-recaptcha \
     --hash=sha256:7a9b60043aee61d6e5fdffc572c64314ea6d9ca09aff0d2f2a93ce7ba8d33b19
 Pygments==2.0.2 \

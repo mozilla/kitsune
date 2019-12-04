@@ -1,0 +1,72 @@
+version: '3.4'
+services:
+  web:
+    build:
+      context: .
+      target: base-dev
+      args:
+        - GIT_SHA
+    image: base-dev-${GIT_COMMIT_SHORT:-latest}
+
+  test:
+    build:
+      context: .
+      target: base-dev
+      args:
+        - GIT_SHA
+    image: base-dev-${GIT_COMMIT_SHORT:-latest}
+
+  test-js:
+    build:
+      context: .
+      target: staticfiles
+      args:
+        - GIT_SHA
+    image: staticfiles-${GIT_COMMIT_SHORT:-latest}
+
+  test-image:
+    build:
+      context: .
+      target: full-no-locales
+      args:
+        - GIT_SHA
+        - LOCALE_ENV
+    image: full-no-locales-${GIT_COMMIT_SHORT:-latest}
+
+  test-image-js:
+    build:
+      context: .
+      target: staticfiles
+      args:
+        - GIT_SHA
+    image: staticfiles-${GIT_COMMIT_SHORT:-latest}
+
+  lint-l10n:
+    build:
+      context: .
+      target: base
+      args:
+        - GIT_SHA
+    image: base-${GIT_COMMIT_SHORT:-latest}
+
+  # images
+  base:
+    image: base-${GIT_COMMIT_SHORT:-latest}
+
+  base-dev:
+    image: base-dev-${GIT_COMMIT_SHORT:-latest}
+
+  node-dev:
+    image: node-dev-${GIT_COMMIT_SHORT:-latest}
+
+  staticfiles:
+    image: staticfiles-${GIT_COMMIT_SHORT:-latest}
+
+  locales:
+    image: locales-${GIT_COMMIT_SHORT:-latest}
+
+  full-no-locales:
+    image: full-no-locales-${GIT_COMMIT_SHORT:-latest}
+
+  full:
+    image: full-${GIT_COMMIT_SHORT:-latest}
