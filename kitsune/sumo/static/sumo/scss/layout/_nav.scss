@@ -212,6 +212,10 @@
     background-image: url('#{p.$image-path}/icons/search.svg');
   }
 
+  .simple-search-form {
+    margin-right: 20px;
+  }
+
   body.scroll-header:not(.lock-body) & {
     position: fixed;
     top: -100px;

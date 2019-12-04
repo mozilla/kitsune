@@ -3,7 +3,7 @@
 
 .simple-search-form {
   position: relative;
-  margin: 0 20px 0 0;
+  margin: 0;
 
   .search-button {
     position: absolute;
@@ -31,5 +31,23 @@
   &:focus,
   &.mzp-is-active  {
     background-color: var(--color-link-active-bg);
+  }
+}
+
+.popular-searches {
+  display: none;
+  @media #{p.$mq-lg} {
+    display: block;
+    text-align: center;
+    margin-top: 32px;
+
+    a, span {
+      display: inline-block;
+      padding-right: 8px;
+
+      &:last-child {
+        padding-right: 0;
+      }
+    }
   }
 }
