@@ -1,16 +1,18 @@
+@use '../config' as c;
+
 // Social Links
 //
 // This component is designed to display HTML content over an image, typically
 // at the beginning of a document. This component can be used on its own, or
 // as an item within a carousel.
 //
-// Markup: ../../../styleguide-examples/social-links.njk
+// Markup: ../../../../../../styleguide/styleguide-examples/social-links.njk
 //
 // Weight: 6
 //
 // Style guide: social-links
 
-@use '../config';
+
 
 .social-links {
   margin: 2em 0 0 0;
@@ -21,7 +23,7 @@
     margin-right: 20px;
 
     a {
-      @include config.image-replaced();
+      @include c.image-replaced();
       display: block;
       background-image: url('/static/sumo/img/social-icon-sprite.svg');
 

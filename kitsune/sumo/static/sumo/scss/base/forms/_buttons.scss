@@ -1,3 +1,6 @@
+@use '../../config' as c;
+@use '../../protocol' as p;
+
 // Buttons
 //
 // These button classes can be added to buttons, inputs, or links. Size classes
@@ -13,14 +16,12 @@
 // .primary-button    - This is the primary variation.
 // .secondary-button - This is the secondary button.
 //
-// Markup: ../../../styleguide-examples/button.njk
+// Markup: ../../../../../../styleguide/styleguide-examples/button.njk
 //
 // Weight: 4
 //
 // Style guide: buttons
 
-@use '../../config' as c;
-@use '../../protocol' as p;
 
 .sumo-button {
   display:inline-flex;

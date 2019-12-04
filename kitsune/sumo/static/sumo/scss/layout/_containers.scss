@@ -1,15 +1,15 @@
+@use '../protocol' as p;
+@use '../config' as c;
+
 // Containers
 //
 // This container provides default horizontal margins for the page and a max-width of 1400px.
 //
-// Markup: ../../../styleguide-examples/containers.njk
+// Markup: ../../../../../../styleguide/styleguide-examples/containers.njk
 //
 // Weight: 20
 //
 // Style guide: containers
-
-@use '../protocol' as p;
-@use '../config' as c;
 
 .mzp-l-content {
   @include c.container;

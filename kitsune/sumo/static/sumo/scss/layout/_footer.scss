@@ -1,16 +1,17 @@
+@use '../config' as c;
+@use '../protocol' as p;
+
 // Footer
 //
 // The site footer is a combination of this styleguide's [customized grid](section-grid.html)
 // and [Protocol's footer component.](https://protocol.mozilla.org/patterns/organisms/footer.html)
 //
-// Markup: ../../../styleguide-examples/footer.njk
+// Markup: ../../../../../../styleguide/styleguide-examples/footer.njk
 //
 // Weight: 21
 //
 // Style guide: footer
 
-@use '../config' as c;
-@use '../protocol' as p;
 
 .mzp-c-footer {
   a:link,

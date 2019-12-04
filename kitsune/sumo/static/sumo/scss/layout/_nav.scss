@@ -1,3 +1,6 @@
+@use '../config' as c;
+@use '../protocol' as p;
+
 // Navigation
 //
 // Basic site navigation
@@ -13,8 +16,7 @@
 //
 // Style guide: nav
 
-@use '../config' as c;
-@use '../protocol' as p;
+
 
 .sumo-nav {
   &--container {

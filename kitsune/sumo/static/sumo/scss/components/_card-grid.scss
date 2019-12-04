@@ -1,16 +1,18 @@
+@use '../config' as c;
+@use '../protocol' as p;
+
 // Card Grid
 //
 // This collection of cards is presented as a scrollable list on mobile and an
 // array of cards on desktop. Any type of card styles can be used in this layout.
 //
-// Markup: ../../../styleguide-examples/card-grid.njk
+// .is-four-wide - changes the width of the cards to display in rows of four on desktop
+//
+// Markup: ../../../../../../../styleguide/styleguide-examples/card-grid.njk
 //
 // Weight: 2
 //
 // Style guide: card.grid
-
-@use '../config' as c;
-@use '../protocol' as p;
 
 :root {
   --cg-card-width: 80vw;
