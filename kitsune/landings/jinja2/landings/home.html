@@ -3,18 +3,25 @@
 {% set styles = ('home',) %}
 {% set canonical_url = canonicalize(viewname='home') %}
 
-{% block content %}
-  <div class="grid_12 search-form-large">
-    <h1>{{ _('Search Mozilla Support') }}</h1>
-    {{ search_box(settings, id='support-search-home', params=search_params) }}
+{% block contentwrap %}
+  <section class="sumo-page-section shade-bg text-center">
+    <div class="mzp-l-content narrow">
+      <h1 class="text-display-xl">{{ _('Search Mozilla Support') }}</h1>
+      {{ search_box(settings, id='support-search-home', params=search_params) }}
+    </div>
+  </section>
+
+
+
+<section class="mzp-l-content sumo-page-section">
+  <div class="text-center">
+    <h2 class="display-xs">{{ _('Get Help') }}</h2>
+    <p>{{ _('Pick your product') }}</p>
   </div>
-  <div class="grid_12">
-    <h2 class="help-articles-title">{{ _('Help articles') }}</h2>
-    <section id="products-and-services">
-      {{ product_cards(products) }}
-    </section>
-  </div>
-  <section id="get-involved-box" class="grid_12">
+  {{ product_cards(products) }}
+</section>
+
+  <section id="get-involved-box">
     <a class="button" href="{{ url('landings.get_involved') }}">
       {{ _('Volunteer for Mozilla Support') }}
     </a>

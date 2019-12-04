@@ -1,20 +1,25 @@
 {% macro product_cards(products, topic=None) -%}
-  <ul id="product-cards" class="card-grid cf">
+<div class="sumo-card-grid" style="--cg-count: {{ products|length }};">
+  <div class="scroll-wrap">
     {% for product in products %}
-      <li>
+      <div class="card card--product">
         {% if topic %}
           {% set prod_url = url('products.documents', product_slug=product.slug, topic_slug=topic.slug) %}
         {% else %}
           {% set prod_url = url('products.product', slug=product.slug) %}
         {% endif %}
-        <a class="cf" href="{{ prod_url }}" data-event-category="link click" data-event-action="product" data-event-label="{{ product.title }}">
-          <div class="icon">
-            <img src="{{ product.image_url }}" alt="{{ pgettext('DB: products.Product.title', product.title) }}" />
+
+          <img class="card--icon" src="{{ product.image_url }}" alt="{{ pgettext('DB: products.Product.title', product.title) }}" />
+          <div class="card--details">
+            <h3 class="card--title">
+              <a class="expand-this-link" href="{{ prod_url }}" data-event-category="link click" data-event-action="product" data-event-label="{{ product.title }}">
+                {{ pgettext('DB: products.Product.title', product.title) }}
+              </a>
+            </h3>
+            <p class="card--desc">{{ pgettext('DB: products.Product.description', product.description) }}</p>
           </div>
-          <div class="title">{{ pgettext('DB: products.Product.title', product.title) }}</div>
-          <div class="description">{{ pgettext('DB: products.Product.description', product.description) }}</div>
-        </a>
-      </li>
+      </div>
     {% endfor %}
-  </ul>
+  </div>
+</div>
 {%- endmacro %}
