@@ -1,0 +1,35 @@
+@use '../../config' as c;
+@use '../../protocol' as p;
+
+.simple-search-form {
+  position: relative;
+  margin: 0 20px 0 0;
+
+  .search-button {
+    position: absolute;
+    top: 4px;
+    right: 6px;
+  }
+}
+
+.search-button {
+  appearance: none;
+  margin-left: 10px;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 4px;
+  background-image: url('#{p.$image-path}/icons/search.svg');
+  background-color: transparent;
+  background-position: center center;
+  background-repeat: no-repeat;
+  font: 0/0 a;
+  color: transparent;
+
+  &:hover,
+  &:active,
+  &:focus,
+  &.mzp-is-active  {
+    background-color: var(--color-link-active-bg);
+  }
+}

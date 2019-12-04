@@ -1,0 +1,67 @@
+// Card Grid
+//
+// This collection of cards is presented as a scrollable list on mobile and an
+// array of cards on desktop. Any type of card styles can be used in this layout.
+//
+// Markup: ../../../styleguide-examples/card-grid.njk
+//
+// Weight: 2
+//
+// Style guide: card.grid
+
+@use '../config' as c;
+@use '../protocol' as p;
+
+:root {
+  --cg-card-width: 80vw;
+  --cg-gutter: #{c.$gutter-width};
+  --cg-count: 3; // This should be set in an inline style with a template tag.
+}
+.sumo-card-grid {
+  padding: calc(var(--cg-gutter) /2) 0 var(--cg-gutter);
+  -webkit-overflow-scrolling: touch;
+  overflow-x: scroll;
+  scroll-padding-right: var(--cg-gutter);
+  scroll-padding-left: var(--cg-gutter);
+  scrollbar-width: none;
+  scroll-snap-type: x proximity;
+
+  .scroll-wrap {
+    display: flex;
+    margin-right: calc(var(--cg-gutter) / -2);
+    margin-left: calc(var(--cg-gutter) / -2);
+    width: calc((var(--cg-card-width) + var(--cg-gutter)) * var(--cg-count));
+  }
+
+  .card {
+    margin-top: 0;
+    margin-right: calc(var(--cg-gutter) / 2);
+    margin-bottom: var(--cg-gutter);
+    margin-left: calc(var(--cg-gutter) / 2);
+    width: var(--cg-card-width);
+    scroll-snap-align: start;
+  }
+
+  @media #{p.$mq-sm} {
+    --cg-card-width: 40vw;
+  }
+
+  @media #{p.$mq-lg} {
+    overflow: visible;
+
+    .scroll-wrap {
+      @include c.grid-row;
+      width: auto;
+    }
+
+    .card {
+      @include c.col(1, 3); // This should be an 8 col grid, and it should use a 10-col grid at XL
+    }
+  }
+
+  // @media #{p.$mq-xl} {
+  //   .card {
+  //     width: col-width(1, 10);
+  //   }
+  // }
+}

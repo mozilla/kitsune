@@ -1,6 +1,3 @@
-@use '../config' as c;
-@use '../protocol' as p;
-
 // Cards
 //
 // This component is used throughout the system to group elements. Combine
@@ -12,23 +9,62 @@
 // .elevation-03 - large shadow
 // .feature-padding.elevation-01 - Increase the amount of padding, for use with larger cards
 //
-/* Markup: #{$styleguide-path}/card.njk */
+// Markup: ../../../styleguide-examples/card.njk
 //
 // Weight: 5
 //
 // Style guide: card
 
+@use '../config' as c;
+@use '../protocol' as p;
+
 .card {
   @include c.bottomless;
+  position: relative;
   padding: p.remify(20px);
   border-radius: var(--global-radius);
 
   &.feature-padding {
     padding: p.remify(40px);
   }
+
+  &--product {
+    @include c.elevation-01;
+    display: flex;
+    align-items: center;
+  }
+
+
+  // &--details {}
+
+  &--icon {
+    flex: 0 0 72px;
+    margin-right: 20px;
+  }
+
+  &--title {
+    @include c.text-body-lg();
+    font-family: var(--base-font-family);
+
+    > a {
+      text-decoration: none;
+      color: var(--color-heading);
+
+      &:hover {
+        text-decoration: underline;
+        color: var(--color-heading);
+      }
+    }
+  }
+
+  &--desc {
+    @include c.text-body-sm();
+    margin-bottom: 0;
+    color: var(--color-text);
+  }
 }
 
-.elevation-00 { @include elevation-00;}
-.elevation-01 { @include elevation-01;}
-.elevation-02 { @include elevation-02;}
-.elevation-03 { @include elevation-03;}
+.elevation-00 { @include c.elevation-00;}
+.elevation-01 { @include c.elevation-01;}
+.elevation-02 { @include c.elevation-02;}
+.elevation-03 { @include c.elevation-03;}

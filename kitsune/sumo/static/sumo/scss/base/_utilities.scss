@@ -1,6 +1,3 @@
-@use '../config' as c;
-@use '../protocol' as p;
-
 // Expanded link utility
 //
 // The `.expand-this-link` utility class can be added to a link, in combination
@@ -9,11 +6,14 @@
 // and accessibility reasons, an anchor with complicated nested content is not
 // preferred.
 //
-/* Markup: #{c.$styleguide-path}/expanded-link-utility.njk */
+// Markup: ../../../styleguide-examples/expanded-link-utility.njk
 //
 // Weight: 4
 //
 // Style guide: Utilities.link-expand
+
+@use '../config' as c;
+@use '../protocol' as p;
 
 .expand-this-link {
   &:after {
@@ -28,9 +28,9 @@
 }
 
 
-@media #{p.$mq-md} {
+@media screen and (max-width: 767px) {
   .hide-on-mobile {
-    display: none;
+    display: none !important;
   }
 }
 
@@ -42,8 +42,9 @@
   }
 }
 
-.hidden {
-    display: none !important;
+.hidden,
+.is-hidden {
+  display: none !important;
 }
 
 .m-0 {
@@ -62,4 +63,12 @@
   position: fixed;
   height: 100vh;
   overflow: hidden;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-right {
+  text-align: right;
 }

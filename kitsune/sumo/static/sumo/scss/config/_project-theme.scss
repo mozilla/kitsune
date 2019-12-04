@@ -10,6 +10,7 @@
   --color-success: var(--color-green-06);
   --color-warning: var(--color-yellow-03);
   --color-error: var(--color-red-05);
+  --color-shade-bg: var(--color-light-gray-02);
 
 
   --color-inverse-bg: var(--color-ink-08);
@@ -22,13 +23,12 @@
   --color-link-active-bg: var(--color-marketing-gray-02);
   --color-link-inverse-visited: var(--color-purple-02);
   --color-link-inverse-active-bg: #{rgba(c.color('marketing-gray', '02'), 0.2)};
+  --color-border: var(--color-marketing-gray-02);
 
   --base-font-family: Inter, X-LocaleSpecific, sans-serif;
   --base-font-size: 1rem; // keep this at 1rem for rem-calc to work correctly.
-  --heading-font-family: Metropolis, Inter, X-LocaleSpecific, sans-serif;
-  --heading-alt-font-family: 'Zilla Slab', 'Open Sans', X-LocaleSpecific, serif;
-
-
+  --heading-font-family: 'Zilla Slab', 'Open Sans', X-LocaleSpecific, serif;
+  --heading-alt-font-family: Metropolis, Inter, X-LocaleSpecific, sans-serif;
 
   --global-margin: 1rem;
   --global-radius: 4px;
@@ -43,4 +43,8 @@
 
   // form fields
   --focus-shadow: 0 0 0 4px rgba(0, 96, 223, 0.3), 0 0 0 2px rgb(0, 138, 234);
+}
+
+.shade-bg {
+  background: var(--color-shade-bg);
 }
