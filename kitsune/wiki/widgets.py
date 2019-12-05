@@ -33,7 +33,7 @@ class ProductTopicsAndSubtopicsWidget(forms.widgets.SelectMultiple):
     def process_topic(self, value, topic):
         if isinstance(value, int) and topic.id == value:
             topic.checked = True
-        elif (not isinstance(value, basestring) and
+        elif (not isinstance(value, str) and
               isinstance(value, collections.Iterable) and
               topic.id in value):
             topic.checked = True
@@ -47,7 +47,7 @@ class RelatedDocumentsWidget(forms.widgets.SelectMultiple):
     def render(self, name, value, attrs=None):
         if isinstance(value, int):
             related_documents = Document.objects.filter(id__in=[value])
-        elif not isinstance(value, basestring) and isinstance(value, collections.Iterable):
+        elif not isinstance(value, str) and isinstance(value, collections.Iterable):
             related_documents = Document.objects.filter(id__in=value)
         else:
             related_documents = Document.objects.none()

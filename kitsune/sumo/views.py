@@ -159,7 +159,7 @@ def monitor(request):
             location = cache_props['LOCATION']
 
             # LOCATION can be a string or a list of strings
-            if isinstance(location, basestring):
+            if isinstance(location, str):
                 location = location.split(';')
 
             if 'memcache' in backend:

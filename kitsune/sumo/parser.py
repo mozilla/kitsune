@@ -299,7 +299,7 @@ class WikiParser(Parser):
 
         message = _lazy(u'The image "%s" does not exist.') % title
         image = get_object_fallback(Image, title, self.locale, message)
-        if isinstance(image, basestring):
+        if isinstance(image, str):
             return image
 
         return render_to_string(self.image_template, {
@@ -335,7 +335,7 @@ class WikiParser(Parser):
             return YOUTUBE_PLACEHOLDER % video_id
 
         v = get_object_fallback(Video, title, self.locale, message)
-        if isinstance(v, basestring):
+        if isinstance(v, str):
             return v
 
         return generate_video(v, params)
