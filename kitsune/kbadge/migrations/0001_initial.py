@@ -60,6 +60,6 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterUniqueTogether(
             name='badge',
-            unique_together=set([('title', 'slug')]),
+            unique_together={('title', 'slug')},
         ),
     ]

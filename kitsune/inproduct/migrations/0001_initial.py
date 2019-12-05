@@ -25,6 +25,6 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterUniqueTogether(
             name='redirect',
-            unique_together=set([('product', 'version', 'platform', 'locale', 'topic')]),
+            unique_together={('product', 'version', 'platform', 'locale', 'topic')},
         ),
     ]

@@ -59,11 +59,11 @@ class TestSynonymParser(TestCase):
             three => orange, grape
             four, five => jellybean
             """)
-        synonyms = set([
+        synonyms = {
             ('one, two', 'apple, banana'),
             ('three', 'orange, grape'),
             ('four, five', 'jellybean'),
-        ])
+        }
         eq_(synonyms, synonym_utils.parse_synonyms(synonym_text))
 
     def testTooManyArrows(self):

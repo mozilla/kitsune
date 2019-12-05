@@ -299,7 +299,7 @@ def render_document_cascade(base):
         # Sends all writes to the master DB. Slaves are readonly.
         pin_this_thread()
 
-        todo = set([base])
+        todo = {base}
         done = set()
 
         while todo:

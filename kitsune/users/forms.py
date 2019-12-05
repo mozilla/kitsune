@@ -366,7 +366,7 @@ def username_allowed(username):
     # Lowercase
     username = username.lower()
     # Add lowercased and non alphanumerics to start.
-    usernames = set([username, re.sub("\W", "", username)])
+    usernames = {username, re.sub("\W", "", username)}
     # Add words split on non alphanumerics.
     for u in re.findall(r'\w+', username):
         usernames.add(u)

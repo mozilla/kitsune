@@ -61,10 +61,10 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterUniqueTogether(
             name='video',
-            unique_together=set([('is_draft', 'creator'), ('locale', 'title')]),
+            unique_together={('is_draft', 'creator'), ('locale', 'title')},
         ),
         migrations.AlterUniqueTogether(
             name='image',
-            unique_together=set([('is_draft', 'creator'), ('locale', 'title')]),
+            unique_together={('is_draft', 'creator'), ('locale', 'title')},
         ),
     ]

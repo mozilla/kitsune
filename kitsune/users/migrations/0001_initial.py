@@ -87,7 +87,7 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterUniqueTogether(
             name='setting',
-            unique_together=set([('user', 'name')]),
+            unique_together={('user', 'name')},
         ),
         migrations.AddField(
             model_name='emailchange',

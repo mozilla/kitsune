@@ -40,10 +40,10 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterUniqueTogether(
             name='wikimetric',
-            unique_together=set([('code', 'product', 'locale', 'date')]),
+            unique_together={('code', 'product', 'locale', 'date')},
         ),
         migrations.AlterUniqueTogether(
             name='wikidocumentvisits',
-            unique_together=set([('period', 'document')]),
+            unique_together={('period', 'document')},
         ),
     ]

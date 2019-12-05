@@ -149,7 +149,7 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterUniqueTogether(
             name='questionmetadata',
-            unique_together=set([('question', 'name')]),
+            unique_together={('question', 'name')},
         ),
         migrations.AddField(
             model_name='answer',

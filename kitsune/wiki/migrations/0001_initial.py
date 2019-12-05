@@ -153,11 +153,11 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterUniqueTogether(
             name='documentlink',
-            unique_together=set([('linked_from', 'linked_to', 'kind')]),
+            unique_together={('linked_from', 'linked_to', 'kind')},
         ),
         migrations.AlterUniqueTogether(
             name='documentimage',
-            unique_together=set([('document', 'image')]),
+            unique_together={('document', 'image')},
         ),
         migrations.AddField(
             model_name='document',
@@ -197,6 +197,6 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterUniqueTogether(
             name='document',
-            unique_together=set([('title', 'locale'), ('parent', 'locale'), ('slug', 'locale')]),
+            unique_together={('title', 'locale'), ('parent', 'locale'), ('slug', 'locale')},
         ),
     ]

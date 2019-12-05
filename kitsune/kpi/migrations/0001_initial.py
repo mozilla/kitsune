@@ -39,6 +39,6 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterUniqueTogether(
             name='metric',
-            unique_together=set([('kind', 'start', 'end')]),
+            unique_together={('kind', 'start', 'end')},
         ),
     ]
