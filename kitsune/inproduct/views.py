@@ -31,7 +31,7 @@ def redirect(request, product, version, platform, locale, topic=None):
         )
         return all(matches)
 
-    redirects = filter(f, redirects)
+    redirects = list(filter(f, redirects))
 
     # Assign a ordinal (score) to each redirect based on how specific it is,
     # then order by score descending.

@@ -62,7 +62,7 @@ def get_cohort(queryset, date_range):
         first_contrib = queryset.filter(creator=u).order_by('id')[0]
         return start <= first_contrib.created < end
 
-    return filter(is_in_cohort, potential_users)
+    return list(filter(is_in_cohort, potential_users))
 
 
 def report_for(queryset, ranges):
