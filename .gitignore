@@ -44,3 +44,4 @@ js_assets/
 .sass-cache/
 styleguide/build/
 
+npm-debug.log
