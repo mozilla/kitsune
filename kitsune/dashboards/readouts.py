@@ -613,7 +613,8 @@ class MostVisitedDefaultLanguageReadout(Readout):
 
         return query, params
 
-    def _format_row(self, (slug, title, visits, num_unreviewed)):
+    def _format_row(self, row):
+        slug, title, visits, num_unreviewed = row
         needs_review = int(num_unreviewed > 0)
         status, view_name, dummy = REVIEW_STATUSES[needs_review]
         return dict(title=title,
@@ -665,8 +666,9 @@ class CategoryReadout(Readout):
 
         return query, params
 
-    def _format_row(self, (slug, title, visits, needs_changes, needs_review,
-                           unready_for_l10n)):
+    def _format_row(self, row):
+        (slug, title, visits, needs_changes, needs_review,
+                           unready_for_l10n) = row
         if needs_review:
             status, view_name, dummy = REVIEW_STATUSES[needs_review]
         elif needs_changes:
@@ -830,8 +832,9 @@ class TemplateTranslationsReadout(Readout):
 
         return query, params
 
-    def _format_row(self, (eng_slug, eng_title, slug, title, significance,
-                           needs_review)):
+    def _format_row(self, row):
+        (eng_slug, eng_title, slug, title, significance,
+                           needs_review) = row
         return _format_row_with_out_of_dateness(
             self.locale, eng_slug, eng_title, slug, title, None, significance,
             needs_review)
@@ -904,7 +907,8 @@ class UnreviewedReadout(Readout):
                 else 'ORDER BY dashboards_wikidocumentvisits.visits DESC, '
                      'wiki_document.title ASC')
 
-    def _format_row(self, (slug, title, changed, users, visits)):
+    def _format_row(self, row):
+        slug, title, changed, users, visits = row
         return dict(title=title,
                     url=reverse('wiki.document_revisions',
                                 args=[slug],
@@ -1035,7 +1039,8 @@ class UnreadyForLocalizationReadout(Readout):
         return ('ORDER BY maxreviewed DESC' if self.mode == MOST_RECENT
                 else 'ORDER BY visits.visits DESC, engdoc.title ASC')
 
-    def _format_row(self, (slug, title, reviewed, visits)):
+    def _format_row(self, row):
+        slug, title, reviewed, visits = row
         return dict(title=title,
                     url=reverse('wiki.document_revisions',
                                 args=[slug],
@@ -1088,7 +1093,8 @@ class NeedsChangesReadout(Readout):
         # revision causes them to be on this dashboard.
         return ('ORDER BY visits.visits DESC, engdoc.title ASC')
 
-    def _format_row(self, (slug, title, comment, visits)):
+    def _format_row(self, row):
+        slug, title, comment, visits = row
         return dict(title=title,
                     url=reverse('wiki.document_revisions',
                                 args=[slug],
