@@ -6,7 +6,7 @@ Run this script like `./manage.py runscript get_media`.
 
 import os
 
-import urllib
+import urllib.request, urllib.parse, urllib.error
 
 from kitsune.gallery.models import Image
 from kitsune.sumo.utils import Progress
@@ -32,8 +32,8 @@ def run():
                 raise e
 
         try:
-            urllib.urlretrieve(url, path)
-        except urllib.ContentTooShortError:
+            urllib.request.urlretrieve(url, path)
+        except urllib.error.ContentTooShortError:
             print("Couldn't download", path)
         progress.tick()
     print('\nDone')

@@ -1,5 +1,5 @@
 import hashlib
-import urllib
+import urllib.request, urllib.parse, urllib.error
 
 from django.conf import settings
 from django.utils.encoding import force_str
@@ -60,7 +60,7 @@ def profile_avatar(user, size=48):
     if avatar.startswith('https') and profile and profile.is_fxa_migrated:
         url = avatar
     elif avatar.startswith('http'):
-        url = url + '&d=%s' % urllib.quote(avatar)
+        url = url + '&d=%s' % urllib.parse.quote(avatar)
 
     return url
 
