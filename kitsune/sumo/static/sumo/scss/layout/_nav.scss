@@ -1,3 +1,6 @@
+@use '../config' as c;
+@use '../protocol' as p;
+
 // Navigation
 //
 // Basic site navigation
@@ -13,15 +16,12 @@
 //
 // Style guide: nav
 
-@use '../config' as c;
-@use '../protocol' as p;
+
 
 .sumo-nav {
-
   &--container {
     @include c.container;
     display: flex;
-    justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
 
@@ -52,11 +52,7 @@
 
   }
 
-  &--list-wrap {
-    flex: 1 1 100%;
-  }
-
-  &--item-right {
+  &--list-wrap-right {
     margin-left: auto;
   }
 
@@ -65,15 +61,34 @@
       padding-right: 0;
 
       .avatar {
-        display: none;
+        display: block;
+        margin-top: -6px;
+        margin-bottom: -6px;
+        margin-left: 20px;
+        width: 36px;
+      }
+    }
+  }
 
-        @media #{p.$mq-md} {
-          display: block;
-          margin-top: -6px;
-          margin-bottom: -6px;
-          margin-left: 20px;
-          width: 36px;
-        }
+  &--avatar-button {
+    display: flex;
+    margin-left: 12px;
+
+    .avatar {
+      width: 32px;
+    }
+
+    @media #{p.$mq-md} {
+      display: none;
+    }
+  }
+
+  &--mobile-search-form {
+
+
+    @media #{p.$mq-md} {
+      .js .mzp-c-navigation-l-content & {
+        display: none;
       }
     }
   }
@@ -123,9 +138,9 @@
     }
 
     &-thirds { // This is non-standard.
-      @include c.col;
       @media #{p.$mq-md} {
-        width: c.col-width(2, 6);
+        @include c.col(2, 6);
+        // width: c.col-width(2, 6);
       }
     }
 
@@ -135,11 +150,13 @@
   }
 
   &--button-row {
-    @include c.col; // adds correct margins
     display: flex;
     justify-content: flex-end;
     padding-top: 12px;
-    width: auto;
+
+    @media #{p.$mq-md} {
+      @include c.col; // adds correct margins
+    }
   }
 
   &--sublist {
@@ -163,6 +180,121 @@
       @at-root .mzp-c-menu-category &.mzp-c-menu-title {
         display: block;
       }
+    }
+  }
+  &--search-button,
+  &--toggle-button {
+    appearance: none;
+    margin-left: 10px;
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 4px;
+    background-image: url('#{p.$image-path}/icons/menu.svg');
+    background-color: transparent;
+    background-position: center center;
+    background-repeat: no-repeat;
+    font: 0/0 a;
+    color: transparent;
+
+    &:hover,
+    &:active,
+    &:focus,
+    &.mzp-is-active  {
+      background-color: var(--color-link-active-bg);
+    }
+
+    @media #{p.$mq-md} {
+      display: none;
+    }
+  }
+
+  &--search-button {
+    margin-left: auto;
+    background-image: url('#{p.$image-path}/icons/search.svg');
+  }
+
+  .simple-search-form {
+    margin-right: 20px;
+  }
+
+  body.scroll-header:not(.lock-body) & {
+    position: fixed;
+    top: -100px;
+    z-index: 97;
+    width: 100%;
+    border: 1px solid var(--color-border);
+    transform: translateY(100px);
+    transition: transform 0.3s;
+
+    .sumo-nav--lang-link {
+      display: none;
+    }
+
+    .sumo-nav--item-lang {
+      margin-left: 0;
+    }
+
+    .sumo-nav--list-wrap-right .sumo-nav--list {
+      padding-top: 0;
+    }
+
+    .simple-search-form {
+      display: block;
+    }
+    .search-button {
+      top: 2px;
+      right: 4px;
+    }
+  }
+
+  .simple-search-form {
+    display: none;
+  }
+
+  .sumo-nav--mobile-search-form {
+    .simple-search-form {
+      margin: 32px 0 0 0;
+      padding: 0 0 32px 0;
+    }
+
+    .searchbox {
+      width: 100%;
+    }
+  }
+
+  .firefox-download-button {
+    margin-right: 24px;
+    margin-left: 8px;
+  }
+
+  .searchbox { // #TODO - remove most of this after old CSS is removed.
+    padding: 0 p.$spacing-sm;
+    width: 300px;
+    height: 36px;
+    box-shadow: none !important;
+    border: 2px solid var(--field-border-color-default) !important;
+    border-radius: var(--global-radius) !important;
+    background-color: var(--color-white);
+    color:#0c0c0d;
+    outline:0;
+    transition-duration:150ms;
+    transition-property:border-color;
+    @include p.font-size(16px);
+
+    &:hover {
+      border-color: var(--field-border-color-hover);
+    }
+
+    &:focus,
+    .has-warning &,
+    .has-error &,
+    .has-success & {
+      border-color: transparent !important;
+    }
+
+    &:focus {
+      box-shadow: var(--focus-shadow)  !important;
     }
   }
 
@@ -205,5 +337,38 @@
 
   .mzp-c-menu-panel {
     top: 74px;
+  }
+}
+
+.js .mzp-c-navigation-l-content .mzp-c-navigation-items.mzp-is-open {
+  width: 100%;
+}
+
+// accessibility tab links
+
+.sumo-nav-access {
+  position: absolute;
+  top: -20em;
+  z-index: 1001;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  background: #fff;
+
+  a {
+    position: absolute;
+    right: 0;
+    left: 0;
+    margin: 0;
+    padding: 12px 10px;
+    padding: 0;
+    background: rgba(255, 255, 255, 0.9);
+    font-weight: bold;
+    text-align: center;
+
+    &:focus {
+      top: 20em;
+      text-decoration: none;
+    }
   }
 }

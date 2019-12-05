@@ -1,5 +1,6 @@
-@use './protocol' as p;
-@use '_variables' as *;
+@use '../protocol' as p;
+@use './variables' as c;
+
 
 // Grid
 //
@@ -35,13 +36,14 @@
 //}
 //```
 //
-/* Markup: #{$styleguide-path}/grid.njk */
+// Markup: ../../../../../../styleguide/styleguide-examples/grid.njk
 //
 // Weight: 2
 //
 // Style guide: grid
 
 // Grid columns
+
 
 $gutter-width: 32px !default;
 $max-container-width: 1312px !default;

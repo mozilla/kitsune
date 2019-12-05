@@ -1,4 +1,4 @@
-{% from 'includes/common_macros.html' import announcement_bar, search_box, aux_nav, favicon with context %}
+{% from 'includes/common_macros.html' import announcement_bar, search_box, aux_nav, profile_nav, favicon with context %}
 
 {% if request.LANGUAGE_CODE == settings.WIKI_DEFAULT_LANGUAGE and waffle.flag('surveygizmo') %}
   {# allow any artibtrary survey to be loaded via the SurveyGizmo admin #}
@@ -26,11 +26,11 @@
     {% endfor %}
   {% endif %}
 
-  {% stylesheet 'common' %}
+  <!-- {% stylesheet 'common' %}
   {% stylesheet 'print' %}
   {% for style in styles %}
     {% stylesheet style %}
-  {% endfor %}
+  {% endfor %} -->
 
   <link href="{{ STATIC_URL }}build/screen.css" rel="stylesheet" type="text/css" />
 
@@ -110,7 +110,7 @@
 {% if localizable_url %}
   {% set locale_picker_url = locale_picker_url|urlparams(next=localizable_url) %}
 {% endif %}
-<ul id="nav-access">
+<ul class="sumo-nav-access" id="nav-access">
   <li><a href="#main-content">{{ _('Skip to main content') }}</a></li>
   <li><a href="{{ locale_picker_url }}">{{ _('Switch language') }}</a></li>
   <li><a id="skip-to-search" href="#search-q">{{ _('Skip to search') }}</a></li>
@@ -124,23 +124,6 @@
 {% endif %}
 
 <div class="media-test"></div>
-
-{# These will only be shown on small-ish screens, by media queries. #}
-{% if request.MOBILE %}
-  <div class="mobile-banner" id="mobile-warning">
-    <div class="close-button" data-close-id="mobile-warning" data-close-memory="remember">X</div>
-    <a href="javascript: history.back();">
-      {{ _("This page doesn't have a mobile optimized version. Tap here to go back.") }}
-    </a>
-  </div>
-{% else %}
-  <div class="mobile-banner" id="mobile-warning">
-    <div class="close-button" data-close-id="mobile-warning" data-close-memory="remember">X</div>
-    <a href="?{{ request.QUERY_STRING }}&amp;mobile=1">
-      {{ _('Tap here to go to the mobile version of the site.') }}
-    </a>
-  </div>
-{% endif %}
 
 {# TrafficCop experiment_fxa_cta_topbar #}
 {% if run_experiments %}
@@ -170,13 +153,18 @@
 </div>
 
 
-<header class="mzp-c-navigation sumo-nav {{modifier_class}}">
+<header class="mzp-c-navigation sumo-nav">
   <div class="mzp-c-navigation-l-content">
     <div class="sumo-nav--container">
       <div class="sumo-nav--logo">
-        <a href="{{ url('home') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Home"><img src="{{ STATIC_URL }}sumo/img/mozilla-support.svg" alt="Mozilla Support Logo"/></a>
+        <a href="{{ url('home') }}"><img src="{{ STATIC_URL }}sumo/img/mozilla-support.svg" alt="Mozilla Support Logo"/></a>
       </div>
-      <button class="mzp-c-navigation-menu-button" type="button" aria-controls="main-navigation">Menu</button>
+
+      <button data-sumo-toggle-nav="#search-navigation" class="sumo-nav--search-button" type="button" aria-controls="search-navigation">Search</button>
+      <button data-sumo-toggle-nav="#main-navigation" class="sumo-nav--toggle-button" type="button" aria-controls="main-navigation">Menu</button>
+      <a class="sumo-nav--avatar-button" data-sumo-toggle-nav="#profile-navigation" aria-controls="profile-navigation" aria-role="button">
+        <img class="avatar" src="{{ profile_avatar(user) }}" alt="Avatar for Username">
+      </a>
       <div class="mzp-c-navigation-items sumo-nav--list-wrap" id="main-navigation">
         <div class="mzp-c-navigation-menu">
           <nav class="mzp-c-menu mzp-is-basic">
@@ -185,6 +173,25 @@
                 {{ aux_nav(user, hide_aaq_link) }}
               </ul>
               {% endif %}
+          </nav>
+        </div>
+      </div>
+
+      <div class="mzp-c-navigation-items sumo-nav--list-wrap-right" id="profile-navigation">
+        <div class="mzp-c-navigation-menu">
+          <nav class="mzp-c-menu mzp-is-basic">
+              {% if not hide_aux_nav %}
+              <ul class="mzp-c-menu-category-list sumo-nav--list">
+                {{ profile_nav(user, hide_aaq_link) }}
+              </ul>
+              {% endif %}
+          </nav>
+        </div>
+      </div>
+      <div class="mzp-c-navigation-items sumo-nav--mobile-search-form" id="search-navigation">
+        <div class="mzp-c-navigation-menu">
+          <nav class="mzp-c-menu mzp-is-basic">
+            {{ search_box(settings, id='mobile-search-results', params=search_params) }}
           </nav>
         </div>
       </div>
@@ -197,6 +204,7 @@
   {{ breadcrumbs(crumbs, id='main-breadcrumbs') }}
 {% endblock %}
 
+{% block contentwrap %}
 <div class="container_12 cf {% block base_container_classes %}{% endblock %}" id="main-container">
   <div class="grid_12">
     {% if messages %}
@@ -220,16 +228,15 @@
     </aside>
   {% endblock %}
 
-  <div class="support-search-main cf">
-    <div class="grid_12 search-form-large">
+  <section class="support-search-main cf">
       {{ search_box(settings, id='support-search-results', params=search_params) }}
-    </div>
-  </div>
+  </section>
 
   <main id="main-content" role="main">
     {% block content %}{% endblock %}
   </main>
 </div>
+{% endblock %}
 
 
 <footer class="mzp-c-footer">
@@ -292,21 +299,6 @@
             <!-- form submit button is shown when JavaScript is not enabled -->
             <button type="submit">{{ _('Go') }}</button>
           </form>
-          <script src="../../../assets/protocol/protocol/js/protocol-lang-switcher.js"></script>
-
-          <script>
-            (function() {
-              'use strict';
-              // a custom callback can be passed to the lang switcher for analytics purposes.
-              Mzp.LangSwitcher.init(function(
-                previousLanguage, newLanguage) {
-                console.log('Previous language: ',
-                  previousLanguage);
-                console.log('New language: ',
-                  newLanguage);
-              })
-            })();
-          </script>
           <ul class="mzp-c-footer-links-social">
             <li><a class="twitter" href="https://twitter.com/firefox">Twitter<span>(@firefox)</span></a></li>
             <li><a class="youtube" href="https://www.youtube.com/firefoxchannel">YouTube<span> (firefoxchannel)</span></a></li>
