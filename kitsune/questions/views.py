@@ -377,7 +377,7 @@ def parse_troubleshooting(troubleshooting_json):
     # and just make them collapsible.
 
     parsed['modifiedPreferences'] = dict(
-        (key, val) for (key, val) in parsed['modifiedPreferences'].items()
+        (key, val) for (key, val) in list(parsed['modifiedPreferences'].items())
         if not key.startswith('print'))
 
     return parsed
@@ -1553,7 +1553,7 @@ def stats_topic_data(bucket_days, start, end, locale=None, product=None):
     # - It is in a format usable by k.Graph.
     #   - ie: [{"created": 1362774285, 'topic-1': 10, 'topic-2': 20}, ...]
 
-    for series in histograms_data.itervalues():
+    for series in histograms_data.values():
         if series['entries']:
             earliest_point = series['entries'][0]['key']
             break
@@ -1563,7 +1563,7 @@ def stats_topic_data(bucket_days, start, end, locale=None, product=None):
     latest_point = earliest_point
     interim_data = {}
 
-    for key, data in histograms_data.iteritems():
+    for key, data in histograms_data.items():
         if not data:
             continue
         for point in data:
@@ -1586,13 +1586,13 @@ def stats_topic_data(bucket_days, start, end, locale=None, product=None):
     timestamp = earliest_point
     while timestamp <= latest_point:
         datum = interim_data.get(timestamp, {'date': timestamp})
-        for key in histograms_data.iterkeys():
+        for key in histograms_data.keys():
             if key not in datum:
                 datum[key] = 0
         timestamp += bucket
 
     # The keys are irrelevant, and the values are exactly what we want.
-    return interim_data.values()
+    return list(interim_data.values())
 
 
 def metrics(request, locale_code=None):
@@ -1616,7 +1616,7 @@ def metrics(request, locale_code=None):
     graph_data = stats_topic_data(bucket_days, start, end, locale_code, product)
 
     for group in graph_data:
-        for name, count in group.items():
+        for name, count in list(group.items()):
             if count == 0:
                 del group[name]
 

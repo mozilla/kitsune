@@ -165,7 +165,7 @@ def build_hook_params(string, locale, allowed_params=[],
             params['caption'] = last_item
 
     # Validate params allowed
-    for p in params.keys():
+    for p in list(params.keys()):
         if p not in allowed_params:
             del params[p]
 

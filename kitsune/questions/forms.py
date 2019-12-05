@@ -228,7 +228,7 @@ class EditQuestionForm(forms.Form):
         def metadata_filter(x):
             return x not in non_metadata_fields
 
-        return list(filter(metadata_filter, self.fields.keys()))
+        return list(filter(metadata_filter, list(self.fields.keys())))
 
     @property
     def cleaned_metadata(self):
@@ -251,7 +251,7 @@ class EditQuestionForm(forms.Form):
                 # Clean out unwanted garbage preferences.
                 if ('modifiedPreferences' in parsed and
                         isinstance(parsed['modifiedPreferences'], dict)):
-                    for pref in parsed['modifiedPreferences'].keys():
+                    for pref in list(parsed['modifiedPreferences'].keys()):
                         if pref.startswith('print.macosx.pagesetup'):
                             del parsed['modifiedPreferences'][pref]
                     clean['troubleshooting'] = json.dumps(parsed)

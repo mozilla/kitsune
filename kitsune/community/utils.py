@@ -118,7 +118,7 @@ def _get_creator_counts(query, count, page):
 
     query_data = {obj['id']: obj['query_count'] for obj in query_data}
 
-    users_data = (UserMappingType.search().filter(id__in=query_data.keys())
+    users_data = (UserMappingType.search().filter(id__in=list(query_data.keys()))
                                  .values_dict('id', 'username', 'display_name',
                                               'avatar', 'twitter_usernames',
                                               'last_contribution_date')[:count])

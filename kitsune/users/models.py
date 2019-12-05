@@ -354,7 +354,7 @@ class Setting(ModelBase):
     def get_for_user(cls, user, name):
         from kitsune.users.forms import SettingsForm
         form = SettingsForm()
-        if name not in form.fields.keys():
+        if name not in list(form.fields.keys()):
             raise KeyError(("'{name}' is not a field in "
                             "user.forms.SettingsFrom()").format(name=name))
         try:

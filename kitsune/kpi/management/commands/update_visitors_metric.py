@@ -32,7 +32,7 @@ class Command(BaseCommand):
 
         # Create the metrics.
         metric_kind = MetricKind.objects.get_or_create(code=VISITORS_METRIC_CODE)[0]
-        for date_str, visits in visitors.items():
+        for date_str, visits in list(visitors.items()):
             day = datetime.strptime(date_str, "%Y-%m-%d").date()
             Metric.objects.create(
                 kind=metric_kind, start=day, end=day + timedelta(days=1), value=visits

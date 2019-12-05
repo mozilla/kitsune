@@ -75,7 +75,7 @@ admin.site.register_view('schema', view=schema_version,
 def redis_info(request):
     """Admin view that displays redis INFO+CONFIG output for all backends."""
     redis_info = {}
-    for key in django_settings.REDIS_BACKENDS.keys():
+    for key in list(django_settings.REDIS_BACKENDS.keys()):
         redis_info[key] = {}
         client = redis_client(key)
         redis_info[key]['connection'] = django_settings.REDIS_BACKENDS[key]

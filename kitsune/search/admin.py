@@ -102,7 +102,7 @@ def reindex(mapping_type_names):
 def handle_recreate_index(request):
     """Deletes an index, recreates it, and reindexes it."""
     groups = [name.replace('check_', '')
-              for name in request.POST.keys()
+              for name in list(request.POST.keys())
               if name.startswith('check_')]
 
     indexes = [write_index(group) for group in groups]
@@ -119,7 +119,7 @@ def handle_recreate_index(request):
 def handle_reindex(request):
     """Caculates and kicks off indexing tasks"""
     mapping_type_names = [name.replace('check_', '')
-                          for name in request.POST.keys()
+                          for name in list(request.POST.keys())
                           if name.startswith('check_')]
 
     reindex(mapping_type_names)
@@ -283,13 +283,13 @@ def index_view(request):
         last_20_by_bucket = [
             (cls_name,
              _fix_results(cls.search().order_by('-indexed_on')[:20]))
-            for cls_name, cls in bucket_to_model.items()]
+            for cls_name, cls in list(bucket_to_model.items())]
 
     return render(
         request,
         'admin/search_index.html',
         {'title': 'Index Browsing',
-         'buckets': [cls_name for cls_name, cls in bucket_to_model.items()],
+         'buckets': [cls_name for cls_name, cls in list(bucket_to_model.items())],
          'last_20_by_bucket': last_20_by_bucket,
          'requested_bucket': requested_bucket,
          'requested_id': requested_id,

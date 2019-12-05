@@ -32,7 +32,7 @@ def create_imageattachment(files, user, obj):
     Given an uploaded file, a user and an object, it creates an ImageAttachment
     owned by `user` and attached to `obj`.
     """
-    up_file = files.values()[0]
+    up_file = list(files.values())[0]
     check_file_size(up_file, settings.IMAGE_MAX_FILESIZE)
 
     (up_file, is_animated) = _image_to_png(up_file)

@@ -162,7 +162,7 @@ class BugzillaAPI(xmlrpclib.ServerProxy):
         except xmlrpclib.Fault:
             log.exception('Problem getting comments for bug ids: %s', bug_ids)
             return {}
-        return dict((int(bid), cids) for bid, cids in comments.iteritems())
+        return dict((int(bid), cids) for bid, cids in comments.items())
 
 
 def wrap(text, indent='    '):
@@ -221,7 +221,7 @@ def bugzilla_stats(year):
         total += 1
         creators[bug['creator']] = creators.get(bug['creator'], 0) + 1
 
-    creators = sorted(creators.items(), key=lambda item: item[1], reverse=True)
+    creators = sorted(list(creators.items()), key=lambda item: item[1], reverse=True)
 
     stats.append(('Bugs created', {
         'total': total,
@@ -292,13 +292,13 @@ def bugzilla_stats(year):
                 resolutions[change['added']] = resolutions.get(
                     change['added'], 0) + 1
 
-    peeps = sorted(peeps.items(), key=lambda item: sum(item[1].values()), reverse=True)
+    peeps = sorted(list(peeps.items()), key=lambda item: sum(item[1].values()), reverse=True)
     stats.append(('Bugs resolved', {
         'total': total,
         'breakdown': [
             {'name': mem[0].split('@')[0],
              'total': sum(mem[1].values()),
-             'breakdown': mem[1].items()}
+             'breakdown': list(mem[1].items())}
             for mem in peeps[:10]
         ]
     }))
@@ -307,7 +307,7 @@ def bugzilla_stats(year):
     # Resolution stats
     # -------------------------------------------
 
-    resolutions = sorted(resolutions.items(), key=lambda item: item[1])
+    resolutions = sorted(list(resolutions.items()), key=lambda item: item[1])
     stats.append(('Bugs resolved breakdown', resolutions))
 
     # -------------------------------------------
@@ -395,7 +395,7 @@ def git_stats(year):
     print('')
 
     committers = sorted(
-        committers.items(), key=lambda item: item[1], reverse=True)
+        list(committers.items()), key=lambda item: item[1], reverse=True)
 
     committers_data = []
     for person, count in committers:
@@ -412,9 +412,9 @@ def git_stats(year):
 
     stats.append(('Git commit data', {
             'total commits': len(all_commits),
-            'total lines added': sum([item[0] for item in changes.values()]),
-            'total lines deleted': sum([item[1] for item in changes.values()]),
-            'total files changed': sum([item[2] for item in changes.values()])
+            'total lines added': sum([item[0] for item in list(changes.values())]),
+            'total lines deleted': sum([item[1] for item in list(changes.values())]),
+            'total files changed': sum([item[2] for item in list(changes.values())])
     }))
 
     stats.append(('Git committer data', committers_data))

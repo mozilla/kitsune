@@ -379,7 +379,7 @@ class TestAnswerNotifications(TestCaseBase):
         notification = [m for m in mail.outbox if m.to == [ANON_EMAIL]][0]
         # Headers should be compared case-insensitively.
         headers = dict((k.lower(), v)
-                       for k, v in notification.extra_headers.items())
+                       for k, v in list(notification.extra_headers.items()))
         eq_('replyto@example.com', headers['reply-to'])
 
     @override_settings(DEFAULT_REPLY_TO_EMAIL='replyto@example.com')
@@ -394,7 +394,7 @@ class TestAnswerNotifications(TestCaseBase):
         notification = [m for m in mail.outbox if m.to == [watcher.email]][0]
         # Headers should be compared case-insensitively.
         headers = dict((k.lower(), v)
-                       for k, v in notification.extra_headers.items())
+                       for k, v in list(notification.extra_headers.items()))
         eq_('replyto@example.com', headers['reply-to'])
 
     @override_settings(DEFAULT_REPLY_TO_EMAIL='replyto@example.com')
@@ -405,5 +405,5 @@ class TestAnswerNotifications(TestCaseBase):
         self.makeAnswer()
         # Headers should be compared case-insensitively.
         headers = dict((k.lower(), v)
-                       for k, v in mail.outbox[0].extra_headers.items())
+                       for k, v in list(mail.outbox[0].extra_headers.items()))
         eq_('replyto@example.com', headers['reply-to'])

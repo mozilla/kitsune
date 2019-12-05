@@ -210,7 +210,7 @@ class QuestionFilter(django_filters.FilterSet):
         except ValueError:
             raise GenericAPIException(400, 'metadata must be valid JSON.')
 
-        for key, values in value.items():
+        for key, values in list(value.items()):
             if not isinstance(values, list):
                 values = [values]
             query = Q()

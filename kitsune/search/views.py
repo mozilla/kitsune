@@ -671,7 +671,7 @@ def _build_es_excerpt(result, first_only=False):
         if we should show all bits
 
     """
-    bits = [m.strip() for m in chain(*result.es_meta.highlight.values())]
+    bits = [m.strip() for m in chain(*list(result.es_meta.highlight.values()))]
 
     if first_only and bits:
         excerpt = bits[0]

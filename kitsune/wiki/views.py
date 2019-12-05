@@ -75,7 +75,7 @@ def doc_page_cache(view):
         if html is not None:
             statsd.incr('wiki.document_view.cache.hit')
             res = HttpResponse(html)
-            for key, val in headers.items():
+            for key, val in list(headers.items()):
                 res[key] = val
             return res
 
@@ -84,7 +84,7 @@ def doc_page_cache(view):
 
         # We only cache if the response returns HTTP 200.
         if response.status_code == 200:
-            cache.set(cache_key, (response.content, dict(response._headers.values())))
+            cache.set(cache_key, (response.content, dict(list(response._headers.values()))))
 
         return response
     return _doc_page_cache_view

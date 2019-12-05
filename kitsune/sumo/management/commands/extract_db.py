@@ -69,8 +69,8 @@ class Command(BaseCommand):
             raise CommandError('DB_LOCALIZE setting is not defined!')
 
         strings = []
-        for app, models in django_apps.items():
-            for model, params in models.items():
+        for app, models in list(django_apps.items()):
+            for model, params in list(models.items()):
                 model_class = apps.get_model(app, model)
                 attrs = params['attrs']
                 qs = model_class.objects.all().values_list(*attrs).distinct()
