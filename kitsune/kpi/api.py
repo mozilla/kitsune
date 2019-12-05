@@ -19,6 +19,7 @@ from kitsune.kpi.models import (
     EXIT_SURVEY_NO_CODE, EXIT_SURVEY_DONT_KNOW_CODE)
 from kitsune.questions.models import Question, Answer, AnswerVote
 from kitsune.wiki.models import HelpfulVote
+from functools import reduce
 
 
 class CachedAPIView(APIView):
