@@ -291,7 +291,7 @@ class SumoPyQuery(PyQuery):
     """Extends PyQuery with some niceties to alleviate its bugs"""
     def first(self):
         """:first doesn't work, so this is a meh substitute"""
-        return self.items().next()
+        return next(self.items())
 
 
 def template_used(response, template_name):
