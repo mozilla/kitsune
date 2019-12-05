@@ -9,7 +9,7 @@
 // and accessibility reasons, an anchor with complicated nested content is not
 // preferred.
 //
-// Markup: ../../../../../../styleguide/styleguide-examples/expanded-link-utility.njk
+/* Markup: #{c.$styleguide-path}/expanded-link-utility.njk */
 //
 // Weight: 4
 //
@@ -28,9 +28,9 @@
 }
 
 
-@media screen and (max-width: 767px) {
+@media #{p.$mq-md} {
   .hide-on-mobile {
-    display: none !important;
+    display: none;
   }
 }
 
@@ -42,9 +42,8 @@
   }
 }
 
-.hidden,
-.is-hidden {
-  display: none !important;
+.hidden {
+    display: none !important;
 }
 
 .m-0 {
@@ -63,12 +62,4 @@
   position: fixed;
   height: 100vh;
   overflow: hidden;
-}
-
-.text-center {
-  text-align: center;
-}
-
-.text-right {
-  text-align: right;
 }

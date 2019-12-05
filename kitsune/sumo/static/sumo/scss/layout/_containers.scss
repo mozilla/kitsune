@@ -1,30 +1,23 @@
-@use '../protocol' as p;
-@use '../config' as c;
-
 // Containers
 //
 // This container provides default horizontal margins for the page and a max-width of 1400px.
 //
-// Markup: ../../../../../../styleguide/styleguide-examples/containers.njk
+// .narrow - 1000px max max-width
+//
+/* Markup: #{$styleguide-path}/containers.njk */
 //
 // Weight: 20
 //
 // Style guide: containers
 
-.mzp-l-content {
-  @include c.container;
+@use '../protocol' as p;
+
+.container {
+  margin: 0 auto;
+  padding: 0 20px;
+  max-width: p.remify(1440px);
 
   &.narrow {
-    max-width: 1000px;
-  }
-}
-
-.sumo-page-section {
-  padding-top: 20px;
-  padding-bottom: 20px;
-
-  @media #{p.$mq-md} {
-    padding-top: 40px;
-    padding-bottom: 40px;
+    max-width: p.remify(1000px);
   }
 }

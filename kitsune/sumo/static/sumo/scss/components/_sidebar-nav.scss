@@ -1,13 +1,13 @@
-@use '../config' as c;
-@use '../protocol' as p;
-
 // Sidebar navigation
 //
-// Markup: ../../../../../../styleguide/styleguide-examples/sidebar-nav.njk
+/* Markup: #{c.$styleguide-path}/sidebar-nav.njk */
 //
 // Weight: 3
 //
 // Style guide: nav.sidebar
+
+@use '../config' as c;
+@use '../protocol' as p;
 
 .sidebar-nav {
 

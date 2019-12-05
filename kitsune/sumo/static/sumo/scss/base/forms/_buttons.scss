@@ -14,14 +14,13 @@
 // .button-lg - large modifier
 // .button-xl - extra large modifier
 // .primary-button    - This is the primary variation.
-// .secondary-button - This is the secondary button.
+// .secondary-button - this is the secondary button.
 //
-// Markup: ../../../../../../styleguide/styleguide-examples/button.njk
+/* Markup: #{c.$styleguide-path}/button.njk */
 //
 // Weight: 4
 //
 // Style guide: buttons
-
 
 .sumo-button {
   display:inline-flex;
@@ -33,7 +32,7 @@
   border-radius: var(--global-radius);
   background-color: var(--color-inverse);
 
-  font-family: var(--heading-alt-font-family);
+  font-family: var(--heading-font-family);
   @include p.font-size(14px);
   font-weight:700;
   text-decoration: none;

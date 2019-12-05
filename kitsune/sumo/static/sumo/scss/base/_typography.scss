@@ -13,7 +13,7 @@
 // to apply to all headings within that context.
 // .alt-heading-font.inverse - Both classes can be used together.
 //
-// Markup: ../../../../../../styleguide/styleguide-examples/typography.njk
+/* Markup: #{c.$styleguide-path}/typography.njk */
 //
 // Weight: 1
 //
@@ -29,11 +29,108 @@
 // there's some redundancy at smaller sizes because we don't want things
 // getting too tiny.
 // Example usage:
-//  .title { @include c.text-display-xl; }
-//  .subtitle { @include c.text-display-lg; }
-//  .intro { @include c.text-body-lg; }
+//  .title { @include text-display-xl; }
+//  .subtitle { @include text-display-lg; }
+//  .intro { @include text-body-lg; }
 
+$text-body-line-height: 1.5 !default;
+$text-display-line-height: 1.1 !default;
 
+// display copy: headings, blockquotes, other fancy stuff
+@mixin text-display-xxl { // Use this one sparingly.
+  @include p.font-size(48px);
+  line-height: $text-display-line-height;
+
+  @media #{p.$mq-md} {
+    @include p.font-size(64px);
+    @include c.line-height(72px);
+  }
+}
+
+@mixin text-display-xl {
+  @include p.font-size(40px);
+  line-height: $text-display-line-height;
+
+  @media #{p.$mq-md} {
+    @include p.font-size(56px);
+    @include c.line-height(64px);
+  }
+}
+
+@mixin text-display-lg {
+  @include p.font-size(32px);
+  line-height: $text-display-line-height;
+
+  @media #{p.$mq-md} {
+    @include p.font-size(48px);
+    @include c.line-height(56px);
+  }
+}
+
+@mixin text-display-md {
+  @include p.font-size(24px);
+  line-height: $text-display-line-height;
+
+  @media #{p.$mq-md} {
+    @include p.font-size(40px);
+    @include c.line-height(44px);
+  }
+}
+
+@mixin text-display-sm {
+  @include p.font-size(21px);
+
+  @media #{p.$mq-md} {
+    @include p.font-size(32px);
+    @include c.line-height(36px);
+  }
+}
+
+@mixin text-display-xs {
+  @include p.font-size(18px);
+  line-height: $text-display-line-height;
+
+  @media #{p.$mq-md} {
+    @include p.font-size(24px);
+    @include c.line-height(28px);
+  }
+}
+
+@mixin text-display-xxs {
+  @include p.font-size(20px);
+  @include c.line-height(24px);
+}
+
+@mixin text-display-xxxs {
+  @include p.font-size(16px);
+  @include c.line-height(20px);
+}
+
+// body copy
+@mixin text-body-lg {
+  @include p.font-size(18px);
+  line-height: $text-body-line-height;
+}
+
+@mixin text-body-md {
+  @include p.font-size(16px);
+  line-height: $text-body-line-height;
+}
+
+@mixin text-body-sm {
+  @include p.font-size(14px);
+  line-height: $text-body-line-height;
+}
+
+@mixin text-body-xs {
+  @include p.font-size(12px);
+  line-height: $text-body-line-height;
+}
+
+@mixin text-body-cta {
+  @include p.font-size(16px);
+  line-height: $text-body-line-height;
+}
 
 body {
   color: var(--color-text);
@@ -45,42 +142,38 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 // Type scale defined in includes/mixins/_typography.scss
-h1,
-.text-display-xxl {
-  @include c.text-display-xxl;
+h1 {
+  @include text-display-xxl;
 }
 
-h2,
-.text-display-xl {
-  @include c.text-display-xl;
+h2 {
+  @include text-display-xl;
 }
 
-h3,
-.text-display-lg {
-  @include c.text-display-lg;
+h3 {
+  @include text-display-lg;
 }
 
-h4,
-.text-display-md {
-  @include c.text-display-md;
+h4 {
+  @include text-display-md;
 }
 
-h5, h6, .text-display-sm {
+h5, h6 {
   font-family: var(--base-font-family);
-  @include c.text-display-sm;
+  @include text-display-sm;
 }
 
 .display-xs {
-  @include c.text-display-xs;
+  @include text-display-xs;
 }
 
 
 .display-xxs {
-  @include c.text-display-xxs;
+  @include text-display-xxs;
 }
 
 .display-xxxs {
-  @include c.text-display-xxxs;
+  @include text-display-xxxs;
 }
 
 
