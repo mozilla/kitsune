@@ -31,7 +31,7 @@ class ProductTopicsAndSubtopicsWidget(forms.widgets.SelectMultiple):
             })
 
     def process_topic(self, value, topic):
-        if isinstance(value, (int, int)) and topic.id == value:
+        if isinstance(value, int) and topic.id == value:
             topic.checked = True
         elif (not isinstance(value, basestring) and
               isinstance(value, collections.Iterable) and
@@ -45,7 +45,7 @@ class RelatedDocumentsWidget(forms.widgets.SelectMultiple):
     """A widget to render the related documents list and search field."""
 
     def render(self, name, value, attrs=None):
-        if isinstance(value, (int, int)):
+        if isinstance(value, int):
             related_documents = Document.objects.filter(id__in=[value])
         elif not isinstance(value, basestring) and isinstance(value, collections.Iterable):
             related_documents = Document.objects.filter(id__in=value)
