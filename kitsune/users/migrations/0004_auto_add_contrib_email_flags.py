@@ -2,8 +2,6 @@
 """
 Add first_answer_email_sent and first_l10n_email_sent fields to Profile.
 """
-from __future__ import unicode_literals
-
 from django.db import models, migrations
 import kitsune.sumo.models  # noqa
 

@@ -3,8 +3,6 @@
 Update list of locale choices for the `profile.locale` field.
 """
 
-from __future__ import unicode_literals
-
 from django.db import models, migrations
 import timezone_field
 import kitsune.sumo.models

@@ -4,8 +4,6 @@ Set the `first_{revision,question}_email_sent` flags for existing users that
 have made the appropriate type of contribution. This is to avoid back filling
 welcome emails to contributors.
 """
-from __future__ import unicode_literals
-
 import sys
 
 from django.conf import settings

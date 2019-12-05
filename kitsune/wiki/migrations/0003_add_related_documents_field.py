@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 """Migration to add the related_documents M2M field to the Document model."""
-from __future__ import unicode_literals
-
 from django.db import models, migrations
 import kitsune.sumo.models
 

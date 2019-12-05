@@ -3,8 +3,6 @@
 Update list of locale choices in the `document.locale` and `locale.locale` fields.
 """
 
-from __future__ import unicode_literals
-
 from django.db import models, migrations
 import kitsune.sumo.models
 
