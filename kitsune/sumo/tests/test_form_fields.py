@@ -15,7 +15,7 @@ class TypedMultipleChoiceFieldTestCase(TestCase):
         self.assertRaises(error, callable, *args, **kwargs)
         try:
             callable(*args, **kwargs)
-        except error, e:
+        except error as e:
             eq_(message, str(e))
 
     def test_typedmultiplechoicefield_71(self):
