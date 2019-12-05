@@ -1,5 +1,5 @@
 import os
-import StringIO
+import io
 
 from django.conf import settings
 from django.core.files import File
@@ -59,7 +59,7 @@ def create_imageattachment(files, user, obj):
 
 def _image_to_png(up_file):
     # PIL cannot directly open an InMemoryUploadedFile, so read into StringIO.
-    fileio = StringIO.StringIO(up_file.read())
+    fileio = io.StringIO(up_file.read())
     pil_image = Image.open(fileio)
 
     # Detect animated GIFS since we don't convert them.
@@ -76,7 +76,7 @@ def _image_to_png(up_file):
         is_animated = True
 
     if not is_animated:
-        converted_image = StringIO.StringIO()
+        converted_image = io.StringIO()
         options = {}
         if 'transparency' in pil_image.info:
             options['transparency'] = pil_image.info['transparency']
