@@ -754,6 +754,7 @@ class TestQuestionFilter(TestCase):
         # This flag caused a regression, tracked in bug 1163855.
         # The error was that the help text on the field was a str instead of a
         # unicode. Yes, really, that matters apparently.
+        # TODO:PY3: Is this functionality or test case affected by the upgrade?
         u = UserFactory(profile__first_answer_email_sent=True)
         QuestionFactory(creator=u)
         url = reverse('question-list')
