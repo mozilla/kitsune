@@ -81,7 +81,7 @@ class PostTestCase(ForumTestCase):
         Thread(is_sticky=True)
 
         threads = Thread.objects.filter(is_sticky=False)
-        self.assert_(threads[0].last_post.created >
+        self.assertTrue(threads[0].last_post.created >
                      threads[1].last_post.created)
 
     def test_post_sorting(self):
@@ -90,28 +90,28 @@ class PostTestCase(ForumTestCase):
         t = ThreadFactory(posts=[{'created': now - timedelta(days=n)} for n in [0, 1, 4, 7, 11]])
         posts = t.post_set.all()
         for i in range(len(posts) - 1):
-            self.assert_(posts[i].created <= posts[i + 1].created)
+            self.assertTrue(posts[i].created <= posts[i + 1].created)
 
     def test_sorting_creator(self):
         """Sorting threads by creator."""
         ThreadFactory(creator__username='aaa')
         ThreadFactory(creator__username='bbb')
         threads = sort_threads(Thread.objects, 3, 1)
-        self.assert_(threads[0].creator.username >= threads[1].creator.username)
+        self.assertTrue(threads[0].creator.username >= threads[1].creator.username)
 
     def test_sorting_replies(self):
         """Sorting threads by replies."""
         ThreadFactory(posts=[{}, {}, {}])
         ThreadFactory()
         threads = sort_threads(Thread.objects, 4)
-        self.assert_(threads[0].replies <= threads[1].replies)
+        self.assertTrue(threads[0].replies <= threads[1].replies)
 
     def test_sorting_last_post_desc(self):
         """Sorting threads by last_post descendingly."""
         ThreadFactory(posts=[{}, {}, {}])
         PostFactory(created=datetime.now() - timedelta(days=1))
         threads = sort_threads(Thread.objects, 5, 1)
-        self.assert_(threads[0].last_post.created >= threads[1].last_post.created)
+        self.assertTrue(threads[0].last_post.created >= threads[1].last_post.created)
 
     def test_thread_last_page(self):
         """Thread's last_page property is accurate."""
