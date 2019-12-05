@@ -169,7 +169,7 @@ class Paginator(object):
             lower, upper = total - span * 2, total
         else:
             lower, upper = page - span, page + span - 1
-        return range(max(lower + 1, 1), min(total, upper) + 1)
+        return list(range(max(lower + 1, 1), min(total, upper) + 1))
 
     def render(self):
         c = {'pager': self.pager, 'num_pages': self.num_pages,

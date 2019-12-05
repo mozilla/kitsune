@@ -122,7 +122,7 @@ class ProfileForm(forms.ModelForm):
     involved_from = forms.DateField(
         required=False,
         label=_lazy(u'Involved with Mozilla from'),
-        widget=MonthYearWidget(years=range(1998, datetime.today().year + 1),
+        widget=MonthYearWidget(years=list(range(1998, datetime.today().year + 1)),
                                required=False))
 
     class Meta(object):

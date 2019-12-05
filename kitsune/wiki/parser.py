@@ -235,7 +235,7 @@ class ForParser(object):
             def preceding_whitespace(str, pos):
                 """Return all contiguous whitespace preceding str[pos]."""
                 whitespace = []
-                for i in xrange(pos - 1, 0, -1):
+                for i in range(pos - 1, 0, -1):
                     if str[i] in '\t \n\r':
                         whitespace.append(str[i])
                     else:
