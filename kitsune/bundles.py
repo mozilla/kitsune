@@ -271,7 +271,7 @@ PIPELINE_JS = {
             'sumo/js/i18n.js',
             'underscore/underscore.js',
             'moment/moment.js',
-            'jquery/jquery.min.js',
+            'jquery/dist/jquery.min.js',
             'jquery/jquery-migrate.js',
             'sumo/js/libs/jquery.cookie.js',
             'sumo/js/libs/jquery.placeholder.js',
@@ -307,7 +307,7 @@ PIPELINE_JS = {
             'protocol/js/protocol-navigation.js',
             'protocol/js/protocol-newsletter.js',
             'protocol/js/protocol-notification-bar.js',
-            'protocol/js/protocol-sidemenu.js',
+            # 'protocol/js/protocol-sidemenu.js',
             'sumo/js/protocol-nav.js',
         ),
         'output_filename': 'build/common-min.js'
