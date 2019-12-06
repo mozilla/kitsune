@@ -3,6 +3,7 @@ from django.conf import settings
 from elasticsearch_dsl import token_filter, analyzer
 
 from kitsune.search import config
+from kitsune.search.v2 import elasticsearch7
 
 
 def _get_locale_specific_analyzer(locale):
@@ -43,3 +44,8 @@ def es_analyzer_for_locale(locale):
     # No specific analyzer found for the locale
     # So use the standard analyzer as default
     return analyzer('default_sumo', tokenizer='standard', filter=['lowercase'])
+
+
+def es7_client():
+    """Return an ES7 Elasticsearch client"""
+    return elasticsearch7.Elasticsearch(settings.ES7_URLS)

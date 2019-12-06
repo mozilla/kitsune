@@ -1,10 +1,14 @@
 from django.utils import timezone
 
-from elasticsearch_dsl import field, Document as DSLDocument
+from elasticsearch_dsl import connections, field, Document as DSLDocument
 
 from kitsune.search import config
+from kitsune.search.v2.es7_utils import es7_client
 from kitsune.search.v2.fields import WikiLocaleText
 from kitsune.wiki.config import REDIRECT_HTML
+
+
+connections.add_connection(config.DEFAULT_ES7_CONNECTION, es7_client())
 
 
 class WikiDocument(DSLDocument):
@@ -32,6 +36,7 @@ class WikiDocument(DSLDocument):
 
     class Index:
         name = config.WIKI_DOCUMENT_INDEX_NAME
+        using = config.DEFAULT_ES7_CONNECTION
 
     def prepare_url(self, instance):
         return instance.get_absolute_url()

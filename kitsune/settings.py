@@ -825,6 +825,10 @@ SESSION_SERIALIZER = config('SESSION_SERIALIZER', default='django.contrib.sessio
 #
 # Connection information for Elastic
 ES_URLS = [config('ES_URLS', default="localhost:9200")]
+
+# Connection information for Elastic 7
+ES7_URLS = config('ES7_URLS', cast=Csv(), default="elasticsearch7:9200")
+
 # Indexes for reading
 ES_INDEXES = {
     'default': config('ES_INDEXES_DEFAULT', default='default'),
