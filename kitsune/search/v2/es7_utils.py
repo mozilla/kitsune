@@ -3,6 +3,7 @@ import inspect
 
 from django.conf import settings
 
+from celery import task
 from elasticsearch_dsl import token_filter, analyzer, Document
 
 from kitsune.search import config
@@ -66,3 +67,15 @@ def get_doc_types(paths=['kitsune.search.v2.documents']):
             if inspect.isclass(cls) and issubclass(cls, Document) and cls != Document:
                 doc_types.append(cls)
     return doc_types
+
+
+@task
+def index_object(doc_type_name, obj_id):
+    """Index an ORM object given an object id and a document type name."""
+
+    doc_type = next(cls for cls in get_doc_types() if cls.__name__ == doc_type_name)
+    model = doc_type.get_model()
+
+    obj = model.objects.get(id=obj_id)
+    doc = doc_type.prepare(obj)
+    doc.save()
