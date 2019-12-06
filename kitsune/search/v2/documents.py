@@ -6,6 +6,7 @@ from kitsune.search import config
 from kitsune.search.v2.es7_utils import es7_client
 from kitsune.search.v2.fields import WikiLocaleText
 from kitsune.wiki.config import REDIRECT_HTML
+from kitsune.wiki import models as wiki_models
 
 
 connections.add_connection(config.DEFAULT_ES7_CONNECTION, es7_client())
@@ -113,3 +114,7 @@ class WikiDocument(DSLDocument):
         obj.meta.id = instance.id
 
         return obj
+
+    @classmethod
+    def get_model(cls):
+        return wiki_models.Document
