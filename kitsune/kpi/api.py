@@ -32,9 +32,9 @@ class CachedAPIView(APIView):
         params = []
         for key, value in list(request.GET.items()):
             params.append("%s=%s" % (key, value))
-        return u'{viewname}:{params}'.format(
+        return '{viewname}:{params}'.format(
             viewname=self.__class__.__name__,
-            params=u':'.join(sorted(params)))
+            params=':'.join(sorted(params)))
 
     def get(self, request):
         cache_key = self._cache_key(request)

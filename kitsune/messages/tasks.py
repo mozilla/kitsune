@@ -29,7 +29,7 @@ def email_private_message(inbox_message_id):
         # Avoid circular import issues
         from kitsune.users.templatetags.jinja_helpers import display_name
 
-        subject = _(u'[SUMO] You have a new private message from [{sender}]')
+        subject = _('[SUMO] You have a new private message from [{sender}]')
         subject = subject.format(
             sender=display_name(inbox_message.sender))
 

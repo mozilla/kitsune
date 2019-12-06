@@ -92,7 +92,7 @@ def redirect(request, product, version, platform, locale, topic=None):
             'utm_source': 'inproduct'}
         if hasattr(request, 'eu_build'):
             params['eu'] = 1
-        target = u'/%s/%s' % (locale, destination.target.lstrip('/'))
+        target = '/%s/%s' % (locale, destination.target.lstrip('/'))
         target = urlparams(target, **params)
 
         # Switch over to HTTPS if we DEBUG=False and sample is active.

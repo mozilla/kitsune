@@ -22,25 +22,25 @@ from kitsune.sumo.urlresolvers import reverse
 class TestHelpers(TestCase):
 
     def test_urlparams_unicode(self):
-        context = {'q': u'Français'}
-        eq_(u'/foo?q=Fran%C3%A7ais', urlparams('/foo', **context))
-        context['q'] = u'\u0125help'
-        eq_(u'/foo?q=%C4%A5help', urlparams('/foo', **context))
+        context = {'q': 'Français'}
+        eq_('/foo?q=Fran%C3%A7ais', urlparams('/foo', **context))
+        context['q'] = '\u0125help'
+        eq_('/foo?q=%C4%A5help', urlparams('/foo', **context))
 
     def test_urlparams_valid(self):
         context = {'a': 'foo', 'b': 'bar'}
-        eq_(u'/foo?a=foo&b=bar', urlparams('/foo', **context))
+        eq_('/foo?a=foo&b=bar', urlparams('/foo', **context))
 
     def test_urlparams_query_string(self):
-        eq_(u'/foo?a=foo&b=bar', urlparams('/foo?a=foo', b='bar'))
+        eq_('/foo?a=foo&b=bar', urlparams('/foo?a=foo', b='bar'))
 
     def test_urlparams_multivalue(self):
-        eq_(u'/foo?a=foo&a=bar', urlparams('/foo?a=foo&a=bar'))
-        eq_(u'/foo?a=bar', urlparams('/foo?a=foo', a='bar'))
+        eq_('/foo?a=foo&a=bar', urlparams('/foo?a=foo&a=bar'))
+        eq_('/foo?a=bar', urlparams('/foo?a=foo', a='bar'))
 
     def test_urlparams_none(self):
         """Assert a value of None doesn't make it into the query string."""
-        eq_(u'/foo', urlparams('/foo', bar=None))
+        eq_('/foo', urlparams('/foo', bar=None))
 
     def test_collapse_linebreaks(self):
         """Make sure collapse_linebreaks works on some tricky cases."""
@@ -200,7 +200,7 @@ class TestUrlHelper(TestCase):
     def test_with_locale(self):
         """Passing a locale to url creates a URL for that locale."""
         u = url('jsi18n', locale='es')
-        eq_(u'/es/jsi18n/', u)
+        eq_('/es/jsi18n/', u)
 
 
 class TimesinceTests(TestCase):
@@ -225,12 +225,12 @@ class TestFormat(TestCase):
     """Test the |f and |fe filters"""
 
     def test_f_handles_unicode_in_ascii_strings(self):
-        var = u'Pśetergnuś'
+        var = 'Pśetergnuś'
         # Note that the format string is not a unicode string.
         eq_(f('{0}', var), var)
 
     def test_fe_handles_unicode_in_ascii_strings(self):
-        var = u'Pśetergnuś'
+        var = 'Pśetergnuś'
         # Note that the format string is not a unicode string.
         eq_(fe('{0}', var), var)
 

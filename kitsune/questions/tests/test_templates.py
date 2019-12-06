@@ -970,13 +970,13 @@ class TaggingViewTestsAsTagger(TestCaseBase):
             data={'tag-name': 'escalate'},
             follow=True)
 
-        question_url = u'https://example.com/en-US{url}'.format(
+        question_url = 'https://example.com/en-US{url}'.format(
             url=self.question.get_absolute_url())
         submit_ticket.assert_called_with(
             email='support@mozilla.com',
             category='Escalated',
-            subject=u'[Escalated] {title}'.format(title=self.question.title),
-            body=u'{url}\n\n{content}'.format(
+            subject='[Escalated] {title}'.format(title=self.question.title),
+            body='{url}\n\n{content}'.format(
                 url=question_url, content=self.question.content),
             tags=['escalate'])
 

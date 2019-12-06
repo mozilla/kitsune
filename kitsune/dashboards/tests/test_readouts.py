@@ -386,7 +386,7 @@ class TemplateTests(ReadoutTestCase):
 
         eq_(1, len(self.rows(locale=locale, product=p)))
         eq_(t.title, self.row(locale=locale, product=p)['title'])
-        eq_(u'', self.row(locale=locale, product=p)['status'])
+        eq_('', self.row(locale=locale, product=p)['status'])
 
     def test_needs_changes(self):
         """Test status for article that needs changes"""
@@ -440,7 +440,7 @@ class HowToContributeTests(ReadoutTestCase):
 
         eq_(1, len(self.rows(locale=locale, product=p)))
         eq_(d2.title, self.row(locale=locale, product=p)['title'])
-        eq_(u'', self.row(locale=locale, product=p)['status'])
+        eq_('', self.row(locale=locale, product=p)['status'])
 
 
 class AdministrationTests(ReadoutTestCase):
@@ -459,7 +459,7 @@ class AdministrationTests(ReadoutTestCase):
 
         eq_(1, len(self.rows(locale=locale, product=p)))
         eq_(d2.title, self.row(locale=locale, product=p)['title'])
-        eq_(u'', self.row(locale=locale, product=p)['status'])
+        eq_('', self.row(locale=locale, product=p)['status'])
 
 
 class MostVisitedTranslationsTests(ReadoutTestCase):

@@ -23,7 +23,7 @@ class TokenLoginMiddleware(object):
         user = authenticate(auth=auth)
         if user and user.is_active:
             login(request, user)
-            msg = _lazy(u'You have been automatically logged in.')
+            msg = _lazy('You have been automatically logged in.')
             messages.success(request, msg)
 
 

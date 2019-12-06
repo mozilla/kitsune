@@ -64,12 +64,12 @@ class SuggestViewTests(ElasticTestCase):
     def test_invalid_product(self):
         res = self.client.get(reverse('search.suggest'), {'product': 'nonexistant', 'q': 'search'})
         eq_(res.status_code, 400)
-        eq_(res.data, {'product': [u'Could not find product with slug "nonexistant".']})
+        eq_(res.data, {'product': ['Could not find product with slug "nonexistant".']})
 
     def test_invalid_locale(self):
         res = self.client.get(reverse('search.suggest'), {'locale': 'bad-medicine', 'q': 'search'})
         eq_(res.status_code, 400)
-        eq_(res.data, {'locale': [u'Could not find locale "bad-medicine".']})
+        eq_(res.data, {'locale': ['Could not find locale "bad-medicine".']})
 
     def test_invalid_fallback_locale_none_case(self):
         # Test the locale -> locale case.
@@ -81,7 +81,7 @@ class SuggestViewTests(ElasticTestCase):
 
         res = self.client.get(reverse('search.suggest'), {'locale': locale, 'q': 'search'})
         eq_(res.status_code, 400)
-        error_message = (u'"{0}" is not supported, but has fallback locale "{1}".'
+        error_message = ('"{0}" is not supported, but has fallback locale "{1}".'
                          .format(locale, fallback))
         eq_(res.data, {'locale': [error_message]})
 
@@ -95,7 +95,7 @@ class SuggestViewTests(ElasticTestCase):
 
         res = self.client.get(reverse('search.suggest'), {'locale': locale, 'q': 'search'})
         eq_(res.status_code, 400)
-        error_message = (u'"{0}" is not supported, but has fallback locale "{1}".'
+        error_message = ('"{0}" is not supported, but has fallback locale "{1}".'
                          .format(locale, settings.WIKI_DEFAULT_LANGUAGE))
         eq_(res.data, {'locale': [error_message]})
 
@@ -107,14 +107,14 @@ class SuggestViewTests(ElasticTestCase):
         })
         eq_(res.status_code, 400)
         eq_(res.data, {
-            'max_questions': [u'A valid integer is required.'],
-            'max_documents': [u'A valid integer is required.'],
+            'max_questions': ['A valid integer is required.'],
+            'max_documents': ['A valid integer is required.'],
         })
 
     def test_q_required(self):
         res = self.client.get(reverse('search.suggest'))
         eq_(res.status_code, 400)
-        eq_(res.data, {'q': [u'This field is required.']})
+        eq_(res.data, {'q': ['This field is required.']})
 
     def test_it_works(self):
         q1 = self._make_question()
@@ -155,7 +155,7 @@ class SuggestViewTests(ElasticTestCase):
             content_type='application/json')
         eq_(req.status_code, 400)
         eq_(req.data,
-            {u'detail': 'Put all parameters either in the querystring or the HTTP request body.'})
+            {'detail': 'Put all parameters either in the querystring or the HTTP request body.'})
 
     def test_questions_max_results_0(self):
         self._make_question()

@@ -598,7 +598,7 @@ class EditWatchListTests(TestCaseBase):
     def test_GET(self):
         r = self.client.get(reverse('users.edit_watch_list'))
         eq_(200, r.status_code)
-        assert u'question: ' + self.question.title in r.content.decode('utf8')
+        assert 'question: ' + self.question.title in r.content.decode('utf8')
 
     def test_POST(self):
         w = Watch.objects.get(object_id=self.question.id, user=self.user)

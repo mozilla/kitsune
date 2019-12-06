@@ -248,9 +248,9 @@ class ForParser(object):
             if tag != '{/for}':
                 i = next(indexes)
                 dehydrations[i] = cls._wiki_to_tag(attrs)
-                token = u'\x07%i\x07' % i
+                token = '\x07%i\x07' % i
             else:
-                token = u'\x07/sf\x07'
+                token = '\x07/sf\x07'
 
             # If the {for} or {/for} is on a line by itself (righthand
             # whitespace is allowed; left would indicate a <pre>), make sure it
@@ -320,11 +320,11 @@ class ForParser(object):
         html = cls._PARSED_STRIPPED_FOR.sub(hydrate, html)
 
         # Replace {/for} tags:
-        return cls._PARSED_STRIPPED_FOR_CLOSER.sub(u'</for>', html)
+        return cls._PARSED_STRIPPED_FOR_CLOSER.sub('</for>', html)
 
 
 # L10n: This error is displayed if a template is included into itself.
-RECURSION_MESSAGE = _lazy(u'[Recursive inclusion of "%s"]')
+RECURSION_MESSAGE = _lazy('[Recursive inclusion of "%s"]')
 
 
 class WikiParser(sumo_parser.WikiParser):

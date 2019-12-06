@@ -119,7 +119,7 @@ class TestUserSerializer(TestCase):
         serializer = api.ProfileSerializer(data=self.data, instance=p)
         eq_(serializer.is_valid(), False)
         eq_(serializer.errors, {
-            'username': [u"Can't change this field."],
+            'username': ["Can't change this field."],
         })
 
     def test_username_bad_chars(self):
@@ -128,7 +128,7 @@ class TestUserSerializer(TestCase):
         serializer = api.ProfileSerializer(data=self.data)
         eq_(serializer.is_valid(), False)
         eq_(serializer.errors, {'username':
-            [u'Usernames may only be letters, numbers, "." and "-".']})
+            ['Usernames may only be letters, numbers, "." and "-".']})
 
     def test_username_too_long(self):
         # Max length is 30
@@ -136,7 +136,7 @@ class TestUserSerializer(TestCase):
         serializer = api.ProfileSerializer(data=self.data)
         eq_(serializer.is_valid(), False)
         eq_(serializer.errors, {'username':
-            [u'Usernames may only be letters, numbers, "." and "-".']})
+            ['Usernames may only be letters, numbers, "." and "-".']})
 
     def test_username_too_short(self):
         # Min length is 4 chars.
@@ -144,7 +144,7 @@ class TestUserSerializer(TestCase):
         serializer = api.ProfileSerializer(data=self.data)
         eq_(serializer.is_valid(), False)
         eq_(serializer.errors, {'username':
-            [u'Usernames may only be letters, numbers, "." and "-".']})
+            ['Usernames may only be letters, numbers, "." and "-".']})
 
     def test_helpfulness(self):
         u = UserFactory()
@@ -384,7 +384,7 @@ class TestUserView(TestCase):
             'email': 'sarah',  # invalid
         })
         eq_(res.status_code, 400)
-        eq_(res.data, {'email': [u'Enter a valid email address.']})
+        eq_(res.data, {'email': ['Enter a valid email address.']})
 
     def test_invalid_username(self):
         url = reverse('user-list')
@@ -394,7 +394,7 @@ class TestUserView(TestCase):
             'email': 'lucy@example.com',
         })
         eq_(res.status_code, 400)
-        eq_(res.data, {'username': [u'Usernames may only be letters, numbers, "." and "-".']})
+        eq_(res.data, {'username': ['Usernames may only be letters, numbers, "." and "-".']})
 
     def test_too_short_username(self):
         url = reverse('user-list')
@@ -404,7 +404,7 @@ class TestUserView(TestCase):
             'email': 'lucy@example.com',
         })
         eq_(res.status_code, 400)
-        eq_(res.data, {'username': [u'Usernames may only be letters, numbers, "." and "-".']})
+        eq_(res.data, {'username': ['Usernames may only be letters, numbers, "." and "-".']})
 
     def test_too_long_username(self):
         url = reverse('user-list')
@@ -414,7 +414,7 @@ class TestUserView(TestCase):
             'email': 'lucy@example.com',
         })
         eq_(res.status_code, 400)
-        eq_(res.data, {'username': [u'Usernames may only be letters, numbers, "." and "-".']})
+        eq_(res.data, {'username': ['Usernames may only be letters, numbers, "." and "-".']})
 
     def test_change_user_with_patch(self):
         user = UserFactory()

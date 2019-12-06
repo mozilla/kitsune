@@ -197,8 +197,8 @@ def eq_msg(a, b, msg=None):
 class FuzzyUnicode(factory.fuzzy.FuzzyText):
     """A FuzzyText factory that contains at least one non-ASCII character."""
 
-    def __init__(self, prefix=u'', **kwargs):
-        prefix = u'%sđ' % prefix
+    def __init__(self, prefix='', **kwargs):
+        prefix = '%sđ' % prefix
         super(FuzzyUnicode, self).__init__(prefix=prefix, **kwargs)
 
 

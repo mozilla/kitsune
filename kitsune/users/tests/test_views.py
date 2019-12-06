@@ -129,7 +129,7 @@ class ChangeEmailTestCase(TestCase):
                                            args=[ec.activation_key]))
         eq_(200, response.status_code)
         doc = pq(response.content)
-        eq_(u'Unable to change email for user %s' % self.user.username,
+        eq_('Unable to change email for user %s' % self.user.username,
             doc('article h1').text())
         u = User.objects.get(username=self.user.username)
         eq_(old_email, u.email)

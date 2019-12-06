@@ -96,10 +96,10 @@ class Question(ModelBase, BigVocabTaggableMixin, SearchMixin):
     taken_by = models.ForeignKey(User, blank=True, null=True)
     taken_until = models.DateTimeField(blank=True, null=True)
 
-    html_cache_key = u'question:html:%s'
-    tags_cache_key = u'question:tags:%s'
-    images_cache_key = u'question:images:%s'
-    contributors_cache_key = u'question:contributors:%s'
+    html_cache_key = 'question:html:%s'
+    tags_cache_key = 'question:tags:%s'
+    images_cache_key = 'question:images:%s'
+    contributors_cache_key = 'question:contributors:%s'
 
     objects = QuestionManager()
 
@@ -855,7 +855,7 @@ class QuestionMetaData(ModelBase):
         unique_together = ('question', 'name')
 
     def __unicode__(self):
-        return u'%s: %s' % (self.name, self.value[:50])
+        return '%s: %s' % (self.name, self.value[:50])
 
 
 class QuestionVisits(ModelBase):
@@ -934,8 +934,8 @@ class Answer(ModelBase, SearchMixin):
     images = GenericRelation(ImageAttachment)
     flags = GenericRelation(FlaggedObject)
 
-    html_cache_key = u'answer:html:%s'
-    images_cache_key = u'answer:images:%s'
+    html_cache_key = 'answer:html:%s'
+    images_cache_key = 'answer:images:%s'
 
     objects = AnswerManager()
 
@@ -947,7 +947,7 @@ class Answer(ModelBase, SearchMixin):
         )
 
     def __unicode__(self):
-        return u'%s: %s' % (self.question.title, self.content[:50])
+        return '%s: %s' % (self.question.title, self.content[:50])
 
     @property
     def content_parsed(self):

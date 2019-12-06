@@ -2,7 +2,7 @@ from collections import namedtuple
 import json
 import os
 
-Language = namedtuple(u'Language', u'english native iso639_1')
+Language = namedtuple('Language', 'english native iso639_1')
 
 file = os.path.join(os.path.dirname(__file__), 'languages.json')
 locales = json.loads(open(file, 'r').read())

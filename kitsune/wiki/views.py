@@ -802,7 +802,7 @@ def translate(request, document_slug, revision_id=None):
             args=[parent_doc.slug]))
 
     if not parent_doc.is_localizable:
-        message = _lazy(u'You cannot translate this document.')
+        message = _lazy('You cannot translate this document.')
         return render(request, 'handlers/400.html', {
             'message': message},
             status=400)

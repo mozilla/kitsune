@@ -23,20 +23,20 @@ from kitsune.users.widgets import FacebookURLWidget
 from kitsune.users.widgets import MonthYearWidget
 
 
-USERNAME_INVALID = _lazy(u'Username may contain only English letters, '
+USERNAME_INVALID = _lazy('Username may contain only English letters, '
                          'numbers and ./-/_ characters.')
-USERNAME_REQUIRED = _lazy(u'Username is required.')
-USERNAME_SHORT = _lazy(u'Username is too short (%(show_value)s characters). '
+USERNAME_REQUIRED = _lazy('Username is required.')
+USERNAME_SHORT = _lazy('Username is too short (%(show_value)s characters). '
                        'It must be at least %(limit_value)s characters.')
-USERNAME_LONG = _lazy(u'Username is too long (%(show_value)s characters). '
+USERNAME_LONG = _lazy('Username is too long (%(show_value)s characters). '
                       'It must be %(limit_value)s characters or less.')
-EMAIL_REQUIRED = _lazy(u'Email address is required.')
-EMAIL_SHORT = _lazy(u'Email address is too short (%(show_value)s characters). '
+EMAIL_REQUIRED = _lazy('Email address is required.')
+EMAIL_SHORT = _lazy('Email address is too short (%(show_value)s characters). '
                     'It must be at least %(limit_value)s characters.')
-EMAIL_LONG = _lazy(u'Email address is too long (%(show_value)s characters). '
+EMAIL_LONG = _lazy('Email address is too long (%(show_value)s characters). '
                    'It must be %(limit_value)s characters or less.')
-PASSWD_REQUIRED = _lazy(u'Password is required.')
-PASSWD2_REQUIRED = _lazy(u'Please enter your password twice.')
+PASSWD_REQUIRED = _lazy('Password is required.')
+PASSWD2_REQUIRED = _lazy('Please enter your password twice.')
 PASSWD_MIN_LENGTH = 8
 PASSWD_MIN_LENGTH_MSG = _lazy('Password must be 8 or more characters.')
 
@@ -48,22 +48,22 @@ password_re = re.compile(r'(?=.*\d)(?=.*[a-zA-Z])')
 class SettingsForm(forms.Form):
     forums_watch_new_thread = forms.BooleanField(
         required=False, initial=True,
-        label=_lazy(u'Watch forum threads I start'))
+        label=_lazy('Watch forum threads I start'))
     forums_watch_after_reply = forms.BooleanField(
         required=False, initial=True,
-        label=_lazy(u'Watch forum threads I comment in'))
+        label=_lazy('Watch forum threads I comment in'))
     kbforums_watch_new_thread = forms.BooleanField(
         required=False, initial=True,
-        label=_lazy(u'Watch KB discussion threads I start'))
+        label=_lazy('Watch KB discussion threads I start'))
     kbforums_watch_after_reply = forms.BooleanField(
         required=False, initial=True,
-        label=_lazy(u'Watch KB discussion threads I comment in'))
+        label=_lazy('Watch KB discussion threads I comment in'))
     questions_watch_after_reply = forms.BooleanField(
         required=False, initial=True,
-        label=_lazy(u'Watch Question threads I comment in'))
+        label=_lazy('Watch Question threads I comment in'))
     email_private_messages = forms.BooleanField(
         required=False, initial=True,
-        label=_lazy(u'Send emails for private messages'))
+        label=_lazy('Send emails for private messages'))
 
     def save_for_user(self, user):
         for field in list(self.fields.keys()):
@@ -82,10 +82,10 @@ class AuthenticationForm(auth_forms.AuthenticationForm):
     * Allows logging in inactive users (initialize with `only_active=False`).
     """
     username = forms.CharField(
-        label=_lazy(u'Username:'),
+        label=_lazy('Username:'),
         error_messages={'required': USERNAME_REQUIRED})
     password = forms.CharField(
-        label=_lazy(u'Password:'),
+        label=_lazy('Password:'),
         widget=forms.PasswordInput(render_value=False),
         error_messages={'required': PASSWD_REQUIRED})
 
@@ -121,7 +121,7 @@ class ProfileForm(forms.ModelForm):
 
     involved_from = forms.DateField(
         required=False,
-        label=_lazy(u'Involved with Mozilla from'),
+        label=_lazy('Involved with Mozilla from'),
         widget=MonthYearWidget(years=list(range(1998, datetime.today().year + 1)),
                                required=False))
 
@@ -149,7 +149,7 @@ class ProfileForm(forms.ModelForm):
     def clean_facebook(self):
         facebook = self.cleaned_data['facebook']
         if facebook and not re.match(FacebookURLWidget.pattern, facebook):
-            raise forms.ValidationError(_(u'Please enter a facebook.com URL.'))
+            raise forms.ValidationError(_('Please enter a facebook.com URL.'))
         return facebook
 
 
@@ -181,13 +181,13 @@ class AvatarForm(forms.ModelForm):
 
 class EmailConfirmationForm(forms.Form):
     """A simple form that requires an email address."""
-    email = forms.EmailField(label=_lazy(u'Email address:'))
+    email = forms.EmailField(label=_lazy('Email address:'))
 
 
 class EmailChangeForm(forms.Form):
     """A simple form that requires an email address and validates that it is
     not the current user's email."""
-    email = forms.EmailField(label=_lazy(u'Email address:'))
+    email = forms.EmailField(label=_lazy('Email address:'))
 
     def __init__(self, user, *args, **kwargs):
         super(EmailChangeForm, self).__init__(*args, **kwargs)
@@ -205,7 +205,7 @@ class EmailChangeForm(forms.Form):
 
 class SetPasswordForm(auth_forms.SetPasswordForm):
     new_password1 = forms.CharField(
-        label=_lazy(u'New password:'),
+        label=_lazy('New password:'),
         min_length=PASSWD_MIN_LENGTH,
         widget=forms.PasswordInput(render_value=False),
         error_messages={'required': PASSWD_REQUIRED,
@@ -219,7 +219,7 @@ class SetPasswordForm(auth_forms.SetPasswordForm):
 
 class PasswordChangeForm(auth_forms.PasswordChangeForm):
     new_password1 = forms.CharField(
-        label=_lazy(u'New password:'),
+        label=_lazy('New password:'),
         min_length=PASSWD_MIN_LENGTH,
         widget=forms.PasswordInput(render_value=False),
         error_messages={'required': PASSWD_REQUIRED,
@@ -235,7 +235,7 @@ class ForgotUsernameForm(forms.Form):
     """A simple form to retrieve username.
 
     Requires an email address."""
-    email = forms.EmailField(label=_lazy(u'Email address:'))
+    email = forms.EmailField(label=_lazy('Email address:'))
 
     def clean_email(self):
         """
@@ -246,8 +246,8 @@ class ForgotUsernameForm(forms.Form):
             self.user = User.objects.get(email__iexact=email, is_active=True)
         except User.DoesNotExist:
             raise forms.ValidationError(
-                _(u"That e-mail address doesn't have an associated user "
-                  u"account. Are you sure you've registered?"))
+                _("That e-mail address doesn't have an associated user "
+                  "account. Are you sure you've registered?"))
         return email
 
     def save(self, text_template='users/email/forgot_username.ltxt',
