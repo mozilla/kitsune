@@ -433,7 +433,7 @@ def add_utm(url_, campaign, source='notification', medium='email'):
 
 @library.global_function
 def to_unicode(str):
-    return unicode(str)
+    return str(str)
 
 
 @library.global_function
@@ -474,7 +474,7 @@ def f(format_string, *args, **kwargs):
     # Jinja will sometimes give us a str and other times give a unicode
     # for the `format_string` parameter, and we can't control it, so coerce it here.
     if isinstance(format_string, str):  # not unicode
-        format_string = unicode(format_string)
+        format_string = str(format_string)
 
     return format_string.format(*args, **kwargs)
 
@@ -491,7 +491,7 @@ def fe(format_string, *args, **kwargs):
     # Jinja will sometimes give us a str and other times give a unicode
     # for the `format_string` parameter, and we can't control it, so coerce it here.
     if isinstance(format_string, str):  # not unicode
-        format_string = unicode(format_string)
+        format_string = str(format_string)
 
     return jinja2.Markup(format_string.format(*args, **kwargs))
 

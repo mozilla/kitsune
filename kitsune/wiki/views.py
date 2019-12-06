@@ -260,7 +260,7 @@ def list_documents(request, category=None):
         except ValueError:
             raise Http404
         try:
-            category = unicode(dict(CATEGORIES)[category_id])
+            category = str(dict(CATEGORIES)[category_id])
         except KeyError:
             raise Http404
 
@@ -1266,7 +1266,7 @@ def get_helpful_votes_async(request, document_slug):
         rdate = rev.reviewed or rev.created
         rev_data.append({
             'x': int(time.mktime(rdate.timetuple())),
-            'text': unicode(_('Revision %s')) % rev.created
+            'text': str(_('Revision %s')) % rev.created
         })
 
     # Rickshaw wants data like

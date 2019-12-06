@@ -25,7 +25,7 @@ class GroupProfile(ModelBase):
         ordering = ['slug']
 
     def __unicode__(self):
-        return unicode(self.group)
+        return str(self.group)
 
     def get_absolute_url(self):
         return reverse('groups.profile', args=[self.slug])

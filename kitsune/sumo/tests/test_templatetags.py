@@ -115,7 +115,7 @@ class TestDateTimeFormat(TestCase):
         """Expects shortdatetime, format: Today at {time}."""
         date_today = datetime.today()
         date_localize = self.timezone.localize(date_today)
-        value_returned = unicode(datetimeformat(self.context, date_today))
+        value_returned = str(datetimeformat(self.context, date_today))
         value_expected = 'Today at %s' % format_time(date_localize,
                                                      format='short',
                                                      locale=self.locale,

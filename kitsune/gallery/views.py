@@ -234,7 +234,7 @@ def upload_async(request, media_type='image'):
     message = _('Could not upload your image.')
     return HttpResponseBadRequest(
         json.dumps({'status': 'error',
-                    'message': unicode(message),
+                    'message': str(message),
                     'errors': file_info}))
 
 

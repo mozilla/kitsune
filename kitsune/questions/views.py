@@ -1074,7 +1074,7 @@ def add_tag_async(request, question_id):
     try:
         question, canonical_name = _add_tag(request, question_id)
     except Tag.DoesNotExist:
-        return HttpResponse(json.dumps({'error': unicode(UNAPPROVED_TAG)}),
+        return HttpResponse(json.dumps({'error': str(UNAPPROVED_TAG)}),
                             content_type='application/json',
                             status=400)
 
@@ -1088,7 +1088,7 @@ def add_tag_async(request, question_id):
         return HttpResponse(json.dumps(data),
                             content_type='application/json')
 
-    return HttpResponse(json.dumps({'error': unicode(NO_TAG)}),
+    return HttpResponse(json.dumps({'error': str(NO_TAG)}),
                         content_type='application/json',
                         status=400)
 
@@ -1129,7 +1129,7 @@ def remove_tag_async(request, question_id):
         question.clear_cached_tags()
         return HttpResponse('{}', content_type='application/json')
 
-    return HttpResponseBadRequest(json.dumps({'error': unicode(NO_TAG)}),
+    return HttpResponseBadRequest(json.dumps({'error': str(NO_TAG)}),
                                   content_type='application/json')
 
 

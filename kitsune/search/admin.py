@@ -350,7 +350,7 @@ def synonym_editor(request):
     # If synonyms_text is not None, it came from POST, and there were
     # errors. It shouldn't be modified, so the error messages make sense.
     if synonyms_text is None:
-        synonyms_text = '\n'.join(unicode(s) for s in all_synonyms)
+        synonyms_text = '\n'.join(str(s) for s in all_synonyms)
 
     synonym_add_count, synonym_remove_count = synonym_utils.count_out_of_date()
 

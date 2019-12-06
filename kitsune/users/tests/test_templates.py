@@ -168,7 +168,7 @@ class PasswordResetTests(TestCaseBase):
         pwform_save.side_effect = raise_smtp
         r = self.client.post(reverse('users.pw_reset'),
                              {'email': self.u.email})
-        self.assertContains(r, unicode(ERROR_SEND_EMAIL))
+        self.assertContains(r, str(ERROR_SEND_EMAIL))
 
     def _get_reset_url(self):
         return reverse('users.pw_reset_confirm',
@@ -537,7 +537,7 @@ class ResendConfirmationTests(TestCaseBase):
         send_confirmation_email.side_effect = raise_smtp
         r = self.client.post(reverse('users.resend_confirmation'),
                              {'email': 'testuser@email.com'})
-        self.assertContains(r, unicode(ERROR_SEND_EMAIL))
+        self.assertContains(r, str(ERROR_SEND_EMAIL))
 
 
 class FlagProfileTests(TestCaseBase):

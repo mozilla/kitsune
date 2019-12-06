@@ -970,7 +970,7 @@ class UnhelpfulReadout(Readout):
                              (float(result[3]) * 100, float(result[2]) * 100))
         return dict(title=result[6].decode('utf-8'),
                     url=reverse('wiki.document_revisions',
-                                args=[unicode(result[5], "utf-8")],
+                                args=[str(result[5], "utf-8")],
                                 locale=self.locale),
                     visits=int(float(result[1])),
                     custom=True,

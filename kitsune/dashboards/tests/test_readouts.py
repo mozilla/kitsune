@@ -397,7 +397,7 @@ class TemplateTests(ReadoutTestCase):
         row = self.row(locale=locale)
 
         eq_(row['title'], d.title)
-        eq_(unicode(row['status']), u'Changes Needed')
+        eq_(str(row['status']), 'Changes Needed')
 
     def test_needs_review(self):
         """Test status for article that needs review"""
@@ -408,7 +408,7 @@ class TemplateTests(ReadoutTestCase):
         row = self.row(locale=locale)
 
         eq_(row['title'], d.title)
-        eq_(unicode(row['status']), u'Review Needed')
+        eq_(str(row['status']), 'Review Needed')
 
     def test_unready_for_l10n(self):
         """Test status for article that is not ready for l10n"""
@@ -421,7 +421,7 @@ class TemplateTests(ReadoutTestCase):
         row = self.row(locale=locale)
 
         eq_(row['title'], d.title)
-        eq_(unicode(row['status']), u'Changes Not Ready For Localization')
+        eq_(str(row['status']), 'Changes Not Ready For Localization')
 
 
 class HowToContributeTests(ReadoutTestCase):
@@ -515,7 +515,7 @@ class MostVisitedTranslationsTests(ReadoutTestCase):
         untranslated = ApprovedRevisionFactory(is_ready_for_localization=True)
         row = self.row()
         eq_(row['title'], untranslated.document.title)
-        eq_(unicode(row['status']), 'Translation Needed')
+        eq_(str(row['status']), 'Translation Needed')
 
     def test_up_to_date(self):
         """Show up-to-date translations have no status, just a happy class.
@@ -523,7 +523,7 @@ class MostVisitedTranslationsTests(ReadoutTestCase):
         translation = TranslatedRevisionFactory(document__locale='de', is_approved=True)
         row = self.row()
         eq_(row['title'], translation.document.title)
-        eq_(unicode(row['status']), '')
+        eq_(str(row['status']), '')
         eq_(row['status_class'], 'ok')
 
     def test_one_rejected_revision(self):
@@ -559,7 +559,7 @@ class MostVisitedTranslationsTests(ReadoutTestCase):
             significance=MEDIUM_SIGNIFICANCE)
         row = self.row()
         eq_(row['title'], translation.document.title)
-        eq_(unicode(row['status']), 'Immediate Update Needed')
+        eq_(str(row['status']), 'Immediate Update Needed')
 
     def test_consider_only_approved_significances(self):
         """Consider only approved significances when computing the max."""
@@ -578,7 +578,7 @@ class MostVisitedTranslationsTests(ReadoutTestCase):
         eq_(row['title'], translation.document.title)
         # This should show as medium significance, because the revision with
         # major significance is unapproved:
-        eq_(unicode(row['status']), 'Update Needed')
+        eq_(str(row['status']), 'Update Needed')
 
     def test_by_product(self):
         """Test the product filtering of the readout."""
@@ -611,7 +611,7 @@ class TemplateTranslationsTests(ReadoutTestCase):
         untranslated = ApprovedRevisionFactory(document=d, is_ready_for_localization=True)
         row = self.row()
         eq_(row['title'], untranslated.document.title)
-        eq_(unicode(row['status']), 'Translation Needed')
+        eq_(str(row['status']), 'Translation Needed')
 
     def test_by_product(self):
         """Test the product filtering of the readout."""

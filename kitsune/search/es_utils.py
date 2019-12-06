@@ -350,7 +350,7 @@ def es_get_synonym_filter(locale):
     name = 'synonyms-' + locale
     body = {
         'type': 'synonym',
-        'synonyms': [unicode(s) for s in synonyms],
+        'synonyms': [str(s) for s in synonyms],
     }
 
     return name, body

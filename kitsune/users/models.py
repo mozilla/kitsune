@@ -99,9 +99,9 @@ class Profile(ModelBase, SearchMixin):
 
     def __unicode__(self):
         try:
-            return unicode(self.user)
+            return str(self.user)
         except Exception as exc:
-            return unicode('%d (%r)' % (self.pk, exc))
+            return str('%d (%r)' % (self.pk, exc))
 
     def get_absolute_url(self):
         return reverse('users.profile', args=[self.user_id])

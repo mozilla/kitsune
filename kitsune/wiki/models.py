@@ -183,14 +183,14 @@ class Document(NotificationsMixin, ModelBase, BigVocabTaggableMixin,
         # Can't save this translation if parent not localizable
         if self.parent and not self.parent.is_localizable:
             raise ValidationError('"%s": parent "%s" is not localizable.' % (
-                                  unicode(self), unicode(self.parent)))
+                                  str(self), str(self.parent)))
 
         # Can't make not localizable if it has translations
         # This only applies to documents that already exist, hence self.pk
         if self.pk and not self.is_localizable and self.translations.exists():
             raise ValidationError(
                 '"{0}": document has {1} translations but is not localizable.'
-                .format(unicode(self), self.translations.count()))
+                .format(str(self), self.translations.count()))
 
     def _ensure_inherited_attr(self, attr):
         """Make sure my `attr` attr is the same as my parent's if I have one.

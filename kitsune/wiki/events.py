@@ -37,7 +37,7 @@ def get_diff_for(doc, old_rev, new_rev):
         # XXX this is super goofy
         acc = ''
         for d in diff_parts:
-            if isinstance(d, unicode):
+            if isinstance(d, str):
                 acc = acc + d
             else:
                 acc = acc + d.decode('utf8')
