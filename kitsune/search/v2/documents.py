@@ -11,10 +11,21 @@ from kitsune.wiki.config import REDIRECT_HTML
 connections.add_connection(config.DEFAULT_ES7_CONNECTION, es7_client())
 
 
-class WikiDocument(DSLDocument):
-    url = field.Keyword()
+class SumoBaseDocument(DSLDocument):
+    """Base document with fields common to all the documents."""
     indexed_on = field.Date()
-    updated = field.Date()
+    doc_updated_on = field.Date()
+    locale = field.Keyword()
+
+    def prepare_indexed_on(self, instance):
+        return timezone.now()
+
+    def prepare_doc_updated_on(self, instance):
+        return timezone.now()
+
+
+class WikiDocument(SumoBaseDocument):
+    url = field.Keyword()
 
     product = field.Keyword()
     topic = field.Keyword()
@@ -25,14 +36,15 @@ class WikiDocument(DSLDocument):
     content = WikiLocaleText(store=True, term_vector='with_positions_offsets',)
     summary = WikiLocaleText(store=True, term_vector='with_positions_offsets')
 
-    locale = field.Keyword()
-    current_id = field.Integer()
+    current_revision_id = field.Integer()
     parent_id = field.Integer()
     category = field.Integer()
     slug = field.Keyword()
     is_archived = field.Boolean()
     recent_helpful_votes = field.Integer()
     display_order = field.Integer()
+    related_documents_ids = field.Integer()
+    revision_content = WikiLocaleText()
 
     class Index:
         name = config.WIKI_DOCUMENT_INDEX_NAME
@@ -40,9 +52,6 @@ class WikiDocument(DSLDocument):
 
     def prepare_url(self, instance):
         return instance.get_absolute_url()
-
-    def prepare_indexed_on(self, instance):
-        return timezone.now()
 
     def prepare_updated(self, instance):
         return getattr(instance.current_revision, 'created', None)
@@ -61,7 +70,7 @@ class WikiDocument(DSLDocument):
 
     def prepare_summary(self, instance):
         if instance.current_revision:
-            return instance.summary
+            return instance.current_revision.summary
         return None
 
     def prepare_current_id(self, instance):
@@ -86,6 +95,16 @@ class WikiDocument(DSLDocument):
 
     def prepare_display_order(self, instance):
         return instance.original.display_order
+
+    def prepare_related_documents_ids(self, instance):
+        """Return a list of DB IDs to store in ES about related documents."""
+        return [obj.id for obj in instance.related_documents] or None
+
+    def prepare_revision_content(self, instance):
+        """Return the content of the current revision."""
+        if instance.current_revision:
+            return instance.current_revision.content
+        return None
 
     @classmethod
     def prepare(cls, instance):

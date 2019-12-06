@@ -1,19 +1,28 @@
 from django.conf import settings
 
 
+##################################
+# ElasticSearch v1 configuration #
+##################################
+
+ES_SYNONYM_LOCALES = [
+    'en-US',
+]
+
+##################################
+# ElasticSearch v2 configuration #
+##################################
+
+
 def get_index_name(index_name):
     name_format = "{prefix}_{suffix}"
     name = name_format.format(prefix=settings.ES_INDEX_PREFIX, suffix=index_name)
     return name
 
 
-ES_SYNONYM_LOCALES = [
-    'en-US',
-]
-
-WIKI_DOCUMENT_INDEX_NAME = get_index_name('wiki_document')
-QUESTION_INDEX_NAME = get_index_name('question')
-USER_INDEX_NAME = get_index_name('user')
+WIKI_DOCUMENT_INDEX_NAME = get_index_name('kb_index')
+QUESTION_INDEX_NAME = get_index_name('aaq_index')
+USER_INDEX_NAME = get_index_name('user_index')
 
 ES_LOCALE_ANALYZERS = {
     'ar': 'arabic',
