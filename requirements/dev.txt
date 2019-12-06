@@ -17,9 +17,6 @@ docutils==0.12 \
 flake8==2.5.0 \
     --hash=sha256:b158f2fd1e62b7d25dbe3e0919fc97798719f72a6072bdb2f9b0e1d02fc2b03f \
     --hash=sha256:8216c8c6ee092ae93d51f89bc91045648c88cd9be77d60cf47df7ca26ee4f88c
-functools32==3.2.3-2 \
-    --hash=sha256:f6253dfbe0538ad2e387bd8fdfd9293c925d63553f5813c4e587745416501e6d \
-    --hash=sha256:89d824aa6c358c421a234d7f9ee0bd75933a67c29588ce50aaa3acdf4d403fa0
 jsonschema==2.5.1 \
     --hash=sha256:71e7b3bcf9fca408bcb65bb60892f375d3abdd2e4f296eeeb8fe0bbbfcde598e \
     --hash=sha256:36673ac378feed3daa5956276a829699056523d7961027911f064b52255ead41 \
@@ -42,6 +39,9 @@ pep8==1.6.2 \
 pre_commit==0.7.0 \
     --hash=sha256:ae5e746bcf953093b82dcc87a4594fa1fc2bd3f9805e176b06594a994d45fa17 \
     --hash=sha256:f1a4e82cf3401db6285aa44023327feffa20be630eaf7ea8fe52eb0d69f4a53f
+virtualenv==16.7.8 \
+    --hash=sha256:116655188441670978117d0ebb6451eb6a7526f9ae0796cc0dee6bd7356909b0 \
+    --hash=sha256:b57776b44f91511866594e477dd10e76a6eb44439cdd7f06dcd30ba4c5bd854f
 pyflakes==1.0.0 \
     --hash=sha256:071d121e9e7b33058aa1ba5de7bce9b97bfa3149cfe1acbb6587c21fc1c8eda1 \
     --hash=sha256:f39e33a4c03beead8774f005bd3ecf0c3f2f264fa0201de965fce0aff1d34263
