@@ -1,5 +1,8 @@
-{% extends "kitsune/styleguide/styleguide-examples/base.njk" %}
+{% extends "styleguide/styleguide-examples/base.njk" %}
 
 {% block content %}
-    <div style="height: 600px;background:#ccc;"></div>
+    {% include "styleguide/styleguide-examples/home-search.njk" %}
+    {% include "styleguide/styleguide-examples/card-grid-products.njk" %}
+    {% include "styleguide/styleguide-examples/card-grid-articles.njk" %}
+    {% include "styleguide/styleguide-examples/card-callout.njk" %}
 {% endblock %}

@@ -148,6 +148,7 @@ styleguide: frontend
 	npm run build:docs:copyprotocol
 	npm run build:docs:copyprotocolimgs
 	npm run build:docs:copysumoimgs
+	npm run build:docs:copyproductimgs
 	npm run build:docs:styles
 	npm run build:docs:kss
 

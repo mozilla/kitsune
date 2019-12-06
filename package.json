@@ -17,6 +17,7 @@
     "build:docs:copyprotocol": "cp -r node_modules/@mozilla-protocol/core/protocol styleguide/build/static",
     "build:docs:copyprotocolimgs": "cp -r node_modules/@mozilla-protocol/core/protocol/img styleguide/build/static",
     "build:docs:copysumoimgs": "mkdir -p styleguide/build/static/sumo && cp -r kitsune/sumo/static/sumo/img styleguide/build/static/sumo",
+    "build:docs:copyproductimgs": "mkdir -p styleguide/build/static/products/img && cp -r kitsune/products/static/products/img styleguide/build/static/products",
     "build:docs:copyjs": "cp -r kitsune/sumo/static/sumo/js styleguide/build/static/sumo",
     "build:docs:copystyles": "mkdir -p styleguide/build/static/css && cp static/build/screen.css styleguide/build/static/css/screen.css && cp static/build/screen.css.map styleguide/build/static/css/screen.css.map",
     "build:docs:styles": "sass styleguide/kss-template/kss-assets/scss/kss.scss styleguide/build/css/kss.css",
