@@ -10,8 +10,8 @@
   <ul id="products">
     {% for product in products %}
       <li>
-          <a class="cf" href="{{ url('products.product', slug=product.slug) }}"  data-event-category="link click" data-event-action="product" data-event-label="{{ product.title }}">
-              <img src="{{ product.image_url }}" class="logo-sprite" alt="{{ pgettext('DB: products.Product.title', product.title) }}">
+        <a class="cf" href="{{ url('products.product', slug=product.slug) }}"  data-event-category="link click" data-event-action="product" data-event-label="{{ product.title }}">
+          <img src="{{ product.image_url }}" class="logo-sprite" alt="{{ pgettext('DB: products.Product.title', product.title) }}">
           <span class="title">{{ pgettext('DB: products.Product.title', product.title) }}</span>
           {{ pgettext('DB: products.Product.description', product.description) }}
         </a>

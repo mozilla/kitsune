@@ -15,6 +15,19 @@
 {% endblock %}
 
 {% block content %}
+  {% if product.subproducts.exists() %}
+    <ul id="products">
+      {% for subproduct in product.subproducts.all() %}
+        <li>
+          <a class="cf" href="{{ url('products.product', slug=subproduct.slug) }}"  data-event-category="link click" data-event-action="product" data-event-label="{{ subproduct.title }}">
+            <img src="{{ product.image_url }}" class="logo-sprite" alt="{{ pgettext('DB: products.Product.title', subproduct.title) }}">
+            <span class="title">{{ pgettext('DB: products.Product.title', subproduct.title) }}</span>
+            {{ pgettext('DB: products.Product.description', subproduct.description) }}
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
   <ul id="topics">
     {% for topic in topics %}
       <li>
