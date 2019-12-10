@@ -1,16 +1,15 @@
 @use '../config' as c;
 @use '../protocol' as p;
 
-// Card Grid
+// Breadcrumbs
 //
-// This collection of cards is presented as a scrollable list on mobile and an
-// array of cards on desktop. Any type of card styles can be used in this layout.
+// Breadcrumb component used throughout the app.
 //
 // Markup: ../../../../../../../styleguide/styleguide-examples/breadcrumbs.njk
 //
-// Weight: 2
+// Weight: 6
 //
-// Style guide: card.grid
+// Style guide: breadcrumbs
 
 .breadcrumbs {
   display: flex;
