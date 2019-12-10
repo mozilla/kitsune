@@ -789,7 +789,7 @@ PIPELINE = {
 
     'JS_COMPRESSOR': 'pipeline.compressors.uglifyjs.UglifyJSCompressor',
     'UGLIFYJS_BINARY': path('node_modules/.bin/uglifyjs'),
-    'UGLIFYJS_ARGUMENTS': '-r "\$super"',
+    'UGLIFYJS_ARGUMENTS': '--mangle-props reserved=[$super]',
 
     'CSS_COMPRESSOR': 'pipeline.compressors.cssmin.CSSMinCompressor',
     'CSSMIN_BINARY': path('node_modules/.bin/cssmin'),
