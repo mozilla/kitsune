@@ -16,88 +16,114 @@
 {% block base_container_classes %}container_wide{% endblock %}
 
 {% block content %}
-  <header class="help-topics-header">
-    <h1 class="product-title">
-      <img class="product-logo" src="{{ product.image_alternate_url }}" alt="Photo of {{ product.title }}" />
+<section class="sumo-page-section shade-bg text-center">
+  <div class="mzp-l-content">
+    {% block breadcrumbs %}
+      {{ breadcrumbs(crumbs, id='main-breadcrumbs') }}
+    {% endblock %}
+  </div>
+<div class="mzp-l-content narrow">
+    <h1 class="page-heading">
+      <img class="page-heading--logo" src="{{ product.image_alternate_url }}" alt="Photo of {{ product.title }}" />
       <span class="product-title-text">{{ pgettext('DB: products.Product.title', product.title) }} {{ _('Support') }}</span>
     </h1>
-  </header>
-
-  <div class="container_12 search-form-large">
     {{ search_box(settings, id='support-search-product', params=search_params) }}
+
+    <p class="popular-searches">
+      <span>Popular Searches:</span>
+      <a href="#TODO">Firefox Accounts</a>
+      <a href="#TODO">Log In</a>
+      <a href="#TODO">Item</a>
+      <a href="#TODO">Item</a>
+    </p>
   </div>
+</section>
 
-  <section class="help-topics">
+<section class="mzp-l-content sumo-page-section">
     <div class="help-topics-subhead">
-
-      {% if product.slug == 'firefox' %}
-        {# show-fx-download.js will remove the 'hidden' class below if the visitor is *NOT* using Firefox #}
-        <div class="firefox-download-button hidden">
-          <div class="download-buttons">
-            <div class="download-firefox">
-              <a href="https://www.mozilla.org/firefox/new/?utm_source=support.mozilla.org&amp;utm_medium=referral&amp;utm_campaign=non-fx-button&amp;utm_content=body-download-button" class="download-button"
-                data-event-category="Download Button"
-                data-event-action="Panel Opening"
-                data-event-label="{{ latest_version }}">
-                <span class="download-content">
-                  <strong class="download-title">{{ _('Download Firefox') }}</strong>
-                </span>
-              </a>
-              <ul class="info">
-                <li><a href="https://www.mozilla.org/firefox/all/">{{ _('Systems and Languages') }}</a></li>
-                <li><a href="https://www.mozilla.org/firefox/notes">{{ _("What's New") }}</a></li>
-                <li><a href="https://www.mozilla.org/legal/privacy/firefox">{{ _('Privacy') }}</a></li>
-              </ul>
-            </div>
-            {#
-              afaict, this button is never shown. products.js is looking for a
-              data-latest-version attribute on the .download-button element above,
-              but it's not present. this should be fixed?
-            #}
-            <div class="refresh-firefox">
-              <div class="help-text">{{ _('Give Firefox a tune up') }}</div>
-              <a data-mozilla-ui-reset="reset" class="btn btn-submit">
-                {{ _('Refresh Firefox') }}
-              </a>
-              <a class="reset-link" href="{{ url('wiki.document', 'refresh-firefox-reset-add-ons-and-settings') }}">
-                {{ _('How does it work?') }}
-              </a>
-              <a href="https://www.mozilla.org/firefox/new/#download-fx"
-                data-event-category="Download Button"
-                data-event-action="Panel Opening"
-                data-event-label="{{ latest_version }}">
-                {{ _('Download a fresh copy') }}
-              </a>
-            </div>
-          </div>
-        </div>
-      {% endif %}
-
-      {% if product.slug == 'thunderbird' %}
+    {% if product.slug == 'firefox' %}
+      {# show-fx-download.js will remove the 'hidden' class below if the visitor is *NOT* using Firefox #}
+      <div class="firefox-download-button hidden">
         <div class="download-buttons">
-          <div class="download-thunderbird">
-            <a href="https://www.thunderbird.net/" class="download-button"
-            data-event-category="Download Button"
-            data-event-action="Download Thunderbird">
+          <div class="download-firefox">
+            <a href="https://www.mozilla.org/firefox/new/?utm_source=support.mozilla.org&amp;utm_medium=referral&amp;utm_campaign=non-fx-button&amp;utm_content=body-download-button" class="download-button"
+              data-event-category="Download Button"
+              data-event-action="Panel Opening"
+              data-event-label="{{ latest_version }}">
               <span class="download-content">
-                <strong class="download-title">{{ _('Download Thunderbird') }}</strong>
+                <strong class="download-title">{{ _('Download Firefox') }}</strong>
               </span>
             </a>
             <ul class="info">
-              <li><a href="https://www.thunderbird.net/thunderbird/all/">{{ _('Systems and Languages') }}</a></li>
-              <li><a href="https://www.thunderbird.net/thunderbird/releases/">{{ _('Release Notes') }}</a></li>
-              <li><a href="https://www.mozilla.org/privacy/thunderbird/">{{ _('Privacy') }}</a></li>
+              <li><a href="https://www.mozilla.org/firefox/all/">{{ _('Systems and Languages') }}</a></li>
+              <li><a href="https://www.mozilla.org/firefox/notes">{{ _("What's New") }}</a></li>
+              <li><a href="https://www.mozilla.org/legal/privacy/firefox">{{ _('Privacy') }}</a></li>
             </ul>
           </div>
+          {#
+            afaict, this button is never shown. products.js is looking for a
+            data-latest-version attribute on the .download-button element above,
+            but it's not present. this should be fixed?
+          #}
+          <div class="refresh-firefox">
+            <div class="help-text">{{ _('Give Firefox a tune up') }}</div>
+            <a data-mozilla-ui-reset="reset" class="btn btn-submit">
+              {{ _('Refresh Firefox') }}
+            </a>
+            <a class="reset-link" href="{{ url('wiki.document', 'refresh-firefox-reset-add-ons-and-settings') }}">
+              {{ _('How does it work?') }}
+            </a>
+            <a href="https://www.mozilla.org/firefox/new/#download-fx"
+              data-event-category="Download Button"
+              data-event-action="Panel Opening"
+              data-event-label="{{ latest_version }}">
+              {{ _('Download a fresh copy') }}
+            </a>
+          </div>
         </div>
-      {% endif %}
+      </div>
+    {% endif %}
 
-
-      <h2 class="help-topics-title">{{ _('Frequent Topics') }}</h2>
-      <p>{{ _('Explore the knowledge base.') }}</p>
+    {% if product.slug == 'thunderbird' %}
+      <div class="download-buttons">
+        <div class="download-thunderbird">
+          <a href="https://www.thunderbird.net/" class="download-button"
+          data-event-category="Download Button"
+          data-event-action="Download Thunderbird">
+            <span class="download-content">
+              <strong class="download-title">{{ _('Download Thunderbird') }}</strong>
+            </span>
+          </a>
+          <ul class="info">
+            <li><a href="https://www.thunderbird.net/thunderbird/all/">{{ _('Systems and Languages') }}</a></li>
+            <li><a href="https://www.thunderbird.net/thunderbird/releases/">{{ _('Release Notes') }}</a></li>
+            <li><a href="https://www.mozilla.org/privacy/thunderbird/">{{ _('Privacy') }}</a></li>
+          </ul>
+        </div>
+      </div>
+    {% endif %}
     </div>
+
+
+    <h2 class="display-xs">{{ _('Frequent Topics') }}</h2>
+    <p>{{ _('Explore the knowledge base.') }}</p>
     {{ help_topics(topics, show_community_support=product.questions_enabled(request.LANGUAGE_CODE)) }}
-  </section>
+</section>
+
+<section class="mzp-l-content sumo-page-section">
+  {% include "landings/includes/ask-our-community.html" %}
+</section>
+
+<section class="mzp-l-content sumo-page-section">
+  <h2 class="display-xs">{{ _('Featured Articles & Threads') }}</h2>
+  {% include "landings/includes/featured_articles.html" %}
+  <p class="text-right"><strong><a href="#TODO">View More</a></strong></p>
+</section>
+<section class="mzp-l-content sumo-page-section">
+  {% include "landings/includes/join-our-community-callout.html" %}
+</section>
+
+
 {% endblock %}
 
 {% block for_contributors %}{% endblock %}

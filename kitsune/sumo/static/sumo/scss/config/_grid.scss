@@ -51,7 +51,9 @@ $max-container-width: 1312px !default;
 @mixin container() {
   margin-right: auto;
   margin-left: auto;
+  padding-top: 0;
   padding-right: $gutter-width / 2;
+  padding-bottom: 0;
   padding-left: $gutter-width / 2;
   width: 100%;
   max-width: $max-container-width;

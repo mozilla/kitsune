@@ -4,24 +4,21 @@
 {% set canonical_url = canonicalize(viewname='home') %}
 
 {% block contentwrap %}
-  <section class="sumo-page-section shade-bg text-center">
-    <div class="mzp-l-content narrow">
-      <h1 class="text-display-xl">{{ _('Search Mozilla Support') }}</h1>
-      {{ search_box(settings, id='support-search-home', params=search_params) }}
+<section class="sumo-page-section shade-bg text-center">
+  <div class="mzp-l-content narrow">
+    <h1 class="text-display-xl">{{ _('Search Mozilla Support') }}</h1>
+    {{ search_box(settings, id='support-search-home', params=search_params) }}
 
-      <p class="popular-searches">
-        <span>Popular Searches:</span>
-        <a href="#TODO">Firefox Accounts</a>
-        <a href="#TODO">Log In</a>
-        <a href="#TODO">Item</a>
-        <a href="#TODO">Item</a>
-      </p>
-    </div>
-  </section>
-
-
-
-<section class="mzp-l-content sumo-page-section">
+    <p class="popular-searches">
+      <span>Popular Searches:</span>
+      <a href="#TODO">Firefox Accounts</a>
+      <a href="#TODO">Log In</a>
+      <a href="#TODO">Item</a>
+      <a href="#TODO">Item</a>
+    </p>
+  </div>
+</section>
+<section class="mzp-l-content sumo-page-section" id="main-content">
   <div class="text-center">
     <h2 class="display-xs">{{ _('Get Help') }}</h2>
     <p>{{ _('Pick your product') }}</p>

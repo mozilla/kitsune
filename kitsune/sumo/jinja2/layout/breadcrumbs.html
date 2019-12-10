@@ -1,15 +1,11 @@
 {% if breadcrumbs %}
-  <div class="breadcrumbs" {% if id %}id="{{ id }}"{% endif %}>
-    <div class="container_12 cf">
-      <ol id="breadcrumbs" class="grid_12 cf">
-        {% for target, label in breadcrumbs %}
-          {% if target %}
-            <li><a href="{{ target }}">{{ label|truncate(length=30) }}</a></li>
-          {% else %}
-            <li>{{ label|truncate(length=40) }}</li>
-          {% endif %}
-        {% endfor %}
-      </ol>
-    </div>
-  </div>
+    <ol id="breadcrumbs" class="breadcrumbs">
+      {% for target, label in breadcrumbs %}
+        {% if target %}
+          <li><a href="{{ target }}">{{ label|truncate(length=30) }}</a></li>
+        {% else %}
+          <li>{{ label|truncate(length=40) }}</li>
+        {% endif %}
+      {% endfor %}
+    </ol>
 {% endif %}
