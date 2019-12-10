@@ -10,6 +10,8 @@
 // {{ nav.nav() }}
 // <div class="kss-modifier__default-name kss-style"><br>Logged-in view</div>
 // {{ nav.nav(is_logged_in=true) }}
+// <div class="kss-modifier__default-name kss-style"><br>Download Firefox button enabled</div>
+// {{ nav.nav(not_firefox=true) }}
 //
 //
 // Weight: 20
