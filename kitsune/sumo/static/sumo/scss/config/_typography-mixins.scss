@@ -9,6 +9,7 @@ $text-display-line-height: 1.1 !default;
 @mixin text-display-xxl { // Use this one sparingly.
   @include p.font-size(48px);
   line-height: $text-display-line-height;
+  font-family: var(--heading-font-family);
 
   @media #{p.$mq-md} {
     @include p.font-size(64px);
@@ -19,6 +20,7 @@ $text-display-line-height: 1.1 !default;
 @mixin text-display-xl {
   @include p.font-size(40px);
   line-height: $text-display-line-height;
+  font-family: var(--heading-font-family);
 
   @media #{p.$mq-md} {
     @include p.font-size(56px);
@@ -29,6 +31,7 @@ $text-display-line-height: 1.1 !default;
 @mixin text-display-lg {
   @include p.font-size(32px);
   line-height: $text-display-line-height;
+  font-family: var(--heading-font-family);
 
   @media #{p.$mq-md} {
     @include p.font-size(48px);

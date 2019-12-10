@@ -21,6 +21,8 @@
 
 
 .sumo-nav {
+  border-bottom: 1px solid var(--color-border);
+
   &--container {
     @include c.container;
     display: flex;
@@ -225,7 +227,6 @@
     top: -100px;
     z-index: 97;
     width: 100%;
-    border: 1px solid var(--color-border);
     transform: translateY(100px);
     transition: transform 0.3s;
 
