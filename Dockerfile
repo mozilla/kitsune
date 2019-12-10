@@ -5,6 +5,7 @@ FROM node:12 AS frontend-base
 
 WORKDIR /app
 COPY ["./package.json", "./package-lock.json", "prepare_django_assets.js", "/app/"]
+COPY ./kitsune/sumo/static/sumo /app/kitsune/sumo/static/sumo
 RUN npm run development && npm run production
 
 ################################
@@ -51,7 +52,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends optipng nodejs 
     rm -rf /var/lib/apt/lists/*
 
 
-
 ################################
 # Staticfiles builder
 #
@@ -59,6 +59,7 @@ FROM base-dev AS staticfiles
 
 COPY --from=frontend-base --chown=kitsune:kitsune /app/js_assets /app/js_assets
 COPY --from=frontend-base --chown=kitsune:kitsune /app/node_modules /app/node_modules
+COPY --from=frontend-base --chown=kitsune:kitsune /app/static /app/static
 
 COPY . .
 

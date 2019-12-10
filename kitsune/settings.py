@@ -401,7 +401,6 @@ STATIC_ROOT = path('static')
 STATIC_URL = config('STATIC_URL', default='/static/')
 STATICFILES_DIRS = (
     path('js_assets'),
-    path('node_modules/@mozilla-protocol/core'),
     path('jsi18n'),  # Collect jsi18n so that it is cache-busted
 )
 STATICFILES_FINDERS = (
