@@ -25,6 +25,7 @@ and follow the following steps.
 2. Pull base Kitsune Docker images, run `collectstatic`, create your database, and install node packages.
    ```
    make init
+   make build
    ```
 
 3. Run Kitsune.
@@ -54,6 +55,15 @@ and act much more like developing without Docker as you may be used to. You shou
 instead of `make shell` as the latter does not bind port 8000 which you need to be able to load the site.
 
 Run `make help` to see other helpful commands.
+
+Finally you can run the development server with instance reloading through
+browser-sync.
+
+```
+npm start
+```
+
+The running instance in this case will be located at http://localhost:3000/.
 
 ### Compiling LESS files
 
