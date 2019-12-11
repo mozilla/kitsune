@@ -20,6 +20,8 @@
   --cg-count: 3; // This should be set in an inline style with a template tag.
 }
 .sumo-card-grid {
+  margin-right: c.$gutter-width * -.5;
+  margin-left: c.$gutter-width * -.5;
   padding: calc(var(--cg-gutter) /2) 0 0;
   -webkit-overflow-scrolling: touch;
   overflow-x: scroll;
@@ -27,8 +29,6 @@
   scroll-padding-left: var(--cg-gutter);
   scrollbar-width: none;
   scroll-snap-type: x proximity;
-  margin-right: c.$gutter-width * -.5;
-  margin-left: c.$gutter-width * -.5;
 
   &.is-four-wide {
     padding-top: var(--cg-gutter);
@@ -62,9 +62,9 @@
 
   @media #{p.$mq-lg} {
     --cg-gutter: #{c.$gutter-width};
-    overflow: visible;
     margin-right: 0;
     margin-left: 0;
+    overflow: visible;
 
     .scroll-wrap {
       @include c.grid-row;
