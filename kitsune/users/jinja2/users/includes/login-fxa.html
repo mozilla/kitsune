@@ -11,7 +11,7 @@
 
   <div class="center-on-mobile">
     <p class="login-button-wrap">
-      <a href="{{ url('users.fxa_authentication_init') }}" class="button">{{ _('Continue with Firefox Accounts') }}</a>
+      <a href="{{ url('users.fxa_authentication_init') }}?next={{ request.META.get('HTTP_REFERER', '/') }}" class="button">{{ _('Continue with Firefox Accounts') }}</a>
     </p>
 
     <p>
