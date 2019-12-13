@@ -40,74 +40,78 @@
 </section>
 
 <section class="mzp-l-content sumo-page-section">
-    <div class="help-topics-subhead">
+  <div class="sumo-page-subheader">
+    <div class="sumo-page-subheader--text">
+      <h2 class="display-xs">{{ _('Frequent Topics') }}</h2>
+      <p>{{ _('Explore the knowledge base.') }}</p>
+    </div>
     {% if product.slug == 'firefox' %}
       {# show-fx-download.js will remove the 'hidden' class below if the visitor is *NOT* using Firefox #}
-      <div class="firefox-download-button hidden">
-        <div class="download-buttons">
-          <div class="download-firefox">
-            <a href="https://www.mozilla.org/firefox/new/?utm_source=support.mozilla.org&amp;utm_medium=referral&amp;utm_campaign=non-fx-button&amp;utm_content=body-download-button" class="download-button"
-              data-event-category="Download Button"
-              data-event-action="Panel Opening"
-              data-event-label="{{ latest_version }}">
-              <span class="download-content">
-                <strong class="download-title">{{ _('Download Firefox') }}</strong>
-              </span>
-            </a>
-            <ul class="info">
-              <li><a href="https://www.mozilla.org/firefox/all/">{{ _('Systems and Languages') }}</a></li>
-              <li><a href="https://www.mozilla.org/firefox/notes">{{ _("What's New") }}</a></li>
-              <li><a href="https://www.mozilla.org/legal/privacy/firefox">{{ _('Privacy') }}</a></li>
-            </ul>
-          </div>
-          {#
-            afaict, this button is never shown. products.js is looking for a
-            data-latest-version attribute on the .download-button element above,
-            but it's not present. this should be fixed?
-          #}
-          <div class="refresh-firefox">
-            <div class="help-text">{{ _('Give Firefox a tune up') }}</div>
-            <a data-mozilla-ui-reset="reset" class="btn btn-submit">
-              {{ _('Refresh Firefox') }}
-            </a>
-            <a class="reset-link" href="{{ url('wiki.document', 'refresh-firefox-reset-add-ons-and-settings') }}">
-              {{ _('How does it work?') }}
-            </a>
-            <a href="https://www.mozilla.org/firefox/new/#download-fx"
-              data-event-category="Download Button"
-              data-event-action="Panel Opening"
-              data-event-label="{{ latest_version }}">
-              {{ _('Download a fresh copy') }}
-            </a>
-          </div>
-        </div>
-      </div>
-    {% endif %}
-
-    {% if product.slug == 'thunderbird' %}
+    <div class="firefox-download-button hidden">
       <div class="download-buttons">
-        <div class="download-thunderbird">
-          <a href="https://www.thunderbird.net/" class="download-button"
-          data-event-category="Download Button"
-          data-event-action="Download Thunderbird">
-            <span class="download-content">
-              <strong class="download-title">{{ _('Download Thunderbird') }}</strong>
-            </span>
+        <div class="download-firefox">
+          <a href="https://www.mozilla.org/firefox/new/?utm_source=support.mozilla.org&amp;utm_medium=referral&amp;utm_campaign=non-fx-button&amp;utm_content=body-download-button"
+            class="download-button sumo-button primary-button button-lg"
+            data-event-category="Download Button"
+            data-event-action="Panel Opening"
+            data-event-label="{{ latest_version }}">
+            {{ _('Download Firefox') }}
           </a>
-          <ul class="info">
-            <li><a href="https://www.thunderbird.net/thunderbird/all/">{{ _('Systems and Languages') }}</a></li>
-            <li><a href="https://www.thunderbird.net/thunderbird/releases/">{{ _('Release Notes') }}</a></li>
-            <li><a href="https://www.mozilla.org/privacy/thunderbird/">{{ _('Privacy') }}</a></li>
+          <ul class="download-firefox--info body-xs">
+            <li><a href="https://www.mozilla.org/firefox/all/">{{ _('Systems and Languages') }}</a></li>
+            <li><a href="https://www.mozilla.org/firefox/notes">{{ _("What's New") }}</a></li>
+            <li><a href="https://www.mozilla.org/legal/privacy/firefox">{{ _('Privacy') }}</a></li>
+          </ul>
+        </div>
+        {#
+          afaict, this button is never shown. products.js is looking for a
+          data-latest-version attribute on the .download-button element above,
+          but it's not present. this should be fixed?
+        #}
+        <div class="refresh-firefox">
+          <p class="help-text">{{ _('Give Firefox a tune up') }}</p>
+          <a data-mozilla-ui-reset="reset" class="download-button sumo-button primary-button button-lg">
+            {{ _('Refresh Firefox') }}
+          </a>
+          <ul class="download-firefox--info body-xs">
+            <li><a class="reset-link" href="{{ url('wiki.document', 'refresh-firefox-reset-add-ons-and-settings') }}">
+              {{ _('How does it work?') }}
+            </a></li>
+            <li>
+              <a href="https://www.mozilla.org/firefox/new/#download-fx"
+                data-event-category="Download Button"
+                data-event-action="Panel Opening"
+                data-event-label="{{ latest_version }}">
+                {{ _('Download a fresh copy') }}
+              </a>
+            </li>
           </ul>
         </div>
       </div>
-    {% endif %}
     </div>
+    {% endif %}
 
+    {% if product.slug == 'thunderbird' %}
+    <div class="download-buttons">
+      <div class="download-thunderbird">
+        <a href="https://www.thunderbird.net/" class="download-button"
+        data-event-category="Download Button"
+        data-event-action="Download Thunderbird">
+          <span class="download-content">
+            <strong class="download-title">{{ _('Download Thunderbird') }}</strong>
+          </span>
+        </a>
+        <ul class="info">
+          <li><a href="https://www.thunderbird.net/thunderbird/all/">{{ _('Systems and Languages') }}</a></li>
+          <li><a href="https://www.thunderbird.net/thunderbird/releases/">{{ _('Release Notes') }}</a></li>
+          <li><a href="https://www.mozilla.org/privacy/thunderbird/">{{ _('Privacy') }}</a></li>
+        </ul>
+      </div>
+    </div>
+    {% endif %}
+  </div>
 
-    <h2 class="display-xs">{{ _('Frequent Topics') }}</h2>
-    <p>{{ _('Explore the knowledge base.') }}</p>
-    {{ help_topics(topics, show_community_support=product.questions_enabled(request.LANGUAGE_CODE)) }}
+  {{ help_topics(topics, show_community_support=product.questions_enabled(request.LANGUAGE_CODE)) }}
 </section>
 
 <section class="mzp-l-content sumo-page-section">

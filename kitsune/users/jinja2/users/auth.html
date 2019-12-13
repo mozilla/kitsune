@@ -15,17 +15,23 @@
     {{ notification_already_migrated(STATIC_URL) }}
   {% endif %}
 
-  <div class="content cf">
-    <figure class="grid_6 large-logo-wrap hide-mobile">
-      <img class="ff-logo" src="{{ STATIC_URL }}sumo/img/firefox-logo.svg" alt="{{ _('Firefox logo') }}"/>
-    </figure>
-    <div class="grid_6">
-      <div id="login-fxa" class="{% if legacy_form_visible %}hidden{% endif %}">
-        {% include "users/includes/login-fxa.html" %}
-      </div>
-      <div id="login-legacy" class="{% if not legacy_form_visible %}hidden{% endif %}">
-        {% include "users/includes/login-form.html" %}
+<section class="sumo-auth--wrap">
+  <div class="mzp-l-content">
+    <div class="card feature-padding elevation-03">
+      <div class="sumo-auth">
+        <figure class="sumo-auth--logo">
+          <img class="ff-logo" src="{{ STATIC_URL }}sumo/img/FF_Master__icon.svg" alt="{{ _('Firefox logo') }}"/>
+        </figure>
+        <div class="sumo-auth--form">
+          <div id="login-fxa" class="{% if legacy_form_visible %}hidden{% endif %}">
+            {% include "users/includes/login-fxa.html" %}
+          </div>
+          <div id="login-legacy" class="{% if not legacy_form_visible %}hidden{% endif %}">
+            {% include "users/includes/login-form.html" %}
+          </div>
+        </div>
       </div>
     </div>
   </div>
+</section>
 {% endblock %}

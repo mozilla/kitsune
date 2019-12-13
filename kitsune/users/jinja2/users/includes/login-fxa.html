@@ -1,7 +1,7 @@
 {% from "users/includes/macros.html" import login_form as render_login with context %}
 
 <article id="login" class="main login-form">
-  <h1 class="mb-0">{{ _('Log in / Sign up with Firefox Accounts') }}</h1>
+  <h1 class="text-display-lg">{{ _('Log in / Sign up with Firefox Accounts') }}</h1>
   <p>
     {{ _('We are upgrading our log-in system to replace Mozilla Support accounts with Firefox Accounts. Firefox Accounts
     offers one log-in for convenient and secure access to Mozilla services.') }}
@@ -11,11 +11,11 @@
 
   <div class="center-on-mobile">
     <p class="login-button-wrap">
-      <a href="{{ url('users.fxa_authentication_init') }}" class="button">{{ _('Continue with Firefox Accounts') }}</a>
+      <a href="{{ url('users.fxa_authentication_init') }}" class="sumo-button primary-button button-lg">{{ _('Continue with Firefox Accounts') }}</a>
     </p>
 
     <p>
-      <a class="legacy-login-toggle" href="#">{{ _('continue w/ SUMO account') }}</a>
+      <a class="legacy-login-toggle" href="#">{{ _('Continue w/ SUMO account') }}</a>
     </p>
 
     <p class="help-text">
