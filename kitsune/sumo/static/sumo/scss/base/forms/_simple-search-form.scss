@@ -38,8 +38,8 @@
   display: none;
   @media #{p.$mq-lg} {
     display: block;
-    text-align: center;
     margin-top: 32px;
+    text-align: center;
 
     a, span {
       display: inline-block;

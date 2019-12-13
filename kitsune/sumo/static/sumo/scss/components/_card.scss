@@ -43,17 +43,17 @@
     flex-direction: column;
 
     .card--title {
-      padding-bottom: 32px;
       margin-bottom: 32px;
+      padding-bottom: 32px;
       border-bottom: 1px solid var(--color-heading);
     }
 
     .card--desc {
       display: -webkit-box;
+      margin-bottom: 32px;
+      overflow: hidden;
       -webkit-line-clamp: 3;
       -webkit-box-orient: vertical;
-      overflow: hidden;
-      margin-bottom: 32px;
     }
   }
 
@@ -106,15 +106,15 @@
 
   &--callout {
     @include c.elevation-01;
-    padding: 40px;
     display: flex;
     flex-direction: column;
     align-items: center;
+    padding: 40px;
     background-color: var(--color-callout-bg);
 
     .card--details {
-      text-align: center;
       flex: 1 1 100%;
+      text-align: center;
     }
 
     .card--title {
@@ -129,10 +129,10 @@
   }
 
   &--feature-img {
-    width: 50%;
     margin-top: -60px;
-    margin-bottom: 20px;
     margin-right: -20px;
+    margin-bottom: 20px;
+    width: 50%;
   }
 
   // &--details {}
@@ -200,12 +200,12 @@
     }
 
     &--feature-img {
+      margin-top: -80px;
+      margin-right: 0;
+      margin-bottom: -60px;
+      margin-left: 60px;
       width: 50%;
       max-width: 450px;
-      margin-right: 0;
-      margin-left: 60px;
-      margin-top: -80px;
-      margin-bottom: -60px;
     }
   }
 
@@ -216,9 +216,9 @@
     }
 
     &--icon {
-      width: 72px;
       margin-right: 20px;
       margin-bottom: 0;
+      width: 72px;
     }
 
     &--ribbon {

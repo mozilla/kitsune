@@ -401,7 +401,6 @@ STATIC_ROOT = path('static')
 STATIC_URL = config('STATIC_URL', default='/static/')
 STATICFILES_DIRS = (
     path('js_assets'),
-    path('node_modules/@mozilla-protocol/core'),
     path('jsi18n'),  # Collect jsi18n so that it is cache-busted
 )
 STATICFILES_FINDERS = (
@@ -789,7 +788,7 @@ PIPELINE = {
 
     'JS_COMPRESSOR': 'pipeline.compressors.uglifyjs.UglifyJSCompressor',
     'UGLIFYJS_BINARY': path('node_modules/.bin/uglifyjs'),
-    'UGLIFYJS_ARGUMENTS': '-r "\$super"',
+    'UGLIFYJS_ARGUMENTS': '--mangle-props reserved=[$super]',
 
     'CSS_COMPRESSOR': 'pipeline.compressors.cssmin.CSSMinCompressor',
     'CSSMIN_BINARY': path('node_modules/.bin/cssmin'),

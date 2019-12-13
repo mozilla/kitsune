@@ -3,7 +3,7 @@
 set -ex
 
 # install Node dependencies
-npm run development && npm run postinstall
+npm run development && npm run production
 # ensure the DB server is ready
 urlwait
 # run collectstatic
