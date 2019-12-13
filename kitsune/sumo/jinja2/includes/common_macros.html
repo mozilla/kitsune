@@ -126,12 +126,6 @@
 </li>
 {% endif %}
 
-{% if not hide_locale_switcher %}
-<li class="mzp-c-menu-category sumo-nav--item-right sumo-nav--item-lang">
-  <a class="mzp-c-menu-title sumo-nav--link sumo-nav--lang-link" href="{{ locale_picker_url }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Locale Picker">{% if request.LANGUAGE_CODE == "en-US"%}EN{% else %}{{ request.LANGUAGE_CODE }}{% endif %}</a>
-</li>
-{% endif %}
-
 <li class="mzp-c-menu-category {% if user.is_authenticated() %}mzp-has-drop-down mzp-js-expandable{% endif %} {% if hide_locale_switcher %}sumo-nav--item-right{% endif %}">
   {% if show_header_fx_download() %}
     {# show-fx-download.js will remove the 'hidden' class below if the visitor is *NOT* using Firefox #}
@@ -193,42 +187,7 @@
                  </a>
                </li>
              {% else %}
-               <li class="dropdown user-dropdown"><a href="javascript:;" class="user"  data-event-category="navigation" data-event-action="main navigation" data-event-label="User">
-                 <span class="hide-on-mobile">{{ display_name(user) }}
-                   <img class="avatar" src="{{ profile_avatar(user) }}">
-                 </span>
-                 <span class="mobile-only">{{ _('My Profile') }}</span>
 
-               </a>
-                 <ul>
-                   <li><a href="{{ profile_url(user) }}"  data-event-category="navigation" data-event-action="main navigation" data-event-label="My Profile">{{ _('View Profile') }}</a></li>
-                   <li><a href="{{ url('search')|urlparams(asked_by=user.username, a=1, w=2) }}"  data-event-category="navigation" data-event-action="main navigation" data-event-label="My Questions">{{ _('My Questions') }}</a></li>
-                   <li><a href="{{ profile_url(user, edit=True) }}"  data-event-category="navigation" data-event-action="main navigation" data-event-label="Edit Profile">{{ _('Edit Profile') }}</a></li>
-                   <li><a href="{{ url('users.edit_settings') }}"  data-event-category="navigation" data-event-action="main navigation" data-event-label="Settings">{{ _('Settings') }}</a></li>
-                   <li>
-                     <a href="{{ url('messages.inbox') }}" data-event-category="navigation" data-event-action="main navigation" data-event-label="Inbox">
-                       {{ _('Inbox') }}
-                       {% if unread_message_count > 0 %}
-                         <span class="unread-message-count">{{ unread_message_count }}</span>
-                       {% endif %}
-                     </a>
-                   </li>
-                   <li>
-                     <form id="sign-out" action="{{ url('users.logout') }}" method="post">
-                       {% csrf_token %}
-                     </form>
-                     <a
-                       data-type="submit"
-                       data-form="sign-out"
-                       href="#sign-out"
-                       data-event-category="navigation"
-                       data-event-action="main navigation"
-                       data-event-label="Sign Out">
-                       {{ _('Sign Out') }}
-                     </a>
-                   </li>
-                 </ul>
-               </li>
              {% endif %}
            </div>
       </div>
