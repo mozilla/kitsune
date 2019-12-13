@@ -177,7 +177,7 @@
         </div>
       </div>
 
-      <div class="mzp-c-navigation-items sumo-nav--list-wrap-right" id="profile-navigation">
+      <div class="mzp-c-navigation-items sumo-nav--list-wrap-right {% if not user.is_authenticated() %}logged-out{% endif %}" id="profile-navigation">
         <div class="mzp-c-navigation-menu">
           <nav class="mzp-c-menu mzp-is-basic">
               {% if not hide_aux_nav %}
