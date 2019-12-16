@@ -179,6 +179,7 @@
         // not draft
         self.modalReset();
       }
+
     },
     /*
     * Validates the entire upload form before publishing a draft.

@@ -117,6 +117,17 @@ h5, h6, .text-display-sm {
   @include c.line-height(18px);
 }
 
+.page-heading {
+  @include c.text-display-xl;
+  text-align: center;
+
+  &--logo {
+    display: block;
+    width: 56px;
+    margin: 0 auto 8px;
+  }
+}
+
 a, :link {
   text-decoration: underline;
   color: var(--color-link);

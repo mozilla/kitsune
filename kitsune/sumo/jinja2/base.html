@@ -177,7 +177,7 @@
         </div>
       </div>
 
-      <div class="mzp-c-navigation-items sumo-nav--list-wrap-right" id="profile-navigation">
+      <div class="mzp-c-navigation-items sumo-nav--list-wrap-right {% if not user.is_authenticated() %}logged-out{% endif %}" id="profile-navigation">
         <div class="mzp-c-navigation-menu">
           <nav class="mzp-c-menu mzp-is-basic">
               {% if not hide_aux_nav %}
@@ -199,10 +199,6 @@
   </div>
 </header><!--/.mzp-c-navigation -->
 
-
-{% block breadcrumbs %}
-  {{ breadcrumbs(crumbs, id='main-breadcrumbs') }}
-{% endblock %}
 
 {% block contentwrap %}
 <div class="container_12 cf {% block base_container_classes %}{% endblock %}" id="main-container">
@@ -228,16 +224,11 @@
     </aside>
   {% endblock %}
 
-  <section class="support-search-main cf">
-      {{ search_box(settings, id='support-search-results', params=search_params) }}
-  </section>
-
   <main id="main-content" role="main">
     {% block content %}{% endblock %}
   </main>
 </div>
 {% endblock %}
-
 
 <footer class="mzp-c-footer">
   <div class="mzp-l-content">

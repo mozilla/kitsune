@@ -1,17 +1,28 @@
 {% macro help_topics(topics, show_community_support=False) -%}
-  {% for topic in topics %}
-    {% if loop.first %}<ul class="card-grid">{% endif %}
-    <li>
-      {% set topic_url = url('products.documents', product_slug=product.slug, topic_slug=topic.slug) %}
-      <a href="{{ topic_url }}" data-on-hover="{{ _('See all') }}" data-event-category="link click" data-event-action="topic" data-event-label="{{topic.title}}">
-        <img src="{{ STATIC_URL }}sumo/img/blank.png" class="topic-icon" style="background-image: url('{{ topic.image_url }}')" alt="" />
-        <span class="title">{{ pgettext('DB: products.Topic.title', topic.title) }}</span>
-      </a>
-    </li>
-  {% if loop.last %}
-  </ul>
-  {% endif %}
-  {% endfor %}
+<div class="sumo-card-grid" style="--cg-count: {{ topics|length }};">
+  <div class="scroll-wrap">
+    {% for topic in topics %}
+    {% set topic_url = url('products.documents', product_slug=product.slug, topic_slug=topic.slug) %}
+    <div class="card card--topic">
+      <img
+        class="card--icon"
+        src="{{ topic.image_url }}"
+        alt="{{ pgettext('DB: products.Topic.title', topic.title) }} icon"
+      />
+      <div class="card--details">
+        <h3 class="card--title">
+          <a class="expand-this-link" href="{{ topic_url }}" data-on-hover="{{ _('See all') }}" data-event-category="link click" data-event-action="topic" data-event-label="{{topic.title}}">
+            {{ pgettext('DB: products.Topic.title', topic.title) }}
+          </a>
+        </h3>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+
+
 
   <section class="support-callouts">
     {% set listed_product=product.slug|capitalize %}

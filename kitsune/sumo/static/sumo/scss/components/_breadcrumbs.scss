@@ -1,0 +1,40 @@
+@use '../config' as c;
+@use '../protocol' as p;
+
+// Breadcrumbs
+//
+// Breadcrumb component used throughout the app.
+//
+// Markup: ../../../../../../../styleguide/styleguide-examples/breadcrumbs.njk
+//
+// Weight: 6
+//
+// Style guide: breadcrumbs
+
+.breadcrumbs {
+  display: flex;
+  list-style: none;
+  @include c.text-body-sm;
+
+  li {
+    margin-right: 4px;
+
+    &:after {
+      content: "/";
+    }
+
+    &:last-child:after {
+      content: none;
+    }
+  }
+
+  a, :visited, {
+    margin-right: 4px;
+    color: var(--color-light-gray-10);
+    text-decoration: none;
+
+    &:hover {
+      color: var(--color-click);
+    }
+  }
+}
