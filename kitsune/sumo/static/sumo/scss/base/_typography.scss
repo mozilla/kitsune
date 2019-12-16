@@ -70,16 +70,16 @@ h5, h6, .text-display-sm {
   @include c.text-display-sm;
 }
 
-.display-xs {
+.text-display-xs {
   @include c.text-display-xs;
 }
 
 
-.display-xxs {
+.text-display-xxs {
   @include c.text-display-xxs;
 }
 
-.display-xxxs {
+.text-display-xxxs {
   @include c.text-display-xxxs;
 }
 

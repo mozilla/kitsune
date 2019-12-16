@@ -1,9 +1,8 @@
 {% from "users/includes/macros.html" import login_form as render_login with context %}
 
 <article id="login" class="main login-form smaller-v-pad">
-  <h1 class="mb-0">{{ _('Log In') }}</h1>
-  <p class="mt-0 mb-0">
-    or <a class="legacy-login-toggle" href="#">{{ _('continue with Firefox Account') }}</a>
-  </p>
+  <h1 class="text-display-lg">{{ _('Log In') }}</h1>
+  <p>or <a class="legacy-login-toggle" href="#">{{ _('continue with Firefox Account') }}</a></p>
+
   {{ render_login(login_form, next_url=next_url) }}
 </article>
