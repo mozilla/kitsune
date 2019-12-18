@@ -1,5 +1,16 @@
 @use '../config' as c;
 
+// Layout Examples
+//
+// These examples are intended to show large layout patterns and collections of components.
+//
+// Weight: 50
+//
+// full: true
+//
+// Style guide: examples
+
+
 // Homepage
 //
 // This is an example homepage design, complied to display several components
@@ -7,8 +18,21 @@
 //
 // Markup: ../../../../../../styleguide/styleguide-examples/example-home.njk
 //
-// Weight: 50
+// Weight: 1
 //
 // full: true
 //
-// Style guide: home
+// Style guide: examples.home
+
+// Two-column example page (Profile)
+//
+// This is an example of a two-column page layout with a collapsable sidebar.
+// This example uses the profile page content, but is used throughout the system
+//
+// Markup: ../../../../../../styleguide/styleguide-examples/example-two-col.njk
+//
+// Weight: 2
+//
+// full: true
+//
+// Style guide: examples.two-col

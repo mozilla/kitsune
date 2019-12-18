@@ -57,18 +57,13 @@
 {%- endmacro %}
 
 {% macro personal_tabs(user, selected) -%}
-  <ul id="user-nav" class="sidebar-nav">
-    <li {{ selected|class_selected('my-profile') }}>
-      <a href="{{ profile_url(user) }}">{{ _('My profile') }}</a>
-    </li>
-    <li {{ selected|class_selected('edit-profile') }}>
-      <a href="{{ url('users.edit_my_profile') }}">{{ _('Edit my profile') }}</a>
-    </li>
-    <li {{ selected|class_selected('edit-settings') }}>
-      <a href="{{ url('users.edit_settings') }}">{{ _('Edit settings') }}</a>
-    </li>
-    <li {{ selected|class_selected('edit-watches') }}>
-      <a href="{{ url('users.edit_watch_list') }}">{{ _('Manage watch list') }}</a>
-    </li>
+<nav class="sidebar-nav">
+  <span class="details-heading">My Profile</span>
+  <ul id="user-nav" class="sidebar-nav--list">
+    <li class="sidebar-nav--item"><a {{ selected|class_selected('my-profile') }} href="{{ profile_url(user) }}">{{ _('My profile') }}</a></li>
+    <li class="sidebar-nav--item"><a {{ selected|class_selected('edit-profile') }} href="{{ url('users.edit_my_profile') }}">{{ _('Edit my profile') }}</a></li>
+    <li class="sidebar-nav--item"><a {{ selected|class_selected('edit-settings') }} href="{{ url('users.edit_settings') }}">{{ _('Edit settings') }}</a></li>
+    <li class="sidebar-nav--item"><a {{ selected|class_selected('edit-watches') }} href="{{ url('users.edit_watch_list') }}">{{ _('Manage watch list') }}</a></li>
   </ul>
+</nav>
 {%- endmacro %}

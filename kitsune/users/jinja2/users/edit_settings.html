@@ -5,16 +5,27 @@
 {% set crumbs = [(None, title)] %}
 
 {% block content %}
-  <div class="grid_9">
-    <article id="edit-settings" class="main cf">
-      <h1>{{ title }}</h1>
-      <form method="post" action="">
-        {% csrf_token %}
-        {{ form.as_ul() }}
-        <div class="submit">
-          <input type="submit" value="{{ _('Update') }}" />
-        </div>
-      </form>
-    </article>
-  </div>
+<article id="edit-settings" class="main">
+  <h1 class="text-display-lg">{{ title }}</h1>
+  <form method="post" action="">
+    {% csrf_token %}
+    {% for field in form %}
+    <div class="field checkbox {% if field.errors %}has-error{% endif %}">
+      {{ field }}
+      <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+      {% if field.errors %}
+      <p class="error">{{ field.errors }}</p>
+      {% endif %}
+      {% if field.help_text %}
+      <p class="help-text">{{ field.help_text }}</p>
+      {% endif %}
+    </div>
+    {% endfor %}
+
+
+    <div class="sumo-button-wrap">
+      <button class="sumo-button primary-button button-lg" type="submit">{{ _('Update') }}</button>
+    </div>
+  </form>
+</article>
 {% endblock %}

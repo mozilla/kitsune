@@ -28,3 +28,13 @@
     padding-bottom: 40px;
   }
 }
+
+.section-break {
+  border: 2px solid var(--color-heading);
+  border-width: 1px 0 0 0;
+  margin: 32px 0;
+
+  @media #{p.$mq-md} {
+    margin: 48px 0;
+  }
+}

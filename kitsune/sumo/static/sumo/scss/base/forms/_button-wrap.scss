@@ -51,8 +51,12 @@
     justify-content: center;
   }
 
+  &.extra-pad-top {
+    padding-top: p.$spacing-lg;
+  }
+
   .sumo-button {
-    margin: 0 p.$spacing-sm p.$spacing-sm 0;
+    margin: 0 p.$spacing-md p.$spacing-sm 0;
   }
 
   &.full-width-on-mobile {
@@ -63,7 +67,7 @@
 
     @media #{p.$mq-md} {
       .sumo-button {
-        margin-right: p.$spacing-sm;
+        margin-right: p.$spacing-md;
         width: auto;
       }
     }

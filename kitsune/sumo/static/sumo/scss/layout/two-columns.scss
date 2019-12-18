@@ -1,0 +1,43 @@
+@use '../config' as c;
+@use '../protocol' as p;
+
+.sumo-l-two-col {
+  @include c.grid-row();
+
+  &--sidebar,
+  &--main {
+    @include c.col;
+  }
+
+  @media #{p.$mq-md} {
+    @include p.bidi(((flex-direction, row, row-reverse),));
+    justify-content: space-between;
+
+    &--sidebar {
+      width: c.col-width(2, 6);
+    }
+    &--main {
+      width: c.col-width(4, 6);
+    }
+  }
+
+  @media #{p.$mq-lg} {
+    &--sidebar {
+      width: c.col-width(2, 8);
+    }
+
+    &--main {
+      width: c.col-width(6, 8);
+    }
+  }
+
+  @media #{p.$mq-xl} {
+    &--sidebar {
+      width: c.col-width(2, 10);
+    }
+
+    &--main {
+      width: c.col-width(7, 10);
+    }
+  }
+}

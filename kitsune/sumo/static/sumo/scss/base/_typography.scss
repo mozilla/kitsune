@@ -149,3 +149,11 @@ a, :link {
     color: var(--color-link-visited);
   }
 }
+
+.warning-link {
+  color: var(--color-red-08);
+
+  &:hover {
+    color: var(--color-red-09);
+  }
+}

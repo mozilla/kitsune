@@ -11,98 +11,93 @@
 
 {% block breadcrumbs %}{% endblock %}
 {% block content %}
-  <div class="grid_9">
-    <article id="profile" class="cf">
-      {% if is_owner and profile.is_fxa_migrated %}
-      <h1>{{ _('Account') }}</h1>
-      <p class="mb-0"><strong>{{ user.email }}</strong></p>
-      <p class="helptext">
-        {{ _('You can change your email address on Firefox Accounts.') }}
-        <a href="https://support.mozilla.org/en-US/kb/change-primary-email-address-firefox-accounts">{{ _('Need help?') }}</a>
-      </p>
-      <hr class="section-break"/>
-      {% endif %}
-      {% if user.has_perm('users.change_profile') %}
-        <div id="admin-actions">
-          <a class="edit" href="{{ url('users.edit_profile', profile.user.username) }}">
-            {{ _('Edit user profile') }}
-          </a>
-        </div>
-      {% endif %}
-      {% if request.user.is_authenticated and request.user != profile.user %}
-        {{ flag_form(url('users.flag', object_id=profile.pk), False) }}
-      {% endif %}
-      <h1 class="user">{{ display_name(profile.user) }}
-        {% if profile.name %}
-          <span class="username">({{ profile.user.username }})</span>
+      <article id="profile">
+        {% if is_owner and profile.is_fxa_migrated %}
+        <h1 class="text-display-lg">{{ _('Account') }}</h1>
+        <p class="mb-0"><strong>{{ user.email }}</strong></p>
+        <p>
+          {{ _('You can change your email address on Firefox Accounts.') }}
+          <a href="https://support.mozilla.org/en-US/kb/change-primary-email-address-firefox-accounts">{{ _('Need help?') }}</a>
+        </p>
+        <hr class="section-break"/>
         {% endif %}
-      </h1>
 
-      <h2 class="location">
-        {% if profile.city and profile.country %}
-          {{ _('{city}, {country}')|f(city=profile.city,
-                                      country=profile.get_country_display() ) }}
-        {% elif profile.city %}
-          {{ profile.city }}
-        {% elif profile.country %}
-          {{ profile.get_country_display() }}
+
+
+        {% if user.has_perm('users.change_profile') %}
+          <div id="admin-actions">
+            <a class="edit" href="{{ url('users.edit_profile', profile.user.username) }}">
+              {{ _('Edit user profile') }}
+            </a>
+          </div>
         {% endif %}
-      </h2>
-
-      <section class="avatar-wrap">
-        <figure class="avatar-preview">
-          {% if profile_avatar(profile.user) %}
-          <img class="avatar" src="{{ profile_avatar(profile.user) }}" alt="">
-          {% else %}
-          <img class="avatar-fallback" src="/static/sumo/img/firefox-logo.svg" alt="Firefox logo">
+        {% if request.user.is_authenticated and request.user != profile.user %}
+          {{ flag_form(url('users.flag', object_id=profile.pk), False) }}
+        {% endif %}
+        <h1 class="text-display-lg user">{{ display_name(profile.user) }}
+          {% if profile.name %}
+            <span class="username">({{ profile.user.username }})</span>
           {% endif %}
+        </h1>
+
+        <h2 class="text-display-xs location">
+          {% if profile.city and profile.country %}
+            {{ _('{city}, {country}')|f(city=profile.city,
+                                        country=profile.get_country_display() ) }}
+          {% elif profile.city %}
+            {{ profile.city }}
+          {% elif profile.country %}
+            {{ profile.get_country_display() }}
+          {% endif %}
+        </h2>
+
+      <section class="avatar-group">
+        <figure class="avatar-group--figure">
+          <img class="avatar" src="{{ profile_avatar(profile.user) }}" alt="">
         </figure>
-        <div class="user-details">
+        <div class="avatar-group--details">
           {% if profile.public_email or profile.website or profile.twitter or
                 profile.facebook or profile.mozillians or profile.irc_handle %}
-            <section class="contact">
-              <ul>
+              <ul class="avatar-group--details-list">
                 {% if profile.public_email and request.user.is_authenticated() %}
-                  <li>
-                    <label>{{ _('Email') }}:</label>
+                  <li class="avatar-group--details-item">
+                    <label class="avatar-group--details-label">{{ _('Email') }}:</label>
                     {{ profile.user.email|public_email }}
                   </li>
                 {% endif %}
                 {% if profile.website %}
-                  <li>
-                    <label>{{ _('Website') }}:</label>
-                    <a rel="nofollow" href="{{ profile.website }}">{{ profile.website }}</a>
+                  <li class="avatar-group--details-item">
+                    <label class="avatar-group--details-label">{{ _('Website') }}:</label>
+                      <a rel="nofollow" href="{{ profile.website }}">{{ profile.website }}</a>
                   </li>
                 {% endif %}
                 {% if profile.twitter %}
-                  <li>
-                    <label>{{ _('Twitter') }}:</label>
+                  <li class="avatar-group--details-item">
+                    <label class="avatar-group--details-label">{{ _('Twitter') }}:</label>
                     <a rel="nofollow" href="https://www.twitter.com/{{profile.twitter}}">{{ profile.twitter }}</a>
                   </li>
                 {% endif %}
                 {% if profile.facebook %}
-                  <li>
-                    <label>{{ _('Facebook') }}:</label>
+                  <li class="avatar-group--details-item">
+                    <label class="avatar-group--details-label">{{ _('Facebook') }}:</label>
                     <a rel="nofollow" href="{{ profile.facebook }}">{{ profile.facebook }}</a>
                   </li>
                 {% endif %}
                 {% if profile.mozillians %}
-                  <li>
-                    <label>{{ _('Mozillians') }}:</label>
+                  <li class="avatar-group--details-item">
+                    <label class="avatar-group--details-label">{{ _('Mozillians') }}:</label>
                     <a rel="nofollow" href="https://mozillians.org/u/{{profile.mozillians}}/">{{ profile.mozillians }}</a>
                   </li>
                 {% endif %}
                 {% if profile.irc_handle %}
-                  <li>
-                    <label>{{ _('IRC') }}:</label>
+                  <li class="avatar-group--details-item">
+                    <label class="avatar-group--details-label">{{ _('IRC') }}:</label>
                     {{ profile.irc_handle }}
                   </li>
                 {% endif %}
               </ul>
-            </section>
           {% endif %}
         </div>
-
       </section>
 
 
@@ -125,7 +120,7 @@
 
       {% if num_answers or num_questions or num_solutions or num_documents or profile.involved_from %}
         <section class="contributions">
-          <h2>Contributions</h2>
+          <h2 class="text-display-xs mt-lg">Contributions</h2>
           <ul>
             {% if profile.involved_from %}
               <li>
@@ -165,13 +160,13 @@
 
       {% if profile.bio %}
         <section class="bio">
-          <h2>{{ _('About {user}')|f(user=display_name(profile.user)) }}</h2>
+          <h2 class="text-display-xs mt-lg">{{ _('About {user}')|f(user=display_name(profile.user)) }}</h2>
           {{ profile.bio|wiki_to_safe_html(nofollow=True) }}
         </section>
       {% endif %}
       {% if groups %}
         <section class="groups">
-          <h2>{{ _("{user}'s Groups")|f(user=display_name(profile.user)) }}</h2>
+          <h2 class="text-display-xs mt-lg">{{ _("{user}'s Groups")|f(user=display_name(profile.user)) }}</h2>
           <ul>
             {% for g in groups %}
               <li>{{ group_link(g) }}</li>
@@ -181,19 +176,19 @@
       {% endif %}
       {% if awards %}
         <section class="badges cf">
-          <h2>{{ _('Badges') }}</h2>
+          <h2 class="text-display-xs mt-lg">{{ _('Badges') }}</h2>
           {{ awards_list(awards) }}
           <p><a href="{{ url('kbadge.badges_list') }}">{{ _('See all available SUMO badges') }}</a></p>
         </section>
       {% endif %}
 
-      <div class="pm-or-signout">
+      <div class="pm-or-signout sumo-button-wrap extra-pad-top">
         {% if profile.user == user %}
           <form id="sign-out" action="{{ url('users.logout') }}" method="post">
             {% csrf_token %}
           </form>
           <a
-            class="button dark"
+            class="sumo-button primary-button button-lg"
             data-type="submit"
             data-form="sign-out"
             href="#sign-out"
@@ -204,6 +199,5 @@
           {{ private_message(profile.user) }}
         {% endif %}
       </div>
-    </article>
-  </div>
+</article>
 {% endblock %}

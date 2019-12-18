@@ -18,6 +18,7 @@
 
   --color-heading: var(--color-inverse-bg);
   --color-text: var(--color-marketing-gray-08);
+  --color-text-light: var(--color-marketing-gray-07);
   --color-link: var(--color-click);
   --color-link-visited: var(--color-purple-06);
   --color-link-active-bg: var(--color-marketing-gray-02);
@@ -27,7 +28,7 @@
   --color-callout-bg: var(--color-marketing-gray-02);
 
   --base-font-family: Inter, X-LocaleSpecific, sans-serif;
-  --base-font-size: 1rem; // keep this at 1rem for rem-calc to work correctly.
+  --base-font-size: 1rem;
   --heading-font-family: 'Zilla Slab', 'Open Sans', X-LocaleSpecific, serif;
   --heading-alt-font-family: Metropolis, Inter, X-LocaleSpecific, sans-serif;
 

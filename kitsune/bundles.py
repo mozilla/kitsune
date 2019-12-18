@@ -309,6 +309,9 @@ PIPELINE_JS = {
             'protocol/js/protocol-notification-bar.js',
             # 'protocol/js/protocol-sidemenu.js',
             'sumo/js/protocol-nav.js',
+            'sumo/js/protocol-details-init.js',
+            'sumo/js/protocol-modal-init.js',
+            'sumo/js/protocol-notification-init.js',
         ),
         'output_filename': 'build/common-min.js'
     },
