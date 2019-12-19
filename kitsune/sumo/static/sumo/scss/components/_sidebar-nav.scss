@@ -10,7 +10,6 @@
 // Style guide: nav.sidebar
 
 .sidebar-nav {
-
   &--list,
   &--sublist {
     list-style: none;
@@ -19,35 +18,34 @@
   }
 
   &--item {
-    @include p.font-size(18px);
+    @include p.font-size(16px);
+    margin-bottom: 8px;
   }
 
-  &--link,
-  &--sublink {
+  a {
     display: block;
-    padding: 4px;
+    padding: 4px 16px;
     border-radius: var(--global-radius);
     text-decoration: none;
 
     &:link,
     &:visited {
-      color: var(--color-link);
+      color: var(--color-text);
     }
 
     &:hover {
-      background-color: var(--color-link-active-bg);
       text-decoration: none;
-      color: var(--color-link);
+      color: var(--color-heading);
     }
 
-    &.is-active {
-      background-color: var(--color-link-active-bg);
-      font-weight: bold;
+    &.selected {
+      &:link,
+      &:visited {
+        background-color: var(--color-link-active-bg);
+        font-weight: bold;
+        color: var(--color-heading);
+      }
     }
-  }
-
-  &--link {
-    font-weight: bold;
   }
 
   &--sublist {
@@ -60,5 +58,56 @@
 
   &--sublink {
     padding-left: p.$spacing-md;
+  }
+
+  .details-heading {
+    // button element is injected with JS on Protocol Details init.
+    // See sumo/protocol-details-init.js and
+    // node_modules/@mozilla-protocol/core/protocol/js/protocol-details.js
+    button {
+      appearance: none;
+      @include p.font-size(16px);
+      display: block;
+      width: 100%;
+      color: var(--color-text);
+      margin-bottom: 12px;
+      text-decoration: none;
+      text-align: left;
+      border: none;
+      background-color: transparent;
+      padding: 0;
+
+      &:after {
+        @include p.bidi(((margin, 0 0 0 12px, 0 12px 0 0),));
+        display: inline-flex;
+        width: 12px;
+        height: 10px;
+        background-image: c.svg-url('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 10"><path fill="none" vector-effect="non-scaling-stroke" stroke="#5E5E72" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" d="M1 1l8 8 8-8"/></svg>');
+        background-size: contain;
+        background-position: center center;
+        background-repeat: no-repeat;
+        transition: transform .3s;
+        transform-style: preserve-3d;
+        content: "";
+      }
+
+      &[aria-expanded="true"]:after {
+        transform: rotateX(180deg) translateY(2px);
+      }
+    }
+
+    + .sidebar-nav--list {
+      &[aria-hidden="true"] {
+        display: none;
+      }
+
+      &[aria-hidden="false"] {
+        display: block;
+      }
+    }
+
+    @media #{p.$mq-md} {
+      display: none;
+    }
   }
 }

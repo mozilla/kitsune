@@ -20,18 +20,18 @@
 //
 // ```
 //.grid-1-example {
-//   @include col(1, 4);
+//   @include c.col(1, 4);
 //
-//   @media #{$mq-sm} {
-//     width: col-width(1, 6);
+//   @media #{p.$mq-sm} {
+//     width: c.col-width(1, 6);
 //   }
 //
-//   @media #{$mq-lg} {
-//     width: col-width(1, 8);
+//   @media #{p.$mq-lg} {
+//     width: c.col-width(1, 8);
 //   }
 //
-//   @media #{$mq-xl} {
-//     width: col-width(1, 10);
+//   @media #{p.$mq-xl} {
+//     width: c.col-width(1, 10);
 //   }
 //}
 //```

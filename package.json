@@ -24,11 +24,12 @@
     "build:docs:kss": "kss --config styleguide/kss-config.json --custom full",
     "build": "concurrently --raw npm:build:*",
     "watch:styles": "onchange 'kitsune/sumo/static/sumo/scss/**/*' -- npm run build:styles",
-    "watch:docs": "onchange 'styleguide/styleguide-examples/*.njk' 'styleguide/kss-template/**/*' -- npm run build:docs:*",
+    "watch:docs": "onchange 'styleguide/styleguide-examples/*.njk' 'styleguide/kss-template/**/*' -- npm run build:docs:kss",
     "watch:docstyles": "onchange 'static/build/screen.css' -- npm run build:docs:copystyles",
     "watch:docjs": "onchange 'kitsune/sumo/static/sumo/js/**/*.js' -- npm run build:docs:copyjs",
     "watch": "npm run build && concurrently --raw npm:watch:*",
     "browser-sync": "browser-sync start --no-open --files \"kitsune/**/*.html\" \"static/build/screen.css\" \"kitsune/**/.py\" \"kitsune/**/.js\" \"kitsune/**/.json\" --proxy 127.0.0.1:8000 --reload-delay=300",
+    "browser-sync:docs": "browser-sync start --no-open --serveStatic \"styleguide/build\" --files \"styleguide/build/**/*\" --port 4000 --reload-delay=300",
     "start": "concurrently --raw --kill-others \"make run\" \"npm run watch\" \"npm run browser-sync\"",
     "production": "npm run postinstall && npm run build:scss && npm run build:postcss"
   },

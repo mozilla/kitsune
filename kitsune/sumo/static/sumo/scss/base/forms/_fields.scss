@@ -55,11 +55,14 @@ label {
   margin-bottom: p.$spacing-sm;
   @include p.font-size(14px);
   color: var(--color-marketing-gray-07);
+  font-weight: bold;
 }
 
-.field {
+.field,
+.form-as-ul > li {
   position: relative;
-  margin-bottom: p.$spacing-md;
+  margin-bottom: p.$spacing-lg;
+  max-width: p.remify(480px);
 
   .error-text {
     display: none;
@@ -185,6 +188,7 @@ select,
   background-position: top 14px right 14px;
   background-repeat: no-repeat;
   background-size: 12px 12px;
+  max-width: p.remify(360px);
 
   :not([class*="has-"]) > &:hover,
   :not([class*="has-"]) > &:focus {
@@ -195,6 +199,17 @@ select,
   .has-disabled & {
     background-image: c.svg-url('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 10"><path fill="none" vector-effect="non-scaling-stroke" stroke="#CDCDD4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" d="M1 1l8 8 8-8"/></svg>');
   }
+}
+
+#id_involved_from_month {
+  display: inline-block;
+  width: calc(60% - #{p.$spacing-sm + 5});
+  margin-right: p.$spacing-sm;
+}
+
+#id_involved_from_year {
+  display: inline-block;
+  width: 40%;
 }
 
 // Textarea
@@ -228,8 +243,22 @@ textarea {
 // Weight: 22
 //
 // Style guide: forms.help-text
-.help-text {
+.help-text,
+.helptext {
   display: block;
   margin: p.$spacing-sm 0 0 0;
   @include p.font-size(12px);
+}
+
+.delete-account-link {
+  margin-top: p.$spacing-lg;
+  padding-top: p.$spacing-md;
+  text-align: center;
+  border-top: 1px solid var(--color-marketing-gray-03);
+
+  @media #{p.$mq-md} {
+    border-top: none;
+    padding-top: 0;
+    text-align: left;
+  }
 }

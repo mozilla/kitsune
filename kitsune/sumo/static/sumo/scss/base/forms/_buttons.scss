@@ -13,6 +13,7 @@
 // .button-sm - small modifier
 // .button-lg - large modifier
 // .button-xl - extra large modifier
+// .button-warning - normal button with red hover state
 // .primary-button    - This is the primary variation.
 // .secondary-button - This is the secondary button.
 //
@@ -119,6 +120,14 @@
     &:active:not(:disabled) {
       border-color: var(--color-blue-09);
       background: var(--color-blue-09);
+      color: var(--color-inverse);
+    }
+  }
+
+  &.warning-button {
+    &:hover:not(:disabled) {
+      border-color: var(--color-red-07);
+      background-color: var(--color-red-07);
       color: var(--color-inverse);
     }
   }

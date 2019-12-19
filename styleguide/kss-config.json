@@ -46,6 +46,7 @@
     "static/protocol/js/protocol-newsletter.js",
     "static/protocol/js/protocol-notification-bar.js",
     "static/sumo/js/protocol-nav.js",
+    "static/sumo/js/protocol-details-init.js",
     "static/sumo/js/show-fx-download.js"
   ],
   "homepage": "../../../../../styleguide/styleguide-examples/styleguide-index.md",

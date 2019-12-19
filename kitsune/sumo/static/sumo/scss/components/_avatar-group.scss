@@ -1,0 +1,56 @@
+@use '../config' as c;
+@use '../protocol' as p;
+
+.avatar-group {
+  @include c.grid-row();
+  flex-direction: column;
+  width: 100%;
+
+  &--figure,
+  &--details {
+    @include c.col;
+  }
+
+  &--details-list {
+
+  }
+
+  &--details-item {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  &--details-label {
+    width: 90px;
+    margin-right: 10px;
+  }
+
+  @media #{p.$mq-sm} {
+    @include p.bidi(((flex-direction, row, row-reverse),));
+
+    &--figure,
+    &--details {
+      width: c.col-width(2, 4);
+    }
+  }
+
+  @media #{p.$mq-lg} {
+    &--figure {
+      width: c.col-width(2, 6);
+    }
+
+    &--details {
+      width: c.col-width(4, 6);
+    }
+  }
+
+  @media #{p.$mq-xl} {
+    &--figure {
+      width: c.col-width(2, 7);
+    }
+
+    &--details {
+      width: c.col-width(5, 7);
+    }
+  }
+}

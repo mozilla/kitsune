@@ -10,7 +10,7 @@
 {% endblock %}
 
 
-{% block content %}
+{% block contentwrap %}
   {% if notification == 'already_migrated' %}
     {{ notification_already_migrated(STATIC_URL) }}
   {% endif %}

@@ -100,7 +100,7 @@ def private_message(user):
     """Return a link to private message the user."""
     url = urlparams(reverse('messages.new'), to=user.username)
     msg = _('Private message')
-    return Markup(u'<p class="pm"><a href="{url}">{msg}</a></p>'.format(
+    return Markup(u'<p class="pm"><a class="sumo-button primary-button button-lg" href="{url}">{msg}</a></p>'.format(
         url=url, msg=msg))
 
 
