@@ -15,7 +15,7 @@
 
 {% block base_container_classes %}container_wide{% endblock %}
 
-{% block content %}
+{% block contentwrap %}
 <section class="sumo-page-section shade-bg text-center">
   <div class="mzp-l-content">
     {% block breadcrumbs %}
@@ -42,7 +42,7 @@
 <section class="mzp-l-content sumo-page-section">
   <div class="sumo-page-subheader">
     <div class="sumo-page-subheader--text">
-      <h2 class="display-xs">{{ _('Frequent Topics') }}</h2>
+      <h2 class="text-display-xs">{{ _('Frequent Topics') }}</h2>
       <p>{{ _('Explore the knowledge base.') }}</p>
     </div>
     {% if product.slug == 'firefox' %}
