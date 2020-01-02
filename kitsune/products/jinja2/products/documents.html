@@ -13,22 +13,31 @@
 
 {% block title %}{{ pgettext('DB: products.Topic.title', topic.title) }} | {{ _('{product} Help')|f(product=pgettext('DB: products.Product.title', product.title)) }}{% endblock %}
 
-{% block content %}
-  <div class="grid_12 search-form-large">
-    {{ search_box(settings, id='support-search-documents', params=search_params) }}
-  </div>
+{% block above_main %}
+<div class="search-form-large">
+  {{ search_box(settings, id='support-search-documents', params=search_params) }}
+</div>
+<div class="documents-product-title cf">
+  {% set prod_url = url('products.product', slug=product.slug) %}
+  <img src="{{ product.image_alternate_url }}" height="48" width="48" alt="" />
+  <a href="{{ prod_url }}">{{ pgettext('DB: products.Product.title', product.title) }}</a>
+</div>
 
-  <div class="grid_12">
-    <div class="documents-product-title cf">
-      {% set prod_url = url('products.product', slug=product.slug) %}
-      <img src="{{ product.image_alternate_url }}" height="48" width="48" alt="" />
-      <a href="{{ prod_url }}">{{ pgettext('DB: products.Product.title', product.title) }}</a>
-    </div>
-  </div>
-  <aside class="grid_3">
-    {{ topic_sidebar(topics[:10], subtopics, product, topic, subtopic) }}
-  </aside>
-  <div class="grid_9">
+{% endblock %}
+
+
+{% block side %}
+{{ topic_sidebar(topics[:10], subtopics, product, topic, subtopic) }}
+{% endblock %}
+
+
+{% block content %}
+
+
+
+
+
+
   {% if product.slug == 'firefox' %}
     {# show-fx-download.js will remove the 'hidden' class below if the visitor is *NOT* using Firefox #}
     <div class="firefox-download-button hidden">
@@ -71,38 +80,47 @@
 
       {# Show the description if it is different than the title. Otherwise, don't bother. #}
       {% if (subtopic and subtopic.title != subtopic.description) or (not subtopic and topic.title != topic.description) %}
-        <p class="topic-description cf">
+        <p class="topic-description">
           {% if subtopic %}
              {{ pgettext('DB: products.Topic.description', subtopic.description) }}
           {% else %}
             {{ pgettext('DB: products.Topic.description', topic.description) }}
           {% endif %}
         </p>
+        <hr />
       {% endif %}
 
       <div class="separator"></div>
 
-      <ul class="topic-list">
+      <section class="topic-list">
         {% if not subtopic and subtopics %}
           {# only show subtopics on the parent topic page #}
           {% for subtopic in subtopics %}
-            <li class="subtopic">
-              <a href="{{ url('products.subtopics', product_slug=product.slug, topic_slug=topic.slug, subtopic_slug=subtopic.slug) }}"
-              data-event-category="link click" data-event-action="subtopic" data-event-label="{{ subtopic.title }}">{{ pgettext('DB: products.Topic.title', subtopic.title) }}</a>
+            <article class="subtopic">
+              <h2 class="text-display-md">
+                <a href="{{ url('products.subtopics', product_slug=product.slug, topic_slug=topic.slug, subtopic_slug=subtopic.slug) }}"
+                  data-event-category="link click" data-event-action="subtopic" data-event-label="{{ subtopic.title }}">
+                  {{ pgettext('DB: products.Topic.title', subtopic.title) }}
+                </a>
+              </h2>
               {% if subtopic.title != subtopic.description %}
-                {{ pgettext('DB: products.Topic.description', subtopic.description) }}
+              <p>{{ pgettext('DB: products.Topic.description', subtopic.description) }}</p>
               {% endif %}
-            </li>
+            </article>
           {% endfor %}
         {% endif %}
         {% for document in documents %}
-          <li>
-            <a href="{{ document['url'] }}" data-event-category="link click" data-event-action="document"
-            data-event-label="{{ document['document_title'] }}">{{ document['document_title'] }}</a>
-            {{ document['document_summary'] }}
-          </li>
+          <article>
+            <h2 class="text-display-md">
+              <a href="{{ document['url'] }}" data-event-category="link click" data-event-action="document"
+                data-event-label="{{ document['document_title'] }}">
+                {{ document['document_title'] }}
+              </a>
+            </h2>
+            <p>{{ document['document_summary'] }}</p>
+          </article>
         {% endfor %}
-      </ul>
+      </section>
 
       {% if fallback_documents %}
         <h2>{{ _('In English') }}</h2>
