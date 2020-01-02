@@ -12,12 +12,25 @@ import kitsune.sumo.models
 from kitsune.flagit.models import FlaggedObject
 from kitsune.questions import config, models
 from kitsune.questions.events import QuestionReplyEvent
-from kitsune.questions.models import (AlreadyTakenException, Answer, InvalidUserException,
-                                      Question, QuestionMetaData, QuestionVisits, VoteMetadata,
-                                      _has_beta, _tenths_version)
+from kitsune.questions.models import (
+    AlreadyTakenException,
+    Answer,
+    InvalidUserException,
+    Question,
+    QuestionMetaData,
+    QuestionVisits,
+    VoteMetadata,
+    _has_beta,
+    _tenths_version,
+)
 from kitsune.questions.tasks import update_answer_pages
-from kitsune.questions.tests import (AnswerFactory, QuestionFactory, QuestionVoteFactory,
-                                     TestCaseBase, tags_eq)
+from kitsune.questions.tests import (
+    AnswerFactory,
+    QuestionFactory,
+    QuestionVoteFactory,
+    TestCaseBase,
+    tags_eq,
+)
 from kitsune.search.tests.test_es import ElasticTestCase
 from kitsune.sumo import googleanalytics
 from kitsune.sumo.tests import TestCase
@@ -33,13 +46,13 @@ class TestAnswer(TestCaseBase):
     def test_new_answer_updates_question(self):
         """Test saving a new answer updates the corresponding question.
         Specifically, last_post and num_replies should update."""
-        q = QuestionFactory(title='Test Question', content='Lorem Ipsum Dolor')
+        q = QuestionFactory(title="Test Question", content="Lorem Ipsum Dolor")
         updated = q.updated
 
         eq_(0, q.num_answers)
         eq_(None, q.last_answer)
 
-        a = AnswerFactory(question=q, content='Test Answer')
+        a = AnswerFactory(question=q, content="Test Answer")
         a.save()
 
         q = Question.objects.get(pk=q.id)
@@ -49,11 +62,12 @@ class TestAnswer(TestCaseBase):
 
     def test_delete_question_removes_flag(self):
         """Deleting a question also removes the flags on that question."""
-        q = QuestionFactory(title='Test Question', content='Lorem Ipsum Dolor')
+        q = QuestionFactory(title="Test Question", content="Lorem Ipsum Dolor")
 
         u = UserFactory()
         FlaggedObject.objects.create(
-            status=0, content_object=q, reason='language', creator_id=u.id)
+            status=0, content_object=q, reason="language", creator_id=u.id
+        )
         eq_(1, FlaggedObject.objects.count())
 
         q.delete()
@@ -61,13 +75,14 @@ class TestAnswer(TestCaseBase):
 
     def test_delete_answer_removes_flag(self):
         """Deleting an answer also removes the flags on that answer."""
-        q = QuestionFactory(title='Test Question', content='Lorem Ipsum Dolor')
+        q = QuestionFactory(title="Test Question", content="Lorem Ipsum Dolor")
 
-        a = AnswerFactory(question=q, content='Test Answer')
+        a = AnswerFactory(question=q, content="Test Answer")
 
         u = UserFactory()
         FlaggedObject.objects.create(
-            status=0, content_object=a, reason='language', creator_id=u.id)
+            status=0, content_object=a, reason="language", creator_id=u.id
+        )
         eq_(1, FlaggedObject.objects.count())
 
         a.delete()
@@ -81,7 +96,7 @@ class TestAnswer(TestCaseBase):
         last_answer = q.last_answer
 
         # add a new answer and verify last_answer updated
-        a = AnswerFactory(question=q, content='Test Answer')
+        a = AnswerFactory(question=q, content="Test Answer")
         q = Question.objects.get(pk=q.id)
 
         eq_(q.last_answer.id, a.id)
@@ -146,13 +161,12 @@ class TestAnswer(TestCaseBase):
     def test_content_parsed_with_locale(self):
         """Make sure links to localized articles work."""
         rev = TranslatedRevisionFactory(
-            is_approved=True,
-            document__title=u'Un mejor títuolo',
-            document__locale='es')
+            is_approved=True, document__title=u"Un mejor títuolo", document__locale="es"
+        )
 
-        a = AnswerFactory(question__locale='es', content=u'[[%s]]' % rev.document.title)
+        a = AnswerFactory(question__locale="es", content=u"[[%s]]" % rev.document.title)
 
-        assert 'es/kb/%s' % rev.document.slug in a.content_parsed
+        assert "es/kb/%s" % rev.document.slug in a.content_parsed
 
     def test_creator_follows(self):
         a = AnswerFactory()
@@ -175,31 +189,35 @@ class TestQuestionMetadata(TestCaseBase):
         super(TestQuestionMetadata, self).setUp()
 
         # add a new Question to test with
-        self.question = QuestionFactory(title='Test Question', content='Lorem Ipsum Dolor')
+        self.question = QuestionFactory(
+            title="Test Question", content="Lorem Ipsum Dolor"
+        )
 
     def test_add_metadata(self):
         """Test the saving of metadata."""
-        metadata = {'version': u'3.6.3', 'os': u'Windows 7'}
+        metadata = {"version": u"3.6.3", "os": u"Windows 7"}
         self.question.add_metadata(**metadata)
         saved = QuestionMetaData.objects.filter(question=self.question)
         eq_(dict((x.name, x.value) for x in saved), metadata)
 
     def test_metadata_property(self):
         """Test the metadata property on Question model."""
-        self.question.add_metadata(crash_id='1234567890')
-        eq_('1234567890', self.question.metadata['crash_id'])
+        self.question.add_metadata(crash_id="1234567890")
+        eq_("1234567890", self.question.metadata["crash_id"])
 
     def test_product_property(self):
         """Test question.product property."""
-        self.question.add_metadata(product='desktop')
-        eq_(config.products['desktop'], self.question.product_config)
+        self.question.add_metadata(product="desktop")
+        eq_(config.products["desktop"], self.question.product_config)
 
     def test_category_property(self):
         """Test question.category property."""
-        self.question.add_metadata(product='desktop')
-        self.question.add_metadata(category='fix-problems')
-        eq_(config.products['desktop']['categories']['fix-problems'],
-            self.question.category_config)
+        self.question.add_metadata(product="desktop")
+        self.question.add_metadata(category="fix-problems")
+        eq_(
+            config.products["desktop"]["categories"]["fix-problems"],
+            self.question.category_config,
+        )
 
     def test_clear_mutable_metadata(self):
         """Make sure it works and clears the internal cache.
@@ -209,60 +227,63 @@ class TestQuestionMetadata(TestCaseBase):
 
         """
         q = self.question
-        q.add_metadata(product='desktop', category='fix-problems',
-                       useragent='Fyerfocks', crash_id='7')
+        q.add_metadata(
+            product="desktop",
+            category="fix-problems",
+            useragent="Fyerfocks",
+            crash_id="7",
+        )
 
         q.metadata
         q.clear_mutable_metadata()
         md = q.metadata
-        assert 'crash_id' not in md, \
-            "clear_mutable_metadata() didn't clear the cached metadata."
-        eq_(dict(product='desktop', category='fix-problems',
-                 useragent='Fyerfocks'),
-            md)
+        assert (
+            "crash_id" not in md
+        ), "clear_mutable_metadata() didn't clear the cached metadata."
+        eq_(dict(product="desktop", category="fix-problems", useragent="Fyerfocks"), md)
 
     def test_auto_tagging(self):
         """Make sure tags get applied based on metadata on first save."""
-        Tag.objects.create(slug='green', name='green')
-        Tag.objects.create(slug='Fix problems', name='fix-problems')
+        Tag.objects.create(slug="green", name="green")
+        Tag.objects.create(slug="Fix problems", name="fix-problems")
         q = self.question
-        q.add_metadata(product='desktop', category='fix-problems',
-                       ff_version='3.6.8', os='GREen')
+        q.add_metadata(
+            product="desktop", category="fix-problems", ff_version="3.6.8", os="GREen"
+        )
         q.save()
         q.auto_tag()
-        tags_eq(q, ['desktop', 'fix-problems', 'Firefox 3.6.8', 'Firefox 3.6',
-                    'green'])
+        tags_eq(q, ["desktop", "fix-problems", "Firefox 3.6.8", "Firefox 3.6", "green"])
 
     def test_auto_tagging_aurora(self):
         """Make sure versions with prerelease suffix are tagged properly."""
         q = self.question
-        q.add_metadata(ff_version='18.0a2')
+        q.add_metadata(ff_version="18.0a2")
         q.save()
         q.auto_tag()
-        tags_eq(q, ['Firefox 18.0'])
+        tags_eq(q, ["Firefox 18.0"])
 
     def test_auto_tagging_restraint(self):
         """Auto-tagging shouldn't tag unknown Firefox versions or OSes."""
         q = self.question
-        q.add_metadata(ff_version='allyourbase', os='toaster 1.0')
+        q.add_metadata(ff_version="allyourbase", os="toaster 1.0")
         q.save()
         q.auto_tag()
         tags_eq(q, [])
 
     def test_tenths_version(self):
         """Test the filter that turns 1.2.3 into 1.2."""
-        eq_(_tenths_version('1.2.3beta3'), '1.2')
-        eq_(_tenths_version('1.2rc'), '1.2')
-        eq_(_tenths_version('1.w'), '')
+        eq_(_tenths_version("1.2.3beta3"), "1.2")
+        eq_(_tenths_version("1.2rc"), "1.2")
+        eq_(_tenths_version("1.w"), "")
 
     def test_has_beta(self):
         """Test the _has_beta helper."""
-        assert _has_beta('5.0', {'5.0b3': '2011-06-01'})
-        assert not _has_beta('6.0', {'5.0b3': '2011-06-01'})
-        assert not _has_beta('5.5', {'5.0b3': '2011-06-01'})
-        assert _has_beta('5.7', {'5.7b1': '2011-06-01'})
-        assert _has_beta('11.0', {'11.0b7': '2011-06-01'})
-        assert not _has_beta('10.0', {'11.0b7': '2011-06-01'})
+        assert _has_beta("5.0", {"5.0b3": "2011-06-01"})
+        assert not _has_beta("6.0", {"5.0b3": "2011-06-01"})
+        assert not _has_beta("5.5", {"5.0b3": "2011-06-01"})
+        assert _has_beta("5.7", {"5.7b1": "2011-06-01"})
+        assert _has_beta("11.0", {"11.0b7": "2011-06-01"})
+        assert not _has_beta("10.0", {"11.0b7": "2011-06-01"})
 
 
 class QuestionTests(TestCaseBase):
@@ -288,14 +309,16 @@ class QuestionTests(TestCaseBase):
         This is easy to get wrong when mixing in taggability.
 
         """
-        eq_(Question._default_manager.__class__,
-            kitsune.questions.managers.QuestionManager)
+        eq_(
+            Question._default_manager.__class__,
+            kitsune.questions.managers.QuestionManager,
+        )
 
     def test_notification_created(self):
         """Creating a new question auto-watches it for answers."""
 
         u = UserFactory()
-        q = QuestionFactory(creator=u, title='foo', content='bar')
+        q = QuestionFactory(creator=u, title="foo", content="bar")
 
         assert QuestionReplyEvent.is_notifying(u, q)
 
@@ -337,13 +360,13 @@ class QuestionTests(TestCaseBase):
         respect filters passed."""
 
         now = datetime.now()
-        QuestionFactory(created=now, locale='en-US')
-        q = QuestionFactory(created=now, locale='en-US')
+        QuestionFactory(created=now, locale="en-US")
+        q = QuestionFactory(created=now, locale="en-US")
         AnswerFactory(question=q)
 
-        QuestionFactory(created=now, locale='pt-BR')
-        QuestionFactory(created=now, locale='pt-BR')
-        q = QuestionFactory(created=now, locale='pt-BR')
+        QuestionFactory(created=now, locale="pt-BR")
+        QuestionFactory(created=now, locale="pt-BR")
+        q = QuestionFactory(created=now, locale="pt-BR")
         AnswerFactory(question=q)
 
         # 5 asked recently, 3 are unanswered
@@ -351,12 +374,12 @@ class QuestionTests(TestCaseBase):
         eq_(3, Question.recent_unanswered_count())
 
         # check english (2 asked, 1 unanswered)
-        locale_filter = Q(locale='en-US')
+        locale_filter = Q(locale="en-US")
         eq_(2, Question.recent_asked_count(locale_filter))
         eq_(1, Question.recent_unanswered_count(locale_filter))
 
         # check pt-BR (3 asked, 2 unanswered)
-        locale_filter = Q(locale='pt-BR')
+        locale_filter = Q(locale="pt-BR")
         eq_(3, Question.recent_asked_count(locale_filter))
         eq_(2, Question.recent_unanswered_count(locale_filter))
 
@@ -364,25 +387,25 @@ class QuestionTests(TestCaseBase):
         """Verify question returned from valid URL."""
         q = QuestionFactory()
 
-        eq_(q, Question.from_url('/en-US/questions/%s' % q.id))
-        eq_(q, Question.from_url('/es/questions/%s' % q.id))
-        eq_(q, Question.from_url('/questions/%s' % q.id))
+        eq_(q, Question.from_url("/en-US/questions/%s" % q.id))
+        eq_(q, Question.from_url("/es/questions/%s" % q.id))
+        eq_(q, Question.from_url("/questions/%s" % q.id))
 
     def test_from_url_id_only(self):
         """Verify question returned from valid URL."""
         # When requesting the id, the existence of the question isn't checked.
-        eq_(123, Question.from_url('/en-US/questions/123', id_only=True))
-        eq_(234, Question.from_url('/es/questions/234', id_only=True))
-        eq_(345, Question.from_url('/questions/345', id_only=True))
+        eq_(123, Question.from_url("/en-US/questions/123", id_only=True))
+        eq_(234, Question.from_url("/es/questions/234", id_only=True))
+        eq_(345, Question.from_url("/questions/345", id_only=True))
 
     def test_from_invalid_url(self):
         """Verify question returned from valid URL."""
         q = QuestionFactory()
 
-        eq_(None, Question.from_url('/en-US/questions/%s/edit' % q.id))
-        eq_(None, Question.from_url('/en-US/kb/%s' % q.id))
-        eq_(None, Question.from_url('/random/url'))
-        eq_(None, Question.from_url('/en-US/questions/dashboard/metrics'))
+        eq_(None, Question.from_url("/en-US/questions/%s/edit" % q.id))
+        eq_(None, Question.from_url("/en-US/kb/%s" % q.id))
+        eq_(None, Question.from_url("/random/url"))
+        eq_(None, Question.from_url("/en-US/questions/dashboard/metrics"))
 
     def test_editable(self):
         q = QuestionFactory()
@@ -407,9 +430,8 @@ class QuestionTests(TestCaseBase):
         # This test relies on datetime.now() being called in the age
         # property, so this delta check makes it less likely to fail
         # randomly.
-        assert abs(q1.age - 10 * 24 * 60 * 60) < 2, ('q1.age (%s) != 10 days'
-                                                     % q1.age)
-        assert abs(q2.age - 30) < 2, 'q2.age (%s) != 30 seconds' % q2.age
+        assert abs(q1.age - 10 * 24 * 60 * 60) < 2, "q1.age (%s) != 10 days" % q1.age
+        assert abs(q2.age - 30) < 2, "q2.age (%s) != 30 seconds" % q2.age
 
     def test_is_taken(self):
         q = QuestionFactory()
@@ -501,14 +523,14 @@ class AddExistingTagTests(TestCaseBase):
 
     def test_add_existing_case_insensitive(self):
         """Assert add_existing_tag works case-insensitively."""
-        TagFactory(name='lemon', slug='lemon')
-        add_existing_tag('LEMON', self.untagged_question.tags)
-        tags_eq(self.untagged_question, [u'lemon'])
+        TagFactory(name="lemon", slug="lemon")
+        add_existing_tag("LEMON", self.untagged_question.tags)
+        tags_eq(self.untagged_question, [u"lemon"])
 
     @raises(Tag.DoesNotExist)
     def test_add_existing_no_such_tag(self):
         """Assert add_existing_tag doesn't work when the tag doesn't exist."""
-        add_existing_tag('nonexistent tag', self.untagged_question.tags)
+        add_existing_tag("nonexistent tag", self.untagged_question.tags)
 
 
 class OldQuestionsArchiveTest(ElasticTestCase):
@@ -519,30 +541,34 @@ class OldQuestionsArchiveTest(ElasticTestCase):
         q1 = QuestionFactory()
 
         # created 200 days ago
-        q2 = QuestionFactory(created=datetime.now() - timedelta(days=200), updated=last_updated)
+        q2 = QuestionFactory(
+            created=datetime.now() - timedelta(days=200), updated=last_updated
+        )
 
         # created 200 days ago, already archived
         q3 = QuestionFactory(
             created=datetime.now() - timedelta(days=200),
             is_archived=True,
-            updated=last_updated)
+            updated=last_updated,
+        )
 
         self.refresh()
 
-        call_command('auto_archive_old_questions')
+        call_command("auto_archive_old_questions")
 
         # There are three questions.
         eq_(len(list(Question.objects.all())), 3)
 
         # q2 and q3 are now archived and updated times are the same
         archived_questions = list(Question.objects.filter(is_archived=True))
-        eq_(sorted([(q.id, q.updated.date()) for q in archived_questions]),
-            [(q.id, q.updated.date()) for q in [q2, q3]])
+        eq_(
+            sorted([(q.id, q.updated.date()) for q in archived_questions]),
+            [(q.id, q.updated.date()) for q in [q2, q3]],
+        )
 
         # q1 is still unarchived.
         archived_questions = list(Question.objects.filter(is_archived=False))
-        eq_(sorted([q.id for q in archived_questions]),
-            [q1.id])
+        eq_(sorted([q.id for q in archived_questions]), [q1.id])
 
 
 class QuestionVisitsTests(TestCase):
@@ -550,10 +576,13 @@ class QuestionVisitsTests(TestCase):
 
     # Need to monkeypatch close_old_connections out because it
     # does something screwy with the testing infra around transactions.
-    @mock.patch.object(models, 'close_old_connections')
-    @mock.patch.object(googleanalytics, 'pageviews_by_question', )
-    def test_visit_count_from_analytics(self, pageviews_by_question,
-                                        close_old_connections):
+    @mock.patch.object(models, "close_old_connections")
+    @mock.patch.object(
+        googleanalytics, "pageviews_by_question",
+    )
+    def test_visit_count_from_analytics(
+        self, pageviews_by_question, close_old_connections
+    ):
         """Verify stored visit counts from mocked data."""
         q1 = QuestionFactory()
         q2 = QuestionFactory()
@@ -588,19 +617,18 @@ class QuestionVisitsTests(TestCase):
 class QuestionVoteTests(TestCase):
     def test_add_metadata_over_1000_chars(self):
         qv = QuestionVoteFactory()
-        qv.add_metadata('test1', 'a'*1001)
+        qv.add_metadata("test1", "a" * 1001)
         metadata = VoteMetadata.objects.all()[0]
-        eq_('a'*1000, metadata.value)
+        eq_("a" * 1000, metadata.value)
 
 
 class TestActions(TestCase):
-
     def test_question_create_action(self):
         """When a question is created, an Action is created too."""
         q = QuestionFactory()
         a = Action.objects.action_object(q).get()
         eq_(a.actor, q.creator)
-        eq_(a.verb, 'asked')
+        eq_(a.verb, "asked")
         eq_(a.target, None)
 
     def test_answer_create_action(self):
@@ -609,7 +637,7 @@ class TestActions(TestCase):
         ans = AnswerFactory(question=q)
         act = Action.objects.action_object(ans).get()
         eq_(act.actor, ans.creator)
-        eq_(act.verb, 'answered')
+        eq_(act.verb, "answered")
         eq_(act.target, q)
 
     def test_question_change_no_action(self):
@@ -634,5 +662,5 @@ class TestActions(TestCase):
 
         act = Action.objects.action_object(ans).get()
         eq_(act.actor, ans.question.creator)
-        eq_(act.verb, 'marked as a solution')
+        eq_(act.verb, "marked as a solution")
         eq_(act.target, ans.question)
