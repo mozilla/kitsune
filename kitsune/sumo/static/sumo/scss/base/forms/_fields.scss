@@ -262,3 +262,12 @@ textarea {
     text-align: left;
   }
 }
+
+.search-form-large {
+  margin-top: 10px;
+  margin-bottom: 20px;
+
+  @media #{p.$mq-md} {
+    margin-bottom: 40px;
+  }
+}
