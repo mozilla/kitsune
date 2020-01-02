@@ -1,0 +1,41 @@
+@use '../config' as c;
+@use '../protocol' as p;
+
+// This is a container for Protocol notifications. See
+// https://protocol.mozilla.org/patterns/molecules/notification-bar.html
+// for more documentation on notifications themselves.
+
+.sumo-user-messages {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+
+  .mzp-c-notification-bar {
+    margin-bottom: p.remify(24px);
+  }
+}
+
+// override to allow for multi-line text
+.mzp-c-notification-bar {
+  height: auto;
+  min-height: 46px;
+  line-height: 20px;
+  @include p.bidi(((padding, 8px 48px 8px 8px, 8px 8px 8px 48px),));
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  .mzp-c-notification-bar-button {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    @include p.bidi(((right, 0, auto),));
+    @include p.bidi(((left, auto, 0),));
+  }
+
+  p {
+    line-height: 20px;
+    margin: 0;
+  }
+}
