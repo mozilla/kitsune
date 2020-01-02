@@ -8,10 +8,8 @@
   .search-button {
     position: absolute;
     top: 4px;
-    @include p.bidi((
-      (right, 6px, auto),
-      (left, auto, 6px),
-    ));
+    @include p.bidi(((right, 6px, auto),));
+    @include p.bidi(((left, auto, 6px),));
   }
 }
 

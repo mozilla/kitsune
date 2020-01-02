@@ -1,5 +1,9 @@
 {% extends "base.html" %}
+<<<<<<< HEAD
 {% from 'products/includes/topic_macros.html' import topic_sidebar, topic_tabs %}
+=======
+{% from 'products/includes/topic_macros.html' import topic_sidebar %}
+>>>>>>> 2f3473456... article index page finished
 {% from 'includes/common_macros.html' import download_firefox %}
 {% set crumbs = [(url('products.product', slug=product.slug), pgettext('DB: products.Product.title', product.title))] %}
 {% if subtopic %}
@@ -17,11 +21,12 @@
 {% block above_main %}
 {% endblock %}
 
-{% block columns_modifier %}sidebar-on-right{% endblock %}
 
 {% block side %}
-<div class="search-form-large hide-on-mobile">
-  {{ search_box(settings, id='support-search-documents', params=search_params) }}
+<div class="documents-product-title cf">
+  {% set prod_url = url('products.product', slug=product.slug) %}
+  <img src="{{ product.image_alternate_url }}" height="48" width="48" alt="" />
+  <a href="{{ prod_url }}">{{ pgettext('DB: products.Product.title', product.title) }}</a>
 </div>
 
 {{ topic_sidebar(topics[:10], subtopics, product, topic, subtopic) }}
@@ -29,15 +34,13 @@
 
 
 {% block content %}
+<div class="search-form-large">
+  {{ search_box(settings, id='support-search-documents', params=search_params) }}
+</div>
     <article id="document-list">
       <header class="sumo-article-header">
         <div class="sumo-article-header--text">
-          <div class="documents-product-title">
-            {% set prod_url = url('products.product', slug=product.slug) %}
-            <a href="{{ prod_url }}"><img src="{{ product.image_alternate_url }}" height="48" width="48" alt="" /></a>
-          </div>
-
-          <h1 class="text-display-lg topic-title">
+          <h1 class="text-display-xl topic-title">
             {% if subtopic %}
               <a href="{{ url('products.documents', product_slug=product.slug, topic_slug=topic.slug) }}">
             {% endif %}
@@ -52,10 +55,16 @@
             {{ pgettext('DB: products.Topic.title', subtopic.title) }}
           </h1>
         {% endif %}
-
+        </div>
+        {% if product.slug == 'firefox' %}
+        <div class="sumo-article-header--meta">
+          {{ download_firefox() }}
+        </div>
+        {% endif %}
+        </header>
         {# Show the description if it is different than the title. Otherwise, don't bother. #}
         {% if (subtopic and subtopic.title != subtopic.description) or (not subtopic and topic.title != topic.description) %}
-          <p class="topic-description color-heading text-body-lg">
+          <p class="topic-description">
             {% if subtopic %}
                {{ pgettext('DB: products.Topic.description', subtopic.description) }}
             {% else %}
@@ -63,55 +72,34 @@
             {% endif %}
           </p>
         {% endif %}
-        </div>
-        {% if product.slug == 'firefox' %}
-        <div class="sumo-article-header--meta">
-          {{ download_firefox() }}
-        </div>
-        {% endif %}
-      </header>
-
-      {{ topic_tabs(topics[:10], subtopics, product, topic, subtopic) }}
-
-
-
+        <hr />
 
       <section class="topic-list">
         {% if not subtopic and subtopics %}
           {# only show subtopics on the parent topic page #}
           {% for subtopic in subtopics %}
-            <article class="topic-article subtopic">
-              <div class="topic-article--icon-wrap">
-                <img class="topic-article--icon" src="{{STATIC_URL}}protocol/img/icons/reader-mode.svg" alt="" />
-              </div>
-              <div class="topic-article--text">
-                <h2 class="text-display-xxs">
-                  <a href="{{ url('products.subtopics', product_slug=product.slug, topic_slug=topic.slug, subtopic_slug=subtopic.slug) }}"
-                    data-event-category="link click" data-event-action="subtopic" data-event-label="{{ subtopic.title }}">
-                    {{ pgettext('DB: products.Topic.title', subtopic.title) }}
-                  </a>
-                </h2>
-                {% if subtopic.title != subtopic.description %}
-                <p>{{ pgettext('DB: products.Topic.description', subtopic.description) }}</p>
-                {% endif %}
-              </div>
+            <article class="subtopic">
+              <h2 class="text-display-xs">
+                <a href="{{ url('products.subtopics', product_slug=product.slug, topic_slug=topic.slug, subtopic_slug=subtopic.slug) }}"
+                  data-event-category="link click" data-event-action="subtopic" data-event-label="{{ subtopic.title }}">
+                  {{ pgettext('DB: products.Topic.title', subtopic.title) }}
+                </a>
+              </h2>
+              {% if subtopic.title != subtopic.description %}
+              <p>{{ pgettext('DB: products.Topic.description', subtopic.description) }}</p>
+              {% endif %}
             </article>
           {% endfor %}
         {% endif %}
         {% for document in documents %}
-          <article class="topic-article">
-            <div class="topic-article--icon-wrap">
-              <img class="topic-article--icon" src="{{STATIC_URL}}protocol/img/icons/reader-mode.svg" alt="" />
-            </div>
-            <div class="topic-article--text">
-              <h2 class="text-display-xxs">
-                <a href="{{ document['url'] }}" data-event-category="link click" data-event-action="document"
-                  data-event-label="{{ document['document_title'] }}">
-                  {{ document['document_title'] }}
-                </a>
-              </h2>
-              <p>{{ document['document_summary'] }}</p>
-            </div>
+          <article>
+            <h2 class="text-display-xs">
+              <a href="{{ document['url'] }}" data-event-category="link click" data-event-action="document"
+                data-event-label="{{ document['document_title'] }}">
+                {{ document['document_title'] }}
+              </a>
+            </h2>
+            <p>{{ document['document_summary'] }}</p>
           </article>
         {% endfor %}
       </section>

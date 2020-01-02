@@ -31,6 +31,25 @@
   display: none;
 }
 
+.sumo-article-header {
+  display: flex;
+  flex-direction: column-reverse;
+
+  &--text {
+    flex: 1 1 auto;
+  }
+
+  &--meta {
+    flex: 0 0 auto;
+  }
+
+  @media #{p.$mq-md} {
+    @include p.bidi(((flex-direction, row, row-reverse),));
+    @include p.bidi(((justify-content, flex-start, flex-end),));
+    align-items: center;
+  }
+}
+
 .documents-product-title {
   display: flex;
   align-items: center;
