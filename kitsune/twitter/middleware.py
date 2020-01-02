@@ -4,22 +4,20 @@ import re
 from django import http
 from django.conf import settings
 
-from kitsune.twitter import (
-    url, Session, REQUEST_KEY_NAME, REQUEST_SECRET_NAME)
+from kitsune.twitter import url, Session, REQUEST_KEY_NAME, REQUEST_SECRET_NAME
 from twython import TwythonError, TwythonAuthError
 
 from kitsune.twitter import get_twitter_api
 
 
-log = logging.getLogger('k')
+log = logging.getLogger("k")
 
 
 def validate_token(token):
-    return bool(token and (len(token) < 100) and re.search('\w+', token))
+    return bool(token and (len(token) < 100) and re.search(r"\w+", token))
 
 
 class SessionMiddleware(object):
-
     def process_request(self, request):
 
         request.twitter = Session.from_request(request)
@@ -29,10 +27,10 @@ class SessionMiddleware(object):
         # secure only.
         is_secure = settings.TWITTER_COOKIE_SECURE
 
-        ssl_url = url(request, {'scheme': 'https' if is_secure else 'http'})
+        ssl_url = url(request, {"scheme": "https" if is_secure else "http"})
 
         try:
-            if request.GET.get('twitter_delete_auth'):
+            if request.GET.get("twitter_delete_auth"):
                 request.twitter = Session()
                 return http.HttpResponseRedirect(url(request))
         except IOError:
@@ -42,10 +40,12 @@ class SessionMiddleware(object):
             return
 
         if request.twitter.authed:
-            request.twitter.api = get_twitter_api(request.twitter.key, request.twitter.secret)
+            request.twitter.api = get_twitter_api(
+                request.twitter.key, request.twitter.secret
+            )
             return
 
-        verifier = request.GET.get('oauth_verifier')
+        verifier = request.GET.get("oauth_verifier")
         if verifier:
             # We are completing an OAuth login
 
@@ -58,53 +58,52 @@ class SessionMiddleware(object):
                 try:
                     tokens = t.get_authorized_tokens(verifier)
                 except (TwythonError, TwythonAuthError):
-                    log.warning('Twython Error with verifier token')
+                    log.warning("Twython Error with verifier token")
                     pass
                 else:
                     # Override path to drop query string.
                     ssl_url = url(
                         request,
-                        {'scheme': 'https' if is_secure else 'http',
-                         'path': request.path})
+                        {
+                            "scheme": "https" if is_secure else "http",
+                            "path": request.path,
+                        },
+                    )
                     response = http.HttpResponseRedirect(ssl_url)
 
-                    request.twitter.screen_name = tokens['screen_name']
+                    request.twitter.screen_name = tokens["screen_name"]
 
-                    Session(
-                        tokens['oauth_token'],
-                        tokens['oauth_token_secret']).save(request,
-                                                           response)
+                    Session(tokens["oauth_token"], tokens["oauth_token_secret"]).save(
+                        request, response
+                    )
 
                     return response
             else:
                 # request tokens didn't validate
                 log.warning("Twitter Oauth request tokens didn't validate")
 
-        elif request.GET.get('twitter_auth_request'):
+        elif request.GET.get("twitter_auth_request"):
             # We are requesting Twitter auth
             t = get_twitter_api(None, None)
             try:
-                auth_props = t.get_authentication_tokens(
-                    callback_url=ssl_url)
+                auth_props = t.get_authentication_tokens(callback_url=ssl_url)
             except (TwythonError, TwythonAuthError):
-                log.warning('Twython error while getting authorization '
-                            'url')
+                log.warning("Twython error while getting authorization " "url")
             else:
-                response = http.HttpResponseRedirect(
-                    auth_props['auth_url'])
+                response = http.HttpResponseRedirect(auth_props["auth_url"])
                 response.set_cookie(
-                    REQUEST_KEY_NAME,
-                    auth_props['oauth_token'],
-                    secure=is_secure)
+                    REQUEST_KEY_NAME, auth_props["oauth_token"], secure=is_secure
+                )
                 response.set_cookie(
                     REQUEST_SECRET_NAME,
-                    auth_props['oauth_token_secret'],
-                    secure=is_secure)
+                    auth_props["oauth_token_secret"],
+                    secure=is_secure,
+                )
                 return response
 
     def process_response(self, request, response):
-        if getattr(request, 'twitter', False):
-            if request.GET.get('twitter_delete_auth'):
+        if getattr(request, "twitter", False):
+            if request.GET.get("twitter_delete_auth"):
                 request.twitter.delete(request, response)
 
             if request.twitter.authed and REQUEST_KEY_NAME in request.COOKIES:
