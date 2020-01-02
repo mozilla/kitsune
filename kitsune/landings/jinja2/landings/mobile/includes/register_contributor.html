@@ -14,7 +14,7 @@
         <button id="sign-up-contributor" class="btn btn-submit">{{ _('Sign me up') }}</button>
       </form>
     {% else %}
-      <a id="sign-up-contributor" class="btn btn-submit" href="{{ url('users.fxa_authentication_init') }}?is_contributor=True">
+      <a id="sign-up-contributor" class="btn btn-submit" href="{{ url('users.fxa_authentication_init') }}?is_contributor=True&next={{ request.META.get('HTTP_REFERER', '/') }}">
         {{ _('Sign me up') }}
       </a>
     {% endif %}
