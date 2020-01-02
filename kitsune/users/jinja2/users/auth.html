@@ -11,12 +11,16 @@
 
 
 {% block contentwrap %}
-  {% if notification == 'already_migrated' %}
-    {{ notification_already_migrated(STATIC_URL) }}
-  {% endif %}
-
 <section class="sumo-auth--wrap">
   <div class="mzp-l-content">
+
+    {% if notification == 'already_migrated' %}
+      <ul class="sumo-user-messages user-messages">
+      {{ notification_already_migrated(STATIC_URL) }}
+      </ul>
+    {% endif %}
+
+
     <div class="card feature-padding elevation-03">
       <div class="sumo-auth">
         <figure class="sumo-auth--logo">
