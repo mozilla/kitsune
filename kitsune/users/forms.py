@@ -4,8 +4,7 @@ from datetime import datetime
 from django import forms
 from django.conf import settings
 from django.contrib.auth import authenticate, forms as auth_forms
-from django.contrib.auth.forms import (PasswordResetForm as
-                                       DjangoPasswordResetForm)
+from django.contrib.auth.forms import PasswordResetForm as DjangoPasswordResetForm
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.shortcuts import get_current_site
@@ -23,47 +22,61 @@ from kitsune.users.widgets import FacebookURLWidget
 from kitsune.users.widgets import MonthYearWidget
 
 
-USERNAME_INVALID = _lazy(u'Username may contain only English letters, '
-                         'numbers and ./-/_ characters.')
-USERNAME_REQUIRED = _lazy(u'Username is required.')
-USERNAME_SHORT = _lazy(u'Username is too short (%(show_value)s characters). '
-                       'It must be at least %(limit_value)s characters.')
-USERNAME_LONG = _lazy(u'Username is too long (%(show_value)s characters). '
-                      'It must be %(limit_value)s characters or less.')
-EMAIL_REQUIRED = _lazy(u'Email address is required.')
-EMAIL_SHORT = _lazy(u'Email address is too short (%(show_value)s characters). '
-                    'It must be at least %(limit_value)s characters.')
-EMAIL_LONG = _lazy(u'Email address is too long (%(show_value)s characters). '
-                   'It must be %(limit_value)s characters or less.')
-PASSWD_REQUIRED = _lazy(u'Password is required.')
-PASSWD2_REQUIRED = _lazy(u'Please enter your password twice.')
+USERNAME_INVALID = _lazy(
+    u"Username may contain only English letters, " "numbers and ./-/_ characters."
+)
+USERNAME_REQUIRED = _lazy(u"Username is required.")
+USERNAME_SHORT = _lazy(
+    u"Username is too short (%(show_value)s characters). "
+    "It must be at least %(limit_value)s characters."
+)
+USERNAME_LONG = _lazy(
+    u"Username is too long (%(show_value)s characters). "
+    "It must be %(limit_value)s characters or less."
+)
+EMAIL_REQUIRED = _lazy(u"Email address is required.")
+EMAIL_SHORT = _lazy(
+    u"Email address is too short (%(show_value)s characters). "
+    "It must be at least %(limit_value)s characters."
+)
+EMAIL_LONG = _lazy(
+    u"Email address is too long (%(show_value)s characters). "
+    "It must be %(limit_value)s characters or less."
+)
+PASSWD_REQUIRED = _lazy(u"Password is required.")
+PASSWD2_REQUIRED = _lazy(u"Please enter your password twice.")
 PASSWD_MIN_LENGTH = 8
-PASSWD_MIN_LENGTH_MSG = _lazy('Password must be 8 or more characters.')
-
+PASSWD_MIN_LENGTH_MSG = _lazy("Password must be 8 or more characters.")
 
 # Enforces at least one digit and at least one alpha character.
-password_re = re.compile(r'(?=.*\d)(?=.*[a-zA-Z])')
+password_re = re.compile(r"(?=.*\d)(?=.*[a-zA-Z])")
 
 
 class SettingsForm(forms.Form):
     forums_watch_new_thread = forms.BooleanField(
-        required=False, initial=True,
-        label=_lazy(u'Watch forum threads I start'))
+        required=False, initial=True, label=_lazy(u"Watch forum threads I start")
+    )
     forums_watch_after_reply = forms.BooleanField(
-        required=False, initial=True,
-        label=_lazy(u'Watch forum threads I comment in'))
+        required=False, initial=True, label=_lazy(u"Watch forum threads I comment in")
+    )
     kbforums_watch_new_thread = forms.BooleanField(
-        required=False, initial=True,
-        label=_lazy(u'Watch KB discussion threads I start'))
+        required=False,
+        initial=True,
+        label=_lazy(u"Watch KB discussion threads I start"),
+    )
     kbforums_watch_after_reply = forms.BooleanField(
-        required=False, initial=True,
-        label=_lazy(u'Watch KB discussion threads I comment in'))
+        required=False,
+        initial=True,
+        label=_lazy(u"Watch KB discussion threads I comment in"),
+    )
     questions_watch_after_reply = forms.BooleanField(
-        required=False, initial=True,
-        label=_lazy(u'Watch Question threads I comment in'))
+        required=False,
+        initial=True,
+        label=_lazy(u"Watch Question threads I comment in"),
+    )
     email_private_messages = forms.BooleanField(
-        required=False, initial=True,
-        label=_lazy(u'Send emails for private messages'))
+        required=False, initial=True, label=_lazy(u"Send emails for private messages")
+    )
 
     def save_for_user(self, user):
         for field in self.fields.keys():
@@ -81,37 +94,44 @@ class AuthenticationForm(auth_forms.AuthenticationForm):
     * Doesn't prefill password on validation error.
     * Allows logging in inactive users (initialize with `only_active=False`).
     """
+
     username = forms.CharField(
-        label=_lazy(u'Username:'),
-        error_messages={'required': USERNAME_REQUIRED})
+        label=_lazy(u"Username:"), error_messages={"required": USERNAME_REQUIRED}
+    )
     password = forms.CharField(
-        label=_lazy(u'Password:'),
+        label=_lazy(u"Password:"),
         widget=forms.PasswordInput(render_value=False),
-        error_messages={'required': PASSWD_REQUIRED})
+        error_messages={"required": PASSWD_REQUIRED},
+    )
 
     def __init__(self, request=None, only_active=True, *args, **kwargs):
         self.only_active = only_active
         super(AuthenticationForm, self).__init__(request, *args, **kwargs)
 
     def clean(self):
-        username = self.cleaned_data.get('username')
-        password = self.cleaned_data.get('password')
+        username = self.cleaned_data.get("username")
+        password = self.cleaned_data.get("password")
 
         if username and password:
-            self.user_cache = authenticate(username=username,
-                                           password=password)
+            self.user_cache = authenticate(username=username, password=password)
             if self.user_cache is None:
                 raise forms.ValidationError(
-                    _('Please enter a correct username and password. Note '
-                      'that both fields are case-sensitive.'))
+                    _(
+                        "Please enter a correct username and password. Note "
+                        "that both fields are case-sensitive."
+                    )
+                )
             elif self.only_active and not self.user_cache.is_active:
-                raise forms.ValidationError(_('This account is inactive.'))
+                raise forms.ValidationError(_("This account is inactive."))
 
         if self.request:
             if not self.request.session.test_cookie_worked():
                 raise forms.ValidationError(
-                    _("Your Web browser doesn't appear to have cookies "
-                      "enabled. Cookies are required for logging in."))
+                    _(
+                        "Your Web browser doesn't appear to have cookies "
+                        "enabled. Cookies are required for logging in."
+                    )
+                )
 
         return self.cleaned_data
 
@@ -121,18 +141,32 @@ class ProfileForm(forms.ModelForm):
 
     involved_from = forms.DateField(
         required=False,
-        label=_lazy(u'Involved with Mozilla from'),
-        widget=MonthYearWidget(years=range(1998, datetime.today().year + 1),
-                               required=False))
+        label=_lazy(u"Involved with Mozilla from"),
+        widget=MonthYearWidget(
+            years=range(1998, datetime.today().year + 1), required=False
+        ),
+    )
 
     class Meta(object):
         model = Profile
-        fields = ('name', 'bio', 'public_email', 'website', 'twitter',
-                  'facebook', 'mozillians', 'irc_handle', 'country', 'city',
-                  'timezone', 'locale', 'involved_from')
+        fields = (
+            "name",
+            "bio",
+            "public_email",
+            "website",
+            "twitter",
+            "facebook",
+            "mozillians",
+            "irc_handle",
+            "country",
+            "city",
+            "timezone",
+            "locale",
+            "involved_from",
+        )
 
         widgets = {
-            'facebook': FacebookURLWidget,
+            "facebook": FacebookURLWidget,
         }
 
     def __init__(self, *args, **kwargs):
@@ -140,94 +174,103 @@ class ProfileForm(forms.ModelForm):
 
         # # Add the public_email toggle if the user has not migrated to FxA yet
         if self.instance and self.instance.is_fxa_migrated:
-            self.fields.pop('public_email')
+            self.fields.pop("public_email")
 
         for field in self.fields.values():
             if isinstance(field, forms.CharField):
-                field.empty_value = ''
+                field.empty_value = ""
 
     def clean_facebook(self):
-        facebook = self.cleaned_data['facebook']
+        facebook = self.cleaned_data["facebook"]
         if facebook and not re.match(FacebookURLWidget.pattern, facebook):
-            raise forms.ValidationError(_(u'Please enter a facebook.com URL.'))
+            raise forms.ValidationError(_(u"Please enter a facebook.com URL."))
         return facebook
 
 
 # This is used in groups/forms.py
 class AvatarForm(forms.ModelForm):
     """The form for editing the user's avatar."""
+
     avatar = LimitedImageField(required=True, widget=ImageWidget)
 
     def __init__(self, *args, **kwargs):
         super(AvatarForm, self).__init__(*args, **kwargs)
-        self.fields['avatar'].help_text = (
-            _('Your avatar will be resized to {size}x{size}').format(
-                size=settings.AVATAR_SIZE))
+        self.fields["avatar"].help_text = _(
+            "Your avatar will be resized to {size}x{size}"
+        ).format(size=settings.AVATAR_SIZE)
 
     class Meta(object):
         model = Profile
-        fields = ('avatar',)
+        fields = ("avatar",)
 
     def clean_avatar(self):
-        if not ('avatar' in self.cleaned_data and self.cleaned_data['avatar']):
-            return self.cleaned_data['avatar']
+        if not ("avatar" in self.cleaned_data and self.cleaned_data["avatar"]):
+            return self.cleaned_data["avatar"]
         try:
-            check_file_size(self.cleaned_data['avatar'],
-                            settings.MAX_AVATAR_FILE_SIZE)
+            check_file_size(self.cleaned_data["avatar"], settings.MAX_AVATAR_FILE_SIZE)
         except FileTooLargeError as e:
             raise forms.ValidationError(e.args[0])
-        return self.cleaned_data['avatar']
+        return self.cleaned_data["avatar"]
 
 
 class EmailConfirmationForm(forms.Form):
     """A simple form that requires an email address."""
-    email = forms.EmailField(label=_lazy(u'Email address:'))
+
+    email = forms.EmailField(label=_lazy(u"Email address:"))
 
 
 class EmailChangeForm(forms.Form):
     """A simple form that requires an email address and validates that it is
     not the current user's email."""
-    email = forms.EmailField(label=_lazy(u'Email address:'))
+
+    email = forms.EmailField(label=_lazy(u"Email address:"))
 
     def __init__(self, user, *args, **kwargs):
         super(EmailChangeForm, self).__init__(*args, **kwargs)
         self.user = user
 
     def clean_email(self):
-        email = self.cleaned_data['email']
+        email = self.cleaned_data["email"]
         if self.user.email == email:
-            raise forms.ValidationError(_('This is your current email.'))
+            raise forms.ValidationError(_("This is your current email."))
         if User.objects.filter(email=email).exists():
-            raise forms.ValidationError(_('A user with that email address '
-                                          'already exists.'))
-        return self.cleaned_data['email']
+            raise forms.ValidationError(
+                _("A user with that email address " "already exists.")
+            )
+        return self.cleaned_data["email"]
 
 
 class SetPasswordForm(auth_forms.SetPasswordForm):
     new_password1 = forms.CharField(
-        label=_lazy(u'New password:'),
+        label=_lazy(u"New password:"),
         min_length=PASSWD_MIN_LENGTH,
         widget=forms.PasswordInput(render_value=False),
-        error_messages={'required': PASSWD_REQUIRED,
-                        'min_length': PASSWD_MIN_LENGTH_MSG})
+        error_messages={
+            "required": PASSWD_REQUIRED,
+            "min_length": PASSWD_MIN_LENGTH_MSG,
+        },
+    )
 
     def clean(self):
         super(SetPasswordForm, self).clean()
-        _check_password(self.cleaned_data.get('new_password1'))
+        _check_password(self.cleaned_data.get("new_password1"))
         return self.cleaned_data
 
 
 class PasswordChangeForm(auth_forms.PasswordChangeForm):
     new_password1 = forms.CharField(
-        label=_lazy(u'New password:'),
+        label=_lazy(u"New password:"),
         min_length=PASSWD_MIN_LENGTH,
         widget=forms.PasswordInput(render_value=False),
-        error_messages={'required': PASSWD_REQUIRED,
-                        'min_length': PASSWD_MIN_LENGTH_MSG})
+        error_messages={
+            "required": PASSWD_REQUIRED,
+            "min_length": PASSWD_MIN_LENGTH_MSG,
+        },
+    )
 
     def clean(self):
         super(PasswordChangeForm, self).clean()
-        _check_password(self.cleaned_data.get('new_password1'))
+        _check_password(self.cleaned_data.get("new_password1"))
         return self.cleaned_data
 
 
@@ -235,7 +278,8 @@ class ForgotUsernameForm(forms.Form):
     """A simple form to retrieve username.
 
     Requires an email address."""
-    email = forms.EmailField(label=_lazy(u'Email address:'))
+
+    email = forms.EmailField(label=_lazy(u"Email address:"))
 
     def clean_email(self):
         """
@@ -246,13 +290,20 @@ class ForgotUsernameForm(forms.Form):
             self.user = User.objects.get(email__iexact=email, is_active=True)
         except User.DoesNotExist:
             raise forms.ValidationError(
-                _(u"That e-mail address doesn't have an associated user "
-                  u"account. Are you sure you've registered?"))
+                _(
+                    u"That e-mail address doesn't have an associated user "
+                    u"account. Are you sure you've registered?"
+                )
+            )
         return email
 
-    def save(self, text_template='users/email/forgot_username.ltxt',
-             html_template='users/email/forgot_username.html', use_https=False,
-             request=None):
+    def save(
+        self,
+        text_template="users/email/forgot_username.ltxt",
+        html_template="users/email/forgot_username.html",
+        use_https=False,
+        request=None,
+    ):
         """Sends email with username."""
         user = self.user
         current_site = get_current_site(request)
@@ -261,7 +312,7 @@ class ForgotUsernameForm(forms.Form):
 
         @email_utils.safe_translation
         def _send_mail(locale, user, context):
-            subject = _('Your username on %s') % site_name
+            subject = _("Your username on %s") % site_name
 
             mail = email_utils.make_mail(
                 subject=subject,
@@ -269,17 +320,19 @@ class ForgotUsernameForm(forms.Form):
                 html_template=html_template,
                 context_vars=context,
                 from_email=settings.TIDINGS_FROM_ADDRESS,
-                to_email=user.email)
+                to_email=user.email,
+            )
 
             email_utils.send_messages([mail])
 
         c = {
-            'email': user.email,
-            'domain': domain,
-            'login_url': reverse('users.login'),
-            'site_name': site_name,
-            'username': user.username,
-            'protocol': use_https and 'https' or 'http'}
+            "email": user.email,
+            "domain": domain,
+            "login_url": reverse("users.login"),
+            "site_name": site_name,
+            "username": user.username,
+            "protocol": use_https and "https" or "http",
+        }
 
         # The user is not logged in, the user object comes from the
         # supplied email address, and is filled in by `clean_email`. If
@@ -290,17 +343,23 @@ class ForgotUsernameForm(forms.Form):
 
 
 class PasswordResetForm(DjangoPasswordResetForm):
-    def save(self, domain_override=None,
-             subject_template_name='registration/password_reset_subject.txt',
-             text_template=None,
-             html_template=None,
-             use_https=False, token_generator=default_token_generator,
-             from_email=None, request=None):
+    def save(
+        self,
+        domain_override=None,
+        subject_template_name="registration/password_reset_subject.txt",
+        text_template=None,
+        html_template=None,
+        use_https=False,
+        token_generator=default_token_generator,
+        from_email=None,
+        request=None,
+    ):
         """
         Based off of django's but handles html and plain-text emails.
         """
         users = User.objects.filter(
-            email__iexact=self.cleaned_data["email"], is_active=True)
+            email__iexact=self.cleaned_data["email"], is_active=True
+        )
         for user in users:
             if not domain_override:
                 current_site = get_current_site(request)
@@ -310,18 +369,18 @@ class PasswordResetForm(DjangoPasswordResetForm):
                 site_name = domain = domain_override
 
             c = {
-                'email': user.email,
-                'domain': domain,
-                'site_name': site_name,
-                'uid': int_to_base36(user.id),
-                'user': user,
-                'token': token_generator.make_token(user),
-                'protocol': use_https and 'https' or 'http',
+                "email": user.email,
+                "domain": domain,
+                "site_name": site_name,
+                "uid": int_to_base36(user.id),
+                "user": user,
+                "token": token_generator.make_token(user),
+                "protocol": use_https and "https" or "http",
             }
 
             subject = email_utils.render_email(subject_template_name, c)
             # Email subject *must not* contain newlines
-            subject = ''.join(subject.splitlines())
+            subject = "".join(subject.splitlines())
 
             @email_utils.safe_translation
             def _make_mail(locale):
@@ -331,7 +390,8 @@ class PasswordResetForm(DjangoPasswordResetForm):
                     html_template=html_template,
                     context_vars=c,
                     from_email=from_email,
-                    to_email=user.email)
+                    to_email=user.email,
+                )
 
                 return mail
 
@@ -346,12 +406,14 @@ class PasswordResetForm(DjangoPasswordResetForm):
 def _check_password(password):
     if password:  # Oddly, empty password validation happens after this.
         if not password_re.search(password):
-            msg = _('At least one number and one English letter are required '
-                    'in the password.')
+            msg = _(
+                "At least one number and one English letter are required "
+                "in the password."
+            )
             raise forms.ValidationError(msg)
 
 
-USERNAME_CACHE_KEY = 'username-blacklist'
+USERNAME_CACHE_KEY = "username-blacklist"
 
 
 def username_allowed(username):
@@ -360,15 +422,15 @@ def username_allowed(username):
     """Returns True if the given username is not a blatent bad word."""
     blacklist = cache.get(USERNAME_CACHE_KEY)
     if blacklist is None:
-        f = open(settings.USERNAME_BLACKLIST, 'r')
+        f = open(settings.USERNAME_BLACKLIST, "r")
         blacklist = [w.strip() for w in f.readlines()]
         cache.set(USERNAME_CACHE_KEY, blacklist, 60 * 60)  # 1 hour
     # Lowercase
     username = username.lower()
     # Add lowercased and non alphanumerics to start.
-    usernames = set([username, re.sub("\W", "", username)])
+    usernames = set([username, re.sub(r"\W", "", username)])
     # Add words split on non alphanumerics.
-    for u in re.findall(r'\w+', username):
+    for u in re.findall(r"\w+", username):
         usernames.add(u)
     # Do any match the bad words?
     return not usernames.intersection(blacklist)
@@ -376,7 +438,9 @@ def username_allowed(username):
 
 def _check_username(username):
     if username and not username_allowed(username):
-        msg = _('The user name you entered is inappropriate. Please pick '
-                'another and consider that our helpers are other Firefox '
-                'users just like you.')
+        msg = _(
+            "The user name you entered is inappropriate. Please pick "
+            "another and consider that our helpers are other Firefox "
+            "users just like you."
+        )
         raise forms.ValidationError(msg)
