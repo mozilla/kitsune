@@ -28,7 +28,10 @@
     max-width: 100%;
 
     li {
-      @include p.bidi(((padding, p.$spacing-md p.$spacing-lg 0 0, p.$spacing-md 0 p.$spacing-lg 0),));
+      @include p.bidi((
+        (padding, p.$spacing-md p.$spacing-lg 0 0, p.$spacing-md 0 0 p.$spacing-lg),
+        (margin, 0, 0),
+      ));
 
       a {
         width: p.$spacing-lg;
