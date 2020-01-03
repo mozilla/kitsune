@@ -7,9 +7,7 @@
 
 {% block above_main %}
   {% if is_owner and not profile.is_fxa_migrated %}
-  <ul class="sumo-user-messages user-messages">
     {{ notification_sumo_deprecation(STATIC_URL) }}
-  </ul>
   {% endif %}
 {% endblock %}
 
