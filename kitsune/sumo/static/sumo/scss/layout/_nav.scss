@@ -234,12 +234,17 @@
         (margin, 0 20px 0 0, 0 0 0 20px),
       ));
     }
+
     .search-button {
       top: 2px;
       @include p.bidi((
         (right, 4px, auto),
         (left, auto, 4px),
       ));
+    }
+
+    .sumo-nav--list-wrap {
+      display: none;
     }
   }
 

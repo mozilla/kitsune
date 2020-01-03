@@ -1,60 +1,32 @@
 {% macro notification_fxa_updated(static_url) -%}
-<div id="fxa-notification-updated" class="notification success">
-  <img class="ff-logo hide-mobile" src="{{ static_url }}sumo/img/firefox-logo.svg" alt="{{ _('Firefox logo') }}"/>
-  <div class="notification-content">
-    <h3 class="notification-title">
-      <img class="ff-logo show-mobile" src="{{ static_url }}sumo/img/firefox-logo.svg" alt="{{ _('Firefox logo') }}"/>
-      {{ _('Good news!') }}
-    </h3>
-    <p>{{ _('You can now log in to Mozilla Support using Firefox Accounts.') }}</p>
-  </div>
-  <a href="javascript:;" class="close-button"><span class="show-for-sr-only">{{ _('Close') }}</span></a>
-</div>
+<li id="fxa-notification-updated"  class="mzp-c-notification-bar mzp-t-success">
+  <button class="mzp-c-notification-bar-button" type="button"></button>
+  <p><strong>{{ _('Good news!') }}</strong> {{ _('You can now log in to Mozilla Support using Firefox Accounts.') }}
+  <a href="https://support.mozilla.org/en-US/kb/firefox-accounts-mozilla-support-faq" class="button dark">{{ _('Read More') }}</a></p>
+</li>
 {%- endmacro %}
 
 {% macro notification_fxa_created(static_url) -%}
-<div id="fxa-notification-created" class="notification alert">
-  <img class="ff-logo hide-mobile" src="{{ static_url }}sumo/img/firefox-logo.svg" alt="{{ _('Firefox logo') }}"/>
-  <div class="notification-content">
-    <h3 class="notification-title">
-      <img class="ff-logo show-mobile" src="{{ static_url }}sumo/img/firefox-logo.svg" alt="{{ _('Firefox logo') }}"/>
-      {{ _('Welcome!') }}
-    </h3>
-    <p>{{ _('You are now logged in using Firefox Accounts. Already have a different Mozilla Support Account?') }}</p>
-  </div>
-  <div class="notification-actions">
-    <a href="https://support.mozilla.org/en-US/kb/firefox-accounts-mozilla-support-faq" class="button dark">{{ _('Read More') }}</a>
-  </div>
-  <a href="javascript:;" class="close-button"><span class="show-for-sr-only">{{ _('Close') }}</span></a>
-</div>
+<li id="fxa-notification-created" class="mzp-c-notification-bar mzp-t-warning">
+  <button class="mzp-c-notification-bar-button" type="button"></button>
+  <p><strong>{{ _('Welcome!') }}</strong> {{ _('You are now logged in using Firefox Accounts. Already have a different Mozilla Support Account?') }}
+  <a href="https://support.mozilla.org/en-US/kb/firefox-accounts-mozilla-support-faq" class="button dark">{{ _('Read More') }}</a></p>
+</li>
 {%- endmacro %}
 
 {% macro notification_sumo_deprecation(static_url) -%}
-<div id="fxa-notification-deprecated" class="notification alert">
-  <img class="ff-logo hide-mobile" src="{{ static_url }}sumo/img/firefox-logo.svg" alt="{{ _('Firefox logo') }}"/>
-  <div class="notification-content">
-    <h3 class="notification-title">
-      <img class="ff-logo show-mobile" src="{{ static_url }}sumo/img/firefox-logo.svg" alt="{{ _('Firefox logo') }}"/>
-      {{ _('Heads up!') }}
-    </h3>
-    <p>{{ _('Soon, Firefox Accounts will replace Mozilla Support logins. You can upgrade your existing Mozilla account to Firefox Accounts today.') }} <a href="https://support.mozilla.org/en-US/kb/firefox-accounts-mozilla-support-faq">{{ _('Read more') }}</a>.</p>
-  </div>
-  <div class="notification-actions">
-    <a href="{{ url('users.fxa_authentication_init') }}" class="button">{{ _('Continue with Firefox Accounts') }}</a>
-  </div>
-</div>
+<li id="fxa-notification-deprecated" class="mzp-c-notification-bar mzp-t-warning">
+  <button class="mzp-c-notification-bar-button" type="button"></button>
+  <p><strong>{{ _('Heads up!') }}</strong> {{ _('Soon, Firefox Accounts will replace Mozilla Support logins. You can upgrade your existing Mozilla account to Firefox Accounts today.') }} <a href="https://support.mozilla.org/en-US/kb/firefox-accounts-mozilla-support-faq">{{ _('Read more') }}</a>.
+  <a href="{{ url('users.fxa_authentication_init') }}" class="button">{{ _('Continue with Firefox Accounts') }}</a></p>
+</li>
 {%- endmacro %}
 
 {% macro notification_already_migrated(static_url) -%}
-<div id="fxa-notification-already-migrated" class="notification alert">
-  <img class="ff-logo hide-mobile" src="{{ static_url }}sumo/img/firefox-logo.svg" alt="{{ _('Firefox logo') }}"/>
-  <div class="notification-content">
-    <h3 class="notification-title">
-      <img class="ff-logo show-mobile" src="{{ static_url }}sumo/img/firefox-logo.svg" alt="{{ _('Firefox logo') }}"/>
-      {{ _('Sorry!') }}
-    </h3>
-    <p>{{ _('You already have a Firefox Account. Please use your Firefox Account instead of your Mozilla Support
-    account.') }}</p>
-  </div>
-</div>
+<li id="fxa-notification-already-migrated" class="mzp-c-notification-bar mzp-t-warning">
+  <button class="mzp-c-notification-bar-button" type="button"></button>
+  <p><strong>{{ _('Sorry!') }}</strong>
+  {{ _('You already have a Firefox Account. Please use your Firefox Account instead of your Mozilla Support
+  account.') }}</p>
+</li>
 {%- endmacro %}
