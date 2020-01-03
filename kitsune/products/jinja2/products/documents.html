@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% from 'products/includes/topic_macros.html' import topic_sidebar %}
+{% from 'includes/common_macros.html' import download_firefox %}
 {% set crumbs = [(url('products.product', slug=product.slug), pgettext('DB: products.Product.title', product.title))] %}
 {% if subtopic %}
   {% set crumbs = crumbs + [(url('products.documents', product_slug=product.slug, topic_slug=topic.slug), pgettext('DB: products.Topic.title', topic.title)), (None, pgettext('DB: products.Topic.title', subtopic.title))] %}
@@ -14,90 +15,68 @@
 {% block title %}{{ pgettext('DB: products.Topic.title', topic.title) }} | {{ _('{product} Help')|f(product=pgettext('DB: products.Product.title', product.title)) }}{% endblock %}
 
 {% block above_main %}
-<div class="search-form-large">
-  {{ search_box(settings, id='support-search-documents', params=search_params) }}
-</div>
+{% endblock %}
+
+
+{% block side %}
 <div class="documents-product-title cf">
   {% set prod_url = url('products.product', slug=product.slug) %}
   <img src="{{ product.image_alternate_url }}" height="48" width="48" alt="" />
   <a href="{{ prod_url }}">{{ pgettext('DB: products.Product.title', product.title) }}</a>
 </div>
 
-{% endblock %}
-
-
-{% block side %}
 {{ topic_sidebar(topics[:10], subtopics, product, topic, subtopic) }}
 {% endblock %}
 
 
 {% block content %}
-
-
-
-
-
-
-  {% if product.slug == 'firefox' %}
-    {# show-fx-download.js will remove the 'hidden' class below if the visitor is *NOT* using Firefox #}
-    <div class="firefox-download-button hidden">
-      <div class="documents-download-buttons download-buttons">
-        <div class="download-firefox">
-          <a href="https://www.mozilla.org/firefox/new/?utm_source=support.mozilla.org&amp;utm_medium=referral&amp;utm_campaign=non-fx-button&amp;utm_content=body-download-button" class="download-button"
-            data-event-category="Download Button"
-            data-event-action="Panel Opening"
-            data-event-label="{{ latest_version }}">
-            <span class="download-content">
-              <strong class="download-title">{{ _('Download Firefox') }}</strong>
-            </span>
-          </a>
-          <ul class="info">
-            <li><a href="https://www.mozilla.org/firefox/all/">{{ _('Systems and Languages') }}</a></li>
-            <li><a href="https://www.mozilla.org/firefox/notes">{{ _("What's New") }}</a></li>
-            <li><a href="https://www.mozilla.org/legal/privacy/firefox">{{ _('Privacy') }}</a></li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  {% endif %}
-
+<div class="search-form-large">
+  {{ search_box(settings, id='support-search-documents', params=search_params) }}
+</div>
     <article id="document-list">
-      <h1 class="topic-title {% if not subtopic %}cf{% endif %}">
-        {% if subtopic %}
-          <a href="{{ url('products.documents', product_slug=product.slug, topic_slug=topic.slug) }}">
-        {% endif %}
-        {{ pgettext('DB: products.Topic.title', topic.title) }}
-        {% if subtopic %}
-          </a>
-        {% endif %}
-      </h1>
+      <header class="sumo-article-header">
+        <div class="sumo-article-header--text">
+          <h1 class="text-display-xl topic-title">
+            {% if subtopic %}
+              <a href="{{ url('products.documents', product_slug=product.slug, topic_slug=topic.slug) }}">
+            {% endif %}
+            {{ pgettext('DB: products.Topic.title', topic.title) }}
+            {% if subtopic %}
+              </a>
+            {% endif %}
+          </h1>
 
-      {% if subtopic %}
-        <h1 class="topic-title is-subtopic cf">
-          {{ pgettext('DB: products.Topic.title', subtopic.title) }}
-        </h1>
-      {% endif %}
-
-      {# Show the description if it is different than the title. Otherwise, don't bother. #}
-      {% if (subtopic and subtopic.title != subtopic.description) or (not subtopic and topic.title != topic.description) %}
-        <p class="topic-description">
-          {% if subtopic %}
-             {{ pgettext('DB: products.Topic.description', subtopic.description) }}
-          {% else %}
-            {{ pgettext('DB: products.Topic.description', topic.description) }}
-          {% endif %}
-        </p>
+        {% if subtopic %}
+          <h1 class="topic-title is-subtopic cf">
+            {{ pgettext('DB: products.Topic.title', subtopic.title) }}
+          </h1>
+        {% endif %}
+        </div>
+        {% if product.slug == 'firefox' %}
+        <div class="sumo-article-header--meta">
+          {{ download_firefox() }}
+        </div>
+        {% endif %}
+        </header>
+        {# Show the description if it is different than the title. Otherwise, don't bother. #}
+        {% if (subtopic and subtopic.title != subtopic.description) or (not subtopic and topic.title != topic.description) %}
+          <p class="topic-description">
+            {% if subtopic %}
+               {{ pgettext('DB: products.Topic.description', subtopic.description) }}
+            {% else %}
+              {{ pgettext('DB: products.Topic.description', topic.description) }}
+            {% endif %}
+          </p>
+        {% endif %}
         <hr />
-      {% endif %}
 
-      <div class="separator"></div>
 
       <section class="topic-list">
         {% if not subtopic and subtopics %}
           {# only show subtopics on the parent topic page #}
           {% for subtopic in subtopics %}
             <article class="subtopic">
-              <h2 class="text-display-md">
+              <h2 class="text-display-xs">
                 <a href="{{ url('products.subtopics', product_slug=product.slug, topic_slug=topic.slug, subtopic_slug=subtopic.slug) }}"
                   data-event-category="link click" data-event-action="subtopic" data-event-label="{{ subtopic.title }}">
                   {{ pgettext('DB: products.Topic.title', subtopic.title) }}
@@ -111,7 +90,7 @@
         {% endif %}
         {% for document in documents %}
           <article>
-            <h2 class="text-display-md">
+            <h2 class="text-display-xs">
               <a href="{{ document['url'] }}" data-event-category="link click" data-event-action="document"
                 data-event-label="{{ document['document_title'] }}">
                 {{ document['document_title'] }}
@@ -123,22 +102,28 @@
       </section>
 
       {% if fallback_documents %}
-        <h2>{{ _('In English') }}</h2>
+        <h2 class="text-display-xs">{{ _('In English') }}</h2>
+        <section class="topic-list">
         {% for document in fallback_documents %}
-          {% if loop.first %}<ul class="topic-list">{% endif %}
-          <li>
-            <a href="{{ document['url']|replace('/'+ settings.WIKI_DEFAULT_LANGUAGE +'/', '/' + request.LANGUAGE_CODE + '/') }}">{{ document['document_title'] }}</a>
-          </li>
-          {% if loop.last %}</ul>{% endif %}
+          <article>
+            <h3 class="text-display-xxs">
+              <a href="{{ document['url']|replace('/'+ settings.WIKI_DEFAULT_LANGUAGE +'/', '/' + request.LANGUAGE_CODE + '/') }}">
+                {{ document['document_title'] }}
+              </a>
+            </h3>
+          </article>
         {% endfor %}
+        </section>
       {% endif %}
     </article>
+{% endblock %}
+
+{% block below_main %}
+<section id="get-involved-button" class="mzp-l-content sumo-page-section">
+  <div class="sumo-button-wrap align-center document-get-involved">
+    <a class="sumo-button primary-button button-lg" href="{{ url('landings.get_involved') }}">{{ _('Volunteer for Mozilla Support') }}</a>
   </div>
-  <div class="grid_12 cf">
-    <section id="get-involved-button" class="document-get-involved">
-      <a class="button" href="{{ url('landings.get_involved') }}">{{ _('Volunteer for Mozilla Support') }}</a>
-    </section>
-  </div>
+</section>
 {% endblock %}
 
 {% block for_contributors %}{% endblock %}

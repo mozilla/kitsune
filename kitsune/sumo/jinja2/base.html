@@ -1,4 +1,4 @@
-{% from 'includes/common_macros.html' import announcement_bar, search_box, aux_nav, profile_nav, favicon with context %}
+{% from 'includes/common_macros.html' import announcement_bar, search_box, aux_nav, profile_nav, download_firefox, favicon with context %}
 
 {% if request.LANGUAGE_CODE == settings.WIKI_DEFAULT_LANGUAGE and waffle.flag('surveygizmo') %}
   {# allow any artibtrary survey to be loaded via the SurveyGizmo admin #}
@@ -204,33 +204,33 @@
 
 <div class="sumo-page-section mzp-l-content {% block base_container_classes %}{% endblock %}" id="main-container">
   {% if messages %}
-    <div class="user-messages">
+    <ul class="user-messages">
       {% for message in messages %}
         {% if not message.message.startswith('fxa_notification') %}
-        <aside class="mzp-c-notification-bar {% if message.tags %}mzp-t-{{ message.tags }}{% endif %}">
+        <li class="mzp-c-notification-bar {% if message.tags %}mzp-t-{{ message.tags }}{% endif %}">
           <button class="mzp-c-notification-bar-button" type="button"></button>
           <p>{{ message }}</p>
-        </aside>
+        </li>
         {% endif %}
       {% endfor %}
-    </div>
+    </ul>
   {% endif %}
 
   {% block above_main %}{% endblock %}
+  <div class="sumo-l-two-col">
+    {% block outer_side %}
+    <aside class="sumo-l-two-col--sidebar">
+      {% block side_top %}{% endblock %}
+      {% block side %}{% endblock %}
+      {% block side_bottom %}{% endblock %}
+    </aside>
+    {% endblock %}
+    <main id="main-content" role="main" class="sumo-l-two-col--main">
 
-    <div class="sumo-l-two-col">
-      {% block outer_side %}
-      <aside class="sumo-l-two-col--sidebar">
-        {% block side_top %}{% endblock %}
-        {% block side %}{% endblock %}
-        {% block side_bottom %}{% endblock %}
-      </aside>
-      {% endblock %}
-      <main id="main-content" role="main" class="sumo-l-two-col--main">
-
-      {% block content %}{% endblock %}
-      </main>
-    </div>
+    {% block content %}{% endblock %}
+    </main>
+  </div>
+  {% block below_main %}{% endblock %}
 </div>
 {% endblock %}
 

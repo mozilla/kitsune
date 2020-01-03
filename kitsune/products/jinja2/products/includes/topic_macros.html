@@ -62,6 +62,7 @@
 
 {% macro topic_sidebar(topics, subtopics, product, selected_topic=None, selected_subtopic=None) -%}
 <nav class="sidebar-nav topics">
+  <span class="details-heading"></span>
   <ul class="sidebar-nav--list">
     {% for topic in topics %}
       {% set topic_url = url('products.documents', product_slug=product.slug, topic_slug=topic.slug) %}
