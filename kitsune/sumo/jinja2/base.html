@@ -204,16 +204,16 @@
 
 <div class="sumo-page-section mzp-l-content {% block base_container_classes %}{% endblock %}" id="main-container">
   {% if messages %}
-    <div class="user-messages">
+    <ul class="user-messages">
       {% for message in messages %}
         {% if not message.message.startswith('fxa_notification') %}
-        <aside class="mzp-c-notification-bar {% if message.tags %}mzp-t-{{ message.tags }}{% endif %}">
+        <li class="mzp-c-notification-bar {% if message.tags %}mzp-t-{{ message.tags }}{% endif %}">
           <button class="mzp-c-notification-bar-button" type="button"></button>
           <p>{{ message }}</p>
-        </aside>
+        </li>
         {% endif %}
       {% endfor %}
-    </div>
+    </ul>
   {% endif %}
 
   {% block above_main %}{% endblock %}

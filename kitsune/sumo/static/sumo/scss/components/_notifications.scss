@@ -5,7 +5,8 @@
 // https://protocol.mozilla.org/patterns/molecules/notification-bar.html
 // for more documentation on notifications themselves.
 
-.sumo-user-messages {
+.sumo-user-messages,
+.user-messages {
   list-style: none;
   margin: 0;
   padding: 0;
