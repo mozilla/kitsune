@@ -138,6 +138,10 @@
   // &--details {}
 
   &--icon {
+    @include p.bidi((
+      (margin-right, 20px, 0),
+      (margin-left, 0, 20px),
+    ));
     margin-bottom: 10px;
     width: 48px;
   }
@@ -150,6 +154,7 @@
   &--title {
     @include c.text-body-lg();
     font-family: var(--base-font-family);
+    margin-bottom: 0;
 
     > a {
       text-decoration: none;
@@ -191,6 +196,10 @@
       .card--icon-sm {
         margin-right: 10px;
         margin-bottom: 0;
+        @include p.bidi((
+          (margin-right, 10px, 0),
+          (margin-left, 0, 10px),
+        ));
       }
 
       .card--desc {
@@ -216,7 +225,6 @@
     }
 
     &--icon {
-      margin-right: 20px;
       margin-bottom: 0;
       width: 72px;
     }
@@ -243,7 +251,9 @@
 
       .card--desc {
         flex: 1 1 auto;
-        margin: 0 40px 0 0;
+        @include p.bidi((
+          (margin, 0 40px 0 0, 0 0 0 40px),
+        ));
       }
     }
   }
