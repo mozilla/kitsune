@@ -7,7 +7,6 @@
   flex-direction: column-reverse;
 
   @media #{p.$mq-md} {
-    @include p.bidi(((flex-direction, row, row-reverse),));
     justify-content: space-between;
   }
 }
@@ -45,8 +44,6 @@
   }
 
   @media #{p.$mq-md} {
-    @include p.bidi(((flex-direction, row, row-reverse),));
-    @include p.bidi(((justify-content, flex-start, flex-end),));
     align-items: center;
   }
 }
