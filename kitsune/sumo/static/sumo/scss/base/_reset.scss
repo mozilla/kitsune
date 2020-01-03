@@ -6,6 +6,10 @@ html, body {
   min-height: 100%;
 }
 
+body {
+  display: flex;
+  flex-direction: column;
+}
 *, *:before, *:after {
   box-sizing: border-box;
 }
