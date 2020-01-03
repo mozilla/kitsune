@@ -44,6 +44,7 @@
   }
 
   @media #{p.$mq-md} {
+    flex-direction: row;
     align-items: center;
   }
 }

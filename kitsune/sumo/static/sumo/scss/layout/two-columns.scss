@@ -12,6 +12,10 @@
   @media #{p.$mq-md} {
     justify-content: space-between;
 
+    &.sidebar-on-right {
+      flex-direction: row-reverse;
+    }
+
     &--sidebar {
       width: c.col-width(2, 6);
     }
