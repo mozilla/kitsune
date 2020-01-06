@@ -1,0 +1,9 @@
+@use '../protocol' as p;
+
+.topic-article {
+    margin-bottom: 24px;
+
+    @media #{p.$mq-md} {
+        margin-bottom: 40px;
+    }
+}

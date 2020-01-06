@@ -33,7 +33,7 @@
   }
 
   &--logo {
-    margin-right: c.$gutter-width;
+    @include p.bidi(((margin, 0 #{c.$gutter-width} 0 0, 0 0 0 #{c.$gutter-width}),));
     padding-top: 12px;
     padding-bottom: 12px;
     width: 96px;
@@ -53,7 +53,10 @@
   }
 
   &--list-wrap-right {
-    margin-left: auto;
+    @include p.bidi((
+      (margin-left, auto, 0),
+      (margin-right, 0, auto)
+    ));
 
     &.logged-out {
       .sumo-nav--list {
@@ -199,17 +202,22 @@
   }
 
   &--search-button {
-    margin-left: auto;
+    @include p.bidi((
+      (margin-left, auto, 0),
+      (margin-right, 0, auto),
+    ));
     background-image: url('#{p.$image-path}/icons/search.svg');
   }
 
   .simple-search-form {
-    margin-right: 20px;
     display: none;
   }
 
   .sumo-nav--mobile-search-form .simple-search-form {
     display: block;
+    @include p.bidi((
+      (margin, 0 20px 0 0, 0 0 0 20px),
+    ));
   }
 
   body.scroll-header:not(.lock-body) & {
@@ -222,11 +230,17 @@
 
     .simple-search-form {
       display: block;
+      @include p.bidi((
+        (margin, 0 20px 0 0, 0 0 0 20px),
+      ));
     }
 
     .search-button {
       top: 2px;
-      right: 4px;
+      @include p.bidi((
+        (right, 4px, auto),
+        (left, auto, 4px),
+      ));
     }
 
     .sumo-nav--list-wrap {
@@ -246,8 +260,7 @@
   }
 
   .firefox-download-button {
-    margin-right: 24px;
-    margin-left: 8px;
+    @include p.bidi(((margin, 0 24px 0 8px, 0 8px 0 24px),));
   }
 
   .searchbox { // #TODO - remove most of this after old CSS is removed.
@@ -287,11 +300,18 @@
 
   // protocol overrides
   .mzp-c-menu-panel .mzp-c-menu-button-close {
-    right: 16px;
+
+    @include p.bidi((
+      (right, 16px, auto),
+      (left, auto, 16px),
+    ));
   }
 
   .mzp-c-navigation-menu {
-    margin-left: 0;
+    @include p.bidi((
+      (margin-left, 0, 0),
+      (margin-right, 0, 0),
+    ));
   }
 
   .mzp-c-menu-category .mzp-c-menu-title {

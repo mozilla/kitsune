@@ -142,7 +142,7 @@
         <button class="mzp-c-menu-button-close" type="button" aria-controls="mzp-c-menu-panel-profile">Close Firefox menu</button>
         <div class="sumo-nav--dropdown-thirds">
           <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
-            <a class="mzp-c-menu-item-link" href="#TODO">
+            <a class="mzp-c-menu-item-link" href="{{ profile_url(user) }}">
               <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round"><path d="M17 17l-1.051 3.154a1 1 0 01-1.898 0L13 17H5a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2h-2zM7 8h10M7 12h10"/></g></svg>
               <h4 class="mzp-c-menu-item-title">Profile</h4>
               <p class="mzp-c-menu-item-desc">
@@ -150,14 +150,14 @@
               </p>
             </a>
             <ul class="mzp-c-menu-item-list sumo-nav--sublist">
-              <li><a href="#">{{ _('Edit Profile') }}</a></li>
-              <li><a href="#">My Questions</a></li>
+              <li><a href="{{ url('users.edit_my_profile') }}">{{ _('Edit Profile') }}</a></li>
+              <li><a href="{{ url('questions.home') }}">My Questions</a></li>
             </ul>
           </section>
          </div>
          <div class="sumo-nav--dropdown-thirds">
            <section class="mzp-c-menu-item mzp-has-icon sumo-nav--dropdown-item">
-             <a class="mzp-c-menu-item-link" href="https://voice.mozilla.org/">
+             <a class="mzp-c-menu-item-link" href="{{ url('users.edit_settings') }}">
                <svg class="mzp-c-menu-item-icon" width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10.5 9.5L3 17c-1 1.667-1 3 0 4s2.333.833 4-.5l7.5-7.5c2.333 1.054 4.333.734 6-.96 1.667-1.693 1.833-3.707.5-6.04l-3 3-2.5-.5L15 6l3-3c-2.333-1.333-4.333-1.167-6 .5-1.667 1.667-2.167 3.667-1.5 6z" stroke="#000" stroke-width="2" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round"/></svg>
                <h4 class="mzp-c-menu-item-title">Settings</h4>
                <p class="mzp-c-menu-item-desc">
@@ -176,20 +176,20 @@
                 </p>
               </a>
             </section>
+            <div class="sumo-button-wrap align-end">
+              <form id="sign-out" action="{{ url('users.logout') }}" method="post">
+                {% csrf_token %}
+              </form>
+              <a
+                class="sumo-button secondary-button button-lg"
+                data-type="submit"
+                data-form="sign-out"
+                href="#sign-out"
+                data-event-label="Sign Out">
+                {{ _('Sign Out') }}
+              </a>
            </div>
-           <div class="sumo-nav--button-row">
-             <a href="#" class="mzp-c-sumo-button secondary-button button-lg">Sign Out</a>
-
-             {% if not user.is_authenticated() %}
-               <li>
-                 <a href="{{ url('users.auth') }}" class="signin-signup-button register"  data-event-category="navigation" data-event-action="main navigation" data-event-label="Sign In">
-                   {{ _('Log in / Sign up') }}
-                 </a>
-               </li>
-             {% else %}
-
-             {% endif %}
-           </div>
+        </div>
       </div>
     </div>
   </div>
@@ -297,4 +297,50 @@
   <link rel="shortcut icon" href="{{ STATIC_URL }}sumo/img/favicon.ico">
   <meta name="msapplication-config" content="{{ STATIC_URL }}sumo/browserconfig.xml">
   <meta name="theme-color" content="#ffffff">
+{% endmacro %}
+
+{% macro download_firefox() %}
+{# show-fx-download.js will remove the 'hidden' class below if the visitor is *NOT* using Firefox #}
+<div class="firefox-download-button hidden">
+  <div class="download-buttons">
+    <div class="download-firefox">
+      <a href="https://www.mozilla.org/firefox/new/?utm_source=support.mozilla.org&amp;utm_medium=referral&amp;utm_campaign=non-fx-button&amp;utm_content=body-download-button"
+        class="download-button sumo-button primary-button button-lg"
+        data-event-category="Download Button"
+        data-event-action="Panel Opening"
+        data-event-label="{{ latest_version }}">
+        {{ _('Download Firefox') }}
+      </a>
+      <ul class="download-firefox--info body-xs">
+        <li><a href="https://www.mozilla.org/firefox/all/">{{ _('Systems and Languages') }}</a></li>
+        <li><a href="https://www.mozilla.org/firefox/notes">{{ _("What's New") }}</a></li>
+        <li><a href="https://www.mozilla.org/legal/privacy/firefox">{{ _('Privacy') }}</a></li>
+      </ul>
+    </div>
+    {#
+      afaict, this button is never shown. products.js is looking for a
+      data-latest-version attribute on the .download-button element above,
+      but it's not present. this should be fixed?
+    #}
+    <div class="refresh-firefox">
+      <p class="help-text">{{ _('Give Firefox a tune up') }}</p>
+      <a data-mozilla-ui-reset="reset" class="download-button sumo-button primary-button button-lg">
+        {{ _('Refresh Firefox') }}
+      </a>
+      <ul class="download-firefox--info body-xs">
+        <li><a class="reset-link" href="{{ url('wiki.document', 'refresh-firefox-reset-add-ons-and-settings') }}">
+          {{ _('How does it work?') }}
+        </a></li>
+        <li>
+          <a href="https://www.mozilla.org/firefox/new/#download-fx"
+            data-event-category="Download Button"
+            data-event-action="Panel Opening"
+            data-event-label="{{ latest_version }}">
+            {{ _('Download a fresh copy') }}
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
 {% endmacro %}

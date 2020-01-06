@@ -10,8 +10,11 @@
   }
 
   @media #{p.$mq-md} {
-    @include p.bidi(((flex-direction, row, row-reverse),));
     justify-content: space-between;
+
+    &.sidebar-on-right {
+      flex-direction: row-reverse;
+    }
 
     &--sidebar {
       width: c.col-width(2, 6);

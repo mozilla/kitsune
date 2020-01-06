@@ -72,10 +72,11 @@
       color: var(--color-text);
       margin-bottom: 12px;
       text-decoration: none;
-      text-align: left;
+      @include p.bidi(((text-align, left, right),));
       border: none;
       background-color: transparent;
       padding: 0;
+
 
       &:after {
         @include p.bidi(((margin, 0 0 0 12px, 0 12px 0 0),));

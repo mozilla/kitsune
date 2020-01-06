@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from 'includes/common_macros.html' import for_contributors_sidebar %}
+{% from 'includes/common_macros.html' import for_contributors_sidebar, download_firefox %}
 {% from 'products/includes/topic_macros.html' import help_topics with context %}
 {% set crumbs = [(None, pgettext('DB: products.Product.title', product.title))] %}
 {% set styles = ('products',) %}
@@ -46,49 +46,7 @@
       <p>{{ _('Explore the knowledge base.') }}</p>
     </div>
     {% if product.slug == 'firefox' %}
-      {# show-fx-download.js will remove the 'hidden' class below if the visitor is *NOT* using Firefox #}
-    <div class="firefox-download-button hidden">
-      <div class="download-buttons">
-        <div class="download-firefox">
-          <a href="https://www.mozilla.org/firefox/new/?utm_source=support.mozilla.org&amp;utm_medium=referral&amp;utm_campaign=non-fx-button&amp;utm_content=body-download-button"
-            class="download-button sumo-button primary-button button-lg"
-            data-event-category="Download Button"
-            data-event-action="Panel Opening"
-            data-event-label="{{ latest_version }}">
-            {{ _('Download Firefox') }}
-          </a>
-          <ul class="download-firefox--info body-xs">
-            <li><a href="https://www.mozilla.org/firefox/all/">{{ _('Systems and Languages') }}</a></li>
-            <li><a href="https://www.mozilla.org/firefox/notes">{{ _("What's New") }}</a></li>
-            <li><a href="https://www.mozilla.org/legal/privacy/firefox">{{ _('Privacy') }}</a></li>
-          </ul>
-        </div>
-        {#
-          afaict, this button is never shown. products.js is looking for a
-          data-latest-version attribute on the .download-button element above,
-          but it's not present. this should be fixed?
-        #}
-        <div class="refresh-firefox">
-          <p class="help-text">{{ _('Give Firefox a tune up') }}</p>
-          <a data-mozilla-ui-reset="reset" class="download-button sumo-button primary-button button-lg">
-            {{ _('Refresh Firefox') }}
-          </a>
-          <ul class="download-firefox--info body-xs">
-            <li><a class="reset-link" href="{{ url('wiki.document', 'refresh-firefox-reset-add-ons-and-settings') }}">
-              {{ _('How does it work?') }}
-            </a></li>
-            <li>
-              <a href="https://www.mozilla.org/firefox/new/#download-fx"
-                data-event-category="Download Button"
-                data-event-action="Panel Opening"
-                data-event-label="{{ latest_version }}">
-                {{ _('Download a fresh copy') }}
-              </a>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </div>
+    {{ download_firefox() }}
     {% endif %}
 
     {% if product.slug == 'thunderbird' %}
