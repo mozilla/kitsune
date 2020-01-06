@@ -47,7 +47,9 @@
     "static/protocol/js/protocol-notification-bar.js",
     "static/sumo/js/protocol-nav.js",
     "static/sumo/js/protocol-details-init.js",
-    "static/sumo/js/show-fx-download.js"
+    "static/sumo/js/show-fx-download.js",
+    "static/sumo/js/sumo-tabs.js"
+
   ],
   "homepage": "../../../../../styleguide/styleguide-examples/styleguide-index.md",
   "builder": "kss-template"

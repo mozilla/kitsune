@@ -1,0 +1,142 @@
+// Tabs
+//
+// Tab component used on the topic listing pages. See
+// [this CSS-tricks article](https://css-tricks.com/container-adapting-tabs-with-more-button/)
+// for a detailed explanation of how it was built.
+//
+// Markup: ../../../../../../../styleguide/styleguide-examples/tabs.njk
+//
+// Weight: 8
+//
+// Style guide: tabs
+
+@use '../config' as c;
+@use '../protocol' as p;
+
+.tabs {
+  position: relative;
+  box-shadow: inset 0 -1px 0 var(--color-marketing-gray-03);
+  margin-bottom: 24px;
+
+  &:not(.is-js-enhanced) {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .is-hidden {
+    display: none;
+  }
+
+  &--list {
+    display: flex;
+  }
+
+  &--link,
+  &--button {
+    appearance: none;
+    white-space: nowrap;
+    text-align: left;
+    border: 0 none;
+    display: block;
+    color: var(--color-text);
+    text-decoration: none;
+    background-color: transparent;
+    @include c.text-body-sm;
+
+    span {
+      display: block;
+      padding: 16px 0;
+      margin-right: 16px;
+    }
+
+    &:hover  {
+      color: var(--color-link);
+    }
+
+    &.is-active {
+      color: var(--color-link);
+      font-weight: bold;
+
+      span {
+        box-shadow: inset 0 -2px 0 var(--color-link);
+      }
+    }
+
+    &:active {
+      color: var(--color-link);
+      background: transparent;
+    }
+  }
+
+  &--button {
+    padding: 16px 0;
+
+    &:after {
+      display: inline-flex;
+      width: 12px;
+      height: 12px;
+      margin-left: 4px;
+      background-image: c.svg-url('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 10"><path fill="none" vector-effect="non-scaling-stroke" stroke="#42435A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" d="M1 1l8 8 8-8"/></svg>');
+      background-repeat: no-repeat;
+      background-size: 12px 12px;
+      transition: transform 0.2s;
+      content: "";
+    }
+  }
+
+  &.dropdown-is-open {
+    .tabs--button:after {
+      transform: rotate(180deg);
+    }
+
+    .tabs--dropdown {
+      display: block;
+    }
+  }
+
+  &--dropdown {
+    max-width: 100%;
+    min-width: 10em;
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    border-radius: var(--global-radius);
+    animation: tabs-dropdown 0.2s;
+
+    .tabs--item {
+      border-top: 1px solid var(--color-border);
+      background-color: var(--page-bg);
+
+      span {
+        padding: 0;
+      }
+    }
+
+    .tabs--link {
+      padding: 8px;
+    }
+  }
+
+  @media #{p.$mq-md} {
+    margin-bottom: 48px;
+
+    &--link,
+    &--button {
+      @include c.text-body-md;
+    }
+  }
+}
+
+// keyframes
+
+@keyframes tabs-dropdown {
+  0% {
+    opacity: 0;
+    transform: translateY(-1em);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
