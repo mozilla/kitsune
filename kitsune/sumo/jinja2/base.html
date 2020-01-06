@@ -226,6 +226,9 @@
     </aside>
     {% endblock %}
     <main id="main-content" role="main" class="sumo-l-two-col--main">
+    {% block breadcrumbs %}
+      {{ breadcrumbs(crumbs, id='main-breadcrumbs') }}
+    {% endblock %}
 
     {% block content %}{% endblock %}
     </main>

@@ -38,7 +38,7 @@
   display: block;
 
   @media #{p.$mq-md} {
-    display: none;
+    display: none !important;
   }
 }
 

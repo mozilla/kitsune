@@ -87,24 +87,29 @@ $text-display-line-height: 1.1 !default;
 @mixin text-body-lg {
   @include p.font-size(18px);
   line-height: $text-body-line-height;
+  font-family: var(--base-font-family);
 }
 
 @mixin text-body-md {
   @include p.font-size(16px);
   line-height: $text-body-line-height;
+  font-family: var(--base-font-family);
 }
 
 @mixin text-body-sm {
   @include p.font-size(14px);
   line-height: $text-body-line-height;
+  font-family: var(--base-font-family);
 }
 
 @mixin text-body-xs {
   @include p.font-size(12px);
   line-height: $text-body-line-height;
+  font-family: var(--base-font-family);
 }
 
 @mixin text-body-cta {
   @include p.font-size(16px);
   line-height: $text-body-line-height;
+  font-family: var(--base-font-family);
 }

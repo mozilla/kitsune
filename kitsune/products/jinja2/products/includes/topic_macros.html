@@ -61,7 +61,7 @@
 {%- endmacro %}
 
 {% macro topic_sidebar(topics, subtopics, product, selected_topic=None, selected_subtopic=None) -%}
-<h3 class="text-display-xxxs">{{ _('All') }} {{ product }} {{ _('Topics') }}</h3>
+<h3 class="sidebar-subheading hide-on-mobile">{{ _('All') }} {{ product }} {{ _('Topics') }}</h3>
 <nav class="sidebar-nav topics">
   <span class="details-heading"></span>
   <ul class="sidebar-nav--list">
@@ -83,7 +83,8 @@
   <ul class="tabs--list subtopics">
     <li class="tabs--item">
       <a class="tabs--link {% if selected_subtopic == None %}is-active{% endif %}" href="{{ topic_url }}">
-        <span>{{ _('All articles and threads') }}</span>
+        <span class="mobile-only">{{ _('All') }}</span>
+        <span class="hide-on-mobile">{{ _('All articles and threads') }}</span>
       </a>
     </li>
     {% for subtopic in subtopics %}

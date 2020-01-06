@@ -16,15 +16,11 @@
 .tabs {
   position: relative;
   box-shadow: inset 0 -1px 0 var(--color-marketing-gray-03);
-  margin-bottom: 24px;
+  margin-bottom: 32px;
 
   &:not(.is-js-enhanced) {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
-  }
-
-  .is-hidden {
-    display: none;
   }
 
   &--list {

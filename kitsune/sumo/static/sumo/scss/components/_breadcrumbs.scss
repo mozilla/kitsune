@@ -12,7 +12,7 @@
 // Style guide: breadcrumbs
 
 .breadcrumbs--list {
-  display: flex;
+  display: none;
   list-style: none;
   @include c.text-body-sm;
 
@@ -36,5 +36,9 @@
     &:hover {
       color: var(--color-click);
     }
+  }
+
+  @media #{p.$mq-md} {
+    display: flex;
   }
 }
