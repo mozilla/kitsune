@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from 'products/includes/topic_macros.html' import topic_sidebar %}
+{% from 'products/includes/topic_macros.html' import topic_sidebar, topic_tabs %}
 {% from 'includes/common_macros.html' import download_firefox %}
 {% set crumbs = [(url('products.product', slug=product.slug), pgettext('DB: products.Product.title', product.title))] %}
 {% if subtopic %}
@@ -53,16 +53,10 @@
             {{ pgettext('DB: products.Topic.title', subtopic.title) }}
           </h1>
         {% endif %}
-        </div>
-        {% if product.slug == 'firefox' %}
-        <div class="sumo-article-header--meta">
-          {{ download_firefox() }}
-        </div>
-        {% endif %}
-        </header>
+
         {# Show the description if it is different than the title. Otherwise, don't bother. #}
         {% if (subtopic and subtopic.title != subtopic.description) or (not subtopic and topic.title != topic.description) %}
-          <p class="topic-description">
+          <p class="topic-description color-heading text-body-lg">
             {% if subtopic %}
                {{ pgettext('DB: products.Topic.description', subtopic.description) }}
             {% else %}
@@ -70,7 +64,17 @@
             {% endif %}
           </p>
         {% endif %}
-        <hr />
+        </div>
+        {% if product.slug == 'firefox' %}
+        <div class="sumo-article-header--meta">
+          {{ download_firefox() }}
+        </div>
+        {% endif %}
+      </header>
+
+      {{ topic_tabs(topics[:10], subtopics, product, topic, subtopic) }}
+
+
 
 
       <section class="topic-list">
