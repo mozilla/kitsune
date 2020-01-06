@@ -1,7 +1,9 @@
-.topic-article {
-  margin-bottom: 24px;
+@use '../protocol' as p;
 
-  @media #{p.$mq-md} {
-    margin-bottom: 40px;
-  }
+.topic-article {
+    margin-bottom: 24px;
+
+    @media #{p.$mq-md} {
+        margin-bottom: 40px;
+    }
 }
