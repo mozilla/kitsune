@@ -53,6 +53,10 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
+.color-heading {
+  color: var(--color-heading);
+}
+
 // Type scale defined in includes/mixins/_typography.scss
 h1,
 .text-display-xxl {
@@ -106,22 +110,22 @@ h5, h6, .text-display-sm {
   color: var(--color-inverse);
 }
 
-.body-lg {
+.text-body-lg {
   @include p.font-size(18px);
   @include c.line-height(28px);
 }
 
-.body-md {
+.text-body-md {
   @include p.font-size(16px);
   @include c.line-height(28px);
 }
 
-.body-sm {
+.text-body-sm {
   @include p.font-size(14px);
   @include c.line-height(22px);
 }
 
-.body-xs {
+.text-body-xs {
   @include p.font-size(12px);
   @include c.line-height(18px);
 }

@@ -1,9 +1,70 @@
+@use '../config' as c;
 @use '../protocol' as p;
 
 .topic-article {
-    margin-bottom: 24px;
+  display: flex;
+  margin-bottom: p.$spacing-lg;
 
-    @media #{p.$mq-md} {
-        margin-bottom: 40px;
+  &--icon-wrap {
+    flex: 0 0 auto;
+    @include p.bidi((
+      (margin, 0 p.$spacing-md 0 0, 0 0 0 p.$spacing-md),
+    ));
+  }
+
+  &--icon {
+    width: p.$spacing-lg;
+    height: p.$spacing-lg;
+  }
+
+  &--text {
+    flex: 1 1 100%;
+  }
+
+  @media #{p.$mq-md} {
+    margin-bottom: p.$spacing-xl;
+  }
+}
+
+.sidebar-subheading {
+  @include c.text-body-lg;
+
+  @media #{p.$mq-md} {
+    margin: 72px 0 p.$spacing-lg;
+  }
+
+}
+
+.sumo-article-header {
+  display: flex;
+  flex-direction: column-reverse;
+  margin: 48px 0 p.$spacing-md;
+
+  &--text {
+    flex: 1 1 auto;
+
+    .documents-product-title {
+      margin-bottom: p.$spacing-md;
+
+      img {
+        width: p.$spacing-xl;
+      }
+
+      @media #{p.$mq-md} {
+        img {
+          width: p.$spacing-2xl;
+        }
+      }
     }
+  }
+
+  &--meta {
+    flex: 0 0 auto;
+  }
+
+  @media #{p.$mq-md} {
+    flex-direction: row;
+    align-items: center;
+    margin: 88px 0 p.$spacing-md;
+  }
 }

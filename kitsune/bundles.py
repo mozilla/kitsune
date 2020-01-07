@@ -312,6 +312,7 @@ PIPELINE_JS = {
             'sumo/js/protocol-details-init.js',
             'sumo/js/protocol-modal-init.js',
             'sumo/js/protocol-notification-init.js',
+            'sumo/js/sumo-tabs.js',
         ),
         'output_filename': 'build/common-min.js'
     },
