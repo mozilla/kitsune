@@ -118,6 +118,8 @@ RUN apt-get update && \
 RUN groupadd --gid 1000 kitsune && useradd -g kitsune --uid 1000 --shell /usr/sbin/nologin kitsune
 
 COPY --from=base --chown=kitsune:kitsune /venv /venv
+COPY --from=staticfiles --chown=kitsune:kitsune /app/node_modules /app/node_modules
+COPY --from=staticfiles --chown=kitsune:kitsune /app/js_assets /app/js_assets
 COPY --from=staticfiles --chown=kitsune:kitsune /app/static /app/static
 COPY --from=staticfiles --chown=kitsune:kitsune /app/jsi18n /app/jsi18n
 
