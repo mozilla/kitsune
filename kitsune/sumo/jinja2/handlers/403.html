@@ -16,7 +16,7 @@
 
       {% if not user.is_authenticated() %}
           <p>
-            Please try to log in / sign up first with <a href="{{ url('users.fxa_authentication_init') }}?next={{ request.META.get('HTTP_REFERER', '/') }}">{{ _('Firefox Accounts') }}</a>
+            Please try to log in / sign up first with <a href="{{ url('users.fxa_authentication_init') }}">{{ _('Firefox Accounts') }}</a>
             or continue with an existing <a class="legacy-login-toggle" href="#">{{ _('SUMO account') }}</a>.
           </p>
           <div id="login-legacy" class="hidden">

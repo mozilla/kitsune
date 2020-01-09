@@ -17,7 +17,7 @@
     </fieldset>
     <div class="submit">
       <button type="submit" data-type="submit" data-name="login" class="btn btn-submit" data-progress="{{ _('Signing in...') }}" data-done="{{ _('Signed in!') }}" data-reset="{{ _('Sign in') }}">{{ _('Sign in') }}</button>
-     <a class="btn" href="{{ url('users.fxa_authentication_init') }}?next={{ request.META.get('HTTP_REFERER', '/') }}">{{ _("Don't have an account? Register") }} </a>
+     <a class="btn" href="{{ url('users.fxa_authentication_init') }}">{{ _("Don't have an account? Register") }} </a>
     </div>
     <ul class="login-help">
       <li><a href="{{ url('users.pw_reset') }}">{{ _("My password isn't working.") }}</a></li>
