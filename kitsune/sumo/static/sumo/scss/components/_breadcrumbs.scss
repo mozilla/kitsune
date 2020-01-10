@@ -12,7 +12,7 @@
 // Style guide: breadcrumbs
 
 .breadcrumbs--list {
-  display: flex;
+  display: none;
   list-style: none;
   @include c.text-body-sm;
 
