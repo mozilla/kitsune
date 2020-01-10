@@ -1,0 +1,147 @@
+@use '../config' as c;
+@use '../protocol' as p;
+
+
+.document {
+  &--contributors {
+    text-align: center;
+  }
+
+  &--contributors-list {
+    margin-bottom: p.$spacing-md;
+  }
+
+  &--content {
+    @media #{p.$mq-md} {
+      p, ul {
+        padding-right: c.col-width(1, 4);
+      }
+    }
+
+    @media #{p.$mq-lg} {
+      p, ul {
+        padding-right: c.col-width(1, 6);
+      }
+    }
+
+    @media #{p.$mq-xl} {
+      p, ul {
+        padding-right: c.col-width(1, 7);
+      }
+    }
+  }
+}
+
+
+// Document Vote
+//
+// This form is used on document pages. It is designed to sit in the sidebar
+// or at the bottom of the content area, and uses position:sticky at some
+// screen sizes to follow the user as they scroll.
+//
+// Markup: ../../../../../../styleguide/styleguide-examples/vote-component.njk
+//
+// Weight: 21
+//
+// Style guide: footer
+.document-vote {
+  border-radius: 36px;
+  padding: p.$spacing-md p.$spacing-lg;
+
+  &--form {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  &--heading {
+    @include c.text-display-xxxs;
+    margin: 0;
+  }
+
+  &--buttons {
+    margin-left: p.$spacing-md;
+  }
+
+  &--sidebar-wrap {
+    display: none;
+
+    @media #{p.$mq-lg} {
+      display: block;
+      position: sticky;
+      top: 100px;
+      margin-top: 300px;
+    }
+
+    .document-vote {
+      border-radius: 24px;
+      padding: p.$spacing-lg;
+    }
+
+    .document-vote--form {
+      flex-direction: column;
+    }
+
+    .document-vote--heading {
+      margin-bottom: p.$spacing-md;
+    }
+  }
+
+  .wait {
+    display: none;
+  }
+
+  .helpful-button,
+  .not-helpful-button {
+    padding: 0;
+    margin: 0 p.$spacing-sm;
+    font-size: 24px;
+    border: 0 none;
+    appearance: none;
+    background: transparent;
+    will-change: transform;
+    transition: transform 0.3s linear;
+    cursor: pointer;
+
+    .hidden-text {
+      font: 0/0 a;
+      color: transparent;
+    }
+
+    &:hover {
+      transform: scale(1.2);
+    }
+  }
+}
+
+
+// This set of styles overrides defaults so classes don't need to be used
+// on headlines, etc. on articles.
+.document--content {
+  #toc {
+    padding: p.$spacing-lg;
+    border-radius: var(--global-radius);
+    background: var(--color-shade-bg);
+    margin-bottom: p.$spacing-xl;
+
+    h2 {
+      @include c.text-display-xs;
+      margin-top: 0;
+    }
+  }
+
+  h1 {
+    @include c.text-display-xs;
+    margin-top: 2em;
+  }
+
+  h2, h3, h4, h5, h6 {
+    @include c.text-display-xxs;
+    margin-top: 2em;
+  }
+
+  .wiki-image {
+    display: block;
+    margin: 2em 0;
+  }
+}

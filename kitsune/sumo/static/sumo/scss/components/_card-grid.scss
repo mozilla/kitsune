@@ -29,6 +29,7 @@
   scroll-padding-left: var(--cg-gutter);
   scrollbar-width: none;
   scroll-snap-type: x proximity;
+  width: 100vw;
 
   &.is-four-wide {
     padding-top: var(--cg-gutter);
@@ -65,6 +66,7 @@
     margin-right: 0;
     margin-left: 0;
     overflow: visible;
+    width: auto;
 
     .scroll-wrap {
       @include c.grid-row;

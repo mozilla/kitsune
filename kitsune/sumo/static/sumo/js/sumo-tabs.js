@@ -1,9 +1,11 @@
 const container = document.querySelector('.tabs')
-const primary = container.querySelector('.tabs--list')
-const primaryItems = container.querySelectorAll('.tabs--list > li:not(.tabs--item-more)')
-container.classList.add('is-js-enhanced')
 
 // insert "more" button and duplicate the list
+if (container) {
+  const primary = container.querySelector('.tabs--list')
+  const primaryItems = container.querySelectorAll('.tabs--list > li:not(.tabs--item-more)')
+  container.classList.add('is-js-enhanced')
+
 
 primary.insertAdjacentHTML('beforeend', `
   <li class="tabs--item-more">
@@ -78,3 +80,5 @@ document.addEventListener('click', (e) => {
   container.classList.remove('dropdown-is-open')
   moreBtn.setAttribute('aria-expanded', false)
 })
+
+}

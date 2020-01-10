@@ -153,6 +153,10 @@ a, :link {
   &:active {
     background-color: var(--color-link-active-bg);
   }
+
+  &.secondary-color:hover {
+    color: var(--color-secondary);
+  }
 }
 
 :visited {
@@ -169,4 +173,8 @@ a, :link {
   &:hover {
     color: var(--color-red-09);
   }
+}
+
+.secondary-color {
+  color: var(--color-secondary);
 }

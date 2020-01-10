@@ -16,6 +16,7 @@
 // .button-warning - normal button with red hover state
 // .primary-button    - This is the primary variation.
 // .secondary-button - This is the secondary button.
+// .link-button - style a button like a link
 //
 // Markup: ../../../../../../styleguide/styleguide-examples/button.njk
 //
@@ -129,6 +130,29 @@
       border-color: var(--color-red-07);
       background-color: var(--color-red-07);
       color: var(--color-inverse);
+    }
+  }
+
+  &.link-button {
+    color: var(--color-link);
+    text-decoration: underline;
+    appearance: none;
+    border: 0 none;
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    font-weight: normal;
+    font-size: var(--base-font-size);
+    font-family: var(--base-font-family);
+
+    &:hover {
+      text-decoration: none;
+      background: transparent;
+      color: var(--color-link);
+    }
+
+    &:active {
+      background: var(--color-link-active-bg);
     }
   }
 }
