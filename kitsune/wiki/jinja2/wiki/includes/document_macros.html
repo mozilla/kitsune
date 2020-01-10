@@ -1,15 +1,15 @@
 {% macro contributor_list(contributors) -%}
-  <section id="doc-contributors" class="clearfix">
+  <section id="doc-contributors" class="document--contributors sumo-page-section">
     {% trans contributors=user_list(contributors), link=url('landings.get_involved') %}
-      <span class="help-title-prefix">//</span>
-      <span class="help-title">These fine people helped write this article:</span><span class="contributors">{{ contributors }}.</span>
-      <span class="help-link cf">You can help too - <a href="{{ link }}">find out how</a>.</span>
+    <p class="help-title text-body-md">These fine people helped write this article:</p>
+    <div class="document--contributors-list text-body-xs">{{ contributors }}</div>
     {% endtrans %}
   </section>
 {%- endmacro %}
 
+
 {% macro document_title(document) -%}
-  <h1 class="title">{{ document.title }}</h1>
+  <h1 class="text-display-lg">{{ document.title }}</h1>
 {%- endmacro %}
 
 {% macro document_messages(document, redirected_from) -%}
@@ -43,7 +43,7 @@
 {%- endmacro %}
 
 {% macro document_content(document, fallback_reason, request, settings, css_class='', any_localizable_revision=False, full_locale_name=None) -%}
-  <section id="doc-content" class="{{ css_class }}">
+  <section id="doc-content" class="document--content {{ css_class }}">
     {% if not fallback_reason %}
       {{ document.html|safe }}
     {% elif fallback_reason == 'no_translation' %}
@@ -178,7 +178,7 @@
       {% else %}
         <form action="{{ url('wiki.document_watch', document.slug) }}" method="post">
           {% csrf_token %}
-          <input type="submit" class="link-btn" value="{{ _('Email me article changes') }}" />
+          <input type="submit" class="sumo-button link-button" value="{{ _('Email me article changes') }}" />
         </form>
       {% endif %}
     </div>
@@ -238,14 +238,14 @@
       {{ showfor_data(products) }}
     </script>
 
-    {{ _('Customize this article') }}
+    <h3 class="sidebar-subheading">{{ _('Customize this article') }}</h3>
     {% if header %}
-      <h1>
+      <p>
         {{ header }}
         {% if close_button %}
           <div class="exit close-button" data-close-id="showfor-panel">x</div>
         {% endif %}
-      </h1>
+      </p>
     {% endif %}
 
     {% for prod in products %}
@@ -254,10 +254,18 @@
         {% set has_platforms = prod.platforms.count() > 1 %}
 
         <div class="product" data-product="{{ prod.slug }}">
-          <h2>
-            <input type="checkbox" checked value="product:{{ prod.slug }}">
-            {{ prod.title }}
-          </h2>
+          <div class="field checkbox is-condensed">
+            <input
+              type="checkbox"
+              id="id_{{ prod.slug}}"
+              checked
+              value="product:{{ prod.slug }}"
+            />
+            <label for="id_{{ prod.slug}}">{{ prod.title }}</label>
+          </div>
+
+
+
 
           {% if has_versions %}
             <div class="selectbox-wrapper">
@@ -289,7 +297,6 @@
               </select>
             </div>
           {% endif %}
-
         </div>
       {% endif %}
     {% endfor %}
@@ -303,18 +310,16 @@
     {% set header = _('Was this article helpful?') %}
   {% endif %}
   {% if document.allows_vote(request) %}
-    <div class="document-vote">
-      <form class="helpful" action="{{ url('wiki.document_vote', document_slug=document.slug) }}" method="post">
-        <p>
-          <span class="header">{{ header }}</span>
-          <input type="hidden" name="revision_id" value="{{ document.current_revision.id }}" />
-          {% if source %}
-            <input type="hidden" name="source" value="{{ source }}" />
-          {% endif %}
-          <input type="submit" class="btn" name="helpful" value="{{ _('Yes') }}" />
-          <input type="submit" class="btn" name="not-helpful" value="{{ _('No') }}" />
-          <img class="wait" src="{{ settings.STATIC_URL }}sumo/img/customercare/spinner.gif" alt="{{ _('Please wait...') }}" />
-        </p>
+    <div class="document-vote elevation-01 text-center">
+      <form class="document-vote--form helpful" action="{{ url('wiki.document_vote', document_slug=document.slug) }}" method="post">
+          <h4 class="document-vote--heading">{{ header }}</h4>
+          <div class="document-vote--buttons">
+            <input type="hidden" name="revision_id" value="{{ document.current_revision.id }}" />
+            {% if source %}<input type="hidden" name="source" value="{{ source }}" />{% endif %}
+            <button type="submit" class="btn helpful-button" name="helpful"><span class="hidden-text">{{ _('Yes') }}</span>👍</button>
+            <button type="submit" class="btn not-helpful-button" name="not-helpful"><span class="hidden-text">{{ _('No') }}</span>👎</button>
+            <img class="wait" src="{{ settings.STATIC_URL }}sumo/img/customercare/spinner.gif" alt="{{ _('Please wait...') }}" />
+          </div>
       </form>
     </div>
   {% endif %}

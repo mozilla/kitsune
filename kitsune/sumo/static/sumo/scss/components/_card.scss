@@ -10,8 +10,12 @@
 // .elevation-01 - small shadow
 // .elevation-02 - medium shadow
 // .elevation-03 - large shadow
-// .feature-padding.elevation-01 - Increase the amount of padding, for use with larger cards
+// .lg-pad.elevation-01 - Increase the amount of padding, for use with larger cards
+// .sm-pad - decrease the amount of padding, for use with smaller cards.
+// .radius-md - 24px border-radius
+// .radius-lg - 36px border-radius
 // .is-inverse - dark background with light text
+//
 //
 // Markup: ../../../../../../styleguide/styleguide-examples/card.njk
 //
@@ -22,12 +26,25 @@
 .card {
   @include c.bottomless;
   position: relative;
-  padding: p.remify(24px);
+  padding: p.$spacing-lg;
   border-radius: var(--global-radius);
 
-  &.feature-padding {
-    padding: p.remify(40px);
+  &.lg-pad {
+    padding: p.$spacing-xl;
   }
+
+  &.sm-pad {
+    padding: p.$spacing-md p.$spacing-lg;
+  }
+
+  &.radius-md {
+    border-radius: 24px;
+  }
+
+  &.radius-lg {
+    border-radius: 36px;
+  }
+
 
   &.is-inverse {
     background: var(--color-inverse-bg);
@@ -77,6 +94,7 @@
       object-fit: contain;
       font-size: 9px;
       line-height: 1;
+      flex: 0 0 auto;
     }
   }
 
@@ -132,7 +150,8 @@
     margin-top: -60px;
     margin-right: -20px;
     margin-bottom: 20px;
-    width: 50%;
+    width: 40%;
+    flex: 0 0 auto;
   }
 
   // &--details {}
@@ -178,11 +197,23 @@
       flex-direction: row;
 
       .card--desc {
-        margin-top: 32px;
-        margin-bottom: 32px;
+        margin: p.$spacing-md auto;
+        max-width: 300px;
 
         &:last-child {
           margin-bottom: 0;
+        }
+      }
+
+      &.is-full-width {
+        .card--desc {
+          margin-top: p.$spacing-lg;
+          margin-bottom: p.$spacing-lg;
+          max-width: none;
+        }
+
+        .card--feature-img {
+          max-width: 450px;
         }
       }
     }
@@ -214,7 +245,7 @@
       margin-bottom: -60px;
       margin-left: 60px;
       width: 50%;
-      max-width: 450px;
+      max-width: 300px;
     }
   }
 

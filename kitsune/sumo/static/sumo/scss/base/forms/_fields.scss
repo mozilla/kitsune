@@ -77,6 +77,10 @@ label {
     }
   }
 
+  &.is-condensed {
+    margin-bottom: p.$spacing-xs;
+  }
+
   &.has-error,
   &.has-success {
     .field-wrap {

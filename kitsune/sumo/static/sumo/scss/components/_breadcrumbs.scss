@@ -12,19 +12,29 @@
 // Style guide: breadcrumbs
 
 .breadcrumbs--list {
-  display: none;
+  display: flex;
   list-style: none;
   @include c.text-body-sm;
 
   li {
+    display: none;
     margin-right: 4px;
 
-    &:after {
-      content: "/";
+    &:before {
+      background-image: c.svg-url('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 18"><path d="M9,1,1,9l8,8" fill="none" stroke="#80808F" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>');
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      width: 10px;
+      height: 10px;
+      display: inline-flex;
+      align-self: center;
+      margin-right: p.$spacing-sm;
+      content: "";
     }
 
-    &:last-child:after {
-      content: none;
+    &:nth-last-child(2) {
+      display: flex;
     }
   }
 
@@ -39,6 +49,20 @@
   }
 
   @media #{p.$mq-md} {
-    display: flex;
+    li {
+      display: flex;
+
+      &:before {
+        content: none;
+      }
+
+      &:after {
+        content: "/";
+      }
+
+      &:last-child:after {
+        content: none;
+      }
+    }
   }
 }

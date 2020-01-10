@@ -9,6 +9,12 @@
     @include c.col;
   }
 
+  &.break-on-lg {
+    .sumo-l-two-col--sidebar {
+      display: none;
+    }
+  }
+
   @media #{p.$mq-md} {
     justify-content: space-between;
 
@@ -16,15 +22,25 @@
       flex-direction: row-reverse;
     }
 
-    &--sidebar {
-      width: c.col-width(2, 6);
-    }
-    &--main {
-      width: c.col-width(4, 6);
+    &:not(.break-on-lg) {
+      .sumo-l-two-col--sidebar {
+        position: relative;
+        width: c.col-width(2, 6);
+
+      }
+      .sumo-l-two-col--main {
+        width: c.col-width(4, 6);
+      }
     }
   }
 
   @media #{p.$mq-lg} {
+    &.break-on-lg {
+      .sumo-l-two-col--sidebar {
+        display: block;
+      }
+    }
+
     &--sidebar {
       width: c.col-width(2, 8);
     }

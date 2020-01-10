@@ -1,0 +1,11 @@
+<div class="document-vote card elevation-01 radius-lg sm-pad text-center">
+  <form class="document-vote--form helpful" action="#" method="post">
+      <h4 class="document-vote--heading">We love your feedback, was this article helpful?</h4>
+      <div class="document-vote--buttons">
+        <input type="hidden" name="revision_id" value="{{ document.current_revision.id }}" />
+        <input type="submit" class="btn helpful-button" name="helpful" value="Yes" />
+        <input type="submit" class="btn not-helpful-button" name="not-helpful" value="No" />
+      </div>
+    </p>
+  </form>
+</div>
