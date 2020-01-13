@@ -41,8 +41,10 @@
       }
     }
 
-    &--sidebar {
-      width: c.col-width(2, 8);
+    &:not(.break-on-lg) {
+      .sumo-l-two-col--sidebar {
+        width: c.col-width(2, 8);
+      }
     }
 
     &--main {
