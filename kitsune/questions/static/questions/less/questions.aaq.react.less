@@ -1,4 +1,4 @@
-@import '../../sumo/less/variables.less';
+@import "../../../../sumo/static/sumo/less/variables.less";
 
 .AAQApp {
   &__ProductSelector {
@@ -117,7 +117,7 @@
           text-align: center;
 
           &:before {
-            content: '\f00d'; // Close (cross) icon
+            content: "\f00d"; // Close (cross) icon
             font-family: FontAwesome;
           }
         }
@@ -138,8 +138,9 @@
       position: relative;
 
       &:before {
-        background: transparent url('../../sumo/img/search-icons-sprite.png') no-repeat scroll 0px 0px;
-        content: '';
+        background: transparent url("../../sumo/img/search-icons-sprite.png")
+          no-repeat scroll 0px 0px;
+        content: "";
         height: 56px;
         left: 0px;
         position: absolute;

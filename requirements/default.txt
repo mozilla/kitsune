@@ -159,8 +159,6 @@ django-nose==1.4.6 \
     --hash=sha256:58934a06a6932696e54c9e8af3fab49bf67ca9e9c840ad668cb7f51219808a07
 https://github.com/gintas/django-picklefield/archive/54b11bdb177fd6140c3ae7d6e9744eaa2deda261.tar.gz#egg=django-picklefield \
     --hash=sha256:8d375db708bc87f6df9bb3ae94edd01bed2cbb6a6894a927785ded9aede983ef
-https://github.com/glogiotatidis/django-pipeline/archive/103bb549cd5f93b5648e10f1be6c2c6c8c5e9610.tar.gz#egg=django-pipeline \
-    --hash=sha256:8137ed0a643560ae2300e11278e04907f0a1208031a0069474771cab6800f325
 https://github.com/mozilla/django-recaptcha/archive/b3ce0daadfff7735d2a0865b8419711748c9190a.tar.gz#egg=django-recaptcha \
     --hash=sha256:9f6cf9632838c9a2e78b29ca74f8213d2201125fe4b4d3b168af25b495a4081d
 django-statsd-mozilla==0.3.16 \
@@ -518,3 +516,6 @@ pyparsing==2.4.0 \
 mozilla-django-oidc==1.2.2 \
     --hash=sha256:2ab8b5ee3d46b50a818cbc009043be2d068f80dc093eb1fb3aa3a3af504d749b \
     --hash=sha256:b916dc452408e23b7c4947f3721b46e4f20717298861a4deaa7d2f3f171e9ad1
+django-pipeline==1.7.0 \
+    --hash=sha256:0ded22b974e3d627c27fc490ef5b23fcdcf0cdb00b704d628b5ca6d0b010d6fe \
+    --hash=sha256:f7da70f00aa4baea3e0811f88927a116425deee05871fa2bfd2f8247f42d8847
