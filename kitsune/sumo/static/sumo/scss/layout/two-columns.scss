@@ -38,14 +38,15 @@
     &.break-on-lg {
       .sumo-l-two-col--sidebar {
         display: block;
+        width: c.col-width(2, 8);
       }
     }
 
     &:not(.break-on-lg) {
       .sumo-l-two-col--sidebar {
         width: c.col-width(2, 8);
-      }
-    }
+       }
+     }
 
     &--main {
       width: c.col-width(6, 8);
@@ -53,9 +54,18 @@
   }
 
   @media #{p.$mq-xl} {
-    &--sidebar {
-      width: c.col-width(2, 10);
+    &.break-on-lg {
+      .sumo-l-two-col--sidebar {
+        display: block;
+        width: c.col-width(2, 10);
+      }
     }
+
+    &:not(.break-on-lg) {
+      .sumo-l-two-col--sidebar {
+        width: c.col-width(2, 10);
+       }
+     }
 
     &--main {
       width: c.col-width(7, 10);
