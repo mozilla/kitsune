@@ -288,11 +288,9 @@
             <label for="mzp-c-language-switcher-select">{{ _('Language') }}</label>
             <select id="mzp-c-language-switcher-select" class="mzp-js-language-switcher-select"
              name="lang">
-              <option value="en-US">English (US)</option>
-              <option value="de">Deutsch</option>
-              <option value="fr">Français</option>
-              <option value="es-ES">Español</option>
-              <option value="ja">日本語</option>
+              {% for locale in settings.LANGUAGE_CHOICES %}
+                  <option value="{{ locale[0] }}" {% if locale[0] == request.LANGUAGE_CODE %}selected{% endif %}>{{ locale[1] }}</option>
+              {% endfor %}
             </select>
             <!-- form submit button is shown when JavaScript is not enabled -->
             <button type="submit">{{ _('Go') }}</button>
