@@ -8,6 +8,7 @@
     var button = document.querySelector('.details-heading button');
     var activeLinkText = document.querySelector('.sidebar-nav .selected a').innerHTML;
     button.innerHTML = activeLinkText;
+  }
 
   if (sidebarList && _mqWide.matches) {
     window.Mzp.Details.init('.details-heading');
